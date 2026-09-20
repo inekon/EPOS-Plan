@@ -27953,6 +27953,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (Feldname aufgelöst: {0} → {1}) ähnelt.
+        /// </summary>
+        public static string KI_FELD_AUFGELOEST {
+            get {
+                return ResourceManager.GetString("KI_FELD_AUFGELOEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske meldet dazu: {0} ähnelt.
         /// </summary>
         public static string KI_FELD_DIALOGBEFUND {
@@ -27998,6 +28007,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Feldname „{0}“ passt in „{1}“ auf mehrere Felder: {2}. Bitte genau benennen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_FELD_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist eine abgeleitete Größe und lässt sich nicht setzen. ähnelt.
         /// </summary>
         public static string KI_FELD_NICHT_SETZBAR {
@@ -28021,6 +28039,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_SETZEN_FEHLER {
             get {
                 return ResourceManager.GetString("KI_FELD_SETZEN_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zur Wahl stehen: {0}. ähnelt.
+        /// </summary>
+        public static string KI_FELD_WAHL_EINTRAEGE {
+            get {
+                return ResourceManager.GetString("KI_FELD_WAHL_EINTRAEGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ führt gerade keine Auswahl; es lässt sich nicht setzen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_WAHL_LEER {
+            get {
+                return ResourceManager.GetString("KI_FELD_WAHL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{1}“ passt bei „{0}“ auf mehrere Einträge: {2}. Bitte genauer benennen. ähnelt.
+        /// </summary>
+        public static string KI_FELD_WAHL_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("KI_FELD_WAHL_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eintrag „{1}“ von „{0}“ lässt sich nicht als Wert setzen (Schlüssel „{2}“). ähnelt.
+        /// </summary>
+        public static string KI_FELD_WAHL_SCHLUESSEL {
+            get {
+                return ResourceManager.GetString("KI_FELD_WAHL_SCHLUESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{1}“ ist kein Eintrag von „{0}“. Zur Wahl stehen: {2}. ähnelt.
+        /// </summary>
+        public static string KI_FELD_WAHL_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_FELD_WAHL_UNBEKANNT", resourceCulture);
             }
         }
         

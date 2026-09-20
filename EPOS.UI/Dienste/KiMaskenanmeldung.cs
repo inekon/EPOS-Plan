@@ -73,8 +73,16 @@ public sealed class KiMaskenanmeldung : IDisposable
     /// Maske nicht, kommt trotzdem ein Objekt zurück; es ist dann nur nicht
     /// <see cref="Angemeldet"/>.
     /// </returns>
+    /// <param name="wahlquellen">
+    /// Je WAHLFELD ein Lieferant seiner Einträge (KI-F1b, KI-D-Q6) — für Listen, die
+    /// nur der Dialog kennt (die Energieträgervarianten des Heizkessels, die Geräte
+    /// eines Katalogs). Fehlt einer, sucht die Anmeldung die Begleiteigenschaft
+    /// <c>&lt;Eigenschaft&gt;Wahl</c> am Daten-Objekt.
+    /// </param>
     public static KiMaskenanmeldung Fuer<T>(string maskenname, Func<T?> quelle,
-                                            KiMaskenhaken? haken = null) where T : class
+                                            KiMaskenhaken? haken = null,
+                                            params (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] wahlquellen)
+        where T : class
     {
         if (quelle is null) throw new ArgumentNullException(nameof(quelle));
 
@@ -91,7 +99,7 @@ public sealed class KiMaskenanmeldung : IDisposable
             // weil Zeilen entstehen und vergehen, solange der Dialog offen steht.
             if (feld.IstSpalte)
             {
-                KiFeldsammlung? spalte = Spalte(feld, quelle);
+                KiFeldsammlung? spalte = Spalte(feld, quelle, wahlquellen);
                 if (spalte is not null) spalten.Add(spalte);
                 continue;
             }
@@ -126,7 +134,8 @@ public sealed class KiMaskenanmeldung : IDisposable
             // Text; was die Eigenschaft annimmt, ist double?, int, bool oder string. Die
             // Umsetzung macht der Kern (KiFeldwandler) - er braucht dafür den Typ, und
             // der steht nur hier fest.
-            zugaenge.Add(new KiFeldzugang(feld, lesen, setzen, eigenschaft.PropertyType));
+            zugaenge.Add(new KiFeldzugang(feld, lesen, setzen, eigenschaft.PropertyType,
+                                          Wahlquelle(feld, quelle, wahlquellen)));
         }
 
         object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge, haken, spalten);
@@ -159,7 +168,9 @@ public sealed class KiMaskenanmeldung : IDisposable
     /// keine, sind alle Zeilen aenderbar.
     /// </para>
     /// </remarks>
-    private static KiFeldsammlung? Spalte<T>(KiDialogFeld feld, Func<T?> quelle) where T : class
+    private static KiFeldsammlung? Spalte<T>(
+        KiDialogFeld feld, Func<T?> quelle,
+        (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] wahlquellen) where T : class
     {
         if (!string.Equals(feld.Datentyp, typeof(T).Name, StringComparison.Ordinal)) return null;
 
@@ -197,7 +208,111 @@ public sealed class KiMaskenanmeldung : IDisposable
                 ? null
                 : zeile => Convert.ToString(kennzeichen.GetValue(zeile), CultureInfo.CurrentCulture) ?? "",
             schreibbar is null ? null : zeile => (bool)(schreibbar.GetValue(zeile) ?? true),
-            spalte.PropertyType);
+            spalte.PropertyType,
+            Wahlquelle(feld, quelle, wahlquellen));
+    }
+
+    /// <summary>
+    /// Der Lieferant der Einträge eines WAHLFELDES (KI-F1b, KI-D-Q6); <c>null</c>, wenn
+    /// das Feld keine Wahl ist oder keine Quelle auflöst.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Zwei Wege, und der ausdrückliche geht vor.</b> Steht die Liste am Daten-Objekt
+    /// (eine Sichtklasse führt neben <c>Bodentyp</c> die Eigenschaft
+    /// <c>BodentypWahl</c>), findet die Anmeldung sie von selbst — das ist der Regelfall
+    /// und braucht im Dialog keine Zeile. Kennt die Liste dagegen nur der Dialog (die
+    /// Energieträgervarianten des Heizkessels stehen in einem privaten Feld), reicht er
+    /// sie beim Anmelden als Lieferant herein.
+    /// </para>
+    /// <para>
+    /// <b>Gerufen wird bei JEDEM Zugriff</b>, nie einmal beim Anmelden: Eine
+    /// Gerätewahl hängt am gewählten Hersteller, eine Energieträgerliste am Gewerk. Eine
+    /// eingefrorene Liste zeigte dem Assistenten die Auswahl von vorhin.
+    /// </para>
+    /// </remarks>
+    private static Func<IReadOnlyList<KiWahleintrag>>? Wahlquelle<T>(
+        KiDialogFeld feld, Func<T?> quelle,
+        (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] wahlquellen) where T : class
+    {
+        if (!feld.IstWahl) return null;
+
+        if (wahlquellen is not null)
+            foreach (var paar in wahlquellen)
+                if (paar.Eintraege is not null &&
+                    string.Equals(paar.Feld, feld.Name, StringComparison.Ordinal))
+                    return paar.Eintraege;
+
+        PropertyInfo? begleiter = Begleiter(typeof(T), feld);
+        if (begleiter is null) return null;
+
+        return () =>
+        {
+            T? stand = quelle();
+            return stand is null
+                       ? Array.Empty<KiWahleintrag>()
+                       : begleiter.GetValue(stand) as IReadOnlyList<KiWahleintrag>
+                         ?? Array.Empty<KiWahleintrag>();
+        };
+    }
+
+    /// <summary>
+    /// Die Begleiteigenschaft <c>&lt;Eigenschaft&gt;Wahl</c> am Daten-Objekt, wenn sie
+    /// eine Eintragsliste liefert; sonst <c>null</c>.
+    /// </summary>
+    private static PropertyInfo? Begleiter(Type datentyp, KiDialogFeld feld)
+    {
+        PropertyInfo? begleiter = datentyp.GetProperty(feld.Eigenschaft + WAHLZUSATZ,
+                                                       BindingFlags.Public | BindingFlags.Instance);
+
+        return begleiter is not null &&
+               typeof(IReadOnlyList<KiWahleintrag>).IsAssignableFrom(begleiter.PropertyType)
+                   ? begleiter
+                   : null;
+    }
+
+    /// <summary>Nachsilbe der Begleiteigenschaft eines Wahlfeldes.</summary>
+    private const string WAHLZUSATZ = "Wahl";
+
+    /// <summary>
+    /// Baut aus einer Liste der Maske die Einträge eines Wahlfeldes (KI-F1b).
+    /// </summary>
+    /// <remarks>
+    /// Sie steht hier und nicht in jedem Dialog, weil sonst jede Maske ihre eigene
+    /// Umsetzung von „Id und Text" schriebe — und die Nullprüfung je Mal neu.
+    /// </remarks>
+    public static IReadOnlyList<KiWahleintrag> Eintraege<TZeile>(
+        IEnumerable<TZeile>? zeilen,
+        Func<TZeile, object?> schluessel,
+        Func<TZeile, string?> text)
+    {
+        if (zeilen is null) return Array.Empty<KiWahleintrag>();
+
+        var liste = new List<KiWahleintrag>();
+        foreach (TZeile zeile in zeilen)
+        {
+            if (zeile is null) continue;
+            liste.Add(new KiWahleintrag(
+                Convert.ToString(schluessel(zeile), CultureInfo.InvariantCulture),
+                text(zeile)));
+        }
+
+        return liste;
+    }
+
+    /// <summary>
+    /// Die Einträge einer Liste, deren SCHLÜSSEL der Listenplatz ist — die Bauform der
+    /// festen Klapplisten des Hauses (KI-F1b).
+    /// </summary>
+    public static IReadOnlyList<KiWahleintrag> Eintraege(IReadOnlyList<string>? texte)
+    {
+        if (texte is null) return Array.Empty<KiWahleintrag>();
+
+        var liste = new List<KiWahleintrag>(texte.Count);
+        for (int i = 0; i < texte.Count; i++)
+            liste.Add(new KiWahleintrag(i.ToString(CultureInfo.InvariantCulture), texte[i]));
+
+        return liste;
     }
 
     /// <summary>Name der Zeileneigenschaft, die den Schreibschutz einer Zeile traegt.</summary>
@@ -238,7 +353,8 @@ public sealed class KiMaskenanmeldung : IDisposable
     /// ihn fiele ein an die falsche Maske gehängtes Daten-Objekt erst auf, wenn zufällig
     /// eine Eigenschaft gleich heisst.
     /// </remarks>
-    public static IReadOnlyList<string> Pruefe(string maskenname, Type datentyp)
+    public static IReadOnlyList<string> Pruefe(string maskenname, Type datentyp,
+                                               params string[] wahlquellen)
     {
         if (datentyp is null) throw new ArgumentNullException(nameof(datentyp));
 
@@ -248,10 +364,33 @@ public sealed class KiMaskenanmeldung : IDisposable
         var fehlt = new List<string>();
 
         foreach (KiDialogFeld feld in eintrag.Felder)
+        {
             if (feld.IstSpalte ? !SpalteLoest(datentyp, feld) : Eigenschaft(datentyp, feld) is null)
+            {
                 fehlt.Add(feld.Eigenschaftspfad);
+                continue;
+            }
+
+            // JEDES Wahlfeld muss seine Eintragsquelle aufloesen (KI-F1b, KI-D-Q6):
+            // entweder die Begleiteigenschaft am Daten-Objekt oder ein Lieferant, den
+            // der Dialog beim Anmelden hereinreicht. Ohne Quelle stuende ein Feld im
+            // Katalog, das der Assistent lesen, aber nie setzen koennte.
+            if (feld.IstWahl && Begleiter(datentyp, feld) is null && !Genannt(wahlquellen, feld.Name))
+                fehlt.Add(feld.Eigenschaftspfad + " (" + WAHLZUSATZ + ")");
+        }
 
         return fehlt;
+    }
+
+    /// <summary>Steht der Feldname unter den ausdrücklich gemeldeten Lieferanten?</summary>
+    private static bool Genannt(string[] wahlquellen, string feldname)
+    {
+        if (wahlquellen is null) return false;
+
+        foreach (string name in wahlquellen)
+            if (string.Equals(name, feldname, StringComparison.Ordinal)) return true;
+
+        return false;
     }
 
     /// <summary>

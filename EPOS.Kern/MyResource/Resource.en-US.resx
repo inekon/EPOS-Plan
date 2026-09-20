@@ -20852,4 +20852,25 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
     <value>On = the surcharge is applied to the selected price series.</value>
   </data>
+  <data name="KI_FELD_WAHL_LEER" xml:space="preserve">
+    <value>The field “{0}” currently offers no selection; it cannot be set.</value>
+  </data>
+  <data name="KI_FELD_WAHL_UNBEKANNT" xml:space="preserve">
+    <value>“{1}” is not an entry of “{0}”. Available are: {2}.</value>
+  </data>
+  <data name="KI_FELD_WAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>“{1}” matches several entries of “{0}”: {2}. Please be more precise.</value>
+  </data>
+  <data name="KI_FELD_WAHL_SCHLUESSEL" xml:space="preserve">
+    <value>The entry “{1}” of “{0}” cannot be set as a value (key “{2}”).</value>
+  </data>
+  <data name="KI_FELD_WAHL_EINTRAEGE" xml:space="preserve">
+    <value>Available are: {0}.</value>
+  </data>
+  <data name="KI_FELD_MEHRDEUTIG" xml:space="preserve">
+    <value>The field name “{0}” matches several fields in “{1}”: {2}. Please name it precisely.</value>
+  </data>
+  <data name="KI_FELD_AUFGELOEST" xml:space="preserve">
+    <value>(field name resolved: {0} → {1})</value>
+  </data>
 </root>

@@ -60,8 +60,13 @@ namespace WindowsFormsApplication1
         /// Der CLR-Typ, den <paramref name="setzen"/> entgegennimmt (Auftrag #201);
         /// <c>null</c> = unbekannt, dann wird der Text unveraendert durchgereicht.
         /// </param>
+        /// <param name="eintraege">
+        /// Die Eintraege eines WAHLFELDES, bei jedem Zugriff frisch (KI-F1b);
+        /// <c>null</c> = das Feld ist keine Wahl.
+        /// </param>
         public KiFeldzugang(KiDialogFeld feld, Func<object> lesen, Action<object> setzen = null,
-                            Type werttyp = null)
+                            Type werttyp = null,
+                            Func<IReadOnlyList<KiWahleintrag>> eintraege = null)
         {
             if (feld == null) throw new ArgumentNullException(nameof(feld));
             if (lesen == null) throw new ArgumentNullException(nameof(lesen));
@@ -70,6 +75,7 @@ namespace WindowsFormsApplication1
             Lesen = lesen;
             Setzen = setzen;
             Werttyp = werttyp;
+            Eintraege = eintraege;
         }
 
         /// <summary>Die Deklaration aus dem Dialogkatalog.</summary>
@@ -95,6 +101,37 @@ namespace WindowsFormsApplication1
         /// <c>PropertyInfo.PropertyType</c>), nicht im Kern.
         /// </remarks>
         public Type Werttyp { get; }
+
+        /// <summary>
+        /// Liefert die Eintraege eines Wahlfeldes; <c>null</c> = das Feld ist keine Wahl
+        /// (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein DELEGAT und keine Liste</b> — aus demselben Grund, aus dem eine Spalte
+        /// ihre Zeilen bei jedem Zugriff neu aufloest: Die Energietraeger einer Maske
+        /// haengen am gewaehlten Gewerk, die Module am Hersteller. Eine beim Anmelden
+        /// eingefrorene Liste zeigte dem Assistenten die Auswahl von vorhin.
+        /// </remarks>
+        public Func<IReadOnlyList<KiWahleintrag>> Eintraege { get; }
+
+        /// <summary>Ist das Feld eine WAHL aus einer Liste der Maske?</summary>
+        public bool IstWahl => Feld.IstWahl;
+
+        /// <summary>
+        /// Die Eintraege des Wahlfeldes — nie <c>null</c>, und ein werfender Lieferant
+        /// ergibt eine leere Liste.
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Regel wie im uebrigen Weg der Bruecke: Eine Assistentenauskunft darf
+        /// unvollstaendig sein, aber nie sprengen.
+        /// </remarks>
+        public IReadOnlyList<KiWahleintrag> Wahleintraege()
+        {
+            if (Eintraege == null) return Array.Empty<KiWahleintrag>();
+
+            try { return Eintraege() ?? Array.Empty<KiWahleintrag>(); }
+            catch (Exception) { return Array.Empty<KiWahleintrag>(); }
+        }
 
         /// <summary>Laesst sich dieses Feld setzen? (Stufe S3)</summary>
         public bool Setzbar => Setzen != null;
@@ -141,13 +178,19 @@ namespace WindowsFormsApplication1
         /// <param name="beschriftung">Benennt eine Zeile im Klartext; <c>null</c> = Nummer.</param>
         /// <param name="schreibbar">Darf DIESE Zeile geaendert werden? <c>null</c> = ja.</param>
         /// <param name="werttyp">Der CLR-Typ, den <paramref name="setzen"/> entgegennimmt.</param>
+        /// <param name="eintraege">
+        /// Die Eintraege einer Wahl-SPALTE (KI-F1b); <c>null</c> = keine Wahl. Sie gelten
+        /// fuer alle Zeilen — eine Klappliste in einer Rasterspalte fuehrt in jeder Zeile
+        /// dieselbe Auswahl.
+        /// </param>
         public KiFeldsammlung(KiDialogFeld feld,
                               Func<IReadOnlyList<object>> zeilen,
                               Func<object, object> lesen,
                               Action<object, object> setzen = null,
                               Func<object, string> beschriftung = null,
                               Func<object, bool> schreibbar = null,
-                              Type werttyp = null)
+                              Type werttyp = null,
+                              Func<IReadOnlyList<KiWahleintrag>> eintraege = null)
         {
             if (feld == null) throw new ArgumentNullException(nameof(feld));
             if (zeilen == null) throw new ArgumentNullException(nameof(zeilen));
@@ -160,6 +203,7 @@ namespace WindowsFormsApplication1
             Beschriftung = beschriftung;
             Schreibbar = schreibbar;
             Werttyp = werttyp;
+            Eintraege = eintraege;
         }
 
         /// <summary>Die Spaltendeklaration aus dem Dialogkatalog.</summary>
@@ -182,6 +226,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der CLR-Typ des Spaltenwertes.</summary>
         public Type Werttyp { get; }
+
+        /// <summary>Die Eintraege einer Wahl-Spalte; <c>null</c> = keine Wahl (KI-F1b).</summary>
+        public Func<IReadOnlyList<KiWahleintrag>> Eintraege { get; }
 
         /// <summary>
         /// Je vorhandener Zeile ein Feldzugang - FRISCH ermittelt.
@@ -216,7 +263,8 @@ namespace WindowsFormsApplication1
                     darfSchreiben
                         ? wert => { object z = Zeile(stelle); if (z != null) Setzen(z, wert); }
                         : (Action<object>)null,
-                    Werttyp));
+                    Werttyp,
+                    Eintraege));
             }
 
             return liste;
@@ -262,7 +310,17 @@ namespace WindowsFormsApplication1
     public sealed class KiFeldwert
     {
         /// <summary>Legt einen gelesenen Feldwert an.</summary>
-        public KiFeldwert(KiDialogFeld feld, object rohwert, string text, bool setzbar)
+        /// <param name="feld">Die Deklaration aus dem Dialogkatalog.</param>
+        /// <param name="rohwert">Der Wert, wie er im Dialog steht.</param>
+        /// <param name="text">Derselbe Wert als Anzeigetext.</param>
+        /// <param name="setzbar">Liesse sich das Feld setzen?</param>
+        /// <param name="schluessel">
+        /// Bei einem WAHLFELD der Schluessel hinter dem Text (KI-F1b); sonst leer.
+        /// </param>
+        /// <param name="eintraege">Bei einem Wahlfeld die Auswahl der Maske; sonst leer.</param>
+        public KiFeldwert(KiDialogFeld feld, object rohwert, string text, bool setzbar,
+                          string schluessel = null,
+                          IReadOnlyList<KiWahleintrag> eintraege = null)
         {
             if (feld == null) throw new ArgumentNullException(nameof(feld));
 
@@ -270,6 +328,8 @@ namespace WindowsFormsApplication1
             Rohwert = rohwert;
             Text = text ?? "";
             Setzbar = setzbar;
+            Schluessel = schluessel ?? "";
+            Eintraege = eintraege ?? Array.Empty<KiWahleintrag>();
         }
 
         /// <summary>Die Deklaration aus dem Dialogkatalog.</summary>
@@ -299,11 +359,58 @@ namespace WindowsFormsApplication1
         /// <summary>Liesse sich dieses Feld setzen? (Stufe S3)</summary>
         public bool Setzbar { get; }
 
+        /// <summary>
+        /// Bei einem Wahlfeld der Schluessel hinter dem Text (KI-F1b); sonst leer.
+        /// </summary>
+        /// <remarks>
+        /// <b>Text UND Schluessel, weil beide gebraucht werden:</b> Der Anwender liest
+        /// „Erdgas H", die Eigenschaft traegt die Id. <c>dialog_lesen</c> nennt deshalb
+        /// beides — der Text, damit die Antwort verstaendlich bleibt, der Schluessel,
+        /// damit das Modell ihn zurueckgeben kann.
+        /// </remarks>
+        public string Schluessel { get; }
+
+        /// <summary>Bei einem Wahlfeld die Auswahl der Maske; sonst leer (KI-F1b).</summary>
+        public IReadOnlyList<KiWahleintrag> Eintraege { get; }
+
+        /// <summary>Ist das Feld eine WAHL aus einer Liste der Maske?</summary>
+        public bool IstWahl => Feld.IstWahl;
+
         /// <summary>Ist das Feld leer?</summary>
         public bool IstLeer => Text.Length == 0;
 
         /// <inheritdoc/>
         public override string ToString() => Name + " = " + Text;
+    }
+
+    /// <summary>
+    /// Das Ergebnis der toleranten Feldsuche: der eine gemeinte Zugang — oder die
+    /// Kandidaten, zwischen denen NICHT geraten wird (KI-F1b, KI-D-Q6).
+    /// </summary>
+    public sealed class KiFeldtreffer
+    {
+        /// <summary>Legt einen Treffer an.</summary>
+        public KiFeldtreffer(KiFeldzugang zugang, IReadOnlyList<string> kandidaten)
+        {
+            Zugang = zugang;
+            Kandidaten = kandidaten ?? Array.Empty<string>();
+        }
+
+        /// <summary>Kein Feld genannt, keine Maske angemeldet, kein Treffer.</summary>
+        public static readonly KiFeldtreffer Keiner =
+            new KiFeldtreffer(null, Array.Empty<string>());
+
+        /// <summary>Der gemeinte Zugang; <c>null</c> = keiner oder mehrere.</summary>
+        public KiFeldzugang Zugang { get; }
+
+        /// <summary>Die Kandidaten, wenn der Name mehrdeutig war; sonst leer.</summary>
+        public IReadOnlyList<string> Kandidaten { get; }
+
+        /// <summary>Genau ein Feld passt.</summary>
+        public bool Eindeutig => Zugang != null;
+
+        /// <summary>Mehrere Felder passen - es wird nicht geraten.</summary>
+        public bool Mehrdeutig => Zugang == null && Kandidaten.Count > 0;
     }
 
     /// <summary>
@@ -583,6 +690,15 @@ namespace WindowsFormsApplication1
                 try { roh = zugang.Lesen(); }
                 catch (Exception) { roh = null; }
 
+                if (zugang.IstWahl)
+                {
+                    IReadOnlyList<KiWahleintrag> eintraege = zugang.Wahleintraege();
+                    string schluessel = AlsText(roh);
+                    werte.Add(new KiFeldwert(zugang.Feld, roh, Wahltext(eintraege, schluessel),
+                                             zugang.Setzbar, schluessel, eintraege));
+                    continue;
+                }
+
                 werte.Add(new KiFeldwert(zugang.Feld, roh, AlsText(roh), zugang.Setzbar));
             }
 
@@ -594,16 +710,86 @@ namespace WindowsFormsApplication1
         /// (Auftrag #201). <c>null</c>, wenn Maske oder Feld nicht angemeldet sind.
         /// </summary>
         public static KiFeldzugang Feldzugang(string maskenname, string feldname)
+            => Feldsuche(maskenname, feldname).Zugang;
+
+        /// <summary>
+        /// Sucht EIN Feld TOLERANT und sagt, warum es scheitert, wenn es scheitert
+        /// (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Auflösung steht HIER und nicht in den Aktionen:</b> Alle drei Wege, die
+        /// ein Feld beim Namen nennen (<c>feld_setzen</c>, <c>formular_ausfuellen</c>,
+        /// <c>dialog_parameter_erklaeren</c>), gehen ueber diese Stelle. Eine zweite
+        /// Namensregel in einer der drei waere genau der Fall, in dem der Assistent ein
+        /// Feld einmal findet und einmal nicht.
+        /// </para>
+        /// <para>
+        /// <b>Gesucht wird unter den ANGEMELDETEN Zugaengen</b>, nicht unter den
+        /// Katalogfeldern: Eine Spalte liefert je Zeile einen eigenen Schluessel
+        /// (<c>nutzungsdauer_3</c>), und den kennt der Katalog nicht.
+        /// </para>
+        /// </remarks>
+        public static KiFeldtreffer Feldsuche(string maskenname, string feldname)
         {
-            if (string.IsNullOrWhiteSpace(feldname)) return null;
+            if (string.IsNullOrWhiteSpace(feldname)) return KiFeldtreffer.Keiner;
 
             Eintrag eintrag = Finde(maskenname);
-            if (eintrag == null) return null;
+            if (eintrag == null) return KiFeldtreffer.Keiner;
 
-            foreach (KiFeldzugang z in eintrag.AlleZugaenge())
-                if (string.Equals(z.Name, feldname, StringComparison.Ordinal)) return z;
+            List<KiFeldzugang> zugaenge = eintrag.AlleZugaenge();
+            var paare = new List<KiWahleintrag>(zugaenge.Count);
+            foreach (KiFeldzugang z in zugaenge)
+                paare.Add(new KiWahleintrag(z.Name, z.Feld.Anzeigename));
 
-            return null;
+            KiWahltreffer treffer = KiWahl.Treffer(paare, feldname);
+
+            return treffer.Eindeutig
+                       ? new KiFeldtreffer(zugaenge[treffer.Stelle], Array.Empty<string>())
+                       : new KiFeldtreffer(null, treffer.Kandidaten);
+        }
+
+        /// <summary>
+        /// Der Anzeigetext eines Wahlwertes: der Eintrag, den der Schluessel trifft -
+        /// sonst der Schluessel selbst (KI-F1b).
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Schluessel bleibt stehen, wenn ihn kein Eintrag traegt.</b> Eine
+        /// Anlage kann auf einen Katalogsatz zeigen, den die Liste gerade nicht fuehrt
+        /// (anderes Gewerk gewaehlt, Satz entfallen); dann ist die rohe Id die Wahrheit
+        /// ueber den Dialog, und die gehoert gezeigt - nicht ein leeres Feld.
+        /// </remarks>
+        public static string Wahltext(IReadOnlyList<KiWahleintrag> eintraege, string schluessel)
+        {
+            if (string.IsNullOrEmpty(schluessel)) return "";
+            if (eintraege == null || eintraege.Count == 0) return schluessel;
+
+            foreach (KiWahleintrag e in eintraege)
+                if (e != null && string.Equals(e.Schluessel, schluessel, StringComparison.Ordinal))
+                    return e.Text;
+
+            return schluessel;
+        }
+
+        /// <summary>
+        /// Der Wert EINES Zugangs als Anzeigetext — bei einer Wahl der Eintragstext,
+        /// sonst die Schreibweise des Feldblocks (KI-F1b).
+        /// </summary>
+        /// <remarks>
+        /// Genau dieser Text steht im Bestaetigungsblock „Feld · bisher → neu"
+        /// (Feldsicherung 11.5). Der Anwender bestaetigt, was er auf der Maske liest,
+        /// und nicht die Id dahinter.
+        /// </remarks>
+        public static string Feldtext(KiFeldzugang zugang)
+        {
+            if (zugang == null) return "";
+
+            object roh;
+            try { roh = zugang.Lesen(); }
+            catch (Exception) { return ""; }
+
+            string text = AlsText(roh);
+            return zugang.IstWahl ? Wahltext(zugang.Wahleintraege(), text) : text;
         }
 
         /// <summary>

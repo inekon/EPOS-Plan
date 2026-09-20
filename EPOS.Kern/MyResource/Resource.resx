@@ -20859,4 +20859,25 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
     <value>An = auf die gewählte Preisreihe wird der Aufschlag angewendet.</value>
   </data>
+  <data name="KI_FELD_WAHL_LEER" xml:space="preserve">
+    <value>Das Feld „{0}“ führt gerade keine Auswahl; es lässt sich nicht setzen.</value>
+  </data>
+  <data name="KI_FELD_WAHL_UNBEKANNT" xml:space="preserve">
+    <value>„{1}“ ist kein Eintrag von „{0}“. Zur Wahl stehen: {2}.</value>
+  </data>
+  <data name="KI_FELD_WAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>„{1}“ passt bei „{0}“ auf mehrere Einträge: {2}. Bitte genauer benennen.</value>
+  </data>
+  <data name="KI_FELD_WAHL_SCHLUESSEL" xml:space="preserve">
+    <value>Der Eintrag „{1}“ von „{0}“ lässt sich nicht als Wert setzen (Schlüssel „{2}“).</value>
+  </data>
+  <data name="KI_FELD_WAHL_EINTRAEGE" xml:space="preserve">
+    <value>Zur Wahl stehen: {0}.</value>
+  </data>
+  <data name="KI_FELD_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Feldname „{0}“ passt in „{1}“ auf mehrere Felder: {2}. Bitte genau benennen.</value>
+  </data>
+  <data name="KI_FELD_AUFGELOEST" xml:space="preserve">
+    <value>(Feldname aufgelöst: {0} → {1})</value>
+  </data>
 </root>
