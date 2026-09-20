@@ -227,3 +227,166 @@ Anwender die Reihe über die Legende abwählt.
   Stelle — sie gehört zum Baustein, nicht zum Schreiber.
 * **Die Gruppen (b), (c) und (d)** des Rollouts stehen noch aus; `ChartBild` bleibt, bis die
   letzte PNG-Stelle umgestellt ist.
+
+---
+
+## Gruppe (c) — Kern: sieben Bilder ohne Zeitachse
+
+### Die Aufgabe
+
+Die sieben Diagrammarten **ohne** Zeitachsen-Zoom — `Kuchen`, `BalkenHorizontal`,
+`StrombilanzMonate`, `MonatsSaeulen`, `MonatsStapel`, `Ring` (zwei Überladungen) und
+`Optimierungsraster` — bekommen ihr öffentliches Zeichenmodell für die SVG-Ausgabe. Sie
+haben keine Zeitachse: zwölf starre Monatsfächer, eine Handvoll Varianten, ein Kuchen, ein
+Ring und ein Raster aus Kapazität × C-Rate. Es gibt hier also nichts zu zoomen — und damit
+verschiebt sich die Frage: Nicht das innere `<svg>` macht diese Bilder interaktiv, sondern
+**der Wert am Element**.
+
+**Die unverrückbare Bedingung blieb: kein PNG darf sich ändern.** Gemessen an der
+Windows-Messlatte dieses Rechners (91 Hashes aus E0/E1), nach jedem Commit.
+
+### Was entstanden ist
+
+| Datei | Was dazugekommen ist |
+|---|---|
+| `EPOS.Kern/Allgemein/Bericht/Zeichnung/Zeichenmodell.cs` | `Zeichenbefehl.Wert` (Z. 113) und die Klammer `Markiert(marke, wert, inhalt)` (Z. 589) |
+| `EPOS.Kern/Allgemein/Bericht/Zeichnung/SvgSchreiber.cs` | `data-wert` an derselben Stelle wie `data-marke` (Z. 414) |
+| `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs` | sieben `…Modell`-Methoden, `MonatsBalkenModell` als Rumpf der Strombilanz, die Wertformatierung (`WERT_TRENNER`, `Elementwert`, `Anteilwert`, `Achsenwert`, `Zellwert`, `Achseneinheit`), `AchsenRasterOhneKreuz` |
+| `Proben/ChartProben/Program.GruppeC.cs` (neu), `Program.cs`, `ChartProben.csproj`, `LIESMICH.md` | zehn SVG-Gegenproben in einer partiellen Klasse, eine Registrierungszeile, die Compile-Zeile, das Papier nachgezogen |
+| `EPOS.Kern.Tests/ChartRendererGruppeCTests.cs` (neu) | zwölf Fälle |
+| `EPOS.Kern.Tests/` | `ZeichenmodellTests` +2 (20 → 22), `SvgSchreiberTests` +2 (29 → 31) |
+
+### Die Entscheide
+
+**DG-E3-6 — Der Wert am Element.** Der Basis-Record `Zeichenbefehl` bekommt neben `Marke`
+ein optionales `string Wert { get; init; }` — den **fertig formatierten Text**, den die
+Oberfläche beim Zeigen auf das Element anzeigt („Jan · Wärmepumpe: 12,5 MWh",
+„Kapazität 220 kWh · Entladeleistung 100 kW: 4.000 €", „Wärmepumpe: 48,0 %"). Der
+`SvgSchreiber` schreibt ihn als `data-wert` an derselben Stelle wie `data-marke`; der
+`SkiaMaler` übergeht ihn wie die Marke, und das PNG bleibt byte-gleich.
+
+*Warum fertiger Text und keine Zahl.* Formatiert wird dort, wo auch die Beschriftung des
+Bildes entsteht — in der `DE`-Kultur des Renderers und mit denselben Nachkommastellen.
+Eine nackte Zahl im Modell müsste die Oberfläche ein zweites Mal formatieren; Bild und
+Zeigetext gingen dann auseinander, und die Einheit wüsste die Oberfläche ohnehin nicht.
+
+**Die Nachkommastellen sind die der EIGENEN Achse des Bildes.** Das ist die Lesart von
+„Formatierung wie die Beschriftung des PNG", und sie ist je Bild eine andere:
+
+| Bild | Format der Zahl | woher |
+|---|---|---|
+| `MonatsSaeulen` | `N0` / `N1` / `N2` | `Skala.Bedarf` — dieselbe Wahl, die die y-Beschriftung trifft |
+| `MonatsStapel` | `N0` ab 10, sonst `N1` | die Regel des `YRaster` |
+| `MonatsBalken` (Strombilanz) | `N0` | die Regel des `AchsenRaster` |
+| `BalkenHorizontal` | `N0` | das Bild schreibt die Zahl selbst hinter den Balken |
+| `Kuchen`, `Ring` | `N1`, Anteil in Prozent | die Prozentzahl der Legende bzw. die Mittelzahl |
+| `Optimierungsraster` | `0.#` senkrecht, `0.##` waagerecht, `N0` für den Zellwert | die beiden Achsenbeschriftungen und die Farbskala |
+
+**DG-E3-7 — Reine Pixelbilder.** Alle sieben haben `Flaeche = null` (kein inneres `<svg>`,
+kein Zoom) und **keine `Datenreihe`** — die Werte stehen am Element. Säulen,
+Stapelschichten, Balkenzeilen, Rasterzellen, Ring- und Kuchensegmente sind Pixel-Elemente
+mit der Marke `reihe:<Name>` (dem Legendenschalter; beim Kuchen `reihe:<Segmentname>`) und
+ihrem `Wert`. Die Legende markiert der Helfer `Legende` bereits (`legende:<Name>`); dazu
+kommen `titel`, `xachse`/`yachse`, die Farbskala des Rasters als `skala`, die Bestmarke als
+`marke` und der Leerhinweis als `leerhinweis`.
+
+**Achsenkreuz und Netzlinien bleiben markenlos.** Dieselbe Regel wie in E2 und in
+Gruppe (a): Die beiden Achsenlinien — und beim Raster die Netzlinien zwischen den Zellen —
+müssen stehen bleiben, wenn die Oberfläche eine Achsenteilung ausblendet oder eine Reihe
+abwählt. Dafür ist `AchsenRaster` wie schon seine drei Nachbarn in `…OhneKreuz` plus
+`Achsenkreuz` aufgeteilt; die Befehlsreihenfolge ändert sich dabei nicht.
+
+### Fünf Stellen, an denen die Umsetzung eine eigene Entscheidung gebraucht hat
+
+1. **Der Kuchen markiert seine Legende selbst.** Der Entscheid sagt, die Legende markiere
+   der Helfer `Legende`. Der Kuchen baut seine aber selbst, weil der Eintrag die
+   Prozentzahl trägt („Solarthermie   12,0 %"). Ohne Marke wäre er der einzige der sieben,
+   dessen Legende nichts schaltet — deshalb steht `legende:<Segmentname>` dort von Hand,
+   mit demselben Schlüssel wie am Segment. Die Befehle bleiben unverändert.
+2. **Der Bedarfszug des Monatsbalkens trägt nur seinen Namen als Wert.** Er ist im PNG EIN
+   Streckenzug über zwölf Monate und zeigt keine einzelne Zahl; ihn in zwölf Elemente zu
+   zerlegen hieße, das Bild zu ändern. Die Regel daraus: Ein Element, das genau eine Zahl
+   zeigt, nennt sie; eines, das eine ganze Reihe zeigt, nennt seinen Namen. So trägt jedes
+   `reihe:`-Element einen `data-wert`, und die Gegenprobe kann das ohne Ausnahmeliste
+   prüfen.
+3. **Die Rasterzelle heißt `reihe:<Skalentitel>`.** Ein Raster hat keine Legende und keine
+   Reihen — es zeigt EINE Größe, und die benennt die Farbskala rechts („ΔJ [€/a]"). Sie
+   trägt deshalb die Marke `skala` und ist damit die Legende dieses Bildes; alle 60 Zellen
+   tragen denselben Reihenschlüssel, und ihren Ort nennt jede in ihrem Wert.
+4. **`Achsenwert` zerlegt die Achsenbeschriftung.** „Kapazität [kWh]" wird zu „Kapazität
+   220 kWh" — die Einheit wandert hinter die Zahl, wo sie hingehört. Was hinter der Klammer
+   noch folgt, fällt weg: Die C-Raten-Achse trägt die Erläuterung „(Leistung = Kapazität ×
+   C-Rate)", und die ist ein Satz über die ACHSE, nicht über die Zelle.
+5. **Loch und Sperre stehen im Wert.** Ein nicht gerechneter Kandidat (#226) nennt statt
+   der Zahl „nicht gerechnet", eine gesperrte Zelle hängt „(unzulässig)" an (#193). Beides
+   sagt das Bild schon — das eine durch die Lochfarbe, das andere durch die Schraffur —,
+   und der Zeigetext sagt es in Worten. Die Schraffur gehört dabei zur Zelle: Sie steht in
+   derselben Klammer und trägt denselben Wert.
+
+### Was an der Byte-Gleichheit zu beachten war
+
+1. **Eine Klammer um einen Schleifenrumpf braucht feste Kopien.** `Markiert` nimmt einen
+   Lambda-Ausdruck; eine Laufvariable, die der Rumpf danach weiterzählt (`unten` im
+   Stapel, `start` im Kuchen und im Ring), muss vorher in eine eigene Größe kopiert
+   werden. Sonst zeichnete der Stapel alle Schichten auf dieselbe Höhe — ein Fehler, den
+   der Bildvergleich sofort meldet, und genau deshalb steht er hier.
+2. **Die Marke gehört um den BLOCK, nicht um den einzelnen Befehl.** Eine Balkenzeile sind
+   vier Befehle (Beschriftung, Balken, Rahmen, Zahl), eine gesperrte Rasterzelle zwei
+   (Fläche und Schraffurgruppe). Sie stehen zusammen in einer Klammer und tragen denselben
+   Wert; die Reihenfolge bleibt wörtlich die des Bestands.
+3. **`Markiert` mit Wert überschreibt nichts.** Marke und Wert werden je für sich nur
+   gesetzt, wo noch keiner steht — so kann eine äußere Klammer keine feinere Angabe
+   verdrängen.
+4. **Die `byte[]`-Methoden bleiben 26.** Der Wächter `ZeichenmodellWacheTests` zählt sie;
+   jede geht jetzt über `SkiaMaler.Png(…Modell(…))`. `StrombilanzMonate` behält dabei ihr
+   `null`: `StrombilanzMonateModell` liefert in denselben Fällen kein Modell, und die
+   Bildmethode gibt `null` weiter, statt den Maler mit `null` zu rufen.
+
+**Kein Bild ist gewandert.** Der Messlatte-Diff war nach jedem der vier Commits leer.
+
+### Die Schnittstelle, die der UI-Teil benutzt
+
+| Was | Signatur (`ChartRenderer.cs`, Zeile) |
+|---|---|
+| Wert am Befehl | `string Zeichenbefehl.Wert { get; init; }` — `Zeichenmodell.cs` Z. 113 |
+| Klammer mit Wert | `void Zeichenhilfe.Markiert(this IZeichenziel z, string marke, string wert, Action<IZeichenziel> inhalt)` — `Zeichenmodell.cs` Z. 589 |
+| Kuchen | `Zeichenmodell KuchenModell(string titel, List<Segment> segmente)` — Z. 151 |
+| Balken | `Zeichenmodell BalkenHorizontalModell(string titel, string einheit, List<Balken> balken)` — Z. 217 |
+| Strombilanz | `Zeichenmodell StrombilanzMonateModell(ZeitreihenSatz z)` — Z. 309 (`null` ohne Daten) |
+| Monatssäulen | `Zeichenmodell MonatsSaeulenModell(string titel, double[] werte, SKColor farbe, string einheit, IReadOnlyList<string> monatsnamen = null)` — Z. 1490 |
+| Ring | `Zeichenmodell RingModell(string titel, IReadOnlyList<Ringsegment> segmente, double mitteWert, string mitteEinheit)` — Z. 2540 |
+| Ring (lang) | `Zeichenmodell RingModell(…, string mitteUnterzeile, bool mitLegende)` — Z. 2587 |
+| Monatsstapel | `Zeichenmodell MonatsStapelModell(string titel, string einheit, IReadOnlyList<Reihe> reihen)` — Z. 2678 |
+| Rasterkarte | `Zeichenmodell OptimierungsrasterModell(string titel, string xTitel, string yTitel, string skalaTitel, IReadOnlyList<double> cRaten, IReadOnlyList<double> kapazitaetenKwh, double[][] werte, int besteZeile, int besteSpalte, bool[][] unzulaessig = null, string fusszeile = null, string fusszeileZusatz = null)` — Z. 3228 |
+
+Die Griffe im Markup: `data-marke` wie bisher, daneben **`data-wert`** mit dem fertigen
+Text. Ein `<svg class="epos-flaeche">` und ein `path.epos-reihe` gibt es bei diesen sieben
+Bildern **nicht** — wer hier einen Zoomgriff anbietet, bietet ihn ins Leere.
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Windows-Messlatte des Rechners (91 Hashes) | 91 von 91 gleich, Text-Diff leer — nach jedem der vier Commits |
+| `Proben/ChartProben` | **94 Bilder geprüft, 0 Verstöße** (84 wie bisher, dazu zehn Gegenproben der Gruppe (c)); 91 Hashes geschrieben |
+| `WP-Plan.Kern.slnf` Bau Release | 0 Fehler |
+| volle Suite mit den CI-Schaltern | grün (`EPOS.Kern.Tests` 4104, `EPOS.UI.Tests` 4918, `SpeicherEngine` 378, `SpeicherPlanung` 27, `KiKern` 499) |
+| `ChartRendererGruppeCTests` | 12 neu |
+| `ZeichenmodellTests` / `SvgSchreiberTests` | 22 (20 + 2) / 31 (29 + 2) |
+| `ZeichenmodellWacheTests`, `ErgebnisbilderTests`, `ChartRendererTests` | grün, unverändert |
+| Sichtprüfung `--svg-alle` gegen `--ablage` (Edge kopflos) | `kuchen`, `ring_waermedeckung`, `monatsstapel_drei_reihen`, `optimierungsraster`: gleiche Struktur, gleiche Farben, gleiche Achsen und Legenden — bei diesen Bildern sogar Bildpunkt für Bildpunkt, weil sie keine gebündelten Reihen führen. Der einzige sichtbare Unterschied ist der aus Gruppe (a) bekannte: Doppelte Leerzeichen im Text („Deckung  [kWh]", „Solarthermie   12,0 %") zeigt der Browser als eines |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Offen nach dem Kernteil der Gruppe (c)
+
+* **Der UI-Teil der Gruppe:** die sieben Bilder auf `DiagrammSvg` umstellen und den
+  `data-wert` beim Zeigen anzeigen (Zeigezeile oder Kurzhinweis am Element) — bis hierher
+  gibt es den Wert, aber keinen Nutzer. Dabei ist zu entscheiden, ob `SvgKnoten` eine
+  bequeme Eigenschaft `Wert` neben `Marke` bekommt; das Attribut selbst steht im Baum.
+* **Die Legendenschalter dieser sieben.** `reihe:<Name>` und `legende:<Name>` tragen
+  denselben Schlüssel; die Oberfläche kann sie paarweise schalten. Beim Raster ist der
+  Schlüssel der Skalentitel, und die Farbskala (`skala`) gehört zu ihm.
+* **Doppelte Leerzeichen im Text** — derselbe offene Punkt wie in Gruppe (a):
+  `xml:space="preserve"` am `<text>` wäre die Stelle, und sie gehört zum Baustein.
+* **Die Gruppen (b) und (d)** des Rollouts; `ChartBild` bleibt, bis die letzte PNG-Stelle
+  umgestellt ist.
