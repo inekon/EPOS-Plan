@@ -30535,6 +30535,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugszeitraum {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BEZUGSZEITRAUM {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BEZUGSZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Region ermitteln ähnelt.
         /// </summary>
         public static string KLIMA_TRY_BTN_REGION {

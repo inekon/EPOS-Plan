@@ -415,12 +415,21 @@ namespace WindowsFormsApplication1
                                   MyResource.Resource.KLIMA_TRY_VERWORFEN, kopf.VerworfenText))
                     + " · " + standort;
 
+                // Der Bezugszeitraum WOERTLICH im Herkunftsvermerk: Das Bezugsjahr
+                // unten ist daraus abgeleitet, also bleibt die Herleitung in der
+                // Zeile nachlesbar (Auftrag KL-7).
+                string zeitraum = (kopf.Bezugszeitraum ?? "").Trim();
+                if (zeitraum.Length > 0)
+                    herkunft += " · " + string.Format(CultureInfo.CurrentCulture,
+                        MyResource.Resource.KLIMA_TRY_BEZUGSZEITRAUM, zeitraum);
+
                 // Schemaschritt 97: Das SZENARIO steht im Dateikopf ("Art des TRY"),
-                // das Bezugsjahr NICHT - der Kopf nennt einen Bezugszeitraum
-                // ("1995-2012"), und daraus ein Bezugsjahr dieses Hauses zu machen
-                // waere eine Behauptung. Also Szenario, wenn der Kopf es hergibt,
-                // und sonst nichts.
+                // das Bezugsjahr steht dort als ZEITRAUM ("1995-2012", "2031-2060").
+                // Die Zuordnung Zeitraum -> Jahr ist die DWD-Konvention und eine
+                // benannte Tabelle (Anwenderentscheid vom 20.09.2026); ein Zeitraum,
+                // der nicht darin steht, ergibt kein Jahr - nie die Vorgabe.
                 szenario = SzenarioschluesselAusKopf(kopf.Art);
+                bezugsjahr = BezugsjahrAusZeitraum(kopf.Bezugszeitraum);
 
                 DwdTryLeser.DirektNormal(stunden, lon, lat);
             }
@@ -804,9 +813,8 @@ namespace WindowsFormsApplication1
         /// „mittleres Jahr" zu heißen: Eine Vorgabe wäre hier eine Behauptung über
         /// die Datei.</para>
         ///
-        /// <para><b>Das Bezugsjahr steht NICHT im Kopf.</b> Er nennt einen
-        /// Bezugszeitraum („1995-2012", „2031-2060"); das Bezugsjahr dieses Hauses
-        /// (2015 bzw. 2045) ist etwas anderes und bleibt bei dieser Quelle NULL.</para>
+        /// <para><b>Das Bezugsjahr steht als ZEITRAUM im Kopf</b> („1995-2012",
+        /// „2031-2060"); es kommt aus <see cref="BezugsjahrAusZeitraum"/>.</para>
         /// </summary>
         public static string SzenarioschluesselAusKopf(string art)
         {
@@ -821,6 +829,76 @@ namespace WindowsFormsApplication1
 
             return "";
         }
+
+        /// <summary>
+        /// Die BENANNTE Zuordnung Bezugszeitraum → Bezugsjahr (DWD-Konvention,
+        /// Anwenderentscheid vom 20.09.2026). Eine Tabelle, keine Schwelle: Was hier
+        /// nicht steht, hat kein Bezugsjahr.
+        /// </summary>
+        private static readonly (int Von, int Bis, int Jahr)[] BEZUGSZEITRAEUME =
+        {
+            (1995, 2012, KlimaImportAuftrag.TRY_JAHR_VORGABE),
+            (2031, 2060, KlimaImportAuftrag.TRY_JAHR_PROJEKTION)
+        };
+
+        /// <summary>
+        /// Das Bezugsjahr aus der Kopfzeile „Bezugszeitraum" einer DWD-TRY-Datei —
+        /// <c>null</c>, wenn der Kopf keinen oder einen unbekannten Zeitraum nennt
+        /// (Auftrag KL-7).
+        ///
+        /// <para><b>Die Zuordnung ist die DWD-Konvention und eine Tabelle</b>
+        /// (<see cref="BEZUGSZEITRAEUME"/>): 1995-2012 ist das Testreferenzjahr 2015,
+        /// 2031-2060 die Projektion 2045. Jeder andere Zeitraum — ein einzelnes Jahr,
+        /// „1961-1990", gar nichts — ergibt <c>null</c> und NIE die Vorgabe: Ein
+        /// Bezugsjahr, das die Datei nicht deckt, wäre eine Behauptung über sie.</para>
+        ///
+        /// <para>Gelesen werden die ersten beiden vierstelligen Jahreszahlen des
+        /// Textes, gleich womit sie verbunden sind (Bindestrich, Gedankenstrich,
+        /// „bis", Zwischenräume).</para>
+        /// </summary>
+        public static int? BezugsjahrAusZeitraum(string zeitraum)
+        {
+            if (!Jahrespaar(zeitraum, out int von, out int bis)) return null;
+
+            foreach ((int Von, int Bis, int Jahr) z in BEZUGSZEITRAEUME)
+                if (z.Von == von && z.Bis == bis) return z.Jahr;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Die ersten beiden VIERSTELLIGEN Jahreszahlen eines freien Textes. Eine
+        /// Ziffernfolge anderer Länge ist keine Jahreszahl und wird übergangen;
+        /// findet sich keine zweite, ist das Ergebnis <c>false</c>.
+        /// </summary>
+        private static bool Jahrespaar(string text, out int von, out int bis)
+        {
+            von = 0;
+            bis = 0;
+
+            string t = text ?? "";
+            int gefunden = 0;
+
+            for (int i = 0; i < t.Length; )
+            {
+                // NUR die Ziffern 0-9: char.IsDigit nimmt auch fremde Ziffernsaetze,
+                // an denen int.Parse dann scheitern wuerde.
+                if (!Ziffer(t[i])) { i++; continue; }
+
+                int start = i;
+                while (i < t.Length && Ziffer(t[i])) i++;
+                if (i - start != 4) continue;
+
+                int jahr = int.Parse(t.Substring(start, 4), CultureInfo.InvariantCulture);
+                if (gefunden == 0) von = jahr; else bis = jahr;
+                if (++gefunden == 2) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>Eine Ziffer 0-9 — und nur die.</summary>
+        private static bool Ziffer(char c) => c >= '0' && c <= '9';
 
         /// <summary>
         /// Der heutige Tag als ISO-Text <c>yyyy-MM-dd</c> — das Format der Spalte
