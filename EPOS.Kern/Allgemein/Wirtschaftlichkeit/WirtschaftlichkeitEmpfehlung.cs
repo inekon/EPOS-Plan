@@ -212,17 +212,48 @@ namespace WindowsFormsApplication1
         public static string Vorschlagstext(IEnumerable<WirtschaftlichkeitErgebnis> alle,
                                             CultureInfo kultur)
         {
-            return Vorschlagstext(Einstufungen(alle), kultur);
+            return Vorschlagstext(Einstufungen(alle), kultur, null);
+        }
+
+        /// <inheritdoc cref="Vorschlagstext(IEnumerable{WirtschaftlichkeitErgebnis},CultureInfo)"/>
+        public static string Vorschlagstext(IEnumerable<WirtschaftlichkeitErgebnis> alle,
+                                            CultureInfo kultur, string referenz)
+        {
+            return Vorschlagstext(Einstufungen(alle), kultur, referenz);
         }
 
         /// <inheritdoc cref="Vorschlagstext(IEnumerable{WirtschaftlichkeitErgebnis},CultureInfo)"/>
         public static string Vorschlagstext(List<VariantenEmpfehlung> urteile, CultureInfo kultur)
         {
+            return Vorschlagstext(urteile, kultur, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E2 (VALERI-Lücke G9, Befund A5) — derselbe Satz, aber mit der
+        /// <b>gewählten Referenz beim Namen</b>.
+        ///
+        /// <para>Maßstab des Vorschlags ist <c>KapitalwertDiff</c>, und diese Größe
+        /// rechnet seit § 2.9 gegen die gewählte Referenz, nicht mehr fest gegen das
+        /// Stammprojekt. Der Satz „Keine Variante ist gegenüber dem Stammprojekt
+        /// wirtschaftlich" war damit bei gewählter Variantenreferenz falsch. Genannt
+        /// wird die Referenz so, wie <c>Referenzwahl.Deklarationszeile</c> sie im
+        /// Paarvergleich schon nennt.</para>
+        /// </summary>
+        /// <param name="referenz">Anzeigename der Referenz; leer oder <c>null</c> =
+        /// der sprachliche Rückfall „dem Referenzfall" für Aufrufer, die die Gruppe
+        /// nicht kennen.</param>
+        public static string Vorschlagstext(List<VariantenEmpfehlung> urteile, CultureInfo kultur,
+                                            string referenz)
+        {
             if (urteile == null || urteile.Count == 0) return "";
             if (kultur == null) kultur = CultureInfo.CurrentCulture;
 
+            string refName = string.IsNullOrEmpty(referenz)
+                           ? MyResource.Resource.WIRT_EMPF_REFERENZ_UNBENANNT : referenz;
+
             VariantenEmpfehlung v = Vorschlag(urteile);
-            if (v == null) return MyResource.Resource.WIRT_EMPF_KEINE;
+            if (v == null)
+                return string.Format(kultur, MyResource.Resource.WIRT_EMPF_KEINE, refName);
 
             string zusatz;
             if (v.BandbreiteFehlt)
@@ -235,7 +266,7 @@ namespace WindowsFormsApplication1
                     Geld(v.DiffWorst, kultur), Geld(v.DiffBest, kultur));
 
             return string.Format(kultur, MyResource.Resource.WIRT_EMPF_SATZ,
-                                 v.Anzeige, Geld(v.DiffErwartet, kultur), zusatz);
+                                 v.Anzeige, Geld(v.DiffErwartet, kultur), zusatz, refName);
         }
 
         /// <summary>Betrag mit Vorzeichen und Einheit; „—" wenn nicht gerechnet.</summary>

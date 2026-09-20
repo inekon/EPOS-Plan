@@ -405,6 +405,28 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#C00000");
                 r++;
             }
+
+            // ETAPPE E2 (VALERI-Lücke G7, Befund A5): der Betrachtungszeitraum gegen die
+            // Nutzungsdauern. Er stand in Word und auf der Seite, im Excel-Blatt nicht —
+            // DIN EN 17463 verlangt die Begründung des Zeitraums in JEDER Ausgabe, und
+            // die Zahl T steht oben im Parameternachweis ohne jede Einordnung.
+            // Derselbe Aufruf wie im Wortbericht (NutzungsdauerAbgleich.Hinweis).
+            try
+            {
+                var positionen = new List<KapitalwertRechner.InvestPosition>();
+                foreach (VariantenDaten v in daten.Varianten)
+                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
+                        v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET));
+                string zeitraum = NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum,
+                                                                positionen, BerichtTexte.Kultur);
+                if (!string.IsNullOrEmpty(zeitraum))
+                {
+                    ws.Cell(r, 1).Value = zeitraum;
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+            }
+            catch { }
             r++;
 
             // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter
@@ -559,13 +581,25 @@ namespace WindowsFormsApplication1
                 r++;   // Leerzeile zwischen den Szenarien
             }
 
+            // ---------------- ETAPPE E2 (G8): Bandbreite mit Spanne und Referenzzeile --
+            //
+            // Die drei Szenarioblöcke darüber zeigen jede Kennzahl je Szenario; was
+            // fehlte, war die ZUSAMMENSCHAU — ΔKW in Worst/Erwartet/Best nebeneinander,
+            // die Spanne dazwischen und die Zeile des Standes, gegen den gerechnet
+            // wurde. Word führt dieselbe Tafel (BausteineWirtschaftlichkeit); gerechnet
+            // wird nichts Neues, die Spanne ist Best − Worst.
+            Referenzwahl referenz = Referenzwahl.Bestimme(daten, idReferenz);
+            r = BandbreitenTafel(ws, r, daten, alle, referenz);
+
             // ---------------- ETAPPE W5‑B‑11 (G9): Vorschlag zur Entscheidung ----------
             //
             // EINE Zelle unter den drei Szenarioblöcken — dieselbe Regel und derselbe
             // Satz wie in Word und auf der Seite (WirtschaftlichkeitEmpfehlung). Leer
-            // bleibt sie, solange keine Variante ein Erwartet-Ergebnis gegenüber dem
-            // Stamm hat; ein Vorschlag ohne Zahlen wäre eine Behauptung.
-            string empfehlung = WirtschaftlichkeitEmpfehlung.Vorschlagstext(alle, BerichtTexte.Kultur);
+            // bleibt sie, solange keine Variante ein Erwartet-Ergebnis gegenüber der
+            // Referenz hat; ein Vorschlag ohne Zahlen wäre eine Behauptung.
+            // ETAPPE E2 (G9): Er nennt die Referenz beim Namen.
+            string empfehlung = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
+                alle, BerichtTexte.Kultur, referenz.Anzeige);
             if (!string.IsNullOrEmpty(empfehlung))
             {
                 ws.Cell(r, 1).Value = empfehlung;
@@ -1003,6 +1037,111 @@ namespace WindowsFormsApplication1
                 r++;
             }
             return r;
+        }
+
+        // ------------------------------------------------- Bandbreite (E2, G8)
+
+        /// <summary>
+        /// ETAPPE E2 (VALERI-Lücke G8) — die <b>Bandbreitentafel</b> des Excel-Blatts:
+        /// je Variante ΔKW in Worst / Erwartet / Best, die <b>Spanne</b> (Best − Worst),
+        /// die Amortisation und die Einstufung, darüber die <b>Referenzzeile</b>.
+        ///
+        /// <para>Dieselbe Tafel führt der Wortbericht
+        /// (<c>BausteineWirtschaftlichkeit.SchreibeSzenarien</c>) — Spalten, Reihenfolge
+        /// und Fußzeile stammen aus denselben Ressourcen. Gerechnet wird nichts: Die
+        /// Δ-Werte stehen in den Ergebnissen, die Spanne ist ihre Differenz.</para>
+        ///
+        /// <para>Die Wertspalten bleiben NUMERISCH (Divergenz D5) — die Referenzzeile
+        /// trägt ihren Text deshalb nur in der Beschriftungsspalte, ihre Δ-Zellen
+        /// bleiben leer statt „(Referenz)" zu tragen.</para>
+        /// </summary>
+        private static int BandbreitenTafel(IXLWorksheet ws, int r, BerichtsDaten daten,
+                                            List<WirtschaftlichkeitErgebnis> alle,
+                                            Referenzwahl referenz)
+        {
+            List<VariantenDaten> varianten = daten.Varianten
+                .Where(v => v.IdProjekt != referenz.IdReferenz).ToList();
+            if (varianten.Count == 0) return r;
+
+            List<VariantenEmpfehlung> urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
+
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_SZ_BANDBREITE_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = GRUPPE;
+            r++;
+
+            string[] kopf =
+            {
+                MyResource.Resource.WIRT_SZ_SP_VARIANTE,
+                MyResource.Resource.WIRT_SZ_SP_WORST,
+                MyResource.Resource.WIRT_SZ_SP_ERWARTET,
+                MyResource.Resource.WIRT_SZ_SP_BEST,
+                MyResource.Resource.WIRT_SZ_SP_SPANNE,
+                MyResource.Resource.WIRT_SZ_SP_AMORT,
+                MyResource.Resource.WIRT_EMPF_SPALTE,
+            };
+            for (int i = 0; i < kopf.Length; i++)
+            {
+                ws.Cell(r, i + 1).Value = kopf[i];
+                ws.Cell(r, i + 1).Style.Font.Bold = true;
+            }
+            r++;
+
+            // Die Referenzzeile — der Stand, gegen den jede Δ-Zahl gerechnet ist.
+            ws.Cell(r, 1).Value = referenz.Anzeige;
+            ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = STAMM;
+            r++;
+
+            foreach (VariantenDaten v in varianten)
+            {
+                ws.Cell(r, 1).Value = v.IstStamm ? BerichtTexte.T("Stamm") : v.Anzeige;
+
+                double? worst = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.WORST);
+                double? erwartet = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET);
+                double? best = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.BEST);
+
+                Betrag(ws, r, 2, worst);
+                Betrag(ws, r, 3, erwartet);
+                Betrag(ws, r, 4, best);
+                Betrag(ws, r, 5, worst.HasValue && best.HasValue
+                                 ? best.Value - worst.Value : (double?)null);
+
+                WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
+                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+                if (erw != null && erw.AmortisationJahre.HasValue)
+                {
+                    ws.Cell(r, 6).Value = erw.AmortisationJahre.Value;
+                    ws.Cell(r, 6).Style.NumberFormat.Format = "#,##0.0";
+                }
+
+                VariantenEmpfehlung u = urteile.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                if (u != null) ws.Cell(r, 7).Value = u.StufeText;
+                r++;
+            }
+
+            ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
+                                                MyResource.Resource.WIRT_SZ_DELTA_FUSS,
+                                                referenz.Anzeige);
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
+            return r;
+        }
+
+        /// <summary>ΔKW eines Standes in einem Szenario; <c>null</c> = nicht gerechnet.</summary>
+        private static double? Diff(List<WirtschaftlichkeitErgebnis> alle, int idProjekt,
+                                    string szenario)
+        {
+            WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(
+                x => x.IdProjekt == idProjekt && x.Szenario == szenario);
+            return e == null ? null : e.KapitalwertDiff;
+        }
+
+        /// <summary>Eine €-Zelle der Bandbreitentafel; ohne Wert bleibt sie leer (D5).</summary>
+        private static void Betrag(IXLWorksheet ws, int zeile, int spalte, double? wert)
+        {
+            if (!wert.HasValue) return;
+            ws.Cell(zeile, spalte).Value = wert.Value;
+            ws.Cell(zeile, spalte).Style.NumberFormat.Format = "#,##0";
         }
 
         // ------------------------------------------------- KWK-Zuschlag je Modul (E7)

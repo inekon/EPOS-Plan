@@ -168,21 +168,34 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Wirtschaftlichkeit — Kapitalwertmethode (DIN EN 17463)",
                              w.Cell(1, 1).GetString());
 
+                // ETAPPE E2 (VALERI-Lücke G7): der Zeitraumhinweis steht seither auch im
+                // Excel-Blatt — er stand nur in Word und auf der Seite.
+                Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(4, 1).GetString());
+
                 // Die drei Szenario-Blöcke, jeder mit seinem eigenen Tabellenkopf.
-                Assert.Equal("Szenario: Erwartet", w.Cell(7, 1).GetString());
-                Zeile(w, 8, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Best", w.Cell(23, 1).GetString());
-                Zeile(w, 25, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Worst", w.Cell(40, 1).GetString());
-                Zeile(w, 42, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Erwartet", w.Cell(8, 1).GetString());
+                Zeile(w, 9, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Best", w.Cell(24, 1).GetString());
+                Zeile(w, 26, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Worst", w.Cell(41, 1).GetString());
+                Zeile(w, 43, "Kennzahl", "Stamm", "Variante A");
+
+                // ETAPPE E2 (VALERI-Lücke G8): die Bandbreitentafel mit der Spalte
+                // „Spanne" und der Referenzzeile darüber.
+                Assert.Equal("Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)",
+                             w.Cell(58, 1).GetString());
+                Zeile(w, 59, "Variante", "ΔKW Worst [€]", "ΔKW Erwartet [€]");
+                Assert.Equal("Spanne [€]", w.Cell(59, 5).GetString());
+                Assert.Equal("Stammprojekt", w.Cell(60, 1).GetString());   // Referenzzeile
+                Assert.Equal("Variante A", w.Cell(61, 1).GetString());
 
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
                 Assert.Equal("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]",
-                             w.Cell(59, 1).GetString());
-                Zeile(w, 60, "Jahr", "Stamm", "Variante A");
-                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(84, 1).GetString());
-                Assert.Equal("Stamm", w.Cell(87, 1).GetString());
-                Zeile(w, 88, "Jahr", "Energiekosten", "Netto nominal");
+                             w.Cell(66, 1).GetString());
+                Zeile(w, 67, "Jahr", "Stamm", "Variante A");
+                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(91, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(94, 1).GetString());
+                Zeile(w, 95, "Jahr", "Energiekosten", "Netto nominal");
 
                 // ---- Variantenblatt -------------------------------------------
                 IXLWorksheet s = wb.Worksheet("Stamm");
@@ -195,11 +208,16 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Werte EINER festen Ankerzeile — „Nettobarwert über T" im Szenario
-        /// „Erwartet" (Zeile 18). Sie ist der Zahlenanker des Blattes: Bewegt sich
+        /// „Erwartet" (Zeile 20). Sie ist der Zahlenanker des Blattes: Bewegt sich
         /// der Rechenweg, fällt dieser Fall, auch wenn die Struktur steht.
         ///
         /// <para>Gegengeprüft gegen das Ende des Kapitalwert-Verlaufs (Jahr 20,
-        /// Zeile 81) — bei Restwert 0 müssen beide Zahlen gleich sein.</para>
+        /// Zeile 88) — bei Restwert 0 müssen beide Zahlen gleich sein.</para>
+        ///
+        /// <para><b>ETAPPE E2:</b> Die Zeile ist von 18 auf 20 gewandert — der
+        /// Zeitraumhinweis (G7) steht jetzt über den Blöcken, und die
+        /// Differenzkennzahl steht nach Q19 ÜBER dem Nettobarwert. Die ZAHLEN sind
+        /// unverändert; E2 hat keine Rechenwirkung.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -216,18 +234,25 @@ namespace EPOS.Kern.Tests
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
 
-                Assert.Equal("Nettobarwert über T [€]", w.Cell(18, 1).GetString());
-                Assert.Equal(-178529.70, w.Cell(18, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(18, 3).GetDouble(), 2);
+                Assert.Equal("Nettobarwert über T [€]", w.Cell(20, 1).GetString());
+                Assert.Equal(-178529.70, w.Cell(20, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(20, 3).GetDouble(), 2);
+
+                // ANWENDERENTSCHEID Q19 (E2): Die Differenzkennzahl steht DARÜBER.
+                Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(19, 1).GetString());
+                Assert.Equal(44632.42, w.Cell(19, 3).GetDouble(), 2);
 
                 // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl.
-                Assert.Equal(20.0, w.Cell(81, 1).GetDouble(), 6);
-                Assert.Equal(-178529.70, w.Cell(81, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(81, 3).GetDouble(), 2);
+                Assert.Equal(20.0, w.Cell(88, 1).GetDouble(), 6);
+                Assert.Equal(-178529.70, w.Cell(88, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(88, 3).GetDouble(), 2);
 
                 // Die Mehrjahrestabelle des Stamms: nominale Energiekosten je Jahr.
-                Assert.Equal(-12000.00, w.Cell(90, 2).GetDouble(), 2);
-                Assert.Equal(-12000.00, w.Cell(90, 3).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(97, 2).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(97, 3).GetDouble(), 2);
+
+                // ETAPPE E2 (G8): die Spanne der Bandbreitentafel = Best − Worst.
+                Assert.Equal(44957.21 - 44312.12, w.Cell(61, 5).GetDouble(), 2);
             }
             finally { Aufraeumen(ordner); }
         }

@@ -266,6 +266,12 @@ namespace WindowsFormsApplication1
             // mit Namen und Farbe; die Stammlinie ist die Bezugsgröße und keine Version
             // und wird deshalb gestrichelt gezeichnet, damit sie auch im
             // Schwarz-Weiß-Ausdruck von den Versionen zu trennen ist.
+            //
+            // ETAPPE E2 — DER VORBEHALT ZUM „EINEN ORT": Gemeint ist der BERICHT. Der
+            // Verlaufsdialog zeichnet dasselbe Bild aus derselben Rechnung (dort ist es
+            // die Sache der Maske, nicht des Berichts), und der Excel-Bericht führt den
+            // Verlauf als ZAHLEN statt als Bild. „An genau einem Ort" heißt also: EIN
+            // erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
             k.Bild(ChartRenderer.KapitalwertVerlauf(
                 "Kumulierte Barwerte je Version",
                 ChartRenderer.VerlaufsReihen(verlauf.Absolut, true, true), null),
@@ -923,18 +929,27 @@ namespace WindowsFormsApplication1
                                               List<WirtschaftlichkeitErgebnis> alle,
                                               WirtschaftlichkeitParameter p)
         {
-            List<VariantenDaten> varianten = daten.Varianten.Where(v => !v.IstStamm).ToList();
+            // ETAPPE E2 (G8/G9): die REFERENZ der Gruppe — in der Paarsicht der Stand A,
+            // sonst die Gruppenreferenz, ohne Wahl der Stamm. Sie bekommt eine eigene
+            // Zeile und steht deshalb nicht noch einmal in der Variantenliste.
+            int idReferenz = daten.Sicht != null && daten.Sicht.IstPaar
+                           ? daten.Sicht.IdA : daten.IdGruppenreferenz;
+            Referenzwahl referenz = Referenzwahl.Bestimme(daten, idReferenz);
+
+            List<VariantenDaten> varianten = daten.Varianten
+                .Where(v => v.IdProjekt != referenz.IdReferenz).ToList();
             if (varianten.Count == 0)
             {
                 k.Hinweis("Keine Varianten ausgewählt — die Szenarienübersicht entfällt.");
                 return;
             }
 
-            // W5‑B‑11: sechs Spalten statt fünf. Die Summe bleibt INHALT_B — die
-            // Beschriftungsspalte gibt die Breite ab, die die Einstufung braucht.
-            int wLabel = 2455;
-            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 5;
-            int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol };
+            // W5‑B‑11: sechs Spalten statt fünf; ETAPPE E2 (G8): sieben mit der Spanne.
+            // Die Summe bleibt INHALT_B — die Beschriftungsspalte gibt die Breite ab,
+            // die Einstufung und Spanne brauchen.
+            int wLabel = 2100;
+            int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 6;
+            int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol, wCol };
 
             List<VariantenEmpfehlung> urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
 
@@ -944,41 +959,74 @@ namespace WindowsFormsApplication1
             kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_WORST, w[1], JustificationValues.Center));
             kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_ERWARTET, w[2], JustificationValues.Center));
             kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_BEST, w[3], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_AMORT, w[4], JustificationValues.Center));
-            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_EMPF_SPALTE, w[5], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_SPANNE, w[4], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SZ_SP_AMORT, w[5], JustificationValues.Center));
+            kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_EMPF_SPALTE, w[6], JustificationValues.Center));
             t.Append(kopf);
+
+            // ---- ETAPPE E2 (G8): die REFERENZZEILE --------------------------------
+            //
+            // Sie nennt den Stand, gegen den jede Δ-Zahl der Tabelle gerechnet ist. Ohne
+            // sie musste der Leser aus der Fußzeile erschließen, welcher Stand fehlt —
+            // und seit § 2.9 ist das nicht mehr zwingend der Stamm. In ihren eigenen
+            // Δ-Spalten steht „(Referenz)", dieselbe Anzeige wie in der
+            // Kennzahlentabelle (WirtZeile.StammAnzeige) — eine 0 wäre eine gerechnete
+            // Zahl, und gerechnet ist hier nichts.
+            var refZeile = new TableRow();
+            refZeile.Append(k.Zelle(referenz.Anzeige, w[0], true,
+                                    WordBerichtGenerator.STAMM_FILL, JustificationValues.Left));
+            for (int i = 1; i <= 4; i++)
+                refZeile.Append(k.Zelle(MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ, w[i], false,
+                                        WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
+            for (int i = 5; i <= 6; i++)
+                refZeile.Append(k.Zelle("—", w[i], false,
+                                        WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
+            t.Append(refZeile);
 
             foreach (VariantenDaten v in varianten)
             {
                 var tr = new TableRow();
                 tr.Append(k.Zelle(v.Anzeige, w[0], false, null, JustificationValues.Left));
                 int spalte = 1;
+                double? worst = null, best = null;
                 foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST,
                                               WirtschaftlichkeitSzenario.ERWARTET,
                                               WirtschaftlichkeitSzenario.BEST })
                 {
                     WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
                         x.IdProjekt == v.IdProjekt && x.Szenario == sz);
+                    if (e != null && sz == WirtschaftlichkeitSzenario.WORST) worst = e.KapitalwertDiff;
+                    if (e != null && sz == WirtschaftlichkeitSzenario.BEST) best = e.KapitalwertDiff;
                     string txt = e == null ? "—" : k.FW(e.KapitalwertDiff, "N0");
                     tr.Append(k.Zelle(txt, w[spalte], false, null,
                         txt == "—" ? JustificationValues.Center : JustificationValues.Right));
                     spalte++;
                 }
+
+                // ETAPPE E2 (G8): die SPANNE — Best minus Worst, eine reine Ableitung
+                // der beiden Nachbarspalten. Fehlt eine der beiden Zahlen, bleibt sie
+                // „—": Eine Spanne aus einer Zahl gibt es nicht.
+                string sp = worst.HasValue && best.HasValue
+                          ? k.FW(best.Value - worst.Value, "N0") : "—";
+                tr.Append(k.Zelle(sp, w[4], false, null,
+                    sp == "—" ? JustificationValues.Center : JustificationValues.Right));
+
                 WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
                     x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
                 string am = erw == null ? "—" : k.FW(erw.AmortisationJahre, "N1");
-                tr.Append(k.Zelle(am, w[4], false, null,
+                tr.Append(k.Zelle(am, w[5], false, null,
                     am == "—" ? JustificationValues.Center : JustificationValues.Right));
 
                 // W5‑B‑11 (G9): die Einstufung derselben Variante. „—", solange kein
                 // Erwartet-Ergebnis vorliegt — ein Urteil ohne Zahl gibt es nicht.
                 VariantenEmpfehlung u = urteile.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
-                tr.Append(k.Zelle(u == null ? "—" : u.StufeText, w[5], false, null,
+                tr.Append(k.Zelle(u == null ? "—" : u.StufeText, w[6], false, null,
                     u == null ? JustificationValues.Center : JustificationValues.Left));
                 t.Append(tr);
             }
             k.Fuege(t);
-            k.HinweisRoh(MyResource.Resource.WIRT_SZ_DELTA_FUSS);
+            k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS,
+                                       referenz.Anzeige));
 
             // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----
             //
@@ -989,7 +1037,11 @@ namespace WindowsFormsApplication1
             SchreibeSzenarioAnnahmen(k, p);
 
             // ---- W5‑B‑11 (G9): der Vorschlag zur Entscheidung ----------------------
-            string vorschlag = WirtschaftlichkeitEmpfehlung.Vorschlagstext(urteile, k.Kultur);
+            // ETAPPE E2: Er nennt die REFERENZ beim Namen. Seit § 2.9 rechnet ΔKW gegen
+            // die gewählte Referenz, nicht mehr fest gegen den Stamm — „gegenüber dem
+            // Stammprojekt" war bei gewählter Variantenreferenz schlicht falsch.
+            string vorschlag = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
+                urteile, k.Kultur, referenz.Anzeige);
             if (!string.IsNullOrEmpty(vorschlag)) k.TextRoh(vorschlag);
             k.Beschriftung(" ");
         }
