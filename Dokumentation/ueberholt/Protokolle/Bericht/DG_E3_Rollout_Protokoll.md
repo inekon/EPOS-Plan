@@ -201,9 +201,10 @@ Anwender die Reihe über die Legende abwählt.
 | Windows-Messlatte des Rechners (91 Hashes) | 91 von 91 gleich, Text-Diff leer — nach jedem Schritt am Renderer |
 | `Proben/ChartProben` | **84 Bilder geprüft, 0 Verstöße** (76 wie bisher, dazu acht SVG-Gegenproben); 91 Hashes geschrieben, die Messlatte bleibt bei 91 Zeilen |
 | `WP-Plan.Kern.slnf` Bau und volle Suite mit den CI-Schaltern | grün |
-| `SvgSchreiberTests` | 29 (21 aus E2, zwei davon auf DG-E3-1 umgestellt, 6 neu) |
-| `PfadregelTests` | 12 (8 aus E2, 4 neu) |
-| `ZeichenmodellTests`, `ChartRendererTests` | 30 bzw. 30 |
+| `SvgSchreiberTests` | 29 (23 aus E2, zwei davon auf DG-E3-1 umgestellt, 6 neu) |
+| `PfadregelTests` | 10 (6 aus E2, 4 neu) |
+| `ZeichenmodellTests` | 20 (18 aus E2, 2 neu) |
+| `ChartRendererTests` | 30 (21 aus E2, 9 neu) |
 | `ZeichenmodellWacheTests`, `SkiaMalerTests`, `FarbpaletteTests`, `ErgebnisbilderTests` | grün, die Wächter unverändert |
 | bunit `DiagrammSvgTests`, `KlimadatenDialogTests`, `DiagrammTests`, `ChartBildTests` | 106 grün — **kein Fall geändert**; der eine, der `viewBox` und `data-voll` gegeneinander hält, hat den Nachzug im Baustein erzwungen (Abweichung 4) |
 | Sichtprüfung `--svg-alle` gegen `--ablage` (Edge kopflos) | `erzeugerstapel_waerme`, `erzeugerstapel_zwei_speicher`, `kostenprofil`, `stundenprofil_woche`: gleiche Struktur, gleiche Farben, gleiche Achsen und Legenden. Der sichtbare Unterschied ist der gewollte: Das SVG zeigt den vollen Tagesgang (roh bzw. konservative Hülle), das PNG das auf jeden n-ten Wert ausgedünnte Band (DG-E2-2) |
