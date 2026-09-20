@@ -68,3 +68,8 @@ gegen diese Datei.
   eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.
 - Die Datei steht als `text eol=lf` in `.gitattributes`: Ein Auschecken mit `autocrlf`
   machte sonst CRLF daraus, und der Vergleich schlüge in jeder Zeile fehl.
+- **Die Messlatte ist plattformgebunden.** Sie ist auf dem Linux-Läufer der CI eingefroren.
+  Der Maler holt seine Schrift über `SKFontManager.Default`, also aus den Systemschriften der
+  Plattform; auf Windows weichen deshalb **alle 91 Hashes** ab, obwohl die Probe dort dieselben
+  72 Bilder mit 0 Verstößen meldet (gemessen 20.09.2026). Der Text-Diff gegen die Messlatte gilt
+  auf dem Linux-Läufer; auf Windows zählt das strukturelle Ergebnis der Probe.
