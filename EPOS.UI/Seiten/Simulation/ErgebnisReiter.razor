@@ -35,6 +35,7 @@
    Satz unter dem Feld. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
 
 <div class="epos-simerg-block">
 
@@ -96,7 +97,16 @@
                         </div>
                     }
 
-                    <ChartBild Png="@BildMonate" Alt="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
+                    @* DER MONATSSTAPEL ALS SVG (Etappe DG-E3, Gruppe (c)): Zwoelf
+                       starre Faecher sind keine Zeitachse - es gibt dort nichts zu
+                       zoomen, und der Baustein schaltet den Zoom von selbst ab,
+                       sobald ein Modell keine Zeichenflaeche traegt. Was er dafuer
+                       zeigt, ist der Wert der Schicht unter dem Zeiger
+                       („Jan · Eigenverbrauch: 1.234 kWh", DG-E3-10); die Einheit
+                       steht schon darin und wird hier nicht ein zweites Mal
+                       behauptet. *@
+                    <DiagrammSvg Modell="@ModellMonate" Kennung="simerg-monate"
+                                 Bezeichnung="@Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG" />
 
                 </KindInhalt>
             </Reiterblatt>
@@ -118,8 +128,11 @@
     /// <summary>Die Zahlen der Autarkie-Analyse.</summary>
     [Parameter] public AutarkieDaten Autarkie { get; set; } = new AutarkieDaten();
 
-    /// <summary>Liefert den Monatsstapel (B6) zur gewaehlten Kapazitaet.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>
+    /// Liefert das Zeichenmodell des Monatsstapels (B6) zur gewaehlten Kapazitaet;
+    /// ohne ihn bleibt das Diagramm leer.
+    /// </summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>
     /// Die Was-waere-wenn-Kapazitaet hat sich geaendert — die Huelle rechnet die
@@ -141,8 +154,8 @@
     private Reiter? _reiter;
     private string _blatt = "";
 
-    private byte[]? BildMonate =>
-        Bild?.Invoke(new Bildauftrag(Bilder.AutarkieMonate, false, -1, null, Autarkie.SpeicherKwh));
+    private Zeichenmodell? ModellMonate =>
+        Modell?.Invoke(new Bildauftrag(Bilder.AutarkieMonate, false, -1, null, Autarkie.SpeicherKwh));
 
     private Task KapazitaetGesetzt(double? wert)
     {

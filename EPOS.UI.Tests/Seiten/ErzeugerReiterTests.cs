@@ -1048,19 +1048,6 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Kein Pixelbild mehr.</b> Alle vier Erzeugerbilder tragen eine Zeitachse —
-    /// für <c>ChartBild</c> bleibt in diesen Reitern nichts übrig.
-    /// </summary>
-    [Fact]
-    public void Keiner_der_vier_Reiter_zeigt_noch_ein_ChartBild()
-    {
-        Assert.Empty(KesselZeichnen(Kessel()).FindComponents<ChartBild>());
-        Assert.Empty(SolarZeichnen().FindComponents<ChartBild>());
-        Assert.Empty(BhkwZeichnen(Bhkw()).FindComponents<ChartBild>());
-        Assert.Empty(PvZeichnen().FindComponents<ChartBild>());
-    }
-
-    /// <summary>
     /// Der Zoom ist Bedienung am Bild: Über jedem der vier Bilder stehen „Bereich"
     /// und „1:1".
     /// </summary>
@@ -1073,22 +1060,5 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(soll, Knoepfe(SolarZeichnen()));
         Assert.Equal(soll, Knoepfe(BhkwZeichnen(Bhkw())));
         Assert.Equal(soll, Knoepfe(PvZeichnen()));
-    }
-
-    /// <summary>
-    /// Der Schalter „sortiert" stellt die ACHSENART um: Die Ganglinie zählt
-    /// Stützstellen, die Dauerlinie den RANG — dort ist x keine Zeit mehr. Nur der
-    /// Kessel- und der BHKW-Reiter führen den Schalter überhaupt.
-    /// </summary>
-    [Fact]
-    public void Der_Sortiertschalter_des_Kessels_stellt_die_Achsenart_auf_Rang()
-    {
-        var seite = KesselZeichnen(Kessel());
-
-        Assert.Equal(Achsenart.Stuetzstelle, Bildrahmen(seite).Achsenart);
-
-        Kasten(seite, 0, 0).Change(true);
-
-        Assert.Equal(Achsenart.Rang, Bildrahmen(seite).Achsenart);
     }
 }

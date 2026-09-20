@@ -129,8 +129,7 @@
         <section class="epos-simerg-block epos-simerg-diagrammzeile">
             <DiagrammSvg Modell="@ModellWaerme" Kennung="simerg-bedarf-waerme"
                          Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-                         Einheit="kW" Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
-                         XEinheit="@(_sortiert ? "" : "h")"
+                         Einheit="kW"
                          Palette="@Farbpalette.Aktuell"
                          FarbwahlErlaubt="@Farbwahl"
                          FarbeGewaehlt="FarbeUebernehmen"
@@ -149,7 +148,7 @@
                Jahresstunde, und traegt deshalb keine Einheit. *@
             <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-bedarf-strom"
                          Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
-                         Einheit="kW" Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                         Einheit="kW"
                          Palette="@Farbpalette.Aktuell"
                          FarbwahlErlaubt="@Farbwahl"
                          FarbeGewaehlt="FarbeUebernehmen"

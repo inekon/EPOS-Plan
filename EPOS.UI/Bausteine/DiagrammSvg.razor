@@ -94,7 +94,8 @@ else
            und eine Sprachausgabe erreicht sie in einem Bild nicht mehr. tabindex
            macht die Flaeche fuer die Tasten + - 0 erreichbar. *@
         <div class="epos-diagramm-svg-flaeche" @ref="_flaeche"
-             tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung">
+             tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung"
+             @onpointerdown="@(_ => BeiFlaechenzeiger())">
 
             @Bildfragment
 
@@ -119,8 +120,9 @@ else
         </div>
 
         @* Die Zeigerzeile steht immer, auch leer: Sonst spraenge das Bild, sobald
-           der Zeiger die Flaeche betritt. *@
-        @if (HatFlaeche)
+           der Zeiger die Flaeche betritt. Bei einem Bild OHNE Zeichenflaeche steht
+           dort der Wert des Elements, auf das der Zeiger zeigt (DG-E3-10). *@
+        @if (ZeigerzeileSteht)
         {
             <div class="epos-diagramm-zeigerzeile" aria-live="polite">@Zeigerzeile</div>
         }
@@ -135,6 +137,13 @@ else
     private const string KLASSE_FARBFELD = "epos-legende-farbfeld";
     private const string KLASSE_AUS = "epos-legende--aus";
     private const string MARKE_LEGENDE = "legende:";
+
+    /// <summary>
+    /// Die Marke eines Reihenelements. Bei einem PIXELBILD ist sie der einzige Griff:
+    /// Dort gibt es keinen Reihenpfad mit <c>data-reihe</c> (DG-E3-7).
+    /// </summary>
+    private const string MARKE_REIHE = "reihe:";
+
     private const string MARKE_XACHSE = "xachse";
 
     /// <summary>
@@ -217,6 +226,15 @@ else
     [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
 
     /// <summary>
+    /// Der Wert des Elements unter dem Zeiger hat gewechselt (DG-E3-10); leer = keiner.
+    ///
+    /// <para><b>Das Bild braucht dafür NICHTS</b> — es zeigt den Wert selbst in seiner
+    /// Zeigerzeile. Der Rückruf ist für einen Wirt, der ihn woanders braucht: der
+    /// Prüfstand, der ihn misst, oder eine Seite, die ihn neben das Bild stellt.</para>
+    /// </summary>
+    [Parameter] public EventCallback<string> WertAmZeigerGeaendert { get; set; }
+
+    /// <summary>
     /// Die Einheit der Werte in der Zeigerzeile („°C", „kW"); leer lässt sie weg.
     /// Sie gilt für die Reihen der LINKEN Achse — und damit für jedes Bild mit nur
     /// einer Achse.
@@ -235,22 +253,15 @@ else
     [Parameter] public string EinheitRechts { get; set; } = "";
 
     /// <summary>
-    /// <b>Was x zählt</b> (Protokoll DG-E3, „Was x je Bild bedeutet"). Sie entscheidet
-    /// die Beschriftung der Zeigerzeile und die Achsenteilung, die der Baustein im
-    /// Ausschnitt nachzeichnet — nur die Stundenachse nimmt
-    /// <c>ChartRenderer.Jahresstundenteilung</c>.
-    /// </summary>
-    [Parameter] public Achsenart Achsenart { get; set; } = Achsenart.Jahresstunde;
-
-    /// <summary>
-    /// Die Einheit der x-Werte in der Zeigerzeile. Leer nimmt die der
-    /// <see cref="Achsenart"/>: „h" bei Jahresstunden, sonst keine.
+    /// Die Einheit der x-Werte in der Zeigerzeile. <b>Leer nimmt die des MODELLS</b>
+    /// (<c>Zeichenflaeche.XEinheit</c>) und, wo auch die fehlt, die der Achsenart:
+    /// „h" auf einer Stundenachse, sonst keine (DG-E3-11).
     /// </summary>
     [Parameter] public string XEinheit { get; set; } = "";
 
     /// <summary>
     /// Der Titel der Achsenteilung, die der Baustein im Ausschnitt nachzeichnet.
-    /// Leer nimmt bei <see cref="Achsenart.Jahresstunde"/> den Hausschlüssel
+    /// Leer nimmt auf einer STUNDENachse den Hausschlüssel
     /// <c>CHART_ACHSE_JAHRESSTUNDEN</c>, sonst bleibt die Zeile weg.
     /// </summary>
     [Parameter] public string XTitelText { get; set; } = "";
@@ -303,8 +314,35 @@ else
     /// <summary>Der stehende Zeitausschnitt in Jahresstunden; <c>null</c> = Vollansicht.</summary>
     private (int Von, int Bis)? _fenster;
 
-    /// <summary>Die Stunde unter dem Zeiger; <c>null</c> = der Zeiger ist weg.</summary>
-    private int? _zeiger;
+    /// <summary>
+    /// Die STELLE auf der x-Achse unter dem Zeiger; <c>null</c> = der Zeiger ist weg.
+    ///
+    /// <para>Eine Gleitkommazahl, seit x nicht mehr nur die Stunde zählt (DG-E3-11):
+    /// Auf einer C-Raten-Achse von 0,1 bis 2,0 fiele eine ganzzahlige Stelle mit dem
+    /// ganzen Bild zusammen.</para>
+    /// </summary>
+    private double? _zeiger;
+
+    /// <summary>
+    /// <b>Der Wert des Elements unter dem Zeiger (DG-E3-10)</b> — der Weg der Bilder
+    /// OHNE Zeichenfläche: Säulen, Stapel, Balken, Raster, Ring, Kuchen, Kennlinien,
+    /// Jahresprojektion, Stückzahl. Dort gibt es keine Reihe, aus der sich ein Wert
+    /// lesen ließe; er steht fertig formatiert am Element (<c>data-wert</c>).
+    /// </summary>
+    private string? _elementwert;
+
+    /// <summary>
+    /// Hat in DIESEM Ereignisdurchlauf ein markiertes Element seinen Wert gemeldet?
+    ///
+    /// <para><b>Wozu.</b> Ein <c>pointerdown</c> steigt vom Element zur Fläche auf. Die
+    /// Fläche löscht den Wert — aber nur, wenn ihn nicht gerade ein Element gesetzt hat.
+    /// Damit gilt bei BERÜHRUNG: Antippen eines Elements zeigt seinen Wert, Antippen
+    /// daneben löscht ihn (DG-E3-10).</para>
+    /// </summary>
+    private bool _wertGemeldet;
+
+    /// <summary>Trägt der Baum überhaupt Werte am Element? (Sonst gibt es nichts zu zeigen.)</summary>
+    private bool _baumHatWerte;
 
     /// <summary>Der Name des Legendeneintrags, dessen Farbwähler offen steht.</summary>
     private string? _farbwahl;
@@ -343,6 +381,15 @@ else
 
     /// <summary>Sind alle Reihen der zweiten y-Achse abgewählt?</summary>
     public bool ZweiteAchseAus => RechteAchseLeer;
+
+    /// <summary>
+    /// Der Wert des Elements unter dem Zeiger (DG-E3-10); leer = keiner. Prüfstände
+    /// lesen ihn, ohne das <c>data-wert</c> im Baum suchen zu müssen.
+    /// </summary>
+    public string WertAmZeiger => _elementwert ?? "";
+
+    /// <summary>Zeigt dieses Bild Werte AM ELEMENT statt aus Datenreihen (DG-E3-10)?</summary>
+    public bool ZeigtWertAmElement => !HatFlaeche && _baumHatWerte;
 
     // =====================================================================
     //  Ableitungen
@@ -391,7 +438,43 @@ else
     /// </summary>
     private bool HatFlaeche => Modell?.Flaeche is not null && Modell.Reihen.Count > 0;
 
+    /// <summary>
+    /// <b>OHNE ZEICHENFLÄCHE KEIN ZOOM (DG-E3-10).</b> Ein Bild ohne inneres
+    /// <c>&lt;svg&gt;</c> hat keine Datenkoordinaten: Weder Leiste noch Rad, Ziehen oder
+    /// Tasten hätten dort etwas zu bewegen, und das JS-Modul wird gar nicht erst
+    /// gebunden. Es zeigt statt dessen den Wert am Element.
+    /// </summary>
     private bool Bedienbar => !OhneZoom && HatFlaeche;
+
+    /// <summary>
+    /// Steht eine Zeigerzeile unter dem Bild? Bei einem Bild MIT Zeichenfläche immer
+    /// (sonst spränge es, sobald der Zeiger die Fläche betritt), bei einem Bild ohne
+    /// Fläche, sobald der Baum Werte am Element trägt.
+    /// </summary>
+    private bool ZeigerzeileSteht => HatFlaeche || _baumHatWerte;
+
+    /// <summary>
+    /// <b>Was x zählt — AUS DEM MODELL</b> (DG-E3-11). Bis hierher sagte es ein
+    /// Oberflächen-Parameter; er ist entfallen, weil die Zeichenfläche es weiß:
+    /// <c>Zeichenflaeche.X</c> steht seit Gruppe (b) im Kern, und zwei Stellen, die
+    /// dasselbe behaupten, gehen irgendwann auseinander.
+    /// </summary>
+    private Achsenart XAchsenart => Modell?.Flaeche?.X ?? Achsenart.Stunden;
+
+    /// <summary>
+    /// Die Einheit der x-Stelle in der Zeigerzeile: die des MODELLS, sonst die des
+    /// Parameters, sonst „h" auf einer Stundenachse und nichts auf jeder anderen.
+    /// </summary>
+    private string XMass
+    {
+        get
+        {
+            string ausModell = Modell?.Flaeche?.XEinheit ?? "";
+            if (ausModell.Length > 0) return ausModell;
+            if (XEinheit.Length > 0) return XEinheit;
+            return XAchsenart == Achsenart.Stunden ? "h" : "";
+        }
+    }
 
     private bool FarbwahlMoeglich => FarbwahlErlaubt && FarbeGewaehlt.HasDelegate;
 
@@ -427,6 +510,7 @@ else
             _zeiger = null;
             _stufe = 1;
             _farbwahl = null;
+            _elementwert = null;
             _ausschnitt.Clear();
         }
 
@@ -434,6 +518,12 @@ else
         _baumPalette = AktivePalette;
         _baumKennung = KennungOderZaehler;
         _baum = SvgSchreiber.Baum(Modell, _baumPalette, _baumKennung);
+
+        // EINMAL je Baum gezählt, nicht je Zeichenlauf: Ob es Werte am Element gibt,
+        // entscheidet nur, ob die Zeigerzeile überhaupt steht.
+        _baumHatWerte = false;
+        foreach (SvgKnoten k in _baum.Alle())
+            if (!string.IsNullOrEmpty(k.Wert)) { _baumHatWerte = true; break; }
     }
 
     /// <summary>Der SVG-Baum als Razor-Elemente.</summary>
@@ -468,6 +558,21 @@ else
         {
             builder.AddAttribute(4, "onclick",
                 EventCallback.Factory.Create<MouseEventArgs>(this, () => FarbwahlOeffnen(legende!)));
+        }
+
+        // DER WERT AM ELEMENT (DG-E3-10). Nur wo es einen gibt, und nur bei den
+        // Bildern OHNE Zeichenflaeche - dort liest die Zeigerzeile aus den Reihen.
+        if (ZeigtWertAmElement && !string.IsNullOrEmpty(knoten.Wert))
+        {
+            string wert = knoten.Wert!;
+            builder.AddAttribute(10, "onpointerenter",
+                EventCallback.Factory.Create<PointerEventArgs>(this, _ => WertZeigen(wert)));
+            builder.AddAttribute(11, "onpointerleave",
+                EventCallback.Factory.Create<PointerEventArgs>(this, BeiZeigerWeg));
+            // BERUEHRUNG: Ein Antippen setzt den Wert und meldet es der Flaeche, die
+            // sonst genau diesen Aufstieg zum Loeschen nimmt.
+            builder.AddAttribute(12, "onpointerdown",
+                EventCallback.Factory.Create<PointerEventArgs>(this, _ => WertZeigen(wert)));
         }
 
         if (!string.IsNullOrEmpty(knoten.Inhalt)) builder.AddContent(5, knoten.Inhalt);
@@ -583,8 +688,8 @@ else
         return werte;
     }
 
-    /// <summary>Die Zeigerlinie im inneren <c>&lt;svg&gt;</c> — x ist die Stunde.</summary>
-    private void Zeigerlinie(RenderTreeBuilder builder, int stunde)
+    /// <summary>Die Zeigerlinie im inneren <c>&lt;svg&gt;</c> — x ist die Stelle der Achse.</summary>
+    private void Zeigerlinie(RenderTreeBuilder builder, double stunde)
     {
         if (Modell?.Flaeche is null) return;
 
@@ -619,9 +724,10 @@ else
         builder.AddAttribute(1, "class", "epos-diagramm-ticks");
 
         int i = 0;
-        foreach ((int stunde, string beschriftung) in Achsenteilung(von, bis))
+        foreach ((double stelle, string beschriftung) in
+                 ChartRenderer.Achsenteilung(Modell.Flaeche, von, bis))
         {
-            float x = bild.X + (float)((stunde - von) / spanne) * bild.Breite;
+            float x = bild.X + (float)((stelle - von) / spanne) * bild.Breite;
 
             builder.OpenRegion(2 + i);
 
@@ -671,54 +777,15 @@ else
         builder.CloseElement();
     }
 
-    /// <summary>Der Titel der nachgezeichneten Achsenteilung; leer = keiner.</summary>
+    /// <summary>
+    /// Der Titel der nachgezeichneten Achsenteilung; leer = keiner. <b>Was x zählt,
+    /// sagt das Modell</b> (DG-E3-11) — auf einer Stundenachse steht ohne eigenen Text
+    /// der Hausschlüssel.
+    /// </summary>
     private string Achsentitel
         => XTitelText.Length > 0
             ? XTitelText
-            : Achsenart == Achsenart.Jahresstunde ? Resource.CHART_ACHSE_JAHRESSTUNDEN : "";
-
-    /// <summary>
-    /// Die Teilung der x-Achse im Ausschnitt. <b>Nur die Stundenachse nimmt
-    /// <c>ChartRenderer.Jahresstundenteilung</c></b> — sie rechnet Tage, Wochen und
-    /// Monate des Jahres aus. Zählt x einen Index, eine Stützstelle oder einen Rang,
-    /// gibt es kein Kalenderraster: Dort steht eine GANZZAHLIGE Teilung mit höchstens
-    /// sechs Marken, gerundet auf eine runde Schrittweite.
-    /// </summary>
-    private IReadOnlyList<(int Stelle, string Text)> Achsenteilung(int von, int bis)
-    {
-        if (Achsenart == Achsenart.Jahresstunde)
-        {
-            var aus = new List<(int, string)>();
-            foreach ((int stunde, string text) in ChartRenderer.Jahresstundenteilung(von, bis))
-                aus.Add((stunde, text));
-            return aus;
-        }
-        return Ganzzahlteilung(von, bis);
-    }
-
-    /// <summary>
-    /// Eine ganzzahlige Teilung zwischen <paramref name="von"/> und
-    /// <paramref name="bis"/>: höchstens sieben Marken auf einer runden Schrittweite
-    /// (1, 2, 5, 10, 20, 50 …), beschriftet in der Kultur des Anwenders.
-    /// </summary>
-    private static IReadOnlyList<(int Stelle, string Text)> Ganzzahlteilung(int von, int bis)
-    {
-        var marken = new List<(int, string)>();
-        int spanne = bis - von;
-        if (spanne <= 0) return marken;
-
-        double roh = spanne / 6.0;
-        double zehn = Math.Pow(10, Math.Floor(Math.Log10(roh <= 0 ? 1 : roh)));
-        double rest = roh / zehn;
-        double schritt = zehn * (rest <= 1 ? 1 : rest <= 2 ? 2 : rest <= 5 ? 5 : 10);
-        if (schritt < 1) schritt = 1;
-
-        long erste = (long)Math.Ceiling(von / schritt) * (long)schritt;
-        for (long s = erste; s <= bis; s += (long)schritt)
-            marken.Add(((int)s, s.ToString("N0", CultureInfo.CurrentCulture)));
-
-        return marken;
-    }
+            : XAchsenart == Achsenart.Stunden ? Resource.CHART_ACHSE_JAHRESSTUNDEN : "";
 
     // =====================================================================
     //  Die Legende
@@ -730,13 +797,26 @@ else
             ? marke.Substring(MARKE_LEGENDE.Length)
             : null;
 
-    /// <summary>Der Name der Reihe, die dieser Knoten zeichnet; <c>null</c> = keine.</summary>
+    /// <summary>
+    /// Der Name der Reihe, die dieser Knoten zeichnet; <c>null</c> = keine.
+    ///
+    /// <para><b>Zwei Griffe, ein Name.</b> Ein Bild MIT Zeichenfläche zeichnet jede Reihe
+    /// als <c>&lt;path&gt;</c> mit <c>data-reihe</c> — der Griff der Etappe E2. Ein
+    /// PIXELBILD hat keine Datenreihen: Seine Säulen, Stapelschichten, Balkenzeilen und
+    /// Rasterzellen sind gewöhnliche Elemente und tragen ihre Zugehörigkeit in der MARKE
+    /// <c>reihe:&lt;Name&gt;</c>. Ohne die zweite Lesart färbte ein Legendenklick beim
+    /// Monatsstapel nur den Eintrag grau und blendete nichts aus.</para>
+    /// </summary>
     private static string? Reihenname(SvgKnoten knoten)
     {
-        if (knoten.Name != "path") return null;
-        foreach (KeyValuePair<string, string> a in knoten.Attribute)
-            if (string.Equals(a.Key, "data-reihe", StringComparison.Ordinal)) return a.Value;
-        return null;
+        if (knoten.Name == "path")
+            foreach (KeyValuePair<string, string> a in knoten.Attribute)
+                if (string.Equals(a.Key, "data-reihe", StringComparison.Ordinal)) return a.Value;
+
+        string? marke = knoten.Marke;
+        return marke is not null && marke.StartsWith(MARKE_REIHE, StringComparison.Ordinal)
+            ? marke.Substring(MARKE_REIHE.Length)
+            : null;
     }
 
     private bool IstDatenflaeche(SvgKnoten knoten)
@@ -766,16 +846,16 @@ else
         => reihe?.Fenster ?? Modell?.Flaeche?.Daten;
 
     /// <summary>
-    /// Steht die Reihe auf der ZWEITEN y-Achse? Das Modell sagt es nicht mit einem
-    /// Kennzeichen — es sagt es mit dem FENSTER: Eine Reihe rechts trägt ihre eigene
-    /// y-Spanne, jede Reihe der linken Achse die der Zeichenfläche.
+    /// Steht die Reihe auf der ZWEITEN y-Achse? <b>Sie sagt es selbst</b> (DG-E3-12):
+    /// <c>Datenreihe.Achsenseite</c> steht im Modell, seit der Renderer sie in
+    /// <c>ErzeugerStapelModell</c> und <c>SpeicherbetriebModell</c> setzt.
+    ///
+    /// <para>Bis dahin RIET die Oberfläche: Eine Reihe mit anderer y-Spanne als die
+    /// Zeichenfläche galt als rechts. Das trifft zu, solange die Spannen sich
+    /// unterscheiden — und geht fehl, sobald beide Achsen zufällig dieselbe führen.</para>
     /// </summary>
-    private bool AufRechterAchse(Datenreihe reihe)
-    {
-        Datenfenster? d = Modell?.Flaeche?.Daten;
-        if (d is null || reihe?.Fenster is null) return false;
-        return reihe.Fenster.YVon != d.YVon || reihe.Fenster.YBis != d.YBis;
-    }
+    private static bool AufRechterAchse(Datenreihe reihe)
+        => reihe is not null && reihe.Achsenseite == Achsenseite.Rechts;
 
     /// <summary>
     /// Ist KEINE Reihe der rechten Achse mehr sichtbar? Dann fallen auch ihre
@@ -933,19 +1013,29 @@ else
     {
         get
         {
+            // OHNE ZEICHENFLAECHE STEHT DER WERT AM ELEMENT (DG-E3-10): Eine Saeule,
+            // eine Rasterzelle, ein Ringsegment fuehren keine Reihe, aus der sich ein
+            // Wert lesen liesse - er steht fertig formatiert am Element.
+            if (ZeigtWertAmElement) return _elementwert ?? "";
+
             if (!_zeiger.HasValue || Modell?.Flaeche is null) return "";
 
             var teile = new List<string>(Modell.Reihen.Count + 1) { Zeigerstelle(_zeiger.Value) };
 
+            // EINE REIHE STEHT EINMAL IN DER ZEILE. Seit die Schnittkurve ihre
+            // Stuetzpunkte als eigene Punktreihen unter DEMSELBEN Namen fuehrt (damit
+            // die Legende beides zusammen schaltet), gibt es mehrere Reihen je Name.
+            var genannt = new HashSet<string>(StringComparer.Ordinal);
+
             foreach (Datenreihe r in Modell.Reihen)
             {
                 string name = r.Name ?? "";
-                if (_versteckt.Contains(name)) continue;
+                if (_versteckt.Contains(name) || !genannt.Add(name)) continue;
 
                 int index = Reihenindex(r, _zeiger.Value);
                 if (index < 0) continue;
 
-                string einheit = AufRechterAchse(r) ? EinheitRechts : Einheit;
+                string einheit = Reiheneinheit(r);
                 string wert = r.Werte![index].ToString("0.###", CultureInfo.CurrentCulture);
                 teile.Add(string.IsNullOrEmpty(einheit)
                     ? name + ": " + wert
@@ -956,21 +1046,41 @@ else
     }
 
     /// <summary>
-    /// Die Stelle auf der x-Achse, wie sie die Zeigerzeile nennt: „4.000 h" bei
-    /// Jahresstunden, sonst die nackte Zahl (oder die Einheit, die der Wirt setzt).
+    /// Die Einheit EINER Reihe (DG-E3-11): die des MODELLS
+    /// (<c>Datenreihe.Einheit</c>), sonst die des Parameters — <see cref="Einheit"/>
+    /// links, <see cref="EinheitRechts"/> auf der zweiten Achse.
     /// </summary>
-    private string Zeigerstelle(int x)
+    private string Reiheneinheit(Datenreihe reihe)
     {
-        string zahl = x.ToString("N0", CultureInfo.CurrentCulture);
-        string mass = XEinheit.Length > 0
-            ? XEinheit
-            : Achsenart == Achsenart.Jahresstunde ? "h" : "";
+        string ausModell = reihe?.Einheit ?? "";
+        if (ausModell.Length > 0) return ausModell;
+        return AufRechterAchse(reihe!) ? EinheitRechts : Einheit;
+    }
+
+    /// <summary>
+    /// Die Stelle auf der x-Achse, wie sie die Zeigerzeile nennt: „4.000 h" auf einer
+    /// Stundenachse, „12,5 °C" auf einer Werteachse, sonst die nackte Zahl.
+    /// </summary>
+    private string Zeigerstelle(double x)
+    {
+        // Eine Stunden- oder Indexachse zaehlt GANZE Stellen; eine Werteachse traegt
+        // Nachkommastellen (die C-Rate 0,75, die Aussentemperatur −2,5).
+        string zahl = XAchsenart == Achsenart.Wert
+            ? x.ToString("0.###", CultureInfo.CurrentCulture)
+            : Math.Round(x).ToString("N0", CultureInfo.CurrentCulture);
+
+        string mass = XMass;
         return mass.Length > 0 ? zahl + " " + mass : zahl;
     }
 
     /// <summary>
     /// Der Index in <c>reihe.Werte</c> zur x-Stelle <paramref name="x"/> — oder
     /// <c>−1</c>, wenn die Reihe dort nichts zeichnet.
+    ///
+    /// <para><b>Eine Reihe mit eigenen x-Stellen wird GESUCHT, nicht gerechnet</b>
+    /// (DG-E3-11): Die Schnittkurve mischt Grob- und Feinpunkte, die Streuwolke trägt
+    /// die Außentemperatur je Stunde. Dort liegt zwischen zwei Stützstellen kein
+    /// gleichmäßiger Schritt, und der nächstliegende Punkt ist die richtige Antwort.</para>
     /// </summary>
     private int Reihenindex(Datenreihe reihe, double x)
     {
@@ -984,12 +1094,76 @@ else
         if (x < f.XVon - 0.5 || x > f.XBis + 0.5) return -1;
 
         int n = reihe.Werte.Length;
+
+        if (reihe.XWerte is not null && reihe.XWerte.Length > 0)
+        {
+            int beste = -1;
+            double abstand = double.MaxValue;
+            int m = Math.Min(n, reihe.XWerte.Length);
+            for (int i = 0; i < m; i++)
+            {
+                double d = Math.Abs(reihe.XWerte[i] - x);
+                if (d >= abstand) continue;
+                abstand = d;
+                beste = i;
+            }
+            return beste;
+        }
+
         double schritt = n > 1 ? (f.XBis - f.XVon) / (n - 1) : 0.0;
         int index = schritt > 0 ? (int)Math.Round((x - f.XVon) / schritt) : 0;
 
         if (index < 0) index = 0;
         if (index >= n) index = n - 1;
         return index;
+    }
+
+    // =====================================================================
+    //  Der Wert am Element (DG-E3-10)
+    // =====================================================================
+
+    /// <summary>Der Zeiger steht auf einem markierten Element: sein Wert steht in der Zeile.</summary>
+    private Task WertZeigen(string wert)
+    {
+        _wertGemeldet = true;
+        return WertSetzen(wert);
+    }
+
+    /// <summary>
+    /// Der Zeiger verlässt das Element. <b>Nur die MAUS löscht damit</b> — bei
+    /// Berührung gibt es kein „daneben", das Verlassen folgte unmittelbar auf das
+    /// Antippen, und der Wert wäre nie zu lesen.
+    /// </summary>
+    private Task BeiZeigerWeg(PointerEventArgs e)
+        => string.Equals(e.PointerType, "mouse", StringComparison.Ordinal)
+            ? WertSetzen(null)
+            : Task.CompletedTask;
+
+    /// <summary>
+    /// Ein Druck auf die FLÄCHE. Er steigt von jedem Element auf: Hat eines gerade
+    /// seinen Wert gemeldet, bleibt er stehen; sonst war es ein Antippen DANEBEN, und
+    /// die Zeile wird leer (DG-E3-10).
+    /// </summary>
+    private Task BeiFlaechenzeiger()
+    {
+        bool gemeldet = _wertGemeldet;
+        _wertGemeldet = false;
+        return gemeldet ? Task.CompletedTask : WertSetzen(null);
+    }
+
+    /// <summary>
+    /// Den Wert setzen und, nur bei einer Änderung, den Wirt unterrichten — ein
+    /// Rückruf je Zeigerbewegung wäre ein Zeichenlauf des Wirtes je Zeigerbewegung.
+    /// </summary>
+    private Task WertSetzen(string? wert)
+    {
+        if (string.Equals(_elementwert, wert, StringComparison.Ordinal))
+            return Task.CompletedTask;
+
+        _elementwert = wert;
+        return WertAmZeigerGeaendert.HasDelegate
+            ? WertAmZeigerGeaendert.InvokeAsync(wert ?? "")
+            : Task.CompletedTask;
     }
 
     // =====================================================================
@@ -1011,7 +1185,7 @@ else
             {
                 _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
                 _hilfe = DotNetObjectReference.Create(this);
-                await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe, new { modus = "viewbox" });
+                await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe);
             }
             catch (Exception)
             {
@@ -1099,7 +1273,9 @@ else
         foreach (Datenreihe r in Modell.Reihen)
         {
             int n = r.Werte is null ? 0 : r.Werte.Length;
-            if (n < 2 || Pfadregel.Roh(n, reihen)) continue;
+            // EINE PUNKTWOLKE WIRD NIE GEBUENDELT (DG-E3-5) - ihr Vollpfad traegt schon
+            // jeden Punkt, und ein Fensterpfad waere genau sein Ausschnitt.
+            if (n < 2 || r.Art == Reihenart.Punkte || Pfadregel.Roh(n, reihen)) continue;
 
             neu[r.Name ?? ""] =
                 SvgSchreiber.Reihenpfad(r, Modell.Flaeche, von, bis, true);
@@ -1110,13 +1286,14 @@ else
     }
 
     /// <summary>
-    /// Das Modul meldet die Stunde unter dem Zeiger (höchstens einmal je
-    /// Bildaufbau), <c>null</c> beim Verlassen der Fläche.
+    /// Das Modul meldet die STELLE auf der x-Achse unter dem Zeiger (höchstens einmal
+    /// je Bildaufbau), <c>null</c> beim Verlassen der Fläche. Seit DG-E3-11 eine
+    /// Gleitkommazahl: Auf einer Werteachse ist die Stelle keine ganze Zahl.
     /// </summary>
     [JSInvokable]
-    public Task ZeigerGemeldet(int? stunde)
+    public Task ZeigerGemeldet(double? stelle)
     {
-        _zeiger = stunde;
+        _zeiger = stelle;
         StateHasChanged();
         return Task.CompletedTask;
     }

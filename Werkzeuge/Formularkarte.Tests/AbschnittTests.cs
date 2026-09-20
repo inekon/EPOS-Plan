@@ -50,14 +50,14 @@ public sealed class AbschnittTests
     }
 
     [Fact]
-    public void Kostenprofil_ChartWirdZuChartBild()
+    public void Kostenprofil_ChartWirdZuDiagrammSvg()
     {
         var grafik = Musterabschnitte("Kosten/Form_Kostenprofil.Designer.cs").Single(a => a.Titel == "Grafik");
 
         var zeile = Assert.Single(grafik.Zeilen);
         Assert.Equal("chart", zeile.Element.Name);
         Assert.Equal("Chart", zeile.Element.Typ);
-        Assert.Equal("ChartBild", zeile.Komponente);
+        Assert.Equal("DiagrammSvg", zeile.Komponente);
     }
 
     [Fact]

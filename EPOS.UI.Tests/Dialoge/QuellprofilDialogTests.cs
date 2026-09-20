@@ -158,8 +158,8 @@ public class QuellprofilDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Der Jahresverlauf des Profils steht als SVG im Baum</b> (Etappe DG-E3,
-    /// Gruppe (a)) — unter der Kennung <c>quellprofil</c>, mit der Einheit °C und
-    /// ohne ein Pixelbild daneben. Gezeichnet wird erst beim BETRETEN des Blattes.
+    /// Gruppe (a)) — unter der Kennung <c>quellprofil</c> und mit der Einheit °C.
+    /// Gezeichnet wird erst beim BETRETEN des Blattes.
     /// </summary>
     [Fact]
     public void Der_Jahresverlauf_steht_als_DiagrammSvg()
@@ -171,9 +171,6 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("quellprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("°C", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Equal(Achsenart.Jahresstunde,
-                     cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>

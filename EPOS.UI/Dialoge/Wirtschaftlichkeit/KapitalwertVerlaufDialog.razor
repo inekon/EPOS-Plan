@@ -8,10 +8,17 @@
    Eingaben sind gesperrt, der Schliessen-Knopf heisst "Abbrechen").
 
    DIE RECHNUNG LIEGT IN DER HUELLE. Sie sammelt die Simulationsdaten
-   (BerichtsDatenSammler, einmal), rechnet den Verlauf und zeichnet die beiden
-   Bilder mit dem Kern-Renderer; die Komponente bekommt zwei PNG und zwei
-   Textzeilen. Der CancellationToken kommt aus der Komponente, damit
+   (BerichtsDatenSammler, einmal), rechnet den Verlauf und baut die beiden
+   Bilder mit dem Kern-Renderer; die Komponente bekommt zwei ZEICHENMODELLE
+   und zwei Textzeilen. Der CancellationToken kommt aus der Komponente, damit
    "Abbrechen" und das Schliessen des Fensters denselben Weg gehen.
+
+   DIE BILDER SIND VEKTOR (Etappe DG-E3, Gruppe (c)). Statt zweier PNG stehen
+   zwei DiagrammSvg im Baum: Rad, Ziehen, Kneifgeste und die Tasten + - 0
+   verschieben die viewBox, die Legende schaltet eine Linie ab, und unter dem
+   Bild steht der Wert unter dem Zeiger. x ist das PROJEKTJAHR (Achsenart.Wert,
+   Einheit "a"), die Reihen tragen ihre Einheit "€" selbst - die Komponente
+   muss dafuer nichts setzen.
 
    KEINE FORTSCHRITTSANZEIGE. Der Vorlaeufer hatte eine ProgressBar, die der
    Sammler ueber IProgress fuellte. Ein Fortschrittsbaustein entsteht in EPOS.UI
@@ -19,6 +26,7 @@
    gerechnet wird. *@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -56,8 +64,14 @@
         <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
     }
 
-    <ChartBild Png="@_differenz" Alt="@AltDifferenz" PlatzhalterText="@PlatzhalterText" />
-    <ChartBild Png="@_absolut" Alt="@AltAbsolut" PlatzhalterText="@PlatzhalterText" />
+    @* ZWEI BILDER AUF EINEM BLATT, ZWEI KENNUNGEN: Sie bilden die clipPath-Namen —
+       zwei gleiche schnitten das eine Bild am Rechteck des anderen. Eine Einheit
+       braucht die Zeigerzeile nicht von hier: Die Reihen tragen „€", die x-Achse „a"
+       (beides im Modell, seit DG-E3-11). *@
+    <DiagrammSvg Modell="@_differenz" Kennung="kapitalwert-differenz"
+                 Bezeichnung="@AltDifferenz" PlatzhalterText="@PlatzhalterText" />
+    <DiagrammSvg Modell="@_absolut" Kennung="kapitalwert-absolut"
+                 Bezeichnung="@AltAbsolut" PlatzhalterText="@PlatzhalterText" />
 
     @if (!string.IsNullOrEmpty(_restwert))
     {
@@ -95,8 +109,12 @@
 
     /// <summary>
     /// Der Rechenweg: Jahre, Szenario-Id und ein Abbruchmerker hinein, zwei
-    /// Bilder und zwei Textzeilen heraus. Die Huelle laesst ihn auf einem
+    /// ZEICHENMODELLE und zwei Textzeilen heraus. Die Huelle laesst ihn auf einem
     /// eigenen Faden laufen (<c>Task.Run</c>).
+    ///
+    /// <para><b>Er laeuft nur auf Zuruf</b> — beim Oeffnen und beim Knopf
+    /// „Aktualisieren", nie je Zeichenlauf: Der Baustein haelt seinen Knotenbaum an
+    /// der REFERENZ des Modells fest.</para>
     /// </summary>
     [Parameter] public Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>? Berechnen { get; set; }
 
@@ -149,11 +167,11 @@
     [Parameter] public string VorlageFehler { get; set; }
         = BhwTexte.T("WVERL_MSG_FEHLER", "Fehler beim Berechnen des Verlaufs: {0}");
 
-    /// <summary>Alternativtext des oberen Bildes.</summary>
+    /// <summary>Was das obere Bild zeigt (Bezeichnung der Zeichenfläche).</summary>
     [Parameter] public string AltDifferenz { get; set; }
         = BhwTexte.T("WVERL_BILD_DIFF", "Kapitalwert-Verlauf: Differenz zur Stamm-Referenz");
 
-    /// <summary>Alternativtext des unteren Bildes.</summary>
+    /// <summary>Was das untere Bild zeigt (Bezeichnung der Zeichenfläche).</summary>
     [Parameter] public string AltAbsolut { get; set; }
         = BhwTexte.T("WVERL_BILD_ABS", "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt");
 
@@ -171,8 +189,12 @@
     private int? _szenario;
     private bool _laeuft;
 
-    private byte[]? _differenz;
-    private byte[]? _absolut;
+    // DIE MODELLE STEHEN ALS FELD, EINMAL JE RECHENLAUF: Der Baustein DiagrammSvg
+    // baut seinen Knotenbaum nur neu, wenn die REFERENZ wechselt - ein je
+    // Zeichenlauf neu gebautes Modell verwuerfe mit dem Baum auch Zoom,
+    // Zeigerstelle und abgewaehlte Reihen.
+    private Zeichenmodell? _differenz;
+    private Zeichenmodell? _absolut;
     private string _restwert = "";
     private string _status = "";
     private string _fehler = "";

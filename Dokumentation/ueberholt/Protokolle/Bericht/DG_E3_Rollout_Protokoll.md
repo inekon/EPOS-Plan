@@ -938,3 +938,214 @@ nachgerechnet hat) und `data-achse2aus`.
   an `Zeichenmodell.cs`, `SvgSchreiber.cs` oder `ChartRenderer.cs`, sondern nur eine
   Zusage, dass die Reihen der zweiten Achse ihr y-Fenster behalten und die
   `…Modell`-Methoden ihr `Achsenfenster` weiterhin annehmen.
+
+---
+
+## Gruppen (b) und (c) — Oberfläche, Abschluss E3
+
+### Die Aufgabe
+
+Die einundzwanzig verbliebenen `ChartBild`-Stellen auf `DiagrammSvg` umstellen — und damit
+den Umstieg der Oberfläche von PNG auf SVG abschließen. Danach gibt es in `EPOS.UI` kein
+Renderer-Pixelbild mehr; `ChartBild`, `Diagramm`, `Diagrammbereich`, der CSS-Transform-Modus
+des JS-Moduls und die zwei Prüfklassen dazu entfallen im selben Auftrag.
+
+Die Gruppe unterscheidet sich von (a) in einem Punkt, und der prägt alles Weitere: **Zwölf
+der einundzwanzig Bilder haben keine Zeichenfläche.** Eine Säule, eine Rasterzelle, ein
+Ringsegment führen keine Datenreihe, aus der sich ein Wert lesen ließe — und zwischen zwei
+Monaten, zwei ganzen Geräten oder zwei Ringsegmenten liegt nichts, worauf ein Zoom zeigen
+könnte. Der Kern hat diesen Bildern mit Gruppe (c) statt dessen den **Wert am Element**
+mitgegeben (`data-wert`); die Oberfläche musste ihn nur noch zeigen.
+
+### Die Entscheide
+
+**DG-E3-10 — Wert am Zeiger.** Bei Bildern ohne Zeichenfläche (Säulen, Stapel, Balken,
+Raster, Ring, Kuchen, Kennlinien, Jahresprojektion, Stückzahl) zeigt die Zeigerzeile den
+`data-wert` des Elements, auf das der Zeiger zeigt (`@onpointerenter`/`@onpointerleave` je
+markiertem Element; Berührung: Antippen zeigt, erneutes Antippen daneben löscht). Kein Zoom,
+keine Leiste, keine JS-Bindung bei diesen Bildern (`Flaeche == null` ⇒ `OhneZoom`).
+
+**DG-E3-11 — Achsenart aus dem Modell.** Der Baustein liest `Zeichenflaeche.X` und
+`XEinheit` aus dem Kern; der Oberflächen-Parameter `Achsenart` aus Gruppe (a) entfällt (die
+Aufrufstellen der Gruppe (a) nachziehen). Ticks bei `Achsenart.Wert` über
+`ChartRenderer.Achsenteilung(flaeche, von, bis)`; die Zeigerzeile nimmt bei Reihen mit
+`XWerte` den nächstliegenden Punkt zur Zeigerstelle, sonst den Index wie bisher; die Einheit
+je Reihe aus `Datenreihe.Einheit`, der Rückfall aus dem Parameter.
+
+**DG-E3-12 — Achsenseite.** `Datenreihe` bekommt `Achsenseite` (`Links`/`Rechts`, Vorgabe
+Links); der Kern setzt sie in `ErzeugerStapelModell` und `SpeicherbetriebModell` für die
+rechte Achse; der Baustein liest sie statt aus der y-Spanne zu raten.
+
+**DG-E3-13 — Abschluss: kein PNG mehr in der Oberfläche.** Nach der Umstellung der 21 Stellen
+gibt es keine `ChartBild`-Stelle mehr. Dann entfallen `EPOS.UI/Standards/ChartBild.razor`,
+`EPOS.UI/Bausteine/Diagramm.razor`, `Diagrammbereich.cs` (falls ohne Leser), der
+CSS-Transform-Modus des JS-Moduls samt Stilregeln, `ChartBildTests` und `DiagrammTests` — im
+selben Auftrag, mit Beleg (`grep`), dass kein Leser bleibt (auch `Proben/Rasterprobe/Wirt`,
+`EPOS.iOS`, `WindowsFormsApplication1` prüfen). Der `byte[]`-Weg des Renderers bleibt für den
+Bericht. `EPOS.UI/CLAUDE.md` beschreibt danach den gültigen Stand: jedes Diagramm der
+Oberfläche ist ein `Zeichenmodell` im Baustein `DiagrammSvg`; keine Geschichte.
+
+Dazu gelten unverändert DG-E2-1, DG-E2-3 und DG-E3-1 bis DG-E3-9.
+
+### Die Kern-Nachzüge
+
+Der Kern brachte aus den Gruppen (b) und (c) die Modelle der Bildarten mit, nicht aber die
+Modelle der **Oberflächenbilder** und der **Flottenansichten** — sie stehen nicht im
+`ChartRenderer`, sondern in eigenen Klassen. Fünf Nachzüge in einem Commit, kein Bild
+geändert:
+
+| Was | Wo |
+|---|---|
+| `SpeicherBetriebsbild.Modell(…)` und `PeakShavingBild.Modell(…)` als Zwillinge von `Zeichnen`/`Lastgang`; der PNG-Weg malt deren Ergebnis | `EPOS.Kern/Allgemein/Bericht/` |
+| je `byte[]`-Bildmethode ein Zwilling: `RasterModell`, `SchnittmodellBeiSpalte`/`…BeiZeile`, `AusschnittModell`, `StueckzahlModell`, `StueckzahlrasterModell`, `Modelle` (Netz/SoC), `JahresprojektionsModell`; die `byte[]`-Methoden gehen über den gemeinsamen Helfer `Gemalt` | `EPOS.Kern/Controller/SpeicherFlottenAnzeigeCtrl*.cs` |
+| `Zeichenbefehl.Wert` an den Datenelementen der Pixelbilder der Gruppe (b): Punktmarken der Kennlinien, Säulen und Ersatzjahr-Marken der Jahresprojektion, Säulen und Bestmarke der Stückzahlkurve — Format wie in Gruppe (c) (`Achsenwert`, `Elementwert`, `Achseneinheit`) | `ChartRenderer.cs` |
+| `Datenreihe.Achsenseite` samt Setzen in `ErzeugerStapelModell` und `VerlaufsbildModell`; `SvgKnoten.Wert` neben `Marke` | `Zeichenmodell.cs`, `SvgSchreiber.cs`, `ChartRenderer.cs` |
+| die Stützpunkte der Schnittkurve als eigene `Punkte`-Reihen — grob und fein getrennt | `ChartRenderer.cs` |
+
+**Zwei Stellen gingen über den Auftrag hinaus.**
+
+1. **Die Stützpunkte der Schnittkurve brauchen ZWEI Reihen, nicht eine.** Das PNG zeichnet
+   Grobpunkte in `STAMM` mit Radius 3,5 und Feinpunkte der zweiten Suchphase in `FEINRASTER`
+   mit Radius 2,5. Eine `Datenreihe` trägt genau EINE Farbe und EINE Strichbreite;
+   zusammengelegt sähe das SVG anders aus als das Bild. Eine leere Art bekommt keine Reihe —
+   so bleibt die Reihenzahl bei einer reinen Grobsuche bei zwei, und die `Pfadregel` bündelt
+   die Kurve nicht plötzlich anders.
+2. **In der Dauerlinie zählt x den RANG, nicht die Stunde.** `ErzeugerStapelModell`,
+   `VerlaufsbildModell` und `GanglinieNormiertModell` setzten `Achsenart.Stunden`
+   unabhängig vom Schalter „sortiert". Solange die Oberfläche ihre Achsenart selbst mitgab,
+   fiel das nicht auf; mit DG-E3-11 liest sie die des Modells, und eine Jahresstundenteilung
+   mit Monatsnamen über einer Rangachse wäre schlicht falsch. Die drei Methoden sagen jetzt
+   `Zeitachsenart(sortiert)`. **Kein PNG ändert sich davon** — der Maler übergeht die
+   Zeichenfläche ganz.
+
+### Was der Baustein dazubekommen hat
+
+| Punkt | Wie er gelöst ist |
+|---|---|
+| **Wert am Zeiger** | Der Baustein zählt beim Bauen des Baumes einmal, ob überhaupt ein Knoten einen `Wert` trägt (`_baumHatWerte`). Trägt einer und hat das Bild keine Zeichenfläche, bekommt jeder Knoten mit Wert `onpointerenter` (setzen), `onpointerleave` (löschen — **nur bei der Maus**) und `onpointerdown` (setzen). Die Fläche selbst bekommt `onpointerdown`, das löscht — aber nur, wenn nicht gerade ein Element gemeldet hat. Ein Druck steigt vom Element zur Fläche auf; damit gilt bei Berührung genau die Regel des Entscheids: Antippen zeigt, Antippen daneben löscht |
+| **Achsenart aus dem Modell** | `XAchsenart` liest `Modell.Flaeche.X`; `XMass` nimmt `Flaeche.XEinheit`, sonst den Parameter, sonst „h" auf einer Stundenachse. Die Ticks des Ausschnitts kommen aus `ChartRenderer.Achsenteilung` — die eine Funktion, die Stunden kalendarisch, einen Index ganzzahlig und einen Wert mit „schönen" Stufen teilt. Der Parameter `Achsenart` und die hauseigene `Ganzzahlteilung` des Bausteins sind entfallen |
+| **Nächstliegender Punkt statt Index** | `Reihenindex` sucht bei einer Reihe mit `XWerte` den kleinsten Abstand statt über die Schrittweite zu rechnen. Die Schnittkurve mischt Grob- und Feinpunkte, die Streuwolke führt die Außentemperatur je Stunde — dort gibt es keinen gleichmäßigen Schritt |
+| **Einheit je Reihe** | `Reiheneinheit` nimmt `Datenreihe.Einheit`, sonst `Einheit` bzw. `EinheitRechts` |
+| **Achsenseite** | `AufRechterAchse` liest `Datenreihe.Achsenseite` statt die y-Spanne zu vergleichen |
+| **Eine Reihe steht einmal in der Zeile** | Die Schnittkurve führt Kurve und Stützpunkte unter DEMSELBEN Namen, damit die Legende beides zusammen schaltet. Die Zeigerzeile nennt jeden Namen deshalb nur einmal |
+| **Eine Punktwolke wird nie nachgeladen** | Ihr Vollpfad trägt schon jeden Punkt (DG-E3-5); ein Fensterpfad wäre genau sein Ausschnitt |
+| **Die Zeigerstelle ist eine Gleitkommazahl** | Das JS-Modul meldete ganze Stunden. Auf einer C-Raten-Achse von 0,1 bis 2,0 fiele eine ganzzahlige Stelle mit dem ganzen Bild zusammen. Gerundet wird jetzt auf ein Tausendstel der SICHTBAREN Breite — feiner als ein Bildpunkt und zugleich **weniger** Meldungen als zuvor (8 760 ganze Stunden auf rund 1 000 Bildpunkte waren acht Meldungen je Bildpunkt) |
+| **`WertAmZeigerGeaendert`** | Ein Rückruf für den Wirt, der den Wert woanders braucht. Das Bild selbst zeigt ihn ohne ihn; ein Zeichenlauf der Komponente frischt aber die Seite DARÜBER nicht auf, und genau die misst der Prüfstand |
+| **Ring und Kuchen** | `LegendeSchaltbar="false"` an der Aufrufstelle — ein Kreis, dem ein Segment fehlt, ist kein Kreis mehr. Der Wert am Zeiger und die Farbwahl über das Farbfeld bleiben |
+
+### Was entfallen ist (DG-E3-13)
+
+| Was | Warum es gehen konnte |
+|---|---|
+| `EPOS.UI/Standards/ChartBild.razor` | keine Aufrufstelle mehr |
+| `EPOS.UI/Bausteine/Diagramm.razor` | einziger Leser war `ChartBild` |
+| `EPOS.UI/Bausteine/Diagrammbereich.cs` | einziger Leser war `Diagramm` samt den Rundlauf-Rückrufen der umgestellten Stellen |
+| der CSS-Transform-Modus des JS-Moduls (`binden`-Option `modus`, `male`, `meldeBereich`, `setzeStufe`, `zoomeUm`, der Zustand `inhalt`/`vx`/`vy`/`viewbox`) | er bediente nur `Diagramm` |
+| die Stilregeln `.epos-diagramm`, `.epos-diagramm--rund` (samt den zwei Folgeregeln), `.epos-diagramm-flaeche`, `…:focus-visible`, `.epos-diagramm-inhalt`, `.epos-chartbild` | dieselbe Ursache |
+| `EPOS.UI.Tests/Standards/ChartBildTests.cs`, `EPOS.UI.Tests/Bausteine/DiagrammTests.cs` | sie prüften genau diese zwei Bausteine |
+
+**Was BLEIBT und warum.** Die Leiste, der Stufentext, die Knöpfe, das Gummiband und der
+Platzhalter tragen dieselben Klassennamen (`.epos-diagramm-leiste`, `-stufe`, `-knopf`,
+`-gummi`, `--zieht`, `--bereich`, `.epos-chartbild-platzhalter`) — `DiagrammSvg` benutzt sie
+weiter. Der `byte[]`-Weg des Renderers bleibt vollständig stehen: Er ist der Weg des
+**Berichts** und die Messlatte der ChartProben.
+
+### Die Prüfseite
+
+`Proben/Rasterprobe/Wirt/Seiten/DiagrammSvgProbe.razor` (`/diagrammsvg`) kennt neben den vier
+Bildern der Etappen E2/E3a fünf weitere, alle aus synthetischen Reihen ohne Zufall:
+
+| Adresse | Was sie zeigt |
+|---|---|
+| `?bild=raster` | eine Rasterkarte Kapazität × C-Rate mit **einem Loch** und **zwei gesperrten Zellen** — beide Sonderfälle des Werttextes („nicht gerechnet", „(unzulässig)") sind damit messbar |
+| `?bild=ring` | ein Ring mit vier Segmenten; **Legende nicht schaltbar**, Werte am Zeiger ja |
+| `?bild=kennlinien` | drei Vorlaufstufen mit Punktmarken — jede Marke nennt Außentemperatur und Wert |
+| `?bild=streuwolke` | 8 760 Punkte über der Außentemperatur; hier lässt sich prüfen, dass die Zeigerzeile den **nächstliegenden** Punkt nimmt statt eines Index |
+| `?bild=kapitalwert` | zwei Verläufe über dem Projektjahr — das einzige der fünf **mit** Zeichenfläche (`Achsenart.Wert`, Einheit „a") und damit mit Zoom |
+
+Der Stand über dem Bild (`#diagrammsvg-stand`) trägt neben `data-nachgeladen` und
+`data-achse2aus` jetzt **`data-wert-am-zeiger`**.
+
+### Der Befund am Anfang: der zusammengeführte Stand baute nicht
+
+Vor dem ersten Schritt war `EPOS.UI` **rot**: 28 Fehler CS0104, „`Achsenart` ist ein
+mehrdeutiger Verweis". Die Oberfläche der Gruppe (a) hatte eine eigene Aufzählung
+`EPOS.UI.Bausteine.Achsenart` mitgebracht, der Kern der Gruppe (b) eine gleichnamige
+`WindowsFormsApplication1.Zeichnung.Achsenart` — und die Oberfläche zieht beide Namensräume.
+Zwei Zweige, jeder für sich grün, zusammen rot; der Kern-Filter der CI sieht `EPOS.UI` nicht
+und meldete es deshalb nicht.
+
+**DG-E3-11 löst es an der Wurzel**: Die Oberflächen-Aufzählung entfällt, es bleibt die des
+Kerns. Ein Alias hätte den Bau geradegerückt und den doppelten Begriff stehen lassen.
+
+### Offen nach dem Abschluss der Etappe E3
+
+* **Die Gerätenachweise (A-DG-1)** stehen weiter aus — Windows bei 125 % DPI und das iPad.
+  Neu dazugekommen ist der Wert am Zeiger bei BERÜHRUNG: Antippen und Antippen daneben sind
+  im Prüfstand gemessen, nicht am Gerät.
+* **Doppelte Leerzeichen im Text** sind erledigt: Der Baustein setzt `xml:space="preserve"`
+  an jedem `<text>` (Gruppe (a), UI-Teil).
+* **Für mehrere umgestellte DIALOGE gibt es keine Wiki-Seiten.** Die Rubrik „Programm
+  Dokumentation" führt dreizehn Seiten; „Wärmepumpe", „Bedarfsergebnis", „Quellprofil",
+  „Bedarfstyp", „Gebäudetyp", „Wärmebedarf extern", „Stromganglinie", „Gebäude",
+  „Erdreichquelle" und „Lastspitzenkappung" kommen dort nicht vor. Die neue Bedienung dieser
+  Dialoge ist damit unbeschrieben — entweder eine eigene Seite oder ein Verweis auf den
+  Abschnitt „Die Diagramme bedienen" der Seite „Simulationsergebnisse".
+
+### Die Wiki-Seiten
+
+| Seite | Was geändert wurde |
+|---|---|
+| `Programm Dokumentation - Simulationsergebnisse.wiki` | Der Absatz „Drei Bilder dieser Auswertung sind Pixelbilder" ist ersetzt: Ringe, Monatssäulen und Monatsstapel zeigen den **Wert des Elements**, auf das der Anwender zeigt (samt Berührung), die Legende eines Rings ist nicht schaltbar; die Streuwolke zoomt über der **Außentemperatur** |
+| `Programm Dokumentation - Stromspeicher.wiki` | Der **Datenzoom durch Ziehen im Bild** ist aus der Steuerzeile der Ergebnisdiagramme heraus und als Zoom IM Bild beschrieben (mit Verweis auf „Die Diagramme bedienen"); die Zeitraumwahl bleibt daneben stehen. Die Jahresprojektion und die drei Auslegungsbilder ohne Achse (Raster, Stückzahlkurve, Stückzahlraster) zeigen ihren Wert am Zeiger — samt „(unzulässig)" und „nicht gerechnet"; Schnittkurven und Ausschnitt zoomen über ihrer Größenachse |
+| `Programm Dokumentation - Wirtschaftlichkeit.wiki` | Der Abschnitt **Verlauf…** beschreibt die zwei Bilder samt Zoom, Zeigerzeile mit dem Projektjahr, Legendenwahl und Farbfeld |
+
+**Fehlende Seiten** — nicht angelegt, nur gemeldet: „Wärmepumpe" (die zwei Kennlinien der
+Anlagen- und der Stammmaske), „Bedarfsergebnis" (Monatssäulen und Jahresverlauf),
+„Erdreichquelle" und „Lastspitzenkappung". Die Rubrik „Programm Dokumentation" führt sie
+nicht.
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Windows-Messlatte des Rechners (91 Hashes) | 91 von 91 gleich, Text-Diff leer — vor dem ersten Schritt, nach dem Kern-Commit und in der Abnahme |
+| `Proben/ChartProben` | 106 Bilder geprüft, 0 Verstöße |
+| `WP-Plan.Kern.slnf` Bau Release | 0 Fehler |
+| `WP-Plan.sln` Debug x64 (im Worktree) | 0 Fehler |
+| `Proben/Rasterprobe/Wirt` | 0 Fehler |
+| volle Suite mit den CI-Schaltern | 0 Fehler |
+| `ChartRendererNachzuegeTests` (neu) | 14 Fälle: die zwei Oberflächenbilder malen ihr eigenes Modell, die Achsenseite steht an der Reihe, jede Punktmarke/Säule/Marke nennt ihren Wert, die Stützpunkte der Schnittkurve stehen als zwei Punktreihen, die Dauerlinie zählt einen Index — und **kein Bild ändert sich dabei** |
+| `grep -rn '<ChartBild\|<Diagramm ' EPOS.UI Proben --include=*.razor` | ohne Treffer |
+| Doku-, Repo- und Wiki-Wachen | grün |
+| Tabu-Regex über die geänderten Wiki-Seiten | keine Treffer in den neuen Zeilen |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Die einundzwanzig umgestellten Stellen
+
+| Stelle | Bild | Modell | Kennung | Fläche |
+|---|---|---|---|---|
+| `Dialoge/Bedarf/BedarfErgebnisDialog` | Monatssäulen | `MonatsSaeulenModell` | `bedarf-monate` | nein |
+| `Dialoge/Simulation/QuelleErdreichDialog` | Jahresgang | `JahresgangModell` | `quelle-erdreich` | ja |
+| `Dialoge/Strom/PeakShavingDialog` | Lastgang | `PeakShavingBild.Modell` | `peakshaving-lastgang` | ja |
+| `Dialoge/Strom/SpeicherFlottenErgebnisAnsicht` | Jahresprojektion | `JahresprojektionsModell` | `flotte-projektion` | nein |
+| … | Netzbild | `Modelle(…).Netz` | `Netzkennung` (Zeitraum, Einheit, Sortierung) | ja |
+| … | Ladezustand | `Modelle(…).Soc` | `Sockennung` | ja |
+| `Dialoge/Strom/SpeicherFlottenGroessenAnsicht` | Stückzahlkurve | `StueckzahlModell` | `flotte-stueckzahl` | nein |
+| … | Stückzahlraster | `StueckzahlrasterModell` | `flotte-stueckraster` | nein |
+| … | Rasterkarte | `RasterModell` | `flotte-raster-<Einheit>` | nein |
+| … | Ausschnitt | `AusschnittModell` | `flotte-ausschnitt-<Einheit>` | ja |
+| … | Spaltenschnitt | `SchnittmodellBeiSpalte` | `flotte-schnitt-spalte-<Einheit>-<Spalte>` | ja |
+| … | Zeilenschnitt | `SchnittmodellBeiZeile` | `flotte-schnitt-zeile-<Einheit>-<Zeile>` | ja |
+| `Dialoge/Waermepumpe/WaermepumpeAnlageDialog` | Kennlinie COP | `KennlinienModell` | `wp-kennlinie-cop` | nein |
+| … | Kennlinie Leistung | `KennlinienModell` | `wp-kennlinie-leistung` | nein |
+| `Dialoge/Waermepumpe/WaermepumpeStammDialog` | Kennlinie COP | `KennlinienModell` | `wp-kennlinie-cop` | nein |
+| … | Kennlinie Leistung | `KennlinienModell` | `wp-kennlinie-leistung` | nein |
+| `Dialoge/Wirtschaftlichkeit/KapitalwertVerlaufDialog` | Differenz | `KapitalwertVerlaufModell` | `kapitalwert-differenz` | ja |
+| … | absolut | `KapitalwertVerlaufModell` | `kapitalwert-absolut` | ja |
+| `Seiten/Simulation/ErgebnisReiter` | Monatsstapel | `MonatsStapelModell` | `simerg-monate` | nein |
+| `Seiten/Simulation/UebersichtReiter` | Ring Wärme/Strom | `RingModell` | `simerg-ring-waerme` / `-strom` | nein |
+| `Seiten/Simulation/WaermepumpeReiter` | Streuwolke | `StreuwolkeModell` | `simerg-wp-streuwolke` | ja |
+
+**Neun der einundzwanzig haben eine Zeichenfläche** und damit Zoom und die Zeigerzeile aus
+den Reihen; die übrigen zwölf zeigen den Wert am Element.

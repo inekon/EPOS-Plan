@@ -134,7 +134,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
-    /// der Kennung <c>gebaeude-bedarf</c>, und ohne ein Pixelbild daneben.
+    /// der Kennung <c>gebaeude-bedarf</c> und mit der Einheit <c>kW</c>.
     /// </summary>
     [Fact]
     public void Die_Ganglinie_steht_als_DiagrammSvg()
@@ -144,7 +144,6 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("gebaeude-bedarf", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>
@@ -218,25 +217,6 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         Assert.True(cut.Instance.Sortiert);
         Assert.Contains(auftraege, a => a.Sortiert);
-    }
-
-    /// <summary>
-    /// Der Schalter tauscht auch die ACHSENART: Die Ganglinie zählt Stützstellen und
-    /// trägt die Stundeneinheit, die Dauerlinie zählt den Rang — dort ist x keine
-    /// Zeit mehr.
-    /// </summary>
-    [Fact]
-    public void Der_Schalter_sortiert_stellt_die_Achsenart_auf_Rang()
-    {
-        var cut = Aufbauen();
-
-        Assert.Equal(Achsenart.Stuetzstelle, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
-        Assert.Equal("h", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
-
-        cut.Find("input[type=checkbox]").Change(true);
-
-        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
-        Assert.Equal("", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
     }
 
     // =================================================================================

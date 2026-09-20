@@ -167,7 +167,7 @@ public static class Kartenbau
             case "ListView":
                 return ("Raster", "Raster");
             case "Chart":
-                return ("Diagramm", "ChartBild");
+                return ("Diagramm", "DiagrammSvg");
             case "GroupBox":
             case "TabPage":
                 return ("Sektion", "Gruppenkopf");

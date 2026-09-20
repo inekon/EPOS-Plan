@@ -19,15 +19,21 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Geprüft wird die Vollfassung 2.2/2.3: vier Kennzahlkacheln, die Δ-Spalte
 /// samt Farbklasse, die eingeklappten Nullzeilen, die Jahresprojektion als BILD, die
-/// Steuerzeile der Hausregel § 5 über dem Netzbild (sortiert, Reihenwahl, Zeitraum,
-/// Datenzoom) — und dass der Betriebseditor hier NICHT mehr steht.</para>
+/// Steuerzeile der Hausregel § 5 über dem Netzbild (sortiert, Reihenwahl, Zeitraum)
+/// — und dass der Betriebseditor hier NICHT mehr steht.</para>
 ///
-/// <para><b>Wie „kommt der Schalter am Bild an?" geprüft wird.</b> Ein PNG lässt sich
-/// nicht befragen. Die Komponente legt deshalb ihren Bildauftrag offen
+/// <para><b>Wie „kommt der Schalter am Bild an?" geprüft wird.</b> Die Komponente
+/// legt ihren Bildauftrag offen
 /// (<see cref="SpeicherFlottenErgebnisAnsicht.Bildschluessel"/>, derselbe Schlüssel wie
 /// auf der Ergebnisseite): Ändert ein Schalter den Schlüssel, ist er beim Kern
 /// angekommen. Dass der Kern ihn an den Renderer durchreicht, zeigt
-/// <c>EPOS.Kern.Tests/SpeicherFlottenAnzeigeCtrlTests</c> über die Bildbytes.</para>
+/// <c>EPOS.Kern.Tests/SpeicherFlottenAnzeigeCtrlTests</c>.</para>
+///
+/// <para><b>Seit der Etappe DG-E3 stehen die drei Bilder als
+/// <see cref="EPOS.UI.Bausteine.DiagrammSvg"/> da</b> — befragt wird deshalb die
+/// KOMPONENTE (Bezeichnung, Modell) und nicht ein <c>img</c> mit <c>data:</c>-URI.
+/// Der Rundlauf-Datenzoom ist mit ihnen entfallen (Entscheid DG-E3-9): Der Zoom liegt
+/// in der <c>viewBox</c>, also gibt es kein Rechteck mehr zu melden.</para>
 /// </summary>
 public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
 {
@@ -147,23 +153,28 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     {
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
 
-        Assert.Contains(cut.FindAll("img"), b => b.GetAttribute("alt") == Resource.FLOTTE_ALT_PROJEKTION);
+        Assert.NotNull(Bild(cut, Resource.FLOTTE_ALT_PROJEKTION).Instance.Modell);
 
         var tabelle = cut.Find("details.epos-flotte-jahreskonten");
         Assert.False(tabelle.HasAttribute("open"));
         Assert.Contains(Resource.FLOTTE_PROJ_SP_CASHFLOW, tabelle.TextContent, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Ein abgewählter Reihenschalter holt ein NEUES Zeichenmodell — geprüft an seiner
+    /// REFERENZ: Genau daran entscheidet der Baustein, ob er seinen Knotenbaum neu baut
+    /// (Etappe DG-E3). Bliebe sie stehen, zeigte das Bild weiter die alte Reihe.
+    /// </summary>
     [Fact]
     public async Task Eine_abgewaehlte_Projektionsreihe_zeichnet_das_Bild_neu()
     {
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
-        string vorher = Bildquelle(cut, Resource.FLOTTE_ALT_PROJEKTION);
+        object? vorher = Bild(cut, Resource.FLOTTE_ALT_PROJEKTION).Instance.Modell;
 
         await Schalten(cut, Resource.FLOTTE_R_KUMULIERT, false);
 
         cut.WaitForAssertion(() =>
-            Assert.NotEqual(vorher, Bildquelle(cut, Resource.FLOTTE_ALT_PROJEKTION)));
+            Assert.NotSame(vorher, Bild(cut, Resource.FLOTTE_ALT_PROJEKTION).Instance.Modell));
     }
 
     // =====================================================================
@@ -252,16 +263,38 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
         });
     }
 
-    /// <summary>Der Datenzoom hängt an JEDER Jahresganglinie (Hausregel § 5.1).</summary>
+    /// <summary>
+    /// DER ZOOM LIEGT IM BILD (Entscheid DG-E3-9). Hier stand bis zur Etappe DG-E3 die
+    /// Wache „das Netzbild trägt den Datenzoom": Das Netzbild war ein PNG, der Anwender
+    /// zog darin ein Rechteck auf, und die Ansicht ließ den Kern das Bild ein zweites
+    /// Mal rechnen. Jetzt trägt das Zeichenmodell die Werte ohnehin, und der Zoom ist
+    /// eine Attributänderung an EINER <c>viewBox</c> — es gibt kein Rechteck mehr zu
+    /// melden. Geprüft wird statt dessen, dass beide Zeitbilder als
+    /// <see cref="EPOS.UI.Bausteine.DiagrammSvg"/> ankommen, jedes mit EIGENER Kennung:
+    /// Zwei gleiche schnitten das eine Bild am <c>clipPath</c>-Rechteck des anderen.
+    /// </summary>
     [Fact]
-    public void Das_Netzbild_traegt_den_Datenzoom()
+    public async Task Die_Zeitbilder_stehen_als_DiagrammSvg_mit_eigener_Kennung_da()
     {
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
-        var bild = cut.FindComponents<EPOS.UI.Standards.ChartBild>()
-                      .Single(b => b.Instance.Alt == Resource.FLOTTE_ALT_NETZ);
+        await Schalten(cut, Resource.FLOTTE_CHK_ZWEITES_BILD, true);
 
-        Assert.True(bild.Instance.BereichGewaehlt.HasDelegate);
-        Assert.True(bild.Instance.Zurueckgesetzt.HasDelegate);
+        cut.WaitForAssertion(() =>
+        {
+            var netz = Bild(cut, Resource.FLOTTE_ALT_NETZ);
+            var soc = Bild(cut, Resource.FLOTTE_ALT_SOC);
+
+            Assert.NotNull(netz.Instance.Modell);
+            Assert.NotNull(soc.Instance.Modell);
+            Assert.NotEqual(netz.Instance.Kennung, soc.Instance.Kennung);
+
+            // Die Einheiten der Zeigerzeile: links kW, rechts der Ladezustand in kWh.
+            Assert.Equal("kW", netz.Instance.Einheit);
+            Assert.Equal("kWh", netz.Instance.EinheitRechts);
+
+            // KEIN Pixelbild mehr: Der PNG-Weg der Oberfläche ist mit DG-E3 fort.
+            Assert.Empty(cut.FindAll("img"));
+        });
     }
 
     /// <summary>Das zweite Bild ist WÄHLBAR und steht anfangs nicht da (Konzept 2.3).</summary>
@@ -269,12 +302,14 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     public async Task Das_Ladezustandsbild_ist_waehlbar()
     {
         var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
-        Assert.DoesNotContain(cut.FindAll("img"), b => b.GetAttribute("alt") == Resource.FLOTTE_ALT_SOC);
+        Assert.DoesNotContain(cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>(),
+                              b => b.Instance.Bezeichnung == Resource.FLOTTE_ALT_SOC);
 
         await Schalten(cut, Resource.FLOTTE_CHK_ZWEITES_BILD, true);
 
         cut.WaitForAssertion(() =>
-            Assert.Contains(cut.FindAll("img"), b => b.GetAttribute("alt") == Resource.FLOTTE_ALT_SOC));
+            Assert.Contains(cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>(),
+                            b => b.Instance.Bezeichnung == Resource.FLOTTE_ALT_SOC));
     }
 
     // =====================================================================
@@ -366,8 +401,11 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     // Helfer
     // =====================================================================
 
-    private static string Bildquelle(IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut, string alt)
-        => cut.FindAll("img").Single(b => b.GetAttribute("alt") == alt).GetAttribute("src") ?? "";
+    /// <summary>Das Diagramm mit dieser Bildbeschreibung (Etappe DG-E3).</summary>
+    private static IRenderedComponent<EPOS.UI.Bausteine.DiagrammSvg> Bild(
+        IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut, string bezeichnung)
+        => cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>()
+              .Single(b => b.Instance.Bezeichnung == bezeichnung);
 
     private static Task Schalten(IRenderedComponent<SpeicherFlottenErgebnisAnsicht> cut,
                                  string beschriftung, bool an)

@@ -644,9 +644,9 @@ public class WaermebedarfExternDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — ohne
-    /// ein Pixelbild daneben. Ihre Kennung trägt den Schlüssel der gewählten
-    /// Ganglinie und die Schalterstellung, damit zwei Bilder nie dieselben
+    /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)). Ihre
+    /// Kennung trägt den Schlüssel der gewählten Ganglinie und die
+    /// Schalterstellung, damit zwei Bilder nie dieselben
     /// <c>clipPath</c>-Kennungen bekommen.
     /// </summary>
     [Fact]
@@ -662,14 +662,12 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Ganglinie B",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(cut.FindComponents<ChartBild>());
 
         // Die Dauerlinie ist ein ZWEITES Bild und traegt deshalb eine eigene Kennung.
         cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
 
         Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Ganglinie B-s",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Contains(auftraege, a => a.Sortiert);
     }
 

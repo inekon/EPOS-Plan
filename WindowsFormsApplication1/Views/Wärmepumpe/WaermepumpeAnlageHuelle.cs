@@ -317,6 +317,13 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Gezeichnet wird beides gleich; nur die HERKUNFT geht mit, damit der
         /// Dialog eine Katalogkennlinie als Herleitung ausweisen kann.</para>
+        ///
+        /// <para><b>ZEICHENMODELL statt PNG</b> (Etappe DG-E3, Gruppe (b)):
+        /// <c>KennlinienModell</c> ist der Rumpf, den <c>Kennlinien</c> an den Maler
+        /// gibt — dasselbe Bild, nur nicht mehr in Bildpunkten eingefroren. Beide
+        /// Modelle entstehen in EINEM Lauf und bleiben als Paar im Dialog stehen, bis
+        /// das Gerät wechselt: Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum
+        /// an der REFERENZ des Modells fest.</para>
         /// </summary>
         private static KennlinienBilder BilderZuAnlage(int idWp)
         {
@@ -327,10 +334,10 @@ namespace WindowsFormsApplication1
             string yLeistung = Text_("WPS_REITER_LEISTUNG", "Leistung");
 
             return new KennlinienBilder(
-                ChartRenderer.Kennlinien(Text_("WPS_REITER_COP", "COP"),
+                ChartRenderer.KennlinienModell(Text_("WPS_REITER_COP", "COP"),
                     Text_("WPS_REITER_COP", "COP"), Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
                     quelle.Satz.Cop, ChartRenderer.Kennlinienmarke.Kreis),
-                ChartRenderer.Kennlinien(yLeistung, yLeistung,
+                ChartRenderer.KennlinienModell(yLeistung, yLeistung,
                     Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
                     quelle.Satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz),
                 quelle.Woher == WaermepumpeKennlinienCtrl.Herkunft.Katalog

@@ -98,7 +98,6 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
         => new SimulationErgebnisDienste
         {
             Laden = _ => _daten,
-            Bild = a => { _auftraege.Add(a); return new byte[] { 1 }; },
             Modell = a => { _auftraege.Add(a); return MODELL; },
             Laufen = mitLauf
                 ? melder =>
@@ -510,7 +509,7 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
 
         Assert.Equal(3, seite.FindAll("div.epos-simerg > fieldset > div.epos-reiter > div.epos-reiter-leiste button[role='tab']").Count);
 
-        // Ohne Bilddelegat wird kein Bild angefordert; der Baustein zeigt seinen
+        // Ohne Modelldelegat wird kein Bild angefordert; der Baustein zeigt seinen
         // Platzhalter.
         Assert.Empty(_auftraege);
     }

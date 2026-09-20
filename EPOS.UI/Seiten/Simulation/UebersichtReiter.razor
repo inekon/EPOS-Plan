@@ -38,8 +38,10 @@
        MWh UND Prozent je Segment (die zwei Zahlen aus W11b-B-11).
 
    (4) KEIN ZOOM an Ringen (Punkt c des Entscheids). Die Leiste „x1 · 1:1" bleibt
-       Zeitreihen und Balken vorbehalten; ChartBild Rund="true" nimmt sie weg.
-       Das ist die eine Ausnahme zur Hausregel W8-E-2.
+       Zeitreihen und Balken vorbehalten. Seit der Etappe DG-E3 braucht es dafuer
+       keinen Schalter mehr: Der Ring traegt kein Datenfenster, und DiagrammSvg
+       laesst die Leiste weg, wo es nichts zu bewegen gibt. Was er zeigt, ist der
+       Wert des Segments unter dem Zeiger.
 
    PRAESENZ STATT NULLZEILEN gilt weiter (W11-B21): Eine Zeile steht nur da, wenn
    das Projekt die Anlage FUEHRT. Sie steht dann aber AUCH mit 0,00 - eine
@@ -74,6 +76,7 @@
    aus #233. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
 
 <div class="epos-simueb">
     @if (Ergebnisstand)
@@ -161,11 +164,14 @@
     /// </summary>
     [Parameter] public BedarfDaten? Bedarf { get; set; }
 
-    /// <summary>Der Ring „Waermedeckung" (Befund W11-B5, GDI-Donut des Navigators).</summary>
-    [Parameter] public byte[]? RingWaerme { get; set; }
+    /// <summary>
+    /// Der Ring „Waermedeckung" (Befund W11-B5, GDI-Donut des Navigators) als
+    /// ZEICHENMODELL — seit der Etappe DG-E3, Gruppe (c).
+    /// </summary>
+    [Parameter] public Zeichenmodell? RingWaerme { get; set; }
 
     /// <summary>Der Ring „Stromdeckung".</summary>
-    [Parameter] public byte[]? RingStrom { get; set; }
+    [Parameter] public Zeichenmodell? RingStrom { get; set; }
 
     /// <summary>„Waermebedarf Uebersicht…" — ohne Rueckruf kein Knopf.</summary>
     [Parameter] public EventCallback BedarfDetails { get; set; }
@@ -289,9 +295,23 @@
         {
             <div class="epos-simueb-ringzeile">
                 <div class="epos-simueb-ring">
-                    <ChartBild Png="@(waerme ? RingWaerme : RingStrom)" Rund="true"
-                               Alt="@(waerme ? Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG
-                                             : Resource.SIMERG_KACHEL_STROMDECKUNG)" />
+                    @* ZWEI RINGE AUF EINEM BLATT, also ZWEI KENNUNGEN: Sie bilden
+                       die clipPath-Namen, und mit derselben schnitte das eine Bild
+                       am Rechteck des anderen.
+
+                       LEGENDE NICHT SCHALTBAR (DG-E3): Ein Kreis, dessen Segment
+                       fehlt, ist kein Kreis mehr - die Anteile ergaenzen sich zu
+                       100 %. Die Legende steht hier ohnehin als HTML daneben; im
+                       Bild ist keine. Was der Ring dafuer zeigt, ist der Wert des
+                       Segments unter dem Zeiger (DG-E3-10). Den Zoom nimmt sich der
+                       Baustein selbst: Ein Modell ohne Zeichenflaeche hat keine
+                       Datenkoordinaten, auf denen eine Leiste etwas bewegen
+                       koennte. *@
+                    <DiagrammSvg Modell="@(waerme ? RingWaerme : RingStrom)"
+                                 Kennung="@(waerme ? "simerg-ring-waerme" : "simerg-ring-strom")"
+                                 LegendeSchaltbar="false"
+                                 Bezeichnung="@(waerme ? Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG
+                                                       : Resource.SIMERG_KACHEL_STROMDECKUNG)" />
                 </div>
 
                 <div class="epos-simueb-legendenblock">

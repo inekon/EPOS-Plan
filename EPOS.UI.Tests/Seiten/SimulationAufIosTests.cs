@@ -69,7 +69,9 @@ public class SimulationAufIosTests : EposBunitContext
                             IdProjekt = 1030,
                             ErgebnisGueltig = true
                         },
-                        Bild = _ => null
+                        // Die Vorrichtung prueft den WEG, kein Bild: Der Delegat
+                        // steht, liefert aber kein Zeichenmodell (Etappe DG-E3).
+                        Modell = _ => null
                     },
                     ["StartProjekt"] = 1030
                 },

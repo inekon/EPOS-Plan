@@ -1518,10 +1518,19 @@ namespace WindowsFormsApplication1
                 // Linie UND Punktmarken tragen die Marke der Reihe: Wer die Kennlinie
                 // ueber die Legende abwaehlt, blendet beides zusammen aus.
                 string name = gueltig[i].Vorlauf.ToString(DE) + "°C";
-                z.Markiert("reihe:" + name, zr =>
+
+                // DG-E3-10: Jede Punktmarke nennt IHREN Wert — „Außentemperatur
+                // −5 °C · 35°C: 4,25". Die Linie darunter zeigt keine einzelne Zahl
+                // und nennt deshalb nur ihren Namen (Regel der Gruppe (c)).
+                var werttexte = new string[punkte.Length];
+                for (int t = 0; t < punkte.Length; t++)
+                    werttexte[t] = Achsenwert(xTitel, temperaturen[t], "0.###") + WERT_TRENNER +
+                                   Elementwert(name, werte[t], "0.###", Achseneinheit(yTitel));
+
+                z.Markiert("reihe:" + name, name, zr =>
                 {
                     Linienzug(zr, punkte, Stift(rolle, 3f, null, Strichverbindung.Rund));
-                    Punktmarken(zr, punkte, rolle, marke);
+                    Punktmarken(zr, punkte, rolle, marke, "reihe:" + name, werttexte);
                 });
 
                 // DG-E3-7: die Kennlinie in DATENWERTEN - x die Aussentemperatur, y der
@@ -1542,21 +1551,37 @@ namespace WindowsFormsApplication1
         /// Die Punktmarken einer Kennlinie. <c>MarkerSize = 5</c> des Vorläufers bei
         /// einfacher Auflösung sind hier 10 px — dieselbe optische Größe.
         /// </summary>
+        /// <param name="reihenmarke">
+        /// Die Marke der Reihe — jede Marke steht in IHRER Klammer, damit sie ihren
+        /// eigenen Wert tragen kann (DG-E3-10). Die Befehlsreihenfolge bleibt dieselbe,
+        /// das PNG also auch.
+        /// </param>
+        /// <param name="werte">Der fertige Text je Punkt; <c>null</c> = ohne Wert.</param>
         private static void Punktmarken(IZeichenziel z, SKPoint[] punkte, Farbrolle rolle,
-                                        Kennlinienmarke marke)
+                                        Kennlinienmarke marke,
+                                        string reihenmarke = null, string[] werte = null)
         {
             const float R = 5f;
             if (marke == Kennlinienmarke.Kreis)
             {
-                foreach (SKPoint p in punkte) z.Kreis(p.X, p.Y, R, null, Flaeche(rolle));
+                for (int i = 0; i < punkte.Length; i++)
+                {
+                    SKPoint p = punkte[i];
+                    z.Markiert(reihenmarke, Wertetext(werte, i),
+                               zp => zp.Kreis(p.X, p.Y, R, null, Flaeche(rolle)));
+                }
                 return;
             }
 
             var stift = Stift(rolle, 2.5f);
-            foreach (SKPoint p in punkte)
+            for (int i = 0; i < punkte.Length; i++)
             {
-                z.Linie(p.X - R, p.Y - R, p.X + R, p.Y + R, stift);
-                z.Linie(p.X - R, p.Y + R, p.X + R, p.Y - R, stift);
+                SKPoint p = punkte[i];
+                z.Markiert(reihenmarke, Wertetext(werte, i), zp =>
+                {
+                    zp.Linie(p.X - R, p.Y - R, p.X + R, p.Y + R, stift);
+                    zp.Linie(p.X - R, p.Y + R, p.X + R, p.Y - R, stift);
+                });
             }
         }
 
@@ -2165,7 +2190,7 @@ namespace WindowsFormsApplication1
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
-                Achsenart.Stunden);
+                Zeitachsenart(sortiert));
 
             foreach (Reihe r in gueltig)
             {
@@ -2375,7 +2400,8 @@ namespace WindowsFormsApplication1
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, 0, max);
-            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks, Achsenart.Stunden);
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
+                                           Zeitachsenart(sortiert));
 
             // (1) Kontur UNTER dem Stapel.
             if (mitKontur)
@@ -2471,10 +2497,13 @@ namespace WindowsFormsApplication1
                     float staerke = r.Breite > 0 ? r.Breite : 2f;
                     z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                         ZeichneLinie(zr, rc, werte, 0, max2, r.Farbe, staerke));
+                    // DG-E3-12: Die Reihe SAGT, dass sie rechts steht — die Oberfläche
+                    // muss es nicht mehr aus ihrer y-Spanne erraten.
                     z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, werte,
                                                 new Datenfenster(fensterLinks.XVon,
                                                                  fensterLinks.XVon + werte.Length - 1,
-                                                                 0, max2)));
+                                                                 0, max2),
+                                                Achsenseite: Achsenseite.Rechts));
                 }
 
                 z.Markiert("yachse2", zy2 =>
@@ -3240,7 +3269,8 @@ namespace WindowsFormsApplication1
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, min, max);
-            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks, Achsenart.Stunden);
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
+                                           Zeitachsenart(sortiert));
 
             foreach (Reihe r in gueltig)
             {
@@ -3266,9 +3296,11 @@ namespace WindowsFormsApplication1
                 z.Markiert("reihe:" + (zweiteAchse.Name ?? ""), zr =>
                     VerlaufLinie(zr, rc, w2, 0, max2, zweiteAchse.Farbe, staerke2,
                                  zweiteAchse.Gestrichelt));
+                // DG-E3-12: Die Reihe SAGT, dass sie rechts steht.
                 z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", zweiteAchse.Farbe.Ton(),
                                             staerke2, muster2, w2,
-                                            new Datenfenster(xVon, xVon + w2.Length - 1, 0, max2)));
+                                            new Datenfenster(xVon, xVon + w2.Length - 1, 0, max2),
+                                            Achsenseite: Achsenseite.Rechts));
 
                 z.Markiert("yachse2", zy2 =>
                 {
@@ -3666,6 +3698,26 @@ namespace WindowsFormsApplication1
                    (gesperrt ? " (" + BerichtTexte.T("unzulässig") + ")" : "");
         }
 
+        /// <summary>
+        /// <b>Was die x-Achse eines ZEITREIHENbildes zählt</b> (DG-E3-11): die
+        /// Stützstelle der Zeitreihe — oder, in der DAUERLINIE, den RANG.
+        ///
+        /// <para>Die Dauerlinie sortiert jede Reihe für sich absteigend; x zählt dann
+        /// keine Zeit mehr, sondern den Platz in der Rangfolge. Eine Jahresstundenteilung
+        /// mit Monatsnamen wäre dort schlicht falsch, und die Zeigerzeile schriebe „h"
+        /// hinter eine Zahl, die keine Stunde ist. Das Bild selbst ändert sich dadurch
+        /// nicht — der Maler übergeht die Zeichenfläche ganz.</para>
+        /// </summary>
+        private static Achsenart Zeitachsenart(bool sortiert)
+            => sortiert ? Achsenart.Index : Achsenart.Stunden;
+
+        /// <summary>
+        /// Der Werttext an der Stelle <paramref name="i"/>; <c>null</c>, wo es keinen
+        /// gibt — dann bleibt <c>data-wert</c> weg.
+        /// </summary>
+        private static string Wertetext(string[] werte, int i)
+            => werte != null && i >= 0 && i < werte.Length ? werte[i] : null;
+
         /// <summary>Die Einheit aus einer Achsenbeschriftung — „Kapitalwert [€]" → „€".</summary>
         private static string Achseneinheit(string achsentitel)
         {
@@ -4025,6 +4077,17 @@ namespace WindowsFormsApplication1
                                         yw.ToArray(), z.Flaeche.Daten, Reihenart.Linie,
                                         null, null, xw.ToArray(), yTitel));
 
+            // DIE STUETZPUNKTE ALS EIGENE PUNKTREIHEN (Gruppe (b), offener Punkt).
+            //
+            // Die Kreise oben tragen die Marke der Reihe und werden deshalb vom
+            // inneren svg verschluckt (DG-E2-2) - im SVG stuende sonst die nackte
+            // Kurve. Als Reihe der Art Punkte zeichnet der Schreiber sie wieder:
+            // Strichbreite = Punktdurchmesser des PNG (Radius 3,5 bzw. 2,5), runde
+            // Kappe. NACH der Linie, damit sie wie im Bild darueber liegen, und unter
+            // DEMSELBEN Namen - so schaltet ein Legendenklick Kurve und Punkte
+            // zusammen.
+            Stuetzpunktreihen(z, name, xw, yw, fein, yTitel);
+
             if (!double.IsNaN(optimumKwh) && !double.IsInfinity(optimumKwh)
                 && !double.IsNaN(optimumEur) && !double.IsInfinity(optimumEur))
             {
@@ -4178,7 +4241,8 @@ namespace WindowsFormsApplication1
             // Der Saeulenrand trennt zwei benachbarte Saeulen; er traegt die Farbe des
             // Bildgrundes, und genau die nennt er auch als Rolle.
             var saeulenrand = Stift(Farbrolle.HINTERGRUND, 1f);
-            z.Markiert("reihe:" + (titel ?? ""), zr =>
+            string saeulenmarke = "reihe:" + (titel ?? "");
+            z.Markiert(saeulenmarke, zr =>
             {
                 for (int i = 0; i < n; i++)
                 {
@@ -4193,11 +4257,25 @@ namespace WindowsFormsApplication1
 
                     Farbrolle rolle = v < 0.0 ? Farbrolle.RASTER_SCHLECHT
                                     : i == besteStelle ? Farbrolle.RASTER_GUT : Farbrolle.STAMM;
-                    zr.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height,
-                                null, Flaeche(rolle));
-                    zr.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height, saeulenrand);
 
-                    if (Gesetzt(unzulaessig, i)) Schraffur(zr, saeule);
+                    // DG-E3-10: Die Säule nennt ihre Stückzahl und ihren Wert; eine
+                    // gesperrte hängt ihre Sperre an (Regel der Gruppe (c), #193).
+                    // Fläche, Rand UND Schraffur stehen in DERSELBEN Klammer — sie
+                    // sind EIN Element.
+                    string text = Achsenwert(xTitel, stueckzahlen[i], "N0") + ": " +
+                                  Elementwert(null, v, "N0", Achseneinheit(yTitel)) +
+                                  (Gesetzt(unzulaessig, i)
+                                      ? " (" + BerichtTexte.T("unzulässig") + ")" : "");
+
+                    zr.Markiert(saeulenmarke, text, zs =>
+                    {
+                        zs.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height,
+                                    null, Flaeche(rolle));
+                        zs.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height,
+                                    saeulenrand);
+
+                        if (Gesetzt(unzulaessig, i)) Schraffur(zs, saeule);
+                    });
                 }
             });
 
@@ -4208,7 +4286,13 @@ namespace WindowsFormsApplication1
                 float mx = rc.Left + (besteStelle + 0.5f) * fach;
                 float my = (float)(rc.Bottom - (werte[besteStelle] - yMin) / (yMax - yMin) * rc.Height);
                 float k = Math.Min(breite, 26f) * 0.36f;
-                z.Markiert("marke", zm =>
+                // Die Marke liegt ÜBER der besten Säule; ohne eigenen Wert zeigte der
+                // Zeiger dort nichts (DG-E3-10).
+                string bestwert = Achsenwert(xTitel, stueckzahlen[besteStelle], "N0") + ": " +
+                                  Elementwert(null, werte[besteStelle], "N0",
+                                              Achseneinheit(yTitel)) +
+                                  " (" + BerichtTexte.T("bester Wert") + ")";
+                z.Markiert("marke", bestwert, zm =>
                     zm.Rechteck(mx - k, my - k, 2f * k, 2f * k, Stift(Farbrolle.TEXT, 3f)));
             }
 
@@ -4238,6 +4322,43 @@ namespace WindowsFormsApplication1
             }
 
             return z;
+        }
+
+        /// <summary>
+        /// Die Stützpunkte der Schnittkurve als <see cref="Reihenart.Punkte"/> — eine
+        /// Reihe für die GROBEN, eine für die FEINEN, beide unter dem Namen der Kurve.
+        ///
+        /// <para>Zwei Reihen und nicht eine, weil das PNG zwei Punktarten zeichnet:
+        /// Grobpunkte in <see cref="Farbrolle.STAMM"/> mit Radius 3,5, Feinpunkte der
+        /// zweiten Suchphase in <see cref="Farbrolle.FEINRASTER"/> mit Radius 2,5. Eine
+        /// Reihe trägt genau EINE Strichbreite und EINE Farbe; zusammengelegt sähe das
+        /// SVG anders aus als das Bild. <b>Eine leere Art bekommt keine Reihe</b> — so
+        /// bleibt die Zahl der Reihen bei einer Grobsuche bei zwei, und die
+        /// <see cref="Pfadregel"/> bündelt die Kurve nicht plötzlich anders.</para>
+        /// </summary>
+        private static void Stuetzpunktreihen(Zeichenmodell z, string name,
+                                              List<double> xw, List<double> yw, List<bool> fein,
+                                              string yTitel)
+        {
+            Stuetzpunktreihe(z, name, xw, yw, fein, false, Farbrolle.STAMM, 7f, yTitel);
+            Stuetzpunktreihe(z, name, xw, yw, fein, true, Farbrolle.FEINRASTER, 5f, yTitel);
+        }
+
+        /// <summary>Eine der beiden Punktarten; ohne Punkte entsteht keine Reihe.</summary>
+        private static void Stuetzpunktreihe(Zeichenmodell z, string name,
+                                             List<double> xw, List<double> yw, List<bool> fein,
+                                             bool feinpunkte, Farbrolle rolle, float durchmesser,
+                                             string yTitel)
+        {
+            var x = new List<double>();
+            var y = new List<double>();
+            for (int i = 0; i < xw.Count; i++)
+                if (fein[i] == feinpunkte) { x.Add(xw[i]); y.Add(yw[i]); }
+
+            if (x.Count == 0) return;
+            z.FuegeReihe(new Datenreihe(name, Farbton.Aus(rolle), durchmesser, null,
+                                        y.ToArray(), z.Flaeche.Daten, Reihenart.Punkte,
+                                        null, null, x.ToArray(), yTitel));
         }
 
         /// <summary>Steht in der Sperrliste an dieser Stelle <c>true</c>?</summary>
@@ -4397,13 +4518,22 @@ namespace WindowsFormsApplication1
                     {
                         if (!ersatzjahre.Contains(jahre[i])) continue;
                         float mitte = rc.Left + (i + 0.5f) * fach;
-                        zm.Rechteck(mitte - fach * 0.45f, rc.Top, fach * 0.9f, rc.Height, null, band);
-                        Vieleck(zm, new[]
+
+                        // DG-E3-10: Band und Dreieck sagen, WELCHES Jahr sie meinen —
+                        // sie zeigen keine Zahl, sondern eine Stelle.
+                        string wert = Achsenwert(xTitel, jahre[i], "N0") + ": " +
+                                      BerichtTexte.T("Ersatzinvestition");
+                        zm.Markiert("marke", wert, zb =>
                         {
-                            new SKPoint(mitte - 7f, rc.Top - 12f),
-                            new SKPoint(mitte + 7f, rc.Top - 12f),
-                            new SKPoint(mitte, rc.Top - 1f)
-                        }, marke);
+                            zb.Rechteck(mitte - fach * 0.45f, rc.Top, fach * 0.9f, rc.Height,
+                                        null, band);
+                            Vieleck(zb, new[]
+                            {
+                                new SKPoint(mitte - 7f, rc.Top - 12f),
+                                new SKPoint(mitte + 7f, rc.Top - 12f),
+                                new SKPoint(mitte, rc.Top - 1f)
+                            }, marke);
+                        });
                     }
                 });
             }
@@ -4413,7 +4543,8 @@ namespace WindowsFormsApplication1
             {
                 var gut = Flaeche(netto.Farbe);
                 var schlecht = Flaeche(C_RASTER_SCHLECHT);
-                z.Markiert("reihe:" + (netto.Name ?? ""), zr =>
+                string saeulenmarke = "reihe:" + (netto.Name ?? "");
+                z.Markiert(saeulenmarke, zr =>
                 {
                     for (int i = 0; i < n && i < netto.Werte.Length; i++)
                     {
@@ -4422,8 +4553,16 @@ namespace WindowsFormsApplication1
                         float oben = Math.Min(y, y0), unten = Math.Max(y, y0);
                         if (unten - oben < 1f) unten = oben + 1f;
                         float mitte = rc.Left + (i + 0.5f) * fach;
-                        zr.Rechteck(mitte - fach * 0.3f, oben, fach * 0.6f, unten - oben,
-                                    null, wert < 0 ? schlecht : gut);
+
+                        // DG-E3-10: Jede Säule nennt IHR Jahr und IHREN Betrag; die
+                        // Zahl steht im Format der eigenen y-Achse („N0", wie die
+                        // Beschriftung links).
+                        string text = Achsenwert(xTitel, jahre[i], "N0") + WERT_TRENNER +
+                                      Elementwert(netto.Name ?? "", wert, "N0",
+                                                  Achseneinheit(yTitel ?? titel));
+                        zr.Markiert(saeulenmarke, text, zs =>
+                            zs.Rechteck(mitte - fach * 0.3f, oben, fach * 0.6f, unten - oben,
+                                        null, wert < 0 ? schlecht : gut));
                     }
                 });
                 z.FuegeReihe(Jahresreihe(netto, jahre, n, 0f));
@@ -4443,7 +4582,9 @@ namespace WindowsFormsApplication1
                 }
                 float staerke = r.Breite > 0 ? r.Breite : 3f;
                 Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
-                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                // Ein Zug über alle Jahre zeigt keine einzelne Zahl — er nennt seinen
+                // Namen (Regel der Gruppe (c)); die Zeigerzeile liest die Reihe.
+                z.Markiert("reihe:" + (r.Name ?? ""), r.Name ?? "", zr =>
                     Linienzug(zr, punkte,
                               Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
                 z.FuegeReihe(Jahresreihe(r, jahre, n, staerke));

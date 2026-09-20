@@ -751,8 +751,8 @@ public sealed class SimulationErgebnisDaten
 
 /// <summary>
 /// Ein Bildauftrag der Ergebnisseite: welcher Reiter, in welcher Schalterstellung.
-/// Die Seite bildet daraus ihren Zwischenspeicherschluessel — zwoelf PNG je Lauf
-/// im Voraus zu rechnen waere zu teuer (Risiko der Vermessung § 11.5).
+/// Die Seite bildet daraus ihren Zwischenspeicherschluessel — sechzehn Zeichenmodelle
+/// je Lauf im Voraus zu bauen waere zu teuer (Risiko der Vermessung § 11.5).
 /// </summary>
 /// <param name="Bild">Sprachneutraler Bildschluessel (<c>BEDARF_WAERME</c>, …).</param>
 /// <param name="Sortiert">Dauerlinie statt Ganglinie.</param>
@@ -764,8 +764,8 @@ public sealed class SimulationErgebnisDaten
 /// § 6). Bis zur Etappe DG-E3 trug der Auftrag einen sechsten Wert
 /// <c>Diagrammbereich Bereich</c>: das Rechteck, das der Anwender im PNG aufgezogen
 /// hatte, in Bildanteilen — die Hülle liess den Kern daraus einen Achsenbereich machen
-/// und rechnete das Bild ein zweites Mal. Seit die Zeitreihen im Baustein
-/// <c>DiagrammSvg</c> stehen, liegt der Zoom in der <c>viewBox</c> der Zeichenflaeche:
+/// und rechnete das Bild ein zweites Mal. Seit jedes Bild im Baustein
+/// <c>DiagrammSvg</c> steht, liegt der Zoom in der <c>viewBox</c> der Zeichenflaeche:
 /// eine Attributaenderung, kein zweiter Renderlauf. Die vier Bilder ohne Zeitachse
 /// kannten nie einen Bereich.
 /// </remarks>
@@ -827,16 +827,15 @@ public sealed class SimulationErgebnisDienste
     public Func<Rueckmeldung>? Speichern;
 
     /// <summary>
-    /// Rendert EIN Pixelbild — erst beim Betreten des Reiters, dann
-    /// zwischengespeichert. Es sind noch vier: die Streuwolke, die zwei Ringe und
-    /// die Monatssaeulen der Autarkie; sie tragen keine Zeitachse.
-    /// </summary>
-    public Func<Bildauftrag, byte[]?>? Bild;
-
-    /// <summary>
-    /// Das ZEICHENMODELL eines Zeitreihenbildes (Etappe DG-E3, Gruppe (a)) — derselbe
-    /// Auftrag, derselbe Zwischenspeicher, nur ein anderer Ausgabeweg: Die Seite zeigt
-    /// es im Baustein <c>DiagrammSvg</c>.
+    /// Das ZEICHENMODELL EINES Bildes (Etappe DG-E3) — erst beim Betreten des
+    /// Reiters, dann zwischengespeichert. Die Seite zeigt es im Baustein
+    /// <c>DiagrammSvg</c>.
+    ///
+    /// <para><b>Einen zweiten Weg für Pixelbilder gibt es nicht mehr.</b> Bis zur
+    /// Gruppe (c) stand daneben ein <c>Bild</c>-Delegat für die vier Bilder ohne
+    /// Zeitachse — die Streuwolke, die zwei Ringe und die Monatssäulen der Autarkie.
+    /// Auch sie sind jetzt Modelle: Drei zeigen den Wert des Elements unter dem
+    /// Zeiger, die Streuwolke lässt sich zudem spreizen.</para>
     /// </summary>
     public Func<Bildauftrag, Zeichenmodell?>? Modell;
 

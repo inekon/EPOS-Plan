@@ -117,38 +117,19 @@
        hoch. Wer sie je Wirt anders will, setzt das Token am Wirt. */
     --epos-listenhoehe: 22rem;
 
-    /* ANZEIGEBREITE EINES RUNDEN DIAGRAMMS (Windows-Abnahme V2 07.09.2026,
-       Befund W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu
-       gross"). Seit W11b-B-2 fuellt jedes Renderer-Bild die Breite seines
-       Rahmens; fuer eine Jahresganglinie ist das richtig - 8 760 Stunden
-       brauchen jeden Bildpunkt -, fuer einen Kuchen nicht. Auf einem 1 920er
-       Schirm stand der 960 x 600 grosse Kuchen der Uebersicht auf 1 850 x 1 156
-       Bildpunkten: mehr als der sichtbare Bereich hoch, ohne eine Aussage mehr
-       als bei einem Drittel davon.
+    /* DIE OBERGRENZE EINES DIAGRAMMS (Windows-Abnahme V2 07.09.2026, Befund
+       W11b-B-4: "Simulation Uebersicht: Die Charts sind optisch zu gross").
+       Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf und
+       Monatssaeulen zeichnet der Renderer 968 bis 1 304 Bildpunkte breit. Auf
+       einem 1 920er Schirm wurde daraus eine Zeile von 1 850 - das Bild wird
+       dabei nicht besser, sondern nur hoeher (835 statt 560). 1 240 ist das
+       Mass der Familie und zugleich das, mit dem W11b-B-2 gerechnet hat.
 
-       WOHER DIE 560 KOMMEN - gerechnet, nicht geschaetzt. Die kleinste Schrift
-       im Bild bestimmt, wie weit es gestaucht werden darf; 11 px ist die
-       Untergrenze, unter der die Legende nicht mehr zu lesen ist (das war
-       W11b-B-2, und der Befund bleibt gueltig):
-         Kuchen  960 px breit, Legende 19 px -> 11/19 * 960 = 556 px
-         Ring    720 px breit, Legende 16 px -> 11/16 * 720 = 495 px
-       Der GROESSERE der beiden Werte gilt fuer beide, aufgerundet auf 560:
-       Der Ring steht damit bei 12,4 px Legende, der Kuchen bei 11,1 - beide
-       ueber der Grenze, und es bleibt EIN Mass statt zweier. Angezeigt werden
-       sie damit auf 560 x 350 (Kuchen) und 560 x 435 (Ring); der Zoom des
-       Bausteins Diagramm holt jede Vergroesserung darueber hinaus.
-
-       KEINE MEDIENABFRAGE. Der Rahmen ist width: 100 % mit dieser Hoechstbreite -
-       in einer schmalen Spalte gilt die Spalte, auf einem breiten Schirm dieses
-       Mass. */
-    --epos-diagramm-rund: 560px;
-
-    /* ... und die Obergrenze der BREITEN Familie: Jahresganglinie, Dauerlinie,
-       Streuwolke, Speicherverlauf und Monatssaeulen zeichnet der Renderer 968
-       bis 1 304 Bildpunkte breit. Auf einem 1 920er Schirm wurde daraus eine
-       Zeile von 1 850 - das Bild wird dabei nicht besser, sondern nur unschaerfer
-       und hoeher (835 statt 560). 1 240 ist das Mass der Familie und zugleich
-       das, mit dem W11b-B-2 gerechnet hat; darunter aendert sich nichts. */
+       KEINE MEDIENABFRAGE. Der Rahmen ist width: 100 % mit dieser
+       Hoechstbreite - in einer schmalen Spalte gilt die Spalte, auf einem
+       breiten Schirm dieses Mass. Ein RUNDES Bild (der Ring der Uebersicht)
+       bekommt seine engere Grenze am Wirt, nicht hier: Es ist die einzige
+       Stelle, die sie braucht. */
     --epos-diagramm-breit: 1240px;
 
     /* Die Projekt/Datenbank-Auswahl (Anwenderentscheid #76, 05.09.2026;
@@ -1498,63 +1479,13 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==========================================================================
-   DIAGRAMM (Windows-Abnahme 05.09.2026, Befund A-1)
+   DIE BEDIENUNG EINES DIAGRAMMS
 
-   Der Rahmen, in dem JEDES Renderer-Bild steht. Er traegt drei Dinge:
-   den Zuschnitt (overflow: hidden - das vergroesserte Bild darf nie ueber
-   seinen Platz hinauslaufen und die Nachbartabelle ueberdecken), die
-   Zeigerhoheit (touch-action: none - sonst nimmt der Browser den Finger fuer
-   seinen eigenen Bildlauf, und das Kneifen kommt nie an) und die Leiste mit
-   Zoomstufe, "Bereich" und "1:1".
-
-   DIE MINDESTHOEHE ist der zweite Teil des Befundes W11b-B-2: Ein Bild in
-   einer schmalen Spalte wurde briefmarkengross. Es fuellt jetzt die Breite
-   (width: 100 % statt max-width), und der Rahmen faellt nie unter 280 px -
-   darunter ist keine Legende mehr zu lesen.
+   Die Leiste mit Zoomstufe, "Bereich" und "1:1", das aufgezogene Rechteck,
+   die Zeigerformen waehrend einer Geste und der Platzhalter, solange es kein
+   Bild gibt. Der Rahmen des Bildes selbst steht weiter unten
+   (.epos-diagramm-svg): Jedes Diagramm der Oberflaeche ist ein SVG-Baum.
    ========================================================================== */
-
-.epos-diagramm {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    width: 100%;
-    min-width: 0;
-    max-width: var(--epos-diagramm-breit);
-}
-
-/* DIE MASSREGEL DER BILDER (Windows-Abnahme V2 07.09.2026, Befund W11b-B-4:
-   "Simulation Uebersicht: Die Charts sind optisch zu gross"). Sie steht an
-   ZWEI Stellen und hat EINEN Satz: Kein Renderer-Bild wird ueber die Breite
-   hinaus gedehnt, in der es gezeichnet wurde. Oben die breite Familie
-   (--epos-diagramm-breit an .epos-diagramm), hier die runde.
-
-   EINE Regel fuer ALLE Reiter der Ergebnisseite: Ein Bild, dessen
-   Aussage im Kreis und in einer Legende daneben steht - Kuchen und Ring -, wird
-   hoechstens --epos-diagramm-rund breit angezeigt. Die Herleitung des Masses
-   steht am Token. Gerendert bleibt es unveraendert (960 x 600 bzw. 720 x 560),
-   damit es auf hoher DPI scharf bleibt und der Zoom etwas zu vergroessern hat;
-   begrenzt ist nur die ANZEIGE.
-
-   Ein BREITES Bild - Jahresganglinie, Dauerlinie, Streuwolke, Speicherverlauf -
-   traegt die Marke NICHT und behaelt die volle Zeilenbreite aus W11b-B-2. */
-.epos-diagramm--rund {
-    max-width: var(--epos-diagramm-rund);
-}
-
-/* Die Mindesthoehe von 280 px aus W11b-B-2 schuetzt eine LINIE davor,
-   briefmarkengross zu werden. Ein rundes Bild bringt seine Hoehe selbst mit
-   (350 bzw. 435 px bei voller Breite); die Mindesthoehe wuerde ihm in einer
-   schmalen Spalte nur einen weissen Streifen unter den Kreis legen. */
-.epos-diagramm--rund .epos-diagramm-flaeche {
-    min-height: 0;
-}
-
-/* ... UND KEINE BEDIENUNG (Auftrag #222, Ausnahme zur Hausregel W8-E-2). Ein
-   rundes Bild traegt seit #222 kein OhneZoom-freies Diagramm mehr: weder Leiste
-   noch Rad. Der Greifzeiger versprach ein Verschieben, das es nicht mehr gibt. */
-.epos-diagramm--rund .epos-diagramm-flaeche {
-    cursor: default;
-}
 
 .epos-diagramm-leiste {
     display: flex;
@@ -1589,30 +1520,6 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-color: var(--epos-karte-rahmen-hover);
 }
 
-.epos-diagramm-flaeche {
-    position: relative;
-    overflow: hidden;
-    min-height: 280px;
-    min-width: 0;
-    border: 1px solid var(--epos-rahmen-leise);
-    border-radius: var(--epos-ecke);
-    background: #fff;
-    touch-action: none;
-    cursor: grab;
-}
-
-.epos-diagramm-flaeche:focus-visible {
-    outline: 2px solid var(--epos-karte-rahmen-hover);
-    outline-offset: 1px;
-}
-
-/* Der verschiebbare Teil. transform-origin oben links, weil das Modul
-   Verschiebung und Vergroesserung getrennt rechnet. */
-.epos-diagramm-inhalt {
-    transform-origin: 0 0;
-    will-change: transform;
-}
-
 /* Waehrend eines Zuges wechselt der Zeiger - sonst sieht man nicht, dass
    gerade geschoben wird. */
 .epos-diagramm--zieht { cursor: grabbing; }
@@ -1626,13 +1533,6 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border: 1px dashed var(--epos-quelle-text);
     background: rgba(55, 138, 221, 0.15);
     pointer-events: none;
-}
-
-.epos-chartbild {
-    display: block;
-    width: 100%;
-    max-width: 100%;
-    height: auto;
 }
 
 .epos-chartbild-platzhalter {
@@ -4184,9 +4084,9 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
    den ganzen sichtbaren Reiter. Drei Viertel der Zeile, hoechstens das
    Familienmass: 590 x 267 auf diesem Schirm, 1 050 in einer 1 400er Zeile. Die
    Legende steht damit bei rund 10 Bildpunkten; was darueber gebraucht wird,
-   holt der Zoom des Bausteins Diagramm (A-1). W11b-B-2 (Bild NICHT in einer
-   halben Spalte) bleibt gewahrt: Es ist weiter eine eigene Zeile. */
-.epos-simerg-diagrammzeile .epos-diagramm {
+   holt der Zoom im Bild (A-1). W11b-B-2 (Bild NICHT in einer halben Spalte)
+   bleibt gewahrt: Es ist weiter eine eigene Zeile. */
+.epos-simerg-diagrammzeile .epos-diagramm-svg {
     max-width: min(var(--epos-diagramm-breit), 75%);
 }
 
@@ -8078,8 +7978,9 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 /*                                                                      */
 /* WO SIE STEHT. Unter den ZWEI Spalten des Dialogs, ueber die volle     */
 /* Breite und vor der Fussleiste - sie gehoert zu beiden Listen, nicht   */
-/* zu einer. Das Bild selbst bringt seinen Rahmen mit (.epos-diagramm    */
-/* hat width:100 % und min-width:0), hier steht nur, was darum liegt:    */
+/* zu einer. Das Bild selbst bringt seinen Rahmen mit                    */
+/* (.epos-diagramm-svg hat width:100 % und min-width:0), hier steht nur, */
+/* was darum liegt:                                                      */
 /* die Kennzahlenzeile und die Leiste mit Schalter und Einheit.          */
 /*                                                                      */
 /* KEIN WAAGERECHTES ROLLEN. min-width:0 auf dem Abschnitt loest die     */
@@ -9332,8 +9233,10 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* Der Ring ist seit #222 quadratisch (420 x 420) und traegt seine Legende
-   nicht mehr im Bild; 200 px reichen fuer die Mittelzahl samt Unterzeile. */
-.epos-simueb-ring .epos-diagramm {
+   nicht mehr im Bild; 200 px reichen fuer die Mittelzahl samt Unterzeile. In
+   der einspaltigen Anordnung unter 900 px ist diese Regel das einzige, was ihn
+   noch begrenzt. */
+.epos-simueb-ring .epos-diagramm-svg {
     max-width: 200px;
 }
 

@@ -113,7 +113,7 @@ steht in `Text`.
 | `RadioButton` | Auswahl | `Auswahlfeld (Gruppe prüfen)` — die Gruppe wird **ein** Feld |
 | `DateTimePicker`, `MonthCalendar` | Datum | `Datumsfeld` |
 | `DataGridView`, `ListView` | Raster | `Raster` |
-| `Chart` | Diagramm | `ChartBild` |
+| `Chart` | Diagramm | `DiagrammSvg` (das Feld trägt ein `Zeichenmodell`) |
 | `GroupBox`, `TabPage` | Sektion | `Gruppenkopf` |
 | `TabControl`, `Panel`, `FlowLayoutPanel`, `TableLayoutPanel`, `SplitContainer` | Sektion | Aufteilung (kein eigener Baustein) |
 | `Button` OK / Abbrechen / Speichern / Übernehmen / Schließen | Knopf | `SpeichernLeiste` |
@@ -494,7 +494,7 @@ Steuerelemente je Typ (Auszug): `Label` 1551, `TextBox` 732, `Button` 504, `Comb
 
 Zielkomponenten über alle 2377 Zeilen: Text 671, `Textfeld` 584, eigener Knopf 286,
 `SpeichernLeiste` 185, `Zahlenfeld` 169, `Auswahlfeld` 158, prüfen 65, `Schalter` 59, `Raster` 54,
-Optionsgruppe 45, `Ganzzahlfeld` 37, `InfoKnopf` 33, `ChartBild` 27, `Datumsfeld` 4.
+Optionsgruppe 45, `Ganzzahlfeld` 37, `InfoKnopf` 33, `DiagrammSvg` 27, `Datumsfeld` 4.
 
 Unbekannte Typen — und damit die einzigen echten Lücken der Tabelle — sind die vier
 selbstgebauten Steuerelemente des Hauses: `AktionsKarte` (2 Masken), `ProjektAuswahl` (1 — seit iU9‑W15a; die Hüllform ist gefallen,

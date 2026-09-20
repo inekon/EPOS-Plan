@@ -760,8 +760,8 @@ public class StromspeicherReiterTests : EposBunitContext
 
     /// <summary>
     /// <b>„Lastgang und Speicherbetrieb" steht als SVG im Baum</b> — unter der
-    /// Kennung <c>simerg-speicherbetrieb</c>, mit der Einheit der linken und der
-    /// rechten Achse, und ohne ein Pixelbild daneben.
+    /// Kennung <c>simerg-speicherbetrieb</c> und mit der Einheit der linken und
+    /// der rechten Achse.
     /// </summary>
     [Fact]
     public void Das_Betriebsbild_steht_als_DiagrammSvg()
@@ -773,8 +773,6 @@ public class StromspeicherReiterTests : EposBunitContext
         Assert.Equal("simerg-speicherbetrieb", bild.Kennung);
         Assert.Equal("kW", bild.Einheit);
         Assert.Equal("kWh", bild.EinheitRechts);
-        Assert.Equal(Achsenart.Stuetzstelle, bild.Achsenart);
-        Assert.Empty(seite.FindComponents<ChartBild>());
     }
 
     /// <summary>
@@ -790,9 +788,5 @@ public class StromspeicherReiterTests : EposBunitContext
                      seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
-
-        Bildschalter(seite)[0].Change(true);
-
-        Assert.Equal(Achsenart.Rang, seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 }

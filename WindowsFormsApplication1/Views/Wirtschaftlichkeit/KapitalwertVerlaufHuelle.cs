@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -15,12 +16,13 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Hier liegt die Rechnung.</b> Die Komponente
     /// <see cref="KapitalwertVerlaufDialog"/> kennt weder Datenbank noch
-    /// Renderer; sie ruft einen Delegaten und zeigt zwei PNG. Dieser Delegat
-    /// macht genau das, was <c>Form_WirtschaftlichkeitVerlauf.btnZeichnen_Click</c>
+    /// Renderer; sie ruft einen Delegaten und bekommt zwei ZEICHENMODELLE. Dieser
+    /// Delegat macht genau das, was
+    /// <c>Form_WirtschaftlichkeitVerlauf.btnZeichnen_Click</c>
     /// tat: Parameter und Tarif laden, die Simulationsdaten EINMAL sammeln
     /// (<c>BerichtsDatenSammler</c>, danach aus dem Zwischenspeicher),
     /// <c>WirtschaftlichkeitCtrl.BerechneVerlauf</c> rufen und die beiden Bilder
-    /// mit <c>ChartRenderer.KapitalwertVerlauf</c> zeichnen — alles auf einem
+    /// mit <c>ChartRenderer.KapitalwertVerlaufModell</c> bauen — alles auf einem
     /// eigenen Faden (<c>Task.Run</c>), abbrechbar über den <c>CancellationToken</c>
     /// der Komponente.</para>
     ///
@@ -182,8 +184,16 @@ namespace WindowsFormsApplication1
         private const string TITEL_ABS = "Kapitalwert-Verlauf: kumulierte Barwerte je Projekt";
 
         /// <summary>
-        /// Zeichnet die beiden Bilder und baut die beiden Textzeilen — wortgleich aus
+        /// Baut die beiden Bilder und die beiden Textzeilen — wortgleich aus
         /// <c>ZeigeDiagramme</c> und dem Statusteil von <c>btnZeichnen_Click</c>.
+        ///
+        /// <para><b>ZEICHENMODELL statt PNG</b> (Etappe DG-E3, Gruppe (c)):
+        /// <c>KapitalwertVerlaufModell</c> ist der Rumpf, den
+        /// <c>KapitalwertVerlauf</c> an den Maler gibt — dasselbe Bild, nur nicht in
+        /// Bildpunkten eingefroren. Beide Modelle entstehen in EINEM Lauf und bleiben
+        /// bis zum nächsten stehen: Der Baustein <c>DiagrammSvg</c> baut seinen
+        /// Knotenbaum an der REFERENZ des Modells fest, und mit einem neuen Baum
+        /// fielen Zoom, Zeigerstelle und abgewählte Reihen.</para>
         /// </summary>
         private static KapitalwertVerlaufBilder Bilder(WirtschaftlichkeitVerlauf verlauf,
                                                        WirtschaftlichkeitParameter p,
@@ -191,14 +201,14 @@ namespace WindowsFormsApplication1
         {
             var kultur = BerichtTexte.Kultur;
 
-            byte[] diff = ChartRenderer.KapitalwertVerlauf(
+            Zeichenmodell diff = ChartRenderer.KapitalwertVerlaufModell(
                 Text_("WVERL_BILD_DIFF", TITEL_DIFF),
                 ChartRenderer.VerlaufsReihen(verlauf.Differenz, false),
                 Text_("WVERL_UNTER_DIFF",
                     "Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; " +
                     "Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert."));
 
-            byte[] abs = ChartRenderer.KapitalwertVerlauf(
+            Zeichenmodell abs = ChartRenderer.KapitalwertVerlaufModell(
                 Text_("WVERL_BILD_ABS", TITEL_ABS),
                 ChartRenderer.VerlaufsReihen(verlauf.Absolut, true),
                 Text_("WVERL_UNTER_ABS",

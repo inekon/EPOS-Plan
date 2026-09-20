@@ -228,11 +228,25 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
     /// <param name="einheitenname">Name der variierten Einheit für die Überschrift; leer = ohne.</param>
     public static byte[] Stueckzahlbild(FlottenAuslegungErgebnis ergebnis, string einheitenname = null)
+        => Gemalt(StueckzahlModell(ergebnis, einheitenname));
+
+    /// <summary>
+    /// <b>DIESELBE KURVE ALS ZEICHENMODELL</b> — der Zwilling von
+    /// <see cref="Stueckzahlbild"/> (Etappe DG-E3).
+    ///
+    /// <para>Sie hat keine Zeichenfläche (DG-E3-7): Zwischen zwei Stückzahlen liegt
+    /// nichts, worauf ein Zoom zeigen könnte. Jede Säule nennt dafür ihren Wert, und die
+    /// Oberfläche zeigt ihn am Zeiger (DG-E3-10).</para>
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheitenname">Name der variierten Einheit für die Überschrift; leer = ohne.</param>
+    public static Zeichnung.Zeichenmodell StueckzahlModell(FlottenAuslegungErgebnis ergebnis,
+                                                           string einheitenname = null)
     {
         FlottenStueckzahlkurve kurve = Stueckzahlkurve(ergebnis);
         if (kurve.IstLeer) return null;
 
-        return ChartRenderer.Stueckzahlkurve(
+        return ChartRenderer.StueckzahlkurveModell(
             Stueckzahltitel(einheitenname),
             MyResource.Resource.FLOTTE_STUECK_ACHSE,
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
@@ -249,11 +263,24 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     public static byte[] Stueckzahlrasterbild(FlottenAuslegungErgebnis ergebnis,
                                               string ersteEinheit = null,
                                               string zweiteEinheit = null)
+        => Gemalt(StueckzahlrasterModell(ergebnis, ersteEinheit, zweiteEinheit));
+
+    /// <summary>
+    /// <b>DIESELBE RASTERKARTE ALS ZEICHENMODELL</b> — der Zwilling von
+    /// <see cref="Stueckzahlrasterbild"/> (Etappe DG-E3). Jede Zelle trägt ihren
+    /// <c>data-wert</c>.
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="ersteEinheit">Name der ersten variierten Einheit; leer = „Einheit 1".</param>
+    /// <param name="zweiteEinheit">Name der zweiten variierten Einheit; leer = „Einheit 2".</param>
+    public static Zeichnung.Zeichenmodell StueckzahlrasterModell(
+        FlottenAuslegungErgebnis ergebnis, string ersteEinheit = null,
+        string zweiteEinheit = null)
     {
         FlottenStueckzahlraster raster = Stueckzahlraster(ergebnis);
         if (raster.IstLeer) return null;
 
-        return ChartRenderer.Optimierungsraster(
+        return ChartRenderer.OptimierungsrasterModell(
             MyResource.Resource.FLOTTE_STUECK_RASTER_TITEL,
             Stueckzahlachse(zweiteEinheit, 2),
             Stueckzahlachse(ersteEinheit, 1),

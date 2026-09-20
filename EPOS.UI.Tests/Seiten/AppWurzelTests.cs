@@ -674,7 +674,7 @@ public class AppWurzelTests : EposBunitContext
                             ErgebnisGueltig = true,
                             ReiterStromspeicher = true
                         },
-                        Bild = _ => null
+                        Modell = _ => null
                     },
                     ["StartProjekt"] = 1030
                 },

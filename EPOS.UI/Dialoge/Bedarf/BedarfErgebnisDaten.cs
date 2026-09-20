@@ -200,13 +200,19 @@ public sealed record ErgebnisKennzahl(string Bezeichnung, string Wert, string Ei
 /// <param name="Werte">
 /// Die zwölf Monatswerte, bereits mit <c>F2</c> formatiert; <c>null</c> zeigt „—".
 /// </param>
-/// <param name="Bild">Die Monatssäulen dieser Sicht als PNG (die Hülle rendert vorab).</param>
+/// <param name="Modell">
+/// Die Monatssäulen dieser Sicht als ZEICHENMODELL (die Hülle baut es vorab).
+///
+/// <para>Seit der Etappe DG-E3, Gruppe (c), steht das Bild im Baustein
+/// <c>DiagrammSvg</c>: Es trägt keine Zeitachse — zwölf starre Fächer —, also auch
+/// keinen Zoom, wohl aber den Wert der Säule unter dem Mauszeiger (DG-E3-10).</para>
+/// </param>
 /// <param name="IstBrauchwasser">
 /// Bei dieser Sicht erscheint der Schalter „Jahresverlauf" — nur die Brauchwassersicht
 /// von <c>Form_ErgBrauchwasserwaerme</c> hatte ihn.
 /// </param>
 public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Werte,
-                                 byte[]? Bild, bool IstBrauchwasser = false)
+                                 Zeichenmodell? Modell, bool IstBrauchwasser = false)
 {
     /// <summary>
     /// Die zwölf Monatswerte als ZAHL in <see cref="QuelleEinheit"/>; <c>null</c> =
@@ -220,8 +226,14 @@ public sealed record Monatssicht(string Bezeichnung, IReadOnlyList<string>? Wert
 
     /// <summary>
     /// Dasselbe Säulenbild mit kWh-Beschriftung; <c>null</c> = es gibt nur
-    /// <see cref="Bild"/>. Ein PNG lässt sich nicht umrechnen — die Hülle zeichnet
-    /// beide Fassungen vorab, weil die Komponente keinen Renderer aufruft.
+    /// <see cref="Modell"/>.
+    ///
+    /// <para><b>Auch ein Zeichenmodell entsteht je Einheit zweimal</b> — es trägt die
+    /// FERTIG formatierten Achsen- und Zeigetexte, und die Komponente ruft keinen
+    /// Renderer (Risiko R‑W8‑2). Beide Fassungen stehen deshalb wie bisher vorab da;
+    /// das ist zugleich die Zwischenspeicherung, auf die <c>DiagrammSvg</c> angewiesen
+    /// ist: Ein Modell, das je Zeichenlauf neu entstünde, verwürfe mit seinem
+    /// Knotenbaum auch die Zeigerstelle.</para>
     /// </summary>
-    public byte[]? BildKWh { get; init; }
+    public Zeichenmodell? ModellKWh { get; init; }
 }

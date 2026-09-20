@@ -22,9 +22,22 @@
 
    DIE DIAGRAMME FOLGEN SEIT #184 DER HAUSREGEL 5. Ueber jedem Bild dieselbe
    Steuerung: "sortiert" (Dauerlinie), je Reihe ein Schalter mit DERSELBEN
-   Ressource wie die Legende, das Bild mit Datenzoom (BereichGewaehlt) - und dazu
-   die Zeitraumwahl Jahr/Woche/Tag mit Navigator (SD-Q7; bis hierher stand der
-   Ausschnitt fest auf sieben Tagen ab dem 1. Januar).
+   Ressource wie die Legende - und dazu die Zeitraumwahl Jahr/Woche/Tag mit
+   Navigator (SD-Q7; bis hierher stand der Ausschnitt fest auf sieben Tagen ab
+   dem 1. Januar).
+
+   DIE DREI BILDER SIND ZEICHENMODELLE IM BAUSTEIN DiagrammSvg (Etappe DG-E3).
+   Damit ist der ZOOM eine Attributaenderung an EINER viewBox: Das Rechteck, das
+   der Anwender frueher im PNG aufzog, ging als Diagrammbereich in den Kern und
+   kostete dort einen zweiten Renderlauf je Geste (Entscheid DG-E3-9). Gefallen
+   sind mit ihm die zwei Bereichsfelder, ihre Rueckrufe und ihr Anteil am
+   Zwischenspeicherschluessel; der Navigator waehlt weiterhin den AUSSCHNITT der
+   Zeitreihe, denn der bestimmt, welche Werte ueberhaupt im Modell stehen.
+
+   DER ZWISCHENSPEICHER IST DABEI BEDINGUNG, NICHT ERSPARNIS: Der Baustein baut
+   seinen Knotenbaum nur neu, wenn die REFERENZ des Modells wechselt - ein Modell
+   je Zeichenlauf verwuerfe mit dem Baum auch Zoom, Zeigerstelle und abgewaehlte
+   Reihen.
 
    DER LADEZUSTAND KOMMT AUF DIE ZWEITE ACHSE (Hausregel 5.3). Welche Einheit
    dort steht, sagt das Auswahlfeld; ihr Reihenschalter sagt, OB sie gezeichnet
@@ -41,6 +54,7 @@
 @using System.Globalization
 @using EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @using SpeicherEngine
 
 @if (Ergebnis is not null)
@@ -199,7 +213,12 @@
                                   WertChanged="@(an => ProjektionsreiheGesetzt(schluessel, an))" />
                     }
                 </div>
-                <ChartBild Png="@_projektion" Alt="@Resource.FLOTTE_ALT_PROJEKTION" />
+                @* DIE JAHRESPROJEKTION HAT KEINE ZEICHENFLAECHE (DG-E3-7): Zwischen
+                   zwei Projektjahren liegt nichts, worauf ein Zoom zeigen koennte.
+                   Der Baustein schaltet ihn deshalb von selbst ab und zeigt statt
+                   dessen den Wert der Saeule unter dem Zeiger (DG-E3-10). *@
+                <DiagrammSvg Modell="@_projektion" Kennung="flotte-projektion"
+                             Bezeichnung="@Resource.FLOTTE_ALT_PROJEKTION" />
             </section>
 
             <details class="epos-flotte-jahreskonten">
@@ -332,13 +351,27 @@
 
             <p class="epos-flotte-hinweis">@_zeitraum</p>
 
-            <ChartBild Png="@_netz" Alt="@Resource.FLOTTE_ALT_NETZ"
-                       BereichGewaehlt="NetzBereich" Zurueckgesetzt="NetzBereichZurueck" />
+            @* DER ZOOM LIEGT IM BILD (Etappe DG-E3): Rad, Ziehen, Kneifgeste und die
+               Tasten + − 0 bewegen EINE viewBox — kein aufgezogenes Rechteck, kein
+               zweiter Rechenlauf im Kern. Gerade hier gewinnt er: Eine Woche im
+               Viertelstundenraster sind 672 Werte, ein Jahr 35 040, und der
+               Ladezyklus, um den es geht, dauert Stunden.
 
-            @if (_zweitesBild && _soc is { Length: > 0 })
+               DIE KENNUNG TRAEGT, WAS DAS BILD UNTERSCHEIDET (Dauerlinie,
+               Zeitraumstufe, Stelle im Jahr): Der Wirt tauscht hier nicht die
+               Komponente, sondern ihr Modell — und zwei Bilder duerfen nie
+               dieselben clipPath-Namen fuehren.
+
+               DIE ZWEITE ACHSE traegt den Ladezustand in kWh; welche Reihe dort
+               steht, sagt das Modell (Datenreihe.Achsenseite, DG-E3-12). *@
+            <DiagrammSvg Modell="@_netz" Kennung="@Netzkennung"
+                         Bezeichnung="@Resource.FLOTTE_ALT_NETZ"
+                         Einheit="kW" EinheitRechts="kWh" />
+
+            @if (_zweitesBild && _soc is not null)
             {
-                <ChartBild Png="@_soc" Alt="@Resource.FLOTTE_ALT_SOC"
-                           BereichGewaehlt="SocBereich" Zurueckgesetzt="SocBereichZurueck" />
+                <DiagrammSvg Modell="@_soc" Kennung="@Sockennung"
+                             Bezeichnung="@Resource.FLOTTE_ALT_SOC" Einheit="kWh" />
             }
 
             <div class="epos-simerg-schalter">
@@ -398,7 +431,19 @@
     private const int STUFE_JAHR = 0, STUFE_WOCHE = 1, STUFE_TAG = 2;
 
     private SpeicherFlottenErgebnis? _gezeichnet;
-    private byte[]? _netz, _soc, _projektion;
+
+    /// <summary>
+    /// Die drei Zeichenmodelle — Netzbild, Ladezustandsbild, Jahresprojektion.
+    ///
+    /// <para><b>Sie werden GEHALTEN, nicht je Zeichenlauf geholt:</b> Der Baustein
+    /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des
+    /// Modells wechselt. Ein Modell, das bei jedem Zeichenlauf des Wirtes neu
+    /// entstünde, verwürfe mit dem Baum auch Zoom, Zeigerstelle und abgewählte
+    /// Reihen — genau den Zustand, um dessentwillen das Bild ein SVG geworden
+    /// ist.</para>
+    /// </summary>
+    private Zeichenmodell? _netz, _soc, _projektion;
+
     private string _zeitraum = "";
     private string _schluessel = "";
     private string _projektionSchluessel = "";
@@ -426,8 +471,6 @@
         SpeicherFlottenAnzeigeCtrl.REIHE_ERSATZ
     };
 
-    private Diagrammbereich? _netzbereich, _socbereich;
-
     // KEIN static readonly: Die Kultur wechselt zur Laufzeit (Sprachumschaltung im
     // Rahmen, gepinnte Kultur in den Prüfständen); ein eingefrorener Wert zeigte nach
     // dem Wechsel weiter deutsche Trennzeichen.
@@ -445,8 +488,6 @@
             _stufe = STUFE_WOCHE;
             Array.Clear(_nummer);
             _speicher = 0;
-            _netzbereich = null;
-            _socbereich = null;
             _schluessel = "";
             _projektionSchluessel = "";
         }
@@ -454,10 +495,14 @@
     }
 
     /// <summary>
-    /// Zeichnet, wenn sich der Auftrag WIRKLICH geändert hat. Der Schlüssel ist der der
-    /// Ergebnisseite (<see cref="Bildauftrag.Schluessel"/>); ein unveränderter Auftrag
-    /// zeichnet nicht noch einmal, und ein schneller Wechsel verwirft den vorigen
+    /// Holt die Modelle, wenn sich der Auftrag WIRKLICH geändert hat. Der Schlüssel ist
+    /// der der Ergebnisseite (<see cref="Bildauftrag.Schluessel"/>); ein unveränderter
+    /// Auftrag holt nicht noch einmal, und ein schneller Wechsel verwirft den vorigen
     /// Auftrag, statt einen Stapel zu bilden (W11b‑B‑25).
+    ///
+    /// <para><b>Der Schlüssel ist hier mehr als eine Ersparnis</b> (DG-E3): Er hält die
+    /// REFERENZ der drei Modelle fest, solange sich nichts an ihnen ändert — und nur so
+    /// überlebt der Zoom im Bild den nächsten Zeichenlauf des Wirtes.</para>
     /// </summary>
     private void Zeichnen()
     {
@@ -467,40 +512,44 @@
         if (!string.Equals(schluessel, _schluessel, StringComparison.Ordinal))
         {
             _schluessel = schluessel;
-            (_netz, _soc, _zeitraum) = SpeicherFlottenAnzeigeCtrl.Bilder(
-                Ergebnis, Starttag(), Tagezahl(), _speicher, Reihen(), _sortiert,
-                Ausschnitt(_netzbereich), Ausschnitt(_socbereich));
+
+            // DIE ZWEI BILDAUSSCHNITTE ENTFALLEN (Entscheid DG-E3-9): Der Zoom liegt in
+            // der viewBox der Zeichenflaeche, nicht in einem Rechteck, das die Maske
+            // meldet und der Kern ein zweites Mal rechnet. Modelle(…) nimmt die zwei
+            // Parameter weiterhin entgegen - der Berichtsweg braucht sie -, diese Ansicht
+            // laesst sie weg.
+            (_netz, _soc, _zeitraum) = SpeicherFlottenAnzeigeCtrl.Modelle(
+                Ergebnis, Starttag(), Tagezahl(), _speicher, Reihen(), _sortiert);
         }
 
         string projektion = new Bildauftrag("FLOTTE_PROJEKTION", false, -1, Projektionsreihen()).Schluessel;
         if (!string.Equals(projektion, _projektionSchluessel, StringComparison.Ordinal))
         {
             _projektionSchluessel = projektion;
-            _projektion = SpeicherFlottenAnzeigeCtrl.Jahresprojektionsbild(Ergebnis, Projektionsreihen());
+            _projektion = SpeicherFlottenAnzeigeCtrl.JahresprojektionsModell(Ergebnis, Projektionsreihen());
         }
     }
 
-    /// <summary>
-    /// Der Schlüssel beider Zeitbilder — jedes Bild führt seinen eigenen Ausschnitt.
-    ///
-    /// <para><b>Der Ausschnitt steht seit DG-E3-9 nicht mehr im <c>Bildauftrag</c>:</b>
-    /// Die Zeitreihen der ERGEBNISREITER haben ihren Rundlauf-Datenzoom verloren, weil
-    /// sie als Zeichenmodell im SVG stehen. Die Flottenansicht zeichnet weiter PNG
-    /// (Gruppe (d) des Rollouts) und hängt ihren Ausschnitt deshalb hier an den
-    /// Schlüssel an, statt ihn durch einen Auftrag zu schleifen, der ihn nicht mehr
-    /// führt.</para>
-    /// </summary>
+    /// <summary>Der Schlüssel beider Zeitbilder — Schalterstellung, Zeitraum, Einheit.</summary>
     private string Auftragsschluessel()
         => new Bildauftrag("FLOTTE_NETZ", _sortiert, Starttag(), Reihen(), Tagezahl()).Schluessel +
-           Bereichsschluessel(_netzbereich) +
-           "#" + new Bildauftrag("FLOTTE_SOC", _sortiert, _speicher).Schluessel +
-           Bereichsschluessel(_socbereich);
+           "#" + new Bildauftrag("FLOTTE_SOC", _sortiert, _speicher).Schluessel;
 
-    private static string Bereichsschluessel(Diagrammbereich? b)
-        => b is null ? "" : "|" + b;
+    /// <summary>
+    /// Die <c>clipPath</c>-Kennung des NETZbildes. Sie trägt, was das Bild
+    /// unterscheidet: Dauerlinie, Zeitraumstufe und Stelle im Jahr. Die Reihenwahl
+    /// steht NICHT darin — sie blendet Reihen desselben Bildes aus, und genau das ist
+    /// die Aufgabe der Legende.
+    /// </summary>
+    private string Netzkennung
+        => "flotte-netz-" + (_sortiert ? "d" : "g") + "-" + _stufe + "-" + _nummer[_stufe];
 
-    private static ChartRenderer.Bildausschnitt? Ausschnitt(Diagrammbereich? b)
-        => b is null ? null : new ChartRenderer.Bildausschnitt(b.XVon, b.XBis, b.YVon, b.YBis);
+    /// <summary>
+    /// Die Kennung des LADEZUSTANDSbildes — dieselben Teile, dazu die gewählte
+    /// Einheit: Sie entscheidet, wessen Ladezustand dort steht.
+    /// </summary>
+    private string Sockennung => "flotte-soc-" + (_sortiert ? "d" : "g") + "-"
+        + _stufe + "-" + _nummer[_stufe] + "-" + _speicher;
 
     // --- Reihenwahl -----------------------------------------------------------
 
@@ -583,10 +632,6 @@
         _stufe = neu;
         if (_nummer[_stufe] >= Anzahl) _nummer[_stufe] = Anzahl - 1;
         if (_nummer[_stufe] < 0) _nummer[_stufe] = 0;
-        // Ein anderer Ausschnitt entwertet den aufgezogenen Bereich - er war in Anteilen
-        // des ALTEN Bildes gemessen (W11b‑B‑25).
-        _netzbereich = null;
-        _socbereich = null;
         Zeichnen();
     }
 
@@ -594,8 +639,6 @@
     private void Zurueck()
     {
         _nummer[_stufe] = _nummer[_stufe] > 0 ? _nummer[_stufe] - 1 : Anzahl - 1;
-        _netzbereich = null;
-        _socbereich = null;
         Zeichnen();
     }
 
@@ -603,8 +646,6 @@
     private void Vor()
     {
         _nummer[_stufe] = _nummer[_stufe] + 1 < Anzahl ? _nummer[_stufe] + 1 : 0;
-        _netzbereich = null;
-        _socbereich = null;
         Zeichnen();
     }
 
@@ -615,14 +656,8 @@
     private void SpeicherGesetzt(int? wert)
     {
         _speicher = wert ?? 0;
-        _socbereich = null;
         Zeichnen();
     }
-
-    private void NetzBereich(Diagrammbereich bereich) { _netzbereich = bereich; Zeichnen(); }
-    private void NetzBereichZurueck() { _netzbereich = null; Zeichnen(); }
-    private void SocBereich(Diagrammbereich bereich) { _socbereich = bereich; Zeichnen(); }
-    private void SocBereichZurueck() { _socbereich = null; Zeichnen(); }
 
     // --- Die vier Kacheln -----------------------------------------------------
 

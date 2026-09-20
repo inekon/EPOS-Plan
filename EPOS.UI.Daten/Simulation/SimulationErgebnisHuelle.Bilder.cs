@@ -15,16 +15,15 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Siebzehn Zeichenflächen, sieben Renderer-Bilder.</b> Was der Vorläufer
     /// mit neun <c>Chart</c>-Steuerelementen, fünf <c>ChartManager</c> und zwei
-    /// GDI-Donuts zeichnete, kommt hier als PNG aus dem Kern-Renderer (iU9-W11a.6).
-    /// Gerendert wird erst auf Anforderung: Die Seite fragt je Reiter und
-    /// Schalterstellung, und ihr Zwischenspeicher hält das Ergebnis.</para>
+    /// GDI-Donuts zeichnete, kommt hier aus dem Kern-Renderer (iU9-W11a.6). Gezeichnet
+    /// wird erst auf Anforderung: Die Seite fragt je Reiter und Schalterstellung, und
+    /// ihr Zwischenspeicher hält das Ergebnis.</para>
     ///
-    /// <para><b>Zwölf davon sind ZEICHENMODELLE</b> (Etappe DG-E3, Gruppe (a)): Jede
-    /// Stelle mit Zeitachse liefert ein <c>Zeichenmodell</c> (<see cref="Modell"/>) und
-    /// steht in der Oberfläche im Baustein <c>DiagrammSvg</c> — Zoom auf der Zeitachse,
-    /// Werte am Mauszeiger, Legende und Farbwahl ohne einen Rundlauf in den Kern.
-    /// Pixelbild bleiben allein die vier Bilder OHNE Zeitachse
-    /// (<see cref="Bild"/>).</para>
+    /// <para><b>Jede Stelle liefert ein ZEICHENMODELL</b> (Etappe DG-E3, Gruppen (a)
+    /// bis (c)) — <see cref="Modell"/>, angezeigt im Baustein <c>DiagrammSvg</c>: Zoom
+    /// auf der Datenachse, Werte am Mauszeiger, Legende und Farbwahl ohne einen
+    /// Rundlauf in den Kern. <b>Einen PNG-Weg gibt es hier nicht mehr;</b> der
+    /// <c>byte[]</c>-Weg des Renderers bleibt dem Bericht.</para>
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
@@ -93,50 +92,20 @@ namespace WindowsFormsApplication1
         // =================================================================
 
         /// <summary>
-        /// <b>Die vier Bilder, die PIXELBILDER BLEIBEN</b> (Etappe DG-E3, Gruppe (a),
-        /// Oberflächenteil): die Streuwolke „Leistung über Außentemperatur", die zwei
-        /// Deckungsringe der Übersicht und die Monatssäulen der Autarkie.
-        ///
-        /// <para>Sie tragen keine ZEITachse — x ist dort die Außentemperatur, ein
-        /// Kreissegment oder ein Monat —, und ihre Zeichenmodelle entstehen in den
-        /// Gruppen (b) und (c) des Rollouts. Bis dahin geht ihr Weg unverändert über
-        /// <c>ChartBild</c>.</para>
-        ///
-        /// <para>Jede übrige Stelle liefert ein <see cref="Modell"/>.</para>
-        /// </summary>
-        private byte[] Bild(Bildauftrag a)
-        {
-            if (a == null) return null;
-
-            try
-            {
-                switch (a.Bild)
-                {
-                    case Bilder.RingWaerme: return ErgebnisIstGueltig ? BildRingWaerme() : null;
-                    case Bilder.RingStrom: return ErgebnisIstGueltig ? BildRingStrom() : null;
-                    case Bilder.WpLeistungTemperatur:
-                        return ErgebnisIstGueltig ? BildStreuwolke(a) : null;
-                    case Bilder.AutarkieMonate:
-                        return ErgebnisIstGueltig ? BildAutarkie(a.Zahl) : null;
-                    default: return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Ein Bild, das nicht entsteht, darf die Seite nicht mitreißen; der
-                // Platzhalter des Bausteins sagt, dass keines da ist.
-                Console.WriteLine("Das Ergebnisbild konnte nicht gezeichnet werden: " + ex.Message);
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// <b>Die zwölf ZEITREIHEN-Bilder als Zeichenmodell</b> (Etappe DG-E3,
-        /// Gruppe (a)). Die Seite zeigt sie im Baustein <c>DiagrammSvg</c>: jede Linie
+        /// <b>ALLE SECHZEHN BILDER ALS ZEICHENMODELL</b> (Etappe DG-E3, Gruppen (a)
+        /// bis (c)). Die Seite zeigt sie im Baustein <c>DiagrammSvg</c>: jede Linie
         /// ein Vektor, der Zoom eine Attributänderung an EINER <c>viewBox</c>, der Wert
         /// am Mauszeiger eine Lesestelle im Modell.
         ///
-        /// <para><b>Der Rundlauf-Datenzoom ist damit entfallen</b> (Entscheid DG-E3-9,
+        /// <para><b>Der PNG-Weg dieser Hülle ist damit entfallen.</b> Bis zur Gruppe (c)
+        /// blieben vier Bilder Pixelbilder — die Streuwolke „Leistung über
+        /// Außentemperatur", die zwei Deckungsringe der Übersicht und die Monatssäulen
+        /// der Autarkie —, weil sie keine ZEITachse tragen. Ein Zeichenmodell brauchen
+        /// sie trotzdem: Vier von ihnen zeigen jetzt den Wert des Elements unter dem
+        /// Zeiger (DG-E3-10), und die Streuwolke lässt sich über der Außentemperatur
+        /// ebenso spreizen wie eine Ganglinie über der Stunde.</para>
+        ///
+        /// <para><b>Der Rundlauf-Datenzoom ist entfallen</b> (Entscheid DG-E3-9,
         /// Konzept Diagramme § 6): Das Modell trägt die Werte ohnehin, also braucht es
         /// weder ein gemeldetes Rechteck noch einen zweiten Renderlauf. Der
         /// <c>Bildauftrag</c> führt deshalb keinen <c>Bereich</c> mehr, und die Hülle
@@ -154,14 +123,18 @@ namespace WindowsFormsApplication1
                 {
                     case Bilder.BedarfWaerme: return ModellBedarfWaerme(a);
                     case Bilder.BedarfStrom: return ModellBedarfStrom(a);
+                    case Bilder.RingWaerme: return ModellRingWaerme();
+                    case Bilder.RingStrom: return ModellRingStrom();
                     case Bilder.WpProduktion: return ModellWpProduktion(a);
                     case Bilder.WpStromverbrauch: return ModellWpStrom(a);
+                    case Bilder.WpLeistungTemperatur: return ModellStreuwolke(a);
                     case Bilder.Speichertemperaturen: return ModellTemperaturen(a);
                     case Bilder.Heizkessel: return ModellKessel(a);
                     case Bilder.Solarthermie: return ModellSolar(a);
                     case Bilder.Bhkw: return ModellBhkw(a);
                     case Bilder.Photovoltaik: return ModellPv(a);
                     case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
+                    case Bilder.AutarkieMonate: return ModellAutarkie(a.Zahl);
                     case Bilder.Waermegang: return ModellWaermegang(a);
                     case Bilder.Stromgang: return ModellStromgang(a);
                     default: return null;
@@ -248,7 +221,7 @@ namespace WindowsFormsApplication1
         // Waermebedarfsdeckung als Kuchen (woertlich FuelleUebersicht :3959-3969)
         // und hatte seit #222 keinen Anforderer mehr: Die Uebersicht des
         // Simulationsergebnisses zeigt dieselbe Aussage seither als RING mit
-        // HTML-Legende daneben (BildRingWaerme), und kein Reiter und keine
+        // HTML-Legende daneben (ModellRingWaerme), und kein Reiter und keine
         // Berichtsseite fragte den Schluessel UEBERSICHT_KUCHEN noch an - nur ein
         // Testfall tat es. Der RENDERER ChartRenderer.Kuchen bleibt: Der
         // Variantenbericht zeichnet damit seine zwei Deckungsbilder
@@ -320,7 +293,15 @@ namespace WindowsFormsApplication1
             return segmente;
         }
 
-        private byte[] BildRingWaerme()
+        /// <summary>
+        /// Der Ring als ZEICHENMODELL (Etappe DG-E3, Gruppe (c)). Er trägt keine
+        /// Zeichenfläche — ein Kreissegment hat keine Datenkoordinaten —, also auch
+        /// keinen Zoom; unter dem Zeiger steht der Wert des Segments (DG-E3-10).
+        ///
+        /// <para><c>mitLegende: false</c> bleibt: Die Legende steht seit #222 als HTML
+        /// neben dem Bild, kopierbar und mit MWh UND Prozent je Segment.</para>
+        /// </summary>
+        private Zeichenmodell ModellRingWaerme()
         {
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
             var k = Kennzahlen();
@@ -328,9 +309,9 @@ namespace WindowsFormsApplication1
 
             double mitte = wbGesamt > 0 ? k.WaermeGesamtMwh * 100.0 / wbGesamt : 0.0;
 
-            return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG,
-                                      SegmenteWaerme(p, k), mitte, "%",
-                                      MyResource.Resource.SIMUEB_RING_GEDECKT, false);
+            return ChartRenderer.RingModell(MyResource.Resource.CHART_KACHEL_WAERMEBEDARFSDECKUNG,
+                                            SegmenteWaerme(p, k), mitte, "%",
+                                            MyResource.Resource.SIMUEB_RING_GEDECKT, false);
         }
 
         /// <summary>
@@ -339,7 +320,7 @@ namespace WindowsFormsApplication1
         /// Photovoltaik und Speicherentladung selbst auf MWh und nahm BHKW und
         /// Reststrom fertig — drei Konventionen in EINEM Bild.
         /// </summary>
-        private byte[] BildRingStrom()
+        private Zeichenmodell ModellRingStrom()
         {
             ErgebnisPraesenz p = ErgebnisPraesenz.Ermitteln(sim);
             var k = Kennzahlen();
@@ -353,8 +334,8 @@ namespace WindowsFormsApplication1
             string unterzeile = mitte > 0 ? MyResource.Resource.SIMUEB_RING_GEDECKT
                                           : MyResource.Resource.SIMUEB_RING_NETZBEZUG;
 
-            return ChartRenderer.Ring(MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG,
-                                      SegmenteStrom(p, k), mitte, "%", unterzeile, false);
+            return ChartRenderer.RingModell(MyResource.Resource.CHART_KACHEL_STROMBEDARFSDECKUNG,
+                                            SegmenteStrom(p, k), mitte, "%", unterzeile, false);
         }
 
         // ---- Die Wärmepumpenseite ---------------------------------------
@@ -421,8 +402,15 @@ namespace WindowsFormsApplication1
         /// <para><b>Befund W11-B17 entfällt:</b> Die im Kommentar angekündigte Filterung
         /// „ein Wert je Temperatur" war auskommentiert, und die drei Kopierschleifen
         /// kopierten Array in Array gleicher Länge — 40 Zeilen totes Programm.</para>
+        ///
+        /// <para><b>Seit der Etappe DG-E3, Gruppe (b), ein ZEICHENMODELL.</b> Ihre
+        /// x-Achse zählt keine Stunden, sondern die Außentemperatur — sie trägt
+        /// trotzdem eine Zeichenfläche und lässt sich deshalb spreizen wie eine
+        /// Ganglinie (<c>Achsenart.Wert</c>, DG-E3-11). Jede Reihe geht als
+        /// <c>Reihenart.Punkte</c> mit ihrer x-Stelle je Punkt hinein und wird NIE
+        /// gebündelt: Die Verdichtung der Wolke IST ihre Aussage (DG-E3-5).</para>
         /// </summary>
-        private byte[] BildStreuwolke(Bildauftrag a)
+        private Zeichenmodell ModellStreuwolke(Bildauftrag a)
         {
             bool alle = Alle(a);
             bool mitBedarf = Gewaehlt(a, alle, "WAERMEBEDARF");
@@ -457,7 +445,7 @@ namespace WindowsFormsApplication1
                 reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
                                                         produktion, F_PRODUKTION.WithAlpha(120)));
 
-            return ChartRenderer.Streuwolke(
+            return ChartRenderer.StreuwolkeModell(
                 MyResource.Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR,
                 MyResource.Resource.CHART_ACHSE_TEMPERATUR,
                 MyResource.Resource.SIM_SPALTE_LEISTUNG, reihen);
@@ -673,8 +661,13 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die zwölf Monatssäulen — wörtlich <c>FillMonthlyChart</c> :431-474: feste
         /// 730-h-Monate, im Viertelstundenraster also 2 920 Intervalle je Monat.
+        ///
+        /// <para><b>Seit der Etappe DG-E3, Gruppe (c), ein ZEICHENMODELL.</b> Zwölf
+        /// starre Fächer sind keine Zeitachse: Der Stapel trägt keine Zeichenfläche
+        /// und damit keinen Zoom, wohl aber je Schicht ihren Wert unter dem Zeiger
+        /// („Jan · Eigenverbrauch: 1.234 kWh", DG-E3-10).</para>
         /// </summary>
-        private byte[] BildAutarkie(double kwh)
+        private Zeichenmodell ModellAutarkie(double kwh)
         {
             if (_autarkieSpeicher == null || _autarkieLast == null) AutarkieRechnen(kwh);
             if (_autarkieSpeicher == null) return null;
@@ -711,7 +704,7 @@ namespace WindowsFormsApplication1
                                         luecke, SKColors.Red)
             };
 
-            return ChartRenderer.MonatsStapel(
+            return ChartRenderer.MonatsStapelModell(
                 MyResource.Resource.CHART_ACHSE_ENERGIEBEDARF_DECKUNG, "kWh", reihen);
         }
 

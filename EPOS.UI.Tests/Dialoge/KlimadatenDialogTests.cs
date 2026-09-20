@@ -212,7 +212,7 @@ public class KlimadatenDialogTests : EposBunitContext
 
         // Der Baustein Reiter zeichnet nur das AKTIVE Blatt - erst das
         // Temperaturbild, nach dem Wechsel das Sonnenwinkelbild. Beide stehen
-        // seit Etappe E2 im Baustein DiagrammSvg, nicht mehr in ChartBild.
+        // im Baustein DiagrammSvg.
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("Jahrestemperatur Verlauf",
                      cut.FindComponent<DiagrammSvg>().Instance.Bezeichnung);
@@ -1315,7 +1315,6 @@ public class KlimadatenDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
                              TimeSpan.FromSeconds(10));
-        Assert.Empty(cut.FindComponents<EPOS.UI.Standards.ChartBild>());
         Assert.Equal(new[] { "Bereich", "1:1" },
                      cut.FindAll("button.epos-diagramm-knopf")
                         .Select(k => k.TextContent.Trim()).ToArray());

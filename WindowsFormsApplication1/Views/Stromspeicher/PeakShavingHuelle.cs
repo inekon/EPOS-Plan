@@ -21,8 +21,9 @@ namespace WindowsFormsApplication1
     /// <see cref="PeakShaving.BerechnePeakShaving"/> über 35 040 Werte und
     /// <see cref="PeakShaving.MinimaleSchwelleKw"/> mit ihrer Suchschleife liefen im
     /// Vorläufer im Oberflächenfaden (Befund W12-B22). In einer WebView ist der
-    /// Renderfaden derselbe Faden; beide laufen deshalb nebenher, ebenso das
-    /// Zeichnen des Bildes und das Lesen der Ganglinienwerte.</para>
+    /// Renderfaden derselbe Faden; beide laufen deshalb nebenher, ebenso das Lesen
+    /// der Ganglinienwerte. <b>Das Bild nicht mehr:</b> Seit der Etappe DG-E3 reicht
+    /// die Hülle das ZEICHENMODELL herein und nicht das gerasterte PNG.</para>
     ///
     /// <para><b>Der Rückgabewert ist immer <c>false</c></b> — Befund W12-B24: Der
     /// einzige Fußknopf des Vorläufers trug <c>DialogResult.Cancel</c>, und
@@ -75,7 +76,7 @@ namespace WindowsFormsApplication1
                 ["Rechnen"] = new Func<double[], PeakShavingEingaben,
                                        Task<PeakShavingErgebnis>>(Rechnen),
                 ["MinimaleSchwelle"] = new Func<double[], PeakShavingEingaben, Task<double>>(Minimal),
-                ["Bild"] = new Func<PeakShavingErgebnis, bool, Task<byte[]>>(Bild),
+                ["Modell"] = new Func<PeakShavingErgebnis, bool, Zeichnung.Zeichenmodell>(Modell),
                 ["CsvSpeichern"] = new Func<PeakShavingErgebnis, Task<bool>>(Csv),
 
                 // DER AUSGANG IN DIE SPEICHERVARIANTE (Entscheid LS-E-1 (a)). OHNE
@@ -158,8 +159,17 @@ namespace WindowsFormsApplication1
         private static Task<double> Minimal(double[] lastgang, PeakShavingEingaben e)
             => Task.Run(() => PeakShaving.MinimaleSchwelleKw(lastgang, e.AlsSpeicherParameter(), e.Modus));
 
-        private static Task<byte[]> Bild(PeakShavingErgebnis r, bool mitSoC)
-            => Task.Run(() => PeakShavingBild.Lastgang(r, mitSoC));
+        /// <summary>
+        /// Das Zeichenmodell des Lastgangs (Etappe DG-E3) — <b>ohne <c>Task.Run</c></b>.
+        ///
+        /// <para>Der Vorläufer legte das Zeichnen nebenher, weil ein PNG über 35 040
+        /// Werte gerastert werden musste und das in einer WebView auf dem Renderfaden
+        /// geschah. Das Modell ist die BESCHREIBUNG des Bildes: Reihen, Achsen, Farbrollen
+        /// — kein Pixel. Es entsteht in Bruchteilen dieser Zeit, und ein Fadenwechsel
+        /// dafür kostete mehr, als er spart.</para>
+        /// </summary>
+        private static Zeichnung.Zeichenmodell Modell(PeakShavingErgebnis r, bool mitSoC)
+            => PeakShavingBild.Modell(r, mitSoC);
 
         // =====================================================================
         // CSV

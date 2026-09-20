@@ -325,9 +325,17 @@ namespace WindowsFormsApplication1
         /// Die Zahlen gehen deshalb samt <see cref="Energieeinheit.MWh"/> in die
         /// Komponente; die <c>F2</c>-Texte bleiben als Rückfall stehen.</para>
         ///
-        /// <para><b>Das Bild entsteht ZWEIMAL</b>, einmal je Einheit. Ein PNG lässt sich
-        /// nicht umrechnen, und die Komponente ruft keinen Renderer (Risiko
-        /// R‑W8‑2).</para>
+        /// <para><b>Das Bild entsteht ZWEIMAL</b>, einmal je Einheit. Weder ein PNG noch
+        /// ein Zeichenmodell lässt sich umrechnen — beide tragen die fertig
+        /// formatierten Achsen- und Zeigetexte —, und die Komponente ruft keinen
+        /// Renderer (Risiko R‑W8‑2).</para>
+        ///
+        /// <para><b>Seit der Etappe DG-E3, Gruppe (c), ist es ein ZEICHENMODELL</b>
+        /// (<c>MonatsSaeulenModell</c> statt <c>MonatsSaeulen</c>): Die zwölf Säulen
+        /// stehen als SVG im Baustein <c>DiagrammSvg</c>, jede mit ihrem Wert am
+        /// Mauszeiger (DG-E3-10). Beide Fassungen entstehen hier EINMAL und bleiben
+        /// im Datensatz liegen; der Baustein baut seinen Knotenbaum nur neu, wenn die
+        /// REFERENZ des Modells wechselt.</para>
         /// </summary>
         private static Monatssicht Sicht(string bezeichnung, double[] monat, string bildtitel,
                                          SKColor farbe, bool istBrauchwasser = false)
@@ -346,16 +354,16 @@ namespace WindowsFormsApplication1
             }
 
             string[] monate = MonateKurz();
-            byte[] bild = ChartRenderer.MonatsSaeulen(bildtitel, mwh, farbe,
-                                                      Energieeinheit.MWh.Text, monate);
-            byte[] bildKWh = ChartRenderer.MonatsSaeulen(bildtitel, kwh, farbe,
-                                                         Energieeinheit.KWh.Text, monate);
+            Zeichenmodell modell = ChartRenderer.MonatsSaeulenModell(
+                bildtitel, mwh, farbe, Energieeinheit.MWh.Text, monate);
+            Zeichenmodell modellKWh = ChartRenderer.MonatsSaeulenModell(
+                bildtitel, kwh, farbe, Energieeinheit.KWh.Text, monate);
 
-            return new Monatssicht(bezeichnung, texte, bild, istBrauchwasser)
+            return new Monatssicht(bezeichnung, texte, modell, istBrauchwasser)
             {
                 Zahlen = mwh,
                 QuelleEinheit = Energieeinheit.MWh,
-                BildKWh = bildKWh
+                ModellKWh = modellKWh
             };
         }
 

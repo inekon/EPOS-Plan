@@ -301,7 +301,7 @@ namespace EPOS.Kern.Tests
             string[] dateien = TestdateienUi();
             Assert.True(dateien.Length > 100, "Nur " + dateien.Length + " EPOS.UI.Tests-Dateien gefunden.");
             Assert.Contains(dateien, d => Path.GetFileName(d) == "MenuebandTests.cs");
-            Assert.Contains(dateien, d => Path.GetFileName(d) == "DiagrammTests.cs");
+            Assert.Contains(dateien, d => Path.GetFileName(d) == "DiagrammSvgTests.cs");
             Assert.DoesNotContain(dateien, d => Path.GetFileName(d) == "Kulturvorrichtung.cs");
         }
 

@@ -16,13 +16,13 @@ namespace WindowsFormsApplication1
     /// die Löschsperre, das Löschen, die Kennlinien für den Editor, deren
     /// Rückschreibweg und den Katalog für die Überlagerung. Die Datenseite steht
     /// vollständig im Kern (<see cref="WPStammCtrl"/>, <see cref="KenndatenCtrl"/>,
-    /// <see cref="KenndatenKuehlungCtrl"/>, <c>ChartRenderer.Kennlinien</c>).</para>
+    /// <see cref="KenndatenKuehlungCtrl"/>, <c>ChartRenderer.KennlinienModell</c>).</para>
     ///
     /// <para><b>Die Bilder entstehen HIER, nicht in der Komponente.</b> Der Renderer
-    /// gehört zum Kern und liefert PNG-Bytes; <c>ChartBild</c> zeigt sie als
-    /// <c>data:</c>-URL. Dasselbe Muster wie <see cref="KapitalwertVerlaufHuelle"/>
+    /// gehört zum Kern und liefert ein ZEICHENMODELL; <c>DiagrammSvg</c> macht daraus
+    /// Razor-Elemente. Dasselbe Muster wie <see cref="KapitalwertVerlaufHuelle"/>
     /// (W1.6) und <see cref="KostenprofilHuelle"/> (W3.4) — nur ohne
-    /// <c>Task.Run</c>: Zwei Kennlinienbilder sind in wenigen Millisekunden gezeichnet,
+    /// <c>Task.Run</c>: Zwei Kennlinienbilder sind in wenigen Millisekunden gebaut,
     /// und der Aufruf kommt aus einem Rückruf, der ein Ergebnis erwartet.</para>
     /// </summary>
     internal static class WaermepumpeStammHuelle
@@ -204,6 +204,18 @@ namespace WindowsFormsApplication1
         /// Die beiden Bilder eines Geräts. Wärme und Kühlung lesen aus verschiedenen
         /// Tabellen und tragen verschiedene Punktmarken — Kreis für den COP, Kreuz für
         /// die Leistung, wie <c>MarkerStyle.Circle</c>/<c>.Cross</c> im Vorläufer.
+        ///
+        /// <para><b>ZEICHENMODELL statt PNG</b> (Etappe DG-E3, Gruppe (b)):
+        /// <c>KennlinienModell</c> ist der Rumpf, den <c>Kennlinien</c> an den Maler
+        /// gibt — dasselbe Bild, nur eben nicht mehr in Bildpunkten eingefroren. Die
+        /// Oberfläche zeichnet es als SVG und liest den Wert am Zeiger unmittelbar
+        /// aus dem Modell.</para>
+        ///
+        /// <para><b>EIN Lauf, EIN Paar.</b> Beide Modelle entstehen zusammen und
+        /// bleiben als Paar im Dialog stehen, bis Zeile oder Betriebsart wechseln:
+        /// Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum an der REFERENZ des
+        /// Modells fest, und ein je Zeichenlauf neu gebautes Modell verwürfe mit dem
+        /// Baum auch die abgewählten Linien und die Zeigerstelle.</para>
         /// </summary>
         internal static KennlinienBilder BilderZu(int idWp, bool kuehlung)
         {
@@ -218,10 +230,10 @@ namespace WindowsFormsApplication1
                 : Text_("WPS_REITER_LEISTUNG", "Leistung");
 
             return new KennlinienBilder(
-                ChartRenderer.Kennlinien(Text_("WPS_REITER_COP", "COP"),
+                ChartRenderer.KennlinienModell(Text_("WPS_REITER_COP", "COP"),
                     Text_("WPS_REITER_COP", "COP"), Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
                     satz.Cop, ChartRenderer.Kennlinienmarke.Kreis),
-                ChartRenderer.Kennlinien(yLeistung, yLeistung,
+                ChartRenderer.KennlinienModell(yLeistung, yLeistung,
                     Text_("WPS_ACHSE_TEMPERATUR", "Temperatur"),
                     satz.Leistung, ChartRenderer.Kennlinienmarke.Kreuz));
         }

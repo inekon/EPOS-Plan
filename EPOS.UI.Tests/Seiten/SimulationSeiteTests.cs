@@ -93,7 +93,9 @@ public class SimulationSeiteTests : EposBunitContext
             // das erste zurueck - und die Marke aus der Auslegung liefe ins Leere.
             ReiterStromspeicher = true
         },
-        Bild = _ => null,
+        // Kein Bild in dieser Vorrichtung: Der Delegat steht, liefert aber kein
+        // Zeichenmodell - geprueft wird der Reiterwechsel, nicht das Diagramm.
+        Modell = _ => null,
         Laufen = melder =>
         {
             _laeufe++;

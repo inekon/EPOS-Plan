@@ -376,11 +376,26 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// <param name="einheitenname">Name der gewählten Einheit für die Überschrift; leer = Flotte gesamt.</param>
     public static byte[] Rasterbild(FlottenAuslegungErgebnis ergebnis,
                                     int einheit = FLOTTE_GESAMT, string einheitenname = null)
+        => Gemalt(RasterModell(ergebnis, einheit, einheitenname));
+
+    /// <summary>
+    /// <b>DIESELBE RASTERKARTE ALS ZEICHENMODELL</b> (Etappe DG-E3, Oberfläche) — der
+    /// Zwilling von <see cref="Rasterbild"/>, gleiche Reihenfolge, gleiche Texte.
+    ///
+    /// <para>Die Karte hat keine Zeichenfläche (DG-E3-7): Jede Zelle trägt statt dessen
+    /// ihren <c>data-wert</c>, und die Oberfläche zeigt ihn am Zeiger (DG-E3-10).</para>
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    /// <param name="einheitenname">Name der gewählten Einheit für die Überschrift; leer = Flotte gesamt.</param>
+    public static Zeichnung.Zeichenmodell RasterModell(FlottenAuslegungErgebnis ergebnis,
+                                                       int einheit = FLOTTE_GESAMT,
+                                                       string einheitenname = null)
     {
         FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
         if (raster.IstLeer) return null;
 
-        return ChartRenderer.Optimierungsraster(
+        return ChartRenderer.OptimierungsrasterModell(
             Bildtitel(Rastertitel(raster.Modus), einheit, einheitenname),
             Achsentext(raster.Spaltengroesse),
             Achsentext(raster.Zeilengroesse),
@@ -443,12 +458,24 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     public static byte[] SchnittbildBeiSpalte(FlottenAuslegungErgebnis ergebnis,
                                               double spaltenwert,
                                               int einheit = FLOTTE_GESAMT)
+        => Gemalt(SchnittmodellBeiSpalte(ergebnis, spaltenwert, einheit));
+
+    /// <summary>
+    /// <b>DIESELBE SCHNITTKURVE ALS ZEICHENMODELL</b> — der Zwilling von
+    /// <see cref="SchnittbildBeiSpalte"/>. Sie trägt eine Zeichenfläche und ihre
+    /// Stützpunkte als eigene Punktreihen (Etappe DG-E3).
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="spaltenwert">Der festgehaltene Spaltenwert.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static Zeichnung.Zeichenmodell SchnittmodellBeiSpalte(
+        FlottenAuslegungErgebnis ergebnis, double spaltenwert, int einheit = FLOTTE_GESAMT)
     {
         FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
         FlottenSchnittdaten schnitt = SchnittBeiSpalte(raster, spaltenwert);
         if (schnitt.IstLeer) return null;
 
-        return ChartRenderer.Schnittkurve(
+        return ChartRenderer.SchnittkurveModell(
             Schnitttitel(raster.Zeilengroesse, raster.Spaltengroesse, spaltenwert),
             Achsentext(raster.Zeilengroesse),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
@@ -463,12 +490,23 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     public static byte[] SchnittbildBeiZeile(FlottenAuslegungErgebnis ergebnis,
                                              double zeilenwert,
                                              int einheit = FLOTTE_GESAMT)
+        => Gemalt(SchnittmodellBeiZeile(ergebnis, zeilenwert, einheit));
+
+    /// <summary>
+    /// <b>DIESELBE SCHNITTKURVE ALS ZEICHENMODELL</b> — der Zwilling von
+    /// <see cref="SchnittbildBeiZeile"/> (Etappe DG-E3).
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="zeilenwert">Der festgehaltene Zeilenwert.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static Zeichnung.Zeichenmodell SchnittmodellBeiZeile(
+        FlottenAuslegungErgebnis ergebnis, double zeilenwert, int einheit = FLOTTE_GESAMT)
     {
         FlottenRasterdaten raster = Rasterdaten(ergebnis, einheit);
         FlottenSchnittdaten schnitt = SchnittBeiZeile(raster, zeilenwert);
         if (schnitt.IstLeer) return null;
 
-        return ChartRenderer.Schnittkurve(
+        return ChartRenderer.SchnittkurveModell(
             Schnitttitel(Gegengroesse(raster.Modus), raster.Zeilengroesse, zeilenwert),
             Achsentext(Gegengroesse(raster.Modus)),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
@@ -517,11 +555,21 @@ public static partial class SpeicherFlottenAnzeigeCtrl
     /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
     public static byte[] Ausschnittbild(FlottenAuslegungErgebnis ergebnis,
                                         int einheit = FLOTTE_GESAMT)
+        => Gemalt(AusschnittModell(ergebnis, einheit));
+
+    /// <summary>
+    /// <b>DERSELBE AUSSCHNITT ALS ZEICHENMODELL</b> — der Zwilling von
+    /// <see cref="Ausschnittbild"/> (Etappe DG-E3).
+    /// </summary>
+    /// <param name="ergebnis">Das Ergebnis der Rastersuche.</param>
+    /// <param name="einheit"><see cref="FLOTTE_GESAMT"/> oder die Stelle der Einheit.</param>
+    public static Zeichnung.Zeichenmodell AusschnittModell(FlottenAuslegungErgebnis ergebnis,
+                                                           int einheit = FLOTTE_GESAMT)
     {
         Ausschnittstand stand = Ausschnitt(ergebnis, einheit);
         if (stand.Daten.IstLeer) return null;
 
-        return ChartRenderer.Schnittkurve(
+        return ChartRenderer.SchnittkurveModell(
             Ausschnitttitel(ergebnis, einheit),
             Achsentext(Zeilengroesse(ergebnis.Achsenmodus)),
             MyResource.Resource.FLOTTE_GROESSEN_SKALA,
