@@ -54,6 +54,8 @@
    (max-content) bleibt sie trotzdem. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -121,12 +123,18 @@
                               WertChanged="@(w => _speicher = w)" />
                 </div>
 
-                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
-                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
-                   zurück. *@
-                <ChartBild Png="@BildPv" Alt="@Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE"
-                           BereichGewaehlt="@(b => _bereich = b)"
-                           Zurueckgesetzt="@(() => _bereich = null)" />
+                @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)); „1:1" holt das
+                   ganze Jahr zurueck. Das Bild zaehlt VIERTELstunden und traegt eine
+                   ZWEITE Achse: Der Speicherfuellstand steht in kWh, alles andere in
+                   kW — deshalb EinheitRechts. *@
+                <DiagrammSvg Modell="@ModellPv" Kennung="simerg-photovoltaik"
+                             Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE"
+                             Einheit="kW" EinheitRechts="kWh"
+                             Achsenart="Achsenart.Stuetzstelle"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
             </section>
 
         </div>
@@ -218,17 +226,12 @@
     public WindowsFormsApplication1.SimulationErgebnisCtrl.PhotovoltaikErgebnis? Daten { get; set; }
 
     /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
-    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? Bereich => _bereich;
-
-    // W11b‑B‑24: der Zeitausschnitt des Datenzooms. Das Bild zählt VIERTELstunden -
-    // die Hülle sagt dem Kern, wieviele Stützstellen es sind.
-    private Diagrammbereich? _bereich;
 
     // W11b‑B‑19: je Reihe ein Zustand. Die Vorbelegung ist die alte: die zwei
     // GRUNDREIHEN an, die zwei ZUSATZREIHEN aus (woertlich :4676-4679).
@@ -254,9 +257,8 @@
         return liste;
     }
 
-    private byte[]? BildPv =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Photovoltaik, false, -1, Reihen(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellPv =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Photovoltaik, false, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

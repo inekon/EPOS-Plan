@@ -39,6 +39,8 @@
    wie im Heizkesselreiter (W11b‑B‑22). Keine Zahl faellt weg. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -200,13 +202,18 @@
                           Wert="@_bedarf" WertChanged="@(w => _bedarf = w)" />
             </div>
 
-            @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
-               mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
-               zurück. Der Ausschnitt gilt in BEIDEN Zweigen — auch die Dauerlinie
-               lässt sich aufziehen, so wie im Bedarfsreiter seit dem 05.09.2026. *@
-            <ChartBild Png="@BildBhkw" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-                       BereichGewaehlt="@(b => _bereich = b)"
-                       Zurueckgesetzt="@(() => _bereich = null)" />
+            @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)): Rad, Ziehen,
+               Kneifgeste und die Tasten + − 0 verschieben die viewBox der
+               Zeichenflaeche, „1:1" holt das ganze Jahr zurueck. Er gilt in BEIDEN
+               Zweigen — auch die Dauerlinie laesst sich aufziehen. *@
+            <DiagrammSvg Modell="@ModellBhkw" Kennung="simerg-bhkw"
+                         Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                         Einheit="kW" Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                         XEinheit="@(_sortiert ? "" : "h")"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
         }
     }
 
@@ -244,7 +251,8 @@
     [Parameter] public bool StrombedarfVorhanden { get; set; } = true;
 
     /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
@@ -252,13 +260,7 @@
     /// <summary>Die eingeschalteten Reihen des Bildes (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
-    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? Bereich => _bereich;
-
     private bool _sortiert;
-
-    // W11b‑B‑24: der Zeitausschnitt des Datenzooms.
-    private Diagrammbereich? _bereich;
 
     // W11b‑B‑23: je Reihe ein Zustand, ALLE vorbelegt an.
     private bool _produktion = true;
@@ -292,9 +294,8 @@
         }
     }
 
-    private byte[]? BildBhkw =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellBhkw =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Bhkw, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

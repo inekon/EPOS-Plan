@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EPOS.UI.Bausteine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -758,19 +759,23 @@ public sealed class SimulationErgebnisDaten
 /// <param name="Kanal">Bedarfsart des Wärmegangs; −1 = Produktion.</param>
 /// <param name="Reihen">Die gewaehlten Serienschluessel; leer = alle.</param>
 /// <param name="Zahl">Freier Zahlenparameter (Was-wäre-wenn-Kapazitaet der Autarkie).</param>
-/// <param name="Bereich">DATENZOOM (Windows-Abnahme 05.09.2026): das Rechteck, das der
-/// Anwender im Bild aufgezogen hat, in Bildanteilen; <c>null</c> = die volle Ansicht.
-/// Die Hülle lässt den Kern daraus einen Achsenbereich machen — nur die
-/// Jahresganglinien werten ihn aus, alle übrigen Bilder übergehen ihn.</param>
+/// <remarks>
+/// <b>DER RUNDLAUF-DATENZOOM IST ENTFALLEN</b> (Entscheid DG-E3-9, Konzept Diagramme
+/// § 6). Bis zur Etappe DG-E3 trug der Auftrag einen sechsten Wert
+/// <c>Diagrammbereich Bereich</c>: das Rechteck, das der Anwender im PNG aufgezogen
+/// hatte, in Bildanteilen — die Hülle liess den Kern daraus einen Achsenbereich machen
+/// und rechnete das Bild ein zweites Mal. Seit die Zeitreihen im Baustein
+/// <c>DiagrammSvg</c> stehen, liegt der Zoom in der <c>viewBox</c> der Zeichenflaeche:
+/// eine Attributaenderung, kein zweiter Renderlauf. Die vier Bilder ohne Zeitachse
+/// kannten nie einen Bereich.
+/// </remarks>
 public sealed record Bildauftrag(string Bild, bool Sortiert = false, int Kanal = -1,
-                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0,
-                                 Diagrammbereich? Bereich = null)
+                                 IReadOnlyList<string>? Reihen = null, double Zahl = 0.0)
 {
     /// <summary>Der Zwischenspeicherschluessel — er trennt zwei Schalterstellungen.</summary>
     public string Schluessel =>
         Bild + "|" + (Sortiert ? "1" : "0") + "|" + Kanal + "|" + Zahl.ToString("R") + "|" +
-        (Reihen is null ? "" : string.Join(",", Reihen)) +
-        (Bereich is null ? "" : "|" + Bereich);
+        (Reihen is null ? "" : string.Join(",", Reihen));
 }
 
 /// <summary>Die sprachneutralen Bildschluessel der Ergebnisseite.</summary>
@@ -821,8 +826,29 @@ public sealed class SimulationErgebnisDienste
     /// <summary>Speichert das Ergebnis nach <c>Tab_Ergebnis*</c>.</summary>
     public Func<Rueckmeldung>? Speichern;
 
-    /// <summary>Rendert EIN Bild — erst beim Betreten des Reiters, dann zwischengespeichert.</summary>
+    /// <summary>
+    /// Rendert EIN Pixelbild — erst beim Betreten des Reiters, dann
+    /// zwischengespeichert. Es sind noch vier: die Streuwolke, die zwei Ringe und
+    /// die Monatssaeulen der Autarkie; sie tragen keine Zeitachse.
+    /// </summary>
     public Func<Bildauftrag, byte[]?>? Bild;
+
+    /// <summary>
+    /// Das ZEICHENMODELL eines Zeitreihenbildes (Etappe DG-E3, Gruppe (a)) — derselbe
+    /// Auftrag, derselbe Zwischenspeicher, nur ein anderer Ausgabeweg: Die Seite zeigt
+    /// es im Baustein <c>DiagrammSvg</c>.
+    /// </summary>
+    public Func<Bildauftrag, Zeichenmodell?>? Modell;
+
+    /// <summary>
+    /// Die Farbe einer Reihe anwendungsweit setzen (<c>Diagrammfarben.Setze</c>) —
+    /// der Klick auf das Farbfeld eines Legendeneintrags. Ohne Delegat bietet kein
+    /// Diagramm den Waehler an.
+    /// </summary>
+    public Func<Farbrolle, Farbe, Task>? FarbeSetzen;
+
+    /// <summary>„Hausfarbe": die Rolle wieder auf die Vorgabe.</summary>
+    public Func<Farbrolle, Task>? FarbeZuruecksetzen;
 
     // ---- Die FUENF Laufparameter stehen seit #216 in Schritt ① ----
     //

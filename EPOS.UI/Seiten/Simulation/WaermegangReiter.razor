@@ -46,6 +46,8 @@
    ohnehin. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -80,12 +82,19 @@
         }
     </div>
 
-    @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
-       laesst den Kern das Bild mit diesem Achsenbereich neu zeichnen - der Achsenzoom
-       des WinForms-Vorbilds. „1:1" holt das ganze Jahr zurueck. *@
-    <ChartBild Png="@BildGang" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-               BereichGewaehlt="@(b => _bereich = b)"
-               Zurueckgesetzt="@(() => _bereich = null)" />
+    @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)): Rad, Ziehen, Kneifgeste und
+       die Tasten + − 0 verschieben die viewBox der Zeichenflaeche; „1:1" holt das
+       ganze Jahr zurueck. Die SPEICHERFUELLSTAENDE stehen auf der zweiten Achse in
+       kWh, alles andere in kW. *@
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-waermegang"
+                 Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                 Einheit="kW" EinheitRechts="kWh"
+                 Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                 XEinheit="@(_sortiert ? "" : "h")"
+                 Palette="@Farbpalette.Aktuell"
+                 FarbwahlErlaubt="@Farbwahl"
+                 FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
 
     @if (Csv.HasDelegate)
     {
@@ -100,8 +109,8 @@
     /// <summary>Erzeugerreihen, Speicherreihen und die waehlbaren Bedarfsarten.</summary>
     [Parameter] public WaermegangDaten Daten { get; set; } = new WaermegangDaten();
 
-    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>
     /// Der CSV-Export: Bedarfsart, gewaehlte Erzeuger, gewaehlte Speicher.
@@ -126,9 +135,6 @@
 
     /// <summary>Die gewaehlten Speicherschluessel (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteSpeicher => Schluessel(Vorhandene(Daten.Speicher), _speicher);
-
-    /// <summary>Der aufgezogene Achsenbereich; <c>null</c> = das ganze Jahr (Pruefhilfe).</summary>
-    public Diagrammbereich? Bereich => _bereich;
 
     /// <summary>Ist die Bedarfslinie eingeblendet? (Pruefhilfe)</summary>
     public bool Bedarfslinie => _bedarfslinie;
@@ -155,7 +161,6 @@
 
     private int? _bedarfsart = -1;
     private bool _sortiert;
-    private Diagrammbereich? _bereich;
     private bool _bedarfslinie;
     private IReadOnlyList<int> _erzeuger = Array.Empty<int>();
     private IReadOnlyList<int> _speicher = Array.Empty<int>();
@@ -230,7 +235,7 @@
 
     /// <summary>
     /// Schreibt die Schalterstellung ins Sitzungsgedaechtnis — nach JEDER Aenderung.
-    /// Der Datenzoom (<c>_bereich</c>) gehoert ausdruecklich NICHT dazu.
+    /// Der Zeitausschnitt gehoert ausdruecklich NICHT dazu; er lebt im Bild.
     /// </summary>
     private void Merken()
     {
@@ -295,9 +300,8 @@
         return liste;
     }
 
-    private byte[]? BildGang =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Waermegang, _sortiert, Bedarfsart, Reihen(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellGang =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Waermegang, _sortiert, Bedarfsart, Reihen()));
 
     private Task CsvGewuenscht()
         => Csv.InvokeAsync((Bedarfsart, GewaehlteErzeuger, GewaehlteSpeicher));

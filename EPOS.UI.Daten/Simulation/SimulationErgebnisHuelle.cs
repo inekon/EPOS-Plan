@@ -270,6 +270,13 @@ namespace WindowsFormsApplication1
                 Abbrechen = Abbrechen,
                 Speichern = ErgebnisSpeichern,
                 Bild = Bild,
+                Modell = Modell,
+
+                // Die Farbe einer Reihe gilt ANWENDUNGSWEIT (Farbrollen, Bedienung
+                // Teil 2): Diagrammfarben schreibt sie ueber EinstellungenCtrl, und
+                // schon das naechste Bild traegt sie - Bildschirm wie Bericht.
+                FarbeSetzen = FarbeSetzen,
+                FarbeZuruecksetzen = FarbeZuruecksetzen,
 
                 // Die FUENF Laufparameter stehen seit #216 in Schritt ①; ihre
                 // Delegaten liefert ParameterGaben() derselben Huelle.

@@ -22,6 +22,8 @@
    Achsenskalierung - sie gehoert in den Renderer). *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -38,14 +40,18 @@
                      Eintraege="@Eintraege" AbsatzNach="@AbsatzNach" Gewaehlt="@_gewaehlt"
                      GewaehltChanged="@(w => { _gewaehlt = w; Merken(); })" />
 
-    @* DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1): Ein aufgezogenes Rechteck
-       laesst den Kern das Bild mit diesem Achsenbereich neu zeichnen. Bei 35 040
-       Viertelstunden auf 1 100 Bildpunkten ist er der einzige Weg zu einer einzelnen
-       Stunde - dreissig Werte je Bildpunkt kann kein Bildzoom aufloesen. *@
-    <ChartBild Png="@BildGang"
-               Alt="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE"
-               BereichGewaehlt="@(b => _bereich = b)"
-               Zurueckgesetzt="@(() => _bereich = null)" />
+    @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)). Bei 35 040 Viertelstunden
+       auf 1 100 Bildpunkten ist er der einzige Weg zu einer einzelnen Stunde —
+       dreissig Werte je Bildpunkt kann kein Bildzoom aufloesen. Ab dem Vierfachen
+       rechnet der Baustein den Ausschnitt roh nach (DG-E3-3). *@
+    <DiagrammSvg Modell="@ModellGang" Kennung="simerg-stromgang"
+                 Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE"
+                 Einheit="kW"
+                 Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                 Palette="@Farbpalette.Aktuell"
+                 FarbwahlErlaubt="@Farbwahl"
+                 FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
 
     @if (Csv.HasDelegate)
     {
@@ -60,8 +66,8 @@
     /// <summary>Die waehlbaren Reihen samt Praesenz.</summary>
     [Parameter] public StromgangDaten Daten { get; set; } = new StromgangDaten();
 
-    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Der CSV-Export - nur die angehakten Reihen. Ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback<IReadOnlyList<string>> Csv { get; set; }
@@ -80,13 +86,9 @@
     /// <summary>Steht die Dauerlinie vorn? (Pruefhilfe)</summary>
     public bool Sortiert => _sortiert;
 
-    /// <summary>Der aufgezogene Achsenbereich; <c>null</c> = das ganze Jahr (Pruefhilfe).</summary>
-    public Diagrammbereich? Bereich => _bereich;
-
     private bool _sortiert;
     private IReadOnlyList<int> _gewaehlt = Array.Empty<int>();
     private bool _erstBelegt;
-    private Diagrammbereich? _bereich;
     private Ganglinienstand _stand = new Ganglinienstand();
 
     protected override void OnInitialized()
@@ -165,7 +167,7 @@
 
     /// <summary>
     /// Schreibt die Schalterstellung ins Sitzungsgedaechtnis — nach JEDER Aenderung.
-    /// Der Datenzoom (<c>_bereich</c>) gehoert ausdruecklich NICHT dazu; eine
+    /// Der Zeitausschnitt gehoert ausdruecklich NICHT dazu — er lebt im Bild; eine
     /// Bedarfsart und eine Bedarfslinie kennt dieser Reiter nicht.
     /// </summary>
     private void Merken() => _stand.Merken(-1, _sortiert, false, Schluessel());
@@ -178,9 +180,8 @@
         return liste;
     }
 
-    private byte[]? BildGang =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellGang =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Stromgang, _sortiert, -1, Schluessel()));
 
     private Task CsvGewuenscht() => Csv.InvokeAsync(Schluessel());
 }

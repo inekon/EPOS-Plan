@@ -34,6 +34,7 @@
    ENDLAGE ist wie bisher die „Uebersicht". *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
 <div class="epos-simerg">
@@ -120,7 +121,9 @@
 
                 <Reiterblatt Schluessel="@Blatt.Bedarf" Titel="@Resource.SIMERG_TAB_BEDARF">
                     <KindInhalt>
-                        <BedarfReiter Daten="@_daten.Bedarf" Bild="BildHolen"
+                        <BedarfReiter Daten="@_daten.Bedarf" Modell="ModellHolen"
+                                      FarbeSetzen="@Dienste?.FarbeSetzen"
+                                      FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                       WaermeDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                       StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
                                       Csv="@Rueckruf(Dienste?.CsvBedarf)" />
@@ -131,7 +134,14 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Waermepumpe" Titel="@Resource.SIM_ERZEUGERNAME_WAERMEPUMPE">
                         <KindInhalt>
+                            @* DER EINZIGE REITER MIT BEIDEN WEGEN: Produktion,
+                               Stromverbrauch und Speichertemperaturen sind
+                               Zeichenmodelle, die Streuwolke bleibt ein Pixelbild
+                               (x = Aussentemperatur, keine Zeitachse). *@
                             <WaermepumpeReiter Daten="@_daten.Waermepumpe" Bild="BildHolen"
+                                               Modell="ModellHolen"
+                                               FarbeSetzen="@Dienste?.FarbeSetzen"
+                                               FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                                Speichertemperaturen="@_daten.Speichertemperaturen"
                                                ModulOeffnen="@(WpGabenDa ? EventCallback.Factory.Create(this, WaermepumpeOeffnen) : default)"
                                                Csv="@Rueckruf(Dienste?.CsvWaermepumpe)" />
@@ -143,7 +153,9 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Heizkessel" Titel="@Resource.SIM_ERZEUGERNAME_HEIZKESSEL">
                         <KindInhalt>
-                            <HeizkesselReiter Daten="@_daten.Heizkessel" Bild="BildHolen"
+                            <HeizkesselReiter Daten="@_daten.Heizkessel" Modell="ModellHolen"
+                                              FarbeSetzen="@Dienste?.FarbeSetzen"
+                                              FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                               Brennstoffe="@_daten.KesselBrennstoffe"
                                               BrennstoffDefiniert="@_daten.KesselBrennstoffDefiniert"
                                               BedarfVorhanden="@(_daten.Uebersicht?.WaermebedarfVorhanden ?? false)"
@@ -156,7 +168,9 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Solarthermie" Titel="@Resource.SIM_ERZEUGERNAME_SOLARTHERMIE">
                         <KindInhalt>
-                            <SolarthermieReiter Daten="@_daten.Solarthermie" Bild="BildHolen" />
+                            <SolarthermieReiter Daten="@_daten.Solarthermie" Modell="ModellHolen"
+                                                FarbeSetzen="@Dienste?.FarbeSetzen"
+                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -165,7 +179,9 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Bhkw" Titel="@Resource.SIM_ERZEUGERNAME_BHKW">
                         <KindInhalt>
-                            <BhkwReiter Daten="@_daten.Bhkw" Bild="BildHolen"
+                            <BhkwReiter Daten="@_daten.Bhkw" Modell="ModellHolen"
+                                        FarbeSetzen="@Dienste?.FarbeSetzen"
+                                        FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                         Brennstoffe="@_daten.BhkwBrennstoffe"
                                         BrennstoffDefiniert="@_daten.BhkwBrennstoffDefiniert"
                                         Praesent="@(_daten.Uebersicht?.Bhkw ?? false)"
@@ -179,7 +195,9 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Photovoltaik" Titel="@Resource.SIM_PHOTOVOLTAIK">
                         <KindInhalt>
-                            <PhotovoltaikReiter Daten="@_daten.Photovoltaik" Bild="BildHolen" />
+                            <PhotovoltaikReiter Daten="@_daten.Photovoltaik" Modell="ModellHolen"
+                                                FarbeSetzen="@Dienste?.FarbeSetzen"
+                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -197,7 +215,9 @@
                                SEIT #274 IST DER REITER REINES ERGEBNIS: Der Einstieg
                                in die Auslegung steht in Schritt ①; von hier fuehrt nur
                                noch der Verweis "Konfiguration aendern → ①" dorthin. *@
-                            <StromspeicherReiter Daten="@_daten.Speicher" Bild="BildHolen"
+                            <StromspeicherReiter Daten="@_daten.Speicher" Modell="ModellHolen"
+                                                 FarbeSetzen="@Dienste?.FarbeSetzen"
+                                                 FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                                  Parameter="@_daten.Parameter.Speicher"
                                                  Dienste="@Dienste" Gesperrt="@_daten.Gesperrt"
                                                  KonfigurationOeffnen="@Rueckruf(Dienste?.KonfigurationOeffnen)"
@@ -397,6 +417,18 @@
     private SimulationErgebnisDaten _daten = new SimulationErgebnisDaten();
     private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
 
+    /// <summary>
+    /// Die ZEICHENMODELLE der Zeitreihenbilder — derselbe Zwischenspeicher wie für
+    /// die Pixelbilder, aus demselben Grund und mit demselben Schluessel.
+    ///
+    /// <para><b>Er ist hier mehr als eine Ersparnis:</b> Der Baustein
+    /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des
+    /// Modells wechselt. Ein Modell, das je Zeichenlauf neu entstuende, verwuerfe mit
+    /// dem Baum auch Zoom, Zeigerstelle und abgewaehlte Reihen.</para>
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell?> _modelle
+        = new Dictionary<string, Zeichenmodell?>();
+
     private Reiter? _reiter;
 
     /// <summary>
@@ -472,6 +504,7 @@
     private void Neuladen()
     {
         _bilder.Clear();
+        _modelle.Clear();
         _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationErgebnisDaten();
     }
 
@@ -699,6 +732,22 @@
 
     private byte[]? Bild(string bild) => BildHolen(new Bildauftrag(bild));
 
+    /// <summary>
+    /// Das Zeichenmodell EINES Zeitreihenbildes — derselbe Weg wie
+    /// <see cref="BildHolen"/>, nur ein anderer Ausgang (Etappe DG-E3, Gruppe (a)).
+    /// </summary>
+    private Zeichenmodell? ModellHolen(Bildauftrag auftrag)
+    {
+        if (Dienste?.Modell is null) return null;
+
+        string schluessel = auftrag.Schluessel;
+        if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+        Zeichenmodell? neu = Dienste.Modell(auftrag);
+        _modelle[schluessel] = neu;
+        return neu;
+    }
+
     // =====================================================================
     // Die Ueberlagerungen
     // =====================================================================
@@ -801,13 +850,15 @@
     // =====================================================================
 
     private RenderFragment Waermegang => @<WaermegangReiter
-        Daten="@_daten.Waermegang" Bild="BildHolen"
+        Daten="@_daten.Waermegang" Modell="ModellHolen"
+        FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
         Csv="@(Dienste?.CsvWaermegang is null ? default
                 : EventCallback.Factory.Create<(int, IReadOnlyList<string>, IReadOnlyList<string>)>(
                       this, w => Dienste!.CsvWaermegang!(w.Item1, w.Item2, w.Item3)))" />;
 
     private RenderFragment Stromgang => @<StromgangReiter
-        Daten="@_daten.Stromgang" Bild="BildHolen"
+        Daten="@_daten.Stromgang" Modell="ModellHolen"
+        FarbeSetzen="@Dienste?.FarbeSetzen" FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
         Csv="@(Dienste?.CsvStromgang is null ? default
                 : EventCallback.Factory.Create<IReadOnlyList<string>>(this, r => Dienste!.CsvStromgang!(r)))" />;
 

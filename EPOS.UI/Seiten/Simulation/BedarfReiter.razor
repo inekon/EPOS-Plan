@@ -32,6 +32,8 @@
    Darstellungsart. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -121,13 +123,18 @@
            bleiben nebeneinander, die Diagramme stehen darunter ueber beide Spalten
            (.epos-simerg-diagrammzeile).
 
-           BereichGewaehlt gibt den Achsenzoom des WinForms-Vorbilds zurueck
-           (Befund A-1): Ein aufgezogenes Rechteck laesst den Kern das Bild mit
-           diesem Zeitausschnitt neu zeichnen; „1:1" holt das ganze Jahr zurueck. *@
+           DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)): Das Diagramm steht
+           als SVG, und ein Zeitausschnitt ist die viewBox seiner Zeichenflaeche -
+           kein zweiter Renderlauf, kein Rundlauf in den Kern (DG-E3-9). *@
         <section class="epos-simerg-block epos-simerg-diagrammzeile">
-            <ChartBild Png="@BildWaerme" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-                       BereichGewaehlt="WaermeBereichGewaehlt"
-                       Zurueckgesetzt="@(() => _waermeBereich = null)" />
+            <DiagrammSvg Modell="@ModellWaerme" Kennung="simerg-bedarf-waerme"
+                         Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                         Einheit="kW" Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                         XEinheit="@(_sortiert ? "" : "h")"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
 
             @if (WaermeDetails.HasDelegate)
             {
@@ -138,9 +145,15 @@
         </section>
 
         <section class="epos-simerg-block epos-simerg-diagrammzeile">
-            <ChartBild Png="@BildStrom" Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
-                       BereichGewaehlt="StromBereichGewaehlt"
-                       Zurueckgesetzt="@(() => _stromBereich = null)" />
+            @* Der Strombedarf zaehlt VIERTELstunden - x ist die Stuetzstelle, keine
+               Jahresstunde, und traegt deshalb keine Einheit. *@
+            <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-bedarf-strom"
+                         Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                         Einheit="kW" Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
 
             @if (StromDetails.HasDelegate)
             {
@@ -166,8 +179,12 @@
     /// <summary>Die vier Zahlen und die drei Kanaele.</summary>
     [Parameter] public BedarfDaten Daten { get; set; } = new BedarfDaten();
 
-    /// <summary>Liefert ein Bild zur aktuellen Schalterstellung; ohne ihn bleibt es leer.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>
+    /// Liefert das Zeichenmodell zur aktuellen Schalterstellung; ohne ihn bleibt
+    /// das Diagramm leer.
+    /// </summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
+
 
     /// <summary>„Details…" der Waermeseite (BedarfErgebnisDialog, W8).</summary>
     [Parameter] public EventCallback WaermeDetails { get; set; }
@@ -184,17 +201,9 @@
     /// <summary>Stehen die Dauerlinien vorn? EIN Zustand fuer BEIDE Bilder (Pruefhilfe).</summary>
     public bool Sortiert => _sortiert;
 
-    /// <summary>Der aufgezogene Zeitausschnitt des Waermebildes; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? WaermeBereich => _waermeBereich;
-
-    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
-    public Diagrammbereich? StromBereich => _stromBereich;
-
     private bool _sortiert;
     private bool _gesamtAn = true;
     private readonly HashSet<int> _kanaele = new HashSet<int>();
-    private Diagrammbereich? _waermeBereich;
-    private Diagrammbereich? _stromBereich;
 
     private bool KanalzeilenDa
     {
@@ -233,23 +242,11 @@
         return liste;
     }
 
-    /// <summary>
-    /// Der Anwender hat im Waermebild einen Bereich aufgezogen. Der Ausschnitt geht
-    /// unveraendert in den Bildauftrag; was daraus fuer ein Achsenbereich wird, weiss
-    /// nur der Renderer, der das Bild gezeichnet hat.
-    /// </summary>
-    private void WaermeBereichGewaehlt(Diagrammbereich bereich) => _waermeBereich = bereich;
+    private Zeichenmodell? ModellWaerme =>
+        Modell?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _sortiert, -1, Reihen()));
 
-    /// <summary>Dasselbe fuer das Strombild.</summary>
-    private void StromBereichGewaehlt(Diagrammbereich bereich) => _stromBereich = bereich;
-
-    private byte[]? BildWaerme =>
-        Bild?.Invoke(new Bildauftrag(Bilder.BedarfWaerme, _sortiert, -1, Reihen(),
-                                     0.0, _waermeBereich));
-
-    private byte[]? BildStrom =>
-        Bild?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _sortiert, -1, null,
-                                     0.0, _stromBereich));
+    private Zeichenmodell? ModellStrom =>
+        Modell?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _sortiert));
 
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet

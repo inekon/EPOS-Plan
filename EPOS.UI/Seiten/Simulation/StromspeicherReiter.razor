@@ -53,6 +53,8 @@
    dann je Reihe einer, dann das Bild mit dem Datenzoom aus W11b-B-24. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 @using EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
@@ -157,10 +159,10 @@
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@
             <section class="epos-simerg-block epos-simerg-diagrammzeile">
 
-                @* DIE SCHALTER STEHEN UEBER DEM BILD und nur MIT Bilddelegat - ohne
+                @* DIE SCHALTER STEHEN UEBER DEM BILD und nur MIT Modelldelegat - ohne
                    ihn gaebe es nichts neu zu zeichnen ("Kein Delegat ist kein
                    Knopf"). *@
-                @if (Bild is not null)
+                @if (Modell is not null)
                 {
                     <div class="epos-simerg-schalter">
                         <Schalter Bezeichnung="@Resource.SIM_CHK_SORTIERT" Wert="@_sortiert"
@@ -177,13 +179,19 @@
                     </div>
                 }
 
-                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
-                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
-                   zurück. Er gilt in BEIDEN Zweigen: Auch die Dauerlinie entsteht aus
-                   dem zugeschnittenen Ausschnitt (Doku, 5.1). *@
-                <ChartBild Png="@BildBetrieb" Alt="@Resource.SP_CHART_TITEL_BETRIEB"
-                           BereichGewaehlt="@(b => _bereich = b)"
-                           Zurueckgesetzt="@(() => _bereich = null)" />
+                @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)). Gerade hier
+                   gewinnt er: Ein Speicher laedt und entlaedt im TAGESrhythmus, und
+                   in der Vollansicht liegen rund 40 Viertelstunden auf einem
+                   Bildpunkt — erst der Ausschnitt zeigt einen einzelnen Zyklus.
+                   Der LADEZUSTAND steht auf der zweiten Achse in kWh. *@
+                <DiagrammSvg Modell="@ModellBetrieb" Kennung="simerg-speicherbetrieb"
+                             Bezeichnung="@Resource.SP_CHART_TITEL_BETRIEB"
+                             Einheit="kW" EinheitRechts="kWh"
+                             Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
 
                 <div class="epos-simerg-schalter">
                     @if (Csv.HasDelegate)
@@ -339,17 +347,17 @@
     /// <summary>Werkzeugtipp des Verweises; SIM_SP_KONFIG_VERWEIS_TIP.</summary>
     [Parameter] public string KonfigVerweisTip { get; set; } = Resource.SIM_SP_KONFIG_VERWEIS_TIP;
 
-    /// <summary>Liefert das Bild „Lastgang und Speicherbetrieb"; ohne ihn bleibt es leer.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>
+    /// Liefert das Zeichenmodell „Lastgang und Speicherbetrieb"; ohne ihn bleibt das
+    /// Diagramm leer.
+    /// </summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Csv { get; set; }
 
     /// <summary>Der Variantenvergleich als Ueberlagerung; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Vergleich { get; set; }
-
-    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? Bereich => _bereich;
 
     /// <summary>Steht die Dauerlinie vorn? (Prüfhilfe)</summary>
     public bool Sortiert => _sortiert;
@@ -358,11 +366,6 @@
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
 
     private int Spalten => Daten.MitVergleich ? 4 : 3;
-
-    // W11b‑B‑24: der Zeitausschnitt des Datenzooms. Ein Speicher lädt und entlädt im
-    // TAGESrhythmus - in der Vollansicht liegen rund 40 Viertelstunden auf einem
-    // Bildpunkt, und erst der Ausschnitt zeigt einen einzelnen Zyklus.
-    private Diagrammbereich? _bereich;
 
     // W11b‑B‑26: Dauerlinie statt Ganglinie - derselbe Schalter wie im Bedarfsreiter
     // (SIM_CHK_SORTIERT), und dieselbe Bedeutung: jede Reihe FUER SICH absteigend.
@@ -417,9 +420,8 @@
         return liste;
     }
 
-    private byte[]? BildBetrieb =>
-        Bild?.Invoke(new Bildauftrag(Bilder.SpeicherBetrieb, _sortiert, -1, Reihen(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellBetrieb =>
+        Modell?.Invoke(new Bildauftrag(Bilder.SpeicherBetrieb, _sortiert, -1, Reihen()));
 
     /// <summary>
     /// Die Zeilen EINER Gruppe, jede mit der Ueberschrift des Unterabschnitts, den

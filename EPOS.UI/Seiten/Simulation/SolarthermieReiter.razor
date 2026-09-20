@@ -42,6 +42,8 @@
    Zeile; kompakt (max-content) bleibt sie trotzdem. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -86,12 +88,16 @@
                               Wert="@_produktion" WertChanged="@(w => _produktion = w)" />
                 </div>
 
-                @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den Kern das Bild
-                   mit diesem Zeitausschnitt NEU zeichnen; „1:1" holt das ganze Jahr
-                   zurück. *@
-                <ChartBild Png="@BildSolar" Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-                           BereichGewaehlt="@(b => _bereich = b)"
-                           Zurueckgesetzt="@(() => _bereich = null)" />
+                @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)): Rad, Ziehen,
+                   Kneifgeste und die Tasten + − 0 verschieben die viewBox der
+                   Zeichenflaeche; „1:1" holt das ganze Jahr zurueck. *@
+                <DiagrammSvg Modell="@ModellSolar" Kennung="simerg-solarthermie"
+                             Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                             Einheit="kW" Achsenart="Achsenart.Stuetzstelle" XEinheit="h"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
             </section>
 
         </div>
@@ -139,17 +145,11 @@
     [Parameter]
     public WindowsFormsApplication1.SimulationErgebnisCtrl.SolarthermieErgebnis? Daten { get; set; }
 
-    /// <summary>Liefert das Bild zur aktuellen Schalterstellung.</summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+    /// <summary>Liefert das Zeichenmodell zur aktuellen Schalterstellung.</summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Die eingeschalteten Reihen (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
-
-    /// <summary>Der aufgezogene Zeitausschnitt des Bildes; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? Bereich => _bereich;
-
-    // W11b‑B‑24: der Zeitausschnitt des Datenzooms.
-    private Diagrammbereich? _bereich;
 
     // W11b‑B‑19: je Reihe ein Zustand, BEIDE vorbelegt an.
     private bool _bedarf = true;
@@ -169,9 +169,8 @@
         return liste;
     }
 
-    private byte[]? BildSolar =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen(),
-                                     0.0, _bereich));
+    private Zeichenmodell? ModellSolar =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Solarthermie, false, -1, Reihen()));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch
