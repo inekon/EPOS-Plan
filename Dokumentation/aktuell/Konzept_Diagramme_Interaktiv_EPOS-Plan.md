@@ -258,7 +258,7 @@ Datenzoom bis dahin überall zu haben.
 
 | Etappe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-20.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **91 Bilder aus 71 Proben** (auch die Bilder der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte** von E1. Keine Bilder im Repository | ChartProben grün (71 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
+| **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-20.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **91 Bilder** (auch die der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte** von E1. Sie gilt für die **Vorgabe-Palette**, die die Probe ausdrücklich setzt; die Gegenprobe der getauschten Palette (Abschnitt 9) steht deshalb nicht darin. Keine Bilder im Repository | ChartProben grün (72 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
 | **E1 Zeichenmodell hinter dem `ChartRenderer`, ohne Bildänderung** — *E1a umgesetzt (#400): Modell, Maler, Farbrollen, Skala und die 15 Zeitreihenbilder; E1b umgesetzt (#401): Säulen, Stapel, Kuchen, Ring, Balken — damit **23 von 26 Methoden** auf dem Modell; E1c (Kennlinien, Streuwolke, Schnitt- und Stückzahlkurve, Optimierungsraster — 5) steht aus* | `Allgemein/Bericht/Zeichnung/`: `Zeichenmodell` (Primitive: Linie, Rechteck, Kreis, Ellipse, Pfad, Text, Gruppe mit Zuschnitt, Strichmuster; Zeichenfläche mit Datenfenster) und `SkiaMaler`. Die 62 Helfer werden auf das Modell umgestellt (`Text`, `Strich`, `Fuellung`, `Linienzug`, `Vieleck`, `Kreissegment`, `Legende`, `YRaster`, `XAchse`, `XAchseFenster`, …), die fünf Skalenrechnungen zu **vier benannten Varianten** einer `Skala` (`Rund`, `Nice`, `Stufe`, `Bedarf` — nicht vereinheitlicht, weil jede Vereinfachung ein Bild verschöbe); die 26 Methoden füllen ein Modell und geben weiterhin `byte[]` zurück (`Png(modell)`). **Farben stehen im Befehl als `Farbrolle` plus Abwandlung, nicht als Zahl** (DG-Q7): aufgelöst wird beim Malen gegen `Farbpalette.Aktuell`, die Vorgabepalette trägt die Hausfarben Wert für Wert, und eine Rückwärtssuche gibt einer von außen durchgereichten Hausfarbe ihre Rolle zurück. Drei Aufträge: Zeitreihen (10 Methoden mit `Achsenfenster`, Jahresgang, Kostenprofil, Stundenprofil, Kapitalwert, Projektion), Säulen/Stapel/Kuchen/Ring/Balken (8), Kennlinien/Streuwolke/Schnitt/Stückzahl/Optimierungsraster (5) plus Bericht-Sonderfälle | **alle 91 Hashes gleich** (Text-Diff gegen die Messlatte leer), ChartProben grün, `ChartRendererTests` grün, Referenzlauf unnötig (kein Rechenweg) | **L** (3 × M) |
 | **E2 SVG-Ausgabe und Baustein für EINE Art** | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
 | **E3 Rollout je Diagrammart** | in dieser Reihenfolge: (a) Zeitreihen der Ergebnisreiter (`Jahresverlauf`, `GanglinieNormiert`, `ErzeugerStapel`, `Temperaturverlauf`, `Speicherbetrieb`, `Kostenprofil`, `Stundenprofil`) — ersetzt den Rundlauf-Datenzoom dort; (b) `KapitalwertVerlauf`, `Jahresprojektion`, `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`; (c) `MonatsSaeulen`, `MonatsStapel`, `StrombilanzMonate`, `BalkenHorizontal`, `Optimierungsraster`; (d) `Kuchen`, `Ring` (ohne Interaktion, nur Schärfe und Text). Je Auftrag eine Gruppe; `ChartBild` bleibt, bis die letzte PNG-Stelle umgestellt ist, dann entfällt der Bildzoom per CSS-Transform | je Gruppe bunit, ChartProben (PNG unverändert), Gerät | 4 × S–M |
@@ -281,5 +281,42 @@ Anwenderentscheidung, keine Pflicht).
 | **DG-Q6** | Zeitpunkt: E0/E1 sofort nach dem Merge von KL-8 und DL-3 beginnen — oder E1 aufschieben, bis DL-3 den Datenzoom überall über den Rundlauf ausgerollt hat? | **Nach dem Merge beginnen**, DL-3 nicht über sein Inventar hinaus in den Rundlauf investieren: Jede weitere Rundlauf-Verdrahtung ist Doppelarbeit gegen E3 | **Beginn sofort nach dem Merge von KL-8**; **DL-3 verworfen** — der Rundlauf-Datenzoom der vier weiteren Stellen kommt mit E3 (20.09.2026) |
 | **DG-Q7** | Farben: die Palette fest im Renderer — oder je Reihe und Größe eine benannte Farbrolle, die anwendungsweit tauschbar ist? | **Farbrollen.** Der Befehl trägt eine Rolle, nicht eine Zahl; die Palette löst sie beim Malen auf. Ein Tausch erreicht damit alle 26 Bilder und den Bericht, ohne dass eine Zeichenmethode angefasst wird | **benannte Farbrollen, anwendungsweit tauschbare Palette; der Bericht folgt** (20.09.2026) |
 
-Kein Wiki-Logbuch-Satz: Bis E2 sieht der Anwender nichts; der Satz entsteht mit der ersten
-umgestellten Maske (Klimadialog).
+Kein Wiki-Logbuch-Satz für E1 selbst: Der Umbau hinter dem Renderer ist unsichtbar. Der Satz
+zur **Farbwahl** steht unter Abschnitt 9, der zur ersten umgestellten Maske entsteht mit E2
+(Klimadialog).
+
+## 9 Farbrollen
+
+Aus DG-Q7 wird eine Bedienung: **Die Farbe einer Größe ist anwendungsweit einstellbar.**
+
+**Rolle.** Ein Zeichenbefehl trägt keine Farbzahl, sondern einen `Farbton` — eine
+`Farbrolle` (`WAERME_WP`, `STROM_PV`, `SPEICHER_3`, `RASTER`, …) und wahlweise eine Abwandlung
+(andere Deckung, oder eine im Layout gerechnete Farbe mit ihrer Herkunftsrolle). Vierzig
+Rollen in sechs Gruppen: Allgemein, Erzeuger und Bedarf, Varianten, Speicher, Profile und
+Temperaturen, Rasterkarte.
+
+**Palette.** `Farbpalette.Vorgabe` trägt die Hausfarben Wert für Wert — sie ist zugleich die
+Messlatte der ChartProben, die ausdrücklich mit ihr rechnen. `Farbpalette.Aktuell` ist die
+Palette, gegen die gemalt wird; `Farbpalette.Zuruecksetzen()` stellt die Vorgabe wieder her.
+**Aufgelöst wird beim MALEN**, deshalb folgt jedes der 26 Bilder und der Bericht (Word und
+PDF malen über denselben `SkiaMaler`), ohne dass eine Zeichenmethode angefasst wird.
+
+**Einstellung.** Ein Schlüssel `DiagrammFarben` unter den Anwendungseinstellungen führt die
+geänderten Rollen als kompakten Text `ROLLE=#RRGGBB;…`; **nur die Abweichungen** stehen darin,
+leer heißt Hausfarben — eine später geänderte Hausfarbe erreicht damit jeden, der sie nicht
+selbst gesetzt hat. Die **Deckung bleibt die der Hausfarbe**: Der Anwender wählt den Farbton,
+die Durchsichtigkeit gehört zum Bildaufbau. Ein nicht lesbarer Eintrag wird **benannt
+verworfen**, nie still. `Diagrammfarben.Uebernehmen()` speist die Palette — beim Programmstart
+und nach dem Speichern der Einstellungen, ohne Neustart.
+
+**Bedienung, Teil 1 (umgesetzt).** Administration › Einstellungen, Rubrik **Diagramme**: je
+Rolle ein `Farbfeld` (Systemwähler, beschreibbares Hexfeld, Muster der Hausfarbe daneben), in
+den sechs Gruppen; „Hausfarben" setzt alle zurück und speichert nicht, übernommen wird mit
+„OK".
+
+**Bedienung, Teil 2 (offen).** Der Klick auf einen Legendeneintrag öffnet den Farbwähler
+unmittelbar am Bild. Er setzt den SVG-Baustein voraus (die PNG-Legende ist ein Bildausschnitt
+ohne Trefferfläche) und kommt deshalb **mit E2**.
+
+**Wiki-Logbuch (Version 1.2.0.3):** „Die Farben der Diagramme lassen sich in den Einstellungen
+je Größe ändern; der Bericht nimmt dieselben Farben."

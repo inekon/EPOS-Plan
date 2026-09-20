@@ -20,6 +20,17 @@ In der '''Stromspeicher-Auslegung''' – erreichbar über ''① Konfiguration �
 
 Nach einer Eingabeänderung wird das alte Ergebnis als veraltet gekennzeichnet. Die Heatmap verwendet Kapazität oder Leistung als gewählte Größenachse; Jahresüberschuss, Kapitalwert und Amortisation berücksichtigen die Betriebskosten. Neu berechnen liefert einen aktuellen Bestpunkt zur Übernahme der Dimensionierung. Die ausführliche Bedienung steht unter [[Programm Dokumentation/Stromspeicher#auslegung-optimieren|Stromspeicher: Auslegung optimieren]].
 
+== Farben der Diagramme ==
+{{Anker|diagrammfarben}}
+
+Unter ''Administration → Einstellungen'' führt die Rubrik '''Diagramme''' zu jeder Größe, die in einem Diagramm vorkommt, eine eigene Farbe – Wärmepumpe, BHKW, Heizkessel, Solarthermie, Photovoltaik, Netzbezug, Restbedarf, Bedarfslinie, die Variantenreihen, die Speicher, die Profil- und Temperaturkurven sowie die Farben der Rasterkarte und die allgemeinen Farben von Hintergrund, Text, Achsen und Rasterlinien. Die Einträge stehen in sechs Gruppen.
+
+Je Größe stehen nebeneinander der Farbwähler, der Farbwert in der Schreibweise <code>#RRGGBB</code> und ein kleines Muster der Hausfarbe. Sie können die Farbe im Wähler aussuchen oder den Wert eintippen; eine Eingabe, die keine Farbe in dieser Schreibweise ist, wird am Feld abgewiesen.
+
+* '''Die Farbe gilt im ganzen Programm.''' Eine hier gesetzte Farbe erscheint in allen Diagrammen, die diese Größe zeigen, und ebenso im Wortbericht und im PDF. Ein Neustart ist nicht nötig.
+* '''Halbdurchsichtige Flächen bleiben halbdurchsichtig.''' Sie wählen den Farbton; wie stark eine Fläche durchscheint, gehört zum Bildaufbau und ändert sich nicht.
+* '''Hausfarben''' setzt alle Farben auf die Vorgaben der Auslieferung zurück; übernommen wird die Änderung – wie in den übrigen Rubriken – erst mit ''OK''.
+
 == Siehe auch ==
 
 * [[Simulation]] – Erzeugerkaskade, Strombilanz und zeitliche Auflösung

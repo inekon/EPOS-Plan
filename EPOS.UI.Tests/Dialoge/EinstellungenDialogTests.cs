@@ -6,6 +6,7 @@ using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -13,7 +14,7 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Die globalen Anwendungseinstellungen (iU9-W14c.6). Soll ist die Feldkarte der
 /// gelöschten Maske <c>Form_AdminSettings</c> (28 Kartenzeilen): eine Rubrikenliste
-/// mit FÜNF Einträgen, elf Textfelder, fünf „Durchsuchen…"-Knöpfe, drei
+/// mit SECHS Einträgen, elf Textfelder, fünf „Durchsuchen…"-Knöpfe, drei
 /// Fußknöpfe — <b>und die zwei Steuerelemente, die zur LAUFZEIT entstanden</b>
 /// (<c>chk_KiAus</c>, <c>lbl_KiAus</c>): Die Feldkarte sah sie nicht (R-W14c-6),
 /// hier stehen sie.
@@ -21,6 +22,11 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <para>Die fünfte Rubrik „Klimadaten" (KL1-A) steht HINTER „Web-Schnittstellen
 /// (API)": PVGIS-Adresse (aus der Web-Rubrik hierher gewandert), Portal der
 /// DWD-Testreferenzjahre und Adresse der TRY-Regionaldaten.</para>
+///
+/// <para>Die sechste Rubrik „Diagramme" (DF-1, Anwenderentscheid 20.09.2026) steht
+/// zwischen „Klimadaten" und „Anwendung": je Farbrolle ein <c>Farbfeld</c>, in
+/// sechs Gruppen, dazu der Knopf „Hausfarben". <b>Die Reiterindizes 0 bis 3 bleiben,
+/// was sie waren</b> — „Anwendung" rückt von 4 auf 5.</para>
 ///
 /// <para>Die Kultur ist auf de-DE gepinnt (Regel seit W8).</para>
 /// </summary>
@@ -55,10 +61,12 @@ public class EinstellungenDialogTests : EposBunitContext
         Func<string, Task<string?>>? waehler = null,
         Func<Einstellungensatz, bool, Task<SpeicherBefund>>? speichern = null,
         Func<Task<Einstellungensatz>>? zuruecksetzen = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        IReadOnlyList<Farbrollengabe>? farbrollen = null)
     {
         return Render<EinstellungenDialog>(p => p
             .Add(x => x.Satz, satz ?? Satz())
+            .Add(x => x.Farbrollen, farbrollen ?? Diagrammfarben.Gaben())
             .Add(x => x.KiAbgeschaltet, kiAus)
             .Add(x => x.MaschinenRiegel, riegel)
             .Add(x => x.KiLesbar, kiLesbar)
@@ -86,13 +94,13 @@ public class EinstellungenDialogTests : EposBunitContext
     /// waren.</para>
     /// </summary>
     [Fact]
-    public void Die_fuenf_Rubriken_sind_fuenf_Reiter()
+    public void Die_sechs_Rubriken_sind_sechs_Reiter()
     {
         var cut = Zeige();
         var reiter = cut.FindAll(".epos-reiter-knopf").Select(e => e.TextContent.Trim()).ToList();
 
         Assert.Equal(new[] { "VDI Datensätze", "Datenbank", "Web-Schnittstellen (API)",
-                             "Klimadaten", "Anwendung" },
+                             "Klimadaten", "Diagramme", "Anwendung" },
                      reiter);
     }
 
@@ -122,8 +130,17 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Equal(3, cut.FindAll("input[type=text]").Count);
         Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
 
-        // Rubrik 5: der Allgemein-Pfad UND der KI-Schalter.
+        // Rubrik 5 "Diagramme": je Farbrolle ein Waehler und ein Hexfeld, dazu das
+        // Vorgabemuster - und keine Dateiwahl.
         Reiter(cut, 4);
+        int rollen = Diagrammfarben.Rollen.Count;
+        Assert.Equal(rollen, cut.FindAll("input[type=color]").Count);
+        Assert.Equal(rollen, cut.FindAll(".epos-farbfeld-hex").Count);
+        Assert.Equal(rollen, cut.FindAll(".epos-farbfeld-vorgabe").Count);
+        Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
+
+        // Rubrik 6: der Allgemein-Pfad UND der KI-Schalter.
+        Reiter(cut, 5);
         Assert.Single(cut.FindAll("input[type=text]"));
         Assert.Single(cut.FindAll(".epos-dateiwahl button"));
         Assert.Single(cut.FindAll("input[type=checkbox]"));
@@ -191,12 +208,12 @@ public class EinstellungenDialogTests : EposBunitContext
             .Add(x => x.Geschlossen, geschlossen ?? (_ => { })));
     }
 
-    /// <summary>Zählt über alle fünf Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
+    /// <summary>Zählt über alle sechs Rubriken — ein Reiterblatt zeichnet nur, wenn es aktiv ist.</summary>
     private static (int Felder, int NurLesend, int Knoepfe) Pfadfelder(
         IRenderedComponent<EinstellungenDialog> cut)
     {
         int felder = 0, lesend = 0, knoepfe = 0;
-        for (int r = 0; r < 5; r++)
+        for (int r = 0; r < 6; r++)
         {
             Reiter(cut, r);
             var pfade = cut.FindAll(".epos-dateiwahl input");
@@ -338,7 +355,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Der_KI_Schalter_zeigt_den_Registry_Stand()
     {
         var cut = Zeige(kiAus: true);
-        Reiter(cut, 4);
+        Reiter(cut, 5);
 
         Assert.True(cut.Instance.KiAus);
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("checked"));
@@ -352,7 +369,7 @@ public class EinstellungenDialogTests : EposBunitContext
     public void Ein_Maschinenriegel_sperrt_den_Schalter_und_sagt_warum()
     {
         var cut = Zeige(kiAus: true, riegel: true);
-        Reiter(cut, 4);
+        Reiter(cut, 5);
 
         Assert.True(cut.Find("input[type=checkbox]").HasAttribute("disabled"));
         Assert.Contains("verwaltungsseitig gesperrt", cut.Markup);
@@ -392,7 +409,7 @@ public class EinstellungenDialogTests : EposBunitContext
     /// <summary>
     /// Der Dialog trägt <b>genau eine</b> Fußleiste, und sie läuft
     /// <b>Standardwerte · Füller · Abbrechen · OK (primär)</b>. „Standardwerte" wirkt
-    /// auf alle fünf Rubriken zugleich und steht deshalb im Aktionsschlitz der
+    /// auf alle sechs Rubriken zugleich und steht deshalb im Aktionsschlitz der
     /// <c>SpeichernLeiste</c>, links vom Füller — die zweite Leiste darüber ist
     /// entfallen (Konzept Knopfleisten der Administrationsdialoge, Nr. 10;
     /// Anwenderentscheid DL-Q6 vom 20.09.2026: der Schlussknopf heißt „OK").
@@ -602,5 +619,163 @@ public class EinstellungenDialogTests : EposBunitContext
         cut.Find(".epos-dialog-zu").Click();
 
         Assert.False(ergebnis);
+    }
+
+    // =====================================================================
+    //  Die Rubrik „Diagramme" (DF-1)
+    // =====================================================================
+
+    /// <summary>Die Rubrik ist der fünfte Reiter (Index 4) — dorthin schaltet jeder Fall unten.</summary>
+    private const int REITER_DIAGRAMME = 4;
+
+    /// <summary>Das Hexfeld einer Rolle.</summary>
+    private static AngleSharp.Dom.IElement Hexfeld(
+        IRenderedComponent<EinstellungenDialog> cut, string rolle)
+        => cut.Find($"#epos-farbe-{rolle} ~ .epos-farbfeld-hex");
+
+    /// <summary>
+    /// Die Rubrik zeigt <b>alle</b> Farbrollen — in den sechs Gruppen des
+    /// Zeichenmodells, jede mit Anzeigename, Wähler, Hexfeld und dem Muster der
+    /// Hausfarbe daneben.
+    /// </summary>
+    [Fact]
+    public void Die_Diagrammrubrik_zeigt_alle_Farbrollen_in_ihren_Gruppen()
+    {
+        var cut = Zeige();
+        Reiter(cut, REITER_DIAGRAMME);
+
+        Assert.Equal(Diagrammfarben.Rollen.Count, cut.FindAll(".epos-farbfeld").Count);
+        Assert.Equal(Diagrammfarben.Gruppen.Count,
+                     cut.FindAll(".epos-gruppenkopf-titel").Count);
+
+        // Der Anzeigename kommt aus der Ressource, nicht aus dem Schluessel.
+        Assert.Contains("Wärmepumpe", cut.Markup);
+        Assert.Contains("Erzeuger und Bedarf", cut.Markup);
+
+        // Die Hausfarbe steht als Wert im Waehler UND als Muster daneben.
+        Assert.Equal("#4172C4", cut.Find("#epos-farbe-WAERME_WP").GetAttribute("value"));
+        Assert.Equal("#4172C4", Hexfeld(cut, "WAERME_WP").GetAttribute("value"));
+    }
+
+    /// <summary>Ein gespeicherter Stand steht in den Feldern — und nur er weicht ab.</summary>
+    [Fact]
+    public void Die_gespeicherten_Farben_stehen_in_den_Feldern()
+    {
+        Einstellungensatz satz = Satz();
+        satz.DiagrammFarben = "WAERME_WP=#FF0000";
+
+        var cut = Zeige(satz);
+        Reiter(cut, REITER_DIAGRAMME);
+
+        Assert.Equal("#FF0000", cut.Find("#epos-farbe-WAERME_WP").GetAttribute("value"));
+        Assert.Equal("#70AD47", cut.Find("#epos-farbe-STROM_PV").GetAttribute("value"));
+    }
+
+    /// <summary>
+    /// <b>Die Aussage der Rubrik:</b> Eine geänderte Farbe landet im Wertesatz, den
+    /// „OK" weiterreicht — und zwar als kompakter Text mit NUR der abweichenden
+    /// Rolle.
+    /// </summary>
+    [Fact]
+    public void Eine_geaenderte_Farbe_landet_im_Satz()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+
+        Reiter(cut, REITER_DIAGRAMME);
+        cut.Find("#epos-farbe-WAERME_WP").Change("#ff0000");
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.Equal("WAERME_WP=#FF0000", uebergeben!.DiagrammFarben);
+    }
+
+    /// <summary>Dasselbe über das Hexfeld — es ist beschreibbar, nicht nur Anzeige.</summary>
+    [Fact]
+    public void Das_Hexfeld_nimmt_eine_getippte_Farbe_entgegen()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+
+        Reiter(cut, REITER_DIAGRAMME);
+        Hexfeld(cut, "SPEICHER_2").Change("#123456");
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.Equal("SPEICHER_2=#123456", uebergeben!.DiagrammFarben);
+    }
+
+    /// <summary>
+    /// Ein ungültiges Hex wird benannt abgewiesen: Das Feld meldet sich, und der
+    /// Wertesatz bleibt unberührt — eine Fehleingabe kann gar nicht gespeichert
+    /// werden.
+    /// </summary>
+    [Fact]
+    public void Ein_ungueltiges_Hex_wird_abgewiesen_und_nicht_gespeichert()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+
+        Reiter(cut, REITER_DIAGRAMME);
+        Hexfeld(cut, "WAERME_WP").Change("rot");
+
+        Assert.Single(cut.FindAll(".epos-farbfeld--ungueltig"));
+        Assert.Contains("#RRGGBB", cut.Markup);
+
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+        Assert.Equal("", uebergeben!.DiagrammFarben);
+    }
+
+    /// <summary>
+    /// „Hausfarben" setzt alle Rollen zurück, verwirft eine stehengebliebene
+    /// Fehleingabe — und <b>speichert nicht</b>, wörtlich wie „Standardwerte".
+    /// </summary>
+    [Fact]
+    public void Hausfarben_setzt_zurueck_und_speichert_nicht()
+    {
+        bool gespeichert = false;
+        var cut = Zeige(speichern: (_, _) =>
+        {
+            gespeichert = true;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+
+        Reiter(cut, REITER_DIAGRAMME);
+        cut.Find("#epos-farbe-WAERME_WP").Change("#ff0000");
+        Hexfeld(cut, "STROM_PV").Change("gruen");
+        Assert.Single(cut.FindAll(".epos-farbfeld--ungueltig"));
+
+        cut.Find(".epos-farbfeld-fuss button").Click();
+
+        Assert.Equal("#4172C4", cut.Find("#epos-farbe-WAERME_WP").GetAttribute("value"));
+        Assert.Equal("#70AD47", Hexfeld(cut, "STROM_PV").GetAttribute("value"));
+        Assert.Empty(cut.FindAll(".epos-farbfeld--ungueltig"));
+        Assert.Contains("Hausfarben wurden geladen", cut.Instance.Meldung);
+        Assert.False(gespeichert);
+    }
+
+    /// <summary>
+    /// Ohne Rollenliste steht die Rubrik leer da, statt zu fehlen — die Hausregel
+    /// „jede Ansicht zeichnet auch ohne Gaben".
+    /// </summary>
+    [Fact]
+    public void Ohne_Farbrollen_bleibt_die_Rubrik_leer_und_der_Dialog_steht()
+    {
+        var cut = Zeige(farbrollen: new List<Farbrollengabe>());
+        Reiter(cut, REITER_DIAGRAMME);
+
+        Assert.Empty(cut.FindAll(".epos-farbfeld"));
+        Assert.Equal(6, cut.FindAll(".epos-reiter-knopf").Count);
     }
 }

@@ -145,6 +145,12 @@ namespace WindowsFormsApplication1
             projektkontext = new ProjektKontextCtrl();
             Dienste.Projekt = projektkontext;
 
+            // Die Farben der Diagramme sind eine Anwendungseinstellung (Rubrik
+            // "Diagramme"): Farbpalette.Aktuell wird EINMAL beim Start daraus gespeist,
+            // danach nur noch beim Speichern der Einstellungen. Ohne Eintrag bleiben es
+            // die Hausfarben. Erst NACH Dienste.Einstellungen, denn von dort liest sie.
+            Zeichnung.Diagrammfarben.Uebernehmen();
+
             // DPI: PER MONITOR V2 (iU9-W16c.4, Anwenderentscheid E-6 / iF21).
             //
             // Bis hierher stand hier HighDpiMode.DpiUnaware, passend zum

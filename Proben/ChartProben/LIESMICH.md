@@ -55,8 +55,14 @@ gegen diese Datei.
 - **Warum alle Bilder und nicht nur die 51 Maßproben.** Was die Messlatte nicht nennt, kann
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
-- **Umfang.** 71 Proben (51 Maßproben, 19 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
+- **Umfang.** 72 Proben (51 Maßproben, 20 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
   und ebenso viele Zeilen.
+- **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
+  Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
+  `Farbpalette.Vorgabe`, damit die Hashliste unabhängig von einer Anwendereinstellung bleibt.
+  Die Gegenprobe `palette_abweichend_wirkt` zeichnet dasselbe Bild ein zweites Mal mit einer
+  getauschten Rolle; ihre zwei Bilder stehen **nicht** in der Ablage und nicht in der
+  Messlatte — sonst hinge die eingefrorene Liste an einer Einstellung.
 - **Wann sie neu eingefroren wird.** Nur, wenn ein Bild sich **bewusst** ändern soll — die
   Etappe E4 des Konzepts nennt den Fall (Linien gebündelt statt jeder n-te). Dann entsteht
   eine neue Datei mit dem Datum des Tages, und die alte wird im selben Schritt entfernt.

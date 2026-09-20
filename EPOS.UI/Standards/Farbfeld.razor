@@ -1,0 +1,147 @@
+﻿@* Farbfeld - EINE Farbe waehlen (Auftrag DF-1).
+
+   WOZU. Die Farben der Diagramme sind seit DF-1 einstellbar (Anwenderentscheid
+   20.09.2026). Im Haus gab es dafuer keinen Baustein: Farbe war bis dahin
+   ausschliesslich eine Konstante im Renderer.
+
+   DREI STUECKE IN EINER ZEILE.
+   (1) der Waehler <input type="color"> - das Farbfenster des Systems, unter
+       Windows wie auf iOS; er ist das BEDIENelement,
+   (2) das Hexfeld daneben - dieselbe Farbe als Text. Es ist bewusst
+       BESCHREIBBAR: Eine Hausfarbe aus einem Styleguide tippt man ab, statt
+       sie im Farbkreis zu suchen. Ungueltiges wird benannt abgewiesen und
+       NICHT nach aussen gemeldet - der Arbeitsstand des Dialogs bleibt damit
+       jederzeit eine gueltige Farbe,
+   (3) das Vorgabemuster - die Hausfarbe als kleines Feld, damit sichtbar
+       bleibt, wovon die eingestellte Farbe abweicht. Es ist kein Knopf:
+       Zuruecksetzen ist eine Sache des ganzen Dialogs ("Hausfarben"), nicht
+       eine Entscheidung je Zeile.
+
+   WAS HIER NICHT STEHT: die DECKUNG. Sie gehoert zum Bildaufbau (die
+   Kostenprofil-Flaeche ist absichtlich halbdurchsichtig) und bleibt die der
+   Hausfarbe; die Einstellung fuehrt deshalb #RRGGBB ohne Alpha.
+
+   BARRIEREFREI. Die Beschriftung gehoert ueber "for" zum Waehler; das Hexfeld
+   traegt ein eigenes aria-label ("<Name> - Farbwert"), weil zwei Felder
+   derselben Zeile sonst dieselbe Ansage bekaemen. Ungueltige Eingabe setzt
+   aria-invalid und zeigt den Grund als Text unter der Zeile - nicht nur als
+   Farbe (M2, Touch- und Kontrastregeln); beide Felder sind mindestens 44 px
+   hoch. *@
+
+@namespace EPOS.UI.Standards
+@using WindowsFormsApplication1.Zeichnung
+
+<div class="epos-farbfeld @(_ungueltig ? "epos-farbfeld--ungueltig" : "")">
+    <label class="epos-farbfeld-name" for="@Kennung">@Bezeichnung</label>
+
+    <input class="epos-farbfeld-waehler" type="color" id="@Kennung" value="@Wert"
+           disabled="@(!Aktiv)" @onchange="BeiWaehler" />
+
+    <input class="epos-farbfeld-hex" type="text" value="@_text" maxlength="7"
+           spellcheck="false" autocomplete="off" disabled="@(!Aktiv)"
+           aria-label="@($"{Bezeichnung} – {FarbwertText}")"
+           aria-invalid="@(_ungueltig ? "true" : "false")"
+           @onchange="BeiText" />
+
+    <span class="epos-farbfeld-vorgabe" style="background-color: @Vorgabe"
+          title="@($"{VorgabeText}: {Vorgabe}")" aria-hidden="true"></span>
+
+    @if (_ungueltig)
+    {
+        <span class="epos-farbfeld-meldung" role="alert">@FehlerText</span>
+    }
+</div>
+
+@code {
+    /// <summary>Beschriftung der Zeile — der Name der Größe, deren Farbe hier steht.</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Die eingestellte Farbe als <c>#RRGGBB</c>. Bindbar über @@bind-Wert; nach
+    /// außen gemeldet wird nur ein GÜLTIGER Wert.
+    /// </summary>
+    [Parameter] public string Wert { get; set; } = "#000000";
+
+    /// <summary>Meldet jede gültige Änderung.</summary>
+    [Parameter] public EventCallback<string> WertChanged { get; set; }
+
+    /// <summary>Die Hausfarbe als <c>#RRGGBB</c> — das Muster rechts.</summary>
+    [Parameter] public string Vorgabe { get; set; } = "#000000";
+
+    /// <summary>
+    /// Die Kennung des Wählers — sie verbindet Beschriftung und Feld. Sie muss in
+    /// der Seite eindeutig sein; der Einstellungsdialog nimmt den Rollenschlüssel.
+    /// </summary>
+    [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>Bedienbar? <c>false</c> sperrt beide Felder.</summary>
+    [Parameter] public bool Aktiv { get; set; } = true;
+
+    /// <summary>
+    /// Der Zähler des ARBEITSSTANDES. Erhöht ihn der Dialog — nach „Hausfarben" oder
+    /// „Standardwerte" —, verwirft das Feld eine stehengebliebene Fehleingabe und
+    /// zeigt wieder <see cref="Wert"/>.
+    ///
+    /// <para>Ohne ihn bliebe eine Fehleingabe in einem Feld stehen, dessen Farbe
+    /// ohnehin schon die Hausfarbe war: Der Wert änderte sich nicht, und das Feld
+    /// hätte keinen Anlass, den Fehler fallen zu lassen.</para>
+    /// </summary>
+    [Parameter] public int Stand { get; set; }
+
+    [Parameter] public string FarbwertText { get; set; } = Resource.DGF_LBL_FARBWERT;
+    [Parameter] public string VorgabeText { get; set; } = Resource.DGF_LBL_VORGABE;
+    [Parameter] public string FehlerText { get; set; } = Resource.DGF_MSG_HEX_UNGUELTIG;
+
+    /// <summary>Der Text im Hexfeld — er darf kurzzeitig ungültig sein, <see cref="Wert"/> nicht.</summary>
+    private string _text = "";
+
+    /// <summary>Steht im Hexfeld gerade etwas, das keine Farbe ist? (Prüfhilfe für Tests.)</summary>
+    public bool Ungueltig => _ungueltig;
+
+    private bool _ungueltig;
+    private int _stand = -1;
+
+    protected override void OnParametersSet()
+    {
+        if (_stand != Stand)
+        {
+            // Neuer Arbeitsstand: eine stehengebliebene Fehleingabe ist gegenstandslos.
+            _stand = Stand;
+            _ungueltig = false;
+            _text = Wert ?? "";
+            return;
+        }
+
+        // Sonst folgt das Hexfeld dem Wert - es sei denn, dort steht gerade eine
+        // Fehleingabe; die bleibt sichtbar, damit der Anwender sieht, was er tippte.
+        if (!_ungueltig) _text = Wert ?? "";
+    }
+
+    private Task BeiWaehler(ChangeEventArgs e)
+    {
+        // Der Systemwaehler liefert immer #rrggbb in Kleinbuchstaben.
+        return Uebernehmen(e.Value?.ToString());
+    }
+
+    private Task BeiText(ChangeEventArgs e)
+    {
+        string eingabe = e.Value?.ToString() ?? "";
+        if (!Diagrammfarben.IstHex(eingabe))
+        {
+            _text = eingabe;
+            _ungueltig = true;
+            return Task.CompletedTask;
+        }
+        return Uebernehmen(eingabe);
+    }
+
+    private Task Uebernehmen(string? hex)
+    {
+        if (!Diagrammfarben.IstHex(hex)) return Task.CompletedTask;
+
+        Wert = hex!.Trim().ToUpperInvariant();
+        _text = Wert;
+        _ungueltig = false;
+        return WertChanged.InvokeAsync(Wert);
+    }
+}

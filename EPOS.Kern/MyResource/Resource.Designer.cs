@@ -596,6 +596,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hausfarben ähnelt.
+        /// </summary>
+        public static string ADM_SET_BTN_HAUSFARBEN {
+            get {
+                return ResourceManager.GetString("ADM_SET_BTN_HAUSFARBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Standardwerte ähnelt.
         /// </summary>
         public static string ADM_SET_BTN_STANDARDWERTE {
@@ -619,6 +628,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_FRAGE_STANDARDWERTE_TITEL {
             get {
                 return ResourceManager.GetString("ADM_SET_FRAGE_STANDARDWERTE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Farbe einer Größe gilt anwendungsweit: Jedes Diagramm und der Bericht zeichnen sie damit. Übernommen wird die Änderung mit „OK“. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_DIAGRAMMFARBEN {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_DIAGRAMMFARBEN", resourceCulture);
             }
         }
         
@@ -731,11 +749,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist keine Farbe in der Schreibweise #RRGGBB. ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_FARBE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_FARBE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Einstellungen wurden gespeichert. ähnelt.
         /// </summary>
         public static string ADM_SET_MSG_GESPEICHERT {
             get {
                 return ResourceManager.GetString("ADM_SET_MSG_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Hausfarben wurden geladen. Mit „OK“ werden sie übernommen. ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_HAUSFARBEN {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_HAUSFARBEN", resourceCulture);
             }
         }
         
@@ -790,6 +826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_RUBRIK_DATENBANK {
             get {
                 return ResourceManager.GetString("ADM_SET_RUBRIK_DATENBANK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diagramme ähnelt.
+        /// </summary>
+        public static string ADM_SET_RUBRIK_DIAGRAMME {
+            get {
+                return ResourceManager.GetString("ADM_SET_RUBRIK_DIAGRAMME", resourceCulture);
             }
         }
         
@@ -8200,6 +8245,447 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_TOOLTIP_WERT {
             get {
                 return ResourceManager.GetString("CHART_TOOLTIP_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Allgemein ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_ALLGEMEIN {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_ALLGEMEIN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erzeuger und Bedarf ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_ERZEUGER {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_ERZEUGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profile und Temperaturen ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_PROFILE {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_PROFILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_RASTERKARTE {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_RASTERKARTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_SPEICHER {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_SPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten ähnelt.
+        /// </summary>
+        public static string DGF_GRUPPE_VARIANTEN {
+            get {
+                return ResourceManager.GetString("DGF_GRUPPE_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Farbwert ähnelt.
+        /// </summary>
+        public static string DGF_LBL_FARBWERT {
+            get {
+                return ResourceManager.GetString("DGF_LBL_FARBWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hausfarbe ähnelt.
+        /// </summary>
+        public static string DGF_LBL_VORGABE {
+            get {
+                return ResourceManager.GetString("DGF_LBL_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Farbe wird in der Schreibweise #RRGGBB angegeben, zum Beispiel #4172C4. ähnelt.
+        /// </summary>
+        public static string DGF_MSG_HEX_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("DGF_MSG_HEX_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Achsen und Beschriftung ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_ACHSE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Außentemperatur ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_AUSSENTEMPERATUR {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_AUSSENTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfslinie ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_BEDARF {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_BEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_ERSATZJAHR {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_ERSATZJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Feinraster ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_FEINRASTER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_FEINRASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hintergrund ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_HINTERGRUND {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_HINTERGRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_KOSTENPROFIL {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_KOSTENPROFIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Legendenrahmen ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_LEGENDENRAHMEN {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_LEGENDENRAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profilfläche ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_PROFILFLAECHE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_PROFILFLAECHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Profillinie ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_PROFILLINIE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_PROFILLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelltemperatur ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_QUELLTEMPERATUR {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_QUELLTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rahmen ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RAHMEN {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RAHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterlinien ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RASTER {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RASTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte: gut ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RASTER_GUT {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RASTER_GUT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte: kein Wert ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RASTER_LOCH {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RASTER_LOCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte: mittel ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RASTER_MITTE {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RASTER_MITTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rasterkarte: schlecht ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_RASTER_SCHLECHT {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_RASTER_SCHLECHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restbedarf ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_REST {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 1 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_1 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 2 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_2 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 3 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_3 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 4 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_4 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 5 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_5 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 6 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_6 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 7 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_7 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihe 8 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SERIE_8 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SERIE_8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 1 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_1 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 2 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_2 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 3 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_3 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 4 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_4 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_4", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 5 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_5 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_5", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speicher 6 ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_SPEICHER_6 {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_SPEICHER_6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stamm-Variante ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STAMM {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Netzbezug ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM_NETZ {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM_NETZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_STROM_PV {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_STROM_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Text ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_TEXT {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_TEXT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME_BHKW {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME_KESSEL {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME_SOLAR {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME_SOLAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe ähnelt.
+        /// </summary>
+        public static string DGF_ROLLE_WAERME_WP {
+            get {
+                return ResourceManager.GetString("DGF_ROLLE_WAERME_WP", resourceCulture);
             }
         }
         

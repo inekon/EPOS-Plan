@@ -9662,6 +9662,103 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==================================================================== */
+/* FARBFELD - eine Farbe waehlen (Auftrag DF-1, Rubrik "Diagramme")     */
+/*                                                                      */
+/* Vier Stuecke in einer Zeile: Beschriftung, Systemwaehler, Hexfeld    */
+/* und das Muster der Hausfarbe. Der Raster ist eine feste Zeile statt  */
+/* eines Flex-Flusses, damit die vierzig Zeilen der Rubrik untereinander*/
+/* auf EINER Kante stehen - sonst wanderte das Hexfeld mit der Laenge   */
+/* des Namens.                                                          */
+/*                                                                      */
+/* Beide Bedienfelder sind mindestens ein Touchziel hoch (M2); unter    */
+/* der Umbruchbreite des Hauses rutscht die Beschriftung nach oben -    */
+/* dieselbe Schwelle wie im Formularraster.                             */
+/* ==================================================================== */
+.epos-farbfeld {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--epos-touchziel) 9ch auto;
+    align-items: center;
+    column-gap: 8px;
+    row-gap: 2px;
+    padding: 2px 0;
+}
+
+.epos-farbfeld-name {
+    min-width: 0;
+    color: var(--epos-text);
+}
+
+/* Der Systemwaehler. Ohne eigene Innenabstaende laege das Farbfeld in
+   WebView2 als schmaler Streifen in der Mitte des Knopfes. */
+.epos-farbfeld-waehler {
+    width: var(--epos-touchziel);
+    min-height: var(--epos-touchziel);
+    padding: 4px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+    cursor: pointer;
+}
+
+.epos-farbfeld-hex {
+    min-height: var(--epos-touchziel);
+    padding: 0 8px;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--epos-text);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen);
+    border-radius: var(--epos-ecke);
+    text-transform: uppercase;
+}
+
+.epos-farbfeld-waehler:focus,
+.epos-farbfeld-hex:focus {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 1px;
+}
+
+/* Das Muster der Hausfarbe - eine Anzeige, kein Bedienelement: kein
+   Tabulatorhalt, kein Zeigerwechsel. */
+.epos-farbfeld-vorgabe {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: 3px;
+}
+
+/* Eine Fehleingabe faerbt UND meldet: Farbe allein traegt keine Aussage. */
+.epos-farbfeld--ungueltig .epos-farbfeld-hex {
+    background: var(--epos-fehleingabe);
+    border-color: var(--epos-stufe-fehler);
+}
+
+.epos-farbfeld-meldung {
+    grid-column: 1 / -1;
+    color: var(--epos-stufe-fehler);
+}
+
+@media (max-width: 900px) {
+    .epos-farbfeld {
+        grid-template-columns: var(--epos-touchziel) 9ch auto;
+    }
+
+    .epos-farbfeld-name {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Der Fuss der Rubrik "Diagramme": "Hausfarben" steht rechts unter den
+   Gruppen - wie "Standardwerte" in der Fussleiste, nur auf diese eine
+   Rubrik bezogen. */
+.epos-farbfeld-fuss {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 8px;
+}
+
+/* ==================================================================== */
 /* FORMULARRASTER (Anwenderwunsch iU8-E-2 / W14a-E-7, 05.09.2026)        */
 /*                                                                      */
 /* "Verbessere die Darstellung der Dialoge, insbesondere der Parameter   */
