@@ -580,7 +580,9 @@ namespace WindowsFormsApplication1
                     Preisanteile.PaarNullbar(dt, r, SchemaKatalog.SPALTE_BB_CO2, ref wert, ref aktiv);
                     if (!wert.HasValue || !aktiv || wert.Value <= 0) continue;
 
-                    object id = r["ID_Energieträger"];
+                    // Der Spaltenname steht EINMAL — buchstabengetreu mit Umlaut, wie
+                    // BETRIEB_SQLITE.md 6.1 es verlangt.
+                    object id = r[ProjektEnergietraegerEindeutig.SPALTE_TRAEGER];
                     if (id == null || id == DBNull.Value) continue;
                     string name = TraegerName(Convert.ToInt32(id));
                     if (!namen.Contains(name)) namen.Add(name);

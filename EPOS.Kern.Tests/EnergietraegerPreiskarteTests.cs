@@ -111,7 +111,10 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(z);
             Assert.Equal("0,0476 €", z.PreisJeKwh);
-            Assert.Equal("0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
+            // ANWENDERENTSCHEID Q7 (Etappe E2): Der ZÄHLER steht mit vier
+            // Nachkommastellen. Mit zwei rundete er weg, was das Ergebnis darunter
+            // mit vier Stellen ausweist — die Division ging nicht auf.
+            Assert.Equal("0,5000 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
         }
 
         [Fact]
@@ -123,7 +126,7 @@ namespace EPOS.Kern.Tests
                 EnergietraegerPreiskarte.Formel(true, "Nm³", "kWh", 0.50, 10.50);
 
             Assert.NotNull(z);
-            Assert.StartsWith("0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
+            Assert.StartsWith("0,5000 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
             Assert.Contains("Direktabrechnung: 0,0476 €/kWh", z.Text);
         }
 
