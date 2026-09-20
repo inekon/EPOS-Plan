@@ -383,4 +383,55 @@ public class TypStammDialogTests : EposBunitContext
         // Zwoelf kurze Felder - je ein Monat.
         Assert.Equal(12, cut.FindAll(".epos-formularraster .epos-feld--kurz").Count);
     }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 5)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Katalogmuster: <b>Überschreiben · Speichern unter · Speichern · Füller ·
+    /// Beenden</b>. Alle drei Speicherwege schreiben SOFORT und lassen die Maske
+    /// stehen — es gibt keinen Arbeitsstand und damit kein Abbrechen. Sie stehen
+    /// links vom Füller, und „Beenden" ist der eine primäre Schlussknopf.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_traegt_das_Katalogmuster()
+    {
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher));
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        IElement fuss = leisten[leisten.Count - 1];
+
+        var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Überschreiben", "Speichern unter", "Speichern", "Beenden" }, knoepfe);
+
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(3, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Die Hervorhebung ist gewandert, die Wege sind geblieben: „Überschreiben" ruft
+    /// weiter <c>Speichern</c>, ohne zu schließen, und der primäre Schlussknopf
+    /// meldet <c>true</c>.
+    /// </summary>
+    [Fact]
+    public void Die_gewanderten_Knoepfe_rufen_dieselben_Wege()
+    {
+        int laeufe = 0;
+        bool? geschlossen = null;
+        var cut = Aufbauen(Daten(BedarfsArt.Stromverbraucher),
+                           speichern: (_, _, n) => { laeufe++; return new KatalogSpeicherErgebnis(true, "", n); },
+                           geschlossen: b => geschlossen = b);
+
+        Knopf(cut, "Überschreiben").Click();
+        Assert.Equal(1, laeufe);
+        Assert.Null(geschlossen);
+
+        cut.Find(".epos-dialog > .epos-leiste button.epos-knopf--primaer").Click();
+        Assert.True(geschlossen);
+    }
 }

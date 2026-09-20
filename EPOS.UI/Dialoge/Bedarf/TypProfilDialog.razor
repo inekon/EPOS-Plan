@@ -31,7 +31,9 @@
        Speichern unter (9) | Speichern in DB (144) | Loeschen (271) |
        Neu (373) | Schliessen (511)
 
-   Uebernommen sind ANORDNUNG und REIHENFOLGE, nicht die Pixel: Die zwei
+   Uebernommen ist die ANORDNUNG, nicht die Pixel - und in der FUSSLEISTE auch
+   die Reihenfolge nicht mehr: Sie folgt der Hausregel (Konzept Knopfleisten,
+   Abschnitt 1 Satz 3). Die zwei
    Listen und die 24 Felder halten --epos-touchziel (44 px statt 17 bzw. 22),
    und die drei Stundenspalten stehen als CSS-Raster nebeneinander. Im Markup
    laufen die Felder weiter 1..24, damit der Tabulator die Reihenfolge der
@@ -203,17 +205,24 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* Die Fussleiste in der Reihenfolge des Designers (x = 9 / 144 / 271 / 373 / 511). *@
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 3)
+       statt in der Reihenfolge des Designers (x = 9 / 144 / 271 / 373 / 511):
+       "Speichern" schreibt SOFORT in den Katalog und laesst die Maske stehen - es
+       gibt keinen Arbeitsstand und damit kein Abbrechen. Nach der Leseregel stehen
+       links vom Fueller die Knoepfe des Eingabeblocks (Speichern, Speichern unter),
+       rechts die der Liste (Neu, Loeschen), und zuletzt der eine primaere
+       Schlussknopf "Beenden". *@
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
-                @onclick="() => OeffneNamensfrage(true)">@BtnSpeichernUnterText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!TypGewaehlt)"
                 @onclick="BeiSpeichern">@BtnSpeichernText</button>
         <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
-                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+                @onclick="() => OeffneNamensfrage(true)">@BtnSpeichernUnterText</button>
+        <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf"
                 @onclick="() => OeffneNamensfrage(false)">@BtnNeuText</button>
-        <button type="button" class="epos-knopf"
+        <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
+                @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@BtnSchliessenText</button>
     </div>
 
@@ -276,7 +285,7 @@
     /// <summary>Zeichnet die 168 Wochenwerte; ohne Delegat bleibt das Blatt leer.</summary>
     [Parameter] public Func<double[], byte[]>? Bild { get; set; }
 
-    /// <summary>Der Dialog wurde geschlossen („Schließen"/Esc) — immer <c>true</c>.</summary>
+    /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // --- Texte -----------------------------------------------------------------
@@ -307,7 +316,12 @@
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string BtnSpeichernUnterText { get; set; } = "Speichern unter";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern in DB";
-    [Parameter] public string BtnSchliessenText { get; set; } = "Schließen";
+    /// <summary>
+    /// Beschriftung des Schlussknopfes. Er heisst „Beenden" wie in den uebrigen
+    /// Katalogverwaltungen (Konzept Knopfleisten, Abschnitt 1 Satz 3) und traegt
+    /// als einziger Knopf der Leiste die Primaerfarbe.
+    /// </summary>
+    [Parameter] public string BtnSchliessenText { get; set; } = "Beenden";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -603,7 +617,7 @@
     }
 
     /// <summary>
-    /// Schließen — von „Schließen", Esc und dem Schliesskreuz gleichermaßen gerufen,
+    /// Schließen — von „Beenden", Esc und dem Schliesskreuz gleichermaßen gerufen,
     /// immer mit <c>true</c> (das Kreuz kopiert Esc, es erfindet keine neue Semantik).
     /// </summary>
     private Task Schliessen() => Geschlossen.InvokeAsync(true);

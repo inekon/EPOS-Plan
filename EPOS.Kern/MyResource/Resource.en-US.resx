@@ -12524,9 +12524,6 @@ Overwrite it anyway?</value>
   <data name="BPRO_BTN_SPEICHERN" xml:space="preserve">
     <value>Save to DB</value>
   </data>
-  <data name="BPRO_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Close</value>
-  </data>
   <data name="BPRO_FELD_STUNDENWERT" xml:space="preserve">
     <value>Hourly value</value>
   </data>
@@ -20260,5 +20257,8 @@ Do you want to allow this?</value>
   </data>
   <data name="BHKWW_MSG_SUMME" xml:space="preserve">
     <value>Electrical and thermal efficiency add up to at most {0}; {1} is too much.</value>
+  </data>
+  <data name="BPRO_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
   </data>
 </root>
