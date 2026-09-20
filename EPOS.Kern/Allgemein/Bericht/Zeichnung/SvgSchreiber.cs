@@ -55,6 +55,15 @@ namespace WindowsFormsApplication1.Zeichnung
     // Vierfache den sichtbaren Bereich roh nach - aus den Datenreihen des
     // Modells, ohne Rundlauf in den Kern.
     //
+    // DG-E3-5 - PUNKTWOLKEN. Eine Datenreihe mit Art = Punkte bringt ihre
+    // x-Stelle JE WERT mit (XWerte) und wird EIN <path> aus Segmenten
+    // "M x,y h 0" mit stroke-linecap="round"; die Strichbreite ist der
+    // Punktdurchmesser des PNG. Gebuendelt wird nicht - die Verdichtung IST
+    // die Aussage der Wolke, und 8 760 Punkte sind ein Knoten. XWerte traegt
+    // auch eine LINIE mit ungleichmaessigen Stuetzstellen (die Schnittkurve
+    // mischt Grob- und Feinpunkte); ohne sie liegen die Stuetzstellen
+    // gleichmaessig zwischen XVon und XBis, wie bisher.
+    //
     // DETERMINISMUS: Attribute stehen in der Reihenfolge, in der sie gebaut
     // werden, Zahlen in InvariantCulture (Bildpunkte "0.##", Datenwerte
     // "0.###"), Zeilenenden sind LF. Kein Zufall, keine Zeitangabe - zweimal
@@ -438,6 +447,7 @@ namespace WindowsFormsApplication1.Zeichnung
                 if (n < 2) continue;
 
                 bool flaeche = r.Art == Reihenart.Flaeche;
+                bool punkte = r.Art == Reihenart.Punkte;
                 Farbton strich = flaeche ? r.Randton : r.Ton;
                 string marke = "reihe:" + (r.Name ?? "");
 
@@ -451,6 +461,9 @@ namespace WindowsFormsApplication1.Zeichnung
                     .Attribut("stroke-opacity", strich == null
                         ? null : Deckung(lage.Palette, strich))
                     .Attribut("stroke-width", strich == null ? null : Px(r.Staerke))
+                    // DG-E3-5: Erst die RUNDE Kappe macht aus einer Strecke der Laenge
+                    // null einen Punkt; ohne sie zeichnet der Browser nichts.
+                    .Attribut("stroke-linecap", punkte ? "round" : null)
                     .Attribut("stroke-dasharray", r.Muster == null
                         ? null
                         : Px(r.Muster.Strich) + " " + Px(r.Muster.Luecke))
@@ -470,7 +483,9 @@ namespace WindowsFormsApplication1.Zeichnung
         /// waagerecht Stunden (bzw. Stützstellen), senkrecht BILDPUNKTE der
         /// Zeichenfläche (DG-E3-1). Roh heißt jede Stützstelle, sonst wird nach
         /// <see cref="Pfadregel"/> gebündelt; eine <see cref="Reihenart.Flaeche"/>
-        /// wird ein geschlossener Zug (Oberkante vorwärts, Unterkante rückwärts).
+        /// wird ein geschlossener Zug (Oberkante vorwärts, Unterkante rückwärts), eine
+        /// <see cref="Reihenart.Punkte"/> eine ungebündelte Folge von
+        /// <c>M x,y h 0</c> (DG-E3-5).
         ///
         /// <para>Geklemmt wird NICHT — das innere <c>&lt;svg&gt;</c> schneidet selbst
         /// ab, und ein geklemmter Wert wäre beim Zoom verloren.</para>
@@ -510,10 +525,29 @@ namespace WindowsFormsApplication1.Zeichnung
             if (spanne <= 0) spanne = 1;
             double schritt = (rf.XBis - rf.XVon) / (n - 1);
 
+            // DG-E3-5: Eine PUNKTWOLKE kennt weder Indexgrenzen noch Buendelung - jeder
+            // Punkt steht fuer sich an seiner eigenen x-Stelle.
+            if (reihe.Art == Reihenart.Punkte)
+                return Punktwolke(reihe, rf, schritt, von, bis, hoehe, spanne);
+
             // Die Indexgrenzen des Ausschnitts. Ohne Schrittweite (eine Reihe ohne
             // x-Ausdehnung) bleibt es bei der ganzen Reihe.
             int ab = 0, biss = n - 1;
-            if (schritt > 0)
+            if (reihe.XWerte != null)
+            {
+                // DG-E3-5: Eine Reihe mit EIGENEN x-Stellen traegt ihre Grenzen nicht im
+                // Index - sie werden gesucht. Die Stellen stehen in Zeichenreihenfolge,
+                // der Treffer ist deshalb ein zusammenhaengender Bereich.
+                ab = n; biss = -1;
+                for (int i = 0; i < n; i++)
+                {
+                    double x = XStelle(reihe, rf, schritt, i);
+                    if (double.IsNaN(x) || x < von - 1e-9 || x > bis + 1e-9) continue;
+                    if (i < ab) ab = i;
+                    if (i > biss) biss = i;
+                }
+            }
+            else if (schritt > 0)
             {
                 ab = (int)Math.Ceiling((von - rf.XVon) / schritt - 1e-9);
                 biss = (int)Math.Floor((bis - rf.XVon) / schritt + 1e-9);
@@ -535,7 +569,7 @@ namespace WindowsFormsApplication1.Zeichnung
             if (roh)
             {
                 for (int i = ab; i <= biss; i++)
-                    Punkt(sb, i == ab, rf.XVon + i * schritt,
+                    Punkt(sb, i == ab, XStelle(reihe, rf, schritt, i),
                           Bildpunkt(reihe.Werte[i], rf, hoehe, spanne));
                 return sb.ToString();
             }
@@ -543,10 +577,47 @@ namespace WindowsFormsApplication1.Zeichnung
             IReadOnlyList<Punkt> gebuendelt =
                 Pfadregel.Gebuendelt(Teil(reihe.Werte, ab, laenge), spalten);
             for (int i = 0; i < gebuendelt.Count; i++)
-                Punkt(sb, i == 0, rf.XVon + (ab + gebuendelt[i].X) * schritt,
+                Punkt(sb, i == 0, XStelle(reihe, rf, schritt, ab + gebuendelt[i].X),
                       Bildpunkt(gebuendelt[i].Y, rf, hoehe, spanne));
             return sb.ToString();
         }
+
+        /// <summary>
+        /// <b>Die Punktwolke (Entscheid DG-E3-5).</b> Je Wert ein Segment
+        /// <c>M x,y h 0</c> — eine Strecke der Länge null, die erst die runde
+        /// Strichkappe zum Punkt macht. Nicht endliche Werte und Punkte außerhalb des
+        /// Ausschnitts fallen weg; gebündelt wird nicht.
+        /// </summary>
+        private static string Punktwolke(Datenreihe reihe, Datenfenster rf, double schritt,
+                                         double von, double bis, double hoehe, double spanne)
+        {
+            int n = reihe.Werte.Length;
+            var sb = new StringBuilder(n * 16 + 16);
+            for (int i = 0; i < n; i++)
+            {
+                double w = reihe.Werte[i];
+                if (double.IsNaN(w) || double.IsInfinity(w)) continue;
+
+                double x = XStelle(reihe, rf, schritt, i);
+                if (double.IsNaN(x) || double.IsInfinity(x)) continue;
+                if (x < von - 1e-9 || x > bis + 1e-9) continue;
+
+                if (sb.Length > 0) sb.Append(' ');
+                sb.Append("M ").Append(Wert(x)).Append(',')
+                  .Append(Px(Bildpunkt(w, rf, hoehe, spanne))).Append(" h 0");
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Die x-Stelle der <paramref name="i"/>-ten Stützstelle: ihr eigener Wert aus
+        /// <see cref="Datenreihe.XWerte"/>, sonst die gleichmäßige Teilung des Fensters
+        /// (DG-E3-5).
+        /// </summary>
+        private static double XStelle(Datenreihe reihe, Datenfenster rf, double schritt, double i)
+            => reihe.XWerte != null && i >= 0 && i < reihe.XWerte.Length
+                ? reihe.XWerte[(int)i]
+                : rf.XVon + i * schritt;
 
         /// <summary>
         /// Der geschlossene Zug einer Fläche: die Oberkante vorwärts, dann die
@@ -576,10 +647,10 @@ namespace WindowsFormsApplication1.Zeichnung
             if (kanteOben.Count == 0 || kanteUnten.Count == 0) return;
 
             for (int i = 0; i < kanteOben.Count; i++)
-                Punkt(sb, i == 0, rf.XVon + (ab + kanteOben[i].X) * schritt,
+                Punkt(sb, i == 0, XStelle(r, rf, schritt, ab + kanteOben[i].X),
                       Bildpunkt(kanteOben[i].Y, rf, hoehe, spanne));
             for (int i = kanteUnten.Count - 1; i >= 0; i--)
-                Punkt(sb, false, rf.XVon + (ab + kanteUnten[i].X) * schritt,
+                Punkt(sb, false, XStelle(r, rf, schritt, ab + kanteUnten[i].X),
                       Bildpunkt(kanteUnten[i].Y, rf, hoehe, spanne));
             sb.Append(" Z");
         }

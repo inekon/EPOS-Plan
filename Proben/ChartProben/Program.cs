@@ -29,7 +29,7 @@ namespace ChartProben
     ///
     /// <para>Rueckgabe 0, wenn alles gruen ist, sonst 1.</para>
     /// </summary>
-    internal static class Program
+    internal static partial class Program
     {
         private const int STUNDEN = 8760;
 
@@ -1468,6 +1468,10 @@ namespace ChartProben
 
             if (_svgdatei != null) SvgAblegen(svgModell(null));
             if (_svgordner != null) SvgOrdnerSchreiben(e3Bilder);
+
+            // Die Gruppe (b) bringt ihre Gegenproben, ihre Daten und ihre SVG-Dateien
+            // selbst mit (Program.GruppeB.cs).
+            GruppeBProben();
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

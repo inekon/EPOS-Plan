@@ -56,6 +56,9 @@
   <ItemGroup>
     <!-- Nur noch die Probe selbst; der Pruefling kommt aus EPOS.Kern. -->
     <Compile Include="Program.cs" />
+    <!-- Die SVG-Gegenproben der Gruppe (b), Auftrag DG-E3b: eine partielle Haelfte
+         derselben Klasse. Sie steht eigens, weil Program.cs die PNG-Probe ist. -->
+    <Compile Include="Program.GruppeB.cs" />
   </ItemGroup>
 
   <ItemGroup>
