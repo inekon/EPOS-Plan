@@ -3708,6 +3708,17 @@ namespace WindowsFormsApplication1
             z.Text(text, x, y, f.Satz, farbe.Ton());
         }
 
+        /// <summary>
+        /// Derselbe Text mit AUSDRÜCKLICH genannter Farbrolle (DG-Q7) — für jede
+        /// Beschriftung, deren Farbe die Zeichenmethode selbst wählt.
+        /// </summary>
+        private static void Text(IZeichenziel z, string text, Schriftmass f, Farbrolle rolle,
+                                 float x, float y)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            z.Text(text, x, y, f.Satz, Farbton.Aus(rolle));
+        }
+
         // =================================================================== Helfer
 
         /// <summary>Zeichenfläche mit weißem Grund (ersetzt Bitmap + Graphics.Clear).</summary>
@@ -3748,11 +3759,25 @@ namespace WindowsFormsApplication1
         private static Zeichnung.Fuellung Flaeche(SKColor farbe)
             => new Zeichnung.Fuellung(farbe.Ton());
 
+        /// <summary>
+        /// Die Fläche einer AUSDRÜCKLICH genannten Rolle (DG-Q7) — die Schreibweise
+        /// für jede Farbe, die die Zeichenmethode selbst wählt. Die Rückwärtssuche
+        /// <see cref="Flaeche(SKColor)"/> bleibt den Farben, die von außen kommen.
+        /// </summary>
+        private static Zeichnung.Fuellung Flaeche(Farbrolle rolle)
+            => new Zeichnung.Fuellung(Farbton.Aus(rolle));
+
         /// <summary>Derselbe Strich als MODELLWERT (Rolle statt Zahl).</summary>
         private static Zeichnung.Stift Stift(SKColor farbe, float staerke,
                                              Strichmuster muster = null,
                                              Strichverbindung verbindung = Strichverbindung.Gehrung)
             => new Zeichnung.Stift(farbe.Ton(), staerke, muster, Strichkappe.Stumpf, verbindung);
+
+        /// <summary>Derselbe Strich mit AUSDRÜCKLICH genannter Rolle (DG-Q7).</summary>
+        private static Zeichnung.Stift Stift(Farbrolle rolle, float staerke,
+                                             Strichmuster muster = null,
+                                             Strichverbindung verbindung = Strichverbindung.Gehrung)
+            => new Zeichnung.Stift(Farbton.Aus(rolle), staerke, muster, Strichkappe.Stumpf, verbindung);
 
         /// <summary>Kreissegment vom Mittelpunkt aus (ersetzt Graphics.FillPie).</summary>
         /// <summary>

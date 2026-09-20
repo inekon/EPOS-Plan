@@ -119,6 +119,16 @@ namespace WindowsFormsApplication1.Zeichnung
     /// </summary>
     public sealed record Farbton(Farbrolle Rolle, Farbe? Fest = null, byte? Deckung = null)
     {
+        /// <summary>
+        /// Der Ton EINER Rolle — die Schreibweise für jede Zeichenmethode, die ihre
+        /// Farbe SELBST wählt. Sie nennt damit die Rolle ausdrücklich, statt einen
+        /// Hausfarbenwert durch die Rückwärtssuche zu schicken; wertgleiche Rollen
+        /// (SERIE_1 und die BHKW-Farbe, ACHSE und die Beschriftungsfarbe) bleiben so
+        /// auseinanderzuhalten. Die Rückwärtssuche bleibt nur für Farben, die als
+        /// Wert von außen hereinkommen.
+        /// </summary>
+        public static Farbton Aus(Farbrolle rolle) => new Farbton(rolle ?? Farbrolle.UNBENANNT);
+
         /// <summary>Eine Farbe ohne Rollenbezug — der Rückfall für Werte von außen.</summary>
         public static Farbton Wert(Farbe farbe) => new Farbton(Farbrolle.UNBENANNT, farbe);
 
