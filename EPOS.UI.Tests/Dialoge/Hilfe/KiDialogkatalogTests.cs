@@ -92,7 +92,9 @@ public class KiDialogkatalogTests
         { KiMaskennamen.QUELLPROFIL,
           typeof(EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht) },
         { KiMaskennamen.WAERMESENKE,
-          typeof(EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht) }
+          typeof(EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht) },
+        { KiMaskennamen.KOMPONENTENKONFIGURATION,
+          typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) }
     };
 
     // =====================================================================
@@ -139,11 +141,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_achtzehn_Masken()
+    public void Der_Katalog_fuehrt_neunzehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(18, katalog.Anzahl);
+        Assert.Equal(19, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -197,6 +199,7 @@ public class KiDialogkatalogTests
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLE_PUFFERSPEICHER));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLPROFIL));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.WAERMESENKE));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.KOMPONENTENKONFIGURATION));
     }
 
     [Fact]
@@ -421,7 +424,10 @@ public class KiDialogkatalogTests
             "Maske; Zeuge ist QuellprofilDialogTests",
         [KiMaskennamen.WAERMESENKE] =
             "bindet über die Sichtklasse WaermesenkeKiSicht auf die Bedienelemente " +
-            "der gewählten Zeile; Zeuge ist WaermesenkeDialogTests"
+            "der gewählten Zeile; Zeuge ist WaermesenkeDialogTests",
+        [KiMaskennamen.KOMPONENTENKONFIGURATION] =
+            "bindet über die Sichtklasse KomponentenKonfigurationKiSicht auf ZWEI " +
+            "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests"
     };
 
     /// <summary>

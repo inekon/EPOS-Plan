@@ -245,7 +245,104 @@ namespace WindowsFormsApplication1
                 QuelleErdreich(),
                 QuellePufferspeicher(),
                 Quellprofil(),
-                Waermesenke());
+                Waermesenke(),
+                Komponentenkonfiguration());
+        }
+
+        // =====================================================================
+        // KomponentenKonfiguration  ->  KomponentenKonfigurationDialog (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Konfiguration EINER Komponente der Simulation — zehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die dritte Maske ohne <c>Form_</c>-Vorsilbe:</b> Sie hatte nie eine
+        /// WinForms-Fassung. Bis zum 16.09.2026 standen ihre Felder offen an den
+        /// Erzeugerkarten; seither stehen sie hinter einem Knopf je Karte.
+        /// </para>
+        /// <para>
+        /// <b>EINE Maske, ZWEI Arbeitskopien — und deshalb ein Sichtmodell.</b> Beim
+        /// Heizkessel und beim BHKW zeigt sie die projektweiten Laufparameter
+        /// (<c>Tab_Einstellungen</c>), bei der Waermepumpe die Konfiguration DIESER
+        /// Anlage. Der Katalog nennt EIN Daten-Objekt vor dem Punkt; die Sichtklasse
+        /// legt beide Staende unter einem Namen zusammen. Hinzu kommt, dass
+        /// <c>ParameterDaten</c> oeffentliche FELDER traegt und keine Eigenschaften —
+        /// die Maskenbruecke loest ueber <c>GetProperty</c> auf und faende dort nichts.
+        /// </para>
+        /// <para>
+        /// <b>Die sieben Felder der Waermepumpe stehen ZWEIMAL im Katalog</b> — hier
+        /// und unter <see cref="KiMaskennamen.WAERMEPUMPE_ANLAGE"/>. Das ist richtig:
+        /// Eine Maske ist, was offen ist, und der Anwender sieht dieselben Werte
+        /// einmal im Anlagendialog und einmal in dieser Konfiguration. Welche Maske
+        /// gerade gilt, sagt die Anmeldung und nicht der Katalog.
+        /// </para>
+        /// <para>
+        /// <b>Der ENERGIETRAEGER bleibt draussen</b> (<c>CarrierId</c>, ein Verweis in
+        /// eine kontextabhaengige Liste) — dieselbe Regel wie bei Kessel, BHKW und
+        /// Stromspeicher.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Komponentenkonfiguration()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOMPONENTENKONFIGURATION,
+                anzeigename: KiDialogTexte.MaskeKomponentenkonfiguration,
+                felder: new[]
+                {
+                    // ---- Die projektweiten Laufparameter ----------------------------
+                    new KiDialogFeld("kessel_bereitschaft",
+                                     "KomponentenKonfigurationKiSicht.Bereitschaft",
+                                     KiDialogTexte.KkonfBereitschaftName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KkonfBereitschaftErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("bhkw_betriebsart",
+                                     "KomponentenKonfigurationKiSicht.BhkwBetriebsart",
+                                     KiDialogTexte.KkonfBetriebsartName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.KkonfBetriebsartErl),
+                    new KiDialogFeld("bhkw_leistungsgrenze",
+                                     "KomponentenKonfigurationKiSicht.BhkwLeistungsgrenze",
+                                     KiDialogTexte.KkonfGrenzeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.KkonfGrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+
+                    // ---- Die Konfiguration DIESER Waermepumpe -----------------------
+                    new KiDialogFeld("heizstab", "KomponentenKonfigurationKiSicht.Heizstab",
+                                     KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaHeizstabErl),
+                    new KiDialogFeld("sperrzeit", "KomponentenKonfigurationKiSicht.Sperrung",
+                                     KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaSperrungErl),
+                    new KiDialogFeld("sperrzeit_von",
+                                     "KomponentenKonfigurationKiSicht.SperrzeitVon",
+                                     KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitVonErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("sperrzeit_bis",
+                                     "KomponentenKonfigurationKiSicht.SperrzeitBis",
+                                     KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitBisErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("bivalenter_betrieb",
+                                     "KomponentenKonfigurationKiSicht.BivalenterBetrieb",
+                                     KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaBivalentErl),
+                    new KiDialogFeld("betriebsart", "KomponentenKonfigurationKiSicht.Betriebsart",
+                                     KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WpaBetriebsartErl, leerErlaubt: true),
+                    new KiDialogFeld("bivalenztemperatur",
+                                     "KomponentenKonfigurationKiSicht.Abschaltpunkt",
+                                     KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaAbschaltpunktErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================

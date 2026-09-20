@@ -638,6 +638,22 @@
         internal static string WsenHoeheName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
         internal static string WsenHoeheErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_ERL;
 
+        // ================= Konfiguration einer Komponente (Welle KI-F2)
+        //
+        // Die sieben Felder der Waermepumpen-Konfiguration stehen schon unter
+        // Form_WP_Anlage und nehmen deren Texte (Wpa*) - es sind dieselben Felder,
+        // nur unter einer anderen offenen Maske.
+
+        /// <summary>Die dreizehnte Maske (Welle KI-F2): die Komponentenkonfiguration.</summary>
+        internal static string MaskeKomponentenkonfiguration => MyResource.Resource.KI_DLG_MASKE_KKONF;
+
+        internal static string KkonfBereitschaftName => MyResource.Resource.SIMERG_LBL_BEREITSCHAFT;
+        internal static string KkonfBereitschaftErl => MyResource.Resource.KI_DLG_KKONF_BEREITSCHAFT_ERL;
+        internal static string KkonfBetriebsartName => MyResource.Resource.SIMERG_GRP_BETRIEBSART;
+        internal static string KkonfBetriebsartErl => MyResource.Resource.KI_DLG_KKONF_BETRIEBSART_ERL;
+        internal static string KkonfGrenzeName => MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE;
+        internal static string KkonfGrenzeErl => MyResource.Resource.KI_DLG_KKONF_GRENZE_ERL;
+
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;
     }

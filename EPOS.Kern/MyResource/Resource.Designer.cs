@@ -25298,6 +25298,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_BEREITSCHAFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_BEREITSCHAFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Modulationsgrenze der BHKW-Module in Prozent der Nennleistung — ein Wert des PROJEKTS; 0 rechnet als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -25555,6 +25582,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_HEIZKESSEL_PROJEKT {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration einer Komponente ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KKONF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KKONF", resourceCulture);
             }
         }
         

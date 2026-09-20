@@ -20742,4 +20742,16 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
     <value>Die eigene Einspeisehöhe im Speicher, 0 = ganz unten bis 1 = ganz oben; sie gilt nur bei eingeschaltetem Schalter.</value>
   </data>
+  <data name="KI_DLG_MASKE_KKONF" xml:space="preserve">
+    <value>Konfiguration einer Komponente</value>
+  </data>
+  <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels.</value>
+  </data>
+  <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung.</value>
+  </data>
+  <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
+    <value>Untere Modulationsgrenze der BHKW-Module in Prozent der Nennleistung — ein Wert des PROJEKTS; 0 rechnet als 0.</value>
+  </data>
 </root>

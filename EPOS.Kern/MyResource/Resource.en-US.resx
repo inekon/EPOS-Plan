@@ -20735,4 +20735,16 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
     <value>The own feed-in height in the tank, 0 = bottom to 1 = top; it applies only while the switch is on.</value>
   </data>
+  <data name="KI_DLG_MASKE_KKONF" xml:space="preserve">
+    <value>Configuration of a component</value>
+  </data>
+  <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Standby operation of the boilers in hours per year — a value of the PROJECT, not of this boiler.</value>
+  </data>
+  <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Operating mode of the CHP units in the project: 0 = heat-led, 1 = power-led, 2 = without grid feed-in.</value>
+  </data>
+  <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
+    <value>Lower modulation limit of the CHP modules in percent of rated power — a value of the PROJECT; 0 counts as 0.</value>
+  </data>
 </root>

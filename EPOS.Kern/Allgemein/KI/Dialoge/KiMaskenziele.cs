@@ -154,7 +154,8 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.QUELLE_ERDREICH,           Masken.Simulation },
                 { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation },
                 { KiMaskennamen.QUELLPROFIL,               Masken.Simulation },
-                { KiMaskennamen.WAERMESENKE,               Masken.Simulation }
+                { KiMaskennamen.WAERMESENKE,               Masken.Simulation },
+                { KiMaskennamen.KOMPONENTENKONFIGURATION,  Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>
