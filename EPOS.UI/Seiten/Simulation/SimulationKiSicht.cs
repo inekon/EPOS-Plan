@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using KiKern;
 
 namespace EPOS.UI.Seiten.Simulation;
 
@@ -404,6 +405,72 @@ public sealed class SimulationKiSicht
     {
         get => Speicher?.Preisquelle ?? "";
         set => SpeicherWahl(SpeicherFeld.Preisquelle, value, s => s.Preisquelle = value ?? "");
+    }
+
+    /// <summary>Die gewählte Preisreihe des Stromtarifs (KI-F1b).</summary>
+    /// <remarks>
+    /// <b>Sie hängt an der Preisquelle:</b> Mit ihr wechseln Beschriftung und Inhalt
+    /// der Reihenauswahl. Eine Id, die die Liste gerade nicht führt, wird abgewiesen —
+    /// dieselbe Regel wie bei den drei Steuerwerten darüber.
+    /// </remarks>
+    public int SpeicherPreisreihe
+    {
+        get => Speicher?.PreisreiheId ?? 0;
+        set
+        {
+            SpeicherParameterDaten? s = Speicher;
+            if (s is null) return;
+
+            bool bekannt = false;
+            foreach ((int id, string _) in s.Preisreihen)
+                if (id == value) bekannt = true;
+
+            if (!bekannt) return;
+
+            SpeicherSetzen(SpeicherFeld.Preisreihe,
+                           value.ToString(CultureInfo.InvariantCulture),
+                           z => z.PreisreiheId = value);
+        }
+    }
+
+    // ---- Die Auswahl der vier Wahlfelder (KI-F1b, KI-D-Q6) -----------------
+    //
+    // Die Anmeldung findet sie ueber die Namenskonvention <Eigenschaft>Wahl; der
+    // Dialog braucht dafuer keine Zeile. Gerufen wird bei JEDEM Zugriff - die
+    // Reihenauswahl wechselt mit der Preisquelle.
+
+    /// <summary>Die Betriebsarten, die die Maske anbietet.</summary>
+    public IReadOnlyList<KiWahleintrag> SpeicherBetriebsartWahl => Auswahl(Speicher?.Betriebsarten);
+
+    /// <summary>Die Berechnungsarten, die die Maske anbietet.</summary>
+    public IReadOnlyList<KiWahleintrag> SpeicherBerechnungsartWahl => Auswahl(Speicher?.Berechnungsarten);
+
+    /// <summary>Die Preisquellen, die die Maske anbietet.</summary>
+    public IReadOnlyList<KiWahleintrag> SpeicherPreisquelleWahl => Auswahl(Speicher?.Preisquellen);
+
+    /// <summary>Die Preisreihen der gewählten Quelle.</summary>
+    public IReadOnlyList<KiWahleintrag> SpeicherPreisreiheWahl
+    {
+        get
+        {
+            SpeicherParameterDaten? s = Speicher;
+            if (s is null) return Array.Empty<KiWahleintrag>();
+
+            var liste = new List<KiWahleintrag>(s.Preisreihen.Count);
+            foreach ((int id, string text) in s.Preisreihen)
+                liste.Add(new KiWahleintrag(id.ToString(CultureInfo.InvariantCulture), text));
+            return liste;
+        }
+    }
+
+    /// <summary>Steuerwerte der Maske als Wahleinträge; Schlüssel ist der Steuerwert.</summary>
+    private static IReadOnlyList<KiWahleintrag> Auswahl(IReadOnlyList<Steuerwahl>? liste)
+    {
+        if (liste is null) return Array.Empty<KiWahleintrag>();
+
+        var eintraege = new List<KiWahleintrag>(liste.Count);
+        foreach (Steuerwahl wahl in liste) eintraege.Add(new KiWahleintrag(wahl.Wert, wahl.Text));
+        return eintraege;
     }
 
     /// <summary>Den Aufschlag auf die Preisreihe anwenden.</summary>

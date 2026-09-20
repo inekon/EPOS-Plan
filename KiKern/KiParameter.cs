@@ -27,7 +27,20 @@ namespace KiKern
         Aufzaehlung = 4,
 
         /// <summary>Liste ganzer Zahlen - fuer Aktionen ueber mehrere Projekte.</summary>
-        GanzzahlListe = 5
+        GanzzahlListe = 5,
+
+        /// <summary>
+        /// WAHL aus einer Liste, die die Maske zur Laufzeit liefert (KI-F1b, KI-D-Q6):
+        /// Energietraeger, Modul, Geraet, Bodentyp, Profil, Preisreihe.
+        /// </summary>
+        /// <remarks>
+        /// <b>Nur fuer ein Maskenfeld</b> (<see cref="KiDialogFeld"/>), nie fuer einen
+        /// Aktionsparameter: Ein Parameter deklariert seine Werte selbst
+        /// (<see cref="Aufzaehlung"/>), ein Wahlfeld bekommt sie vom offenen Dialog.
+        /// Der Unterschied ist der ganze Punkt - eine Energietraegerliste im Katalog
+        /// waere am Tag ihrer Deklaration richtig und danach nie wieder.
+        /// </remarks>
+        Wahl = 6
     }
 
     /// <summary>
@@ -70,6 +83,12 @@ namespace KiKern
                 throw new ArgumentException(
                     "Parametername '" + name + "' ist nicht zulaessig (erlaubt: a-z, 0-9, _; hoechstens 64 Zeichen).",
                     nameof(name));
+            // Ein Aktionsparameter kann keine WAHL sein: Seine Werte stehen in der
+            // Deklaration, die einer Wahl kommen aus der offenen Maske (KI-F1b).
+            if (typ == KiParameterTyp.Wahl)
+                throw new ArgumentException(
+                    "Der Parameter '" + name + "' kann keine Wahl sein; die Eintraege einer Wahl " +
+                    "liefert die Maske, nicht die Deklaration.", nameof(typ));
             if (typ == KiParameterTyp.Aufzaehlung && (werte == null || werte.Count == 0))
                 throw new ArgumentException(
                     "Der Aufzaehlungsparameter '" + name + "' braucht eine nicht leere Werteliste.", nameof(werte));

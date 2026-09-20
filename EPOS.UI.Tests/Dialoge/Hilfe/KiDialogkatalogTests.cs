@@ -97,6 +97,38 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) }
     };
 
+    /// <summary>
+    /// Je Maske die WAHLFELDER, deren Einträge der Dialog beim Anmelden ausdrücklich
+    /// hereinreicht (KI-F1b, KI-D-Q6).
+    /// </summary>
+    /// <remarks>
+    /// <b>Diese Liste ist die Gegenprobe zum Dialog.</b> Ein Wahlfeld löst seine Quelle
+    /// entweder über die Begleiteigenschaft <c>&lt;Eigenschaft&gt;Wahl</c> am Daten-Objekt
+    /// auf — das findet der Wächter selbst — oder über einen Lieferanten im Dialog, und
+    /// den kann er nicht sehen. Steht ein Feld hier, das der Dialog NICHT liefert, bleibt
+    /// es im Betrieb ohne Auswahl; steht eines nicht hier, das er liefert, meldet der
+    /// Wächter es als fehlend. Beides fällt auf.
+    /// </remarks>
+    private static string[] Wahlquellen(string maske) => maske switch
+    {
+        KiMaskennamen.HEIZKESSEL           => new[] { "energietraeger" },
+        KiMaskennamen.PUFFERSPEICHER       => new[] { "speichertyp" },
+        KiMaskennamen.WAERMEPUMPE          => new[] { "typ", "leistungsstufen",
+                                                      "aufstellung", "baujahr" },
+        KiMaskennamen.HEIZKESSEL_PROJEKT   => new[] { "energietraeger" },
+        KiMaskennamen.BHKW_PROJEKT         => new[] { "energietraeger" },
+        KiMaskennamen.STROMSPEICHER_PROJEKT => new[] { "energietraeger" },
+        KiMaskennamen.PHOTOVOLTAIK         => new[] { "energietraeger" },
+        KiMaskennamen.WAERMEPUMPE_ANLAGE   => new[] { "energietraeger", "betriebsart", "typ",
+                                                      "leistungsstufen", "aufstellung", "baujahr" },
+
+        // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
+        // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
+        // Begleiteigenschaft <Eigenschaft>Wahl - den Weg findet der Waechter selbst.
+        // Wer eines ihrer Felder hier eintruege, naehme ihm genau diese Probe.
+        _ => Array.Empty<string>()
+    };
+
     // =====================================================================
     //  Der Wächter
     // =====================================================================
@@ -105,7 +137,7 @@ public class KiDialogkatalogTests
     [MemberData(nameof(Masken))]
     public void Jeder_Eigenschaftsname_des_Katalogs_gibt_es_am_Daten_Objekt(string maske, Type daten)
     {
-        IReadOnlyList<string> fehlt = KiMaskenanmeldung.Pruefe(maske, daten);
+        IReadOnlyList<string> fehlt = KiMaskenanmeldung.Pruefe(maske, daten, Wahlquellen(maske));
 
         Assert.True(fehlt.Count == 0,
                     "Diese Eigenschaftspfade der Maske '" + maske + "' lösen an " +
@@ -118,11 +150,13 @@ public class KiDialogkatalogTests
         // Ohne die Typprobe VOR dem Punkt fiele ein an die falsche Maske gehängtes
         // Daten-Objekt erst auf, wenn zufällig eine Eigenschaft gleich heisst.
         IReadOnlyList<string> fehlt =
-            KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten));
+            KiMaskenanmeldung.Pruefe(KiMaskennamen.HEIZKESSEL, typeof(PufferSpKatalogDaten),
+                                     Wahlquellen(KiMaskennamen.HEIZKESSEL));
 
-        // SECHS seit dem 15.09.2026 — der Katalogeditor hat Kosten und Emissionen
-        // verloren (siehe Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
-        Assert.Equal(6, fehlt.Count);
+        // ELF seit der Welle KI-F1b: die sechs Zahlen des Katalogeditors und die fuenf
+        // uebrigen Eingabefelder (Name, Hersteller, Beschreibung, Energietraeger,
+        // Brennwert) - keines davon gibt es an PufferSpKatalogDaten.
+        Assert.Equal(11, fehlt.Count);
         Assert.Contains("HeizkesselKatalogDaten.Ptherm", fehlt);
     }
 
@@ -235,7 +269,7 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_6_14_1_und_1_Feld()
+    public void Die_vier_Startmasken_fuehren_11_15_5_und_11_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -246,10 +280,10 @@ public class KiDialogkatalogTests
         // Kosten und Emissionen enthalten" hat die Maske neun Felder verloren; der
         // Katalog führt sie deshalb auch nicht mehr (siehe
         // Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
-        Assert.Equal(6, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
-        Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder);
-        Assert.Single(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder);
+        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
+        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
+        Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
     }
 
     /// <summary>
@@ -306,14 +340,16 @@ public class KiDialogkatalogTests
     /// sagt, WELCHE — und dass keines der neun auf einem Umweg zurückkommt.</para>
     /// </summary>
     [Fact]
-    public void Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder()
+    public void Die_Heizkesselmaske_fuehrt_genau_ihre_sichtbaren_Felder()
     {
         KiDialog hk = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!;
 
         string[] erwartet =
         {
             "th_leistung", "wirkungsgrad_gas", "wirkungsgrad_oel",
-            "bereitschaftsverlust", "vorlauf", "ruecklauf"
+            "bereitschaftsverlust", "vorlauf", "ruecklauf",
+            // Welle KI-F1b: die uebrigen Eingabefelder derselben Maske.
+            "name", "hersteller", "beschreibung", "energietraeger", "brennwert"
         };
         Assert.Equal(erwartet.OrderBy(x => x, StringComparer.Ordinal),
                      hk.Felder.Select(f => f.Name).OrderBy(x => x, StringComparer.Ordinal));

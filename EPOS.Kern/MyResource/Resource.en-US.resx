@@ -20852,4 +20852,121 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
     <value>On = the surcharge is applied to the selected price series.</value>
   </data>
+  <data name="KI_FELD_WAHL_LEER" xml:space="preserve">
+    <value>The field “{0}” currently offers no selection; it cannot be set.</value>
+  </data>
+  <data name="KI_FELD_WAHL_UNBEKANNT" xml:space="preserve">
+    <value>“{1}” is not an entry of “{0}”. Available are: {2}.</value>
+  </data>
+  <data name="KI_FELD_WAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>“{1}” matches several entries of “{0}”: {2}. Please be more precise.</value>
+  </data>
+  <data name="KI_FELD_WAHL_SCHLUESSEL" xml:space="preserve">
+    <value>The entry “{1}” of “{0}” cannot be set as a value (key “{2}”).</value>
+  </data>
+  <data name="KI_FELD_WAHL_EINTRAEGE" xml:space="preserve">
+    <value>Available are: {0}.</value>
+  </data>
+  <data name="KI_FELD_MEHRDEUTIG" xml:space="preserve">
+    <value>The field name “{0}” matches several fields in “{1}”: {2}. Please name it precisely.</value>
+  </data>
+  <data name="KI_FELD_AUFGELOEST" xml:space="preserve">
+    <value>(field name resolved: {0} → {1})</value>
+  </data>
+  <data name="KI_DLG_HK_NAME_ERL" xml:space="preserve">
+    <value>The boiler name of the catalogue record; the boiler appears under it in the list.</value>
+  </data>
+  <data name="KI_DLG_HK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the boiler; purely descriptive, it does not enter any calculation.</value>
+  </data>
+  <data name="KI_DLG_HK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free descriptive text for the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_HK_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the boiler; it decides which efficiency is used.</value>
+  </data>
+  <data name="KI_DLG_HK_BRENNWERT_ERL" xml:space="preserve">
+    <value>Yes = the boiler is calculated as a condensing boiler.</value>
+  </data>
+  <data name="KI_DLG_PSP_NAME_ERL" xml:space="preserve">
+    <value>The name of the storage tank in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_PSP_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the storage tank; purely descriptive.</value>
+  </data>
+  <data name="KI_DLG_PSP_SPEICHERTYP_ERL" xml:space="preserve">
+    <value>The design of the storage tank (solar, buffer, combined).</value>
+  </data>
+  <data name="KI_DLG_PSP_VERLUSTE_ERL" xml:space="preserve">
+    <value>The heat loss of the ready-to-operate storage tank over one day.</value>
+  </data>
+  <data name="KI_DLG_WP_NAME_ERL" xml:space="preserve">
+    <value>The name of the heat pump in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_WP_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>The cooling capacity of the catalogue record; here a read-only display, it is changed at the plant.</value>
+  </data>
+  <data name="KI_DLG_HKP_TRAEGER_ERL" xml:space="preserve">
+    <value>The fuel variant of the plant; it decides the price and the emissions of the boiler.</value>
+  </data>
+  <data name="KI_DLG_BHKW_TRAEGER_ERL" xml:space="preserve">
+    <value>The fuel variant of the plant; it decides the price and the emissions of the module.</value>
+  </data>
+  <data name="KI_DLG_STSP_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the storage unit; it decides the price and the emissions of the electricity drawn.</value>
+  </data>
+  <data name="KI_DLG_PV_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the plant; it decides the price and the emissions of the electricity generated.</value>
+  </data>
+  <data name="KI_DLG_WPA_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the heat pump; it decides the price and the emissions of the drive power.</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_HEIZUNG" xml:space="preserve">
+    <value>Heating:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_BW" xml:space="preserve">
+    <value>Domestic hot water:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_PROZESS" xml:space="preserve">
+    <value>Process heat:</value>
+  </data>
+  <data name="KI_DLG_QERD_BODENTYP_ERL" xml:space="preserve">
+    <value>The subsoil at the site. It supplies the thermal conductivity and heat capacity of the ground and thus determines the source temperature and the design to VDI 4640.</value>
+  </data>
+  <data name="KI_DLG_QPUF_PUFFER_ERL" xml:space="preserve">
+    <value>The buffer tank of the project that serves as the heat source. Only the tanks of this project are available; “Create buffer tank…” adds a new one.</value>
+  </data>
+  <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
+    <value>The stored source profile the screen loads. “New profile” starts an empty set; a loaded profile brings along its operating mode, name and values.</value>
+  </data>
+  <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
+    <value>The buffer tank this sink charges. It exists only if the target is a tank slot; each tank may be a target only once.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL" xml:space="preserve">
+    <value>The tank supplies the heating. The usage is a multiple choice: heating, domestic hot water and process heat can be ticked individually or together.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_BW_ERL" xml:space="preserve">
+    <value>The tank supplies the domestic hot water. Only then does the domestic hot water usable temperature apply.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_PROZESS_ERL" xml:space="preserve">
+    <value>The tank supplies the process heat.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL" xml:space="preserve">
+    <value>The height at which the heating draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_BW_ERL" xml:space="preserve">
+    <value>The height at which the domestic hot water draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_PROZESS_ERL" xml:space="preserve">
+    <value>The height at which the process heat draws from the tank: 0 is at the very bottom, 1 at the very top. Empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_KKONF_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier of the heat pump; it determines the price and emissions of the drive electricity.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISREIHE_ERL" xml:space="preserve">
+    <value>The price series the storage unit's electricity tariff is calculated from; it changes with the price source.</value>
+  </data>
+  <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
+    <value>The reference quantity of the item; it decides what the rate refers to.</value>
+  </data>
 </root>

@@ -20859,4 +20859,121 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
     <value>An = auf die gewählte Preisreihe wird der Aufschlag angewendet.</value>
   </data>
+  <data name="KI_FELD_WAHL_LEER" xml:space="preserve">
+    <value>Das Feld „{0}“ führt gerade keine Auswahl; es lässt sich nicht setzen.</value>
+  </data>
+  <data name="KI_FELD_WAHL_UNBEKANNT" xml:space="preserve">
+    <value>„{1}“ ist kein Eintrag von „{0}“. Zur Wahl stehen: {2}.</value>
+  </data>
+  <data name="KI_FELD_WAHL_MEHRDEUTIG" xml:space="preserve">
+    <value>„{1}“ passt bei „{0}“ auf mehrere Einträge: {2}. Bitte genauer benennen.</value>
+  </data>
+  <data name="KI_FELD_WAHL_SCHLUESSEL" xml:space="preserve">
+    <value>Der Eintrag „{1}“ von „{0}“ lässt sich nicht als Wert setzen (Schlüssel „{2}“).</value>
+  </data>
+  <data name="KI_FELD_WAHL_EINTRAEGE" xml:space="preserve">
+    <value>Zur Wahl stehen: {0}.</value>
+  </data>
+  <data name="KI_FELD_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Feldname „{0}“ passt in „{1}“ auf mehrere Felder: {2}. Bitte genau benennen.</value>
+  </data>
+  <data name="KI_FELD_AUFGELOEST" xml:space="preserve">
+    <value>(Feldname aufgelöst: {0} → {1})</value>
+  </data>
+  <data name="KI_DLG_HK_NAME_ERL" xml:space="preserve">
+    <value>Die Kesselbezeichnung des Katalogsatzes; unter ihr steht der Kessel in der Liste.</value>
+  </data>
+  <data name="KI_DLG_HK_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Kessels; reine Beschreibung, sie geht in keine Rechnung ein.</value>
+  </data>
+  <data name="KI_DLG_HK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freier Beschreibungstext zum Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_HK_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger des Kessels; er bestimmt, welcher Wirkungsgrad gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_HK_BRENNWERT_ERL" xml:space="preserve">
+    <value>Ja = der Kessel wird als Brennwertkessel gerechnet.</value>
+  </data>
+  <data name="KI_DLG_PSP_NAME_ERL" xml:space="preserve">
+    <value>Der Name des Speichers im Katalog.</value>
+  </data>
+  <data name="KI_DLG_PSP_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Speichers; reine Beschreibung.</value>
+  </data>
+  <data name="KI_DLG_PSP_SPEICHERTYP_ERL" xml:space="preserve">
+    <value>Die Bauart des Speichers (Solarspeicher, Pufferspeicher, Kombispeicher).</value>
+  </data>
+  <data name="KI_DLG_PSP_VERLUSTE_ERL" xml:space="preserve">
+    <value>Der Wärmeverlust des betriebsbereiten Speichers an einem Tag.</value>
+  </data>
+  <data name="KI_DLG_WP_NAME_ERL" xml:space="preserve">
+    <value>Der Name der Wärmepumpe im Katalog.</value>
+  </data>
+  <data name="KI_DLG_WP_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>Die Kühlleistung des Katalogsatzes; in der Katalogpflege eine Anzeige, änderbar ist sie an der Anlage.</value>
+  </data>
+  <data name="KI_DLG_HKP_TRAEGER_ERL" xml:space="preserve">
+    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Kessels.</value>
+  </data>
+  <data name="KI_DLG_BHKW_TRAEGER_ERL" xml:space="preserve">
+    <value>Die Brennstoffvariante der Anlage; sie bestimmt Preis und Emissionen des Moduls.</value>
+  </data>
+  <data name="KI_DLG_STSP_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger des Speichers; er bestimmt Preis und Emissionen des bezogenen Stroms.</value>
+  </data>
+  <data name="KI_DLG_PV_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger der Anlage; er bestimmt Preis und Emissionen des erzeugten Stroms.</value>
+  </data>
+  <data name="KI_DLG_WPA_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms.</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_HEIZUNG" xml:space="preserve">
+    <value>Heizung:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_BW" xml:space="preserve">
+    <value>Brauchwasser:</value>
+  </data>
+  <data name="PSP_LABEL_ENTNAHME_PROZESS" xml:space="preserve">
+    <value>Prozesswärme:</value>
+  </data>
+  <data name="KI_DLG_QERD_BODENTYP_ERL" xml:space="preserve">
+    <value>Der Untergrund am Standort. Er liefert Wärmeleitfähigkeit und Wärmekapazität des Bodens und bestimmt damit die Quelltemperatur und die Auslegung nach VDI 4640.</value>
+  </data>
+  <data name="KI_DLG_QPUF_PUFFER_ERL" xml:space="preserve">
+    <value>Der Pufferspeicher des Projekts, der als Wärmequelle dient. Zur Wahl stehen nur die Speicher dieses Projekts; „Pufferspeicher anlegen…“ legt einen neuen an.</value>
+  </data>
+  <data name="KI_DLG_QPROF_PROFIL_ERL" xml:space="preserve">
+    <value>Das gespeicherte Quellprofil, das die Maske lädt. „Neues Profil“ beginnt einen leeren Satz; ein geladenes Profil bringt Betriebsart, Bezeichnung und Werte mit.</value>
+  </data>
+  <data name="KI_DLG_WSEN_SPEICHER_ERL" xml:space="preserve">
+    <value>Der Pufferspeicher, den diese Senke lädt. Es gibt ihn nur, wenn das Ziel ein Pufferplatz ist; jeder Speicher darf nur einmal Ziel sein.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_HEIZUNG_ERL" xml:space="preserve">
+    <value>Der Speicher versorgt die Heizung. Die Nutzung ist eine Mehrfachwahl: Heizung, Brauchwasser und Prozesswärme lassen sich einzeln oder zusammen ankreuzen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_BW_ERL" xml:space="preserve">
+    <value>Der Speicher versorgt das Brauchwasser. Erst damit gilt die Nutztemperatur Brauchwasser.</value>
+  </data>
+  <data name="KI_DLG_PSPV_NUTZUNG_PROZESS_ERL" xml:space="preserve">
+    <value>Der Speicher versorgt die Prozesswärme.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_HEIZUNG_ERL" xml:space="preserve">
+    <value>Die Höhe, auf der die Heizung aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_BW_ERL" xml:space="preserve">
+    <value>Die Höhe, auf der das Brauchwasser aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTNAHME_PROZESS_ERL" xml:space="preserve">
+    <value>Die Höhe, auf der die Prozesswärme aus dem Speicher entnimmt: 0 ist ganz unten, 1 ganz oben. Leer heißt „oben“.</value>
+  </data>
+  <data name="KI_DLG_KKONF_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISREIHE_ERL" xml:space="preserve">
+    <value>Die Preisreihe, aus der der Stromtarif des Speichers gerechnet wird; sie wechselt mit der Preisquelle.</value>
+  </data>
+  <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
+    <value>Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht.</value>
+  </data>
 </root>

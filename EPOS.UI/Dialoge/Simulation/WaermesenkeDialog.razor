@@ -683,8 +683,47 @@
         EinspeisehoeheAktivLesen = () => _hoeheAktiv,
         EinspeisehoeheAktivSetzen = EinspeisehoeheUmschalten,
         EinspeisehoeheLesen = () => _hoehe,
-        EinspeisehoeheSetzen = w => { _hoehe = w; ZeileZurueckschreiben(); }
+        EinspeisehoeheSetzen = w => { _hoehe = w; ZeileZurueckschreiben(); },
+        SpeicherLesen = () => Aktuell?.IdPuffer ?? 0,
+        SpeicherSetzen = id => SpeicherWaehlen(id),
+        ZielEintraege = () => Steuerwertwahl(Ziele, Zieltexte),
+        BedarfsartEintraege = () => Steuerwertwahl(Bedarfsarten, Bedarfsarttexte),
+        LadeprioritaetEintraege = () => Zahlwahl(Prioritaeten),
+        LadeprioritaetPvEintraege = () => Zahlwahl(PrioritaetenPv),
+        SpeicherEintraege = Speicherwahl
     };
+
+    /// <summary>
+    /// Die Einträge einer Steuerwertliste für den Assistenten (KI-F1b): Schlüssel ist
+    /// der Steuerwert, Text der Eintrag der Klappliste.
+    /// </summary>
+    private static IReadOnlyList<KiWahleintrag> Steuerwertwahl(IReadOnlyList<string> werte,
+                                                               IReadOnlyList<string> texte)
+    {
+        var l = new List<KiWahleintrag>(werte.Count);
+        for (int i = 0; i < werte.Count; i++)
+            l.Add(new KiWahleintrag(werte[i], i < texte.Count ? texte[i] : werte[i]));
+        return l;
+    }
+
+    /// <summary>Die Einträge einer Zahlenliste für den Assistenten (KI-F1b).</summary>
+    private static IReadOnlyList<KiWahleintrag> Zahlwahl(IReadOnlyList<(int Id, string Text)> liste)
+        => KiMaskenanmeldung.Eintraege(liste, e => e.Id, e => e.Text);
+
+    /// <summary>
+    /// Die wählbaren Speicher für den Assistenten (KI-F1b) — OHNE die gesperrten
+    /// Gruppenköpfe der Klappliste: Deren Id ist negativ und war nie eine gültige
+    /// Wahl (<see cref="SpeicherWaehlen"/> überliest sie).
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> Speicherwahl()
+    {
+        var l = new List<KiWahleintrag>();
+        foreach ((int id, string text) in Speichereintraege)
+            if (id > 0) l.Add(new KiWahleintrag(
+                                  id.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                                  text));
+        return l;
+    }
 
     /// <summary>
     /// Sucht den Listenplatz eines STEUERWERTS und geht damit den Weg der Klappliste;

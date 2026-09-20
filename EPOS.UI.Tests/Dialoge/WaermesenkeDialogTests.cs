@@ -726,4 +726,73 @@ public class WaermesenkeDialogTests : EposBunitContext
             WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ladegrenze");
         Assert.Equal(70.0, grenze.Lesen());
     }
+
+    /// <summary>
+    /// <b>Der Speicher ist ein WAHLFELD</b> (KI-F1b): Gesetzt wird über die ANZEIGE
+    /// der Klappliste, in der Zeile steht danach die Id. Die gesperrten GRUPPENKÖPFE
+    /// (negative Id) stehen NICHT zur Wahl — sie sind Überschriften.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Speicher_ohne_die_Gruppenkoepfe()
+    {
+        var cut = Zeige(MitPuffern());
+
+        WindowsFormsApplication1.KiFeldzugang ziel = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ziel");
+        ziel.Setzen(P_HEIZUNG);
+        cut.Render();
+
+        WindowsFormsApplication1.KiFeldzugang speicher = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "speicher");
+        Assert.NotNull(speicher);
+
+        // Die Maske zeigt zwei Gruppenkoepfe (zwei Klassen-Sets) - der Assistent
+        // sieht nur die zwei waehlbaren Speicher.
+        var eintraege = speicher.Wahleintraege();
+        Assert.Equal(2, eintraege.Count);
+        Assert.All(eintraege, e => Assert.DoesNotContain("—", e.Text));
+
+        WindowsFormsApplication1.KiFeldumsetzung umsetzung =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(speicher, "Kombispeicher");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        speicher.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(12, speicher.Lesen());
+
+        WindowsFormsApplication1.KiFeldwert wert =
+            WindowsFormsApplication1.KiMaskenbruecke
+                .Lesen(WindowsFormsApplication1.KiMaskennamen.WAERMESENKE)
+                .Single(f => f.Name == "speicher");
+        Assert.Equal("Kombispeicher", wert.Text);
+        Assert.Equal("12", wert.Schluessel);
+    }
+
+    /// <summary>
+    /// Das Ziel läuft seit KI-F1b als Wahl: Gesetzt wird über den ANZEIGETEXT der
+    /// Klappliste, in der Zeile steht danach der STEUERWERT.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_das_Ziel_ueber_seinen_Anzeigetext()
+    {
+        var cut = Zeige(MitPuffern());
+
+        WindowsFormsApplication1.KiFeldzugang zugang = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.WAERMESENKE, "ziel");
+
+        WindowsFormsApplication1.KiFeldumsetzung umsetzung =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(zugang, "Puffer Kombi");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(P_KOMBI, zugang.Lesen());
+
+        WindowsFormsApplication1.KiFeldwert wert =
+            WindowsFormsApplication1.KiMaskenbruecke
+                .Lesen(WindowsFormsApplication1.KiMaskennamen.WAERMESENKE)
+                .Single(f => f.Name == "ziel");
+        Assert.Equal("Puffer Kombi", wert.Text);
+        Assert.Equal(P_KOMBI, wert.Schluessel);
+    }
 }

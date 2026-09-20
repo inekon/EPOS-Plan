@@ -168,6 +168,15 @@ namespace KiKern
         /// </summary>
         public bool NurLesen { get; }
 
+        /// <summary>
+        /// Ist das Feld eine WAHL aus einer Liste, die die Maske liefert (KI-F1b)?
+        /// </summary>
+        /// <remarks>
+        /// Die Eintraege stehen NICHT hier: Ein Wahlfeld deklariert nur seine Art, die
+        /// Liste kommt zur Laufzeit vom offenen Dialog (<see cref="KiWahleintrag"/>).
+        /// </remarks>
+        public bool IstWahl => Typ == KiParameterTyp.Wahl;
+
         /// <summary>Fuehrt dieses Feld ueber eine Sammlung - ist es also eine SPALTE?</summary>
         public bool IstSpalte => KiEigenschaftspfad.IstSammlung(Eigenschaftspfad);
 
@@ -486,8 +495,29 @@ namespace KiKern
             return null;
         }
 
+        /// <summary>
+        /// Sucht ein Feld TOLERANT: Schluessel, Anzeigename, eindeutiger Anfang,
+        /// eindeutig enthaltener Teil (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// So trifft „vorlauftemperatur" das Feld <c>vorlauf</c>, ohne dass der Katalog
+        /// eine zweite Namensliste fuehren muesste. Mehrdeutig bleibt mehrdeutig: Der
+        /// Treffer nennt dann die Kandidaten, und es wird nicht geraten.
+        /// </remarks>
+        public KiWahltreffer Feldsuche(string? name) => KiWahl.Treffer(KiWahl.Paare(_felder), name);
+
+        /// <summary>Das tolerant gesuchte Feld; <c>null</c> = keines oder mehrere.</summary>
+        public KiDialogFeld? FindeFeldTolerant(string? name)
+        {
+            KiWahltreffer treffer = Feldsuche(name);
+            return treffer.Eindeutig ? _felder[treffer.Stelle] : null;
+        }
+
         /// <summary>Kennt die Maske dieses Feld?</summary>
         public bool KenntFeld(string? name) => FindeFeld(name) != null;
+
+        /// <summary>Kennt die Maske dieses Feld unter einem tolerant gelesenen Namen?</summary>
+        public bool KenntFeldTolerant(string? name) => FindeFeldTolerant(name) != null;
 
         /// <summary>Kennt die Maske diesen Knopf?</summary>
         public bool KenntKnopf(string? name) => FindeKnopf(name) != null;

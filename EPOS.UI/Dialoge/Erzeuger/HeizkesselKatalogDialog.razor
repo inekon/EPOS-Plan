@@ -307,8 +307,15 @@
     protected override void OnInitialized()
     {
         _hinweis = HinweisBeimOeffnen ?? "";
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten, KiHaken());
+        // KI-F1b: Der Energieträger ist ein WAHLFELD; seine Einträge stehen in der
+        // Brennstoffliste, die die Hülle hereinreicht.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL, () => Daten, KiHaken(),
+                                          ("energietraeger", Traegereintraege));
     }
+
+    /// <summary>Die Brennstoffe des Katalogs für den Assistenten (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Traegereintraege()
+        => KiMaskenanmeldung.Eintraege(Brennstoffe, b => b.Id, b => b.Text);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3):

@@ -460,8 +460,18 @@
         RuecklaufLesen = () => _tbRuecklauf,
         RuecklaufSetzen = w => _tbRuecklauf = w,
         AnschlusshoeheLesen = () => _anschlusshoehe,
-        AnschlusshoeheSetzen = w => _anschlusshoehe = w
+        AnschlusshoeheSetzen = w => _anschlusshoehe = w,
+        PufferLesen = () => _idPuffer,
+        PufferSetzen = PufferWaehlen,
+        PufferEintraege = Puffereintraege
     };
+
+    /// <summary>
+    /// Die Pufferspeicher des Projekts für den Assistenten (KI-F1b): Schlüssel ist die
+    /// Id der Zeile, Text ihre Anzeige in der Liste.
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> Puffereintraege()
+        => KiMaskenanmeldung.Eintraege(Puffer, z => z.Id, z => z.Anzeige);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).

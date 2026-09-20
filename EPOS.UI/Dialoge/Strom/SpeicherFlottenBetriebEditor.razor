@@ -1,4 +1,4 @@
-@* DER BAUSTEIN DER BETRIEBSFUEHRUNG. Er steht an ZWEI Stellen - im Dialog
+﻿@* DER BAUSTEIN DER BETRIEBSFUEHRUNG. Er steht an ZWEI Stellen - im Dialog
    "Speicherflotte & Auslegung" (ueber SpeicherFlottenEditor) und im Reiter
    "Stromspeicher" der Ergebnisseite. Das Mehrspeicherkonzept will das so:
    "ueber denselben Baustein editierbar".
@@ -130,7 +130,12 @@
     // KEIN static readonly: Die Texte kommen aus den Ressourcen, und die Sprache
     // wechselt zur Laufzeit (Sprachumschaltung im Rahmen). Ein einmal gefuellter
     // statischer Vorrat zeigte nach dem Wechsel weiter die alte Sprache.
-    private static IReadOnlyList<(int Id, string Text)> Betriebsziele => new[]
+    /// <summary>
+    /// Die fünf Betriebsziele — <b>öffentlich, weil der Hilfe-Assistent dieselbe Liste
+    /// braucht</b> (KI-F1b): Die Id ist der Zahlenwert von <c>FlottenBetriebsziel</c>,
+    /// der Text der Ressourcentext der Klappliste.
+    /// </summary>
+    public static IReadOnlyList<(int Id, string Text)> Betriebsziele => new[]
     {
         (0, Resource.FLOTTE_ZIEL_PVGREEDY), (1, Resource.FLOTTE_ZIEL_PEAKSHAVING),
         (2, Resource.FLOTTE_ZIEL_PVPLANUNG), (3, Resource.FLOTTE_ZIEL_ARBITRAGE),

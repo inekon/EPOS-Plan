@@ -799,9 +799,16 @@
         // Auftrag #200: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden. Sie wechselt
         // mit jedem Klick in der Projektliste - deshalb ein Delegat und keine Instanz;
         // die Bruecke liest bei jedem Mal neu.
+        // KI-F1b: Der Energieträger ist ein WAHLFELD; seine Einträge stehen im
+        // Trägerkatalog, den die Hülle hereinreicht.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => _projektZeile,
-                                          KiHaken());
+                                          KiHaken(),
+                                          ("energietraeger", Traegereintraege));
     }
+
+    /// <summary>Die Energieträger des Katalogs für den Assistenten (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Traegereintraege()
+        => KiMaskenanmeldung.Eintraege(Traegerkatalog, e => e.Id, e => e.Name);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3).

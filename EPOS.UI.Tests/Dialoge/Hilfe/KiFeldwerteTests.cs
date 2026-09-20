@@ -115,9 +115,12 @@ public class KiFeldwerteTests : EposBunitContext
 
         Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PUFFERSPEICHER));
 
+        // FÜNF Felder seit der Welle KI‑F1b: Der Katalogeditor führt neben dem
+        // Gesamtvolumen auch Name, Hersteller, Speichertyp und Bereitschaftsverluste.
         IReadOnlyList<KiFeldwert> werte = KiMaskenbruecke.Lesen(KiMaskennamen.PUFFERSPEICHER);
-        Assert.Single(werte);
+        Assert.Equal(5, werte.Count);
         Assert.Equal("gesamtvolumen", werte[0].Name);
+        Assert.Contains(werte, w => w.Name == "speichertyp" && w.IstWahl);
 
         Assert.NotNull(cut.Instance);
     }

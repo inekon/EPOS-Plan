@@ -232,8 +232,15 @@
     private KiMaskenanmeldung? _kiMaske;
 
     protected override void OnInitialized()
+        // KI-F1b: Der Speichertyp ist ein WAHLFELD; seine drei Einträge reicht die
+        // Hülle herein, samt einem vierten für einen abweichenden Bestandswert.
         => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER, () => Daten,
-                                             KiHaken());
+                                             KiHaken(),
+                                             ("speichertyp", Speichertypeintraege));
+
+    /// <summary>Die Speichertypen für den Assistenten (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Speichertypeintraege()
+        => KiMaskenanmeldung.Eintraege(Speichertypen, s => s.Id, s => s.Text);
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3) —

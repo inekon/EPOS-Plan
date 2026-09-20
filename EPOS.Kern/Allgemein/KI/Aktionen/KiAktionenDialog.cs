@@ -106,6 +106,10 @@ namespace WindowsFormsApplication1
                     foreach (KiFeldwert w in KiMaskenbruecke.Lesen(maske))
                     {
                         gelesen++;
+
+                        // Eine WAHL zeigt beides (KI-F1b): den Text, damit die Antwort
+                        // verstaendlich bleibt, den Schluessel, damit das Modell ihn
+                        // zurueckgeben kann - und die Eintraege, damit es nicht raten muss.
                         zeilen.Add(KiHilfe.Zeile(
                             "art", "feld",
                             "name", w.Name,
@@ -113,7 +117,8 @@ namespace WindowsFormsApplication1
                             "typ", w.Typ.ToString(),
                             "einheit", KiHilfe.Text(w.Einheit),
                             "leer_erlaubt", w.LeerErlaubt,
-                            "wert", KiHilfe.Text(w.Text),
+                            "wert", KiHilfe.Text(w.IstWahl ? Wahlwert(w) : w.Text),
+                            "eintraege", KiHilfe.Text(KiWahl.Aufzaehlen(w.Eintraege)),
                             "bedienbar", w.Setzbar,
                             "hinweis", KiHilfe.Text(w.Setzbar ? null : KiDialogTexte.NichtSetzbar)));
                     }
@@ -127,6 +132,7 @@ namespace WindowsFormsApplication1
                             "einheit", "",
                             "leer_erlaubt", false,
                             "wert", "",
+                            "eintraege", "",
                             "bedienbar", false,
                             "hinweis", KiHilfe.Text(haken.Speichern != null
                                                         ? MyResource.Resource.KI_AKTION_KNOPF_UEBER_SPEICHERN
@@ -189,6 +195,12 @@ namespace WindowsFormsApplication1
                         ? KiDialogTexte.LeerErlaubt
                         : KiDialogTexte.LeerPflicht;
 
+                    // Bei einer WAHL gehoeren die Eintraege in die Erklaerung (KI-F1b):
+                    // „welche Werte nimmt das Feld an?" ist bei ihr die ganze Frage.
+                    string auswahl = zugang.IstWahl
+                        ? KiWahl.Aufzaehlen(zugang.Wahleintraege())
+                        : "";
+
                     var zeilen = KiHilfe.Liste();
                     zeilen.Add(KiHilfe.Zeile(
                         "name", feld.Name,
@@ -199,6 +211,7 @@ namespace WindowsFormsApplication1
                         "leer_regel", KiHilfe.Text(leerregel),
                         "erlaeuterung", KiHilfe.Text(feld.Erlaeuterung),
                         "wert", KiHilfe.Text(Feldtext(zugang)),
+                        "eintraege", KiHilfe.Text(auswahl),
                         "bedienbar", zugang.Setzbar,
                         "hilfe_slug", KiHilfe.Text(feld.HilfeSlug),
                         "hilfe_tooltip", KiHilfe.Text(hilfe != null ? hilfe.Kurztext : ""),
@@ -210,6 +223,11 @@ namespace WindowsFormsApplication1
                         " (" + Typname(feld.Typ) +
                         (feld.Einheit.Length > 0 ? ", " + feld.Einheit : "") + ") " +
                         feld.Erlaeuterung + " " + leerregel;
+
+                    if (auswahl.Length > 0)
+                        satz += " " + string.Format(CultureInfo.CurrentCulture,
+                                                    MyResource.Resource.KI_FELD_WAHL_EINTRAEGE,
+                                                    auswahl);
 
                     if (hilfe != null && hilfe.Kurztext.Length > 0)
                         satz += " " + hilfe.Kurztext;
@@ -345,7 +363,7 @@ namespace WindowsFormsApplication1
                     return KiFeldBlock.Felder(eintrag.Anzeigename, new[]
                     {
                         new KiFeldAenderung(zugang.Feld.Anzeigename,
-                                            Feldtext(zugang), a.Text("wert"))
+                                            Feldtext(zugang), Neutext(zugang, a.Text("wert")))
                     });
                 },
                 ausfuehren: a =>
@@ -368,12 +386,15 @@ namespace WindowsFormsApplication1
                     zeilen.Add(KiHilfe.Zeile(
                         "maske", eintrag.Maskenname,
                         "feld", zugang.Name,
+                        "feld_genannt", KiHilfe.Text(a.Text("feld")),
                         "wert_vorher", KiHilfe.Text(alt),
                         "wert_nachher", KiHilfe.Text(Feldtext(zugang))));
 
                     KiErgebnis ergebnis = KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldGesetzt,
-                                      zugang.Feld.Anzeigename, Sichtbar(a.Text("wert")), Sichtbar(alt)),
+                                      zugang.Feld.Anzeigename,
+                                      Sichtbar(Feldtext(zugang)), Sichtbar(alt)) +
+                        Aufloesung(a.Text("feld"), zugang),
                         zeilen, anzahl: 1);
 
                     return MitBefund(ergebnis, haken);
@@ -446,6 +467,7 @@ namespace WindowsFormsApplication1
                     var zeilen = KiHilfe.Liste();
                     var meldungen = new List<string>();
                     int gesetzt = 0;
+                    string aufgeloest = "";
 
                     for (int i = 0; i < namen.Count; i++)
                     {
@@ -465,9 +487,11 @@ namespace WindowsFormsApplication1
                         }
 
                         gesetzt++;
+                        aufgeloest += Aufloesung(namen[i], zugang);
                         zeilen.Add(KiHilfe.Zeile(
                             "maske", eintrag.Maskenname,
                             "feld", zugang.Name,
+                            "feld_genannt", KiHilfe.Text(namen[i]),
                             "wert_vorher", KiHilfe.Text(alt),
                             "wert_nachher", KiHilfe.Text(Feldtext(zugang))));
                     }
@@ -476,7 +500,7 @@ namespace WindowsFormsApplication1
 
                     KiErgebnis e = KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FelderGesetzt,
-                                      gesetzt, eintrag.Anzeigename),
+                                      gesetzt, eintrag.Anzeigename) + aufgeloest,
                         zeilen, anzahl: gesetzt);
 
                     return MitBefund(e.MitMeldungen(meldungen), haken);
@@ -785,6 +809,21 @@ namespace WindowsFormsApplication1
 
             if (felder == null) return null;
 
+            // ZWEI Durchgaenge, und der buchstabengetreue geht vor (KI-F1b): Ein Name,
+            // den GENAU EINE Maske als Schluessel fuehrt, ist eindeutig - auch wenn eine
+            // andere Maske einen aehnlichen traegt („bereitschaftsverlust" gegen
+            // „bereitschaftsverluste"). Erst wenn kein Schluessel passt, wird tolerant
+            // gesucht; dann meint „vorlauftemperatur" das Feld „vorlauf".
+            return Gemeint(felder, (d, f) => d.KenntFeld(f))
+                   ?? Gemeint(felder, (d, f) => d.KenntFeldTolerant(f));
+        }
+
+        /// <summary>
+        /// Die EINE Maske, die alle genannten Felder nach dieser Regel kennt;
+        /// <c>null</c> bei keinem oder mehrdeutigem Treffer.
+        /// </summary>
+        private static KiDialog Gemeint(string[] felder, Func<KiDialog, string, bool> kennt)
+        {
             KiDialog treffer = null;
 
             foreach (string feld in felder)
@@ -793,7 +832,7 @@ namespace WindowsFormsApplication1
 
                 foreach (KiDialog d in KiDialoge.Katalog.Alle)
                 {
-                    if (!d.KenntFeld(feld.Trim())) continue;
+                    if (!kennt(d, feld.Trim())) continue;
 
                     // Ein zweiter, ANDERER Treffer macht die Sache mehrdeutig.
                     if (treffer != null && !ReferenceEquals(treffer, d)) return null;
@@ -857,11 +896,28 @@ namespace WindowsFormsApplication1
             return null;
         }
 
-        /// <summary>Klartextgrund fuer ein Feld, das die Bruecke nicht fuehrt.</summary>
+        /// <summary>
+        /// Klartextgrund fuer ein Feld, das die Bruecke nicht fuehrt - oder das MEHRERE
+        /// treffen koennte (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// <b>Zwei Absagen, weil es zwei Befunde sind.</b> „Das Feld gibt es nicht, hier
+        /// ist die Liste" hilft, wenn der Name danebenlag; steht der Name dagegen fuer
+        /// mehrere Felder („lauf" fuer Vorlauf und Ruecklauf), ist die ganze Liste
+        /// Rauschen - genannt werden dann die Kandidaten, und geraten wird nicht.
+        /// </remarks>
         private static string FeldzugangGrund(string genannt, string feld)
         {
             string maske = Maskenschluessel(genannt);
             KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+            KiFeldtreffer treffer = KiMaskenbruecke.Feldsuche(maske, feld);
+
+            if (treffer.Mehrdeutig)
+                return string.Format(CultureInfo.CurrentCulture,
+                                     MyResource.Resource.KI_FELD_MEHRDEUTIG,
+                                     feld ?? "",
+                                     eintrag == null ? maske : eintrag.Anzeigename,
+                                     Aufzaehlen(treffer.Kandidaten));
 
             return string.Format(CultureInfo.CurrentCulture, KiDialogTexte.FeldUnbekannt,
                                  feld ?? "",
@@ -1073,17 +1129,33 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Wert eines Feldes als Anzeigetext; ein werfender Getter ergibt leer.</summary>
         /// <remarks>
-        /// Formatiert wird ueber <see cref="KiMaskenbruecke.Anzeigetext"/> — dieselbe
-        /// Schreibweise, in der der Feldblock die Werte an das Modell gibt. Zwei
-        /// Fassungen desselben Wertes waeren genau die Stelle, an der Vorschau und
-        /// Ergebnis auseinanderliefen.
+        /// Formatiert wird ueber <see cref="KiMaskenbruecke.Feldtext"/> — dieselbe
+        /// Schreibweise, in der der Feldblock die Werte an das Modell gibt, und bei einer
+        /// WAHL der Text des Eintrags statt seiner Id (KI-F1b). Zwei Fassungen desselben
+        /// Wertes waeren genau die Stelle, an der Vorschau und Ergebnis auseinanderliefen.
         /// </remarks>
-        private static string Feldtext(KiFeldzugang zugang)
-        {
-            if (zugang == null) return "";
+        private static string Feldtext(KiFeldzugang zugang) => KiMaskenbruecke.Feldtext(zugang);
 
-            try { return KiMaskenbruecke.Anzeigetext(zugang.Lesen()); }
-            catch (Exception) { return ""; }
+        /// <summary>
+        /// Der Vermerk einer toleranten Namensauflösung („vorlauftemperatur → vorlauf")
+        /// - leer, wenn der genannte Name schon der Schluessel war (KI-F1b).
+        /// </summary>
+        /// <remarks>
+        /// Er haengt am Ergebnistext und geht damit in die Protokollzeile
+        /// (<c>KiErgebnis.Kurzfassung</c>): Wer spaeter nachliest, welches Feld gesetzt
+        /// wurde, soll auch sehen, unter welchem Namen es gemeint war.
+        /// </remarks>
+        private static string Aufloesung(string genannt, KiFeldzugang zugang)
+        {
+            string gesucht = (genannt ?? "").Trim();
+
+            if (zugang == null || gesucht.Length == 0 ||
+                string.Equals(gesucht, zugang.Name, StringComparison.Ordinal))
+                return "";
+
+            return " " + string.Format(CultureInfo.CurrentCulture,
+                                       MyResource.Resource.KI_FELD_AUFGELOEST,
+                                       gesucht, zugang.Name);
         }
 
         /// <summary>
@@ -1126,25 +1198,41 @@ namespace WindowsFormsApplication1
         /// Sammelt die ECHTEN Aenderungen fuer den Vorschaublock - Felder, die den Wert
         /// schon tragen, bleiben draussen.
         /// </summary>
+        /// <remarks>
+        /// <b>Beide Seiten stehen als TEXT</b> (KI-F1b): Bei einer Wahl zeigt der Block
+        /// „Energietraeger · Heizoel EL → Erdgas H" und nicht „12 → 3". Bestaetigt wird,
+        /// was der Anwender auf der Maske liest (Feldsicherung 11.5).
+        /// </remarks>
         private static void Sammle(string maske, string werte, List<KiFeldAenderung> ziel)
         {
             var namen = new List<string>();
             var inhalte = new List<string>();
             if (Zerlegen(werte, namen, inhalte) != null) return;
 
-            IReadOnlyList<KiFeldwert> gelesen = KiMaskenbruecke.Lesen(maske);
-
             for (int i = 0; i < namen.Count; i++)
             {
-                KiFeldwert stand = null;
-                foreach (KiFeldwert w in gelesen)
-                    if (string.Equals(w.Name, namen[i], StringComparison.Ordinal)) { stand = w; break; }
+                KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, namen[i]);
+                if (zugang == null) continue;
 
-                if (stand == null) continue;
-
-                var aenderung = new KiFeldAenderung(stand.Anzeigename, stand.Text, inhalte[i]);
+                var aenderung = new KiFeldAenderung(zugang.Feld.Anzeigename,
+                                                    Feldtext(zugang),
+                                                    Neutext(zugang, inhalte[i]));
                 if (aenderung.IstAenderung) ziel.Add(aenderung);
             }
+        }
+
+        /// <summary>
+        /// Der NEUE Wert, wie er im Bestaetigungsblock steht: bei einer Wahl der Text des
+        /// getroffenen Eintrags, sonst der genannte Wert selbst (KI-F1b).
+        /// </summary>
+        private static string Neutext(KiFeldzugang zugang, string wert)
+        {
+            if (zugang == null || !zugang.IstWahl) return wert;
+
+            IReadOnlyList<KiWahleintrag> eintraege = zugang.Wahleintraege();
+            KiWahltreffer treffer = KiWahl.Treffer(eintraege, wert);
+
+            return treffer.Eindeutig ? eintraege[treffer.Stelle].Text : wert;
         }
 
         /// <summary>Zaehlt Namen lesbar auf; lange Listen werden gekuerzt.</summary>
@@ -1175,7 +1263,8 @@ namespace WindowsFormsApplication1
                 case KiParameterTyp.Ganzzahl: return KiDialogTexte.TypGanzzahl;
                 case KiParameterTyp.Zahl: return KiDialogTexte.TypZahl;
                 case KiParameterTyp.Wahrheitswert: return KiDialogTexte.TypWahrheit;
-                case KiParameterTyp.Aufzaehlung: return KiDialogTexte.TypAuswahl;
+                case KiParameterTyp.Aufzaehlung:
+                case KiParameterTyp.Wahl: return KiDialogTexte.TypAuswahl;
                 default: return KiDialogTexte.TypText;
             }
         }
@@ -1184,6 +1273,23 @@ namespace WindowsFormsApplication1
         private static string Sichtbar(string text)
         {
             return string.IsNullOrEmpty(text) ? KiDialogTexte.KeinWert : text;
+        }
+
+        /// <summary>
+        /// Der Stand eines Wahlfeldes fuer <c>dialog_lesen</c>: „Text (Schluessel)"
+        /// (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// Der Text allein liesse das Modell den Schluessel raten, der Schluessel allein
+        /// machte die Antwort unlesbar. Traegt das Feld gar keinen Wert, bleibt es leer -
+        /// eine Klammer um nichts ist keine Auskunft.
+        /// </remarks>
+        private static string Wahlwert(KiFeldwert w)
+        {
+            if (w == null || w.Schluessel.Length == 0) return "";
+            if (string.Equals(w.Text, w.Schluessel, StringComparison.Ordinal)) return w.Text;
+
+            return w.Text + " (" + w.Schluessel + ")";
         }
     }
 }

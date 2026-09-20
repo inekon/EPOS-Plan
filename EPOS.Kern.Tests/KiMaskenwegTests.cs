@@ -162,6 +162,100 @@ namespace EPOS.Kern.Tests
             Assert.DoesNotContain(KiMaskennamen.HEIZKESSEL, text, StringComparison.Ordinal);
         }
 
+        // ============================ Der tolerante Feldname (KI-F1b, KI-D-Q6)
+
+        /// <summary>
+        /// <b>Der Anwenderbefund vom 20.09.2026:</b> „vorlauftemperatur" wurde
+        /// abgelehnt, weil der Schluessel <c>vorlauf</c> heisst. Bei OFFENER Maske
+        /// loest die Bruecke den Namen jetzt auf — und die Ergebniszeile sagt, wie.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Vermerk haengt am Ergebnistext</b> und geht damit ueber
+        /// <c>KiErgebnis.Kurzfassung</c> in die Protokollzeile: Wer spaeter nachliest,
+        /// welches Feld gesetzt wurde, sieht auch, unter welchem Namen es gemeint war.
+        /// </remarks>
+        [Fact]
+        public void Vorlauftemperatur_wird_aufgeloest_und_der_Vermerk_steht_im_Ergebnis()
+        {
+            KiDialog eintrag = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_PROJEKT);
+            KiDialogFeld feld = eintrag.FindeFeld("vorlauf");
+            int gesetzt = 40;
+
+            Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+            KiMaskenbruecke.Leeren();
+            try
+            {
+                KiMaskenbruecke.Anmelden(
+                    eintrag.Maskenname, eintrag,
+                    new[]
+                    {
+                        new KiFeldzugang(feld, () => gesetzt, w => gesetzt = (int)w, typeof(int))
+                    });
+
+                var werte = new Dictionary<string, object>
+                { ["feld"] = "vorlauftemperatur", ["wert"] = "55" };
+
+                KiAktion a = Frisch().Register.Finde("feld_setzen");
+                KiPruefErgebnis p = KiPruefung.Pruefe(a, werte);
+                Assert.True(p.Gueltig, p.FehlerText());
+
+                // Die Vorbedingung laesst den toleranten Namen durch ...
+                Assert.Null(a.Vorbedingung(p.Aufruf));
+
+                KiErgebnis e = a.Ausfuehren(p.Aufruf);
+
+                Assert.Equal(KiStatus.Ausgefuehrt, e.Status);
+                Assert.Equal(55, gesetzt);
+
+                // ... und das Ergebnis - also auch die Protokollzeile - vermerkt sie.
+                Assert.Contains("vorlauftemperatur", e.Kurzfassung(), StringComparison.Ordinal);
+                Assert.Contains("vorlauf", e.Kurzfassung(), StringComparison.Ordinal);
+            }
+            finally
+            {
+                KiMaskenbruecke.Leeren();
+                Schreibnaht.Schreibrecht = schreibrechtVorher;
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein mehrdeutiger Name bleibt eine Absage</b> — und sie nennt die
+        /// Kandidaten, statt eine Liste aller Felder zu zeigen.
+        /// </summary>
+        [Fact]
+        public void Ein_mehrdeutiger_Feldname_an_offener_Maske_nennt_die_Kandidaten()
+        {
+            KiDialog eintrag = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_PROJEKT);
+            int wert = 40;
+
+            Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+            KiMaskenbruecke.Leeren();
+            try
+            {
+                var zugaenge = new List<KiFeldzugang>();
+                foreach (string name in new[] { "vorlauf", "ruecklauf" })
+                    zugaenge.Add(new KiFeldzugang(eintrag.FindeFeld(name), () => wert,
+                                                  w => wert = (int)w, typeof(int)));
+
+                KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge);
+
+                string grund = Grund("feld_setzen",
+                    new Dictionary<string, object> { ["feld"] = "lauf", ["wert"] = "55" });
+
+                Assert.NotNull(grund);
+                Assert.Contains("vorlauf", grund, StringComparison.Ordinal);
+                Assert.Contains("ruecklauf", grund, StringComparison.Ordinal);
+                Assert.Equal(40, wert);
+            }
+            finally
+            {
+                KiMaskenbruecke.Leeren();
+                Schreibnaht.Schreibrecht = schreibrechtVorher;
+            }
+        }
+
         // ===================================================== Die Voraussetzung
 
         /// <summary>

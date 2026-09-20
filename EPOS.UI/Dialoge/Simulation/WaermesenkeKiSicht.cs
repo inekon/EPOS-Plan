@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild der Maske „Wärmesenken" für den Hilfe-Assistenten (Welle KI‑F2) —
@@ -43,6 +45,52 @@ public sealed class WaermesenkeKiSicht
 
     public Func<double?>? EinspeisehoeheLesen { get; init; }
     public Action<double?>? EinspeisehoeheSetzen { get; init; }
+
+    public Func<int>? SpeicherLesen { get; init; }
+    public Action<int>? SpeicherSetzen { get; init; }
+
+    // =====================================================================
+    //  Die Einträge der fünf Wahlfelder (KI-F1b)
+    // =====================================================================
+
+    /// <summary>Liefert die Ziele, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? ZielEintraege { get; init; }
+
+    /// <summary>Liefert die Bedarfsarten, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BedarfsartEintraege { get; init; }
+
+    /// <summary>Liefert die Ladeprioritäten, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? LadeprioritaetEintraege { get; init; }
+
+    /// <summary>Liefert die PV-Sonderprioritäten, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? LadeprioritaetPvEintraege { get; init; }
+
+    /// <summary>Liefert die Speicher, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? SpeicherEintraege { get; init; }
+
+    /// <summary>Heizkreis und Pufferplätze — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> ZielWahl
+        => ZielEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Bedarfsarten des Heizkreises — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> BedarfsartWahl
+        => BedarfsartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>„nach Vorgabe" und die Ränge 1…9 — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> LadeprioritaetWahl
+        => LadeprioritaetEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>„unverändert" und die Ränge 1…9 — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> LadeprioritaetPvWahl
+        => LadeprioritaetPvEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>
+    /// Die wählbaren Pufferspeicher — die Auswahl der Maske (KI-F1b). Die gesperrten
+    /// GRUPPENKÖPFE der Klappliste stehen nicht darin; sie sind Überschriften und
+    /// keine Wahl.
+    /// </summary>
+    public IReadOnlyList<KiWahleintrag> SpeicherWahl
+        => SpeicherEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die Felder der gewählten Zeile
@@ -113,5 +161,15 @@ public sealed class WaermesenkeKiSicht
     {
         get => EinspeisehoeheLesen?.Invoke();
         set => EinspeisehoeheSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Id des Pufferspeichers dieser Senke; <c>0</c> heißt „keiner". Es gibt ihn
+    /// nur, wenn das Ziel ein Pufferplatz ist.
+    /// </summary>
+    public int Speicher
+    {
+        get => SpeicherLesen?.Invoke() ?? 0;
+        set => SpeicherSetzen?.Invoke(value);
     }
 }

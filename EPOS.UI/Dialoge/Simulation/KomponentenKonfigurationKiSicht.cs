@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild der Maske „Konfiguration einer Komponente" für den Hilfe-Assistenten
@@ -41,6 +43,34 @@ public sealed class KomponentenKonfigurationKiSicht
     /// oder die Plattform stellt den Weg nicht — dann bleiben die sieben Felder leer.
     /// </summary>
     public Func<EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten?>? AnlageLesen { get; init; }
+
+    // =====================================================================
+    //  Die Einträge der drei Wahlfelder (KI-F1b)
+    // =====================================================================
+
+    /// <summary>Liefert die BHKW-Betriebsarten, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BhkwBetriebsartEintraege { get; init; }
+
+    /// <summary>Liefert die Betriebsarten der Wärmepumpe, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? BetriebsartEintraege { get; init; }
+
+    /// <summary>Liefert die Energieträger, die die Maske zur Wahl stellt.</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? EnergietraegerEintraege { get; init; }
+
+    /// <summary>
+    /// Wärmegeführt, stromgeführt und ohne Einspeisung — die Auswahl der Maske
+    /// (KI-F1b); der Schlüssel ist der Steuerwert 0/1/2 des Bestands.
+    /// </summary>
+    public IReadOnlyList<KiWahleintrag> BhkwBetriebsartWahl
+        => BhkwBetriebsartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Alternativ, parallel und teilparallel — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> BetriebsartWahl
+        => BetriebsartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Energieträger des Katalogs — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> EnergietraegerWahl
+        => EnergietraegerEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die projektweiten Laufparameter
@@ -114,6 +144,16 @@ public sealed class KomponentenKonfigurationKiSicht
     {
         get => Anlage?.Betriebsart ?? "";
         set { if (Anlage is { } a) a.Betriebsart = value ?? ""; }
+    }
+
+    /// <summary>
+    /// Die Id des Energieträgers der Anlage; er bestimmt Preis und Emissionen des
+    /// Antriebsstroms. <c>0</c> heißt „keiner gewählt".
+    /// </summary>
+    public int Energietraeger
+    {
+        get => Anlage?.CarrierId ?? 0;
+        set { if (Anlage is { } a) a.CarrierId = value; }
     }
 
     /// <summary>Die Bivalenztemperatur [°C], ab der der zweite Erzeuger übernimmt.</summary>

@@ -671,9 +671,37 @@
         AnzahlSondenSetzen = w => Setzen(() => _anzahl = w),
         SpreizungLesen = () => _spreizung,
         SpreizungSetzen = w => Setzen(() => _spreizung = w),
+        BodentypLesen = () => Bodentyp,
+        BodentypSetzen = KiBodentypSetzen,
+        BodentypEintraege = Bodentypeintraege,
         KlimazoneLesen = () => _zone,
-        KlimazoneSetzen = ZoneWaehlen
+        KlimazoneSetzen = ZoneWaehlen,
+        KlimazoneEintraege = Klimazoneneintraege
     };
+
+    /// <summary>
+    /// Die Bodentypen für den Assistenten (KI-F1b): Schlüssel ist der KATALOGSCHLÜSSEL,
+    /// Text der lokalisierte Untergrundname der Normtabelle.
+    /// </summary>
+    private static IReadOnlyList<KiWahleintrag> Bodentypeintraege()
+        => KiMaskenanmeldung.Eintraege(ErdreichTemperatur.Katalog,
+                                       b => b.Schluessel, b => b.Untergrund);
+
+    /// <summary>Die Klimazonen für den Assistenten (KI-F1b) — Schlüssel ist die Zonennummer.</summary>
+    private IReadOnlyList<KiWahleintrag> Klimazoneneintraege()
+        => KiMaskenanmeldung.Eintraege(Klimazonen, z => z.Id, z => z.Text);
+
+    /// <summary>
+    /// Der Bodentyp über seinen Katalogschlüssel: Er geht den Weg der Klappliste
+    /// (<see cref="BodentypWaehlen"/>), damit Kennwertzeile, Vorschau und Prüfung
+    /// nachziehen. Ein Schlüssel, den der Katalog nicht führt, wird abgewiesen.
+    /// </summary>
+    private void KiBodentypSetzen(string? schluessel)
+    {
+        int stelle = ErdreichTemperatur.KatalogIndex(schluessel ?? "");
+        if (stelle < 0) return;
+        BodentypWaehlen(stelle);
+    }
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).

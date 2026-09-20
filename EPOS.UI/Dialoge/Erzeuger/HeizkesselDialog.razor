@@ -693,9 +693,17 @@
         // Welle KI-F1: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden. Sie
         // wechselt mit jedem Klick in der Projektliste - deshalb ein Delegat und keine
         // Instanz; die Bruecke liest bei jedem Mal neu.
+        // KI-F1b: Die Brennstoffvariante ist ein WAHLFELD; ihre Einträge kennt nur
+        // dieser Dialog (sie hängen am Träger der gewählten Zeile), deshalb geht der
+        // Lieferant als Quelle mit — er wird bei jedem Zugriff gerufen.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_PROJEKT,
-                                          () => _projektZeile, KiHaken());
+                                          () => _projektZeile, KiHaken(),
+                                          ("energietraeger", Traegereintraege));
     }
+
+    /// <summary>Die Brennstoffvarianten der gewählten Zeile für den Assistenten (KI-F1b).</summary>
+    private IReadOnlyList<KiWahleintrag> Traegereintraege()
+        => KiMaskenanmeldung.Eintraege(_varianten, v => v.Id, v => v.Text);
 
     // =================================================================================
     // Der Hilfe-Assistent liest und setzt die Zeilenwerte (Welle KI-F1)

@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Simulation;
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Simulation;
 
 /// <summary>
 /// Das FLACHE Abbild des Pufferspeicher-Projektdialogs für den Hilfe-Assistenten
@@ -75,6 +77,31 @@ public sealed class PufferSpProjektKiSicht
 
     public Func<int?>? EntladeprioritaetLesen { get; init; }
     public Action<int?>? EntladeprioritaetSetzen { get; init; }
+
+    public Func<bool>? NutzungHeizungLesen { get; init; }
+    public Action<bool>? NutzungHeizungSetzen { get; init; }
+
+    public Func<bool>? NutzungBrauchwasserLesen { get; init; }
+    public Action<bool>? NutzungBrauchwasserSetzen { get; init; }
+
+    public Func<bool>? NutzungProzessLesen { get; init; }
+    public Action<bool>? NutzungProzessSetzen { get; init; }
+
+    public Func<double?>? EntnahmeHeizungLesen { get; init; }
+    public Action<double?>? EntnahmeHeizungSetzen { get; init; }
+
+    public Func<double?>? EntnahmeBrauchwasserLesen { get; init; }
+    public Action<double?>? EntnahmeBrauchwasserSetzen { get; init; }
+
+    public Func<double?>? EntnahmeProzessLesen { get; init; }
+    public Action<double?>? EntnahmeProzessSetzen { get; init; }
+
+    /// <summary>Liefert die Entladeprioritäten, die die Maske zur Wahl stellt (KI-F1b).</summary>
+    public Func<IReadOnlyList<KiWahleintrag>>? EntladeprioritaetEintraege { get; init; }
+
+    /// <summary>„automatisch" und die Ränge 1…9 — die Auswahl der Maske (KI-F1b).</summary>
+    public IReadOnlyList<KiWahleintrag> EntladeprioritaetWahl
+        => EntladeprioritaetEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
 
     // =====================================================================
     //  Die Felder der Maske
@@ -190,5 +217,60 @@ public sealed class PufferSpProjektKiSicht
     {
         get => EntladeprioritaetLesen?.Invoke();
         set => EntladeprioritaetSetzen?.Invoke(value);
+    }
+
+    // =====================================================================
+    //  Die Nutzung — eine MEHRFACHwahl aus drei Klassen, drei Felder
+    // =====================================================================
+    //
+    // Die Maske führt sie als EINE Mehrfachauswahl ueber ein Id-Set; ein
+    // Katalogfeld traegt EINEN Wert (KiDialogFeld). Deshalb steht je Klasse
+    // ein Wahrheitswert: „ist sie im Set?" - und das Setzen nimmt sie in das
+    // Set hinein oder heraus, ueber denselben Rueckruf wie ein Klick.
+
+    /// <summary>Der Speicher versorgt die Heizung.</summary>
+    public bool NutzungHeizung
+    {
+        get => NutzungHeizungLesen?.Invoke() ?? false;
+        set => NutzungHeizungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Speicher versorgt das Brauchwasser.</summary>
+    public bool NutzungBrauchwasser
+    {
+        get => NutzungBrauchwasserLesen?.Invoke() ?? false;
+        set => NutzungBrauchwasserSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Speicher versorgt die Prozesswärme.</summary>
+    public bool NutzungProzess
+    {
+        get => NutzungProzessLesen?.Invoke() ?? false;
+        set => NutzungProzessSetzen?.Invoke(value);
+    }
+
+    // =====================================================================
+    //  Die drei Entnahmehöhen
+    // =====================================================================
+
+    /// <summary>Die Entnahmehöhe der Heizung, 0 (unten) bis 1 (oben).</summary>
+    public double? EntnahmehoeheHeizung
+    {
+        get => EntnahmeHeizungLesen?.Invoke();
+        set => EntnahmeHeizungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Entnahmehöhe des Brauchwassers, 0 (unten) bis 1 (oben).</summary>
+    public double? EntnahmehoeheBrauchwasser
+    {
+        get => EntnahmeBrauchwasserLesen?.Invoke();
+        set => EntnahmeBrauchwasserSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Entnahmehöhe der Prozesswärme, 0 (unten) bis 1 (oben).</summary>
+    public double? EntnahmehoeheProzess
+    {
+        get => EntnahmeProzessLesen?.Invoke();
+        set => EntnahmeProzessSetzen?.Invoke(value);
     }
 }

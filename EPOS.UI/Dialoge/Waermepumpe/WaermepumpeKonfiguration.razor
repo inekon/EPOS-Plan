@@ -166,7 +166,12 @@
     [Parameter] public EventCallback Geaendert { get; set; }
 
     /// <summary>Die drei Betriebsarten — STEUERWERTE aus <c>DbWerte</c>, keine Anzeigetexte.</summary>
-    private static readonly string[] BETRIEBSARTEN =
+    /// <remarks>
+    /// <b>Öffentlich, weil der Hilfe-Assistent dieselbe Liste braucht</b> (KI-F1b): Der
+    /// Anlagendialog reicht sie als Einträge seines Wahlfeldes herein, damit Klappliste
+    /// und Assistentenauswahl dieselben drei Werte führen.
+    /// </remarks>
+    public static readonly string[] BETRIEBSARTEN =
     {
         DbWerte.WP_BETRIEBSART_ALTERNATIV,
         DbWerte.WP_BETRIEBSART_PARALLEL,

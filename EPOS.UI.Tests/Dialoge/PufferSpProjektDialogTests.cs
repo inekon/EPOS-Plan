@@ -1037,4 +1037,62 @@ public class PufferSpProjektDialogTests : EposBunitContext
         zugang.Setzen("Pufferspeicher Nord");
         Assert.Equal("Pufferspeicher Nord", zugang.Lesen());
     }
+
+    /// <summary>
+    /// <b>Die Entladepriorität ist ein WAHLFELD</b> (KI-F1b): Ihr Eintrag 0 trägt
+    /// einen TEXT und keine Zahl — er wird über ihn getroffen, und die Brücke zeigt
+    /// ihn danach auch als Text.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Entladeprioritaet_ueber_ihren_Anzeigetext()
+    {
+        var cut = Zeige(MitZwei(), idPuffer: 11);
+
+        KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, "entladeprioritaet");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung rang = KiFeldwandler.Wandle(zugang, "7");
+        Assert.True(rang.Ok, rang.Grund);
+        zugang.Setzen(rang.Wert);
+        cut.Render();
+        Assert.Equal(7, zugang.Lesen());
+
+        KiFeldumsetzung zurueck = KiFeldwandler.Wandle(zugang, "automatisch");
+        Assert.True(zurueck.Ok, zurueck.Grund);
+        zugang.Setzen(zurueck.Wert);
+        cut.Render();
+        Assert.Equal(0, zugang.Lesen());
+
+        KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG)
+                                         .Single(f => f.Name == "entladeprioritaet");
+        Assert.Equal("automatisch", wert.Text);
+        Assert.Equal("0", wert.Schluessel);
+    }
+
+    /// <summary>
+    /// Die Nutzung ist auf der Maske EINE Mehrfachwahl; im Katalog sind es drei
+    /// Wahrheitswerte. Ein Setzen nimmt die Klasse über denselben Rückruf in das Set
+    /// hinein, den ein Klick nimmt — die übrigen Klassen bleiben stehen.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_nimmt_das_Brauchwasser_in_die_Nutzung_auf()
+    {
+        var cut = Zeige(MitZwei(), idPuffer: 11);
+
+        KiFeldzugang heizung = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, "nutzung_heizung");
+        KiFeldzugang brauchwasser = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PUFFERSPEICHER_VERWALTUNG, "nutzung_brauchwasser");
+
+        Assert.Equal(true, heizung.Lesen());
+        Assert.Equal(false, brauchwasser.Lesen());
+
+        brauchwasser.Setzen(true);
+        cut.Render();
+
+        Assert.Equal(true, brauchwasser.Lesen());
+        Assert.Contains(0, cut.Instance.KlassenSet);
+        Assert.Contains(1, cut.Instance.KlassenSet);
+    }
 }

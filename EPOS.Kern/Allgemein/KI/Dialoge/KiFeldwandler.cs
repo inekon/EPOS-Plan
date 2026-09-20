@@ -18,6 +18,7 @@
 // entscheidet der DIALOG (KiMaskenhaken.Pruefen) - genauso wie bei einer Eingabe von Hand.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using KiKern;
 
@@ -89,6 +90,10 @@ namespace WindowsFormsApplication1
                                   MyResource.Resource.KI_FELD_LEER_UNMOEGLICH, feld.Anzeigename));
             }
 
+            // ---- WAHL: der Text des Modells trifft einen Eintrag der Maske (KI-F1b).
+            //      Gesetzt wird der SCHLUESSEL dahinter, im Typ der Zieleigenschaft.
+            if (zugang.IstWahl) return AusWahl(zugang, roh, ziel, nullbar);
+
             // ---- Text bleibt Text.
             if (ziel == null || ziel == typeof(string)) return KiFeldumsetzung.Gut(roh);
 
@@ -149,6 +154,115 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Setzt den genannten Text in den SCHLUESSEL eines Wahleintrags um
+        /// (KI-F1b, KI-D-Q6).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Getroffen wird ueber den angezeigten Text ODER den Schluessel</b>, nach der
+        /// einen Namensregel des Hauses (<see cref="KiWahl.Treffer"/>): gross/klein,
+        /// Umlaut, Leerzeichen gefaltet, eindeutiger Anfang genuegt. Der Anwender sagt
+        /// „erdgas", und die Maske traegt „Erdgas H" unter der Id 3.
+        /// </para>
+        /// <para>
+        /// <b>Kein Treffer und Mehrdeutigkeit sind ZWEI verschiedene Absagen.</b> Die
+        /// erste nennt, was zur Wahl steht; die zweite nennt die Kandidaten und bittet
+        /// um einen genaueren Namen. Ein gemeinsamer Text waere in beiden Faellen der
+        /// falsche.
+        /// </para>
+        /// </remarks>
+        private static KiFeldumsetzung AusWahl(KiFeldzugang zugang, string roh,
+                                               Type ziel, bool nullbar)
+        {
+            KiDialogFeld feld = zugang.Feld;
+            IReadOnlyList<KiWahleintrag> eintraege = zugang.Wahleintraege();
+
+            if (eintraege.Count == 0)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KI_FELD_WAHL_LEER, feld.Anzeigename));
+
+            KiWahltreffer treffer = KiWahl.Treffer(eintraege, roh);
+
+            if (treffer.Mehrdeutig)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KI_FELD_WAHL_MEHRDEUTIG,
+                                  feld.Anzeigename, roh, string.Join(", ", treffer.Kandidaten)));
+
+            if (!treffer.Eindeutig)
+                return KiFeldumsetzung.Schlecht(
+                    string.Format(CultureInfo.CurrentCulture,
+                                  MyResource.Resource.KI_FELD_WAHL_UNBEKANNT,
+                                  feld.Anzeigename, roh, KiWahl.Aufzaehlen(eintraege)));
+
+            string schluessel = eintraege[treffer.Stelle].Schluessel;
+
+            // ---- Der Schluessel im Typ der Zieleigenschaft.
+            if (ziel == null || ziel == typeof(string)) return KiFeldumsetzung.Gut(schluessel);
+
+            if (schluessel.Length == 0)
+                return nullbar
+                           ? KiFeldumsetzung.Gut(null)
+                           : KiFeldumsetzung.Schlecht(
+                                 string.Format(CultureInfo.CurrentCulture,
+                                               MyResource.Resource.KI_FELD_LEER_UNMOEGLICH,
+                                               feld.Anzeigename));
+
+            if (ziel == typeof(bool))
+            {
+                bool schalter;
+                if (Wahrheitswert(schluessel, out schalter)) return KiFeldumsetzung.Gut(schalter);
+                return Unbrauchbar(feld, eintraege[treffer.Stelle].Text, schluessel);
+            }
+
+            if (ziel.IsEnum)
+            {
+                try { return KiFeldumsetzung.Gut(Enum.Parse(ziel, schluessel, ignoreCase: true)); }
+                catch (Exception)
+                {
+                    double roheZahl;
+                    if (Zahl(schluessel, out roheZahl))
+                        return KiFeldumsetzung.Gut(
+                            Enum.ToObject(ziel, (int)Math.Round(roheZahl, MidpointRounding.AwayFromZero)));
+
+                    return Unbrauchbar(feld, eintraege[treffer.Stelle].Text, schluessel);
+                }
+            }
+
+            double zahl;
+            if (!Zahl(schluessel, out zahl))
+                return Unbrauchbar(feld, eintraege[treffer.Stelle].Text, schluessel);
+
+            if (ziel == typeof(int) || ziel == typeof(long) || ziel == typeof(short))
+            {
+                double gerundet = Math.Round(zahl, MidpointRounding.AwayFromZero);
+                if (Math.Abs(gerundet) > int.MaxValue)
+                    return Unbrauchbar(feld, eintraege[treffer.Stelle].Text, schluessel);
+
+                if (ziel == typeof(int)) return KiFeldumsetzung.Gut((int)gerundet);
+                if (ziel == typeof(long)) return KiFeldumsetzung.Gut((long)gerundet);
+                return KiFeldumsetzung.Gut((short)gerundet);
+            }
+
+            if (ziel == typeof(decimal)) return KiFeldumsetzung.Gut((decimal)zahl);
+            if (ziel == typeof(float)) return KiFeldumsetzung.Gut((float)zahl);
+            if (ziel == typeof(double)) return KiFeldumsetzung.Gut(zahl);
+
+            return KiFeldumsetzung.Gut(schluessel);
+        }
+
+        /// <summary>
+        /// Ein Eintrag, dessen Schluessel die Eigenschaft nicht annimmt - das ist ein
+        /// Befund ueber die MASKE und wird deshalb benannt, nicht stillschweigend gesetzt.
+        /// </summary>
+        private static KiFeldumsetzung Unbrauchbar(KiDialogFeld feld, string text, string schluessel)
+            => KiFeldumsetzung.Schlecht(
+                   string.Format(CultureInfo.CurrentCulture,
+                                 MyResource.Resource.KI_FELD_WAHL_SCHLUESSEL,
+                                 feld.Anzeigename, text, schluessel));
+
+        /// <summary>
         /// Die Zahl aus dem Text — <b>dieselbe Regel wie jedes Eingabefeld des Hauses</b>.
         /// </summary>
         /// <remarks>
@@ -162,15 +276,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Wahrheitswert aus dem Text: <c>true</c>/<c>false</c>, „Ja"/„Nein" in beiden
-        /// Programmsprachen, dazu 1/0.
+        /// Programmsprachen, „an"/„aus", „wahr"/„falsch", dazu 1/0.
         /// </summary>
         /// <remarks>
+        /// <para>
         /// <b>Die zwei Anzeigetexte stehen in den Ressourcen</b>
         /// (<c>KI_DIALOGDATEN_JA</c>/<c>_NEIN</c>) — genau die, die
         /// <c>KiMaskenbruecke</c> in den Feldblock schreibt. Sie werden hier
         /// zurueckgelesen, damit der Assistent annehmen kann, was er selbst gesendet hat.
         /// Die englischen und die festen Formen stehen daneben, weil die Programmsprache
         /// zwischen Senden und Antworten wechseln kann.
+        /// </para>
+        /// <para>
+        /// <b>„an"/„aus" und „wahr"/„falsch" kommen aus der Sprache des Anwenders</b>
+        /// (KI-F1b): Ein Schalter heisst auf der Maske „Heizstab", und die Bitte lautet
+        /// „schalte den Heizstab an" - nicht „setze ihn auf Ja".
+        /// </para>
         /// </remarks>
         public static bool Wahrheitswert(string text, out bool wert)
         {
@@ -181,6 +302,8 @@ namespace WindowsFormsApplication1
             if (bool.TryParse(t, out wert)) return true;
 
             if (Gleich(t, "1") || Gleich(t, "ja") || Gleich(t, "yes") ||
+                Gleich(t, "an") || Gleich(t, "ein") || Gleich(t, "on") ||
+                Gleich(t, "wahr") || Gleich(t, "true") ||
                 Gleich(t, MyResource.Resource.KI_DIALOGDATEN_JA))
             {
                 wert = true;
@@ -188,6 +311,8 @@ namespace WindowsFormsApplication1
             }
 
             if (Gleich(t, "0") || Gleich(t, "nein") || Gleich(t, "no") ||
+                Gleich(t, "aus") || Gleich(t, "off") ||
+                Gleich(t, "falsch") || Gleich(t, "false") ||
                 Gleich(t, MyResource.Resource.KI_DIALOGDATEN_NEIN))
             {
                 wert = false;
