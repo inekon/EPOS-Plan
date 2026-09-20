@@ -147,30 +147,56 @@ namespace EPOS.Kern.Tests
             Assert.Equal(erwartet, KlimaImportAblauf.SzenarioschluesselAusKopf(art));
         }
 
+        /// <summary>
+        /// <b>Der Bezugszeitraum des Kopfs ergibt das Bezugsjahr — oder nichts</b>
+        /// (Auftrag KL-7, Anwenderentscheid vom 20.09.2026: DWD-Konvention). Die
+        /// Zuordnung ist eine TABELLE, keine Schwelle: 1995-2012 ist 2015, 2031-2060
+        /// ist 2045. Womit die beiden Jahreszahlen verbunden sind, ist gleichgültig.
+        /// Jeder andere Zeitraum — ein einzelnes Jahr, ein fremder Zeitraum, gar
+        /// nichts — bleibt LEER und wird NIE zur Vorgabe 2015.
+        /// </summary>
+        [Theory]
+        [InlineData("1995-2012", 2015)]
+        [InlineData("1995 - 2012", 2015)]
+        [InlineData("1995–2012", 2015)]
+        [InlineData("1995 bis 2012", 2015)]
+        [InlineData("2031-2060", 2045)]
+        [InlineData("2031 bis 2060", 2045)]
+        [InlineData("", null)]
+        [InlineData(null, null)]
+        [InlineData("2012", null)]
+        [InlineData("1961-1990", null)]
+        [InlineData("keine Angabe", null)]
+        public void Der_Bezugszeitraum_des_Kopfs_ergibt_das_Jahr_oder_nichts(string zeitraum, int? erwartet)
+        {
+            Assert.Equal(erwartet, KlimaImportAblauf.BezugsjahrAusZeitraum(zeitraum));
+        }
+
         // =====================================================================
         //  3 — Schreiben: Import und Projektkopie
         // =====================================================================
 
         /// <summary>
-        /// <b>Der Import einer TRY-Datei schreibt das Szenario aus dem Kopf</b> — und
-        /// LÄSST DAS BEZUGSJAHR LEER: Der Kopf nennt einen Bezugszeitraum
-        /// („1995-2012"), nicht das Bezugsjahr dieses Hauses. Aus einem Zeitraum ein
-        /// Jahr zu machen wäre eine Behauptung.
+        /// <b>Der Import einer TRY-Datei schreibt Szenario UND Bezugsjahr aus dem
+        /// Kopf</b> (Auftrag KL-7): „Art des TRY" ist das Szenario, der
+        /// „Bezugszeitraum" ergibt nach der DWD-Konvention das Bezugsjahr — hier
+        /// 2031-2060 → 2045. Der gelesene Zeitraum steht wörtlich im
+        /// Herkunftsvermerk, damit die Ableitung nachlesbar bleibt.
         /// </summary>
         [Fact]
-        public async Task Der_TRY_Dateiimport_schreibt_das_Szenario_ohne_Jahr()
+        public async Task Der_TRY_Dateiimport_schreibt_Szenario_und_Jahr_aus_dem_Kopf()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            string pfad = TryDatei("Art des TRY: Sommer warm");
+            string pfad = TryDatei("Art des TRY: Sommer warm", "Bezugszeitraum: 2031-2060");
             try
             {
                 KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
                     new KlimaImportAuftrag
                     {
                         Art = KlimaImportArt.AusKoordinaten,
-                        Bezeichnung = "KL6 TRY Probe",
+                        Bezeichnung = "KL7 TRY Probe",
                         Longitude = 9.1829,
                         Latitude = 48.7758,
                         Quelle = KlimaQuelle.TryDatei,
@@ -181,6 +207,92 @@ namespace EPOS.Kern.Tests
                 Assert.True(erg.Erfolgreich, erg.Meldung);
 
                 Assert.Equal(DbWerte.KLIMA_SZENARIO_SOMMERWARM,
+                             Text(SchemaKatalog.SPALTE_KR_SZENARIO, erg.Id));
+                Assert.Equal("2045", Text(SchemaKatalog.SPALTE_KR_BEZUGSJAHR, erg.Id));
+
+                Assert.Contains("2031-2060", Text("Details", erg.Id), StringComparison.Ordinal);
+
+                // A-KL7-1: die Regionsliste sagt es im Satzbau aus KL-6.
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KLIMA_QUELLE_TRY_DATEI + " · 2045 · " +
+                             WindowsFormsApplication1.MyResource.Resource.KLIMA_TRY_SZ_SOMMERWARM,
+                             KlimaregionStammCtrl.Katalogfilterzeilen()
+                                 .Single(z => z.Bezeichner == "KL7 TRY Probe")
+                                 .Text(Katalogfilterprofil.SpQuelle));
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+            }
+        }
+
+        /// <summary>
+        /// <b>Gegenprobe: ohne Bezugszeitraum im Kopf bleibt das Bezugsjahr leer</b>
+        /// — auch dann, wenn die Datei ihr Szenario nennt. Ein Jahr, das die Datei
+        /// nicht deckt, wäre eine Behauptung über sie; die Vorgabe 2015 gilt allein
+        /// für die Regionaldaten, wo der Anwender sie gewählt hat.
+        /// </summary>
+        [Fact]
+        public async Task Ohne_Bezugszeitraum_im_Kopf_bleibt_das_Jahr_leer()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string pfad = TryDatei("Art des TRY: Winter kalt");
+            try
+            {
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "KL7 TRY ohne Zeitraum",
+                        Longitude = 9.1829,
+                        Latitude = 48.7758,
+                        Quelle = KlimaQuelle.TryDatei,
+                        TryPfad = pfad
+                    },
+                    null);
+
+                Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                Assert.Equal(DbWerte.KLIMA_SZENARIO_WINTERKALT,
+                             Text(SchemaKatalog.SPALTE_KR_SZENARIO, erg.Id));
+                Assert.Equal("", Text(SchemaKatalog.SPALTE_KR_BEZUGSJAHR, erg.Id));
+            }
+            finally
+            {
+                try { File.Delete(pfad); } catch { /* aufraeumen darf scheitern */ }
+            }
+        }
+
+        /// <summary>
+        /// <b>Ein fremder Bezugszeitraum ergibt kein Jahr</b> (A-KL7-1, Gegenprobe):
+        /// „1961-1990" steht nicht in der Zuordnungstabelle — also bleibt das
+        /// Bezugsjahr leer, statt still auf die Vorgabe zu fallen.
+        /// </summary>
+        [Fact]
+        public async Task Ein_fremder_Bezugszeitraum_ergibt_kein_Jahr()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string pfad = TryDatei("Art des TRY: mittleres Jahr", "Bezugszeitraum: 1961-1990");
+            try
+            {
+                KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
+                    new KlimaImportAuftrag
+                    {
+                        Art = KlimaImportArt.AusKoordinaten,
+                        Bezeichnung = "KL7 TRY fremder Zeitraum",
+                        Longitude = 9.1829,
+                        Latitude = 48.7758,
+                        Quelle = KlimaQuelle.TryDatei,
+                        TryPfad = pfad
+                    },
+                    null);
+
+                Assert.True(erg.Erfolgreich, erg.Meldung);
+
+                Assert.Equal(DbWerte.KLIMA_SZENARIO_MITTEL,
                              Text(SchemaKatalog.SPALTE_KR_SZENARIO, erg.Id));
                 Assert.Equal("", Text(SchemaKatalog.SPALTE_KR_BEZUGSJAHR, erg.Id));
             }
@@ -201,7 +313,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            string pfad = TryDatei(null);
+            string pfad = TryDatei();
             try
             {
                 KlimaImportErgebnis erg = await KlimaImportAblauf.Laufen(
@@ -506,20 +618,26 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Eine vollständige, SYNTHETISCHE TRY-Datei (34 Kopfzeilen, 8 760 Datenzeilen)
-        /// im Temp-Ordner — Bauart wie in <c>KlimaspaltenTests</c>, nur dass die erste
-        /// Kopfzeile hier gesetzt werden kann. Keine DWD-Originaldaten.
+        /// im Temp-Ordner — Bauart wie in <c>KlimaspaltenTests</c>, nur dass die ERSTEN
+        /// Kopfzeilen hier gesetzt werden können. Keine DWD-Originaldaten.
         /// </summary>
-        /// <param name="kopfzeile">Der Inhalt der ersten Kopfzeile;
-        /// <c>null</c> = eine nichtssagende Zeile wie die übrigen.</param>
-        private static string TryDatei(string kopfzeile)
+        /// <param name="kopfzeilen">Der Inhalt der ersten Kopfzeilen; der Rest bleibt
+        /// nichtssagend. Nichts oder <c>null</c> = ein Kopf ohne jede Angabe.</param>
+        private static string TryDatei(params string[] kopfzeilen)
         {
             string pfad = Path.Combine(Path.GetTempPath(),
                 "epos_kl6_" + Guid.NewGuid().ToString("N") + ".dat");
 
+            string[] gesetzt = kopfzeilen ?? Array.Empty<string>();
+
             var sb = new StringBuilder(700 * 1024);
-            sb.Append(string.IsNullOrEmpty(kopfzeile) ? "Kopfzeile 1" : kopfzeile).Append("\r\n");
-            for (int i = 2; i <= 34; i++)
-                sb.Append("Kopfzeile ").Append(i.ToString(CultureInfo.InvariantCulture)).Append("\r\n");
+            for (int i = 1; i <= 34; i++)
+            {
+                string zeile = i <= gesetzt.Length ? gesetzt[i - 1] : null;
+                sb.Append(string.IsNullOrEmpty(zeile)
+                          ? "Kopfzeile " + i.ToString(CultureInfo.InvariantCulture)
+                          : zeile).Append("\r\n");
+            }
             sb.Append("*** \r\n");
 
             int[] tageMonat = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
