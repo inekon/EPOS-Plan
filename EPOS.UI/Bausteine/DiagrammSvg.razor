@@ -29,9 +29,11 @@
    FARBFELD desselben Eintrags oeffnet den Farbwaehler unmittelbar am Bild
    (Farbrollen, Bedienung Teil 2). Der Eintrag ist fokussierbar
    (role="button", tabindex="0"): Eingabe und Leertaste schalten,
-   Umschalt+Eingabe oeffnet den Waehler. Eine Reihe mit FEST gerechneter Farbe
-   bekommt keinen Waehler - eine Rolle, auf die die Einstellung zeigen
-   koennte, gibt es dort nicht.
+   Umschalt+Eingabe oeffnet den Waehler. JEDE Reihe, die eine Farbrolle nennt,
+   bekommt einen Waehler - auch eine, deren Farbe im Layout gerechnet ist und
+   ihre Herkunftsrolle mitfuehrt (DG-E5, Anwenderentscheid DG-Q8). Ohne Waehler
+   bleibt allein eine Farbe ohne Rolle (UNBENANNT): Auf sie zeigt keine
+   Einstellung.
 
    DER WAEHLER WEICHT KEINEM ZWEITEN KLICK AUS (DG-E3-14). Solange einer offen
    ist, traegt die Zeichenflaeche die Klasse epos-diagramm-svg-flaeche--waehler,
@@ -982,9 +984,12 @@ else
     /// Die Farbrolle einer Reihe — oder <c>null</c>, wenn es keine gibt, auf die
     /// eine Einstellung zeigen könnte.
     ///
-    /// <para>Zwei Fälle fallen heraus: eine Reihe mit <see cref="Farbton.Fest"/>
-    /// (im Layout gerechnet — die Einstellung erreichte sie nicht) und eine Rolle,
-    /// die die Rollenliste nicht führt (<c>UNBENANNT</c>).</para>
+    /// <para><b>Eine im Layout GERECHNETE Farbe zählt mit</b> (DG-E5,
+    /// Anwenderentscheid DG-Q8): Sie führt ihre Herkunftsrolle, und ihr Farbfeld
+    /// öffnet den Wähler eben dieser Rolle — die Abstufung entsteht weiterhin im
+    /// Bild, aus der geänderten Hausfarbe. Ohne Wähler bleibt allein
+    /// <c>UNBENANNT</c>: eine Farbe, die als loser Wert hereinkam und auf die keine
+    /// Einstellung zeigt.</para>
     /// </summary>
     private Farbrolle? RolleDerReihe(string reihe)
     {
@@ -992,7 +997,7 @@ else
         foreach (Datenreihe r in Modell.Reihen)
         {
             if (!string.Equals(r.Name ?? "", reihe, StringComparison.Ordinal)) continue;
-            if (r.Ton is null || r.Ton.Fest.HasValue) return null;
+            if (r.Ton is null) return null;
             return Diagrammfarben.Rolle(r.Ton.Rolle?.Name ?? "");
         }
         return null;
