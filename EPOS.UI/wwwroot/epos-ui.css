@@ -1668,11 +1668,22 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* Der Klick daneben schliesst - ueber eine Flaeche, nicht ueber focusout
-   (Hausregel: focusout feuert auch bei Fokuswechseln INNERHALB). */
+   (Hausregel: focusout feuert auch bei Fokuswechseln INNERHALB). Sie faengt den
+   Klick AUSSERHALB des Bildes; im Bild selbst schliesst der Klick auf die
+   Zeichenflaeche (Entscheid DG-E3-14). */
 .epos-farbwahl-schliessflaeche {
     position: fixed;
     inset: 0;
     z-index: 2;
+}
+
+/* DREI z-EBENEN, SOLANGE EIN WAEHLER OFFEN IST (DG-E3-14): Das aeussere SVG samt
+   Legende steht UEBER der Schliessflaeche, sonst faenge diese jeden Klick auf ein
+   Farbfeld ab und der Anwender braeuchte zwei. Der Waehler (z-index 3, spaeter im
+   DOM) bleibt obenauf. */
+.epos-diagramm-svg-flaeche--waehler > svg {
+    position: relative;
+    z-index: 3;
 }
 
 /* ==========================================================================

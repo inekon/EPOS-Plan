@@ -1266,4 +1266,195 @@ public class DiagrammSvgTests : EposBunitContext
         // Die EINHEIT der x-Stelle kommt aus dem Modell, nicht aus einem Parameter.
         Assert.Contains("7 kWh", zeile);
     }
+
+    // =====================================================================
+    //  DS-11  Der Wähler weicht keinem zweiten Klick aus (DG-E3-14)
+    // =====================================================================
+    //
+    //  Die Schliessflaeche liegt ueber dem Bild. Ohne die Klasse
+    //  epos-diagramm-svg-flaeche--waehler faengt sie jeden Klick auf ein anderes
+    //  Farbfeld ab: Der erste Klick schloesse nur, erst der zweite oeffnete - und
+    //  fuer den Anwender oeffnet "der Klick auf das Farbfeld nicht immer".
+
+    /// <summary>Die ZWEITE Reihe mit Farbrolle — auf sie wechselt der Wähler.</summary>
+    private const string ZWEITE_ROLLE = "Wärmepumpe";
+
+    /// <summary>
+    /// Sechs Reihen, fünf davon in einer Hausfarbe und damit mit Rolle. Die
+    /// Legende läuft dadurch über die halbe Bildbreite: Nur so gibt es
+    /// Legendeneinträge in BEIDEN Bildhälften, und die Lage des Wählers ist
+    /// prüfbar.
+    /// </summary>
+    private static Zeichenmodell Rollenmodell()
+    {
+        static double[] Welle(double hub, double versatz)
+        {
+            var werte = new double[744];
+            for (int i = 0; i < werte.Length; i++)
+                werte[i] = hub + hub * Math.Sin(2 * Math.PI * i / 744.0 + versatz);
+            return werte;
+        }
+
+        return ChartRenderer.JahresgangModell(
+            "Rollen im Bild",
+            new[]
+            {
+                new ChartRenderer.Reihe(MIT_ROLLE, Welle(12, 0.0), ChartRenderer.C_AUSSENTEMPERATUR),
+                new ChartRenderer.Reihe(ZWEITE_ROLLE, Welle(8, 0.4), ChartRenderer.C_WP),
+                new ChartRenderer.Reihe(OHNE_ROLLE, Welle(20, 0.8), SkiaSharp.SKColors.Orange),
+                new ChartRenderer.Reihe("Photovoltaik", Welle(6, 1.2), ChartRenderer.C_PV),
+                new ChartRenderer.Reihe("Netzbezug", Welle(9, 1.6), ChartRenderer.C_NETZ),
+                new ChartRenderer.Reihe("Wärmebedarf", Welle(15, 2.0), ChartRenderer.C_BEDARF)
+            },
+            "Stunde des Jahres", "Leistung [kW]");
+    }
+
+    private IRenderedComponent<DiagrammSvg> ZeigeRollen()
+        => Zeige(modell: Rollenmodell(), kennung: "rollen", farbwahl: true);
+
+    /// <summary>Das erste Farbfeld eines Eintrags — der Rahmen liegt auf der Füllung.</summary>
+    private static IElement Farbfeld(IRenderedComponent<DiagrammSvg> cut, string reihe)
+        => cut.FindAll("rect[data-legende='" + reihe + "']")[0];
+
+    /// <summary>
+    /// <b>Der Wechsel von einem Eintrag zum nächsten kostet EINEN Klick.</b> Fängt
+    /// die Schließfläche den Klick auf das zweite Farbfeld ab, schließt er nur den
+    /// Wähler, und erst ein zweiter öffnet ihn wieder.
+    /// </summary>
+    [Fact]
+    public void DS11_Ein_Klick_wechselt_vom_einen_Farbfeld_zum_anderen()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Equal(Diagrammfarben.Anzeigename(ChartRenderer.C_AUSSENTEMPERATUR.Ton().Rolle),
+                     cut.Find(".epos-farbwahl .epos-farbfeld-name").TextContent);
+
+        Farbfeld(cut, ZWEITE_ROLLE).Click();
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        Assert.Equal(Diagrammfarben.Anzeigename(ChartRenderer.C_WP.Ton().Rolle),
+                     cut.Find(".epos-farbwahl .epos-farbfeld-name").TextContent);
+    }
+
+    /// <summary>
+    /// Dasselbe Farbfeld ein zweites Mal schließt den Wähler — das Feld ist ein
+    /// UMSCHALTER, nicht nur ein Öffner.
+    /// </summary>
+    [Fact]
+    public void DS11_Dasselbe_Farbfeld_schliesst_den_Waehler()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Der Legendentext schaltet seine Reihe UND schließt den offenen Wähler in
+    /// EINEM Klick: Sein Klick steigt zur Fläche auf, und dort schließt er.
+    /// </summary>
+    [Fact]
+    public void DS11_Der_Legendentext_schaltet_und_schliesst_in_einem_Klick()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ein Klick irgendwo auf das Bild schließt den Wähler.</summary>
+    [Fact]
+    public void DS11_Ein_Klick_auf_die_Flaeche_schliesst_den_Waehler()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        cut.Find(".epos-diagramm-svg-flaeche").Click();
+
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Ein Klick IM Wähler lässt ihn stehen — sonst schlösse der Griff zum
+    /// Systemwähler genau das Fenster, das er bedient.
+    /// </summary>
+    [Fact]
+    public void DS11_Ein_Klick_im_Waehler_laesst_ihn_stehen()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        cut.Find(".epos-farbwahl").Click();
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Die Fläche trägt <c>epos-diagramm-svg-flaeche--waehler</c> nur, solange ein
+    /// Wähler offen ist: Die Klasse hebt das Bild über die Schließfläche, und ohne
+    /// Wähler gibt es nichts zu heben.
+    /// </summary>
+    [Fact]
+    public void DS11_Die_Flaeche_traegt_die_Klasse_nur_bei_offenem_Waehler()
+    {
+        const string KLASSE = "epos-diagramm-svg-flaeche--waehler";
+        var cut = ZeigeRollen();
+
+        Assert.DoesNotContain(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Contains(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+
+        cut.Find(".epos-diagramm-svg-flaeche").Click();
+        Assert.DoesNotContain(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+    }
+
+    /// <summary>
+    /// <b>Die Lage des Wählers folgt der Bildhälfte.</b> Links hängt er an der
+    /// linken Kante seines Farbfeldes; in der rechten Hälfte hängt er an der
+    /// RECHTEN — mit <c>left</c> stünde er dort über den Bildrand hinaus.
+    /// </summary>
+    [Fact]
+    public void DS11_In_der_rechten_Bildhaelfte_haengt_der_Waehler_rechts()
+    {
+        Zeichenmodell modell = Rollenmodell();
+        var cut = Zeige(modell: modell, kennung: "lage", farbwahl: true);
+
+        // Erst die Stellen lesen, dann klicken: Jeder Zeichenlauf tauscht die
+        // Knoten, und ein gemerkter Verweis zeigte danach ins Leere.
+        var stellen = new List<(string Name, double X)>();
+        foreach (Datenreihe reihe in modell.Reihen)
+        {
+            var felder = cut.FindAll("rect[data-legende='" + reihe.Name + "']");
+            if (felder.Count == 0) continue;   // eine Reihe ohne Rolle traegt kein Feld
+            stellen.Add((reihe.Name ?? "",
+                         double.Parse(felder[0].GetAttribute("x")!,
+                                      CultureInfo.InvariantCulture)));
+        }
+
+        int links = 0, rechts = 0;
+        foreach ((string name, double x) in stellen)
+        {
+            Farbfeld(cut, name).Click();
+            string stil = cut.Find(".epos-farbwahl").GetAttribute("style")!;
+
+            if (x > modell.Breite / 2.0) { rechts++; Assert.StartsWith("right:", stil); }
+            else { links++; Assert.StartsWith("left:", stil); }
+
+            cut.Find(".epos-diagramm-svg-flaeche").Click();
+        }
+
+        // Bewiesen ist die Regel nur, wenn beide Haelften vorkommen.
+        Assert.True(links > 0, "kein Legendeneintrag in der linken Bildhälfte");
+        Assert.True(rechts > 0, "kein Legendeneintrag in der rechten Bildhälfte");
+    }
 }
