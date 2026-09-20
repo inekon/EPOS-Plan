@@ -1,7 +1,7 @@
 # Konzept: Knopfleisten der Administrationsdialoge nach der Hausregel (DL-2)
 
-**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); Schritt 0 der
-Umsetzungsreihenfolge ist umgesetzt, die Schritte 1 bis 9 sind frei.
+**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); die Schritte 0
+bis 3 der Umsetzungsreihenfolge sind umgesetzt, die Schritte 4 bis 9 sind frei.
 **Anlass:** Anwenderentscheid 19.09.2026 — „Prüfe alle Dialoge [des Administrationsmenüs] auf
 Überlappung und Übersichtlichkeit/Anordnung Buttons." Entscheid: alle abweichenden Dialoge an die
 Hausregel angleichen, je Dialog ein Mockup zur Abnahme; umgebaut wird erst danach. Die Überlappung
@@ -103,10 +103,10 @@ abgenommen, alle Schritte sind damit frei.
 
 | Schritt | Auftrag | Aufwand | Voraussetzung |
 |---|---|---|---|
-| 0 | **umgesetzt (DL-2a)** — `SpeichernLeiste`: Aktionsschlitz links (`Aktionen`), bunit-Test; dazu die Wache **`EPOS.UI.Tests/KnopfleistenWacheTests`**: Die Fußleiste jeder `*Dialog.razor` unter `EPOS.UI/Dialoge/` steht allein (keine zweite Leiste unmittelbar darüber), trägt genau einen `epos-knopf--primaer`, und er ist der letzte Knopf; wo `Abbrechen` steht, steht es unmittelbar vor ihm. Acht der zehn stehen mit Grund in `AUSNAHMEN` — **jeder Folgeauftrag streicht seinen Eintrag**; `WaermepumpeStammDialog` und `GebaeudeDialog` halten diese vier Regeln schon ein und stehen nicht darin. Sechs Dialoge außerhalb des Administrationsmenüs verletzen dieselben Regeln und stehen als Befund in `AUSNAHMEN_BEFUND` (Abschnitt 5) | S | — |
-| 1 | GebaeudetypDialog (2) | S | — |
-| 2 | WaermepumpeStammDialog (4) | S | — |
-| 3 | BedarfAdminDialog (3) | S | — |
+| 0 | **umgesetzt (DL-2a)** — `SpeichernLeiste`: Aktionsschlitz links (`Aktionen`), bunit-Test; dazu die Wache **`EPOS.UI.Tests/KnopfleistenWacheTests`**: Die Fußleiste jeder `*Dialog.razor` unter `EPOS.UI/Dialoge/` steht allein (keine zweite Leiste unmittelbar darüber), trägt genau einen `epos-knopf--primaer`, und er ist der letzte Knopf; wo `Abbrechen` steht, steht es unmittelbar vor ihm. Acht der zehn standen mit Grund in `AUSNAHMEN` — **jeder Folgeauftrag streicht seinen Eintrag**, DL-2b die Einträge `GebaeudetypDialog` und `BedarfAdminDialog`; `WaermepumpeStammDialog` und `GebaeudeDialog` halten diese vier Regeln schon ein und stehen nicht darin. Sechs Dialoge außerhalb des Administrationsmenüs verletzen dieselben Regeln und stehen als Befund in `AUSNAHMEN_BEFUND` (Abschnitt 5) | S | — |
+| 1 | **umgesetzt (#383)** — GebaeudetypDialog (2): Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden (primär); „OK" heißt „Beenden", Esc und ✕ melden weiter `true`; Speichern bleibt hart gesperrt, weil die Herleitungszeile den Grund schon nennt (A‑7) | S | — |
+| 2 | **umgesetzt (#383)** — WaermepumpeStammDialog (4): Speichern · Kennliniendaten… · Füller · Neu · Löschen · Beenden; der Knopf trägt den kurzen Text, die Überlagerung den vollen (`TitelKenndatenText`) | S | — |
+| 3 | **umgesetzt (#383)** — BedarfAdminDialog (3): Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden; die zweite Leiste entfällt, Esc und ✕ schließen wie Beenden | S | — |
 | 4 | KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag — ein Knopftext, zwei Wirte | S | DL-Q4 |
 | 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
 | 6 | PeakShavingDialog (5) | S | DL-Q2 |
