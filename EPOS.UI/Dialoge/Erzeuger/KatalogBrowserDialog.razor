@@ -420,7 +420,40 @@
     {
         _geaendert = true;
         _meldung = "";
+        SummeNachziehen();
     }
+
+    /// <summary>
+    /// <b>Der Gesamtwirkungsgrad des BHKW läuft mit</b> (Anwenderentscheid
+    /// 20.09.2026): Er ist ein ANZEIGEFELD, und was es zeigt, ist die Summe der zwei
+    /// Anteile — sobald einer von beiden sich ändert.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Rechnung steht im Kern</b> (<c>BhkwWirkungsgrad.GesamtAnzeige</c>,
+    /// Schemaschritt 99) — dieselbe, die der Katalogeditor zeigt und die der
+    /// Schreibweg in die Spalte stellt. Hier steht nur, WANN sie gezogen wird.</para>
+    /// <para><b>Sind beide Anteile leer, bleibt das Feld stehen</b>: Dann trägt es den
+    /// Altbestandswert eines Satzes von vor Schritt 99, und den soll das Ändern eines
+    /// anderen Feldes nicht wegwischen.</para>
+    /// </remarks>
+    private void SummeNachziehen()
+    {
+        if (Profil.Art != KatalogBrowserArt.Bhkw) return;
+
+        BrowserFeldwert? el = Feld(KatalogBrowserProfil.FeldWirkungsgradEl);
+        BrowserFeldwert? th = Feld(KatalogBrowserProfil.FeldWirkungsgradTh);
+        BrowserFeldwert? gesamt = Feld(KatalogBrowserProfil.FeldWirkungsgrad);
+        if (el is null || th is null || gesamt is null) return;
+
+        double? elWert = Zahlen.ZahlParsen(el.Wert, out double e) ? e : null;
+        double? thWert = Zahlen.ZahlParsen(th.Wert, out double t) ? t : null;
+        if (elWert is null && thWert is null) return;
+
+        gesamt.Wert = BhkwWirkungsgrad.GesamtAnzeige(elWert, thWert, null);
+    }
+
+    private BrowserFeldwert? Feld(string schluessel)
+        => _felder.FirstOrDefault(f => f.Schluessel == schluessel);
 
     /// <summary>
     /// Sammelt, welche Zahlenfelder gerade keinen gueltigen Text tragen.

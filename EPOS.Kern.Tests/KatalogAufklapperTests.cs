@@ -82,7 +82,8 @@ namespace EPOS.Kern.Tests
                 {
                     "BEZEICHNER", "FIRMA", "BESCHREIBUNG", "PTHERM", "PEL", "GRENZLEISTUNG",
                     "VORLAUF", "RUECKLAUF",
-                    "BRENNSTOFF", "WIRKUNGSGRAD", "MOTORTYP", "RAUMBEDARF",
+                    "BRENNSTOFF", "WIRKUNGSGRAD_EL", "WIRKUNGSGRAD_TH", "WIRKUNGSGRAD",
+                    "MOTORTYP", "RAUMBEDARF",
                     "KOSTEN_MODUL", "KOSTEN_MONTAGE", "KOSTEN_LIEFERUNG",
                     "KOSTEN_SCHALLSCHUTZ", "KOSTEN_ABGASREINIGUNG",
                     "INVESTITION_KWEL", "WARTUNG_KWHEL", "NUTZUNGSDAUER",
@@ -342,11 +343,12 @@ namespace EPOS.Kern.Tests
             var felder = new BHKWStammCtrl.AnzeigefelderBhkw(
                 "Probe GmbH", 260, 240, 25, 88, 62,
                 Beschreibung: "Probe Aufklapper", Brennstoff: "Biogas",
-                Wirkungsgrad: 0.86, Motortyp: "Zuendstrahlmotor", Raumbedarf: 12.5,
+                Motortyp: "Zuendstrahlmotor", Raumbedarf: 12.5,
                 KostenModul: 20000, KostenMontage: 1000, KostenLieferung: 500,
                 KostenSchallschutzhaube: 2000, KostenAbgasreinigung: 500,
                 WartungskostenJeKWhel: 0.025, Nutzungsdauer: 12,
-                NOx: 90, SO2: 2, CO: 210, CO2: 199000, Staub: 1);
+                NOx: 90, SO2: 2, CO: 210, CO2: 199000, Staub: 1,
+                WirkungsgradEl: 0.30, WirkungsgradTh: 0.56);
 
             var ergebnis = BHKWStammCtrl.AnzeigefelderSchreiben(BHKW, felder,
                                                                 schreibschutzUebergehen: true);
@@ -359,6 +361,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal("Probe GmbH", nachher[KatalogBrowserProfil.FeldFirma]);
             Assert.Equal("Probe Aufklapper", nachher[KatalogBrowserProfil.FeldBeschreibung]);
             Assert.Equal("Biogas", nachher[KatalogBrowserProfil.FeldBrennstoff]);
+            // DER GESAMTWIRKUNGSGRAD IST ANZEIGE, NICHT EINGABE (Anwenderentscheid
+            // 20.09.2026): Geschrieben werden die zwei Anteile, gezeigt wird ihre
+            // Summe - auf drei Stellen, wie im Katalogeditor.
+            Assert.Equal("0,3", nachher[KatalogBrowserProfil.FeldWirkungsgradEl]);
+            Assert.Equal("0,56", nachher[KatalogBrowserProfil.FeldWirkungsgradTh]);
             Assert.Equal("0,86", nachher[KatalogBrowserProfil.FeldWirkungsgrad]);
             Assert.Equal("Zuendstrahlmotor", nachher[KatalogBrowserProfil.FeldMotortyp]);
             Assert.Equal("12,5", nachher[KatalogBrowserProfil.FeldRaumbedarf]);

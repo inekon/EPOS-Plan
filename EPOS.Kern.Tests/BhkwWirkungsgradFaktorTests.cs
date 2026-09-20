@@ -283,8 +283,15 @@ namespace EPOS.Kern.Tests
         /// Faktor durch. Geprüft am Weg <c>AnzeigefelderSchreiben</c>, den der
         /// Aufklapper „Alle Daten anzeigen" zieht.
         /// </summary>
+        /// <remarks>
+        /// <b>Der Aufklapper nimmt seit dem Anwenderentscheid vom 20.09.2026 die zwei
+        /// ANTEILE entgegen</b>, nicht mehr den Gesamtwert (BW-3). Geprüft werden sie
+        /// gegen dieselben drei Regeln wie im Katalogeditor
+        /// (<c>BhkwWirkungsgrad.Pruefen</c>): Der Prozentwert 29,5 scheitert weiterhin
+        /// benannt, und die Spalte <c>Wirkungsgrad</c> bleibt die Summe der zwei.
+        /// </remarks>
         [Fact]
-        public void Der_Katalogweg_weist_29_5_ab_und_laesst_0_92_durch()
+        public void Der_Katalogweg_weist_29_5_ab_und_laesst_den_Faktor_durch()
         {
             if (!_db.Vorhanden) return;
             using var _ = new Kulturvorrichtung();
@@ -293,10 +300,12 @@ namespace EPOS.Kern.Tests
 
             BHKWStammModel vorher = new BHKWStammCtrl().ReadModel(satz);
             Assert.NotNull(vorher);
+            Assert.True(vorher.m_Wirkungsgrad_el.HasValue && vorher.m_Wirkungsgrad_th.HasValue,
+                        "Schemaschritt 99 hat den Satz aufgeteilt.");
 
             var abgelehnt = new BHKWStammCtrl.AnzeigefelderBhkw(
                 vorher.m_szFirma, vorher.m_Ptherm, vorher.m_Pel, vorher.m_Grenzleistung,
-                vorher.m_Vorlauf, vorher.m_Ruecklauf, Wirkungsgrad: 29.5);
+                vorher.m_Vorlauf, vorher.m_Ruecklauf, WirkungsgradEl: 29.5);
 
             BHKWStammCtrl.SpeicherErgebnis ergebnis =
                 BHKWStammCtrl.AnzeigefelderSchreiben(satz, abgelehnt, true);
@@ -307,19 +316,26 @@ namespace EPOS.Kern.Tests
             // Der Satz steht unveraendert da.
             Assert.Equal(vorher.m_Wirkungsgrad, new BHKWStammCtrl().ReadModel(satz).m_Wirkungsgrad, 6);
 
-            // Und der Faktor geht durch.
+            // Und die zwei Faktoren gehen durch - der Gesamtwert ist ihre Summe.
             var erlaubt = new BHKWStammCtrl.AnzeigefelderBhkw(
                 vorher.m_szFirma, vorher.m_Ptherm, vorher.m_Pel, vorher.m_Grenzleistung,
-                vorher.m_Vorlauf, vorher.m_Ruecklauf, Wirkungsgrad: 0.92);
+                vorher.m_Vorlauf, vorher.m_Ruecklauf,
+                WirkungsgradEl: 0.30, WirkungsgradTh: 0.62);
 
             Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(satz, erlaubt, true).Ok);
-            Assert.Equal(0.92, new BHKWStammCtrl().ReadModel(satz).m_Wirkungsgrad, 4);
+            BHKWStammModel nachher = new BHKWStammCtrl().ReadModel(satz);
+            Assert.Equal(0.92, nachher.m_Wirkungsgrad, 4);
+            Assert.Equal(0.30, nachher.m_Wirkungsgrad_el.Value, 4);
+            Assert.Equal(0.62, nachher.m_Wirkungsgrad_th.Value, 4);
 
             // Zuruecksetzen - die Arbeitskopie soll bleiben, wie der Schritt sie liess.
             var zurueck = new BHKWStammCtrl.AnzeigefelderBhkw(
                 vorher.m_szFirma, vorher.m_Ptherm, vorher.m_Pel, vorher.m_Grenzleistung,
-                vorher.m_Vorlauf, vorher.m_Ruecklauf, Wirkungsgrad: vorher.m_Wirkungsgrad);
+                vorher.m_Vorlauf, vorher.m_Ruecklauf,
+                WirkungsgradEl: vorher.m_Wirkungsgrad_el,
+                WirkungsgradTh: vorher.m_Wirkungsgrad_th);
             Assert.True(BHKWStammCtrl.AnzeigefelderSchreiben(satz, zurueck, true).Ok);
+            Assert.Equal(vorher.m_Wirkungsgrad, new BHKWStammCtrl().ReadModel(satz).m_Wirkungsgrad, 6);
         }
 
         // =============================================================================

@@ -319,6 +319,8 @@ namespace WindowsFormsApplication1
         public const string FeldStaub = "STAUB";
 
         public const string FeldWirkungsgrad = "WIRKUNGSGRAD";
+        public const string FeldWirkungsgradEl = "WIRKUNGSGRAD_EL";
+        public const string FeldWirkungsgradTh = "WIRKUNGSGRAD_TH";
         public const string FeldMotortyp = "MOTORTYP";
         public const string FeldInvestitionJeKwel = "INVESTITION_KWEL";
         public const string FeldKostenModul = "KOSTEN_MODUL";
@@ -465,8 +467,25 @@ namespace WindowsFormsApplication1
                             // Der volle Satz (15.09.2026): Technik, Kosten, Emissionen.
                             new BrowserDetailfeld(FeldBrennstoff,   t("BHKWK_LBL_ENERGIETRAEGER"), "",
                                                   BrowserFeldArt.Text, editierbar: true),
-                            new BrowserDetailfeld(FeldWirkungsgrad, t("BHKWK_LBL_WIRKUNGSGRAD"), "",
+                            // DIE ZWEI ANTEILE SIND DIE EINGABE, DIE SUMME IST ANZEIGE
+                            // (Anwenderentscheid 20.09.2026). Bis hierher nahm der
+                            // Aufklapper den GESAMTwert entgegen und verteilte ihn im
+                            // Verhaeltnis der Leistungen auf die zwei Anteile - eine
+                            // dritte Zahl, die die zwei gepflegten ueberschrieb. Jetzt
+                            // steht hier dasselbe wie im Katalogeditor: gepflegt werden
+                            // el und th, der Gesamtwirkungsgrad laeuft als ihre Summe
+                            // mit (BhkwWirkungsgrad.Gesamt, Schemaschritt 99) und ist
+                            // deshalb NICHT editierbar - wie die Investition je kWel.
+                            new BrowserDetailfeld(FeldWirkungsgradEl,
+                                                  t("BHKWK_LBL_WIRKUNGSGRAD_EL"),
+                                                  t("BHKWK_HINT_WIRKUNGSGRAD_EL"),
                                                   BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldWirkungsgradTh,
+                                                  t("BHKWK_LBL_WIRKUNGSGRAD_TH"),
+                                                  t("BHKWK_HINT_WIRKUNGSGRAD_TH"),
+                                                  BrowserFeldArt.Zahl, editierbar: true),
+                            new BrowserDetailfeld(FeldWirkungsgrad, t("BHKWK_LBL_WIRKUNGSGRAD"), "",
+                                                  BrowserFeldArt.Zahl),
                             new BrowserDetailfeld(FeldMotortyp,     t("BHKWK_LBL_MOTORTYP"), "",
                                                   BrowserFeldArt.Text, editierbar: true),
                             new BrowserDetailfeld(FeldRaumbedarf,   t("BHKWK_LBL_RAUMBEDARF"), "m³",
