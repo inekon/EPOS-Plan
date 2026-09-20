@@ -2822,15 +2822,18 @@ namespace WindowsFormsApplication1
         /// Zelle (<c>ClipRect</c>), damit die Striche nicht in die Nachbarzelle laufen.
         /// </remarks>
         private static void Schraffur(SKCanvas g, SKRect zelle)
+            => Schraffur(new SkiaZiel(g), zelle);
+
+        private static void Schraffur(IZeichenziel z, SKRect zelle)
         {
             const float abstand = 7f;
-            g.Save();
-            g.ClipRect(zelle);
-            using (var stift = Strich(C_RASTER_SCHLECHT, 1.5f))
+            var stift = Stift(Farbrolle.RASTER_SCHLECHT, 1.5f);
+            z.Gruppe(zelle.Modellrahmen(), inhalt =>
+            {
                 for (float v = -zelle.Height; v < zelle.Width; v += abstand)
-                    g.DrawLine(zelle.Left + v, zelle.Bottom,
-                               zelle.Left + v + zelle.Height, zelle.Top, stift);
-            g.Restore();
+                    inhalt.Linie(zelle.Left + v, zelle.Bottom,
+                                 zelle.Left + v + zelle.Height, zelle.Top, stift);
+            });
         }
 
         /// <summary>Abstand zwischen zwei Zeilen einer Fußzeile in Bildpunkten.</summary>
@@ -2998,117 +3001,105 @@ namespace WindowsFormsApplication1
                                           IReadOnlyList<bool> feinpunkte = null)
         {
             int W = 720, H = 460;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+
+            var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
+
+            int n = Math.Min(kapazitaetenKwh?.Count ?? 0, werte?.Count ?? 0);
+            var xw = new List<double>();
+            var yw = new List<double>();
+            var fein = new List<bool>();
+            for (int i = 0; i < n; i++)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-
-                var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
-
-                int n = Math.Min(kapazitaetenKwh?.Count ?? 0, werte?.Count ?? 0);
-                var xw = new List<double>();
-                var yw = new List<double>();
-                var fein = new List<bool>();
-                for (int i = 0; i < n; i++)
-                {
-                    double x = kapazitaetenKwh[i], y = werte[i];
-                    if (double.IsNaN(x) || double.IsInfinity(x)) continue;
-                    if (double.IsNaN(y) || double.IsInfinity(y)) continue;
-                    xw.Add(x); yw.Add(y);
-                    fein.Add(feinpunkte != null && i < feinpunkte.Count && feinpunkte[i]);
-                }
-
-                if (xw.Count < 2)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                double xMin = xw.Min(), xMax = xw.Max();
-                if (xMax - xMin < 1e-9) xMax = xMin + 1.0;
-
-                double yRoh0 = yw.Min(), yRoh1 = yw.Max();
-                double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
-                double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
-                double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
-                if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
-
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(14f))
-                    for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
-                    {
-                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
-                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
-                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
-                             y - TextHoehe(f) / 2f);
-                    }
-
-                // Die Nulllinie, wo die Achse sie enthaelt - dieselbe Strichelung wie
-                // im Jahresgang.
-                if (yMin < 0.0 && yMax > 0.0)
-                    using (var strichel = SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f))
-                    using (var nulllinie = Strich(SKColors.DimGray, 1.5f))
-                    {
-                        nulllinie.PathEffect = strichel;
-                        float y = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
-                        g.DrawLine(rc.Left, y, rc.Right, y, nulllinie);
-                    }
-
-                double xStufe = RundeStufe((xMax - xMin) / 6.0);
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(14f))
-                    for (double wert = Math.Ceiling(xMin / xStufe) * xStufe;
-                         wert <= xMax + xStufe * 1e-6; wert += xStufe)
-                    {
-                        float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
-                        g.DrawLine(x, rc.Top, x, rc.Bottom, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
-                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                {
-                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
-                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
-                }
-
-                var punkte = new SKPoint[xw.Count];
-                for (int i = 0; i < xw.Count; i++)
-                    punkte[i] = new SKPoint(
-                        rc.Left + (float)((xw[i] - xMin) / (xMax - xMin)) * rc.Width,
-                        (float)(rc.Bottom - (yw[i] - yMin) / (yMax - yMin) * rc.Height));
-
-                using (var stift = Strich(C_STAMM, 2.5f))
-                {
-                    stift.StrokeJoin = SKStrokeJoin.Round;
-                    Linienzug(g, punkte, stift);
-                }
-                using (var b = Fuellung(C_STAMM))
-                using (var bFein = Fuellung(C_FEINRASTER))
-                    for (int i = 0; i < punkte.Length; i++)
-                        if (fein[i]) g.DrawCircle(punkte[i].X, punkte[i].Y, 2.5f, bFein);
-                        else g.DrawCircle(punkte[i].X, punkte[i].Y, 3.5f, b);
-
-                if (!double.IsNaN(optimumKwh) && !double.IsInfinity(optimumKwh)
-                    && !double.IsNaN(optimumEur) && !double.IsInfinity(optimumEur))
-                    using (var marke = Strich(C_RASTER_SCHLECHT, 3f))
-                    {
-                        float x = rc.Left + (float)((optimumKwh - xMin) / (xMax - xMin)) * rc.Width;
-                        float y = (float)(rc.Bottom - (optimumEur - yMin) / (yMax - yMin) * rc.Height);
-                        if (x >= rc.Left - 20f && x <= rc.Right + 20f)
-                            g.DrawCircle(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)), 9f, marke);
-                    }
-
-                using (var f = Schrift(15f))
-                {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray,
-                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
-                }
-
-                return Png(flaeche);
+                double x = kapazitaetenKwh[i], y = werte[i];
+                if (double.IsNaN(x) || double.IsInfinity(x)) continue;
+                if (double.IsNaN(y) || double.IsInfinity(y)) continue;
+                xw.Add(x); yw.Add(y);
+                fein.Add(feinpunkte != null && i < feinpunkte.Count && feinpunkte[i]);
             }
+
+            if (xw.Count < 2)
+            {
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
+            }
+
+            double xMin = xw.Min(), xMax = xw.Max();
+            if (xMax - xMin < 1e-9) xMax = xMin + 1.0;
+
+            double yRoh0 = yw.Min(), yRoh1 = yw.Max();
+            double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
+            double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
+            double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
+            if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
+
+            var raster = Stift(Farbrolle.RASTER, 1f);
+
+            using (var f = Schrift(14f))
+                for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
+                {
+                    float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                    z.Linie(rc.Left, y, rc.Right, y, raster);
+                    string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                         y - TextHoehe(f) / 2f);
+                }
+
+            // Die Nulllinie, wo die Achse sie enthaelt - dieselbe Strichelung wie
+            // im Jahresgang.
+            if (yMin < 0.0 && yMax > 0.0)
+            {
+                float y = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
+                z.Linie(rc.Left, y, rc.Right, y,
+                        Stift(Farbrolle.ACHSE, 1.5f, new Strichmuster(8f, 5f)));
+            }
+
+            double xStufe = RundeStufe((xMax - xMin) / 6.0);
+            using (var f = Schrift(14f))
+                for (double wert = Math.Ceiling(xMin / xStufe) * xStufe;
+                     wert <= xMax + xStufe * 1e-6; wert += xStufe)
+                {
+                    float x = rc.Left + (float)((wert - xMin) / (xMax - xMin)) * rc.Width;
+                    z.Linie(x, rc.Top, x, rc.Bottom, raster);
+                    string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+
+            Achsenkreuz(z, rc);
+
+            var punkte = new SKPoint[xw.Count];
+            for (int i = 0; i < xw.Count; i++)
+                punkte[i] = new SKPoint(
+                    rc.Left + (float)((xw[i] - xMin) / (xMax - xMin)) * rc.Width,
+                    (float)(rc.Bottom - (yw[i] - yMin) / (yMax - yMin) * rc.Height));
+
+            Linienzug(z, punkte, Stift(Farbrolle.STAMM, 2.5f, null, Strichverbindung.Rund));
+
+            Zeichnung.Fuellung grob = Flaeche(Farbrolle.STAMM);
+            Zeichnung.Fuellung feinPunkt = Flaeche(Farbrolle.FEINRASTER);
+            for (int i = 0; i < punkte.Length; i++)
+                if (fein[i]) z.Kreis(punkte[i].X, punkte[i].Y, 2.5f, null, feinPunkt);
+                else z.Kreis(punkte[i].X, punkte[i].Y, 3.5f, null, grob);
+
+            if (!double.IsNaN(optimumKwh) && !double.IsInfinity(optimumKwh)
+                && !double.IsNaN(optimumEur) && !double.IsInfinity(optimumEur))
+            {
+                float x = rc.Left + (float)((optimumKwh - xMin) / (xMax - xMin)) * rc.Width;
+                float y = (float)(rc.Bottom - (optimumEur - yMin) / (yMax - yMin) * rc.Height);
+                if (x >= rc.Left - 20f && x <= rc.Right + 20f)
+                    z.Kreis(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)), 9f,
+                            Stift(Farbrolle.RASTER_SCHLECHT, 3f));
+            }
+
+            using (var f = Schrift(15f))
+            {
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
+                     rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
+            }
+
+            return SkiaMaler.Png(z);
         }
 
 
@@ -3154,125 +3145,119 @@ namespace WindowsFormsApplication1
                                              IReadOnlyList<bool> unzulaessig = null)
         {
             int W = 720, H = 460;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+
+            var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
+
+            int n = Math.Min(stueckzahlen?.Count ?? 0, werte?.Count ?? 0);
+            if (n < 1)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-
-                var rc = SKRect.Create(110f, 92f, W - 170f, 280f);
-
-                int n = Math.Min(stueckzahlen?.Count ?? 0, werte?.Count ?? 0);
-                if (n < 1)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                double yRoh0 = 0.0, yRoh1 = 0.0;
-                bool etwas = false;
-                for (int i = 0; i < n; i++)
-                {
-                    double v = werte[i];
-                    if (double.IsNaN(v) || double.IsInfinity(v)) continue;
-                    if (!etwas) { yRoh0 = v; yRoh1 = v; etwas = true; }
-                    if (v < yRoh0) yRoh0 = v;
-                    if (v > yRoh1) yRoh1 = v;
-                }
-                if (!etwas)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                // Die Null gehoert IMMER auf die Achse: Eine Saeule waechst von ihr aus,
-                // und ohne sie stuende der Fuss der Saeule an einer erfundenen Grundlinie.
-                if (yRoh0 > 0.0) yRoh0 = 0.0;
-                if (yRoh1 < 0.0) yRoh1 = 0.0;
-
-                double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
-                double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
-                double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
-                if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
-
-                using (var raster = Strich(SKColors.Gainsboro, 1f))
-                using (var f = Schrift(14f))
-                    for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
-                    {
-                        float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
-                        g.DrawLine(rc.Left, y, rc.Right, y, raster);
-                        string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
-                        Text(g, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
-                             y - TextHoehe(f) / 2f);
-                    }
-
-                float nullhoehe = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
-                if (yMin < 0.0 && yMax > 0.0)
-                    using (var strichel = SKPathEffect.CreateDash(new[] { 8f, 5f }, 0f))
-                    using (var nulllinie = Strich(SKColors.DimGray, 1.5f))
-                    {
-                        nulllinie.PathEffect = strichel;
-                        g.DrawLine(rc.Left, nullhoehe, rc.Right, nullhoehe, nulllinie);
-                    }
-
-                float fach = rc.Width / n;
-                float breite = Math.Min(fach * 0.62f, 64f);
-
-                for (int i = 0; i < n; i++)
-                {
-                    double v = werte[i];
-                    if (double.IsNaN(v) || double.IsInfinity(v)) continue;
-
-                    float y = (float)(rc.Bottom - (v - yMin) / (yMax - yMin) * rc.Height);
-                    float mitte = rc.Left + (i + 0.5f) * fach;
-                    float oben = Math.Min(y, nullhoehe);
-                    float hoehe = Math.Max(1f, Math.Abs(y - nullhoehe));
-                    var saeule = SKRect.Create(mitte - breite / 2f, oben, breite, hoehe);
-
-                    SKColor farbe = v < 0.0 ? C_RASTER_SCHLECHT
-                                  : i == besteStelle ? C_RASTER_GUT : C_STAMM;
-                    using (var b = Fuellung(farbe)) g.DrawRect(saeule, b);
-                    using (var rand = Strich(SKColors.White, 1f)) g.DrawRect(saeule, rand);
-
-                    if (Gesetzt(unzulaessig, i)) Schraffur(g, saeule);
-                }
-
-                // Die Marke des Optimums — dasselbe offene schwarze Quadrat wie in der
-                // Rasterkarte, damit beide Bilder dieselbe Zeichensprache sprechen.
-                if (besteStelle >= 0 && besteStelle < n && double.IsFinite(werte[besteStelle]))
-                    using (var marke = Strich(SKColors.Black, 3f))
-                    {
-                        float mx = rc.Left + (besteStelle + 0.5f) * fach;
-                        float my = (float)(rc.Bottom - (werte[besteStelle] - yMin) / (yMax - yMin) * rc.Height);
-                        float k = Math.Min(breite, 26f) * 0.36f;
-                        g.DrawRect(mx - k, my - k, 2f * k, 2f * k, marke);
-                    }
-
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                {
-                    g.DrawLine(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
-                    g.DrawLine(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
-                }
-
-                using (var f = Schrift(14f))
-                {
-                    int jede = Math.Max(1, (int)Math.Ceiling(n * 46f / rc.Width));
-                    for (int i = 0; i < n; i += jede)
-                    {
-                        string lab = stueckzahlen[i].ToString("N0", DE);
-                        float x = rc.Left + (i + 0.5f) * fach;
-                        Text(g, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-                }
-
-                using (var f = Schrift(15f))
-                {
-                    Text(g, xTitel ?? "", f, SKColors.DimGray,
-                         rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                    Text(g, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
-                }
-
-                return Png(flaeche);
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
             }
+
+            double yRoh0 = 0.0, yRoh1 = 0.0;
+            bool etwas = false;
+            for (int i = 0; i < n; i++)
+            {
+                double v = werte[i];
+                if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+                if (!etwas) { yRoh0 = v; yRoh1 = v; etwas = true; }
+                if (v < yRoh0) yRoh0 = v;
+                if (v > yRoh1) yRoh1 = v;
+            }
+            if (!etwas)
+            {
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
+            }
+
+            // Die Null gehoert IMMER auf die Achse: Eine Saeule waechst von ihr aus,
+            // und ohne sie stuende der Fuss der Saeule an einer erfundenen Grundlinie.
+            if (yRoh0 > 0.0) yRoh0 = 0.0;
+            if (yRoh1 < 0.0) yRoh1 = 0.0;
+
+            double yStufe = RundeStufe(Math.Max(1e-9, (yRoh1 - yRoh0) / 5.0));
+            double yMin = Math.Floor(yRoh0 / yStufe) * yStufe;
+            double yMax = Math.Ceiling(yRoh1 / yStufe) * yStufe;
+            if (yMax - yMin < 1e-9) yMax = yMin + yStufe;
+
+            using (var f = Schrift(14f))
+            {
+                var raster = Stift(Farbrolle.RASTER, 1f);
+                for (double wert = yMin; wert <= yMax + yStufe * 1e-6; wert += yStufe)
+                {
+                    float y = (float)(rc.Bottom - (wert - yMin) / (yMax - yMin) * rc.Height);
+                    z.Linie(rc.Left, y, rc.Right, y, raster);
+                    string lab = (wert == 0 ? 0.0 : wert).ToString("N0", DE);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                         y - TextHoehe(f) / 2f);
+                }
+            }
+
+            float nullhoehe = (float)(rc.Bottom + yMin / (yMax - yMin) * rc.Height);
+            if (yMin < 0.0 && yMax > 0.0)
+                z.Linie(rc.Left, nullhoehe, rc.Right, nullhoehe,
+                        Stift(Farbrolle.ACHSE, 1.5f, new Strichmuster(8f, 5f)));
+
+            float fach = rc.Width / n;
+            float breite = Math.Min(fach * 0.62f, 64f);
+
+            // Der Saeulenrand trennt zwei benachbarte Saeulen; er traegt die Farbe des
+            // Bildgrundes, und genau die nennt er auch als Rolle.
+            var saeulenrand = Stift(Farbrolle.HINTERGRUND, 1f);
+            for (int i = 0; i < n; i++)
+            {
+                double v = werte[i];
+                if (double.IsNaN(v) || double.IsInfinity(v)) continue;
+
+                float y = (float)(rc.Bottom - (v - yMin) / (yMax - yMin) * rc.Height);
+                float mitte = rc.Left + (i + 0.5f) * fach;
+                float oben = Math.Min(y, nullhoehe);
+                float hoehe = Math.Max(1f, Math.Abs(y - nullhoehe));
+                var saeule = SKRect.Create(mitte - breite / 2f, oben, breite, hoehe);
+
+                Farbrolle rolle = v < 0.0 ? Farbrolle.RASTER_SCHLECHT
+                                : i == besteStelle ? Farbrolle.RASTER_GUT : Farbrolle.STAMM;
+                z.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height,
+                           null, Flaeche(rolle));
+                z.Rechteck(saeule.Left, saeule.Top, saeule.Width, saeule.Height, saeulenrand);
+
+                if (Gesetzt(unzulaessig, i)) Schraffur(z, saeule);
+            }
+
+            // Die Marke des Optimums — dasselbe offene schwarze Quadrat wie in der
+            // Rasterkarte, damit beide Bilder dieselbe Zeichensprache sprechen.
+            if (besteStelle >= 0 && besteStelle < n && double.IsFinite(werte[besteStelle]))
+            {
+                float mx = rc.Left + (besteStelle + 0.5f) * fach;
+                float my = (float)(rc.Bottom - (werte[besteStelle] - yMin) / (yMax - yMin) * rc.Height);
+                float k = Math.Min(breite, 26f) * 0.36f;
+                z.Rechteck(mx - k, my - k, 2f * k, 2f * k, Stift(Farbrolle.TEXT, 3f));
+            }
+
+            Achsenkreuz(z, rc);
+
+            using (var f = Schrift(14f))
+            {
+                int jede = Math.Max(1, (int)Math.Ceiling(n * 46f / rc.Width));
+                for (int i = 0; i < n; i += jede)
+                {
+                    string lab = stueckzahlen[i].ToString("N0", DE);
+                    float x = rc.Left + (i + 0.5f) * fach;
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                }
+            }
+
+            using (var f = Schrift(15f))
+            {
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
+                     rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
+            }
+
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>Steht in der Sperrliste an dieser Stelle <c>true</c>?</summary>
