@@ -130,6 +130,7 @@ export function binden(flaeche, hilfe, optionen) {
 
     // --- Rad: Zoom um den Zeiger. Ohne preventDefault rollt die Seite mit. ---
     an(flaeche, "wheel", e => {
+        if (gehoertDemBaustein(e.target)) return;   // ueber dem Farbwaehler rollt die Seite
         e.preventDefault();
         const schritt = e.ctrlKey ? KNEIF_SCHRITT : RAD_SCHRITT;
         const faktor = Math.exp(-e.deltaY * schritt);
@@ -143,12 +144,11 @@ export function binden(flaeche, hilfe, optionen) {
     // --- Zeiger nieder: entweder ein Rechteck aufziehen oder verschieben. ---
     an(flaeche, "pointerdown", e => {
         if (e.button !== 0 && e.pointerType === "mouse") return;
-        // LEGENDE: Geht der Zeiger auf einem Legendeneintrag nieder, gehoert er
-        // dem Baustein (Blazor-Klick: Reihe schalten, Farbwaehler oeffnen). Hier
-        // beginnt dann keine Geste, und vor allem KEIN FANG - mit Fang wanderte
-        // das Ziel des click-Ereignisses auf die Flaeche, und der Eintrag
-        // bekaeme seinen Klick nie (gemessen 20.09.2026 im Wirt, Chromium).
-        if (istLegende(e.target)) return;
+        // BAUSTEINEIGENES: Geht der Zeiger auf einem Legendeneintrag, im
+        // Farbwaehler oder auf einem Formularelement nieder, gehoert er dem
+        // Baustein (Blazor-Klick). Hier beginnt dann keine Geste, und vor allem
+        // KEIN FANG (siehe gehoertDemBaustein).
+        if (gehoertDemBaustein(e.target)) return;
         // Der Fang haelt die Bewegung bei uns, auch wenn der Zeiger den Rahmen
         // verlaesst. Er kann fehlschlagen, wenn der Zeiger schon wieder weg ist -
         // dann geht es ohne ihn weiter.
@@ -245,6 +245,7 @@ export function binden(flaeche, hilfe, optionen) {
 
     // --- Doppelklick: zurueck auf 1:1. Dieselbe Geste wie im Vorbild. ---
     an(flaeche, "dblclick", e => {
+        if (gehoertDemBaustein(e.target)) return;
         e.preventDefault();
         stelleHer(flaeche, true);
     });
@@ -252,6 +253,7 @@ export function binden(flaeche, hilfe, optionen) {
     // --- Tastatur: + groesser, - kleiner, 0 zurueck. ---
     an(flaeche, "keydown", e => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
+        if (gehoertDemBaustein(e.target)) return;   // "0" im Hexfeld ist eine Ziffer, kein Befehl
         const m = { x: flaeche.clientWidth / 2, y: flaeche.clientHeight / 2 };
         const mitteClient = flaeche.getBoundingClientRect().left + m.x;
         if (e.key === "+" || e.key === "=") {
@@ -328,11 +330,15 @@ export function bereichsmodus(flaeche, an_) {
 // ---------------------------------------------------------------- Innenleben
 
 /** Handler anhaengen UND merken - loesen() braucht dieselbe Funktion wieder. */
-// Ein Legendeneintrag - Text oder Farbfeld mit data-marke="legende:..." -
-// gehoert dem Baustein DiagrammSvg: Er schaltet die Reihe oder oeffnet den
-// Farbwaehler. Das Modul laesst seine Zeiger in Ruhe.
-function istLegende(el) {
-    return !!(el && el.closest && el.closest('[data-marke^="legende:"]'));
+// Was der Baustein DiagrammSvg selbst bedient - Legendeneintraege (Text und
+// Farbfeld mit data-marke="legende:..."), der Farbwaehler samt seiner
+// Schliessflaeche und jedes Formularelement -, laesst das Modul in Ruhe: kein
+// Fang, keine Geste, kein Zoom, keine Taste. Mit Fang wanderte das Ziel des
+// click-Ereignisses auf die Flaeche, und ein Legendeneintrag oder ein Knopf im
+// Waehler bekaeme seinen Klick nie (gemessen 20.09.2026 im Wirt, Chromium).
+const BAUSTEIN_EIGEN = '[data-marke^="legende:"], .epos-farbwahl, .epos-farbwahl-schliessflaeche, button, input, select, textarea, label';
+function gehoertDemBaustein(el) {
+    return !!(el && el.closest && el.closest(BAUSTEIN_EIGEN));
 }
 
 function an(el, name, fn, opt) {

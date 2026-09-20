@@ -316,3 +316,13 @@ nieder (`istLegende`), beginnt keine Geste und es gibt keinen Fang. Zoom, Versch
 Zeigerzeile sind davon unberührt (gemessen: viewBox `2441 … 6377`, Stufe ×2,2, fünf Ticks,
 Zeigerzeile mit drei Werten). Dazu der xUnit-Hinweis 2031 in `SvgSchreiberTests` (Assert.Single mit
 Prädikat statt Where).
+
+Dieselbe Ursache traf den **Farbwähler**: Der Knopf „Hausfarbe“ und die Felder liegen innerhalb der
+gebundenen Fläche, ein Zeiger darauf wurde gefangen (`gotpointercapture` an der Fläche, `click` an der
+Fläche statt am Knopf), und die Hausfarbe kam nie zurück. Ausgenommen vom Modul sind deshalb jetzt
+**alle bausteineigenen Bedienflächen** (`gehoertDemBaustein`: Legendeneinträge, der Farbwähler samt
+Schließfläche, jedes Formularelement) — für den Fang im `pointerdown`, das Rad, den Doppelklick und die
+Tasten (eine „0“ im Hexfeld ist eine Ziffer, kein Zoom-Befehl). Geprüft im Wirt mit echten Klicks:
+Legendentext schaltet die Reihe, Farbfeld öffnet den Wähler, eine Wahl färbt Pfad und Legendenfeld,
+„Hausfarbe“ stellt die Vorgabe wieder her, Esc schließt. bunit sieht davon nichts — die
+Gerätenachweise (A-DG-1) bleiben die Stelle, an der Zeigerfang und Geste geprüft werden.
