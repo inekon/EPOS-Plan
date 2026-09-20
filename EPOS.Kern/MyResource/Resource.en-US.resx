@@ -20438,4 +20438,31 @@ Do you want to allow this?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>“{0}” is not a colour in the #RRGGBB notation.</value>
   </data>
+  <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
+    <value>Boiler management</value>
+  </data>
+  <data name="KI_DLG_MASKE_BHKW" xml:space="preserve">
+    <value>CHP management</value>
+  </data>
+  <data name="KI_DLG_HKP_ANLAGE_ERL" xml:space="preserve">
+    <value>The name of the boiler selected in the project — shown from the project list, not editable.</value>
+  </data>
+  <data name="KI_DLG_HKP_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of this boiler in the project in °C, whole number; empty means “not specified”.</value>
+  </data>
+  <data name="KI_DLG_HKP_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of this boiler in the project in °C, whole number; empty means “not specified”.</value>
+  </data>
+  <data name="KI_DLG_BHKW_ANLAGE_ERL" xml:space="preserve">
+    <value>The name of the CHP module selected in the project — shown from the project list, not editable.</value>
+  </data>
+  <data name="KI_DLG_BHKW_GRENZLEISTUNG_ERL" xml:space="preserve">
+    <value>Lower modulation limit of this module as a percentage of rated output; 0 means “project default from the settings”.</value>
+  </data>
+  <data name="KI_DLG_BHKW_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of this CHP module in the project in °C, whole number; empty means “not specified”.</value>
+  </data>
+  <data name="KI_DLG_BHKW_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of this CHP module in the project in °C, whole number; empty means “not specified”.</value>
+  </data>
 </root>

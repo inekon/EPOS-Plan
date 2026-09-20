@@ -144,6 +144,38 @@
         internal static string WpModulkostenName => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_NAME;
         internal static string WpModulkostenErl => MyResource.Resource.KI_DLG_WP_MODULKOSTEN_ERL;
 
+        // ========================================= Welle KI-F1: Erzeuger im Projekt
+        //
+        // DIE ANZEIGENAMEN SIND DIE BESCHRIFTUNGEN DER MASKE, nicht eigene KI-Texte:
+        // Es sind dieselben Ressourcenschluessel, die die Huelle in den Dialog reicht
+        // (HZKK_LBL_VORLAUF, BHKWV_LBL_GRENZLEISTUNG …). Ein zweiter Name fuer dasselbe
+        // Feld waere eine zweite Wahrheit - der Anwender liest in der Bestaetigung
+        // woertlich das, was ueber dem Eingabefeld steht. Neu ist je Feld allein die
+        // ERLAEUTERUNG (KI_DLG_<MASKE>_<FELD>_ERL).
+
+        internal static string MaskeHeizkesselProjekt => MyResource.Resource.KI_DLG_MASKE_HEIZKESSEL_PROJEKT;
+        internal static string MaskeBhkwProjekt => MyResource.Resource.KI_DLG_MASKE_BHKW;
+
+        // ------------------------------------------- Form_Heizkessel (Projektmaske)
+
+        internal static string HkpAnlageName => MyResource.Resource.HZK_LBL_NAME;
+        internal static string HkpAnlageErl => MyResource.Resource.KI_DLG_HKP_ANLAGE_ERL;
+        internal static string HkpVorlaufName => MyResource.Resource.HZKK_LBL_VORLAUF;
+        internal static string HkpVorlaufErl => MyResource.Resource.KI_DLG_HKP_VORLAUF_ERL;
+        internal static string HkpRuecklaufName => MyResource.Resource.HZKK_LBL_RUECKLAUF;
+        internal static string HkpRuecklaufErl => MyResource.Resource.KI_DLG_HKP_RUECKLAUF_ERL;
+
+        // -------------------------------------------- Form_BHKWEing (Projektmaske)
+
+        internal static string BhkwAnlageName => MyResource.Resource.BHKWV_LBL_NAME;
+        internal static string BhkwAnlageErl => MyResource.Resource.KI_DLG_BHKW_ANLAGE_ERL;
+        internal static string BhkwGrenzleistungName => MyResource.Resource.BHKWV_LBL_GRENZLEISTUNG;
+        internal static string BhkwGrenzleistungErl => MyResource.Resource.KI_DLG_BHKW_GRENZLEISTUNG_ERL;
+        internal static string BhkwVorlaufName => MyResource.Resource.BHKWV_LBL_VORLAUF;
+        internal static string BhkwVorlaufErl => MyResource.Resource.KI_DLG_BHKW_VORLAUF_ERL;
+        internal static string BhkwRuecklaufName => MyResource.Resource.BHKWV_LBL_RUECKLAUF;
+        internal static string BhkwRuecklaufErl => MyResource.Resource.KI_DLG_BHKW_RUECKLAUF_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;

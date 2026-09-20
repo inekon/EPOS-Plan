@@ -1,8 +1,8 @@
 ﻿// WOHIN dialog_oeffnen FUEHRT (Auftrag #201, Stufe S3, Punkt 3).
 //
-// Der Dialogkatalog nennt fuenf Masken unter ihren KATALOGSCHLUESSELN
+// Der Dialogkatalog nennt seine Masken unter ihren KATALOGSCHLUESSELN
 // (Form_Heizkessel_Bearbeiten, Form_PV, Form_PufferSp_Bearbeiten, Form_WP,
-// StromspeicherAuslegung). Dienste.Navigation kennt dagegen NAVIGATIONSSCHLUESSEL
+// StromspeicherAuslegung, …). Dienste.Navigation kennt dagegen NAVIGATIONSSCHLUESSEL
 // (Masken.* bzw. die Seitenschluessel der AppWurzel). Beide Namensraeume gibt es aus
 // gutem Grund - der eine steht im Werkzeugvertrag des Modells und im Protokoll, der
 // andere in der Navigationstabelle der jeweiligen Huelle -, und zwischen ihnen fehlte
@@ -59,6 +59,40 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string KOSTENVERWALTUNG = "KOSTENVERWALTUNG";
 
+        /// <summary>
+        /// Der Seitenschluessel der STARTSEITE — das Ziel der Erzeugermasken des
+        /// Projekts (Welle KI‑F1).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum die Startseite und nicht die Maske selbst.</b> Die sechs
+        /// Projektmasken gehen aus der Erzeugerkarte der Startseite auf (Reiter
+        /// „Energieerzeuger") und brauchen eine gewaehlte Anlage; kontextfrei lassen
+        /// sie sich nicht oeffnen — dieselbe Lage wie bei den Katalogeditoren, deren
+        /// Ziel die Verwaltung ist. Der Assistent fuehrt den Anwender deshalb dorthin,
+        /// wo er die Anlage waehlt: auf die Startseite. Das ist der Weg, den er auch
+        /// von Hand ginge.
+        /// </para>
+        /// <para>
+        /// <b>Ein Reiterwunsch geht dabei nicht mit.</b> Die <c>AppWurzel</c> fuehrt
+        /// zwar einen (<c>Reiterwunsch</c> der <c>Startseite</c>), sie setzt ihn aber
+        /// aus ihrem RUECKWEG und nicht aus den Argumenten von <c>OeffneMaske</c>; es
+        /// gibt also keinen Schluessel, der die Startseite auf dem Reiter
+        /// „Energieerzeuger" aufmachte. Ein solcher waere eine neue Naht durch drei
+        /// Schichten und gehoert nicht in diese Welle.
+        /// </para>
+        /// <para>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.Startseite</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="STROMSPEICHER_AUSLEGUNG"/> — jene
+        /// Konstante steht in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht.
+        /// Ein Waechter in <c>EPOS.UI.Tests</c> haelt beide gegeneinander. Unter
+        /// Windows kennt <c>WinFormsNavigation</c> den Schluessel nicht; dort liefert
+        /// <c>OeffneMaske</c> <c>false</c>, und <c>dialog_oeffnen</c> lehnt benannt ab,
+        /// statt still nichts zu tun. Auf iOS wechselt die Wurzel die Ansicht.
+        /// </para>
+        /// </remarks>
+        public const string STARTSEITE = "STARTSEITE";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -91,7 +125,13 @@ namespace WindowsFormsApplication1
 
                 // Die Kostenverwaltung geht nur AUS einer gewaehlten Komponente auf;
                 // siehe KOSTENVERWALTUNG.
-                { KiMaskennamen.KOSTENVERWALTUNG, KOSTENVERWALTUNG }
+                { KiMaskennamen.KOSTENVERWALTUNG, KOSTENVERWALTUNG },
+
+                // Welle KI-F1: Die Erzeugermasken des PROJEKTS gehen aus der
+                // Erzeugerkarte der Startseite auf und brauchen eine gewaehlte Anlage;
+                // ihr Ziel ist deshalb die Startseite - siehe STARTSEITE.
+                { KiMaskennamen.HEIZKESSEL_PROJEKT, STARTSEITE },
+                { KiMaskennamen.BHKW_PROJEKT,       STARTSEITE }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

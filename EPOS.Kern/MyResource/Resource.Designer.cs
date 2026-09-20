@@ -25010,6 +25010,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Modulationsgrenze dieses Moduls in Prozent der Nennleistung; 0 bedeutet „Projektvorgabe aus den Einstellungen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_GRENZLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_GRENZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKW_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKW_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld „{0}“ ist ein {1}; gesetzt werden können nur Textfeld, Häkchen und Auswahlliste. ähnelt.
         /// </summary>
         public static string KI_DLG_CONTROL_ART {
@@ -25105,6 +25141,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GELESEN {
             get {
                 return ResourceManager.GetString("KI_DLG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Heizkessels — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_HKP_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_HKP_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -25469,11 +25532,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung BHKW ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BHKW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Heizkessel bearbeiten ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Heizkessel ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_HEIZKESSEL_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_HEIZKESSEL_PROJEKT", resourceCulture);
             }
         }
         

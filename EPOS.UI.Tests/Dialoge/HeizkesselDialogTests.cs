@@ -1156,4 +1156,54 @@ public class HeizkesselDialogTests : EposBunitContext
     private static AngleSharp.Dom.IElement Knopf(
         Bunit.IRenderedComponent<HeizkesselDialog> cut, string beschriftung)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == beschriftung);
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Anlassfall der Welle:</b> „Setze die Vorlauftemperatur aller Heizkessel
+    /// auf 55 °C". Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>,
+    /// die Brücke liest den Vorlauf der gewählten Zeile und setzt ihn — und der Wert
+    /// steht danach in der Zeile, die der Dialog führt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — nicht, dass nichts anderes da wäre. Die Brücke ist
+    /// prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_den_Vorlauf()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Kessel A", 100);
+        Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.HEIZKESSEL_PROJEKT));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "vorlauf");
+        Assert.NotNull(zugang);
+        Assert.Equal(70, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(55);
+
+        Assert.Equal(55, zeile.Vorlauf);
+    }
+
+    /// <summary>
+    /// Der Name der Anlage ist ANZEIGE und kein Eingabefeld — er wird gelesen und
+    /// erklärt, aber nie gesetzt (<c>nurLesen</c> im Katalog).
+    /// </summary>
+    [Fact]
+    public void Der_Anlagenname_ist_fuer_den_Assistenten_nur_lesbar()
+    {
+        Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) });
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "anlage");
+
+        Assert.Equal("Kessel A", zugang.Lesen());
+        Assert.False(zugang.Setzbar);
+    }
 }

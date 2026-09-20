@@ -1282,4 +1282,52 @@ public class BhkwDialogTests : EposBunitContext
     private static AngleSharp.Dom.IElement Knopf(
         Bunit.IRenderedComponent<BhkwDialog> cut, string beschriftung)
         => cut.FindAll("button").First(b => b.TextContent.Trim() == beschriftung);
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F1)
+    // =====================================================================
+
+    /// <summary>
+    /// Nach dem Zeichnen steht die Maske an der <c>KiMaskenbruecke</c>; die Brücke
+    /// liest die untere Grenzleistung der gewählten Zeile und setzt sie — und der Wert
+    /// steht danach in der Zeile, die der Dialog führt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist. Die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Grenzleistung()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Modul A", 100);
+        Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BHKW_PROJEKT));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW_PROJEKT, "grenzleistung");
+        Assert.NotNull(zugang);
+        Assert.Equal(50.0, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(35.0);
+
+        Assert.Equal(35.0, zeile.Grenzleistung);
+    }
+
+    /// <summary>
+    /// Der Modulname ist ANZEIGE und kein Eingabefeld — er wird gelesen und erklärt,
+    /// aber nie gesetzt (<c>nurLesen</c> im Katalog).
+    /// </summary>
+    [Fact]
+    public void Der_Modulname_ist_fuer_den_Assistenten_nur_lesbar()
+    {
+        Aufbauen(zeilen: new List<ErzeugerZeile> { Zeile(1, "Modul A", 100) });
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW_PROJEKT, "anlage");
+
+        Assert.Equal("Modul A", zugang.Lesen());
+        Assert.False(zugang.Setzbar);
+    }
 }

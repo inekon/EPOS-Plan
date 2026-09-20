@@ -48,6 +48,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -688,7 +689,64 @@
 
         // SetControls: die erste Zeile ist beim Oeffnen gewaehlt.
         if (Zeilen.Count > 0) ProjektZeileWaehlen(Zeilen[0]);
+
+        // Welle KI-F1: die GEWAEHLTE Zeile beim Hilfe-Assistenten anmelden. Sie
+        // wechselt mit jedem Klick in der Projektliste - deshalb ein Delegat und keine
+        // Instanz; die Bruecke liest bei jedem Mal neu.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                          () => _projektZeile, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Zeilenwerte (Welle KI-F1)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. Sie hält die Getter auf die
+    /// gewählte Projektzeile und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier ÜBERNEHMEN.</b> Dieser Dialog schreibt nicht in
+    /// einen Katalog, er schreibt die gewählte Projektzeile in das Modell zurück —
+    /// derselbe Weg, den Vorlauf und Rücklauf von Hand gehen
+    /// (<c>Uebernehmen?.Invoke(_projektZeile)</c>). Ohne gewählte Zeile gibt es nichts
+    /// zu übernehmen, und die Aktion lehnt benannt ab.</para>
+    /// <para><b>Keine eigene Prüfung.</b> Vorlauf und Rücklauf sind Ganzzahlfelder, die
+    /// sich selbst färben; eine Knopfprüfung wie in den Katalogeditoren hat dieser
+    /// Dialog nicht.</para>
+    /// <para><b>Der SCHREIBSCHUTZ hängt am Gerät</b>, auf das die gewählte Zeile
+    /// verweist (<c>ErzeugerZeile.NurLesen</c>, Fachkonzept 4.5) — ohne gewählte Zeile
+    /// ist nichts schreibgeschützt.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
+        Speichern = () => Task.FromResult(KiUebernehmen())
+    };
+
+    private KiKern.KiErgebnis KiUebernehmen()
+    {
+        if (_projektZeile is null || Uebernehmen is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        Uebernehmen(_projektZeile);
+        return KiKern.KiErgebnis.Ok(_projektZeile.Bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

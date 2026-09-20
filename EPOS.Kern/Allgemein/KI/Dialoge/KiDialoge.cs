@@ -62,6 +62,23 @@ namespace WindowsFormsApplication1
         /// etwas anderes stand.
         /// </remarks>
         public const string KOSTENVERWALTUNG = "Kostenverwaltung";
+
+        // =================================================================
+        //  Welle KI-F1: die Erzeugermasken des PROJEKTS
+        // =================================================================
+        //
+        // Sie stehen neben den KATALOGeditoren gleichen Gewerks und sind
+        // etwas anderes: Der Editor pflegt einen Satz des Katalogs, diese
+        // Maske pflegt die ANLAGE im Projekt - Vorlauf, Ruecklauf,
+        // Grenzleistung, Modulzahl. Deshalb tragen beide ihren eigenen
+        // Schluessel, und beide sind die WinForms-Maskennamen des Bestands
+        // (Form_Heizkessel gegen Form_Heizkessel_Bearbeiten).
+
+        /// <summary>Heizkessel im Projekt (<c>HeizkesselDialog</c>).</summary>
+        public const string HEIZKESSEL_PROJEKT = "Form_Heizkessel";
+
+        /// <summary>BHKW im Projekt (<c>BhkwDialog</c>).</summary>
+        public const string BHKW_PROJEKT = "Form_BHKWEing";
     }
 
     /// <summary>
@@ -155,7 +172,114 @@ namespace WindowsFormsApplication1
                 Waermepumpe(),
                 Stromspeicherauslegung(),
                 Simulation(),
-                Kostenverwaltung());
+                Kostenverwaltung(),
+                HeizkesselProjekt(),
+                BhkwProjekt());
+        }
+
+        // =====================================================================
+        // Form_Heizkessel  ->  HeizkesselDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// Heizkessel im Projekt — die Werte, die der Projektdialog an der GEWAEHLTEN
+        /// Zeile fuehrt (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist eine ZEILE und kein Dialogstand</b> — dieselbe
+        /// Bauart wie bei <see cref="Photovoltaik"/>: Der Dialog fuehrt eine
+        /// Projektliste, angemeldet wird die gewaehlte Zeile, und der Getter holt sie
+        /// bei jedem Lesen neu. Ist keine gewaehlt, sind die Felder leer — derselbe
+        /// Zustand, den der Anwender auf der Maske sieht.
+        /// </para>
+        /// <para>
+        /// <b>Die BRENNSTOFFVARIANTE fehlt mit Absicht.</b> Sie ist ein Verweis in eine
+        /// kontextabhaengige Liste (<c>ErzeugerZeile.CarrierId</c>, gefuellt aus den
+        /// Varianten der Traegergruppe); sie ueber ihre rohe Id setzen zu lassen hiesse,
+        /// das Modell eine Zahl raten zu lassen, deren Bedeutung nur die Maske kennt —
+        /// dieselbe Regel wie bei der Bemessung der Kostenverwaltung. Sie kommt in den
+        /// Katalog, sobald es dafuer eine benannte Auswahl gibt.
+        /// </para>
+        /// <para>
+        /// <b>Der Aufklapper „Alle Daten" bleibt draussen.</b> Er zeigt die Spalten des
+        /// gewaehlten KATALOGsatzes ueber ein Profil
+        /// (<c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>) und nicht ueber
+        /// benannte Eigenschaften der Zeile; was dort steht, gehoert dem Katalog und
+        /// nicht der Anlage.
+        /// </para>
+        /// </remarks>
+        private static KiDialog HeizkesselProjekt()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.HEIZKESSEL_PROJEKT,
+                anzeigename: KiDialogTexte.MaskeHeizkesselProjekt,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                                     KiDialogTexte.HkpAnlageName, KiParameterTyp.Text,
+                                     KiDialogTexte.HkpAnlageErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                                     KiDialogTexte.HkpVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.HkpVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                                     KiDialogTexte.HkpRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.HkpRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_BHKWEing  ->  BhkwDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// BHKW im Projekt — die Werte der gewaehlten Projektzeile
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>Die untere GRENZLEISTUNG ist der Unterschied zum Heizkessel.</b> Sie sagt,
+        /// bis wohin das Modul moduliert; 0 heisst „Projektvorgabe"
+        /// (<c>Tab_Einstellungen.Leistungsgrenze</c>), und genau das steht in ihrer
+        /// Erlaeuterung. Die Brennstoffvariante fehlt aus demselben Grund wie beim
+        /// Heizkessel.
+        /// </remarks>
+        private static KiDialog BhkwProjekt()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BHKW_PROJEKT,
+                anzeigename: KiDialogTexte.MaskeBhkwProjekt,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                                     KiDialogTexte.BhkwAnlageName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhkwAnlageErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("grenzleistung", "ErzeugerZeile.Grenzleistung",
+                                     KiDialogTexte.BhkwGrenzleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkwGrenzleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                                     KiDialogTexte.BhkwVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkwVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                                     KiDialogTexte.BhkwRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkwRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================

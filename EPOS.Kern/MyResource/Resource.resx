@@ -20445,4 +20445,31 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>„{0}“ ist keine Farbe in der Schreibweise #RRGGBB.</value>
   </data>
+  <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
+    <value>Verwaltung Heizkessel</value>
+  </data>
+  <data name="KI_DLG_MASKE_BHKW" xml:space="preserve">
+    <value>Verwaltung BHKW</value>
+  </data>
+  <data name="KI_DLG_HKP_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten Heizkessels — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_HKP_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_HKP_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur dieses Kessels im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_ANLAGE_ERL" xml:space="preserve">
+    <value>Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar.</value>
+  </data>
+  <data name="KI_DLG_BHKW_GRENZLEISTUNG_ERL" xml:space="preserve">
+    <value>Untere Modulationsgrenze dieses Moduls in Prozent der Nennleistung; 0 bedeutet „Projektvorgabe aus den Einstellungen“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
+  <data name="KI_DLG_BHKW_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur dieses BHKW-Moduls im Projekt in °C, ganze Zahl; leer heißt „nicht angegeben“.</value>
+  </data>
 </root>

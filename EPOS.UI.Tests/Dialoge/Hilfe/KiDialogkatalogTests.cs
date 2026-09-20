@@ -39,7 +39,13 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// </summary>
 public class KiDialogkatalogTests
 {
-    /// <summary>Die sieben Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <summary>Die Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
+    /// <remarks>
+    /// <b>Ein Daten-Objekt darf MEHRERE Masken tragen.</b> Die Erzeugermasken des
+    /// Projekts (Welle KI‑F1) melden alle dieselbe <c>ErzeugerZeile</c> an — die
+    /// gewählte Zeile ihrer Projektliste; welche Felder daran hängen, sagt der
+    /// Katalogeintrag und nicht der Typ.
+    /// </remarks>
     public static TheoryData<string, Type> Masken() => new()
     {
         { KiMaskennamen.HEIZKESSEL,              typeof(HeizkesselKatalogDaten) },
@@ -58,7 +64,12 @@ public class KiDialogkatalogTests
         // sind zum Teil SPALTEN (KostenKomponenteStand.Zeilen[].Nutzungsdauer); der
         // Waechter unten loest sie ueber KiMaskenanmeldung.Pruefe mit auf.
         { KiMaskennamen.KOSTENVERWALTUNG,
-          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) }
+          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) },
+
+        // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
+        // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT, typeof(ErzeugerZeile) },
+        { KiMaskennamen.BHKW_PROJEKT,       typeof(ErzeugerZeile) }
     };
 
     // =====================================================================
@@ -105,13 +116,34 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sieben_Masken()
+    public void Der_Katalog_fuehrt_neun_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(7, katalog.Anzahl);
+        Assert.Equal(9, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
+    }
+
+    /// <summary>
+    /// <b>Jede Katalogmaske hat ein Öffnungsziel, und die Projektmasken teilen sich
+    /// eines</b> — die STARTSEITE, von deren Erzeugerkarte aus sie aufgehen (Welle
+    /// KI‑F1).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Wächter über die zwei Fundstellen.</b> <c>KiMaskenziele.STARTSEITE</c>
+    /// steht im Kern als Zeichenkette, weil der Kern die Oberfläche nicht kennt;
+    /// <c>Seitenschluessel.Startseite</c> steht in <c>EPOS.UI</c>. Laufen beide
+    /// auseinander, führt <c>dialog_oeffnen</c> ins Leere — dasselbe Muster, mit dem
+    /// die Stromspeicher-Ansicht zusammengehalten wird.
+    /// </remarks>
+    [Fact]
+    public void Das_Ziel_der_Projektmasken_ist_der_Seitenschluessel_der_Startseite()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Startseite, KiMaskenziele.STARTSEITE);
+
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.BHKW_PROJEKT));
     }
 
     [Fact]
@@ -221,7 +253,11 @@ public class KiDialogkatalogTests
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
                                           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
-        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" }
+        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
+
+        // Welle KI-F1: die Erzeugermasken des PROJEKTS.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT, "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
+        { KiMaskennamen.BHKW_PROJEKT,       "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor" }
     };
 
     /// <summary>
@@ -370,8 +406,9 @@ public class KiDialogkatalogTests
             felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
         }
 
-        // 6 (Heizkessel) + 3 (PV) + 1 (Puffer) + 1 (WP) + 7 (Kostenverwaltung) = 18.
-        Assert.True(felder >= 18, "Nur " + felder + " Feldpfade geprüft.");
+        // 6 (Heizkesseleditor) + 3 (PV) + 1 (Puffereditor) + 1 (WP) +
+        // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) = 25.
+        Assert.True(felder >= 25, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------
