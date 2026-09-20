@@ -25271,6 +25271,528 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Wand an Dach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Fenster an Wand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_FENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_FENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Außenwand an Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_KELLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_KELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außenwandfläche ohne die Fenster. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_AUSSENWAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_AUSSENWAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BAUART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BAUART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der Maske ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BETRIEBSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die wärmeübertragende Dachfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_DACHFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_DACHFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_DURCHLASSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_DURCHLASSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FENSTER_WAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FENSTER_WAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Norden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_NORD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_NORD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Osten und Westen zusammen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_OSTWEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_OSTWEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Süden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_SUED_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_SUED_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fläche je Nutzer; sie bestimmt die Zahl der Personen und damit die inneren Lasten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FLAECHE_NUTZER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FLAECHE_NUTZER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Grundfläche gegen Erdreich oder unbeheizten Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_GRUNDFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_GRUNDFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_LUFTWECHSEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_LUFTWECHSEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_MAX_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_MAX_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung der Raumtemperatur in der Nacht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RAUMHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RAUMHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SOLL_FERIEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SOLL_FERIEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur der Räume am Tag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SOLL_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SOLL_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die übrigen wärmeübertragenden Flächen, die keiner der anderen Gruppen zugehören. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SONST_FLAECHEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SONST_FLAECHEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen des Verbrauchs mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Außenwand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_AUSSENWAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_AUSSENWAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Dachfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Fenster. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_FENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_FENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Grundfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der übrigen Flächen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_SONSTIGES_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_SONSTIGES_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_VERWENDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_VERWENDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die inneren Wärmegewinne durch Personen und Geräte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAERMEGEWINNE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAERMEGEWINNE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Wand an Dach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAND_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAND_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Außenwand an Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAND_KELLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAND_KELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WOCHENENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WOCHENENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Wohn- oder Nutzfläche des Gebäudes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WOHNFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WOHNFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe, wie sie im Kopf steht — auch dann, wenn die Klappliste sie nicht mehr führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_ANGABEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_ANGABEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart aus dem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes im Klartext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung aus dem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird das Warmwasser im Gebäude dezentral bereitet? Dann bleibt es aus dem Wärmebedarf der Heizung heraus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_DEZENTRAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_DEZENTRAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Gebäudes, dessen Angaben die Maske führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_NUTZUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_NUTZUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_ANGABEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_ANGABEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_FILTER_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_FILTER_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_FILTER_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_FILTER_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des markierten Satzes — je nach Markierung der des Projektgebäudes oder der des Katalogsatzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_SUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_SUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWALTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWALTUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWENDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWENDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_WOHNFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_WOHNFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} steuerbare Felder, {2} auslösbare Knöpfe. ähnelt.
         /// </summary>
         public static string KI_DLG_GELESEN {
@@ -25771,6 +26293,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BHKW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudekatalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche des Gebäudes ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBW", resourceCulture);
             }
         }
         

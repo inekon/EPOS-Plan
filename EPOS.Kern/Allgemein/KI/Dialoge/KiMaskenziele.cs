@@ -155,7 +155,24 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation },
                 { KiMaskennamen.QUELLPROFIL,               Masken.Simulation },
                 { KiMaskennamen.WAERMESENKE,               Masken.Simulation },
-                { KiMaskennamen.KOMPONENTENKONFIGURATION,  Masken.Simulation }
+                { KiMaskennamen.KOMPONENTENKONFIGURATION,  Masken.Simulation },
+
+                // Welle KI-F3: Die GEBAEUDEMASKE ist zugleich die Gebaeudeverwaltung -
+                // Masken.GebaeudeAdmin oeffnet dieselbe Razor-Komponente in der
+                // Betriebsart Admin. Hier fuehrt ein Ziel also auf die Maske selbst und
+                // nicht bloss in ihre Naehe; welche Betriebsart offen ist, sagt ihr Feld
+                // „verwaltung". Der Gebaeude-KATALOGEDITOR geht aus dieser Maske auf und
+                // braucht einen gewaehlten Satz; sein Ziel ist deshalb dieselbe
+                // Verwaltung - dieselbe Begruendung wie bei den Katalogeditoren der
+                // Erzeuger.
+                { KiMaskennamen.GEBAEUDE,         Masken.GebaeudeAdmin },
+                { KiMaskennamen.GEBAEUDE_KATALOG, Masken.GebaeudeAdmin },
+
+                // Die Wohn-/Nutzflaechenangabe haengt an einer gewaehlten PROJEKTZEILE
+                // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie
+                // nicht. Ihr Weg beginnt auf der Startseite, Reiter „Waermebedarf",
+                // Kachel „Gebaeudedaten eingeben" - siehe STARTSEITE.
+                { KiMaskennamen.GEBAEUDE_WOHNFLAECHE, STARTSEITE }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

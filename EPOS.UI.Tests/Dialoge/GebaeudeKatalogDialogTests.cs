@@ -6,6 +6,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -681,5 +682,63 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
 
         cut.Find(".epos-dialog > .epos-leiste button.epos-knopf--primaer").Click();
         Assert.True(geschlossen);
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>GebaeudeKatalogKiSicht</c> und deckt BEIDE Reiterblätter ab: Die
+    /// Wohnfläche steht im Satz, die Solltemperatur im eigenen Stand der Maske — beide
+    /// liest und setzt die Brücke.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_beide_Blaetter()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE_KATALOG));
+
+        WindowsFormsApplication1.KiFeldzugang flaeche =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "wohnflaeche");
+        Assert.NotNull(flaeche);
+        Assert.Equal(150.0, flaeche.Lesen());
+
+        flaeche.Setzen(180.0);
+        cut.Render();
+        Assert.Equal(180.0, cut.Instance.Daten.WohnflaecheGesamt);
+
+        WindowsFormsApplication1.KiFeldzugang soll =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "soll_tag");
+        Assert.NotNull(soll);
+        Assert.Equal(20.0, soll.Lesen());
+
+        soll.Setzen(21.5);
+        cut.Render();
+        Assert.Equal(21.5, soll.Lesen());
+    }
+
+    /// <summary>
+    /// <b>Der Gebäudetyp ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über seinen
+    /// Anzeigetext, im Satz steht danach der NAME des Katalogsatzes — nicht sein
+    /// Listenplatz.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Gebaeudetyp_ueber_seinen_Text()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_KATALOG, "gebaeudetyp");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, TYPEN[1]);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(TYPEN[1], cut.Instance.Daten.Typ);
     }
 }

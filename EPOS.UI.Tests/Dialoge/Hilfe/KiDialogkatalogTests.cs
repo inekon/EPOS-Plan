@@ -94,7 +94,16 @@ public class KiDialogkatalogTests
         { KiMaskennamen.WAERMESENKE,
           typeof(EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht) },
         { KiMaskennamen.KOMPONENTENKONFIGURATION,
-          typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) }
+          typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) },
+
+        // Welle KI-F3: die Masken des BEDARFS. Sie melden je eine SICHTKLASSE an -
+        // siehe OhneMarkupprobe.
+        { KiMaskennamen.GEBAEUDE,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKiSicht) },
+        { KiMaskennamen.GEBAEUDE_WOHNFLAECHE,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeWohnflaecheKiSicht) },
+        { KiMaskennamen.GEBAEUDE_KATALOG,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) }
     };
 
     /// <summary>
@@ -175,11 +184,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neunzehn_Masken()
+    public void Der_Katalog_fuehrt_zweiundzwanzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(19, katalog.Anzahl);
+        Assert.Equal(22, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -234,6 +243,28 @@ public class KiDialogkatalogTests
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLPROFIL));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.WAERMESENKE));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.KOMPONENTENKONFIGURATION));
+    }
+
+    /// <summary>
+    /// <b>Die Gebäudemaske IST die Gebäudeverwaltung</b> (Welle KI‑F3):
+    /// <c>Masken.GebaeudeAdmin</c> öffnet dieselbe Razor-Komponente in der Betriebsart
+    /// Admin, und der Katalogeditor geht aus ihr auf.
+    /// </summary>
+    /// <remarks>
+    /// Die Wohn-/Nutzflächenangabe dagegen hängt an einer gewählten Projektzeile und
+    /// geht über den Knopf „Ändern…" auf; ihr Ziel ist deshalb die Startseite — dieselbe
+    /// Begründung wie bei den Erzeugermasken des Projekts.
+    /// </remarks>
+    [Fact]
+    public void Das_Ziel_der_Gebaeudemasken_ist_die_Gebaeudeverwaltung()
+    {
+        string ziel = WindowsFormsApplication1.Masken.GebaeudeAdmin;
+
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_KATALOG));
+
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_WOHNFLAECHE));
     }
 
     [Fact]
@@ -463,7 +494,16 @@ public class KiDialogkatalogTests
             "der gewählten Zeile; Zeuge ist WaermesenkeDialogTests",
         [KiMaskennamen.KOMPONENTENKONFIGURATION] =
             "bindet über die Sichtklasse KomponentenKonfigurationKiSicht auf ZWEI " +
-            "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests"
+            "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests",
+        [KiMaskennamen.GEBAEUDE] =
+            "bindet über die Sichtklasse GebaeudeKiSicht auf die Filterfelder und den " +
+            "Detailblock der Maske; Zeuge ist GebaeudeDialogTests",
+        [KiMaskennamen.GEBAEUDE_WOHNFLAECHE] =
+            "bindet über die Sichtklasse GebaeudeWohnflaecheKiSicht auf die lebenden " +
+            "Eingabefelder; Zeuge ist GebaeudeWohnflaecheDialogTests",
+        [KiMaskennamen.GEBAEUDE_KATALOG] =
+            "bindet über die Sichtklasse GebaeudeKatalogKiSicht auf BEIDE Reiterblätter; " +
+            "Zeuge ist GebaeudeKatalogDialogTests"
     };
 
     /// <summary>

@@ -20976,4 +20976,187 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
     <value>Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht.</value>
   </data>
+  <data name="KI_DLG_MASKE_GEB" xml:space="preserve">
+    <value>Gebäudedaten</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBW" xml:space="preserve">
+    <value>Wohn-/Nutzfläche des Gebäudes</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBK" xml:space="preserve">
+    <value>Gebäudekatalog</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWENDUNG_ERL" xml:space="preserve">
+    <value>Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten.</value>
+  </data>
+  <data name="KI_DLG_GEB_FILTER_ART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung.</value>
+  </data>
+  <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
+    <value>Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse.</value>
+  </data>
+  <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
+    <value>Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen.</value>
+  </data>
+  <data name="KI_DLG_GEB_NAME_ERL" xml:space="preserve">
+    <value>Der Name des markierten Satzes — je nach Markierung der des Projektgebäudes oder der des Katalogsatzes.</value>
+  </data>
+  <data name="KI_DLG_GEB_ART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart des markierten Satzes.</value>
+  </data>
+  <data name="KI_DLG_GEB_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Die Beschreibung des markierten Satzes.</value>
+  </data>
+  <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
+    <value>Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“.</value>
+  </data>
+  <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
+    <value>Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWALTUNG_NAME" xml:space="preserve">
+    <value>Katalogverwaltung</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWALTUNG_ERL" xml:space="preserve">
+    <value>Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
+    <value>Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben.</value>
+  </data>
+  <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
+    <value>Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt.</value>
+  </data>
+  <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht.</value>
+  </data>
+  <data name="KI_DLG_GEBW_DEZENTRAL_ERL" xml:space="preserve">
+    <value>Wird das Warmwasser im Gebäude dezentral bereitet? Dann bleibt es aus dem Wärmebedarf der Heizung heraus.</value>
+  </data>
+  <data name="KI_DLG_GEBW_NAME_ERL" xml:space="preserve">
+    <value>Der Name des Gebäudes, dessen Angaben die Maske führt.</value>
+  </data>
+  <data name="KI_DLG_GEBW_ART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart aus dem Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Die Beschreibung aus dem Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BAUJAHR_ERL" xml:space="preserve">
+    <value>Die Baualtersklasse des Gebäudes im Klartext.</value>
+  </data>
+  <data name="KI_DLG_GEBW_ANGABEART_ERL" xml:space="preserve">
+    <value>Die Art der Angabe, wie sie im Kopf steht — auch dann, wenn die Klappliste sie nicht mehr führt.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
+    <value>Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird.</value>
+  </data>
+  <data name="KI_DLG_GEBK_TYP_ERL" xml:space="preserve">
+    <value>Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen des Verbrauchs mit.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
+    <value>Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
+    <value>Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile.</value>
+  </data>
+  <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
+    <value>Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
+    <value>Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
+    <value>Die gesamte Wohn- oder Nutzfläche des Gebäudes.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FLAECHE_NUTZER_ERL" xml:space="preserve">
+    <value>Die Fläche je Nutzer; sie bestimmt die Zahl der Personen und damit die inneren Lasten.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAERMEGEWINNE_ERL" xml:space="preserve">
+    <value>Die inneren Wärmegewinne durch Personen und Geräte.</value>
+  </data>
+  <data name="KI_DLG_GEBK_DURCHLASSGRAD_ERL" xml:space="preserve">
+    <value>Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4.</value>
+  </data>
+  <data name="KI_DLG_GEBK_RAUMHOEHE_ERL" xml:space="preserve">
+    <value>Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_NORD_ERL" xml:space="preserve">
+    <value>Die Fensterfläche nach Norden.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_SUED_ERL" xml:space="preserve">
+    <value>Die Fensterfläche nach Süden.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_OSTWEST_ERL" xml:space="preserve">
+    <value>Die Fensterfläche nach Osten und Westen zusammen.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSSENWAND_ERL" xml:space="preserve">
+    <value>Die Außenwandfläche ohne die Fenster.</value>
+  </data>
+  <data name="KI_DLG_GEBK_DACHFLAECHE_ERL" xml:space="preserve">
+    <value>Die wärmeübertragende Dachfläche.</value>
+  </data>
+  <data name="KI_DLG_GEBK_GRUNDFLAECHE_ERL" xml:space="preserve">
+    <value>Die Grundfläche gegen Erdreich oder unbeheizten Keller.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SONST_FLAECHEN_ERL" xml:space="preserve">
+    <value>Die übrigen wärmeübertragenden Flächen, die keiner der anderen Gruppen zugehören.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_AUSSENWAND_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient der Außenwand.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_FENSTER_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient der Fenster.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_DACH_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient der Dachfläche.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_GRUND_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient der Grundfläche.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_SONSTIGES_ERL" xml:space="preserve">
+    <value>Der Wärmedurchgangskoeffizient der übrigen Flächen.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLL_TAG_ERL" xml:space="preserve">
+    <value>Die Solltemperatur der Räume am Tag.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_ERL" xml:space="preserve">
+    <value>Die Absenkung der Raumtemperatur in der Nacht.</value>
+  </data>
+  <data name="KI_DLG_GEBK_MAX_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
+    <value>Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
+    <value>Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
+    <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAND_DACH_ERL" xml:space="preserve">
+    <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Wand an Dach.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAND_KELLER_ERL" xml:space="preserve">
+    <value>Der Wärmebrückenverlustkoeffizient des Anschlusses Außenwand an Keller.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_FENSTER_ERL" xml:space="preserve">
+    <value>Die Länge des Anschlusses Fenster an Wand.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_DACH_ERL" xml:space="preserve">
+    <value>Die Länge des Anschlusses Wand an Dach.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_KELLER_ERL" xml:space="preserve">
+    <value>Die Länge des Anschlusses Außenwand an Keller.</value>
+  </data>
+  <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
+    <value>Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BETRIEBSART_NAME" xml:space="preserve">
+    <value>Betriebsart der Maske</value>
+  </data>
+  <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
+  </data>
 </root>

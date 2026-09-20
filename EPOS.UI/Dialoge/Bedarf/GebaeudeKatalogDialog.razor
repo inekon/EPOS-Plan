@@ -56,6 +56,7 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -596,7 +597,144 @@
 
         _ursprungsname = Daten.Name ?? "";
         ZweitenReiterFuellen();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_KATALOG,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt beide Reiterblätter (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeKatalogKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten. Das erste Reiterblatt greift auf den LEBENDEN Satz
+    /// zu — er wird beim Klapplistenwechsel ausgetauscht, deshalb ein Delegat und keine
+    /// Instanz; das zweite greift auf die Felder der Maske, die erst „Werte übernehmen"
+    /// in den Satz schreibt.
+    /// </summary>
+    private GebaeudeKatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudeKatalogKiSicht
+        {
+            SatzLesen = () => Daten,
+
+            NameLesen = () => Daten.Name,
+            NameSetzen = KiNameSetzen,
+
+            BauartSetzen = BauartWaehlen,
+
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(
+                Typeintraege, e => e.Text, e => e.Text),
+            GebaeudeartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Arteintraege, e => e.Text, e => e.Text),
+            BaualtersklasseEintraege = () => KiMaskenanmeldung.Eintraege(
+                Klasseneintraege, e => e.Id, e => e.Text),
+            BauartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Bauarteintraege, e => e.Id, e => e.Text),
+            VerwendungEintraege = KiVerwendungseintraege,
+
+            SollTagLesen = () => _sollTag,
+            SollTagSetzen = w => _sollTag = w,
+            NachtabsenkungLesen = () => _nachtAbsenkung,
+            NachtabsenkungSetzen = w => _nachtAbsenkung = w,
+            MaxTemperaturLesen = () => _maxTemperatur,
+            MaxTemperaturSetzen = w => _maxTemperatur = w,
+            WochenendabsenkungLesen = () => _weAbsenkung,
+            WochenendabsenkungSetzen = w => _weAbsenkung = w,
+            SollFerienLesen = () => _sollFerien,
+            SollFerienSetzen = w => _sollFerien = w,
+
+            WbvkFensterWandLesen = () => _wbvkFenster,
+            WbvkFensterWandSetzen = w => _wbvkFenster = w,
+            WbvkWandDachLesen = () => _wbvkDach,
+            WbvkWandDachSetzen = w => _wbvkDach = w,
+            WbvkAussenwandKellerLesen = () => _wbvkKeller,
+            WbvkAussenwandKellerSetzen = w => _wbvkKeller = w,
+
+            AnschlussFensterWandLesen = () => _anschlussFenster,
+            AnschlussFensterWandSetzen = w => _anschlussFenster = w,
+            AnschlussWandDachLesen = () => _anschlussDach,
+            AnschlussWandDachSetzen = w => _anschlussDach = w,
+            AnschlussAussenwandKellerLesen = () => _anschlussKeller,
+            AnschlussAussenwandKellerSetzen = w => _anschlussKeller = w,
+
+            LuftwechselrateLesen = () => _luftwechsel,
+            LuftwechselrateSetzen = w => _luftwechsel = w,
+
+            BetriebsartLesen = () => Modus.ToString()
+        };
+    }
+
+    /// <summary>Die Verwendungen: Schlüssel ist der STEUERWERT, Text der Eintrag der Maske.</summary>
+    private IReadOnlyList<KiWahleintrag> KiVerwendungseintraege()
+    {
+        var liste = new List<KiWahleintrag>();
+        for (int i = 0; i < Verwendungswerte.Count && i < Verwendungen.Count; i++)
+            liste.Add(new KiWahleintrag(Verwendungswerte[i], Verwendungen[i]));
+        return liste;
+    }
+
+    /// <summary>
+    /// Der Name — in der KATALOGVERWALTUNG WÄHLT er den Satz, sonst BENENNT er ihn.
+    /// Das ist keine Auslegung, sondern der Unterschied der beiden Bedienelemente: Dort
+    /// steht eine Klappliste aller Sätze, hier ein Textfeld.
+    /// </summary>
+    private void KiNameSetzen(string wert)
+    {
+        if (Modus != GebaeudeKatalogModus.Admin) { Daten.Name = wert ?? ""; return; }
+
+        for (int i = 0; i < _namen.Count; i++)
+            if (string.Equals(_namen[i], wert, StringComparison.Ordinal)) { NamenWaehlen(i); return; }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier ÜBERSCHREIBEN bzw. ANLEGEN</b> — der Weg des
+    /// Knopfes, der die Maske stehen lässt: in der Betriebsart Neu wird angelegt, sonst
+    /// der Satz unter seinem Ursprungsnamen überschrieben.</para>
+    /// <para><b>Das zweite Reiterblatt geht MIT.</b> Seine Felder gehören der Maske und
+    /// erreichen den Satz nur über „Werte übernehmen"; ohne diesen Schritt schriebe der
+    /// Speicherweg einen Stand, den die Maske im selben Augenblick verwirft. Scheitert
+    /// die Übernahme an einer Ferienregel, wird nicht geschrieben und der Befund der
+    /// Maske genannt.</para>
+    /// <para><b>Die Prüfung ist die des Dialogs</b> — dieselben 17 Pflichtzahlen, die
+    /// auch seine Speicherknöpfe verlangen.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => PflichtzahlenStehen() ? "" : _meldung,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        BeiUebernehmen();
+        if (_meldungStufe == WarnStufe.Warnung) return KiKern.KiErgebnis.Abgelehnt(_meldung);
+
+        bool istNeu = Modus == GebaeudeKatalogModus.Neu;
+        if (istNeu && string.IsNullOrWhiteSpace(Daten.Name))
+            return KiKern.KiErgebnis.Abgelehnt(MeldungNameFehlt);
+
+        if (!PflichtzahlenStehen()) return KiKern.KiErgebnis.Abgelehnt(_meldung);
+
+        Schreiben(istNeu, istNeu ? Daten.Name : _ursprungsname);
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(Daten.Name, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

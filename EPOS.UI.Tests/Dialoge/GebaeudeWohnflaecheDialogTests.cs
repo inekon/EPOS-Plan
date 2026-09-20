@@ -5,6 +5,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -288,5 +289,55 @@ public class GebaeudeWohnflaecheDialogTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld"));
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>GebaeudeWohnflaecheKiSicht</c>: Die Brücke liest den Verbrauch,
+    /// den der Anwender sieht, und ein Setzen landet im Eingabefeld.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_den_Wert()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE_WOHNFLAECHE));
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_WOHNFLAECHE, "wert");
+        Assert.NotNull(zugang);
+        Assert.Equal(120.5, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(200.0);
+        cut.Render();
+
+        Assert.Equal(200.0, zugang.Lesen());
+    }
+
+    /// <summary>
+    /// <b>Die Bedarfsart ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über ihren
+    /// Anzeigetext; danach steht in der Maske die Einheit des gewählten Eintrags.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Bedarfsart_ueber_ihren_Text()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_WOHNFLAECHE, "bedarfsart");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Ölverbrauch [l/a]");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal("Ölverbrauch [l/a]", cut.Instance.GewaehlteEinheit);
+        Assert.Equal("l/a", cut.Instance.Einheitszeichen);
     }
 }

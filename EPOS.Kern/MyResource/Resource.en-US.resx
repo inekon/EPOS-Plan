@@ -20969,4 +20969,187 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KV_BEMESSUNG_ERL" xml:space="preserve">
     <value>The reference quantity of the item; it decides what the rate refers to.</value>
   </data>
+  <data name="KI_DLG_MASKE_GEB" xml:space="preserve">
+    <value>Building data</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBW" xml:space="preserve">
+    <value>Living/usable area of the building</value>
+  </data>
+  <data name="KI_DLG_MASKE_GEBK" xml:space="preserve">
+    <value>Building catalogue</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWENDUNG_ERL" xml:space="preserve">
+    <value>The use the catalogue list is filtered by; it also switches the list of building types.</value>
+  </data>
+  <data name="KI_DLG_GEB_FILTER_ART_ERL" xml:space="preserve">
+    <value>The building type of the filter. “All” shows every type of the selected use.</value>
+  </data>
+  <data name="KI_DLG_GEB_FILTER_BAUJAHR_ERL" xml:space="preserve">
+    <value>The construction period of the filter. “All” shows every class.</value>
+  </data>
+  <data name="KI_DLG_GEB_SUCHE_ERL" xml:space="preserve">
+    <value>The search pattern over the names in the catalogue list; the asterisk stands for any characters.</value>
+  </data>
+  <data name="KI_DLG_GEB_NAME_ERL" xml:space="preserve">
+    <value>The name of the marked record — of the project building or of the catalogue record, depending on the marking.</value>
+  </data>
+  <data name="KI_DLG_GEB_ART_ERL" xml:space="preserve">
+    <value>The building type of the marked record.</value>
+  </data>
+  <data name="KI_DLG_GEB_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description of the marked record.</value>
+  </data>
+  <data name="KI_DLG_GEB_WOHNFLAECHE_ERL" xml:space="preserve">
+    <value>The living or usable area of the marked record as shown on the screen. It is changed with the “Change…” button.</value>
+  </data>
+  <data name="KI_DLG_GEB_ANGABEART_ERL" xml:space="preserve">
+    <value>The kind of entry: living area, or a consumption figure the area is derived from.</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWALTUNG_NAME" xml:space="preserve">
+    <value>Catalogue management</value>
+  </data>
+  <data name="KI_DLG_GEB_VERWALTUNG_ERL" xml:space="preserve">
+    <value>Is the screen in catalogue management? Then it carries no project list, and the “Change…” and “Simulation…” buttons are absent.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BEDARFSART_ERL" xml:space="preserve">
+    <value>The kind of entry for this building; it determines the unit and the calculation path of the figure beside it.</value>
+  </data>
+  <data name="KI_DLG_GEBW_WERT_ERL" xml:space="preserve">
+    <value>The heat demand or the living area, in the unit named by the kind of entry.</value>
+  </data>
+  <data name="KI_DLG_GEBW_NUTZUNGSGRAD_ERL" xml:space="preserve">
+    <value>The annual efficiency of the boiler as a fraction, e.g. 0.85 for 85 %. It is only needed for a fuel figure.</value>
+  </data>
+  <data name="KI_DLG_GEBW_DEZENTRAL_ERL" xml:space="preserve">
+    <value>Is domestic hot water produced locally in the building? Then it stays out of the heating demand.</value>
+  </data>
+  <data name="KI_DLG_GEBW_NAME_ERL" xml:space="preserve">
+    <value>The name of the building whose figures the screen carries.</value>
+  </data>
+  <data name="KI_DLG_GEBW_ART_ERL" xml:space="preserve">
+    <value>The building type from the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description from the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_GEBW_BAUJAHR_ERL" xml:space="preserve">
+    <value>The construction period of the building in plain text.</value>
+  </data>
+  <data name="KI_DLG_GEBW_ANGABEART_ERL" xml:space="preserve">
+    <value>The kind of entry as shown in the header — even when the drop-down list no longer carries it.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NAME_ERL" xml:space="preserve">
+    <value>The name of the catalogue record. In catalogue management it selects the record the screen loads; otherwise it names the record that is written.</value>
+  </data>
+  <data name="KI_DLG_GEBK_TYP_ERL" xml:space="preserve">
+    <value>The building type from the type catalogue; it brings along the daily consumption profiles.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text for the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ART_ERL" xml:space="preserve">
+    <value>The building type, for example detached house or office building.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BAUJAHR_ERL" xml:space="preserve">
+    <value>The construction period of the building; it determines the defaults of the components.</value>
+  </data>
+  <data name="KI_DLG_GEBK_VERWENDUNG_ERL" xml:space="preserve">
+    <value>Residential building, or commercial and other; the use decides which list the building types come from.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BAUART_ERL" xml:space="preserve">
+    <value>The construction class: light, heavy or very heavy. It updates the thermal mass derived from class and living area.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WOHNFLAECHE_ERL" xml:space="preserve">
+    <value>The total living or usable area of the building.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FLAECHE_NUTZER_ERL" xml:space="preserve">
+    <value>The area per occupant; it determines the number of people and thus the internal loads.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAERMEGEWINNE_ERL" xml:space="preserve">
+    <value>The internal heat gains from people and appliances.</value>
+  </data>
+  <data name="KI_DLG_GEBK_DURCHLASSGRAD_ERL" xml:space="preserve">
+    <value>The total solar energy transmittance of the windows as a fraction, for example 0.4.</value>
+  </data>
+  <data name="KI_DLG_GEBK_RAUMHOEHE_ERL" xml:space="preserve">
+    <value>The mean clear room height; it enters the heated air volume.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_NORD_ERL" xml:space="preserve">
+    <value>The window area facing north.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_SUED_ERL" xml:space="preserve">
+    <value>The window area facing south.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FF_OSTWEST_ERL" xml:space="preserve">
+    <value>The window area facing east and west together.</value>
+  </data>
+  <data name="KI_DLG_GEBK_AUSSENWAND_ERL" xml:space="preserve">
+    <value>The external wall area without the windows.</value>
+  </data>
+  <data name="KI_DLG_GEBK_DACHFLAECHE_ERL" xml:space="preserve">
+    <value>The heat-transferring roof area.</value>
+  </data>
+  <data name="KI_DLG_GEBK_GRUNDFLAECHE_ERL" xml:space="preserve">
+    <value>The floor area against ground or unheated basement.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SONST_FLAECHEN_ERL" xml:space="preserve">
+    <value>The remaining heat-transferring areas that belong to none of the other groups.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_AUSSENWAND_ERL" xml:space="preserve">
+    <value>The thermal transmittance of the external wall.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_FENSTER_ERL" xml:space="preserve">
+    <value>The thermal transmittance of the windows.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_DACH_ERL" xml:space="preserve">
+    <value>The thermal transmittance of the roof area.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_GRUND_ERL" xml:space="preserve">
+    <value>The thermal transmittance of the floor area.</value>
+  </data>
+  <data name="KI_DLG_GEBK_U_SONSTIGES_ERL" xml:space="preserve">
+    <value>The thermal transmittance of the remaining areas.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLL_TAG_ERL" xml:space="preserve">
+    <value>The set room temperature during the day.</value>
+  </data>
+  <data name="KI_DLG_GEBK_NACHT_ERL" xml:space="preserve">
+    <value>The night-time setback of the room temperature.</value>
+  </data>
+  <data name="KI_DLG_GEBK_MAX_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The highest admissible room temperature; a value below 1 counts as 24 degrees.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WOCHENENDE_ERL" xml:space="preserve">
+    <value>The weekend setback; a value above 0 switches weekend operation on.</value>
+  </data>
+  <data name="KI_DLG_GEBK_SOLL_FERIEN_ERL" xml:space="preserve">
+    <value>The set temperature during holiday periods; a value above 0 switches holiday operation on.</value>
+  </data>
+  <data name="KI_DLG_GEBK_FENSTER_WAND_ERL" xml:space="preserve">
+    <value>The thermal bridge loss coefficient of the window-to-wall joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAND_DACH_ERL" xml:space="preserve">
+    <value>The thermal bridge loss coefficient of the wall-to-roof joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_WAND_KELLER_ERL" xml:space="preserve">
+    <value>The thermal bridge loss coefficient of the external wall-to-basement joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_FENSTER_ERL" xml:space="preserve">
+    <value>The length of the window-to-wall joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_DACH_ERL" xml:space="preserve">
+    <value>The length of the wall-to-roof joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_ANS_KELLER_ERL" xml:space="preserve">
+    <value>The length of the external wall-to-basement joint.</value>
+  </data>
+  <data name="KI_DLG_GEBK_LUFTWECHSEL_ERL" xml:space="preserve">
+    <value>The air change rate of the building; it determines the ventilation losses.</value>
+  </data>
+  <data name="KI_DLG_GEBK_BETRIEBSART_NAME" xml:space="preserve">
+    <value>Screen operating mode</value>
+  </data>
+  <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Edit, New or catalogue management; the operating mode decides which of the two saving paths is available.</value>
+  </data>
 </root>
