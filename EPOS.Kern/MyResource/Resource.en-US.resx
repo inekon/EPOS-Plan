@@ -20477,4 +20477,88 @@ Do you want to allow this?</value>
   <data name="KI_DLG_STSP_ANLAGE_ERL" xml:space="preserve">
     <value>The name of the battery storage unit selected in the project — shown from the project list, not editable.</value>
   </data>
+  <data name="KI_DLG_MASKE_SOLARKOLLEKTOREN" xml:space="preserve">
+    <value>Solar collector input</value>
+  </data>
+  <data name="KI_DLG_SK_ANZAHL_ERL" xml:space="preserve">
+    <value>Number of collector modules of this system, whole number from 0; together with the module area it yields the aperture area shown.</value>
+  </data>
+  <data name="KI_DLG_SK_NEIGUNG_ERL" xml:space="preserve">
+    <value>Tilt of the collector area against the horizontal in degrees, 0 to 90 (0 = horizontal).</value>
+  </data>
+  <data name="KI_DLG_SK_AZIMUT_ERL" xml:space="preserve">
+    <value>Orientation of the collector area in degrees, 0 = south; negative values towards east, positive towards west.</value>
+  </data>
+  <data name="KI_DLG_SK_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
+  </data>
+  <data name="KI_DLG_SK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of the collector circuit in °C, whole number; empty counts as 0.</value>
+  </data>
+  <data name="KI_DLG_MASKE_WP_ANLAGE" xml:space="preserve">
+    <value>Heat pump in the project</value>
+  </data>
+  <data name="KI_DLG_WPA_ANLAGE_ERL" xml:space="preserve">
+    <value>The name of the selected heat pump — shown from the device list; renaming is done in the heat pump management.</value>
+  </data>
+  <data name="KI_DLG_WPA_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of the system in °C; selectable are the steps for which the device has characteristic curves.</value>
+  </data>
+  <data name="KI_DLG_WPA_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of the system in °C, whole number and freely editable; the values shown are a suggestion.</value>
+  </data>
+  <data name="KI_DLG_WPA_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Service life of this system in years; it is mandatory — without it the OK button reports.</value>
+  </data>
+  <data name="KI_DLG_WPA_HEIZSTAB_ERL" xml:space="preserve">
+    <value>Should the immersion heater of this heat pump be included in the run? Yes requires a stored heater output.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRUNG_ERL" xml:space="preserve">
+    <value>Does the utility block the heat pump at times? Yes makes both blocking times effective.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRZEIT_VON_ERL" xml:space="preserve">
+    <value>Start of the daily blocking time in hours; mandatory — without it the OK button reports.</value>
+  </data>
+  <data name="KI_DLG_WPA_SPERRZEIT_BIS_ERL" xml:space="preserve">
+    <value>End of the daily blocking time in hours; mandatory — without it the OK button reports.</value>
+  </data>
+  <data name="KI_DLG_WPA_BIVALENT_ERL" xml:space="preserve">
+    <value>Does the heat pump work bivalently, that is together with a second heat generator? Yes requires an operating mode.</value>
+  </data>
+  <data name="KI_DLG_WPA_BETRIEBSART_ERL" xml:space="preserve">
+    <value>The operating mode of bivalent operation: “Alternativbetrieb”, “Parallelbetrieb” or “Teilparallelbetrieb”. With alternative and semi-parallel operation the bivalence temperature takes effect.</value>
+  </data>
+  <data name="KI_DLG_WPA_ABSCHALTPUNKT_ERL" xml:space="preserve">
+    <value>The bivalence temperature in °C — the outdoor temperature below which the second heat generator takes over; effective only in alternative and semi-parallel operation.</value>
+  </data>
+  <data name="KI_DLG_WPA_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the device as held in the project copy; free text.</value>
+  </data>
+  <data name="KI_DLG_WPA_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text about the device of the project copy; it affects no calculation.</value>
+  </data>
+  <data name="KI_DLG_WPA_TYP_ERL" xml:space="preserve">
+    <value>The heat pump type of the project copy (for example air/water or brine/water); selectable are the entries of the form.</value>
+  </data>
+  <data name="KI_DLG_WPA_REGELUNG_ERL" xml:space="preserve">
+    <value>The output stages of the device (for example single-stage or modulating); selectable are the entries of the form.</value>
+  </data>
+  <data name="KI_DLG_WPA_AUFSTELLUNG_ERL" xml:space="preserve">
+    <value>The installation type of the device (for example indoor or outdoor); selectable are the entries of the form.</value>
+  </data>
+  <data name="KI_DLG_WPA_BAUJAHR_ERL" xml:space="preserve">
+    <value>The year of manufacture of the device as a four-digit year.</value>
+  </data>
+  <data name="KI_DLG_WPA_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>The rated thermal output of the device in kW, whole number; it belongs to the project copy, not to the catalogue record.</value>
+  </data>
+  <data name="KI_DLG_WPA_HEIZSTAB_KW_ERL" xml:space="preserve">
+    <value>The electrical output of the immersion heater in kW; without it the heater cannot be included in the run.</value>
+  </data>
+  <data name="KI_DLG_WPA_KUEHLLEISTUNG_ERL" xml:space="preserve">
+    <value>The cooling capacity of the device in kW; decimals are allowed, empty means “not maintained”.</value>
+  </data>
+  <data name="KI_DLG_WPA_MODULKOSTEN_ERL" xml:space="preserve">
+    <value>The device costs in euros — display only; they are maintained in the cost management, not on this form.</value>
+  </data>
 </root>

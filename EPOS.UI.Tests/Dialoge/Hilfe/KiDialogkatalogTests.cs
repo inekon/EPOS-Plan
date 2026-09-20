@@ -71,7 +71,15 @@ public class KiDialogkatalogTests
         { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerZeile) },
         { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerZeile) },
         { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerZeile) },
-        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) }
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) },
+
+        // Die Solarkollektoren melden den ARBEITSSTAND der Kollektorgruppe an und
+        // nicht die Zeile: Ihre fuenf Zahlen gehen erst mit „Uebernehmen" dorthin.
+        { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
+
+        // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE, typeof(WaermepumpeAnlageDaten) }
     };
 
     // =====================================================================
@@ -118,11 +126,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_elf_Masken()
+    public void Der_Katalog_fuehrt_dreizehn_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(11, katalog.Anzahl);
+        Assert.Equal(13, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -148,6 +156,8 @@ public class KiDialogkatalogTests
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.BHKW_PROJEKT));
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_PROJEKT));
         Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.STROMSPEICHER_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT));
+        Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(KiMaskennamen.WAERMEPUMPE_ANLAGE));
     }
 
     [Fact]
@@ -263,7 +273,17 @@ public class KiDialogkatalogTests
         { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
         { KiMaskennamen.BHKW_PROJEKT,           "EPOS.UI/Dialoge/Erzeuger/BhkwDialog.razor" },
         { KiMaskennamen.PUFFERSPEICHER_PROJEKT, "EPOS.UI/Dialoge/Erzeuger/PufferspeicherDialog.razor" },
-        { KiMaskennamen.STROMSPEICHER_PROJEKT,  "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor" }
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  "EPOS.UI/Dialoge/Erzeuger/StromspeicherDialog.razor" },
+        { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+          "EPOS.UI/Dialoge/Solarthermie/SolarkollektorenDialog.razor" },
+
+        // DREI Dateien: Der Anlagendialog zeichnet die Auslegung selbst und bettet
+        // die Konfiguration und den Stammfeldblock ein - jedes Feld steht damit vor
+        // dem Anwender, nur eben teils in einer Kinddatei.
+        { KiMaskennamen.WAERMEPUMPE_ANLAGE,
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" }
     };
 
     /// <summary>
@@ -412,10 +432,11 @@ public class KiDialogkatalogTests
             felder += KiDialoge.Katalog.Finde((string)zeile[0])!.Felder.Count;
         }
 
-        // 6 (Heizkesseleditor) + 3 (PV) + 1 (Puffereditor) + 1 (WP) +
+        // 6 (Heizkesseleditor) + 3 (PV) + 1 (Puffereditor) + 1 (WP-Verwaltung) +
         // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) +
-        // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) = 27.
-        Assert.True(felder >= 27, "Nur " + felder + " Feldpfade geprüft.");
+        // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) +
+        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 53.
+        Assert.True(felder >= 53, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

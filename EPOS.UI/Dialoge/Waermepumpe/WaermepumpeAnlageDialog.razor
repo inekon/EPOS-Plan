@@ -121,6 +121,7 @@
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Kosten
+@implements IDisposable
 
 <div class="epos-dialog epos-wp-anlage @(Eingebettet ? "epos-dialog--eingebettet" : "")" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -1077,7 +1078,57 @@
         // unberuehrt - er ist der Fall, gegen den sich der Vorlaeufer mit
         // m_bStilleFuellung wehren musste (Ä21).
         Auffrischen();
+
+        // Welle KI-F1: den Feldsatz der Anlage beim Hilfe-Assistenten anmelden. Er ist
+        // die EINE Quelle aller drei Bloecke - Dialog, Konfiguration und Stammfelder;
+        // die Stammfelder arbeiten auf einem Abbild, das nach einer Feldsetzung neu
+        // aufgebaut wird (siehe KiHaken).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE_ANLAGE,
+                                          () => Daten, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Anlagenfelder (Welle KI-F1)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung bei der <c>KiMaskenbruecke</c>. Sie hält die Getter auf
+    /// <see cref="Daten"/> und fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>AUFFRISCHEN heißt hier mehr als neu zeichnen.</b> Der Stammfeldblock
+    /// bindet an <c>_stamm</c>, das ABBILD von <see cref="Daten"/>; nach einer
+    /// Feldsetzung muss es neu aufgebaut werden, sonst zeigte die Maske weiter die alte
+    /// Zahl. <see cref="Auffrischen"/> tut genau das — und verliert dabei nichts, weil
+    /// jede Eingabe im Block ohnehin sofort nach <see cref="Daten"/> zurückschreibt
+    /// (<see cref="StammfeldGeaendert"/>).</para>
+    /// <para><b>Die PRÜFUNG ist dieselbe, die der OK-Knopf ruft</b>
+    /// (<see cref="ErsterFehler"/>): Der Assistent ersetzt sie nicht, er löst sie
+    /// aus, und ihr Befund geht als Meldung an den Chat zurück.</para>
+    /// <para><b>KEIN Speicherweg.</b> Dieser Dialog schreibt nicht selbst — geschrieben
+    /// wird im OK-Weg, und zwar von der Hülle, die den Satz zurücknimmt.
+    /// <c>dialog_speichern</c> lehnt deshalb benannt ab, statt still nichts zu
+    /// tun.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(() => { Auffrischen(); StateHasChanged(); }),
+        Pruefen = () => ErsterFehler().Meldung ?? "",
+        Schreibgeschuetzt = () => NurLesen
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

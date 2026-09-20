@@ -133,7 +133,12 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.HEIZKESSEL_PROJEKT,     STARTSEITE },
                 { KiMaskennamen.BHKW_PROJEKT,           STARTSEITE },
                 { KiMaskennamen.PUFFERSPEICHER_PROJEKT, STARTSEITE },
-                { KiMaskennamen.STROMSPEICHER_PROJEKT,  STARTSEITE }
+                { KiMaskennamen.STROMSPEICHER_PROJEKT,  STARTSEITE },
+                { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, STARTSEITE },
+
+                // Die Waermepumpen-ANLAGE geht ebenfalls aus der Erzeugerkarte auf -
+                // anders als die Stammverwaltung Form_WP, die ihre eigene Maske hat.
+                { KiMaskennamen.WAERMEPUMPE_ANLAGE,     STARTSEITE }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

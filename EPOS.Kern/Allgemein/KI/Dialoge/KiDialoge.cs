@@ -85,6 +85,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>Stromspeicher im Projekt (<c>StromspeicherDialog</c>).</summary>
         public const string STROMSPEICHER_PROJEKT = "Form_Stromspeicher";
+
+        /// <summary>Solarkollektoren im Projekt (<c>SolarkollektorenDialog</c>).</summary>
+        public const string SOLARKOLLEKTOREN_PROJEKT = "Form_SolarKollektoren";
+
+        /// <summary>
+        /// Die Waermepumpen-ANLAGE eines Projekts (<c>WaermepumpeAnlageDialog</c>)
+        /// samt ihren Teilbausteinen Konfiguration und Stammfelder.
+        /// </summary>
+        /// <remarks>
+        /// Sie steht neben <see cref="WAERMEPUMPE"/>, der Stammverwaltung: Die pflegt
+        /// einen Satz des Katalogs, diese hier die Anlage im Projekt.
+        /// </remarks>
+        public const string WAERMEPUMPE_ANLAGE = "Form_WP_Anlage";
     }
 
     /// <summary>
@@ -182,7 +195,209 @@ namespace WindowsFormsApplication1
                 HeizkesselProjekt(),
                 BhkwProjekt(),
                 PufferspeicherProjekt(),
-                StromspeicherProjekt());
+                StromspeicherProjekt(),
+                SolarkollektorenProjekt(),
+                WaermepumpeAnlage());
+        }
+
+        // =====================================================================
+        // Form_WP_Anlage  ->  WaermepumpeAnlageDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermepumpen-ANLAGE eines Projekts — einundzwanzig Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeAnlageDaten</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>DREI Bloecke, EIN Daten-Objekt.</b> Die Maske besteht aus dem Dialog und
+        /// zwei Bausteinen: der KONFIGURATION (Heizstab, Sperrzeit, bivalenter Betrieb,
+        /// Betriebsart, Bivalenztemperatur) und den STAMMFELDERN (Hersteller, Typ,
+        /// Nennleistung …). Beide schreiben in denselben Satz — die Stammfelder ueber
+        /// ein Abbild, das der Dialog bei jeder Eingabe zurueckschreibt und nach einer
+        /// Feldsetzung des Assistenten neu aufbaut. Deshalb steht hier EIN
+        /// Katalogeintrag und nicht drei.
+        /// </para>
+        /// <para>
+        /// <b>Die BETRIEBSART ist eine Aufzaehlung.</b> Ihre Werte sind Steuerwerte des
+        /// Bestands (<c>DbWerte.WP_BETRIEBSART_*</c>: alternativ, parallel,
+        /// teilparallel) und stehen so in <c>Tab_Energieanlagen.Betriebsart</c> — nicht
+        /// der Anzeigetext der Klappliste. Was sie bedeuten, steht in der Erlaeuterung.
+        /// </para>
+        /// <para>
+        /// <b>Die MODULKOSTEN sind Anzeige.</b> Der Stammfeldblock zeigt sie als
+        /// Lesewert; gepflegt werden Geraetekosten in der Kostenverwaltung. Ohne
+        /// <c>nurLesen</c> boete der Assistent an, eine Zahl zu setzen, die der naechste
+        /// Kostenlauf wortlos ueberschriebe.
+        /// </para>
+        /// <para>
+        /// <b>Der ENERGIETRAEGER fehlt mit Absicht</b> — er steht im Daten-Objekt allein
+        /// als Id (<c>CarrierId</c>); dieselbe Regel wie bei Kessel, BHKW und
+        /// Stromspeicher. Die KENNLINIEN fehlen ebenfalls: Sie sind eine Tabelle von
+        /// Stuetzstellen mit eigenem Editor, kein Maskenfeld.
+        /// </para>
+        /// <para>
+        /// <b>Keine Knoepfe ausser OK und Abbrechen.</b> „Kennlinien aus dem Katalog
+        /// uebernehmen" und „In Stamm uebernehmen…" sind datenbankwirksam und gehoeren
+        /// in das Aktionsregister mit Bestaetigung und Sicherungspunkt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog WaermepumpeAnlage()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WAERMEPUMPE_ANLAGE,
+                anzeigename: KiDialogTexte.MaskeWpAnlage,
+                felder: new[]
+                {
+                    // ---- Woran der Anwender gerade arbeitet -------------------------
+                    new KiDialogFeld("anlage", "WaermepumpeAnlageDaten.Bezeichner",
+                                     KiDialogTexte.WpaAnlageName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaAnlageErl,
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- Auslegung fuer die Verteilung ------------------------------
+                    new KiDialogFeld("vorlauf", "WaermepumpeAnlageDaten.Vorlauf",
+                                     KiDialogTexte.WpaVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "WaermepumpeAnlageDaten.Ruecklauf",
+                                     KiDialogTexte.WpaRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("nutzungsdauer", "WaermepumpeAnlageDaten.Nutzungszeit",
+                                     KiDialogTexte.WpaNutzungsdauerName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaNutzungsdauerErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
+
+                    // ---- Der Block „Konfiguration" ---------------------------------
+                    new KiDialogFeld("heizstab", "WaermepumpeAnlageDaten.Heizstab",
+                                     KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaHeizstabErl),
+                    new KiDialogFeld("sperrzeit", "WaermepumpeAnlageDaten.Sperrung",
+                                     KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaSperrungErl),
+                    new KiDialogFeld("sperrzeit_von", "WaermepumpeAnlageDaten.SperrzeitVon",
+                                     KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitVonErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("sperrzeit_bis", "WaermepumpeAnlageDaten.SperrzeitBis",
+                                     KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitBisErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("bivalenter_betrieb", "WaermepumpeAnlageDaten.BivalenterBetrieb",
+                                     KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaBivalentErl),
+                    new KiDialogFeld("betriebsart", "WaermepumpeAnlageDaten.Betriebsart",
+                                     KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WpaBetriebsartErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("bivalenztemperatur", "WaermepumpeAnlageDaten.Abschaltpunkt",
+                                     KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaAbschaltpunktErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Felder des Geraets (Stammfeldblock) --------------------
+                    new KiDialogFeld("hersteller", "WaermepumpeAnlageDaten.Firma",
+                                     KiDialogTexte.WpaFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "WaermepumpeAnlageDaten.Beschreibung",
+                                     KiDialogTexte.WpaBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("typ", "WaermepumpeAnlageDaten.Typ",
+                                     KiDialogTexte.WpaTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaTypErl, leerErlaubt: true),
+                    new KiDialogFeld("leistungsstufen", "WaermepumpeAnlageDaten.Regelung",
+                                     KiDialogTexte.WpaRegelungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaRegelungErl, leerErlaubt: true),
+                    new KiDialogFeld("aufstellung", "WaermepumpeAnlageDaten.Aufstellung",
+                                     KiDialogTexte.WpaAufstellungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WpaAufstellungErl, leerErlaubt: true),
+                    new KiDialogFeld("baujahr", "WaermepumpeAnlageDaten.Baujahr",
+                                     KiDialogTexte.WpaBaujahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaBaujahrErl),
+                    new KiDialogFeld("nennleistung", "WaermepumpeAnlageDaten.Nennleistung",
+                                     KiDialogTexte.WpaNennleistungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaNennleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("heizstab_leistung", "WaermepumpeAnlageDaten.HeizstabLeistung",
+                                     KiDialogTexte.WpaHeizstabLeistungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaHeizstabLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("kuehlleistung", "WaermepumpeAnlageDaten.Kuehlleistung",
+                                     KiDialogTexte.WpaKuehlleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaKuehlleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("modulkosten", "WaermepumpeAnlageDaten.Modulkosten",
+                                     KiDialogTexte.WpaModulkostenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaModulkostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_SolarKollektoren  ->  SolarkollektorenDialog   (Welle KI-F1)
+        // =====================================================================
+
+        /// <summary>
+        /// Solarkollektoren im Projekt — die fuenf Zahlen der Kollektorgruppe
+        /// (<c>EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist der ARBEITSSTAND und nicht die Projektzeile.</b>
+        /// Diese Maske schreibt die Zeile erst beim Knopf „Uebernehmen"; bis dahin
+        /// fuehrt sie die Eingaben fuer sich, und genau die sieht der Anwender. Eine
+        /// Setzung in die Zeile bliebe auf der Maske unsichtbar, und das naechste
+        /// „Uebernehmen" ueberschriebe sie wortlos — deshalb zeigt der Katalog auf den
+        /// Stand, an dem auch die Eingabefelder haengen.
+        /// </para>
+        /// <para>
+        /// <b>Die APERTURFLAECHE fehlt.</b> Sie ist Anzeige und faellt aus Modulflaeche
+        /// mal Anzahl; ein eigenes Feld traegt sie im Arbeitsstand nicht, und eine
+        /// Groesse, die es nur als gerechnete Zeichenkette gibt, laesst sich weder
+        /// benennen noch pruefen. Wer die Flaeche aendern will, aendert die Anzahl.
+        /// </para>
+        /// </remarks>
+        private static KiDialog SolarkollektorenProjekt()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+                anzeigename: KiDialogTexte.MaskeSolarkollektoren,
+                felder: new[]
+                {
+                    new KiDialogFeld("anzahl_module", "SolarkollektorenEingaben.Anzahl",
+                                     KiDialogTexte.SkAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkAnzahlErl,
+                                     leerErlaubt: true),
+                    new KiDialogFeld("neigung", "SolarkollektorenEingaben.Neigung",
+                                     KiDialogTexte.SkNeigungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkNeigungErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("azimut", "SolarkollektorenEingaben.Azimut",
+                                     KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkAzimutErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("vorlauf", "SolarkollektorenEingaben.Vorlauf",
+                                     KiDialogTexte.SkVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "SolarkollektorenEingaben.Ruecklauf",
+                                     KiDialogTexte.SkRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
