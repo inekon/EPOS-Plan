@@ -46,6 +46,52 @@ Unter den Feldern steht die '''Netzbezugsspitze ohne Speicher''' des letzten Lau
 
 Was die Kappung wirtschaftlich bringt, steht in [[Programm Dokumentation/Wirtschaftlichkeit#energiekosten|Wirtschaftlichkeit]].
 
+== Mögliche Optimierungen ==
+{{Anker|optimierungen}}
+
+Dieser Abschnitt ordnet ein, '''was''' sich am Stromspeicher optimieren lässt und '''wo''' im Programm Sie es finden. Er beschreibt die Bedienung nicht neu, sondern verweist auf die vorhandenen Abschnitte dieser Seite und auf die Berechnungshilfe.
+
+=== Betriebsziel wählen ===
+{{Anker|optimierungen-betriebsziele}}
+
+Die [[#auslegung-betrieb|Betriebsführung]] – in der Stromspeicher-Auslegung wie im gewöhnlichen Projektlauf – bietet fünf Betriebsziele:
+
+{| class="wikitable"
+! Betriebsziel !! Wofür es taugt !! Voraussetzung
+|-
+| '''PV-Eigenverbrauch''' || senkt den Netzbezug, indem Überschuss sofort geladen und bei Bedarf sofort entladen wird || keine, arbeitet ohne Prognose
+|-
+| '''Lastspitzenkappung''' || hält die Bezugsspitze unter einem Ziel – fest vorgegeben oder adaptiv nachgezogen || fest ein geprüftes Peak-Ziel, adaptiv nur einen Startwert
+|-
+| '''PV-Prognoseplanung''' || plant vorausschauend gegen kleinsten Netzbezug und kleinste Abregelung || den Fahrplaner und eine Prognose
+|-
+| '''Preisoptimierung / Arbitrage''' || lädt und verkauft nach einer erwarteten Preisreihe || den Fahrplaner und eine Preisprognose
+|-
+| '''Multi Use mit Peak-Priorität''' || verfolgt Kappung und Kosten zugleich, die Kappung zuerst || den Fahrplaner und eine Prognose
+|}
+
+'''Lastspitzenkappung, adaptiv.''' Ohne eine sicher bekannte Spitze stellen Sie in der Betriebsführung „adaptiv (kausal)" statt „fest" ein: Die eingegebene Zahl gilt dann nur als '''Startwert''' der Schwelle – vorbelegt mit der Grundlast –, und die Schwelle wird im Lauf '''nachgezogen''' (die Ratsche), sobald die Flotte eine anstehende Spitze nicht mehr halten kann; sie sinkt danach nie wieder. So bleibt Ladung für die große Spitze reserviert, statt an vielen kleinen verbraucht zu werden. Der Knopf „Peak-Ziel bestimmen…" – bei adaptiver Kappung „Mit Vorausschau erreichbares Ziel bestimmen…" – sucht per Bisektion das kleinste feste Ziel, das dieselbe Flotte mit vollem Wissen des Jahres noch hält, und stellt die Differenz zur kausal erreichten Schwelle als '''Wert der Vorausschau''' daneben. Felder und Knöpfe im Einzelnen stehen unter [[#auslegung-betrieb|Betriebsführung]], der Rechenweg unter [[Programm Dokumentation/Berechnung/Stromspeicher#peak-ratsche|Adaptive Entladeschwelle – die kausale Ratsche]].
+
+'''Maske Lastspitzenkappung.''' Für einen einzelnen Lastgang ohne eigene Flotte steht die eigene [[#maske-lastspitzenkappung|Maske Lastspitzenkappung]] bereit: Sie prüft eine Ganglinie gegen ein festes oder adaptives Ziel und übernimmt das Ergebnis mit „In Variante übernehmen" unmittelbar in die aktive Speichervariante des Projekts – Berechnungsart, erreichte Schwelle und die Einstellung adaptiv inbegriffen.
+
+=== Auslegung: Größe und Stückzahl suchen ===
+{{Anker|optimierungen-auslegung}}
+
+Statt eines Betriebsziels sucht die [[#auslegung-optimierung|Auslegungsoptimierung]] (Schritt 4 der Stromspeicher-Auslegung) eine '''Bestückung''': '''Nur bewerten''' rechnet die eingestellte Flotte, '''Größe suchen''' variiert Kapazität und Leistung jeder Einheit unter den tatsächlich verfügbaren Geräten, '''Stückzahl suchen''' variiert die Anzahl gleicher Einheiten – Einzelheiten unter [[#auslegung-methoden|Die drei Suchmethoden]]. Je Einheit grenzen Sie in einer eigenen Karte den [[#auslegung-groesse|Suchraum]] ein; die [[#auslegung-kandidatenzahl|Kandidatenzahl]] zählt live mit und sperrt den Lauf, sobald sie die Obergrenze aus Schritt 2 reißt. Gefunden wird die Bestückung mit dem höchsten Kapitalwert gegenüber „ohne Speicher".
+
+=== Mehrere Einheiten und Netzgrenzen ===
+{{Anker|optimierungen-verteilung}}
+
+Bei mehreren Einheiten verteilt die [[#auslegung-betrieb|Leistungsverteilung]] eine Lade- oder Entladeanforderung auf die Flotte – nach verfügbarer Kapazität, als Kaskade oder nach Grenzkosten und Wirkungsgrad –, und die '''Erzeuger-Reihenfolge''' bestimmt, ob PV oder BHKW zuerst direkt einspeist. '''Netzbezugs- und Netzeinspeisegrenze''' sowie '''Endenergieziele''' stecken den Rahmen ab, innerhalb dessen optimiert wird; alles unter [[#auslegung-netz|Netz und Planung]]. Der Rechenweg der Flotte steht unter [[Programm Dokumentation/Berechnung/Stromspeicher#flotte|Mehrere Speicher (Speicherflotte)]].
+
+=== Was nicht optimiert wird ===
+{{Anker|optimierungen-grenzen}}
+
+* Ein planendes Betriebsziel rechnet mit geladenen Prognosen oder ausdrücklich mit Idealwissen; die eigene Jahresreihe des Projekts liefert dafür nie die Prognose – sonst wäre der Fahrplan im Nachhinein hellsichtig (siehe [[#auslegung-netz|Netz und Planung]]).
+* Die Auslegungsoptimierung findet nur '''Geräte, die es im gewählten Bestand gibt''' – ein fehlendes Gerät wird nicht erfunden, siehe [[#auslegung-feinraster|Was die Suche findet — und was nicht]].
+* Die '''Ratsche''' ist keine Optimierung: Sie erreicht das mit Vorausschau erreichbare Ziel nur, wenn sie ihre Schwelle nie nachziehen muss.
+* Weitere Grenzen – unter anderem ein konstanter Umlaufwirkungsgrad ohne Temperatur- oder C-Rate-Abhängigkeit, keine Alterung im Jahreslauf und kein gemeinsam mit der Wärmeseite optimierter Fahrplan – stehen unter [[Programm Dokumentation/Berechnung/Stromspeicher#grenzen|Grenzen und Annahmen]].
+
 == Stromspeicher-Auslegung ==
 {{Anker|auslegung-ansicht}}
 {{Anker|auslegung-optimieren}}

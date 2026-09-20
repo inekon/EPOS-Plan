@@ -128,6 +128,7 @@ und `README.md`.
 | [`aktuell/Umsetzung_iU10_Nachweise.md`](aktuell/Umsetzung_iU10_Nachweise.md) | Nachweisliste iU10 (iOS-Hülle): was ohne Mac nachweisbar ist und was nicht — wird fortgeschrieben | 2026-09-11 |
 | [`aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md`](aktuell/Umsetzungskonzept_iOS_EPOS-Plan.md) | Umsetzungskonzept iOS: Pakete iU0–iU13, Bausteine, Risiken, Entscheidungsbedarf — der Stand der Umsetzung steht in `aktuell/Status_iOS_Migration.md` | 2026-09-12 |
 | [`aktuell/Werkzeuglage_Rechner_EPOS-Plan.md`](aktuell/Werkzeuglage_Rechner_EPOS-Plan.md) | Werkzeuglage des Entwicklungsrechners: was fehlt (Python, sqlite3, poppler), Pfadlänge, Auswege | 2026-09-15 |
+| [`aktuell/Wiki_Update_2026-09-26.md`](aktuell/Wiki_Update_2026-09-26.md) | Vorbereitung des Wiki-Sammel-Uploads 26.09.2026: Seitenliste, Logbuch-Einträge je Version, offene Seiten ohne Wiki-Quelle | 2026-09-20 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md`](aktuell/Wirtschaftlichkeit_Kosten/LIESMICH.md) | Wegweiser des Ordners: Rechenwege, Beispielprojekt, Zahlenprobe | 2026-09-19 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](aktuell/Wirtschaftlichkeit_Kosten/Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md) | **Führende Fassung** des Wirtschaftlichkeitskonzepts (Dialoge, Felder, Formeln) | 2026-09-19 |
 | [`aktuell/Wirtschaftlichkeit_Kosten/Beispielprojekt.md`](aktuell/Wirtschaftlichkeit_Kosten/Beispielprojekt.md) | „Musterprojekt Gewerbepark" — die eine Zahlenquelle aller Rechenwege | 2026-09-18 |
