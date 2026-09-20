@@ -16098,6 +16098,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB ändern... ähnelt.
         /// </summary>
         public static string GEB_BTN_DB_AENDERN {
@@ -35066,6 +35075,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
         /// </summary>
         public static string PEAK_BTN_CSV {
@@ -35098,15 +35116,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_BTN_RECHNEN {
             get {
                 return ResourceManager.GetString("PEAK_BTN_RECHNEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string PEAK_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("PEAK_BTN_SCHLIESSEN", resourceCulture);
             }
         }
         

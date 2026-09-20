@@ -126,12 +126,6 @@ public sealed class KnopfleistenWacheTests
             + "setzt die Primaerfarbe auf Beenden (DL-Q4)."),
 
         new Ausnahme(
-            "EPOS.UI/Dialoge/Strom/PeakShavingDialog.razor", REGEL_EIN_PRIMAER,
-            "DL-2 Nr. 5: der Fuss traegt GAR keinen primaeren Knopf - die Primaerfarbe "
-            + "liegt auf \"Berechnen\" im Blatt. Auftrag DL-2g macht \"Beenden\" primaer "
-            + "(DL-Q2 a)."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor", REGEL_ABBRECHEN_DAVOR,
             "DL-2 Nr. 6: der Fuss laeuft Abbrechen . Speichern . OK. Auftrag DL-2i "
             + "ersetzt ihn durch die SpeichernLeiste mit MitSpeichern (DL-Q3 a)."),

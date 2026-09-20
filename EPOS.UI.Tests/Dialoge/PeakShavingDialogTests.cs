@@ -17,7 +17,7 @@ namespace EPOS.UI.Tests.Dialoge;
 ///
 /// <para>Soll ist die Feldkarte: Quellwahl mit zwei Optionen, Ganglinienliste,
 /// Dateiwahl, 14 Zahlenfelder, drei Schalter, „Minimale haltbare Schwelle
-/// ermitteln", „Berechnen", drei Reiter, „CSV-Export" und „Schließen".</para>
+/// ermitteln", „Berechnen", drei Reiter, „CSV-Export" und „Beenden".</para>
 ///
 /// <para>Gerechnet wird mit der echten Engine über einen synthetischen Lastgang —
 /// keine Datenbank, keine Oberfläche des Bestands.</para>
@@ -73,9 +73,11 @@ public class PeakShavingDialogTests : EposBunitContext
         Func<double[], PeakShavingEingaben, Task<double>>? minimal = null,
         Func<PeakShavingErgebnis, bool, Task<byte[]?>>? bild = null,
         Func<PeakShavingErgebnis, Task<bool>>? csv = null,
+        Func<double, bool, Task<bool>>? variante = null,
         Action<bool>? geschlossen = null)
     {
         return Render<PeakShavingDialog>(p => p
+            .Add(x => x.VarianteUebernehmen, variante)
             .Add(x => x.Ganglinien, ganglinien ?? Zwei())
             .Add(x => x.Vorgaben, vorgaben ?? Vorgaben())
             .Add(x => x.Werte, werte ?? (i => Task.FromResult(Lastgang())))
@@ -122,7 +124,7 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-dateiwahl"));
 
         var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
-        Assert.Single(leisten[leisten.Count - 1].QuerySelectorAll("button"));   // nur "Schliessen"
+        Assert.Single(leisten[leisten.Count - 1].QuerySelectorAll("button"));   // nur "Beenden"
 
         var mit = Zeige(waehlen: p => Task.FromResult<string?>(""),
                         csv: r => Task.FromResult(true));
@@ -370,8 +372,54 @@ public class PeakShavingDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
+    /// <b>DL-2, Schritt 6 (Entscheid DL-Q2 a).</b> Die Fußleiste läuft
+    /// <b>CSV-Export · In Variante übernehmen · Füller · Beenden</b>; „Beenden" ist
+    /// der letzte und der EINZIGE primäre Knopf der Maske.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_laeuft_CSV_Variante_Fueller_Beenden()
+    {
+        var cut = Zeige(csv: r => Task.FromResult(true),
+                        variante: (ziel, adaptiv) => Task.FromResult(true));
+
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        IElement fuss = leisten[leisten.Count - 1];
+
+        Assert.Equal(new[] { "CSV-Export", "In Variante übernehmen", "Beenden" },
+                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+        Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
+
+        // Und in der GANZEN Maske traegt kein zweiter Knopf die Primaerfarbe.
+        Assert.Single(cut.FindAll(".epos-dialog button.epos-knopf--primaer"));
+    }
+
+    /// <summary>
+    /// „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis — aber ohne
+    /// Primärfarbe (DL-Q2 a). Derselbe Knopf, derselbe Handler: Er rechnet weiter.
+    /// </summary>
+    [Fact]
+    public void Der_Rechenknopf_bleibt_im_Blatt_und_traegt_keine_Primaerfarbe()
+    {
+        var cut = Zeige();
+
+        IElement rechnen = Rechenknopf(cut);
+        Assert.Equal("Berechnen", rechnen.TextContent.Trim());
+        Assert.DoesNotContain("epos-knopf--primaer", rechnen.ClassName ?? "");
+
+        rechnen.Click();
+        Assert.NotEmpty(cut.Instance.Kennzahlen);
+    }
+
+    /// <summary>
     /// <b>Befund W12-B24, wörtlich:</b> Der einzige Fußknopf schließt mit
-    /// „Abbrechen" — es kommt immer <c>false</c> heraus, auch bei Esc.
+    /// „Abbrechen" — es kommt immer <c>false</c> heraus, auch bei Esc. Der Knopf
+    /// heißt seit DL-2 „Beenden"; sein Handler ist derselbe geblieben.
     /// </summary>
     [Fact]
     public void Der_Fussknopf_und_Esc_melden_beide_false()
