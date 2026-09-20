@@ -767,7 +767,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardwerte wurden geladen. Mit „Speichern&quot; werden sie übernommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardwerte wurden geladen. Mit „OK&quot; werden sie übernommen. ähnelt.
         /// </summary>
         public static string ADM_SET_MSG_STANDARDWERTE {
             get {

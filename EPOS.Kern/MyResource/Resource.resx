@@ -13769,7 +13769,7 @@ Ihre Stunden- und Tageswerte werden mit gelöscht.</value>
     <value>Die Ordner konnten nicht erstellt werden. Bitte die Pfadangaben überprüfen. Fehler: {0}</value>
   </data>
   <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
-    <value>Die Standardwerte wurden geladen. Mit „Speichern" werden sie übernommen.</value>
+    <value>Die Standardwerte wurden geladen. Mit „OK" werden sie übernommen.</value>
   </data>
   <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
     <value>Wirklich alle Einstellungen auf die Werksstandards zurücksetzen?</value>

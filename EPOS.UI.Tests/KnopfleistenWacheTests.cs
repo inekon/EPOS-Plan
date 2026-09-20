@@ -106,11 +106,6 @@ public sealed class KnopfleistenWacheTests
             + "Leiste mit Beenden zusammen."),
 
         new Ausnahme(
-            "EPOS.UI/Dialoge/Admin/EinstellungenDialog.razor", REGEL_EINE_LEISTE,
-            "DL-2 Nr. 10: die Standardwerte-Leiste steht unmittelbar ueber der "
-            + "SpeichernLeiste. Auftrag DL-2f legt Standardwerte in den Aktionsschlitz."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Bedarf/GebaeudetypDialog.razor", REGEL_PRIMAER_ZULETZT,
             "DL-2 Nr. 2: \"Typ speichern\" ist primaer, OK steht dahinter. Auftrag DL-2b "
             + "dreht das um (Speichern . Fueller . Hinzufuegen . Loeschen . Beenden)."),

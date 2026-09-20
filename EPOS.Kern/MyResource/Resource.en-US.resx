@@ -13762,7 +13762,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>The folders could not be created. Please check the path entries. Error: {0}</value>
   </data>
   <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
-    <value>The default values have been loaded. Use “Save” to apply them.</value>
+    <value>The default values have been loaded. Use “OK” to apply them.</value>
   </data>
   <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
     <value>Really reset all settings to the factory defaults?</value>
