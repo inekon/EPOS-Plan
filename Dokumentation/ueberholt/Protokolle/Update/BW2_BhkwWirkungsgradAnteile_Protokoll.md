@@ -116,7 +116,8 @@ meldet für beide Tabellen **0**.
 - **Er nimmt dem Aufklapper „Alle Daten" das Feld nicht weg:** Dort bleibt der
   GESAMTwirkungsgrad eingebbar; wer ihn ändert, verschiebt beide Anteile im Verhältnis der
   Leistungen mit (`BHKWStammCtrl.FelderUebernehmen`, Punkt 5). Drei Zahlen, von denen zwei
-  einander widersprechen, gibt es damit an keiner Stelle.
+  einander widersprechen, gibt es damit an keiner Stelle. — **Ein zweiter Anwenderentscheid
+  desselben Tages hat das anders entschieden: Abschnitt 10.**
 
 ## 6 Die Felder des BHKW-Katalogs nach BW-2
 
@@ -142,7 +143,8 @@ Auftrag). Der **Katalogeditor** („Bearbeiten…") zeigt:
 Der Aufklapper **„Alle Daten anzeigen"** des Projektdialogs führt dazu: Ges. Wirkungsgrad,
 Investition je kWel (€/kWel, nur Anzeige), Raumbedarf (m³), Wartungskosten (€/kWhel),
 Nutzungsdauer (Jahre), die fünf Kostenposten (€) und die fünf Emissionsfaktoren
-(CO₂, SO₂, NOx, CO, Staub, je g/MWh — nur Anzeige).
+(CO₂, SO₂, NOx, CO, Staub, je g/MWh — nur Anzeige). **Mit BW-3 führt er auch die zwei
+Anteile, und der Gesamtwirkungsgrad ist dort nur noch Anzeige: Abschnitt 10.2.**
 
 **Masken, die den BHKW-Wirkungsgrad zeigen und unverändert bleiben**, weil sie alle den
 GESAMTwert zeigen: der Aufklapper „Alle Daten" (`KatalogBrowserProfil`), die Katalogliste
@@ -210,7 +212,122 @@ Das ist die Abnahme dieses Auftrags: Er ändert die Pflege, nicht die Rechnung.
   Feldliste in Abschnitt 6 ist die Grundlage für die Seite „Programm
   Dokumentation/Gerätekataloge"; der Logbuch-Satz zu **Version 1.2.0.3** steht in der
   Statusdatei unter „Nach #392".
-- **Der Aufklapper „Alle Daten" zeigt den Gesamtwirkungsgrad weiterhin als Eingabe.** Das
-  ist ein Entwurfsentscheid: Er ist der Feldbestand der Tabelle, und ein dort geänderter
-  Wert wird sauber auf beide Anteile verteilt. Ob er dort — wie im Katalogeditor — zur
-  reinen Anzeige werden soll, ist ein Anwenderentscheid.
+- **Der Aufklapper „Alle Daten" zeigt den Gesamtwirkungsgrad weiterhin als Eingabe.**
+  **Erledigt mit BW-3, Abschnitt 10.**
+
+---
+
+## 10 Nachtrag BW-3 — der Aufklapper zeigt den Gesamtwirkungsgrad nur noch
+
+**Anwenderentscheid vom 20.09.2026** zum letzten offenen Punkt aus Abschnitt 9: Im
+Aufklapper „Alle Daten anzeigen" wird der Gesamtwirkungsgrad zur **reinen Anzeige** — wie
+im Katalogeditor. Eine Eingabe gibt es nur noch für den elektrischen und den thermischen
+Wirkungsgrad.
+
+### 10.1 Warum der Verteilungsweg fällt
+
+Der Aufklapper nahm den GESAMTwert entgegen und verteilte ihn über
+`BHKWStammCtrl.FelderUebernehmen` im Verhältnis der Leistungen auf die zwei Anteile.
+Das war widerspruchsfrei, aber es war die **Rückrichtung**: eine geschätzte Aufteilung,
+die eine vom Datenblatt gepflegte überschrieb, sobald jemand die Summe anfasste — auch
+versehentlich, denn ein Speicherweg schreibt alle Felder des Blocks. Die Hinrichtung ist
+die eine Wahrheit (Abschnitt 2); sie steht jetzt an beiden Masken allein.
+
+### 10.2 Was im Aufklapper steht
+
+| Feld | Art | Bemerkung |
+|---|---|---|
+| **Elektrischer Wirkungsgrad** | Eingabe | Faktor, Hinweis „(Faktor, z. B. 0,30)" |
+| **Thermischer Wirkungsgrad** | Eingabe | Faktor, Hinweis „(Faktor, z. B. 0,60)" |
+| **Ges. Wirkungsgrad** | **Anzeige** | Summe der zwei, drei Stellen; nicht beschreibbar |
+
+Die zwei Anteile stehen **vor** der Summe — erst die Eingabe, dann, was daraus folgt.
+Das BHKW-Profil führt damit **27** Detailfelder, **24** davon editierbar (bis hierher
+25 / 23). Nicht editierbar sind der Bezeichner (Schlüssel des `UPDATE`) und die zwei
+abgeleiteten Größen: die Investition je kWel und der Gesamtwirkungsgrad.
+
+**Die Summe läuft mit.** `BhkwWirkungsgrad.GesamtAnzeige(el, th, altbestand)` ist die eine
+Regel dafür: die Summe der zwei gepflegten Anteile auf drei Stellen, und nur wo **beide**
+fehlen, der gespeicherte Altbestandswert. Ein **halbes Paar** ergibt nichts — leer statt
+einer Zahl, die nur einen der zwei Anteile enthielte. Gezogen wird sie an drei Stellen:
+beim Aufbau der Anzeige (`BHKWStammCtrl.KatalogsatzAnzeige`), bei jeder Feldänderung im
+Browser (`KatalogBrowserDialog.SummeNachziehen`) und — als dieselbe Rechnung — im
+Katalogeditor.
+
+### 10.3 Die Signatur des Speicherwegs
+
+`BHKWStammCtrl.AnzeigefelderBhkw` führt **`WirkungsgradEl` und `WirkungsgradTh` statt
+`Wirkungsgrad`**. Der Gesamtwert lässt sich damit gar nicht mehr liefern — die Falle ist
+nicht abgefangen, sondern nicht mehr baubar. `FelderUebernehmen`:
+
+- prüft die zwei Anteile mit `BhkwWirkungsgrad.Pruefen` — dieselben drei Regeln und
+  dieselben drei Meldungen wie im Katalogeditor; geprüft wird der Stand, der **nach** der
+  Übernahme dastünde, denn ein leer hereinkommendes Feld lässt den gepflegten Wert stehen;
+- setzt sie in den gelesenen Satz;
+- zieht die Spalte `Wirkungsgrad` als `GesamtZumSchreiben(el, th, bisher)` nach. Fehlt ein
+  Anteil (Altbestand vor Schritt 99), bleibt der Gesamtwert stehen, wie er war, und
+  `SimulationBHKW` liest ihn unverändert.
+
+Der Wächter `KatalogAufklapperTests.Der_Datensatz_deckt_genau_die_editierbaren_Felder`
+hält die Klammer: 24 editierbare Profilfelder, 24 Parameter des Datensatzes.
+
+### 10.4 Der Wächter gegen die Parameter-Falle
+
+Abschnitt 7 beschreibt den Befund; ab BW-3 hält ihn eine Probe:
+`EPOS.Kern.Tests/DbParamNullkonstanteWacheTests` liest jede `.cs` unter `EPOS.Kern`,
+`EPOS.UI.Daten`, `WindowsFormsApplication1`, `Werkzeuge`, `EPOS.Referenzlauf` und `KiKern`
+(ohne `bin`/`obj`, ohne Kommentarzeilen) und meldet **jeden Aufruf
+`new DbParam(<name>, <wert>)` — auch über mehrere Zeilen —, dessen zweites Argument (a) ein
+Nullliteral ist (`0`, `0.0`, `0d`, `0f`, `0m`, `0L`, `0x0`, `-0` und ihre Vielfachen an
+Nullen) oder (b) der Name einer `const`-Deklaration des Bestands mit dem Wert 0.**
+
+Die Begründung steht im Kopf der Klasse: Roslyn wandelt eine **konstante Null jedes
+numerischen Typs** implizit in jeden Aufzählungstyp um — die Sprachnorm nennt dafür nur die
+ganzzahligen Typen, Roslyn lässt auch `0.0`, `0f` und `0m` durch. Damit gewinnt
+`DbParam(string, DbParamTyp)`, der Parameter bindet `DBNull`, und die SQL-Bedingung ist für
+jede Zeile NULL: Sie trifft nichts und meldet nichts. Der XML-Kommentar an `NULLGRENZE`
+sagt das jetzt in dieser Schärfe und verweist auf den Wächter.
+
+**Ergebnis auf dem Bestand: 0 Fundstellen** bei 2 491 gelesenen `DbParam`-Aufrufen in
+718 Dateien. Drei Gegenproben halten ihn wach: eine synthetische Verletzung in allen zehn
+Gestalten (samt mehrzeiligem Aufruf und `const`-Bezeichner) wird erkannt, elf unverfängliche
+Schreibweisen werden durchgelassen, die Sammlung der `const`-Nullen findet die bekannten
+Namen (`SOC_MIN`, `ALLE`, `ANTEIL_VON`, `SYSTEMVERLUSTE_VORGABE`) und ausdrücklich **nicht**
+`NULLGRENZE` — die steht seit dem Befund als `static readonly` da —, und die Zählung der
+gelesenen Aufrufe schlägt an, sobald der Leser selbst verunglückt.
+
+### 10.5 Nachweise
+
+**Neue Fälle** `EPOS.Kern.Tests/BhkwWirkungsgradAnteileTests` (+3): der Datensatz nimmt
+keinen Gesamtwert mehr entgegen und das Profil führt die zwei Anteile editierbar vor der
+Summe; der Speicherweg schreibt die Summe und weist einen Anteil außerhalb des Bandes
+benannt ab; ein Altbestandssatz ohne Aufteilung behält seinen Gesamtwirkungsgrad, und die
+Anzeige zeigt ihn.
+**Neue Fälle** `EPOS.Kern.Tests/DbParamNullkonstanteWacheTests` (4, siehe 10.4).
+**Neue Fälle** `EPOS.UI.Tests/Dialoge/KatalogBrowserDialogTests` (+2) — die Maske ist der
+Browser, nicht der Katalogeditor: Das Gesamtfeld trägt `readonly`, die zwei Anteile nicht;
+0,30 und 0,60 ergeben 0,9, und ein geleerter Anteil lässt die Summe leer.
+**Angepasst**, nicht gelöscht: die Feldzahl des BHKW (25 → 27) und die Zahl der
+editierbaren Felder (23 → 24), die Spaltenfolge des Profils, der Rundlauf des Aufklappers
+(liefert jetzt die zwei Anteile) und die Abweisung des Prozentwerts 29,5, die nun am
+elektrischen Anteil hängt.
+
+**Gate beide Kulturen grün:** EPOS.Kern 3 921, EPOS.UI 4 847, KiKern 499, SpeicherEngine
+378, SpeicherPlanung 27 (1 übersprungen). Windows-Schale mit
+`-p:EnableWindowsTargeting=true` **0 Fehler**. SQL-Dialekt-Prüfer **0 Fundstellen**
+(1 546 Texte). ResourceDesigner wiederholbar — **kein neuer Ressourcenschlüssel**, die zwei
+Beschriftungen und ihre Hinweise stehen seit BW-2 in beiden Sprachen.
+
+**Kein Referenzlauf.** BW-3 fasst weder Rechenweg noch Schema an: Die Spalte `Wirkungsgrad`
+steht, wo sie stand, und wird aus denselben zwei Anteilen gebildet wie seit Schritt 99.
+Die Basis `2026-09-19_R10_BhkwWirkungsgrad` gilt unverändert.
+
+### 10.6 Offen nach BW-3
+
+- **Windows-Abnahme A-BW3-1:** Administration › Energiesysteme › BHKW › „Alle Daten
+  anzeigen" — die zwei Anteile sind Eingaben, „Ges. Wirkungsgrad" ist nicht beschreibbar
+  und läuft mit; Speichern schreibt beide Anteile samt Summe in den Katalogsatz.
+- **Kein Logbuch-Eintrag:** eine Kleinigkeit im Sinn der Regel (Konzept Hilfesystem 13.4);
+  der BW-2-Satz zu Version 1.2.0.3 deckt sie ab.
+- **Die Wikiseite „Programm Dokumentation/Gerätekataloge"** bleibt offen (Abschnitt 9); die
+  Feldliste in Abschnitt 6 gilt mit der Änderung aus 10.2.
