@@ -528,10 +528,17 @@ else
             ReferenceEquals(_baumPalette, AktivePalette) &&
             string.Equals(_baumKennung, KennungOderZaehler, StringComparison.Ordinal)) return;
 
-        if (!ReferenceEquals(_baumModell, Modell))
+        bool neueInstanz = !ReferenceEquals(_baumModell, Modell);
+        bool anderesBild = neueInstanz &&
+                           (_baumModell is null || !SelbesBild(_baumModell, Modell));
+
+        if (anderesBild)
         {
             // EIN ANDERES BILD IST EINE ANDERE REIHE: Ausschnitt, Zeiger und
-            // ausgeblendete Reihen haben fuer das neue keine Bedeutung.
+            // ausgeblendete Reihen haben fuer das neue keine Bedeutung. EINE NEUE
+            // INSTANZ DESSELBEN BILDES IST ABER KEIN ANDERES BILD (DG-E3-15): Die
+            // Reiter bauen ihr Modell je Zeichenlauf neu, und ein Ruecksetzer naehme
+            // dem Anwender nach jeder Farbwahl Zoom und abgewaehlte Reihe.
             _versteckt.Clear();
             _fenster = null;
             _zeiger = null;
@@ -539,6 +546,13 @@ else
             _farbwahl = null;
             _elementwert = null;
             _ausschnitt.Clear();
+        }
+        else if (neueInstanz)
+        {
+            // Dasselbe Bild, neu gerechnete Werte: Der Ausschnitt wird am STEHENDEN
+            // Fenster nachgerechnet, sonst zeigte er die Werte des vorigen Laufs.
+            if (_fenster is null) _ausschnitt.Clear();
+            else Nachladen(_fenster.Value.Von, _fenster.Value.Bis, false);
         }
 
         _baumModell = Modell;
@@ -551,6 +565,47 @@ else
         _baumHatWerte = false;
         foreach (SvgKnoten k in _baum.Alle())
             if (!string.IsNullOrEmpty(k.Wert)) { _baumHatWerte = true; break; }
+    }
+
+    /// <summary>
+    /// <b>Zeigen zwei Modelle DASSELBE BILD?</b> (Entscheid DG-E3-15)
+    ///
+    /// <para>Ein Wirt, der sein Modell je Zeichenlauf neu baut, liefert bei jedem
+    /// <c>StateHasChanged</c> eine andere INSTANZ desselben Bildes. Am
+    /// Referenzvergleich allein hinge daran der ganze Zustand: Zoom, Zeigerstelle
+    /// und abgewählte Reihen fielen nach jeder Farbwahl. Dasselbe Bild ist deshalb:
+    /// gleiche Maße, beide mit oder beide ohne Zeichenfläche, gleiches x-Fenster
+    /// samt Achsenart und Einheit, und in gleicher Reihenfolge dieselben Reihen —
+    /// Name, Art, Achsenseite und Länge.</para>
+    ///
+    /// <para><b>Die y-Spanne bleibt außen vor:</b> Ein neuer Rechenlauf ändert sie,
+    /// das Bild bleibt dasselbe. Ebenso die WERTE selbst — sie dürfen neu sein, der
+    /// Baum wird ohnehin neu gebaut.</para>
+    /// </summary>
+    private static bool SelbesBild(Zeichenmodell a, Zeichenmodell b)
+    {
+        if (a is null || b is null) return false;
+        if (a.Breite != b.Breite || a.Hoehe != b.Hoehe) return false;
+
+        Zeichenflaeche fa = a.Flaeche, fb = b.Flaeche;
+        if ((fa is null) != (fb is null)) return false;
+        if (fa is not null && fb is not null)
+        {
+            if (fa.Daten.XVon != fb.Daten.XVon || fa.Daten.XBis != fb.Daten.XBis) return false;
+            if (fa.X != fb.X) return false;
+            if (!string.Equals(fa.XEinheit ?? "", fb.XEinheit ?? "", StringComparison.Ordinal))
+                return false;
+        }
+
+        if (a.Reihen.Count != b.Reihen.Count) return false;
+        for (int i = 0; i < a.Reihen.Count; i++)
+        {
+            Datenreihe ra = a.Reihen[i], rb = b.Reihen[i];
+            if (!string.Equals(ra.Name ?? "", rb.Name ?? "", StringComparison.Ordinal)) return false;
+            if (ra.Art != rb.Art || ra.Achsenseite != rb.Achsenseite) return false;
+            if ((ra.Werte?.Length ?? 0) != (rb.Werte?.Length ?? 0)) return false;
+        }
+        return true;
     }
 
     /// <summary>Der SVG-Baum als Razor-Elemente.</summary>
@@ -1266,12 +1321,16 @@ else
             return;
         }
 
-        if (!ReferenceEquals(_modellGebunden, Modell))
-        {
-            // Ein anderes Bild heisst andere Grenzen: Das Modul faengt von vorn an.
-            _modellGebunden = Modell;
-            await Zuruecksetzen();
-        }
+        if (ReferenceEquals(_modellGebunden, Modell)) return;
+
+        // EIN ANDERES BILD heisst andere Grenzen: Das Modul faengt von vorn an. Eine
+        // neue INSTANZ desselben Bildes laesst es stehen (DG-E3-15) - sonst spraenge
+        // der Zoom bei jedem Zeichenlauf des Wirtes auf 1:1 zurueck.
+        bool anderesBild = _modellGebunden is null || Modell is null ||
+                           !SelbesBild(_modellGebunden, Modell);
+        _modellGebunden = Modell;
+
+        if (anderesBild) await Zuruecksetzen();
     }
 
     /// <summary>Das Modul meldet eine neue Zoomstufe (nur bei Änderung).</summary>

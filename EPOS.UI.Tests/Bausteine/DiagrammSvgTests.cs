@@ -60,7 +60,14 @@ public class DiagrammSvgTests : EposBunitContext
     /// Klimadaten-Hülle baut. Die Pfadregel lässt beide Reihen damit ROH in den
     /// Pfad gehen (bis 8 760 Stützstellen und drei Reihen).
     /// </summary>
-    private static Zeichenmodell Modell()
+    private static Zeichenmodell Modell() => Jahresgang(OHNE_ROLLE);
+
+    /// <summary>
+    /// Dasselbe Bild mit frei wählbarem Namen der zweiten Reihe. Ein anderer Name
+    /// macht daraus ein ANDERES Bild (DG-E3-15) — sonst ist es dasselbe, auch als
+    /// neue Instanz.
+    /// </summary>
+    private static Zeichenmodell Jahresgang(string zweite)
     {
         var temperatur = new double[8760];
         var winkel = new double[8760];
@@ -75,7 +82,7 @@ public class DiagrammSvgTests : EposBunitContext
             new[]
             {
                 new ChartRenderer.Reihe(MIT_ROLLE, temperatur, ChartRenderer.C_AUSSENTEMPERATUR),
-                new ChartRenderer.Reihe(OHNE_ROLLE, winkel, SkiaSharp.SKColors.Orange)
+                new ChartRenderer.Reihe(zweite, winkel, SkiaSharp.SKColors.Orange)
             },
             "Stunde des Jahres", "Temperatur [°C]");
     }
@@ -1456,5 +1463,94 @@ public class DiagrammSvgTests : EposBunitContext
         // Bewiesen ist die Regel nur, wenn beide Haelften vorkommen.
         Assert.True(links > 0, "kein Legendeneintrag in der linken Bildhälfte");
         Assert.True(rechts > 0, "kein Legendeneintrag in der rechten Bildhälfte");
+    }
+
+    // =====================================================================
+    //  DS-12  Dasselbe Bild in neuer Instanz (DG-E3-15)
+    // =====================================================================
+    //
+    //  Die Reiter bauen ihr Zeichenmodell bei JEDEM Zeichenlauf neu. Haenge der
+    //  Zustand an der Referenz, verloere der Anwender nach jeder Farbwahl Zoom
+    //  und abgewaehlte Reihe - entgegen der Zusage des Farbwahlwirtes. Der
+    //  Baustein setzt deshalb nur zurueck, wenn das neue Modell ein ANDERES BILD
+    //  zeigt, nicht wenn es eine neue Instanz desselben ist.
+
+    /// <summary>
+    /// <b>Dasselbe Bild in neuer Instanz lässt jeden Zustand stehen:</b>
+    /// abgewählte Reihe, Fenster samt nachgezeichneter Achsenteilung und den
+    /// offenen Farbwähler.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Eine_neue_Instanz_desselben_Bildes_laesst_den_Zustand_stehen()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Equal((3000, 3400), cut.Instance.Fenster);
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        int ticks = cut.FindAll(".epos-diagramm-ticks line").Count;
+        Assert.NotEqual(0, ticks);
+
+        // DIESELBEN Reihen, dieselbe Flaeche - nur eine andere Instanz.
+        cut.Render(p => p.Add(x => x.Modell, Modell()));
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Equal((3000, 3400), cut.Instance.Fenster);
+        Assert.Equal(ticks, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.All(cut.FindAll("[data-marke='xachse']"),
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// <b>Ein anderer Reihenname ist ein anderes Bild:</b> Ausschnitt, Zeiger,
+    /// abgewählte Reihe und der Wähler haben dort keine Bedeutung mehr.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Ein_anderes_Bild_setzt_alles_zurueck()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+
+        cut.Render(p => p.Add(x => x.Modell, Jahresgang("Sonnenhöhe")));
+
+        Assert.False(cut.Instance.IstAus(MIT_ROLLE));
+        Assert.Null(cut.Instance.Fenster);
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Der nachgerechnete Ausschnitt überlebt die neue Instanz — <b>mit den Werten
+    /// des NEUEN Modells</b>: Ein stehen gebliebener Pfad zeigte sonst den vorigen
+    /// Rechenlauf.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Der_nachgerechnete_Ausschnitt_ueberlebt_die_neue_Instanz()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, Stapelmodell())
+            .Add(x => x.Kennung, "stapel"));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(1000, 1200));
+        Assert.NotEmpty(cut.Instance.Ausschnittpfade);
+
+        Zeichenmodell neu = Stapelmodell();
+        cut.Render(p => p.Add(x => x.Modell, neu));
+
+        Assert.Equal((1000, 1200), cut.Instance.Fenster);
+
+        Datenreihe reihe = neu.Reihen.Single(r => r.Name == FLAECHE);
+        string erwartet = SvgSchreiber.Reihenpfad(reihe, neu.Flaeche, 1000, 1200, true);
+
+        Assert.Equal(erwartet, cut.Instance.Ausschnittpfade[FLAECHE]);
+        Assert.Equal(erwartet, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
     }
 }
