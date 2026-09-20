@@ -1695,6 +1695,17 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     max-width: 100%;
 }
 
+/* ZWEI LEERZEICHEN BLEIBEN ZWEI LEERZEICHEN. Der Bildtitel des Kostenprofils
+   heisst "Kostenprofil  [ct/kWh]" mit zwei Leerzeichen; das PNG setzt beide,
+   XML-Leerraum faltet sie zu einem. Der Baustein schreibt dagegen
+   xml:space="preserve" an jeden <text> - diese Regel ist der zweite Weg zum
+   selben Ziel und traegt auch dort, wo das Attribut ohne seinen Namensraum
+   ankommt (ein Attribut, das erst die Oberflaeche setzt, ist nicht dasselbe
+   wie eines im geparsten Markup). */
+.epos-diagramm-svg-flaeche text {
+    white-space: pre;
+}
+
 /* DIE LEGENDE IST BEDIENFLAECHE (DG-E2-1). Der Text schaltet die Reihe, das
    Farbfeld oeffnet den Waehler; beide sind fokussierbar, also brauchen beide
    einen sichtbaren Fokusring. */

@@ -227,3 +227,154 @@ Anwender die Reihe über die Legende abwählt.
   Stelle — sie gehört zum Baustein, nicht zum Schreiber.
 * **Die Gruppen (b), (c) und (d)** des Rollouts stehen noch aus; `ChartBild` bleibt, bis die
   letzte PNG-Stelle umgestellt ist.
+
+---
+
+## Gruppe (a) — Oberfläche
+
+### Die Aufgabe
+
+Die zwölf Zeitreihen-Bilder, deren Zeichenmodelle der Kernteil der Gruppe (a) gebaut hat, in
+die Oberfläche bringen: Die Hüllen führen das Modell statt der Bytes, die Reiter und Dialoge
+zeigen `DiagrammSvg` statt `ChartBild`, und der Rundlauf-Datenzoom entfällt je umgestellter
+Stelle. Dazu die vier Punkte, die der Kernteil unter „Offen für den UI-Teil" hinterlassen
+hat: die Zeigerzeile mit dem eigenen Fenster jeder Reihe, die Marke `yachse2`, das Nachladen
+ab dem Vierfachen und `xml:space="preserve"`.
+
+`ChartBild` bleibt für die Bilder derselben Seite, die noch kein Modell haben — die Gruppen
+(b) und (c) bringen sie nach.
+
+### Der Entscheid
+
+**DG-E3-9 — Der Rundlauf-Datenzoom entfällt je umgestellter Stelle.** Mit dem Bild wandert
+sein Zoom: Wo eine Stelle ihr `Zeichenmodell` an `DiagrammSvg` gibt, verliert sie im selben
+Schritt den sechsten Wert des Bildauftrags (`Diagrammbereich Bereich`), die
+`Diagrammbereich`-Felder und -Rückrufe ihres Reiters (`BereichGewaehlt`, `Zurueckgesetzt`,
+die Prüfhilfe `Bereich`) und den Umrechner der Hülle (`ChartRenderer.FensterAusBild` über
+`Bildausschnitt`). Der Zeitausschnitt ist dann die `viewBox` der Zeichenfläche — eine
+Attributänderung, kein zweiter Renderlauf.
+
+*Warum je Stelle und nicht in einem Zug.* Der Rundlauf ist die einzige Zoomart, die ein PNG
+kennt; eine Seite, die beide Bildarten trägt (die Wärmepumpe: drei Modelle und die
+Streuwolke), braucht ihn für die verbliebene weiter. Der Entscheid löst ihn deshalb dort ab,
+wo sein Gegenstand verschwindet, und lässt ihn stehen, wo noch ein Pixelbild hängt. Das ist
+genau das, was Konzept § 6 als „Doppelarbeit, rund drei Zeilen je Bildstelle" angekündigt
+hat.
+
+*Was dabei NICHT fällt:* der Kernanteil (`Achsenfenster`, `Zugeschnitten`, `XAchseFenster`).
+Er ist der Zustand des Zooms, den auch der Bericht druckt, und die `…Modell`-Methoden nehmen
+ihn weiterhin entgegen — die Ganglinienquelle des Bedarfsdialogs schneidet damit ihre Woche
+und ihren Tag zu, und der Zoom im Bild bewegt sich INNERHALB dieses Ausschnitts.
+
+### Was der Baustein dazubekommen hat
+
+| Punkt | Wie er gelöst ist |
+|---|---|
+| **Zeigerzeile je Reihe** | `Reihenindex(reihe, x)` rechnet über das EIGENE Fenster der Reihe: Index = (x − `Fenster.XVon`) / Schrittweite, mit Schrittweite = (`XBis` − `XVon`) / (n − 1) — dieselbe Rechnung wie in `SvgSchreiber.Reihenpfad`. Liegt x außerhalb des Fensters, steht die Reihe nicht in der Zeile; sie ist dort nicht gezeichnet |
+| **Einheit je Reihe** | `Einheit` gilt für die linke Achse, `EinheitRechts` für die zweite. Welche Reihe rechts steht, sagt ihr Fenster: eine andere y-Spanne als die Zeichenfläche (`AufRechterAchse`) |
+| **`yachse2` fällt mit seinen Reihen** | `RechteAchseLeer` — es gibt Reihen der rechten Achse UND jede ist abgewählt; dann bekommt jeder Knoten mit der Marke `yachse2` `display="none"` |
+| **Nachladen ab dem Vierfachen** | `FensterGemeldet` rechnet Faktor = volle Breite / (bis − von). Ab 4 bekommt jede Reihe, für die `Pfadregel.Roh(n, reihen)` falsch ist, ihren Ausschnitt roh: `SvgSchreiber.Reihenpfad(reihe, flaeche, von, bis, roh: true)`. Das Ergebnis steht in `_ausschnitt` und ERSETZT beim Zeichnen das `d` des Pfades — der Baum bleibt derselbe, Blazor tauscht ein Attribut. Unter dem Vierfachen und in der Vollansicht wird `_ausschnitt` geleert, und der Vollpfad des Schreibers steht wieder |
+| **`xml:space="preserve"`** | an jedem `<text>`, das der Baustein zeichnet |
+| **Flächen schalten wie Linien** | ohne Zutun: Der Schreiber gibt einer Fläche denselben `data-reihe`-Griff wie einer Linie, und `display="none"` wirkt auf beide. Der bunit-Fall hält es fest |
+| **Ticks ohne Kalender** | die neue `Achsenart` (Jahresstunde, Index, Stützstelle, Rang). Nur `Jahresstunde` nimmt `ChartRenderer.Jahresstundenteilung`; die übrigen bekommen eine ganzzahlige Teilung mit höchstens sieben Marken auf einer runden Schrittweite. Sie entscheidet außerdem, ob die Zeigerzeile „4.000 h" oder „4.000" schreibt |
+
+### Die umgestellten Stellen
+
+**Simulations-Ergebnisreiter.** `SimulationErgebnisHuelle.Bilder.cs` liefert jetzt
+`Modell(Bildauftrag)` neben `Bild(Bildauftrag)`; die Seite hält beide in eigenen
+Zwischenspeichern.
+
+| Bild | Modell | Reiter, Kennung |
+|---|---|---|
+| Bedarf Wärme | `GanglinieNormiertModell` | `BedarfReiter`, `simerg-bedarf-waerme` |
+| Bedarf Strom | `GanglinieNormiertModell` | `BedarfReiter`, `simerg-bedarf-strom` |
+| WP Produktion | `ErzeugerStapelModell` | `WaermepumpeReiter`, `simerg-wp-produktion` |
+| WP Stromverbrauch | `JahresverlaufModell` | `WaermepumpeReiter`, `simerg-wp-strom` |
+| Speichertemperaturen | `TemperaturverlaufModell` | `WaermepumpeReiter`, `simerg-wp-temperaturen` |
+| Heizkessel | `ErzeugerStapelModell` | `HeizkesselReiter`, `simerg-heizkessel` |
+| Solarthermie | `ErzeugerStapelModell` | `SolarthermieReiter`, `simerg-solarthermie` |
+| BHKW | `ErzeugerStapelModell` | `BhkwReiter`, `simerg-bhkw` |
+| Photovoltaik | `ErzeugerStapelModell`, zweite Achse | `PhotovoltaikReiter`, `simerg-photovoltaik` |
+| Speicherbetrieb | `SpeicherbetriebModell`, zweite Achse | `StromspeicherReiter`, `simerg-speicherbetrieb` |
+| Wärmegang | `ErzeugerStapelModell`, zweite Achse | `WaermegangReiter`, `simerg-waermegang` |
+| Stromgang | `ErzeugerStapelModell` | `StromgangReiter`, `simerg-stromgang` |
+
+**Bedarf, Quellen, Kosten und die Bedarfsstammdialoge:**
+
+| Stelle | Modell | Kennung |
+|---|---|---|
+| `BedarfErgebnisHuelle` — Jahresverlauf Brauchwasser | `JahresverlaufModell` | `bedarf-jahresverlauf` |
+| `BedarfErgebnisHuelle` — Ganglinienquelle Woche/Tag | `JahresverlaufModell` mit `Achsenfenster` | `bedarf-gang-<Stufe>-<Nummer>` |
+| `QuellprofilHuelle` | `JahresverlaufModell` | `quellprofil` |
+| `KostenprofilHuelle` | `KostenprofilModell` | `kostenprofil` |
+| `TypStammHuelle`, Wochen-Stundenprofil | `StundenprofilModell` | `typprofil` |
+| `GebaeudetypHuelle`, Tages-Stundenprofil | `StundenprofilModell` | `gebaeudetyp` |
+| `GebaeudeHuelle` | `GanglinieNormiertModell` | `gebaeude-bedarf` |
+| `WaermebedarfExternHuelle`, `StromganglinieHuelle` | `GanglinieNormiertModell` | `ganglinie-<Schlüssel>` |
+
+**Was PNG bleibt — und warum:**
+
+| Stelle | Grund |
+|---|---|
+| Streuwolke „Leistung über Außentemperatur" | keine Zeitachse: x ist die Außentemperatur; ihr Modell entsteht in einer späteren Gruppe |
+| Ring „Wärmedeckung", Ring „Stromdeckung" | Kreissegmente, kein x |
+| Monatssäulen der Autarkie-Analyse | zwölf Monate, kein Zeitraster zum Zoomen |
+| Monatssäulen des Bedarfsergebnisses | dasselbe; sie stehen auf demselben Blatt wie der umgestellte Jahresverlauf |
+| Flottenansicht der Stromspeicher-Auslegung | gehört zur Gruppe (d). Sie hängt ihren Ausschnitt seither selbst an den Zwischenspeicherschlüssel, statt ihn durch einen `Bildauftrag` zu schleifen, der ihn nicht mehr führt |
+
+### Drei Stellen, an denen die Umsetzung über den Auftrag hinausgeht
+
+1. **Ein gemeinsamer Rumpf `Farbwahlwirt` statt zwanzigmal derselben zwanzig Zeilen.** Der
+   Auftrag nennt „`FarbeSetzen`/`FarbeZuruecksetzen` über die Hülle … wie im Klimadialog".
+   Der Klimadialog ist EINE Stelle; hier sind es zehn Reiter und acht Dialoge, und der Weg
+   ist überall derselbe: zwei Parameter, zwei Rückrufe, ein `StateHasChanged`. Sie stehen
+   deshalb einmal in `EPOS.UI/Bausteine/Farbwahlwirt.cs`, und ein Wirt schreibt
+   `@inherits Farbwahlwirt`. Der Klimadialog bleibt unverändert — sein Weg ist derselbe, nur
+   ausgeschrieben.
+2. **Die Modelle werden zwischengespeichert wie zuvor die Bilder — aus einem zweiten
+   Grund.** Beim PNG war der Zwischenspeicher eine Ersparnis. Beim Modell ist er Bedingung:
+   `DiagrammSvg` baut seinen Knotenbaum nur neu, wenn die REFERENZ des Modells wechselt, und
+   ein Modell, das je Zeichenlauf neu entstünde, verwürfe mit dem Baum auch Zoom,
+   Zeigerstelle und abgewählte Reihen. Die Ergebnisseite führt dafür `_modelle` neben
+   `_bilder`, `GanglinienGrafik` und `GebaeudeBedarfDialog` je einen Eintrag je
+   Schalterstellung.
+3. **Die Kennung trägt, was das Bild unterscheidet.** Zwei `DiagrammSvg` auf einem Blatt
+   dürfen nicht dieselbe `clipPath`-Kennung bekommen. Wo ein Wirt sein Bild wechselt, ohne
+   die Komponente zu tauschen — der Navigator der Ganglinienstufen, der Schalter
+   „sortiert" —, wandert das Unterscheidende in die Kennung: `bedarf-gang-<Stufe>-<Nummer>`,
+   `ganglinie-<Schlüssel>`.
+
+### Die Prüfseite
+
+`Proben/Rasterprobe/Wirt/Seiten/DiagrammSvgProbe.razor` (`/diagrammsvg`) kennt neben dem
+Jahresgang der Etappe E2 drei weitere Bilder:
+
+| Adresse | Was sie zeigt |
+|---|---|
+| `?bild=erzeugerstapel` | zwei gestapelte Flächen, eine Linie darüber, eine Reihe auf der zweiten Achse in kWh — alle vier über **35 040 Viertelstunden**, also gebündelt: Erst hier gibt es etwas nachzuladen |
+| `?bild=stundenprofil` | eine Fläche mit Randlinie über 168 Wochenstunden; `Achsenart.Index`, ganzzahlige Teilung im Ausschnitt |
+| `?bild=speicherbetrieb` | drei Leistungen um die Nulllinie und der Ladezustand rechts — zum Prüfen, dass `yachse2` mit ihm fällt |
+
+Der Stand über dem Bild trägt `data-nachgeladen` (wie viele Pfade der Baustein gerade roh
+nachgerechnet hat) und `data-achse2aus`.
+
+### Offen nach dem UI-Teil der Gruppe (a)
+
+* **Die Gerätenachweise (A-DG-1)** stehen weiter aus — Windows bei 125 % DPI und das iPad.
+  Neu dazugekommen sind der Griff auf den Legendeneintrag einer FLÄCHE und die Zeigerzeile
+  mit zwei Einheiten.
+* **Die Gruppen (b), (c) und (d)** des Rollouts. `ChartBild` bleibt, bis die letzte
+  PNG-Stelle umgestellt ist; die verbliebenen Stellen stehen oben.
+* **Für die umgestellten DIALOGE gibt es keine Wiki-Seiten.** Die Rubrik „Programm
+  Dokumentation" führt dreizehn Seiten; „Bedarfsergebnis", „Quellprofil", „Bedarfstyp",
+  „Gebäudetyp", „Wärmebedarf extern", „Stromganglinie" und „Gebäude" kommen dort nicht vor.
+  Die neue Bedienung dieser Dialoge ist damit unbeschrieben — entweder eine eigene Seite
+  oder ein Verweis auf den Abschnitt „Die Diagramme bedienen" der Seite
+  „Simulationsergebnisse".
+* **Die Stromspeicher-AUSLEGUNG beschreibt noch den Datenzoom durch Ziehen im Bild**
+  (`Programm Dokumentation - Stromspeicher.wiki`). Das trifft zu, solange ihre Bilder PNG
+  sind; mit der Gruppe (d) muss der Absatz mit.
+* **Zwei Wünsche an den Kern** stehen im Bericht des Auftrags; sie brauchen keine Änderung
+  an `Zeichenmodell.cs`, `SvgSchreiber.cs` oder `ChartRenderer.cs`, sondern nur eine
+  Zusage, dass die Reihen der zweiten Achse ihr y-Fenster behalten und die
+  `…Modell`-Methoden ihr `Achsenfenster` weiterhin annehmen.
