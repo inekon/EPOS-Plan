@@ -38,6 +38,8 @@
    der Dialog. Enter ist NICHT belegt: OK SPEICHERT. *@
 
 @namespace EPOS.UI.Dialoge.Simulation
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -629,7 +631,95 @@
 
         _verbund = Daten.VerbundMitglieder ?? Array.Empty<int>();
         ZeileWaehlen(0);
+
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird ein
+        // SICHTMODELL ueber die Bedienelemente der GEWAEHLTEN Zeile - eine Zeile ist
+        // ein unveraenderlicher Record, und jede Aenderung ersetzt den Listeneintrag.
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMESENKE,
+                                          () => _kiSicht, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die gewaehlte Zeile (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die Bedienelemente der gewählten Zeile; es fällt mit dem
+    /// Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private WaermesenkeKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die acht Wege auf die Bedienelemente der gewählten Zeile.
+    /// </summary>
+    /// <remarks>
+    /// <b>Setzen heißt tippen:</b> Jeder Weg ist der des Bedienelements — mit dem
+    /// Ziel wechseln Speicher- und Prioritätsfelder mit, das Einschalten einer
+    /// Ladeobergrenze bringt ihre Vorbelegung mit, und jede Änderung schreibt die
+    /// Zeile ordentlich zurück (<see cref="ZeileZurueckschreiben"/>).
+    /// </remarks>
+    private WaermesenkeKiSicht KiSicht() => new WaermesenkeKiSicht
+    {
+        ZielLesen = () => Aktuell?.Ziel ?? "",
+        ZielSetzen = w => KiAusListe(Ziele, w, ZielWaehlen),
+        BedarfsartLesen = () => Aktuell?.Bedarfsart ?? "",
+        BedarfsartSetzen = w => KiAusListe(Bedarfsarten, w, BedarfsartWaehlen),
+        LadeprioritaetLesen = () => Aktuell?.Ladeprio ?? 0,
+        LadeprioritaetSetzen = w => LadeprioWaehlen(w),
+        LadeprioritaetPvLesen = () => Aktuell?.LadeprioPv ?? 0,
+        LadeprioritaetPvSetzen = w => LadeprioPvWaehlen(w),
+        LadegrenzeAktivLesen = () => _ladegrenzeAktiv,
+        LadegrenzeAktivSetzen = LadegrenzeUmschalten,
+        LadegrenzeLesen = () => _ladegrenze,
+        LadegrenzeSetzen = w => { _ladegrenze = w; ZeileZurueckschreiben(); },
+        EinspeisehoeheAktivLesen = () => _hoeheAktiv,
+        EinspeisehoeheAktivSetzen = EinspeisehoeheUmschalten,
+        EinspeisehoeheLesen = () => _hoehe,
+        EinspeisehoeheSetzen = w => { _hoehe = w; ZeileZurueckschreiben(); }
+    };
+
+    /// <summary>
+    /// Sucht den Listenplatz eines STEUERWERTS und geht damit den Weg der Klappliste;
+    /// ein Wert, den die Liste nicht führt, wird abgewiesen.
+    /// </summary>
+    private static void KiAusListe(IReadOnlyList<string> liste, string? steuerwert,
+                                   Action<int?> waehlen)
+    {
+        if (steuerwert is null) return;
+
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i], steuerwert, StringComparison.Ordinal))
+            {
+                waehlen(i);
+                return;
+            }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Dieser Dialog schreibt Senkenliste und
+    /// Parallelverbund selbst — aber nur im OK-Weg, und der schließt die Maske. Eine
+    /// datenbankwirksame Aktion, die den Dialog zumacht, löst der Assistent nicht im
+    /// Rücken des Anwenders aus; <c>dialog_speichern</c> lehnt hier benannt ab.</para>
+    /// <para><b>Kein Schreibschutz.</b> Die Maske kennt keinen.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

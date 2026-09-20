@@ -655,12 +655,18 @@
         // wird ein SICHTMODELL und nicht eine der DTO - ein Katalogfeld ist genau zwei
         // Stufen tief, die Kennzahlen des Laufs liegen drei bis vier Stufen tief und
         // verteilt ueber vier Staende (Muster StromspeicherAuslegungSeite, #200).
+        // Welle KI-F2: dazu die zwei Schreibdienste der BLAETTER - der Reiter
+        // "Stromspeicher" schreibt je Feld ueber SpeicherfeldSchreiben, der Lesepunkt
+        // von Schritt ① ueber LesepunktSchreiben. Beide haengen an der jeweiligen
+        // Komponente und sind null, solange sie nicht steht.
         _kiSicht = new SimulationKiSicht(() => _konfigSeite?.Stand,
                                          KiLaufparameter,
                                          () => Dienste?.Parameter,
                                          () => Dienste?.Ergebnisstand?.Invoke(),
                                          () => SchrittText,
-                                         () => ReiterText);
+                                         () => ReiterText,
+                                         () => _ergebnisSeite?.Dienste,
+                                         () => _konfigSeite?.Dienste);
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => _kiSicht, KiHaken());
     }

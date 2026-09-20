@@ -68,6 +68,37 @@
         /// </summary>
         internal const string EINHEIT_H_TAG = "h/Tag";
 
+        /// <summary>
+        /// Einheit eines Arbeitspreises in Cent je Kilowattstunde (Welle KI-F2) — so
+        /// steht sie an der Ladeschwelle und am Netzladeaufschlag des Stromspeichers.
+        /// </summary>
+        internal const string EINHEIT_CT_KWH = "ct/kWh";
+
+        /// <summary>
+        /// Einheit eines Leistungspreises (Welle KI-F2) — Euro je Kilowatt und Jahr.
+        /// </summary>
+        internal const string EINHEIT_EURO_KW_A = "€/(kW·a)";
+
+        /// <summary>Einheit einer Laenge in Metern (Welle KI-F2).</summary>
+        internal const string EINHEIT_METER = "m";
+
+        /// <summary>Einheit einer Flaeche in Quadratmetern (Welle KI-F2).</summary>
+        internal const string EINHEIT_M2 = "m²";
+
+        /// <summary>Einheit einer Temperaturspreizung in Kelvin (Welle KI-F2).</summary>
+        internal const string EINHEIT_KELVIN = "K";
+
+        /// <summary>
+        /// Einheit der Bereitschaftsverluste eines Speichers (Welle KI-F2) —
+        /// Kilowattstunden je Tag, so steht sie am Feld.
+        /// </summary>
+        internal const string EINHEIT_KWH_24H = "kWh/24h";
+
+        /// <summary>
+        /// Einheit der effektiven Waermeleitfaehigkeit der Schichtung (Welle KI-F2).
+        /// </summary>
+        internal const string EINHEIT_W_MK = "W/(m·K)";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -504,6 +535,184 @@
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
+
+        // ---- Der Lesepunkt und der Reiter „Stromspeicher" (Welle KI-F2) ----------
+        //
+        // Die ANZEIGENAMEN sind die Beschriftungen, die auf der Ansicht stehen
+        // (SP_PARAM_*, PREIS_PARAM_*, SIM_BOOSTER_*); neu ist je Feld allein die
+        // Erlaeuterung.
+
+        internal static string SimLesepunktName => MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER;
+        internal static string SimLesepunktErl => MyResource.Resource.KI_DLG_SIM_LESEPUNKT_ERL;
+        internal static string SimSpSocMinName => MyResource.Resource.SP_PARAM_LABEL_SOC_MIN;
+        internal static string SimSpSocMinErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMIN_ERL;
+        internal static string SimSpSocMaxName => MyResource.Resource.SP_PARAM_LABEL_SOC_MAX;
+        internal static string SimSpSocMaxErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMAX_ERL;
+        internal static string SimSpLadeleistungName => MyResource.Resource.SP_PARAM_LABEL_LADELEISTUNG;
+        internal static string SimSpLadeleistungErl => MyResource.Resource.KI_DLG_SIM_SP_LADELEISTUNG_ERL;
+        internal static string SimSpKapazitaetName => MyResource.Resource.SP_PARAM_LABEL_KAPAZITAET;
+        internal static string SimSpKapazitaetErl => MyResource.Resource.KI_DLG_SIM_SP_KAPAZITAET_ERL;
+        internal static string SimSpLadeschwelleName => MyResource.Resource.SP_PARAM_LABEL_LADESCHWELLE;
+        internal static string SimSpLadeschwelleErl => MyResource.Resource.KI_DLG_SIM_SP_LADESCHWELLE_ERL;
+        internal static string SimSpBetriebsartName => MyResource.Resource.SP_PARAM_LABEL_BETRIEBSART;
+        internal static string SimSpBetriebsartErl => MyResource.Resource.KI_DLG_SIM_SP_BETRIEBSART_ERL;
+        internal static string SimSpBerechnungsartName => MyResource.Resource.SP_PARAM_LABEL_BERECHNUNGSART;
+        internal static string SimSpBerechnungsartErl => MyResource.Resource.KI_DLG_SIM_SP_BERECHNUNGSART_ERL;
+        internal static string SimSpPeakZielName => MyResource.Resource.SP_PARAM_LABEL_PEAKZIEL;
+        internal static string SimSpPeakZielErl => MyResource.Resource.KI_DLG_SIM_SP_PEAKZIEL_ERL;
+        internal static string SimSpPeakAdaptivName => MyResource.Resource.SP_PARAM_LABEL_PEAKZIEL_ADAPTIV;
+        internal static string SimSpPeakAdaptivErl => MyResource.Resource.KI_DLG_SIM_SP_PEAKADAPTIV_ERL;
+        internal static string SimSpKompatibilitaetName => MyResource.Resource.SP_PARAM_LABEL_KOMPATIBILITAET;
+        internal static string SimSpKompatibilitaetErl => MyResource.Resource.KI_DLG_SIM_SP_KOMPAT_ERL;
+        internal static string SimSpLadenPvName => MyResource.Resource.SP_PARAM_CHK_PV;
+        internal static string SimSpLadenPvErl => MyResource.Resource.KI_DLG_SIM_SP_LADEN_PV_ERL;
+        internal static string SimSpLadenBhkwName => MyResource.Resource.SP_PARAM_CHK_BHKW;
+        internal static string SimSpLadenBhkwErl => MyResource.Resource.KI_DLG_SIM_SP_LADEN_BHKW_ERL;
+        internal static string SimSpNetzentladungName => MyResource.Resource.SP_PARAM_CHK_NETZENTLADUNG;
+        internal static string SimSpNetzentladungErl => MyResource.Resource.KI_DLG_SIM_SP_NETZENTLADUNG_ERL;
+        internal static string SimSpStromgefuehrtName => MyResource.Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT;
+        internal static string SimSpStromgefuehrtErl => MyResource.Resource.KI_DLG_SIM_SP_STROMGEFUEHRT_ERL;
+        internal static string SimSpKapitalzinsName => MyResource.Resource.SP_PARAM_LABEL_KAPITALZINS;
+        internal static string SimSpKapitalzinsErl => MyResource.Resource.KI_DLG_SIM_SP_KAPITALZINS_ERL;
+        internal static string SimSpNutzungsdauerName => MyResource.Resource.SP_PARAM_LABEL_NUTZUNGSDAUER;
+        internal static string SimSpNutzungsdauerErl => MyResource.Resource.KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL;
+        internal static string SimSpLeistungspreisName => MyResource.Resource.SP_PARAM_LABEL_LEISTUNGSPREIS;
+        internal static string SimSpLeistungspreisErl => MyResource.Resource.KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL;
+        internal static string SimSpNetzaufschlagName => MyResource.Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG;
+        internal static string SimSpNetzaufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL;
+        internal static string SimSpPreisquelleName => MyResource.Resource.PREIS_PARAM_LABEL_PREISQUELLE;
+        internal static string SimSpPreisquelleErl => MyResource.Resource.KI_DLG_SIM_SP_PREISQUELLE_ERL;
+        internal static string SimSpAufschlagName => MyResource.Resource.PREIS_PARAM_CHK_AUFSCHLAG;
+        internal static string SimSpAufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_AUFSCHLAG_ERL;
+
+        // ============ Pufferspeicher-Verwaltung des Projekts (Welle KI-F2)
+        //
+        // Die ANZEIGENAMEN sind die Beschriftungen, die auf der Maske stehen
+        // (PSP_LABEL_*); neu ist je Feld allein die Erlaeuterung.
+
+        /// <summary>Die achte Maske (Welle KI-F2): die Pufferverwaltung des Projekts.</summary>
+        internal static string MaskePufferSpVerwaltung => MyResource.Resource.KI_DLG_MASKE_PSPV;
+
+        internal static string PspvBezeichnerName => MyResource.Resource.PSP_LABEL_BEZEICHNER;
+        internal static string PspvBezeichnerErl => MyResource.Resource.KI_DLG_PSPV_BEZEICHNER_ERL;
+        internal static string PspvVolumenName => MyResource.Resource.PSP_LABEL_GESAMTVOLUMEN;
+        internal static string PspvVolumenErl => MyResource.Resource.KI_DLG_PSPV_VOLUMEN_ERL;
+        internal static string PspvVerlusteName => MyResource.Resource.PSP_LABEL_BEREITSCHAFTSVERLUSTE;
+        internal static string PspvVerlusteErl => MyResource.Resource.KI_DLG_PSPV_VERLUSTE_ERL;
+        internal static string PspvVorlaufName => MyResource.Resource.PSP_LABEL_VORLAUF;
+        internal static string PspvVorlaufErl => MyResource.Resource.KI_DLG_PSPV_VORLAUF_ERL;
+        internal static string PspvRuecklaufName => MyResource.Resource.PSP_LABEL_RUECKLAUF;
+        internal static string PspvRuecklaufErl => MyResource.Resource.KI_DLG_PSPV_RUECKLAUF_ERL;
+        internal static string PspvSchwelleEinName => MyResource.Resource.PSP_LABEL_EINSCHALTSCHWELLE;
+        internal static string PspvSchwelleEinErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_EIN_ERL;
+        internal static string PspvSchwelleAusName => MyResource.Resource.PSP_LABEL_ABSCHALTSCHWELLE;
+        internal static string PspvSchwelleAusErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_AUS_ERL;
+        internal static string PspvSchwelleNachrangName => MyResource.Resource.PSP_LABEL_SCHWELLE_NACHRANGIG;
+        internal static string PspvSchwelleNachrangErl => MyResource.Resource.KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL;
+        internal static string PspvMindestfuellstandName => MyResource.Resource.PSP_LABEL_MINDESTFUELLSTAND;
+        internal static string PspvMindestfuellstandErl => MyResource.Resource.KI_DLG_PSPV_MINDESTFUELLSTAND_ERL;
+        internal static string PspvSchichtenName => MyResource.Resource.PSP_LABEL_SCHICHTEN;
+        internal static string PspvSchichtenErl => MyResource.Resource.KI_DLG_PSPV_SCHICHTEN_ERL;
+        internal static string PspvHoeheName => MyResource.Resource.PSP_LABEL_HOEHE;
+        internal static string PspvHoeheErl => MyResource.Resource.KI_DLG_PSPV_HOEHE_ERL;
+        internal static string PspvLambdaName => MyResource.Resource.PSP_LABEL_LAMBDA_EFF;
+        internal static string PspvLambdaErl => MyResource.Resource.KI_DLG_PSPV_LAMBDA_ERL;
+        internal static string PspvNutztemperaturName => MyResource.Resource.PSP_LABEL_T_NUTZ_BW;
+        internal static string PspvNutztemperaturErl => MyResource.Resource.KI_DLG_PSPV_T_NUTZ_BW_ERL;
+        internal static string PspvLadeleistungName => MyResource.Resource.PSP_LABEL_LADELEISTUNG_MAX;
+        internal static string PspvLadeleistungErl => MyResource.Resource.KI_DLG_PSPV_LADELEISTUNG_ERL;
+        internal static string PspvEntladeleistungName => MyResource.Resource.PSP_LABEL_ENTLADELEISTUNG_MAX;
+        internal static string PspvEntladeleistungErl => MyResource.Resource.KI_DLG_PSPV_ENTLADELEISTUNG_ERL;
+        internal static string PspvEntladeprioName => MyResource.Resource.PSP_LABEL_ENTLADEPRIORITAET;
+        internal static string PspvEntladeprioErl => MyResource.Resource.KI_DLG_PSPV_ENTLADEPRIO_ERL;
+
+        // ================= Waermequelle Erdreich und Pufferspeicher (Welle KI-F2)
+
+        /// <summary>Die neunte Maske (Welle KI-F2): die Waermequelle Erdreich.</summary>
+        internal static string MaskeQuelleErdreich => MyResource.Resource.KI_DLG_MASKE_QERD;
+
+        /// <summary>Die zehnte Maske (Welle KI-F2): die Waermequelle Pufferspeicher.</summary>
+        internal static string MaskeQuellePuffer => MyResource.Resource.KI_DLG_MASKE_QPUF;
+
+        internal static string QerdSondeName => MyResource.Resource.SIMQ_ERDREICH_RB_SONDE_WAHL;
+        internal static string QerdSondeErl => MyResource.Resource.KI_DLG_QERD_SONDE_ERL;
+        internal static string QerdTiefeName => MyResource.Resource.SIMQ_ERDREICH_VERLEGETIEFE;
+        internal static string QerdTiefeErl => MyResource.Resource.KI_DLG_QERD_TIEFE_ERL;
+        internal static string QerdFlaecheName => MyResource.Resource.SIMQ_ERDREICH_FLAECHE;
+        internal static string QerdFlaecheErl => MyResource.Resource.KI_DLG_QERD_FLAECHE_ERL;
+        internal static string QerdLaengeName => MyResource.Resource.SIMQ_ERDREICH_LAENGE_SONDE;
+        internal static string QerdLaengeErl => MyResource.Resource.KI_DLG_QERD_LAENGE_ERL;
+        internal static string QerdAnzahlName => MyResource.Resource.SIMQ_ERDREICH_ANZAHL_SONDEN;
+        internal static string QerdAnzahlErl => MyResource.Resource.KI_DLG_QERD_ANZAHL_ERL;
+        internal static string QerdSpreizungName => MyResource.Resource.SIMQ_ERDREICH_SPREIZUNG;
+        internal static string QerdSpreizungErl => MyResource.Resource.KI_DLG_QERD_SPREIZUNG_ERL;
+        internal static string QerdKlimazoneName => MyResource.Resource.SIMQ_ERDREICH_KLIMAZONE;
+        internal static string QerdKlimazoneErl => MyResource.Resource.KI_DLG_QERD_KLIMAZONE_ERL;
+
+        internal static string QpufTemperaturName => MyResource.Resource.SIMQ_PUFFER_QUELLTEMPERATUR;
+        internal static string QpufTemperaturErl => MyResource.Resource.KI_DLG_QPUF_TEMPERATUR_ERL;
+        internal static string QpufSpreizungName => MyResource.Resource.SIMQ_PUFFER_SPREIZUNG;
+        internal static string QpufSpreizungErl => MyResource.Resource.KI_DLG_QPUF_SPREIZUNG_ERL;
+        internal static string QpufRegenerationName => MyResource.Resource.SIMQ_PUFFER_REGENERATION;
+        internal static string QpufRegenerationErl => MyResource.Resource.KI_DLG_QPUF_REGENERATION_ERL;
+        internal static string QpufUnbegrenztName => MyResource.Resource.SIMQ_PUFFER_CB_UNBEGRENZT;
+        internal static string QpufUnbegrenztErl => MyResource.Resource.KI_DLG_QPUF_UNBEGRENZT_ERL;
+        internal static string QpufFestName => MyResource.Resource.SIMQ_PUFFER_TB_FEST;
+        internal static string QpufFestErl => MyResource.Resource.KI_DLG_QPUF_FEST_ERL;
+        internal static string QpufVorlaufName => MyResource.Resource.SIMQ_PUFFER_TB_VORLAUF;
+        internal static string QpufVorlaufErl => MyResource.Resource.KI_DLG_QPUF_VORLAUF_ERL;
+        internal static string QpufRuecklaufName => MyResource.Resource.SIMQ_PUFFER_TB_RUECKLAUF;
+        internal static string QpufRuecklaufErl => MyResource.Resource.KI_DLG_QPUF_RUECKLAUF_ERL;
+        internal static string QpufAnschlusshoeheName => MyResource.Resource.SIMQ_PUFFER_ANSCHLUSSHOEHE;
+        internal static string QpufAnschlusshoeheErl => MyResource.Resource.KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL;
+
+        // ======================= Quellprofil und Waermesenken (Welle KI-F2)
+
+        /// <summary>Die elfte Maske (Welle KI-F2): der Kopf eines Quellprofils.</summary>
+        internal static string MaskeQuellprofil => MyResource.Resource.KI_DLG_MASKE_QPROF;
+
+        /// <summary>Die zwoelfte Maske (Welle KI-F2): die Waermesenken einer Anlage.</summary>
+        internal static string MaskeWaermesenke => MyResource.Resource.KI_DLG_MASKE_WSEN;
+
+        internal static string QprofBezeichnungName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BEZEICHNER;
+        internal static string QprofBezeichnungErl => MyResource.Resource.KI_DLG_QPROF_BEZEICHNUNG_ERL;
+        internal static string QprofBeschreibungName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BESCHREIBUNG;
+        internal static string QprofBeschreibungErl => MyResource.Resource.KI_DLG_QPROF_BESCHREIBUNG_ERL;
+        internal static string QprofBetriebsartName => MyResource.Resource.SIMQ_QUELLPROFIL_LBL_BETRIEBSART;
+        internal static string QprofBetriebsartErl => MyResource.Resource.KI_DLG_QPROF_BETRIEBSART_ERL;
+
+        internal static string WsenZielName => MyResource.Resource.SIM_SPALTE_ZIEL;
+        internal static string WsenZielErl => MyResource.Resource.KI_DLG_WSEN_ZIEL_ERL;
+        internal static string WsenBedarfsartName => MyResource.Resource.SIM_SPALTE_BEDARFSART;
+        internal static string WsenBedarfsartErl => MyResource.Resource.KI_DLG_WSEN_BEDARFSART_ERL;
+        internal static string WsenLadeprioName => MyResource.Resource.PSP_SPALTE_LADEPRIO;
+        internal static string WsenLadeprioErl => MyResource.Resource.KI_DLG_WSEN_LADEPRIO_ERL;
+        internal static string WsenLadeprioPvName => MyResource.Resource.SIM_LBL_PV_UEBERSCHUSS;
+        internal static string WsenLadeprioPvErl => MyResource.Resource.KI_DLG_WSEN_LADEPRIO_PV_ERL;
+        internal static string WsenLadegrenzeAktivName => MyResource.Resource.SIM_CHK_LADEGRENZE;
+        internal static string WsenLadegrenzeAktivErl => MyResource.Resource.KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL;
+        internal static string WsenLadegrenzeName => MyResource.Resource.SIM_CHK_LADEGRENZE;
+        internal static string WsenLadegrenzeErl => MyResource.Resource.KI_DLG_WSEN_LADEGRENZE_ERL;
+        internal static string WsenHoeheAktivName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
+        internal static string WsenHoeheAktivErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_AKTIV_ERL;
+        internal static string WsenHoeheName => MyResource.Resource.SIM_CHK_EINSPEISEHOEHE;
+        internal static string WsenHoeheErl => MyResource.Resource.KI_DLG_WSEN_HOEHE_ERL;
+
+        // ================= Konfiguration einer Komponente (Welle KI-F2)
+        //
+        // Die sieben Felder der Waermepumpen-Konfiguration stehen schon unter
+        // Form_WP_Anlage und nehmen deren Texte (Wpa*) - es sind dieselben Felder,
+        // nur unter einer anderen offenen Maske.
+
+        /// <summary>Die dreizehnte Maske (Welle KI-F2): die Komponentenkonfiguration.</summary>
+        internal static string MaskeKomponentenkonfiguration => MyResource.Resource.KI_DLG_MASKE_KKONF;
+
+        internal static string KkonfBereitschaftName => MyResource.Resource.SIMERG_LBL_BEREITSCHAFT;
+        internal static string KkonfBereitschaftErl => MyResource.Resource.KI_DLG_KKONF_BEREITSCHAFT_ERL;
+        internal static string KkonfBetriebsartName => MyResource.Resource.SIMERG_GRP_BETRIEBSART;
+        internal static string KkonfBetriebsartErl => MyResource.Resource.KI_DLG_KKONF_BETRIEBSART_ERL;
+        internal static string KkonfGrenzeName => MyResource.Resource.SIMERG_LBL_UNTERE_LEISTUNGSGRENZE;
+        internal static string KkonfGrenzeErl => MyResource.Resource.KI_DLG_KKONF_GRENZE_ERL;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

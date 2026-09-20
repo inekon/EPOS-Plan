@@ -509,4 +509,64 @@ public class QuellePufferspeicherDialogTests : EposBunitContext
     /// </summary>
     private static void Ok(IRenderedComponent<QuellePufferspeicherDialog> cut)
         => cut.FindAll(".epos-leiste button.epos-knopf--primaer").Last().Click();
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>QuellePufferspeicherKiSicht</c> und steht deshalb nicht in der
+    /// Markup-Probe des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske steht
+    /// gezeichnet da, die Brücke liest die Quelltemperatur, und ein Setzen landet im
+    /// Eingabefeld.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Quelltemperatur()
+    {
+        Zeige(Wp());
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(
+                        WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER));
+
+        WindowsFormsApplication1.KiFeldzugang zugang = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER, "quelltemperatur");
+
+        Assert.NotNull(zugang);
+        Assert.Equal(12.0, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(9.5);
+
+        Assert.Equal(9.5, zugang.Lesen());
+    }
+
+    /// <summary>
+    /// Der Temperaturbezug des KESSELS geht den Weg des Optionsfeldes: Mit „fest"
+    /// kommt der Vorschlag 70/50 °C für ein leeres Paar — genau wie beim Umschalten
+    /// von Hand.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_schaltet_den_Temperaturbezug_auf_fest()
+    {
+        var cut = Zeige(Kessel());
+
+        WindowsFormsApplication1.KiFeldzugang fest = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER, "temperatur_fest");
+
+        Assert.Equal(false, fest.Lesen());
+
+        fest.Setzen(true);
+        cut.Render();
+
+        Assert.Equal(true, fest.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang vorlauf = WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+            WindowsFormsApplication1.KiMaskennamen.QUELLE_PUFFERSPEICHER, "vorlauf");
+        Assert.Equal(QuellePufferspeicherDialog.VORSCHLAG_VORLAUF, vorlauf.Lesen());
+    }
 }

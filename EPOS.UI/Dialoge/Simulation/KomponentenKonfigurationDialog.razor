@@ -37,6 +37,8 @@
 @namespace EPOS.UI.Dialoge.Simulation
 @using EPOS.UI.Dialoge.Waermepumpe
 @using EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -253,12 +255,80 @@
         (2, Resource.SIMERG_OPT_OHNE_EINSPEISUNG)
     };
 
+    protected override void OnInitialized()
+    {
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird ein
+        // SICHTMODELL, weil die Maske ZWEI Arbeitskopien zeigt - die projektweiten
+        // Laufparameter (public FELDER, die GetProperty nicht faende) und die
+        // Anlagendaten der Waermepumpe.
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOMPONENTENKONFIGURATION,
+                                          () => _kiSicht, KiHaken());
+    }
+
     protected override async Task OnAfterRenderAsync(bool ersteAnzeige)
     {
         // Der Fokus gehoert dem Dialog, sobald er steht - sonst liefe Esc an ihm
         // vorbei (Muster der Nachbardialoge).
         if (ersteAnzeige) await _wurzel.FocusAsync();
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Arbeitskopien (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die beiden Arbeitskopien; es fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private KomponentenKonfigurationKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die Wege auf die beiden Arbeitskopien.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die drei projektweiten Werte nehmen den Weg ihrer Felder</b>
+    /// (<see cref="BereitschaftGesetzt"/> und die zwei Geschwister) — geschrieben wird
+    /// weiterhin erst im OK-Weg des Wirts, genau wie bei einer Eingabe von Hand. Die
+    /// sieben Werte der Wärmepumpe stehen in der Arbeitskopie der Anlage; die
+    /// Sichtklasse greift unmittelbar darauf zu, weil der eingebettete Baustein
+    /// dasselbe tut.
+    /// </remarks>
+    private KomponentenKonfigurationKiSicht KiSicht() => new KomponentenKonfigurationKiSicht
+    {
+        BereitschaftLesen = () => Werte.Bereitschaft,
+        BereitschaftSetzen = w => BereitschaftGesetzt(w),
+        BhkwBetriebsartLesen = () => Werte.Betriebsart,
+        BhkwBetriebsartSetzen = w => BetriebsartGesetzt(w),
+        BhkwLeistungsgrenzeLesen = () => Werte.UntersteLeistungsgrenze,
+        BhkwLeistungsgrenzeSetzen = w => LeistungsgrenzeGesetzt(w),
+        AnlageLesen = () => Anlage
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Der Dialog schreibt nicht — er meldet beim OK nur
+    /// <c>true</c>, und der Wirt schreibt. Der Weg dorthin schließt die Maske.</para>
+    /// <para><b>Der SCHREIBSCHUTZ gehört der Seite</b>: Steht die
+    /// Simulationskonfiguration gesperrt (Schemamigration), sind auch hier alle Felder
+    /// nur ansehbar, und <c>feld_setzen</c> lehnt benannt ab.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => NurLesen
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     // =====================================================================
     // Die Felder — sie ändern NUR die Arbeitskopie

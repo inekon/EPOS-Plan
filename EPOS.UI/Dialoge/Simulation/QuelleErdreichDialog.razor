@@ -62,6 +62,7 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -623,7 +624,74 @@
         _laufAusDialog = false;
 
         Aktualisieren();
+
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird ein
+        // SICHTMODELL ueber die LEBENDEN Felder - Daten ist ein unveraenderlicher
+        // Record, und der OK-Weg erzeugt ueber "with" einen neuen.
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.QUELLE_ERDREICH,
+                                          () => _kiSicht, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Eingabefelder (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die Eingabefelder; es fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private QuelleErdreichKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die sieben Wege auf die Felder der Maske.
+    /// </summary>
+    /// <remarks>
+    /// <b>Setzen heißt tippen:</b> Jeder Setzweg nimmt denselben Weg wie die Tastatur
+    /// (<see cref="Setzen"/>, <c>SystemUmschalten</c>, <c>ZoneWaehlen</c>) — die
+    /// Kennwertzeile, die Vorschau und die Auslegungsprüfung ziehen danach nach.
+    /// </remarks>
+    private QuelleErdreichKiSicht KiSicht() => new QuelleErdreichKiSicht
+    {
+        ErdsondeLesen = () => _sonde,
+        ErdsondeSetzen = w => SystemUmschalten(w ? SONDE : KOLLEKTOR),
+        VerlegetiefeLesen = () => _tiefe,
+        VerlegetiefeSetzen = w => Setzen(() => _tiefe = w),
+        FlaecheLesen = () => _flaeche,
+        FlaecheSetzen = w => Setzen(() => _flaeche = w),
+        LaengeSondeLesen = () => _laenge,
+        LaengeSondeSetzen = w => Setzen(() => _laenge = w),
+        AnzahlSondenLesen = () => _anzahl,
+        AnzahlSondenSetzen = w => Setzen(() => _anzahl = w),
+        SpreizungLesen = () => _spreizung,
+        SpreizungSetzen = w => Setzen(() => _spreizung = w),
+        KlimazoneLesen = () => _zone,
+        KlimazoneSetzen = ZoneWaehlen
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Diese Maske schreibt nicht — sie ENTSCHEIDET: OK
+    /// prüft acht Regeln und reicht einen neuen Satz an den Wirt, der schreibt. Der
+    /// einzige Weg dorthin schließt die Maske, und das löst der Assistent nicht im
+    /// Rücken des Anwenders aus; <c>dialog_speichern</c> lehnt hier benannt ab.</para>
+    /// <para><b>Kein Schreibschutz.</b> Die Maske kennt keinen.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -20643,4 +20643,220 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
     <value>Ausrichtung dieses Teilfelds in Grad, 0 = Süden; leer übernimmt den Azimut der Anlage.</value>
   </data>
+  <data name="KI_DLG_MASKE_PSPV" xml:space="preserve">
+    <value>Pufferspeicher im Projekt verwalten</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name dieses Pufferspeichers im Projekt; er muss angegeben sein.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VOLUMEN_ERL" xml:space="preserve">
+    <value>Gesamtvolumen des Speichers in Litern; es muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VERLUSTE_ERL" xml:space="preserve">
+    <value>Bereitschaftsverluste des Speichers in Kilowattstunden je Tag; leer gilt als 0.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VORLAUF_ERL" xml:space="preserve">
+    <value>Vorlauftemperatur des Speichers in °C; sie muss über der Rücklauftemperatur liegen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Rücklauftemperatur des Speichers in °C; sie muss unter der Vorlauftemperatur liegen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_EIN_ERL" xml:space="preserve">
+    <value>Füllstand in Prozent, ab dem die Erzeuger den Speicher nachladen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_AUS_ERL" xml:space="preserve">
+    <value>Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
+    <value>Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen.</value>
+  </data>
+  <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
+    <value>Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHICHTEN_ERL" xml:space="preserve">
+    <value>Zahl der Rechenschichten des Speichermodells; 1 heißt „ein Volumen ohne Schichtung".</value>
+  </data>
+  <data name="KI_DLG_PSPV_HOEHE_ERL" xml:space="preserve">
+    <value>Bauhöhe des Speichers in Metern — nur beim geschichteten Modell; leer heißt „Vorgabe gilt".</value>
+  </data>
+  <data name="KI_DLG_PSPV_LAMBDA_ERL" xml:space="preserve">
+    <value>Effektive Wärmeleitfähigkeit zwischen den Schichten in W/(m·K); sie bestimmt, wie schnell die Schichtung zerfällt.</value>
+  </data>
+  <data name="KI_DLG_PSPV_T_NUTZ_BW_ERL" xml:space="preserve">
+    <value>Temperatur in °C, ab der das Wasser für Brauchwasser nutzbar ist.</value>
+  </data>
+  <data name="KI_DLG_PSPV_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Höchste Ladeleistung des Speichers in kW; leer heißt „unbegrenzt".</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADELEISTUNG_ERL" xml:space="preserve">
+    <value>Höchste Entladeleistung des Speichers in kW; leer heißt „unbegrenzt".</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADEPRIO_ERL" xml:space="preserve">
+    <value>Reihenfolge, in der die Speicher des Projekts entladen werden (1 = zuerst); 0 heißt „automatisch".</value>
+  </data>
+  <data name="KI_DLG_MASKE_QERD" xml:space="preserve">
+    <value>Wärmequelle Erdreich</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPUF" xml:space="preserve">
+    <value>Wärmequelle Pufferspeicher</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDE_ERL" xml:space="preserve">
+    <value>Das Quellsystem: an = Erdsonde (Länge je Sonde und Anzahl gelten), aus = Erdkollektor (Verlegetiefe und Fläche gelten). Die Wahl sperrt nur; der andere Zweig behält seine Werte.</value>
+  </data>
+  <data name="KI_DLG_QERD_TIEFE_ERL" xml:space="preserve">
+    <value>Verlegetiefe des Erdkollektors in Metern; sie bestimmt Dämpfung und Phasenverschiebung der Quelltemperatur.</value>
+  </data>
+  <data name="KI_DLG_QERD_FLAECHE_ERL" xml:space="preserve">
+    <value>Belegte Fläche des Erdkollektors in Quadratmetern; sie geht in die Auslegungsprüfung nach VDI 4640 Blatt 2 ein.</value>
+  </data>
+  <data name="KI_DLG_QERD_LAENGE_ERL" xml:space="preserve">
+    <value>Länge JE Erdsonde in Metern — nicht die Summe aller Sonden.</value>
+  </data>
+  <data name="KI_DLG_QERD_ANZAHL_ERL" xml:space="preserve">
+    <value>Zahl der Erdsonden; mindestens 1.</value>
+  </data>
+  <data name="KI_DLG_QERD_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_QERD_KLIMAZONE_ERL" xml:space="preserve">
+    <value>Klimazone des Standorts, 1 bis 15; 0 heißt „nicht zugeordnet". Sie liefert die Bodentemperaturen, solange keine Klimadaten des Projekts vorliegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Temperatur in °C, mit der die Quelle am Verdampfer ankommt.</value>
+  </data>
+  <data name="KI_DLG_QPUF_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_QPUF_REGENERATION_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Leistung in kW, mit der die Quelle sich nachlädt.</value>
+  </data>
+  <data name="KI_DLG_QPUF_UNBEGRENZT_ERL" xml:space="preserve">
+    <value>Nur Wärmepumpe: Die Quelle gilt als unbegrenzt verfügbar; der Speicherinhalt begrenzt die Entnahme dann nicht.</value>
+  </data>
+  <data name="KI_DLG_QPUF_FEST_ERL" xml:space="preserve">
+    <value>Nur Heizkessel: an = Vorlauf und Rücklauf sind fest vorgegeben, aus = sie werden aus der Anlage berechnet.</value>
+  </data>
+  <data name="KI_DLG_QPUF_VORLAUF_ERL" xml:space="preserve">
+    <value>Nur Heizkessel bei fester Vorgabe: der Vorlauf in °C; er muss über dem Rücklauf liegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Nur Heizkessel bei fester Vorgabe: der Rücklauf in °C; er muss unter dem Vorlauf liegen.</value>
+  </data>
+  <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
+    <value>Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben".</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPROF" xml:space="preserve">
+    <value>Quellprofil</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSEN" xml:space="preserve">
+    <value>Wärmesenken</value>
+  </data>
+  <data name="KI_DLG_QPROF_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name des Quellprofils; ohne ihn wird nicht gespeichert.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Quellprofil; er darf leer bleiben.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Das Raster des Profils: Monat (12 Werte), Tag (365 Werte) oder Stunde (8760 Werte). Ein Wechsel behält, was passt, und belegt den Rest mit der Vorgabe.</value>
+  </data>
+  <data name="KI_DLG_WSEN_ZIEL_ERL" xml:space="preserve">
+    <value>Wohin diese Senke die Wärme gibt: in den Heizkreis oder in einen Pufferspeicher. Mit dem Ziel wechseln die Felder darunter.</value>
+  </data>
+  <data name="KI_DLG_WSEN_BEDARFSART_ERL" xml:space="preserve">
+    <value>Nur beim Heizkreis: welcher Bedarf gedeckt wird (Heizung, Brauchwasser, Prozesswärme).</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_ERL" xml:space="preserve">
+    <value>Nur bei einem Pufferspeicher: in welcher Reihenfolge dieser Speicher geladen wird; 0 heißt „nach Vorgabe des Speichers".</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_PV_ERL" xml:space="preserve">
+    <value>Nur auf Rang 1 und nur mit Photovoltaik: abweichende Reihenfolge, solange PV-Überschuss ansteht; 0 heißt „unverändert".</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL" xml:space="preserve">
+    <value>An = diese Senke lädt nur bis zu einer eigenen Obergrenze statt bis zur Abschaltschwelle des Speichers. Beim Einschalten steht 70 % als Vorschlag.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_ERL" xml:space="preserve">
+    <value>Die eigene Ladeobergrenze dieser Senke in Prozent; sie gilt nur bei eingeschaltetem Schalter.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_AKTIV_ERL" xml:space="preserve">
+    <value>An = diese Senke speist auf einer eigenen Höhe in den Speicher ein. Beim Einschalten steht 1 (ganz oben) als Vorschlag.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
+    <value>Die eigene Einspeisehöhe im Speicher, 0 = ganz unten bis 1 = ganz oben; sie gilt nur bei eingeschaltetem Schalter.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KKONF" xml:space="preserve">
+    <value>Konfiguration einer Komponente</value>
+  </data>
+  <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels.</value>
+  </data>
+  <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung.</value>
+  </data>
+  <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
+    <value>Untere Modulationsgrenze der BHKW-Module in Prozent der Nennleistung — ein Wert des PROJEKTS; 0 rechnet als 0.</value>
+  </data>
+  <data name="KI_DLG_SIM_LESEPUNKT_ERL" xml:space="preserve">
+    <value>An = die Wärmepumpe liest den Speicherzustand vom Stundenanfang (konservativ), aus = vom Stundenende. Der Schalter gilt dem ganzen Projekt.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMIN_ERL" xml:space="preserve">
+    <value>Unterer Ladezustand des Stromspeichers in Prozent; darunter wird nicht entladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMAX_ERL" xml:space="preserve">
+    <value>Oberer Ladezustand des Stromspeichers in Prozent; darüber wird nicht geladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Lade- und Entladeleistung der Speicheranlage in kW — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Nennkapazität der Speicheranlage in kWh — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADESCHWELLE_ERL" xml:space="preserve">
+    <value>Preisschwelle in Cent je Kilowattstunde, unter der aus dem Netz geladen wird.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Betriebsart des Stromspeichers — nicht der Anzeigetext der Klappliste.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BERECHNUNGSART_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Berechnungsart. Sie entscheidet mit, ob Kompatibilitätsmodus und Peak-Ziel überhaupt wählbar sind.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKZIEL_ERL" xml:space="preserve">
+    <value>Zielschwelle der Lastspitzenkappung in kW; 0 heißt „nicht gepflegt".</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKADAPTIV_ERL" xml:space="preserve">
+    <value>An = die Zielschwelle zieht sich im Lauf selbst nach, statt gegen den eingetragenen Wert zu rechnen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KOMPAT_ERL" xml:space="preserve">
+    <value>Kompatibilitätsmodus der Dauernutzung — er rechnet wie die Excel-Vorlage; nur bei dieser Berechnungsart wählbar.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_PV_ERL" xml:space="preserve">
+    <value>An = der Speicher lädt aus dem Überschuss der Photovoltaik.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_BHKW_ERL" xml:space="preserve">
+    <value>An = der Speicher lädt aus dem Überschuss der BHKW.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZENTLADUNG_ERL" xml:space="preserve">
+    <value>An = der Speicher darf in das Netz entladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_STROMGEFUEHRT_ERL" xml:space="preserve">
+    <value>Stromgeführter BHKW-Betrieb für den Speicher — sichtbar, aber dauerhaft gesperrt; nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPITALZINS_ERL" xml:space="preserve">
+    <value>Kalkulationszins der Speicherwirtschaftlichkeit in Prozent.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Nutzungsdauer der Speicheranlage in Jahren.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Leistungspreis des Netzbetreibers in Euro je Kilowatt und Jahr; er bewertet die gekappte Bezugsspitze.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL" xml:space="preserve">
+    <value>Aufschlag auf netzgeladene Energie in Cent je Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISQUELLE_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Preisquelle. Mit ihr wechseln Beschriftung und Inhalt der Reihenauswahl darunter.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>An = auf die gewählte Preisreihe wird der Aufschlag angewendet.</value>
+  </data>
 </root>

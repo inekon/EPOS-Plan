@@ -20636,4 +20636,220 @@ Do you want to allow this?</value>
   <data name="KI_DLG_PV_STRANG_AZIMUT_ERL" xml:space="preserve">
     <value>Orientation of this sub-array in degrees, 0 = south; empty inherits the azimuth of the plant.</value>
   </data>
+  <data name="KI_DLG_MASKE_PSPV" xml:space="preserve">
+    <value>Manage buffer tanks of the project</value>
+  </data>
+  <data name="KI_DLG_PSPV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of this buffer tank in the project; it must be given.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VOLUMEN_ERL" xml:space="preserve">
+    <value>Total volume of the tank in litres; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VERLUSTE_ERL" xml:space="preserve">
+    <value>Standby losses of the tank in kilowatt hours per day; empty counts as 0.</value>
+  </data>
+  <data name="KI_DLG_PSPV_VORLAUF_ERL" xml:space="preserve">
+    <value>Flow temperature of the tank in °C; it must be above the return temperature.</value>
+  </data>
+  <data name="KI_DLG_PSPV_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Return temperature of the tank in °C; it must be below the flow temperature.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_EIN_ERL" xml:space="preserve">
+    <value>State of charge in percent at which the generators start recharging the tank.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_AUS_ERL" xml:space="preserve">
+    <value>State of charge in percent at which charging stops; it must be above the switch-on threshold.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL" xml:space="preserve">
+    <value>State of charge in percent from which subordinate generators may charge as well.</value>
+  </data>
+  <data name="KI_DLG_PSPV_MINDESTFUELLSTAND_ERL" xml:space="preserve">
+    <value>Share in percent kept in the tank as an emergency reserve and never discharged; 0 is valid.</value>
+  </data>
+  <data name="KI_DLG_PSPV_SCHICHTEN_ERL" xml:space="preserve">
+    <value>Number of calculation layers of the tank model; 1 means “one volume without stratification”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_HOEHE_ERL" xml:space="preserve">
+    <value>Height of the tank in metres — only for the stratified model; empty means “the default applies”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_LAMBDA_ERL" xml:space="preserve">
+    <value>Effective thermal conductivity between the layers in W/(m·K); it governs how fast the stratification decays.</value>
+  </data>
+  <data name="KI_DLG_PSPV_T_NUTZ_BW_ERL" xml:space="preserve">
+    <value>Temperature in °C from which the water is usable for domestic hot water.</value>
+  </data>
+  <data name="KI_DLG_PSPV_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum charging power of the tank in kW; empty means “unlimited”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADELEISTUNG_ERL" xml:space="preserve">
+    <value>Maximum discharging power of the tank in kW; empty means “unlimited”.</value>
+  </data>
+  <data name="KI_DLG_PSPV_ENTLADEPRIO_ERL" xml:space="preserve">
+    <value>Order in which the tanks of the project are discharged (1 = first); 0 means “automatic”.</value>
+  </data>
+  <data name="KI_DLG_MASKE_QERD" xml:space="preserve">
+    <value>Ground heat source</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPUF" xml:space="preserve">
+    <value>Buffer tank as heat source</value>
+  </data>
+  <data name="KI_DLG_QERD_SONDE_ERL" xml:space="preserve">
+    <value>The source system: on = borehole probe (length per probe and count apply), off = horizontal collector (laying depth and area apply). The choice only locks; the other branch keeps its values.</value>
+  </data>
+  <data name="KI_DLG_QERD_TIEFE_ERL" xml:space="preserve">
+    <value>Laying depth of the horizontal collector in metres; it governs damping and phase shift of the source temperature.</value>
+  </data>
+  <data name="KI_DLG_QERD_FLAECHE_ERL" xml:space="preserve">
+    <value>Area occupied by the horizontal collector in square metres; it enters the design check to VDI 4640 part 2.</value>
+  </data>
+  <data name="KI_DLG_QERD_LAENGE_ERL" xml:space="preserve">
+    <value>Length of EACH borehole probe in metres — not the total of all probes.</value>
+  </data>
+  <data name="KI_DLG_QERD_ANZAHL_ERL" xml:space="preserve">
+    <value>Number of borehole probes; at least 1.</value>
+  </data>
+  <data name="KI_DLG_QERD_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Usable temperature spread of the source in kelvin; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_QERD_KLIMAZONE_ERL" xml:space="preserve">
+    <value>Climate zone of the site, 1 to 15; 0 means “not assigned”. It supplies the ground temperatures as long as no climate data of the project are available.</value>
+  </data>
+  <data name="KI_DLG_QPUF_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Heat pump only: temperature in °C at which the source reaches the evaporator.</value>
+  </data>
+  <data name="KI_DLG_QPUF_SPREIZUNG_ERL" xml:space="preserve">
+    <value>Heat pump only: usable temperature spread of the source in kelvin; it must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_QPUF_REGENERATION_ERL" xml:space="preserve">
+    <value>Heat pump only: power in kW with which the source recharges itself.</value>
+  </data>
+  <data name="KI_DLG_QPUF_UNBEGRENZT_ERL" xml:space="preserve">
+    <value>Heat pump only: the source counts as unlimited; the tank content then does not limit the withdrawal.</value>
+  </data>
+  <data name="KI_DLG_QPUF_FEST_ERL" xml:space="preserve">
+    <value>Boiler only: on = flow and return are fixed values, off = they are derived from the plant.</value>
+  </data>
+  <data name="KI_DLG_QPUF_VORLAUF_ERL" xml:space="preserve">
+    <value>Boiler only, with fixed values: the flow temperature in °C; it must be above the return.</value>
+  </data>
+  <data name="KI_DLG_QPUF_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Boiler only, with fixed values: the return temperature in °C; it must be below the flow.</value>
+  </data>
+  <data name="KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL" xml:space="preserve">
+    <value>Height of the source withdrawal in the tank, 0 = bottom to 1 = top; empty means “top”.</value>
+  </data>
+  <data name="KI_DLG_MASKE_QPROF" xml:space="preserve">
+    <value>Source profile</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSEN" xml:space="preserve">
+    <value>Heat sinks</value>
+  </data>
+  <data name="KI_DLG_QPROF_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name of the source profile; without it nothing is saved.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text for the source profile; it may stay empty.</value>
+  </data>
+  <data name="KI_DLG_QPROF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>The raster of the profile: month (12 values), day (365 values) or hour (8760 values). A change keeps what fits and fills the rest with the default.</value>
+  </data>
+  <data name="KI_DLG_WSEN_ZIEL_ERL" xml:space="preserve">
+    <value>Where this sink delivers its heat: into the heating circuit or into a buffer tank. The fields below follow the target.</value>
+  </data>
+  <data name="KI_DLG_WSEN_BEDARFSART_ERL" xml:space="preserve">
+    <value>Heating circuit only: which demand is covered (space heating, domestic hot water, process heat).</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_ERL" xml:space="preserve">
+    <value>Buffer tank only: in which order this tank is charged; 0 means “as the tank specifies”.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEPRIO_PV_ERL" xml:space="preserve">
+    <value>Rank 1 only and only with photovoltaics: a different order while PV surplus is available; 0 means “unchanged”.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL" xml:space="preserve">
+    <value>On = this sink charges only up to its own upper limit instead of the switch-off threshold of the tank. Switching it on proposes 70 %.</value>
+  </data>
+  <data name="KI_DLG_WSEN_LADEGRENZE_ERL" xml:space="preserve">
+    <value>The own upper charging limit of this sink in percent; it applies only while the switch is on.</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_AKTIV_ERL" xml:space="preserve">
+    <value>On = this sink feeds into the tank at its own height. Switching it on proposes 1 (top).</value>
+  </data>
+  <data name="KI_DLG_WSEN_HOEHE_ERL" xml:space="preserve">
+    <value>The own feed-in height in the tank, 0 = bottom to 1 = top; it applies only while the switch is on.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KKONF" xml:space="preserve">
+    <value>Configuration of a component</value>
+  </data>
+  <data name="KI_DLG_KKONF_BEREITSCHAFT_ERL" xml:space="preserve">
+    <value>Standby operation of the boilers in hours per year — a value of the PROJECT, not of this boiler.</value>
+  </data>
+  <data name="KI_DLG_KKONF_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Operating mode of the CHP units in the project: 0 = heat-led, 1 = power-led, 2 = without grid feed-in.</value>
+  </data>
+  <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
+    <value>Lower modulation limit of the CHP modules in percent of rated power — a value of the PROJECT; 0 counts as 0.</value>
+  </data>
+  <data name="KI_DLG_SIM_LESEPUNKT_ERL" xml:space="preserve">
+    <value>On = the heat pump reads the storage state at the start of the hour (conservative), off = at the end of the hour. The switch applies to the whole project.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMIN_ERL" xml:space="preserve">
+    <value>Lower state of charge of the battery in percent; below it nothing is discharged.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMAX_ERL" xml:space="preserve">
+    <value>Upper state of charge of the battery in percent; above it nothing is charged.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Charging and discharging power of the battery system in kW — a device value; editable only with exactly one battery system.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Rated capacity of the battery system in kWh — a device value; editable only with exactly one battery system.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADESCHWELLE_ERL" xml:space="preserve">
+    <value>Price threshold in cents per kilowatt hour below which the battery charges from the grid.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BETRIEBSART_ERL" xml:space="preserve">
+    <value>The control value of the battery operating mode — not the display text of the drop-down list.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BERECHNUNGSART_ERL" xml:space="preserve">
+    <value>The control value of the calculation mode. It also decides whether compatibility mode and peak target are selectable at all.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKZIEL_ERL" xml:space="preserve">
+    <value>Target threshold of peak shaving in kW; 0 means “not maintained”.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKADAPTIV_ERL" xml:space="preserve">
+    <value>On = the target threshold tracks itself during the run instead of using the entered value.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KOMPAT_ERL" xml:space="preserve">
+    <value>Compatibility mode of continuous use — it calculates like the Excel template; selectable only for that calculation mode.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_PV_ERL" xml:space="preserve">
+    <value>On = the battery charges from the photovoltaic surplus.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_BHKW_ERL" xml:space="preserve">
+    <value>On = the battery charges from the CHP surplus.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZENTLADUNG_ERL" xml:space="preserve">
+    <value>On = the battery may discharge into the grid.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_STROMGEFUEHRT_ERL" xml:space="preserve">
+    <value>Power-led CHP operation for the battery — visible but permanently locked; read only.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPITALZINS_ERL" xml:space="preserve">
+    <value>Discount rate of the battery economics in percent.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Service life of the battery system in years.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Demand charge of the grid operator in euro per kilowatt and year; it values the peak that was shaved.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL" xml:space="preserve">
+    <value>Surcharge on grid-charged energy in cents per kilowatt hour.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISQUELLE_ERL" xml:space="preserve">
+    <value>The control value of the price source. It changes both the label and the content of the series selection below.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>On = the surcharge is applied to the selected price series.</value>
+  </data>
 </root>

@@ -25424,6 +25424,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_BEREITSCHAFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_BEREITSCHAFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der BHKW im Projekt: 0 = wärmegeführt, 1 = stromgeführt, 2 = ohne Einspeisung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Untere Modulationsgrenze der BHKW-Module in Prozent der Nennleistung — ein Wert des PROJEKTS; 0 rechnet als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KKONF_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KKONF_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -25685,6 +25712,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration einer Komponente ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KKONF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KKONF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
@@ -25699,6 +25735,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_NICHT_OFFEN {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher im Projekt verwalten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PSPV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PSPV", resourceCulture);
             }
         }
         
@@ -25726,6 +25771,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_PV {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Erdreich ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QERD {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QERD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quellprofil ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QPROF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QPROF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Pufferspeicher ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_QPUF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_QPUF", resourceCulture);
             }
         }
         
@@ -25793,6 +25865,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenken ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WSEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich. ähnelt.
         /// </summary>
         public static string KI_DLG_MEHRERE_OFFEN {
@@ -25852,6 +25933,150 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSPP_ANLAGE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PSPP_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name dieses Pufferspeichers im Projekt; er muss angegeben sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Entladeleistung des Speichers in kW; leer heißt „unbegrenzt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTLADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTLADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reihenfolge, in der die Speicher des Projekts entladen werden (1 = zuerst); 0 heißt „automatisch&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_ENTLADEPRIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_ENTLADEPRIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bauhöhe des Speichers in Metern — nur beim geschichteten Modell; leer heißt „Vorgabe gilt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_HOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_HOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höchste Ladeleistung des Speichers in kW; leer heißt „unbegrenzt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_LADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_LADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effektive Wärmeleitfähigkeit zwischen den Schichten in W/(m·K); sie bestimmt, wie schnell die Schichtung zerfällt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_LAMBDA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_LAMBDA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil in Prozent, der als Notreserve im Speicher bleibt und nicht entladen wird; 0 ist gültig. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_MINDESTFUELLSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_MINDESTFUELLSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rücklauftemperatur des Speichers in °C; sie muss unter der Vorlauftemperatur liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Rechenschichten des Speichermodells; 1 heißt „ein Volumen ohne Schichtung&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHICHTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHICHTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, bei dem die Ladung endet; er muss über der Einschaltschwelle liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_AUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_AUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem die Erzeuger den Speicher nachladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_EIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_EIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Füllstand in Prozent, ab dem auch nachrangige Erzeuger laden dürfen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_SCHWELLE_NACHRANG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur in °C, ab der das Wasser für Brauchwasser nutzbar ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_T_NUTZ_BW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_T_NUTZ_BW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bereitschaftsverluste des Speichers in Kilowattstunden je Tag; leer gilt als 0. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VERLUSTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VERLUSTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamtvolumen des Speichers in Litern; es muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VOLUMEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VOLUMEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlauftemperatur des Speichers in °C; sie muss über der Rücklauftemperatur liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PSPV_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PSPV_VORLAUF_ERL", resourceCulture);
             }
         }
         
@@ -26027,6 +26252,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahl der Erdsonden; mindestens 1. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_ANZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_ANZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Belegte Fläche des Erdkollektors in Quadratmetern; sie geht in die Auslegungsprüfung nach VDI 4640 Blatt 2 ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_FLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_FLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimazone des Standorts, 1 bis 15; 0 heißt „nicht zugeordnet&quot;. Sie liefert die Bodentemperaturen, solange keine Klimadaten des Projekts vorliegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_KLIMAZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_KLIMAZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Länge JE Erdsonde in Metern — nicht die Summe aller Sonden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Quellsystem: an = Erdsonde (Länge je Sonde und Anzahl gelten), aus = Erdkollektor (Verlegetiefe und Fläche gelten). Die Wahl sperrt nur; der andere Zweig behält seine Werte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SONDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SONDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_SPREIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_SPREIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlegetiefe des Erdkollektors in Metern; sie bestimmt Dämpfung und Phasenverschiebung der Quelltemperatur. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QERD_TIEFE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QERD_TIEFE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Quellprofil; er darf leer bleiben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Raster des Profils: Monat (12 Werte), Tag (365 Werte) oder Stunde (8760 Werte). Ein Wechsel behält, was passt, und belegt den Rest mit der Vorgabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Quellprofils; ohne ihn wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPROF_BEZEICHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPROF_BEZEICHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Höhe der Quell-Entnahme im Speicher, 0 = ganz unten bis 1 = ganz oben; leer heißt „oben&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_ANSCHLUSSHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel: an = Vorlauf und Rücklauf sind fest vorgegeben, aus = sie werden aus der Anlage berechnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_FEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_FEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Leistung in kW, mit der die Quelle sich nachlädt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_REGENERATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_REGENERATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel bei fester Vorgabe: der Rücklauf in °C; er muss unter dem Vorlauf liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: nutzbare Spreizung der Quelle in Kelvin; sie muss größer als 0 sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_SPREIZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_SPREIZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Temperatur in °C, mit der die Quelle am Verdampfer ankommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Wärmepumpe: Die Quelle gilt als unbegrenzt verfügbar; der Speicherinhalt begrenzt die Entnahme dann nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_UNBEGRENZT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_UNBEGRENZT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur Heizkessel bei fester Vorgabe: der Vorlauf in °C; er muss über dem Rücklauf liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_QPUF_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_QPUF_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert für „{0}“ muss zwischen {1} und {2} liegen. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_BEREICH {
@@ -26144,6 +26531,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Wärmepumpe liest den Speicherzustand vom Stundenanfang (konservativ), aus = vom Stundenende. Der Schalter gilt dem ganzen Projekt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_LESEPUNKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_LESEPUNKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag auf den Wärmebedarf für die Verluste des Verteilnetzes; wirkt nur bei vorhandenem Wärmebedarf. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_NETZVERLUSTE_ERL {
@@ -26252,6 +26648,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = auf die gewählte Preisreihe wird der Aufschlag angewendet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_AUFSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_AUFSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Steuerwert der Berechnungsart. Sie entscheidet mit, ob Kompatibilitätsmodus und Peak-Ziel überhaupt wählbar sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_BERECHNUNGSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_BERECHNUNGSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Steuerwert der Betriebsart des Stromspeichers — nicht der Anzeigetext der Klappliste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die im Lauf aus dem Stromspeicher entnommene Energie; 0, wenn das Projekt keinen Speicher führt oder er nicht gearbeitet hat. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_SP_ENTLADUNG_ERL {
@@ -26270,6 +26693,150 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nennkapazität der Speicheranlage in kWh — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins der Speicherwirtschaftlichkeit in Prozent. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_KAPITALZINS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_KAPITALZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kompatibilitätsmodus der Dauernutzung — er rechnet wie die Excel-Vorlage; nur bei dieser Berechnungsart wählbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_KOMPAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_KOMPAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lade- und Entladeleistung der Speicheranlage in kW — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_LADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_LADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = der Speicher lädt aus dem Überschuss der BHKW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_LADEN_BHKW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_LADEN_BHKW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = der Speicher lädt aus dem Überschuss der Photovoltaik. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_LADEN_PV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_LADEN_PV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preisschwelle in Cent je Kilowattstunde, unter der aus dem Netz geladen wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_LADESCHWELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_LADESCHWELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis des Netzbetreibers in Euro je Kilowatt und Jahr; er bewertet die gekappte Bezugsspitze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Aufschlag auf netzgeladene Energie in Cent je Kilowattstunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = der Speicher darf in das Netz entladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_NETZENTLADUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_NETZENTLADUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer der Speicheranlage in Jahren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Zielschwelle zieht sich im Lauf selbst nach, statt gegen den eingetragenen Wert zu rechnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_PEAKADAPTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_PEAKADAPTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zielschwelle der Lastspitzenkappung in kW; 0 heißt „nicht gepflegt&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_PEAKZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_PEAKZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Steuerwert der Preisquelle. Mit ihr wechseln Beschriftung und Inhalt der Reihenauswahl darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_PREISQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_PREISQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Oberer Ladezustand des Stromspeichers in Prozent; darüber wird nicht geladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_SOCMAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_SOCMAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Unterer Ladezustand des Stromspeichers in Prozent; darunter wird nicht entladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_SOCMIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_SOCMIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der zulässige Ladezustandsbereich der aktiven Speichervariante; leer, wenn das Projekt keine aktive Variante führt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_SP_SOC_ERL {
@@ -26284,6 +26851,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_SP_SOC_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_SP_SOC_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromgeführter BHKW-Betrieb für den Speicher — sichtbar, aber dauerhaft gesperrt; nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_SP_STROMGEFUEHRT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_SP_STROMGEFUEHRT_ERL", resourceCulture);
             }
         }
         
@@ -27175,6 +27751,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_MODULKOSTEN_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_MODULKOSTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur beim Heizkreis: welcher Bedarf gedeckt wird (Heizung, Brauchwasser, Prozesswärme). ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = diese Senke speist auf einer eigenen Höhe in den Speicher ein. Beim Einschalten steht 1 (ganz oben) als Vorschlag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_HOEHE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_HOEHE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eigene Einspeisehöhe im Speicher, 0 = ganz unten bis 1 = ganz oben; sie gilt nur bei eingeschaltetem Schalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_HOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_HOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = diese Senke lädt nur bis zu einer eigenen Obergrenze statt bis zur Abschaltschwelle des Speichers. Beim Einschalten steht 70 % als Vorschlag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEGRENZE_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die eigene Ladeobergrenze dieser Senke in Prozent; sie gilt nur bei eingeschaltetem Schalter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur bei einem Pufferspeicher: in welcher Reihenfolge dieser Speicher geladen wird; 0 heißt „nach Vorgabe des Speichers&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEPRIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEPRIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nur auf Rang 1 und nur mit Photovoltaik: abweichende Reihenfolge, solange PV-Überschuss ansteht; 0 heißt „unverändert&quot;. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_LADEPRIO_PV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_LADEPRIO_PV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohin diese Senke die Wärme gibt: in den Heizkreis oder in einen Pufferspeicher. Mit dem Ziel wechseln die Felder darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSEN_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSEN_ZIEL_ERL", resourceCulture);
             }
         }
         

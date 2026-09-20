@@ -41,8 +41,10 @@
 
 @namespace EPOS.UI.Dialoge.Simulation
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -511,7 +513,78 @@
         _betriebsart = 0;
         if (_profil > 0) ProfilUebernehmen(_profil.Value);
         VorderstesBlattSetzen();
+
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird der
+        // KOPF des Profils ueber ein Sichtmodell - Daten traegt nur die Vorauswahl,
+        // und der Dialog bearbeitet seine Felder selbst.
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.QUELLPROFIL,
+                                          () => _kiSicht, KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt den Profilkopf (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die Kopffelder; es fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private QuellprofilKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die drei Wege auf die Kopffelder der Maske.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Betriebsart nimmt den Weg der Klappliste</b>
+    /// (<see cref="BetriebsartWaehlen"/>): Mit ihr wechselt das vorderste Blatt, und
+    /// die Werteliste wird auf das neue Raster gezogen („was passt, bleibt"). Ein
+    /// Steuerwert, den die Liste nicht führt, wird abgewiesen — sonst stünde die Maske
+    /// auf einem Raster, das es nicht gibt.
+    /// </remarks>
+    private QuellprofilKiSicht KiSicht() => new QuellprofilKiSicht
+    {
+        BezeichnungLesen = () => _bezeichner,
+        BezeichnungSetzen = w => _bezeichner = w ?? "",
+        BeschreibungLesen = () => _beschreibung,
+        BeschreibungSetzen = w => _beschreibung = w ?? "",
+        BetriebsartLesen = () => Betriebsart,
+        BetriebsartSetzen = KiBetriebsartSetzen
+    };
+
+    private void KiBetriebsartSetzen(string steuerwert)
+    {
+        for (int i = 0; i < Betriebsarten.Count; i++)
+            if (string.Equals(Betriebsarten[i], steuerwert, StringComparison.Ordinal))
+            {
+                BetriebsartWaehlen(i);
+                return;
+            }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Dieser Dialog SPEICHERT zwar selbst — aber nur im
+    /// OK-Weg, und der schließt die Maske und gibt die neue Id an den Wirt. Eine
+    /// datenbankwirksame Aktion, die den Dialog zumacht, löst der Assistent nicht im
+    /// Rücken des Anwenders aus; <c>dialog_speichern</c> lehnt hier benannt ab.</para>
+    /// <para><b>Kein Schreibschutz.</b> Die Maske kennt keinen.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// Das Blatt, das nach einem Betriebsartwechsel vorn steht: die Monatsseite bzw.

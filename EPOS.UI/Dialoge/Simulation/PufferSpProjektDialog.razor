@@ -61,6 +61,8 @@
    versehentliches Enter kein Bestaetigen, sondern ein Zufall. *@
 
 @namespace EPOS.UI.Dialoge.Simulation
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -713,7 +715,18 @@
 
     // --- Aufbau -----------------------------------------------------------------
 
-    protected override void OnInitialized() => Laden();
+    protected override void OnInitialized()
+    {
+        Laden();
+
+        // Welle KI-F2: die Maske beim Hilfe-Assistenten anmelden. Angemeldet wird ein
+        // SICHTMODELL ueber die LEBENDEN Eingabefelder - der Dialog fuehrt keinen
+        // veraenderlichen Satz, sondern baut seinen Record PspEingaben erst im
+        // Uebernehmen (Muster SimulationKiSicht).
+        _kiSicht = KiSicht();
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PUFFERSPEICHER_VERWALTUNG,
+                                          () => _kiSicht, KiHaken());
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -721,6 +734,109 @@
         _ersterAufbau = false;
         await _wurzel.FocusAsync();
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Eingabefelder (Welle KI-F2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Sichtmodell über die Eingabefelder; es fällt mit dem Dialog.
+    /// </summary>
+    /// <remarks>
+    /// <b>Angemeldet heißt nicht übertragen.</b> Ob ein Feldwert hinausgeht,
+    /// entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (KI‑D‑Q2).
+    /// </remarks>
+    private PufferSpProjektKiSicht? _kiSicht;
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>
+    /// Die sechzehn Wege auf die Felder der Maske — je ein Lese- und ein Setzweg.
+    /// </summary>
+    /// <remarks>
+    /// <b>Setzen heißt hier tippen.</b> Jeder Setzweg geht denselben Weg wie die
+    /// Tastatur: Er merkt den Wert und markiert den Stand als geändert
+    /// (<c>_geaendert</c>), damit OK ihn übernimmt und schreibt — sonst stünde die
+    /// Zahl im Feld und fiele beim Schließen weg.
+    /// </remarks>
+    private PufferSpProjektKiSicht KiSicht() => new PufferSpProjektKiSicht
+    {
+        BezeichnerLesen = () => _bezeichner,
+        BezeichnerSetzen = w => KiGeaendert(() => _bezeichner = w ?? ""),
+        VolumenLesen = () => _volumen,
+        VolumenSetzen = w => KiGeaendert(() => _volumen = w),
+        VerlusteLesen = () => _verluste,
+        VerlusteSetzen = w => KiGeaendert(() => _verluste = w),
+        VorlaufLesen = () => _vorlauf,
+        VorlaufSetzen = w => KiGeaendert(() => _vorlauf = w),
+        RuecklaufLesen = () => _ruecklauf,
+        RuecklaufSetzen = w => KiGeaendert(() => _ruecklauf = w),
+        SchwelleEinLesen = () => _schwelleEin,
+        SchwelleEinSetzen = w => KiGeaendert(() => _schwelleEin = w),
+        SchwelleAusLesen = () => _schwelleAus,
+        SchwelleAusSetzen = w => KiGeaendert(() => _schwelleAus = w),
+        SchwelleNachrangLesen = () => _schwelleNachrang,
+        SchwelleNachrangSetzen = w => KiGeaendert(() => _schwelleNachrang = w),
+        MindestfuellstandLesen = () => _schwelleReserve,
+        MindestfuellstandSetzen = w => KiGeaendert(() => _schwelleReserve = w),
+        SchichtenLesen = () => _schichten,
+        SchichtenSetzen = w => KiGeaendert(() => _schichten = w),
+        HoeheLesen = () => _hoehe,
+        HoeheSetzen = w => KiGeaendert(() => _hoehe = w),
+        LambdaLesen = () => _lambda,
+        LambdaSetzen = w => KiGeaendert(() => _lambda = w),
+        NutztemperaturBwLesen = () => _tNutzBW,
+        NutztemperaturBwSetzen = w => KiGeaendert(() => _tNutzBW = w),
+        LadeleistungLesen = () => _ladeleistung,
+        LadeleistungSetzen = w => KiGeaendert(() => _ladeleistung = w),
+        EntladeleistungLesen = () => _entladeleistung,
+        EntladeleistungSetzen = w => KiGeaendert(() => _entladeleistung = w),
+        EntladeprioritaetLesen = () => _entladeprio,
+        EntladeprioritaetSetzen = w => KiGeaendert(() => _entladeprio = w)
+    };
+
+    private void KiGeaendert(Action setzen)
+    {
+        setzen();
+        _geaendert = true;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier ÜBERNEHMEN</b> — der Knopf „Anlegen"/
+    /// „Übernehmen", der die Zeile in den Arbeitsstand legt und den Dialog OFFEN
+    /// lässt (<see cref="Uebernehmen"/>). Geschrieben wird weiterhin erst im OK-Weg;
+    /// das ist die Hausregel, und der Assistent bricht sie nicht.</para>
+    /// <para><b>Keine Prüfung als eigener Haken.</b> Die Prüfkette dieses Dialogs
+    /// steckt im Übernehmen und meldet dort; sie ein zweites Mal aufzurufen hiesse,
+    /// sie zweimal zu schreiben.</para>
+    /// <para><b>Kein Schreibschutz.</b> Die Maske kennt keinen — sie wird an allen
+    /// drei Einbettungsstellen voll bearbeitbar gezeigt.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Speichern = KiUebernehmen
+    };
+
+    private async Task<KiKern.KiErgebnis> KiUebernehmen()
+    {
+        if (Dienste is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        await Uebernehmen();
+
+        return _meldung.Length > 0 && _meldungStufe != WarnStufe.Erfolg
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+            : KiKern.KiErgebnis.Ok(_bezeichner, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// <c>SetControls</c>:1063-1104 — Katalog und Bestand laden, dann die

@@ -98,6 +98,49 @@ namespace WindowsFormsApplication1
         /// einen Satz des Katalogs, diese hier die Anlage im Projekt.
         /// </remarks>
         public const string WAERMEPUMPE_ANLAGE = "Form_WP_Anlage";
+
+        // =================================================================
+        //  Welle KI-F2: die Masken der SIMULATIONSKONFIGURATION
+        // =================================================================
+        //
+        // Sie gehen aus Schritt ① der Ansicht "Simulation" auf - je Karte
+        // die Maske, die zu ihr gehoert: die Pufferverwaltung des Projekts,
+        // die zwei Quellenmasken der Waermepumpe, das Quellprofil, die
+        // Waermesenken und die Konfiguration einer Komponente. Alle sechs
+        // brauchen eine gewaehlte Komponente und lassen sich nicht
+        // kontextfrei oeffnen; ihr Ziel ist deshalb die Ansicht selbst.
+
+        /// <summary>
+        /// Die Pufferspeicher-Verwaltung des Projekts
+        /// (<c>PufferSpProjektDialog</c>).
+        /// </summary>
+        /// <remarks>
+        /// Sie steht neben <see cref="PUFFERSPEICHER"/> (dem Katalogeditor) und
+        /// <see cref="PUFFERSPEICHER_PROJEKT"/> (der Erzeugerkarte des Projekts) und
+        /// ist etwas Drittes: Hier entstehen und vergehen die Speicher des Projekts
+        /// samt Schichtmodell, Schwellen und Leistungsgrenzen. Alle drei tragen die
+        /// WinForms-Maskennamen des Bestands.
+        /// </remarks>
+        public const string PUFFERSPEICHER_VERWALTUNG = "Form_PufferSp_Projekt";
+
+        /// <summary>Waermequelle Erdreich einer Waermepumpe (<c>QuelleErdreichDialog</c>).</summary>
+        public const string QUELLE_ERDREICH = "Form_QuelleErdreich";
+
+        /// <summary>Waermequelle Pufferspeicher (<c>QuellePufferspeicherDialog</c>).</summary>
+        public const string QUELLE_PUFFERSPEICHER = "Form_QuellePufferspeicher";
+
+        /// <summary>Das Quellprofil einer Waermepumpe (<c>QuellprofilDialog</c>).</summary>
+        public const string QUELLPROFIL = "Form_Quellprofil";
+
+        /// <summary>Die Waermesenken einer Anlage (<c>WaermesenkeDialog</c>).</summary>
+        public const string WAERMESENKE = "Form_Waermesenke";
+
+        /// <summary>
+        /// Die Konfiguration EINER Komponente der Simulation
+        /// (<c>KomponentenKonfigurationDialog</c>) — die dritte Maske ohne
+        /// <c>Form_</c>-Vorsilbe: Sie hatte nie eine WinForms-Fassung.
+        /// </summary>
+        public const string KOMPONENTENKONFIGURATION = "KomponentenKonfiguration";
     }
 
     /// <summary>
@@ -197,7 +240,504 @@ namespace WindowsFormsApplication1
                 PufferspeicherProjekt(),
                 StromspeicherProjekt(),
                 SolarkollektorenProjekt(),
-                WaermepumpeAnlage());
+                WaermepumpeAnlage(),
+                PufferspeicherVerwaltung(),
+                QuelleErdreich(),
+                QuellePufferspeicher(),
+                Quellprofil(),
+                Waermesenke(),
+                Komponentenkonfiguration());
+        }
+
+        // =====================================================================
+        // KomponentenKonfiguration  ->  KomponentenKonfigurationDialog (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Konfiguration EINER Komponente der Simulation — zehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die dritte Maske ohne <c>Form_</c>-Vorsilbe:</b> Sie hatte nie eine
+        /// WinForms-Fassung. Bis zum 16.09.2026 standen ihre Felder offen an den
+        /// Erzeugerkarten; seither stehen sie hinter einem Knopf je Karte.
+        /// </para>
+        /// <para>
+        /// <b>EINE Maske, ZWEI Arbeitskopien — und deshalb ein Sichtmodell.</b> Beim
+        /// Heizkessel und beim BHKW zeigt sie die projektweiten Laufparameter
+        /// (<c>Tab_Einstellungen</c>), bei der Waermepumpe die Konfiguration DIESER
+        /// Anlage. Der Katalog nennt EIN Daten-Objekt vor dem Punkt; die Sichtklasse
+        /// legt beide Staende unter einem Namen zusammen. Hinzu kommt, dass
+        /// <c>ParameterDaten</c> oeffentliche FELDER traegt und keine Eigenschaften —
+        /// die Maskenbruecke loest ueber <c>GetProperty</c> auf und faende dort nichts.
+        /// </para>
+        /// <para>
+        /// <b>Die sieben Felder der Waermepumpe stehen ZWEIMAL im Katalog</b> — hier
+        /// und unter <see cref="KiMaskennamen.WAERMEPUMPE_ANLAGE"/>. Das ist richtig:
+        /// Eine Maske ist, was offen ist, und der Anwender sieht dieselben Werte
+        /// einmal im Anlagendialog und einmal in dieser Konfiguration. Welche Maske
+        /// gerade gilt, sagt die Anmeldung und nicht der Katalog.
+        /// </para>
+        /// <para>
+        /// <b>Der ENERGIETRAEGER bleibt draussen</b> (<c>CarrierId</c>, ein Verweis in
+        /// eine kontextabhaengige Liste) — dieselbe Regel wie bei Kessel, BHKW und
+        /// Stromspeicher.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Komponentenkonfiguration()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOMPONENTENKONFIGURATION,
+                anzeigename: KiDialogTexte.MaskeKomponentenkonfiguration,
+                felder: new[]
+                {
+                    // ---- Die projektweiten Laufparameter ----------------------------
+                    new KiDialogFeld("kessel_bereitschaft",
+                                     "KomponentenKonfigurationKiSicht.Bereitschaft",
+                                     KiDialogTexte.KkonfBereitschaftName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KkonfBereitschaftErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A),
+                    new KiDialogFeld("bhkw_betriebsart",
+                                     "KomponentenKonfigurationKiSicht.BhkwBetriebsart",
+                                     KiDialogTexte.KkonfBetriebsartName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.KkonfBetriebsartErl),
+                    new KiDialogFeld("bhkw_leistungsgrenze",
+                                     "KomponentenKonfigurationKiSicht.BhkwLeistungsgrenze",
+                                     KiDialogTexte.KkonfGrenzeName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.KkonfGrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+
+                    // ---- Die Konfiguration DIESER Waermepumpe -----------------------
+                    new KiDialogFeld("heizstab", "KomponentenKonfigurationKiSicht.Heizstab",
+                                     KiDialogTexte.WpaHeizstabName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaHeizstabErl),
+                    new KiDialogFeld("sperrzeit", "KomponentenKonfigurationKiSicht.Sperrung",
+                                     KiDialogTexte.WpaSperrungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaSperrungErl),
+                    new KiDialogFeld("sperrzeit_von",
+                                     "KomponentenKonfigurationKiSicht.SperrzeitVon",
+                                     KiDialogTexte.WpaSperrzeitVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitVonErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("sperrzeit_bis",
+                                     "KomponentenKonfigurationKiSicht.SperrzeitBis",
+                                     KiDialogTexte.WpaSperrzeitBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaSperrzeitBisErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_TAG, leerErlaubt: true),
+                    new KiDialogFeld("bivalenter_betrieb",
+                                     "KomponentenKonfigurationKiSicht.BivalenterBetrieb",
+                                     KiDialogTexte.WpaBivalentName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaBivalentErl),
+                    new KiDialogFeld("betriebsart", "KomponentenKonfigurationKiSicht.Betriebsart",
+                                     KiDialogTexte.WpaBetriebsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WpaBetriebsartErl, leerErlaubt: true),
+                    new KiDialogFeld("bivalenztemperatur",
+                                     "KomponentenKonfigurationKiSicht.Abschaltpunkt",
+                                     KiDialogTexte.WpaAbschaltpunktName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaAbschaltpunktErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Quellprofil  ->  QuellprofilDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der KOPF eines Quellprofils — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuellprofilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Nur der Kopf, und das ist die Aussage.</b> Die zwoelf Monatswerte und die
+        /// 365 bzw. 8 760 Reihenwerte sind Zahlenfolgen ohne Zeilentyp: Ein Katalogfeld
+        /// traegt EINEN Wert, eine Katalogspalte braucht Zeilen mit benannten
+        /// Eigenschaften (<c>KiFeldsammlung</c>). Gepflegt werden sie ohnehin ueber
+        /// „Alle Werte gleich setzen…" und den CSV-Weg und nicht Zelle fuer Zelle.
+        /// </para>
+        /// <para>
+        /// <b>Das gewaehlte PROFIL bleibt draussen</b> — ein Verweis in die Profilliste
+        /// des Projekts (rohe Id, 0 = „neues Profil"); dieselbe Regel wie beim
+        /// gewaehlten Puffer der Quellenmaske.
+        /// </para>
+        /// <para>
+        /// <b>Die BETRIEBSART ist eine Aufzaehlung</b> und traegt den Steuerwert des
+        /// Bestands (Monat, Tag, Stunde) — nicht den Anzeigetext der Klappliste. Sie
+        /// entscheidet, wie viele Werte das Profil fuehrt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Quellprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLPROFIL,
+                anzeigename: KiDialogTexte.MaskeQuellprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", "QuellprofilKiSicht.Bezeichnung",
+                                     KiDialogTexte.QprofBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.QprofBezeichnungErl),
+                    new KiDialogFeld("beschreibung", "QuellprofilKiSicht.Beschreibung",
+                                     KiDialogTexte.QprofBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.QprofBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("betriebsart", "QuellprofilKiSicht.Betriebsart",
+                                     KiDialogTexte.QprofBetriebsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.QprofBetriebsartErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Waermesenke  ->  WaermesenkeDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermesenken einer Anlage — acht Felder der GEWAEHLTEN Zeile aus
+        /// <c>EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist eine ZEILE und kein Dialogstand</b> — dieselbe
+        /// Bauart wie bei <see cref="Photovoltaik"/>: Der Dialog fuehrt eine Liste, und
+        /// angemeldet ist, was in der gewaehlten Zeile steht. Ist keine gewaehlt, sind
+        /// die Felder leer — derselbe Zustand, den der Anwender sieht.
+        /// </para>
+        /// <para>
+        /// <b>Der gewaehlte SPEICHER und der PARALLELVERBUND bleiben draussen.</b> Der
+        /// eine ist ein Verweis in die Pufferliste des Projekts (rohe Id), der andere
+        /// eine MENGE solcher Verweise; ein Katalogfeld traegt EINEN Wert. Der RANG der
+        /// Zeile bleibt ebenfalls draussen: Er wird nicht eingegeben, sondern ueber
+        /// „nach oben"/„nach unten" verschoben, und er traegt keine eigene Beschriftung.
+        /// </para>
+        /// <para>
+        /// <b>„Senke hinzufuegen", „nach oben", „nach unten" und „Pufferspeicher
+        /// anlegen…" sind keine Knoepfe dieser Liste</b> — sie aendern die LISTE und
+        /// nicht einen Wert; „Entfernen" ist ueberdies ein Loeschknopf und damit nicht
+        /// deklarierbar (Bauartsperre in <see cref="KiDialogKnopf"/>).
+        /// </para>
+        /// </remarks>
+        private static KiDialog Waermesenke()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WAERMESENKE,
+                anzeigename: KiDialogTexte.MaskeWaermesenke,
+                felder: new[]
+                {
+                    new KiDialogFeld("ziel", "WaermesenkeKiSicht.Ziel",
+                                     KiDialogTexte.WsenZielName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WsenZielErl, leerErlaubt: true),
+                    new KiDialogFeld("bedarfsart", "WaermesenkeKiSicht.Bedarfsart",
+                                     KiDialogTexte.WsenBedarfsartName, KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.WsenBedarfsartErl, leerErlaubt: true),
+                    new KiDialogFeld("ladeprioritaet", "WaermesenkeKiSicht.Ladeprioritaet",
+                                     KiDialogTexte.WsenLadeprioName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WsenLadeprioErl),
+                    new KiDialogFeld("ladeprioritaet_pv", "WaermesenkeKiSicht.LadeprioritaetPv",
+                                     KiDialogTexte.WsenLadeprioPvName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WsenLadeprioPvErl),
+                    new KiDialogFeld("ladegrenze_aktiv", "WaermesenkeKiSicht.LadegrenzeAktiv",
+                                     KiDialogTexte.WsenLadegrenzeAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WsenLadegrenzeAktivErl),
+                    new KiDialogFeld("ladegrenze", "WaermesenkeKiSicht.Ladegrenze",
+                                     KiDialogTexte.WsenLadegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WsenLadegrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("einspeisehoehe_aktiv",
+                                     "WaermesenkeKiSicht.EinspeisehoeheAktiv",
+                                     KiDialogTexte.WsenHoeheAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WsenHoeheAktivErl),
+                    new KiDialogFeld("einspeisehoehe", "WaermesenkeKiSicht.Einspeisehoehe",
+                                     KiDialogTexte.WsenHoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WsenHoeheErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_QuelleErdreich  ->  QuelleErdreichDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermequelle ERDREICH einer Sole-/Wasser-Waermepumpe — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuelleErdreichKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ZWEI Quellsysteme, ein Feldsatz.</b> Der Erdkollektor fuehrt Verlegetiefe
+        /// und Flaeche, die Erdsonde Laenge je Sonde und Anzahl; die Wahl zwischen
+        /// beiden ist ein Wahrheitswert (<c>Erdsonde</c>). Sie SPERRT nur — der andere
+        /// Zweig behaelt seine Werte, und deshalb stehen alle vier Zahlen im Katalog
+        /// und nicht nur die des gewaehlten Zweigs.
+        /// </para>
+        /// <para>
+        /// <b>Der BODENTYP bleibt draussen.</b> Die Maske fuehrt ihn als Platz in einer
+        /// Katalogliste; was gespeichert wird, ist ein Katalogschluessel, den nur die
+        /// Maske kennt — dieselbe Regel wie bei der Brennstoffvariante. Die KLIMAZONE
+        /// steht dagegen im Katalog: Sie ist die Zonennummer selbst (1…15, 0 = nicht
+        /// zugeordnet) und kein Listenplatz.
+        /// </para>
+        /// <para>
+        /// <b>„Simulation starten" ist kein Knopf dieser Liste.</b> Er rechnet lange,
+        /// meldet Fortschritt und laesst sich abbrechen; solche Wege gehoeren in das
+        /// Aktionsregister (Stufe 2), nicht in die Positivliste einer Maske. Der
+        /// Kartenknopf „…" traegt nur ein Zeichen und keine Beschriftung.
+        /// </para>
+        /// </remarks>
+        private static KiDialog QuelleErdreich()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLE_ERDREICH,
+                anzeigename: KiDialogTexte.MaskeQuelleErdreich,
+                felder: new[]
+                {
+                    new KiDialogFeld("erdsonde", "QuelleErdreichKiSicht.Erdsonde",
+                                     KiDialogTexte.QerdSondeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QerdSondeErl),
+                    new KiDialogFeld("verlegetiefe", "QuelleErdreichKiSicht.Verlegetiefe",
+                                     KiDialogTexte.QerdTiefeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdTiefeErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("flaeche", "QuelleErdreichKiSicht.Flaeche",
+                                     KiDialogTexte.QerdFlaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdFlaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2, leerErlaubt: true),
+                    new KiDialogFeld("laenge_sonde", "QuelleErdreichKiSicht.LaengeSonde",
+                                     KiDialogTexte.QerdLaengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdLaengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("anzahl_sonden", "QuelleErdreichKiSicht.AnzahlSonden",
+                                     KiDialogTexte.QerdAnzahlName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QerdAnzahlErl, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "QuelleErdreichKiSicht.Spreizung",
+                                     KiDialogTexte.QerdSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QerdSpreizungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("klimazone", "QuelleErdreichKiSicht.Klimazone",
+                                     KiDialogTexte.QerdKlimazoneName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QerdKlimazoneErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_QuellePufferspeicher  ->  QuellePufferspeicherDialog  (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Waermequelle PUFFERSPEICHER — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.QuellePufferspeicherKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>ZWEI Erzeugerarten in einer Maske.</b> Die Waermepumpe zieht
+        /// Verdampferwaerme aus dem Speicher und pflegt dazu Quelltemperatur,
+        /// Spreizung, Regeneration und „Quelle unbegrenzt"; der Heizkessel nimmt seine
+        /// Eintrittstemperatur aus dem Puffer und pflegt dafuer den Temperaturbezug
+        /// samt festem Vorlauf und Ruecklauf. Die Entnahmehoehe gilt beiden. Welche
+        /// Felder sichtbar sind, entscheidet die Erzeugerart; die jeweils andere Seite
+        /// bleibt unangetastet.
+        /// </para>
+        /// <para>
+        /// <b>Der gewaehlte PUFFER bleibt draussen.</b> Er ist ein Verweis in die
+        /// Projektliste (rohe <c>WQ_ID_Puffer</c>) — dieselbe Regel wie bei der
+        /// Brennstoffvariante und beim Bodentyp der Erdreichquelle.
+        /// </para>
+        /// <para>
+        /// <b>„Pufferspeicher anlegen…" ist kein Knopf dieser Liste.</b> Er oeffnet
+        /// eine zweite Maske als Ueberlagerung, setzt aber keinen Wert; die
+        /// Positivliste dieser Welle fuehrt nur OK und Abbrechen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog QuellePufferspeicher()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.QUELLE_PUFFERSPEICHER,
+                anzeigename: KiDialogTexte.MaskeQuellePuffer,
+                felder: new[]
+                {
+                    new KiDialogFeld("quelltemperatur",
+                                     "QuellePufferspeicherKiSicht.Quelltemperatur",
+                                     KiDialogTexte.QpufTemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("spreizung", "QuellePufferspeicherKiSicht.Spreizung",
+                                     KiDialogTexte.QpufSpreizungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufSpreizungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KELVIN, leerErlaubt: true),
+                    new KiDialogFeld("regeneration", "QuellePufferspeicherKiSicht.Regeneration",
+                                     KiDialogTexte.QpufRegenerationName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufRegenerationErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("unbegrenzt", "QuellePufferspeicherKiSicht.Unbegrenzt",
+                                     KiDialogTexte.QpufUnbegrenztName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QpufUnbegrenztErl),
+                    new KiDialogFeld("temperatur_fest",
+                                     "QuellePufferspeicherKiSicht.TemperaturFest",
+                                     KiDialogTexte.QpufFestName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.QpufFestErl),
+                    new KiDialogFeld("vorlauf", "QuellePufferspeicherKiSicht.Vorlauf",
+                                     KiDialogTexte.QpufVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QpufVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "QuellePufferspeicherKiSicht.Ruecklauf",
+                                     KiDialogTexte.QpufRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.QpufRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("anschlusshoehe",
+                                     "QuellePufferspeicherKiSicht.Anschlusshoehe",
+                                     KiDialogTexte.QpufAnschlusshoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.QpufAnschlusshoeheErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PufferSp_Projekt  ->  PufferSpProjektDialog   (Welle KI-F2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Pufferspeicher-Verwaltung des Projekts — sechzehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Simulation.PufferSpProjektKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Warum ein SICHTMODELL und nicht das Daten-Objekt.</b> Dieser Dialog
+        /// bekommt keinen veraenderlichen Satz herein und gibt keinen heraus: Was
+        /// hereinkommt, sind zwei Ids, und was der Anwender bearbeitet, steht bis zum
+        /// „Uebernehmen" in den Eingabefeldern der Maske — erst dort entsteht der
+        /// unveraenderliche Record <c>PspEingaben</c>. Ein daran angemeldeter Katalog
+        /// zeigte dem Assistenten den Stand von vorhin und setzte ins Leere. Dieselbe
+        /// Lage wie bei der Stromspeicher- und der Simulationsansicht, dieselbe
+        /// Antwort: eine flache Sichtklasse ueber die lebenden Felder.
+        /// </para>
+        /// <para>
+        /// <b>Die drei ENTNAHMEHOEHEN bleiben draussen.</b> „Heizung", „Brauchwasser"
+        /// und „Prozesswaerme" tragen im Bestand keine Beschriftungsressource — die
+        /// Maske zeigt dort ihren deutschen Vorgabetext, auch auf der englischen
+        /// Oberflaeche. Ein Anzeigename waere hier also erfunden und nicht abgelesen;
+        /// sie kommen in den Katalog, sobald die Maske sie in beiden Sprachen
+        /// beschriftet.
+        /// </para>
+        /// <para>
+        /// <b>Der Katalogsatz und die NUTZUNG bleiben ebenfalls draussen.</b> „Aus
+        /// Katalog" ist ein roher Listenplatz im Pufferkatalog (dieselbe Regel wie bei
+        /// der Brennstoffvariante), und „Nutzung" ist eine MEHRFACHwahl aus drei
+        /// Klassen — ein Katalogfeld traegt EINEN Wert (<c>KiDialogFeld</c>).
+        /// </para>
+        /// <para>
+        /// <b>Knoepfe: OK, Abbrechen und UEBERNEHMEN.</b> „Entfernen" ist ein
+        /// Loeschknopf und damit nicht deklarierbar (Bauartsperre in
+        /// <see cref="KiDialogKnopf"/>); „Neuer Pufferspeicher" und „Katalog
+        /// ansehen…" wechseln den Stand der Maske, ohne einen Wert zu setzen, und
+        /// gehoeren nicht in die Positivliste dieser Welle.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PufferspeicherVerwaltung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PUFFERSPEICHER_VERWALTUNG,
+                anzeigename: KiDialogTexte.MaskePufferSpVerwaltung,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichner", "PufferSpProjektKiSicht.Bezeichner",
+                                     KiDialogTexte.PspvBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.PspvBezeichnerErl),
+                    new KiDialogFeld("volumen", "PufferSpProjektKiSicht.Volumen",
+                                     KiDialogTexte.PspvVolumenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvVolumenErl,
+                                     einheit: KiDialogTexte.EINHEIT_LITER, leerErlaubt: true),
+                    new KiDialogFeld("bereitschaftsverluste",
+                                     "PufferSpProjektKiSicht.Bereitschaftsverluste",
+                                     KiDialogTexte.PspvVerlusteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvVerlusteErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH_24H, leerErlaubt: true),
+                    new KiDialogFeld("vorlauf", "PufferSpProjektKiSicht.Vorlauf",
+                                     KiDialogTexte.PspvVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "PufferSpProjektKiSicht.Ruecklauf",
+                                     KiDialogTexte.PspvRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("einschaltschwelle",
+                                     "PufferSpProjektKiSicht.Einschaltschwelle",
+                                     KiDialogTexte.PspvSchwelleEinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleEinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("abschaltschwelle",
+                                     "PufferSpProjektKiSicht.Abschaltschwelle",
+                                     KiDialogTexte.PspvSchwelleAusName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleAusErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("schwelle_nachrangig",
+                                     "PufferSpProjektKiSicht.SchwelleNachrangig",
+                                     KiDialogTexte.PspvSchwelleNachrangName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvSchwelleNachrangErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("mindestfuellstand",
+                                     "PufferSpProjektKiSicht.Mindestfuellstand",
+                                     KiDialogTexte.PspvMindestfuellstandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvMindestfuellstandErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("schichten", "PufferSpProjektKiSicht.Schichten",
+                                     KiDialogTexte.PspvSchichtenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvSchichtenErl, leerErlaubt: true),
+                    new KiDialogFeld("hoehe", "PufferSpProjektKiSicht.Hoehe",
+                                     KiDialogTexte.PspvHoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvHoeheErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("lambda", "PufferSpProjektKiSicht.Lambda",
+                                     KiDialogTexte.PspvLambdaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvLambdaErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true),
+                    new KiDialogFeld("nutztemperatur_bw",
+                                     "PufferSpProjektKiSicht.NutztemperaturBw",
+                                     KiDialogTexte.PspvNutztemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvNutztemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ladeleistung", "PufferSpProjektKiSicht.Ladeleistung",
+                                     KiDialogTexte.PspvLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("entladeleistung", "PufferSpProjektKiSicht.Entladeleistung",
+                                     KiDialogTexte.PspvEntladeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PspvEntladeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("entladeprioritaet",
+                                     "PufferSpProjektKiSicht.Entladeprioritaet",
+                                     KiDialogTexte.PspvEntladeprioName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PspvEntladeprioErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
@@ -1119,7 +1659,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
-        /// „Simulation" — achtzehn Felder aus
+        /// „Simulation" — achtunddreissig Felder aus
         /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1152,6 +1692,22 @@ namespace WindowsFormsApplication1
         /// rechnende bzw. datenbankwirksame Aktionen der Stufen 2 und 3 und gehoeren in
         /// das Aktionsregister mit Bestaetigung und Sicherungspunkt — dieselbe
         /// Begruendung wie bei der Stromspeicher-Ansicht.
+        /// </para>
+        /// <para>
+        /// <b>Welle KI-F2: die BLAETTER der Ansicht kommen dazu.</b> Einundzwanzig
+        /// Einstellwerte des Reiters „Stromspeicher" von Schritt ③ und der Lesepunkt
+        /// aus der Fusszeile von Schritt ①. Sie gehen nicht auf, sie STEHEN auf der
+        /// Ansicht — eine Maske ist, was offen ist, und eine eigene Maske je Reiterblatt
+        /// waere eine Maske, die der Anwender nie oeffnet. Jedes dieser Felder schreibt
+        /// SOFORT, ueber denselben Weg wie das Feld auf dem Bildschirm
+        /// (<c>SpeicherfeldSchreiben</c> je Feldschluessel bzw.
+        /// <c>LesepunktSchreiben</c>); der Speicherknopf, den
+        /// <c>dialog_speichern</c> druecken koennte, fehlt hier weiterhin.
+        /// </para>
+        /// <para>
+        /// <b>Die PREISREIHE bleibt draussen</b> — ein Verweis in eine
+        /// kontextabhaengige Liste (rohe Id, deren Inhalt mit der Preisquelle
+        /// wechselt); dieselbe Regel wie bei der Brennstoffvariante.
         /// </para>
         /// </remarks>
         private static KiDialog Simulation()
@@ -1233,7 +1789,122 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimSpeicherSocErl, leerErlaubt: true),
                     new KiDialogFeld("laufhinweise", "SimulationKiSicht.Laufhinweise",
                                      KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
-                                     KiDialogTexte.SimHinweiseErl, leerErlaubt: true)
+                                     KiDialogTexte.SimHinweiseErl, leerErlaubt: true),
+
+                    // ---- Der Lesepunkt der Fusszeile von ① (Welle KI-F2) -----------
+                    new KiDialogFeld("lesepunkt_davor", "SimulationKiSicht.LesepunktDavor",
+                                     KiDialogTexte.SimLesepunktName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimLesepunktErl),
+
+                    // ---- Der Reiter „Stromspeicher" von ③ (Welle KI-F2) ------------
+                    //
+                    // Einundzwanzig EINSTELLWERTE der aktiven Speichervariante. Sie
+                    // stehen auf einem BLATT der Ansicht und nicht in einem Dialog -
+                    // eine Maske ist, was offen ist, und offen ist die Simulation.
+                    // Jedes Feld schreibt SOFORT, ueber denselben Weg wie das Feld auf
+                    // dem Bildschirm (SpeicherfeldSchreiben je Feldschluessel).
+                    new KiDialogFeld("speicher_soc_min", "SimulationKiSicht.SpeicherSocMin",
+                                     KiDialogTexte.SimSpSocMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpSocMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_soc_max", "SimulationKiSicht.SpeicherSocMax",
+                                     KiDialogTexte.SimSpSocMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpSocMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_ladeleistung",
+                                     "SimulationKiSicht.SpeicherLadeleistung",
+                                     KiDialogTexte.SimSpLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("speicher_kapazitaet",
+                                     "SimulationKiSicht.SpeicherKapazitaet",
+                                     KiDialogTexte.SimSpKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+                    new KiDialogFeld("speicher_ladeschwelle",
+                                     "SimulationKiSicht.SpeicherLadeschwelle",
+                                     KiDialogTexte.SimSpLadeschwelleName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLadeschwelleErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("speicher_betriebsart",
+                                     "SimulationKiSicht.SpeicherBetriebsart",
+                                     KiDialogTexte.SimSpBetriebsartName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpBetriebsartErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_berechnungsart",
+                                     "SimulationKiSicht.SpeicherBerechnungsart",
+                                     KiDialogTexte.SimSpBerechnungsartName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpBerechnungsartErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_peakziel", "SimulationKiSicht.SpeicherPeakZiel",
+                                     KiDialogTexte.SimSpPeakZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpPeakZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("speicher_peakziel_adaptiv",
+                                     "SimulationKiSicht.SpeicherPeakZielAdaptiv",
+                                     KiDialogTexte.SimSpPeakAdaptivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpPeakAdaptivErl),
+                    new KiDialogFeld("speicher_kompatibilitaet",
+                                     "SimulationKiSicht.SpeicherKompatibilitaet",
+                                     KiDialogTexte.SimSpKompatibilitaetName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpKompatibilitaetErl),
+                    new KiDialogFeld("speicher_laden_pv", "SimulationKiSicht.SpeicherLadenAusPv",
+                                     KiDialogTexte.SimSpLadenPvName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpLadenPvErl),
+                    new KiDialogFeld("speicher_laden_bhkw",
+                                     "SimulationKiSicht.SpeicherLadenAusBhkw",
+                                     KiDialogTexte.SimSpLadenBhkwName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpLadenBhkwErl),
+                    new KiDialogFeld("speicher_netzentladung",
+                                     "SimulationKiSicht.SpeicherNetzentladung",
+                                     KiDialogTexte.SimSpNetzentladungName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpNetzentladungErl),
+
+                    // Sichtbar, aber dauerhaft gesperrt (Ausbaustufe 11) - deshalb
+                    // nurLesen: Der Assistent soll nicht anbieten, einen Schalter zu
+                    // legen, den der Anwender nicht legen kann.
+                    new KiDialogFeld("speicher_bhkw_stromgefuehrt",
+                                     "SimulationKiSicht.SpeicherBhkwStromgefuehrt",
+                                     KiDialogTexte.SimSpStromgefuehrtName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpStromgefuehrtErl, nurLesen: true),
+
+                    new KiDialogFeld("speicher_kapitalzins",
+                                     "SimulationKiSicht.SpeicherKapitalzins",
+                                     KiDialogTexte.SimSpKapitalzinsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpKapitalzinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_nutzungsdauer",
+                                     "SimulationKiSicht.SpeicherNutzungsdauer",
+                                     KiDialogTexte.SimSpNutzungsdauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpNutzungsdauerErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR),
+                    new KiDialogFeld("speicher_leistungspreis",
+                                     "SimulationKiSicht.SpeicherLeistungspreis",
+                                     KiDialogTexte.SimSpLeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLeistungspreisErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A),
+                    new KiDialogFeld("speicher_netzladeaufschlag",
+                                     "SimulationKiSicht.SpeicherNetzladeaufschlag",
+                                     KiDialogTexte.SimSpNetzaufschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpNetzaufschlagErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("speicher_preisquelle",
+                                     "SimulationKiSicht.SpeicherPreisquelle",
+                                     KiDialogTexte.SimSpPreisquelleName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpPreisquelleErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_aufschlag",
+                                     "SimulationKiSicht.SpeicherAufschlag",
+                                     KiDialogTexte.SimSpAufschlagName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpAufschlagErl)
                 });
         }
     }

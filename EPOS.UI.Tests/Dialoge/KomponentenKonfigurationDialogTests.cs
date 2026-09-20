@@ -250,4 +250,71 @@ public class KomponentenKonfigurationDialogTests : EposBunitContext
                      cut.Find("h1.epos-dialog-titel").TextContent);
         Assert.NotNull(cut.Find("button.epos-dialog-zu"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>KomponentenKonfigurationKiSicht</c> und steht deshalb nicht in
+    /// der Markup-Probe des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske
+    /// steht gezeichnet da, die Brücke liest die projektweite Leistungsgrenze, und
+    /// ein Setzen landet in der Arbeitskopie.
+    /// </summary>
+    /// <remarks>
+    /// <b>Monotone Aussage</b> (Muster <c>KiMaskenhakenTests</c>): Geprüft wird, was
+    /// nach dem Zeichnen DA ist — die Brücke ist prozessweiter Zustand.
+    /// </remarks>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Leistungsgrenze()
+    {
+        var cut = Zeige(Komponentenart.Bhkw);
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(
+                        WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION));
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "bhkw_leistungsgrenze");
+
+        Assert.NotNull(zugang);
+        Assert.Equal(30, zugang.Lesen());
+
+        Assert.True(zugang.Setzbar);
+        zugang.Setzen(45);
+        cut.Render();
+
+        Assert.Equal(45, _werte.UntersteLeistungsgrenze);
+    }
+
+    /// <summary>
+    /// <b>Dieselben Felder unter einer anderen Maske.</b> Steht die Konfiguration einer
+    /// WÄRMEPUMPE offen, liest und setzt der Assistent die sieben Werte der ANLAGE —
+    /// dieselben, die unter <c>Form_WP_Anlage</c> stehen. Eine Maske ist, was offen ist.
+    /// </summary>
+    [Fact]
+    public void Bei_der_Waermepumpe_stehen_die_sieben_Werte_der_Anlage()
+    {
+        var anlage = new WaermepumpeAnlageDaten { Heizstab = false, Abschaltpunkt = -5 };
+        var cut = Zeige(Komponentenart.Waermepumpe, anlage);
+
+        WindowsFormsApplication1.KiFeldzugang heizstab =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION, "heizstab");
+
+        Assert.Equal(false, heizstab.Lesen());
+
+        heizstab.Setzen(true);
+        cut.Render();
+
+        Assert.True(anlage.Heizstab);
+
+        WindowsFormsApplication1.KiFeldzugang bivalenz =
+            WindowsFormsApplication1.KiMaskenbruecke.Feldzugang(
+                WindowsFormsApplication1.KiMaskennamen.KOMPONENTENKONFIGURATION,
+                "bivalenztemperatur");
+        Assert.Equal(-5.0, bivalenz.Lesen());
+    }
 }

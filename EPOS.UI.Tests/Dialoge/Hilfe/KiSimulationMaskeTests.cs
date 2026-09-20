@@ -115,6 +115,33 @@ public class KiSimulationMaskeTests : IDisposable
         Laufmeldungen = "LAUF_W_ERZEUGER_OHNE_KASKADENPLATZ: Kollektorfeld"
     };
 
+    /// <summary>
+    /// Ein Ergebnisstand MIT aktiver Speichervariante (Welle KI‑F2) — er trägt die
+    /// Einstellwerte des Reiters „Stromspeicher" und schreibt jede Feldsetzung mit.
+    /// </summary>
+    private static SimulationErgebnisDaten Speicherstand(List<string> geschrieben)
+    {
+        SimulationErgebnisDaten d = Ergebnisstand();
+        d.Parameter = new ParameterDaten
+        {
+            Speicher = new SpeicherParameterDaten
+            {
+                VarianteVorhanden = true,
+                SoCMinProzent = 20,
+                SoCMaxProzent = 90,
+                KapazitaetKwh = 40,
+                Kapitalzins = 4.5,
+                Betriebsart = "PeakShaving",
+                Betriebsarten = new[]
+                {
+                    new Steuerwahl("PeakShaving", "Lastspitzenkappung"),
+                    new Steuerwahl("PvGreedy", "PV-Eigenverbrauch")
+                }
+            }
+        };
+        return d;
+    }
+
     /// <summary>Die vier Laufparameter samt Schreibweg — und was der Weg mitbekommt.</summary>
     private sealed class Schreibprobe
     {
@@ -148,11 +175,14 @@ public class KiSimulationMaskeTests : IDisposable
                                            SimulationKonfigDaten? konfig = null,
                                            SimulationErgebnisDaten? ergebnis = null,
                                            string schritt = "1 Konfiguration",
-                                           string reiter = "")
+                                           string reiter = "",
+                                           SimulationErgebnisDienste? speicherwege = null,
+                                           SimulationKonfigDienste? konfigwege = null)
     {
         SimulationParameterDienste wege = probe.Wege();
         return new SimulationKiSicht(() => konfig, () => probe.Stand, () => wege,
-                                     () => ergebnis, () => schritt, () => reiter);
+                                     () => ergebnis, () => schritt, () => reiter,
+                                     () => speicherwege, () => konfigwege);
     }
 
     // =====================================================================
@@ -160,12 +190,13 @@ public class KiSimulationMaskeTests : IDisposable
     // =====================================================================
 
     /// <summary>
-    /// Siebzehn seit Auftrag #299: Das Feld <c>wp_heizstab</c> ist entfallen — der
-    /// Heizstab gehört der WÄRMEPUMPE (<c>Tab_Energieanlagen.Heizstab</c> je Anlage)
-    /// und ist kein Laufparameter des Projekts mehr.
+    /// Achtunddreissig seit der Welle KI‑F2: Zu den siebzehn Feldern der Ablaufleiste
+    /// kommen die BLÄTTER der Ansicht — der Lesepunkt aus der Fußzeile von Schritt ①
+    /// und die einundzwanzig Einstellwerte des Reiters „Stromspeicher" von Schritt ③.
+    /// Sie gehen nicht auf, sie stehen auf der Ansicht; eine Maske ist, was offen ist.
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_siebzehn_Felder_an()
+    public void Die_Ansicht_meldet_achtunddreissig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -174,7 +205,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(17, felder.Count);
+        Assert.Equal(38, felder.Count);
     }
 
     [Fact]
@@ -313,7 +344,11 @@ public class KiSimulationMaskeTests : IDisposable
     [Fact]
     public void Kein_Feld_des_Laufs_traegt_einen_Setzer()
     {
-        // Die Gegenprobe zur Setzbarkeit: genau FUENF der achtzehn Felder sind setzbar.
+        // Die Gegenprobe zur Setzbarkeit: Die Kaskade, der Schritt, der Reiter und die
+        // Kennzahlen des Laufs sind ABGELEITET und haben keinen Setzer. Setzbar sind
+        // die vier Laufparameter und - seit der Welle KI-F2 - der Lesepunkt sowie die
+        // zwanzig EINGEBBAREN Felder des Reiters "Stromspeicher"; der stromgefuehrte
+        // BHKW-Betrieb steht dort sichtbar, aber dauerhaft gesperrt.
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
             KiMaskennamen.SIMULATION, () => Sicht(probe), new KiMaskenhaken());
@@ -328,8 +363,125 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.Equal(new[]
         {
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft"
+            "kessel_bereitschaft", "lesepunkt_davor",
+            "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",
+            "speicher_kapazitaet", "speicher_ladeschwelle", "speicher_betriebsart",
+            "speicher_berechnungsart", "speicher_peakziel", "speicher_peakziel_adaptiv",
+            "speicher_kompatibilitaet", "speicher_laden_pv", "speicher_laden_bhkw",
+            "speicher_netzentladung", "speicher_kapitalzins", "speicher_nutzungsdauer",
+            "speicher_leistungspreis", "speicher_netzladeaufschlag",
+            "speicher_preisquelle", "speicher_aufschlag"
         }, setzbar);
+    }
+
+    // =====================================================================
+    //  2b — Der Reiter „Stromspeicher" (Welle KI-F2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Einstellwerte des Reiters „Stromspeicher" stehen an der Brücke</b> — und
+    /// ein Setzen geht denselben Weg wie das Feld auf dem Bildschirm: erst merken,
+    /// dann schreiben (<c>SpeicherfeldSchreiben</c> mit dem Feldschlüssel des Blatts).
+    /// </summary>
+    [Fact]
+    public void Die_Speicherfelder_werden_gelesen_und_ueber_ihren_Feldweg_geschrieben()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<string>();
+        SimulationErgebnisDaten stand = Speicherstand(geschrieben);
+
+        var speicherwege = new SimulationErgebnisDienste
+        {
+            SpeicherfeldSchreiben = (feld, wert) =>
+            {
+                geschrieben.Add(feld + "=" + wert);
+                return new Rueckmeldung(true, "");
+            }
+        };
+
+        var sicht = Sicht(probe, ergebnis: stand, speicherwege: speicherwege);
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiFeldzugang zins =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "speicher_kapitalzins");
+        Assert.Equal(4.5, zins.Lesen());
+
+        zins.Setzen(3.0);
+
+        Assert.Equal(3.0, stand.Parameter.Speicher.Kapitalzins);
+        Assert.Contains(SpeicherFeld.Kapitalzins + "=3", geschrieben);
+    }
+
+    /// <summary>
+    /// <b>Ein Steuerwert, den die Klappliste der Maske nicht führt, wird abgewiesen.</b>
+    /// Er stünde sonst in der Datenbank, ohne dass ihn jemand wieder auswählen könnte.
+    /// </summary>
+    [Fact]
+    public void Ein_unbekannter_Steuerwert_der_Betriebsart_wird_abgewiesen()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<string>();
+        SimulationErgebnisDaten stand = Speicherstand(geschrieben);
+
+        var speicherwege = new SimulationErgebnisDienste
+        {
+            SpeicherfeldSchreiben = (feld, wert) =>
+            {
+                geschrieben.Add(feld + "=" + wert);
+                return new Rueckmeldung(true, "");
+            }
+        };
+
+        var sicht = Sicht(probe, ergebnis: stand, speicherwege: speicherwege);
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiFeldzugang art =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "speicher_betriebsart");
+
+        art.Setzen("Arbitrage");
+        Assert.Equal("PeakShaving", stand.Parameter.Speicher.Betriebsart);
+        Assert.Empty(geschrieben);
+
+        art.Setzen("PvGreedy");
+        Assert.Equal("PvGreedy", stand.Parameter.Speicher.Betriebsart);
+        Assert.Contains(SpeicherFeld.Betriebsart + "=PvGreedy", geschrieben);
+    }
+
+    /// <summary>
+    /// Der LESEPUNKT von Schritt ① zieht erst nach, wenn sein Schreibweg die Einstellung
+    /// bestätigt — genau wie am Schalter der Fußzeile.
+    /// </summary>
+    [Fact]
+    public void Der_Lesepunkt_zieht_nur_nach_einer_bestaetigten_Einstellung_nach()
+    {
+        var probe = new Schreibprobe();
+        SimulationKonfigDaten konfig = Konfigstand();
+        konfig.BoosterDavor = true;
+
+        bool angenommen = false;
+        var konfigwege = new SimulationKonfigDienste
+        {
+            LesepunktSchreiben = _ => angenommen
+        };
+
+        var sicht = Sicht(probe, konfig: konfig, konfigwege: konfigwege);
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiFeldzugang punkt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "lesepunkt_davor");
+
+        Assert.Equal(true, punkt.Lesen());
+
+        // Die Einstellung kommt nicht an: Der Stand bleibt, wie er war.
+        punkt.Setzen(false);
+        Assert.True(konfig.BoosterDavor);
+
+        angenommen = true;
+        punkt.Setzen(false);
+        Assert.False(konfig.BoosterDavor);
     }
 
     // =====================================================================
