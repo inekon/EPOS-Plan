@@ -15,17 +15,21 @@ namespace WindowsFormsApplication1
     /// Kuchendiagramme des Bestandsberichts). Alle Methoden liefern PNG-Bytes;
     /// gerendert wird in doppelter Zielauflösung (Einbettung skaliert herunter).
     ///
-    /// <para><b>Paket iU7 — die Portierung von GDI+ auf SkiaSharp.</b> Bis zum
-    /// 03.09.2026 zeichnete diese Datei mit GDI+ und war damit die letzte
-    /// Windows-Bindung im Berichtsweg. Übersetzt wurde 1:1 und ohne jede Änderung an
-    /// Bildmaßen, Farben, Texten oder Achsenlogik: <c>Graphics</c> → <see cref="SKCanvas"/>,
-    /// <c>Pen</c> → <see cref="SKPaint"/> im Stroke-Stil, <c>Brush</c> → <see cref="SKPaint"/>
-    /// im Fill-Stil, <c>MeasureString</c> → <see cref="SKFont.MeasureText(string)"/>,
-    /// <c>FillPie</c> → <see cref="SKPath.ArcTo(SKRect, float, float, bool)"/>,
-    /// <c>Bitmap.Save(Png)</c> → <see cref="SKSurface"/> + <see cref="SKImage.Encode(SKEncodedImageFormat, int)"/>.
-    /// Die öffentliche Fläche ist unverändert; nur die Farbfelder tragen jetzt
-    /// <see cref="SKColor"/> statt des GDI+-Farbtyps <c>Color</c>. Die Datei hat damit
-    /// KEINE Windows-Bindung mehr und kann in den plattformfreien Kern ziehen.</para>
+    /// <para><b>Etappe E1 — der Renderer zeichnet nicht mehr, er BESCHREIBT.</b> Jede
+    /// der 26 Zeichenmethoden fuellt ein <see cref="Zeichenmodell"/> — eine Liste
+    /// unveraenderlicher Befehle mit fertigen Koordinaten und einem
+    /// <see cref="Farbton"/> je Farbe — und gibt es an <see cref="SkiaMaler.Png"/>.
+    /// Hier steht deshalb KEIN Zeichenaufruf einer Grafikbibliothek mehr: keine
+    /// Leinwand, kein Pinsel, kein Pfad. Was bleibt, ist das Layout — Bildmasse,
+    /// Achsen, Skalen — und die TEXTVERMESSUNG (<see cref="Schriftmass"/>), die das
+    /// Layout VOR dem Befehl braucht. Denselben Modellbaum kann ein zweiter
+    /// Ausgabeweg (SVG, Etappe E2) lesen.</para>
+    ///
+    /// <para>Die oeffentliche Flaeche fuehrt weiter <see cref="SKColor"/>, <c>SKRect</c>
+    /// und <c>SKPoint</c> als reine WERTTYPEN fuer Farbe, Rechteck und Punkt — sie
+    /// zeichnen nichts. Ihr Ersatz durch die Modelltypen <c>Farbe</c>,
+    /// <c>Rahmen</c> und <c>Punkt</c> beruehrt jede Huelle und gehoert deshalb in
+    /// eine eigene Etappe.</para>
     ///
     /// <para>Der eingefrorene GDI+-Stand (<c>ChartRendererGdi</c>) und der Modus
     /// <c>bildvergleich</c> der Referenzlauf-Suite sind mit Entscheid iF23 am 03.09.2026
@@ -56,8 +60,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static readonly SKColor[] C_SPEICHER =
         {
-            SKColors.MediumVioletRed, SKColors.DarkViolet, SKColors.Teal,
-            SKColors.SaddleBrown, SKColors.DarkSlateGray, SKColors.Crimson
+            new SKColor(0xC7, 0x15, 0x85),   // MediumVioletRed
+            new SKColor(0x94, 0x00, 0xD3),   // DarkViolet
+            new SKColor(0x00, 0x80, 0x80),   // Teal
+            new SKColor(0x8B, 0x45, 0x13),   // SaddleBrown
+            new SKColor(0x2F, 0x4F, 0x4F),   // DarkSlateGray
+            new SKColor(0xDC, 0x14, 0x3C)    // Crimson
         };
 
         private static readonly CultureInfo DE = CultureInfo.GetCultureInfo("de-DE");
@@ -308,8 +316,8 @@ namespace WindowsFormsApplication1
                 if (p == 0)
                     using (var f = Schrift(15f))
                     {
-                        Text(bild, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
-                        Text(bild, "0", f, SKColors.DimGray, rc.Left - 24f, rc.Bottom - 10f);
+                        Text(bild, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                        Text(bild, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
                     }
             }
             Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
@@ -391,8 +399,8 @@ namespace WindowsFormsApplication1
                 if (p == 0)
                     using (var f = Schrift(15f))
                     {
-                        Text(bild, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
-                        Text(bild, min.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Bottom - 10f);
+                        Text(bild, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                        Text(bild, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
                     }
             }
 
@@ -488,7 +496,7 @@ namespace WindowsFormsApplication1
                 {
                     float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
                     float breite = f.MeasureText(monate[m]);
-                    Text(z, monate[m], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                    Text(z, monate[m], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                 }
 
             float slot = rc.Width / 12f;
@@ -589,7 +597,7 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 using (var f = Schrift(18f))
-                    Text(z, "Keine berechenbaren Reihen.", f, SKColors.DimGray, rc.Left, rc.Top + 20f);
+                    Text(z, "Keine berechenbaren Reihen.", f, Farbrolle.ACHSE, rc.Left, rc.Top + 20f);
                 return SkiaMaler.Png(z);
             }
             int n = gueltig.Max(r => r.Werte.Length);          // Stützstellen (Jahre + 1)
@@ -607,7 +615,7 @@ namespace WindowsFormsApplication1
             max = Math.Ceiling(max / schritt) * schritt;
 
             // Raster + y-Beschriftung.
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (double wert = min; wert <= max + schritt / 2; wert += schritt)
                 {
@@ -615,13 +623,13 @@ namespace WindowsFormsApplication1
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString("N0", DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                 }
 
             // X-Achse: Jahre 0…N, Beschriftung in sinnvollen Schritten.
             int jahre = n - 1;
             int xschritt = jahre <= 12 ? 1 : jahre <= 25 ? 2 : jahre <= 50 ? 5 : 10;
-            var xraster = Stift(SKColors.Gainsboro, 1f);
+            var xraster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int t = 0; t <= jahre; t += xschritt)
                 {
@@ -629,16 +637,16 @@ namespace WindowsFormsApplication1
                     z.Linie(x, rc.Top, x, rc.Bottom, xraster);
                     string lab = t.ToString(DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                 }
             using (var f = Schrift(15f))
-                Text(z, BerichtTexte.T("Jahr"), f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+                Text(z, BerichtTexte.T("Jahr"), f, Farbrolle.ACHSE, rc.Right + 10f, rc.Bottom + 8f);
 
             // Achsen + hervorgehobene Nulllinie.
             Achsenkreuz(z, rc);
             float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
             z.Linie(rc.Left, y0, rc.Right, y0,
-                    Stift(SKColors.DimGray, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
+                    Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
 
             // Linien (kürzere Reihen enden früher; x bezieht sich auf N).
             foreach (Reihe r in gueltig)
@@ -669,7 +677,7 @@ namespace WindowsFormsApplication1
                     110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
             if (!string.IsNullOrEmpty(fussnote))
                 using (var f = Schrift(14f, kursiv: true))
-                    Text(z, fussnote, f, SKColors.DimGray, 110f, H - 28f);
+                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f, H - 28f);
             return SkiaMaler.Png(z);
         }
 
@@ -717,7 +725,7 @@ namespace WindowsFormsApplication1
             if (stundenwerte == null || stundenwerte.Length < 2)
             {
                 using (var f = Schrift(18f))
-                    Text(z, "Kein Profil vorhanden.", f, SKColors.DimGray, rc.Left, rc.Top + 20f);
+                    Text(z, "Kein Profil vorhanden.", f, Farbrolle.ACHSE, rc.Left, rc.Top + 20f);
                 return SkiaMaler.Png(z);
             }
 
@@ -735,7 +743,7 @@ namespace WindowsFormsApplication1
             max = Math.Ceiling(max / schritt) * schritt;
 
             // Raster + y-Beschriftung.
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (double wert = min; wert <= max + schritt / 2; wert += schritt)
                 {
@@ -743,11 +751,11 @@ namespace WindowsFormsApplication1
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString("0.###", DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                 }
 
             // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1).
-            var xraster = Stift(SKColors.Gainsboro, 1f);
+            var xraster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int m = 0; m <= 12; m++)
                 {
@@ -755,10 +763,10 @@ namespace WindowsFormsApplication1
                     z.Linie(x, rc.Top, x, rc.Bottom, xraster);
                     string lab = m.ToString(DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                 }
             using (var f = Schrift(15f))
-                Text(z, achseMonat ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
+                Text(z, achseMonat ?? "", f, Farbrolle.ACHSE, rc.Right + 10f, rc.Bottom + 8f);
 
             // Achsen + Nulllinie, wenn die Skala unter null reicht.
             Achsenkreuz(z, rc);
@@ -766,7 +774,7 @@ namespace WindowsFormsApplication1
             {
                 float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
                 z.Linie(rc.Left, y0, rc.Right, y0,
-                        Stift(SKColors.DimGray, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
+                        Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
             }
 
             // Die Linie. 8 760 Punkte auf 1 146 Bildpunkte: jeder n-te Wert
@@ -896,7 +904,7 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 using (var f = Schrift(18f))
-                    Text(z, BerichtTexte.T("Kein Jahresgang vorhanden."), f, SKColors.DimGray,
+                    Text(z, BerichtTexte.T("Kein Jahresgang vorhanden."), f, Farbrolle.ACHSE,
                          rc.Left, rc.Top + 20f);
                 return SkiaMaler.Png(z);
             }
@@ -922,7 +930,7 @@ namespace WindowsFormsApplication1
 
             // Raster + y-Beschriftung. GEPUNKTET wie im Vorlaeufer
             // (ChartDashStyle.Dot auf beiden Achsen).
-            var raster = Stift(SKColors.Gainsboro, 1f, new Strichmuster(2f, 4f));
+            var raster = Stift(Farbrolle.RASTER, 1f, new Strichmuster(2f, 4f));
             using (var f = Schrift(15f))
             {
                 for (double wert = min; wert <= max + schritt / 2; wert += schritt)
@@ -931,7 +939,7 @@ namespace WindowsFormsApplication1
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString("0.###", DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                 }
             }
 
@@ -941,7 +949,7 @@ namespace WindowsFormsApplication1
             // keine Aussage mehr.
             if (fenster == null)
             {
-                var xraster = Stift(SKColors.Gainsboro, 1f, new Strichmuster(2f, 4f));
+                var xraster = Stift(Farbrolle.RASTER, 1f, new Strichmuster(2f, 4f));
                 using (var f = Schrift(15f))
                 {
                     for (int m = 0; m <= 12; m++)
@@ -950,7 +958,7 @@ namespace WindowsFormsApplication1
                         z.Linie(x, rc.Top, x, rc.Bottom, xraster);
                         string lab = m.ToString(DE);
                         float breite = f.MeasureText(lab);
-                        Text(z, lab, f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
                 }
             }
@@ -961,8 +969,8 @@ namespace WindowsFormsApplication1
                 // Im Fenster steht der Achsentitel schon da - mittig unter der
                 // Achse und mit dem Wort "Jahresstunde" (XAchseFenster).
                 if (fenster == null)
-                    Text(z, xTitel ?? "", f, SKColors.DimGray, rc.Right + 10f, rc.Bottom + 8f);
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                    Text(z, xTitel ?? "", f, Farbrolle.ACHSE, rc.Right + 10f, rc.Bottom + 8f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
             }
 
             // Achsen + Nulllinie, wenn die Skala unter null reicht.
@@ -971,7 +979,7 @@ namespace WindowsFormsApplication1
             {
                 float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
                 z.Linie(rc.Left, y0, rc.Right, y0,
-                        Stift(SKColors.DimGray, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
+                        Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
             }
 
             // Die Linien. Der Vorlaeufer legte die Reihen mit x = i * 12 / 8760 auf
@@ -1234,19 +1242,16 @@ namespace WindowsFormsApplication1
             => Skala.Bedarf(maxWert);
 
         /// <summary>Zeichnet Raster, y-Beschriftung und die beiden Achsen einer Bedarfsskala.</summary>
-        private static void BedarfsRaster(SKCanvas g, SKRect rc, double schritt, double max, string format)
-            => BedarfsRaster(new SkiaZiel(g), rc, schritt, max, format);
-
         private static void BedarfsRaster(IZeichenziel z, SKRect rc, double schritt, double max, string format)
         {
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (double wert = 0; wert <= max + schritt / 2; wert += schritt)
                 {
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString(format, DE);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f, y - TextHoehe(f) / 2f);
                 }
 
             Achsenkreuz(z, rc);
@@ -1359,7 +1364,7 @@ namespace WindowsFormsApplication1
             if (werte == null || werte.Length < 2)
             {
                 using (var f = Schrift(18f))
-                    Text(z, BerichtTexte.T("Kein Profil vorhanden."), f, SKColors.DimGray,
+                    Text(z, BerichtTexte.T("Kein Profil vorhanden."), f, Farbrolle.ACHSE,
                          rc.Left, rc.Top + 20f);
                 return SkiaMaler.Png(z);
             }
@@ -1371,7 +1376,7 @@ namespace WindowsFormsApplication1
             // y-Raster in fünf Stufen; die Zahlen tragen so viele Stellen, wie der
             // Größtwert braucht (bei Verteilungen unter 1 sonst lauter Nullen).
             string format = max >= 10 ? "0" : max >= 1 ? "0.0" : "0.000";
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int i = 0; i <= 5; i++)
                 {
@@ -1379,27 +1384,27 @@ namespace WindowsFormsApplication1
                     float y = rc.Bottom - (float)(i / 5.0) * rc.Height;
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString(format, DE);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
 
             // x-Raster: die Stundenmarken des Vorläufers (Intervall 24 bzw. 2).
             int schrittX = intervall > 0 ? intervall : Math.Max(1, werte.Length / 6);
-            var xraster = Stift(SKColors.Gainsboro, 1f);
+            var xraster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int h = 0; h <= werte.Length; h += schrittX)
                 {
                     float x = rc.Left + (float)h / werte.Length * rc.Width;
                     z.Linie(x, rc.Top, x, rc.Bottom, xraster);
                     string lab = h.ToString(DE);
-                    Text(z, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
 
             Achsenkreuz(z, rc);
             using (var f = Schrift(15f))
             {
-                Text(z, xTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Bottom + 34f);
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Bottom + 34f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
             }
 
             // Die Fläche: ein Punkt je Wert, am rechten Rand seines Fachs — Stunde n
@@ -1470,7 +1475,7 @@ namespace WindowsFormsApplication1
             if (werte == null || werte.Length < 2)
             {
                 using (var f = Schrift(18f))
-                    Text(z, BerichtTexte.T("Kein Jahresverlauf vorhanden."), f, SKColors.DimGray,
+                    Text(z, BerichtTexte.T("Kein Jahresverlauf vorhanden."), f, Farbrolle.ACHSE,
                          rc.Left, rc.Top + 20f);
                 return SkiaMaler.Png(z);
             }
@@ -1486,20 +1491,20 @@ namespace WindowsFormsApplication1
             {
                 // Monatsgrenzen statt Stundenzahlen (siehe Kopf).
                 KeyValuePair<int[], string[]> ticks = MonatsTicks365();
-                var raster = Stift(SKColors.Gainsboro, 1f);
+                var raster = Stift(Farbrolle.RASTER, 1f);
                 using (var f = Schrift(15f))
                     for (int m = 0; m < 12; m++)
                     {
                         float x = rc.Left + (float)(ticks.Key[m] * 24) / werte.Length * rc.Width;
                         if (x > rc.Right) break;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        Text(z, ticks.Value[m], f, SKColors.DimGray, x + 4f, rc.Bottom + 8f);
+                        Text(z, ticks.Value[m], f, Farbrolle.ACHSE, x + 4f, rc.Bottom + 8f);
                     }
             }
             else XAchseFenster(z, rc, fenster, gesamt);
 
             using (var f = Schrift(15f))
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
 
             // 8 760 Punkte auf rund 840 Bildpunkte: jeder n-te genügt (wie beim
             // Kostenprofil) — mehr Punkte als Pixel zeichnen dasselbe Bild langsamer.
@@ -1644,7 +1649,7 @@ namespace WindowsFormsApplication1
             if (fenster == null) XAchse(z, rc, achse, gueltig[0].Werte.Length);
             else XAchseFenster(z, rc, fenster, ganz[0].Werte.Length);
             using (var f = Schrift(15f))
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
 
             foreach (Reihe r in gueltig)
             {
@@ -1813,7 +1818,7 @@ namespace WindowsFormsApplication1
             if (fenster == null) XAchse(z, rc, achse, n);
             else XAchseFenster(z, rc, fenster, gesamt);
             using (var f = Schrift(15f))
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
 
             // (1) Kontur UNTER dem Stapel.
             if (mitKontur)
@@ -1876,7 +1881,9 @@ namespace WindowsFormsApplication1
                 max2 = Nice(max2);
                 if (max2 <= 0) max2 = 1;
 
-                SKColor achsenfarbe = y2G.Count == 1 ? y2G[0].Farbe : SKColors.DimGray;
+                Farbton achsenfarbe = y2G.Count == 1
+                                    ? y2G[0].Farbe.Ton()
+                                    : Farbton.Aus(Farbrolle.ACHSE);
 
                 foreach (Reihe r in y2G)
                     ZeichneLinie(z, rc, sortiert ? AbsteigendKopie(r.Werte) : r.Werte,
@@ -1929,11 +1936,6 @@ namespace WindowsFormsApplication1
         /// halbtransparent, damit die untere sichtbar bleibt; die Vorgabe 210 entspricht
         /// der bisherigen, undurchsichtigeren Flaeche.
         /// </summary>
-        private static void StapelZeichnen(SKCanvas g, SKRect rc, List<Reihe> stapel,
-                                           Stapelart gruppe, int n, double max,
-                                           float versatz, float breite, byte alpha = 210)
-            => StapelZeichnen(new SkiaZiel(g), rc, stapel, gruppe, n, max, versatz, breite, alpha);
-
         private static void StapelZeichnen(IZeichenziel z, SKRect rc, List<Reihe> stapel,
                                            Stapelart gruppe, int n, double max,
                                            float versatz, float breite, byte alpha = 210)
@@ -2443,7 +2445,7 @@ namespace WindowsFormsApplication1
                 max = Math.Ceiling(max);
 
                 // Raster und y-Beschriftung ueber die vorzeichenfaehige Spanne.
-                var raster = Stift(SKColors.Gainsboro, 1f);
+                var raster = Stift(Farbrolle.RASTER, 1f);
                 using (var f = Schrift(15f))
                     for (int i = 0; i <= 5; i++)
                     {
@@ -2451,7 +2453,7 @@ namespace WindowsFormsApplication1
                         float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                         z.Linie(rc.Left, y, rc.Right, y, raster);
                         string lab = wert.ToString("N0", DE);
-                        Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                        Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                              y - TextHoehe(f) / 2f);
                     }
             }
@@ -2459,7 +2461,7 @@ namespace WindowsFormsApplication1
             Achsenkreuz(z, rc);
             if (!string.IsNullOrEmpty(yTitel))
                 using (var f = Schrift(15f))
-                    Text(z, yTitel, f, SKColors.DimGray, rc.Left, rc.Top - 24f);
+                    Text(z, yTitel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
 
             int n = mitY1 ? gueltig[0].Werte.Length : zweiteAchse.Werte.Length;
             if (fenster == null) XAchse(z, rc, Achse.Jahresstunden, n);
@@ -2518,11 +2520,6 @@ namespace WindowsFormsApplication1
         /// klemmt Werte ausserhalb der Spanne an den Rand, statt sie aus dem Bild laufen
         /// zu lassen - beides braucht der Verlauf, und beides braucht der Stapel nicht.
         /// </remarks>
-        private static void VerlaufLinie(SKCanvas g, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe,
-                                         float staerke, bool gestrichelt)
-            => VerlaufLinie(new SkiaZiel(g), rc, werte, min, max, farbe, staerke, gestrichelt);
-
         private static void VerlaufLinie(IZeichenziel z, SKRect rc, double[] werte,
                                          double min, double max, SKColor farbe,
                                          float staerke, bool gestrichelt)
@@ -2810,12 +2807,9 @@ namespace WindowsFormsApplication1
         /// <remarks>
         /// Der Abstand steht in BILDPUNKTEN und nicht in Zellbreiten: Sonst trüge eine
         /// schmale Zelle dieselbe Strichzahl wie eine breite, und das Muster sagte etwas
-        /// über die Rastergröße statt über die Sperre. Gezeichnet wird innerhalb der
-        /// Zelle (<c>ClipRect</c>), damit die Striche nicht in die Nachbarzelle laufen.
+        /// über die Rastergröße statt über die Sperre. Die Striche stehen in einer auf
+        /// die Zelle ZUGESCHNITTENEN Gruppe, damit sie nicht in die Nachbarzelle laufen.
         /// </remarks>
-        private static void Schraffur(SKCanvas g, SKRect zelle)
-            => Schraffur(new SkiaZiel(g), zelle);
-
         private static void Schraffur(IZeichenziel z, SKRect zelle)
         {
             const float abstand = 7f;
@@ -3375,14 +3369,14 @@ namespace WindowsFormsApplication1
             max = Math.Ceiling(max / stufe) * stufe;
             if (max - min < 1e-9) max = min + stufe;
 
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (double wert = min; wert <= max + stufe * 1e-6; wert += stufe)
                 {
                     float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString("N0", DE);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
 
@@ -3446,7 +3440,7 @@ namespace WindowsFormsApplication1
             // Achsen, gestrichelte Nulllinie und die Jahresbeschriftung.
             Achsenkreuz(z, rc);
             z.Linie(rc.Left, y0, rc.Right, y0,
-                    Stift(SKColors.DimGray, 2f, new Strichmuster(6f, 4f)));
+                    Stift(Farbrolle.ACHSE, 2f, new Strichmuster(6f, 4f)));
 
             int schritt = n <= 12 ? 1 : n <= 25 ? 2 : n <= 50 ? 5 : 10;
             using (var f = Schrift(15f))
@@ -3455,12 +3449,12 @@ namespace WindowsFormsApplication1
                 {
                     string lab = jahre[i].ToString(DE);
                     float mitte = rc.Left + (i + 0.5f) * fach;
-                    Text(z, lab, f, SKColors.DimGray, mitte - f.MeasureText(lab) / 2f,
+                    Text(z, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f,
                          rc.Bottom + 8f);
                 }
-                Text(z, xTitel ?? "", f, SKColors.DimGray,
+                Text(z, xTitel ?? "", f, Farbrolle.ACHSE,
                      rc.Right - f.MeasureText(xTitel ?? ""), rc.Bottom + 34f);
-                Text(z, yTitel ?? "", f, SKColors.DimGray, rc.Left, rc.Top - 26f);
+                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 26f);
             }
 
             return SkiaMaler.Png(z);
@@ -3480,13 +3474,10 @@ namespace WindowsFormsApplication1
                    r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w));
         }
 
-        private static void Leerhinweis(SKCanvas g, SKRect rc)
-            => Leerhinweis(new SkiaZiel(g), rc);
-
         private static void Leerhinweis(IZeichenziel z, SKRect rc)
         {
             using (var f = Schrift(18f))
-                Text(z, BerichtTexte.T("Keine Simulationsdaten vorhanden."), f, SKColors.DimGray,
+                Text(z, BerichtTexte.T("Keine Simulationsdaten vorhanden."), f, Farbrolle.ACHSE,
                      rc.Left, rc.Top + 20f);
         }
 
@@ -3508,19 +3499,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Raster und y-Beschriftung einer Prozentachse 0…100,2.</summary>
-        private static void ProzentRaster(SKCanvas g, SKRect rc)
-            => ProzentRaster(new SkiaZiel(g), rc);
-
         private static void ProzentRaster(IZeichenziel z, SKRect rc)
         {
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int p = 0; p <= 100; p += 20)
                 {
                     float y = (float)(rc.Bottom - p / Y_PROZENT_MAX * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = p.ToString(DE) + " %";
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
             Achsenkreuz(z, rc);
@@ -3529,18 +3517,15 @@ namespace WindowsFormsApplication1
         /// <summary>Die beiden Achsenlinien — links und unten, in jedem Rasterhelfer gleich.</summary>
         private static void Achsenkreuz(IZeichenziel z, SKRect rc)
         {
-            var achse = Stift(SKColors.DimGray, 2f);
+            var achse = Stift(Farbrolle.ACHSE, 2f);
             z.Linie(rc.Left, rc.Top, rc.Left, rc.Bottom, achse);
             z.Linie(rc.Left, rc.Bottom, rc.Right, rc.Bottom, achse);
         }
 
         /// <summary>Raster, y-Beschriftung und Achsen einer Skala 0…max mit fuenf Stufen.</summary>
-        private static void YRaster(SKCanvas g, SKRect rc, double max)
-            => YRaster(new SkiaZiel(g), rc, max);
-
         private static void YRaster(IZeichenziel z, SKRect rc, double max)
         {
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
                 for (int i = 0; i <= 5; i++)
                 {
@@ -3548,7 +3533,7 @@ namespace WindowsFormsApplication1
                     float y = (float)(rc.Bottom - wert / max * rc.Height);
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = wert.ToString(max >= 10 ? "N0" : "N1", DE);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - f.MeasureText(lab) - 6f,
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
                          y - TextHoehe(f) / 2f);
                 }
             Achsenkreuz(z, rc);
@@ -3566,12 +3551,9 @@ namespace WindowsFormsApplication1
         /// Marken (<see cref="XAchsentitel"/>); er kommt aus dem Ressourcenkatalog und
         /// wechselt damit die Sprache mit der Oberfläche.</para>
         /// </summary>
-        private static void XAchse(SKCanvas g, SKRect rc, Achse achse, int n)
-            => XAchse(new SkiaZiel(g), rc, achse, n);
-
         private static void XAchse(IZeichenziel z, SKRect rc, Achse achse, int n)
         {
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
             {
                 if (achse == Achse.Monate)
@@ -3581,7 +3563,7 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + m / 12f * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = m.ToString(DE);
-                        Text(z, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
                 else
@@ -3597,7 +3579,7 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + (float)(index / (n - 1)) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         string lab = h.ToString("N0", DE);
-                        Text(z, lab, f, SKColors.DimGray, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                        Text(z, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                     }
                 }
             }
@@ -3615,14 +3597,11 @@ namespace WindowsFormsApplication1
         /// liegt <c>rc.Bottom</c> bei 460…470 und die Bildhöhe bei 542…560 — der Titel
         /// bleibt damit innerhalb der Fläche, und kein Bildmaß ändert sich.
         /// </summary>
-        private static void XAchsentitel(SKCanvas g, SKRect rc, string titel)
-            => XAchsentitel(new SkiaZiel(g), rc, titel);
-
         private static void XAchsentitel(IZeichenziel z, SKRect rc, string titel)
         {
             if (string.IsNullOrEmpty(titel)) return;
             using (var f = Schrift(15f))
-                Text(z, titel, f, SKColors.DimGray,
+                Text(z, titel, f, Farbrolle.ACHSE,
                      rc.Left + (rc.Width - f.MeasureText(titel)) / 2f, rc.Bottom + 30f);
         }
 
@@ -3643,7 +3622,7 @@ namespace WindowsFormsApplication1
         //   2. die Systemschrift im gewuenschten Stil (MatchFamily(null, Stil))
         //      → iOS/macOS: Helvetica bzw. SF Pro.
         //   3. irgendeine Schrift, die ein 'A' zeichnen kann (MatchCharacter)
-        //   4. SKTypeface.Default — der Notnagel, der nie null ist.
+        //   4. die letzte Ersatzschrift der Kette — der Notnagel, der nie null ist.
         //
         // Auf Systemen mit fontconfig kann Schritt 1 bereits bei „Calibri" eine
         // Ersatzschrift liefern (fontconfig antwortet immer mit einer Naeherung);
@@ -3651,17 +3630,9 @@ namespace WindowsFormsApplication1
         // ausgerechnet Calibri.
         //
         // Die Punktgroessen des Bestandes (14…22 pt) waren GDI+-Punkte bei 96 dpi.
-        // SKFont rechnet in Pixeln, deshalb pt * 96/72. Damit bleiben Textgroesse
-        // und Bildmasse dieselben wie vor der Portierung.
+        // Die Schriftkette rechnet in Pixeln, deshalb pt * 96/72. Damit bleiben
+        // Textgroesse und Bildmasse dieselben wie vor der Portierung.
         // ---------------------------------------------------------------------
-
-        /// <summary>
-        /// Schriftart je Stil — Schriftkette, Ersatzfamilien und Zwischenspeicher stehen
-        /// in <see cref="Schriftkette"/>, damit auch der <c>SkiaMaler</c> einen Textbefehl
-        /// in DIESELBE Schrift setzt, in der das Layout ihn vermessen hat.
-        /// </summary>
-        private static SKTypeface Schriftart(bool fett, bool kursiv)
-            => Schriftkette.Schriftart(fett, kursiv);
 
         /// <summary>
         /// Schrift in Punkt (wie im Bestand) — ein <see cref="Schriftmass"/>, das die
@@ -3680,62 +3651,39 @@ namespace WindowsFormsApplication1
         /// <c>Graphics.DrawString</c>. Skia bezieht sich auf die Grundlinie, deshalb wird
         /// der Aufstieg (negativ) abgezogen; das macht der Maler.
         /// </summary>
-        private static void Text(SKCanvas g, string text, Schriftmass f, SKColor farbe, float x, float y)
-            => Text(new SkiaZiel(g), text, f, farbe, x, y);
-
-        private static void Text(IZeichenziel z, string text, Schriftmass f, SKColor farbe,
+        private static void Text(IZeichenziel z, string text, Schriftmass f, Farbton ton,
                                  float x, float y)
         {
             if (string.IsNullOrEmpty(text)) return;
-            z.Text(text, x, y, f.Satz, farbe.Ton());
+            z.Text(text, x, y, f.Satz, ton);
         }
 
         /// <summary>
-        /// Derselbe Text mit AUSDRÜCKLICH genannter Farbrolle (DG-Q7) — für jede
-        /// Beschriftung, deren Farbe die Zeichenmethode selbst wählt.
+        /// Derselbe Text mit AUSDRÜCKLICH genannter Farbrolle (DG-Q7) — die
+        /// Schreibweise für jede Beschriftung, deren Farbe die Zeichenmethode selbst
+        /// wählt. Sie trifft auch dann die gemeinte Rolle, wenn eine zweite denselben
+        /// Wert trägt.
         /// </summary>
         private static void Text(IZeichenziel z, string text, Schriftmass f, Farbrolle rolle,
                                  float x, float y)
-        {
-            if (string.IsNullOrEmpty(text)) return;
-            z.Text(text, x, y, f.Satz, Farbton.Aus(rolle));
-        }
+            => Text(z, text, f, Farbton.Aus(rolle), x, y);
+
+        /// <summary>
+        /// Derselbe Text in einer Farbe, die von AUSSEN kommt (eine Reihenfarbe) — sie
+        /// bekommt ihre Rolle über die Rückwärtssuche der Palette.
+        /// </summary>
+        private static void Text(IZeichenziel z, string text, Schriftmass f, SKColor farbe,
+                                 float x, float y)
+            => Text(z, text, f, farbe.Ton(), x, y);
 
         // =================================================================== Helfer
 
-        /// <summary>Zeichenfläche mit weißem Grund (ersetzt Bitmap + Graphics.Clear).</summary>
-        private static SKSurface Start(int breite, int hoehe)
-        {
-            var flaeche = SKSurface.Create(
-                new SKImageInfo(breite, hoehe, SKColorType.Rgba8888, SKAlphaType.Premul));
-            flaeche.Canvas.Clear(SKColors.White);
-            return flaeche;
-        }
-
         /// <summary>
-        /// Ein Bild als ZEICHENMODELL — der Ersatz fuer <see cref="Start"/>: Statt einer
-        /// Leinwand entsteht eine Befehlsliste, die <c>SkiaMaler.Png</c> ausgibt.
+        /// Ein Bild als ZEICHENMODELL: Jede Zeichenmethode fuellt eine Befehlsliste,
+        /// die <c>SkiaMaler.Png</c> ausgibt. Eine Leinwand sieht der Renderer nicht.
         /// </summary>
         private static Zeichenmodell Modell(int breite, int hoehe)
             => new Zeichenmodell(breite, hoehe, new Farbton(Farbrolle.HINTERGRUND));
-
-        /// <summary>Flächenfarbe (ersetzt SolidBrush) — immer kantengeglättet.</summary>
-        private static SKPaint Fuellung(SKColor farbe)
-        {
-            return new SKPaint { Color = farbe, Style = SKPaintStyle.Fill, IsAntialias = true };
-        }
-
-        /// <summary>Strichfarbe und -stärke (ersetzt Pen) — immer kantengeglättet.</summary>
-        private static SKPaint Strich(SKColor farbe, float staerke)
-        {
-            return new SKPaint
-            {
-                Color = farbe,
-                Style = SKPaintStyle.Stroke,
-                StrokeWidth = staerke,
-                IsAntialias = true
-            };
-        }
 
         /// <summary>Dieselbe Flächenfarbe als MODELLWERT (Rolle statt Zahl).</summary>
         private static Zeichnung.Fuellung Flaeche(SKColor farbe)
@@ -3749,49 +3697,37 @@ namespace WindowsFormsApplication1
         private static Zeichnung.Fuellung Flaeche(Farbrolle rolle)
             => new Zeichnung.Fuellung(Farbton.Aus(rolle));
 
-        /// <summary>Derselbe Strich als MODELLWERT (Rolle statt Zahl).</summary>
+        /// <summary>Der Strich zu einem fertigen Farbton.</summary>
+        private static Zeichnung.Stift Stift(Farbton ton, float staerke,
+                                             Strichmuster muster = null,
+                                             Strichverbindung verbindung = Strichverbindung.Gehrung)
+            => new Zeichnung.Stift(ton, staerke, muster, Strichkappe.Stumpf, verbindung);
+
+        /// <summary>Derselbe Strich in einer Farbe, die von AUSSEN kommt (Rückwärtssuche).</summary>
         private static Zeichnung.Stift Stift(SKColor farbe, float staerke,
                                              Strichmuster muster = null,
                                              Strichverbindung verbindung = Strichverbindung.Gehrung)
-            => new Zeichnung.Stift(farbe.Ton(), staerke, muster, Strichkappe.Stumpf, verbindung);
+            => Stift(farbe.Ton(), staerke, muster, verbindung);
 
         /// <summary>Derselbe Strich mit AUSDRÜCKLICH genannter Rolle (DG-Q7).</summary>
         private static Zeichnung.Stift Stift(Farbrolle rolle, float staerke,
                                              Strichmuster muster = null,
                                              Strichverbindung verbindung = Strichverbindung.Gehrung)
-            => new Zeichnung.Stift(Farbton.Aus(rolle), staerke, muster, Strichkappe.Stumpf, verbindung);
+            => Stift(Farbton.Aus(rolle), staerke, muster, verbindung);
 
-        /// <summary>Kreissegment vom Mittelpunkt aus (ersetzt Graphics.FillPie).</summary>
         /// <summary>
-        /// Ein Kreissegment (ersetzt <c>Graphics.FillPie</c>).
+        /// Ein Kreissegment als Modellbefehl (ersetzt <c>Graphics.FillPie</c>).
         ///
         /// <para><b>Der VOLLKREIS ist ein eigener Fall (Befund zu Auftrag #222).</b>
-        /// <c>SKPath.ArcTo</c> zieht bei einem Winkel von 360° NICHTS: Anfangs- und
-        /// Endpunkt fallen zusammen, und der geschlossene Pfad ist die leere Strecke
-        /// vom Mittelpunkt zum Kreisrand und zurück. Genau das sah der Anwender am
-        /// Stromring ohne Erzeuger — ein Segment über den ganzen Kreis, und im Bild
-        /// stand ein LEERER Kreis („Strombedarfsdeckung bei 0 ist das Diagramm nicht
-        /// gut", 11.09.2026). Ab 360° wird deshalb ein Kreis gezeichnet und kein
-        /// Bogen. Dieselbe Falle traf den Kuchen mit nur einem Segment.</para>
+        /// Ein Bogen ueber 360° zieht NICHTS: Anfangs- und Endpunkt fallen zusammen,
+        /// und der geschlossene Pfad ist die leere Strecke vom Mittelpunkt zum
+        /// Kreisrand und zurueck. Genau das sah der Anwender am Stromring ohne
+        /// Erzeuger — ein Segment ueber den ganzen Kreis, und im Bild stand ein
+        /// LEERER Kreis („Strombedarfsdeckung bei 0 ist das Diagramm nicht gut",
+        /// 11.09.2026). Ab 360° wird deshalb ein Kreis gezeichnet und kein Bogen;
+        /// den Fall entscheidet der Ausgabeweg (<c>SkiaMaler</c>). Dieselbe Falle
+        /// traf den Kuchen mit nur einem Segment.</para>
         /// </summary>
-        private static void Kreissegment(SKCanvas g, SKRect rect, float start, float sweep, SKPaint fuellung)
-        {
-            if (Math.Abs(sweep) >= 360f)
-            {
-                g.DrawOval(rect, fuellung);
-                return;
-            }
-
-            using (var pfad = new SKPath())
-            {
-                pfad.MoveTo(rect.MidX, rect.MidY);
-                pfad.ArcTo(rect, start, sweep, false);
-                pfad.Close();
-                g.DrawPath(pfad, fuellung);
-            }
-        }
-
-        /// <summary>Dasselbe Kreissegment als Modellbefehl.</summary>
         private static void Kreissegment(IZeichenziel z, SKRect rect, float start, float sweep,
                                          Zeichnung.Fuellung fuellung)
             => z.Fuege(new Zeichnung.Kreissegment(rect.Left, rect.Top, rect.Width, rect.Height,
@@ -3811,58 +3747,23 @@ namespace WindowsFormsApplication1
             z.Pfad(SkiaBruecke.Modellpunkte(punkte), true, null, fuellung);
         }
 
-        /// <summary>Streckenzug (ersetzt Graphics.DrawLines).</summary>
-        private static void Linienzug(SKCanvas g, SKPoint[] punkte, SKPaint stift)
-        {
-            if (punkte == null || punkte.Length < 2) return;
-            using (var pfad = new SKPath())
-            {
-                pfad.MoveTo(punkte[0]);
-                for (int i = 1; i < punkte.Length; i++) pfad.LineTo(punkte[i]);
-                g.DrawPath(pfad, stift);
-            }
-        }
-
-        /// <summary>Gefülltes Vieleck (ersetzt Graphics.FillPolygon).</summary>
-        private static void Vieleck(SKCanvas g, SKPoint[] punkte, SKPaint fuellung)
-        {
-            if (punkte == null || punkte.Length < 3) return;
-            using (var pfad = new SKPath())
-            {
-                pfad.MoveTo(punkte[0]);
-                for (int i = 1; i < punkte.Length; i++) pfad.LineTo(punkte[i]);
-                pfad.Close();
-                g.DrawPath(pfad, fuellung);
-            }
-        }
-
-        private static void Titel(SKCanvas g, string text, int breite)
-            => Titel(new SkiaZiel(g), text, breite);
-
         private static void Titel(IZeichenziel z, string text, int breite)
         {
             using (var f = Schrift(22f, fett: true))
-                Text(z, text, f, C_STAMM, 24f, 16f);
+                Text(z, text, f, Farbrolle.STAMM, 24f, 16f);
         }
-
-        private static void PanelRahmen(SKCanvas g, SKRect rc, string titel)
-            => PanelRahmen(new SkiaZiel(g), rc, titel);
 
         private static void PanelRahmen(IZeichenziel z, SKRect rc, string titel)
         {
-            z.Rechteck(rc.Left, rc.Top, rc.Width, rc.Height, Stift(SKColors.Silver, 1f));
+            z.Rechteck(rc.Left, rc.Top, rc.Width, rc.Height, Stift(Farbrolle.RAHMEN, 1f));
             using (var f = Schrift(16f, fett: true))
-                Text(z, titel, f, SKColors.DimGray, rc.Left, rc.Top - 28f);
+                Text(z, titel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 28f);
         }
-
-        private static void AchsenRaster(SKCanvas g, SKRect rc, double max,
-                                         int[] xpos, string[] xlab, int n)
-            => AchsenRaster(new SkiaZiel(g), rc, max, xpos, xlab, n);
 
         private static void AchsenRaster(IZeichenziel z, SKRect rc, double max,
                                          int[] xpos, string[] xlab, int n)
         {
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
             {
                 for (int s = 0; s <= 4; s++)
@@ -3871,7 +3772,7 @@ namespace WindowsFormsApplication1
                     z.Linie(rc.Left, y, rc.Right, y, raster);
                     string lab = (max * s / 4.0).ToString("N0", DE);
                     float breite = f.MeasureText(lab);
-                    Text(z, lab, f, SKColors.DimGray, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                 }
                 if (xpos != null)
                     for (int i = 0; i < xpos.Length; i++)
@@ -3879,15 +3780,11 @@ namespace WindowsFormsApplication1
                         float x = rc.Left + (float)xpos[i] / Math.Max(n - 1, 1) * rc.Width;
                         z.Linie(x, rc.Top, x, rc.Bottom, raster);
                         float breite = f.MeasureText(xlab[i]);
-                        Text(z, xlab[i], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
+                        Text(z, xlab[i], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
                     }
             }
             Achsenkreuz(z, rc);
         }
-
-        private static void ZeichneLinie(SKCanvas g, SKRect rc, double[] werte,
-                                         double min, double max, SKColor farbe, float staerke)
-            => ZeichneLinie(new SkiaZiel(g), rc, werte, min, max, farbe, staerke);
 
         private static void ZeichneLinie(IZeichenziel z, SKRect rc, double[] werte,
                                          double min, double max, SKColor farbe, float staerke)
@@ -3905,11 +3802,6 @@ namespace WindowsFormsApplication1
                 Linienzug(z, punkte.ToArray(),
                           Stift(farbe, staerke, null, Strichverbindung.Rund));
         }
-
-        private static void ZeichneFlaeche(SKCanvas g, SKRect rc, double[] unten,
-                                           double[] oben, double max, SKColor farbe,
-                                           byte alpha = 210)
-            => ZeichneFlaeche(new SkiaZiel(g), rc, unten, oben, max, farbe, alpha);
 
         private static void ZeichneFlaeche(IZeichenziel z, SKRect rc, double[] unten,
                                            double[] oben, double max, SKColor farbe,
@@ -3946,16 +3838,12 @@ namespace WindowsFormsApplication1
         /// (Befund am Bild „Lastgang und Speicherbetrieb"), und die lag dann auf dem
         /// Achsentitel. Wer den Platz kennt, kann ihn räumen.</para>
         /// </summary>
-        private static float Legende(SKCanvas g, List<Segment> eintraege, float x, float y,
-                                     float umbruchBei = 0)
-            => Legende(new SkiaZiel(g), eintraege, x, y, umbruchBei);
-
         private static float Legende(IZeichenziel z, List<Segment> eintraege, float x, float y,
                                      float umbruchBei = 0)
         {
             float startX = x;
             int zeilen = 1;
-            var rahmen = Stift(SKColors.Gray, 1f);
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
             using (var f = Schrift(16f))
                 foreach (Segment s in eintraege)
                 {
@@ -3971,7 +3859,7 @@ namespace WindowsFormsApplication1
                     else
                         z.Rechteck(x, y, 22f, 22f, null, Flaeche(s.Farbe));
                     z.Rechteck(x, y, 22f, 22f, rahmen);
-                    Text(z, s.Label, f, SKColors.Black, x + 28f, y + 1f);
+                    Text(z, s.Label, f, Farbrolle.TEXT, x + 28f, y + 1f);
                     x += breite;
                 }
             return zeilen * LEGENDE_ZEILE;
@@ -4019,13 +3907,6 @@ namespace WindowsFormsApplication1
             var breiten = new List<float>(Math.Max(0, anzahl));
             for (int i = 0; i < anzahl; i++) breiten.Add(eintragsbreite);
             return LegendenHoehe(breiten, x, x + breiteVerfuegbar);
-        }
-
-        private static byte[] Png(SKSurface flaeche)
-        {
-            using (SKImage bild = flaeche.Snapshot())
-            using (SKData daten = bild.Encode(SKEncodedImageFormat.Png, 100))
-                return daten.ToArray();
         }
 
         // Erzeugerreihen Wärme in fester Stapelreihenfolge (Solar unten … Kessel oben).
@@ -4242,9 +4123,6 @@ namespace WindowsFormsApplication1
         /// <para>Auch ein Monatsbild bekommt im Fenster Stundenmarken: Monatsgrenzen
         /// sagen im Ausschnitt nichts mehr, die Stunde schon.</para>
         /// </summary>
-        private static void XAchseFenster(SKCanvas g, SKRect rc, Achsenfenster f, int gesamt)
-            => XAchseFenster(new SkiaZiel(g), rc, f, gesamt);
-
         private static void XAchseFenster(IZeichenziel z, SKRect rc, Achsenfenster f, int gesamt)
         {
             double stundenJeWert = gesamt > Kanalsatz.STUNDEN_JAHR ? 0.25 : 1.0;
@@ -4255,14 +4133,14 @@ namespace WindowsFormsApplication1
             double schritt = RundeStufe((h1 - h0) / 5.0);
             double erste = Math.Ceiling(h0 / schritt) * schritt;
 
-            var raster = Stift(SKColors.Gainsboro, 1f);
+            var raster = Stift(Farbrolle.RASTER, 1f);
             using (var schrift = Schrift(15f))
                 for (double h = erste; h <= h1 + 1e-9; h += schritt)
                 {
                     float x = rc.Left + (float)((h - h0) / (h1 - h0)) * rc.Width;
                     z.Linie(x, rc.Top, x, rc.Bottom, raster);
                     string lab = h.ToString("N0", DE);
-                    Text(z, lab, schrift, SKColors.DimGray,
+                    Text(z, lab, schrift, Farbrolle.ACHSE,
                          x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
 
