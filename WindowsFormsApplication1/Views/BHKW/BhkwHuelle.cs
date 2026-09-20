@@ -154,7 +154,11 @@ namespace WindowsFormsApplication1
                 ["TitelSchreibschutz"] = Text_("BHKWK_TITEL_SCHREIBSCHUTZ", "Schreibgeschützter Datensatz"),
                 ["MeldungZahlUngueltig"] = Text_("HZKK_MSG_ZAHL",
                     "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt)."),
-                ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!")
+                ["MeldungNameFehlt"] = Text_("HZKK_MSG_NAME_FEHLT", "Bitte einen gültigen Namen eingeben!"),
+                // Der Gesamtwirkungsgrad ist ein FAKTOR; ein Prozentwert wird benannt
+                // abgelehnt (dieselbe Obergrenze wie Schemaschritt 98 und der Kern).
+                ["MeldungWirkungsgradFaktor"] = Text_("BHKWK_MSG_WIRKUNGSGRAD",
+                    "„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.")
             };
         }
 

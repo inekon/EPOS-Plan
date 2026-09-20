@@ -729,6 +729,9 @@
   <data name="KBROW_MSG_WERT_UNBEKANNT" xml:space="preserve">
     <value>„{0}“: „{1}“ ist kein zulässiger Wert. Zulässig sind: {2}</value>
   </data>
+  <data name="KBROW_MSG_WIRKUNGSGRAD_FAKTOR" xml:space="preserve">
+    <value>„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.</value>
+  </data>
   <data name="KBROW_SPALTE_EIGENSCHAFTEN" xml:space="preserve">
     <value>Eigenschaften</value>
   </data>
@@ -11166,7 +11169,10 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
     <value>Gesamtwirkungsgrad</value>
   </data>
   <data name="BHKWK_HINT_WIRKUNGSGRAD" xml:space="preserve">
-    <value>(z. B. 0,85)</value>
+    <value>(Faktor 0–1, z. B. 0,90)</value>
+  </data>
+  <data name="BHKWK_MSG_WIRKUNGSGRAD" xml:space="preserve">
+    <value>„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.</value>
   </data>
   <data name="BHKWK_LBL_GRENZLEISTUNG" xml:space="preserve">
     <value>Untere Grenzleistung:</value>

@@ -3504,6 +3504,30 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_97_KLIMA_SZENARIO = 97;
 
+        /// <summary>
+        /// Schritt 98 — der <b>BHKW-Wirkungsgrad ist ein Faktor</b> (Anwenderentscheid
+        /// vom 19.09.2026, „Katalog vereinheitlichen + Basis neu").
+        ///
+        /// <para><b>Der Befund.</b> <c>Tab_BHKW[_STAMM].Wirkungsgrad</c> ist der
+        /// GESAMTwirkungsgrad als Faktor: Die Maske sagt es („Ges. Wirkungsgrad",
+        /// Hinweis „z. B. 0,85"), und <c>SimulationBHKW.Auswertung</c> rechnet damit
+        /// (<c>Verbrauch = (Wärme + Strom) / Wirkungsgrad</c>). Ein Teil des Katalogs
+        /// trug dort einen PROZENTWERT — den des ELEKTRISCHEN Wirkungsgrads. Geteilt
+        /// wurde dann durch 29,5 statt durch 0,92: Gasverbrauch, Gasspitze, Emissionen
+        /// und Brennstoffkosten des BHKW fielen um rund Faktor 32 zu klein aus.</para>
+        ///
+        /// <para><b>Die Umrechnung</b> steht bei <see cref="BhkwWirkungsgradFaktor"/> —
+        /// EINE Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den
+        /// Nachweis in <c>EPOS.Kern.Tests</c>. Sie rechnet je Zeile aus den Werten
+        /// derselben Zeile und übernimmt nur, was in [0,5; 1,05] fällt; alles andere
+        /// bleibt stehen und wird BENANNT ausgewiesen.</para>
+        ///
+        /// <para><b>REIN DML, und er ändert Ergebnisse</b> — das ist sein Zweck. Die
+        /// Referenzbasis wird im selben Schritt neu eingefroren; der Rechenweg selbst
+        /// ist nicht angefasst.</para>
+        /// </summary>
+        public const int SCHRITT_98_BHKW_WIRKUNGSGRAD = 98;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4802,6 +4826,24 @@ namespace WindowsFormsApplication1
                         "Kopf) - der Schritt ist damit fuer jede Bestandsrechnung " +
                         "ergebnisneutral.",
                         Schritt_97_KlimaSzenario),
+
+            // ANWENDERENTSCHEID 19.09.2026 (Auftrag BW-1) - der BHKW-Wirkungsgrad ist
+            // ein FAKTOR, kein Prozentwert. REIN DML, kein DDL; die Quelle ist
+            // BhkwWirkungsgradFaktor. Keine Reihenfolgebedingung gegenueber 89 bis 97 -
+            // der Schritt fasst allein zwei Spaltenwerte an. Er steht NACH 96, weil 96
+            // Tab_BHKW neu baut.
+            new Schritt(SCHRITT_98_BHKW_WIRKUNGSGRAD,
+                        "Tab_BHKW(_STAMM).Wirkungsgrad: Prozentwerte werden zum Faktor",
+                        "Der Wirkungsgrad eines BHKW ist der GESAMTwirkungsgrad als " +
+                        "Faktor - so sagt es die Maske, so rechnet die Simulation " +
+                        "((Waerme + Strom) / Wirkungsgrad). Ein Teil des Katalogs trug " +
+                        "dort den ELEKTRISCHEN Wirkungsgrad in Prozent; geteilt wurde " +
+                        "dann durch 29,5 statt durch 0,92, und Gasverbrauch, Gasspitze, " +
+                        "Emissionen und Brennstoffkosten des BHKW fielen um rund Faktor " +
+                        "32 zu klein aus. Umgerechnet wird je Zeile aus ihren eigenen " +
+                        "Werten; was dabei nicht in [0,5; 1,05] faellt, bleibt stehen " +
+                        "und wird benannt ausgewiesen.",
+                        Schritt_98_BhkwWirkungsgrad),
         };
 
         /// <summary>
@@ -7088,6 +7130,48 @@ namespace WindowsFormsApplication1
                     "bleiben NULL, und NULL heisst 'sagt nichts dazu' (Altbestand, " +
                     "PVGIS, TRY-Datei ohne Art im Kopf). KEIN Rechenergebnis aendert " +
                     "sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 98 - der BHKW-Wirkungsgrad ist ein Faktor (Anwenderentscheid 19.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 98 — Anlass, Rechnung und Band stehen bei
+        /// <see cref="SCHRITT_98_BHKW_WIRKUNGSGRAD"/> und bei
+        /// <see cref="BhkwWirkungsgradFaktor"/>.
+        ///
+        /// <para><b>Reines DML</b> über zwei Tabellen — deshalb keine Schleife über
+        /// einen <c>SchemaKatalog</c>-Eintrag. Gezählt wird JE TABELLE VOR dem
+        /// Schreiben; danach findet die Zählung nichts mehr, und die Protokollzeile
+        /// soll sagen, was der Schritt getan hat.</para>
+        ///
+        /// <para><b>Die Ausweisung gehört ins Protokoll</b>, nicht in eine stille Ecke:
+        /// Jede Zeile über 1, die der Schritt nicht anfasst, steht mit Id, Name, altem
+        /// und gerechnetem Wert in der Notiz.</para>
+        /// </summary>
+        private static bool Schritt_98_BhkwWirkungsgrad(Lauf l)
+        {
+            BhkwWirkungsgradFaktor.Aufnahme aufnahme = BhkwWirkungsgradFaktor.Bestandsaufnahme();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                     in BhkwWirkungsgradFaktor.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("98: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            l.Notiz("98: BHKW-Wirkungsgrad vom Prozentwert auf den Faktor. " +
+                    BhkwWirkungsgradFaktor.Bericht(aufnahme) +
+                    " Der Rechenweg ist unveraendert; der Brennstoff der betroffenen " +
+                    "Module faellt ab hier richtig aus, und der Referenzlauf aendert " +
+                    "sich deshalb - die Basis ist neu eingefroren.");
             return true;
         }
 

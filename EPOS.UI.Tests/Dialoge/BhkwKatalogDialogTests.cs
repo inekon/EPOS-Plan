@@ -324,6 +324,58 @@ public class BhkwKatalogDialogTests : EposBunitContext
         Assert.Contains("thermische Leistung", cut.Find(".epos-warnbanner").TextContent);
     }
 
+    /// <summary>
+    /// A-BW1-3: <b>Der Gesamtwirkungsgrad ist ein FAKTOR.</b> Ein Prozentwert (29,5)
+    /// wird benannt abgelehnt und nicht geschrieben — der Rechenweg teilt durch diese
+    /// Zahl, und ein Prozentwert machte den Brennstoff um rund Faktor 32 zu klein
+    /// (Schemaschritt 98).
+    /// </summary>
+    [Fact]
+    public void Ein_Wirkungsgrad_als_Prozentwert_wird_benannt_abgelehnt()
+    {
+        bool geschrieben = false;
+        var daten = Bestand();
+        daten.Wirkungsgrad = 29.5;
+
+        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        {
+            geschrieben = true;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.False(geschrieben);
+        Assert.Contains("Faktor", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("Gesamtwirkungsgrad", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// Die Obergrenze ist die des Schemaschritts: 1,05 geht durch (Brennwertgerät),
+    /// 1,06 nicht — und 0 ebenso wenig, denn durch 0 teilt kein Rechenweg.
+    /// </summary>
+    [Theory]
+    [InlineData(1.05, true)]
+    [InlineData(1.06, false)]
+    [InlineData(0.0, false)]
+    [InlineData(0.9216, true)]
+    public void Die_Obergrenze_der_Pflege_ist_die_des_Schemaschritts(double wert, bool erlaubt)
+    {
+        bool geschrieben = false;
+        var daten = Bestand();
+        daten.Wirkungsgrad = wert;
+
+        var cut = Aufbauen(daten, ueberschreiben: (d, _) =>
+        {
+            geschrieben = true;
+            return new KatalogSpeicherErgebnis(true, "ok", d.Bezeichner);
+        });
+
+        cut.FindAll(".epos-leiste button")[^4].Click();
+
+        Assert.Equal(erlaubt, geschrieben);
+    }
+
     [Fact]
     public void Eine_leere_Bezeichnung_legt_nichts_an()
     {

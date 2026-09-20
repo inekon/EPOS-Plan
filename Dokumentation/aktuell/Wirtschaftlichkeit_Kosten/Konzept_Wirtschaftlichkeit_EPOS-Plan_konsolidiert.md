@@ -2235,7 +2235,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | Kapitalwert 1024 | **−2.220.322,32 €** |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 |
 | Kaskadenregression 1042 | +20.927,61 |
-| Referenzbasis | `Referenzlaeufe\2026-09-18_R9_Kesselbrennstoff` |
+| Referenzbasis | `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` |
 
 Die 1030-Anker sind durch den Kaskaden-Umbau **überholt** und müssen neu gesetzt werden.
 

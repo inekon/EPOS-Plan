@@ -70,6 +70,36 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <c>null</c>, wenn der Wirkungsgrad ein FAKTOR ist — größer 0 und höchstens
+        /// <see cref="BhkwWirkungsgradFaktor.BAND_BIS"/>; sonst der Ablehnungsgrund.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Wozu eine eigene Regel.</b> „Nicht negativ" ließ 29,5 durch — den
+        /// ELEKTRISCHEN Wirkungsgrad in Prozent, wo der Gesamtwirkungsgrad als Faktor
+        /// hingehört. Der Rechenweg teilt durch diese Zahl
+        /// (<c>Verbrauch = (Wärme + Strom) / Wirkungsgrad</c>); ein Prozentwert macht
+        /// den Brennstoff um rund Faktor 32 zu klein. Schemaschritt 98 hat den Bestand
+        /// umgerechnet — diese Prüfung hält die Pflege davon frei.</para>
+        /// <para><b>Die Obergrenze ist die des Bands</b>, aus derselben Quelle wie die
+        /// Umrechnung: 1,05 lässt das Brennwertgerät zu, dessen Gesamtwirkungsgrad auf
+        /// den Heizwert bezogen über 1 liegt.</para>
+        /// <para><b><c>null</c> heißt „unverändert lassen"</b> — dieselbe Lesart wie im
+        /// ganzen Aufklapper; ein nicht mitgeschickter Wert wird nicht geprüft.</para>
+        /// </remarks>
+        public static string WirkungsgradFaktor(KatalogBrowserArt art, string schluessel,
+                                                double? wert)
+        {
+            if (!wert.HasValue) return null;
+            if (wert.Value > 0 && wert.Value <= BhkwWirkungsgradFaktor.BAND_BIS) return null;
+
+            return string.Format(
+                Text("KBROW_MSG_WIRKUNGSGRAD_FAKTOR",
+                     "„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert."),
+                Feldname(art, schluessel),
+                BhkwWirkungsgradFaktor.BAND_BIS.ToString(CultureInfo.CurrentCulture));
+        }
+
+        /// <summary>
         /// Prueft einen Wert gegen eine feste Liste erlaubter Texte — der Ersatz fuer die
         /// Klappliste, die es im Aufklapper nicht gibt (dort kennt der Baustein nur
         /// Text, Zahl und Schalter).

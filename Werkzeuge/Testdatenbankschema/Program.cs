@@ -957,6 +957,60 @@ namespace Testdatenbankschema
                 }
             }
 
+            // ---- Schritt 98: der BHKW-Wirkungsgrad ist ein FAKTOR (Anwenderentscheid
+            //      19.09.2026, Auftrag BW-1). REIN DML, kein DDL: Wo
+            //      Tab_BHKW_STAMM.Wirkungsgrad bzw. Tab_BHKW.Wirkungsgrad einen
+            //      Prozentwert traegt (den des ELEKTRISCHEN Wirkungsgrads), rechnet der
+            //      Schritt ihn in den Gesamtwirkungsgrad als Faktor um - je Zeile aus
+            //      ihren eigenen Werten und nur, solange das Ergebnis im Band
+            //      [0,5; 1,05] bleibt. DIESELBE Quelle, aus der sich
+            //      SchemaMigration.Schritt_98_BhkwWirkungsgrad bedient.
+            //
+            //      ER STEHT NACH 96 wie in der Migration: 96 baut Tab_BHKW neu, und ein
+            //      Wert, den 98 vorher setzte, wuerde zwar mitkopiert - die Reihenfolge
+            //      der Migration nachzubilden ist trotzdem das Ehrlichere.
+            //
+            //      ER AENDERT ERGEBNISSE, und das ist sein Zweck: Der Brennstoff der
+            //      betroffenen Module faellt ab hier richtig aus. Die Referenzbasis ist
+            //      im selben Schritt neu eingefroren.
+            Console.WriteLine();
+            BhkwWirkungsgradFaktor.Aufnahme aufnahme98 = BhkwWirkungsgradFaktor.Bestandsaufnahme();
+            foreach (string tabelle98 in BhkwWirkungsgradFaktor.Tabellen)
+            {
+                if (!aufnahme98.Gesamt.ContainsKey(tabelle98)) continue;
+                Console.WriteLine("Schritt 98 - " + tabelle98 + ": " +
+                                  aufnahme98.Umzurechnen[tabelle98] +
+                                  " Zeile(n) umzurechnen, " +
+                                  aufnahme98.AusgewiesenIn(tabelle98) +
+                                  " Zeile(n) ueber 1 bleiben stehen; ueber der " +
+                                  "Pflegegrenze " +
+                                  BhkwWirkungsgradFaktor.UeberDerPflegegrenze(tabelle98) + ".");
+            }
+
+            if (!trocken)
+            {
+                foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                         in BhkwWirkungsgradFaktor.Anweisungen)
+                {
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+                    Console.WriteLine("Schritt 98 - " + a.Key + ".");
+                }
+
+                Console.WriteLine("Schritt 98 - " + BhkwWirkungsgradFaktor.Bericht(aufnahme98));
+
+                foreach (string tabelle98 in BhkwWirkungsgradFaktor.Tabellen)
+                    Console.WriteLine("Schritt 98 - " + tabelle98 + ": offen " +
+                                      BhkwWirkungsgradFaktor.Offen(tabelle98) +
+                                      " (erwartet 0), ueber der Pflegegrenze " +
+                                      BhkwWirkungsgradFaktor.UeberDerPflegegrenze(tabelle98) +
+                                      " (erwartet 0).");
+            }
+            else
+            {
+                foreach (BhkwWirkungsgradFaktor.Ausweis a in aufnahme98.Ausgewiesen)
+                    Console.WriteLine("Schritt 98 - " + a.Zeile() + ".");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

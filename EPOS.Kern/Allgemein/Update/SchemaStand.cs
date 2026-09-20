@@ -288,11 +288,25 @@ namespace WindowsFormsApplication1
         /// <see cref="SchemaKatalog.Schritt97_KlimaSzenario"/>. <b>Kein DML:</b> Beide
         /// bleiben NULL, und NULL heißt „sagt nichts dazu"; kein Rechenweg liest sie,
         /// der Referenzlauf bleibt byte-gleich.
+        /// Mit dem BHKW-WIRKUNGSGRAD ALS FAKTOR (Schritt 98, Anwenderentscheid
+        /// 19.09.2026) steht das Ziel auf <b>98</b>: <c>Tab_BHKW_STAMM.Wirkungsgrad</c>
+        /// und <c>Tab_BHKW.Wirkungsgrad</c> sind der GESAMTwirkungsgrad als Faktor
+        /// (0…1) — so sagt es die Maske, so rechnet <c>SimulationBHKW</c>
+        /// (<c>Verbrauch = (Wärme + Strom) / Wirkungsgrad</c>). Ein Teil des Katalogs
+        /// trug dort einen Prozentwert, und zwar den des ELEKTRISCHEN Wirkungsgrads;
+        /// der Brennstoff des BHKW fiel dadurch um rund Faktor 32 zu klein aus. Der
+        /// Schritt rechnet je Zeile um —
+        /// <c>(Ptherm + Pel) · Wirkungsgrad / 100 / Pel</c>, auf vier Stellen —, und
+        /// zwar nur, wenn das Ergebnis in [0,5; 1,05] fällt; sonst bleibt die Zeile
+        /// stehen und wird benannt ausgewiesen. Die Anweisung steht bei
+        /// <see cref="BhkwWirkungsgradFaktor"/>. <b>Kein DDL.</b> <b>Der Referenzlauf
+        /// ändert sich</b> — die Basis wird im selben Schritt neu eingefroren
+        /// (<c>2026-09-19_R10_BhkwWirkungsgrad</c>).
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 97;
+        public const int Zielversion = 98;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

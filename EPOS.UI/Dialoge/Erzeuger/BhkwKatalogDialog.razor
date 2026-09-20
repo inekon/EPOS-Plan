@@ -41,6 +41,7 @@
    Enter ist nicht belegt: Drei Knoepfe schreiben sofort in den Katalog. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
+@using System.Globalization
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Kosten
 @* Der Namensraum des Kerns - KatalogModus, Ergebnisrecords und Standardfelder. *@
@@ -233,7 +234,7 @@
     [Parameter] public string FeldPel { get; set; } = "elektrische Leistung";
     [Parameter] public string LabelWirkungsgrad { get; set; } = "Ges. Wirkungsgrad:";
     [Parameter] public string FeldWirkungsgrad { get; set; } = "Gesamtwirkungsgrad";
-    [Parameter] public string HinweisWirkungsgrad { get; set; } = "(z. B. 0,85)";
+    [Parameter] public string HinweisWirkungsgrad { get; set; } = "(Faktor 0–1, z. B. 0,90)";
     [Parameter] public string LabelGrenzleistung { get; set; } = "Untere Grenzleistung:";
     [Parameter] public string FeldGrenzleistung { get; set; } = "untere Grenzleistung";
     [Parameter] public string LabelEnergietraeger { get; set; } = "Energieträger:";
@@ -265,6 +266,13 @@
         "Bitte für \"{0}\" eine Zahl eingeben (Dezimaltrennzeichen Komma oder Punkt).";
 
     [Parameter] public string MeldungNameFehlt { get; set; } = "Bitte einen gültigen Namen eingeben!";
+
+    /// <summary>
+    /// Die Ablehnung eines Wirkungsgrads ausserhalb des Faktorbands — <c>{0}</c> ist das
+    /// Feld, <c>{1}</c> die Obergrenze.
+    /// </summary>
+    [Parameter] public string MeldungWirkungsgradFaktor { get; set; } =
+        "„{0}“ ist ein Faktor zwischen 0 und {1} (z. B. 0,90), kein Prozentwert.";
 
     /// <summary>Schluessel des Hilfeknopfes - die Zeile in help_mapping.txt.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_DBBHKW.btn_Help";
@@ -334,9 +342,33 @@
 
     private bool EingabenPruefen()
     {
-        if (_fehlerhaft.Count == 0) return true;
+        if (_fehlerhaft.Count > 0)
+        {
+            _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+            _meldungStufe = WarnStufe.Warnung;
+            return false;
+        }
 
-        _meldung = string.Format(MeldungZahlUngueltig, _fehlerhaft[0]);
+        return WirkungsgradPruefen();
+    }
+
+    /// <summary>
+    /// Der Gesamtwirkungsgrad ist ein FAKTOR, kein Prozentwert: Der Rechenweg teilt
+    /// durch diese Zahl (<c>Verbrauch = (Wärme + Strom) / Wirkungsgrad</c>), und eine 29,5
+    /// machte den Brennstoff um rund Faktor 32 zu klein. Zugelassen ist (0;
+    /// <see cref="BhkwWirkungsgradFaktor.BAND_BIS"/>] — dieselbe Obergrenze wie im
+    /// Schemaschritt 98 und im Kern (<c>KatalogFeldPruefung.WirkungsgradFaktor</c>);
+    /// 1,05 laesst das Brennwertgeraet zu, dessen Gesamtwirkungsgrad auf den Heizwert
+    /// bezogen ueber 1 liegt.
+    /// </summary>
+    private bool WirkungsgradPruefen()
+    {
+        double? wert = Daten.Wirkungsgrad;
+        if (!wert.HasValue) return true;
+        if (wert.Value > 0 && wert.Value <= BhkwWirkungsgradFaktor.BAND_BIS) return true;
+
+        _meldung = string.Format(MeldungWirkungsgradFaktor, FeldWirkungsgrad,
+                                 BhkwWirkungsgradFaktor.BAND_BIS.ToString(CultureInfo.CurrentCulture));
         _meldungStufe = WarnStufe.Warnung;
         return false;
     }
