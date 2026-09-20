@@ -217,10 +217,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static byte[] JahresverlaufWaerme(ZeitreihenSatz z)
         {
+            Zeichenmodell m = JahresverlaufWaermeModell(z);
+            return m == null ? null : SkiaMaler.Png(m);
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe d).
+        ///
+        /// <para><b>Ein reines PIXELBILD</b> (Entscheid DG-E3-7): keine
+        /// <see cref="Zeichenmodell.Flaeche"/> und keine <see cref="Datenreihe"/>. Der
+        /// SVG-Weg schreibt deshalb jeden Befehl so, wie das PNG ihn malt — der Gewinn
+        /// im Bericht ist Schärfe und durchsuchbarer Text, nicht Bedienung.</para>
+        ///
+        /// <para><c>null</c> heißt „kein Bild": Führt der Lauf weder Erzeugung noch
+        /// Bedarf, entsteht auch kein Modell — der Bericht lässt die Stelle aus,
+        /// statt einen Leerhinweis zu zeichnen.</para>
+        /// </summary>
+        public static Zeichenmodell JahresverlaufWaermeModell(ZeitreihenSatz z)
+        {
             var stapel = WaermeErzeugerReihen(z, tagesmittel: true);
             double[] bedarf = TagesMittel(z.Hole(ZeitreihenSatz.WAERMEBEDARF));
             if (stapel.Count == 0 && bedarf == null) return null;
-            return StapelDiagramm("Wärmeerzeugung im Jahresverlauf (Tagesmittel)", "kW",
+            return StapelDiagrammModell("Wärmeerzeugung im Jahresverlauf (Tagesmittel)", "kW",
                 stapel, bedarf, "Wärmebedarf", MonatsTicks365());
         }
 
@@ -230,6 +248,20 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static byte[] DauerlinieWaerme(ZeitreihenSatz z)
         {
+            Zeichenmodell m = DauerlinieWaermeModell(z);
+            return m == null ? null : SkiaMaler.Png(m);
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe d) — ein reines
+        /// Pixelbild nach Entscheid DG-E3-7; <c>null</c>, wenn der Lauf keinen
+        /// Wärmebedarf führt. Siehe <see cref="JahresverlaufWaermeModell"/>.
+        ///
+        /// <para>Auf der x-Achse zählt hier der RANG, nicht die Jahresstunde — die
+        /// Reihen sind absteigend sortiert.</para>
+        /// </summary>
+        public static Zeichenmodell DauerlinieWaermeModell(ZeitreihenSatz z)
+        {
             double[] bedarf = z.Hole(ZeitreihenSatz.WAERMEBEDARF);
             if (bedarf == null) return null;
 
@@ -237,7 +269,7 @@ namespace WindowsFormsApplication1
             foreach (Reihe r in WaermeErzeugerReihen(z, tagesmittel: false))
                 reihen.Add(new Reihe(r.Name, SortiertAbsteigend(r.Werte), r.Farbe));
 
-            return LinienDiagramm("Jahresdauerlinie Wärme", "kW", reihen,
+            return LinienDiagrammModell("Jahresdauerlinie Wärme", "kW", reihen,
                 new[] { 0, 2190, 4380, 6570, 8760 },
                 new[] { "0", "2.190", "4.380", "6.570", "8.760 h" });
         }
@@ -276,6 +308,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static byte[] Speicherverlauf(ZeitreihenSatz z)
         {
+            Zeichenmodell m = SpeicherverlaufModell(z);
+            return m == null ? null : SkiaMaler.Png(m);
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe d) — ein reines
+        /// Pixelbild nach Entscheid DG-E3-7; <c>null</c>, wenn der Lauf keine
+        /// Füllstandsreihe führt. Siehe <see cref="JahresverlaufWaermeModell"/>.
+        ///
+        /// <para><b>Drei Wochenfelder in EINEM Bild.</b> Jede Reihe wird deshalb
+        /// DREIMAL gezeichnet — einmal je Feld —, und alle drei Befehle tragen
+        /// dieselbe Marke <c>reihe:&lt;Name&gt;</c>. Eine Zeichenfläche in
+        /// Datenkoordinaten gäbe es hier ohnehin nicht: Sie wäre nicht eine, sondern
+        /// drei.</para>
+        /// </summary>
+        public static Zeichenmodell SpeicherverlaufModell(ZeitreihenSatz z)
+        {
             var reihen = new List<Reihe>();
 
             // PAKET E1 (Konzept 6.3, Befund S-1): eine Linie JE WÄRMESPEICHER statt der
@@ -300,7 +349,7 @@ namespace WindowsFormsApplication1
 
             int W = 1240, H = 520;
             var bild = Modell(W, H);
-            Titel(bild, "Speicherverlauf — Füllstand [kWh]", W);
+            bild.Markiert("titel", zt => Titel(zt, "Speicherverlauf — Füllstand [kWh]", W));
 
             double max = reihen.Max(r => r.Werte.Max());
             if (max <= 0) max = 1;
@@ -310,18 +359,25 @@ namespace WindowsFormsApplication1
             {
                 var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
                 PanelRahmen(bild, rc, titelWoche[p]);
+                int feld = p;
                 foreach (Reihe r in reihen)
-                    ZeichneLinie(bild, rc, Ausschnitt(r.Werte, fenster[p], 168), 0, max, r.Farbe, 3f);
+                {
+                    Reihe reihe = r;
+                    bild.Markiert("reihe:" + reihe.Name, zr =>
+                        ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
+                                     0, max, reihe.Farbe, 3f));
+                }
                 // Y-Beschriftung nur links.
                 if (p == 0)
                     using (var f = Schrift(15f))
-                    {
-                        Text(bild, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
-                        Text(bild, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
-                    }
+                        bild.Markiert("yachse", zy =>
+                        {
+                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, "0", f, Farbrolle.ACHSE, rc.Left - 24f, rc.Bottom - 10f);
+                        });
             }
             Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
-            return SkiaMaler.Png(bild);
+            return bild;
         }
 
         /// <summary>
@@ -341,6 +397,19 @@ namespace WindowsFormsApplication1
         /// bei drei Speichern wären sechs eigene Farben nicht mehr zu unterscheiden.</para>
         /// </summary>
         public static byte[] Speichertemperaturen(ZeitreihenSatz z)
+        {
+            Zeichenmodell m = SpeichertemperaturenModell(z);
+            return m == null ? null : SkiaMaler.Png(m);
+        }
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Etappe DG-E3, Gruppe d) — ein reines
+        /// Pixelbild nach Entscheid DG-E3-7; <c>null</c>, wenn der Lauf keine
+        /// Temperaturreihe führt. Drei Wochenfelder wie bei
+        /// <see cref="SpeicherverlaufModell"/>, nur mit einer Achse, die beim
+        /// kleinsten vorkommenden Wert beginnt.
+        /// </summary>
+        public static Zeichenmodell SpeichertemperaturenModell(ZeitreihenSatz z)
         {
             var reihen = new List<Reihe>();
 
@@ -386,40 +455,56 @@ namespace WindowsFormsApplication1
 
             int W = 1240, H = 560;
             var bild = Modell(W, H);
-            Titel(bild, "Speichertemperaturen — oberste und unterste Schicht [°C]", W);
+            bild.Markiert("titel", zt =>
+                Titel(zt, "Speichertemperaturen — oberste und unterste Schicht [°C]", W));
 
             float panelB = (W - 120f) / 3f;
             for (int p = 0; p < 3; p++)
             {
                 var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
                 PanelRahmen(bild, rc, titelWoche[p]);
+                int feld = p;
                 foreach (Reihe r in reihen)
-                    ZeichneLinie(bild, rc, Ausschnitt(r.Werte, fenster[p], 168), min, max, r.Farbe, 3f);
+                {
+                    Reihe reihe = r;
+                    bild.Markiert("reihe:" + reihe.Name, zr =>
+                        ZeichneLinie(zr, rc, Ausschnitt(reihe.Werte, fenster[feld], 168),
+                                     min, max, reihe.Farbe, 3f));
+                }
 
                 if (p == 0)
                     using (var f = Schrift(15f))
-                    {
-                        Text(bild, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
-                        Text(bild, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
-                    }
+                        bild.Markiert("yachse", zy =>
+                        {
+                            Text(zy, max.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Top - 8f);
+                            Text(zy, min.ToString("N0", DE), f, Farbrolle.ACHSE, rc.Left - 62f, rc.Bottom - 10f);
+                        });
             }
 
             // Umbruch bei vielen Serien: zwei Reihen je Speicher füllen die Zeile
             // schneller als beim Füllstandsdiagramm.
             Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
                     70f, H - 96f, W - 70f);
-            return SkiaMaler.Png(bild);
+            return bild;
         }
 
         // =================================================================== Kernzeichner
 
-        private static byte[] StapelDiagramm(string titel, string einheit, List<Reihe> stapel,
+        /// <summary>
+        /// Der gemeinsame Rumpf des gestapelten Jahresverlaufs — seit Etappe DG-E3
+        /// (Gruppe d) ein <see cref="Zeichenmodell"/> statt PNG-Bytes. Ein reines
+        /// Pixelbild nach Entscheid DG-E3-7: Die Marken <c>titel</c>, <c>xachse</c>,
+        /// <c>yachse</c>, <c>reihe:…</c> und <c>legende:…</c> stehen im Baum, eine
+        /// Zeichenfläche in Datenkoordinaten gibt es nicht.
+        /// </summary>
+        private static Zeichenmodell StapelDiagrammModell(string titel, string einheit,
+                                             List<Reihe> stapel,
                                              double[] linie, string linienName,
                                              KeyValuePair<int[], string[]> xticks)
         {
             int W = 1240, H = 560;
             var z = Modell(W, H);
-            Titel(z, titel + "  [" + einheit + "]", W);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
             var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
             int n = stapel.Count > 0 ? stapel[0].Werte.Length : linie.Length;
@@ -439,23 +524,34 @@ namespace WindowsFormsApplication1
             {
                 var oben = new double[n];
                 for (int i = 0; i < n; i++) oben[i] = unten[i] + Math.Max(r.Werte[i], 0);
-                ZeichneFlaeche(z, rc, unten, oben, max, r.Farbe);
+                Reihe reihe = r;
+                double[] unterkante = unten, oberkante = oben;
+                z.Markiert("reihe:" + reihe.Name, zr =>
+                    ZeichneFlaeche(zr, rc, unterkante, oberkante, max, reihe.Farbe));
                 unten = oben;
             }
-            if (linie != null) ZeichneLinie(z, rc, linie, 0, max, C_BEDARF, 3f);
+            if (linie != null)
+                z.Markiert("reihe:" + linienName, zr =>
+                    ZeichneLinie(zr, rc, linie, 0, max, C_BEDARF, 3f));
 
             var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
             if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
             Legende(z, leg, 90f, H - 64f);
-            return SkiaMaler.Png(z);
+            return z;
         }
 
-        private static byte[] LinienDiagramm(string titel, string einheit, List<Reihe> reihen,
+        /// <summary>
+        /// Der gemeinsame Rumpf der Dauerlinie — seit Etappe DG-E3 (Gruppe d) ein
+        /// <see cref="Zeichenmodell"/> statt PNG-Bytes; siehe
+        /// <see cref="StapelDiagrammModell"/>.
+        /// </summary>
+        private static Zeichenmodell LinienDiagrammModell(string titel, string einheit,
+                                             List<Reihe> reihen,
                                              int[] xpos, string[] xlab)
         {
             int W = 1240, H = 560;
             var z = Modell(W, H);
-            Titel(z, titel + "  [" + einheit + "]", W);
+            z.Markiert("titel", zt => Titel(zt, titel + "  [" + einheit + "]", W));
             var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
             int n = reihen[0].Werte.Length;
@@ -463,10 +559,15 @@ namespace WindowsFormsApplication1
             AchsenRaster(z, rc, max, xpos, xlab, n);
 
             foreach (Reihe r in reihen)
-                ZeichneLinie(z, rc, r.Werte, 0, max, r.Farbe, r.Farbe == C_BEDARF ? 3.5f : 2.5f);
+            {
+                Reihe reihe = r;
+                z.Markiert("reihe:" + reihe.Name, zr =>
+                    ZeichneLinie(zr, rc, reihe.Werte, 0, max, reihe.Farbe,
+                                 reihe.Farbe == C_BEDARF ? 3.5f : 2.5f));
+            }
 
             Legende(z, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         private static byte[] MonatsBalken(string titel, string einheit, List<Reihe> serien,
@@ -4138,35 +4239,61 @@ namespace WindowsFormsApplication1
                 Text(z, text, f, Farbrolle.STAMM, 24f, 16f);
         }
 
+        /// <summary>
+        /// Der Rahmen EINES Wochenfeldes samt seiner Überschrift (Speicherverlauf,
+        /// Speichertemperaturen).
+        ///
+        /// <para><b>Die Marken (Etappe DG-E3, Gruppe d).</b> Der Rahmen ist das
+        /// Achsenkreuz des Feldes und bleibt deshalb OHNE Marke — dieselbe Regel wie
+        /// beim <see cref="Achsenkreuz"/> der ganzflächigen Bilder. Die Überschrift
+        /// sagt, welche Woche das Feld zeigt; sie ist die Beschriftung seiner
+        /// Zeitachse und trägt darum <c>xachse</c>.</para>
+        /// </summary>
         private static void PanelRahmen(IZeichenziel z, SKRect rc, string titel)
         {
             z.Rechteck(rc.Left, rc.Top, rc.Width, rc.Height, Stift(Farbrolle.RAHMEN, 1f));
             using (var f = Schrift(16f, fett: true))
-                Text(z, titel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 28f);
+                z.Markiert("xachse", zx => Text(zx, titel, f, Farbrolle.ACHSE, rc.Left, rc.Top - 28f));
         }
 
+        /// <summary>
+        /// Waagerechtes Raster samt y-Beschriftung, wahlweise senkrechte Teilung mit
+        /// x-Beschriftung, dazu das Achsenkreuz.
+        ///
+        /// <para><b>Die Marken (Etappe DG-E3, Gruppe d).</b> Der y-Teil steht unter
+        /// <c>yachse</c>, der x-Teil unter <c>xachse</c>, das <see cref="Achsenkreuz"/>
+        /// unter keiner von beiden: Blendet die Oberfläche die Teilung einer Achse
+        /// aus, müssen die zwei Achsenlinien stehen bleiben. Die Befehlsreihenfolge
+        /// ändert sich dadurch nicht — das PNG bleibt byte-gleich.</para>
+        /// </summary>
         private static void AchsenRaster(IZeichenziel z, SKRect rc, double max,
                                          int[] xpos, string[] xlab, int n)
         {
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var f = Schrift(15f))
             {
-                for (int s = 0; s <= 4; s++)
+                z.Markiert("yachse", zy =>
                 {
-                    float y = rc.Bottom - s * rc.Height / 4f;
-                    z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = (max * s / 4.0).ToString("N0", DE);
-                    float breite = f.MeasureText(lab);
-                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
-                }
-                if (xpos != null)
-                    for (int i = 0; i < xpos.Length; i++)
+                    for (int s = 0; s <= 4; s++)
                     {
-                        float x = rc.Left + (float)xpos[i] / Math.Max(n - 1, 1) * rc.Width;
-                        z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                        float breite = f.MeasureText(xlab[i]);
-                        Text(z, xlab[i], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                        float y = rc.Bottom - s * rc.Height / 4f;
+                        zy.Linie(rc.Left, y, rc.Right, y, raster);
+                        string lab = (max * s / 4.0).ToString("N0", DE);
+                        float breite = f.MeasureText(lab);
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
                     }
+                });
+                if (xpos != null)
+                    z.Markiert("xachse", zx =>
+                    {
+                        for (int i = 0; i < xpos.Length; i++)
+                        {
+                            float x = rc.Left + (float)xpos[i] / Math.Max(n - 1, 1) * rc.Width;
+                            zx.Linie(x, rc.Top, x, rc.Bottom, raster);
+                            float breite = f.MeasureText(xlab[i]);
+                            Text(zx, xlab[i], f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                        }
+                    });
             }
             Achsenkreuz(z, rc);
         }
