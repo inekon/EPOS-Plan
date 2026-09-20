@@ -12,6 +12,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Klimadaten;
 using Microsoft.AspNetCore.Components;
 using SkiaSharp;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -105,11 +106,9 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Regionen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(RegionenLesen),
-                ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(
-                                  name => Ansicht(name, null, null)),
-                ["AnsichtMitAusschnitt"] =
-                    new Func<string, Diagrammbereich, Diagrammbereich,
-                             Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
+                ["Ansicht"] = new Func<string, Task<KlimadatenDialog.Regionsansicht>>(Ansicht),
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
                 ["Importieren"] = new Func<KlimaImportAuftrag, IProgress<ImportFortschritt>,
                                            Task<KlimaImportErgebnis>>(Importieren),
                 ["Abbrechen"] = new Action(() => { try { _abbruch?.Cancel(); } catch { } }),
@@ -164,26 +163,22 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Details, Koordinaten und die zwei Bilder einer Region (<c>CreateChart</c>).
+        /// Details, Koordinaten und die zwei ZEICHENMODELLE einer Region.
         ///
         /// <para><b>Ohne Stundenwerte gibt es eine Meldung, keine Ausnahme</b> (Befund
         /// W14c-B19): <c>yAxis.ToArray().Max()</c> warf mit „Sequence contains no
         /// elements", sobald eine Region keine Zeilen in <c>Tab_Solar_STAMM</c> hatte —
         /// etwa nach einem abgebrochenen Import.</para>
         ///
-        /// <para><b>Der DATENZOOM</b> (Anwenderwunsch KL‑8, 20.09.2026: „Chart soll
-        /// Zoom/Ausschnitt möglich sein (wie andere Charts)"): Jedes der beiden Bilder
-        /// trägt seinen EIGENEN aufgezogenen Bereich. Was an einer Stelle des Bildes
-        /// steht, weiß nur der Renderer, der es gezeichnet hat — deshalb rechnet
-        /// <c>ChartRenderer.FensterAusBild</c> daraus das Achsenfenster, genau wie in
-        /// den übrigen Hüllen mit Ganglinie.</para>
+        /// <para><b>Ein Modell statt Bildbytes</b> (Konzept Diagramme, Etappe E2): Die
+        /// Oberfläche zeichnet es als SVG, und der Zeitausschnitt liegt seither im
+        /// Browser — in der <c>viewBox</c> des inneren <c>&lt;svg&gt;</c>. Deshalb gibt
+        /// es hier kein Achsenfenster mehr und keinen zweiten Delegaten: Ein Zoom
+        /// zeichnet nichts neu. Die PNG-Fassung <c>ChartRenderer.Jahresgang</c> bleibt
+        /// für den Bericht, sie geht durch dasselbe Modell.</para>
         /// </summary>
         /// <param name="name">Der Bezeichner der Region.</param>
-        /// <param name="temperaturbereich">Der Bildausschnitt des Temperaturbildes;
-        /// <c>null</c> = das ganze Jahr.</param>
-        /// <param name="sonnenwinkelbereich">Der Bildausschnitt des Sonnenwinkelbildes.</param>
-        private static Task<KlimadatenDialog.Regionsansicht> Ansicht(
-            string name, Diagrammbereich temperaturbereich, Diagrammbereich sonnenwinkelbereich)
+        private static Task<KlimadatenDialog.Regionsansicht> Ansicht(string name)
         {
             var region = new KlimaregionStammCtrl();
             region.ReadByName(name ?? "");
@@ -203,7 +198,7 @@ namespace WindowsFormsApplication1
             double[] werteTemperatur = solar.list_Temperatur.ToArray();
             double[] werteSonnenwinkel = solar.list_Sonnenwinkel.ToArray();
 
-            byte[] temperatur = ChartRenderer.Jahresgang(
+            Zeichenmodell temperatur = ChartRenderer.JahresgangModell(
                 MyResource.Resource.KLIMA_DIA_TEMPERATUR,
                 new[]
                 {
@@ -212,13 +207,11 @@ namespace WindowsFormsApplication1
                                             ChartRenderer.C_AUSSENTEMPERATUR)
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
-                MyResource.Resource.KLIMA_ACHSE_TEMPERATUR,
-                false,
-                Fenster(temperaturbereich, werteTemperatur.Length));
+                MyResource.Resource.KLIMA_ACHSE_TEMPERATUR);
 
             // A-3/E-4: Die Sonnenwinkel-Achse beginnt bei 0 - wie YMinValue = 0 des
             // Vorlaeufers (W14c.0j).
-            byte[] winkel = ChartRenderer.Jahresgang(
+            Zeichenmodell winkel = ChartRenderer.JahresgangModell(
                 MyResource.Resource.KLIMA_DIA_SONNENWINKEL,
                 new[]
                 {
@@ -228,26 +221,33 @@ namespace WindowsFormsApplication1
                 },
                 MyResource.Resource.KLIMA_ACHSE_X,
                 MyResource.Resource.KLIMA_ACHSE_SONNENWINKEL,
-                true,
-                Fenster(sonnenwinkelbereich, werteSonnenwinkel.Length));
+                true);
 
             return Task.FromResult(new KlimadatenDialog.Regionsansicht(
                 region.Details ?? "", region.Longitude, region.Latitude, temperatur, winkel, ""));
         }
 
-        /// <summary>
-        /// Rechnet ein aufgezogenes Rechteck in das Achsenfenster des Renderers um
-        /// (KL‑8) — dieselbe eine Stelle, die auch die Gebäude-, Ganglinien- und
-        /// Simulationshüllen nehmen. Ohne Rechteck bleibt es beim ganzen Jahr.
-        /// </summary>
-        private static ChartRenderer.Achsenfenster Fenster(Diagrammbereich bereich, int laenge)
-        {
-            if (bereich == null) return null;
+        // =====================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =====================================================================
 
-            return ChartRenderer.FensterAusBild(
-                new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
-                                                 bereich.YVon, bereich.YBis),
-                laenge);
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         // =====================================================================

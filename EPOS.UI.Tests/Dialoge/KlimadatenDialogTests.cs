@@ -6,6 +6,7 @@ using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -21,7 +22,29 @@ namespace EPOS.UI.Tests.Dialoge;
 /// </summary>
 public class KlimadatenDialogTests : EposBunitContext
 {
-    private static readonly byte[] BILD = { 1, 2, 3, 4 };
+    /// <summary>
+    /// Das Zeichenmodell EINES der beiden Bilder — seit Etappe E2 führt die
+    /// <c>Regionsansicht</c> Modelle statt PNG-Bytes, und der Baustein
+    /// <c>DiagrammSvg</c> zeichnet sie als Elemente in den Baum.
+    ///
+    /// <para>Es ist dasselbe Modell, das die Windows-Hülle baut
+    /// (<c>ChartRenderer.JahresgangModell</c>, 8 760 Stundenwerte) — ein
+    /// Ersatzmodell hätte weder Legende noch Zeichenfläche und damit nichts, woran
+    /// die Bedienung hängt.</para>
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Bild();
+
+    private static Zeichenmodell Bild()
+    {
+        var werte = new double[8760];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 10.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+
+        return ChartRenderer.JahresgangModell(
+            "Jahrestemperatur Verlauf",
+            new[] { new ChartRenderer.Reihe("Temperatur", werte, ChartRenderer.C_AUSSENTEMPERATUR) },
+            "Stunde des Jahres", "Temperatur [°C]");
+    }
 
     /// <summary>
     /// Die drei Regionen der Liste — seit Auftrag KL-4 Katalogzeilen mit sieben
@@ -70,16 +93,17 @@ public class KlimadatenDialogTests : EposBunitContext
         Action<bool>? geschlossen = null,
         Func<string, Task<string?>>? dateiWaehlen = null,
         Func<KlimaImportAuftrag, Task<KlimaVorschauErgebnis>>? regionErmitteln = null,
-        Func<string, Diagrammbereich?, Diagrammbereich?,
-             Task<KlimadatenDialog.Regionsansicht>>? ansichtMitAusschnitt = null)
+        Func<Farbrolle, Farbe, Task>? farbeSetzen = null,
+        Func<Farbrolle, Task>? farbeZuruecksetzen = null)
     {
         IReadOnlyList<Katalogfilterzeile> liste = regionen ?? Regionen();
         return Render<KlimadatenDialog>(p => p
             .Add(x => x.Regionen, () => Task.FromResult(liste))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Ansicht, ansicht ?? (n => Task.FromResult(
-                new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, BILD, BILD, ""))))
-            .Add(x => x.AnsichtMitAusschnitt, ansichtMitAusschnitt)
+                new KlimadatenDialog.Regionsansicht("Details " + n, 9.18, 48.77, MODELL, MODELL, ""))))
+            .Add(x => x.FarbeSetzen, farbeSetzen)
+            .Add(x => x.FarbeZuruecksetzen, farbeZuruecksetzen)
             .Add(x => x.Importieren, importieren ?? ((_, _) => Task.FromResult(
                 new KlimaImportErgebnis
                 {
@@ -173,7 +197,7 @@ public class KlimadatenDialogTests : EposBunitContext
         {
             gefragt = n;
             return Task.FromResult(new KlimadatenDialog.Regionsansicht(
-                "PVGIS-SARAH3", 13.4, 52.5, BILD, BILD, ""));
+                "PVGIS-SARAH3", 13.4, 52.5, MODELL, MODELL, ""));
         });
 
         cut.FindAll("button.epos-anlagenwahl")[0].Click();
@@ -187,15 +211,20 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.Equal("Berlin", cut.Instance.Gewaehlt);
 
         // Der Baustein Reiter zeichnet nur das AKTIVE Blatt - erst das
-        // Temperaturbild, nach dem Wechsel das Sonnenwinkelbild.
-        Assert.Single(cut.FindComponents<EPOS.UI.Standards.ChartBild>());
+        // Temperaturbild, nach dem Wechsel das Sonnenwinkelbild. Beide stehen
+        // seit Etappe E2 im Baustein DiagrammSvg, nicht mehr in ChartBild.
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("Jahrestemperatur Verlauf",
-                     cut.FindComponent<EPOS.UI.Standards.ChartBild>().Instance.Alt);
+                     cut.FindComponent<DiagrammSvg>().Instance.Bezeichnung);
+        Assert.Equal("klima-temperatur",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
 
         cut.FindAll(".epos-reiter-knopf")[1].Click();
         cut.WaitForAssertion(() => Assert.Equal("Sonnenwinkel Verlauf",
-                     cut.FindComponent<EPOS.UI.Standards.ChartBild>().Instance.Alt),
+                     cut.FindComponent<DiagrammSvg>().Instance.Bezeichnung),
                              TimeSpan.FromSeconds(10));
+        Assert.Equal("klima-sonnenwinkel",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
     }
 
     /// <summary>
@@ -1257,127 +1286,143 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.False(knopf.HasAttribute("style"));
     }
 
+
     // =====================================================================
-    //  Der DATENZOOM der beiden Diagramme (Anwenderwunsch KL-8)
+    //  Die Farbe einer Reihe am Bild (Farbrollen, Bedienung Teil 2)
     // =====================================================================
 
-    /// <summary>Die Beschriftungen der Knöpfe über dem GEZEIGTEN Diagramm.</summary>
-    private static string[] Diagrammknoepfe(IRenderedComponent<KlimadatenDialog> cut)
-        => cut.FindAll("button.epos-diagramm-knopf")
-              .Select(k => k.TextContent.Trim()).ToArray();
-
-    /// <summary>Der Bildrahmen des gezeigten Reiters — je Reiter steht genau einer.</summary>
-    private static EPOS.UI.Bausteine.Diagramm Bildrahmen(IRenderedComponent<KlimadatenDialog> cut)
-        => cut.FindComponents<EPOS.UI.Bausteine.Diagramm>()[0].Instance;
+    /// <summary>Der Baustein des GEZEIGTEN Reiters — je Reiter steht genau einer.</summary>
+    private static DiagrammSvg Bild(IRenderedComponent<KlimadatenDialog> cut)
+        => cut.FindComponents<DiagrammSvg>()[0].Instance;
 
     /// <summary>
     /// Wählt die Region Nr. <paramref name="nr"/> — ein Bild gibt es erst mit einer
-    /// gewählten Region, ohne sie steht der Platzhalter (und kein Bildrahmen).
+    /// gewählten Region, ohne sie steht der Platzhalter.
     /// </summary>
     private static void Region(IRenderedComponent<KlimadatenDialog> cut, int nr)
         => cut.FindAll("button.epos-anlagenwahl")[nr].Click();
 
     /// <summary>
-    /// <b>OHNE den Delegaten bleibt es beim BILDZOOM.</b> Wer nur <c>Ansicht</c>
-    /// belegt, kann keinen Zeitausschnitt zeichnen lassen — dann steht über dem Bild
-    /// nur „1:1", und der Knopf „Bereich" erscheint gar nicht erst. Ein Knopf, der
-    /// nichts neu zeichnen kann, wäre eine Behauptung.
+    /// <b>Beide Reiter zeigen ein SVG, nicht ein Bild.</b> Der Zoom auf der
+    /// Zeitachse liegt damit im Browser: Über jedem Bild stehen „Bereich" und
+    /// „1:1", darunter die Zeile mit den Werten am Mauszeiger.
     /// </summary>
     [Fact]
-    public void Ohne_den_Ausschnittdelegaten_fehlt_der_Bereichsknopf()
+    public void Beide_Reiter_zeigen_das_Diagramm_als_SVG()
     {
         var cut = Zeige();
         Region(cut, 0);
 
-        Assert.Equal(new[] { "1:1" }, Diagrammknoepfe(cut));
-    }
-
-    /// <summary>
-    /// <b>MIT dem Delegaten trägt JEDER der beiden Reiter den Knopf „Bereich".</b>
-    /// Der Reiter zeichnet nur das gewählte Blatt; geprüft wird deshalb erst die
-    /// Temperatur, dann der Sonnenwinkel.
-    /// </summary>
-    [Fact]
-    public void Mit_dem_Ausschnittdelegaten_traegt_jeder_Reiter_den_Bereichsknopf()
-    {
-        var cut = Zeige(ansichtMitAusschnitt: (_, _, _) => Task.FromResult(
-            new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, "")));
-        Region(cut, 0);
-
-        Assert.Equal(new[] { "Bereich", "1:1" }, Diagrammknoepfe(cut));
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Empty(cut.FindComponents<EPOS.UI.Standards.ChartBild>());
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     cut.FindAll("button.epos-diagramm-knopf")
+                        .Select(k => k.TextContent.Trim()).ToArray());
+        Assert.Single(cut.FindAll(".epos-diagramm-zeigerzeile"));
 
         cut.FindAll("button[role='tab']")[1].Click();
 
-        Assert.Equal(new[] { "Bereich", "1:1" }, Diagrammknoepfe(cut));
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("svg.epos-flaeche")),
+                             TimeSpan.FromSeconds(10));
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     cut.FindAll("button.epos-diagramm-knopf")
+                        .Select(k => k.TextContent.Trim()).ToArray());
     }
 
     /// <summary>
-    /// <b>Der aufgezogene Bereich geht UNVERÄNDERT an den Delegaten — und zwar am
-    /// Platz des RICHTIGEN Reiters.</b> Was an einer Stelle des Bildes steht, weiß
-    /// nur der Renderer, der es gezeichnet hat; der Dialog rechnet nichts. Zieht der
-    /// Anwender im Temperaturbild, bleibt der Sonnenwinkel beim ganzen Jahr — und
-    /// umgekehrt. „1:1" nimmt den Ausschnitt wieder zurück.
+    /// <b>Die Einheit steht je Reiter</b> — Grad Celsius am Temperaturbild, Grad am
+    /// Sonnenwinkel. Sie ist das, was in der Zeigerzeile hinter dem Wert steht.
     /// </summary>
     [Fact]
-    public async Task Der_Bereich_geht_an_den_Platz_des_gezeigten_Reiters()
+    public void Jeder_Reiter_traegt_seine_Einheit()
     {
-        var rufe = new List<(Diagrammbereich? Temperatur, Diagrammbereich? Sonnenwinkel)>();
-
-        var cut = Zeige(ansichtMitAusschnitt: (_, t, s) =>
-        {
-            rufe.Add((t, s));
-            return Task.FromResult(
-                new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, ""));
-        });
+        var cut = Zeige();
         Region(cut, 0);
 
-        // Reiter 1: das Temperaturbild.
-        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+        cut.WaitForAssertion(() => Assert.Equal("°C", Bild(cut).Einheit),
+                             TimeSpan.FromSeconds(10));
 
-        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
-        Assert.Equal(0.5, rufe[^1].Temperatur!.XBis);
-        Assert.Null(rufe[^1].Sonnenwinkel);
-
-        // Reiter 2: der Sonnenwinkel fuehrt seinen EIGENEN Ausschnitt; der der
-        // Temperatur steht weiter.
         cut.FindAll("button[role='tab']")[1].Click();
-        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.3, 0.7, 0.2, 0.8));
 
-        Assert.Equal(0.3, rufe[^1].Sonnenwinkel!.XVon);
-        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
-
-        // „1:1" verwirft den Ausschnitt DIESES Bildes.
-        cut.FindAll("button.epos-diagramm-knopf").First(k => k.TextContent.Trim() == "1:1").Click();
-
-        Assert.Null(rufe[^1].Sonnenwinkel);
-        Assert.Equal(0.25, rufe[^1].Temperatur!.XVon);
+        cut.WaitForAssertion(() => Assert.Equal("°", Bild(cut).Einheit),
+                             TimeSpan.FromSeconds(10));
     }
 
     /// <summary>
-    /// <b>Eine andere Region heißt eine andere Reihe</b> — ein Ausschnitt, der für
-    /// die alte Region aufgezogen wurde, hat für die neue keine Bedeutung und fällt
-    /// mit der Wahl.
+    /// <b>Ohne den Delegaten gibt es keinen Farbwähler.</b> Ein Wähler, dessen Wahl
+    /// niemand speichert, wäre eine Behauptung — dieselbe Hausregel wie überall:
+    /// kein Delegat, kein Bedienelement.
     /// </summary>
     [Fact]
-    public async Task Der_Regionswechsel_setzt_beide_Ausschnitte_zurueck()
+    public void Ohne_FarbeSetzen_bleibt_der_Farbwaehler_weg()
     {
-        var rufe = new List<(string Name, Diagrammbereich? Temperatur, Diagrammbereich? Sonnenwinkel)>();
-
-        var cut = Zeige(ansichtMitAusschnitt: (n, t, s) =>
-        {
-            rufe.Add((n, t, s));
-            return Task.FromResult(
-                new KlimadatenDialog.Regionsansicht("D", 9.18, 48.77, BILD, BILD, ""));
-        });
+        var cut = Zeige();
         Region(cut, 0);
 
-        await cut.InvokeAsync(() => Bildrahmen(cut).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-        Assert.NotNull(rufe[^1].Temperatur);
+        cut.WaitForAssertion(() => Assert.False(Bild(cut).FarbwahlErlaubt),
+                             TimeSpan.FromSeconds(10));
+        Assert.Empty(cut.FindAll(".epos-legende-farbfeld"));
+    }
 
-        Region(cut, 1);
+    /// <summary>
+    /// <b>Mit dem Delegaten kommt die Wahl bei der Hülle an — mit Rolle und
+    /// Farbe.</b> Der Dialog rechnet nichts um: Die Rolle steht im Modell, die
+    /// Farbe kommt aus dem Wähler.
+    /// </summary>
+    [Fact]
+    public async Task FarbeSetzen_bekommt_Rolle_und_Farbe()
+    {
+        var rufe = new List<(Farbrolle Rolle, Farbe Farbe)>();
 
-        Assert.Equal("Stuttgart", rufe[^1].Name);
-        Assert.Null(rufe[^1].Temperatur);
-        Assert.Null(rufe[^1].Sonnenwinkel);
+        var cut = Zeige(farbeSetzen: (r, f) => { rufe.Add((r, f)); return Task.CompletedTask; });
+        Region(cut, 0);
+
+        cut.WaitForAssertion(() => Assert.True(Bild(cut).FarbwahlErlaubt),
+                             TimeSpan.FromSeconds(10));
+
+        // Das Farbfeld des Legendeneintrags oeffnet den Waehler; dort meldet das
+        // Farbfeld des Hauses die gewaehlte Farbe.
+        cut.FindAll(".epos-legende-farbfeld")[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-farbwahl")),
+                             TimeSpan.FromSeconds(10));
+
+        await cut.InvokeAsync(() =>
+            cut.Find(".epos-farbwahl input.epos-farbfeld-waehler").Change("#123456"));
+
+        Assert.Single(rufe);
+        Assert.Equal(Farbrolle.AUSSENTEMPERATUR, rufe[0].Rolle);
+        Assert.Equal(0x12, rufe[0].Farbe.R);
+        Assert.Equal(0x34, rufe[0].Farbe.G);
+        Assert.Equal(0x56, rufe[0].Farbe.B);
+
+        // Die DECKUNG bleibt die der Hausfarbe - der Anwender waehlt den Farbton.
+        Assert.Equal(Farbpalette.Vorgabe[Farbrolle.AUSSENTEMPERATUR].A, rufe[0].Farbe.A);
+    }
+
+    /// <summary>
+    /// <b>„Hausfarbe" nimmt die Wahl zurück</b> — die Rolle fällt aus der
+    /// Einstellung, und eine später geänderte Hausfarbe erreicht den Anwender
+    /// wieder.
+    /// </summary>
+    [Fact]
+    public void Hausfarbe_meldet_die_Rolle_zurueck()
+    {
+        var rollen = new List<Farbrolle>();
+
+        var cut = Zeige(farbeSetzen: (_, _) => Task.CompletedTask,
+                        farbeZuruecksetzen: r => { rollen.Add(r); return Task.CompletedTask; });
+        Region(cut, 0);
+
+        cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".epos-legende-farbfeld")),
+                             TimeSpan.FromSeconds(10));
+
+        cut.FindAll(".epos-legende-farbfeld")[0].Click();
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-farbwahl")),
+                             TimeSpan.FromSeconds(10));
+
+        cut.Find(".epos-farbwahl button.epos-knopf").Click();
+
+        Assert.Equal(new[] { Farbrolle.AUSSENTEMPERATUR }, rollen);
     }
 }
