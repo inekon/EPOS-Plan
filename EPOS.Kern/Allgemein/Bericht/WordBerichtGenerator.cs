@@ -41,6 +41,13 @@ namespace WindowsFormsApplication1
         public const int SCHRIFT_TABELLE_SCHMAL = 14;
 
         /// <summary>
+        /// <b>Die Office-Erweiterung, die ein SVG an einen Blip hängt</b> (Entscheid
+        /// DG-E3-8). Der Wert ist festgelegt — Word erkennt die Erweiterung an dieser
+        /// Kennung, nicht am Elementnamen.
+        /// </summary>
+        public const string SVG_EXT_URI = "{96DAC541-7B7A-43D3-8B79-37D633B846F1}";
+
+        /// <summary>
         /// Erzeugt den Bericht. Rückgabe: Pfad der geschriebenen Datei.
         /// </summary>
         public string Erzeuge(BerichtsDaten daten, BerichtsKonfiguration konfig, string zielDatei)
@@ -255,8 +262,45 @@ namespace WindowsFormsApplication1
         /// Bettet ein PNG als Inline-Grafik ein (Anzeigegröße in Pixel bei 96 dpi;
         /// gerendert wird in doppelter Auflösung → scharfer Druck). Portierung der
         /// BildDrawing-Logik aus dem Bestandsbericht. png == null wird ignoriert.
+        ///
+        /// <para>Dieser Weg bleibt den Bildern, deren Renderer-Methode noch KEIN
+        /// Zeichenmodell hat; wer eines hat, nimmt
+        /// <see cref="Bild(Zeichnung.Zeichenmodell, int, int)"/> und bekommt dazu das
+        /// SVG.</para>
         /// </summary>
         public void Bild(byte[] png, int anzeigeBreitePx, int anzeigeHoehePx)
+            => BildTeile(png, null, anzeigeBreitePx, anzeigeHoehePx);
+
+        /// <summary>
+        /// <b>Dasselbe Bild aus dem ZEICHENMODELL — als SVG mit PNG-Rückfall</b>
+        /// (Entscheid DG-E3-8, Anwenderentscheid 20.09.2026 „alle Grafiken, soweit
+        /// möglich").
+        ///
+        /// <para>Es entstehen ZWEI Teile im Dokument: das PNG aus
+        /// <c>SkiaMaler.Png</c> als gewöhnlicher <c>a:blip</c> und der SVG-Text aus
+        /// <c>SvgSchreiber.Text</c> als zweiter <c>ImagePart</c> mit dem Inhaltstyp
+        /// <c>image/svg+xml</c>, verknüpft über <c>asvg:svgBlip</c> in der
+        /// Erweiterungsliste des Blips (<see cref="SVG_EXT_URI"/>). Word ab 2016 zeigt
+        /// das SVG und druckt es in Gerätauflösung; jeder ältere Leser — und jeder
+        /// Konverter, der die Erweiterung nicht kennt — zeigt das PNG. Maße und Lage
+        /// sind dieselben wie beim reinen PNG.</para>
+        ///
+        /// <para><c>null</c> wird übergangen: Ein Bild, das der Lauf nicht hergibt,
+        /// lässt die Stelle aus.</para>
+        /// </summary>
+        public void Bild(Zeichnung.Zeichenmodell modell, int anzeigeBreitePx, int anzeigeHoehePx)
+        {
+            if (modell == null) return;
+            BildTeile(Zeichnung.SkiaMaler.Png(modell), Zeichnung.SvgSchreiber.Text(modell),
+                      anzeigeBreitePx, anzeigeHoehePx);
+        }
+
+        /// <summary>
+        /// Der gemeinsame Rumpf beider Bildwege. <paramref name="svg"/> leer heißt
+        /// „nur PNG"; sonst kommt der zweite Teil dazu und der Blip bekommt seine
+        /// Erweiterungsliste.
+        /// </summary>
+        private void BildTeile(byte[] png, string svg, int anzeigeBreitePx, int anzeigeHoehePx)
         {
             if (png == null || png.Length == 0) return;
 
@@ -264,9 +308,27 @@ namespace WindowsFormsApplication1
             using (var ms = new System.IO.MemoryStream(png)) imgPart.FeedData(ms);
             string relId = Main.GetIdOfPart(imgPart);
 
+            // Der SVG-Teil: UTF-8 OHNE Vorzeichenfolge — ein BOM vor dem "<" macht
+            // das Bild fuer manche Leser zu einer kaputten XML-Datei.
+            string svgRelId = null;
+            if (!string.IsNullOrEmpty(svg))
+            {
+                ImagePart svgPart = Main.AddImagePart(ImagePartType.Svg);
+                byte[] roh = new System.Text.UTF8Encoding(false).GetBytes(svg);
+                using (var ms = new System.IO.MemoryStream(roh)) svgPart.FeedData(ms);
+                svgRelId = Main.GetIdOfPart(svgPart);
+            }
+
             long cx = anzeigeBreitePx * 9525L;   // 1 px @96dpi = 9525 EMU
             long cy = anzeigeHoehePx * 9525L;
             uint id = _bildId++;
+
+            var blip = new A.Blip { Embed = relId };
+            if (svgRelId != null)
+                blip.Append(new A.BlipExtensionList(
+                    new A.BlipExtension(
+                        new DocumentFormat.OpenXml.Office2019.Drawing.SVG.SVGBlip { Embed = svgRelId })
+                    { Uri = WordBerichtGenerator.SVG_EXT_URI }));
 
             var drawing = new Drawing(
                 new DW.Inline(
@@ -281,7 +343,7 @@ namespace WindowsFormsApplication1
                                     new PIC.NonVisualDrawingProperties { Id = 0U, Name = "Diagramm" + id + ".png" },
                                     new PIC.NonVisualPictureDrawingProperties()),
                                 new PIC.BlipFill(
-                                    new A.Blip { Embed = relId },
+                                    blip,
                                     new A.Stretch(new A.FillRectangle())),
                                 new PIC.ShapeProperties(
                                     new A.Transform2D(
@@ -301,10 +363,17 @@ namespace WindowsFormsApplication1
             var t = new Table();
             var tp = new TableProperties();
             tp.Append(new TableWidth { Type = TableWidthUnitValues.Dxa, Width = breiten.Sum().ToString() });
+            // DIE REIHENFOLGE IST TEIL DES SCHEMAS (Befund DG-E3d): `CT_TblBorders`
+            // führt top, left, bottom, right, insideH, insideV — in GENAU dieser
+            // Folge. Bis hierher stand links hinter unten; der `OpenXmlValidator`
+            // meldete deshalb je Tabelle „unexpected child element w:left". Word zeigt
+            // den Rahmen trotzdem, die Datei war aber nicht schemagültig, und jeder
+            // strengere Leser hätte sie zurückgewiesen. Am Bild ändert der Tausch
+            // nichts: Es sind dieselben sechs Rahmen in denselben Farben.
             tp.Append(new TableBorders(
                 new TopBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
-                new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
                 new LeftBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
+                new BottomBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
                 new RightBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
                 new InsideHorizontalBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN },
                 new InsideVerticalBorder { Val = BorderValues.Single, Size = 4U, Color = WordBerichtGenerator.RAHMEN }));
