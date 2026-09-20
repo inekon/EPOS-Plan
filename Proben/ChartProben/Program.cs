@@ -82,6 +82,13 @@ namespace ChartProben
         private static string _hashdatei;
 
         /// <summary>
+        /// Die Datei des Schalters <c>--svg</c>, sonst <c>null</c>: Dorthin schreibt die
+        /// SVG-Gegenprobe den Jahresgang der Klimadaten EINMAL als Text — zum Ansehen im
+        /// Browser und als Nachweis von Größe und Knotenzahl (Auftrag DG-E2).
+        /// </summary>
+        private static string _svgdatei;
+
+        /// <summary>
         /// Die Messlatte: Dateiname → SHA-256 des PNG, nach Name geordnet
         /// (<see cref="StringComparer.Ordinal"/> — damit die Reihenfolge nicht von der
         /// Kultur des Laufs abhaengt). Gefuellt wird nur, wenn einer der beiden Schalter
@@ -106,12 +113,14 @@ namespace ChartProben
 
             _ablage = Argument(args, "--ablage");
             _hashdatei = Argument(args, "--hashes");
+            _svgdatei = Argument(args, "--svg");
             if (_ablage != null) Directory.CreateDirectory(_ablage);
 
             Console.WriteLine("ChartProben - plattformfreier Renderer-Nachweis (Paket iU7-3)");
             Console.WriteLine("Zielordner: " + ziel);
             if (_ablage != null) Console.WriteLine("Ablage: " + _ablage);
             if (_hashdatei != null) Console.WriteLine("Hashliste: " + _hashdatei);
+            if (_svgdatei != null) Console.WriteLine("SVG-Datei: " + _svgdatei);
             Console.WriteLine("Schriftart: " + Schriftbefund());
             Console.WriteLine();
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
@@ -1220,6 +1229,138 @@ namespace ChartProben
                 () => MitPalette(rot, () => ChartRenderer.JahresverlaufWaerme(z)),
                 false);
 
+            // =========================================================================
+            // AUFTRAG DG-E2 - DIE SVG-GEGENPROBE.
+            //
+            // Derselbe Jahresgang, zweiter Ausgabeweg: SvgSchreiber statt SkiaMaler.
+            // Geprueft wird, was ein PNG-Vergleich nicht sehen kann - Determinismus
+            // des Textes, der Aufbau des Baums, die Wirkung der Palette und die
+            // viewBox des inneren svg im Fenster.
+            //
+            // OHNE ABLAGE UND OHNE MESSLATTE: Hier entsteht kein PNG; die eingefrorene
+            // Hashliste misst den PNG-Weg und bleibt bei 91 Zeilen.
+            // =========================================================================
+            var svgReihen = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Temperatur", klimaTemperatur,
+                                        ChartRenderer.C_AUSSENTEMPERATUR)
+            };
+            Func<ChartRenderer.Achsenfenster, Zeichenmodell> svgModell =
+                f => ChartRenderer.JahresgangModell("Jahrestemperatur Verlauf", svgReihen,
+                                                    "Monat", "Temperatur [°C]", false, f);
+
+            // (a) Zweimal geschrieben - und zweimal ERZEUGT - ist byte-gleich. Ohne
+            //     diese Probe koennte sich ein Zufall (Woerterbuchreihenfolge, Zeit,
+            //     Kultur) in den Text schleichen, den kein Aufbau-Test bemerkt.
+            SvgProbe("svg_jahresgang_byte_gleich", e =>
+            {
+                Zeichenmodell m = svgModell(null);
+                string a = SvgSchreiber.Text(m);
+                string b = SvgSchreiber.Text(m);
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                e.Groesse = Encoding.UTF8.GetByteCount(a).ToString("N0", CultureInfo.InvariantCulture);
+
+                if (!string.Equals(a, b, StringComparison.Ordinal))
+                    e.Maengel.Add("zweimal geschrieben ist nicht byte-gleich");
+                if (!string.Equals(a, SvgSchreiber.Text(svgModell(null)), StringComparison.Ordinal))
+                    e.Maengel.Add("zweimal erzeugt ist nicht byte-gleich");
+            });
+
+            // (b) Der Aufbau: je Reihe GENAU EIN <path class="epos-reihe"> im inneren
+            //     svg, dieses mit preserveAspectRatio="none", jeder Reihenpfad mit
+            //     vector-effect und data-marke, und mindestens so viele <text> wie das
+            //     Modell Beschriftungen fuehrt. Ohne das bestuende ein Schreiber, der
+            //     die Reihen weglaesst, jede Determinismuspruefung.
+            SvgProbe("svg_jahresgang_struktur", e =>
+            {
+                Zeichenmodell m = svgModell(null);
+                SvgKnoten baum = SvgSchreiber.Baum(m);
+                List<SvgKnoten> alle = baum.Alle().ToList();
+                e.Masse = m.Breite + "x" + m.Hoehe;
+                e.Knoten = alle.Count.ToString(CultureInfo.InvariantCulture);
+
+                List<SvgKnoten> pfade = alle.Where(
+                    k => k.Name == "path" && Attributwert(k, "class") == "epos-reihe").ToList();
+                if (pfade.Count != m.Reihen.Count)
+                    e.Maengel.Add("Reihenpfade: " + pfade.Count + " statt " + m.Reihen.Count);
+                foreach (SvgKnoten pf in pfade)
+                {
+                    if (Attributwert(pf, "vector-effect") != "non-scaling-stroke")
+                        e.Maengel.Add("Reihenpfad ohne vector-effect");
+                    string marke = Attributwert(pf, "data-marke");
+                    if (marke == null || !marke.StartsWith("reihe:", StringComparison.Ordinal))
+                        e.Maengel.Add("Reihenpfad ohne data-marke");
+                    if (string.IsNullOrEmpty(Attributwert(pf, "d")))
+                        e.Maengel.Add("Reihenpfad ohne Punkte");
+                }
+
+                SvgKnoten flaeche = alle.FirstOrDefault(
+                    k => k.Name == "svg" && Attributwert(k, "class") == "epos-flaeche");
+                if (flaeche == null) e.Maengel.Add("kein inneres svg");
+                else if (Attributwert(flaeche, "preserveAspectRatio") != "none")
+                    e.Maengel.Add("inneres svg ohne preserveAspectRatio=none");
+
+                int texte = alle.Count(k => k.Name == "text");
+                int beschriftungen = Textbefehle(m.Befehle);
+                if (texte < beschriftungen)
+                    e.Maengel.Add("nur " + texte + " <text> zu " + beschriftungen + " Beschriftungen");
+
+                if (!alle.Any(k => Attributwert(k, "data-marke") != null))
+                    e.Maengel.Add("keine data-marke im Baum");
+            });
+
+            // (c) Die Palette wirkt beim SCHREIBEN - genau wie beim Malen. Ohne diese
+            //     Probe bliebe unbemerkt, dass der Schreiber die Farbrolle gar nicht
+            //     aufloest: Der Text saehe mit jeder Palette gleich aus.
+            var svgRot = new Farbpalette(
+                new Dictionary<Farbrolle, Farbe>
+                { { Farbrolle.AUSSENTEMPERATUR, new Farbe(0xFF, 0x00, 0x00, 90) } },
+                Farbpalette.Vorgabe);
+            SvgProbe("svg_palette_wirkt", e =>
+            {
+                Zeichenmodell m = svgModell(null);
+                string vorgabe = SvgSchreiber.Text(m, Farbpalette.Vorgabe);
+                string getauscht = SvgSchreiber.Text(m, svgRot);
+                e.Groesse = Encoding.UTF8.GetByteCount(vorgabe)
+                                    .ToString("N0", CultureInfo.InvariantCulture);
+
+                if (string.Equals(vorgabe, getauscht, StringComparison.Ordinal))
+                    e.Maengel.Add("die getauschte Palette aendert den Text nicht");
+                if (!string.Equals(vorgabe, SvgSchreiber.Text(m), StringComparison.Ordinal))
+                    e.Maengel.Add("die Vorgabe-Palette aendert den Text");
+
+                string hausfarbe = Reihenfarbe(SvgSchreiber.Baum(m, Farbpalette.Vorgabe));
+                string getauschte = Reihenfarbe(SvgSchreiber.Baum(m, svgRot));
+                if (hausfarbe != "#4682B4")
+                    e.Maengel.Add("Reihenfarbe der Vorgabe ist " + (hausfarbe ?? "nicht da"));
+                if (getauschte != "#FF0000")
+                    e.Maengel.Add("Reihenfarbe der getauschten Palette ist " + (getauschte ?? "nicht da"));
+            });
+
+            // (d) Im Fenster steht die viewBox des inneren svg auf den FENSTERSTUNDEN.
+            //     Ohne diese Probe bestuende ein Schreiber, der das Datenfenster
+            //     stillschweigend uebergeht - der Ausschnitt zeigte weiter das Jahr.
+            SvgProbe("svg_jahresgang_fenster", e =>
+            {
+                SvgKnoten voll = SvgSchreiber.Baum(svgModell(null));
+                SvgKnoten teil = SvgSchreiber.Baum(svgModell(fensterKlima));
+                string boxVoll = Flaechenbox(voll);
+                string boxTeil = Flaechenbox(teil);
+                e.Masse = "Fenster";
+                e.Knoten = teil.Alle().Count().ToString(CultureInfo.InvariantCulture);
+
+                // 2 900 bis 3 400 (ausschliesslich) sind 500 Stuetzstellen, also die
+                // Stunden 2 900 bis 3 399 - eine Spanne von 499.
+                string erwartet = "2900 0 499 ";
+                if (boxTeil == null || !boxTeil.StartsWith(erwartet, StringComparison.Ordinal))
+                    e.Maengel.Add("viewBox steht nicht auf den Fensterstunden: " +
+                                  (boxTeil ?? "fehlt"));
+                if (boxVoll == null || !boxVoll.StartsWith("0 0 8759 ", StringComparison.Ordinal))
+                    e.Maengel.Add("viewBox der Vollansicht: " + (boxVoll ?? "fehlt"));
+            });
+
+            if (_svgdatei != null) SvgAblegen(svgModell(null));
+
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
             MesslatteSchreiben();
@@ -1288,6 +1429,92 @@ namespace ChartProben
 
             File.WriteAllText(_hashdatei, text.ToString(), new UTF8Encoding(false));
             Console.WriteLine(_messlatte.Count + " Hashes geschrieben: " + _hashdatei);
+        }
+
+        // =================================================================================
+        // Die SVG-Gegenprobe (Auftrag DG-E2)
+        // =================================================================================
+
+        /// <summary>Was eine SVG-Gegenprobe meldet — dieselben Spalten wie ein Bild.</summary>
+        private sealed class SvgErgebnis
+        {
+            public string Masse = "-";
+            public string Groesse = "-";
+            public string Knoten = "-";
+            public readonly List<string> Maengel = new List<string>();
+        }
+
+        /// <summary>
+        /// Eine Gegenprobe auf dem SVG-Weg: <b>kein PNG, keine Ablage, keine
+        /// Messlatte</b>. Sie zählt als geprüftes Bild, damit sie in der Zusammenfassung
+        /// steht; die eingefrorene Hashliste bleibt bei 91 Zeilen (sie misst den
+        /// PNG-Weg, und der ändert sich in dieser Etappe nicht um ein Byte).
+        /// </summary>
+        private static void SvgProbe(string name, Action<SvgErgebnis> pruefung)
+        {
+            _bilder++;
+            var e = new SvgErgebnis();
+            try { pruefung(e); }
+            catch (Exception ex)
+            { e.Maengel.Add("Ausnahme: " + ex.GetType().Name + " - " + ex.Message); }
+            Melde(name, e.Masse, e.Groesse, e.Knoten, "-", e.Maengel);
+        }
+
+        /// <summary>Der Wert eines Attributs oder <c>null</c>.</summary>
+        private static string Attributwert(SvgKnoten knoten, string name)
+        {
+            foreach (KeyValuePair<string, string> a in knoten.Attribute)
+                if (a.Key == name) return a.Value;
+            return null;
+        }
+
+        /// <summary>Die <c>viewBox</c> des inneren svg in Datenkoordinaten.</summary>
+        private static string Flaechenbox(SvgKnoten baum)
+        {
+            foreach (SvgKnoten k in baum.Alle())
+                if (k.Name == "svg" && Attributwert(k, "class") == "epos-flaeche")
+                    return Attributwert(k, "viewBox");
+            return null;
+        }
+
+        /// <summary>Die Strichfarbe des ersten Reihenpfads.</summary>
+        private static string Reihenfarbe(SvgKnoten baum)
+        {
+            foreach (SvgKnoten k in baum.Alle())
+                if (k.Name == "path" && Attributwert(k, "class") == "epos-reihe")
+                    return Attributwert(k, "stroke");
+            return null;
+        }
+
+        /// <summary>Die Anzahl der Textbefehle des Modells, auch die in Gruppen.</summary>
+        private static int Textbefehle(IReadOnlyList<Zeichenbefehl> befehle)
+        {
+            int n = 0;
+            if (befehle == null) return 0;
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b is WindowsFormsApplication1.Zeichnung.Text) n++;
+                else if (b is Gruppe g) n += Textbefehle(g.Befehle);
+            }
+            return n;
+        }
+
+        /// <summary>
+        /// Schreibt den Jahresgang EINMAL als SVG-Datei (Schalter <c>--svg</c>) und
+        /// nennt Größe und Knotenzahl.
+        /// </summary>
+        private static void SvgAblegen(Zeichenmodell modell)
+        {
+            string text = SvgSchreiber.Text(modell);
+            string ordner = Path.GetDirectoryName(Path.GetFullPath(_svgdatei));
+            if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
+            File.WriteAllText(_svgdatei, text, new UTF8Encoding(false));
+
+            Console.WriteLine("SVG geschrieben: " + _svgdatei + " - " +
+                Encoding.UTF8.GetByteCount(text).ToString("N0", CultureInfo.InvariantCulture) +
+                " Byte, " +
+                SvgSchreiber.Baum(modell).Alle().Count().ToString("N0", CultureInfo.InvariantCulture) +
+                " Knoten");
         }
 
 

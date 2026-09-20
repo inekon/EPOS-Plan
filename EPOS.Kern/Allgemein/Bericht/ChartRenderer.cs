@@ -881,10 +881,32 @@ namespace WindowsFormsApplication1
                                         string xTitel, string yTitel,
                                         bool minimumNull = false,
                                         Achsenfenster fenster = null)
+            => SkiaMaler.Png(JahresgangModell(titel, reihen, xTitel, yTitel, minimumNull, fenster));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL (Konzept Diagramme, Etappe E2) — der Rumpf,
+        /// den <see cref="Jahresgang"/> an <c>SkiaMaler.Png</c> gibt.
+        ///
+        /// <para><b>Was das Modell über die Befehlsliste hinaus trägt.</b> Erstens die
+        /// <c>Zeichenflaeche</c>: das Pixelrechteck der Fläche und das Datenfenster
+        /// darin (x = Stützstelle der Reihe, y = Werteinheit). Zweitens je Reihe eine
+        /// <c>Datenreihe</c> mit den UNGEKÜRZTEN Werten — der Pixelpfad im Befehl ist
+        /// auf jeden n-ten Wert gekürzt, der SVG-Weg zeichnet aus den Datenwerten
+        /// (Entscheid DG-E2-2). Drittens die MARKEN: <c>titel</c>, <c>xachse</c>,
+        /// <c>yachse</c>, <c>reihe:…</c>, <c>legende:…</c>, <c>nulllinie</c>,
+        /// <c>leerhinweis</c>.</para>
+        ///
+        /// <para><b>Das PNG bleibt byte-gleich</b>: Der Maler übergeht Marken,
+        /// Zeichenfläche und Datenreihen — sie stehen für den zweiten Ausgabeweg da.</para>
+        /// </summary>
+        public static Zeichenmodell JahresgangModell(string titel, IReadOnlyList<Reihe> reihen,
+                                                     string xTitel, string yTitel,
+                                                     bool minimumNull = false,
+                                                     Achsenfenster fenster = null)
         {
             int W = 1304, H = 440;
             var z = Modell(W, H);
-            Titel(z, titel ?? "", W);
+            z.Markiert("titel", zt => Titel(zt, titel ?? "", W));
 
             // Legende OBEN wie im Vorlaeufer, aber ueber der Zeichenflaeche statt
             // darin - sonst verdeckt sie bei zwei Reihen den Jahresanfang.
@@ -904,9 +926,10 @@ namespace WindowsFormsApplication1
             if (gueltig.Count == 0)
             {
                 using (var f = Schrift(18f))
-                    Text(z, BerichtTexte.T("Kein Jahresgang vorhanden."), f, Farbrolle.ACHSE,
-                         rc.Left, rc.Top + 20f);
-                return SkiaMaler.Png(z);
+                    z.Markiert("leerhinweis", zl =>
+                        Text(zl, BerichtTexte.T("Kein Jahresgang vorhanden."), f, Farbrolle.ACHSE,
+                             rc.Left, rc.Top + 20f));
+                return z;
             }
 
             Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
@@ -931,17 +954,20 @@ namespace WindowsFormsApplication1
             // Raster + y-Beschriftung. GEPUNKTET wie im Vorlaeufer
             // (ChartDashStyle.Dot auf beiden Achsen).
             var raster = Stift(Farbrolle.RASTER, 1f, new Strichmuster(2f, 4f));
-            using (var f = Schrift(15f))
+            z.Markiert("yachse", zy =>
             {
-                for (double wert = min; wert <= max + schritt / 2; wert += schritt)
+                using (var f = Schrift(15f))
                 {
-                    float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
-                    z.Linie(rc.Left, y, rc.Right, y, raster);
-                    string lab = wert.ToString("0.###", DE);
-                    float breite = f.MeasureText(lab);
-                    Text(z, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    for (double wert = min; wert <= max + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
+                        zy.Linie(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("0.###", DE);
+                        float breite = f.MeasureText(lab);
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    }
                 }
-            }
+            });
 
             // x-Achse: Monatsgrenzen 0…12, Abstand 1 (AxisX.Interval = 1). Im
             // FENSTER stehen dort die wirklichen Jahresstunden (KL-8, Regel des
@@ -950,37 +976,55 @@ namespace WindowsFormsApplication1
             if (fenster == null)
             {
                 var xraster = Stift(Farbrolle.RASTER, 1f, new Strichmuster(2f, 4f));
-                using (var f = Schrift(15f))
+                z.Markiert("xachse", zx =>
                 {
-                    for (int m = 0; m <= 12; m++)
+                    using (var f = Schrift(15f))
                     {
-                        float x = rc.Left + m / 12f * rc.Width;
-                        z.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = m.ToString(DE);
-                        float breite = f.MeasureText(lab);
-                        Text(z, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                        for (int m = 0; m <= 12; m++)
+                        {
+                            float x = rc.Left + m / 12f * rc.Width;
+                            zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
+                            string lab = m.ToString(DE);
+                            float breite = f.MeasureText(lab);
+                            Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                        }
                     }
-                }
+                });
             }
-            else XAchseFenster(z, rc, fenster, gesamt);
+            else z.Markiert("xachse", zx => XAchseFenster(zx, rc, fenster, gesamt));
 
             using (var f = Schrift(15f))
             {
                 // Im Fenster steht der Achsentitel schon da - mittig unter der
                 // Achse und mit dem Wort "Jahresstunde" (XAchseFenster).
                 if (fenster == null)
-                    Text(z, xTitel ?? "", f, Farbrolle.ACHSE, rc.Right + 10f, rc.Bottom + 8f);
-                Text(z, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f);
+                    z.Markiert("xachse", zx =>
+                        Text(zx, xTitel ?? "", f, Farbrolle.ACHSE, rc.Right + 10f, rc.Bottom + 8f));
+                z.Markiert("yachse", zy =>
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
             }
 
-            // Achsen + Nulllinie, wenn die Skala unter null reicht.
+            // Achsen + Nulllinie, wenn die Skala unter null reicht. Das ACHSENKREUZ
+            // bleibt ohne Marke: Es steht auch dann, wenn die Oberflaeche beim Zoom
+            // die Teilung der x-Achse ausblendet.
             Achsenkreuz(z, rc);
             if (min < 0)
             {
                 float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
-                z.Linie(rc.Left, y0, rc.Right, y0,
-                        Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f)));
+                z.Markiert("nulllinie", zn =>
+                    zn.Linie(rc.Left, y0, rc.Right, y0,
+                             Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f))));
             }
+
+            // DIE ZEICHENFLAECHE SAMT DATENFENSTER (Etappe E2). x zaehlt die
+            // Stuetzstellen des BILDES: ohne Fenster 0 … gesamt-1, mit Fenster dessen
+            // Grenzen; y ist die fertige Skala. Daraus baut der SvgSchreiber das
+            // innere <svg> in Datenkoordinaten.
+            double xVon = fenster == null ? 0.0
+                        : Math.Max(0, Math.Min(gesamt, fenster.Von));
+            z.Flaeche = new Zeichenflaeche(
+                rc.Modellrahmen(),
+                new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, min, max));
 
             // Die Linien. Der Vorlaeufer legte die Reihen mit x = i * 12 / 8760 auf
             // die Monatsachse; ueber die eigene Laenge gerechnet ist das dasselbe und
@@ -1000,11 +1044,17 @@ namespace WindowsFormsApplication1
                     float y = (float)(rc.Bottom - (r.Werte[i] - min) / (max - min) * rc.Height);
                     punkte.Add(new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y))));
                 }
-                Linienzug(z, punkte.ToArray(),
-                          Stift(r.Farbe, staerke, null, Strichverbindung.Rund));
+                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    Linienzug(zr, punkte.ToArray(),
+                              Stift(r.Farbe, staerke, null, Strichverbindung.Rund)));
+
+                // DG-E2-2: dieselbe Reihe zusaetzlich in DATENWERTEN, ungekuerzt. Der
+                // Pixelpfad darueber bleibt dem PNG; der SVG-Weg zeichnet aus dieser
+                // Reihe, bis E4 beide Wege zusammenfallen laesst.
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", r.Farbe.Ton(), staerke, null, r.Werte));
             }
 
-            return SkiaMaler.Png(z);
+            return z;
         }
 
         // =================================================================== Kennlinien
@@ -3837,6 +3887,13 @@ namespace WindowsFormsApplication1
         /// Abstand darunter. Bei vier Serien bricht die Legende in eine zweite Zeile um
         /// (Befund am Bild „Lastgang und Speicherbetrieb"), und die lag dann auf dem
         /// Achsentitel. Wer den Platz kennt, kann ihn räumen.</para>
+        ///
+        /// <para><b>Die MARKE steht hier</b> (Etappe E2), nicht an den zwölf
+        /// Aufrufstellen: Farbfeld, Rahmen und Text EINES Eintrags bekommen zusammen
+        /// die Marke <c>legende:&lt;Label&gt;</c>. Damit trägt jedes der zwölf Bilder
+        /// sie, und die Oberfläche hat eine Trefferfläche je Eintrag — die
+        /// Voraussetzung dafür, dass ein Klick auf einen Legendeneintrag den
+        /// Farbwähler öffnet (Farbrollen, Bedienung Teil 2).</para>
         /// </summary>
         private static float Legende(IZeichenziel z, List<Segment> eintraege, float x, float y,
                                      float umbruchBei = 0)
@@ -3850,16 +3907,21 @@ namespace WindowsFormsApplication1
                     float breite = 40f + f.MeasureText(s.Label ?? "") + 24f;
                     if (umbruchBei > 0 && x > startX && x + breite > umbruchBei)
                     { x = startX; y += LEGENDE_ZEILE; zeilen++; }   // Umbruch bei vielen Serien (Review 11)
-                    // AUFTRAG U18: Ein Eintrag zu einer gestrichelten Linie bekommt ein
-                    // gestricheltes Feld in der Reihenfarbe statt einer vollen Füllung —
-                    // sonst sagt die Legende über die Strichart nichts, und im
-                    // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
-                    if (s.Gestrichelt)
-                        z.Rechteck(x, y, 22f, 22f, Stift(s.Farbe, 3f, new Strichmuster(8f, 5f)));
-                    else
-                        z.Rechteck(x, y, 22f, 22f, null, Flaeche(s.Farbe));
-                    z.Rechteck(x, y, 22f, 22f, rahmen);
-                    Text(z, s.Label, f, Farbrolle.TEXT, x + 28f, y + 1f);
+
+                    float ex = x, ey = y;      // fest fuer die Klammer der Marke
+                    z.Markiert("legende:" + (s.Label ?? ""), ze =>
+                    {
+                        // AUFTRAG U18: Ein Eintrag zu einer gestrichelten Linie bekommt ein
+                        // gestricheltes Feld in der Reihenfarbe statt einer vollen Füllung —
+                        // sonst sagt die Legende über die Strichart nichts, und im
+                        // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
+                        if (s.Gestrichelt)
+                            ze.Rechteck(ex, ey, 22f, 22f, Stift(s.Farbe, 3f, new Strichmuster(8f, 5f)));
+                        else
+                            ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(s.Farbe));
+                        ze.Rechteck(ex, ey, 22f, 22f, rahmen);
+                        Text(ze, s.Label, f, Farbrolle.TEXT, ex + 28f, ey + 1f);
+                    });
                     x += breite;
                 }
             return zeilen * LEGENDE_ZEILE;
@@ -4130,16 +4192,12 @@ namespace WindowsFormsApplication1
             double h1 = (f.Bis - 1) * stundenJeWert;
             if (h1 - h0 < 1e-9) return;
 
-            double schritt = RundeStufe((h1 - h0) / 5.0);
-            double erste = Math.Ceiling(h0 / schritt) * schritt;
-
             var raster = Stift(Farbrolle.RASTER, 1f);
             using (var schrift = Schrift(15f))
-                for (double h = erste; h <= h1 + 1e-9; h += schritt)
+                foreach ((double h, string lab) in Stundenteilung(h0, h1))
                 {
                     float x = rc.Left + (float)((h - h0) / (h1 - h0)) * rc.Width;
                     z.Linie(x, rc.Top, x, rc.Bottom, raster);
-                    string lab = h.ToString("N0", DE);
                     Text(z, lab, schrift, Farbrolle.ACHSE,
                          x - schrift.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
@@ -4147,6 +4205,48 @@ namespace WindowsFormsApplication1
             // #234: derselbe Achsentitel wie in der Vollansicht - im Fenster zaehlt die
             // Achse IMMER Jahresstunden, auch wenn das Bild sonst Monatsgrenzen traegt.
             XAchsentitel(z, rc, MyResource.Resource.CHART_ACHSE_JAHRESSTUNDEN);
+        }
+
+        /// <summary>
+        /// DIE TEILUNG DER X-ACHSE EINES ZUGESCHNITTENEN BILDES als reine Funktion
+        /// (Etappe E2): die runden Jahresstunden zwischen <paramref name="von"/> und
+        /// <paramref name="bis"/> samt ihrer Beschriftung, in Zeichenreihenfolge.
+        ///
+        /// <para><b>Wofür.</b> Im SVG liegen nur die REIHEN in Datenkoordinaten
+        /// (Entscheid DG-E2-3); Raster und Beschriftung bleiben Pixel-Elemente. Zoomt
+        /// der Anwender die Zeitachse, blendet die Oberfläche die Elemente mit der
+        /// Marke <c>xachse</c> aus und zeichnet die Ticks aus DIESER Funktion nach —
+        /// nach derselben Regel, mit der <see cref="XAchseFenster"/> sie ins Bild
+        /// setzt, und damit ohne Kernaufruf.</para>
+        ///
+        /// <para>Beide Wege gehen durch <c>Stundenteilung</c>; die gebrochenen Grenzen
+        /// einer Viertelstundenreihe (Jahresstunde in Vierteln) bleiben dem Bild
+        /// vorbehalten, die Oberfläche zoomt in ganzen Stunden.</para>
+        /// </summary>
+        /// <param name="von">Erste Jahresstunde des Fensters (einschließlich).</param>
+        /// <param name="bis">Letzte Jahresstunde des Fensters (einschließlich).</param>
+        public static IReadOnlyList<(int Stunde, string Text)> Jahresstundenteilung(int von, int bis)
+        {
+            var liste = new List<(int Stunde, string Text)>();
+            foreach ((double stunde, string text) in Stundenteilung(von, bis))
+                liste.Add(((int)stunde, text));
+            return liste;
+        }
+
+        /// <summary>
+        /// Der gemeinsame Rumpf: runde Stufe über fünf Marken, erste Marke auf dem
+        /// nächsten Vielfachen, Beschriftung mit Tausenderpunkt.
+        /// </summary>
+        private static List<(double Stunde, string Text)> Stundenteilung(double h0, double h1)
+        {
+            var liste = new List<(double Stunde, string Text)>();
+            if (h1 - h0 < 1e-9) return liste;
+
+            double schritt = RundeStufe((h1 - h0) / 5.0);
+            double erste = Math.Ceiling(h0 / schritt) * schritt;
+            for (double h = erste; h <= h1 + 1e-9; h += schritt)
+                liste.Add((h, h.ToString("N0", DE)));
+            return liste;
         }
 
         /// <summary>

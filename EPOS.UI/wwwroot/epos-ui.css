@@ -1642,6 +1642,124 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 }
 
 /* ==========================================================================
+   DAS DIAGRAMM ALS SVG IM BAUM (Konzept Diagramme, Etappe E2)
+
+   Derselbe Rahmen wie oben - Leiste, Flaeche, darunter eine Zeile mit den
+   Werten am Mauszeiger. Der Unterschied steckt IN der Flaeche: Dort haengt
+   kein <img>, sondern der SVG-Baum aus dem Zeichenmodell. Deshalb KEIN
+   overflow: hidden und kein verschiebbarer Inhalt - gezoomt wird die viewBox
+   des inneren <svg>, und die schneidet selbst ab.
+
+   touch-action: none ist hier genauso Pflicht wie beim Bildzoom: Ohne das
+   nimmt der Browser den Finger fuer seinen eigenen Bildlauf, und pointermove
+   kommt im Modul nie an.
+   ========================================================================== */
+
+.epos-diagramm-svg {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+    max-width: var(--epos-diagramm-breit);
+}
+
+/* position: relative traegt zwei Kinder: das aufgezogene Rechteck und den
+   Farbwaehler am Legendeneintrag. */
+.epos-diagramm-svg-flaeche {
+    position: relative;
+    min-width: 0;
+    border: 1px solid var(--epos-rahmen-leise);
+    border-radius: var(--epos-ecke);
+    background: #fff;
+    touch-action: none;
+    cursor: grab;
+}
+
+.epos-diagramm-svg-flaeche:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 1px;
+}
+
+/* Das SVG fuellt die Breite und behaelt sein Seitenverhaeltnis; breiter als
+   gezeichnet wird es nicht - dieselbe Massregel wie beim PNG (W11b-B-4). */
+.epos-diagramm-svg-flaeche svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+}
+
+/* DIE LEGENDE IST BEDIENFLAECHE (DG-E2-1). Der Text schaltet die Reihe, das
+   Farbfeld oeffnet den Waehler; beide sind fokussierbar, also brauchen beide
+   einen sichtbaren Fokusring. */
+.epos-legende-eintrag {
+    cursor: pointer;
+}
+
+.epos-legende-farbfeld {
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.epos-legende-eintrag:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+.epos-legende-farbfeld:focus-visible {
+    outline: 2px solid var(--epos-karte-rahmen-hover);
+    outline-offset: 2px;
+}
+
+/* Eine abgeschaltete Reihe: Der Eintrag bleibt LESBAR, aber gedaempft - eine
+   ausgeblendete Reihe ist kein geloeschter Eintrag. */
+.epos-legende--aus {
+    opacity: 0.4;
+}
+
+/* Die Zeigerlinie im inneren svg. vector-effect haelt sie 1 px breit, egal
+   wie weit die viewBox gezoomt ist (das Attribut setzt die Komponente). */
+.epos-diagramm-zeiger {
+    stroke: var(--epos-text);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+/* Die Werte am Mauszeiger. Ziffern in fester Breite, damit die Zeile beim
+   Wandern des Zeigers nicht springt; sie steht auch leer da und haelt so die
+   Hoehe des Bildes ruhig. */
+.epos-diagramm-zeigerzeile {
+    min-height: 20px;
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+}
+
+/* DER FARBWAEHLER AM BILD - eine kleine Ueberlagerung am Legendeneintrag.
+   Die Lage kommt als Prozentwert vom Aufrufer (das SVG skaliert mit seiner
+   Breite), das Mass steht hier. */
+.epos-farbwahl {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px;
+    background: #fff;
+    border: 1px solid var(--epos-rahmen);
+    border-radius: var(--epos-ecke);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+
+/* Der Klick daneben schliesst - ueber eine Flaeche, nicht ueber focusout
+   (Hausregel: focusout feuert auch bei Fokuswechseln INNERHALB). */
+.epos-farbwahl-schliessflaeche {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+}
+
+/* ==========================================================================
    Seiten: die Wurzelansichten der iOS-Huelle (iU10-2)
 
    Eine "Seite" ist keine Karte und kein Dialog: Sie fuellt die ganze Flaeche

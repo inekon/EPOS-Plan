@@ -28,6 +28,7 @@ dotnet run --project Proben/ChartProben -c Release
 | `--ziel <ordner>` | Zielordner der Maßproben-Bilder. Vorgabe: `artifacts/chartproben` (steht in `.gitignore`) |
 | `--ablage <ordner>` | legt **jedes** gezeichnete Bild als PNG in diesem Ordner ab — auch die beiden Bilder je Gegenprobe (`…_a.png` / `…_b.png`) und die beiden der Versatzprobe (`…_wenige.png` / `…_viele.png`). Dateiname = Probenname |
 | `--hashes <datei>` | schreibt die **Hash-Messlatte**: je Bild eine Zeile aus SHA-256, zwei Leerzeichen und `<name>.png`, nach Name geordnet, mit LF und ohne BOM — das Format von `sha256sum`, also mit `sha256sum -c` im Ablageordner nachrechenbar |
+| `--svg <datei>` | schreibt den Jahresgang der Klimadaten **einmal** als SVG-Text (UTF-8 ohne BOM, LF) und nennt Größe und Knotenzahl — zum Ansehen im Browser und als Nachweis der SVG-Gegenprobe |
 
 Ohne `--ablage` und ohne `--hashes` verhält sich die Probe unverändert.
 
@@ -56,7 +57,8 @@ gegen diese Datei.
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
 - **Umfang.** 72 Proben (51 Maßproben, 20 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
-  und ebenso viele Zeilen.
+  und ebenso viele Zeilen. Die vier SVG-Gegenproben zeichnen kein PNG und stehen deshalb
+  nicht darin — die Probenzahl steigt, die Messlatte bleibt bei 91.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
   `Farbpalette.Vorgabe`, damit die Hashliste unabhängig von einer Anwendereinstellung bleibt.
@@ -78,4 +80,26 @@ gegen diese Datei.
   lässt die Probe dort und am HEAD mit `--ablage` und `--hashes` laufen und vergleicht die beiden
   Windows-Hashlisten miteinander — gleicher Rechner, gleiche Schriften, die Listen müssen gleich
   sein. So ist der Umbau auf das Zeichenmodell auch auf Windows abgenommen (Basis E0 gegen den
-  Abschluss von E1 mit DF‑1: 91 von 91 gleich).
+  Abschluss von E1 mit DF‑1: 91 von 91 gleich; E2 gegen denselben Stand: wieder 91 von 91).
+
+---
+
+## Die SVG-Gegenprobe
+
+Seit der Etappe E2 des
+[Diagrammkonzepts](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md) gibt
+es zu jedem Modell einen **zweiten Ausgabeweg**: `SvgSchreiber` schreibt dasselbe
+`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Vier
+Proben halten ihn fest — sie zeichnen **kein PNG**, legen nichts ab und stehen **nicht** in
+der Messlatte:
+
+| Probe | Aussage |
+|---|---|
+| `svg_jahresgang_byte_gleich` | zweimal geschrieben *und* zweimal erzeugt ergibt denselben Text, Byte für Byte — kein Zufall, keine Zeitangabe, keine Kulturabhängigkeit |
+| `svg_jahresgang_struktur` | genau ein `<path class="epos-reihe">` je Reihe, jeder mit `vector-effect` und `data-marke`; das innere `<svg>` in Datenkoordinaten mit `preserveAspectRatio="none"`; mindestens so viele `<text>` wie das Modell Beschriftungen führt |
+| `svg_palette_wirkt` | die Farbrollen werden **beim Schreiben** aufgelöst: mit getauschter Palette ändert sich die Strichfarbe der Reihe, mit der Vorgabe nicht |
+| `svg_jahresgang_fenster` | mit `Achsenfenster` steht die `viewBox` des inneren svg auf den **Fensterstunden** — die Schnittstelle, über die die Oberfläche zoomt |
+
+Warum sie nötig sind: Ein Schreiber, der die Reihen wegließe, die Palette nicht läse oder das
+Datenfenster überginge, bestünde jede Maß-, Farb- und Determinismusprüfung des PNG-Wegs — das
+PNG entsteht ja weiterhin aus dem Maler.

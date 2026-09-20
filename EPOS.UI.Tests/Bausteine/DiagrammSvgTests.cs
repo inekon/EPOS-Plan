@@ -1,0 +1,666 @@
+﻿using System.Globalization;
+using Bunit;
+using EPOS.UI.Bausteine;
+using Microsoft.AspNetCore.Components.Web;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
+using WindowsFormsApplication1.Zeichnung;
+using Xunit;
+
+namespace EPOS.UI.Tests.Bausteine;
+
+/// <summary>
+/// Der Baustein <see cref="DiagrammSvg"/> — das Diagramm als SVG im Baum
+/// (Konzept Diagramme, Etappe E2, Option B).
+///
+/// <para><b>Was hier bewiesen wird.</b> Der Baustein bekommt ein
+/// <c>Zeichenmodell</c> und zeichnet den Baum aus <c>SvgSchreiber.Baum</c> als
+/// Razor-Elemente — mit vier Zutaten, die der Kern nicht liefern kann: die
+/// Legende als Bedienfläche (DG-E2-1), die Zeigerzeile, die nachgezeichnete
+/// Achsenteilung des Fensters (DG-E2-3) und den Farbwähler am Bild.</para>
+///
+/// <para><b>Was hier NICHT bewiesen wird:</b> der Zoom selbst. Er ist eine
+/// Attributänderung an der <c>viewBox</c>, die das JS-Modul vornimmt — bunit hat
+/// kein Layout und kein JavaScript. Geprüft wird stattdessen, was die Komponente
+/// aus den gemeldeten Werten macht; die Geste misst der Prüfstand im Wirt
+/// (<c>/diagrammsvg</c>) und die Abnahme am Gerät.</para>
+///
+/// <para>Die Klasse pinnt die Sprache (Regel seit W8): Sie prüft Zahlen mit
+/// Dezimalkomma und Tausenderpunkt.</para>
+/// </summary>
+public class DiagrammSvgTests : EposBunitContext
+{
+    private const string MODUL = "./_content/EPOS.UI/epos-diagramm.js";
+
+    /// <summary>Die Reihe MIT Farbrolle — ihr Legendeneintrag trägt einen Wähler.</summary>
+    private const string MIT_ROLLE = "Temperatur";
+
+    /// <summary>
+    /// Die Reihe mit FEST gerechneter Farbe (Orange ist keine Hausfarbe, also
+    /// <c>Farbton.Wert</c> mit der Rolle <c>UNBENANNT</c>) — sie bekommt keinen
+    /// Wähler.
+    /// </summary>
+    private const string OHNE_ROLLE = "Sonnenwinkel";
+
+    public DiagrammSvgTests()
+    {
+        // Der Baustein laedt sein Modul dynamisch. In Loose-Mode beantwortet
+        // bunit den import mit dem Standardwert, und der Baustein faellt auf
+        // „kein Modul" zurueck - genau der Zustand einer WebView ohne Skript.
+        JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
+    // =====================================================================
+    //  Das Modell der Fälle
+    // =====================================================================
+
+    /// <summary>
+    /// Zwei Reihen mit je 8 760 Stundenwerten — dasselbe Bild, das die
+    /// Klimadaten-Hülle baut. Die Pfadregel lässt beide Reihen damit ROH in den
+    /// Pfad gehen (bis 8 760 Stützstellen und drei Reihen).
+    /// </summary>
+    private static Zeichenmodell Modell()
+    {
+        var temperatur = new double[8760];
+        var winkel = new double[8760];
+        for (int i = 0; i < 8760; i++)
+        {
+            temperatur[i] = 10.0 - 12.0 * Math.Cos(2 * Math.PI * i / 8760.0);
+            winkel[i] = 30.0 + 20.0 * Math.Sin(2 * Math.PI * i / 8760.0);
+        }
+
+        return ChartRenderer.JahresgangModell(
+            "Jahrestemperatur Verlauf",
+            new[]
+            {
+                new ChartRenderer.Reihe(MIT_ROLLE, temperatur, ChartRenderer.C_AUSSENTEMPERATUR),
+                new ChartRenderer.Reihe(OHNE_ROLLE, winkel, SkiaSharp.SKColors.Orange)
+            },
+            "Stunde des Jahres", "Temperatur [°C]");
+    }
+
+    /// <summary>Dasselbe Bild OHNE Reihen — der Leerhinweis, ohne Zeichenfläche.</summary>
+    private static Zeichenmodell LeeresModell()
+        => ChartRenderer.JahresgangModell("Jahrestemperatur Verlauf",
+                                          Array.Empty<ChartRenderer.Reihe>(),
+                                          "Stunde des Jahres", "Temperatur [°C]");
+
+    private IRenderedComponent<DiagrammSvg> Zeige(
+        Zeichenmodell? modell = null,
+        Farbpalette? palette = null,
+        string kennung = "probe",
+        bool farbwahl = false,
+        Action<(Farbrolle Rolle, Farbe Farbe)>? farbeGewaehlt = null,
+        Action<Farbrolle>? farbeZurueckgesetzt = null,
+        Action<ChartRenderer.Achsenfenster?>? fensterGeaendert = null,
+        string einheit = "")
+    {
+        return Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell ?? Modell());
+            p.Add(x => x.Kennung, kennung);
+            p.Add(x => x.Bezeichnung, "Jahresgang");
+            p.Add(x => x.Einheit, einheit);
+            if (palette is not null) p.Add(x => x.Palette, palette);
+            if (farbwahl || farbeGewaehlt is not null) p.Add(x => x.FarbwahlErlaubt, true);
+            p.Add(x => x.FarbeGewaehlt, farbeGewaehlt ?? (_ => { }));
+            if (farbeZurueckgesetzt is not null)
+                p.Add(x => x.FarbeZurueckgesetzt, farbeZurueckgesetzt);
+            if (fensterGeaendert is not null)
+                p.Add(x => x.FensterGeaendert, fensterGeaendert);
+        });
+    }
+
+    // =====================================================================
+    //  DS-1  Der Baum
+    // =====================================================================
+
+    /// <summary>
+    /// Der Baum steht als ELEMENTE da, nicht als Markup-Klumpen: äußeres
+    /// <c>&lt;svg&gt;</c>, darin die Datenfläche mit ihrer <c>viewBox</c> in
+    /// Datenkoordinaten und je Reihe ein Pfad mit ihrem Namen.
+    /// </summary>
+    [Fact]
+    public void DS1_Der_Baum_traegt_Flaeche_und_je_Reihe_einen_Pfad()
+    {
+        var cut = Zeige();
+
+        Assert.Single(cut.FindAll(".epos-diagramm-svg"));
+        Assert.Single(cut.FindAll(".epos-diagramm-svg-flaeche"));
+
+        var flaeche = cut.Find("svg.epos-flaeche");
+        Assert.Equal("none", flaeche.GetAttribute("preserveAspectRatio"));
+        Assert.Equal("0 0 8759 " + flaeche.GetAttribute("viewBox")!.Split(' ')[3],
+                     flaeche.GetAttribute("viewBox"));
+
+        // DIE VOLLEN GRENZEN als eigenes Attribut - daraus liest das JS-Modul,
+        // ohne eine Kopie zu fuehren, die beim Modellwechsel veraltet.
+        Assert.Equal(flaeche.GetAttribute("viewBox"), flaeche.GetAttribute("data-voll"));
+
+        Assert.Equal(2, cut.FindAll("path.epos-reihe").Count);
+        Assert.Single(cut.FindAll("path[data-reihe='" + MIT_ROLLE + "']"));
+        Assert.Single(cut.FindAll("path[data-reihe='" + OHNE_ROLLE + "']"));
+    }
+
+    /// <summary>
+    /// Text bleibt Text — Titel und Legendeneinträge stehen als
+    /// <c>&lt;text&gt;</c> im Baum, nicht in einem Bild. Genau das ist der
+    /// Gewinn gegenüber dem PNG.
+    /// </summary>
+    [Fact]
+    public void DS1_Titel_und_Legende_stehen_als_Text_im_Baum()
+    {
+        var cut = Zeige();
+
+        Assert.Contains(cut.FindAll("text[data-marke='titel']"),
+                        t => t.TextContent.Contains("Jahrestemperatur"));
+        Assert.Equal(MIT_ROLLE, cut.Find("text[data-legende='" + MIT_ROLLE + "']").TextContent);
+        Assert.Equal(OHNE_ROLLE, cut.Find("text[data-legende='" + OHNE_ROLLE + "']").TextContent);
+    }
+
+    /// <summary>
+    /// Die <c>clipPath</c>-Kennungen tragen die KENNUNG der Instanz. Stehen zwei
+    /// Bilder auf einer Seite, schnitte sonst das eine am Rechteck des anderen.
+    /// </summary>
+    [Fact]
+    public void DS1_Die_clipPath_Kennungen_tragen_die_Kennung()
+    {
+        // Der Jahresgang fuehrt keine zugeschnittene Gruppe; fuer diesen Fall
+        // traegt das Modell eine - alles andere waere ein Beweis am falschen Bild.
+        var modell = new Zeichenmodell(200, 100, Farbton.Aus(Farbrolle.HINTERGRUND));
+        modell.Gruppe(new Rahmen(10, 10, 100, 50),
+                      zg => zg.Linie(0, 0, 200, 100, new Stift(Farbton.Aus(Farbrolle.ACHSE), 1f)));
+
+        var cut = Zeige(modell: modell, kennung: "klima-temperatur");
+
+        Assert.Equal("klima-temperatur-c1", cut.Find("clipPath").GetAttribute("id"));
+        Assert.Equal("url(#klima-temperatur-c1)", cut.Find("g").GetAttribute("clip-path"));
+    }
+
+    /// <summary>
+    /// <b>Die Palette wirkt beim Zeichnen.</b> Dasselbe Modell, eine andere
+    /// Palette, ein anderer Strich — die Modelle sind palettenfrei, sie tragen
+    /// Rollen.
+    /// </summary>
+    [Fact]
+    public void DS1_Eine_getauschte_Palette_faerbt_die_Reihe_um()
+    {
+        var modell = Modell();
+
+        string hausfarbe = Zeige(modell: modell)
+            .Find("path[data-reihe='" + MIT_ROLLE + "']").GetAttribute("stroke")!;
+
+        var getauscht = new Farbpalette(
+            new Dictionary<Farbrolle, Farbe> { { Farbrolle.AUSSENTEMPERATUR, new Farbe(0xFF, 0, 0, 90) } },
+            Farbpalette.Vorgabe);
+
+        string neu = Zeige(modell: modell, palette: getauscht, kennung: "zweite")
+            .Find("path[data-reihe='" + MIT_ROLLE + "']").GetAttribute("stroke")!;
+
+        Assert.Equal("#FF0000", neu);
+        Assert.NotEqual(hausfarbe, neu);
+    }
+
+    // =====================================================================
+    //  DS-2  Die Legende schaltet die Reihe (DG-E2-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick auf den TEXT blendet die Reihe aus — der Pfad bekommt
+    /// <c>display="none"</c>, der Eintrag wird gedämpft. Ein zweiter Klick holt
+    /// sie zurück.
+    /// </summary>
+    [Fact]
+    public void DS2_Der_Legendentext_blendet_die_Reihe_aus_und_wieder_ein()
+    {
+        var cut = Zeige();
+
+        Assert.False(cut.Find("path[data-reihe='" + MIT_ROLLE + "']").HasAttribute("display"));
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+
+        Assert.Equal("none",
+            cut.Find("path[data-reihe='" + MIT_ROLLE + "']").GetAttribute("display"));
+        Assert.Contains("epos-legende--aus",
+            cut.Find("text[data-legende='" + MIT_ROLLE + "']").ClassName);
+        Assert.True(cut.Instance.IstAus(MIT_ROLLE));
+
+        // Die ANDERE Reihe bleibt, wo sie war.
+        Assert.False(cut.Find("path[data-reihe='" + OHNE_ROLLE + "']").HasAttribute("display"));
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+
+        Assert.False(cut.Find("path[data-reihe='" + MIT_ROLLE + "']").HasAttribute("display"));
+        Assert.False(cut.Instance.IstAus(MIT_ROLLE));
+    }
+
+    /// <summary>
+    /// Der Eintrag ist ein Bedienelement, also auch mit der Tastatur erreichbar:
+    /// <c>role="button"</c>, <c>tabindex="0"</c>, Eingabe und Leertaste schalten.
+    /// </summary>
+    [Fact]
+    public void DS2_Der_Eintrag_ist_fokussierbar_und_schaltet_mit_der_Tastatur()
+    {
+        var cut = Zeige();
+        var eintrag = cut.Find("text[data-legende='" + MIT_ROLLE + "']");
+
+        Assert.Equal("button", eintrag.GetAttribute("role"));
+        Assert.Equal("0", eintrag.GetAttribute("tabindex"));
+
+        eintrag.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.True(cut.Instance.IstAus(MIT_ROLLE));
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']")
+           .KeyDown(new KeyboardEventArgs { Key = " " });
+        Assert.False(cut.Instance.IstAus(MIT_ROLLE));
+    }
+
+    /// <summary>
+    /// Ohne <c>LegendeSchaltbar</c> ist die Legende nur noch Beschriftung — kein
+    /// <c>role</c>, keine Klasse, kein Klick.
+    /// </summary>
+    [Fact]
+    public void DS2_Ohne_LegendeSchaltbar_bleibt_die_Legende_Beschriftung()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, Modell())
+            .Add(x => x.Kennung, "starr")
+            .Add(x => x.LegendeSchaltbar, false));
+
+        Assert.Empty(cut.FindAll(".epos-legende-eintrag"));
+        Assert.False(cut.Find("text[data-marke='legende:" + MIT_ROLLE + "']").HasAttribute("role"));
+    }
+
+    // =====================================================================
+    //  DS-3  Der Farbwähler am Bild (DG-E2-1, Farbrollen Teil 2)
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Klick auf das FARBFELD öffnet den Wähler; die gewählte Farbe geht
+    /// samt Rolle nach oben, und der Wähler schließt sich.
+    /// </summary>
+    [Fact]
+    public void DS3_Das_Farbfeld_oeffnet_den_Waehler_und_meldet_Rolle_und_Farbe()
+    {
+        var wahl = new List<(Farbrolle Rolle, Farbe Farbe)>();
+        var cut = Zeige(farbeGewaehlt: w => wahl.Add(w));
+
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        Assert.Single(cut.FindAll(".epos-farbwahl-schliessflaeche"));
+
+        cut.Find(".epos-farbwahl input.epos-farbfeld-waehler").Change("#123456");
+
+        Assert.Single(wahl);
+        Assert.Equal(Farbrolle.AUSSENTEMPERATUR, wahl[0].Rolle);
+        Assert.Equal(0x12, wahl[0].Farbe.R);
+        Assert.Equal(0x34, wahl[0].Farbe.G);
+        Assert.Equal(0x56, wahl[0].Farbe.B);
+
+        // Die DECKUNG bleibt die der Hausfarbe - gewaehlt wird der Farbton.
+        Assert.Equal(Farbpalette.Vorgabe[Farbrolle.AUSSENTEMPERATUR].A, wahl[0].Farbe.A);
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>„Hausfarbe" meldet die Rolle zurück und schließt den Wähler.</summary>
+    [Fact]
+    public void DS3_Hausfarbe_meldet_die_Rolle_zurueck()
+    {
+        var rollen = new List<Farbrolle>();
+        var cut = Zeige(farbwahl: true, farbeZurueckgesetzt: r => rollen.Add(r));
+
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+        cut.Find(".epos-farbwahl button.epos-knopf").Click();
+
+        Assert.Equal(new[] { Farbrolle.AUSSENTEMPERATUR }, rollen);
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// <b>Eine Reihe mit FEST gerechneter Farbe bekommt keinen Wähler.</b> Es
+    /// gibt keine Rolle, auf die die Einstellung zeigen könnte — ein Wähler wäre
+    /// dort ein Versprechen ohne Wirkung.
+    /// </summary>
+    [Fact]
+    public void DS3_Eine_Reihe_ohne_Rolle_bekommt_keinen_Farbwaehler()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        Assert.NotEmpty(cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']"));
+        Assert.Empty(cut.FindAll("rect[data-legende='" + OHNE_ROLLE + "']"));
+
+        // Umschalt+Eingabe auf diesem Eintrag oeffnet deshalb auch nichts.
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']")
+           .KeyDown(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Umschalt+Eingabe öffnet den Wähler — der Tastaturweg zum Farbfeld.</summary>
+    [Fact]
+    public void DS3_Umschalt_und_Eingabe_oeffnet_den_Waehler()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']")
+           .KeyDown(new KeyboardEventArgs { Key = "Enter", ShiftKey = true });
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        Assert.False(cut.Instance.IstAus(MIT_ROLLE));   // geschaltet wird dabei NICHT
+    }
+
+    /// <summary>Esc und der Klick daneben schließen den Wähler.</summary>
+    [Fact]
+    public void DS3_Esc_und_der_Klick_daneben_schliessen_den_Waehler()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+        cut.Find(".epos-farbwahl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+        cut.Find(".epos-farbwahl-schliessflaeche").Click();
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Ohne <c>FarbeGewaehlt</c> gibt es keinen Wähler, auch wenn ihn jemand
+    /// erlaubt hat: Kein Delegat, kein Bedienelement.
+    /// </summary>
+    [Fact]
+    public void DS3_Ohne_Ruecklauf_gibt_es_kein_Farbfeld()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, Modell())
+            .Add(x => x.Kennung, "ohne")
+            .Add(x => x.FarbwahlErlaubt, true));
+
+        Assert.Empty(cut.FindAll(".epos-legende-farbfeld"));
+    }
+
+    // =====================================================================
+    //  DS-4  Die Zeigerzeile
+    // =====================================================================
+
+    /// <summary>
+    /// Das Modul meldet die STUNDE; die Werte liest die Komponente aus dem
+    /// Modell — ein Interop je Bildaufbau, kein Kernaufruf.
+    /// </summary>
+    [Fact]
+    public async Task DS4_Die_gemeldete_Stunde_fuellt_die_Zeigerzeile()
+    {
+        var modell = Modell();
+        var cut = Zeige(modell: modell, einheit: "°C");
+
+        Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent.Trim());
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
+
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains("4.000 h", zeile);
+        Assert.Contains(MIT_ROLLE + ": ", zeile);
+        Assert.Contains(OHNE_ROLLE + ": ", zeile);
+        Assert.Contains("°C", zeile);
+
+        // Der Wert ist der der Stunde 4 000, mit Dezimalkomma.
+        Assert.Contains(modell.Reihen[0].Werte[4000].ToString("0.###", CultureInfo.CurrentCulture),
+                        zeile);
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(null));
+        Assert.Equal("", cut.Find(".epos-diagramm-zeigerzeile").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Eine ausgeblendete Reihe steht nicht in der Zeile — sie ist ja auch nicht
+    /// im Bild.
+    /// </summary>
+    [Fact]
+    public async Task DS4_Eine_ausgeblendete_Reihe_steht_nicht_in_der_Zeigerzeile()
+    {
+        var cut = Zeige();
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(4000));
+
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains(MIT_ROLLE + ": ", zeile);
+        Assert.DoesNotContain(OHNE_ROLLE + ": ", zeile);
+    }
+
+    /// <summary>Die gemeldete Zoomstufe steht in der Leiste — mit Dezimalkomma.</summary>
+    [Fact]
+    public async Task DS4_Die_gemeldete_Stufe_erscheint_mit_Dezimalkomma()
+    {
+        var cut = Zeige();
+
+        Assert.Equal("×1", cut.Find(".epos-diagramm-stufe").TextContent.Trim());
+
+        await cut.InvokeAsync(() => cut.Instance.ZoomGemeldet(2.5));
+
+        Assert.Equal("×2,5", cut.Find(".epos-diagramm-stufe").TextContent.Trim());
+    }
+
+    // =====================================================================
+    //  DS-5  Das Fenster und die nachgezeichnete Achsenteilung (DG-E2-3)
+    // =====================================================================
+
+    /// <summary>
+    /// Im Fenster gilt die Monatsteilung des Bildes nicht mehr: Die Komponente
+    /// blendet die Elemente mit der Marke <c>xachse</c> aus und zeichnet die
+    /// Ticks aus <c>ChartRenderer.Jahresstundenteilung</c> nach — dieselbe
+    /// Regel, mit der der Renderer sie ins PNG setzt.
+    /// </summary>
+    [Fact]
+    public async Task DS5_Ein_Fenster_blendet_die_Monatsachse_aus_und_zeichnet_Ticks()
+    {
+        var fenster = new List<ChartRenderer.Achsenfenster?>();
+        var cut = Zeige(fensterGeaendert: f => fenster.Add(f));
+
+        Assert.NotEmpty(cut.FindAll("[data-marke='xachse']"));
+        Assert.All(cut.FindAll("[data-marke='xachse']"),
+                   e => Assert.False(e.HasAttribute("display")));
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        Assert.All(cut.FindAll("[data-marke='xachse']"),
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+
+        var ticks = ChartRenderer.Jahresstundenteilung(3000, 3400);
+        Assert.NotEmpty(ticks);
+        Assert.Equal(ticks.Count, cut.FindAll(".epos-diagramm-ticks line").Count);
+
+        // Die Beschriftungen sind die der Teilung, dazu der Achsentitel.
+        var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
+        Assert.Equal(ticks.Count + 1, texte.Count);
+        foreach ((int _, string text) in ticks) Assert.Contains(text, texte);
+        Assert.Contains(Resource.CHART_ACHSE_JAHRESSTUNDEN, texte);
+
+        Assert.Equal((3000, 3400), cut.Instance.Fenster);
+        Assert.Single(fenster);
+        Assert.Equal(3000, fenster[0]!.Von);
+        Assert.Equal(3401, fenster[0]!.Bis);   // Achsenfenster.Bis ist ausschliesslich
+    }
+
+    /// <summary>
+    /// Deckt das gemeldete Fenster das ganze Bild ab, ist das die Vollansicht:
+    /// Die Monatsachse steht wieder, die Ticks fallen, und der Wirt bekommt
+    /// <c>null</c>.
+    /// </summary>
+    [Fact]
+    public async Task DS5_Der_Vollbereich_stellt_die_Monatsachse_her_und_meldet_null()
+    {
+        var fenster = new List<ChartRenderer.Achsenfenster?>();
+        var cut = Zeige(fensterGeaendert: f => fenster.Add(f));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 8759));
+
+        Assert.All(cut.FindAll("[data-marke='xachse']"),
+                   e => Assert.False(e.HasAttribute("display")));
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Null(cut.Instance.Fenster);
+
+        Assert.Equal(2, fenster.Count);
+        Assert.Null(fenster[1]);
+    }
+
+    /// <summary>
+    /// Der Knopf „1:1" stellt die volle Ansicht her und sagt es nach oben —
+    /// EIN Knopf für Zoom und Ausschnitt.
+    /// </summary>
+    [Fact]
+    public async Task DS5_Der_Knopf_stellt_die_volle_Ansicht_her()
+    {
+        var fenster = new List<ChartRenderer.Achsenfenster?>();
+        var cut = Zeige(fensterGeaendert: f => fenster.Add(f));
+
+        await cut.InvokeAsync(() => cut.Instance.ZoomGemeldet(4));
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        cut.FindAll("button.epos-diagramm-knopf").First(k => k.TextContent.Trim() == "1:1").Click();
+
+        Assert.Equal(1.0, cut.Instance.Stufe);
+        Assert.Null(cut.Instance.Fenster);
+        Assert.Null(fenster[^1]);
+    }
+
+    /// <summary>Der Umschalter „Bereich" bleibt gedrückt, solange er an ist.</summary>
+    [Fact]
+    public void DS5_Der_Bereichsknopf_schaltet_um()
+    {
+        var cut = Zeige();
+
+        Assert.Equal("false", cut.Find("button[aria-pressed]").GetAttribute("aria-pressed"));
+
+        cut.Find("button[aria-pressed]").Click();
+
+        Assert.True(cut.Instance.Bereichsmodus);
+        Assert.Equal("true", cut.Find("button[aria-pressed]").GetAttribute("aria-pressed"));
+    }
+
+    // =====================================================================
+    //  DS-6  Die Grenzfälle
+    // =====================================================================
+
+    /// <summary>
+    /// Ein Bild ohne Reihen trägt nur den Leerhinweis und keine Zeichenfläche:
+    /// Der Baum steht unverändert da, aber es gibt weder Leiste noch
+    /// Zeigerzeile — dort wäre nichts zu bedienen und nichts abzulesen.
+    /// </summary>
+    [Fact]
+    public void DS6_Ohne_Reihen_steht_der_Leerhinweis_ohne_Leiste()
+    {
+        var cut = Zeige(modell: LeeresModell());
+
+        Assert.Single(cut.FindAll("[data-marke='leerhinweis']"));
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Empty(cut.FindAll(".epos-diagramm-zeigerzeile"));
+    }
+
+    /// <summary>Ohne Modell steht der Platzhalter — und sonst nichts.</summary>
+    [Fact]
+    public void DS6_Ohne_Modell_steht_der_Platzhalter()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.PlatzhalterText, "Kein Diagramm vorhanden"));
+
+        Assert.Equal("Kein Diagramm vorhanden",
+                     cut.Find(".epos-chartbild-platzhalter").TextContent.Trim());
+        Assert.Empty(cut.FindAll("svg"));
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+    }
+
+    /// <summary>
+    /// Mit <c>OhneZoom</c> fällt die Leiste, die Legende bleibt: Ein Bild ohne
+    /// Zeitachse hat nichts zu zoomen, seine Reihen bleiben trotzdem schaltbar.
+    /// </summary>
+    [Fact]
+    public void DS6_OhneZoom_faellt_die_Leiste_und_die_Legende_bleibt()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, Modell())
+            .Add(x => x.Kennung, "starr")
+            .Add(x => x.OhneZoom, true));
+
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.False(cut.Find(".epos-diagramm-svg-flaeche").HasAttribute("tabindex"));
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+        Assert.True(cut.Instance.IstAus(MIT_ROLLE));
+    }
+
+    /// <summary>
+    /// Die Fläche ist benannt und tastaturerreichbar. <c>role="group"</c> statt
+    /// <c>role="img"</c>: Die Legendeneinträge SIND Bedienelemente, und in einem
+    /// Bild erreichte sie keine Sprachausgabe mehr.
+    /// </summary>
+    [Fact]
+    public void DS6_Die_Flaeche_ist_benannt_und_tastaturerreichbar()
+    {
+        var cut = Zeige();
+        var flaeche = cut.Find(".epos-diagramm-svg-flaeche");
+
+        Assert.Equal("group", flaeche.GetAttribute("role"));
+        Assert.Equal("Jahresgang", flaeche.GetAttribute("aria-label"));
+        Assert.Equal("0", flaeche.GetAttribute("tabindex"));
+    }
+
+    // =====================================================================
+    //  DS-7  Der Weg zum Modul
+    // =====================================================================
+
+    /// <summary>
+    /// Beim ersten Zeichnen wird das Modul geladen und an die Fläche gehängt —
+    /// mit dem viewBox-Modus als dritter Gabe.
+    /// </summary>
+    [Fact]
+    public void DS7_Beim_ersten_Zeichnen_wird_im_viewBox_Modus_gebunden()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        var binden = modul.SetupVoid("binden", _ => true);
+
+        Zeige();
+
+        Assert.Single(binden.Invocations);
+        Assert.Equal(3, binden.Invocations.Single().Arguments.Count);
+    }
+
+    /// <summary>
+    /// Lädt das Modul nicht, steht das Bild da — vollständig, nur ohne Zoom.
+    /// Legende und Farbwahl bleiben bedienbar: Sie sind Blazor, kein JavaScript.
+    /// </summary>
+    [Fact]
+    public void DS7_Ohne_Modul_bleibt_das_Bild_stehen()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+
+        var cut = Zeige();
+
+        Assert.Equal(2, cut.FindAll("path.epos-reihe").Count);
+        Assert.Equal("×1", cut.Find(".epos-diagramm-stufe").TextContent.Trim());
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+        Assert.True(cut.Instance.IstAus(MIT_ROLLE));
+    }
+
+    /// <summary>Das Abräumen löst die Handler wieder.</summary>
+    [Fact]
+    public async Task DS7_Das_Abraeumen_loest_die_Handler()
+    {
+        JSInterop.Mode = JSRuntimeMode.Strict;
+        var modul = JSInterop.SetupModule(MODUL);
+        modul.SetupVoid("binden", _ => true);
+        var loesen = modul.SetupVoid("loesen", _ => true);
+
+        var cut = Zeige();
+        await cut.Instance.DisposeAsync();
+
+        Assert.Single(loesen.Invocations);
+    }
+}

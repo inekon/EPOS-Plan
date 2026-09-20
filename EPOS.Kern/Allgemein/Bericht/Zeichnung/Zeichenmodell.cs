@@ -73,8 +73,25 @@ namespace WindowsFormsApplication1.Zeichnung
 
     // ----------------------------------------------------------------- Befehle
 
-    /// <summary>Ein einzelner Zeichenbefehl.</summary>
-    public abstract record Zeichenbefehl;
+    /// <summary>
+    /// Ein einzelner Zeichenbefehl.
+    ///
+    /// <para><b>Die MARKE (Etappe E2).</b> Ein Befehl darf sagen, WOZU er gehört —
+    /// <c>"titel"</c>, <c>"xachse"</c>, <c>"yachse"</c>, <c>"reihe:&lt;Name&gt;"</c>,
+    /// <c>"legende:&lt;Name&gt;"</c>, <c>"nulllinie"</c>, <c>"leerhinweis"</c>. Der
+    /// <c>SkiaMaler</c> ÜBERGEHT sie; das PNG bleibt deshalb byte-gleich. Der
+    /// <see cref="SvgSchreiber"/> gibt sie als <c>data-marke</c> weiter, und die
+    /// Oberfläche schaltet damit Gruppen ein und aus (Legendenwahl) oder blendet
+    /// beim Zoom die Achsenteilung aus und zeichnet sie neu.</para>
+    ///
+    /// <para><c>null</c> heißt „keine Marke" und ist die Vorgabe — jeder Befehl des
+    /// Bestands bleibt damit wörtlich, wie er war.</para>
+    /// </summary>
+    public abstract record Zeichenbefehl
+    {
+        /// <summary>Wozu der Befehl gehört; <c>null</c> = keine Marke.</summary>
+        public string Marke { get; init; }
+    }
 
     /// <summary>Eine Strecke.</summary>
     public sealed record Linie(float X1, float Y1, float X2, float Y2, Stift Stift) : Zeichenbefehl;
@@ -124,6 +141,136 @@ namespace WindowsFormsApplication1.Zeichnung
     /// </summary>
     public sealed record Gruppe(Rahmen? Zuschnitt, Wertliste<Zeichenbefehl> Befehle) : Zeichenbefehl;
 
+    // ------------------------------------------------- Zeichenflaeche und Reihen
+
+    /// <summary>
+    /// Was auf einer Zeichenfläche links, rechts, unten und oben liegt — in
+    /// DATENKOORDINATEN, nicht in Bildpunkten.
+    /// </summary>
+    /// <param name="XVon">Erste Stützstelle des Bildes (Jahresstunde als Index der Reihe).</param>
+    /// <param name="XBis">Letzte Stützstelle des Bildes (einschließlich).</param>
+    /// <param name="YVon">Unterkante der Fläche in Werteinheiten.</param>
+    /// <param name="YBis">Oberkante der Fläche in Werteinheiten.</param>
+    public sealed record Datenfenster(double XVon, double XBis, double YVon, double YBis);
+
+    /// <summary>
+    /// Die Zeichenfläche eines Bildes: ihr Pixelrechteck und das Datenfenster, das
+    /// darin steht.
+    ///
+    /// <para><b>Wozu.</b> Die Befehlsliste trägt fertige Bildpunkte — daraus ist nicht
+    /// mehr abzulesen, welche Stunde an welcher Stelle steht. Der SVG-Weg braucht
+    /// genau das: Er setzt die Fläche als INNERES <c>&lt;svg&gt;</c> in
+    /// Datenkoordinaten, und Zoom und Verschieben sind dann eine Änderung seiner
+    /// <c>viewBox</c> — ohne Neuzeichnen und ohne Rundlauf.</para>
+    /// </summary>
+    public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten);
+
+    /// <summary>
+    /// Eine Reihe des Bildes in DATENWERTEN — ungekürzt, Stützstelle für Stützstelle.
+    ///
+    /// <para><b>Warum neben dem Linienzug.</b> Der Pixelpfad im Befehl ist auf jeden
+    /// n-ten Wert gekürzt (so zeichnet das PNG seit je). Der SVG-Weg zeichnet die
+    /// Reihe stattdessen aus DIESEN Werten, nach <see cref="Pfadregel"/> roh oder
+    /// gebündelt; damit zeigt ein Zoom die echte Stunde statt der Stützstellen der
+    /// Schrittweite. Entscheid DG-E2-2.</para>
+    /// </summary>
+    /// <param name="Name">Der Name der Reihe — zugleich der Schlüssel der Legende.</param>
+    /// <param name="Ton">Die Farbe als Rolle; aufgelöst wird beim Schreiben.</param>
+    /// <param name="Staerke">Die Strichstärke [px], wie sie das PNG zeichnet.</param>
+    /// <param name="Muster">Das Strichmuster oder <c>null</c>.</param>
+    /// <param name="Werte">Die Werte des BILDES — bei einem Fenster die zugeschnittenen.</param>
+    public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
+                                    Strichmuster Muster, double[] Werte)
+    {
+        /// <summary>
+        /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
+        /// die REFERENZ; zwei gleich gefüllte Reihen wären dann verschieden, und der
+        /// Determinismusnachweis des Modells liefe ins Leere — derselbe Grund, aus dem
+        /// die Punktfolgen in einer <see cref="Wertliste{T}"/> stehen.
+        /// </summary>
+        public bool Gleicht(Datenreihe andere)
+        {
+            if (andere == null) return false;
+            if (!string.Equals(Name, andere.Name, StringComparison.Ordinal)) return false;
+            if (!Equals(Ton, andere.Ton) || Staerke != andere.Staerke) return false;
+            if (!Equals(Muster, andere.Muster)) return false;
+            if (Werte == null || andere.Werte == null) return ReferenceEquals(Werte, andere.Werte);
+            if (Werte.Length != andere.Werte.Length) return false;
+            for (int i = 0; i < Werte.Length; i++)
+                if (!Werte[i].Equals(andere.Werte[i])) return false;
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Pfadregel (Entscheid DG-Q5, „eine Konstante im Modell").</b> Wie viele
+    /// Stützstellen eine Reihe in den SVG-Pfad bringt.
+    ///
+    /// <para>Bis <see cref="ROH_BIS_STUETZSTELLEN"/> Stützstellen und
+    /// <see cref="ROH_BIS_REIHEN"/> Reihen geht der Pfad ROH — jede Stunde ein Punkt;
+    /// der Zoom zeigt dann ohne Nachladen die echte Stunde. Darüber wird GEBÜNDELT:
+    /// je Bildpunktspalte Minimum und Maximum in Indexreihenfolge, höchstens zwei
+    /// Punkte je Spalte, bei 1:1 vom rohen Bild nicht zu unterscheiden und ohne
+    /// verlorene Spitze (Konzept Diagramme § 5, Prüfstand vom 20.09.2026).</para>
+    /// </summary>
+    public static class Pfadregel
+    {
+        /// <summary>Bis hierher geht der Pfad roh — ein volles Stundenjahr.</summary>
+        public const int ROH_BIS_STUETZSTELLEN = 8760;
+
+        /// <summary>Und nur bis hierher: ab der vierten Reihe wird gebündelt.</summary>
+        public const int ROH_BIS_REIHEN = 3;
+
+        /// <summary>Geht die Reihe roh in den Pfad?</summary>
+        public static bool Roh(int stuetzstellen, int reihen)
+            => stuetzstellen <= ROH_BIS_STUETZSTELLEN && reihen <= ROH_BIS_REIHEN;
+
+        /// <summary>
+        /// Die gebündelten Punkte einer Reihe: je Bildpunktspalte das Minimum UND das
+        /// Maximum, in INDEXREIHENFOLGE (erst das, was früher steht). Eine Spalte mit
+        /// nur einem Extrem gibt einen Punkt.
+        ///
+        /// <para><c>Punkt.X</c> ist die Stunde (der Index in
+        /// <paramref name="werte"/>), <c>Punkt.Y</c> der Wert — beides in
+        /// DATENKOORDINATEN, nicht in Bildpunkten.</para>
+        /// </summary>
+        public static IReadOnlyList<Punkt> Gebuendelt(double[] werte, int spalten)
+        {
+            var punkte = new List<Punkt>();
+            if (werte == null || werte.Length == 0) return punkte;
+            if (spalten < 1) spalten = 1;
+
+            int start = 0;
+            for (int c = 1; c <= spalten; c++)
+            {
+                int ende = (int)((long)c * werte.Length / spalten);
+                if (ende <= start) continue;
+
+                int iMin = start, iMax = start;
+                for (int i = start + 1; i < ende; i++)
+                {
+                    if (werte[i] < werte[iMin]) iMin = i;
+                    if (werte[i] > werte[iMax]) iMax = i;
+                }
+
+                if (iMin == iMax) punkte.Add(new Punkt(iMin, (float)werte[iMin]));
+                else if (iMin < iMax)
+                {
+                    punkte.Add(new Punkt(iMin, (float)werte[iMin]));
+                    punkte.Add(new Punkt(iMax, (float)werte[iMax]));
+                }
+                else
+                {
+                    punkte.Add(new Punkt(iMax, (float)werte[iMax]));
+                    punkte.Add(new Punkt(iMin, (float)werte[iMin]));
+                }
+
+                start = ende;
+            }
+            return punkte;
+        }
+    }
+
     // ------------------------------------------------------------------ Ziele
 
     /// <summary>
@@ -159,6 +306,7 @@ namespace WindowsFormsApplication1.Zeichnung
     public sealed class Zeichenmodell : IZeichenziel
     {
         private readonly List<Zeichenbefehl> _befehle = new List<Zeichenbefehl>();
+        private readonly List<Datenreihe> _reihen = new List<Datenreihe>();
 
         public Zeichenmodell(int breite, int hoehe, Farbton hintergrund)
         {
@@ -173,20 +321,38 @@ namespace WindowsFormsApplication1.Zeichnung
 
         public IReadOnlyList<Zeichenbefehl> Befehle => _befehle;
 
+        /// <summary>
+        /// Die Zeichenfläche samt Datenfenster; <c>null</c>, wenn das Bild keine hat
+        /// (Kuchen, Ring, Balken). Nur mit ihr entsteht im SVG das innere
+        /// <c>&lt;svg&gt;</c> in Datenkoordinaten.
+        /// </summary>
+        public Zeichenflaeche Flaeche { get; set; }
+
+        /// <summary>Die Reihen des Bildes in Datenwerten, in Zeichenreihenfolge.</summary>
+        public IReadOnlyList<Datenreihe> Reihen => _reihen;
+
         public void Fuege(Zeichenbefehl befehl) { if (befehl != null) _befehle.Add(befehl); }
 
+        /// <summary>Eine Reihe in Datenwerten hinzufügen.</summary>
+        public void FuegeReihe(Datenreihe reihe) { if (reihe != null) _reihen.Add(reihe); }
+
         /// <summary>
-        /// Gleichheit zweier Modelle — Fläche, Hintergrund und jeder Befehl. Damit
-        /// prüft ein Test, dass zweimal Erzeugen dasselbe Modell liefert.
+        /// Gleichheit zweier Modelle — Fläche, Hintergrund, jeder Befehl (samt Marke)
+        /// und seit Etappe E2 auch Zeichenfläche und Reihen. Damit prüft ein Test,
+        /// dass zweimal Erzeugen dasselbe Modell liefert.
         /// </summary>
         public bool Gleicht(Zeichenmodell andere)
         {
             if (andere == null) return false;
             if (Breite != andere.Breite || Hoehe != andere.Hoehe ||
                 !Equals(Hintergrund, andere.Hintergrund)) return false;
+            if (!Equals(Flaeche, andere.Flaeche)) return false;
             if (_befehle.Count != andere._befehle.Count) return false;
             for (int i = 0; i < _befehle.Count; i++)
                 if (!Equals(_befehle[i], andere._befehle[i])) return false;
+            if (_reihen.Count != andere._reihen.Count) return false;
+            for (int i = 0; i < _reihen.Count; i++)
+                if (!_reihen[i].Gleicht(andere._reihen[i])) return false;
             return true;
         }
     }
@@ -268,6 +434,29 @@ namespace WindowsFormsApplication1.Zeichnung
             var sammler = new Befehlssammler();
             inhalt(sammler);
             z.Fuege(new Zeichnung.Gruppe(zuschnitt, sammler.Liste()));
+        }
+
+        /// <summary>
+        /// Alles, was <paramref name="inhalt"/> absetzt, bekommt die
+        /// <see cref="Zeichenbefehl.Marke"/> <paramref name="marke"/> (Etappe E2).
+        ///
+        /// <para><b>Warum ein Sammler und kein Parameter an jedem Helfer.</b> Eine
+        /// Marke gehört zu einem BLOCK — die x-Achse sind sechs Rasterlinien, sechs
+        /// Beschriftungen und ein Titel —, und die Helfer, die sie absetzen, haben
+        /// zwölf Nutzer. Ein Parameter an jedem von ihnen wäre Tippfehlerfläche ohne
+        /// Gewinn; hier steht die Marke EINMAL an der Klammer. Die Befehle selbst
+        /// bleiben unverändert (der Maler übergeht die Marke), das PNG deshalb
+        /// byte-gleich.</para>
+        ///
+        /// <para>Eine Marke, die der Inhalt schon gesetzt hat, bleibt stehen — so
+        /// überschreibt eine äußere Klammer keine feinere Marke.</para>
+        /// </summary>
+        public static void Markiert(this IZeichenziel z, string marke, Action<IZeichenziel> inhalt)
+        {
+            var sammler = new Befehlssammler();
+            inhalt(sammler);
+            foreach (Zeichenbefehl b in sammler.Befehle)
+                z.Fuege(b.Marke == null ? b with { Marke = marke } : b);
         }
     }
 }
