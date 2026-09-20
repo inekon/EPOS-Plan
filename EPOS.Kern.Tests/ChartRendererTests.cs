@@ -647,5 +647,409 @@ namespace EPOS.Kern.Tests
             // Ohne Spanne gibt es keine Teilung statt einer Ausnahme.
             Assert.Empty(ChartRenderer.Jahresstundenteilung(100, 100));
         }
+
+        // -----------------------------------------------------------------------------
+        // 9 — Die sieben Zeitreihen-Modelle der Ergebnisreiter (Etappe E3, Gruppe a)
+        // -----------------------------------------------------------------------------
+
+        /// <summary>Eine Jahresreihe mit Jahres- und Tagesgang — deterministisch.</summary>
+        private static double[] Jahresreihe(double grund, double jahresHub, double tagesHub,
+                                            double versatz = 0)
+        {
+            var w = new double[8760];
+            for (int i = 0; i < w.Length; i++)
+                w[i] = grund
+                     + jahresHub * Math.Sin(2 * Math.PI * i / 8760.0 - Math.PI / 2 + versatz)
+                     + tagesHub * Math.Sin(2 * Math.PI * (i % 24) / 24.0);
+            return w;
+        }
+
+        private static List<ChartRenderer.Reihe> Stapelreihen()
+            => new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Waermepumpe", Jahresreihe(60, 45, 12), SKColors.Orange,
+                                        ChartRenderer.Stapelart.Saeule),
+                new ChartRenderer.Reihe("Heizkessel", Jahresreihe(50, 40, 10, 0.2), SKColors.Blue,
+                                        ChartRenderer.Stapelart.Saeule)
+            };
+
+        private static List<ChartRenderer.Reihe> Temperaturreihen()
+            => new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Puffer oben", Jahresreihe(62, 8, 0), SKColors.Firebrick),
+                new ChartRenderer.Reihe("Puffer unten", Jahresreihe(48, 6, 0), SKColors.Firebrick,
+                                        ChartRenderer.Stapelart.Keine, true)
+            };
+
+        /// <summary>
+        /// <b>Ein Modell, zwei Ausgaben — für alle sieben Bilder der Gruppe (a).</b>
+        /// Jede <c>byte[]</c>-Methode ist seit der Etappe E3 nur noch
+        /// <c>SkiaMaler.Png(…Modell(…))</c>; das muss Byte für Byte dasselbe Bild
+        /// ergeben, sonst hätte der Umbau den Bericht verändert. Die Hash-Messlatte der
+        /// ChartProben sagt dasselbe über die ganze Bildmenge — dieser Fall sagt es in
+        /// jedem Kern-Lauf.
+        /// </summary>
+        [Fact]
+        public void Die_sieben_Bilder_liefern_dieselben_Bytes_wie_der_Maler_aus_ihrem_Modell()
+        {
+            double[] profil = Jahresreihe(24, 6, 3);
+            double[] woche = Jahresreihe(1, 0.4, 0.3).Take(168).ToArray();
+            double[] bedarf = Jahresreihe(140, 90, 30);
+            List<ChartRenderer.Reihe> stapel = Stapelreihen();
+            List<ChartRenderer.Reihe> temperaturen = Temperaturreihen();
+            var speicher = new ChartRenderer.Reihe("Ladezustand", Jahresreihe(400, 120, 180),
+                                                   SKColors.MediumVioletRed);
+
+            Assert.Equal(ChartRenderer.Kostenprofil("K", profil, "ct/kWh", "Monat"),
+                         SkiaMaler.Png(ChartRenderer.KostenprofilModell("K", profil, "ct/kWh", "Monat")));
+
+            Assert.Equal(ChartRenderer.Stundenprofil("S", woche, 24, "Stunde", "Verteilung"),
+                         SkiaMaler.Png(ChartRenderer.StundenprofilModell("S", woche, 24, "Stunde",
+                                                                         "Verteilung")));
+
+            Assert.Equal(ChartRenderer.Jahresverlauf("J", bedarf, "kW", SKColors.SteelBlue),
+                         SkiaMaler.Png(ChartRenderer.JahresverlaufModell("J", bedarf, "kW",
+                                                                         SKColors.SteelBlue)));
+
+            Assert.Equal(ChartRenderer.GanglinieNormiert("G", stapel, "%",
+                                                         ChartRenderer.Achse.Monate, false),
+                         SkiaMaler.Png(ChartRenderer.GanglinieNormiertModell(
+                             "G", stapel, "%", ChartRenderer.Achse.Monate, false)));
+
+            Assert.Equal(ChartRenderer.ErzeugerStapel("E", stapel, null, null, "kW",
+                                                      ChartRenderer.Achse.Monate, false),
+                         SkiaMaler.Png(ChartRenderer.ErzeugerStapelModell(
+                             "E", stapel, null, null, "kW", ChartRenderer.Achse.Monate, false)));
+
+            Assert.Equal(ChartRenderer.Temperaturverlauf("T", temperaturen, true),
+                         SkiaMaler.Png(ChartRenderer.TemperaturverlaufModell("T", temperaturen, true)));
+
+            Assert.Equal(ChartRenderer.Speicherbetrieb("L", temperaturen, "kW", speicher, "kWh"),
+                         SkiaMaler.Png(ChartRenderer.SpeicherbetriebModell(
+                             "L", temperaturen, "kW", speicher, "kWh")));
+        }
+
+        /// <summary>
+        /// Dasselbe im FENSTER und im LEERFALL — die beiden Lagen, in denen ein Bild
+        /// einen anderen Weg nimmt.
+        /// </summary>
+        [Fact]
+        public void Die_sieben_Bilder_bleiben_auch_im_Fenster_und_leer_byte_gleich()
+        {
+            double[] bedarf = Jahresreihe(140, 90, 30);
+            List<ChartRenderer.Reihe> stapel = Stapelreihen();
+            var fenster = new ChartRenderer.Achsenfenster(3000, 3500, 0.6);
+
+            Assert.Equal(ChartRenderer.Jahresverlauf("J", bedarf, "kW", SKColors.SteelBlue, fenster),
+                         SkiaMaler.Png(ChartRenderer.JahresverlaufModell("J", bedarf, "kW",
+                                                                         SKColors.SteelBlue, fenster)));
+            Assert.Equal(ChartRenderer.GanglinieNormiert("G", stapel, "%",
+                                                         ChartRenderer.Achse.Jahresstunden, true,
+                                                         fenster),
+                         SkiaMaler.Png(ChartRenderer.GanglinieNormiertModell(
+                             "G", stapel, "%", ChartRenderer.Achse.Jahresstunden, true, fenster)));
+            Assert.Equal(ChartRenderer.ErzeugerStapel("E", stapel, null, null, "kW",
+                                                      ChartRenderer.Achse.Jahresstunden, false,
+                                                      null, null, fenster),
+                         SkiaMaler.Png(ChartRenderer.ErzeugerStapelModell(
+                             "E", stapel, null, null, "kW", ChartRenderer.Achse.Jahresstunden,
+                             false, null, null, fenster)));
+            Assert.Equal(ChartRenderer.Temperaturverlauf("T", Temperaturreihen(), true, fenster),
+                         SkiaMaler.Png(ChartRenderer.TemperaturverlaufModell(
+                             "T", Temperaturreihen(), true, fenster)));
+
+            Assert.Equal(ChartRenderer.Kostenprofil("K", null, "ct/kWh", "Monat"),
+                         SkiaMaler.Png(ChartRenderer.KostenprofilModell("K", null, "ct/kWh", "Monat")));
+            Assert.Equal(ChartRenderer.Stundenprofil("S", null, 24, "x", "y"),
+                         SkiaMaler.Png(ChartRenderer.StundenprofilModell("S", null, 24, "x", "y")));
+            Assert.Equal(ChartRenderer.Jahresverlauf("J", null, "kW", SKColors.SteelBlue),
+                         SkiaMaler.Png(ChartRenderer.JahresverlaufModell("J", null, "kW",
+                                                                         SKColors.SteelBlue)));
+            Assert.Equal(ChartRenderer.GanglinieNormiert("G", null, "%",
+                                                         ChartRenderer.Achse.Monate, false),
+                         SkiaMaler.Png(ChartRenderer.GanglinieNormiertModell(
+                             "G", null, "%", ChartRenderer.Achse.Monate, false)));
+            Assert.Equal(ChartRenderer.ErzeugerStapel("E", null, null, null, "kW",
+                                                      ChartRenderer.Achse.Monate, false),
+                         SkiaMaler.Png(ChartRenderer.ErzeugerStapelModell(
+                             "E", null, null, null, "kW", ChartRenderer.Achse.Monate, false)));
+            Assert.Equal(ChartRenderer.Temperaturverlauf("T", null, true),
+                         SkiaMaler.Png(ChartRenderer.TemperaturverlaufModell("T", null, true)));
+            Assert.Equal(ChartRenderer.Speicherbetrieb("L", null),
+                         SkiaMaler.Png(ChartRenderer.SpeicherbetriebModell("L", null)));
+        }
+
+        /// <summary>
+        /// Ohne Reihen trägt jedes der sieben Modelle NUR den Leerhinweis: keine
+        /// Zeichenfläche (ein Bild ohne Reihen hat keine) und keine Datenreihe.
+        /// </summary>
+        [Fact]
+        public void Die_sieben_Modelle_ohne_Reihen_tragen_nur_den_Leerhinweis()
+        {
+            var leer = new List<Zeichenmodell>
+            {
+                ChartRenderer.KostenprofilModell("K", null, "ct/kWh", "Monat"),
+                ChartRenderer.StundenprofilModell("S", null, 24, "x", "y"),
+                ChartRenderer.JahresverlaufModell("J", null, "kW", SKColors.SteelBlue),
+                ChartRenderer.GanglinieNormiertModell("G", null, "%", ChartRenderer.Achse.Monate, false),
+                ChartRenderer.ErzeugerStapelModell("E", null, null, null, "kW",
+                                                   ChartRenderer.Achse.Monate, false),
+                ChartRenderer.TemperaturverlaufModell("T", null, true),
+                ChartRenderer.SpeicherbetriebModell("L", null)
+            };
+
+            foreach (Zeichenmodell m in leer)
+            {
+                Assert.Null(m.Flaeche);
+                Assert.Empty(m.Reihen);
+                Assert.Contains(m.Befehle, b => b.Marke == "leerhinweis");
+            }
+        }
+
+        /// <summary>
+        /// <b>Kostenprofil:</b> die Zeichenfläche des PNG, x als INDEX der Reihe, eine
+        /// Linie in der Rolle <c>KOSTENPROFIL</c> mit den ungekürzten Werten, und die
+        /// Marken samt Nulllinie (die Reihe läuft ins Negative).
+        /// </summary>
+        [Fact]
+        public void KostenprofilModell_traegt_Flaeche_Reihe_und_Marken()
+        {
+            double[] profil = Jahresreihe(4, 12, 3);      // reicht unter null
+            Zeichenmodell m = ChartRenderer.KostenprofilModell("Kostenprofil", profil,
+                                                               "ct/kWh", "Monat");
+
+            Assert.Equal(1296, m.Breite);
+            Assert.Equal(780, m.Hoehe);
+            Assert.Equal(new Rahmen(110f, 80f, 1146f, 560f), m.Flaeche.Bild);
+            Assert.Equal(0.0, m.Flaeche.Daten.XVon);
+            Assert.Equal(8759.0, m.Flaeche.Daten.XBis);
+            Assert.True(m.Flaeche.Daten.YVon < 0.0, "die Skala reicht unter null");
+
+            Datenreihe r = Assert.Single(m.Reihen);
+            Assert.Equal("Kostenprofil", r.Name);
+            Assert.Equal(Farbrolle.KOSTENPROFIL, r.Ton.Rolle);
+            Assert.Equal(Reihenart.Linie, r.Art);
+            Assert.Equal(8760, r.Werte.Length);
+            Assert.Equal(m.Flaeche.Daten, r.Fenster);
+
+            Assert.Equal(new[] { "titel", "yachse", "xachse", "nulllinie", "reihe:Kostenprofil",
+                                 "legende:Kostenprofil" }.OrderBy(s => s, StringComparer.Ordinal),
+                         Marken(m).OrderBy(s => s, StringComparer.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Stundenprofil:</b> EINE Reihe, gezeichnet als FLÄCHE mit Randlinie
+        /// (DG-E3-2) — Füllung <c>PROFILFLAECHE</c>, Rand <c>PROFILLINIE</c>. Ihr
+        /// Fenster beginnt bei 1: Wert <c>i</c> steht am rechten Rand seines Fachs,
+        /// während die Zeichenfläche von 0 bis <c>n</c> läuft (DG-E3-1).
+        /// </summary>
+        [Fact]
+        public void StundenprofilModell_traegt_die_Flaeche_mit_ihrer_Randlinie()
+        {
+            double[] woche = Jahresreihe(1, 0.4, 0.3).Take(168).ToArray();
+            Zeichenmodell m = ChartRenderer.StundenprofilModell("Wochenwerte", woche, 24,
+                                                                "Wochenstunde", "Verteilung");
+
+            Assert.Equal(new Rahmen(100f, 76f, 1044f, 300f), m.Flaeche.Bild);
+            Assert.Equal(0.0, m.Flaeche.Daten.XVon);
+            Assert.Equal(168.0, m.Flaeche.Daten.XBis);
+            Assert.Equal(0.0, m.Flaeche.Daten.YVon);
+
+            Datenreihe r = Assert.Single(m.Reihen);
+            Assert.Equal("Verteilung", r.Name);
+            Assert.Equal(Reihenart.Flaeche, r.Art);
+            Assert.Equal(Farbrolle.PROFILFLAECHE, r.Ton.Rolle);
+            Assert.Equal(Farbrolle.PROFILLINIE, r.Randton.Rolle);
+            Assert.Equal(2f, r.Staerke);
+            Assert.Null(r.Unten);                       // sie schliesst auf der Achsennull
+            Assert.Equal(1.0, r.Fenster.XVon);
+            Assert.Equal(168.0, r.Fenster.XBis);
+
+            Assert.Equal(new[] { "titel", "yachse", "xachse", "reihe:Verteilung" }
+                             .OrderBy(s => s, StringComparer.Ordinal),
+                         Marken(m).OrderBy(s => s, StringComparer.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Jahresverlauf:</b> x zählt Jahresstunden, im Fenster dessen Grenzen; die
+        /// Reihe trägt die zugeschnittenen Werte, und die Marke der x-Achse steht an
+        /// den nachgezeichneten Stundenmarken.
+        /// </summary>
+        [Fact]
+        public void JahresverlaufModell_traegt_Flaeche_Reihe_und_Marken()
+        {
+            double[] bedarf = Jahresreihe(140, 90, 30);
+            Zeichenmodell voll = ChartRenderer.JahresverlaufModell("Jahresuebersicht", bedarf,
+                                                                   "Waermebedarf [kW]",
+                                                                   SKColors.SteelBlue);
+
+            Assert.Equal(new Rahmen(100f, 80f, 838f, 380f), voll.Flaeche.Bild);
+            Assert.Equal(0.0, voll.Flaeche.Daten.XVon);
+            Assert.Equal(8759.0, voll.Flaeche.Daten.XBis);
+            Assert.Equal(0.0, voll.Flaeche.Daten.YVon);
+
+            Datenreihe r = Assert.Single(voll.Reihen);
+            Assert.Equal("Waermebedarf [kW]", r.Name);
+            Assert.Equal(Reihenart.Linie, r.Art);
+            Assert.Equal(8760, r.Werte.Length);
+
+            Assert.Equal(new[] { "titel", "yachse", "xachse", "reihe:Waermebedarf [kW]" }
+                             .OrderBy(s => s, StringComparer.Ordinal),
+                         Marken(voll).OrderBy(s => s, StringComparer.Ordinal));
+
+            Zeichenmodell teil = ChartRenderer.JahresverlaufModell(
+                "Jahresuebersicht", bedarf, "Waermebedarf [kW]", SKColors.SteelBlue,
+                new ChartRenderer.Achsenfenster(3000, 3500));
+            Assert.Equal(3000.0, teil.Flaeche.Daten.XVon);
+            Assert.Equal(3499.0, teil.Flaeche.Daten.XBis);
+            Assert.Equal(500, teil.Reihen[0].Werte.Length);
+        }
+
+        /// <summary>
+        /// <b>Normierte Ganglinie:</b> Die Datenreihen führen die Werte des BILDES,
+        /// also PROZENT des gemeinsamen Höchstwerts — die Achse läuft bis 100,2.
+        /// </summary>
+        [Fact]
+        public void GanglinieNormiertModell_fuehrt_Prozentwerte()
+        {
+            List<ChartRenderer.Reihe> reihen = Stapelreihen();
+            Zeichenmodell m = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Monate, false);
+
+            Assert.Equal(0.0, m.Flaeche.Daten.YVon);
+            Assert.Equal(100.2, m.Flaeche.Daten.YBis);
+            Assert.Equal(2, m.Reihen.Count);
+
+            double bezug = reihen.Max(x => x.Werte.Max());
+            Assert.Equal(reihen[0].Werte[17] / bezug * 100.0, m.Reihen[0].Werte[17], 9);
+            Assert.All(m.Reihen, r => Assert.All(r.Werte, w => Assert.InRange(w, -0.001, 100.001)));
+            Assert.All(m.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
+
+            // Die Dauerlinie sortiert JEDE Reihe fuer sich - x zaehlt dann den Rang.
+            Zeichenmodell dauer = ChartRenderer.GanglinieNormiertModell(
+                "Waermelast", reihen, "Anteil", ChartRenderer.Achse.Jahresstunden, true);
+            for (int i = 1; i < 100; i++)
+                Assert.True(dauer.Reihen[0].Werte[i] <= dauer.Reihen[0].Werte[i - 1]);
+        }
+
+        /// <summary>
+        /// <b>Erzeugerstapel:</b> jede Schicht eine FLÄCHE mit ihrer Unterkante, die
+        /// Kontur- und Bedarfslinie Linien, die zweite Achse mit EIGENEM Fenster und
+        /// der Marke <c>yachse2</c> (DG-E3-1/2).
+        /// </summary>
+        [Fact]
+        public void ErzeugerStapelModell_stapelt_Flaechen_und_traegt_die_zweite_Achse()
+        {
+            double[] gesamt = Jahresreihe(180, 120, 40);
+            List<ChartRenderer.Reihe> stapel = Stapelreihen();
+            var speicher = new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Puffer 1", Jahresreihe(900, 600, 250),
+                                        SKColors.MediumVioletRed)
+            };
+
+            Zeichenmodell m = ChartRenderer.ErzeugerStapelModell(
+                "Waermeproduktion", stapel,
+                new List<ChartRenderer.Reihe>
+                { new ChartRenderer.Reihe("Waermebedarf", gesamt, SKColors.DarkCyan) },
+                new ChartRenderer.Reihe("Gesamt", gesamt, SKColors.Green,
+                                        ChartRenderer.Stapelart.Keine, false, 4f),
+                "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
+                speicher, "Speicherinhalt [kWh]");
+
+            // Zeichenreihenfolge: Kontur, Stapel von unten, Linien, zweite Achse.
+            Assert.Equal(new[] { "Gesamt", "Waermepumpe", "Heizkessel", "Waermebedarf", "Puffer 1" },
+                         m.Reihen.Select(r => r.Name).ToArray());
+
+            Assert.Equal(Reihenart.Linie, m.Reihen[0].Art);
+            Assert.Equal(4f, m.Reihen[0].Staerke);
+
+            // Die erste Schicht liegt auf der Null, die zweite auf der ersten.
+            Datenreihe wp = m.Reihen[1], kessel = m.Reihen[2];
+            Assert.Equal(Reihenart.Flaeche, wp.Art);
+            Assert.Equal(Reihenart.Flaeche, kessel.Art);
+            Assert.All(wp.Unten, u => Assert.Equal(0.0, u));
+            Assert.Equal(wp.Werte, kessel.Unten);
+            for (int i = 0; i < 50; i++)
+                Assert.Equal(wp.Werte[i] + Math.Max(stapel[1].Werte[i], 0), kessel.Werte[i], 9);
+
+            // Die zweite Achse hat ihre EIGENE Skala; die linke bleibt die der Flaeche.
+            Datenreihe puffer = m.Reihen[4];
+            Assert.Equal(Reihenart.Linie, puffer.Art);
+            Assert.Equal(0.0, puffer.Fenster.YVon);
+            Assert.True(puffer.Fenster.YBis > m.Flaeche.Daten.YBis,
+                        "die rechte Achse reicht weiter als die linke");
+            Assert.Equal(m.Flaeche.Daten.XVon, puffer.Fenster.XVon);
+
+            Assert.Contains("yachse2", Marken(m));
+            Assert.Contains("legende:Puffer 1", Marken(m));
+        }
+
+        /// <summary>
+        /// <b>Temperaturverlauf:</b> eine Achse OHNE Nullpunkt — das Datenfenster
+        /// beginnt beim kleinsten Wert des Ausschnitts, nicht bei null. Die untere
+        /// Speicherschicht trägt ihr Strichmuster mit ins Modell.
+        /// </summary>
+        [Fact]
+        public void TemperaturverlaufModell_traegt_Flaeche_Reihen_und_Marken()
+        {
+            Zeichenmodell m = ChartRenderer.TemperaturverlaufModell(
+                "Speichertemperaturen", Temperaturreihen(), true);
+
+            Assert.Equal(new Rahmen(100f, 110f, 1100f, 360f), m.Flaeche.Bild);
+            Assert.True(m.Flaeche.Daten.YVon > 30.0, "die Achse beginnt am kleinsten Wert");
+
+            Assert.Equal(2, m.Reihen.Count);
+            Assert.Null(m.Reihen[0].Muster);
+            Assert.NotNull(m.Reihen[1].Muster);         // die untere Schicht ist gestrichelt
+            Assert.All(m.Reihen, r => Assert.Equal(Reihenart.Linie, r.Art));
+            Assert.All(m.Reihen, r => Assert.Equal(m.Flaeche.Daten, r.Fenster));
+
+            Assert.Equal(new[] { "titel", "yachse", "xachse", "legende:Puffer oben",
+                                 "legende:Puffer unten", "reihe:Puffer oben", "reihe:Puffer unten" }
+                             .OrderBy(s => s, StringComparer.Ordinal),
+                         Marken(m).OrderBy(s => s, StringComparer.Ordinal));
+        }
+
+        /// <summary>
+        /// <b>Speicherbetrieb:</b> dieselbe Zeichnung mit der rechten Achse — der
+        /// Ladezustand ist eine ENERGIE und bekommt sein eigenes Fenster ab null
+        /// (DG-E3-1), die Achse selbst die Marke <c>yachse2</c>.
+        /// </summary>
+        [Fact]
+        public void SpeicherbetriebModell_traegt_die_zweite_Achse()
+        {
+            var speicher = new ChartRenderer.Reihe("Ladezustand", Jahresreihe(400, 120, 180),
+                                                   SKColors.MediumVioletRed);
+            Zeichenmodell m = ChartRenderer.SpeicherbetriebModell(
+                "Lastgang", Temperaturreihen(), "Leistung [kW]", speicher, "Ladezustand [kWh]");
+
+            Assert.Equal(3, m.Reihen.Count);
+            Datenreihe rechts = m.Reihen[2];
+            Assert.Equal("Ladezustand", rechts.Name);
+            Assert.Equal(0.0, rechts.Fenster.YVon);
+            Assert.True(rechts.Fenster.YBis >= speicher.Werte.Max());
+            Assert.NotEqual(m.Flaeche.Daten.YVon, rechts.Fenster.YVon);
+
+            Assert.Contains("yachse2", Marken(m));
+            Assert.Contains("reihe:Ladezustand", Marken(m));
+        }
+
+        /// <summary>Alle Marken eines Modells — auch die in Gruppen.</summary>
+        private static HashSet<string> Marken(Zeichenmodell m)
+        {
+            var marken = new HashSet<string>(StringComparer.Ordinal);
+            Sammle(m.Befehle, marken);
+            return marken;
+        }
+
+        private static void Sammle(IReadOnlyList<Zeichenbefehl> befehle, HashSet<string> ziel)
+        {
+            foreach (Zeichenbefehl b in befehle)
+            {
+                if (b.Marke != null) ziel.Add(b.Marke);
+                if (b is Gruppe g) Sammle(g.Befehle, ziel);
+            }
+        }
     }
 }
