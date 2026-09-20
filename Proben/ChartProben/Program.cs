@@ -1472,6 +1472,9 @@ namespace ChartProben
             // Die Gegenproben der GRUPPE (d) - die vier reinen Berichtsbilder
             // (Program.GruppeD.cs). Sie schreiben mit --svg-alle ihre eigenen Dateien.
             GruppeDProben(z);
+            // Die Gruppe (b) bringt ihre Gegenproben, ihre Daten und ihre SVG-Dateien
+            // selbst mit (Program.GruppeB.cs).
+            GruppeBProben();
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

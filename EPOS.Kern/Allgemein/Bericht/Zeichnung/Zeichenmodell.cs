@@ -155,6 +155,35 @@ namespace WindowsFormsApplication1.Zeichnung
     public sealed record Datenfenster(double XVon, double XBis, double YVon, double YBis);
 
     /// <summary>
+    /// <b>Was die x-Achse ZÄHLT (Entscheid DG-E3-4).</b> Aus ihr folgt, wie
+    /// <c>ChartRenderer.Achsenteilung</c> einen Ausschnitt teilt, wenn die Oberfläche
+    /// beim Zoom die Marken der Achse neu setzt.
+    /// </summary>
+    public enum Achsenart
+    {
+        /// <summary>
+        /// Die JAHRESSTUNDE (bzw. die Stützstelle einer Zeitreihe) — die Vorgabe und
+        /// der Fall jedes Zeitreihenbildes. Geteilt wird über
+        /// <c>ChartRenderer.Jahresstundenteilung</c>.
+        /// </summary>
+        Stunden = 0,
+
+        /// <summary>
+        /// Der INDEX der Reihe, 0 … n−1 — das Kostenprofil und das Stundenprofil legen
+        /// ihre Reihe über deren EIGENE Länge auf eine feste Achse. Geteilt wird
+        /// ganzzahlig.
+        /// </summary>
+        Index = 1,
+
+        /// <summary>
+        /// Eine freie GRÖSSE mit eigener Einheit: das Projektjahr, die Außentemperatur,
+        /// die Kapazität. Geteilt wird mit denselben „schönen" Stufen
+        /// (1 / 2 / 2,5 / 5 × 10^k), mit denen das Bild seine Achse setzt.
+        /// </summary>
+        Wert = 2
+    }
+
+    /// <summary>
     /// Die Zeichenfläche eines Bildes: ihr Pixelrechteck und das Datenfenster, das
     /// darin steht.
     ///
@@ -164,7 +193,20 @@ namespace WindowsFormsApplication1.Zeichnung
     /// Datenkoordinaten, und Zoom und Verschieben sind dann eine Änderung seiner
     /// <c>viewBox</c> — ohne Neuzeichnen und ohne Rundlauf.</para>
     /// </summary>
-    public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten);
+    /// <param name="Bild">Das Pixelrechteck der Fläche im Bild.</param>
+    /// <param name="Daten">Das Datenfenster der LINKEN Achse (die Vorgabe jeder Reihe).</param>
+    /// <param name="X">
+    /// Was die x-Achse zählt (DG-E3-4); <see cref="Achsenart.Stunden"/> ist die Vorgabe
+    /// und lässt jedes Zeitreihenbild, wie es war.
+    /// </param>
+    /// <param name="XEinheit">
+    /// Die Einheit der x-Größe für die Achsenbeschriftung eines Ausschnitts — „°C",
+    /// „kWh", „a"; <c>null</c> = keine (eine Stunden- oder Indexachse braucht keine,
+    /// und ein Bild, dessen x-Größe je Aufruf wechselt, nennt sie nicht).
+    /// </param>
+    public sealed record Zeichenflaeche(Rahmen Bild, Datenfenster Daten,
+                                        Achsenart X = Achsenart.Stunden,
+                                        string XEinheit = null);
 
     /// <summary>
     /// Wie eine <see cref="Datenreihe"/> im SVG gezeichnet wird (Entscheid DG-E3-2).
@@ -179,7 +221,21 @@ namespace WindowsFormsApplication1.Zeichnung
         /// <see cref="Datenreihe.Werte"/> — eine Schicht des Stapels oder das
         /// Profilband.
         /// </summary>
-        Flaeche = 1
+        Flaeche = 1,
+
+        /// <summary>
+        /// <b>Eine PUNKTWOLKE (Entscheid DG-E3-5).</b> Jeder Wert steht an seiner
+        /// eigenen x-Stelle (<see cref="Datenreihe.XWerte"/>) und wird als PUNKT
+        /// gezeichnet, nicht verbunden — die Streuwolke „Leistung über
+        /// Außentemperatur".
+        ///
+        /// <para>Im SVG wird daraus EIN <c>&lt;path&gt;</c> aus Segmenten
+        /// <c>M x,y h 0</c> mit runder Strichkappe; die Strichbreite ist der
+        /// Punktdurchmesser des PNG. <b>Gebündelt wird nicht</b>: Eine Bündelung je
+        /// Bildpunktspalte nähme genau die Verdichtung weg, die die Aussage der Wolke
+        /// ist, und 8 760 Punkte sind EIN Knoten.</para>
+        /// </summary>
+        Punkte = 2
     }
 
     /// <summary>
@@ -223,19 +279,37 @@ namespace WindowsFormsApplication1.Zeichnung
     /// ANDEREN Farbe zieht als die Füllung — eine Fläche mit Rand wird im SVG so
     /// gezeichnet, wie das Bild sie zeichnet.
     /// </param>
+    /// <param name="XWerte">
+    /// <b>Die x-Stelle JE WERT (Entscheid DG-E3-5)</b>, in der Einheit der x-Achse;
+    /// <c>null</c> = die Stützstellen liegen gleichmäßig von <c>Fenster.XVon</c> bis
+    /// <c>Fenster.XBis</c> — der Regelfall jeder Zeitreihe.
+    ///
+    /// <para>Eine <see cref="Reihenart.Punkte"/> braucht sie zwingend (x = Temperatur,
+    /// y = Leistung). Eine LINIE braucht sie, wo die Stützstellen ungleichmäßig
+    /// liegen: Die Schnittkurve der Rastersuche mischt Grob- und Feinpunkte, und ohne
+    /// die eigene x-Stelle säße jeder Feinpunkt an der falschen Kapazität.</para>
+    /// </param>
+    /// <param name="Einheit">
+    /// Die Einheit der WERTE für die Zeigerzeile der Oberfläche — „kW", „€", „°C";
+    /// <c>null</c> = keine. Sie steht an der REIHE und nicht an der Fläche, weil eine
+    /// Reihe der zweiten Achse eine andere führt als die der linken (DG-E3-4).
+    /// </param>
     public sealed record Datenreihe(string Name, Farbton Ton, float Staerke,
                                     Strichmuster Muster, double[] Werte,
                                     Datenfenster Fenster = null,
                                     Reihenart Art = Reihenart.Linie,
                                     double[] Unten = null,
-                                    Farbton Randton = null)
+                                    Farbton Randton = null,
+                                    double[] XWerte = null,
+                                    string Einheit = null)
     {
         /// <summary>
         /// Wertgleichheit samt Werten. Ein Record vergliche <see cref="Werte"/> über
         /// die REFERENZ; zwei gleich gefüllte Reihen wären dann verschieden, und der
         /// Determinismusnachweis des Modells liefe ins Leere — derselbe Grund, aus dem
         /// die Punktfolgen in einer <see cref="Wertliste{T}"/> stehen. Dasselbe gilt
-        /// seit DG-E3-2 für <see cref="Unten"/>.
+        /// seit DG-E3-2 für <see cref="Unten"/> und seit DG-E3-5 für
+        /// <see cref="XWerte"/>.
         /// </summary>
         public bool Gleicht(Datenreihe andere)
         {
@@ -246,7 +320,9 @@ namespace WindowsFormsApplication1.Zeichnung
             if (!Equals(Fenster, andere.Fenster)) return false;
             if (Art != andere.Art) return false;
             if (!Equals(Randton, andere.Randton)) return false;
+            if (!string.Equals(Einheit, andere.Einheit, StringComparison.Ordinal)) return false;
             if (!Werteliste(Werte, andere.Werte)) return false;
+            if (!Werteliste(XWerte, andere.XWerte)) return false;
             return Werteliste(Unten, andere.Unten);
         }
 
