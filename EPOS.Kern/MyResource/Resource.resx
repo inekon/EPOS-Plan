@@ -12592,10 +12592,10 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Typ hinzufügen</value>
   </data>
   <data name="GTYP_BTN_LOESCHEN" xml:space="preserve">
-    <value>Typ Löschen</value>
+    <value>Typ löschen</value>
   </data>
   <data name="GTYP_BTN_SPEICHERN" xml:space="preserve">
-    <value>Typ Speichern</value>
+    <value>Typ speichern</value>
   </data>
   <data name="GTYP_MSG_GESPERRT" xml:space="preserve">
     <value>Die vom Softwarehersteller gelieferten Gebäudetypen können nicht geändert werden</value>
@@ -20222,5 +20222,8 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>Paket konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="GTYP_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
   </data>
 </root>

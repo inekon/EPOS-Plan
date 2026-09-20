@@ -89,7 +89,52 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.Contains("Stundenwerteeingabe [kW, kWh oder %]", cut.Markup);
 
         var knoepfe = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Typ hinzufügen", "Typ Löschen", "Typ Speichern", "OK" }, knoepfe);
+        Assert.Equal(new[] { "Typ speichern", "Typ hinzufügen", "Typ löschen", "Beenden" }, knoepfe);
+    }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (DL-2 Nr. 2, Konzept Abschnitt 2 Zeile 2)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Katalogmuster: <b>Typ speichern · Füller · Typ hinzufügen · Typ löschen ·
+    /// Beenden</b>. Speichern wirkt auf den Eingabeblock und steht links vom Füller,
+    /// die beiden Listenaktionen rechts, und „Beenden" ist der eine primäre
+    /// Schlussknopf — dieselbe Anordnung wie in <c>ModulKatalogDialog</c>.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_traegt_das_Katalogmuster()
+    {
+        var cut = Aufbauen();
+        var leiste = cut.Find(".epos-leiste");
+
+        var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Typ speichern", "Typ hinzufügen", "Typ löschen", "Beenden" }, knoepfe);
+
+        // Der Fueller steht zwischen "Typ speichern" und "Typ hinzufuegen".
+        var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(1, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Der Schlussknopf ruft denselben Weg wie Esc und das Schliesskreuz:
+    /// <c>Geschlossen(true)</c> — der Dialog kennt keinen Abbruchweg.
+    /// </summary>
+    [Fact]
+    public void Beenden_schliesst_mit_true_wie_Esc_und_Kreuz()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(geschlossen: b => ergebnis = b);
+
+        Knopf(cut, "Beenden").Click();
+
+        Assert.True(ergebnis);
     }
 
     /// <summary>Die Beschreibung ist eine ANZEIGE — der Vorläufer setzte sie nur.</summary>
@@ -173,7 +218,7 @@ public class GebaeudetypDialogTests : EposBunitContext
     {
         var cut = Aufbauen(lies: n => Typ(n, 8, aenderbar: false));
 
-        Assert.True(Knopf(cut, "Typ Speichern").HasAttribute("disabled"));
+        Assert.True(Knopf(cut, "Typ speichern").HasAttribute("disabled"));
         Assert.Contains("vom Softwarehersteller gelieferten Gebäudetypen",
                         cut.Find(".epos-herleitung").TextContent);
     }
@@ -183,7 +228,7 @@ public class GebaeudetypDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Assert.False(Knopf(cut, "Typ Speichern").HasAttribute("disabled"));
+        Assert.False(Knopf(cut, "Typ speichern").HasAttribute("disabled"));
         Assert.Empty(cut.FindAll(".epos-herleitung"));
     }
 
@@ -198,7 +243,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (_, _) => { geschrieben = true; return true; });
 
         cut.FindAll("input[inputmode=decimal]")[6].Input("");
-        Knopf(cut, "Typ Speichern").Click();
+        Knopf(cut, "Typ speichern").Click();
 
         Assert.False(geschrieben);
         Assert.Contains("Stunde 7", cut.Find(".epos-warnbanner").TextContent);
@@ -212,7 +257,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         var cut = Aufbauen(speichern: (i, v) => { id = i; verteilung = v; return true; });
 
         cut.FindAll("input[inputmode=decimal]")[3].Input("88");
-        Knopf(cut, "Typ Speichern").Click();
+        Knopf(cut, "Typ speichern").Click();
 
         Assert.Equal(7, id);
         Assert.Equal(88.0, verteilung[0, 3]);
@@ -270,12 +315,12 @@ public class GebaeudetypDialogTests : EposBunitContext
         var cut = Aufbauen(typen: () => liste,
                            loeschen: _ => { geloescht++; liste.RemoveAt(0); return true; });
 
-        Knopf(cut, "Typ Löschen").Click();
+        Knopf(cut, "Typ löschen").Click();
         Assert.True(cut.Instance.Loeschfrage);
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Nein").Click();
         Assert.Equal(0, geloescht);
 
-        Knopf(cut, "Typ Löschen").Click();
+        Knopf(cut, "Typ löschen").Click();
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Ja").Click();
         Assert.Equal(1, geloescht);
     }
@@ -287,7 +332,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         var cut = Aufbauen(lies: n => Typ(n, 8, aenderbar: false),
                            loeschen: _ => { geloescht = true; return true; });
 
-        Knopf(cut, "Typ Löschen").Click();
+        Knopf(cut, "Typ löschen").Click();
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "Ja").Click();
 
         Assert.False(geloescht);
@@ -321,7 +366,7 @@ public class GebaeudetypDialogTests : EposBunitContext
         Assert.Equal(1, gemeldet);
     }
 
-    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„OK": schließt mit <c>true</c>.</summary>
+    /// <summary>Das Kreuz im Dialogkopf wirkt wie Esc/„Beenden": schließt mit <c>true</c>.</summary>
     [Fact]
     public void Kreuz_schliesst_wie_Esc()
     {

@@ -16707,7 +16707,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Löschen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GTYP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GTYP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ löschen ähnelt.
         /// </summary>
         public static string GTYP_BTN_LOESCHEN {
             get {
@@ -16725,7 +16734,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ speichern ähnelt.
         /// </summary>
         public static string GTYP_BTN_SPEICHERN {
             get {

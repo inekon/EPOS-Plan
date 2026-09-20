@@ -17,7 +17,7 @@
    Pflicht ("Stunde n"). Beides steht hier genauso.
 
    DER AUSLIEFERUNGSBESTAND IST GESPERRT. Ist ein Typ nicht "Veraenderbar" oder
-   "ReadOnly", bleibt "Typ Speichern" gesperrt. Der Vorlaeufer sagte den Grund
+   "ReadOnly", bleibt "Typ speichern" gesperrt. Der Vorlaeufer sagte den Grund
    in einem gelben ToolTip ueber der Typliste; ein Tooltip ist auf einem
    Beruehrungsgeraet nicht erreichbar, also steht er hier als Herleitungszeile
    (A-7).
@@ -26,8 +26,8 @@
    Rueckfrage - Kopf und 192 Datenzeilen auf einen Klick, und der Katalog gilt
    fuer alle Projekte (A-8, wie W6 A-4).
 
-   TASTATUR: Esc schliesst. Enter ist nicht belegt - zwei der vier Knoepfe
-   schreiben sofort. *@
+   TASTATUR: Esc schliesst wie "Beenden". Enter ist nicht belegt - drei der vier
+   Knoepfe schreiben sofort. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -119,14 +119,19 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
+    @* KATALOGMUSTER (DL-2 Nr. 2): Speichern wirkt auf den Eingabeblock und steht
+       LINKS vom Fueller, "Typ hinzufuegen" und "Typ loeschen" wirken auf die Liste
+       und stehen rechts, "Beenden" ist der eine primaere Schlussknopf - dieselbe
+       Anordnung wie in ModulKatalogDialog. *@
     <div class="epos-leiste">
+        <button type="button" class="epos-knopf"
+                disabled="@(!TypGewaehlt || !Daten.Aenderbar)"
+                @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf" @onclick="() => _namensfrage = true">@BtnNeuText</button>
         <button type="button" class="epos-knopf" disabled="@(!TypGewaehlt)"
                 @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                disabled="@(!TypGewaehlt || !Daten.Aenderbar)"
-                @onclick="BeiSpeichern">@BtnSpeichernText</button>
-        <button type="button" class="epos-knopf"
                 @onclick="Schliessen">@BtnSchliessenText</button>
     </div>
 
@@ -170,7 +175,7 @@
     /// <summary>Zeichnet die 24 Stundenwerte einer Kurve; ohne Delegat bleibt es leer.</summary>
     [Parameter] public Func<double[], byte[]>? Bild { get; set; }
 
-    /// <summary>Der Dialog wurde geschlossen („OK"/Esc) — immer <c>true</c>.</summary>
+    /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // --- Texte -----------------------------------------------------------------
@@ -183,9 +188,9 @@
     [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
 
     [Parameter] public string BtnNeuText { get; set; } = "Typ hinzufügen";
-    [Parameter] public string BtnLoeschenText { get; set; } = "Typ Löschen";
-    [Parameter] public string BtnSpeichernText { get; set; } = "Typ Speichern";
-    [Parameter] public string BtnSchliessenText { get; set; } = "OK";
+    [Parameter] public string BtnLoeschenText { get; set; } = "Typ löschen";
+    [Parameter] public string BtnSpeichernText { get; set; } = "Typ speichern";
+    [Parameter] public string BtnSchliessenText { get; set; } = "Beenden";
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -202,7 +207,7 @@
     [Parameter] public string FrageLoeschen { get; set; } = "Soll {0} wirklich gelöscht werden ?";
 
     /// <summary>
-    /// Der Grund, aus dem „Typ Speichern" gesperrt ist. Wörtlich der Tooltip des
+    /// Der Grund, aus dem „Typ speichern" gesperrt ist. Wörtlich der Tooltip des
     /// Vorläufers (<c>listBox_Typename_SelectedIndexChanged</c>:95).
     /// </summary>
     [Parameter] public string HinweisGesperrt { get; set; }
@@ -330,7 +335,7 @@
     // =================================================================================
 
     /// <summary>
-    /// „Typ Speichern": erst die 24 Pflichtzahlen (<c>VerteilungUebernehmen</c>:158),
+    /// „Typ speichern": erst die 24 Pflichtzahlen (<c>VerteilungUebernehmen</c>:158),
     /// dann schreiben und das Bild neu zeichnen.
     /// </summary>
     private void BeiSpeichern()
@@ -390,7 +395,7 @@
     }
 
     /// <summary>
-    /// „Typ Löschen": Der Vorläufer löschte OHNE Rückfrage (A‑8). Der Auslieferungsbestand
+    /// „Typ löschen": Der Vorläufer löschte OHNE Rückfrage (A‑8). Der Auslieferungsbestand
     /// bleibt gesperrt, wie dort.
     /// </summary>
     private void BeiLoeschfrage(bool? ja)
@@ -425,7 +430,7 @@
     }
 
     /// <summary>
-    /// Schließen — von „OK", Esc und dem Schliesskreuz gleichermaßen gerufen, immer
+    /// Schließen — von „Beenden", Esc und dem Schliesskreuz gleichermaßen gerufen, immer
     /// mit <c>true</c> (das Kreuz kopiert Esc, es erfindet keine neue Semantik).
     /// </summary>
     private Task Schliessen() => Geschlossen.InvokeAsync(true);

@@ -78,9 +78,14 @@ namespace WindowsFormsApplication1
                 ["Feldnamen"] = Feldnamen(),
 
                 ["BtnNeuText"] = Text_("GTYP_BTN_NEU", "Typ hinzufügen"),
-                ["BtnLoeschenText"] = Text_("GTYP_BTN_LOESCHEN", "Typ Löschen"),
-                ["BtnSpeichernText"] = Text_("GTYP_BTN_SPEICHERN", "Typ Speichern"),
-                ["BtnSchliessenText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["BtnLoeschenText"] = Text_("GTYP_BTN_LOESCHEN", "Typ löschen"),
+                ["BtnSpeichernText"] = Text_("GTYP_BTN_SPEICHERN", "Typ speichern"),
+
+                // DL-2 Nr. 2: Der Schlussknopf heisst "Beenden" und traegt als
+                // einziger die Primaerfarbe - jede der drei uebrigen Aktionen
+                // schreibt sofort in den Katalog, "OK" hiess hier schon immer nur
+                // schliessen.
+                ["BtnSchliessenText"] = Text_("GTYP_BTN_BEENDEN", "Beenden"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,

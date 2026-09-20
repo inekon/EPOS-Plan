@@ -111,11 +111,6 @@ public sealed class KnopfleistenWacheTests
             + "SpeichernLeiste. Auftrag DL-2f legt Standardwerte in den Aktionsschlitz."),
 
         new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/GebaeudetypDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "DL-2 Nr. 2: \"Typ speichern\" ist primaer, OK steht dahinter. Auftrag DL-2b "
-            + "dreht das um (Speichern . Fueller . Hinzufuegen . Loeschen . Beenden)."),
-
-        new Ausnahme(
             "EPOS.UI/Dialoge/Photovoltaik/ModulImportDialog.razor", REGEL_PRIMAER_ZULETZT,
             "DL-2 Nr. 8: \"Auswahl uebernehmen\" ist primaer, OK steht dahinter. "
             + "Auftrag DL-2e setzt die Primaerfarbe auf Beenden (DL-Q4)."),
