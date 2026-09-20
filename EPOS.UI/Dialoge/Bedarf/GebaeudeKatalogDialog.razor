@@ -357,14 +357,20 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 3):
+       Diese Maske fuehrt KEINEN Arbeitsstand - "Ueberschreiben" und "Speichern"
+       schreiben sofort in den Katalog und lassen den Dialog stehen. Sie traegt
+       deshalb keinen Abbrechen-Knopf, sondern den primaeren Schlussknopf
+       "Beenden" ganz rechts; die beiden Speicherwege stehen links vom Fueller. *@
     <div class="epos-leiste">
         <button type="button" class="epos-knopf"
                 disabled="@(Modus == GebaeudeKatalogModus.Neu)"
                 @onclick="BeiUeberschreiben">@BtnUeberschreibenText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer"
+        <button type="button" class="epos-knopf"
                 disabled="@(Modus == GebaeudeKatalogModus.Admin)"
                 @onclick="BeiSpeichern">@SpeichernKnopftext</button>
-        <button type="button" class="epos-knopf"
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="Schliessen">@BtnBeendenText</button>
     </div>
 </div>

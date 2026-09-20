@@ -106,10 +106,17 @@
                       Vergleichsparameter="@Vergleichsparameter" />
     </div>
 
+    @* Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 1 Satz 1):
+       "Uebernehmen" SCHLIESST die Maske mit der gewaehlten Zeile - es ist der
+       OK-Weg dieses Dialogs und damit der eine primaere Knopf, und er steht
+       zuletzt. "Abbrechen" steht unmittelbar davor; es ist derselbe Weg wie Esc
+       und das Kreuz. Anders als in den Importdialogen (DL-Q4) bleibt der Dialog
+       nach der Uebernahme NICHT stehen, deshalb traegt er kein "Beenden". *@
     <div class="epos-leiste">
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 disabled="@(_gewaehlt.Length == 0)" @onclick="Uebernehmen">@BtnUebernehmenText</button>
-        <button type="button" class="epos-knopf" @onclick="Abbrechen">@AbbrechenText</button>
     </div>
 </div>
 

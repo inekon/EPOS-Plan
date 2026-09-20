@@ -218,11 +218,15 @@ public class TypProfilDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Fußleiste in der Reihenfolge des Designers — x = 9 / 144 / 271 / 373 / 511.
-    /// Die erste Razor-Fassung begann mit „Neu"; der Anwender liest sie von links.
+    /// Das Katalogmuster (Konzept Knopfleisten, Abschnitt 5): <b>Speichern in DB ·
+    /// Speichern unter · Füller · Neu · Löschen · Beenden</b>. „Speichern" schreibt
+    /// SOFORT in den Katalog und lässt die Maske stehen — es gibt keinen
+    /// Arbeitsstand und damit kein Abbrechen. Nach der Leseregel stehen die Knöpfe
+    /// des Eingabeblocks links vom Füller, die der Liste rechts, und „Beenden" ist
+    /// der eine primäre Schlussknopf.
     /// </summary>
     [Fact]
-    public void Die_Fussleiste_steht_in_der_Reihenfolge_des_Vorbilds()
+    public void Die_Fussleiste_traegt_das_Katalogmuster()
     {
         var cut = Aufbauen();
 
@@ -230,8 +234,39 @@ public class TypProfilDialogTests : EposBunitContext
         IElement fuss = leisten[leisten.Count - 1];
 
         var texte = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Speichern unter", "Speichern in DB", "Löschen", "Neu", "Schließen" },
+        Assert.Equal(new[] { "Speichern in DB", "Speichern unter", "Neu", "Löschen", "Beenden" },
                      texte);
+
+        // Der Fueller steht zwischen "Speichern unter" und "Neu".
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Die Knöpfe sind nur gewandert: „Speichern in DB" ruft weiter <c>Speichern</c>,
+    /// ohne zu schließen, und der primäre Schlussknopf meldet <c>true</c> wie Esc.
+    /// </summary>
+    [Fact]
+    public void Die_gewanderten_Knoepfe_rufen_dieselben_Wege()
+    {
+        int laeufe = 0;
+        bool? geschlossen = null;
+        var cut = Aufbauen(speichern: (_, _, _) => { laeufe++; return true; },
+                           geschlossen: b => geschlossen = b);
+
+        Typzeilen(cut)[0].Click();
+        Knopf(cut, "Speichern in DB").Click();
+        Assert.Equal(1, laeufe);
+        Assert.Null(geschlossen);
+
+        cut.Find(".epos-dialog > .epos-leiste button.epos-knopf--primaer").Click();
+        Assert.True(geschlossen);
     }
 
     /// <summary>

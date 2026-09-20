@@ -125,7 +125,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Equal("Investitionskosten", texte[5].TextContent);
         Assert.Equal("Variante:", texte[6].TextContent);
         Assert.Equal("OK", cut.Find(".epos-knopf--primaer").TextContent);
-        Assert.Equal("Abbrechen", cut.FindAll(".epos-leiste button.epos-knopf")[1].TextContent);
+        Assert.Equal("Abbrechen", cut.FindAll(".epos-leiste button.epos-knopf")[0].TextContent);
     }
 
     /// <summary>
@@ -507,7 +507,7 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         var cut = Aufbauen(beimSchliessen: e => schluss = e,
                            uebernehmen: _ => { laeufe++; return new VorlagenUebernahmeAntwort(false, "x"); });
 
-        cut.FindAll(".epos-leiste button.epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste button.epos-knopf")[0].Click();
 
         Assert.Equal(0, laeufe);
         Assert.False(schluss?.Geschrieben);
@@ -584,5 +584,36 @@ public class VorlagenUebernahmeDialogTests : BunitContext
         Assert.Single(cut.FindAll(".epos-formularraster"));
         Assert.Single(cut.FindAll(".epos-formularraster.epos-formularraster--einspaltig"));
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count >= 4);
+    }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 5)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Füller · Abbrechen · OK (primär, zuletzt)</b> — die eine
+    /// <c>SpeichernLeiste</c> des Hauses. Ohne Aktionen und ohne
+    /// <c>MitSpeichern</c> zeichnet sie genau die zwei Knöpfe dieser Maske; der
+    /// Füller ist ihre Statusspanne.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_ist_die_SpeichernLeiste_des_Hauses()
+    {
+        var cut = Aufbauen();
+        var leisten = cut.FindAll(".epos-leiste");
+        var fuss = leisten[leisten.Count - 1];
+
+        var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Abbrechen", "OK" }, knoepfe);
+
+        // Der Fueller ist die Statusspanne, und sie steht VOR den beiden Knoepfen.
+        Assert.Single(fuss.QuerySelectorAll(".epos-status"));
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Equal(0, kinder.FindIndex(k => k.Contains("epos-status")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("OK", primaer[0].TextContent.Trim());
     }
 }

@@ -65,7 +65,7 @@ namespace EPOS.UI.Tests;
 public sealed class KnopfleistenWacheTests
 {
     // =====================================================================
-    //  Die Regeln als Kennungen - sie stehen so in den Ausnahmelisten
+    //  Die Regeln als Kennungen - sie stehen so in der Ausnahmeliste
     // =====================================================================
 
     private const string REGEL_EINE_LEISTE = "genau eine Fussleiste";
@@ -85,73 +85,21 @@ public sealed class KnopfleistenWacheTests
     private readonly record struct Ausnahme(string Datei, string Regel, string Grund);
 
     /// <summary>
-    /// <b>Die zehn Komponenten des Konzepts DL-2, soweit sie heute wirklich
-    /// verletzen.</b> Sie sind erfasst, begründet und terminiert: Die
-    /// <b>Folgeaufträge DL-2b…k streichen ihren Eintrag</b>, je Auftrag einen. Ist
-    /// die Liste leer, ist der Umbau fertig und die Wache steht allein.
+    /// <b>Die Ausnahmeliste — sie ist leer.</b> Jede Fußleiste des Bestands folgt
+    /// der Hausregel; die Wache steht allein.
     ///
-    /// <para>Zwei der zehn standen NIE hier, weil sie die vier Regeln dieser Wache
-    /// schon einhalten: <c>WaermepumpeStammDialog</c> (was ihm fehlte, war der
-    /// Füller — das ist Anordnung, keine Regel dieser Wache) und
-    /// <c>GebaeudeDialog</c> (seine zweite Leiste steht im Detailblock, nicht
-    /// unmittelbar über dem Fuß). Beide werden trotzdem umgebaut; ihre Abnahme
-    /// hängt an den bunit-Tests ihres Auftrags, nicht an dieser Wache.</para>
+    /// <para>Wer eine Leiste baut, die eine der vier Regeln verletzt, trägt sie
+    /// hier mit <b>Grund und Termin</b> ein — und streicht den Eintrag, sobald die
+    /// Leiste umgebaut ist. Eine Ausnahme, die ins Leere zeigt, lässt
+    /// <see cref="Jede_Ausnahme_verletzt_heute_wirklich"/> rot werden; sie wird
+    /// GESTRICHEN, nicht umgeschrieben.</para>
     /// </summary>
     private static readonly Ausnahme[] AUSNAHMEN =
     {
     };
 
-    /// <summary>
-    /// <b>Befund des Auftrags DL-2a, AUSSERHALB der zehn.</b> Diese sechs Dialoge
-    /// gehören nicht zum Administrationsmenü und stehen deshalb nicht im Inventar des
-    /// Konzepts — sie verletzen dieselben Regeln aus demselben Grund. Sie stehen
-    /// bewusst in einer EIGENEN Liste: Sie sind kein Teil von DL-2, und kein
-    /// Folgeauftrag ist ihnen zugeordnet. <b>Wer sie umbaut, streicht ihren
-    /// Eintrag</b>; bis dahin macht die Liste den Befund sichtbar, statt ihn im
-    /// Umbauplan verschwinden zu lassen.
-    ///
-    /// <para>Die ersten drei sind Geschwister der schon umgebauten Katalogdialoge
-    /// (<c>BhkwKatalogDialog</c>, <c>HeizkesselKatalogDialog</c>,
-    /// <c>PufferSpKatalogDialog</c>, <c>SolarkollektorKatalogDialog</c> laufen
-    /// bereits „… · Abbrechen · Speichern(primär)"), die letzten drei sind Zwillinge
-    /// der DL-2-Fälle 8/9 bzw. 6/7.</para>
-    /// </summary>
-    private static readonly Ausnahme[] AUSNAHMEN_BEFUND =
-    {
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/GebaeudeKatalogDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "Befund DL-2a: Ueberschreiben . Speichern(primaer) . Beenden - dieselbe "
-            + "Stellung wie im Geschwisterdialog BhkwKatalogDialog VOR dessen Umbau."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "Befund DL-2a: Ueberschreiben . Speichern unter . Speichern(primaer) . "
-            + "Beenden - wie GebaeudeKatalogDialog."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Bedarf/TypProfilDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "Befund DL-2a: Speichern unter . Speichern(primaer) . Loeschen . Neu . "
-            + "Schliessen - die Fussleiste steht in der Reihenfolge des WinForms-Designers."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Waermepumpe/WaermepumpenKatalogDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "Befund DL-2a: Uebernehmen(primaer) . Abbrechen - derselbe Fall wie die "
-            + "Importdialoge 8 und 9 des Konzepts (DL-Q4)."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Kosten/VorlagenUebernahmeDialog.razor", REGEL_PRIMAER_ZULETZT,
-            "Befund DL-2a: OK(primaer) . Abbrechen - die beiden Schlussknoepfe stehen "
-            + "vertauscht."),
-
-        new Ausnahme(
-            "EPOS.UI/Dialoge/Strom/GanglinieImportOptionenDialog.razor", REGEL_ABBRECHEN_DAVOR,
-            "Befund DL-2a: Abbrechen . Aktualisieren . OK - derselbe Fall wie die "
-            + "Kostendialoge 6 und 7 des Konzepts.")
-    };
-
-    /// <summary>Beide Listen hintereinander — so prüft die Wache.</summary>
-    private static Ausnahme[] AlleAusnahmen()
-        => AUSNAHMEN.Concat(AUSNAHMEN_BEFUND).ToArray();
+    /// <summary>Die Ausnahmen, so wie die Wache sie prüft.</summary>
+    private static Ausnahme[] AlleAusnahmen() => AUSNAHMEN;
 
     // =====================================================================
     //  Die Wache
@@ -168,8 +116,8 @@ public sealed class KnopfleistenWacheTests
         Assert.True(funde.Count == 0,
             "Diese Fussleisten folgen nicht der Hausregel (eine Fussleiste; genau ein "
             + "epos-knopf--primaer; er steht zuletzt; ein Abbrechen-Knopf steht "
-            + "unmittelbar davor). Entweder die Leiste umbauen oder die Stelle mit Grund "
-            + "in AUSNAHMEN (die zehn aus DL-2) bzw. AUSNAHMEN_BEFUND aufnehmen:\n"
+            + "unmittelbar davor). Entweder die Leiste umbauen oder die Stelle mit "
+            + "Grund und Termin in AUSNAHMEN aufnehmen:\n"
             + Bericht(funde));
     }
 

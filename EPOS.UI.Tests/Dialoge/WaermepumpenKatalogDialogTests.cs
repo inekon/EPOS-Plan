@@ -104,6 +104,14 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
     private static int Trefferzahl(IRenderedComponent<WaermepumpenKatalogDialog> cut)
         => cut.FindAll(".epos-raster tbody tr").Count;
 
+    /// <summary>
+    /// Ein Knopf der FUSSLEISTE — sie läuft Füller · Abbrechen(0) · Übernehmen(1).
+    /// Die Schalterzeile über der Liste ist ebenfalls eine <c>epos-leiste</c>, trägt
+    /// aber keinen Knopf.
+    /// </summary>
+    private static AngleSharp.Dom.IElement Fussknopf(IRenderedComponent<WaermepumpenKatalogDialog> cut, int i)
+        => cut.FindAll(".epos-leiste button")[i];
+
     // =================================================================================
     // 1 — Die elf Bedienelemente sind weg
     // =================================================================================
@@ -361,7 +369,7 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         string? ergebnis = "nicht gerufen";
         var cut = Aufbauen(n => ergebnis = n);
 
-        var uebernehmen = cut.FindAll(".epos-leiste button")[0];
+        var uebernehmen = Fussknopf(cut, 1);
         Assert.True(uebernehmen.HasAttribute("disabled"));
 
         uebernehmen.Click();
@@ -375,7 +383,7 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         var cut = Aufbauen(n => ergebnis = n);
 
         cut.FindAll(".epos-raster tbody tr")[1].QuerySelector("button")!.Click();
-        cut.FindAll(".epos-leiste button")[0].Click();
+        Fussknopf(cut, 1).Click();
 
         Assert.Equal("CS-127", ergebnis);
     }
@@ -401,7 +409,7 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         Assert.Equal(2, Trefferzahl(cut));
         Assert.Equal("CS-127", cut.Instance.Gewaehlt);
 
-        cut.FindAll(".epos-leiste button")[0].Click();
+        Fussknopf(cut, 1).Click();
         Assert.Equal("CS-127", ergebnis);
     }
 
@@ -420,7 +428,7 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         string? ergebnis = "nicht gerufen";
         var cut = Aufbauen(n => ergebnis = n);
 
-        cut.FindAll(".epos-leiste button")[1].Click();
+        Fussknopf(cut, 0).Click();
         Assert.Null(ergebnis);
     }
 
@@ -497,5 +505,39 @@ public class WaermepumpenKatalogDialogTests : EposBunitContext
         var knoepfe = cut.FindAll(".epos-leiste button").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Apply", knoepfe);
         Assert.Contains("Cancel", knoepfe);
+    }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (Konzept Knopfleisten, Abschnitt 5)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Füller · Abbrechen · Übernehmen (primär, zuletzt).</b> „Übernehmen" SCHLIESST
+    /// die Maske mit der gewählten Zeile — es ist der OK-Weg dieses Dialogs und
+    /// damit sein einziger primärer Knopf. Anders als in den Importdialogen (DL-Q4)
+    /// bleibt der Dialog nach der Übernahme nicht stehen, deshalb trägt er kein
+    /// „Beenden", sondern „Abbrechen" unmittelbar vor dem primären Knopf.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_folgt_der_Hausregel()
+    {
+        var cut = Aufbauen();
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        var fuss = leisten[leisten.Count - 1];
+
+        var knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(2, knoepfe.Count);
+        Assert.Equal("Abbrechen", knoepfe[0]);
+        Assert.Contains("bernehmen", knoepfe[1]);
+
+        // Der Fueller steht ganz vorn - beide Knoepfe stehen rechts.
+        var kinder = fuss.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(0, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        // Genau ein primaerer Knopf, und er steht zuletzt.
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Contains("bernehmen", primaer[0].TextContent.Trim());
     }
 }
