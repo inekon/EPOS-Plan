@@ -98,3 +98,13 @@ Referenzlaeufe/Importproben/** -text
 # gepflegter Text und bleibt normalisiert.
 ###############################################################################
 VDI-3805-Daten/Stromspeicher/bslib_database.csv -text
+
+###############################################################################
+# Hash-Messlatte der ChartProben (DG-E0)
+#
+# Die Datei entsteht mit `--hashes` und wird mit einem frisch erzeugten Stand
+# TEXTGLEICH verglichen - das ist die Abnahme der Etappe E1. Der Erzeuger
+# schreibt LF; ein Auschecken mit autocrlf machte daraus CRLF, und der
+# Vergleich schluege in jeder Zeile fehl.
+###############################################################################
+Proben/ChartProben/*.sha256 text eol=lf

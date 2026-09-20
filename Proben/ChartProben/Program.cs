@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using SkiaSharp;
 using WindowsFormsApplication1;
@@ -69,6 +70,25 @@ namespace ChartProben
         private static int _verstoesse;
         private static int _bilder;
 
+        /// <summary>
+        /// Der Ordner des Schalters <c>--ablage</c>, sonst <c>null</c>: Dorthin legt jede
+        /// Probe ihr Bild als PNG ab — auch die Gegenproben, die im Bestand gar nichts
+        /// schreiben.
+        /// </summary>
+        private static string _ablage;
+
+        /// <summary>Die Datei des Schalters <c>--hashes</c>, sonst <c>null</c>.</summary>
+        private static string _hashdatei;
+
+        /// <summary>
+        /// Die Messlatte: Dateiname → SHA-256 des PNG, nach Name geordnet
+        /// (<see cref="StringComparer.Ordinal"/> — damit die Reihenfolge nicht von der
+        /// Kultur des Laufs abhaengt). Gefuellt wird nur, wenn einer der beiden Schalter
+        /// steht; ohne sie bleibt das Verhalten der Probe unveraendert.
+        /// </summary>
+        private static readonly SortedDictionary<string, string> _messlatte =
+            new SortedDictionary<string, string>(StringComparer.Ordinal);
+
         private static int Main(string[] args)
         {
             try { Console.OutputEncoding = new UTF8Encoding(false); } catch { }
@@ -76,8 +96,14 @@ namespace ChartProben
             string ziel = Argument(args, "--ziel") ?? Path.Combine(Wurzel(), "artifacts", "chartproben");
             Directory.CreateDirectory(ziel);
 
+            _ablage = Argument(args, "--ablage");
+            _hashdatei = Argument(args, "--hashes");
+            if (_ablage != null) Directory.CreateDirectory(_ablage);
+
             Console.WriteLine("ChartProben - plattformfreier Renderer-Nachweis (Paket iU7-3)");
             Console.WriteLine("Zielordner: " + ziel);
+            if (_ablage != null) Console.WriteLine("Ablage: " + _ablage);
+            if (_hashdatei != null) Console.WriteLine("Hashliste: " + _hashdatei);
             Console.WriteLine("Schriftart: " + Schriftbefund());
             Console.WriteLine();
             Console.WriteLine(string.Format(CultureInfo.InvariantCulture,
@@ -1170,9 +1196,60 @@ namespace ChartProben
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");
+            MesslatteSchreiben();
             if (_verstoesse == 0) Console.WriteLine("ERGEBNIS: alle gruen.");
             else Console.WriteLine("ERGEBNIS: FEHLGESCHLAGEN.");
             return _verstoesse == 0 ? 0 : 1;
+        }
+
+        // =================================================================================
+        // Ablage und Messlatte (Auftrag DG-E0)
+        // =================================================================================
+
+        /// <summary>
+        /// Legt EIN gezeichnetes PNG in der Ablage ab und merkt sich seinen SHA-256.
+        ///
+        /// <para>Die Probe ruft das fuer jedes Bild, das sie erzeugt — also auch fuer die
+        /// beiden Bilder einer Gegenprobe (<see cref="Unterschiedlich"/>), die im Bestand
+        /// nur miteinander verglichen und nie geschrieben werden. Die Messlatte soll den
+        /// GANZEN Zeichenweg abdecken: Was sie nicht nennt, kann sich beim Umbau auf das
+        /// Zeichenmodell unbemerkt aendern.</para>
+        ///
+        /// <para>Ohne <c>--ablage</c> und ohne <c>--hashes</c> tut die Methode nichts —
+        /// die Probe verhaelt sich dann Byte fuer Byte wie zuvor.</para>
+        /// </summary>
+        private static void Ablegen(string dateiname, byte[] daten)
+        {
+            if (daten == null) return;
+            if (_ablage == null && _hashdatei == null) return;
+
+            if (_ablage != null)
+                File.WriteAllBytes(Path.Combine(_ablage, dateiname), daten);
+
+            if (_hashdatei != null)
+                _messlatte[dateiname] =
+                    Convert.ToHexString(SHA256.HashData(daten)).ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Schreibt die Hashliste: je Bild eine Zeile <c>&lt;sha256&gt;&#160;&#160;&lt;name&gt;.png</c>,
+        /// nach Name geordnet, mit LF und OHNE BOM. Das Format ist das von
+        /// <c>sha256sum</c>, damit die Liste auch ausserhalb der Probe nachgerechnet
+        /// werden kann (<c>sha256sum -c</c> im Ablageordner).
+        /// </summary>
+        private static void MesslatteSchreiben()
+        {
+            if (_hashdatei == null) return;
+
+            string ordner = Path.GetDirectoryName(Path.GetFullPath(_hashdatei));
+            if (!string.IsNullOrEmpty(ordner)) Directory.CreateDirectory(ordner);
+
+            var text = new StringBuilder();
+            foreach (KeyValuePair<string, string> zeile in _messlatte)
+                text.Append(zeile.Value).Append("  ").Append(zeile.Key).Append('\n');
+
+            File.WriteAllText(_hashdatei, text.ToString(), new UTF8Encoding(false));
+            Console.WriteLine(_messlatte.Count + " Hashes geschrieben: " + _hashdatei);
         }
 
 
@@ -1517,6 +1594,7 @@ namespace ChartProben
 
             bytes = a.Length.ToString("N0", CultureInfo.InvariantCulture);
             File.WriteAllBytes(Path.Combine(ziel, name + ".png"), a);
+            Ablegen(name + ".png", a);
 
             // --- PNG-Signatur -----------------------------------------------------------
             byte[] sig = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
@@ -1582,6 +1660,11 @@ namespace ChartProben
             if (a == null || b == null) maengel.Add("Renderer liefert null");
             else if (a.SequenceEqual(b)) maengel.Add("Ausschnitt aendert das Bild nicht");
 
+            // Beide Seiten der Gegenprobe in die Ablage und die Messlatte: "_a" ist das
+            // erste, "_b" das zweite Bild des Vergleichs.
+            Ablegen(name + "_a.png", a);
+            Ablegen(name + "_b.png", b);
+
             Melde(name + " (wirkt)", "-", b == null ? "-" : b.Length.ToString("N0", CultureInfo.InvariantCulture),
                   "-", "-", maengel);
         }
@@ -1637,8 +1720,11 @@ namespace ChartProben
 
             try
             {
-                oben = ObersteRasterlinie(wenige());
-                unten = ObersteRasterlinie(viele());
+                byte[] a = wenige(), b = viele();
+                oben = ObersteRasterlinie(a);
+                unten = ObersteRasterlinie(b);
+                Ablegen(name + "_wenige.png", a);
+                Ablegen(name + "_viele.png", b);
             }
             catch (Exception ex)
             {
