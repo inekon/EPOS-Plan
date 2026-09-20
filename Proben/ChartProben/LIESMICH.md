@@ -73,3 +73,9 @@ gegen diese Datei.
   Plattform; auf Windows weichen deshalb **alle 91 Hashes** ab, obwohl die Probe dort dieselben
   72 Bilder mit 0 Verstößen meldet (gemessen 20.09.2026). Der Text-Diff gegen die Messlatte gilt
   auf dem Linux-Läufer; auf Windows zählt das strukturelle Ergebnis der Probe.
+- **Bildgleichheit auf Windows nachweisen.** Wer dort prüfen will, ob ein Umbau ein Bild verändert
+  hat, baut den Vergleichsstand in einem Worktree (`git worktree add --detach <ordner> <basis>`),
+  lässt die Probe dort und am HEAD mit `--ablage` und `--hashes` laufen und vergleicht die beiden
+  Windows-Hashlisten miteinander — gleicher Rechner, gleiche Schriften, die Listen müssen gleich
+  sein. So ist der Umbau auf das Zeichenmodell auch auf Windows abgenommen (Basis E0 gegen den
+  Abschluss von E1 mit DF‑1: 91 von 91 gleich).
