@@ -1659,7 +1659,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die SECHSTE Maske (Auftrag #221, Anwenderentscheid KI‑D‑E‑1): die Ansicht
-        /// „Simulation" — achtzehn Felder aus
+        /// „Simulation" — achtunddreissig Felder aus
         /// <c>EPOS.UI.Seiten.Simulation.SimulationKiSicht</c>.
         /// </summary>
         /// <remarks>
@@ -1692,6 +1692,22 @@ namespace WindowsFormsApplication1
         /// rechnende bzw. datenbankwirksame Aktionen der Stufen 2 und 3 und gehoeren in
         /// das Aktionsregister mit Bestaetigung und Sicherungspunkt — dieselbe
         /// Begruendung wie bei der Stromspeicher-Ansicht.
+        /// </para>
+        /// <para>
+        /// <b>Welle KI-F2: die BLAETTER der Ansicht kommen dazu.</b> Einundzwanzig
+        /// Einstellwerte des Reiters „Stromspeicher" von Schritt ③ und der Lesepunkt
+        /// aus der Fusszeile von Schritt ①. Sie gehen nicht auf, sie STEHEN auf der
+        /// Ansicht — eine Maske ist, was offen ist, und eine eigene Maske je Reiterblatt
+        /// waere eine Maske, die der Anwender nie oeffnet. Jedes dieser Felder schreibt
+        /// SOFORT, ueber denselben Weg wie das Feld auf dem Bildschirm
+        /// (<c>SpeicherfeldSchreiben</c> je Feldschluessel bzw.
+        /// <c>LesepunktSchreiben</c>); der Speicherknopf, den
+        /// <c>dialog_speichern</c> druecken koennte, fehlt hier weiterhin.
+        /// </para>
+        /// <para>
+        /// <b>Die PREISREIHE bleibt draussen</b> — ein Verweis in eine
+        /// kontextabhaengige Liste (rohe Id, deren Inhalt mit der Preisquelle
+        /// wechselt); dieselbe Regel wie bei der Brennstoffvariante.
         /// </para>
         /// </remarks>
         private static KiDialog Simulation()
@@ -1773,7 +1789,122 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimSpeicherSocErl, leerErlaubt: true),
                     new KiDialogFeld("laufhinweise", "SimulationKiSicht.Laufhinweise",
                                      KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
-                                     KiDialogTexte.SimHinweiseErl, leerErlaubt: true)
+                                     KiDialogTexte.SimHinweiseErl, leerErlaubt: true),
+
+                    // ---- Der Lesepunkt der Fusszeile von ① (Welle KI-F2) -----------
+                    new KiDialogFeld("lesepunkt_davor", "SimulationKiSicht.LesepunktDavor",
+                                     KiDialogTexte.SimLesepunktName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimLesepunktErl),
+
+                    // ---- Der Reiter „Stromspeicher" von ③ (Welle KI-F2) ------------
+                    //
+                    // Einundzwanzig EINSTELLWERTE der aktiven Speichervariante. Sie
+                    // stehen auf einem BLATT der Ansicht und nicht in einem Dialog -
+                    // eine Maske ist, was offen ist, und offen ist die Simulation.
+                    // Jedes Feld schreibt SOFORT, ueber denselben Weg wie das Feld auf
+                    // dem Bildschirm (SpeicherfeldSchreiben je Feldschluessel).
+                    new KiDialogFeld("speicher_soc_min", "SimulationKiSicht.SpeicherSocMin",
+                                     KiDialogTexte.SimSpSocMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpSocMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_soc_max", "SimulationKiSicht.SpeicherSocMax",
+                                     KiDialogTexte.SimSpSocMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpSocMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_ladeleistung",
+                                     "SimulationKiSicht.SpeicherLadeleistung",
+                                     KiDialogTexte.SimSpLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("speicher_kapazitaet",
+                                     "SimulationKiSicht.SpeicherKapazitaet",
+                                     KiDialogTexte.SimSpKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+                    new KiDialogFeld("speicher_ladeschwelle",
+                                     "SimulationKiSicht.SpeicherLadeschwelle",
+                                     KiDialogTexte.SimSpLadeschwelleName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLadeschwelleErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("speicher_betriebsart",
+                                     "SimulationKiSicht.SpeicherBetriebsart",
+                                     KiDialogTexte.SimSpBetriebsartName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpBetriebsartErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_berechnungsart",
+                                     "SimulationKiSicht.SpeicherBerechnungsart",
+                                     KiDialogTexte.SimSpBerechnungsartName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpBerechnungsartErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_peakziel", "SimulationKiSicht.SpeicherPeakZiel",
+                                     KiDialogTexte.SimSpPeakZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpPeakZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("speicher_peakziel_adaptiv",
+                                     "SimulationKiSicht.SpeicherPeakZielAdaptiv",
+                                     KiDialogTexte.SimSpPeakAdaptivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpPeakAdaptivErl),
+                    new KiDialogFeld("speicher_kompatibilitaet",
+                                     "SimulationKiSicht.SpeicherKompatibilitaet",
+                                     KiDialogTexte.SimSpKompatibilitaetName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpKompatibilitaetErl),
+                    new KiDialogFeld("speicher_laden_pv", "SimulationKiSicht.SpeicherLadenAusPv",
+                                     KiDialogTexte.SimSpLadenPvName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpLadenPvErl),
+                    new KiDialogFeld("speicher_laden_bhkw",
+                                     "SimulationKiSicht.SpeicherLadenAusBhkw",
+                                     KiDialogTexte.SimSpLadenBhkwName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpLadenBhkwErl),
+                    new KiDialogFeld("speicher_netzentladung",
+                                     "SimulationKiSicht.SpeicherNetzentladung",
+                                     KiDialogTexte.SimSpNetzentladungName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpNetzentladungErl),
+
+                    // Sichtbar, aber dauerhaft gesperrt (Ausbaustufe 11) - deshalb
+                    // nurLesen: Der Assistent soll nicht anbieten, einen Schalter zu
+                    // legen, den der Anwender nicht legen kann.
+                    new KiDialogFeld("speicher_bhkw_stromgefuehrt",
+                                     "SimulationKiSicht.SpeicherBhkwStromgefuehrt",
+                                     KiDialogTexte.SimSpStromgefuehrtName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpStromgefuehrtErl, nurLesen: true),
+
+                    new KiDialogFeld("speicher_kapitalzins",
+                                     "SimulationKiSicht.SpeicherKapitalzins",
+                                     KiDialogTexte.SimSpKapitalzinsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpKapitalzinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("speicher_nutzungsdauer",
+                                     "SimulationKiSicht.SpeicherNutzungsdauer",
+                                     KiDialogTexte.SimSpNutzungsdauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpNutzungsdauerErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR),
+                    new KiDialogFeld("speicher_leistungspreis",
+                                     "SimulationKiSicht.SpeicherLeistungspreis",
+                                     KiDialogTexte.SimSpLeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpLeistungspreisErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A),
+                    new KiDialogFeld("speicher_netzladeaufschlag",
+                                     "SimulationKiSicht.SpeicherNetzladeaufschlag",
+                                     KiDialogTexte.SimSpNetzaufschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimSpNetzaufschlagErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("speicher_preisquelle",
+                                     "SimulationKiSicht.SpeicherPreisquelle",
+                                     KiDialogTexte.SimSpPreisquelleName,
+                                     KiParameterTyp.Aufzaehlung,
+                                     KiDialogTexte.SimSpPreisquelleErl, leerErlaubt: true),
+                    new KiDialogFeld("speicher_aufschlag",
+                                     "SimulationKiSicht.SpeicherAufschlag",
+                                     KiDialogTexte.SimSpAufschlagName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SimSpAufschlagErl)
                 });
         }
     }

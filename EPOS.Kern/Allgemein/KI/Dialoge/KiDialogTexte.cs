@@ -68,6 +68,17 @@
         /// </summary>
         internal const string EINHEIT_H_TAG = "h/Tag";
 
+        /// <summary>
+        /// Einheit eines Arbeitspreises in Cent je Kilowattstunde (Welle KI-F2) — so
+        /// steht sie an der Ladeschwelle und am Netzladeaufschlag des Stromspeichers.
+        /// </summary>
+        internal const string EINHEIT_CT_KWH = "ct/kWh";
+
+        /// <summary>
+        /// Einheit eines Leistungspreises (Welle KI-F2) — Euro je Kilowatt und Jahr.
+        /// </summary>
+        internal const string EINHEIT_EURO_KW_A = "€/(kW·a)";
+
         /// <summary>Einheit einer Laenge in Metern (Welle KI-F2).</summary>
         internal const string EINHEIT_METER = "m";
 
@@ -524,6 +535,55 @@
         internal static string SimSpeicherSocErl => MyResource.Resource.KI_DLG_SIM_SP_SOC_ERL;
         internal static string SimHinweiseName => MyResource.Resource.KI_DLG_SIM_HINWEISE_NAME;
         internal static string SimHinweiseErl => MyResource.Resource.KI_DLG_SIM_HINWEISE_ERL;
+
+        // ---- Der Lesepunkt und der Reiter „Stromspeicher" (Welle KI-F2) ----------
+        //
+        // Die ANZEIGENAMEN sind die Beschriftungen, die auf der Ansicht stehen
+        // (SP_PARAM_*, PREIS_PARAM_*, SIM_BOOSTER_*); neu ist je Feld allein die
+        // Erlaeuterung.
+
+        internal static string SimLesepunktName => MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER;
+        internal static string SimLesepunktErl => MyResource.Resource.KI_DLG_SIM_LESEPUNKT_ERL;
+        internal static string SimSpSocMinName => MyResource.Resource.SP_PARAM_LABEL_SOC_MIN;
+        internal static string SimSpSocMinErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMIN_ERL;
+        internal static string SimSpSocMaxName => MyResource.Resource.SP_PARAM_LABEL_SOC_MAX;
+        internal static string SimSpSocMaxErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMAX_ERL;
+        internal static string SimSpLadeleistungName => MyResource.Resource.SP_PARAM_LABEL_LADELEISTUNG;
+        internal static string SimSpLadeleistungErl => MyResource.Resource.KI_DLG_SIM_SP_LADELEISTUNG_ERL;
+        internal static string SimSpKapazitaetName => MyResource.Resource.SP_PARAM_LABEL_KAPAZITAET;
+        internal static string SimSpKapazitaetErl => MyResource.Resource.KI_DLG_SIM_SP_KAPAZITAET_ERL;
+        internal static string SimSpLadeschwelleName => MyResource.Resource.SP_PARAM_LABEL_LADESCHWELLE;
+        internal static string SimSpLadeschwelleErl => MyResource.Resource.KI_DLG_SIM_SP_LADESCHWELLE_ERL;
+        internal static string SimSpBetriebsartName => MyResource.Resource.SP_PARAM_LABEL_BETRIEBSART;
+        internal static string SimSpBetriebsartErl => MyResource.Resource.KI_DLG_SIM_SP_BETRIEBSART_ERL;
+        internal static string SimSpBerechnungsartName => MyResource.Resource.SP_PARAM_LABEL_BERECHNUNGSART;
+        internal static string SimSpBerechnungsartErl => MyResource.Resource.KI_DLG_SIM_SP_BERECHNUNGSART_ERL;
+        internal static string SimSpPeakZielName => MyResource.Resource.SP_PARAM_LABEL_PEAKZIEL;
+        internal static string SimSpPeakZielErl => MyResource.Resource.KI_DLG_SIM_SP_PEAKZIEL_ERL;
+        internal static string SimSpPeakAdaptivName => MyResource.Resource.SP_PARAM_LABEL_PEAKZIEL_ADAPTIV;
+        internal static string SimSpPeakAdaptivErl => MyResource.Resource.KI_DLG_SIM_SP_PEAKADAPTIV_ERL;
+        internal static string SimSpKompatibilitaetName => MyResource.Resource.SP_PARAM_LABEL_KOMPATIBILITAET;
+        internal static string SimSpKompatibilitaetErl => MyResource.Resource.KI_DLG_SIM_SP_KOMPAT_ERL;
+        internal static string SimSpLadenPvName => MyResource.Resource.SP_PARAM_CHK_PV;
+        internal static string SimSpLadenPvErl => MyResource.Resource.KI_DLG_SIM_SP_LADEN_PV_ERL;
+        internal static string SimSpLadenBhkwName => MyResource.Resource.SP_PARAM_CHK_BHKW;
+        internal static string SimSpLadenBhkwErl => MyResource.Resource.KI_DLG_SIM_SP_LADEN_BHKW_ERL;
+        internal static string SimSpNetzentladungName => MyResource.Resource.SP_PARAM_CHK_NETZENTLADUNG;
+        internal static string SimSpNetzentladungErl => MyResource.Resource.KI_DLG_SIM_SP_NETZENTLADUNG_ERL;
+        internal static string SimSpStromgefuehrtName => MyResource.Resource.SP_PARAM_CHK_BHKW_STROMGEFUEHRT;
+        internal static string SimSpStromgefuehrtErl => MyResource.Resource.KI_DLG_SIM_SP_STROMGEFUEHRT_ERL;
+        internal static string SimSpKapitalzinsName => MyResource.Resource.SP_PARAM_LABEL_KAPITALZINS;
+        internal static string SimSpKapitalzinsErl => MyResource.Resource.KI_DLG_SIM_SP_KAPITALZINS_ERL;
+        internal static string SimSpNutzungsdauerName => MyResource.Resource.SP_PARAM_LABEL_NUTZUNGSDAUER;
+        internal static string SimSpNutzungsdauerErl => MyResource.Resource.KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL;
+        internal static string SimSpLeistungspreisName => MyResource.Resource.SP_PARAM_LABEL_LEISTUNGSPREIS;
+        internal static string SimSpLeistungspreisErl => MyResource.Resource.KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL;
+        internal static string SimSpNetzaufschlagName => MyResource.Resource.SP_PARAM_LABEL_NETZLADEAUFSCHLAG;
+        internal static string SimSpNetzaufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL;
+        internal static string SimSpPreisquelleName => MyResource.Resource.PREIS_PARAM_LABEL_PREISQUELLE;
+        internal static string SimSpPreisquelleErl => MyResource.Resource.KI_DLG_SIM_SP_PREISQUELLE_ERL;
+        internal static string SimSpAufschlagName => MyResource.Resource.PREIS_PARAM_CHK_AUFSCHLAG;
+        internal static string SimSpAufschlagErl => MyResource.Resource.KI_DLG_SIM_SP_AUFSCHLAG_ERL;
 
         // ============ Pufferspeicher-Verwaltung des Projekts (Welle KI-F2)
         //

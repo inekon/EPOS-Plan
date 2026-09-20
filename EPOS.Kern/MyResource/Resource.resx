@@ -20754,4 +20754,67 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
     <value>Untere Modulationsgrenze der BHKW-Module in Prozent der Nennleistung — ein Wert des PROJEKTS; 0 rechnet als 0.</value>
   </data>
+  <data name="KI_DLG_SIM_LESEPUNKT_ERL" xml:space="preserve">
+    <value>An = die Wärmepumpe liest den Speicherzustand vom Stundenanfang (konservativ), aus = vom Stundenende. Der Schalter gilt dem ganzen Projekt.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMIN_ERL" xml:space="preserve">
+    <value>Unterer Ladezustand des Stromspeichers in Prozent; darunter wird nicht entladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMAX_ERL" xml:space="preserve">
+    <value>Oberer Ladezustand des Stromspeichers in Prozent; darüber wird nicht geladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Lade- und Entladeleistung der Speicheranlage in kW — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Nennkapazität der Speicheranlage in kWh — ein Gerätedatum; änderbar nur bei genau einer Speicheranlage.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADESCHWELLE_ERL" xml:space="preserve">
+    <value>Preisschwelle in Cent je Kilowattstunde, unter der aus dem Netz geladen wird.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BETRIEBSART_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Betriebsart des Stromspeichers — nicht der Anzeigetext der Klappliste.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BERECHNUNGSART_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Berechnungsart. Sie entscheidet mit, ob Kompatibilitätsmodus und Peak-Ziel überhaupt wählbar sind.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKZIEL_ERL" xml:space="preserve">
+    <value>Zielschwelle der Lastspitzenkappung in kW; 0 heißt „nicht gepflegt".</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKADAPTIV_ERL" xml:space="preserve">
+    <value>An = die Zielschwelle zieht sich im Lauf selbst nach, statt gegen den eingetragenen Wert zu rechnen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KOMPAT_ERL" xml:space="preserve">
+    <value>Kompatibilitätsmodus der Dauernutzung — er rechnet wie die Excel-Vorlage; nur bei dieser Berechnungsart wählbar.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_PV_ERL" xml:space="preserve">
+    <value>An = der Speicher lädt aus dem Überschuss der Photovoltaik.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_BHKW_ERL" xml:space="preserve">
+    <value>An = der Speicher lädt aus dem Überschuss der BHKW.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZENTLADUNG_ERL" xml:space="preserve">
+    <value>An = der Speicher darf in das Netz entladen.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_STROMGEFUEHRT_ERL" xml:space="preserve">
+    <value>Stromgeführter BHKW-Betrieb für den Speicher — sichtbar, aber dauerhaft gesperrt; nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPITALZINS_ERL" xml:space="preserve">
+    <value>Kalkulationszins der Speicherwirtschaftlichkeit in Prozent.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Nutzungsdauer der Speicheranlage in Jahren.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Leistungspreis des Netzbetreibers in Euro je Kilowatt und Jahr; er bewertet die gekappte Bezugsspitze.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL" xml:space="preserve">
+    <value>Aufschlag auf netzgeladene Energie in Cent je Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISQUELLE_ERL" xml:space="preserve">
+    <value>Der Steuerwert der Preisquelle. Mit ihr wechseln Beschriftung und Inhalt der Reihenauswahl darunter.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>An = auf die gewählte Preisreihe wird der Aufschlag angewendet.</value>
+  </data>
 </root>

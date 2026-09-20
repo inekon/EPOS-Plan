@@ -20747,4 +20747,67 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KKONF_GRENZE_ERL" xml:space="preserve">
     <value>Lower modulation limit of the CHP modules in percent of rated power — a value of the PROJECT; 0 counts as 0.</value>
   </data>
+  <data name="KI_DLG_SIM_LESEPUNKT_ERL" xml:space="preserve">
+    <value>On = the heat pump reads the storage state at the start of the hour (conservative), off = at the end of the hour. The switch applies to the whole project.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMIN_ERL" xml:space="preserve">
+    <value>Lower state of charge of the battery in percent; below it nothing is discharged.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_SOCMAX_ERL" xml:space="preserve">
+    <value>Upper state of charge of the battery in percent; above it nothing is charged.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Charging and discharging power of the battery system in kW — a device value; editable only with exactly one battery system.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Rated capacity of the battery system in kWh — a device value; editable only with exactly one battery system.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADESCHWELLE_ERL" xml:space="preserve">
+    <value>Price threshold in cents per kilowatt hour below which the battery charges from the grid.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BETRIEBSART_ERL" xml:space="preserve">
+    <value>The control value of the battery operating mode — not the display text of the drop-down list.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_BERECHNUNGSART_ERL" xml:space="preserve">
+    <value>The control value of the calculation mode. It also decides whether compatibility mode and peak target are selectable at all.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKZIEL_ERL" xml:space="preserve">
+    <value>Target threshold of peak shaving in kW; 0 means “not maintained”.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PEAKADAPTIV_ERL" xml:space="preserve">
+    <value>On = the target threshold tracks itself during the run instead of using the entered value.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KOMPAT_ERL" xml:space="preserve">
+    <value>Compatibility mode of continuous use — it calculates like the Excel template; selectable only for that calculation mode.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_PV_ERL" xml:space="preserve">
+    <value>On = the battery charges from the photovoltaic surplus.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LADEN_BHKW_ERL" xml:space="preserve">
+    <value>On = the battery charges from the CHP surplus.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZENTLADUNG_ERL" xml:space="preserve">
+    <value>On = the battery may discharge into the grid.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_STROMGEFUEHRT_ERL" xml:space="preserve">
+    <value>Power-led CHP operation for the battery — visible but permanently locked; read only.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_KAPITALZINS_ERL" xml:space="preserve">
+    <value>Discount rate of the battery economics in percent.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Service life of the battery system in years.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Demand charge of the grid operator in euro per kilowatt and year; it values the peak that was shaved.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_NETZAUFSCHLAG_ERL" xml:space="preserve">
+    <value>Surcharge on grid-charged energy in cents per kilowatt hour.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_PREISQUELLE_ERL" xml:space="preserve">
+    <value>The control value of the price source. It changes both the label and the content of the series selection below.</value>
+  </data>
+  <data name="KI_DLG_SIM_SP_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>On = the surcharge is applied to the selected price series.</value>
+  </data>
 </root>
