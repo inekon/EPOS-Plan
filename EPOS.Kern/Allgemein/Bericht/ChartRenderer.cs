@@ -129,38 +129,35 @@ namespace WindowsFormsApplication1
         public static byte[] Kuchen(string titel, List<Segment> segmente)
         {
             int W = 960, H = 600;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel, W);
+
+            double total = segmente.Sum(s => Math.Max(s.Wert, 0));
+            if (total <= 0) total = 1;
+
+            var rect = SKRect.Create(40f, 90f, 440f, 440f);
+            float start = -90f;
+            foreach (Segment s in segmente)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel, W);
+                float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
+                Kreissegment(z, rect, start, sweep, Flaeche(s.Farbe));
+                start += sweep;
+            }
+            z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
+                      Stift(Farbrolle.HINTERGRUND, 3f));
 
-                double total = segmente.Sum(s => Math.Max(s.Wert, 0));
-                if (total <= 0) total = 1;
-
-                var rect = SKRect.Create(40f, 90f, 440f, 440f);
-                float start = -90f;
+            float lx = 540f, ly = 110f;
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
+            using (var lf = Schrift(19f))
                 foreach (Segment s in segmente)
                 {
-                    float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
-                    using (var b = Fuellung(s.Farbe))
-                        Kreissegment(g, rect, start, sweep, b);
-                    start += sweep;
+                    z.Rechteck(lx, ly, 28f, 28f, null, Flaeche(s.Farbe));
+                    z.Rechteck(lx, ly, 28f, 28f, rahmen);
+                    Text(z, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                         lf, Farbrolle.TEXT, lx + 40f, ly + 1f);
+                    ly += 48f;
                 }
-                using (var stift = Strich(SKColors.White, 3f)) g.DrawOval(rect, stift);
-
-                float lx = 540f, ly = 110f;
-                using (var lf = Schrift(19f))
-                using (var rahmen = Strich(SKColors.Gray, 1f))
-                    foreach (Segment s in segmente)
-                    {
-                        using (var b = Fuellung(s.Farbe)) g.DrawRect(lx, ly, 28f, 28f, b);
-                        g.DrawRect(lx, ly, 28f, 28f, rahmen);
-                        Text(g, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
-                             lf, SKColors.Black, lx + 40f, ly + 1f);
-                        ly += 48f;
-                    }
-                return Png(flaeche);
-            }
+            return SkiaMaler.Png(z);
         }
 
         // =================================================================== Balken
@@ -173,38 +170,35 @@ namespace WindowsFormsApplication1
         {
             int W = 1240;
             int H = 150 + balken.Count * 64;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+
+            float links = 300f, rechts = W - 150f, oben = 80f;
+            double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
+
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
+            using (var lf = Schrift(18f))
+            using (var wf = Schrift(17f))
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
-
-                float links = 300f, rechts = W - 150f, oben = 80f;
-                double max = Math.Max(balken.Max(b => Math.Abs(b.Wert)), 1e-9);
-
-                using (var lf = Schrift(18f))
-                using (var wf = Schrift(17f))
-                using (var rahmen = Strich(SKColors.Gray, 1f))
+                for (int i = 0; i < balken.Count; i++)
                 {
-                    for (int i = 0; i < balken.Count; i++)
-                    {
-                        float y = oben + i * 64f;
-                        Balken b = balken[i];
-                        float laenge = (float)(Math.Abs(b.Wert) / max * (rechts - links));
-                        SKColor farbe = b.Hervorheben ? C_STAMM : C_WP;
+                    float y = oben + i * 64f;
+                    Balken b = balken[i];
+                    float laenge = (float)(Math.Abs(b.Wert) / max * (rechts - links));
+                    Farbrolle farbe = b.Hervorheben ? Farbrolle.STAMM : Farbrolle.WAERME_WP;
 
-                        // Label links (rechtsbündig).
-                        float lbreite = lf.MeasureText(b.Label ?? "");
-                        Text(g, b.Label, lf, SKColors.Black, links - 12f - lbreite, y + 8f);
+                    // Label links (rechtsbündig).
+                    float lbreite = lf.MeasureText(b.Label ?? "");
+                    Text(z, b.Label, lf, Farbrolle.TEXT, links - 12f - lbreite, y + 8f);
 
-                        using (var br = Fuellung(farbe)) g.DrawRect(links, y, laenge, 40f, br);
-                        g.DrawRect(links, y, laenge, 40f, rahmen);
-                        Text(g, b.Wert.ToString("N0", DE), wf, SKColors.Black, links + laenge + 10f, y + 9f);
-                    }
+                    z.Rechteck(links, y, laenge, 40f, null, Flaeche(farbe));
+                    z.Rechteck(links, y, laenge, 40f, rahmen);
+                    Text(z, b.Wert.ToString("N0", DE), wf, Farbrolle.TEXT, links + laenge + 10f, y + 9f);
                 }
-                using (var achse = Strich(SKColors.DimGray, 2f))
-                    g.DrawLine(links, oben - 8f, links, oben + balken.Count * 64f - 16f, achse);
-                return Png(flaeche);
             }
+            z.Linie(links, oben - 8f, links, oben + balken.Count * 64f - 16f,
+                    Stift(Farbrolle.ACHSE, 2f));
+            return SkiaMaler.Png(z);
         }
 
         // =================================================================== Ganglinien
@@ -1287,45 +1281,45 @@ namespace WindowsFormsApplication1
                                            string einheit, IReadOnlyList<string> monatsnamen = null)
         {
             int W = 978, H = 542;
-            using (var flaeche = Start(W, H))
-            {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
-                var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
+            var z = Modell(W, H);
+            Titel(z, titel + (string.IsNullOrEmpty(einheit) ? "" : "  [" + einheit + "]"), W);
+            var rc = SKRect.Create(100f, 80f, W - 140f, 380f);
 
-                if (werte == null || werte.Length < 12)
+            if (werte == null || werte.Length < 12)
+            {
+                using (var f = Schrift(18f))
+                    Text(z, BerichtTexte.T("Keine Monatswerte vorhanden."), f, Farbrolle.ACHSE,
+                         rc.Left, rc.Top + 20f);
+                return SkiaMaler.Png(z);
+            }
+
+            double maxWert = 0;
+            for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
+            (double schritt, double max, string format) = BedarfsSkala(maxWert);
+
+            BedarfsRaster(z, rc, schritt, max, format);
+
+            float fach = rc.Width / 12f;
+            float breite = fach * 0.6f;
+            // Die Saeulenfarbe kommt von AUSSEN (sie benennt die Sicht) und behaelt
+            // deshalb die Rueckwaertssuche; alle uebrigen Farben nennen ihre Rolle.
+            Zeichnung.Fuellung pinsel = Flaeche(farbe);
+            using (var f = Schrift(15f))
+                for (int m = 0; m < 12; m++)
                 {
-                    using (var f = Schrift(18f))
-                        Text(g, BerichtTexte.T("Keine Monatswerte vorhanden."), f, SKColors.DimGray,
-                             rc.Left, rc.Top + 20f);
-                    return Png(flaeche);
+                    float mitte = rc.Left + (m + 0.5f) * fach;
+
+                    double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
+                    float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
+                    if (hoehe > 0)
+                        z.Rechteck(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, null, pinsel);
+
+                    string lab = (monatsnamen != null && monatsnamen.Count > m)
+                        ? monatsnamen[m] : MONATE_KURZ[m];
+                    Text(z, lab, f, Farbrolle.ACHSE, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
                 }
 
-                double maxWert = 0;
-                for (int m = 0; m < 12; m++) if (werte[m] > maxWert) maxWert = werte[m];
-                (double schritt, double max, string format) = BedarfsSkala(maxWert);
-
-                BedarfsRaster(g, rc, schritt, max, format);
-
-                float fach = rc.Width / 12f;
-                float breite = fach * 0.6f;
-                using (var f = Schrift(15f))
-                using (var pinsel = Fuellung(farbe))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float mitte = rc.Left + (m + 0.5f) * fach;
-
-                        double wert = werte[m] > 0 ? werte[m] : 0;   // y beginnt starr bei 0
-                        float hoehe = (float)(Math.Min(wert, max) / max * rc.Height);
-                        if (hoehe > 0) g.DrawRect(mitte - breite / 2f, rc.Bottom - hoehe, breite, hoehe, pinsel);
-
-                        string lab = (monatsnamen != null && monatsnamen.Count > m)
-                            ? monatsnamen[m] : MONATE_KURZ[m];
-                        Text(g, lab, f, SKColors.DimGray, mitte - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
-                    }
-
-                return Png(flaeche);
-            }
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>
@@ -2132,60 +2126,56 @@ namespace WindowsFormsApplication1
         {
             int W = mitLegende ? 720 : 420;
             int H = mitLegende ? 560 : 420;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+
+            var gueltig = (segmente ?? new List<Ringsegment>())
+                .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
+                .ToList();
+
+            var rc = mitLegende ? SKRect.Create(210f, 90f, 300f, 300f)
+                                : SKRect.Create(60f, 70f, 300f, 300f);
+
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-
-                var gueltig = (segmente ?? new List<Ringsegment>())
-                    .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
-                    .ToList();
-
-                var rc = mitLegende ? SKRect.Create(210f, 90f, 300f, 300f)
-                                    : SKRect.Create(60f, 70f, 300f, 300f);
-
-                if (gueltig.Count == 0)
-                {
-                    Leerhinweis(g, SKRect.Create(60f, 100f, W - 120f, 100f));
-                    return Png(flaeche);
-                }
-
-                double summe = gueltig.Sum(s => s.Wert);
-                float start = -90f;   // 12 Uhr, wie im Vorlaeufer
-                foreach (Ringsegment s in gueltig)
-                {
-                    float winkel = (float)(s.Wert / summe * 360.0);
-                    using (var b = Fuellung(s.Farbe)) Kreissegment(g, rc, start, winkel, b);
-                    start += winkel;
-                }
-
-                // Das Innenloch: ein weisser Kreis auf demselben Mittelpunkt. Genau so
-                // machte es DonutChartDrawer.
-                using (var loch = Fuellung(SKColors.White))
-                    g.DrawCircle(rc.MidX, rc.MidY, rc.Width * 0.30f, loch);
-
-                string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
-                                                                   ? "" : " " + mitteEinheit);
-                bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
-                using (var f = Schrift(26f, fett: true))
-                {
-                    float y = rc.MidY - TextHoehe(f) / 2f;
-                    if (unterzeile) y -= 9f;      // Platz fuer die kleine Zeile darunter
-                    Text(g, mitte, f, C_STAMM, rc.MidX - f.MeasureText(mitte) / 2f, y);
-                }
-
-                if (unterzeile)
-                    using (var f = Schrift(12f))
-                        Text(g, mitteUnterzeile, f, SKColors.DimGray,
-                             rc.MidX - f.MeasureText(mitteUnterzeile) / 2f,
-                             rc.MidY + TextHoehe(f) / 2f + 2f);
-
-                if (mitLegende)
-                    Legende(g, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
-                            60f, 430f, W - 30f);
-
-                return Png(flaeche);
+                Leerhinweis(z, SKRect.Create(60f, 100f, W - 120f, 100f));
+                return SkiaMaler.Png(z);
             }
+
+            double summe = gueltig.Sum(s => s.Wert);
+            float start = -90f;   // 12 Uhr, wie im Vorlaeufer
+            foreach (Ringsegment s in gueltig)
+            {
+                float winkel = (float)(s.Wert / summe * 360.0);
+                Kreissegment(z, rc, start, winkel, Flaeche(s.Farbe));
+                start += winkel;
+            }
+
+            // Das Innenloch: ein weisser Kreis auf demselben Mittelpunkt. Genau so
+            // machte es DonutChartDrawer.
+            z.Kreis(rc.MidX, rc.MidY, rc.Width * 0.30f, null, Flaeche(Farbrolle.HINTERGRUND));
+
+            string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
+                                                               ? "" : " " + mitteEinheit);
+            bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
+            using (var f = Schrift(26f, fett: true))
+            {
+                float y = rc.MidY - TextHoehe(f) / 2f;
+                if (unterzeile) y -= 9f;      // Platz fuer die kleine Zeile darunter
+                Text(z, mitte, f, Farbrolle.STAMM, rc.MidX - f.MeasureText(mitte) / 2f, y);
+            }
+
+            if (unterzeile)
+                using (var f = Schrift(12f))
+                    Text(z, mitteUnterzeile, f, Farbrolle.ACHSE,
+                         rc.MidX - f.MeasureText(mitteUnterzeile) / 2f,
+                         rc.MidY + TextHoehe(f) / 2f + 2f);
+
+            if (mitLegende)
+                Legende(z, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
+                        60f, 430f, W - 30f);
+
+            return SkiaMaler.Png(z);
         }
 
         // ------------------------------------------------------------------ B6
@@ -2212,61 +2202,58 @@ namespace WindowsFormsApplication1
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun",
                                 "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
 
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, string.IsNullOrEmpty(einheit) ? (titel ?? "")
+                                                   : (titel ?? "") + "  [" + einheit + "]", W);
+
+            var gueltig = (reihen ?? new List<Reihe>())
+                .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
+                .ToList();
+
+            var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, string.IsNullOrEmpty(einheit) ? (titel ?? "")
-                                                       : (titel ?? "") + "  [" + einheit + "]", W);
-
-                var gueltig = (reihen ?? new List<Reihe>())
-                    .Where(r => r != null && r.Werte != null && r.Werte.Length >= 12)
-                    .ToList();
-
-                var rc = SKRect.Create(100f, 120f, W - 140f, 320f);
-                if (gueltig.Count == 0)
-                {
-                    Leerhinweis(g, rc);
-                    return Png(flaeche);
-                }
-
-                // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
-                float legendenbreite = Legendenbreite(gueltig);
-                Legende(g, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                        Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
-
-                var summe = new double[12];
-                for (int m = 0; m < 12; m++)
-                    foreach (Reihe r in gueltig) summe[m] += Math.Max(r.Werte[m], 0);
-                double max = Nice(summe.Max());
-                if (max <= 0) max = 1;
-
-                YRaster(g, rc, max);
-                using (var f = Schrift(15f))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
-                        Text(g, monate[m], f, SKColors.DimGray,
-                             x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
-                    }
-
-                float slot = rc.Width / 12f;
-                float balken = slot * 0.6f;
-                for (int m = 0; m < 12; m++)
-                {
-                    float x0 = rc.Left + m * slot + (slot - balken) / 2f;
-                    float unten = rc.Bottom;
-                    foreach (Reihe r in gueltig)
-                    {
-                        float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
-                        if (hoehe <= 0) continue;
-                        using (var br = Fuellung(r.Farbe))
-                            g.DrawRect(x0, unten - hoehe, balken, hoehe, br);
-                        unten -= hoehe;
-                    }
-                }
-
-                return Png(flaeche);
+                Leerhinweis(z, rc);
+                return SkiaMaler.Png(z);
             }
+
+            // Legende OBEN und ZENTRIERT (Docking.Top, StringAlignment.Center).
+            float legendenbreite = Legendenbreite(gueltig);
+            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                    Math.Max(20f, (W - legendenbreite) / 2f), 68f, W - 20f);
+
+            var summe = new double[12];
+            for (int m = 0; m < 12; m++)
+                foreach (Reihe r in gueltig) summe[m] += Math.Max(r.Werte[m], 0);
+            double max = Nice(summe.Max());
+            if (max <= 0) max = 1;
+
+            YRaster(z, rc, max);
+            using (var f = Schrift(15f))
+                for (int m = 0; m < 12; m++)
+                {
+                    float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
+                    Text(z, monate[m], f, Farbrolle.ACHSE,
+                         x - f.MeasureText(monate[m]) / 2f, rc.Bottom + 8f);
+                }
+
+            float slot = rc.Width / 12f;
+            float balken = slot * 0.6f;
+            for (int m = 0; m < 12; m++)
+            {
+                float x0 = rc.Left + m * slot + (slot - balken) / 2f;
+                float unten = rc.Bottom;
+                foreach (Reihe r in gueltig)
+                {
+                    float hoehe = (float)(Math.Max(r.Werte[m], 0) / max * rc.Height);
+                    if (hoehe <= 0) continue;
+                    // Die Reihenfarbe kommt von AUSSEN und behaelt die Rueckwaertssuche.
+                    z.Rechteck(x0, unten - hoehe, balken, hoehe, null, Flaeche(r.Farbe));
+                    unten -= hoehe;
+                }
+            }
+
+            return SkiaMaler.Png(z);
         }
 
         /// <summary>Breite, die die Legende dieser Reihen braucht — fuer die Zentrierung.</summary>
@@ -3708,6 +3695,17 @@ namespace WindowsFormsApplication1
             z.Text(text, x, y, f.Satz, farbe.Ton());
         }
 
+        /// <summary>
+        /// Derselbe Text mit AUSDRÜCKLICH genannter Farbrolle (DG-Q7) — für jede
+        /// Beschriftung, deren Farbe die Zeichenmethode selbst wählt.
+        /// </summary>
+        private static void Text(IZeichenziel z, string text, Schriftmass f, Farbrolle rolle,
+                                 float x, float y)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            z.Text(text, x, y, f.Satz, Farbton.Aus(rolle));
+        }
+
         // =================================================================== Helfer
 
         /// <summary>Zeichenfläche mit weißem Grund (ersetzt Bitmap + Graphics.Clear).</summary>
@@ -3748,11 +3746,25 @@ namespace WindowsFormsApplication1
         private static Zeichnung.Fuellung Flaeche(SKColor farbe)
             => new Zeichnung.Fuellung(farbe.Ton());
 
+        /// <summary>
+        /// Die Fläche einer AUSDRÜCKLICH genannten Rolle (DG-Q7) — die Schreibweise
+        /// für jede Farbe, die die Zeichenmethode selbst wählt. Die Rückwärtssuche
+        /// <see cref="Flaeche(SKColor)"/> bleibt den Farben, die von außen kommen.
+        /// </summary>
+        private static Zeichnung.Fuellung Flaeche(Farbrolle rolle)
+            => new Zeichnung.Fuellung(Farbton.Aus(rolle));
+
         /// <summary>Derselbe Strich als MODELLWERT (Rolle statt Zahl).</summary>
         private static Zeichnung.Stift Stift(SKColor farbe, float staerke,
                                              Strichmuster muster = null,
                                              Strichverbindung verbindung = Strichverbindung.Gehrung)
             => new Zeichnung.Stift(farbe.Ton(), staerke, muster, Strichkappe.Stumpf, verbindung);
+
+        /// <summary>Derselbe Strich mit AUSDRÜCKLICH genannter Rolle (DG-Q7).</summary>
+        private static Zeichnung.Stift Stift(Farbrolle rolle, float staerke,
+                                             Strichmuster muster = null,
+                                             Strichverbindung verbindung = Strichverbindung.Gehrung)
+            => new Zeichnung.Stift(Farbton.Aus(rolle), staerke, muster, Strichkappe.Stumpf, verbindung);
 
         /// <summary>Kreissegment vom Mittelpunkt aus (ersetzt Graphics.FillPie).</summary>
         /// <summary>

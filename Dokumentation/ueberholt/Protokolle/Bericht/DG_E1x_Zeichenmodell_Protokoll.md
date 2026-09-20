@@ -162,3 +162,91 @@ gab keinen Fall, in dem ein Bild zu untersuchen gewesen wäre.
   ihren Rollenbezug erst mit E1c; bis dahin kommen sie als Wert ohne Rolle ins Modell.
 * `Punktmarken`, `Schraffur`, `Farbskala` und `Umbruchtext` sind Helfer der Bilder von E1c und
   stehen noch auf `SKCanvas`.
+
+---
+
+## E1b — Säulen, Stapel, Kuchen, Ring, Balken (Statusnummer #401)
+
+### Die Aufgabe
+
+Die fünf Zeichenmethoden, die noch auf einer Leinwand malten und nicht zu den Kurvenbildern
+von E1c gehören, auf das Modell heben — byte-gleich gegen dieselbe unverrückbare Messlatte.
+Dazu der Nachtrag aus dem Farbentscheid: **Wo eine Methode ihre Farbe SELBST wählt, nennt sie
+die Rolle ausdrücklich**, statt einen Hausfarbenwert durch die Rückwärtssuche zu schicken.
+
+### Die fünf Zeichenmethoden
+
+`Kuchen`, `BalkenHorizontal`, `MonatsSaeulen`, `Ring` (beide Überladungen über den einen
+langen Rumpf) und `MonatsStapel`. Die drei Kernzeichner der Gruppe — `StapelDiagramm`,
+`LinienDiagramm`, `MonatsBalken` — standen schon auf dem Modell, weil die Zeitreihenbilder von
+E1a durch sie hindurchgehen; hier kam nichts an ihnen dazu.
+
+Damit stehen **23 von 26 Methoden** auf dem Modell. Unmittelbar auf eine Leinwand malen nur
+noch `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve` und `Optimierungsraster` —
+die fünf Bilder von E1c. Die Zahl der unmittelbaren Skia-Zeichenaufrufe fiel von 47 auf 38
+(`DrawOval` 2 → 1, `DrawRect` 13 → 7, `DrawCircle` 6 → 5, `DrawLine` 23 → 22, `DrawPath`
+unverändert 3; der Rest liegt in den `SKCanvas`-Fassungen von `Kreissegment`, `Linienzug` und
+`Vieleck`, die E1c mit sich nimmt).
+
+### Die Rolle im Befehl statt des Werts
+
+Drei Schreibweisen kamen dafür hinzu — `Farbton.Aus(rolle)` im Modell, dazu die Überladungen
+`Flaeche(Farbrolle)`, `Stift(Farbrolle, …)` und `Text(…, Farbrolle, …)` im Renderer, neben den
+bestehenden Fassungen für Farben von außen.
+
+**Die Trennlinie ist die Herkunft der Farbe, nicht ihr Wert.** Ausdrücklich genannt werden
+HINTERGRUND (der weiße Trennring des Kuchens, das Innenloch des Rings), LEGENDENRAHMEN, TEXT,
+ACHSE, STAMM und WAERME\_WP (die beiden Balkenfarben). Die Rückwärtssuche behalten
+`Segment.Farbe`, `Ringsegment.Farbe`, `Reihe.Farbe` und die Sichtfarbe der Monatssäulen — sie
+kommen aus den Hüllen herein, und ihre Rolle steht dort nicht.
+
+Das verschiebt kein Bild, weil die Vorgabepalette dieselben Werte trägt; der neue Testfall
+`AusdrueckenDerRolleIstWertgleichZurRueckwaertssuche` hält beides fest — den gleichen Farbwert
+für JEDE Rolle und den gleichen Ton überall dort, wo die Rückwärtssuche eindeutig ist.
+
+### Was an der Byte-Gleichheit schwierig war
+
+**Nichts, was ein Bild gekostet hätte** — der Messlatte-Diff war nach jedem der vier
+Umbau-Commits leer, kein Bild war zu untersuchen. Vier Stellen verdienten trotzdem Sorgfalt:
+
+1. **Füllung vor Rand, zwei Aufrufe im Bestand.** Kuchenlegende, Balken und die Legendenfelder
+   setzten `DrawRect` zweimal ab — erst mit dem Füll-, dann mit dem Strich-Paint. Im Modell
+   stehen dafür zwei `Rechteck`-Befehle mit je einer Seite und nicht ein Befehl mit beidem:
+   Ein Befehl malte dasselbe, aber der Bestand hält die Reihenfolge über zwei Befehle, und die
+   Gleichheit soll am Aufrufbild ablesbar bleiben.
+2. **`DrawOval` als Rand ohne Füllung.** Der weiße Trennring des Kuchens ist eine `Ellipse`
+   mit Stift und ohne Füllung; der Maler zeichnet dann nur den Rand, wie `DrawOval` mit einem
+   Stroke-Paint.
+3. **Der Vollkreis des Rings.** `Kreissegment` trägt den Sonderfall ab 360° (Skia zieht sonst
+   nichts) im Modell und im Maler — beide Seiten hatten ihn schon aus E1a, der Ring hängt sich
+   nur daran.
+4. **Die wertgleichen Rollen.** `ACHSE` und `WAERME_WP` teilen ihren Wert mit keiner anderen
+   Rolle, `SERIE_1`/`SERIE_3` sehr wohl. Deshalb prüft der neue Testfall die Gleichheit des
+   TONS nur dort, wo die Rückwärtssuche eindeutig ist, und die des WERTS überall — sonst wäre
+   er eine Behauptung über die Eintragsreihenfolge der Palette.
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| Messlatte `Messlatte_2026-09-20.sha256` | 91 von 91 Hashes gleich, Text-Diff leer — nach jedem Umbau-Commit |
+| `Proben/ChartProben` | 71 Bilder, 0 Verstöße |
+| `WP-Plan.Kern.slnf` Bau und volle Suite mit den CI-Schaltern | grün |
+| `ChartRendererTests` | 15 grün, beide Kulturen |
+| `ZeichenmodellTests` | 15 (14 + 1 neu: ausdrückliche Rolle gegen Rückwärtssuche) |
+| `SkiaMalerTests` | 17 grün |
+| Windows-Schale (`-p:EnableWindowsTargeting=true`) | 0 Fehler |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Offen nach E1b
+
+* **E1c** — `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`,
+  `Optimierungsraster`; danach entfallen `SkiaZiel`, die sechzehn `SKCanvas`-Überladungen,
+  `Start`, `Png(SKSurface)`, die `SKCanvas`-Fassungen von `Kreissegment`, `Linienzug` und
+  `Vieleck` sowie die beiden Paint-Fabriken `Strich` und `Fuellung`.
+* Die gerechneten Farben der Rasterkarte (`Farbstufe`, `Mischung`, `Rasterfarbe`) und die
+  Helfer `Punktmarken`, `Schraffur`, `Farbskala`, `Umbruchtext` bleiben E1c.
+* Die Helfer der schon umgestellten Bilder nennen ihre Farben weiter als Wert
+  (`Titel` STAMM, `YRaster`/`XAchse` RASTER und ACHSE, `Legende` LEGENDENRAHMEN). Das ist
+  wertgleich und kostet kein Bild; ausdrücklich genannt werden sie, wenn E1c die letzten
+  `SKCanvas`-Überladungen entfernt und jeder Helfer ohnehin angefasst wird.
