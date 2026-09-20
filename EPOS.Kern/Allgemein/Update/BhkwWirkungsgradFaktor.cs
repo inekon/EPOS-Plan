@@ -53,9 +53,9 @@ namespace WindowsFormsApplication1
     // nicht im Kern), das Werkzeug Werkzeuge/Testdatenbankschema und den Nachweis in
     // EPOS.Kern.Tests. Stuenden sie dort, muessten die anderen beiden sie abschreiben.
     //
-    // DER SCHUTZ VOR WIEDERHOLUNG steht daneben, nicht hier: KatalogFeldPruefung.
-    // WirkungsgradFaktor haelt jede Pflege gegen dieselbe OBERGRENZE, und der
-    // BHKW-Katalogdialog weist einen Prozentwert benannt ab.
+    // DER SCHUTZ VOR WIEDERHOLUNG steht daneben, nicht hier: BhkwWirkungsgrad.Pruefen
+    // (Schemaschritt 99) haelt jede Pflege gegen dieselbe OBERGRENZE (BAND_BIS) - im
+    // Aufklapper wie im BHKW-Katalogdialog wird ein Prozentwert benannt abgewiesen.
     // ====================================================================================
 
     /// <summary>
