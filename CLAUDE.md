@@ -118,6 +118,10 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
   zuschreibt. Quelltexte: `.cs`, `.csproj`, `.resx` UTF-8 **mit** BOM und CRLF; Markdown
   UTF-8 **ohne** BOM (`.editorconfig`). Ältere Dateien können noch Windows-1252 ohne BOM
   sein — vor dem Bearbeiten die Bytes messen und byte-erhaltend schreiben.
+- Die Python-Werkzeuge der Tabelle unten laufen auf Windows über den Starter `py` (`python3`
+  gibt es dort nicht), mit `PYTHONIOENCODING=utf-8` davor, weil sie Unicode ausgeben.
+  `Proben/ChartProben` und `EPOS.Referenzlauf` stehen **nicht** im Kern-Filter — wer sie mit
+  `--no-build` laufen lässt, baut sie vorher ausdrücklich, sonst laufen alte Binaries.
 
 **Werkzeuge, die vor der Arbeit an Maske, Rechenweg oder Auslieferung zu kennen sind:**
 
