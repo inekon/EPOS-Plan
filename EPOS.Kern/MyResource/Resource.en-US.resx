@@ -6752,6 +6752,9 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_REIHE_STROMSTEUER_ENTLASTUNG" xml:space="preserve">
     <value>Electricity tax relief</value>
   </data>
+  <data name="WIRT_REIHE_PV" xml:space="preserve">
+    <value>PV remuneration (EEG)</value>
+  </data>
   <data name="KI_REG_PROJEKT_ID_NAME" xml:space="preserve">
     <value>Project</value>
   </data>
@@ -9801,11 +9804,17 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="KOH_HILFSENERGIE_DOPPELT" xml:space="preserve">
     <value>Auxiliary energy maintained twice (quantity at the unit and cost item {0}): {1} carries an auxiliary energy share of {2} % and at the same time an active auxiliary energy cost item. The quantity reduces the CHP bonus, the cost item burdens the operating costs — nothing is offset.</value>
   </data>
+  <data name="KOH_CO2_DOPPELT" xml:space="preserve">
+    <value>CO₂ counted twice: the recorded energy price carries an active CO₂ component under the German Fuel Emissions Trading Act ({0}), and the run additionally books a CO₂ levy of {1} €/a. The same amount therefore appears twice in the energy costs — nothing is offset.</value>
+  </data>
+  <data name="KOH_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
+    <value>CO₂ balance: no electricity energy carrier is assigned to the project — grid supply is calculated with the default grid-mix value of {0} g CO₂/kWh.</value>
+  </data>
+  <data name="KOH_STROMST_ERLAUBNIS" xml:space="preserve">
+    <value>Permit required under the Electricity Duty Act: from {0} kW electrical rated output the operator needs a permit from the main customs office. Affected: {1}. This does not affect the calculation.</value>
+  </data>
   <data name="STEUER_ENERGIEST_NUR_54" xml:space="preserve">
     <value>{0}: Sections 53 and 53a (5) of the Energy Duty Act only relieve units that generate electricity. For this unit only Section 54 of the Energy Duty Act can apply.</value>
-  </data>
-  <data name="WIRT_CO2_STROMMIX_RUECKFALL" xml:space="preserve">
-    <value>CO2 balance: no electricity energy carrier assigned — grid supply calculated with the default grid-mix value.</value>
   </data>
   <data name="WIRT_STROMTRAEGER_RUECKFALL" xml:space="preserve">
     <value>Grid supply priced with energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
@@ -16131,7 +16140,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>PV system &#8220;{0}&#8221;: {1}</value>
   </data>
   <data name="WIRT_EMPF_SATZ" xml:space="preserve">
-    <value>Decision proposal: variant “{0}” — net present value difference to the base project {1} (expected){2}.</value>
+    <value>Decision proposal: variant “{0}” — net present value difference to {3} {1} (expected){2}.</value>
   </data>
   <data name="WIRT_EMPF_ALLE_POSITIV" xml:space="preserve">
     <value>, positive in all three scenarios (worst {0}, best {1})</value>
@@ -16143,7 +16152,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>range not calculated</value>
   </data>
   <data name="WIRT_EMPF_KEINE" xml:space="preserve">
-    <value>Decision proposal: no variant is economical compared with the base project; continued operation (reference case).</value>
+    <value>Decision proposal: no variant is economical compared with {0}; continued operation (reference case).</value>
   </data>
   <data name="WIRT_EMPF_STUFE_JA" xml:space="preserve">
     <value>recommended</value>
@@ -16196,8 +16205,17 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Payback [yrs]</value>
   </data>
+  <data name="WIRT_SZ_SP_SPANNE" xml:space="preserve">
+    <value>Range [€]</value>
+  </data>
+  <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
+    <value>Range of the net present value difference (worst / expected / best)</value>
+  </data>
+  <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
+    <value>the reference case</value>
+  </data>
   <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
-    <value>ΔNPV = net present value of the variant less the net present value of the base project (reference case); “—" = no base project in the comparison group or scenario not calculated.</value>
+    <value>ΔNPV = net present value of the variant less the net present value of {0} (reference); “—" = reference not in the comparison group or scenario not calculated. Range = best − worst.</value>
   </data>
   <data name="WIRT_NM_TITEL" xml:space="preserve">
     <value>Non-monetary effects</value>

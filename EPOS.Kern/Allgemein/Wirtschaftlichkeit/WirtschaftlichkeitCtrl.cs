@@ -5459,13 +5459,15 @@ namespace WindowsFormsApplication1
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem
             // Strom-Energieträger auf den Strommix-Vorgabewert zurück (Flag aus
-            // KostenEmissionRechner), gehört das in denselben Hinweiskanal wie jede
-            // andere dokumentierte Vereinfachung — sonst steht im Ergebnis eine
-            // CO₂-Bilanz, deren Bezugsgröße niemand erfasst hat.
-            if (v.CO2StrommixRueckfall)
-                erg.Hinweis = Anhaengen(erg.Hinweis, T("WIRT_CO2_STROMMIX_RUECKFALL",
-                    "CO₂-Bilanz: kein Strom-Energieträger zugeordnet — Netzbezug mit " +
-                    "Strommix-Vorgabewert gerechnet."));
+            // KostenEmissionRechner), gehört das ausgewiesen — sonst steht im Ergebnis
+            // eine CO₂-Bilanz, deren Bezugsgröße niemand erfasst hat.
+            //
+            // ETAPPE E2 (Befund R6): Die Zeile ist keine Laufbemerkung mehr, sondern
+            // eine KOHÄRENZZEILE MIT WERT (§ 3.9 des Konzepts führt sie dort). Sie wird
+            // unten an KohaerenzPruefung übergeben und erreicht damit dieselben drei
+            // Ausgaben wie jede andere Kohärenzzeile — Rubrik, Wort- und Excelbericht.
+
+
 
             // AUFTRAG #267: Dieselbe Lage auf der KOSTENseite — der Netzbezug wurde mit
             // dem Auslieferungsträger des Katalogs bepreist, weil das Projekt keinen
@@ -5519,7 +5521,14 @@ namespace WindowsFormsApplication1
                     EnergiesteuerEur = eingabe.EnergiesteuerJahr1,
                     StromsteuerBefreiungEur = eingabe.StromsteuerBefreiungJahr1,
                     StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes,   // B6
-                    StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1
+                    StromsteuerEntlastungEur = eingabe.StromsteuerEntlastungJahr1,
+                    // ETAPPE E2 (R5): die gebuchte CO₂-Abgabe des Jahres 1 — sie ist der
+                    // Betrag, der bei aktivem CO₂-Bestandteil im Arbeitspreis ZWEIMAL
+                    // in den Energiekosten steht.
+                    Co2AbgabeEur = eingabe.Behg,
+                    // ETAPPE E2 (R6): der Strommix-Rückfall als Zeile MIT Wert.
+                    StrommixRueckfallGJeKwh = v.CO2StrommixRueckfall
+                        ? KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH : (double?)null
                 });
             }
             catch { }
@@ -5780,7 +5789,18 @@ namespace WindowsFormsApplication1
             catch { return 0; }
         }
 
-        /// <summary>true, wenn die Zeile die Kostenart „Zuschuss" trägt (K5).</summary>
+        /// <summary>
+        /// true, wenn die Zeile die Kostenart „Zuschuss" trägt (K5).
+        ///
+        /// <para><b>ETAPPE E2 (Befund I-5) — ZEICHENGENAU.</b> Bis hierher verglich
+        /// allein diese Stelle <c>OrdinalIgnoreCase</c>, während dieselbe Frage im
+        /// Betriebskostenpfad als SQL-Gleichheit gestellt wird
+        /// (<c>BetriebskostenCtrl</c>, Parameter <c>@art</c>) — und SQLite vergleicht
+        /// TEXT zeichengenau. Eine Zeile mit abweichender Schreibweise wäre hier ein
+        /// Zuschuss gewesen und dort keiner: zwei Antworten auf eine Frage. Steuerwerte
+        /// sind eingefrorene ASCII-Schlüssel (Drei-Schichten-Regel) und werden im
+        /// ganzen Kern zeichengenau verglichen — 78 von 79 Stellen taten das bereits.</para>
+        /// </summary>
         internal static bool IstZuschuss(DataRow r)
         {
             try
@@ -5789,7 +5809,7 @@ namespace WindowsFormsApplication1
                 object o = r[SchemaKatalog.SPALTE_PW_KOSTENART];
                 if (o == null || o == DBNull.Value) return false;
                 return string.Equals(Convert.ToString(o).Trim(), DbWerte.KOSTENART_ZUSCHUSS,
-                                     StringComparison.OrdinalIgnoreCase);
+                                     StringComparison.Ordinal);
             }
             catch { return false; }
         }
