@@ -590,10 +590,17 @@ function radEnde(z) {
 }
 
 /**
- * Die Stunde unter dem Zeiger - hoechstens EINMAL je Bildaufbau. Die 2 px
- * duenne Linie trifft elementFromPoint fast nie (Pruefstand, Abschnitt 5);
- * gerechnet wird deshalb x -> viewBox -> Stunde, und den Wert liest die
- * Komponente aus dem Modell.
+ * Die STELLE auf der x-Achse unter dem Zeiger - hoechstens EINMAL je
+ * Bildaufbau. Die 2 px duenne Linie trifft elementFromPoint fast nie
+ * (Pruefstand, Abschnitt 5); gerechnet wird deshalb x -> viewBox -> Stelle,
+ * und den Wert liest die Komponente aus dem Modell.
+ *
+ * DG-E3-11: Gemeldet wird eine GLEITKOMMAZAHL. Die Achse zaehlt nicht mehr
+ * immer Stunden - auf einer C-Raten-Achse von 0,1 bis 2,0 fiele eine
+ * ganzzahlige Stelle mit dem ganzen Bild zusammen. Gerundet wird auf ein
+ * Tausendstel der SICHTBAREN Breite: feiner als ein Bildpunkt, und zugleich
+ * weniger Meldungen als die frueheren ganzen Stunden eines Jahres (8 760 auf
+ * rund 1 000 Bildpunkte).
  */
 function zeigerMerken(z, clientX) {
     z.zeigerX = clientX;
@@ -603,12 +610,14 @@ function zeigerMerken(z, clientX) {
         if (z.zeigerX === null) return;
         const b = kasten(z);
         const voll = vollKasten(z);
-        let stunde = Math.round(b.x + svgAnteil(z, z.zeigerX) * b.b);
-        stunde = Math.min(Math.round(voll.x + voll.b), Math.max(Math.round(voll.x), stunde));
-        if (stunde === z.zeigerStunde) return;
-        z.zeigerStunde = stunde;
+        let stelle = b.x + svgAnteil(z, z.zeigerX) * b.b;
+        stelle = Math.min(voll.x + voll.b, Math.max(voll.x, stelle));
+        const schritt = b.b / 1000;
+        if (schritt > 0) stelle = Math.round(stelle / schritt) * schritt;
+        if (stelle === z.zeigerStunde) return;
+        z.zeigerStunde = stelle;
         if (!z.hilfe) return;
-        try { z.hilfe.invokeMethodAsync("ZeigerGemeldet", stunde); } catch (e) { /* Huelle ist weg */ }
+        try { z.hilfe.invokeMethodAsync("ZeigerGemeldet", stelle); } catch (e) { /* Huelle ist weg */ }
     });
 }
 

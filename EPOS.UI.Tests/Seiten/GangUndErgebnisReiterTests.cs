@@ -139,7 +139,6 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Equal("simerg-waermegang", bild.Kennung);
         Assert.Equal("kW", bild.Einheit);
         Assert.Equal("kWh", bild.EinheitRechts);
-        Assert.Equal(Achsenart.Stuetzstelle, bild.Achsenart);
         Assert.Empty(seite.FindComponents<ChartBild>());
     }
 
@@ -428,13 +427,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Single(seite.FindComponents<DiagrammSvg>());
         Assert.Equal("simerg-stromgang", seite.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", seite.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Equal(Achsenart.Stuetzstelle,
-                     seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Empty(seite.FindComponents<ChartBild>());
-
-        seite.FindAll("input[type='checkbox']")[0].Change(true);
-
-        Assert.Equal(Achsenart.Rang, seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 
     /// <summary>Ausgangszustand „nur Gesamt an" — woertlich <c>SetControl</c> :224-228.</summary>

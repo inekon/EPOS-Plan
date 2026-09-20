@@ -669,7 +669,6 @@ public class WaermebedarfExternDialogTests : EposBunitContext
 
         Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Ganglinie B-s",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Contains(auftraege, a => a.Sortiert);
     }
 

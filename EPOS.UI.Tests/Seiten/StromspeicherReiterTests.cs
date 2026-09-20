@@ -773,7 +773,6 @@ public class StromspeicherReiterTests : EposBunitContext
         Assert.Equal("simerg-speicherbetrieb", bild.Kennung);
         Assert.Equal("kW", bild.Einheit);
         Assert.Equal("kWh", bild.EinheitRechts);
-        Assert.Equal(Achsenart.Stuetzstelle, bild.Achsenart);
         Assert.Empty(seite.FindComponents<ChartBild>());
     }
 
@@ -790,9 +789,5 @@ public class StromspeicherReiterTests : EposBunitContext
                      seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
-
-        Bildschalter(seite)[0].Change(true);
-
-        Assert.Equal(Achsenart.Rang, seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 }

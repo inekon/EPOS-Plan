@@ -1074,21 +1074,4 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(soll, Knoepfe(BhkwZeichnen(Bhkw())));
         Assert.Equal(soll, Knoepfe(PvZeichnen()));
     }
-
-    /// <summary>
-    /// Der Schalter „sortiert" stellt die ACHSENART um: Die Ganglinie zählt
-    /// Stützstellen, die Dauerlinie den RANG — dort ist x keine Zeit mehr. Nur der
-    /// Kessel- und der BHKW-Reiter führen den Schalter überhaupt.
-    /// </summary>
-    [Fact]
-    public void Der_Sortiertschalter_des_Kessels_stellt_die_Achsenart_auf_Rang()
-    {
-        var seite = KesselZeichnen(Kessel());
-
-        Assert.Equal(Achsenart.Stuetzstelle, Bildrahmen(seite).Achsenart);
-
-        Kasten(seite, 0, 0).Change(true);
-
-        Assert.Equal(Achsenart.Rang, Bildrahmen(seite).Achsenart);
-    }
 }

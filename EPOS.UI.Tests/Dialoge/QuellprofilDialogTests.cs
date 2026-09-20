@@ -171,8 +171,6 @@ public class QuellprofilDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("quellprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("°C", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Equal(Achsenart.Jahresstunde,
-                     cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Empty(cut.FindComponents<ChartBild>());
     }
 

@@ -322,7 +322,6 @@ public class KostenprofilDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("kostenprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("ct/kWh", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Equal(Achsenart.Index, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Empty(cut.FindComponents<ChartBild>());
     }
 

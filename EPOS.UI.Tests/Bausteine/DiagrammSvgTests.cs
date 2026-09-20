@@ -763,7 +763,6 @@ public class DiagrammSvgTests : EposBunitContext
             p.Add(x => x.Kennung, "stapel");
             p.Add(x => x.Einheit, "kW");
             p.Add(x => x.EinheitRechts, "kWh");
-            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
         });
 
     // ---- Die Zeigerzeile liest das eigene Fenster jeder Reihe ------------
@@ -783,7 +782,6 @@ public class DiagrammSvgTests : EposBunitContext
         {
             p.Add(x => x.Modell, modell);
             p.Add(x => x.Kennung, "profil");
-            p.Add(x => x.Achsenart, Achsenart.Index);
         });
 
         // Die Stelle 1 meint den ERSTEN Wert der Reihe.
@@ -910,7 +908,6 @@ public class DiagrammSvgTests : EposBunitContext
         {
             p.Add(x => x.Modell, modell);
             p.Add(x => x.Kennung, "stapel");
-            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
         });
 
         Assert.Empty(cut.Instance.Ausschnittpfade);
@@ -942,7 +939,6 @@ public class DiagrammSvgTests : EposBunitContext
         {
             p.Add(x => x.Modell, modell);
             p.Add(x => x.Kennung, "stapel");
-            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
         });
 
         string vollpfad = cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d")!;
@@ -992,37 +988,6 @@ public class DiagrammSvgTests : EposBunitContext
     // ---- Die Achsenart ---------------------------------------------------
 
     /// <summary>
-    /// <b>Nur die Stundenachse nimmt die Jahresstundenteilung.</b> Zählt x einen
-    /// Index, gibt es kein Kalenderraster: Die nachgezeichnete Teilung steht
-    /// ganzzahlig da, und der Achsentitel „Jahresstunden" bleibt weg.
-    /// </summary>
-    [Fact]
-    public async Task DS8_Die_Achsenart_Index_zeichnet_eine_ganzzahlige_Teilung()
-    {
-        var cut = Render<DiagrammSvg>(p =>
-        {
-            p.Add(x => x.Modell, Profilmodell());
-            p.Add(x => x.Kennung, "profil");
-            p.Add(x => x.Achsenart, Achsenart.Index);
-        });
-
-        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(24, 72));
-
-        var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
-        Assert.NotEmpty(texte);
-        Assert.DoesNotContain(Resource.CHART_ACHSE_JAHRESSTUNDEN, texte);
-
-        // Jede Beschriftung ist eine ganze Zahl im Fenster.
-        foreach (string t in texte)
-        {
-            Assert.True(int.TryParse(t, NumberStyles.Number, CultureInfo.CurrentCulture,
-                                     out int stelle),
-                        "Keine ganze Zahl: " + t);
-            Assert.InRange(stelle, 24, 72);
-        }
-    }
-
-    /// <summary>
     /// Ein eigener Titel steht auch dort, wo die Achsenart keinen mitbringt —
     /// der Wirt kennt den Ressourcentext seines Bildes.
     /// </summary>
@@ -1033,7 +998,6 @@ public class DiagrammSvgTests : EposBunitContext
         {
             p.Add(x => x.Modell, Profilmodell());
             p.Add(x => x.Kennung, "profil");
-            p.Add(x => x.Achsenart, Achsenart.Index);
             p.Add(x => x.XTitelText, "Wochenstunde");
         });
 

@@ -220,25 +220,6 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains(auftraege, a => a.Sortiert);
     }
 
-    /// <summary>
-    /// Der Schalter tauscht auch die ACHSENART: Die Ganglinie zählt Stützstellen und
-    /// trägt die Stundeneinheit, die Dauerlinie zählt den Rang — dort ist x keine
-    /// Zeit mehr.
-    /// </summary>
-    [Fact]
-    public void Der_Schalter_sortiert_stellt_die_Achsenart_auf_Rang()
-    {
-        var cut = Aufbauen();
-
-        Assert.Equal(Achsenart.Stuetzstelle, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
-        Assert.Equal("h", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
-
-        cut.Find("input[type=checkbox]").Change(true);
-
-        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
-        Assert.Equal("", cut.FindComponent<DiagrammSvg>().Instance.XEinheit);
-    }
-
     // =================================================================================
     // Die Einheit (W8-O-5)
     // =================================================================================

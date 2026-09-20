@@ -385,7 +385,6 @@ public class GebaeudetypDialogTests : EposBunitContext
 
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("gebaeudetyp", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal(Achsenart.Index, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Empty(cut.FindComponents<ChartBild>());
     }
 

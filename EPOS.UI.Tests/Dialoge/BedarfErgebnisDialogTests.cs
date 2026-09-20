@@ -345,8 +345,6 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Assert.Equal("bedarf-jahresverlauf",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Equal(Achsenart.Jahresstunde,
-                     cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
         Assert.Empty(cut.FindComponents<ChartBild>());
     }
 

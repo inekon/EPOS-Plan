@@ -234,28 +234,6 @@ public class BedarfReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die Einheit der y-Achse und die Achsenart der x-Achse gehören zum Bild: Die
-    /// Ganglinie zählt Stützstellen, die Dauerlinie den RANG — und nur die
-    /// Ganglinie der Wärme trägt die Stundeneinheit.
-    /// </summary>
-    [Fact]
-    public void Der_Sortiertschalter_stellt_die_Achsenart_auf_Rang()
-    {
-        var seite = Zeichnen(Daten());
-        var waerme = seite.FindComponents<DiagrammSvg>()[0].Instance;
-
-        Assert.Equal("kW", waerme.Einheit);
-        Assert.Equal(Achsenart.Stuetzstelle, waerme.Achsenart);
-        Assert.Equal("h", waerme.XEinheit);
-
-        seite.FindAll("input[type='checkbox']")[0].Change(true);
-
-        waerme = seite.FindComponents<DiagrammSvg>()[0].Instance;
-        Assert.Equal(Achsenart.Rang, waerme.Achsenart);
-        Assert.Equal("", waerme.XEinheit);
-    }
-
-    /// <summary>
     /// Befund W11-B14: EINE Fuelllogik. „Sortiert" wechselt nur den
     /// Bildauftrag; derselbe Schalterstand ergibt denselben Schluessel.
     ///

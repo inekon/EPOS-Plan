@@ -928,7 +928,6 @@ public class StromganglinieDialogTests : EposBunitContext
 
         Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Werk Nord-s",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 
     /// <summary>

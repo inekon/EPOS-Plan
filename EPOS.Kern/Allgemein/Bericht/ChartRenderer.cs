@@ -2190,7 +2190,7 @@ namespace WindowsFormsApplication1
             z.Flaeche = new Zeichenflaeche(
                 rc.Modellrahmen(),
                 new Datenfenster(xVon, xVon + gueltig[0].Werte.Length - 1, 0, Y_PROZENT_MAX),
-                Achsenart.Stunden);
+                Zeitachsenart(sortiert));
 
             foreach (Reihe r in gueltig)
             {
@@ -2400,7 +2400,8 @@ namespace WindowsFormsApplication1
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, 0, max);
-            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks, Achsenart.Stunden);
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
+                                           Zeitachsenart(sortiert));
 
             // (1) Kontur UNTER dem Stapel.
             if (mitKontur)
@@ -3268,7 +3269,8 @@ namespace WindowsFormsApplication1
             // DIE ZEICHENFLAECHE SAMT DATENFENSTER DER LINKEN ACHSE (Etappe E3).
             double xVon = fenster == null ? 0.0 : Math.Max(0, Math.Min(gesamt, fenster.Von));
             var fensterLinks = new Datenfenster(xVon, xVon + n - 1, min, max);
-            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks, Achsenart.Stunden);
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(), fensterLinks,
+                                           Zeitachsenart(sortiert));
 
             foreach (Reihe r in gueltig)
             {
@@ -3695,6 +3697,19 @@ namespace WindowsFormsApplication1
             return stelle + ": " + zahl +
                    (gesperrt ? " (" + BerichtTexte.T("unzulässig") + ")" : "");
         }
+
+        /// <summary>
+        /// <b>Was die x-Achse eines ZEITREIHENbildes zählt</b> (DG-E3-11): die
+        /// Stützstelle der Zeitreihe — oder, in der DAUERLINIE, den RANG.
+        ///
+        /// <para>Die Dauerlinie sortiert jede Reihe für sich absteigend; x zählt dann
+        /// keine Zeit mehr, sondern den Platz in der Rangfolge. Eine Jahresstundenteilung
+        /// mit Monatsnamen wäre dort schlicht falsch, und die Zeigerzeile schriebe „h"
+        /// hinter eine Zahl, die keine Stunde ist. Das Bild selbst ändert sich dadurch
+        /// nicht — der Maler übergeht die Zeichenfläche ganz.</para>
+        /// </summary>
+        private static Achsenart Zeitachsenart(bool sortiert)
+            => sortiert ? Achsenart.Index : Achsenart.Stunden;
 
         /// <summary>
         /// Der Werttext an der Stelle <paramref name="i"/>; <c>null</c>, wo es keinen

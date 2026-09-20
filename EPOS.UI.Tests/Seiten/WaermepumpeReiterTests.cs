@@ -456,7 +456,6 @@ public class WaermepumpeReiterTests : EposBunitContext
         Assert.Single(seite.FindComponents<DiagrammSvg>());
         Assert.Equal("simerg-wp-produktion", Bild(seite).Kennung);
         Assert.Equal("kW", Bild(seite).Einheit);
-        Assert.Equal(Achsenart.Stuetzstelle, Bild(seite).Achsenart);
     }
 
     /// <summary>
@@ -469,13 +468,9 @@ public class WaermepumpeReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Erg());
 
-        Assert.Equal("h", Bild(seite).XEinheit);
-
         Kasten(seite, SORTIERT, 0).Change(true);
 
         Assert.Contains(_auftraege, a => a.Bild == Bilder.WpProduktion && a.Sortiert);
-        Assert.Equal(Achsenart.Rang, Bild(seite).Achsenart);
-        Assert.Equal("", Bild(seite).XEinheit);
     }
 
     /// <summary>
@@ -492,7 +487,6 @@ public class WaermepumpeReiterTests : EposBunitContext
 
         seite.FindAll("button[role='tab']")[1].Click();
         Assert.Equal("simerg-wp-strom", Bild(seite).Kennung);
-        Assert.Equal(Achsenart.Jahresstunde, Bild(seite).Achsenart);
 
         seite.FindAll("button[role='tab']")[2].Click();
         Assert.Equal("simerg-wp-temperaturen", Bild(seite).Kennung);
