@@ -254,9 +254,9 @@ namespace WindowsFormsApplication1
                       "derselbe Rechenkern wie Reiter und Verlaufs-Dialog.");
 
             if (verlauf.Differenz.Any(s => s.Kumuliert != null))
-                k.Bild(ChartRenderer.KapitalwertVerlauf(
+                k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
                     "Differenz zur Stamm-Referenz",
-                    ChartRenderer.VerlaufsReihen(verlauf.Differenz, false), null),
+                    ChartRenderer.VerlaufsReihen(verlauf.Differenz, false), null)),
                     620, 310);
             else
                 k.Hinweis("Differenzdiagramm entfällt — für das Stammprojekt konnte keine " +
@@ -272,10 +272,20 @@ namespace WindowsFormsApplication1
             // die Sache der Maske, nicht des Berichts), und der Excel-Bericht führt den
             // Verlauf als ZAHLEN statt als Bild. „An genau einem Ort" heißt also: EIN
             // erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
-            k.Bild(ChartRenderer.KapitalwertVerlauf(
+            k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
                 "Kumulierte Barwerte je Version",
-                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true, true), null),
+                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true, true), null)),
                 620, 310);
+        }
+
+        /// <summary>
+        /// Dieselbe Klammer wie in den Bausteinen „Ergebnisse" und „Vergleich": Ein
+        /// Diagrammfehler lässt die Bildstelle aus, statt den ganzen Bericht zu
+        /// reißen. <c>WordKontext.Bild</c> übergeht das <c>null</c>.
+        /// </summary>
+        private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)
+        {
+            try { return f(); } catch { return null; }
         }
 
         // ------------------------------------------------------- Mehrjahresübersicht (E7)

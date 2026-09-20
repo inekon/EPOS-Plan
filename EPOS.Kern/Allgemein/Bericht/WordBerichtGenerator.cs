@@ -263,10 +263,12 @@ namespace WindowsFormsApplication1
         /// gerendert wird in doppelter Auflösung → scharfer Druck). Portierung der
         /// BildDrawing-Logik aus dem Bestandsbericht. png == null wird ignoriert.
         ///
-        /// <para>Dieser Weg bleibt den Bildern, deren Renderer-Methode noch KEIN
-        /// Zeichenmodell hat; wer eines hat, nimmt
-        /// <see cref="Bild(Zeichnung.Zeichenmodell, int, int)"/> und bekommt dazu das
-        /// SVG.</para>
+        /// <para><b>Kein Baustein des Berichts ruft ihn mehr</b> — jedes Diagramm des
+        /// Wortberichts geht über <see cref="Bild(Zeichnung.Zeichenmodell, int, int)"/>
+        /// und trägt damit SVG mit PNG-Rückfall. Der Weg bleibt für FREMDBILDER: ein
+        /// Bild, das nicht aus dem <c>ChartRenderer</c> kommt, und die Renderer ohne
+        /// Zeichenmodell (<c>PeakShavingBild</c>, <c>SpeicherBetriebsbild</c>), falls
+        /// eines davon einmal in den Bericht soll.</para>
         /// </summary>
         public void Bild(byte[] png, int anzeigeBreitePx, int anzeigeHoehePx)
             => BildTeile(png, null, anzeigeBreitePx, anzeigeHoehePx);

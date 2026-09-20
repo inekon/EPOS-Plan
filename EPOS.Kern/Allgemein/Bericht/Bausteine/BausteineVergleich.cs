@@ -65,10 +65,10 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die vier Ganglinientypen des Berichts.
         ///
-        /// <para><b>Drei davon gehen seit DG-E3 (Gruppe d) über das ZEICHENMODELL</b>
-        /// und stehen damit als SVG mit PNG-Rückfall im Dokument (Entscheid DG-E3-8).
-        /// Die Strombilanz hat noch keine <c>…Modell</c>-Methode — sie bleibt beim
-        /// <c>byte[]</c>-Weg, bis die Gruppe (b)/(c) sie umstellt.</para>
+        /// <para><b>Alle vier gehen über das ZEICHENMODELL</b> und stehen damit als
+        /// SVG mit PNG-Rückfall im Dokument (Entscheid DG-E3-8). Die Strombilanz kam
+        /// als letzte dazu, als die Gruppe (c) ihr
+        /// <c>StrombilanzMonateModell</c> mitbrachte.</para>
         /// </summary>
         private static void ZeichneGanglinien(WordKontext k, ZeitreihenSatz z)
         {
@@ -84,10 +84,10 @@ namespace WindowsFormsApplication1
                 k.Bild(m, 620, 280);
                 k.Beschriftung("Jahresdauerlinie Wärme (geordnete Bedarfs- und Erzeugerdauerlinien)");
             }
-            byte[] png = SicherPng(() => ChartRenderer.StrombilanzMonate(z));
-            if (png != null)
+            m = Sicher(() => ChartRenderer.StrombilanzMonateModell(z));
+            if (m != null)
             {
-                k.Bild(png, 620, 280);
+                k.Bild(m, 620, 280);
                 k.Beschriftung("Strombilanz im Monatsverlauf (Deckung gestapelt, Einspeisung separat, Bedarf als Linie)");
             }
             m = Sicher(() => ChartRenderer.SpeicherverlaufModell(z));
@@ -99,11 +99,6 @@ namespace WindowsFormsApplication1
         }
 
         private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)
-        {
-            try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
-        }
-
-        private static byte[] SicherPng(Func<byte[]> f)
         {
             try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
         }
@@ -181,11 +176,12 @@ namespace WindowsFormsApplication1
                                 v.IstStamm ? "Stamm" : v.Anzeige, wert.Value, v.IstStamm));
                     }
                     if (balken.Count < 2) continue;
-                    byte[] png = SicherB(() => ChartRenderer.BalkenHorizontal(kz.Label(BerichtTexte.Englisch), kz.Einheit, balken));
-                    if (png != null)
+                    Zeichnung.Zeichenmodell m2 = Sicher(() => ChartRenderer.BalkenHorizontalModell(
+                        kz.Label(BerichtTexte.Englisch), kz.Einheit, balken));
+                    if (m2 != null)
                     {
                         int hoehe = (150 + balken.Count * 64) / 2;
-                        k.Bild(png, 620, hoehe);
+                        k.Bild(m2, 620, hoehe);
                         k.Beschriftung(kz.Label(BerichtTexte.Englisch) + " je Variante (Stamm hervorgehoben)");
                     }
                 }
@@ -222,15 +218,9 @@ namespace WindowsFormsApplication1
                 if (100.0 - sumS > 0.05) segS.Add(new ChartRenderer.Segment("Netzbezug", 100.0 - sumS, ChartRenderer.C_KESSEL));
 
                 if (segW.Count > 0)
-                {
-                    byte[] png = SicherB(() => ChartRenderer.Kuchen("Wärmedeckung", segW));
-                    if (png != null) k.Bild(png, 420, 262);
-                }
+                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Wärmedeckung", segW)), 420, 262);
                 if (segS.Count > 0)
-                {
-                    byte[] png = SicherB(() => ChartRenderer.Kuchen("Stromdeckung", segS));
-                    if (png != null) k.Bild(png, 420, 262);
-                }
+                    k.Bild(Sicher(() => ChartRenderer.KuchenModell("Stromdeckung", segS)), 420, 262);
             }
 
             // ---------------- Erzeuger-Einzellisten je Projekt ----------------
@@ -357,7 +347,7 @@ namespace WindowsFormsApplication1
         private static double? Wert(VariantenDaten v, string schluessel)
         { return v.Kennzahlen.ContainsKey(schluessel) ? v.Kennzahlen[schluessel] : null; }
 
-        private static byte[] SicherB(Func<byte[]> f)
+        private static Zeichnung.Zeichenmodell Sicher(Func<Zeichnung.Zeichenmodell> f)
         {
             try { return f(); } catch { return null; }   // ein Diagrammfehler kippt nicht den Bericht
         }
