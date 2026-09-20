@@ -444,7 +444,8 @@ else
         {
             Datenfenster d = Modell.Flaeche.Daten;
             werte.Add(new KeyValuePair<string, object>(
-                "data-voll", Wert(d.XVon) + " 0 " + Wert(Breite(d)) + " " + Wert(Hoehe(d))));
+                "data-voll",
+                Wert(d.XVon) + " 0 " + Wert(Breite(d)) + " " + Px(Flaechenhoehe())));
         }
 
         return werte;
@@ -454,14 +455,13 @@ else
     private void Zeigerlinie(RenderTreeBuilder builder, int stunde)
     {
         if (Modell?.Flaeche is null) return;
-        Datenfenster d = Modell.Flaeche.Daten;
 
         builder.OpenElement(0, "line");
         builder.AddAttribute(1, "class", "epos-diagramm-zeiger");
         builder.AddAttribute(2, "x1", Wert(stunde));
         builder.AddAttribute(3, "y1", "0");
         builder.AddAttribute(4, "x2", Wert(stunde));
-        builder.AddAttribute(5, "y2", Wert(Hoehe(d)));
+        builder.AddAttribute(5, "y2", Px(Flaechenhoehe()));
         builder.AddAttribute(6, "vector-effect", "non-scaling-stroke");
         builder.CloseElement();
     }
@@ -858,9 +858,16 @@ else
         return b <= 0 ? 1 : b;
     }
 
-    private static double Hoehe(Datenfenster d)
+    /// <summary>
+    /// Die SENKRECHTE Ausdehnung des inneren <c>&lt;svg&gt;</c> — seit dem Entscheid
+    /// DG-E3-1 sind das die BILDPUNKTE der Zeichenfläche, nicht mehr die Wertespanne
+    /// der Achse. Nur so trägt dasselbe innere <c>&lt;svg&gt;</c> auch Reihen einer
+    /// zweiten y-Achse; jede Reihe rechnet ihren Wert über IHR Fenster in Bildpunkte
+    /// um, und der <c>SvgSchreiber</c> setzt die <c>viewBox</c> entsprechend.
+    /// </summary>
+    private double Flaechenhoehe()
     {
-        double h = d.YBis - d.YVon;
+        double h = Modell?.Flaeche is null ? 0 : Modell.Flaeche.Bild.Hoehe;
         return h <= 0 ? 1 : h;
     }
 
