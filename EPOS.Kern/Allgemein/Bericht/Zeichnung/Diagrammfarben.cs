@@ -354,6 +354,107 @@ namespace WindowsFormsApplication1.Zeichnung
             return text.ToString();
         }
 
+        /// <summary>
+        /// Der Einstellungstext, in dem EINE Rolle gesetzt oder entfernt ist — die
+        /// reine Textrechnung hinter <see cref="Setze"/> und
+        /// <see cref="Zuruecksetzen(Farbrolle)"/>.
+        ///
+        /// <para><b>Nur Abweichungen stehen darin</b> (§ 9 des Diagrammkonzepts):
+        /// <paramref name="farbe"/> = <c>null</c> entfernt den Eintrag, und eine Farbe,
+        /// die der Hausfarbe entspricht, wird ebenfalls ENTFERNT statt geschrieben —
+        /// sonst friere eine später geänderte Hausfarbe bei jedem ein, der sie einmal
+        /// ausdrücklich gewählt hat. Verglichen wird über <c>#RRGGBB</c>, die Deckung
+        /// bleibt ohnehin die der Hausfarbe.</para>
+        ///
+        /// <para>Nicht lesbare Einträge des Ausgangstextes fallen weg — sie sind schon
+        /// beim Lesen benannt verworfen (<see cref="Abweichungen"/>), und ein Text, der
+        /// sie mitschleppte, verwürfe sie beim nächsten Mal erneut.</para>
+        /// </summary>
+        /// <param name="text">Der bisherige Einstellungstext; <c>null</c> = leer.</param>
+        /// <param name="rolle">Die Rolle; eine unbekannte lässt den Text unverändert.</param>
+        /// <param name="farbe">Die neue Farbe, oder <c>null</c> für „Hausfarbe".</param>
+        public static string MitRolle(string text, Farbrolle rolle, Farbe? farbe)
+        {
+            IReadOnlyList<string> verworfen;
+            var abweichungen = new Dictionary<Farbrolle, Farbe>(
+                Abweichungen(text, out verworfen));
+
+            // Eine Rolle, die es in der Liste nicht gibt (UNBENANNT, ein Tippfehler),
+            // aendert nichts - aber die verworfenen Eintraege sind trotzdem weg.
+            if (rolle != null && Rolle(rolle.Name) != null)
+            {
+                if (!farbe.HasValue ||
+                    string.Equals(Hex(farbe.Value), Hex(Farbpalette.Vorgabe[rolle]),
+                                  StringComparison.Ordinal))
+                    abweichungen.Remove(rolle);
+                else
+                    abweichungen[rolle] = farbe.Value;
+            }
+
+            var neu = new StringBuilder();
+            foreach (Farbrolle r in Rollen)
+            {
+                Farbe f;
+                if (!abweichungen.TryGetValue(r, out f)) continue;
+                if (neu.Length > 0) neu.Append(TRENNER);
+                neu.Append(r.Name).Append(GLEICH).Append(Hex(f));
+            }
+            return neu.ToString();
+        }
+
+        /// <summary>
+        /// Die Farbe EINER Rolle anwendungsweit setzen — der Weg, den die Legende des
+        /// SVG-Bausteins nimmt (Bedienung Teil 2 der Farbrollen).
+        ///
+        /// <para><b>Ein Speicherweg, nicht zwei.</b> Gelesen und geschrieben wird über
+        /// <see cref="EinstellungenCtrl"/>, denselben Weg wie der Einstellungsdialog;
+        /// der schreibt in <c>Properties.Settings</c>, während
+        /// <c>Dienste.Einstellungen.Schreib</c> in die Registry ginge — dort läge der
+        /// Wert dann im Schatten des Settings-Werts und käme nie an. <c>Speichern</c>
+        /// ruft am Ende <see cref="Uebernehmen"/>, also trägt schon das nächste
+        /// gezeichnete Bild die Farbe, Bildschirm wie Bericht.</para>
+        ///
+        /// <para>Eine Rolle, die die Liste nicht führt (<see cref="Farbrolle.UNBENANNT"/>,
+        /// eine Reihe mit fest gerechneter Farbe), wird <b>abgewiesen</b> — es gibt
+        /// nichts, worauf die Einstellung zeigen könnte.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Einstellung danach den gewünschten Stand trägt.</returns>
+        public static bool Setze(Farbrolle rolle, Farbe farbe)
+        {
+            return Schreibe(rolle, farbe);
+        }
+
+        /// <summary>
+        /// Die Farbe EINER Rolle auf die Hausfarbe zurücksetzen: Der Eintrag fällt aus
+        /// der Einstellung, und damit erreicht eine später geänderte Hausfarbe diesen
+        /// Anwender wieder.
+        /// </summary>
+        public static bool Zuruecksetzen(Farbrolle rolle)
+        {
+            return Schreibe(rolle, null);
+        }
+
+        private static bool Schreibe(Farbrolle rolle, Farbe? farbe)
+        {
+            if (rolle == null || Rolle(rolle.Name) == null) return false;
+
+            Einstellungensatz satz = EinstellungenCtrl.Lesen();
+            string alt = satz.DiagrammFarben ?? "";
+            string neu = MitRolle(alt, rolle, farbe);
+
+            // Nichts zu schreiben: Die Palette trotzdem nachziehen, damit ein Aufruf
+            // auch dann einen definierten Stand hinterlaesst.
+            if (string.Equals(alt, neu, StringComparison.Ordinal))
+            {
+                Uebernehmen();
+                return true;
+            }
+
+            satz.DiagrammFarben = neu;
+            SpeicherBefund befund = EinstellungenCtrl.Speichern(satz);
+            return befund != null && befund.Ok;
+        }
+
         // =====================================================================
         // Die Einstellung lesen und übernehmen
         // =====================================================================

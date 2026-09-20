@@ -1,0 +1,874 @@
+﻿@* Das Diagramm als SVG im Baum - der Baustein der Etappe E2 (Konzept
+   Diagramme, Option B).
+
+   WAS ER IST. Der Bestand zeigt Renderer-Bilder als PNG im Baustein Diagramm;
+   Zoomen heisst dort, ein Pixelbild zu vergroessern, und ein Datenzoom kostet
+   einen Rundlauf in den Kern. Hier steht statt des Bildes das ZEICHENMODELL:
+   SvgSchreiber.Baum macht daraus einen Knotenbaum, und dieser Baustein
+   zeichnet ihn als RAZOR-ELEMENTE. Damit ist
+
+     * jede Linie Vektor (scharf auf jeder DPI, Text bleibt Text),
+     * Zoom und Verschieben eine Attributaenderung an EINER viewBox
+       (DG-E2-3: nur die Reihen liegen in Datenkoordinaten),
+     * Legende ein/aus ein Attribut an EINEM Pfad,
+     * der Wert am Mauszeiger eine Lesestelle im Modell - kein Kernaufruf.
+
+   WARUM ALS RAZOR-ELEMENTE UND NICHT ALS MarkupString. Ein Jahresgang mit
+   8 760 Stuetzstellen sind gut 100 KB Markup. Als MarkupString wuerde Blazor
+   bei jeder Legendenwahl den ganzen Block neu in den Baum setzen; als
+   Elementbaum tauscht es das eine Attribut, das sich geaendert hat.
+
+   DIE AUFTEILUNG (Entscheid DG-Q4). Alles, was JE BILDAUFBAU anfaellt - Rad,
+   Kneifgeste, Ziehen, Rechteck, Tasten, die Zeigerstunde -, macht das Modul
+   epos-diagramm.js im viewBox-Modus. Blazor fuehrt den ZUSTAND: welche Reihe
+   aus ist, welches Fenster steht, welche Stunde der Zeiger meldet, und es
+   zeichnet die Achsenteilung des Fensters nach.
+
+   DG-E2-1, DIE BEDIENUNG DER LEGENDE. Ein Klick auf den TEXT eines
+   Legendeneintrags blendet die Reihe aus und wieder ein; ein Klick auf das
+   FARBFELD desselben Eintrags oeffnet den Farbwaehler unmittelbar am Bild
+   (Farbrollen, Bedienung Teil 2). Der Eintrag ist fokussierbar
+   (role="button", tabindex="0"): Eingabe und Leertaste schalten,
+   Umschalt+Eingabe oeffnet den Waehler. Eine Reihe mit FEST gerechneter Farbe
+   bekommt keinen Waehler - eine Rolle, auf die die Einstellung zeigen
+   koennte, gibt es dort nicht.
+
+   OHNE JAVASCRIPT BRICHT NICHTS. Laedt das Modul nicht (alte WebView,
+   Pruefumgebung), steht das Bild da - ohne Zoom, aber vollstaendig, mit
+   Legende und Farbwahl. Das ist ein Schoenheitsfehler, kein Fehlschlag.
+
+   DIE TEXTE STEHEN ALS PARAMETER mit deutschem Standardwert, nicht als
+   Ressourcenschluessel - dieselbe Regel wie beim Baustein Diagramm. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+@using System.Threading
+@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.JSInterop
+@using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@implements IAsyncDisposable
+@inject IJSRuntime Js
+
+@if (Modell is null)
+{
+    <div class="epos-chartbild-platzhalter">@PlatzhalterText</div>
+}
+else
+{
+    <div class="epos-diagramm-svg">
+
+        @* OHNE ZEICHENFLAECHE KEINE LEISTE. Ein Modell ohne Reihen traegt nur
+           den Leerhinweis; dort gaebe es weder etwas zu zoomen noch einen Wert
+           am Zeiger - dieselbe Ausnahme, die der Baustein Diagramm mit
+           OhneZoom macht. *@
+        @if (Bedienbar)
+        {
+            <div class="epos-diagramm-leiste">
+                <span class="epos-diagramm-stufe" aria-live="polite">@Stufentext</span>
+
+                <button type="button" class="epos-diagramm-knopf"
+                        aria-pressed="@(_bereich ? "true" : "false")"
+                        title="@BereichHilfe" @onclick="BereichUmschalten">@BereichText</button>
+
+                <button type="button" class="epos-diagramm-knopf" title="@ZurueckHilfe"
+                        @onclick="ZurueckGewaehlt">@ZurueckText</button>
+            </div>
+        }
+
+        @* role="group" statt role="img": Die Legendeneintraege SIND Bedienelemente,
+           und eine Sprachausgabe erreicht sie in einem Bild nicht mehr. tabindex
+           macht die Flaeche fuer die Tasten + - 0 erreichbar. *@
+        <div class="epos-diagramm-svg-flaeche" @ref="_flaeche"
+             tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung">
+
+            @Bildfragment
+
+            @* Das aufgezogene Rechteck des Bereichsmodus - dasselbe Element wie
+               im Baustein Diagramm, damit das Modul es dort findet. *@
+            <div class="epos-diagramm-gummi" hidden></div>
+
+            @if (_farbwahl is not null)
+            {
+                @* Die Schliessflaeche faengt den Klick daneben - Hausregel: ein
+                   Aufklapper haengt sein Schliessen nie an focusout. *@
+                <div class="epos-farbwahl-schliessflaeche" @onclick="FarbwahlSchliessen"></div>
+
+                <div class="epos-farbwahl" style="@FarbwahlLage" @onkeydown="BeiFarbwahlTaste">
+                    <Farbfeld Bezeichnung="@FarbwahlName" Kennung="@FarbwahlKennung"
+                              Wert="@FarbwahlWert" Vorgabe="@FarbwahlVorgabe"
+                              Stand="@_farbstand" WertChanged="BeiFarbe" />
+                    <button type="button" class="epos-knopf"
+                            @onclick="BeiHausfarbe">@HausfarbeText</button>
+                </div>
+            }
+        </div>
+
+        @* Die Zeigerzeile steht immer, auch leer: Sonst spraenge das Bild, sobald
+           der Zeiger die Flaeche betritt. *@
+        @if (HatFlaeche)
+        {
+            <div class="epos-diagramm-zeigerzeile" aria-live="polite">@Zeigerzeile</div>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Der Pfad des JS-Moduls — derselbe wie beim Baustein <c>Diagramm</c>.</summary>
+    private const string MODUL = "./_content/EPOS.UI/epos-diagramm.js";
+
+    private const string KLASSE_EINTRAG = "epos-legende-eintrag";
+    private const string KLASSE_FARBFELD = "epos-legende-farbfeld";
+    private const string KLASSE_AUS = "epos-legende--aus";
+    private const string MARKE_LEGENDE = "legende:";
+    private const string MARKE_XACHSE = "xachse";
+
+    private static readonly CultureInfo INV = CultureInfo.InvariantCulture;
+
+    // =====================================================================
+    //  Gaben
+    // =====================================================================
+
+    /// <summary>
+    /// Das Bild als Zeichenmodell (<c>ChartRenderer.JahresgangModell</c> und die
+    /// Geschwister, die mit E3 folgen). <c>null</c> zeigt den Platzhalter.
+    /// </summary>
+    [Parameter] public Zeichenmodell? Modell { get; set; }
+
+    /// <summary>Was das Diagramm zeigt (<c>aria-label</c> der Fläche).</summary>
+    [Parameter] public string Bezeichnung { get; set; } = "";
+
+    /// <summary>
+    /// Der Namensvorsatz der <c>clipPath</c>-Kennungen — er muss je Instanz
+    /// EINDEUTIG sein, sonst schneidet das eine Bild am Rechteck des anderen.
+    /// Leer nimmt einen Zähler, der je Komponenteninstanz einmal zieht.
+    /// </summary>
+    [Parameter] public string Kennung { get; set; } = "";
+
+    /// <summary>
+    /// Die Palette, gegen die die Farbrollen aufgelöst werden; <c>null</c> nimmt
+    /// <see cref="Farbpalette.Aktuell"/> zum Renderzeitpunkt.
+    ///
+    /// <para><b>Wer die Farbwahl anbietet, übergibt sie ausdrücklich</b> — dann
+    /// wechselt mit der Palette auch die Referenz, und der Baum wird neu gebaut.</para>
+    /// </summary>
+    [Parameter] public Farbpalette? Palette { get; set; }
+
+    /// <summary>
+    /// KEIN ZOOM an diesem Bild — weder Leiste noch Rad, Ziehen, Kneifgeste oder
+    /// Tasten. Legende und Farbwahl bleiben.
+    /// </summary>
+    [Parameter] public bool OhneZoom { get; set; }
+
+    /// <summary>Darf ein Klick auf den Legendentext die Reihe ausblenden?</summary>
+    [Parameter] public bool LegendeSchaltbar { get; set; } = true;
+
+    /// <summary>
+    /// Darf ein Klick auf das Farbfeld der Legende den Farbwähler öffnen? Er
+    /// erscheint nur, wenn zugleich <see cref="FarbeGewaehlt"/> belegt ist —
+    /// ein Wähler ohne Empfänger wäre ein Versprechen, das niemand einlöst.
+    /// </summary>
+    [Parameter] public bool FarbwahlErlaubt { get; set; }
+
+    /// <summary>Der Anwender hat eine Farbe für diese Rolle gewählt.</summary>
+    [Parameter] public EventCallback<(Farbrolle Rolle, Farbe Farbe)> FarbeGewaehlt { get; set; }
+
+    /// <summary>„Hausfarbe": Die Rolle soll wieder die Vorgabefarbe tragen.</summary>
+    [Parameter] public EventCallback<Farbrolle> FarbeZurueckgesetzt { get; set; }
+
+    /// <summary>
+    /// Der Zeitausschnitt hat sich geändert; <c>null</c> = wieder die Vollansicht.
+    ///
+    /// <para><b>Das Bild braucht dafür NICHTS</b> — der Zoom liegt in der viewBox,
+    /// und die Reihen liegen roh vor. Der Rückruf ist für den Wirt, der den
+    /// Ausschnitt merken oder drucken will.</para>
+    /// </summary>
+    [Parameter] public EventCallback<ChartRenderer.Achsenfenster?> FensterGeaendert { get; set; }
+
+    /// <summary>Text, solange es noch kein Modell gibt.</summary>
+    [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
+
+    /// <summary>Die Einheit der Werte in der Zeigerzeile („°C", „kW"); leer lässt sie weg.</summary>
+    [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>Beschriftung des Knopfs, der auf 1:1 zurückstellt.</summary>
+    [Parameter] public string ZurueckText { get; set; } = "1:1";
+
+    /// <summary>Sein Mouseover-Text.</summary>
+    [Parameter] public string ZurueckHilfe { get; set; }
+        = "Zurück zur vollen Ansicht (Doppelklick oder Taste 0)";
+
+    /// <summary>Beschriftung des Umschalters „Bereich aufziehen".</summary>
+    [Parameter] public string BereichText { get; set; } = "Bereich";
+
+    /// <summary>Sein Mouseover-Text.</summary>
+    [Parameter] public string BereichHilfe { get; set; }
+        = "Einen Zeitbereich aufziehen (mit der Maus auch Umschalt + Ziehen)";
+
+    /// <summary>Der Knopf im Farbwähler, der die Hausfarbe wiederherstellt.</summary>
+    [Parameter] public string HausfarbeText { get; set; } = "Hausfarbe";
+
+    // =====================================================================
+    //  Zustand
+    // =====================================================================
+
+    private static int _naechsteKennung;
+
+    /// <summary>Die eigene Kennung — einmal je Instanz gezogen, nie zweimal dieselbe.</summary>
+    private readonly string _eigeneKennung =
+        "dsvg" + Interlocked.Increment(ref _naechsteKennung).ToString(INV);
+
+    private ElementReference _flaeche;
+    private IJSObjectReference? _modul;
+    private DotNetObjectReference<DiagrammSvg>? _hilfe;
+    private bool _gebunden;
+    private Zeichenmodell? _modellGebunden;
+
+    /// <summary>Der gebaute SVG-Baum samt den Gaben, aus denen er entstand.</summary>
+    private SvgKnoten? _baum;
+    private Zeichenmodell? _baumModell;
+    private Farbpalette? _baumPalette;
+    private string _baumKennung = "";
+
+    private double _stufe = 1;
+    private bool _bereich;
+
+    /// <summary>Die ausgeblendeten Reihen (Schlüssel = Name der Reihe).</summary>
+    private readonly HashSet<string> _versteckt = new(StringComparer.Ordinal);
+
+    /// <summary>Der stehende Zeitausschnitt in Jahresstunden; <c>null</c> = Vollansicht.</summary>
+    private (int Von, int Bis)? _fenster;
+
+    /// <summary>Die Stunde unter dem Zeiger; <c>null</c> = der Zeiger ist weg.</summary>
+    private int? _zeiger;
+
+    /// <summary>Der Name des Legendeneintrags, dessen Farbwähler offen steht.</summary>
+    private string? _farbwahl;
+
+    /// <summary>Arbeitsstand des Farbfeldes — er verwirft eine stehengebliebene Fehleingabe.</summary>
+    private int _farbstand;
+
+    // =====================================================================
+    //  Prüfhilfen (bunit liest sie statt der DOM-Innereien)
+    // =====================================================================
+
+    /// <summary>Die angezeigte Zoomstufe.</summary>
+    public double Stufe => _stufe;
+
+    /// <summary>Steht der Umschalter „Bereich" an?</summary>
+    public bool Bereichsmodus => _bereich;
+
+    /// <summary>Ist die Reihe ausgeblendet?</summary>
+    public bool IstAus(string reihe) => _versteckt.Contains(reihe ?? "");
+
+    /// <summary>Der stehende Zeitausschnitt; <c>null</c> = Vollansicht.</summary>
+    public (int Von, int Bis)? Fenster => _fenster;
+
+    // =====================================================================
+    //  Ableitungen
+    // =====================================================================
+
+    /// <summary>Die Palette dieses Zeichenlaufs.</summary>
+    private Farbpalette AktivePalette => Palette ?? Farbpalette.Aktuell;
+
+    private string KennungOderZaehler
+        => string.IsNullOrWhiteSpace(Kennung) ? _eigeneKennung : Kennung.Trim();
+
+    /// <summary>
+    /// Hat das Bild eine Zeichenfläche MIT Reihen? Nur dann gibt es ein inneres
+    /// <c>&lt;svg&gt;</c> in Datenkoordinaten — und nur dann etwas zu bedienen.
+    /// </summary>
+    private bool HatFlaeche => Modell?.Flaeche is not null && Modell.Reihen.Count > 0;
+
+    private bool Bedienbar => !OhneZoom && HatFlaeche;
+
+    private bool FarbwahlMoeglich => FarbwahlErlaubt && FarbeGewaehlt.HasDelegate;
+
+    private string Stufentext => "×" + _stufe.ToString("0.#", CultureInfo.CurrentCulture);
+
+    // =====================================================================
+    //  Der Baum
+    // =====================================================================
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        // Der Baum wird nur neu gebaut, wenn sich sein Gegenstand geaendert hat:
+        // ein anderes Modell, eine andere Palette, eine andere Kennung. Ein
+        // Zeichenlauf des Wirtes allein kostet dann nichts.
+        if (Modell is null)
+        {
+            _baum = null;
+            _baumModell = null;
+            return;
+        }
+
+        if (ReferenceEquals(_baumModell, Modell) &&
+            ReferenceEquals(_baumPalette, AktivePalette) &&
+            string.Equals(_baumKennung, KennungOderZaehler, StringComparison.Ordinal)) return;
+
+        if (!ReferenceEquals(_baumModell, Modell))
+        {
+            // EIN ANDERES BILD IST EINE ANDERE REIHE: Ausschnitt, Zeiger und
+            // ausgeblendete Reihen haben fuer das neue keine Bedeutung.
+            _versteckt.Clear();
+            _fenster = null;
+            _zeiger = null;
+            _stufe = 1;
+            _farbwahl = null;
+        }
+
+        _baumModell = Modell;
+        _baumPalette = AktivePalette;
+        _baumKennung = KennungOderZaehler;
+        _baum = SvgSchreiber.Baum(Modell, _baumPalette, _baumKennung);
+    }
+
+    /// <summary>Der SVG-Baum als Razor-Elemente.</summary>
+    private RenderFragment Bildfragment => builder =>
+    {
+        if (_baum is not null) Zeichne(builder, _baum);
+    };
+
+    /// <summary>
+    /// EIN Knoten samt Kindern. Die Anreicherung steht hier und nicht im Kern:
+    /// Der Schreiber liefert das Bild, die Oberfläche die Bedienung.
+    /// </summary>
+    private void Zeichne(RenderTreeBuilder builder, SvgKnoten knoten)
+    {
+        string? legende = Legendenname(knoten.Marke);
+        bool eintragText = legende is not null && knoten.Name == "text" && LegendeSchaltbar;
+        bool eintragFeld = legende is not null && knoten.Name == "rect" &&
+                           FarbwahlMoeglich && RolleDerReihe(legende) is not null;
+
+        builder.OpenElement(0, knoten.Name);
+        builder.AddMultipleAttributes(1, Attribute(knoten, legende, eintragText, eintragFeld));
+
+        if (eintragText)
+        {
+            builder.AddAttribute(2, "onclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => ReiheUmschalten(legende!)));
+            builder.AddAttribute(3, "onkeydown",
+                EventCallback.Factory.Create<KeyboardEventArgs>(
+                    this, e => BeiLegendentaste(e, legende!)));
+        }
+        if (eintragFeld)
+        {
+            builder.AddAttribute(4, "onclick",
+                EventCallback.Factory.Create<MouseEventArgs>(this, () => FarbwahlOeffnen(legende!)));
+        }
+
+        if (!string.IsNullOrEmpty(knoten.Inhalt)) builder.AddContent(5, knoten.Inhalt);
+
+        // In einer Schleife mit veraenderlicher Tiefe: OpenRegion je Kind
+        // (Hausregel) - ein laufender Zaehler verschoebe alle folgenden Nummern.
+        int i = 0;
+        foreach (SvgKnoten kind in knoten.Kinder)
+        {
+            builder.OpenRegion(6 + i);
+            Zeichne(builder, kind);
+            builder.CloseRegion();
+            i++;
+        }
+
+        // Die Zeigerlinie gehoert IN die Datenflaeche - dort ist x die Stunde.
+        if (IstDatenflaeche(knoten) && _zeiger.HasValue)
+        {
+            builder.OpenRegion(1000000);
+            Zeigerlinie(builder, _zeiger.Value);
+            builder.CloseRegion();
+        }
+
+        // Die nachgezeichnete Achsenteilung gehoert an die WURZEL: Sie steht in
+        // Bildpunkten, nicht in Datenkoordinaten (DG-E2-3).
+        if (ReferenceEquals(knoten, _baum) && _fenster is not null)
+        {
+            builder.OpenRegion(1000001);
+            Ticks(builder, _fenster.Value.Von, _fenster.Value.Bis);
+            builder.CloseRegion();
+        }
+
+        builder.CloseElement();
+    }
+
+    /// <summary>
+    /// Die Attribute EINES Knotens: die des Schreibers, dazu die der Bedienung.
+    /// Sie gehen als EIN Satz hinein (<c>AddMultipleAttributes</c>) — bei einer
+    /// veränderlichen Attributmenge ist das der Weg, den Blazor sauber diffen kann.
+    /// </summary>
+    private IEnumerable<KeyValuePair<string, object>> Attribute(
+        SvgKnoten knoten, string? legende, bool eintragText, bool eintragFeld)
+    {
+        var klassen = new List<string>(3);
+        if (eintragText) klassen.Add(KLASSE_EINTRAG);
+        if (eintragFeld) klassen.Add(KLASSE_FARBFELD);
+        if (legende is not null && _versteckt.Contains(legende)) klassen.Add(KLASSE_AUS);
+
+        bool versteckt = false;
+        string? reihe = Reihenname(knoten);
+        if (reihe is not null && _versteckt.Contains(reihe)) versteckt = true;
+        if (_fenster is not null && knoten.Marke == MARKE_XACHSE) versteckt = true;
+
+        var werte = new List<KeyValuePair<string, object>>(knoten.Attribute.Count + 5);
+        bool klasseGesetzt = false;
+
+        foreach (KeyValuePair<string, string> a in knoten.Attribute)
+        {
+            if (string.Equals(a.Key, "class", StringComparison.Ordinal) && klassen.Count > 0)
+            {
+                werte.Add(new KeyValuePair<string, object>(
+                    "class", a.Value + " " + string.Join(" ", klassen)));
+                klasseGesetzt = true;
+            }
+            else werte.Add(new KeyValuePair<string, object>(a.Key, a.Value));
+        }
+
+        if (!klasseGesetzt && klassen.Count > 0)
+            werte.Add(new KeyValuePair<string, object>("class", string.Join(" ", klassen)));
+
+        if (versteckt) werte.Add(new KeyValuePair<string, object>("display", "none"));
+
+        if (eintragText || eintragFeld)
+            werte.Add(new KeyValuePair<string, object>("data-legende", legende!));
+
+        if (eintragText)
+        {
+            werte.Add(new KeyValuePair<string, object>("role", "button"));
+            werte.Add(new KeyValuePair<string, object>("tabindex", "0"));
+        }
+
+        // DIE VOLLE viewBox ALS EIGENES ATTRIBUT: Das Modul liest sie von hier,
+        // waehrend es die viewBox selbst veraendert. Wechselt das Modell, wechselt
+        // auch dieser Wert - so kennt das Modul nie veraltete Grenzen.
+        if (IstDatenflaeche(knoten) && Modell?.Flaeche is not null)
+        {
+            Datenfenster d = Modell.Flaeche.Daten;
+            werte.Add(new KeyValuePair<string, object>(
+                "data-voll", Wert(d.XVon) + " 0 " + Wert(Breite(d)) + " " + Wert(Hoehe(d))));
+        }
+
+        return werte;
+    }
+
+    /// <summary>Die Zeigerlinie im inneren <c>&lt;svg&gt;</c> — x ist die Stunde.</summary>
+    private void Zeigerlinie(RenderTreeBuilder builder, int stunde)
+    {
+        if (Modell?.Flaeche is null) return;
+        Datenfenster d = Modell.Flaeche.Daten;
+
+        builder.OpenElement(0, "line");
+        builder.AddAttribute(1, "class", "epos-diagramm-zeiger");
+        builder.AddAttribute(2, "x1", Wert(stunde));
+        builder.AddAttribute(3, "y1", "0");
+        builder.AddAttribute(4, "x2", Wert(stunde));
+        builder.AddAttribute(5, "y2", Wert(Hoehe(d)));
+        builder.AddAttribute(6, "vector-effect", "non-scaling-stroke");
+        builder.CloseElement();
+    }
+
+    /// <summary>
+    /// Die Achsenteilung des Fensters, in BILDPUNKTEN. Beim Zoom blendet die
+    /// Komponente die Elemente mit der Marke <c>xachse</c> aus und zeichnet diese
+    /// Gruppe an ihrer Stelle — dieselbe Regel, mit der
+    /// <c>ChartRenderer.XAchseFenster</c> sie ins PNG setzt (DG-E2-3).
+    /// </summary>
+    private void Ticks(RenderTreeBuilder builder, int von, int bis)
+    {
+        if (Modell?.Flaeche is null) return;
+        Rahmen bild = Modell.Flaeche.Bild;
+        double spanne = bis - von;
+        if (spanne <= 0) return;
+
+        string rasterfarbe = Hex(Farbrolle.RASTER);
+        string textfarbe = Hex(Farbrolle.ACHSE);
+        float unten = bild.Unten;
+
+        builder.OpenElement(0, "g");
+        builder.AddAttribute(1, "class", "epos-diagramm-ticks");
+
+        int i = 0;
+        foreach ((int stunde, string beschriftung) in ChartRenderer.Jahresstundenteilung(von, bis))
+        {
+            float x = bild.X + (float)((stunde - von) / spanne) * bild.Breite;
+
+            builder.OpenRegion(2 + i);
+
+            builder.OpenElement(0, "line");
+            builder.AddAttribute(1, "x1", Px(x));
+            builder.AddAttribute(2, "y1", Px(bild.Y));
+            builder.AddAttribute(3, "x2", Px(x));
+            builder.AddAttribute(4, "y2", Px(unten));
+            builder.AddAttribute(5, "stroke", rasterfarbe);
+            builder.AddAttribute(6, "stroke-width", "1");
+            builder.AddAttribute(7, "stroke-dasharray", "2 4");
+            builder.CloseElement();
+
+            builder.OpenElement(10, "text");
+            builder.AddAttribute(11, "x", Px(x));
+            builder.AddAttribute(12, "y", Px(unten + 8f));
+            builder.AddAttribute(13, "font-size", "20px");
+            builder.AddAttribute(14, "text-anchor", "middle");
+            builder.AddAttribute(15, "dominant-baseline", "text-before-edge");
+            builder.AddAttribute(16, "fill", textfarbe);
+            builder.AddContent(17, beschriftung);
+            builder.CloseElement();
+
+            builder.CloseRegion();
+            i++;
+        }
+
+        // Im Fenster zaehlt die Achse IMMER Jahresstunden - auch wenn das Bild
+        // sonst Monatsgrenzen traegt.
+        builder.OpenRegion(1000000);
+        builder.OpenElement(0, "text");
+        builder.AddAttribute(1, "class", "epos-diagramm-achsentitel");
+        builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
+        builder.AddAttribute(3, "y", Px(unten + 30f));
+        builder.AddAttribute(4, "font-size", "20px");
+        builder.AddAttribute(5, "text-anchor", "middle");
+        builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
+        builder.AddAttribute(7, "fill", textfarbe);
+        builder.AddContent(8, Resource.CHART_ACHSE_JAHRESSTUNDEN);
+        builder.CloseElement();
+        builder.CloseRegion();
+
+        builder.CloseElement();
+    }
+
+    // =====================================================================
+    //  Die Legende
+    // =====================================================================
+
+    /// <summary>Der Name des Legendeneintrags einer Marke; <c>null</c> = keiner.</summary>
+    private static string? Legendenname(string? marke)
+        => marke is not null && marke.StartsWith(MARKE_LEGENDE, StringComparison.Ordinal)
+            ? marke.Substring(MARKE_LEGENDE.Length)
+            : null;
+
+    /// <summary>Der Name der Reihe, die dieser Knoten zeichnet; <c>null</c> = keine.</summary>
+    private static string? Reihenname(SvgKnoten knoten)
+    {
+        if (knoten.Name != "path") return null;
+        foreach (KeyValuePair<string, string> a in knoten.Attribute)
+            if (string.Equals(a.Key, "data-reihe", StringComparison.Ordinal)) return a.Value;
+        return null;
+    }
+
+    private bool IstDatenflaeche(SvgKnoten knoten)
+    {
+        if (knoten.Name != "svg") return false;
+        foreach (KeyValuePair<string, string> a in knoten.Attribute)
+            if (string.Equals(a.Key, "class", StringComparison.Ordinal) &&
+                a.Value == SvgSchreiber.KLASSE_FLAECHE) return true;
+        return false;
+    }
+
+    private Task ReiheUmschalten(string reihe)
+    {
+        if (!_versteckt.Remove(reihe)) _versteckt.Add(reihe);
+        return Task.CompletedTask;
+    }
+
+    private Task BeiLegendentaste(KeyboardEventArgs e, string reihe)
+    {
+        if (e.Key is "Enter" or " " or "Spacebar")
+        {
+            if (e.ShiftKey) FarbwahlOeffnen(reihe);
+            else return ReiheUmschalten(reihe);
+        }
+        return Task.CompletedTask;
+    }
+
+    // =====================================================================
+    //  Der Farbwähler am Bild (DG-E2-1, Farbrollen Teil 2)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Farbrolle einer Reihe — oder <c>null</c>, wenn es keine gibt, auf die
+    /// eine Einstellung zeigen könnte.
+    ///
+    /// <para>Zwei Fälle fallen heraus: eine Reihe mit <see cref="Farbton.Fest"/>
+    /// (im Layout gerechnet — die Einstellung erreichte sie nicht) und eine Rolle,
+    /// die die Rollenliste nicht führt (<c>UNBENANNT</c>).</para>
+    /// </summary>
+    private Farbrolle? RolleDerReihe(string reihe)
+    {
+        if (Modell is null) return null;
+        foreach (Datenreihe r in Modell.Reihen)
+        {
+            if (!string.Equals(r.Name ?? "", reihe, StringComparison.Ordinal)) continue;
+            if (r.Ton is null || r.Ton.Fest.HasValue) return null;
+            return Diagrammfarben.Rolle(r.Ton.Rolle?.Name ?? "");
+        }
+        return null;
+    }
+
+    private void FarbwahlOeffnen(string reihe)
+    {
+        if (!FarbwahlMoeglich || RolleDerReihe(reihe) is null) return;
+        _farbwahl = reihe;
+        _farbstand++;
+    }
+
+    private void FarbwahlSchliessen() => _farbwahl = null;
+
+    private void BeiFarbwahlTaste(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape") FarbwahlSchliessen();
+    }
+
+    private Farbrolle? OffeneRolle => _farbwahl is null ? null : RolleDerReihe(_farbwahl);
+
+    private string FarbwahlName
+        => OffeneRolle is null ? "" : Diagrammfarben.Anzeigename(OffeneRolle);
+
+    private string FarbwahlKennung
+        => KennungOderZaehler + "-farbe-" + (OffeneRolle?.Name ?? "");
+
+    private string FarbwahlWert
+        => OffeneRolle is null ? "#000000" : Diagrammfarben.Hex(AktivePalette[OffeneRolle]);
+
+    private string FarbwahlVorgabe
+        => OffeneRolle is null ? "#000000" : Diagrammfarben.Hex(Farbpalette.Vorgabe[OffeneRolle]);
+
+    /// <summary>
+    /// Die Lage des Wählers am Eintrag — in PROZENT des Bildes, nicht in
+    /// Bildpunkten: Das SVG füllt die Breite seines Rahmens, also verschiebt sich
+    /// der Eintrag mit. Gerechnet wird aus dem Farbfeld des Eintrags im Baum.
+    /// </summary>
+    private string FarbwahlLage
+    {
+        get
+        {
+            if (_baum is null || Modell is null || _farbwahl is null) return "";
+            string marke = MARKE_LEGENDE + _farbwahl;
+            foreach (SvgKnoten k in _baum.Alle())
+            {
+                if (k.Name != "rect" || k.Marke != marke) continue;
+                double x = Zahl(k, "x"), y = Zahl(k, "y"), h = Zahl(k, "height");
+                return "left: " + Px(x / Modell.Breite * 100.0) + "%; top: "
+                     + Px((y + h + 4.0) / Modell.Hoehe * 100.0) + "%;";
+            }
+            return "";
+        }
+    }
+
+    private static double Zahl(SvgKnoten knoten, string name)
+    {
+        foreach (KeyValuePair<string, string> a in knoten.Attribute)
+            if (string.Equals(a.Key, name, StringComparison.Ordinal))
+                return double.TryParse(a.Value, NumberStyles.Float, INV, out double w) ? w : 0.0;
+        return 0.0;
+    }
+
+    private async Task BeiFarbe(string hex)
+    {
+        Farbrolle? rolle = OffeneRolle;
+        if (rolle is null) { FarbwahlSchliessen(); return; }
+
+        // Die DECKUNG bleibt die der Hausfarbe - der Anwender waehlt den Farbton,
+        // die Durchsichtigkeit gehoert zum Bildaufbau (Farbrollen, Abschnitt 9).
+        if (!Diagrammfarben.Lies(hex, Farbpalette.Vorgabe[rolle].A, out Farbe farbe)) return;
+
+        FarbwahlSchliessen();
+        await FarbeGewaehlt.InvokeAsync((rolle, farbe));
+    }
+
+    private async Task BeiHausfarbe()
+    {
+        Farbrolle? rolle = OffeneRolle;
+        FarbwahlSchliessen();
+        if (rolle is not null && FarbeZurueckgesetzt.HasDelegate)
+            await FarbeZurueckgesetzt.InvokeAsync(rolle);
+    }
+
+    // =====================================================================
+    //  Die Zeigerzeile
+    // =====================================================================
+
+    /// <summary>
+    /// „4.000 h · Temperatur: 12,3 °C · …" — die Werte unter dem Zeiger, gelesen
+    /// aus dem Modell. <b>Kein Kernaufruf:</b> Das Modul meldet die STUNDE, der
+    /// Index in die Reihe ist Stunde − <c>XVon</c>.
+    /// </summary>
+    private string Zeigerzeile
+    {
+        get
+        {
+            if (!_zeiger.HasValue || Modell?.Flaeche is null) return "";
+
+            int index = (int)Math.Round(_zeiger.Value - Modell.Flaeche.Daten.XVon);
+            var teile = new List<string>(Modell.Reihen.Count + 1)
+            {
+                _zeiger.Value.ToString("N0", CultureInfo.CurrentCulture) + " h"
+            };
+
+            foreach (Datenreihe r in Modell.Reihen)
+            {
+                string name = r.Name ?? "";
+                if (_versteckt.Contains(name)) continue;
+                if (r.Werte is null || index < 0 || index >= r.Werte.Length) continue;
+
+                string wert = r.Werte[index].ToString("0.###", CultureInfo.CurrentCulture);
+                teile.Add(string.IsNullOrEmpty(Einheit)
+                    ? name + ": " + wert
+                    : name + ": " + wert + " " + Einheit);
+            }
+            return string.Join(" · ", teile);
+        }
+    }
+
+    // =====================================================================
+    //  Das JS-Modul
+    // =====================================================================
+
+    /// <inheritdoc/>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!Bedienbar) return;
+
+        if (!_gebunden)
+        {
+            // NUR EIN VERSUCH je Komponente: Schlaegt der Import fehl, bleibt das
+            // Bild starr - ein Wiederholen bei jedem Zeichenlauf brächte nichts.
+            _gebunden = true;
+            _modellGebunden = Modell;
+            try
+            {
+                _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+                _hilfe = DotNetObjectReference.Create(this);
+                await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe, new { modus = "viewbox" });
+            }
+            catch (Exception)
+            {
+                // Ohne Modul bleibt das Bild stehen - kein Fehlschlag.
+                _modul = null;
+            }
+            return;
+        }
+
+        if (!ReferenceEquals(_modellGebunden, Modell))
+        {
+            // Ein anderes Bild heisst andere Grenzen: Das Modul faengt von vorn an.
+            _modellGebunden = Modell;
+            await Zuruecksetzen();
+        }
+    }
+
+    /// <summary>Das Modul meldet eine neue Zoomstufe (nur bei Änderung).</summary>
+    [JSInvokable]
+    public Task ZoomGemeldet(double stufe)
+    {
+        _stufe = stufe;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Das Modul meldet den sichtbaren Zeitausschnitt in ganzen Jahresstunden —
+    /// am ENDE einer Geste, nicht bei jeder Radrast.
+    ///
+    /// <para>Deckt er das ganze Bild ab, ist das die Vollansicht: Die
+    /// Achsenteilung des Modells gilt wieder, und der Wirt bekommt <c>null</c>.</para>
+    /// </summary>
+    [JSInvokable]
+    public async Task FensterGemeldet(int von, int bis)
+    {
+        if (Modell?.Flaeche is null) return;
+        Datenfenster d = Modell.Flaeche.Daten;
+
+        bool voll = von <= (int)Math.Ceiling(d.XVon) && bis >= (int)Math.Floor(d.XBis);
+        _fenster = voll ? null : (von, bis);
+        _farbwahl = null;
+        StateHasChanged();
+
+        if (!FensterGeaendert.HasDelegate) return;
+
+        // Achsenfenster.Bis ist AUSSCHLIESSLICH, die gemeldete Stunde einschliesslich.
+        await FensterGeaendert.InvokeAsync(
+            voll ? null : new ChartRenderer.Achsenfenster(von, bis + 1));
+    }
+
+    /// <summary>
+    /// Das Modul meldet die Stunde unter dem Zeiger (höchstens einmal je
+    /// Bildaufbau), <c>null</c> beim Verlassen der Fläche.
+    /// </summary>
+    [JSInvokable]
+    public Task ZeigerGemeldet(int? stunde)
+    {
+        _zeiger = stunde;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Der Knopf „1:1": volle Ansicht, und der Wirt erfährt davon.</summary>
+    private async Task ZurueckGewaehlt()
+    {
+        bool hatteFenster = _fenster is not null;
+        await Zuruecksetzen();
+        if (hatteFenster && FensterGeaendert.HasDelegate)
+            await FensterGeaendert.InvokeAsync(null);
+    }
+
+    /// <summary>Zurück auf die volle viewBox — Bild und Zustand.</summary>
+    private async Task Zuruecksetzen()
+    {
+        _stufe = 1;
+        _fenster = null;
+        _zeiger = null;
+        _farbwahl = null;
+        StateHasChanged();
+
+        if (_modul is null) return;
+        try { await _modul.InvokeVoidAsync("zuruecksetzen", _flaeche); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
+
+    /// <summary>Schaltet das Aufziehen eines Rechtecks ein und aus.</summary>
+    private async Task BereichUmschalten()
+    {
+        _bereich = !_bereich;
+        if (_modul is null) return;
+        try { await _modul.InvokeVoidAsync("bereichsmodus", _flaeche, _bereich); }
+        catch (Exception) { /* Die WebView ist schon weg. */ }
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is not null)
+        {
+            try
+            {
+                await _modul.InvokeVoidAsync("loesen", _flaeche);
+                await _modul.DisposeAsync();
+            }
+            catch (Exception) { /* Die WebView ist schon weg. */ }
+        }
+        _hilfe?.Dispose();
+    }
+
+    // =====================================================================
+    //  Kleinigkeiten
+    // =====================================================================
+
+    private static double Breite(Datenfenster d)
+    {
+        double b = d.XBis - d.XVon;
+        return b <= 0 ? 1 : b;
+    }
+
+    private static double Hoehe(Datenfenster d)
+    {
+        double h = d.YBis - d.YVon;
+        return h <= 0 ? 1 : h;
+    }
+
+    /// <summary>Ein Bildpunktmaß — dieselbe Schreibweise wie im <c>SvgSchreiber</c>.</summary>
+    private static string Px(double wert) => wert.ToString("0.##", INV);
+
+    /// <summary>Ein Datenwert — drei Nachkommastellen, wie im Achsentext.</summary>
+    private static string Wert(double wert) => wert.ToString("0.###", INV);
+
+    private string Hex(Farbrolle rolle) => Diagrammfarben.Hex(AktivePalette[rolle]);
+}
