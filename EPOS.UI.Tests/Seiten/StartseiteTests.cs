@@ -452,6 +452,46 @@ public class StartseiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Ein Auffrischen liest auch die KLIMAREGIONEN neu</b> (Welle GM‑1).
+    ///
+    /// <para>Die Seite liest die Regionsliste allein in <c>Laden</c>. Das
+    /// Klimadatenfenster legt Regionen an und löscht sie; ohne diesen Nachzug
+    /// fehlte eine importierte Region im Auswahlfeld bis zum Projektwechsel, und
+    /// eine gelöschte bliebe darin stehen.</para>
+    /// </summary>
+    [Fact]
+    public void Ein_Auffrischen_liest_die_Klimaregionen_neu()
+    {
+        SeitenZustand zustand = new SeitenZustand();
+        List<(int Id, string Text)> regionen = new List<(int Id, string Text)>
+        {
+            (47, "München"), (17, "Berlin")
+        };
+
+        var cut = Render<Startseite>(p => p
+            .Add(x => x.Zustand, zustand)
+            .Add(x => x.Kacheln, () => Kacheln())
+            .Add(x => x.ProjektId, () => 1030)
+            .Add(x => x.Varianten, () => new[] { (1030, "Referenzprojekt") })
+            .Add(x => x.Klimaregionen, () => regionen)
+            .Add(x => x.KlimaregionId, () => 47)
+            .Add(x => x.Bericht, Bereitschaft));
+
+        Klimafeld(cut).Click();
+        cut.WaitForAssertion(() => Assert.Equal(2, cut.FindAll("li[role='option']").Count));
+
+        // Der Import im Klimadatenfenster: eine Region mehr. Die Huelle meldet es
+        // ueber den Zustand (KlimadatenHuelle -> StartseiteHuelle).
+        regionen.Add((46, "Tübingen"));
+        cut.InvokeAsync(() => zustand.Auffrischen());
+
+        Klimafeld(cut).Click();
+        cut.WaitForAssertion(() => Assert.Equal(
+            new[] { "München", "Berlin", "Tübingen" },
+            cut.FindAll("li[role='option']").Select(e => e.TextContent.Trim()).ToArray()));
+    }
+
+    /// <summary>
     /// Ohne offenes Projekt steht die Seite auf Reiter 1 — wörtlich der
     /// Anfangszustand von <c>Form_Start_Load</c>. Ein Wechsel auf „kein Projekt"
     /// (das offene wurde gelöscht) holt sie dorthin zurück.

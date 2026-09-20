@@ -75,6 +75,15 @@ namespace WindowsFormsApplication1
         /// <c>Hauptfensterrahmen.MenuItem_Klimadaten_Click</c>.
         ///
         /// <para><b>Mit Besitzer und in einem <c>using</c></b> (Befund W14c-B34).</para>
+        ///
+        /// <para><b>Nach dem Schließen frischt die Startseite ihre Klimaregionen
+        /// auf</b> (Welle GM‑1): Sie liest die Liste nur in <c>Startseite.Laden</c>,
+        /// also beim Aufbau und auf Meldung des <c>SeitenZustand</c>. Ohne diesen
+        /// Rückweg fehlte eine hier importierte Region in ihrem Auswahlfeld bis zum
+        /// Projektwechsel, und eine gelöschte stünde weiter darin. Aufgefrischt wird
+        /// IMMER — ob importiert, gelöscht oder nichts geändert wurde, sagt der
+        /// Rückgabewert des Fensters nicht, und die paar Dutzend Regionen neu zu
+        /// lesen kostet nichts.</para>
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer)
         {
@@ -97,6 +106,12 @@ namespace WindowsFormsApplication1
             {
                 if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
             }
+
+            // Die Startseite hinter dem Fenster liest ihre Regionsliste neu. Steht
+            // keine (das Fenster ging aus einer anderen Maske auf), laeuft der
+            // Aufruf leer - derselbe Weg wie VariantenAnzeigeAktualisieren.
+            StartseiteHuelle.Aktuelle?.KlimaregionenAktualisieren();
+
             return ok;
         }
 
