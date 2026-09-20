@@ -133,14 +133,22 @@
                 </table>
             </div>
 
+            @* Die LISTENLEISTE der Katalogspalte (DL-2, Schritt 7). Sie wirkt auf die
+               Liste darueber und ist nach Abschnitt 1 des Konzepts ausdruecklich keine
+               zweite Fussleiste: kein primaerer, kein schliessender Knopf. Reihenfolge
+               wie im Konzept: Neu... . Aendern... . Loeschen.
+
+               "Gebaeudetyp in DB aendern..." steht hier NUR in der Verwaltung
+               (Entscheid DL-Q1 b): Im Projektbetrieb traegt ihn die Fussleiste, in
+               der Verwaltung gibt es keine, die ihn tragen koennte. *@
             <div class="epos-leiste">
-                <button type="button" class="epos-knopf"
-                        @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
                 <button type="button" class="epos-knopf"
                         @onclick="BeiKatalogNeu">@BtnDbNeuText</button>
                 <button type="button" class="epos-knopf"
+                        @onclick="BeiKatalogAendern">@BtnDbAendernText</button>
+                <button type="button" class="epos-knopf"
                         @onclick="() => _loeschfrage = true">@BtnDbLoeschenText</button>
-                @if (GebaeudetypGaben is not null)
+                @if (Admin && GebaeudetypGaben is not null)
                 {
                     <button type="button" class="epos-knopf"
                             @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
@@ -173,9 +181,37 @@
             </KindInhalt>
         </Formularraster>
 
-            @if (!Admin)
-            {
-                <div class="epos-leiste">
+            @* DL-2, Schritt 7: Der Detailblock traegt KEINE Knoepfe mehr. "Aendern" und
+               "Simulation..." wirken auf die markierte Projektzeile, also auf den ganzen
+               Dialog - sie stehen im Aktionsschlitz der einen Fussleiste. *@
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @if (!Wizard)
+    {
+        @* ZWEI FUESSE FUER ZWEI BETRIEBSARTEN (DL-2, Schritt 7).
+
+           VERWALTUNG: Jede Katalogaktion (Neu, Aendern, Loeschen, Gebaeudetyp) schreibt
+           SOFORT in die Datenbank. Ein "Abbrechen" naehme davon nichts zurueck - es war
+           eine Behauptung, die nicht stimmt. Deshalb steht hier der Schlussknopf
+           "Beenden" allein, wie in jedem Katalogdialog ohne Arbeitsstand (Konzept
+           Abschnitt 1, Satz 3; Vorbild ModulKatalogDialog).
+
+           PROJEKT: Die Projektliste ist ein Arbeitsstand des Wirtes - OK und Abbrechen
+           behalten ihren Sinn. Die drei Aktionsknoepfe stehen links vom Fueller im
+           Aktionsschlitz der SpeichernLeiste, nicht in einer zweiten Leiste. *@
+        @if (Admin)
+        {
+            <div class="epos-leiste">
+                <span class="epos-leiste-fueller"></span>
+                <button type="button" class="epos-knopf epos-knopf--primaer"
+                        @onclick="BeiBeenden">@BtnBeendenText</button>
+            </div>
+        }
+        else
+        {
+            <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis">
+                <Aktionen>
                     <button type="button" class="epos-knopf" disabled="@(_gewaehlt is null)"
                             @onclick="BeiAendern">@BtnAendernText</button>
 
@@ -189,14 +225,17 @@
                                 title="@BtnSimulationHinweis"
                                 @onclick="BeiSimulation">@BtnSimulationText</button>
                     }
-                </div>
-            }
-        </KindInhalt>
-    </Gruppenkopf>
 
-    @if (!Wizard)
-    {
-        <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+                    @* Der Zwilling des Menuepunkts "Gebaeudetypen" (Entscheid DL-Q1 b):
+                       der Weg aus der Gebaeudemaske heraus ist der kuerzere. *@
+                    @if (GebaeudetypGaben is not null)
+                    {
+                        <button type="button" class="epos-knopf"
+                                @onclick="() => _gebaeudetypOffen = true">@BtnGebTypText</button>
+                    }
+                </Aktionen>
+            </SpeichernLeiste>
+        }
     }
 
     @* --- Ueberlagerung 1: der Katalogeditor (W9.1) ------------------------- *@
@@ -400,6 +439,14 @@
     [Parameter] public string BtnDbNeuText { get; set; } = "Gebäude in DB neu...";
     [Parameter] public string BtnDbLoeschenText { get; set; } = "Gebäude in DB löschen";
     [Parameter] public string BtnGebTypText { get; set; } = "Gebäudetyp in DB ändern...";
+
+    /// <summary>
+    /// Beschriftung des Schlussknopfes der KATALOGVERWALTUNG — <c>GEB_BTN_BEENDEN</c>.
+    /// Dort schreibt jede Aktion sofort; es gibt nichts zu bestätigen und nichts
+    /// zurückzunehmen (DL-2, Schritt 7).
+    /// </summary>
+    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -814,6 +861,13 @@
     }
 
     private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+
+    /// <summary>
+    /// „Beenden" der Katalogverwaltung — derselbe Ausgang, den dort bis zum Umbau
+    /// „OK" trug: Der Katalog ist bereits geschrieben, die Hülle bekommt
+    /// <c>true</c> (DL-2, Schritt 7; Vorbild <c>ModulKatalogDialog.BeiBeenden</c>).
+    /// </summary>
+    private Task BeiBeenden() => Geschlossen.InvokeAsync(true);
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(false);

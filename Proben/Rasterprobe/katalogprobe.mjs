@@ -136,6 +136,19 @@ const KAESTEN = () => {
     ...mass(b),
     // Wer liegt an den fuenf Punkten dieses Knopfes ZUOBERST? Ist es nicht der
     // Knopf selbst (oder ein Kind), verdeckt ihn etwas.
+    //
+    // EIN VORFAHR IST KEINE UEBERDECKUNG. Der Knopf des Hauses traegt
+    // border-radius 6px (--epos-ecke); Chromium schnappt seinen Kasten fuer die
+    // Trefferpruefung auf ganze Bildpunkte. Je nach Bruchteil der Breite liegt
+    // der 2px-Eckpunkt damit um Bruchteile eines Bildpunktes NEBEN der
+    // abgerundeten Ecke - gemessen an der Waermepumpen-Fussleiste: rechter Rand
+    // 262,484 px, geschnappt 262, Abstand zum Bogenmittelpunkt 6,009 statt
+    // hoechstens 6. elementFromPoint meldet dann die Leiste, also den Vorfahren
+    // des Knopfes. Ein Vorfahr kann sein eigenes Kind aber nicht ueberdecken -
+    // er zeichnet darunter. Der Punkt liegt schlicht ausserhalb der runden Ecke,
+    // und das ist kein Befund. Eine echte Ueberdeckung kommt IMMER aus einem
+    // anderen Zweig (img.epos-chartbild, ein Eingabeblock) und wird weiter
+    // gemeldet.
     verdeckt: (() => {
       const r = b.getBoundingClientRect();
       const punkte = [
@@ -148,7 +161,7 @@ const KAESTEN = () => {
         if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) { fremd.push('ausserhalb'); continue; }
         const oben = document.elementFromPoint(x, y);
         if (!oben) { fremd.push('nichts'); continue; }
-        if (oben === b || b.contains(oben)) continue;
+        if (oben === b || b.contains(oben) || oben.contains(b)) continue;
         fremd.push(oben.tagName.toLowerCase() +
           (oben.className ? '.' + String(oben.className).trim().split(/\s+/).slice(0, 2).join('.') : ''));
       }

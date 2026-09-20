@@ -659,10 +659,15 @@ public class KostenKomponenteDialogTests : BunitContext
             .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.VorlageGespeichert, "gespeichert {0} Uhr"));
 
-        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[1].Click();
+        // DL-2 (Nr. 6): Der Fuß läuft Speichern · Abbrechen · OK.
+        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
 
         Assert.Equal(1, gespeichert);
         Assert.StartsWith("gespeichert ", cut.Instance.Status);
+        // Der Statustext steht seit DL-2 IN der Fußleiste.
+        Assert.StartsWith("gespeichert ",
+                          cut.FindAll(".epos-leiste")[^1].QuerySelector(".epos-status")!
+                             .TextContent.Trim());
     }
 
     [Fact]
@@ -689,10 +694,67 @@ public class KostenKomponenteDialogTests : BunitContext
             .Add(x => x.Speichern, () => { gespeichert++; return true; })
             .Add(x => x.Geschlossen, (bool ok) => ergebnis = ok));
 
-        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[0].Click();
+        // DL-2 (Nr. 6): Abbrechen steht unmittelbar vor OK.
+        cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[1].Click();
 
         Assert.Equal(0, gespeichert);
         Assert.False(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 6, Schritt 8):</b> Der Fuß ist eine <c>SpeichernLeiste</c> —
+    /// Status (zugleich Füller) · Speichern · Abbrechen · OK, und OK ist der
+    /// einzige primäre Knopf und der letzte.
+    /// </summary>
+    [Fact]
+    public void Der_Fuss_laeuft_Speichern_Abbrechen_OK()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.SpeichernText, "Speichern")
+            .Add(x => x.AbbrechenText, "Abbrechen")
+            .Add(x => x.OkText, "OK"));
+
+        var fuss = cut.FindAll(".epos-leiste")[^1];
+        var knoepfe = fuss.QuerySelectorAll("button");
+
+        Assert.Equal(new[] { "Speichern", "Abbrechen", "OK" },
+                     knoepfe.Select(b => b.TextContent.Trim()).ToArray());
+        Assert.NotNull(fuss.QuerySelector(".epos-status"));
+        Assert.Single(fuss.QuerySelectorAll(".epos-knopf--primaer"));
+        Assert.Contains("epos-knopf--primaer", knoepfe[^1].ClassName);
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Entscheid DL-Q3 a):</b> Die Zeilenaktionen des Reiters „Kosten"
+    /// schreiben sofort; der Kurztext des Abbrechen-Knopfes sagt das.
+    /// </summary>
+    [Fact]
+    public void Der_Abbrechen_Knopf_traegt_den_Kurztext_zum_Arbeitsstand()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.AbbrechenText, "Abbrechen")
+            .Add(x => x.AbbrechenKurztext,
+                 "Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben."));
+
+        var abbrechen = cut.FindAll(".epos-leiste")[^1].QuerySelectorAll("button")[1];
+
+        Assert.Contains("angelegte Positionen bleiben", abbrechen.GetAttribute("title"));
+    }
+
+    /// <summary>
+    /// <b>DL-2 (Nr. 6):</b> Die Reiterleiste im Reiter „Kosten" bleibt Blattleiste —
+    /// ihre vier Knöpfe rufen dieselben Delegaten wie zuvor, keiner ist primär.
+    /// </summary>
+    [Fact]
+    public void Die_Reiterleiste_bleibt_im_Blatt_und_ohne_Primaerknopf()
+    {
+        var cut = Zeige(p => p
+            .Add(x => x.NutzungsdauerVorbelegen, (bool a) => new NutzungsdauerVorbelegung(0, 0)));
+
+        var blatt = cut.FindAll(".epos-leiste")[0];
+
+        Assert.Equal(4, blatt.QuerySelectorAll("button").Length);
+        Assert.Empty(blatt.QuerySelectorAll(".epos-knopf--primaer"));
     }
 
     // =====================================================================

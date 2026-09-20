@@ -204,6 +204,11 @@ namespace WindowsFormsApplication1
                 ["BtnDbNeuText"] = Text_("GEB_BTN_DB_NEU", "Gebäude in DB neu..."),
                 ["BtnDbLoeschenText"] = Text_("GEB_BTN_DB_LOESCHEN", "Gebäude in DB löschen"),
                 ["BtnGebTypText"] = Text_("GEB_BTN_GEBTYP", "Gebäudetyp in DB ändern..."),
+
+                // DL-2, Schritt 7: Die KATALOGVERWALTUNG schliesst mit "Beenden" -
+                // jede ihrer Aktionen hat bereits geschrieben, OK und Abbrechen
+                // waeren eine Behauptung. Im Projektbetrieb bleibt es bei OK/Abbrechen.
+                ["BtnBeendenText"] = Text_("GEB_BTN_BEENDEN", "Beenden"),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,

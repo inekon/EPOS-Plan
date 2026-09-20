@@ -14,6 +14,17 @@
    geschlossen wird er von der Huelle, nicht von der Komponente. *@
 
 <div class="epos-leiste">
+    @* Der linke Aktionsschlitz (DL-2, Schritt 0). Nach der Leseregel der Fussleiste
+       stehen LINKS vom Fueller die Knoepfe, die auf den Eingabeblock oder eine
+       Ansicht wirken (Standardwerte, Grafik..., Simulation..., Aendern...), RECHTS
+       die Knoepfe, die schliessen. Der Fueller ist hier die Statusspanne: sie traegt
+       flex: 1 1 auto und schiebt alles Nachfolgende nach rechts.
+
+       Ohne <Aktionen> aendert sich am Markup NICHTS - ein null-RenderFragment
+       zeichnet nichts, kein Platzhalter, kein leeres Element. Die bestehenden
+       Aufrufer bleiben deshalb unveraendert. *@
+    @Aktionen
+
     <span class="epos-status @(_statusFehler ? "epos-status--fehler" : "")" role="status">@_statusText</span>
 
     @if (MitSpeichern)
@@ -24,7 +35,7 @@
 
     @if (MitAbbrechen)
     {
-        <button type="button" class="epos-knopf"
+        <button type="button" class="epos-knopf" title="@AbbrechenKurztext"
                 @onclick="() => Ergebnis.InvokeAsync(false)">@AbbrechenText</button>
     }
 
@@ -33,6 +44,21 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Der linke Aktionsschlitz: Knoepfe, die auf den Eingabeblock oder eine
+    /// Ansicht wirken, VOR dem Statustext und damit links vom Fueller.
+    ///
+    /// <para>Die Fussleiste des Hauses laeuft
+    /// <b>Aktionen · Fueller · [Speichern] · Abbrechen · OK</b>; ohne diesen Schlitz
+    /// brauchte ein Dialog mit Aktionsknoepfen eine ZWEITE Leiste ueber der
+    /// Fussleiste - und genau das verbietet die Hausregel „Jeder Dialog traegt genau
+    /// eine Fussleiste" (Konzept Knopfleisten der Administrationsdialoge, DL-2).</para>
+    ///
+    /// <para>Der Schlitz ist optional: Bleibt er leer, zeichnet die Leiste dasselbe
+    /// Markup wie zuvor.</para>
+    /// </summary>
+    [Parameter] public RenderFragment? Aktionen { get; set; }
+
     /// <summary>Beschriftung des OK-Knopfes.</summary>
     [Parameter] public string OkText { get; set; } = "OK";
 
@@ -60,6 +86,16 @@
     /// "Speichern".</para>
     /// </summary>
     [Parameter] public bool MitAbbrechen { get; set; } = true;
+
+    /// <summary>
+    /// Kurztext des Abbrechen-Knopfes (DL-2, Entscheid DL-Q3 a).
+    ///
+    /// <para>Ein Dialog, der einen TEIL seiner Arbeit schon geschrieben hat - weil
+    /// eine Zeilenaktion eine Id braucht (Position anlegen, Traeger anlegen) -,
+    /// sagt am Knopf selbst, was Abbrechen wirklich verwirft. Ohne Kurztext
+    /// zeichnet der Knopf kein <c>title</c>-Attribut.</para>
+    /// </summary>
+    [Parameter] public string? AbbrechenKurztext { get; set; }
 
     /// <summary>Ist links ein Datensatz markiert? (Vorbild: Zustand, erster Parameter.)</summary>
     [Parameter] public bool SatzMarkiert { get; set; }
@@ -113,6 +149,16 @@
     public void Leeren()
     {
         Melden("", false);
+    }
+
+    /// <summary>
+    /// Ein eigener Statustext des Wirts - fuer Dialoge, die mehr zu melden haben
+    /// als „gespeichert" und „nicht gespeichert" (etwa „{0} Nutzungsdauern aus der
+    /// AfA-Tabelle vorbelegt"). Der Wirt haelt den Wortlaut, die Leiste zeigt ihn.
+    /// </summary>
+    public void Zeigen(string szText, bool bFehler = false)
+    {
+        Melden(szText, bFehler);
     }
 
     private void Melden(string szText, bool bFehler)

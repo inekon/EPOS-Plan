@@ -276,6 +276,11 @@ namespace WindowsFormsApplication1
                     + "Satz und Betrag bleiben stehen."),
                 ["SpeichernText"] = T("KDLG_BTN_SPEICHERN", "Speichern"),
                 ["AbbrechenText"] = T("KDLG_BTN_ABBRECHEN", "Abbrechen"),
+                // DL-2 (DL-Q3 a): Die Zeilenaktionen des Reiters „Kosten" schreiben
+                // sofort - der Kurztext sagt, was Abbrechen wirklich verwirft.
+                ["AbbrechenKurztext"] = T("KDLG_TIP_ABBRECHEN",
+                    "Verwirft nur die ungespeicherten Eingaben; "
+                    + "angelegte Positionen bleiben."),
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["JaText"] = T("KKOMP_BTN_JA", "Ja"),
                 ["NeinText"] = T("KKOMP_BTN_NEIN", "Nein"),

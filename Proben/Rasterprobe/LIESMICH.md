@@ -299,3 +299,19 @@ unter dem Fensterrand und wäre so unerreichbar wie vorher. Keine Positionierung
 feste Pixelhöhe. Die zwei Masken, die `epos-katalog-fuellend` auf eine bloße Liste setzen
 (`GesetzeskatalogDialog`, `WaermepumpenKatalogDialog`), haben keine zweite Reihe und
 bleiben unberührt; die neun Fälle von `rasterprobe.mjs` bleiben grün.
+
+### Nachtrag (DL-2b) — ein Vorfahr ist keine Überdeckung
+
+Prüfung (e) setzt ihre Punkte **2 px** von den vier Ecken des Knopfes. Der Knopf des
+Hauses trägt `border-radius: 6px` (`--epos-ecke`), und Chromium schnappt seinen Kasten
+für die Trefferprüfung auf ganze Bildpunkte: Je nach Bruchteil der Knopfbreite liegt der
+Eckpunkt damit um Bruchteile eines Bildpunktes **neben** der runden Ecke. Gemessen an der
+Fußleiste der Wärmepumpen-Verwaltung (Fall P1): rechter Rand 262,484 px, geschnappt 262,
+Abstand des Punktes zum Bogenmittelpunkt 6,009 statt höchstens 6 — `elementFromPoint`
+meldete dort die **Leiste**, also den Vorfahren des Knopfes.
+
+Ein Vorfahr kann sein eigenes Kind nicht überdecken; er zeichnet darunter. Der Punkt liegt
+schlicht außerhalb der runden Ecke, und das ist kein Befund. `katalogprobe.mjs` lässt
+deshalb auch einen Treffer gelten, der den Knopf **enthält** (`oben.contains(b)`). Eine
+echte Überdeckung kommt immer aus einem anderen Zweig des Baumes; die Gegenprobe G1 meldet
+ihre drei verdeckten Knöpfe unverändert über `img.epos-chartbild`.

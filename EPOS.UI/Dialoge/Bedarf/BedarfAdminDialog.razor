@@ -17,9 +17,9 @@
 
    BEFUND W14-B78: Der Handler btn_ErgebnisseVerbrauch_Click stand in ALLEN DREI
    Masken - einen Knopf dazu gab es in KEINEM der drei Designer. Der
-   "Ergebnisse"-Knopf, den die Vermessung nennt, war seit jeher tot; die sieben
-   Knöpfe der Masken sind Grafik, Neu, Löschen, Typ ändern, Ändern, OK und
-   Abbrechen. Damit sind auch W14-B50 (E-7: zwei verschiedene Sichten) und
+   "Ergebnisse"-Knopf, den die Vermessung nennt, war seit jeher tot; die sechs
+   Knöpfe der Maske sind Grafik, Typ ändern, Neu, Ändern, Löschen und Beenden.
+   Damit sind auch W14-B50 (E-7: zwei verschiedene Sichten) und
    W14-B58 (E-8: "Ergebnisse" ohne vorheriges "Grafik" zeigt Nullen)
    gegenstandslos - beide beschreiben Verhalten eines Knopfes, den niemand
    drücken konnte. Der Dialog baut ihn nicht nach (A-4).
@@ -41,8 +41,8 @@
    Format kommt je Ausprägung von der Hülle; die Vereinheitlichung auf "F2" ist
    eine Anwenderfrage (offener Punkt W14b-O-1).
 
-   TASTATUR: Esc schliesst, aber erst, wenn keine Ueberlagerung offen ist.
-   Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst wie "Beenden", aber erst, wenn keine Ueberlagerung
+   offen ist. Enter ist nicht belegt. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
@@ -54,7 +54,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="Abbrechen" />
+        <Schliesskreuz Geschlossen="Beenden" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -105,17 +105,27 @@
         </Eingabe>
     </Katalograhmen>
 
+    @* EINE LEISTE, KATALOGMUSTER (DL-2 Nr. 3). Stammkopf, Wochenprofil und Loeschen
+       schreiben SOFORT in den Katalog - "OK" und "Abbrechen" nahmen nichts zurueck
+       und sind deshalb entfallen; der Dialog schliesst mit "Beenden", und Esc wie
+       das Schliesskreuz tun dasselbe.
+
+       Nach der Leseregel stehen links vom Fueller die Knoepfe, die auf eine ANSICHT
+       oder einen Nachbarkatalog wirken (Grafik, Typ aendern), rechts die
+       Zeilenaktionen (Neu, Aendern, Loeschen), und ganz rechts der eine primaere
+       Schlussknopf. *@
     <div class="epos-leiste">
         <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
-                @onclick="BeiAendern">@BtnAendernText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiTypAendern">@BtnTypAendernText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
-        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
                 @onclick="BeiGrafik">@BtnGrafikText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiTypAendern">@BtnTypAendernText</button>
+        <span class="epos-leiste-fueller"></span>
+        <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        <button type="button" class="epos-knopf" disabled="@(!ZeileGewaehlt)"
+                @onclick="BeiAendern">@BtnAendernText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="Beenden">@BtnBeendenText</button>
     </div>
-
-    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
 
     @* --- Ueberlagerung 1: der Stammkopf (W8.1), Modi Bearbeiten und Neu --- *@
     <Ueberlagerung Offen="@(_typStammGaben is not null)"
@@ -248,7 +258,10 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyDictionary<string, object>?>? Vorschau { get; set; }
 
-    /// <summary>Der Dialog ist zu Ende; <c>true</c> = mit OK.</summary>
+    /// <summary>
+    /// Der Dialog ist zu Ende — immer <c>true</c>. Einen Abbruchweg gibt es nicht:
+    /// Jede Aktion schreibt sofort in den Katalog (DL-2 Nr. 3).
+    /// </summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
     // =====================================================================
@@ -270,6 +283,10 @@
     [Parameter] public string BtnLoeschenText { get; set; } = "";
     [Parameter] public string BtnGrafikText { get; set; } = Resource.BADM_BTN_GRAFIK;
 
+    /// <summary>Der eine Schlussknopf (DL-2 Nr. 3) — er trägt die Primärfarbe.</summary>
+    [Parameter] public string BtnBeendenText { get; set; } = Resource.BADM_BTN_BEENDEN;
+
+    /// <summary>OK der Namensabfrage vor „Neu…" — nicht mehr der Fußleiste.</summary>
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
@@ -523,16 +540,18 @@
         _meldungStufe = stufe;
     }
 
-    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
-
-    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+    /// <summary>
+    /// „Beenden" — der eine Schlussweg. Es gibt nichts zu verwerfen: Stammkopf,
+    /// Wochenprofil und Löschen schreiben sofort in den Katalog. Esc und das
+    /// Schliesskreuz rufen denselben Weg (DL-2 Nr. 3).
+    /// </summary>
+    private Task Beenden() => Geschlossen.InvokeAsync(true);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrage || _namensfrage || _typProfilOffen
             || _typStammGaben is not null || _ergebnisGaben is not null) return Task.CompletedTask;
-        return Abbrechen();
+        return Beenden();
     }
 }

@@ -148,10 +148,15 @@
                 {
                     @* Ä9: Im Katalogkontext ist der Stammkopf editierbar.
                        Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung
-                       neben dem Feld; das handgebaute Feldpaar entfaellt, der
-                       Uebernahmeknopf steht in einer eigenen Leiste. Das Suchfeld
-                       ueber der Liste bleibt, wo es ist - es gehoert zur Liste,
-                       nicht zu einem Formularblock. *@
+                       neben dem Feld; das handgebaute Feldpaar entfaellt. Das
+                       Suchfeld ueber der Liste bleibt, wo es ist - es gehoert zur
+                       Liste, nicht zu einem Formularblock.
+
+                       DL-2 (Nr. 7, Entscheid DL-Q5): Der eigene Knopf „Bezeichnung
+                       speichern" ist ENTFALLEN. Bezeichnung und Gruppe sind Felder
+                       der Karte; sie werden mit ihr geschrieben - im Speichern- wie
+                       im OK-Weg (siehe StammMitschreiben). Zwei Speichern-Knoepfe in
+                       einer Maske waren die einzige echte Doppelung des Inventars. *@
                     <Formularraster>
                         <KindInhalt>
                             <Textfeld Bezeichnung="@LabelStammName" Wert="@_stammName"
@@ -161,10 +166,6 @@
                                          AuswahlChanged="@(w => _stammGruppe = w)" />
                         </KindInhalt>
                     </Formularraster>
-                    <div class="epos-leiste">
-                        <button type="button" class="epos-knopf"
-                                @onclick="StammUebernehmen">@StammSpeichernText</button>
-                    </div>
                 }
 
                 <EnergietraegerEinstellungen @attributes="KarteTexte"
@@ -203,11 +204,14 @@
         </div>
     </div>
 
-    <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="BeiAbbrechen">@AbbrechenText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@SpeichernText</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" @onclick="BeiOk">@OkText</button>
-    </div>
+    @* DL-2 (Nr. 7): die eine Fussleiste des Hauses - Status (zugleich Fueller) ·
+       Speichern · Abbrechen · OK. Die Leiste der Listenspalte bleibt, wo sie ist:
+       Sie traegt keinen primaeren und keinen schliessenden Knopf und ist damit eine
+       Listenleiste, keine zweite Fussleiste. *@
+    <SpeichernLeiste MitSpeichern="true" SatzMarkiert="true" Geaendert="true"
+                     SpeichernText="@SpeichernText" Gespeichertwerden="BeiSpeichern"
+                     AbbrechenText="@AbbrechenText" AbbrechenKurztext="@AbbrechenKurztext"
+                     OkText="@OkText" Ergebnis="BeiErgebnis" />
 
     @* ------------------------------------------------------ Unterdialoge *@
     <Ueberlagerung Offen="@(_namensGaben is not null)"
@@ -540,7 +544,16 @@
     [Parameter] public string EntfernenText { get; set; } = "Entfernen";
     [Parameter] public string LabelStammName { get; set; } = "Bezeichnung:";
     [Parameter] public string LabelStammGruppe { get; set; } = "Gruppe:";
-    [Parameter] public string StammSpeichernText { get; set; } = "Bezeichnung speichern";
+    // DL-2 (Nr. 7, DL-Q5): „StammSpeichernText" ist mit dem Knopf entfallen.
+
+    /// <summary>
+    /// DL-2 (Entscheid DL-Q3 a): Die Aktionen der Listenspalte (Neu…, Variante,
+    /// Löschen bzw. Übernehmen…, Entfernen) schreiben sofort, weil sie Ids
+    /// brauchen. Der Kurztext des Abbrechen-Knopfes sagt das, damit „Abbrechen"
+    /// keine Behauptung ist, die nicht stimmt.
+    /// </summary>
+    [Parameter] public string AbbrechenKurztext { get; set; }
+        = "Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben.";
     [Parameter] public string KarteProfilTitel { get; set; } = "Kostenprofil";
     [Parameter] public string KarteProfilInfo { get; set; }
         = "Monatliche Preisniveaus des Strombezugs pflegen.";
@@ -878,18 +891,28 @@
     // Katalogkontext
     // =====================================================================
 
-    private void StammUebernehmen()
+    /// <summary>
+    /// DL-2 (Nr. 7, Entscheid DL-Q5): Bezeichnung und Gruppe des Stammkopfs gehen
+    /// im Speichern- und im OK-Weg mit — der eigene Knopf „Bezeichnung speichern"
+    /// ist entfallen.
+    ///
+    /// <para>Nur im Katalogkontext, denn nur dort ist der Stammkopf überhaupt da.
+    /// Ohne Schreibweg (Hülle ohne <see cref="StammSchreiben"/>) bleibt der Schritt
+    /// aus; „nichts zu tun" ist kein Fehler und hält das Speichern nicht auf.</para>
+    /// </summary>
+    private bool StammMitschreiben()
     {
-        if (StammSchreiben is null) return;
+        if (!Katalogkontext || StammSchreiben is null || _ansicht.Stand is null) return true;
+
         if (!StammSchreiben(_stammName, _stammGruppe))
         {
             Melden(MeldungStammLeer, WarnStufe.Warnung);
-            return;
+            return false;
         }
         // ET-5: Die Bezeichnung steht in der Liste — ohne Nachziehen trüge der Eintrag
         // weiter den alten Namen, während der Kartenkopf schon den neuen zeigte.
         ListeNachziehen();
-        Melden("");
+        return true;
     }
 
     private void NeuFragen()
@@ -1067,13 +1090,27 @@
     // Schlussleiste (Ä14)
     // =====================================================================
 
-    private void BeiSpeichern()
+    /// <summary>
+    /// DL-2 (Nr. 7): DER eine Schreibweg — erst die Stammwerte der Karte
+    /// (Katalogkontext, DL-Q5), dann die Karte selbst. „Speichern" und „OK" gehen
+    /// beide hier durch; die Prüfregeln stehen damit an einer Stelle.
+    /// </summary>
+    private bool SchreibenVersuchen()
     {
+        if (!StammMitschreiben()) return false;
+
         if (Speichern is not null && !Speichern())
         {
             Melden(SpeichernGrund is null ? "" : SpeichernGrund(), WarnStufe.Warnung);
-            return;
+            return false;
         }
+        return true;
+    }
+
+    private void BeiSpeichern()
+    {
+        if (!SchreibenVersuchen()) return;
+
         // Die Hülle hat die Preishistorie neu gelesen und den Übernahmehinweis
         // gelöscht; die Ansicht folgt, damit beides sofort dasteht.
         Nachziehen();
@@ -1088,11 +1125,7 @@
 
     private Task BeiOk()
     {
-        if (Speichern is not null && !Speichern())
-        {
-            Melden(SpeichernGrund is null ? "" : SpeichernGrund(), WarnStufe.Warnung);
-            return Task.CompletedTask;
-        }
+        if (!SchreibenVersuchen()) return Task.CompletedTask;
         return Geschlossen.InvokeAsync(true);
     }
 
@@ -1122,6 +1155,12 @@
     }
 
     private Task BeiAbbrechen() => Geschlossen.InvokeAsync(false);
+
+    /// <summary>
+    /// DL-2 (Nr. 7): Die <c>SpeichernLeiste</c> meldet OK und Abbrechen über EIN
+    /// Ergebnis; die beiden Wege dahinter sind dieselben wie zuvor.
+    /// </summary>
+    private Task BeiErgebnis(bool ok) => ok ? BeiOk() : BeiAbbrechen();
 
     private void Melden(string text, WarnStufe stufe = WarnStufe.Hinweis)
     {

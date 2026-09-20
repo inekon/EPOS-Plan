@@ -1205,12 +1205,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// ET-7: Der Stammkopf-Knopf heisst „Bezeichnung speichern" — drei Knoepfe
-        /// desselben Dialogs trugen „uebernehmen" (Kataloguebernahme, Katalogwerte,
-        /// Stammkopf), und das war die Ursache der Fehlerwartung des Anwenders.
+        /// DL-Q5 (#386): Der Stammkopf hat keinen eigenen Knopf mehr - Bezeichnung und
+        /// Gruppe werden mit Speichern/OK geschrieben. Die Gabe "StammSpeichernText" gibt
+        /// es deshalb nicht mehr; der Abbrechen-Kurztext sagt, was Abbrechen verwirft.
         /// </summary>
         [Fact]
-        public void Der_Stammkopf_Knopf_heisst_nicht_wie_die_Uebernahme()
+        public void Der_Stammkopf_hat_keinen_eigenen_Knopf_mehr()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -1218,14 +1218,8 @@ namespace EPOS.Kern.Tests
             using (var _ = new Kulturvorrichtung("de-DE"))
             {
                 IReadOnlyDictionary<string, object> g = new EnergietraegerHuelle(0).Gaben();
-                Assert.Equal("Bezeichnung speichern", (string)g["StammSpeichernText"]);
-                Assert.NotEqual((string)g["UebernehmenKurzText"], (string)g["StammSpeichernText"]);
-            }
-            using (var _ = new Kulturvorrichtung("en-US"))
-            {
-                IReadOnlyDictionary<string, object> g = new EnergietraegerHuelle(0).Gaben();
-                Assert.Equal("Save name", (string)g["StammSpeichernText"]);
-                Assert.NotEqual((string)g["UebernehmenKurzText"], (string)g["StammSpeichernText"]);
+                Assert.False(g.ContainsKey("StammSpeichernText"));
+                Assert.False(string.IsNullOrWhiteSpace((string)g["AbbrechenKurztext"]));
             }
         }
     }

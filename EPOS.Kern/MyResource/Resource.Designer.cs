@@ -767,7 +767,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardwerte wurden geladen. Mit „Speichern&quot; werden sie übernommen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Standardwerte wurden geladen. Mit „OK&quot; werden sie übernommen. ähnelt.
         /// </summary>
         public static string ADM_SET_MSG_STANDARDWERTE {
             get {
@@ -1565,7 +1565,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozess ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_PROZESS {
             get {
@@ -1574,7 +1574,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_AENDERN_STROM {
             get {
@@ -1583,7 +1583,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string BADM_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("BADM_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Grafik... ähnelt.
         /// </summary>
         public static string BADM_BTN_GRAFIK {
             get {
@@ -1628,7 +1637,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Prozess ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Prozess... ähnelt.
         /// </summary>
         public static string BADM_BTN_NEU_PROZESS {
             get {
@@ -1637,7 +1646,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB neu ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verbraucher in DB neu... ähnelt.
         /// </summary>
         public static string BADM_BTN_NEU_STROM {
             get {
@@ -1655,7 +1664,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_TYP_PROZESS {
             get {
@@ -1664,7 +1673,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ in DB ändern... ähnelt.
         /// </summary>
         public static string BADM_BTN_TYP_STROM {
             get {
@@ -16107,6 +16116,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GEB_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GEB_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäude in DB ändern... ähnelt.
         /// </summary>
         public static string GEB_BTN_DB_AENDERN {
@@ -16716,7 +16734,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Löschen ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string GTYP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("GTYP_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ löschen ähnelt.
         /// </summary>
         public static string GTYP_BTN_LOESCHEN {
             get {
@@ -16734,7 +16761,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Typ Speichern ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Typ speichern ähnelt.
         /// </summary>
         public static string GTYP_BTN_SPEICHERN {
             get {
@@ -18534,6 +18561,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string IMP_KAT_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("IMP_KAT_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Datei VDI 3805 einlesen... ähnelt.
         /// </summary>
         public static string IMP_KAT_BTN_DATEI {
@@ -18548,15 +18584,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string IMP_KAT_BTN_DATEI_WP {
             get {
                 return ResourceManager.GetString("IMP_KAT_BTN_DATEI_WP", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern DB ähnelt.
-        /// </summary>
-        public static string IMP_KAT_BTN_UEBERNEHMEN {
-            get {
-                return ResourceManager.GetString("IMP_KAT_BTN_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -21126,6 +21153,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Träger bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_ET_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_ET_TIP_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
         /// </summary>
         public static string KDLG_ET_TITEL {
@@ -21969,6 +22005,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KDLG_TAB_KOSTEN {
             get {
                 return ResourceManager.GetString("KDLG_TAB_KOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verwirft nur die ungespeicherten Eingaben; angelegte Positionen bleiben. ähnelt.
+        /// </summary>
+        public static string KDLG_TIP_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("KDLG_TIP_ABBRECHEN", resourceCulture);
             }
         }
         
@@ -30553,6 +30598,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezugszeitraum {0} ähnelt.
+        /// </summary>
+        public static string KLIMA_TRY_BEZUGSZEITRAUM {
+            get {
+                return ResourceManager.GetString("KLIMA_TRY_BEZUGSZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Region ermitteln ähnelt.
         /// </summary>
         public static string KLIMA_TRY_BTN_REGION {
@@ -35075,6 +35129,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string PEAK_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("PEAK_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Export ähnelt.
         /// </summary>
         public static string PEAK_BTN_CSV {
@@ -35107,15 +35170,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PEAK_BTN_RECHNEN {
             get {
                 return ResourceManager.GetString("PEAK_BTN_RECHNEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string PEAK_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("PEAK_BTN_SCHLIESSEN", resourceCulture);
             }
         }
         
@@ -39844,6 +39898,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string PVIMP_ALLE {
             get {
                 return ResourceManager.GetString("PVIMP_ALLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string PVIMP_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("PVIMP_BTN_BEENDEN", resourceCulture);
             }
         }
         
@@ -58208,6 +58271,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WPS_BTN_KENNDATEN {
             get {
                 return ResourceManager.GetString("WPS_BTN_KENNDATEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennliniendaten... ähnelt.
+        /// </summary>
+        public static string WPS_BTN_KENNDATEN_KURZ {
+            get {
+                return ResourceManager.GetString("WPS_BTN_KENNDATEN_KURZ", resourceCulture);
             }
         }
         

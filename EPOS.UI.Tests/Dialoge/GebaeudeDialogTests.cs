@@ -649,6 +649,164 @@ public class GebaeudeDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Die eine Fussleiste je Betriebsart - DL-2, Schritt 7 (Entscheid DL-Q1 b)
+    // =================================================================================
+
+    /// <summary>Die LETZTE Knopfleiste unter dem Dialoginhalt — der Fuß.</summary>
+    private static IElement Fuss(IRenderedComponent<GebaeudeDialog> cut)
+    {
+        var leisten = cut.FindAll(".epos-dialog > .epos-leiste");
+        return leisten[leisten.Count - 1];
+    }
+
+    /// <summary>Die Listenleiste unter dem Katalog — sie steht IN der Zweispaltenauswahl.</summary>
+    private static IElement Katalogleiste(IRenderedComponent<GebaeudeDialog> cut)
+        => cut.FindAll(".epos-zweispalten .epos-leiste")[0];
+
+    /// <summary>
+    /// <b>Projektbetrieb.</b> Der Fuß läuft
+    /// <b>Ändern · Simulation… · Gebäudetyp in DB ändern… · Füller · Abbrechen · OK</b>
+    /// — eine einzige Leiste (<c>SpeichernLeiste</c> mit Aktionsschlitz), OK als
+    /// letzter und einziger primärer Knopf.
+    /// </summary>
+    [Fact]
+    public void Im_Projekt_stehen_die_drei_Aktionen_im_Fuss_vor_Abbrechen_und_OK()
+    {
+        var cut = Aufbauen(bedarfGaben: _ => new Dictionary<string, object>(),
+                           gebaeudetypGaben: () => new Dictionary<string, object>());
+
+        IElement fuss = Fuss(cut);
+
+        Assert.Equal(
+            new[] { "Ändern", "Simulation...", "Gebäudetyp in DB ändern...", "Abbrechen", "OK" },
+            fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+
+        // Der Fueller der SpeichernLeiste ist ihre Statusspanne (flex: 1 1 auto):
+        // Sie steht zwischen den Aktionen und den zwei Schlussknoepfen.
+        Assert.Single(fuss.QuerySelectorAll(".epos-status"));
+
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("OK", primaer[0].TextContent.Trim());
+        Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
+
+        // Keine zweite Leiste im Detailblock mehr - die drei Knoepfe sind gewandert.
+        Assert.Equal(2, cut.FindAll(".epos-leiste").Count);      // Katalogliste + Fuss
+    }
+
+    /// <summary>
+    /// <b>Katalogverwaltung.</b> Jede Aktion schreibt sofort; OK und Abbrechen
+    /// entfallen, der Fuß trägt <b>Füller · Beenden</b>, und „Beenden" meldet
+    /// <c>true</c> — derselbe Ausgang, den dort „OK" trug.
+    /// </summary>
+    [Fact]
+    public void In_der_Verwaltung_schliesst_der_Fuss_mit_Beenden()
+    {
+        bool? ergebnis = null;
+        var cut = Aufbauen(admin: true, geschlossen: b => ergebnis = b);
+
+        IElement fuss = Fuss(cut);
+
+        Assert.Equal(new[] { "Beenden" },
+                     fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Single(fuss.QuerySelectorAll(".epos-leiste-fueller"));
+
+        var primaer = fuss.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Same(fuss.QuerySelectorAll("button").Last(), primaer[0]);
+
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "OK");
+        Assert.DoesNotContain(cut.FindAll("button"), b => b.TextContent.Trim() == "Abbrechen");
+
+        primaer[0].Click();
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>
+    /// Die Listenleiste der Katalogspalte läuft <b>Neu… · Ändern… · Löschen</b>; den
+    /// Gebäudetyp-Knopf trägt sie NUR in der Verwaltung (Entscheid DL-Q1 b) — im
+    /// Projekt steht er im Fuß.
+    /// </summary>
+    [Fact]
+    public void Der_Gebaeudetyp_Knopf_steht_je_Betriebsart_an_genau_einer_Stelle()
+    {
+        var projekt = Aufbauen(gebaeudetypGaben: () => new Dictionary<string, object>());
+
+        Assert.Equal(new[] { "Gebäude in DB neu...", "Gebäude in DB ändern...",
+                             "Gebäude in DB löschen" },
+                     Katalogleiste(projekt).QuerySelectorAll("button")
+                         .Select(b => b.TextContent.Trim()).ToArray());
+        Assert.Contains(Fuss(projekt).QuerySelectorAll("button"),
+                        b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...");
+
+        var verwaltung = Aufbauen(admin: true,
+                                  gebaeudetypGaben: () => new Dictionary<string, object>());
+
+        Assert.Equal(new[] { "Gebäude in DB neu...", "Gebäude in DB ändern...",
+                             "Gebäude in DB löschen", "Gebäudetyp in DB ändern..." },
+                     Katalogleiste(verwaltung).QuerySelectorAll("button")
+                         .Select(b => b.TextContent.Trim()).ToArray());
+        Assert.DoesNotContain(Fuss(verwaltung).QuerySelectorAll("button"),
+                              b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...");
+    }
+
+    /// <summary>
+    /// Ein gewanderter Knopf behält seinen Handler: „Ändern" im Fuß öffnet weiter die
+    /// Wohnflächenangabe, „Simulation…" den Wärmebedarf, „Gebäudetyp in DB ändern…"
+    /// die Typenverwaltung — und alle drei hängen weiter an der Markierung bzw. am
+    /// Delegaten.
+    /// </summary>
+    [Fact]
+    public void Die_gewanderten_Knoepfe_rufen_denselben_Weg()
+    {
+        var cut = Aufbauen(wohnflaecheGaben: _ => new Dictionary<string, object>(),
+                           bedarfGaben: _ => new Dictionary<string, object>(),
+                           gebaeudetypGaben: () => new Dictionary<string, object>());
+
+        IElement fuss = Fuss(cut);
+
+        fuss.QuerySelectorAll("button").First(b => b.TextContent.Trim() == "Ändern").Click();
+        Assert.True(cut.Instance.WohnflaecheOffen);
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Fuss(cut).QuerySelectorAll("button")
+            .First(b => b.TextContent.Trim() == "Simulation...").Click();
+        Assert.True(cut.Instance.BedarfOffen);
+        cut.Find(".epos-ueberlagerung-zu").Click();
+
+        Fuss(cut).QuerySelectorAll("button")
+            .First(b => b.TextContent.Trim() == "Gebäudetyp in DB ändern...").Click();
+        Assert.True(cut.Instance.GebaeudetypOffen);
+    }
+
+    /// <summary>
+    /// <b>Der Arbeitsstand.</b> „Abbrechen" schreibt nichts: Es meldet <c>false</c>,
+    /// auch nachdem die Projektliste im Dialog verändert wurde — geschrieben wird
+    /// erst im OK-Weg des Wirtes.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_schreibt_nichts()
+    {
+        bool? ergebnis = null;
+        int geloescht = 0;
+        var zeilen = new List<GebaeudeProjektZeile> { Zeile(1) };
+
+        var cut = Aufbauen(zeilen: zeilen,
+                           katalogLoeschen: _ => { geloescht++; return true; },
+                           geschlossen: b => ergebnis = b);
+
+        // Eine Aufnahme aus dem Katalog - der Arbeitsstand des Dialogs aendert sich.
+        cut.FindAll("button.epos-anlagenwahl").Last().Click();
+        Uebernehmen(cut).Click();
+        Assert.Equal(2, zeilen.Count);
+
+        Knopf(cut, "Abbrechen").Click();
+
+        Assert.False(ergebnis);
+        Assert.Equal(0, geloescht);
+    }
+
+    // =================================================================================
     // Die zwei Richtungsknoepfe - Windows-Abnahme 05.09.2026, Befund W9-B-3
     // =================================================================================
 

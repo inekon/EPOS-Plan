@@ -81,12 +81,19 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Die Quellen ----------------------------------------------------- *@
+    @* --- Die Quellen -----------------------------------------------------
+       Ein UMSCHALTER, keine Aktionsleiste (DL-2, Abschnitt 2.1): Die gewaehlte
+       Quelle war bis zum Umbau ein epos-knopf--primaer und damit ein ZWEITER
+       dunkler Knopf in der Maske. Sie traegt jetzt die Umschaltermarke
+       (epos-knopf--gewaehlt, aria-pressed) - dasselbe Bild wie die
+       Ansichtsumschalter der Simulationskonfiguration. An der Bedienung aendert
+       das nichts: Ein Klick laedt weiterhin aus der Quelle. *@
     <div class="epos-leiste">
         @foreach (ImportQuelle quelle in Erreichbar)
         {
             ImportQuelle q = quelle;
             <button type="button" class="@Quellenklasse(q)" disabled="@_laeuft"
+                    aria-pressed="@(IstQuelle(q) ? "true" : "false")"
                     @onclick="() => BeiQuelle(q)">@q.Beschriftung</button>
         }
         <span class="epos-leiste-fueller"></span>
@@ -157,11 +164,20 @@
       </KindInhalt>
     </Reiter>
 
+    @* --- Die Fussleiste nach der Hausregel (DL-2 Nr. 8) -------------------
+       Fueller · Auswahl uebernehmen · Beenden (primaer). Der Import schreibt
+       SOFORT in den Katalog - das ist das Katalogmuster: der nicht schliessende
+       Uebernahmeknopf steht VOR dem einen primaeren Schlussknopf, und der heisst
+       "Beenden", weil er nichts bestaetigt (Entscheid DL-Q4 vom 20.09.2026:
+       Hausregel - der Schlussknopf traegt die Primaerfarbe). Auffindbar bleibt
+       die Uebernahme ueber ihre Sperre (nur mit gewaehlter Zeile) und ueber den
+       Doppelklick, der eine Zeile sofort uebernimmt. *@
     <div class="epos-leiste">
         <span class="epos-leiste-fueller"></span>
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!UebernehmenErlaubt)"
+        <button type="button" class="epos-knopf" disabled="@(!UebernehmenErlaubt)"
                 @onclick="BeiUebernehmen">@UebernehmenText</button>
-        <button type="button" class="epos-knopf" @onclick="BeiSchliessen">@SchliessenText</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer"
+                @onclick="BeiSchliessen">@SchliessenText</button>
     </div>
 
     @* --- Plausibilitaet: Warnungen fragen zurueck, Fehler sperren --------- *@
@@ -199,9 +215,9 @@
     private ModulImportProfil? _profil;
 
     /// <summary>
-    /// Der Schlüssel der Quelle, mit der der Dialog aufmacht — sie trägt den
-    /// hervorgehobenen Knopf. Zwei Menüpunkte, EINE Maske: Der Vorläufer öffnete beide
-    /// im SELBEN Zustand (Befund W13‑B51).
+    /// Der Schlüssel der Quelle, mit der der Dialog aufmacht — ihr Knopf steht
+    /// eingerastet (Umschaltermarke). Zwei Menüpunkte, EINE Maske: Der Vorläufer
+    /// öffnete beide im SELBEN Zustand (Befund W13‑B51).
     /// </summary>
     [Parameter] public string Quelle { get; set; } = ModulImportProfil.QuelleCec;
 
@@ -218,8 +234,10 @@
     [Parameter] public string ZuruecksetzenText { get; set; } = Resource.PVIMP_BTN_ZURUECKSETZEN;
     [Parameter] public string UebernehmenText { get; set; } = Resource.PVIMP_BTN_UEBERNEHMEN;
     @* W13-B-4 (Windows-Abnahme 08.09.2026): Der Knopf SCHLIESST und verwirft nichts -
-       was uebernommen ist, ist im Katalog. "Abbrechen" versprach das Gegenteil. *@
-    [Parameter] public string SchliessenText { get; set; } = Resource.ALLG_BTN_OK;
+       was uebernommen ist, ist im Katalog. "Abbrechen" versprach das Gegenteil.
+       DL-2 Nr. 8: Aus "OK" ist "Beenden" geworden - OK bestaetigt etwas, dieser
+       Knopf bestaetigt nichts. *@
+    [Parameter] public string SchliessenText { get; set; } = Resource.PVIMP_BTN_BEENDEN;
     [Parameter] public string AbbrechenText { get; set; } = Resource.IMPORT_BTN_ABBRECHEN;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
@@ -435,9 +453,18 @@
 
     private bool Istgewaehlt(ImportZeile zeile) => _wahl.IstGewaehlt(zeile.Nummer);
 
+    /// <summary>Ist das die Quelle, aus der die Liste gerade stammt?</summary>
+    private bool IstQuelle(ImportQuelle q)
+        => string.Equals(q.Schluessel, Quelle, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Die Klasse eines Quellknopfes. Die gewählte Quelle trägt die
+    /// <b>Umschaltermarke</b>, nicht die Primärfarbe (DL-2, Abschnitt 2.1): Die
+    /// Quellenwahl ist ein Umschalter, und der einzige primäre Knopf der Maske ist
+    /// der Schlussknopf der Fußleiste.
+    /// </summary>
     private string Quellenklasse(ImportQuelle q) =>
-        string.Equals(q.Schluessel, Quelle, StringComparison.OrdinalIgnoreCase)
-            ? "epos-knopf epos-knopf--primaer" : "epos-knopf";
+        IstQuelle(q) ? "epos-knopf epos-knopf--gewaehlt" : "epos-knopf";
 
     private string Feldwert(ImportFeld feld) => GewaehlteZeile?.Feld(feld.Schluessel) ?? "";
 

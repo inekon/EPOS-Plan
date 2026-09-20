@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Bunit;
 using EPOS.UI.Bausteine;
+using Microsoft.AspNetCore.Components;
 using Xunit;
 
 namespace EPOS.UI.Tests.Bausteine;
@@ -140,5 +141,72 @@ public class SpeichernLeisteTests : EposBunitContext
         Assert.Equal(2, knoepfe.Count);
         Assert.Equal("Speichern", knoepfe[0].TextContent);
         Assert.Equal("Schließen", knoepfe[1].TextContent);
+    }
+
+    // =====================================================================
+    //  Der linke Aktionsschlitz (DL-2, Schritt 0)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Reihenfolge der Fussleiste ist Aktionen · Status (= Fueller) ·
+    /// [Speichern] · Abbrechen · OK. Der Schlitz steht also VOR dem Statustext -
+    /// und damit links vom Fueller, denn die Statusspanne IST der Fueller
+    /// (<c>.epos-status { flex: 1 1 auto }</c>).
+    /// </summary>
+    [Fact]
+    public void Der_Aktionsschlitz_steht_vor_dem_Status_und_damit_vor_dem_Fueller()
+    {
+        var cut = Render<SpeichernLeiste>(p => p
+            .Add(x => x.MitSpeichern, true)
+            .Add(x => x.SatzMarkiert, true)
+            .Add(x => x.Geaendert, true)
+            .Add(x => x.Aktionen, (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "button");
+                b.AddAttribute(1, "type", "button");
+                b.AddAttribute(2, "class", "epos-knopf");
+                b.AddContent(3, "Standardwerte");
+                b.CloseElement();
+            })));
+
+        var leiste = cut.Find(".epos-leiste");
+        var kinder = leiste.Children;
+
+        // Erstes Kind ist der Aktionsknopf, zweites die Statusspanne.
+        Assert.Equal("BUTTON", kinder[0].TagName);
+        Assert.Equal("Standardwerte", kinder[0].TextContent);
+        Assert.Contains("epos-status", kinder[1].ClassName);
+
+        // Und in der Knopffolge steht er vor Speichern, Abbrechen und OK.
+        var knoepfe = cut.FindAll(".epos-leiste button");
+        Assert.Equal(4, knoepfe.Count);
+        Assert.Equal("Standardwerte", knoepfe[0].TextContent);
+        Assert.Equal("Speichern", knoepfe[1].TextContent);
+        Assert.Equal("Abbrechen", knoepfe[2].TextContent);
+        Assert.Contains("epos-knopf--primaer", knoepfe[3].ClassName);
+    }
+
+    /// <summary>
+    /// Der Bestandstest zum Schlitz: OHNE <c>Aktionen</c> zeichnet die Leiste
+    /// genau dasselbe Markup wie vor DL-2 — kein Platzhalter, kein leeres
+    /// Element, die Statusspanne bleibt das erste Kind. Die bestehenden Aufrufer
+    /// bleiben deshalb unveraendert.
+    /// </summary>
+    [Fact]
+    public void Ohne_Aktionen_bleibt_das_Markup_unveraendert()
+    {
+        var cut = Render<SpeichernLeiste>();
+
+        var leiste = cut.Find(".epos-leiste");
+
+        Assert.Equal(3, leiste.Children.Length);          // Status, Abbrechen, OK
+        Assert.Contains("epos-status", leiste.Children[0].ClassName);
+        Assert.Equal("Abbrechen", leiste.Children[1].TextContent);
+        Assert.Equal("OK", leiste.Children[2].TextContent);
+        Assert.Contains("epos-knopf--primaer", leiste.Children[2].ClassName);
+
+        // Kein zusaetzlicher Knoten: Die Leiste zaehlt genau die drei Kinder von
+        // vor DL-2, und der Schlitz hinterlaesst keine leere Huelse.
+        Assert.Equal(2, cut.FindAll(".epos-leiste button").Count);
     }
 }

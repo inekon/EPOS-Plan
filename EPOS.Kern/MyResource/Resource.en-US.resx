@@ -121,13 +121,13 @@
     <value>Change profile...</value>
   </data>
   <data name="BADM_BTN_AENDERN_PROZESS" xml:space="preserve">
-    <value>Change process in DB</value>
+    <value>Change process in DB...</value>
   </data>
   <data name="BADM_BTN_AENDERN_STROM" xml:space="preserve">
-    <value>Change consumer</value>
+    <value>Change consumer...</value>
   </data>
   <data name="BADM_BTN_GRAFIK" xml:space="preserve">
-    <value>Graphic</value>
+    <value>Graphic...</value>
   </data>
   <data name="BADM_BTN_LOESCHEN_BRAUCHWASSER" xml:space="preserve">
     <value>Delete profile</value>
@@ -142,19 +142,19 @@
     <value>New profile...</value>
   </data>
   <data name="BADM_BTN_NEU_PROZESS" xml:space="preserve">
-    <value>New process in DB</value>
+    <value>New process in DB...</value>
   </data>
   <data name="BADM_BTN_NEU_STROM" xml:space="preserve">
-    <value>New consumer</value>
+    <value>New consumer...</value>
   </data>
   <data name="BADM_BTN_TYP_BRAUCHWASSER" xml:space="preserve">
     <value>Change profile type...</value>
   </data>
   <data name="BADM_BTN_TYP_PROZESS" xml:space="preserve">
-    <value>Change type in DB</value>
+    <value>Change type in DB...</value>
   </data>
   <data name="BADM_BTN_TYP_STROM" xml:space="preserve">
-    <value>Change type</value>
+    <value>Change type...</value>
   </data>
   <data name="BADM_EINHEIT_STROM" xml:space="preserve">
     <value>MWh</value>
@@ -401,9 +401,6 @@
   </data>
   <data name="IMP_KAT_BTN_DATEI_WP" xml:space="preserve">
     <value>Read WP from file VDI 3805...</value>
-  </data>
-  <data name="IMP_KAT_BTN_UEBERNEHMEN" xml:space="preserve">
-    <value>Save DB</value>
   </data>
   <data name="IMP_KAT_EINH_KW" xml:space="preserve">
     <value>kW</value>
@@ -4861,9 +4858,6 @@ Please run the simulation with photovoltaics first.</value>
   </data>
   <data name="PEAK_BTN_CSV" xml:space="preserve">
     <value>CSV export</value>
-  </data>
-  <data name="PEAK_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Close</value>
   </data>
   <data name="PEAK_TAB_KENNZAHLEN" xml:space="preserve">
     <value>Key figures</value>
@@ -12591,10 +12585,10 @@ Overwrite it anyway?</value>
     <value>Add type</value>
   </data>
   <data name="GTYP_BTN_LOESCHEN" xml:space="preserve">
-    <value>Type Delete</value>
+    <value>Delete type</value>
   </data>
   <data name="GTYP_BTN_SPEICHERN" xml:space="preserve">
-    <value>Type Save</value>
+    <value>Save type</value>
   </data>
   <data name="GTYP_MSG_GESPERRT" xml:space="preserve">
     <value>The building types supplied by the software manufacturer cannot be changed</value>
@@ -13771,7 +13765,7 @@ Its hourly and daily values will be deleted as well.</value>
     <value>The folders could not be created. Please check the path entries. Error: {0}</value>
   </data>
   <data name="ADM_SET_MSG_STANDARDWERTE" xml:space="preserve">
-    <value>The default values have been loaded. Use “Save” to apply them.</value>
+    <value>The default values have been loaded. Use “OK” to apply them.</value>
   </data>
   <data name="ADM_SET_FRAGE_STANDARDWERTE" xml:space="preserve">
     <value>Really reset all settings to the factory defaults?</value>
@@ -20072,6 +20066,9 @@ Do you want to allow this?</value>
   <data name="KLIMA_TRY_DETAILS_DATEI" xml:space="preserve">
     <value>DWD test reference year · file “{0}” · imported {1} · {2} · {3}</value>
   </data>
+  <data name="KLIMA_TRY_BEZUGSZEITRAUM" xml:space="preserve">
+    <value>reference period {0}</value>
+  </data>
   <data name="KLIMA_TRY_DETAILS_REGIONAL" xml:space="preserve">
     <value>TRY regional data · region {0} · station {1} · distance {2} km · scenario {3} · reference year {4} · source {5} · imported {6} · {7} · {8}</value>
   </data>
@@ -20218,5 +20215,32 @@ Do you want to allow this?</value>
   </data>
   <data name="TRANSFER_PAKET_UNLESBAR_GRUND" xml:space="preserve">
     <value>The package could not be read: {0}</value>
+  </data>
+  <data name="PVIMP_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IMP_KAT_BTN_BEENDEN" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="PEAK_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="GEB_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="KDLG_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; items already created remain.</value>
+  </data>
+  <data name="KDLG_ET_TIP_ABBRECHEN" xml:space="preserve">
+    <value>Discards only the unsaved entries; energy sources already created remain.</value>
+  </data>
+  <data name="GTYP_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WPS_BTN_KENNDATEN_KURZ" xml:space="preserve">
+    <value>Characteristic curve data...</value>
+  </data>
+  <data name="BADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
   </data>
 </root>
