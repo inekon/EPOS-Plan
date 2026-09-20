@@ -33,6 +33,20 @@
    bekommt keinen Waehler - eine Rolle, auf die die Einstellung zeigen
    koennte, gibt es dort nicht.
 
+   WAS DIE ETAPPE E3 DAZUGELEGT HAT. Die Gruppe (a) bringt Bilder mit, die der
+   Jahresgang nicht kannte:
+
+     * ZWEI y-ACHSEN. Jede Reihe traegt ihr eigenes Datenfenster (DG-E3-1); die
+       Zeigerzeile liest daraus Index UND Einheit, und die Elemente der rechten
+       Achse (Marke yachse2) fallen, sobald jede ihrer Reihen abgewaehlt ist.
+     * FLAECHEN. Ein Stapel ist ein geschlossener Pfad mit data-reihe wie jede
+       Linie - der Legendenklick schaltet ihn deshalb ebenso.
+     * GEBUENDELTE PFADE. Ueber 8 760 Stuetzstellen oder drei Reihen buendelt der
+       Schreiber; ab dem VIERFACHEN Zoom rechnet der Baustein den sichtbaren
+       Ausschnitt roh nach (DG-E3-3) - aus dem Modell, ohne Rundlauf.
+     * EINE x-ACHSE, DIE NICHT DIE STUNDE ZAEHLT. Was x bedeutet, sagt die
+       Achsenart; nur die Stundenachse nimmt die Jahresstundenteilung des Kerns.
+
    OHNE JAVASCRIPT BRICHT NICHTS. Laedt das Modul nicht (alte WebView,
    Pruefumgebung), steht das Bild da - ohne Zoom, aber vollstaendig, mit
    Legende und Farbwahl. Das ist ein Schoenheitsfehler, kein Fehlschlag.
@@ -123,6 +137,20 @@ else
     private const string MARKE_LEGENDE = "legende:";
     private const string MARKE_XACHSE = "xachse";
 
+    /// <summary>
+    /// Rasterlinie, Beschriftung und Titel der ZWEITEN y-Achse (DG-E3-1). Sie
+    /// verschwinden mit ihren Reihen: Eine Achse ohne sichtbare Reihe beschriftet
+    /// nichts mehr.
+    /// </summary>
+    private const string MARKE_YACHSE2 = "yachse2";
+
+    /// <summary>
+    /// <b>Nachladen ab dem Vierfachen</b> (DG-E2-4, eingelöst mit DG-E3-3): Ab dieser
+    /// Zoomstufe rechnet der Baustein den sichtbaren Ausschnitt einer GEBÜNDELTEN
+    /// Reihe roh nach. Darunter zeigt die Bündelung bei 1:1 dasselbe Bild.
+    /// </summary>
+    private const double NACHLADEN_AB = 4.0;
+
     private static readonly CultureInfo INV = CultureInfo.InvariantCulture;
 
     // =====================================================================
@@ -188,8 +216,44 @@ else
     /// <summary>Text, solange es noch kein Modell gibt.</summary>
     [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
 
-    /// <summary>Die Einheit der Werte in der Zeigerzeile („°C", „kW"); leer lässt sie weg.</summary>
+    /// <summary>
+    /// Die Einheit der Werte in der Zeigerzeile („°C", „kW"); leer lässt sie weg.
+    /// Sie gilt für die Reihen der LINKEN Achse — und damit für jedes Bild mit nur
+    /// einer Achse.
+    /// </summary>
     [Parameter] public string Einheit { get; set; } = "";
+
+    /// <summary>
+    /// Die Einheit der Reihen auf der ZWEITEN (rechten) y-Achse — der
+    /// Speicherinhalt in kWh neben Leistungen in kW.
+    ///
+    /// <para><b>Ohne sie stünde in der Zeigerzeile der richtige Wert mit der
+    /// falschen Einheit</b> (Protokoll DG-E3, „Offen für den UI-Teil"). Welche Reihe
+    /// rechts steht, sagt ihr eigenes Datenfenster: Es trägt eine andere y-Spanne als
+    /// die Zeichenfläche. Leer lässt die Einheit bei diesen Reihen weg.</para>
+    /// </summary>
+    [Parameter] public string EinheitRechts { get; set; } = "";
+
+    /// <summary>
+    /// <b>Was x zählt</b> (Protokoll DG-E3, „Was x je Bild bedeutet"). Sie entscheidet
+    /// die Beschriftung der Zeigerzeile und die Achsenteilung, die der Baustein im
+    /// Ausschnitt nachzeichnet — nur die Stundenachse nimmt
+    /// <c>ChartRenderer.Jahresstundenteilung</c>.
+    /// </summary>
+    [Parameter] public Achsenart Achsenart { get; set; } = Achsenart.Jahresstunde;
+
+    /// <summary>
+    /// Die Einheit der x-Werte in der Zeigerzeile. Leer nimmt die der
+    /// <see cref="Achsenart"/>: „h" bei Jahresstunden, sonst keine.
+    /// </summary>
+    [Parameter] public string XEinheit { get; set; } = "";
+
+    /// <summary>
+    /// Der Titel der Achsenteilung, die der Baustein im Ausschnitt nachzeichnet.
+    /// Leer nimmt bei <see cref="Achsenart.Jahresstunde"/> den Hausschlüssel
+    /// <c>CHART_ACHSE_JAHRESSTUNDEN</c>, sonst bleibt die Zeile weg.
+    /// </summary>
+    [Parameter] public string XTitelText { get; set; } = "";
 
     /// <summary>Beschriftung des Knopfs, der auf 1:1 zurückstellt.</summary>
     [Parameter] public string ZurueckText { get; set; } = "1:1";
@@ -245,6 +309,13 @@ else
     /// <summary>Der Name des Legendeneintrags, dessen Farbwähler offen steht.</summary>
     private string? _farbwahl;
 
+    /// <summary>
+    /// Die NACHGERECHNETEN Pfade des Ausschnitts (Reihenname → <c>d</c>), leer
+    /// unterhalb des Vierfachen. Der Baustein setzt damit nur ein Attribut je Pfad
+    /// neu — kein Kernaufruf, kein neuer Baum.
+    /// </summary>
+    private readonly Dictionary<string, string> _ausschnitt = new(StringComparer.Ordinal);
+
     /// <summary>Arbeitsstand des Farbfeldes — er verwirft eine stehengebliebene Fehleingabe.</summary>
     private int _farbstand;
 
@@ -264,6 +335,15 @@ else
     /// <summary>Der stehende Zeitausschnitt; <c>null</c> = Vollansicht.</summary>
     public (int Von, int Bis)? Fenster => _fenster;
 
+    /// <summary>
+    /// Die nachgerechneten Ausschnittpfade (Reihenname → <c>d</c>); leer heißt
+    /// „der Vollpfad des Schreibers steht" (DG-E3-3).
+    /// </summary>
+    public IReadOnlyDictionary<string, string> Ausschnittpfade => _ausschnitt;
+
+    /// <summary>Sind alle Reihen der zweiten y-Achse abgewählt?</summary>
+    public bool ZweiteAchseAus => RechteAchseLeer;
+
     // =====================================================================
     //  Ableitungen
     // =====================================================================
@@ -271,8 +351,39 @@ else
     /// <summary>Die Palette dieses Zeichenlaufs.</summary>
     private Farbpalette AktivePalette => Palette ?? Farbpalette.Aktuell;
 
+    /// <summary>
+    /// Die Kennung, mit der der Schreiber seine <c>clipPath</c>-Namen bildet —
+    /// <b>auf Zeichen beschränkt, die in einem <c>url(#…)</c> stehen dürfen</b>.
+    ///
+    /// <para><b>Warum hier und nicht beim Aufrufer.</b> Ein Wirt bildet seine
+    /// Kennung gern aus dem, was sein Bild unterscheidet: der Ganglinienbaustein
+    /// aus „K|4711|Werk Nord". Daraus würde <c>clip-path="url(#ganglinie-K|4711|Werk
+    /// Nord-c1)"</c> — ein Verweis mit Leerzeichen und Strich, den kein Browser
+    /// auflöst, und das Bild verlöre seinen Zuschnitt. Die Regel gehört deshalb an
+    /// die EINE Stelle, die die Kennung weitergibt.</para>
+    ///
+    /// <para>Der öffentliche Parameter bleibt unangetastet: Er ist der Name, den der
+    /// Wirt vergeben hat, und Prüfstände lesen ihn.</para>
+    /// </summary>
     private string KennungOderZaehler
-        => string.IsNullOrWhiteSpace(Kennung) ? _eigeneKennung : Kennung.Trim();
+        => string.IsNullOrWhiteSpace(Kennung) ? _eigeneKennung : Gesaeubert(Kennung.Trim());
+
+    /// <summary>
+    /// Buchstaben, Ziffern, Bindestrich und Unterstrich bleiben; alles andere wird
+    /// ein Bindestrich. Eine Kennung, von der nichts übrig bleibt, nimmt den Zähler.
+    /// </summary>
+    private string Gesaeubert(string roh)
+    {
+        var sb = new System.Text.StringBuilder(roh.Length);
+        bool inhalt = false;
+        foreach (char c in roh)
+        {
+            if (char.IsLetterOrDigit(c) && c < 128) { sb.Append(c); inhalt = true; }
+            else if (c == '-' || c == '_') sb.Append(c);
+            else sb.Append('-');
+        }
+        return inhalt ? sb.ToString() : _eigeneKennung;
+    }
 
     /// <summary>
     /// Hat das Bild eine Zeichenfläche MIT Reihen? Nur dann gibt es ein inneres
@@ -316,6 +427,7 @@ else
             _zeiger = null;
             _stufe = 1;
             _farbwahl = null;
+            _ausschnitt.Clear();
         }
 
         _baumModell = Modell;
@@ -409,8 +521,19 @@ else
         if (reihe is not null && _versteckt.Contains(reihe)) versteckt = true;
         if (_fenster is not null && knoten.Marke == MARKE_XACHSE) versteckt = true;
 
-        var werte = new List<KeyValuePair<string, object>>(knoten.Attribute.Count + 5);
+        // DIE ZWEITE ACHSE FAELLT MIT IHREN REIHEN (DG-E3-1): Rasterlinie,
+        // Beschriftung und Titel rechts beschriften nichts mehr, sobald jede Reihe
+        // dieser Achse ueber die Legende abgewaehlt ist.
+        if (knoten.Marke == MARKE_YACHSE2 && RechteAchseLeer) versteckt = true;
+
+        var werte = new List<KeyValuePair<string, object>>(knoten.Attribute.Count + 6);
         bool klasseGesetzt = false;
+
+        // DER NACHGERECHNETE AUSSCHNITT ERSETZT NUR EIN ATTRIBUT (DG-E3-3): Liegt
+        // fuer diese Reihe ein roher Fensterpfad vor, geht er an die Stelle des
+        // Vollpfads - der Baum bleibt derselbe, Blazor tauscht das eine d.
+        string? pfad = null;
+        if (reihe is not null) _ausschnitt.TryGetValue(reihe, out pfad);
 
         foreach (KeyValuePair<string, string> a in knoten.Attribute)
         {
@@ -420,8 +543,17 @@ else
                     "class", a.Value + " " + string.Join(" ", klassen)));
                 klasseGesetzt = true;
             }
+            else if (pfad is not null && string.Equals(a.Key, "d", StringComparison.Ordinal))
+                werte.Add(new KeyValuePair<string, object>("d", pfad));
             else werte.Add(new KeyValuePair<string, object>(a.Key, a.Value));
         }
+
+        // ZWEI LEERZEICHEN BLEIBEN ZWEI LEERZEICHEN. Der Bildtitel des
+        // Kostenprofils heisst „Kostenprofil  [ct/kWh]"; das PNG setzt beide, der
+        // Browser faltet XML-Leerraum zusammen und zeigt eines (Protokoll DG-E3,
+        // „Offen fuer den UI-Teil").
+        if (knoten.Name == "text")
+            werte.Add(new KeyValuePair<string, object>("xml:space", "preserve"));
 
         if (!klasseGesetzt && klassen.Count > 0)
             werte.Add(new KeyValuePair<string, object>("class", string.Join(" ", klassen)));
@@ -487,7 +619,7 @@ else
         builder.AddAttribute(1, "class", "epos-diagramm-ticks");
 
         int i = 0;
-        foreach ((int stunde, string beschriftung) in ChartRenderer.Jahresstundenteilung(von, bis))
+        foreach ((int stunde, string beschriftung) in Achsenteilung(von, bis))
         {
             float x = bild.X + (float)((stunde - von) / spanne) * bild.Breite;
 
@@ -517,22 +649,75 @@ else
             i++;
         }
 
-        // Im Fenster zaehlt die Achse IMMER Jahresstunden - auch wenn das Bild
-        // sonst Monatsgrenzen traegt.
-        builder.OpenRegion(1000000);
-        builder.OpenElement(0, "text");
-        builder.AddAttribute(1, "class", "epos-diagramm-achsentitel");
-        builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
-        builder.AddAttribute(3, "y", Px(unten + 30f));
-        builder.AddAttribute(4, "font-size", "20px");
-        builder.AddAttribute(5, "text-anchor", "middle");
-        builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
-        builder.AddAttribute(7, "fill", textfarbe);
-        builder.AddContent(8, Resource.CHART_ACHSE_JAHRESSTUNDEN);
-        builder.CloseElement();
-        builder.CloseRegion();
+        // Im Fenster zaehlt die Achse das, was die Achsenart sagt - auch wenn das
+        // Bild sonst Monatsgrenzen traegt. Ohne Titel bleibt die Zeile weg.
+        string achsentitel = Achsentitel;
+        if (achsentitel.Length > 0)
+        {
+            builder.OpenRegion(1000000);
+            builder.OpenElement(0, "text");
+            builder.AddAttribute(1, "class", "epos-diagramm-achsentitel");
+            builder.AddAttribute(2, "x", Px(bild.X + bild.Breite / 2f));
+            builder.AddAttribute(3, "y", Px(unten + 30f));
+            builder.AddAttribute(4, "font-size", "20px");
+            builder.AddAttribute(5, "text-anchor", "middle");
+            builder.AddAttribute(6, "dominant-baseline", "text-before-edge");
+            builder.AddAttribute(7, "fill", textfarbe);
+            builder.AddContent(8, achsentitel);
+            builder.CloseElement();
+            builder.CloseRegion();
+        }
 
         builder.CloseElement();
+    }
+
+    /// <summary>Der Titel der nachgezeichneten Achsenteilung; leer = keiner.</summary>
+    private string Achsentitel
+        => XTitelText.Length > 0
+            ? XTitelText
+            : Achsenart == Achsenart.Jahresstunde ? Resource.CHART_ACHSE_JAHRESSTUNDEN : "";
+
+    /// <summary>
+    /// Die Teilung der x-Achse im Ausschnitt. <b>Nur die Stundenachse nimmt
+    /// <c>ChartRenderer.Jahresstundenteilung</c></b> — sie rechnet Tage, Wochen und
+    /// Monate des Jahres aus. Zählt x einen Index, eine Stützstelle oder einen Rang,
+    /// gibt es kein Kalenderraster: Dort steht eine GANZZAHLIGE Teilung mit höchstens
+    /// sechs Marken, gerundet auf eine runde Schrittweite.
+    /// </summary>
+    private IReadOnlyList<(int Stelle, string Text)> Achsenteilung(int von, int bis)
+    {
+        if (Achsenart == Achsenart.Jahresstunde)
+        {
+            var aus = new List<(int, string)>();
+            foreach ((int stunde, string text) in ChartRenderer.Jahresstundenteilung(von, bis))
+                aus.Add((stunde, text));
+            return aus;
+        }
+        return Ganzzahlteilung(von, bis);
+    }
+
+    /// <summary>
+    /// Eine ganzzahlige Teilung zwischen <paramref name="von"/> und
+    /// <paramref name="bis"/>: höchstens sieben Marken auf einer runden Schrittweite
+    /// (1, 2, 5, 10, 20, 50 …), beschriftet in der Kultur des Anwenders.
+    /// </summary>
+    private static IReadOnlyList<(int Stelle, string Text)> Ganzzahlteilung(int von, int bis)
+    {
+        var marken = new List<(int, string)>();
+        int spanne = bis - von;
+        if (spanne <= 0) return marken;
+
+        double roh = spanne / 6.0;
+        double zehn = Math.Pow(10, Math.Floor(Math.Log10(roh <= 0 ? 1 : roh)));
+        double rest = roh / zehn;
+        double schritt = zehn * (rest <= 1 ? 1 : rest <= 2 ? 2 : rest <= 5 ? 5 : 10);
+        if (schritt < 1) schritt = 1;
+
+        long erste = (long)Math.Ceiling(von / schritt) * (long)schritt;
+        for (long s = erste; s <= bis; s += (long)schritt)
+            marken.Add(((int)s, s.ToString("N0", CultureInfo.CurrentCulture)));
+
+        return marken;
     }
 
     // =====================================================================
@@ -567,6 +752,50 @@ else
     {
         if (!_versteckt.Remove(reihe)) _versteckt.Add(reihe);
         return Task.CompletedTask;
+    }
+
+    // =====================================================================
+    //  Die zweite y-Achse (DG-E3-1)
+    // =====================================================================
+
+    /// <summary>
+    /// Das Datenfenster EINER Reihe — ihr eigenes, sonst das der Zeichenfläche
+    /// (die linke Achse). Dieselbe Regel wie im <c>SvgSchreiber</c>.
+    /// </summary>
+    private Datenfenster? Reihenfenster(Datenreihe reihe)
+        => reihe?.Fenster ?? Modell?.Flaeche?.Daten;
+
+    /// <summary>
+    /// Steht die Reihe auf der ZWEITEN y-Achse? Das Modell sagt es nicht mit einem
+    /// Kennzeichen — es sagt es mit dem FENSTER: Eine Reihe rechts trägt ihre eigene
+    /// y-Spanne, jede Reihe der linken Achse die der Zeichenfläche.
+    /// </summary>
+    private bool AufRechterAchse(Datenreihe reihe)
+    {
+        Datenfenster? d = Modell?.Flaeche?.Daten;
+        if (d is null || reihe?.Fenster is null) return false;
+        return reihe.Fenster.YVon != d.YVon || reihe.Fenster.YBis != d.YBis;
+    }
+
+    /// <summary>
+    /// Ist KEINE Reihe der rechten Achse mehr sichtbar? Dann fallen auch ihre
+    /// Elemente (<c>yachse2</c>). Ein Bild ohne zweite Achse liefert <c>false</c> —
+    /// dort gibt es nichts auszublenden.
+    /// </summary>
+    private bool RechteAchseLeer
+    {
+        get
+        {
+            if (Modell is null) return false;
+            bool gibtEs = false;
+            foreach (Datenreihe r in Modell.Reihen)
+            {
+                if (!AufRechterAchse(r)) continue;
+                gibtEs = true;
+                if (!_versteckt.Contains(r.Name ?? "")) return false;
+            }
+            return gibtEs;
+        }
     }
 
     private Task BeiLegendentaste(KeyboardEventArgs e, string reihe)
@@ -688,8 +917,17 @@ else
 
     /// <summary>
     /// „4.000 h · Temperatur: 12,3 °C · …" — die Werte unter dem Zeiger, gelesen
-    /// aus dem Modell. <b>Kein Kernaufruf:</b> Das Modul meldet die STUNDE, der
-    /// Index in die Reihe ist Stunde − <c>XVon</c>.
+    /// aus dem Modell. <b>Kein Kernaufruf:</b> Das Modul meldet die Stelle auf der
+    /// x-Achse, der Rest ist eine Lesestelle im Modell.
+    ///
+    /// <para><b>JE REIHE IHR EIGENES FENSTER</b> (DG-E3-1). Der Index ist
+    /// x − <c>Fenster.XVon</c> DER REIHE, geteilt durch ihre Schrittweite — sonst
+    /// läse die Zeile beim Stundenprofil (es zählt 1 … n) und bei zwei nebeneinander
+    /// gestellten Stapelgruppen den falschen Wert. Liegt x außerhalb des Fensters
+    /// einer Reihe, steht sie nicht in der Zeile; sie ist dort nicht gezeichnet.</para>
+    ///
+    /// <para><b>UND IHRE EIGENE EINHEIT:</b> Reihen der zweiten Achse tragen
+    /// <see cref="EinheitRechts"/>, alle übrigen <see cref="Einheit"/>.</para>
     /// </summary>
     private string Zeigerzeile
     {
@@ -697,25 +935,61 @@ else
         {
             if (!_zeiger.HasValue || Modell?.Flaeche is null) return "";
 
-            int index = (int)Math.Round(_zeiger.Value - Modell.Flaeche.Daten.XVon);
-            var teile = new List<string>(Modell.Reihen.Count + 1)
-            {
-                _zeiger.Value.ToString("N0", CultureInfo.CurrentCulture) + " h"
-            };
+            var teile = new List<string>(Modell.Reihen.Count + 1) { Zeigerstelle(_zeiger.Value) };
 
             foreach (Datenreihe r in Modell.Reihen)
             {
                 string name = r.Name ?? "";
                 if (_versteckt.Contains(name)) continue;
-                if (r.Werte is null || index < 0 || index >= r.Werte.Length) continue;
 
-                string wert = r.Werte[index].ToString("0.###", CultureInfo.CurrentCulture);
-                teile.Add(string.IsNullOrEmpty(Einheit)
+                int index = Reihenindex(r, _zeiger.Value);
+                if (index < 0) continue;
+
+                string einheit = AufRechterAchse(r) ? EinheitRechts : Einheit;
+                string wert = r.Werte![index].ToString("0.###", CultureInfo.CurrentCulture);
+                teile.Add(string.IsNullOrEmpty(einheit)
                     ? name + ": " + wert
-                    : name + ": " + wert + " " + Einheit);
+                    : name + ": " + wert + " " + einheit);
             }
             return string.Join(" · ", teile);
         }
+    }
+
+    /// <summary>
+    /// Die Stelle auf der x-Achse, wie sie die Zeigerzeile nennt: „4.000 h" bei
+    /// Jahresstunden, sonst die nackte Zahl (oder die Einheit, die der Wirt setzt).
+    /// </summary>
+    private string Zeigerstelle(int x)
+    {
+        string zahl = x.ToString("N0", CultureInfo.CurrentCulture);
+        string mass = XEinheit.Length > 0
+            ? XEinheit
+            : Achsenart == Achsenart.Jahresstunde ? "h" : "";
+        return mass.Length > 0 ? zahl + " " + mass : zahl;
+    }
+
+    /// <summary>
+    /// Der Index in <c>reihe.Werte</c> zur x-Stelle <paramref name="x"/> — oder
+    /// <c>−1</c>, wenn die Reihe dort nichts zeichnet.
+    /// </summary>
+    private int Reihenindex(Datenreihe reihe, double x)
+    {
+        if (reihe?.Werte is null || reihe.Werte.Length == 0) return -1;
+
+        Datenfenster? f = Reihenfenster(reihe);
+        if (f is null) return -1;
+
+        // Ausserhalb IHRES Fensters steht die Reihe nicht im Bild (halbe
+        // Bildbreite je Stapelgruppe, kuerzere Reihe neben laengerer).
+        if (x < f.XVon - 0.5 || x > f.XBis + 0.5) return -1;
+
+        int n = reihe.Werte.Length;
+        double schritt = n > 1 ? (f.XBis - f.XVon) / (n - 1) : 0.0;
+        int index = schritt > 0 ? (int)Math.Round((x - f.XVon) / schritt) : 0;
+
+        if (index < 0) index = 0;
+        if (index >= n) index = n - 1;
+        return index;
     }
 
     // =====================================================================
@@ -780,6 +1054,7 @@ else
         bool voll = von <= (int)Math.Ceiling(d.XVon) && bis >= (int)Math.Floor(d.XBis);
         _fenster = voll ? null : (von, bis);
         _farbwahl = null;
+        Nachladen(voll ? 0 : von, voll ? 0 : bis, voll);
         StateHasChanged();
 
         if (!FensterGeaendert.HasDelegate) return;
@@ -787,6 +1062,51 @@ else
         // Achsenfenster.Bis ist AUSSCHLIESSLICH, die gemeldete Stunde einschliesslich.
         await FensterGeaendert.InvokeAsync(
             voll ? null : new ChartRenderer.Achsenfenster(von, bis + 1));
+    }
+
+    /// <summary>
+    /// <b>NACHLADEN AB DEM VIERFACHEN</b> (DG-E2-4, Schnittstelle DG-E3-3).
+    ///
+    /// <para>Ein Pfad mit mehr als 8 760 Stützstellen oder mehr als drei Reihen geht
+    /// GEBÜNDELT in den Baum (<c>Pfadregel</c>) — je Bildpunktspalte zwei Punkte.
+    /// Das ist bei 1:1 vom rohen Bild nicht zu unterscheiden; zoomt der Anwender
+    /// darüber hinaus, zeigt die Bündelung aber nicht mehr die echte Stützstelle.
+    /// Ab dem Vierfachen rechnet der Baustein den sichtbaren Ausschnitt deshalb ROH
+    /// nach — <b>aus den Datenreihen des Modells, die er ohnehin hält</b>, also ohne
+    /// einen Rundlauf in den Kern. Unterhalb des Vierfachen (und in der Vollansicht)
+    /// steht wieder der Vollpfad des Schreibers.</para>
+    ///
+    /// <para>Rohe Reihen bleiben unberührt: Ihr Vollpfad trägt schon jede
+    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt.</para>
+    /// </summary>
+    private void Nachladen(int von, int bis, bool voll)
+    {
+        if (Modell?.Flaeche is null) { _ausschnitt.Clear(); return; }
+
+        Datenfenster d = Modell.Flaeche.Daten;
+        double spanne = bis - von;
+        double faktor = voll || spanne <= 0 ? 1.0 : Breite(d) / spanne;
+
+        if (voll || faktor < NACHLADEN_AB)
+        {
+            _ausschnitt.Clear();
+            return;
+        }
+
+        int reihen = Modell.Reihen.Count;
+        var neu = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        foreach (Datenreihe r in Modell.Reihen)
+        {
+            int n = r.Werte is null ? 0 : r.Werte.Length;
+            if (n < 2 || Pfadregel.Roh(n, reihen)) continue;
+
+            neu[r.Name ?? ""] =
+                SvgSchreiber.Reihenpfad(r, Modell.Flaeche, von, bis, true);
+        }
+
+        _ausschnitt.Clear();
+        foreach (KeyValuePair<string, string> p in neu) _ausschnitt[p.Key] = p.Value;
     }
 
     /// <summary>
@@ -817,6 +1137,7 @@ else
         _fenster = null;
         _zeiger = null;
         _farbwahl = null;
+        _ausschnitt.Clear();
         StateHasChanged();
 
         if (_modul is null) return;

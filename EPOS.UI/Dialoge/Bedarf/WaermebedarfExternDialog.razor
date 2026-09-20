@@ -98,6 +98,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -222,7 +223,9 @@
                           LabelVollbenutzung="@LabelVollbenutzung"
                           LabelSortiert="@LabelSortiert" LabelEinheit="@LabelEinheit"
                           EinheitKw="@EinheitKw" EinheitStunden="@EinheitStunden"
-                          Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild" />
+                          Bildtext="@Bildtext" PlatzhalterBild="@PlatzhalterBild"
+                          FarbeSetzen="@FarbeSetzen"
+                          FarbeZuruecksetzen="@FarbeZuruecksetzen" />
     }
 
     @if (!Wizard)
@@ -358,13 +361,21 @@
     [Parameter] public Func<GanglinienWahl, Task<GanglinienKennzahlen?>>? Kennzahlen { get; set; }
 
     /// <summary>
-    /// Zeichnet die gewählte Ganglinie (W9‑E‑3): Wahl, Schalterstellung „sortiert"
-    /// und der aufgezogene Bildausschnitt (<c>null</c> = das ganze Jahr).
+    /// Rechnet das Zeichenmodell der gewählten Ganglinie (W9‑E‑3): Wahl und
+    /// Schalterstellung „sortiert".
     ///
-    /// <para>Gezeichnet wird im Kern (<c>ChartRenderer.GanglinieNormiert</c>) — diese
-    /// Bibliothek ruft keinen Renderer (Risiko R‑W8‑2).</para>
+    /// <para>Gerechnet wird im Kern (<c>ChartRenderer.GanglinieNormiertModell</c>) —
+    /// diese Bibliothek ruft keinen Renderer (Risiko R‑W8‑2). Ein dritter Parameter
+    /// für den aufgezogenen Bildausschnitt stand hier bis zur Etappe DG-E3; der
+    /// Zeitausschnitt liegt seither im Bild (DG-E3-9).</para>
     /// </summary>
-    [Parameter] public Func<GanglinienWahl, bool, Diagrammbereich?, byte[]?>? Bildauftrag { get; set; }
+    [Parameter] public Func<GanglinienWahl, bool, Zeichenmodell?>? Bildauftrag { get; set; }
+
+    /// <summary>Die Farbe einer Rolle anwendungsweit setzen; ohne ihn kein Farbwähler.</summary>
+    [Parameter] public Func<Farbrolle, Farbe, Task>? FarbeSetzen { get; set; }
+
+    /// <summary>„Hausfarbe": die Rolle wieder auf die Vorgabe.</summary>
+    [Parameter] public Func<Farbrolle, Task>? FarbeZuruecksetzen { get; set; }
 
     /// <summary>Die ANZEIGEEINHEIT der Jahresarbeit — MWh (Vorgabe) oder kWh (W8‑O‑5).</summary>
     [Parameter] public Energieeinheit Einheit { get; set; } = Energieeinheit.MWh;
@@ -735,10 +746,10 @@
                                 + "|" + _wahl.Bezeichner;
 
     /// <summary>Der Bildauftrag der Grafik — die Wahl steckt schon darin.</summary>
-    private Func<bool, Diagrammbereich?, byte[]?>? Grafikbild
+    private Func<bool, Zeichenmodell?>? Grafikbild
         => (Bildauftrag is null || _wahl is null)
             ? null
-            : (sortiert, bereich) => Bildauftrag(_wahl, sortiert, bereich);
+            : sortiert => Bildauftrag(_wahl, sortiert);
 
     // =================================================================================
     // Kanal

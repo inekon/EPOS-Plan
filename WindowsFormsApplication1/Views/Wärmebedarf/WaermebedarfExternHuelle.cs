@@ -7,6 +7,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using Microsoft.AspNetCore.Components;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -135,13 +136,15 @@ namespace WindowsFormsApplication1
                 ["Kopieren"] = new Func<string, string, Task<bool>>(Kopieren),
 
                 // iU9-W9-E-3: die Grafik der markierten Ganglinie. Gerechnet wird im
-                // Kern (GanglinienAuswertungCtrl), gezeichnet auch
-                // (ChartRenderer.GanglinieNormiert) - die Komponente bekommt Zahlen
-                // und ein PNG.
+                // Kern (GanglinienAuswertungCtrl), das ZEICHENMODELL auch
+                // (ChartRenderer.GanglinieNormiertModell) - die Komponente bekommt
+                // Zahlen und ein Modell, keinen Renderer.
                 ["Kennzahlen"] = new Func<GanglinienWahl, Task<GanglinienKennzahlen>>(
                     w => Task.FromResult(vorrat.Kennzahlen(w))),
-                ["Bildauftrag"] = new Func<GanglinienWahl, bool, Diagrammbereich, byte[]>(
-                    (w, sortiert, bereich) => vorrat.Bild(w, sortiert, bereich)),
+                ["Bildauftrag"] = new Func<GanglinienWahl, bool, Zeichenmodell>(
+                    (w, sortiert) => vorrat.Modell(w, sortiert)),
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 // Die Anzeigeeinheit (Entscheid W8-O-5): dieselbe gemerkte Wahl wie in
                 // den Bedarfsansichten.
@@ -263,6 +266,27 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
+        }
+
+        // =================================================================
         // Die Grafik der markierten Ganglinie (W9-E-3)
         // =================================================================
 
@@ -303,14 +327,14 @@ namespace WindowsFormsApplication1
             /// x wahlweise Monatsgrenzen oder die vier Stundenmarken, Farbe Rot. Nur
             /// die Reihe ist eine andere — hier steht GENAU EINE, die gewählte
             /// Ganglinie.
+            ///
+            /// <para><b>Der Rundlauf-Datenzoom ist entfallen</b> (Entscheid DG-E3-9):
+            /// Das Bild steht als ZEICHENMODELL im Baustein <c>DiagrammSvg</c>, und der
+            /// Zeitausschnitt ist dort die <c>viewBox</c> der Zeichenfläche.</para>
             /// </summary>
             /// <param name="wahl">Katalogsatz oder Projektkopie.</param>
             /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
-            /// <param name="bereich">Der aufgezogene Bildausschnitt (Datenzoom, Befund
-            /// A‑1); <c>null</c> = das ganze Jahr. Was an dieser Stelle des Bildes
-            /// steht, weiß nur der Renderer — deshalb rechnet
-            /// <c>ChartRenderer.FensterAusBild</c>.</param>
-            internal byte[] Bild(GanglinienWahl wahl, bool sortiert, Diagrammbereich bereich)
+            internal Zeichenmodell Modell(GanglinienWahl wahl, bool sortiert)
             {
                 GanglinienAuswertung a = Lesen(wahl);
                 if (a == null || !a.Erfolgreich) return null;
@@ -324,18 +348,11 @@ namespace WindowsFormsApplication1
                                             SkiaSharp.SKColors.Red)
                 };
 
-                ChartRenderer.Achsenfenster fenster = bereich == null
-                    ? null
-                    : ChartRenderer.FensterAusBild(
-                        new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
-                                                         bereich.YVon, bereich.YBis),
-                        werte.Length);
-
-                return ChartRenderer.GanglinieNormiert(
+                return ChartRenderer.GanglinieNormiertModell(
                     MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                     MyResource.Resource.CHART_ACHSE_WAERMELAST,
                     sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                    sortiert, fenster);
+                    sortiert);
             }
 
             /// <summary>Liest die Reihe — oder gibt die schon gelesene zurück.</summary>

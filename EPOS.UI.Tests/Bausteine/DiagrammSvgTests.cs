@@ -178,6 +178,33 @@ public class DiagrammSvgTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Eine Kennung, die ein Wirt aus einem NAMEN bildet, wird gesäubert.</b>
+    /// Der Ganglinienbaustein unterscheidet seine Bilder über
+    /// <c>„K|4711|Werk Nord"</c>; daraus würde ohne Regel
+    /// <c>clip-path="url(#ganglinie-K|4711|Werk Nord-c1)"</c> — ein Verweis mit
+    /// Leerzeichen und Strich, den kein Browser auflöst, und das Bild verlöre
+    /// seinen Zuschnitt.
+    ///
+    /// <para>Der PARAMETER bleibt dabei, was der Wirt gesetzt hat.</para>
+    /// </summary>
+    [Fact]
+    public void DS1_Eine_Kennung_mit_Sonderzeichen_wird_gesaeubert()
+    {
+        var modell = new Zeichenmodell(200, 100, Farbton.Aus(Farbrolle.HINTERGRUND));
+        modell.Gruppe(new Rahmen(10, 10, 100, 50),
+                      zg => zg.Linie(0, 0, 200, 100, new Stift(Farbton.Aus(Farbrolle.ACHSE), 1f)));
+
+        var cut = Zeige(modell: modell, kennung: "ganglinie-K|4711|Werk Nord");
+
+        Assert.Equal("ganglinie-K-4711-Werk-Nord-c1", cut.Find("clipPath").GetAttribute("id"));
+        Assert.Equal("url(#ganglinie-K-4711-Werk-Nord-c1)",
+                     cut.Find("g").GetAttribute("clip-path"));
+
+        // Der Name, den der Wirt vergeben hat, bleibt unangetastet.
+        Assert.Equal("ganglinie-K|4711|Werk Nord", cut.Instance.Kennung);
+    }
+
+    /// <summary>
     /// <b>Die Palette wirkt beim Zeichnen.</b> Dasselbe Modell, eine andere
     /// Palette, ein anderer Strich — die Modelle sind palettenfrei, sie tragen
     /// Rollen.
@@ -662,5 +689,378 @@ public class DiagrammSvgTests : EposBunitContext
         await cut.Instance.DisposeAsync();
 
         Assert.Single(loesen.Invocations);
+    }
+
+    // =====================================================================
+    //  DS-8  Was die Etappe E3 dazugelegt hat
+    // =====================================================================
+    //
+    //  Die Gruppe (a) bringt Bilder mit, die der Jahresgang nicht kannte: ZWEI
+    //  y-Achsen (jede Reihe mit eigenem Datenfenster, DG-E3-1), FLAECHEN
+    //  (DG-E3-2), GEBUENDELTE Pfade samt Nachladen ab dem Vierfachen (DG-E3-3)
+    //  und eine x-Achse, die keine Jahresstunde zaehlt.
+
+    /// <summary>Wie viele Stützstellen die Stapelfälle führen.</summary>
+    private const int STAPEL_N = 3000;
+
+    /// <summary>Der Name der Reihe auf der ZWEITEN y-Achse.</summary>
+    private const string RECHTS = "Speicherinhalt";
+
+    /// <summary>Der Name der unteren Stapelfläche.</summary>
+    private const string FLAECHE = "Heizwärme";
+
+    /// <summary>
+    /// Ein Erzeugerstapel: zwei gestapelte FLÄCHEN, eine Linie darüber und eine
+    /// Reihe auf der ZWEITEN Achse — vier Reihen also, und damit GEBÜNDELT
+    /// (<c>Pfadregel.Roh</c> gilt bis drei Reihen).
+    ///
+    /// <para>Die zweite Achse führt Werte um 800; die linke bleibt weit darunter.
+    /// Nur so unterscheiden sich die beiden y-Fenster, und nur daran erkennt der
+    /// Baustein, welche Reihe rechts steht.</para>
+    /// </summary>
+    private static Zeichenmodell Stapelmodell()
+    {
+        var heizung = new double[STAPEL_N];
+        var wasser = new double[STAPEL_N];
+        var bedarf = new double[STAPEL_N];
+        var speicher = new double[STAPEL_N];
+        for (int i = 0; i < STAPEL_N; i++)
+        {
+            heizung[i] = 20.0 + 15.0 * Math.Sin(2 * Math.PI * i / 96.0);
+            wasser[i] = 5.0 + 3.0 * Math.Cos(2 * Math.PI * i / 96.0);
+            bedarf[i] = heizung[i] + wasser[i] + 4.0;
+            speicher[i] = 800.0 + 300.0 * Math.Sin(2 * Math.PI * i / 96.0 - 1.1);
+        }
+
+        return ChartRenderer.ErzeugerStapelModell(
+            "Erzeugerstapel",
+            new[]
+            {
+                new ChartRenderer.Reihe(FLAECHE, heizung, ChartRenderer.C_WP,
+                                        ChartRenderer.Stapelart.Flaeche),
+                new ChartRenderer.Reihe("Warmwasser", wasser, ChartRenderer.C_PV,
+                                        ChartRenderer.Stapelart.Flaeche)
+            },
+            new[] { new ChartRenderer.Reihe("Wärmebedarf", bedarf, ChartRenderer.C_BEDARF) },
+            null, "Leistung [kW]", ChartRenderer.Achse.Monate, false,
+            new[] { new ChartRenderer.Reihe(RECHTS, speicher, ChartRenderer.C_NETZ) },
+            "Speicherinhalt [kWh]");
+    }
+
+    /// <summary>Ein Stundenprofil über 168 Wochenstunden — eine Fläche mit Randlinie.</summary>
+    private static Zeichenmodell Profilmodell()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < 168; i++) werte[i] = 10.0 + i;
+        return ChartRenderer.StundenprofilModell("Stundenprofil", werte, 24,
+                                                 "Wochenstunde (1..168)", "Verteilung");
+    }
+
+    private IRenderedComponent<DiagrammSvg> ZeigeStapel()
+        => Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Stapelmodell());
+            p.Add(x => x.Kennung, "stapel");
+            p.Add(x => x.Einheit, "kW");
+            p.Add(x => x.EinheitRechts, "kWh");
+            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
+        });
+
+    // ---- Die Zeigerzeile liest das eigene Fenster jeder Reihe ------------
+
+    /// <summary>
+    /// <b>DG-E3-1 in der Zeigerzeile.</b> Das Stundenprofil zählt 1 … n: Seine
+    /// Zeichenfläche geht von 0 bis n, die REIHE aber von 1 bis n — Wert
+    /// <c>i</c> steht am rechten Rand seines Fachs. Der Index ist deshalb
+    /// x − 1 und nicht x − <c>Flaeche.Daten.XVon</c>; genau das war der Grund,
+    /// aus dem der Kernteil diesen Punkt offen gelassen hat.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Die_Zeigerzeile_liest_das_eigene_Fenster_der_Reihe()
+    {
+        Zeichenmodell modell = Profilmodell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "profil");
+            p.Add(x => x.Achsenart, Achsenart.Index);
+        });
+
+        // Die Stelle 1 meint den ERSTEN Wert der Reihe.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(1));
+        Assert.Contains(modell.Reihen[0].Werte[0].ToString("0.###", CultureInfo.CurrentCulture),
+                        cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Und die Stelle 168 den letzten.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(168));
+        Assert.Contains(modell.Reihen[0].Werte[167].ToString("0.###", CultureInfo.CurrentCulture),
+                        cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+
+        // Die Stelle 0 liegt VOR dem Fenster der Reihe: Dort zeichnet sie nichts,
+        // und dann steht sie auch nicht in der Zeile.
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(0));
+        Assert.DoesNotContain(":", cut.Find(".epos-diagramm-zeigerzeile").TextContent);
+    }
+
+    /// <summary>
+    /// Eine Reihe der ZWEITEN Achse trägt ihre eigene Einheit. Ohne das stünde
+    /// in der Zeile der richtige Wert mit der falschen Einheit — kWh neben kW.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Die_zweite_Achse_traegt_EinheitRechts()
+    {
+        var cut = ZeigeStapel();
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(500));
+
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
+        Assert.Contains(FLAECHE + ": ", zeile);
+        Assert.Contains("kW", zeile);
+        Assert.Contains("kWh", zeile);
+        Assert.Contains(RECHTS + ": ", zeile);
+
+        // Die Stelle zaehlt eine Stuetzstelle, keine Stunde: keine Einheit „h".
+        Assert.DoesNotContain("500 h", zeile);
+        Assert.Contains("500", zeile);
+    }
+
+    // ---- Die zweite Achse fällt mit ihren Reihen -------------------------
+
+    /// <summary>
+    /// <b>Die Marke <c>yachse2</c> fällt mit ihrer Reihe.</b> Rasterlinie,
+    /// Beschriftung und Titel der rechten Achse beschriften nichts mehr, sobald
+    /// jede ihrer Reihen über die Legende abgewählt ist.
+    /// </summary>
+    [Fact]
+    public void DS8_Die_zweite_Achse_faellt_mit_ihrer_Reihe()
+    {
+        var cut = ZeigeStapel();
+
+        Assert.NotEmpty(cut.FindAll("[data-marke='yachse2']"));
+        Assert.All(cut.FindAll("[data-marke='yachse2']"),
+                   e => Assert.False(e.HasAttribute("display")));
+        Assert.False(cut.Instance.ZweiteAchseAus);
+
+        cut.Find("text[data-legende='" + RECHTS + "']").Click();
+
+        Assert.True(cut.Instance.ZweiteAchseAus);
+        Assert.All(cut.FindAll("[data-marke='yachse2']"),
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+
+        // Und zurueck: Der Eintrag schaltet in beide Richtungen.
+        cut.Find("text[data-legende='" + RECHTS + "']").Click();
+        Assert.False(cut.Instance.ZweiteAchseAus);
+        Assert.All(cut.FindAll("[data-marke='yachse2']"),
+                   e => Assert.False(e.HasAttribute("display")));
+    }
+
+    /// <summary>
+    /// Ein Bild OHNE zweite Achse hat nichts auszublenden — <c>ZweiteAchseAus</c>
+    /// bleibt falsch, auch wenn jede Reihe abgewählt ist.
+    /// </summary>
+    [Fact]
+    public void DS8_Ohne_zweite_Achse_bleibt_der_Schalter_aus()
+    {
+        var cut = Zeige();
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+
+        Assert.False(cut.Instance.ZweiteAchseAus);
+    }
+
+    // ---- Der Legendenklick schaltet auch eine Fläche ---------------------
+
+    /// <summary>
+    /// <b>Eine FLÄCHE schaltet wie eine Linie.</b> Der Schreiber gibt ihr
+    /// denselben Griff <c>data-reihe</c>, und <c>display="none"</c> wirkt auf
+    /// beide — der Baustein braucht dafür keinen Sonderweg.
+    /// </summary>
+    [Fact]
+    public void DS8_Der_Legendenklick_schaltet_auch_eine_Flaeche()
+    {
+        var cut = ZeigeStapel();
+
+        var flaeche = cut.Find("path[data-reihe='" + FLAECHE + "']");
+        Assert.Equal("none", flaeche.GetAttribute("stroke"));   // eine Flaeche ohne Rand
+        Assert.False(flaeche.HasAttribute("display"));
+
+        cut.Find("text[data-legende='" + FLAECHE + "']").Click();
+
+        Assert.True(cut.Instance.IstAus(FLAECHE));
+        Assert.Equal("none",
+                     cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("display"));
+    }
+
+    // ---- Nachladen ab dem Vierfachen (DG-E3-3) ---------------------------
+
+    /// <summary>
+    /// <b>Ab dem Vierfachen rechnet der Baustein den Ausschnitt ROH nach.</b>
+    /// Vier Reihen heißt gebündelt (<c>Pfadregel.Roh</c> gilt bis drei); zoomt
+    /// der Anwender darüber hinaus, zeigt die Bündelung nicht mehr die echte
+    /// Stützstelle. Der neue Pfad kommt aus <c>SvgSchreiber.Reihenpfad</c> mit
+    /// Fenster — <b>kein Kernaufruf</b>, das Modell trägt die Werte ohnehin —
+    /// und ersetzt das <c>d</c> des vorhandenen Pfades.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Ab_dem_Vierfachen_wird_der_Ausschnitt_roh_nachgerechnet()
+    {
+        Zeichenmodell modell = Stapelmodell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "stapel");
+            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
+        });
+
+        Assert.Empty(cut.Instance.Ausschnittpfade);
+        string vollpfad = cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d")!;
+
+        // 200 von 3 000 Stuetzstellen sind das Fuenfzehnfache.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(1000, 1200));
+
+        Assert.Equal(modell.Reihen.Count, cut.Instance.Ausschnittpfade.Count);
+
+        Datenreihe reihe = modell.Reihen.Single(r => r.Name == FLAECHE);
+        string erwartet = SvgSchreiber.Reihenpfad(reihe, modell.Flaeche, 1000, 1200, true);
+
+        Assert.Equal(erwartet, cut.Instance.Ausschnittpfade[FLAECHE]);
+        Assert.Equal(erwartet, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
+        Assert.NotEqual(vollpfad, erwartet);
+    }
+
+    /// <summary>
+    /// Unter dem Vierfachen bleibt es beim Vollpfad des Schreibers: Die
+    /// Bündelung ist dort vom rohen Bild nicht zu unterscheiden, und ein
+    /// zweiter Pfad wäre Arbeit ohne Wirkung.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Unter_dem_Vierfachen_steht_wieder_der_Vollpfad()
+    {
+        Zeichenmodell modell = Stapelmodell();
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, modell);
+            p.Add(x => x.Kennung, "stapel");
+            p.Add(x => x.Achsenart, Achsenart.Stuetzstelle);
+        });
+
+        string vollpfad = cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d")!;
+
+        // Rund das Doppelte - darunter bleibt der Vollpfad.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 1500));
+        Assert.Empty(cut.Instance.Ausschnittpfade);
+        Assert.Equal(vollpfad, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
+
+        // Erst nachladen, dann wieder herauszoomen: Der Vollpfad kommt zurueck.
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(1000, 1200));
+        Assert.NotEmpty(cut.Instance.Ausschnittpfade);
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(0, 1500));
+        Assert.Empty(cut.Instance.Ausschnittpfade);
+        Assert.Equal(vollpfad, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
+    }
+
+    /// <summary>
+    /// Eine ROHE Reihe wird nie nachgeladen: Ihr Vollpfad trägt schon jede
+    /// Stützstelle, und der Fensterpfad wäre genau sein Ausschnitt.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Eine_rohe_Reihe_wird_nicht_nachgeladen()
+    {
+        var cut = Zeige();   // zwei Reihen, 8 760 Stuetzstellen - also roh
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+
+        Assert.Empty(cut.Instance.Ausschnittpfade);
+    }
+
+    /// <summary>Die volle Ansicht räumt den nachgerechneten Ausschnitt ab.</summary>
+    [Fact]
+    public async Task DS8_Der_Knopf_raeumt_den_Ausschnitt_ab()
+    {
+        var cut = ZeigeStapel();
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(1000, 1200));
+        Assert.NotEmpty(cut.Instance.Ausschnittpfade);
+
+        cut.FindAll("button.epos-diagramm-knopf").First(k => k.TextContent.Trim() == "1:1").Click();
+
+        Assert.Empty(cut.Instance.Ausschnittpfade);
+    }
+
+    // ---- Die Achsenart ---------------------------------------------------
+
+    /// <summary>
+    /// <b>Nur die Stundenachse nimmt die Jahresstundenteilung.</b> Zählt x einen
+    /// Index, gibt es kein Kalenderraster: Die nachgezeichnete Teilung steht
+    /// ganzzahlig da, und der Achsentitel „Jahresstunden" bleibt weg.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Die_Achsenart_Index_zeichnet_eine_ganzzahlige_Teilung()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Profilmodell());
+            p.Add(x => x.Kennung, "profil");
+            p.Add(x => x.Achsenart, Achsenart.Index);
+        });
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(24, 72));
+
+        var texte = cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent).ToList();
+        Assert.NotEmpty(texte);
+        Assert.DoesNotContain(Resource.CHART_ACHSE_JAHRESSTUNDEN, texte);
+
+        // Jede Beschriftung ist eine ganze Zahl im Fenster.
+        foreach (string t in texte)
+        {
+            Assert.True(int.TryParse(t, NumberStyles.Number, CultureInfo.CurrentCulture,
+                                     out int stelle),
+                        "Keine ganze Zahl: " + t);
+            Assert.InRange(stelle, 24, 72);
+        }
+    }
+
+    /// <summary>
+    /// Ein eigener Titel steht auch dort, wo die Achsenart keinen mitbringt —
+    /// der Wirt kennt den Ressourcentext seines Bildes.
+    /// </summary>
+    [Fact]
+    public async Task DS8_Ein_eigener_Achsentitel_steht_im_Ausschnitt()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Profilmodell());
+            p.Add(x => x.Kennung, "profil");
+            p.Add(x => x.Achsenart, Achsenart.Index);
+            p.Add(x => x.XTitelText, "Wochenstunde");
+        });
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(24, 72));
+
+        Assert.Contains("Wochenstunde",
+                        cut.FindAll(".epos-diagramm-ticks text").Select(t => t.TextContent));
+    }
+
+    // ---- Der Leerraum im Text --------------------------------------------
+
+    /// <summary>
+    /// <b>Zwei Leerzeichen bleiben zwei Leerzeichen.</b> Der Bildtitel des
+    /// Kostenprofils heißt „Kostenprofil  [ct/kWh]"; das PNG setzt beide, der
+    /// Browser faltet XML-Leerraum zusammen und zeigt eines. Jeder
+    /// <c>&lt;text&gt;</c> des Bausteins trägt deshalb <c>xml:space</c>.
+    /// </summary>
+    [Fact]
+    public void DS8_Jeder_Text_traegt_xml_space_preserve()
+    {
+        var cut = Zeige();
+
+        var texte = cut.FindAll("text");
+        Assert.NotEmpty(texte);
+
+        // Am MARKUP geprueft und nicht ueber GetAttribute: xml:space traegt einen
+        // Namensraum, und wie ein Parser ihn zurueckgibt, ist seine Sache.
+        Assert.All(texte, t => Assert.Contains("xml:space=\"preserve\"", t.OuterHtml));
     }
 }

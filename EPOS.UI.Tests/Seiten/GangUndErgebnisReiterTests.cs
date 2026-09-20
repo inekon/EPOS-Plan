@@ -1,9 +1,13 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -28,7 +32,53 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    /// <summary>Die MONATSSÄULEN der Autarkie bleiben ein Pixelbild — sie tragen keine Zeitachse.</summary>
     private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }
+
+    /// <summary>
+    /// Die Zeichenmodelle der zwei Gangbilder, nach Bild und Schalterstellung
+    /// getrennt und je EINMAL gebaut. Der Baustein <c>DiagrammSvg</c> vergleicht die
+    /// Modellreferenz; ein je Zeichenlauf neu gebautes Modell setzte seinen Baum
+    /// jedes Mal neu und nähme ihm Zoom und abgewählte Reihe.
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell> _modelle = new();
+
+    private Zeichenmodell? Modell(Bildauftrag a)
+    {
+        _auftraege.Add(a);
+
+        string schluessel = a.Bild + (a.Sortiert ? "-s" : "") + "|" + a.Kanal;
+        if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+        Zeichenmodell neu = Gangbild(a.Bild, a.Sortiert);
+        _modelle[schluessel] = neu;
+        return neu;
+    }
+
+    /// <summary>
+    /// Ein echtes Gangbild aus einer KURZEN Reihe (eine Woche) — die Fälle prüfen die
+    /// Bedienung, nicht die Rechenzeit eines Jahres. Die zweite Achse trägt den
+    /// Speicherfüllstand, wie im Bild des Kerns.
+    /// </summary>
+    private static Zeichenmodell Gangbild(string name, bool sortiert)
+    {
+        var werte = new double[168];
+        var fuellstand = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+        {
+            werte[i] = 150.0 + 90.0 * Math.Sin(2 * Math.PI * i / 24.0);
+            fuellstand[i] = 40.0 + 20.0 * Math.Cos(2 * Math.PI * i / 24.0);
+        }
+        if (sortiert) Array.Sort(werte, (x, y) => y.CompareTo(x));
+
+        return ChartRenderer.ErzeugerStapelModell(
+            name,
+            new[] { new ChartRenderer.Reihe("Summe", werte, ChartRenderer.C_WP) },
+            Array.Empty<ChartRenderer.Reihe>(), null,
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert,
+            new[] { new ChartRenderer.Reihe("Puffer 1", fuellstand, ChartRenderer.C_SPEICHER[0]) },
+            "kWh");
+    }
 
     // =====================================================================
     // Waermegang
@@ -67,12 +117,31 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         => Render<WaermegangReiter>(p =>
         {
             p.Add(x => x.Daten, Waerme());
-            p.Add(x => x.Bild, Bild);
+            p.Add(x => x.Modell, Modell);
             p.Add(x => x.Gedaechtnis, stand ?? _waermeStand);
             if (csv is not null)
                 p.Add(x => x.Csv, EventCallback.Factory.Create<(int, IReadOnlyList<string>,
                                                                 IReadOnlyList<string>)>(this, csv));
         });
+
+    /// <summary>
+    /// <b>Das Wärmegangbild steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
+    /// unter der Kennung <c>simerg-waermegang</c>, mit der Einheit der linken und der
+    /// rechten Achse, und ohne ein Pixelbild daneben.
+    /// </summary>
+    [Fact]
+    public void Waermegang_steht_als_DiagrammSvg()
+    {
+        var seite = WaermeZeichnen();
+        DiagrammSvg bild = seite.FindComponent<DiagrammSvg>().Instance;
+
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
+        Assert.Equal("simerg-waermegang", bild.Kennung);
+        Assert.Equal("kW", bild.Einheit);
+        Assert.Equal("kWh", bild.EinheitRechts);
+        Assert.Equal(Achsenart.Stuetzstelle, bild.Achsenart);
+        Assert.Empty(seite.FindComponents<ChartBild>());
+    }
 
     /// <summary>Fehlende Reihen erscheinen gar nicht — und koennen nicht in den Export.</summary>
     [Fact]
@@ -340,11 +409,33 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         => Render<StromgangReiter>(p =>
         {
             p.Add(x => x.Daten, Strom());
-            p.Add(x => x.Bild, Bild);
+            p.Add(x => x.Modell, Modell);
             p.Add(x => x.Gedaechtnis, stand ?? _stromStand);
             if (csv is not null)
                 p.Add(x => x.Csv, EventCallback.Factory.Create<IReadOnlyList<string>>(this, csv));
         });
+
+    /// <summary>
+    /// <b>Das Stromgangbild steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
+    /// unter der Kennung <c>simerg-stromgang</c>, und ohne ein Pixelbild daneben. Der
+    /// Schalter „sortiert" stellt die Achsenart auf den RANG um.
+    /// </summary>
+    [Fact]
+    public void Stromgang_steht_als_DiagrammSvg()
+    {
+        var seite = StromZeichnen();
+
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
+        Assert.Equal("simerg-stromgang", seite.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("kW", seite.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal(Achsenart.Stuetzstelle,
+                     seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(seite.FindComponents<ChartBild>());
+
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        Assert.Equal(Achsenart.Rang, seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
+    }
 
     /// <summary>Ausgangszustand „nur Gesamt an" — woertlich <c>SetControl</c> :224-228.</summary>
     [Fact]
@@ -481,6 +572,21 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Equal(3, seite.FindAll(".epos-kennzahlkachel").Count);
         Assert.Equal(2, seite.FindAll("meter").Count);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.AutarkieMonate);
+    }
+
+    /// <summary>
+    /// <b>Die Monatssäulen der Autarkie bleiben ein Pixelbild.</b> Zwölf Säulen
+    /// tragen keine Zeitachse — der Reiter führt deshalb weiter ein
+    /// <c>ChartBild</c> und kein <c>DiagrammSvg</c> (Etappe DG-E3, Gruppe (a)).
+    /// </summary>
+    [Fact]
+    public void Das_Monatsbild_der_Autarkie_bleibt_ein_ChartBild()
+    {
+        var seite = ErgebnisZeichnen(Autarkie());
+        seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
+
+        Assert.Single(seite.FindComponents<ChartBild>());
+        Assert.Empty(seite.FindComponents<DiagrammSvg>());
     }
 
     /// <summary>

@@ -12,10 +12,11 @@
             Brauchwasser der Jahresverlauf hinter dem Schalter). Nichts daran
             aendert sich, und wer den Reiter oeffnet, sieht das gewohnte Bild.
 
-     WOCHE  168 Stunden, TAG 24 Stunden - beide aus dem Ganglinienbild des Kerns
-            mit einem Achsenfenster (ChartRenderer.Jahresverlauf). Es ist derselbe
-            Zeichenweg, den die Ergebnisseite fuer ihren Datenzoom nimmt; ein
-            neues Renderer-Bild braucht es dafuer nicht.
+     WOCHE  168 Stunden, TAG 24 Stunden - beide aus dem Ganglinien-ZEICHENMODELL
+            des Kerns mit einem Achsenfenster (ChartRenderer.JahresverlaufModell).
+            Seit der Etappe DG-E3, Gruppe (a), stehen sie im Baustein DiagrammSvg:
+            Der Navigator waehlt den AUSSCHNITT, der Zoom im Bild verschiebt die
+            viewBox darin.
 
    WARUM EIN DELEGAT UND KEIN BILDVORRAT. 52 Wochen und 365 Tage sind 417 Bilder.
    Sie vorab zu zeichnen hiesse, fuer einen Blick auf eine Woche ein Jahr zu
@@ -33,6 +34,8 @@
    unveraendert (W9-B-4/B-5 duerfen sich nicht verschlechtern). *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-gang">
 
@@ -54,7 +57,16 @@
                     @onclick="Vor">@VorZeichen</button>
         </div>
 
-        <ChartBild Png="@Fensterbild" Alt="@Marke" PlatzhalterText="@PlatzhalterText" />
+        @* Der Ausschnitt kommt aus dem Navigator, der Zoom DARIN aus dem Bild
+           (Etappe DG-E3, Gruppe (a)). Die Kennung traegt Stufe und Nummer, damit
+           zwei Ausschnitte nie dieselbe clipPath-Kennung bekommen. *@
+        <DiagrammSvg Modell="@Fenstermodell" Kennung="@Bildkennung" Bezeichnung="@Marke"
+                     PlatzhalterText="@PlatzhalterText" Einheit="@Einheit"
+                     Achsenart="Achsenart.Jahresstunde"
+                     Palette="@Farbpalette.Aktuell"
+                     FarbwahlErlaubt="@Farbwahl"
+                     FarbeGewaehlt="FarbeUebernehmen"
+                     FarbeZurueckgesetzt="FarbeVerwerfen" />
     }
     else
     {
@@ -92,6 +104,15 @@
     [Parameter] public string VorHilfe { get; set; } = "Einen Schritt vor";
     [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
 
+    /// <summary>Die Einheit der Werte in der Zeigerzeile des Ausschnitts.</summary>
+    [Parameter] public string Einheit { get; set; } = "kW";
+
+    /// <summary>
+    /// Der Namensvorsatz der <c>clipPath</c>-Kennungen; er wird je Ausschnitt um
+    /// Stufe und Nummer ergänzt.
+    /// </summary>
+    [Parameter] public string Kennung { get; set; } = "bedarf-gang";
+
     /// <summary>Die gewählte Zeitstufe — Prüfhilfe für die Tests.</summary>
     public Gangstufe Stufe => _stufe;
 
@@ -99,6 +120,19 @@
     public int Nummer => _nummer[(int)_stufe] + 1;
 
     private Gangstufe _stufe = Gangstufe.Jahr;
+
+    /// <summary>Die Quelle, zu der der Modellvorrat gehört.</summary>
+    private Ganglinienquelle? _quelle;
+
+    /// <inheritdoc/>
+    protected override void OnParametersSet()
+    {
+        // EINE ANDERE QUELLE IST EINE ANDERE REIHE: Ihre Woche 12 ist nicht
+        // dieselbe, und der Vorrat der vorigen hat fuer sie keine Bedeutung.
+        if (ReferenceEquals(_quelle, Quelle)) return;
+        _quelle = Quelle;
+        _modelle.Clear();
+    }
 
     /// <summary>
     /// Die nullbasierte Stelle JE STUFE. Wer von Woche 30 auf den Tag wechselt und
@@ -128,7 +162,40 @@
     private string Marke => string.Format(MarkeFormat, Nummer, Anzahl,
         _stufe == Gangstufe.Woche ? StufeWocheText : StufeTagText);
 
-    private byte[]? Fensterbild => Quelle?.Bild?.Invoke(_stufe, _nummer[(int)_stufe]);
+    /// <summary>
+    /// Die gerechneten Modelle, nach Stufe und Nummer getrennt.
+    ///
+    /// <para><b>Ohne den Zwischenspeicher verlöre das Bild bei jedem Zeichenlauf
+    /// seinen Zustand:</b> Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum
+    /// neu, sobald die REFERENZ des Modells wechselt, und die Hülle rechnet je
+    /// Aufruf ein neues. Zoom, Zeigerstelle und abgewählte Reihe wären nach jedem
+    /// Tastendruck des Wirts weg.</para>
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell?> _modelle
+        = new Dictionary<string, Zeichenmodell?>(StringComparer.Ordinal);
+
+    private Zeichenmodell? Fenstermodell
+    {
+        get
+        {
+            if (Quelle?.Modell is null) return null;
+
+            string schluessel = Bildkennung;
+            if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+            Zeichenmodell? neu = Quelle.Modell(_stufe, _nummer[(int)_stufe]);
+            _modelle[schluessel] = neu;
+            return neu;
+        }
+    }
+
+    /// <summary>
+    /// Die Kennung DIESES Ausschnitts. Sie wechselt mit Stufe und Nummer — so baut
+    /// der Baustein seinen Baum bei jedem Schritt des Navigators neu und behält
+    /// keinen Zoom aus der Woche davor.
+    /// </summary>
+    private string Bildkennung
+        => Kennung + "-" + (int)_stufe + "-" + _nummer[(int)_stufe];
 
     private void StufeWaehlen(int? id)
     {

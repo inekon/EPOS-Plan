@@ -259,6 +259,11 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Equal(2, seite.FindAll("img").Count);
         Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund img").Count);
         Assert.Equal(2, seite.FindAll("div.epos-simueb-ring").Count);
+
+        // Die zwei Ringe bleiben PIXELBILDER: Ein Kreis traegt keine Zeitachse,
+        // und der SVG-Baustein der Etappe DG-E3 hat hier nichts zu zeichnen.
+        Assert.Equal(2, seite.FindComponents<EPOS.UI.Standards.ChartBild>().Count);
+        Assert.Empty(seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Kosten;
 using Microsoft.AspNetCore.Components;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -63,20 +64,27 @@ namespace WindowsFormsApplication1
                 ["Wochentage"] = (IReadOnlyList<ValueTuple<int, string>>)Wochentage(),
                 ["Einheit"] = DbWerte.PREISREIHE_EINHEIT_CT_KWH,
 
-                // ChartAktualisieren: Engine rechnen lassen, Kern zeichnen lassen.
-                ["Vorschau"] = new Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]>>(
+                // ChartAktualisieren: Engine rechnen lassen, Kern das MODELL bauen
+                // lassen. Seit der Etappe DG-E3, Gruppe (a), steht die Vorschau im
+                // Baustein DiagrammSvg; x zaehlt dort den INDEX der Reihe, nicht die
+                // Jahresstunde - ein Profil muss keine 8 760 Werte fuehren.
+                ["Vorschau"] = new Func<IReadOnlyList<double>, IReadOnlyList<double>,
+                                        Task<Zeichenmodell>>(
                     (m, w) => Kulturweitergabe.Starten(() =>
                     {
                         double[] mm = Feld(m, 12);
                         double[] ww = Feld(w, 168);
                         double[] profil = PreisModell.AusMonatsUndWochenwerten(mm, ww);
 
-                        return ChartRenderer.Kostenprofil(
+                        return ChartRenderer.KostenprofilModell(
                             MyResource.Resource.PREIS_CHART_SERIE_KOSTENPROFIL,
                             profil,
                             DbWerte.PREISREIHE_EINHEIT_CT_KWH,
                             MyResource.Resource.CHART_ACHSE_MONAT);
                     })),
+
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 // btnOk_Click: schreiben, dann schließen.
                 ["Speichern"] = new Func<string, IReadOnlyList<double>, IReadOnlyList<double>, bool>(
@@ -196,6 +204,27 @@ namespace WindowsFormsApplication1
             try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
             catch { }
             return string.IsNullOrEmpty(t) ? rueckfall : t;
+        }
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
     }
 }

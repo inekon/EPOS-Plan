@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EPOS.UI.Seiten.Simulation;
 using SkiaSharp;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -18,10 +19,12 @@ namespace WindowsFormsApplication1
     /// Gerendert wird erst auf Anforderung: Die Seite fragt je Reiter und
     /// Schalterstellung, und ihr Zwischenspeicher hält das Ergebnis.</para>
     ///
-    /// <para><b>Was dabei entfällt</b> (Risiko R-W11-5, bewusst dokumentiert): Zoom und
-    /// Cursor (die nur <c>chart1</c>/<c>chart2</c> hatten), die zwei fehlerhaften
-    /// Maus-ToolTips (Befund W11-B13) und die <c>InnerPlotPosition</c>-Handrechnung der
-    /// zweiten Achse. Für Einzelwerte bleibt der CSV-Export.</para>
+    /// <para><b>Zwölf davon sind ZEICHENMODELLE</b> (Etappe DG-E3, Gruppe (a)): Jede
+    /// Stelle mit Zeitachse liefert ein <c>Zeichenmodell</c> (<see cref="Modell"/>) und
+    /// steht in der Oberfläche im Baustein <c>DiagrammSvg</c> — Zoom auf der Zeitachse,
+    /// Werte am Mauszeiger, Legende und Farbwahl ohne einen Rundlauf in den Kern.
+    /// Pixelbild bleiben allein die vier Bilder OHNE Zeitachse
+    /// (<see cref="Bild"/>).</para>
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
@@ -89,7 +92,57 @@ namespace WindowsFormsApplication1
         // Ein Bild
         // =================================================================
 
+        /// <summary>
+        /// <b>Die vier Bilder, die PIXELBILDER BLEIBEN</b> (Etappe DG-E3, Gruppe (a),
+        /// Oberflächenteil): die Streuwolke „Leistung über Außentemperatur", die zwei
+        /// Deckungsringe der Übersicht und die Monatssäulen der Autarkie.
+        ///
+        /// <para>Sie tragen keine ZEITachse — x ist dort die Außentemperatur, ein
+        /// Kreissegment oder ein Monat —, und ihre Zeichenmodelle entstehen in den
+        /// Gruppen (b) und (c) des Rollouts. Bis dahin geht ihr Weg unverändert über
+        /// <c>ChartBild</c>.</para>
+        ///
+        /// <para>Jede übrige Stelle liefert ein <see cref="Modell"/>.</para>
+        /// </summary>
         private byte[] Bild(Bildauftrag a)
+        {
+            if (a == null) return null;
+
+            try
+            {
+                switch (a.Bild)
+                {
+                    case Bilder.RingWaerme: return ErgebnisIstGueltig ? BildRingWaerme() : null;
+                    case Bilder.RingStrom: return ErgebnisIstGueltig ? BildRingStrom() : null;
+                    case Bilder.WpLeistungTemperatur:
+                        return ErgebnisIstGueltig ? BildStreuwolke(a) : null;
+                    case Bilder.AutarkieMonate:
+                        return ErgebnisIstGueltig ? BildAutarkie(a.Zahl) : null;
+                    default: return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ein Bild, das nicht entsteht, darf die Seite nicht mitreißen; der
+                // Platzhalter des Bausteins sagt, dass keines da ist.
+                Console.WriteLine("Das Ergebnisbild konnte nicht gezeichnet werden: " + ex.Message);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// <b>Die zwölf ZEITREIHEN-Bilder als Zeichenmodell</b> (Etappe DG-E3,
+        /// Gruppe (a)). Die Seite zeigt sie im Baustein <c>DiagrammSvg</c>: jede Linie
+        /// ein Vektor, der Zoom eine Attributänderung an EINER <c>viewBox</c>, der Wert
+        /// am Mauszeiger eine Lesestelle im Modell.
+        ///
+        /// <para><b>Der Rundlauf-Datenzoom ist damit entfallen</b> (Entscheid DG-E3-9,
+        /// Konzept Diagramme § 6): Das Modell trägt die Werte ohnehin, also braucht es
+        /// weder ein gemeldetes Rechteck noch einen zweiten Renderlauf. Der
+        /// <c>Bildauftrag</c> führt deshalb keinen <c>Bereich</c> mehr, und die Hülle
+        /// keinen Umrechner dafür.</para>
+        /// </summary>
+        private Zeichenmodell Modell(Bildauftrag a)
         {
             if (a == null) return null;
             if (!ErgebnisIstGueltig && a.Bild != Bilder.BedarfWaerme && a.Bild != Bilder.BedarfStrom)
@@ -99,29 +152,23 @@ namespace WindowsFormsApplication1
             {
                 switch (a.Bild)
                 {
-                    case Bilder.BedarfWaerme: return BildBedarfWaerme(a);
-                    case Bilder.BedarfStrom: return BildBedarfStrom(a);
-                    case Bilder.RingWaerme: return BildRingWaerme();
-                    case Bilder.RingStrom: return BildRingStrom();
-                    case Bilder.WpProduktion: return BildWpProduktion(a);
-                    case Bilder.WpStromverbrauch: return BildWpStrom(a);
-                    case Bilder.WpLeistungTemperatur: return BildStreuwolke(a);
-                    case Bilder.Speichertemperaturen: return BildTemperaturen(a);
-                    case Bilder.Heizkessel: return BildKessel(a);
-                    case Bilder.Solarthermie: return BildSolar(a);
-                    case Bilder.Bhkw: return BildBhkw(a);
-                    case Bilder.Photovoltaik: return BildPv(a);
-                    case Bilder.SpeicherBetrieb: return BildSpeicherBetrieb(a);
-                    case Bilder.AutarkieMonate: return BildAutarkie(a.Zahl);
-                    case Bilder.Waermegang: return BildWaermegang(a);
-                    case Bilder.Stromgang: return BildStromgang(a);
+                    case Bilder.BedarfWaerme: return ModellBedarfWaerme(a);
+                    case Bilder.BedarfStrom: return ModellBedarfStrom(a);
+                    case Bilder.WpProduktion: return ModellWpProduktion(a);
+                    case Bilder.WpStromverbrauch: return ModellWpStrom(a);
+                    case Bilder.Speichertemperaturen: return ModellTemperaturen(a);
+                    case Bilder.Heizkessel: return ModellKessel(a);
+                    case Bilder.Solarthermie: return ModellSolar(a);
+                    case Bilder.Bhkw: return ModellBhkw(a);
+                    case Bilder.Photovoltaik: return ModellPv(a);
+                    case Bilder.SpeicherBetrieb: return ModellSpeicherBetrieb(a);
+                    case Bilder.Waermegang: return ModellWaermegang(a);
+                    case Bilder.Stromgang: return ModellStromgang(a);
                     default: return null;
                 }
             }
             catch (Exception ex)
             {
-                // Ein Bild, das nicht entsteht, darf die Seite nicht mitreißen; der
-                // Platzhalter des Bausteins sagt, dass keines da ist.
                 Console.WriteLine("Das Ergebnisbild konnte nicht gezeichnet werden: " + ex.Message);
                 return null;
             }
@@ -147,20 +194,6 @@ namespace WindowsFormsApplication1
         private static double[] Kopie(double[] werte)
             => werte == null ? new double[0] : (double[])werte.Clone();
 
-        /// <summary>
-        /// Die Anzahl der Stützstellen, die ein Bild führt — die erste Reihe, die
-        /// überhaupt eine hat. Sie sagt dem Datenzoom (<see cref="Fenster"/>), ob er
-        /// Stunden oder Viertelstunden zählt. Ohne jede Reihe kommt 0 heraus, und
-        /// <c>ChartRenderer.FensterAusBild</c> liefert dazu kein Fenster.
-        /// </summary>
-        private static int Stuetzstellen(IEnumerable<ChartRenderer.Reihe> reihen)
-        {
-            if (reihen == null) return 0;
-            foreach (ChartRenderer.Reihe r in reihen)
-                if (r != null && r.Werte != null && r.Werte.Length > 0) return r.Werte.Length;
-            return 0;
-        }
-
         // breite ist eine STRICHSTAERKE in Bildpunkten - SkiaSharp rechnet in float,
         // deshalb bleibt der Parameter float (W8-O-5d, Grenze 2a).
         private static ChartRenderer.Reihe Reihe(string name, double[] werte, SKColor farbe,
@@ -168,42 +201,9 @@ namespace WindowsFormsApplication1
                                                  float breite = 0f)
             => new ChartRenderer.Reihe(name, Kopie(werte), farbe, art, false, breite);
 
-        /// <summary>
-        /// DER DATENZOOM (Windows-Abnahme 05.09.2026, Befund A-1). Der Baustein
-        /// <c>Diagramm</c> meldet ein aufgezogenes Rechteck in ANTEILEN DES BILDES —
-        /// mehr kann die Oberfläche nicht wissen, sie sieht ein PNG. Was an dieser
-        /// Stelle des Bildes steht, weiß der Renderer, der es gezeichnet hat; deshalb
-        /// rechnet <c>ChartRenderer.FensterAusBild</c> daraus den Achsenbereich, und
-        /// die Hülle reicht ihn nur weiter.
-        ///
-        /// <para>Ohne Rechteck (und für jedes Bild, das keinen Bereich kennt) kommt
-        /// <c>null</c> heraus, und alles bleibt, wie es war.</para>
-        ///
-        /// <para><b>Anwenderentscheid 09.09.2026, W11b‑B‑24 — JEDE Jahresganglinie.</b> Bis
-        /// dahin fragten nur drei Bilder danach (Bedarf, Wärmegang, Stromgang); an den
-        /// FACHREITERN blieb es beim Bildzoom, und der ist für 8 760 Stützstellen auf
-        /// 1 100 Bildpunkten zu grob. Jetzt reicht JEDES Bild mit Zeitachse sein Fenster
-        /// weiter — Wärmepumpe (Produktion, Stromverbrauch, Speichertemperaturen),
-        /// Heizkessel, Solarthermie, BHKW, Photovoltaik und der Ladezustand des
-        /// Stromspeichers. OHNE Zeitachse bleibt es beim Bildzoom: die Streuwolke
-        /// (x = Außentemperatur), die Monatssäulen der Autarkie, Kuchen und Ringe.</para>
-        /// </summary>
-        /// <param name="a">Der Bildauftrag der Seite.</param>
-        /// <param name="laenge">Die Anzahl der Stützstellen der gezeigten Reihe —
-        /// 8 760 Stunden oder 35 040 Viertelstunden.</param>
-        private static ChartRenderer.Achsenfenster Fenster(Bildauftrag a, int laenge)
-        {
-            if (a?.Bereich == null) return null;
-
-            return ChartRenderer.FensterAusBild(
-                new ChartRenderer.Bildausschnitt(a.Bereich.XVon, a.Bereich.XBis,
-                                                 a.Bereich.YVon, a.Bereich.YBis),
-                laenge);
-        }
-
         // ---- B1: die zwei normierten Ganglinien des Bedarfsreiters ------
 
-        private byte[] BildBedarfWaerme(Bildauftrag a)
+        private Zeichenmodell ModellBedarfWaerme(Bildauftrag a)
         {
             var reihen = new List<ChartRenderer.Reihe>();
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
@@ -220,14 +220,14 @@ namespace WindowsFormsApplication1
                                  F_KANAL[k % F_KANAL.Length]));
             }
 
-            return ChartRenderer.GanglinieNormiert(
+            return ChartRenderer.GanglinieNormiertModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert, Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                a.Sortiert);
         }
 
-        private byte[] BildBedarfStrom(Bildauftrag a)
+        private Zeichenmodell ModellBedarfStrom(Bildauftrag a)
         {
             double[] werte = _strombedarf.Strombedarf_viertelStundenwerte;
             var reihen = new List<ChartRenderer.Reihe>
@@ -235,11 +235,11 @@ namespace WindowsFormsApplication1
                 Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF, werte, F_BEDARF)
             };
 
-            return ChartRenderer.GanglinieNormiert(
+            return ChartRenderer.GanglinieNormiertModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_STROMBEDARF,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert, Fenster(a, werte == null ? 0 : werte.Length));
+                a.Sortiert);
         }
 
         // ---- Die zwei Ringe ---------------------------------------------
@@ -368,7 +368,7 @@ namespace WindowsFormsApplication1
         /// „WP-Produktion + Heizstab", chronologisch als eigenen Anteil — zwei Größen
         /// unter demselben Serienschlüssel.</para>
         /// </summary>
-        private byte[] BildWpProduktion(Bildauftrag a)
+        private Zeichenmodell ModellWpProduktion(Bildauftrag a)
         {
             double[] bedarf = sim.simulation_wp.Waermebedarf_stuendlich;
             double[] ww = SimulationErgebnisCtrl.WarmwasserAnteil(_waermebedarf, bedarf);
@@ -394,29 +394,24 @@ namespace WindowsFormsApplication1
                                  sim.simulation_wp.Heizstab_stuendlich, F_HEIZSTAB,
                                  ChartRenderer.Stapelart.Saeule));
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, new List<ChartRenderer.Reihe>(), null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, a != null && a.Sortiert,
-                null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                ChartRenderer.Achse.Jahresstunden, a != null && a.Sortiert);
         }
 
         /// <summary>
         /// B3 auf der Wärmepumpenseite: der Stromverbrauch als EINE Linie über dem Jahr.
-        /// Seit W11b‑B‑24 (09.09.2026) trägt auch sie den Datenzoom —
-        /// <c>ChartRenderer.Jahresverlauf</c> kennt den Zeitausschnitt seit W8‑E‑2, hier
-        /// fehlte nur der Weg dorthin: Die Weiche rief das Bild ohne seinen Auftrag.
         /// </summary>
-        private byte[] BildWpStrom(Bildauftrag a)
+        private Zeichenmodell ModellWpStrom(Bildauftrag a)
         {
             double[] gesamt = _strombedarf.AddVectors(sim.simulation_wp.WP_Strombedarf_stuendlich,
                                                      sim.simulation_wp.Heizstab_stuendlich);
 
-            return ChartRenderer.Jahresverlauf(
+            return ChartRenderer.JahresverlaufModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
-                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF,
-                Fenster(a, gesamt == null ? 0 : gesamt.Length));
+                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF);
         }
 
         /// <summary>
@@ -471,22 +466,20 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// B7 — die Speichertemperaturen, Y-Achse ohne Nullpunkt.
         ///
-        /// <para><b>W11b‑B‑24 (09.09.2026):</b> auch hier der Datenzoom. Gerade dieses Bild
-        /// gewinnt dabei zweifach — der Ausschnitt zeigt nicht nur weniger Stunden,
-        /// sondern spreizt die Temperaturachse auf Min und Max DES AUSSCHNITTS; sie hat
-        /// keinen Nullpunkt, den ein senkrechter Anteil verschieben könnte (Begründung
-        /// an <c>ChartRenderer.Temperaturverlauf</c>).</para>
+        /// <para>Der Ausschnitt entsteht seit der Etappe DG-E3 im SVG: Der Zoom
+        /// verschiebt die <c>viewBox</c> der Zeichenfläche, und die Temperaturachse
+        /// bleibt dabei vollständig stehen (DG-E2-3, „Zoom nur auf der
+        /// Zeitachse").</para>
         /// </summary>
-        private byte[] BildTemperaturen(Bildauftrag a)
+        private Zeichenmodell ModellTemperaturen(Bildauftrag a)
         {
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
                 reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Farbe,
                                                    ChartRenderer.Stapelart.Keine, r.Gestrichelt));
 
-            return ChartRenderer.Temperaturverlauf(
-                MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true,
-                Fenster(a, Stuetzstellen(reihen)));
+            return ChartRenderer.TemperaturverlaufModell(
+                MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);
         }
 
         // ---- Kessel, Solarthermie, BHKW, Photovoltaik -------------------
@@ -497,7 +490,7 @@ namespace WindowsFormsApplication1
         /// weiter „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ —
         /// der Renderer zeichnet dann seinen Leerhinweis.
         /// </summary>
-        private byte[] BildKessel(Bildauftrag a)
+        private Zeichenmodell ModellKessel(Bildauftrag a)
         {
             bool sortiert = a != null && a.Sortiert;
             bool alle = Alle(a);
@@ -518,11 +511,11 @@ namespace WindowsFormsApplication1
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT,
                                  _waermebedarf.Waermebedarf, F_BEDARF));
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, linien, null, MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert, null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                sortiert);
         }
 
         /// <summary>
@@ -531,7 +524,7 @@ namespace WindowsFormsApplication1
         /// „alle“ (<see cref="Alle"/>), eine LEERE Liste heißt „keine“ — der
         /// Renderer zeichnet dann seinen Leerhinweis.
         /// </summary>
-        private byte[] BildSolar(Bildauftrag a)
+        private Zeichenmodell ModellSolar(Bildauftrag a)
         {
             bool alle = Alle(a);
             var linien = new List<ChartRenderer.Reihe>();
@@ -543,12 +536,11 @@ namespace WindowsFormsApplication1
                 linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
                                                    sim.simulation_solarthermie.Waermeproduktion, F_PRODUKTION));
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
-                ChartRenderer.Achse.Jahresstunden, false,
-                null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                ChartRenderer.Achse.Jahresstunden, false);
         }
 
         /// <summary>
@@ -556,7 +548,7 @@ namespace WindowsFormsApplication1
         /// abwählbar — dieselbe Regel wie überall: <c>null</c> heißt „alle“
         /// (<see cref="Alle"/>), eine LEERE Liste heißt „keine“.
         /// </summary>
-        private byte[] BildBhkw(Bildauftrag a)
+        private Zeichenmodell ModellBhkw(Bildauftrag a)
         {
             SimulationBHKW b = sim.simulation_bhkw;
             bool sortiert = a != null && a.Sortiert;
@@ -580,11 +572,11 @@ namespace WindowsFormsApplication1
             if (Gewaehlt(a, alle, "WAERMEBEDARF"))
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, b.waermebedarf, F_BEDARF));
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
                 stapel, linien, null, MyResource.Resource.CHART_ACHSE_WAERMELAST,
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert, null, null, Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                sortiert);
         }
 
         /// <summary>
@@ -598,7 +590,7 @@ namespace WindowsFormsApplication1
         /// LEERE Liste heißt „keine“, und der Renderer zeichnet dann seinen
         /// Leerhinweis. Die Reihenfolge der Reihen bleibt unverändert.</para>
         /// </summary>
-        private byte[] BildPv(Bildauftrag a)
+        private Zeichenmodell ModellPv(Bildauftrag a)
         {
             bool alle = Alle(a);
 
@@ -627,13 +619,12 @@ namespace WindowsFormsApplication1
                           sim.Speicherfuellstand_viertelstuendlich, F_SPEICHER) }
                 : null;
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_PV_JAHRESGANGLINIE,
                 new List<ChartRenderer.Reihe>(), linien, null,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 ChartRenderer.Achse.Monate, false,
-                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH,
-                Fenster(a, Kanalsatz.STUNDEN_JAHR * 4));
+                zweite, MyResource.Resource.CHART_ACHSE_SPEICHER_KWH);
         }
 
         /// <summary>
@@ -655,7 +646,7 @@ namespace WindowsFormsApplication1
         /// Entladung). Ohne einen von beiden gibt es kein Bild, und der Baustein sagt, dass
         /// keines da ist.</para>
         /// </summary>
-        private byte[] BildSpeicherBetrieb(Bildauftrag a)
+        private Zeichenmodell ModellSpeicherBetrieb(Bildauftrag a)
         {
             SpeicherErgebnis erg = sim.Speicherergebnis;
             StromspeicherLaufKontext kontext = sim.Speicherkontext;
@@ -665,10 +656,16 @@ namespace WindowsFormsApplication1
             SpeicherParameter p = kontext.Parameter;
             double dt = p != null && p.DtH > 0.0 ? p.DtH : StromspeicherSimCtrl.INTERVALL_H;
 
-            return SpeicherBetriebsbild.Zeichnen(
+            // DIE REIHEN KOMMEN AUS DERSELBEN STELLE WIE FUER DAS PNG
+            // (SpeicherBetriebsbild) - nur der Ausgabeweg ist ein anderer: Das
+            // Modell geht in den SVG-Baustein, die Bytes weiter in den Bericht.
+            return ChartRenderer.SpeicherbetriebModell(
                 MyResource.Resource.SP_CHART_TITEL_BETRIEB,
-                eingang, erg, dt, a.Reihen, a.Sortiert,
-                Fenster(a, eingang.Anzahl));
+                SpeicherBetriebsbild.Leistungsreihen(eingang, erg, dt, a.Reihen),
+                MyResource.Resource.PEAK_CHART_Y,
+                SpeicherBetriebsbild.Ladezustand(erg, a.Reihen),
+                MyResource.Resource.PEAK_CHART_Y2,
+                a.Sortiert);
         }
 
         // ---- B6: der Monatsstapel der Autarkie-Analyse -------------------
@@ -725,7 +722,7 @@ namespace WindowsFormsApplication1
         /// die Deckung des Kanals — die Kernachse der E2-Umschaltung
         /// (<c>VektorenSetzen</c> :424-453).
         /// </summary>
-        private byte[] BildWaermegang(Bildauftrag a)
+        private Zeichenmodell ModellWaermegang(Bildauftrag a)
         {
             int kanal = a.Kanal;
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
@@ -831,21 +828,20 @@ namespace WindowsFormsApplication1
 
             // Die zweite Achse steht NUR, wenn ein Speicher gewählt ist — sonst nimmt
             // die Zeichenfläche die vollen 1 100 Bildpunkte wie jedes Bild ohne sie.
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 titel, stapel, linien, kontur,
                 MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 a.Sortiert,
                 speicherreihen.Count > 0 ? speicherreihen : null,
-                MyResource.Resource.CHART_ACHSE_SPEICHERINHALT_KWH,
-                Fenster(a, Kanalsatz.STUNDEN_JAHR));
+                MyResource.Resource.CHART_ACHSE_SPEICHERINHALT_KWH);
         }
 
         /// <summary>
         /// Der Stromgang (B2): der Verbrauchsstapel, die Erzeugungslinien darüber und
         /// die Kontrolllinie „Summe Stromverbrauch" — im Viertelstundenraster.
         /// </summary>
-        private byte[] BildStromgang(Bildauftrag a)
+        private Zeichenmodell ModellStromgang(Bildauftrag a)
         {
             IReadOnlyList<string> wahl = a.Reihen ?? new List<string>();
 
@@ -894,12 +890,34 @@ namespace WindowsFormsApplication1
                                                  ChartRenderer.Stapelart.Keine, false, 2f);
             }
 
-            return ChartRenderer.ErzeugerStapel(
+            return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_STROMVERBRAUCH_JAHRESGANGLINIE,
                 stapel, linien, kontur, MyResource.Resource.CHART_ACHSE_LEISTUNG,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                a.Sortiert, null, null,
-                Fenster(a, Kanalsatz.STUNDEN_JAHR * 4));
+                a.Sortiert);
+        }
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
     }
 }

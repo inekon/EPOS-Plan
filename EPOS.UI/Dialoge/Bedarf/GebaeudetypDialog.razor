@@ -31,6 +31,8 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -112,7 +114,14 @@
         </KindInhalt>
     </Gruppenkopf>
 
-    <ChartBild Png="@_bild" Alt="@GruppeStunden" PlatzhalterText="@PlatzhalterBild" />
+    @* Das Tages-Stundenprofil im SVG-Baustein (Etappe DG-E3, Gruppe (a)): x zaehlt
+       den INDEX der Reihe, 1 … 24, keine Jahresstunde. *@
+    <DiagrammSvg Modell="@_modell" Kennung="gebaeudetyp" Bezeichnung="@GruppeStunden"
+                 PlatzhalterText="@PlatzhalterBild" Achsenart="Achsenart.Index"
+                 Palette="@Farbpalette.Aktuell"
+                 FarbwahlErlaubt="@Farbwahl"
+                 FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
 
     @if (!string.IsNullOrEmpty(_meldung))
     {
@@ -172,8 +181,11 @@
     /// <summary>Löscht einen Gebäudetyp — Daten vor Kopf.</summary>
     [Parameter] public Func<int, bool>? Loeschen { get; set; }
 
-    /// <summary>Zeichnet die 24 Stundenwerte einer Kurve; ohne Delegat bleibt es leer.</summary>
-    [Parameter] public Func<double[], byte[]>? Bild { get; set; }
+    /// <summary>
+    /// Rechnet das Zeichenmodell der 24 Stundenwerte einer Kurve; ohne Delegat bleibt
+    /// es leer.
+    /// </summary>
+    [Parameter] public Func<double[], Zeichenmodell?>? Bild { get; set; }
 
     /// <summary>Der Dialog wurde geschlossen („Beenden"/Esc) — immer <c>true</c>.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
@@ -222,7 +234,7 @@
     private IReadOnlyList<string> _typen = Array.Empty<string>();
     private int _kurve;
     private readonly double?[] _felder = new double?[GebaeudetypDaten.STUNDEN];
-    private byte[]? _bild;
+    private Zeichenmodell? _modell;
 
     private bool _namensfrage;
     private bool _loeschfrage;
@@ -288,7 +300,7 @@
             Daten = new GebaeudetypDaten();
             _kurve = 0;
             Felderleeren();
-            _bild = null;
+            _modell = null;
             return;
         }
 
@@ -314,7 +326,7 @@
     {
         double[] werte = Daten.Kurve(n);
         for (int s = 0; s < GebaeudetypDaten.STUNDEN; s++) _felder[s] = werte[s];
-        _bild = Bild?.Invoke(werte);
+        _modell = Bild?.Invoke(werte);
     }
 
     private void Felderleeren()
@@ -419,7 +431,7 @@
 
         ListeLaden();
         if (_typen.Count > 0) TypWaehlen(_typen[0]);
-        else { Daten = new GebaeudetypDaten(); Felderleeren(); _bild = null; }
+        else { Daten = new GebaeudetypDaten(); Felderleeren(); _modell = null; }
     }
 
     private Task BeiTaste(KeyboardEventArgs e)

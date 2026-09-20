@@ -1,11 +1,14 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -33,6 +36,30 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     }
 
     private static readonly byte[] BILD = { 1, 2, 3, 4 };
+
+    /// <summary>
+    /// Der JAHRESVERLAUF des Brauchwassers als Zeichenmodell — EINE Instanz, EINMAL
+    /// gebaut: Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein
+    /// je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
+    ///
+    /// <para>Die Monatssäulen daneben bleiben ein Pixelbild (<see cref="BILD"/>):
+    /// zwölf Säulen tragen keine Zeitachse.</para>
+    /// </summary>
+    private static readonly Zeichenmodell JAHRESVERLAUF = Jahresverlauf();
+
+    /// <summary>Das Fenstermodell des Navigators (Woche bzw. Tag).</summary>
+    private static readonly Zeichenmodell FENSTER = Jahresverlauf();
+
+    /// <summary>Eine kurze, echte Reihe (eine Woche) statt eines vollen Jahres.</summary>
+    private static Zeichenmodell Jahresverlauf()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 12.0 + 8.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.JahresverlaufModell("Brauchwasser Jahresverlauf", werte,
+                                                 "kW", ChartRenderer.C_BEDARF);
+    }
 
     private static string[] Reihe(double start)
     {
@@ -82,7 +109,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
             MitBrauchwasser = mitBrauchwasser,
             StartReiter = startReiter,
             TitelZusatz = titelZusatz,
-            JahresverlaufBild = mitBrauchwasser ? BILD : null,
+            JahresverlaufModell = mitBrauchwasser ? JAHRESVERLAUF : null,
             // Dieselbe Gliederung wie beim Strom (W8-E-2): Leistung, Posten, Summe.
             Kennzahlen = new[]
             {
@@ -283,6 +310,44 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         cut.FindAll(".epos-option input")[1].Change(true);
         Assert.Empty(cut.FindAll("input[type=checkbox]"));
         Assert.False(cut.Instance.JahresverlaufGewaehlt);
+    }
+
+    /// <summary>
+    /// <b>Zwei Bildarten auf einem Blatt</b> (Etappe DG-E3, Gruppe (a)): Solange der
+    /// Schalter „Jahresverlauf" NICHT steht, zeigt das Blatt die MONATSSÄULEN — zwölf
+    /// Säulen tragen keine Zeitachse und bleiben ein Pixelbild.
+    /// </summary>
+    [Fact]
+    public void Ohne_Jahresverlauf_stehen_die_Monatssaeulen_als_Pixelbild()
+    {
+        var cut = Aufbauen(Waerme(true));
+        Reiterknopf(cut, "Grafik").Click();
+        cut.FindAll(".epos-option input")[2].Change(true);      // Brauchwassersicht
+
+        Assert.Single(cut.FindComponents<ChartBild>());
+        Assert.Empty(cut.FindComponents<DiagrammSvg>());
+    }
+
+    /// <summary>
+    /// <b>Mit dem Schalter kommt das SVG.</b> Der Jahresverlauf trägt eine Zeitachse
+    /// und steht deshalb im Baustein <c>DiagrammSvg</c>, unter der Kennung
+    /// <c>bedarf-jahresverlauf</c> — das Pixelbild der Monatssäulen weicht ihm.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresverlauf_steht_als_DiagrammSvg()
+    {
+        var cut = Aufbauen(Waerme(true));
+        Reiterknopf(cut, "Grafik").Click();
+        cut.FindAll(".epos-option input")[2].Change(true);      // Brauchwassersicht
+        cut.Find("input[type=checkbox]").Change(true);          // „Jahresverlauf"
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("bedarf-jahresverlauf",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal(Achsenart.Jahresstunde,
+                     cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     // =================================================================================
@@ -590,7 +655,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         {
             Wochen = 52,
             Tage = 365,
-            Bild = (stufe, nummer) => { ruf.Add((stufe, nummer)); return BILD_KWH; }
+            Modell = (stufe, nummer) => { ruf.Add((stufe, nummer)); return FENSTER; }
         };
 
     [Fact]
@@ -663,6 +728,35 @@ public class BedarfErgebnisDialogTests : EposBunitContext
 
         Knopf(1).Click();                                        // und wieder herum
         Assert.Equal(1, cut.FindComponent<BedarfGangGrafik>().Instance.Nummer);
+    }
+
+    /// <summary>
+    /// <b>Der Ausschnitt des Navigators steht als SVG im Baum</b> (Etappe DG-E3,
+    /// Gruppe (a)). Seine Kennung trägt Stufe und Nummer — so baut der Baustein
+    /// seinen Baum bei jedem Schritt neu und behält keinen Zoom aus der Woche davor.
+    /// </summary>
+    [Fact]
+    public void Der_Ausschnitt_des_Navigators_traegt_Stufe_und_Nummer_in_der_Kennung()
+    {
+        var ruf = new List<(Gangstufe Stufe, int Nummer)>();
+        var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
+                           "Strombedarf monatlich", "Grafik Strombedarf");
+
+        // JAHR zeigt die Monatssaeulen als Pixelbild - kein SVG.
+        Assert.Empty(cut.FindComponents<DiagrammSvg>());
+        Assert.Single(cut.FindComponents<ChartBild>());
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);   // Woche
+
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("bedarf-gang-1-0", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+
+        cut.FindAll(".epos-gang-knopf")[1].Click();                           // eine Woche vor
+        Assert.Equal("bedarf-gang-1-1", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+
+        cut.FindAll(".epos-gang-stufen input[type=radio]")[2].Change(true);   // Tag
+        Assert.Equal("bedarf-gang-2-0", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
     }
 
     /// <summary>

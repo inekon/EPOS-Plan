@@ -1,8 +1,12 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
 using EPOS.UI.Dienste;
+using EPOS.UI.Standards;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -46,15 +50,36 @@ public class QuellprofilDialogTests : EposBunitContext
         _ => 12
     };
 
+    /// <summary>
+    /// Das Zeichenmodell des Jahresverlaufs — EINE Instanz, EINMAL gebaut: Der
+    /// Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je
+    /// Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private static readonly Zeichenmodell MODELL = Jahresbild();
+
+    /// <summary>Eine kurze, echte Temperaturreihe (eine Woche) statt eines Jahres.</summary>
+    private static Zeichenmodell Jahresbild()
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 8.0 + 4.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.JahresverlaufModell("Quellprofil", werte, "°C",
+                                                 ChartRenderer.C_QUELLTEMPERATUR);
+    }
+
     private IRenderedComponent<QuellprofilDialog> Zeige(
         QuellprofilDaten daten, Pruefstand stand,
         Action<int?>? geschlossen = null,
         IReadOnlyList<QuellprofilZeile>? profile = null,
         bool mitCsv = true,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        bool mitBild = false)
     {
         return Render<QuellprofilDialog>(p =>
         {
+            if (mitBild)
+                p.Add(x => x.Jahresbild, (_, _) => Task.FromResult<Zeichenmodell?>(MODELL));
             p.Add(x => x.Daten, daten);
             p.Add(x => x.Profile, profile ?? Array.Empty<QuellprofilZeile>());
             p.Add(x => x.Betriebsarten, new[] { MONAT, TAG, STUNDE });
@@ -127,6 +152,40 @@ public class QuellprofilDialogTests : EposBunitContext
 
         Assert.Equal(5.0, cut.Instance.Monatsfelder[0]);
         Assert.Equal(16.0, cut.Instance.Monatsfelder[11]);
+    }
+
+    // ================================================================== Die Grafik
+
+    /// <summary>
+    /// <b>Der Jahresverlauf des Profils steht als SVG im Baum</b> (Etappe DG-E3,
+    /// Gruppe (a)) — unter der Kennung <c>quellprofil</c>, mit der Einheit °C und
+    /// ohne ein Pixelbild daneben. Gezeichnet wird erst beim BETRETEN des Blattes.
+    /// </summary>
+    [Fact]
+    public void Der_Jahresverlauf_steht_als_DiagrammSvg()
+    {
+        var cut = Zeige(Neu(), new Pruefstand(), mitBild: true);
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.Same(MODELL, cut.Instance.Modell);
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("quellprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("°C", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Equal(Achsenart.Jahresstunde,
+                     cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+    }
+
+    /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>
+    [Fact]
+    public void Ohne_Bilddelegat_steht_der_Platzhalter()
+    {
+        var cut = Zeige(Neu(), new Pruefstand());
+        cut.FindAll("button[role=tab]").First(b => b.TextContent.Contains("Grafik")).Click();
+
+        Assert.Null(cut.Instance.Modell);
+        Assert.Empty(cut.FindAll("svg.epos-flaeche"));
+        Assert.Single(cut.FindAll(".epos-chartbild-platzhalter"));
     }
 
     // ================================================================== Altweg-Reiter

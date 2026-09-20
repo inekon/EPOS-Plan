@@ -6,8 +6,10 @@ using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using EPOS.UI.Standards;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -781,7 +783,30 @@ public class StromganglinieDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>Ein Bildauftrag, wie ihn die Grafik stellt.</summary>
-    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert, Diagrammbereich? Bereich);
+    private sealed record Auftrag(GanglinienWahl Wahl, bool Sortiert);
+
+    /// <summary>
+    /// Die zwei Zeichenmodelle der Grafik — Ganglinie und Dauerlinie, je EINE
+    /// Instanz. Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein je
+    /// Zeichenlauf neu gebautes Modell verwürfe mit dem Baum auch Zoom und
+    /// abgewählte Reihen.
+    /// </summary>
+    private static readonly Zeichenmodell GANG = Ganglinie(false);
+    private static readonly Zeichenmodell DAUER = Ganglinie(true);
+
+    /// <summary>Eine kurze, echte Ganglinie (eine Woche) statt eines Jahres.</summary>
+    private static Zeichenmodell Ganglinie(bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 800.0 + 600.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (a, b) => b.CompareTo(a));
+
+        return ChartRenderer.GanglinieNormiertModell(
+            "Strombedarf Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Strombedarf", werte, ChartRenderer.C_NETZ) },
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
 
     /// <summary>
     /// Der Dialog MIT der Grafikseite (W12‑E‑2). Die Kennzahlen kommen aus einem
@@ -810,10 +835,10 @@ public class StromganglinieDialogTests : EposBunitContext
             .Add(x => x.Kennzahlen, (GanglinienWahl w) =>
                 Task.FromResult(zahlen.TryGetValue(w.Bezeichner, out GanglinienKennzahlen? k)
                                 ? k : null))
-            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert, Diagrammbereich? bereich) =>
+            .Add(x => x.Bildauftrag, (GanglinienWahl w, bool sortiert) =>
             {
-                liste.Add(new Auftrag(w, sortiert, bereich));
-                return new byte[] { 1, 2, 3 };
+                liste.Add(new Auftrag(w, sortiert));
+                return sortiert ? DAUER : GANG;
             })
             .Add(x => x.Einheit, einheit ?? Energieeinheit.MWh)
             .Add(x => x.EinheitGewaehlt, einheitGewaehlt));
@@ -829,7 +854,7 @@ public class StromganglinieDialogTests : EposBunitContext
         var cut = ZeigeMitGrafik();
 
         Assert.Empty(cut.FindAll(".epos-ganglinie-grafik"));
-        Assert.Empty(cut.FindAll("img.epos-chartbild"));
+        Assert.Empty(cut.FindComponents<DiagrammSvg>());
         Assert.Null(cut.Instance.Grafikkennzahlen);
     }
 
@@ -860,7 +885,7 @@ public class StromganglinieDialogTests : EposBunitContext
         Waehle(cut, 1, 0);      // "Werk Nord"
 
         Assert.Single(cut.FindAll(".epos-ganglinie-grafik"));
-        Assert.NotNull(cut.Find("img.epos-chartbild"));
+        Assert.NotNull(cut.Find("svg.epos-flaeche"));
         Assert.Contains("Werk Nord", cut.Find(".epos-ganglinie-grafik .epos-kontextzeile").TextContent);
 
         Assert.Equal(3, cut.FindAll(".epos-ganglinie-kennzahl").Count);
@@ -874,7 +899,36 @@ public class StromganglinieDialogTests : EposBunitContext
 
         // Der Bildauftrag kennt die Wahl: rechte Spalte, also der Katalog.
         Assert.Contains(auftraege, a => a.Wahl.AusKatalog && a.Wahl.Bezeichner == "Werk Nord"
-                                        && !a.Sortiert && a.Bereich is null);
+                                        && !a.Sortiert);
+    }
+
+    /// <summary>
+    /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — ohne
+    /// ein Pixelbild daneben. Ihre Kennung trägt den Schlüssel der gewählten
+    /// Ganglinie und die Schalterstellung, damit zwei Bilder nie dieselben
+    /// <c>clipPath</c>-Kennungen bekommen.
+    /// </summary>
+    [Fact]
+    public void Die_Ganglinie_steht_als_DiagrammSvg_mit_eigener_Kennung()
+    {
+        var auftraege = new List<Auftrag>();
+        var cut = ZeigeMitGrafik(auftraege: auftraege);
+
+        Waehle(cut, 1, 0);      // "Werk Nord"
+
+        GanglinienWahl wahl = auftraege[0].Wahl;
+        Assert.Single(cut.FindComponents<DiagrammSvg>());
+        Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Werk Nord",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
+        Assert.Empty(cut.FindComponents<ChartBild>());
+
+        // Die Dauerlinie ist ein ZWEITES Bild und traegt deshalb eine eigene Kennung.
+        cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
+
+        Assert.Equal("ganglinie-K|" + wahl.GanglinieId + "|Werk Nord-s",
+                     cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Equal(Achsenart.Rang, cut.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 
     /// <summary>
@@ -937,28 +991,6 @@ public class StromganglinieDialogTests : EposBunitContext
 
         Assert.True(grafik.Sortiert);
         Assert.Contains(auftraege, a => a.Sortiert);
-    }
-
-    /// <summary>
-    /// Der Datenzoom (Befund A‑1): Ein aufgezogenes Rechteck geht UNVERÄNDERT in den
-    /// Bildauftrag, und ein Schalterwechsel verwirft ihn wieder.
-    /// </summary>
-    [Fact]
-    public async Task Ein_aufgezogener_Bereich_geht_in_den_Bildauftrag()
-    {
-        var auftraege = new List<Auftrag>();
-        var cut = ZeigeMitGrafik(auftraege: auftraege);
-        Waehle(cut, 1, 0);
-
-        Diagramm diagramm = cut.FindComponent<Diagramm>().Instance;
-        await cut.InvokeAsync(() => diagramm.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-
-        GanglinienGrafik grafik = cut.FindComponent<GanglinienGrafik>().Instance;
-        Assert.NotNull(grafik.Bereich);
-        Assert.Contains(auftraege, a => a.Bereich is not null && a.Bereich.XBis == 0.5);
-
-        cut.Find(".epos-ganglinie-leiste input[type=checkbox]").Change(true);
-        Assert.Null(grafik.Bereich);
     }
 
     /// <summary>

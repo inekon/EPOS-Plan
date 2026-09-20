@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -356,8 +358,10 @@ namespace WindowsFormsApplication1
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
-                ["Bildauftrag"] = new Func<bool, Diagrammbereich, byte[]>(
-                    (sortiert, bereich) => Bedarfsbild(ergebnis, sortiert, bereich)),
+                ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
+                    sortiert => Bedarfsmodell(ergebnis, sortiert)),
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 // Die Anzeigeeinheit (Entscheid W8-O-5): dieselbe gemerkte Wahl wie im
                 // Bedarfsprofil- und im Bedarfsergebnisdialog.
@@ -388,13 +392,15 @@ namespace WindowsFormsApplication1
         /// Jahreshöchstwert, x wahlweise Monatsgrenzen oder die vier Stundenmarken,
         /// Farbe <c>F_BEDARF</c> = Rot. Nur die Reihe ist eine andere — hier steht
         /// GENAU EINE, die Heizwärme dieses Gebäudes.
+        ///
+        /// <para><b>Der Rundlauf-Datenzoom ist entfallen</b> (Entscheid DG-E3-9): Das
+        /// Bild steht seit der Etappe DG-E3, Gruppe (a), als ZEICHENMODELL im Baustein
+        /// <c>DiagrammSvg</c>, und der Zeitausschnitt ist dort die <c>viewBox</c> der
+        /// Zeichenfläche — kein zweiter Renderlauf, kein Bildausschnitt, den der Kern
+        /// zurückrechnen müsste.</para>
         /// </summary>
         /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
-        /// <param name="bereich">Der aufgezogene Bildausschnitt (Datenzoom, Befund A-1);
-        /// <c>null</c> = das ganze Jahr. Was an dieser Stelle des Bildes steht, weiß nur
-        /// der Renderer — deshalb rechnet <c>ChartRenderer.FensterAusBild</c>.</param>
-        private static byte[] Bedarfsbild(GebaeudeBedarfErgebnis ergebnis, bool sortiert,
-                                          Diagrammbereich bereich)
+        private static Zeichenmodell Bedarfsmodell(GebaeudeBedarfErgebnis ergebnis, bool sortiert)
         {
             double[] werte = ergebnis.Stundenwerte;
 
@@ -405,19 +411,33 @@ namespace WindowsFormsApplication1
                                         SkiaSharp.SKColors.Red)
             };
 
-            ChartRenderer.Achsenfenster fenster = bereich == null
-                ? null
-                : ChartRenderer.FensterAusBild(
-                    new ChartRenderer.Bildausschnitt(bereich.XVon, bereich.XBis,
-                                                     bereich.YVon, bereich.YBis),
-                    werte.Length);
-
-            return ChartRenderer.GanglinieNormiert(
+            return ChartRenderer.GanglinieNormiertModell(
                 Text_("CHART_TITEL_WAERMELAST_JAHRESGANGLINIE", "Wärmelast Jahresganglinie"),
                 reihen,
                 Text_("CHART_ACHSE_WAERMELAST", "Wärmelast"),
                 sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert, fenster);
+                sortiert);
+        }
+
+        // =====================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         /// <summary>Die zwölf Zeilenbeschriftungen der Monatstabelle (mit Doppelpunkt).</summary>

@@ -1,9 +1,13 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -24,6 +28,33 @@ namespace EPOS.UI.Tests.Seiten;
 public class BedarfReiterTests : EposBunitContext
 {
     private readonly List<Bildauftrag> _auftraege = new();
+
+    /// <summary>
+    /// Die zwei Zeichenmodelle des Reiters — EINE Instanz je Bild, EINMAL gebaut.
+    /// Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein Delegat,
+    /// der bei jedem Aufruf ein neues Modell bauen würde, ließe ihn seinen Baum je
+    /// Zeichenlauf neu setzen und nähme ihm Zoom und abgewählte Reihe.
+    /// </summary>
+    private static readonly Zeichenmodell WAERME =
+        Ganglinie("Wärmelast Jahresganglinie", ChartRenderer.C_BEDARF);
+
+    private static readonly Zeichenmodell STROM =
+        Ganglinie("Strombedarf Jahresganglinie", ChartRenderer.C_NETZ);
+
+    /// <summary>
+    /// Eine kurze, echte Ganglinie (eine Woche) — kein Jahr: Der Fall prüft die
+    /// Bedienung, nicht die Rechenzeit.
+    /// </summary>
+    private static Zeichenmodell Ganglinie(string titel, SkiaSharp.SKColor farbe)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 40.0 + 20.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.GanglinieNormiertModell(
+            titel, new[] { new ChartRenderer.Reihe("Gesamt", werte, farbe) },
+            "kW", ChartRenderer.Achse.Jahresstunden, false);
+    }
 
     public BedarfReiterTests()
     {
@@ -49,7 +80,11 @@ public class BedarfReiterTests : EposBunitContext
         => Render<BedarfReiter>(p =>
         {
             p.Add(x => x.Daten, daten);
-            p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
+            p.Add(x => x.Modell, a =>
+            {
+                _auftraege.Add(a);
+                return a.Bild == Bilder.BedarfWaerme ? WAERME : STROM;
+            });
             if (waerme is not null) p.Add(x => x.WaermeDetails, EventCallback.Factory.Create(this, waerme));
             if (strom is not null) p.Add(x => x.StromDetails, EventCallback.Factory.Create(this, strom));
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
@@ -168,6 +203,56 @@ public class BedarfReiterTests : EposBunitContext
 
         Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfWaerme);
         Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfStrom);
+    }
+
+    /// <summary>
+    /// <b>Beide Ganglinien stehen als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
+    /// mit ihrer eigenen Kennung, damit zwei Bilder nie dieselben
+    /// <c>clipPath</c>-Kennungen bekommen.
+    /// </summary>
+    [Fact]
+    public void Beide_Ganglinien_stehen_als_DiagrammSvg_mit_eigener_Kennung()
+    {
+        var seite = Zeichnen(Daten());
+        var bilder = seite.FindComponents<DiagrammSvg>();
+
+        Assert.Equal(2, bilder.Count);
+        Assert.Equal(new[] { "simerg-bedarf-waerme", "simerg-bedarf-strom" },
+                     bilder.Select(b => b.Instance.Kennung).ToArray());
+        Assert.Equal(2, seite.FindAll("svg.epos-flaeche").Count);
+    }
+
+    /// <summary>
+    /// <b>Kein Pixelbild mehr.</b> Der Reiter führt zwei Bilder, und beide tragen
+    /// eine Zeitachse — für <c>ChartBild</c> bleibt hier nichts übrig.
+    /// </summary>
+    [Fact]
+    public void Kein_ChartBild_bleibt_im_Reiter_stehen()
+    {
+        var seite = Zeichnen(Daten());
+        Assert.Empty(seite.FindComponents<ChartBild>());
+    }
+
+    /// <summary>
+    /// Die Einheit der y-Achse und die Achsenart der x-Achse gehören zum Bild: Die
+    /// Ganglinie zählt Stützstellen, die Dauerlinie den RANG — und nur die
+    /// Ganglinie der Wärme trägt die Stundeneinheit.
+    /// </summary>
+    [Fact]
+    public void Der_Sortiertschalter_stellt_die_Achsenart_auf_Rang()
+    {
+        var seite = Zeichnen(Daten());
+        var waerme = seite.FindComponents<DiagrammSvg>()[0].Instance;
+
+        Assert.Equal("kW", waerme.Einheit);
+        Assert.Equal(Achsenart.Stuetzstelle, waerme.Achsenart);
+        Assert.Equal("h", waerme.XEinheit);
+
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        waerme = seite.FindComponents<DiagrammSvg>()[0].Instance;
+        Assert.Equal(Achsenart.Rang, waerme.Achsenart);
+        Assert.Equal("", waerme.XEinheit);
     }
 
     /// <summary>

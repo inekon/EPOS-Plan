@@ -27,6 +27,8 @@
    TASTATUR: Esc schliesst. Enter ist NICHT belegt - "OK" speichert. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -121,7 +123,17 @@
         @* ============================================================== Grafik *@
         <Reiterblatt Schluessel="GRAFIK" Titel="@KopfGrafik" Betreten="VorschauZeichnen">
             <KindInhalt>
-                <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+                @* x zaehlt hier den INDEX der Reihe, nicht die Jahresstunde: Das Bild
+                   legt das Profil ueber seine EIGENE Laenge auf die Monatsachse
+                   (Protokoll DG-E3, „Was x je Bild bedeutet"). Die nachgezeichnete
+                   Teilung im Ausschnitt ist deshalb ganzzahlig. *@
+                <DiagrammSvg Modell="@_modell" Kennung="kostenprofil"
+                             Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
+                             Einheit="@Einheit" Achsenart="Achsenart.Index"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" disabled="@_zeichnet"
                             @onclick="VorschauZeichnen">@AktualisierenText</button>
@@ -166,10 +178,12 @@
 
     /// <summary>
     /// Zeichnet die Vorschau: zwoelf Monats- und 168 Wochenwerte hinein, ein
-    /// PNG heraus. Die Huelle rechnet mit derselben Engine-Methode wie die
+    /// ZEICHENMODELL heraus. Die Huelle rechnet mit derselben Engine-Methode wie die
     /// Simulation und laesst den Lauf auf einem eigenen Faden laufen.
     /// </summary>
-    [Parameter] public Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<byte[]?>>? Vorschau { get; set; }
+    [Parameter]
+    public Func<IReadOnlyList<double>, IReadOnlyList<double>, Task<Zeichenmodell?>>? Vorschau
+    { get; set; }
 
     /// <summary>
     /// Speichert das Profil (Bezeichner, zwoelf Monats-, 168 Wochenwerte).
@@ -277,7 +291,7 @@
     private double[]? _tagKopie;
     private int? _tag = 0;
 
-    private byte[]? _bild;
+    private Zeichenmodell? _modell;
     private bool _zeichnet;
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
@@ -294,8 +308,8 @@
     /// <summary>Die stehende Meldung (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
 
-    /// <summary>Das gezeichnete Bild (Pruefhilfe fuer Tests).</summary>
-    public byte[]? Bild => _bild;
+    /// <summary>Das gerechnete Zeichenmodell (Pruefhilfe fuer Tests).</summary>
+    public Zeichenmodell? Modell => _modell;
 
     protected override void OnInitialized()
     {
@@ -424,7 +438,7 @@
         StateHasChanged();                 // der Knopf sperrt, solange gerechnet wird
         try
         {
-            _bild = await Vorschau(Monatsliste(), Wochenliste());
+            _modell = await Vorschau(Monatsliste(), Wochenliste());
         }
         finally
         {

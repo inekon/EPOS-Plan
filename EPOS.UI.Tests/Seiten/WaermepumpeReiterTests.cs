@@ -1,10 +1,13 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -21,9 +24,10 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Seit dem Anwenderwunsch 08.09.2026 (<b>W11b‑B‑17</b>) dazu die WAHL DER
 /// REIHEN: je Bild eine Schalterzeile, alle vorbelegt an, die Wahl im
 /// Bildauftrag.</para>
-/// <para>Und seit dem Anwenderentscheid 09.09.2026 (<b>W11b‑B‑24</b>) der
-/// DATENZOOM an jedem Bild mit Zeitachse — aber nicht an der Streuwolke, deren
-/// x-Achse die Außentemperatur ist.</para>
+/// <para>Der Reiter ist seit der Etappe DG-E3, Gruppe (a), der EINZIGE mit
+/// beiden Bildarten: Die drei Bilder mit Zeitachse stehen im Baustein
+/// <c>DiagrammSvg</c>, die STREUWOLKE bleibt ein Pixelbild — ihre x-Achse ist
+/// die Außentemperatur, kein Zeitstrahl.</para>
 /// </summary>
 public class WaermepumpeReiterTests : EposBunitContext
 {
@@ -74,10 +78,73 @@ public class WaermepumpeReiterTests : EposBunitContext
         {
             p.Add(x => x.Daten, erg);
             p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
+            p.Add(x => x.Modell, Modell);
             p.Add(x => x.Speichertemperaturen, temperaturen);
             if (modul is not null) p.Add(x => x.ModulOeffnen, EventCallback.Factory.Create(this, modul));
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
+
+    /// <summary>
+    /// Die Zeichenmodelle der DREI Bilder mit Zeitachse, nach Bild und
+    /// Schalterstellung getrennt und je EINMAL gebaut. Der Baustein
+    /// <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein je Zeichenlauf neu
+    /// gebautes Modell setzte seinen Baum jedes Mal neu und nähme ihm Zoom und
+    /// abgewählte Reihe.
+    ///
+    /// <para>Die STREUWOLKE geht diesen Weg nicht — sie kommt weiter als
+    /// Pixelbild aus <c>Bild</c>.</para>
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell> _modelle = new();
+
+    private Zeichenmodell? Modell(Bildauftrag a)
+    {
+        _auftraege.Add(a);
+
+        string schluessel = a.Bild + (a.Sortiert ? "-s" : "");
+        if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+        Zeichenmodell neu = a.Bild == Bilder.Speichertemperaturen
+            ? Temperaturbild()
+            : Gangbild(a.Bild, a.Sortiert);
+        _modelle[schluessel] = neu;
+        return neu;
+    }
+
+    /// <summary>Eine kurze, echte Ganglinie (eine Woche) statt eines Jahres.</summary>
+    private static Zeichenmodell Gangbild(string name, bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 60.0 + 40.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (x, y) => y.CompareTo(x));
+
+        return ChartRenderer.ErzeugerStapelModell(
+            name,
+            new[] { new ChartRenderer.Reihe("Wärmeproduktion", werte, ChartRenderer.C_WP) },
+            Array.Empty<ChartRenderer.Reihe>(), null,
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
+
+    /// <summary>Die zwei Speicherschichten — dasselbe Bild wie im Kern, nur kurz.</summary>
+    private static Zeichenmodell Temperaturbild()
+    {
+        var oben = new double[168];
+        var unten = new double[168];
+        for (int i = 0; i < oben.Length; i++)
+        {
+            oben[i] = 55.0 + 5.0 * Math.Sin(2 * Math.PI * i / 24.0);
+            unten[i] = 38.0 + 4.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        }
+
+        return ChartRenderer.TemperaturverlaufModell(
+            "Speichertemperaturen",
+            new[]
+            {
+                new ChartRenderer.Reihe("Puffer 1 oben", oben, ChartRenderer.C_SPEICHER[0]),
+                new ChartRenderer.Reihe("Puffer 1 unten", unten, ChartRenderer.C_QUELLTEMPERATUR)
+            },
+            true);
+    }
 
     // Die DREI Schalterzeilen in der Reihenfolge des Markups: die Streuwolke
     // steht ueber den Unterblaettern, im Blatt „Wärmeproduktion" folgen erst
@@ -361,115 +428,94 @@ public class WaermepumpeReiterTests : EposBunitContext
     }
 
     // =====================================================================
-    //  W11b‑B‑24 — DER DATENZOOM AN JEDER JAHRESGANGLINIE
-    //  (Anwenderentscheid 09.09.2026)
+    //  DER EINZIGE REITER MIT BEIDEN BILDARTEN (Etappe DG-E3, Gruppe (a))
+    //
+    //  Die drei Bilder mit Zeitachse stehen im Baustein DiagrammSvg: Der
+    //  Zeitausschnitt ist die viewBox ihrer Zeichenflaeche. Die Streuwolke
+    //  bleibt ein Pixelbild - ihre x-Achse ist die Aussentemperatur, und ein
+    //  „Zeitausschnitt" waere dort ohne Sinn.
     // =====================================================================
 
-    /// <summary>Das Diagramm Nr. <paramref name="nr"/> in der Reihenfolge des Markups.</summary>
-    private static EPOS.UI.Bausteine.Diagramm Bildrahmen(
-        IRenderedComponent<WaermepumpeReiter> seite, int nr)
-        => seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[nr].Instance;
-
-    /// <summary>Der Knopf „1:1" des Diagramms Nr. <paramref name="nr"/>.</summary>
-    private static void EinsZuEins(IRenderedComponent<WaermepumpeReiter> seite, int nr)
-        => seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[nr]
-                .FindAll("button.epos-diagramm-knopf")
-                .First(k => k.TextContent.Trim() == "1:1").Click();
+    /// <summary>Das gezeigte SVG-Diagramm — je Unterblatt steht genau eines.</summary>
+    private static DiagrammSvg Bild(IRenderedComponent<WaermepumpeReiter> seite)
+        => seite.FindComponent<DiagrammSvg>().Instance;
 
     /// <summary>
-    /// Ein aufgezogenes Rechteck geht UNVERÄNDERT in den Bildauftrag — was an
-    /// dieser Stelle des Bildes steht, weiß nur der Renderer, der es gezeichnet
-    /// hat. Der Knopf „1:1" nimmt den Ausschnitt wieder zurück.
+    /// <b>Beide Bildarten zugleich:</b> Die Streuwolke steht als <c>ChartBild</c>
+    /// über den Unterblättern, die Jahresganglinie der Produktion als
+    /// <c>DiagrammSvg</c> darin — unter der Kennung <c>simerg-wp-produktion</c>.
     /// </summary>
     [Fact]
-    public async Task Die_Jahresganglinie_traegt_den_aufgezogenen_Bereich()
+    public void Streuwolke_und_Produktionsbild_stehen_nebeneinander()
     {
         var seite = Zeichnen(Erg());
 
-        // [0] die Streuwolke, [1] die Jahresganglinie des Unterblattes.
-        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
+        Assert.Single(seite.FindComponents<ChartBild>());
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.WpLeistungTemperatur);
 
-        Assert.Equal(0.25, seite.Instance.ProduktionBereich!.XVon);
-        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.WpProduktion).Bereich!.XBis);
-
-        EinsZuEins(seite, 1);
-
-        Assert.Null(seite.Instance.ProduktionBereich);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.WpProduktion).Bereich);
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
+        Assert.Equal("simerg-wp-produktion", Bild(seite).Kennung);
+        Assert.Equal("kW", Bild(seite).Einheit);
+        Assert.Equal(Achsenart.Stuetzstelle, Bild(seite).Achsenart);
     }
 
     /// <summary>
-    /// Der Ausschnitt ÜBERLEBT den Umschalter „sortiert" — dieselbe Regel wie im
-    /// Bedarfsreiter seit dem 05.09.2026: Der Zoom gilt in BEIDEN Zweigen, weil der
-    /// Renderer die Dauerlinie aus dem zugeschnittenen Ausschnitt bildet.
+    /// Der Schalter „sortiert" stellt die Achsenart des Produktionsbildes auf den
+    /// RANG um — dort zählt x nicht mehr die Zeit, sondern den Platz in der
+    /// Rangfolge, und die Stundeneinheit fällt weg.
     /// </summary>
     [Fact]
-    public async Task Der_Ausschnitt_gilt_auch_fuer_die_Dauerlinie()
+    public void Der_Sortiertschalter_stellt_die_Achsenart_auf_Rang()
     {
         var seite = Zeichnen(Erg());
-        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-        _auftraege.Clear();
+
+        Assert.Equal("h", Bild(seite).XEinheit);
 
         Kasten(seite, SORTIERT, 0).Change(true);
 
-        Bildauftrag gang = _auftraege.Last(a => a.Bild == Bilder.WpProduktion);
-        Assert.True(gang.Sortiert);
-        Assert.Equal(0.25, gang.Bereich!.XVon);
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.WpProduktion && a.Sortiert);
+        Assert.Equal(Achsenart.Rang, Bild(seite).Achsenart);
+        Assert.Equal("", Bild(seite).XEinheit);
     }
 
     /// <summary>
-    /// Das Strombild liegt auf dem ZWEITEN Unterblatt und führt seinen EIGENEN
-    /// Ausschnitt: Es zeigt eine andere Größe, und ein geteilter Ausschnitt hätte
-    /// den einen Zug am anderen Bild sichtbar gemacht.
+    /// Jedes der drei Blätter trägt seine EIGENE Kennung: Sie zeigen verschiedene
+    /// Größen, und zwei Bilder dürfen nie dieselben <c>clipPath</c>-Kennungen
+    /// bekommen.
     /// </summary>
     [Fact]
-    public async Task Das_Strombild_traegt_seinen_eigenen_Ausschnitt()
-    {
-        var seite = Zeichnen(Erg());
-        seite.FindAll("button[role='tab']")[1].Click();
-
-        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.3, 0.6, 0.2, 0.9));
-
-        Assert.Equal(0.3, seite.Instance.StromBereich!.XVon);
-        Assert.Equal(0.6, _auftraege.Last(a => a.Bild == Bilder.WpStromverbrauch).Bereich!.XBis);
-        Assert.Null(seite.Instance.ProduktionBereich);
-    }
-
-    /// <summary>
-    /// Und dasselbe für die Speichertemperaturen auf dem dritten Unterblatt. Gerade
-    /// dieses Bild gewinnt doppelt: Der Ausschnitt spreizt auch die Temperaturachse,
-    /// die keinen Nullpunkt hat.
-    /// </summary>
-    [Fact]
-    public async Task Die_Speichertemperaturen_tragen_ihren_eigenen_Ausschnitt()
+    public void Jedes_Unterblatt_traegt_seine_eigene_Kennung()
     {
         var seite = Zeichnen(Erg(), temperaturen: true);
+
+        Assert.Equal("simerg-wp-produktion", Bild(seite).Kennung);
+
+        seite.FindAll("button[role='tab']")[1].Click();
+        Assert.Equal("simerg-wp-strom", Bild(seite).Kennung);
+        Assert.Equal(Achsenart.Jahresstunde, Bild(seite).Achsenart);
+
         seite.FindAll("button[role='tab']")[2].Click();
-
-        await seite.InvokeAsync(() => Bildrahmen(seite, 1).BereichGemeldet(0.4, 0.7, 0.2, 0.9));
-
-        Assert.Equal(0.4, seite.Instance.TemperaturBereich!.XVon);
-        Assert.Equal(0.7, _auftraege.Last(a => a.Bild == Bilder.Speichertemperaturen).Bereich!.XBis);
+        Assert.Equal("simerg-wp-temperaturen", Bild(seite).Kennung);
+        Assert.Equal("°C", Bild(seite).Einheit);
     }
 
     /// <summary>
-    /// Die STREUWOLKE bekommt KEINEN Datenzoom: Ihre x-Achse ist die
-    /// Außentemperatur, kein Zeitstrahl — ein „Zeitausschnitt" wäre dort ohne Sinn.
-    /// Sichtbar ist das am fehlenden Umschalter „Bereich" (kein Rückruf, kein Knopf).
+    /// <b>Nur die Jahresganglinie trägt den Bereichsknopf.</b> Die STREUWOLKE bekommt
+    /// keinen Zeitausschnitt: Ihre x-Achse ist die Außentemperatur, kein Zeitstrahl —
+    /// sie behält den reinen BILDzoom ihres Rahmens und damit allein „1:1".
     /// </summary>
     [Fact]
-    public void Die_Streuwolke_bleibt_ohne_Datenzoom()
+    public void Nur_die_Jahresganglinie_traegt_den_Bereichsknopf()
     {
         var seite = Zeichnen(Erg());
 
-        Assert.Equal(new[] { "1:1" },
-                     seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[0]
+        Assert.Equal(new[] { "Bereich", "1:1" },
+                     seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
 
-        // Die Jahresganglinie daneben hat beide Knoepfe.
-        Assert.Equal(new[] { "Bereich", "1:1" },
-                     seite.FindComponents<EPOS.UI.Bausteine.Diagramm>()[1]
+        Assert.Equal(new[] { "1:1" },
+                     seite.FindComponent<Diagramm>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
     }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -94,6 +95,8 @@ namespace WindowsFormsApplication1
                     Zeilenumbruch.Normalisieren(MyResource.Resource.SIMQ_QUELLPROFIL_CSV_HINWEIS),
                 ["BildAlt"] = MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK,
                 ["PlatzhalterText"] = MyResource.Resource.SIMQ_ERDREICH_BILD_PLATZHALTER,
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
                 ["OkText"] = MyResource.Resource.SIM_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.SIM_BTN_ABBRECHEN,
 
@@ -172,14 +175,18 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Delegat <c>Jahresbild</c>: Betriebsart und Werte hinein, ein PNG heraus.
-        /// Gezeichnet wird auf einem eigenen Faden — 8 760 Punkte.
+        /// Der Delegat <c>Jahresbild</c>: Betriebsart und Werte hinein, ein
+        /// ZEICHENMODELL heraus. Gerechnet wird auf einem eigenen Faden — 8 760 Punkte.
+        ///
+        /// <para>Seit der Etappe DG-E3, Gruppe (a), steht das Profil im Baustein
+        /// <c>DiagrammSvg</c>: Zoom auf der Zeitachse, Werte am Mauszeiger, Legende
+        /// und Farbwahl — alles aus dem Modell, ohne einen zweiten Lauf.</para>
         ///
         /// <para><b>Der ALTWEG hat Vorrang, solange kein Profil gespeichert ist</b>
         /// (<c>ChartAktualisieren</c>:1054-1056): Trägt die Anlage noch einen Wochengang,
         /// zeigt die Grafik das aus Monats- und Wochenwerten konstruierte Profil.</para>
         /// </summary>
-        private static Func<string, double[], Task<byte[]>> Bildzeichner(QuellprofilDaten daten)
+        private static Func<string, double[], Task<Zeichenmodell>> Bildzeichner(QuellprofilDaten daten)
         {
             return (betriebsart, werte) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
@@ -189,11 +196,32 @@ namespace WindowsFormsApplication1
                 var jahr = new double[profil.Length];
                 for (int i = 0; i < profil.Length; i++) jahr[i] = profil[i];
 
-                return ChartRenderer.Jahresverlauf(
+                return ChartRenderer.JahresverlaufModell(
                     MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
                     MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
                     SkiaSharp.SKColors.SteelBlue);
             });
+        }
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         /// <summary>Die zwölf Monatsnamen der eingestellten Sprache.</summary>

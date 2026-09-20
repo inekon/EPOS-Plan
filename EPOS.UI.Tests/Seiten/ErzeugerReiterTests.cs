@@ -1,11 +1,14 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -33,10 +36,10 @@ namespace EPOS.UI.Tests.Seiten;
 /// <b>W11b‑B‑23</b> zieht dieselbe Bauform durch alle vier Reiter — Balken statt
 /// <c>h3</c> für jede Hauptgruppe, ein Leerhinweis, der die fehlende Komponente
 /// nennt, und die Reihenwahl auch am BHKW-Bild.</para>
-/// <para><b>W11b‑B‑24</b> (Anwenderentscheid 09.09.2026) gibt jedem der vier
-/// Bilder den DATENZOOM: Ein aufgezogenes Rechteck geht als
-/// <c>Bildauftrag.Bereich</c> an den Kern, der Knopf „1:1" nimmt ihn
-/// zurück.</para>
+/// <para>Seit der Etappe DG-E3, Gruppe (a), steht jedes der vier Bilder im
+/// Baustein <c>DiagrammSvg</c>: Der Zeitausschnitt ist die viewBox seiner
+/// Zeichenfläche, „Bereich" und „1:1" bedienen sie, und kein Zoom kostet mehr
+/// einen Rundlauf in den Kern (DG-E3-9).</para>
 /// </summary>
 public class ErzeugerReiterTests : EposBunitContext
 {
@@ -48,7 +51,43 @@ public class ErzeugerReiterTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
-    private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }
+    /// <summary>
+    /// Die Zeichenmodelle, nach Bild und Schalterstellung getrennt und je EINMAL
+    /// gebaut. Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein
+    /// Delegat, der bei jedem Aufruf ein neues Modell bauen würde, ließe ihn seinen
+    /// Baum je Zeichenlauf neu setzen und nähme ihm Zoom und abgewählte Reihe.
+    /// </summary>
+    private readonly Dictionary<string, Zeichenmodell> _modelle = new();
+
+    private Zeichenmodell? Modell(Bildauftrag a)
+    {
+        _auftraege.Add(a);
+
+        string schluessel = a.Bild + (a.Sortiert ? "-s" : "");
+        if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
+
+        Zeichenmodell neu = Erzeugerbild(a.Bild, a.Sortiert);
+        _modelle[schluessel] = neu;
+        return neu;
+    }
+
+    /// <summary>
+    /// Ein echtes Erzeugerbild aus einer KURZEN Reihe (eine Woche) — die Fälle prüfen
+    /// die Bedienung, nicht die Rechenzeit eines Jahres.
+    /// </summary>
+    private static Zeichenmodell Erzeugerbild(string name, bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++)
+            werte[i] = 100.0 + 60.0 * Math.Sin(2 * Math.PI * i / 24.0);
+        if (sortiert) Array.Sort(werte, (x, y) => y.CompareTo(x));
+
+        return ChartRenderer.ErzeugerStapelModell(
+            name,
+            new[] { new ChartRenderer.Reihe("Produktion", werte, ChartRenderer.C_KESSEL) },
+            Array.Empty<ChartRenderer.Reihe>(), null,
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
 
     /// <summary>Die Beschriftungen der Schalterzeile Nr. <paramref name="nr"/>.</summary>
     private static string[] Schalterzeile<T>(IRenderedComponent<T> seite, int nr = 0)
@@ -110,7 +149,7 @@ public class ErzeugerReiterTests : EposBunitContext
             p.Add(x => x.Brennstoffe, brennstoffe ?? Kesselbrennstoffe());
             p.Add(x => x.BrennstoffDefiniert, brennstoffDefiniert);
             p.Add(x => x.BedarfVorhanden, bedarf);
-            p.Add(x => x.Bild, Bild);
+            p.Add(x => x.Modell, Modell);
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
         });
 
@@ -367,7 +406,7 @@ public class ErzeugerReiterTests : EposBunitContext
     private IRenderedComponent<SolarthermieReiter> SolarZeichnen(bool deckung = true)
         => Render<SolarthermieReiter>(p => p
             .Add(x => x.Daten, Solar(deckung))
-            .Add(x => x.Bild, Bild));
+            .Add(x => x.Modell, Modell));
 
     [Fact]
     public void Solarthermie_zeigt_fuenf_Felder_und_die_Kollektortabelle()
@@ -490,7 +529,7 @@ public class ErzeugerReiterTests : EposBunitContext
     [Fact]
     public void Solarthermie_ohne_Lauf_bleibt_leer()
     {
-        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Bild, Bild));
+        var seite = Render<SolarthermieReiter>(p => p.Add(x => x.Modell, Modell));
 
         Assert.Empty(seite.FindAll("table"));
         Assert.Empty(seite.FindAll("img"));
@@ -536,7 +575,7 @@ public class ErzeugerReiterTests : EposBunitContext
                 new Brennstoffzeile("Gasverbrauch (Hu):", 62.0, true)
             })
             .Add(x => x.BrennstoffDefiniert, brennstoffDefiniert)
-            .Add(x => x.Bild, Bild));
+            .Add(x => x.Modell, Modell));
 
     /// <summary>
     /// <b>Auftrag BH-1 (Anwenderbefund 19.09.2026).</b> Ein BHKW, das hinter
@@ -752,7 +791,11 @@ public class ErzeugerReiterTests : EposBunitContext
         var seite = PvZeichnen();
         Assert.Contains("W/m²", seite.Markup);
         Assert.Contains("1.058,93", seite.Markup);   // N2 (W11b-B-13)
-        Assert.DoesNotContain(">kW<", seite.Markup);
+
+        // Nur die EINHEITENSPALTEN der Kennzahlenlisten; das Bild daneben nennt
+        // seit der Etappe DG-E3 „kW" als y-Achsentitel in seinem SVG.
+        Assert.All(seite.FindAll("dl.epos-simerg-werte dd.epos-simerg-einheit"),
+                   z => Assert.NotEqual("kW", z.TextContent.Trim()));
     }
 
     // ---- W11b‑B‑20: die Kennzahlenliste ------------------------------------
@@ -826,7 +869,7 @@ public class ErzeugerReiterTests : EposBunitContext
     private IRenderedComponent<PhotovoltaikReiter> PvZeichnen()
         => Render<PhotovoltaikReiter>(p => p
             .Add(x => x.Daten, Pv())
-            .Add(x => x.Bild, Bild));
+            .Add(x => x.Modell, Modell));
 
     /// <summary>
     /// Befund W11-B22: Der Deckungsgrad stand in zwei von drei Referenzprojekten
@@ -947,124 +990,79 @@ public class ErzeugerReiterTests : EposBunitContext
     [Fact]
     public void Die_Leerhinweise_nennen_die_fehlende_Komponente()
     {
-        Assert.Contains("BHKW", Render<BhkwReiter>(p => p.Add(x => x.Bild, Bild))
+        Assert.Contains("BHKW", Render<BhkwReiter>(p => p.Add(x => x.Modell, Modell))
                                     .Find("p.epos-simerg-hinweis").TextContent);
-        Assert.Contains("Solarthermie", Render<SolarthermieReiter>(p => p.Add(x => x.Bild, Bild))
+        Assert.Contains("Solarthermie", Render<SolarthermieReiter>(p => p.Add(x => x.Modell, Modell))
                                             .Find("p.epos-simerg-hinweis").TextContent);
-        Assert.Contains("Photovoltaik", Render<PhotovoltaikReiter>(p => p.Add(x => x.Bild, Bild))
+        Assert.Contains("Photovoltaik", Render<PhotovoltaikReiter>(p => p.Add(x => x.Modell, Modell))
                                             .Find("p.epos-simerg-hinweis").TextContent);
     }
 
     // =====================================================================
-    //  W11b‑B‑24 — DER DATENZOOM AN JEDER JAHRESGANGLINIE
-    //  (Anwenderentscheid 09.09.2026)
+    //  DER BAUSTEIN DiagrammSvg (Etappe DG-E3, Gruppe (a))
     //
-    //  Bis dahin gab es ihn nur im Bedarfsreiter, im Wärme- und im Stromgang;
-    //  an den vier Erzeugerreitern blieb es beim BILDzoom, und der ist für
-    //  8 760 Stützstellen auf 1 100 Bildpunkten zu grob.
+    //  Jedes der vier Bilder traegt eine Zeitachse und steht deshalb als SVG
+    //  im Baum: Der Zeitausschnitt ist die viewBox der Zeichenflaeche und
+    //  kostet keinen Rundlauf in den Kern mehr (DG-E3-9).
     // =====================================================================
 
     /// <summary>Das (einzige) Diagramm des Reiters.</summary>
-    private static EPOS.UI.Bausteine.Diagramm Bildrahmen<T>(IRenderedComponent<T> seite)
+    private static DiagrammSvg Bildrahmen<T>(IRenderedComponent<T> seite)
         where T : class, IComponent
-        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>().Instance;
+        => seite.FindComponent<DiagrammSvg>().Instance;
 
-    /// <summary>Der Knopf „1:1" des Diagramms.</summary>
-    private static void EinsZuEins<T>(IRenderedComponent<T> seite) where T : class, IComponent
-        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+    /// <summary>Die Beschriftungen der Knoepfe am Bild, in ihrer Reihenfolge.</summary>
+    private static string[] Knoepfe<T>(IRenderedComponent<T> seite) where T : class, IComponent
+        => seite.FindComponent<DiagrammSvg>()
                 .FindAll("button.epos-diagramm-knopf")
-                .First(k => k.TextContent.Trim() == "1:1").Click();
+                .Select(k => k.TextContent.Trim()).ToArray();
 
     /// <summary>
-    /// Das aufgezogene Rechteck geht UNVERÄNDERT in den Bildauftrag — was an
-    /// dieser Stelle des Bildes steht, weiß nur der Renderer, der es gezeichnet
-    /// hat —, und „1:1" nimmt es wieder zurück.
+    /// <b>Jeder der vier Reiter trägt GENAU EIN <c>DiagrammSvg</c></b> — mit seiner
+    /// eigenen Kennung, damit zwei Bilder nie dieselben <c>clipPath</c>-Kennungen
+    /// bekommen.
     /// </summary>
     [Fact]
-    public async Task Kessel_traegt_den_aufgezogenen_Bereich()
+    public void Der_Kesselreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
+        => Bildpruefung(KesselZeichnen(Kessel()), "simerg-heizkessel");
+
+    [Fact]
+    public void Der_Solarreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
+        => Bildpruefung(SolarZeichnen(), "simerg-solarthermie");
+
+    [Fact]
+    public void Der_Bhkwreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
+        => Bildpruefung(BhkwZeichnen(Bhkw()), "simerg-bhkw");
+
+    [Fact]
+    public void Der_Pvreiter_traegt_ein_DiagrammSvg_mit_seiner_Kennung()
+        => Bildpruefung(PvZeichnen(), "simerg-photovoltaik");
+
+    private static void Bildpruefung<T>(IRenderedComponent<T> seite, string kennung)
+        where T : class, IComponent
     {
-        var seite = KesselZeichnen(Kessel());
-
-        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-
-        Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.5, _auftraege.Last(a => a.Bild == Bilder.Heizkessel).Bereich!.XBis);
-
-        EinsZuEins(seite);
-
-        Assert.Null(seite.Instance.Bereich);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Heizkessel).Bereich);
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
+        Assert.Equal(kennung, Bildrahmen(seite).Kennung);
+        Assert.Equal("kW", Bildrahmen(seite).Einheit);
+        Assert.Single(seite.FindAll("svg.epos-flaeche"));
     }
 
     /// <summary>
-    /// Der Ausschnitt ÜBERLEBT den Umschalter „sortiert" — dieselbe Regel wie im
-    /// Bedarfsreiter seit dem 05.09.2026: Der Zoom gilt in BEIDEN Zweigen, weil der
-    /// Renderer die Dauerlinie aus dem zugeschnittenen Ausschnitt bildet.
+    /// <b>Kein Pixelbild mehr.</b> Alle vier Erzeugerbilder tragen eine Zeitachse —
+    /// für <c>ChartBild</c> bleibt in diesen Reitern nichts übrig.
     /// </summary>
     [Fact]
-    public async Task Kessel_behaelt_den_Ausschnitt_beim_Umschalten_auf_sortiert()
+    public void Keiner_der_vier_Reiter_zeigt_noch_ein_ChartBild()
     {
-        var seite = KesselZeichnen(Kessel());
-        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-        _auftraege.Clear();
-
-        Kasten(seite, 0, 0).Change(true);
-
-        Bildauftrag gang = _auftraege.Last(a => a.Bild == Bilder.Heizkessel);
-        Assert.True(gang.Sortiert);
-        Assert.Equal(0.25, gang.Bereich!.XVon);
-    }
-
-    [Fact]
-    public async Task Solarthermie_traegt_den_aufgezogenen_Bereich()
-    {
-        var seite = SolarZeichnen();
-
-        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.3, 0.6, 0.2, 0.9));
-
-        Assert.Equal(0.3, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.6, _auftraege.Last(a => a.Bild == Bilder.Solarthermie).Bereich!.XBis);
-
-        EinsZuEins(seite);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Solarthermie).Bereich);
-    }
-
-    [Fact]
-    public async Task Bhkw_traegt_den_aufgezogenen_Bereich()
-    {
-        var seite = BhkwZeichnen(Bhkw());
-
-        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.35, 0.65, 0.2, 0.9));
-
-        Assert.Equal(0.35, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.65, _auftraege.Last(a => a.Bild == Bilder.Bhkw).Bereich!.XBis);
-
-        EinsZuEins(seite);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Bhkw).Bereich);
+        Assert.Empty(KesselZeichnen(Kessel()).FindComponents<ChartBild>());
+        Assert.Empty(SolarZeichnen().FindComponents<ChartBild>());
+        Assert.Empty(BhkwZeichnen(Bhkw()).FindComponents<ChartBild>());
+        Assert.Empty(PvZeichnen().FindComponents<ChartBild>());
     }
 
     /// <summary>
-    /// Das PV-Bild zählt VIERTELstunden; der Reiter merkt davon nichts — er meldet
-    /// Bildanteile, und erst die Hülle sagt dem Kern, wieviele Stützstellen dahinter
-    /// stehen (35 040 statt 8 760).
-    /// </summary>
-    [Fact]
-    public async Task Photovoltaik_traegt_den_aufgezogenen_Bereich()
-    {
-        var seite = PvZeichnen();
-
-        await seite.InvokeAsync(() => Bildrahmen(seite).BereichGemeldet(0.4, 0.7, 0.2, 0.9));
-
-        Assert.Equal(0.4, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.7, _auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Bereich!.XBis);
-
-        EinsZuEins(seite);
-        Assert.Null(_auftraege.Last(a => a.Bild == Bilder.Photovoltaik).Bereich);
-    }
-
-    /// <summary>
-    /// Sichtbar wird der Datenzoom am Umschalter „Bereich" — kein Rückruf, kein
-    /// Knopf. Vor W11b‑B‑24 stand an diesen vier Bildern nur „1:1".
+    /// Der Zoom ist Bedienung am Bild: Über jedem der vier Bilder stehen „Bereich"
+    /// und „1:1".
     /// </summary>
     [Fact]
     public void Jedes_der_vier_Bilder_traegt_den_Bereichsknopf()
@@ -1077,9 +1075,20 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.Equal(soll, Knoepfe(PvZeichnen()));
     }
 
-    /// <summary>Die Beschriftungen der Knoepfe am Diagrammrahmen, in ihrer Reihenfolge.</summary>
-    private static string[] Knoepfe<T>(IRenderedComponent<T> seite) where T : class, IComponent
-        => seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
-                .FindAll("button.epos-diagramm-knopf")
-                .Select(k => k.TextContent.Trim()).ToArray();
+    /// <summary>
+    /// Der Schalter „sortiert" stellt die ACHSENART um: Die Ganglinie zählt
+    /// Stützstellen, die Dauerlinie den RANG — dort ist x keine Zeit mehr. Nur der
+    /// Kessel- und der BHKW-Reiter führen den Schalter überhaupt.
+    /// </summary>
+    [Fact]
+    public void Der_Sortiertschalter_des_Kessels_stellt_die_Achsenart_auf_Rang()
+    {
+        var seite = KesselZeichnen(Kessel());
+
+        Assert.Equal(Achsenart.Stuetzstelle, Bildrahmen(seite).Achsenart);
+
+        Kasten(seite, 0, 0).Change(true);
+
+        Assert.Equal(Achsenart.Rang, Bildrahmen(seite).Achsenart);
+    }
 }

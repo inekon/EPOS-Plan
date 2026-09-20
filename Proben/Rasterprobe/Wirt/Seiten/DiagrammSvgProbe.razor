@@ -3,26 +3,41 @@
 @using SvgProbe
 @inject NavigationManager Navigation
 
-@*  DIE PRUEFSEITE DES BAUSTEINS DiagrammSvg (Konzept Diagramme, Etappe E2).
+@*  DIE PRUEFSEITE DES BAUSTEINS DiagrammSvg (Konzept Diagramme, Etappen E2/E3).
 
     WOZU. bunit hat weder Layout noch JavaScript: Es kann beweisen, was die
     Komponente aus einer GEMELDETEN Stunde oder einem gemeldeten Fenster macht,
     aber nicht, dass Rad, Ziehen, Kneifgeste und Gummiband im Browser wirklich
-    die viewBox bewegen. Diese Seite stellt den Baustein deshalb so, wie der
-    Klimadialog ihn stellt - mit einem echten Jahresgang-Modell aus dem Kern -,
-    damit sich die Bedienung messen laesst:
+    die viewBox bewegen. Diese Seite stellt den Baustein deshalb so, wie ein
+    Dialog ihn stellt - mit echten Modellen aus dem Kern -, damit sich die
+    Bedienung messen laesst:
 
       * Rad und Kneifgeste zoomen die ZEITACHSE, y bleibt voll,
       * Ziehen verschiebt, Doppelklick und die Taste 0 stellen 1:1 her,
       * "Bereich" zieht ein Rechteck auf, das den Ausschnitt setzt,
       * die Zeile unter dem Bild zeigt die Werte am Mauszeiger,
-      * ein Klick auf den Legendentext blendet die Reihe aus,
+      * ein Klick auf den Legendentext blendet die Reihe ODER FLAECHE aus,
       * ein Klick auf ihr Farbfeld oeffnet den Farbwaehler.
 
-    DREI REIHEN, ZWEI FAELLE. Zwei Reihen tragen HAUSFARBEN und damit eine
-    Farbrolle - ihr Legendeneintrag hat ein Farbfeld. Die dritte traegt eine
-    fest gerechnete Farbe ohne Rolle; sie bekommt keinen Waehler, und genau das
-    soll man hier sehen.
+    DREI REIHEN, ZWEI FAELLE (Jahresgang). Zwei Reihen tragen HAUSFARBEN und
+    damit eine Farbrolle - ihr Legendeneintrag hat ein Farbfeld. Die dritte
+    traegt eine fest gerechnete Farbe ohne Rolle; sie bekommt keinen Waehler,
+    und genau das soll man hier sehen.
+
+    WAS DIE ETAPPE E3 DAZUGELEGT HAT (Gaben ?bild=…):
+
+      erzeugerstapel  zwei gestapelte FLAECHEN, eine Linie darueber und eine
+                      Reihe auf der ZWEITEN y-Achse (kWh neben kW). Alle vier
+                      Reihen zaehlen 35 040 VIERTELSTUNDEN - damit buendelt die
+                      Pfadregel, und ab dem vierfachen Zoom rechnet der Baustein
+                      den Ausschnitt roh nach (DG-E3-3). Die Zahl der
+                      nachgerechneten Pfade steht als data-nachgeladen im Stand.
+      stundenprofil   eine FLAECHE MIT RANDLINIE ueber 168 Wochenstunden; x
+                      zaehlt den INDEX der Reihe (1 … 168), nicht die
+                      Jahresstunde - die Teilung im Ausschnitt ist ganzzahlig.
+      speicherbetrieb drei Leistungen um die Nulllinie und der LADEZUSTAND auf
+                      der zweiten Achse; zum Pruefen, dass yachse2 faellt,
+                      sobald der Ladezustand abgewaehlt ist.
 
     DIE FARBWAHL SPEICHERT NICHTS. Der Delegat setzt allein
     Farbpalette.Aktuell - die Einstellung des Anwenders bleibt unberuehrt. Eine
@@ -30,21 +45,28 @@
     sie laeuft.
 
     Gaben aus der Adresse:
-      ?reihen=3     Anzahl der Reihen (1…3; darueber buendelt die Pfadregel,
-                    und E2 hat keinen gebuendelten Pfad)
+      ?bild=…       jahresgang (Vorgabe) | erzeugerstapel | stundenprofil |
+                    speicherbetrieb
+      ?reihen=3     Anzahl der Reihen des Jahresgangs (1…3)
       ?zoom=0       ohne Leiste und ohne JS-Anbindung (OhneZoom)
       ?farben=0     ohne Farbwaehler (nur der Legendenschalter bleibt)
 *@
 
-<h1 class="epos-ueberschrift">DiagrammSvg-Probe DG-E2</h1>
+<h1 class="epos-ueberschrift">DiagrammSvg-Probe @_bild</h1>
 
 <p id="diagrammsvg-stand" class="epos-hinweis"
-   data-reihen="@_reihen" data-fenster="@_fensterText" data-farbe="@_farbeText">
-    @_reihen Reihen · Fenster @_fensterText · zuletzt gesetzt: @_farbeText
+   data-bild="@_bild" data-reihen="@_reihen" data-fenster="@_fensterText"
+   data-farbe="@_farbeText" data-nachgeladen="@Nachgeladen"
+   data-achse2aus="@(Achse2Aus ? "1" : "0")">
+    @_bild · @_reihen Reihen · Fenster @_fensterText · zuletzt gesetzt: @_farbeText
+    · nachgeladen: @Nachgeladen · zweite Achse aus: @(Achse2Aus ? "ja" : "nein")
 </p>
 
-<DiagrammSvg Modell="@_modell" Kennung="probe" Bezeichnung="Jahresgang der Probe"
-             Einheit="kW" Palette="@Farbpalette.Aktuell"
+<DiagrammSvg @ref="_diagramm"
+             Modell="@_modell" Kennung="probe" Bezeichnung="@_bezeichnung"
+             Einheit="@_einheit" EinheitRechts="@_einheitRechts"
+             Achsenart="@_achsenart" XEinheit="@_xEinheit"
+             Palette="@Farbpalette.Aktuell"
              OhneZoom="@(!_mitZoom)"
              FarbwahlErlaubt="@_mitFarben"
              FarbeGewaehlt="FarbeSetzen"
@@ -52,17 +74,42 @@
              FensterGeaendert="FensterGemerkt" />
 
 @code {
+    /// <summary>Wie viele VIERTELstunden das Jahr hat — das Raster der Stapelprobe.</summary>
+    private const int VIERTELSTUNDEN = 35040;
+
+    /// <summary>Wie viele Stunden eine Woche hat — das Raster des Stundenprofils.</summary>
+    private const int WOCHENSTUNDEN = 168;
+
+    private DiagrammSvg? _diagramm;
+
     private Zeichenmodell? _modell;
+    private string _bild = "jahresgang";
     private int _reihen = 3;
     private bool _mitZoom = true;
     private bool _mitFarben = true;
+
+    private string _bezeichnung = "Jahresgang der Probe";
+    private string _einheit = "kW";
+    private string _einheitRechts = "";
+    private string _xEinheit = "";
+    private Achsenart _achsenart = Achsenart.Jahresstunde;
 
     private string _fensterText = "voll";
     private string _farbeText = "—";
 
     /// <summary>
-    /// Die Farben der drei Reihen: zwei Hausfarben (Rolle vorhanden, Farbfeld in
-    /// der Legende) und eine fest gerechnete ohne Rolle (kein Farbfeld).
+    /// Wie viele Pfade der Baustein gerade roh nachgerechnet hat (DG-E3-3);
+    /// 0 heißt „der Vollpfad des Schreibers steht".
+    /// </summary>
+    private int Nachgeladen => _diagramm?.Ausschnittpfade.Count ?? 0;
+
+    /// <summary>Sind alle Reihen der zweiten y-Achse abgewählt?</summary>
+    private bool Achse2Aus => _diagramm?.ZweiteAchseAus ?? false;
+
+    /// <summary>
+    /// Die Farben der drei Reihen des Jahresgangs: zwei Hausfarben (Rolle
+    /// vorhanden, Farbfeld in der Legende) und eine fest gerechnete ohne Rolle
+    /// (kein Farbfeld).
     /// </summary>
     private static readonly SkiaSharp.SKColor[] FARBEN =
     {
@@ -76,15 +123,37 @@
     protected override void OnInitialized()
     {
         var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("bild", out var b)) _bild = b.ToString().ToLowerInvariant();
         if (abfrage.TryGetValue("reihen", out var r) && int.TryParse(r, out int n))
             _reihen = Math.Clamp(n, 1, 3);
         if (abfrage.TryGetValue("zoom", out var z)) _mitZoom = z.ToString() != "0";
         if (abfrage.TryGetValue("farben", out var f)) _mitFarben = f.ToString() != "0";
 
-        // Die Reihen kommen aus der SVG-Probe (Jahresgang, Tagesgang, einzelne
-        // Spitzen ZWISCHEN den Stuetzstellen der Schrittweite) - dieselben, mit
-        // denen der Pruefstand die Zahlen des Konzepts gemessen hat. Das BILD
-        // baut der Kern, damit hier kein zweiter Renderer entsteht.
+        switch (_bild)
+        {
+            case "erzeugerstapel": Erzeugerstapel(); break;
+            case "stundenprofil": Stundenprofil(); break;
+            case "speicherbetrieb": Speicherbetrieb(); break;
+            default: Jahresgang(); break;
+        }
+    }
+
+    // =====================================================================
+    //  Die vier Bilder
+    // =====================================================================
+
+    /// <summary>
+    /// Der Jahresgang der Etappe E2 — unverändert. Die Reihen kommen aus der
+    /// SVG-Probe (Jahresgang, Tagesgang, einzelne Spitzen ZWISCHEN den
+    /// Stützstellen der Schrittweite); das BILD baut der Kern, damit hier kein
+    /// zweiter Renderer entsteht.
+    /// </summary>
+    private void Jahresgang()
+    {
+        _bild = "jahresgang";
+        _achsenart = Achsenart.Jahresstunde;
+        _bezeichnung = "Jahresgang der Probe";
+
         double[][] werte = SvgZeichner.Jahresreihen(_reihen);
 
         var reihen = new List<ChartRenderer.Reihe>(_reihen);
@@ -94,6 +163,155 @@
         _modell = ChartRenderer.JahresgangModell(
             "Jahresgang der Probe", reihen, "Monat", "Leistung [kW]");
     }
+
+    /// <summary>
+    /// <b>Der Erzeugerstapel</b> — das Bild, an dem die Etappe E3 hängt: zwei
+    /// gestapelte FLÄCHEN, eine Linie darüber und eine Reihe auf der ZWEITEN
+    /// y-Achse in kWh.
+    ///
+    /// <para><b>35 040 Viertelstunden je Reihe.</b> Über 8 760 Stützstellen (oder
+    /// mehr als drei Reihen) bündelt die Pfadregel — und erst ein gebündelter
+    /// Pfad lässt sich nachladen. Genau das soll hier messbar sein: Ab dem
+    /// vierfachen Zoom rechnet der Baustein den sichtbaren Ausschnitt roh nach
+    /// und zählt die Pfade in <c>data-nachgeladen</c>.</para>
+    /// </summary>
+    private void Erzeugerstapel()
+    {
+        _achsenart = Achsenart.Stuetzstelle;
+        _einheit = "kW";
+        _einheitRechts = "kWh";
+        _bezeichnung = "Erzeugerstapel der Probe";
+
+        double[] heizung = Viertelstundenreihe(0.0, 1.0);
+        double[] warmwasser = Viertelstundenreihe(1.4, 0.35);
+        double[] bedarf = new double[VIERTELSTUNDEN];
+        for (int i = 0; i < VIERTELSTUNDEN; i++) bedarf[i] = heizung[i] + warmwasser[i] + 12.0;
+
+        var stapel = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Heizwärmebedarf", heizung, ChartRenderer.C_WP,
+                                    ChartRenderer.Stapelart.Flaeche),
+            new ChartRenderer.Reihe("Warmwasserbedarf", warmwasser, ChartRenderer.C_PV,
+                                    ChartRenderer.Stapelart.Flaeche)
+        };
+
+        var linien = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Wärmebedarf gesamt", bedarf, ChartRenderer.C_NETZ)
+        };
+
+        // Die zweite Achse: der Speicherinhalt in kWh, eine ganz andere Skala.
+        var zweite = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Speicherinhalt", Speicherreihe(), ChartRenderer.C_SPEICHER[0])
+        };
+
+        _modell = ChartRenderer.ErzeugerStapelModell(
+            "Erzeugerstapel der Probe", stapel, linien, null, "Leistung [kW]",
+            ChartRenderer.Achse.Monate, false, zweite, "Speicherinhalt [kWh]");
+    }
+
+    /// <summary>
+    /// <b>Das Stundenprofil</b> — eine FLÄCHE MIT RANDLINIE über 168
+    /// Wochenstunden. x zählt hier den INDEX der Reihe: Die Fläche geht von 0
+    /// bis n, die Reihe von 1 bis n (Protokoll DG-E3, „Was x je Bild bedeutet"),
+    /// und die Teilung im Ausschnitt ist deshalb ganzzahlig statt kalendarisch.
+    /// </summary>
+    private void Stundenprofil()
+    {
+        _achsenart = Achsenart.Index;
+        _einheit = "%";
+        _einheitRechts = "";
+        _bezeichnung = "Stundenprofil der Probe";
+
+        var werte = new double[WOCHENSTUNDEN];
+        for (int i = 0; i < WOCHENSTUNDEN; i++)
+        {
+            double stunde = i % 24;
+            double tag = i / 24;
+            double werktag = tag < 5 ? 1.0 : 0.55;
+            werte[i] = Math.Round(
+                werktag * (20 + 60 * Math.Max(0.0, Math.Sin(Math.PI * (stunde - 5) / 14.0))), 3);
+        }
+
+        _modell = ChartRenderer.StundenprofilModell(
+            "Stundenprofil der Probe", werte, 24, "Wochenstunde (1..168)", "Verteilung");
+    }
+
+    /// <summary>
+    /// <b>Der Speicherbetrieb</b> — drei Leistungen um die Nulllinie und der
+    /// Ladezustand auf der zweiten Achse. Hier lässt sich messen, dass die
+    /// Elemente der Marke <c>yachse2</c> verschwinden, sobald der Ladezustand
+    /// über die Legende abgewählt ist.
+    /// </summary>
+    private void Speicherbetrieb()
+    {
+        _achsenart = Achsenart.Stuetzstelle;
+        _einheit = "kW";
+        _einheitRechts = "kWh";
+        _bezeichnung = "Speicherbetrieb der Probe";
+
+        double[] ohne = Viertelstundenreihe(0.2, 1.0);
+        double[] speicher = new double[VIERTELSTUNDEN];
+        double[] mit = new double[VIERTELSTUNDEN];
+        for (int i = 0; i < VIERTELSTUNDEN; i++)
+        {
+            speicher[i] = Math.Round(18.0 * Math.Sin(2 * Math.PI * (i % 96) / 96.0), 3);
+            mit[i] = Math.Round(ohne[i] - speicher[i], 3);
+        }
+
+        var reihen = new List<ChartRenderer.Reihe>
+        {
+            new ChartRenderer.Reihe("Netzbezug ohne Speicher", ohne, ChartRenderer.C_BEDARF),
+            new ChartRenderer.Reihe("Netzbezug mit Speicher", mit, ChartRenderer.C_NETZ),
+            new ChartRenderer.Reihe("Speicherleistung", speicher, ChartRenderer.C_WP)
+        };
+
+        var ladezustand = new ChartRenderer.Reihe("Ladezustand [kWh]", Speicherreihe(),
+                                                  ChartRenderer.C_SPEICHER[0]);
+
+        _modell = ChartRenderer.SpeicherbetriebModell(
+            "Speicherbetrieb der Probe", reihen, "Leistung [kW]", ladezustand,
+            "Ladezustand [kWh]", false);
+    }
+
+    // =====================================================================
+    //  Die synthetischen Reihen — fest verdrahtet, ohne Zufall
+    // =====================================================================
+
+    /// <summary>
+    /// Eine Viertelstundenreihe über ein Jahr: Saison mal Tagesgang, dazu eine
+    /// schnelle Welle und alle paar Wochen eine einzelne Spitze. Die Spitzen
+    /// stehen zwischen zwei Bildpunktspalten — sie zeigen, was die Bündelung
+    /// hält und was ein nachgerechneter Ausschnitt genauer zeigt.
+    /// </summary>
+    private static double[] Viertelstundenreihe(double phase, double faktor)
+    {
+        var w = new double[VIERTELSTUNDEN];
+        for (int i = 0; i < VIERTELSTUNDEN; i++)
+        {
+            double tag = i / 96.0;
+            double saison = 0.5 + 0.5 * Math.Cos(2 * Math.PI * (tag - 15) / 365.0);
+            double tagesgang = 0.5 + 0.5 * Math.Sin(2 * Math.PI * (i % 96) / 96.0 + phase);
+            double wert = 8 + 40 * saison * (0.6 + 0.4 * tagesgang) + 6 * Math.Sin(i * 0.11 + phase);
+            if (i % 3989 == 7) wert += 35;
+            w[i] = Math.Round(Math.Max(0.0, wert * faktor), 3);
+        }
+        return w;
+    }
+
+    /// <summary>Der Speicherinhalt in kWh — eine ganz andere Skala als die Leistungen.</summary>
+    private static double[] Speicherreihe()
+    {
+        var w = new double[VIERTELSTUNDEN];
+        for (int i = 0; i < VIERTELSTUNDEN; i++)
+            w[i] = Math.Round(600 + 400 * Math.Sin(2 * Math.PI * (i % 96) / 96.0 - 1.1), 3);
+        return w;
+    }
+
+    // =====================================================================
+    //  Die Rückrufe
+    // =====================================================================
 
     /// <summary>
     /// Die gewählte Farbe wirkt SOFORT und NUR in diesem Prozess: Sie geht in
@@ -128,7 +346,12 @@
         _fensterText = fenster is null
             ? "voll"
             : fenster.Von.ToString("N0", CultureInfo.CurrentCulture) + " … "
-              + (fenster.Bis - 1).ToString("N0", CultureInfo.CurrentCulture) + " h";
+              + (fenster.Bis - 1).ToString("N0", CultureInfo.CurrentCulture)
+              + (_achsenart == Achsenart.Jahresstunde ? " h" : "");
+
+        // Der Stand zeigt, wie viele Pfade der Baustein nachgerechnet hat; das
+        // weiss er erst NACH seinem eigenen Zeichenlauf.
+        StateHasChanged();
         return Task.CompletedTask;
     }
 }

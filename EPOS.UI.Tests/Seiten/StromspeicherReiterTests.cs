@@ -1,12 +1,15 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Seiten.Simulation;
+using EPOS.UI.Standards;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -101,12 +104,53 @@ public class StromspeicherReiterTests : EposBunitContext
             if (konfigWeg)
                 p.Add(x => x.KonfigurationOeffnen,
                       EventCallback.Factory.Create(this, () => _konfigwechsel++));
-            if (mitBild) p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
+            if (mitBild) p.Add(x => x.Modell, Modell);
             if (csv is not null) p.Add(x => x.Csv, EventCallback.Factory.Create(this, csv));
             if (vergleich is not null) p.Add(x => x.Vergleich, EventCallback.Factory.Create(this, vergleich));
         });
 
     private int _konfigwechsel;
+
+    /// <summary>
+    /// Die Zeichenmodelle des Betriebsbildes, nach Schalterstellung getrennt und je
+    /// EINMAL gebaut. Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz;
+    /// ein je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu und
+    /// nähme ihm Zoom und abgewählte Reihe.
+    /// </summary>
+    private readonly Dictionary<bool, Zeichenmodell> _modelle = new();
+
+    private Zeichenmodell? Modell(Bildauftrag a)
+    {
+        _auftraege.Add(a);
+
+        if (_modelle.TryGetValue(a.Sortiert, out Zeichenmodell? vorhanden)) return vorhanden;
+
+        Zeichenmodell neu = Betriebsbild(a.Sortiert);
+        _modelle[a.Sortiert] = neu;
+        return neu;
+    }
+
+    /// <summary>
+    /// „Lastgang und Speicherbetrieb" aus einer KURZEN Reihe (eine Woche) — der
+    /// Ladezustand steht auf der ZWEITEN Achse, wie im Bild des Kerns.
+    /// </summary>
+    private static Zeichenmodell Betriebsbild(bool sortiert)
+    {
+        var last = new double[168];
+        var soc = new double[168];
+        for (int i = 0; i < last.Length; i++)
+        {
+            last[i] = 30.0 + 25.0 * Math.Sin(2 * Math.PI * i / 24.0);
+            soc[i] = 5.0 + 4.0 * Math.Cos(2 * Math.PI * i / 24.0);
+        }
+
+        return ChartRenderer.SpeicherbetriebModell(
+            "Lastgang und Speicherbetrieb",
+            new[] { new ChartRenderer.Reihe("Netzbezug", last, ChartRenderer.C_NETZ) },
+            "kW",
+            new ChartRenderer.Reihe("Ladezustand", soc, ChartRenderer.C_SPEICHER[0]),
+            "kWh", sortiert);
+    }
 
     /// <summary>Die Kontrollkästchen DES BILDES — nicht die des Parameterblocks.</summary>
     private static IReadOnlyList<AngleSharp.Dom.IElement> Bildschalter(
@@ -423,7 +467,7 @@ public class StromspeicherReiterTests : EposBunitContext
         }, seite.Instance.GewaehlteReihen);
 
         // Das SoC-Bild geht darin auf - es wird nicht daneben noch einmal angefordert.
-        Assert.Single(seite.FindAll("img"));
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
     }
 
     /// <summary>
@@ -706,40 +750,36 @@ public class StromspeicherReiterTests : EposBunitContext
     }
 
     // =====================================================================
-    //  W11b‑B‑24 — DER DATENZOOM AM BILD DES REITERS
-    //  (Anwenderentscheid 09.09.2026; seit W11b‑B‑26 traegt ihn das Bild
-    //  „Lastgang und Speicherbetrieb", in dem das SoC-Bild aufgegangen ist)
+    //  DER BAUSTEIN DiagrammSvg (Etappe DG-E3, Gruppe (a))
+    //
+    //  Gerade dieses Bild braucht den Ausschnitt: Ein Speicher laedt und
+    //  entlaedt im TAGESrhythmus, und in der Vollansicht liegen rund
+    //  40 Viertelstunden auf einem Bildpunkt. Der Ausschnitt ist seither die
+    //  viewBox der Zeichenflaeche - kein Rundlauf in den Kern (DG-E3-9).
     // =====================================================================
 
     /// <summary>
-    /// Das aufgezogene Rechteck geht UNVERÄNDERT in den Bildauftrag, „1:1" nimmt es
-    /// zurück. Gerade dieses Bild braucht den Ausschnitt: Ein Speicher lädt und
-    /// entlädt im TAGESrhythmus, und in der Vollansicht liegen rund 40 Viertelstunden
-    /// auf einem Bildpunkt.
+    /// <b>„Lastgang und Speicherbetrieb" steht als SVG im Baum</b> — unter der
+    /// Kennung <c>simerg-speicherbetrieb</c>, mit der Einheit der linken und der
+    /// rechten Achse, und ohne ein Pixelbild daneben.
     /// </summary>
     [Fact]
-    public async Task Das_Betriebsbild_traegt_den_aufgezogenen_Bereich()
+    public void Das_Betriebsbild_steht_als_DiagrammSvg()
     {
         var seite = Zeichnen(Daten());
-        EPOS.UI.Bausteine.Diagramm rahmen =
-            seite.FindComponent<EPOS.UI.Bausteine.Diagramm>().Instance;
+        DiagrammSvg bild = seite.FindComponent<DiagrammSvg>().Instance;
 
-        await seite.InvokeAsync(() => rahmen.BereichGemeldet(0.25, 0.5, 0.1, 0.9));
-
-        Assert.Equal(0.25, seite.Instance.Bereich!.XVon);
-        Assert.Equal(0.5, Letzter.Bereich!.XBis);
-
-        seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
-             .FindAll("button.epos-diagramm-knopf")
-             .First(k => k.TextContent.Trim() == "1:1").Click();
-
-        Assert.Null(seite.Instance.Bereich);
-        Assert.Null(Letzter.Bereich);
+        Assert.Single(seite.FindComponents<DiagrammSvg>());
+        Assert.Equal("simerg-speicherbetrieb", bild.Kennung);
+        Assert.Equal("kW", bild.Einheit);
+        Assert.Equal("kWh", bild.EinheitRechts);
+        Assert.Equal(Achsenart.Stuetzstelle, bild.Achsenart);
+        Assert.Empty(seite.FindComponents<ChartBild>());
     }
 
     /// <summary>
-    /// Sichtbar wird der Datenzoom am Umschalter „Bereich" — kein Rückruf, kein
-    /// Knopf. Vor W11b‑B‑24 stand an diesem Bild nur „1:1".
+    /// Der Zoom ist Bedienung am Bild: Über ihm stehen „Bereich" und „1:1", und der
+    /// Schalter „sortiert" stellt die Achsenart auf den RANG um.
     /// </summary>
     [Fact]
     public void Das_Betriebsbild_traegt_den_Bereichsknopf()
@@ -747,8 +787,12 @@ public class StromspeicherReiterTests : EposBunitContext
         var seite = Zeichnen(Daten());
 
         Assert.Equal(new[] { "Bereich", "1:1" },
-                     seite.FindComponent<EPOS.UI.Bausteine.Diagramm>()
+                     seite.FindComponent<DiagrammSvg>()
                           .FindAll("button.epos-diagramm-knopf")
                           .Select(k => k.TextContent.Trim()).ToArray());
+
+        Bildschalter(seite)[0].Change(true);
+
+        Assert.Equal(Achsenart.Rang, seite.FindComponent<DiagrammSvg>().Instance.Achsenart);
     }
 }

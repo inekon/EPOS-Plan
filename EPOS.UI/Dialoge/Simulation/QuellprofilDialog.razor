@@ -41,6 +41,8 @@
 
 @namespace EPOS.UI.Dialoge.Simulation
 @using Microsoft.AspNetCore.Components.QuickGrid
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -174,7 +176,15 @@
             @* --- Grafik ------------------------------------------------------ *@
             <Reiterblatt Schluessel="GRAFIK" Titel="@TabGrafik" Betreten="BildZeichnen">
                 <KindInhalt>
-                    <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+                    @* Der Jahresverlauf des Profils im SVG-Baustein (Etappe DG-E3,
+                       Gruppe (a)): Zoom auf der Zeitachse, Wert am Mauszeiger. *@
+                    <DiagrammSvg Modell="@_modell" Kennung="quellprofil"
+                                 Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
+                                 Einheit="°C" Achsenart="Achsenart.Jahresstunde"
+                                 Palette="@Farbpalette.Aktuell"
+                                 FarbwahlErlaubt="@Farbwahl"
+                                 FarbeGewaehlt="FarbeUebernehmen"
+                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -234,8 +244,8 @@
     /// </summary>
     [Parameter] public Func<int, Task<double[]?>>? CsvLesen { get; set; }
 
-    /// <summary>Zeichnet das Jahresbild aus Betriebsart und Werten.</summary>
-    [Parameter] public Func<string, double[], Task<byte[]?>>? Jahresbild { get; set; }
+    /// <summary>Rechnet das Zeichenmodell des Jahresbildes aus Betriebsart und Werten.</summary>
+    [Parameter] public Func<string, double[], Task<Zeichenmodell?>>? Jahresbild { get; set; }
 
     /// <summary>Die Sollzahl an Werten je Betriebsart (<c>DbWerte.QuellprofilWerteanzahl</c>).</summary>
     [Parameter] public Func<string, int>? Werteanzahl { get; set; }
@@ -340,7 +350,7 @@
     private int? _tag = 0;
 
     private string _reiter = "";
-    private byte[]? _bild;
+    private Zeichenmodell? _modell;
 
     private Abfrageart _abfrage = Abfrageart.Keine;
     private string _abfrageTitel = "";
@@ -378,7 +388,7 @@
     public string Bezeichner => _bezeichner;
 
     /// <summary>Das gezeichnete Bild.</summary>
-    public byte[]? Bild => _bild;
+    public Zeichenmodell? Modell => _modell;
 
     /// <summary>Steht eine Zahlenabfrage?</summary>
     public bool AbfrageSteht => _abfrage != Abfrageart.Keine;
@@ -589,7 +599,7 @@
             _werte = neu;
         }
 
-        _bild = null;
+        _modell = null;
     }
 
     // --- Die beiden „alle …"-Knöpfe ---------------------------------------------
@@ -623,7 +633,7 @@
         if (was == Abfrageart.Monate)
         {
             for (int m = 0; m < 12; m++) _monat[m] = wert.Value;
-            _bild = null;
+            _modell = null;
             return;
         }
 
@@ -631,7 +641,7 @@
         if (soll <= 0) return;
         _werte = new double[soll];
         for (int i = 0; i < soll; i++) _werte[i] = wert.Value;
-        _bild = null;
+        _modell = null;
     }
 
     // --- CSV --------------------------------------------------------------------
@@ -658,7 +668,7 @@
 
         _meldung = "";
         _werte = gelesen;
-        _bild = null;
+        _modell = null;
     }
 
     // --- Grafik -----------------------------------------------------------------
@@ -683,7 +693,7 @@
             werte = _werte;
         }
 
-        _bild = await Jahresbild(Betriebsart, werte);
+        _modell = await Jahresbild(Betriebsart, werte);
         StateHasChanged();
     }
 

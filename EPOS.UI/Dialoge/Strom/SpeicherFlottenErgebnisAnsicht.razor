@@ -480,10 +480,24 @@
         }
     }
 
-    /// <summary>Der Schlüssel beider Zeitbilder — jedes Bild führt seinen eigenen Ausschnitt.</summary>
+    /// <summary>
+    /// Der Schlüssel beider Zeitbilder — jedes Bild führt seinen eigenen Ausschnitt.
+    ///
+    /// <para><b>Der Ausschnitt steht seit DG-E3-9 nicht mehr im <c>Bildauftrag</c>:</b>
+    /// Die Zeitreihen der ERGEBNISREITER haben ihren Rundlauf-Datenzoom verloren, weil
+    /// sie als Zeichenmodell im SVG stehen. Die Flottenansicht zeichnet weiter PNG
+    /// (Gruppe (d) des Rollouts) und hängt ihren Ausschnitt deshalb hier an den
+    /// Schlüssel an, statt ihn durch einen Auftrag zu schleifen, der ihn nicht mehr
+    /// führt.</para>
+    /// </summary>
     private string Auftragsschluessel()
-        => new Bildauftrag("FLOTTE_NETZ", _sortiert, Starttag(), Reihen(), Tagezahl(), _netzbereich).Schluessel +
-           "#" + new Bildauftrag("FLOTTE_SOC", _sortiert, _speicher, null, 0.0, _socbereich).Schluessel;
+        => new Bildauftrag("FLOTTE_NETZ", _sortiert, Starttag(), Reihen(), Tagezahl()).Schluessel +
+           Bereichsschluessel(_netzbereich) +
+           "#" + new Bildauftrag("FLOTTE_SOC", _sortiert, _speicher).Schluessel +
+           Bereichsschluessel(_socbereich);
+
+    private static string Bereichsschluessel(Diagrammbereich? b)
+        => b is null ? "" : "|" + b;
 
     private static ChartRenderer.Bildausschnitt? Ausschnitt(Diagrammbereich? b)
         => b is null ? null : new ChartRenderer.Bildausschnitt(b.XVon, b.XBis, b.YVon, b.YBis);

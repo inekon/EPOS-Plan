@@ -35,6 +35,8 @@
    Sonderfall, keine Ausnahme. *@
 
 @namespace EPOS.UI.Seiten.Simulation
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-simerg-block">
 
@@ -231,24 +233,32 @@
                                       Wert="@_pgHeizstab" WertChanged="@(w => _pgHeizstab = w)" />
                         </div>
 
-                        @* W11b‑B‑24: DATENZOOM. Ein aufgezogenes Rechteck lässt den
-                           Kern DIESES Bild mit dem Zeitausschnitt neu zeichnen; „1:1"
-                           holt das ganze Jahr zurück. Jedes Bild führt seinen eigenen
-                           Ausschnitt — sie stehen auf drei Unterblättern und zeigen
-                           verschiedene Größen. *@
-                        <ChartBild Png="@BildProduktion"
-                                   Alt="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
-                                   BereichGewaehlt="@(b => _produktionBereich = b)"
-                                   Zurueckgesetzt="@(() => _produktionBereich = null)" />
+                        @* DER ZOOM LIEGT IM BILD (Etappe DG-E3, Gruppe (a)); „1:1"
+                           holt das ganze Jahr zurueck. Jedes Bild fuehrt seinen
+                           eigenen Ausschnitt — sie stehen auf drei Unterblaettern
+                           und zeigen verschiedene Groessen, und jedes traegt seine
+                           eigene clipPath-Kennung. *@
+                        <DiagrammSvg Modell="@ModellProduktion" Kennung="simerg-wp-produktion"
+                                     Bezeichnung="@Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE"
+                                     Einheit="kW"
+                                     Achsenart="@(_sortiert ? Achsenart.Rang : Achsenart.Stuetzstelle)"
+                                     XEinheit="@(_sortiert ? "" : "h")"
+                                     Palette="@Farbpalette.Aktuell"
+                                     FarbwahlErlaubt="@Farbwahl"
+                                     FarbeGewaehlt="FarbeUebernehmen"
+                                     FarbeZurueckgesetzt="FarbeVerwerfen" />
                     </KindInhalt>
                 </Reiterblatt>
 
                 <Reiterblatt Schluessel="STROM" Titel="@Resource.SIMERG_TAB_WP_STROM">
                     <KindInhalt>
-                        <ChartBild Png="@BildStrom"
-                                   Alt="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
-                                   BereichGewaehlt="@(b => _stromBereich = b)"
-                                   Zurueckgesetzt="@(() => _stromBereich = null)" />
+                        <DiagrammSvg Modell="@ModellStrom" Kennung="simerg-wp-strom"
+                                     Bezeichnung="@Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE"
+                                     Einheit="kW" Achsenart="Achsenart.Jahresstunde"
+                                     Palette="@Farbpalette.Aktuell"
+                                     FarbwahlErlaubt="@Farbwahl"
+                                     FarbeGewaehlt="FarbeUebernehmen"
+                                     FarbeZurueckgesetzt="FarbeVerwerfen" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -256,10 +266,15 @@
                 {
                     <Reiterblatt Schluessel="TEMPERATUREN" Titel="@Resource.SIM_TAB_SPEICHERTEMPERATUR">
                         <KindInhalt>
-                            <ChartBild Png="@BildTemperaturen"
-                                       Alt="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
-                                       BereichGewaehlt="@(b => _temperaturBereich = b)"
-                                       Zurueckgesetzt="@(() => _temperaturBereich = null)" />
+                            <DiagrammSvg Modell="@ModellTemperaturen"
+                                         Kennung="simerg-wp-temperaturen"
+                                         Bezeichnung="@Resource.CHART_TITEL_SPEICHERTEMPERATUR"
+                                         Einheit="°C" Achsenart="Achsenart.Stuetzstelle"
+                                         XEinheit="h"
+                                         Palette="@Farbpalette.Aktuell"
+                                         FarbwahlErlaubt="@Farbwahl"
+                                         FarbeGewaehlt="FarbeUebernehmen"
+                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
                         </KindInhalt>
                     </Reiterblatt>
                 }
@@ -289,8 +304,18 @@
     [Parameter]
     public WindowsFormsApplication1.SimulationErgebnisCtrl.WaermepumpeErgebnis? Daten { get; set; }
 
-    /// <summary>Liefert ein Bild zur aktuellen Schalterstellung.</summary>
+    /// <summary>
+    /// Liefert das PIXELBILD der Streuwolke. Sie traegt keine Zeitachse — x ist die
+    /// Aussentemperatur —, und ihr Zeichenmodell entsteht in einer spaeteren Gruppe
+    /// des Rollouts; bis dahin geht sie ueber <c>ChartBild</c>.
+    /// </summary>
     [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
+
+    /// <summary>
+    /// Liefert das Zeichenmodell der drei ZEITREIHEN-Bilder (Produktion,
+    /// Stromverbrauch, Speichertemperaturen).
+    /// </summary>
+    [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>
     /// Fuehrt der Lauf Speichertemperaturen? Nur dann steht das dritte
@@ -318,15 +343,6 @@
     /// <summary>Die gewaehlten Reihen der Jahresganglinie (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihenProduktion => ReihenProduktion();
 
-    /// <summary>Der aufgezogene Zeitausschnitt der Jahresganglinie; <c>null</c> = ganzes Jahr.</summary>
-    public Diagrammbereich? ProduktionBereich => _produktionBereich;
-
-    /// <summary>Derselbe Ausschnitt fuer das Strombild (Pruefhilfe).</summary>
-    public Diagrammbereich? StromBereich => _stromBereich;
-
-    /// <summary>Derselbe Ausschnitt fuer die Speichertemperaturen (Pruefhilfe).</summary>
-    public Diagrammbereich? TemperaturBereich => _temperaturBereich;
-
     private Reiter? _reiter;
     private string _blatt = "";
     private bool _sortiert;
@@ -339,11 +355,6 @@
     private bool _pgWarmwasser = true;
     private bool _pgProduktion = true;
     private bool _pgHeizstab = true;
-
-    // W11b‑B‑24: je Bild EIN Zeitausschnitt, <c>null</c> = die volle Ansicht.
-    private Diagrammbereich? _produktionBereich;
-    private Diagrammbereich? _stromBereich;
-    private Diagrammbereich? _temperaturBereich;
 
     private Task ModulGewaehlt() => ModulOeffnen.InvokeAsync();
 
@@ -376,17 +387,14 @@
     private byte[]? BildStreuwolke =>
         Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur, false, -1, ReihenStreuwolke()));
 
-    private byte[]? BildProduktion =>
-        Bild?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion(),
-                                     0.0, _produktionBereich));
+    private Zeichenmodell? ModellProduktion =>
+        Modell?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));
 
-    private byte[]? BildStrom =>
-        Bild?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch, false, -1, null,
-                                     0.0, _stromBereich));
+    private Zeichenmodell? ModellStrom =>
+        Modell?.Invoke(new Bildauftrag(Bilder.WpStromverbrauch));
 
-    private byte[]? BildTemperaturen =>
-        Bild?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen, false, -1, null,
-                                     0.0, _temperaturBereich));
+    private Zeichenmodell? ModellTemperaturen =>
+        Modell?.Invoke(new Bildauftrag(Bilder.Speichertemperaturen));
 
     /// <summary>
     /// Eine Zahl der Kennzahlenliste. „N2" statt „F2" seit dem Anwenderwunsch

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -68,7 +70,9 @@ namespace WindowsFormsApplication1
                 ["Speichern"] = new Func<int, double[,], bool>(TagVCtrl.Speichern),
                 ["Anlegen"] = new Func<string, string, int>(TagVCtrl.Anlegen),
                 ["Loeschen"] = new Func<int, bool>(TagVCtrl.Loeschen),
-                ["Bild"] = new Func<double[], byte[]>(Tagesbild),
+                ["Bild"] = new Func<double[], Zeichenmodell>(Tagesbild),
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 ["TitelText"] = Text_("GTYP_TITEL", "Gebäudetypen Verwaltung"),
                 ["LabelName"] = Text_("GTYP_LBL_NAME", "Name:"),
@@ -125,13 +129,38 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Das Tagesbild. Intervall 2 = jede zweite Stunde, wörtlich aus
-        /// <c>init_Chart</c> (<c>AxisX.Interval = 2</c>, x von 0 bis 24).
+        /// Das Tagesbild als ZEICHENMODELL (Etappe DG-E3, Gruppe (a)). Intervall 2 =
+        /// jede zweite Stunde, wörtlich aus <c>init_Chart</c>
+        /// (<c>AxisX.Interval = 2</c>, x von 0 bis 24).
+        ///
+        /// <para>Auf der x-Achse zählt der INDEX der Reihe: Die Fläche geht von 0 bis
+        /// n, die Reihe von 1 bis n (Protokoll DG-E3, „Was x je Bild bedeutet").</para>
         /// </summary>
-        private static byte[] Tagesbild(double[] werte)
-            => ChartRenderer.Stundenprofil("", werte, 2,
+        private static Zeichenmodell Tagesbild(double[] werte)
+            => ChartRenderer.StundenprofilModell("", werte, 2,
                    Text_("GTYP_ACHSE_X", "Stunde des Tages"),
                    Text_("GTYP_ACHSE_Y", "Tagesverteilung"));
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
+        }
 
         /// <summary>Die 24 Feldnamen der Prüfmeldung — „Stunde 7" (<c>VerteilungUebernehmen</c>:158).</summary>
         private static string[] Feldnamen()
