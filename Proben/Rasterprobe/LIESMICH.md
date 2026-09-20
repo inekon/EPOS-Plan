@@ -300,6 +300,13 @@ feste Pixelhöhe. Die zwei Masken, die `epos-katalog-fuellend` auf eine bloße L
 (`GesetzeskatalogDialog`, `WaermepumpenKatalogDialog`), haben keine zweite Reihe und
 bleiben unberührt; die neun Fälle von `rasterprobe.mjs` bleiben grün.
 
+### Der Wirt trägt auch die SVG-Probe (DG-1)
+
+Die Seite `/svgprobe` und die Antworten `/svgprobe/svg` und `/svgprobe/png` gehören zur
+[`SvgProbe`](../SvgProbe/LIESMICH.md) (Konzept Diagramme direkt in der Oberfläche); der Wirt
+referenziert dafür `Proben/SvgProbe/SvgProbe.csproj`. Gemessen wird sie mit
+`Proben/SvgProbe/svgprobe.mjs`, üblich auf Port 5371.
+
 ### Nachtrag (DL-2b) — ein Vorfahr ist keine Überdeckung
 
 Prüfung (e) setzt ihre Punkte **2 px** von den vier Ecken des Knopfes. Der Knopf des

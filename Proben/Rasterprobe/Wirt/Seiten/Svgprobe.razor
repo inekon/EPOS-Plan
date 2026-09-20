@@ -1,0 +1,85 @@
+@page "/svgprobe"
+@using Microsoft.AspNetCore.WebUtilities
+@using SvgProbe
+@inject NavigationManager Navigation
+
+@*  DIE SEITE DER SVG-PROBE (Konzept DG-1, Diagramme direkt in der Oberflaeche).
+
+    Sie zeigt EIN Jahresgang-Diagramm so, wie Blazor es liefern wuerde: als
+    Markup aus dem Zeichenmodell (SvgProbe.SvgZeichner), ueber MarkupString in
+    den Baum gesetzt - kein <img>, keine Bibliothek, kein Skript. Zum Vergleich
+    kann dieselbe Reihe als PNG aus ChartRenderer.Jahresgang stehen, dem Bild,
+    das die Anwendung heute zeigt.
+
+    Gaben aus der Adresse:
+      ?variante=roh|jedernte|gebuendelt|png   Pfadart bzw. das PNG des Bestands
+      ?reihen=3                                Anzahl der Reihen (1…6)
+
+    Die Messung (svgprobe.mjs) liest die Zahlen aus #svgprobe-stand, misst das
+    Zeichnen dieser Seite und dann - netzfrei, in derselben Seite - das
+    Einsetzen des Markups aus /svgprobe/svg in #svgprobe-buehne, den viewBox-
+    Zoom auf #svgprobe-flaeche und die Trefferpruefung am Mauszeiger.
+*@
+
+<h1 class="epos-ueberschrift">SVG-Probe DG-1</h1>
+
+<p id="svgprobe-stand" class="epos-hinweis"
+   data-variante="@_variante" data-reihen="@_reihen" data-bytes="@_bytes"
+   data-erzeugung-ms="@_erzeugungMs.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)">
+    Variante @_variante · @_reihen Reihen · @_bytes Bytes · erzeugt in @_erzeugungMs.ToString("0.00") ms
+</p>
+
+@* Kein .epos-diagramm um den Inhalt: Dessen Hoechstbreite (1 240 px) staucht
+   das Bild, und die Probe soll SVG und PNG in demselben Mass 1 304 x 440 messen. *@
+<div id="svgprobe-inhalt">
+    @if (_variante == "png")
+    {
+        <img id="svgprobe-png" width="1304" height="440"
+             alt="Jahresgang als PNG" src="data:image/png;base64,@_png" />
+    }
+    else
+    {
+        @((MarkupString)_svg)
+    }
+</div>
+
+<div id="svgprobe-buehne"></div>
+
+@code {
+    private string _variante = "gebuendelt";
+    private int _reihen = 3;
+    private int _bytes;
+    private string _svg = "";
+    private string _png = "";
+    private double _erzeugungMs;
+
+    protected override void OnInitialized()
+    {
+        var abfrage = QueryHelpers.ParseQuery(new Uri(Navigation.Uri).Query);
+        if (abfrage.TryGetValue("variante", out var v)) _variante = v.ToString().ToLowerInvariant();
+        if (abfrage.TryGetValue("reihen", out var r) && int.TryParse(r, out int n)) _reihen = Math.Clamp(n, 1, 6);
+
+        double[][] reihen = SvgZeichner.Jahresreihen(_reihen);
+        // Die Erzeugung im Kern - beim PNG der Skia-Renderer, beim SVG das
+        // Zeichenmodell - ist der eine Teil des Rundlaufs, den Option A je
+        // Interaktion zahlt; gemessen wird sie deshalb mit (Warmlauf: der
+        // erste Aufruf traegt das Laden der Schriften, hier zaehlt der zweite).
+        if (_variante == "png")
+        {
+            Bilder.Png(reihen);
+            var uhr = System.Diagnostics.Stopwatch.StartNew();
+            byte[] png = Bilder.Png(reihen);
+            _erzeugungMs = uhr.Elapsed.TotalMilliseconds;
+            _bytes = png.Length;
+            _png = Convert.ToBase64String(png);
+        }
+        else
+        {
+            SvgZeichner.Svg(reihen, SvgZeichner.Art(_variante));
+            var uhr = System.Diagnostics.Stopwatch.StartNew();
+            _svg = SvgZeichner.Svg(reihen, SvgZeichner.Art(_variante));
+            _erzeugungMs = uhr.Elapsed.TotalMilliseconds;
+            _bytes = System.Text.Encoding.UTF8.GetByteCount(_svg);
+        }
+    }
+}

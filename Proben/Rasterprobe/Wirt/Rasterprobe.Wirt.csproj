@@ -28,6 +28,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\EPOS.UI\EPOS.UI.csproj" />
+    <!-- Der Pruefling der SVG-PROBE (Konzept DG-1): das Zeichenmodell, das die
+         Seite /svgprobe als Markup zeigt. Ohne Bibliothek, ohne Kern. -->
+    <ProjectReference Include="..\..\SvgProbe\SvgProbe.csproj" />
   </ItemGroup>
 
 </Project>

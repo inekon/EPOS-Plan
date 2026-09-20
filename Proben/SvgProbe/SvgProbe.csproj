@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    SvgProbe (Konzept DG-1, Diagramme direkt in der Oberflaeche statt als Bild) -
+    der PRUEFSTAND fuer die Option "SVG aus C#".
+
+    Zweck: aus einer synthetischen Jahresreihe (8 760 Stundenwerte, drei oder sechs
+    Reihen) ein SVG erzeugen - den Pfad ROH (jede Stunde ein Punkt), JEDER N-TE
+    (so zeichnet ChartRenderer.Jahresgang heute ins PNG) und PIXELGEBUENDELT (je
+    Bildpunktspalte Minimum und Maximum, 1 154 Spalten wie die Zeichenflaeche des
+    Jahresgangs) - und dabei Groesse, Erzeugungszeit und Determinismus messen.
+    Die Renderzeit im Browser misst svgprobe.mjs ueber den Rasterprobe-Wirt
+    (Proben/Rasterprobe/Wirt, Seite /svgprobe), der diese Klassen referenziert.
+
+    KEINE Abhaengigkeit: kein EPOS.Kern, kein SkiaSharp, keine Bibliothek. Die
+    Probe soll zeigen, was ein Zeichenmodell OHNE Bibliothek kann - und auf einem
+    nackten Rechner ohne Paketquelle bauen.
+
+    EIGENE Projektmappe, BEWUSST NICHT in WP-Plan.sln und in keiner CI - dasselbe
+    Muster wie Proben\Rasterprobe: Nachweis, kein Werkzeug der Auslieferung.
+  -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <EnableWindowsTargeting>false</EnableWindowsTargeting>
+    <AssemblyName>SvgProbe</AssemblyName>
+    <RootNamespace>SvgProbe</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <NeutralLanguage>de-DE</NeutralLanguage>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+</Project>
