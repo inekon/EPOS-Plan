@@ -46,21 +46,32 @@ namespace EPOS.Kern.Tests
         private const int STAMM = 9101;
         private const int VARIANTE_A = 9102;
 
+        /// <summary>Das Referenzprojekt der Testdatenbank — der Bericht, den ein Anwender bekommt.</summary>
+        private const int PROJEKT_1030 = 1030;
+
         // =====================================================================
         //  1 — die Einbettung selbst: ein Modell, zwei Teile
         // =====================================================================
 
         /// <summary>
-        /// Jedes der vier Berichtsbilder der Gruppe (d) legt beide Teile ab: einen
-        /// PNG-Teil, auf den der <c>a:blip</c> zeigt, und einen SVG-Teil, auf den der
+        /// Jede Diagrammart des Wortberichts legt beide Teile ab: einen PNG-Teil, auf
+        /// den der <c>a:blip</c> zeigt, und einen SVG-Teil, auf den der
         /// <c>asvg:svgBlip</c> darin zeigt. Der SVG-Teil beginnt wohlgeformt mit
         /// <c>&lt;svg</c> und trägt keinen BOM.
+        ///
+        /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die vier
+        /// übrigen die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell
+        /// bekommen haben und seither ebenfalls über den Modellweg gehen.</para>
         /// </summary>
         [Theory]
         [InlineData("jahresverlauf")]
         [InlineData("dauerlinie")]
         [InlineData("speicherverlauf")]
         [InlineData("speichertemperaturen")]
+        [InlineData("strombilanz")]
+        [InlineData("kuchen")]
+        [InlineData("balken")]
+        [InlineData("kapitalwert")]
         public void EinModellLegtBeideTeileAb(string bild)
         {
             Zeichenmodell m = Bildmodell(bild);
@@ -104,7 +115,9 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Der <c>byte[]</c>-Weg bleibt, was er war: EIN Teil, kein <c>svgBlip</c>.
-        /// Die Bilder ohne Zeichenmodell (Gruppen b und c) gehen weiter darüber.
+        /// Kein Baustein des Berichts ruft ihn noch — er steht für FREMDBILDER und
+        /// für die Renderer ohne Zeichenmodell bereit (<c>PeakShavingBild</c>,
+        /// <c>SpeicherBetriebsbild</c>), falls eines davon einmal in den Bericht soll.
         /// </summary>
         [Fact]
         public void DerByteWegLegtNurDasPngAb()
@@ -219,15 +232,138 @@ namespace EPOS.Kern.Tests
                                       StringComparison.Ordinal);
                 }
 
-                // Die vier Bilder der Gruppe (d): Jahresverlauf, Dauerlinie und
-                // Speicherverlauf je Variante (zwei), dazu die Speichertemperaturen
-                // des Stamms — mindestens vier, und nie mehr Teile als Verweise.
+                // JEDE Bildstelle trägt inzwischen ein SVG — es gibt im Bericht keine
+                // Diagrammart mehr ohne Zeichenmodell.
+                Assert.True(mitSvg == blips.Count,
+                    "Von " + blips.Count + " Bildstellen tragen nur " + mitSvg + " ein SVG.");
                 Assert.True(mitSvg >= 4, "Nur " + mitSvg + " Bildstellen tragen ein SVG.");
 
+                // Nie mehr Teile als Verweise — kein verwaister Teil, kein Verweis ins Leere.
                 int svgTeile = main.ImageParts.Count(p => p.ContentType == "image/svg+xml");
                 Assert.Equal(mitSvg, svgTeile);
             }
             finally { Aufraeumen(ordner); }
+        }
+
+        // =====================================================================
+        //  3 — der Bericht aus dem REFERENZPROJEKT 1030
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Der Bericht, den ein Anwender bekommt.</b> Projekt 1030 der
+        /// Testdatenbank, frisch simuliert, mit ALLEN Bausteinen — nicht die
+        /// synthetische Prüfgruppe der Fälle darüber, sondern echte Reihen aus einem
+        /// echten Lauf.
+        ///
+        /// <para><b>Die Regel:</b> Jede Bildstelle trägt beide Teile. Es gibt im
+        /// Wortbericht keine Diagrammart mehr, die nur ein PNG ablegt — deshalb steht
+        /// hier <c>mitSvg == blips.Count</c> und nicht eine Untergrenze. Die Zahl der
+        /// Bilder selbst hängt am Projektstand der Testdatenbank (dieses Projekt
+        /// führt sieben) und ist bewusst nur nach unten festgenagelt; die harte
+        /// Aussage ist die Deckungsgleichheit.</para>
+        ///
+        /// <para>Dazu die Gültigkeit in <b>allen sechs</b> Office-Fassungen: Ein
+        /// Bericht, den ein älterer Leser als beschädigt zurückweist, wäre mit SVG
+        /// schlechter dran als ohne.</para>
+        /// </summary>
+        [Fact]
+        public void DerBerichtAusProjekt1030TraegtAnJederBildstelleBeideTeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "bericht_1030.docx");
+                new WordBerichtGenerator().Erzeuge(Projektdaten1030(), VolleKonfiguration(), ziel);
+                Assert.True(File.Exists(ziel), "Der Bericht wurde nicht geschrieben.");
+
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                MainDocumentPart main = doc.MainDocumentPart;
+
+                List<A.Blip> blips = main.Document.Descendants<A.Blip>().ToList();
+                Assert.True(blips.Count >= 7,
+                    "Der Bericht aus 1030 führt nur " + blips.Count + " Bilder.");
+
+                int mitSvg = 0;
+                foreach (A.Blip blip in blips)
+                {
+                    ImagePart png = (ImagePart)main.GetPartById(blip.Embed.Value);
+                    Assert.Equal("image/png", png.ContentType);
+
+                    ASVG.SVGBlip svgBlip = blip.Descendants<ASVG.SVGBlip>().FirstOrDefault();
+                    if (svgBlip == null) continue;
+                    mitSvg++;
+
+                    ImagePart svg = (ImagePart)main.GetPartById(svgBlip.Embed.Value);
+                    Assert.Equal("image/svg+xml", svg.ContentType);
+                    Assert.StartsWith("<svg", Encoding.UTF8.GetString(Inhalt(svg)),
+                                      StringComparison.Ordinal);
+                }
+
+                Assert.True(mitSvg == blips.Count,
+                    "Von " + blips.Count + " Bildstellen des Berichts 1030 tragen nur " +
+                    mitSvg + " ein SVG.");
+
+                // Je Bild genau zwei Teile: das PNG und das SVG.
+                Assert.Equal(blips.Count, main.ImageParts.Count(p => p.ContentType == "image/png"));
+                Assert.Equal(blips.Count, main.ImageParts.Count(p => p.ContentType == "image/svg+xml"));
+
+                // Und derselbe Bericht ist in JEDER Office-Fassung gültig: Ein
+                // Dokument, das ein älterer Leser als beschädigt zurückweist, wäre
+                // mit SVG schlechter dran als ohne. Der Lauf steckt im selben Fall,
+                // damit Projekt 1030 nur EINMAL simuliert wird.
+                foreach (FileFormatVersions fassung in Fassungen)
+                {
+                    List<ValidationErrorInfo> fehler =
+                        new OpenXmlValidator(fassung).Validate(doc).ToList();
+                    Assert.True(fehler.Count == 0,
+                        fassung + ": " + fehler.Count + " Fehler — " + string.Join(" | ",
+                            fehler.Take(5).Select(f => f.Description + " @ " + f.Path?.XPath)));
+                }
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>Office 2007 bis 2021 — jede Fassung, die der Validator kennt.</summary>
+        private static readonly FileFormatVersions[] Fassungen =
+        {
+            FileFormatVersions.Office2007, FileFormatVersions.Office2010,
+            FileFormatVersions.Office2013, FileFormatVersions.Office2016,
+            FileFormatVersions.Office2019, FileFormatVersions.Office2021
+        };
+
+        /// <summary>
+        /// Der Berichtsbaum des Referenzprojekts 1030: frisch simuliert, Zeitreihen
+        /// aus dem Lauf, Ergebniszeilen aus der Datenbank — derselbe Weg, den der
+        /// <c>BerichtsDatenSammler</c> der Schale geht.
+        /// </summary>
+        private static BerichtsDaten Projektdaten1030()
+        {
+            var laeufer = new SimulationRunner();
+            string fehler;
+            Assert.True(laeufer.Simuliere(PROJEKT_1030, out fehler), "Lauf gescheitert: " + fehler);
+
+            var daten = new BerichtsDaten { IdStamm = PROJEKT_1030, Stammprojektname = "Referenzprojekt 1030" };
+            daten.Varianten.Add(new VariantenDaten
+            {
+                IdProjekt = PROJEKT_1030,
+                IstStamm = true,
+                Projektname = daten.Stammprojektname,
+                Ergebnis = new ErgebnisCtrl().Load(PROJEKT_1030) ?? new ErgebnisModel(),
+                Zeitreihen = ZeitreihenExtraktor.AusLauf(laeufer)
+            });
+            return daten;
+        }
+
+        /// <summary>Alle Bausteine an — sonst fehlte gerade die Bildstelle, um die es geht.</summary>
+        private static BerichtsKonfiguration VolleKonfiguration()
+        {
+            var k = new BerichtsKonfiguration();
+            foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
+                k.AktiveBausteine.Add(d.Schluessel);
+            return k;
         }
 
         // =====================================================================
@@ -243,8 +379,43 @@ namespace EPOS.Kern.Tests
                 case "dauerlinie": return ChartRenderer.DauerlinieWaermeModell(z);
                 case "speicherverlauf": return ChartRenderer.SpeicherverlaufModell(z);
                 case "speichertemperaturen": return ChartRenderer.SpeichertemperaturenModell(z);
+                case "strombilanz": return ChartRenderer.StrombilanzMonateModell(z);
+                case "kuchen": return ChartRenderer.KuchenModell("Wärmedeckung", Segmente());
+                case "balken": return ChartRenderer.BalkenHorizontalModell(
+                                          "Brennstoffeinsatz", "MWh/a", Balken());
+                case "kapitalwert": return ChartRenderer.KapitalwertVerlaufModell(
+                                          "Kumulierte Barwerte je Version", Barwerte(), null);
                 default: throw new ArgumentOutOfRangeException(nameof(bild), bild, "unbekanntes Bild");
             }
+        }
+
+        private static List<ChartRenderer.Segment> Segmente() => new List<ChartRenderer.Segment>
+        {
+            new ChartRenderer.Segment("BHKW", 55.0, ChartRenderer.C_BHKW),
+            new ChartRenderer.Segment("Spitzenkessel", 30.0, ChartRenderer.C_KESSEL),
+            new ChartRenderer.Segment("Rest/ungedeckt", 15.0, ChartRenderer.C_REST)
+        };
+
+        private static List<ChartRenderer.Balken> Balken() => new List<ChartRenderer.Balken>
+        {
+            new ChartRenderer.Balken("Stamm", 1240.0, true),
+            new ChartRenderer.Balken("Variante A", 980.0, false)
+        };
+
+        private static List<ChartRenderer.Reihe> Barwerte()
+        {
+            var stamm = new double[21];
+            var variante = new double[21];
+            for (int j = 0; j < stamm.Length; j++)
+            {
+                stamm[j] = -180000.0 + j * 14000.0;
+                variante[j] = -240000.0 + j * 21000.0;
+            }
+            return new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Stamm", stamm, ChartRenderer.C_KESSEL),
+                new ChartRenderer.Reihe("Variante A", variante, ChartRenderer.C_BHKW)
+            };
         }
 
         private static byte[] Inhalt(ImagePart teil)
