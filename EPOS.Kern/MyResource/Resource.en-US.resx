@@ -21209,4 +21209,79 @@ Do you want to allow this?</value>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Free text for the catalogue record.</value>
   </data>
+  <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
+    <value>Demand profiles in the project</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_PROZ" xml:space="preserve">
+    <value>Process heat catalogue</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_STROM" xml:space="preserve">
+    <value>Electricity consumer catalogue</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_BW" xml:space="preserve">
+    <value>Domestic hot water catalogue</value>
+  </data>
+  <data name="KI_DLG_MASKE_BERG" xml:space="preserve">
+    <value>Demand result</value>
+  </data>
+  <data name="KI_DLG_BEDARFSART_NAME" xml:space="preserve">
+    <value>Demand kind of the screen</value>
+  </data>
+  <data name="KI_DLG_BEDARFSART_ERL" xml:space="preserve">
+    <value>Which of the three variants is open: process heat, electricity consumers or domestic hot water. The same screen serves all three.</value>
+  </data>
+  <data name="KI_DLG_BPF_EINHEIT_ERL" xml:space="preserve">
+    <value>The display unit; it applies to the information block, the totals and the input field beside it alike.</value>
+  </data>
+  <data name="KI_DLG_BPF_NEUER_WERT_ERL" xml:space="preserve">
+    <value>The new annual consumption of the marked assignment, in the unit beside it. It goes into the row with “Apply”.</value>
+  </data>
+  <data name="KI_DLG_BPF_PROFIL_ERL" xml:space="preserve">
+    <value>The name of the marked profile.</value>
+  </data>
+  <data name="KI_DLG_BPF_TYP_ERL" xml:space="preserve">
+    <value>The type of the marked profile; it brings along the hourly distribution the annual consumption is spread by.</value>
+  </data>
+  <data name="KI_DLG_BPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description of the marked profile from its header record.</value>
+  </data>
+  <data name="KI_DLG_BPF_JAHRESVERBRAUCH_ERL" xml:space="preserve">
+    <value>The annual consumption of the marked assignment as shown on the screen.</value>
+  </data>
+  <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
+    <value>The total over all profiles assigned to this project.</value>
+  </data>
+  <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
+    <value>The marked catalogue record. Setting it marks it in the list; the information block follows.</value>
+  </data>
+  <data name="KI_DLG_BADM_TYP_ERL" xml:space="preserve">
+    <value>The type of the marked record from its header record.</value>
+  </data>
+  <data name="KI_DLG_BADM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description of the marked record.</value>
+  </data>
+  <data name="KI_DLG_BADM_JAHRESSUMME_NAME" xml:space="preserve">
+    <value>Annual total</value>
+  </data>
+  <data name="KI_DLG_BADM_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>The annual total of the marked record as shown on the screen.</value>
+  </data>
+  <data name="KI_DLG_BERG_EINHEIT_ERL" xml:space="preserve">
+    <value>The display unit of the energy quantities; it affects all three tab sheets alike.</value>
+  </data>
+  <data name="KI_DLG_BERG_TABELLE_NAME" xml:space="preserve">
+    <value>View of the table</value>
+  </data>
+  <data name="KI_DLG_BERG_TABELLE_ERL" xml:space="preserve">
+    <value>Which view the key figure and monthly table shows; it changes independently of the chart.</value>
+  </data>
+  <data name="KI_DLG_BERG_GRAFIK_NAME" xml:space="preserve">
+    <value>View of the chart</value>
+  </data>
+  <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
+    <value>Which view the chart shows; a change away from domestic hot water takes the annual profile along.</value>
+  </data>
+  <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
+    <value>Does the chart show the annual profile? The switch exists only for the domestic hot water view and only when an annual profile is available.</value>
+  </data>
 </root>

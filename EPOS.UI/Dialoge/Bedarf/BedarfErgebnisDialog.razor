@@ -56,6 +56,7 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -520,7 +521,58 @@
             _sichtTabelle = start;
             _sichtGrafik = start;
         }
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BEDARF_ERGEBNIS,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent stellt die Anzeige (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BedarfErgebnisKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die vier Schalter der Maske. Setzen nimmt
+    /// denselben Weg wie die Hand — ein Sichtwechsel weg vom Brauchwasser nimmt den
+    /// Jahresverlauf mit.
+    /// </summary>
+    private BedarfErgebnisKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BedarfErgebnisKiSicht
+        {
+            EinheitLesen = () => EinheitIndex,
+            EinheitSetzen = EinheitWaehlen,
+            EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
+                Einheitenwahl, e => e.Id, e => e.Text),
+
+            TabellensichtLesen = () => _sichtTabelle,
+            TabellensichtSetzen = TabellensichtWaehlen,
+            GrafiksichtLesen = () => _sichtGrafik,
+            GrafiksichtSetzen = GrafiksichtWaehlen,
+            SichtEintraege = () => KiMaskenanmeldung.Eintraege(
+                Sichtwahl, e => e.Id, e => e.Text),
+
+            JahresverlaufLesen = () => _jahresverlauf,
+            JahresverlaufSetzen = JahresverlaufUmschalten
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur Auffrischen.</b> Diese Maske zeigt ein gerechnetes Ergebnis; nichts
+    /// schreibt zurück, und einen Schreibschutz gibt es nicht.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

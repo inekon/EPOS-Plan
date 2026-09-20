@@ -21216,4 +21216,79 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
     <value>Freitext zum Katalogsatz.</value>
   </data>
+  <data name="KI_DLG_MASKE_BPF" xml:space="preserve">
+    <value>Bedarfsprofile im Projekt</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_PROZ" xml:space="preserve">
+    <value>Prozesswärme-Katalog</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_STROM" xml:space="preserve">
+    <value>Stromverbraucher-Katalog</value>
+  </data>
+  <data name="KI_DLG_MASKE_BADM_BW" xml:space="preserve">
+    <value>Brauchwasser-Katalog</value>
+  </data>
+  <data name="KI_DLG_MASKE_BERG" xml:space="preserve">
+    <value>Bedarfsergebnis</value>
+  </data>
+  <data name="KI_DLG_BEDARFSART_NAME" xml:space="preserve">
+    <value>Bedarfsart der Maske</value>
+  </data>
+  <data name="KI_DLG_BEDARFSART_ERL" xml:space="preserve">
+    <value>Welche der drei Ausprägungen offen ist: Prozesswärme, Stromverbraucher oder Brauchwasser. Dieselbe Maske bedient alle drei.</value>
+  </data>
+  <data name="KI_DLG_BPF_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich.</value>
+  </data>
+  <data name="KI_DLG_BPF_NEUER_WERT_ERL" xml:space="preserve">
+    <value>Der neue Jahresverbrauch der markierten Zuordnung, in der Einheit daneben. Er geht mit „Übernehmen“ in die Zeile.</value>
+  </data>
+  <data name="KI_DLG_BPF_PROFIL_ERL" xml:space="preserve">
+    <value>Der Bezeichner des markierten Profils.</value>
+  </data>
+  <data name="KI_DLG_BPF_TYP_ERL" xml:space="preserve">
+    <value>Der Typ des markierten Profils; er bringt die Stundenverteilung mit, nach der der Jahresverbrauch verteilt wird.</value>
+  </data>
+  <data name="KI_DLG_BPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Die Beschreibung des markierten Profils aus seinem Kopfsatz.</value>
+  </data>
+  <data name="KI_DLG_BPF_JAHRESVERBRAUCH_ERL" xml:space="preserve">
+    <value>Der Jahresverbrauch der markierten Zuordnung, wie er auf der Maske steht.</value>
+  </data>
+  <data name="KI_DLG_BPF_SUMME_ERL" xml:space="preserve">
+    <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
+  </data>
+  <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
+    <value>Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach.</value>
+  </data>
+  <data name="KI_DLG_BADM_TYP_ERL" xml:space="preserve">
+    <value>Der Typ des markierten Satzes aus seinem Kopfsatz.</value>
+  </data>
+  <data name="KI_DLG_BADM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Die Beschreibung des markierten Satzes.</value>
+  </data>
+  <data name="KI_DLG_BADM_JAHRESSUMME_NAME" xml:space="preserve">
+    <value>Jahressumme</value>
+  </data>
+  <data name="KI_DLG_BADM_JAHRESSUMME_ERL" xml:space="preserve">
+    <value>Die Jahressumme des markierten Satzes, wie sie auf der Maske steht.</value>
+  </data>
+  <data name="KI_DLG_BERG_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Anzeigeeinheit der Energiemengen; sie wirkt auf alle drei Reiterblätter zugleich.</value>
+  </data>
+  <data name="KI_DLG_BERG_TABELLE_NAME" xml:space="preserve">
+    <value>Sicht der Tabelle</value>
+  </data>
+  <data name="KI_DLG_BERG_TABELLE_ERL" xml:space="preserve">
+    <value>Welche Sicht die Kennzahlen- und Monatstabelle zeigt; sie wechselt unabhängig von der Grafik.</value>
+  </data>
+  <data name="KI_DLG_BERG_GRAFIK_NAME" xml:space="preserve">
+    <value>Sicht der Grafik</value>
+  </data>
+  <data name="KI_DLG_BERG_GRAFIK_ERL" xml:space="preserve">
+    <value>Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit.</value>
+  </data>
+  <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
+    <value>Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt.</value>
+  </data>
 </root>

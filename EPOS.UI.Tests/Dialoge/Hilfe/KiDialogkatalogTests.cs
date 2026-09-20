@@ -113,7 +113,22 @@ public class KiDialogkatalogTests
 
         // Die EINZIGE Maske der Welle KI-F3 ohne Sichtklasse: Ihr Satz ist
         // veraenderlich und bindet unmittelbar ans Markup.
-        { KiMaskennamen.TYPSTAMM, typeof(EPOS.UI.Dialoge.Bedarf.TypStammDaten) }
+        { KiMaskennamen.TYPSTAMM, typeof(EPOS.UI.Dialoge.Bedarf.TypStammDaten) },
+
+        { KiMaskennamen.BEDARFSPROFILE,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht) },
+
+        // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
+        // Brauchwasser sind drei Katalogschluessel derselben Komponente.
+        { KiMaskennamen.PROZESSWAERME_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+        { KiMaskennamen.STROMVERBRAUCHER_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+        { KiMaskennamen.BRAUCHWASSER_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+
+        { KiMaskennamen.BEDARF_ERGEBNIS,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) }
     };
 
     /// <summary>
@@ -198,11 +213,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sechsundzwanzig_Masken()
+    public void Der_Katalog_fuehrt_einunddreissig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(26, katalog.Anzahl);
+        Assert.Equal(31, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -297,6 +312,29 @@ public class KiDialogkatalogTests
         string strom = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
         Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPPROFIL));
         Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPSTAMM));
+    }
+
+    /// <summary>
+    /// <b>Die drei Bedarfs-Katalogverwaltungen sind DREI Masken</b> (Welle KI‑F3) —
+    /// jede mit eigenem Katalogschlüssel und eigenem Menüweg, obwohl EINE Komponente
+    /// sie zeichnet. Hier fallen Katalog- und Navigationsschlüssel zusammen.
+    /// </summary>
+    [Fact]
+    public void Jede_Bedarfsverwaltung_hat_ihr_eigenes_Ziel()
+    {
+        Assert.Equal(WindowsFormsApplication1.Masken.ProzesswaermeAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROZESSWAERME_ADMIN));
+        Assert.Equal(WindowsFormsApplication1.Masken.StromverbraucherAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.STROMVERBRAUCHER_ADMIN));
+        Assert.Equal(WindowsFormsApplication1.Masken.BrauchwasserAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.BRAUCHWASSER_ADMIN));
+
+        // Die Profile eines Projekts gehen aus den Startkacheln auf, das Ergebnis aus
+        // der Ansicht „Simulation".
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.BEDARFSPROFILE));
+        Assert.Equal(WindowsFormsApplication1.Masken.Simulation,
+                     KiMaskenziele.Ziel(KiMaskennamen.BEDARF_ERGEBNIS));
     }
 
     [Fact]
@@ -548,7 +586,22 @@ public class KiDialogkatalogTests
             "Maske; Zeuge ist GebaeudetypDialogTests",
         [KiMaskennamen.TYPPROFIL] =
             "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
-            "Maske; Zeuge ist TypProfilDialogTests"
+            "Maske; Zeuge ist TypProfilDialogTests",
+        [KiMaskennamen.BEDARFSPROFILE] =
+            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
+            "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
+        [KiMaskennamen.PROZESSWAERME_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.STROMVERBRAUCHER_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.BRAUCHWASSER_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.BEDARF_ERGEBNIS] =
+            "bindet über die Sichtklasse BedarfErgebnisKiSicht auf die vier Schalter " +
+            "der Anzeige; Zeuge ist BedarfErgebnisDialogTests"
     };
 
     /// <summary>

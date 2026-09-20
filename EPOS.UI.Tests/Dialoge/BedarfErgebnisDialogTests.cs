@@ -882,4 +882,60 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Assert.Contains("4060", ausVorschau);
         Assert.Contains("kWh", ausVorschau);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>BedarfErgebnisKiSicht</c>: Die vier Schalter der Anzeige sind
+    /// setzbar, und ein Sichtwechsel nimmt den Jahresverlauf mit.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_wechselt_die_Sicht()
+    {
+        var cut = Aufbauen(Waerme(mitBrauchwasser: true));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARF_ERGEBNIS));
+
+        WindowsFormsApplication1.KiFeldzugang sicht =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARF_ERGEBNIS, "tabellensicht");
+        Assert.NotNull(sicht);
+        Assert.Equal(0, sicht.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(sicht, "Prozesse");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        sicht.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(0, cut.Instance.Tabellensicht);
+
+        WindowsFormsApplication1.KiFeldzugang jahr =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARF_ERGEBNIS, "jahresverlauf");
+        Assert.NotNull(jahr);
+        Assert.True(jahr.Setzbar);
+        Assert.Equal(false, jahr.Lesen());
+    }
+
+    /// <summary>
+    /// Die Anzeigeeinheit ist ein WAHLFELD (KI-D-Q6) und wirkt auf alle drei
+    /// Reiterblätter zugleich.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Anzeigeeinheit_ueber_ihren_Text()
+    {
+        var cut = Aufbauen(WaermeMitEinheiten());
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARF_ERGEBNIS, "einheit");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, Energieeinheit.KWh.Text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+    }
 }

@@ -194,6 +194,32 @@ namespace WindowsFormsApplication1
         /// (<c>TypStammDialog</c>) — ebenfalls EINE Komponente mit drei Auspraegungen.
         /// </summary>
         public const string TYPSTAMM = "Form_EingDBStromverbraucher";
+
+        /// <summary>
+        /// Die Bedarfsprofile EINES PROJEKTS (<c>BedarfsProfileDialog</c>) — ebenfalls
+        /// EINE Komponente mit drei Auspraegungen.
+        /// </summary>
+        public const string BEDARFSPROFILE = "Form_Prozesswaerme";
+
+        // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
+        // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
+        // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
+        // Schluessel haette dem Modell verschwiegen, welcher Katalog offen ist - und
+        // „oeffne die Brauchwasserverwaltung" waere nicht mehr ausdrueckbar gewesen.
+
+        /// <summary>Die Prozesswaerme-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string PROZESSWAERME_ADMIN = "Form_Prozesswaerme_Admin";
+
+        /// <summary>Die Stromverbraucher-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string STROMVERBRAUCHER_ADMIN = "Form_Stromverbraucher_Admin";
+
+        /// <summary>Die Brauchwasser-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string BRAUCHWASSER_ADMIN = "Form_Brauchwasser_Admin";
+
+        /// <summary>
+        /// Die Ergebnisanzeige eines Bedarfs (<c>BedarfErgebnisDialog</c>).
+        /// </summary>
+        public const string BEDARF_ERGEBNIS = "Form_ErgStromverbraucher";
     }
 
     /// <summary>
@@ -306,7 +332,197 @@ namespace WindowsFormsApplication1
                 GebaeudeBedarf(),
                 Gebaeudetyp(),
                 Typprofil(),
-                Typstamm());
+                Typstamm(),
+                Bedarfsprofile(),
+                BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
+                            KiDialogTexte.MaskeProzesswaermeAdmin),
+                BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
+                            KiDialogTexte.MaskeStromverbraucherAdmin),
+                BedarfAdmin(KiMaskennamen.BRAUCHWASSER_ADMIN,
+                            KiDialogTexte.MaskeBrauchwasserAdmin),
+                BedarfErgebnis());
+        }
+
+        // =====================================================================
+        // Form_Prozesswaerme  ->  BedarfsProfileDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Bedarfsprofile eines Projekts — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Listen, ein Einstellwert.</b> Links die Zuordnungen des Projekts,
+        /// rechts der Katalog; eingestellt wird der JAHRESVERBRAUCH der markierten
+        /// Zuordnung, und der Knopf „Uebernehmen" schreibt ihn in die Zeile. Die
+        /// ANZEIGEEINHEIT gilt dabei fuer Eingabe und Infoblock zugleich.
+        /// </para>
+        /// <para>
+        /// <b>EINE Maske, DREI Auspraegungen</b> (Prozesswaerme, Stromverbraucher,
+        /// Brauchwasser). Der Katalogschluessel ist der WinForms-Maskenname der
+        /// Prozesswaermefassung; welche gerade offen ist, sagt das Feld
+        /// <c>bedarfsart</c>.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die beiden LISTEN</b> — die Zuordnungen des Projekts und
+        /// der Katalog mit seinem eigenen Filterbaustein — sowie die Knoepfe, die
+        /// Katalogsaetze anlegen, aendern und loeschen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Bedarfsprofile()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARFSPROFILE,
+                anzeigename: KiDialogTexte.MaskeBedarfsprofile,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "BedarfsProfileKiSicht.Einheit",
+                                     KiDialogTexte.BpfEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfEinheitErl),
+                    new KiDialogFeld("neuer_wert", "BedarfsProfileKiSicht.NeuerWert",
+                                     KiDialogTexte.BpfNeuerWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BpfNeuerWertErl, leerErlaubt: true),
+                    new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
+                                     KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfProfilErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("typ", "BedarfsProfileKiSicht.Typ",
+                                     KiDialogTexte.BpfTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfTypErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "BedarfsProfileKiSicht.Beschreibung",
+                                     KiDialogTexte.BpfBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("jahresverbrauch", "BedarfsProfileKiSicht.Jahresverbrauch",
+                                     KiDialogTexte.BpfJahresverbrauchName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfJahresverbrauchErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("summe", "BedarfsProfileKiSicht.Summe",
+                                     KiDialogTexte.BpfSummeName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfSummeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bedarfsart", "BedarfsProfileKiSicht.Bedarfsart",
+                                     KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
+                                     KiDialogTexte.BedarfsartErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_*_Admin  ->  BedarfAdminDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// EINE Bedarfs-Katalogverwaltung — fuenf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>DREI Katalogeintraege, EIN Feldsatz.</b> Prozesswaerme, Stromverbraucher
+        /// und Brauchwasser sind drei Masken mit eigenem Namen und eigenem
+        /// Navigationsziel; gezeichnet wird dieselbe Komponente, und die Felder sind
+        /// dieselben. Deshalb baut diese Methode alle drei — der Unterschied ist der
+        /// Schluessel und der Anzeigename.
+        /// </para>
+        /// <para>
+        /// <b>Warum sie trotz KI-D-Q5 im Katalog stehen.</b> Sie sind mehr als eine
+        /// Liste mit Suchfeld: Neben der Katalogliste steht ein Infoblock mit Typ,
+        /// Beschreibung und Jahressumme des markierten Satzes — und genau danach fragt
+        /// der Anwender. Die LISTENWAHL ist das Wahlfeld dieser Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfAdmin(string maskenname, string anzeigename)
+        {
+            return new KiDialog(
+                maskenname: maskenname,
+                anzeigename: anzeigename,
+                felder: new[]
+                {
+                    new KiDialogFeld("satz", "BedarfAdminKiSicht.Satz",
+                                     KiDialogTexte.BadmSatzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BadmSatzErl, leerErlaubt: true),
+                    new KiDialogFeld("typ", "BedarfAdminKiSicht.Typ",
+                                     KiDialogTexte.BadmTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmTypErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "BedarfAdminKiSicht.Beschreibung",
+                                     KiDialogTexte.BadmBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("jahressumme", "BedarfAdminKiSicht.Jahressumme",
+                                     KiDialogTexte.BadmJahressummeName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmJahressummeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bedarfsart", "BedarfAdminKiSicht.Bedarfsart",
+                                     KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
+                                     KiDialogTexte.BedarfsartErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_ErgStromverbraucher  ->  BedarfErgebnisDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Ergebnisanzeige eines Bedarfs — vier Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, die nur ZEIGT.</b> Einstellbar sind allein die vier Schalter
+        /// der Anzeige: die Anzeigeeinheit, die Sicht der Tabelle, die Sicht der Grafik
+        /// und der Jahresverlauf. Sie schreiben nichts in die Datenbank; sie wechseln,
+        /// was dasteht.
+        /// </para>
+        /// <para>
+        /// <b>Die KENNZAHLEN selbst bleiben draussen</b>: Sie sind eine Liste von
+        /// Zeilen mit eigenen Bezeichnern und wechseln mit der Auspraegung; ein
+        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte und die drei
+        /// Zeitstufen des Ganglinienbausteins — ein Bild mit eigenem Navigator.
+        /// </para>
+        /// <para>
+        /// <b>Der REITER steht nicht im Katalog:</b> Er wechselt nur das Blatt, nicht
+        /// den Stand — dieselbe Regel wie bei den Knoepfen, die bloss die Liste
+        /// umstellen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfErgebnis()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARF_ERGEBNIS,
+                anzeigename: KiDialogTexte.MaskeBedarfErgebnis,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "BedarfErgebnisKiSicht.Einheit",
+                                     KiDialogTexte.BergEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergEinheitErl),
+                    new KiDialogFeld("tabellensicht", "BedarfErgebnisKiSicht.Tabellensicht",
+                                     KiDialogTexte.BergTabellensichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergTabellensichtErl, leerErlaubt: true),
+                    new KiDialogFeld("grafiksicht", "BedarfErgebnisKiSicht.Grafiksicht",
+                                     KiDialogTexte.BergGrafiksichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergGrafiksichtErl, leerErlaubt: true),
+                    new KiDialogFeld("jahresverlauf", "BedarfErgebnisKiSicht.Jahresverlauf",
+                                     KiDialogTexte.BergJahresverlaufName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BergJahresverlaufErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
         }
 
         // =====================================================================

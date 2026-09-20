@@ -968,6 +968,60 @@
         internal static string TstammBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
         internal static string TstammBeschreibungErl => MyResource.Resource.KI_DLG_TSTAMM_BESCHREIBUNG_ERL;
 
+        // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
+
+        /// <summary>Die einundzwanzigste Maske (Welle KI-F3): die Bedarfsprofile eines Projekts.</summary>
+        internal static string MaskeBedarfsprofile => MyResource.Resource.KI_DLG_MASKE_BPF;
+
+        /// <summary>Die Prozesswaerme-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeProzesswaermeAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_PROZ;
+
+        /// <summary>Die Stromverbraucher-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeStromverbraucherAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_STROM;
+
+        /// <summary>Die Brauchwasser-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeBrauchwasserAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_BW;
+
+        /// <summary>Die Ergebnisanzeige eines Bedarfs (Welle KI-F3).</summary>
+        internal static string MaskeBedarfErgebnis => MyResource.Resource.KI_DLG_MASKE_BERG;
+
+        /// <summary>Welche der drei Auspraegungen offen ist (Welle KI-F3).</summary>
+        internal static string BedarfsartName => MyResource.Resource.KI_DLG_BEDARFSART_NAME;
+        internal static string BedarfsartErl => MyResource.Resource.KI_DLG_BEDARFSART_ERL;
+
+        internal static string BpfEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string BpfEinheitErl => MyResource.Resource.KI_DLG_BPF_EINHEIT_ERL;
+        internal static string BpfNeuerWertName => MyResource.Resource.BPF_LBL_NEUER_WERT;
+        internal static string BpfNeuerWertErl => MyResource.Resource.KI_DLG_BPF_NEUER_WERT_ERL;
+        internal static string BpfProfilName => MyResource.Resource.BTYP_LBL_NAME;
+        internal static string BpfProfilErl => MyResource.Resource.KI_DLG_BPF_PROFIL_ERL;
+        internal static string BpfTypName => MyResource.Resource.BPF_LBL_TYP;
+        internal static string BpfTypErl => MyResource.Resource.KI_DLG_BPF_TYP_ERL;
+        internal static string BpfBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
+        internal static string BpfBeschreibungErl => MyResource.Resource.KI_DLG_BPF_BESCHREIBUNG_ERL;
+        internal static string BpfJahresverbrauchName => MyResource.Resource.BPF_LBL_JAHRESVERBRAUCH_PROZ;
+        internal static string BpfJahresverbrauchErl => MyResource.Resource.KI_DLG_BPF_JAHRESVERBRAUCH_ERL;
+        internal static string BpfSummeName => MyResource.Resource.BPF_LBL_SUMME_PROZ;
+        internal static string BpfSummeErl => MyResource.Resource.KI_DLG_BPF_SUMME_ERL;
+
+        internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
+        internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
+        internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;
+        internal static string BadmTypErl => MyResource.Resource.KI_DLG_BADM_TYP_ERL;
+        internal static string BadmBeschreibungName => MyResource.Resource.BADM_LBL_BESCHREIBUNG;
+        internal static string BadmBeschreibungErl => MyResource.Resource.KI_DLG_BADM_BESCHREIBUNG_ERL;
+        internal static string BadmJahressummeName => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_NAME;
+        internal static string BadmJahressummeErl => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_ERL;
+
+        internal static string BergEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string BergEinheitErl => MyResource.Resource.KI_DLG_BERG_EINHEIT_ERL;
+        internal static string BergTabellensichtName => MyResource.Resource.KI_DLG_BERG_TABELLE_NAME;
+        internal static string BergTabellensichtErl => MyResource.Resource.KI_DLG_BERG_TABELLE_ERL;
+        internal static string BergGrafiksichtName => MyResource.Resource.KI_DLG_BERG_GRAFIK_NAME;
+        internal static string BergGrafiksichtErl => MyResource.Resource.KI_DLG_BERG_GRAFIK_ERL;
+        internal static string BergJahresverlaufName => MyResource.Resource.BERG_SCH_JAHRESVERLAUF;
+        internal static string BergJahresverlaufErl => MyResource.Resource.KI_DLG_BERG_JAHRESVERLAUF_ERL;
+
         /// <summary>Der Knopf „Werte uebernehmen" des zweiten Reiterblatts (Welle KI-F3).</summary>
         internal static string KnopfWerteUebernehmen => MyResource.Resource.GEBK_BTN_UEBERNEHMEN;
 

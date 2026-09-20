@@ -188,7 +188,23 @@ namespace WindowsFormsApplication1
                 // Ziel ist deshalb die Stromverbraucher-Verwaltung - der Weg, den der
                 // Anwender von Hand ginge.
                 { KiMaskennamen.TYPPROFIL, Masken.StromverbraucherAdmin },
-                { KiMaskennamen.TYPSTAMM,  Masken.StromverbraucherAdmin }
+                { KiMaskennamen.TYPSTAMM,  Masken.StromverbraucherAdmin },
+
+                // Die BEDARFSPROFILE eines Projekts gehen aus den Kacheln der
+                // Startseite auf (Reiter „Waermebedarf" und „Strombedarf") und
+                // brauchen ein offenes Projekt.
+                { KiMaskennamen.BEDARFSPROFILE, STARTSEITE },
+
+                // Die drei KATALOGVERWALTUNGEN sind selbst Navigationsziele des
+                // Menues - hier fallen Katalogschluessel und Navigationsschluessel
+                // zusammen, wie bei der Waermepumpenverwaltung.
+                { KiMaskennamen.PROZESSWAERME_ADMIN,    Masken.ProzesswaermeAdmin },
+                { KiMaskennamen.STROMVERBRAUCHER_ADMIN, Masken.StromverbraucherAdmin },
+                { KiMaskennamen.BRAUCHWASSER_ADMIN,     Masken.BrauchwasserAdmin },
+
+                // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
+                // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.
+                { KiMaskennamen.BEDARF_ERGEBNIS, Masken.Simulation }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

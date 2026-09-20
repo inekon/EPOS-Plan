@@ -25136,6 +25136,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressumme des markierten Satzes, wie sie auf der Maske steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_JAHRESSUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_JAHRESSUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_JAHRESSUMME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_JAHRESSUMME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_SATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes aus seinem Kopfsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche der drei Ausprägungen offen ist: Prozesswärme, Stromverbraucher oder Brauchwasser. Dieselbe Maske bedient alle drei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart der Maske ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEDARFSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEDARFSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf alle drei Reiterblätter zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_GRAFIK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_GRAFIK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicht der Grafik ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_GRAFIK_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_GRAFIK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_JAHRESVERLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_JAHRESVERLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Kennzahlen- und Monatstabelle zeigt; sie wechselt unabhängig von der Grafik. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_TABELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_TABELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicht der Tabelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_TABELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKW_ANLAGE_ERL {
@@ -25177,6 +25294,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BHKW_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BHKW_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Profils aus seinem Kopfsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresverbrauch der markierten Zuordnung, wie er auf der Maske steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_JAHRESVERBRAUCH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_JAHRESVERBRAUCH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Jahresverbrauch der markierten Zuordnung, in der Einheit daneben. Er geht mit „Übernehmen“ in die Zeile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_NEUER_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_NEUER_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des markierten Profils. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_PROFIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe über alle Profile, die diesem Projekt zugeordnet sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_SUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_SUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Profils; er bringt die Stundenverteilung mit, nach der der Jahresverbrauch verteilt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_TYP_ERL", resourceCulture);
             }
         }
         
@@ -26369,11 +26549,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_BW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_PROZ {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_STROM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsergebnis ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BERG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BERG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung BHKW ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BHKW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprofile im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BPF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BPF", resourceCulture);
             }
         }
         
