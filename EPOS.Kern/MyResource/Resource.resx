@@ -20226,4 +20226,7 @@ Möchten Sie das zulassen?</value>
   <data name="GTYP_BTN_BEENDEN" xml:space="preserve">
     <value>Beenden</value>
   </data>
+  <data name="WPS_BTN_KENNDATEN_KURZ" xml:space="preserve">
+    <value>Kennliniendaten...</value>
+  </data>
 </root>

@@ -123,11 +123,57 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         // W14a-E-10 / S2.2: Der Knopf "Modul-Katalog..." ist GEFALLEN - siehe
         // Der_Modulkatalog_ist_mit_S2_2_gefallen.
         Assert.DoesNotContain("📋  Modul-Katalog...", knopftexte);
-        Assert.Contains("Kennliniendaten Ansicht/Bearbeiten...", knopftexte);
+        Assert.Contains("Kennliniendaten...", knopftexte);
         Assert.Contains("Speichern", knopftexte);
         Assert.Contains("Neu", knopftexte);
         Assert.Contains("Löschen", knopftexte);
         Assert.Contains("Beenden", knopftexte);
+    }
+
+    // =================================================================================
+    // Die Fussleiste nach der Hausregel (DL-2 Nr. 4, Konzept Abschnitt 2 Zeile 4)
+    // =================================================================================
+
+    /// <summary>
+    /// Das Katalogmuster: <b>Speichern · Kennliniendaten… · Füller · Neu · Löschen ·
+    /// Beenden</b>. „Speichern" und der Kennlinieneditor wirken auf den markierten
+    /// Satz und stehen links vom Füller, „Neu" und „Löschen" auf die Liste und stehen
+    /// rechts; „Beenden" ist der einzige primäre Knopf und steht zuletzt.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_traegt_das_Katalogmuster()
+    {
+        var cut = Aufbauen();
+        var leiste = cut.FindAll(".epos-leiste").Last();
+
+        var knoepfe = leiste.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Speichern", "Kennliniendaten...", "Neu", "Löschen", "Beenden" },
+                     knoepfe);
+
+        // Der Fueller steht zwischen "Kennliniendaten..." und "Neu".
+        var kinder = leiste.Children.Select(e => e.ClassName ?? "").ToList();
+        Assert.Single(leiste.QuerySelectorAll(".epos-leiste-fueller"));
+        Assert.Equal(2, kinder.FindIndex(k => k.Contains("epos-leiste-fueller")));
+
+        var primaer = leiste.QuerySelectorAll("button.epos-knopf--primaer");
+        Assert.Single(primaer);
+        Assert.Equal("Beenden", primaer[0].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// Der Knopf trägt den kurzen Text, die Überlagerung den vollen Wortlaut — und
+    /// hinter dem kurzen Knopf steht derselbe Handler: Er öffnet den Kennlinieneditor.
+    /// </summary>
+    [Fact]
+    public void Der_kurze_Knopf_oeffnet_die_Ueberlagerung_mit_dem_vollen_Titel()
+    {
+        var cut = Aufbauen();
+
+        Knopf(cut, "Kennliniendaten...").Click();
+
+        Assert.True(cut.Instance.KennlinieneditorOffen);
+        Assert.Contains("Kennliniendaten Ansicht/Bearbeiten...",
+                        cut.Find(".epos-ueberlagerung").TextContent);
     }
 
     [Fact]
@@ -408,7 +454,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
 
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
 
         Assert.True(cut.Instance.KennlinieneditorOffen);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
@@ -420,7 +466,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         int geschrieben = 0;
         var cut = Aufbauen(abgleichen: (_, _) => { geschrieben++; return true; });
 
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
         cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
            .First(b => b.TextContent.Trim() == "OK").Click();
 
@@ -434,7 +480,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         int geschrieben = 0;
         var cut = Aufbauen(abgleichen: (_, _) => { geschrieben++; return true; });
 
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
         cut.Find(".epos-ueberlagerung").QuerySelectorAll("button")
            .First(b => b.TextContent.Trim() == "Abbruch").Click();
 
@@ -448,7 +494,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen(abgleichen: (_, _) => { geschrieben++; return true; });
 
         cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
 
         Assert.Contains("nur angesehen", cut.FindAll(".epos-warnbanner")[0].TextContent);
 
@@ -543,7 +589,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
 
         // Seit S2.2 ist der Kennlinien-Editor die verbliebene Ueberlagerung.
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
@@ -567,7 +613,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        Knopf(cut, "Kennliniendaten Ansicht/Bearbeiten...").Click();
+        Knopf(cut, "Kennliniendaten...").Click();
         Assert.True(cut.Instance.KennlinieneditorOffen);
 
         cut.Find(".epos-ueberlagerung-zu").Click();

@@ -173,9 +173,16 @@
         </KindInhalt>
     </Reiter>
 
+    @* KATALOGMUSTER (DL-2 Nr. 4): "Speichern" und der Kennlinieneditor wirken auf
+       den markierten Satz und stehen LINKS vom Fueller, "Neu" und "Loeschen" auf
+       die Liste und stehen rechts, "Beenden" ist der eine primaere Schlussknopf -
+       dieselbe Anordnung wie in ModulKatalogDialog. Der Knopf traegt den KURZEN
+       Text; den vollen ("Kennliniendaten Ansicht/Bearbeiten...") traegt die
+       Ueberlagerung als Titel. *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
         <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        <button type="button" class="epos-knopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
+        <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
         <button type="button" class="epos-knopf" @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
@@ -184,7 +191,7 @@
 
     @* --- Ueberlagerung 1: der Kennlinieneditor ------------------------------- *@
     <Ueberlagerung Offen="@(_kennlinien is not null)"
-                   Titel="@BtnKenndatenText" Geschlossen="() => _kennlinien = null">
+                   Titel="@TitelKenndatenText" Geschlossen="() => _kennlinien = null">
         <KindInhalt>
             @if (_kennlinien is not null)
             {
@@ -360,7 +367,16 @@
     /// </summary>
     [Parameter] public string HinweisModulkostenLeer { get; set; } =
         "kein Planwert im Datenbestand";
-    [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
+    /// <summary>
+    /// Der KURZE Knopftext der Fußleiste. Der volle Wortlaut des Vorläufers
+    /// („Kennliniendaten Ansicht/Bearbeiten…") steht als Titel der Überlagerung
+    /// (<see cref="TitelKenndatenText"/>) — ein langer Knopf in einer Leiste mit sechs
+    /// Knöpfen drängt die übrigen zusammen (DL-2 Nr. 4).
+    /// </summary>
+    [Parameter] public string BtnKenndatenText { get; set; } = "Kennliniendaten...";
+
+    /// <summary>Der Titel der Kennlinien-Überlagerung — der volle Wortlaut.</summary>
+    [Parameter] public string TitelKenndatenText { get; set; } = "Kennliniendaten Ansicht/Bearbeiten...";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
     [Parameter] public string BtnNeuText { get; set; } = "Neu";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";

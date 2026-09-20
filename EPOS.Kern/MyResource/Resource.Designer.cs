@@ -58212,6 +58212,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennliniendaten... ähnelt.
+        /// </summary>
+        public static string WPS_BTN_KENNDATEN_KURZ {
+            get {
+                return ResourceManager.GetString("WPS_BTN_KENNDATEN_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Löschen ähnelt.
         /// </summary>
         public static string WPS_BTN_LOESCHEN {

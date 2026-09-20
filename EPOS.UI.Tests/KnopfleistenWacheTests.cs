@@ -90,8 +90,8 @@ public sealed class KnopfleistenWacheTests
     /// <b>Folgeaufträge DL-2b…k streichen ihren Eintrag</b>, je Auftrag einen. Ist
     /// die Liste leer, ist der Umbau fertig und die Wache steht allein.
     ///
-    /// <para>Zwei der zehn stehen NICHT hier, weil sie die vier Regeln dieser Wache
-    /// heute schon einhalten: <c>WaermepumpeStammDialog</c> (ihm fehlt nur der
+    /// <para>Zwei der zehn standen NIE hier, weil sie die vier Regeln dieser Wache
+    /// schon einhalten: <c>WaermepumpeStammDialog</c> (was ihm fehlte, war der
     /// Füller — das ist Anordnung, keine Regel dieser Wache) und
     /// <c>GebaeudeDialog</c> (seine zweite Leiste steht im Detailblock, nicht
     /// unmittelbar über dem Fuß). Beide werden trotzdem umgebaut; ihre Abnahme
