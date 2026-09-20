@@ -186,4 +186,86 @@ public sealed class RazorSchreiberTests
 
         Assert.Equal("EPOS.UI.Dialoge.Hauptformular", RazorSchreiber.Namensraum(imMuster));
     }
+
+    [Fact]
+    public void ChartsWerdenZuDiagrammSvgMitEigenerKennung()
+    {
+        // DG-E3: Die Bausteine ChartBild (PNG-Bild) und Diagramm sind gefallen -
+        // jedes Diagramm der Oberflaeche ist ein Zeichenmodell im Baustein
+        // DiagrammSvg (EPOS.UI/CLAUDE.md, "Anordnung"). Ein Skelett, das noch
+        // <ChartBild Png=...> schriebe, zeigte auf eine Komponente, die es nicht
+        // mehr gibt, und baute nicht.
+        //
+        // Zeuge ist Form_Klimadaten, das einzige Pruefmuster mit ZWEI Charts in
+        // EINEM Dialog (chart1 und chart2, je ein Reiter). DiagrammSvg bildet aus
+        // der Kennung seine clipPath-Namen; tragen zwei Bilder eines Blattes
+        // dieselbe, schneidet das eine am Rechteck des anderen. Die Kennung muss
+        // deshalb je Bild verschieden sein - der Feldname ist es, denn er ist im
+        // Werte-Record schon eindeutig.
+        var razor = Musterskelett("Klimadaten/Form_Klimadaten.Designer.cs");
+
+        Assert.Contains("<DiagrammSvg Modell=\"@Werte.Chart1\" Kennung=\"chart1\" Bezeichnung=\"@Chart1Text\" />",
+                        razor, StringComparison.Ordinal);
+        Assert.Contains("<DiagrammSvg Modell=\"@Werte.Chart2\" Kennung=\"chart2\" Bezeichnung=\"@Chart2Text\" />",
+                        razor, StringComparison.Ordinal);
+
+        // Das Feld im Werte-Record traegt das Modell, keine PNG-Bytes mehr.
+        Assert.Contains("public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Chart1 { get; set; }",
+                        razor, StringComparison.Ordinal);
+        Assert.Contains("public WindowsFormsApplication1.Zeichnung.Zeichenmodell? Chart2 { get; set; }",
+                        razor, StringComparison.Ordinal);
+        Assert.DoesNotContain("byte[]", razor, StringComparison.Ordinal);
+        Assert.DoesNotContain("<ChartBild", razor, StringComparison.Ordinal);
+
+        // Und die Kennungen aller Bilder des Blattes sind paarweise verschieden.
+        var kennungen = System.Text.RegularExpressions.Regex
+            .Matches(razor, "<DiagrammSvg [^>]*Kennung=\"([^\"]*)\"")
+            .Select(treffer => treffer.Groups[1].Value)
+            .ToList();
+        Assert.Equal(2, kennungen.Count);
+        Assert.Equal(kennungen.Count, kennungen.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    [Fact]
+    public void JederGenannteBausteinLiegtInEposUi()
+    {
+        // Der Schreiber kennt seine Bausteine nur dem Namen nach, und EPOS.UI
+        // weiss nichts von ihm. Faellt dort ein Baustein - ChartBild mit DG-E3 -,
+        // merkt der Schreiber es nicht, und wer die Karte fuer eine neue Maske
+        // zieht, bekommt Quelltext, der nicht baut. Diese Wache haelt jeden
+        // Bausteinnamen aus den Skeletten ALLER Pruefmuster gegen die
+        // .razor-Dateien in EPOS.UI - so faellt die naechste Umbenennung hier
+        // auf, nicht erst beim Ziehen der Karte.
+        //
+        // Gemessen wird nur der Markup-Teil vor "@code {": Im Code stehen
+        // generische Typen wie EventCallback<UcVorlagenZeileErgebnis?>, deren
+        // Argument wie ein Bausteinname aussieht. HTML-Elemente schreiben sich
+        // klein und fallen durch das Muster; KindInhalt ist kein Baustein, sondern
+        // der benannte Inhaltsparameter von Gruppenkopf und Raster.
+        var vorhanden = Directory
+            .EnumerateFiles(Repowurzel.Datei("EPOS.UI"), "*.razor", SearchOption.AllDirectories)
+            .Where(pfad => !pfad.Split(Path.DirectorySeparatorChar).Any(teil => teil is "bin" or "obj"))
+            .Select(pfad => Path.GetFileNameWithoutExtension(pfad))
+            .ToHashSet(StringComparer.Ordinal);
+        var parameter = new HashSet<string>(StringComparer.Ordinal) { "KindInhalt" };
+
+        var fehlend = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (var designer in Stapel.Dateien(Repowurzel.PruefmusterWurzel))
+        {
+            var maske = Kartenbau.Vollstaendig(designer, null, Repowurzel.PruefmusterWurzel, erreichbarkeit: false);
+            var razor = RazorSchreiber.Schreiben(maske);
+            var markup = razor.Substring(0, razor.IndexOf("@code {", StringComparison.Ordinal));
+
+            foreach (System.Text.RegularExpressions.Match treffer in
+                     System.Text.RegularExpressions.Regex.Matches(markup, "<([A-Z][A-Za-z0-9]*)"))
+            {
+                var baustein = treffer.Groups[1].Value;
+                if (parameter.Contains(baustein) || vorhanden.Contains(baustein)) continue;
+                fehlend.Add(baustein + " (" + Path.GetFileName(designer) + ")");
+            }
+        }
+
+        Assert.True(fehlend.Count == 0,
+                    "Skelette nennen Bausteine, die EPOS.UI nicht hat: " + string.Join(", ", fehlend));
+    }
 }
