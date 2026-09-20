@@ -15,7 +15,7 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Klimadaten | `Projekte/Wiki/Programm Dokumentation - Klimadaten.wiki` | neue Seite: Quellenwahl PVGIS/DWD-Testreferenzjahr, Standort aus dem Dateikopf, Regionsvorschau, durchsuchbare Liste mit Quelle/Bezugsjahr/Szenario, Diagrammzoom | Statuszeilen #367, #368, #369, #371, #382, #396, #404, #413 |
 | Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
-| Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Ansichten); wächst mit den Wellen KI‑F2 bis F6 | Statuszeile #416 |
+| Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
 | Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt | Statuszeilen #372, #405, #413 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
@@ -56,6 +56,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
 - Seit 26.09.2026: Der Hilfe-Assistent kann die Erzeugermasken des Projekts lesen, ausfüllen
   und speichern (Heizkessel, BHKW, Pufferspeicher, Stromspeicher, Solarkollektoren, Wärmepumpe,
   Photovoltaik). (#416)
+- Seit 26.09.2026: Der Hilfe-Assistent liest und setzt auch die Masken der
+  Simulationskonfiguration (Pufferspeicher im Projekt, Erdreich- und Pufferspeicherquelle,
+  Quellprofil, Wärmesenke, Komponentenkonfiguration) und die Einstellwerte des
+  Stromspeicher-Reiters der Simulation. (#419)
 - Seit 26.09.2026: Jeder Legendeneintrag eines Diagramms hat ein Farbfeld; die
   Simulationsreiter zeigen dieselben Farben wie der Bericht, und die Einstellungen führen dafür
   54 Größen. (#418)
