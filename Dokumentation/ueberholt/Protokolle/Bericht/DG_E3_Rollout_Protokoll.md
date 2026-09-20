@@ -565,9 +565,29 @@ Punktpfad trägt zusätzlich `stroke-linecap="round"`.
 
 ### Offen nach Gruppe (d)
 
-* **Die Bildarten ohne Modell** (Strombilanz, Kapitalwertverlauf, Kuchen, Balken) gehen mit
-  dem Merge der Gruppen (b) und (c) auf den Modellweg und tragen dann ebenfalls SVG. Die
-  Umstellung ist je Stelle eine Zeile.
+* **Die Bildarten ohne Modell** (Strombilanz, Kapitalwertverlauf, Kuchen, Balken) waren
+  offen, bis die Gruppen (b) und (c) ihre `…Modell`-Methoden mitbrachten. **Erledigt
+  (DG-E3d2):** Die sechs Stellen — Strombilanz (`BausteineVergleich`, Ganglinien), Balken je
+  Schlüsselkennzahl und die zwei Kuchen „Wärmedeckung"/„Stromdeckung" (derselbe Baustein),
+  die zwei Kapitalwertverläufe (`BausteineWirtschaftlichkeit`) — holen jetzt `…Modell(…)`
+  und gehen über `WordKontext.Bild(Zeichenmodell, …)`. Die Tabelle „Welche Bildstellen des
+  Wortberichts jetzt SVG tragen" weiter oben ist damit überholt: **Es gibt im Wortbericht
+  keine Bildstelle mehr ohne SVG.** Der Bericht aus Projekt 1030 legt zu allen sieben Bildern
+  beide Teile ab (20 Teile statt 17 — 7 PNG, 7 SVG, 6 Strukturteile), Validator 0 Fehler in
+  allen sechs Office-Fassungen. Die Fehlerfang-Klammern sind mitgezogen: `SicherPng` und
+  `SicherB` weichen dem `Sicher`, das ein Zeichenmodell führt, und der
+  Wirtschaftlichkeits-Baustein bekommt dieselbe Klammer, die er bisher nicht hatte — ein
+  Diagrammfehler lässt die Bildstelle aus, statt den Bericht zu reißen.
+* **Was PNG bleibt — und warum.** Im Wortbericht nichts: Jedes Diagramm trägt SVG **mit
+  PNG-Rückfall**, das PNG steht also weiterhin in jedem `a:blip` und ist das, was jeder Leser
+  vor Word 2016 und jeder Konverter zeigt. Rein PNG bleiben drei Dinge, alle außerhalb des
+  Wortberichts: die **Oberfläche** (`PeakShavingBild.Lastgang`, `SpeicherBetriebsbild.Zeichnen`
+  — sie liefern `byte[]` für Reiter und Dialoge und haben kein Zeichenmodell), der
+  **Excelbericht** (`ExcelBerichtGenerator` bettet überhaupt kein Bild ein, er führt die
+  Zahlen) und die **ChartProben**, die weiterhin über die `byte[]`-Renderer messen — sie sind
+  die Messlatte der Byte-Gleichheit. Der Weg `WordKontext.Bild(byte[] …)` hat damit **keinen
+  Leser mehr**; er bleibt trotzdem stehen, weil ein Fremdbild oder eines der beiden
+  Oberflächenbilder ihn braucht, sobald es in den Bericht soll.
 * **Doppelte Leerzeichen im Titel gehen im Browser verloren** — derselbe offene Punkt wie in
   Gruppe (a), hier sichtbar an „Wärmeerzeugung im Jahresverlauf (Tagesmittel)  [kW]" und
   „Jahresdauerlinie Wärme  [kW]". Im PNG stehen zwei Leerzeichen, im SVG eines. Die Stelle
