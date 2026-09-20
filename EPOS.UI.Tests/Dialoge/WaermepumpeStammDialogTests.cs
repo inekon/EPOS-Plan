@@ -7,6 +7,7 @@ using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -26,8 +27,31 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     /// <c>KatalogfilterstandTests</c>.
     /// </summary>
     private readonly Katalogfilterstand _filterstand = new();
-    private static readonly byte[] BildCop = { 1, 2, 3 };
-    private static readonly byte[] BildLeistung = { 4, 5, 6 };
+
+    /// <summary>
+    /// Die beiden Kennlinienbilder als ZEICHENMODELL — je EINE Instanz, EINMAL
+    /// gebaut: Der Baustein <c>DiagrammSvg</c> vergleicht die MODELLREFERENZ, und ein
+    /// je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu. Die
+    /// Titel sind mit Absicht unverwechselbar — daran erkennt der Prüfstand, welches
+    /// der beiden Blätter gerade im Baum steht.
+    /// </summary>
+    private static readonly Zeichenmodell BildCop = Kennlinienbild("BILD-COP");
+    private static readonly Zeichenmodell BildLeistung = Kennlinienbild("BILD-LEISTUNG");
+
+    private static Zeichenmodell Kennlinienbild(string titel)
+    {
+        var punkte = new List<(double Temperatur, double Wert)>();
+        for (int t = -15; t <= 15; t += 5) punkte.Add((t, 4.0 + t * 0.05));
+
+        return ChartRenderer.KennlinienModell(
+            titel, titel, "Temperatur",
+            new[] { new ChartRenderer.KennlinienReihe(35, punkte) },
+            ChartRenderer.Kennlinienmarke.Kreis);
+    }
+
+    /// <summary>Der Text des gezeigten Kennlinienbildes (Titel, Achsen, Legende).</summary>
+    private static string Bildtext(IRenderedComponent<WaermepumpeStammDialog> cut)
+        => cut.Find(".epos-diagramm-svg").TextContent;
 
     /// <summary>
     /// Die Stammliste mit ihren NEUN Spalten (Anwenderentscheid W14a-E-10 vom
@@ -305,7 +329,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     public void Die_Wahl_fuellt_die_Felder_und_die_Bilder()
     {
         var cut = Aufbauen();
-        Assert.Contains(Convert.ToBase64String(BildCop), cut.Find(".epos-chartbild").GetAttribute("src"));
+        Assert.Contains("BILD-COP", Bildtext(cut));
 
         cut.FindAll(".epos-raster tbody tr button")[1].Click();
 
@@ -331,10 +355,33 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     public void Der_Umschalter_zeichnet_die_Bilder_neu()
     {
         var cut = Aufbauen();
-        Assert.Contains(Convert.ToBase64String(BildCop), cut.Find(".epos-chartbild").GetAttribute("src"));
+        Assert.Contains("BILD-COP", Bildtext(cut));
 
         cut.FindAll(".epos-optionsgruppe input[type=radio]")[1].Change(true);   // Kühlung
-        Assert.Contains(Convert.ToBase64String(BildLeistung), cut.Find(".epos-chartbild").GetAttribute("src"));
+        Assert.Contains("BILD-LEISTUNG", Bildtext(cut));
+    }
+
+    /// <summary>
+    /// <b>Die Kennlinien stehen als SVG im Baum</b> (Etappe DG-E3, Gruppe (b)) —
+    /// unter zwei verschiedenen Kennungen. Ohne Zeichenfläche gibt es dort auch
+    /// keine Bedienleiste: Ein Zoom auf eine Handvoll Stützstellen hätte keine
+    /// Aussage (Entscheid DG-E3-7/-10).
+    /// </summary>
+    [Fact]
+    public void Die_Kennlinien_stehen_als_DiagrammSvg()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
+        Assert.Equal("wp-kennlinie-cop",
+                     cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Kennung);
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+
+        // Das zweite Blatt traegt die ANDERE Kennung - zwei gleiche schnitten das eine
+        // Bild am clipPath-Rechteck des anderen.
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+        Assert.Equal("wp-kennlinie-leistung",
+                     cut.FindComponent<EPOS.UI.Bausteine.DiagrammSvg>().Instance.Kennung);
     }
 
     [Fact]

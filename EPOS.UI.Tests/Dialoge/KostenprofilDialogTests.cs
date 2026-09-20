@@ -309,9 +309,8 @@ public class KostenprofilDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Vorschau steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
-    /// der Kennung <c>kostenprofil</c>, mit der Einheit des Dialogs und ohne ein
-    /// Pixelbild daneben. Ihre x-Achse zählt den INDEX der Reihe, keine
-    /// Jahresstunde.
+    /// der Kennung <c>kostenprofil</c> und mit der Einheit des Dialogs. Ihre
+    /// x-Achse zählt den INDEX der Reihe, keine Jahresstunde.
     /// </summary>
     [Fact]
     public void Die_Vorschau_steht_als_DiagrammSvg()
@@ -322,7 +321,6 @@ public class KostenprofilDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("kostenprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("ct/kWh", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht auf dem Grafikblatt.</summary>

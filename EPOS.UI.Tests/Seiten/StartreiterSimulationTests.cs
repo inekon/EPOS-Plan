@@ -125,7 +125,9 @@ public class StartreiterSimulationTests : EposBunitContext
             Bedarf = new BedarfDaten { StrombedarfGesamtMwh = 2850.2 },
             ReiterStromspeicher = true
         },
-        Bild = _ => null,
+        // Kein Bild in dieser Vorrichtung: Der Delegat steht, liefert aber kein
+        // Zeichenmodell - geprueft wird der Weg von der Kachel in den Reiter.
+        Modell = _ => null,
         Laufen = melder =>
         {
             _laeufe++;

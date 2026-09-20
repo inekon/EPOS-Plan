@@ -84,7 +84,9 @@ public sealed class AblaufleisteBuendigTests : EposBunitContext
         var ergebnisdienste = new SimulationErgebnisDienste
         {
             Laden = _ => new SimulationErgebnisDaten { IdProjekt = 1030 },
-            Bild = _ => null,
+            // Der Delegat steht und liefert nichts: Dieser Fall misst die
+            // Ablaufleiste, kein Diagramm. Einen PNG-Weg gibt es nicht mehr.
+            Modell = _ => null,
             Laufen = _ => Task.FromResult(new Rueckmeldung(true, "")),
             Speichern = () => new Rueckmeldung(true, "")
         };

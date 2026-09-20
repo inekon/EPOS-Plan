@@ -584,8 +584,8 @@ public class TypProfilDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Das Wochenprofil steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
-    /// unter der Kennung <c>typprofil</c>, und ohne ein Pixelbild daneben. Seine
-    /// x-Achse zählt den INDEX der Reihe, 1 … 168: keine Jahresstunde.
+    /// unter der Kennung <c>typprofil</c>. Seine x-Achse zählt den INDEX der
+    /// Reihe, 1 … 168: keine Jahresstunde.
     /// </summary>
     [Fact]
     public void Das_Wochenprofil_steht_als_DiagrammSvg()
@@ -595,7 +595,6 @@ public class TypProfilDialogTests : EposBunitContext
 
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("typprofil", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht auf dem Grafikblatt.</summary>

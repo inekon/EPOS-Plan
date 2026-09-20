@@ -95,7 +95,7 @@ else
            macht die Flaeche fuer die Tasten + - 0 erreichbar. *@
         <div class="epos-diagramm-svg-flaeche" @ref="_flaeche"
              tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung"
-             @onpointerdown="BeiFlaechenzeiger">
+             @onpointerdown="@(_ => BeiFlaechenzeiger())">
 
             @Bildfragment
 
@@ -137,6 +137,13 @@ else
     private const string KLASSE_FARBFELD = "epos-legende-farbfeld";
     private const string KLASSE_AUS = "epos-legende--aus";
     private const string MARKE_LEGENDE = "legende:";
+
+    /// <summary>
+    /// Die Marke eines Reihenelements. Bei einem PIXELBILD ist sie der einzige Griff:
+    /// Dort gibt es keinen Reihenpfad mit <c>data-reihe</c> (DG-E3-7).
+    /// </summary>
+    private const string MARKE_REIHE = "reihe:";
+
     private const string MARKE_XACHSE = "xachse";
 
     /// <summary>
@@ -217,6 +224,15 @@ else
 
     /// <summary>Text, solange es noch kein Modell gibt.</summary>
     [Parameter] public string PlatzhalterText { get; set; } = "Kein Diagramm vorhanden";
+
+    /// <summary>
+    /// Der Wert des Elements unter dem Zeiger hat gewechselt (DG-E3-10); leer = keiner.
+    ///
+    /// <para><b>Das Bild braucht dafür NICHTS</b> — es zeigt den Wert selbst in seiner
+    /// Zeigerzeile. Der Rückruf ist für einen Wirt, der ihn woanders braucht: der
+    /// Prüfstand, der ihn misst, oder eine Seite, die ihn neben das Bild stellt.</para>
+    /// </summary>
+    [Parameter] public EventCallback<string> WertAmZeigerGeaendert { get; set; }
 
     /// <summary>
     /// Die Einheit der Werte in der Zeigerzeile („°C", „kW"); leer lässt sie weg.
@@ -550,13 +566,13 @@ else
         {
             string wert = knoten.Wert!;
             builder.AddAttribute(10, "onpointerenter",
-                EventCallback.Factory.Create<PointerEventArgs>(this, () => WertZeigen(wert)));
+                EventCallback.Factory.Create<PointerEventArgs>(this, _ => WertZeigen(wert)));
             builder.AddAttribute(11, "onpointerleave",
                 EventCallback.Factory.Create<PointerEventArgs>(this, BeiZeigerWeg));
             // BERUEHRUNG: Ein Antippen setzt den Wert und meldet es der Flaeche, die
             // sonst genau diesen Aufstieg zum Loeschen nimmt.
             builder.AddAttribute(12, "onpointerdown",
-                EventCallback.Factory.Create<PointerEventArgs>(this, () => WertZeigen(wert)));
+                EventCallback.Factory.Create<PointerEventArgs>(this, _ => WertZeigen(wert)));
         }
 
         if (!string.IsNullOrEmpty(knoten.Inhalt)) builder.AddContent(5, knoten.Inhalt);
@@ -781,13 +797,26 @@ else
             ? marke.Substring(MARKE_LEGENDE.Length)
             : null;
 
-    /// <summary>Der Name der Reihe, die dieser Knoten zeichnet; <c>null</c> = keine.</summary>
+    /// <summary>
+    /// Der Name der Reihe, die dieser Knoten zeichnet; <c>null</c> = keine.
+    ///
+    /// <para><b>Zwei Griffe, ein Name.</b> Ein Bild MIT Zeichenfläche zeichnet jede Reihe
+    /// als <c>&lt;path&gt;</c> mit <c>data-reihe</c> — der Griff der Etappe E2. Ein
+    /// PIXELBILD hat keine Datenreihen: Seine Säulen, Stapelschichten, Balkenzeilen und
+    /// Rasterzellen sind gewöhnliche Elemente und tragen ihre Zugehörigkeit in der MARKE
+    /// <c>reihe:&lt;Name&gt;</c>. Ohne die zweite Lesart färbte ein Legendenklick beim
+    /// Monatsstapel nur den Eintrag grau und blendete nichts aus.</para>
+    /// </summary>
     private static string? Reihenname(SvgKnoten knoten)
     {
-        if (knoten.Name != "path") return null;
-        foreach (KeyValuePair<string, string> a in knoten.Attribute)
-            if (string.Equals(a.Key, "data-reihe", StringComparison.Ordinal)) return a.Value;
-        return null;
+        if (knoten.Name == "path")
+            foreach (KeyValuePair<string, string> a in knoten.Attribute)
+                if (string.Equals(a.Key, "data-reihe", StringComparison.Ordinal)) return a.Value;
+
+        string? marke = knoten.Marke;
+        return marke is not null && marke.StartsWith(MARKE_REIHE, StringComparison.Ordinal)
+            ? marke.Substring(MARKE_REIHE.Length)
+            : null;
     }
 
     private bool IstDatenflaeche(SvgKnoten knoten)
@@ -1094,10 +1123,10 @@ else
     // =====================================================================
 
     /// <summary>Der Zeiger steht auf einem markierten Element: sein Wert steht in der Zeile.</summary>
-    private void WertZeigen(string wert)
+    private Task WertZeigen(string wert)
     {
-        _elementwert = wert;
         _wertGemeldet = true;
+        return WertSetzen(wert);
     }
 
     /// <summary>
@@ -1105,21 +1134,36 @@ else
     /// Berührung gibt es kein „daneben", das Verlassen folgte unmittelbar auf das
     /// Antippen, und der Wert wäre nie zu lesen.
     /// </summary>
-    private void BeiZeigerWeg(PointerEventArgs e)
-    {
-        if (string.Equals(e.PointerType, "mouse", StringComparison.Ordinal))
-            _elementwert = null;
-    }
+    private Task BeiZeigerWeg(PointerEventArgs e)
+        => string.Equals(e.PointerType, "mouse", StringComparison.Ordinal)
+            ? WertSetzen(null)
+            : Task.CompletedTask;
 
     /// <summary>
     /// Ein Druck auf die FLÄCHE. Er steigt von jedem Element auf: Hat eines gerade
     /// seinen Wert gemeldet, bleibt er stehen; sonst war es ein Antippen DANEBEN, und
     /// die Zeile wird leer (DG-E3-10).
     /// </summary>
-    private void BeiFlaechenzeiger()
+    private Task BeiFlaechenzeiger()
     {
-        if (!_wertGemeldet) _elementwert = null;
+        bool gemeldet = _wertGemeldet;
         _wertGemeldet = false;
+        return gemeldet ? Task.CompletedTask : WertSetzen(null);
+    }
+
+    /// <summary>
+    /// Den Wert setzen und, nur bei einer Änderung, den Wirt unterrichten — ein
+    /// Rückruf je Zeigerbewegung wäre ein Zeichenlauf des Wirtes je Zeigerbewegung.
+    /// </summary>
+    private Task WertSetzen(string? wert)
+    {
+        if (string.Equals(_elementwert, wert, StringComparison.Ordinal))
+            return Task.CompletedTask;
+
+        _elementwert = wert;
+        return WertAmZeigerGeaendert.HasDelegate
+            ? WertAmZeigerGeaendert.InvokeAsync(wert ?? "")
+            : Task.CompletedTask;
     }
 
     // =====================================================================
@@ -1141,7 +1185,7 @@ else
             {
                 _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
                 _hilfe = DotNetObjectReference.Create(this);
-                await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe, new { modus = "viewbox" });
+                await _modul.InvokeVoidAsync("binden", _flaeche, _hilfe);
             }
             catch (Exception)
             {

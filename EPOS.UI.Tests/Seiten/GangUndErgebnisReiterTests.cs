@@ -32,11 +32,8 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
-    /// <summary>Die MONATSSÄULEN der Autarkie bleiben ein Pixelbild — sie tragen keine Zeitachse.</summary>
-    private byte[]? Bild(Bildauftrag a) { _auftraege.Add(a); return new byte[] { 1 }; }
-
     /// <summary>
-    /// Die Zeichenmodelle der zwei Gangbilder, nach Bild und Schalterstellung
+    /// Die Zeichenmodelle aller Bilder dieser Reiter, nach Bild und Schalterstellung
     /// getrennt und je EINMAL gebaut. Der Baustein <c>DiagrammSvg</c> vergleicht die
     /// Modellreferenz; ein je Zeichenlauf neu gebautes Modell setzte seinen Baum
     /// jedes Mal neu und nähme ihm Zoom und abgewählte Reihe.
@@ -50,9 +47,32 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         string schluessel = a.Bild + (a.Sortiert ? "-s" : "") + "|" + a.Kanal;
         if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
 
-        Zeichenmodell neu = Gangbild(a.Bild, a.Sortiert);
+        Zeichenmodell neu = a.Bild == Bilder.AutarkieMonate
+            ? Monatsstapel()
+            : Gangbild(a.Bild, a.Sortiert);
         _modelle[schluessel] = neu;
         return neu;
+    }
+
+    /// <summary>
+    /// Der MONATSSTAPEL der Autarkie (Etappe DG-E3, Gruppe (c)): zwölf starre Fächer
+    /// ohne Zeichenfläche — kein Zoom, dafür der Wert der Schicht unter dem Zeiger.
+    /// </summary>
+    private static Zeichenmodell Monatsstapel()
+    {
+        var direkt = new double[12];
+        var speicher = new double[12];
+        for (int m = 0; m < 12; m++)
+        {
+            direkt[m] = 100.0 + 10.0 * m;
+            speicher[m] = 40.0 + 2.0 * m;
+        }
+
+        return ChartRenderer.MonatsStapelModell("Deckung", "kWh", new[]
+        {
+            new ChartRenderer.Reihe("Direkt", direkt, ChartRenderer.C_PV),
+            new ChartRenderer.Reihe("Aus Speicher", speicher, ChartRenderer.C_SPEICHER[0])
+        });
     }
 
     /// <summary>
@@ -139,7 +159,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Equal("simerg-waermegang", bild.Kennung);
         Assert.Equal("kW", bild.Einheit);
         Assert.Equal("kWh", bild.EinheitRechts);
-        Assert.Empty(seite.FindComponents<ChartBild>());
+        Assert.Empty(seite.FindAll("img"));
     }
 
     /// <summary>Fehlende Reihen erscheinen gar nicht — und koennen nicht in den Export.</summary>
@@ -427,7 +447,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         Assert.Single(seite.FindComponents<DiagrammSvg>());
         Assert.Equal("simerg-stromgang", seite.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", seite.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(seite.FindComponents<ChartBild>());
+        Assert.Empty(seite.FindAll("img"));
     }
 
     /// <summary>Ausgangszustand „nur Gesamt an" — woertlich <c>SetControl</c> :224-228.</summary>
@@ -517,7 +537,7 @@ public class GangUndErgebnisReiterTests : EposBunitContext
         => Render<ErgebnisReiter>(p =>
         {
             p.Add(x => x.Autarkie, a);
-            p.Add(x => x.Bild, Bild);
+            p.Add(x => x.Modell, Modell);
             p.Add(x => x.WaermegangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>wg</i>")));
             p.Add(x => x.StromgangInhalt, (RenderFragment)(b => b.AddMarkupContent(0, "<i>sg</i>")));
             if (kapazitaet is not null)
@@ -568,18 +588,25 @@ public class GangUndErgebnisReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Monatssäulen der Autarkie bleiben ein Pixelbild.</b> Zwölf Säulen
-    /// tragen keine Zeitachse — der Reiter führt deshalb weiter ein
-    /// <c>ChartBild</c> und kein <c>DiagrammSvg</c> (Etappe DG-E3, Gruppe (a)).
+    /// <b>Der Monatsstapel der Autarkie steht im SVG-Baustein</b> (Etappe DG-E3,
+    /// Gruppe (c)). Zwölf starre Fächer tragen keine Zeitachse: Es gibt dort nichts
+    /// zu zoomen, und der Baustein lässt die Leiste deshalb von selbst weg — ein
+    /// <c>OhneZoom</c> setzt der Reiter nicht. Was das Bild dafür zeigt, ist der
+    /// Wert der Schicht unter dem Zeiger (DG-E3-10).
     /// </summary>
     [Fact]
-    public void Das_Monatsbild_der_Autarkie_bleibt_ein_ChartBild()
+    public void Der_Monatsstapel_der_Autarkie_steht_im_SvgBaustein()
     {
         var seite = ErgebnisZeichnen(Autarkie());
         seite.Find("button[role='tab'][id='reiter-AUTARKIE']").Click();
 
-        Assert.Single(seite.FindComponents<ChartBild>());
-        Assert.Empty(seite.FindComponents<DiagrammSvg>());
+        Assert.Empty(seite.FindAll("img"));
+        DiagrammSvg bild = seite.FindComponents<DiagrammSvg>().Single().Instance;
+
+        Assert.Equal("simerg-monate", bild.Kennung);
+        Assert.False(bild.OhneZoom);
+        Assert.True(bild.ZeigtWertAmElement);
+        Assert.Empty(seite.FindAll(".epos-diagramm-leiste"));
     }
 
     /// <summary>

@@ -29,11 +29,14 @@
    Kennzahlen, Monatstabelle und Saeulenbild gemeinsam folgen. Umgerechnet wird
    nur, was die Huelle als ZAHL samt Quelleneinheit mitgibt - die beiden
    Leistungen in kW und der Jahresverlauf bleiben unberuehrt. Das Saeulenbild
-   kommt in zwei Fassungen herein; ein PNG laesst sich nicht umrechnen, und die
+   kommt in zwei Fassungen herein; auch ein Zeichenmodell traegt seine Achsen- und
+   Zeigetexte fertig formatiert, laesst sich also nicht umrechnen, und die
    Komponente ruft keinen Renderer.
 
-   OHNE MAUSRAD-ZOOM (A-1): Die Jahresansicht des Vorlaeufers liess sich am
-   Mausrad spreizen. Ein PNG kann das nicht; Zoomen ist W3-O2/W11.
+   ZOOMEN NUR, WO EINE ZEITACHSE IST (Etappe DG-E3): Der Jahresverlauf laesst sich
+   im SVG spreizen - ein Zeitausschnitt ist die viewBox seiner Zeichenflaeche. Die
+   Monatssaeulen zaehlen zwoelf starre Faecher; dort gibt es keine Datenkoordinaten
+   und damit nichts zu zoomen, wohl aber den Wert der Saeule unter dem Zeiger.
 
    DREI KATEGORIEN STATT EINER LISTE (Anwenderwunsch W8-E-2, Windows-Abnahme
    05.09.2026). Der Bestand reihte alle Kennzahlen untereinander - eine LEISTUNG
@@ -217,10 +220,14 @@
                                           WertChanged="JahresverlaufUmschalten" />
                             }
 
-                            @* ZWEI BILDARTEN AUF EINEM BLATT: Der JAHRESVERLAUF traegt
-                               eine Zeitachse und steht deshalb im SVG-Baustein (Etappe
-                               DG-E3, Gruppe (a)); die MONATSSAEULEN zaehlen zwoelf
-                               Monate und bleiben ein Pixelbild. *@
+                            @* ZWEI BILDARTEN AUF EINEM BLATT, beide als SVG: Der
+                               JAHRESVERLAUF traegt eine Zeitachse und laesst sich
+                               zoomen (Etappe DG-E3, Gruppe (a)); die MONATSSAEULEN
+                               zaehlen zwoelf starre Faecher - dort gibt es nichts zu
+                               zoomen, wohl aber den Wert der Saeule unter dem Zeiger
+                               (DG-E3-10, Gruppe (c)). Der Baustein schaltet den Zoom
+                               von selbst ab, sobald ein Modell keine Zeichenflaeche
+                               traegt; OhneZoom braucht es dafuer nicht. *@
                             @if (JahresverlaufMoeglich && _jahresverlauf)
                             {
                                 <DiagrammSvg Modell="@Daten.JahresverlaufModell"
@@ -234,8 +241,14 @@
                             }
                             else
                             {
-                                <ChartBild Png="@Bild" Alt="@Bildtext"
-                                           PlatzhalterText="@PlatzhalterBild" />
+                                @* KEINE FARBWAHL AN DIESEM BILD: Das Saeulenmodell
+                                   fuehrt weder Legende noch Datenreihe - es gibt
+                                   also kein Farbfeld, an dem der Waehler haengen
+                                   koennte. Die Saeulenfarbe benennt die SICHT und
+                                   kommt mit ihr aus der Huelle. *@
+                                <DiagrammSvg Modell="@Monatsmodell" Kennung="bedarf-monate"
+                                             Bezeichnung="@Bildtext"
+                                             PlatzhalterText="@PlatzhalterBild" />
                             }
                         </JahresInhalt>
                     </BedarfGangGrafik>
@@ -460,22 +473,30 @@
            && Daten.Sichten[_sichtGrafik].IstBrauchwasser;
 
     /// <summary>
-    /// Die MONATSSÄULEN der gewählten Sicht — das Pixelbild dieses Blattes.
+    /// Die MONATSSÄULEN der gewählten Sicht als Zeichenmodell (Etappe DG-E3,
+    /// Gruppe (c)).
     ///
-    /// <para>Es gibt sie in zwei Fassungen, eine je Einheit: Ein PNG lässt sich nicht
-    /// umrechnen, und die Komponente ruft keinen Renderer. Der JAHRESVERLAUF steht
-    /// daneben als Zeichenmodell (<see cref="BedarfErgebnisDaten.JahresverlaufModell"/>)
-    /// und geht diesen Weg nicht.</para>
+    /// <para>Es gibt sie in zwei Fassungen, eine je Einheit: Auch ein Zeichenmodell
+    /// trägt die fertigen Achsen- und Zeigetexte, lässt sich also nicht umrechnen, und
+    /// die Komponente ruft keinen Renderer. <b>Beide liegen fertig im Datensatz</b> —
+    /// diese Eigenschaft WÄHLT nur aus, sie baut nicht: Ein Modell, das je Zeichenlauf
+    /// neu entstünde, verwürfe im Baustein mit dem Knotenbaum auch die Zeigerstelle.
+    /// Der Sicht- oder Einheitenwechsel IST der Modellwechsel, und er soll den Baum
+    /// neu bauen.</para>
+    ///
+    /// <para>Der JAHRESVERLAUF steht daneben
+    /// (<see cref="BedarfErgebnisDaten.JahresverlaufModell"/>) und geht diesen Weg
+    /// nicht.</para>
     /// </summary>
-    private byte[]? Bild
+    private Zeichenmodell? Monatsmodell
     {
         get
         {
             if (_sichtGrafik < 0 || _sichtGrafik >= Daten.Sichten.Count) return null;
 
             Monatssicht sicht = Daten.Sichten[_sichtGrafik];
-            return (ReferenceEquals(_einheit, Energieeinheit.KWh) && sicht.BildKWh is not null)
-                ? sicht.BildKWh : sicht.Bild;
+            return (ReferenceEquals(_einheit, Energieeinheit.KWh) && sicht.ModellKWh is not null)
+                ? sicht.ModellKWh : sicht.Modell;
         }
     }
 

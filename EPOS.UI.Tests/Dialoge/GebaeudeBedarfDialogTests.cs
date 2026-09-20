@@ -134,7 +134,7 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Die Ganglinie steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) — unter
-    /// der Kennung <c>gebaeude-bedarf</c>, und ohne ein Pixelbild daneben.
+    /// der Kennung <c>gebaeude-bedarf</c> und mit der Einheit <c>kW</c>.
     /// </summary>
     [Fact]
     public void Die_Ganglinie_steht_als_DiagrammSvg()
@@ -144,7 +144,6 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("gebaeude-bedarf", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>

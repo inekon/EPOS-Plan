@@ -1,4 +1,6 @@
-﻿namespace EPOS.UI.Dialoge.Waermepumpe;
+﻿using WindowsFormsApplication1.Zeichnung;
+
+namespace EPOS.UI.Dialoge.Waermepumpe;
 
 /// <summary>
 /// Eine Zeile der Wärmepumpen-Liste im Stammdialog (iU9-W7.3).
@@ -41,8 +43,16 @@ public enum Kennlinienherkunft
 }
 
 /// <summary>
-/// Die beiden Kennlinienbilder als fertige PNG (iU9-W7.3) — gezeichnet von
-/// <c>ChartRenderer.Kennlinien</c> im Kern, angezeigt von <c>ChartBild</c>.
+/// Die beiden Kennlinienbilder als ZEICHENMODELL (iU9-W7.3, Etappe DG-E3 Gruppe (b)) —
+/// gebaut von <c>ChartRenderer.KennlinienModell</c> im Kern, gezeichnet von
+/// <c>DiagrammSvg</c>.
+///
+/// <para><b>Warum ein Paar und kein einzelnes Modell.</b> Der Baustein
+/// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des Modells
+/// wechselt; entstünden die beiden Modelle je Zeichenlauf neu, verwürfe der Baustein
+/// mit dem Baum auch die abgewählten Reihen und die Zeigerstelle. Beide Modelle
+/// kommen deshalb ZUSAMMEN aus einem Lauf der Hülle und liegen als EIN Feld im
+/// Dialog — genauso, wie zuvor das Paar der PNG-Bytes.</para>
 /// </summary>
 /// <param name="Cop">Blatt „COP".</param>
 /// <param name="Leistung">Blatt „Leistung".</param>
@@ -55,7 +65,7 @@ public enum Kennlinienherkunft
 /// vorhandene Gerätekopie im Projekt UND einen Katalogsatz mit Kennlinien voraus.
 /// Nur dann zeigt der Dialog den Knopf — ein Knopf ohne Ziel ist ein Versprechen.
 /// </param>
-public sealed record KennlinienBilder(byte[]? Cop, byte[]? Leistung,
+public sealed record KennlinienBilder(Zeichenmodell? Cop, Zeichenmodell? Leistung,
                                       Kennlinienherkunft Herkunft = Kennlinienherkunft.Ohne,
                                       bool Nachholbar = false)
 {

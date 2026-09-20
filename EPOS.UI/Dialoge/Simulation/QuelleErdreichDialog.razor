@@ -60,6 +60,8 @@
 
 @namespace EPOS.UI.Dialoge.Simulation
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
+@inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -189,7 +191,17 @@
     @* --- Vorschau ---------------------------------------------------------- *@
     <Gruppenkopf Titel="@GbVorschau">
         <KindInhalt>
-            <ChartBild Png="@_bild" Alt="@BildAlt" PlatzhalterText="@PlatzhalterText" />
+            @* DER JAHRESGANG STEHT ALS SVG (Etappe DG-E3): Ein Zeitausschnitt ist die
+               viewBox seiner Zeichenflaeche - kein zweiter Renderlauf, kein Rundlauf
+               in den Kern. Die Einheit der beiden Reihen steht im Modell; ein
+               Oberflaechen-Parameter dafuer waere die zweite Stelle, die dasselbe
+               behauptet. *@
+            <DiagrammSvg Modell="@_modell" Kennung="quelle-erdreich"
+                         Bezeichnung="@BildAlt" PlatzhalterText="@PlatzhalterText"
+                         Palette="@Farbpalette.Aktuell"
+                         FarbwahlErlaubt="@Farbwahl"
+                         FarbeGewaehlt="FarbeUebernehmen"
+                         FarbeZurueckgesetzt="FarbeVerwerfen" />
             <Herleitungszeile Text="@_kennwertzeile" />
         </KindInhalt>
     </Gruppenkopf>
@@ -273,10 +285,15 @@
         Simulieren { get; set; }
 
     /// <summary>
-    /// Zeichnet die Vorschau: Quelltemperatur und Außentemperatur hinein, ein PNG
-    /// heraus. Ohne Delegat bleibt der Platzhalter stehen.
+    /// Zeichnet die Vorschau: Quelltemperatur und Außentemperatur hinein, ein
+    /// ZEICHENMODELL heraus (Etappe DG-E3). Ohne Delegat bleibt der Platzhalter stehen.
+    ///
+    /// <para>Der Dialog fordert es nur nach einer Eingabe an und hält es bis dahin in
+    /// <c>_modell</c> — der Baustein baut seinen Knotenbaum nur neu, wenn die REFERENZ
+    /// wechselt, und ein Modell je Zeichenlauf verwürfe mit dem Baum auch Zoom und
+    /// abgewählte Reihe.</para>
     /// </summary>
-    [Parameter] public Func<double[], double[]?, Task<byte[]?>>? Jahresgangbild { get; set; }
+    [Parameter] public Func<double[], double[]?, Task<Zeichenmodell?>>? Jahresgangmodell { get; set; }
 
     /// <summary>Das Ergebnis: der geänderte Satz, <c>null</c> bei Abbruch oder Esc.</summary>
     [Parameter] public EventCallback<QuelleErdreichDaten?> Geschlossen { get; set; }
@@ -451,7 +468,12 @@
     private string _aenderungshinweis = "";
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
-    private byte[]? _bild;
+
+    /// <summary>
+    /// Das ZEICHENMODELL der Vorschau — es bleibt liegen, bis eine Eingabe ein neues
+    /// verlangt. Siehe <see cref="Jahresgangmodell"/>.
+    /// </summary>
+    private Zeichenmodell? _modell;
 
     // --- Prüfhilfen für die Tests -----------------------------------------------
 
@@ -488,8 +510,8 @@
     /// <summary>Die Bodenkennwerte-Zeile.</summary>
     public string Bodenkennwerte => _bodenkennwerte;
 
-    /// <summary>Das gezeichnete Bild.</summary>
-    public byte[]? Bild => _bild;
+    /// <summary>Das gezeichnete Bild als Zeichenmodell.</summary>
+    public Zeichenmodell? Bild => _modell;
 
     /// <summary>Die Werte der vier Zweigfelder (Prüfhilfe für A-4).</summary>
     public (double? Tiefe, double? Flaeche, double? Laenge, int? Anzahl) Zweigfelder
@@ -764,7 +786,7 @@
 
     private async Task BildZeichnen()
     {
-        if (Jahresgangbild is null) return;
+        if (Jahresgangmodell is null) return;
 
         double[] profil = Profil();
         var quelle = new double[profil.Length];
@@ -778,8 +800,7 @@
             for (int i = 0; i < aussen.Length; i++) aussen[i] = a[i];
         }
 
-        byte[]? png = await Jahresgangbild(quelle, aussen);
-        _bild = png;
+        _modell = await Jahresgangmodell(quelle, aussen);
         StateHasChanged();
     }
 

@@ -1,9 +1,11 @@
 ﻿using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Simulation;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -65,7 +67,8 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Action<QuelleErdreichDaten?>? geschlossen = null,
         ErdreichAuswertung.ErdreichLaufErgebnis? lauf = null,
         Func<int, Task<(ErdreichAuswertung.ErdreichLaufErgebnis?, string?)>>? simulieren = null,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        Func<double[], double[]?, Task<Zeichenmodell?>>? modell = null)
     {
         return Render<QuelleErdreichDialog>(p =>
         {
@@ -74,7 +77,31 @@ public class QuelleErdreichDialogTests : EposBunitContext
             if (!titelAnzeigen) p.Add(x => x.TitelAnzeigen, false);
             if (geschlossen is not null) p.Add(x => x.Geschlossen, geschlossen);
             if (simulieren is not null) p.Add(x => x.Simulieren, simulieren);
+            if (modell is not null) p.Add(x => x.Jahresgangmodell, modell);
         });
+    }
+
+    /// <summary>
+    /// Die VORSCHAU als Zeichenmodell — EINE Instanz, EINMAL gebaut: Der Baustein
+    /// <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein je Zeichenlauf neu
+    /// gebautes Modell setzte seinen Baum jedes Mal neu.
+    /// </summary>
+    private readonly Zeichenmodell _vorschau = Vorschau();
+
+    private static Zeichenmodell Vorschau()
+    {
+        var quelle = new double[168];
+        for (int i = 0; i < quelle.Length; i++)
+            quelle[i] = 8.0 + 2.0 * Math.Sin(2 * Math.PI * i / 24.0);
+
+        return ChartRenderer.JahresgangModell(
+            "Jahresgang der Quelltemperatur",
+            new[]
+            {
+                new ChartRenderer.Reihe("Quelltemperatur", quelle,
+                                        ChartRenderer.C_QUELLTEMPERATUR)
+            },
+            "Monat", "Quelltemperatur [°C]");
     }
 
     /// <summary>Ein belastbares Laufergebnis — die Prüfung rechnet damit.</summary>
@@ -776,5 +803,58 @@ public class QuelleErdreichDialogTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-formularraster--einspaltig"));
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
+    }
+
+    // =====================================================================
+    //  Die Vorschau als SVG (Etappe DG-E3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der Jahresgang der Quelltemperatur steht im Baustein <c>DiagrammSvg</c></b>
+    /// — unter der Kennung <c>quelle-erdreich</c>, mit Zoomleiste: Er trägt eine
+    /// Zeitachse, und ein Zeitausschnitt ist die <c>viewBox</c> seiner Zeichenfläche.
+    ///
+    /// <para>Das Modell kommt AUS DER HÜLLE und bleibt im Dialog liegen, bis eine
+    /// Eingabe ein neues verlangt — der Baustein baut seinen Knotenbaum nur neu, wenn
+    /// die REFERENZ wechselt.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_steht_als_DiagrammSvg()
+    {
+        var cut = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+
+        // Das Bild entsteht NACH dem ersten Zeichenlauf (OnAfterRenderAsync) - der
+        // Zeichner laeuft auf einem eigenen Faden. Also auf den Stand warten, statt
+        // ihn sofort zu lesen.
+        cut.WaitForAssertion(
+            () => Assert.Same(_vorschau, cut.FindComponent<DiagrammSvg>().Instance.Modell));
+
+        Assert.Equal("quelle-erdreich", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
+        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Empty(cut.FindAll("img"));
+    }
+
+    /// <summary>
+    /// <b>Die Farbwahl am Bild geht durch</b> (Farbrollen, Bedienung Teil 2): Die zwei
+    /// Reihen der Vorschau tragen die Rollen <c>QUELLTEMPERATUR</c> und
+    /// <c>AUSSENTEMPERATUR</c>, also gibt es dort etwas zu wählen. Ohne Delegat bietet
+    /// der Baustein den Wähler NICHT an — kein Empfänger, kein Versprechen.
+    /// </summary>
+    [Fact]
+    public void Ohne_Farbdelegat_bietet_die_Vorschau_keinen_Waehler()
+    {
+        var ohne = Zeige(Kollektor(), modell: (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+        Assert.False(ohne.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
+
+        var mit = Render<QuelleErdreichDialog>(p =>
+        {
+            p.Add(x => x.Daten, Kollektor());
+            p.Add(x => x.Lauf, ErdreichAuswertung.ErdreichLaufErgebnis.Keines);
+            p.Add(x => x.Jahresgangmodell,
+                  (_, _) => Task.FromResult<Zeichenmodell?>(_vorschau));
+            p.Add(x => x.FarbeSetzen, (_, _) => Task.CompletedTask);
+        });
+
+        Assert.True(mit.FindComponent<DiagrammSvg>().Instance.FarbwahlErlaubt);
     }
 }

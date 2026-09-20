@@ -223,17 +223,6 @@ public class BedarfReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Kein Pixelbild mehr.</b> Der Reiter führt zwei Bilder, und beide tragen
-    /// eine Zeitachse — für <c>ChartBild</c> bleibt hier nichts übrig.
-    /// </summary>
-    [Fact]
-    public void Kein_ChartBild_bleibt_im_Reiter_stehen()
-    {
-        var seite = Zeichnen(Daten());
-        Assert.Empty(seite.FindComponents<ChartBild>());
-    }
-
-    /// <summary>
     /// Befund W11-B14: EINE Fuelllogik. „Sortiert" wechselt nur den
     /// Bildauftrag; derselbe Schalterstand ergibt denselben Schluessel.
     ///

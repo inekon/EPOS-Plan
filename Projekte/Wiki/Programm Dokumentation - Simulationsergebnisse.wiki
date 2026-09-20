@@ -33,7 +33,11 @@ Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve oder Fläch
 
 Die Bilder sind '''maßstabsfrei''': Die Beschriftung bleibt in jeder Vergrößerung scharf, und ein Zeitausschnitt zeigt die Werte dieses Ausschnitts, nicht ein vergrößertes Bild.
 
-'''Drei Bilder dieser Auswertung sind Pixelbilder''' – die Streuwolke ''Leistung über Außentemperatur'' auf der Seite ''Wärmepumpe'', die beiden [[#ringe|Deckungsringe]] der Übersicht und die Monatssäulen der ''Autarkie-Analyse''. Sie tragen weder die Leiste über dem Bild noch die Werte am Mauszeiger, ihre Legende schaltet nichts, und ein Farbfeld haben sie nicht; vergrößern lässt sich an ihnen nur das Bild als Ganzes, samt seiner Beschriftung. Ein Zeitausschnitt hat dort auch keinen Gegenstand: Die Streuwolke trägt keine Zeitachse, an einem Ring gibt es nichts zu zoomen, und die Monatssäulen zeigen ohnehin nur zwölf Werte. Ihre Farben stellen Sie unter [[#diagrammfarben|Farben der Diagramme]] ein.
+'''Nicht jedes Bild hat eine Zeitachse''' – und wo keine ist, gibt es auch nichts zu zoomen. Die beiden [[#ringe|Deckungsringe]] der Übersicht, die Monatssäulen der ''Autarkie-Analyse'' und die Monatsbilder des Reiters ''Ergebnis'' tragen deshalb keine Leiste über dem Bild: Ein Ring zeigt Anteile, die Monatsbilder zwölf Fächer. Sie zeigen statt dessen '''den Wert des Elements, auf das Sie zeigen''' – ein Ringsegment nennt seinen Namen und seinen Anteil, eine Säule ihren Monat, ihre Reihe und ihre Menge. Auf einem Berührungsbildschirm tippen Sie das Element an; ein Tippen daneben löscht die Zeile wieder. Die '''Legende eines Rings ist nicht schaltbar''' – ein Kreis, dem ein Segment fehlt, wäre kein Kreis mehr –, ihr Farbfeld öffnet aber denselben Farbwähler wie überall.
+
+Die Streuwolke ''Leistung über Außentemperatur'' auf der Seite ''Wärmepumpe'' hat eine Achse, auf der sich zoomen lässt, nur zählt sie keine Zeit, sondern die '''Außentemperatur'''. Sie trägt darum dieselbe Leiste wie die Zeitreihen, und die Zeile unter dem Bild nennt die Temperatur samt dem Wert des nächstliegenden Punktes.
+
+Alle diese Bilder sind ebenso '''maßstabsfrei''' wie die Zeitreihen; ihre Farben stellen Sie unter [[#diagrammfarben|Farben der Diagramme]] ein.
 
 == Farben der Diagramme ==
 {{Anker|diagrammfarben}}

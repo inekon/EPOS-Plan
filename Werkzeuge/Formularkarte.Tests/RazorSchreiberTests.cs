@@ -111,7 +111,7 @@ public sealed class RazorSchreiberTests
         // Gruppenkopf nimmt seinen Inhalt nicht als ChildContent, sondern als
         // benannten Parameter KindInhalt - ohne das Element uebersetzt es nicht.
         Assert.Contains("<KindInhalt>", razor, StringComparison.Ordinal);
-        Assert.Contains("<ChartBild Png=\"@Werte.Chart\"", razor, StringComparison.Ordinal);
+        Assert.Contains("<DiagrammSvg Modell=\"@Werte.Chart\"", razor, StringComparison.Ordinal);
     }
 
     [Fact]

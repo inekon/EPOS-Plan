@@ -123,8 +123,17 @@
                               Wert="@_swProduktion" WertChanged="@(w => _swProduktion = w)" />
                 </div>
 
-                <ChartBild Png="@BildStreuwolke"
-                           Alt="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR" />
+                @* DIE STREUWOLKE ALS SVG (Etappe DG-E3, Gruppe (b)): Auf x steht
+                   die AUSSENTEMPERATUR statt der Stunde - das sagt die Achsenart
+                   ihres Modells, nicht ein Parameter hier (DG-E3-11). Gezoomt wird
+                   damit ueber der Temperatur, und die Punktwolke wird nie
+                   gebuendelt: Ihre Verdichtung IST ihre Aussage (DG-E3-5). *@
+                <DiagrammSvg Modell="@ModellStreuwolke" Kennung="simerg-wp-streuwolke"
+                             Bezeichnung="@Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
             </section>
 
         </div>
@@ -302,15 +311,12 @@
     public WindowsFormsApplication1.SimulationErgebnisCtrl.WaermepumpeErgebnis? Daten { get; set; }
 
     /// <summary>
-    /// Liefert das PIXELBILD der Streuwolke. Sie traegt keine Zeitachse — x ist die
-    /// Aussentemperatur —, und ihr Zeichenmodell entsteht in einer spaeteren Gruppe
-    /// des Rollouts; bis dahin geht sie ueber <c>ChartBild</c>.
-    /// </summary>
-    [Parameter] public Func<Bildauftrag, byte[]?>? Bild { get; set; }
-
-    /// <summary>
-    /// Liefert das Zeichenmodell der drei ZEITREIHEN-Bilder (Produktion,
-    /// Stromverbrauch, Speichertemperaturen).
+    /// Liefert das Zeichenmodell der VIER Bilder dieses Reiters — Produktion,
+    /// Stromverbrauch, Speichertemperaturen und die Streuwolke.
+    ///
+    /// <para>Die Streuwolke zaehlt auf x die Aussentemperatur statt der Stunde; sie
+    /// geht seit der Etappe DG-E3, Gruppe (b), denselben Weg wie die drei
+    /// Zeitreihen — was x bedeutet, sagt ihr Modell.</para>
     /// </summary>
     [Parameter] public Func<Bildauftrag, Zeichenmodell?>? Modell { get; set; }
 
@@ -381,8 +387,8 @@
         return liste;
     }
 
-    private byte[]? BildStreuwolke =>
-        Bild?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur, false, -1, ReihenStreuwolke()));
+    private Zeichenmodell? ModellStreuwolke =>
+        Modell?.Invoke(new Bildauftrag(Bilder.WpLeistungTemperatur, false, -1, ReihenStreuwolke()));
 
     private Zeichenmodell? ModellProduktion =>
         Modell?.Invoke(new Bildauftrag(Bilder.WpProduktion, _sortiert, -1, ReihenProduktion()));

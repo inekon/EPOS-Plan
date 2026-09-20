@@ -375,8 +375,8 @@ public class GebaeudetypDialogTests : EposBunitContext
 
     /// <summary>
     /// <b>Das Tagesprofil steht als SVG im Baum</b> (Etappe DG-E3, Gruppe (a)) —
-    /// unter der Kennung <c>gebaeudetyp</c>, und ohne ein Pixelbild daneben. Seine
-    /// x-Achse zählt den INDEX der Reihe, 1 … 24: keine Jahresstunde.
+    /// unter der Kennung <c>gebaeudetyp</c>. Seine x-Achse zählt den INDEX der
+    /// Reihe, 1 … 24: keine Jahresstunde.
     /// </summary>
     [Fact]
     public void Das_Tagesprofil_steht_als_DiagrammSvg()
@@ -385,7 +385,6 @@ public class GebaeudetypDialogTests : EposBunitContext
 
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("gebaeudetyp", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Empty(cut.FindComponents<ChartBild>());
     }
 
     /// <summary>Ohne Delegat kein Bild — der Platzhalter steht.</summary>

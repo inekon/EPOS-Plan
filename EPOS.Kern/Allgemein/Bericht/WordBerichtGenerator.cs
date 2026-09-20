@@ -266,9 +266,9 @@ namespace WindowsFormsApplication1
         /// <para><b>Kein Baustein des Berichts ruft ihn mehr</b> — jedes Diagramm des
         /// Wortberichts geht über <see cref="Bild(Zeichnung.Zeichenmodell, int, int)"/>
         /// und trägt damit SVG mit PNG-Rückfall. Der Weg bleibt für FREMDBILDER: ein
-        /// Bild, das nicht aus dem <c>ChartRenderer</c> kommt, und die Renderer ohne
-        /// Zeichenmodell (<c>PeakShavingBild</c>, <c>SpeicherBetriebsbild</c>), falls
-        /// eines davon einmal in den Bericht soll.</para>
+        /// Bild, das nicht aus dem <c>ChartRenderer</c> kommt. Einen Renderer ohne
+        /// Zeichenmodell gibt es nicht mehr — auch die zwei Oberflächenbilder
+        /// (<c>PeakShavingBild</c>, <c>SpeicherBetriebsbild</c>) führen eines.</para>
         /// </summary>
         public void Bild(byte[] png, int anzeigeBreitePx, int anzeigeHoehePx)
             => BildTeile(png, null, anzeigeBreitePx, anzeigeHoehePx);

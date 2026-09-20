@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Simulation;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -10,7 +11,7 @@ namespace WindowsFormsApplication1
     /// Die WINDOWS-HÜLLE von <c>QuelleErdreichDialog</c> (iU9-W10a.3) — der Ersatz für
     /// <c>Form_QuelleErdreich</c>.
     ///
-    /// <para><b>Zwei Delegaten, kein Datenzugriff sonst.</b> Die Fachrechnung des
+    /// <para><b>Nur Delegaten, kein Datenzugriff sonst.</b> Die Fachrechnung des
     /// Dialogs — Bodenkennwerte, Jahresprofile, VDI-4640-Prüfung — steht in
     /// <c>ErdreichTemperatur</c>, <c>VDI4640Pruefung</c> und <c>ErdreichAuswertung</c>
     /// und braucht keine Datenbank; die Komponente ruft sie direkt. Die Hülle liefert
@@ -21,9 +22,13 @@ namespace WindowsFormsApplication1
     ///     dass <c>SimulationRunner.Simuliere</c> dort fehlerfrei läuft: Der
     ///     Datenzugriff öffnet je Aufruf eine eigene Verbindung und hält nichts am
     ///     Faden fest.</description></item>
-    ///   <item><description><c>Jahresgangbild</c> — das PNG aus
-    ///     <c>ChartRenderer.Jahresgang</c>, ebenfalls auf einem eigenen Faden. Der Kern
-    ///     zeichnet, die Oberfläche zeigt (Hausregel seit iU7-5).</description></item>
+    ///   <item><description><c>Jahresgangmodell</c> — das Zeichenmodell aus
+    ///     <c>ChartRenderer.JahresgangModell</c>, ebenfalls auf einem eigenen Faden. Der
+    ///     Kern zeichnet, die Oberfläche zeigt (Hausregel seit iU7-5).</description></item>
+    ///   <item><description><c>FarbeSetzen</c> / <c>FarbeZuruecksetzen</c> — der Klick
+    ///     auf das Farbfeld eines Legendeneintrags am Bild. Die zwei Reihen der
+    ///     Vorschau tragen Farbrollen, also gibt es dort etwas zu wählen (Farbrollen,
+    ///     Bedienung Teil 2).</description></item>
     /// </list>
     ///
     /// <para><b>Die Dreistufenlogik der Ergebniszuordnung</b> (<c>ErgebnisDesLaufs</c>
@@ -53,7 +58,10 @@ namespace WindowsFormsApplication1
                     ErgebnisDesLaufs(daten)),
 
                 ["Simulieren"] = Simulationslauf(daten),
-                ["Jahresgangbild"] = Bildzeichner(),
+                ["Jahresgangmodell"] = Modellzeichner(),
+
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 ["TitelText"] = MyResource.Resource.SIMQ_ERDREICH_TITEL,
                 ["TitelMitWp"] = MyResource.Resource.SIMQ_ERDREICH_TITEL_MIT_WP,
@@ -152,10 +160,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Der Delegat <c>Jahresgangbild</c>: zwei Stundenreihen hinein, ein PNG heraus.
-        /// Die Außentemperatur darf fehlen — dann zeichnet der Renderer eine Reihe.
+        /// Der Delegat <c>Jahresgangmodell</c>: zwei Stundenreihen hinein, ein
+        /// ZEICHENMODELL heraus. Die Außentemperatur darf fehlen — dann zeichnet der
+        /// Renderer eine Reihe.
+        ///
+        /// <para><b>Seit der Etappe DG-E3 ist es kein PNG mehr</b>
+        /// (<c>JahresgangModell</c> statt <c>Jahresgang</c>): Das Bild steht im
+        /// Baustein <c>DiagrammSvg</c>, der Zeitausschnitt ist die <c>viewBox</c>
+        /// seiner Zeichenfläche. Gerechnet wird weiterhin auf einem EIGENEN FADEN —
+        /// 8 760 Stützstellen je Reihe bleiben 8 760, ob sie in ein Pixelbild oder in
+        /// einen Knotenbaum münden.</para>
+        ///
+        /// <para><b>Der Dialog hält das Ergebnis</b> (sein Feld <c>_modell</c>) und
+        /// fordert nur nach einer Eingabe ein neues an; das ist dieselbe
+        /// Zwischenspeicherung, die er für die Bytes führte, und zugleich die
+        /// Bedingung des Bausteins: Er baut seinen Knotenbaum nur neu, wenn die
+        /// REFERENZ des Modells wechselt.</para>
         /// </summary>
-        private static Func<double[], double[], Task<byte[]>> Bildzeichner()
+        private static Func<double[], double[], Task<Zeichenmodell>> Modellzeichner()
         {
             return (quelle, aussen) => SpeicherEngine.Kulturweitergabe.Starten(() =>
             {
@@ -170,11 +192,36 @@ namespace WindowsFormsApplication1
                         MyResource.Resource.CHART_SERIE_AUSSENTEMPERATUR, aussen,
                         ChartRenderer.C_AUSSENTEMPERATUR));
 
-                return ChartRenderer.Jahresgang(
+                return ChartRenderer.JahresgangModell(
                     MyResource.Resource.SIMQ_ERDREICH_GB_VORSCHAU, reihen,
                     MyResource.Resource.CHART_ACHSE_MONAT,
                     MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR);
             });
+        }
+
+        // =================================================================
+        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
+        // =================================================================
+
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
+        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
+        ///
+        /// <para>Die zwei Reihen der Vorschau tragen die Rollen
+        /// <c>QUELLTEMPERATUR</c> und <c>AUSSENTEMPERATUR</c>; erst damit hat der
+        /// Wähler am Bild etwas zu setzen.</para>
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
         }
 
         /// <summary>

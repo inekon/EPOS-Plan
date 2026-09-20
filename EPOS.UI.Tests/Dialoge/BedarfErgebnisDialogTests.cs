@@ -35,15 +35,28 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
-    private static readonly byte[] BILD = { 1, 2, 3, 4 };
+    /// <summary>
+    /// Die MONATSSÄULEN als Zeichenmodell (Etappe DG-E3, Gruppe (c)) — zwölf starre
+    /// Fächer ohne Zeichenfläche: kein Zoom, dafür der Wert der Säule am Zeiger.
+    /// </summary>
+    private static readonly Zeichenmodell SAEULEN = Monatssaeulen("MWh");
+
+    /// <summary>Dasselbe Bild mit kWh-Beschriftung — die zweite Fassung der Hülle.</summary>
+    private static readonly Zeichenmodell SAEULEN_KWH = Monatssaeulen("kWh");
+
+    private static Zeichenmodell Monatssaeulen(string einheit)
+    {
+        var werte = new double[12];
+        for (int m = 0; m < 12; m++) werte[m] = 20.0 + m;
+
+        return ChartRenderer.MonatsSaeulenModell("Prozesswärme", werte,
+                                                 ChartRenderer.C_BEDARF, einheit);
+    }
 
     /// <summary>
     /// Der JAHRESVERLAUF des Brauchwassers als Zeichenmodell — EINE Instanz, EINMAL
     /// gebaut: Der Baustein <c>DiagrammSvg</c> vergleicht die Modellreferenz, und ein
     /// je Zeichenlauf neu gebautes Modell setzte seinen Baum jedes Mal neu.
-    ///
-    /// <para>Die Monatssäulen daneben bleiben ein Pixelbild (<see cref="BILD"/>):
-    /// zwölf Säulen tragen keine Zeitachse.</para>
     /// </summary>
     private static readonly Zeichenmodell JAHRESVERLAUF = Jahresverlauf();
 
@@ -89,7 +102,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
             new ErgebnisKennzahl("Gesamter Strombedarf:", "340,00", "MWh")
                 { Art = Kennzahlart.Summe }
         },
-        Sichten = new[] { new Monatssicht("Strombedarf", Reihe(10), BILD) },
+        Sichten = new[] { new Monatssicht("Strombedarf", Reihe(10), SAEULEN) },
         Ganglinie = ganglinie
     };
 
@@ -98,10 +111,10 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     {
         var sichten = new List<Monatssicht>
         {
-            new("Prozesse", Reihe(20), BILD),
-            new("Gebäude (incl. ext. Wärmebedarf)", Reihe(30), BILD)
+            new("Prozesse", Reihe(20), SAEULEN),
+            new("Gebäude (incl. ext. Wärmebedarf)", Reihe(30), SAEULEN)
         };
-        if (mitBrauchwasser) sichten.Add(new Monatssicht("Brauchwasser", Reihe(40), BILD, true));
+        if (mitBrauchwasser) sichten.Add(new Monatssicht("Brauchwasser", Reihe(40), SAEULEN, true));
 
         return new BedarfErgebnisDaten
         {
@@ -313,25 +326,33 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Zwei Bildarten auf einem Blatt</b> (Etappe DG-E3, Gruppe (a)): Solange der
-    /// Schalter „Jahresverlauf" NICHT steht, zeigt das Blatt die MONATSSÄULEN — zwölf
-    /// Säulen tragen keine Zeitachse und bleiben ein Pixelbild.
+    /// <b>Zwei Bilder auf einem Blatt, beide als SVG</b> (Etappe DG-E3): Solange der
+    /// Schalter „Jahresverlauf" NICHT steht, zeigt das Blatt die MONATSSÄULEN. Zwölf
+    /// starre Fächer tragen keine Zeitachse — es gibt dort nichts zu zoomen, und der
+    /// Baustein lässt die Leiste von selbst weg. Was er zeigt, ist der Wert der Säule
+    /// unter dem Zeiger (DG-E3-10).
     /// </summary>
     [Fact]
-    public void Ohne_Jahresverlauf_stehen_die_Monatssaeulen_als_Pixelbild()
+    public void Ohne_Jahresverlauf_stehen_die_Monatssaeulen_als_Svg()
     {
         var cut = Aufbauen(Waerme(true));
         Reiterknopf(cut, "Grafik").Click();
         cut.FindAll(".epos-option input")[2].Change(true);      // Brauchwassersicht
 
-        Assert.Single(cut.FindComponents<ChartBild>());
-        Assert.Empty(cut.FindComponents<DiagrammSvg>());
+        DiagrammSvg bild = cut.FindComponents<DiagrammSvg>().Single().Instance;
+
+        Assert.Equal("bedarf-monate", bild.Kennung);
+        Assert.False(bild.OhneZoom);
+        Assert.True(bild.ZeigtWertAmElement);
+        Assert.Empty(cut.FindAll(".epos-diagramm-leiste"));
+        Assert.Empty(cut.FindAll("img"));
     }
 
     /// <summary>
-    /// <b>Mit dem Schalter kommt das SVG.</b> Der Jahresverlauf trägt eine Zeitachse
-    /// und steht deshalb im Baustein <c>DiagrammSvg</c>, unter der Kennung
-    /// <c>bedarf-jahresverlauf</c> — das Pixelbild der Monatssäulen weicht ihm.
+    /// <b>Mit dem Schalter kommt der Jahresverlauf.</b> Er trägt eine ZEITachse und
+    /// damit den Zoom, unter der Kennung <c>bedarf-jahresverlauf</c> — die
+    /// Monatssäulen weichen ihm; zwei Bilder auf einem Blatt teilten sich sonst ihre
+    /// <c>clipPath</c>-Kennungen.
     /// </summary>
     [Fact]
     public void Der_Jahresverlauf_steht_als_DiagrammSvg()
@@ -345,7 +366,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Assert.Equal("bedarf-jahresverlauf",
                      cut.FindComponent<DiagrammSvg>().Instance.Kennung);
         Assert.Equal("kW", cut.FindComponent<DiagrammSvg>().Instance.Einheit);
-        Assert.Empty(cut.FindComponents<ChartBild>());
+        Assert.Single(cut.FindAll(".epos-diagramm-leiste"));
     }
 
     // =================================================================================
@@ -427,8 +448,6 @@ public class BedarfErgebnisDialogTests : EposBunitContext
     // Die Einheitenwahl (Anwenderentscheid W8-O-5 vom 04.09.2026)
     // =================================================================================
 
-    private static readonly byte[] BILD_KWH = { 9, 9, 9, 9 };
-
     /// <summary>
     /// Ein Wärmedatensatz, wie ihn die Hülle seit dem Entscheid baut: jede
     /// Energiekennzahl mit ihrer QUELLENEINHEIT.
@@ -444,11 +463,11 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         var zahlen = new double[12];
         for (int m = 0; m < 12; m++) zahlen[m] = 20 + m;
 
-        var sicht = new Monatssicht("Prozesse", Reihe(20), BILD)
+        var sicht = new Monatssicht("Prozesse", Reihe(20), SAEULEN)
         {
             Zahlen = zahlen,
             QuelleEinheit = Energieeinheit.MWh,
-            BildKWh = BILD_KWH
+            ModellKWh = SAEULEN_KWH
         };
 
         return new BedarfErgebnisDaten
@@ -531,13 +550,14 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         var cut = Aufbauen(WaermeMitEinheiten());
         Reiterknopf(cut, "Grafik").Click();
 
-        string mwh = cut.Find("img.epos-chartbild").GetAttribute("src") ?? "";
-        Einheitenfeld(cut).Change("1");
-        string kwh = cut.Find("img.epos-chartbild").GetAttribute("src") ?? "";
+        // Der Baustein bekommt die ZWEITE Fassung des Modells - dieselbe Zeichnung
+        // mit kWh-Beschriftung. Geprueft wird die REFERENZ: An ihr entscheidet
+        // DiagrammSvg, ob es seinen Knotenbaum neu baut.
+        Assert.Same(SAEULEN, cut.FindComponent<DiagrammSvg>().Instance.Modell);
 
-        Assert.NotEqual(mwh, kwh);
-        Assert.Contains(Convert.ToBase64String(BILD), mwh);
-        Assert.Contains(Convert.ToBase64String(BILD_KWH), kwh);
+        Einheitenfeld(cut).Change("1");
+
+        Assert.Same(SAEULEN_KWH, cut.FindComponent<DiagrammSvg>().Instance.Modell);
     }
 
     [Fact]
@@ -672,8 +692,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         Assert.Equal(Gangstufe.Jahr, cut.FindComponent<BedarfGangGrafik>().Instance.Stufe);
         Assert.Empty(cut.FindAll(".epos-gang-navigator"));
         Assert.Empty(ruf);
-        Assert.Contains(Convert.ToBase64String(BILD),
-                        cut.Find("img.epos-chartbild").GetAttribute("src") ?? "");
+        Assert.Equal("bedarf-monate", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
     }
 
     [Fact]
@@ -740,15 +759,13 @@ public class BedarfErgebnisDialogTests : EposBunitContext
         var cut = Aufbauen(Strom(2, Gangquelle(ruf)), "Strombedarf Ergebnisse",
                            "Strombedarf monatlich", "Grafik Strombedarf");
 
-        // JAHR zeigt die Monatssaeulen als Pixelbild - kein SVG.
-        Assert.Empty(cut.FindComponents<DiagrammSvg>());
-        Assert.Single(cut.FindComponents<ChartBild>());
+        // JAHR zeigt die Monatssaeulen - eigenes Bild, eigene Kennung.
+        Assert.Equal("bedarf-monate", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
 
         cut.FindAll(".epos-gang-stufen input[type=radio]")[1].Change(true);   // Woche
 
         Assert.Single(cut.FindComponents<DiagrammSvg>());
         Assert.Equal("bedarf-gang-1-0", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
-        Assert.Empty(cut.FindComponents<ChartBild>());
 
         cut.FindAll(".epos-gang-knopf")[1].Click();                           // eine Woche vor
         Assert.Equal("bedarf-gang-1-1", cut.FindComponent<DiagrammSvg>().Instance.Kennung);
@@ -807,7 +824,7 @@ public class BedarfErgebnisDialogTests : EposBunitContext
                     QuelleEinheit = Energieeinheit.MWh
                 }
             },
-            Sichten = new[] { new Monatssicht("Brauchwasser", Reihe(40), BILD, true) }
+            Sichten = new[] { new Monatssicht("Brauchwasser", Reihe(40), SAEULEN, true) }
         };
     }
 

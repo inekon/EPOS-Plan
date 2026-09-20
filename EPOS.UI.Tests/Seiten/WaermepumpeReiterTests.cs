@@ -24,10 +24,10 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Seit dem Anwenderwunsch 08.09.2026 (<b>W11b‑B‑17</b>) dazu die WAHL DER
 /// REIHEN: je Bild eine Schalterzeile, alle vorbelegt an, die Wahl im
 /// Bildauftrag.</para>
-/// <para>Der Reiter ist seit der Etappe DG-E3, Gruppe (a), der EINZIGE mit
-/// beiden Bildarten: Die drei Bilder mit Zeitachse stehen im Baustein
-/// <c>DiagrammSvg</c>, die STREUWOLKE bleibt ein Pixelbild — ihre x-Achse ist
-/// die Außentemperatur, kein Zeitstrahl.</para>
+/// <para>Seit der Etappe DG-E3 stehen ALLE VIER Bilder des Reiters im Baustein
+/// <c>DiagrammSvg</c>. Die STREUWOLKE zählt auf x die Außentemperatur statt der
+/// Stunde (Gruppe (b)); was x bedeutet, sagt seit DG-E3-11 ihr Modell, nicht der
+/// Aufrufer.</para>
 /// </summary>
 public class WaermepumpeReiterTests : EposBunitContext
 {
@@ -77,7 +77,6 @@ public class WaermepumpeReiterTests : EposBunitContext
         => Render<WaermepumpeReiter>(p =>
         {
             p.Add(x => x.Daten, erg);
-            p.Add(x => x.Bild, a => { _auftraege.Add(a); return new byte[] { 1 }; });
             p.Add(x => x.Modell, Modell);
             p.Add(x => x.Speichertemperaturen, temperaturen);
             if (modul is not null) p.Add(x => x.ModulOeffnen, EventCallback.Factory.Create(this, modul));
@@ -85,14 +84,10 @@ public class WaermepumpeReiterTests : EposBunitContext
         });
 
     /// <summary>
-    /// Die Zeichenmodelle der DREI Bilder mit Zeitachse, nach Bild und
-    /// Schalterstellung getrennt und je EINMAL gebaut. Der Baustein
-    /// <c>DiagrammSvg</c> vergleicht die Modellreferenz; ein je Zeichenlauf neu
-    /// gebautes Modell setzte seinen Baum jedes Mal neu und nähme ihm Zoom und
-    /// abgewählte Reihe.
-    ///
-    /// <para>Die STREUWOLKE geht diesen Weg nicht — sie kommt weiter als
-    /// Pixelbild aus <c>Bild</c>.</para>
+    /// Die Zeichenmodelle ALLER VIER Bilder, nach Bild, Schalterstellung und
+    /// Reihenwahl getrennt und je EINMAL gebaut. Der Baustein <c>DiagrammSvg</c>
+    /// vergleicht die Modellreferenz; ein je Zeichenlauf neu gebautes Modell setzte
+    /// seinen Baum jedes Mal neu und nähme ihm Zoom und abgewählte Reihe.
     /// </summary>
     private readonly Dictionary<string, Zeichenmodell> _modelle = new();
 
@@ -100,14 +95,31 @@ public class WaermepumpeReiterTests : EposBunitContext
     {
         _auftraege.Add(a);
 
-        string schluessel = a.Bild + (a.Sortiert ? "-s" : "");
+        string schluessel = a.Schluessel;
         if (_modelle.TryGetValue(schluessel, out Zeichenmodell? vorhanden)) return vorhanden;
 
-        Zeichenmodell neu = a.Bild == Bilder.Speichertemperaturen
-            ? Temperaturbild()
-            : Gangbild(a.Bild, a.Sortiert);
+        Zeichenmodell neu = a.Bild switch
+        {
+            Bilder.Speichertemperaturen => Temperaturbild(),
+            Bilder.WpLeistungTemperatur => Streuwolke(),
+            _ => Gangbild(a.Bild, a.Sortiert)
+        };
         _modelle[schluessel] = neu;
         return neu;
+    }
+
+    /// <summary>
+    /// Die STREUWOLKE (Etappe DG-E3, Gruppe (b)): x ist die Außentemperatur, jede
+    /// Reihe eine Punktwolke mit ihrer x-Stelle je Punkt.
+    /// </summary>
+    private static Zeichenmodell Streuwolke()
+    {
+        var punkte = new List<(double, double)>();
+        for (int i = 0; i < 48; i++) punkte.Add((-15.0 + i * 0.75, 20.0 + i));
+
+        return ChartRenderer.StreuwolkeModell(
+            "Leistung über Außentemperatur", "°C", "kW",
+            new[] { new ChartRenderer.Punktreihe("Wärmebedarf", punkte, ChartRenderer.C_WP) });
     }
 
     /// <summary>Eine kurze, echte Ganglinie (eine Woche) statt eines Jahres.</summary>
@@ -428,33 +440,39 @@ public class WaermepumpeReiterTests : EposBunitContext
     }
 
     // =====================================================================
-    //  DER EINZIGE REITER MIT BEIDEN BILDARTEN (Etappe DG-E3, Gruppe (a))
+    //  VIER BILDER, EIN WEG (Etappe DG-E3, Gruppen (a) und (b))
     //
-    //  Die drei Bilder mit Zeitachse stehen im Baustein DiagrammSvg: Der
-    //  Zeitausschnitt ist die viewBox ihrer Zeichenflaeche. Die Streuwolke
-    //  bleibt ein Pixelbild - ihre x-Achse ist die Aussentemperatur, und ein
-    //  „Zeitausschnitt" waere dort ohne Sinn.
+    //  Alle vier stehen im Baustein DiagrammSvg: Der Ausschnitt ist die
+    //  viewBox ihrer Zeichenflaeche. Bei der Streuwolke zaehlt x die
+    //  AUSSENTEMPERATUR - was x bedeutet, sagt ihr Modell (DG-E3-11), und die
+    //  Spanne laesst sich dort ebenso aufziehen wie eine Stundenspanne.
     // =====================================================================
 
-    /// <summary>Das gezeigte SVG-Diagramm — je Unterblatt steht genau eines.</summary>
+    /// <summary>
+    /// Das SVG-Diagramm des sichtbaren UNTERBLATTS — es steht neben der Streuwolke,
+    /// die ueber den Blaettern liegt, also wird die ausdruecklich uebergangen.
+    /// </summary>
     private static DiagrammSvg Bild(IRenderedComponent<WaermepumpeReiter> seite)
-        => seite.FindComponent<DiagrammSvg>().Instance;
+        => seite.FindComponents<DiagrammSvg>()
+                .Select(b => b.Instance)
+                .First(b => b.Kennung != "simerg-wp-streuwolke");
 
     /// <summary>
-    /// <b>Beide Bildarten zugleich:</b> Die Streuwolke steht als <c>ChartBild</c>
-    /// über den Unterblättern, die Jahresganglinie der Produktion als
-    /// <c>DiagrammSvg</c> darin — unter der Kennung <c>simerg-wp-produktion</c>.
+    /// <b>Streuwolke und Produktionsbild stehen nebeneinander</b> — beide als
+    /// <c>DiagrammSvg</c>, jedes unter seiner eigenen Kennung. Ein Pixelbild führt
+    /// dieser Reiter nicht mehr.
     /// </summary>
     [Fact]
     public void Streuwolke_und_Produktionsbild_stehen_nebeneinander()
     {
         var seite = Zeichnen(Erg());
 
-        Assert.Single(seite.FindComponents<ChartBild>());
+        Assert.Empty(seite.FindAll("img"));
         Assert.Contains(_auftraege, a => a.Bild == Bilder.WpLeistungTemperatur);
 
-        Assert.Single(seite.FindComponents<DiagrammSvg>());
-        Assert.Equal("simerg-wp-produktion", Bild(seite).Kennung);
+        Assert.Equal(new[] { "simerg-wp-streuwolke", "simerg-wp-produktion" },
+                     seite.FindComponents<DiagrammSvg>()
+                          .Select(b => b.Instance.Kennung).ToArray());
         Assert.Equal("kW", Bild(seite).Einheit);
     }
 
@@ -494,23 +512,20 @@ public class WaermepumpeReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Nur die Jahresganglinie trägt den Bereichsknopf.</b> Die STREUWOLKE bekommt
-    /// keinen Zeitausschnitt: Ihre x-Achse ist die Außentemperatur, kein Zeitstrahl —
-    /// sie behält den reinen BILDzoom ihres Rahmens und damit allein „1:1".
+    /// <b>Auch die Streuwolke trägt die Zoomleiste</b> (Etappe DG-E3, Gruppe (b)).
+    /// Bis dahin blieb sie ein Pixelbild und hatte allein „1:1" — den reinen
+    /// Bildzoom ihres Rahmens. Jetzt trägt sie eine Zeichenfläche wie jedes andere
+    /// Bild; der aufgezogene Bereich ist dort eine TEMPERATURspanne statt einer
+    /// Stundenspanne, und genau das ist der Gewinn.
     /// </summary>
     [Fact]
-    public void Nur_die_Jahresganglinie_traegt_den_Bereichsknopf()
+    public void Auch_die_Streuwolke_traegt_die_Zoomleiste()
     {
         var seite = Zeichnen(Erg());
 
-        Assert.Equal(new[] { "Bereich", "1:1" },
-                     seite.FindComponent<DiagrammSvg>()
-                          .FindAll("button.epos-diagramm-knopf")
-                          .Select(k => k.TextContent.Trim()).ToArray());
-
-        Assert.Equal(new[] { "1:1" },
-                     seite.FindComponent<Diagramm>()
-                          .FindAll("button.epos-diagramm-knopf")
-                          .Select(k => k.TextContent.Trim()).ToArray());
+        Assert.All(seite.FindComponents<DiagrammSvg>(),
+                   b => Assert.Equal(new[] { "Bereich", "1:1" },
+                                     b.FindAll("button.epos-diagramm-knopf")
+                                      .Select(k => k.TextContent.Trim()).ToArray()));
     }
 }

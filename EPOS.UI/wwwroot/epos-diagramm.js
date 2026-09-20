@@ -29,29 +29,23 @@
 //     nimmt der Browser den Finger fuer seinen eigenen Bildlauf, und
 //     pointermove kommt nie an.
 //
-// ZWEI MODI, DIESELBEN HANDLER (Konzept Diagramme, Etappe E2, Entscheid DG-Q4).
-// binden(flaeche, hilfe, optionen) kennt seit E2 einen zweiten Modus:
+// GEZOOMT WIRD DIE viewBox DES INNEREN svg (Konzept Diagramme, Etappe E2,
+// Entscheid DG-Q4). Das Bild ist ein SVG-Baum, und die Reihen liegen im inneren
+// <svg class="epos-flaeche"> in DATENKOORDINATEN. Vergroessert wird dessen
+// viewBox, und zwar NUR auf der Zeitachse: x und Breite aendern sich, y und
+// Hoehe bleiben - sonst verloere ein Leistungsbild seine Null. Eine
+// Attributaenderung, kein Neuzeichnen, kein Rundlauf; der Pruefstand hat dafuer
+// 0,1 ms je Schritt gemessen. Gemeldet wird der sichtbare Ausschnitt
+// (FensterGemeldet) und die Stelle unter dem Zeiger (ZeigerGemeldet).
 //
-//   TRANSFORM (Vorgabe, Baustein Diagramm) - das Bild ist ein PNG, vergroessert
-//     wird es ueber einen CSS-Transform auf .epos-diagramm-inhalt. Ein
-//     aufgezogenes Rechteck meldet ANTEILE des Bildes (BereichGemeldet), aus
-//     denen der Kern das Bild neu zeichnet.
+// EINEN ZWEITEN MODUS GIBT ES NICHT MEHR. Bis zum Abschluss der Etappe E3 kannte
+// dieses Modul daneben einen CSS-Transform auf einem PNG - fuer den Baustein
+// Diagramm, der ein Pixelbild vergroesserte und ein aufgezogenes Rechteck als
+// ANTEILE meldete, aus denen der Kern das Bild neu zeichnete. Mit der letzten
+// umgestellten Bildstelle ist dieser Weg samt seinem Baustein entfallen; was
+// bleibt, ist ein Modul, das genau eine Sache tut.
 //
-//   VIEWBOX  (optionen.modus === "viewbox", Baustein DiagrammSvg) - das Bild
-//     ist ein SVG-Baum, und die Reihen liegen im inneren <svg class=
-//     "epos-flaeche"> in DATENKOORDINATEN. Vergroessert wird dessen viewBox,
-//     und zwar NUR auf der Zeitachse: x und Breite aendern sich, y und Hoehe
-//     bleiben. Eine Attributaenderung, kein Neuzeichnen, kein Rundlauf - der
-//     Pruefstand hat dafuer 0,1 ms je Schritt gemessen. Gemeldet wird der
-//     sichtbare Ausschnitt in ganzen Stunden (FensterGemeldet) und die Stunde
-//     unter dem Zeiger (ZeigerGemeldet).
-//
-// Es sind DIESELBEN Handler: Rad, Kneifgeste, Ziehen, Doppelklick, Tasten und
-// Gummiband haengen einmal an der Flaeche und verzweigen erst dort, wo sie
-// wirken. Damit gilt jede der drei WebView-Eigenheiten oben fuer beide Modi -
-// besonders die Safari-Kneifgeste, die sonst die ganze Seite zoomte.
-//
-// DIE VOLLEN GRENZEN LIEST DER VIEWBOX-MODUS AUS data-voll am inneren <svg>,
+// DIE VOLLEN GRENZEN LIEST DAS MODUL AUS data-voll am inneren <svg>,
 // nicht aus einer beim Binden gemerkten Kopie: Wechselt das Modell (eine andere
 // Region, eine andere Reihe), schreibt Blazor dort neue Grenzen - eine Kopie
 // waere dann still veraltet, und Klemmung wie Zuruecksetzen liefen ins Leere.
@@ -91,25 +85,17 @@ const ZUSTAENDE = new WeakMap();
  *
  * @param {HTMLElement} flaeche der Rahmen mit overflow:hidden
  * @param {object} hilfe DotNetObjectReference auf die Komponente; sie fuehrt
- *        im Transform-Modus ZoomGemeldet(stufe) und BereichGemeldet(x0,x1,y0,y1),
- *        im viewBox-Modus ZoomGemeldet(stufe), FensterGemeldet(von, bis) und
- *        ZeigerGemeldet(stunde|null).
- * @param {object} [optionen] { modus: "viewbox" } schaltet auf die viewBox des
- *        inneren svg um; ohne Angabe bleibt es beim CSS-Transform.
+ *        ZoomGemeldet(stufe), FensterGemeldet(von, bis) und
+ *        ZeigerGemeldet(stelle|null).
  */
-export function binden(flaeche, hilfe, optionen) {
+export function binden(flaeche, hilfe) {
     if (!flaeche || ZUSTAENDE.has(flaeche)) return;
-
-    const viewbox = !!(optionen && optionen.modus === "viewbox");
 
     const z = {
         hilfe: hilfe,
-        viewbox: viewbox,
-        svg: viewbox ? flaeche.querySelector("svg." + KLASSE_FLAECHE) : null,
-        inhalt: viewbox ? null : flaeche.querySelector(".epos-diagramm-inhalt"),
+        svg: flaeche.querySelector("svg." + KLASSE_FLAECHE),
         gummi: flaeche.querySelector(".epos-diagramm-gummi"),
-        stufe: 1,          // Vergroesserung
-        vx: 0, vy: 0,      // Verschiebung in Bildpunkten des Rahmens
+        stufe: 1,          // Vergroesserung (nur als Bezug der Kneifgeste)
         bereichsmodus: false,
         zeiger: new Map(), // laufende Beruehrungen/Zeiger je pointerId
         zugAb: null,       // Startpunkt eines Verschiebens
@@ -117,15 +103,15 @@ export function binden(flaeche, hilfe, optionen) {
         kneifAb: 0,        // Fingerabstand beim Beginn der Kneifgeste
         kneifStufe: 1,     // Zoomstufe beim Beginn der Kneifgeste
         gemeldet: 1,       // zuletzt an .NET gemeldete Stufe
-        fensterVon: null,  // zuletzt gemeldeter Ausschnitt (viewBox-Modus)
+        fensterVon: null,  // zuletzt gemeldeter Ausschnitt
         fensterBis: null,
         radUhr: 0,         // Zeitgeber, der das Ende einer Radgeste feststellt
-        zeigerStunde: null,// zuletzt gemeldete Zeigerstunde
+        zeigerStunde: null,// zuletzt gemeldete Zeigerstelle
         zeigerX: null,     // clientX, auf den der naechste Bildaufbau wartet
         zeigerRahmen: 0,   // laufende requestAnimationFrame-Anforderung
         handler: []
     };
-    if (viewbox ? !z.svg : !z.inhalt) return;
+    if (!z.svg) return;
     ZUSTAENDE.set(flaeche, z);
 
     // --- Rad: Zoom um den Zeiger. Ohne preventDefault rollt die Seite mit. ---
@@ -134,8 +120,7 @@ export function binden(flaeche, hilfe, optionen) {
         e.preventDefault();
         const schritt = e.ctrlKey ? KNEIF_SCHRITT : RAD_SCHRITT;
         const faktor = Math.exp(-e.deltaY * schritt);
-        const p = punkt(flaeche, e.clientX, e.clientY);
-        zoomeUm(z, flaeche, faktor, p.x, p.y, e.clientX);
+        zoomeViewbox(z, faktor, e.clientX);
         // Eine Radgeste hat kein Ende - sie hoert auf. Der Ausschnitt wird
         // deshalb erst nach einer kurzen Ruhe gemeldet, nicht je Rast.
         radEnde(z);
@@ -160,7 +145,7 @@ export function binden(flaeche, hilfe, optionen) {
             z.zugAb = null;
             z.gummiAb = null;
             z.kneifAb = abstand(z.zeiger);
-            z.kneifStufe = z.stufe;
+            z.kneifStufe = stufeJetzt(z);
             return;
         }
 
@@ -169,21 +154,18 @@ export function binden(flaeche, hilfe, optionen) {
             z.gummiAb = p;
             zeichneGummi(z, p, p);
         } else {
-            const b = z.viewbox ? kasten(z) : null;
-            z.zugAb = {
-                x: e.clientX, y: e.clientY, vx: z.vx, vy: z.vy,
-                kx: b ? b.x : 0, kb: b ? b.b : 0
-            };
+            const b = kasten(z);
+            z.zugAb = { x: e.clientX, kx: b.x, kb: b.b };
             flaeche.classList.add("epos-diagramm--zieht");
         }
     });
 
     // --- Zeiger bewegt: Rechteck nachziehen, kneifen oder verschieben. ---
     an(flaeche, "pointermove", e => {
-        // Die ZEIGERSTUNDE haengt nicht an einem gedrueckten Knopf: Sie meldet
+        // Die ZEIGERSTELLE haengt nicht an einem gedrueckten Knopf: Sie meldet
         // sich bei jeder Bewegung ueber der Flaeche, hoechstens einmal je
         // Bildaufbau (requestAnimationFrame).
-        if (z.viewbox) zeigerMerken(z, e.clientX);
+        zeigerMerken(z, e.clientX);
 
         if (!z.zeiger.has(e.pointerId)) return;
         z.zeiger.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -192,8 +174,7 @@ export function binden(flaeche, hilfe, optionen) {
             e.preventDefault();
             const jetzt = abstand(z.zeiger);
             const m = mitte(z.zeiger);
-            const p = punkt(flaeche, m.x, m.y);
-            setzeStufe(z, flaeche, z.kneifStufe * (jetzt / z.kneifAb), p.x, p.y, m.x);
+            setzeStufeViewbox(z, z.kneifStufe * (jetzt / z.kneifAb), m.x);
             return;
         }
 
@@ -205,15 +186,12 @@ export function binden(flaeche, hilfe, optionen) {
 
         if (z.zugAb) {
             e.preventDefault();
-            if (z.viewbox) { verschiebeViewbox(z, e.clientX); return; }
-            z.vx = z.zugAb.vx + (e.clientX - z.zugAb.x);
-            z.vy = z.zugAb.vy + (e.clientY - z.zugAb.y);
-            male(z, flaeche);
+            verschiebeViewbox(z, e.clientX);
         }
     }, { passive: false });
 
     // --- Der Zeiger verlaesst die Flaeche: die Zeigerzeile wird leer. ---
-    an(flaeche, "pointerleave", () => { if (z.viewbox) zeigerWeg(z); });
+    an(flaeche, "pointerleave", () => zeigerWeg(z));
 
     // --- Zeiger hoch: das Rechteck auswerten und melden. ---
     const beendet = e => {
@@ -224,10 +202,9 @@ export function binden(flaeche, hilfe, optionen) {
         z.zugAb = null;
 
         if (!z.gummiAb) {
-            // ENDE EINER GESTE: erst jetzt meldet der viewBox-Modus seinen
-            // Ausschnitt - waehrend des Zuges waere das ein Zeichenlauf je
-            // Bildpunkt.
-            if (z.viewbox && zog) meldeFenster(z);
+            // ENDE EINER GESTE: erst jetzt wird der Ausschnitt gemeldet -
+            // waehrend des Zuges waere das ein Zeichenlauf je Bildpunkt.
+            if (zog) meldeFenster(z);
             return;
         }
         const bis = punkt(flaeche, e.clientX, e.clientY);
@@ -237,8 +214,7 @@ export function binden(flaeche, hilfe, optionen) {
 
         // Ein zu kleines Rechteck ist ein verrutschter Klick, kein Bereich.
         if (Math.abs(bis.x - ab.x) < RECHTECK_MIN || Math.abs(bis.y - ab.y) < RECHTECK_MIN) return;
-        if (z.viewbox) gummiViewbox(z, flaeche, ab, bis);
-        else meldeBereich(z, ab, bis);
+        gummiViewbox(z, flaeche, ab, bis);
     };
     an(flaeche, "pointerup", beendet);
     an(flaeche, "pointercancel", beendet);
@@ -254,17 +230,18 @@ export function binden(flaeche, hilfe, optionen) {
     an(flaeche, "keydown", e => {
         if (e.ctrlKey || e.altKey || e.metaKey) return;
         if (gehoertDemBaustein(e.target)) return;   // "0" im Hexfeld ist eine Ziffer, kein Befehl
-        const m = { x: flaeche.clientWidth / 2, y: flaeche.clientHeight / 2 };
-        const mitteClient = flaeche.getBoundingClientRect().left + m.x;
+        // Die Tasten zoomen um die MITTE der Flaeche - dort steht kein Zeiger,
+        // auf den sich das Bild beziehen koennte.
+        const mitteClient = flaeche.getBoundingClientRect().left + flaeche.clientWidth / 2;
         if (e.key === "+" || e.key === "=") {
             e.preventDefault();
-            zoomeUm(z, flaeche, TASTE_FAKTOR, m.x, m.y, mitteClient);
-            if (z.viewbox) meldeFenster(z);
+            zoomeViewbox(z, TASTE_FAKTOR, mitteClient);
+            meldeFenster(z);
         }
         else if (e.key === "-") {
             e.preventDefault();
-            zoomeUm(z, flaeche, 1 / TASTE_FAKTOR, m.x, m.y, mitteClient);
-            if (z.viewbox) meldeFenster(z);
+            zoomeViewbox(z, 1 / TASTE_FAKTOR, mitteClient);
+            meldeFenster(z);
         }
         else if (e.key === "0") { e.preventDefault(); stelleHer(flaeche, true); }
     });
@@ -306,17 +283,11 @@ function stelleHer(flaeche, melden) {
     const z = ZUSTAENDE.get(flaeche);
     if (!z) return;
 
-    if (z.viewbox) {
-        const v = vollKasten(z);
-        setzeKasten(z, v.x, v.b);
-        zeigerWeg(z);
-        if (melden) meldeFenster(z);
-        else { z.fensterVon = null; z.fensterBis = null; z.gemeldet = 1; }
-        return;
-    }
-
-    z.stufe = 1; z.vx = 0; z.vy = 0;
-    male(z, flaeche);
+    const v = vollKasten(z);
+    setzeKasten(z, v.x, v.b);
+    zeigerWeg(z);
+    if (melden) meldeFenster(z);
+    else { z.fensterVon = null; z.fensterBis = null; z.gemeldet = 1; }
 }
 
 /** Schaltet das Aufziehen eines Rechtecks ein oder aus (Knopf "Bereich"). */
@@ -373,53 +344,11 @@ function rechteckGewollt(z, e) {
     return z.bereichsmodus || (e.shiftKey && e.pointerType === "mouse");
 }
 
-/**
- * Zoomt um den Faktor, wobei der Punkt (px, py) stehen bleibt.
- * @param {number} [clientX] Fensterkoordinate desselben Punktes - der
- *        viewBox-Modus rechnet gegen das innere svg, nicht gegen den Rahmen.
- */
-function zoomeUm(z, flaeche, faktor, px, py, clientX) {
-    if (z.viewbox) { zoomeViewbox(z, faktor, clientX); return; }
-    setzeStufe(z, flaeche, z.stufe * faktor, px, py);
-}
-
-/** Setzt die Stufe absolut, wobei der Punkt (px, py) stehen bleibt. */
-function setzeStufe(z, flaeche, neu, px, py, clientX) {
-    if (z.viewbox) { setzeStufeViewbox(z, neu, clientX); return; }
-    neu = Math.min(STUFE_MAX, Math.max(STUFE_MIN, neu));
-    if (neu === z.stufe) return;
-    // Der Punkt unter dem Zeiger behaelt seine Lage: Erst zurueckrechnen, wo er
-    // im ungezoomten Bild liegt, dann mit der neuen Stufe wieder dorthin.
-    z.vx = px - (px - z.vx) * neu / z.stufe;
-    z.vy = py - (py - z.vy) * neu / z.stufe;
-    z.stufe = neu;
-    male(z, flaeche);
-}
-
-/**
- * Setzt die Verschiebung um und meldet die Stufe. Das Bild bleibt dabei im
- * Rahmen: Bei Stufe 1 sitzt es buendig, darueber darf kein Rand frei werden.
- */
-function male(z, flaeche) {
-    const bw = flaeche.clientWidth;
-    const bh = flaeche.clientHeight;
-    const iw = z.inhalt.offsetWidth * z.stufe;
-    const ih = z.inhalt.offsetHeight * z.stufe;
-
-    z.vx = iw <= bw ? (bw - iw) / 2 : Math.min(0, Math.max(bw - iw, z.vx));
-    z.vy = ih <= bh ? (bh - ih) / 2 : Math.min(0, Math.max(bh - ih, z.vy));
-
-    z.inhalt.style.transform =
-        "translate(" + z.vx + "px, " + z.vy + "px) scale(" + z.stufe + ")";
-    flaeche.classList.toggle("epos-diagramm--gezoomt", z.stufe > 1.001);
-
-    // Nur melden, wenn sich die ANGEZEIGTE Stufe aendert - sonst laeuft bei
-    // jeder Radbewegung ein Zeichenlauf der Komponente mit.
-    const grob = Math.round(z.stufe * 10) / 10;
-    if (grob !== z.gemeldet && z.hilfe) {
-        z.gemeldet = grob;
-        try { z.hilfe.invokeMethodAsync("ZoomGemeldet", grob); } catch (e) { /* Huelle ist weg */ }
-    }
+/** Die Vergroesserung, die die aktuelle viewBox bedeutet. */
+function stufeJetzt(z) {
+    const voll = vollKasten(z);
+    const b = kasten(z);
+    return b.b > 0 ? voll.b / b.b : 1;
 }
 
 /** Zeichnet das aufgezogene Rechteck. */
@@ -436,33 +365,8 @@ function versteckeGummi(z) {
     if (z.gummi) z.gummi.hidden = true;
 }
 
-/**
- * Rechnet das Rechteck in ANTEILE DES BILDES um (0…1, linke obere Ecke zuerst)
- * und meldet sie. Der Kern macht daraus die Achsenbereiche - die Oberflaeche
- * kennt weder Stunden noch Kilowatt.
- */
-function meldeBereich(z, ab, bis) {
-    const iw = z.inhalt.offsetWidth * z.stufe;
-    const ih = z.inhalt.offsetHeight * z.stufe;
-    if (iw <= 0 || ih <= 0 || !z.hilfe) return;
-
-    const anteil = p => ({
-        x: Math.min(1, Math.max(0, (p.x - z.vx) / iw)),
-        y: Math.min(1, Math.max(0, (p.y - z.vy) / ih))
-    });
-    const a = anteil(ab);
-    const b = anteil(bis);
-
-    try {
-        z.hilfe.invokeMethodAsync("BereichGemeldet",
-            Math.min(a.x, b.x), Math.max(a.x, b.x),
-            Math.min(a.y, b.y), Math.max(a.y, b.y));
-    } catch (e) { /* Huelle ist weg */ }
-}
-
-// ============================================================ viewBox-Modus
+// ============================================================ Die viewBox
 //
-// Hier steht die zweite Wirkung derselben Handler (Entscheid DG-Q4, Etappe E2).
 // Veraendert wird AUSSCHLIESSLICH x und Breite der viewBox des inneren
 // <svg class="epos-flaeche">; y und Hoehe bleiben, denn gezoomt wird nur die
 // ZEITACHSE - die Werteachse bleibt voll, sonst verloere ein Leistungsbild
@@ -584,7 +488,6 @@ function meldeFenster(z) {
 
 /** Eine Radgeste gilt nach RAD_RUHE Millisekunden Ruhe als beendet. */
 function radEnde(z) {
-    if (!z.viewbox) return;
     if (z.radUhr) clearTimeout(z.radUhr);
     z.radUhr = setTimeout(() => { z.radUhr = 0; meldeFenster(z); }, RAD_RUHE);
 }

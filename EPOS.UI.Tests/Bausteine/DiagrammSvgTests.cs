@@ -642,11 +642,14 @@ public class DiagrammSvgTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Beim ersten Zeichnen wird das Modul geladen und an die Fläche gehängt —
-    /// mit dem viewBox-Modus als dritter Gabe.
+    /// Beim ersten Zeichnen wird das Modul geladen und an die Fläche gehängt.
+    ///
+    /// <para><b>ZWEI Gaben, nicht drei</b> (DG-E3-13): Der Modus ist entfallen, weil
+    /// das Modul nur noch einen kennt — den der <c>viewBox</c>. Der CSS-Transform auf
+    /// einem PNG ist mit dem Baustein <c>Diagramm</c> gefallen.</para>
     /// </summary>
     [Fact]
-    public void DS7_Beim_ersten_Zeichnen_wird_im_viewBox_Modus_gebunden()
+    public void DS7_Beim_ersten_Zeichnen_wird_gebunden()
     {
         JSInterop.Mode = JSRuntimeMode.Strict;
         var modul = JSInterop.SetupModule(MODUL);
@@ -655,7 +658,7 @@ public class DiagrammSvgTests : EposBunitContext
         Zeige();
 
         Assert.Single(binden.Invocations);
-        Assert.Equal(3, binden.Invocations.Single().Arguments.Count);
+        Assert.Equal(2, binden.Invocations.Single().Arguments.Count);
     }
 
     /// <summary>
@@ -718,7 +721,11 @@ public class DiagrammSvgTests : EposBunitContext
     /// Nur so unterscheiden sich die beiden y-Fenster, und nur daran erkennt der
     /// Baustein, welche Reihe rechts steht.</para>
     /// </summary>
-    private static Zeichenmodell Stapelmodell()
+    /// <param name="sortiert">
+    /// Dauerlinie statt Ganglinie — dann zählt x den RANG, und die Zeichenfläche sagt
+    /// <c>Achsenart.Index</c> statt <c>Stunden</c> (DG-E3-11).
+    /// </param>
+    private static Zeichenmodell Stapelmodell(bool sortiert = false)
     {
         var heizung = new double[STAPEL_N];
         var wasser = new double[STAPEL_N];
@@ -742,7 +749,7 @@ public class DiagrammSvgTests : EposBunitContext
                                         ChartRenderer.Stapelart.Flaeche)
             },
             new[] { new ChartRenderer.Reihe("Wärmebedarf", bedarf, ChartRenderer.C_BEDARF) },
-            null, "Leistung [kW]", ChartRenderer.Achse.Monate, false,
+            null, "Leistung [kW]", ChartRenderer.Achse.Monate, sortiert,
             new[] { new ChartRenderer.Reihe(RECHTS, speicher, ChartRenderer.C_NETZ) },
             "Speicherinhalt [kWh]");
     }
@@ -817,9 +824,34 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Contains("kWh", zeile);
         Assert.Contains(RECHTS + ": ", zeile);
 
-        // Die Stelle zaehlt eine Stuetzstelle, keine Stunde: keine Einheit „h".
-        Assert.DoesNotContain("500 h", zeile);
+        // DIE EINHEIT DER STELLE KOMMT AUS DEM MODELL (DG-E3-11): Der Erzeugerstapel
+        // zaehlt auf x Stuetzstellen einer ZEITREIHE, seine Zeichenflaeche sagt
+        // Achsenart.Stunden - und damit steht „h" hinter der Zahl. Bis zum Abschluss
+        // der Etappe E3 sagte das ein Parameter der Aufrufstelle; zwei Stellen, die
+        // dasselbe behaupten, gehen irgendwann auseinander.
+        Assert.Contains("500 h", zeile);
+    }
+
+    /// <summary>
+    /// <b>DG-E3-11 an der anderen Achsenart:</b> In der DAUERLINIE zählt x den RANG.
+    /// Der Renderer sagt dort <c>Achsenart.Index</c>, und die Zeigerzeile schreibt
+    /// keine Einheit hinter die Zahl — ein Rang ist keine Stunde.
+    /// </summary>
+    [Fact]
+    public async Task DS8_In_der_Dauerlinie_traegt_die_Stelle_keine_Einheit()
+    {
+        var cut = Render<DiagrammSvg>(p =>
+        {
+            p.Add(x => x.Modell, Stapelmodell(sortiert: true));
+            p.Add(x => x.Kennung, "dauerlinie");
+            p.Add(x => x.Einheit, "kW");
+        });
+
+        await cut.InvokeAsync(() => cut.Instance.ZeigerGemeldet(500));
+
+        string zeile = cut.Find(".epos-diagramm-zeigerzeile").TextContent;
         Assert.Contains("500", zeile);
+        Assert.DoesNotContain("500 h", zeile);
     }
 
     // ---- Die zweite Achse fällt mit ihren Reihen -------------------------

@@ -31,6 +31,13 @@
    iU9-W11a eine Sekundaerachse - genau das, was der Ladezustand hier braucht.
    Kein neuer Renderer, keine neue ChartProbe (PeakShavingBild, W12.0h).
 
+   ... UND STEHT SEIT DER ETAPPE DG-E3 ALS ZEICHENMODELL IM BAUSTEIN DiagrammSvg.
+   Die Huelle reicht PeakShavingBild.Modell herein - den Zwilling von .Lastgang,
+   gleiche Reihen, gleiche Achsen -, und der Baustein macht daraus Vektoren:
+   Zoom auf der Zeitachse, Legendenwahl und der Wert am Zeiger ohne einen
+   Rundlauf in den Kern. Das PNG kostete bei jeder Stellung des Schalters
+   "Ladezustand" einen vollen Renderlauf und war auf jeder DPI unscharf.
+
    WOERTLICH TROTZ BEFUND: W12-B24 - der einzige Fussknopf schliesst mit
    "Abbrechen", die Huelle liefert deshalb immer false. W12-B9 entfaellt: die
    hartkodiert deutsche Zahlenmeldung von Program.ZahlPruefen ersetzt das
@@ -41,6 +48,7 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 
 <div class="epos-dialog epos-peakshaving" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -217,7 +225,18 @@
                 <KindInhalt>
                     <Schalter Bezeichnung="@LabelSoC" Wert="@_socZeigen" WertChanged="SoCGeaendert"
                               Aktiv="@(!_laeuft)" />
-                    <ChartBild Png="@_bild" Alt="@ReiterChart" PlatzhalterText="@LeerText" />
+
+                    @* DER LASTGANG ALS ZEICHENMODELL (Etappe DG-E3, Gruppe (b)/(c)).
+                       Gerade hier gewinnt der Zoom: Das Bild traegt 35 040
+                       Viertelstunden, und die gekappte Spitze ist ein Ereignis von
+                       wenigen Stunden - in der Vollansicht liegen rund vierzig Werte
+                       auf einem Bildpunkt. Der LADEZUSTAND steht auf der zweiten
+                       Achse in kWh; welche Reihe dort steht, sagt das Modell
+                       (Datenreihe.Achsenseite), die Einheit steht hier als
+                       Rueckfall. *@
+                    <DiagrammSvg Modell="@_modell" Kennung="peakshaving-lastgang"
+                                 Bezeichnung="@ReiterChart" PlatzhalterText="@LeerText"
+                                 Einheit="kW" EinheitRechts="kWh" />
                 </KindInhalt>
             </Reiterblatt>
 
@@ -342,8 +361,16 @@
     /// <summary>Die Suche nach der kleinsten haltbaren Schwelle; ebenfalls nebenher.</summary>
     [Parameter] public Func<double[], PeakShavingEingaben, Task<double>>? MinimaleSchwelle { get; set; }
 
-    /// <summary>Zeichnet das Vorher/Nachher-Bild (<c>PeakShavingBild.Lastgang</c>).</summary>
-    [Parameter] public Func<PeakShavingErgebnis, bool, Task<byte[]?>>? Bild { get; set; }
+    /// <summary>
+    /// Das Zeichenmodell des Vorher/Nachher-Bildes (<c>PeakShavingBild.Modell</c>).
+    ///
+    /// <para><b>Kein PNG mehr und kein <c>Task</c></b> (Etappe DG-E3): Das Modell ist
+    /// die Beschreibung des Bildes, nicht seine Rasterung — es entsteht ohne
+    /// Zeichenbibliothek und ohne den Faden zu belasten, den der Vorläufer mit
+    /// <c>Task.Run</c> freihalten musste. Gezeichnet wird erst im Baustein
+    /// <c>DiagrammSvg</c>, und zwar als Vektor.</para>
+    /// </summary>
+    [Parameter] public Func<PeakShavingErgebnis, bool, Zeichenmodell?>? Modell { get; set; }
 
     /// <summary>Schreibt die fuenf Spalten als CSV; ohne Delegat kein Knopf.</summary>
     [Parameter] public Func<PeakShavingErgebnis, Task<bool>>? CsvSpeichern { get; set; }
@@ -480,7 +507,18 @@
     private PeakShavingErgebnis? _ergebnis;
     private List<PeakShavingKennzahlenBlock.Zeile> _kennzahlen = new();
     private List<PeakShavingKennzahlenBlock.Monatszeile> _monate = new();
-    private byte[]? _bild;
+
+    /// <summary>
+    /// Das gehaltene Zeichenmodell des Lastgangs.
+    ///
+    /// <para><b>Es wird gehalten, nicht je Zeichenlauf geholt:</b> Der Baustein
+    /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des
+    /// Modells wechselt. Ein Modell, das bei jedem Tastendruck der Maske neu
+    /// entstünde, verwürfe mit dem Baum auch Zoom, Zeigerstelle und abgewählte
+    /// Reihen.</para>
+    /// </summary>
+    private Zeichenmodell? _modell;
+
     private bool _socZeigen;
     private string _reiter = "KENNZAHLEN";
 
@@ -836,7 +874,7 @@
 
         _kennzahlen = PeakShavingKennzahlenBlock.Zeilen(_ergebnis);
         _monate = PeakShavingKennzahlenBlock.Monatszeilen(_ergebnis);
-        await BildZeichnen();
+        ModellHolen();
 
         if (_ergebnis is not null && _ergebnis.SchwelleGerissen)
             Melden(string.Format(System.Globalization.CultureInfo.CurrentCulture, VorlageGerissen,
@@ -850,19 +888,23 @@
         _ergebnis = null;
         _kennzahlen = new List<PeakShavingKennzahlenBlock.Zeile>();
         _monate = new List<PeakShavingKennzahlenBlock.Monatszeile>();
-        _bild = null;
+        _modell = null;
     }
 
-    private async Task SoCGeaendert(bool an)
+    private void SoCGeaendert(bool an)
     {
         _socZeigen = an;
-        await BildZeichnen();
+        ModellHolen();
     }
 
-    private async Task BildZeichnen()
+    /// <summary>
+    /// Holt das Zeichenmodell — nach einem Lauf und beim Schalter „Ladezustand".
+    /// Nur an diesen zwei Stellen wechselt sein Inhalt, und nur dort darf seine
+    /// Referenz wechseln (siehe <see cref="_modell"/>).
+    /// </summary>
+    private void ModellHolen()
     {
-        if (_ergebnis is null || Bild is null) { _bild = null; return; }
-        _bild = await Bild(_ergebnis, _socZeigen);
+        _modell = _ergebnis is null || Modell is null ? null : Modell(_ergebnis, _socZeigen);
     }
 
     // =====================================================================

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -44,7 +45,21 @@ public class UebersichtReiterTests : EposBunitContext
     // Probendaten — ein Projekt mit Wärmepumpe, Heizstab und Heizkessel
     // =====================================================================
 
-    private static readonly byte[] BILD = { 137, 80, 78, 71 };
+    /// <summary>
+    /// Ein ECHTER Ring als Zeichenmodell (Etappe DG-E3, Gruppe (c)) — ohne Legende
+    /// im Bild, wie die Hülle ihn baut: Sie steht hier als HTML daneben.
+    ///
+    /// <para>EINMAL je Fall gebaut und dann liegen gelassen: Der Baustein baut seinen
+    /// Knotenbaum nur neu, wenn die REFERENZ des Modells wechselt.</para>
+    /// </summary>
+    private readonly Zeichenmodell _ring = ChartRenderer.RingModell(
+        "Wärmebedarfsdeckung",
+        new[]
+        {
+            new ChartRenderer.Ringsegment("Wärmepumpe", 300.0, ChartRenderer.C_WP),
+            new ChartRenderer.Ringsegment("Rest", 180.0, ChartRenderer.C_KESSEL)
+        },
+        62.5, "%", "gedeckt", false);
 
     private static SimulationErgebnisCtrl.UebersichtKennzahlen Zahlen() =>
         new SimulationErgebnisCtrl.UebersichtKennzahlen
@@ -139,8 +154,8 @@ public class UebersichtReiterTests : EposBunitContext
         {
             p.Add(x => x.Kennzahlen, Zahlen());
             p.Add(x => x.Daten, daten);
-            p.Add(x => x.RingWaerme, BILD);
-            p.Add(x => x.RingStrom, BILD);
+            p.Add(x => x.RingWaerme, _ring);
+            p.Add(x => x.RingStrom, _ring);
             if (details is not null) p.Add(x => x.BedarfDetails, EventCallback.Factory.Create(this, details));
             if (strom is not null) p.Add(x => x.StromDetails, EventCallback.Factory.Create(this, strom));
         });
@@ -256,21 +271,42 @@ public class UebersichtReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Daten());
 
-        Assert.Equal(2, seite.FindAll("img").Count);
-        Assert.Equal(2, seite.FindAll("div.epos-diagramm--rund img").Count);
+        Assert.Empty(seite.FindAll("img"));
         Assert.Equal(2, seite.FindAll("div.epos-simueb-ring").Count);
 
-        // Die zwei Ringe bleiben PIXELBILDER: Ein Kreis traegt keine Zeitachse,
-        // und der SVG-Baustein der Etappe DG-E3 hat hier nichts zu zeichnen.
-        Assert.Equal(2, seite.FindComponents<EPOS.UI.Standards.ChartBild>().Count);
-        Assert.Empty(seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
+        // ZWEI RINGE ALS SVG (Etappe DG-E3, Gruppe (c)) - und ZWEI Kennungen: Sie
+        // bilden die clipPath-Namen, und mit derselben schnitte das eine Bild am
+        // Rechteck des anderen.
+        var ringe = seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>();
+        Assert.Equal(2, ringe.Count);
+        Assert.Equal(new[] { "simerg-ring-waerme", "simerg-ring-strom" },
+                     ringe.Select(r => r.Instance.Kennung).ToArray());
+    }
+
+    /// <summary>
+    /// <b>Am Ring ist die Legende NICHT schaltbar</b> (Entscheid der Etappe DG-E3):
+    /// Ein Kreis, dessen Segment fehlt, ist kein Kreis mehr — die Anteile ergänzen
+    /// sich zu 100 %. Der WERT am Zeiger bleibt: Er ist das, was der Ring statt des
+    /// Zooms anbietet (DG-E3-10).
+    /// </summary>
+    [Fact]
+    public void Am_Ring_ist_die_Legende_nicht_schaltbar()
+    {
+        var ring = Zeichnen(Daten()).FindComponents<EPOS.UI.Bausteine.DiagrammSvg>()[0]
+                                    .Instance;
+
+        Assert.False(ring.LegendeSchaltbar);
+        Assert.True(ring.ZeigtWertAmElement);
     }
 
     /// <summary>
     /// <b>Entscheid c (#222): KEINE ZOOMLEISTE AN RINGEN.</b> Die Leiste
     /// „×1 · 1:1" bleibt Zeitreihen und Balken vorbehalten; an einem Ring war sie
     /// Bedienfläche ohne Gegenwert, und auf ×1,2 schnitt der Rahmen den Kreis an.
-    /// Das ist die eine Ausnahme zur Hausregel W8‑E‑2 — der RAHMEN bleibt.
+    ///
+    /// <para>Seit der Etappe DG-E3 steht das NICHT mehr am Aufrufer: Ein Modell ohne
+    /// Zeichenfläche hat keine Datenkoordinaten, und der Baustein lässt die Leiste
+    /// von selbst weg — <c>OhneZoom</c> setzt der Reiter nicht. Der RAHMEN bleibt.</para>
     /// </summary>
     [Fact]
     public void Die_Ringe_tragen_keine_Zoomleiste()
@@ -279,7 +315,9 @@ public class UebersichtReiterTests : EposBunitContext
 
         Assert.Empty(seite.FindAll("div.epos-diagramm-leiste"));
         Assert.Empty(seite.FindAll("button.epos-diagramm-knopf"));
-        Assert.Equal(2, seite.FindAll("div.epos-diagramm").Count);   // der Rahmen bleibt
+        Assert.All(seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>(),
+                   r => Assert.False(r.Instance.OhneZoom));
+        Assert.Equal(2, seite.FindAll("div.epos-diagramm-svg-flaeche").Count);
     }
 
     /// <summary>
@@ -321,7 +359,8 @@ public class UebersichtReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Daten(stromerzeuger: false));
 
-        Assert.Equal(2, seite.FindAll("img").Count);          // der Stromring bleibt stehen
+        // Der Stromring bleibt stehen.
+        Assert.Equal(2, seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>().Count);
         var hinweis = seite.Find("p.epos-simueb-leerhinweis").TextContent;
         Assert.Contains("Kein Stromerzeuger in der Kaskade", hinweis);
         Assert.Contains("① Konfiguration", hinweis);
@@ -347,7 +386,7 @@ public class UebersichtReiterTests : EposBunitContext
     {
         var seite = Zeichnen(Daten(waermebedarf: false, strombedarf: false));
 
-        Assert.Empty(seite.FindAll("img"));
+        Assert.Empty(seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
         Assert.Equal(2, seite.FindAll("p.epos-simerg-hinweis").Count);
         Assert.Empty(seite.FindAll("ul.epos-simueb-legende"));
     }
@@ -636,7 +675,7 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Contains(Zahl(2850.2), seite.Markup, StringComparison.Ordinal);
 
         // Nichts, was ein Ergebnis behaupten würde.
-        Assert.Empty(seite.FindAll("img"));
+        Assert.Empty(seite.FindComponents<EPOS.UI.Bausteine.DiagrammSvg>());
         Assert.Empty(seite.FindAll("ul.epos-simueb-legende"));
         Assert.Empty(seite.FindAll("table.epos-simueb-tabelle"));
         Assert.DoesNotContain(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
@@ -706,8 +745,8 @@ public class UebersichtReiterTests : EposBunitContext
             p.Add(x => x.Daten, Daten(stromerzeuger: false));
             p.Add(x => x.Zustand, ErgebnisZustand.Gueltig);
             p.Add(x => x.Bedarf, Bedarfszahlen());
-            p.Add(x => x.RingWaerme, BILD);
-            p.Add(x => x.RingStrom, BILD);
+            p.Add(x => x.RingWaerme, _ring);
+            p.Add(x => x.RingStrom, _ring);
         });
 
         Assert.Empty(seite.FindAll("p.epos-simueb-leerkarte"));

@@ -29,15 +29,17 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Hier steht die ganze Datenseite.</b> Die Komponente kennt weder
     /// Controller noch Renderer; sie bekommt fertige Zahlen (die DTO aus iU9-W11a) und
-    /// fertige PNG. Der LAUF läuft in <c>Task.Run</c>, meldet Phasen über
+    /// fertige Zeichenmodelle. Der LAUF läuft in <c>Task.Run</c>, meldet Phasen über
     /// <c>IProgress&lt;LaufFortschritt&gt;</c> und nimmt einen
     /// <c>CancellationToken</c> — die Aufteilung ist die aus
     /// <c>Form_SpeicherOptimierung</c>: Vorprüfen, Bedarf und Bestücken lesen die
     /// Datenbank und bleiben auf dem Bedienfaden.</para>
     ///
-    /// <para><b>Bilder erst auf Anforderung.</b> Zwölf PNG je Lauf im Voraus zu rechnen
-    /// wäre zu teuer; die Seite fragt je Reiter und Schalterstellung nach und hält das
-    /// Ergebnis in ihrem Zwischenspeicher.</para>
+    /// <para><b>Bilder erst auf Anforderung.</b> Sechzehn Zeichenmodelle je Lauf im
+    /// Voraus zu bauen wäre zu teuer; die Seite fragt je Reiter und Schalterstellung
+    /// nach und hält das Ergebnis in ihrem Zwischenspeicher. Der ist seit der Etappe
+    /// DG-E3 zugleich Bedingung und nicht nur Ersparnis: <c>DiagrammSvg</c> baut
+    /// seinen Knotenbaum nur neu, wenn die REFERENZ des Modells wechselt.</para>
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
@@ -269,7 +271,6 @@ namespace WindowsFormsApplication1
                 Laufen = Laufen,
                 Abbrechen = Abbrechen,
                 Speichern = ErgebnisSpeichern,
-                Bild = Bild,
                 Modell = Modell,
 
                 // Die Farbe einer Reihe gilt ANWENDUNGSWEIT (Farbrollen, Bedienung

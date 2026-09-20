@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -59,6 +60,14 @@ public class PeakShavingDialogTests : EposBunitContext
             IFixEur = 1000.0
         };
 
+    /// <summary>
+    /// Ein Zeichenmodell ohne Inhalt — die Prüfstände fragen nur, OB und mit welcher
+    /// Schalterstellung der Delegat gerufen wurde; was er zeichnet, misst
+    /// <c>PeakShavingBildTests</c> im Kern.
+    /// </summary>
+    private static Zeichenmodell Leermodell()
+        => new Zeichenmodell(200, 100, Farbton.Aus(Farbrolle.HINTERGRUND));
+
     /// <summary>Der echte Rechenweg — dieselbe Engine wie in der Hülle.</summary>
     private static Task<PeakShavingErgebnis> Rechnen(double[] reihe, PeakShavingEingaben e)
         => Task.FromResult(new PeakShaving(e.AlsPeakShavingParameter(), e.Modus)
@@ -71,7 +80,7 @@ public class PeakShavingDialogTests : EposBunitContext
         Func<string, Task<string?>>? waehlen = null,
         Func<double[], PeakShavingEingaben, Task<PeakShavingErgebnis>>? rechnen = null,
         Func<double[], PeakShavingEingaben, Task<double>>? minimal = null,
-        Func<PeakShavingErgebnis, bool, Task<byte[]?>>? bild = null,
+        Func<PeakShavingErgebnis, bool, Zeichenmodell?>? modell = null,
         Func<PeakShavingErgebnis, Task<bool>>? csv = null,
         Func<double, bool, Task<bool>>? variante = null,
         Action<bool>? geschlossen = null)
@@ -84,7 +93,7 @@ public class PeakShavingDialogTests : EposBunitContext
             .Add(x => x.DateiWaehlen, waehlen)
             .Add(x => x.Rechnen, rechnen ?? Rechnen)
             .Add(x => x.MinimaleSchwelle, minimal)
-            .Add(x => x.Bild, bild)
+            .Add(x => x.Modell, modell)
             .Add(x => x.CsvSpeichern, csv)
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
     }
@@ -212,15 +221,14 @@ public class PeakShavingDialogTests : EposBunitContext
 
     /// <summary>
     /// Der Lauf füllt die 17 Kennzahlzeilen (plus drei Trenner) und die
-    /// Monatsspitzen; das Bild kommt über den Delegaten.
+    /// Monatsspitzen; das Zeichenmodell kommt über den Delegaten.
     /// </summary>
     [Fact]
     public void Der_Lauf_fuellt_Kennzahlen_Monate_und_Bild()
     {
-        byte[] gemalt = new byte[] { 1, 2, 3 };
         bool socGefragt = false;
 
-        var cut = Zeige(bild: (r, soc) => { socGefragt = soc; return Task.FromResult<byte[]?>(gemalt); });
+        var cut = Zeige(modell: (r, soc) => { socGefragt = soc; return Leermodell(); });
 
         Rechenknopf(cut).Click();
 
@@ -320,14 +328,14 @@ public class PeakShavingDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Der SoC-Schalter zeichnet neu und fragt den Ladezustand ausdrücklich an —
-    /// die Sekundärachse des Bildes.
+    /// Der SoC-Schalter holt ein neues Zeichenmodell und fragt den Ladezustand
+    /// ausdrücklich an — die Sekundärachse des Bildes.
     /// </summary>
     [Fact]
     public void Der_SoC_Schalter_zeichnet_das_Bild_neu()
     {
         bool? letzterSoc = null;
-        var cut = Zeige(bild: (r, soc) => { letzterSoc = soc; return Task.FromResult<byte[]?>(new byte[] { 9 }); });
+        var cut = Zeige(modell: (r, soc) => { letzterSoc = soc; return Leermodell(); });
 
         Rechenknopf(cut).Click();
         Assert.False(letzterSoc);

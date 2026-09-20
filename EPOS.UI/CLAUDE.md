@@ -127,8 +127,26 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   `UeberlagerungstitelTests`; ein `@attributes`-Satz bleibt dort Handarbeit (bunit-Fall im Wirt).
 - **Ein Dialog IN einem Dialog:** Unterdialoge erscheinen als `Ueberlagerung` im selben Fenster,
   nie als zweite `BlazorWebView`; der Wirt splattet ihren Parametersatz aus `Gaben()`.
-- **Jedes Renderer-Bild steht im Baustein `Diagramm`**, einziger Weg dorthin ist `ChartBild` —
-  sonst fehlt der Zoom; `Rund="true"` reicht `OhneZoom` durch.
+- **Jedes Diagramm der Oberfläche ist ein `Zeichenmodell` im Baustein `DiagrammSvg`.** Die Hülle
+  holt `ChartRenderer.…Modell(…)` aus dem Kern und reicht es als `Modell` herein; der Baustein
+  macht daraus über `SvgSchreiber.Baum` Razor-Elemente. Es gibt **keinen PNG-Weg in der
+  Oberfläche** — ein `<img>` mit Renderer-Bytes wäre ein Diagramm ohne Zoom, ohne Legendenwahl,
+  ohne Werte am Zeiger und auf jeder DPI unscharf. Der `byte[]`-Weg des Renderers bleibt für den
+  **Bericht**.
+  - **Die Kennung ist je Bild auf einem Blatt EINDEUTIG** (sie bildet die `clipPath`-Namen);
+    wo ein Wirt sein Bild wechselt, ohne die Komponente zu tauschen, wandert das
+    Unterscheidende in die Kennung.
+  - **Das Modell wird ZWISCHENGESPEICHERT** — der Baustein baut seinen Knotenbaum nur neu, wenn
+    die **Referenz** wechselt; ein Modell je Zeichenlauf verwürfe mit dem Baum auch Zoom,
+    Zeigerstelle und abgewählte Reihen.
+  - **Was das Bild kann, sagt sein Modell, nicht der Aufrufer:** Die Achsenart kommt aus
+    `Zeichenflaeche.X`, die Einheiten aus `Zeichenflaeche.XEinheit` und `Datenreihe.Einheit`, die
+    Achsenseite aus `Datenreihe.Achsenseite`. **Ein Bild ohne Zeichenfläche hat keinen Zoom** und
+    zeigt statt dessen den `data-wert` des Elements unter dem Zeiger; bei Ring und Kuchen ist die
+    Legende zusätzlich nicht schaltbar (`LegendeSchaltbar="false"`).
+  - **Die Farbwahl am Bild steht einmal** in `Bausteine/Farbwahlwirt.cs`: Ein Wirt schreibt
+    `@inherits Farbwahlwirt` und reicht `FarbwahlErlaubt`/`FarbeGewaehlt`/`FarbeZurueckgesetzt`
+    samt `Palette` durch. **Kein Delegat, kein Wähler.**
 - **Eine Summenlinie heißt nach dem, was sie summiert, und ist abschaltbar wie ihre
   Summanden.** Der Name folgt der Summenbildung im Code, nicht der Gewohnheit: Ein
   Schlüssel „Gesamt" für drei verschiedene Summen benennt keine davon — je Diagramm ein

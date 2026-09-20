@@ -305,7 +305,10 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void DieSchnittkurveTraegtIhreUngleichmaessigenStuetzstellen()
         {
-            Datenreihe r = Assert.Single(Schnittkurve().Reihen);
+            // Neben der KURVE stehen seit dem Oberflaechen-Abschluss ihre
+            // STUETZPUNKTE als eigene Punktreihen (sonst verschluckt sie das innere
+            // svg, DG-E2-2). Gemeint ist hier die Linie.
+            Datenreihe r = Assert.Single(Schnittkurve().Reihen, x => x.Art == Reihenart.Linie);
 
             Assert.Equal(Reihenart.Linie, r.Art);
             Assert.Equal(KAPAZITAETEN, r.XWerte);

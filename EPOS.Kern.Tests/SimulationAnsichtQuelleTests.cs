@@ -218,11 +218,12 @@ namespace EPOS.Kern.Tests
         /// Aufrufe desselben Auftrags liefern dasselbe Bild (Determinismus, dieselbe
         /// Zusage wie in <c>Proben/ChartProben</c>).
         ///
-        /// <para><b>Zwei Wege seit der Etappe DG-E3, Gruppe (a).</b> Eine Stelle mit
-        /// ZEITACHSE liefert ein <c>Zeichenmodell</c> (<c>dienste.Modell</c>) — die
-        /// Oberfläche zeigt es als SVG. Ohne Zeitachse bleibt es beim Pixelbild
-        /// (<c>dienste.Bild</c>): die Streuwolke, die zwei Ringe und die Monatssäulen
-        /// der Autarkie. Geprüft wird je einer von beiden.</para>
+        /// <para><b>EIN Weg seit der Etappe DG-E3.</b> Jede Stelle liefert ein
+        /// <c>Zeichenmodell</c> (<c>dienste.Modell</c>), das die Oberfläche als SVG
+        /// zeigt; einen PNG-Ausgang führt die Datenseite nicht mehr. Geprüft wird ein
+        /// Bild MIT Zeitachse (der Wärmebedarf) und eines OHNE (der Ring): Das zweite
+        /// trägt keine Zeichenfläche und keine Datenreihe — seine Werte hängen am
+        /// Element.</para>
         /// </summary>
         [Fact]
         public async Task Die_Bilder_der_Ergebnisseite_sind_da_und_deterministisch()
@@ -244,15 +245,17 @@ namespace EPOS.Kern.Tests
             Zeichenmodell zweites = dienste.Modell(new Bildauftrag(Bilder.BedarfWaerme));
             Assert.Equal(SvgSchreiber.Text(erstes), SvgSchreiber.Text(zweites));
 
-            // Und das PNG bleibt, wo es bleibt: Seit Auftrag #240 ist die Torte der
-            // Uebersicht gefallen (kein Anforderer mehr, seit #222 zeichnet die
-            // Uebersicht den RING). Er hat kein x und deshalb kein Modell.
-            byte[] uebersicht = dienste.Bild(new Bildauftrag(Bilder.RingWaerme));
-            Assert.NotNull(uebersicht);
-            Assert.True(uebersicht.Length > 0);
+            // DER RING HAT KEIN x UND DESHALB KEINE ZEICHENFLAECHE (DG-E3-7) - ein
+            // Modell fuehrt er seit den Gruppen (b)/(c) trotzdem: Jedes Segment traegt
+            // seinen Wert am Element, und die Oberflaeche zeigt ihn am Zeiger
+            // (DG-E3-10). Ein PNG gibt es in der Oberflaeche nicht mehr.
+            Zeichenmodell ring = dienste.Modell(new Bildauftrag(Bilder.RingWaerme));
+            Assert.NotNull(ring);
+            Assert.Null(ring.Flaeche);
+            Assert.Empty(ring.Reihen);
 
-            byte[] nochmal = dienste.Bild(new Bildauftrag(Bilder.RingWaerme));
-            Assert.Equal(uebersicht, nochmal);
+            Zeichenmodell nochmal = dienste.Modell(new Bildauftrag(Bilder.RingWaerme));
+            Assert.Equal(SvgSchreiber.Text(ring), SvgSchreiber.Text(nochmal));
         }
 
         // =================================================================================

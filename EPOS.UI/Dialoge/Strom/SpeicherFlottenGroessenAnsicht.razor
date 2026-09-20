@@ -31,6 +31,20 @@
    1). Die Hausregel dahinter ist dieselbe wie in der Ergebnisansicht (#184):
    Fachaussagen stehen im Kern, damit iOS sie nicht ein zweites Mal bekommt.
 
+   JEDES BILD IST EIN ZEICHENMODELL IM BAUSTEIN DiagrammSvg (Etappe DG-E3). Karte,
+   Stueckzahlkurve und Stueckzahlraster haben dabei KEINE Zeichenflaeche: Zwischen
+   zwei gerechneten Rasterpunkten liegt nichts, worauf ein Zoom zeigen koennte. Der
+   Baustein schaltet ihn dort von selbst ab und nennt statt dessen den Wert des
+   Elements unter dem Zeiger - jede Rasterzelle ihre zwei Groessen und ihren
+   Kapitalwert, eine gesperrte mit dem Zusatz "(unzulaessig)" (DG-E3-10). Die zwei
+   Schnitte und der Ausschnitt tragen eine Flaeche und damit den Zoom.
+
+   DIE MODELLE WERDEN GEHALTEN, NICHT JE ZEICHENLAUF GEHOLT. Bis hierher entstanden
+   alle Bilder bei jedem OnParametersSet neu - als PNG war das nur teuer, als
+   Zeichenmodell verwuerfe es mit dem Knotenbaum auch Zoom und Zeigerstelle. Der
+   Zwischenspeicherschluessel traegt deshalb Einheitenwahl und Schieberstellen; was
+   ihn nicht aendert, aendert auch die Bilder nicht.
+
    DIE ACHSEN FOLGEN DER GROESSENKOPPLUNG (Auftrag #226, Anwenderbefund vom
    11.09.2026). Bis dahin stand die C-Rate immer auf der Spaltenachse - auch bei
    einer Suche ueber Kapazitaet UND Leistung, wo P/C gar kein Gitter bildet: Aus
@@ -67,6 +81,7 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using System.Globalization
 @using WindowsFormsApplication1
+@using WindowsFormsApplication1.Zeichnung
 @using SpeicherEngine
 
 <div class="epos-flotte-groessen">
@@ -106,16 +121,23 @@
            eine Aussage ueber eine Achse, die der Lauf gar nicht gefahren hat. *@
         @if (Methode == FlottenSuchmethode.Stueckzahl)
         {
-            @if (_stueckbild is not null)
+            @* KEIN ZOOM AN DIESEN ZWEI BILDERN - sie haben keine Zeichenflaeche
+               (DG-E3-7): Zwischen zwei Stueckzahlen liegt nichts, worauf er zeigen
+               koennte. Der Baustein schaltet ihn deshalb von selbst ab; unter dem
+               Zeiger steht statt dessen der Wert der Saeule bzw. der Zelle
+               (DG-E3-10). *@
+            @if (_stueckmodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <ChartBild Png="@_stueckbild" Alt="@Resource.FLOTTE_STUECK_BILD_ALT" />
+                    <DiagrammSvg Modell="@_stueckmodell" Kennung="flotte-stueckzahl"
+                                 Bezeichnung="@Resource.FLOTTE_STUECK_BILD_ALT" />
                 </section>
             }
-            else if (_stueckrasterbild is not null)
+            else if (_stueckrastermodell is not null)
             {
                 <section class="epos-simerg-block">
-                    <ChartBild Png="@_stueckrasterbild" Alt="@Resource.FLOTTE_STUECK_RASTER_ALT" />
+                    <DiagrammSvg Modell="@_stueckrastermodell" Kennung="flotte-stueckraster"
+                                 Bezeichnung="@Resource.FLOTTE_STUECK_RASTER_ALT" />
                 </section>
             }
             else
@@ -147,16 +169,27 @@
                                              AuswahlChanged="EinheitGesetzt" />
                             </div>
                         }
-                        <ChartBild Png="@_rasterbild" Alt="@Rasterbeschreibung" />
+                        @* DIE RASTERKARTE HAT KEINE ZEICHENFLAECHE (DG-E3-7): Ihre
+                           Zellen sind gerechnete Punkte, zwischen denen nichts liegt.
+                           Der Baustein schaltet den Zoom deshalb selbst ab und nennt
+                           unter dem Zeiger den Wert der Zelle - samt „(unzulaessig)",
+                           wo sie gesperrt ist (DG-E3-10). Die Kennung traegt die
+                           gewaehlte Einheit: Deren Karte ist eine andere. *@
+                        <DiagrammSvg Modell="@_rastermodell" Kennung="@("flotte-raster-" + Einheitenkennung)"
+                                     Bezeichnung="@Rasterbeschreibung" />
                     </section>
 
                     @* OHNE ZWEITE PHASE KEIN BLOCK: Ein leerer Rahmen mit
                        Platzhalterbild waere eine Aussage ueber ein Raster, das
                        niemand gerechnet hat. *@
-                    @if (_ausschnittbild is not null)
+                    @if (_ausschnittmodell is not null)
                     {
                         <section class="epos-simerg-block">
-                            <ChartBild Png="@_ausschnittbild" Alt="@Ausschnittalt" />
+                            @* Der Ausschnitt IST die Lupe auf das Feinraster; der Zoom
+                               im Bild setzt sie fort, ohne einen zweiten Rechenlauf. *@
+                            <DiagrammSvg Modell="@_ausschnittmodell"
+                                         Kennung="@("flotte-ausschnitt-" + Einheitenkennung)"
+                                         Bezeichnung="@Ausschnittalt" />
                             <p class="epos-flotte-hinweis">@Ausschnittsatz</p>
                         </section>
                     }
@@ -195,8 +228,21 @@
                         </label>
                     </div>
 
-                    <ChartBild Png="@_spaltenbild" Alt="@Spaltenbeschreibung" />
-                    <ChartBild Png="@_zeilenbild" Alt="@Zeilenbeschreibung" />
+                    @* DIE ZWEI SCHNITTE TRAGEN EINE ZEICHENFLAECHE und damit den Zoom:
+                       Die Kurve laeuft ueber eine WERTEachse (Kapazitaet, Leistung oder
+                       C-Rate), und ihre Stuetzstellen liegen ungleichmaessig - das
+                       Feinraster der zweiten Suchphase schiebt Punkte dazwischen.
+
+                       DIE KENNUNG TRAEGT EINHEIT UND SCHIEBERSTELLE: Beide Schnitte
+                       stehen NEBENEINANDER auf demselben Blatt, und jede Schieberstelle
+                       ist eine andere Kurve - zwei Bilder duerfen dabei nie dieselben
+                       clipPath-Namen fuehren. *@
+                    <DiagrammSvg Modell="@_spaltenmodell"
+                                 Kennung="@("flotte-schnitt-spalte-" + Einheitenkennung + "-" + _spalte)"
+                                 Bezeichnung="@Spaltenbeschreibung" />
+                    <DiagrammSvg Modell="@_zeilenmodell"
+                                 Kennung="@("flotte-schnitt-zeile-" + Einheitenkennung + "-" + _zeile)"
+                                 Bezeichnung="@Zeilenbeschreibung" />
                 </section>
             </div>
         }
@@ -398,7 +444,7 @@
     /// Der AUSSCHNITT um das Optimum steht da (Prüfhilfe, Auftrag #255) — er entsteht
     /// nur, wenn eine zweite Suchphase gelaufen ist.
     /// </summary>
-    public bool HatAusschnitt => _ausschnittbild is not null;
+    public bool HatAusschnitt => _ausschnittmodell is not null;
 
     /// <summary>Die Kandidatenzeilen nach Filter und Sortierung (Prüfhilfe).</summary>
     public IReadOnlyList<Katalogfilterzeile> SichtbareZeilen => Zeilen;
@@ -409,19 +455,42 @@
 
     private FlottenAuslegungErgebnis? _gezeichnet;
     private FlottenRasterdaten _raster = FlottenRasterdaten.Leer;
-    private byte[]? _rasterbild, _spaltenbild, _zeilenbild;
 
     /// <summary>
-    /// Das Bild des AUSSCHNITTS um das Optimum (Auftrag #255); <c>null</c>, solange keine
+    /// Die Zeichenmodelle von Karte und den zwei Schnitten.
+    ///
+    /// <para><b>Sie werden GEHALTEN, nicht je Zeichenlauf geholt</b> (Etappe DG-E3):
+    /// Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die
+    /// REFERENZ des Modells wechselt. Bis hierher entstanden die Bilder bei JEDEM
+    /// <c>OnParametersSet</c> neu — als PNG war das nur teuer, als Modell verwürfe es
+    /// mit dem Baum auch Zoom, Zeigerstelle und abgewählte Reihen. Der Schlüssel
+    /// <see cref="_schluessel"/> hält sie fest, solange Einheitenwahl und
+    /// Schieberstellen stehen.</para>
+    /// </summary>
+    private Zeichenmodell? _rastermodell, _spaltenmodell, _zeilenmodell;
+
+    /// <summary>
+    /// Der AUSSCHNITT um das Optimum (Auftrag #255); <c>null</c>, solange keine
     /// zweite Suchphase gelaufen ist — dann steht der Block gar nicht da.
     /// </summary>
-    private byte[]? _ausschnittbild;
+    private Zeichenmodell? _ausschnittmodell;
 
     /// <summary>
     /// Die zwei Bilder der STÜCKZAHLSUCHE (Auftrag #247); höchstens eines ist belegt —
     /// die Kurve bei EINER variierten Einheit, die Karte n₁ × n₂ bei ZWEI.
     /// </summary>
-    private byte[]? _stueckbild, _stueckrasterbild;
+    private Zeichenmodell? _stueckmodell, _stueckrastermodell;
+
+    /// <summary>
+    /// Der Zwischenspeicherschlüssel der Modelle: Was ihn nicht ändert, ändert auch
+    /// die Bilder nicht — und dann bleibt ihre Referenz und mit ihr der Zustand des
+    /// Bausteins stehen. Leer heißt „noch nichts geholt".
+    /// </summary>
+    private string _schluessel = "";
+
+    /// <summary>Der Schlüssel der STÜCKZAHLSICHT — sie kennt weder Einheit noch Schieber.</summary>
+    private const string SCHLUESSEL_STUECK = "STUECK";
+
     private string _offen = "";
     private int _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
 
@@ -454,6 +523,7 @@
             _einheit = SpeicherFlottenAnzeigeCtrl.FLOTTE_GESAMT;
             _spalte = -1;
             _zeile = -1;
+            _schluessel = "";
             _offen = "";
             _stand.Zuruecksetzen();
             _stand.Sortierspalte = "";
@@ -465,39 +535,48 @@
     }
 
     /// <summary>
-    /// Holt Karte, Schnitte und die drei Bilder aus dem Kern. Die Schieberstellen werden
-    /// dabei auf die Achse zurückgeholt — eine neue Einheitenwahl hat andere Achsen, und
-    /// eine Stelle, die es nicht mehr gibt, zeigte eine leere Kurve.
+    /// Holt Karte, Schnitte und die Zeichenmodelle aus dem Kern. Die Schieberstellen
+    /// werden dabei auf die Achse zurückgeholt — eine neue Einheitenwahl hat andere
+    /// Achsen, und eine Stelle, die es nicht mehr gibt, zeigte eine leere Kurve.
+    ///
+    /// <para><b>Geholt wird nur, was sich geändert hat</b> (Etappe DG-E3): Ein
+    /// unveränderter Schlüssel lässt die Modelle stehen — und damit den Zustand, den
+    /// der Baustein an ihrer Referenz führt (siehe <see cref="_rastermodell"/>).</para>
     /// </summary>
     private void Zeichnen()
     {
         // DIE STUECKZAHLSICHT ZUERST (Auftrag #247): Sie braucht weder Einheitenwahl noch
-        // Schieber — die Achse ist die Stueckzahl, und die steht im Kandidaten.
-        _stueckbild = null;
-        _stueckrasterbild = null;
+        // Schieber — die Achse ist die Stueckzahl, und die steht im Kandidaten. Die
+        // Groessenkarte und ihre zwei Schnitte entstehen dann GAR NICHT: Sie zeigten eine
+        // Achse, die dieser Lauf nie gefahren hat.
         if (Methode == FlottenSuchmethode.Stueckzahl)
         {
-            _stueckbild = SpeicherFlottenAnzeigeCtrl.Stueckzahlbild(Ergebnis);
-            _stueckrasterbild = _stueckbild is null
-                ? SpeicherFlottenAnzeigeCtrl.Stueckzahlrasterbild(Ergebnis) : null;
-            // Die Groessenkarte und ihre zwei Schnitte entstehen dann GAR NICHT: Sie
-            // zeigten eine Achse, die dieser Lauf nie gefahren hat — und jedes Bild
-            // kostet einen vollen Zeichenlauf.
             _raster = FlottenRasterdaten.Leer;
-            _rasterbild = null;
-            _spaltenbild = null;
-            _zeilenbild = null;
-            _ausschnittbild = null;
+            _rastermodell = null;
+            _spaltenmodell = null;
+            _zeilenmodell = null;
+            _ausschnittmodell = null;
+
+            if (string.Equals(_schluessel, SCHLUESSEL_STUECK, StringComparison.Ordinal)) return;
+            _schluessel = SCHLUESSEL_STUECK;
+
+            _stueckmodell = SpeicherFlottenAnzeigeCtrl.StueckzahlModell(Ergebnis);
+            _stueckrastermodell = _stueckmodell is null
+                ? SpeicherFlottenAnzeigeCtrl.StueckzahlrasterModell(Ergebnis) : null;
             return;
         }
+
+        _stueckmodell = null;
+        _stueckrastermodell = null;
 
         _raster = SpeicherFlottenAnzeigeCtrl.Rasterdaten(Ergebnis, _einheit);
         if (_raster.IstLeer)
         {
-            _rasterbild = null;
-            _spaltenbild = null;
-            _zeilenbild = null;
-            _ausschnittbild = null;
+            _schluessel = "";
+            _rastermodell = null;
+            _spaltenmodell = null;
+            _zeilenmodell = null;
+            _ausschnittmodell = null;
             return;
         }
 
@@ -508,17 +587,32 @@
         _spalte = Math.Clamp(_spalte, 0, _raster.Spaltenwerte.Count - 1);
         _zeile = Math.Clamp(_zeile, 0, _raster.Zeilenwerte.Count - 1);
 
-        _rasterbild = SpeicherFlottenAnzeigeCtrl.Rasterbild(Ergebnis, _einheit, Einheitenname(_einheit));
-        _spaltenbild = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiSpalte(
+        // DER SCHLUESSEL STEHT ERST HIER: Er traegt die GEKLEMMTEN Schieberstellen —
+        // „noch nicht gewaehlt" (−1) waere sonst ein anderer Schluessel als dieselbe
+        // Stelle nach der Vorbelegung.
+        string schluessel = _einheit + "|" + _spalte + "|" + _zeile;
+        if (string.Equals(schluessel, _schluessel, StringComparison.Ordinal)) return;
+        _schluessel = schluessel;
+
+        _rastermodell = SpeicherFlottenAnzeigeCtrl.RasterModell(Ergebnis, _einheit, Einheitenname(_einheit));
+        _spaltenmodell = SpeicherFlottenAnzeigeCtrl.SchnittmodellBeiSpalte(
             Ergebnis, _raster.Spaltenwerte[_spalte], _einheit);
-        _zeilenbild = SpeicherFlottenAnzeigeCtrl.SchnittbildBeiZeile(
+        _zeilenmodell = SpeicherFlottenAnzeigeCtrl.SchnittmodellBeiZeile(
             Ergebnis, _raster.Zeilenwerte[_zeile], _einheit);
 
         // DER AUSSCHNITT haengt NICHT an den Schiebern (#255): Sein Fenster und sein
         // festgehaltener Wert stehen mit dem Lauf fest - es ist das Feinraster um das
         // Grob-Optimum. Die Einheitenwahl wirkt wie auf die Karte.
-        _ausschnittbild = SpeicherFlottenAnzeigeCtrl.Ausschnittbild(Ergebnis, _einheit);
+        _ausschnittmodell = SpeicherFlottenAnzeigeCtrl.AusschnittModell(Ergebnis, _einheit);
     }
+
+    /// <summary>
+    /// Die gewählte Einheit als Teil einer <c>clipPath</c>-Kennung — „gesamt" für die
+    /// Flotte, sonst ihre Stelle. <b>Nicht die nackte Zahl:</b> <c>−1</c> ergäbe einen
+    /// zweiten Bindestrich mitten im Namen und läse sich wie eine Trennung.
+    /// </summary>
+    private string Einheitenkennung
+        => _einheit < 0 ? "gesamt" : _einheit.ToString(CultureInfo.InvariantCulture);
 
     // --- Einheitenwahl und Schieber -------------------------------------------
 

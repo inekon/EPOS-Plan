@@ -1,8 +1,11 @@
 ﻿using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
+using WindowsFormsApplication1.Zeichnung;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -29,16 +32,41 @@ public class KapitalwertVerlaufDialogTests : EposBunitContext
         (2, "Worst")
     };
 
-    private static readonly byte[] PngA = { 1, 2, 3 };
-    private static readonly byte[] PngB = { 4, 5, 6 };
+    /// <summary>
+    /// Die beiden Verläufe als ZEICHENMODELL — je EINE Instanz, EINMAL gebaut: Der
+    /// Baustein <c>DiagrammSvg</c> vergleicht die MODELLREFERENZ, und ein je
+    /// Zeichenlauf neu gebautes Modell verwürfe mit dem Baum auch Zoom, Zeigerstelle
+    /// und abgewählte Reihen. Die Titel sind mit Absicht unverwechselbar — daran
+    /// erkennt der Prüfstand, welches der beiden Bilder oben steht.
+    /// </summary>
+    private static readonly Zeichenmodell ModellDifferenz = Verlaufsbild("BILD-DIFFERENZ");
+    private static readonly Zeichenmodell ModellAbsolut = Verlaufsbild("BILD-ABSOLUT");
+
+    private static Zeichenmodell Verlaufsbild(string titel)
+    {
+        var werte = new double[21];
+        for (int i = 0; i < werte.Length; i++) werte[i] = -12000 + i * 1400;
+
+        return ChartRenderer.KapitalwertVerlaufModell(
+            titel,
+            new List<ChartRenderer.Reihe>
+            {
+                new ChartRenderer.Reihe("Variante A", werte, ChartRenderer.C_WP)
+            },
+            "Fussnote");
+    }
 
     public KapitalwertVerlaufDialogTests()
     {
+        // Die Verlaufsbilder haben eine Zeichenflaeche und binden deshalb das
+        // JS-Modul des Zooms; im Pruefstand gibt es keines.
+        JSInterop.Mode = JSRuntimeMode.Loose;
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
     private static KapitalwertVerlaufBilder Ergebnis(int jahre, string szenario) =>
-        new(PngA, PngB, "Restwert-Barwerte …", "Verlauf über " + jahre + " Jahre, Szenario „" + szenario + "“.");
+        new(ModellDifferenz, ModellAbsolut, "Restwert-Barwerte …",
+            "Verlauf über " + jahre + " Jahre, Szenario „" + szenario + "“.");
 
     private IRenderedComponent<KapitalwertVerlaufDialog> Aufbauen(
         Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>? berechnen = null,
@@ -86,10 +114,11 @@ public class KapitalwertVerlaufDialogTests : EposBunitContext
 
         Assert.Single(cut.FindAll("input[type=text]"));        // Zeitraum
         Assert.Single(cut.FindAll("select"));                  // Szenario
-        // Aktualisieren + Schliessen.
+        // Aktualisieren + Schliessen. Die beiden Diagramme fuehren eine eigene Leiste
+        // ("Bereich", "1:1"), ihre Knoepfe tragen aber epos-diagramm-knopf.
         Assert.Equal(2, cut.FindAll("button.epos-knopf:not(.epos-dialog-zu)").Count);
         // Zwei Bilder (nach dem Lauf beim Oeffnen).
-        Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Equal(2, cut.FindComponents<DiagrammSvg>().Count);
     }
 
     [Fact]
@@ -133,19 +162,30 @@ public class KapitalwertVerlaufDialogTests : EposBunitContext
         });
 
         Assert.Equal(1, laeufe);
-        Assert.Equal(2, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Equal(2, cut.FindComponents<DiagrammSvg>().Count);
     }
 
+    /// <summary>
+    /// <b>Beide Verläufe stehen als SVG im Baum</b> (Etappe DG-E3, Gruppe (c)) — in
+    /// der Reihenfolge Differenz, absolut, jeder unter seiner EIGENEN Kennung: Zwei
+    /// gleiche schnitten das eine Bild am <c>clipPath</c>-Rechteck des anderen.
+    /// </summary>
     [Fact]
-    public void Die_Bilder_kommen_als_data_URL_in_die_Seite()
+    public void Die_Bilder_stehen_als_DiagrammSvg_in_der_Seite()
     {
         var cut = Aufbauen();
 
-        var bilder = cut.FindAll("img.epos-chartbild");
-        Assert.Equal("data:image/png;base64," + Convert.ToBase64String(PngA),
-                     bilder[0].GetAttribute("src"));
-        Assert.Equal("data:image/png;base64," + Convert.ToBase64String(PngB),
-                     bilder[1].GetAttribute("src"));
+        var bilder = cut.FindComponents<DiagrammSvg>();
+        Assert.Equal("kapitalwert-differenz", bilder[0].Instance.Kennung);
+        Assert.Equal("kapitalwert-absolut", bilder[1].Instance.Kennung);
+
+        var flaechen = cut.FindAll(".epos-diagramm-svg");
+        Assert.Contains("BILD-DIFFERENZ", flaechen[0].TextContent);
+        Assert.Contains("BILD-ABSOLUT", flaechen[1].TextContent);
+
+        // MIT Zeichenflaeche: Der Verlauf traegt die Bedienleiste des Zooms - anders
+        // als die Kennlinien, die keine Flaeche haben (DG-E3-7).
+        Assert.Equal(2, cut.FindAll(".epos-diagramm-leiste").Count);
     }
 
     [Fact]

@@ -1048,19 +1048,6 @@ public class ErzeugerReiterTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Kein Pixelbild mehr.</b> Alle vier Erzeugerbilder tragen eine Zeitachse —
-    /// für <c>ChartBild</c> bleibt in diesen Reitern nichts übrig.
-    /// </summary>
-    [Fact]
-    public void Keiner_der_vier_Reiter_zeigt_noch_ein_ChartBild()
-    {
-        Assert.Empty(KesselZeichnen(Kessel()).FindComponents<ChartBild>());
-        Assert.Empty(SolarZeichnen().FindComponents<ChartBild>());
-        Assert.Empty(BhkwZeichnen(Bhkw()).FindComponents<ChartBild>());
-        Assert.Empty(PvZeichnen().FindComponents<ChartBild>());
-    }
-
-    /// <summary>
     /// Der Zoom ist Bedienung am Bild: Über jedem der vier Bilder stehen „Bereich"
     /// und „1:1".
     /// </summary>

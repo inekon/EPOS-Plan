@@ -96,7 +96,7 @@
             <WaermepumpeStammDialog Filterstandvorgabe="@_filterstand"
                                     Liste="@(() => WaermepumpenZeilen())"
                                     Satz="@WaermepumpeSatz"
-                                    Bilder="@((id, kuehl) => new KennlinienBilder(_bild, _bild))"
+                                    Bilder="@((id, kuehl) => new KennlinienBilder(_modell, _modell))"
                                     HatKuehlung="@(id => true)"
                                     Kennlinien="@(_ => Kennlinien())"
                                     KennlinienAbgleichen="@((_, _) => true)"
@@ -120,11 +120,11 @@
     private readonly Katalogfilterstand _filterstand = new();
     private readonly IReadOnlyList<string> _orte = new[] { "Stuttgart", "Berlin", "Hamburg" };
 
-    /// <summary>Das Zeichenmodell des Klimadialogs (seit Etappe E2 SVG statt PNG).</summary>
+    /// <summary>
+    /// Das Zeichenmodell der Bilder (seit Etappe E2 SVG statt PNG) — Klimadialog wie
+    /// Kennlinienmaske: Seit Gruppe (b) nimmt auch die Wärmepumpe ein Modell.
+    /// </summary>
     private Zeichenmodell? _modell;
-
-    /// <summary>Das PNG der Kennlinienmaske — sie geht weiter über <c>ChartBild</c>.</summary>
-    private byte[] _bild = Array.Empty<byte>();
 
     protected override void OnInitialized()
     {
@@ -135,7 +135,6 @@
         if (abfrage.TryGetValue("bilder", out var b)) _mitBildern = b.ToString() != "0";
 
         _modell = Diagrammmodell();
-        _bild = SkiaMaler.Png(_modell);
     }
 
     // ---------------------------------------------------------------- Bild

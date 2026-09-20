@@ -399,16 +399,34 @@
                             Verfallen="@MeldungVergessen" />
             }
 
+            @* ZWEI BILDER, ZWEI KENNUNGEN (Etappe DG-E3, Gruppe (b)): Die Kennung
+               bildet die clipPath-Namen; zwei gleiche schnitten das eine Bild am
+               Rechteck des anderen. Dieselben zwei Kennungen traegt der
+               Stammdialog - die beiden Masken stehen nie auf demselben Blatt.
+
+               KEIN ZOOM UND KEINE EINHEIT VON AUSSEN. Die Kennlinien haben keine
+               Zeichenflaeche (Entscheid DG-E3-7): Der Baustein schaltet den Zoom
+               darum von selbst ab und zeigt statt einer Reihenzeile den Wert des
+               Elements unter dem Zeiger (DG-E3-10) - jede Punktmarke nennt
+               Aussentemperatur, Vorlauf und Wert bereits fertig formatiert.
+
+               KEINE FARBWAHL. Diese Maske bot noch nie einen Schreibweg fuer die
+               Farbrollen an; ein Waehler ohne Empfaenger waere ein Versprechen,
+               das niemand einloest (Hausregel des Bausteins). *@
             <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
                 <KindInhalt>
                     <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
                         <KindInhalt>
-                            <ChartBild Png="@_bilder.Cop" Alt="@ReiterCop" PlatzhalterText="@PlatzhalterBild" />
+                            <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
+                                         Bezeichnung="@ReiterCop"
+                                         PlatzhalterText="@PlatzhalterBild" />
                         </KindInhalt>
                     </Reiterblatt>
                     <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
                         <KindInhalt>
-                            <ChartBild Png="@_bilder.Leistung" Alt="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild" />
+                            <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
+                                         Bezeichnung="@ReiterLeistung"
+                                         PlatzhalterText="@PlatzhalterBild" />
                         </KindInhalt>
                     </Reiterblatt>
                 </KindInhalt>
@@ -558,6 +576,12 @@
     /// <summary>
     /// Die beiden Kennlinienbilder eines Geräts (Wärme) samt ihrer HERKUNFT — seit
     /// Befund <b>W7‑B‑3</b> liest die Hülle Projektkopie vor Stammkatalog.
+    ///
+    /// <para><b>Der Dialog ruft ihn NUR beim Gerätewechsel</b> (und nach dem
+    /// Kennlinieneditor bzw. dem Nachholen aus dem Katalog), nie je Zeichenlauf: Seit
+    /// die Bilder Zeichenmodelle sind, hängt der SVG-Baum des Bausteins an ihrer
+    /// REFERENZ — ein je Lauf neu gebautes Modell verwürfe mit dem Baum auch die
+    /// abgewählten Linien und die Zeigerstelle.</para>
     /// </summary>
     [Parameter] public Func<int, KennlinienBilder>? Bilder { get; set; }
 

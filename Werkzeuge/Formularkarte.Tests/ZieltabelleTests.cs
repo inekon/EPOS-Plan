@@ -25,7 +25,7 @@ public sealed class ZieltabelleTests
     [InlineData("DateTimePicker", "Datum", "Datumsfeld")]
     [InlineData("DataGridView", "Raster", "Raster")]
     [InlineData("ListView", "Raster", "Raster")]
-    [InlineData("Chart", "Diagramm", "ChartBild")]
+    [InlineData("Chart", "Diagramm", "DiagrammSvg")]
     [InlineData("GroupBox", "Sektion", "Gruppenkopf")]
     [InlineData("TabPage", "Sektion", "Gruppenkopf")]
     [InlineData("TabControl", "Sektion", "Aufteilung")]

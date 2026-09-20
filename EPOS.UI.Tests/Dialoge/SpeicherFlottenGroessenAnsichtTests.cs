@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Strom;
 using SpeicherEngine;
 using WindowsFormsApplication1;
@@ -21,11 +22,15 @@ namespace EPOS.UI.Tests.Dialoge;
 /// Spaltenfilter, Optimum-Zeile, Arbeitslos-Kennzeichen und dem Ereignis
 /// „übernehmen".</para>
 ///
-/// <para><b>Was hier NICHT geprüft wird: die Bilder selbst.</b> Ein PNG lässt sich
-/// nicht befragen. Dass Achsen, Schraffur und Marke stimmen, zeigt
-/// <c>EPOS.Kern.Tests/SpeicherFlottenGroessenCtrlTests</c> an den Daten und an den
-/// Bildbytes; hier zählt, dass ein Bild ANKOMMT und dass die Schieber die gewählte
-/// Stelle melden.</para>
+/// <para><b>Was hier NICHT geprüft wird: die Bilder selbst.</b> Dass Achsen,
+/// Schraffur und Marke stimmen, zeigt
+/// <c>EPOS.Kern.Tests/SpeicherFlottenGroessenCtrlTests</c> an den Daten und am
+/// Zeichenmodell; hier zählt, dass ein Bild ANKOMMT und dass die Schieber die
+/// gewählte Stelle melden.</para>
+///
+/// <para><b>Seit der Etappe DG-E3 steht jedes Bild als <see cref="DiagrammSvg"/> da</b>
+/// und nicht mehr als <c>img</c> mit <c>data:</c>-URI — gezählt und befragt wird
+/// deshalb die KOMPONENTE (Kennung, Bezeichnung), nicht ein Bildelement.</para>
 /// </summary>
 public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
 {
@@ -43,18 +48,23 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
     }
 
     /// <summary>
-    /// Drei Bilder: die Rasterkarte und die zwei Schnitte. Sie kommen als
-    /// <c>data:</c>-URI herein — dasselbe Muster wie in der Ergebnisansicht (#184).
+    /// Drei Bilder: die Rasterkarte und die zwei Schnitte — jedes als
+    /// <see cref="DiagrammSvg"/> mit seinem Zeichenmodell und seiner EIGENEN Kennung
+    /// (zwei gleiche schnitten das eine Bild am <c>clipPath</c>-Rechteck des anderen).
+    /// Ein Pixelbild steht daneben nicht mehr.
     /// </summary>
     [Fact]
     public void Karte_und_zwei_Schnitte_stehen_als_Bild_da()
     {
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
 
-        var bilder = cut.FindAll("img.epos-chartbild");
+        var bilder = Bilder(cut);
         Assert.Equal(3, bilder.Count);
-        Assert.All(bilder, b => Assert.StartsWith("data:image/png;base64,",
-            b.GetAttribute("src"), StringComparison.Ordinal));
+        Assert.All(bilder, b => Assert.NotNull(b.Instance.Modell));
+        Assert.Equal(3, bilder.Select(b => b.Instance.Kennung).Distinct(StringComparer.Ordinal).Count());
+
+        // KEIN Pixelbild mehr: Der PNG-Weg der Oberfläche ist mit der Etappe DG-E3 fort.
+        Assert.Empty(cut.FindAll("img"));
     }
 
     /// <summary>Die Aussage des Laufs und der SP‑O‑4-Hinweis stehen über den Bildern.</summary>
@@ -136,7 +146,7 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         Schieber(cut, Resource.FLOTTE_GROESSEN_LBL_KAPAZITAET).Change("99");
 
         Assert.Equal(30.0, cut.Instance.GewaehlterZeilenwert, 9);
-        Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Equal(3, Bilder(cut).Count);
     }
 
     // =====================================================================
@@ -171,7 +181,7 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
     }
 
     /// <summary>
-    /// Die drei Bildbeschreibungen folgen demselben Modus — ein <c>alt</c>-Text, der
+    /// Die drei Bildbeschreibungen folgen demselben Modus — eine Beschriftung, die
     /// von einer C-Rate spräche, wäre für eine Sprachausgabe schlicht falsch.
     /// </summary>
     [Fact]
@@ -180,11 +190,11 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
             .Add(x => x.Ergebnis, KapazitaetUndLeistung()));
 
-        IReadOnlyList<IElement> bilder = cut.FindAll("img.epos-chartbild");
+        var bilder = Bilder(cut);
         Assert.Equal(3, bilder.Count);
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER_KW, bilder[0].GetAttribute("alt"));
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW, bilder[1].GetAttribute("alt"));
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].GetAttribute("alt"));
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER_KW, bilder[0].Instance.Bezeichnung);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_KAP_BEI_KW, bilder[1].Instance.Bezeichnung);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].Instance.Bezeichnung);
     }
 
     /// <summary>
@@ -223,10 +233,10 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         Assert.DoesNotContain(Resource.FLOTTE_GROESSEN_LBL_LEISTUNG, cut.Markup,
             StringComparison.Ordinal);
 
-        IReadOnlyList<IElement> bilder = cut.FindAll("img.epos-chartbild");
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER, bilder[0].GetAttribute("alt"));
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT, bilder[1].GetAttribute("alt"));
-        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].GetAttribute("alt"));
+        var bilder = Bilder(cut);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_RASTER, bilder[0].Instance.Bezeichnung);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT, bilder[1].Instance.Bezeichnung);
+        Assert.Equal(Resource.FLOTTE_GROESSEN_ALT_SCHNITT_LEISTUNG, bilder[2].Instance.Bezeichnung);
     }
 
     // =====================================================================
@@ -387,7 +397,7 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, eins));
 
         Assert.Contains(Resource.FLOTTE_GROESSEN_KEIN_RASTER, cut.Markup, StringComparison.Ordinal);
-        Assert.Empty(cut.FindAll("img.epos-chartbild"));
+        Assert.Empty(Bilder(cut));
         Assert.Single(Zeilen(cut));
     }
 
@@ -405,7 +415,7 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p.Add(x => x.Ergebnis, Ergebnis()));
 
         Assert.False(cut.Instance.HatAusschnitt);
-        Assert.Equal(3, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Equal(3, Bilder(cut).Count);
     }
 
     /// <summary>
@@ -419,18 +429,17 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
             .Add(x => x.Ergebnis, MitFeinraster()));
 
         Assert.True(cut.Instance.HatAusschnitt);
-        Assert.Equal(4, cut.FindAll("img.epos-chartbild").Count);
+        Assert.Equal(4, Bilder(cut).Count);
 
-        var linke = cut.FindAll(".epos-flotte-groessen-spalte img.epos-chartbild");
+        // ZWEI Bilder in der LINKEN Spalte: Karte oben, Ausschnitt darunter.
+        var linke = cut.FindAll(".epos-flotte-groessen-spalte .epos-diagramm-svg");
         Assert.Equal(2, linke.Count);
-        Assert.StartsWith("data:image/png;base64,", linke[1].GetAttribute("src"),
-                          StringComparison.Ordinal);
     }
 
     /// <summary>
-    /// Der ALT-Text nennt Achse und festgehaltenen Wert, der Satz darunter Fenster,
-    /// Schrittweite und bestes Ergebnis — beide Texte kommen aus dem Kern, damit im Bild
-    /// und daneben dasselbe steht.
+    /// Die Bildbeschreibung nennt Achse und festgehaltenen Wert, der Satz darunter
+    /// Fenster, Schrittweite und bestes Ergebnis — beide Texte kommen aus dem Kern,
+    /// damit im Bild und daneben dasselbe steht.
     /// </summary>
     [Fact]
     public void Der_Ausschnitt_traegt_Alt_Text_und_Begleitsatz()
@@ -438,8 +447,8 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
         var cut = Render<SpeicherFlottenGroessenAnsicht>(p => p
             .Add(x => x.Ergebnis, MitFeinraster()));
 
-        string alt = cut.FindAll(".epos-flotte-groessen-spalte img.epos-chartbild")[1]
-                        .GetAttribute("alt")!;
+        // Das ZWEITE Bild der linken Spalte ist der Ausschnitt (unter der Karte).
+        string alt = Bilder(cut)[1].Instance.Bezeichnung;
         Assert.StartsWith("Ausschnitt um das Optimum", alt, StringComparison.Ordinal);
         Assert.Contains("200 kW", alt, StringComparison.Ordinal);
 
@@ -469,6 +478,15 @@ public sealed class SpeicherFlottenGroessenAnsichtTests : EposBunitContext
 
     private static IReadOnlyList<IElement> Zeilen(IRenderedComponent<SpeicherFlottenGroessenAnsicht> cut)
         => cut.FindAll("tbody tr");
+
+    /// <summary>
+    /// Die Diagramme der Sicht in ihrer Reihenfolge im Baum: Rasterkarte, Ausschnitt
+    /// (nur mit zweiter Suchphase), Spaltenschnitt, Zeilenschnitt — bzw. das eine Bild
+    /// der Stückzahlsuche.
+    /// </summary>
+    private static IReadOnlyList<IRenderedComponent<DiagrammSvg>> Bilder(
+        IRenderedComponent<SpeicherFlottenGroessenAnsicht> cut)
+        => cut.FindComponents<DiagrammSvg>();
 
     private static string Ersten(IRenderedComponent<SpeicherFlottenGroessenAnsicht> cut)
         => cut.Instance.SichtbareZeilen[0].Schluessel;

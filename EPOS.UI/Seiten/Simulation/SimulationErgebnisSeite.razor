@@ -23,10 +23,13 @@
    Behaelter-Reiter „Simulation" (R3) war kein Fachreiter, sondern genau diese
    Menueliste; er entfaellt, und aus elf Reitern werden ZEHN Blaetter.
 
-   BILDER ERST BEIM BETRETEN. Zwoelf PNG je Lauf im Voraus zu rechnen waere zu
-   teuer (Risiko der Vermessung § 11.5). Jedes Blatt fordert seine Bilder selbst
-   an, und die Seite haelt sie in einem Zwischenspeicher, dessen Schluessel die
-   Schalterstellung traegt. Ein neuer Lauf leert ihn.
+   BILDER ERST BEIM BETRETEN. Sechzehn Zeichenmodelle je Lauf im Voraus zu bauen
+   waere zu teuer (Risiko der Vermessung § 11.5). Jedes Blatt fordert seine Bilder
+   selbst an, und die Seite haelt sie in einem Zwischenspeicher, dessen Schluessel
+   die Schalterstellung traegt. Ein neuer Lauf leert ihn. Seit der Etappe DG-E3 ist
+   dieser Speicher zugleich BEDINGUNG: DiagrammSvg baut seinen Knotenbaum nur neu,
+   wenn die Referenz des Modells wechselt - ein Modell je Zeichenlauf verwuerfe mit
+   dem Baum auch Zoom, Zeigerstelle und abgewaehlte Reihen.
 
    DER AUTOMATIKSTART BLEIBT WOERTLICH (Befund W11-B48): Beim Oeffnen laeuft die
    Simulation von selbst an, wenn das Projekt eine Konfigurationszeile fuehrt -
@@ -111,8 +114,8 @@
                         <UebersichtReiter Kennzahlen="@_daten.Kennzahlen" Daten="@_daten.Uebersicht"
                                           Zustand="@_daten.Zustand" Zustandstext="@Zustandstext"
                                           Bedarf="@_daten.Bedarf"
-                                          RingWaerme="@(ErgebnisSteht ? Bild(Bilder.RingWaerme) : null)"
-                                          RingStrom="@(ErgebnisSteht ? Bild(Bilder.RingStrom) : null)"
+                                          RingWaerme="@(ErgebnisSteht ? Modell(Bilder.RingWaerme) : null)"
+                                          RingStrom="@(ErgebnisSteht ? Modell(Bilder.RingStrom) : null)"
                                           BedarfDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                           StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
                                           Aufnehmen="@ErzeugerAufnehmen" />
@@ -134,11 +137,12 @@
                 {
                     <Reiterblatt Schluessel="@Blatt.Waermepumpe" Titel="@Resource.SIM_ERZEUGERNAME_WAERMEPUMPE">
                         <KindInhalt>
-                            @* DER EINZIGE REITER MIT BEIDEN WEGEN: Produktion,
-                               Stromverbrauch und Speichertemperaturen sind
-                               Zeichenmodelle, die Streuwolke bleibt ein Pixelbild
-                               (x = Aussentemperatur, keine Zeitachse). *@
-                            <WaermepumpeReiter Daten="@_daten.Waermepumpe" Bild="BildHolen"
+                            @* VIER BILDER, EIN WEG: Produktion, Stromverbrauch,
+                               Speichertemperaturen und die Streuwolke sind
+                               Zeichenmodelle. Die Streuwolke zaehlt auf x die
+                               AUSSENTEMPERATUR statt der Stunde - was x bedeutet,
+                               sagt seit DG-E3-11 ihr Modell. *@
+                            <WaermepumpeReiter Daten="@_daten.Waermepumpe"
                                                Modell="ModellHolen"
                                                FarbeSetzen="@Dienste?.FarbeSetzen"
                                                FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
@@ -229,7 +233,7 @@
 
                 <Reiterblatt Schluessel="@Blatt.Ergebnis" Titel="@Resource.SIM_ERGEBNIS">
                     <KindInhalt>
-                        <ErgebnisReiter Autarkie="@_daten.Autarkie" Bild="BildHolen"
+                        <ErgebnisReiter Autarkie="@_daten.Autarkie" Modell="ModellHolen"
                                         KapazitaetGeaendert="KapazitaetGeaendert"
                                         WaermegangInhalt="@Waermegang"
                                         StromgangInhalt="@Stromgang" />
@@ -415,11 +419,11 @@
     // =====================================================================
 
     private SimulationErgebnisDaten _daten = new SimulationErgebnisDaten();
-    private readonly Dictionary<string, byte[]?> _bilder = new Dictionary<string, byte[]?>();
 
     /// <summary>
-    /// Die ZEICHENMODELLE der Zeitreihenbilder — derselbe Zwischenspeicher wie für
-    /// die Pixelbilder, aus demselben Grund und mit demselben Schluessel.
+    /// Die ZEICHENMODELLE aller Bilder dieser Seite — sechzehn je Lauf im Voraus zu
+    /// bauen waere zu teuer, also fragt jedes Blatt beim Betreten nach, und der
+    /// Schluessel des Bildauftrags trennt zwei Schalterstellungen.
     ///
     /// <para><b>Er ist hier mehr als eine Ersparnis:</b> Der Baustein
     /// <c>DiagrammSvg</c> baut seinen Knotenbaum nur neu, wenn die REFERENZ des
@@ -503,7 +507,6 @@
 
     private void Neuladen()
     {
-        _bilder.Clear();
         _modelle.Clear();
         _daten = Dienste?.Laden?.Invoke(IdProjekt) ?? new SimulationErgebnisDaten();
     }
@@ -718,23 +721,9 @@
     // Bilder - erst beim Betreten, dann zwischengespeichert
     // =====================================================================
 
-    private byte[]? BildHolen(Bildauftrag auftrag)
-    {
-        if (Dienste?.Bild is null) return null;
-
-        string schluessel = auftrag.Schluessel;
-        if (_bilder.TryGetValue(schluessel, out byte[]? vorhanden)) return vorhanden;
-
-        byte[]? neu = Dienste.Bild(auftrag);
-        _bilder[schluessel] = neu;
-        return neu;
-    }
-
-    private byte[]? Bild(string bild) => BildHolen(new Bildauftrag(bild));
-
     /// <summary>
-    /// Das Zeichenmodell EINES Zeitreihenbildes — derselbe Weg wie
-    /// <see cref="BildHolen"/>, nur ein anderer Ausgang (Etappe DG-E3, Gruppe (a)).
+    /// Das Zeichenmodell EINES Bildes — einmal geholt, dann liegen gelassen
+    /// (Etappe DG-E3; siehe <see cref="_modelle"/>, warum das hier Bedingung ist).
     /// </summary>
     private Zeichenmodell? ModellHolen(Bildauftrag auftrag)
     {
@@ -747,6 +736,9 @@
         _modelle[schluessel] = neu;
         return neu;
     }
+
+    /// <summary>Das Modell eines Bildes OHNE Schalterstellung — die zwei Ringe.</summary>
+    private Zeichenmodell? Modell(string bild) => ModellHolen(new Bildauftrag(bild));
 
     // =====================================================================
     // Die Ueberlagerungen

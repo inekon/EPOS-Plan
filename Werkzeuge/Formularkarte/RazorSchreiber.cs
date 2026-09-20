@@ -271,9 +271,13 @@ public static class RazorSchreiber
                 werkzeug.Append(einzug).Append("</Raster>\n");
                 break;
 
-            case "ChartBild":
-                werkzeug.Append(einzug).Append("<ChartBild Png=\"@Werte.").Append(name)
-                        .Append("\" Alt=\"@").Append(name).Append("Text\" />\n");
+            // Ein Diagramm der Oberflaeche ist ein ZEICHENMODELL im Baustein
+            // DiagrammSvg; einen PNG-Weg gibt es nicht mehr. Die Kennung muss je
+            // Bild eines Blattes eindeutig sein - der Feldname ist es.
+            case "DiagrammSvg":
+                werkzeug.Append(einzug).Append("<DiagrammSvg Modell=\"@Werte.").Append(name)
+                        .Append("\" Kennung=\"").Append(name.ToLowerInvariant())
+                        .Append("\" Bezeichnung=\"@").Append(name).Append("Text\" />\n");
                 break;
 
             case "Text":
@@ -461,7 +465,7 @@ public static class RazorSchreiber
         "Schalter" => ("bool", ""),
         "Datumsfeld" => ("DateOnly?", ""),
         "Raster" => ("IQueryable<object>?", ""),
-        "ChartBild" => ("byte[]?", ""),
+        "DiagrammSvg" => ("WindowsFormsApplication1.Zeichnung.Zeichenmodell?", ""),
         _ => null
     };
 
