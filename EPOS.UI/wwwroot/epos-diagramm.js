@@ -143,6 +143,12 @@ export function binden(flaeche, hilfe, optionen) {
     // --- Zeiger nieder: entweder ein Rechteck aufziehen oder verschieben. ---
     an(flaeche, "pointerdown", e => {
         if (e.button !== 0 && e.pointerType === "mouse") return;
+        // LEGENDE: Geht der Zeiger auf einem Legendeneintrag nieder, gehoert er
+        // dem Baustein (Blazor-Klick: Reihe schalten, Farbwaehler oeffnen). Hier
+        // beginnt dann keine Geste, und vor allem KEIN FANG - mit Fang wanderte
+        // das Ziel des click-Ereignisses auf die Flaeche, und der Eintrag
+        // bekaeme seinen Klick nie (gemessen 20.09.2026 im Wirt, Chromium).
+        if (istLegende(e.target)) return;
         // Der Fang haelt die Bewegung bei uns, auch wenn der Zeiger den Rahmen
         // verlaesst. Er kann fehlschlagen, wenn der Zeiger schon wieder weg ist -
         // dann geht es ohne ihn weiter.
@@ -322,6 +328,13 @@ export function bereichsmodus(flaeche, an_) {
 // ---------------------------------------------------------------- Innenleben
 
 /** Handler anhaengen UND merken - loesen() braucht dieselbe Funktion wieder. */
+// Ein Legendeneintrag - Text oder Farbfeld mit data-marke="legende:..." -
+// gehoert dem Baustein DiagrammSvg: Er schaltet die Reihe oder oeffnet den
+// Farbwaehler. Das Modul laesst seine Zeiger in Ruhe.
+function istLegende(el) {
+    return !!(el && el.closest && el.closest('[data-marke^="legende:"]'));
+}
+
 function an(el, name, fn, opt) {
     const z = ZUSTAENDE.get(el);
     el.addEventListener(name, fn, opt);

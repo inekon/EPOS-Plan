@@ -304,3 +304,15 @@ Klick für beides hieße, dass eine der beiden Gesten ein Menü davor bekommt.
 * **Nachladen ab dem Vierfachen** (DG-E2-4) kommt mit dem ersten gebündelten Pfad, also mit E3.
 * **Die Zeigerzeile liest den Index Stunde − `XVon`.** Das gilt für eine Stundenreihe; eine
   Viertelstundenreihe zählt Jahresstunden in Vierteln und braucht dort einen Faktor.
+### Nachtrag des Orchestrators: Legendenklick und Zeigerfang
+
+Die Sichtprüfung der Prüfseite `/diagrammsvg` im eingebauten Chromium der Desktop-App fand nach dem
+Merge einen Fehler, den weder bunit noch ein synthetischer Klick zeigen: Ein **echter** Mausklick
+auf einen Legendeneintrag kam nie beim Baustein an. Ursache war der Zeigerfang des JS-Moduls
+(`setPointerCapture` im `pointerdown`-Handler der Fläche): Mit Fang wandert das Ziel des
+`click`-Ereignisses auf die Fläche, der `<text>` mit dem Blazor-Handler bekommt es nicht.
+Behoben in `epos-diagramm.js`: Geht der Zeiger auf einem Element mit `data-marke="legende:…"`
+nieder (`istLegende`), beginnt keine Geste und es gibt keinen Fang. Zoom, Verschieben und
+Zeigerzeile sind davon unberührt (gemessen: viewBox `2441 … 6377`, Stufe ×2,2, fünf Ticks,
+Zeigerzeile mit drei Werten). Dazu der xUnit-Hinweis 2031 in `SvgSchreiberTests` (Assert.Single mit
+Prädikat statt Where).

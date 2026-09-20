@@ -409,7 +409,7 @@ namespace EPOS.Kern.Tests
             SvgKnoten w = SvgSchreiber.Baum(Flaechenmodell(), Farbpalette.Vorgabe);
 
             Assert.DoesNotContain(w.Alle(), k => k.Name == "line");
-            Assert.Single(w.Alle().Where(k => k.Name == "svg" && !ReferenceEquals(k, w)));
+            Assert.Single(w.Alle(), k => k.Name == "svg" && !ReferenceEquals(k, w));
         }
 
         /// <summary>
