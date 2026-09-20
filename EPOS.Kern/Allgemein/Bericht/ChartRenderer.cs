@@ -297,32 +297,29 @@ namespace WindowsFormsApplication1
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
             int W = 1240, H = 520;
-            using (var flaeche = Start(W, H))
+            var bild = Modell(W, H);
+            Titel(bild, "Speicherverlauf — Füllstand [kWh]", W);
+
+            double max = reihen.Max(r => r.Werte.Max());
+            if (max <= 0) max = 1;
+
+            float panelB = (W - 120f) / 3f;
+            for (int p = 0; p < 3; p++)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, "Speicherverlauf — Füllstand [kWh]", W);
-
-                double max = reihen.Max(r => r.Werte.Max());
-                if (max <= 0) max = 1;
-
-                float panelB = (W - 120f) / 3f;
-                for (int p = 0; p < 3; p++)
-                {
-                    var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
-                    PanelRahmen(g, rc, titelWoche[p]);
-                    foreach (Reihe r in reihen)
-                        ZeichneLinie(g, rc, Ausschnitt(r.Werte, fenster[p], 168), 0, max, r.Farbe, 3f);
-                    // Y-Beschriftung nur links.
-                    if (p == 0)
-                        using (var f = Schrift(15f))
-                        {
-                            Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
-                            Text(g, "0", f, SKColors.DimGray, rc.Left - 24f, rc.Bottom - 10f);
-                        }
-                }
-                Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
-                return Png(flaeche);
+                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                PanelRahmen(bild, rc, titelWoche[p]);
+                foreach (Reihe r in reihen)
+                    ZeichneLinie(bild, rc, Ausschnitt(r.Werte, fenster[p], 168), 0, max, r.Farbe, 3f);
+                // Y-Beschriftung nur links.
+                if (p == 0)
+                    using (var f = Schrift(15f))
+                    {
+                        Text(bild, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
+                        Text(bild, "0", f, SKColors.DimGray, rc.Left - 24f, rc.Bottom - 10f);
+                    }
             }
+            Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 70f, H - 56f);
+            return SkiaMaler.Png(bild);
         }
 
         /// <summary>
@@ -386,33 +383,30 @@ namespace WindowsFormsApplication1
             var titelWoche = new[] { "Winterwoche (Jan)", "Übergangswoche (Apr)", "Sommerwoche (Jul)" };
 
             int W = 1240, H = 560;
-            using (var flaeche = Start(W, H))
+            var bild = Modell(W, H);
+            Titel(bild, "Speichertemperaturen — oberste und unterste Schicht [°C]", W);
+
+            float panelB = (W - 120f) / 3f;
+            for (int p = 0; p < 3; p++)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, "Speichertemperaturen — oberste und unterste Schicht [°C]", W);
+                var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
+                PanelRahmen(bild, rc, titelWoche[p]);
+                foreach (Reihe r in reihen)
+                    ZeichneLinie(bild, rc, Ausschnitt(r.Werte, fenster[p], 168), min, max, r.Farbe, 3f);
 
-                float panelB = (W - 120f) / 3f;
-                for (int p = 0; p < 3; p++)
-                {
-                    var rc = SKRect.Create(70f + p * (panelB + 12f), 100f, panelB - 24f, 330f);
-                    PanelRahmen(g, rc, titelWoche[p]);
-                    foreach (Reihe r in reihen)
-                        ZeichneLinie(g, rc, Ausschnitt(r.Werte, fenster[p], 168), min, max, r.Farbe, 3f);
-
-                    if (p == 0)
-                        using (var f = Schrift(15f))
-                        {
-                            Text(g, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
-                            Text(g, min.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Bottom - 10f);
-                        }
-                }
-
-                // Umbruch bei vielen Serien: zwei Reihen je Speicher füllen die Zeile
-                // schneller als beim Füllstandsdiagramm.
-                Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
-                        70f, H - 96f, W - 70f);
-                return Png(flaeche);
+                if (p == 0)
+                    using (var f = Schrift(15f))
+                    {
+                        Text(bild, max.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Top - 8f);
+                        Text(bild, min.ToString("N0", DE), f, SKColors.DimGray, rc.Left - 62f, rc.Bottom - 10f);
+                    }
             }
+
+            // Umbruch bei vielen Serien: zwei Reihen je Speicher füllen die Zeile
+            // schneller als beim Füllstandsdiagramm.
+            Legende(bild, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(),
+                    70f, H - 96f, W - 70f);
+            return SkiaMaler.Png(bild);
         }
 
         // =================================================================== Kernzeichner
@@ -422,61 +416,55 @@ namespace WindowsFormsApplication1
                                              KeyValuePair<int[], string[]> xticks)
         {
             int W = 1240, H = 560;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel + "  [" + einheit + "]", W);
+            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+
+            int n = stapel.Count > 0 ? stapel[0].Werte.Length : linie.Length;
+            var summe = new double[n];
+            foreach (Reihe r in stapel)
+                for (int i = 0; i < n; i++) summe[i] += Math.Max(r.Werte[i], 0);
+
+            double max = summe.Length > 0 ? summe.Max() : 0;
+            if (linie != null) max = Math.Max(max, linie.Max());
+            max = Nice(max);
+
+            AchsenRaster(z, rc, max, xticks.Key, xticks.Value, n);
+
+            // Stapel von unten nach oben zeichnen (kumulierte Flächen).
+            var unten = new double[n];
+            foreach (Reihe r in stapel)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
-
-                int n = stapel.Count > 0 ? stapel[0].Werte.Length : linie.Length;
-                var summe = new double[n];
-                foreach (Reihe r in stapel)
-                    for (int i = 0; i < n; i++) summe[i] += Math.Max(r.Werte[i], 0);
-
-                double max = summe.Length > 0 ? summe.Max() : 0;
-                if (linie != null) max = Math.Max(max, linie.Max());
-                max = Nice(max);
-
-                AchsenRaster(g, rc, max, xticks.Key, xticks.Value, n);
-
-                // Stapel von unten nach oben zeichnen (kumulierte Flächen).
-                var unten = new double[n];
-                foreach (Reihe r in stapel)
-                {
-                    var oben = new double[n];
-                    for (int i = 0; i < n; i++) oben[i] = unten[i] + Math.Max(r.Werte[i], 0);
-                    ZeichneFlaeche(g, rc, unten, oben, max, r.Farbe);
-                    unten = oben;
-                }
-                if (linie != null) ZeichneLinie(g, rc, linie, 0, max, C_BEDARF, 3f);
-
-                var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
-                if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
-                Legende(g, leg, 90f, H - 64f);
-                return Png(flaeche);
+                var oben = new double[n];
+                for (int i = 0; i < n; i++) oben[i] = unten[i] + Math.Max(r.Werte[i], 0);
+                ZeichneFlaeche(z, rc, unten, oben, max, r.Farbe);
+                unten = oben;
             }
+            if (linie != null) ZeichneLinie(z, rc, linie, 0, max, C_BEDARF, 3f);
+
+            var leg = stapel.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
+            Legende(z, leg, 90f, H - 64f);
+            return SkiaMaler.Png(z);
         }
 
         private static byte[] LinienDiagramm(string titel, string einheit, List<Reihe> reihen,
                                              int[] xpos, string[] xlab)
         {
             int W = 1240, H = 560;
-            using (var flaeche = Start(W, H))
-            {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+            var z = Modell(W, H);
+            Titel(z, titel + "  [" + einheit + "]", W);
+            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
-                int n = reihen[0].Werte.Length;
-                double max = Nice(reihen.Max(r => r.Werte.Max()));
-                AchsenRaster(g, rc, max, xpos, xlab, n);
+            int n = reihen[0].Werte.Length;
+            double max = Nice(reihen.Max(r => r.Werte.Max()));
+            AchsenRaster(z, rc, max, xpos, xlab, n);
 
-                foreach (Reihe r in reihen)
-                    ZeichneLinie(g, rc, r.Werte, 0, max, r.Farbe, r.Farbe == C_BEDARF ? 3.5f : 2.5f);
+            foreach (Reihe r in reihen)
+                ZeichneLinie(z, rc, r.Werte, 0, max, r.Farbe, r.Farbe == C_BEDARF ? 3.5f : 2.5f);
 
-                Legende(g, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
-                return Png(flaeche);
-            }
+            Legende(z, reihen.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList(), 90f, H - 64f);
+            return SkiaMaler.Png(z);
         }
 
         private static byte[] MonatsBalken(string titel, string einheit, List<Reihe> serien,
@@ -484,68 +472,64 @@ namespace WindowsFormsApplication1
         {
             int W = 1240, H = 560;
             string[] monate = { "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
-            using (var flaeche = Start(W, H))
-            {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel + "  [" + einheit + "]", W);
-                var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
+            var z = Modell(W, H);
+            Titel(z, titel + "  [" + einheit + "]", W);
+            var rc = SKRect.Create(90f, 80f, W - 130f, 380f);
 
-                // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
-                Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
-                var stapel = serien.Where(s => s != einspeisung).ToList();
+            // Einspeisung wird nicht gestapelt, sondern als schmaler Nebenbalken gezeigt.
+            Reihe einspeisung = serien.FirstOrDefault(s => s.Name == "Einspeisung");
+            var stapel = serien.Where(s => s != einspeisung).ToList();
 
-                var summe = new double[12];
-                foreach (Reihe r in stapel) for (int m = 0; m < 12; m++) summe[m] += r.Werte[m];
-                double max = summe.Max();
-                if (linie != null) max = Math.Max(max, linie.Max());
-                if (einspeisung != null) max = Math.Max(max, einspeisung.Werte.Max());
-                max = Nice(max);
+            var summe = new double[12];
+            foreach (Reihe r in stapel) for (int m = 0; m < 12; m++) summe[m] += r.Werte[m];
+            double max = summe.Max();
+            if (linie != null) max = Math.Max(max, linie.Max());
+            if (einspeisung != null) max = Math.Max(max, einspeisung.Werte.Max());
+            max = Nice(max);
 
-                // Achsen + Monatslabels.
-                AchsenRaster(g, rc, max, null, null, 12);
-                using (var f = Schrift(15f))
-                    for (int m = 0; m < 12; m++)
-                    {
-                        float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
-                        float breite = f.MeasureText(monate[m]);
-                        Text(g, monate[m], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
-                    }
-
-                float slot = rc.Width / 12f;
-                float bBreit = slot * 0.5f, bSchmal = slot * 0.18f;
+            // Achsen + Monatslabels.
+            AchsenRaster(z, rc, max, null, null, 12);
+            using (var f = Schrift(15f))
                 for (int m = 0; m < 12; m++)
                 {
-                    float x0 = rc.Left + m * slot + slot * 0.12f;
-                    float unten = rc.Bottom;
-                    foreach (Reihe r in stapel)
-                    {
-                        float hoehe = (float)(r.Werte[m] / max * rc.Height);
-                        using (var br = Fuellung(r.Farbe))
-                            g.DrawRect(x0, unten - hoehe, bBreit, hoehe, br);
-                        unten -= hoehe;
-                    }
-                    if (einspeisung != null)
-                    {
-                        float hoehe = (float)(einspeisung.Werte[m] / max * rc.Height);
-                        using (var br = Fuellung(einspeisung.Farbe))
-                            g.DrawRect(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe, bSchmal, hoehe, br);
-                    }
+                    float x = rc.Left + (m + 0.5f) * rc.Width / 12f;
+                    float breite = f.MeasureText(monate[m]);
+                    Text(z, monate[m], f, SKColors.DimGray, x - breite / 2f, rc.Bottom + 8f);
                 }
 
-                if (linie != null)
+            float slot = rc.Width / 12f;
+            float bBreit = slot * 0.5f, bSchmal = slot * 0.18f;
+            for (int m = 0; m < 12; m++)
+            {
+                float x0 = rc.Left + m * slot + slot * 0.12f;
+                float unten = rc.Bottom;
+                foreach (Reihe r in stapel)
                 {
-                    var punkte = new SKPoint[12];
-                    for (int m = 0; m < 12; m++)
-                        punkte[m] = new SKPoint(rc.Left + (m + 0.5f) * slot,
-                            rc.Bottom - (float)(linie[m] / max * rc.Height));
-                    using (var stift = Strich(C_BEDARF, 3f)) Linienzug(g, punkte, stift);
+                    float hoehe = (float)(r.Werte[m] / max * rc.Height);
+                    z.Rechteck(x0, unten - hoehe, bBreit, hoehe, null, Flaeche(r.Farbe));
+                    unten -= hoehe;
                 }
-
-                var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
-                if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
-                Legende(g, leg, 90f, H - 56f);
-                return Png(flaeche);
+                if (einspeisung != null)
+                {
+                    float hoehe = (float)(einspeisung.Werte[m] / max * rc.Height);
+                    z.Rechteck(x0 + bBreit + slot * 0.06f, rc.Bottom - hoehe, bSchmal, hoehe,
+                               null, Flaeche(einspeisung.Farbe));
+                }
             }
+
+            if (linie != null)
+            {
+                var punkte = new SKPoint[12];
+                for (int m = 0; m < 12; m++)
+                    punkte[m] = new SKPoint(rc.Left + (m + 0.5f) * slot,
+                        rc.Bottom - (float)(linie[m] / max * rc.Height));
+                Linienzug(z, punkte, Stift(C_BEDARF, 3f));
+            }
+
+            var leg = serien.Select(r => new Segment(r.Name, 0, r.Farbe)).ToList();
+            if (linie != null) leg.Add(new Segment(linienName, 0, C_BEDARF));
+            Legende(z, leg, 90f, H - 56f);
+            return SkiaMaler.Png(z);
         }
 
         // ============================================== Kapitalwert-Verlauf (Phase 11)
