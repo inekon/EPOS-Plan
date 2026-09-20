@@ -88,7 +88,7 @@ Unter ''Administration → Einstellungen'' führt die Rubrik '''Klimadaten''' di
 * '''DWD-Testreferenzjahre''' – die Adresse des Klimaberatungsmoduls, über das Sie eine Datei beziehen.
 * '''TRY-Regionaldaten''' – die Adresse des Archivs mit den offenen Regionaldaten.
 
-Alle drei sind Textfelder. ''Standardwerte'' setzt sie auf die Vorgaben der Auslieferung; übernommen wird die Änderung erst mit ''Speichern''.
+Alle drei sind Textfelder. ''Standardwerte'' setzt sie auf die Vorgaben der Auslieferung; übernommen wird die Änderung erst mit ''OK''.
 
 == Siehe auch ==
 

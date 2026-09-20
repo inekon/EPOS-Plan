@@ -1,7 +1,7 @@
 # Konzept: Knopfleisten der Administrationsdialoge nach der Hausregel (DL-2)
 
-**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); Schritt 0 der
-Umsetzungsreihenfolge ist umgesetzt, die Schritte 1 bis 9 sind frei.
+**Stand:** Mockups abgenommen, alle sechs Fragen entschieden (Abschnitt 3); welcher Schritt
+umgesetzt ist, steht in der Tabelle der Umsetzungsreihenfolge (Abschnitt 4).
 **Anlass:** Anwenderentscheid 19.09.2026 — „Prüfe alle Dialoge [des Administrationsmenüs] auf
 Überlappung und Übersichtlichkeit/Anordnung Buttons." Entscheid: alle abweichenden Dialoge an die
 Hausregel angleichen, je Dialog ein Mockup zur Abnahme; umgebaut wird erst danach. Die Überlappung
@@ -107,8 +107,8 @@ abgenommen, alle Schritte sind damit frei.
 | 1 | GebaeudetypDialog (2) | S | — |
 | 2 | WaermepumpeStammDialog (4) | S | — |
 | 3 | BedarfAdminDialog (3) | S | — |
-| 4 | KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag — ein Knopftext, zwei Wirte | S | DL-Q4 |
-| 5 | EinstellungenDialog (10) | S | Schritt 0, DL-Q6 |
+| 4 | **umgesetzt (#384)** — KatalogImportDialog (9) und ModulImportDialog (8) in einem Auftrag: beide Füße laufen Füller · Auswahl übernehmen · Beenden (primär), beide Übernahmeknöpfe tragen denselben Ressourcentext (`PVIMP_BTN_UEBERNEHMEN`; „Speichern DB" ist entfallen), und die Quellenwahl beider Masken ist als Umschalter gezeichnet (`epos-knopf--gewaehlt`, `aria-pressed`) statt als primärer Knopf | S | DL-Q4 |
+| 5 | **umgesetzt (#384)** — EinstellungenDialog (10): eine `SpeichernLeiste` mit „Standardwerte" im Aktionsschlitz, Schlussknopf „OK" | S | Schritt 0, DL-Q6 |
 | 6 | PeakShavingDialog (5) | S | DL-Q2 |
 | 7 | GebaeudeDialog (1), beide Betriebsarten | M | Schritt 0, DL-Q1 |
 | 8 | KostenKomponenteDialog (6) | S | Schritt 0, DL-Q3 |
