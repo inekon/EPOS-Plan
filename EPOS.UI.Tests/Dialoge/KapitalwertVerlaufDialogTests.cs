@@ -72,12 +72,14 @@ public class KapitalwertVerlaufDialogTests : EposBunitContext
         Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>? berechnen = null,
         Action? beimSchliessen = null,
         int jahreVorgabe = 20,
-        bool titelAnzeigen = true)
+        bool titelAnzeigen = true,
+        Func<Farbrolle, Farbe, Task>? farbeSetzen = null)
     {
         return Render<KapitalwertVerlaufDialog>(p => p
             .Add(x => x.Szenarien, Szenarien)
             .Add(x => x.JahreVorgabe, jahreVorgabe)
             .Add(x => x.TitelAnzeigen, titelAnzeigen)
+            .Add(x => x.FarbeSetzen, farbeSetzen)
             .Add(x => x.Berechnen, berechnen ??
                 ((jahre, szenario, _) => Task.FromResult(Ergebnis(jahre, Szenarien[szenario].Text))))
             .Add(x => x.Geschlossen, () => beimSchliessen?.Invoke()));
@@ -323,5 +325,34 @@ public class KapitalwertVerlaufDialogTests : EposBunitContext
         cut.Find(".epos-infoknopf").Click();
 
         Assert.Equal(new[] { "Form_WirtschaftlichkeitVerlauf.btn_Help" }, hilfe.Geoeffnet);
+    }
+
+    // =================================================================================
+    //  Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Mit Schreibweg trägt das Farbfeld des Legendeneintrags die Klasse
+    /// <c>epos-legende-farbfeld</c>, und ein Klick öffnet den Wähler.</b> Die
+    /// Verlaufsreihen nehmen Hausfarben, und daraus wird im Modell eine Farbrolle;
+    /// ohne <c>FarbeSetzen</c> gäbe es dort nichts zu klicken.
+    /// </summary>
+    [Fact]
+    public void Das_Farbfeld_des_Verlaufs_oeffnet_den_Farbwaehler()
+    {
+        var cut = Aufbauen(farbeSetzen: (rolle, farbe) => Task.CompletedTask);
+
+        Assert.NotEmpty(cut.FindAll("rect.epos-legende-farbfeld"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect.epos-legende-farbfeld")[0].Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ohne Schreibweg bleibt das Farbfeld ein gemaltes Rechteck.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_traegt_der_Verlauf_kein_Farbfeld()
+    {
+        Assert.Empty(Aufbauen().FindAll("rect.epos-legende-farbfeld"));
     }
 }

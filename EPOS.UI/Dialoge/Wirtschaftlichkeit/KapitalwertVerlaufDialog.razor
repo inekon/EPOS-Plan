@@ -26,6 +26,7 @@
    gerechnet wird. *@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
+@inherits Farbwahlwirt
 @using WindowsFormsApplication1.Zeichnung
 @implements IDisposable
 
@@ -67,11 +68,19 @@
     @* ZWEI BILDER AUF EINEM BLATT, ZWEI KENNUNGEN: Sie bilden die clipPath-Namen —
        zwei gleiche schnitten das eine Bild am Rechteck des anderen. Eine Einheit
        braucht die Zeigerzeile nicht von hier: Die Reihen tragen „€", die x-Achse „a"
-       (beides im Modell, seit DG-E3-11). *@
+       (beides im Modell, seit DG-E3-11).
+
+       DIE FARBWAHL AM BILD steht offen: Die Verlaufsreihen nehmen Hausfarben
+       (Stammvariante und Serienfarben), und daraus wird im Modell eine Farbrolle.
+       Ohne FarbeSetzen bleibt das Farbfeld stumm. *@
     <DiagrammSvg Modell="@_differenz" Kennung="kapitalwert-differenz"
-                 Bezeichnung="@AltDifferenz" PlatzhalterText="@PlatzhalterText" />
+                 Bezeichnung="@AltDifferenz" PlatzhalterText="@PlatzhalterText"
+                 FarbwahlErlaubt="@Farbwahl" FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
     <DiagrammSvg Modell="@_absolut" Kennung="kapitalwert-absolut"
-                 Bezeichnung="@AltAbsolut" PlatzhalterText="@PlatzhalterText" />
+                 Bezeichnung="@AltAbsolut" PlatzhalterText="@PlatzhalterText"
+                 FarbwahlErlaubt="@Farbwahl" FarbeGewaehlt="FarbeUebernehmen"
+                 FarbeZurueckgesetzt="FarbeVerwerfen" />
 
     @if (!string.IsNullOrEmpty(_restwert))
     {

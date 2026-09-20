@@ -398,6 +398,38 @@ public sealed class SpeicherFlottenErgebnisBetriebTests : EposBunitContext
     }
 
     // =====================================================================
+    // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Mit Schreibweg trägt das Farbfeld des Legendeneintrags die Klasse
+    /// <c>epos-legende-farbfeld</c>, und ein Klick öffnet den Wähler.</b> Die
+    /// Jahresprojektion führt Reihen mit Farbrolle; ohne <c>FarbeSetzen</c> gäbe es
+    /// dort nichts zu klicken — kein Delegat, kein Wähler.
+    /// </summary>
+    [Fact]
+    public void Das_Farbfeld_der_Projektion_oeffnet_den_Farbwaehler()
+    {
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p
+            .Add(x => x.Ergebnis, Vollstaendig())
+            .Add(x => x.FarbeSetzen, (rolle, farbe) => Task.CompletedTask));
+
+        Assert.NotEmpty(cut.FindAll("rect.epos-legende-farbfeld"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect.epos-legende-farbfeld")[0].Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ohne Schreibweg bleibt das Farbfeld ein gemaltes Rechteck.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_traegt_die_Projektion_kein_Farbfeld()
+    {
+        var cut = Render<SpeicherFlottenErgebnisAnsicht>(p => p.Add(x => x.Ergebnis, Vollstaendig()));
+        Assert.Empty(cut.FindAll("rect.epos-legende-farbfeld"));
+    }
+
+    // =====================================================================
     // Helfer
     // =====================================================================
 

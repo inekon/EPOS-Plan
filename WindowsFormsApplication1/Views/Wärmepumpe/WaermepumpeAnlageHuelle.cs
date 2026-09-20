@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Waermepumpe;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -119,6 +120,12 @@ namespace WindowsFormsApplication1
                 // PROJEKTKOPIE. Der eigene Weg unten liest Projektkopie vor Katalog.
                 ["Bilder"] = new Func<int, KennlinienBilder>(BilderZuAnlage),
                 ["KennlinienUebernehmen"] = new Func<int, int>(KennlinienNachholen),
+
+                // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2): Jede
+                // Vorlaufkennlinie traegt eine Farbrolle, der Klick auf ihr Farbfeld
+                // schreibt sie anwendungsweit. Kein Delegat, kein Waehler.
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
                 ["Stammdaten"] = new Func<int, WaermepumpeStammDaten>(StammdatenZu),
 
@@ -325,6 +332,25 @@ namespace WindowsFormsApplication1
         /// das Gerät wechselt: Der Baustein <c>DiagrammSvg</c> baut seinen Knotenbaum
         /// an der REFERENZ des Modells fest.</para>
         /// </summary>
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
+        }
+
         private static KennlinienBilder BilderZuAnlage(int idWp)
         {
             WaermepumpeKennlinienCtrl.Quelle quelle = WaermepumpeKennlinienCtrl.FuerAnlage(idWp);

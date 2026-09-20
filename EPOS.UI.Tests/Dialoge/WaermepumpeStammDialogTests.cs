@@ -106,9 +106,11 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Func<int, IReadOnlyList<KennlinienZeile>>? kennlinien = null,
         Func<int, IReadOnlyList<KennlinienZeile>, bool>? abgleichen = null,
         Func<IReadOnlyList<Katalogfilterzeile>>? liste = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<Farbrolle, Farbe, Task>? farbeSetzen = null)
         => Render<WaermepumpeStammDialog>(p => p
             .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.FarbeSetzen, farbeSetzen)
             .Add(x => x.Liste, liste ?? (() => Liste))
             .Add(x => x.Satz, Satz)
             .Add(x => x.Bilder, (id, kuehl) => new KennlinienBilder(
@@ -856,5 +858,34 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         cut.Find(".epos-modulparameter-knopf").Click();
         Assert.Contains("4000",
                         cut.Find(".epos-parameteruebersicht-wert").TextContent.Trim());
+    }
+
+    // =================================================================================
+    //  Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Mit Schreibweg trägt das Farbfeld des Legendeneintrags die Klasse
+    /// <c>epos-legende-farbfeld</c>, und ein Klick öffnet den Wähler.</b> Jede
+    /// Vorlaufkennlinie führt eine Farbrolle; ohne <c>FarbeSetzen</c> gäbe es dort
+    /// nichts zu klicken — kein Delegat, kein Wähler.
+    /// </summary>
+    [Fact]
+    public void Das_Farbfeld_der_Kennlinie_oeffnet_den_Farbwaehler()
+    {
+        var cut = Aufbauen(farbeSetzen: (rolle, farbe) => Task.CompletedTask);
+
+        Assert.NotEmpty(cut.FindAll("rect.epos-legende-farbfeld"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+
+        cut.FindAll("rect.epos-legende-farbfeld")[0].Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ohne Schreibweg bleibt das Farbfeld ein gemaltes Rechteck.</summary>
+    [Fact]
+    public void Ohne_Schreibweg_traegt_die_Kennlinie_kein_Farbfeld()
+    {
+        Assert.Empty(Aufbauen().FindAll("rect.epos-legende-farbfeld"));
     }
 }

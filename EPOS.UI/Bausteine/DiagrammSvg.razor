@@ -33,6 +33,17 @@
    bekommt keinen Waehler - eine Rolle, auf die die Einstellung zeigen
    koennte, gibt es dort nicht.
 
+   DER WAEHLER WEICHT KEINEM ZWEITEN KLICK AUS (DG-E3-14). Solange einer offen
+   ist, traegt die Zeichenflaeche die Klasse epos-diagramm-svg-flaeche--waehler,
+   und das aeussere SVG samt Legende steht damit UEBER der Schliessflaeche:
+   Jeder Klick im Bild trifft, was unter ihm liegt. Das Farbfeld ist deshalb ein
+   UMSCHALTER - dieselbe Reihe schliesst, eine andere wechselt mit EINEM Klick -,
+   und sein Klick steigt nicht zur Flaeche auf. Der Legendentext schaltet seine
+   Reihe und schliesst den Waehler in EINEM Klick, weil sein Klick aufsteigt;
+   dasselbe tut ein Klick irgendwo sonst im Bild und das Ende einer Zieh- oder
+   Radgeste. Die Schliessflaeche bleibt fuer den Klick AUSSERHALB des Bildes
+   (Hausregel: kein focusout).
+
    WAS DIE ETAPPE E3 DAZUGELEGT HAT. Die Gruppe (a) bringt Bilder mit, die der
    Jahresgang nicht kannte:
 
@@ -93,9 +104,9 @@ else
         @* role="group" statt role="img": Die Legendeneintraege SIND Bedienelemente,
            und eine Sprachausgabe erreicht sie in einem Bild nicht mehr. tabindex
            macht die Flaeche fuer die Tasten + - 0 erreichbar. *@
-        <div class="epos-diagramm-svg-flaeche" @ref="_flaeche"
+        <div class="@Flaechenklassen" @ref="_flaeche"
              tabindex="@(Bedienbar ? "0" : null)" role="group" aria-label="@Bezeichnung"
-             @onpointerdown="@(_ => BeiFlaechenzeiger())">
+             @onpointerdown="@(_ => BeiFlaechenzeiger())" @onclick="BeiFlaechenklick">
 
             @Bildfragment
 
@@ -105,11 +116,16 @@ else
 
             @if (_farbwahl is not null)
             {
-                @* Die Schliessflaeche faengt den Klick daneben - Hausregel: ein
-                   Aufklapper haengt sein Schliessen nie an focusout. *@
+                @* Die Schliessflaeche faengt den Klick AUSSERHALB des Bildes -
+                   Hausregel: ein Aufklapper haengt sein Schliessen nie an
+                   focusout. Im Bild selbst schliesst der Klick auf die Flaeche
+                   (BeiFlaechenklick), denn dort liegt das SVG darueber. *@
                 <div class="epos-farbwahl-schliessflaeche" @onclick="FarbwahlSchliessen"></div>
 
-                <div class="epos-farbwahl" style="@FarbwahlLage" @onkeydown="BeiFarbwahlTaste">
+                @* Ein Klick IM Waehler steigt nicht zur Flaeche auf - er schloesse
+                   sonst genau den Waehler, den er bedient. *@
+                <div class="epos-farbwahl" style="@FarbwahlLage" @onkeydown="BeiFarbwahlTaste"
+                     @onclick="BeiWaehlerklick" @onclick:stopPropagation="true">
                     <Farbfeld Bezeichnung="@FarbwahlName" Kennung="@FarbwahlKennung"
                               Wert="@FarbwahlWert" Vorgabe="@FarbwahlVorgabe"
                               Stand="@_farbstand" WertChanged="BeiFarbe" />
@@ -478,6 +494,17 @@ else
 
     private bool FarbwahlMoeglich => FarbwahlErlaubt && FarbeGewaehlt.HasDelegate;
 
+    /// <summary>
+    /// Die Klassen der Zeichenfläche. Bei offenem Wähler kommt
+    /// <c>epos-diagramm-svg-flaeche--waehler</c> dazu: Erst damit steht das äußere
+    /// SVG samt Legende über der Schließfläche, und ein Klick auf ein anderes
+    /// Farbfeld trifft dieses statt der Fläche darüber (DG-E3-14).
+    /// </summary>
+    private string Flaechenklassen
+        => _farbwahl is null
+            ? "epos-diagramm-svg-flaeche"
+            : "epos-diagramm-svg-flaeche epos-diagramm-svg-flaeche--waehler";
+
     private string Stufentext => "×" + _stufe.ToString("0.#", CultureInfo.CurrentCulture);
 
     // =====================================================================
@@ -501,10 +528,17 @@ else
             ReferenceEquals(_baumPalette, AktivePalette) &&
             string.Equals(_baumKennung, KennungOderZaehler, StringComparison.Ordinal)) return;
 
-        if (!ReferenceEquals(_baumModell, Modell))
+        bool neueInstanz = !ReferenceEquals(_baumModell, Modell);
+        bool anderesBild = neueInstanz &&
+                           (_baumModell is null || !SelbesBild(_baumModell, Modell));
+
+        if (anderesBild)
         {
             // EIN ANDERES BILD IST EINE ANDERE REIHE: Ausschnitt, Zeiger und
-            // ausgeblendete Reihen haben fuer das neue keine Bedeutung.
+            // ausgeblendete Reihen haben fuer das neue keine Bedeutung. EINE NEUE
+            // INSTANZ DESSELBEN BILDES IST ABER KEIN ANDERES BILD (DG-E3-15): Die
+            // Reiter bauen ihr Modell je Zeichenlauf neu, und ein Ruecksetzer naehme
+            // dem Anwender nach jeder Farbwahl Zoom und abgewaehlte Reihe.
             _versteckt.Clear();
             _fenster = null;
             _zeiger = null;
@@ -512,6 +546,13 @@ else
             _farbwahl = null;
             _elementwert = null;
             _ausschnitt.Clear();
+        }
+        else if (neueInstanz)
+        {
+            // Dasselbe Bild, neu gerechnete Werte: Der Ausschnitt wird am STEHENDEN
+            // Fenster nachgerechnet, sonst zeigte er die Werte des vorigen Laufs.
+            if (_fenster is null) _ausschnitt.Clear();
+            else Nachladen(_fenster.Value.Von, _fenster.Value.Bis, false);
         }
 
         _baumModell = Modell;
@@ -524,6 +565,47 @@ else
         _baumHatWerte = false;
         foreach (SvgKnoten k in _baum.Alle())
             if (!string.IsNullOrEmpty(k.Wert)) { _baumHatWerte = true; break; }
+    }
+
+    /// <summary>
+    /// <b>Zeigen zwei Modelle DASSELBE BILD?</b> (Entscheid DG-E3-15)
+    ///
+    /// <para>Ein Wirt, der sein Modell je Zeichenlauf neu baut, liefert bei jedem
+    /// <c>StateHasChanged</c> eine andere INSTANZ desselben Bildes. Am
+    /// Referenzvergleich allein hinge daran der ganze Zustand: Zoom, Zeigerstelle
+    /// und abgewählte Reihen fielen nach jeder Farbwahl. Dasselbe Bild ist deshalb:
+    /// gleiche Maße, beide mit oder beide ohne Zeichenfläche, gleiches x-Fenster
+    /// samt Achsenart und Einheit, und in gleicher Reihenfolge dieselben Reihen —
+    /// Name, Art, Achsenseite und Länge.</para>
+    ///
+    /// <para><b>Die y-Spanne bleibt außen vor:</b> Ein neuer Rechenlauf ändert sie,
+    /// das Bild bleibt dasselbe. Ebenso die WERTE selbst — sie dürfen neu sein, der
+    /// Baum wird ohnehin neu gebaut.</para>
+    /// </summary>
+    private static bool SelbesBild(Zeichenmodell a, Zeichenmodell b)
+    {
+        if (a is null || b is null) return false;
+        if (a.Breite != b.Breite || a.Hoehe != b.Hoehe) return false;
+
+        Zeichenflaeche fa = a.Flaeche, fb = b.Flaeche;
+        if ((fa is null) != (fb is null)) return false;
+        if (fa is not null && fb is not null)
+        {
+            if (fa.Daten.XVon != fb.Daten.XVon || fa.Daten.XBis != fb.Daten.XBis) return false;
+            if (fa.X != fb.X) return false;
+            if (!string.Equals(fa.XEinheit ?? "", fb.XEinheit ?? "", StringComparison.Ordinal))
+                return false;
+        }
+
+        if (a.Reihen.Count != b.Reihen.Count) return false;
+        for (int i = 0; i < a.Reihen.Count; i++)
+        {
+            Datenreihe ra = a.Reihen[i], rb = b.Reihen[i];
+            if (!string.Equals(ra.Name ?? "", rb.Name ?? "", StringComparison.Ordinal)) return false;
+            if (ra.Art != rb.Art || ra.Achsenseite != rb.Achsenseite) return false;
+            if ((ra.Werte?.Length ?? 0) != (rb.Werte?.Length ?? 0)) return false;
+        }
+        return true;
     }
 
     /// <summary>Der SVG-Baum als Razor-Elemente.</summary>
@@ -558,6 +640,10 @@ else
         {
             builder.AddAttribute(4, "onclick",
                 EventCallback.Factory.Create<MouseEventArgs>(this, () => FarbwahlOeffnen(legende!)));
+            // OHNE DIESE SPERRE SCHLOESSE DIE FLAECHE DEN WAEHLER IM SELBEN KLICK
+            // (DG-E3-14): Sie schliesst jeden offenen Waehler, den der Klick nicht
+            // ausdruecklich meint. Der Legendentext daneben stoppt bewusst NICHT.
+            builder.AddEventStopPropagationAttribute(13, "onclick", true);
         }
 
         // DER WERT AM ELEMENT (DG-E3-10). Nur wo es einen gibt, und nur bei den
@@ -912,14 +998,45 @@ else
         return null;
     }
 
+    /// <summary>
+    /// Der UMSCHALTER am Farbfeld (DG-E3-14): Dieselbe Reihe schließt den Wähler,
+    /// eine andere übernimmt ihn — auch wenn gerade ein anderer Eintrag offen ist.
+    /// <b>Der Wechsel von einem Eintrag zum nächsten kostet EINEN Klick.</b>
+    /// </summary>
     private void FarbwahlOeffnen(string reihe)
     {
         if (!FarbwahlMoeglich || RolleDerReihe(reihe) is null) return;
+        if (string.Equals(_farbwahl, reihe, StringComparison.Ordinal))
+        {
+            FarbwahlSchliessen();
+            return;
+        }
         _farbwahl = reihe;
         _farbstand++;
     }
 
     private void FarbwahlSchliessen() => _farbwahl = null;
+
+    /// <summary>
+    /// Ein Klick auf das Bild schließt einen offenen Wähler — der Legendentext,
+    /// die Zeichenfläche selbst und das Ende einer Zieh- oder Radgeste (der Klick
+    /// landet dann hier, weil das Modul den Zeiger gefangen hat). Nur das Farbfeld
+    /// und der Wähler selbst halten ihren Klick auf (DG-E3-14).
+    /// </summary>
+    private void BeiFlaechenklick()
+    {
+        if (_farbwahl is null) return;
+        FarbwahlSchliessen();
+    }
+
+    /// <summary>
+    /// Der Klick IM Wähler endet hier: Er bedient den Systemwähler, das Hexfeld,
+    /// den Hausfarbe-Knopf oder die Beschriftung — und lässt den Wähler stehen,
+    /// statt über die Fläche zu schließen (DG-E3-14).
+    /// </summary>
+    private void BeiWaehlerklick()
+    {
+    }
 
     private void BeiFarbwahlTaste(KeyboardEventArgs e)
     {
@@ -944,6 +1061,10 @@ else
     /// Die Lage des Wählers am Eintrag — in PROZENT des Bildes, nicht in
     /// Bildpunkten: Das SVG füllt die Breite seines Rahmens, also verschiebt sich
     /// der Eintrag mit. Gerechnet wird aus dem Farbfeld des Eintrags im Baum.
+    ///
+    /// <para><b>In der rechten Bildhälfte hängt der Wähler am RECHTEN Rand</b>
+    /// (DG-E3-14): Mit <c>left</c> angeschlagen stünde er dort über den Bildrand
+    /// hinaus, und der Anwender sähe den halben Wähler.</para>
     /// </summary>
     private string FarbwahlLage
     {
@@ -954,9 +1075,14 @@ else
             foreach (SvgKnoten k in _baum.Alle())
             {
                 if (k.Name != "rect" || k.Marke != marke) continue;
-                double x = Zahl(k, "x"), y = Zahl(k, "y"), h = Zahl(k, "height");
-                return "left: " + Px(x / Modell.Breite * 100.0) + "%; top: "
-                     + Px((y + h + 4.0) / Modell.Hoehe * 100.0) + "%;";
+                double x = Zahl(k, "x"), y = Zahl(k, "y");
+                double b = Zahl(k, "width"), h = Zahl(k, "height");
+                string oben = "top: " + Px((y + h + 4.0) / Modell.Hoehe * 100.0) + "%;";
+
+                return x > Modell.Breite / 2.0
+                    ? "right: " + Px((Modell.Breite - x - b) / Modell.Breite * 100.0)
+                        + "%; " + oben
+                    : "left: " + Px(x / Modell.Breite * 100.0) + "%; " + oben;
             }
             return "";
         }
@@ -1195,12 +1321,16 @@ else
             return;
         }
 
-        if (!ReferenceEquals(_modellGebunden, Modell))
-        {
-            // Ein anderes Bild heisst andere Grenzen: Das Modul faengt von vorn an.
-            _modellGebunden = Modell;
-            await Zuruecksetzen();
-        }
+        if (ReferenceEquals(_modellGebunden, Modell)) return;
+
+        // EIN ANDERES BILD heisst andere Grenzen: Das Modul faengt von vorn an. Eine
+        // neue INSTANZ desselben Bildes laesst es stehen (DG-E3-15) - sonst spraenge
+        // der Zoom bei jedem Zeichenlauf des Wirtes auf 1:1 zurueck.
+        bool anderesBild = _modellGebunden is null || Modell is null ||
+                           !SelbesBild(_modellGebunden, Modell);
+        _modellGebunden = Modell;
+
+        if (anderesBild) await Zuruecksetzen();
     }
 
     /// <summary>Das Modul meldet eine neue Zoomstufe (nur bei Änderung).</summary>

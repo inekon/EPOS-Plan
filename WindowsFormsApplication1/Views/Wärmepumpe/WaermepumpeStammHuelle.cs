@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Waermepumpe;
 using Microsoft.AspNetCore.Components;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -82,6 +84,12 @@ namespace WindowsFormsApplication1
                                                              KatalogBrowserHuelle.Text),
                 ["Satz"] = new Func<int, WaermepumpeStammDaten>(SatzZu),
                 ["Bilder"] = new Func<int, bool, KennlinienBilder>(BilderZu),
+
+                // Die Farbwahl am Bild (Farbrollen, Bedienung Teil 2): Jede
+                // Vorlaufkennlinie traegt eine Farbrolle, der Klick auf ihr Farbfeld
+                // schreibt sie anwendungsweit. Kein Delegat, kein Waehler.
+                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
+                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
                 ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndaten),
                 ["Speichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(Speichern),
                 ["GesperrtDurch"] = new Func<string, string>(
@@ -217,6 +225,25 @@ namespace WindowsFormsApplication1
         /// Modells fest, und ein je Zeichenlauf neu gebautes Modell verwürfe mit dem
         /// Baum auch die abgewählten Linien und die Zeigerstelle.</para>
         /// </summary>
+        /// <summary>
+        /// Der Klick auf das Farbfeld eines Legendeneintrags landet hier: Die Rolle
+        /// bekommt anwendungsweit diese Farbe (<c>Diagrammfarben.Setze</c> schreibt
+        /// die Einstellung und speist <c>Farbpalette.Aktuell</c>). Danach trägt sie
+        /// jedes Diagramm und jeder Bericht — beide malen über dieselbe Palette.
+        /// </summary>
+        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
+        {
+            Diagrammfarben.Setze(rolle, farbe);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
+        private static Task FarbeZuruecksetzen(Farbrolle rolle)
+        {
+            Diagrammfarben.Zuruecksetzen(rolle);
+            return Task.CompletedTask;
+        }
+
         internal static KennlinienBilder BilderZu(int idWp, bool kuehlung)
         {
             if (idWp <= 0) return KennlinienBilder.Leer;

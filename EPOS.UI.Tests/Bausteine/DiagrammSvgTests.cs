@@ -60,7 +60,14 @@ public class DiagrammSvgTests : EposBunitContext
     /// Klimadaten-Hülle baut. Die Pfadregel lässt beide Reihen damit ROH in den
     /// Pfad gehen (bis 8 760 Stützstellen und drei Reihen).
     /// </summary>
-    private static Zeichenmodell Modell()
+    private static Zeichenmodell Modell() => Jahresgang(OHNE_ROLLE);
+
+    /// <summary>
+    /// Dasselbe Bild mit frei wählbarem Namen der zweiten Reihe. Ein anderer Name
+    /// macht daraus ein ANDERES Bild (DG-E3-15) — sonst ist es dasselbe, auch als
+    /// neue Instanz.
+    /// </summary>
+    private static Zeichenmodell Jahresgang(string zweite)
     {
         var temperatur = new double[8760];
         var winkel = new double[8760];
@@ -75,7 +82,7 @@ public class DiagrammSvgTests : EposBunitContext
             new[]
             {
                 new ChartRenderer.Reihe(MIT_ROLLE, temperatur, ChartRenderer.C_AUSSENTEMPERATUR),
-                new ChartRenderer.Reihe(OHNE_ROLLE, winkel, SkiaSharp.SKColors.Orange)
+                new ChartRenderer.Reihe(zweite, winkel, SkiaSharp.SKColors.Orange)
             },
             "Stunde des Jahres", "Temperatur [°C]");
     }
@@ -1265,5 +1272,285 @@ public class DiagrammSvgTests : EposBunitContext
         Assert.Contains("Kapitalwert: 300 €", zeile);
         // Die EINHEIT der x-Stelle kommt aus dem Modell, nicht aus einem Parameter.
         Assert.Contains("7 kWh", zeile);
+    }
+
+    // =====================================================================
+    //  DS-11  Der Wähler weicht keinem zweiten Klick aus (DG-E3-14)
+    // =====================================================================
+    //
+    //  Die Schliessflaeche liegt ueber dem Bild. Ohne die Klasse
+    //  epos-diagramm-svg-flaeche--waehler faengt sie jeden Klick auf ein anderes
+    //  Farbfeld ab: Der erste Klick schloesse nur, erst der zweite oeffnete - und
+    //  fuer den Anwender oeffnet "der Klick auf das Farbfeld nicht immer".
+
+    /// <summary>Die ZWEITE Reihe mit Farbrolle — auf sie wechselt der Wähler.</summary>
+    private const string ZWEITE_ROLLE = "Wärmepumpe";
+
+    /// <summary>
+    /// Sechs Reihen, fünf davon in einer Hausfarbe und damit mit Rolle. Die
+    /// Legende läuft dadurch über die halbe Bildbreite: Nur so gibt es
+    /// Legendeneinträge in BEIDEN Bildhälften, und die Lage des Wählers ist
+    /// prüfbar.
+    /// </summary>
+    private static Zeichenmodell Rollenmodell()
+    {
+        static double[] Welle(double hub, double versatz)
+        {
+            var werte = new double[744];
+            for (int i = 0; i < werte.Length; i++)
+                werte[i] = hub + hub * Math.Sin(2 * Math.PI * i / 744.0 + versatz);
+            return werte;
+        }
+
+        return ChartRenderer.JahresgangModell(
+            "Rollen im Bild",
+            new[]
+            {
+                new ChartRenderer.Reihe(MIT_ROLLE, Welle(12, 0.0), ChartRenderer.C_AUSSENTEMPERATUR),
+                new ChartRenderer.Reihe(ZWEITE_ROLLE, Welle(8, 0.4), ChartRenderer.C_WP),
+                new ChartRenderer.Reihe(OHNE_ROLLE, Welle(20, 0.8), SkiaSharp.SKColors.Orange),
+                new ChartRenderer.Reihe("Photovoltaik", Welle(6, 1.2), ChartRenderer.C_PV),
+                new ChartRenderer.Reihe("Netzbezug", Welle(9, 1.6), ChartRenderer.C_NETZ),
+                new ChartRenderer.Reihe("Wärmebedarf", Welle(15, 2.0), ChartRenderer.C_BEDARF)
+            },
+            "Stunde des Jahres", "Leistung [kW]");
+    }
+
+    private IRenderedComponent<DiagrammSvg> ZeigeRollen()
+        => Zeige(modell: Rollenmodell(), kennung: "rollen", farbwahl: true);
+
+    /// <summary>Das erste Farbfeld eines Eintrags — der Rahmen liegt auf der Füllung.</summary>
+    private static IElement Farbfeld(IRenderedComponent<DiagrammSvg> cut, string reihe)
+        => cut.FindAll("rect[data-legende='" + reihe + "']")[0];
+
+    /// <summary>
+    /// <b>Der Wechsel von einem Eintrag zum nächsten kostet EINEN Klick.</b> Fängt
+    /// die Schließfläche den Klick auf das zweite Farbfeld ab, schließt er nur den
+    /// Wähler, und erst ein zweiter öffnet ihn wieder.
+    /// </summary>
+    [Fact]
+    public void DS11_Ein_Klick_wechselt_vom_einen_Farbfeld_zum_anderen()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Equal(Diagrammfarben.Anzeigename(ChartRenderer.C_AUSSENTEMPERATUR.Ton().Rolle),
+                     cut.Find(".epos-farbwahl .epos-farbfeld-name").TextContent);
+
+        Farbfeld(cut, ZWEITE_ROLLE).Click();
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        Assert.Equal(Diagrammfarben.Anzeigename(ChartRenderer.C_WP.Ton().Rolle),
+                     cut.Find(".epos-farbwahl .epos-farbfeld-name").TextContent);
+    }
+
+    /// <summary>
+    /// Dasselbe Farbfeld ein zweites Mal schließt den Wähler — das Feld ist ein
+    /// UMSCHALTER, nicht nur ein Öffner.
+    /// </summary>
+    [Fact]
+    public void DS11_Dasselbe_Farbfeld_schliesst_den_Waehler()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Der Legendentext schaltet seine Reihe UND schließt den offenen Wähler in
+    /// EINEM Klick: Sein Klick steigt zur Fläche auf, und dort schließt er.
+    /// </summary>
+    [Fact]
+    public void DS11_Der_Legendentext_schaltet_und_schliesst_in_einem_Klick()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>Ein Klick irgendwo auf das Bild schließt den Wähler.</summary>
+    [Fact]
+    public void DS11_Ein_Klick_auf_die_Flaeche_schliesst_den_Waehler()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        cut.Find(".epos-diagramm-svg-flaeche").Click();
+
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Ein Klick IM Wähler lässt ihn stehen — sonst schlösse der Griff zum
+    /// Systemwähler genau das Fenster, das er bedient.
+    /// </summary>
+    [Fact]
+    public void DS11_Ein_Klick_im_Waehler_laesst_ihn_stehen()
+    {
+        var cut = ZeigeRollen();
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        cut.Find(".epos-farbwahl").Click();
+
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Die Fläche trägt <c>epos-diagramm-svg-flaeche--waehler</c> nur, solange ein
+    /// Wähler offen ist: Die Klasse hebt das Bild über die Schließfläche, und ohne
+    /// Wähler gibt es nichts zu heben.
+    /// </summary>
+    [Fact]
+    public void DS11_Die_Flaeche_traegt_die_Klasse_nur_bei_offenem_Waehler()
+    {
+        const string KLASSE = "epos-diagramm-svg-flaeche--waehler";
+        var cut = ZeigeRollen();
+
+        Assert.DoesNotContain(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+
+        Farbfeld(cut, MIT_ROLLE).Click();
+        Assert.Contains(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+
+        cut.Find(".epos-diagramm-svg-flaeche").Click();
+        Assert.DoesNotContain(KLASSE, cut.Find(".epos-diagramm-svg-flaeche").ClassName);
+    }
+
+    /// <summary>
+    /// <b>Die Lage des Wählers folgt der Bildhälfte.</b> Links hängt er an der
+    /// linken Kante seines Farbfeldes; in der rechten Hälfte hängt er an der
+    /// RECHTEN — mit <c>left</c> stünde er dort über den Bildrand hinaus.
+    /// </summary>
+    [Fact]
+    public void DS11_In_der_rechten_Bildhaelfte_haengt_der_Waehler_rechts()
+    {
+        Zeichenmodell modell = Rollenmodell();
+        var cut = Zeige(modell: modell, kennung: "lage", farbwahl: true);
+
+        // Erst die Stellen lesen, dann klicken: Jeder Zeichenlauf tauscht die
+        // Knoten, und ein gemerkter Verweis zeigte danach ins Leere.
+        var stellen = new List<(string Name, double X)>();
+        foreach (Datenreihe reihe in modell.Reihen)
+        {
+            var felder = cut.FindAll("rect[data-legende='" + reihe.Name + "']");
+            if (felder.Count == 0) continue;   // eine Reihe ohne Rolle traegt kein Feld
+            stellen.Add((reihe.Name ?? "",
+                         double.Parse(felder[0].GetAttribute("x")!,
+                                      CultureInfo.InvariantCulture)));
+        }
+
+        int links = 0, rechts = 0;
+        foreach ((string name, double x) in stellen)
+        {
+            Farbfeld(cut, name).Click();
+            string stil = cut.Find(".epos-farbwahl").GetAttribute("style")!;
+
+            if (x > modell.Breite / 2.0) { rechts++; Assert.StartsWith("right:", stil); }
+            else { links++; Assert.StartsWith("left:", stil); }
+
+            cut.Find(".epos-diagramm-svg-flaeche").Click();
+        }
+
+        // Bewiesen ist die Regel nur, wenn beide Haelften vorkommen.
+        Assert.True(links > 0, "kein Legendeneintrag in der linken Bildhälfte");
+        Assert.True(rechts > 0, "kein Legendeneintrag in der rechten Bildhälfte");
+    }
+
+    // =====================================================================
+    //  DS-12  Dasselbe Bild in neuer Instanz (DG-E3-15)
+    // =====================================================================
+    //
+    //  Die Reiter bauen ihr Zeichenmodell bei JEDEM Zeichenlauf neu. Haenge der
+    //  Zustand an der Referenz, verloere der Anwender nach jeder Farbwahl Zoom
+    //  und abgewaehlte Reihe - entgegen der Zusage des Farbwahlwirtes. Der
+    //  Baustein setzt deshalb nur zurueck, wenn das neue Modell ein ANDERES BILD
+    //  zeigt, nicht wenn es eine neue Instanz desselben ist.
+
+    /// <summary>
+    /// <b>Dasselbe Bild in neuer Instanz lässt jeden Zustand stehen:</b>
+    /// abgewählte Reihe, Fenster samt nachgezeichneter Achsenteilung und den
+    /// offenen Farbwähler.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Eine_neue_Instanz_desselben_Bildes_laesst_den_Zustand_stehen()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.Find("text[data-legende='" + OHNE_ROLLE + "']").Click();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Equal((3000, 3400), cut.Instance.Fenster);
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+        int ticks = cut.FindAll(".epos-diagramm-ticks line").Count;
+        Assert.NotEqual(0, ticks);
+
+        // DIESELBEN Reihen, dieselbe Flaeche - nur eine andere Instanz.
+        cut.Render(p => p.Add(x => x.Modell, Modell()));
+
+        Assert.True(cut.Instance.IstAus(OHNE_ROLLE));
+        Assert.Equal((3000, 3400), cut.Instance.Fenster);
+        Assert.Equal(ticks, cut.FindAll(".epos-diagramm-ticks line").Count);
+        Assert.All(cut.FindAll("[data-marke='xachse']"),
+                   e => Assert.Equal("none", e.GetAttribute("display")));
+        Assert.Single(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// <b>Ein anderer Reihenname ist ein anderes Bild:</b> Ausschnitt, Zeiger,
+    /// abgewählte Reihe und der Wähler haben dort keine Bedeutung mehr.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Ein_anderes_Bild_setzt_alles_zurueck()
+    {
+        var cut = Zeige(farbwahl: true);
+
+        cut.Find("text[data-legende='" + MIT_ROLLE + "']").Click();
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(3000, 3400));
+        cut.FindAll("rect[data-legende='" + MIT_ROLLE + "']")[0].Click();
+
+        cut.Render(p => p.Add(x => x.Modell, Jahresgang("Sonnenhöhe")));
+
+        Assert.False(cut.Instance.IstAus(MIT_ROLLE));
+        Assert.Null(cut.Instance.Fenster);
+        Assert.Empty(cut.FindAll(".epos-diagramm-ticks"));
+        Assert.Empty(cut.FindAll(".epos-farbwahl"));
+    }
+
+    /// <summary>
+    /// Der nachgerechnete Ausschnitt überlebt die neue Instanz — <b>mit den Werten
+    /// des NEUEN Modells</b>: Ein stehen gebliebener Pfad zeigte sonst den vorigen
+    /// Rechenlauf.
+    /// </summary>
+    [Fact]
+    public async Task DS12_Der_nachgerechnete_Ausschnitt_ueberlebt_die_neue_Instanz()
+    {
+        var cut = Render<DiagrammSvg>(p => p
+            .Add(x => x.Modell, Stapelmodell())
+            .Add(x => x.Kennung, "stapel"));
+
+        await cut.InvokeAsync(() => cut.Instance.FensterGemeldet(1000, 1200));
+        Assert.NotEmpty(cut.Instance.Ausschnittpfade);
+
+        Zeichenmodell neu = Stapelmodell();
+        cut.Render(p => p.Add(x => x.Modell, neu));
+
+        Assert.Equal((1000, 1200), cut.Instance.Fenster);
+
+        Datenreihe reihe = neu.Reihen.Single(r => r.Name == FLAECHE);
+        string erwartet = SvgSchreiber.Reihenpfad(reihe, neu.Flaeche, 1000, 1200, true);
+
+        Assert.Equal(erwartet, cut.Instance.Ausschnittpfade[FLAECHE]);
+        Assert.Equal(erwartet, cut.Find("path[data-reihe='" + FLAECHE + "']").GetAttribute("d"));
     }
 }
