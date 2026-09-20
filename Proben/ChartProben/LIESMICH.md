@@ -139,7 +139,6 @@ Warum sie nötig sind: Ein Schreiber, der die Reihen wegließe, die Palette nich
 Datenfenster überginge, bestünde jede Maß-, Farb- und Determinismusprüfung des PNG-Wegs — das
 PNG entsteht ja weiterhin aus dem Maler.
 
-<<<<<<< HEAD
 ### Die vier reinen Pixelbilder der Gruppe (d)
 
 Die vier **Berichtsbilder** sind der Gegenfall: Nach Entscheid DG-E3-7 tragen sie **keine**
