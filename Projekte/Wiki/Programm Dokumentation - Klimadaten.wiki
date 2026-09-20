@@ -19,7 +19,11 @@ Die Spalte ''Quelle'' nennt neben der Herkunft auch das '''Bezugsjahr''' und das
 
 Rechts stehen die Stundenwerte der gewählten Region als Kurve – im Reiter ''Temperatur'' die Außentemperatur, im Reiter ''Sonnenwinkel'' der Sonnenstand, beide über dem ganzen Jahr.
 
-Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie das Bild; die Leiste zeigt links die Vergrößerung an. ''Bereich'' schaltet auf das Aufziehen eines Zeitausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen, und die Kurve wird für diesen Ausschnitt neu gezeichnet – die Achse zählt darin die Stunden des Jahres. ''1:1'' stellt das ganze Jahr wieder her. Beide Reiter führen ihren Ausschnitt getrennt; ein Wechsel der Region zeigt wieder das ganze Jahr.
+Über jedem Bild steht eine kleine Leiste. Mit dem Mausrad, mit Ziehen, mit der Kneifgeste und mit den Tasten ''+'', ''−'' und ''0'' vergrößern und verschieben Sie den Zeitausschnitt; die Werteachse bleibt dabei vollständig, und die Leiste zeigt links die Vergrößerung an. ''Bereich'' schaltet auf das Aufziehen eines Ausschnitts um: Ziehen Sie ein Rechteck über die Stelle, die Sie sehen wollen. Die Achse zählt im Ausschnitt die Stunden des Jahres. ''1:1'' stellt das ganze Jahr wieder her; ein Doppelklick ins Bild tut dasselbe. Beide Reiter führen ihren Ausschnitt getrennt, und ein Wechsel der Region zeigt wieder das ganze Jahr.
+
+Unter dem Bild steht eine Zeile mit den Werten an der Stelle, auf die Sie zeigen: die Stunde des Jahres und dazu je Kurve ihr Wert.
+
+Die Legende ist bedienbar. Ein Klick auf den '''Namen''' einer Kurve blendet sie aus, ein zweiter holt sie zurück; der ausgeblendete Eintrag bleibt sichtbar, nur blasser. Ein Klick auf das '''Farbfeld''' daneben öffnet den Farbwähler unmittelbar am Bild: Sie wählen die Farbe im Farbfenster oder tragen ihren Hexwert ein, ''Hausfarbe'' nimmt die Wahl wieder zurück. Dieselbe Farbe gilt anschließend in allen Diagrammen des Programms und im Bericht. Mit der Tastatur erreichen Sie beides ebenso: Die Einträge lassen sich anspringen, Eingabe und Leertaste schalten die Kurve, Umschalt + Eingabe öffnet den Farbwähler.
 
 == Klimaquelle ==
 {{Anker|klimaquelle}}

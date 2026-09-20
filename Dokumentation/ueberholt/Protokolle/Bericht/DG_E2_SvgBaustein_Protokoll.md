@@ -4,8 +4,7 @@ Etappe E2 des Konzepts
 [`Konzept_Diagramme_Interaktiv_EPOS-Plan.md`](../../../aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md)
 in zwei Teilen: **Kern** — Zeichenmodell, `SvgSchreiber`, `JahresgangModell` und die
 Gegenprobe; **Oberfläche** — der Baustein `DiagrammSvg`, der viewBox-Modus des JS-Moduls und
-die erste umgestellte Maske (Klimadialog). Dieses Papier hält beide Abschnitte; der UI-Teil
-ergänzt seinen später.
+die erste umgestellte Maske (Klimadialog). Dieses Papier hält beide Abschnitte.
 
 Der gültige Stand steht in der Statusdatei und im Konzept; hier steht, wie es geworden ist.
 
@@ -185,3 +184,123 @@ der auf jeden siebten Wert gekürzte PNG-Pfad nicht zeigt.
 * **`Farbpalette.Aktuell` ist prozessweiter Zustand.** Der Schreiber nimmt sie als Vorgabe;
   die Oberfläche sollte ihre Palette ausdrücklich übergeben, sobald zwei Ansichten
   verschiedene Paletten zeigen könnten.
+
+---
+
+## Oberfläche — DiagrammSvg, viewBox-Modus, Klimadialog, Legendenklick
+
+### Die Aufgabe
+
+Aus dem Zeichenmodell einen BAUSTEIN machen: `EPOS.UI/Bausteine/DiagrammSvg.razor` zeichnet den
+Baum aus `SvgSchreiber.Baum` als Razor-Elemente, `epos-diagramm.js` bekommt den viewBox-Modus,
+und der Klimadialog wird die erste Maske, die statt zweier PNG zwei Modelle führt. Dazu die
+Bedienung, die das PNG nie tragen konnte: die Legende als Trefferfläche.
+
+### Was entstanden ist
+
+**Der Baustein** (`DiagrammSvg.razor`, rund 640 Zeilen). Er nimmt ein `Zeichenmodell`, eine
+`Farbpalette` und eine `Kennung` und baut daraus einen `SvgKnoten`-Baum — **einmal**, und nur
+neu, wenn sich Modell, Palette oder Kennung ändern; ein Zeichenlauf des Wirtes allein kostet
+nichts. Gezeichnet wird über den `RenderTreeBuilder` mit `AddMultipleAttributes` je Knoten und
+`OpenRegion` je Kind (Hausregel für veränderliche Tiefe), **nicht** als `MarkupString`: Eine
+Legendenwahl tauscht damit ein Attribut statt 100 KB Markup.
+
+Beim Zeichnen reichert er den Baum an vier Stellen an:
+
+* **Legendeneintrag.** Ein Knoten mit der Marke `legende:<Name>` bekommt als `<text>` die Klasse
+  `epos-legende-eintrag`, `role="button"`, `tabindex="0"` und die Klick- und Tastaturbehandlung;
+  als `<rect>` die Klasse `epos-legende-farbfeld` und den Klick, der den Farbwähler öffnet.
+* **Ausgeblendete Reihe.** Der Pfad mit `data-reihe="<Name>"` bekommt `display="none"`, der
+  Eintrag zusätzlich `epos-legende--aus`.
+* **Fenster.** Steht ein Ausschnitt, bekommt jedes Element mit der Marke `xachse`
+  `display="none"`, und an der Wurzel entsteht eine Gruppe `epos-diagramm-ticks` in
+  Bildpunkten: Rasterlinien gepunktet, Beschriftung aus `ChartRenderer.Jahresstundenteilung`,
+  Achsentitel `CHART_ACHSE_JAHRESSTUNDEN` (DG-E2-3).
+* **Zeiger.** Im inneren `<svg class="epos-flaeche">` steht bei x = Stunde eine
+  `<line class="epos-diagramm-zeiger" vector-effect="non-scaling-stroke">` über die volle Höhe.
+
+Dazu die Leiste (`×n`, „Bereich" mit `aria-pressed`, „1:1") und die **Zeigerzeile** unter dem
+Bild: „4.000 h · Temperatur: 12,3 °C · …", gelesen aus `Modell.Reihen` mit dem Index
+Stunde − `Flaeche.Daten.XVon`. Ein Modell ohne Reihen (der Leerhinweis) wird unverändert
+gezeichnet — ohne Leiste, ohne Zeigerzeile, ohne JS; `Modell == null` zeigt den Platzhalter.
+
+**Der viewBox-Modus** (`epos-diagramm.js`). `binden(flaeche, hilfe, { modus: "viewbox" })` lässt
+**dieselben Handler** — Rad, Kneifgeste, Ziehen, Doppelklick, Tasten + − 0, Gummiband — auf die
+`viewBox` des inneren `<svg>` wirken: nur `x` und `width`, `y` und `height` bleiben. Gemeldet
+wird die Stufe bei Änderung der gerundeten Zahl, das **Fenster am Ende einer Geste**
+(pointerup, Radende nach 150 ms Ruhe, Tastendruck) und die **Zeigerstunde höchstens einmal je
+Bildaufbau** (`requestAnimationFrame`), `null` beim Verlassen. Der CSS-Transform-Modus bleibt
+Wort für Wort, wie er war; der Baustein `Diagramm` benutzt ihn weiter.
+
+**Der Klimadialog.** `Regionsansicht` führt `ModellTemperatur` und `ModellSonnenwinkel`; beide
+Reiter zeigen `DiagrammSvg` mit eigener Kennung (`klima-temperatur`, `klima-sonnenwinkel`),
+eigener Einheit und `Farbpalette.Aktuell`. Der KL-8-Rundlauf ist **ersatzlos entfallen**:
+`AnsichtMitAusschnitt`, die beiden `Diagrammbereich`-Felder, ihre vier Rückrufe und der
+`Fenster`-Helfer der Hülle. Neu sind die Delegaten `FarbeSetzen` und `FarbeZuruecksetzen`, die
+die Hülle auf `Diagrammfarben.Setze` und `…Zuruecksetzen` legt.
+
+**Der Kern-Weg der Farbe.** `Diagrammfarben.MitRolle(text, rolle, farbe?)` ist die reine
+Textrechnung — nur Abweichungen, Hausfarbe entfernt den Eintrag, unlesbare Einträge fallen weg,
+die Reihenfolge ist die der Rollenliste. `Setze` und `Zuruecksetzen` lesen und schreiben darüber
+mit `EinstellungenCtrl`, **nicht** mit `Dienste.Einstellungen.Schreib`: Das ginge in die
+Registry, und `SettingsEinstellungen.Lies` fragt zuerst `Properties.Settings` — der Wert läge
+dort für immer im Schatten. `EinstellungenCtrl.Speichern` ruft am Ende `Uebernehmen()`, also
+trägt schon das nächste Bild die Farbe, Bildschirm wie Bericht.
+
+### Der Entscheid
+
+**DG-E2-1 — Die Bedienung der Legende.** Ein Klick auf den **Text** eines Legendeneintrags
+blendet die Reihe aus und wieder ein (der Eintrag bleibt lesbar, nur gedämpft; der Pfad bekommt
+`display="none"`). Ein Klick auf das **Farbfeld** desselben Eintrags — das Rechteck — öffnet den
+Farbwähler unmittelbar am Bild (Farbrollen, Bedienung Teil 2). Der Eintrag ist fokussierbar
+(`role="button"`, `tabindex="0"`): Eingabe und Leertaste schalten, Umschalt + Eingabe öffnet den
+Wähler. Der Wähler ist eine kleine Überlagerung am Eintrag mit dem Baustein `Farbfeld` (Rolle
+als Bezeichnung über `Diagrammfarben.Anzeigename`, Vorgabe = Hausfarbe) und „Hausfarbe"; Esc und
+der Klick daneben schließen ihn. **Eine Reihe mit fest gerechneter Farbe ohne Rolle
+(`Farbton.Fest` gesetzt, Rolle `UNBENANNT`) bekommt keinen Wähler** — es gibt nichts, worauf die
+Einstellung zeigen könnte. *Warum zwei Trefferflächen statt einer:* Ausblenden ist die häufige
+Geste und muss ohne Zielen gehen; die Farbe wählt man selten und dann bewusst. Ein einziger
+Klick für beides hieße, dass eine der beiden Gesten ein Menü davor bekommt.
+
+### Drei Stellen, an denen die Umsetzung über den Auftrag hinausgeht
+
+1. **Die vollen Grenzen stehen als `data-voll` am inneren `<svg>`.** Der Auftrag sagte „Grenzen
+   = die beim Binden gelesene Voll-viewBox". Eine beim Binden gemerkte Kopie veraltet aber
+   still, sobald der Wirt ein anderes Modell einsetzt (eine andere Region, eine andere Reihe):
+   Klemmung und Zurücksetzen liefen dann gegen die Grenzen des vorigen Bildes. Der Baustein
+   schreibt die vollen Grenzen deshalb als eigenes Attribut, das Blazor beim Modellwechsel
+   mitzieht, und das Modul liest sie dort — vier Zahlen je Geste, gemessen nicht messbar.
+2. **Die Fläche trägt `role="group"`, nicht `role="img"`.** Der Baustein `Diagramm` setzt
+   `role="img"`, weil dort ein PNG hängt. Hier sind die Legendeneinträge Bedienelemente; in
+   einem `img` erreichte eine Sprachausgabe sie nicht mehr. `aria-label` und `tabindex` bleiben.
+3. **`Achsenfenster.Bis` bekommt `bis + 1`.** Das Modul meldet die letzte sichtbare Stunde
+   **einschließlich**, `ChartRenderer.Achsenfenster.Bis` ist **ausschließlich**. Ohne die Eins
+   fehlte dem Wirt, der den Ausschnitt druckt, die letzte Stunde.
+
+### Nachweis
+
+| Prüfung | Ergebnis |
+|---|---|
+| `WP-Plan.Kern.slnf` Release | 0 Fehler |
+| `WP-Plan.sln` Debug x64 (die Windows-Schale) | 0 Fehler |
+| `Proben/Rasterprobe/Wirt` Release | 0 Fehler |
+| volle Suite mit den CI-Schaltern | 9 843 grün, 0 rot (KiKern 499, SpeicherEngine 378, SpeicherPlanung 27, EPOS.UI 4 907, EPOS.Kern 4 032) |
+| neu `DiagrammSvgTests` | 27 |
+| neu `DiagrammfarbenTests` | 9 |
+| `KlimadatenDialogTests` | 49 — die vier KL-8-Fälle sind durch fünf neue ersetzt |
+| `DiagrammTests`, `ChartBildTests` | unverändert grün |
+| `Proben/ChartProben` | 76 Bilder, 0 Verstöße; **91 von 91 Hashes gleich**, Diff gegen die Messlatte leer |
+| Prüfseite `/diagrammsvg` im Wirt (Chromium) | Rad zoomt die Zeitachse (viewBox `3487,68 0 1768,41 200` — y und Höhe unverändert), Stufe ×5, Fenster „3.488 … 5.256 h" gemeldet, `xachse` ausgeblendet, vier Ticks gezeichnet; Legendenklick setzt `display="none"` und `epos-legende--aus`; Farbfeld öffnet den Wähler am Eintrag, die Wahl färbt den Pfad auf `#FF0000` um und **der Zoom bleibt dabei stehen**; Zeigerzeile „3.841 h · Photovoltaik: 39,174 kW · Sonstiges: 33,453 kW" |
+| Referenzlauf | nicht nötig — kein Rechenweg berührt |
+
+### Offen nach dem UI-Teil
+
+* **A-DG-1, die Abnahme am Gerät.** Windows bei 125 % DPI und das iPad: Kneifgeste,
+  Zeigerzeile, Schärfe des Textes, die Trefferfläche der Legende mit dem Finger (44 px gelten
+  für Knöpfe — ein Legendenfeld ist 22 px hoch). Chromium ist weder WebView2 noch WKWebView.
+* **E3, der Rollout.** `DiagrammSvg` trägt bis dahin genau eine Stelle. Jede weitere
+  Diagrammart braucht ihre `…Modell`-Methode und ihre Marken; `ChartBild` bleibt, bis die letzte
+  PNG-Stelle umgestellt ist.
+* **Nachladen ab dem Vierfachen** (DG-E2-4) kommt mit dem ersten gebündelten Pfad, also mit E3.
+* **Die Zeigerzeile liest den Index Stunde − `XVon`.** Das gilt für eine Stundenreihe; eine
+  Viertelstundenreihe zählt Jahresstunden in Vierteln und braucht dort einen Faktor.

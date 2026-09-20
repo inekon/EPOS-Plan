@@ -1,7 +1,11 @@
 # Konzept: Diagramme direkt in der Oberfläche statt als Bild (DG-1)
 
-Stand 20.09.2026 — entschieden (DG-Q1…Q6, Abschnitt 8); **E0 umgesetzt** (Statuszeile #399),
-**E1a und E1b umgesetzt** (#400, #401), E1c offen. Prüfstände: [`Proben/SvgProbe/`](../../Proben/SvgProbe/LIESMICH.md) und die
+Stand 20.09.2026 — entschieden (DG-Q1…Q7, Abschnitt 8); **E0 umgesetzt** (Statuszeile #399),
+**E1 umgesetzt** (#400–#402), **E2 umgesetzt** (#404): der Baustein `DiagrammSvg`, der
+viewBox-Modus des JS-Moduls und der Klimadialog als erste SVG-Maske. Offen sind **E3** (der
+Rollout je Diagrammart) und **E4** (die zwei Wahlpunkte des Berichts); offen bleibt außerdem die
+Abnahme am Gerät **A-DG-1**. Prüfstände: [`Proben/SvgProbe/`](../../Proben/SvgProbe/LIESMICH.md), die Seite
+`/diagrammsvg` im Rasterprobe-Wirt ([`Proben/Rasterprobe/`](../../Proben/Rasterprobe/LIESMICH.md)) und die
 Hash-Messlatte in [`Proben/ChartProben/`](../../Proben/ChartProben/LIESMICH.md).
 
 ## 1 Die Frage
@@ -260,7 +264,7 @@ Datenzoom bis dahin überall zu haben.
 |---|---|---|---|
 | **E0 Vorbereitung** — *umgesetzt (#399)* | KL-8 gemergt (DL-3 verworfen, DG-Q6). `ChartProben` hat die Schalter `--ablage <ordner>` und `--hashes <datei>`; die Liste [`Proben/ChartProben/Messlatte_2026-09-20.sha256`](../../Proben/ChartProben/LIESMICH.md) nennt **91 Bilder** (auch die der Gegen- und Versatzproben, die im Bestand nie geschrieben werden) und ist die **Messlatte** von E1. Sie gilt für die **Vorgabe-Palette**, die die Probe ausdrücklich setzt; die Gegenprobe der getauschten Palette (Abschnitt 9) steht deshalb nicht darin. Keine Bilder im Repository | ChartProben grün (72 Proben, 0 Verstöße), Hashliste liegt vor, zweiter Lauf byte-gleich | S |
 | **E1 Zeichenmodell hinter dem `ChartRenderer`, ohne Bildänderung** — *umgesetzt (#400–#402): E1a Modell, Maler, Farbrollen, Skala und die 15 Zeitreihenbilder; E1b Säulen, Stapel, Kuchen, Ring, Balken; E1c Kennlinien, Streuwolke, Schnitt- und Stückzahlkurve, Optimierungsraster. **Alle 26 Methoden füllen ein Modell**; im Renderer steht kein Zeichenaufruf einer Grafikbibliothek mehr (Wächter `ZeichenmodellWacheTests`), die Übergangswege sind entfernt. **E2 ist frei.*** | `Allgemein/Bericht/Zeichnung/`: `Zeichenmodell` (Primitive: Linie, Rechteck, Kreis, Ellipse, Pfad, Text, Gruppe mit Zuschnitt, Strichmuster; Zeichenfläche mit Datenfenster) und `SkiaMaler`. Die 62 Helfer werden auf das Modell umgestellt (`Text`, `Strich`, `Fuellung`, `Linienzug`, `Vieleck`, `Kreissegment`, `Legende`, `YRaster`, `XAchse`, `XAchseFenster`, …), die fünf Skalenrechnungen zu **vier benannten Varianten** einer `Skala` (`Rund`, `Nice`, `Stufe`, `Bedarf` — nicht vereinheitlicht, weil jede Vereinfachung ein Bild verschöbe); die 26 Methoden füllen ein Modell und geben weiterhin `byte[]` zurück (`Png(modell)`). **Farben stehen im Befehl als `Farbrolle` plus Abwandlung, nicht als Zahl** (DG-Q7): aufgelöst wird beim Malen gegen `Farbpalette.Aktuell`, die Vorgabepalette trägt die Hausfarben Wert für Wert, und eine Rückwärtssuche gibt einer von außen durchgereichten Hausfarbe ihre Rolle zurück. Drei Aufträge: Zeitreihen (10 Methoden mit `Achsenfenster`, Jahresgang, Kostenprofil, Stundenprofil, Kapitalwert, Projektion), Säulen/Stapel/Kuchen/Ring/Balken (8), Kennlinien/Streuwolke/Schnitt/Stückzahl/Optimierungsraster (5) plus Bericht-Sonderfälle | **alle 91 Hashes gleich** (Text-Diff gegen die Messlatte leer), ChartProben grün, `ChartRendererTests` grün, Referenzlauf unnötig (kein Rechenweg) | **L** (3 × M) |
-| **E2 SVG-Ausgabe und Baustein für EINE Art** | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
+| **E2 SVG-Ausgabe und Baustein für EINE Art** — *umgesetzt (#404): Der Klimadialog zeigt seine zwei Jahresgänge als SVG; Zoom, Verschieben, Rechteck, Werte am Mauszeiger, Legendenschalter und Farbwahl laufen im Browser, ohne einen einzigen Rundlauf in den Kern, und kein PNG hat sich um ein Byte geändert. Der Rundlauf-Datenzoom (KL-8) ist an dieser Stelle ersatzlos entfallen.* | `SvgSchreiber` (Modell → Text; inneres `<svg>` in Datenkoordinaten, `text-anchor`, `vector-effect`), `ChartRenderer.JahresgangModell` (das Modell statt `byte[]`), Baustein `EPOS.UI/Bausteine/DiagrammSvg.razor` (Razor-Elemente aus dem Modell, Legende schaltbar, Zeigerzeile, Bereich → `Achsenfenster` **ohne** Kernaufruf), `epos-diagramm.js` mit viewBox-Modus (dieselben Handler, zusätzlich Nachladen ab dem Vierfachen). Erste Stelle: **Klimadialog** (`KlimadatenHuelle`, `Regionsansicht` führt zwei Modelle; die PNG-Fassung bleibt für den Bericht). `ChartProben` bekommt die SVG-Gegenprobe (byte-gleich, Knotenzahl) | bunit: Pfade, Texte, Legendenschalter, Zeigerzeile, Fall ohne Gaben; SvgProbe-Sollwerte; **Abnahme am Gerät** A-DG-1 (Windows 125 % DPI und iPad: Zoom, Kneifen, Zeigerzeile, Text scharf) | **M** |
 | **E3 Rollout je Diagrammart** | in dieser Reihenfolge: (a) Zeitreihen der Ergebnisreiter (`Jahresverlauf`, `GanglinieNormiert`, `ErzeugerStapel`, `Temperaturverlauf`, `Speicherbetrieb`, `Kostenprofil`, `Stundenprofil`) — ersetzt den Rundlauf-Datenzoom dort; (b) `KapitalwertVerlauf`, `Jahresprojektion`, `Kennlinien`, `Streuwolke`, `Schnittkurve`, `Stueckzahlkurve`; (c) `MonatsSaeulen`, `MonatsStapel`, `StrombilanzMonate`, `BalkenHorizontal`, `Optimierungsraster`; (d) `Kuchen`, `Ring` (ohne Interaktion, nur Schärfe und Text). Je Auftrag eine Gruppe; `ChartBild` bleibt, bis die letzte PNG-Stelle umgestellt ist, dann entfällt der Bildzoom per CSS-Transform | je Gruppe bunit, ChartProben (PNG unverändert), Gerät | 4 × S–M |
 | **E4 Bericht bleibt PNG aus demselben Modell** | nichts Neues — das ist E1. Zwei Wahlpunkte: die PNG-Linien auf **gebündelt** umstellen (heute jeder n-te; das ändert die Bilder bewusst, neue Hash-Messlatte mit dem Datum des Tages, ChartProben bleibt grün, weil sie Struktur prüft); im Bericht den **gezoomten Ausschnitt** drucken, wenn der Anwender ihn gesetzt hat (Achsenfenster ins Modell, Bildauftrag des Berichts) | Hash-Messlatte neu, Sichtprüfung eines Berichts | S |
 
@@ -314,9 +318,18 @@ Rolle ein `Farbfeld` (Systemwähler, beschreibbares Hexfeld, Muster der Hausfarb
 den sechs Gruppen; „Hausfarben" setzt alle zurück und speichert nicht, übernommen wird mit
 „OK".
 
-**Bedienung, Teil 2 (offen).** Der Klick auf einen Legendeneintrag öffnet den Farbwähler
-unmittelbar am Bild. Er setzt den SVG-Baustein voraus (die PNG-Legende ist ein Bildausschnitt
-ohne Trefferfläche) und kommt deshalb **mit E2**.
+**Bedienung, Teil 2 (umgesetzt, DG-E2-1).** Die Legende eines SVG-Diagramms ist Bedienfläche:
+Ein Klick auf den **Namen** einer Reihe blendet sie aus und wieder ein (der Eintrag bleibt
+lesbar, nur gedämpft), ein Klick auf das **Farbfeld** daneben öffnet den Farbwähler unmittelbar
+am Bild — Systemwähler, Hexfeld, Hausfarbenmuster und „Hausfarbe". Der Eintrag ist
+fokussierbar; Eingabe und Leertaste schalten, Umschalt + Eingabe öffnet den Wähler. Eine Reihe
+mit fest gerechneter Farbe ohne Rolle bekommt keinen Wähler. Geschrieben wird über
+`Diagrammfarben.Setze`/`Zuruecksetzen` in denselben Einstellungsschlüssel wie in der
+Administration — **nur die Abweichungen**, und `Uebernehmen()` speist die Palette sofort. Die
+PNG-Legende bleibt ein Bildausschnitt ohne Trefferfläche; die Bedienung gilt deshalb je Bild ab
+dem Tag, an dem es auf SVG steht (E3).
 
 **Wiki-Logbuch (Version 1.2.0.3):** „Die Farben der Diagramme lassen sich in den Einstellungen
-je Größe ändern; der Bericht nimmt dieselben Farben."
+je Größe ändern; der Bericht nimmt dieselben Farben." — dazu, mit E2: „Die beiden Diagramme der
+Klimadaten lassen sich auf der Zeitachse vergrößern und verschieben; unter dem Bild stehen die
+Werte am Mauszeiger, und über die Legende lassen sich Kurven ausblenden und ihre Farben ändern."
