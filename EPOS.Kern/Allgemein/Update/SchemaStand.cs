@@ -302,11 +302,26 @@ namespace WindowsFormsApplication1
         /// <see cref="BhkwWirkungsgradFaktor"/>. <b>Kein DDL.</b> <b>Der Referenzlauf
         /// ändert sich</b> — die Basis wird im selben Schritt neu eingefroren
         /// (<c>2026-09-19_R10_BhkwWirkungsgrad</c>).
+        /// Mit den ZWEI WIRKUNGSGRADEN DES BHKW (Schritt 99, Anwenderentscheid
+        /// 20.09.2026) steht das Ziel auf <b>99</b>: <c>Tab_BHKW_STAMM</c> und
+        /// <c>Tab_BHKW</c> bekommen <c>Wirkungsgrad_el</c> und <c>Wirkungsgrad_th</c>
+        /// — die zwei Anteile, aus denen sich der Gesamtwirkungsgrad ergibt („Der
+        /// Wirkungsgrad sollte sich aus dem elektrischen und dem thermischen
+        /// Wirkungsgrad ergeben."). Die vier Spalten stehen bei
+        /// <see cref="SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile"/>, der Datenteil
+        /// bei <see cref="BhkwWirkungsgradAnteile"/>: Jeder gepflegte
+        /// Gesamtwirkungsgrad wird im Verhältnis der Leistungen aufgeteilt
+        /// (<c>Wirkungsgrad · Pel / (Pel + Ptherm)</c> und ebenso thermisch, vier
+        /// Stellen); fehlt eine Angabe, bleiben beide NULL und die Zeile wird benannt
+        /// ausgewiesen. <b>Die Spalte <c>Wirkungsgrad</c> bleibt die Summe</b> und
+        /// bleibt der Wert, den <c>SimulationBHKW</c> liest — <b>der Referenzlauf
+        /// bleibt byte-gleich</b>, die Basis <c>2026-09-19_R10_BhkwWirkungsgrad</c>
+        /// gilt weiter.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 98;
+        public const int Zielversion = 99;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

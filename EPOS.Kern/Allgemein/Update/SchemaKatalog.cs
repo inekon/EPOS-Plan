@@ -3664,6 +3664,70 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // SCHRITT 99 — elektrischer und thermischer Wirkungsgrad des BHKW
+        //              (Anwenderentscheid 20.09.2026, Auftrag BW-2)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>Der Auslieferungskatalog der BHKW.</summary>
+        public const string TAB_BHKW_STAMM = "Tab_BHKW_STAMM";
+
+        /// <summary>Die Projektkopien der BHKW.</summary>
+        public const string TAB_BHKW = "Tab_BHKW";
+
+        /// <summary>
+        /// <b>Der ELEKTRISCHE Wirkungsgrad eines BHKW</b> als Faktor (0…1): der Teil
+        /// des Brennstoffs, der zu Strom wird.
+        ///
+        /// <para><b>NULL heißt „nicht gepflegt"</b> — der Altbestand, dessen Leistungen
+        /// fehlen und der deshalb nicht aufgeteilt werden konnte. Der Dialog bietet
+        /// solchen Sätzen die Aufteilung als Vorschlag an
+        /// (<see cref="BhkwWirkungsgrad.Aufteilen"/>); gespeichert wird sie erst beim
+        /// Speichern.</para>
+        /// </summary>
+        public const string SPALTE_BHKW_WIRKUNGSGRAD_EL = BhkwWirkungsgrad.SPALTE_EL;
+
+        /// <summary>
+        /// <b>Der THERMISCHE Wirkungsgrad eines BHKW</b> als Faktor (0…1): der Teil des
+        /// Brennstoffs, der zu Wärme wird. <b>NULL heißt „nicht gepflegt"</b>, wie beim
+        /// elektrischen Anteil.
+        /// </summary>
+        public const string SPALTE_BHKW_WIRKUNGSGRAD_TH = BhkwWirkungsgrad.SPALTE_TH;
+
+        /// <summary>
+        /// Schritt 99 der Migration: ELEKTRISCHER und THERMISCHER Wirkungsgrad an
+        /// <c>Tab_BHKW_STAMM</c> und <c>Tab_BHKW</c> (Anwenderentscheid 20.09.2026:
+        /// „Der Wirkungsgrad sollte sich aus dem elektrischen und dem thermischen
+        /// Wirkungsgrad ergeben.").
+        ///
+        /// <para><b>Die Fortsetzung von Schritt 98.</b> Der stellte den
+        /// Gesamtwirkungsgrad im ganzen Katalog auf den Faktor um; dieser Schritt sagt,
+        /// WORAUS er sich zusammensetzt. Die Spalte <c>Wirkungsgrad</c> bleibt und
+        /// bleibt die Summe — <c>SimulationBHKW</c> liest weiter sie, der Rechenweg ist
+        /// nicht angefasst.</para>
+        ///
+        /// <para><b>MIT DML</b>, anders als die Schritte 95 und 97: Der Datenteil teilt
+        /// jeden gepflegten Gesamtwirkungsgrad im Verhältnis der Leistungen auf
+        /// (<see cref="BhkwWirkungsgradAnteile"/>). <b>Ergebnisneutral trotzdem</b> —
+        /// gelesen wird im Rechenweg allein die unveränderte Summe; der Referenzlauf
+        /// bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Katalog und Projektkopie im selben Schritt</b>, Spalte für Spalte
+        /// gleich — eine Spalte nur auf einer Seite wäre beim Kopieren ins Projekt
+        /// sofort ein Datenverlust (Hausregel, vgl. <see cref="Schritt95_Klimaspalten"/>).</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe
+        /// Grund wie bei Schritt 95 und 97: Die Rückfallebene läuft bei jedem
+        /// Simulationsstart, und die Simulation liest diese vier Spalten nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt99_BhkwWirkungsgradAnteile =
+        {
+            new SchemaSpalte(TAB_BHKW_STAMM, SPALTE_BHKW_WIRKUNGSGRAD_EL, "DOUBLE"),
+            new SchemaSpalte(TAB_BHKW_STAMM, SPALTE_BHKW_WIRKUNGSGRAD_TH, "DOUBLE"),
+            new SchemaSpalte(TAB_BHKW,       SPALTE_BHKW_WIRKUNGSGRAD_EL, "DOUBLE"),
+            new SchemaSpalte(TAB_BHKW,       SPALTE_BHKW_WIRKUNGSGRAD_TH, "DOUBLE"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 

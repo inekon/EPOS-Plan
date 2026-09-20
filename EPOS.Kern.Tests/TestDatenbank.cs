@@ -377,6 +377,19 @@ namespace EPOS.Kern.Tests
                          in BhkwWirkungsgradFaktor.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
 
+                // Schritt 99 (Anwenderentscheid 20.09.2026, Auftrag BW-2): der
+                // BHKW-Katalog fuehrt elektrischen und thermischen Wirkungsgrad. DDL
+                // UND DML, aus DENSELBEN Quellen wie Migration und Werkzeug; erst die
+                // vier Spalten, dann die Aufteilung. Wiederholbar - angefasst wird nur,
+                // wo beide Spalten NULL sind. Er steht NACH 98, weil er dessen Ergebnis
+                // aufteilt.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile)
+                    SpalteSicherstellen(s);
+
+                foreach (System.Collections.Generic.KeyValuePair<string, BhkwWirkungsgradFaktor.Anweisung> a
+                         in BhkwWirkungsgradAnteile.Anweisungen)
+                    DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

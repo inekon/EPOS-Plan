@@ -146,11 +146,19 @@ namespace WindowsFormsApplication1
 
                 string sql = @"UPDATE Tab_BHKW SET
                                Beschreibung=?, Firma=?, Motortyp=?, Ptherm=?, Pel=?,
-                               Brennstoff=?, Wirkungsgrad=?, Investition_kwel=?, Raumbedarf=?,
+                               Brennstoff=?, Wirkungsgrad=?, Wirkungsgrad_el=?, Wirkungsgrad_th=?,
+                               Investition_kwel=?, Raumbedarf=?,
                                Wartungskosten_kwhel=?, Nutzungsdauer=?, NOx=?, SO2=?, CO=?,
                                CO2=?, Staub=?, Grenzleistung=?, Kosten_Modul=?, Kosten_Montage=?,
                                Kosten_Lieferung=?, Kosten_Schallschutzhaube=?, Kosten_Abgasreinigung=?
                                WHERE ID=?";
+
+                // EINE WAHRHEIT (Schemaschritt 99): Der Gesamtwirkungsgrad ist die
+                // SUMME der zwei Anteile und wird hier nachgezogen. Ohne gepflegte
+                // Anteile (Altbestand) bleibt er stehen, wie er war - SimulationBHKW
+                // liest ihn unveraendert.
+                model.m_Wirkungsgrad = BhkwWirkungsgrad.GesamtZumSchreiben(
+                    model.m_Wirkungsgrad_el, model.m_Wirkungsgrad_th, model.m_Wirkungsgrad);
 
                 // Die Einzelposten fuehren (Regel in BHKWKosten, Nutzerentscheid
                 // 22.08.2026): der spezifische Wert wird hier aus den Posten und Pel
@@ -180,6 +188,8 @@ namespace WindowsFormsApplication1
                 werte.Add(new DbParam("@pel", model.m_Pel));
                 werte.Add(new DbParam("@brenn", model.m_Brennstoff));
                 werte.Add(new DbParam("@wirk", model.m_Wirkungsgrad));
+                werte.Add(P("@wirkEl", model.m_Wirkungsgrad_el));
+                werte.Add(P("@wirkTh", model.m_Wirkungsgrad_th));
                 werte.Add(new DbParam("@inv", model.m_Investition_KWel));
                 werte.Add(new DbParam("@raum", model.m_Raumbedarf));
                 werte.Add(new DbParam("@wart", model.m_Wartungskosten_kWhel));
@@ -280,10 +290,11 @@ namespace WindowsFormsApplication1
                 //    (inkl. Vorlauf/Rücklauf). ReadOnly wird NICHT uebernommen.
                 string sql = @"INSERT INTO Tab_BHKW
                     (ID, ID_Projekt, Bezeichner, Firma, Beschreibung, Ptherm, Pel, Brennstoff,
-                     Wirkungsgrad, Investition_kwel, Raumbedarf, Wartungskosten_kwhel, Nutzungsdauer,
+                     Wirkungsgrad, Wirkungsgrad_el, Wirkungsgrad_th,
+                     Investition_kwel, Raumbedarf, Wartungskosten_kwhel, Nutzungsdauer,
                      NOx, SO2, CO, CO2, Staub, Motortyp, Grenzleistung, Kosten_Modul, Kosten_Montage,
                      Kosten_Lieferung, Kosten_Schallschutzhaube, Kosten_Abgasreinigung, Vorlauf, Ruecklauf)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       
                 DbParam[] ps = {
                     new DbParam("@id", neueId),
@@ -295,6 +306,11 @@ namespace WindowsFormsApplication1
                     P("@pel", s["Pel"]),
                     P("@brenn", s["Brennstoff"]),
                     P("@wirk", s["Wirkungsgrad"]),
+                    // Die Uebernahme kopiert BEIDE Anteile mit (Schemaschritt 99);
+                    // eine Spalte nur auf der Katalogseite waere hier sofort ein
+                    // Datenverlust.
+                    P("@wirkEl", ColOrNull(s, BhkwWirkungsgrad.SPALTE_EL)),
+                    P("@wirkTh", ColOrNull(s, BhkwWirkungsgrad.SPALTE_TH)),
                     P("@inv", s["Investition_kwel"]),
                     P("@raum", s["Raumbedarf"]),
                     P("@wart", s["Wartungskosten_kwhel"]),
@@ -354,6 +370,18 @@ namespace WindowsFormsApplication1
             return row.Table.Columns.Contains(col) ? row[col] : DBNull.Value;
         }
 
+        /// <summary>
+        /// Ein Wirkungsgradanteil aus der Zeile; fehlende Spalte (Altbestand vor
+        /// Schemaschritt 99) und <c>NULL</c> ergeben <c>null</c> — „nicht gepflegt".
+        /// </summary>
+        private static double? AnteilAus(DataRow row, string spalte)
+        {
+            if (!row.Table.Columns.Contains(spalte)) return null;
+            object v = row[spalte];
+            if (v == null || v == DBNull.Value) return null;
+            return Convert.ToDouble(v);
+        }
+
         #endregion
 
         #region --- UI FILL METHODS ---
@@ -375,6 +403,8 @@ namespace WindowsFormsApplication1
             m.m_Pel = row["Pel"] != DBNull.Value ? Convert.ToDouble(row["Pel"]) : 0;
             m.m_Brennstoff = row["Brennstoff"] != DBNull.Value ? Convert.ToInt32(row["Brennstoff"]) : 0;
             m.m_Wirkungsgrad = row["Wirkungsgrad"] != DBNull.Value ? Convert.ToDouble(row["Wirkungsgrad"]) : 0;
+            m.m_Wirkungsgrad_el = AnteilAus(row, BhkwWirkungsgrad.SPALTE_EL);
+            m.m_Wirkungsgrad_th = AnteilAus(row, BhkwWirkungsgrad.SPALTE_TH);
             m.m_Investition_KWel = row["Investition_kwel"] != DBNull.Value ? Convert.ToDouble(row["Investition_kwel"]) : 0;
             m.m_Raumbedarf = row["Raumbedarf"] != DBNull.Value ? Convert.ToDouble(row["Raumbedarf"]) : 0;
             m.m_Wartungskosten_kWhel = row["Wartungskosten_kwhel"] != DBNull.Value ? Convert.ToDouble(row["Wartungskosten_kwhel"]) : 0;
@@ -406,6 +436,8 @@ namespace WindowsFormsApplication1
             this.m_Pel = m.m_Pel;
             this.m_Brennstoff = m.m_Brennstoff;
             this.m_Wirkungsgrad = m.m_Wirkungsgrad;
+            this.m_Wirkungsgrad_el = m.m_Wirkungsgrad_el;
+            this.m_Wirkungsgrad_th = m.m_Wirkungsgrad_th;
             this.m_Investition_KWel = m.m_Investition_KWel;
             this.m_Raumbedarf = m.m_Raumbedarf;
             this.m_Wartungskosten_kWhel = m.m_Wartungskosten_kWhel;
