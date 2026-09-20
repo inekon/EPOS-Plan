@@ -1,6 +1,6 @@
 # KL1 — Klimaquelle DWD-Testreferenzjahr (TRY): Umsetzungsprotokoll
 
-Stand: 19.09.2026 · Zweig `ios_migration_september` · Bezug:
+Stand: 20.09.2026 · Zweig `ios_migration_september` · Bezug:
 [`Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](../../../aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)
 (der gültige Stand; dieses Protokoll ist die Geschichte dazu).
 
@@ -606,3 +606,56 @@ offen", Referenzlauf 1030/1007/1017/1045/1046 PASS und **byte-gleich** gegen
   sagt nichts über ihr Wetterjahr — auch dann nicht, wenn ihr `Details`-Text es nennt: Aus
   einem Freitext einen Schlüssel zu lesen wäre eine Behauptung über einen Satz, der in einer
   von zwei Sprachen geschrieben sein kann.
+
+## 13. Nachtrag KL-7 — Bezugsjahr einer TRY-Datei aus dem Bezugszeitraum des Kopfs
+
+**Anwenderentscheid 20.09.2026:** Die DWD-Konvention wird übernommen — `1995-2012 → 2015`,
+`2031-2060 → 2045`. Damit ist der offene Punkt aus 12.7 beantwortet; der Dialog fragt bei
+dieser Quelle nicht nach dem Bezugsjahr.
+
+### 13.1 Befund
+
+`TryKopf.Bezugszeitraum` wurde von `KopfzeileDeuten` (`DwdTryLeser`) bereits gefüllt, aber
+nirgends ausgewertet. Im TRY-Datei-Zweig von `KlimaImportAblauf.Laufen` stand allein
+`szenario = SzenarioschluesselAusKopf(kopf.Art)`; `bezugsjahr` blieb null. Der Regionalzweig
+nimmt `auftrag.TryJahr` (`TRY_JAHR_VORGABE` 2015, `TRY_JAHR_PROJEKTION` 2045). Die
+`Add`-Überladung mit Szenario und Bezugsjahr war seit Schritt 97 vorhanden — es fehlte nur
+die Ableitung. Kein Schemaschritt, kein Rechenweg, kein Dialog- und kein Hüllenbedarf: Die
+Anzeige läuft über `KlimaAnzeige.Quellenzeile` aus KL-6 von selbst mit.
+
+### 13.2 Zuordnung
+
+Neu `KlimaImportAblauf.BezugsjahrAusZeitraum(string)`. Gelesen werden die ersten beiden
+**vierstelligen** Jahreszahlen des freien Textes; eine Ziffernfolge anderer Länge ist keine
+Jahreszahl. Womit die beiden verbunden sind, ist gleichgültig — Bindestrich, Gedankenstrich,
+„bis", Zwischenräume. Das Paar wird gegen die **benannte Tabelle** `BEZUGSZEITRAEUME`
+gehalten:
+
+| Bezugszeitraum im Kopf | Bezugsjahr |
+|---|---|
+| 1995–2012 | `TRY_JAHR_VORGABE` = 2015 |
+| 2031–2060 | `TRY_JAHR_PROJEKTION` = 2045 |
+| alles andere (leer, ein einzelnes Jahr, „1961-1990", unlesbar) | NULL |
+
+Eine **Tabelle, keine Schwelle**: Ein fremder Zeitraum fällt nicht still auf die Vorgabe,
+sondern ergibt kein Jahr. Der gelesene Zeitraum steht wörtlich im Herkunftsvermerk
+`Details` (neuer Schlüssel `KLIMA_TRY_BEZUGSZEITRAUM`, beide Sprachen), damit die Ableitung
+in der Zeile nachlesbar bleibt.
+
+### 13.3 Nachweise
+
+`KlimaSzenarioTests` gewachsen: Theory `Der_Bezugszeitraum_des_Kopfs_ergibt_das_Jahr_oder_nichts`
+(elf Fälle), `Der_TRY_Dateiimport_schreibt_Szenario_und_Jahr_aus_dem_Kopf` (Kopf „Art des
+TRY: Sommer warm" + „Bezugszeitraum: 2031-2060" → `SOMMERWARM`/2045, Zeitraum im
+`Details`-Text, Regionsliste „DWD-Testreferenzjahr aus Datei · 2045 · sommerwarm"),
+`Ohne_Bezugszeitraum_im_Kopf_bleibt_das_Jahr_leer` und
+`Ein_fremder_Bezugszeitraum_ergibt_kein_Jahr`. Der Testkopf-Generator `TryDatei` nimmt jetzt
+mehrere Kopfzeilen (`params string[]`). 39 Prüfungen der Klasse grün in beiden Kulturen; kein
+Rechenweg berührt, Referenzlauf byte-gleich gegen die geltende Basis.
+
+### 13.4 Windows-Abnahmepunkt
+
+- **A-KL7-1** — Eine echte DWD-TRY-Datei mit dem Bezugszeitraum 2031-2060 einlesen: Die
+  Regionsliste nennt in der Spalte „Quelle" Jahr **und** Szenario („DWD-Testreferenzjahr aus
+  Datei · 2045 · sommerwarm"), das Detailfeld führt den Bezugszeitraum wörtlich mit. Eine
+  Datei ohne Bezugszeitraum im Kopf bleibt ohne Jahr.

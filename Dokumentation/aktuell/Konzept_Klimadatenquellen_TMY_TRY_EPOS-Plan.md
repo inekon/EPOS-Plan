@@ -307,13 +307,21 @@ Sie wird je Quelle so gefüllt:
 | Quelle | Szenario | Bezugsjahr |
 |---|---|---|
 | PVGIS-TMY | NULL — PVGIS kennt keine TRY-Szenarien | NULL |
-| TRY-Datei | aus der Kopfzeile „Art des TRY"; ist sie unlesbar oder fehlt sie, NULL | **NULL** — der Kopf nennt einen Bezugs*zeitraum* („1995-2012"), nicht das Bezugsjahr dieses Hauses, und aus einem Zeitraum ein Jahr zu machen wäre eine Behauptung |
+| TRY-Datei | aus der Kopfzeile „Art des TRY"; ist sie unlesbar oder fehlt sie, NULL | aus der Kopfzeile „Bezugszeitraum" nach der **DWD-Konvention** (`1995-2012 → 2015`, `2031-2060 → 2045`); jeder andere oder fehlende Zeitraum ergibt NULL, nie die Vorgabe |
 | TRY-Regionaldaten | aus dem Auftrag — der Anwender hat es gewählt, und danach ist das Paket gelesen worden | aus dem Auftrag |
 
 Gemessen wird die Kopfzeile gegen die tragenden Wortteile („sommer"+"warm",
 „winter"+"kalt", „mittl") ohne Rücksicht auf Schreibweise, Bindestrich und Zwischenraum;
 was sich nicht zuordnen lässt, bleibt leer. Auch diese zwei Spalten wandern mit der
 Projektkopie.
+
+Das **Bezugsjahr einer TRY-Datei** kommt aus der Kopfzeile „Bezugszeitraum". Gelesen werden
+die ersten beiden vierstelligen Jahreszahlen des Textes, gleich womit sie verbunden sind
+(Bindestrich, Gedankenstrich, „bis", Zwischenräume); das Paar wird gegen eine **benannte
+Tabelle** gehalten — `1995-2012 → 2015`, `2031-2060 → 2045` (DWD-Konvention). Ein Zeitraum,
+der nicht darin steht, ein einzelnes Jahr und eine fehlende Zeile ergeben NULL; eine
+Vorgabe wäre hier eine Behauptung über die Datei. Der gelesene Zeitraum steht **wörtlich**
+im Herkunftsvermerk `Details`, damit die Ableitung nachlesbar bleibt.
 
 Der Lizenzvermerk lautet **„CC BY 4.0, RE-Lab-Projects/TRY_DE_2015_2045, Rohdaten Deutscher
 Wetterdienst"**. Die Datei aus dem DWD-Klimaberatungsmodul bezieht der Anwender selbst; sie
@@ -384,9 +392,10 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
   sie die Prüfoption „volles Jahr aus". Ihr Kopf steht auf einem stimmigen Punkt:
   Rechtswert 3 929 310 / Hochwert 2 478 193 ergeben 9,0000° O / 49,0000° N.
 - `KlimaSzenarioTests` — Schemaschritt 97: die vier Spalten und ihre Wiederholbarkeit, der
-  NULL gebliebene Bestand, das Szenario aus dem Dateikopf samt Gegenproben, die Projektkopie,
-  der zusammengesetzte Satz der Liste, der Halbgeviertstrich des Altbestands, eine Datenbank
-  auf Stand 95 und der Satzbau in beiden Kulturen.
+  NULL gebliebene Bestand, Szenario **und Bezugsjahr** aus dem Dateikopf samt Gegenproben
+  (fehlender und fremder Bezugszeitraum), die Projektkopie, der zusammengesetzte Satz der
+  Liste, der Halbgeviertstrich des Altbestands, eine Datenbank auf Stand 95 und der Satzbau
+  in beiden Kulturen.
 - Referenzlauf der fünf Projekte byte-gleich gegen die geltende Basis; der PVGIS-Weg bleibt
   unverändert.
 
@@ -397,11 +406,6 @@ die zwei TRY-Schlüssel nicht kennt, bekommt die Werksvorgabe.
    LESEN fehlt noch — kein Leser wertet sie bisher aus.
 2. **`E` (langwellige Ausstrahlung) wird nicht gespeichert** (Abschnitt 6) — sie hätte keinen
    Leser. Sie kommt, wenn der Rechenweg sie braucht.
-3. **Eine TRY-Datei bekommt kein Bezugsjahr** (Abschnitt 8). Ihr Kopf nennt einen
-   Bezugszeitraum; die Zuordnung „1995-2012 → 2015" und „2031-2060 → 2045" wäre die
-   DWD-Konvention und nicht die Aussage der Datei. Die Spalte bleibt dort NULL, bis der
-   Anwender entscheidet, dass die Zuordnung gewollt ist — oder bis er das Jahr im Dialog
-   selbst angibt.
-4. **Nach Szenario und Jahr wird über die Spalte „Quelle" gefiltert, nicht sortiert**
+3. **Nach Szenario und Jahr wird über die Spalte „Quelle" gefiltert, nicht sortiert**
    (Abschnitt 2.1). Zwei eigene Spalten wären der andere Weg; sie kosten Breite in einem
    ohnehin schmalen Dialog.

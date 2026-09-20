@@ -40,6 +40,8 @@ Bei den Regionaldaten wählen Sie zusätzlich:
 
 Vorbelegt sind das Bezugsjahr 2015 und das mittlere Jahr.
 
+Bei einer '''Testreferenzjahr-Datei''' entfällt die Wahl: Das Programm übernimmt Jahr und Szenario aus dem Kopf der Datei – das Jahr aus dem dort angegebenen Bezugszeitraum, das Szenario aus der Art des Testreferenzjahres. Nennt der Kopf eines von beidem nicht, bleibt es leer.
+
 ''Region ermitteln'' sagt Ihnen schon vor dem Einlesen, welche Region Ihr Standort trifft: Nummer und Name der Bezugsstation, ihre Koordinate und die Entfernung zu Ihrem Standort, dazu die Jahre und Szenarien, die das Archiv für diese Region führt. Dafür wird nur das Inhaltsverzeichnis des Archivs gelesen, kein Datensatz. Trifft der Standort keine Region, steht der Grund an derselben Stelle; einlesen können Sie trotzdem.
 
 == Einlesen ==
