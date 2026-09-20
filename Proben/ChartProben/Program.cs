@@ -1475,6 +1475,10 @@ namespace ChartProben
             // Die Gruppe (b) bringt ihre Gegenproben, ihre Daten und ihre SVG-Dateien
             // selbst mit (Program.GruppeB.cs).
             GruppeBProben();
+            // AUFTRAG DG-E3c - die sieben Bilder OHNE Zeitachse. Sie stehen in
+            // Program.GruppeC.cs und bringen ihre Gaben selbst mit; die Registrierung
+            // ist diese eine Zeile.
+            GruppeCProben();
 
             Console.WriteLine(new string('-', 92));
             Console.WriteLine(_bilder + " Bilder geprueft, " + _verstoesse + " Verstoesse.");

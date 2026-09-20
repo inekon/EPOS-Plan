@@ -61,6 +61,11 @@
     <!-- Die SVG-Gegenproben der Gruppe (b), Auftrag DG-E3b: eine partielle Haelfte
          derselben Klasse. Sie steht eigens, weil Program.cs die PNG-Probe ist. -->
     <Compile Include="Program.GruppeB.cs" />
+
+    <!-- Die SVG-Gegenproben der Gruppe (c) - sieben Bilder OHNE Zeitachse
+         (DG-E3c). Eigene Datei, damit die Gruppen des Rollouts nebeneinander
+         entstehen koennen, ohne sich in Program.cs zu begegnen. -->
+    <Compile Include="Program.GruppeC.cs" />
   </ItemGroup>
 
   <ItemGroup>
