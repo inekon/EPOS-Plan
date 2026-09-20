@@ -129,38 +129,35 @@ namespace WindowsFormsApplication1
         public static byte[] Kuchen(string titel, List<Segment> segmente)
         {
             int W = 960, H = 600;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel, W);
+
+            double total = segmente.Sum(s => Math.Max(s.Wert, 0));
+            if (total <= 0) total = 1;
+
+            var rect = SKRect.Create(40f, 90f, 440f, 440f);
+            float start = -90f;
+            foreach (Segment s in segmente)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel, W);
+                float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
+                Kreissegment(z, rect, start, sweep, Flaeche(s.Farbe));
+                start += sweep;
+            }
+            z.Ellipse(rect.Left, rect.Top, rect.Width, rect.Height,
+                      Stift(Farbrolle.HINTERGRUND, 3f));
 
-                double total = segmente.Sum(s => Math.Max(s.Wert, 0));
-                if (total <= 0) total = 1;
-
-                var rect = SKRect.Create(40f, 90f, 440f, 440f);
-                float start = -90f;
+            float lx = 540f, ly = 110f;
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
+            using (var lf = Schrift(19f))
                 foreach (Segment s in segmente)
                 {
-                    float sweep = (float)(Math.Max(s.Wert, 0) / total * 360.0);
-                    using (var b = Fuellung(s.Farbe))
-                        Kreissegment(g, rect, start, sweep, b);
-                    start += sweep;
+                    z.Rechteck(lx, ly, 28f, 28f, null, Flaeche(s.Farbe));
+                    z.Rechteck(lx, ly, 28f, 28f, rahmen);
+                    Text(z, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
+                         lf, Farbrolle.TEXT, lx + 40f, ly + 1f);
+                    ly += 48f;
                 }
-                using (var stift = Strich(SKColors.White, 3f)) g.DrawOval(rect, stift);
-
-                float lx = 540f, ly = 110f;
-                using (var lf = Schrift(19f))
-                using (var rahmen = Strich(SKColors.Gray, 1f))
-                    foreach (Segment s in segmente)
-                    {
-                        using (var b = Fuellung(s.Farbe)) g.DrawRect(lx, ly, 28f, 28f, b);
-                        g.DrawRect(lx, ly, 28f, 28f, rahmen);
-                        Text(g, s.Label + "   " + (s.Wert / total * 100.0).ToString("N1", DE) + " %",
-                             lf, SKColors.Black, lx + 40f, ly + 1f);
-                        ly += 48f;
-                    }
-                return Png(flaeche);
-            }
+            return SkiaMaler.Png(z);
         }
 
         // =================================================================== Balken
@@ -2132,60 +2129,56 @@ namespace WindowsFormsApplication1
         {
             int W = mitLegende ? 720 : 420;
             int H = mitLegende ? 560 : 420;
-            using (var flaeche = Start(W, H))
+            var z = Modell(W, H);
+            Titel(z, titel ?? "", W);
+
+            var gueltig = (segmente ?? new List<Ringsegment>())
+                .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
+                .ToList();
+
+            var rc = mitLegende ? SKRect.Create(210f, 90f, 300f, 300f)
+                                : SKRect.Create(60f, 70f, 300f, 300f);
+
+            if (gueltig.Count == 0)
             {
-                SKCanvas g = flaeche.Canvas;
-                Titel(g, titel ?? "", W);
-
-                var gueltig = (segmente ?? new List<Ringsegment>())
-                    .Where(s => s != null && s.Wert > 0 && !double.IsNaN(s.Wert) && !double.IsInfinity(s.Wert))
-                    .ToList();
-
-                var rc = mitLegende ? SKRect.Create(210f, 90f, 300f, 300f)
-                                    : SKRect.Create(60f, 70f, 300f, 300f);
-
-                if (gueltig.Count == 0)
-                {
-                    Leerhinweis(g, SKRect.Create(60f, 100f, W - 120f, 100f));
-                    return Png(flaeche);
-                }
-
-                double summe = gueltig.Sum(s => s.Wert);
-                float start = -90f;   // 12 Uhr, wie im Vorlaeufer
-                foreach (Ringsegment s in gueltig)
-                {
-                    float winkel = (float)(s.Wert / summe * 360.0);
-                    using (var b = Fuellung(s.Farbe)) Kreissegment(g, rc, start, winkel, b);
-                    start += winkel;
-                }
-
-                // Das Innenloch: ein weisser Kreis auf demselben Mittelpunkt. Genau so
-                // machte es DonutChartDrawer.
-                using (var loch = Fuellung(SKColors.White))
-                    g.DrawCircle(rc.MidX, rc.MidY, rc.Width * 0.30f, loch);
-
-                string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
-                                                                   ? "" : " " + mitteEinheit);
-                bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
-                using (var f = Schrift(26f, fett: true))
-                {
-                    float y = rc.MidY - TextHoehe(f) / 2f;
-                    if (unterzeile) y -= 9f;      // Platz fuer die kleine Zeile darunter
-                    Text(g, mitte, f, C_STAMM, rc.MidX - f.MeasureText(mitte) / 2f, y);
-                }
-
-                if (unterzeile)
-                    using (var f = Schrift(12f))
-                        Text(g, mitteUnterzeile, f, SKColors.DimGray,
-                             rc.MidX - f.MeasureText(mitteUnterzeile) / 2f,
-                             rc.MidY + TextHoehe(f) / 2f + 2f);
-
-                if (mitLegende)
-                    Legende(g, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
-                            60f, 430f, W - 30f);
-
-                return Png(flaeche);
+                Leerhinweis(z, SKRect.Create(60f, 100f, W - 120f, 100f));
+                return SkiaMaler.Png(z);
             }
+
+            double summe = gueltig.Sum(s => s.Wert);
+            float start = -90f;   // 12 Uhr, wie im Vorlaeufer
+            foreach (Ringsegment s in gueltig)
+            {
+                float winkel = (float)(s.Wert / summe * 360.0);
+                Kreissegment(z, rc, start, winkel, Flaeche(s.Farbe));
+                start += winkel;
+            }
+
+            // Das Innenloch: ein weisser Kreis auf demselben Mittelpunkt. Genau so
+            // machte es DonutChartDrawer.
+            z.Kreis(rc.MidX, rc.MidY, rc.Width * 0.30f, null, Flaeche(Farbrolle.HINTERGRUND));
+
+            string mitte = mitteWert.ToString("N1", DE) + (string.IsNullOrEmpty(mitteEinheit)
+                                                               ? "" : " " + mitteEinheit);
+            bool unterzeile = !string.IsNullOrEmpty(mitteUnterzeile);
+            using (var f = Schrift(26f, fett: true))
+            {
+                float y = rc.MidY - TextHoehe(f) / 2f;
+                if (unterzeile) y -= 9f;      // Platz fuer die kleine Zeile darunter
+                Text(z, mitte, f, Farbrolle.STAMM, rc.MidX - f.MeasureText(mitte) / 2f, y);
+            }
+
+            if (unterzeile)
+                using (var f = Schrift(12f))
+                    Text(z, mitteUnterzeile, f, Farbrolle.ACHSE,
+                         rc.MidX - f.MeasureText(mitteUnterzeile) / 2f,
+                         rc.MidY + TextHoehe(f) / 2f + 2f);
+
+            if (mitLegende)
+                Legende(z, gueltig.Select(s => new Segment(s.Name, 0, s.Farbe)).ToList(),
+                        60f, 430f, W - 30f);
+
+            return SkiaMaler.Png(z);
         }
 
         // ------------------------------------------------------------------ B6
