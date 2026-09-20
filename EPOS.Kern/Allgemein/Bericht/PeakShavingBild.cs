@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using SkiaSharp;
 using SpeicherEngine;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
@@ -16,9 +16,11 @@ namespace WindowsFormsApplication1
     /// Hauptgitter, 1 240 x 560. Deshalb entsteht hier KEINE neue Renderer-Methode
     /// und keine neue ChartProbe — die Zahl der Bilder bleibt 30.</para>
     ///
-    /// <para><b>Die drei Farben stehen woertlich im Vorlaeufer</b>: Lastgang ohne
-    /// Speicher (190, 90, 90), mit Speicher (40, 110, 180), Ladezustand
-    /// (120, 130, 140).</para>
+    /// <para><b>Die drei Reihen nennen ihre FARBROLLE</b> (DG-E5, Anwenderentscheid
+    /// DG-Q8): Netzbezug ohne Speicher, Netzbezug mit Speicher und Speicherfuellstand.
+    /// Ihre Vorgabefarben sind die des Bildes, aenderbar sind sie seither in
+    /// Administration › Einstellungen › Diagramme — und im Bild ueber das Farbfeld
+    /// ihres Legendeneintrags.</para>
     ///
     /// <para><b>Das Raster ergibt sich aus der Reihenlaenge.</b> 8 760 oder 35 040 —
     /// <c>ChartRenderer.XAchse</c> rechnet die vier Jahresstundenmarken selbst um.
@@ -32,14 +34,14 @@ namespace WindowsFormsApplication1
     /// </summary>
     public static class PeakShavingBild
     {
-        /// <summary>Lastgang ohne Speicher — woertlich <c>Color.FromArgb(190, 90, 90)</c>.</summary>
-        public static readonly SKColor FarbeAlt = new SKColor(190, 90, 90);
+        /// <summary>Lastgang ohne Speicher.</summary>
+        public static readonly Farbrolle RolleAlt = Farbrolle.NETZ_OHNE_SPEICHER;
 
-        /// <summary>Lastgang mit Speicher — woertlich <c>Color.FromArgb(40, 110, 180)</c>.</summary>
-        public static readonly SKColor FarbeNeu = new SKColor(40, 110, 180);
+        /// <summary>Lastgang mit Speicher.</summary>
+        public static readonly Farbrolle RolleNeu = Farbrolle.NETZ_MIT_SPEICHER;
 
-        /// <summary>Ladezustand — woertlich <c>Color.FromArgb(120, 130, 140)</c>.</summary>
-        public static readonly SKColor FarbeSoC = new SKColor(120, 130, 140);
+        /// <summary>Ladezustand — dieselbe Rolle wie in jedem Bild, das ihn zeigt.</summary>
+        public static readonly Farbrolle RolleSoC = Farbrolle.SPEICHERFUELLSTAND;
 
         /// <summary>
         /// Zeichnet den Lastgang vor und nach der Kappung.
@@ -72,15 +74,15 @@ namespace WindowsFormsApplication1
 
             List<ChartRenderer.Reihe> linien = new List<ChartRenderer.Reihe>
             {
-                new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_ALT, r.PAltKw, FarbeAlt),
-                new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_NEU, r.PNeuKw, FarbeNeu)
+                new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_ALT, r.PAltKw, RolleAlt),
+                new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_NEU, r.PNeuKw, RolleNeu)
             };
 
             // #234: Die zweite Achse nimmt seither eine LISTE. Hier steht genau eine
             // Reihe darauf; die Achse traegt damit unveraendert deren Farbe.
             List<ChartRenderer.Reihe> soc = mitSoC
                 ? new List<ChartRenderer.Reihe>
-                  { new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_SOC, r.SoCKwh, FarbeSoC) }
+                  { new ChartRenderer.Reihe(MyResource.Resource.PEAK_SERIE_SOC, r.SoCKwh, RolleSoC) }
                 : null;
 
             return ChartRenderer.ErzeugerStapelModell(

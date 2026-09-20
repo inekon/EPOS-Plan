@@ -27,39 +27,28 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed partial class SimulationErgebnisHuelle
     {
-        // Die Farben der Reihen — wörtlich die des Vorläufers, nur als SKColor.
-        private static readonly SKColor F_BEDARF = SKColors.Red;
-        private static readonly SKColor F_PRODUKTION = SKColors.Blue;
-        private static readonly SKColor F_HEIZSTAB = SKColors.Yellow;
-        private static readonly SKColor F_REST = SKColors.Green;
-        private static readonly SKColor F_WARMWASSER = SKColors.DeepSkyBlue;
-        private static readonly SKColor F_SPEICHERLADUNG = SKColors.DarkOrange;
-        private static readonly SKColor F_SPEICHER = new SKColor(120, 130, 140);
-        private static readonly SKColor F_UEBERSCHUSS = SKColors.Yellow;
-        private static readonly SKColor F_PV = SKColors.BlueViolet;
-        private static readonly SKColor F_WAERMEPUMPE = SKColors.Orange;
-        private static readonly SKColor F_KESSEL = SKColors.Blue;
-        private static readonly SKColor F_SOLAR = SKColors.Brown;
-        private static readonly SKColor F_BHKW = SKColors.Red;
-        private static readonly SKColor F_GESAMT = SKColors.Green;
-        private static readonly SKColor F_LASTGANG = SKColors.Brown;
+        // =================================================================
+        // DIE FARBE EINER REIHE IST IHRE ROLLE (DG-E5, Anwenderentscheid DG-Q8)
+        //
+        // Jede Reihe nennt die GROESSE, die sie zeigt, und bekommt ihre Farbe
+        // aus der Palette. Erst damit traegt jeder Legendeneintrag ein
+        // Farbfeld, und die Reiter zeigen dieselben Hausfarben wie der Bericht.
+        // Eine Groesse, die in zwei Bildern verschieden heisst, entscheidet je
+        // Verwendungsstelle: "Produktion" ist auf der Kesselseite die Waerme
+        // des Kessels, auf der Solarseite die der Kollektoren.
+        // =================================================================
 
-        /// <summary>
-        /// Befund W11-B40 (A-Zeile): Lastgangprofil und BHKW-Strom trugen im Vorläufer
-        /// BEIDE <c>Color.Brown</c> — im Stapel unten und als Linie darüber nicht zu
-        /// unterscheiden. Das BHKW bekommt hier eine eigene Farbe.
-        /// </summary>
-        private static readonly SKColor F_BHKW_STROM = SKColors.SaddleBrown;
-
-        private static readonly SKColor[] F_KANAL =
+        /// <summary>Die drei Bedarfskanäle in der Reihenfolge von <c>Kanal</c>.</summary>
+        private static readonly Farbrolle[] R_KANAL =
         {
-            SKColors.Red, SKColors.DeepSkyBlue, new SKColor(0x7E, 0x57, 0xA6)
+            Farbrolle.HEIZWAERME, Farbrolle.WARMWASSER, Farbrolle.PROZESSWAERME
         };
 
-        private static readonly SKColor[] F_SPEICHERREIHEN =
+        /// <summary>Die sechs Speicherrollen — je Speicher des Projekts eine.</summary>
+        private static readonly Farbrolle[] R_SPEICHERREIHEN =
         {
-            SKColors.MediumVioletRed, SKColors.DarkViolet, SKColors.Teal,
-            SKColors.SaddleBrown, SKColors.DarkSlateGray, SKColors.Crimson
+            Farbrolle.SPEICHER_1, Farbrolle.SPEICHER_2, Farbrolle.SPEICHER_3,
+            Farbrolle.SPEICHER_4, Farbrolle.SPEICHER_5, Farbrolle.SPEICHER_6
         };
 
         // Die Ringfarben der zwei GDI-Donuts (NavigatorUebersicht :310-388).
@@ -169,10 +158,10 @@ namespace WindowsFormsApplication1
 
         // breite ist eine STRICHSTAERKE in Bildpunkten - SkiaSharp rechnet in float,
         // deshalb bleibt der Parameter float (W8-O-5d, Grenze 2a).
-        private static ChartRenderer.Reihe Reihe(string name, double[] werte, SKColor farbe,
+        private static ChartRenderer.Reihe Reihe(string name, double[] werte, Farbrolle rolle,
                                                  ChartRenderer.Stapelart art = ChartRenderer.Stapelart.Keine,
                                                  float breite = 0f)
-            => new ChartRenderer.Reihe(name, Kopie(werte), farbe, art, false, breite);
+            => new ChartRenderer.Reihe(name, Kopie(werte), rolle, art, false, breite);
 
         // ---- B1: die zwei normierten Ganglinien des Bedarfsreiters ------
 
@@ -183,14 +172,14 @@ namespace WindowsFormsApplication1
 
             if (wahl.Count == 0 || wahl.Contains("GESAMT"))
                 reihen.Add(Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF,
-                                 _waermebedarf.Waermebedarf, F_BEDARF));
+                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF));
 
             for (int k = 0; k < Kanal.ANZAHL; k++)
             {
                 if (!wahl.Contains("KANAL_" + k)) continue;
                 reihen.Add(Reihe(KANALNAMEN[k],
                                  SimulationControl.BedarfKanalStuendlich(_waermebedarf, k),
-                                 F_KANAL[k % F_KANAL.Length]));
+                                 R_KANAL[k % R_KANAL.Length]));
             }
 
             return ChartRenderer.GanglinieNormiertModell(
@@ -205,7 +194,7 @@ namespace WindowsFormsApplication1
             double[] werte = _strombedarf.Strombedarf_viertelStundenwerte;
             var reihen = new List<ChartRenderer.Reihe>
             {
-                Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF, werte, F_BEDARF)
+                Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF, werte, Farbrolle.BEDARF)
             };
 
             return ChartRenderer.GanglinieNormiertModell(
@@ -362,17 +351,17 @@ namespace WindowsFormsApplication1
 
             if (Gewaehlt(a, alle, "HEIZWAERMEBEDARF"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, heizung,
-                                 F_BEDARF, ChartRenderer.Stapelart.Flaeche));
+                                 Farbrolle.HEIZWAERME, ChartRenderer.Stapelart.Flaeche));
             if (Gewaehlt(a, alle, "WARMWASSERBEDARF"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WARMWASSERBEDARF, ww,
-                                 F_WARMWASSER, ChartRenderer.Stapelart.Flaeche));
+                                 Farbrolle.WARMWASSER, ChartRenderer.Stapelart.Flaeche));
             if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                                 sim.simulation_wp.WP_Waermeproduktion_stuendlich, F_PRODUKTION,
+                                 sim.simulation_wp.WP_Waermeproduktion_stuendlich, Farbrolle.WAERME_WP,
                                  ChartRenderer.Stapelart.Saeule));
             if (Gewaehlt(a, alle, "HEIZSTAB"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                                 sim.simulation_wp.Heizstab_stuendlich, F_HEIZSTAB,
+                                 sim.simulation_wp.Heizstab_stuendlich, Farbrolle.HEIZSTAB,
                                  ChartRenderer.Stapelart.Saeule));
 
             return ChartRenderer.ErzeugerStapelModell(
@@ -392,7 +381,7 @@ namespace WindowsFormsApplication1
 
             return ChartRenderer.JahresverlaufModell(
                 MyResource.Resource.CHART_TITEL_STROMBEDARF_JAHRESGANGLINIE,
-                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, F_BEDARF);
+                Kopie(gesamt), MyResource.Resource.CHART_ACHSE_STROMBEDARF, Farbrolle.BEDARF);
         }
 
         /// <summary>
@@ -437,13 +426,13 @@ namespace WindowsFormsApplication1
             var reihen = new List<ChartRenderer.Punktreihe>();
             if (mitBedarf)
                 reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
-                                                        bedarf, F_BEDARF.WithAlpha(120)));
+                                                        bedarf, Farbrolle.BEDARF, 120));
             if (mitHeizstab)
                 reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                                                        heizstab, F_HEIZSTAB.WithAlpha(120)));
+                                                        heizstab, Farbrolle.HEIZSTAB, 120));
             if (mitProduktion)
                 reihen.Add(new ChartRenderer.Punktreihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                                                        produktion, F_PRODUKTION.WithAlpha(120)));
+                                                        produktion, Farbrolle.WAERME_WP, 120));
 
             return ChartRenderer.StreuwolkeModell(
                 MyResource.Resource.CHART_TITEL_LEISTUNG_UEBER_AUSSENTEMPERATUR,
@@ -463,7 +452,7 @@ namespace WindowsFormsApplication1
         {
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
-                reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Farbe,
+                reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Rolle,
                                                    ChartRenderer.Stapelart.Keine, r.Gestrichelt));
 
             return ChartRenderer.TemperaturverlaufModell(
@@ -486,18 +475,18 @@ namespace WindowsFormsApplication1
             var stapel = new List<ChartRenderer.Reihe>();
             if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION_HEIZKESSEL,
-                                 sim.simulation_spk.Kesselleistung_stuendlich, F_PRODUKTION,
+                                 sim.simulation_spk.Kesselleistung_stuendlich, Farbrolle.WAERME_KESSEL,
                                  ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f));
 
             var linien = new List<ChartRenderer.Reihe>();
             if (Gewaehlt(a, alle, "RESTWAERME"))
                 linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME,
-                                 sim.simulation_spk.Restwaerme, F_REST));
+                                 sim.simulation_spk.Restwaerme, Farbrolle.REST));
             // Der Bedarf ZULETZT und damit ganz oben - er ist die Bezugsgröße
             // (Begründung im Blockkommentar :970-980). Hier der PROJEKTbedarf.
             if (Gewaehlt(a, alle, "WAERMEBEDARF"))
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF_GESAMT,
-                                 _waermebedarf.Waermebedarf, F_BEDARF));
+                                 _waermebedarf.Waermebedarf, Farbrolle.BEDARF));
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
@@ -525,10 +514,12 @@ namespace WindowsFormsApplication1
 
             if (Gewaehlt(a, alle, "WAERMEBEDARF"))
                 linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF,
-                                                   sim.simulation_solarthermie.Waermebedarf, F_BEDARF));
+                                                   sim.simulation_solarthermie.Waermebedarf,
+                                                   Farbrolle.BEDARF));
             if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
                 linien.Add(new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION,
-                                                   sim.simulation_solarthermie.Waermeproduktion, F_PRODUKTION));
+                                                   sim.simulation_solarthermie.Waermeproduktion,
+                                                   Farbrolle.WAERME_SOLAR));
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
@@ -551,20 +542,23 @@ namespace WindowsFormsApplication1
             var stapel = new List<ChartRenderer.Reihe>();
             if (Gewaehlt(a, alle, "WAERMEPRODUKTION"))
                 stapel.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEPRODUKTION, b.waermeproduktion,
-                                 F_PRODUKTION, ChartRenderer.Stapelart.Saeule, sortiert ? 4f : 0f));
+                                 Farbrolle.WAERME_BHKW, ChartRenderer.Stapelart.Saeule,
+                                 sortiert ? 4f : 0f));
 
             double[] ladung = Array.ConvertAll(b.Speicherladung_stuendlich, x => (double)x);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (Gewaehlt(a, alle, "SPEICHERLADUNG"))
                 linien.Add(Reihe(MyResource.Resource.SIMDET_BHKW_SERIE_SPEICHERLADUNG, ladung,
-                                 F_SPEICHERLADUNG));
+                                 Farbrolle.SPEICHERLADUNG));
             if (Gewaehlt(a, alle, "RESTWAERME"))
-                linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME, b.waermerestbedarf, F_REST));
+                linien.Add(Reihe(MyResource.Resource.CHART_SEGMENT_RESTWAERME, b.waermerestbedarf,
+                                 Farbrolle.REST));
             // Der STUFENEINGANG zuletzt und damit oben - nicht der Projektbedarf
             // (Begründung im Blockkommentar :2140-2147).
             if (Gewaehlt(a, alle, "WAERMEBEDARF"))
-                linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, b.waermebedarf, F_BEDARF));
+                linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, b.waermebedarf,
+                                 Farbrolle.BEDARF));
 
             return ChartRenderer.ErzeugerStapelModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE,
@@ -599,10 +593,10 @@ namespace WindowsFormsApplication1
             var linien = new List<ChartRenderer.Reihe>();
             if (Gewaehlt(a, alle, "UEBERSCHUSS"))
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_UEBERSCHUSS,
-                                 sim.simulation_pv.Ueberschuss_viertelstunde, F_UEBERSCHUSS));
+                                 sim.simulation_pv.Ueberschuss_viertelstunde, Farbrolle.UEBERSCHUSS));
             if (Gewaehlt(a, alle, "STROMBEDARF"))
                 linien.Add(Reihe(MyResource.Resource.CHART_ACHSE_STROMBEDARF,
-                                 sim.simulation_pv.Strombedarf, F_BEDARF));
+                                 sim.simulation_pv.Strombedarf, Farbrolle.BEDARF));
             // W11b-B-6: die ERZEUGUNG der Module (Stromproduktion_Theoretisch), nicht der
             // genutzte Anteil - der lag ohne Strombedarf auf 0, die Kurve war leer, und
             // die Tabelle darunter wies 13 MWh aus. Der Vorlaeufer (:4574) zeichnete
@@ -611,14 +605,14 @@ namespace WindowsFormsApplication1
             if (Gewaehlt(a, alle, "PHOTOVOLTAIK"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
                                  sim.simulation_pv.Stundenwerte_zu_viertelstunden(
-                                     sim.simulation_pv.Stromproduktion_Theoretisch), F_PV));
+                                     sim.simulation_pv.Stromproduktion_Theoretisch), Farbrolle.STROM_PV));
 
             // #234: Die zweite Achse nimmt seither eine LISTE; hier steht genau eine
             // Reihe darauf — der eine Stromspeicher des Projekts.
             List<ChartRenderer.Reihe> zweite = Gewaehlt(a, alle, "SPEICHERFUELLSTAND")
                 ? new List<ChartRenderer.Reihe>
                   { Reihe(MyResource.Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND,
-                          sim.Speicherfuellstand_viertelstuendlich, F_SPEICHER) }
+                          sim.Speicherfuellstand_viertelstuendlich, Farbrolle.SPEICHERFUELLSTAND) }
                 : null;
 
             return ChartRenderer.ErzeugerStapelModell(
@@ -712,11 +706,11 @@ namespace WindowsFormsApplication1
             var reihen = new List<ChartRenderer.Reihe>
             {
                 new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_EIGENVERBRAUCH_DIREKT,
-                                        direkt, SKColors.Gold),
+                                        direkt, Farbrolle.STROM_PV),
                 new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_EIGENVERBRAUCH_SPEICHER,
-                                        ausSpeicher, SKColors.LightGreen),
+                                        ausSpeicher, Farbrolle.STROM_SPEICHER),
                 new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_AUTARKIELUECKE,
-                                        luecke, SKColors.Red)
+                                        luecke, Farbrolle.REST)
             };
 
             return ChartRenderer.MonatsStapelModell(
@@ -760,11 +754,12 @@ namespace WindowsFormsApplication1
                 }
             }
 
-            var farben = new Dictionary<string, SKColor>
+            var rollen = new Dictionary<string, Farbrolle>
             {
-                { "WAERMEPUMPE", F_WAERMEPUMPE }, { "HEIZSTAB", F_HEIZSTAB },
-                { "HEIZKESSEL", F_KESSEL }, { "SOLARTHERMIE", F_SOLAR },
-                { "BHKW_WAERME", F_BHKW }
+                { "WAERMEPUMPE", Farbrolle.WAERME_WP }, { "HEIZSTAB", Farbrolle.HEIZSTAB },
+                { "HEIZKESSEL", Farbrolle.WAERME_KESSEL },
+                { "SOLARTHERMIE", Farbrolle.WAERME_SOLAR },
+                { "BHKW_WAERME", Farbrolle.WAERME_BHKW }
             };
 
             var stapel = new List<ChartRenderer.Reihe>();
@@ -773,7 +768,7 @@ namespace WindowsFormsApplication1
                 if (!r.Vorhanden || !wahl.Contains(r.Schluessel)) continue;
                 double[] werte = Vektor(r.Schluessel);
                 if (werte == null) continue;
-                stapel.Add(Reihe(r.Text, werte, farben[r.Schluessel],
+                stapel.Add(Reihe(r.Text, werte, rollen[r.Schluessel],
                                  ChartRenderer.Stapelart.Saeule, a.Sortiert ? 4f : 0f));
             }
 
@@ -792,7 +787,7 @@ namespace WindowsFormsApplication1
                 string schluessel = sp.Schluessel(i);
                 if (wahl.Contains(schluessel))
                     speicherreihen.Add(Reihe(sp.BezeichnerAnzeige(), sp.SOC_stuendlich,
-                                             F_SPEICHERREIHEN[nummer % F_SPEICHERREIHEN.Length]));
+                                             R_SPEICHERREIHEN[nummer % R_SPEICHERREIHEN.Length]));
                 nummer++;
             }
 
@@ -812,7 +807,7 @@ namespace WindowsFormsApplication1
                     for (int h = 0; h < gesamt.Length && h < r.Werte.Length; h++) gesamt[h] += r.Werte[h];
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEERZEUGUNG,
-                                                 gesamt, F_GESAMT,
+                                                 gesamt, Farbrolle.ERZEUGUNG_GESAMT,
                                                  ChartRenderer.Stapelart.Keine, false, 4f);
             }
 
@@ -827,7 +822,7 @@ namespace WindowsFormsApplication1
                     ? _waermebedarf.Waermebedarf
                     : SimulationControl.BedarfKanalStuendlich(_waermebedarf, kanal);
                 linien.Add(Reihe(MyResource.Resource.CHART_LEGENDE_WAERMEBEDARF, bedarf,
-                                 SKColors.DarkCyan, ChartRenderer.Stapelart.Keine, 2f));
+                                 Farbrolle.BEDARF, ChartRenderer.Stapelart.Keine, 2f));
             }
 
             string titel = kanal < 0
@@ -856,29 +851,29 @@ namespace WindowsFormsApplication1
             double[] Viertel(double[] stunden) => sim.Stundenwerte_zu_viertelstunden(stunden);
 
             var stapel = new List<ChartRenderer.Reihe>();
-            void Stapel(string schluessel, string name, double[] werte, SKColor farbe)
+            void Stapel(string schluessel, string name, double[] werte, Farbrolle rolle)
             {
                 if (wahl.Contains(schluessel) && werte != null)
-                    stapel.Add(Reihe(name, werte, farbe, ChartRenderer.Stapelart.Saeule,
+                    stapel.Add(Reihe(name, werte, rolle, ChartRenderer.Stapelart.Saeule,
                                      a.Sortiert ? 4f : 0f));
             }
 
             Stapel("PROFIL_LASTGANG", MyResource.Resource.CHART_LEGENDE_PROFIL_LASTGANG,
-                   _strombedarf.Strombedarf_viertelStundenwerte, F_LASTGANG);
+                   _strombedarf.Strombedarf_viertelStundenwerte, Farbrolle.BEDARF);
             Stapel("WAERMEPUMPE", MyResource.Resource.SIM_ERZEUGERNAME_WAERMEPUMPE,
-                   Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich), F_WAERMEPUMPE);
+                   Viertel(sim.simulation_wp.WP_Strombedarf_stuendlich), Farbrolle.WAERME_WP);
             Stapel("HEIZSTAB", MyResource.Resource.CHART_SEGMENT_HEIZSTAB,
-                   Viertel(sim.simulation_wp.Heizstab_stuendlich), F_HEIZSTAB);
+                   Viertel(sim.simulation_wp.Heizstab_stuendlich), Farbrolle.HEIZSTAB);
             Stapel("HEIZKESSEL", MyResource.Resource.SIM_ERZEUGERNAME_HEIZKESSEL,
-                   Viertel(sim.simulation_spk.Strombedarf_stuendlich), F_KESSEL);
+                   Viertel(sim.simulation_spk.Strombedarf_stuendlich), Farbrolle.WAERME_KESSEL);
 
             var linien = new List<ChartRenderer.Reihe>();
             if (wahl.Contains("BHKW_STROM"))
                 linien.Add(Reihe(MyResource.Resource.SIM_ERZEUGERNAME_BHKW,
-                                 Viertel(sim.simulation_bhkw.stromproduktion), F_BHKW_STROM));
+                                 Viertel(sim.simulation_bhkw.stromproduktion), Farbrolle.STROM_BHKW));
             if (wahl.Contains("PV"))
                 linien.Add(Reihe(MyResource.Resource.SIM_PHOTOVOLTAIK,
-                                 sim.simulation_pv.Stromproduktion_viertelstunde, F_PV));
+                                 sim.simulation_pv.Stromproduktion_viertelstunde, Farbrolle.STROM_PV));
 
             // „GESAMT" ist die Kontrolllinie über allem (:220-221). Sie addiert
             // Lastgang, Wärmepumpe, Heizstab und Heizkessel - das ist der
@@ -894,7 +889,7 @@ namespace WindowsFormsApplication1
                                             Viertel(sim.simulation_spk.Strombedarf_stuendlich)));
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
-                                                 Kopie(gesamt), F_GESAMT,
+                                                 Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,
                                                  ChartRenderer.Stapelart.Keine, false, 2f);
             }
 

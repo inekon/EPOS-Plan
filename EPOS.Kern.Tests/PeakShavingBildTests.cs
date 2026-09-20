@@ -146,15 +146,28 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Die drei Farben stehen woertlich im Vorlaeufer
-        /// (<c>Form_PeakShaving.ChartZeichnen</c> :708-716).
+        /// Die drei Reihen nennen ihre FARBROLLE (DG-E5), und deren Hausfarbe ist die
+        /// des Bildes. Damit trägt jeder Legendeneintrag ein Farbfeld — und ein
+        /// Anwender, der den Ladezustand umfärbt, färbt ihn in jedem Bild um.
         /// </summary>
         [Fact]
-        public void Die_drei_Farben_sind_die_des_Vorlaeufers()
+        public void Die_drei_Reihen_tragen_ihre_Farbrolle()
         {
-            Assert.Equal(new SkiaSharp.SKColor(190, 90, 90), PeakShavingBild.FarbeAlt);
-            Assert.Equal(new SkiaSharp.SKColor(40, 110, 180), PeakShavingBild.FarbeNeu);
-            Assert.Equal(new SkiaSharp.SKColor(120, 130, 140), PeakShavingBild.FarbeSoC);
+            Assert.Equal(WindowsFormsApplication1.Zeichnung.Farbrolle.NETZ_OHNE_SPEICHER,
+                         PeakShavingBild.RolleAlt);
+            Assert.Equal(WindowsFormsApplication1.Zeichnung.Farbrolle.NETZ_MIT_SPEICHER,
+                         PeakShavingBild.RolleNeu);
+            Assert.Equal(WindowsFormsApplication1.Zeichnung.Farbrolle.SPEICHERFUELLSTAND,
+                         PeakShavingBild.RolleSoC);
+            Assert.Equal(PeakShavingBild.RolleSoC, SpeicherBetriebsbild.RolleSoC);
+
+            var vorgabe = WindowsFormsApplication1.Zeichnung.Farbpalette.Vorgabe;
+            Assert.Equal(new WindowsFormsApplication1.Zeichnung.Farbe(190, 90, 90),
+                         vorgabe[PeakShavingBild.RolleAlt]);
+            Assert.Equal(new WindowsFormsApplication1.Zeichnung.Farbe(40, 110, 180),
+                         vorgabe[PeakShavingBild.RolleNeu]);
+            Assert.Equal(new WindowsFormsApplication1.Zeichnung.Farbe(120, 130, 140),
+                         vorgabe[PeakShavingBild.RolleSoC]);
         }
     }
 }

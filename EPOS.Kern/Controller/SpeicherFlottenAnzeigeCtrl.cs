@@ -254,7 +254,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
             ladezustand = new ChartRenderer.Reihe(
                 Benannt(MyResource.Resource.FLOTTE_R_SOC, einheiten[stelle]),
                 teil.Select(x => Wert(x.EnergieEndeKWhJeSpeicher, stelle)).ToArray(),
-                SpeicherBetriebsbild.FarbeSoC);
+                SpeicherBetriebsbild.RolleSoC);
         }
 
         Zeichnung.Zeichenmodell netz = ChartRenderer.SpeicherbetriebModell(

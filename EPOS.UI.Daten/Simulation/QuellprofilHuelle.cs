@@ -199,7 +199,7 @@ namespace WindowsFormsApplication1
                 return ChartRenderer.JahresverlaufModell(
                     MyResource.Resource.SIMQ_QUELLPROFIL_TAB_GRAFIK, jahr,
                     MyResource.Resource.CHART_ACHSE_QUELLTEMPERATUR,
-                    SkiaSharp.SKColors.SteelBlue);
+                    Farbrolle.QUELLTEMPERATUR);
             });
         }
 

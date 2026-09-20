@@ -345,7 +345,7 @@ namespace WindowsFormsApplication1
                 {
                     new ChartRenderer.Reihe(MyResource.Resource.CHART_ACHSE_WAERMELAST,
                                             Array.ConvertAll(werte, x => (double)x),
-                                            SkiaSharp.SKColors.Red)
+                                            Zeichnung.Farbrolle.BEDARF)
                 };
 
                 return ChartRenderer.GanglinieNormiertModell(
