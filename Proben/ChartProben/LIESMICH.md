@@ -58,7 +58,7 @@ gegen diese Datei.
   sich beim Umbau unbemerkt ändern. Deshalb stehen auch die Bilder der Gegen- und
   Versatzproben darin, die im Bestand nur miteinander verglichen und nie geschrieben werden.
 - **Umfang.** 72 Proben (51 Maßproben, 20 Gegenproben, 1 Versatzprobe) ergeben **91 Bilder**
-  und ebenso viele Zeilen. Die zwölf SVG-Gegenproben zeichnen kein PNG und stehen deshalb
+  und ebenso viele Zeilen. Die sechzehn SVG-Gegenproben zeichnen kein PNG und stehen deshalb
   nicht darin — die Probenzahl steigt, die Messlatte bleibt bei 91.
 - **Die Messlatte gilt für die Vorgabe-Palette.** Die Farben der Diagramme sind eine
   Anwendungseinstellung (Rubrik „Diagramme"); die Probe setzt deshalb zu Beginn ausdrücklich
@@ -90,7 +90,7 @@ gegen diese Datei.
 Seit der Etappe E2 des
 [Diagrammkonzepts](../../Dokumentation/aktuell/Konzept_Diagramme_Interaktiv_EPOS-Plan.md) gibt
 es zu jedem Modell einen **zweiten Ausgabeweg**: `SvgSchreiber` schreibt dasselbe
-`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Zwölf
+`Zeichenmodell`, das der `SkiaMaler` ins PNG malt, als SVG-Text für den Bildschirm. Sechzehn
 Proben halten ihn fest — sie zeichnen **kein PNG**, legen nichts ab und stehen **nicht** in
 der Messlatte:
 
@@ -122,9 +122,28 @@ Warum sie nötig sind: Ein Schreiber, der die Reihen wegließe, die Palette nich
 Datenfenster überginge, bestünde jede Maß-, Farb- und Determinismusprüfung des PNG-Wegs — das
 PNG entsteht ja weiterhin aus dem Maler.
 
-**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle neun Modelle (die acht und den
-Jahresgang) als Dateien; ein kopfloser Browser macht daraus ein Bild, das sich neben das
-Skia-PNG aus `--ablage` legen lässt. Erwartet wird **dieselbe Struktur**, nicht dasselbe
-Pixel: Das SVG zeichnet die Reihe roh bzw. als konservative Hülle, das PNG jeden n-ten Wert —
-im SVG steht deshalb der volle Tagesgang, wo das PNG ein ausgedünntes Band zeigt (Entscheid
-DG-E2-2).
+### Die vier reinen Pixelbilder der Gruppe (d)
+
+Die vier **Berichtsbilder** sind der Gegenfall: Nach Entscheid DG-E3-7 tragen sie **keine**
+Zeichenfläche und **keine** `Datenreihe` — im Bericht gibt es keine Bedienung, der Gewinn des
+SVG ist Schärfe und durchsuchbarer Text. Ihre Gegenprobe (`SvgPixelprobe` in
+`Program.GruppeD.cs`) prüft deshalb das Gegenteil: kein inneres `<svg class="epos-flaeche">`,
+kein `path.epos-reihe`, dafür **jeder** Textbefehl des Modells als `<text>`, die Marken
+`titel`, `xachse`, `yachse`, `reihe:…`, `legende:…` im Baum — und zu jeder gezeichneten Reihe
+genau ein Legendeneintrag.
+
+| Probe | Bild |
+|---|---|
+| `svgd_jahresverlauf_waerme` | `JahresverlaufWaermeModell` — Tagesmittel, Stapelflächen, Bedarfslinie |
+| `svgd_dauerlinie_waerme` | `DauerlinieWaermeModell` — x zählt den Rang |
+| `svgd_speicherverlauf` | `SpeicherverlaufModell` — drei Wochenfelder in einem Bild |
+| `svgd_speichertemperaturen` | `SpeichertemperaturenModell` — drei Felder, Achse ohne Nullpunkt |
+
+**Sichtprüfung.** `--svg-alle <ordner>` schreibt alle dreizehn Modelle (die acht der
+Gruppe (a), den Jahresgang und die vier der Gruppe (d)) als Dateien; ein kopfloser Browser
+macht daraus ein Bild, das sich neben das Skia-PNG aus `--ablage` legen lässt. Erwartet wird
+**dieselbe Struktur**, nicht dasselbe Pixel: Das SVG der Gruppe (a) zeichnet die Reihe roh
+bzw. als konservative Hülle, das PNG jeden n-ten Wert — im SVG steht deshalb der volle
+Tagesgang, wo das PNG ein ausgedünntes Band zeigt (Entscheid DG-E2-2). Bei den vier
+Pixelbildern der Gruppe (d) entfällt dieser Unterschied: Sie zeichnen dieselben Befehle,
+nur als Vektor.
