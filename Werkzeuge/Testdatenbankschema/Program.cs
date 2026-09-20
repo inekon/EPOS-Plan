@@ -663,12 +663,19 @@ namespace Testdatenbankschema
             //      zweiter Lauf findet nichts mehr.
             if (!trocken)
             {
-                int umzuziehen = VerguetungUmzug.ZaehlungUmzug();
-                Console.WriteLine("Schritt 84 - Projekte mit gepflegtem Kartenwert: " + umzuziehen + ".");
-                foreach (string zeile in VerguetungUmzug.Umziehen())
-                    Console.WriteLine("Schritt 84 - " + zeile);
-                if (umzuziehen == 0)
-                    Console.WriteLine("Schritt 84: nichts umzuziehen - kein gepflegter Kartenwert.");
+                if (!VerguetungUmzug.KartenspaltenVorhanden())
+                {
+                    Console.WriteLine("Schritt 84: nichts umzuziehen - die Kartenspalten sind mit Schritt 85 entfallen.");
+                }
+                else
+                {
+                    int umzuziehen = VerguetungUmzug.ZaehlungUmzug();
+                    Console.WriteLine("Schritt 84 - Projekte mit gepflegtem Kartenwert: " + umzuziehen + ".");
+                    foreach (string zeile in VerguetungUmzug.Umziehen())
+                        Console.WriteLine("Schritt 84 - " + zeile);
+                    if (umzuziehen == 0)
+                        Console.WriteLine("Schritt 84: nichts umzuziehen - kein gepflegter Kartenwert.");
+                }
             }
             Console.WriteLine();
 

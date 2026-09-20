@@ -182,8 +182,9 @@
         // Einspeiseverguetung_KWK - zwei Wahrheiten fuer denselben eingespeisten Strom.
         // Beide Verguetungen kommen ab hier aus den Wirtschaftlichkeitsparametern; die
         // Quellenkette steht an StromPreisCtrl.VerguetungenBauen. Die Spalten
-        // Verguetung_PV/_BHKW bleiben im Schema stehen (Schemaschritt 84 zieht ihren
-        // Inhalt in die Parameter um), werden aber weder gelesen noch geschrieben.
+        // Verguetung_PV/_BHKW gibt es im Schema nicht mehr: Schemaschritt 84 hat ihren
+        // Inhalt in die Parameter umgezogen, Schritt 85 sie entfernt
+        // (StrompreisAltspalten).
 
         /// <summary>
         /// true, wenn die Zeile aus der Datenbank stammt. false heisst: Es gab keine

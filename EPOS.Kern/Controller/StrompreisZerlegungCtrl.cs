@@ -188,9 +188,9 @@ namespace WindowsFormsApplication1
             Schalter(dt, r, SchemaKatalog.SPALTE_AUFSCHLAG_UMLAGEN_EINZELN, ref m.Umlagen_Einzeln);
 
             // SP-E-5 (a): Verguetung_PV/_BHKW werden NICHT MEHR GELESEN. Die
-            // Einspeiseverguetung steht bei den Wirtschaftlichkeitsparametern; die
-            // Spalten bleiben stehen, damit eine aeltere Programmfassung auf derselben
-            // Datei nicht auf einen fehlenden Namen laeuft.
+            // Einspeiseverguetung steht bei den Wirtschaftlichkeitsparametern;
+            // Schemaschritt 84 hat die Kartenwerte dorthin umgezogen, Schritt 85 die
+            // Spalten entfernt (StrompreisAltspalten).
 
             m.AusDatenbank = true;
             return m;
