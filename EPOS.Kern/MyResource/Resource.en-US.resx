@@ -21152,4 +21152,61 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Edit, New or catalogue management; the operating mode decides which of the two saving paths is available.</value>
   </data>
+  <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
+    <value>Heat demand of a building</value>
+  </data>
+  <data name="KI_DLG_MASKE_GTYP" xml:space="preserve">
+    <value>Building types</value>
+  </data>
+  <data name="KI_DLG_MASKE_TPROF" xml:space="preserve">
+    <value>Weekly hourly profile of a type</value>
+  </data>
+  <data name="KI_DLG_MASKE_TSTAMM" xml:space="preserve">
+    <value>Header record of a demand catalogue</value>
+  </data>
+  <data name="KI_DLG_GEBB_EINHEIT_ERL" xml:space="preserve">
+    <value>The display unit of the energy quantities; it affects key figures, monthly overview and chart alike.</value>
+  </data>
+  <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
+    <value>Does the chart show the load duration curve instead of the annual load profile? Sorted means the 8,760 hourly values by magnitude.</value>
+  </data>
+  <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
+    <value>The name of the building whose heat demand the screen shows.</value>
+  </data>
+  <data name="KI_DLG_GEBB_HEIZWAERME_ERL" xml:space="preserve">
+    <value>The annual sum of heating energy of this building. Domestic hot water and process heat are not included.</value>
+  </data>
+  <data name="KI_DLG_GEBB_MAX_LAST_ERL" xml:space="preserve">
+    <value>The highest hourly load of the year; it determines the sizing of the generator.</value>
+  </data>
+  <data name="KI_DLG_GEBB_VOLLBENUTZUNG_ERL" xml:space="preserve">
+    <value>The full load hours: annual sum divided by peak load. Without a peak load there are none.</value>
+  </data>
+  <data name="KI_DLG_GTYP_TYP_ERL" xml:space="preserve">
+    <value>The loaded building type. Setting it loads its record together with its daily curves — the same path as a click in the list.</value>
+  </data>
+  <data name="KI_DLG_GTYP_KURVE_ERL" xml:space="preserve">
+    <value>The daily curve whose 24 hourly values the screen shows; a type carries five or eight of them.</value>
+  </data>
+  <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The free text of the loaded type; the screen shows it locked.</value>
+  </data>
+  <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
+    <value>The loaded type. Setting it loads its weekly profile — the same path as a click in the list.</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENTAG_ERL" xml:space="preserve">
+    <value>The weekday whose 24 hourly values the screen shows; Monday is the first.</value>
+  </data>
+  <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The free text of the loaded type; it goes to the database when saving.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
+    <value>The name of the catalogue record; the screen shows it locked. A different name is created with “Save as”.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_TYP_ERL" xml:space="preserve">
+    <value>The type from the type catalogue; it brings along the weekly hourly profile the monthly values are distributed by.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Free text for the catalogue record.</value>
+  </data>
 </root>

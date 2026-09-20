@@ -434,4 +434,61 @@ public class TypStammDialogTests : EposBunitContext
         cut.Find(".epos-dialog > .epos-leiste button.epos-knopf--primaer").Click();
         Assert.True(geschlossen);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie ist die einzige der
+    /// Welle ohne Sichtklasse: Der Katalog hängt sich an <c>TypStammDaten</c> selbst,
+    /// und ein Setzen der Beschreibung steht im selben Objekt, das die Maske zeigt.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Beschreibung()
+    {
+        TypStammDaten daten = Daten(BedarfsArt.Stromverbraucher);
+        var cut = Aufbauen(daten);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.TYPSTAMM));
+
+        WindowsFormsApplication1.KiFeldzugang name =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPSTAMM, "name");
+        Assert.NotNull(name);
+        Assert.Equal("Halle 1", name.Lesen());
+        Assert.False(name.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang beschreibung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPSTAMM, "beschreibung");
+        Assert.True(beschreibung.Setzbar);
+
+        beschreibung.Setzen("Neuer Text");
+        cut.Render();
+
+        Assert.Equal("Neuer Text", daten.Beschreibung);
+    }
+
+    /// <summary>
+    /// <b>Der Verbrauchertyp ist ein WAHLFELD</b> (KI-D-Q6): Seine Einträge kennt nur
+    /// der Dialog, er reicht sie beim Anmelden als Lieferant herein; gesetzt wird über
+    /// den Anzeigetext, im Satz steht danach der Typname.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_den_Verbrauchertyp_ueber_seinen_Text()
+    {
+        TypStammDaten daten = Daten(BedarfsArt.Stromverbraucher);
+        var cut = Aufbauen(daten);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPSTAMM, "typ");
+        Assert.NotNull(zugang);
+        Assert.Equal("Gewerbe", zugang.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Wohnen");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal("Wohnen", daten.Typ);
+    }
 }

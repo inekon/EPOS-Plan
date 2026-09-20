@@ -35,6 +35,8 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -259,7 +261,56 @@
     {
         _typliste = Typen?.Invoke() ?? Array.Empty<string>();
         _ursprungsname = Daten.Name ?? "";
+
+        // Welle KI-F3: Der Satz ist VERAENDERLICH und bindet unmittelbar ans Markup -
+        // hier braucht es kein Sichtmodell. Die Typliste kennt nur dieser Dialog,
+        // deshalb geht sie als Lieferant des Wahlfeldes mit.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.TYPSTAMM, () => Daten, KiHaken(),
+                                          ("typ", Typwahleintraege));
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt den Kopfsatz (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>Die Verbrauchertypen des Katalogs für den Assistenten (KI-D-Q6).</summary>
+    private IReadOnlyList<KiWahleintrag> Typwahleintraege()
+        => KiMaskenanmeldung.Eintraege(Typeintraege, e => e.Text, e => e.Text);
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier ÜBERSCHREIBEN bzw. ANLEGEN</b> — der Weg des
+    /// Knopfes, der die Maske stehen lässt: in der Betriebsart Neu wird angelegt, sonst
+    /// der Satz unter seinem Ursprungsnamen überschrieben.</para>
+    /// <para><b>Die Prüfung ist die des Dialogs</b> — die zwölf Monatswerte sind
+    /// Pflicht, und die Meldung nennt das erste Feld, an dem es hängt.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => MonatswerteStehen() ? "" : _meldung,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        if (Modus == KatalogModus.Neu) BeiSpeichern(); else BeiUeberschreiben();
+
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(Daten.Name, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -172,7 +172,23 @@ namespace WindowsFormsApplication1
                 // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie
                 // nicht. Ihr Weg beginnt auf der Startseite, Reiter „Waermebedarf",
                 // Kachel „Gebaeudedaten eingeben" - siehe STARTSEITE.
-                { KiMaskennamen.GEBAEUDE_WOHNFLAECHE, STARTSEITE }
+                { KiMaskennamen.GEBAEUDE_WOHNFLAECHE, STARTSEITE },
+
+                // Der WAERMEBEDARF eines Gebaeudes geht aus der Gebaeudemaske auf und
+                // braucht eine gewaehlte Projektzeile samt gerechnetem Bedarf.
+                { KiMaskennamen.GEBAEUDE_BEDARF, STARTSEITE },
+
+                // Die Gebaeudetypen-Verwaltung IST die Maske des Navigationsschluessels -
+                // hier fallen Katalogschluessel und Navigationsschluessel zusammen.
+                { KiMaskennamen.GEBAEUDETYP, Masken.GebaeudetypenAdmin },
+
+                // Profil und Kopfsatz eines Bedarfstyps gehen als Ueberlagerung aus den
+                // drei Bedarfsverwaltungen auf. Eine Komponente bedient alle drei
+                // Auspraegungen; der Katalogschluessel ist die Stromfassung, und das
+                // Ziel ist deshalb die Stromverbraucher-Verwaltung - der Weg, den der
+                // Anwender von Hand ginge.
+                { KiMaskennamen.TYPPROFIL, Masken.StromverbraucherAdmin },
+                { KiMaskennamen.TYPSTAMM,  Masken.StromverbraucherAdmin }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

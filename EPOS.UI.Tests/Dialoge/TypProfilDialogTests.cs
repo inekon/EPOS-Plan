@@ -776,4 +776,58 @@ public class TypProfilDialogTests : EposBunitContext
         Assert.True(e > a);
         return css.Substring(a + selektor.Length, e - a - selektor.Length);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>TypProfilKiSicht</c>: Der Typ ist eine WAHL und lädt sein
+    /// Wochenprofil, der Wochentag sagt, welche 24 Felder dastehen.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_waehlt_den_Wochentag()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.TYPPROFIL));
+
+        WindowsFormsApplication1.KiFeldzugang typ =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPPROFIL, "typ");
+        Assert.NotNull(typ);
+        Assert.Equal(TYPEN[0], typ.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang tag =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPPROFIL, "wochentag");
+        Assert.NotNull(tag);
+        Assert.Equal(0, tag.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(tag, "Mittwoch");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        tag.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(2, tag.Lesen());
+    }
+
+    /// <summary>
+    /// Die BESCHREIBUNG ist ein gewöhnliches Textfeld dieser Maske — anders als bei
+    /// den Gebäudetypen, wo sie gesperrt steht; sie geht mit dem Speichern mit.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_die_Beschreibung_des_Typs()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.TYPPROFIL, "beschreibung");
+        Assert.NotNull(zugang);
+        Assert.True(zugang.Setzbar);
+
+        zugang.Setzen("Neuer Text");
+        cut.Render();
+
+        Assert.Equal("Neuer Text", zugang.Lesen());
+    }
 }

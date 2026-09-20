@@ -103,7 +103,17 @@ public class KiDialogkatalogTests
         { KiMaskennamen.GEBAEUDE_WOHNFLAECHE,
           typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeWohnflaecheKiSicht) },
         { KiMaskennamen.GEBAEUDE_KATALOG,
-          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) }
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) },
+        { KiMaskennamen.GEBAEUDE_BEDARF,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht) },
+        { KiMaskennamen.GEBAEUDETYP,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht) },
+        { KiMaskennamen.TYPPROFIL,
+          typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
+
+        // Die EINZIGE Maske der Welle KI-F3 ohne Sichtklasse: Ihr Satz ist
+        // veraenderlich und bindet unmittelbar ans Markup.
+        { KiMaskennamen.TYPSTAMM, typeof(EPOS.UI.Dialoge.Bedarf.TypStammDaten) }
     };
 
     /// <summary>
@@ -130,6 +140,10 @@ public class KiDialogkatalogTests
         KiMaskennamen.PHOTOVOLTAIK         => new[] { "energietraeger" },
         KiMaskennamen.WAERMEPUMPE_ANLAGE   => new[] { "energietraeger", "betriebsart", "typ",
                                                       "leistungsstufen", "aufstellung", "baujahr" },
+
+        // Welle KI-F3: Der Kopfsatz eines Bedarfskatalogs meldet SEIN Daten-Objekt an;
+        // die Typliste kennt nur der Dialog und reicht sie als Lieferant herein.
+        KiMaskennamen.TYPSTAMM             => new[] { "typ" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -184,11 +198,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_zweiundzwanzig_Masken()
+    public void Der_Katalog_fuehrt_sechsundzwanzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(22, katalog.Anzahl);
+        Assert.Equal(26, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -265,6 +279,24 @@ public class KiDialogkatalogTests
 
         Assert.Equal(KiMaskenziele.STARTSEITE,
                      KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_WOHNFLAECHE));
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_BEDARF));
+    }
+
+    /// <summary>
+    /// <b>Die Bedarfsmasken führen auf ihre VERWALTUNG</b> (Welle KI‑F3): die
+    /// Gebäudetypen auf ihre eigene Maske, Profil und Kopfsatz eines Bedarfstyps auf
+    /// die Stromverbraucher-Verwaltung, aus der sie als Überlagerung aufgehen.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Typmasken_ist_ihre_Verwaltung()
+    {
+        Assert.Equal(WindowsFormsApplication1.Masken.GebaeudetypenAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDETYP));
+
+        string strom = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
+        Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPPROFIL));
+        Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPSTAMM));
     }
 
     [Fact]
@@ -441,7 +473,11 @@ public class KiDialogkatalogTests
         { KiMaskennamen.WAERMEPUMPE_ANLAGE,
           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" }
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
+
+        // Welle KI-F3: der Kopfsatz eines Bedarfskatalogs - die einzige Maske der
+        // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
+        { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" }
     };
 
     /// <summary>
@@ -503,7 +539,16 @@ public class KiDialogkatalogTests
             "Eingabefelder; Zeuge ist GebaeudeWohnflaecheDialogTests",
         [KiMaskennamen.GEBAEUDE_KATALOG] =
             "bindet über die Sichtklasse GebaeudeKatalogKiSicht auf BEIDE Reiterblätter; " +
-            "Zeuge ist GebaeudeKatalogDialogTests"
+            "Zeuge ist GebaeudeKatalogDialogTests",
+        [KiMaskennamen.GEBAEUDE_BEDARF] =
+            "bindet über die Sichtklasse GebaeudeBedarfKiSicht auf den eingefrorenen " +
+            "Satz und die zwei Bedienelemente; Zeuge ist GebaeudeBedarfDialogTests",
+        [KiMaskennamen.GEBAEUDETYP] =
+            "bindet über die Sichtklasse GebaeudetypKiSicht auf die Listenwahl der " +
+            "Maske; Zeuge ist GebaeudetypDialogTests",
+        [KiMaskennamen.TYPPROFIL] =
+            "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
+            "Maske; Zeuge ist TypProfilDialogTests"
     };
 
     /// <summary>

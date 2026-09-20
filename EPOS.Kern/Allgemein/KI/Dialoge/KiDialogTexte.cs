@@ -920,6 +920,54 @@
         internal static string GebkBetriebsartName => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_NAME;
         internal static string GebkBetriebsartErl => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_ERL;
 
+        // ================= Bedarf: Gebaeudebedarf, Typen und Profile (Welle KI-F3)
+
+        /// <summary>Die siebzehnte Maske (Welle KI-F3): der Waermebedarf eines Gebaeudes.</summary>
+        internal static string MaskeGebaeudeBedarf => MyResource.Resource.KI_DLG_MASKE_GEBB;
+
+        /// <summary>Die achtzehnte Maske (Welle KI-F3): die Gebaeudetypen-Verwaltung.</summary>
+        internal static string MaskeGebaeudetyp => MyResource.Resource.KI_DLG_MASKE_GTYP;
+
+        /// <summary>Die neunzehnte Maske (Welle KI-F3): das Wochen-Stundenprofil eines Typs.</summary>
+        internal static string MaskeTypprofil => MyResource.Resource.KI_DLG_MASKE_TPROF;
+
+        /// <summary>Die zwanzigste Maske (Welle KI-F3): der Kopfsatz eines Bedarfskatalogs.</summary>
+        internal static string MaskeTypstamm => MyResource.Resource.KI_DLG_MASKE_TSTAMM;
+
+        internal static string GebbEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string GebbEinheitErl => MyResource.Resource.KI_DLG_GEBB_EINHEIT_ERL;
+        internal static string GebbSortiertName => MyResource.Resource.SIM_CHK_SORTIERT;
+        internal static string GebbSortiertErl => MyResource.Resource.KI_DLG_GEBB_SORTIERT_ERL;
+        internal static string GebbGebaeudeName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
+        internal static string GebbGebaeudeErl => MyResource.Resource.KI_DLG_GEBB_GEBAEUDE_ERL;
+        internal static string GebbHeizwaermeName => MyResource.Resource.GEBB_LBL_HEIZWAERME;
+        internal static string GebbHeizwaermeErl => MyResource.Resource.KI_DLG_GEBB_HEIZWAERME_ERL;
+        internal static string GebbMaxLastName => MyResource.Resource.SIMERG_LBL_MAX_WAERMELAST;
+        internal static string GebbMaxLastErl => MyResource.Resource.KI_DLG_GEBB_MAX_LAST_ERL;
+        internal static string GebbVollbenutzungName => MyResource.Resource.GEBB_LBL_VOLLBENUTZUNG;
+        internal static string GebbVollbenutzungErl => MyResource.Resource.KI_DLG_GEBB_VOLLBENUTZUNG_ERL;
+
+        internal static string GtypTypName => MyResource.Resource.GTYP_LBL_NAME;
+        internal static string GtypTypErl => MyResource.Resource.KI_DLG_GTYP_TYP_ERL;
+        internal static string GtypKurveName => MyResource.Resource.GTYP_LBL_KURVE;
+        internal static string GtypKurveErl => MyResource.Resource.KI_DLG_GTYP_KURVE_ERL;
+        internal static string GtypBeschreibungName => MyResource.Resource.GTYP_LBL_BESCHREIBUNG;
+        internal static string GtypBeschreibungErl => MyResource.Resource.KI_DLG_GTYP_BESCHREIBUNG_ERL;
+
+        internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
+        internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;
+        internal static string TprofWochentagName => MyResource.Resource.BPRO_LBL_WOCHENTAG;
+        internal static string TprofWochentagErl => MyResource.Resource.KI_DLG_TPROF_WOCHENTAG_ERL;
+        internal static string TprofBeschreibungName => MyResource.Resource.BPRO_LBL_BESCHR_STROM;
+        internal static string TprofBeschreibungErl => MyResource.Resource.KI_DLG_TPROF_BESCHREIBUNG_ERL;
+
+        internal static string TstammNameName => MyResource.Resource.BTYP_LBL_NAME;
+        internal static string TstammNameErl => MyResource.Resource.KI_DLG_TSTAMM_NAME_ERL;
+        internal static string TstammTypName => MyResource.Resource.BTYP_LBL_TYP_STROM;
+        internal static string TstammTypErl => MyResource.Resource.KI_DLG_TSTAMM_TYP_ERL;
+        internal static string TstammBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
+        internal static string TstammBeschreibungErl => MyResource.Resource.KI_DLG_TSTAMM_BESCHREIBUNG_ERL;
+
         /// <summary>Der Knopf „Werte uebernehmen" des zweiten Reiterblatts (Welle KI-F3).</summary>
         internal static string KnopfWerteUebernehmen => MyResource.Resource.GEBK_BTN_UEBERNEHMEN;
 

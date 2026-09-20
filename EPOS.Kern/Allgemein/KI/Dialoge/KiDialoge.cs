@@ -171,6 +171,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Gebaeude-Katalogeditor (<c>GebaeudeKatalogDialog</c>).</summary>
         public const string GEBAEUDE_KATALOG = "Form_Gebaeude1";
+
+        /// <summary>Der Waermebedarf EINES Gebaeudes (<c>GebaeudeBedarfDialog</c>).</summary>
+        public const string GEBAEUDE_BEDARF = "Form_Gebaeude_Bedarf";
+
+        /// <summary>Die Gebaeudetypen-Verwaltung (<c>GebaeudetypDialog</c>).</summary>
+        public const string GEBAEUDETYP = "Form_EingGebTyp";
+
+        /// <summary>
+        /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>EINE Komponente, DREI Auspraegungen.</b> Dieselbe Maske pflegt die
+        /// Stromverbraucher-, die Prozess- und die Brauchwassertypen; der
+        /// Katalogschluessel ist der WinForms-Maskenname der Stromfassung, und welche
+        /// Auspraegung offen ist, sagt der Typ, den sie fuehrt.
+        /// </remarks>
+        public const string TYPPROFIL = "Form_EingStromTyp";
+
+        /// <summary>
+        /// Der Kopfsatz eines Bedarfskatalogs samt seinen zwoelf Monatswerten
+        /// (<c>TypStammDialog</c>) — ebenfalls EINE Komponente mit drei Auspraegungen.
+        /// </summary>
+        public const string TYPSTAMM = "Form_EingDBStromverbraucher";
     }
 
     /// <summary>
@@ -279,7 +302,218 @@ namespace WindowsFormsApplication1
                 Komponentenkonfiguration(),
                 Gebaeude(),
                 GebaeudeWohnflaeche(),
-                GebaeudeKatalog());
+                GebaeudeKatalog(),
+                GebaeudeBedarf(),
+                Gebaeudetyp(),
+                Typprofil(),
+                Typstamm());
+        }
+
+        // =====================================================================
+        // Form_Gebaeude_Bedarf  ->  GebaeudeBedarfDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Waermebedarf EINES Gebaeudes — sechs Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, die RECHNET und nicht schreibt.</b> Drei Kennzahlen, eine
+        /// Monatsuebersicht und ein Bild; eingestellt werden koennen nur die
+        /// ANZEIGEEINHEIT und der Schalter zwischen Jahresganglinie und Dauerlinie.
+        /// Beide liegen in den lebenden Feldern der Maske, die Kennzahlen im
+        /// eingefrorenen Ergebnis — deshalb eine Sichtklasse ueber beides.
+        /// </para>
+        /// <para>
+        /// <b>Die Kennzahlen stehen in MWh und kW</b>, so wie der Rechenkern sie
+        /// liefert; die Maske rechnet nur fuer die Anzeige um.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die zwoelf Monatssummen</b> (eine Zahlenfolge ohne
+        /// Zeilentyp) und das Bild.
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeBedarf()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_BEDARF,
+                anzeigename: KiDialogTexte.MaskeGebaeudeBedarf,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "GebaeudeBedarfKiSicht.Einheit",
+                                     KiDialogTexte.GebbEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebbEinheitErl),
+                    new KiDialogFeld("sortiert", "GebaeudeBedarfKiSicht.Sortiert",
+                                     KiDialogTexte.GebbSortiertName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebbSortiertErl),
+                    new KiDialogFeld("gebaeude", "GebaeudeBedarfKiSicht.Gebaeude",
+                                     KiDialogTexte.GebbGebaeudeName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebbGebaeudeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("heizwaerme", "GebaeudeBedarfKiSicht.HeizwaermeMwh",
+                                     KiDialogTexte.GebbHeizwaermeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbHeizwaermeErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("max_last", "GebaeudeBedarfKiSicht.MaxLastKw",
+                                     KiDialogTexte.GebbMaxLastName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbMaxLastErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("vollbenutzungsstunden",
+                                     "GebaeudeBedarfKiSicht.VollbenutzungsstundenH",
+                                     KiDialogTexte.GebbVollbenutzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbVollbenutzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingGebTyp  ->  GebaeudetypDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Gebaeudetypen-Verwaltung — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der NAME ist eine WAHL und kein Textfeld</b> (KI-D-Q6): Die Liste links
+        /// waehlt den Typ, und mit ihm laedt die Maske einen anderen Satz samt seinen
+        /// fuenf oder acht Tageskurven. Ebenso die KURVE — sie sagt, welche 24
+        /// Stundenwerte gerade dastehen.
+        /// </para>
+        /// <para>
+        /// <b>Die 24 Stundenwerte je Kurve bleiben draussen:</b> ein Raster mit eigenem
+        /// Editor. Gepflegt werden sie Feld fuer Feld und gespeichert als Kurve.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Gebaeudetyp()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDETYP,
+                anzeigename: KiDialogTexte.MaskeGebaeudetyp,
+                felder: new[]
+                {
+                    new KiDialogFeld("typ", "GebaeudetypKiSicht.Typ",
+                                     KiDialogTexte.GtypTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GtypTypErl, leerErlaubt: true),
+                    new KiDialogFeld("kurve", "GebaeudetypKiSicht.Kurve",
+                                     KiDialogTexte.GtypKurveName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GtypKurveErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
+                                     KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.GtypBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingStromTyp  ->  TypProfilDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Wochen-Stundenprofil eines Bedarfstyps — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der TYP ist eine WAHL</b> (KI-D-Q6): Die Liste laedt einen anderen Satz
+        /// samt seinen 168 Wochenwerten. Der WOCHENTAG ist es ebenfalls — er sagt,
+        /// welche 24 Felder gerade dastehen.
+        /// </para>
+        /// <para>
+        /// <b>Die 7 x 24 Wochenwerte bleiben draussen:</b> ein Raster mit eigenem
+        /// Editor samt Kopierweg von Tag zu Tag.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Typprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TYPPROFIL,
+                anzeigename: KiDialogTexte.MaskeTypprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("typ", "TypProfilKiSicht.Typ",
+                                     KiDialogTexte.TprofTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TprofTypErl, leerErlaubt: true),
+                    new KiDialogFeld("wochentag", "TypProfilKiSicht.Wochentag",
+                                     KiDialogTexte.TprofWochentagName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TprofWochentagErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "TypProfilKiSicht.Beschreibung",
+                                     KiDialogTexte.TprofBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingDBStromverbraucher  ->  TypStammDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kopfsatz eines Bedarfskatalogs — drei Felder an
+        /// <c>EPOS.UI.Dialoge.Bedarf.TypStammDaten</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die einzige Maske dieser Welle OHNE Sichtklasse.</b> Ihr Satz ist
+        /// veraenderlich, und jedes der drei Felder bindet unmittelbar ans Markup — der
+        /// Katalog haengt sich also an dasselbe Objekt, das die Maske zeigt. Genau
+        /// dafuer ist der Weg da; eine Sichtklasse waere hier eine Schicht ohne Zweck.
+        /// </para>
+        /// <para>
+        /// <b>Der VERBRAUCHERTYP ist ein WAHLFELD</b> (KI-D-Q6) und traegt als
+        /// Schluessel den Namen des Typkatalogsatzes. Seine Eintraege kennt nur der
+        /// Dialog; er reicht sie beim Anmelden als Lieferant herein.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die zwoelf MONATSWERTE:</b> eine Zahlenfolge ohne
+        /// Zeilentyp — ein Katalogfeld traegt EINEN Wert, eine Katalogspalte braucht
+        /// Zeilen mit benannten Eigenschaften. Die Pflichtpruefung ueber alle zwoelf
+        /// steht dem Assistenten trotzdem offen: Sie ist der Haken „Pruefen".
+        /// </para>
+        /// </remarks>
+        private static KiDialog Typstamm()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TYPSTAMM,
+                anzeigename: KiDialogTexte.MaskeTypstamm,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "TypStammDaten.Name",
+                                     KiDialogTexte.TstammNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.TstammNameErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("typ", "TypStammDaten.Typ",
+                                     KiDialogTexte.TstammTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TstammTypErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "TypStammDaten.Beschreibung",
+                                     KiDialogTexte.TstammBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
         }
 
         // =====================================================================

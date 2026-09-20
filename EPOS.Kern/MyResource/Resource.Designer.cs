@@ -25271,6 +25271,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf Kennzahlen, Monatsübersicht und Bild zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Gebäudes, dessen Wärmebedarf die Maske zeigt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_GEBAEUDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_GEBAEUDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressumme der Heizwärme dieses Gebäudes. Brauchwasser und Prozesswärme sind nicht enthalten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_HEIZWAERME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_HEIZWAERME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste Stundenlast des Jahres; sie bestimmt die Auslegung des Erzeugers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_MAX_LAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_MAX_LAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt das Bild die Dauerlinie statt der Jahresganglinie? Sortiert heißt: die 8 760 Stundenwerte der Größe nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_SORTIERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_SORTIERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vollbenutzungsstunden: Jahressumme geteilt durch Höchstlast. Ohne Höchstlast gibt es sie nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_VOLLBENUTZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_VOLLBENUTZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Wand an Dach. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_ANS_DACH_ERL {
@@ -25802,6 +25856,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_KURVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_KURVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der geladene Gebäudetyp. Ihn zu setzen lädt seinen Satz samt seinen Tageskurven — derselbe Weg wie ein Klick in die Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Heizkessels — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_HKP_ANLAGE_ERL {
@@ -26306,6 +26387,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf eines Gebäudes ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudekatalog ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_GEBK {
@@ -26320,6 +26410,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_GEBW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_GEBW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GTYP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GTYP", resourceCulture);
             }
         }
         
@@ -26464,6 +26563,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_STROMSPEICHER {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochen-Stundenprofil eines Typs ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_TPROF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_TPROF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopfsatz eines Bedarfskatalogs ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_TSTAMM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_TSTAMM", resourceCulture);
             }
         }
         
@@ -28246,6 +28363,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_STSP_TRAEGER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_STSP_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte die Maske zeigt; Montag ist der erste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENTAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes; die Maske zeigt ihn gesperrt. Ein anderer Name entsteht über „Speichern unter“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ aus dem Typkatalog; er bringt das Wochen-Stundenprofil mit, nach dem die Monatswerte verteilt werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_TYP_ERL", resourceCulture);
             }
         }
         

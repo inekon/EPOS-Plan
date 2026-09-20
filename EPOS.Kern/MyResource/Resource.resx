@@ -21159,4 +21159,61 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GEBK_BETRIEBSART_ERL" xml:space="preserve">
     <value>Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist.</value>
   </data>
+  <data name="KI_DLG_MASKE_GEBB" xml:space="preserve">
+    <value>Wärmebedarf eines Gebäudes</value>
+  </data>
+  <data name="KI_DLG_MASKE_GTYP" xml:space="preserve">
+    <value>Gebäudetypen</value>
+  </data>
+  <data name="KI_DLG_MASKE_TPROF" xml:space="preserve">
+    <value>Wochen-Stundenprofil eines Typs</value>
+  </data>
+  <data name="KI_DLG_MASKE_TSTAMM" xml:space="preserve">
+    <value>Kopfsatz eines Bedarfskatalogs</value>
+  </data>
+  <data name="KI_DLG_GEBB_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Anzeigeeinheit der Energiemengen; sie wirkt auf Kennzahlen, Monatsübersicht und Bild zugleich.</value>
+  </data>
+  <data name="KI_DLG_GEBB_SORTIERT_ERL" xml:space="preserve">
+    <value>Zeigt das Bild die Dauerlinie statt der Jahresganglinie? Sortiert heißt: die 8 760 Stundenwerte der Größe nach.</value>
+  </data>
+  <data name="KI_DLG_GEBB_GEBAEUDE_ERL" xml:space="preserve">
+    <value>Der Name des Gebäudes, dessen Wärmebedarf die Maske zeigt.</value>
+  </data>
+  <data name="KI_DLG_GEBB_HEIZWAERME_ERL" xml:space="preserve">
+    <value>Die Jahressumme der Heizwärme dieses Gebäudes. Brauchwasser und Prozesswärme sind nicht enthalten.</value>
+  </data>
+  <data name="KI_DLG_GEBB_MAX_LAST_ERL" xml:space="preserve">
+    <value>Die höchste Stundenlast des Jahres; sie bestimmt die Auslegung des Erzeugers.</value>
+  </data>
+  <data name="KI_DLG_GEBB_VOLLBENUTZUNG_ERL" xml:space="preserve">
+    <value>Die Vollbenutzungsstunden: Jahressumme geteilt durch Höchstlast. Ohne Höchstlast gibt es sie nicht.</value>
+  </data>
+  <data name="KI_DLG_GTYP_TYP_ERL" xml:space="preserve">
+    <value>Der geladene Gebäudetyp. Ihn zu setzen lädt seinen Satz samt seinen Tageskurven — derselbe Weg wie ein Klick in die Liste.</value>
+  </data>
+  <data name="KI_DLG_GTYP_KURVE_ERL" xml:space="preserve">
+    <value>Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon.</value>
+  </data>
+  <data name="KI_DLG_GTYP_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt.</value>
+  </data>
+  <data name="KI_DLG_TPROF_TYP_ERL" xml:space="preserve">
+    <value>Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste.</value>
+  </data>
+  <data name="KI_DLG_TPROF_WOCHENTAG_ERL" xml:space="preserve">
+    <value>Der Wochentag, dessen 24 Stundenwerte die Maske zeigt; Montag ist der erste.</value>
+  </data>
+  <data name="KI_DLG_TPROF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_NAME_ERL" xml:space="preserve">
+    <value>Der Bezeichner des Katalogsatzes; die Maske zeigt ihn gesperrt. Ein anderer Name entsteht über „Speichern unter“.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_TYP_ERL" xml:space="preserve">
+    <value>Der Typ aus dem Typkatalog; er bringt das Wochen-Stundenprofil mit, nach dem die Monatswerte verteilt werden.</value>
+  </data>
+  <data name="KI_DLG_TSTAMM_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Freitext zum Katalogsatz.</value>
+  </data>
 </root>

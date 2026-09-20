@@ -311,4 +311,56 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>GebaeudeBedarfKiSicht</c>: Die Brücke liest die Jahressumme aus
+    /// dem eingefrorenen Satz und legt den Schalter „sortiert" um.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_schaltet_die_Dauerlinie()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE_BEDARF));
+
+        WindowsFormsApplication1.KiFeldzugang summe =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "heizwaerme");
+        Assert.NotNull(summe);
+        Assert.False(summe.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang sortiert =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "sortiert");
+        Assert.Equal(false, sortiert.Lesen());
+
+        sortiert.Setzen(true);
+        cut.Render();
+
+        Assert.True(cut.Instance.Sortiert);
+    }
+
+    /// <summary>
+    /// <b>Die Anzeigeeinheit ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über ihren
+    /// Text; danach rechnet die Maske ihre Zahlen in dieser Einheit.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Anzeigeeinheit_ueber_ihren_Text()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE_BEDARF, "einheit");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, Energieeinheit.KWh.Text);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
+    }
 }
