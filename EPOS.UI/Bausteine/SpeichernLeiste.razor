@@ -14,6 +14,17 @@
    geschlossen wird er von der Huelle, nicht von der Komponente. *@
 
 <div class="epos-leiste">
+    @* Der linke Aktionsschlitz (DL-2, Schritt 0). Nach der Leseregel der Fussleiste
+       stehen LINKS vom Fueller die Knoepfe, die auf den Eingabeblock oder eine
+       Ansicht wirken (Standardwerte, Grafik..., Simulation..., Aendern...), RECHTS
+       die Knoepfe, die schliessen. Der Fueller ist hier die Statusspanne: sie traegt
+       flex: 1 1 auto und schiebt alles Nachfolgende nach rechts.
+
+       Ohne <Aktionen> aendert sich am Markup NICHTS - ein null-RenderFragment
+       zeichnet nichts, kein Platzhalter, kein leeres Element. Die bestehenden
+       Aufrufer bleiben deshalb unveraendert. *@
+    @Aktionen
+
     <span class="epos-status @(_statusFehler ? "epos-status--fehler" : "")" role="status">@_statusText</span>
 
     @if (MitSpeichern)
@@ -33,6 +44,21 @@
 </div>
 
 @code {
+    /// <summary>
+    /// Der linke Aktionsschlitz: Knoepfe, die auf den Eingabeblock oder eine
+    /// Ansicht wirken, VOR dem Statustext und damit links vom Fueller.
+    ///
+    /// <para>Die Fussleiste des Hauses laeuft
+    /// <b>Aktionen · Fueller · [Speichern] · Abbrechen · OK</b>; ohne diesen Schlitz
+    /// brauchte ein Dialog mit Aktionsknoepfen eine ZWEITE Leiste ueber der
+    /// Fussleiste - und genau das verbietet die Hausregel „Jeder Dialog traegt genau
+    /// eine Fussleiste" (Konzept Knopfleisten der Administrationsdialoge, DL-2).</para>
+    ///
+    /// <para>Der Schlitz ist optional: Bleibt er leer, zeichnet die Leiste dasselbe
+    /// Markup wie zuvor.</para>
+    /// </summary>
+    [Parameter] public RenderFragment? Aktionen { get; set; }
+
     /// <summary>Beschriftung des OK-Knopfes.</summary>
     [Parameter] public string OkText { get; set; } = "OK";
 
