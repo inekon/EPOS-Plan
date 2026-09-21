@@ -12,7 +12,7 @@ Der Dialog '''Pufferspeicher''' wählt thermische Speicher aus dem Katalog aus u
 * '''Modul''' – Name, Hersteller und Speichertyp.
 * '''Gesamtvolumen''' – das Volumen des Speichers; es bestimmt zusammen mit der Spreizung die nutzbare Kapazität.
 * '''Bereitschaftsverluste''' – in Kilowattstunden je Tag; die Simulation bilanziert sie stündlich mit.
-* '''Investitionskosten''' – der Betrag, der in die Wirtschaftlichkeit eingeht. Die Zuordnung zum Erzeuger sowie die Ein- und Abschaltschwellen legen Sie im Dialog ''Simulation Konfiguration'' fest.
+* '''Alle Daten anzeigen''' – der Aufklapper zeigt den Katalogsatz des gewählten Speichers und lässt ihn bearbeiten; dort stehen auch die Investitionskosten (€), der Betrag, der in die Wirtschaftlichkeit eingeht. Die Zuordnung zum Erzeuger sowie die Ein- und Abschaltschwellen legen Sie im Dialog ''Simulation Konfiguration'' fest.
 
 === Pufferspeicher im Projekt ===
 

@@ -8,8 +8,8 @@ namespace EPOS.UI.Dialoge.Erzeuger;
 /// </summary>
 /// <remarks>
 /// <para><b>Warum Text und nicht Zahl.</b> Die vier Vorläufer zeigen ihre Kennwerte
-/// unterschiedlich: Der Heizkessel formatiert Leistung und Investitionskosten mit
-/// <c>F2</c>, die drei anderen zeigen roh. Das ist Bestand und bleibt bitgleich — die
+/// unterschiedlich: Der Heizkessel formatiert die Leistung mit <c>F2</c>, die drei
+/// anderen zeigen roh. Das ist Bestand und bleibt bitgleich — die
 /// Hülle liefert deshalb den fertigen ANZEIGETEXT, und nur die editierbaren Felder des
 /// Speicherwegs werden von der Komponente wieder als Zahl gelesen.</para>
 /// <para>Der Schalter „Brennwertkessel" kommt sprachneutral als <c>"1"</c> oder

@@ -682,18 +682,27 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der Detailblock. Reihenfolge und Formatierung wie in
-        /// <c>ApplySelectedKessel</c>: Leistung und Investition mit zwei
-        /// Nachkommastellen.
+        /// <c>ApplySelectedKessel</c>: die Leistung mit zwei Nachkommastellen.
         /// </summary>
         private static ErzeugerDetail DetailZu(HeizkesselCtrl.KesselDetail d)
         {
             if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
+            // HIER STAND DAS FELD „Investitionskosten [€]:" (HZK_LBL_INVEST, mit F2
+            // formatiert) — nur lesbar, neben „Leistung [kW]". Anwenderentscheid
+            // 21.09.2026: „Die Anzeige der Investitionskosten an dieser Stelle hat keine
+            // Funktion." Gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen"
+            // desselben Dialogs: Der Katalogbrowser zeigt ihn dort editierbar und
+            // schreibt ihn zurück (KatalogBrowserProfil.FeldInvestitionskosten). Die
+            // Anzeige hier war damit eine Dublette ohne Funktion.
+            //
+            // DER WERT BLEIBT IM DATENSATZ. HeizkesselCtrl.KesselDetail führt
+            // Investitionskosten weiter, und der Katalogsatz geht unverändert durch
+            // AusModell/NachModell — nur die zweite Anzeige ist weg.
             var felder = new List<(string, string)>
             {
                 (Text_("HZK_LBL_BRENNSTOFFTYP", "Brennstoff Typ:"), d.Brennstoff),
-                (Text_("HZK_LBL_LEISTUNG", "Leistung [kW]:"), d.Ptherm.ToString("F2")),
-                (Text_("HZK_LBL_INVEST", "Investitionskosten [€]:"), d.Investitionskosten.ToString("F2"))
+                (Text_("HZK_LBL_LEISTUNG", "Leistung [kW]:"), d.Ptherm.ToString("F2"))
             };
 
             return new ErzeugerDetail(d.Bezeichner, d.Beschreibung, felder,

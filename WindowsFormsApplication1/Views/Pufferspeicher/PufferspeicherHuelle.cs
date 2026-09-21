@@ -271,13 +271,22 @@ namespace WindowsFormsApplication1
         {
             if (d == null) return new ErzeugerDetail("", "", new List<(string, string)>());
 
+            // HIER STAND DAS FELD „Investitionskosten [€]:" (PSPD_LBL_INVEST) — nur
+            // lesbar, als letzte Zeile des Blocks. Anwenderentscheid 21.09.2026: „Die
+            // Anzeige der Investitionskosten an dieser Stelle hat keine Funktion."
+            // Gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen" desselben
+            // Dialogs: Der Katalogbrowser zeigt ihn dort editierbar und schreibt ihn
+            // zurück (KatalogBrowserProfil.FeldInvestitionskosten). Die Anzeige hier war
+            // damit eine Dublette ohne Funktion.
+            //
+            // DER WERT BLEIBT IM DATENSATZ. PufferSpStammCtrl.SpeicherDetail führt
+            // Investitionskosten weiter — nur die zweite Anzeige ist weg.
             var felder = new List<(string, string)>
             {
                 (Text_("PSPD_LBL_HERSTELLER", "Hersteller:"), d.Hersteller),
                 (Text_("PSPD_LBL_TYP", "Speichertyp:"), d.Typ),
                 (Text_("PSPD_LBL_VERLUSTE", "Bereitschaftsverluste:"), d.Bereitschaftsverluste),
-                (Text_("PSPD_LBL_VOLUMEN", "Gesamtvolumen [l]:"), d.Gesamtvolumen),
-                (Text_("PSPD_LBL_INVEST", "Investitionskosten [€]:"), d.Investitionskosten)
+                (Text_("PSPD_LBL_VOLUMEN", "Gesamtvolumen [l]:"), d.Gesamtvolumen)
             };
 
             return new ErzeugerDetail(d.Bezeichner, "", felder);
