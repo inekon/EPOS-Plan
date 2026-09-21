@@ -2459,30 +2459,6 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        public bool Add_SP(int projektID, List<StromspeicherModel> list, DbVorgang vorgang = null)
-        {
-            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
-            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
-            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
-
-            foreach (var item in list)
-            {
-                string sql = @"INSERT INTO Tab_Energieanlagen 
-                               (ID_Projekt, Bezeichner, ID_Type, ID_SP) 
-                               VALUES (?, ?, ?, ?)";
-
-                DbParam[] ps = {
-                    new DbParam("@pID", projektID),
-                    new DbParam("@bez", item.m_szBezeichner ?? ""),
-                    new DbParam("@type", 4), // Typ 4 Stromspeicher
-                    new DbParam("@spID", item.m_ID)
-                };
-
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
-            }
-            return true;
-        }
-
         public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
