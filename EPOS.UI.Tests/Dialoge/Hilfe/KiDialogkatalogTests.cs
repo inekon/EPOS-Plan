@@ -128,7 +128,17 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
 
         { KiMaskennamen.BEDARF_ERGEBNIS,
-          typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) }
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
+
+        // Die zweite Maske der Welle KI-F3 ohne Sichtklasse: Angemeldet ist die
+        // GEWAEHLTE Zuordnung - dieselbe Bauart wie bei den Erzeugermasken.
+        { KiMaskennamen.WAERMEBEDARF_EXTERN,
+          typeof(EPOS.UI.Dialoge.Bedarf.WaermebedarfExternZeile) },
+
+        { KiMaskennamen.SOLARGANGLINIE,
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht) },
+        { KiMaskennamen.KLIMADATEN,
+          typeof(EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht) }
     };
 
     /// <summary>
@@ -159,6 +169,10 @@ public class KiDialogkatalogTests
         // Welle KI-F3: Der Kopfsatz eines Bedarfskatalogs meldet SEIN Daten-Objekt an;
         // die Typliste kennt nur der Dialog und reicht sie als Lieferant herein.
         KiMaskennamen.TYPSTAMM             => new[] { "typ" },
+
+        // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
+        // Parameter der Huelle herein.
+        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -213,11 +227,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_einunddreissig_Masken()
+    public void Der_Katalog_fuehrt_vierunddreissig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(31, katalog.Anzahl);
+        Assert.Equal(34, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -335,6 +349,26 @@ public class KiDialogkatalogTests
                      KiMaskenziele.Ziel(KiMaskennamen.BEDARFSPROFILE));
         Assert.Equal(WindowsFormsApplication1.Masken.Simulation,
                      KiMaskenziele.Ziel(KiMaskennamen.BEDARF_ERGEBNIS));
+    }
+
+    /// <summary>
+    /// <b>Der Wächter über die zwei Fundstellen des Klimadatenschlüssels</b>
+    /// (Welle KI‑F3): <c>KiMaskenziele.KLIMADATEN</c> steht im Kern als Zeichenkette,
+    /// weil der Kern die Oberfläche nicht kennt; <c>Seitenschluessel.Klimadaten</c>
+    /// steht in <c>EPOS.UI</c>. Laufen beide auseinander, führt <c>dialog_oeffnen</c>
+    /// ins Leere — dasselbe Muster wie bei der Startseite.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Klimadaten_ist_ihr_Seitenschluessel()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Klimadaten, KiMaskenziele.KLIMADATEN);
+        Assert.Equal(KiMaskenziele.KLIMADATEN, KiMaskenziele.Ziel(KiMaskennamen.KLIMADATEN));
+
+        // Die zwei Ganglinienmasken des Projekts gehen aus den Startkacheln auf.
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.WAERMEBEDARF_EXTERN));
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.SOLARGANGLINIE));
     }
 
     [Fact]
@@ -515,7 +549,12 @@ public class KiDialogkatalogTests
 
         // Welle KI-F3: der Kopfsatz eines Bedarfskatalogs - die einzige Maske der
         // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
-        { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" }
+        { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" },
+
+        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
+        // Bezeichner stehen beide im Markup.
+        { KiMaskennamen.WAERMEBEDARF_EXTERN,
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" }
     };
 
     /// <summary>
@@ -601,7 +640,13 @@ public class KiDialogkatalogTests
             "Infoblock; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BEDARF_ERGEBNIS] =
             "bindet über die Sichtklasse BedarfErgebnisKiSicht auf die vier Schalter " +
-            "der Anzeige; Zeuge ist BedarfErgebnisDialogTests"
+            "der Anzeige; Zeuge ist BedarfErgebnisDialogTests",
+        [KiMaskennamen.SOLARGANGLINIE] =
+            "bindet über die Sichtklasse SolarganglinieKiSicht auf Katalogwahl und " +
+            "Detailblock; Zeuge ist SolarganglinieDialogTests",
+        [KiMaskennamen.KLIMADATEN] =
+            "bindet über die Sichtklasse KlimadatenKiSicht auf die lebenden Felder " +
+            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests"
     };
 
     /// <summary>

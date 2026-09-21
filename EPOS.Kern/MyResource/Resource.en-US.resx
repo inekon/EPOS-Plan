@@ -21284,4 +21284,55 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
     <value>Does the chart show the annual profile? The switch exists only for the domestic hot water view and only when an annual profile is available.</value>
   </data>
+  <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
+    <value>External heat demand profiles</value>
+  </data>
+  <data name="KI_DLG_MASKE_SGL" xml:space="preserve">
+    <value>Solar profiles in the project</value>
+  </data>
+  <data name="KI_DLG_MASKE_KLIMA" xml:space="preserve">
+    <value>Climate data</value>
+  </data>
+  <data name="KI_DLG_WBX_KANAL_ERL" xml:space="preserve">
+    <value>Which demand the profile feeds: heating, domestic hot water or process heat. The channel applies per assignment, not per profile.</value>
+  </data>
+  <data name="KI_DLG_WBX_GANGLINIE_ERL" xml:space="preserve">
+    <value>The name of the assigned profile.</value>
+  </data>
+  <data name="KI_DLG_SGL_KATALOG_ERL" xml:space="preserve">
+    <value>The solar profile marked in the catalogue; it is the one that “Add to project” takes over.</value>
+  </data>
+  <data name="KI_DLG_SGL_PROJEKT_ERL" xml:space="preserve">
+    <value>The solar profile marked in the project list; it is the one that “Remove from project” takes out.</value>
+  </data>
+  <data name="KI_DLG_SGL_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description of the marked profile from its catalogue record.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_QUELLE_ERL" xml:space="preserve">
+    <value>Where the climate data come from: from the PVGIS service, from a single TRY file or from a TRY package. The source decides which fields appear below.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_ORT_ERL" xml:space="preserve">
+    <value>The place name the coordinates are looked up for. It may also be entered freely.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_LAENGE_ERL" xml:space="preserve">
+    <value>The longitude of the site, in decimal degrees. East of Greenwich it is positive.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_BREITE_ERL" xml:space="preserve">
+    <value>The latitude of the site, in decimal degrees. North of the equator it is positive.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>The name the climate region is stored under. When reading a TRY file it is pre-filled from the file name.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_JAHR_ERL" xml:space="preserve">
+    <value>The reference year of the test reference year; the current state and the projection are available.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_SZENARIO_ERL" xml:space="preserve">
+    <value>The scenario of the test reference year: average year, warm summer or cold winter.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_TRY_DATEI_ERL" xml:space="preserve">
+    <value>The selected TRY file. A path is not typed, it is chosen through the file dialogue.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_TRY_PAKET_ERL" xml:space="preserve">
+    <value>The selected TRY package. It may stay empty; then the supplied package is used.</value>
+  </data>
 </root>

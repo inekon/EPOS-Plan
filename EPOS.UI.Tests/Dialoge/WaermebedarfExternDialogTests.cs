@@ -938,4 +938,40 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         Assert.Equal("Wärmebedarf Extern",
                      cut.Find("[role='dialog'] .epos-ueberlagerung-titel").TextContent.Trim());
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Angemeldet ist die GEWÄHLTE
+    /// Zuordnung; der Kanal ist ein WAHLFELD und trägt als Schlüssel seinen Steuerwert.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_die_gewaehlte_Zuordnung_an_und_setzt_den_Kanal()
+    {
+        var zeilen = new List<WaermebedarfExternZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.WAERMEBEDARF_EXTERN));
+
+        WindowsFormsApplication1.KiFeldzugang ganglinie =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEBEDARF_EXTERN, "ganglinie");
+        Assert.NotNull(ganglinie);
+        Assert.Equal("Ganglinie A", ganglinie.Lesen());
+        Assert.False(ganglinie.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang kanal =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WAERMEBEDARF_EXTERN, "kanal");
+        Assert.NotNull(kanal);
+        Assert.Equal("HEIZUNG", kanal.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(kanal, "Brauchwasser");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        kanal.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        // In der Zeile steht der STEUERWERT der Kanalliste, nicht der Anzeigetext.
+        Assert.Equal("BRAUCHWASSER", zeilen[0].Kanal);
+    }
 }

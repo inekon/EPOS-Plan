@@ -89,6 +89,7 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
@@ -685,6 +686,10 @@
     // Aufbau
     // =====================================================================
 
+    protected override void OnInitialized()
+        => _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KLIMADATEN,
+                                             () => KiSicht(), KiHaken());
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender || !_ersterAufbau) return;
@@ -693,6 +698,86 @@
         await _wurzel.FocusAsync();
         StateHasChanged();
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent stellt Quelle und Standort (Welle KI-F3)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KlimadatenKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder. Setzen nimmt denselben Weg
+    /// wie die Tastatur; die beiden Dateipfade bleiben dem Dateidialog der Plattform
+    /// vorbehalten und sind deshalb nur lesbar.
+    /// </summary>
+    private KlimadatenKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KlimadatenKiSicht
+        {
+            QuelleLesen = () => (int)_quelle,
+            QuelleSetzen = BeiQuelle,
+            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(
+                Quelleneintraege, e => e.Id, e => e.Text),
+
+            OrtsnameLesen = () => _ortsname,
+            OrtsnameSetzen = KiOrtsnameSetzen,
+
+            BezeichnungLesen = () => _bezeichnung,
+            BezeichnungSetzen = t => { _bezeichnung = t ?? ""; _meldung = ""; },
+
+            LaengengradLesen = () => _longitude,
+            LaengengradSetzen = w => { _longitude = w; KiStandortGeaendert(); },
+            BreitengradLesen = () => _latitude,
+            BreitengradSetzen = w => { _latitude = w; KiStandortGeaendert(); },
+
+            JahrLesen = () => _tryJahr,
+            JahrSetzen = BeiTryJahr,
+            JahrEintraege = () => KiMaskenanmeldung.Eintraege(
+                Jahreseintraege, e => e.Id, e => e.Text),
+
+            SzenarioLesen = () => (int)_szenario,
+            SzenarioSetzen = BeiSzenario,
+            SzenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                Szenarioeintraege, e => e.Id, e => e.Text),
+
+            TryDateiLesen = () => _tryPfad,
+            TryPaketLesen = () => _tryPaketPfad
+        };
+    }
+
+    /// <summary>Der Ortsname — derselbe Weg wie eine Eingabe von Hand.</summary>
+    private void KiOrtsnameSetzen(string wert)
+    {
+        _ortsname = wert ?? "";
+        _meldung = "";
+        _regionszeile = "";
+    }
+
+    /// <summary>Eine geänderte Koordinate verwirft Meldung, Standort und Regionszeile.</summary>
+    private void KiStandortGeaendert()
+    {
+        _meldung = "";
+        _tryStandort = "";
+        _regionszeile = "";
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Daten einlesen" ist ein LADEVORGANG: Er holt eine
+    /// Zeitreihe aus dem Netz oder aus einer Datei, dauert Minuten und lässt sich
+    /// abbrechen. Das ist kein Speichern einer Maske, sondern ein rechnender Weg — er
+    /// gehört ins Aktionsregister und nicht hierher.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>Lädt die Regionsliste neu (<c>ReadAll</c> + <c>FillListBox</c>).</summary>
     public async Task RegionenLaden()

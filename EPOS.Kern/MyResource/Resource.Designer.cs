@@ -26306,6 +26306,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem die Klimaregion gespeichert wird. Beim Einlesen einer TRY-Datei wird er aus dem Dateinamen vorbelegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_BEZEICHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_BEZEICHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Breitengrad des Standorts, in Dezimalgrad. Nördlich des Äquators ist er positiv. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_BREITE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_BREITE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bezugsjahr des Testreferenzjahres; zur Wahl stehen der heutige Stand und die Projektion. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Längengrad des Standorts, in Dezimalgrad. Östlich von Greenwich ist er positiv. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ortsname, zu dem die Koordinaten gesucht werden. Er darf auch frei eingegeben werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_ORT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_ORT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Klimadaten kommen: aus dem PVGIS-Dienst, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket. Die Quelle entscheidet, welche Felder darunter stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Testreferenzjahres: mittleres Jahr, sommerwarm oder winterkalt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_SZENARIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte TRY-Datei. Getippt wird ein Pfad nicht, er wird über den Dateidialog gewählt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_TRY_DATEI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_TRY_DATEI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte TRY-Paket. Es darf leer bleiben; dann wird das mitgelieferte Paket genommen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_TRY_PAKET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_TRY_PAKET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -26675,6 +26756,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KLIMA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KLIMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
@@ -26756,6 +26846,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SGL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SGL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SIM {
@@ -26815,6 +26914,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Externe Wärmebedarfsganglinien ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WBX {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WBX", resourceCulture);
             }
         }
         
@@ -27508,6 +27616,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_QPUF_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QPUF_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung der markierten Ganglinie aus ihrem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die im Katalog markierte Solarganglinie; sie ist die, die „In das Projekt übernehmen“ aufnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die in der Projektliste markierte Solarganglinie; sie ist die, die „Aus dem Projekt entfernen“ herausnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_PROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_PROJEKT_ERL", resourceCulture);
             }
         }
         
@@ -28687,6 +28822,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_TYP_ZAHL {
             get {
                 return ResourceManager.GetString("KI_DLG_TYP_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_GANGLINIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_GANGLINIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In welchen Bedarf die Ganglinie läuft: Heizung, Brauchwasser oder Prozesswärme. Der Kanal gilt je Zuordnung, nicht je Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_KANAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_KANAL_ERL", resourceCulture);
             }
         }
         

@@ -1424,4 +1424,66 @@ public class KlimadatenDialogTests : EposBunitContext
 
         Assert.Equal(new[] { Farbrolle.AUSSENTEMPERATUR }, rollen);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>KlimadatenKiSicht</c>: Die Brücke setzt den Standort, und die
+    /// Maske trägt ihn danach in ihren Feldern.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_den_Standort()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KLIMADATEN));
+
+        WindowsFormsApplication1.KiFeldzugang laenge =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KLIMADATEN, "laengengrad");
+        Assert.NotNull(laenge);
+        Assert.True(laenge.Setzbar);
+
+        laenge.Setzen(9.18);
+        cut.Render();
+        Assert.Equal(9.18, laenge.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang bezeichnung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KLIMADATEN, "bezeichnung");
+        bezeichnung.Setzen("Stuttgart");
+        cut.Render();
+        Assert.Equal("Stuttgart", bezeichnung.Lesen());
+
+        // Der Dateipfad kommt aus dem Dateidialog der Plattform - er ist nur lesbar.
+        WindowsFormsApplication1.KiFeldzugang datei =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KLIMADATEN, "try_datei");
+        Assert.NotNull(datei);
+        Assert.False(datei.Setzbar);
+    }
+
+    /// <summary>
+    /// <b>Die Quelle ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über ihren
+    /// Anzeigetext, und danach zeigt die Maske die Felder dieser Quelle.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Datenquelle_ueber_ihren_Text()
+    {
+        var cut = Zeige();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KLIMADATEN, "quelle");
+        Assert.NotNull(zugang);
+        Assert.Equal((int)KlimaQuelle.PvgisTmy, zugang.Lesen());
+
+        KiFeldumsetzung umsetzung =
+            KiFeldwandler.Wandle(zugang,
+                                 WindowsFormsApplication1.MyResource.Resource.KLIMA_QUELLE_TRY_DATEI);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal((int)KlimaQuelle.TryDatei, zugang.Lesen());
+    }
 }

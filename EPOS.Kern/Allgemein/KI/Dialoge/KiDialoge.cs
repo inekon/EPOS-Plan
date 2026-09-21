@@ -220,6 +220,18 @@ namespace WindowsFormsApplication1
         /// Die Ergebnisanzeige eines Bedarfs (<c>BedarfErgebnisDialog</c>).
         /// </summary>
         public const string BEDARF_ERGEBNIS = "Form_ErgStromverbraucher";
+
+        /// <summary>
+        /// Die externen Waermebedarfsganglinien eines Projekts
+        /// (<c>WaermebedarfExternDialog</c>).
+        /// </summary>
+        public const string WAERMEBEDARF_EXTERN = "Form_Waermebedarf";
+
+        /// <summary>Die Solarganglinien eines Projekts (<c>SolarganglinieDialog</c>).</summary>
+        public const string SOLARGANGLINIE = "Form_Solarganglinie";
+
+        /// <summary>Die Klimadatenverwaltung (<c>KlimadatenDialog</c>).</summary>
+        public const string KLIMADATEN = "Form_Klimadaten";
     }
 
     /// <summary>
@@ -340,7 +352,182 @@ namespace WindowsFormsApplication1
                             KiDialogTexte.MaskeStromverbraucherAdmin),
                 BedarfAdmin(KiMaskennamen.BRAUCHWASSER_ADMIN,
                             KiDialogTexte.MaskeBrauchwasserAdmin),
-                BedarfErgebnis());
+                BedarfErgebnis(),
+                WaermebedarfExtern(),
+                Solarganglinie(),
+                Klimadaten());
+        }
+
+        // =====================================================================
+        // Form_Waermebedarf  ->  WaermebedarfExternDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die externen Waermebedarfsganglinien eines Projekts — zwei Felder der
+        /// GEWAEHLTEN Zuordnung (<c>EPOS.UI.Dialoge.Bedarf.WaermebedarfExternZeile</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist eine ZEILE und kein Dialogstand</b> — dieselbe
+        /// Bauart wie bei den Erzeugermasken des Projekts: Der Dialog fuehrt eine
+        /// Liste, und angemeldet ist, was in der gewaehlten Zeile steht. Ist keine
+        /// gewaehlt, sind die Felder leer — derselbe Zustand, den der Anwender sieht.
+        /// </para>
+        /// <para>
+        /// <b>Der KANAL ist ein WAHLFELD</b> (KI-D-Q6) und traegt als Schluessel seinen
+        /// Steuerwert (Heizung, Brauchwasser, Prozesswaerme). Er gilt JE ZUORDNUNG:
+        /// Dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein und dabei
+        /// einmal in den Heizbedarf und einmal in den Brauchwasserbedarf laufen.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben der Katalog mit seinem Filterbaustein, der CSV-Import
+        /// samt Vorschau und Ablage</b> (ein Ladevorgang) und die Ganglinienvorschau.
+        /// </para>
+        /// </remarks>
+        private static KiDialog WaermebedarfExtern()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WAERMEBEDARF_EXTERN,
+                anzeigename: KiDialogTexte.MaskeWaermebedarfExtern,
+                felder: new[]
+                {
+                    new KiDialogFeld("kanal", "WaermebedarfExternZeile.Kanal",
+                                     KiDialogTexte.WbxKanalName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxKanalErl, leerErlaubt: true),
+                    new KiDialogFeld("ganglinie", "WaermebedarfExternZeile.Bezeichner",
+                                     KiDialogTexte.WbxGanglinieName, KiParameterTyp.Text,
+                                     KiDialogTexte.WbxGanglinieErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Solarganglinie  ->  SolarganglinieDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Solarganglinien eines Projekts — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Maske fuehrt keinen Einstellwert der Anlage.</b> Sie ordnet
+        /// Ganglinien zu und zeigt zu der markierten Zeile Name und Beschreibung. Ihr
+        /// Wahlfeld ist die KATALOGWAHL — sie markiert die Ganglinie, die „In das
+        /// Projekt uebernehmen" aufnimmt.
+        /// </para>
+        /// <para>
+        /// Freigegeben ist sie trotzdem, damit <c>dialog_lesen</c> nennt, welche
+        /// Ganglinie gewaehlt ist, und <c>feld_setzen</c> benannt ablehnt statt „Maske
+        /// nicht freigegeben" — dieselbe Begruendung wie bei den Speichermasken des
+        /// Projekts.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Solarganglinie()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SOLARGANGLINIE,
+                anzeigename: KiDialogTexte.MaskeSolarganglinie,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogganglinie",
+                                     "SolarganglinieKiSicht.Katalogganglinie",
+                                     KiDialogTexte.SglKatalogName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SglKatalogErl, leerErlaubt: true),
+                    new KiDialogFeld("projektganglinie",
+                                     "SolarganglinieKiSicht.Projektganglinie",
+                                     KiDialogTexte.SglProjektName, KiParameterTyp.Text,
+                                     KiDialogTexte.SglProjektErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "SolarganglinieKiSicht.Beschreibung",
+                                     KiDialogTexte.SglBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.SglBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Klimadaten  ->  KlimadatenDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Klimadatenverwaltung — neun Felder aus
+        /// <c>EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die QUELLE fuehrt die Maske.</b> Sie entscheidet, ob der Standort aus dem
+        /// PVGIS-Dienst kommt, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket —
+        /// und damit, welche Felder darunter ueberhaupt dastehen. Drei der neun sind
+        /// deshalb Wahlfelder (Quelle, Jahr, Szenario).
+        /// </para>
+        /// <para>
+        /// <b>Die beiden DATEIPFADE sind nur lesbar</b> (KI-D-Q6, Grenzfall): Getippt
+        /// wird ein Pfad nicht, er wird ueber den Dateidialog der Plattform gewaehlt;
+        /// das Feld der Maske ist gesperrt. Der Assistent liest ihn und sagt, welche
+        /// Datei ansteht.
+        /// </para>
+        /// <para>
+        /// <b>„Daten einlesen" ist ein LADEVORGANG und kein Speicherweg</b>: Er holt
+        /// eine Zeitreihe aus dem Netz oder aus einer Datei, dauert Minuten und laesst
+        /// sich abbrechen — ein rechnender Weg der Stufe 2, der ins Aktionsregister
+        /// gehoert. Ebenso draussen: die Regionsliste mit ihrem Filterbaustein, die
+        /// zwei Diagramme und der Loeschweg.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Klimadaten()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KLIMADATEN,
+                anzeigename: KiDialogTexte.MaskeKlimadaten,
+                felder: new[]
+                {
+                    new KiDialogFeld("quelle", "KlimadatenKiSicht.Quelle",
+                                     KiDialogTexte.KlimaQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaQuelleErl),
+                    new KiDialogFeld("ortsname", "KlimadatenKiSicht.Ortsname",
+                                     KiDialogTexte.KlimaOrtName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaOrtErl, leerErlaubt: true),
+                    new KiDialogFeld("laengengrad", "KlimadatenKiSicht.Laengengrad",
+                                     KiDialogTexte.KlimaLaengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KlimaLaengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("breitengrad", "KlimadatenKiSicht.Breitengrad",
+                                     KiDialogTexte.KlimaBreiteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KlimaBreiteErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("bezeichnung", "KlimadatenKiSicht.Bezeichnung",
+                                     KiDialogTexte.KlimaBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaBezeichnungErl, leerErlaubt: true),
+                    new KiDialogFeld("jahr", "KlimadatenKiSicht.Jahr",
+                                     KiDialogTexte.KlimaJahrName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaJahrErl, leerErlaubt: true),
+                    new KiDialogFeld("szenario", "KlimadatenKiSicht.Szenario",
+                                     KiDialogTexte.KlimaSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaSzenarioErl),
+                    new KiDialogFeld("try_datei", "KlimadatenKiSicht.TryDatei",
+                                     KiDialogTexte.KlimaTryDateiName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaTryDateiErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("try_paket", "KlimadatenKiSicht.TryPaket",
+                                     KiDialogTexte.KlimaTryPaketName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaTryPaketErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
         }
 
         // =====================================================================

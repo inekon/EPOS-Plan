@@ -93,6 +93,20 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string STARTSEITE = "STARTSEITE";
 
+        /// <summary>
+        /// Der Seitenschluessel der KLIMADATENVERWALTUNG (Welle KI‑F3).
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.Klimadaten</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="STARTSEITE"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Dieser
+        /// Schluessel hat als einziger der Welle KEINEN <c>Masken.*</c>-Zwilling: Die
+        /// Klimadaten haengen am Menuepunkt „Administration → Klimadaten", und die
+        /// Windows-Huelle faengt ihn selbst ab. Ein Waechter in <c>EPOS.UI.Tests</c>
+        /// haelt beide Fundstellen gegeneinander.
+        /// </remarks>
+        public const string KLIMADATEN = "KLIMADATEN";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -204,7 +218,18 @@ namespace WindowsFormsApplication1
 
                 // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
                 // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.
-                { KiMaskennamen.BEDARF_ERGEBNIS, Masken.Simulation }
+                { KiMaskennamen.BEDARF_ERGEBNIS, Masken.Simulation },
+
+                // Die externen WAERMEBEDARFSGANGLINIEN und die SOLARGANGLINIEN eines
+                // Projekts gehen aus den Kacheln der Startseite auf und brauchen ein
+                // offenes Projekt; die Verwaltung ihrer Kataloge steht hinter dem
+                // Knopf „Bearbeiten…" IN diesen Masken.
+                { KiMaskennamen.WAERMEBEDARF_EXTERN, STARTSEITE },
+                { KiMaskennamen.SOLARGANGLINIE,      STARTSEITE },
+
+                // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
+                // siehe KLIMADATEN.
+                { KiMaskennamen.KLIMADATEN, KLIMADATEN }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

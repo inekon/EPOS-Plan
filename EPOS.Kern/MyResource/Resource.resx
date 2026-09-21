@@ -21291,4 +21291,55 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_BERG_JAHRESVERLAUF_ERL" xml:space="preserve">
     <value>Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt.</value>
   </data>
+  <data name="KI_DLG_MASKE_WBX" xml:space="preserve">
+    <value>Externe Wärmebedarfsganglinien</value>
+  </data>
+  <data name="KI_DLG_MASKE_SGL" xml:space="preserve">
+    <value>Solarganglinien im Projekt</value>
+  </data>
+  <data name="KI_DLG_MASKE_KLIMA" xml:space="preserve">
+    <value>Klimadaten</value>
+  </data>
+  <data name="KI_DLG_WBX_KANAL_ERL" xml:space="preserve">
+    <value>In welchen Bedarf die Ganglinie läuft: Heizung, Brauchwasser oder Prozesswärme. Der Kanal gilt je Zuordnung, nicht je Ganglinie.</value>
+  </data>
+  <data name="KI_DLG_WBX_GANGLINIE_ERL" xml:space="preserve">
+    <value>Der Bezeichner der zugeordneten Ganglinie.</value>
+  </data>
+  <data name="KI_DLG_SGL_KATALOG_ERL" xml:space="preserve">
+    <value>Die im Katalog markierte Solarganglinie; sie ist die, die „In das Projekt übernehmen“ aufnimmt.</value>
+  </data>
+  <data name="KI_DLG_SGL_PROJEKT_ERL" xml:space="preserve">
+    <value>Die in der Projektliste markierte Solarganglinie; sie ist die, die „Aus dem Projekt entfernen“ herausnimmt.</value>
+  </data>
+  <data name="KI_DLG_SGL_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Die Beschreibung der markierten Ganglinie aus ihrem Katalogsatz.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Klimadaten kommen: aus dem PVGIS-Dienst, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket. Die Quelle entscheidet, welche Felder darunter stehen.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_ORT_ERL" xml:space="preserve">
+    <value>Der Ortsname, zu dem die Koordinaten gesucht werden. Er darf auch frei eingegeben werden.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_LAENGE_ERL" xml:space="preserve">
+    <value>Der Längengrad des Standorts, in Dezimalgrad. Östlich von Greenwich ist er positiv.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_BREITE_ERL" xml:space="preserve">
+    <value>Der Breitengrad des Standorts, in Dezimalgrad. Nördlich des Äquators ist er positiv.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_BEZEICHNUNG_ERL" xml:space="preserve">
+    <value>Der Name, unter dem die Klimaregion gespeichert wird. Beim Einlesen einer TRY-Datei wird er aus dem Dateinamen vorbelegt.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_JAHR_ERL" xml:space="preserve">
+    <value>Das Bezugsjahr des Testreferenzjahres; zur Wahl stehen der heutige Stand und die Projektion.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario des Testreferenzjahres: mittleres Jahr, sommerwarm oder winterkalt.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_TRY_DATEI_ERL" xml:space="preserve">
+    <value>Die gewählte TRY-Datei. Getippt wird ein Pfad nicht, er wird über den Dateidialog gewählt.</value>
+  </data>
+  <data name="KI_DLG_KLIMA_TRY_PAKET_ERL" xml:space="preserve">
+    <value>Das gewählte TRY-Paket. Es darf leer bleiben; dann wird das mitgelieferte Paket genommen.</value>
+  </data>
 </root>

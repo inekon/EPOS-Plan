@@ -1022,6 +1022,48 @@
         internal static string BergJahresverlaufName => MyResource.Resource.BERG_SCH_JAHRESVERLAUF;
         internal static string BergJahresverlaufErl => MyResource.Resource.KI_DLG_BERG_JAHRESVERLAUF_ERL;
 
+        // ============ Waermebedarf, Solarganglinie und Klimadaten (Welle KI-F3)
+
+        /// <summary>Die externen Waermebedarfsganglinien eines Projekts (Welle KI-F3).</summary>
+        internal static string MaskeWaermebedarfExtern => MyResource.Resource.KI_DLG_MASKE_WBX;
+
+        /// <summary>Die Solarganglinien eines Projekts (Welle KI-F3).</summary>
+        internal static string MaskeSolarganglinie => MyResource.Resource.KI_DLG_MASKE_SGL;
+
+        /// <summary>Die Klimadatenverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeKlimadaten => MyResource.Resource.KI_DLG_MASKE_KLIMA;
+
+        internal static string WbxKanalName => MyResource.Resource.KANAL_LABEL;
+        internal static string WbxKanalErl => MyResource.Resource.KI_DLG_WBX_KANAL_ERL;
+        internal static string WbxGanglinieName => MyResource.Resource.BHKWV_SP_NAME;
+        internal static string WbxGanglinieErl => MyResource.Resource.KI_DLG_WBX_GANGLINIE_ERL;
+
+        internal static string SglKatalogName => MyResource.Resource.SGL_LBL_KATALOGLISTE;
+        internal static string SglKatalogErl => MyResource.Resource.KI_DLG_SGL_KATALOG_ERL;
+        internal static string SglProjektName => MyResource.Resource.SGL_LBL_PROJEKTLISTE;
+        internal static string SglProjektErl => MyResource.Resource.KI_DLG_SGL_PROJEKT_ERL;
+        internal static string SglBeschreibungName => MyResource.Resource.SGL_LBL_BESCHREIBUNG;
+        internal static string SglBeschreibungErl => MyResource.Resource.KI_DLG_SGL_BESCHREIBUNG_ERL;
+
+        internal static string KlimaQuelleName => MyResource.Resource.KLIMA_QUELLE;
+        internal static string KlimaQuelleErl => MyResource.Resource.KI_DLG_KLIMA_QUELLE_ERL;
+        internal static string KlimaOrtName => MyResource.Resource.KLIMA_LBL_ORT;
+        internal static string KlimaOrtErl => MyResource.Resource.KI_DLG_KLIMA_ORT_ERL;
+        internal static string KlimaLaengeName => MyResource.Resource.KLIMA_LBL_LONGITUDE;
+        internal static string KlimaLaengeErl => MyResource.Resource.KI_DLG_KLIMA_LAENGE_ERL;
+        internal static string KlimaBreiteName => MyResource.Resource.KLIMA_LBL_LATITUDE;
+        internal static string KlimaBreiteErl => MyResource.Resource.KI_DLG_KLIMA_BREITE_ERL;
+        internal static string KlimaBezeichnungName => MyResource.Resource.KLIMA_LBL_BEZEICHNUNG;
+        internal static string KlimaBezeichnungErl => MyResource.Resource.KI_DLG_KLIMA_BEZEICHNUNG_ERL;
+        internal static string KlimaJahrName => MyResource.Resource.KLIMA_TRY_JAHR;
+        internal static string KlimaJahrErl => MyResource.Resource.KI_DLG_KLIMA_JAHR_ERL;
+        internal static string KlimaSzenarioName => MyResource.Resource.KLIMA_TRY_SZENARIO;
+        internal static string KlimaSzenarioErl => MyResource.Resource.KI_DLG_KLIMA_SZENARIO_ERL;
+        internal static string KlimaTryDateiName => MyResource.Resource.KLIMA_TRY_DATEI;
+        internal static string KlimaTryDateiErl => MyResource.Resource.KI_DLG_KLIMA_TRY_DATEI_ERL;
+        internal static string KlimaTryPaketName => MyResource.Resource.KLIMA_TRY_PAKET;
+        internal static string KlimaTryPaketErl => MyResource.Resource.KI_DLG_KLIMA_TRY_PAKET_ERL;
+
         /// <summary>Der Knopf „Werte uebernehmen" des zweiten Reiterblatts (Welle KI-F3).</summary>
         internal static string KnopfWerteUebernehmen => MyResource.Resource.GEBK_BTN_UEBERNEHMEN;
 
