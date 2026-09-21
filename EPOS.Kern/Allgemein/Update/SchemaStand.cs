@@ -317,11 +317,28 @@ namespace WindowsFormsApplication1
         /// bleibt der Wert, den <c>SimulationBHKW</c> liest — <b>der Referenzlauf
         /// bleibt byte-gleich</b>, die Basis <c>2026-09-19_R10_BhkwWirkungsgrad</c>
         /// gilt weiter.
+        /// Mit der VORGABE 0 DER FREMDSCHLÜSSELSPALTEN (Schritt 100,
+        /// Anwenderentscheid 21.09.2026, Auftrag FK-1) steht das Ziel auf <b>100</b>:
+        /// Einundvierzig Fremdschlüsselspalten in fünfundzwanzig Tabellen tragen
+        /// <c>DEFAULT 0</c>, und keine Elterntabelle hat eine Zeile 0 — jeder
+        /// Schreibweg, der eine solche Spalte weglässt, bekam still die 0 und damit
+        /// eine Fremdschlüsselmeldung weit weg von der Ursache. Der Schritt nimmt die
+        /// Vorgabe heraus und lässt <c>NOT NULL</c> stehen, wo es steht; eine
+        /// weggelassene Spalte meldet ab hier <c>NOT NULL constraint failed</c> mit
+        /// Tabelle und Spalte im Klartext, und eine nullbare Spalte wird NULL, was
+        /// SQLite bei einer Beziehung immer durchlässt. Der Schritt steht bei
+        /// <see cref="FremdschluesselVorgabe"/>: gemessener Katalog
+        /// (<c>pragma_foreign_key_list</c> × <c>pragma_table_info</c>), Zieltext aus
+        /// dem Bestands-DDL, Tabellenneubau mit abgeschalteten Fremdschlüsseln,
+        /// wiederholbar. <b>Kein DML:</b> Werte ändert er nicht — Zeilen mit dem Wert 0
+        /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
+        /// Referenzlauf bleibt byte-gleich</b>, die Basis
+        /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 99;
+        public const int Zielversion = 100;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

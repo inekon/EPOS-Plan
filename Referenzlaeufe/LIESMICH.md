@@ -164,6 +164,16 @@ Projektkopien; ein Satz ohne Gesamtwirkungsgrad bleibt benannt ausgewiesen). **D
 `Wirkungsgrad` bleibt unverändert**, und nur sie liest `SimulationBHKW` — die **Referenzbasis
 R10 bleibt**, der Lauf der fünf CI-Projekte gegen sie ist **PASS und byte-gleich gemessen**
 (1 656 417 Werte, 143 Dateien).
+
+**Und inzwischen auf Schemastand 100** — wieder reines Nachziehen: Schritt 100 nimmt
+**41 Fremdschlüsselspalten in 25 Tabellen** ihre Vorgabe `DEFAULT 0`. Eine Elterntabelle mit
+einer Zeile 0 gibt es nicht, also war die Vorgabe eine Falle: Ein Schreibweg, der eine solche
+Spalte weglässt, bekam still die 0 und damit eine Fremdschlüsselmeldung weit weg von der
+Ursache. `NOT NULL` bleibt stehen, wo es steht. **Kein Wert ist angefasst** — keine Zeile trug
+den Wert 0, Zeilenzahlen, Ids, `sqlite_sequence`-Stände, Indizes, Sichten und
+`integrity_check` sind vor und nach dem Lauf gleich —, die **Referenzbasis R10 bleibt**, und
+der Lauf der fünf CI-Projekte gegen sie ist **PASS und byte-gleich gemessen** (1 656 417
+Werte, 143 Dateien).
 **Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte `Nachweis_Json` an
 `Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese Ergebnistabelle ist keine
 Schematabelle, sie entsteht und wächst erst beim ersten Programmlauf über

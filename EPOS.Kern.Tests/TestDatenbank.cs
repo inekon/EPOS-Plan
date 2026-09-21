@@ -391,6 +391,15 @@ namespace EPOS.Kern.Tests
                          in BhkwWirkungsgradAnteile.Anweisungen)
                     DataRepository.ExecuteNonQuery(a.Value.Sql, a.Value.Parameter);
 
+                // Schritt 100 (Anwenderentscheid 21.09.2026, Auftrag FK-1): Die
+                // Fremdschluesselspalten verlieren ihre Vorgabe 0. REIN DDL, aus
+                // DERSELBEN Quelle wie Migration und Werkzeug. Er steht ZULETZT und
+                // muss es: Er baut die betroffenen Tabellen vollstaendig neu, also muss
+                // jede Spalte eines frueheren Schritts vorher dastehen - und er findet
+                // seine Spalten ueber die Fremdschluessel, die erst Schritt 96 setzt.
+                // Steht keine Vorgabe mehr, tut der Aufruf nichts.
+                FremdschluesselVorgabe.Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
