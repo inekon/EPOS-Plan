@@ -31,8 +31,10 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -276,7 +278,69 @@
 
         // SetControls:32 - die erste Wahl steht vorn und bekommt den Fokus.
         if (_typen.Count > 0) TypWaehlen(_typen[0]);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDETYP, () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent wählt Typ und Kurve (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudetypKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten. Setzen nimmt denselben Weg wie ein Klick in die
+    /// Liste: Der Typ LÄDT seinen Satz, die Kurve zeigt ihre 24 Stundenwerte.
+    /// </summary>
+    private GebaeudetypKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudetypKiSicht
+        {
+            TypLesen = () => Daten.Name,
+            TypSetzen = TypWaehlen,
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(_typen, t => t),
+
+            KurveLesen = () => _kurve,
+            KurveSetzen = n => KurveWaehlen(n ?? 0),
+            KurveEintraege = () => KiMaskenanmeldung.Eintraege(Daten.Kurvennamen),
+
+            BeschreibungLesen = () => Daten.Beschreibung
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier der Weg des Knopfes „Typ speichern"</b> — er
+    /// schreibt die 24 Stundenwerte der offenen Kurve und lässt die Maske stehen.</para>
+    /// <para><b>Der SCHREIBSCHUTZ ist der des Satzes</b> (<c>Aenderbar</c>): Die vom
+    /// Softwarehersteller gelieferten Typen lassen sich nicht ändern.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => !Daten.Aenderbar,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null || !TypGewaehlt)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        if (!Daten.Aenderbar) return KiKern.KiErgebnis.Abgelehnt(HinweisGesperrt);
+
+        BeiSpeichern();
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(Daten.Name, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

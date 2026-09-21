@@ -268,4 +268,43 @@ public class SolarganglinieDialogTests : EposBunitContext
         cut.Find(".epos-dialog-zu").Click();
         Assert.False(ergebnis);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>SolarganglinieKiSicht</c>: Die Katalogwahl ist ein WAHLFELD, und
+    /// ein Setzen zieht die Beschreibung nach — derselbe Weg wie ein Klick in die
+    /// Liste.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_markiert_im_Katalog()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.SOLARGANGLINIE));
+
+        WindowsFormsApplication1.KiFeldzugang projekt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARGANGLINIE, "projektganglinie");
+        Assert.NotNull(projekt);
+        Assert.False(projekt.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang katalog =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARGANGLINIE, "katalogganglinie");
+        Assert.NotNull(katalog);
+        Assert.True(katalog.Setzbar);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(katalog, "Ganglinie Süd");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        katalog.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal("Ganglinie Süd", cut.Instance.Katalogzeile?.Bezeichner);
+
+        WindowsFormsApplication1.KiFeldzugang beschreibung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARGANGLINIE, "beschreibung");
+        Assert.Equal("Messreihe 2024, Standort Süd", beschreibung.Lesen());
+    }
 }

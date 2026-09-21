@@ -141,6 +141,97 @@ namespace WindowsFormsApplication1
         /// <c>Form_</c>-Vorsilbe: Sie hatte nie eine WinForms-Fassung.
         /// </summary>
         public const string KOMPONENTENKONFIGURATION = "KomponentenKonfiguration";
+
+        // =================================================================
+        //  Welle KI-F3: die Masken des BEDARFS und der KLIMADATEN
+        // =================================================================
+        //
+        // Sie gehen aus dem Reiter „Waermebedarf" bzw. „Strombedarf" der
+        // Startseite und aus dem Menue „Administration" auf. Die Schluessel
+        // sind die WinForms-Maskennamen des Bestands - auch dort, wo eine
+        // Razor-Komponente heute mehrere von ihnen bedient.
+
+        /// <summary>
+        /// Die Gebaeudemaske (<c>GebaeudeDialog</c>) — Projektliste und Katalog
+        /// nebeneinander.
+        /// </summary>
+        /// <remarks>
+        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt fuehrt sie beide Listen, in
+        /// der Katalogverwaltung nur den Katalog; die Felder sind dieselben, und welche
+        /// Betriebsart gilt, steht als Feld darin. Ein zweiter Katalogeintrag haette
+        /// zwei Wahrheiten ueber ein und dieselbe gezeichnete Maske gefuehrt.
+        /// </remarks>
+        public const string GEBAEUDE = "Form_Gebaeude";
+
+        /// <summary>
+        /// Die Wohn-/Nutzflaechenangabe eines Projektgebaeudes
+        /// (<c>GebaeudeWohnflaecheDialog</c>).
+        /// </summary>
+        public const string GEBAEUDE_WOHNFLAECHE = "Form_GebWohnflaeche";
+
+        /// <summary>Der Gebaeude-Katalogeditor (<c>GebaeudeKatalogDialog</c>).</summary>
+        public const string GEBAEUDE_KATALOG = "Form_Gebaeude1";
+
+        /// <summary>Der Waermebedarf EINES Gebaeudes (<c>GebaeudeBedarfDialog</c>).</summary>
+        public const string GEBAEUDE_BEDARF = "Form_Gebaeude_Bedarf";
+
+        /// <summary>Die Gebaeudetypen-Verwaltung (<c>GebaeudetypDialog</c>).</summary>
+        public const string GEBAEUDETYP = "Form_EingGebTyp";
+
+        /// <summary>
+        /// Das Wochen-Stundenprofil eines Bedarfstyps (<c>TypProfilDialog</c>).
+        /// </summary>
+        /// <remarks>
+        /// <b>EINE Komponente, DREI Auspraegungen.</b> Dieselbe Maske pflegt die
+        /// Stromverbraucher-, die Prozess- und die Brauchwassertypen; der
+        /// Katalogschluessel ist der WinForms-Maskenname der Stromfassung, und welche
+        /// Auspraegung offen ist, sagt der Typ, den sie fuehrt.
+        /// </remarks>
+        public const string TYPPROFIL = "Form_EingStromTyp";
+
+        /// <summary>
+        /// Der Kopfsatz eines Bedarfskatalogs samt seinen zwoelf Monatswerten
+        /// (<c>TypStammDialog</c>) — ebenfalls EINE Komponente mit drei Auspraegungen.
+        /// </summary>
+        public const string TYPSTAMM = "Form_EingDBStromverbraucher";
+
+        /// <summary>
+        /// Die Bedarfsprofile EINES PROJEKTS (<c>BedarfsProfileDialog</c>) — ebenfalls
+        /// EINE Komponente mit drei Auspraegungen.
+        /// </summary>
+        public const string BEDARFSPROFILE = "Form_Prozesswaerme";
+
+        // Die drei BEDARFS-KATALOGVERWALTUNGEN sind DREI Masken auf EINER Komponente:
+        // Sie tragen die WinForms-Maskennamen des Bestands, haben je ein eigenes
+        // Navigationsziel im Menue und lassen sich einzeln oeffnen. Ein gemeinsamer
+        // Schluessel haette dem Modell verschwiegen, welcher Katalog offen ist - und
+        // „oeffne die Brauchwasserverwaltung" waere nicht mehr ausdrueckbar gewesen.
+
+        /// <summary>Die Prozesswaerme-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string PROZESSWAERME_ADMIN = "Form_Prozesswaerme_Admin";
+
+        /// <summary>Die Stromverbraucher-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string STROMVERBRAUCHER_ADMIN = "Form_Stromverbraucher_Admin";
+
+        /// <summary>Die Brauchwasser-Katalogverwaltung (<c>BedarfAdminDialog</c>).</summary>
+        public const string BRAUCHWASSER_ADMIN = "Form_Brauchwasser_Admin";
+
+        /// <summary>
+        /// Die Ergebnisanzeige eines Bedarfs (<c>BedarfErgebnisDialog</c>).
+        /// </summary>
+        public const string BEDARF_ERGEBNIS = "Form_ErgStromverbraucher";
+
+        /// <summary>
+        /// Die externen Waermebedarfsganglinien eines Projekts
+        /// (<c>WaermebedarfExternDialog</c>).
+        /// </summary>
+        public const string WAERMEBEDARF_EXTERN = "Form_Waermebedarf";
+
+        /// <summary>Die Solarganglinien eines Projekts (<c>SolarganglinieDialog</c>).</summary>
+        public const string SOLARGANGLINIE = "Form_Solarganglinie";
+
+        /// <summary>Die Klimadatenverwaltung (<c>KlimadatenDialog</c>).</summary>
+        public const string KLIMADATEN = "Form_Klimadaten";
     }
 
     /// <summary>
@@ -246,7 +337,955 @@ namespace WindowsFormsApplication1
                 QuellePufferspeicher(),
                 Quellprofil(),
                 Waermesenke(),
-                Komponentenkonfiguration());
+                Komponentenkonfiguration(),
+                Gebaeude(),
+                GebaeudeWohnflaeche(),
+                GebaeudeKatalog(),
+                GebaeudeBedarf(),
+                Gebaeudetyp(),
+                Typprofil(),
+                Typstamm(),
+                Bedarfsprofile(),
+                BedarfAdmin(KiMaskennamen.PROZESSWAERME_ADMIN,
+                            KiDialogTexte.MaskeProzesswaermeAdmin),
+                BedarfAdmin(KiMaskennamen.STROMVERBRAUCHER_ADMIN,
+                            KiDialogTexte.MaskeStromverbraucherAdmin),
+                BedarfAdmin(KiMaskennamen.BRAUCHWASSER_ADMIN,
+                            KiDialogTexte.MaskeBrauchwasserAdmin),
+                BedarfErgebnis(),
+                WaermebedarfExtern(),
+                Solarganglinie(),
+                Klimadaten());
+        }
+
+        // =====================================================================
+        // Form_Waermebedarf  ->  WaermebedarfExternDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die externen Waermebedarfsganglinien eines Projekts — zwei Felder der
+        /// GEWAEHLTEN Zuordnung (<c>EPOS.UI.Dialoge.Bedarf.WaermebedarfExternZeile</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Das Daten-Objekt ist eine ZEILE und kein Dialogstand</b> — dieselbe
+        /// Bauart wie bei den Erzeugermasken des Projekts: Der Dialog fuehrt eine
+        /// Liste, und angemeldet ist, was in der gewaehlten Zeile steht. Ist keine
+        /// gewaehlt, sind die Felder leer — derselbe Zustand, den der Anwender sieht.
+        /// </para>
+        /// <para>
+        /// <b>Der KANAL ist ein WAHLFELD</b> (KI-D-Q6) und traegt als Schluessel seinen
+        /// Steuerwert (Heizung, Brauchwasser, Prozesswaerme). Er gilt JE ZUORDNUNG:
+        /// Dieselbe Ganglinie darf einem Projekt mehrfach zugeordnet sein und dabei
+        /// einmal in den Heizbedarf und einmal in den Brauchwasserbedarf laufen.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben der Katalog mit seinem Filterbaustein, der CSV-Import
+        /// samt Vorschau und Ablage</b> (ein Ladevorgang) und die Ganglinienvorschau.
+        /// </para>
+        /// </remarks>
+        private static KiDialog WaermebedarfExtern()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WAERMEBEDARF_EXTERN,
+                anzeigename: KiDialogTexte.MaskeWaermebedarfExtern,
+                felder: new[]
+                {
+                    new KiDialogFeld("kanal", "WaermebedarfExternZeile.Kanal",
+                                     KiDialogTexte.WbxKanalName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WbxKanalErl, leerErlaubt: true),
+                    new KiDialogFeld("ganglinie", "WaermebedarfExternZeile.Bezeichner",
+                                     KiDialogTexte.WbxGanglinieName, KiParameterTyp.Text,
+                                     KiDialogTexte.WbxGanglinieErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Solarganglinie  ->  SolarganglinieDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Solarganglinien eines Projekts — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Maske fuehrt keinen Einstellwert der Anlage.</b> Sie ordnet
+        /// Ganglinien zu und zeigt zu der markierten Zeile Name und Beschreibung. Ihr
+        /// Wahlfeld ist die KATALOGWAHL — sie markiert die Ganglinie, die „In das
+        /// Projekt uebernehmen" aufnimmt.
+        /// </para>
+        /// <para>
+        /// Freigegeben ist sie trotzdem, damit <c>dialog_lesen</c> nennt, welche
+        /// Ganglinie gewaehlt ist, und <c>feld_setzen</c> benannt ablehnt statt „Maske
+        /// nicht freigegeben" — dieselbe Begruendung wie bei den Speichermasken des
+        /// Projekts.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Solarganglinie()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SOLARGANGLINIE,
+                anzeigename: KiDialogTexte.MaskeSolarganglinie,
+                felder: new[]
+                {
+                    new KiDialogFeld("katalogganglinie",
+                                     "SolarganglinieKiSicht.Katalogganglinie",
+                                     KiDialogTexte.SglKatalogName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SglKatalogErl, leerErlaubt: true),
+                    new KiDialogFeld("projektganglinie",
+                                     "SolarganglinieKiSicht.Projektganglinie",
+                                     KiDialogTexte.SglProjektName, KiParameterTyp.Text,
+                                     KiDialogTexte.SglProjektErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "SolarganglinieKiSicht.Beschreibung",
+                                     KiDialogTexte.SglBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.SglBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Klimadaten  ->  KlimadatenDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Klimadatenverwaltung — neun Felder aus
+        /// <c>EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die QUELLE fuehrt die Maske.</b> Sie entscheidet, ob der Standort aus dem
+        /// PVGIS-Dienst kommt, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket —
+        /// und damit, welche Felder darunter ueberhaupt dastehen. Drei der neun sind
+        /// deshalb Wahlfelder (Quelle, Jahr, Szenario).
+        /// </para>
+        /// <para>
+        /// <b>Die beiden DATEIPFADE sind nur lesbar</b> (KI-D-Q6, Grenzfall): Getippt
+        /// wird ein Pfad nicht, er wird ueber den Dateidialog der Plattform gewaehlt;
+        /// das Feld der Maske ist gesperrt. Der Assistent liest ihn und sagt, welche
+        /// Datei ansteht.
+        /// </para>
+        /// <para>
+        /// <b>„Daten einlesen" ist ein LADEVORGANG und kein Speicherweg</b>: Er holt
+        /// eine Zeitreihe aus dem Netz oder aus einer Datei, dauert Minuten und laesst
+        /// sich abbrechen — ein rechnender Weg der Stufe 2, der ins Aktionsregister
+        /// gehoert. Ebenso draussen: die Regionsliste mit ihrem Filterbaustein, die
+        /// zwei Diagramme und der Loeschweg.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Klimadaten()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KLIMADATEN,
+                anzeigename: KiDialogTexte.MaskeKlimadaten,
+                felder: new[]
+                {
+                    new KiDialogFeld("quelle", "KlimadatenKiSicht.Quelle",
+                                     KiDialogTexte.KlimaQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaQuelleErl),
+                    new KiDialogFeld("ortsname", "KlimadatenKiSicht.Ortsname",
+                                     KiDialogTexte.KlimaOrtName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaOrtErl, leerErlaubt: true),
+                    new KiDialogFeld("laengengrad", "KlimadatenKiSicht.Laengengrad",
+                                     KiDialogTexte.KlimaLaengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KlimaLaengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("breitengrad", "KlimadatenKiSicht.Breitengrad",
+                                     KiDialogTexte.KlimaBreiteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.KlimaBreiteErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
+                    new KiDialogFeld("bezeichnung", "KlimadatenKiSicht.Bezeichnung",
+                                     KiDialogTexte.KlimaBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaBezeichnungErl, leerErlaubt: true),
+                    new KiDialogFeld("jahr", "KlimadatenKiSicht.Jahr",
+                                     KiDialogTexte.KlimaJahrName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaJahrErl, leerErlaubt: true),
+                    new KiDialogFeld("szenario", "KlimadatenKiSicht.Szenario",
+                                     KiDialogTexte.KlimaSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KlimaSzenarioErl),
+                    new KiDialogFeld("try_datei", "KlimadatenKiSicht.TryDatei",
+                                     KiDialogTexte.KlimaTryDateiName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaTryDateiErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("try_paket", "KlimadatenKiSicht.TryPaket",
+                                     KiDialogTexte.KlimaTryPaketName, KiParameterTyp.Text,
+                                     KiDialogTexte.KlimaTryPaketErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_Prozesswaerme  ->  BedarfsProfileDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Bedarfsprofile eines Projekts — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Listen, ein Einstellwert.</b> Links die Zuordnungen des Projekts,
+        /// rechts der Katalog; eingestellt wird der JAHRESVERBRAUCH der markierten
+        /// Zuordnung, und der Knopf „Uebernehmen" schreibt ihn in die Zeile. Die
+        /// ANZEIGEEINHEIT gilt dabei fuer Eingabe und Infoblock zugleich.
+        /// </para>
+        /// <para>
+        /// <b>EINE Maske, DREI Auspraegungen</b> (Prozesswaerme, Stromverbraucher,
+        /// Brauchwasser). Der Katalogschluessel ist der WinForms-Maskenname der
+        /// Prozesswaermefassung; welche gerade offen ist, sagt das Feld
+        /// <c>bedarfsart</c>.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die beiden LISTEN</b> — die Zuordnungen des Projekts und
+        /// der Katalog mit seinem eigenen Filterbaustein — sowie die Knoepfe, die
+        /// Katalogsaetze anlegen, aendern und loeschen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Bedarfsprofile()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARFSPROFILE,
+                anzeigename: KiDialogTexte.MaskeBedarfsprofile,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "BedarfsProfileKiSicht.Einheit",
+                                     KiDialogTexte.BpfEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BpfEinheitErl),
+                    new KiDialogFeld("neuer_wert", "BedarfsProfileKiSicht.NeuerWert",
+                                     KiDialogTexte.BpfNeuerWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BpfNeuerWertErl, leerErlaubt: true),
+                    new KiDialogFeld("profil", "BedarfsProfileKiSicht.Profil",
+                                     KiDialogTexte.BpfProfilName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfProfilErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("typ", "BedarfsProfileKiSicht.Typ",
+                                     KiDialogTexte.BpfTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfTypErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "BedarfsProfileKiSicht.Beschreibung",
+                                     KiDialogTexte.BpfBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("jahresverbrauch", "BedarfsProfileKiSicht.Jahresverbrauch",
+                                     KiDialogTexte.BpfJahresverbrauchName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfJahresverbrauchErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("summe", "BedarfsProfileKiSicht.Summe",
+                                     KiDialogTexte.BpfSummeName, KiParameterTyp.Text,
+                                     KiDialogTexte.BpfSummeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bedarfsart", "BedarfsProfileKiSicht.Bedarfsart",
+                                     KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
+                                     KiDialogTexte.BedarfsartErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_*_Admin  ->  BedarfAdminDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// EINE Bedarfs-Katalogverwaltung — fuenf Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>DREI Katalogeintraege, EIN Feldsatz.</b> Prozesswaerme, Stromverbraucher
+        /// und Brauchwasser sind drei Masken mit eigenem Namen und eigenem
+        /// Navigationsziel; gezeichnet wird dieselbe Komponente, und die Felder sind
+        /// dieselben. Deshalb baut diese Methode alle drei — der Unterschied ist der
+        /// Schluessel und der Anzeigename.
+        /// </para>
+        /// <para>
+        /// <b>Warum sie trotz KI-D-Q5 im Katalog stehen.</b> Sie sind mehr als eine
+        /// Liste mit Suchfeld: Neben der Katalogliste steht ein Infoblock mit Typ,
+        /// Beschreibung und Jahressumme des markierten Satzes — und genau danach fragt
+        /// der Anwender. Die LISTENWAHL ist das Wahlfeld dieser Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfAdmin(string maskenname, string anzeigename)
+        {
+            return new KiDialog(
+                maskenname: maskenname,
+                anzeigename: anzeigename,
+                felder: new[]
+                {
+                    new KiDialogFeld("satz", "BedarfAdminKiSicht.Satz",
+                                     KiDialogTexte.BadmSatzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BadmSatzErl, leerErlaubt: true),
+                    new KiDialogFeld("typ", "BedarfAdminKiSicht.Typ",
+                                     KiDialogTexte.BadmTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmTypErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "BedarfAdminKiSicht.Beschreibung",
+                                     KiDialogTexte.BadmBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("jahressumme", "BedarfAdminKiSicht.Jahressumme",
+                                     KiDialogTexte.BadmJahressummeName, KiParameterTyp.Text,
+                                     KiDialogTexte.BadmJahressummeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bedarfsart", "BedarfAdminKiSicht.Bedarfsart",
+                                     KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
+                                     KiDialogTexte.BedarfsartErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_ErgStromverbraucher  ->  BedarfErgebnisDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Ergebnisanzeige eines Bedarfs — vier Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, die nur ZEIGT.</b> Einstellbar sind allein die vier Schalter
+        /// der Anzeige: die Anzeigeeinheit, die Sicht der Tabelle, die Sicht der Grafik
+        /// und der Jahresverlauf. Sie schreiben nichts in die Datenbank; sie wechseln,
+        /// was dasteht.
+        /// </para>
+        /// <para>
+        /// <b>Die KENNZAHLEN selbst bleiben draussen</b>: Sie sind eine Liste von
+        /// Zeilen mit eigenen Bezeichnern und wechseln mit der Auspraegung; ein
+        /// Katalogfeld traegt EINEN Wert. Ebenso die zwoelf Monatswerte und die drei
+        /// Zeitstufen des Ganglinienbausteins — ein Bild mit eigenem Navigator.
+        /// </para>
+        /// <para>
+        /// <b>Der REITER steht nicht im Katalog:</b> Er wechselt nur das Blatt, nicht
+        /// den Stand — dieselbe Regel wie bei den Knoepfen, die bloss die Liste
+        /// umstellen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BedarfErgebnis()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BEDARF_ERGEBNIS,
+                anzeigename: KiDialogTexte.MaskeBedarfErgebnis,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "BedarfErgebnisKiSicht.Einheit",
+                                     KiDialogTexte.BergEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergEinheitErl),
+                    new KiDialogFeld("tabellensicht", "BedarfErgebnisKiSicht.Tabellensicht",
+                                     KiDialogTexte.BergTabellensichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergTabellensichtErl, leerErlaubt: true),
+                    new KiDialogFeld("grafiksicht", "BedarfErgebnisKiSicht.Grafiksicht",
+                                     KiDialogTexte.BergGrafiksichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BergGrafiksichtErl, leerErlaubt: true),
+                    new KiDialogFeld("jahresverlauf", "BedarfErgebnisKiSicht.Jahresverlauf",
+                                     KiDialogTexte.BergJahresverlaufName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BergJahresverlaufErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gebaeude_Bedarf  ->  GebaeudeBedarfDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Waermebedarf EINES Gebaeudes — sechs Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, die RECHNET und nicht schreibt.</b> Drei Kennzahlen, eine
+        /// Monatsuebersicht und ein Bild; eingestellt werden koennen nur die
+        /// ANZEIGEEINHEIT und der Schalter zwischen Jahresganglinie und Dauerlinie.
+        /// Beide liegen in den lebenden Feldern der Maske, die Kennzahlen im
+        /// eingefrorenen Ergebnis — deshalb eine Sichtklasse ueber beides.
+        /// </para>
+        /// <para>
+        /// <b>Die Kennzahlen stehen in MWh und kW</b>, so wie der Rechenkern sie
+        /// liefert; die Maske rechnet nur fuer die Anzeige um.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die zwoelf Monatssummen</b> (eine Zahlenfolge ohne
+        /// Zeilentyp) und das Bild.
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeBedarf()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_BEDARF,
+                anzeigename: KiDialogTexte.MaskeGebaeudeBedarf,
+                felder: new[]
+                {
+                    new KiDialogFeld("einheit", "GebaeudeBedarfKiSicht.Einheit",
+                                     KiDialogTexte.GebbEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebbEinheitErl),
+                    new KiDialogFeld("sortiert", "GebaeudeBedarfKiSicht.Sortiert",
+                                     KiDialogTexte.GebbSortiertName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebbSortiertErl),
+                    new KiDialogFeld("gebaeude", "GebaeudeBedarfKiSicht.Gebaeude",
+                                     KiDialogTexte.GebbGebaeudeName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebbGebaeudeErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("heizwaerme", "GebaeudeBedarfKiSicht.HeizwaermeMwh",
+                                     KiDialogTexte.GebbHeizwaermeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbHeizwaermeErl,
+                                     einheit: KiDialogTexte.EINHEIT_MWH_A,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("max_last", "GebaeudeBedarfKiSicht.MaxLastKw",
+                                     KiDialogTexte.GebbMaxLastName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbMaxLastErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("vollbenutzungsstunden",
+                                     "GebaeudeBedarfKiSicht.VollbenutzungsstundenH",
+                                     KiDialogTexte.GebbVollbenutzungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebbVollbenutzungErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingGebTyp  ->  GebaeudetypDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Gebaeudetypen-Verwaltung — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der NAME ist eine WAHL und kein Textfeld</b> (KI-D-Q6): Die Liste links
+        /// waehlt den Typ, und mit ihm laedt die Maske einen anderen Satz samt seinen
+        /// fuenf oder acht Tageskurven. Ebenso die KURVE — sie sagt, welche 24
+        /// Stundenwerte gerade dastehen.
+        /// </para>
+        /// <para>
+        /// <b>Die 24 Stundenwerte je Kurve bleiben draussen:</b> ein Raster mit eigenem
+        /// Editor. Gepflegt werden sie Feld fuer Feld und gespeichert als Kurve.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Gebaeudetyp()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDETYP,
+                anzeigename: KiDialogTexte.MaskeGebaeudetyp,
+                felder: new[]
+                {
+                    new KiDialogFeld("typ", "GebaeudetypKiSicht.Typ",
+                                     KiDialogTexte.GtypTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GtypTypErl, leerErlaubt: true),
+                    new KiDialogFeld("kurve", "GebaeudetypKiSicht.Kurve",
+                                     KiDialogTexte.GtypKurveName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GtypKurveErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "GebaeudetypKiSicht.Beschreibung",
+                                     KiDialogTexte.GtypBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.GtypBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingStromTyp  ->  TypProfilDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Wochen-Stundenprofil eines Bedarfstyps — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der TYP ist eine WAHL</b> (KI-D-Q6): Die Liste laedt einen anderen Satz
+        /// samt seinen 168 Wochenwerten. Der WOCHENTAG ist es ebenfalls — er sagt,
+        /// welche 24 Felder gerade dastehen.
+        /// </para>
+        /// <para>
+        /// <b>Die 7 x 24 Wochenwerte bleiben draussen:</b> ein Raster mit eigenem
+        /// Editor samt Kopierweg von Tag zu Tag.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Typprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TYPPROFIL,
+                anzeigename: KiDialogTexte.MaskeTypprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("typ", "TypProfilKiSicht.Typ",
+                                     KiDialogTexte.TprofTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TprofTypErl, leerErlaubt: true),
+                    new KiDialogFeld("wochentag", "TypProfilKiSicht.Wochentag",
+                                     KiDialogTexte.TprofWochentagName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TprofWochentagErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "TypProfilKiSicht.Beschreibung",
+                                     KiDialogTexte.TprofBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.TprofBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_EingDBStromverbraucher  ->  TypStammDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kopfsatz eines Bedarfskatalogs — drei Felder an
+        /// <c>EPOS.UI.Dialoge.Bedarf.TypStammDaten</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die einzige Maske dieser Welle OHNE Sichtklasse.</b> Ihr Satz ist
+        /// veraenderlich, und jedes der drei Felder bindet unmittelbar ans Markup — der
+        /// Katalog haengt sich also an dasselbe Objekt, das die Maske zeigt. Genau
+        /// dafuer ist der Weg da; eine Sichtklasse waere hier eine Schicht ohne Zweck.
+        /// </para>
+        /// <para>
+        /// <b>Der VERBRAUCHERTYP ist ein WAHLFELD</b> (KI-D-Q6) und traegt als
+        /// Schluessel den Namen des Typkatalogsatzes. Seine Eintraege kennt nur der
+        /// Dialog; er reicht sie beim Anmelden als Lieferant herein.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die zwoelf MONATSWERTE:</b> eine Zahlenfolge ohne
+        /// Zeilentyp — ein Katalogfeld traegt EINEN Wert, eine Katalogspalte braucht
+        /// Zeilen mit benannten Eigenschaften. Die Pflichtpruefung ueber alle zwoelf
+        /// steht dem Assistenten trotzdem offen: Sie ist der Haken „Pruefen".
+        /// </para>
+        /// </remarks>
+        private static KiDialog Typstamm()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TYPSTAMM,
+                anzeigename: KiDialogTexte.MaskeTypstamm,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "TypStammDaten.Name",
+                                     KiDialogTexte.TstammNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.TstammNameErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("typ", "TypStammDaten.Typ",
+                                     KiDialogTexte.TstammTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TstammTypErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "TypStammDaten.Beschreibung",
+                                     KiDialogTexte.TstammBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.TstammBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gebaeude  ->  GebaeudeDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Gebaeudemaske — zehn Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>EINE Maske, zwei Betriebsarten.</b> Im Projekt stehen Projektliste und
+        /// Katalog nebeneinander, in der Katalogverwaltung nur der Katalog; gezeichnet
+        /// wird dieselbe Komponente mit denselben Bedienelementen. Welche Betriebsart
+        /// gilt, sagt das Feld <c>verwaltung</c> — so muss der Assistent nicht raten und
+        /// der Katalog nicht zweimal dasselbe fuehren.
+        /// </para>
+        /// <para>
+        /// <b>Setzbar sind die vier FILTERFELDER</b> (Verwendung, Gebaeudeart, Baujahr,
+        /// Suchmuster): Sie sind die Eingabefelder dieser Maske, und mit ihnen findet der
+        /// Anwender den Satz, den er uebernehmen will. Die fuenf Felder des Detailblocks
+        /// sind nur lesbar — sie zeigen, was am markierten Satz steht.
+        /// </para>
+        /// <para>
+        /// <b>Die Werte der Zuordnung stehen NICHT hier</b>, sondern unter
+        /// <see cref="KiMaskennamen.GEBAEUDE_WOHNFLAECHE"/>: Wohnflaeche,
+        /// Jahresnutzungsgrad, Art der Angabe und die dezentrale Warmwasserbereitung
+        /// pflegt der Knopf „Aendern…" in jener Maske. Sie hier zu setzen hiesse, eine
+        /// Zahl zu aendern, die der Anwender auf dieser Maske nicht nachlesen kann.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Gebaeude()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE,
+                anzeigename: KiDialogTexte.MaskeGebaeude,
+                felder: new[]
+                {
+                    // ---- Der Filter ueber die Katalogliste --------------------------
+                    new KiDialogFeld("verwendung", "GebaeudeKiSicht.Verwendung",
+                                     KiDialogTexte.GebVerwendungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebVerwendungErl),
+                    new KiDialogFeld("filter_gebaeudeart", "GebaeudeKiSicht.FilterGebaeudeart",
+                                     KiDialogTexte.GebFilterArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebFilterArtErl, leerErlaubt: true),
+                    new KiDialogFeld("filter_baujahr", "GebaeudeKiSicht.FilterBaujahr",
+                                     KiDialogTexte.GebFilterBaujahrName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebFilterBaujahrErl, leerErlaubt: true),
+                    new KiDialogFeld("suche", "GebaeudeKiSicht.Suche",
+                                     KiDialogTexte.GebSucheName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebSucheErl, leerErlaubt: true),
+
+                    // ---- Der Detailblock des markierten Satzes ----------------------
+                    new KiDialogFeld("name", "GebaeudeKiSicht.Name",
+                                     KiDialogTexte.GebNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebNameErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gebaeudeart", "GebaeudeKiSicht.Gebaeudeart",
+                                     KiDialogTexte.GebArtName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebArtErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "GebaeudeKiSicht.Beschreibung",
+                                     KiDialogTexte.GebBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("wohnflaeche", "GebaeudeKiSicht.Wohnflaeche",
+                                     KiDialogTexte.GebWohnflaecheName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebWohnflaecheErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("angabeart", "GebaeudeKiSicht.Angabeart",
+                                     KiDialogTexte.GebAngabeartName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebAngabeartErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("verwaltung", "GebaeudeKiSicht.Verwaltung",
+                                     KiDialogTexte.GebVerwaltungName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebVerwaltungErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_GebWohnflaeche  ->  GebaeudeWohnflaecheDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Wohn-/Nutzflaechenangabe eines Projektgebaeudes — neun Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeWohnflaecheKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Hier stehen die vier Werte der ZUORDNUNG</b>, die
+        /// <see cref="KiMaskennamen.GEBAEUDE"/> nur anzeigt: die Bedarfsart, die Zahl
+        /// dazu, der Jahresnutzungsgrad des Kessels und die dezentrale
+        /// Warmwasserbereitung. Die fuenf Kopfangaben sind nur lesbar — sie kommen aus
+        /// dem Katalogsatz und werden dort gepflegt.
+        /// </para>
+        /// <para>
+        /// <b>Die BEDARFSART ist ein WAHLFELD</b> (KI-D-Q6) und traegt als Schluessel
+        /// ihren Listenplatz. Sie entscheidet die Einheit der Zahl daneben und den
+        /// Rechenweg: Wohnflaeche oder Ruecktrechnung aus einem Verbrauch.
+        /// </para>
+        /// <para>
+        /// <b>Die Maske SCHREIBT nicht, sie entscheidet</b> — der einzige Weg zum Wirt
+        /// ist OK, und OK schliesst sie; <c>dialog_speichern</c> lehnt deshalb benannt ab.
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeWohnflaeche()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_WOHNFLAECHE,
+                anzeigename: KiDialogTexte.MaskeGebaeudeWohnflaeche,
+                felder: new[]
+                {
+                    new KiDialogFeld("bedarfsart", "GebaeudeWohnflaecheKiSicht.Bedarfsart",
+                                     KiDialogTexte.GebwBedarfsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebwBedarfsartErl, leerErlaubt: true),
+                    new KiDialogFeld("wert", "GebaeudeWohnflaecheKiSicht.Wert",
+                                     KiDialogTexte.GebwWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebwWertErl),
+                    new KiDialogFeld("jahresnutzungsgrad",
+                                     "GebaeudeWohnflaecheKiSicht.Jahresnutzungsgrad",
+                                     KiDialogTexte.GebwNutzungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebwNutzungsgradErl),
+                    new KiDialogFeld("dezentral_warmwasser",
+                                     "GebaeudeWohnflaecheKiSicht.DezentralWarmwasser",
+                                     KiDialogTexte.GebwDezentralName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.GebwDezentralErl),
+
+                    new KiDialogFeld("gebaeudename", "GebaeudeWohnflaecheKiSicht.Gebaeudename",
+                                     KiDialogTexte.GebwNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebwNameErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gebaeudeart", "GebaeudeWohnflaecheKiSicht.Gebaeudeart",
+                                     KiDialogTexte.GebwArtName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebwArtErl, leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("beschreibung", "GebaeudeWohnflaecheKiSicht.Beschreibung",
+                                     KiDialogTexte.GebwBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebwBeschreibungErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("baujahr", "GebaeudeWohnflaecheKiSicht.Baujahr",
+                                     KiDialogTexte.GebwBaujahrName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebwBaujahrErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("angabeart", "GebaeudeWohnflaecheKiSicht.Angabeart",
+                                     KiDialogTexte.GebwAngabeartName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebwAngabeartErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gebaeude1  ->  GebaeudeKatalogDialog   (Welle KI-F3)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Gebaeude-Katalogeditor — 37 Felder aus
+        /// <c>EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht</c>: die groesste Maske des
+        /// Katalogs.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Reiterblaetter, ein Feldsatz.</b> Kenngroessen, Flaechen und U-Werte
+        /// binden unmittelbar an den Satz; Raumtemperaturen, Waermebruecken,
+        /// Anschlussmasse und Luftwechsel fuehrt die Maske in einem EIGENEN Stand und
+        /// gibt sie erst mit „Werte uebernehmen" in den Satz. Die Sichtklasse legt beide
+        /// unter einem Namen zusammen — dieselbe Bauart wie bei der
+        /// Komponentenkonfiguration.
+        /// </para>
+        /// <para>
+        /// <b>Fuenf Klapplisten sind WAHLFELDER</b> (KI-D-Q6): Gebaeudetyp und
+        /// Gebaeudeart tragen den Namen des Katalogsatzes als Schluessel, Baujahr und
+        /// Bauart ihren Listenplatz, die VERWENDUNG ihren Steuerwert. Die Bauart zieht
+        /// die Bauweise nach — derselbe Weg, den die Klappliste geht.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die sechzehn FERIENZAHLEN</b> (je vier Zeitraeume Beginn
+        /// und Ende, Tag und Monat): Sie sind zwei Zahlenfolgen ohne Zeilentyp, und ein
+        /// Katalogfeld traegt EINEN Wert. Geprueft werden sie ohnehin nur im Verbund —
+        /// vier Regeln ueber alle acht Paare. Ebenso draussen: die BAUWEISE, die aus
+        /// Bauart und Wohnflaeche gerechnet wird, und die Liste der
+        /// Brauchwasserprofile, die eine eigene Maske pflegt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog GebaeudeKatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GEBAEUDE_KATALOG,
+                anzeigename: KiDialogTexte.MaskeGebaeudeKatalog,
+                felder: new[]
+                {
+                    // ---- Kenngroessen ----------------------------------------------
+                    new KiDialogFeld("name", "GebaeudeKatalogKiSicht.Name",
+                                     KiDialogTexte.GebkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebkNameErl),
+                    new KiDialogFeld("gebaeudetyp", "GebaeudeKatalogKiSicht.Typ",
+                                     KiDialogTexte.GebkTypName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkTypErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "GebaeudeKatalogKiSicht.Beschreibung",
+                                     KiDialogTexte.GebkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebkBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("gebaeudeart", "GebaeudeKatalogKiSicht.Gebaeudeart",
+                                     KiDialogTexte.GebkArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkArtErl, leerErlaubt: true),
+                    new KiDialogFeld("baualtersklasse", "GebaeudeKatalogKiSicht.Baualtersklasse",
+                                     KiDialogTexte.GebkBaujahrName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkBaujahrErl),
+                    new KiDialogFeld("verwendung", "GebaeudeKatalogKiSicht.Verwendung",
+                                     KiDialogTexte.GebkVerwendungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkVerwendungErl, leerErlaubt: true),
+                    new KiDialogFeld("bauart", "GebaeudeKatalogKiSicht.Bauart",
+                                     KiDialogTexte.GebkBauartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GebkBauartErl),
+                    new KiDialogFeld("wohnflaeche", "GebaeudeKatalogKiSicht.WohnflaecheGesamt",
+                                     KiDialogTexte.GebkWohnflaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkWohnflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("flaeche_nutzer", "GebaeudeKatalogKiSicht.FlaecheNutzer",
+                                     KiDialogTexte.GebkFlaecheNutzerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFlaecheNutzerErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("waermegewinne", "GebaeudeKatalogKiSicht.Waermegewinne",
+                                     KiDialogTexte.GebkWaermegewinneName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkWaermegewinneErl,
+                                     einheit: KiDialogTexte.EINHEIT_W),
+                    new KiDialogFeld("fensterdurchlassgrad",
+                                     "GebaeudeKatalogKiSicht.Fensterdurchlassgrad",
+                                     KiDialogTexte.GebkDurchlassgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkDurchlassgradErl),
+                    new KiDialogFeld("raumhoehe", "GebaeudeKatalogKiSicht.Raumhoehe",
+                                     KiDialogTexte.GebkRaumhoeheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkRaumhoeheErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER),
+
+                    // ---- Flaechen ---------------------------------------------------
+                    new KiDialogFeld("fensterflaeche_nord",
+                                     "GebaeudeKatalogKiSicht.FensterflaecheNord",
+                                     KiDialogTexte.GebkFfNordName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFfNordErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("fensterflaeche_sued",
+                                     "GebaeudeKatalogKiSicht.FensterflaecheSued",
+                                     KiDialogTexte.GebkFfSuedName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFfSuedErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("fensterflaeche_ostwest",
+                                     "GebaeudeKatalogKiSicht.FensterflaecheOstWest",
+                                     KiDialogTexte.GebkFfOstWestName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFfOstWestErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("flaeche_aussenwand",
+                                     "GebaeudeKatalogKiSicht.FlaecheAussenwand",
+                                     KiDialogTexte.GebkAussenwandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAussenwandErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("dachflaeche", "GebaeudeKatalogKiSicht.Dachflaeche",
+                                     KiDialogTexte.GebkDachflaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkDachflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("grundflaeche", "GebaeudeKatalogKiSicht.Grundflaeche",
+                                     KiDialogTexte.GebkGrundflaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkGrundflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("sonstige_flaechen",
+                                     "GebaeudeKatalogKiSicht.SonstigeFlaechen",
+                                     KiDialogTexte.GebkSonstFlaechenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkSonstFlaechenErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+
+                    // ---- U-Werte ----------------------------------------------------
+                    new KiDialogFeld("u_aussenwand", "GebaeudeKatalogKiSicht.UWertAussenwand",
+                                     KiDialogTexte.GebkUAussenwandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUAussenwandErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+                    new KiDialogFeld("u_fenster", "GebaeudeKatalogKiSicht.UWertFenster",
+                                     KiDialogTexte.GebkUFensterName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUFensterErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+                    new KiDialogFeld("u_dachflaeche", "GebaeudeKatalogKiSicht.UWertDachflaeche",
+                                     KiDialogTexte.GebkUDachName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUDachErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+                    new KiDialogFeld("u_grundflaeche", "GebaeudeKatalogKiSicht.UWertGrundflaeche",
+                                     KiDialogTexte.GebkUGrundName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUGrundErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+                    new KiDialogFeld("u_sonstiges", "GebaeudeKatalogKiSicht.UWertSonstiges",
+                                     KiDialogTexte.GebkUSonstigesName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkUSonstigesErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+
+                    // ---- Raumtemperaturen (zweites Reiterblatt) ---------------------
+                    new KiDialogFeld("soll_tag", "GebaeudeKatalogKiSicht.SollTag",
+                                     KiDialogTexte.GebkSollTagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkSollTagErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("nachtabsenkung", "GebaeudeKatalogKiSicht.Nachtabsenkung",
+                                     KiDialogTexte.GebkNachtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkNachtErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("max_temperatur", "GebaeudeKatalogKiSicht.MaxTemperatur",
+                                     KiDialogTexte.GebkMaxTemperaturName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkMaxTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("wochenendabsenkung",
+                                     "GebaeudeKatalogKiSicht.Wochenendabsenkung",
+                                     KiDialogTexte.GebkWochenendeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkWochenendeErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("soll_ferien", "GebaeudeKatalogKiSicht.SollFerien",
+                                     KiDialogTexte.GebkSollFerienName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkSollFerienErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Waermebruecken und Anschlussmasse --------------------------
+                    new KiDialogFeld("wbvk_fenster_wand",
+                                     "GebaeudeKatalogKiSicht.WbvkFensterWand",
+                                     KiDialogTexte.GebkFensterWandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkFensterWandErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true),
+                    new KiDialogFeld("wbvk_wand_dach", "GebaeudeKatalogKiSicht.WbvkWandDach",
+                                     KiDialogTexte.GebkWandDachName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkWandDachErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true),
+                    new KiDialogFeld("wbvk_aussenwand_keller",
+                                     "GebaeudeKatalogKiSicht.WbvkAussenwandKeller",
+                                     KiDialogTexte.GebkWandKellerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkWandKellerErl,
+                                     einheit: KiDialogTexte.EINHEIT_W_MK, leerErlaubt: true),
+                    new KiDialogFeld("anschluss_fenster_wand",
+                                     "GebaeudeKatalogKiSicht.AnschlussFensterWand",
+                                     KiDialogTexte.GebkAnschlussFensterName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAnschlussFensterErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("anschluss_wand_dach",
+                                     "GebaeudeKatalogKiSicht.AnschlussWandDach",
+                                     KiDialogTexte.GebkAnschlussDachName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAnschlussDachErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("anschluss_aussenwand_keller",
+                                     "GebaeudeKatalogKiSicht.AnschlussAussenwandKeller",
+                                     KiDialogTexte.GebkAnschlussKellerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkAnschlussKellerErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("luftwechselrate", "GebaeudeKatalogKiSicht.Luftwechselrate",
+                                     KiDialogTexte.GebkLuftwechselName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GebkLuftwechselErl,
+                                     einheit: KiDialogTexte.EINHEIT_1_H, leerErlaubt: true),
+
+                    new KiDialogFeld("betriebsart", "GebaeudeKatalogKiSicht.Betriebsart",
+                                     KiDialogTexte.GebkBetriebsartName, KiParameterTyp.Text,
+                                     KiDialogTexte.GebkBetriebsartErl, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("werte_uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfWerteUebernehmen),
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("speichern", "btn_Speichern",
+                                      KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
+                });
         }
 
         // =====================================================================

@@ -39,6 +39,8 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -542,7 +544,69 @@
         KatalogLaden(ausBaujahrwahl: false);
         if (!Admin) ProjektauswahlNachziehen();
         else if (_katalog.Count > 0) KatalogzeileWaehlen(_katalog[0]);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE, () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die Maske und stellt ihren Filter (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder — einmal gebaut, danach nur
+    /// noch gelesen; ihre Delegaten greifen bei jedem Zugriff neu zu.
+    /// </summary>
+    private GebaeudeKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudeKiSicht
+        {
+            VerwendungLesen = () => _wohngebaeude ? 0 : 1,
+            VerwendungSetzen = VerwendungWaehlen,
+            VerwendungEintraege = () => KiMaskenanmeldung.Eintraege(
+                Verwendungseintraege, e => e.Id, e => e.Text),
+
+            FilterGebaeudeartLesen = () => _artindex,
+            FilterGebaeudeartSetzen = ArtWaehlen,
+            GebaeudeartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Arteintraege, e => e.Id, e => e.Text),
+
+            FilterBaujahrLesen = () => _klassenindex,
+            FilterBaujahrSetzen = KlasseWaehlen,
+            BaujahrEintraege = () => KiMaskenanmeldung.Eintraege(
+                Klasseneintraege, e => e.Id, e => e.Text),
+
+            SucheLesen = () => _suche,
+            SucheSetzen = muster => SucheSetzen(muster),
+
+            NameLesen = () => _detailName,
+            GebaeudeartLesen = () => _detailArt,
+            BeschreibungLesen = () => _detailBeschreibung,
+            WohnflaecheLesen = () => _detailWohnflaeche,
+            AngabeartLesen = () => _detailEinheit,
+            VerwaltungLesen = () => Admin
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Speicherweg.</b> Die Maske schreibt nicht: Jede Katalogaktion geht
+    /// über ihren eigenen Knopf in die Datenbank, und die Projektliste gehört dem Wirt,
+    /// der sie beim OK übernimmt. <c>dialog_speichern</c> lehnt deshalb benannt ab.</para>
+    /// <para><b>Kein Schreibschutz.</b> Ob ein Katalogsatz zur Auslieferung gehört,
+    /// entscheidet der Löschweg der Hülle und nicht diese Maske.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// Zieht die Markierung der Projektliste nach, sobald der Wirt eine ANDERE

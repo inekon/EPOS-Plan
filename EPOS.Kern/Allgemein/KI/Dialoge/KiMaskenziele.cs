@@ -93,6 +93,20 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string STARTSEITE = "STARTSEITE";
 
+        /// <summary>
+        /// Der Seitenschluessel der KLIMADATENVERWALTUNG (Welle KI‑F3).
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.Klimadaten</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="STARTSEITE"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Dieser
+        /// Schluessel hat als einziger der Welle KEINEN <c>Masken.*</c>-Zwilling: Die
+        /// Klimadaten haengen am Menuepunkt „Administration → Klimadaten", und die
+        /// Windows-Huelle faengt ihn selbst ab. Ein Waechter in <c>EPOS.UI.Tests</c>
+        /// haelt beide Fundstellen gegeneinander.
+        /// </remarks>
+        public const string KLIMADATEN = "KLIMADATEN";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -155,7 +169,67 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.QUELLE_PUFFERSPEICHER,     Masken.Simulation },
                 { KiMaskennamen.QUELLPROFIL,               Masken.Simulation },
                 { KiMaskennamen.WAERMESENKE,               Masken.Simulation },
-                { KiMaskennamen.KOMPONENTENKONFIGURATION,  Masken.Simulation }
+                { KiMaskennamen.KOMPONENTENKONFIGURATION,  Masken.Simulation },
+
+                // Welle KI-F3: Die GEBAEUDEMASKE ist zugleich die Gebaeudeverwaltung -
+                // Masken.GebaeudeAdmin oeffnet dieselbe Razor-Komponente in der
+                // Betriebsart Admin. Hier fuehrt ein Ziel also auf die Maske selbst und
+                // nicht bloss in ihre Naehe; welche Betriebsart offen ist, sagt ihr Feld
+                // „verwaltung". Der Gebaeude-KATALOGEDITOR geht aus dieser Maske auf und
+                // braucht einen gewaehlten Satz; sein Ziel ist deshalb dieselbe
+                // Verwaltung - dieselbe Begruendung wie bei den Katalogeditoren der
+                // Erzeuger.
+                { KiMaskennamen.GEBAEUDE,         Masken.GebaeudeAdmin },
+                { KiMaskennamen.GEBAEUDE_KATALOG, Masken.GebaeudeAdmin },
+
+                // Die Wohn-/Nutzflaechenangabe haengt an einer gewaehlten PROJEKTZEILE
+                // und geht ueber den Knopf „Aendern…" auf; kontextfrei gibt es sie
+                // nicht. Ihr Weg beginnt auf der Startseite, Reiter „Waermebedarf",
+                // Kachel „Gebaeudedaten eingeben" - siehe STARTSEITE.
+                { KiMaskennamen.GEBAEUDE_WOHNFLAECHE, STARTSEITE },
+
+                // Der WAERMEBEDARF eines Gebaeudes geht aus der Gebaeudemaske auf und
+                // braucht eine gewaehlte Projektzeile samt gerechnetem Bedarf.
+                { KiMaskennamen.GEBAEUDE_BEDARF, STARTSEITE },
+
+                // Die Gebaeudetypen-Verwaltung IST die Maske des Navigationsschluessels -
+                // hier fallen Katalogschluessel und Navigationsschluessel zusammen.
+                { KiMaskennamen.GEBAEUDETYP, Masken.GebaeudetypenAdmin },
+
+                // Profil und Kopfsatz eines Bedarfstyps gehen als Ueberlagerung aus den
+                // drei Bedarfsverwaltungen auf. Eine Komponente bedient alle drei
+                // Auspraegungen; der Katalogschluessel ist die Stromfassung, und das
+                // Ziel ist deshalb die Stromverbraucher-Verwaltung - der Weg, den der
+                // Anwender von Hand ginge.
+                { KiMaskennamen.TYPPROFIL, Masken.StromverbraucherAdmin },
+                { KiMaskennamen.TYPSTAMM,  Masken.StromverbraucherAdmin },
+
+                // Die BEDARFSPROFILE eines Projekts gehen aus den Kacheln der
+                // Startseite auf (Reiter „Waermebedarf" und „Strombedarf") und
+                // brauchen ein offenes Projekt.
+                { KiMaskennamen.BEDARFSPROFILE, STARTSEITE },
+
+                // Die drei KATALOGVERWALTUNGEN sind selbst Navigationsziele des
+                // Menues - hier fallen Katalogschluessel und Navigationsschluessel
+                // zusammen, wie bei der Waermepumpenverwaltung.
+                { KiMaskennamen.PROZESSWAERME_ADMIN,    Masken.ProzesswaermeAdmin },
+                { KiMaskennamen.STROMVERBRAUCHER_ADMIN, Masken.StromverbraucherAdmin },
+                { KiMaskennamen.BRAUCHWASSER_ADMIN,     Masken.BrauchwasserAdmin },
+
+                // Die ERGEBNISANZEIGE eines Bedarfs geht aus dem Bedarfsreiter der
+                // Ansicht „Simulation" auf und braucht einen gerechneten Lauf.
+                { KiMaskennamen.BEDARF_ERGEBNIS, Masken.Simulation },
+
+                // Die externen WAERMEBEDARFSGANGLINIEN und die SOLARGANGLINIEN eines
+                // Projekts gehen aus den Kacheln der Startseite auf und brauchen ein
+                // offenes Projekt; die Verwaltung ihrer Kataloge steht hinter dem
+                // Knopf „Bearbeiten…" IN diesen Masken.
+                { KiMaskennamen.WAERMEBEDARF_EXTERN, STARTSEITE },
+                { KiMaskennamen.SOLARGANGLINIE,      STARTSEITE },
+
+                // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
+                // siehe KLIMADATEN.
+                { KiMaskennamen.KLIMADATEN, KLIMADATEN }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

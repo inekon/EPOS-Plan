@@ -5,6 +5,7 @@ using EPOS.UI.Dialoge.Bedarf;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -958,4 +959,58 @@ public class GebaeudeDialogTests : EposBunitContext
         Assert.Equal(2, cut.FindAll(".epos-zweispalten-spalte .epos-raster-huelle").Count);
     }
 
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>GebaeudeKiSicht</c> und steht deshalb nicht in der Markup-Probe
+    /// des Dialogkatalogs — dieser Fall ist ihr Ersatz: Die Maske steht gezeichnet da,
+    /// die Brücke liest den Namen des markierten Satzes, und ein Setzen des Suchmusters
+    /// landet im Filterfeld.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Suche()
+    {
+        Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDE));
+
+        WindowsFormsApplication1.KiFeldzugang name =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "name");
+        Assert.NotNull(name);
+        Assert.Equal("Haus 1990", name.Lesen());
+        Assert.False(name.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang suche =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "suche");
+        Assert.True(suche.Setzbar);
+
+        suche.Setzen("Haus*");
+        Assert.Equal("Haus*", suche.Lesen());
+    }
+
+    /// <summary>
+    /// <b>Das Baujahr ist ein WAHLFELD</b> (KI-D-Q6): Gesetzt wird über den Anzeigetext
+    /// der Klappliste, in der Sicht steht danach ihr Listenplatz.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_die_Baualtersklasse_ueber_ihren_Text()
+    {
+        var cut = Aufbauen();
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDE, "filter_baujahr");
+        Assert.NotNull(zugang);
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, "Passivhaus");
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        KiFeldwert wert = KiMaskenbruecke.Lesen(KiMaskennamen.GEBAEUDE)
+                                         .Single(f => f.Name == "filter_baujahr");
+        Assert.Equal("Passivhaus", wert.Text);
+    }
 }

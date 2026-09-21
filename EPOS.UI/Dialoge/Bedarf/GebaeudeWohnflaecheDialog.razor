@@ -30,6 +30,8 @@
    zurueck; die Hausregel laesst Enter nur in reinen Anzeigedialogen zu. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -227,7 +229,64 @@
             if (string.Equals(Bedarfsarten[i], _einheit, StringComparison.Ordinal)) _bedarfsart = i;
 
         if (_bedarfsart is null && !string.IsNullOrEmpty(_einheit)) _bedarfsart = -1;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_WOHNFLAECHE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest und setzt die Angaben (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeWohnflaecheKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder. Setzen nimmt denselben Weg
+    /// wie die Tastatur: Die Bedarfsart geht über den Klapplistenwechsel und zieht die
+    /// Einheitsanzeige nach.
+    /// </summary>
+    private GebaeudeWohnflaecheKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudeWohnflaecheKiSicht
+        {
+            BedarfsartLesen = () => _bedarfsart,
+            BedarfsartSetzen = BedarfsartWaehlen,
+            BedarfsartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Bedarfsarteintraege, e => e.Id, e => e.Text),
+
+            WertLesen = () => _wert,
+            WertSetzen = w => _wert = w,
+
+            NutzungsgradLesen = () => _nutzungsgrad,
+            NutzungsgradSetzen = w => _nutzungsgrad = w,
+
+            DezentralLesen = () => _dezentral,
+            DezentralSetzen = w => _dezentral = w,
+
+            GebaeudenameLesen = () => Gebaeudename,
+            GebaeudeartLesen = () => Gebaeudeart,
+            BeschreibungLesen = () => Beschreibung,
+            BaujahrLesen = () => Baujahr,
+            AngabeartLesen = () => _einheit
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Diese Maske schreibt nicht, sie ENTSCHEIDET: Der einzige
+    /// Weg zum Wirt ist OK, und OK schließt die Maske — das löst der Assistent nicht im
+    /// Rücken des Anwenders aus. Einen Schreibschutz kennt sie nicht.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

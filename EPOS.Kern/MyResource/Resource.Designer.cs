@@ -25136,6 +25136,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressumme des markierten Satzes, wie sie auf der Maske steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_JAHRESSUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_JAHRESSUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jahressumme ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_JAHRESSUMME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_JAHRESSUMME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_SATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes aus seinem Kopfsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche der drei Ausprägungen offen ist: Prozesswärme, Stromverbraucher oder Brauchwasser. Dieselbe Maske bedient alle drei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsart der Maske ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEDARFSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEDARFSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf alle drei Reiterblätter zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Grafik zeigt; ein Wechsel weg vom Brauchwasser nimmt den Jahresverlauf mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_GRAFIK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_GRAFIK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicht der Grafik ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_GRAFIK_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_GRAFIK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Grafik den Jahresverlauf? Den Schalter gibt es nur zur Brauchwassersicht und nur, wenn ein Jahresverlauf vorliegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_JAHRESVERLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_JAHRESVERLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welche Sicht die Kennzahlen- und Monatstabelle zeigt; sie wechselt unabhängig von der Grafik. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_TABELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_TABELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sicht der Tabelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_BERG_TABELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKW_ANLAGE_ERL {
@@ -25177,6 +25294,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BHKW_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BHKW_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Profils aus seinem Kopfsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit; sie gilt für den Infoblock, die Summen und das Eingabefeld daneben zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresverbrauch der markierten Zuordnung, wie er auf der Maske steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_JAHRESVERBRAUCH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_JAHRESVERBRAUCH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der neue Jahresverbrauch der markierten Zuordnung, in der Einheit daneben. Er geht mit „Übernehmen“ in die Zeile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_NEUER_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_NEUER_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des markierten Profils. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_PROFIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_PROFIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Summe über alle Profile, die diesem Projekt zugeordnet sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_SUMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_SUMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Profils; er bringt die Stundenverteilung mit, nach der der Jahresverbrauch verteilt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BPF_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BPF_TYP_ERL", resourceCulture);
             }
         }
         
@@ -25271,11 +25451,614 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anzeigeeinheit der Energiemengen; sie wirkt auf Kennzahlen, Monatsübersicht und Bild zugleich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Gebäudes, dessen Wärmebedarf die Maske zeigt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_GEBAEUDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_GEBAEUDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahressumme der Heizwärme dieses Gebäudes. Brauchwasser und Prozesswärme sind nicht enthalten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_HEIZWAERME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_HEIZWAERME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste Stundenlast des Jahres; sie bestimmt die Auslegung des Erzeugers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_MAX_LAST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_MAX_LAST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt das Bild die Dauerlinie statt der Jahresganglinie? Sortiert heißt: die 8 760 Stundenwerte der Größe nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_SORTIERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_SORTIERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vollbenutzungsstunden: Jahressumme geteilt durch Höchstlast. Ohne Höchstlast gibt es sie nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBB_VOLLBENUTZUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBB_VOLLBENUTZUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Wand an Dach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Fenster an Wand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_FENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_FENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Anschlusses Außenwand an Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ANS_KELLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ANS_KELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart, zum Beispiel Einfamilienhaus oder Bürogebäude. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außenwandfläche ohne die Fenster. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_AUSSENWAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_AUSSENWAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart: leicht, schwer oder sehr schwer. Sie zieht die Bauweise nach, die aus Bauart und Wohnfläche gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BAUART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BAUART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes; sie bestimmt die Vorgaben der Bauteile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bearbeiten, Neu oder Katalogverwaltung; die Betriebsart entscheidet, welcher der beiden Speicherwege frei ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BETRIEBSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BETRIEBSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsart der Maske ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_BETRIEBSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die wärmeübertragende Dachfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_DACHFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_DACHFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtenergiedurchlassgrad der Fenster als Anteil, zum Beispiel 0,4. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_DURCHLASSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_DURCHLASSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FENSTER_WAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FENSTER_WAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Norden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_NORD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_NORD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Osten und Westen zusammen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_OSTWEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_OSTWEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fensterfläche nach Süden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FF_SUED_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FF_SUED_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fläche je Nutzer; sie bestimmt die Zahl der Personen und damit die inneren Lasten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FLAECHE_NUTZER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FLAECHE_NUTZER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Grundfläche gegen Erdreich oder unbeheizten Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_GRUNDFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_GRUNDFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_LUFTWECHSEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_LUFTWECHSEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste zulässige Raumtemperatur; ein Wert unter 1 gilt als 24 Grad. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_MAX_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_MAX_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung der Raumtemperatur in der Nacht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NACHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NACHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes. In der Katalogverwaltung wählt er den Satz aus, den die Maske lädt; sonst benennt er den Satz, der geschrieben wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RAUMHOEHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RAUMHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur in den Ferienzeiträumen; ein Wert über 0 schaltet den Ferienbetrieb ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SOLL_FERIEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SOLL_FERIEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Solltemperatur der Räume am Tag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SOLL_TAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SOLL_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die übrigen wärmeübertragenden Flächen, die keiner der anderen Gruppen zugehören. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SONST_FLAECHEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SONST_FLAECHEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen des Verbrauchs mit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Außenwand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_AUSSENWAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_AUSSENWAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Dachfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Fenster. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_FENSTER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_FENSTER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der Grundfläche. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmedurchgangskoeffizient der übrigen Flächen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_U_SONSTIGES_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_U_SONSTIGES_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohngebäude oder Gewerbe und Sonstiges; die Verwendung entscheidet, aus welcher Liste die Gebäudearten kommen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_VERWENDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_VERWENDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die inneren Wärmegewinne durch Personen und Geräte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAERMEGEWINNE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAERMEGEWINNE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Wand an Dach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAND_DACH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAND_DACH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Außenwand an Keller. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WAND_KELLER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WAND_KELLER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Absenkung am Wochenende; ein Wert über 0 schaltet den Wochenendbetrieb ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WOCHENENDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WOCHENENDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gesamte Wohn- oder Nutzfläche des Gebäudes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_WOHNFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_WOHNFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe, wie sie im Kopf steht — auch dann, wenn die Klappliste sie nicht mehr führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_ANGABEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_ANGABEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart aus dem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Gebäudes im Klartext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe für dieses Gebäude; sie bestimmt Einheit und Rechenweg der Zahl daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BEDARFSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BEDARFSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung aus dem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird das Warmwasser im Gebäude dezentral bereitet? Dann bleibt es aus dem Wärmebedarf der Heizung heraus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_DEZENTRAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_DEZENTRAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Gebäudes, dessen Angaben die Maske führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresnutzungsgrad des Kessels als Anteil, z. B. 0,85 für 85 %. Er wird nur bei einer Brennstoffangabe gebraucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_NUTZUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_NUTZUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebedarf bzw. die Wohnfläche in der Einheit, die die Bedarfsart nennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBW_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBW_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Art der Angabe: Wohnfläche oder ein Verbrauch, aus dem die Fläche zurückgerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_ANGABEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_ANGABEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gebäudeart des Filters. „Alle“ zeigt jede Art der gewählten Verwendung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_FILTER_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_FILTER_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Baualtersklasse des Filters. „Alle“ zeigt jede Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_FILTER_BAUJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_FILTER_BAUJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des markierten Satzes — je nach Markierung der des Projektgebäudes oder der des Katalogsatzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Suchmuster über die Namen der Katalogliste; der Stern steht für beliebige Zeichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_SUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_SUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Maske in der Katalogverwaltung? Dann führt sie keine Projektliste, und die Knöpfe „Ändern…“ und „Simulation…“ gibt es nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWALTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogverwaltung ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWALTUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWALTUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verwendung, nach der die Katalogliste gefiltert wird; sie wechselt zugleich die Liste der Gebäudearten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_VERWENDUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_VERWENDUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wohn- oder Nutzfläche des markierten Satzes, so wie sie auf der Maske steht. Geändert wird sie über den Knopf „Ändern…“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEB_WOHNFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEB_WOHNFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“: {1} steuerbare Felder, {2} auslösbare Knöpfe. ähnelt.
         /// </summary>
         public static string KI_DLG_GELESEN {
             get {
                 return ResourceManager.GetString("KI_DLG_GELESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Tageskurve, deren 24 Stundenwerte die Maske zeigt; ein Typ führt fünf oder acht davon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_KURVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_KURVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der geladene Gebäudetyp. Ihn zu setzen lädt seinen Satz samt seinen Tageskurven — derselbe Weg wie ein Klick in die Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GTYP_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GTYP_TYP_ERL", resourceCulture);
             }
         }
         
@@ -25523,6 +26306,87 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem die Klimaregion gespeichert wird. Beim Einlesen einer TRY-Datei wird er aus dem Dateinamen vorbelegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_BEZEICHNUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_BEZEICHNUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Breitengrad des Standorts, in Dezimalgrad. Nördlich des Äquators ist er positiv. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_BREITE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_BREITE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bezugsjahr des Testreferenzjahres; zur Wahl stehen der heutige Stand und die Projektion. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Längengrad des Standorts, in Dezimalgrad. Östlich von Greenwich ist er positiv. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ortsname, zu dem die Koordinaten gesucht werden. Er darf auch frei eingegeben werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_ORT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_ORT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Klimadaten kommen: aus dem PVGIS-Dienst, aus einer einzelnen TRY-Datei oder aus einem TRY-Paket. Die Quelle entscheidet, welche Felder darunter stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario des Testreferenzjahres: mittleres Jahr, sommerwarm oder winterkalt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_SZENARIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte TRY-Datei. Getippt wird ein Pfad nicht, er wird über den Dateidialog gewählt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_TRY_DATEI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_TRY_DATEI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das gewählte TRY-Paket. Es darf leer bleiben; dann wird das mitgelieferte Paket genommen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KLIMA_TRY_PAKET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KLIMA_TRY_PAKET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
         /// </summary>
         public static string KI_DLG_KNOPF_ABBRECHEN {
@@ -25766,11 +26630,101 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_BW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_BW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prozesswärme-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_PROZ {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_PROZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromverbraucher-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BADM_STROM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BADM_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsergebnis ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BERG {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BERG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung BHKW ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BHKW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprofile im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BPF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudedaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf eines Gebäudes ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudekatalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wohn-/Nutzfläche des Gebäudes ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GEBW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GEBW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gebäudetypen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GTYP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GTYP", resourceCulture);
             }
         }
         
@@ -25798,6 +26752,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_KKONF {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KKONF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Klimadaten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KLIMA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KLIMA", resourceCulture);
             }
         }
         
@@ -25883,6 +26846,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien im Projekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SGL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SGL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Simulation ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SIM {
@@ -25919,11 +26891,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wochen-Stundenprofil eines Typs ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_TPROF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_TPROF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopfsatz eines Bedarfskatalogs ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_TSTAMM {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_TSTAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Externe Wärmebedarfsganglinien ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WBX {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WBX", resourceCulture);
             }
         }
         
@@ -26617,6 +27616,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_QPUF_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_QPUF_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung der markierten Ganglinie aus ihrem Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die im Katalog markierte Solarganglinie; sie ist die, die „In das Projekt übernehmen“ aufnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_KATALOG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_KATALOG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die in der Projektliste markierte Solarganglinie; sie ist die, die „Aus dem Projekt entfernen“ herausnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGL_PROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGL_PROJEKT_ERL", resourceCulture);
             }
         }
         
@@ -27701,6 +28727,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der geladene Typ. Ihn zu setzen lädt sein Wochenprofil — derselbe Weg wie ein Klick in die Liste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte die Maske zeigt; Montag ist der erste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TPROF_WOCHENTAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TPROF_WOCHENTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Freitext zum Katalogsatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Katalogsatzes; die Maske zeigt ihn gesperrt. Ein anderer Name entsteht über „Speichern unter“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ aus dem Typkatalog; er bringt das Wochen-Stundenprofil mit, nach dem die Monatswerte verteilt werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TSTAMM_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TSTAMM_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Auswahl ähnelt.
         /// </summary>
         public static string KI_DLG_TYP_AUSWAHL {
@@ -27742,6 +28822,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_TYP_ZAHL {
             get {
                 return ResourceManager.GetString("KI_DLG_TYP_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der zugeordneten Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_GANGLINIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_GANGLINIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In welchen Bedarf die Ganglinie läuft: Heizung, Brauchwasser oder Prozesswärme. Der Kanal gilt je Zuordnung, nicht je Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WBX_KANAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WBX_KANAL_ERL", resourceCulture);
             }
         }
         

@@ -435,4 +435,40 @@ public class GebaeudetypDialogTests : EposBunitContext
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>GebaeudetypKiSicht</c>: Der Typ ist eine WAHL, und ein Setzen
+    /// LÄDT seinen Satz samt Kurvennamen — derselbe Weg wie ein Klick in die Liste.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_laedt_den_gewaehlten_Typ()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GEBAEUDETYP));
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDETYP, "typ");
+        Assert.NotNull(zugang);
+        Assert.Equal(TYPEN[0], zugang.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, TYPEN[1]);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        zugang.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(TYPEN[1], zugang.Lesen());
+
+        // Die KURVE ist die zweite Wahl - sie sagt, welche 24 Felder dastehen.
+        WindowsFormsApplication1.KiFeldzugang kurve =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GEBAEUDETYP, "kurve");
+        Assert.NotNull(kurve);
+        Assert.True(kurve.Setzbar);
+        Assert.Equal(0, kurve.Lesen());
+    }
 }

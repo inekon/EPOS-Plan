@@ -99,6 +99,7 @@
 @using SpeicherEngine
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -631,7 +632,41 @@
             Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Waermebedarf));
 
         if (Zeilen.Count > 0) _gewaehlt = Zeilen[0];
+
+        // Welle KI-F3: Angemeldet ist die GEWAEHLTE Zuordnung - sie wechselt mit jedem
+        // Klick in der Projektliste, deshalb ein Delegat und keine Instanz. Die
+        // Kanaleintraege kennt nur dieser Dialog.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEBEDARF_EXTERN,
+                                          () => _gewaehlt, KiHaken(),
+                                          ("kanal", Kanalwahleintraege));
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die gewählte Zuordnung (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>Die drei Bedarfskanäle für den Assistenten (KI-D-Q6).</summary>
+    private IReadOnlyList<KiWahleintrag> Kanalwahleintraege()
+        => KiMaskenanmeldung.Eintraege(Kanaele, k => k.Wert, k => k.Text);
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Die Zuordnungsliste gehört dem Wirt und geht erst mit
+    /// dem OK an ihn; der Kanal steht bis dahin in der Zeile, die der Anwender sieht.
+    /// Einen Schreibschutz kennt diese Maske nicht — der des Katalogs hängt am
+    /// Löschweg und nicht an der Zuordnung.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

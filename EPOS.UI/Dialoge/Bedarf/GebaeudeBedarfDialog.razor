@@ -36,6 +36,7 @@
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -196,7 +197,55 @@
     /// <summary>Die gewählte Anzeigeeinheit — Prüfhilfe für die Tests.</summary>
     public Energieeinheit Anzeigeeinheit => _einheit;
 
-    protected override void OnInitialized() => _einheit = Einheit ?? Energieeinheit.Vorgabe;
+    protected override void OnInitialized()
+    {
+        _einheit = Einheit ?? Energieeinheit.Vorgabe;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GEBAEUDE_BEDARF,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest den Bedarf und stellt die Anzeige (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GebaeudeBedarfKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die drei Kennzahlen aus dem eingefrorenen Satz und
+    /// die zwei Bedienelemente der Maske.
+    /// </summary>
+    private GebaeudeBedarfKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GebaeudeBedarfKiSicht
+        {
+            EinheitLesen = () => EinheitIndex,
+            EinheitSetzen = EinheitWaehlen,
+            EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
+                Einheitenwahl, e => e.Id, e => e.Text),
+
+            SortiertLesen = () => _sortiert,
+            SortiertSetzen = w => SortiertGesetzt(w),
+
+            SatzLesen = () => Daten
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur Auffrischen.</b> Diese Maske zeigt ein gerechnetes Ergebnis und schreibt
+    /// nichts; einen Schreibschutz und einen Speicherweg gibt es nicht.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

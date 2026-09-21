@@ -77,8 +77,10 @@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
+@using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
 @inherits Farbwahlwirt
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -424,7 +426,70 @@
 
         // SetControls: die erste Wahl steht vorn und laedt ihre Werte mit.
         if (_typen.Count > 0) TypWaehlen(_typen[0]);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.TYPPROFIL, () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent wählt Typ und Wochentag (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TypProfilKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten. Setzen nimmt denselben Weg wie ein Klick in die
+    /// Liste: Der Typ LÄDT sein Profil, der Wochentag zeigt seine 24 Stundenwerte.
+    /// </summary>
+    private TypProfilKiSicht KiSicht()
+    {
+        return _kiSicht ??= new TypProfilKiSicht
+        {
+            TypLesen = () => Daten.Typ,
+            TypSetzen = TypWaehlen,
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(_typen, t => t),
+
+            WochentagLesen = () => _tag,
+            WochentagSetzen = t => TagWaehlen(t ?? 0),
+            WochentagEintraege = () => KiMaskenanmeldung.Eintraege(Wochentage),
+
+            BeschreibungLesen = () => Daten.Beschreibung,
+            BeschreibungSetzen = t => Daten.Beschreibung = t ?? ""
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>„Speichern" heißt hier der Weg des Knopfes „Speichern in DB"</b> — er
+    /// schreibt die ÜBERNOMMENEN Werte samt der Beschreibung und lässt die Maske
+    /// stehen. Nicht übernommene Feldeingaben gehen nicht mit; das ist die Regel der
+    /// Maske und nicht die des Assistenten.</para>
+    /// <para><b>Der SCHREIBSCHUTZ ist der des Satzes</b> — die Maske fragt ihn beim
+    /// Speichern ab, statt den Knopf zu sperren.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => IstReadOnly is not null && IstReadOnly(Daten.Typ),
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null || !TypGewaehlt)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        BeiSpeichern();
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(Daten.Typ, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

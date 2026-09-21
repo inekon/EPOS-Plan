@@ -94,7 +94,51 @@ public class KiDialogkatalogTests
         { KiMaskennamen.WAERMESENKE,
           typeof(EPOS.UI.Dialoge.Simulation.WaermesenkeKiSicht) },
         { KiMaskennamen.KOMPONENTENKONFIGURATION,
-          typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) }
+          typeof(EPOS.UI.Dialoge.Simulation.KomponentenKonfigurationKiSicht) },
+
+        // Welle KI-F3: die Masken des BEDARFS. Sie melden je eine SICHTKLASSE an -
+        // siehe OhneMarkupprobe.
+        { KiMaskennamen.GEBAEUDE,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKiSicht) },
+        { KiMaskennamen.GEBAEUDE_WOHNFLAECHE,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeWohnflaecheKiSicht) },
+        { KiMaskennamen.GEBAEUDE_KATALOG,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeKatalogKiSicht) },
+        { KiMaskennamen.GEBAEUDE_BEDARF,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudeBedarfKiSicht) },
+        { KiMaskennamen.GEBAEUDETYP,
+          typeof(EPOS.UI.Dialoge.Bedarf.GebaeudetypKiSicht) },
+        { KiMaskennamen.TYPPROFIL,
+          typeof(EPOS.UI.Dialoge.Bedarf.TypProfilKiSicht) },
+
+        // Die EINZIGE Maske der Welle KI-F3 ohne Sichtklasse: Ihr Satz ist
+        // veraenderlich und bindet unmittelbar ans Markup.
+        { KiMaskennamen.TYPSTAMM, typeof(EPOS.UI.Dialoge.Bedarf.TypStammDaten) },
+
+        { KiMaskennamen.BEDARFSPROFILE,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfsProfileKiSicht) },
+
+        // DREI Masken auf EINER Sichtklasse: Prozesswaerme, Stromverbraucher und
+        // Brauchwasser sind drei Katalogschluessel derselben Komponente.
+        { KiMaskennamen.PROZESSWAERME_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+        { KiMaskennamen.STROMVERBRAUCHER_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+        { KiMaskennamen.BRAUCHWASSER_ADMIN,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
+
+        { KiMaskennamen.BEDARF_ERGEBNIS,
+          typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
+
+        // Die zweite Maske der Welle KI-F3 ohne Sichtklasse: Angemeldet ist die
+        // GEWAEHLTE Zuordnung - dieselbe Bauart wie bei den Erzeugermasken.
+        { KiMaskennamen.WAERMEBEDARF_EXTERN,
+          typeof(EPOS.UI.Dialoge.Bedarf.WaermebedarfExternZeile) },
+
+        { KiMaskennamen.SOLARGANGLINIE,
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht) },
+        { KiMaskennamen.KLIMADATEN,
+          typeof(EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht) }
     };
 
     /// <summary>
@@ -121,6 +165,14 @@ public class KiDialogkatalogTests
         KiMaskennamen.PHOTOVOLTAIK         => new[] { "energietraeger" },
         KiMaskennamen.WAERMEPUMPE_ANLAGE   => new[] { "energietraeger", "betriebsart", "typ",
                                                       "leistungsstufen", "aufstellung", "baujahr" },
+
+        // Welle KI-F3: Der Kopfsatz eines Bedarfskatalogs meldet SEIN Daten-Objekt an;
+        // die Typliste kennt nur der Dialog und reicht sie als Lieferant herein.
+        KiMaskennamen.TYPSTAMM             => new[] { "typ" },
+
+        // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
+        // Parameter der Huelle herein.
+        KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -175,11 +227,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neunzehn_Masken()
+    public void Der_Katalog_fuehrt_vierunddreissig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(19, katalog.Anzahl);
+        Assert.Equal(34, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -234,6 +286,89 @@ public class KiDialogkatalogTests
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.QUELLPROFIL));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.WAERMESENKE));
         Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.KOMPONENTENKONFIGURATION));
+    }
+
+    /// <summary>
+    /// <b>Die Gebäudemaske IST die Gebäudeverwaltung</b> (Welle KI‑F3):
+    /// <c>Masken.GebaeudeAdmin</c> öffnet dieselbe Razor-Komponente in der Betriebsart
+    /// Admin, und der Katalogeditor geht aus ihr auf.
+    /// </summary>
+    /// <remarks>
+    /// Die Wohn-/Nutzflächenangabe dagegen hängt an einer gewählten Projektzeile und
+    /// geht über den Knopf „Ändern…" auf; ihr Ziel ist deshalb die Startseite — dieselbe
+    /// Begründung wie bei den Erzeugermasken des Projekts.
+    /// </remarks>
+    [Fact]
+    public void Das_Ziel_der_Gebaeudemasken_ist_die_Gebaeudeverwaltung()
+    {
+        string ziel = WindowsFormsApplication1.Masken.GebaeudeAdmin;
+
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE));
+        Assert.Equal(ziel, KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_KATALOG));
+
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_WOHNFLAECHE));
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDE_BEDARF));
+    }
+
+    /// <summary>
+    /// <b>Die Bedarfsmasken führen auf ihre VERWALTUNG</b> (Welle KI‑F3): die
+    /// Gebäudetypen auf ihre eigene Maske, Profil und Kopfsatz eines Bedarfstyps auf
+    /// die Stromverbraucher-Verwaltung, aus der sie als Überlagerung aufgehen.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Typmasken_ist_ihre_Verwaltung()
+    {
+        Assert.Equal(WindowsFormsApplication1.Masken.GebaeudetypenAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.GEBAEUDETYP));
+
+        string strom = WindowsFormsApplication1.Masken.StromverbraucherAdmin;
+        Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPPROFIL));
+        Assert.Equal(strom, KiMaskenziele.Ziel(KiMaskennamen.TYPSTAMM));
+    }
+
+    /// <summary>
+    /// <b>Die drei Bedarfs-Katalogverwaltungen sind DREI Masken</b> (Welle KI‑F3) —
+    /// jede mit eigenem Katalogschlüssel und eigenem Menüweg, obwohl EINE Komponente
+    /// sie zeichnet. Hier fallen Katalog- und Navigationsschlüssel zusammen.
+    /// </summary>
+    [Fact]
+    public void Jede_Bedarfsverwaltung_hat_ihr_eigenes_Ziel()
+    {
+        Assert.Equal(WindowsFormsApplication1.Masken.ProzesswaermeAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROZESSWAERME_ADMIN));
+        Assert.Equal(WindowsFormsApplication1.Masken.StromverbraucherAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.STROMVERBRAUCHER_ADMIN));
+        Assert.Equal(WindowsFormsApplication1.Masken.BrauchwasserAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.BRAUCHWASSER_ADMIN));
+
+        // Die Profile eines Projekts gehen aus den Startkacheln auf, das Ergebnis aus
+        // der Ansicht „Simulation".
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.BEDARFSPROFILE));
+        Assert.Equal(WindowsFormsApplication1.Masken.Simulation,
+                     KiMaskenziele.Ziel(KiMaskennamen.BEDARF_ERGEBNIS));
+    }
+
+    /// <summary>
+    /// <b>Der Wächter über die zwei Fundstellen des Klimadatenschlüssels</b>
+    /// (Welle KI‑F3): <c>KiMaskenziele.KLIMADATEN</c> steht im Kern als Zeichenkette,
+    /// weil der Kern die Oberfläche nicht kennt; <c>Seitenschluessel.Klimadaten</c>
+    /// steht in <c>EPOS.UI</c>. Laufen beide auseinander, führt <c>dialog_oeffnen</c>
+    /// ins Leere — dasselbe Muster wie bei der Startseite.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Klimadaten_ist_ihr_Seitenschluessel()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Klimadaten, KiMaskenziele.KLIMADATEN);
+        Assert.Equal(KiMaskenziele.KLIMADATEN, KiMaskenziele.Ziel(KiMaskennamen.KLIMADATEN));
+
+        // Die zwei Ganglinienmasken des Projekts gehen aus den Startkacheln auf.
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.WAERMEBEDARF_EXTERN));
+        Assert.Equal(KiMaskenziele.STARTSEITE,
+                     KiMaskenziele.Ziel(KiMaskennamen.SOLARGANGLINIE));
     }
 
     [Fact]
@@ -410,7 +545,16 @@ public class KiDialogkatalogTests
         { KiMaskennamen.WAERMEPUMPE_ANLAGE,
           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeAnlageDialog.razor;" +
           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeKonfiguration.razor;" +
-          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" }
+          "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
+
+        // Welle KI-F3: der Kopfsatz eines Bedarfskatalogs - die einzige Maske der
+        // Welle, die ihr Daten-Objekt anmeldet und damit die Markup-Probe traegt.
+        { KiMaskennamen.TYPSTAMM, "EPOS.UI/Dialoge/Bedarf/TypStammDialog.razor" },
+
+        // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
+        // Bezeichner stehen beide im Markup.
+        { KiMaskennamen.WAERMEBEDARF_EXTERN,
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" }
     };
 
     /// <summary>
@@ -463,7 +607,46 @@ public class KiDialogkatalogTests
             "der gewählten Zeile; Zeuge ist WaermesenkeDialogTests",
         [KiMaskennamen.KOMPONENTENKONFIGURATION] =
             "bindet über die Sichtklasse KomponentenKonfigurationKiSicht auf ZWEI " +
-            "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests"
+            "Arbeitskopien; Zeuge ist KomponentenKonfigurationDialogTests",
+        [KiMaskennamen.GEBAEUDE] =
+            "bindet über die Sichtklasse GebaeudeKiSicht auf die Filterfelder und den " +
+            "Detailblock der Maske; Zeuge ist GebaeudeDialogTests",
+        [KiMaskennamen.GEBAEUDE_WOHNFLAECHE] =
+            "bindet über die Sichtklasse GebaeudeWohnflaecheKiSicht auf die lebenden " +
+            "Eingabefelder; Zeuge ist GebaeudeWohnflaecheDialogTests",
+        [KiMaskennamen.GEBAEUDE_KATALOG] =
+            "bindet über die Sichtklasse GebaeudeKatalogKiSicht auf BEIDE Reiterblätter; " +
+            "Zeuge ist GebaeudeKatalogDialogTests",
+        [KiMaskennamen.GEBAEUDE_BEDARF] =
+            "bindet über die Sichtklasse GebaeudeBedarfKiSicht auf den eingefrorenen " +
+            "Satz und die zwei Bedienelemente; Zeuge ist GebaeudeBedarfDialogTests",
+        [KiMaskennamen.GEBAEUDETYP] =
+            "bindet über die Sichtklasse GebaeudetypKiSicht auf die Listenwahl der " +
+            "Maske; Zeuge ist GebaeudetypDialogTests",
+        [KiMaskennamen.TYPPROFIL] =
+            "bindet über die Sichtklasse TypProfilKiSicht auf die Listenwahl der " +
+            "Maske; Zeuge ist TypProfilDialogTests",
+        [KiMaskennamen.BEDARFSPROFILE] =
+            "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
+            "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
+        [KiMaskennamen.PROZESSWAERME_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.STROMVERBRAUCHER_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.BRAUCHWASSER_ADMIN] =
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
+            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+        [KiMaskennamen.BEDARF_ERGEBNIS] =
+            "bindet über die Sichtklasse BedarfErgebnisKiSicht auf die vier Schalter " +
+            "der Anzeige; Zeuge ist BedarfErgebnisDialogTests",
+        [KiMaskennamen.SOLARGANGLINIE] =
+            "bindet über die Sichtklasse SolarganglinieKiSicht auf Katalogwahl und " +
+            "Detailblock; Zeuge ist SolarganglinieDialogTests",
+        [KiMaskennamen.KLIMADATEN] =
+            "bindet über die Sichtklasse KlimadatenKiSicht auf die lebenden Felder " +
+            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests"
     };
 
     /// <summary>

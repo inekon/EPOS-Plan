@@ -47,6 +47,7 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog epos-bedarf-admin" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
@@ -369,6 +370,8 @@
             ?? Katalogfilterregister.Stand(Katalogprofil?.Schluessel ?? ("BEDARF_" + Art));
 
         KatalogLaden();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaske, () => KiSicht(), KiHaken());
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -377,6 +380,61 @@
         _ersterAufbau = false;
         await _wurzel.FocusAsync();
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest den Katalog (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BedarfAdminKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Der Katalogschlüssel DIESER Ausprägung. Die drei Verwaltungen sind drei Masken
+    /// mit eigenem Namen und eigenem Navigationsziel; gezeichnet wird dieselbe
+    /// Komponente.
+    /// </summary>
+    public string KiMaske => Art switch
+    {
+        BedarfsArt.Stromverbraucher => KiMaskennamen.STROMVERBRAUCHER_ADMIN,
+        BedarfsArt.Brauchwasser     => KiMaskennamen.BRAUCHWASSER_ADMIN,
+        _                           => KiMaskennamen.PROZESSWAERME_ADMIN
+    };
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Listenwahl und der Infoblock, der ihr folgt.
+    /// </summary>
+    private BedarfAdminKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BedarfAdminKiSicht
+        {
+            SatzLesen = () => _gewaehlt,
+            SatzSetzen = BeiZeile,
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(
+                _katalog, z => z.Bezeichner, z => z.Bezeichner),
+
+            BeschreibungLesen = () => _beschreibung,
+            TypLesen = () => _typ,
+            JahressummeLesen = () => _jahressumme,
+            BedarfsartLesen = () => Art.ToString()
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Nur Auffrischen.</b> Diese Maske schreibt nicht selbst: Anlegen und Ändern
+    /// laufen über ihre Überlagerungen, Löschen ist ein Löschweg und bleibt dem
+    /// Assistenten verschlossen (Bauartsperre). <c>dialog_speichern</c> lehnt deshalb
+    /// benannt ab.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// Lädt die Liste neu — <c>SetControls</c> des Vorläufers. Er wählte danach die

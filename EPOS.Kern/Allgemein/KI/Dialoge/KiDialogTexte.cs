@@ -99,6 +99,15 @@
         /// </summary>
         internal const string EINHEIT_W_MK = "W/(m·K)";
 
+        /// <summary>Einheit einer Waermeleistung in Watt (Welle KI-F3).</summary>
+        internal const string EINHEIT_W = "W";
+
+        /// <summary>Einheit eines Waermedurchgangskoeffizienten (Welle KI-F3).</summary>
+        internal const string EINHEIT_W_M2K = "W/(m²·K)";
+
+        /// <summary>Einheit einer Luftwechselrate (Welle KI-F3).</summary>
+        internal const string EINHEIT_1_H = "1/h";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -784,6 +793,282 @@
         internal static string KkonfGrenzeErl => MyResource.Resource.KI_DLG_KKONF_GRENZE_ERL;
         internal static string KkonfTraegerName => MyResource.Resource.ETW_LBL_ART;
         internal static string KkonfTraegerErl => MyResource.Resource.KI_DLG_KKONF_TRAEGER_ERL;
+
+        // ======================= Gebaeude im Projekt und im Katalog (Welle KI-F3)
+
+        /// <summary>Die vierzehnte Maske (Welle KI-F3): die Gebaeudemaske.</summary>
+        internal static string MaskeGebaeude => MyResource.Resource.KI_DLG_MASKE_GEB;
+
+        /// <summary>Die fuenfzehnte Maske (Welle KI-F3): die Wohn-/Nutzflaechenangabe.</summary>
+        internal static string MaskeGebaeudeWohnflaeche => MyResource.Resource.KI_DLG_MASKE_GEBW;
+
+        /// <summary>Die sechzehnte Maske (Welle KI-F3): der Gebaeude-Katalogeditor.</summary>
+        internal static string MaskeGebaeudeKatalog => MyResource.Resource.KI_DLG_MASKE_GEBK;
+
+        internal static string GebVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
+        internal static string GebVerwendungErl => MyResource.Resource.KI_DLG_GEB_VERWENDUNG_ERL;
+        internal static string GebFilterArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
+        internal static string GebFilterArtErl => MyResource.Resource.KI_DLG_GEB_FILTER_ART_ERL;
+        internal static string GebFilterBaujahrName => MyResource.Resource.GEB_LBL_BAUJAHR;
+        internal static string GebFilterBaujahrErl => MyResource.Resource.KI_DLG_GEB_FILTER_BAUJAHR_ERL;
+        internal static string GebSucheName => MyResource.Resource.GEB_LBL_SUCHE;
+        internal static string GebSucheErl => MyResource.Resource.KI_DLG_GEB_SUCHE_ERL;
+        internal static string GebNameName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
+        internal static string GebNameErl => MyResource.Resource.KI_DLG_GEB_NAME_ERL;
+        internal static string GebArtName => MyResource.Resource.GEB_LBL_GEBAEUDEART;
+        internal static string GebArtErl => MyResource.Resource.KI_DLG_GEB_ART_ERL;
+        internal static string GebBeschreibungName => MyResource.Resource.GEB_LBL_BESCHREIBUNG;
+        internal static string GebBeschreibungErl => MyResource.Resource.KI_DLG_GEB_BESCHREIBUNG_ERL;
+        internal static string GebWohnflaecheName => MyResource.Resource.GEB_LBL_WOHNFLAECHE;
+        internal static string GebWohnflaecheErl => MyResource.Resource.KI_DLG_GEB_WOHNFLAECHE_ERL;
+        internal static string GebAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
+        internal static string GebAngabeartErl => MyResource.Resource.KI_DLG_GEB_ANGABEART_ERL;
+        internal static string GebVerwaltungName => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_NAME;
+        internal static string GebVerwaltungErl => MyResource.Resource.KI_DLG_GEB_VERWALTUNG_ERL;
+
+        internal static string GebwBedarfsartName => MyResource.Resource.GEBW_LBL_BEDARFSART;
+        internal static string GebwBedarfsartErl => MyResource.Resource.KI_DLG_GEBW_BEDARFSART_ERL;
+        internal static string GebwWertName => MyResource.Resource.GEBW_LBL_VERBRAUCH;
+        internal static string GebwWertErl => MyResource.Resource.KI_DLG_GEBW_WERT_ERL;
+        internal static string GebwNutzungsgradName => MyResource.Resource.GEBW_LBL_NUTZUNGSGRAD;
+        internal static string GebwNutzungsgradErl => MyResource.Resource.KI_DLG_GEBW_NUTZUNGSGRAD_ERL;
+        internal static string GebwDezentralName => MyResource.Resource.GEBW_LBL_DEZ_WARMWASSER;
+        internal static string GebwDezentralErl => MyResource.Resource.KI_DLG_GEBW_DEZENTRAL_ERL;
+        internal static string GebwNameName => MyResource.Resource.GEBW_LBL_GEBAEUDENAME;
+        internal static string GebwNameErl => MyResource.Resource.KI_DLG_GEBW_NAME_ERL;
+        internal static string GebwArtName => MyResource.Resource.GEBW_LBL_GEBAEUDEART;
+        internal static string GebwArtErl => MyResource.Resource.KI_DLG_GEBW_ART_ERL;
+        internal static string GebwBeschreibungName => MyResource.Resource.GEBW_LBL_BESCHREIBUNG;
+        internal static string GebwBeschreibungErl => MyResource.Resource.KI_DLG_GEBW_BESCHREIBUNG_ERL;
+        internal static string GebwBaujahrName => MyResource.Resource.GEBW_LBL_BAUJAHR;
+        internal static string GebwBaujahrErl => MyResource.Resource.KI_DLG_GEBW_BAUJAHR_ERL;
+        internal static string GebwAngabeartName => MyResource.Resource.GEBW_LBL_ART_ANGABE;
+        internal static string GebwAngabeartErl => MyResource.Resource.KI_DLG_GEBW_ANGABEART_ERL;
+
+        internal static string GebkNameName => MyResource.Resource.GEBK_LBL_NAME;
+        internal static string GebkNameErl => MyResource.Resource.KI_DLG_GEBK_NAME_ERL;
+        internal static string GebkTypName => MyResource.Resource.GEBK_LBL_GEBAEUDETYP;
+        internal static string GebkTypErl => MyResource.Resource.KI_DLG_GEBK_TYP_ERL;
+        internal static string GebkBeschreibungName => MyResource.Resource.GEBK_LBL_BESCHREIBUNG;
+        internal static string GebkBeschreibungErl => MyResource.Resource.KI_DLG_GEBK_BESCHREIBUNG_ERL;
+        internal static string GebkArtName => MyResource.Resource.GEBK_LBL_GEBAEUDEART;
+        internal static string GebkArtErl => MyResource.Resource.KI_DLG_GEBK_ART_ERL;
+        internal static string GebkBaujahrName => MyResource.Resource.GEBK_LBL_BAUJAHR;
+        internal static string GebkBaujahrErl => MyResource.Resource.KI_DLG_GEBK_BAUJAHR_ERL;
+        internal static string GebkVerwendungName => MyResource.Resource.GEBK_LBL_VERWENDUNG;
+        internal static string GebkVerwendungErl => MyResource.Resource.KI_DLG_GEBK_VERWENDUNG_ERL;
+        internal static string GebkBauartName => MyResource.Resource.GEBK_LBL_BAUART;
+        internal static string GebkBauartErl => MyResource.Resource.KI_DLG_GEBK_BAUART_ERL;
+        internal static string GebkWohnflaecheName => MyResource.Resource.GEBK_LBL_WOHNFLAECHE;
+        internal static string GebkWohnflaecheErl => MyResource.Resource.KI_DLG_GEBK_WOHNFLAECHE_ERL;
+        internal static string GebkFlaecheNutzerName => MyResource.Resource.GEBK_LBL_FLAECHE_NUTZER;
+        internal static string GebkFlaecheNutzerErl => MyResource.Resource.KI_DLG_GEBK_FLAECHE_NUTZER_ERL;
+        internal static string GebkWaermegewinneName => MyResource.Resource.GEBK_LBL_WAERMEGEWINNE;
+        internal static string GebkWaermegewinneErl => MyResource.Resource.KI_DLG_GEBK_WAERMEGEWINNE_ERL;
+        internal static string GebkDurchlassgradName => MyResource.Resource.GEBK_LBL_FENSTERDURCHLASS;
+        internal static string GebkDurchlassgradErl => MyResource.Resource.KI_DLG_GEBK_DURCHLASSGRAD_ERL;
+        internal static string GebkRaumhoeheName => MyResource.Resource.GEBK_LBL_RAUMHOEHE;
+        internal static string GebkRaumhoeheErl => MyResource.Resource.KI_DLG_GEBK_RAUMHOEHE_ERL;
+        internal static string GebkFfNordName => MyResource.Resource.GEBK_LBL_FF_NORD;
+        internal static string GebkFfNordErl => MyResource.Resource.KI_DLG_GEBK_FF_NORD_ERL;
+        internal static string GebkFfSuedName => MyResource.Resource.GEBK_LBL_FF_SUED;
+        internal static string GebkFfSuedErl => MyResource.Resource.KI_DLG_GEBK_FF_SUED_ERL;
+        internal static string GebkFfOstWestName => MyResource.Resource.GEBK_LBL_FF_OSTWEST;
+        internal static string GebkFfOstWestErl => MyResource.Resource.KI_DLG_GEBK_FF_OSTWEST_ERL;
+        internal static string GebkAussenwandName => MyResource.Resource.GEBK_LBL_FL_AUSSENWAND;
+        internal static string GebkAussenwandErl => MyResource.Resource.KI_DLG_GEBK_AUSSENWAND_ERL;
+        internal static string GebkDachflaecheName => MyResource.Resource.GEBK_LBL_DACHFLAECHE;
+        internal static string GebkDachflaecheErl => MyResource.Resource.KI_DLG_GEBK_DACHFLAECHE_ERL;
+        internal static string GebkGrundflaecheName => MyResource.Resource.GEBK_LBL_GRUNDFLAECHE;
+        internal static string GebkGrundflaecheErl => MyResource.Resource.KI_DLG_GEBK_GRUNDFLAECHE_ERL;
+        internal static string GebkSonstFlaechenName => MyResource.Resource.GEBK_LBL_SONST_FLAECHEN;
+        internal static string GebkSonstFlaechenErl => MyResource.Resource.KI_DLG_GEBK_SONST_FLAECHEN_ERL;
+        internal static string GebkUAussenwandName => MyResource.Resource.GEBK_LBL_U_AUSSENWAND;
+        internal static string GebkUAussenwandErl => MyResource.Resource.KI_DLG_GEBK_U_AUSSENWAND_ERL;
+        internal static string GebkUFensterName => MyResource.Resource.GEBK_LBL_U_FENSTER;
+        internal static string GebkUFensterErl => MyResource.Resource.KI_DLG_GEBK_U_FENSTER_ERL;
+        internal static string GebkUDachName => MyResource.Resource.GEBK_LBL_U_DACHFLAECHE;
+        internal static string GebkUDachErl => MyResource.Resource.KI_DLG_GEBK_U_DACH_ERL;
+        internal static string GebkUGrundName => MyResource.Resource.GEBK_LBL_U_GRUNDFLAECHE;
+        internal static string GebkUGrundErl => MyResource.Resource.KI_DLG_GEBK_U_GRUND_ERL;
+        internal static string GebkUSonstigesName => MyResource.Resource.GEBK_LBL_U_SONSTIGES;
+        internal static string GebkUSonstigesErl => MyResource.Resource.KI_DLG_GEBK_U_SONSTIGES_ERL;
+        internal static string GebkSollTagName => MyResource.Resource.GEBK_LBL_SOLL_TAG;
+        internal static string GebkSollTagErl => MyResource.Resource.KI_DLG_GEBK_SOLL_TAG_ERL;
+        internal static string GebkNachtName => MyResource.Resource.GEBK_LBL_NACHTABSENKUNG;
+        internal static string GebkNachtErl => MyResource.Resource.KI_DLG_GEBK_NACHT_ERL;
+        internal static string GebkMaxTemperaturName => MyResource.Resource.GEBK_LBL_MAXTEMPERATUR;
+        internal static string GebkMaxTemperaturErl => MyResource.Resource.KI_DLG_GEBK_MAX_TEMPERATUR_ERL;
+        internal static string GebkWochenendeName => MyResource.Resource.GEBK_LBL_WE_ABSENKUNG;
+        internal static string GebkWochenendeErl => MyResource.Resource.KI_DLG_GEBK_WOCHENENDE_ERL;
+        internal static string GebkSollFerienName => MyResource.Resource.GEBK_LBL_SOLL_FERIEN;
+        internal static string GebkSollFerienErl => MyResource.Resource.KI_DLG_GEBK_SOLL_FERIEN_ERL;
+        internal static string GebkFensterWandName => MyResource.Resource.GEBK_LBL_FENSTER_WAND;
+        internal static string GebkFensterWandErl => MyResource.Resource.KI_DLG_GEBK_FENSTER_WAND_ERL;
+        internal static string GebkWandDachName => MyResource.Resource.GEBK_LBL_WAND_DACH;
+        internal static string GebkWandDachErl => MyResource.Resource.KI_DLG_GEBK_WAND_DACH_ERL;
+        internal static string GebkWandKellerName => MyResource.Resource.GEBK_LBL_AUSSENWAND_KELLER;
+        internal static string GebkWandKellerErl => MyResource.Resource.KI_DLG_GEBK_WAND_KELLER_ERL;
+        internal static string GebkAnschlussFensterName => MyResource.Resource.GEBK_FELD_ANSCHLUSS_FENSTER;
+        internal static string GebkAnschlussFensterErl => MyResource.Resource.KI_DLG_GEBK_ANS_FENSTER_ERL;
+        internal static string GebkAnschlussDachName => MyResource.Resource.GEBK_FELD_ANSCHLUSS_DACH;
+        internal static string GebkAnschlussDachErl => MyResource.Resource.KI_DLG_GEBK_ANS_DACH_ERL;
+        internal static string GebkAnschlussKellerName => MyResource.Resource.GEBK_FELD_ANSCHLUSS_KELLER;
+        internal static string GebkAnschlussKellerErl => MyResource.Resource.KI_DLG_GEBK_ANS_KELLER_ERL;
+        internal static string GebkLuftwechselName => MyResource.Resource.GEBK_LBL_LUFTWECHSEL;
+        internal static string GebkLuftwechselErl => MyResource.Resource.KI_DLG_GEBK_LUFTWECHSEL_ERL;
+        internal static string GebkBetriebsartName => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_NAME;
+        internal static string GebkBetriebsartErl => MyResource.Resource.KI_DLG_GEBK_BETRIEBSART_ERL;
+
+        // ================= Bedarf: Gebaeudebedarf, Typen und Profile (Welle KI-F3)
+
+        /// <summary>Die siebzehnte Maske (Welle KI-F3): der Waermebedarf eines Gebaeudes.</summary>
+        internal static string MaskeGebaeudeBedarf => MyResource.Resource.KI_DLG_MASKE_GEBB;
+
+        /// <summary>Die achtzehnte Maske (Welle KI-F3): die Gebaeudetypen-Verwaltung.</summary>
+        internal static string MaskeGebaeudetyp => MyResource.Resource.KI_DLG_MASKE_GTYP;
+
+        /// <summary>Die neunzehnte Maske (Welle KI-F3): das Wochen-Stundenprofil eines Typs.</summary>
+        internal static string MaskeTypprofil => MyResource.Resource.KI_DLG_MASKE_TPROF;
+
+        /// <summary>Die zwanzigste Maske (Welle KI-F3): der Kopfsatz eines Bedarfskatalogs.</summary>
+        internal static string MaskeTypstamm => MyResource.Resource.KI_DLG_MASKE_TSTAMM;
+
+        internal static string GebbEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string GebbEinheitErl => MyResource.Resource.KI_DLG_GEBB_EINHEIT_ERL;
+        internal static string GebbSortiertName => MyResource.Resource.SIM_CHK_SORTIERT;
+        internal static string GebbSortiertErl => MyResource.Resource.KI_DLG_GEBB_SORTIERT_ERL;
+        internal static string GebbGebaeudeName => MyResource.Resource.GEB_LBL_GEBAEUDENAME;
+        internal static string GebbGebaeudeErl => MyResource.Resource.KI_DLG_GEBB_GEBAEUDE_ERL;
+        internal static string GebbHeizwaermeName => MyResource.Resource.GEBB_LBL_HEIZWAERME;
+        internal static string GebbHeizwaermeErl => MyResource.Resource.KI_DLG_GEBB_HEIZWAERME_ERL;
+        internal static string GebbMaxLastName => MyResource.Resource.SIMERG_LBL_MAX_WAERMELAST;
+        internal static string GebbMaxLastErl => MyResource.Resource.KI_DLG_GEBB_MAX_LAST_ERL;
+        internal static string GebbVollbenutzungName => MyResource.Resource.GEBB_LBL_VOLLBENUTZUNG;
+        internal static string GebbVollbenutzungErl => MyResource.Resource.KI_DLG_GEBB_VOLLBENUTZUNG_ERL;
+
+        internal static string GtypTypName => MyResource.Resource.GTYP_LBL_NAME;
+        internal static string GtypTypErl => MyResource.Resource.KI_DLG_GTYP_TYP_ERL;
+        internal static string GtypKurveName => MyResource.Resource.GTYP_LBL_KURVE;
+        internal static string GtypKurveErl => MyResource.Resource.KI_DLG_GTYP_KURVE_ERL;
+        internal static string GtypBeschreibungName => MyResource.Resource.GTYP_LBL_BESCHREIBUNG;
+        internal static string GtypBeschreibungErl => MyResource.Resource.KI_DLG_GTYP_BESCHREIBUNG_ERL;
+
+        internal static string TprofTypName => MyResource.Resource.BPRO_LBL_LISTE_STROM;
+        internal static string TprofTypErl => MyResource.Resource.KI_DLG_TPROF_TYP_ERL;
+        internal static string TprofWochentagName => MyResource.Resource.BPRO_LBL_WOCHENTAG;
+        internal static string TprofWochentagErl => MyResource.Resource.KI_DLG_TPROF_WOCHENTAG_ERL;
+        internal static string TprofBeschreibungName => MyResource.Resource.BPRO_LBL_BESCHR_STROM;
+        internal static string TprofBeschreibungErl => MyResource.Resource.KI_DLG_TPROF_BESCHREIBUNG_ERL;
+
+        internal static string TstammNameName => MyResource.Resource.BTYP_LBL_NAME;
+        internal static string TstammNameErl => MyResource.Resource.KI_DLG_TSTAMM_NAME_ERL;
+        internal static string TstammTypName => MyResource.Resource.BTYP_LBL_TYP_STROM;
+        internal static string TstammTypErl => MyResource.Resource.KI_DLG_TSTAMM_TYP_ERL;
+        internal static string TstammBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
+        internal static string TstammBeschreibungErl => MyResource.Resource.KI_DLG_TSTAMM_BESCHREIBUNG_ERL;
+
+        // =========== Bedarfsprofile, Katalogverwaltungen, Ergebnis (Welle KI-F3)
+
+        /// <summary>Die einundzwanzigste Maske (Welle KI-F3): die Bedarfsprofile eines Projekts.</summary>
+        internal static string MaskeBedarfsprofile => MyResource.Resource.KI_DLG_MASKE_BPF;
+
+        /// <summary>Die Prozesswaerme-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeProzesswaermeAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_PROZ;
+
+        /// <summary>Die Stromverbraucher-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeStromverbraucherAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_STROM;
+
+        /// <summary>Die Brauchwasser-Katalogverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeBrauchwasserAdmin => MyResource.Resource.KI_DLG_MASKE_BADM_BW;
+
+        /// <summary>Die Ergebnisanzeige eines Bedarfs (Welle KI-F3).</summary>
+        internal static string MaskeBedarfErgebnis => MyResource.Resource.KI_DLG_MASKE_BERG;
+
+        /// <summary>Welche der drei Auspraegungen offen ist (Welle KI-F3).</summary>
+        internal static string BedarfsartName => MyResource.Resource.KI_DLG_BEDARFSART_NAME;
+        internal static string BedarfsartErl => MyResource.Resource.KI_DLG_BEDARFSART_ERL;
+
+        internal static string BpfEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string BpfEinheitErl => MyResource.Resource.KI_DLG_BPF_EINHEIT_ERL;
+        internal static string BpfNeuerWertName => MyResource.Resource.BPF_LBL_NEUER_WERT;
+        internal static string BpfNeuerWertErl => MyResource.Resource.KI_DLG_BPF_NEUER_WERT_ERL;
+        internal static string BpfProfilName => MyResource.Resource.BTYP_LBL_NAME;
+        internal static string BpfProfilErl => MyResource.Resource.KI_DLG_BPF_PROFIL_ERL;
+        internal static string BpfTypName => MyResource.Resource.BPF_LBL_TYP;
+        internal static string BpfTypErl => MyResource.Resource.KI_DLG_BPF_TYP_ERL;
+        internal static string BpfBeschreibungName => MyResource.Resource.BTYP_LBL_BESCHREIBUNG;
+        internal static string BpfBeschreibungErl => MyResource.Resource.KI_DLG_BPF_BESCHREIBUNG_ERL;
+        internal static string BpfJahresverbrauchName => MyResource.Resource.BPF_LBL_JAHRESVERBRAUCH_PROZ;
+        internal static string BpfJahresverbrauchErl => MyResource.Resource.KI_DLG_BPF_JAHRESVERBRAUCH_ERL;
+        internal static string BpfSummeName => MyResource.Resource.BPF_LBL_SUMME_PROZ;
+        internal static string BpfSummeErl => MyResource.Resource.KI_DLG_BPF_SUMME_ERL;
+
+        internal static string BadmSatzName => MyResource.Resource.BADM_LBL_NAME;
+        internal static string BadmSatzErl => MyResource.Resource.KI_DLG_BADM_SATZ_ERL;
+        internal static string BadmTypName => MyResource.Resource.BADM_LBL_TYP;
+        internal static string BadmTypErl => MyResource.Resource.KI_DLG_BADM_TYP_ERL;
+        internal static string BadmBeschreibungName => MyResource.Resource.BADM_LBL_BESCHREIBUNG;
+        internal static string BadmBeschreibungErl => MyResource.Resource.KI_DLG_BADM_BESCHREIBUNG_ERL;
+        internal static string BadmJahressummeName => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_NAME;
+        internal static string BadmJahressummeErl => MyResource.Resource.KI_DLG_BADM_JAHRESSUMME_ERL;
+
+        internal static string BergEinheitName => MyResource.Resource.ALLG_LBL_EINHEIT;
+        internal static string BergEinheitErl => MyResource.Resource.KI_DLG_BERG_EINHEIT_ERL;
+        internal static string BergTabellensichtName => MyResource.Resource.KI_DLG_BERG_TABELLE_NAME;
+        internal static string BergTabellensichtErl => MyResource.Resource.KI_DLG_BERG_TABELLE_ERL;
+        internal static string BergGrafiksichtName => MyResource.Resource.KI_DLG_BERG_GRAFIK_NAME;
+        internal static string BergGrafiksichtErl => MyResource.Resource.KI_DLG_BERG_GRAFIK_ERL;
+        internal static string BergJahresverlaufName => MyResource.Resource.BERG_SCH_JAHRESVERLAUF;
+        internal static string BergJahresverlaufErl => MyResource.Resource.KI_DLG_BERG_JAHRESVERLAUF_ERL;
+
+        // ============ Waermebedarf, Solarganglinie und Klimadaten (Welle KI-F3)
+
+        /// <summary>Die externen Waermebedarfsganglinien eines Projekts (Welle KI-F3).</summary>
+        internal static string MaskeWaermebedarfExtern => MyResource.Resource.KI_DLG_MASKE_WBX;
+
+        /// <summary>Die Solarganglinien eines Projekts (Welle KI-F3).</summary>
+        internal static string MaskeSolarganglinie => MyResource.Resource.KI_DLG_MASKE_SGL;
+
+        /// <summary>Die Klimadatenverwaltung (Welle KI-F3).</summary>
+        internal static string MaskeKlimadaten => MyResource.Resource.KI_DLG_MASKE_KLIMA;
+
+        internal static string WbxKanalName => MyResource.Resource.KANAL_LABEL;
+        internal static string WbxKanalErl => MyResource.Resource.KI_DLG_WBX_KANAL_ERL;
+        internal static string WbxGanglinieName => MyResource.Resource.BHKWV_SP_NAME;
+        internal static string WbxGanglinieErl => MyResource.Resource.KI_DLG_WBX_GANGLINIE_ERL;
+
+        internal static string SglKatalogName => MyResource.Resource.SGL_LBL_KATALOGLISTE;
+        internal static string SglKatalogErl => MyResource.Resource.KI_DLG_SGL_KATALOG_ERL;
+        internal static string SglProjektName => MyResource.Resource.SGL_LBL_PROJEKTLISTE;
+        internal static string SglProjektErl => MyResource.Resource.KI_DLG_SGL_PROJEKT_ERL;
+        internal static string SglBeschreibungName => MyResource.Resource.SGL_LBL_BESCHREIBUNG;
+        internal static string SglBeschreibungErl => MyResource.Resource.KI_DLG_SGL_BESCHREIBUNG_ERL;
+
+        internal static string KlimaQuelleName => MyResource.Resource.KLIMA_QUELLE;
+        internal static string KlimaQuelleErl => MyResource.Resource.KI_DLG_KLIMA_QUELLE_ERL;
+        internal static string KlimaOrtName => MyResource.Resource.KLIMA_LBL_ORT;
+        internal static string KlimaOrtErl => MyResource.Resource.KI_DLG_KLIMA_ORT_ERL;
+        internal static string KlimaLaengeName => MyResource.Resource.KLIMA_LBL_LONGITUDE;
+        internal static string KlimaLaengeErl => MyResource.Resource.KI_DLG_KLIMA_LAENGE_ERL;
+        internal static string KlimaBreiteName => MyResource.Resource.KLIMA_LBL_LATITUDE;
+        internal static string KlimaBreiteErl => MyResource.Resource.KI_DLG_KLIMA_BREITE_ERL;
+        internal static string KlimaBezeichnungName => MyResource.Resource.KLIMA_LBL_BEZEICHNUNG;
+        internal static string KlimaBezeichnungErl => MyResource.Resource.KI_DLG_KLIMA_BEZEICHNUNG_ERL;
+        internal static string KlimaJahrName => MyResource.Resource.KLIMA_TRY_JAHR;
+        internal static string KlimaJahrErl => MyResource.Resource.KI_DLG_KLIMA_JAHR_ERL;
+        internal static string KlimaSzenarioName => MyResource.Resource.KLIMA_TRY_SZENARIO;
+        internal static string KlimaSzenarioErl => MyResource.Resource.KI_DLG_KLIMA_SZENARIO_ERL;
+        internal static string KlimaTryDateiName => MyResource.Resource.KLIMA_TRY_DATEI;
+        internal static string KlimaTryDateiErl => MyResource.Resource.KI_DLG_KLIMA_TRY_DATEI_ERL;
+        internal static string KlimaTryPaketName => MyResource.Resource.KLIMA_TRY_PAKET;
+        internal static string KlimaTryPaketErl => MyResource.Resource.KI_DLG_KLIMA_TRY_PAKET_ERL;
+
+        /// <summary>Der Knopf „Werte uebernehmen" des zweiten Reiterblatts (Welle KI-F3).</summary>
+        internal static string KnopfWerteUebernehmen => MyResource.Resource.GEBK_BTN_UEBERNEHMEN;
+
+        /// <summary>Der Knopf „Beenden" (Welle KI-F3).</summary>
+        internal static string KnopfBeenden => MyResource.Resource.GEBK_BTN_BEENDEN;
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;

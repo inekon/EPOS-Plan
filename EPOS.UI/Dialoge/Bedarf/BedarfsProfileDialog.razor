@@ -42,6 +42,7 @@
 @namespace EPOS.UI.Dialoge.Bedarf
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -550,7 +551,68 @@
 
         KatalogLaden();
         if (Zeilen.Count > 0) ProjektzeileWaehlen(Zeilen[0]);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BEDARFSPROFILE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest den Infoblock und ändert den Verbrauch (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BedarfsProfileKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder: die Anzeigeeinheit, den
+    /// neuen Jahresverbrauch und den Infoblock des markierten Profils.
+    /// </summary>
+    private BedarfsProfileKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BedarfsProfileKiSicht
+        {
+            EinheitLesen = () => EinheitIndex,
+            EinheitSetzen = EinheitWaehlen,
+            EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
+                Einheitenwahl, e => e.Id, e => e.Text),
+
+            NeuerWertLesen = () => _neuerWert,
+            NeuerWertSetzen = w => _neuerWert = w,
+
+            ProfilLesen = () => _infoName,
+            TypLesen = () => _infoTyp,
+            BeschreibungLesen = () => _infoBeschreibung,
+            JahresverbrauchLesen = () => Jahresverbrauch,
+            SummeLesen = () => Gesamtsumme,
+            BedarfsartLesen = () => Art.ToString()
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>„Speichern" heißt hier ÜBERNEHMEN</b> — der Weg des Knopfes, der den neuen
+    /// Jahresverbrauch in die markierte Projektzeile schreibt und die Maske stehen
+    /// lässt. Ohne markierte Zeile oder ohne Zahl lehnt er benannt ab, genau wie der
+    /// Knopf. Einen Schreibschutz kennt diese Maske nicht.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Speichern = () => Task.FromResult(KiUebernehmen())
+    };
+
+    private KiKern.KiErgebnis KiUebernehmen()
+    {
+        BeiUebernehmen();
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(_infoName, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// Die Einheit umschalten. Der eingegebene Wert WANDERT MIT — er stand in der

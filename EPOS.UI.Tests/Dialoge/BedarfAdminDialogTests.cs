@@ -594,4 +594,48 @@ public class BedarfAdminDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>BedarfAdminKiSicht</c>: Die Listenwahl ist ein WAHLFELD, und ein
+    /// Setzen zieht den Infoblock nach — derselbe Weg wie ein Klick in die Liste.
+    /// </summary>
+    [Theory]
+    [InlineData(BedarfsArt.Prozesswaerme, KiMaskennamen.PROZESSWAERME_ADMIN)]
+    [InlineData(BedarfsArt.Stromverbraucher, KiMaskennamen.STROMVERBRAUCHER_ADMIN)]
+    [InlineData(BedarfsArt.Brauchwasser, KiMaskennamen.BRAUCHWASSER_ADMIN)]
+    public void Jede_Auspraegung_meldet_sich_unter_ihrem_eigenen_Namen_an(
+        BedarfsArt art, string maske)
+    {
+        var cut = Aufbauen(art);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(maske));
+
+        WindowsFormsApplication1.KiFeldzugang satz =
+            KiMaskenbruecke.Feldzugang(maske, "satz");
+        Assert.NotNull(satz);
+        Assert.Equal(KATALOG[0], satz.Lesen());
+
+        KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(satz, KATALOG[2]);
+        Assert.True(umsetzung.Ok, umsetzung.Grund);
+        satz.Setzen(umsetzung.Wert);
+        cut.Render();
+
+        Assert.Equal(KATALOG[2], cut.Instance.Gewaehlt);
+
+        // Der Infoblock zieht nach - er ist der Grund, warum diese Maske trotz
+        // KI-D-Q5 im Katalog steht.
+        WindowsFormsApplication1.KiFeldzugang typ = KiMaskenbruecke.Feldzugang(maske, "typ");
+        Assert.NotNull(typ);
+        Assert.False(typ.Setzbar);
+        Assert.Equal("Typ " + KATALOG[2], typ.Lesen());
+
+        WindowsFormsApplication1.KiFeldzugang bedarfsart =
+            KiMaskenbruecke.Feldzugang(maske, "bedarfsart");
+        Assert.Equal(art.ToString(), bedarfsart.Lesen());
+    }
 }

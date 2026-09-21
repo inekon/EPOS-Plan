@@ -30,6 +30,7 @@
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -232,7 +233,49 @@
             Katalogprofil?.Schluessel ?? ("ZEITREIHE_" + Zeitreihenart.Solarganglinie));
 
         KatalogNeuLaden();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SOLARGANGLINIE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent liest die markierte Ganglinie (Welle KI-F3)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private SolarganglinieKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Katalogwahl und der Detailblock, der ihr folgt.
+    /// </summary>
+    private SolarganglinieKiSicht KiSicht()
+    {
+        return _kiSicht ??= new SolarganglinieKiSicht
+        {
+            KatalogLesen = () => _katalogGewaehlt,
+            KatalogSetzen = KatalogZeileWaehlen,
+            KatalogEintraege = () => KiMaskenanmeldung.Eintraege(
+                _katalog, z => z.Bezeichner, z => z.Bezeichner),
+
+            ProjektganglinieLesen = () => _projektZeile?.Bezeichner ?? "",
+            BeschreibungLesen = () => _beschreibung
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Die Zuordnungsliste gehört dem Wirt und geht erst mit
+    /// dem OK an ihn; die Katalogsätze pflegt die Verwaltung hinter „Bearbeiten…".
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

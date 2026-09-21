@@ -795,4 +795,60 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // Der neue Wert ist ein Zahlenfeld, also ein KURZES Feld.
         Assert.NotEmpty(cut.FindAll(".epos-formularraster .epos-feld--kurz"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F3)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>BedarfsProfileKiSicht</c>: Die Brücke liest den Infoblock des
+    /// markierten Profils und setzt den neuen Jahresverbrauch; <c>dialog_speichern</c>
+    /// nimmt den Weg des Knopfes „Übernehmen".
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_uebernimmt_den_Verbrauch()
+    {
+        var zeilen = new List<BedarfsProfilZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BEDARFSPROFILE));
+
+        WindowsFormsApplication1.KiFeldzugang profil =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "profil");
+        Assert.NotNull(profil);
+        Assert.False(profil.Setzbar);
+
+        WindowsFormsApplication1.KiFeldzugang wert =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "neuer_wert");
+        Assert.True(wert.Setzbar);
+
+        wert.Setzen(30.0);
+        cut.Render();
+        Assert.Equal(30.0, wert.Lesen());
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.BEDARFSPROFILE);
+        Assert.NotNull(haken.Speichern);
+        Assert.True(haken.Speichern!().Result.Erfolg);
+
+        // Die Zeile trägt den neuen Verbrauch - in MWh, der Einheit des Speicherwegs.
+        Assert.Equal(30.0, zeilen[0].Summe);
+    }
+
+    /// <summary>
+    /// <b>Die Ausprägung ist LESBAR</b> (Welle KI‑F3): Dieselbe Komponente pflegt
+    /// Prozesswärme, Stromverbraucher und Brauchwasser; der Assistent muss nicht
+    /// raten, welche offen ist.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_die_Bedarfsart_der_Maske()
+    {
+        Aufbauen(art: BedarfsArt.Brauchwasser);
+
+        WindowsFormsApplication1.KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.BEDARFSPROFILE, "bedarfsart");
+        Assert.NotNull(zugang);
+        Assert.False(zugang.Setzbar);
+        Assert.Equal(BedarfsArt.Brauchwasser.ToString(), zugang.Lesen());
+    }
 }

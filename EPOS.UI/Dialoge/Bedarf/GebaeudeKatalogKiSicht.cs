@@ -1,0 +1,400 @@
+﻿using KiKern;
+
+namespace EPOS.UI.Dialoge.Bedarf;
+
+/// <summary>
+/// Das FLACHE Abbild des Gebäude-Katalogeditors für den Hilfe-Assistenten (Welle KI‑F3).
+///
+/// <para><b>EIN Katalogeintrag, ZWEI Stände — und deshalb ein Sichtmodell.</b> Das erste
+/// Reiterblatt (Kenngrößen, Flächen, U‑Werte) bindet unmittelbar an
+/// <c>GebaeudeKatalogDaten</c>; das zweite (Raumtemperaturen, Wärmebrücken,
+/// Anschlussmaße, Luftwechsel) führt einen EIGENEN Arbeitsstand in den Feldern der Maske
+/// und gibt ihn erst mit „Werte übernehmen" in den Satz. Ein Katalog, der beide Blätter
+/// an den Satz hängte, schriebe in Zahlen, die die Maske im selben Augenblick wieder
+/// überschreibt. Diese Klasse legt sich über BEIDE Stände unter einem Namen — dieselbe
+/// Bauart wie <c>KomponentenKonfigurationKiSicht</c>.</para>
+///
+/// <para><b>Die sechs Klapplisten sind WAHLFELDER</b> (KI‑D‑Q6): Gebäudetyp, Gebäudeart,
+/// Baujahr, Verwendung und Bauart. Die VERWENDUNG trägt als Schlüssel ihren Steuerwert
+/// und nicht den Anzeigetext; die BAUART zieht die Bauweise nach, genau wie die
+/// Klappliste.</para>
+///
+/// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff ihren
+/// Delegaten bzw. liest den lebenden Satz.</para>
+/// </summary>
+public sealed class GebaeudeKatalogKiSicht
+{
+    // =====================================================================
+    //  Der Satz des ERSTEN Reiterblatts
+    // =====================================================================
+
+    /// <summary>Liefert den Satz, den die Maske gerade führt; darf <c>null</c> liefern.</summary>
+    public Func<GebaeudeKatalogDaten?>? SatzLesen { get; init; }
+
+    private GebaeudeKatalogDaten? Satz => SatzLesen?.Invoke();
+
+    // =====================================================================
+    //  Die Zugriffswege des ZWEITEN Reiterblatts und des Namens
+    // =====================================================================
+
+    public Func<string>? NameLesen { get; init; }
+    public Action<string>? NameSetzen { get; init; }
+
+    public Action<int?>? BauartSetzen { get; init; }
+
+    public Func<double?>? SollTagLesen { get; init; }
+    public Action<double?>? SollTagSetzen { get; init; }
+
+    public Func<double?>? NachtabsenkungLesen { get; init; }
+    public Action<double?>? NachtabsenkungSetzen { get; init; }
+
+    public Func<double?>? MaxTemperaturLesen { get; init; }
+    public Action<double?>? MaxTemperaturSetzen { get; init; }
+
+    public Func<double?>? WochenendabsenkungLesen { get; init; }
+    public Action<double?>? WochenendabsenkungSetzen { get; init; }
+
+    public Func<double?>? SollFerienLesen { get; init; }
+    public Action<double?>? SollFerienSetzen { get; init; }
+
+    public Func<double?>? WbvkFensterWandLesen { get; init; }
+    public Action<double?>? WbvkFensterWandSetzen { get; init; }
+
+    public Func<double?>? WbvkWandDachLesen { get; init; }
+    public Action<double?>? WbvkWandDachSetzen { get; init; }
+
+    public Func<double?>? WbvkAussenwandKellerLesen { get; init; }
+    public Action<double?>? WbvkAussenwandKellerSetzen { get; init; }
+
+    public Func<double?>? AnschlussFensterWandLesen { get; init; }
+    public Action<double?>? AnschlussFensterWandSetzen { get; init; }
+
+    public Func<double?>? AnschlussWandDachLesen { get; init; }
+    public Action<double?>? AnschlussWandDachSetzen { get; init; }
+
+    public Func<double?>? AnschlussAussenwandKellerLesen { get; init; }
+    public Action<double?>? AnschlussAussenwandKellerSetzen { get; init; }
+
+    public Func<double?>? LuftwechselrateLesen { get; init; }
+    public Action<double?>? LuftwechselrateSetzen { get; init; }
+
+    public Func<string>? BetriebsartLesen { get; init; }
+
+    // =====================================================================
+    //  Die Einträge der fünf Wahlfelder (KI-D-Q6)
+    // =====================================================================
+
+    public Func<IReadOnlyList<KiWahleintrag>>? TypEintraege { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? GebaeudeartEintraege { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? BaualtersklasseEintraege { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? VerwendungEintraege { get; init; }
+    public Func<IReadOnlyList<KiWahleintrag>>? BauartEintraege { get; init; }
+
+    /// <summary>Die Gebäudetypen des Katalogs.</summary>
+    public IReadOnlyList<KiWahleintrag> TypWahl
+        => TypEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Gebäudearten des Katalogs.</summary>
+    public IReadOnlyList<KiWahleintrag> GebaeudeartWahl
+        => GebaeudeartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Die Baualtersklassen A…U; der Schlüssel ist ihr Listenplatz.</summary>
+    public IReadOnlyList<KiWahleintrag> BaualtersklasseWahl
+        => BaualtersklasseEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Wohngebäude oder Gewerbe; der Schlüssel ist der Steuerwert.</summary>
+    public IReadOnlyList<KiWahleintrag> VerwendungWahl
+        => VerwendungEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    /// <summary>Leichte, schwere oder sehr schwere Bauart.</summary>
+    public IReadOnlyList<KiWahleintrag> BauartWahl
+        => BauartEintraege?.Invoke() ?? Array.Empty<KiWahleintrag>();
+
+    // =====================================================================
+    //  Kenngrößen — das erste Reiterblatt
+    // =====================================================================
+
+    /// <summary>
+    /// Der Bezeichner des Satzes. In der KATALOGVERWALTUNG wählt er den Satz aus,
+    /// den die Maske lädt — denselben Weg nimmt dort die Klappliste; in den beiden
+    /// anderen Betriebsarten benennt er den Satz, der geschrieben wird.
+    /// </summary>
+    public string Name
+    {
+        get => NameLesen?.Invoke() ?? "";
+        set => NameSetzen?.Invoke(value ?? "");
+    }
+
+    /// <summary>Der Gebäudetyp aus dem Typkatalog; er bringt die Tagesverteilungen mit.</summary>
+    public string Typ
+    {
+        get => Satz?.Typ ?? "";
+        set { if (Satz is GebaeudeKatalogDaten d) d.Typ = value ?? ""; }
+    }
+
+    /// <summary>Der Freitext des Satzes.</summary>
+    public string Beschreibung
+    {
+        get => Satz?.Beschreibung ?? "";
+        set { if (Satz is GebaeudeKatalogDaten d) d.Beschreibung = value ?? ""; }
+    }
+
+    /// <summary>Die Gebäudeart (Einfamilienhaus, Bürogebäude …).</summary>
+    public string Gebaeudeart
+    {
+        get => Satz?.Gebaeudeart ?? "";
+        set { if (Satz is GebaeudeKatalogDaten d) d.Gebaeudeart = value ?? ""; }
+    }
+
+    /// <summary>Die Baualtersklasse als Platz in der Klappliste.</summary>
+    public int Baualtersklasse
+    {
+        get => Satz?.Baualtersklasse ?? 0;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Baualtersklasse = value; }
+    }
+
+    /// <summary>
+    /// Die Verwendung als STEUERWERT (nicht als Anzeigetext): Sie entscheidet, aus
+    /// welcher Liste die Gebäudearten kommen.
+    /// </summary>
+    public string Verwendung
+    {
+        get => Satz?.Verwendung ?? "";
+        set { if (Satz is GebaeudeKatalogDaten d) d.Verwendung = value ?? ""; }
+    }
+
+    /// <summary>
+    /// Die Bauart als Platz in der Klappliste. Ein Setzen zieht die BAUWEISE nach —
+    /// derselbe Weg, den die Klappliste geht.
+    /// </summary>
+    public int Bauart
+    {
+        get => Satz?.Bauart ?? 0;
+        set => BauartSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die gesamte Wohn- oder Nutzfläche [m²].</summary>
+    public double? WohnflaecheGesamt
+    {
+        get => Satz?.WohnflaecheGesamt;
+        set { if (Satz is GebaeudeKatalogDaten d) d.WohnflaecheGesamt = value; }
+    }
+
+    /// <summary>Die Fläche je Nutzer [m²].</summary>
+    public double? FlaecheNutzer
+    {
+        get => Satz?.FlaecheNutzer;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FlaecheNutzer = value; }
+    }
+
+    /// <summary>Die inneren Wärmegewinne [W].</summary>
+    public double? Waermegewinne
+    {
+        get => Satz?.Waermegewinne;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Waermegewinne = value; }
+    }
+
+    /// <summary>Der Gesamtenergiedurchlassgrad der Fenster als Anteil (z. B. 0,4).</summary>
+    public double? Fensterdurchlassgrad
+    {
+        get => Satz?.Fensterdurchlassgrad;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Fensterdurchlassgrad = value; }
+    }
+
+    /// <summary>Die mittlere Raumhöhe [m].</summary>
+    public double? Raumhoehe
+    {
+        get => Satz?.Raumhoehe;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Raumhoehe = value; }
+    }
+
+    // =====================================================================
+    //  Flächen [m²]
+    // =====================================================================
+
+    /// <summary>Die Fensterfläche nach Norden [m²].</summary>
+    public double? FensterflaecheNord
+    {
+        get => Satz?.FensterflaecheNord;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheNord = value; }
+    }
+
+    /// <summary>Die Fensterfläche nach Süden [m²].</summary>
+    public double? FensterflaecheSued
+    {
+        get => Satz?.FensterflaecheSued;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheSued = value; }
+    }
+
+    /// <summary>Die Fensterfläche nach Osten und Westen zusammen [m²].</summary>
+    public double? FensterflaecheOstWest
+    {
+        get => Satz?.FensterflaecheOstWest;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FensterflaecheOstWest = value; }
+    }
+
+    /// <summary>Die Außenwandfläche ohne Fenster [m²].</summary>
+    public double? FlaecheAussenwand
+    {
+        get => Satz?.FlaecheAussenwand;
+        set { if (Satz is GebaeudeKatalogDaten d) d.FlaecheAussenwand = value; }
+    }
+
+    /// <summary>Die Dachfläche [m²].</summary>
+    public double? Dachflaeche
+    {
+        get => Satz?.Dachflaeche;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Dachflaeche = value; }
+    }
+
+    /// <summary>Die Grundfläche gegen Erdreich oder Keller [m²].</summary>
+    public double? Grundflaeche
+    {
+        get => Satz?.Grundflaeche;
+        set { if (Satz is GebaeudeKatalogDaten d) d.Grundflaeche = value; }
+    }
+
+    /// <summary>Die übrigen wärmeübertragenden Flächen [m²].</summary>
+    public double? SonstigeFlaechen
+    {
+        get => Satz?.SonstigeFlaechen;
+        set { if (Satz is GebaeudeKatalogDaten d) d.SonstigeFlaechen = value; }
+    }
+
+    // =====================================================================
+    //  U-Werte [W/(m²·K)]
+    // =====================================================================
+
+    /// <summary>Der U-Wert der Außenwand.</summary>
+    public double? UWertAussenwand
+    {
+        get => Satz?.UWertAussenwand;
+        set { if (Satz is GebaeudeKatalogDaten d) d.UWertAussenwand = value; }
+    }
+
+    /// <summary>Der U-Wert der Fenster.</summary>
+    public double? UWertFenster
+    {
+        get => Satz?.UWertFenster;
+        set { if (Satz is GebaeudeKatalogDaten d) d.UWertFenster = value; }
+    }
+
+    /// <summary>Der U-Wert der Dachfläche.</summary>
+    public double? UWertDachflaeche
+    {
+        get => Satz?.UWertDachflaeche;
+        set { if (Satz is GebaeudeKatalogDaten d) d.UWertDachflaeche = value; }
+    }
+
+    /// <summary>Der U-Wert der Grundfläche.</summary>
+    public double? UWertGrundflaeche
+    {
+        get => Satz?.UWertGrundflaeche;
+        set { if (Satz is GebaeudeKatalogDaten d) d.UWertGrundflaeche = value; }
+    }
+
+    /// <summary>Der U-Wert der übrigen Flächen.</summary>
+    public double? UWertSonstiges
+    {
+        get => Satz?.UWertSonstiges;
+        set { if (Satz is GebaeudeKatalogDaten d) d.UWertSonstiges = value; }
+    }
+
+    // =====================================================================
+    //  Raumtemperaturen — das ZWEITE Reiterblatt
+    // =====================================================================
+
+    /// <summary>Die Solltemperatur am Tag [°C].</summary>
+    public double? SollTag
+    {
+        get => SollTagLesen?.Invoke();
+        set => SollTagSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Nachtabsenkung [°C].</summary>
+    public double? Nachtabsenkung
+    {
+        get => NachtabsenkungLesen?.Invoke();
+        set => NachtabsenkungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die höchste zulässige Raumtemperatur [°C]; unter 1 gilt 24.</summary>
+    public double? MaxTemperatur
+    {
+        get => MaxTemperaturLesen?.Invoke();
+        set => MaxTemperaturSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Absenkung am Wochenende [°C]; über 0 schaltet sie den Betrieb ein.</summary>
+    public double? Wochenendabsenkung
+    {
+        get => WochenendabsenkungLesen?.Invoke();
+        set => WochenendabsenkungSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Solltemperatur in den Ferien [°C]; über 0 schaltet sie den Betrieb ein.</summary>
+    public double? SollFerien
+    {
+        get => SollFerienLesen?.Invoke();
+        set => SollFerienSetzen?.Invoke(value);
+    }
+
+    // =====================================================================
+    //  Wärmebrücken [W/(m·K)] und Anschlussmaße [m]
+    // =====================================================================
+
+    /// <summary>Der Wärmebrückenverlustkoeffizient Fenster–Wand.</summary>
+    public double? WbvkFensterWand
+    {
+        get => WbvkFensterWandLesen?.Invoke();
+        set => WbvkFensterWandSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Wärmebrückenverlustkoeffizient Wand–Dach.</summary>
+    public double? WbvkWandDach
+    {
+        get => WbvkWandDachLesen?.Invoke();
+        set => WbvkWandDachSetzen?.Invoke(value);
+    }
+
+    /// <summary>Der Wärmebrückenverlustkoeffizient Außenwand–Keller.</summary>
+    public double? WbvkAussenwandKeller
+    {
+        get => WbvkAussenwandKellerLesen?.Invoke();
+        set => WbvkAussenwandKellerSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Anschlusslänge Fenster–Wand [m].</summary>
+    public double? AnschlussFensterWand
+    {
+        get => AnschlussFensterWandLesen?.Invoke();
+        set => AnschlussFensterWandSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Anschlusslänge Wand–Dach [m].</summary>
+    public double? AnschlussWandDach
+    {
+        get => AnschlussWandDachLesen?.Invoke();
+        set => AnschlussWandDachSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Anschlusslänge Außenwand–Keller [m].</summary>
+    public double? AnschlussAussenwandKeller
+    {
+        get => AnschlussAussenwandKellerLesen?.Invoke();
+        set => AnschlussAussenwandKellerSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Luftwechselrate [1/h].</summary>
+    public double? Luftwechselrate
+    {
+        get => LuftwechselrateLesen?.Invoke();
+        set => LuftwechselrateSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Betriebsart der Maske — Bearbeiten, Neu oder Katalogverwaltung. Sie
+    /// entscheidet, welcher der beiden Speicherwege frei ist.
+    /// </summary>
+    public string Betriebsart => BetriebsartLesen?.Invoke() ?? "";
+}
