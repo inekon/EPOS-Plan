@@ -169,15 +169,26 @@ namespace WindowsFormsApplication1
 
                         foreach (DataRow tr in dtTyp.Rows)
                         {
-                            // Tab_Stromverbrauchertyp (Projekt) hat kein ID_Projekt; Verknuepfung ueber ID_Stromverbraucher.
-                            StringBuilder tc = new StringBuilder("ID, ID_Stromverbraucher, Typname, Beschreibung");
-                            StringBuilder tv = new StringBuilder("?, ?, ?, ?");
+                            // ANWENDERENTSCHEID 21.09.2026 (FK-1): ID_Projekt WIRD gesetzt -
+                            // wie in BrauchwasserStammCtrl und ProzesswaermeStammCtrl. Bis hierher
+                            // liess diese Stelle die Spalte weg, und das ging gut, solange die
+                            // Spalte nur DEFAULT 0 trug. Seit SCHEMASCHRITT 96 steht auf
+                            // Tab_Stromverbrauchertyp.ID_Projekt ein Fremdschluessel auf
+                            // Tab_Projekt(ID); ein Projekt 0 gibt es nicht, also scheiterte der
+                            // Insert, die ganze Kopie wurde zurueckgerollt, CopyFromStamm gab -1 -
+                            // und der Assistent schrieb daraufhin eine KATALOG-Id in
+                            // Z_Projekt_Stromverbraucher ("SQLite Error 19: FOREIGN KEY constraint
+                            // failed"). Die Verknuepfung ueber ID_Stromverbraucher bleibt; die
+                            // Projektspalte steht daneben, wie bei den zwei Schwestertabellen.
+                            StringBuilder tc = new StringBuilder("ID, ID_Stromverbraucher, ID_Projekt, Typname, Beschreibung");
+                            StringBuilder tv = new StringBuilder("?, ?, ?, ?, ?");
                             foreach (string col in profil) { tc.Append(", [" + col + "]"); tv.Append(", ?"); }
 
                             {
                                 List<DbParam> p = new List<DbParam>();
                                 p.Add(new DbParam("@tid", neuTypId++));
                                 p.Add(new DbParam("@tsv", neuSvId));
+                                p.Add(new DbParam("@tproj", idProjekt));
                                 p.Add(new DbParam("@ttypn", (object)typName ?? DBNull.Value));
                                 p.Add(new DbParam("@tbesch", ColOrNull(tr, "Beschreibung")));
                                 int k = 0;

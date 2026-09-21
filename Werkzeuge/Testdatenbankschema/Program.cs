@@ -1072,6 +1072,45 @@ namespace Testdatenbankschema
                     Console.WriteLine("Schritt 99 - " + a.Zeile() + ".");
             }
 
+            // ---- Schritt 100: die Vorgabe 0 der Fremdschluesselspalten faellt
+            //      (Anwenderentscheid 21.09.2026, Auftrag FK-1). DER VIERTE
+            //      TABELLENNEUBAU DIESES WERKZEUGS, und er steht ZULETZT UNTER ALLEN
+            //      SCHRITTEN: Er baut die betroffenen Tabellen vollstaendig neu, also
+            //      muss jede Spalte eines frueheren Schritts vorher dastehen - und er
+            //      findet seine Spalten ueber die Fremdschluessel, die erst Schritt 96
+            //      setzt. Die Anweisungen kommen aus FremdschluesselVorgabe - DERSELBEN
+            //      Quelle, aus der sich
+            //      SchemaMigration.Schritt_100_FremdschluesselVorgabe bedient; jede
+            //      Tabelle laeuft dort wie hier in ihrer eigenen Transaktion mit
+            //      abgeschalteten Fremdschluesseln.
+            //
+            //      REIN DDL, ergebnisneutral: Werte, Ids und AUTOINCREMENT-Staende
+            //      bleiben. Zeilen mit dem Wert 0 gibt es nicht - faende der Schritt
+            //      welche, braeche er benannt ab.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 100 - Fremdschluesselspalten mit der Vorgabe " +
+                              FremdschluesselVorgabe.VORGABE + ": " +
+                              FremdschluesselVorgabe.OffeneSpalten() + " in " +
+                              FremdschluesselVorgabe.Offen() + " Tabelle(n).");
+            if (!trocken)
+            {
+                var bericht100 = new List<string>();
+                int umgebaut100 = FremdschluesselVorgabe.Alle(bericht100);
+                foreach (string zeile in bericht100)
+                    Console.WriteLine("Schritt 100 - " + zeile);
+                Console.WriteLine("Schritt 100 - " + umgebaut100 + " Tabelle(n) neu aufgebaut, offen " +
+                                  FremdschluesselVorgabe.OffeneSpalten() + " Spalte(n) (erwartet 0).");
+            }
+            else
+            {
+                // --trocken zaehlt nur - und nennt jede Spalte, damit der Bericht
+                // nachlesbar macht, was der Lauf anfassen wuerde.
+                foreach (FremdschluesselVorgabe.Spalte s in FremdschluesselVorgabe.Betroffene())
+                    Console.WriteLine("Schritt 100 - " + s + ": Vorgabe " +
+                                      FremdschluesselVorgabe.VORGABE + ", Zeilen mit diesem Wert " +
+                                      FremdschluesselVorgabe.ZeilenMitVorgabe(s.Tabelle, s.Name) + ".");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

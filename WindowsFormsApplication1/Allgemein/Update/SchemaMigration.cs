@@ -3552,6 +3552,49 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_99_BHKW_WIRKUNGSGRAD_ANTEILE = 99;
 
+        /// <summary>
+        /// Schritt 100 — die <b>Vorgabe 0 der Fremdschlüsselspalten</b> fällt
+        /// (Anwenderentscheid vom 21.09.2026, Auftrag FK-1: „FK beheben, vor allen
+        /// anderen Aufgaben").
+        ///
+        /// <para><b>Der Befund.</b> Einundvierzig Fremdschlüsselspalten in
+        /// fünfundzwanzig Tabellen tragen <c>DEFAULT 0</c>, und KEINE Elterntabelle hat
+        /// eine Zeile 0. Jeder Schreibweg, der eine solche Spalte weglässt, bekam damit
+        /// still die 0 eingetragen — und die 0 verletzt die Beziehung. So entstand die
+        /// Gerätemeldung vom 21.09.2026: Der Typprofil-Insert in
+        /// <c>StromverbraucherStammCtrl.CopyFromStamm</c> liess <c>ID_Projekt</c> weg,
+        /// bekam die 0, und der Fremdschlüssel aus Schritt 96 wies sie ab — gemeldet
+        /// wurde das erst zwei Ebenen weiter oben beim Einfügen in
+        /// <c>Z_Projekt_Stromverbraucher</c>.</para>
+        ///
+        /// <para><b>Was der Schritt herstellt.</b> Dieselbe Spaltendefinition ohne ihr
+        /// <c>DEFAULT 0</c>. <c>NOT NULL</c> bleibt, wo es steht — und darauf kommt es
+        /// an: Eine weggelassene Spalte meldet ab hier <c>NOT NULL constraint failed:
+        /// &lt;Tabelle&gt;.&lt;Spalte&gt;</c>, also Ort und Sache im Klartext, statt
+        /// still eine 0 zu setzen. Wo die Spalte nullbar ist, heisst weggelassen NULL,
+        /// und NULL lässt SQLite bei einer Beziehung immer durch.</para>
+        ///
+        /// <para><b>Der Katalog wird GEMESSEN, nicht aufgezählt</b>
+        /// (<c>pragma_foreign_key_list</c> × <c>pragma_table_info</c>), der Zieltext
+        /// entsteht aus dem geltenden <c>sqlite_master.sql</c>, und der Umbau läuft mit
+        /// abgeschalteten Fremdschlüsseln — dasselbe Rezept wie Schritt 96, aus
+        /// demselben Grund (der Schritt baut ELTERNtabellen um). Alles steht bei
+        /// <see cref="FremdschluesselVorgabe"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>KEIN DML, ergebnisneutral.</b> Werte, Typen, Ids,
+        /// <c>sqlite_sequence</c>-Stände, Spaltenreihenfolge, Indizes und Sichten
+        /// bleiben. Zeilen mit dem Wert 0 gibt es nicht; fände der Schritt welche, bräche
+        /// er BENANNT ab, statt eine kaputte Beziehung zu zementieren. Der Referenzlauf
+        /// bleibt byte-gleich.</para>
+        ///
+        /// <para><b>Nach Schritt 96</b>, und das ist zwingend: 96 setzt die
+        /// Fremdschlüssel überhaupt erst, über die dieser Schritt seine Spalten
+        /// findet.</para>
+        /// </summary>
+        public const int SCHRITT_100_FREMDSCHLUESSEL_VORGABE = 100;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4892,6 +4935,28 @@ namespace WindowsFormsApplication1
                         "Wirkungsgrad bleibt unveraendert, und nur sie liest der " +
                         "Rechenweg.",
                         Schritt_99_BhkwWirkungsgradAnteile),
+
+            // ANWENDERENTSCHEID 21.09.2026 (Auftrag FK-1) - die Vorgabe 0 der
+            // Fremdschluesselspalten faellt. REIN DDL, kein DML; die Quelle ist
+            // FremdschluesselVorgabe. Er steht NACH 96 und das ist zwingend: 96 setzt
+            // die Fremdschluessel ueberhaupt erst, ueber die dieser Schritt seine
+            // Spalten findet. Er baut wie 96 ELTERNtabellen um und braucht deshalb
+            // dieselbe Transaktionsklammer mit abgeschalteten Fremdschluesseln.
+            new Schritt(SCHRITT_100_FREMDSCHLUESSEL_VORGABE,
+                        "Die Fremdschluesselspalten verlieren ihre Vorgabe 0",
+                        "41 Fremdschluesselspalten in 25 Tabellen trugen DEFAULT 0, und " +
+                        "keine Elterntabelle hat eine Zeile 0. Jeder Schreibweg, der eine " +
+                        "solche Spalte weglaesst, bekam damit still die 0 - und die 0 " +
+                        "verletzt die Beziehung; gemeldet wurde das irgendwo weiter vorn " +
+                        "als 'FOREIGN KEY constraint failed', ohne Tabelle und Spalte zu " +
+                        "nennen. Ab hier steht keine Vorgabe mehr dort. NOT NULL bleibt, " +
+                        "wo es steht: Eine weggelassene Spalte meldet jetzt sofort 'NOT " +
+                        "NULL constraint failed' MIT Tabelle und Spalte, und eine " +
+                        "nullbare Spalte wird NULL - was SQLite bei einer Beziehung immer " +
+                        "durchlaesst. Kein Wert wird angefasst; Zeilen mit dem Wert 0 " +
+                        "gibt es nicht, und faende der Schritt welche, braeche er benannt " +
+                        "ab.",
+                        Schritt_100_FremdschluesselVorgabe),
         };
 
         /// <summary>
@@ -7362,6 +7427,92 @@ namespace WindowsFormsApplication1
                     "nimmt ab hier seine Zeilen mit. Werte, Ids und Zaehlerstaende " +
                     "bleiben; entfernt wurde nur, was zu keinem Projekt gehoert - der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 100 - die Vorgabe 0 der Fremdschluesselspalten (Anwenderentscheid 21.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 100 — Anlass, Rezept und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_100_FREMDSCHLUESSEL_VORGABE"/> und ausführlich bei
+        /// <see cref="FremdschluesselVorgabe"/>.
+        ///
+        /// <para><b>Wie Schritt 96</b>: Zählung, Umbau über den Kern, Nachprobe. Der
+        /// Umbau selbst steht nicht hier — er braucht die Transaktionsklammer MIT
+        /// ABGESCHALTETEN FREMDSCHLÜSSELN, die nur
+        /// <c>DataRepository.VorgangOhneFremdschluessel</c> spannt.</para>
+        ///
+        /// <para><b>JE TABELLE EINE BERICHTSZEILE.</b> Eine Tabelle, die an ihrem Umbau
+        /// scheitert, hält den Schritt an; die vorher fertigen bleiben stehen, und der
+        /// nächste Lauf setzt dort fort (jede fertige Tabelle wird übersprungen).</para>
+        /// </summary>
+        private static bool Schritt_100_FremdschluesselVorgabe(Lauf l)
+        {
+            int offeneTabellen = FremdschluesselVorgabe.Offen();
+            int offeneSpalten = FremdschluesselVorgabe.OffeneSpalten();
+            l.Notiz("100: Fremdschluesselspalten mit der Vorgabe " +
+                    FremdschluesselVorgabe.VORGABE + ": " +
+                    offeneSpalten.ToString(CultureInfo.InvariantCulture) + " in " +
+                    offeneTabellen.ToString(CultureInfo.InvariantCulture) + " Tabelle(n).");
+
+            if (offeneSpalten == 0)
+            {
+                l.Notiz("100: nichts zu tun - keine Fremdschluesselspalte traegt noch eine Vorgabe.");
+                return true;
+            }
+
+            var bericht = new List<string>();
+            int umgebaut = 0;
+
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();          // Sammlung leeren
+                try
+                {
+                    foreach (string tabelle in FremdschluesselVorgabe.Tabellen())
+                        if (FremdschluesselVorgabe.Umbauen(tabelle, bericht)) umgebaut++;
+                }
+                catch (Exception ex)
+                {
+                    foreach (string zeile in bericht) l.Notiz("100: " + zeile);
+
+                    string text = (ex.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+                    if (text.Length > 300) text = text.Substring(0, 297) + "...";
+                    l.LetzterFehler = text;
+                    l.Notiz("100: FEHLER - " + text + " (" +
+                            umgebaut.ToString(CultureInfo.InvariantCulture) +
+                            " Tabelle(n) sind fertig und bleiben stehen; der Schritt ist " +
+                            "wiederholbar.)");
+                    return false;
+                }
+                finally
+                {
+                    DataRepository.StilleFehlerAbholen();
+                }
+            }
+
+            foreach (string zeile in bericht) l.Notiz("100: " + zeile);
+
+            // Die Nachprobe. Sie fragt dasselbe wie die Zaehlung vorher - steht jetzt
+            // noch eine Vorgabe, hat eine Tabelle ihren Umbau nicht bekommen.
+            int rest = FremdschluesselVorgabe.OffeneSpalten();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Fremdschluesselspalte(n) tragen nach dem Umbau weiter die " +
+                                  "Vorgabe " + FremdschluesselVorgabe.VORGABE + ".";
+                l.Notiz("100: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("100: " + umgebaut.ToString(CultureInfo.InvariantCulture) +
+                    " Tabelle(n) neu aufgebaut; keine Fremdschluesselspalte traegt mehr die " +
+                    "Vorgabe " + FremdschluesselVorgabe.VORGABE + ". Eine weggelassene Spalte " +
+                    "meldet ab hier NOT NULL mit Tabelle und Spalte statt still eine 0 zu " +
+                    "setzen. Werte, Ids und Zaehlerstaende bleiben - der Referenzlauf bleibt " +
+                    "byte-gleich.");
             return true;
         }
 

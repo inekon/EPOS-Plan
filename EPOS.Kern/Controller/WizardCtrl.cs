@@ -2459,30 +2459,6 @@ namespace WindowsFormsApplication1
             return DataRepository.ExecuteSQL(sql, ps);
         }
 
-        public bool Add_SP(int projektID, List<StromspeicherModel> list, DbVorgang vorgang = null)
-        {
-            // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
-            // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
-            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
-
-            foreach (var item in list)
-            {
-                string sql = @"INSERT INTO Tab_Energieanlagen 
-                               (ID_Projekt, Bezeichner, ID_Type, ID_SP) 
-                               VALUES (?, ?, ?, ?)";
-
-                DbParam[] ps = {
-                    new DbParam("@pID", projektID),
-                    new DbParam("@bez", item.m_szBezeichner ?? ""),
-                    new DbParam("@type", 4), // Typ 4 Stromspeicher
-                    new DbParam("@spID", item.m_ID)
-                };
-
-                if (!DataRepository.ExecuteSQL(sql, ps)) return false;
-            }
-            return true;
-        }
-
         public bool Add_WaermebedarfExtern(int projektID, List<Z_ProjWaermebedarfModel> list, DbVorgang vorgang = null)
         {
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
@@ -2534,8 +2510,24 @@ namespace WindowsFormsApplication1
             foreach (var item in list)
             {
                 // Stamm-Prozess (+ Typ-Profil) bei Bedarf ins Projekt kopieren und die Projekt-ID verwenden.
+                //
+                // KEIN RUECKFALL AUF DIE KATALOG-ID (Anwenderentscheid 21.09.2026, FK-1).
+                // Scheitert die Kopie, bricht der Schritt BENANNT ab. Bis hierher blieb
+                // item.ID_Prozesswaerme die KATALOG-Id und wanderte in
+                // Z_Projekt_Prozesswaerme, deren Fremdschluessel auf Tab_Prozesswaerme
+                // (die PROJEKTtabelle) zeigt - daraus wurde "FOREIGN KEY constraint
+                // failed" an einer Stelle, die mit der Ursache nichts zu tun hat. Eine
+                // Katalog-Id gehoert nie in eine Projektzuordnung.
                 int projPwId = ProzesswaermeStammCtrl.CopyFromStamm(item.szProzessname, projektID);
-                if (projPwId > 0) item.ID_Prozesswaerme = projPwId;
+                if (projPwId <= 0)
+                {
+                    DataRepository.FehlerMelden(
+                        "Die Prozesswaerme \"" + (item.szProzessname ?? "") + "\" konnte nicht in das " +
+                        "Projekt uebernommen werden - der Katalogsatz fehlt, oder die Kopie ist " +
+                        "gescheitert. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                item.ID_Prozesswaerme = projPwId;
 
                 string sql = "INSERT INTO Z_Projekt_Prozesswaerme (ID, ID_Projekt, ID_Prozesswaerme, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
@@ -2563,8 +2555,24 @@ namespace WindowsFormsApplication1
             foreach (var item in list)
             {
                 // Stamm-Stromverbraucher (+ Typ-Profil) bei Bedarf ins Projekt kopieren und die Projekt-ID verwenden.
+                //
+                // KEIN RUECKFALL AUF DIE KATALOG-ID (Anwenderentscheid 21.09.2026, FK-1).
+                // Genau hier wurde die Gerätemeldung sichtbar: Scheiterte die Kopie,
+                // blieb item.m_ID_Stromverbraucher die KATALOG-Id und wanderte in
+                // Z_Projekt_Stromverbraucher, deren Fremdschluessel auf
+                // Tab_Stromverbraucher (die PROJEKTtabelle) zeigt - "SQLite Error 19:
+                // FOREIGN KEY constraint failed", weit weg von der Ursache. Eine
+                // Katalog-Id gehoert nie in eine Projektzuordnung.
                 int projSvId = StromverbraucherStammCtrl.CopyFromStamm(item.m_szVerbraucher, projektID);
-                if (projSvId > 0) item.m_ID_Stromverbraucher = projSvId;
+                if (projSvId <= 0)
+                {
+                    DataRepository.FehlerMelden(
+                        "Der Stromverbraucher \"" + (item.m_szVerbraucher ?? "") + "\" konnte nicht in " +
+                        "das Projekt uebernommen werden - der Katalogsatz fehlt, oder die Kopie ist " +
+                        "gescheitert. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                item.m_ID_Stromverbraucher = projSvId;
 
                 string sql = "INSERT INTO Z_Projekt_Stromverbraucher (ID, ID_Projekt, ID_Stromverbraucher, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
@@ -2645,8 +2653,22 @@ namespace WindowsFormsApplication1
             foreach (var item in list)
             {
                 // Stamm-Brauchwasser (+ Typ-Profil) bei Bedarf ins Projekt kopieren und die Projekt-ID verwenden.
+                //
+                // KEIN RUECKFALL AUF DIE KATALOG-ID (Anwenderentscheid 21.09.2026, FK-1).
+                // Dasselbe Muster wie bei Prozesswaerme und Stromverbraucher: Scheitert
+                // die Kopie, bricht der Schritt BENANNT ab, statt die KATALOG-Id in
+                // Z_Projekt_Brauchwasser zu schreiben, deren Fremdschluessel auf
+                // Tab_Brauchwasser (die PROJEKTtabelle) zeigt.
                 int projBwId = BrauchwasserStammCtrl.CopyFromStamm(item.szBezeichner, projektID);
-                if (projBwId > 0) item.ID_Brauchwasser = projBwId;
+                if (projBwId <= 0)
+                {
+                    DataRepository.FehlerMelden(
+                        "Das Brauchwasser \"" + (item.szBezeichner ?? "") + "\" konnte nicht in das " +
+                        "Projekt uebernommen werden - der Katalogsatz fehlt, oder die Kopie ist " +
+                        "gescheitert. Die Zuordnung wurde nicht gespeichert.");
+                    return false;
+                }
+                item.ID_Brauchwasser = projBwId;
 
                 string sql = "INSERT INTO Z_Projekt_Brauchwasser (ID, ID_Projekt, ID_Brauchwasser, Bezeichner, Summe) VALUES (?, ?, ?, ?, ?)";
 
