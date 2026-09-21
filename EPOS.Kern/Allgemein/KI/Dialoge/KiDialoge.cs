@@ -232,6 +232,105 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Klimadatenverwaltung (<c>KlimadatenDialog</c>).</summary>
         public const string KLIMADATEN = "Form_Klimadaten";
+
+        // =================================================================
+        //  Welle KI-F4: KOSTEN und WIRTSCHAFTLICHKEIT
+        // =================================================================
+        //
+        // Sie gehen aus dem Menue „Administration -> Kosten", aus den zwei
+        // Knoepfen der Kostenseite und aus der Fussleiste der
+        // Wirtschaftlichkeitsseite auf. Die Schluessel sind auch hier die
+        // WinForms-Maskennamen des Bestands; jede Razor-Datei nennt ihren
+        // Vorlaeufer im Kopf.
+
+        /// <summary>
+        /// Die Energietraegerverwaltung (<c>EnergietraegerDialog</c>) samt
+        /// Traegerkarte und den beiden Preisbloecken.
+        /// </summary>
+        /// <remarks>
+        /// <b>EINE Maske, DREI Dateien.</b> <c>EnergietraegerEinstellungen</c> traegt
+        /// die Karte, <c>StrompreisDetails</c> und <c>BrennstoffBestandteile</c> je
+        /// einen aufklappbaren Preisblock; keiner davon geht in einem eigenen Fenster
+        /// auf. Ihre Werte sind deshalb Felder DIESER Maske - dieselbe Bauart wie die
+        /// Stammfelder der Waermepumpe.
+        /// </remarks>
+        public const string ENERGIETRAEGER = "Form_Energietraeger";
+
+        /// <summary>
+        /// „Energietraeger-Variante anlegen" (<c>EnergietraegerVarianteDialog</c>).
+        /// </summary>
+        public const string ENERGIETRAEGER_VARIANTE = "Form_Kosten_Auswahl";
+
+        /// <summary>
+        /// Die saisonalen Leistungspreis-Saetze eines Traegers
+        /// (<c>LeistungspreisReiheDialog</c>).
+        /// </summary>
+        public const string LEISTUNGSPREISREIHE = "Form_LeistungspreisReihe";
+
+        /// <summary>Das Kostenprofil eines Stromtraegers (<c>KostenprofilDialog</c>).</summary>
+        public const string KOSTENPROFIL = "Form_Kostenprofil";
+
+        /// <summary>Der Kostenfaktoren-Katalog (<c>KostenfaktorKatalogDialog</c>).</summary>
+        public const string KOSTENFAKTOR_KATALOG = "Form_KostenAdmin";
+
+        /// <summary>
+        /// Emissionsarten und ihr Wertekatalog (<c>EmissionskatalogDialog</c>).
+        /// </summary>
+        public const string EMISSIONSKATALOG = "Form_Emissionskatalog";
+
+        /// <summary>Die Nutzungsdauern (AfA) (<c>NutzungsdauerDialog</c>).</summary>
+        public const string NUTZUNGSDAUER = "Form_Nutzungsdauer";
+
+        /// <summary>Der Zeileneditor einer Kostenposition (<c>VorlagenPositionDialog</c>).</summary>
+        public const string VORLAGENPOSITION = "Form_VorlagenPosition";
+
+        /// <summary>
+        /// Worst- und Best-Case einer Kostenposition (<c>CaseEingabeDialog</c>).
+        /// </summary>
+        public const string CASE_EINGABE = "Form_CaseEingabe";
+
+        /// <summary>
+        /// Die Wirtschaftlichkeits-Parameter des Projekts
+        /// (<c>WirtschaftlichkeitParameterDialog</c>).
+        /// </summary>
+        public const string WIRTSCHAFTLICHKEIT_PARAMETER = "Form_WirtschaftlichkeitParameter";
+
+        /// <summary>
+        /// Die BHKW-Wirtschaftlichkeit (<c>BhkwWirtschaftlichkeitDialog</c>) — KWKG,
+        /// Energie- und Stromsteuer.
+        /// </summary>
+        public const string BHKW_WIRTSCHAFTLICHKEIT = "Form_BhkwWirtschaftlichkeit";
+
+        /// <summary>Die Tarifstruktur des Strombezugs (<c>TarifstrukturDialog</c>).</summary>
+        public const string TARIFSTRUKTUR = "Form_Tarifstruktur";
+
+        /// <summary>
+        /// Die Photovoltaik-Verguetung (<c>PhotovoltaikVerguetungDialog</c>).
+        /// </summary>
+        public const string PV_VERGUETUNG = "Form_PhotovoltaikVerguetung";
+
+        /// <summary>Die gesetzlichen Parameter (<c>GesetzeskatalogDialog</c>).</summary>
+        public const string GESETZESKATALOG = "Form_Gesetzesparameter";
+
+        /// <summary>
+        /// Der Zeileneditor der gesetzlichen Parameter
+        /// (<c>GesetzeskatalogZeileDialog</c>).
+        /// </summary>
+        public const string GESETZESKATALOG_ZEILE = "Form_GesetzparameterZeile";
+
+        // Die zwei REITERBLAETTER der Ansicht „Berichte und Kosten" haben nie eine
+        // WinForms-MASKE gehabt - ihre Vorlaeufer waren UserControls (UcBkKosten,
+        // UcWirtschaftlichkeit). Sie tragen deshalb, wie die Ansicht „Simulation",
+        // einen Schluessel ohne Form_-Vorsilbe.
+
+        /// <summary>Das Reiterblatt „Kosten" (<c>Seiten.Berichte.KostenSeite</c>).</summary>
+        public const string KOSTENSEITE = "Kostenseite";
+
+        /// <summary>
+        /// Das Reiterblatt „Wirtschaftlichkeit"
+        /// (<c>Seiten.Berichte.WirtschaftlichkeitSeite</c>).
+        /// </summary>
+        public const string WIRTSCHAFTLICHKEITSSEITE = "Wirtschaftlichkeitsseite";
     }
 
     /// <summary>
@@ -355,7 +454,1472 @@ namespace WindowsFormsApplication1
                 BedarfErgebnis(),
                 WaermebedarfExtern(),
                 Solarganglinie(),
-                Klimadaten());
+                Klimadaten(),
+                Energietraeger(),
+                EnergietraegerVariante(),
+                Leistungspreisreihe(),
+                Kostenprofil(),
+                Kostenfaktorkatalog(),
+                Emissionskatalog(),
+                Nutzungsdauer(),
+                Vorlagenposition(),
+                CaseEingabe(),
+                WirtschaftlichkeitParameter(),
+                BhkwWirtschaftlichkeit(),
+                Tarifstruktur(),
+                PhotovoltaikVerguetung(),
+                Gesetzeskatalog(),
+                GesetzeskatalogZeile(),
+                Kostenseite(),
+                Wirtschaftlichkeitsseite());
+        }
+
+        // =====================================================================
+        // Kostenseite  ->  Seiten.Berichte.KostenSeite   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Kosten" — drei Felder aus
+        /// <c>EPOS.UI.Seiten.Berichte.KostenSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Seite fuehrt genau EINEN Einstellwert</b>: die markierte Anlage. Sie
+        /// entscheidet, welche Komponente die Kostenverwaltung oeffnet und welche
+        /// Energietraegerzeile hervorgehoben steht. Alles andere - die drei
+        /// Kennzahlkarten, die Gegenueberstellung der Versionen, die Komponenten- und
+        /// die Traegertabelle - ist gerechnete ANZEIGE.
+        /// </para>
+        /// <para>
+        /// <b>Freigegeben ist sie trotzdem</b>, damit <c>dialog_lesen</c> nennt, woran
+        /// der Anwender arbeitet, und <c>feld_setzen</c> benannt ablehnt statt „Maske
+        /// nicht freigegeben" - dieselbe Begruendung wie bei der Solarganglinienmaske
+        /// der Welle KI-F3. Die VERGLEICHSWAHL bleibt draussen: Sie ist eine Menge von
+        /// Verweisen, und ein Maskenfeld traegt genau einen Wert.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Kostenseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENSEITE,
+                anzeigename: KiDialogTexte.MaskeKostenseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "KostenSeiteKiSicht.Anlage",
+                                     KiDialogTexte.KseAnlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KseAnlageErl, leerErlaubt: true),
+                    new KiDialogFeld("projektzeile", "KostenSeiteKiSicht.Projektzeile",
+                                     KiDialogTexte.KseProjektName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseProjektErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("statuszeile", "KostenSeiteKiSicht.Statuszeile",
+                                     KiDialogTexte.KseStatusName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
+        }
+
+        // =====================================================================
+        // Wirtschaftlichkeitsseite  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Wirtschaftlichkeit" — sechs Felder aus
+        /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Seite traegt Einstellwerte und ist deshalb drin.</b> Sie
+        /// entscheidet, WELCHE Staende gegeneinander gerechnet werden
+        /// (Vergleichssicht, Referenz, Paar A und B), unter WELCHEM Szenario - und sie
+        /// pflegt den Freitext der nicht monetaeren Wirkungen nach DIN EN 17463.
+        /// </para>
+        /// <para>
+        /// <b>Jedes dieser Felder ist an der Seite ein WEG und kein Wert</b>: Die
+        /// Seite holt sich zu jeder Wahl einen NEUEN Stand aus der Huelle und rechnet
+        /// das Warnband nach. Sie bindet deshalb ueber eine Sichtklasse, die jede
+        /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
+        /// Kapitalwertverlauf</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
+        /// Welche Varianten angehakt sind, ist eine Menge von Verweisen und kein
+        /// Feldwert.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Wirtschaftlichkeitsseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,
+                anzeigename: KiDialogTexte.MaskeWirtschaftsseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("szenario", "WirtschaftlichkeitSeiteKiSicht.Szenario",
+                                     KiDialogTexte.WseSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseSzenarioErl, leerErlaubt: true),
+                    new KiDialogFeld("vergleichssicht",
+                                     "WirtschaftlichkeitSeiteKiSicht.Vergleichssicht",
+                                     KiDialogTexte.WseSichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseSichtErl, leerErlaubt: true),
+                    new KiDialogFeld("referenz", "WirtschaftlichkeitSeiteKiSicht.Referenz",
+                                     KiDialogTexte.WseReferenzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseReferenzErl, leerErlaubt: true),
+                    new KiDialogFeld("stand_a", "WirtschaftlichkeitSeiteKiSicht.StandA",
+                                     KiDialogTexte.WseAName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseAErl, leerErlaubt: true),
+                    new KiDialogFeld("stand_b", "WirtschaftlichkeitSeiteKiSicht.StandB",
+                                     KiDialogTexte.WseBName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseBErl, leerErlaubt: true),
+                    new KiDialogFeld("nicht_monetaer",
+                                     "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
+                                     KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                });
+        }
+
+        // =====================================================================
+        // Form_WirtschaftlichkeitParameter  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Wirtschaftlichkeits-Parameter — 26 Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Drei Objekte, ein Feldsatz.</b> Zwoelf Felder gehoeren dem Parametersatz
+        /// des Projekts, vierzehn den zwei SZENARIOSAETZEN Best und Worst - je Groesse
+        /// eines. Sie zeigen den WIRKSAMEN Wert und nicht den gepflegten: Ein leeres
+        /// Feld gaebe es sonst fuer jede Vorgabe, und niemand saehe, womit gerechnet
+        /// wird. Gesetzt wird dagegen der gepflegte Wert - wer tippt, pflegt.
+        /// </para>
+        /// <para>
+        /// <b>Die Erwartet-Spalte der Szenariotabelle steht NICHT im Katalog</b>: Sie
+        /// wiederholt, was oben unter „Allgemein" gepflegt wird, und traegt deshalb
+        /// kein eigenes Feld. Ebenfalls draussen: die Herleitungszeilen, der Knopf
+        /// „Vorgaben" (er setzt alle vierzehn Szenariofelder zurueck - ein Weg, kein
+        /// Wert) und der Gesetzeskatalog, der als Ueberlagerung aufgeht und seinen
+        /// eigenen Schluessel traegt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog WirtschaftlichkeitParameter()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
+                anzeigename: KiDialogTexte.MaskeWirtParameter,
+                felder: new[]
+                {
+                    // ---- Allgemein --------------------------------------------------
+                    new KiDialogFeld("zinssatz", "WirtschaftlichkeitParameterKiSicht.Zinssatz",
+                                     KiDialogTexte.WpaZinsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaZinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("betrachtungszeitraum",
+                                     "WirtschaftlichkeitParameterKiSicht.Betrachtungszeitraum",
+                                     KiDialogTexte.WpaJahreName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaJahreErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("preissteigerung_energie",
+                                     "WirtschaftlichkeitParameterKiSicht.PreissteigerungEnergie",
+                                     KiDialogTexte.WpaPreisEName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaPreisEErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("preissteigerung_betrieb",
+                                     "WirtschaftlichkeitParameterKiSicht.PreissteigerungBetrieb",
+                                     KiDialogTexte.WpaPreisBName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaPreisBErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("preissteigerung_investition",
+                                     "WirtschaftlichkeitParameterKiSicht.PreissteigerungInvestition",
+                                     KiDialogTexte.WpaPreisIName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaPreisIErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A, leerErlaubt: true),
+
+                    // ---- Strom, Brennstoff, Bilanzierung ----------------------------
+                    new KiDialogFeld("einspeiseverguetung",
+                                     "WirtschaftlichkeitParameterKiSicht.Einspeiseverguetung",
+                                     KiDialogTexte.WpaEinspName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    new KiDialogFeld("co2_preis", "WirtschaftlichkeitParameterKiSicht.Co2Preis",
+                                     KiDialogTexte.WpaCo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaCo2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_T),
+                    new KiDialogFeld("kraftwerkspark",
+                                     "WirtschaftlichkeitParameterKiSicht.Kraftwerkspark",
+                                     KiDialogTexte.WpaParkName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaParkErl, leerErlaubt: true),
+                    new KiDialogFeld("bilanzjahr", "WirtschaftlichkeitParameterKiSicht.Bilanzjahr",
+                                     KiDialogTexte.WpaBilanzjahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpaBilanzjahrErl),
+                    new KiDialogFeld("emissionsmethode",
+                                     "WirtschaftlichkeitParameterKiSicht.Emissionsmethode",
+                                     KiDialogTexte.WpaMethodeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaMethodeErl, leerErlaubt: true),
+                    new KiDialogFeld("biomassekonvention",
+                                     "WirtschaftlichkeitParameterKiSicht.Biomassekonvention",
+                                     KiDialogTexte.WpaBiomasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpaBiomasseErl, leerErlaubt: true),
+                    new KiDialogFeld("nachhaltigkeitsnachweis",
+                                     "WirtschaftlichkeitParameterKiSicht.Nachhaltigkeitsnachweis",
+                                     KiDialogTexte.WpaNachweisName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.WpaNachweisErl),
+
+                    // ---- Szenarien: je Groesse Best und Worst -----------------------
+                    new KiDialogFeld("best_zinssatz",
+                                     "WirtschaftlichkeitParameterKiSicht.BestZinssatz",
+                                     KiDialogTexte.WpaSzBestZins, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzZinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("worst_zinssatz",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstZinssatz",
+                                     KiDialogTexte.WpaSzWorstZins, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzZinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("best_preissteigerung_energie",
+                                     "WirtschaftlichkeitParameterKiSicht.BestPreissteigerungEnergie",
+                                     KiDialogTexte.WpaSzBestPreisE, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisEErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("worst_preissteigerung_energie",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstPreissteigerungEnergie",
+                                     KiDialogTexte.WpaSzWorstPreisE, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisEErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("best_preissteigerung_betrieb",
+                                     "WirtschaftlichkeitParameterKiSicht.BestPreissteigerungBetrieb",
+                                     KiDialogTexte.WpaSzBestPreisB, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisBErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("worst_preissteigerung_betrieb",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstPreissteigerungBetrieb",
+                                     KiDialogTexte.WpaSzWorstPreisB, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisBErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("best_preissteigerung_investition",
+                                     "WirtschaftlichkeitParameterKiSicht.BestPreissteigerungInvestition",
+                                     KiDialogTexte.WpaSzBestPreisI, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisIErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("worst_preissteigerung_investition",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstPreissteigerungInvestition",
+                                     KiDialogTexte.WpaSzWorstPreisI, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzPreisIErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A),
+                    new KiDialogFeld("best_investition",
+                                     "WirtschaftlichkeitParameterKiSicht.BestInvestitionAenderung",
+                                     KiDialogTexte.WpaSzBestInvest, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzInvestErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("worst_investition",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstInvestitionAenderung",
+                                     KiDialogTexte.WpaSzWorstInvest, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzInvestErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("best_ertrag",
+                                     "WirtschaftlichkeitParameterKiSicht.BestErtragAenderung",
+                                     KiDialogTexte.WpaSzBestErtrag, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzErtragErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("worst_ertrag",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstErtragAenderung",
+                                     KiDialogTexte.WpaSzWorstErtrag, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzErtragErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("best_nutzungsdauer",
+                                     "WirtschaftlichkeitParameterKiSicht.BestNutzungsdauerAenderung",
+                                     KiDialogTexte.WpaSzBestDauer, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("worst_nutzungsdauer",
+                                     "WirtschaftlichkeitParameterKiSicht.WorstNutzungsdauerAenderung",
+                                     KiDialogTexte.WpaSzWorstDauer, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpaSzDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_BhkwWirtschaftlichkeit  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die BHKW-Wirtschaftlichkeit — 25 Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Arbeitsstaende, ein Feldsatz.</b> Zwoelf Felder gehoeren der
+        /// GEWAEHLTEN Anlage, zwoelf den projektweiten Vorgaben; das dreizehnte ist
+        /// die Anlagenwahl selbst. Die Vorsilben <c>anlage_</c> und <c>projekt_</c>
+        /// halten beide auseinander - Energiesteuerwahl und Aufteilungsmethode gibt es
+        /// naemlich ZWEIMAL, einmal je Ebene.
+        /// </para>
+        /// <para>
+        /// <b>Die Anlagentabelle bleibt draussen</b> (Projekt, Bezeichner, Leistung,
+        /// Brennstoff sind Anzeige), ebenso die drei Vorschlagszeilen, die
+        /// Kohaerenzpruefung, die Mengenkette und die Vorschau: Sie stehen als Text
+        /// unter den Feldern, aus denen sie entstehen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog BhkwWirtschaftlichkeit()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT,
+                anzeigename: KiDialogTexte.MaskeBhkwWirtschaft,
+                felder: new[]
+                {
+                    new KiDialogFeld("modul", "BhkwWirtschaftlichkeitKiSicht.Modul",
+                                     KiDialogTexte.BhwModulName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwModulErl, leerErlaubt: true),
+
+                    // ---- Die gewaehlte Anlage ---------------------------------------
+                    new KiDialogFeld("anlage_stichtag",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageStichtag",
+                                     KiDialogTexte.BhwStichtagAName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhwStichtagAErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_inbetriebnahme",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageInbetriebnahme",
+                                     KiDialogTexte.BhwIbnAName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhwIbnAErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_anlagenart",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageAnlagenart",
+                                     KiDialogTexte.BhwArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwArtErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_eigenfall",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageEigenfall",
+                                     KiDialogTexte.BhwFallName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwFallErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_satz_einspeisung",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageSatzEinspeisung",
+                                     KiDialogTexte.BhwSatzEinspName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwSatzEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("anlage_satz_eigen",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageSatzEigen",
+                                     KiDialogTexte.BhwSatzEigenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwSatzEigenErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("anlage_kontingent",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageKontingent",
+                                     KiDialogTexte.BhwKontingentName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwKontingentErl,
+                                     einheit: KiDialogTexte.EINHEIT_STUNDE, leerErlaubt: true),
+                    new KiDialogFeld("anlage_deckel", "BhkwWirtschaftlichkeitKiSicht.AnlageDeckel",
+                                     KiDialogTexte.BhwDeckelName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwDeckelErl,
+                                     einheit: KiDialogTexte.EINHEIT_H_A, leerErlaubt: true),
+                    new KiDialogFeld("anlage_kostenanteil",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageKostenanteil",
+                                     KiDialogTexte.BhwKostenanteilName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwKostenanteilErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("anlage_energiesteuer",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageEnergiesteuer",
+                                     KiDialogTexte.BhwEsAName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwEsAErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_aufteilung",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageAufteilung",
+                                     KiDialogTexte.BhwAufAName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwAufAErl, leerErlaubt: true),
+                    new KiDialogFeld("anlage_hilfsenergie",
+                                     "BhkwWirtschaftlichkeitKiSicht.AnlageHilfsenergie",
+                                     KiDialogTexte.BhwHilfsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwHilfsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+
+                    // ---- Die projektweiten Vorgaben ---------------------------------
+                    new KiDialogFeld("projekt_einspeisung_kwk",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektEinspeisungKwk",
+                                     KiDialogTexte.BhwEinspKwkName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwEinspKwkErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("projekt_abschlag",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektAbschlag",
+                                     KiDialogTexte.BhwAbschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwAbschlagErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("projekt_pauschalmodus",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektPauschalmodus",
+                                     KiDialogTexte.BhwPauschalName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BhwPauschalErl),
+                    new KiDialogFeld("projekt_stichtag",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektStichtag",
+                                     KiDialogTexte.BhwStichtagPName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhwStichtagPErl, leerErlaubt: true),
+                    new KiDialogFeld("projekt_inbetriebnahme",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektInbetriebnahme",
+                                     KiDialogTexte.BhwIbnPName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhwIbnPErl, leerErlaubt: true),
+                    new KiDialogFeld("projekt_energiesteuer",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektEnergiesteuer",
+                                     KiDialogTexte.BhwEsPName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwEsPErl, leerErlaubt: true),
+                    new KiDialogFeld("projekt_aufteilung",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektAufteilung",
+                                     KiDialogTexte.BhwAufPName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwAufPErl, leerErlaubt: true),
+                    new KiDialogFeld("projekt_jahresnutzungsgrad",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektJahresnutzungsgrad",
+                                     KiDialogTexte.BhwNutzungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhwNutzungsgradErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("projekt_unternehmensart",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektUnternehmensart",
+                                     KiDialogTexte.BhwUaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwUaErl, leerErlaubt: true),
+                    new KiDialogFeld("projekt_raeumlich",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektRaeumlich",
+                                     KiDialogTexte.BhwRaeumlichName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BhwRaeumlichErl),
+                    new KiDialogFeld("projekt_hocheffizienz",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektHocheffizienz",
+                                     KiDialogTexte.BhwHocheffizienzName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BhwHocheffizienzErl),
+                    new KiDialogFeld("projekt_befreiungsmodus",
+                                     "BhkwWirtschaftlichkeitKiSicht.ProjektBefreiungsmodus",
+                                     KiDialogTexte.BhwModusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhwModusErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Tarifstruktur  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Tarifstruktur des Strombezugs — 28 Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Modelle, eine Maske.</b> Das ZONENMODELL rechnet mit vier
+        /// Preiszonen (Winter/Sommer × Hoch-/Niedertarif) und einer Leistungsstaffel,
+        /// das ROLLENMODELL mit je einem Arbeits-, Grund- und Leistungspreis fuer
+        /// Bezug und Reststrom. Welches gilt, sagt das Feld <c>modell</c>; die Felder
+        /// des jeweils anderen stehen gesperrt da. Deklariert sind beide - der
+        /// Anwender sieht beide.
+        /// </para>
+        /// <para>
+        /// <b>Die vier LEISTUNGSSTUFEN je Rolle bleiben draussen.</b> Zwoelf Zellen je
+        /// Rolle (Obergrenze, Sommer- und Winterpreis × vier Stufen) entstehen aus
+        /// einer Schleife ueber ihren Index und sind damit eine WERTETAFEL - dieselbe
+        /// Regel, mit der diese Welle die Monatssaetze der Preisreihe und die
+        /// Stundentafel des Kostenprofils auslaesst.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Tarifstruktur()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.TARIFSTRUKTUR,
+                anzeigename: KiDialogTexte.MaskeTarifstruktur,
+                felder: new[]
+                {
+                    new KiDialogFeld("aktiv", "TarifstrukturKiSicht.Aktiv",
+                                     KiDialogTexte.TarAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.TarAktivErl),
+                    new KiDialogFeld("modell", "TarifstrukturKiSicht.Modell",
+                                     KiDialogTexte.TarModellName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TarModellErl, leerErlaubt: true),
+                    new KiDialogFeld("gueltig_ab", "TarifstrukturKiSicht.GueltigAb",
+                                     KiDialogTexte.TarGueltigAbName, KiParameterTyp.Text,
+                                     KiDialogTexte.TarGueltigAbErl, leerErlaubt: true),
+
+                    // ---- Zeitzonen --------------------------------------------------
+                    new KiDialogFeld("winter_von", "TarifstrukturKiSicht.WinterVon",
+                                     KiDialogTexte.TarWinterVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.TarWinterVonErl, leerErlaubt: true),
+                    new KiDialogFeld("winter_bis", "TarifstrukturKiSicht.WinterBis",
+                                     KiDialogTexte.TarWinterBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.TarWinterBisErl, leerErlaubt: true),
+                    new KiDialogFeld("hochtarif_von", "TarifstrukturKiSicht.HochtarifVon",
+                                     KiDialogTexte.TarHtVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.TarHtVonErl, leerErlaubt: true),
+                    new KiDialogFeld("hochtarif_bis", "TarifstrukturKiSicht.HochtarifBis",
+                                     KiDialogTexte.TarHtBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.TarHtBisErl, leerErlaubt: true),
+
+                    // ---- Zonenmodell: Bezug -----------------------------------------
+                    new KiDialogFeld("bezug_winter_hoch",
+                                     "TarifstrukturKiSicht.BezugWinterHoch",
+                                     KiDialogTexte.TarBezugWinterHtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("bezug_winter_nieder",
+                                     "TarifstrukturKiSicht.BezugWinterNieder",
+                                     KiDialogTexte.TarBezugWinterNtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("bezug_sommer_hoch",
+                                     "TarifstrukturKiSicht.BezugSommerHoch",
+                                     KiDialogTexte.TarBezugSommerHtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("bezug_sommer_nieder",
+                                     "TarifstrukturKiSicht.BezugSommerNieder",
+                                     KiDialogTexte.TarBezugSommerNtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+
+                    // ---- Zonenmodell: Einspeisung -----------------------------------
+                    new KiDialogFeld("einspeisung_winter_hoch",
+                                     "TarifstrukturKiSicht.EinspeisungWinterHoch",
+                                     KiDialogTexte.TarEinspWinterHtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("einspeisung_winter_nieder",
+                                     "TarifstrukturKiSicht.EinspeisungWinterNieder",
+                                     KiDialogTexte.TarEinspWinterNtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("einspeisung_sommer_hoch",
+                                     "TarifstrukturKiSicht.EinspeisungSommerHoch",
+                                     KiDialogTexte.TarEinspSommerHtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("einspeisung_sommer_nieder",
+                                     "TarifstrukturKiSicht.EinspeisungSommerNieder",
+                                     KiDialogTexte.TarEinspSommerNtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+
+                    // ---- Zonenmodell: Leistungsstaffel ------------------------------
+                    new KiDialogFeld("staffel_grenze", "TarifstrukturKiSicht.StaffelGrenze",
+                                     KiDialogTexte.TarStaffelGrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarStaffelGrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("staffel_preis_unten",
+                                     "TarifstrukturKiSicht.StaffelPreisUnten",
+                                     KiDialogTexte.TarStaffelUntenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarStaffelUntenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
+                    new KiDialogFeld("staffel_preis_oben",
+                                     "TarifstrukturKiSicht.StaffelPreisOben",
+                                     KiDialogTexte.TarStaffelObenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarStaffelObenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
+
+                    // ---- Rollenmodell: Bezug ----------------------------------------
+                    new KiDialogFeld("bezug_arbeitspreis",
+                                     "TarifstrukturKiSicht.BezugArbeitspreis",
+                                     KiDialogTexte.TarBezugArbeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugArbeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("bezug_grundpreis", "TarifstrukturKiSicht.BezugGrundpreis",
+                                     KiDialogTexte.TarBezugGrundName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarBezugGrundErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_A, leerErlaubt: true),
+                    new KiDialogFeld("bezug_leistungsmodell",
+                                     "TarifstrukturKiSicht.BezugLeistungsmodell",
+                                     KiDialogTexte.TarBezugModellName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TarLeistungsmodellErl, leerErlaubt: true),
+                    new KiDialogFeld("bezug_monatspreis", "TarifstrukturKiSicht.BezugMonatspreis",
+                                     KiDialogTexte.TarBezugMonatName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarMonatspreisErl, leerErlaubt: true),
+
+                    // ---- Rollenmodell: Reststrom ------------------------------------
+                    new KiDialogFeld("rest_arbeitspreis", "TarifstrukturKiSicht.RestArbeitspreis",
+                                     KiDialogTexte.TarRestArbeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarRestArbeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("rest_grundpreis", "TarifstrukturKiSicht.RestGrundpreis",
+                                     KiDialogTexte.TarRestGrundName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarRestGrundErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_A, leerErlaubt: true),
+                    new KiDialogFeld("rest_leistungsmodell",
+                                     "TarifstrukturKiSicht.RestLeistungsmodell",
+                                     KiDialogTexte.TarRestModellName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.TarLeistungsmodellErl, leerErlaubt: true),
+                    new KiDialogFeld("rest_monatspreis", "TarifstrukturKiSicht.RestMonatspreis",
+                                     KiDialogTexte.TarRestMonatName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarMonatspreisErl, leerErlaubt: true),
+
+                    // ---- Rollenmodell: Einspeisung ----------------------------------
+                    new KiDialogFeld("einspeisung_arbeitspreis",
+                                     "TarifstrukturKiSicht.EinspeisungArbeitspreis",
+                                     KiDialogTexte.TarEinspArbeitName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspArbeitErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("einspeisung_grundpreis",
+                                     "TarifstrukturKiSicht.EinspeisungGrundpreis",
+                                     KiDialogTexte.TarEinspGrundName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.TarEinspGrundErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_A, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PhotovoltaikVerguetung  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Photovoltaik-Verguetung — 16 Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Draussen bleiben die Herleitungen</b> — die rechnerische Leistung, der
+        /// anzulegende Wert aus dem Katalog, der Zulaessigkeitsstatus, die
+        /// Anlagenwarnungen, die Vorschau und die Kennzahlzeile: Sie stehen als Text
+        /// unter den Feldern, aus denen sie entstehen, und niemand tippt sie. Der
+        /// Marktwertimport ist ein LADEVORGANG und gehoert ins Aktionsregister.
+        /// </remarks>
+        private static KiDialog PhotovoltaikVerguetung()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PV_VERGUETUNG,
+                anzeigename: KiDialogTexte.MaskePvVerguetung,
+                felder: new[]
+                {
+                    new KiDialogFeld("aktiv", "PhotovoltaikVerguetungKiSicht.Aktiv",
+                                     KiDialogTexte.PvvAktivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvvAktivErl),
+                    new KiDialogFeld("leistung", "PhotovoltaikVerguetungKiSicht.Leistung",
+                                     KiDialogTexte.PvvLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWP, leerErlaubt: true),
+                    new KiDialogFeld("inbetriebnahme",
+                                     "PhotovoltaikVerguetungKiSicht.Inbetriebnahme",
+                                     KiDialogTexte.PvvIbnName, KiParameterTyp.Text,
+                                     KiDialogTexte.PvvIbnErl, leerErlaubt: true),
+                    new KiDialogFeld("degradation", "PhotovoltaikVerguetungKiSicht.Degradation",
+                                     KiDialogTexte.PvvDegradationName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvDegradationErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_A, leerErlaubt: true),
+                    new KiDialogFeld("einspeiseart", "PhotovoltaikVerguetungKiSicht.Einspeiseart",
+                                     KiDialogTexte.PvvEinspeiseartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvvEinspeiseartErl, leerErlaubt: true),
+                    new KiDialogFeld("anzulegender_wert",
+                                     "PhotovoltaikVerguetungKiSicht.AnzulegenderWert",
+                                     KiDialogTexte.PvvAwName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvAwErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("vermarktungsform",
+                                     "PhotovoltaikVerguetungKiSicht.Vermarktungsform",
+                                     KiDialogTexte.PvvVermarktungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvvVermarktungErl, leerErlaubt: true),
+                    new KiDialogFeld("direktvermarktungsentgelt",
+                                     "PhotovoltaikVerguetungKiSicht.Direktvermarktungsentgelt",
+                                     KiDialogTexte.PvvDvName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvDvErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("ppa_preis", "PhotovoltaikVerguetungKiSicht.PpaPreis",
+                                     KiDialogTexte.PvvPpaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvPpaErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("ppa_spotaufschlag",
+                                     "PhotovoltaikVerguetungKiSicht.PpaSpotaufschlag",
+                                     KiDialogTexte.PvvPpaAufschlagName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvPpaAufschlagErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("paragraf_51", "PhotovoltaikVerguetungKiSicht.Paragraf51",
+                                     KiDialogTexte.PvvPar51Name, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvvPar51Erl, leerErlaubt: true),
+                    new KiDialogFeld("messsystemjahr",
+                                     "PhotovoltaikVerguetungKiSicht.Messsystemjahr",
+                                     KiDialogTexte.PvvImsysName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.PvvImsysErl, leerErlaubt: true),
+                    new KiDialogFeld("ausfallanteil",
+                                     "PhotovoltaikVerguetungKiSicht.Ausfallanteil",
+                                     KiDialogTexte.PvvAusfallName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvvAusfallErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("paragraf_51a_kompensation",
+                                     "PhotovoltaikVerguetungKiSicht.Paragraf51aKompensation",
+                                     KiDialogTexte.PvvPar51aName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvvPar51aErl),
+                    new KiDialogFeld("bezug_aus_preisreihe",
+                                     "PhotovoltaikVerguetungKiSicht.BezugAusPreisreihe",
+                                     KiDialogTexte.PvvBezugName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PvvBezugErl),
+                    new KiDialogFeld("kappung", "PhotovoltaikVerguetungKiSicht.Kappung",
+                                     KiDialogTexte.PvvKappungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PvvKappungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Gesetzesparameter  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die gesetzlichen Parameter — zwei Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die Katalogliste bleibt draussen</b>: Sie ist der Baustein
+        /// <c>Katalogliste</c> mit eigenem Filter, eigener Suche und eigener
+        /// Sortierung - sechs Spalten Anzeige je Zeile, keine davon hier eingebbar.
+        /// Gepflegt wird eine Zeile im ZEILENEDITOR, und der traegt seinen eigenen
+        /// Katalogschluessel.
+        /// </remarks>
+        private static KiDialog Gesetzeskatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GESETZESKATALOG,
+                anzeigename: KiDialogTexte.MaskeGesetzeskatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("klasse", "GesetzeskatalogKiSicht.Klasse",
+                                     KiDialogTexte.GskKlasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GskKlasseErl, leerErlaubt: true),
+                    new KiDialogFeld("zeile", "GesetzeskatalogKiSicht.Zeile",
+                                     KiDialogTexte.GskZeileName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GskZeileErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("schliessen", "btn_Schliessen", KiDialogTexte.KnopfBeenden)
+                });
+        }
+
+        // =====================================================================
+        // Form_GesetzparameterZeile  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Zeileneditor der gesetzlichen Parameter — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogZeileKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum eine EIGENE Maske.</b> Der Editor ist nur als Ueberlagerung im
+        /// Gesetzeskatalog zu sehen, pflegt aber einen ganz anderen Gegenstand: EINE
+        /// Jahreszeile mit Schluessel, Jahr, Wert, Einheit, Status und Quelle. Ein
+        /// gemeinsamer Katalogeintrag haette dem Modell verschwiegen, ob es gerade
+        /// ueber die Liste oder ueber eine Zeile spricht.
+        /// </remarks>
+        private static KiDialog GesetzeskatalogZeile()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.GESETZESKATALOG_ZEILE,
+                anzeigename: KiDialogTexte.MaskeGesetzeszeile,
+                felder: new[]
+                {
+                    new KiDialogFeld("schluessel", "GesetzeskatalogZeileKiSicht.Schluessel",
+                                     KiDialogTexte.GszSchluesselName, KiParameterTyp.Text,
+                                     KiDialogTexte.GszSchluesselErl, leerErlaubt: true),
+                    new KiDialogFeld("klasse", "GesetzeskatalogZeileKiSicht.Klasse",
+                                     KiDialogTexte.GskKlasseName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GszKlasseErl, leerErlaubt: true),
+                    new KiDialogFeld("jahr", "GesetzeskatalogZeileKiSicht.Jahr",
+                                     KiDialogTexte.GszJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.GszJahrErl, leerErlaubt: true),
+                    new KiDialogFeld("wert", "GesetzeskatalogZeileKiSicht.Wert",
+                                     KiDialogTexte.GszWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.GszWertErl, leerErlaubt: true),
+                    new KiDialogFeld("einheit", "GesetzeskatalogZeileKiSicht.Einheit",
+                                     KiDialogTexte.LprEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GszEinheitErl, leerErlaubt: true),
+                    new KiDialogFeld("status", "GesetzeskatalogZeileKiSicht.Status",
+                                     KiDialogTexte.GszStatusName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.GszStatusErl, leerErlaubt: true),
+                    new KiDialogFeld("quelle", "GesetzeskatalogZeileKiSicht.Quelle",
+                                     KiDialogTexte.NudQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.GszQuelleErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_KostenAdmin  ->  KostenfaktorKatalogDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kostenfaktoren-Katalog — zwei Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.KostenfaktorKatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Das Raster bleibt draussen.</b> Es zeigt je Faktor nur seine
+        /// Bezeichnung, und die ist der Anzeigetext der WAHL - ein zweites Feld
+        /// daneben waere dieselbe Zeichenkette ein zweites Mal. Deklariert sind der
+        /// Bezeichner der Neuzeile und die Markierung, auf die „Loeschen" greift.
+        /// </remarks>
+        private static KiDialog Kostenfaktorkatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENFAKTOR_KATALOG,
+                anzeigename: KiDialogTexte.MaskeKostenfaktorkatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("kostenfaktor",
+                                     "KostenfaktorKatalogKiSicht.Kostenfaktor",
+                                     KiDialogTexte.KfkFaktorName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KfkFaktorErl, leerErlaubt: true),
+                    new KiDialogFeld("neuer_name", "KostenfaktorKatalogKiSicht.NeuerName",
+                                     KiDialogTexte.KfkNeuName, KiParameterTyp.Text,
+                                     KiDialogTexte.KfkNeuErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
+        }
+
+        // =====================================================================
+        // Form_Emissionskatalog  ->  EmissionskatalogDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Emissionsarten und ihr Wertekatalog — zwoelf Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, drei Ebenen.</b> Oben die Bilanzierungsmethode, darunter
+        /// zwei Raster (Arten und ihre Werte) und ueber ihnen je ein EDITOR als
+        /// Ueberlagerung. Die Editoren gehen IN dieser Maske auf und tragen deshalb
+        /// keinen eigenen Katalogschluessel - dieselbe Lage wie die zwei
+        /// Reiterblaetter des Gebaeudekatalogs.
+        /// </para>
+        /// <para>
+        /// <b>Was die Raster ZEIGEN, bleibt draussen</b>: Kuerzel, Name, Einheit, GWP
+        /// und Herkunft stehen dort als Anzeige. Deklariert sind die MARKIERUNGEN -
+        /// sie entscheiden, worauf „Aendern", „Loeschen" und „Uebernehmen" greifen -
+        /// und die lebenden Felder der beiden Editoren.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Emissionskatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.EMISSIONSKATALOG,
+                anzeigename: KiDialogTexte.MaskeEmissionskatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("als_co2e", "EmissionskatalogKiSicht.AlsCo2e",
+                                     KiDialogTexte.EmkModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkModusErl),
+                    new KiDialogFeld("emissionsart", "EmissionskatalogKiSicht.Emissionsart",
+                                     KiDialogTexte.EmkArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkArtErl, leerErlaubt: true),
+                    new KiDialogFeld("emissionswert", "EmissionskatalogKiSicht.Emissionswert",
+                                     KiDialogTexte.EmkWertName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkWertErl, leerErlaubt: true),
+
+                    // ---- Arteneditor ------------------------------------------------
+                    new KiDialogFeld("art_kuerzel", "EmissionskatalogKiSicht.ArtKuerzel",
+                                     KiDialogTexte.EmkKuerzelName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkKuerzelErl, leerErlaubt: true),
+                    new KiDialogFeld("art_name", "EmissionskatalogKiSicht.ArtName",
+                                     KiDialogTexte.EmkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkNameErl, leerErlaubt: true),
+                    new KiDialogFeld("art_einheit", "EmissionskatalogKiSicht.ArtEinheit",
+                                     KiDialogTexte.EmkEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkEinheitErl, leerErlaubt: true),
+                    new KiDialogFeld("art_gwp", "EmissionskatalogKiSicht.ArtGwp",
+                                     KiDialogTexte.EmkGwpName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EmkGwpErl, leerErlaubt: true),
+                    new KiDialogFeld("art_quelle", "EmissionskatalogKiSicht.ArtQuelle",
+                                     KiDialogTexte.EmkArtQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkArtQuelleErl, leerErlaubt: true),
+
+                    // ---- Werteeditor ------------------------------------------------
+                    new KiDialogFeld("wert_quelle", "EmissionskatalogKiSicht.WertQuelle",
+                                     KiDialogTexte.EmkWertQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkWertQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("wert", "EmissionskatalogKiSicht.Wert",
+                                     KiDialogTexte.EmkWertZahlName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EmkWertZahlErl, leerErlaubt: true),
+                    new KiDialogFeld("wert_ist_co2e", "EmissionskatalogKiSicht.WertIstCo2e",
+                                     KiDialogTexte.EmkWertCo2eName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkWertCo2eErl),
+                    new KiDialogFeld("wert_als_vorlage",
+                                     "EmissionskatalogKiSicht.WertAlsVorlage",
+                                     KiDialogTexte.EmkWertVorlageName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkWertVorlageErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Nutzungsdauer  ->  NutzungsdauerDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Nutzungsdauern (AfA) — fuenf Kopffelder und drei SPALTEN aus
+        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Tabelle wird an Ort und Stelle bearbeitet</b> und kommt deshalb als
+        /// Spalten in den Katalog - dieselbe Bauart wie das Positionsraster der
+        /// Kostenverwaltung. Aus jeder Spaltendeklaration wird je vorhandener Zeile
+        /// ein gewoehnliches Feld; den Klartextnamen einer Zeile liefert ihre
+        /// POSITIONSART.
+        /// </para>
+        /// <para>
+        /// <b>Technik und Auslieferungsmarke sind ANZEIGE.</b> Die Technik ordnet die
+        /// Gruppen und wird beim Anlegen einmal gesetzt; die Marke sagt, dass ein
+        /// Satz zur Auslieferung gehoert und deshalb nur weich zu loeschen ist.
+        /// Beide stehen nicht als Spalte, weil sie sich in der Tabelle nicht aendern
+        /// lassen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Nutzungsdauer()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.NUTZUNGSDAUER,
+                anzeigename: KiDialogTexte.MaskeNutzungsdauer,
+                felder: new[]
+                {
+                    new KiDialogFeld("suche", "NutzungsdauerKiSicht.Suche",
+                                     KiDialogTexte.NudSucheName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudSucheErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_technik", "NutzungsdauerKiSicht.NeueTechnik",
+                                     KiDialogTexte.NudTechnikName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.NudTechnikErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_positionsart",
+                                     "NutzungsdauerKiSicht.NeuePositionsart",
+                                     KiDialogTexte.NudArtName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudArtErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_nutzungsdauer",
+                                     "NutzungsdauerKiSicht.NeueNutzungsdauer",
+                                     KiDialogTexte.NudNeuWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuWertErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    new KiDialogFeld("neue_afa", "NutzungsdauerKiSicht.NeueAfa",
+                                     KiDialogTexte.NudNeuAfaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuAfaErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+
+                    // ---- Die Tabelle: je Satz eine Zeile ----------------------------
+                    new KiDialogFeld("nutzungsdauer",
+                                     "NutzungsdauerKiSicht.Zeilen[].Nutzungsdauer",
+                                     KiDialogTexte.NudWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudWertErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("afa_steuerlich",
+                                     "NutzungsdauerKiSicht.Zeilen[].AfaSteuerlich",
+                                     KiDialogTexte.NudAfaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudAfaErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("quelle", "NutzungsdauerKiSicht.Zeilen[].Quelle",
+                                     KiDialogTexte.NudQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudQuelleErl, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Die Eigenschaft, aus der eine Zeile der Nutzungsdauertabelle ihren
+        /// Klartextnamen bekommt — „Nutzungsdauer (Waermeerzeuger)" statt
+        /// „Nutzungsdauer 3".
+        /// </summary>
+        private const string ZEILENKENNZEICHEN_NUTZUNGSDAUER = "Positionsart";
+
+        // =====================================================================
+        // Form_VorlagenPosition  ->  VorlagenPositionDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Zeileneditor einer Kostenposition — sechs Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Zwei WAHLFELDER mit verschiedenen Schluesseln</b> (KI-D-Q6): Die
+        /// KOSTENART traegt den Listenplatz der VDI-2067-Liste, die POSITIONSART die
+        /// Id des Nutzungsdauersatzes. Beide setzt der Assistent ueber ihren
+        /// Anzeigetext, nie ueber eine rohe Zahl.
+        /// </remarks>
+        private static KiDialog Vorlagenposition()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.VORLAGENPOSITION,
+                anzeigename: KiDialogTexte.MaskeVorlagenposition,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", "VorlagenPositionKiSicht.Bezeichnung",
+                                     KiDialogTexte.VopBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.VopBezeichnungErl, leerErlaubt: true),
+                    new KiDialogFeld("kostenart", "VorlagenPositionKiSicht.Kostenart",
+                                     KiDialogTexte.VopKostenartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopKostenartErl, leerErlaubt: true),
+                    new KiDialogFeld("ist_erloes", "VorlagenPositionKiSicht.IstErloes",
+                                     KiDialogTexte.VopErloesName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.VopErloesErl),
+                    new KiDialogFeld("positionsart", "VorlagenPositionKiSicht.Positionsart",
+                                     KiDialogTexte.VopPositionsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopPositionsartErl, leerErlaubt: true),
+                    new KiDialogFeld("empfehlung_von", "VorlagenPositionKiSicht.EmpfehlungVon",
+                                     KiDialogTexte.VopVonName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.VopVonErl, leerErlaubt: true),
+                    new KiDialogFeld("empfehlung_bis", "VorlagenPositionKiSicht.EmpfehlungBis",
+                                     KiDialogTexte.VopBisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.VopBisErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_CaseEingabe  ->  CaseEingabeDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Worst- und Best-Case einer Kostenposition — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der PROZENTMODUS fuehrt die Maske.</b> Er entscheidet, ob die zwei
+        /// Kostenfelder einen Betrag oder eine Abweichung vom Erwartungswert tragen -
+        /// und damit ihre Einheit und ihre Grenzen. Ohne gepflegten Erwartungswert ist
+        /// er gesperrt; dann gibt es nichts, wovon abzuweichen waere. Geschrieben wird
+        /// beim OK IMMER in Euro, auch wenn der Anwender Prozente getippt hat.
+        /// </remarks>
+        private static KiDialog CaseEingabe()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.CASE_EINGABE,
+                anzeigename: KiDialogTexte.MaskeCaseEingabe,
+                felder: new[]
+                {
+                    new KiDialogFeld("prozentmodus", "CaseEingabeKiSicht.Prozentmodus",
+                                     KiDialogTexte.CseModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.CseModusErl),
+                    new KiDialogFeld("best_case", "CaseEingabeKiSicht.BestCase",
+                                     KiDialogTexte.CseBestName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseBestErl, leerErlaubt: true),
+                    new KiDialogFeld("worst_case", "CaseEingabeKiSicht.WorstCase",
+                                     KiDialogTexte.CseWorstName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseWorstErl, leerErlaubt: true),
+                    new KiDialogFeld("best_nutzungsdauer",
+                                     "CaseEingabeKiSicht.BestNutzungsdauer",
+                                     KiDialogTexte.CseBestDauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseBestDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("worst_nutzungsdauer",
+                                     "CaseEingabeKiSicht.WorstNutzungsdauer",
+                                     KiDialogTexte.CseWorstDauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseWorstDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("startjahr", "CaseEingabeKiSicht.Startjahr",
+                                     KiDialogTexte.CseJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.CseJahrErl),
+                    new KiDialogFeld("ist_zuschuss", "CaseEingabeKiSicht.IstZuschuss",
+                                     KiDialogTexte.CseZuschussName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.CseZuschussErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Energietraeger  ->  EnergietraegerDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Energietraegerverwaltung — 45 Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.EnergietraegerKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Drei Bloecke in einem Feldsatz.</b> Oben der Listenkopf (Filter,
+        /// gewaehlter Traeger, die zwei Stammfelder der Katalogverwaltung), darunter
+        /// die Traegerkarte mit ihren Preisen, Einheiten und Emissionen, ganz unten
+        /// der Preisblock, der zur Familie des Traegers gehoert: die ZERLEGUNG des
+        /// Strompreises oder die BESTANDTEILE des Brennstoffpreises. Beide Bloecke
+        /// sind Bausteine IN der Karte und keine eigenen Masken - siehe
+        /// <see cref="KiMaskennamen.ENERGIETRAEGER"/>.
+        /// </para>
+        /// <para>
+        /// <b>Jeder Bestandteil traegt Wert UND Schalter.</b> Der Schalter
+        /// unterscheidet „gepflegt" von „kein Anteil"; ein Betrag hinter einem
+        /// ausgeschalteten Schalter wirkt nicht. Beides steht auf der Maske
+        /// nebeneinander, also auch im Katalog.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die drei RASTER</b> — die Emissionszeilen mit ihrem
+        /// Katalogknopf je Zeile, die Umrechnungsregeln und die Preishistorie —,
+        /// die Wertluecken mit ihren Leihknoepfen, die Schnellwahlsaetze und die
+        /// vier Unterdialoge (Kostenprofil, Spotpreisimport, saisonale Saetze,
+        /// Emissionskatalog). Drei davon tragen einen eigenen Katalogschluessel.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Energietraeger()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ENERGIETRAEGER,
+                anzeigename: KiDialogTexte.MaskeEnergietraeger,
+                felder: new[]
+                {
+                    // ---- Listenkopf und Stammfelder ---------------------------------
+                    new KiDialogFeld("suche", "EnergietraegerKiSicht.Suche",
+                                     KiDialogTexte.EtSucheName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtSucheErl, leerErlaubt: true),
+                    new KiDialogFeld("energietraeger", "EnergietraegerKiSicht.Energietraeger",
+                                     KiDialogTexte.EtTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EtTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("stammname", "EnergietraegerKiSicht.Stammname",
+                                     KiDialogTexte.EtStammnameName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtStammnameErl, leerErlaubt: true),
+                    new KiDialogFeld("stammgruppe", "EnergietraegerKiSicht.Stammgruppe",
+                                     KiDialogTexte.EtStammgruppeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EtStammgruppeErl, leerErlaubt: true),
+
+                    // ---- Die Traegerkarte -------------------------------------------
+                    new KiDialogFeld("arbeitspreis", "EnergietraegerKiSicht.Arbeitspreis",
+                                     KiDialogTexte.EtArbeitspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtArbeitspreisErl),
+                    new KiDialogFeld("grundpreis", "EnergietraegerKiSicht.Grundpreis",
+                                     KiDialogTexte.EtGrundpreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtGrundpreisErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_A),
+                    new KiDialogFeld("leistungspreis", "EnergietraegerKiSicht.Leistungspreis",
+                                     KiDialogTexte.EtLeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtLeistungspreisErl),
+                    new KiDialogFeld("leistungspreis_monatlich",
+                                     "EnergietraegerKiSicht.LeistungspreisMonatlich",
+                                     KiDialogTexte.EtLpModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtLpModusErl),
+                    new KiDialogFeld("heizwert", "EnergietraegerKiSicht.Heizwert",
+                                     KiDialogTexte.EtHeizwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtHeizwertErl),
+                    new KiDialogFeld("brennwert", "EnergietraegerKiSicht.Brennwert",
+                                     KiDialogTexte.EtBrennwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtBrennwertErl),
+                    new KiDialogFeld("preisbasis", "EnergietraegerKiSicht.Preisbasis",
+                                     KiDialogTexte.EtPreisbasisName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EtPreisbasisErl, leerErlaubt: true),
+                    new KiDialogFeld("basiseinheit", "EnergietraegerKiSicht.Basiseinheit",
+                                     KiDialogTexte.EtBasiseinheitName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtBasiseinheitErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("effektivpreis", "EnergietraegerKiSicht.Effektivpreis",
+                                     KiDialogTexte.EtEffektivName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtEffektivErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("gueltig_ab", "EnergietraegerKiSicht.GueltigAb",
+                                     KiDialogTexte.EtGueltigAbName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtGueltigAbErl, leerErlaubt: true),
+
+                    // ---- Emissionen der Karte ---------------------------------------
+                    new KiDialogFeld("emissionen_als_co2e",
+                                     "EnergietraegerKiSicht.EmissionenAlsCo2e",
+                                     KiDialogTexte.EtModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtModusErl),
+                    new KiDialogFeld("co2", "EnergietraegerKiSicht.Co2",
+                                     KiDialogTexte.EtCo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtCo2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_G_KWH),
+                    new KiDialogFeld("so2", "EnergietraegerKiSicht.So2",
+                                     KiDialogTexte.EtSo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtSo2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_G_KWH),
+                    new KiDialogFeld("nox", "EnergietraegerKiSicht.Nox",
+                                     KiDialogTexte.EtNoxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtNoxErl,
+                                     einheit: KiDialogTexte.EINHEIT_G_KWH),
+
+                    // ---- Baustein „Strompreis Details" ------------------------------
+                    new KiDialogFeld("strom_beschaffung",
+                                     "EnergietraegerKiSicht.StromBeschaffung",
+                                     KiDialogTexte.EtStromBeschaffungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromBeschaffungErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_beschaffung_aktiv",
+                                     "EnergietraegerKiSicht.StromBeschaffungAktiv",
+                                     KiDialogTexte.EtStromBeschaffungAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_vertrieb", "EnergietraegerKiSicht.StromVertrieb",
+                                     KiDialogTexte.EtStromVertriebName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromVertriebErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_vertrieb_aktiv",
+                                     "EnergietraegerKiSicht.StromVertriebAktiv",
+                                     KiDialogTexte.EtStromVertriebAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_netzentgelt",
+                                     "EnergietraegerKiSicht.StromNetzentgelt",
+                                     KiDialogTexte.EtStromNetzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromNetzErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_netzentgelt_aktiv",
+                                     "EnergietraegerKiSicht.StromNetzentgeltAktiv",
+                                     KiDialogTexte.EtStromNetzAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("stromsteuer", "EnergietraegerKiSicht.Stromsteuer",
+                                     KiDialogTexte.EtStromsteuerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromsteuerErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("stromsteuer_aktiv",
+                                     "EnergietraegerKiSicht.StromsteuerAktiv",
+                                     KiDialogTexte.EtStromsteuerAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_konzession",
+                                     "EnergietraegerKiSicht.StromKonzession",
+                                     KiDialogTexte.EtStromKonzessionName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromKonzessionErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_konzession_aktiv",
+                                     "EnergietraegerKiSicht.StromKonzessionAktiv",
+                                     KiDialogTexte.EtStromKonzessionAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_umlagen", "EnergietraegerKiSicht.StromUmlagen",
+                                     KiDialogTexte.EtStromUmlagenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromUmlagenErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_umlagen_aktiv",
+                                     "EnergietraegerKiSicht.StromUmlagenAktiv",
+                                     KiDialogTexte.EtStromUmlagenAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_umlagen_einzeln",
+                                     "EnergietraegerKiSicht.StromUmlagenEinzeln",
+                                     KiDialogTexte.EtStromEinzelnName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtStromEinzelnErl),
+                    new KiDialogFeld("strom_umlage_kwkg",
+                                     "EnergietraegerKiSicht.StromUmlageKwkg",
+                                     KiDialogTexte.EtStromKwkgName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromKwkgErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_umlage_kwkg_aktiv",
+                                     "EnergietraegerKiSicht.StromUmlageKwkgAktiv",
+                                     KiDialogTexte.EtStromKwkgAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_umlage_offshore",
+                                     "EnergietraegerKiSicht.StromUmlageOffshore",
+                                     KiDialogTexte.EtStromOffshoreName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromOffshoreErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_umlage_offshore_aktiv",
+                                     "EnergietraegerKiSicht.StromUmlageOffshoreAktiv",
+                                     KiDialogTexte.EtStromOffshoreAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("strom_umlage_stromnev",
+                                     "EnergietraegerKiSicht.StromUmlageStromNev",
+                                     KiDialogTexte.EtStromNevName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStromNevErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("strom_umlage_stromnev_aktiv",
+                                     "EnergietraegerKiSicht.StromUmlageStromNevAktiv",
+                                     KiDialogTexte.EtStromNevAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+
+                    // ---- Baustein „Preisbestandteile" -------------------------------
+                    new KiDialogFeld("brennstoff_energiesteuer",
+                                     "EnergietraegerKiSicht.BrennstoffEnergiesteuer",
+                                     KiDialogTexte.EtBsEnergiesteuerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtBsEnergiesteuerErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("brennstoff_energiesteuer_aktiv",
+                                     "EnergietraegerKiSicht.BrennstoffEnergiesteuerAktiv",
+                                     KiDialogTexte.EtBsEnergiesteuerAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("brennstoff_co2", "EnergietraegerKiSicht.BrennstoffCo2",
+                                     KiDialogTexte.EtBsCo2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtBsCo2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("brennstoff_co2_aktiv",
+                                     "EnergietraegerKiSicht.BrennstoffCo2Aktiv",
+                                     KiDialogTexte.EtBsCo2AktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("brennstoff_netzentgelt",
+                                     "EnergietraegerKiSicht.BrennstoffNetzentgelt",
+                                     KiDialogTexte.EtBsNetzName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtBsNetzErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("brennstoff_netzentgelt_aktiv",
+                                     "EnergietraegerKiSicht.BrennstoffNetzentgeltAktiv",
+                                     KiDialogTexte.EtBsNetzAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl),
+                    new KiDialogFeld("brennstoff_vertrieb",
+                                     "EnergietraegerKiSicht.BrennstoffVertrieb",
+                                     KiDialogTexte.EtBsVertriebName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtBsVertriebErl,
+                                     einheit: KiDialogTexte.EINHEIT_CT_KWH),
+                    new KiDialogFeld("brennstoff_vertrieb_aktiv",
+                                     "EnergietraegerKiSicht.BrennstoffVertriebAktiv",
+                                     KiDialogTexte.EtBsVertriebAktivName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EtAnteilAktivErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Kosten_Auswahl  ->  EnergietraegerVarianteDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// „Energietraeger-Variante anlegen" — zwei Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der Traeger ist ein WAHLFELD</b> (KI-D-Q6) und traegt als Schluessel
+        /// seine Katalog-Id; ihn zu setzen belegt den Variantennamen vor - derselbe
+        /// Weg wie ein Griff in die Klappliste. Der Dialog legt beim OK einen NEUEN
+        /// Katalogsatz an; das ist ein datenbankwirksamer Weg und laeuft deshalb
+        /// ueber <c>dialog_speichern</c>, nicht als Formularaktion.
+        /// </remarks>
+        private static KiDialog EnergietraegerVariante()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.ENERGIETRAEGER_VARIANTE,
+                anzeigename: KiDialogTexte.MaskeEnergietraegerVariante,
+                felder: new[]
+                {
+                    new KiDialogFeld("energietraeger",
+                                     "EnergietraegerVarianteKiSicht.Energietraeger",
+                                     KiDialogTexte.EtvTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EtvTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("variantenname",
+                                     "EnergietraegerVarianteKiSicht.Variantenname",
+                                     KiDialogTexte.EtvNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.EtvNameErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_LeistungspreisReihe  ->  LeistungspreisReiheDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die saisonalen Leistungspreis-Saetze — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die zwoelf Monatssaetze bleiben draussen.</b> Sie stehen als Schleife
+        /// ueber ihren Index im Markup und sind damit eine WERTETAFEL - dieselbe
+        /// Regel, mit der die Welle KI-F3 die zwoelf Monatssummen des
+        /// Gebaeudebedarfs ausgelassen hat. Das JAHR dagegen ist der Einstellwert,
+        /// der die ganze Reihe traegt.
+        /// </remarks>
+        private static KiDialog Leistungspreisreihe()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.LEISTUNGSPREISREIHE,
+                anzeigename: KiDialogTexte.MaskeLeistungspreisreihe,
+                felder: new[]
+                {
+                    new KiDialogFeld("jahr", "LeistungspreisReiheKiSicht.Jahr",
+                                     KiDialogTexte.LprJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.LprJahrErl, leerErlaubt: true),
+                    new KiDialogFeld("einheit", "LeistungspreisReiheKiSicht.Einheit",
+                                     KiDialogTexte.LprEinheitName, KiParameterTyp.Text,
+                                     KiDialogTexte.LprEinheitErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("kontext", "LeistungspreisReiheKiSicht.Kontext",
+                                     KiDialogTexte.LprKontextName, KiParameterTyp.Text,
+                                     KiDialogTexte.LprKontextErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
+                                      KiDialogTexte.KnopfUebernehmen),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Kostenprofil  ->  KostenprofilDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Kostenprofil eines Stromtraegers — drei Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die 36 Zahlenfelder bleiben draussen.</b> Zwoelf Monatswerte und
+        /// 7 × 24 Wochenstunden entstehen aus einer Schleife ueber ihren Index, und
+        /// die Maske pflegt sie mit eigenen Griffen („Jan.-Wert in alle Monate",
+        /// „Tag kopieren", „Tag einfuegen"); der Dateikopf des Dialogs weist sie
+        /// ausdruecklich als nicht feldkartenfaehig aus. Einstellwerte sind der
+        /// BEZEICHNER und der Wochentag, dessen Stundenkurve dasteht.
+        /// </remarks>
+        private static KiDialog Kostenprofil()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENPROFIL,
+                anzeigename: KiDialogTexte.MaskeKostenprofil,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichner", "KostenprofilKiSicht.Bezeichner",
+                                     KiDialogTexte.KprBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.KprBezeichnerErl, leerErlaubt: true),
+                    new KiDialogFeld("wochentag", "KostenprofilKiSicht.Wochentag",
+                                     KiDialogTexte.KprWochentagName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KprWochentagErl, leerErlaubt: true),
+                    new KiDialogFeld("einheit", "KostenprofilKiSicht.Einheit",
+                                     KiDialogTexte.KprEinheitName, KiParameterTyp.Text,
+                                     KiDialogTexte.KprEinheitErl,
+                                     leerErlaubt: true, nurLesen: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
@@ -2306,6 +3870,22 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.KvNurLesenName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.KvNurLesenErl,
                                      nurLesen: true),
+
+                    // Welle KI-F4: die VARIANTE der Vorlage - das einzige Wahlfeld der
+                    // Maske, das am Stand haengt und bis dahin fehlte. Sie steht nur im
+                    // Stammkontext (VariantePflegbar); im Projekt ist die Liste leer.
+                    //
+                    // NUR LESEN, und das ist der Punkt: Die Variante zu WECHSELN laedt
+                    // einen anderen Positionssatz nach (BeiVariante -> KontextLaden).
+                    // Der Katalog bindet hier unmittelbar an den Stand; ein Setzer
+                    // schriebe die Id, ohne dass das Raster nachzieht - die Maske zeigte
+                    // dann die neue Variante ueber den alten Zeilen. Der Assistent NENNT
+                    // sie deshalb samt ihren Alternativen und lehnt das Setzen benannt
+                    // ab; ein Wechsel ist ein Ladevorgang und kein Feldwert.
+                    new KiDialogFeld("variante", "KostenKomponenteStand.VarianteId",
+                                     KiDialogTexte.KvVarianteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KvVarianteErl,
+                                     leerErlaubt: true, nurLesen: true),
 
                     // ---- Das Raster: je Position eine Zeile --------------------------
                     new KiDialogFeld("position", "KostenKomponenteStand.Zeilen[].Bezeichnung",

@@ -35,6 +35,8 @@
    sofort (A-7 aus B5b). *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -233,7 +235,48 @@
         for (int m = 0; m < 12; m++)
             _werte[m] = m < Werte.Count ? Werte[m] : 0.0;
         _jahr = Jahr;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.LEISTUNGSPREISREIHE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private LeistungspreisReiheKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: das JAHR der Reihe und zwei Anzeigen. Die zwölf
+    /// Monatssätze bleiben draußen — sie stehen als Schleife über ihren Index im
+    /// Markup und sind damit eine Wertetafel.
+    /// </summary>
+    private LeistungspreisReiheKiSicht KiSicht()
+    {
+        return _kiSicht ??= new LeistungspreisReiheKiSicht
+        {
+            JahrLesen = () => _jahr,
+            JahrSetzen = BeiJahr,
+            EinheitLesen = () => Einheit,
+            KontextLesen = () => KontextText
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Übernehmen" schreibt die Reihe in die Datenbank;
+    /// das läuft über <c>dialog_speichern</c> samt Rückfrage und Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

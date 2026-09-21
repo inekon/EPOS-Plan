@@ -22,6 +22,8 @@
    erste Tabulatorschritt in die Auswahlliste. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -122,7 +124,52 @@
         // WinForms-Vorlaeufer tat das ueber comboBox_Varianten.Text (Befund 03.09.2026:
         // Feld blieb leer, weil nur der Wechsel der Auswahl vorbelegte).
         if (VorwahlId.HasValue && string.IsNullOrWhiteSpace(_variantenName)) _variantenName = NameZu(_auswahl);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ENERGIETRAEGER_VARIANTE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private EnergietraegerVarianteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die zwei lebenden Felder der Maske. Ein
+    /// Daten-Objekt gibt es nicht — <c>EnergietraegerVarianteErgebnis</c> entsteht
+    /// erst beim OK und ist unveränderlich.
+    /// </summary>
+    private EnergietraegerVarianteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new EnergietraegerVarianteKiSicht
+        {
+            TraegerLesen = () => _auswahl,
+            TraegerSetzen = id => BeiAuswahl(id),
+            TraegerEintraege = () => KiMaskenanmeldung.Eintraege(
+                Energietraeger, z => z.Id, z => z.Name),
+
+            NameLesen = () => _variantenName,
+            NameSetzen = BeiName
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Das OK legt einen neuen Katalogsatz an; das ist
+    /// datenbankwirksam und gehört über <c>dialog_speichern</c> samt Rückfrage und
+    /// Sicherungspunkt, nicht als Formularaktion (Anwenderentscheid KI‑D‑Q4).
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

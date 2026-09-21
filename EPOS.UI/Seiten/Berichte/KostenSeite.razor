@@ -37,6 +37,8 @@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
@@ -360,7 +362,80 @@
     /// <summary>Die gewählte Anlagenzeile (Prüfhilfe; -1 = keine).</summary>
     public int GewaehlteAnlage => _anlage;
 
-    protected override void OnInitialized() => Auffrischen();
+    protected override void OnInitialized()
+    {
+        Auffrischen();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOSTENSEITE,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KostenSeiteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die markierte Anlage und zwei Anzeigen. Alles
+    /// andere auf dieser Seite ist gerechnete Anzeige.
+    /// </summary>
+    private KostenSeiteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KostenSeiteKiSicht
+        {
+            AnlageLesen = () => _anlage >= 0 ? _anlage : (int?)null,
+            AnlageSetzen = KiAnlage,
+            AnlagenEintraege = () => KiMaskenanmeldung.Eintraege(
+                Waehlbare(), z => z.Schluessel, z => z.Anzeige),
+
+            ProjektzeileLesen = () => _stand.Projektzeile,
+            StatuszeileLesen = () => _status
+        };
+    }
+
+    /// <summary>
+    /// Die wählbaren Zeilen der Kostentabelle — Summen- und Hinweiszeilen tragen
+    /// keinen Wahlknopf und stehen deshalb auch nicht zur Wahl.
+    /// </summary>
+    private IReadOnlyList<KostenZeile> Waehlbare()
+    {
+        var treffer = new List<KostenZeile>();
+        foreach (KostenZeile z in _stand.Komponenten)
+        {
+            if (z.Art != ZeilenArt.Summe && z.Art != ZeilenArt.Hinweis) treffer.Add(z);
+        }
+        return treffer;
+    }
+
+    /// <summary>Eine Anlage über den Assistenten markieren — derselbe Weg wie ein Klick.</summary>
+    private void KiAnlage(int? schluessel)
+    {
+        if (schluessel is null) return;
+        foreach (KostenZeile z in Waehlbare())
+        {
+            if (z.Schluessel != schluessel.Value) continue;
+            AnlageWaehlen(z);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Diese Seite schreibt nichts: Gepflegt wird in der
+    /// Kostenverwaltung und in der Energieträgerverwaltung, die beide von hier aus
+    /// aufgehen und je einen eigenen Katalogschlüssel tragen.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

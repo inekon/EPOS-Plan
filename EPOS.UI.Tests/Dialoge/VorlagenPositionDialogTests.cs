@@ -1,8 +1,10 @@
 ﻿using Bunit;
+using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -336,5 +338,39 @@ public class VorlagenPositionDialogTests : BunitContext
 
         Assert.NotNull(ergebnis);
         Assert.Null(ergebnis!.PositionsartId);
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die KOSTENART ist ein
+    /// WAHLFELD über ihren Anzeigetext; der Schlüssel ist der Listenplatz der
+    /// VDI‑2067-Liste, die der Wirt hereinreicht.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_die_Kostenart()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.VORLAGENPOSITION));
+
+        KiFeldzugang bezeichnung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.VORLAGENPOSITION, "bezeichnung");
+        Assert.Equal("Montage", bezeichnung.Lesen());
+
+        KiFeldzugang art =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.VORLAGENPOSITION, "kostenart");
+        Assert.NotNull(art);
+        Assert.True(art.Setzbar);
+
+        string zweite = art.Wahleintraege()[1].Text;
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(art, zweite);
+        Assert.True(wahl.Ok, wahl.Grund);
+        art.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(art.Wahleintraege()[1].Schluessel,
+                     Convert.ToString(cut.Instance.Kostenart, CultureInfo.InvariantCulture));
     }
 }

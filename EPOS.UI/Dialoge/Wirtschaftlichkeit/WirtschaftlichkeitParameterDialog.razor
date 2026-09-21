@@ -40,6 +40,7 @@
 @using System.Globalization
 @using WindowsFormsApplication1
 @using EPOS.UI.Dialoge.Allgemein
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -505,7 +506,57 @@
     {
         _methoden = WirtParameterWahlen.Methode(_t);
         _biomasse = WirtParameterWahlen.Biomasse(_t);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private WirtschaftlichkeitParameterKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: der Parametersatz des Projekts UND die zwei
+    /// Szenariosätze. Alle drei sind Fachklassen des Kerns mit öffentlichen FELDERN;
+    /// die Maskenbrücke löst über Eigenschaften auf.
+    /// </summary>
+    private WirtschaftlichkeitParameterKiSicht KiSicht()
+    {
+        return _kiSicht ??= new WirtschaftlichkeitParameterKiSicht
+        {
+            ParameterLesen = () => Parameter,
+            BestLesen = () => Best,
+            WorstLesen = () => Worst,
+
+            ParkEintraege = () => KiMaskenanmeldung.Eintraege(
+                Kraftwerksparks, z => z.Id, z => z.Text),
+            MethodeEintraege = () => KiMaskenanmeldung.Eintraege(
+                _methoden, z => z.Wert, z => z.Text),
+            BiomasseEintraege = () => KiMaskenanmeldung.Eintraege(
+                _biomasse, z => z.Wert, z => z.Text),
+
+            Nachziehen = () => _ = InvokeAsync(StateHasChanged)
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Speichern" schreibt den Parametersatz samt beiden
+    /// Szenariosätzen in die Datenbank; das läuft über <c>dialog_speichern</c> samt
+    /// Rückfrage und Sicherungspunkt (Anwenderentscheid KI‑D‑Q4).
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

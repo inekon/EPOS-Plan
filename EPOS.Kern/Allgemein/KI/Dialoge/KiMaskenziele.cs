@@ -107,6 +107,73 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string KLIMADATEN = "KLIMADATEN";
 
+        /// <summary>
+        /// Der Seitenschluessel der ENERGIETRAEGERVERWALTUNG (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.EnergietraegerVerwaltung</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="KLIMADATEN"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Der Schluessel
+        /// gehoert zum Menuepunkt „Administration → Kosten → Energietraegerverwaltung…";
+        /// die Windows-Huelle faengt ihn im Menueweg selbst ab
+        /// (<c>HauptfensterHuelle.Weg</c>), <c>WinFormsNavigation.OeffneMaske</c> kennt
+        /// ihn nicht. <c>dialog_oeffnen</c> lehnt dort also benannt ab, statt still
+        /// nichts zu tun — genau wie bei der Kostenverwaltung. Auf iOS ist die
+        /// Kostenverwaltung insgesamt noch nicht angebunden; die <c>AppWurzel</c>
+        /// meldet <c>false</c>. LESEN und SETZEN erreichen die Maske trotzdem, sobald
+        /// der Anwender sie offen hat: Dafuer zaehlt die Anmeldung an der
+        /// Maskenbruecke, nicht dieses Ziel.
+        /// </remarks>
+        public const string ENERGIETRAEGER_VERWALTUNG = "ENERGIETRAEGER_VERWALTUNG";
+
+        /// <summary>
+        /// Der Seitenschluessel des Dialogs „Energietraeger-Variante anlegen"
+        /// (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Er ist einer der wenigen dieser Welle, den die <c>AppWurzel</c> WIRKLICH
+        /// bedient (<c>Seitenschluessel.Energietraeger</c>): Auf iOS geht der Dialog
+        /// damit auf. Unter Windows kennt <c>WinFormsNavigation</c> ihn nicht — dort
+        /// steht er als Ueberlagerung in den Erzeugerdialogen, und
+        /// <c>dialog_oeffnen</c> lehnt benannt ab.
+        /// </remarks>
+        public const string VARIANTE_ANLEGEN = "ENERGIETRAEGER_VARIANTE";
+
+        /// <summary>
+        /// Der Seitenschluessel der NUTZUNGSDAUERVERWALTUNG (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Der dritte Punkt der Rubrik „Administration → Kosten"; dieselbe Lage wie
+        /// bei <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn
+        /// im Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht, und
+        /// auf iOS ist die Kostenverwaltung noch nicht angebunden. <c>dialog_oeffnen</c>
+        /// lehnt deshalb auf beiden Plattformen benannt ab.
+        /// </remarks>
+        public const string NUTZUNGSDAUER_VERWALTUNG = "NUTZUNGSDAUER_VERWALTUNG";
+
+        /// <summary>
+        /// Der Seitenschluessel des Dialogs „BHKW-Wirtschaftlichkeit" (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Wie <see cref="VARIANTE_ANLEGEN"/> einer der wenigen Schluessel dieser Welle,
+        /// den die <c>AppWurzel</c> WIRKLICH bedient
+        /// (<c>Seitenschluessel.BhkwWirtschaftlichkeit</c>): Auf iOS geht der Dialog
+        /// damit auf. Unter Windows kennt <c>WinFormsNavigation</c> ihn nicht — dort
+        /// steht er als Ueberlagerung der Wirtschaftlichkeitsseite und in einem eigenen
+        /// Fenster, und <c>dialog_oeffnen</c> lehnt benannt ab.
+        /// </remarks>
+        public const string BHKW_WIRTSCHAFTLICHKEIT = "BHKW_WIRTSCHAFTLICHKEIT";
+
+        /// <summary>
+        /// Der Seitenschluessel der GESETZLICHEN PARAMETER (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Menuepunkt „Administration → Gesetzliche Parameter"; dieselbe Lage wie bei
+        /// <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn im
+        /// Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht.
+        /// </remarks>
+        public const string GESETZESKATALOG = "GESETZESKATALOG";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -229,7 +296,67 @@ namespace WindowsFormsApplication1
 
                 // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
                 // siehe KLIMADATEN.
-                { KiMaskennamen.KLIMADATEN, KLIMADATEN }
+                { KiMaskennamen.KLIMADATEN, KLIMADATEN },
+
+                // Welle KI-F4: Die ENERGIETRAEGERVERWALTUNG haengt am Menuepunkt
+                // „Administration → Kosten → Energietraegerverwaltung…" - siehe
+                // ENERGIETRAEGER_VERWALTUNG. Die saisonalen Leistungspreis-Saetze und
+                // das Kostenprofil gehen als UEBERLAGERUNG aus ihr auf und brauchen
+                // einen gewaehlten Traeger; kontextfrei gibt es beide nicht, und ihr
+                // Ziel ist deshalb die Maske, aus der sie aufgehen - dieselbe
+                // Begruendung wie bei den Katalogeditoren der Erzeuger.
+                { KiMaskennamen.ENERGIETRAEGER,        ENERGIETRAEGER_VERWALTUNG },
+                { KiMaskennamen.LEISTUNGSPREISREIHE,   ENERGIETRAEGER_VERWALTUNG },
+                { KiMaskennamen.KOSTENPROFIL,          ENERGIETRAEGER_VERWALTUNG },
+
+                // „Energietraeger-Variante anlegen" ist eine eigene Ansicht der
+                // AppWurzel - siehe VARIANTE_ANLEGEN.
+                { KiMaskennamen.ENERGIETRAEGER_VARIANTE, VARIANTE_ANLEGEN },
+
+                // Der EMISSIONSKATALOG geht als Ueberlagerung aus der Traegerkarte
+                // auf („Emissionsarten & Katalog verwalten…") und braucht einen
+                // gewaehlten Traeger; sein Ziel ist deshalb die Verwaltung.
+                { KiMaskennamen.EMISSIONSKATALOG, ENERGIETRAEGER_VERWALTUNG },
+
+                // Die NUTZUNGSDAUERN sind selbst ein Menuepunkt - hier fallen
+                // Katalogschluessel und Navigationsschluessel zusammen, wie bei der
+                // Waermepumpenverwaltung.
+                { KiMaskennamen.NUTZUNGSDAUER, NUTZUNGSDAUER_VERWALTUNG },
+
+                // Der KOSTENFAKTOREN-Katalog, der ZEILENEDITOR einer Position und die
+                // Worst-/Best-Case-Eingabe gehen alle drei als Ueberlagerung aus der
+                // Kostenverwaltung auf und brauchen eine gewaehlte Komponente bzw.
+                // Zeile; ihr Ziel ist deshalb die Maske, aus der sie aufgehen.
+                { KiMaskennamen.KOSTENFAKTOR_KATALOG, KOSTENVERWALTUNG },
+                { KiMaskennamen.VORLAGENPOSITION,     KOSTENVERWALTUNG },
+                { KiMaskennamen.CASE_EINGABE,         KOSTENVERWALTUNG },
+
+                // Welle KI-F4: Die WIRTSCHAFTLICHKEITSMASKEN gehen aus der Fussleiste
+                // der Wirtschaftlichkeitsseite auf; die ist das dritte Reiterblatt der
+                // Ansicht „Berichte und Kosten" (Ansichten.BerichteKosten), und die
+                // bedient die AppWurzel auf beiden Plattformen. Anders als bei den
+                // Kostenmasken fuehrt hier also ein Ziel wirklich irgendwohin.
+                { KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, Ansichten.BerichteKosten },
+                { KiMaskennamen.TARIFSTRUKTUR,                Ansichten.BerichteKosten },
+                { KiMaskennamen.PV_VERGUETUNG,                Ansichten.BerichteKosten },
+
+                // Die BHKW-Wirtschaftlichkeit ist zusaetzlich eine eigene Ansicht der
+                // AppWurzel (Seitenschluessel.BhkwWirtschaftlichkeit) - der einzige
+                // Dialog dieser Welle, den die Wurzel unmittelbar zeigt.
+                { KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, BHKW_WIRTSCHAFTLICHKEIT },
+
+                // Die GESETZLICHEN PARAMETER haengen am Menuepunkt „Administration →
+                // Gesetzliche Parameter"; der Zeileneditor geht als Ueberlagerung aus
+                // ihnen auf und braucht eine gewaehlte Zeile.
+                { KiMaskennamen.GESETZESKATALOG,       GESETZESKATALOG },
+                { KiMaskennamen.GESETZESKATALOG_ZEILE, GESETZESKATALOG },
+
+                // Die zwei REITERBLAETTER sind Teile der Ansicht „Berichte und
+                // Kosten"; ein Reiterwunsch geht dabei nicht mit (dieselbe Lage wie
+                // beim Reiterwunsch der Startseite, siehe STARTSEITE). Die Ansicht
+                // bedient die AppWurzel auf beiden Plattformen.
+                { KiMaskennamen.KOSTENSEITE,              Ansichten.BerichteKosten },
+                { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, Ansichten.BerichteKosten }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

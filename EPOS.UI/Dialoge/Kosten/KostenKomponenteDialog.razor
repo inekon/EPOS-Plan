@@ -827,7 +827,13 @@
         _eintragId = EintragVorwahl ?? (Eintraege.Count > 0 ? Eintraege[0].Id : null);
         _invest = InvestVorwahl;
         KontextLaden(null);
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOSTENVERWALTUNG, () => _stand, KiHaken());
+        // Welle KI-F4: Die VARIANTE haengt am Stand, ihre Liste aber auch - eine
+        // Begleiteigenschaft VarianteIdWahl gaebe es doppelt. Sie kommt deshalb als
+        // benannte Wahlquelle herein.
+        _kiMaske = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.KOSTENVERWALTUNG, () => _stand, KiHaken(),
+            ("variante", () => KiMaskenanmeldung.Eintraege(
+                _stand.Varianten, z => z.Id, z => z.Text)));
     }
 
     /// <summary>Meldet die Maske beim Assistenten wieder ab.</summary>

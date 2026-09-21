@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Dom;
+using System.Globalization;
 using Bunit;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
@@ -1068,5 +1069,47 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             => Task.FromResult(new LaufErgebnis())), stand);
 
         Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Seite an der Maskenbrücke.</b> Jede Wahl läuft durch
+    /// denselben Rückruf wie ein Griff in die Klappliste: Die Seite holt sich dabei
+    /// einen NEUEN Stand aus der Hülle.
+    /// </summary>
+    [Fact]
+    public void Die_Seite_meldet_sich_beim_Assistenten_an_und_waehlt_ein_Szenario()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE));
+
+        KiFeldzugang szenario = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "szenario");
+        Assert.NotNull(szenario);
+        Assert.True(szenario.Setzbar);
+        Assert.NotEmpty(szenario.Wahleintraege());
+
+        string zweites = szenario.Wahleintraege()[1].Text;
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(szenario, zweites);
+        Assert.True(wahl.Ok, wahl.Grund);
+        szenario.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(szenario.Wahleintraege()[1].Schluessel,
+                     Convert.ToString(szenario.Lesen(), CultureInfo.InvariantCulture));
+
+        // Der Freitext der nicht monetaeren Wirkungen ist ein Feld dieser Seite.
+        KiFeldzugang wirkung = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, "nicht_monetaer");
+        Assert.NotNull(wirkung);
+        Assert.True(wirkung.Setzbar);
+
+        // Die Vergleichsgruppe ist eine Menge von Verweisen und KEIN Feld.
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE)!
+                              .FindeFeld("gewaehlte_varianten"));
     }
 }

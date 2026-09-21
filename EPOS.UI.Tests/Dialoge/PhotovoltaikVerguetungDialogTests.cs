@@ -555,4 +555,44 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
                         f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
     }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Sichtklasse
+    /// <c>PhotovoltaikVerguetungKiSicht</c> setzt über die WEGE der Maske: Eine 0
+    /// heißt „nicht gepflegt", und die Zulässigkeitsprüfung läuft mit.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_ueber_ihre_Wege()
+    {
+        var modell = Satz();
+        var cut = Aufbauen(modell);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_VERGUETUNG));
+
+        KiFeldzugang leistung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_VERGUETUNG, "leistung");
+        Assert.NotNull(leistung);
+        Assert.True(leistung.Setzbar);
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(leistung, "42");
+        Assert.True(neu.Ok, neu.Grund);
+        leistung.Setzen(neu.Wert);
+        cut.Render();
+        Assert.Equal(42, modell.KwpOverride!.Value, 3);
+
+        // Eine 0 heisst "nicht gepflegt" - der Weg der Maske fuehrt sie auf null.
+        KiFeldumsetzung null_ = KiFeldwandler.Wandle(leistung, "0");
+        Assert.True(null_.Ok, null_.Grund);
+        leistung.Setzen(null_.Wert);
+        cut.Render();
+        Assert.Null(modell.KwpOverride);
+
+        // Die VERMARKTUNGSFORM ist ein Wahlfeld ueber ihren Steuerwert.
+        KiFeldzugang form =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_VERGUETUNG, "vermarktungsform");
+        Assert.Equal(4, form.Wahleintraege().Count);
+    }
 }

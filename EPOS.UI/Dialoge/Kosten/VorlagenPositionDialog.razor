@@ -23,6 +23,8 @@
    Erstfokus dort, Enter = OK, Esc = Abbrechen. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -203,7 +205,64 @@
         // Wie SetControls: eine unbekannte Kostenart faellt auf "sonstige" zurueck.
         _kostenart = KostenartId.HasValue && Bekannt(KostenartId.Value)
             ? KostenartId : RueckfallKostenartId;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.VORLAGENPOSITION,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private VorlagenPositionKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die sechs lebenden Felder des Zeileneditors. Ein
+    /// Daten-Objekt gibt es nicht — <c>VorlagenPositionErgebnis</c> entsteht erst
+    /// beim OK und ist unveränderlich.
+    /// </summary>
+    private VorlagenPositionKiSicht KiSicht()
+    {
+        return _kiSicht ??= new VorlagenPositionKiSicht
+        {
+            BezeichnungLesen = () => _bezeichnung,
+            BezeichnungSetzen = BeiBezeichnung,
+
+            KostenartLesen = () => _kostenart,
+            KostenartSetzen = BeiKostenart,
+            KostenartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Kostenarten, z => z.Id, z => z.Text),
+
+            ErloesLesen = () => _istErloes,
+            ErloesSetzen = BeiErloes,
+
+            PositionsartLesen = () => _positionsart,
+            PositionsartSetzen = BeiPositionsart,
+            PositionsartEintraege = () => KiMaskenanmeldung.Eintraege(
+                Positionsarten, z => z.Id, z => z.Text),
+
+            VonLesen = () => _empfVon,
+            VonSetzen = w => _empfVon = w,
+            BisLesen = () => _empfBis,
+            BisSetzen = w => _empfBis = w
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Der Editor meldet sein Ergebnis an den Wirt; der
+    /// schreibt es mit seinem eigenen OK.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

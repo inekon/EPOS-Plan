@@ -21342,4 +21342,724 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KLIMA_TRY_PAKET_ERL" xml:space="preserve">
     <value>Das gewählte TRY-Paket. Es darf leer bleiben; dann wird das mitgelieferte Paket genommen.</value>
   </data>
+  <data name="KI_DLG_MASKE_ET" xml:space="preserve">
+    <value>Energieträgerverwaltung</value>
+  </data>
+  <data name="KI_DLG_MASKE_ETV" xml:space="preserve">
+    <value>Energieträger-Variante anlegen</value>
+  </data>
+  <data name="KI_DLG_MASKE_LPR" xml:space="preserve">
+    <value>Saisonale Leistungspreis-Sätze</value>
+  </data>
+  <data name="KI_DLG_MASKE_KPR" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KI_DLG_ET_AKTIV_VORLAGE" xml:space="preserve">
+    <value>{0} — Anteil gepflegt</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_NAME" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_ERL" xml:space="preserve">
+    <value>Der in der Liste markierte Energieträger. Alle Angaben der Trägerkarte rechts gehören zu ihm; ihn zu setzen holt seine Preise, Einheiten und Emissionen herein.</value>
+  </data>
+  <data name="KI_DLG_ET_SUCHE_ERL" xml:space="preserve">
+    <value>Der Filtertext über der Trägerliste. Er blendet Träger aus, deren Name oder Gruppe ihn nicht enthält; die Auswahl bleibt dabei stehen.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMNAME_ERL" xml:space="preserve">
+    <value>Die Bezeichnung des Katalogsatzes. Sie steht nur in der Katalogverwaltung und wird mit „Speichern“ oder „OK“ geschrieben.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMGRUPPE_ERL" xml:space="preserve">
+    <value>Die Gruppe, unter der der Träger in der Liste steht. Sie ordnet nur die Anzeige und geht nicht in die Rechnung ein.</value>
+  </data>
+  <data name="KI_DLG_ET_ARBEITSPREIS_ERL" xml:space="preserve">
+    <value>Der verbrauchsabhängige Preis des Trägers, bezogen auf die Preisbasis darunter. Aus ihm und dem Heizwert entsteht der Preis je Kilowattstunde, mit dem die Wirtschaftlichkeit rechnet.</value>
+  </data>
+  <data name="KI_DLG_ET_GRUNDPREIS_ERL" xml:space="preserve">
+    <value>Der verbrauchsunabhängige Jahresbetrag des Liefervertrags — Zählermiete, Bereitstellung, Abrechnung.</value>
+  </data>
+  <data name="KI_DLG_ET_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Der Preis je Kilowatt Anschlussleistung. Ob er je Jahr oder je Monat gilt, sagt der Schalter daneben.</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_NAME" xml:space="preserve">
+    <value>Leistungspreis monatlich</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_ERL" xml:space="preserve">
+    <value>Gilt der Leistungspreis je Monat statt je Jahr? Der Monatsmodus rechnet mit der Höchstlast des jeweiligen Monats, der Jahresmodus mit der Jahreshöchstlast.</value>
+  </data>
+  <data name="KI_DLG_ET_HEIZWERT_ERL" xml:space="preserve">
+    <value>Der Heizwert des Brennstoffs. Er setzt die Abrechnungseinheit in Kilowattstunden um; ohne ihn lässt sich kein Preis je Kilowattstunde bilden.</value>
+  </data>
+  <data name="KI_DLG_ET_BRENNWERT_ERL" xml:space="preserve">
+    <value>Der Brennwert des Brennstoffs. Er wird für Brennwertgeräte gebraucht und steht nur an Trägern, die ihn führen.</value>
+  </data>
+  <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
+    <value>Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Preiskette rechnet — Anzeige. Sie folgt der Preisbasis und den aktiven Umrechnungsregeln.</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_NAME" xml:space="preserve">
+    <value>Effektiver Preis</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_ERL" xml:space="preserve">
+    <value>Der ausgerechnete Preis je Kilowattstunde samt seiner Herleitung — Anzeige. Er folgt Arbeitspreis, Heizwert, Preisbasis und den Umrechnungsregeln.</value>
+  </data>
+  <data name="KI_DLG_ET_GUELTIGAB_ERL" xml:space="preserve">
+    <value>Der Preisstand, ab dem die Angaben der Karte gelten (JJJJ-MM-TT). Beim Speichern wandert der bisherige Stand in die Preishistorie.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_NAME" xml:space="preserve">
+    <value>Emissionen als CO₂-Äquivalent</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_ERL" xml:space="preserve">
+    <value>Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? In der Katalogverwaltung ist die Wahl gesperrt — dort gilt die Vorgabe des Projekts.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2_ERL" xml:space="preserve">
+    <value>Der CO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_SO2_ERL" xml:space="preserve">
+    <value>Der SO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_NOX_ERL" xml:space="preserve">
+    <value>Der NOx-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_ANTEIL_AKTIV_ERL" xml:space="preserve">
+    <value>Ist dieser Anteil gepflegt? Ausgeschaltet heißt „kein Anteil“ und nicht „null“ — der Betrag daneben wirkt dann nicht und geht auch nicht in die Summe ein.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_BESCHAFFUNG_ERL" xml:space="preserve">
+    <value>Der Einkaufsanteil des Strompreises — was der Lieferant für die Energie selbst zahlt.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_VERTRIEB_ERL" xml:space="preserve">
+    <value>Der Vertriebsanteil des Strompreises — Marge, Abrechnung und Kundendienst des Lieferanten.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NETZ_ERL" xml:space="preserve">
+    <value>Der arbeitspreisbezogene Anteil des Netzentgelts. Der leistungsbezogene Anteil steht im Leistungspreis der Trägerkarte.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_STEUER_ERL" xml:space="preserve">
+    <value>Die Stromsteuer je Kilowattstunde. Der Regelsatz und der ermäßigte Satz stehen als Schnellwahl daneben.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KONZESSION_ERL" xml:space="preserve">
+    <value>Die Konzessionsabgabe der Gemeinde je Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_UMLAGEN_ERL" xml:space="preserve">
+    <value>Die gesetzlichen Umlagen als EINE Summe. Sie gilt, solange der Schalter „Umlagen aufschlüsseln“ aus ist.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_EINZELN_ERL" xml:space="preserve">
+    <value>Stehen die Umlagen einzeln statt als Summe? Eingeschaltet treten KWKG-, Offshore- und § 19-StromNEV-Umlage an die Stelle der Summenzeile.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KWKG_ERL" xml:space="preserve">
+    <value>Die KWKG-Umlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_OFFSHORE_ERL" xml:space="preserve">
+    <value>Die Offshore-Netzumlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NEV_ERL" xml:space="preserve">
+    <value>Die Umlage nach § 19 StromNEV je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_ENERGIESTEUER_ERL" xml:space="preserve">
+    <value>Die Energiesteuer im Arbeitspreis des Brennstoffs. Der Block zerlegt den Preis und ändert ihn nicht.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_CO2_ERL" xml:space="preserve">
+    <value>Der CO₂-Bestandteil nach BEHG im Arbeitspreis des Brennstoffs.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_NETZ_ERL" xml:space="preserve">
+    <value>Das Netz- und Messentgelt im Arbeitspreis des Brennstoffs.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_VERTRIEB_ERL" xml:space="preserve">
+    <value>Beschaffung und Vertrieb im Arbeitspreis des Brennstoffs — der Rest, der nach Steuer, CO₂ und Netzentgelt bleibt.</value>
+  </data>
+  <data name="KI_DLG_ETV_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger, von dem die neue Variante abstammt. Ihn zu setzen belegt den Variantennamen vor.</value>
+  </data>
+  <data name="KI_DLG_ETV_NAME_ERL" xml:space="preserve">
+    <value>Die Bezeichnung der neuen Variante. Sie darf nicht leer sein; sonst bleibt der Dialog beim OK stehen.</value>
+  </data>
+  <data name="KI_DLG_LPR_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr, für das die zwölf Monatssätze gelten. Je Träger und Jahr gibt es genau eine Reihe.</value>
+  </data>
+  <data name="KI_DLG_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KI_DLG_LPR_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der zwölf Monatssätze — Anzeige. Sie folgt dem Leistungspreismodus des Trägers.</value>
+  </data>
+  <data name="KI_DLG_KONTEXT_NAME" xml:space="preserve">
+    <value>Bezug</value>
+  </data>
+  <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
+    <value>Zu welchem Energieträger die Reihe gehört — Anzeige.</value>
+  </data>
+  <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des Kostenprofils. Unter ihm steht es im Katalog und in der Trägerkarte.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
+    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen.</value>
+  </data>
+  <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige.</value>
+  </data>
+  <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
+    <value>Die Vorlagenvariante, deren Positionen die Tabelle zeigt — nur im Stammkontext. Sie zu wechseln lädt einen anderen Positionssatz und ist deshalb kein Feldwert; der Assistent nennt sie und die Alternativen, setzen lässt sie sich hier nicht.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KFK" xml:space="preserve">
+    <value>Kostenfaktoren-Katalog</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_NAME" xml:space="preserve">
+    <value>Kostenfaktor</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_ERL" xml:space="preserve">
+    <value>Der im Raster markierte Kostenfaktor. Ihn zu setzen markiert ihn — erst danach greift „Löschen“.</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_NAME" xml:space="preserve">
+    <value>Bezeichner der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_ERL" xml:space="preserve">
+    <value>Der Bezeichner, unter dem „Neu“ einen Kostenfaktor anlegt. Ein leerer Bezeichner legt nichts an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_EMK" xml:space="preserve">
+    <value>Emissionsarten und Katalog</value>
+  </data>
+  <data name="KI_DLG_EMK_MODUS_ERL" xml:space="preserve">
+    <value>Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? Die Wahl gilt für die Anzeige beider Raster und für die Summe darunter.</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_NAME" xml:space="preserve">
+    <value>Markierte Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_ERL" xml:space="preserve">
+    <value>Die im oberen Raster markierte Emissionsart. Sie entscheidet, welche Werte darunter stehen und worauf „Ändern“ und „Löschen“ greifen.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_NAME" xml:space="preserve">
+    <value>Markierter Emissionswert</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_ERL" xml:space="preserve">
+    <value>Der im unteren Raster markierte Wert der gewählten Art. Er ist es, den „Übernehmen“ an den Energieträger gibt.</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_NAME" xml:space="preserve">
+    <value>Kürzel der Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_ERL" xml:space="preserve">
+    <value>Das Kürzel der bearbeiteten Art (CO2, CH4, N2O). An einer Art der Auslieferung lässt es sich nicht ändern.</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_NAME" xml:space="preserve">
+    <value>Name der Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_ERL" xml:space="preserve">
+    <value>Der Klartextname der bearbeiteten Art, wie er in beiden Rastern steht.</value>
+  </data>
+  <data name="KI_DLG_EMK_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der bearbeiteten Art — Gramm oder Milligramm je Kilowattstunde. Sie gilt für alle Werte dieser Art.</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_NAME" xml:space="preserve">
+    <value>Treibhauspotenzial (GWP₁₀₀)</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_ERL" xml:space="preserve">
+    <value>Der Faktor, mit dem die Art in CO₂-Äquivalent umgerechnet wird. An einer Pflichtart ist er gesperrt.</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_NAME" xml:space="preserve">
+    <value>Quelle des Äquivalenzfaktors</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_ERL" xml:space="preserve">
+    <value>Woher das Treibhauspotenzial stammt (IPCC-Bericht, Norm, eigene Festlegung).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_NAME" xml:space="preserve">
+    <value>Herkunft des Wertes</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_ERL" xml:space="preserve">
+    <value>Woher der bearbeitete Emissionswert stammt (GEMIS, Datenblatt, eigene Messung).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_NAME" xml:space="preserve">
+    <value>Emissionswert</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_ERL" xml:space="preserve">
+    <value>Der Zahlenwert selbst, in der Einheit seiner Art.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_NAME" xml:space="preserve">
+    <value>Wert ist bereits CO₂-Äquivalent</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_ERL" xml:space="preserve">
+    <value>Ist der Wert schon in CO₂-Äquivalent angegeben? Dann wird er nicht ein zweites Mal mit dem Treibhauspotenzial multipliziert.</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_NAME" xml:space="preserve">
+    <value>Als Vorlage für weitere Träger</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_ERL" xml:space="preserve">
+    <value>Soll der neue Wert auch für andere Energieträger als Vorschlag gelten? Der Schalter steht nur bei einer Neuanlage mit Trägerbezug.</value>
+  </data>
+  <data name="KI_DLG_MASKE_NUD" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)</value>
+  </data>
+  <data name="KI_DLG_NUD_SUCHE_ERL" xml:space="preserve">
+    <value>Der Filtertext über der Tabelle. Er blendet Sätze aus, deren Technik oder Positionsart ihn nicht enthält.</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_NAME" xml:space="preserve">
+    <value>Technik der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_ERL" xml:space="preserve">
+    <value>Die Technik, unter der „Neu“ den Satz anlegt. Leer heißt „technikübergreifend“ — der Satz gilt dann für alle Gewerke.</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_NAME" xml:space="preserve">
+    <value>Positionsart der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_ERL" xml:space="preserve">
+    <value>Die Positionsart, unter der „Neu“ den Satz anlegt — der Name, unter dem ihn eine Kostenposition später findet.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_NAME" xml:space="preserve">
+    <value>Nutzungsdauer der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_ERL" xml:space="preserve">
+    <value>Die kalkulatorische Nutzungsdauer des neuen Satzes nach VDI 2067.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_NAME" xml:space="preserve">
+    <value>AfA der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_ERL" xml:space="preserve">
+    <value>Die steuerliche Abschreibungsdauer des neuen Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen.</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_NAME" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_ERL" xml:space="preserve">
+    <value>Die kalkulatorische Nutzungsdauer dieses Satzes nach VDI 2067. Sie bestimmt, wie oft eine Position im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_NAME" xml:space="preserve">
+    <value>AfA steuerlich</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_ERL" xml:space="preserve">
+    <value>Die steuerliche Abschreibungsdauer dieses Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen.</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_NAME" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Dauer stammt (VDI 2067, AfA-Tabelle, Herstellerangabe, eigene Festlegung).</value>
+  </data>
+  <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
+    <value>Kostenposition bearbeiten</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_NAME" xml:space="preserve">
+    <value>Bezeichnung der Position</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_ERL" xml:space="preserve">
+    <value>Der Name der Kostenposition, wie er in der Vorlage und im Bericht steht.</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_NAME" xml:space="preserve">
+    <value>Kostenart</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_ERL" xml:space="preserve">
+    <value>Die Kostenart nach VDI 2067 — Kapital, Bedarf, Betrieb oder sonstige. Sie entscheidet, in welcher Kategorie die Position in der Auswertung erscheint.</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_NAME" xml:space="preserve">
+    <value>Position ist ein Erlös</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_ERL" xml:space="preserve">
+    <value>Ist die Position ein ERLÖS und keine Kosten? Ein Erlös geht mit umgekehrtem Vorzeichen in den Kapitalwert ein.</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_NAME" xml:space="preserve">
+    <value>Positionsart</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_ERL" xml:space="preserve">
+    <value>Die Positionsart, aus der die Nutzungsdauer kommt. Ohne sie rechnet die Position mit der Nutzungsdauer ihrer Komponente.</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_NAME" xml:space="preserve">
+    <value>Empfehlung von</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_ERL" xml:space="preserve">
+    <value>Die untere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre.</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_NAME" xml:space="preserve">
+    <value>Empfehlung bis</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_ERL" xml:space="preserve">
+    <value>Die obere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre.</value>
+  </data>
+  <data name="KI_DLG_MASKE_CSE" xml:space="preserve">
+    <value>Worst- und Best-Case einer Position</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_NAME" xml:space="preserve">
+    <value>Eingabe als Prozentabweichung</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_ERL" xml:space="preserve">
+    <value>Tragen die zwei Kostenfelder eine ABWEICHUNG vom Erwartungswert in Prozent statt eines Betrags in Euro? Ohne gepflegten Erwartungswert ist der Prozentmodus gesperrt.</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_NAME" xml:space="preserve">
+    <value>Kosten im besten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_ERL" xml:space="preserve">
+    <value>Die Kosten der Position im günstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_NAME" xml:space="preserve">
+    <value>Kosten im schlechtesten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_ERL" xml:space="preserve">
+    <value>Die Kosten der Position im ungünstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag.</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer im besten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_ERL" xml:space="preserve">
+    <value>Die Nutzungsdauer der Position im günstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer im schlechtesten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_ERL" xml:space="preserve">
+    <value>Die Nutzungsdauer der Position im ungünstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_NAME" xml:space="preserve">
+    <value>Startjahr der Zahlung</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr des Betrachtungszeitraums, in dem die Zahlung beginnt; 0 heißt „im ersten Jahr“.</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_NAME" xml:space="preserve">
+    <value>Position ist ein Zuschuss</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_ERL" xml:space="preserve">
+    <value>Ist die Position ein ZUSCHUSS und keine Ausgabe? Der Schalter steht nur dort, wo ein Zuschuss überhaupt möglich ist.</value>
+  </data>
+  <data name="KI_DLG_BLOCK_VORLAGE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="KI_DLG_MASKE_WPA" xml:space="preserve">
+    <value>Wirtschaftlichkeits-Parameter</value>
+  </data>
+  <data name="KI_DLG_WPA_ZINS_ERL" xml:space="preserve">
+    <value>Der Kalkulationszinssatz i der Barwertrechnung nach VDI 2067. Er bestimmt, wie stark spätere Zahlungen gegenüber heutigen abgewertet werden.</value>
+  </data>
+  <data name="KI_DLG_WPA_JAHRE_ERL" xml:space="preserve">
+    <value>Der Betrachtungszeitraum T in Jahren. Über ihn läuft die Barwertrechnung; Ersatzbeschaffungen und Restwerte richten sich nach ihm.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_E_ERL" xml:space="preserve">
+    <value>Die jährliche Preissteigerung der Energiekosten p_E. Sie indiziert Brennstoff- und Strompreise über den Betrachtungszeitraum.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_B_ERL" xml:space="preserve">
+    <value>Die jährliche Preissteigerung der Betriebskosten p_B — Wartung, Instandhaltung, Bedienung.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_I_ERL" xml:space="preserve">
+    <value>Die jährliche Preissteigerung der Investition p_I. Leer heißt „wie Betrieb“, nicht „0 %/a“; der Satz indiziert Ersatzbeschaffungen und die Preisbasis des Restwerts.</value>
+  </data>
+  <data name="KI_DLG_WPA_EINSP_ERL" xml:space="preserve">
+    <value>Die Einspeisevergütung für PV-Strom. Sie gilt für die ganze Anwendung: Sie bewertet den eingespeisten Strom UND stellt den Verkaufspreis der Speicherwelt.</value>
+  </data>
+  <data name="KI_DLG_WPA_CO2_ERL" xml:space="preserve">
+    <value>Der konstante CO₂-Preis; 0 heißt „Pfad aus dem Gesetzeskatalog“ und nicht „kein Preis“.</value>
+  </data>
+  <data name="KI_DLG_WPA_PARK_ERL" xml:space="preserve">
+    <value>Der Referenz-Kraftwerkspark, gegen den die Stromgutschrift gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_WPA_BILANZJAHR_ERL" xml:space="preserve">
+    <value>Das Bilanzjahr der Emissionsrechnung; 0 heißt „nicht gepflegt“.</value>
+  </data>
+  <data name="KI_DLG_WPA_METHODE_ERL" xml:space="preserve">
+    <value>Wie die Emissionen des KWK-Stroms bilanziert werden — aus dem Katalog, mit Stromgutschrift, ohne Gutschrift oder über Substitution.</value>
+  </data>
+  <data name="KI_DLG_WPA_BIOMASSE_ERL" xml:space="preserve">
+    <value>Wie die Verbrennung von Biomasse bilanziert wird — Nullansatz oder tatsächliche Verbrennungsemissionen.</value>
+  </data>
+  <data name="KI_DLG_WPA_NACHWEIS_ERL" xml:space="preserve">
+    <value>Liegt ein Nachhaltigkeitsnachweis für die eingesetzte Biomasse vor? Ohne ihn gilt der Nullansatz nicht.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ZINS_ERL" xml:space="preserve">
+    <value>Der Kalkulationszins in diesem Szenario. Das Feld zeigt den WIRKSAMEN Satz — die Vorgabe liegt einen Prozentpunkt neben dem Erwartungswert; wer tippt, pflegt einen eigenen.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_E_ERL" xml:space="preserve">
+    <value>Die Preissteigerung der Energiekosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_B_ERL" xml:space="preserve">
+    <value>Die Preissteigerung der Betriebskosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_I_ERL" xml:space="preserve">
+    <value>Die Preissteigerung der Investition in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem wirksamen Erwartungssatz.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_INVEST_ERL" xml:space="preserve">
+    <value>Die Änderung der Investition in diesem Szenario. Sie greift NUR auf Positionen ohne eigenen Szenariowert.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ERTRAG_ERL" xml:space="preserve">
+    <value>Die Änderung der Erträge in diesem Szenario. Sie greift auf Einspeiseerlös und PV-Vergütung, nicht auf die gesetzlichen Erlösreihen.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_DAUER_ERL" xml:space="preserve">
+    <value>Die Änderung der Nutzungsdauern in diesem Szenario, in Jahren. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BHW" xml:space="preserve">
+    <value>BHKW-Wirtschaftlichkeit</value>
+  </data>
+  <data name="KI_DLG_BHW_MODUL_ERL" xml:space="preserve">
+    <value>Das BHKW-Modul, dessen Angaben darunter stehen. Alle Felder mit der Vorsilbe „Anlage“ gehören zu ihm; die Felder mit „Projekt“ gelten für alle Module.</value>
+  </data>
+  <data name="KI_DLG_BHW_STICHTAG_A_ERL" xml:space="preserve">
+    <value>Der Stichtag der Bestellung oder Genehmigung dieser Anlage. Er entscheidet über die Förderfähigkeit nach KWKG.</value>
+  </data>
+  <data name="KI_DLG_BHW_IBN_A_ERL" xml:space="preserve">
+    <value>Die Inbetriebnahme dieser Anlage. Ab ihr laufen Förderdauer und Vollbenutzungsstunden-Staffel.</value>
+  </data>
+  <data name="KI_DLG_BHW_ART_ERL" xml:space="preserve">
+    <value>Die Anlagenart nach KWKG. Sie entscheidet über die Zuschlagsstaffel und die Ausschreibungspflicht.</value>
+  </data>
+  <data name="KI_DLG_BHW_FALL_ERL" xml:space="preserve">
+    <value>Der Eigenstromfall nach § 6 Abs. 3 KWKG — er entscheidet, ob eigenverbrauchter Strom überhaupt einen Zuschlag bekommt.</value>
+  </data>
+  <data name="KI_DLG_BHW_SATZ_EINSP_ERL" xml:space="preserve">
+    <value>Der KWKG-Zuschlag auf eingespeisten Strom dieser Anlage; 0 heißt „kein eigener Satz“ — dann gilt die gesetzliche Staffel.</value>
+  </data>
+  <data name="KI_DLG_BHW_SATZ_EIGEN_ERL" xml:space="preserve">
+    <value>Der KWKG-Zuschlag auf eigenverbrauchten Strom dieser Anlage; 0 heißt „kein eigener Satz“.</value>
+  </data>
+  <data name="KI_DLG_BHW_KONTINGENT_ERL" xml:space="preserve">
+    <value>Das Vollbenutzungsstunden-Kontingent dieser Anlage; 0 heißt „nach § 8 abgeleitet“.</value>
+  </data>
+  <data name="KI_DLG_BHW_DECKEL_ERL" xml:space="preserve">
+    <value>Der Vollbenutzungsstunden-Deckel je Jahr; 0 heißt „degressive Staffel ab dem Inbetriebnahmejahr“.</value>
+  </data>
+  <data name="KI_DLG_BHW_KOSTENANTEIL_ERL" xml:space="preserve">
+    <value>Der Anteil dieser Anlage an der Gesamtinvestition. Er wird für die Stufenwahl nach § 8 gebraucht.</value>
+  </data>
+  <data name="KI_DLG_BHW_ES_A_ERL" xml:space="preserve">
+    <value>Die Energiesteuerwahl DIESER Anlage. Sie hat Vorrang vor der Projektvorgabe darunter.</value>
+  </data>
+  <data name="KI_DLG_BHW_AUF_A_ERL" xml:space="preserve">
+    <value>Die Aufteilungsmethode des Brennstoffs für DIESE Anlage — sie entscheidet, welcher Anteil auf Strom und welcher auf Wärme entfällt.</value>
+  </data>
+  <data name="KI_DLG_BHW_HILFS_ERL" xml:space="preserve">
+    <value>Der Hilfsenergieanteil der Anlage. 0 ist ein gültiger Wert und heißt „keine Hilfsenergie“.</value>
+  </data>
+  <data name="KI_DLG_BHW_EINSP_KWK_ERL" xml:space="preserve">
+    <value>Die Einspeisevergütung für KWK-Strom; 0 heißt „nicht gepflegt“ — dann gilt der PV-Satz aus den Wirtschaftlichkeits-Parametern.</value>
+  </data>
+  <data name="KI_DLG_BHW_ABSCHLAG_ERL" xml:space="preserve">
+    <value>Der Abschlag bei negativen Spotpreisen — der Anteil der Stunden, für die kein Zuschlag gezahlt wird.</value>
+  </data>
+  <data name="KI_DLG_BHW_PAUSCHAL_ERL" xml:space="preserve">
+    <value>Die Pauschalvergütung nach § 9 KWKG. Sie gilt nur bis 2 kW elektrischer Leistung und wird einmalig gezahlt.</value>
+  </data>
+  <data name="KI_DLG_BHW_STICHTAG_P_ERL" xml:space="preserve">
+    <value>Der projektweite KWKG-Stichtag. Er gilt für Module ohne eigenen Stichtag.</value>
+  </data>
+  <data name="KI_DLG_BHW_IBN_P_ERL" xml:space="preserve">
+    <value>Der Förderbeginn — das Startjahr der KWKG-Reihen des Projekts.</value>
+  </data>
+  <data name="KI_DLG_BHW_ES_P_ERL" xml:space="preserve">
+    <value>Die Energiesteuerwahl des PROJEKTS. Sie gilt für Module ohne eigene Wahl.</value>
+  </data>
+  <data name="KI_DLG_BHW_AUF_P_ERL" xml:space="preserve">
+    <value>Die Aufteilungsmethode des PROJEKTS. Sie gilt für Module ohne eigene Methode.</value>
+  </data>
+  <data name="KI_DLG_BHW_NUTZUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Jahresnutzungsgrad der KWK-Anlage; 0 heißt „nicht erfasst“. Er wird nur für § 53a Energiesteuergesetz gebraucht (Schwelle 70 %).</value>
+  </data>
+  <data name="KI_DLG_BHW_UA_ERL" xml:space="preserve">
+    <value>Die Unternehmensart nach Stromsteuergesetz. Sie entscheidet über die Befreiungstatbestände.</value>
+  </data>
+  <data name="KI_DLG_BHW_RAEUMLICH_ERL" xml:space="preserve">
+    <value>Ist der räumliche Zusammenhang von 4,5 km zwischen Erzeugung und Verbrauch gegeben? Ohne ihn entfällt die Stromsteuerbefreiung.</value>
+  </data>
+  <data name="KI_DLG_BHW_HOCHEFFIZIENZ_ERL" xml:space="preserve">
+    <value>Liegt ein Hocheffizienznachweis vor? Er ist Voraussetzung für einen Teil der Befreiungstatbestände.</value>
+  </data>
+  <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
+    <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
+  </data>
+  <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
+    <value>Tarifstruktur</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG" xml:space="preserve">
+    <value>Bezug</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSPEISUNG" xml:space="preserve">
+    <value>Einspeisung</value>
+  </data>
+  <data name="KI_DLG_TAR_REST" xml:space="preserve">
+    <value>Reststrom</value>
+  </data>
+  <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
+    <value>Wird die Tarifstruktur überhaupt angewendet? Ausgeschaltet rechnet die Simulation mit dem einfachen Arbeitspreis des Energieträgers.</value>
+  </data>
+  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
+    <value>Zonenmodell oder Rollenmodell. Das Zonenmodell rechnet mit vier Preiszonen und einer Leistungsstaffel, das Rollenmodell mit je einem Arbeits-, Grund- und Leistungspreis je Rolle.</value>
+  </data>
+  <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
+    <value>Der Preisstand, ab dem die Tarifstruktur gilt (ISO, JJJJ-MM-TT).</value>
+  </data>
+  <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
+    <value>Der Monat, mit dem die Winterzone beginnt.</value>
+  </data>
+  <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
+    <value>Der Monat, mit dem die Winterzone endet.</value>
+  </data>
+  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
+    <value>Die Stunde, mit der der Hochtarif beginnt — nur im Zonenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
+    <value>Die Stunde, mit der der Hochtarif endet (exklusiv) — nur im Zonenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
+    <value>Der Bezugspreis dieser Preiszone im Zonenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
+    <value>Der Einspeisepreis dieser Preiszone im Zonenmodell. Er gilt für PV UND KWK — beide teilen sich das Feld.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>Die Leistungsgrenze, ab der der zweite Staffelpreis gilt.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
+    <value>Der Leistungspreis unterhalb der Staffelgrenze.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
+    <value>Der Leistungspreis oberhalb der Staffelgrenze.</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
+    <value>Der Arbeitspreis der Bezugsrolle im Rollenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG_GRUND_ERL" xml:space="preserve">
+    <value>Der Grundpreis der Bezugsrolle im Rollenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_REST_ARBEIT_ERL" xml:space="preserve">
+    <value>Der Arbeitspreis der Reststromrolle — der Strom, den das Projekt trotz eigener Erzeugung beziehen muss.</value>
+  </data>
+  <data name="KI_DLG_TAR_REST_GRUND_ERL" xml:space="preserve">
+    <value>Der Grundpreis der Reststromrolle.</value>
+  </data>
+  <data name="KI_DLG_TAR_LM_ERL" xml:space="preserve">
+    <value>Das Leistungspreismodell dieser Rolle — monatlich, gestaffelt oder nach Jahreshöchstlast.</value>
+  </data>
+  <data name="KI_DLG_TAR_MONAT_ERL" xml:space="preserve">
+    <value>Der Monatspreis dieser Rolle — er gilt nur im monatlichen Leistungspreismodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSP_ARBEIT_ERL" xml:space="preserve">
+    <value>Der Einspeisepreis der Einspeiserolle im Rollenmodell.</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSP_GRUND_ERL" xml:space="preserve">
+    <value>Der Grundpreis der Einspeiserolle im Rollenmodell.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PVV" xml:space="preserve">
+    <value>Photovoltaik-Vergütung</value>
+  </data>
+  <data name="KI_DLG_PVV_AKTIV_ERL" xml:space="preserve">
+    <value>Wird die Vergütungsrechnung überhaupt angewendet? Ausgeschaltet bewertet die Wirtschaftlichkeit den eingespeisten Strom mit dem Satz aus den Wirtschaftlichkeits-Parametern.</value>
+  </data>
+  <data name="KI_DLG_PVV_LEISTUNG_ERL" xml:space="preserve">
+    <value>Die gesetzte Anlagenleistung; 0 heißt „keine“ — dann gilt die rechnerische Leistung aus den Anlagen des Projekts.</value>
+  </data>
+  <data name="KI_DLG_PVV_IBN_ERL" xml:space="preserve">
+    <value>Die Inbetriebnahme der Anlage (ISO). Sie entscheidet über den anzulegenden Wert und ist Pflicht, wenn die Rechnung gilt.</value>
+  </data>
+  <data name="KI_DLG_PVV_DEGRADATION_ERL" xml:space="preserve">
+    <value>Die jährliche Leistungsabnahme der Module; 0 heißt „keine“.</value>
+  </data>
+  <data name="KI_DLG_PVV_EINSPEISEART_ERL" xml:space="preserve">
+    <value>Überschuss- oder Volleinspeisung. Sie entscheidet über den anzulegenden Wert und darüber, ob Eigenverbrauch überhaupt gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_PVV_AW_ERL" xml:space="preserve">
+    <value>Der gesetzte anzulegende Wert; 0 heißt „Satz aus dem Gesetzeskatalog“.</value>
+  </data>
+  <data name="KI_DLG_PVV_VERMARKTUNG_ERL" xml:space="preserve">
+    <value>Die Vermarktungsform — Einspeisevergütung, Marktprämie, sonstige Direktvermarktung oder keine.</value>
+  </data>
+  <data name="KI_DLG_PVV_DV_ERL" xml:space="preserve">
+    <value>Das Direktvermarktungsentgelt. Es wirkt nur bei der Marktprämie.</value>
+  </data>
+  <data name="KI_DLG_PVV_PPA_ERL" xml:space="preserve">
+    <value>Der vereinbarte PPA-Preis; 0 heißt „keiner“. Er wirkt nur bei sonstiger Direktvermarktung.</value>
+  </data>
+  <data name="KI_DLG_PVV_PPA_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>Der Auf- oder Abschlag auf den Spotpreis im PPA. Er wirkt nur bei sonstiger Direktvermarktung.</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51_NAME" xml:space="preserve">
+    <value>§ 51 anwenden</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51_ERL" xml:space="preserve">
+    <value>Gilt § 51 EEG (kein Erlös bei negativen Preisen)? Automatisch heißt „nach Inbetriebnahme und Leistung entscheiden“.</value>
+  </data>
+  <data name="KI_DLG_PVV_IMSYS_ERL" xml:space="preserve">
+    <value>Das Einbaujahr des intelligenten Messsystems; 0 heißt „keins“. Es verschont die Anlage von einem Teil der Kappung.</value>
+  </data>
+  <data name="KI_DLG_PVV_AUSFALL_ERL" xml:space="preserve">
+    <value>Der angenommene Anteil der Erlöse, der durch negative Preise ausfällt.</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51A_ERL" xml:space="preserve">
+    <value>Wird der Ausfall nach § 51a EEG durch eine Verlängerung der Förderdauer ausgeglichen?</value>
+  </data>
+  <data name="KI_DLG_PVV_BEZUG_ERL" xml:space="preserve">
+    <value>Wird der Eigenverbrauch aus der Preisreihe des Stromträgers bewertet statt mit dem festen Arbeitspreis?</value>
+  </data>
+  <data name="KI_DLG_PVV_KAPPUNG_ERL" xml:space="preserve">
+    <value>Gilt die 60-Prozent-Kappung der Einspeiseleistung? Automatisch heißt „nach Inbetriebnahme und Messsystem entscheiden“.</value>
+  </data>
+  <data name="KI_DLG_MASKE_GSK" xml:space="preserve">
+    <value>Gesetzliche Parameter</value>
+  </data>
+  <data name="KI_DLG_MASKE_GSZ" xml:space="preserve">
+    <value>Gesetzliche Parameter — Zeile</value>
+  </data>
+  <data name="KI_DLG_GSK_KLASSE_ERL" xml:space="preserve">
+    <value>Die Klasse, deren Jahreszeilen die Liste zeigt — CO₂-Preispfad, KWKG-Sätze, Energie- und Stromsteuer und die übrigen Rubriken des Katalogs.</value>
+  </data>
+  <data name="KI_DLG_GSK_ZEILE_NAME" xml:space="preserve">
+    <value>Markierte Zeile</value>
+  </data>
+  <data name="KI_DLG_GSK_ZEILE_ERL" xml:space="preserve">
+    <value>Die in der Liste markierte Jahreszeile. Sie entscheidet, worauf „Ändern“ und „Löschen“ greifen.</value>
+  </data>
+  <data name="KI_DLG_GSZ_SCHLUESSEL_ERL" xml:space="preserve">
+    <value>Der Schlüssel der Zeile — der sprachneutrale Name, unter dem die Rechnung den Satz findet. Beim Ändern ist er gesperrt.</value>
+  </data>
+  <data name="KI_DLG_GSZ_KLASSE_ERL" xml:space="preserve">
+    <value>Die Klasse, zu der die Zeile gehört. Beim Ändern ist sie gesperrt — eine Zeile wechselt ihre Rubrik nicht.</value>
+  </data>
+  <data name="KI_DLG_GSZ_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr, ab dem der Wert gilt. Er gilt bis zur nächsten Zeile desselben Schlüssels.</value>
+  </data>
+  <data name="KI_DLG_GSZ_WERT_ERL" xml:space="preserve">
+    <value>Der Wert selbst. Ein leeres Feld heißt „der Satz ist ab diesem Jahr entfallen“ und nicht „null“.</value>
+  </data>
+  <data name="KI_DLG_GSZ_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit des Wertes. Sie gehört zur Zeile, nicht zur Klasse.</value>
+  </data>
+  <data name="KI_DLG_GSZ_STATUS_ERL" xml:space="preserve">
+    <value>Der Status der Zeile — gesetzt, Prognose oder entfallen. Er sagt, wie belastbar der Wert ist.</value>
+  </data>
+  <data name="KI_DLG_GSZ_QUELLE_ERL" xml:space="preserve">
+    <value>Die Fundstelle, aus der der Wert stammt — Gesetz, Verordnung oder Veröffentlichung samt Datum.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KSE" xml:space="preserve">
+    <value>Kosten (Berichte und Kosten)</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_NAME" xml:space="preserve">
+    <value>Markierte Anlage</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_ERL" xml:space="preserve">
+    <value>Die in der Kostentabelle markierte Anlage. Sie entscheidet, welche Komponente die Kostenverwaltung öffnet, und hebt ihre Energieträgerzeile hervor.</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_NAME" xml:space="preserve">
+    <value>Projekt der Seite</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_ERL" xml:space="preserve">
+    <value>Das Projekt, dessen Kosten die Seite zeigt — Anzeige. Die Gegenüberstellung darüber gilt dagegen der ganzen Vergleichsgruppe.</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_NAME" xml:space="preserve">
+    <value>Statuszeile</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
+    <value>Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe.</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
+    <value>Wirtschaftlichkeit (Berichte und Kosten)</value>
+  </data>
+  <data name="KI_DLG_WSE_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario, unter dem die Kennzahlen gerechnet werden — Erwartungsfall, Best oder Worst. Die Sätze dahinter stehen im Dialog „Wirtschaftlichkeits-Parameter“.</value>
+  </data>
+  <data name="KI_DLG_WSE_SICHT_ERL" xml:space="preserve">
+    <value>Alle angehakten Stände gegen die Referenz der Gruppe — oder genau zwei Stände A und B. Die zweite Sicht steht nur offen, wenn die Gruppe mehr als einen Stand führt.</value>
+  </data>
+  <data name="KI_DLG_WSE_REFERENZ_ERL" xml:space="preserve">
+    <value>Die Referenz der Gruppe — die Unterlassensalternative nach DIN EN 17463, gegen die alle übrigen Stände gerechnet werden. Sie kann auch eine Variante sein.</value>
+  </data>
+  <data name="KI_DLG_WSE_A_ERL" xml:space="preserve">
+    <value>Der Stand A der Paarsicht; er ist dabei die Referenz. Die Liste führt B nicht — so sind A und B ohne Meldung verschieden.</value>
+  </data>
+  <data name="KI_DLG_WSE_B_ERL" xml:space="preserve">
+    <value>Der Stand B der Paarsicht. Die Liste führt A nicht — so sind A und B ohne Meldung verschieden.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
+    <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+  </data>
 </root>

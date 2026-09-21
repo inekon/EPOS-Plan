@@ -27,6 +27,8 @@
    stellt nur die Frage, geloescht wird in der Antwort. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -183,7 +185,52 @@
     protected override void OnInitialized()
     {
         _zeilen = new List<KostenfaktorZeile>(Zeilen);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOSTENFAKTOR_KATALOG,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KostenfaktorKatalogKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: der Bezeichner der Neuzeile und die Markierung im
+    /// Raster. Das Raster selbst zeigt je Faktor nur seine Bezeichnung — sie ist der
+    /// Anzeigetext der Wahl.
+    /// </summary>
+    private KostenfaktorKatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KostenfaktorKatalogKiSicht
+        {
+            NeuerNameLesen = () => _neuerName,
+            NeuerNameSetzen = BeiNeuerName,
+
+            MarkierungLesen = () => _gewaehlt,
+            MarkierungSetzen = id => _gewaehlt = id,
+            FaktorEintraege = () => KiMaskenanmeldung.Eintraege(
+                _zeilen, z => z.StammId, z => z.Bezeichnung)
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Neu" und „Löschen" schreiben unmittelbar in den
+    /// Katalog; beide sind datenbankwirksam und laufen über <c>dialog_speichern</c>
+    /// samt Rückfrage und Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

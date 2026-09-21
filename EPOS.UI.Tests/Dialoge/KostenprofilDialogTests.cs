@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Dom;
+using System.Globalization;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Kosten;
@@ -526,5 +527,42 @@ public class KostenprofilDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Bezeichner und Wochentag
+    /// sind die Einstellwerte; die 36 Zahlenfelder der Monats- und Wochentafel
+    /// bleiben draußen.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_wechselt_den_Wochentag()
+    {
+        var cut = Zeige(p => p.Add(x => x.Bezeichner, "Nachtstrom"));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KOSTENPROFIL));
+
+        KiFeldzugang bezeichner =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENPROFIL, "bezeichner");
+        Assert.Equal("Nachtstrom", bezeichner.Lesen());
+
+        KiFeldzugang tag =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENPROFIL, "wochentag");
+        Assert.NotNull(tag);
+        Assert.True(tag.Setzbar);
+
+        string zweiter = tag.Wahleintraege()[1].Text;
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(tag, zweiter);
+        Assert.True(wahl.Ok, wahl.Grund);
+        tag.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(1, Convert.ToInt32(tag.Lesen(), CultureInfo.InvariantCulture));
+
+        // Die 36 Zahlenfelder sind NICHT deklariert - eine Wertetafel.
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENPROFIL)!.FindeFeld("januar"));
     }
 }

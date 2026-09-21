@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using AngleSharp.Dom;
 using Bunit;
+using WindowsFormsApplication1;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
@@ -1739,5 +1740,57 @@ public class EnergietraegerDialogTests : EposBunitContext
 
         Assert.Contains("Erdgas H", Listenmarkup(cut));
         Assert.Null(cut.Instance.Traeger);
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>EnergietraegerKiSicht</c>: Der gewählte Träger ist ein
+    /// WAHLFELD über seinen Anzeigetext, und die Preise der Karte lassen sich lesen
+    /// und setzen — auch die des Preisblocks, der als Baustein in ihr steht.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_ihre_Felder()
+    {
+        var cut = Zeige(ansicht: new EnergietraegerAnsicht
+        {
+            Stand = Stand(strom: true),
+            StammName = "Erdgas H"
+        });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ENERGIETRAEGER));
+
+        // Eine Zahl der Traegerkarte: lesen und setzen.
+        KiFeldzugang preis =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "arbeitspreis");
+        Assert.NotNull(preis);
+        Assert.True(preis.Setzbar);
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(preis, "0,71");
+        Assert.True(neu.Ok, neu.Grund);
+        preis.Setzen(neu.Wert);
+        Assert.Equal(0.71, _ansicht.Stand!.Arbeitspreis, 3);
+
+        // Der Preisblock ist ein BAUSTEIN und traegt trotzdem Felder DIESER Maske.
+        KiFeldzugang beschaffung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "strom_beschaffung");
+        Assert.Equal(9.75, Convert.ToDouble(beschaffung.Lesen(), CultureInfo.InvariantCulture), 3);
+
+        // Der Traeger ist eine WAHL ueber den Anzeigetext.
+        KiFeldzugang traeger =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "energietraeger");
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(traeger, "Flüssiggas");
+        Assert.True(wahl.Ok, wahl.Grund);
+        traeger.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(12, _geladen);
+
+        // Ein nur lesbares Feld bietet sich nicht zum Setzen an.
+        KiFeldzugang effektiv =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.ENERGIETRAEGER, "effektivpreis");
+        Assert.False(effektiv.Setzbar);
     }
 }

@@ -4,6 +4,7 @@ using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -324,5 +325,39 @@ public class CaseEingabeDialogTests : EposBunitContext
 
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
                         f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der PROZENTMODUS läuft
+    /// über denselben Weg wie die Optionsgruppe der Maske: Er rechnet die zwei
+    /// Kostenfelder um, statt nur einen Schalter umzulegen.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_schaltet_den_Prozentmodus()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.CASE_EINGABE));
+
+        KiFeldzugang jahr = KiMaskenbruecke.Feldzugang(KiMaskennamen.CASE_EINGABE, "startjahr");
+        Assert.NotNull(jahr);
+        Assert.True(jahr.Setzbar);
+        jahr.Setzen(3);
+        cut.Render();
+        Assert.Equal(3, Convert.ToInt32(jahr.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldzugang modus =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.CASE_EINGABE, "prozentmodus");
+        Assert.False(cut.Instance.ProzentModus);
+
+        KiFeldumsetzung an = KiFeldwandler.Wandle(modus, "ja");
+        Assert.True(an.Ok, an.Grund);
+        modus.Setzen(an.Wert);
+        cut.Render();
+
+        Assert.True(cut.Instance.ProzentModus);
     }
 }

@@ -461,4 +461,45 @@ public class TarifstrukturDialogTests : EposBunitContext
 
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld--kurz").Count > 0);
     }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>TarifstrukturKiSicht</c> auf die lebenden Eingabefelder; der
+    /// <c>TarifParameter</c> des Kerns bleibt bis zum OK unangetastet.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_eine_Preiszone()
+    {
+        var cut = Aufbauen(Satz());
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.TARIFSTRUKTUR));
+
+        KiFeldzugang zone = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.TARIFSTRUKTUR, "bezug_winter_hoch");
+        Assert.NotNull(zone);
+        Assert.True(zone.Setzbar);
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(zone, "0,2850");
+        Assert.True(neu.Ok, neu.Grund);
+        zone.Setzen(neu.Wert);
+        cut.Render();
+        Assert.Equal(0.285, Convert.ToDouble(zone.Lesen(), CultureInfo.InvariantCulture), 4);
+
+        // Das MODELL ist ein Wahlfeld ueber seinen Steuerwert.
+        KiFeldzugang modell = KiMaskenbruecke.Feldzugang(KiMaskennamen.TARIFSTRUKTUR, "modell");
+        Assert.NotEmpty(modell.Wahleintraege());
+
+        KiFeldumsetzung rollen = KiFeldwandler.Wandle(modell, modell.Wahleintraege()[1].Text);
+        Assert.True(rollen.Ok, rollen.Grund);
+        modell.Setzen(rollen.Wert);
+        cut.Render();
+        Assert.True(cut.Instance.Rollen);
+
+        // Die vier Leistungsstufen je Rolle sind NICHT deklariert - eine Wertetafel.
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.TARIFSTRUKTUR)!
+                              .FindeFeld("bezug_stufe_1"));
+    }
 }

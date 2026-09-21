@@ -31,6 +31,8 @@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using EPOS.UI.Dialoge.Wirtschaftlichkeit
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
@@ -741,7 +743,95 @@
     /// <summary>Die angehakten Versionen inklusive Stamm (Prüfhilfe).</summary>
     public IReadOnlyList<int> Gewaehlte => _gewaehlt;
 
-    protected override void OnInitialized() => Auffrischen();
+    protected override void OnInitialized()
+    {
+        Auffrischen();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private WirtschaftlichkeitSeiteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die fünf Wahlfelder, die entscheiden, WAS gegen WAS
+    /// unter welchem Szenario gerechnet wird, und der Freitext der nicht monetären
+    /// Wirkungen.
+    /// </summary>
+    /// <remarks>
+    /// Jede Setzung läuft durch denselben Rückruf wie ein Griff in die Klappliste:
+    /// Die Seite holt sich dabei einen NEUEN Stand aus der Hülle und rechnet das
+    /// Warnband nach. An diesen Wegen vorbei geschrieben stünden die Kennzahlen von
+    /// vorhin neben der neuen Wahl.
+    /// </remarks>
+    private WirtschaftlichkeitSeiteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new WirtschaftlichkeitSeiteKiSicht
+        {
+            SzenarioLesen = () => _stand.SzenarioId,
+            SzenarioSetzen = BeiSzenario,
+            SzenarioEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Szenarien, z => z.Id, z => z.Text),
+
+            SichtLesen = () => _stand.Sicht,
+            SichtSetzen = BeiSicht,
+            SichtEintraege = () => KiMaskenanmeldung.Eintraege(
+                Sichten, z => z.Id, z => z.Text),
+
+            ReferenzLesen = () => _stand.IdReferenz,
+            ReferenzSetzen = BeiReferenz,
+            StandEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Staende, z => z.Id, z => z.Text),
+
+            ALesen = () => _stand.SichtA,
+            ASetzen = BeiA,
+            AEintraege = () => KiMaskenanmeldung.Eintraege(
+                EintraegeA, z => z.Id, z => z.Text),
+
+            BLesen = () => _stand.SichtB,
+            BSetzen = BeiB,
+            BEintraege = () => KiMaskenanmeldung.Eintraege(
+                EintraegeB, z => z.Id, z => z.Text),
+
+            WirkungLesen = () => _nichtMonetaer,
+            WirkungSetzen = wert => _nichtMonetaer = wert ?? ""
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Speicherweg schreibt die nicht monetären Wirkungen</b> — derselbe Weg
+    /// wie der Knopf daneben. Eine Seite hat kein OK; alles andere auf ihr ist
+    /// entweder eine Wahl, die sofort nachrechnet, oder Anzeige.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => WirkungSpeichern is null,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (WirkungSpeichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", BewertungTitel));
+
+        WirkungSchreiben();
+        return string.IsNullOrEmpty(_fehler)
+                   ? KiKern.KiErgebnis.Ok(BewertungTitel, anzahl: 1)
+                   : KiKern.KiErgebnis.Abgelehnt(_fehler);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

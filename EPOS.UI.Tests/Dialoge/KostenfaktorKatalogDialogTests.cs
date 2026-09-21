@@ -1,8 +1,10 @@
 ﻿using Bunit;
+using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -335,5 +337,38 @@ public class KostenfaktorKatalogDialogTests : BunitContext
         cut.Find(".epos-infoknopf").Click();
 
         Assert.Equal(new[] { "Form_KostenAdmin.btn_Help" }, hilfe.Geoeffnet);
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der markierte Kostenfaktor
+    /// ist ein WAHLFELD über seinen Anzeigetext; ihn zu setzen markiert ihn im
+    /// Raster, und erst danach greift „Löschen".
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_markiert_im_Raster()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KOSTENFAKTOR_KATALOG));
+
+        KiFeldzugang name =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENFAKTOR_KATALOG, "neuer_name");
+        Assert.NotNull(name);
+        Assert.True(name.Setzbar);
+        name.Setzen("Planung");
+        cut.Render();
+        Assert.Equal("Planung", name.Lesen());
+
+        KiFeldzugang faktor =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENFAKTOR_KATALOG, "kostenfaktor");
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(faktor, "Wartung");
+        Assert.True(wahl.Ok, wahl.Grund);
+        faktor.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(7, Convert.ToInt32(faktor.Lesen(), CultureInfo.InvariantCulture));
     }
 }

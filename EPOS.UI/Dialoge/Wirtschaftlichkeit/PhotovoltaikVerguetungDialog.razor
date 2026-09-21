@@ -32,6 +32,7 @@
 
 @using System.Globalization
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -360,6 +361,9 @@
 
     protected override void OnInitialized()
     {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PV_VERGUETUNG,
+                                          () => KiSicht(), KiHaken());
+
         _schalter = PvSchalterwahlen.Liste(_t);
         _einspeisearten = new[] { (0, _t.Ueberschuss), (1, _t.Voll) };
         _vermarktungsformen = new[]
@@ -757,4 +761,92 @@
 
     private Task BeiTaste(KeyboardEventArgs e) =>
         e.Key == "Escape" ? Schliessen(PvSprung.Keiner) : Task.CompletedTask;
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private PhotovoltaikVerguetungKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: das Vergütungsmodell des Projekts, gesetzt über die
+    /// Wege der Maske.
+    /// </summary>
+    /// <remarks>
+    /// Leistung, Inbetriebnahme, Degradation, Einspeiseart und Vermarktungsform
+    /// laufen über eigene Wege, die die ZULÄSSIGKEIT neu prüfen und eine 0 als „nicht
+    /// gepflegt" führen. An ihnen vorbei zu schreiben zeigte eine Leistung von 0
+    /// statt „keine" und die Warnungen von vorhin.
+    /// </remarks>
+    private PhotovoltaikVerguetungKiSicht KiSicht()
+    {
+        return _kiSicht ??= new PhotovoltaikVerguetungKiSicht
+        {
+            ModellLesen = () => Modell,
+
+            LeistungSetzen = LeistungGeaendert,
+            DegradationSetzen = DegradationGeaendert,
+            IbnSetzen = wert => IbnGeaendert(KiTag(wert)),
+            EinspeiseartSetzen = wert => EinspeiseartGewaehlt(
+                string.Equals(wert, DbWerte.PV_EINSPEISEART_VOLL, StringComparison.Ordinal) ? 1 : 0),
+            VermarktungSetzen = KiVermarktung,
+
+            EinspeiseartEintraege = () => KiMaskenanmeldung.Eintraege(new[]
+            {
+                new KiWahleintrag(DbWerte.PV_EINSPEISEART_UEBERSCHUSS, _t.Ueberschuss),
+                new KiWahleintrag(DbWerte.PV_EINSPEISEART_VOLL, _t.Voll)
+            }, z => z.Schluessel, z => z.Text),
+
+            VermarktungEintraege = () => KiMaskenanmeldung.Eintraege(new[]
+            {
+                new KiWahleintrag(DbWerte.PV_VERMARKTUNG_EV, _t.Ev),
+                new KiWahleintrag(DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE, _t.Marktpraemie),
+                new KiWahleintrag(DbWerte.PV_VERMARKTUNG_SONSTIGE_DV, _t.Ppa),
+                new KiWahleintrag(DbWerte.PV_VERMARKTUNG_KEINE, _t.Keine)
+            }, z => z.Schluessel, z => z.Text),
+
+            SchalterEintraege = () => KiMaskenanmeldung.Eintraege(
+                _schalter, z => z.Wert, z => z.Text),
+
+            Nachziehen = () => _ = InvokeAsync(StateHasChanged)
+        };
+    }
+
+    /// <summary>Ein ISO-Datum als <c>DateOnly</c>; leer bleibt leer.</summary>
+    private static DateOnly? KiTag(string? wert)
+    {
+        if (string.IsNullOrWhiteSpace(wert)) return null;
+        return DateOnly.TryParse(wert, CultureInfo.InvariantCulture, out DateOnly d)
+            || DateOnly.TryParse(wert, CultureInfo.CurrentCulture, out d) ? d : null;
+    }
+
+    /// <summary>Die Vermarktungsform über ihren Steuerwert setzen.</summary>
+    private void KiVermarktung(string wert)
+    {
+        int nummer = wert switch
+        {
+            _ when string.Equals(wert, DbWerte.PV_VERMARKTUNG_MARKTPRAEMIE, StringComparison.Ordinal) => 1,
+            _ when string.Equals(wert, DbWerte.PV_VERMARKTUNG_SONSTIGE_DV, StringComparison.Ordinal) => 2,
+            _ when string.Equals(wert, DbWerte.PV_VERMARKTUNG_KEINE, StringComparison.Ordinal) => 3,
+            _ => 0
+        };
+        VermarktungGewaehlt(nummer);
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Übernehmen" schreibt das Vergütungsmodell in die
+    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
+    /// Sicherungspunkt. Der Marktwertimport ist ein LADEVORGANG und gehört ins
+    /// Aktionsregister.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 }

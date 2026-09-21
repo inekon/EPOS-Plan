@@ -27,6 +27,8 @@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -248,7 +250,69 @@
         }
     }
 
-    protected override void OnInitialized() => Uebernehmen(Zeilen);
+    protected override void OnInitialized()
+    {
+        Uebernehmen(Zeilen);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.NUTZUNGSDAUER,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private NutzungsdauerKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die fünf Kopffelder und die LEBENDE Zeilenliste,
+    /// über die der Katalog seine drei Spalten auflöst.
+    /// </summary>
+    /// <remarks>
+    /// Die Tabelle wird an Ort und Stelle bearbeitet; ihre Zeilen sind veränderlich
+    /// (<c>NutzungsdauerZeileAnzeige</c>) und entstehen und vergehen, solange der
+    /// Dialog offen steht. Deshalb liefert die Sicht die Liste bei jedem Zugriff neu
+    /// — dieselbe Bauart wie das Positionsraster der Kostenverwaltung.
+    /// </remarks>
+    private NutzungsdauerKiSicht KiSicht()
+    {
+        return _kiSicht ??= new NutzungsdauerKiSicht
+        {
+            SucheLesen = () => _suche,
+            SucheSetzen = SucheSetzen,
+
+            TechnikLesen = () => _neuTechnik,
+            TechnikSetzen = id => _neuTechnik = id,
+            TechnikEintraege = () => KiMaskenanmeldung.Eintraege(
+                Techniken, z => z.Id, z => z.Text),
+
+            ArtLesen = () => _neuArt,
+            ArtSetzen = w => _neuArt = w,
+            WertLesen = () => _neuWert,
+            WertSetzen = w => _neuWert = w,
+            AfaLesen = () => _neuAfa,
+            AfaSetzen = w => _neuAfa = w,
+
+            ZeilenLesen = () => _zeilen
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Speichern" und „OK" schreiben die geänderten Sätze
+    /// in den Katalog; das ist datenbankwirksam und läuft über
+    /// <c>dialog_speichern</c> samt Rückfrage und Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

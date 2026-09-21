@@ -127,6 +127,45 @@ public class KiDialogkatalogTests
         { KiMaskennamen.BRAUCHWASSER_ADMIN,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
 
+        // Welle KI-F4: Kosten und Wirtschaftlichkeit. Auch sie melden je eine
+        // SICHTKLASSE an - siehe OhneMarkupprobe.
+        { KiMaskennamen.ENERGIETRAEGER,
+          typeof(EPOS.UI.Dialoge.Kosten.EnergietraegerKiSicht) },
+        { KiMaskennamen.ENERGIETRAEGER_VARIANTE,
+          typeof(EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteKiSicht) },
+        { KiMaskennamen.LEISTUNGSPREISREIHE,
+          typeof(EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht) },
+        { KiMaskennamen.KOSTENPROFIL,
+          typeof(EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht) },
+        { KiMaskennamen.KOSTENFAKTOR_KATALOG,
+          typeof(EPOS.UI.Dialoge.Kosten.KostenfaktorKatalogKiSicht) },
+        { KiMaskennamen.EMISSIONSKATALOG,
+          typeof(EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht) },
+        { KiMaskennamen.NUTZUNGSDAUER,
+          typeof(EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht) },
+        { KiMaskennamen.VORLAGENPOSITION,
+          typeof(EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht) },
+        { KiMaskennamen.CASE_EINGABE,
+          typeof(EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht) },
+        { KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht) },
+        { KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitKiSicht) },
+        { KiMaskennamen.TARIFSTRUKTUR,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturKiSicht) },
+        { KiMaskennamen.PV_VERGUETUNG,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungKiSicht) },
+        { KiMaskennamen.GESETZESKATALOG,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogKiSicht) },
+        { KiMaskennamen.GESETZESKATALOG_ZEILE,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogZeileKiSicht) },
+
+        // Die zwei REITERBLAETTER der Ansicht „Berichte und Kosten".
+        { KiMaskennamen.KOSTENSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.KostenSeiteKiSicht) },
+        { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht) },
+
         { KiMaskennamen.BEDARF_ERGEBNIS,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
 
@@ -173,6 +212,12 @@ public class KiDialogkatalogTests
         // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
         // Parameter der Huelle herein.
         KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal" },
+
+        // Welle KI-F4: Die VARIANTE der Kostenverwaltung haengt am Stand, ihre Liste
+        // aber auch (KostenKomponenteStand.Varianten) - eine Begleiteigenschaft
+        // VarianteIdWahl fuehrte dieselbe Liste ein zweites Mal. Der Dialog meldet
+        // sie deshalb als benannte Wahlquelle an.
+        KiMaskennamen.KOSTENVERWALTUNG     => new[] { "variante" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -227,11 +272,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_vierunddreissig_Masken()
+    public void Der_Katalog_fuehrt_einundfuenfzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(34, katalog.Anzahl);
+        Assert.Equal(51, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -646,7 +691,62 @@ public class KiDialogkatalogTests
             "Detailblock; Zeuge ist SolarganglinieDialogTests",
         [KiMaskennamen.KLIMADATEN] =
             "bindet über die Sichtklasse KlimadatenKiSicht auf die lebenden Felder " +
-            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests"
+            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests",
+
+        // Welle KI-F4
+        [KiMaskennamen.ENERGIETRAEGER] =
+            "bindet über die Sichtklasse EnergietraegerKiSicht auf Listenkopf, " +
+            "Trägerkarte und beide Preisblöcke; Zeuge ist EnergietraegerDialogTests",
+        [KiMaskennamen.ENERGIETRAEGER_VARIANTE] =
+            "bindet über die Sichtklasse EnergietraegerVarianteKiSicht auf die zwei " +
+            "lebenden Felder; Zeuge ist EnergietraegerVarianteDialogTests",
+        [KiMaskennamen.LEISTUNGSPREISREIHE] =
+            "bindet über die Sichtklasse LeistungspreisReiheKiSicht auf das Jahr der " +
+            "Reihe; Zeuge ist LeistungspreisReiheDialogTests",
+        [KiMaskennamen.KOSTENPROFIL] =
+            "bindet über die Sichtklasse KostenprofilKiSicht auf Bezeichner und " +
+            "Wochentag; Zeuge ist KostenprofilDialogTests",
+        [KiMaskennamen.KOSTENFAKTOR_KATALOG] =
+            "bindet über die Sichtklasse KostenfaktorKatalogKiSicht auf Neuzeile und " +
+            "Rastermarkierung; Zeuge ist KostenfaktorKatalogDialogTests",
+        [KiMaskennamen.EMISSIONSKATALOG] =
+            "bindet über die Sichtklasse EmissionskatalogKiSicht auf Methode, beide " +
+            "Markierungen und die zwei Editoren; Zeuge ist EmissionskatalogDialogTests",
+        [KiMaskennamen.NUTZUNGSDAUER] =
+            "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
+            "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
+        [KiMaskennamen.VORLAGENPOSITION] =
+            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die sechs " +
+            "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
+        [KiMaskennamen.CASE_EINGABE] =
+            "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +
+            "Felder; Zeuge ist CaseEingabeDialogTests",
+        [KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER] =
+            "bindet über die Sichtklasse WirtschaftlichkeitParameterKiSicht auf den " +
+            "Parametersatz UND beide Szenariosätze; Zeuge ist " +
+            "WirtschaftlichkeitParameterDialogTests",
+        [KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT] =
+            "bindet über die Sichtklasse BhkwWirtschaftlichkeitKiSicht auf die zwei " +
+            "Arbeitsstände; Zeuge ist BhkwWirtschaftlichkeitDialogTests",
+        [KiMaskennamen.TARIFSTRUKTUR] =
+            "bindet über die Sichtklasse TarifstrukturKiSicht auf die lebenden " +
+            "Eingabefelder; Zeuge ist TarifstrukturDialogTests",
+        [KiMaskennamen.PV_VERGUETUNG] =
+            "bindet über die Sichtklasse PhotovoltaikVerguetungKiSicht auf das " +
+            "Vergütungsmodell, gesetzt über die Wege der Maske; Zeuge ist " +
+            "PhotovoltaikVerguetungDialogTests",
+        [KiMaskennamen.GESETZESKATALOG] =
+            "bindet über die Sichtklasse GesetzeskatalogKiSicht auf Klassenwahl und " +
+            "Listenmarkierung; Zeuge ist GesetzeskatalogDialogTests",
+        [KiMaskennamen.GESETZESKATALOG_ZEILE] =
+            "bindet über die Sichtklasse GesetzeskatalogZeileKiSicht auf die sieben " +
+            "lebenden Felder; Zeuge ist GesetzeskatalogDialogTests",
+        [KiMaskennamen.KOSTENSEITE] =
+            "bindet über die Sichtklasse KostenSeiteKiSicht auf die Zeilenmarkierung " +
+            "der Seite; Zeuge ist KostenSeiteTests",
+        [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
+            "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
+            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests"
     };
 
     /// <summary>
