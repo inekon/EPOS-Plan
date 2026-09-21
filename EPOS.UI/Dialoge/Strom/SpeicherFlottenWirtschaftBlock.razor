@@ -71,7 +71,11 @@
     /// <summary>Etwas wurde geschrieben — der Wirt sichert und zeichnet neu.</summary>
     [Parameter] public EventCallback Geaendert { get; set; }
 
-    private static readonly IReadOnlyList<(int Id, string Text)> Projektionsarten = new[]
+    /// <summary>
+    /// Die zwei Jahresprojektionen — öffentlich, weil der Hilfe-Assistent dieselbe
+    /// Liste führt (KI‑F1b).
+    /// </summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> Projektionsarten = new[]
     {
         (0, "Eingelesene Jahre einzeln bewerten"), (1, "Referenzjahr ausdrücklich wiederholen")
     };

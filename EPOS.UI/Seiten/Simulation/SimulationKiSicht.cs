@@ -46,6 +46,7 @@ public sealed class SimulationKiSicht
     private readonly Func<string> _reiter;
     private readonly Func<SimulationErgebnisDienste?>? _speicherwege;
     private readonly Func<SimulationKonfigDienste?>? _konfigwege;
+    private readonly Action<double>? _autarkiespeicher;
 
     /// <summary>Legt die Sicht über die lebenden Stände der Ansicht.</summary>
     /// <param name="konfiguration">Der Stand von Schritt ①; <c>null</c> = ① steht nicht.</param>
@@ -63,6 +64,11 @@ public sealed class SimulationKiSicht
     /// Der Schreibdienst von Schritt ① (Welle KI‑F2) — er trägt den Lesepunkt des
     /// Wärmepumpen-Kennfelds. <c>null</c> = ① steht nicht.
     /// </param>
+    /// <param name="autarkiespeicher">
+    /// Der Schreibweg der Speicherkapazität auf dem Blatt „Ergebnis" (Welle KI‑F6) —
+    /// das EINZIGE echte Eingabefeld der neun Reiterblätter. <c>null</c> = das Blatt
+    /// steht nicht; dann bleibt der Wert lesbar.
+    /// </param>
     public SimulationKiSicht(Func<SimulationKonfigDaten?> konfiguration,
                              Func<ParameterDaten?> laufparameter,
                              Func<SimulationParameterDienste?> schreibwege,
@@ -70,8 +76,10 @@ public sealed class SimulationKiSicht
                              Func<string> schritt,
                              Func<string> reiter,
                              Func<SimulationErgebnisDienste?>? speicherwege = null,
-                             Func<SimulationKonfigDienste?>? konfigwege = null)
+                             Func<SimulationKonfigDienste?>? konfigwege = null,
+                             Action<double>? autarkiespeicher = null)
     {
+        _autarkiespeicher = autarkiespeicher;
         _konfiguration = konfiguration ?? throw new ArgumentNullException(nameof(konfiguration));
         _laufparameter = laufparameter ?? throw new ArgumentNullException(nameof(laufparameter));
         _schreibwege = schreibwege ?? throw new ArgumentNullException(nameof(schreibwege));
@@ -531,6 +539,28 @@ public sealed class SimulationKiSicht
     /// findet die Erklärung damit auch ohne Modell.
     /// </remarks>
     public string Laufhinweise => _ergebnis()?.Laufmeldungen ?? "";
+
+    /// <summary>
+    /// Die Speicherkapazität [kWh] der Autarkierechnung auf dem Blatt „Ergebnis"
+    /// (Welle KI‑F6).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Sie ist das EINZIGE echte Eingabefeld der neun Reiterblätter.</b>
+    /// Alles andere darauf sind Schalter EINES BILDES — „sortiert", die Reihenhaken,
+    /// die Streuwolken, die Nullzeilen —; sie schreiben nichts und leben in privaten
+    /// Feldern, die der Reiter bei jedem Zeichenlauf neu aufbaut. Ein Setzer darauf
+    /// schriebe in ein Feld, das der nächste Aufbau verwirft (Fachkonzept 11.6: eine
+    /// Setzung, die der Anwender in der offenen Maske nicht nachlesen kann).</para>
+    /// <para><b>Gesetzt wird über denselben Weg wie das Feld selbst:</b>
+    /// <c>SimulationErgebnisSeite.KapazitaetGeaendert</c> rechnet die Autarkie neu
+    /// (<c>AutarkieRechnen</c>) und tauscht den Stand aus. Steht das Blatt nicht,
+    /// bleibt der Wert lesbar und die Setzung läuft benannt ins Leere.</para>
+    /// </remarks>
+    public double AutarkieSpeicherKWh
+    {
+        get => _ergebnis()?.Autarkie?.SpeicherKwh ?? 0.0;
+        set => _autarkiespeicher?.Invoke(value);
+    }
 
     // =====================================================================
     //  Die Auflösung der Ketten — jede null-Stufe hat einen Grund

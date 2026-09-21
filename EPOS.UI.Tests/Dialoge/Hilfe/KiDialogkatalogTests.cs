@@ -192,7 +192,28 @@ public class KiDialogkatalogTests
         // Laufzeit - siehe OhneMarkupprobe.
         { KiMaskennamen.PV_MODULKATALOG,        typeof(ModulKatalogKiSicht) },
         { KiMaskennamen.STROMSPEICHER_KATALOG,  typeof(ModulKatalogKiSicht) },
-        { KiMaskennamen.WECHSELRICHTER_KATALOG, typeof(ModulKatalogKiSicht) }
+        { KiMaskennamen.WECHSELRICHTER_KATALOG, typeof(ModulKatalogKiSicht) },
+
+        // Welle KI-F6, Schritt 1 (STROM): drei Masken, drei Sichtklassen. Alle
+        // drei fuehren ihren Stand in privaten Feldern der Komponente - siehe
+        // OhneMarkupprobe.
+        { KiMaskennamen.PEAK_SHAVING,
+          typeof(EPOS.UI.Dialoge.Strom.PeakShavingKiSicht) },
+        { KiMaskennamen.SPEICHER_ZEITREIHEN,
+          typeof(EPOS.UI.Dialoge.Strom.SpeicherZeitreihenKiSicht) },
+        { KiMaskennamen.STROMGANGLINIE_ADMIN,
+          typeof(EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht) },
+
+        // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
+        // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
+        { KiMaskennamen.BERICHTE_UEBERSICHT,
+          typeof(EPOS.UI.Seiten.Berichte.UebersichtSeiteKiSicht) },
+        { KiMaskennamen.BERICHTSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.BerichtSeiteKiSicht) },
+        { KiMaskennamen.PROJEKT_KOPIE,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektKopieKiSicht) },
+        { KiMaskennamen.PROJEKT_VARIANTE,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) }
     };
 
     /// <summary>
@@ -294,11 +315,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_sechsundfuenfzig_Masken()
+    public void Der_Katalog_fuehrt_dreiundsechzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(56, katalog.Anzahl);
+        Assert.Equal(63, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -509,6 +530,119 @@ public class KiDialogkatalogTests
         Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
         Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
         Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
+    }
+
+    /// <summary>
+    /// <b>Die drei Strommasken der Welle KI‑F6 führen 22, 18 und 2 Felder.</b>
+    /// </summary>
+    /// <remarks>
+    /// <para>Die LASTSPITZENKAPPUNG führt achtzehn Eingaben und vier Anzeigen (Quelle,
+    /// Ganglinie und die achtzehn Zahlen und Schalter; dazu Reihenzeile, Herkunft und
+    /// das offene Blatt).</para>
+    /// <para>Die ZEITREIHEN-Leseregeln führen sechzehn Einstellwerte und zwei
+    /// Anzeigen; Datei und Rolle kommen vom Wirt.</para>
+    /// <para>Die STROMGANGLINIEN-Verwaltung führt genau EINEN Einstellwert — das
+    /// Zeitraster — und daneben die Markierung als Anzeige. Alles Übrige darauf ist
+    /// Suche, Auswahl und Ladevorgang (KI‑D‑Q5).</para>
+    /// </remarks>
+    [Fact]
+    public void Die_drei_Strommasken_fuehren_22_18_und_2_Felder()
+    {
+        KiDialog peak = KiDialoge.Katalog.Finde(KiMaskennamen.PEAK_SHAVING)!;
+        KiDialog reihe = KiDialoge.Katalog.Finde(KiMaskennamen.SPEICHER_ZEITREIHEN)!;
+        KiDialog admin = KiDialoge.Katalog.Finde(KiMaskennamen.STROMGANGLINIE_ADMIN)!;
+
+        Assert.Equal(22, peak.Felder.Count);
+        Assert.Equal(18, reihe.Felder.Count);
+        Assert.Equal(2, admin.Felder.Count);
+
+        // KEINE Knöpfe: „Berechnen", „Minimale Schwelle", „Übernehmen", „Einlesen"
+        // und „Löschen" sind rechnende bzw. datenbankwirksame Aktionen der Stufen 2
+        // und 3 und gehören in das Aktionsregister.
+        Assert.Empty(peak.Knoepfe);
+        Assert.Empty(reihe.Knoepfe);
+        Assert.Empty(admin.Knoepfe);
+
+        // Drei Felder der Lastspitzenkappung sind ABGELEITET, zwei der Leseregeln,
+        // eines der Verwaltung.
+        Assert.Equal(3, peak.Felder.Count(f => f.NurLesen));
+        Assert.Equal(2, reihe.Felder.Count(f => f.NurLesen));
+        Assert.Equal(1, admin.Felder.Count(f => f.NurLesen));
+    }
+
+    /// <summary>
+    /// <b>Die Ziele der Welle KI‑F6, Schritt 1.</b> Lastspitzenkappung und
+    /// Stromganglinien-Verwaltung sind eigene Fenster mit einem Weg im Menü — ihr
+    /// Katalogschlüssel IST ihr Navigationsschlüssel. Die Leseregeln gehen als
+    /// Überlagerung aus Station 2 der Stromspeicher-Auslegung auf und führen deshalb
+    /// auf diese Ansicht.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Strommasken_ist_ihr_eigener_Weg_oder_die_Auslegung()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.PeakShaving,
+                     KiMaskenziele.Ziel(KiMaskennamen.PEAK_SHAVING));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.StromganglinieAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.STROMGANGLINIE_ADMIN));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.StromspeicherAuslegung,
+                     KiMaskenziele.Ziel(KiMaskennamen.SPEICHER_ZEITREIHEN));
+    }
+
+    /// <summary>
+    /// <b>Die Ziele der Welle KI‑F6, Schritt 2.</b> Die zwei Reiterblätter führen auf
+    /// die Ansicht „Berichte und Kosten" — wie schon Kosten- und
+    /// Wirtschaftlichkeitsseite der Welle KI‑F4. „Projekt speichern unter" ist selbst
+    /// eine Maske der Navigationstabelle; „Als Variante speichern" hängt am Menüweg,
+    /// und <c>KiMaskenziele.PROJEKT_VARIANTE</c> steht im Kern als Zeichenkette gegen
+    /// <c>Seitenschluessel.ProjektAlsVariante</c> in <c>EPOS.UI</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Berichts_und_Projektmasken_steht_fest()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BerichteKosten,
+                     KiMaskenziele.Ziel(KiMaskennamen.BERICHTE_UEBERSICHT));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BerichteKosten,
+                     KiMaskenziele.Ziel(KiMaskennamen.BERICHTSEITE));
+
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.ProjektSpeichernUnter,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROJEKT_KOPIE));
+
+        // Der Wächter über die ZWEI Fundstellen.
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.ProjektAlsVariante,
+                     KiMaskenziele.PROJEKT_VARIANTE);
+        Assert.Equal(KiMaskenziele.PROJEKT_VARIANTE,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROJEKT_VARIANTE));
+    }
+
+    /// <summary>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 5, 5 und 4 Felder.</b>
+    /// </summary>
+    /// <remarks>
+    /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
+    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" zwei
+    /// Einstellwerte und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
+    /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
+    /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
+    /// </remarks>
+    [Fact]
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_5_5_und_4_Felder()
+    {
+        KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
+        KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
+        KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
+        KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
+
+        Assert.Equal(6, ueb.Felder.Count);
+        Assert.Equal(5, ber.Felder.Count);
+        Assert.Equal(5, kop.Felder.Count);
+        Assert.Equal(4, var.Felder.Count);
+
+        Assert.Equal(2, ueb.Felder.Count(f => f.NurLesen));
+        Assert.Equal(3, ber.Felder.Count(f => f.NurLesen));
+        Assert.Empty(kop.Felder.Where(f => f.NurLesen));
+        Assert.Single(var.Felder.Where(f => f.NurLesen));
+
+        foreach (KiDialog d in new[] { ueb, ber, kop, var }) Assert.Empty(d.Knoepfe);
     }
 
     /// <summary>
@@ -855,7 +989,35 @@ public class KiDialogkatalogTests
         [KiMaskennamen.WECHSELRICHTER_KATALOG] =
             "bindet über die Sichtklasse ModulKatalogKiSicht auf den Feldsatz des " +
             "Profils; das Markup zeichnet eine Schleife, keine benannten Bindungen. " +
-            "Zeuge ist ModulKatalogDialogTests"
+            "Zeuge ist ModulKatalogDialogTests",
+
+        // Welle KI-F6, Schritt 1: die drei Strommasken
+        [KiMaskennamen.PEAK_SHAVING] =
+            "bindet über die Sichtklasse PeakShavingKiSicht auf die privaten Felder " +
+            "der Maske; PeakShavingEingaben entsteht erst im Rechenweg. Zeuge ist " +
+            "PeakShavingDialogTests",
+        [KiMaskennamen.SPEICHER_ZEITREIHEN] =
+            "bindet über die Sichtklasse SpeicherZeitreihenKiSicht auf den lebenden " +
+            "Optionssatz und den Zeitart-Schalter der Maske; Zeuge ist " +
+            "SpeicherZeitreihenDialogTests",
+        [KiMaskennamen.STROMGANGLINIE_ADMIN] =
+            "bindet über die Sichtklasse StromganglinieAdminKiSicht auf Rasterwahl " +
+            "und Listenmarkierung; Zeuge ist StromganglinieAdminDialogTests",
+
+        // Welle KI-F6, Schritt 2
+        [KiMaskennamen.BERICHTE_UEBERSICHT] =
+            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die vier Wahlwege " +
+            "der Seite; sie schreibt nicht in ihren Stand, sondern meldet an die " +
+            "Hülle. Zeuge ist UebersichtSeiteTests",
+        [KiMaskennamen.BERICHTSEITE] =
+            "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
+            "Zielordner und die zwei Aufstellungen; Zeuge ist BerichtSeiteTests",
+        [KiMaskennamen.PROJEKT_KOPIE] =
+            "bindet über die Sichtklasse ProjektKopieKiSicht auf die sieben privaten " +
+            "Felder der Maske; Zeuge ist ProjektKopieDialogTests",
+        [KiMaskennamen.PROJEKT_VARIANTE] =
+            "bindet über die Sichtklasse ProjektVarianteKiSicht auf Haken, Listenwahl " +
+            "und Bezeichner; Zeuge ist ProjektVarianteDialogTests"
     };
 
     /// <summary>
@@ -1049,7 +1211,7 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Die_Stromspeicher_Ansicht_fuehrt_siebenundzwanzig_Felder_und_keinen_Knopf()
+    public void Die_Stromspeicher_Ansicht_fuehrt_fuenfundachtzig_Felder_und_keinen_Knopf()
     {
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
 
@@ -1059,7 +1221,18 @@ public class KiDialogkatalogTests
         // Kandidatenzahl des Suchraums) und die vier des Kastens „Bestes Ergebnis".
         // Seit AUFTRAG #247 siebenundzwanzig: die SUCHMETHODE (nur lesend) sagt, WAS
         // der nächste Lauf variiert — Größe oder Stückzahl (SD‑E‑10).
-        Assert.Equal(27, d.Felder.Count);
+        //
+        // Mit der Welle KI-F6 kommen die STATIONEN 1 bis 4 dazu (Statuszeile #420,
+        // Punkt b): 23 Spalten je Speichereinheit, 17 Felder der Datenquellen und
+        // Kostensätze, 10 der Betriebsführung samt Netz und Prognose und 8 Spalten je
+        // Suchachse — 58 neue, zusammen 85.
+        Assert.Equal(85, d.Felder.Count);
+
+        // ZWEI Sammlungen: die Einheiten der Flotte und die Achsen des Suchraums.
+        // Ihre Zahl steht erst zur Laufzeit fest; deshalb sind sie Spalten und keine
+        // Einzelfelder.
+        Assert.Equal(23, d.Felder.Count(f => f.Sammlung == "Einheitenzeilen"));
+        Assert.Equal(8, d.Felder.Count(f => f.Sammlung == "Suchachsen"));
 
         // KEINE Knöpfe: „Berechnen", „Peak-Ziel bestimmen…" und „Speichern" sind
         // rechnende bzw. datenbankwirksame Aktionen und gehören in das Aktionsregister
@@ -1105,20 +1278,35 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Nur_die_neun_eingebbaren_Felder_sind_SETZBAR()
+    public void Nur_die_sechsundzwanzig_eingebbaren_Einzelfelder_sind_SETZBAR()
     {
-        // Die übrigen siebzehn sind ABGELEITET: die Summen der Flotte (eine Zahl je
-        // Feld, aber viele Einheiten dahinter), der Schritt der Ansicht, die
-        // Kandidatenzahl des Suchraums, die Diagnose und das Ergebnis des letzten Laufs.
-        // Die Stufe S3 muss ein feld_setzen darauf ablehnen können, und das hängt an
-        // der Schreibbarkeit der Eigenschaft (KiFeldzugang.Setzbar).
+        // Die übrigen achtundzwanzig FLACHEN Felder sind ABGELEITET: die Summen der
+        // Flotte (eine Zahl je Feld, aber viele Einheiten dahinter), der Schritt der
+        // Ansicht, die Suchmethode, die Kandidatenzahl des Suchraums, die Diagnose und
+        // das Ergebnis des letzten Laufs. Die Stufe S3 muss ein feld_setzen darauf
+        // ablehnen können, und das hängt an der Schreibbarkeit der Eigenschaft
+        // (KiFeldzugang.Setzbar).
         //
-        // MIT AUFTRAG #224 kommen DREI setzbare dazu, alle aus Station 4: die Wahl
-        // „beste Größe suchen", der Feinraster-Schalter und die Kandidatengrenze.
+        // MIT AUFTRAG #224 kamen drei setzbare dazu, alle aus Station 4; mit der Welle
+        // KI-F6 die siebzehn der Station 2 und die zehn der Station 3. Die SPALTEN
+        // bleiben hier außen vor — ihre Schreibbarkeit hängt am ZEILENtyp und nicht an
+        // der Sicht; sie prüft der Fall darunter.
         string[] setzbar =
         {
             "betriebsziel", "peak_ziel", "peak_ziel_adaptiv", "netzladung", "start_soc",
-            "peak_reserve", "groessen_optimieren", "feinraster", "maximale_kandidaten"
+            "peak_reserve", "groessen_optimieren", "feinraster", "maximale_kandidaten",
+
+            // Station 2
+            "lastquelle", "pv_quelle", "preisquelle", "modelljahr_zuordnen",
+            "investitionsquelle", "betriebsquelle", "investition_leistung",
+            "investition_kapazitaet", "betrieb_leistung", "betrieb_kapazitaet",
+            "betrieb_entladen", "leistungspreis", "energie_ausgleich",
+            "kalkulationszins", "jahresprojektion", "projektjahre", "restwert_studie",
+
+            // Station 3
+            "verteilung", "erzeuger_prioritaet", "batterieexport", "netzbezug_grenze",
+            "netzeinspeisung_grenze", "informationsstand", "planungshorizont",
+            "neuplanung", "endbedingung", "prognose_fallback"
         };
 
         KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
@@ -1126,6 +1314,8 @@ public class KiDialogkatalogTests
 
         foreach (KiDialogFeld f in d.Felder)
         {
+            if (f.IstSpalte) continue;
+
             var eigenschaft = typeof(StromspeicherKiSicht)
                 .GetProperty(f.Eigenschaft,
                              System.Reflection.BindingFlags.Public |
@@ -1137,6 +1327,42 @@ public class KiDialogkatalogTests
 
         Assert.Equal(setzbar.OrderBy(x => x, StringComparer.Ordinal),
                      gefundenSetzbar.OrderBy(x => x, StringComparer.Ordinal));
+    }
+
+    /// <summary>
+    /// <b>Jede SPALTE löst am Zeilentyp auf, und alle einunddreißig sind setzbar.</b>
+    /// Eine Spalte ohne Setzer wäre eine Anzeige in einem Raster; die zwei
+    /// Zeilenhüllen der Ansicht führen nur Eingabefelder — der Kartenname der
+    /// Suchachse ist kein Katalogfeld.
+    /// </summary>
+    [Theory]
+    [InlineData("Einheitenzeilen", typeof(EPOS.UI.Seiten.Strom.FlottenEinheitKiZeile), "Name")]
+    [InlineData("Suchachsen", typeof(EPOS.UI.Seiten.Strom.FlottenAchseKiZeile), "Achse")]
+    public void Jede_Spalte_der_Stromspeicher_Ansicht_loest_am_Zeilentyp_auf(
+        string sammlung, Type zeilentyp, string kennzeichen)
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_AUSLEGUNG)!;
+
+        var spalten = d.Felder.Where(f => f.Sammlung == sammlung).ToList();
+        Assert.NotEmpty(spalten);
+
+        // Die Sammlung selbst gibt es an der Sicht, und sie liefert diesen Zeilentyp.
+        var liste = typeof(StromspeicherKiSicht).GetProperty(sammlung)!;
+        Assert.NotNull(liste);
+        Assert.Equal(zeilentyp, liste.PropertyType.GetGenericArguments()[0]);
+
+        // Das Zeilenkennzeichen steht am Zeilentyp — sonst hieße die Zeile „2".
+        Assert.NotNull(zeilentyp.GetProperty(kennzeichen));
+
+        foreach (KiDialogFeld f in spalten)
+        {
+            Assert.Equal(kennzeichen, f.Zeilenkennzeichen);
+
+            var spalte = zeilentyp.GetProperty(f.Eigenschaft);
+            Assert.True(spalte is not null, sammlung + "[]." + f.Eigenschaft);
+            Assert.True(spalte!.CanWrite, f.Name);
+            Assert.False(f.NurLesen, f.Name);
+        }
     }
 
     // =====================================================================
@@ -1270,6 +1496,106 @@ public class KiDialogkatalogTests
     /// Ein Arbeitsstand nach dem Muster des Referenzprojekts 1046 („Prüfprojekt
     /// Speicherflotte"): zwei Einheiten, Ziel <c>PeakShaving</c> gegen 16 kW.
     /// </summary>
+    // =====================================================================
+    //  Die Stationen 1 bis 4 der Ansicht (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Spalten schreiben in die LEBENDE Einheit</b> — und rechnen die fünf
+    /// Prozentwerte um: Die Engine führt sie als Anteil 0…1, die Maske zeigt Prozent.
+    /// </summary>
+    [Fact]
+    public void Die_Einheitenzeilen_schreiben_durch_und_rechnen_Prozent_um()
+    {
+        var eingaben = Eingaben();
+        var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
+                                             () => Array.Empty<FlottenHinweis>());
+
+        IReadOnlyList<EPOS.UI.Seiten.Strom.FlottenEinheitKiZeile> zeilen = sicht.Einheitenzeilen;
+        Assert.Equal(2, zeilen.Count);
+        Assert.Equal("Eins", zeilen[0].Name);
+        Assert.Equal(24.0, zeilen[0].Kapazitaet);
+
+        // 0,40 in der Engine sind 40 % auf der Maske.
+        Assert.Equal(40.0, zeilen[0].SocStart, 6);
+
+        zeilen[0].SocStart = 55.0;
+        zeilen[0].Kapazitaet = 30.0;
+
+        FlottenEinheit erste = eingaben.Auslegung!.Flotte!.Einheiten[0];
+        Assert.Equal(0.55, erste.SocStart, 6);
+        Assert.Equal(30.0, erste.KapazitaetKWh);
+
+        // Die Liste entsteht bei JEDEM Zugriff neu — eine gehaltene zeigte den Stand
+        // von vorhin.
+        Assert.Equal(30.0, sicht.Einheitenzeilen[0].Kapazitaet);
+    }
+
+    /// <summary>
+    /// <b>Station 2 und 3 schreiben in den lebenden Stand</b> — der Leistungspreis an
+    /// BEIDE Orte, die er auf der Maske hat, und der Zins als Anteil.
+    /// </summary>
+    [Fact]
+    public void Die_Stationen_zwei_und_drei_schreiben_in_den_lebenden_Stand()
+    {
+        var eingaben = Eingaben();
+        var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
+                                             () => Array.Empty<FlottenHinweis>());
+
+        sicht.Leistungspreis = 137.5;
+        Assert.Equal(137.5, eingaben.LeistungspreisEurProKwA);
+        Assert.Equal(137.5, eingaben.Auslegung!.Flotte!.Tarif.LeistungspreisEuroProKw);
+
+        sicht.KalkulationszinsProzent = 4.5;
+        Assert.Equal(0.045, eingaben.Auslegung.Flotte.Wirtschaftlichkeit.Kalkulationszins, 9);
+
+        sicht.InvestitionProKWh = 350.0;
+        Assert.Equal(350.0, eingaben.Auslegung.DirekteKosten.InvestEurProKwh);
+        Assert.True(eingaben.Auslegung.DirekteKosten.InvestVorhanden);
+
+        sicht.Verteilung = FlottenVerteilung.Grenzkosten;
+        Assert.Equal(FlottenVerteilung.Grenzkosten,
+                     eingaben.Auslegung.Flotte.Optionen.Verteilung);
+
+        sicht.NetzbezugGrenzeKw = 250.0;
+        Assert.Equal(250.0, eingaben.Auslegung.Flotte.Optionen.NetzbezugGrenzeKw);
+
+        // Die Wahllisten stehen je EINMAL: sie kommen aus den Bausteinen der Maske.
+        Assert.Equal(3, sicht.VerteilungWahl.Count);
+        Assert.Equal(2, sicht.LastquelleWahl.Count);
+        Assert.Equal(3, sicht.PreisquelleWahl.Count);
+        Assert.Equal(3, sicht.EndbedingungWahl.Count);
+    }
+
+    /// <summary>
+    /// <b>Die Suchachsen tragen den Namen ihrer Einheit</b> — so beschriftet der
+    /// Optimierungsblock seine Karten — und schreiben durch.
+    /// </summary>
+    [Fact]
+    public void Die_Suchachsen_tragen_den_Einheitennamen_und_schreiben_durch()
+    {
+        var eingaben = Eingaben();
+        eingaben.Auslegung!.Flotte!.Auslegung.Achsen.Add(
+            new FlottenAuslegungsAchse { ErsetztEinheitId = "2", KapazitaetVonKWh = 5.0 });
+
+        var sicht = new StromspeicherKiSicht(() => eingaben, () => null,
+                                             () => Array.Empty<FlottenHinweis>());
+
+        IReadOnlyList<EPOS.UI.Seiten.Strom.FlottenAchseKiZeile> achsen = sicht.Suchachsen;
+        Assert.Single(achsen);
+        Assert.Equal("Zwei", achsen[0].Achse);
+        Assert.Equal(5.0, achsen[0].KapazitaetVon);
+
+        achsen[0].KapazitaetBis = 40.0;
+        achsen[0].Quelle = FlottenKandidatenquelle.Stammdaten;
+
+        Assert.Equal(40.0, eingaben.Auslegung.Flotte.Auslegung.Achsen[0].KapazitaetBisKWh);
+        Assert.Equal(FlottenKandidatenquelle.Stammdaten,
+                     eingaben.Auslegung.Flotte.Auslegung.Achsen[0].Quelle);
+
+        Assert.Equal(2, sicht.QuelleWahl.Count);
+    }
+
     private static SpeicherOptimierungEingaben Eingaben()
     {
         return new SpeicherOptimierungEingaben

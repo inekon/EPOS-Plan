@@ -25640,6 +25640,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In welchem Format der Bericht entsteht: Word, Excel oder beides. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_AUSGABE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_AUSGABE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Bausteine als Aufstellung — die Kapitel, die der Bericht trägt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_BAUSTEINE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_BAUSTEINE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angehakten Versionen als Aufstellung; das Stammprojekt ist immer dabei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VARIANTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VARIANTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versionen im Bericht ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VARIANTEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VARIANTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner, in den der Bericht geschrieben wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner für das Umbenennen der markierten Version; er wirkt erst mit dem Knopf „Umbenennen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Liste nur Stammprojekte oder auch deren Varianten? ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_NURSTAEMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_NURSTAEMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wann die markierte Version zuletzt simuliert wurde, oder dass sie es noch nicht ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_SIM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_SIM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationsstand ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_SIM_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_SIM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stammprojekt, dessen Vergleichsgruppe die Seite zeigt; ein Wechsel lädt die ganze Gruppe neu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_STAMM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_STAMM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die markierte Version; sie entscheidet, welche Unterschiede die Tabelle zeigt und was Löschen, Umbenennen und Simulieren treffen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_VARIANTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_VARIANTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
         /// </summary>
         public static string KI_DLG_BLOCK_VORLAGE {
@@ -26491,6 +26590,213 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_FELD_UNBEKANNT {
             get {
                 return ResourceManager.GetString("KI_DLG_FELD_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kosten je entladener Kilowattstunde dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_DURCHSATZKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_DURCHSATZKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet diese Einheit mit eigenen Kostensätzen statt mit denen der Studie? ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_EIGENE_KOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_EIGENE_KOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste Entladeleistung dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_ENTLADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_ENTLADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad beim Entladen dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_ENTLADEWIRKUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_ENTLADEWIRKUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_ERSATZINTERVALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_ERSATZINTERVALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was ein Ersatz dieser Einheit kostet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_ERSATZKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_ERSATZKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die marginalen Verschleißkosten je entladener Kilowattstunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_GRENZVERSCHLEISS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_GRENZVERSCHLEISS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der dauernde Eigenverbrauch der Einheit auf der Wechselstromseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_HILFSVERBRAUCH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_HILFSVERBRAUCH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der feste Anteil der Investition dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_INVEST_FIX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_INVEST_FIX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der kapazitätsbezogene Anteil der Investition dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_INVEST_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_INVEST_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_INVEST_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_INVEST_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennkapazität dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste Ladeleistung dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_LADELEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_LADELEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad beim Laden dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_LADEWIRKUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_LADEWIRKUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung der Speichereinheit; sie steht auch in der Aufstellung der Ansicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die festen jährlichen Betriebskosten dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_OPEX_FIX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_OPEX_FIX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogenen jährlichen Betriebskosten dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_OPEX_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_OPEX_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die leistungsbezogenen jährlichen Betriebskosten dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_OPEX_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_OPEX_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energie, die diese Einheit für die Lastspitzenkappung zurückhält. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_PEAK_RESERVE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_PEAK_RESERVE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Restwert dieser Einheit am Ende der Betrachtung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_RESTWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_RESTWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere Grenze des Ladezustands dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_SOC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_SOC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Grenze des Ladezustands dieser Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_SOC_MIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_SOC_MIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ladezustand dieser Einheit zu Beginn des Laufs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_FLE_SOC_START_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_FLE_SOC_START_ERL", resourceCulture);
             }
         }
         
@@ -27980,6 +28286,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BKB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BKB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BKU {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BKU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprofile im Projekt ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BPF {
@@ -28187,6 +28511,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Lastspitzenkappung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PEAK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PEAK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt speichern unter ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PRK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PRK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Variante speichern ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PRV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PRV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Pufferspeicher im Projekt verwalten ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PSPV {
@@ -28259,6 +28610,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromganglinien-Verwaltung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SGA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SGA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Solarganglinien im Projekt ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_SGL {
@@ -28300,6 +28660,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_STROMSPEICHER {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_STROMSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitreihe einlesen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_SZR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_SZR", resourceCulture);
             }
         }
         
@@ -28840,6 +29209,321 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_OHNE_AENDERUNG {
             get {
                 return ResourceManager.GetString("KI_DLG_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zieht die Schwelle im Lauf nach, sobald der Speicher eine Spitze nicht halten kann; sonst steht sie fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_ADAPTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_ADAPTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der mittlere Arbeitspreis des Netzbezugs; er bewertet die Umwandlungsverluste. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_BEZUGSPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_BEZUGSPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der kapazitätsbezogene Anteil der Investition. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_CCAP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_CCAP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_CPOW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_CPOW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Umlaufwirkungsgrad des Speichers; er wird je zur Hälfte auf Laden und Entladen verteilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_ETA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_ETA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Ganglinie des Katalogs; sie wird beim Wechsel sofort geladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_GANGLINIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_GANGLINIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die vorbelegten Zahlen stammen — aus einer Projektvariante oder aus den Vorgabewerten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_HERKUNFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_HERKUNFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der Vorgaben ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_HERKUNFT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_HERKUNFT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der feste Anteil der Investition, unabhängig von Größe und Leistung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_IFIX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_IFIX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die nutzbare Speicherkapazität; zusammen mit dem SoC-Band ergibt sie den Arbeitsbereich. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_KAPAZITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_KAPAZITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet ohne Verluste und ohne untere SoC-Grenze — die Betriebsart des Vorläufers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_KOMPAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_KOMPAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er bewertet die gekappte Spitze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_LP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_LP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer des Speichers; sie bestimmt den Annuitätsfaktor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste Lade- und Entladeleistung des Speichers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Lastgang kommt: aus einer vorhandenen Ganglinie oder aus einer eingelesenen Datei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die geladene Reihe samt Zahl der Werte und ihrem Höchstwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_REIHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_REIHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Geladene Reihe ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_REIHE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_REIHE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welches Blatt gerade offen steht: Kennzahlen, Diagramm oder Monatswerte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_REITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_REITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reiterblatt ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_REITER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere Grenze des Ladezustands; darüber wird nicht geladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_SOCMAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_SOCMAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Grenze des Ladezustands; darunter wird nicht entladen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_SOCMIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_SOCMIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Ladezustandskurve auf der zweiten Achse des Diagramms. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_SOC_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_SOC_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ladezustand zu Beginn des Laufs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_STARTSOC_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_STARTSOC_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die feste Zielschwelle des Netzbezugs; sie gilt nur ohne adaptive Nachführung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalkulationszins der Annuität. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PEAK_ZINS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PEAK_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bearbeiter, den die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_BEARBEITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_BEARBEITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung, die die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kunde, den die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_KUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_KUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Kopie; er muss neu sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, das kopiert wird; es zu wechseln belegt Beschreibung, Kunde und Bearbeiter aus ihm vor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der neuen Variante; aus ihm und dem Stammprojekt entsteht der Projektname. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bekommt die Variante den Inhalt eines bestehenden Projekts? Nur dann steht die Projektliste darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_HAKEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_HAKEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, dessen Inhalt die Variante bekommt; ohne eigenen Bezeichner übernimmt sie auch dessen Namen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem die Variante entsteht — gerechnet aus Stammprojekt und Bezeichner, samt Zähler bei Namensgleichheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_ZIELNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_ZIELNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Projektname ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_ZIELNAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_ZIELNAME_NAME", resourceCulture);
             }
         }
         
@@ -29609,6 +30293,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der markierten Katalogzeile; er entscheidet, was der Löschknopf trifft. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGA_GEWAEHLT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGA_GEWAEHLT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierte Ganglinie ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGA_GEWAEHLT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGA_GEWAEHLT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit welchem Zeitraster eine eingelesene Datei abgelegt wird — Stunde oder Viertelstunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SGA_ZEITINTERVALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SGA_ZEITINTERVALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung der markierten Ganglinie aus ihrem Katalogsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_SGL_BESCHREIBUNG_ERL {
@@ -29632,6 +30343,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SGL_PROJEKT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_SGL_PROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUTARKIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUTARKIE_ERL", resourceCulture);
             }
         }
         
@@ -30374,6 +31094,321 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert, mit dem am Jahresende eine veränderte Speicherfüllung ausgeglichen wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_AUSGLEICH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_AUSGLEICH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Betriebskosten kommen: aus diesem Dialog oder aus dem Kostenmodul. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_BETRIEBSQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_BETRIEBSQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Betriebskosten je entladener Kilowattstunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_BETRIEB_ENTLADEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_BETRIEB_ENTLADEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogenen jährlichen Betriebskosten der Studie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_BETRIEB_KWH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_BETRIEB_KWH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die leistungsbezogenen jährlichen Betriebskosten der Studie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_BETRIEB_KW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_BETRIEB_KW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Investitionskosten kommen: aus diesem Dialog oder aus dem Kostenmodul. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_INVESTQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_INVESTQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der kapazitätsbezogene Anteil der Investition; er lässt sich nur bei der Quelle ‚Im Dialog‘ eingeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_INVEST_KWH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_INVEST_KWH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition; er lässt sich nur bei der Quelle ‚Im Dialog‘ eingeben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_INVEST_KW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_INVEST_KW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Strombedarf kommt: aus der EPOS-Rechnung oder aus einer eingelesenen Datei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_LASTQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_LASTQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_LEISTUNGSPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_LEISTUNGSPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ordnet die Zeitachse einer eingelesenen Datei dem EPOS-Modelljahr zu; nötig, sobald Datei und EPOS-Reihe nebeneinander stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_MODELLJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_MODELLJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Bezugspreis kommt: aus dem EPOS-Stromtarif, aus einer Datei oder aus einem Preisprofil. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_PREISQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_PREISQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob die eingelesenen Jahre einzeln bewertet oder ein Referenzjahr wiederholt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_PROJEKTIONSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_PROJEKTIONSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Über wie viele Jahre ein wiederholtes Referenzjahr gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_PROJEKTJAHRE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_PROJEKTJAHRE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die PV-Erzeugung kommt: aus der EPOS-Simulation, aus einer Datei oder gar nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_PVQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_PVQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein zusätzlicher Restwert der Studie, über die Restwerte der Einheiten hinaus. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_RESTWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_RESTWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalkulationszins der Studie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA2_ZINS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA2_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine harte Obergrenze des Netzbezugs; leer bedeutet keine Grenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_BEZUGSGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_BEZUGSGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine harte Obergrenze der Netzeinspeisung; leer bedeutet keine Grenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_EINSPEISEGRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_EINSPEISEGRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was am Ende des Planungshorizonts für die Speicherfüllung gelten soll. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_ENDBEDINGUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_ENDBEDINGUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darf die Batterie ins Netz einspeisen? ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_EXPORT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_EXPORT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Darf der Lauf auf die reaktive Regel zurückfallen, wenn der Plan scheitert? Der Rückfall wird protokolliert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_FALLBACK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_FALLBACK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mit welchem Wissen der Fahrplaner rechnet — mit archivierten Prognosen oder mit Idealwissen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_INFORMATIONSSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_INFORMATIONSSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nach wie vielen Intervallen der Fahrplan neu gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_NEUPLANUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_NEUPLANUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Über wie viele Intervalle der Fahrplaner vorausplant. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_PLANUNGSHORIZONT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_PLANUNGSHORIZONT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welcher Erzeuger den Speicher zuerst lädt — Photovoltaik oder BHKW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_PRIORITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_PRIORITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie sich die geforderte Leistung auf mehrere Einheiten verteilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA3_VERTEILUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA3_VERTEILUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die größte Stückzahl dieser Achse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_ANZAHL_BIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_ANZAHL_BIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kleinste Stückzahl dieser Achse; 0 bedeutet ‚diese Einheit entfällt‘. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_ANZAHL_VON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_ANZAHL_VON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die größte Kapazität des Suchbereichs dieser Achse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_KAPAZITAET_BIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_KAPAZITAET_BIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kleinste Kapazität des Suchbereichs dieser Achse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_KAPAZITAET_VON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_KAPAZITAET_VON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die größte Leistung des Suchbereichs dieser Achse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_LEISTUNG_BIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_LEISTUNG_BIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kleinste Leistung des Suchbereichs dieser Achse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_LEISTUNG_VON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_LEISTUNG_VON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Geräte kommen, unter denen die Größensuche wählt — aus dem Projektkatalog oder aus den Stammdaten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nimmt diese Achse an der Suche teil? ähnelt.
+        /// </summary>
+        public static string KI_DLG_SPA4_VARIIEREN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SPA4_VARIIEREN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Adaptiv (kausale Ratsche): Die Schwelle startet auf dem eingegebenen Wert und wird im Lauf nachgezogen, sobald die Flotte eine Spitze nicht halten kann. Fest: Die Schwelle steht den ganzen Zeitraum. ähnelt.
         /// </summary>
         public static string KI_DLG_SPA_ADAPTIV_ERL {
@@ -30874,6 +31909,330 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_STSP_TRAEGER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_STSP_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei, deren Leseregeln hier eingestellt werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATEI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATEI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datei ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATEI_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATEI_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Format des Datums; leer bedeutet das Standardformat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATUMFORMAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATUMFORMAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsformat ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATUMFORMAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATUMFORMAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Datum; sie gilt nur bei getrennter Zeitangabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATUMSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATUMSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsspalte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DATUMSPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DATUMSPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeichen, das in den Zahlen der Datei Ganz- und Nachkommateil trennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DEZIMAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DEZIMAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimaltrenner ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_DEZIMAL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_DEZIMAL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der Werte in der Datei; welche zur Wahl stehen, sagt die Rolle der Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit der Werte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_EINHEIT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_EINHEIT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_INTERVALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_INTERVALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Intervallbezug ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_INTERVALL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_INTERVALL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeichenkodierung der Datei; sie wird nicht geraten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_KODIERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_KODIERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kodierung ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_KODIERUNG_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_KODIERUNG_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trägt die erste Datenzeile die Spaltennamen statt Werte? ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_KOPFZEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_KOPFZEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kopfzeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_KOPFZEILE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_KOPFZEILE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wofür die Reihe steht: Last, PV-Erzeugung oder Bezugspreis. Sie bestimmt die wählbaren Einheiten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ROLLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ROLLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rolle der Reihe ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ROLLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ROLLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Zeichen, das die Spalten der Datei trennt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_TRENNZEICHEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_TRENNZEICHEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_TRENNZEICHEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_TRENNZEICHEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie viele Zeilen vor der Kopfzeile übergangen werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UEBERSPRINGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UEBERSPRINGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen überspringen ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UEBERSPRINGEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UEBERSPRINGEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Format der Uhrzeit; leer bedeutet das Standardformat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UHRZEITFORMAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UHRZEITFORMAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitformat ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UHRZEITFORMAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UHRZEITFORMAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit der Uhrzeit; sie gilt nur bei getrennter Zeitangabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UHRZEITSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UHRZEITSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitspalte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_UHRZEITSPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_UHRZEITSPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem Messwert der Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_WERTSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_WERTSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wertspalte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_WERTSPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_WERTSPALTE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Steht die Zeit in einer Zeitstempelspalte oder in getrennten Spalten für Datum und Uhrzeit? ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZEITANGABE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZEITANGABE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitangabe ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZEITANGABE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZEITANGABE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zeitzone, in der die Zeitangaben der Datei stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZEITZONE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZEITZONE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzone ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZEITZONE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZEITZONE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Format des Zeitstempels; leer bedeutet das Standardformat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZSTEMPELFORMAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZSTEMPELFORMAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelformat ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZSTEMPELFORMAT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZSTEMPELFORMAT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spalte mit dem vollständigen Zeitstempel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZSTEMPELSPALTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZSTEMPELSPALTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelspalte ähnelt.
+        /// </summary>
+        public static string KI_DLG_SZR_ZSTEMPELSPALTE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SZR_ZSTEMPELSPALTE_NAME", resourceCulture);
             }
         }
         

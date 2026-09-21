@@ -29,6 +29,8 @@
    ab und braucht keine Bibliothek. *@
 
 @namespace EPOS.UI.Seiten.Berichte
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
@@ -280,7 +282,76 @@
         }
     }
 
-    protected override void OnInitialized() => Auffrischen();
+    protected override void OnInitialized()
+    {
+        Auffrischen();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BERICHTSEITE,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BerichtSeiteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: Ausgabeformat und Zielordner als Einstellwerte,
+    /// die zwei Mengen als Aufstellung.
+    /// </summary>
+    private BerichtSeiteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BerichtSeiteKiSicht
+        {
+            AusgabeLesen = () => _stand.AusgabeId,
+            AusgabeSetzen = BeiAusgabe,
+            AusgabeEintraege = () => KiMaskenanmeldung.Eintraege(
+                Ausgabeformen, z => z.Id, z => z.Text),
+
+            ZielordnerLesen = () => _stand.Zielordner,
+            ZielordnerSetzen = BeiZielordner,
+
+            VariantenLesen = KiVariantenzeile,
+            BausteineLesen = KiBausteinzeile,
+            StatusLesen = () => _status
+        };
+    }
+
+    /// <summary>Die angehakten Versionen als Aufstellung — je Zeile ihr Klartext.</summary>
+    private string KiVariantenzeile()
+    {
+        var namen = new List<string>();
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (_gewaehlt.Contains(z.IdProjekt))
+                namen.Add(string.IsNullOrEmpty(z.Projektname) ? z.Bezeichner : z.Projektname);
+        return string.Join("; ", namen);
+    }
+
+    /// <summary>Die gewählten Bausteine als Aufstellung — je Baustein sein Titel.</summary>
+    private string KiBausteinzeile()
+    {
+        var titel = new List<string>();
+        foreach (var b in _stand.Bausteine)
+            if (_bausteine.Contains(b.Schluessel)) titel.Add(b.Titel);
+        return string.Join("; ", titel);
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Erstellen" rechnet den Bericht und schreibt eine
+    /// Datei — eine Aktion der Stufen 2 und 3 mit eigener Rückfrage.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

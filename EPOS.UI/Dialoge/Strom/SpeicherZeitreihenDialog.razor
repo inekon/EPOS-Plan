@@ -1,6 +1,7 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" role="dialog" aria-modal="true">
     @* Ein Titel, eine Stelle: dieser Dialog steht ausschliesslich als Ueberlagerung im
@@ -109,6 +110,62 @@
         _optionen.Einheit=Rolle==SpeicherZeitreihenRolle.Bezug?SpeicherZeitreihenEinheit.EuroJeKilowattstunde:SpeicherZeitreihenEinheit.Kilowatt;
         VorschauLesen();
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private SpeicherZeitreihenKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiSicht = new SpeicherZeitreihenKiSicht(
+            () => _optionen,
+            () => _getrennteZeit,
+            ZeitartUmstellen,
+            KiAufgefrischt,
+            () => KiMaskenanmeldung.Eintraege(Spalten, z => z.Id, z => z.Text),
+            () => KiMaskenanmeldung.Eintraege(Einheiten, z => z.Id, z => z.Text),
+            () => Datei?.Dateiname ?? "");
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SPEICHER_ZEITREIHEN,
+                                          () => _kiSicht, KiHaken());
+    }
+
+    /// <summary>Stellt die Zeitangabe um — derselbe Weg wie die Klappliste.</summary>
+    private void ZeitartUmstellen(bool getrennt) => ZeitartSetzen(getrennt ? 1 : 0);
+
+    /// <summary>
+    /// Nach jedem Setzen rechnet die Maske ihre Vorschau neu und zeichnet sich.
+    /// </summary>
+    /// <remarks>
+    /// Ohne das zweite bliebe die Tabelle von vorhin stehen: Der Setzer schreibt in
+    /// den Optionssatz, aber Blazor zeichnet nur nach einem Ereignis DES BROWSERS.
+    /// </remarks>
+    private void KiAufgefrischt()
+    {
+        Geaendert();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Übernehmen" liest die Datei ein und reicht die
+    /// fertige Reihe an den Wirt — das ist ein Ladevorgang der Stufe 2 und kein
+    /// Speichern. Die PRÜFUNG dagegen ist dieselbe wie an der Maske: Was die
+    /// Vorschau nicht lesen kann, steht als Fehlerbanner darin.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => _fehler
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     private void VorschauLesen(){try{_vorschau=SpeicherZeitreihenImport.Vorschau(Datei.Inhalt,_optionen);_fehler="";}catch(Exception ex){_vorschau=null;_fehler=ex.Message;}}
     private void Geaendert(){VorschauLesen();}

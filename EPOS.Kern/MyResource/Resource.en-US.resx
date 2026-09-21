@@ -22310,4 +22310,457 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WRK_P_NACHT_ERL" xml:space="preserve">
     <value>The loss power of the device at night.</value>
   </data>
+  <data name="KI_DLG_MASKE_PEAK" xml:space="preserve">
+    <value>Peak shaving</value>
+  </data>
+  <data name="KI_DLG_MASKE_SZR" xml:space="preserve">
+    <value>Read time series</value>
+  </data>
+  <data name="KI_DLG_MASKE_SGA" xml:space="preserve">
+    <value>Electric load profile catalogue</value>
+  </data>
+  <data name="KI_DLG_PEAK_REITER_NAME" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="KI_DLG_PEAK_REIHE_NAME" xml:space="preserve">
+    <value>Loaded series</value>
+  </data>
+  <data name="KI_DLG_PEAK_HERKUNFT_NAME" xml:space="preserve">
+    <value>Origin of the defaults</value>
+  </data>
+  <data name="KI_DLG_PEAK_QUELLE_ERL" xml:space="preserve">
+    <value>Where the load profile comes from: an existing profile or an imported file.</value>
+  </data>
+  <data name="KI_DLG_PEAK_GANGLINIE_ERL" xml:space="preserve">
+    <value>The selected catalogue load profile; it is loaded immediately when changed.</value>
+  </data>
+  <data name="KI_DLG_PEAK_P_ERL" xml:space="preserve">
+    <value>The maximum charging and discharging power of the storage unit.</value>
+  </data>
+  <data name="KI_DLG_PEAK_KAPAZITAET_ERL" xml:space="preserve">
+    <value>The usable storage capacity; together with the SoC band it gives the working range.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ETA_ERL" xml:space="preserve">
+    <value>The round-trip efficiency; it is split evenly between charging and discharging.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOCMIN_ERL" xml:space="preserve">
+    <value>The lower limit of the state of charge; the unit does not discharge below it.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOCMAX_ERL" xml:space="preserve">
+    <value>The upper limit of the state of charge; the unit does not charge above it.</value>
+  </data>
+  <data name="KI_DLG_PEAK_STARTSOC_ERL" xml:space="preserve">
+    <value>The state of charge at the start of the run.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ADAPTIV_ERL" xml:space="preserve">
+    <value>Raises the threshold during the run when the unit cannot hold a peak; otherwise it stays fixed.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ZIEL_ERL" xml:space="preserve">
+    <value>The fixed target threshold of the grid draw; it applies only without adaptive tracking.</value>
+  </data>
+  <data name="KI_DLG_PEAK_LP_ERL" xml:space="preserve">
+    <value>The demand charge of the grid connection; it values the peak that was cut.</value>
+  </data>
+  <data name="KI_DLG_PEAK_BEZUGSPREIS_ERL" xml:space="preserve">
+    <value>The average energy price of the grid draw; it values the conversion losses.</value>
+  </data>
+  <data name="KI_DLG_PEAK_KOMPAT_ERL" xml:space="preserve">
+    <value>Calculates without losses and without a lower SoC limit — the predecessor's mode.</value>
+  </data>
+  <data name="KI_DLG_PEAK_CCAP_ERL" xml:space="preserve">
+    <value>The capacity-related share of the investment.</value>
+  </data>
+  <data name="KI_DLG_PEAK_CPOW_ERL" xml:space="preserve">
+    <value>The power-related share of the investment.</value>
+  </data>
+  <data name="KI_DLG_PEAK_IFIX_ERL" xml:space="preserve">
+    <value>The fixed share of the investment, independent of size and power.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ZINS_ERL" xml:space="preserve">
+    <value>The discount rate of the annuity.</value>
+  </data>
+  <data name="KI_DLG_PEAK_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>The service life of the storage unit; it determines the annuity factor.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOC_ERL" xml:space="preserve">
+    <value>Shows the state-of-charge curve on the second axis of the chart.</value>
+  </data>
+  <data name="KI_DLG_PEAK_REITER_ERL" xml:space="preserve">
+    <value>Which sheet is open: key figures, chart or monthly values.</value>
+  </data>
+  <data name="KI_DLG_PEAK_REIHE_ERL" xml:space="preserve">
+    <value>The loaded series with its number of values and its maximum.</value>
+  </data>
+  <data name="KI_DLG_PEAK_HERKUNFT_ERL" xml:space="preserve">
+    <value>Where the pre-filled numbers come from — a project variant or the default values.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATEI_NAME" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="KI_DLG_SZR_DATEI_ERL" xml:space="preserve">
+    <value>The file whose reading rules are set here.</value>
+  </data>
+  <data name="KI_DLG_SZR_ROLLE_NAME" xml:space="preserve">
+    <value>Role of the series</value>
+  </data>
+  <data name="KI_DLG_SZR_ROLLE_ERL" xml:space="preserve">
+    <value>What the series stands for: load, PV generation or purchase price. It determines the available units.</value>
+  </data>
+  <data name="KI_DLG_SZR_TRENNZEICHEN_NAME" xml:space="preserve">
+    <value>Field separator</value>
+  </data>
+  <data name="KI_DLG_SZR_TRENNZEICHEN_ERL" xml:space="preserve">
+    <value>The character that separates the columns of the file.</value>
+  </data>
+  <data name="KI_DLG_SZR_DEZIMAL_NAME" xml:space="preserve">
+    <value>Decimal separator</value>
+  </data>
+  <data name="KI_DLG_SZR_DEZIMAL_ERL" xml:space="preserve">
+    <value>The character that separates the integer and fractional part in the file's numbers.</value>
+  </data>
+  <data name="KI_DLG_SZR_KODIERUNG_NAME" xml:space="preserve">
+    <value>Encoding</value>
+  </data>
+  <data name="KI_DLG_SZR_KODIERUNG_ERL" xml:space="preserve">
+    <value>The character encoding of the file; it is not guessed.</value>
+  </data>
+  <data name="KI_DLG_SZR_KOPFZEILE_NAME" xml:space="preserve">
+    <value>Header row</value>
+  </data>
+  <data name="KI_DLG_SZR_KOPFZEILE_ERL" xml:space="preserve">
+    <value>Does the first data row carry the column names instead of values?</value>
+  </data>
+  <data name="KI_DLG_SZR_UEBERSPRINGEN_NAME" xml:space="preserve">
+    <value>Rows to skip</value>
+  </data>
+  <data name="KI_DLG_SZR_UEBERSPRINGEN_ERL" xml:space="preserve">
+    <value>How many rows before the header row are skipped.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITANGABE_NAME" xml:space="preserve">
+    <value>Time format</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITANGABE_ERL" xml:space="preserve">
+    <value>Is the time in one timestamp column or in separate date and time columns?</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELSPALTE_NAME" xml:space="preserve">
+    <value>Timestamp column</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the complete timestamp.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELFORMAT_NAME" xml:space="preserve">
+    <value>Timestamp format</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELFORMAT_ERL" xml:space="preserve">
+    <value>The format of the timestamp; empty means the standard format.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMSPALTE_NAME" xml:space="preserve">
+    <value>Date column</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the date; it applies only with separate date and time.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMFORMAT_NAME" xml:space="preserve">
+    <value>Date format</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMFORMAT_ERL" xml:space="preserve">
+    <value>The format of the date; empty means the standard format.</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITSPALTE_NAME" xml:space="preserve">
+    <value>Time column</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the time of day; it applies only with separate date and time.</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITFORMAT_NAME" xml:space="preserve">
+    <value>Time-of-day format</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITFORMAT_ERL" xml:space="preserve">
+    <value>The format of the time of day; empty means the standard format.</value>
+  </data>
+  <data name="KI_DLG_SZR_WERTSPALTE_NAME" xml:space="preserve">
+    <value>Value column</value>
+  </data>
+  <data name="KI_DLG_SZR_WERTSPALTE_ERL" xml:space="preserve">
+    <value>The column holding the measured value of the series.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITZONE_NAME" xml:space="preserve">
+    <value>Time zone</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITZONE_ERL" xml:space="preserve">
+    <value>The time zone the file's time stamps are given in.</value>
+  </data>
+  <data name="KI_DLG_SZR_INTERVALL_NAME" xml:space="preserve">
+    <value>Interval reference</value>
+  </data>
+  <data name="KI_DLG_SZR_INTERVALL_ERL" xml:space="preserve">
+    <value>Whether the timestamp denotes the start or the end of the interval.</value>
+  </data>
+  <data name="KI_DLG_SZR_EINHEIT_NAME" xml:space="preserve">
+    <value>Unit of the values</value>
+  </data>
+  <data name="KI_DLG_SZR_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the values in the file; the available ones depend on the role of the series.</value>
+  </data>
+  <data name="KI_DLG_SGA_ZEITINTERVALL_ERL" xml:space="preserve">
+    <value>The time resolution an imported file is stored with — hourly or quarter-hourly.</value>
+  </data>
+  <data name="KI_DLG_SGA_GEWAEHLT_NAME" xml:space="preserve">
+    <value>Selected load profile</value>
+  </data>
+  <data name="KI_DLG_SGA_GEWAEHLT_ERL" xml:space="preserve">
+    <value>The identifier of the selected catalogue row; it decides what the delete button affects.</value>
+  </data>
+  <data name="KI_DLG_FLE_NAME_ERL" xml:space="preserve">
+    <value>The name of the storage unit; it also appears in the fleet listing of the view.</value>
+  </data>
+  <data name="KI_DLG_FLE_KAPAZITAET_ERL" xml:space="preserve">
+    <value>The nominal capacity of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>The maximum charging power of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ENTLADELEISTUNG_ERL" xml:space="preserve">
+    <value>The maximum discharging power of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_LADEWIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>The charging efficiency of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ENTLADEWIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>The discharging efficiency of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_MIN_ERL" xml:space="preserve">
+    <value>The lower state-of-charge limit of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_MAX_ERL" xml:space="preserve">
+    <value>The upper state-of-charge limit of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_START_ERL" xml:space="preserve">
+    <value>The state of charge of this unit at the start of the run.</value>
+  </data>
+  <data name="KI_DLG_FLE_PEAK_RESERVE_ERL" xml:space="preserve">
+    <value>The energy this unit holds back for peak shaving.</value>
+  </data>
+  <data name="KI_DLG_FLE_HILFSVERBRAUCH_ERL" xml:space="preserve">
+    <value>The permanent auxiliary consumption of the unit on the AC side.</value>
+  </data>
+  <data name="KI_DLG_FLE_GRENZVERSCHLEISS_ERL" xml:space="preserve">
+    <value>The marginal wear cost per discharged kilowatt-hour.</value>
+  </data>
+  <data name="KI_DLG_FLE_EIGENE_KOSTEN_ERL" xml:space="preserve">
+    <value>Does this unit use its own cost rates instead of the study's?</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_FIX_ERL" xml:space="preserve">
+    <value>The fixed share of this unit's investment.</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_KAPAZITAET_ERL" xml:space="preserve">
+    <value>The capacity-related share of this unit's investment.</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_LEISTUNG_ERL" xml:space="preserve">
+    <value>The power-related share of this unit's investment.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_FIX_ERL" xml:space="preserve">
+    <value>The fixed annual operating cost of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_KAPAZITAET_ERL" xml:space="preserve">
+    <value>The capacity-related annual operating cost of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_LEISTUNG_ERL" xml:space="preserve">
+    <value>The power-related annual operating cost of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_DURCHSATZKOSTEN_ERL" xml:space="preserve">
+    <value>The cost per discharged kilowatt-hour of this unit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ERSATZKOSTEN_ERL" xml:space="preserve">
+    <value>What replacing this unit costs.</value>
+  </data>
+  <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
+    <value>After how many years this unit is replaced; 0 = no replacement.</value>
+  </data>
+  <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
+    <value>The residual value of this unit at the end of the study period.</value>
+  </data>
+  <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
+    <value>Where the electricity demand comes from: the EPOS calculation or an imported file.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PVQUELLE_ERL" xml:space="preserve">
+    <value>Where the PV generation comes from: the EPOS simulation, a file, or not at all.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PREISQUELLE_ERL" xml:space="preserve">
+    <value>Where the purchase price comes from: the EPOS electricity tariff, a file, or a price profile.</value>
+  </data>
+  <data name="KI_DLG_SPA2_MODELLJAHR_ERL" xml:space="preserve">
+    <value>Maps an imported file's time axis onto the EPOS model year; needed as soon as a file and an EPOS series stand side by side.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVESTQUELLE_ERL" xml:space="preserve">
+    <value>Where the investment cost comes from: this dialogue or the cost module.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEBSQUELLE_ERL" xml:space="preserve">
+    <value>Where the operating cost comes from: this dialogue or the cost module.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVEST_KW_ERL" xml:space="preserve">
+    <value>The power-related share of the investment; it can be entered only with the source 'In the dialogue'.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVEST_KWH_ERL" xml:space="preserve">
+    <value>The capacity-related share of the investment; it can be entered only with the source 'In the dialogue'.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_KW_ERL" xml:space="preserve">
+    <value>The power-related annual operating cost of the study.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_KWH_ERL" xml:space="preserve">
+    <value>The capacity-related annual operating cost of the study.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_ENTLADEN_ERL" xml:space="preserve">
+    <value>The operating cost per discharged kilowatt-hour.</value>
+  </data>
+  <data name="KI_DLG_SPA2_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>The demand charge of the grid connection; it is also held in the fleet tariff.</value>
+  </data>
+  <data name="KI_DLG_SPA2_AUSGLEICH_ERL" xml:space="preserve">
+    <value>The value used to settle a changed storage level at the end of the year.</value>
+  </data>
+  <data name="KI_DLG_SPA2_ZINS_ERL" xml:space="preserve">
+    <value>The discount rate of the study.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PROJEKTIONSART_ERL" xml:space="preserve">
+    <value>Whether the imported years are evaluated individually or one reference year is repeated.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PROJEKTJAHRE_ERL" xml:space="preserve">
+    <value>Over how many years a repeated reference year is calculated.</value>
+  </data>
+  <data name="KI_DLG_SPA2_RESTWERT_ERL" xml:space="preserve">
+    <value>An additional residual value of the study, beyond the units' residual values.</value>
+  </data>
+  <data name="KI_DLG_SPA3_VERTEILUNG_ERL" xml:space="preserve">
+    <value>How the requested power is distributed across several units.</value>
+  </data>
+  <data name="KI_DLG_SPA3_PRIORITAET_ERL" xml:space="preserve">
+    <value>Which generator charges the storage first — photovoltaics or the CHP unit.</value>
+  </data>
+  <data name="KI_DLG_SPA3_EXPORT_ERL" xml:space="preserve">
+    <value>May the battery feed into the grid?</value>
+  </data>
+  <data name="KI_DLG_SPA3_BEZUGSGRENZE_ERL" xml:space="preserve">
+    <value>A hard upper limit of the grid draw; empty means no limit.</value>
+  </data>
+  <data name="KI_DLG_SPA3_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>A hard upper limit of the grid feed-in; empty means no limit.</value>
+  </data>
+  <data name="KI_DLG_SPA3_INFORMATIONSSTAND_ERL" xml:space="preserve">
+    <value>What knowledge the scheduler works with — archived forecasts or perfect foresight.</value>
+  </data>
+  <data name="KI_DLG_SPA3_PLANUNGSHORIZONT_ERL" xml:space="preserve">
+    <value>How many intervals the scheduler plans ahead.</value>
+  </data>
+  <data name="KI_DLG_SPA3_NEUPLANUNG_ERL" xml:space="preserve">
+    <value>After how many intervals the schedule is recalculated.</value>
+  </data>
+  <data name="KI_DLG_SPA3_ENDBEDINGUNG_ERL" xml:space="preserve">
+    <value>What shall hold for the storage level at the end of the planning horizon.</value>
+  </data>
+  <data name="KI_DLG_SPA3_FALLBACK_ERL" xml:space="preserve">
+    <value>May the run fall back to the reactive rule when the plan fails? The fallback is logged.</value>
+  </data>
+  <data name="KI_DLG_SPA4_VARIIEREN_ERL" xml:space="preserve">
+    <value>Does this axis take part in the search?</value>
+  </data>
+  <data name="KI_DLG_SPA4_QUELLE_ERL" xml:space="preserve">
+    <value>Where the devices come from that the size search selects among — the project catalogue or the master data.</value>
+  </data>
+  <data name="KI_DLG_SPA4_KAPAZITAET_VON_ERL" xml:space="preserve">
+    <value>The smallest capacity of this axis's search range.</value>
+  </data>
+  <data name="KI_DLG_SPA4_KAPAZITAET_BIS_ERL" xml:space="preserve">
+    <value>The largest capacity of this axis's search range.</value>
+  </data>
+  <data name="KI_DLG_SPA4_LEISTUNG_VON_ERL" xml:space="preserve">
+    <value>The smallest power of this axis's search range.</value>
+  </data>
+  <data name="KI_DLG_SPA4_LEISTUNG_BIS_ERL" xml:space="preserve">
+    <value>The largest power of this axis's search range.</value>
+  </data>
+  <data name="KI_DLG_SPA4_ANZAHL_VON_ERL" xml:space="preserve">
+    <value>The smallest number of units on this axis; 0 means 'this unit is dropped'.</value>
+  </data>
+  <data name="KI_DLG_SPA4_ANZAHL_BIS_ERL" xml:space="preserve">
+    <value>The largest number of units on this axis.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BKU" xml:space="preserve">
+    <value>Overview (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_MASKE_BKB" xml:space="preserve">
+    <value>Report (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_MASKE_PRK" xml:space="preserve">
+    <value>Save project as</value>
+  </data>
+  <data name="KI_DLG_MASKE_PRV" xml:space="preserve">
+    <value>Save as variant</value>
+  </data>
+  <data name="KI_DLG_BKU_STAMM_ERL" xml:space="preserve">
+    <value>The master project whose comparison group the page shows; a change reloads the whole group.</value>
+  </data>
+  <data name="KI_DLG_BKU_NURSTAEMME_ERL" xml:space="preserve">
+    <value>Does the list show only master projects, or their variants as well?</value>
+  </data>
+  <data name="KI_DLG_BKU_VARIANTE_ERL" xml:space="preserve">
+    <value>The selected version; it decides which differences the table shows and what delete, rename and simulate act on.</value>
+  </data>
+  <data name="KI_DLG_BKU_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier used to rename the selected version; it takes effect only with the 'Rename' button.</value>
+  </data>
+  <data name="KI_DLG_BKU_SIM_NAME" xml:space="preserve">
+    <value>Simulation state</value>
+  </data>
+  <data name="KI_DLG_BKU_SIM_ERL" xml:space="preserve">
+    <value>When the selected version was last simulated, or that it has not been yet.</value>
+  </data>
+  <data name="KI_DLG_BKB_AUSGABE_ERL" xml:space="preserve">
+    <value>The format the report is produced in: Word, Excel or both.</value>
+  </data>
+  <data name="KI_DLG_BKB_ZIEL_ERL" xml:space="preserve">
+    <value>The folder the report is written to.</value>
+  </data>
+  <data name="KI_DLG_BKB_VARIANTEN_NAME" xml:space="preserve">
+    <value>Versions in the report</value>
+  </data>
+  <data name="KI_DLG_BKB_VARIANTEN_ERL" xml:space="preserve">
+    <value>The ticked versions as a listing; the master project is always included.</value>
+  </data>
+  <data name="KI_DLG_BKB_BAUSTEINE_ERL" xml:space="preserve">
+    <value>The selected building blocks as a listing — the chapters the report carries.</value>
+  </data>
+  <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
+    <value>The project that is copied; changing it pre-fills description, customer and editor from it.</value>
+  </data>
+  <data name="KI_DLG_PRK_NAME_ERL" xml:space="preserve">
+    <value>The name of the copy; it must not already exist.</value>
+  </data>
+  <data name="KI_DLG_PRK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRK_KUNDE_ERL" xml:space="preserve">
+    <value>The customer the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRK_BEARBEITER_ERL" xml:space="preserve">
+    <value>The editor the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRV_HAKEN_ERL" xml:space="preserve">
+    <value>Does the variant take the content of an existing project? Only then is the project list shown below.</value>
+  </data>
+  <data name="KI_DLG_PRV_QUELLE_ERL" xml:space="preserve">
+    <value>The project whose content the variant receives; without an own identifier it also takes its name.</value>
+  </data>
+  <data name="KI_DLG_PRV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier of the new variant; the project name is derived from it and the master project.</value>
+  </data>
+  <data name="KI_DLG_PRV_ZIELNAME_NAME" xml:space="preserve">
+    <value>New project name</value>
+  </data>
+  <data name="KI_DLG_PRV_ZIELNAME_ERL" xml:space="preserve">
+    <value>The name the variant is created under — derived from master project and identifier, with a counter on name clashes.</value>
+  </data>
+  <data name="KI_DLG_SIM_AUTARKIE_ERL" xml:space="preserve">
+    <value>The storage size the 'Result' sheet uses to calculate the PV self-sufficiency; it is an assumption of the display and does not change the simulation run.</value>
+  </data>
 </root>

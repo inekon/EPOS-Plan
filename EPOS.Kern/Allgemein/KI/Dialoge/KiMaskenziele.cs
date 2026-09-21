@@ -174,6 +174,23 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string GESETZESKATALOG = "GESETZESKATALOG";
 
+        /// <summary>
+        /// Der Seitenschluessel des Dialogs „Als Variante speichern" (Welle KI‑F6).
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.ProjektAlsVariante</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="KLIMADATEN"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Der Schluessel
+        /// gehoert zum Menuepunkt „Projekt → Als Variante speichern…"; die
+        /// Windows-Huelle faengt ihn im Menueweg selbst ab
+        /// (<c>HauptfensterHuelle.Weg</c>), <c>WinFormsNavigation.OeffneMaske</c> kennt
+        /// ihn nicht. <c>dialog_oeffnen</c> lehnt dort also benannt ab, statt still
+        /// nichts zu tun — genau wie bei der Kostenverwaltung. LESEN und SETZEN
+        /// erreichen die Maske trotzdem, sobald der Anwender sie offen hat: Dafuer
+        /// zaehlt die Anmeldung an der Maskenbruecke, nicht dieses Ziel.
+        /// </remarks>
+        public const string PROJEKT_VARIANTE = "PROJEKT_ALS_VARIANTE";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -374,7 +391,48 @@ namespace WindowsFormsApplication1
                 // Katalogschluessel.
                 { KiMaskennamen.PV_MODULKATALOG,        Masken.PvAdmin },
                 { KiMaskennamen.STROMSPEICHER_KATALOG,  Masken.StromspeicherAdmin },
-                { KiMaskennamen.WECHSELRICHTER_KATALOG, Masken.WechselrichterAdmin }
+                { KiMaskennamen.WECHSELRICHTER_KATALOG, Masken.WechselrichterAdmin },
+
+                // ---- Welle KI-F6: STROM -------------------------------------
+                //
+                // Die LASTSPITZENKAPPUNG und die STROMGANGLINIEN-VERWALTUNG sind
+                // eigene Fenster mit einem Weg im Menue; ihre Katalogschluessel
+                // sind zugleich ihre Navigationsschluessel - dieselbe Lage wie
+                // bei der Waermepumpenverwaltung. WinFormsNavigation.OeffneMaske
+                // kennt beide; auf iOS uebersetzt IosNavigation keinen von
+                // ihnen, die Wurzel antwortet false, und dialog_oeffnen lehnt
+                // benannt ab.
+                { KiMaskennamen.PEAK_SHAVING,        Masken.PeakShaving },
+                { KiMaskennamen.STROMGANGLINIE_ADMIN, Masken.StromganglinieAdmin },
+
+                // Die LESEREGELN einer Speicher-Zeitreihe gehen als Ueberlagerung
+                // aus Station 2 der Stromspeicher-Auslegung auf und brauchen eine
+                // gewaehlte Datei; kontextfrei gibt es sie nicht. Ihr Ziel ist
+                // deshalb die Ansicht, aus der sie aufgehen - dieselbe
+                // Begruendung wie bei den Ueberlagerungen der
+                // Energietraegerverwaltung.
+                { KiMaskennamen.SPEICHER_ZEITREIHEN, STROMSPEICHER_AUSLEGUNG },
+
+                // ---- Welle KI-F6: BERICHTE und PROJEKT -----------------------
+                //
+                // Die zwei REITERBLAETTER gehoeren zur Ansicht „Berichte und
+                // Kosten" - wie schon Kostenseite und Wirtschaftlichkeitsseite
+                // der Welle KI-F4; ein Reiterwunsch geht dabei nicht mit. Die
+                // Ansicht bedient die AppWurzel auf beiden Plattformen.
+                { KiMaskennamen.BERICHTE_UEBERSICHT, Ansichten.BerichteKosten },
+                { KiMaskennamen.BERICHTSEITE,        Ansichten.BerichteKosten },
+
+                // „Projekt speichern unter" IST eine Maske der Windows-
+                // Navigationstabelle - hier fallen Katalogschluessel und
+                // Navigationsschluessel zusammen, wie bei der
+                // Waermepumpenverwaltung. Auf iOS uebersetzt IosNavigation den
+                // Schluessel nicht, die Wurzel antwortet false, und
+                // dialog_oeffnen lehnt benannt ab.
+                { KiMaskennamen.PROJEKT_KOPIE, Masken.ProjektSpeichernUnter },
+
+                // „Als Variante speichern" haengt am Menuepunkt „Projekt → Als
+                // Variante speichern…" - siehe PROJEKT_VARIANTE.
+                { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

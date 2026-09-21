@@ -281,4 +281,71 @@ public class ProjektKopieDialogTests : EposBunitContext
             ".epos-projektkopie-felder .epos-formularraster--einspaltig"));
         Assert.Equal(4, cut.FindAll(".epos-formularraster .epos-feld").Count);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Das Quellprojekt ist ein
+    /// Wahlfeld über seinen Namen; es zu setzen belegt Beschreibung, Kunde und
+    /// Bearbeiter vor — genau wie ein Klick in die Liste.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_belegt_die_Felder_vor()
+    {
+        var cut = Aufbauen(new Kern());
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PROJEKT_KOPIE));
+
+        KiFeldzugang quelle = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_KOPIE, "quellprojekt");
+        Assert.NotNull(quelle);
+        Assert.True(quelle.Setzbar);
+        Assert.Equal(2, quelle.Wahleintraege().Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(quelle, "Zweitprojekt");
+        Assert.True(wahl.Ok, wahl.Grund);
+        quelle.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(1007, Convert.ToInt32(quelle.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldzugang beschreibung = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_KOPIE, "beschreibung");
+        Assert.Equal("B von Zweitprojekt", beschreibung.Lesen());
+
+        // Der neue Name ist ein gewöhnliches Textfeld.
+        KiFeldzugang name = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKT_KOPIE, "neuer_name");
+        name.Setzen("Kopie A");
+        cut.Render();
+        Assert.Equal("Kopie A", name.Lesen());
+    }
+
+    /// <summary>
+    /// <b>Der Prüfhaken zieht dieselbe Regel wie der OK-Knopf</b> — ein belegter
+    /// Zielname ist ein Befund.
+    /// </summary>
+    [Fact]
+    public void Der_Pruefhaken_meldet_einen_belegten_Zielnamen()
+    {
+        var kern = new Kern();
+        var cut = Aufbauen(kern);
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.PROJEKT_KOPIE);
+        Assert.NotNull(haken);
+        Assert.NotNull(haken.Pruefen);
+
+        // Ohne Namen ist es ein Befund — dieselbe Regel wie am OK-Knopf.
+        Assert.False(string.IsNullOrEmpty(haken.Pruefen()));
+
+        KiFeldzugang name = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKT_KOPIE, "neuer_name");
+        name.Setzen("Ganz neu");
+        cut.Render();
+        Assert.True(string.IsNullOrEmpty(haken.Pruefen()));
+
+        // Und was der KERN ablehnt, lehnt auch der Haken ab.
+        kern.Pruefung = DuplizierBefund.ZielExistiert;
+        Assert.False(string.IsNullOrEmpty(haken.Pruefen()));
+    }
 }

@@ -435,4 +435,74 @@ public class ProjektVarianteDialogTests : EposBunitContext
         // das traegt dann die Ueberlagerung.
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der Haken schaltet die
+    /// Liste frei, das Quellprojekt trifft über seinen Namen, und der Zielname
+    /// folgt der Kernregel — als Anzeige.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_rechnet_den_Zielnamen()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PROJEKT_VARIANTE));
+
+        KiFeldzugang haken = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "aus_quelle");
+        Assert.True(haken.Setzbar);
+        haken.Setzen(true);
+        cut.Render();
+
+        KiFeldzugang quelle = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "quellprojekt");
+        Assert.Equal(3, quelle.Wahleintraege().Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(quelle, "Zweitprojekt");
+        Assert.True(wahl.Ok, wahl.Grund);
+        quelle.Setzen(wahl.Wert);
+        cut.Render();
+
+        // Ohne eigenen Bezeichner uebernimmt die Variante den Namen der Quelle.
+        KiFeldzugang bezeichner = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "bezeichner");
+        Assert.Equal("Zweitprojekt", bezeichner.Lesen());
+
+        bezeichner.Setzen("Sommerbetrieb");
+        cut.Render();
+
+        KiFeldzugang ziel = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "zielname");
+        Assert.False(ziel.Setzbar);
+        Assert.Contains("Sommerbetrieb", Convert.ToString(ziel.Lesen()) ?? "");
+    }
+
+    /// <summary>
+    /// <b>Ein vom Assistenten gesetzter Bezeichner bleibt stehen</b> — dieselbe
+    /// Regel wie beim Tippen von Hand: Ein Wechsel des Quellprojekts überschreibt
+    /// ihn danach nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Ein_gesetzter_Bezeichner_ueberlebt_den_Wechsel_der_Quelle()
+    {
+        var cut = Aufbauen();
+
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKT_VARIANTE, "aus_quelle").Setzen(true);
+        KiFeldzugang bezeichner = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "bezeichner");
+        bezeichner.Setzen("Sommerbetrieb");
+        cut.Render();
+
+        KiFeldzugang quelle = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PROJEKT_VARIANTE, "quellprojekt");
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(quelle, "Zweitprojekt");
+        quelle.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal("Sommerbetrieb", bezeichner.Lesen());
+    }
 }

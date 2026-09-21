@@ -4,7 +4,9 @@ using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
+using KiKern;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -1008,5 +1010,62 @@ public class UebersichtSeiteTests : EposBunitContext
 
         Assert.Equal(new[] { 1030 }, gemeldet);
         Assert.Equal(2, _geladen);                            // die Seite liest den Stand neu
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Seite an der Maskenbrücke.</b> Die markierte Version über
+    /// ihren Namen zu setzen meldet dieselbe Id an die Hülle wie ein Griff in die
+    /// Klappliste — und die Seite liest ihren Stand danach neu.
+    /// </summary>
+    [Fact]
+    public void Die_Seite_meldet_sich_beim_Assistenten_an_und_markiert_eine_Version()
+    {
+        var gemeldet = new List<int>();
+        var cut = Zeige(p => p.Add(x => x.ZeileMarkiert, (int id) => gemeldet.Add(id)));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BERICHTE_UEBERSICHT));
+
+        KiFeldzugang variante = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTE_UEBERSICHT, "variante");
+        Assert.NotNull(variante);
+        Assert.True(variante.Setzbar);
+        Assert.Equal(2, variante.Wahleintraege().Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(variante, "WP klein");
+        Assert.True(wahl.Ok, wahl.Grund);
+        variante.Setzen(wahl.Wert);
+
+        // Der Assistent setzt aus SEINEM Faden; die Seite wechselt dafür über
+        // InvokeAsync in den Blazor-Verteiler — deshalb wird hier gewartet.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Equal(new[] { 1031 }, gemeldet);
+            Assert.Equal(2, _geladen);
+        });
+    }
+
+    /// <summary>
+    /// <b>Der Filter ist ein Wahrheitswert, der Simulationsstand eine Anzeige.</b>
+    /// </summary>
+    [Fact]
+    public void Der_Filter_ist_setzbar_und_der_Simulationsstand_nur_lesbar()
+    {
+        var gemeldet = new List<bool>();
+        var cut = Zeige(p => p.Add(x => x.FilterGewechselt, (bool an) => gemeldet.Add(an)));
+
+        KiFeldzugang filter = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTE_UEBERSICHT, "nur_staemme");
+        Assert.True(filter.Setzbar);
+        filter.Setzen(true);
+        cut.WaitForAssertion(() => Assert.Equal(new[] { true }, gemeldet));
+
+        KiFeldzugang sim = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTE_UEBERSICHT, "simulationsstand");
+        Assert.NotNull(sim);
+        Assert.False(sim.Setzbar);
     }
 }

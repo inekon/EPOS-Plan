@@ -825,6 +825,19 @@
         }
     }
 
+    /// <summary>
+    /// Setzt die Speicherkapazität der Autarkierechnung — derselbe Weg wie das
+    /// Eingabefeld auf dem Blatt „Ergebnis" (Welle KI‑F6).
+    /// </summary>
+    /// <remarks>
+    /// <b>Über <c>InvokeAsync</c>, weil der Assistent nicht aus dem Blazor-Verteiler
+    /// setzt:</b> <see cref="KapazitaetGeaendert"/> ruft <c>StateHasChanged</c>, und
+    /// das verlangt den Verteilerfaden — dieselbe Hausregel wie beim
+    /// <c>SeitenZustand</c>.
+    /// </remarks>
+    public void SpeicherkapazitaetSetzen(double kwh)
+        => _ = InvokeAsync(() => KapazitaetGeaendert(kwh));
+
     private void KapazitaetGeaendert(double kwh)
     {
         AutarkieDaten? neu = Dienste?.AutarkieRechnen?.Invoke(kwh);
