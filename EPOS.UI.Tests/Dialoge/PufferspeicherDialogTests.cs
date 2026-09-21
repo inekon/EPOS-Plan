@@ -63,11 +63,16 @@ public class PufferspeicherDialogTests : EposBunitContext
     private static ErzeugerZeile Zeile(int schluessel, string name, int geraetId)
         => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = geraetId };
 
+    /// <summary>
+    /// Der Detailblock, wie ihn <c>PufferspeicherHuelle.DetailZu</c> baut: Hersteller,
+    /// Speichertyp, Bereitschaftsverluste und Gesamtvolumen. Ein Feld
+    /// „Investitionskosten" steht nicht darin — gepflegt wird der Preis im Aufklapper
+    /// „Alle Daten anzeigen".
+    /// </summary>
     private static ErzeugerDetail Detail(string name) => new(
         name, "",
         new[] { ("Hersteller:", "Musterwerk"), ("Speichertyp:", "stehend"),
-                ("Bereitschaftsverluste:", "1,5"), ("Gesamtvolumen [l]:", "600,0"),
-                ("Investitionskosten [€]:", "2500,0") });
+                ("Bereitschaftsverluste:", "1,5"), ("Gesamtvolumen [l]:", "600,0") });
 
     /// <summary>
     /// Die Felder des Aufklappers „Alle Daten anzeigen" — der Feldsatz des
@@ -157,9 +162,10 @@ public class PufferspeicherDialogTests : EposBunitContext
         Assert.DoesNotContain("Filtern nach Volumen:", texte);
         Assert.Single(cut.FindAll(".epos-katalog-suchzeile"));
 
-        // Sechs NUR LESBARE Anzeigefelder: Name, Hersteller, Typ, Verluste, Volumen,
-        // Investitionskosten.
-        Assert.Equal(6, cut.FindAll(".epos-gruppenkopf-koerper input[readonly]").Count);
+        // Fuenf NUR LESBARE Anzeigefelder: Name, Hersteller, Typ, Verluste, Volumen.
+        // Ein Feld „Investitionskosten" steht nicht mehr darunter (Anwenderentscheid
+        // 21.09.2026) — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
+        Assert.Equal(5, cut.FindAll(".epos-gruppenkopf-koerper input[readonly]").Count);
     }
 
     /// <summary>

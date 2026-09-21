@@ -71,10 +71,14 @@ public class HeizkesselDialogTests : EposBunitContext
         => new() { Schluessel = schluessel, Bezeichner = name, GeraetId = geraetId,
                    CarrierId = carrier, Vorlauf = 70, Ruecklauf = 50 };
 
+    /// <summary>
+    /// Der Detailblock, wie ihn <c>HeizkesselHuelle.DetailZu</c> baut: Brennstoff Typ,
+    /// Leistung und der Schalter „Brennwertkessel". Ein Feld „Investitionskosten" steht
+    /// nicht darin — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
+    /// </summary>
     private static ErzeugerDetail Detail(string name) => new(
         name, "Beschreibung",
-        new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00"),
-                ("Investitionskosten [€]:", "12000,00") },
+        new[] { ("Brennstoff Typ:", "Erdgas E"), ("Leistung [kW]:", "120,00") },
         ("Brennwertkessel", true));
 
     private IRenderedComponent<HeizkesselDialog> Aufbauen(
@@ -203,15 +207,17 @@ public class HeizkesselDialogTests : EposBunitContext
     }
 
     [Fact]
-    public void Der_Detailblock_zeigt_die_sieben_Felder_der_Gruppe_Modul()
+    public void Der_Detailblock_zeigt_die_sechs_Felder_der_Gruppe_Modul()
     {
         var cut = Aufbauen();
 
-        // Name, Brennstoff Typ, Leistung, Investition, Beschreibung (mehrzeilig),
-        // Brennwertkessel (Schalter), Brennstoff Variante (Auswahl).
+        // Name, Brennstoff Typ, Leistung, Beschreibung (mehrzeilig), Brennwertkessel
+        // (Schalter), Brennstoff Variante (Auswahl). Ein nur lesbares Feld
+        // „Investitionskosten" steht nicht mehr darunter (Anwenderentscheid
+        // 21.09.2026) — gepflegt wird der Preis im Aufklapper „Alle Daten anzeigen".
         var gruppe = cut.Find(".epos-gruppenkopf-koerper");
         Assert.Equal("Modul", cut.Find(".epos-gruppenkopf-titel").TextContent);
-        Assert.Equal(4, gruppe.QuerySelectorAll("input[type=text][readonly]").Length);
+        Assert.Equal(3, gruppe.QuerySelectorAll("input[type=text][readonly]").Length);
         Assert.Single(gruppe.QuerySelectorAll("textarea"));
         Assert.Single(gruppe.QuerySelectorAll("input[type=checkbox]"));
     }
