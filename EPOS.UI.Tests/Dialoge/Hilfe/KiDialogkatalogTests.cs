@@ -11,6 +11,7 @@ using EPOS.UI.Seiten.Strom;
 using KiKern;
 using SpeicherEngine;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge.Hilfe;
@@ -177,7 +178,21 @@ public class KiDialogkatalogTests
         { KiMaskennamen.SOLARGANGLINIE,
           typeof(EPOS.UI.Dialoge.Solarthermie.SolarganglinieKiSicht) },
         { KiMaskennamen.KLIMADATEN,
-          typeof(EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht) }
+          typeof(EPOS.UI.Dialoge.Klimadaten.KlimadatenKiSicht) },
+
+        // Welle KI-F5: die ERZEUGERKATALOGE. Die zwei Katalogeditoren melden ihr
+        // DATEN-OBJEKT an - dieselbe Bauart wie Heizkessel und Pufferspeicher, und
+        // damit tragen sie auch die Markup-Probe.
+        { KiMaskennamen.BHKW,           typeof(BhkwKatalogDaten) },
+        { KiMaskennamen.SOLARKOLLEKTOR,
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorKatalogDaten) },
+
+        // DREI Masken auf EINER Sichtklasse: Der Modulkatalog ist eine Komponente
+        // mit drei Auspraegungen, und welche Felder sie fuehrt, sagt das Profil zur
+        // Laufzeit - siehe OhneMarkupprobe.
+        { KiMaskennamen.PV_MODULKATALOG,        typeof(ModulKatalogKiSicht) },
+        { KiMaskennamen.STROMSPEICHER_KATALOG,  typeof(ModulKatalogKiSicht) },
+        { KiMaskennamen.WECHSELRICHTER_KATALOG, typeof(ModulKatalogKiSicht) }
     };
 
     /// <summary>
@@ -218,6 +233,13 @@ public class KiDialogkatalogTests
         // VarianteIdWahl fuehrte dieselbe Liste ein zweites Mal. Der Dialog meldet
         // sie deshalb als benannte Wahlquelle an.
         KiMaskennamen.KOSTENVERWALTUNG     => new[] { "variante" },
+
+        // Welle KI-F5: Der BHKW-Katalogeditor bekommt seine Brennstoffliste von der
+        // Huelle - genau wie der Heizkessel. Die drei MODULKATALOGE stehen hier
+        // bewusst NICHT: Ihre einzige Wahl (die Zelltechnologie des PV-Moduls) loest
+        // die Bruecke ueber die Begleiteigenschaft TechnologieWahl der Sichtklasse
+        // selbst auf.
+        KiMaskennamen.BHKW                 => new[] { "energietraeger" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -272,11 +294,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_einundfuenfzig_Masken()
+    public void Der_Katalog_fuehrt_sechsundfuenfzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(51, katalog.Anzahl);
+        Assert.Equal(56, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -467,6 +489,71 @@ public class KiDialogkatalogTests
     }
 
     /// <summary>
+    /// <b>Die fünf Erzeugerkataloge der Welle KI‑F5</b> — je Maske genau die Felder,
+    /// die sie zeigt.
+    /// </summary>
+    /// <remarks>
+    /// <para>Der BHKW-Editor führt DREIZEHN und damit zwei mehr als der Heizkessel: den
+    /// Motortyp und die zwei Wirkungsgradanteile samt ihrer Summe, dafür keinen
+    /// Brennwertschalter. Der Kollektoreditor führt dreizehn ohne die
+    /// Investitionskosten — sie sind am 15.09.2026 aus der Maske gefallen.</para>
+    /// <para>Die drei MODULKATALOGE zählen genau die Felder ihres Profils
+    /// (<c>ModulKatalogProfil.Finde</c>); wächst dem Profil eines zu, fällt es hier
+    /// auf und nicht beim Anwender.</para>
+    /// </remarks>
+    [Fact]
+    public void Die_fuenf_Erzeugerkataloge_fuehren_13_13_15_14_und_26_Felder()
+    {
+        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.BHKW)!.Felder.Count);
+        Assert.Equal(13, KiDialoge.Katalog.Finde(KiMaskennamen.SOLARKOLLEKTOR)!.Felder.Count);
+        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PV_MODULKATALOG)!.Felder.Count);
+        Assert.Equal(14, KiDialoge.Katalog.Finde(KiMaskennamen.STROMSPEICHER_KATALOG)!.Felder.Count);
+        Assert.Equal(26, KiDialoge.Katalog.Finde(KiMaskennamen.WECHSELRICHTER_KATALOG)!.Felder.Count);
+    }
+
+    /// <summary>
+    /// <b>Jedes Feld der drei Modulkataloge trägt den Schlüssel eines Profilfeldes</b>
+    /// — und umgekehrt fehlt keines.
+    /// </summary>
+    /// <remarks>
+    /// Das ist die schärfere Probe als eine Zahl: Der Feldsatz des Modulkatalogs ist
+    /// DATEN (<c>ModulKatalogProfil</c>), und der Katalogeintrag ist seine benannte
+    /// Sicht darauf. Liefe eines von beiden dem anderen davon, böte der Assistent ein
+    /// Feld an, das die Maske nicht zeigt — oder er verschwiege eines, das sie zeigt.
+    /// Geprüft wird über die ANZEIGENAMEN, denn nur sie verbinden beide Seiten: Der
+    /// Katalog nennt seine Felder sprachneutral (<c>u_mpp</c>), das Profil über die
+    /// Beschriftung der Maske.
+    /// </remarks>
+    [Theory]
+    [InlineData(ModulKatalogArt.Photovoltaik, KiMaskennamen.PV_MODULKATALOG)]
+    [InlineData(ModulKatalogArt.Stromspeicher, KiMaskennamen.STROMSPEICHER_KATALOG)]
+    [InlineData(ModulKatalogArt.Wechselrichter, KiMaskennamen.WECHSELRICHTER_KATALOG)]
+    public void Der_Modulkatalog_deklariert_genau_die_Felder_seines_Profils(
+        ModulKatalogArt art, string maske)
+    {
+        ModulKatalogProfil profil = ModulKatalogProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+        KiDialog dialog = KiDialoge.Katalog.Finde(maske)!;
+
+        Assert.Equal(profil.Felder.Count, dialog.Felder.Count);
+
+        var ausDerMaske = new HashSet<string>(profil.Felder.Select(f => f.Bezeichnung.TrimEnd(' ', ':')),
+                                              StringComparer.Ordinal);
+        foreach (KiDialogFeld f in dialog.Felder)
+            Assert.True(ausDerMaske.Contains(f.Anzeigename.TrimEnd(' ', ':')),
+                        "Das Katalogfeld '" + f.Name + "' heißt '" + f.Anzeigename +
+                        "' — so steht es an der Maske '" + maske + "' nicht.");
+
+        // Und die GESPERRTEN Felder des Profils sind im Katalog nur lesend.
+        foreach (ModulKatalogFeld p in profil.Felder.Where(p => p.Gesperrt))
+        {
+            KiDialogFeld? k = dialog.Felder.FirstOrDefault(
+                f => string.Equals(f.Anzeigename.TrimEnd(' ', ':'), p.Feldname, StringComparison.Ordinal));
+            Assert.NotNull(k);
+            Assert.True(k!.NurLesen, p.Feldname);
+        }
+    }
+
+    /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
     /// der Strangliste.
@@ -599,7 +686,13 @@ public class KiDialogkatalogTests
         // Die gewaehlte Zuordnung der externen Waermebedarfsganglinien: Kanal und
         // Bezeichner stehen beide im Markup.
         { KiMaskennamen.WAERMEBEDARF_EXTERN,
-          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" }
+          "EPOS.UI/Dialoge/Bedarf/WaermebedarfExternDialog.razor" },
+
+        // Welle KI-F5: die zwei KATALOGEDITOREN. Sie binden ihr Daten-Objekt und
+        // zeichnen jedes Feld selbst - eine Datei je Maske.
+        { KiMaskennamen.BHKW, "EPOS.UI/Dialoge/Erzeuger/BhkwKatalogDialog.razor" },
+        { KiMaskennamen.SOLARKOLLEKTOR,
+          "EPOS.UI/Dialoge/Solarthermie/SolarkollektorKatalogDialog.razor" }
     };
 
     /// <summary>
@@ -746,7 +839,23 @@ public class KiDialogkatalogTests
             "der Seite; Zeuge ist KostenSeiteTests",
         [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
             "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
-            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests"
+            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests",
+
+        // Welle KI-F5: die drei Ausprägungen des Modulkatalogs. Ihre Felder stehen
+        // NICHT im Markup — es zeichnet eine Schleife über den Feldsatz, den das
+        // ModulKatalogProfil zur Laufzeit bestimmt.
+        [KiMaskennamen.PV_MODULKATALOG] =
+            "bindet über die Sichtklasse ModulKatalogKiSicht auf den Feldsatz des " +
+            "Profils; das Markup zeichnet eine Schleife, keine benannten Bindungen. " +
+            "Zeuge ist ModulKatalogDialogTests",
+        [KiMaskennamen.STROMSPEICHER_KATALOG] =
+            "bindet über die Sichtklasse ModulKatalogKiSicht auf den Feldsatz des " +
+            "Profils; das Markup zeichnet eine Schleife, keine benannten Bindungen. " +
+            "Zeuge ist ModulKatalogDialogTests",
+        [KiMaskennamen.WECHSELRICHTER_KATALOG] =
+            "bindet über die Sichtklasse ModulKatalogKiSicht auf den Feldsatz des " +
+            "Profils; das Markup zeichnet eine Schleife, keine benannten Bindungen. " +
+            "Zeuge ist ModulKatalogDialogTests"
     };
 
     /// <summary>
@@ -875,8 +984,9 @@ public class KiDialogkatalogTests
         // 6 (Heizkesseleditor) + 14 (PV) + 1 (Puffereditor) + 1 (WP-Verwaltung) +
         // 7 (Kostenverwaltung) + 3 (Heizkessel im Projekt) + 4 (BHKW im Projekt) +
         // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) +
-        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 64.
-        Assert.True(felder >= 64, "Nur " + felder + " Feldpfade geprüft.");
+        // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 64; seit der Welle KI-F5
+        // dazu 13 (BHKW-Katalogeditor) und 13 (Kollektoreditor) = 90.
+        Assert.True(felder >= 90, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

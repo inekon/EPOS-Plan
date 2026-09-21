@@ -22055,4 +22055,259 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
   </data>
+  <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
+    <value>h0</value>
+  </data>
+  <data name="KI_DLG_SKK_K1_NAME" xml:space="preserve">
+    <value>k1</value>
+  </data>
+  <data name="KI_DLG_SKK_K2_NAME" xml:space="preserve">
+    <value>k2</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIR_NAME" xml:space="preserve">
+    <value>Kdir</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIFF_NAME" xml:space="preserve">
+    <value>Kdiff</value>
+  </data>
+  <data name="KI_DLG_BHKK_NAME_ERL" xml:space="preserve">
+    <value>The module name of the catalogue record; it is the key the record is saved under and therefore read-only in edit mode.</value>
+  </data>
+  <data name="KI_DLG_BHKK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the module; it serves recognition in the catalogue and enters no calculation.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MOTORTYP_ERL" xml:space="preserve">
+    <value>The engine type as free text, for example gas Otto or pilot injection.</value>
+  </data>
+  <data name="KI_DLG_BHKK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>A multi-line note on the module; it only appears in the catalogue and affects no calculation.</value>
+  </data>
+  <data name="KI_DLG_BHKK_PTHERM_ERL" xml:space="preserve">
+    <value>The rated thermal output of the module at full load.</value>
+  </data>
+  <data name="KI_DLG_BHKK_PEL_ERL" xml:space="preserve">
+    <value>The rated electrical output of the module at full load; it is the reference for profitability and the electricity credit.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_EL_ERL" xml:space="preserve">
+    <value>The electrical efficiency as a factor, for example 0.30 for thirty percent.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_TH_ERL" xml:space="preserve">
+    <value>The thermal efficiency as a factor, for example 0.60 for sixty percent.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_GESAMT_ERL" xml:space="preserve">
+    <value>The overall efficiency is the sum of the two shares and follows every entry; what you change are the shares.</value>
+  </data>
+  <data name="KI_DLG_BHKK_GRENZLEISTUNG_ERL" xml:space="preserve">
+    <value>The lower limit output as a share of the rated output; below it the module shuts down instead of modulating further.</value>
+  </data>
+  <data name="KI_DLG_BHKK_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier the module runs on; it determines the fuel price and the emission factor.</value>
+  </data>
+  <data name="KI_DLG_BHKK_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature at which the module feeds into the network.</value>
+  </data>
+  <data name="KI_DLG_BHKK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>The return temperature at which the module is fed.</value>
+  </data>
+  <data name="KI_DLG_SKK_NAME_ERL" xml:space="preserve">
+    <value>The collector name of the catalogue record; it is the key of the record and therefore read-only.</value>
+  </data>
+  <data name="KI_DLG_SKK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the collector; it serves recognition in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_SKK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>A multi-line note on the collector; it only appears in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_SKK_TYP_ERL" xml:space="preserve">
+    <value>The collector type as free text, for example flat plate or evacuated tube.</value>
+  </data>
+  <data name="KI_DLG_SKK_MODULFLAECHE_ERL" xml:space="preserve">
+    <value>The gross area of one module including the frame; it determines the space required, not the yield.</value>
+  </data>
+  <data name="KI_DLG_SKK_APERTURFLAECHE_ERL" xml:space="preserve">
+    <value>The effective aperture area of one module; the conversion factor and the loss coefficients refer to it.</value>
+  </data>
+  <data name="KI_DLG_SKK_H0_ERL" xml:space="preserve">
+    <value>The conversion factor h0: the share of irradiation the collector converts at zero temperature difference.</value>
+  </data>
+  <data name="KI_DLG_SKK_K1_ERL" xml:space="preserve">
+    <value>The linear heat loss coefficient k1 of the collector curve.</value>
+  </data>
+  <data name="KI_DLG_SKK_K2_ERL" xml:space="preserve">
+    <value>The quadratic heat loss coefficient k2 of the collector curve.</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIR_ERL" xml:space="preserve">
+    <value>The incidence angle modifier Kdir for direct irradiation.</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
+    <value>The incidence angle modifier Kdiff for diffuse irradiation, given at fifty degrees.</value>
+  </data>
+  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature of the collector circuit; empty counts as zero.</value>
+  </data>
+  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>The return temperature of the collector circuit; empty counts as zero.</value>
+  </data>
+  <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier of the storage record; it is the key the record is written under and therefore read-only.</value>
+  </data>
+  <data name="KI_DLG_MODK_PV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier of the module record; it is the key the record is written under and therefore read-only.</value>
+  </data>
+  <data name="KI_DLG_MODK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer; the catalogue list can be narrowed down by it.</value>
+  </data>
+  <data name="KI_DLG_MODK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>A multi-line note on the record; it only appears in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_MODK_TYP_ERL" xml:space="preserve">
+    <value>The storage type as free text, for example lithium-ion; it describes the cell chemistry.</value>
+  </data>
+  <data name="KI_DLG_MODK_ENERGIE_ERL" xml:space="preserve">
+    <value>The rated capacity of one storage module.</value>
+  </data>
+  <data name="KI_DLG_MODK_LEISTUNG_ERL" xml:space="preserve">
+    <value>The charge and discharge power of one storage module.</value>
+  </data>
+  <data name="KI_DLG_MODK_LADEZUSTAND_ERL" xml:space="preserve">
+    <value>The usable share of the capacity; it limits the depth of discharge.</value>
+  </data>
+  <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
+    <value>The annual capacity loss of the storage unit.</value>
+  </data>
+  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
+    <value>The capacity-related module cost of the storage unit.</value>
+  </data>
+  <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
+    <value>The round-trip efficiency over charging and discharging as a factor; empty means not maintained.</value>
+  </data>
+  <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
+    <value>The cycle life of the storage unit; empty means not maintained.</value>
+  </data>
+  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
+    <value>The wear cost per kilowatt hour throughput; empty means not maintained.</value>
+  </data>
+  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
+    <value>The power-related share of the investment; empty means not maintained.</value>
+  </data>
+  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
+    <value>The fixed share of the investment per storage unit, independent of size and power.</value>
+  </data>
+  <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
+    <value>The standby power of the storage unit at rest.</value>
+  </data>
+  <data name="KI_DLG_MODK_PMAX_ERL" xml:space="preserve">
+    <value>The rated power of one module under standard test conditions; it is the only mandatory field of the module catalogue.</value>
+  </data>
+  <data name="KI_DLG_MODK_WIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>The module efficiency under standard test conditions.</value>
+  </data>
+  <data name="KI_DLG_MODK_UMPP_ERL" xml:space="preserve">
+    <value>The voltage at the maximum power point; it enters the string layout.</value>
+  </data>
+  <data name="KI_DLG_MODK_ULEERLAUF_ERL" xml:space="preserve">
+    <value>The open-circuit voltage; it limits the number of modules in series.</value>
+  </data>
+  <data name="KI_DLG_MODK_IMPP_ERL" xml:space="preserve">
+    <value>The current at the maximum power point.</value>
+  </data>
+  <data name="KI_DLG_MODK_IKURZSCHLUSS_ERL" xml:space="preserve">
+    <value>The short-circuit current; it limits the number of parallel strings per input.</value>
+  </data>
+  <data name="KI_DLG_MODK_TEMPKOEFF_ERL" xml:space="preserve">
+    <value>The temperature coefficient of power; it is negative and states how much power is lost per kelvin of cell heating.</value>
+  </data>
+  <data name="KI_DLG_MODK_LAENGE_ERL" xml:space="preserve">
+    <value>The length of the module; length and width give the area the layout needs.</value>
+  </data>
+  <data name="KI_DLG_MODK_BREITE_ERL" xml:space="preserve">
+    <value>The width of the module.</value>
+  </data>
+  <data name="KI_DLG_MODK_PV_KOSTEN_ERL" xml:space="preserve">
+    <value>The price of one module; the plant cost follows from it via the module count.</value>
+  </data>
+  <data name="KI_DLG_MODK_TNOCT_ERL" xml:space="preserve">
+    <value>The cell temperature under nominal operating conditions; it drives the heating in the yield model.</value>
+  </data>
+  <data name="KI_DLG_MODK_TECHNOLOGIE_ERL" xml:space="preserve">
+    <value>The cell technology of the module; it selects the curve shape in the extended yield model.</value>
+  </data>
+  <data name="KI_DLG_WRK_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier of the device record; it is the key the record is written under and therefore read-only.</value>
+  </data>
+  <data name="KI_DLG_WRK_FIRMA_ERL" xml:space="preserve">
+    <value>The manufacturer of the device; the catalogue list can be narrowed down by it.</value>
+  </data>
+  <data name="KI_DLG_WRK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>A multi-line note on the device; it only appears in the catalogue.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_AC_NENN_ERL" xml:space="preserve">
+    <value>The rated active power on the AC side; it is the only mandatory field of the device.</value>
+  </data>
+  <data name="KI_DLG_WRK_S_AC_MAX_ERL" xml:space="preserve">
+    <value>The maximum apparent power on the AC side.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_DC_MAX_ERL" xml:space="preserve">
+    <value>The maximum generator power the inverter accepts on the DC side.</value>
+  </data>
+  <data name="KI_DLG_WRK_KOSTEN_ERL" xml:space="preserve">
+    <value>The price of one device; it enters the investment of the plant.</value>
+  </data>
+  <data name="KI_DLG_WRK_HERKUNFT_ERL" xml:space="preserve">
+    <value>Where the record comes from: the device import sets the source, a hand-maintained record carries „HAND“. The entry is information, not input.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_MPP_MIN_ERL" xml:space="preserve">
+    <value>The lower voltage of the MPP range; below it the device no longer tracks.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_MPP_MAX_ERL" xml:space="preserve">
+    <value>The upper voltage of the MPP range.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_DC_MAX_ERL" xml:space="preserve">
+    <value>The maximum permissible DC voltage at the input; it must not be exceeded even at cold open circuit.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_START_ERL" xml:space="preserve">
+    <value>The voltage from which the device starts operating.</value>
+  </data>
+  <data name="KI_DLG_WRK_I_DC_MAX_ERL" xml:space="preserve">
+    <value>The maximum operating current per MPP tracker.</value>
+  </data>
+  <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
+    <value>The maximum permissible short-circuit current per MPP tracker; beyond it the device is damaged.</value>
+  </data>
+  <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
+    <value>The number of independent MPP trackers of the device.</value>
+  </data>
+  <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
+    <value>The number of strings that can be connected to one MPP tracker.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
+    <value>The efficiency at five percent partial load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA10_ERL" xml:space="preserve">
+    <value>The efficiency at ten percent partial load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA20_ERL" xml:space="preserve">
+    <value>The efficiency at twenty percent partial load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA30_ERL" xml:space="preserve">
+    <value>The efficiency at thirty percent partial load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA50_ERL" xml:space="preserve">
+    <value>The efficiency at fifty percent partial load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA100_ERL" xml:space="preserve">
+    <value>The efficiency at full load, as a factor from zero to one.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA_EURO_ERL" xml:space="preserve">
+    <value>The European efficiency: the weighted mean of the partial load values.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA_MAX_ERL" xml:space="preserve">
+    <value>The highest efficiency the device reaches.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_STANDBY_ERL" xml:space="preserve">
+    <value>The standby power of the device during the day.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_NACHT_ERL" xml:space="preserve">
+    <value>The loss power of the device at night.</value>
+  </data>
 </root>

@@ -57,19 +57,23 @@ namespace EPOS.Kern.Tests
         /// Der Fall aus dem Befund: zwei Felder der Heizkesselmaske, keine Maske offen.
         /// </summary>
         /// <remarks>
-        /// <b>Die zwei Felder sind <c>th_leistung</c> und <c>bereitschaftsverlust</c>.</b>
-        /// Sie stehen an genau EINER Maske, und nur dann darf die Absage sie zuordnen.
-        /// <c>vorlauf</c> und <c>ruecklauf</c> taugen dafür nicht mehr: Mit der Freigabe
-        /// der Erzeugermasken des Projekts führen sie fünf Masken (Kessel im Katalog und
-        /// im Projekt, BHKW, Solarkollektoren, Wärmepumpen-Anlage). Was dann geschieht,
-        /// hält <see cref="Ein_mehrdeutiges_Feld_wird_nicht_geraten"/> fest.
+        /// <para><b>Die zwei Felder sind <c>wirkungsgrad_gas</c> und
+        /// <c>bereitschaftsverlust</c>.</b> Sie stehen an genau EINER Maske, und nur
+        /// dann darf die Absage sie zuordnen.</para>
+        /// <para><b>Welche Felder das sind, hat sich zweimal geändert — und beide Male
+        /// aus demselben Grund.</b> <c>vorlauf</c> und <c>ruecklauf</c> taugten nach der
+        /// Freigabe der Erzeugermasken des Projekts nicht mehr (sie führen fünf Masken),
+        /// <c>th_leistung</c> nicht mehr seit der Freigabe des BHKW-Katalogeditors: Die
+        /// thermische Leistung steht seither am Heizkessel UND am BHKW. Was bei einem
+        /// mehrdeutigen Feld geschieht, hält
+        /// <see cref="Ein_mehrdeutiges_Feld_wird_nicht_geraten"/> fest.</para>
         /// </remarks>
         [Fact]
         public void Die_Absage_nennt_die_Maske_zu_den_Feldern()
         {
             string text = Grund("formular_ausfuellen",
                 new Dictionary<string, object>
-                { ["werte"] = "th_leistung=120; bereitschaftsverlust=1,5" });
+                { ["werte"] = "wirkungsgrad_gas=0,95; bereitschaftsverlust=1,5" });
 
             Assert.NotNull(text);
 
@@ -85,7 +89,8 @@ namespace EPOS.Kern.Tests
         public void Auch_feld_setzen_bekommt_den_Weg_genannt()
         {
             string text = Grund("feld_setzen",
-                new Dictionary<string, object> { ["feld"] = "th_leistung", ["wert"] = "120" });
+                new Dictionary<string, object>
+                { ["feld"] = "bereitschaftsverlust", ["wert"] = "1,5" });
 
             Assert.NotNull(text);
             Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,

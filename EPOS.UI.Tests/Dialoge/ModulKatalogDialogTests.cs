@@ -3,6 +3,7 @@ using System.Threading;
 using Bunit;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
+using KiKern;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using WindowsFormsApplication1;
@@ -71,6 +72,11 @@ public class ModulKatalogDialogTests : EposBunitContext
                 LeerErlaubt = feld.LeerErlaubt,
                 Gesperrt = feld.Gesperrt,
                 Gruppe = feld.Gruppe,
+                // Die OPTIONEN eines Auswahlfeldes gehören dazu - so reicht sie die
+                // Hülle herein (ModulKatalogHuelle), und ohne sie hätte die
+                // Zelltechnologie weder eine Klappliste noch Wahleinträge für den
+                // Assistenten.
+                Optionen = feld.Optionen,
                 Wert = wert
             });
         }
@@ -564,5 +570,122 @@ public class ModulKatalogDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
+    }
+
+    // =================================================================================
+    //  Der Hilfe-Assistent (Welle KI-F5)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Jede der drei Ausprägungen meldet ihren EIGENEN Katalogschlüssel an</b> —
+    /// eine Komponente, drei Masken.
+    /// </summary>
+    [Theory]
+    [InlineData(ModulKatalogArt.Photovoltaik, KiMaskennamen.PV_MODULKATALOG)]
+    [InlineData(ModulKatalogArt.Stromspeicher, KiMaskennamen.STROMSPEICHER_KATALOG)]
+    [InlineData(ModulKatalogArt.Wechselrichter, KiMaskennamen.WECHSELRICHTER_KATALOG)]
+    public void Jede_Auspraegung_meldet_ihren_eigenen_Katalogschluessel_an(
+        ModulKatalogArt art, string maske)
+    {
+        Aufbauen(art);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(maske));
+        Assert.Equal(maske, KiMaskenbruecke.AktiveMaske());
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE des PV-Modulkatalogs.</b> Gelesen und gesetzt wird über die
+    /// Sichtklasse auf den lebenden Feldsatz; die Zelltechnologie ist ein WAHLFELD,
+    /// dessen Einträge aus dem Profil kommen (KI‑D‑Q6).
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Felder_des_PV_Modulkatalogs()
+    {
+        var cut = Aufbauen(ModulKatalogArt.Photovoltaik);
+
+        // Der Bezeichner ist gesperrt — er ist der Schlüssel des UPDATE.
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_MODULKATALOG, "name").Setzbar);
+
+        KiFeldzugang pmax =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_MODULKATALOG, "pmax");
+        Assert.NotNull(pmax);
+        Assert.True(pmax.Setzbar);
+        pmax.Setzen(425.0);
+        cut.Render();
+        Assert.Equal(425.0, Convert.ToDouble(pmax.Lesen(), CultureInfo.InvariantCulture));
+
+        // ... und der Wert steht im FELDSATZ der Maske, nicht nur in der Sicht.
+        Assert.Equal("425", cut.Instance.Felder
+                                .First(f => f.Schluessel == ModulKatalogProfil.FeldLeistung).Wert);
+
+        KiFeldzugang technologie =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_MODULKATALOG, "technologie");
+        Assert.NotEmpty(technologie.Wahleintraege());
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE des Wechselrichterkatalogs.</b> Die HERKUNFT ist Auskunft des
+    /// Imports und deshalb nur lesbar, die Zahl der MPP-Tracker eine Ganzzahl.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_liest_und_setzt_die_Felder_des_Wechselrichterkatalogs()
+    {
+        var cut = Aufbauen(ModulKatalogArt.Wechselrichter);
+
+        Assert.False(KiMaskenbruecke
+                     .Feldzugang(KiMaskennamen.WECHSELRICHTER_KATALOG, "herkunft").Setzbar);
+
+        KiFeldzugang mppt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.WECHSELRICHTER_KATALOG, "anzahl_mppt");
+        mppt.Setzen(3);
+        cut.Render();
+        Assert.Equal(3, Convert.ToInt32(mppt.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Der Speicherweg des Modulkatalogs</b> schreibt denselben Feldsatz zurück,
+    /// den der Speicherknopf schreibt — und lehnt benannt ab, wenn eine Pflichtzahl
+    /// fehlt.
+    /// </summary>
+    [Fact]
+    public void Der_Speicherweg_schreibt_den_Feldsatz_und_prueft_die_Pflichtfelder()
+    {
+        IReadOnlyList<ModulFeldwert>? geschrieben = null;
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = Zeilen,
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            Speichern = (f, _, __) =>
+            {
+                geschrieben = f;
+                return new KatalogSpeicherErgebnis(
+                    true, "Datensatz gespeichert",
+                    f.First(x => x.Schluessel == ModulKatalogProfil.FeldBezeichner).Wert);
+            },
+            Loeschen = n => new KatalogSpeicherErgebnis(true, "", n)
+        };
+
+        var cut = Aufbauen(ModulKatalogArt.Stromspeicher, wege);
+
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.STROMSPEICHER_KATALOG, "energie").Setzen(120.0);
+        cut.Render();
+
+        KiErgebnis ok = KiMaskenbruecke.Haken(KiMaskennamen.STROMSPEICHER_KATALOG)
+                                       .Speichern().GetAwaiter().GetResult();
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ok.Status);
+        Assert.NotNull(geschrieben);
+        Assert.Equal("120", geschrieben!
+                            .First(f => f.Schluessel == ModulKatalogProfil.FeldEnergie).Wert);
+
+        // Eine geleerte PFLICHTZAHL hält den Speicherweg an.
+        cut.Instance.Felder.First(f => f.Schluessel == ModulKatalogProfil.FeldEnergie).Wert = "";
+        geschrieben = null;
+
+        KiErgebnis abgelehnt = KiMaskenbruecke.Haken(KiMaskennamen.STROMSPEICHER_KATALOG)
+                                              .Speichern().GetAwaiter().GetResult();
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
+        Assert.Null(geschrieben);
     }
 }

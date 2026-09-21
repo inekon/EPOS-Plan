@@ -1580,5 +1580,223 @@
         internal static string WseBErl => MyResource.Resource.KI_DLG_WSE_B_ERL;
         internal static string WseWirkungName => MyResource.Resource.WPAR_NICHT_MONETAER;
         internal static string WseWirkungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ERL;
+
+        // ============================================== Einheiten der Welle KI-F5
+
+        /// <summary>Ein dimensionsloser Faktor - so steht das Zeichen auf der Maske.</summary>
+        internal const string EINHEIT_FAKTOR = "-";
+
+        /// <summary>Einheit der leistungsbezogenen Kosten.</summary>
+        internal const string EINHEIT_EURO_KW = "€/kW";
+
+        /// <summary>Einheit einer elektrischen Spannung.</summary>
+        internal const string EINHEIT_VOLT = "V";
+
+        /// <summary>Einheit einer elektrischen Stromstaerke.</summary>
+        internal const string EINHEIT_AMPERE = "A";
+
+        /// <summary>Einheit eines Temperaturkoeffizienten der Leistung.</summary>
+        internal const string EINHEIT_PROZENT_K = "%/K";
+
+        /// <summary>Einheit einer elektrischen Scheinleistung.</summary>
+        internal const string EINHEIT_KVA = "kVA";
+
+        /// <summary>Einheit des quadratischen Waermeverlustbeiwerts k2.</summary>
+        internal const string EINHEIT_W_M2K2 = "W/(m²·K²)";
+
+        /// <summary>
+        /// Einheit der Verschleisskosten eines Stromspeichers - sie traegt ein WORT
+        /// und kommt deshalb aus der Ressource.
+        /// </summary>
+        internal static string EinheitZykluskosten => MyResource.Resource.SP_EINHEIT_ZYKLUSKOSTEN;
+
+        // ============================================== Masken der Welle KI-F5
+
+        internal static string MaskeBhkwKatalog => MyResource.Resource.BHKWK_TITEL;
+        internal static string MaskeSolarkollektorKatalog => MyResource.Resource.SKK_TITEL;
+        internal static string MaskePvModulkatalog => MyResource.Resource.MODK_TITEL_PV;
+        internal static string MaskeStromspeicherkatalog => MyResource.Resource.MODK_TITEL_STROMSPEICHER;
+        internal static string MaskeWechselrichterkatalog => MyResource.Resource.WRK_TITEL_VERWALTUNG;
+
+        // ============================================== Knoepfe des Modulkatalogs
+
+        internal static string KnopfNeu => MyResource.Resource.KBROW_BTN_NEU;
+
+        // ============================================== Welle KI-F5: ERZEUGERKATALOGE
+        //
+        // Die Anzeigenamen kommen aus den BESCHRIFTUNGEN der Masken (BHKWK_LBL_*,
+        // SKK_LBL_*, MODK_LBL_*, SP_LABEL_*, WRK_LBL_*) - genau der Text, den der
+        // Anwender dort liest. Eine zweite Schreibweise daneben koennte auseinander
+        // laufen; nur die fuenf FORMELZEICHEN des Kollektors (h0, k1, k2, Kdir,
+        // Kdiff) tragen einen eigenen Schluessel, weil die Maske sie als Vorgabewert
+        // ihrer Parameter fuehrt und nicht aus der Ressource holt.
+
+        // ---- Der BHKW-Katalogeditor (Form_DBBHKW)
+        internal static string BhkkNameName => MyResource.Resource.BHKWK_LBL_NAME;
+        internal static string BhkkNameErl => MyResource.Resource.KI_DLG_BHKK_NAME_ERL;
+        internal static string BhkkFirmaName => MyResource.Resource.BHKWK_LBL_HERSTELLER;
+        internal static string BhkkFirmaErl => MyResource.Resource.KI_DLG_BHKK_FIRMA_ERL;
+        internal static string BhkkMotortypName => MyResource.Resource.BHKWK_LBL_MOTORTYP;
+        internal static string BhkkMotortypErl => MyResource.Resource.KI_DLG_BHKK_MOTORTYP_ERL;
+        internal static string BhkkBeschreibungName => MyResource.Resource.BHKWK_LBL_BESCHREIBUNG;
+        internal static string BhkkBeschreibungErl => MyResource.Resource.KI_DLG_BHKK_BESCHREIBUNG_ERL;
+        internal static string BhkkPthermName => MyResource.Resource.BHKWK_LBL_PTHERM;
+        internal static string BhkkPthermErl => MyResource.Resource.KI_DLG_BHKK_PTHERM_ERL;
+        internal static string BhkkPelName => MyResource.Resource.BHKWK_LBL_PEL;
+        internal static string BhkkPelErl => MyResource.Resource.KI_DLG_BHKK_PEL_ERL;
+        internal static string BhkkWgElName => MyResource.Resource.BHKWK_LBL_WIRKUNGSGRAD_EL;
+        internal static string BhkkWgElErl => MyResource.Resource.KI_DLG_BHKK_WG_EL_ERL;
+        internal static string BhkkWgThName => MyResource.Resource.BHKWK_LBL_WIRKUNGSGRAD_TH;
+        internal static string BhkkWgThErl => MyResource.Resource.KI_DLG_BHKK_WG_TH_ERL;
+        internal static string BhkkWgGesamtName => MyResource.Resource.BHKWK_LBL_WIRKUNGSGRAD;
+        internal static string BhkkWgGesamtErl => MyResource.Resource.KI_DLG_BHKK_WG_GESAMT_ERL;
+        internal static string BhkkGrenzleistungName => MyResource.Resource.BHKWK_LBL_GRENZLEISTUNG;
+        internal static string BhkkGrenzleistungErl => MyResource.Resource.KI_DLG_BHKK_GRENZLEISTUNG_ERL;
+        internal static string BhkkTraegerName => MyResource.Resource.BHKWK_LBL_ENERGIETRAEGER;
+        internal static string BhkkTraegerErl => MyResource.Resource.KI_DLG_BHKK_TRAEGER_ERL;
+        internal static string BhkkVorlaufName => MyResource.Resource.BHKWK_LBL_VORLAUF;
+        internal static string BhkkVorlaufErl => MyResource.Resource.KI_DLG_BHKK_VORLAUF_ERL;
+        internal static string BhkkRuecklaufName => MyResource.Resource.BHKWK_LBL_RUECKLAUF;
+        internal static string BhkkRuecklaufErl => MyResource.Resource.KI_DLG_BHKK_RUECKLAUF_ERL;
+
+        // ---- Der Solarkollektor-Katalogeditor (Form_SolarDB)
+        internal static string SkkNameName => MyResource.Resource.SKK_LBL_NAME;
+        internal static string SkkNameErl => MyResource.Resource.KI_DLG_SKK_NAME_ERL;
+        internal static string SkkFirmaName => MyResource.Resource.SKK_LBL_HERSTELLER;
+        internal static string SkkFirmaErl => MyResource.Resource.KI_DLG_SKK_FIRMA_ERL;
+        internal static string SkkBeschreibungName => MyResource.Resource.SKK_LBL_BESCHREIBUNG;
+        internal static string SkkBeschreibungErl => MyResource.Resource.KI_DLG_SKK_BESCHREIBUNG_ERL;
+        internal static string SkkTypName => MyResource.Resource.SKK_LBL_TYP;
+        internal static string SkkTypErl => MyResource.Resource.KI_DLG_SKK_TYP_ERL;
+        internal static string SkkModulflaecheName => MyResource.Resource.SKK_LBL_MODULFLAECHE;
+        internal static string SkkModulflaecheErl => MyResource.Resource.KI_DLG_SKK_MODULFLAECHE_ERL;
+        internal static string SkkAperturflaecheName => MyResource.Resource.SKK_LBL_APERTURFLAECHE;
+        internal static string SkkAperturflaecheErl => MyResource.Resource.KI_DLG_SKK_APERTURFLAECHE_ERL;
+        internal static string SkkH0Name => MyResource.Resource.KI_DLG_SKK_H0_NAME;
+        internal static string SkkH0Erl => MyResource.Resource.KI_DLG_SKK_H0_ERL;
+        internal static string SkkK1Name => MyResource.Resource.KI_DLG_SKK_K1_NAME;
+        internal static string SkkK1Erl => MyResource.Resource.KI_DLG_SKK_K1_ERL;
+        internal static string SkkK2Name => MyResource.Resource.KI_DLG_SKK_K2_NAME;
+        internal static string SkkK2Erl => MyResource.Resource.KI_DLG_SKK_K2_ERL;
+        internal static string SkkKdirName => MyResource.Resource.KI_DLG_SKK_KDIR_NAME;
+        internal static string SkkKdirErl => MyResource.Resource.KI_DLG_SKK_KDIR_ERL;
+        internal static string SkkKdiffName => MyResource.Resource.KI_DLG_SKK_KDIFF_NAME;
+        internal static string SkkKdiffErl => MyResource.Resource.KI_DLG_SKK_KDIFF_ERL;
+        internal static string SkkVorlaufName => MyResource.Resource.SKK_LBL_VORLAUF;
+        internal static string SkkVorlaufErl => MyResource.Resource.KI_DLG_SKK_VORLAUF_ERL;
+        internal static string SkkRuecklaufName => MyResource.Resource.SKK_LBL_RUECKLAUF;
+        internal static string SkkRuecklaufErl => MyResource.Resource.KI_DLG_SKK_RUECKLAUF_ERL;
+
+        // ---- Der Modulkatalog: Stromspeicher und PV-Modul
+        internal static string ModkBezeichnerName => MyResource.Resource.MODK_LBL_BEZEICHNER;
+        internal static string ModkBezeichnerErl => MyResource.Resource.KI_DLG_MODK_BEZEICHNER_ERL;
+        internal static string ModkPvBezeichnerName => MyResource.Resource.MODK_LBL_BEZEICHNER_PV;
+        internal static string ModkPvBezeichnerErl => MyResource.Resource.KI_DLG_MODK_PV_BEZEICHNER_ERL;
+        internal static string ModkFirmaName => MyResource.Resource.MODK_LBL_FIRMA;
+        internal static string ModkFirmaErl => MyResource.Resource.KI_DLG_MODK_FIRMA_ERL;
+        internal static string ModkBeschreibungName => MyResource.Resource.MODK_LBL_BESCHREIBUNG;
+        internal static string ModkBeschreibungErl => MyResource.Resource.KI_DLG_MODK_BESCHREIBUNG_ERL;
+        internal static string ModkTypName => MyResource.Resource.MODK_LBL_TYP;
+        internal static string ModkTypErl => MyResource.Resource.KI_DLG_MODK_TYP_ERL;
+        internal static string ModkEnergieName => MyResource.Resource.SP_LABEL_ENERGIE_KURZ;
+        internal static string ModkEnergieErl => MyResource.Resource.KI_DLG_MODK_ENERGIE_ERL;
+        internal static string ModkLeistungName => MyResource.Resource.MODK_LBL_LEISTUNG;
+        internal static string ModkLeistungErl => MyResource.Resource.KI_DLG_MODK_LEISTUNG_ERL;
+        internal static string ModkLadezustandName => MyResource.Resource.MODK_LBL_LADEZUSTAND;
+        internal static string ModkLadezustandErl => MyResource.Resource.KI_DLG_MODK_LADEZUSTAND_ERL;
+        internal static string ModkDegradationName => MyResource.Resource.MODK_LBL_DEGRADATION;
+        internal static string ModkDegradationErl => MyResource.Resource.KI_DLG_MODK_DEGRADATION_ERL;
+        internal static string ModkKostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
+        internal static string ModkKostenErl => MyResource.Resource.KI_DLG_MODK_KOSTEN_ERL;
+        internal static string ModkWirkungsgradRtName => MyResource.Resource.SP_LABEL_WIRKUNGSGRAD_RT;
+        internal static string ModkWirkungsgradRtErl => MyResource.Resource.KI_DLG_MODK_WG_RT_ERL;
+        internal static string ModkZyklenName => MyResource.Resource.SP_LABEL_ZYKLEN;
+        internal static string ModkZyklenErl => MyResource.Resource.KI_DLG_MODK_ZYKLEN_ERL;
+        internal static string ModkVerschleissName => MyResource.Resource.SP_LABEL_VERSCHLEISSKOSTEN;
+        internal static string ModkVerschleissErl => MyResource.Resource.KI_DLG_MODK_VERSCHLEISS_ERL;
+        internal static string ModkLeistungskostenName => MyResource.Resource.SP_LABEL_LEISTUNGSKOSTEN;
+        internal static string ModkLeistungskostenErl => MyResource.Resource.KI_DLG_MODK_LEISTUNGSKOSTEN_ERL;
+        internal static string ModkInvestFixName => MyResource.Resource.SP_LABEL_INVESTITION_FIX;
+        internal static string ModkInvestFixErl => MyResource.Resource.KI_DLG_MODK_INVEST_FIX_ERL;
+        internal static string ModkStandbyName => MyResource.Resource.SP_LABEL_STANDBY;
+        internal static string ModkStandbyErl => MyResource.Resource.KI_DLG_MODK_STANDBY_ERL;
+        internal static string ModkPmaxName => MyResource.Resource.MODK_LBL_PMAX;
+        internal static string ModkPmaxErl => MyResource.Resource.KI_DLG_MODK_PMAX_ERL;
+        internal static string ModkWirkungsgradName => MyResource.Resource.MODK_LBL_WIRKUNGSGRAD;
+        internal static string ModkWirkungsgradErl => MyResource.Resource.KI_DLG_MODK_WIRKUNGSGRAD_ERL;
+        internal static string ModkUMppName => MyResource.Resource.MODK_LBL_UMPP;
+        internal static string ModkUMppErl => MyResource.Resource.KI_DLG_MODK_UMPP_ERL;
+        internal static string ModkULeerlaufName => MyResource.Resource.MODK_LBL_ULEERLAUF;
+        internal static string ModkULeerlaufErl => MyResource.Resource.KI_DLG_MODK_ULEERLAUF_ERL;
+        internal static string ModkIMppName => MyResource.Resource.MODK_LBL_IMPP;
+        internal static string ModkIMppErl => MyResource.Resource.KI_DLG_MODK_IMPP_ERL;
+        internal static string ModkIKurzschlussName => MyResource.Resource.MODK_LBL_IKURZSCHLUSS;
+        internal static string ModkIKurzschlussErl => MyResource.Resource.KI_DLG_MODK_IKURZSCHLUSS_ERL;
+        internal static string ModkTempkoeffName => MyResource.Resource.MODK_LBL_TEMPKOEFF;
+        internal static string ModkTempkoeffErl => MyResource.Resource.KI_DLG_MODK_TEMPKOEFF_ERL;
+        internal static string ModkLaengeName => MyResource.Resource.MODK_LBL_LAENGE;
+        internal static string ModkLaengeErl => MyResource.Resource.KI_DLG_MODK_LAENGE_ERL;
+        internal static string ModkBreiteName => MyResource.Resource.MODK_LBL_BREITE;
+        internal static string ModkBreiteErl => MyResource.Resource.KI_DLG_MODK_BREITE_ERL;
+        internal static string ModkPvKostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN_PV;
+        internal static string ModkPvKostenErl => MyResource.Resource.KI_DLG_MODK_PV_KOSTEN_ERL;
+        internal static string ModkTNoctName => MyResource.Resource.PV_MODUL_LABEL_TNOCT;
+        internal static string ModkTNoctErl => MyResource.Resource.KI_DLG_MODK_TNOCT_ERL;
+        internal static string ModkTechnologieName => MyResource.Resource.PVM_MODUL_LABEL_TECHNOLOGIE;
+        internal static string ModkTechnologieErl => MyResource.Resource.KI_DLG_MODK_TECHNOLOGIE_ERL;
+
+        // ---- Der Modulkatalog: Wechselrichter
+        internal static string WrkBezeichnerName => MyResource.Resource.WRK_LBL_BEZEICHNER;
+        internal static string WrkBezeichnerErl => MyResource.Resource.KI_DLG_WRK_BEZEICHNER_ERL;
+        internal static string WrkFirmaName => MyResource.Resource.WRK_LBL_FIRMA;
+        internal static string WrkFirmaErl => MyResource.Resource.KI_DLG_WRK_FIRMA_ERL;
+        internal static string WrkBeschreibungName => MyResource.Resource.WRK_LBL_BESCHREIBUNG;
+        internal static string WrkBeschreibungErl => MyResource.Resource.KI_DLG_WRK_BESCHREIBUNG_ERL;
+        internal static string WrkPAcNennName => MyResource.Resource.WRK_LBL_P_AC_NENN;
+        internal static string WrkPAcNennErl => MyResource.Resource.KI_DLG_WRK_P_AC_NENN_ERL;
+        internal static string WrkSAcMaxName => MyResource.Resource.WRK_LBL_S_AC_MAX;
+        internal static string WrkSAcMaxErl => MyResource.Resource.KI_DLG_WRK_S_AC_MAX_ERL;
+        internal static string WrkPDcMaxName => MyResource.Resource.WRK_LBL_P_DC_MAX;
+        internal static string WrkPDcMaxErl => MyResource.Resource.KI_DLG_WRK_P_DC_MAX_ERL;
+        internal static string WrkKostenName => MyResource.Resource.WRK_LBL_KOSTEN;
+        internal static string WrkKostenErl => MyResource.Resource.KI_DLG_WRK_KOSTEN_ERL;
+        internal static string WrkHerkunftName => MyResource.Resource.WRK_LBL_HERKUNFT;
+        internal static string WrkHerkunftErl => MyResource.Resource.KI_DLG_WRK_HERKUNFT_ERL;
+        internal static string WrkUMppMinName => MyResource.Resource.WRK_LBL_U_MPP_MIN;
+        internal static string WrkUMppMinErl => MyResource.Resource.KI_DLG_WRK_U_MPP_MIN_ERL;
+        internal static string WrkUMppMaxName => MyResource.Resource.WRK_LBL_U_MPP_MAX;
+        internal static string WrkUMppMaxErl => MyResource.Resource.KI_DLG_WRK_U_MPP_MAX_ERL;
+        internal static string WrkUDcMaxName => MyResource.Resource.WRK_LBL_U_DC_MAX;
+        internal static string WrkUDcMaxErl => MyResource.Resource.KI_DLG_WRK_U_DC_MAX_ERL;
+        internal static string WrkUStartName => MyResource.Resource.WRK_LBL_U_START;
+        internal static string WrkUStartErl => MyResource.Resource.KI_DLG_WRK_U_START_ERL;
+        internal static string WrkIDcMaxName => MyResource.Resource.WRK_LBL_I_DC_MAX;
+        internal static string WrkIDcMaxErl => MyResource.Resource.KI_DLG_WRK_I_DC_MAX_ERL;
+        internal static string WrkIScMaxName => MyResource.Resource.WRK_LBL_I_SC_MAX;
+        internal static string WrkIScMaxErl => MyResource.Resource.KI_DLG_WRK_I_SC_MAX_ERL;
+        internal static string WrkAnzahlMpptName => MyResource.Resource.WRK_LBL_ANZAHL_MPPT;
+        internal static string WrkAnzahlMpptErl => MyResource.Resource.KI_DLG_WRK_ANZAHL_MPPT_ERL;
+        internal static string WrkStraengeJeMpptName => MyResource.Resource.WRK_LBL_STRAENGE_JE_MPPT;
+        internal static string WrkStraengeJeMpptErl => MyResource.Resource.KI_DLG_WRK_STRAENGE_JE_MPPT_ERL;
+        internal static string WrkEta05Name => MyResource.Resource.WRK_LBL_ETA05;
+        internal static string WrkEta05Erl => MyResource.Resource.KI_DLG_WRK_ETA05_ERL;
+        internal static string WrkEta10Name => MyResource.Resource.WRK_LBL_ETA10;
+        internal static string WrkEta10Erl => MyResource.Resource.KI_DLG_WRK_ETA10_ERL;
+        internal static string WrkEta20Name => MyResource.Resource.WRK_LBL_ETA20;
+        internal static string WrkEta20Erl => MyResource.Resource.KI_DLG_WRK_ETA20_ERL;
+        internal static string WrkEta30Name => MyResource.Resource.WRK_LBL_ETA30;
+        internal static string WrkEta30Erl => MyResource.Resource.KI_DLG_WRK_ETA30_ERL;
+        internal static string WrkEta50Name => MyResource.Resource.WRK_LBL_ETA50;
+        internal static string WrkEta50Erl => MyResource.Resource.KI_DLG_WRK_ETA50_ERL;
+        internal static string WrkEta100Name => MyResource.Resource.WRK_LBL_ETA100;
+        internal static string WrkEta100Erl => MyResource.Resource.KI_DLG_WRK_ETA100_ERL;
+        internal static string WrkEtaEuroName => MyResource.Resource.WRK_LBL_ETA_EURO;
+        internal static string WrkEtaEuroErl => MyResource.Resource.KI_DLG_WRK_ETA_EURO_ERL;
+        internal static string WrkEtaMaxName => MyResource.Resource.WRK_LBL_ETA_MAX;
+        internal static string WrkEtaMaxErl => MyResource.Resource.KI_DLG_WRK_ETA_MAX_ERL;
+        internal static string WrkPStandbyName => MyResource.Resource.WRK_LBL_P_STANDBY;
+        internal static string WrkPStandbyErl => MyResource.Resource.KI_DLG_WRK_P_STANDBY_ERL;
+        internal static string WrkPNachtName => MyResource.Resource.WRK_LBL_P_NACHT;
+        internal static string WrkPNachtErl => MyResource.Resource.KI_DLG_WRK_P_NACHT_ERL;
     }
 }

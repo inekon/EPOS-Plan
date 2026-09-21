@@ -30,6 +30,7 @@
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog epos-modulkatalog" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
@@ -294,6 +295,9 @@
     /// <summary>Der gewählte Bezeichner (Prüfhilfe für Tests).</summary>
     public string Gewaehlt => _gewaehlt;
 
+    /// <summary>Der Feldsatz des geladenen Satzes (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<ModulFeldwert> Felder => _felder;
+
     /// <summary>Die aktuelle Meldung (Prüfhilfe für Tests).</summary>
     public string Meldung => _meldung;
 
@@ -321,7 +325,93 @@
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
+
+        // KI-F5: DREI Katalogschluessel auf EINER Komponente - welcher gilt, sagt die
+        // Auspraegung. Das Wahlfeld der Zelltechnologie loest die Bruecke ueber die
+        // Begleiteigenschaft TechnologieWahl der Sichtklasse selbst auf.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskenname, () => KiSicht(), KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F5)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ModulKatalogKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Der Katalogschlüssel dieser Ausprägung — <c>Form_AdminPV</c>,
+    /// <c>Form_AdminStromspeicher</c> oder <c>Form_AdminWechselrichter</c>.
+    /// </summary>
+    /// <remarks>
+    /// Gefragt wird <see cref="Profil"/> und nicht <see cref="Art"/>: Eine
+    /// <see cref="ProfilVorgabe"/> schlägt den Parameter, und angemeldet gehört die
+    /// Maske, die der Anwender vor sich hat.
+    /// </remarks>
+    private string KiMaskenname => Profil.Art switch
+    {
+        ModulKatalogArt.Photovoltaik => KiMaskennamen.PV_MODULKATALOG,
+        ModulKatalogArt.Wechselrichter => KiMaskennamen.WECHSELRICHTER_KATALOG,
+        _ => KiMaskennamen.STROMSPEICHER_KATALOG
+    };
+
+    /// <summary>
+    /// Die Sicht des Assistenten: je Profilschlüssel eine benannte Eigenschaft über
+    /// dem lebenden Feldsatz. Sie wird EINMAL erzeugt und hält nur Delegaten — der
+    /// Feldsatz wechselt mit jeder Zeilenwahl, die Sicht nicht.
+    /// </summary>
+    private ModulKatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new ModulKatalogKiSicht
+        {
+            Feldsuche = schluessel => _felder.FirstOrDefault(
+                f => string.Equals(f.Schluessel, schluessel, StringComparison.Ordinal)),
+            Gesetzt = () => _meldung = ""
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
+    /// (<see cref="EingabenPruefen"/>): erst die ungültigen Texte, dann die
+    /// Pflichtfelder des Profils.</para>
+    /// <para><b>Kein Haken „Schreibgeschützt".</b> Der Modulkatalog pflegt die
+    /// Stammtabelle selbst; einen Auslieferungsschutz je Satz führt er nicht.
+    /// Gesperrt sind einzelne FELDER (Bezeichner, Herkunft), und die stehen im
+    /// Katalog als „nur lesen".</para>
+    /// <para><b>„Löschen" bleibt draußen.</b> Es entfernt einen Katalogsatz ohne
+    /// Umweg und ist damit eine Aktion mit Rückfrage und Sicherungspunkt, kein
+    /// Speicherweg.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Speichern = KiSpeichern
+    };
+
+    private Task<KiErgebnis> KiSpeichern()
+    {
+        if (Wege.Speichern is null)
+            return Task.FromResult(KiErgebnis.Abgelehnt(
+                Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Profil.Titel)));
+
+        if (_gewaehlt.Length == 0 && !_neu)
+            return Task.FromResult(KiErgebnis.Abgelehnt(Profil.MeldungOhneAuswahl));
+
+        if (!EingabenPruefen())
+            return Task.FromResult(KiErgebnis.Abgelehnt(_meldung));
+
+        KatalogSpeicherErgebnis ergebnis = Schreiben();
+        return Task.FromResult(ergebnis.Ok
+            ? KiErgebnis.Ok(ergebnis.Meldung, anzahl: 1)
+            : KiErgebnis.Fehlgeschlagen(ergebnis.Meldung));
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -443,13 +533,26 @@
         if (_gewaehlt.Length == 0 && !_neu) return;
         if (!EingabenPruefen()) return;
 
-        KatalogSpeicherErgebnis ergebnis = Wege.Speichern(_felder, _neu, _schluessel);
+        Schreiben();
+    }
+
+    /// <summary>
+    /// Der reine SCHREIBVORGANG samt Nachlauf — ohne die drei Wachen davor.
+    /// </summary>
+    /// <remarks>
+    /// Er steht für sich, weil ihn zwei Wege rufen: der Speicherknopf und
+    /// <c>dialog_speichern</c> des Assistenten (Welle KI‑F5). Beide prüfen vorher
+    /// dasselbe; nur der Assistent BENENNT, woran es lag.
+    /// </remarks>
+    private KatalogSpeicherErgebnis Schreiben()
+    {
+        KatalogSpeicherErgebnis ergebnis = Wege.Speichern!(_felder, _neu, _schluessel);
 
         if (!ergebnis.Ok)
         {
             _meldung = ergebnis.Meldung;
             _meldungStufe = WarnStufe.Warnung;
-            return;
+            return ergebnis;
         }
 
         _meldung = ergebnis.Meldung;
@@ -458,6 +561,7 @@
         _gewaehlt = ergebnis.Name;
         _schluessel = ergebnis.Name;
         ListeAufbauen();
+        return ergebnis;
     }
 
     private void BeiNeu()

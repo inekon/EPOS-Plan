@@ -37,6 +37,8 @@
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Allgemein
 @using EPOS.UI.Dialoge.Erzeuger
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -228,6 +230,64 @@
 
     /// <summary>Steht die Namensabfrage? Prüfhilfe für die Tests.</summary>
     public bool Namensfrage => _namensfrage;
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F5)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung an der Maskenbrücke. Angemeldet ist das DATEN-OBJEKT selbst — der
+    /// Dialog führt seinen Stand darin und nicht in privaten Feldern, deshalb braucht
+    /// diese Maske keine Sichtklasse.
+    /// </summary>
+    private KiMaskenanmeldung? _kiMaske;
+
+    protected override void OnInitialized()
+    {
+        // KEINE Wahlquelle: Der Kollektoreditor führt kein einziges Auswahlfeld; die
+        // Kollektortype ist ein Freitext (KI-D-Q6 trifft hier auf nichts).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SOLARKOLLEKTOR, () => Daten, KiHaken());
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
+    /// (<see cref="ZahlenStehen"/>): die sieben Pflichtzahlen in der Reihenfolge des
+    /// Vorläufers. Der Assistent ersetzt sie nicht, er löst sie aus.</para>
+    /// <para><b>Der Speicherweg ist „Überschreiben"</b> — der einzige, der ohne einen
+    /// neuen Namen auskommt. „Speichern" und „Speichern unter" legen einen Satz unter
+    /// einem NAMEN an, und den kann der Assistent nicht beisteuern; ist kein Satz
+    /// geladen (Modus Neu), lehnt der Weg benannt ab.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => ZahlenStehen() ? "" : _meldung,
+        Speichern = KiSpeichern
+    };
+
+    private async Task<KiErgebnis> KiSpeichern()
+    {
+        if (!ZahlenStehen()) return KiErgebnis.Abgelehnt(_meldung);
+
+        KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
+            ? Ueberschreiben?.Invoke(Daten)
+            : null;
+
+        if (ergebnis is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                .Replace("{0}", TitelText));
+
+        await Auswerten(ergebnis);
+        return ergebnis.Ok
+            ? KiErgebnis.Ok(ergebnis.Meldung, anzahl: 1)
+            : KiErgebnis.Fehlgeschlagen(ergebnis.Meldung);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

@@ -2,6 +2,8 @@
 using Bunit;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -621,5 +623,99 @@ public class BhkwKatalogDialogTests : EposBunitContext
         var kurz = cut.FindAll(".epos-formularraster .epos-feld--kurz");
         Assert.NotEmpty(kurz);
         Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+
+    // =================================================================================
+    //  Der Hilfe-Assistent (Welle KI-F5)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der Editor meldet sein
+    /// DATEN-OBJEKT an; gelesen und gesetzt wird über den Eigenschaftspfad des
+    /// Katalogs, der Energieträger als WAHLFELD über seinen Anzeigetext (KI‑D‑Q6).
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_ihre_Felder()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BHKW));
+
+        KiFeldzugang leistung = KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW, "th_leistung");
+        Assert.NotNull(leistung);
+        Assert.True(leistung.Setzbar);
+        leistung.Setzen(95.0);
+        cut.Render();
+        Assert.Equal(95.0, Convert.ToDouble(leistung.Lesen(), CultureInfo.InvariantCulture));
+
+        // Das Wahlfeld löst seinen Anzeigetext in den Listenschlüssel auf.
+        KiFeldzugang traeger = KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW, "energietraeger");
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(traeger, "Heizöl EL");
+        Assert.True(wahl.Ok, wahl.Grund);
+        traeger.Setzen(wahl.Wert);
+        cut.Render();
+        Assert.Equal(3, Convert.ToInt32(traeger.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Der MODULNAME und der Gesamtwirkungsgrad sind nur lesbar.</b> Der Name ist
+    /// der Schlüssel des UPDATE, die Summe der zwei Anteile eine Anzeige.
+    /// </summary>
+    [Fact]
+    public void Name_und_Gesamtwirkungsgrad_sind_fuer_den_Assistenten_nur_lesbar()
+    {
+        Aufbauen();
+
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW, "name").Setzbar);
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.BHKW, "wirkungsgrad_gesamt").Setzbar);
+    }
+
+    /// <summary>
+    /// <b>Der Speicherweg überschreibt den geladenen Satz</b> — und er lehnt benannt
+    /// ab, solange der Satz aus der Auslieferung stammt: Diesen Schutz hebt der
+    /// Anwender an der Maske auf, nicht der Assistent.
+    /// </summary>
+    [Fact]
+    public void Der_Speicherweg_schreibt_und_lehnt_den_Auslieferungssatz_benannt_ab()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(ueberschreiben: (d, _) =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
+        });
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.BHKW);
+        Assert.NotNull(haken.Speichern);
+
+        KiErgebnis ok = haken.Speichern().GetAwaiter().GetResult();
+        Assert.Equal(KiStatus.Ausgefuehrt, ok.Status);
+        Assert.Equal(1, gerufen);
+
+    }
+
+    /// <summary>
+    /// <b>Am AUSLIEFERUNGSSATZ lehnt der Speicherweg benannt ab.</b> Die Rückfrage
+    /// „Schreibgeschützter Datensatz" ist eine ausdrückliche Bestätigung an genau
+    /// diesem Satz; der Assistent lässt sie nicht aus.
+    /// </summary>
+    [Fact]
+    public void Der_Speicherweg_lehnt_den_Auslieferungssatz_benannt_ab()
+    {
+        BhkwKatalogDaten katalogsatz = Bestand();
+        katalogsatz.Katalogsatz = true;
+
+        int gerufen = 0;
+        Aufbauen(daten: katalogsatz, ueberschreiben: (d, _) =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "geschrieben", d.Bezeichner);
+        });
+
+        KiErgebnis abgelehnt = KiMaskenbruecke.Haken(KiMaskennamen.BHKW)
+                                              .Speichern().GetAwaiter().GetResult();
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
+        Assert.Equal(0, gerufen);
     }
 }

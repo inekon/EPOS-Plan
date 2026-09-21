@@ -47,6 +47,7 @@
 @using EPOS.UI.Dialoge.Kosten
 @* Der Namensraum des Kerns - KatalogModus, Ergebnisrecords und Standardfelder. *@
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -326,6 +327,11 @@
     /// </summary>
     protected override void OnInitialized()
     {
+        // KI-F5: Die Maske meldet sich an der Bruecke an - mit dem ENERGIETRAEGER als
+        // Wahlfeld, dessen Eintraege die Huelle hereinreicht (KI-D-Q6).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BHKW, () => Daten, KiHaken(),
+                                          ("energietraeger", Traegereintraege));
+
         if (Daten is null) return;
         if (Daten.WirkungsgradEl.HasValue || Daten.WirkungsgradTh.HasValue) return;
 
@@ -493,6 +499,74 @@
 
         await Geschlossen.InvokeAsync(ergebnis.Name);
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F5)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung an der Maskenbrücke. Sie hält nur den Zugang; ob ein Feldwert
+    /// hinausgeht, entscheiden der Schalter „Feldwerte mitsenden" im Chat und die
+    /// Einwilligungsstufe „Dialogdaten" (Anwenderentscheid KI‑D‑Q2).
+    /// </summary>
+    private KiMaskenanmeldung? _kiMaske;
+
+    /// <summary>Die Brennstoffe des Katalogs für den Assistenten (KI‑D‑Q6).</summary>
+    private IReadOnlyList<KiKern.KiWahleintrag> Traegereintraege()
+        => KiMaskenanmeldung.Eintraege(Brennstoffe, b => b.Id, b => b.Text);
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3): zeichnen nach dem
+    /// Setzen, die eigene Zahlenprüfung, der Speicherweg.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Kein Haken „Schreibgeschützt".</b> <c>Daten.Katalogsatz</c> sagt, dass
+    /// der Satz aus der AUSLIEFERUNG stammt — er sperrt das Überschreiben aber nicht,
+    /// sondern verlangt eine ausdrückliche Rückfrage. Ein Schreibschutz auf
+    /// <c>feld_setzen</c> wäre hier also zu scharf: Er verböte ein Ändern, das die
+    /// Maske von Hand erlaubt. Abgelehnt wird stattdessen der SPEICHERWEG, und zwar
+    /// benannt.</para>
+    /// <para><b>Der Speicherweg folgt dem MODUS</b>, genau wie die Knopfleiste: Im
+    /// Modus Bearbeiten schreibt „Überschreiben" den geladenen Satz zurück, im Modus
+    /// Neu legt „Speichern" ihn unter seinem Namen an. „Speichern unter" fragt einen
+    /// NAMEN ab — den kann der Assistent nicht beisteuern, und er bietet ihn deshalb
+    /// nicht an.</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Speichern = KiSpeichern
+    };
+
+    private async Task<KiKern.KiErgebnis> KiSpeichern()
+    {
+        if (!EingabenPruefen())
+            return KiKern.KiErgebnis.Abgelehnt(_meldung);
+
+        // DER SCHREIBSCHUTZ EINES AUSLIEFERUNGSSATZES wird auf der MASKE aufgehoben
+        // und nirgends sonst: Die Rueckfrage "Schreibgeschuetzter Datensatz" ist eine
+        // ausdrueckliche Bestaetigung an genau diesem Satz. Der Assistent laesst sie
+        // nicht aus, er lehnt benannt ab.
+        if (Modus == KatalogModus.Bearbeiten && Daten.Katalogsatz)
+            return KiKern.KiErgebnis.Abgelehnt(FrageSchreibschutz);
+
+        KatalogSpeicherErgebnis? ergebnis = Modus == KatalogModus.Bearbeiten
+            ? Ueberschreiben?.Invoke(Daten, false)
+            : Anlegen?.Invoke(Daten, Daten.Bezeichner);
+
+        if (ergebnis is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", TitelText));
+
+        await NachDemSchreiben(ergebnis);
+        return ergebnis.Ok
+            ? KiKern.KiErgebnis.Ok(ergebnis.Meldung, anzahl: 1)
+            : KiKern.KiErgebnis.Fehlgeschlagen(ergebnis.Meldung);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(null);

@@ -331,6 +331,53 @@ namespace WindowsFormsApplication1
         /// (<c>Seiten.Berichte.WirtschaftlichkeitSeite</c>).
         /// </summary>
         public const string WIRTSCHAFTLICHKEITSSEITE = "Wirtschaftlichkeitsseite";
+
+        // =================================================================
+        //  Welle KI-F5: die ERZEUGERKATALOGE
+        // =================================================================
+        //
+        // Fuenf Katalogeditoren der Geraetefamilien. Die Schluessel sind auch
+        // hier die WinForms-Maskennamen des Bestands - und zugleich die Vorsilbe
+        // des HILFESCHLUESSELS, den die Razor-Datei am Fragezeichen fuehrt
+        // (Form_DBBHKW.btn_Help, Form_SolarDB.btn_Help, Form_AdminPV.btn_Help,
+        // Form_AdminStromspeicher.btn_Help, Form_AdminWechselrichter.btn_Help).
+        // Dieselbe Regel, nach der Heizkessel und Pufferspeicher heissen, wie sie
+        // heissen.
+
+        /// <summary>
+        /// Der BHKW-Katalogeditor (<c>BhkwKatalogDialog</c>) — Bauart und
+        /// Feldstrategie des <c>HeizkesselKatalogDialog</c>.
+        /// </summary>
+        public const string BHKW = "Form_DBBHKW";
+
+        /// <summary>
+        /// Der Solarkollektor-Katalogeditor (<c>SolarkollektorKatalogDialog</c>).
+        /// </summary>
+        public const string SOLARKOLLEKTOR = "Form_SolarDB";
+
+        // DREI Schluessel auf EINER Komponente: Der ModulKatalogDialog ist Browser
+        // und Editor in einem und kennt drei Auspraegungen (ModulKatalogArt). Jede
+        // pflegt eine andere Stammtabelle mit einem anderen Feldsatz - das sind
+        // drei Masken und nicht eine, genau wie die drei Bedarfskataloge der Welle
+        // KI-F3 drei Schluessel auf BedarfAdminKiSicht tragen.
+
+        /// <summary>
+        /// Der PV-Modulkatalog (<c>ModulKatalogDialog</c>, Auspraegung
+        /// <c>Photovoltaik</c>) — fuenfzehn Modulfelder.
+        /// </summary>
+        public const string PV_MODULKATALOG = "Form_AdminPV";
+
+        /// <summary>
+        /// Der Stromspeicher-Katalog (<c>ModulKatalogDialog</c>, Auspraegung
+        /// <c>Stromspeicher</c>) — vierzehn Felder in zwei Gruppen.
+        /// </summary>
+        public const string STROMSPEICHER_KATALOG = "Form_AdminStromspeicher";
+
+        /// <summary>
+        /// Der Wechselrichter-Katalog (<c>ModulKatalogDialog</c>, Auspraegung
+        /// <c>Wechselrichter</c>) — sechsundzwanzig Felder in drei Gruppen.
+        /// </summary>
+        public const string WECHSELRICHTER_KATALOG = "Form_AdminWechselrichter";
     }
 
     /// <summary>
@@ -471,7 +518,12 @@ namespace WindowsFormsApplication1
                 Gesetzeskatalog(),
                 GesetzeskatalogZeile(),
                 Kostenseite(),
-                Wirtschaftlichkeitsseite());
+                Wirtschaftlichkeitsseite(),
+                Bhkw(),
+                Solarkollektor(),
+                PvModulkatalog(),
+                Stromspeicherkatalog(),
+                Wechselrichterkatalog());
         }
 
         // =====================================================================
@@ -4684,6 +4736,544 @@ namespace WindowsFormsApplication1
                                      KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.SimSpAufschlagErl)
                 });
+        }
+
+        // =====================================================================
+        // Form_DBBHKW  ->  BhkwKatalogDialog   (Welle KI-F5)
+        // =====================================================================
+
+        /// <summary>
+        /// Der BHKW-Katalogeditor — die dreizehn Felder, die
+        /// <c>BhkwKatalogDialog</c> sichtbar traegt, als Eigenschaften von
+        /// <c>EPOS.UI.Dialoge.Erzeuger.BhkwKatalogDaten</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Dieselbe Feldstrategie wie beim Heizkessel</b> — und derselbe Schnitt:
+        /// Die Gruppen „Eingabedaten zur Berechnung der Kosten", „Emissionen nach
+        /// BEHG-V" und „Emissionsfaktoren" sind am 15.09.2026 aus dem Editor gefallen
+        /// („Der Dialog ueber Button Bearbeiten soll keine Kosten und Emissionen
+        /// enthalten"). Die fuenf Kostenposten, Raumbedarf, Wartung, Nutzungsdauer und
+        /// die fuenf Emissionsfaktoren bleiben im Feldsatz, weil die Huelle sie beim
+        /// Speichern unveraendert zurueckschreibt — sie stehen aber NICHT in dieser
+        /// Maske und gehoeren damit nicht in den Katalog (Fachkonzept 11.6: ein
+        /// Katalogfeld, das in der offenen Maske niemand sieht, waere eine stille
+        /// Setzung).
+        /// </para>
+        /// <para>
+        /// <b>Der MODULNAME ist nur lesbar</b> — anders als beim Heizkessel.
+        /// <c>BHKWStammCtrl.Update</c> filtert per <c>Bezeichner</c>; ein hier
+        /// geaenderter Name traefe keinen Satz, und die Maske sperrt das Feld im Modus
+        /// „Bearbeiten" deshalb selbst (Abweichung A-3 des Protokolls W6). Umbenannt
+        /// wird ueber „Speichern unter", und dazu braucht es einen Namen, den der
+        /// Assistent nicht beisteuert.
+        /// </para>
+        /// <para>
+        /// <b>Der GESAMTWIRKUNGSGRAD ist eine Anzeige</b> (Schemaschritt 99,
+        /// Anwenderentscheid 20.09.2026): Gepflegt werden die zwei Anteile, die Summe
+        /// laeuft daneben mit. Wer ihn setzen koennte, schriebe die dritte von drei
+        /// Zahlen, von denen zwei einander widersprechen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Bhkw()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BHKW,
+                anzeigename: KiDialogTexte.MaskeBhkwKatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "BhkwKatalogDaten.Bezeichner",
+                                     KiDialogTexte.BhkkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhkkNameErl, nurLesen: true),
+                    new KiDialogFeld("hersteller", "BhkwKatalogDaten.Firma",
+                                     KiDialogTexte.BhkkFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhkkFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("motortyp", "BhkwKatalogDaten.Motortyp",
+                                     KiDialogTexte.BhkkMotortypName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhkkMotortypErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "BhkwKatalogDaten.Beschreibung",
+                                     KiDialogTexte.BhkkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.BhkkBeschreibungErl, leerErlaubt: true),
+
+                    new KiDialogFeld("th_leistung", "BhkwKatalogDaten.Ptherm",
+                                     KiDialogTexte.BhkkPthermName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkPthermErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("el_leistung", "BhkwKatalogDaten.Pel",
+                                     KiDialogTexte.BhkkPelName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkPelErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_el", "BhkwKatalogDaten.WirkungsgradEl",
+                                     KiDialogTexte.BhkkWgElName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkWgElErl, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_th", "BhkwKatalogDaten.WirkungsgradTh",
+                                     KiDialogTexte.BhkkWgThName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkWgThErl, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad_gesamt", "BhkwKatalogDaten.Wirkungsgrad",
+                                     KiDialogTexte.BhkkWgGesamtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkWgGesamtErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("grenzleistung", "BhkwKatalogDaten.Grenzleistung",
+                                     KiDialogTexte.BhkkGrenzleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.BhkkGrenzleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("energietraeger", "BhkwKatalogDaten.Brennstoff",
+                                     KiDialogTexte.BhkkTraegerName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BhkkTraegerErl, leerErlaubt: true),
+                    new KiDialogFeld("vorlauf", "BhkwKatalogDaten.Vorlauf",
+                                     KiDialogTexte.BhkkVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkkVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "BhkwKatalogDaten.Ruecklauf",
+                                     KiDialogTexte.BhkkRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.BhkkRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("speichern_unter", "btn_Speichern_Unter",
+                                      KiDialogTexte.KnopfSpeichernUnter),
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_SolarDB  ->  SolarkollektorKatalogDialog   (Welle KI-F5)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Solarkollektor-Katalogeditor — die dreizehn Felder von
+        /// <c>EPOS.UI.Dialoge.Solarthermie.SolarkollektorKatalogDaten</c>, die
+        /// <c>SolarkollektorKatalogDialog</c> zeigt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der KOLLEKTORNAME ist hier IMMER nur lesbar</b> — nicht nur im Modus
+        /// „Bearbeiten": Die Maske setzt <c>NurLesen="true"</c> ohne Bedingung, weil der
+        /// Name der Schluessel des Katalogsatzes ist. Ein neuer Name entsteht ueber
+        /// „Speichern unter", das ihn abfragt.
+        /// </para>
+        /// <para>
+        /// <b>Die INVESTITIONSKOSTEN stehen NICHT hier.</b>
+        /// <c>SolarkollektorKatalogDaten.Kosten</c> fuehrt den Preis weiter — die Huelle
+        /// liest ihn und schreibt ihn unveraendert zurueck, sonst nullte jedes
+        /// „Ueberschreiben" die Spalte —, gezeigt wird er seit dem 15.09.2026 im
+        /// Aufklapper „Alle Daten anzeigen" des Projektdialogs. Dorthin fuehrt kein Weg
+        /// des Assistenten, und ein Katalogfeld ohne Feld auf der Maske waere die stille
+        /// Setzung, die Fachkonzept 11.6 ausschliesst.
+        /// </para>
+        /// <para>
+        /// <b>h0, k1, k2, Kdir und Kdiff sind FORMELZEICHEN</b> und stehen auf beiden
+        /// Oberflaechen gleich — der Katalog schreibt keine zweite Schreibweise daneben.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Solarkollektor()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SOLARKOLLEKTOR,
+                anzeigename: KiDialogTexte.MaskeSolarkollektorKatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "SolarkollektorKatalogDaten.Name",
+                                     KiDialogTexte.SkkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkNameErl, nurLesen: true),
+                    new KiDialogFeld("hersteller", "SolarkollektorKatalogDaten.Firma",
+                                     KiDialogTexte.SkkFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "SolarkollektorKatalogDaten.Beschreibung",
+                                     KiDialogTexte.SkkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("kollektortyp", "SolarkollektorKatalogDaten.Kollektortyp",
+                                     KiDialogTexte.SkkTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.SkkTypErl, leerErlaubt: true),
+
+                    new KiDialogFeld("modulflaeche", "SolarkollektorKatalogDaten.Modulflaeche",
+                                     KiDialogTexte.SkkModulflaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkModulflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("aperturflaeche", "SolarkollektorKatalogDaten.Aperturflaeche",
+                                     KiDialogTexte.SkkAperturflaecheName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkAperturflaecheErl,
+                                     einheit: KiDialogTexte.EINHEIT_M2),
+                    new KiDialogFeld("h0", "SolarkollektorKatalogDaten.H0",
+                                     KiDialogTexte.SkkH0Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkH0Erl),
+                    new KiDialogFeld("k1", "SolarkollektorKatalogDaten.K1",
+                                     KiDialogTexte.SkkK1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkK1Erl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K),
+                    new KiDialogFeld("k2", "SolarkollektorKatalogDaten.K2",
+                                     KiDialogTexte.SkkK2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkK2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_W_M2K2),
+                    new KiDialogFeld("kdir", "SolarkollektorKatalogDaten.Kdir",
+                                     KiDialogTexte.SkkKdirName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkKdirErl),
+                    new KiDialogFeld("kdiff", "SolarkollektorKatalogDaten.Kdiff",
+                                     KiDialogTexte.SkkKdiffName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SkkKdiffErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD),
+                    new KiDialogFeld("vorlauf", "SolarkollektorKatalogDaten.Vorlauf",
+                                     KiDialogTexte.SkkVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkkVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("ruecklauf", "SolarkollektorKatalogDaten.Ruecklauf",
+                                     KiDialogTexte.SkkRuecklaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SkkRuecklaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("speichern_unter", "btn_Speichern_Unter",
+                                      KiDialogTexte.KnopfSpeichernUnter),
+                    new KiDialogKnopf("ueberschreiben", "btn_Ueberschreiben",
+                                      KiDialogTexte.KnopfUeberschreiben),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_AdminPV, Form_AdminStromspeicher, Form_AdminWechselrichter
+        //   ->  ModulKatalogDialog   (Welle KI-F5)
+        // =====================================================================
+        //
+        // DREI MASKEN AUF EINER KOMPONENTE. Der ModulKatalogDialog ist Browser und
+        // Editor in einem (Familie C der Vermessung): Liste links, Felder rechts,
+        // "Speichern" schreibt unmittelbar in die Stammtabelle. Welche Felder rechts
+        // stehen, sagt das ModulKatalogProfil - je Auspraegung ein anderer Satz aus
+        // einer anderen Tabelle. Das sind drei Masken und nicht eine; dieselbe Lage
+        // wie bei den drei Bedarfskatalogen der Welle KI-F3, die sich eine
+        // Sichtklasse teilen.
+        //
+        // WAS DRAUSSEN BLEIBT - und warum:
+        //
+        //   * DIE KATALOGLISTE. Sie fuehrt nach dem CEC-Import 20 749 PV-Module,
+        //     6 658 Stromspeicher und ueber zweitausend Wechselrichter. Eine
+        //     Wahlliste dieser Groesse ist keine Auswahl mehr, sondern eine Menge
+        //     von Verweisen (KI-D-Q5); gewaehlt wird ueber das gefilterte Raster,
+        //     und das ist keine Klappliste, die sich setzen liesse.
+        //   * DER FILTERSTAND der Liste (Spaltentrichter, Suchzeile). Er engt eine
+        //     Anzeige ein und ist kein Einstellwert des Katalogsatzes.
+        //   * DER AUFKLAPPER "Alle Parameter und ihre Verwendung". Reine Auskunft.
+
+        /// <summary>
+        /// Der PV-Modulkatalog — die fuenfzehn Felder, die
+        /// <c>ModulKatalogDialog</c> in der Auspraegung <c>Photovoltaik</c> zeigt.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der BEZEICHNER ist nur lesbar</b> — er ist der WHERE-Schluessel des
+        /// UPDATE, und das Profil sperrt ihn deshalb selbst
+        /// (<c>ModulKatalogFeld.Gesperrt</c>). Ein neuer Name entsteht ueber „Neu…",
+        /// das ihn abfragt.
+        /// </para>
+        /// <para>
+        /// <b>Die ZELLTECHNOLOGIE ist ein Wahlfeld</b> (KI-D-Q6). Ihre Eintraege
+        /// stehen im Profil (<c>ModulKatalogProfil.Technologien</c>) und kommen zur
+        /// Laufzeit ueber die Begleiteigenschaft <c>TechnologieWahl</c> der
+        /// Sichtklasse herein; der Schluessel ist der Listenplatz, genau wie beim
+        /// Auswahlfeld der Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PvModulkatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PV_MODULKATALOG,
+                anzeigename: KiDialogTexte.MaskePvModulkatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "ModulKatalogKiSicht.Bezeichner",
+                                     KiDialogTexte.ModkPvBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkPvBezeichnerErl, nurLesen: true),
+                    new KiDialogFeld("hersteller", "ModulKatalogKiSicht.Firma",
+                                     KiDialogTexte.ModkFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "ModulKatalogKiSicht.Beschreibung",
+                                     KiDialogTexte.ModkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("pmax", "ModulKatalogKiSicht.Leistung",
+                                     KiDialogTexte.ModkPmaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkPmaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_W),
+                    new KiDialogFeld("wirkungsgrad", "ModulKatalogKiSicht.Wirkungsgrad",
+                                     KiDialogTexte.ModkWirkungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkWirkungsgradErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("u_mpp", "ModulKatalogKiSicht.UMpp",
+                                     KiDialogTexte.ModkUMppName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkUMppErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("u_leerlauf", "ModulKatalogKiSicht.ULeerlauf",
+                                     KiDialogTexte.ModkULeerlaufName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkULeerlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("i_mpp", "ModulKatalogKiSicht.IMpp",
+                                     KiDialogTexte.ModkIMppName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkIMppErl,
+                                     einheit: KiDialogTexte.EINHEIT_AMPERE, leerErlaubt: true),
+                    new KiDialogFeld("i_kurzschluss", "ModulKatalogKiSicht.IKurzschluss",
+                                     KiDialogTexte.ModkIKurzschlussName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkIKurzschlussErl,
+                                     einheit: KiDialogTexte.EINHEIT_AMPERE, leerErlaubt: true),
+                    new KiDialogFeld("gamma_pmp", "ModulKatalogKiSicht.GammaPmp",
+                                     KiDialogTexte.ModkTempkoeffName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkTempkoeffErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT_K, leerErlaubt: true),
+                    new KiDialogFeld("laenge", "ModulKatalogKiSicht.Laenge",
+                                     KiDialogTexte.ModkLaengeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkLaengeErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("breite", "ModulKatalogKiSicht.Breite",
+                                     KiDialogTexte.ModkBreiteName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkBreiteErl,
+                                     einheit: KiDialogTexte.EINHEIT_METER, leerErlaubt: true),
+                    new KiDialogFeld("modulkosten", "ModulKatalogKiSicht.Modulkosten",
+                                     KiDialogTexte.ModkPvKostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkPvKostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("t_noct", "ModulKatalogKiSicht.TNoct",
+                                     KiDialogTexte.ModkTNoctName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkTNoctErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("technologie", "ModulKatalogKiSicht.Technologie",
+                                     KiDialogTexte.ModkTechnologieName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.ModkTechnologieErl, leerErlaubt: true)
+                },
+                knoepfe: Modulkatalogknoepfe());
+        }
+
+        /// <summary>
+        /// Der Stromspeicher-Katalog — die vierzehn Felder der Auspraegung
+        /// <c>Stromspeicher</c>, in zwei Gruppen: die Bestandsfelder und die
+        /// Geraetetechnik nach Fachkonzept Stromspeicher 5.1.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die SPEICHERART ist ein Textfeld und kein Wahlfeld</b> — so steht sie
+        /// im Profil (<c>BrowserFeldArt.Text</c> mit der Vorbelegung
+        /// <c>DbWerte.SP_TYP_LITHIUM_IONEN</c>). Der Katalog schreibt keine
+        /// Klappliste dorthin, wo die Maske ein freies Feld zeigt; sonst boete der
+        /// Assistent eine Auswahl an, die es auf der Maske nicht gibt.
+        /// </remarks>
+        private static KiDialog Stromspeicherkatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STROMSPEICHER_KATALOG,
+                anzeigename: KiDialogTexte.MaskeStromspeicherkatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "ModulKatalogKiSicht.Bezeichner",
+                                     KiDialogTexte.ModkBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkBezeichnerErl, nurLesen: true),
+                    new KiDialogFeld("hersteller", "ModulKatalogKiSicht.Firma",
+                                     KiDialogTexte.ModkFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("typ", "ModulKatalogKiSicht.Typ",
+                                     KiDialogTexte.ModkTypName, KiParameterTyp.Text,
+                                     KiDialogTexte.ModkTypErl),
+                    new KiDialogFeld("energie", "ModulKatalogKiSicht.Energie",
+                                     KiDialogTexte.ModkEnergieName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkEnergieErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+                    new KiDialogFeld("leistung", "ModulKatalogKiSicht.Leistung",
+                                     KiDialogTexte.ModkLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("ladezustand", "ModulKatalogKiSicht.Ladezustand",
+                                     KiDialogTexte.ModkLadezustandName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkLadezustandErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("degradation", "ModulKatalogKiSicht.Degradation",
+                                     KiDialogTexte.ModkDegradationName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkDegradationErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("modulkosten", "ModulKatalogKiSicht.Modulkosten",
+                                     KiDialogTexte.ModkKostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkKostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+
+                    // ---- Geraetetechnik: leer heisst „nicht gepflegt" ---------------
+                    new KiDialogFeld("wirkungsgrad_rt", "ModulKatalogKiSicht.WirkungsgradRt",
+                                     KiDialogTexte.ModkWirkungsgradRtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkWirkungsgradRtErl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("zyklen", "ModulKatalogKiSicht.Zyklen",
+                                     KiDialogTexte.ModkZyklenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.ModkZyklenErl, leerErlaubt: true),
+                    new KiDialogFeld("verschleisskosten", "ModulKatalogKiSicht.Verschleisskosten",
+                                     KiDialogTexte.ModkVerschleissName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkVerschleissErl,
+                                     einheit: KiDialogTexte.EinheitZykluskosten, leerErlaubt: true),
+                    new KiDialogFeld("leistungskosten", "ModulKatalogKiSicht.Leistungskosten",
+                                     KiDialogTexte.ModkLeistungskostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkLeistungskostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW, leerErlaubt: true),
+                    new KiDialogFeld("investition_fix", "ModulKatalogKiSicht.InvestitionFix",
+                                     KiDialogTexte.ModkInvestFixName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkInvestFixErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("standby", "ModulKatalogKiSicht.Standby",
+                                     KiDialogTexte.ModkStandbyName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.ModkStandbyErl,
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true)
+                },
+                knoepfe: Modulkatalogknoepfe());
+        }
+
+        /// <summary>
+        /// Der Wechselrichter-Katalog — die sechsundzwanzig Felder der Auspraegung
+        /// <c>Wechselrichter</c> in drei Gruppen: Geraet, Eingang und Wirkungsgrad.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die HERKUNFT ist Auskunft und keine Eingabe</b>: Der Geraeteimport setzt
+        /// sie, die Handpflege bekommt „HAND". Das Profil sperrt sie, der Katalog
+        /// deklariert sie deshalb nur lesend.
+        /// </para>
+        /// <para>
+        /// <b>Die acht Wirkungsgrade sind FAKTOREN von 0 bis 1</b> und keine Prozente
+        /// — so fuehrt sie <c>PvErweitertesModell.EtaWechselrichter</c>, und so stehen
+        /// sie auf der Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Wechselrichterkatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WECHSELRICHTER_KATALOG,
+                anzeigename: KiDialogTexte.MaskeWechselrichterkatalog,
+                felder: new[]
+                {
+                    // ---- Gruppe „Geraet" -------------------------------------------
+                    new KiDialogFeld("name", "ModulKatalogKiSicht.Bezeichner",
+                                     KiDialogTexte.WrkBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.WrkBezeichnerErl, nurLesen: true),
+                    new KiDialogFeld("hersteller", "ModulKatalogKiSicht.Firma",
+                                     KiDialogTexte.WrkFirmaName, KiParameterTyp.Text,
+                                     KiDialogTexte.WrkFirmaErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "ModulKatalogKiSicht.Beschreibung",
+                                     KiDialogTexte.WrkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WrkBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("p_ac_nenn", "ModulKatalogKiSicht.PAcNenn",
+                                     KiDialogTexte.WrkPAcNennName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkPAcNennErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW),
+                    new KiDialogFeld("s_ac_max", "ModulKatalogKiSicht.SAcMax",
+                                     KiDialogTexte.WrkSAcMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkSAcMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_KVA, leerErlaubt: true),
+                    new KiDialogFeld("p_dc_max", "ModulKatalogKiSicht.PDcMax",
+                                     KiDialogTexte.WrkPDcMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkPDcMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("kosten", "ModulKatalogKiSicht.Kosten",
+                                     KiDialogTexte.WrkKostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkKostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+                    new KiDialogFeld("herkunft", "ModulKatalogKiSicht.Herkunft",
+                                     KiDialogTexte.WrkHerkunftName, KiParameterTyp.Text,
+                                     KiDialogTexte.WrkHerkunftErl,
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- Gruppe „Eingang" ------------------------------------------
+                    new KiDialogFeld("u_mpp_min", "ModulKatalogKiSicht.UMppMin",
+                                     KiDialogTexte.WrkUMppMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkUMppMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("u_mpp_max", "ModulKatalogKiSicht.UMppMax",
+                                     KiDialogTexte.WrkUMppMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkUMppMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("u_dc_max", "ModulKatalogKiSicht.UDcMax",
+                                     KiDialogTexte.WrkUDcMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkUDcMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("u_start", "ModulKatalogKiSicht.UStart",
+                                     KiDialogTexte.WrkUStartName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkUStartErl,
+                                     einheit: KiDialogTexte.EINHEIT_VOLT, leerErlaubt: true),
+                    new KiDialogFeld("i_dc_max", "ModulKatalogKiSicht.IDcMax",
+                                     KiDialogTexte.WrkIDcMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkIDcMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_AMPERE, leerErlaubt: true),
+                    new KiDialogFeld("i_sc_max", "ModulKatalogKiSicht.IScMax",
+                                     KiDialogTexte.WrkIScMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkIScMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_AMPERE, leerErlaubt: true),
+                    new KiDialogFeld("anzahl_mppt", "ModulKatalogKiSicht.AnzahlMppt",
+                                     KiDialogTexte.WrkAnzahlMpptName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WrkAnzahlMpptErl, leerErlaubt: true),
+                    new KiDialogFeld("straenge_je_mppt", "ModulKatalogKiSicht.StraengeJeMppt",
+                                     KiDialogTexte.WrkStraengeJeMpptName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WrkStraengeJeMpptErl, leerErlaubt: true),
+
+                    // ---- Gruppe „Wirkungsgrad" -------------------------------------
+                    new KiDialogFeld("eta05", "ModulKatalogKiSicht.Eta05",
+                                     KiDialogTexte.WrkEta05Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta05Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta10", "ModulKatalogKiSicht.Eta10",
+                                     KiDialogTexte.WrkEta10Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta10Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta20", "ModulKatalogKiSicht.Eta20",
+                                     KiDialogTexte.WrkEta20Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta20Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta30", "ModulKatalogKiSicht.Eta30",
+                                     KiDialogTexte.WrkEta30Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta30Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta50", "ModulKatalogKiSicht.Eta50",
+                                     KiDialogTexte.WrkEta50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta50Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta100", "ModulKatalogKiSicht.Eta100",
+                                     KiDialogTexte.WrkEta100Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEta100Erl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta_euro", "ModulKatalogKiSicht.EtaEuro",
+                                     KiDialogTexte.WrkEtaEuroName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEtaEuroErl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("eta_max", "ModulKatalogKiSicht.EtaMax",
+                                     KiDialogTexte.WrkEtaMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkEtaMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_FAKTOR, leerErlaubt: true),
+                    new KiDialogFeld("p_standby", "ModulKatalogKiSicht.PStandby",
+                                     KiDialogTexte.WrkPStandbyName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkPStandbyErl,
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true),
+                    new KiDialogFeld("p_nacht", "ModulKatalogKiSicht.PNacht",
+                                     KiDialogTexte.WrkPNachtName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WrkPNachtErl,
+                                     einheit: KiDialogTexte.EINHEIT_W, leerErlaubt: true)
+                },
+                knoepfe: Modulkatalogknoepfe());
+        }
+
+        /// <summary>
+        /// Die Knoepfe, die alle drei Auspraegungen des Modulkatalogs tragen.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>„Löschen" fehlt, und zwar nicht aus Versehen:</b> Ein Loeschknopf
+        /// ist nicht deklarierbar (Fachkonzept 1.2/11.7), und <c>KiDialogKnopf</c>
+        /// weist ihn schon im Konstruktor ab. Der Katalogsatz verschwindet damit nicht
+        /// auf Zuruf des Modells.</para>
+        /// <para><b>„Neu…" fragt einen NAMEN ab</b> und steht deshalb — wie „Speichern
+        /// unter" bei den Katalogeditoren — nur in der Liste, nicht im Speicherweg des
+        /// Assistenten: Den Namen kann er nicht beisteuern.</para>
+        /// </remarks>
+        private static KiDialogKnopf[] Modulkatalogknoepfe()
+        {
+            return new[]
+            {
+                new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                new KiDialogKnopf("neu", "btn_Neu", KiDialogTexte.KnopfNeu),
+                new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfOk)
+            };
         }
     }
 }

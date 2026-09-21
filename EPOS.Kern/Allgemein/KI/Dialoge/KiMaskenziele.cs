@@ -356,7 +356,25 @@ namespace WindowsFormsApplication1
                 // beim Reiterwunsch der Startseite, siehe STARTSEITE). Die Ansicht
                 // bedient die AppWurzel auf beiden Plattformen.
                 { KiMaskennamen.KOSTENSEITE,              Ansichten.BerichteKosten },
-                { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, Ansichten.BerichteKosten }
+                { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, Ansichten.BerichteKosten },
+
+                // ---- Welle KI-F5: die ERZEUGERKATALOGE -----------------------
+                //
+                // DIE KATALOGEDITOREN fuehren auf ihre VERWALTUNG - dieselbe
+                // Begruendung wie beim Heizkessel und beim Pufferspeicher: Sie gehen
+                // aus einer Liste heraus auf, brauchen einen gewaehlten Satz und
+                // lassen sich nicht kontextfrei oeffnen. Der Assistent fuehrt den
+                // Anwender dorthin, wo er den Satz waehlt.
+                { KiMaskennamen.BHKW,           Masken.BhkwAdmin },
+                { KiMaskennamen.SOLARKOLLEKTOR, Masken.SolarkollektorenAdmin },
+
+                // DIE DREI MODULKATALOGE sind selbst die Verwaltung (Browser und
+                // Editor in einem) und haben deshalb je einen EIGENEN Weg im Menue
+                // „Administration"; ihre Navigationsschluessel sind zugleich ihre
+                // Katalogschluessel.
+                { KiMaskennamen.PV_MODULKATALOG,        Masken.PvAdmin },
+                { KiMaskennamen.STROMSPEICHER_KATALOG,  Masken.StromspeicherAdmin },
+                { KiMaskennamen.WECHSELRICHTER_KATALOG, Masken.WechselrichterAdmin }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>
