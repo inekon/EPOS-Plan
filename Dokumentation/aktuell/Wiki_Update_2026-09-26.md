@@ -17,6 +17,7 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
 | Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt | Statuszeilen #372, #405, #413 |
+| Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 
 Die Liste folgt der zusammenfassenden Aussage der Statuszeile #413: „Die Seiten Klimadaten,
 Simulationsergebnisse, Stromspeicher und Wirtschaftlichkeit sind in den Repo-Quellen
@@ -68,6 +69,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
 - Seit 26.09.2026: Jeder Legendeneintrag eines Diagramms hat ein Farbfeld; die
   Simulationsreiter zeigen dieselben Farben wie der Bericht, und die Einstellungen führen dafür
   54 Größen. (#418)
+- Seit 26.09.2026: Die Dialoge Heizkessel und Pufferspeicher zeigen im Modulblock kein Feld
+  „Investitionskosten" mehr; der Preis steht bearbeitbar im Aufklapper „Alle Daten anzeigen". (#422)
 
 *Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
 Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
