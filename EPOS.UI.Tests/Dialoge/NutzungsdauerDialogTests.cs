@@ -1,8 +1,10 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -340,5 +342,47 @@ public class NutzungsdauerDialogTests : EposBunitContext
 
         cut.WaitForAssertion(() => Assert.True(ergebnis.HasValue));
         Assert.True(ergebnis!.Value.Geaendert);
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>NutzungsdauerKiSicht</c>: fünf Kopffelder und drei SPALTEN
+    /// über die lebende Zeilenliste — je Zeile wird aus einer Spaltendeklaration ein
+    /// gewöhnliches Feld, benannt nach der Positionsart.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_eine_Zeile()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.NUTZUNGSDAUER));
+
+        // Ein Kopffeld.
+        KiFeldzugang suche = KiMaskenbruecke.Feldzugang(KiMaskennamen.NUTZUNGSDAUER, "suche");
+        Assert.NotNull(suche);
+        suche.Setzen("Heiz");
+        cut.Render();
+        Assert.Equal("Heiz", suche.Lesen());
+
+        // Eine SPALTE: Aus der Deklaration wird je Zeile ein eigenes Feld, und sein
+        // Anzeigename traegt die Positionsart.
+        string spalte = KiMaskenbruecke.Lesen(KiMaskennamen.NUTZUNGSDAUER)
+                                       .Select(w => w.Name)
+                                       .First(n => n.StartsWith("nutzungsdauer_",
+                                                                StringComparison.Ordinal));
+
+        KiFeldzugang zeile = KiMaskenbruecke.Feldzugang(KiMaskennamen.NUTZUNGSDAUER, spalte);
+        Assert.NotNull(zeile);
+        Assert.True(zeile.Setzbar);
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(zeile, "18");
+        Assert.True(neu.Ok, neu.Grund);
+        zeile.Setzen(neu.Wert);
+        cut.Render();
+
+        Assert.Equal(18, Convert.ToDouble(zeile.Lesen(), CultureInfo.InvariantCulture), 3);
     }
 }

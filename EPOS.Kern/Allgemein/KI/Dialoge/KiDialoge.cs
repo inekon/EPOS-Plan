@@ -269,6 +269,25 @@ namespace WindowsFormsApplication1
 
         /// <summary>Das Kostenprofil eines Stromtraegers (<c>KostenprofilDialog</c>).</summary>
         public const string KOSTENPROFIL = "Form_Kostenprofil";
+
+        /// <summary>Der Kostenfaktoren-Katalog (<c>KostenfaktorKatalogDialog</c>).</summary>
+        public const string KOSTENFAKTOR_KATALOG = "Form_KostenAdmin";
+
+        /// <summary>
+        /// Emissionsarten und ihr Wertekatalog (<c>EmissionskatalogDialog</c>).
+        /// </summary>
+        public const string EMISSIONSKATALOG = "Form_Emissionskatalog";
+
+        /// <summary>Die Nutzungsdauern (AfA) (<c>NutzungsdauerDialog</c>).</summary>
+        public const string NUTZUNGSDAUER = "Form_Nutzungsdauer";
+
+        /// <summary>Der Zeileneditor einer Kostenposition (<c>VorlagenPositionDialog</c>).</summary>
+        public const string VORLAGENPOSITION = "Form_VorlagenPosition";
+
+        /// <summary>
+        /// Worst- und Best-Case einer Kostenposition (<c>CaseEingabeDialog</c>).
+        /// </summary>
+        public const string CASE_EINGABE = "Form_CaseEingabe";
     }
 
     /// <summary>
@@ -396,7 +415,314 @@ namespace WindowsFormsApplication1
                 Energietraeger(),
                 EnergietraegerVariante(),
                 Leistungspreisreihe(),
-                Kostenprofil());
+                Kostenprofil(),
+                Kostenfaktorkatalog(),
+                Emissionskatalog(),
+                Nutzungsdauer(),
+                Vorlagenposition(),
+                CaseEingabe());
+        }
+
+        // =====================================================================
+        // Form_KostenAdmin  ->  KostenfaktorKatalogDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kostenfaktoren-Katalog — zwei Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.KostenfaktorKatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Das Raster bleibt draussen.</b> Es zeigt je Faktor nur seine
+        /// Bezeichnung, und die ist der Anzeigetext der WAHL - ein zweites Feld
+        /// daneben waere dieselbe Zeichenkette ein zweites Mal. Deklariert sind der
+        /// Bezeichner der Neuzeile und die Markierung, auf die „Loeschen" greift.
+        /// </remarks>
+        private static KiDialog Kostenfaktorkatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENFAKTOR_KATALOG,
+                anzeigename: KiDialogTexte.MaskeKostenfaktorkatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("kostenfaktor",
+                                     "KostenfaktorKatalogKiSicht.Kostenfaktor",
+                                     KiDialogTexte.KfkFaktorName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KfkFaktorErl, leerErlaubt: true),
+                    new KiDialogFeld("neuer_name", "KostenfaktorKatalogKiSicht.NeuerName",
+                                     KiDialogTexte.KfkNeuName, KiParameterTyp.Text,
+                                     KiDialogTexte.KfkNeuErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk)
+                });
+        }
+
+        // =====================================================================
+        // Form_Emissionskatalog  ->  EmissionskatalogDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Emissionsarten und ihr Wertekatalog — zwoelf Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, drei Ebenen.</b> Oben die Bilanzierungsmethode, darunter
+        /// zwei Raster (Arten und ihre Werte) und ueber ihnen je ein EDITOR als
+        /// Ueberlagerung. Die Editoren gehen IN dieser Maske auf und tragen deshalb
+        /// keinen eigenen Katalogschluessel - dieselbe Lage wie die zwei
+        /// Reiterblaetter des Gebaeudekatalogs.
+        /// </para>
+        /// <para>
+        /// <b>Was die Raster ZEIGEN, bleibt draussen</b>: Kuerzel, Name, Einheit, GWP
+        /// und Herkunft stehen dort als Anzeige. Deklariert sind die MARKIERUNGEN -
+        /// sie entscheiden, worauf „Aendern", „Loeschen" und „Uebernehmen" greifen -
+        /// und die lebenden Felder der beiden Editoren.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Emissionskatalog()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.EMISSIONSKATALOG,
+                anzeigename: KiDialogTexte.MaskeEmissionskatalog,
+                felder: new[]
+                {
+                    new KiDialogFeld("als_co2e", "EmissionskatalogKiSicht.AlsCo2e",
+                                     KiDialogTexte.EmkModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkModusErl),
+                    new KiDialogFeld("emissionsart", "EmissionskatalogKiSicht.Emissionsart",
+                                     KiDialogTexte.EmkArtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkArtErl, leerErlaubt: true),
+                    new KiDialogFeld("emissionswert", "EmissionskatalogKiSicht.Emissionswert",
+                                     KiDialogTexte.EmkWertName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkWertErl, leerErlaubt: true),
+
+                    // ---- Arteneditor ------------------------------------------------
+                    new KiDialogFeld("art_kuerzel", "EmissionskatalogKiSicht.ArtKuerzel",
+                                     KiDialogTexte.EmkKuerzelName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkKuerzelErl, leerErlaubt: true),
+                    new KiDialogFeld("art_name", "EmissionskatalogKiSicht.ArtName",
+                                     KiDialogTexte.EmkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkNameErl, leerErlaubt: true),
+                    new KiDialogFeld("art_einheit", "EmissionskatalogKiSicht.ArtEinheit",
+                                     KiDialogTexte.EmkEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.EmkEinheitErl, leerErlaubt: true),
+                    new KiDialogFeld("art_gwp", "EmissionskatalogKiSicht.ArtGwp",
+                                     KiDialogTexte.EmkGwpName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EmkGwpErl, leerErlaubt: true),
+                    new KiDialogFeld("art_quelle", "EmissionskatalogKiSicht.ArtQuelle",
+                                     KiDialogTexte.EmkArtQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkArtQuelleErl, leerErlaubt: true),
+
+                    // ---- Werteeditor ------------------------------------------------
+                    new KiDialogFeld("wert_quelle", "EmissionskatalogKiSicht.WertQuelle",
+                                     KiDialogTexte.EmkWertQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.EmkWertQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("wert", "EmissionskatalogKiSicht.Wert",
+                                     KiDialogTexte.EmkWertZahlName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EmkWertZahlErl, leerErlaubt: true),
+                    new KiDialogFeld("wert_ist_co2e", "EmissionskatalogKiSicht.WertIstCo2e",
+                                     KiDialogTexte.EmkWertCo2eName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkWertCo2eErl),
+                    new KiDialogFeld("wert_als_vorlage",
+                                     "EmissionskatalogKiSicht.WertAlsVorlage",
+                                     KiDialogTexte.EmkWertVorlageName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.EmkWertVorlageErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_Nutzungsdauer  ->  NutzungsdauerDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Nutzungsdauern (AfA) — fuenf Kopffelder und drei SPALTEN aus
+        /// <c>EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Tabelle wird an Ort und Stelle bearbeitet</b> und kommt deshalb als
+        /// Spalten in den Katalog - dieselbe Bauart wie das Positionsraster der
+        /// Kostenverwaltung. Aus jeder Spaltendeklaration wird je vorhandener Zeile
+        /// ein gewoehnliches Feld; den Klartextnamen einer Zeile liefert ihre
+        /// POSITIONSART.
+        /// </para>
+        /// <para>
+        /// <b>Technik und Auslieferungsmarke sind ANZEIGE.</b> Die Technik ordnet die
+        /// Gruppen und wird beim Anlegen einmal gesetzt; die Marke sagt, dass ein
+        /// Satz zur Auslieferung gehoert und deshalb nur weich zu loeschen ist.
+        /// Beide stehen nicht als Spalte, weil sie sich in der Tabelle nicht aendern
+        /// lassen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Nutzungsdauer()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.NUTZUNGSDAUER,
+                anzeigename: KiDialogTexte.MaskeNutzungsdauer,
+                felder: new[]
+                {
+                    new KiDialogFeld("suche", "NutzungsdauerKiSicht.Suche",
+                                     KiDialogTexte.NudSucheName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudSucheErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_technik", "NutzungsdauerKiSicht.NeueTechnik",
+                                     KiDialogTexte.NudTechnikName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.NudTechnikErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_positionsart",
+                                     "NutzungsdauerKiSicht.NeuePositionsart",
+                                     KiDialogTexte.NudArtName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudArtErl, leerErlaubt: true),
+                    new KiDialogFeld("neue_nutzungsdauer",
+                                     "NutzungsdauerKiSicht.NeueNutzungsdauer",
+                                     KiDialogTexte.NudNeuWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuWertErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+                    new KiDialogFeld("neue_afa", "NutzungsdauerKiSicht.NeueAfa",
+                                     KiDialogTexte.NudNeuAfaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudNeuAfaErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true),
+
+                    // ---- Die Tabelle: je Satz eine Zeile ----------------------------
+                    new KiDialogFeld("nutzungsdauer",
+                                     "NutzungsdauerKiSicht.Zeilen[].Nutzungsdauer",
+                                     KiDialogTexte.NudWertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudWertErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("afa_steuerlich",
+                                     "NutzungsdauerKiSicht.Zeilen[].AfaSteuerlich",
+                                     KiDialogTexte.NudAfaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.NudAfaErl,
+                                     einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER),
+                    new KiDialogFeld("quelle", "NutzungsdauerKiSicht.Zeilen[].Quelle",
+                                     KiDialogTexte.NudQuelleName, KiParameterTyp.Text,
+                                     KiDialogTexte.NudQuelleErl, leerErlaubt: true,
+                                     zeilenkennzeichen: ZEILENKENNZEICHEN_NUTZUNGSDAUER)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        /// <summary>
+        /// Die Eigenschaft, aus der eine Zeile der Nutzungsdauertabelle ihren
+        /// Klartextnamen bekommt — „Nutzungsdauer (Waermeerzeuger)" statt
+        /// „Nutzungsdauer 3".
+        /// </summary>
+        private const string ZEILENKENNZEICHEN_NUTZUNGSDAUER = "Positionsart";
+
+        // =====================================================================
+        // Form_VorlagenPosition  ->  VorlagenPositionDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Zeileneditor einer Kostenposition — sechs Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Zwei WAHLFELDER mit verschiedenen Schluesseln</b> (KI-D-Q6): Die
+        /// KOSTENART traegt den Listenplatz der VDI-2067-Liste, die POSITIONSART die
+        /// Id des Nutzungsdauersatzes. Beide setzt der Assistent ueber ihren
+        /// Anzeigetext, nie ueber eine rohe Zahl.
+        /// </remarks>
+        private static KiDialog Vorlagenposition()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.VORLAGENPOSITION,
+                anzeigename: KiDialogTexte.MaskeVorlagenposition,
+                felder: new[]
+                {
+                    new KiDialogFeld("bezeichnung", "VorlagenPositionKiSicht.Bezeichnung",
+                                     KiDialogTexte.VopBezeichnungName, KiParameterTyp.Text,
+                                     KiDialogTexte.VopBezeichnungErl, leerErlaubt: true),
+                    new KiDialogFeld("kostenart", "VorlagenPositionKiSicht.Kostenart",
+                                     KiDialogTexte.VopKostenartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopKostenartErl, leerErlaubt: true),
+                    new KiDialogFeld("ist_erloes", "VorlagenPositionKiSicht.IstErloes",
+                                     KiDialogTexte.VopErloesName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.VopErloesErl),
+                    new KiDialogFeld("positionsart", "VorlagenPositionKiSicht.Positionsart",
+                                     KiDialogTexte.VopPositionsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.VopPositionsartErl, leerErlaubt: true),
+                    new KiDialogFeld("empfehlung_von", "VorlagenPositionKiSicht.EmpfehlungVon",
+                                     KiDialogTexte.VopVonName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.VopVonErl, leerErlaubt: true),
+                    new KiDialogFeld("empfehlung_bis", "VorlagenPositionKiSicht.EmpfehlungBis",
+                                     KiDialogTexte.VopBisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.VopBisErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_CaseEingabe  ->  CaseEingabeDialog   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Worst- und Best-Case einer Kostenposition — sieben Felder aus
+        /// <c>EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <b>Der PROZENTMODUS fuehrt die Maske.</b> Er entscheidet, ob die zwei
+        /// Kostenfelder einen Betrag oder eine Abweichung vom Erwartungswert tragen -
+        /// und damit ihre Einheit und ihre Grenzen. Ohne gepflegten Erwartungswert ist
+        /// er gesperrt; dann gibt es nichts, wovon abzuweichen waere. Geschrieben wird
+        /// beim OK IMMER in Euro, auch wenn der Anwender Prozente getippt hat.
+        /// </remarks>
+        private static KiDialog CaseEingabe()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.CASE_EINGABE,
+                anzeigename: KiDialogTexte.MaskeCaseEingabe,
+                felder: new[]
+                {
+                    new KiDialogFeld("prozentmodus", "CaseEingabeKiSicht.Prozentmodus",
+                                     KiDialogTexte.CseModusName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.CseModusErl),
+                    new KiDialogFeld("best_case", "CaseEingabeKiSicht.BestCase",
+                                     KiDialogTexte.CseBestName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseBestErl, leerErlaubt: true),
+                    new KiDialogFeld("worst_case", "CaseEingabeKiSicht.WorstCase",
+                                     KiDialogTexte.CseWorstName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseWorstErl, leerErlaubt: true),
+                    new KiDialogFeld("best_nutzungsdauer",
+                                     "CaseEingabeKiSicht.BestNutzungsdauer",
+                                     KiDialogTexte.CseBestDauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseBestDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("worst_nutzungsdauer",
+                                     "CaseEingabeKiSicht.WorstNutzungsdauer",
+                                     KiDialogTexte.CseWorstDauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.CseWorstDauerErl,
+                                     einheit: KiDialogTexte.EinheitJahre),
+                    new KiDialogFeld("startjahr", "CaseEingabeKiSicht.Startjahr",
+                                     KiDialogTexte.CseJahrName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.CseJahrErl),
+                    new KiDialogFeld("ist_zuschuss", "CaseEingabeKiSicht.IstZuschuss",
+                                     KiDialogTexte.CseZuschussName,
+                                     KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.CseZuschussErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
 
         // =====================================================================
@@ -2718,6 +3044,22 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.KvNurLesenName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.KvNurLesenErl,
                                      nurLesen: true),
+
+                    // Welle KI-F4: die VARIANTE der Vorlage - das einzige Wahlfeld der
+                    // Maske, das am Stand haengt und bis dahin fehlte. Sie steht nur im
+                    // Stammkontext (VariantePflegbar); im Projekt ist die Liste leer.
+                    //
+                    // NUR LESEN, und das ist der Punkt: Die Variante zu WECHSELN laedt
+                    // einen anderen Positionssatz nach (BeiVariante -> KontextLaden).
+                    // Der Katalog bindet hier unmittelbar an den Stand; ein Setzer
+                    // schriebe die Id, ohne dass das Raster nachzieht - die Maske zeigte
+                    // dann die neue Variante ueber den alten Zeilen. Der Assistent NENNT
+                    // sie deshalb samt ihren Alternativen und lehnt das Setzen benannt
+                    // ab; ein Wechsel ist ein Ladevorgang und kein Feldwert.
+                    new KiDialogFeld("variante", "KostenKomponenteStand.VarianteId",
+                                     KiDialogTexte.KvVarianteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KvVarianteErl,
+                                     leerErlaubt: true, nurLesen: true),
 
                     // ---- Das Raster: je Position eine Zeile --------------------------
                     new KiDialogFeld("position", "KostenKomponenteStand.Zeilen[].Bezeichnung",

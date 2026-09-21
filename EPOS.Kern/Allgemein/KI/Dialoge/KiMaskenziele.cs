@@ -139,6 +139,18 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string VARIANTE_ANLEGEN = "ENERGIETRAEGER_VARIANTE";
 
+        /// <summary>
+        /// Der Seitenschluessel der NUTZUNGSDAUERVERWALTUNG (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Der dritte Punkt der Rubrik „Administration → Kosten"; dieselbe Lage wie
+        /// bei <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn
+        /// im Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht, und
+        /// auf iOS ist die Kostenverwaltung noch nicht angebunden. <c>dialog_oeffnen</c>
+        /// lehnt deshalb auf beiden Plattformen benannt ab.
+        /// </remarks>
+        public const string NUTZUNGSDAUER_VERWALTUNG = "NUTZUNGSDAUER_VERWALTUNG";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -276,7 +288,25 @@ namespace WindowsFormsApplication1
 
                 // „Energietraeger-Variante anlegen" ist eine eigene Ansicht der
                 // AppWurzel - siehe VARIANTE_ANLEGEN.
-                { KiMaskennamen.ENERGIETRAEGER_VARIANTE, VARIANTE_ANLEGEN }
+                { KiMaskennamen.ENERGIETRAEGER_VARIANTE, VARIANTE_ANLEGEN },
+
+                // Der EMISSIONSKATALOG geht als Ueberlagerung aus der Traegerkarte
+                // auf („Emissionsarten & Katalog verwalten…") und braucht einen
+                // gewaehlten Traeger; sein Ziel ist deshalb die Verwaltung.
+                { KiMaskennamen.EMISSIONSKATALOG, ENERGIETRAEGER_VERWALTUNG },
+
+                // Die NUTZUNGSDAUERN sind selbst ein Menuepunkt - hier fallen
+                // Katalogschluessel und Navigationsschluessel zusammen, wie bei der
+                // Waermepumpenverwaltung.
+                { KiMaskennamen.NUTZUNGSDAUER, NUTZUNGSDAUER_VERWALTUNG },
+
+                // Der KOSTENFAKTOREN-Katalog, der ZEILENEDITOR einer Position und die
+                // Worst-/Best-Case-Eingabe gehen alle drei als Ueberlagerung aus der
+                // Kostenverwaltung auf und brauchen eine gewaehlte Komponente bzw.
+                // Zeile; ihr Ziel ist deshalb die Maske, aus der sie aufgehen.
+                { KiMaskennamen.KOSTENFAKTOR_KATALOG, KOSTENVERWALTUNG },
+                { KiMaskennamen.VORLAGENPOSITION,     KOSTENVERWALTUNG },
+                { KiMaskennamen.CASE_EINGABE,         KOSTENVERWALTUNG }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

@@ -25,6 +25,8 @@
 
 @namespace EPOS.UI.Dialoge.Kosten
 @using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -259,7 +261,68 @@
         };
         // rbCaseAbsolut.Checked = true; rbCaseProzent.Enabled = Betrag != 0.
         _gesperrteModi = Betrag != 0 ? null : new[] { MODUS_PROZENT };
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.CASE_EINGABE,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private CaseEingabeKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die sieben lebenden Felder. Ein Daten-Objekt gibt
+    /// es nicht — <c>CaseEingabeErgebnis</c> entsteht erst beim OK und trägt die
+    /// Beträge dann immer in Euro.
+    /// </summary>
+    /// <remarks>
+    /// Der PROZENTMODUS läuft über denselben Weg wie die Optionsgruppe der Maske:
+    /// Er rechnet die zwei Kostenfelder um, statt nur einen Schalter umzulegen.
+    /// Ohne gepflegten Erwartungswert lehnt er ab — dann gibt es nichts, wovon
+    /// abzuweichen wäre.
+    /// </remarks>
+    private CaseEingabeKiSicht KiSicht()
+    {
+        return _kiSicht ??= new CaseEingabeKiSicht
+        {
+            ProzentmodusLesen = () => _prozentModus,
+            ProzentmodusSetzen = w => BeiEingabeart(w ? MODUS_PROZENT : MODUS_ABSOLUT),
+
+            BestLesen = () => _best,
+            BestSetzen = w => _best = w,
+            WorstLesen = () => _worst,
+            WorstSetzen = w => _worst = w,
+
+            BestDauerLesen = () => _bestNutzung,
+            BestDauerSetzen = w => _bestNutzung = w,
+            WorstDauerLesen = () => _worstNutzung,
+            WorstDauerSetzen = w => _worstNutzung = w,
+
+            JahrLesen = () => _startJahr,
+            JahrSetzen = w => _startJahr = w,
+
+            ZuschussLesen = () => _istZuschuss,
+            ZuschussSetzen = w => _istZuschuss = w
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Der Dialog meldet sein Ergebnis an den Wirt; der
+    /// schreibt es mit seinem eigenen OK.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

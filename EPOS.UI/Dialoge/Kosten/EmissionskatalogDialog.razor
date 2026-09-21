@@ -44,6 +44,8 @@
    nicht belegt - fast jeder Knopf hier schreibt sofort. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -689,7 +691,84 @@
         _modusCo2e = ModusCo2e;
         _arten = new List<EmissionsartZeile>(Arten);
         ArtVorwaehlen(ArtVorwahl);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.EMISSIONSKATALOG,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private EmissionskatalogKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Bilanzierungsmethode, die zwei Markierungen und
+    /// die lebenden Felder der beiden Editoren.
+    /// </summary>
+    /// <remarks>
+    /// Die Editoren gehen als Überlagerung IN dieser Maske auf und tragen deshalb
+    /// keinen eigenen Katalogschlüssel — dieselbe Lage wie die zwei Reiterblätter des
+    /// Gebäudekatalogs. Steht kein Editor offen, sind ihre Felder leer; das ist
+    /// derselbe Zustand, den der Anwender sieht.
+    /// </remarks>
+    private EmissionskatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new EmissionskatalogKiSicht
+        {
+            ModusLesen = () => _modusCo2e,
+            ModusSetzen = w => _modusCo2e = w,
+
+            ArtLesen = () => _artId,
+            ArtSetzen = id => { if (id.HasValue) ArtWaehlen(id.Value); },
+            ArtEintraege = () => KiMaskenanmeldung.Eintraege(
+                _arten, z => z.Id, z => z.Name),
+
+            WertLesen = () => _wertId,
+            WertSetzen = id => { if (id.HasValue) _wertId = id.Value; },
+            WertEintraege = () => KiMaskenanmeldung.Eintraege(
+                _werte, z => z.Id, z => z.Herkunftstext),
+
+            ArtKuerzelLesen = () => _artKuerzel,
+            ArtKuerzelSetzen = w => _artKuerzel = w,
+            ArtNameLesen = () => _artName,
+            ArtNameSetzen = w => _artName = w,
+            ArtEinheitLesen = () => _artEinheit,
+            ArtEinheitSetzen = id => _artEinheit = id ?? 0,
+            EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
+                Einheiten, z => z.Id, z => z.Text),
+            ArtGwpLesen = () => _artGwp,
+            ArtGwpSetzen = w => _artGwp = w,
+            ArtQuelleLesen = () => _artQuelle,
+            ArtQuelleSetzen = w => _artQuelle = w,
+
+            WertQuelleLesen = () => _wertText,
+            WertQuelleSetzen = w => _wertText = w,
+            WertZahlLesen = () => _wertZahl,
+            WertZahlSetzen = w => _wertZahl = w,
+            WertCo2eLesen = () => _wertCo2e,
+            WertCo2eSetzen = w => _wertCo2e = w,
+            WertVorlageLesen = () => _wertVorlage,
+            WertVorlageSetzen = w => _wertVorlage = w
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Arten und Werte schreibt die Maske über ihre eigenen
+    /// Knöpfe in den Katalog; das ist datenbankwirksam und läuft über
+    /// <c>dialog_speichern</c> samt Rückfrage und Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

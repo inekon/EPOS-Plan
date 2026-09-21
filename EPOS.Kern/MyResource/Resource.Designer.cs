@@ -25397,6 +25397,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer der Position im günstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_BESTDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_BESTDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer im besten Fall ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_BESTDAUER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_BESTDAUER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kosten der Position im günstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_BEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_BEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten im besten Fall ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_BEST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_BEST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahr des Betrachtungszeitraums, in dem die Zahlung beginnt; 0 heißt „im ersten Jahr“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startjahr der Zahlung ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_JAHR_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_JAHR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tragen die zwei Kostenfelder eine ABWEICHUNG vom Erwartungswert in Prozent statt eines Betrags in Euro? Ohne gepflegten Erwartungswert ist der Prozentmodus gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eingabe als Prozentabweichung ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_MODUS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_MODUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nutzungsdauer der Position im ungünstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_WORSTDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_WORSTDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer im schlechtesten Fall ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_WORSTDAUER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_WORSTDAUER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kosten der Position im ungünstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_WORST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_WORST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten im schlechtesten Fall ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_WORST_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_WORST_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist die Position ein ZUSCHUSS und keine Ausgabe? Der Schalter steht nur dort, wo ein Zuschuss überhaupt möglich ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ZUSCHUSS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ZUSCHUSS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ist ein Zuschuss ähnelt.
+        /// </summary>
+        public static string KI_DLG_CSE_ZUSCHUSS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_CSE_ZUSCHUSS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Jahre ähnelt.
         /// </summary>
         public static string KI_DLG_EINHEIT_JAHRE {
@@ -25411,6 +25537,204 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_EINHEIT_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_EINHEIT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher das Treibhauspotenzial stammt (IPCC-Bericht, Norm, eigene Festlegung). ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_ARTQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_ARTQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle des Äquivalenzfaktors ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_ARTQUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_ARTQUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die im oberen Raster markierte Emissionsart. Sie entscheidet, welche Werte darunter stehen und worauf „Ändern“ und „Löschen“ greifen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierte Emissionsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_ART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_ART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der bearbeiteten Art — Gramm oder Milligramm je Kilowattstunde. Sie gilt für alle Werte dieser Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Faktor, mit dem die Art in CO₂-Äquivalent umgerechnet wird. An einer Pflichtart ist er gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_GWP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_GWP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Treibhauspotenzial (GWP₁₀₀) ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_GWP_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_GWP_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Kürzel der bearbeiteten Art (CO2, CH4, N2O). An einer Art der Auslieferung lässt es sich nicht ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_KUERZEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_KUERZEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kürzel der Emissionsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_KUERZEL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_KUERZEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? Die Wahl gilt für die Anzeige beider Raster und für die Summe darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Klartextname der bearbeiteten Art, wie er in beiden Rastern steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name der Emissionsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_NAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_NAME_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Soll der neue Wert auch für andere Energieträger als Vorschlag gelten? Der Schalter steht nur bei einer Neuanlage mit Trägerbezug. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_VORLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_VORLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Vorlage für weitere Träger ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_VORLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_VORLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist der Wert schon in CO₂-Äquivalent angegeben? Dann wird er nicht ein zweites Mal mit dem Treibhauspotenzial multipliziert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTCO2E_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTCO2E_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wert ist bereits CO₂-Äquivalent ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTCO2E_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTCO2E_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der bearbeitete Emissionswert stammt (GEMIS, Datenblatt, eigene Messung). ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTQUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTQUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft des Wertes ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTQUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTQUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zahlenwert selbst, in der Einheit seiner Art. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTZAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTZAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionswert ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERTZAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERTZAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der im unteren Raster markierte Wert der gewählten Art. Er ist es, den „Übernehmen“ an den Energieträger gibt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierter Emissionswert ähnelt.
+        /// </summary>
+        public static string KI_DLG_EMK_WERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EMK_WERT_NAME", resourceCulture);
             }
         }
         
@@ -26639,6 +26963,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der im Raster markierte Kostenfaktor. Ihn zu setzen markiert ihn — erst danach greift „Löschen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KFK_FAKTOR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KFK_FAKTOR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktor ähnelt.
+        /// </summary>
+        public static string KI_DLG_KFK_FAKTOR_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KFK_FAKTOR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner, unter dem „Neu“ einen Kostenfaktor anlegt. Ein leerer Bezeichner legt nichts an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KFK_NEU_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KFK_NEU_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichner der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_KFK_NEU_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KFK_NEU_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsbereitschaft der Heizkessel in Stunden je Jahr — ein Wert des PROJEKTS, nicht dieses Kessels. ähnelt.
         /// </summary>
         public static string KI_DLG_KKONF_BEREITSCHAFT_ERL {
@@ -27017,6 +27377,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlagenvariante, deren Positionen die Tabelle zeigt — nur im Stammkontext. Sie zu wechseln lädt einen anderen Positionssatz und ist deshalb kein Feldwert; der Assistent nennt sie und die Alternativen, setzen lässt sie sich hier nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_VARIANTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_VARIANTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Das Feld darf leer bleiben; leer zählt wie 0. ähnelt.
         /// </summary>
         public static string KI_DLG_LEER_ERLAUBT {
@@ -27116,6 +27485,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Worst- und Best-Case einer Position ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_CSE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_CSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsarten und Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_EMK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_EMK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_ET {
@@ -27197,6 +27584,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenfaktoren-Katalog ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KFK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KFK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration einer Komponente ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KKONF {
@@ -27247,6 +27643,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_NICHT_OFFEN {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_NICHT_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauern (AfA) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_NUD {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_NUD", resourceCulture);
             }
         }
         
@@ -27386,6 +27791,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenposition bearbeiten ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_VOP {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_VOP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Externe Wärmebedarfsganglinien ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_WBX {
@@ -27463,6 +27877,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NICHT_SETZBAR {
             get {
                 return ResourceManager.GetString("KI_DLG_NICHT_SETZBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer dieses Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_AFA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_AFA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AfA steuerlich ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_AFA_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_AFA_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Positionsart, unter der „Neu“ den Satz anlegt — der Name, unter dem ihn eine Kostenposition später findet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsart der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_ART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_ART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer des neuen Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUAFA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUAFA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die AfA der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUAFA_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUAFA_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kalkulatorische Nutzungsdauer des neuen Satzes nach VDI 2067. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_NEUWERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_NEUWERT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher die Dauer stammt (VDI 2067, AfA-Tabelle, Herstellerangabe, eigene Festlegung). ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_QUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Filtertext über der Tabelle. Er blendet Sätze aus, deren Technik oder Positionsart ihn nicht enthält. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_SUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_SUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Technik, unter der „Neu“ den Satz anlegt. Leer heißt „technikübergreifend“ — der Satz gilt dann für alle Gewerke. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_TECHNIK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_TECHNIK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Technik der neuen Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_TECHNIK_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_TECHNIK_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kalkulatorische Nutzungsdauer dieses Satzes nach VDI 2067. Sie bestimmt, wie oft eine Position im Betrachtungszeitraum ersetzt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer ähnelt.
+        /// </summary>
+        public static string KI_DLG_NUD_WERT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_NUD_WERT_NAME", resourceCulture);
             }
         }
         
@@ -29290,6 +29839,114 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_TYP_ZAHL {
             get {
                 return ResourceManager.GetString("KI_DLG_TYP_ZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Kostenposition, wie er in der Vorlage und im Bericht steht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_BEZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_BEZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung der Position ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_BEZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_BEZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_BIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_BIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung bis ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_BIS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_BIS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist die Position ein ERLÖS und keine Kosten? Ein Erlös geht mit umgekehrtem Vorzeichen in den Kapitalwert ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_ERLOES_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_ERLOES_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Position ist ein Erlös ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_ERLOES_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_ERLOES_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kostenart nach VDI 2067 — Kapital, Bedarf, Betrieb oder sonstige. Sie entscheidet, in welcher Kategorie die Position in der Auswertung erscheint. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_KOSTENART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_KOSTENART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenart ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_KOSTENART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_KOSTENART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Positionsart, aus der die Nutzungsdauer kommt. Ohne sie rechnet die Position mit der Nutzungsdauer ihrer Komponente. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_POSART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_POSART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Positionsart ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_POSART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_POSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre. ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_VON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_VON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Empfehlung von ähnelt.
+        /// </summary>
+        public static string KI_DLG_VOP_VON_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_VOP_VON_NAME", resourceCulture);
             }
         }
         

@@ -21498,4 +21498,223 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige.</value>
   </data>
+  <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
+    <value>Die Vorlagenvariante, deren Positionen die Tabelle zeigt — nur im Stammkontext. Sie zu wechseln lädt einen anderen Positionssatz und ist deshalb kein Feldwert; der Assistent nennt sie und die Alternativen, setzen lässt sie sich hier nicht.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KFK" xml:space="preserve">
+    <value>Kostenfaktoren-Katalog</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_NAME" xml:space="preserve">
+    <value>Kostenfaktor</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_ERL" xml:space="preserve">
+    <value>Der im Raster markierte Kostenfaktor. Ihn zu setzen markiert ihn — erst danach greift „Löschen“.</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_NAME" xml:space="preserve">
+    <value>Bezeichner der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_ERL" xml:space="preserve">
+    <value>Der Bezeichner, unter dem „Neu“ einen Kostenfaktor anlegt. Ein leerer Bezeichner legt nichts an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_EMK" xml:space="preserve">
+    <value>Emissionsarten und Katalog</value>
+  </data>
+  <data name="KI_DLG_EMK_MODUS_ERL" xml:space="preserve">
+    <value>Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? Die Wahl gilt für die Anzeige beider Raster und für die Summe darunter.</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_NAME" xml:space="preserve">
+    <value>Markierte Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_ERL" xml:space="preserve">
+    <value>Die im oberen Raster markierte Emissionsart. Sie entscheidet, welche Werte darunter stehen und worauf „Ändern“ und „Löschen“ greifen.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_NAME" xml:space="preserve">
+    <value>Markierter Emissionswert</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_ERL" xml:space="preserve">
+    <value>Der im unteren Raster markierte Wert der gewählten Art. Er ist es, den „Übernehmen“ an den Energieträger gibt.</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_NAME" xml:space="preserve">
+    <value>Kürzel der Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_ERL" xml:space="preserve">
+    <value>Das Kürzel der bearbeiteten Art (CO2, CH4, N2O). An einer Art der Auslieferung lässt es sich nicht ändern.</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_NAME" xml:space="preserve">
+    <value>Name der Emissionsart</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_ERL" xml:space="preserve">
+    <value>Der Klartextname der bearbeiteten Art, wie er in beiden Rastern steht.</value>
+  </data>
+  <data name="KI_DLG_EMK_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der bearbeiteten Art — Gramm oder Milligramm je Kilowattstunde. Sie gilt für alle Werte dieser Art.</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_NAME" xml:space="preserve">
+    <value>Treibhauspotenzial (GWP₁₀₀)</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_ERL" xml:space="preserve">
+    <value>Der Faktor, mit dem die Art in CO₂-Äquivalent umgerechnet wird. An einer Pflichtart ist er gesperrt.</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_NAME" xml:space="preserve">
+    <value>Quelle des Äquivalenzfaktors</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_ERL" xml:space="preserve">
+    <value>Woher das Treibhauspotenzial stammt (IPCC-Bericht, Norm, eigene Festlegung).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_NAME" xml:space="preserve">
+    <value>Herkunft des Wertes</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_ERL" xml:space="preserve">
+    <value>Woher der bearbeitete Emissionswert stammt (GEMIS, Datenblatt, eigene Messung).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_NAME" xml:space="preserve">
+    <value>Emissionswert</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_ERL" xml:space="preserve">
+    <value>Der Zahlenwert selbst, in der Einheit seiner Art.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_NAME" xml:space="preserve">
+    <value>Wert ist bereits CO₂-Äquivalent</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_ERL" xml:space="preserve">
+    <value>Ist der Wert schon in CO₂-Äquivalent angegeben? Dann wird er nicht ein zweites Mal mit dem Treibhauspotenzial multipliziert.</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_NAME" xml:space="preserve">
+    <value>Als Vorlage für weitere Träger</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_ERL" xml:space="preserve">
+    <value>Soll der neue Wert auch für andere Energieträger als Vorschlag gelten? Der Schalter steht nur bei einer Neuanlage mit Trägerbezug.</value>
+  </data>
+  <data name="KI_DLG_MASKE_NUD" xml:space="preserve">
+    <value>Nutzungsdauern (AfA)</value>
+  </data>
+  <data name="KI_DLG_NUD_SUCHE_ERL" xml:space="preserve">
+    <value>Der Filtertext über der Tabelle. Er blendet Sätze aus, deren Technik oder Positionsart ihn nicht enthält.</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_NAME" xml:space="preserve">
+    <value>Technik der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_ERL" xml:space="preserve">
+    <value>Die Technik, unter der „Neu“ den Satz anlegt. Leer heißt „technikübergreifend“ — der Satz gilt dann für alle Gewerke.</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_NAME" xml:space="preserve">
+    <value>Positionsart der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_ERL" xml:space="preserve">
+    <value>Die Positionsart, unter der „Neu“ den Satz anlegt — der Name, unter dem ihn eine Kostenposition später findet.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_NAME" xml:space="preserve">
+    <value>Nutzungsdauer der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_ERL" xml:space="preserve">
+    <value>Die kalkulatorische Nutzungsdauer des neuen Satzes nach VDI 2067.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_NAME" xml:space="preserve">
+    <value>AfA der neuen Zeile</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_ERL" xml:space="preserve">
+    <value>Die steuerliche Abschreibungsdauer des neuen Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen.</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_NAME" xml:space="preserve">
+    <value>Nutzungsdauer</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_ERL" xml:space="preserve">
+    <value>Die kalkulatorische Nutzungsdauer dieses Satzes nach VDI 2067. Sie bestimmt, wie oft eine Position im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_NAME" xml:space="preserve">
+    <value>AfA steuerlich</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_ERL" xml:space="preserve">
+    <value>Die steuerliche Abschreibungsdauer dieses Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen.</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_NAME" xml:space="preserve">
+    <value>Quelle</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Dauer stammt (VDI 2067, AfA-Tabelle, Herstellerangabe, eigene Festlegung).</value>
+  </data>
+  <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
+    <value>Kostenposition bearbeiten</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_NAME" xml:space="preserve">
+    <value>Bezeichnung der Position</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_ERL" xml:space="preserve">
+    <value>Der Name der Kostenposition, wie er in der Vorlage und im Bericht steht.</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_NAME" xml:space="preserve">
+    <value>Kostenart</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_ERL" xml:space="preserve">
+    <value>Die Kostenart nach VDI 2067 — Kapital, Bedarf, Betrieb oder sonstige. Sie entscheidet, in welcher Kategorie die Position in der Auswertung erscheint.</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_NAME" xml:space="preserve">
+    <value>Position ist ein Erlös</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_ERL" xml:space="preserve">
+    <value>Ist die Position ein ERLÖS und keine Kosten? Ein Erlös geht mit umgekehrtem Vorzeichen in den Kapitalwert ein.</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_NAME" xml:space="preserve">
+    <value>Positionsart</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_ERL" xml:space="preserve">
+    <value>Die Positionsart, aus der die Nutzungsdauer kommt. Ohne sie rechnet die Position mit der Nutzungsdauer ihrer Komponente.</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_NAME" xml:space="preserve">
+    <value>Empfehlung von</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_ERL" xml:space="preserve">
+    <value>Die untere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre.</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_NAME" xml:space="preserve">
+    <value>Empfehlung bis</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_ERL" xml:space="preserve">
+    <value>Die obere Grenze des empfohlenen Satzes. Sie ist ein Hinweis an der Eingabe und keine Sperre.</value>
+  </data>
+  <data name="KI_DLG_MASKE_CSE" xml:space="preserve">
+    <value>Worst- und Best-Case einer Position</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_NAME" xml:space="preserve">
+    <value>Eingabe als Prozentabweichung</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_ERL" xml:space="preserve">
+    <value>Tragen die zwei Kostenfelder eine ABWEICHUNG vom Erwartungswert in Prozent statt eines Betrags in Euro? Ohne gepflegten Erwartungswert ist der Prozentmodus gesperrt.</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_NAME" xml:space="preserve">
+    <value>Kosten im besten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_ERL" xml:space="preserve">
+    <value>Die Kosten der Position im günstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_NAME" xml:space="preserve">
+    <value>Kosten im schlechtesten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_ERL" xml:space="preserve">
+    <value>Die Kosten der Position im ungünstigsten Fall — je nach Eingabeart ein Betrag oder eine Abweichung. Geschrieben wird immer ein Betrag.</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer im besten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_ERL" xml:space="preserve">
+    <value>Die Nutzungsdauer der Position im günstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_NAME" xml:space="preserve">
+    <value>Nutzungsdauer im schlechtesten Fall</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_ERL" xml:space="preserve">
+    <value>Die Nutzungsdauer der Position im ungünstigsten Fall. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird.</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_NAME" xml:space="preserve">
+    <value>Startjahr der Zahlung</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr des Betrachtungszeitraums, in dem die Zahlung beginnt; 0 heißt „im ersten Jahr“.</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_NAME" xml:space="preserve">
+    <value>Position ist ein Zuschuss</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_ERL" xml:space="preserve">
+    <value>Ist die Position ein ZUSCHUSS und keine Ausgabe? Der Schalter steht nur dort, wo ein Zuschuss überhaupt möglich ist.</value>
+  </data>
 </root>

@@ -137,6 +137,16 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht) },
         { KiMaskennamen.KOSTENPROFIL,
           typeof(EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht) },
+        { KiMaskennamen.KOSTENFAKTOR_KATALOG,
+          typeof(EPOS.UI.Dialoge.Kosten.KostenfaktorKatalogKiSicht) },
+        { KiMaskennamen.EMISSIONSKATALOG,
+          typeof(EPOS.UI.Dialoge.Kosten.EmissionskatalogKiSicht) },
+        { KiMaskennamen.NUTZUNGSDAUER,
+          typeof(EPOS.UI.Dialoge.Kosten.NutzungsdauerKiSicht) },
+        { KiMaskennamen.VORLAGENPOSITION,
+          typeof(EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht) },
+        { KiMaskennamen.CASE_EINGABE,
+          typeof(EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht) },
 
         { KiMaskennamen.BEDARF_ERGEBNIS,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
@@ -184,6 +194,12 @@ public class KiDialogkatalogTests
         // Die drei Bedarfskanaele kennt ebenfalls nur der Dialog; sie kommen als
         // Parameter der Huelle herein.
         KiMaskennamen.WAERMEBEDARF_EXTERN  => new[] { "kanal" },
+
+        // Welle KI-F4: Die VARIANTE der Kostenverwaltung haengt am Stand, ihre Liste
+        // aber auch (KostenKomponenteStand.Varianten) - eine Begleiteigenschaft
+        // VarianteIdWahl fuehrte dieselbe Liste ein zweites Mal. Der Dialog meldet
+        // sie deshalb als benannte Wahlquelle an.
+        KiMaskennamen.KOSTENVERWALTUNG     => new[] { "variante" },
 
         // Die sechs Masken der SIMULATIONSKONFIGURATION stehen hier bewusst NICHT:
         // Sie melden je eine Sichtklasse an, und die traegt zu jedem Wahlfeld ihre
@@ -238,11 +254,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_achtunddreissig_Masken()
+    public void Der_Katalog_fuehrt_dreiundvierzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(38, katalog.Anzahl);
+        Assert.Equal(43, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -671,7 +687,22 @@ public class KiDialogkatalogTests
             "Reihe; Zeuge ist LeistungspreisReiheDialogTests",
         [KiMaskennamen.KOSTENPROFIL] =
             "bindet über die Sichtklasse KostenprofilKiSicht auf Bezeichner und " +
-            "Wochentag; Zeuge ist KostenprofilDialogTests"
+            "Wochentag; Zeuge ist KostenprofilDialogTests",
+        [KiMaskennamen.KOSTENFAKTOR_KATALOG] =
+            "bindet über die Sichtklasse KostenfaktorKatalogKiSicht auf Neuzeile und " +
+            "Rastermarkierung; Zeuge ist KostenfaktorKatalogDialogTests",
+        [KiMaskennamen.EMISSIONSKATALOG] =
+            "bindet über die Sichtklasse EmissionskatalogKiSicht auf Methode, beide " +
+            "Markierungen und die zwei Editoren; Zeuge ist EmissionskatalogDialogTests",
+        [KiMaskennamen.NUTZUNGSDAUER] =
+            "bindet über die Sichtklasse NutzungsdauerKiSicht auf Kopffelder und die " +
+            "lebende Zeilenliste; Zeuge ist NutzungsdauerDialogTests",
+        [KiMaskennamen.VORLAGENPOSITION] =
+            "bindet über die Sichtklasse VorlagenPositionKiSicht auf die sechs " +
+            "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
+        [KiMaskennamen.CASE_EINGABE] =
+            "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +
+            "Felder; Zeuge ist CaseEingabeDialogTests"
     };
 
     /// <summary>

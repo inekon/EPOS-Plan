@@ -1233,5 +1233,94 @@
         internal static string KprWochentagErl => MyResource.Resource.KI_DLG_KPR_WOCHENTAG_ERL;
         internal static string KprEinheitName => MyResource.Resource.KI_DLG_EINHEIT_NAME;
         internal static string KprEinheitErl => MyResource.Resource.KI_DLG_KPR_EINHEIT_ERL;
+
+        // ---- Die VARIANTE der Kostenverwaltung (Welle KI-F4)
+        internal static string KvVarianteName => MyResource.Resource.KDLG_LBL_VARIANTE;
+        internal static string KvVarianteErl => MyResource.Resource.KI_DLG_KV_VARIANTE_ERL;
+
+        // ---- Form_KostenAdmin
+        internal static string MaskeKostenfaktorkatalog => MyResource.Resource.KI_DLG_MASKE_KFK;
+        internal static string KfkFaktorName => MyResource.Resource.KI_DLG_KFK_FAKTOR_NAME;
+        internal static string KfkFaktorErl => MyResource.Resource.KI_DLG_KFK_FAKTOR_ERL;
+        internal static string KfkNeuName => MyResource.Resource.KI_DLG_KFK_NEU_NAME;
+        internal static string KfkNeuErl => MyResource.Resource.KI_DLG_KFK_NEU_ERL;
+
+        // ---- Form_Emissionskatalog
+        internal static string MaskeEmissionskatalog => MyResource.Resource.KI_DLG_MASKE_EMK;
+        internal static string EmkModusName => MyResource.Resource.KI_DLG_ET_CO2E_NAME;
+        internal static string EmkModusErl => MyResource.Resource.KI_DLG_EMK_MODUS_ERL;
+        internal static string EmkArtName => MyResource.Resource.KI_DLG_EMK_ART_NAME;
+        internal static string EmkArtErl => MyResource.Resource.KI_DLG_EMK_ART_ERL;
+        internal static string EmkWertName => MyResource.Resource.KI_DLG_EMK_WERT_NAME;
+        internal static string EmkWertErl => MyResource.Resource.KI_DLG_EMK_WERT_ERL;
+        internal static string EmkKuerzelName => MyResource.Resource.KI_DLG_EMK_KUERZEL_NAME;
+        internal static string EmkKuerzelErl => MyResource.Resource.KI_DLG_EMK_KUERZEL_ERL;
+        internal static string EmkNameName => MyResource.Resource.KI_DLG_EMK_NAME_NAME;
+        internal static string EmkNameErl => MyResource.Resource.KI_DLG_EMK_NAME_ERL;
+        internal static string EmkEinheitName => MyResource.Resource.KI_DLG_EINHEIT_NAME;
+        internal static string EmkEinheitErl => MyResource.Resource.KI_DLG_EMK_EINHEIT_ERL;
+        internal static string EmkGwpName => MyResource.Resource.KI_DLG_EMK_GWP_NAME;
+        internal static string EmkGwpErl => MyResource.Resource.KI_DLG_EMK_GWP_ERL;
+        internal static string EmkArtQuelleName => MyResource.Resource.KI_DLG_EMK_ARTQUELLE_NAME;
+        internal static string EmkArtQuelleErl => MyResource.Resource.KI_DLG_EMK_ARTQUELLE_ERL;
+        internal static string EmkWertQuelleName => MyResource.Resource.KI_DLG_EMK_WERTQUELLE_NAME;
+        internal static string EmkWertQuelleErl => MyResource.Resource.KI_DLG_EMK_WERTQUELLE_ERL;
+        internal static string EmkWertZahlName => MyResource.Resource.KI_DLG_EMK_WERTZAHL_NAME;
+        internal static string EmkWertZahlErl => MyResource.Resource.KI_DLG_EMK_WERTZAHL_ERL;
+        internal static string EmkWertCo2eName => MyResource.Resource.KI_DLG_EMK_WERTCO2E_NAME;
+        internal static string EmkWertCo2eErl => MyResource.Resource.KI_DLG_EMK_WERTCO2E_ERL;
+        internal static string EmkWertVorlageName => MyResource.Resource.KI_DLG_EMK_VORLAGE_NAME;
+        internal static string EmkWertVorlageErl => MyResource.Resource.KI_DLG_EMK_VORLAGE_ERL;
+
+        // ---- Form_Nutzungsdauer
+        internal static string MaskeNutzungsdauer => MyResource.Resource.KI_DLG_MASKE_NUD;
+        internal static string NudSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
+        internal static string NudSucheErl => MyResource.Resource.KI_DLG_NUD_SUCHE_ERL;
+        internal static string NudTechnikName => MyResource.Resource.KI_DLG_NUD_TECHNIK_NAME;
+        internal static string NudTechnikErl => MyResource.Resource.KI_DLG_NUD_TECHNIK_ERL;
+        internal static string NudArtName => MyResource.Resource.KI_DLG_NUD_ART_NAME;
+        internal static string NudArtErl => MyResource.Resource.KI_DLG_NUD_ART_ERL;
+        internal static string NudNeuWertName => MyResource.Resource.KI_DLG_NUD_NEUWERT_NAME;
+        internal static string NudNeuWertErl => MyResource.Resource.KI_DLG_NUD_NEUWERT_ERL;
+        internal static string NudNeuAfaName => MyResource.Resource.KI_DLG_NUD_NEUAFA_NAME;
+        internal static string NudNeuAfaErl => MyResource.Resource.KI_DLG_NUD_NEUAFA_ERL;
+        internal static string NudWertName => MyResource.Resource.KI_DLG_NUD_WERT_NAME;
+        internal static string NudWertErl => MyResource.Resource.KI_DLG_NUD_WERT_ERL;
+        internal static string NudAfaName => MyResource.Resource.KI_DLG_NUD_AFA_NAME;
+        internal static string NudAfaErl => MyResource.Resource.KI_DLG_NUD_AFA_ERL;
+        internal static string NudQuelleName => MyResource.Resource.KI_DLG_NUD_QUELLE_NAME;
+        internal static string NudQuelleErl => MyResource.Resource.KI_DLG_NUD_QUELLE_ERL;
+
+        // ---- Form_VorlagenPosition
+        internal static string MaskeVorlagenposition => MyResource.Resource.KI_DLG_MASKE_VOP;
+        internal static string VopBezeichnungName => MyResource.Resource.KI_DLG_VOP_BEZ_NAME;
+        internal static string VopBezeichnungErl => MyResource.Resource.KI_DLG_VOP_BEZ_ERL;
+        internal static string VopKostenartName => MyResource.Resource.KI_DLG_VOP_KOSTENART_NAME;
+        internal static string VopKostenartErl => MyResource.Resource.KI_DLG_VOP_KOSTENART_ERL;
+        internal static string VopErloesName => MyResource.Resource.KI_DLG_VOP_ERLOES_NAME;
+        internal static string VopErloesErl => MyResource.Resource.KI_DLG_VOP_ERLOES_ERL;
+        internal static string VopPositionsartName => MyResource.Resource.KI_DLG_VOP_POSART_NAME;
+        internal static string VopPositionsartErl => MyResource.Resource.KI_DLG_VOP_POSART_ERL;
+        internal static string VopVonName => MyResource.Resource.KI_DLG_VOP_VON_NAME;
+        internal static string VopVonErl => MyResource.Resource.KI_DLG_VOP_VON_ERL;
+        internal static string VopBisName => MyResource.Resource.KI_DLG_VOP_BIS_NAME;
+        internal static string VopBisErl => MyResource.Resource.KI_DLG_VOP_BIS_ERL;
+
+        // ---- Form_CaseEingabe
+        internal static string MaskeCaseEingabe => MyResource.Resource.KI_DLG_MASKE_CSE;
+        internal static string CseModusName => MyResource.Resource.KI_DLG_CSE_MODUS_NAME;
+        internal static string CseModusErl => MyResource.Resource.KI_DLG_CSE_MODUS_ERL;
+        internal static string CseBestName => MyResource.Resource.KI_DLG_CSE_BEST_NAME;
+        internal static string CseBestErl => MyResource.Resource.KI_DLG_CSE_BEST_ERL;
+        internal static string CseWorstName => MyResource.Resource.KI_DLG_CSE_WORST_NAME;
+        internal static string CseWorstErl => MyResource.Resource.KI_DLG_CSE_WORST_ERL;
+        internal static string CseBestDauerName => MyResource.Resource.KI_DLG_CSE_BESTDAUER_NAME;
+        internal static string CseBestDauerErl => MyResource.Resource.KI_DLG_CSE_BESTDAUER_ERL;
+        internal static string CseWorstDauerName => MyResource.Resource.KI_DLG_CSE_WORSTDAUER_NAME;
+        internal static string CseWorstDauerErl => MyResource.Resource.KI_DLG_CSE_WORSTDAUER_ERL;
+        internal static string CseJahrName => MyResource.Resource.KI_DLG_CSE_JAHR_NAME;
+        internal static string CseJahrErl => MyResource.Resource.KI_DLG_CSE_JAHR_ERL;
+        internal static string CseZuschussName => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_NAME;
+        internal static string CseZuschussErl => MyResource.Resource.KI_DLG_CSE_ZUSCHUSS_ERL;
     }
 }

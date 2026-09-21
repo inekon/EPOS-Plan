@@ -1,9 +1,11 @@
 ﻿using AngleSharp.Dom;
 using Bunit;
+using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -862,5 +864,47 @@ public class EmissionskatalogDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>EmissionskatalogKiSicht</c>: die Bilanzierungsmethode, die
+    /// Markierung im Artenraster als WAHLFELD und die lebenden Felder des
+    /// Arteneditors.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_markiert_eine_Art()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.EMISSIONSKATALOG));
+
+        KiFeldzugang modus =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.EMISSIONSKATALOG, "als_co2e");
+        Assert.NotNull(modus);
+        Assert.True(modus.Setzbar);
+
+        KiFeldzugang art =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.EMISSIONSKATALOG, "emissionsart");
+        Assert.NotNull(art);
+        Assert.NotEmpty(art.Wahleintraege());
+
+        string zweite = art.Wahleintraege()[1].Text;
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(art, zweite);
+        Assert.True(wahl.Ok, wahl.Grund);
+        art.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(art.Wahleintraege()[1].Schluessel,
+                     Convert.ToString(art.Lesen(), CultureInfo.InvariantCulture));
+
+        // Die Felder des Arteneditors sind Felder DIESER Maske.
+        KiFeldzugang gwp =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.EMISSIONSKATALOG, "art_gwp");
+        Assert.NotNull(gwp);
+        Assert.True(gwp.Setzbar);
     }
 }

@@ -21491,4 +21491,223 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
     <value>The unit the monthly and weekly values are given in — display only.</value>
   </data>
+  <data name="KI_DLG_KV_VARIANTE_ERL" xml:space="preserve">
+    <value>The template variant whose positions the table shows — master context only. Switching it loads a different set of positions and is therefore not a field value; the assistant names it and the alternatives but cannot set it here.</value>
+  </data>
+  <data name="KI_DLG_MASKE_KFK" xml:space="preserve">
+    <value>Cost factor catalog</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_NAME" xml:space="preserve">
+    <value>Cost factor</value>
+  </data>
+  <data name="KI_DLG_KFK_FAKTOR_ERL" xml:space="preserve">
+    <value>The cost factor selected in the grid. Setting it selects it — only then does Delete apply.</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_NAME" xml:space="preserve">
+    <value>Name of the new entry</value>
+  </data>
+  <data name="KI_DLG_KFK_NEU_ERL" xml:space="preserve">
+    <value>The name under which "New" creates a cost factor. An empty name creates nothing.</value>
+  </data>
+  <data name="KI_DLG_MASKE_EMK" xml:space="preserve">
+    <value>Emission types and catalog</value>
+  </data>
+  <data name="KI_DLG_EMK_MODUS_ERL" xml:space="preserve">
+    <value>Does the mask calculate in CO₂ equivalent (GWP₁₀₀) instead of pure CO₂? The choice governs both grids and the total below them.</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_NAME" xml:space="preserve">
+    <value>Selected emission type</value>
+  </data>
+  <data name="KI_DLG_EMK_ART_ERL" xml:space="preserve">
+    <value>The emission type selected in the upper grid. It determines which values appear below and what Edit and Delete apply to.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_NAME" xml:space="preserve">
+    <value>Selected emission value</value>
+  </data>
+  <data name="KI_DLG_EMK_WERT_ERL" xml:space="preserve">
+    <value>The value of the selected type that is marked in the lower grid. It is the one that "Apply" hands to the energy carrier.</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_NAME" xml:space="preserve">
+    <value>Emission type abbreviation</value>
+  </data>
+  <data name="KI_DLG_EMK_KUERZEL_ERL" xml:space="preserve">
+    <value>The abbreviation of the edited type (CO2, CH4, N2O). It cannot be changed on a type that ships with the program.</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_NAME" xml:space="preserve">
+    <value>Emission type name</value>
+  </data>
+  <data name="KI_DLG_EMK_NAME_ERL" xml:space="preserve">
+    <value>The plain-text name of the edited type as it appears in both grids.</value>
+  </data>
+  <data name="KI_DLG_EMK_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the edited type — grams or milligrams per kilowatt hour. It applies to all values of this type.</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_NAME" xml:space="preserve">
+    <value>Global warming potential (GWP₁₀₀)</value>
+  </data>
+  <data name="KI_DLG_EMK_GWP_ERL" xml:space="preserve">
+    <value>The factor by which the type is converted into CO₂ equivalent. It is locked on a mandatory type.</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_NAME" xml:space="preserve">
+    <value>Source of the equivalence factor</value>
+  </data>
+  <data name="KI_DLG_EMK_ARTQUELLE_ERL" xml:space="preserve">
+    <value>Where the global warming potential comes from (IPCC report, standard, own decision).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_NAME" xml:space="preserve">
+    <value>Origin of the value</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTQUELLE_ERL" xml:space="preserve">
+    <value>Where the edited emission value comes from (GEMIS, data sheet, own measurement).</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_NAME" xml:space="preserve">
+    <value>Emission value</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTZAHL_ERL" xml:space="preserve">
+    <value>The numeric value itself, in the unit of its type.</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_NAME" xml:space="preserve">
+    <value>Value is already CO₂ equivalent</value>
+  </data>
+  <data name="KI_DLG_EMK_WERTCO2E_ERL" xml:space="preserve">
+    <value>Is the value already given as CO₂ equivalent? Then it is not multiplied by the global warming potential a second time.</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_NAME" xml:space="preserve">
+    <value>As template for further carriers</value>
+  </data>
+  <data name="KI_DLG_EMK_VORLAGE_ERL" xml:space="preserve">
+    <value>Should the new value also serve as a suggestion for other energy carriers? The switch appears only when creating a value in a carrier context.</value>
+  </data>
+  <data name="KI_DLG_MASKE_NUD" xml:space="preserve">
+    <value>Service lives (depreciation)</value>
+  </data>
+  <data name="KI_DLG_NUD_SUCHE_ERL" xml:space="preserve">
+    <value>Filter text above the table. It hides records whose technology or position type does not contain it.</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_NAME" xml:space="preserve">
+    <value>Technology of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_TECHNIK_ERL" xml:space="preserve">
+    <value>The technology under which "New" creates the record. Empty means "across technologies" — the record then applies to all trades.</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_NAME" xml:space="preserve">
+    <value>Position type of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_ART_ERL" xml:space="preserve">
+    <value>The position type under which "New" creates the record — the name a cost position later finds it by.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_NAME" xml:space="preserve">
+    <value>Service life of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUWERT_ERL" xml:space="preserve">
+    <value>The calculated service life of the new record under VDI 2067.</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_NAME" xml:space="preserve">
+    <value>Depreciation period of the new entry</value>
+  </data>
+  <data name="KI_DLG_NUD_NEUAFA_ERL" xml:space="preserve">
+    <value>The tax depreciation period of the new record. It may differ from the calculated service life.</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_NAME" xml:space="preserve">
+    <value>Service life</value>
+  </data>
+  <data name="KI_DLG_NUD_WERT_ERL" xml:space="preserve">
+    <value>The calculated service life of this record under VDI 2067. It determines how often a position is replaced within the study period.</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_NAME" xml:space="preserve">
+    <value>Tax depreciation period</value>
+  </data>
+  <data name="KI_DLG_NUD_AFA_ERL" xml:space="preserve">
+    <value>The tax depreciation period of this record. It may differ from the calculated service life.</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_NAME" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="KI_DLG_NUD_QUELLE_ERL" xml:space="preserve">
+    <value>Where the period comes from (VDI 2067, depreciation table, manufacturer data, own decision).</value>
+  </data>
+  <data name="KI_DLG_MASKE_VOP" xml:space="preserve">
+    <value>Edit cost position</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_NAME" xml:space="preserve">
+    <value>Position name</value>
+  </data>
+  <data name="KI_DLG_VOP_BEZ_ERL" xml:space="preserve">
+    <value>The name of the cost position as it appears in the template and in the report.</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_NAME" xml:space="preserve">
+    <value>Cost category</value>
+  </data>
+  <data name="KI_DLG_VOP_KOSTENART_ERL" xml:space="preserve">
+    <value>The cost category under VDI 2067 — capital, demand, operation or other. It determines the category the position appears under in the evaluation.</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_NAME" xml:space="preserve">
+    <value>Position is a revenue</value>
+  </data>
+  <data name="KI_DLG_VOP_ERLOES_ERL" xml:space="preserve">
+    <value>Is the position a revenue rather than a cost? A revenue enters the net present value with the opposite sign.</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_NAME" xml:space="preserve">
+    <value>Position type</value>
+  </data>
+  <data name="KI_DLG_VOP_POSART_ERL" xml:space="preserve">
+    <value>The position type the service life comes from. Without it the position uses the service life of its component.</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_NAME" xml:space="preserve">
+    <value>Recommendation from</value>
+  </data>
+  <data name="KI_DLG_VOP_VON_ERL" xml:space="preserve">
+    <value>The lower bound of the recommended rate. It is a hint at the input field, not a restriction.</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_NAME" xml:space="preserve">
+    <value>Recommendation to</value>
+  </data>
+  <data name="KI_DLG_VOP_BIS_ERL" xml:space="preserve">
+    <value>The upper bound of the recommended rate. It is a hint at the input field, not a restriction.</value>
+  </data>
+  <data name="KI_DLG_MASKE_CSE" xml:space="preserve">
+    <value>Worst and best case of a position</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_NAME" xml:space="preserve">
+    <value>Input as percentage deviation</value>
+  </data>
+  <data name="KI_DLG_CSE_MODUS_ERL" xml:space="preserve">
+    <value>Do the two cost fields hold a percentage DEVIATION from the expected value instead of an amount in euros? Without a maintained expected value the percentage mode is locked.</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_NAME" xml:space="preserve">
+    <value>Cost in the best case</value>
+  </data>
+  <data name="KI_DLG_CSE_BEST_ERL" xml:space="preserve">
+    <value>The cost of the position in the most favourable case — an amount or a deviation depending on the input mode. An amount is always what gets stored.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_NAME" xml:space="preserve">
+    <value>Cost in the worst case</value>
+  </data>
+  <data name="KI_DLG_CSE_WORST_ERL" xml:space="preserve">
+    <value>The cost of the position in the least favourable case — an amount or a deviation depending on the input mode. An amount is always what gets stored.</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_NAME" xml:space="preserve">
+    <value>Service life in the best case</value>
+  </data>
+  <data name="KI_DLG_CSE_BESTDAUER_ERL" xml:space="preserve">
+    <value>The service life of the position in the most favourable case. It governs how often it is replaced within the study period.</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_NAME" xml:space="preserve">
+    <value>Service life in the worst case</value>
+  </data>
+  <data name="KI_DLG_CSE_WORSTDAUER_ERL" xml:space="preserve">
+    <value>The service life of the position in the least favourable case. It governs how often it is replaced within the study period.</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_NAME" xml:space="preserve">
+    <value>Payment start year</value>
+  </data>
+  <data name="KI_DLG_CSE_JAHR_ERL" xml:space="preserve">
+    <value>The year of the study period in which the payment begins; 0 means "in the first year".</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_NAME" xml:space="preserve">
+    <value>Position is a subsidy</value>
+  </data>
+  <data name="KI_DLG_CSE_ZUSCHUSS_ERL" xml:space="preserve">
+    <value>Is the position a subsidy rather than an expense? The switch appears only where a subsidy is possible at all.</value>
+  </data>
 </root>
