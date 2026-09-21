@@ -349,7 +349,14 @@ namespace WindowsFormsApplication1
                 // Gesetzliche Parameter"; der Zeileneditor geht als Ueberlagerung aus
                 // ihnen auf und braucht eine gewaehlte Zeile.
                 { KiMaskennamen.GESETZESKATALOG,       GESETZESKATALOG },
-                { KiMaskennamen.GESETZESKATALOG_ZEILE, GESETZESKATALOG }
+                { KiMaskennamen.GESETZESKATALOG_ZEILE, GESETZESKATALOG },
+
+                // Die zwei REITERBLAETTER sind Teile der Ansicht „Berichte und
+                // Kosten"; ein Reiterwunsch geht dabei nicht mit (dieselbe Lage wie
+                // beim Reiterwunsch der Startseite, siehe STARTSEITE). Die Ansicht
+                // bedient die AppWurzel auf beiden Plattformen.
+                { KiMaskennamen.KOSTENSEITE,              Ansichten.BerichteKosten },
+                { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, Ansichten.BerichteKosten }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

@@ -27566,6 +27566,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die in der Kostentabelle markierte Anlage. Sie entscheidet, welche Komponente die Kostenverwaltung öffnet, und hebt ihre Energieträgerzeile hervor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierte Anlage ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_ANLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_ANLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, dessen Kosten die Seite zeigt — Anzeige. Die Gegenüberstellung darüber gilt dagegen der ganzen Vergleichsgruppe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_PROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_PROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt der Seite ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_PROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_PROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_STATUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_STATUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Statuszeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_KSE_STATUS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KSE_STATUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_BEMESSUNG_ERL {
@@ -27971,6 +28025,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kosten (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KSE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
@@ -28201,6 +28264,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_WP_ANLAGE {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_WP_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WSE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WSE", resourceCulture);
             }
         }
         
@@ -31216,6 +31288,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WSEN_ZIEL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WSEN_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stand A der Paarsicht; er ist dabei die Referenz. Die Liste führt B nicht — so sind A und B ohne Meldung verschieden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stand B der Paarsicht. Die Liste führt A nicht — so sind A und B ohne Meldung verschieden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_B_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_B_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Referenz der Gruppe — die Unterlassensalternative nach DIN EN 17463, gegen die alle übrigen Stände gerechnet werden. Sie kann auch eine Variante sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_REFERENZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_REFERENZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle angehakten Stände gegen die Referenz der Gruppe — oder genau zwei Stände A und B. Die zweite Sicht steht nur offen, wenn die Gruppe mehr als einen Stand führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_SICHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_SICHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Szenario, unter dem die Kennzahlen gerechnet werden — Erwartungsfall, Best oder Worst. Die Sätze dahinter stehen im Dialog „Wirtschaftlichkeits-Parameter“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_SZENARIO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_SZENARIO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WSE_WIRKUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WSE_WIRKUNG_ERL", resourceCulture);
             }
         }
         

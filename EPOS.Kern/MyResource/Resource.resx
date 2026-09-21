@@ -22020,4 +22020,46 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_GSZ_QUELLE_ERL" xml:space="preserve">
     <value>Die Fundstelle, aus der der Wert stammt — Gesetz, Verordnung oder Veröffentlichung samt Datum.</value>
   </data>
+  <data name="KI_DLG_MASKE_KSE" xml:space="preserve">
+    <value>Kosten (Berichte und Kosten)</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_NAME" xml:space="preserve">
+    <value>Markierte Anlage</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_ERL" xml:space="preserve">
+    <value>Die in der Kostentabelle markierte Anlage. Sie entscheidet, welche Komponente die Kostenverwaltung öffnet, und hebt ihre Energieträgerzeile hervor.</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_NAME" xml:space="preserve">
+    <value>Projekt der Seite</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_ERL" xml:space="preserve">
+    <value>Das Projekt, dessen Kosten die Seite zeigt — Anzeige. Die Gegenüberstellung darüber gilt dagegen der ganzen Vergleichsgruppe.</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_NAME" xml:space="preserve">
+    <value>Statuszeile</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
+    <value>Die Fußzeile mit den Befunden der Seite — fehlende Positionen, lose Zuordnungen, Hinweise zur Vergleichsgruppe.</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
+    <value>Wirtschaftlichkeit (Berichte und Kosten)</value>
+  </data>
+  <data name="KI_DLG_WSE_SZENARIO_ERL" xml:space="preserve">
+    <value>Das Szenario, unter dem die Kennzahlen gerechnet werden — Erwartungsfall, Best oder Worst. Die Sätze dahinter stehen im Dialog „Wirtschaftlichkeits-Parameter“.</value>
+  </data>
+  <data name="KI_DLG_WSE_SICHT_ERL" xml:space="preserve">
+    <value>Alle angehakten Stände gegen die Referenz der Gruppe — oder genau zwei Stände A und B. Die zweite Sicht steht nur offen, wenn die Gruppe mehr als einen Stand führt.</value>
+  </data>
+  <data name="KI_DLG_WSE_REFERENZ_ERL" xml:space="preserve">
+    <value>Die Referenz der Gruppe — die Unterlassensalternative nach DIN EN 17463, gegen die alle übrigen Stände gerechnet werden. Sie kann auch eine Variante sein.</value>
+  </data>
+  <data name="KI_DLG_WSE_A_ERL" xml:space="preserve">
+    <value>Der Stand A der Paarsicht; er ist dabei die Referenz. Die Liste führt B nicht — so sind A und B ohne Meldung verschieden.</value>
+  </data>
+  <data name="KI_DLG_WSE_B_ERL" xml:space="preserve">
+    <value>Der Stand B der Paarsicht. Die Liste führt A nicht — so sind A und B ohne Meldung verschieden.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
+    <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
+  </data>
 </root>

@@ -22013,4 +22013,46 @@ Do you want to allow this?</value>
   <data name="KI_DLG_GSZ_QUELLE_ERL" xml:space="preserve">
     <value>The source the value comes from — law, ordinance or publication with its date.</value>
   </data>
+  <data name="KI_DLG_MASKE_KSE" xml:space="preserve">
+    <value>Costs (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_NAME" xml:space="preserve">
+    <value>Selected plant</value>
+  </data>
+  <data name="KI_DLG_KSE_ANLAGE_ERL" xml:space="preserve">
+    <value>The plant selected in the cost table. It determines which component the cost management opens and highlights its energy carrier row.</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_NAME" xml:space="preserve">
+    <value>Project of the page</value>
+  </data>
+  <data name="KI_DLG_KSE_PROJEKT_ERL" xml:space="preserve">
+    <value>The project whose costs the page shows — display only. The comparison above it, in contrast, covers the whole comparison group.</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_NAME" xml:space="preserve">
+    <value>Status line</value>
+  </data>
+  <data name="KI_DLG_KSE_STATUS_ERL" xml:space="preserve">
+    <value>The footer with the page's findings — missing positions, unassigned entries, notes on the comparison group.</value>
+  </data>
+  <data name="KI_DLG_MASKE_WSE" xml:space="preserve">
+    <value>Economics (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_WSE_SZENARIO_ERL" xml:space="preserve">
+    <value>The scenario the key figures are calculated under — expected, best or worst case. The rates behind it are in the economic parameters dialog.</value>
+  </data>
+  <data name="KI_DLG_WSE_SICHT_ERL" xml:space="preserve">
+    <value>All selected states against the group's reference — or exactly two states A and B. The second view is available only when the group holds more than one state.</value>
+  </data>
+  <data name="KI_DLG_WSE_REFERENZ_ERL" xml:space="preserve">
+    <value>The group's reference — the do-nothing alternative under DIN EN 17463 all other states are calculated against. It may also be a variant.</value>
+  </data>
+  <data name="KI_DLG_WSE_A_ERL" xml:space="preserve">
+    <value>State A of the pair view; it acts as the reference there. The list does not contain B — so A and B differ without any message.</value>
+  </data>
+  <data name="KI_DLG_WSE_B_ERL" xml:space="preserve">
+    <value>State B of the pair view. The list does not contain A — so A and B differ without any message.</value>
+  </data>
+  <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
+    <value>The non-monetary effects under DIN EN 17463 as free text — security of supply, comfort, emissions, operating effort. It is saved on request, not on every keystroke; the report shows it unchanged.</value>
+  </data>
 </root>

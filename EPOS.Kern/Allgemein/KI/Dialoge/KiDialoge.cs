@@ -317,6 +317,20 @@ namespace WindowsFormsApplication1
         /// (<c>GesetzeskatalogZeileDialog</c>).
         /// </summary>
         public const string GESETZESKATALOG_ZEILE = "Form_GesetzparameterZeile";
+
+        // Die zwei REITERBLAETTER der Ansicht „Berichte und Kosten" haben nie eine
+        // WinForms-MASKE gehabt - ihre Vorlaeufer waren UserControls (UcBkKosten,
+        // UcWirtschaftlichkeit). Sie tragen deshalb, wie die Ansicht „Simulation",
+        // einen Schluessel ohne Form_-Vorsilbe.
+
+        /// <summary>Das Reiterblatt „Kosten" (<c>Seiten.Berichte.KostenSeite</c>).</summary>
+        public const string KOSTENSEITE = "Kostenseite";
+
+        /// <summary>
+        /// Das Reiterblatt „Wirtschaftlichkeit"
+        /// (<c>Seiten.Berichte.WirtschaftlichkeitSeite</c>).
+        /// </summary>
+        public const string WIRTSCHAFTLICHKEITSSEITE = "Wirtschaftlichkeitsseite";
     }
 
     /// <summary>
@@ -455,7 +469,112 @@ namespace WindowsFormsApplication1
                 Tarifstruktur(),
                 PhotovoltaikVerguetung(),
                 Gesetzeskatalog(),
-                GesetzeskatalogZeile());
+                GesetzeskatalogZeile(),
+                Kostenseite(),
+                Wirtschaftlichkeitsseite());
+        }
+
+        // =====================================================================
+        // Kostenseite  ->  Seiten.Berichte.KostenSeite   (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Kosten" — drei Felder aus
+        /// <c>EPOS.UI.Seiten.Berichte.KostenSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Seite fuehrt genau EINEN Einstellwert</b>: die markierte Anlage. Sie
+        /// entscheidet, welche Komponente die Kostenverwaltung oeffnet und welche
+        /// Energietraegerzeile hervorgehoben steht. Alles andere - die drei
+        /// Kennzahlkarten, die Gegenueberstellung der Versionen, die Komponenten- und
+        /// die Traegertabelle - ist gerechnete ANZEIGE.
+        /// </para>
+        /// <para>
+        /// <b>Freigegeben ist sie trotzdem</b>, damit <c>dialog_lesen</c> nennt, woran
+        /// der Anwender arbeitet, und <c>feld_setzen</c> benannt ablehnt statt „Maske
+        /// nicht freigegeben" - dieselbe Begruendung wie bei der Solarganglinienmaske
+        /// der Welle KI-F3. Die VERGLEICHSWAHL bleibt draussen: Sie ist eine Menge von
+        /// Verweisen, und ein Maskenfeld traegt genau einen Wert.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Kostenseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KOSTENSEITE,
+                anzeigename: KiDialogTexte.MaskeKostenseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("anlage", "KostenSeiteKiSicht.Anlage",
+                                     KiDialogTexte.KseAnlageName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KseAnlageErl, leerErlaubt: true),
+                    new KiDialogFeld("projektzeile", "KostenSeiteKiSicht.Projektzeile",
+                                     KiDialogTexte.KseProjektName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseProjektErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("statuszeile", "KostenSeiteKiSicht.Statuszeile",
+                                     KiDialogTexte.KseStatusName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
+        }
+
+        // =====================================================================
+        // Wirtschaftlichkeitsseite  (Welle KI-F4)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Wirtschaftlichkeit" — sechs Felder aus
+        /// <c>EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Seite traegt Einstellwerte und ist deshalb drin.</b> Sie
+        /// entscheidet, WELCHE Staende gegeneinander gerechnet werden
+        /// (Vergleichssicht, Referenz, Paar A und B), unter WELCHEM Szenario - und sie
+        /// pflegt den Freitext der nicht monetaeren Wirkungen nach DIN EN 17463.
+        /// </para>
+        /// <para>
+        /// <b>Jedes dieser Felder ist an der Seite ein WEG und kein Wert</b>: Die
+        /// Seite holt sich zu jeder Wahl einen NEUEN Stand aus der Huelle und rechnet
+        /// das Warnband nach. Sie bindet deshalb ueber eine Sichtklasse, die jede
+        /// Setzung durch denselben Rueckruf schickt wie ein Griff in die Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Draussen bleiben die Kennzahltabelle, die Herleitungszeilen und der
+        /// Kapitalwertverlauf</b> (gerechnete Anzeige) sowie die VERGLEICHSGRUPPE:
+        /// Welche Varianten angehakt sind, ist eine Menge von Verweisen und kein
+        /// Feldwert.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Wirtschaftlichkeitsseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,
+                anzeigename: KiDialogTexte.MaskeWirtschaftsseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("szenario", "WirtschaftlichkeitSeiteKiSicht.Szenario",
+                                     KiDialogTexte.WseSzenarioName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseSzenarioErl, leerErlaubt: true),
+                    new KiDialogFeld("vergleichssicht",
+                                     "WirtschaftlichkeitSeiteKiSicht.Vergleichssicht",
+                                     KiDialogTexte.WseSichtName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseSichtErl, leerErlaubt: true),
+                    new KiDialogFeld("referenz", "WirtschaftlichkeitSeiteKiSicht.Referenz",
+                                     KiDialogTexte.WseReferenzName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseReferenzErl, leerErlaubt: true),
+                    new KiDialogFeld("stand_a", "WirtschaftlichkeitSeiteKiSicht.StandA",
+                                     KiDialogTexte.WseAName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseAErl, leerErlaubt: true),
+                    new KiDialogFeld("stand_b", "WirtschaftlichkeitSeiteKiSicht.StandB",
+                                     KiDialogTexte.WseBName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WseBErl, leerErlaubt: true),
+                    new KiDialogFeld("nicht_monetaer",
+                                     "WirtschaftlichkeitSeiteKiSicht.NichtMonetaer",
+                                     KiDialogTexte.WseWirkungName, KiParameterTyp.Text,
+                                     KiDialogTexte.WseWirkungErl, leerErlaubt: true)
+                });
         }
 
         // =====================================================================

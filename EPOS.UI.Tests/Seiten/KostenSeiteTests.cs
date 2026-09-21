@@ -4,6 +4,7 @@ using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -754,5 +755,41 @@ public class KostenSeiteTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Seite an der Maskenbrücke.</b> Ihr einziger Einstellwert
+    /// ist die markierte Anlage — ein WAHLFELD über ihren Anzeigetext; Summen- und
+    /// Hinweiszeilen stehen nicht zur Wahl.
+    /// </summary>
+    [Fact]
+    public void Die_Seite_meldet_sich_beim_Assistenten_an_und_markiert_eine_Anlage()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KOSTENSEITE));
+
+        KiFeldzugang anlage =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENSEITE, "anlage");
+        Assert.NotNull(anlage);
+        Assert.True(anlage.Setzbar);
+        Assert.NotEmpty(anlage.Wahleintraege());
+
+        string erste = anlage.Wahleintraege()[0].Text;
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(anlage, erste);
+        Assert.True(wahl.Ok, wahl.Grund);
+        anlage.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(anlage.Wahleintraege()[0].Schluessel,
+                     cut.Instance.GewaehlteAnlage.ToString(CultureInfo.InvariantCulture));
+
+        // Die Projektzeile ist Anzeige und bietet sich nicht zum Setzen an.
+        KiFeldzugang projekt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENSEITE, "projektzeile");
+        Assert.False(projekt.Setzbar);
     }
 }

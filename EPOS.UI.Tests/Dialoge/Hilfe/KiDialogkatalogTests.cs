@@ -160,6 +160,12 @@ public class KiDialogkatalogTests
         { KiMaskennamen.GESETZESKATALOG_ZEILE,
           typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogZeileKiSicht) },
 
+        // Die zwei REITERBLAETTER der Ansicht „Berichte und Kosten".
+        { KiMaskennamen.KOSTENSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.KostenSeiteKiSicht) },
+        { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.WirtschaftlichkeitSeiteKiSicht) },
+
         { KiMaskennamen.BEDARF_ERGEBNIS,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
 
@@ -266,11 +272,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neunundvierzig_Masken()
+    public void Der_Katalog_fuehrt_einundfuenfzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(49, katalog.Anzahl);
+        Assert.Equal(51, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -734,7 +740,13 @@ public class KiDialogkatalogTests
             "Listenmarkierung; Zeuge ist GesetzeskatalogDialogTests",
         [KiMaskennamen.GESETZESKATALOG_ZEILE] =
             "bindet über die Sichtklasse GesetzeskatalogZeileKiSicht auf die sieben " +
-            "lebenden Felder; Zeuge ist GesetzeskatalogDialogTests"
+            "lebenden Felder; Zeuge ist GesetzeskatalogDialogTests",
+        [KiMaskennamen.KOSTENSEITE] =
+            "bindet über die Sichtklasse KostenSeiteKiSicht auf die Zeilenmarkierung " +
+            "der Seite; Zeuge ist KostenSeiteTests",
+        [KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE] =
+            "bindet über die Sichtklasse WirtschaftlichkeitSeiteKiSicht auf die fünf " +
+            "Wahlwege und den Freitext; Zeuge ist WirtschaftlichkeitSeiteTests"
     };
 
     /// <summary>

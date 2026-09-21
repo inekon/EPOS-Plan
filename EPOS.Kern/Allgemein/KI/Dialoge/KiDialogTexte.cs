@@ -1557,5 +1557,28 @@
         internal static string GszStatusName => MyResource.Resource.GESETZ_SP_STATUS;
         internal static string GszStatusErl => MyResource.Resource.KI_DLG_GSZ_STATUS_ERL;
         internal static string GszQuelleErl => MyResource.Resource.KI_DLG_GSZ_QUELLE_ERL;
+
+        // ---- Die zwei Reiterblaetter der Ansicht „Berichte und Kosten"
+        internal static string MaskeKostenseite => MyResource.Resource.KI_DLG_MASKE_KSE;
+        internal static string KseAnlageName => MyResource.Resource.KI_DLG_KSE_ANLAGE_NAME;
+        internal static string KseAnlageErl => MyResource.Resource.KI_DLG_KSE_ANLAGE_ERL;
+        internal static string KseProjektName => MyResource.Resource.KI_DLG_KSE_PROJEKT_NAME;
+        internal static string KseProjektErl => MyResource.Resource.KI_DLG_KSE_PROJEKT_ERL;
+        internal static string KseStatusName => MyResource.Resource.KI_DLG_KSE_STATUS_NAME;
+        internal static string KseStatusErl => MyResource.Resource.KI_DLG_KSE_STATUS_ERL;
+
+        internal static string MaskeWirtschaftsseite => MyResource.Resource.KI_DLG_MASKE_WSE;
+        internal static string WseSzenarioName => MyResource.Resource.WIRT_LBL_SZENARIO;
+        internal static string WseSzenarioErl => MyResource.Resource.KI_DLG_WSE_SZENARIO_ERL;
+        internal static string WseSichtName => MyResource.Resource.WIRT_SICHT_ALLE;
+        internal static string WseSichtErl => MyResource.Resource.KI_DLG_WSE_SICHT_ERL;
+        internal static string WseReferenzName => MyResource.Resource.WIRT_SICHT_REF_SPALTE;
+        internal static string WseReferenzErl => MyResource.Resource.KI_DLG_WSE_REFERENZ_ERL;
+        internal static string WseAName => MyResource.Resource.WIRT_SICHT_A;
+        internal static string WseAErl => MyResource.Resource.KI_DLG_WSE_A_ERL;
+        internal static string WseBName => MyResource.Resource.WIRT_SICHT_B;
+        internal static string WseBErl => MyResource.Resource.KI_DLG_WSE_B_ERL;
+        internal static string WseWirkungName => MyResource.Resource.WPAR_NICHT_MONETAER;
+        internal static string WseWirkungErl => MyResource.Resource.KI_DLG_WSE_WIRKUNG_ERL;
     }
 }
