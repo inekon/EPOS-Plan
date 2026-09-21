@@ -92,8 +92,10 @@ public class KiFeldwerteTests : EposBunitContext
     public void Eine_leere_Quelle_meldet_trotzdem_an_und_liest_leer()
     {
         // Der Photovoltaik-Dialog meldet die GEWAEHLTE Zeile an - und solange keine
-        // gewaehlt ist, gibt es keine. Die Maske steht trotzdem offen.
-        ErzeugerZeile? keine = null;
+        // gewaehlt ist, gibt es keine. Die Maske steht trotzdem offen. Seit der Welle
+        // KI-F7 ist das angemeldete Objekt die Sichtklasse; ohne gewaehlte Zeile
+        // meldet der Dialog gar keine an, und die Lage bleibt dieselbe.
+        PhotovoltaikKiSicht? keine = null;
 
         using KiMaskenanmeldung anmeldung =
             KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => keine);

@@ -8283,7 +8283,7 @@ The seat becomes available for another device; a new activation is required to c
     <value>Module cost</value>
   </data>
   <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Purchase cost of the heat pump; the entry is mandatory when saving.</value>
+    <value>Purchase cost of the heat pump in euros — display only; the form shows it with its derivation, it is maintained in the cost management.</value>
   </data>
   <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
     <value>The form “{0}” is not released for the assistant. Released are: {1}.</value>
@@ -20604,7 +20604,7 @@ Do you want to allow this?</value>
     <value>The device costs in euros — display only; they are maintained in the cost management, not on this form.</value>
   </data>
   <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
-    <value>Yes = the extended calculation model, No = the simple one (isotropic irradiance, linear temperature response). The inverter is calculated in both models.</value>
+    <value>The two entries of the drop-down list: “Simple” = isotropic irradiance and linear temperature response, “Extended” = Hay-Davies, low-light model and inverter characteristic curve. The inverter is calculated in both models.</value>
   </data>
   <data name="KI_DLG_PV_WR_WIRKUNGSGRAD_ERL" xml:space="preserve">
     <value>The inverter efficiency as a factor between 0 and 1; empty means 0.95. Editable only in the simple model — in the extended one the characteristic curve applies.</value>
@@ -22762,5 +22762,44 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_SIM_AUTARKIE_ERL" xml:space="preserve">
     <value>The storage size the 'Result' sheet uses to calculate the PV self-sufficiency; it is an assumption of the display and does not change the simulation run.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PV_ANLAGENWERTE" xml:space="preserve">
+    <value>Inverter plant values</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_KALT_NAME" xml:space="preserve">
+    <value>Design temperature, cold</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_KALT_ERL" xml:space="preserve">
+    <value>The coldest cell temperature of the design in °C; it determines the highest string voltage. Empty means −10 °C. The value belongs to the PROJECT and applies to every plant in it.</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_HEISS_NAME" xml:space="preserve">
+    <value>Design temperature, hot</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_HEISS_ERL" xml:space="preserve">
+    <value>The hottest cell temperature of the design in °C; it determines the lowest MPP voltage and the highest current. Empty means +70 °C. The value belongs to the PROJECT and applies to every plant in it.</value>
+  </data>
+  <data name="KI_DLG_PVA_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>The AC rated power of the inverter in kW; it limits the feed-in (clipping). Empty or 0 means “not known” — then nothing is limited.</value>
+  </data>
+  <data name="KI_DLG_PVA_ETA_ERL" xml:space="preserve">
+    <value>The efficiency of the inverter at this load point as a factor between 0 and 1 (0.97 = 97 %), not in percent. Empty or 0 means “not known”; the plant then calculates with the default values.</value>
+  </data>
+  <data name="KI_DLG_KV_KOMPONENTENWAHL_NAME" xml:space="preserve">
+    <value>Component selection</value>
+  </data>
+  <data name="KI_DLG_KV_KOMPONENTENWAHL_ERL" xml:space="preserve">
+    <value>The component whose costs the form currently holds — display only. Selecting another one loads a different set of items; that is an operation, not a field value.</value>
+  </data>
+  <data name="KI_DLG_KV_PV_WAHL_NAME" xml:space="preserve">
+    <value>PV remuneration</value>
+  </data>
+  <data name="KI_DLG_KV_PV_WAHL_ERL" xml:space="preserve">
+    <value>On the 'Yield' tab: whether this variant takes over the remuneration of the master project or keeps its own — display only. Changing it writes through the wrapper and rebuilds the tab.</value>
+  </data>
+  <data name="KI_DLG_KV_PV_PROJEKT_NAME" xml:space="preserve">
+    <value>PV master project</value>
+  </data>
+  <data name="KI_DLG_KV_PV_PROJEKT_ERL" xml:space="preserve">
+    <value>On the 'Yield' tab: the master project whose PV remuneration the button 'Open PV remuneration dialogue…' calls up. Selectable only in the administration context; with a project open it is fixed.</value>
   </data>
 </root>

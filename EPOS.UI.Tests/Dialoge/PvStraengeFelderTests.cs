@@ -1715,6 +1715,103 @@ public class PvStraengeFelderTests : EposBunitContext
         Assert.Contains("Kein Vorschlag", banner.Instance.Text, StringComparison.Ordinal);
     }
 
+    // =================================================================================
+    // Der Hilfe-Assistent: die Ueberlagerung „Anlagenwerte" als EIGENE Maske (KI-F7)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Maske <c>Form_PV_Anlagenwerte</c></b> (Anwenderentscheid
+    /// 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// <para>Geprüft wird genau das, was den Einwand von Fachkonzept 11.6 beantwortet:
+    /// Die Maske steht beim Assistenten NUR, solange das Fenster offen ist — vorher
+    /// nicht, nachher nicht mehr. Dazwischen liest und schreibt er den ARBEITSSTAND des
+    /// Fensters; die Anlage bekommt die Zahlen erst mit „OK".</para>
+    /// <para>Dass sie damit auch die OBERE Maske ist (die Brücke nimmt die zuletzt
+    /// angemeldete als die gemeinte), fällt hier nicht auf: Der Wirt <c>Form_PV</c> ist
+    /// in diesem Prüfstand gar nicht gezeichnet.</para>
+    /// </remarks>
+    [Fact]
+    public async Task Der_Assistent_kennt_die_Anlagenwerte_nur_solange_das_Fenster_steht()
+    {
+        ErzeugerZeile zeile = Zeile();
+        zeile.WrEta50 = 0.95;
+
+        var cut = Aufbauen(zeile);
+
+        // Geschlossen: keine Maske.
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_ANLAGENWERTE));
+
+        cut.Find(".epos-straenge-anlagenknopf").Click();
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_ANLAGENWERTE));
+
+        KiFeldzugang eta50 =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_ANLAGENWERTE, "wr_eta50");
+        Assert.NotNull(eta50);
+        Assert.Equal(0.95, eta50.Lesen());
+        Assert.True(eta50.Setzbar);
+
+        eta50.Setzen(0.97);
+        Assert.Equal(0.97, cut.Instance.Anlagenwerte.Eta50);
+
+        // Die ANLAGE bleibt unangetastet, bis das Fenster uebernimmt.
+        Assert.Equal(0.95, zeile.WrEta50);
+
+        await cut.InvokeAsync(() => cut.FindComponent<SpeichernLeiste>()
+                                       .Instance.Ergebnis.InvokeAsync(true));
+
+        Assert.Equal(0.97, zeile.WrEta50);
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_ANLAGENWERTE));
+    }
+
+    /// <summary>
+    /// <b>„Abbrechen" verwirft auch die Setzung des Assistenten</b> — sonst wäre
+    /// Abbrechen eine Behauptung, die nicht stimmt (Hausregel EPOS.UI).
+    /// </summary>
+    [Fact]
+    public async Task Abbrechen_verwirft_auch_was_der_Assistent_gesetzt_hat()
+    {
+        ErzeugerZeile zeile = Zeile();
+        var cut = Aufbauen(zeile);
+
+        cut.Find(".epos-straenge-anlagenknopf").Click();
+
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.PV_ANLAGENWERTE, "wr_nennleistung")
+                       .Setzen(3.5);
+
+        await cut.InvokeAsync(() => cut.FindComponent<SpeichernLeiste>()
+                                       .Instance.Ergebnis.InvokeAsync(false));
+
+        Assert.Null(zeile.WrNennleistungKw);
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PV_ANLAGENWERTE));
+    }
+
+    /// <summary>
+    /// <b>Die zwei AUSLEGUNGSTEMPERATUREN sind von außen lesbar und setzbar</b> (Welle
+    /// KI‑F7): Der Wirt <c>Form_PV</c> reicht sie dem Assistenten durch, und gesetzt
+    /// wird auf demselben Weg wie über das Eingabefeld — die Zahl steht danach im Feld
+    /// UND in den Projekteinstellungen.
+    /// </summary>
+    [Fact]
+    public async Task Die_Auslegungstemperaturen_sind_von_aussen_lesbar_und_setzbar()
+    {
+        double? kalt = null, heiss = null;
+        ErzeugerZeile zeile = Zeile();
+
+        var cut = Aufbauen(zeile, tKalt: -12.0, tHeiss: 65.0,
+                           temperaturenSetzen: (k, h) => { kalt = k; heiss = h; });
+
+        Assert.Equal(-12.0, cut.Instance.TKaltLebend);
+        Assert.Equal(65.0, cut.Instance.THeissLebend);
+
+        await cut.InvokeAsync(() => cut.Instance.TKaltSetzen(-15.5));
+
+        Assert.Equal(-15.5, cut.Instance.TKaltLebend);
+        Assert.Equal(-15.5, kalt);
+        Assert.Equal(65.0, heiss);
+    }
+
     /// <summary>Das <c>&lt;select&gt;</c> einer Strangzeile über sein <c>aria-label</c>.</summary>
     private static AngleSharp.Dom.IElement Klappliste(
         IRenderedComponent<PvStraengeFelder> cut, string kurzname, int zeile = 0)

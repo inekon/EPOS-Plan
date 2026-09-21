@@ -183,7 +183,8 @@
                    "Wechselrichter und Straenge" - die zwei sichtbaren Optionen, die
                    Strangtabelle mit der Ampel und, als Anlagenrueckfall, die
                    Ueberlagerung mit den fuenf Anlagenwerten. *@
-                <PvStraengeFelder Zeile="@_projektZeile"
+                <PvStraengeFelder @ref="_straenge"
+                                  Zeile="@_projektZeile"
                                   NeigungAnlage="@_projektZeile.Neigung"
                                   AzimutAnlage="@_projektZeile.Azimut"
                                   KwpAnlage="@KwpDer(_projektZeile)"
@@ -801,7 +802,9 @@
         // die Bruecke liest bei jedem Mal neu.
         // KI-F1b: Der Energieträger ist ein WAHLFELD; seine Einträge stehen im
         // Trägerkatalog, den die Hülle hereinreicht.
-        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => _projektZeile,
+        // Welle KI-F7: Angemeldet wird seither die SICHTKLASSE; sie reicht die Zeile
+        // durch und traegt zusaetzlich die zwei Auslegungstemperaturen des Projekts.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, KiSicht,
                                           KiHaken(),
                                           ("energietraeger", Traegereintraege));
     }
@@ -809,6 +812,64 @@
     /// <summary>Die Energieträger des Katalogs für den Assistenten (KI-F1b).</summary>
     private IReadOnlyList<KiWahleintrag> Traegereintraege()
         => KiMaskenanmeldung.Eintraege(Traegerkatalog, e => e.Id, e => e.Name);
+
+    // =================================================================================
+    // Die Sicht des Assistenten (Welle KI-F7)
+    // =================================================================================
+
+    private PvStraengeFelder? _straenge;
+    private PhotovoltaikKiSicht? _kiSicht;
+    private readonly PvModellTexte _modellTexte = new();
+
+    /// <summary>
+    /// Die Sicht auf die offene Maske; <c>null</c>, solange keine Projektzeile gewählt
+    /// ist — dann sind die Felder leer, genau wie auf der Maske.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Warum überhaupt eine Sicht.</b> Dreizehn der fünfzehn Felder stehen an
+    /// der gewählten <c>ErzeugerZeile</c> und werden unverändert durchgereicht. Die zwei
+    /// AUSLEGUNGSTEMPERATUREN stehen dort NICHT: Sie gehören dem Projekt
+    /// (<c>Tab_Einstellungen</c>), leben im Strangbaustein und werden über
+    /// <c>AuslegungstemperaturenSetzen</c> zurückgeschrieben. Die Brücke kennt je Maske
+    /// EIN Daten-Objekt — also trägt die Sicht beide Herkünfte.</para>
+    /// <para><b>Der Schreibweg der Temperaturen ist der der Maske.</b> Gesetzt wird über
+    /// <c>PvStraengeFelder</c>, damit die Strangampel nachprüft und das Eingabefeld die
+    /// neue Zahl zeigt; steht der Strangabschnitt noch nicht (kein Zeichenlauf), geht
+    /// die Setzung unmittelbar in die Projekteinstellungen.</para>
+    /// </remarks>
+    private PhotovoltaikKiSicht? KiSicht()
+    {
+        if (_projektZeile is null) return null;
+
+        return _kiSicht ??= new PhotovoltaikKiSicht
+        {
+            Zeilenquelle = () => _projektZeile,
+            ModellEintraege = Modelleintraege,
+            KaltLesen = () => _straenge?.TKaltLebend ?? AuslegungKalt,
+            HeissLesen = () => _straenge?.THeissLebend ?? AuslegungHeiss,
+            KaltSetzen = wert =>
+            {
+                if (_straenge is not null) _ = _straenge.TKaltSetzen(wert);
+                else AuslegungstemperaturenSetzen?.Invoke(wert, AuslegungHeiss);
+            },
+            HeissSetzen = wert =>
+            {
+                if (_straenge is not null) _ = _straenge.THeissSetzen(wert);
+                else AuslegungstemperaturenSetzen?.Invoke(AuslegungKalt, wert);
+            }
+        };
+    }
+
+    /// <summary>
+    /// Die zwei Einträge des Auswahlfelds „Rechenmodell" (KI‑D‑Q6, KI‑D‑Q7) — dieselben
+    /// Schlüssel und dieselben Texte, die <c>PvModellFelder</c> zeichnet.
+    /// </summary>
+    private IReadOnlyList<KiWahleintrag> Modelleintraege()
+        => new[]
+        {
+            new KiWahleintrag("0", _modellTexte.ModellEinfach),
+            new KiWahleintrag("1", _modellTexte.ModellErweitert)
+        };
 
     /// <summary>
     /// Was der Assistent über die Feldwerte hinaus darf (Auftrag #201, Stufe S3).

@@ -4,6 +4,7 @@ using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Allgemein;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dienste;
+using KiKern;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -1121,5 +1122,84 @@ public class PhotovoltaikDialogTests : EposBunitContext
 
         zugang.Setzen(16);
         Assert.Equal(16, zeile.Straenge[1].ModuleReihe);
+    }
+
+    /// <summary>
+    /// <b>Der ZEUGE der Sichtklasse <c>PhotovoltaikKiSicht</c></b> (Welle KI‑F7,
+    /// Anwenderentscheid 21.09.2026): Die Maske gibt seit dieser Welle auch die zwei
+    /// AUSLEGUNGSTEMPERATUREN heraus — sie stehen im Strangabschnitt, gehören aber dem
+    /// PROJEKT und hängen deshalb nicht an der Anlagenzeile.
+    /// </summary>
+    /// <remarks>
+    /// <b>Gesetzt wird über den Weg der Maske.</b> Nach der Setzung steht die Zahl im
+    /// lebenden Feld des Strangbausteins UND in den Projekteinstellungen — das zweite
+    /// misst der Rückruf <c>AuslegungstemperaturenSetzen</c>. Genau dafür gibt es die
+    /// Sichtklasse: An <c>ErzeugerZeile</c> gäbe es diese Größe gar nicht.
+    /// </remarks>
+    [Fact]
+    public void Der_Assistent_setzt_die_Auslegungstemperatur_des_Projekts()
+    {
+        double? kalt = null, heiss = null;
+        ErzeugerZeile zeile = Zeile(1, "Anlage A", 100);
+
+        IRenderedComponent<PhotovoltaikDialog> cut = Render<PhotovoltaikDialog>(p => p
+            .Add(x => x.Zeilen, new List<ErzeugerZeile> { zeile })
+            .Add(x => x.Katalogprofil, Profil)
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Detail, n => Detail(n))
+            .Add(x => x.Gesamtleistung, () => "8")
+            .Add(x => x.AuslegungKalt, -12.0)
+            .Add(x => x.AuslegungHeiss, 65.0)
+            .Add(x => x.AuslegungstemperaturenSetzen,
+                 (double? k, double? h) => { kalt = k; heiss = h; }));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PHOTOVOLTAIK));
+
+        KiFeldzugang zugang =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK, "auslegung_kalt");
+        Assert.NotNull(zugang);
+        Assert.Equal(-12.0, zugang.Lesen());
+        Assert.True(zugang.Setzbar);
+
+        // Der Assistent ruft aus seinem EIGENEN Faden; der Weg der Maske geht über den
+        // Blazor-Verteiler und ist damit nicht sofort fertig (Hausregel EPOS.UI).
+        zugang.Setzen(-15.5);
+
+        cut.WaitForAssertion(() => Assert.Equal(-15.5, kalt));
+        Assert.Equal(65.0, heiss);
+        Assert.Equal(-15.5, KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK,
+                                                       "auslegung_kalt").Lesen());
+
+        // Die Felder der ZEILE gehen weiterhin an die Zeile — die Sicht reicht sie
+        // unverändert durch.
+        KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK, "neigung").Setzen(35);
+        Assert.Equal(35, zeile.Neigung);
+    }
+
+    /// <summary>
+    /// <b>Das RECHENMODELL ist ein Wahlfeld mit den Einträgen der Maske</b> (KI‑D‑Q6,
+    /// KI‑D‑Q7): „Einfach" und „Erweitert" stehen im Auswahlfeld des Bausteins, und
+    /// über genau diese Texte trifft der Assistent den Wahrheitswert der Anlage.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_waehlt_das_Rechenmodell_ueber_seinen_Text()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Anlage A", 100);
+        Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        KiFeldzugang modell =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.PHOTOVOLTAIK, "modell_erweitert");
+        Assert.NotNull(modell);
+        Assert.True(modell.IstWahl);
+
+        IReadOnlyList<KiWahleintrag> eintraege = modell.Wahleintraege();
+        Assert.Equal(2, eintraege.Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(modell, eintraege[1].Text);
+        Assert.True(wahl.Ok, wahl.Grund);
+        modell.Setzen(wahl.Wert);
+
+        Assert.True(zeile.ModellErweitert);
     }
 }

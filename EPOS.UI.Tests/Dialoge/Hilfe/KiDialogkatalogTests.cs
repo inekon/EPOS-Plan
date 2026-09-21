@@ -50,7 +50,18 @@ public class KiDialogkatalogTests
     public static TheoryData<string, Type> Masken() => new()
     {
         { KiMaskennamen.HEIZKESSEL,              typeof(HeizkesselKatalogDaten) },
-        { KiMaskennamen.PHOTOVOLTAIK,            typeof(ErzeugerZeile) },
+
+        // Welle KI-F7: Form_PV meldet seit dem Anwenderentscheid 21.09.2026 eine
+        // SICHTKLASSE an. Sie reicht die gewaehlte ErzeugerZeile durch und traegt
+        // zusaetzlich die zwei Auslegungstemperaturen des PROJEKTS - siehe
+        // OhneMarkupprobe.
+        { KiMaskennamen.PHOTOVOLTAIK,            typeof(PhotovoltaikKiSicht) },
+
+        // Die Ueberlagerung „Anlagenwerte" ist eine EIGENE Maske mit eigenem
+        // Arbeitsstand; angemeldet ist genau dieser Stand, und zwar nur, solange das
+        // Fenster offen steht.
+        { KiMaskennamen.PV_ANLAGENWERTE,         typeof(PvAnlagenwerteKiSicht) },
+
         { KiMaskennamen.PUFFERSPEICHER,          typeof(PufferSpKatalogDaten) },
         { KiMaskennamen.WAERMEPUMPE,             typeof(WaermepumpeStammDaten) },
         { KiMaskennamen.STROMSPEICHER_AUSLEGUNG, typeof(StromspeicherKiSicht) },
@@ -62,10 +73,13 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Seiten.Simulation.SimulationKiSicht) },
 
         // 14.09.2026: die siebte Maske — und die erste mit einem RASTER. Ihre Felder
-        // sind zum Teil SPALTEN (KostenKomponenteStand.Zeilen[].Nutzungsdauer); der
+        // sind zum Teil SPALTEN (KostenKomponenteKiSicht.Zeilen[].Nutzungsdauer); der
         // Waechter unten loest sie ueber KiMaskenanmeldung.Pruefe mit auf.
+        // Welle KI-F7: Angemeldet ist seither eine SICHTKLASSE - sie reicht den Stand
+        // durch und traegt die drei Groessen, die NICHT an ihm haengen (siehe
+        // OhneMarkupprobe).
         { KiMaskennamen.KOSTENVERWALTUNG,
-          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) },
+          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteKiSicht) },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
         // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
@@ -315,11 +329,14 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_dreiundsechzig_Masken()
+    public void Der_Katalog_fuehrt_vierundsechzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(63, katalog.Anzahl);
+        // VIERUNDSECHZIG seit der Welle KI-F7: Die Ueberlagerung „Anlagenwerte" der
+        // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
+        // 21.09.2026, KI-D-Q7).
+        Assert.Equal(64, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -492,7 +509,7 @@ public class KiDialogkatalogTests
     }
 
     [Fact]
-    public void Die_vier_Startmasken_fuehren_11_15_5_und_11_Felder()
+    public void Die_vier_Startmasken_fuehren_11_17_5_und_11_Felder()
     {
         // Der Feldumfang ist mit #200 NICHT gewachsen — sonst liesse sich hinterher
         // nicht sagen, was den Feldblock verändert hat: der Umfang oder der
@@ -503,10 +520,81 @@ public class KiDialogkatalogTests
         // Kosten und Emissionen enthalten" hat die Maske neun Felder verloren; der
         // Katalog führt sie deshalb auch nicht mehr (siehe
         // Die_Heizkesselmaske_fuehrt_nur_noch_die_sechs_sichtbaren_Felder).
+        //
+        // GEWACHSEN ist er mit der Welle KI-F7 bei der Photovoltaik: von 15 auf 17.
+        // Die zwei AUSLEGUNGSTEMPERATUREN des Projekts stehen im Strangabschnitt und
+        // fehlten dem Katalog, weil sie nicht an der Anlagenzeile haengen
+        // (Anwenderentscheid 21.09.2026, KI-D-Q7).
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(15, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
+
+        // Die Ueberlagerung „Anlagenwerte" fuehrt die VIER Kennwerte des
+        // Wechselrichters - Nennleistung und die drei Punkte der Teillastkennlinie.
+        Assert.Equal(4, KiDialoge.Katalog.Finde(KiMaskennamen.PV_ANLAGENWERTE)!.Felder.Count);
+    }
+
+    /// <summary>
+    /// <b>Die Kostenverwaltung führt ZWÖLF Felder</b> — die neun der Wellen KI‑F1 bis
+    /// KI‑F4 und die drei Lücken, die die Welle KI‑F7 geschlossen hat
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// <b>Zwei der drei sind nur lesbar.</b> Komponentenwahl und PV‑Vergütung zu
+    /// wechseln lädt nach — dieselbe Begründung, die das Wahlfeld <c>variante</c> seit
+    /// der Welle KI‑F4 trägt. Das PV‑Projekt wählt allein das Ziel eines Knopfes und
+    /// bleibt setzbar.
+    /// </remarks>
+    [Fact]
+    public void Die_Kostenverwaltung_fuehrt_zwoelf_Felder_samt_der_drei_Luecken()
+    {
+        KiDialog kv = KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENVERWALTUNG)!;
+
+        Assert.Equal(12, kv.Felder.Count);
+
+        foreach (string name in new[] { "komponentenwahl", "pv_verguetung", "pv_projekt" })
+        {
+            KiDialogFeld feld = kv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.Equal(KiParameterTyp.Wahl, feld.Typ);
+            Assert.False(feld.IstSpalte, name);
+        }
+
+        Assert.True(kv.FindeFeld("komponentenwahl")!.NurLesen);
+        Assert.True(kv.FindeFeld("pv_verguetung")!.NurLesen);
+        Assert.False(kv.FindeFeld("pv_projekt")!.NurLesen);
+
+        // Der Bestand laeuft unveraendert weiter - Namen, Arten und das nurLesen des
+        // Wahlfeldes variante aus der Welle KI-F4.
+        Assert.Equal(KiParameterTyp.Wahl, kv.FindeFeld("variante")!.Typ);
+        Assert.True(kv.FindeFeld("variante")!.NurLesen);
+        Assert.True(kv.FindeFeld("betrag")!.NurLesen);
+        Assert.True(kv.FindeFeld("nutzungsdauer")!.IstSpalte);
+    }
+
+    /// <summary>
+    /// <b>Die MODULKOSTEN der Wärmepumpenverwaltung sind nur lesbar</b>
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// Die Maske zeigt sie als Lesewert mit Herleitungszeile — gepflegt werden sie in
+    /// der Kostenverwaltung. Der Katalog führte sie bis dahin setzbar und bot damit an,
+    /// eine Zahl zu ändern, für die es auf der Maske kein Eingabefeld gibt; bei
+    /// <c>Form_WP_Anlage</c> war dieselbe Größe schon vorher <c>nurLesen</c>.
+    /// </remarks>
+    [Fact]
+    public void Die_Modulkosten_beider_Waermepumpenmasken_sind_nur_lesbar()
+    {
+        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!
+                              .FindeFeld("modulkosten")!.NurLesen);
+        Assert.True(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE_ANLAGE)!
+                              .FindeFeld("modulkosten")!.NurLesen);
+
+        // Die Nennleistung derselben Maske bleibt setzbar — der Feldsatz ist nicht
+        // insgesamt gesperrt, nur diese eine Anzeige.
+        Assert.False(KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!
+                               .FindeFeld("nennleistung")!.NurLesen);
     }
 
     /// <summary>
@@ -727,9 +815,26 @@ public class KiDialogkatalogTests
         }
 
         // Die Anlagenwerte des Wechselrichters stehen in einer eigenen Ueberlagerung
-        // und bleiben deshalb draussen (Fachkonzept 11.6).
+        // und bleiben deshalb aus DIESER Maske draussen (Fachkonzept 11.6). Seit der
+        // Welle KI-F7 haben sie einen EIGENEN Schluessel - der Anwender hat sie am
+        // 21.09.2026 freigegeben, und zwar nach der Regel „Baustein in eigenem
+        // Fenster bekommt einen Schluessel" (KI-D-Q7).
+        KiDialog werte = KiDialoge.Katalog.Finde(KiMaskennamen.PV_ANLAGENWERTE)!;
+        Assert.NotNull(werte);
+
         foreach (string weg in new[] { "wr_nennleistung", "wr_eta10", "wr_eta50", "wr_eta100" })
+        {
             Assert.False(pv.KenntFeld(weg), weg);
+            Assert.True(werte.KenntFeld(weg), weg);
+        }
+
+        // Die zwei AUSLEGUNGSTEMPERATUREN gehoeren dagegen zu Form_PV: Sie stehen im
+        // Strangabschnitt derselben Maske, nur nicht an der Anlagenzeile.
+        Assert.True(pv.KenntFeld("auslegung_kalt"));
+        Assert.True(pv.KenntFeld("auslegung_heiss"));
+
+        // Das Rechenmodell ist seit KI-F7 eine WAHL und kein Wahrheitswert (KI-D-Q6).
+        Assert.Equal(KiParameterTyp.Wahl, pv.FindeFeld("modell_erweitert")!.Typ);
     }
 
     /// <summary>
@@ -787,15 +892,17 @@ public class KiDialogkatalogTests
     public static TheoryData<string, string> Markupdateien() => new()
     {
         { KiMaskennamen.HEIZKESSEL,       "EPOS.UI/Dialoge/Erzeuger/HeizkesselKatalogDialog.razor" },
-        // DREI Dateien (Welle KI-F1): Der Projektdialog zeichnet Neigung, Azimut und
-        // Modulzahl selbst, die Modellfelder und die Straenge stehen in Bausteinen.
-        { KiMaskennamen.PHOTOVOLTAIK,     "EPOS.UI/Dialoge/Erzeuger/PhotovoltaikDialog.razor;" +
-                                          "EPOS.UI/Dialoge/Erzeuger/PvModellFelder.razor;" +
-                                          "EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor" },
+
+        // Welle KI-F7: Die Ueberlagerung „Anlagenwerte" bindet ihren Arbeitsstand
+        // NAMENTLICH im Markup - vier Zahlenfelder, vier Eigenschaften. Sie traegt
+        // deshalb die Markup-Probe, obwohl ihr Daten-Objekt eine Sichtklasse ist:
+        // Diese Sichtklasse IST der Stand des Fensters und kein Umweg um ihn herum.
+        // Form_PV selbst steht seit derselben Welle in OhneMarkupprobe.
+        { KiMaskennamen.PV_ANLAGENWERTE,  "EPOS.UI/Dialoge/Erzeuger/PvStraengeFelder.razor" },
+
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
                                           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
-        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS.
         { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
@@ -1017,7 +1124,20 @@ public class KiDialogkatalogTests
             "Felder der Maske; Zeuge ist ProjektKopieDialogTests",
         [KiMaskennamen.PROJEKT_VARIANTE] =
             "bindet über die Sichtklasse ProjektVarianteKiSicht auf Haken, Listenwahl " +
-            "und Bezeichner; Zeuge ist ProjektVarianteDialogTests"
+            "und Bezeichner; Zeuge ist ProjektVarianteDialogTests",
+
+        // Welle KI-F7 (Anwenderentscheid 21.09.2026): Form_PV gibt die Markup-Probe
+        // auf, weil zwei seiner Felder gar nicht an der Anlagenzeile haengen.
+        [KiMaskennamen.PHOTOVOLTAIK] =
+            "bindet über die Sichtklasse PhotovoltaikKiSicht: dreizehn Felder reicht " +
+            "sie an die gewählte ErzeugerZeile durch, die zwei Auslegungstemperaturen " +
+            "gehören dem PROJEKT (Tab_Einstellungen) und stehen in den lebenden " +
+            "Feldern des Strangbausteins; Zeuge ist PhotovoltaikDialogTests",
+        [KiMaskennamen.KOSTENVERWALTUNG] =
+            "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
+            "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
+            "einem privaten Feld des Dialogs und die PV-Wahl samt PV-Projekt aus dem " +
+            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests"
     };
 
     /// <summary>
@@ -1148,7 +1268,12 @@ public class KiDialogkatalogTests
         // 1 (Pufferspeicher im Projekt) + 1 (Stromspeicher im Projekt) +
         // 5 (Solarkollektoren) + 21 (Waermepumpen-Anlage) = 64; seit der Welle KI-F5
         // dazu 13 (BHKW-Katalogeditor) und 13 (Kollektoreditor) = 90.
-        Assert.True(felder >= 90, "Nur " + felder + " Feldpfade geprüft.");
+        //
+        // Mit der Welle KI-F7 verliert die Probe die Felder von Form_PV und der
+        // Kostenverwaltung (beide binden jetzt ueber eine Sichtklasse) und gewinnt die
+        // vier der Ueberlagerung „Anlagenwerte". Die Schranke sagt weiterhin nur, dass
+        // die Probe nicht ins Leere greift.
+        Assert.True(felder >= 65, "Nur " + felder + " Feldpfade geprüft.");
     }
 
     // ---------------------------------------------------------------------

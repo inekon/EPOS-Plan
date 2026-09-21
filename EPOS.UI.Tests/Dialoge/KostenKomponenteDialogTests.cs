@@ -1,7 +1,9 @@
 ﻿using Bunit;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
+using KiKern;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using WindowsFormsApplication1.MyResource;
 using Xunit;
 
@@ -2045,5 +2047,115 @@ public class KostenKomponenteDialogTests : BunitContext
 
         Assert.Contains(cut.FindAll(".epos-zr-herleitung"),
                         e => e.TextContent == "15 a · Vorgabe der Technik");
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent: die drei Lücken der Welle KI-F4 (KI-F7)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Sichtklasse <c>KostenKomponenteKiSicht</c></b>
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// <para>Geprüft wird beides: dass die BISHERIGEN Felder unverändert
+    /// weiterlaufen — Kopfsatz, Wahlfeld <c>variante</c> und das Positionsraster mit
+    /// seinen Spalten — und dass die drei Lücken jetzt dastehen. Die
+    /// KOMPONENTENWAHL steht in einem privaten Feld des Dialogs, die PV‑WAHL und das
+    /// PV‑PROJEKT im Baustein <c>ErtragBonus</c>; an <c>KostenKomponenteStand</c> gibt
+    /// es keine davon, und genau deshalb gibt es die Sicht.</para>
+    /// <para>Der Reiter „Ertrag" wird gezeichnet, sobald der Anwender ihn öffnet —
+    /// vorher steht der Baustein nicht, und die zwei Felder lesen leer.</para>
+    /// </remarks>
+    [Fact]
+    public void Der_Assistent_liest_die_drei_Luecken_des_Reiters_Ertrag()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["IstVariante"] = true,
+            ["Uebernommen"] = false,
+            ["Projekte"] = (IReadOnlyList<(int, string)>)new[] { (7, "Musterprojekt"),
+                                                                 (8, "Zweitprojekt") }
+        };
+
+        var cut = Zeige(stand: mit);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.KOSTENVERWALTUNG));
+
+        // Der BESTAND läuft unverändert weiter.
+        Assert.Equal("Kostenverwaltung Wärmepumpe",
+                     KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG,
+                                                "komponente").Lesen());
+        Assert.Equal(5, KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG,
+                                                   "variante").Lesen());
+        Assert.Equal(1200.0, KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG,
+                                                        "satz_1").Lesen());
+
+        // Die KOMPONENTENWAHL: lesbar samt ihren Alternativen, nicht setzbar.
+        KiFeldzugang wahl =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG, "komponentenwahl");
+        Assert.NotNull(wahl);
+        Assert.Equal(0, wahl.Lesen());
+        Assert.False(wahl.Setzbar);
+        Assert.Equal(2, wahl.Wahleintraege().Count);
+
+        // Solange der Reiter nicht offen steht, gibt es den Baustein nicht.
+        Assert.Null(KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG,
+                                               "pv_verguetung").Lesen());
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();          // Reiter „Ertrag/Bonus"
+
+        // Die PV-WAHL: 1 = eigene Vergütung (Uebernommen = false), nur lesbar.
+        KiFeldzugang pv =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG, "pv_verguetung");
+        Assert.Equal(1, pv.Lesen());
+        Assert.False(pv.Setzbar);
+        Assert.Equal(2, pv.Wahleintraege().Count);
+
+        // Das PV-PROJEKT: vorbelegt auf den ersten Eintrag, setzbar über die Liste.
+        KiFeldzugang projekt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG, "pv_projekt");
+        Assert.Equal(7, projekt.Lesen());
+        Assert.True(projekt.Setzbar);
+
+        KiFeldumsetzung ziel = KiFeldwandler.Wandle(projekt, "Zweitprojekt");
+        Assert.True(ziel.Ok, ziel.Grund);
+        projekt.Setzen(ziel.Wert);
+
+        Assert.Equal(8, cut.FindComponent<ErtragBonus>().Instance.GewaehltesProjekt);
+    }
+
+    /// <summary>
+    /// <b>Ohne Projektliste steht nichts zur Wahl</b> (VV‑Q7): Im Projektmodus zeigt
+    /// die Maske die Liste nicht — dann lehnt der Assistent die Setzung benannt ab,
+    /// statt eine Id zu raten, die der Anwender nirgends sieht.
+    /// </summary>
+    [Fact]
+    public void Ohne_Projektliste_hat_das_PV_Projekt_keine_Eintraege()
+    {
+        KostenKomponenteStand mit = Standard(projekt: true);
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["ProjektlisteZeigen"] = false,
+            ["ProjektVorwahl"] = (int?)42,
+            ["Projekte"] = (IReadOnlyList<(int, string)>)new[] { (7, "Musterprojekt") }
+        };
+
+        var cut = Zeige(stand: mit);
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+
+        KiFeldzugang projekt =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.KOSTENVERWALTUNG, "pv_projekt");
+
+        Assert.Equal(42, projekt.Lesen());
+        Assert.Empty(projekt.Wahleintraege());
+
+        KiFeldumsetzung ziel = KiFeldwandler.Wandle(projekt, "Musterprojekt");
+        Assert.False(ziel.Ok);
     }
 }
