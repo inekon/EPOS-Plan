@@ -71,6 +71,11 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   54 Größen. (#418)
 - Seit 26.09.2026: Die Dialoge Heizkessel und Pufferspeicher zeigen im Modulblock kein Feld
   „Investitionskosten" mehr; der Preis steht bearbeitbar im Aufklapper „Alle Daten anzeigen". (#422)
+- Seit 26.09.2026: Der Hilfe-Assistent liest und setzt auch die Masken der Kosten und der
+  Wirtschaftlichkeit (Energieträger, Kostenprofil, Kostenfaktoren, Emissions- und
+  Nutzungsdauerkatalog, Kostenvorlagen, Wirtschaftlichkeitsparameter, BHKW-Wirtschaftlichkeit,
+  Tarifstruktur, Photovoltaik-Vergütung, gesetzliche Parameter) sowie die Seiten Kosten und
+  Wirtschaftlichkeit. (#423)
 
 *Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
 Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
