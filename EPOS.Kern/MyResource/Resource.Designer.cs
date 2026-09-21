@@ -28070,6 +28070,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Komponente, deren Kosten die Maske gerade führt — Anzeige. Eine andere zu wählen lädt einen anderen Positionssatz nach; das ist ein Vorgang und kein Feldwert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_KOMPONENTENWAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_KOMPONENTENWAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komponentenwahl ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_KOMPONENTENWAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_KOMPONENTENWAHL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wahr, wenn die gewählte Vorlage zur Auslieferung gehört; ihre Zeilen lassen sich dann nicht ändern. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_NURLESEN_ERL {
@@ -28120,6 +28138,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_KV_POSITION_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_KV_POSITION_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Reiter „Ertrag“: das Stammprojekt, dessen PV-Vergütung der Knopf „PV-Vergütungsdialog öffnen…“ aufruft. Nur im Administrationskontext wählbar; bei geöffnetem Projekt steht es fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_PV_PROJEKT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_PV_PROJEKT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Stammprojekt ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_PV_PROJEKT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_PV_PROJEKT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Reiter „Ertrag“: ob diese Variante die Vergütung vom Stammprojekt übernimmt oder eine eigene führt — Anzeige. Der Wechsel schreibt über die Hülle und baut das Reiterblatt neu auf. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_PV_WAHL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_PV_WAHL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die PV-Vergütung ähnelt.
+        /// </summary>
+        public static string KI_DLG_KV_PV_WAHL_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KV_PV_WAHL_NAME", resourceCulture);
             }
         }
         

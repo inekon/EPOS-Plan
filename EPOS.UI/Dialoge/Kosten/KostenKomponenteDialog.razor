@@ -330,7 +330,10 @@
             <KindInhalt>
                 @* Kein Delegat, kein Knopf: Ohne GesetzeGaben bekommt das
                    Reiterblatt auch keinen Rueckruf. *@
-                <ErtragBonus @attributes="_stand.ErtragGaben"
+                @* Der @ref traegt den Hilfe-Assistenten: Die PV-Wahl und das
+                   PV-Projekt leben in diesem Baustein, angemeldet ist sie der
+                   WIRT (Hausregel EPOS.UI, Welle KI-F7). *@
+                <ErtragBonus @ref="_ertrag" @attributes="_stand.ErtragGaben"
                              GesetzeGewuenscht="@GesetzeRueckruf"
                              NeuLaden="@ErtragNeuLaden" />
             </KindInhalt>
@@ -830,11 +833,53 @@
         // Welle KI-F4: Die VARIANTE haengt am Stand, ihre Liste aber auch - eine
         // Begleiteigenschaft VarianteIdWahl gaebe es doppelt. Sie kommt deshalb als
         // benannte Wahlquelle herein.
+        // Welle KI-F7: Angemeldet ist seither die SICHTKLASSE. Sie reicht den Stand
+        // durch und traegt die drei Groessen, die NICHT an ihm haengen - die
+        // Komponentenwahl der Kontextleiste und die zwei Wahlen des Reiters „Ertrag".
         _kiMaske = KiMaskenanmeldung.Fuer(
-            KiMaskennamen.KOSTENVERWALTUNG, () => _stand, KiHaken(),
+            KiMaskennamen.KOSTENVERWALTUNG, KiSicht, KiHaken(),
             ("variante", () => KiMaskenanmeldung.Eintraege(
                 _stand.Varianten, z => z.Id, z => z.Text)));
     }
+
+    // =====================================================================
+    // Die Sicht des Assistenten (Welle KI-F7, Anwenderentscheid 21.09.2026)
+    // =====================================================================
+
+    private ErtragBonus? _ertrag;
+    private KostenKomponenteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht auf die offene Maske — sie entsteht einmal und liest bei jedem Zugriff
+    /// neu.
+    /// </summary>
+    /// <remarks>
+    /// <b>Drei Lücken schließt sie</b> (benannt in der Welle KI‑F4): Die
+    /// KOMPONENTENWAHL steht in <c>_eintragId</c>, die PV‑WAHL und das PV‑PROJEKT im
+    /// Baustein <c>ErtragBonus</c> — an <c>KostenKomponenteStand</c> gibt es keine
+    /// davon. Die zwei ersten bleiben <c>nurLesen</c>: Sie zu wechseln lädt nach, und
+    /// das ist ein Vorgang und kein Feldwert (dieselbe Begründung wie beim Wahlfeld
+    /// <c>variante</c>).
+    /// </remarks>
+    private KostenKomponenteKiSicht KiSicht()
+        => _kiSicht ??= new KostenKomponenteKiSicht
+        {
+            Standquelle = () => _stand,
+            KomponenteLesen = () => _eintragId,
+            KomponenteEintraege = () => KiMaskenanmeldung.Eintraege(
+                Eintraege, z => z.Id, z => z.Text),
+            PvVerguetungLesen = () => _ertrag?.Verguetungswahl,
+            PvVerguetungEintraege = () => KiMaskenanmeldung.Eintraege(
+                _ertrag?.Verguetungswahlen, z => z.Id, z => z.Text),
+            PvProjektLesen = () => _ertrag?.GewaehltesProjekt,
+            PvProjektSetzen = id => _ertrag?.ProjektWaehlen(id),
+
+            // Im Projektmodus zeigt die Maske die Projektliste NICHT (VV-Q7); dann
+            // steht auch nichts zur Wahl, und der Assistent lehnt benannt ab.
+            PvProjektEintraege = () => _ertrag is null || !_ertrag.ProjektlisteZeigen
+                ? Array.Empty<KiWahleintrag>()
+                : KiMaskenanmeldung.Eintraege(_ertrag.Projekte, z => z.Id, z => z.Text)
+        };
 
     /// <summary>Meldet die Maske beim Assistenten wieder ab.</summary>
     public void Dispose() => _kiMaske?.Dispose();

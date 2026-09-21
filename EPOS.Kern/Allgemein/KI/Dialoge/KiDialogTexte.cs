@@ -176,6 +176,18 @@
         internal static string KvBetragName => MyResource.Resource.KI_DLG_KV_BETRAG_NAME;
         internal static string KvBetragErl => MyResource.Resource.KI_DLG_KV_BETRAG_ERL;
 
+        // Die drei Luecken der Welle KI-F4, geschlossen mit der Welle KI-F7: die
+        // Komponentenwahl der Kontextleiste und die zwei Wahlen des Reiters „Ertrag".
+        // Ihre Anzeigenamen sind die Beschriftungen der Maske.
+        internal static string KvKomponenteName
+            => MyResource.Resource.KI_DLG_KV_KOMPONENTENWAHL_NAME;
+        internal static string KvKomponenteErl
+            => MyResource.Resource.KI_DLG_KV_KOMPONENTENWAHL_ERL;
+        internal static string KvPvWahlName => MyResource.Resource.KI_DLG_KV_PV_WAHL_NAME;
+        internal static string KvPvWahlErl => MyResource.Resource.KI_DLG_KV_PV_WAHL_ERL;
+        internal static string KvPvProjektName => MyResource.Resource.KI_DLG_KV_PV_PROJEKT_NAME;
+        internal static string KvPvProjektErl => MyResource.Resource.KI_DLG_KV_PV_PROJEKT_ERL;
+
         /// <summary>Die sechste Maske (Auftrag #221): die Ansicht „Simulation".</summary>
         internal static string MaskeSimulation => MyResource.Resource.KI_DLG_MASKE_SIM;
 

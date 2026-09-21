@@ -260,6 +260,30 @@
     /// <summary>Das gewaehlte Stammprojekt (Pruefhilfe fuer Tests).</summary>
     public int? GewaehltesProjekt => _projektId;
 
+    // ---------------------------------------------------------------------------------
+    // Der Zugang des Hilfe-Assistenten (Welle KI-F7): Der WIRT meldet an, nicht das
+    // Blatt darin (Hausregel EPOS.UI) - er braucht dafuer die drei Wege hierher.
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Die zwei Eintraege der Verguetungswahl — dieselbe Liste, die die Optionsgruppe
+    /// zeichnet.
+    /// </summary>
+    public IReadOnlyList<(int Id, string Text)> Verguetungswahlen => _wahlen;
+
+    /// <summary>
+    /// Die gewaehlte Verguetung als Listenplatz: 0 = vom Stammprojekt uebernehmen,
+    /// 1 = eigene Verguetung.
+    /// </summary>
+    public int Verguetungswahl => Uebernommen ? UEBERNEHMEN : EIGENE;
+
+    /// <summary>
+    /// Waehlt ein Stammprojekt — derselbe Weg wie ein Griff in die Klappliste. Er laedt
+    /// nichts nach: Die Wahl bestimmt allein das Ziel des Knopfes
+    /// „PV-Verguetungsdialog oeffnen…".
+    /// </summary>
+    public void ProjektWaehlen(int? id) => BeiProjekt(id);
+
     protected override void OnParametersSet()
     {
         if (_projektId.HasValue) return;

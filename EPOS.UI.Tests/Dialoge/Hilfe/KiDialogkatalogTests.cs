@@ -73,10 +73,13 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Seiten.Simulation.SimulationKiSicht) },
 
         // 14.09.2026: die siebte Maske — und die erste mit einem RASTER. Ihre Felder
-        // sind zum Teil SPALTEN (KostenKomponenteStand.Zeilen[].Nutzungsdauer); der
+        // sind zum Teil SPALTEN (KostenKomponenteKiSicht.Zeilen[].Nutzungsdauer); der
         // Waechter unten loest sie ueber KiMaskenanmeldung.Pruefe mit auf.
+        // Welle KI-F7: Angemeldet ist seither eine SICHTKLASSE - sie reicht den Stand
+        // durch und traegt die drei Groessen, die NICHT an ihm haengen (siehe
+        // OhneMarkupprobe).
         { KiMaskennamen.KOSTENVERWALTUNG,
-          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteStand) },
+          typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteKiSicht) },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
         // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
@@ -533,6 +536,44 @@ public class KiDialogkatalogTests
     }
 
     /// <summary>
+    /// <b>Die Kostenverwaltung führt ZWÖLF Felder</b> — die neun der Wellen KI‑F1 bis
+    /// KI‑F4 und die drei Lücken, die die Welle KI‑F7 geschlossen hat
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// <b>Zwei der drei sind nur lesbar.</b> Komponentenwahl und PV‑Vergütung zu
+    /// wechseln lädt nach — dieselbe Begründung, die das Wahlfeld <c>variante</c> seit
+    /// der Welle KI‑F4 trägt. Das PV‑Projekt wählt allein das Ziel eines Knopfes und
+    /// bleibt setzbar.
+    /// </remarks>
+    [Fact]
+    public void Die_Kostenverwaltung_fuehrt_zwoelf_Felder_samt_der_drei_Luecken()
+    {
+        KiDialog kv = KiDialoge.Katalog.Finde(KiMaskennamen.KOSTENVERWALTUNG)!;
+
+        Assert.Equal(12, kv.Felder.Count);
+
+        foreach (string name in new[] { "komponentenwahl", "pv_verguetung", "pv_projekt" })
+        {
+            KiDialogFeld feld = kv.FindeFeld(name)!;
+            Assert.NotNull(feld);
+            Assert.Equal(KiParameterTyp.Wahl, feld.Typ);
+            Assert.False(feld.IstSpalte, name);
+        }
+
+        Assert.True(kv.FindeFeld("komponentenwahl")!.NurLesen);
+        Assert.True(kv.FindeFeld("pv_verguetung")!.NurLesen);
+        Assert.False(kv.FindeFeld("pv_projekt")!.NurLesen);
+
+        // Der Bestand laeuft unveraendert weiter - Namen, Arten und das nurLesen des
+        // Wahlfeldes variante aus der Welle KI-F4.
+        Assert.Equal(KiParameterTyp.Wahl, kv.FindeFeld("variante")!.Typ);
+        Assert.True(kv.FindeFeld("variante")!.NurLesen);
+        Assert.True(kv.FindeFeld("betrag")!.NurLesen);
+        Assert.True(kv.FindeFeld("nutzungsdauer")!.IstSpalte);
+    }
+
+    /// <summary>
     /// <b>Die MODULKOSTEN der Wärmepumpenverwaltung sind nur lesbar</b>
     /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
     /// </summary>
@@ -862,7 +903,6 @@ public class KiDialogkatalogTests
         { KiMaskennamen.PUFFERSPEICHER,   "EPOS.UI/Dialoge/Erzeuger/PufferSpKatalogDialog.razor" },
         { KiMaskennamen.WAERMEPUMPE,      "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammDialog.razor;" +
                                           "EPOS.UI/Dialoge/Waermepumpe/WaermepumpeStammFelder.razor" },
-        { KiMaskennamen.KOSTENVERWALTUNG, "EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor" },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS.
         { KiMaskennamen.HEIZKESSEL_PROJEKT,     "EPOS.UI/Dialoge/Erzeuger/HeizkesselDialog.razor" },
@@ -1092,7 +1132,12 @@ public class KiDialogkatalogTests
             "bindet über die Sichtklasse PhotovoltaikKiSicht: dreizehn Felder reicht " +
             "sie an die gewählte ErzeugerZeile durch, die zwei Auslegungstemperaturen " +
             "gehören dem PROJEKT (Tab_Einstellungen) und stehen in den lebenden " +
-            "Feldern des Strangbausteins; Zeuge ist PhotovoltaikDialogTests"
+            "Feldern des Strangbausteins; Zeuge ist PhotovoltaikDialogTests",
+        [KiMaskennamen.KOSTENVERWALTUNG] =
+            "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
+            "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
+            "einem privaten Feld des Dialogs und die PV-Wahl samt PV-Projekt aus dem " +
+            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests"
     };
 
     /// <summary>

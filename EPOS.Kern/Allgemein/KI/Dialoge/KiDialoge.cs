@@ -4434,7 +4434,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Kostenverwaltung einer Komponente — die erste Maske des Katalogs, die mit
-        /// SPALTEN arbeitet (Anwenderbefund vom 14.09.2026).
+        /// SPALTEN arbeitet (Anwenderbefund vom 14.09.2026); seit der Welle KI-F7
+        /// angemeldet ueber <c>EPOS.UI.Dialoge.Kosten.KostenKomponenteKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
@@ -4444,6 +4445,16 @@ namespace WindowsFormsApplication1
         /// aendert sie nicht. Die Spalten sind das Raster: je Position eine Zeile, und
         /// aus jeder Spaltendeklaration wird je vorhandener Zeile ein gewoehnliches
         /// Feld (<c>nutzungsdauer_1</c>, <c>nutzungsdauer_2</c>, …).
+        /// </para>
+        /// <para>
+        /// <b>Die DREI LUECKEN der Welle KI-F4 sind geschlossen</b> (Anwenderentscheid
+        /// 21.09.2026, KI-D-Q7). Komponentenwahl, PV-Wahl und PV-Projekt stehen nicht
+        /// am Arbeitsstand: Die erste liegt in einem privaten Feld des Dialogs, die
+        /// zwei anderen im Baustein <c>ErtragBonus</c> des Reiters „Ertrag". Sie zu
+        /// deklarieren hiess, die Maske von ihrem Daten-Objekt auf eine Sichtklasse
+        /// umzustellen und dabei ihre Markup-Probe aufzugeben; der Anwender hat das
+        /// entschieden. Alle bisherigen Felder laufen unveraendert weiter - dieselben
+        /// Namen, dieselben Arten, dasselbe <c>nurLesen</c>.
         /// </para>
         /// <para>
         /// <b>Der Betrag ist Anzeige, kein Eingabefeld.</b> Er faellt aus Satz und
@@ -4473,18 +4484,32 @@ namespace WindowsFormsApplication1
                 felder: new[]
                 {
                     // ---- Woran der Anwender gerade arbeitet -------------------------
-                    new KiDialogFeld("komponente", "KostenKomponenteStand.Titel",
+                    new KiDialogFeld("komponente", "KostenKomponenteKiSicht.Titel",
                                      KiDialogTexte.KvTitelName, KiParameterTyp.Text,
                                      KiDialogTexte.KvTitelErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("bezug", "KostenKomponenteStand.Untertitel",
+                    new KiDialogFeld("bezug", "KostenKomponenteKiSicht.Untertitel",
                                      KiDialogTexte.KvUntertitelName, KiParameterTyp.Text,
                                      KiDialogTexte.KvUntertitelErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("auslieferungsvorlage", "KostenKomponenteStand.NurLesen",
+                    new KiDialogFeld("auslieferungsvorlage", "KostenKomponenteKiSicht.NurLesen",
                                      KiDialogTexte.KvNurLesenName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.KvNurLesenErl,
                                      nurLesen: true),
+
+                    // Welle KI-F7, erste der drei Luecken: die KOMPONENTENWAHL der
+                    // Kontextleiste. Sie steht in einem privaten Feld des Dialogs, und
+                    // ihre Liste kennt nur er - die Sichtklasse traegt beides.
+                    //
+                    // NUR LESEN, und zwar aus demselben Grund wie die Variante
+                    // darunter: Eine andere Komponente zu waehlen laedt einen anderen
+                    // Positionssatz nach. Das ist ein Vorgang und kein Feldwert; der
+                    // Assistent nennt die offene Komponente samt ihren Alternativen.
+                    new KiDialogFeld("komponentenwahl",
+                                     "KostenKomponenteKiSicht.Komponentenwahl",
+                                     KiDialogTexte.KvKomponenteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KvKomponenteErl,
+                                     leerErlaubt: true, nurLesen: true),
 
                     // Welle KI-F4: die VARIANTE der Vorlage - das einzige Wahlfeld der
                     // Maske, das am Stand haengt und bis dahin fehlte. Sie steht nur im
@@ -4497,30 +4522,49 @@ namespace WindowsFormsApplication1
                     // dann die neue Variante ueber den alten Zeilen. Der Assistent NENNT
                     // sie deshalb samt ihren Alternativen und lehnt das Setzen benannt
                     // ab; ein Wechsel ist ein Ladevorgang und kein Feldwert.
-                    new KiDialogFeld("variante", "KostenKomponenteStand.VarianteId",
+                    new KiDialogFeld("variante", "KostenKomponenteKiSicht.VarianteId",
                                      KiDialogTexte.KvVarianteName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KvVarianteErl,
                                      leerErlaubt: true, nurLesen: true),
 
+                    // ---- Der Reiter „Ertrag" (Welle KI-F7) ---------------------------
+                    // Zweite und dritte Luecke: Sie liegen im Baustein ErtragBonus.
+                    //
+                    // Die VERGUETUNGSWAHL ist nur lesbar - sie zu wechseln schreibt
+                    // ueber die Huelle und baut das Reiterblatt neu auf (und oeffnet
+                    // dabei je nach Wahl den Verguetungsdialog). Das PV-PROJEKT ist
+                    // setzbar: Es waehlt allein das Ziel des Knopfes
+                    // „PV-Verguetungsdialog oeffnen…" und laedt nichts nach. Im
+                    // Projektmodus zeigt die Maske seine Liste nicht (VV-Q7); dann hat
+                    // das Feld keine Eintraege, und die Setzung wird benannt abgelehnt.
+                    new KiDialogFeld("pv_verguetung", "KostenKomponenteKiSicht.PvVerguetung",
+                                     KiDialogTexte.KvPvWahlName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KvPvWahlErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("pv_projekt", "KostenKomponenteKiSicht.PvProjekt",
+                                     KiDialogTexte.KvPvProjektName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.KvPvProjektErl,
+                                     leerErlaubt: true),
+
                     // ---- Das Raster: je Position eine Zeile --------------------------
-                    new KiDialogFeld("position", "KostenKomponenteStand.Zeilen[].Bezeichnung",
+                    new KiDialogFeld("position", "KostenKomponenteKiSicht.Zeilen[].Bezeichnung",
                                      KiDialogTexte.KvPositionName, KiParameterTyp.Text,
                                      KiDialogTexte.KvPositionErl,
                                      zeilenkennzeichen: ZEILENKENNZEICHEN),
-                    new KiDialogFeld("bemessung", "KostenKomponenteStand.Zeilen[].BemessungId",
+                    new KiDialogFeld("bemessung", "KostenKomponenteKiSicht.Zeilen[].BemessungId",
                                      KiDialogTexte.KvBemessungName, KiParameterTyp.Wahl,
                                      KiDialogTexte.KvBemessungErl, leerErlaubt: true,
                                      zeilenkennzeichen: ZEILENKENNZEICHEN),
-                    new KiDialogFeld("satz", "KostenKomponenteStand.Zeilen[].Satz",
+                    new KiDialogFeld("satz", "KostenKomponenteKiSicht.Zeilen[].Satz",
                                      KiDialogTexte.KvSatzName, KiParameterTyp.Zahl,
                                      KiDialogTexte.KvSatzErl,
                                      leerErlaubt: true, zeilenkennzeichen: ZEILENKENNZEICHEN),
-                    new KiDialogFeld("nutzungsdauer", "KostenKomponenteStand.Zeilen[].Nutzungsdauer",
+                    new KiDialogFeld("nutzungsdauer", "KostenKomponenteKiSicht.Zeilen[].Nutzungsdauer",
                                      KiDialogTexte.KvNutzungsdauerName, KiParameterTyp.Zahl,
                                      KiDialogTexte.KvNutzungsdauerErl,
                                      einheit: KiDialogTexte.EinheitJahre, leerErlaubt: true,
                                      zeilenkennzeichen: ZEILENKENNZEICHEN),
-                    new KiDialogFeld("betrag", "KostenKomponenteStand.Zeilen[].BetragText",
+                    new KiDialogFeld("betrag", "KostenKomponenteKiSicht.Zeilen[].BetragText",
                                      KiDialogTexte.KvBetragName, KiParameterTyp.Text,
                                      KiDialogTexte.KvBetragErl,
                                      einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true,

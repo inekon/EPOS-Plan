@@ -22784,4 +22784,22 @@ Do you want to allow this?</value>
   <data name="KI_DLG_PVA_ETA_ERL" xml:space="preserve">
     <value>The efficiency of the inverter at this load point as a factor between 0 and 1 (0.97 = 97 %), not in percent. Empty or 0 means “not known”; the plant then calculates with the default values.</value>
   </data>
+  <data name="KI_DLG_KV_KOMPONENTENWAHL_NAME" xml:space="preserve">
+    <value>Component selection</value>
+  </data>
+  <data name="KI_DLG_KV_KOMPONENTENWAHL_ERL" xml:space="preserve">
+    <value>The component whose costs the form currently holds — display only. Selecting another one loads a different set of items; that is an operation, not a field value.</value>
+  </data>
+  <data name="KI_DLG_KV_PV_WAHL_NAME" xml:space="preserve">
+    <value>PV remuneration</value>
+  </data>
+  <data name="KI_DLG_KV_PV_WAHL_ERL" xml:space="preserve">
+    <value>On the 'Yield' tab: whether this variant takes over the remuneration of the master project or keeps its own — display only. Changing it writes through the wrapper and rebuilds the tab.</value>
+  </data>
+  <data name="KI_DLG_KV_PV_PROJEKT_NAME" xml:space="preserve">
+    <value>PV master project</value>
+  </data>
+  <data name="KI_DLG_KV_PV_PROJEKT_ERL" xml:space="preserve">
+    <value>On the 'Yield' tab: the master project whose PV remuneration the button 'Open PV remuneration dialogue…' calls up. Selectable only in the administration context; with a project open it is fixed.</value>
+  </data>
 </root>
