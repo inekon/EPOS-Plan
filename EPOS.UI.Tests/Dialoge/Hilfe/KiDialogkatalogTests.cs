@@ -202,7 +202,18 @@ public class KiDialogkatalogTests
         { KiMaskennamen.SPEICHER_ZEITREIHEN,
           typeof(EPOS.UI.Dialoge.Strom.SpeicherZeitreihenKiSicht) },
         { KiMaskennamen.STROMGANGLINIE_ADMIN,
-          typeof(EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht) }
+          typeof(EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht) },
+
+        // Welle KI-F6, Schritt 2 (BERICHTE und PROJEKT): zwei Reiterblaetter der
+        // Ansicht „Berichte und Kosten" und die zwei Projektmasken.
+        { KiMaskennamen.BERICHTE_UEBERSICHT,
+          typeof(EPOS.UI.Seiten.Berichte.UebersichtSeiteKiSicht) },
+        { KiMaskennamen.BERICHTSEITE,
+          typeof(EPOS.UI.Seiten.Berichte.BerichtSeiteKiSicht) },
+        { KiMaskennamen.PROJEKT_KOPIE,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektKopieKiSicht) },
+        { KiMaskennamen.PROJEKT_VARIANTE,
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) }
     };
 
     /// <summary>
@@ -304,11 +315,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neunundfuenfzig_Masken()
+    public void Der_Katalog_fuehrt_dreiundsechzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(59, katalog.Anzahl);
+        Assert.Equal(63, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -575,6 +586,63 @@ public class KiDialogkatalogTests
                      KiMaskenziele.Ziel(KiMaskennamen.STROMGANGLINIE_ADMIN));
         Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.StromspeicherAuslegung,
                      KiMaskenziele.Ziel(KiMaskennamen.SPEICHER_ZEITREIHEN));
+    }
+
+    /// <summary>
+    /// <b>Die Ziele der Welle KI‑F6, Schritt 2.</b> Die zwei Reiterblätter führen auf
+    /// die Ansicht „Berichte und Kosten" — wie schon Kosten- und
+    /// Wirtschaftlichkeitsseite der Welle KI‑F4. „Projekt speichern unter" ist selbst
+    /// eine Maske der Navigationstabelle; „Als Variante speichern" hängt am Menüweg,
+    /// und <c>KiMaskenziele.PROJEKT_VARIANTE</c> steht im Kern als Zeichenkette gegen
+    /// <c>Seitenschluessel.ProjektAlsVariante</c> in <c>EPOS.UI</c>.
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Berichts_und_Projektmasken_steht_fest()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BerichteKosten,
+                     KiMaskenziele.Ziel(KiMaskennamen.BERICHTE_UEBERSICHT));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BerichteKosten,
+                     KiMaskenziele.Ziel(KiMaskennamen.BERICHTSEITE));
+
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.ProjektSpeichernUnter,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROJEKT_KOPIE));
+
+        // Der Wächter über die ZWEI Fundstellen.
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.ProjektAlsVariante,
+                     KiMaskenziele.PROJEKT_VARIANTE);
+        Assert.Equal(KiMaskenziele.PROJEKT_VARIANTE,
+                     KiMaskenziele.Ziel(KiMaskennamen.PROJEKT_VARIANTE));
+    }
+
+    /// <summary>
+    /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 5, 5 und 4 Felder.</b>
+    /// </summary>
+    /// <remarks>
+    /// <para>Das Reiterblatt „Übersicht" führt vier Einstellwerte (Stammprojekt,
+    /// Filter, markierte Version, Bezeichner) und zwei Anzeigen; „Bericht" zwei
+    /// Einstellwerte und drei Anzeigen — die zwei Mengen stehen als Aufstellung.</para>
+    /// <para>„Projekt speichern unter" führt fünf Verwaltungsangaben, „Als Variante
+    /// speichern" drei Einstellwerte und den gerechneten Zielnamen.</para>
+    /// </remarks>
+    [Fact]
+    public void Die_vier_Berichts_und_Projektmasken_fuehren_6_5_5_und_4_Felder()
+    {
+        KiDialog ueb = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTE_UEBERSICHT)!;
+        KiDialog ber = KiDialoge.Katalog.Finde(KiMaskennamen.BERICHTSEITE)!;
+        KiDialog kop = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_KOPIE)!;
+        KiDialog var = KiDialoge.Katalog.Finde(KiMaskennamen.PROJEKT_VARIANTE)!;
+
+        Assert.Equal(6, ueb.Felder.Count);
+        Assert.Equal(5, ber.Felder.Count);
+        Assert.Equal(5, kop.Felder.Count);
+        Assert.Equal(4, var.Felder.Count);
+
+        Assert.Equal(2, ueb.Felder.Count(f => f.NurLesen));
+        Assert.Equal(3, ber.Felder.Count(f => f.NurLesen));
+        Assert.Empty(kop.Felder.Where(f => f.NurLesen));
+        Assert.Single(var.Felder.Where(f => f.NurLesen));
+
+        foreach (KiDialog d in new[] { ueb, ber, kop, var }) Assert.Empty(d.Knoepfe);
     }
 
     /// <summary>
@@ -934,7 +1002,22 @@ public class KiDialogkatalogTests
             "SpeicherZeitreihenDialogTests",
         [KiMaskennamen.STROMGANGLINIE_ADMIN] =
             "bindet über die Sichtklasse StromganglinieAdminKiSicht auf Rasterwahl " +
-            "und Listenmarkierung; Zeuge ist StromganglinieAdminDialogTests"
+            "und Listenmarkierung; Zeuge ist StromganglinieAdminDialogTests",
+
+        // Welle KI-F6, Schritt 2
+        [KiMaskennamen.BERICHTE_UEBERSICHT] =
+            "bindet über die Sichtklasse UebersichtSeiteKiSicht auf die vier Wahlwege " +
+            "der Seite; sie schreibt nicht in ihren Stand, sondern meldet an die " +
+            "Hülle. Zeuge ist UebersichtSeiteTests",
+        [KiMaskennamen.BERICHTSEITE] =
+            "bindet über die Sichtklasse BerichtSeiteKiSicht auf Ausgabeform, " +
+            "Zielordner und die zwei Aufstellungen; Zeuge ist BerichtSeiteTests",
+        [KiMaskennamen.PROJEKT_KOPIE] =
+            "bindet über die Sichtklasse ProjektKopieKiSicht auf die sieben privaten " +
+            "Felder der Maske; Zeuge ist ProjektKopieDialogTests",
+        [KiMaskennamen.PROJEKT_VARIANTE] =
+            "bindet über die Sichtklasse ProjektVarianteKiSicht auf Haken, Listenwahl " +
+            "und Bezeichner; Zeuge ist ProjektVarianteDialogTests"
     };
 
     /// <summary>

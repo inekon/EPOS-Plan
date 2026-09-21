@@ -25640,6 +25640,105 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In welchem Format der Bericht entsteht: Word, Excel oder beides. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_AUSGABE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_AUSGABE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Bausteine als Aufstellung — die Kapitel, die der Bericht trägt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_BAUSTEINE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_BAUSTEINE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die angehakten Versionen als Aufstellung; das Stammprojekt ist immer dabei. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VARIANTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VARIANTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Versionen im Bericht ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_VARIANTEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_VARIANTEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Ordner, in den der Bericht geschrieben wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKB_ZIEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKB_ZIEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner für das Umbenennen der markierten Version; er wirkt erst mit dem Knopf „Umbenennen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeigt die Liste nur Stammprojekte oder auch deren Varianten? ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_NURSTAEMME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_NURSTAEMME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wann die markierte Version zuletzt simuliert wurde, oder dass sie es noch nicht ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_SIM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_SIM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Simulationsstand ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_SIM_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_SIM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Stammprojekt, dessen Vergleichsgruppe die Seite zeigt; ein Wechsel lädt die ganze Gruppe neu. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_STAMM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_STAMM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die markierte Version; sie entscheidet, welche Unterschiede die Tabelle zeigt und was Löschen, Umbenennen und Simulieren treffen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BKU_VARIANTE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BKU_VARIANTE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
         /// </summary>
         public static string KI_DLG_BLOCK_VORLAGE {
@@ -28187,6 +28286,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bericht (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BKB {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BKB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übersicht (Berichte und Kosten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BKU {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BKU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprofile im Projekt ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BPF {
@@ -28399,6 +28516,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_PEAK {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_PEAK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt speichern unter ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PRK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PRK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Als Variante speichern ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PRV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PRV", resourceCulture);
             }
         }
         
@@ -29299,6 +29434,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PEAK_ZINS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PEAK_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bearbeiter, den die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_BEARBEITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_BEARBEITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung, die die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kunde, den die Kopie bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_KUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_KUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name der Kopie; er muss neu sein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, das kopiert wird; es zu wechseln belegt Beschreibung, Kunde und Bearbeiter aus ihm vor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRK_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRK_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner der neuen Variante; aus ihm und dem Stammprojekt entsteht der Projektname. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bekommt die Variante den Inhalt eines bestehenden Projekts? Nur dann steht die Projektliste darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_HAKEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_HAKEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Projekt, dessen Inhalt die Variante bekommt; ohne eigenen Bezeichner übernimmt sie auch dessen Namen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name, unter dem die Variante entsteht — gerechnet aus Stammprojekt und Bezeichner, samt Zähler bei Namensgleichheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_ZIELNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_ZIELNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neuer Projektname ähnelt.
+        /// </summary>
+        public static string KI_DLG_PRV_ZIELNAME_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PRV_ZIELNAME_NAME", resourceCulture);
             }
         }
         

@@ -34,6 +34,7 @@
    und Verwaltungsfelder kommen als Parameter bzw. Delegaten herein. *@
 
 @namespace EPOS.UI.Dialoge.Projekt
+@implements IDisposable
 
 @using System.Threading
 @using EPOS.UI.Bausteine
@@ -224,6 +225,87 @@
         _quelle = z?.Name ?? "";
         QuellfelderLaden();
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ProjektKopieKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKT_KOPIE,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder der Maske. Das
+    /// Quellprojekt zu setzen belegt Beschreibung, Kunde und Bearbeiter vor —
+    /// derselbe Weg wie ein Klick in die Liste.
+    /// </summary>
+    private ProjektKopieKiSicht KiSicht()
+    {
+        return _kiSicht ??= new ProjektKopieKiSicht
+        {
+            QuelleLesen = () => _markiert > 0 ? _markiert : (int?)null,
+            QuelleSetzen = KiQuelle,
+            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(
+                Zeilen, z => z.Id, z => z.Name),
+
+            NameLesen = () => _neuerName,
+            NameSetzen = w => { _neuerName = w ?? ""; _meldung = ""; },
+            BeschreibungLesen = () => _beschreibung,
+            BeschreibungSetzen = w => _beschreibung = w ?? "",
+            KundeLesen = () => _kunde,
+            KundeSetzen = w => _kunde = w ?? "",
+            BearbeiterLesen = () => _bearbeiter,
+            BearbeiterSetzen = w => _bearbeiter = w ?? ""
+        };
+    }
+
+    /// <summary>Markiert ein Quellprojekt über seine Id — wie ein Klick in die Liste.</summary>
+    private void KiQuelle(int? id)
+    {
+        if (id is null) return;
+        foreach (ProjektKopfZeile z in Zeilen)
+            if (z.Id == id.Value) { BeiMarkierung(z); return; }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Das OK dieser Maske startet einen LAUF mit
+    /// Fortschrittsanzeige und Abbruchknopf, der ein ganzes Projekt dupliziert; ihn
+    /// über <c>dialog_speichern</c> auszulösen hieße, eine Aktion der Stufe 3 ohne
+    /// ihren eigenen Bestätigungsweg zu starten. Die PRÜFUNG ist dagegen dieselbe
+    /// wie am OK-Knopf: ein Quellprojekt und ein Name, der es noch nicht gibt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = KiPruefung
+    };
+
+    private string KiPruefung()
+    {
+        string neu = (_neuerName ?? "").Trim();
+        if (neu.Length == 0) return MeldungNameLeer;
+        if (Pruefen is null) return "";
+
+        return Pruefen(_quelle, neu) switch
+        {
+            DuplizierBefund.NamenLeer => MeldungNameLeer,
+            DuplizierBefund.QuelleFehlt => string.Format(
+                System.Globalization.CultureInfo.CurrentCulture, MeldungQuelleFehlt, _quelle),
+            DuplizierBefund.ZielExistiert => MeldungNameBelegt,
+            _ => ""
+        };
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// A-6: Der Doppelklick markiert die Quelle und laedt die Felder — er startet NICHT

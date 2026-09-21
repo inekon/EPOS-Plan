@@ -22685,4 +22685,79 @@ Do you want to allow this?</value>
   <data name="KI_DLG_SPA4_ANZAHL_BIS_ERL" xml:space="preserve">
     <value>The largest number of units on this axis.</value>
   </data>
+  <data name="KI_DLG_MASKE_BKU" xml:space="preserve">
+    <value>Overview (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_MASKE_BKB" xml:space="preserve">
+    <value>Report (reports and costs)</value>
+  </data>
+  <data name="KI_DLG_MASKE_PRK" xml:space="preserve">
+    <value>Save project as</value>
+  </data>
+  <data name="KI_DLG_MASKE_PRV" xml:space="preserve">
+    <value>Save as variant</value>
+  </data>
+  <data name="KI_DLG_BKU_STAMM_ERL" xml:space="preserve">
+    <value>The master project whose comparison group the page shows; a change reloads the whole group.</value>
+  </data>
+  <data name="KI_DLG_BKU_NURSTAEMME_ERL" xml:space="preserve">
+    <value>Does the list show only master projects, or their variants as well?</value>
+  </data>
+  <data name="KI_DLG_BKU_VARIANTE_ERL" xml:space="preserve">
+    <value>The selected version; it decides which differences the table shows and what delete, rename and simulate act on.</value>
+  </data>
+  <data name="KI_DLG_BKU_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier used to rename the selected version; it takes effect only with the 'Rename' button.</value>
+  </data>
+  <data name="KI_DLG_BKU_SIM_NAME" xml:space="preserve">
+    <value>Simulation state</value>
+  </data>
+  <data name="KI_DLG_BKU_SIM_ERL" xml:space="preserve">
+    <value>When the selected version was last simulated, or that it has not been yet.</value>
+  </data>
+  <data name="KI_DLG_BKB_AUSGABE_ERL" xml:space="preserve">
+    <value>The format the report is produced in: Word, Excel or both.</value>
+  </data>
+  <data name="KI_DLG_BKB_ZIEL_ERL" xml:space="preserve">
+    <value>The folder the report is written to.</value>
+  </data>
+  <data name="KI_DLG_BKB_VARIANTEN_NAME" xml:space="preserve">
+    <value>Versions in the report</value>
+  </data>
+  <data name="KI_DLG_BKB_VARIANTEN_ERL" xml:space="preserve">
+    <value>The ticked versions as a listing; the master project is always included.</value>
+  </data>
+  <data name="KI_DLG_BKB_BAUSTEINE_ERL" xml:space="preserve">
+    <value>The selected building blocks as a listing — the chapters the report carries.</value>
+  </data>
+  <data name="KI_DLG_PRK_QUELLE_ERL" xml:space="preserve">
+    <value>The project that is copied; changing it pre-fills description, customer and editor from it.</value>
+  </data>
+  <data name="KI_DLG_PRK_NAME_ERL" xml:space="preserve">
+    <value>The name of the copy; it must not already exist.</value>
+  </data>
+  <data name="KI_DLG_PRK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>The description the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRK_KUNDE_ERL" xml:space="preserve">
+    <value>The customer the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRK_BEARBEITER_ERL" xml:space="preserve">
+    <value>The editor the copy receives.</value>
+  </data>
+  <data name="KI_DLG_PRV_HAKEN_ERL" xml:space="preserve">
+    <value>Does the variant take the content of an existing project? Only then is the project list shown below.</value>
+  </data>
+  <data name="KI_DLG_PRV_QUELLE_ERL" xml:space="preserve">
+    <value>The project whose content the variant receives; without an own identifier it also takes its name.</value>
+  </data>
+  <data name="KI_DLG_PRV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The identifier of the new variant; the project name is derived from it and the master project.</value>
+  </data>
+  <data name="KI_DLG_PRV_ZIELNAME_NAME" xml:space="preserve">
+    <value>New project name</value>
+  </data>
+  <data name="KI_DLG_PRV_ZIELNAME_ERL" xml:space="preserve">
+    <value>The name the variant is created under — derived from master project and identifier, with a counter on name clashes.</value>
+  </data>
 </root>

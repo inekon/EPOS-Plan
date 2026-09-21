@@ -577,7 +577,217 @@ namespace WindowsFormsApplication1
                 Wechselrichterkatalog(),
                 PeakShaving(),
                 Speicherzeitreihen(),
-                StromganglinieAdmin());
+                StromganglinieAdmin(),
+                BerichteUebersicht(),
+                Berichtseite(),
+                ProjektKopie(),
+                ProjektVariante());
+        }
+
+        // =====================================================================
+        // Berichtsuebersicht  ->  Seiten.Berichte.UebersichtSeite   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Uebersicht" der Ansicht „Berichte und Kosten" — vier
+        /// Einstellwerte und zwei Anzeigen ueber die Sichtklasse
+        /// <c>EPOS.UI.Seiten.Berichte.UebersichtSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Es steht neben <see cref="KiMaskennamen.KOSTENSEITE"/> und
+        /// <see cref="KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE"/></b> (Welle KI-F4): Die
+        /// vier Blaetter derselben Ansicht tragen je einen eigenen Schluessel, weil sie
+        /// ganz verschiedene Felder fuehren.
+        /// </para>
+        /// <para>
+        /// <b>Die Seite SCHREIBT nicht in ihren Stand</b>, sie meldet jede Wahl an die
+        /// Huelle und laedt danach neu. Deshalb bindet sie ueber eine Sichtklasse: Ein
+        /// unmittelbar angemeldeter <c>UebersichtStand</c> boete an, die Stamm-Id zu
+        /// setzen, ohne dass die Gruppe nachzoege.
+        /// </para>
+        /// <para>
+        /// <b>Die VERGLEICHSWAHL bleibt draussen</b> — eine Menge von Verweisen und
+        /// kein Feldwert; dieselbe Regel und derselbe Grund wie beim Reiterblatt
+        /// „Kosten". Ebenso draussen: die Unterschiedstabelle samt ihrer
+        /// Uebernahmespalte (gerechnete Anzeige mit einer Aktion je Zeile).
+        /// </para>
+        /// </remarks>
+        private static KiDialog BerichteUebersicht()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BERICHTE_UEBERSICHT,
+                anzeigename: KiDialogTexte.MaskeBerichteUebersicht,
+                felder: new[]
+                {
+                    new KiDialogFeld("stammprojekt", "UebersichtSeiteKiSicht.Stammprojekt",
+                                     KiDialogTexte.BkuStammName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkuStammErl, leerErlaubt: true),
+                    new KiDialogFeld("nur_staemme", "UebersichtSeiteKiSicht.NurStaemme",
+                                     KiDialogTexte.BkuNurStaemmeName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.BkuNurStaemmeErl),
+                    new KiDialogFeld("variante", "UebersichtSeiteKiSicht.Variante",
+                                     KiDialogTexte.BkuVarianteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkuVarianteErl, leerErlaubt: true),
+                    new KiDialogFeld("bezeichner", "UebersichtSeiteKiSicht.Bezeichner",
+                                     KiDialogTexte.BkuBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkuBezeichnerErl, leerErlaubt: true),
+                    new KiDialogFeld("simulationsstand", "UebersichtSeiteKiSicht.Simulationsstand",
+                                     KiDialogTexte.BkuSimName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkuSimErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("statuszeile", "UebersichtSeiteKiSicht.Statuszeile",
+                                     KiDialogTexte.KseStatusName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
+        }
+
+        // =====================================================================
+        // Berichtsseite  ->  Seiten.Berichte.BerichtSeite   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// Das Reiterblatt „Bericht" derselben Ansicht — zwei Einstellwerte und drei
+        /// Anzeigen ueber <c>EPOS.UI.Seiten.Berichte.BerichtSeiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Zwei Einstellwerte, zwei Mengen.</b> Ausgabeformat und Zielordner stehen
+        /// im Stand der Seite und gehen mit dem Lauf in die Huelle; welche Versionen
+        /// und welche Bausteine der Bericht traegt, sind MENGEN VON VERWEISEN und damit
+        /// keine Feldwerte (ein <c>KiDialogFeld</c> traegt genau einen). Sie gehen als
+        /// AUFSTELLUNG hinaus — dieselbe Bauart wie bei der Einheitenliste der
+        /// Stromspeicher-Ansicht.
+        /// </para>
+        /// <para>
+        /// <b>Kein Speicherweg.</b> „Erstellen" rechnet den Bericht und schreibt eine
+        /// Datei; das ist eine Aktion der Stufen 2 und 3 mit eigener Rueckfrage.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Berichtseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.BERICHTSEITE,
+                anzeigename: KiDialogTexte.MaskeBerichtseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("ausgabe", "BerichtSeiteKiSicht.Ausgabe",
+                                     KiDialogTexte.BkbAusgabeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.BkbAusgabeErl),
+                    new KiDialogFeld("zielordner", "BerichtSeiteKiSicht.Zielordner",
+                                     KiDialogTexte.BkbZielName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkbZielErl, leerErlaubt: true),
+                    new KiDialogFeld("varianten", "BerichtSeiteKiSicht.Varianten",
+                                     KiDialogTexte.BkbVariantenName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkbVariantenErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("bausteine", "BerichtSeiteKiSicht.Bausteine",
+                                     KiDialogTexte.BkbBausteineName, KiParameterTyp.Text,
+                                     KiDialogTexte.BkbBausteineErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("statuszeile", "BerichtSeiteKiSicht.Statuszeile",
+                                     KiDialogTexte.KseStatusName, KiParameterTyp.Text,
+                                     KiDialogTexte.KseStatusErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
+        }
+
+        // =====================================================================
+        // Form_ProjektSpeichernUnter  ->  ProjektKopieDialog   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// „Projekt speichern unter" — fuenf Felder ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Projekt.ProjektKopieKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der Schluessel ist der Name der WinForms-Maske, die der Dialog abgeloest
+        /// hat</b> — er steht so im Hilfeschluessel (<c>Form_ProjektSpeichernUnter.btn_Help</c>),
+        /// im Bereichsregister der Windows-Huelle und in der Navigationstabelle.
+        /// </para>
+        /// <para>
+        /// <b>Das QUELLPROJEKT ist ein Wahlfeld</b> (KI-D-Q6). Es zu setzen belegt
+        /// Beschreibung, Kunde und Bearbeiter aus dem Quellprojekt vor — genau wie ein
+        /// Klick in die Liste; das ist die Absicht der Maske und keine Nebenwirkung.
+        /// </para>
+        /// <para>
+        /// <b>Kein Speicherweg.</b> Das OK startet einen LAUF mit Fortschrittsanzeige
+        /// und Abbruchknopf, der ein ganzes Projekt dupliziert; ihn ueber
+        /// <c>dialog_speichern</c> auszuloesen hiesse, eine Aktion der Stufe 3 ohne
+        /// ihren eigenen Bestaetigungsweg zu starten. Die PRUEFUNG ist dagegen
+        /// dieselbe wie am OK-Knopf. Die SUCHE bleibt draussen: Sie schraenkt die
+        /// Projektliste ein und ist damit Teil einer Menge von Verweisen.
+        /// </para>
+        /// </remarks>
+        private static KiDialog ProjektKopie()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_KOPIE,
+                anzeigename: KiDialogTexte.MaskeProjektKopie,
+                felder: new[]
+                {
+                    new KiDialogFeld("quellprojekt", "ProjektKopieKiSicht.Quellprojekt",
+                                     KiDialogTexte.PrkQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PrkQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("neuer_name", "ProjektKopieKiSicht.NeuerName",
+                                     KiDialogTexte.PrkNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrkNameErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "ProjektKopieKiSicht.Beschreibung",
+                                     KiDialogTexte.PrkBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrkBeschreibungErl, leerErlaubt: true),
+                    new KiDialogFeld("kunde", "ProjektKopieKiSicht.Kunde",
+                                     KiDialogTexte.PrkKundeName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrkKundeErl, leerErlaubt: true),
+                    new KiDialogFeld("bearbeiter", "ProjektKopieKiSicht.Bearbeiter",
+                                     KiDialogTexte.PrkBearbeiterName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrkBearbeiterErl, leerErlaubt: true)
+                });
+        }
+
+        // =====================================================================
+        // Projektvariante  ->  ProjektVarianteDialog   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// „Als Variante speichern" — drei Einstellwerte und eine Anzeige ueber
+        /// <c>EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Der ZIELNAME ist gerechnet</b> (<c>VariantenCtrl.Zielname</c> samt
+        /// Zaehler bei Namensgleichheit) und deshalb nur lesbar — eingeben laesst sich
+        /// der Bezeichner, aus dem er folgt.
+        /// </para>
+        /// <para>
+        /// <b>Der Bezeichner folgt dem Quellprojekt, bis er von Hand getippt wird.</b>
+        /// Ein vom Assistenten gesetzter Bezeichner gilt als von Hand getippt und
+        /// bleibt deshalb stehen, auch wenn danach ein anderes Quellprojekt gewaehlt
+        /// wird — dieselbe Regel wie am Eingabefeld.
+        /// </para>
+        /// </remarks>
+        private static KiDialog ProjektVariante()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKT_VARIANTE,
+                anzeigename: KiDialogTexte.MaskeProjektVariante,
+                felder: new[]
+                {
+                    new KiDialogFeld("aus_quelle", "ProjektVarianteKiSicht.AusQuelle",
+                                     KiDialogTexte.PrvHakenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PrvHakenErl),
+                    new KiDialogFeld("quellprojekt", "ProjektVarianteKiSicht.Quellprojekt",
+                                     KiDialogTexte.PrkQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PrvQuelleErl, leerErlaubt: true),
+                    new KiDialogFeld("bezeichner", "ProjektVarianteKiSicht.Bezeichner",
+                                     KiDialogTexte.PrvBezeichnerName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrvBezeichnerErl, leerErlaubt: true),
+                    new KiDialogFeld("zielname", "ProjektVarianteKiSicht.Zielname",
+                                     KiDialogTexte.PrvZielnameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PrvZielnameErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
         }
 
         // =====================================================================

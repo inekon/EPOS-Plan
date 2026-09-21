@@ -2027,5 +2027,55 @@
         internal static string Spa4AnzahlVonErl => MyResource.Resource.KI_DLG_SPA4_ANZAHL_VON_ERL;
         internal static string Spa4AnzahlBisName => MyResource.Resource.FLOTTE_ED_ANZAHL_BIS;
         internal static string Spa4AnzahlBisErl => MyResource.Resource.KI_DLG_SPA4_ANZAHL_BIS_ERL;
+
+        // ========================== Welle KI-F6: BERICHTE und PROJEKT
+
+        internal static string MaskeBerichteUebersicht => MyResource.Resource.KI_DLG_MASKE_BKU;
+        internal static string MaskeBerichtseite => MyResource.Resource.KI_DLG_MASKE_BKB;
+        internal static string MaskeProjektKopie => MyResource.Resource.KI_DLG_MASKE_PRK;
+        internal static string MaskeProjektVariante => MyResource.Resource.KI_DLG_MASKE_PRV;
+
+        // ---- Reiterblatt „Uebersicht"
+        internal static string BkuStammName => MyResource.Resource.BKS_LBL_STAMM;
+        internal static string BkuStammErl => MyResource.Resource.KI_DLG_BKU_STAMM_ERL;
+        internal static string BkuNurStaemmeName => MyResource.Resource.BKS_LBL_NUR_STAEMME;
+        internal static string BkuNurStaemmeErl => MyResource.Resource.KI_DLG_BKU_NURSTAEMME_ERL;
+        internal static string BkuVarianteName => MyResource.Resource.BKS_LBL_VARIANTE;
+        internal static string BkuVarianteErl => MyResource.Resource.KI_DLG_BKU_VARIANTE_ERL;
+        internal static string BkuBezeichnerName => MyResource.Resource.BKS_LBL_BEZEICHNER;
+        internal static string BkuBezeichnerErl => MyResource.Resource.KI_DLG_BKU_BEZEICHNER_ERL;
+        internal static string BkuSimName => MyResource.Resource.KI_DLG_BKU_SIM_NAME;
+        internal static string BkuSimErl => MyResource.Resource.KI_DLG_BKU_SIM_ERL;
+
+        // ---- Reiterblatt „Bericht"
+        internal static string BkbAusgabeName => MyResource.Resource.BK_BER_LBL_AUSGABE;
+        internal static string BkbAusgabeErl => MyResource.Resource.KI_DLG_BKB_AUSGABE_ERL;
+        internal static string BkbZielName => MyResource.Resource.BK_BER_LBL_ZIEL;
+        internal static string BkbZielErl => MyResource.Resource.KI_DLG_BKB_ZIEL_ERL;
+        internal static string BkbVariantenName => MyResource.Resource.KI_DLG_BKB_VARIANTEN_NAME;
+        internal static string BkbVariantenErl => MyResource.Resource.KI_DLG_BKB_VARIANTEN_ERL;
+        internal static string BkbBausteineName => MyResource.Resource.BK_BER_LBL_BAUSTEINE;
+        internal static string BkbBausteineErl => MyResource.Resource.KI_DLG_BKB_BAUSTEINE_ERL;
+
+        // ---- „Projekt speichern unter"
+        internal static string PrkQuelleName => MyResource.Resource.PRJ_KOPIE_LBL_AUSWAHL;
+        internal static string PrkQuelleErl => MyResource.Resource.KI_DLG_PRK_QUELLE_ERL;
+        internal static string PrkNameName => MyResource.Resource.PRJ_KOPIE_LBL_NEUERNAME;
+        internal static string PrkNameErl => MyResource.Resource.KI_DLG_PRK_NAME_ERL;
+        internal static string PrkBeschreibungName => MyResource.Resource.PRJ_KOPIE_LBL_BESCHREIBUNG;
+        internal static string PrkBeschreibungErl => MyResource.Resource.KI_DLG_PRK_BESCHREIBUNG_ERL;
+        internal static string PrkKundeName => MyResource.Resource.PRJ_KOPIE_LBL_KUNDE;
+        internal static string PrkKundeErl => MyResource.Resource.KI_DLG_PRK_KUNDE_ERL;
+        internal static string PrkBearbeiterName => MyResource.Resource.PRJ_KOPIE_LBL_BEARBEITER;
+        internal static string PrkBearbeiterErl => MyResource.Resource.KI_DLG_PRK_BEARBEITER_ERL;
+
+        // ---- „Als Variante speichern"
+        internal static string PrvHakenName => MyResource.Resource.VAR_DLG_QUELLE_HAKEN;
+        internal static string PrvHakenErl => MyResource.Resource.KI_DLG_PRV_HAKEN_ERL;
+        internal static string PrvQuelleErl => MyResource.Resource.KI_DLG_PRV_QUELLE_ERL;
+        internal static string PrvBezeichnerName => MyResource.Resource.BK_LBL_BEZEICHNER;
+        internal static string PrvBezeichnerErl => MyResource.Resource.KI_DLG_PRV_BEZEICHNER_ERL;
+        internal static string PrvZielnameName => MyResource.Resource.KI_DLG_PRV_ZIELNAME_NAME;
+        internal static string PrvZielnameErl => MyResource.Resource.KI_DLG_PRV_ZIELNAME_ERL;
     }
 }

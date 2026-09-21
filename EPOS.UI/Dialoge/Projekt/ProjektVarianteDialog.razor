@@ -33,6 +33,7 @@
    /Projekt/ProjektVarianteHuelle. *@
 
 @namespace EPOS.UI.Dialoge.Projekt
+@implements IDisposable
 
 @using EPOS.UI.Bausteine
 @using WindowsFormsApplication1
@@ -232,6 +233,82 @@
             catch { return ""; }
         }
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private ProjektVarianteKiSicht? _kiSicht;
+
+    protected override void OnInitialized()
+    {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PROJEKT_VARIANTE,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder der Maske; der Zielname
+    /// bleibt eine Anzeige, weil ihn die Kernregel rechnet.
+    /// </summary>
+    private ProjektVarianteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new ProjektVarianteKiSicht
+        {
+            HakenLesen = () => _ausQuelle,
+            HakenSetzen = BeiHaken,
+
+            QuelleLesen = () => _idQuelle > 0 ? _idQuelle : (int?)null,
+            QuelleSetzen = KiQuelle,
+            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(
+                Zeilen, z => z.Id, z => z.Name),
+
+            BezeichnerLesen = () => _bezeichner,
+            BezeichnerSetzen = KiBezeichner,
+            ZielnameLesen = () => ZielnameJetzt
+        };
+    }
+
+    /// <summary>Wählt ein Quellprojekt über seine Id — wie ein Klick in die Liste.</summary>
+    private void KiQuelle(int? id)
+    {
+        if (id is null) return;
+        foreach (ProjektKopfZeile z in Zeilen)
+            if (z.Id == id.Value) { BeiMarkierung(z); return; }
+    }
+
+    /// <summary>
+    /// Setzt den Bezeichner über denselben Weg wie das Eingabefeld — samt der Marke
+    /// „von Hand": Ein gesetzter Bezeichner bleibt stehen, auch wenn danach ein
+    /// anderes Quellprojekt gewählt wird.
+    /// </summary>
+    private void KiBezeichner(string wert)
+    {
+        _bezeichner = wert ?? "";
+        _vonHand = _bezeichner.Length > 0;
+        _meldung = "";
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Variante anlegen" reicht die Wahl an den Wirt, der
+    /// daraufhin ein ganzes Projekt kopiert — eine Aktion der Stufe 3 mit eigenem
+    /// Bestätigungsweg. Die PRÜFUNG ist dieselbe, die den Knopf sperrt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = () => OkErlaubt
+                            ? ""
+                            : string.IsNullOrWhiteSpace(_bezeichner)
+                                  ? FrageText
+                                  : MeldungQuelleWaehlen
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

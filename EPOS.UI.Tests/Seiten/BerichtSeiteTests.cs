@@ -2,7 +2,9 @@
 using Bunit;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
+using KiKern;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Seiten;
@@ -418,5 +420,49 @@ public class BerichtSeiteTests : BunitContext
 
         // Die Seitenzeilen bleiben ausserhalb.
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-seite-zeile"));
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Seite an der Maskenbrücke.</b> Ausgabeform und Zielordner
+    /// sind Einstellwerte; die zwei Mengen stehen als Aufstellung und lassen sich
+    /// nicht setzen.
+    /// </summary>
+    [Fact]
+    public void Die_Seite_meldet_sich_beim_Assistenten_an_und_setzt_die_Ausgabeform()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BERICHTSEITE));
+
+        KiFeldzugang ausgabe = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTSEITE, "ausgabe");
+        Assert.NotNull(ausgabe);
+        Assert.True(ausgabe.Setzbar);
+        Assert.Equal(3, ausgabe.Wahleintraege().Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(ausgabe, "1");
+        Assert.True(wahl.Ok, wahl.Grund);
+        ausgabe.Setzen(wahl.Wert);
+        cut.Render();
+        Assert.Equal(1, _stand.AusgabeId);
+
+        KiFeldzugang ziel = KiMaskenbruecke.Feldzugang(KiMaskennamen.BERICHTSEITE, "zielordner");
+        ziel.Setzen(@"D:\Ausgabe");
+        cut.Render();
+        Assert.Equal(@"D:\Ausgabe", _stand.Zielordner);
+
+        // Die zwei MENGEN sind Anzeigen: Sie nennen, was angehakt ist.
+        KiFeldzugang varianten = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTSEITE, "varianten");
+        Assert.False(varianten.Setzbar);
+        Assert.Contains("Musterhaus", Convert.ToString(varianten.Lesen()) ?? "");
+
+        KiFeldzugang bausteine = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BERICHTSEITE, "bausteine");
+        Assert.False(bausteine.Setzbar);
     }
 }

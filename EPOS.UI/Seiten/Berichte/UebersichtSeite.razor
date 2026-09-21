@@ -53,6 +53,8 @@
 
 @namespace EPOS.UI.Seiten.Berichte
 @using EPOS.UI.Dialoge.Berichte
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
@@ -438,7 +440,73 @@
 
     private bool _mitAktionsspalte;
 
-    protected override void OnInitialized() => Auffrischen();
+    protected override void OnInitialized()
+    {
+        Auffrischen();
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BERICHTE_UEBERSICHT,
+                                          () => KiSicht(), KiHaken());
+    }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private UebersichtSeiteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die vier Einstellwerte der Seite und zwei
+    /// Anzeigen. Jede Wahl geht denselben Weg wie ein Griff in die Klappliste —
+    /// Rückruf an die Hülle, danach Auffrischen.
+    /// </summary>
+    private UebersichtSeiteKiSicht KiSicht()
+    {
+        return _kiSicht ??= new UebersichtSeiteKiSicht
+        {
+            // DIE DREI WAHLWEGE LAUFEN UEBER InvokeAsync: Sie enden in
+            // Auffrischen(), und das ruft StateHasChanged; der Assistent setzt aber
+            // NICHT aus dem Blazor-Verteiler, sondern aus dem Faden seiner
+            // Aufgabensteuerung. Ohne den Wechsel wirft der Renderer "The current
+            // thread is not associated with the Dispatcher" - dieselbe Hausregel wie
+            // beim SeitenZustand.
+            StammLesen = () => _stand.StammId,
+            StammSetzen = id => _ = InvokeAsync(() => BeiStamm(id)),
+            StammEintraege = () => KiMaskenanmeldung.Eintraege(
+                _stand.Staemme, z => z.Id, z => z.Text),
+
+            FilterLesen = () => _stand.NurStaemme,
+            FilterSetzen = an => _ = InvokeAsync(() => BeiFilter(an)),
+
+            VarianteLesen = () => Markierung,
+            VarianteSetzen = id => _ = InvokeAsync(() => BeiVersion(id)),
+            VarianteEintraege = () => KiMaskenanmeldung.Eintraege(
+                Versionen, z => z.Id, z => z.Text),
+
+            BezeichnerLesen = () => _bezeichner,
+            BezeichnerSetzen = w => _bezeichner = w ?? "",
+
+            SimulationLesen = () => Simulationszeile,
+            StatusLesen = () => _status
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Anlegen, Löschen, Umbenennen und Simulieren sind
+    /// datenbankwirksame bzw. rechnende Aktionen mit eigener Rückfrage; sie gehören
+    /// in das Aktionsregister und nicht in einen Speicherknopf, den es hier nicht
+    /// gibt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
