@@ -109,10 +109,12 @@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Bausteine
+@using EPOS.UI.Dienste
 @using System.Globalization
 @* W6-B-4: die Vorbelegung eines neuen Strangs rechnet der Kern
    (WindowsFormsApplication1.Strangvorbelegung) - eine Wahrheit fuer Windows und iOS. *@
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-straenge">
 
@@ -373,19 +375,27 @@
             <Formularraster Einspaltig="true">
                 <KindInhalt>
                     <div title="@AnlagenTexte.TipNennleistung">
-                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelNennleistung" Wert="@_nenn"
-                                    WertChanged="@(w => _nenn = w)" Min="0" Max="100000" Nachkommastellen="2"
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelNennleistung"
+                                    Wert="@_anlagenwerte.Nennleistung"
+                                    WertChanged="@(w => _anlagenwerte.Nennleistung = w)"
+                                    Min="0" Max="100000" Nachkommastellen="2"
                                     Feldname="WrNennleistung" />
                     </div>
                     <div title="@AnlagenTexte.TipEta">
-                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta10" Wert="@_eta10"
-                                    WertChanged="@(w => _eta10 = w)" Min="0" Max="1" Nachkommastellen="3"
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta10"
+                                    Wert="@_anlagenwerte.Eta10"
+                                    WertChanged="@(w => _anlagenwerte.Eta10 = w)"
+                                    Min="0" Max="1" Nachkommastellen="3"
                                     Feldname="WrEta10" />
-                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50" Wert="@_eta50"
-                                    WertChanged="@(w => _eta50 = w)" Min="0" Max="1" Nachkommastellen="3"
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta50"
+                                    Wert="@_anlagenwerte.Eta50"
+                                    WertChanged="@(w => _anlagenwerte.Eta50 = w)"
+                                    Min="0" Max="1" Nachkommastellen="3"
                                     Feldname="WrEta50" />
-                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100" Wert="@_eta100"
-                                    WertChanged="@(w => _eta100 = w)" Min="0" Max="1" Nachkommastellen="3"
+                        <Zahlenfeld Bezeichnung="@AnlagenTexte.LabelEta100"
+                                    Wert="@_anlagenwerte.Eta100"
+                                    WertChanged="@(w => _anlagenwerte.Eta100 = w)"
+                                    Min="0" Max="1" Nachkommastellen="3"
                                     Feldname="WrEta100" />
                     </div>
                 </KindInhalt>
@@ -640,7 +650,15 @@
     private string _temperatursatz = "";
 
     private bool _offen;
-    private double? _nenn, _eta10, _eta50, _eta100;
+
+    /// <summary>
+    /// Der Arbeitsstand der Anlagen-Ueberlagerung — er ist ZUGLEICH das Daten-Objekt
+    /// der Katalogmaske <c>Form_PV_Anlagenwerte</c> (Welle KI-F7).
+    /// </summary>
+    private readonly PvAnlagenwerteKiSicht _anlagenwerte = new();
+
+    /// <summary>Der Arbeitsstand der Ueberlagerung (Pruefhilfe fuer Tests).</summary>
+    public PvAnlagenwerteKiSicht Anlagenwerte => _anlagenwerte;
 
     /// <summary>Steht die Anlagen-Ueberlagerung? (Pruefhilfe fuer Tests.)</summary>
     public bool WechselrichterOffen => _offen;
@@ -1229,6 +1247,35 @@
         return TemperaturUebernehmen();
     }
 
+    // ---------------------------------------------------------------------------------
+    // Der Zugang des Hilfe-Assistenten auf die zwei LEBENDEN Temperaturen (Welle KI-F7)
+    // ---------------------------------------------------------------------------------
+
+    /// <summary>
+    /// Die lebende Auslegungstemperatur des kalten Falls [°C]; <c>null</c> = Vorgabe.
+    /// <b>Der Wirt reicht sie dem Hilfe-Assistenten durch</b> — sie steht in diesem
+    /// Baustein und nicht an der Anlagenzeile, denn sie gehört dem PROJEKT.
+    /// </summary>
+    public double? TKaltLebend => _tKalt;
+
+    /// <summary>Dasselbe für den heißen Fall.</summary>
+    public double? THeissLebend => _tHeiss;
+
+    /// <summary>
+    /// Setzt den kalten Fall auf DEMSELBEN Weg, den auch das Eingabefeld geht: Ampel
+    /// nachprüfen, dann in die Projekteinstellungen schreiben.
+    /// </summary>
+    /// <remarks>
+    /// <b>Über den Verteiler</b>, denn der Assistent ruft aus seinem eigenen Faden: Der
+    /// Weg endet in einem Zeichenlauf des Wirts, und der gehört Blazor (Hausregel
+    /// EPOS.UI, „Der SeitenZustand wird im Blazor-Verteiler gelesen"). Steht der Aufruf
+    /// schon auf dem Verteiler — der Griff ins Eingabefeld —, läuft er unverzüglich.
+    /// </remarks>
+    public Task TKaltSetzen(double? wert) => InvokeAsync(() => BeiTKalt(wert));
+
+    /// <summary>Dasselbe für den heißen Fall.</summary>
+    public Task THeissSetzen(double? wert) => InvokeAsync(() => BeiTHeiss(wert));
+
     private Task TemperaturUebernehmen()
     {
         // Eine Handeingabe ersetzt die Herleitung des letzten Vorschlags: Sie erklaerte
@@ -1306,32 +1353,69 @@
     {
         get
         {
-            if (!_nenn.HasValue || _nenn.Value <= 0.0 || KwpAnlage <= 0.0) return AnlagenTexte.DcAcOhne;
+            double? nenn = _anlagenwerte.Nennleistung;
+            if (!nenn.HasValue || nenn.Value <= 0.0 || KwpAnlage <= 0.0) return AnlagenTexte.DcAcOhne;
             return string.Format(CultureInfo.CurrentCulture, AnlagenTexte.DcAc,
-                                 KwpAnlage, _nenn.Value, KwpAnlage / _nenn.Value);
+                                 KwpAnlage, nenn.Value, KwpAnlage / nenn.Value);
         }
     }
 
     private void Oeffnen()
     {
-        _nenn = Zeile.WrNennleistungKw;
-        _eta10 = Zeile.WrEta10;
-        _eta50 = Zeile.WrEta50;
-        _eta100 = Zeile.WrEta100;
+        _anlagenwerte.Laden(Zeile);
         _offen = true;
+        AnlagenwerteAnmelden();
     }
 
     /// <summary>OK uebernimmt die vier Werte (0 = nicht bekannt = NULL); Abbrechen verwirft sie.</summary>
     private async Task BeiErgebnis(bool ok)
     {
         _offen = false;
+        AnlagenwerteAbmelden();
         if (!ok) return;
-        Zeile.WrNennleistungKw = Positiv(_nenn);
-        Zeile.WrEta10 = Positiv(_eta10);
-        Zeile.WrEta50 = Positiv(_eta50);
-        Zeile.WrEta100 = Positiv(_eta100);
+        _anlagenwerte.Uebernehmen(Zeile);
         await Geaendert.InvokeAsync();
     }
 
-    private static double? Positiv(double? wert) => wert.HasValue && wert.Value > 0.0 ? wert : null;
+    // =================================================================================
+    // Der Hilfe-Assistent: die Ueberlagerung ist eine EIGENE Maske (Welle KI-F7)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Anmeldung der Ueberlagerung „Anlagenwerte" beim Hilfe-Assistenten
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Sie steht nur, SOLANGE das Fenster offen ist.</b> Das ist der ganze
+    /// Unterschied zu vier weiteren Feldern an <c>Form_PV</c>: Ein Katalogfeld, das der
+    /// Anwender auf der offenen Maske nicht nachlesen kann, wäre die stille Setzung,
+    /// die Fachkonzept 11.6 ausschließt. Angemeldet wird der ARBEITSSTAND des Fensters,
+    /// und die Brücke nimmt die zuletzt angemeldete Maske als die gemeinte — eine
+    /// Überlagerung liegt über ihrem Wirt, und beide sind angemeldet.</para>
+    /// <para><b>Kein Speicherweg.</b> „OK" schreibt nicht in die Datenbank, es übernimmt
+    /// den Arbeitsstand in die Anlage; das bleibt der Klick des Anwenders. Gemeldet sind
+    /// deshalb nur Auffrischen und der Schreibschutz des Geräts.</para>
+    /// </remarks>
+    private KiMaskenanmeldung? _kiAnlagenwerte;
+
+    private void AnlagenwerteAnmelden()
+    {
+        _kiAnlagenwerte?.Dispose();
+        _kiAnlagenwerte = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.PV_ANLAGENWERTE, () => _offen ? _anlagenwerte : null,
+            new KiMaskenhaken
+            {
+                Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+                Schreibgeschuetzt = () => Zeile.NurLesen
+            });
+    }
+
+    private void AnlagenwerteAbmelden()
+    {
+        _kiAnlagenwerte?.Dispose();
+        _kiAnlagenwerte = null;
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => AnlagenwerteAbmelden();
 }

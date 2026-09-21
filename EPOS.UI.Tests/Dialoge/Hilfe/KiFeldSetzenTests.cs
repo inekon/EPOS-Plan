@@ -65,17 +65,105 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Equal(250.5, daten.Ptherm);
     }
 
+    /// <summary>
+    /// <b>Seit der Welle KI‑F7 meldet die Photovoltaik eine SICHTKLASSE an</b>
+    /// (Anwenderentscheid 21.09.2026): <c>PhotovoltaikKiSicht</c> reicht die gewählte
+    /// Zeile durch und trägt zusätzlich die zwei Auslegungstemperaturen des Projekts.
+    /// Der Weg an die Zeile bleibt derselbe — das zeigt dieser Fall.
+    /// </summary>
     [Fact]
     public async Task Photovoltaik_Die_Bestaetigung_setzt_die_Neigung_der_gewaehlten_Zeile()
     {
         var zeile = new ErzeugerZeile { Neigung = 30 };
-        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => zeile,
+        var sicht = new PhotovoltaikKiSicht { Zeilenquelle = () => zeile };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => sicht,
                                                      Haken());
 
         KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "35");
 
         Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
         Assert.Equal(35, zeile.Neigung);
+    }
+
+    /// <summary>
+    /// <b>Die AUSLEGUNGSTEMPERATUR geht nicht an die Zeile, sondern ans PROJEKT</b>
+    /// (Welle KI‑F7): Sie steht in <c>Tab_Einstellungen</c> und gilt für jede Anlage
+    /// darin; die Sicht führt sie über den Schreibweg der Maske.
+    /// </summary>
+    [Fact]
+    public async Task Photovoltaik_Die_Auslegungstemperatur_geht_ueber_den_Weg_der_Maske()
+    {
+        double? kalt = -10.0;
+        var zeile = new ErzeugerZeile();
+        var sicht = new PhotovoltaikKiSicht
+        {
+            Zeilenquelle = () => zeile,
+            KaltLesen = () => kalt,
+            KaltSetzen = wert => kalt = wert
+        };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => sicht,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "auslegung_kalt", "-15,5");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(-15.5, kalt);
+    }
+
+    /// <summary>
+    /// <b>Das RECHENMODELL ist ein Wahlfeld</b> (KI‑D‑Q6, KI‑D‑Q7): Auf der Maske steht
+    /// ein Auswahlfeld mit „Einfach" und „Erweitert", und genau über diesen Text trifft
+    /// der Assistent es — der Wahrheitswert der Anlage bleibt dahinter.
+    /// </summary>
+    [Fact]
+    public async Task Photovoltaik_Das_Rechenmodell_wird_ueber_seinen_Text_gewaehlt()
+    {
+        var zeile = new ErzeugerZeile { ModellErweitert = false };
+        var sicht = new PhotovoltaikKiSicht
+        {
+            Zeilenquelle = () => zeile,
+            ModellEintraege = () => new[]
+            {
+                new KiWahleintrag("0", "Einfach"),
+                new KiWahleintrag("1", "Erweitert")
+            }
+        };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => sicht,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "modell_erweitert",
+                                           "erweitert");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.True(zeile.ModellErweitert);
+    }
+
+    /// <summary>
+    /// <b>Die Überlagerung „Anlagenwerte" ist eine EIGENE Maske</b> (Welle KI‑F7): Der
+    /// Assistent schreibt in ihren Arbeitsstand, nicht an ihm vorbei in die Anlage —
+    /// „OK" und „Abbrechen" bleiben der Klick des Anwenders.
+    /// </summary>
+    [Fact]
+    public async Task Anlagenwerte_Die_Bestaetigung_setzt_den_Arbeitsstand_des_Fensters()
+    {
+        var zeile = new ErzeugerZeile { WrEta50 = 0.95 };
+        var stand = new PvAnlagenwerteKiSicht();
+        stand.Laden(zeile);
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PV_ANLAGENWERTE,
+                                                     () => stand, Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.PV_ANLAGENWERTE, "wr_eta50", "0,97");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(0.97, stand.Eta50);
+
+        // Die ANLAGE bleibt unangetastet, bis das Fenster übernimmt.
+        Assert.Equal(0.95, zeile.WrEta50);
+        stand.Uebernehmen(zeile);
+        Assert.Equal(0.97, zeile.WrEta50);
     }
 
     [Fact]
@@ -91,8 +179,36 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Equal(1500, daten.Gesamtvolumen);
     }
 
+    /// <summary>
+    /// <b>Der kanonische setzbare Fall der Wärmepumpenverwaltung ist die
+    /// NENNLEISTUNG</b> — nicht mehr die Modulkosten.
+    /// </summary>
+    /// <remarks>
+    /// Die Modulkosten sind seit dem Anwenderentscheid 21.09.2026 (KI‑D‑Q7)
+    /// <c>nurLesen</c>: Die Maske zeigt sie als Lesewert mit Herleitungszeile, gepflegt
+    /// werden sie in der Kostenverwaltung. Ein Fall, der sie setzt, prüfte damit nicht
+    /// mehr das Setzen, sondern die Ablehnung — die steht weiter unten.
+    /// </remarks>
     [Fact]
-    public async Task Waermepumpe_Die_Bestaetigung_setzt_die_Modulkosten()
+    public async Task Waermepumpe_Die_Bestaetigung_setzt_die_Nennleistung()
+    {
+        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Nennleistung = 12 };
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "nennleistung", "18");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal(18, daten.Nennleistung);
+    }
+
+    /// <summary>
+    /// <b>Die MODULKOSTEN sind eine Anzeige und werden benannt abgelehnt</b>
+    /// (Anwenderentscheid 21.09.2026, KI‑D‑Q7) — dieselbe Lage wie an
+    /// <c>Form_WP_Anlage</c>.
+    /// </summary>
+    [Fact]
+    public async Task Waermepumpe_Die_Modulkosten_sind_nur_lesbar_und_werden_abgelehnt()
     {
         var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Modulkosten = 1000 };
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten,
@@ -100,8 +216,8 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
 
         KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "modulkosten", "2400");
 
-        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
-        Assert.Equal(2400, daten.Modulkosten);
+        Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+        Assert.Equal(1000, daten.Modulkosten);
     }
 
     /// <summary>
@@ -128,22 +244,26 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     }
 
     /// <summary>
-    /// <b>Der tolerante Feldname</b> (KI-F1b): „Modulkosten des Geräts" trifft das
-    /// Feld <c>modulkosten</c>, und das Ergebnis vermerkt die Auflösung.
+    /// <b>Der tolerante Feldname</b> (KI-F1b): „Nennleistung des Geräts" trifft das
+    /// Feld <c>nennleistung</c>, und das Ergebnis vermerkt die Auflösung.
     /// </summary>
+    /// <remarks>
+    /// Bis zum Anwenderentscheid 21.09.2026 stand hier „Modulkosten des Geräts"; das
+    /// Feld ist seither <c>nurLesen</c> und taugt nicht mehr als setzbarer Fall.
+    /// </remarks>
     [Fact]
     public async Task Ein_tolerant_genannter_Feldname_trifft_und_wird_vermerkt()
     {
-        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Modulkosten = 1000 };
+        var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten { Nennleistung = 12 };
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten,
                                                      Haken());
 
         KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE,
-                                           "Modulkosten des Geräts", "2400");
+                                           "Nennleistung des Geräts", "18");
 
         Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
-        Assert.Equal(2400, daten.Modulkosten);
-        Assert.Contains("modulkosten", ergebnis.Kurzfassung(), StringComparison.Ordinal);
+        Assert.Equal(18, daten.Nennleistung);
+        Assert.Contains("nennleistung", ergebnis.Kurzfassung(), StringComparison.Ordinal);
     }
 
     /// <summary>
@@ -240,19 +360,23 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     [Fact]
     public async Task Ein_schreibgeschuetzter_Katalogsatz_wird_sichtbar_abgelehnt()
     {
+        // Gesetzt wird ein SETZBARES Feld (die Nennleistung): Sonst läge die Ablehnung
+        // schon am nurLesen des Feldes und nicht am Schreibschutz des Satzes — genau
+        // das wäre die stumpfe Probe. Die Modulkosten sind seit dem Anwenderentscheid
+        // 21.09.2026 nur lesbar und haben ihren eigenen Fall weiter oben.
         var daten = new EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten
         {
-            Modulkosten = 1000,
+            Nennleistung = 12,
             NurLesen = true
         };
 
         var haken = new KiMaskenhaken { Schreibgeschuetzt = () => daten.NurLesen };
         using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.WAERMEPUMPE, () => daten, haken);
 
-        KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "modulkosten", "2400");
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.WAERMEPUMPE, "nennleistung", "18");
 
         Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
-        Assert.Equal(1000, daten.Modulkosten);
+        Assert.Equal(12, daten.Nennleistung);
     }
 
     /// <summary>
@@ -282,9 +406,10 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
     public async Task Photovoltaik_Ein_schreibgeschuetzter_Katalogsatz_wird_sichtbar_abgelehnt()
     {
         var zeile = new ErzeugerZeile { Neigung = 30, NurLesen = true };
+        var sicht = new PhotovoltaikKiSicht { Zeilenquelle = () => zeile };
 
         var haken = new KiMaskenhaken { Schreibgeschuetzt = () => zeile.NurLesen };
-        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => zeile, haken);
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.PHOTOVOLTAIK, () => sicht, haken);
 
         KiErgebnis ergebnis = await Setzen(KiMaskennamen.PHOTOVOLTAIK, "neigung", "35");
 

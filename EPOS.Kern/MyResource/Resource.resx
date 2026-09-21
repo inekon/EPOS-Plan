@@ -8290,7 +8290,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Modulkosten</value>
   </data>
   <data name="KI_DLG_WP_MODULKOSTEN_ERL" xml:space="preserve">
-    <value>Anschaffungskosten der Wärmepumpe; beim Speichern ist die Angabe Pflicht.</value>
+    <value>Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung.</value>
   </data>
   <data name="KI_DLG_MASKE_UNBEKANNT" xml:space="preserve">
     <value>Die Maske „{0}“ ist für den Assistenten nicht freigegeben. Freigegeben sind: {1}.</value>
@@ -20611,7 +20611,7 @@ Möchten Sie das zulassen?</value>
     <value>Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske.</value>
   </data>
   <data name="KI_DLG_PV_MODELL_ERL" xml:space="preserve">
-    <value>Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit.</value>
+    <value>Die zwei Einträge der Klappliste: „Einfach“ = isotrope Einstrahlung und linearer Temperaturgang, „Erweitert“ = Hay-Davies, Schwachlichtmodell und Wechselrichter-Kennlinie. Der Wechselrichter rechnet in beiden Modellen mit.</value>
   </data>
   <data name="KI_DLG_PV_WR_WIRKUNGSGRAD_ERL" xml:space="preserve">
     <value>Der Wechselrichter-Wirkungsgrad als Faktor zwischen 0 und 1; leer bedeutet 0,95. Nur im einfachen Rechenmodell eingebbar — im erweiterten rechnet die Kennlinie.</value>
@@ -22769,5 +22769,26 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_SIM_AUTARKIE_ERL" xml:space="preserve">
     <value>Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PV_ANLAGENWERTE" xml:space="preserve">
+    <value>Anlagenwerte des Wechselrichters</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_KALT_NAME" xml:space="preserve">
+    <value>Auslegungstemperatur kalt</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_KALT_ERL" xml:space="preserve">
+    <value>Die kälteste Zelltemperatur der Auslegung in °C; sie bestimmt die höchste Strangspannung. Leer bedeutet −10 °C. Der Wert gehört dem PROJEKT und gilt für alle Anlagen darin.</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_HEISS_NAME" xml:space="preserve">
+    <value>Auslegungstemperatur heiß</value>
+  </data>
+  <data name="KI_DLG_PV_AUSLEG_HEISS_ERL" xml:space="preserve">
+    <value>Die heißeste Zelltemperatur der Auslegung in °C; sie bestimmt die niedrigste MPP-Spannung und den höchsten Strom. Leer bedeutet +70 °C. Der Wert gehört dem PROJEKT und gilt für alle Anlagen darin.</value>
+  </data>
+  <data name="KI_DLG_PVA_NENNLEISTUNG_ERL" xml:space="preserve">
+    <value>Die AC-Nennleistung des Wechselrichters in kW; sie begrenzt die Einspeisung (Clipping). Leer oder 0 heißt „nicht bekannt“ — dann wird nicht begrenzt.</value>
+  </data>
+  <data name="KI_DLG_PVA_ETA_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad des Wechselrichters an diesem Lastpunkt als Faktor zwischen 0 und 1 (0,97 = 97 %), nicht in Prozent. Leer oder 0 heißt „nicht bekannt“; dann rechnet die Anlage mit den Vorgabewerten.</value>
   </data>
 </root>

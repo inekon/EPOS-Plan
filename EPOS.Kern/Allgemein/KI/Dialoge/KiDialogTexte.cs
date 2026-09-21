@@ -140,6 +140,14 @@
 
         internal static string MaskeHeizkessel => MyResource.Resource.KI_DLG_MASKE_HEIZKESSEL;
         internal static string MaskePv => MyResource.Resource.KI_DLG_MASKE_PV;
+
+        /// <summary>
+        /// Die Ueberlagerung „Anlagenwerte" der Photovoltaik (Welle KI-F7,
+        /// Anwenderentscheid 21.09.2026).
+        /// </summary>
+        internal static string MaskePvAnlagenwerte
+            => MyResource.Resource.KI_DLG_MASKE_PV_ANLAGENWERTE;
+
         internal static string MaskePufferSp => MyResource.Resource.KI_DLG_MASKE_PUFFERSP;
         internal static string MaskeWp => MyResource.Resource.KI_DLG_MASKE_WP;
 
@@ -257,6 +265,32 @@
         internal static string PvStrangAzimutErl => MyResource.Resource.KI_DLG_PV_STRANG_AZIMUT_ERL;
         internal static string PvTraegerName => MyResource.Resource.ETW_LBL_ART;
         internal static string PvTraegerErl => MyResource.Resource.KI_DLG_PV_TRAEGER_ERL;
+
+        // Die zwei AUSLEGUNGSTEMPERATUREN des Projekts (Welle KI-F7). Ihre
+        // Maskenbeschriftungen sind „kalt [°C]" und „heiss [°C]" unter der Zeile
+        // „Auslegungstemperaturen:" - als Feldname allein zu wenig, deshalb ein
+        // eigener, ausgeschriebener Schluessel je Fall.
+        internal static string PvAuslegKaltName => MyResource.Resource.KI_DLG_PV_AUSLEG_KALT_NAME;
+        internal static string PvAuslegKaltErl => MyResource.Resource.KI_DLG_PV_AUSLEG_KALT_ERL;
+        internal static string PvAuslegHeissName => MyResource.Resource.KI_DLG_PV_AUSLEG_HEISS_NAME;
+        internal static string PvAuslegHeissErl => MyResource.Resource.KI_DLG_PV_AUSLEG_HEISS_ERL;
+
+        // ============================================== Photovoltaik: Anlagenwerte
+
+        // Die Ueberlagerung „Anlagenwerte" (Welle KI-F7). Ihre Feldnamen sind die
+        // Beschriftungen des Fensters - dieselben Schluessel, die PvModellTexte fuehrt.
+        internal static string PvaNennleistungName => MyResource.Resource.PVM_DLG_NENNLEISTUNG;
+        internal static string PvaNennleistungErl => MyResource.Resource.KI_DLG_PVA_NENNLEISTUNG_ERL;
+        internal static string PvaEta10Name => MyResource.Resource.PVM_DLG_ETA10;
+        internal static string PvaEta50Name => MyResource.Resource.PVM_DLG_ETA50;
+        internal static string PvaEta100Name => MyResource.Resource.PVM_DLG_ETA100;
+
+        /// <summary>
+        /// EINE Erlaeuterung fuer alle drei Wirkungsgrade: Sie sagen dasselbe ueber
+        /// drei Lastpunkte, und drei fast gleiche Saetze waeren drei Stellen zum
+        /// Auseinanderlaufen.
+        /// </summary>
+        internal static string PvaEtaErl => MyResource.Resource.KI_DLG_PVA_ETA_ERL;
 
         // ====================================================== Pufferspeicher: Felder
 

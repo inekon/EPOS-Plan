@@ -201,6 +201,11 @@ namespace WindowsFormsApplication1
                 // kontextfreie Weg ist die Modulverwaltung.
                 { KiMaskennamen.PHOTOVOLTAIK,     Masken.PvAdmin },
 
+                // Die Ueberlagerung „Anlagenwerte" geht aus dem Strangabschnitt von
+                // Form_PV auf und hat keinen eigenen Weg im Menue - ihr Ziel ist
+                // deshalb dasselbe wie das ihres Wirts (Welle KI-F7).
+                { KiMaskennamen.PV_ANLAGENWERTE,  Masken.PvAdmin },
+
                 // Ebenso der Pufferspeichereditor.
                 { KiMaskennamen.PUFFERSPEICHER,   Masken.PufferSpAdmin },
 

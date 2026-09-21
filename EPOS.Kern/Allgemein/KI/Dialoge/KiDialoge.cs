@@ -33,6 +33,18 @@ namespace WindowsFormsApplication1
         /// <summary>Photovoltaik-Projektdialog (<c>PhotovoltaikDialog</c>).</summary>
         public const string PHOTOVOLTAIK = "Form_PV";
 
+        /// <summary>
+        /// Die Ueberlagerung „Anlagenwerte" der Photovoltaik (<c>PvStraengeFelder</c>,
+        /// Anwenderentscheid 21.09.2026, KI-D-Q7).
+        /// </summary>
+        /// <remarks>
+        /// Sie ist ein eigenes Fenster mit eigenem Titel, eigenem Arbeitsstand und
+        /// eigener Knopfleiste — und bekommt deshalb nach der Regel „Baustein in
+        /// eigenem Fenster bekommt einen Schluessel" einen eigenen Katalogeintrag
+        /// statt vier Feldern an <see cref="PHOTOVOLTAIK"/>.
+        /// </remarks>
+        public const string PV_ANLAGENWERTE = "Form_PV_Anlagenwerte";
+
         /// <summary>Pufferspeicher-Katalogeditor (<c>PufferSpKatalogDialog</c>).</summary>
         public const string PUFFERSPEICHER = "Form_PufferSp_Bearbeiten";
 
@@ -518,6 +530,7 @@ namespace WindowsFormsApplication1
             return new KiDialogKatalog(
                 Heizkessel(),
                 Photovoltaik(),
+                PvAnlagenwerte(),
                 Pufferspeicher(),
                 Waermepumpe(),
                 Stromspeicherauslegung(),
@@ -4624,15 +4637,28 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Photovoltaik — die drei Werte, die der Projektdialog neben der Geraetewahl
-        /// fuehrt; sie stehen an der gewaehlten Zeile
-        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>).
+        /// Photovoltaik — die Werte, die der Projektdialog neben der Geraetewahl
+        /// fuehrt; sie stehen an der gewaehlten Zeile und, seit der Welle KI-F7, an
+        /// der Sichtklasse <c>EPOS.UI.Dialoge.Erzeuger.PhotovoltaikKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <b>Das Daten-Objekt ist hier eine ZEILE und kein Dialogstand.</b> Der Dialog
         /// fuehrt eine Projektliste; angemeldet wird die GEWAEHLTE Zeile, und der Getter
         /// holt sie bei jedem Lesen neu. Ist keine gewaehlt, sind die Felder leer —
-        /// derselbe Zustand, den der Anwender auf der Maske sieht.
+        /// derselbe Zustand, den der Anwender auf der Maske sieht. Die Sichtklasse
+        /// reicht jede Zeileneigenschaft unveraendert durch und faellt mit der Zeile:
+        /// Ohne gewaehlte Zeile meldet der Dialog gar keine Sicht an.
+        /// <para>
+        /// <b>Die zwei AUSLEGUNGSTEMPERATUREN sind PROJEKTWEIT</b> (Welle KI-F7,
+        /// Anwenderentscheid 21.09.2026, KI-D-Q7). Sie stehen nicht an der Zeile,
+        /// sondern in <c>Tab_Einstellungen.Ausleg_T_Kalt</c> und
+        /// <c>…Ausleg_T_Heiss</c>; die Maske zeigt sie im Strangabschnitt und schreibt
+        /// sie ueber <c>KonfigurationCtrl.AuslegungstemperaturenSchreiben</c> zurueck.
+        /// Genau deshalb braucht <c>Form_PV</c> eine Sichtklasse: An der Zeile gibt es
+        /// diese zwei Groessen nicht, und ein zweites Daten-Objekt je Maske kennt die
+        /// Bruecke nicht. Wer eine der beiden setzt, aendert sie fuer JEDE Anlage des
+        /// Projekts — das sagt ihre Erlaeuterung.
+        /// </para>
         /// <para>
         /// <b>Die Maske besteht aus DREI Dateien</b> (Welle KI-F1): der Projektdialog
         /// selbst, der Baustein der MODELLFELDER (Rechenmodell,
@@ -4648,11 +4674,18 @@ namespace WindowsFormsApplication1
         /// und stehen im Daten-Objekt allein als Id — dieselbe Regel wie ueberall.
         /// </para>
         /// <para>
-        /// <b>Die Anlagenwerte des Wechselrichters bleiben draussen</b>
-        /// (<c>WrNennleistungKw</c>, <c>WrEta10/50/100</c>). Sie stehen in einer eigenen
-        /// Ueberlagerung mit eigenem Arbeitsstand und eigenem OK; auf der offenen Maske
-        /// sieht der Anwender sie nicht, und ein Katalogfeld, das dort niemand nachlesen
-        /// kann, waere genau die stille Setzung, die Fachkonzept 11.6 ausschliesst.
+        /// <b>Die Anlagenwerte des Wechselrichters haben einen EIGENEN Schluessel</b>
+        /// (<c>WrNennleistungKw</c>, <c>WrEta10/50/100</c>). Bis zur Welle KI-F7 blieben
+        /// sie ganz draussen: Sie stehen in einer eigenen Ueberlagerung mit eigenem
+        /// Arbeitsstand und eigenem OK, auf der offenen Maske sieht der Anwender sie
+        /// nicht, und ein Katalogfeld, das dort niemand nachlesen kann, waere genau die
+        /// stille Setzung, die Fachkonzept 11.6 ausschliesst. Der ANWENDER hat sie am
+        /// 21.09.2026 freigegeben (KI-D-Q7) — nicht als Felder dieser Maske, sondern
+        /// nach der Regel „Baustein in eigenem Fenster bekommt einen Schluessel":
+        /// <see cref="KiMaskennamen.PV_ANLAGENWERTE"/> meldet sich an, SOLANGE die
+        /// Ueberlagerung offen steht, und ist damit genau dann lesbar, wenn der
+        /// Anwender die Zahlen auch vor sich hat. Der Einwand von 11.6 bleibt also
+        /// beantwortet, nicht uebergangen.
         /// </para>
         /// </remarks>
         private static KiDialog Photovoltaik()
@@ -4663,69 +4696,156 @@ namespace WindowsFormsApplication1
                 felder: new[]
                 {
                     // ---- Die Anlage -------------------------------------------------
-                    new KiDialogFeld("neigung", "ErzeugerZeile.Neigung",
+                    new KiDialogFeld("neigung", "PhotovoltaikKiSicht.Neigung",
                                      KiDialogTexte.PvNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvNeigungErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("azimut", "ErzeugerZeile.Azimut",
+                    new KiDialogFeld("azimut", "PhotovoltaikKiSicht.Azimut",
                                      KiDialogTexte.PvAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "PhotovoltaikKiSicht.CarrierId",
                                      KiDialogTexte.PvTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.PvTraegerErl),
-                    new KiDialogFeld("anzahl_module", "ErzeugerZeile.AnzahlModule",
+                    new KiDialogFeld("anzahl_module", "PhotovoltaikKiSicht.AnzahlModule",
                                      KiDialogTexte.PvAnzahlName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvAnzahlErl,
                                      leerErlaubt: true),
 
                     // ---- Die Modellfelder (PvModellFelder) --------------------------
-                    new KiDialogFeld("modell_erweitert", "ErzeugerZeile.ModellErweitert",
-                                     KiDialogTexte.PvModellName, KiParameterTyp.Wahrheitswert,
+                    // Das Rechenmodell ist auf der Maske ein AUSWAHLFELD mit den zwei
+                    // Eintraegen „Einfach" und „Erweitert" - und seit dem
+                    // Anwenderentscheid 21.09.2026 (KI-D-Q7) auch im Katalog eine WAHL
+                    // statt eines Wahrheitswerts (KI-D-Q6: der Assistent trifft einen
+                    // Eintrag ueber denselben Text, den der Anwender liest). Die
+                    // Eigenschaft bleibt ein bool; die Schluessel der zwei Eintraege
+                    // sind die Listenplaetze 0 und 1 der Maske.
+                    new KiDialogFeld("modell_erweitert", "PhotovoltaikKiSicht.ModellErweitert",
+                                     KiDialogTexte.PvModellName, KiParameterTyp.Wahl,
                                      KiDialogTexte.PvModellErl),
-                    new KiDialogFeld("wr_wirkungsgrad", "ErzeugerZeile.WrWirkungsgrad",
+                    new KiDialogFeld("wr_wirkungsgrad", "PhotovoltaikKiSicht.WrWirkungsgrad",
                                      KiDialogTexte.PvWrWirkungsgradName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvWrWirkungsgradErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("systemverluste", "ErzeugerZeile.Systemverluste",
+                    new KiDialogFeld("systemverluste", "PhotovoltaikKiSicht.Systemverluste",
                                      KiDialogTexte.PvSystemverlusteName, KiParameterTyp.Zahl,
                                      KiDialogTexte.PvSystemverlusteErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
 
                     // ---- Wechselrichter und Straenge (PvStraengeFelder) -------------
-                    new KiDialogFeld("mit_wechselrichter", "ErzeugerZeile.MitWechselrichter",
+                    new KiDialogFeld("mit_wechselrichter", "PhotovoltaikKiSicht.MitWechselrichter",
                                      KiDialogTexte.PvMitWrName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.PvMitWrErl),
-                    new KiDialogFeld("strang", "ErzeugerZeile.Straenge[].Bezeichner",
+
+                    // ---- Die zwei AUSLEGUNGSTEMPERATUREN (Welle KI-F7) --------------
+                    // Sie stehen im Strangabschnitt, gehoeren aber dem PROJEKT
+                    // (Tab_Einstellungen) - siehe Klassenkommentar.
+                    new KiDialogFeld("auslegung_kalt", "PhotovoltaikKiSicht.AuslegungKalt",
+                                     KiDialogTexte.PvAuslegKaltName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvAuslegKaltErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("auslegung_heiss", "PhotovoltaikKiSicht.AuslegungHeiss",
+                                     KiDialogTexte.PvAuslegHeissName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvAuslegHeissErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    new KiDialogFeld("strang", "PhotovoltaikKiSicht.Straenge[].Bezeichner",
                                      KiDialogTexte.PvStrangName, KiParameterTyp.Text,
                                      KiDialogTexte.PvStrangErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_geraet", "ErzeugerZeile.Straenge[].Geraetenummer",
+                    new KiDialogFeld("strang_geraet", "PhotovoltaikKiSicht.Straenge[].Geraetenummer",
                                      KiDialogTexte.PvStrangGeraetName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangGeraetErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_mppt", "ErzeugerZeile.Straenge[].Mppt",
+                    new KiDialogFeld("strang_mppt", "PhotovoltaikKiSicht.Straenge[].Mppt",
                                      KiDialogTexte.PvStrangMpptName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangMpptErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_module_reihe", "ErzeugerZeile.Straenge[].ModuleReihe",
+                    new KiDialogFeld("strang_module_reihe", "PhotovoltaikKiSicht.Straenge[].ModuleReihe",
                                      KiDialogTexte.PvStrangReiheName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangReiheErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_parallel", "ErzeugerZeile.Straenge[].StraengeParallel",
+                    new KiDialogFeld("strang_parallel", "PhotovoltaikKiSicht.Straenge[].StraengeParallel",
                                      KiDialogTexte.PvStrangParallelName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangParallelErl,
                                      leerErlaubt: true, zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_neigung", "ErzeugerZeile.Straenge[].Neigung",
+                    new KiDialogFeld("strang_neigung", "PhotovoltaikKiSicht.Straenge[].Neigung",
                                      KiDialogTexte.PvStrangNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangNeigungErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
                                      zeilenkennzeichen: STRANGKENNZEICHEN),
-                    new KiDialogFeld("strang_azimut", "ErzeugerZeile.Straenge[].Azimut",
+                    new KiDialogFeld("strang_azimut", "PhotovoltaikKiSicht.Straenge[].Azimut",
                                      KiDialogTexte.PvStrangAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.PvStrangAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
                                      zeilenkennzeichen: STRANGKENNZEICHEN)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Form_PV_Anlagenwerte  ->  PvStraengeFelder (Ueberlagerung)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Ueberlagerung „Anlagenwerte" der Photovoltaik — die vier Kennwerte des
+        /// Wechselrichters als Rueckfall ohne Strangzuordnung
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.PvAnlagenwerteKiSicht</c>).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Was Fachkonzept 11.6 sagte.</b> Ein Katalogfeld, das der Anwender auf der
+        /// offenen Maske nicht nachlesen kann, ist eine stille Setzung; die vier Werte
+        /// stehen in einem eigenen Fenster mit eigenem Arbeitsstand und eigenem OK und
+        /// blieben deshalb bis zur Welle KI-F6 ganz draussen.
+        /// </para>
+        /// <para>
+        /// <b>Was der ANWENDER entschieden hat</b> (21.09.2026, KI-D-Q7): Sie werden
+        /// freigegeben — nicht als vier weitere Felder von <c>Form_PV</c>, sondern als
+        /// EIGENE Maske nach der Regel „Baustein in eigenem Fenster bekommt einen
+        /// Schluessel". Damit bleibt der Einwand von 11.6 beantwortet: Die Maske meldet
+        /// sich an, SOLANGE die Ueberlagerung offen steht, und liest und schreibt dabei
+        /// den ARBEITSSTAND des Fensters (<c>_nenn</c>, <c>_eta10/50/100</c>) — genau
+        /// die Zahlen, die vor dem Anwender stehen. „OK" uebernimmt sie in die Anlage,
+        /// „Abbrechen" verwirft sie; der Assistent aendert daran nichts.
+        /// </para>
+        /// <para>
+        /// <b>Ihr Oeffnungsziel ist das von <c>Form_PV</c></b>: Das Fenster geht aus dem
+        /// Abschnitt „Wechselrichter und Straenge" auf und hat keinen eigenen Weg im
+        /// Menue — dieselbe Bauart wie bei den Masken der Simulationskonfiguration.
+        /// </para>
+        /// <para>
+        /// <b>Null heisst „nicht bekannt".</b> Die Maske nimmt 0 als „nicht bekannt" an
+        /// und schreibt dann NULL in die Anlage; deshalb sind alle vier
+        /// <c>leerErlaubt</c>. Die drei Wirkungsgrade sind Faktoren zwischen 0 und 1,
+        /// keine Prozentzahlen — das sagt ihre Erlaeuterung, denn eine „97" traefe sonst
+        /// wortlos die Grenze der Maske.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PvAnlagenwerte()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PV_ANLAGENWERTE,
+                anzeigename: KiDialogTexte.MaskePvAnlagenwerte,
+                felder: new[]
+                {
+                    new KiDialogFeld("wr_nennleistung", "PvAnlagenwerteKiSicht.Nennleistung",
+                                     KiDialogTexte.PvaNennleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvaNennleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("wr_eta10", "PvAnlagenwerteKiSicht.Eta10",
+                                     KiDialogTexte.PvaEta10Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvaEtaErl, leerErlaubt: true),
+                    new KiDialogFeld("wr_eta50", "PvAnlagenwerteKiSicht.Eta50",
+                                     KiDialogTexte.PvaEta50Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvaEtaErl, leerErlaubt: true),
+                    new KiDialogFeld("wr_eta100", "PvAnlagenwerteKiSicht.Eta100",
+                                     KiDialogTexte.PvaEta100Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PvaEtaErl, leerErlaubt: true)
                 },
                 knoepfe: new[]
                 {
@@ -4804,9 +4924,20 @@ namespace WindowsFormsApplication1
         /// (<c>EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDaten</c>).
         /// </summary>
         /// <remarks>
+        /// <para>
         /// Begruendung fuer den Feldumfang wie beim Pufferspeicher (Fachkonzept 11.7):
         /// <c>btn_Speichern_Click</c> prueft ausschliesslich die Modulkosten, und zwar
         /// mit <c>leerErlaubt: false</c>.
+        /// </para>
+        /// <para>
+        /// <b>Die MODULKOSTEN sind seit dem Anwenderentscheid 21.09.2026 (KI-D-Q7) nur
+        /// lesbar.</b> Der Katalog fuehrte sie setzbar, <c>WaermepumpeStammFelder</c>
+        /// zeigt sie aber seit W14a-O-1 als Lesewert mit Herleitungszeile: Gepflegt
+        /// werden sie in der Kostenverwaltung. Ein Setzer bot damit an, eine Zahl zu
+        /// aendern, die auf der Maske kein Eingabefeld hat — dieselbe Lage und
+        /// dieselbe Antwort wie bei <c>Form_WP_Anlage</c>, wo sie schon vorher
+        /// <c>nurLesen</c> war.
+        /// </para>
         /// </remarks>
         private static KiDialog Waermepumpe()
         {
@@ -4818,7 +4949,8 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("modulkosten", "WaermepumpeStammDaten.Modulkosten",
                                      KiDialogTexte.WpModulkostenName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.WpModulkostenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: false),
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: false,
+                                     nurLesen: true),
 
                     // ---- Die Stammfelder des Bausteins (KI-F1b, KI-D-Q6) ----------
                     new KiDialogFeld("name", "WaermepumpeStammDaten.Name",

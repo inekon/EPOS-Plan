@@ -28583,6 +28583,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenwerte des Wechselrichters ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PV_ANLAGENWERTE {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PV_ANLAGENWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Erdreich ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_QERD {
@@ -29789,6 +29798,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad des Wechselrichters an diesem Lastpunkt als Faktor zwischen 0 und 1 (0,97 = 97 %), nicht in Prozent. Leer oder 0 heißt „nicht bekannt“; dann rechnet die Anlage mit den Vorgabewerten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVA_ETA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVA_ETA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die AC-Nennleistung des Wechselrichters in kW; sie begrenzt die Einspeisung (Clipping). Leer oder 0 heißt „nicht bekannt“ — dann wird nicht begrenzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVA_NENNLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVA_NENNLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Vergütungsrechnung überhaupt angewendet? Ausgeschaltet bewertet die Wirtschaftlichkeit den eingespeisten Strom mit dem Satz aus den Wirtschaftlichkeits-Parametern. ähnelt.
         /// </summary>
         public static string KI_DLG_PVV_AKTIV_ERL {
@@ -29960,6 +29987,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die heißeste Zelltemperatur der Auslegung in °C; sie bestimmt die niedrigste MPP-Spannung und den höchsten Strom. Leer bedeutet +70 °C. Der Wert gehört dem PROJEKT und gilt für alle Anlagen darin. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AUSLEG_HEISS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AUSLEG_HEISS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungstemperatur heiß ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AUSLEG_HEISS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AUSLEG_HEISS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kälteste Zelltemperatur der Auslegung in °C; sie bestimmt die höchste Strangspannung. Leer bedeutet −10 °C. Der Wert gehört dem PROJEKT und gilt für alle Anlagen darin. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AUSLEG_KALT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AUSLEG_KALT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslegungstemperatur kalt ähnelt.
+        /// </summary>
+        public static string KI_DLG_PV_AUSLEG_KALT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PV_AUSLEG_KALT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Ausrichtung der Modulfläche gegen Süden (0° Süd, negative Werte nach Osten, positive nach Westen). ähnelt.
         /// </summary>
         public static string KI_DLG_PV_AZIMUT_ERL {
@@ -29987,7 +30050,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ja = das erweiterte Rechenmodell, Nein = das einfache (isotrope Einstrahlung, linearer Temperaturgang). Der Wechselrichter rechnet in beiden Modellen mit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die zwei Einträge der Klappliste: „Einfach“ = isotrope Einstrahlung und linearer Temperaturgang, „Erweitert“ = Hay-Davies, Schwachlichtmodell und Wechselrichter-Kennlinie. Der Wechselrichter rechnet in beiden Modellen mit. ähnelt.
         /// </summary>
         public static string KI_DLG_PV_MODELL_ERL {
             get {
@@ -33074,7 +33137,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe; beim Speichern ist die Angabe Pflicht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anschaffungskosten der Wärmepumpe in Euro — Anzeige; die Maske zeigt sie mit ihrer Herleitung, gepflegt werden sie in der Kostenverwaltung. ähnelt.
         /// </summary>
         public static string KI_DLG_WP_MODULKOSTEN_ERL {
             get {
