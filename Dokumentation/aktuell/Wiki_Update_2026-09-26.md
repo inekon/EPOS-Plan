@@ -62,6 +62,9 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Stromspeicher-Reiters der Simulation. (#419)
 - Seit 26.09.2026: Der Hilfe-Assistent setzt in den freigegebenen Masken jedes Eingabefeld,
   auch Auswahlfelder über den angezeigten Text; Feldnamen dürfen ungefähr sein. (#420)
+- Seit 26.09.2026: Der Hilfe-Assistent liest und setzt auch die Masken des Bedarfs (Gebäude,
+  Wohnfläche, Gebäudekatalog, Gebäude- und Bedarfstypen, Bedarfsprofile und -verwaltungen,
+  Wärmebedarf extern, Solarganglinie) und die Klimadaten. (#421)
 - Seit 26.09.2026: Jeder Legendeneintrag eines Diagramms hat ein Farbfeld; die
   Simulationsreiter zeigen dieselben Farben wie der Bericht, und die Einstellungen führen dafür
   54 Größen. (#418)
