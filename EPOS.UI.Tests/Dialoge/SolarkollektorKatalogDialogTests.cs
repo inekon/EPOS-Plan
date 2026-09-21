@@ -4,6 +4,8 @@ using Bunit;
 using EPOS.UI.Dialoge.Erzeuger;
 using EPOS.UI.Dialoge.Solarthermie;
 using EPOS.UI.Dienste;
+using KiKern;
+using WindowsFormsApplication1;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -430,5 +432,78 @@ public class SolarkollektorKatalogDialogTests : EposBunitContext
         var kurz = cut.FindAll(".epos-formularraster .epos-feld--kurz");
         Assert.NotEmpty(kurz);
         Assert.Contains(kurz, f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
+    }
+
+    // =================================================================================
+    //  Der Hilfe-Assistent (Welle KI-F5)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der Editor meldet sein
+    /// DATEN-OBJEKT an; der Kollektorname bleibt nur lesbar, weil er der Schlüssel des
+    /// Katalogsatzes ist.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_ihre_Felder()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.SOLARKOLLEKTOR));
+
+        Assert.False(KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "name").Setzbar);
+
+        KiFeldzugang h0 = KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "h0");
+        Assert.NotNull(h0);
+        Assert.True(h0.Setzbar);
+        h0.Setzen(0.81);
+        cut.Render();
+        Assert.Equal(0.81, Convert.ToDouble(h0.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldzugang vorlauf =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.SOLARKOLLEKTOR, "vorlauf");
+        vorlauf.Setzen(70);
+        cut.Render();
+        Assert.Equal(70, Convert.ToInt32(vorlauf.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Der Speicherweg ist „Überschreiben".</b> Er prüft dieselben sieben
+    /// Pflichtzahlen wie der Knopf — fehlt eine, lehnt er benannt ab und schreibt nicht.
+    /// </summary>
+    [Fact]
+    public void Der_Speicherweg_ueberschreibt_und_prueft_die_Pflichtzahlen()
+    {
+        int gerufen = 0;
+        Aufbauen(ueberschreiben: d =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", d.Name);
+        });
+
+        KiErgebnis ok = KiMaskenbruecke.Haken(KiMaskennamen.SOLARKOLLEKTOR)
+                                       .Speichern().GetAwaiter().GetResult();
+        Assert.Equal(KiStatus.Ausgefuehrt, ok.Status);
+        Assert.Equal(1, gerufen);
+    }
+
+    /// <summary>Fehlt eine Pflichtzahl, schreibt der Assistent nicht.</summary>
+    [Fact]
+    public void Ohne_Pflichtzahl_lehnt_der_Speicherweg_ab()
+    {
+        SolarkollektorKatalogDaten luecke = Voll();
+        luecke.K1 = null;
+
+        int gerufen = 0;
+        Aufbauen(daten: luecke, ueberschreiben: d =>
+        {
+            gerufen++;
+            return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", d.Name);
+        });
+
+        KiErgebnis abgelehnt = KiMaskenbruecke.Haken(KiMaskennamen.SOLARKOLLEKTOR)
+                                              .Speichern().GetAwaiter().GetResult();
+
+        Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
+        Assert.Equal(0, gerufen);
     }
 }

@@ -25253,6 +25253,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine mehrzeilige Notiz zum Modul; sie steht nur im Katalog und beeinflusst keine Rechnung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Moduls; er dient der Wiedererkennung im Katalog und geht in keine Rechnung ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Grenzleistung als Anteil der Nennleistung; darunter schaltet das Modul ab statt weiter zu modulieren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_GRENZLEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_GRENZLEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart des Motors als Freitext, etwa Gas-Otto oder Zündstrahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_MOTORTYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_MOTORTYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Modulname des Katalogsatzes; er ist der Schlüssel, unter dem gespeichert wird, und deshalb im Modus „Bearbeiten“ nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die elektrische Nennleistung des Moduls bei Volllast; sie ist der Bezug der Wirtschaftlichkeit und der Stromgutschrift. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_PEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_PEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die thermische Nennleistung des Moduls bei Volllast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_PTHERM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_PTHERM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur, mit der das Modul angeströmt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger, mit dem das Modul betrieben wird; er bestimmt Brennstoffpreis und Emissionsfaktor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur, mit der das Modul in das Netz einspeist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der elektrische Wirkungsgrad als Faktor, etwa 0,30 für dreißig Prozent. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_WG_EL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_WG_EL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Gesamtwirkungsgrad ist die Summe der zwei Anteile und läuft bei jeder Eingabe mit; geändert werden die Anteile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_WG_GESAMT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_WG_GESAMT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der thermische Wirkungsgrad als Faktor, etwa 0,60 für sechzig Prozent. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHKK_WG_TH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHKK_WG_TH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten BHKW-Moduls — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_BHKW_ANLAGE_ERL {
@@ -28304,6 +28421,258 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine mehrzeilige Notiz zum Satz; sie steht nur im Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Breite des Moduls. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_BREITE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_BREITE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der jährliche Kapazitätsverlust des Speichers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_DEGRADATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_DEGRADATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennkapazität eines Speichermoduls. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_ENERGIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_ENERGIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller; nach ihm lässt sich die Katalogliste einengen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kurzschlussstrom; er begrenzt die Zahl paralleler Stränge je Eingang. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_IKURZSCHLUSS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_IKURZSCHLUSS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Strom im Punkt größter Leistung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_IMPP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_IMPP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_INVEST_FIX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_INVEST_FIX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die kapazitätsbezogenen Modulkosten des Speichers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_KOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_KOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der nutzbare Anteil der Kapazität; er begrenzt die Entladetiefe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_LADEZUSTAND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_LADEZUSTAND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Länge des Moduls; Länge und Breite ergeben die Fläche, die der Belegungsplan braucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_LAENGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_LAENGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_LEISTUNGSKOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_LEISTUNGSKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Lade- und Entladeleistung eines Speichermoduls. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennleistung eines Moduls unter Standardtestbedingungen; sie ist das einzige Pflichtfeld des Modulkatalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_PMAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_PMAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Modulsatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_PV_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_PV_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Moduls; die Anlagenkosten entstehen daraus über die Modulzahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_PV_KOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_PV_KOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bereitschaftsleistung des Speichers im Ruhezustand. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_STANDBY_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_STANDBY_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zelltechnologie des Moduls; sie wählt die Kennlinienform im erweiterten Ertragsmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_TECHNOLOGIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_TECHNOLOGIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Temperaturkoeffizient der Leistung; er ist negativ und sagt, wie viel Leistung je Kelvin Zellerwärmung verloren geht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_TEMPKOEFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_TEMPKOEFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zelltemperatur unter Normalbetriebsbedingungen; sie steuert die Erwärmung im Ertragsmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_TNOCT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_TNOCT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speicherart als Freitext, etwa Lithium-Ionen; sie beschreibt die Zellchemie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leerlaufspannung; sie begrenzt die Zahl der Module in Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_ULEERLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_ULEERLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spannung im Punkt größter Leistung; sie geht in die Strangauslegung ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_UMPP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_UMPP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_VERSCHLEISS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_VERSCHLEISS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Umlaufwirkungsgrad über Laden und Entladen als Faktor; leer heißt nicht gepflegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_WG_RT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_WG_RT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Modulwirkungsgrad unter Standardtestbedingungen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_WIRKUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_WIRKUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zyklenlebensdauer des Speichers; leer heißt nicht gepflegt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_MODK_ZYKLEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MODK_ZYKLEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Maske „{0}“ ist nicht das aktive Fenster. In eine Maske eingetragen wird nur dort, wo Sie gerade arbeiten. ähnelt.
         /// </summary>
         public static string KI_DLG_NICHT_AKTIV {
@@ -29798,6 +30167,168 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die wirksame Aperturfläche eines Moduls; auf sie beziehen sich der Konversionsfaktor und die Verlustbeiwerte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_APERTURFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_APERTURFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine mehrzeilige Notiz zum Kollektor; sie steht nur im Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Kollektors; er dient der Wiedererkennung im Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Konversionsfaktor h0: der Anteil der Einstrahlung, den der Kollektor ohne Temperaturdifferenz umsetzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_H0_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_H0_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die h0 ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_H0_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_H0_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der lineare Wärmeverlustbeiwert k1 der Kollektorkennlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_K1_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_K1_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die k1 ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_K1_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_K1_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der quadratische Wärmeverlustbeiwert k2 der Kollektorkennlinie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_K2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_K2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die k2 ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_K2_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_K2_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_KDIFF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_KDIFF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kdiff ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_KDIFF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_KDIFF_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einfallswinkelkorrekturfaktor Kdir für die direkte Einstrahlung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_KDIR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_KDIR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kdir ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_KDIR_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_KDIR_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bruttofläche eines Moduls einschließlich Rahmen; sie bestimmt den Platzbedarf, nicht den Ertrag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_MODULFLAECHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_MODULFLAECHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kollektorname des Katalogsatzes; er ist der Schlüssel des Satzes und deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Rücklauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_RUECKLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_RUECKLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bauart des Kollektors als Freitext, etwa Flachkollektor oder Vakuumröhre. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_TYP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_TYP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur des Kollektorkreises; leer gilt als null. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SKK_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SKK_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Anzahl der Kollektormodule dieser Anlage, ganze Zahl ab 0; aus ihr und der Modulfläche fällt die angezeigte Aperturfläche. ähnelt.
         /// </summary>
         public static string KI_DLG_SK_ANZAHL_ERL {
@@ -31207,6 +31738,240 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WP_NAME_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WP_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der unabhängigen MPP-Tracker des Geräts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ANZAHL_MPPT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ANZAHL_MPPT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine mehrzeilige Notiz zum Gerät; sie steht nur im Katalog. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner des Gerätesatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA05_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA05_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei Volllast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA100_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA100_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei zehn Prozent Teillast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA10_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA10_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei zwanzig Prozent Teillast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA20_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA20_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei dreißig Prozent Teillast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA30_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA30_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wirkungsgrad bei fünfzig Prozent Teillast, als Faktor von null bis eins. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA50_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA50_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der europäische Wirkungsgrad: das gewichtete Mittel der Teillastwerte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA_EURO_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA_EURO_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der höchste Wirkungsgrad, den das Gerät erreicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_ETA_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_ETA_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Geräts; nach ihm lässt sich die Katalogliste einengen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_FIRMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_FIRMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Woher der Satz stammt: der Geräteimport setzt die Quelle, ein von Hand gepflegter Satz trägt „HAND“. Die Angabe ist Auskunft und keine Eingabe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_HERKUNFT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_HERKUNFT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte Arbeitsstrom je MPP-Tracker. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_I_DC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_I_DC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_I_SC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_I_SC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis eines Geräts; er geht in die Investition der Anlage ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_KOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_KOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Nennwirkleistung auf der Wechselstromseite; sie ist das einzige Pflichtfeld des Geräts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_P_AC_NENN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_P_AC_NENN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die größte Generatorleistung, die der Wechselrichter gleichstromseitig aufnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_P_DC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_P_DC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Verlustleistung des Geräts in der Nacht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_P_NACHT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_P_NACHT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bereitschaftsleistung des Geräts am Tag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_P_STANDBY_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_P_STANDBY_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_STRAENGE_JE_MPPT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_STRAENGE_JE_MPPT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die größte Scheinleistung auf der Wechselstromseite. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_S_AC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_S_AC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die höchste zulässige Gleichspannung am Eingang; sie darf auch im kalten Leerlauf nicht überschritten werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_U_DC_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_U_DC_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die obere Spannung des MPP-Bereichs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_U_MPP_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_U_MPP_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die untere Spannung des MPP-Bereichs; darunter regelt das Gerät nicht mehr nach. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_U_MPP_MIN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_U_MPP_MIN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Spannung, ab der das Gerät den Betrieb aufnimmt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WRK_U_START_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WRK_U_START_ERL", resourceCulture);
             }
         }
         

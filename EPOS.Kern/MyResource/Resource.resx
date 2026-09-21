@@ -22062,4 +22062,259 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WSE_WIRKUNG_ERL" xml:space="preserve">
     <value>Die nicht monetären Wirkungen nach DIN EN 17463 als Freitext — Versorgungssicherheit, Komfort, Emissionen, Bedienaufwand. Er wird auf Zuruf geschrieben, nicht bei jedem Zeichen; im Bericht steht er unverändert.</value>
   </data>
+  <data name="KI_DLG_SKK_H0_NAME" xml:space="preserve">
+    <value>h0</value>
+  </data>
+  <data name="KI_DLG_SKK_K1_NAME" xml:space="preserve">
+    <value>k1</value>
+  </data>
+  <data name="KI_DLG_SKK_K2_NAME" xml:space="preserve">
+    <value>k2</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIR_NAME" xml:space="preserve">
+    <value>Kdir</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIFF_NAME" xml:space="preserve">
+    <value>Kdiff</value>
+  </data>
+  <data name="KI_DLG_BHKK_NAME_ERL" xml:space="preserve">
+    <value>Der Modulname des Katalogsatzes; er ist der Schlüssel, unter dem gespeichert wird, und deshalb im Modus „Bearbeiten“ nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_BHKK_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Moduls; er dient der Wiedererkennung im Katalog und geht in keine Rechnung ein.</value>
+  </data>
+  <data name="KI_DLG_BHKK_MOTORTYP_ERL" xml:space="preserve">
+    <value>Die Bauart des Motors als Freitext, etwa Gas-Otto oder Zündstrahl.</value>
+  </data>
+  <data name="KI_DLG_BHKK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine mehrzeilige Notiz zum Modul; sie steht nur im Katalog und beeinflusst keine Rechnung.</value>
+  </data>
+  <data name="KI_DLG_BHKK_PTHERM_ERL" xml:space="preserve">
+    <value>Die thermische Nennleistung des Moduls bei Volllast.</value>
+  </data>
+  <data name="KI_DLG_BHKK_PEL_ERL" xml:space="preserve">
+    <value>Die elektrische Nennleistung des Moduls bei Volllast; sie ist der Bezug der Wirtschaftlichkeit und der Stromgutschrift.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_EL_ERL" xml:space="preserve">
+    <value>Der elektrische Wirkungsgrad als Faktor, etwa 0,30 für dreißig Prozent.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_TH_ERL" xml:space="preserve">
+    <value>Der thermische Wirkungsgrad als Faktor, etwa 0,60 für sechzig Prozent.</value>
+  </data>
+  <data name="KI_DLG_BHKK_WG_GESAMT_ERL" xml:space="preserve">
+    <value>Der Gesamtwirkungsgrad ist die Summe der zwei Anteile und läuft bei jeder Eingabe mit; geändert werden die Anteile.</value>
+  </data>
+  <data name="KI_DLG_BHKK_GRENZLEISTUNG_ERL" xml:space="preserve">
+    <value>Die untere Grenzleistung als Anteil der Nennleistung; darunter schaltet das Modul ab statt weiter zu modulieren.</value>
+  </data>
+  <data name="KI_DLG_BHKK_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger, mit dem das Modul betrieben wird; er bestimmt Brennstoffpreis und Emissionsfaktor.</value>
+  </data>
+  <data name="KI_DLG_BHKK_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur, mit der das Modul in das Netz einspeist.</value>
+  </data>
+  <data name="KI_DLG_BHKK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Die Rücklauftemperatur, mit der das Modul angeströmt wird.</value>
+  </data>
+  <data name="KI_DLG_SKK_NAME_ERL" xml:space="preserve">
+    <value>Der Kollektorname des Katalogsatzes; er ist der Schlüssel des Satzes und deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_SKK_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Kollektors; er dient der Wiedererkennung im Katalog.</value>
+  </data>
+  <data name="KI_DLG_SKK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine mehrzeilige Notiz zum Kollektor; sie steht nur im Katalog.</value>
+  </data>
+  <data name="KI_DLG_SKK_TYP_ERL" xml:space="preserve">
+    <value>Die Bauart des Kollektors als Freitext, etwa Flachkollektor oder Vakuumröhre.</value>
+  </data>
+  <data name="KI_DLG_SKK_MODULFLAECHE_ERL" xml:space="preserve">
+    <value>Die Bruttofläche eines Moduls einschließlich Rahmen; sie bestimmt den Platzbedarf, nicht den Ertrag.</value>
+  </data>
+  <data name="KI_DLG_SKK_APERTURFLAECHE_ERL" xml:space="preserve">
+    <value>Die wirksame Aperturfläche eines Moduls; auf sie beziehen sich der Konversionsfaktor und die Verlustbeiwerte.</value>
+  </data>
+  <data name="KI_DLG_SKK_H0_ERL" xml:space="preserve">
+    <value>Der Konversionsfaktor h0: der Anteil der Einstrahlung, den der Kollektor ohne Temperaturdifferenz umsetzt.</value>
+  </data>
+  <data name="KI_DLG_SKK_K1_ERL" xml:space="preserve">
+    <value>Der lineare Wärmeverlustbeiwert k1 der Kollektorkennlinie.</value>
+  </data>
+  <data name="KI_DLG_SKK_K2_ERL" xml:space="preserve">
+    <value>Der quadratische Wärmeverlustbeiwert k2 der Kollektorkennlinie.</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIR_ERL" xml:space="preserve">
+    <value>Der Einfallswinkelkorrekturfaktor Kdir für die direkte Einstrahlung.</value>
+  </data>
+  <data name="KI_DLG_SKK_KDIFF_ERL" xml:space="preserve">
+    <value>Der Einfallswinkelkorrekturfaktor Kdiff für die diffuse Einstrahlung, angegeben bei fünfzig Grad.</value>
+  </data>
+  <data name="KI_DLG_SKK_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur des Kollektorkreises; leer gilt als null.</value>
+  </data>
+  <data name="KI_DLG_SKK_RUECKLAUF_ERL" xml:space="preserve">
+    <value>Die Rücklauftemperatur des Kollektorkreises; leer gilt als null.</value>
+  </data>
+  <data name="KI_DLG_MODK_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Bezeichner des Speichersatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_MODK_PV_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Bezeichner des Modulsatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_MODK_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller; nach ihm lässt sich die Katalogliste einengen.</value>
+  </data>
+  <data name="KI_DLG_MODK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine mehrzeilige Notiz zum Satz; sie steht nur im Katalog.</value>
+  </data>
+  <data name="KI_DLG_MODK_TYP_ERL" xml:space="preserve">
+    <value>Die Speicherart als Freitext, etwa Lithium-Ionen; sie beschreibt die Zellchemie.</value>
+  </data>
+  <data name="KI_DLG_MODK_ENERGIE_ERL" xml:space="preserve">
+    <value>Die Nennkapazität eines Speichermoduls.</value>
+  </data>
+  <data name="KI_DLG_MODK_LEISTUNG_ERL" xml:space="preserve">
+    <value>Die Lade- und Entladeleistung eines Speichermoduls.</value>
+  </data>
+  <data name="KI_DLG_MODK_LADEZUSTAND_ERL" xml:space="preserve">
+    <value>Der nutzbare Anteil der Kapazität; er begrenzt die Entladetiefe.</value>
+  </data>
+  <data name="KI_DLG_MODK_DEGRADATION_ERL" xml:space="preserve">
+    <value>Der jährliche Kapazitätsverlust des Speichers.</value>
+  </data>
+  <data name="KI_DLG_MODK_KOSTEN_ERL" xml:space="preserve">
+    <value>Die kapazitätsbezogenen Modulkosten des Speichers.</value>
+  </data>
+  <data name="KI_DLG_MODK_WG_RT_ERL" xml:space="preserve">
+    <value>Der Umlaufwirkungsgrad über Laden und Entladen als Faktor; leer heißt nicht gepflegt.</value>
+  </data>
+  <data name="KI_DLG_MODK_ZYKLEN_ERL" xml:space="preserve">
+    <value>Die Zyklenlebensdauer des Speichers; leer heißt nicht gepflegt.</value>
+  </data>
+  <data name="KI_DLG_MODK_VERSCHLEISS_ERL" xml:space="preserve">
+    <value>Die Verschleißkosten je umgesetzter Kilowattstunde; leer heißt nicht gepflegt.</value>
+  </data>
+  <data name="KI_DLG_MODK_LEISTUNGSKOSTEN_ERL" xml:space="preserve">
+    <value>Der leistungsbezogene Anteil der Investition; leer heißt nicht gepflegt.</value>
+  </data>
+  <data name="KI_DLG_MODK_INVEST_FIX_ERL" xml:space="preserve">
+    <value>Der feste Anteil der Investition je Speicher, unabhängig von Größe und Leistung.</value>
+  </data>
+  <data name="KI_DLG_MODK_STANDBY_ERL" xml:space="preserve">
+    <value>Die Bereitschaftsleistung des Speichers im Ruhezustand.</value>
+  </data>
+  <data name="KI_DLG_MODK_PMAX_ERL" xml:space="preserve">
+    <value>Die Nennleistung eines Moduls unter Standardtestbedingungen; sie ist das einzige Pflichtfeld des Modulkatalogs.</value>
+  </data>
+  <data name="KI_DLG_MODK_WIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Modulwirkungsgrad unter Standardtestbedingungen.</value>
+  </data>
+  <data name="KI_DLG_MODK_UMPP_ERL" xml:space="preserve">
+    <value>Die Spannung im Punkt größter Leistung; sie geht in die Strangauslegung ein.</value>
+  </data>
+  <data name="KI_DLG_MODK_ULEERLAUF_ERL" xml:space="preserve">
+    <value>Die Leerlaufspannung; sie begrenzt die Zahl der Module in Reihe.</value>
+  </data>
+  <data name="KI_DLG_MODK_IMPP_ERL" xml:space="preserve">
+    <value>Der Strom im Punkt größter Leistung.</value>
+  </data>
+  <data name="KI_DLG_MODK_IKURZSCHLUSS_ERL" xml:space="preserve">
+    <value>Der Kurzschlussstrom; er begrenzt die Zahl paralleler Stränge je Eingang.</value>
+  </data>
+  <data name="KI_DLG_MODK_TEMPKOEFF_ERL" xml:space="preserve">
+    <value>Der Temperaturkoeffizient der Leistung; er ist negativ und sagt, wie viel Leistung je Kelvin Zellerwärmung verloren geht.</value>
+  </data>
+  <data name="KI_DLG_MODK_LAENGE_ERL" xml:space="preserve">
+    <value>Die Länge des Moduls; Länge und Breite ergeben die Fläche, die der Belegungsplan braucht.</value>
+  </data>
+  <data name="KI_DLG_MODK_BREITE_ERL" xml:space="preserve">
+    <value>Die Breite des Moduls.</value>
+  </data>
+  <data name="KI_DLG_MODK_PV_KOSTEN_ERL" xml:space="preserve">
+    <value>Der Preis eines Moduls; die Anlagenkosten entstehen daraus über die Modulzahl.</value>
+  </data>
+  <data name="KI_DLG_MODK_TNOCT_ERL" xml:space="preserve">
+    <value>Die Zelltemperatur unter Normalbetriebsbedingungen; sie steuert die Erwärmung im Ertragsmodell.</value>
+  </data>
+  <data name="KI_DLG_MODK_TECHNOLOGIE_ERL" xml:space="preserve">
+    <value>Die Zelltechnologie des Moduls; sie wählt die Kennlinienform im erweiterten Ertragsmodell.</value>
+  </data>
+  <data name="KI_DLG_WRK_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Bezeichner des Gerätesatzes; er ist der Schlüssel, unter dem geschrieben wird, und deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_WRK_FIRMA_ERL" xml:space="preserve">
+    <value>Der Hersteller des Geräts; nach ihm lässt sich die Katalogliste einengen.</value>
+  </data>
+  <data name="KI_DLG_WRK_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine mehrzeilige Notiz zum Gerät; sie steht nur im Katalog.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_AC_NENN_ERL" xml:space="preserve">
+    <value>Die Nennwirkleistung auf der Wechselstromseite; sie ist das einzige Pflichtfeld des Geräts.</value>
+  </data>
+  <data name="KI_DLG_WRK_S_AC_MAX_ERL" xml:space="preserve">
+    <value>Die größte Scheinleistung auf der Wechselstromseite.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_DC_MAX_ERL" xml:space="preserve">
+    <value>Die größte Generatorleistung, die der Wechselrichter gleichstromseitig aufnimmt.</value>
+  </data>
+  <data name="KI_DLG_WRK_KOSTEN_ERL" xml:space="preserve">
+    <value>Der Preis eines Geräts; er geht in die Investition der Anlage ein.</value>
+  </data>
+  <data name="KI_DLG_WRK_HERKUNFT_ERL" xml:space="preserve">
+    <value>Woher der Satz stammt: der Geräteimport setzt die Quelle, ein von Hand gepflegter Satz trägt „HAND“. Die Angabe ist Auskunft und keine Eingabe.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_MPP_MIN_ERL" xml:space="preserve">
+    <value>Die untere Spannung des MPP-Bereichs; darunter regelt das Gerät nicht mehr nach.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_MPP_MAX_ERL" xml:space="preserve">
+    <value>Die obere Spannung des MPP-Bereichs.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_DC_MAX_ERL" xml:space="preserve">
+    <value>Die höchste zulässige Gleichspannung am Eingang; sie darf auch im kalten Leerlauf nicht überschritten werden.</value>
+  </data>
+  <data name="KI_DLG_WRK_U_START_ERL" xml:space="preserve">
+    <value>Die Spannung, ab der das Gerät den Betrieb aufnimmt.</value>
+  </data>
+  <data name="KI_DLG_WRK_I_DC_MAX_ERL" xml:space="preserve">
+    <value>Der größte Arbeitsstrom je MPP-Tracker.</value>
+  </data>
+  <data name="KI_DLG_WRK_I_SC_MAX_ERL" xml:space="preserve">
+    <value>Der größte zulässige Kurzschlussstrom je MPP-Tracker; darüber nimmt das Gerät Schaden.</value>
+  </data>
+  <data name="KI_DLG_WRK_ANZAHL_MPPT_ERL" xml:space="preserve">
+    <value>Die Zahl der unabhängigen MPP-Tracker des Geräts.</value>
+  </data>
+  <data name="KI_DLG_WRK_STRAENGE_JE_MPPT_ERL" xml:space="preserve">
+    <value>Die Zahl der Stränge, die sich an einen MPP-Tracker anschließen lassen.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA05_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei fünf Prozent Teillast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA10_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei zehn Prozent Teillast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA20_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei zwanzig Prozent Teillast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA30_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei dreißig Prozent Teillast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA50_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei fünfzig Prozent Teillast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA100_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad bei Volllast, als Faktor von null bis eins.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA_EURO_ERL" xml:space="preserve">
+    <value>Der europäische Wirkungsgrad: das gewichtete Mittel der Teillastwerte.</value>
+  </data>
+  <data name="KI_DLG_WRK_ETA_MAX_ERL" xml:space="preserve">
+    <value>Der höchste Wirkungsgrad, den das Gerät erreicht.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_STANDBY_ERL" xml:space="preserve">
+    <value>Die Bereitschaftsleistung des Geräts am Tag.</value>
+  </data>
+  <data name="KI_DLG_WRK_P_NACHT_ERL" xml:space="preserve">
+    <value>Die Verlustleistung des Geräts in der Nacht.</value>
+  </data>
 </root>
