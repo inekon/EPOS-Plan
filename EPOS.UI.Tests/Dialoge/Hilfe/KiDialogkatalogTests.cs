@@ -127,6 +127,17 @@ public class KiDialogkatalogTests
         { KiMaskennamen.BRAUCHWASSER_ADMIN,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminKiSicht) },
 
+        // Welle KI-F4: Kosten und Wirtschaftlichkeit. Auch sie melden je eine
+        // SICHTKLASSE an - siehe OhneMarkupprobe.
+        { KiMaskennamen.ENERGIETRAEGER,
+          typeof(EPOS.UI.Dialoge.Kosten.EnergietraegerKiSicht) },
+        { KiMaskennamen.ENERGIETRAEGER_VARIANTE,
+          typeof(EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteKiSicht) },
+        { KiMaskennamen.LEISTUNGSPREISREIHE,
+          typeof(EPOS.UI.Dialoge.Kosten.LeistungspreisReiheKiSicht) },
+        { KiMaskennamen.KOSTENPROFIL,
+          typeof(EPOS.UI.Dialoge.Kosten.KostenprofilKiSicht) },
+
         { KiMaskennamen.BEDARF_ERGEBNIS,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
 
@@ -227,11 +238,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_vierunddreissig_Masken()
+    public void Der_Katalog_fuehrt_achtunddreissig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(34, katalog.Anzahl);
+        Assert.Equal(38, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -646,7 +657,21 @@ public class KiDialogkatalogTests
             "Detailblock; Zeuge ist SolarganglinieDialogTests",
         [KiMaskennamen.KLIMADATEN] =
             "bindet über die Sichtklasse KlimadatenKiSicht auf die lebenden Felder " +
-            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests"
+            "von Quelle und Standort; Zeuge ist KlimadatenDialogTests",
+
+        // Welle KI-F4
+        [KiMaskennamen.ENERGIETRAEGER] =
+            "bindet über die Sichtklasse EnergietraegerKiSicht auf Listenkopf, " +
+            "Trägerkarte und beide Preisblöcke; Zeuge ist EnergietraegerDialogTests",
+        [KiMaskennamen.ENERGIETRAEGER_VARIANTE] =
+            "bindet über die Sichtklasse EnergietraegerVarianteKiSicht auf die zwei " +
+            "lebenden Felder; Zeuge ist EnergietraegerVarianteDialogTests",
+        [KiMaskennamen.LEISTUNGSPREISREIHE] =
+            "bindet über die Sichtklasse LeistungspreisReiheKiSicht auf das Jahr der " +
+            "Reihe; Zeuge ist LeistungspreisReiheDialogTests",
+        [KiMaskennamen.KOSTENPROFIL] =
+            "bindet über die Sichtklasse KostenprofilKiSicht auf Bezeichner und " +
+            "Wochentag; Zeuge ist KostenprofilDialogTests"
     };
 
     /// <summary>

@@ -37,6 +37,7 @@
 @namespace EPOS.UI.Dialoge.Kosten
 @using EPOS.UI.Dialoge.Allgemein
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -648,7 +649,96 @@
         _liste = Liste;
         _traegerId = TraegerVorwahl ?? ErsterTraeger();
         if (_traegerId.HasValue) Laden(_traegerId.Value);
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.ENERGIETRAEGER,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private EnergietraegerKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: Listenkopf, Trägerkarte und der Preisblock, der
+    /// zur Familie des Trägers gehört.
+    /// </summary>
+    /// <remarks>
+    /// <b>Zwei Orte, ein Feldsatz.</b> Filter, Trägerwahl und die zwei Stammfelder
+    /// liegen in privaten Feldern dieser Komponente, die Preisangaben in
+    /// <c>_ansicht.Stand</c>. Die Sicht löst beides an einer Stelle auf; nach jedem
+    /// Setzen in die Karte läuft <see cref="Nachziehen"/> — derselbe Weg, den ein
+    /// Tastendruck des Anwenders nimmt.
+    /// </remarks>
+    private EnergietraegerKiSicht KiSicht()
+    {
+        return _kiSicht ??= new EnergietraegerKiSicht
+        {
+            SucheLesen = () => _suche,
+            SucheSetzen = w => _suche = w,
+
+            TraegerLesen = () => _traegerId,
+            TraegerSetzen = id => { if (id.HasValue) BeiTraeger(id.Value); },
+            TraegerEintraege = () => KiMaskenanmeldung.Eintraege(
+                Traegerzeilen(), z => z.Traeger, z => z.Text),
+
+            StammNameLesen = () => _stammName,
+            StammNameSetzen = w => _stammName = w,
+            StammGruppeLesen = () => _stammGruppe,
+            StammGruppeSetzen = id => _stammGruppe = id,
+            GruppenEintraege = () => KiMaskenanmeldung.Eintraege(
+                Gruppen, z => z.Id, z => z.Text),
+
+            StandLesen = () => _ansicht.Stand,
+            Nachziehen = Nachziehen
+        };
+    }
+
+    /// <summary>
+    /// Die Trägerzeilen OHNE die Gruppenköpfe — nur sie sind wählbar.
+    /// </summary>
+    private IReadOnlyList<EnergietraegerListe> Traegerzeilen()
+    {
+        var treffer = new List<EnergietraegerListe>();
+        foreach (EnergietraegerListe e in _liste)
+        {
+            if (e.Traeger.HasValue) treffer.Add(e);
+        }
+        return treffer;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Der Speicherweg ist derselbe wie der Knopf „Speichern".</b> Er schreibt
+    /// den Stammkopf und die Karte und zieht Liste und Ansicht nach — genau das, was
+    /// <c>BeiSpeichern</c> tut. Einen Schreibschutz meldet die Maske nicht: Welcher
+    /// Satz schreibbar ist, entscheidet die Hülle über ihre Delegaten, und ohne
+    /// <c>Speichern</c>-Delegat lehnt der Weg von selbst ab.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", Kopftitel));
+
+        BeiSpeichern();
+        return _meldungStufe == WarnStufe.Warnung
+                   ? KiKern.KiErgebnis.Abgelehnt(_meldung)
+                   : KiKern.KiErgebnis.Ok(_stammName, anzahl: 1);
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     /// <summary>
     /// ET‑5: Die Liste FRISCH aus der Hülle holen — nach jedem Schritt, der sie verändert

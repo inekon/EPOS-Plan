@@ -25406,11 +25406,380 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit ähnelt.
+        /// </summary>
+        public static string KI_DLG_EINHEIT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_EINHEIT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ in „{1}“. ähnelt.
         /// </summary>
         public static string KI_DLG_ERKLAERT {
             get {
                 return ResourceManager.GetString("KI_DLG_ERKLAERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung der neuen Variante. Sie darf nicht leer sein; sonst bleibt der Dialog beim OK stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ETV_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ETV_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger, von dem die neue Variante abstammt. Ihn zu setzen belegt den Variantennamen vor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ETV_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ETV_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Anteil gepflegt ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_AKTIV_VORLAGE {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_AKTIV_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist dieser Anteil gepflegt? Ausgeschaltet heißt „kein Anteil“ und nicht „null“ — der Betrag daneben wirkt dann nicht und geht auch nicht in die Summe ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_ANTEIL_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_ANTEIL_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der verbrauchsabhängige Preis des Trägers, bezogen auf die Preisbasis darunter. Aus ihm und dem Heizwert entsteht der Preis je Kilowattstunde, mit dem die Wirtschaftlichkeit rechnet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_ARBEITSPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_ARBEITSPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der die Preiskette rechnet — Anzeige. Sie folgt der Preisbasis und den aktiven Umrechnungsregeln. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BASISEINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BASISEINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Brennwert des Brennstoffs. Er wird für Brennwertgeräte gebraucht und steht nur an Trägern, die ihn führen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BRENNWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BRENNWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der CO₂-Bestandteil nach BEHG im Arbeitspreis des Brennstoffs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BS_CO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BS_CO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energiesteuer im Arbeitspreis des Brennstoffs. Der Block zerlegt den Preis und ändert ihn nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BS_ENERGIESTEUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BS_ENERGIESTEUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Netz- und Messentgelt im Arbeitspreis des Brennstoffs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BS_NETZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BS_NETZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschaffung und Vertrieb im Arbeitspreis des Brennstoffs — der Rest, der nach Steuer, CO₂ und Netzentgelt bleibt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_BS_VERTRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_BS_VERTRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? In der Katalogverwaltung ist die Wahl gesperrt — dort gilt die Vorgabe des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_CO2E_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_CO2E_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionen als CO₂-Äquivalent ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_CO2E_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_CO2E_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der CO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_CO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_CO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der ausgerechnete Preis je Kilowattstunde samt seiner Herleitung — Anzeige. Er folgt Arbeitspreis, Heizwert, Preisbasis und den Umrechnungsregeln. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_EFFEKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_EFFEKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Effektiver Preis ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_EFFEKTIV_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_EFFEKTIV_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der verbrauchsunabhängige Jahresbetrag des Liefervertrags — Zählermiete, Bereitstellung, Abrechnung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_GRUNDPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_GRUNDPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preisstand, ab dem die Angaben der Karte gelten (JJJJ-MM-TT). Beim Speichern wandert der bisherige Stand in die Preishistorie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_GUELTIGAB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_GUELTIGAB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Heizwert des Brennstoffs. Er setzt die Abrechnungseinheit in Kilowattstunden um; ohne ihn lässt sich kein Preis je Kilowattstunde bilden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_HEIZWERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_HEIZWERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preis je Kilowatt Anschlussleistung. Ob er je Jahr oder je Monat gilt, sagt der Schalter daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_LEISTUNGSPREIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_LEISTUNGSPREIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt der Leistungspreis je Monat statt je Jahr? Der Monatsmodus rechnet mit der Höchstlast des jeweiligen Monats, der Jahresmodus mit der Jahreshöchstlast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_LPMODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_LPMODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leistungspreis monatlich ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_LPMODUS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_LPMODUS_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der NOx-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_NOX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_NOX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_PREISBASIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_PREISBASIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der SO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_SO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_SO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gruppe, unter der der Träger in der Liste steht. Sie ordnet nur die Anzeige und geht nicht in die Rechnung ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STAMMGRUPPE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STAMMGRUPPE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezeichnung des Katalogsatzes. Sie steht nur in der Katalogverwaltung und wird mit „Speichern“ oder „OK“ geschrieben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STAMMNAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STAMMNAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einkaufsanteil des Strompreises — was der Lieferant für die Energie selbst zahlt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_BESCHAFFUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_BESCHAFFUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stehen die Umlagen einzeln statt als Summe? Eingeschaltet treten KWKG-, Offshore- und § 19-StromNEV-Umlage an die Stelle der Summenzeile. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_EINZELN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_EINZELN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konzessionsabgabe der Gemeinde je Kilowattstunde. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_KONZESSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_KONZESSION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die KWKG-Umlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_KWKG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_KWKG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der arbeitspreisbezogene Anteil des Netzentgelts. Der leistungsbezogene Anteil steht im Leistungspreis der Trägerkarte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_NETZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_NETZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Umlage nach § 19 StromNEV je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_NEV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_NEV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Offshore-Netzumlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_OFFSHORE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_OFFSHORE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromsteuer je Kilowattstunde. Der Regelsatz und der ermäßigte Satz stehen als Schnellwahl daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_STEUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_STEUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gesetzlichen Umlagen als EINE Summe. Sie gilt, solange der Schalter „Umlagen aufschlüsseln“ aus ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_UMLAGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_UMLAGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vertriebsanteil des Strompreises — Marge, Abrechnung und Kundendienst des Lieferanten. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_STROM_VERTRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_STROM_VERTRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Filtertext über der Trägerliste. Er blendet Träger aus, deren Name oder Gruppe ihn nicht enthält; die Auswahl bleibt dabei stehen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_SUCHE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_SUCHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der in der Liste markierte Energieträger. Alle Angaben der Trägerkarte rechts gehören zu ihm; ihn zu setzen holt seine Preise, Einheiten und Emissionen herein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_TRAEGER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_TRAEGER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string KI_DLG_ET_TRAEGER_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ET_TRAEGER_NAME", resourceCulture);
             }
         }
         
@@ -26477,6 +26846,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezug ähnelt.
+        /// </summary>
+        public static string KI_DLG_KONTEXT_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KONTEXT_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Kostenprofils. Unter ihm steht es im Katalog und in der Trägerkarte. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KPR_WOCHENTAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KPR_WOCHENTAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Position; sie bestimmt, worauf sich der Satz bezieht. ähnelt.
         /// </summary>
         public static string KI_DLG_KV_BEMESSUNG_ERL {
@@ -26630,6 +27035,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit der zwölf Monatssätze — Anzeige. Sie folgt dem Leistungspreismodus des Trägers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LPR_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LPR_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahr, für das die zwölf Monatssätze gelten. Je Träger und Jahr gibt es genau eine Reihe. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LPR_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LPR_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu welchem Energieträger die Reihe gehört — Anzeige. ähnelt.
+        /// </summary>
+        public static string KI_DLG_LPR_KONTEXT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_LPR_KONTEXT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Katalog ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BADM_BW {
@@ -26680,6 +27112,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_BPF {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_BPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträgerverwaltung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_ET {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_ET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger-Variante anlegen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_ETV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_ETV", resourceCulture);
             }
         }
         
@@ -26765,11 +27215,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kostenprofil ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_KPR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_KPR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kostenverwaltung ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_KV {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_KV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Saisonale Leistungspreis-Sätze ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_LPR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_LPR", resourceCulture);
             }
         }
         

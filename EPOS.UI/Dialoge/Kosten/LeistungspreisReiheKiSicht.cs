@@ -1,0 +1,50 @@
+﻿namespace EPOS.UI.Dialoge.Kosten;
+
+/// <summary>
+/// Das FLACHE Abbild der Maske „Saisonale Leistungspreis-Sätze" für den
+/// Hilfe-Assistenten (Welle KI‑F4).
+///
+/// <para><b>Warum ein Sichtmodell.</b> Der Dialog hält seinen Arbeitsstand in
+/// privaten Feldern (<c>_jahr</c>, <c>_werte</c>); die Parameter <c>Jahr</c> und
+/// <c>Werte</c> sind nur der Anfangsstand, und einen Ergebnis-Record gibt es
+/// nicht — geschrieben wird über den Delegaten <c>Uebernehmen</c>.</para>
+///
+/// <para><b>Die zwölf Monatssätze bleiben draußen.</b> Sie stehen als Schleife über
+/// ihren Index im Markup (<c>Monatsname(m)</c>) und sind damit eine WERTETAFEL wie
+/// die Monats- und Wochenraster des Kostenprofils — dieselbe Regel, mit der die
+/// Welle KI‑F3 die zwölf Monatssummen des Gebäudebedarfs ausgelassen hat. Das JAHR
+/// dagegen ist der Einstellwert, der die ganze Reihe trägt: Er sagt, für welches
+/// Jahr die Sätze gelten.</para>
+///
+/// <para><b>Sie hält keinen Zustand</b>: Jede Eigenschaft ruft bei jedem Zugriff
+/// ihren Delegaten.</para>
+/// </summary>
+public sealed class LeistungspreisReiheKiSicht
+{
+    // =====================================================================
+    //  Die Zugriffswege — der Dialog setzt sie beim Anmelden
+    // =====================================================================
+
+    public Func<int?>? JahrLesen { get; init; }
+    public Action<int?>? JahrSetzen { get; init; }
+
+    public Func<string>? EinheitLesen { get; init; }
+    public Func<string>? KontextLesen { get; init; }
+
+    // =====================================================================
+    //  Die Felder der Maske
+    // =====================================================================
+
+    /// <summary>Das Jahr, für das die zwölf Monatssätze gelten.</summary>
+    public int? Jahr
+    {
+        get => JahrLesen?.Invoke();
+        set => JahrSetzen?.Invoke(value);
+    }
+
+    /// <summary>Die Einheit der zwölf Sätze — Anzeige, nicht Eingabe.</summary>
+    public string Einheit => EinheitLesen?.Invoke() ?? "";
+
+    /// <summary>Zu welchem Energieträger die Reihe gehört — Anzeige.</summary>
+    public string Kontext => KontextLesen?.Invoke() ?? "";
+}

@@ -3,6 +3,7 @@ using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -18,6 +19,9 @@ public class EnergietraegerVarianteDialogTests : BunitContext
         (3, "Erdgas"),
         (7, "Fernwaerme")
     };
+
+    /// <summary>Der zweite Träger der Probe — der Zeuge der Welle KI‑F4 wählt ihn.</summary>
+    private const string ZWEITER_TRAEGER = "Fernwaerme";
 
     public EnergietraegerVarianteDialogTests()
     {
@@ -215,5 +219,35 @@ public class EnergietraegerVarianteDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der Energieträger ist ein
+    /// WAHLFELD über seinen Anzeigetext; ihn zu setzen belegt den Variantennamen
+    /// vor — derselbe Weg wie ein Griff in die Klappliste.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_belegt_den_Namen_vor()
+    {
+        var cut = Aufbauen(_ => { });
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.ENERGIETRAEGER_VARIANTE));
+
+        KiFeldzugang traeger = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.ENERGIETRAEGER_VARIANTE, "energietraeger");
+        Assert.NotNull(traeger);
+        Assert.True(traeger.Setzbar);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(traeger, ZWEITER_TRAEGER);
+        Assert.True(wahl.Ok, wahl.Grund);
+        traeger.Setzen(wahl.Wert);
+        cut.Render();
+
+        KiFeldzugang name = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.ENERGIETRAEGER_VARIANTE, "variantenname");
+        Assert.Equal(ZWEITER_TRAEGER, name.Lesen());
     }
 }

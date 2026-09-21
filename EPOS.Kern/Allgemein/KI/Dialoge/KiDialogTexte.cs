@@ -108,6 +108,27 @@
         /// <summary>Einheit einer Luftwechselrate (Welle KI-F3).</summary>
         internal const string EINHEIT_1_H = "1/h";
 
+        /// <summary>Einheit eines Jahresgrundpreises (Welle KI-F4).</summary>
+        internal const string EINHEIT_EURO_A = "€/a";
+
+        /// <summary>Einheit eines Emissionsfaktors je Kilowattstunde (Welle KI-F4).</summary>
+        internal const string EINHEIT_G_KWH = "g/kWh";
+
+        /// <summary>Einheit eines Arbeitspreises in Euro je Kilowattstunde (Welle KI-F4).</summary>
+        internal const string EINHEIT_EURO_KWH = "€/kWh";
+
+        /// <summary>Einheit eines Preises je Tonne CO₂ (Welle KI-F4).</summary>
+        internal const string EINHEIT_EURO_T = "€/t";
+
+        /// <summary>Einheit einer jaehrlichen Preissteigerung (Welle KI-F4).</summary>
+        internal const string EINHEIT_PROZENT_A = "%/a";
+
+        /// <summary>Einheit einer Betriebsstundenzahl (Welle KI-F4).</summary>
+        internal const string EINHEIT_STUNDE = "h";
+
+        /// <summary>Einheit einer elektrischen Leistung (Welle KI-F4).</summary>
+        internal const string EINHEIT_KWP = "kWp";
+
         /// <summary>Einheit einer Zeitspanne in Jahren.</summary>
         internal static string EinheitJahre => MyResource.Resource.KI_DLG_EINHEIT_JAHRE;
 
@@ -1072,5 +1093,145 @@
 
         /// <summary>Ersatztext fuer einen leeren Feldinhalt in der Ergebnisliste.</summary>
         internal static string KeinWert => MyResource.Resource.KI_DLG_KEIN_WERT;
+
+        // ================================ Kosten und Wirtschaftlichkeit (Welle KI-F4)
+
+        /// <summary>Die Energietraegerverwaltung (Welle KI-F4).</summary>
+        internal static string MaskeEnergietraeger => MyResource.Resource.KI_DLG_MASKE_ET;
+
+        /// <summary>„Energietraeger-Variante anlegen" (Welle KI-F4).</summary>
+        internal static string MaskeEnergietraegerVariante => MyResource.Resource.KI_DLG_MASKE_ETV;
+
+        /// <summary>Die saisonalen Leistungspreis-Saetze (Welle KI-F4).</summary>
+        internal static string MaskeLeistungspreisreihe => MyResource.Resource.KI_DLG_MASKE_LPR;
+
+        /// <summary>Das Kostenprofil eines Stromtraegers (Welle KI-F4).</summary>
+        internal static string MaskeKostenprofil => MyResource.Resource.KI_DLG_MASKE_KPR;
+
+        /// <summary>
+        /// Der Anzeigename eines Bestandteil-SCHALTERS: „&lt;Bestandteil&gt; — Anteil
+        /// gepflegt" (Welle KI-F4).
+        /// </summary>
+        /// <remarks>
+        /// <b>Eine Vorlage statt dreizehn Schluessel.</b> Jeder Preisbestandteil traegt
+        /// auf der Maske seinen Wert UND seinen Schalter; der Schalter heisst ueberall
+        /// dasselbe, nur der Bestandteil wechselt. Dreizehn gleichlautende
+        /// Ressourceneintraege waeren dreizehn Pflegestellen fuer einen Satz.
+        /// </remarks>
+        internal static string Aktiv(string bestandteil)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_ET_AKTIV_VORLAGE, bestandteil);
+
+        // ---- Form_Energietraeger: Listenkopf und Stammfelder
+        internal static string EtSucheName => MyResource.Resource.IMP_KAT_FILTER_SUCHE;
+        internal static string EtSucheErl => MyResource.Resource.KI_DLG_ET_SUCHE_ERL;
+        internal static string EtTraegerName => MyResource.Resource.KI_DLG_ET_TRAEGER_NAME;
+        internal static string EtTraegerErl => MyResource.Resource.KI_DLG_ET_TRAEGER_ERL;
+        internal static string EtStammnameName => MyResource.Resource.KDLG_ET_STAMM_NAME;
+        internal static string EtStammnameErl => MyResource.Resource.KI_DLG_ET_STAMMNAME_ERL;
+        internal static string EtStammgruppeName => MyResource.Resource.KDLG_ET_STAMM_GRUPPE;
+        internal static string EtStammgruppeErl => MyResource.Resource.KI_DLG_ET_STAMMGRUPPE_ERL;
+
+        // ---- Form_Energietraeger: die Traegerkarte
+        internal static string EtArbeitspreisName => MyResource.Resource.ETV_LBL_ARBEITSPREIS;
+        internal static string EtArbeitspreisErl => MyResource.Resource.KI_DLG_ET_ARBEITSPREIS_ERL;
+        internal static string EtGrundpreisName => MyResource.Resource.ETV_LBL_GRUNDPREIS;
+        internal static string EtGrundpreisErl => MyResource.Resource.KI_DLG_ET_GRUNDPREIS_ERL;
+        internal static string EtLeistungspreisName => MyResource.Resource.ETV_LBL_LEISTUNGSPREIS;
+        internal static string EtLeistungspreisErl => MyResource.Resource.KI_DLG_ET_LEISTUNGSPREIS_ERL;
+        internal static string EtLpModusName => MyResource.Resource.KI_DLG_ET_LPMODUS_NAME;
+        internal static string EtLpModusErl => MyResource.Resource.KI_DLG_ET_LPMODUS_ERL;
+        internal static string EtHeizwertName => MyResource.Resource.ETV_LBL_HEIZWERT;
+        internal static string EtHeizwertErl => MyResource.Resource.KI_DLG_ET_HEIZWERT_ERL;
+        internal static string EtBrennwertName => MyResource.Resource.ETV_LBL_BRENNWERT;
+        internal static string EtBrennwertErl => MyResource.Resource.KI_DLG_ET_BRENNWERT_ERL;
+        internal static string EtPreisbasisName => MyResource.Resource.ETV_LBL_PREISBASIS;
+        internal static string EtPreisbasisErl => MyResource.Resource.KI_DLG_ET_PREISBASIS_ERL;
+        internal static string EtBasiseinheitName => MyResource.Resource.ETV_LBL_BASISEINHEIT;
+        internal static string EtBasiseinheitErl => MyResource.Resource.KI_DLG_ET_BASISEINHEIT_ERL;
+        internal static string EtEffektivName => MyResource.Resource.KI_DLG_ET_EFFEKTIV_NAME;
+        internal static string EtEffektivErl => MyResource.Resource.KI_DLG_ET_EFFEKTIV_ERL;
+        internal static string EtGueltigAbName => MyResource.Resource.ETV_LBL_GUELTIG_AB;
+        internal static string EtGueltigAbErl => MyResource.Resource.KI_DLG_ET_GUELTIGAB_ERL;
+
+        // ---- Form_Energietraeger: Emissionen
+        internal static string EtModusName => MyResource.Resource.KI_DLG_ET_CO2E_NAME;
+        internal static string EtModusErl => MyResource.Resource.KI_DLG_ET_CO2E_ERL;
+        internal static string EtCo2Name => MyResource.Resource.ETV_LBL_CO2;
+        internal static string EtCo2Erl => MyResource.Resource.KI_DLG_ET_CO2_ERL;
+        internal static string EtSo2Name => MyResource.Resource.ETV_LBL_SO2;
+        internal static string EtSo2Erl => MyResource.Resource.KI_DLG_ET_SO2_ERL;
+        internal static string EtNoxName => MyResource.Resource.ETV_LBL_NOX;
+        internal static string EtNoxErl => MyResource.Resource.KI_DLG_ET_NOX_ERL;
+
+        /// <summary>Die EINE Erlaeuterung aller dreizehn Bestandteil-Schalter.</summary>
+        internal static string EtAnteilAktivErl => MyResource.Resource.KI_DLG_ET_ANTEIL_AKTIV_ERL;
+
+        // ---- Form_Energietraeger: Baustein „Strompreis Details"
+        internal static string EtStromBeschaffungName => MyResource.Resource.PREIS_KOMP_BESCHAFFUNG;
+        internal static string EtStromBeschaffungAktivName => Aktiv(EtStromBeschaffungName);
+        internal static string EtStromBeschaffungErl => MyResource.Resource.KI_DLG_ET_STROM_BESCHAFFUNG_ERL;
+        internal static string EtStromVertriebName => MyResource.Resource.PREIS_KOMP_VERTRIEB;
+        internal static string EtStromVertriebAktivName => Aktiv(EtStromVertriebName);
+        internal static string EtStromVertriebErl => MyResource.Resource.KI_DLG_ET_STROM_VERTRIEB_ERL;
+        internal static string EtStromNetzName => MyResource.Resource.PREIS_KOMP_NETZENTGELT;
+        internal static string EtStromNetzAktivName => Aktiv(EtStromNetzName);
+        internal static string EtStromNetzErl => MyResource.Resource.KI_DLG_ET_STROM_NETZ_ERL;
+        internal static string EtStromsteuerName => MyResource.Resource.PREIS_KOMP_STROMSTEUER;
+        internal static string EtStromsteuerAktivName => Aktiv(EtStromsteuerName);
+        internal static string EtStromsteuerErl => MyResource.Resource.KI_DLG_ET_STROM_STEUER_ERL;
+        internal static string EtStromKonzessionName => MyResource.Resource.PREIS_KOMP_KONZESSION;
+        internal static string EtStromKonzessionAktivName => Aktiv(EtStromKonzessionName);
+        internal static string EtStromKonzessionErl => MyResource.Resource.KI_DLG_ET_STROM_KONZESSION_ERL;
+        internal static string EtStromUmlagenName => MyResource.Resource.PREIS_KOMP_UMLAGEN;
+        internal static string EtStromUmlagenAktivName => Aktiv(EtStromUmlagenName);
+        internal static string EtStromUmlagenErl => MyResource.Resource.KI_DLG_ET_STROM_UMLAGEN_ERL;
+        internal static string EtStromEinzelnName => MyResource.Resource.PREIS_UMLAGEN_EINZELN;
+        internal static string EtStromEinzelnErl => MyResource.Resource.KI_DLG_ET_STROM_EINZELN_ERL;
+        internal static string EtStromKwkgName => MyResource.Resource.PREIS_KOMP_KWKG;
+        internal static string EtStromKwkgAktivName => Aktiv(EtStromKwkgName);
+        internal static string EtStromKwkgErl => MyResource.Resource.KI_DLG_ET_STROM_KWKG_ERL;
+        internal static string EtStromOffshoreName => MyResource.Resource.PREIS_KOMP_OFFSHORE;
+        internal static string EtStromOffshoreAktivName => Aktiv(EtStromOffshoreName);
+        internal static string EtStromOffshoreErl => MyResource.Resource.KI_DLG_ET_STROM_OFFSHORE_ERL;
+        internal static string EtStromNevName => MyResource.Resource.PREIS_KOMP_STROMNEV19;
+        internal static string EtStromNevAktivName => Aktiv(EtStromNevName);
+        internal static string EtStromNevErl => MyResource.Resource.KI_DLG_ET_STROM_NEV_ERL;
+
+        // ---- Form_Energietraeger: Baustein „Preisbestandteile"
+        internal static string EtBsEnergiesteuerName => MyResource.Resource.BB_KOMP_ENERGIESTEUER;
+        internal static string EtBsEnergiesteuerAktivName => Aktiv(EtBsEnergiesteuerName);
+        internal static string EtBsEnergiesteuerErl => MyResource.Resource.KI_DLG_ET_BS_ENERGIESTEUER_ERL;
+        internal static string EtBsCo2Name => MyResource.Resource.BB_KOMP_CO2;
+        internal static string EtBsCo2AktivName => Aktiv(EtBsCo2Name);
+        internal static string EtBsCo2Erl => MyResource.Resource.KI_DLG_ET_BS_CO2_ERL;
+        internal static string EtBsNetzName => MyResource.Resource.BB_KOMP_NETZENTGELT;
+        internal static string EtBsNetzAktivName => Aktiv(EtBsNetzName);
+        internal static string EtBsNetzErl => MyResource.Resource.KI_DLG_ET_BS_NETZ_ERL;
+        internal static string EtBsVertriebName => MyResource.Resource.BB_KOMP_VERTRIEB;
+        internal static string EtBsVertriebAktivName => Aktiv(EtBsVertriebName);
+        internal static string EtBsVertriebErl => MyResource.Resource.KI_DLG_ET_BS_VERTRIEB_ERL;
+
+        // ---- Form_Kosten_Auswahl
+        internal static string EtvTraegerName => MyResource.Resource.KI_DLG_ET_TRAEGER_NAME;
+        internal static string EtvTraegerErl => MyResource.Resource.KI_DLG_ETV_TRAEGER_ERL;
+        internal static string EtvNameName => MyResource.Resource.KAUSW_LBL_VARIANTE;
+        internal static string EtvNameErl => MyResource.Resource.KI_DLG_ETV_NAME_ERL;
+
+        // ---- Form_LeistungspreisReihe
+        internal static string LprJahrName => MyResource.Resource.KDLG_LPR_JAHR;
+        internal static string LprJahrErl => MyResource.Resource.KI_DLG_LPR_JAHR_ERL;
+        internal static string LprEinheitName => MyResource.Resource.KI_DLG_EINHEIT_NAME;
+        internal static string LprEinheitErl => MyResource.Resource.KI_DLG_LPR_EINHEIT_ERL;
+        internal static string LprKontextName => MyResource.Resource.KI_DLG_KONTEXT_NAME;
+        internal static string LprKontextErl => MyResource.Resource.KI_DLG_LPR_KONTEXT_ERL;
+
+        // ---- Form_Kostenprofil
+        internal static string KprBezeichnerName => MyResource.Resource.PREIS_PROFIL_LABEL_BEZEICHNER;
+        internal static string KprBezeichnerErl => MyResource.Resource.KI_DLG_KPR_BEZEICHNER_ERL;
+        internal static string KprWochentagName => MyResource.Resource.PREIS_PROFIL_LBL_WOCHENTAG;
+        internal static string KprWochentagErl => MyResource.Resource.KI_DLG_KPR_WOCHENTAG_ERL;
+        internal static string KprEinheitName => MyResource.Resource.KI_DLG_EINHEIT_NAME;
+        internal static string KprEinheitErl => MyResource.Resource.KI_DLG_KPR_EINHEIT_ERL;
     }
 }

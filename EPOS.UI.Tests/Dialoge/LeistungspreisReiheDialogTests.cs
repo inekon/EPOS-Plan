@@ -1,8 +1,10 @@
 ﻿using Bunit;
+using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
 using EPOS.UI.Dienste;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using WindowsFormsApplication1;
 using Xunit;
 
 namespace EPOS.UI.Tests.Dialoge;
@@ -396,5 +398,38 @@ public class LeistungspreisReiheDialogTests : BunitContext
         Assert.Empty(cut.FindAll(".epos-dialog-zu"));
         // Der Hilfeknopf bleibt - er haengt nicht am Titel.
         Assert.NotEmpty(cut.FindAll(".epos-dialog-kopf"));
+    }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Das JAHR ist der eine
+    /// Einstellwert, den die Reihe trägt; die zwölf Monatssätze bleiben als
+    /// Wertetafel draußen.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_das_Jahr()
+    {
+        var cut = Zeige(p => p.Add(x => x.Jahr, 2026));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.LEISTUNGSPREISREIHE));
+
+        KiFeldzugang jahr =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.LEISTUNGSPREISREIHE, "jahr");
+        Assert.NotNull(jahr);
+        Assert.True(jahr.Setzbar);
+        Assert.Equal(2026, Convert.ToInt32(jahr.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(jahr, "2027");
+        Assert.True(neu.Ok, neu.Grund);
+        jahr.Setzen(neu.Wert);
+        cut.Render();
+
+        Assert.Equal(2027, Convert.ToInt32(jahr.Lesen(), CultureInfo.InvariantCulture));
+
+        // Die zwoelf Monatssaetze sind NICHT deklariert - eine Wertetafel.
+        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.LEISTUNGSPREISREIHE)!
+                              .FindeFeld("januar"));
     }
 }

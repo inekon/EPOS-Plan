@@ -21342,4 +21342,160 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_KLIMA_TRY_PAKET_ERL" xml:space="preserve">
     <value>Das gewählte TRY-Paket. Es darf leer bleiben; dann wird das mitgelieferte Paket genommen.</value>
   </data>
+  <data name="KI_DLG_MASKE_ET" xml:space="preserve">
+    <value>Energieträgerverwaltung</value>
+  </data>
+  <data name="KI_DLG_MASKE_ETV" xml:space="preserve">
+    <value>Energieträger-Variante anlegen</value>
+  </data>
+  <data name="KI_DLG_MASKE_LPR" xml:space="preserve">
+    <value>Saisonale Leistungspreis-Sätze</value>
+  </data>
+  <data name="KI_DLG_MASKE_KPR" xml:space="preserve">
+    <value>Kostenprofil</value>
+  </data>
+  <data name="KI_DLG_ET_AKTIV_VORLAGE" xml:space="preserve">
+    <value>{0} — Anteil gepflegt</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_NAME" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_ERL" xml:space="preserve">
+    <value>Der in der Liste markierte Energieträger. Alle Angaben der Trägerkarte rechts gehören zu ihm; ihn zu setzen holt seine Preise, Einheiten und Emissionen herein.</value>
+  </data>
+  <data name="KI_DLG_ET_SUCHE_ERL" xml:space="preserve">
+    <value>Der Filtertext über der Trägerliste. Er blendet Träger aus, deren Name oder Gruppe ihn nicht enthält; die Auswahl bleibt dabei stehen.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMNAME_ERL" xml:space="preserve">
+    <value>Die Bezeichnung des Katalogsatzes. Sie steht nur in der Katalogverwaltung und wird mit „Speichern“ oder „OK“ geschrieben.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMGRUPPE_ERL" xml:space="preserve">
+    <value>Die Gruppe, unter der der Träger in der Liste steht. Sie ordnet nur die Anzeige und geht nicht in die Rechnung ein.</value>
+  </data>
+  <data name="KI_DLG_ET_ARBEITSPREIS_ERL" xml:space="preserve">
+    <value>Der verbrauchsabhängige Preis des Trägers, bezogen auf die Preisbasis darunter. Aus ihm und dem Heizwert entsteht der Preis je Kilowattstunde, mit dem die Wirtschaftlichkeit rechnet.</value>
+  </data>
+  <data name="KI_DLG_ET_GRUNDPREIS_ERL" xml:space="preserve">
+    <value>Der verbrauchsunabhängige Jahresbetrag des Liefervertrags — Zählermiete, Bereitstellung, Abrechnung.</value>
+  </data>
+  <data name="KI_DLG_ET_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Der Preis je Kilowatt Anschlussleistung. Ob er je Jahr oder je Monat gilt, sagt der Schalter daneben.</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_NAME" xml:space="preserve">
+    <value>Leistungspreis monatlich</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_ERL" xml:space="preserve">
+    <value>Gilt der Leistungspreis je Monat statt je Jahr? Der Monatsmodus rechnet mit der Höchstlast des jeweiligen Monats, der Jahresmodus mit der Jahreshöchstlast.</value>
+  </data>
+  <data name="KI_DLG_ET_HEIZWERT_ERL" xml:space="preserve">
+    <value>Der Heizwert des Brennstoffs. Er setzt die Abrechnungseinheit in Kilowattstunden um; ohne ihn lässt sich kein Preis je Kilowattstunde bilden.</value>
+  </data>
+  <data name="KI_DLG_ET_BRENNWERT_ERL" xml:space="preserve">
+    <value>Der Brennwert des Brennstoffs. Er wird für Brennwertgeräte gebraucht und steht nur an Trägern, die ihn führen.</value>
+  </data>
+  <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
+    <value>Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Preiskette rechnet — Anzeige. Sie folgt der Preisbasis und den aktiven Umrechnungsregeln.</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_NAME" xml:space="preserve">
+    <value>Effektiver Preis</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_ERL" xml:space="preserve">
+    <value>Der ausgerechnete Preis je Kilowattstunde samt seiner Herleitung — Anzeige. Er folgt Arbeitspreis, Heizwert, Preisbasis und den Umrechnungsregeln.</value>
+  </data>
+  <data name="KI_DLG_ET_GUELTIGAB_ERL" xml:space="preserve">
+    <value>Der Preisstand, ab dem die Angaben der Karte gelten (JJJJ-MM-TT). Beim Speichern wandert der bisherige Stand in die Preishistorie.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_NAME" xml:space="preserve">
+    <value>Emissionen als CO₂-Äquivalent</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_ERL" xml:space="preserve">
+    <value>Rechnet die Maske in CO₂-Äquivalent (GWP₁₀₀) statt in reinem CO₂? In der Katalogverwaltung ist die Wahl gesperrt — dort gilt die Vorgabe des Projekts.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2_ERL" xml:space="preserve">
+    <value>Der CO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_SO2_ERL" xml:space="preserve">
+    <value>Der SO₂-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_NOX_ERL" xml:space="preserve">
+    <value>Der NOx-Ersatzwert des Trägers, solange der Emissionskatalog für ihn keinen führt.</value>
+  </data>
+  <data name="KI_DLG_ET_ANTEIL_AKTIV_ERL" xml:space="preserve">
+    <value>Ist dieser Anteil gepflegt? Ausgeschaltet heißt „kein Anteil“ und nicht „null“ — der Betrag daneben wirkt dann nicht und geht auch nicht in die Summe ein.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_BESCHAFFUNG_ERL" xml:space="preserve">
+    <value>Der Einkaufsanteil des Strompreises — was der Lieferant für die Energie selbst zahlt.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_VERTRIEB_ERL" xml:space="preserve">
+    <value>Der Vertriebsanteil des Strompreises — Marge, Abrechnung und Kundendienst des Lieferanten.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NETZ_ERL" xml:space="preserve">
+    <value>Der arbeitspreisbezogene Anteil des Netzentgelts. Der leistungsbezogene Anteil steht im Leistungspreis der Trägerkarte.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_STEUER_ERL" xml:space="preserve">
+    <value>Die Stromsteuer je Kilowattstunde. Der Regelsatz und der ermäßigte Satz stehen als Schnellwahl daneben.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KONZESSION_ERL" xml:space="preserve">
+    <value>Die Konzessionsabgabe der Gemeinde je Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_UMLAGEN_ERL" xml:space="preserve">
+    <value>Die gesetzlichen Umlagen als EINE Summe. Sie gilt, solange der Schalter „Umlagen aufschlüsseln“ aus ist.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_EINZELN_ERL" xml:space="preserve">
+    <value>Stehen die Umlagen einzeln statt als Summe? Eingeschaltet treten KWKG-, Offshore- und § 19-StromNEV-Umlage an die Stelle der Summenzeile.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KWKG_ERL" xml:space="preserve">
+    <value>Die KWKG-Umlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_OFFSHORE_ERL" xml:space="preserve">
+    <value>Die Offshore-Netzumlage je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NEV_ERL" xml:space="preserve">
+    <value>Die Umlage nach § 19 StromNEV je Kilowattstunde — nur sichtbar, wenn die Umlagen aufgeschlüsselt sind.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_ENERGIESTEUER_ERL" xml:space="preserve">
+    <value>Die Energiesteuer im Arbeitspreis des Brennstoffs. Der Block zerlegt den Preis und ändert ihn nicht.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_CO2_ERL" xml:space="preserve">
+    <value>Der CO₂-Bestandteil nach BEHG im Arbeitspreis des Brennstoffs.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_NETZ_ERL" xml:space="preserve">
+    <value>Das Netz- und Messentgelt im Arbeitspreis des Brennstoffs.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_VERTRIEB_ERL" xml:space="preserve">
+    <value>Beschaffung und Vertrieb im Arbeitspreis des Brennstoffs — der Rest, der nach Steuer, CO₂ und Netzentgelt bleibt.</value>
+  </data>
+  <data name="KI_DLG_ETV_TRAEGER_ERL" xml:space="preserve">
+    <value>Der Energieträger, von dem die neue Variante abstammt. Ihn zu setzen belegt den Variantennamen vor.</value>
+  </data>
+  <data name="KI_DLG_ETV_NAME_ERL" xml:space="preserve">
+    <value>Die Bezeichnung der neuen Variante. Sie darf nicht leer sein; sonst bleibt der Dialog beim OK stehen.</value>
+  </data>
+  <data name="KI_DLG_LPR_JAHR_ERL" xml:space="preserve">
+    <value>Das Jahr, für das die zwölf Monatssätze gelten. Je Träger und Jahr gibt es genau eine Reihe.</value>
+  </data>
+  <data name="KI_DLG_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="KI_DLG_LPR_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der zwölf Monatssätze — Anzeige. Sie folgt dem Leistungspreismodus des Trägers.</value>
+  </data>
+  <data name="KI_DLG_KONTEXT_NAME" xml:space="preserve">
+    <value>Bezug</value>
+  </data>
+  <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
+    <value>Zu welchem Energieträger die Reihe gehört — Anzeige.</value>
+  </data>
+  <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des Kostenprofils. Unter ihm steht es im Katalog und in der Trägerkarte.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
+    <value>Der Wochentag, dessen 24 Stundenwerte das Reiterblatt „Woche“ zeigt. Ihn zu wechseln zeigt eine andere Tageskurve; die Werte selbst pflegt die Maske mit ihren eigenen Griffen.</value>
+  </data>
+  <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit, in der die Monats- und Wochenwerte stehen — Anzeige.</value>
+  </data>
 </root>

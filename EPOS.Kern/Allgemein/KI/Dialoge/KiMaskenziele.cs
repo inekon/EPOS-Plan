@@ -107,6 +107,38 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string KLIMADATEN = "KLIMADATEN";
 
+        /// <summary>
+        /// Der Seitenschluessel der ENERGIETRAEGERVERWALTUNG (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.EnergietraegerVerwaltung</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="KLIMADATEN"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Der Schluessel
+        /// gehoert zum Menuepunkt „Administration → Kosten → Energietraegerverwaltung…";
+        /// die Windows-Huelle faengt ihn im Menueweg selbst ab
+        /// (<c>HauptfensterHuelle.Weg</c>), <c>WinFormsNavigation.OeffneMaske</c> kennt
+        /// ihn nicht. <c>dialog_oeffnen</c> lehnt dort also benannt ab, statt still
+        /// nichts zu tun — genau wie bei der Kostenverwaltung. Auf iOS ist die
+        /// Kostenverwaltung insgesamt noch nicht angebunden; die <c>AppWurzel</c>
+        /// meldet <c>false</c>. LESEN und SETZEN erreichen die Maske trotzdem, sobald
+        /// der Anwender sie offen hat: Dafuer zaehlt die Anmeldung an der
+        /// Maskenbruecke, nicht dieses Ziel.
+        /// </remarks>
+        public const string ENERGIETRAEGER_VERWALTUNG = "ENERGIETRAEGER_VERWALTUNG";
+
+        /// <summary>
+        /// Der Seitenschluessel des Dialogs „Energietraeger-Variante anlegen"
+        /// (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Er ist einer der wenigen dieser Welle, den die <c>AppWurzel</c> WIRKLICH
+        /// bedient (<c>Seitenschluessel.Energietraeger</c>): Auf iOS geht der Dialog
+        /// damit auf. Unter Windows kennt <c>WinFormsNavigation</c> ihn nicht — dort
+        /// steht er als Ueberlagerung in den Erzeugerdialogen, und
+        /// <c>dialog_oeffnen</c> lehnt benannt ab.
+        /// </remarks>
+        public const string VARIANTE_ANLEGEN = "ENERGIETRAEGER_VARIANTE";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -229,7 +261,22 @@ namespace WindowsFormsApplication1
 
                 // Die KLIMADATEN haengen am Menuepunkt „Administration → Klimadaten" -
                 // siehe KLIMADATEN.
-                { KiMaskennamen.KLIMADATEN, KLIMADATEN }
+                { KiMaskennamen.KLIMADATEN, KLIMADATEN },
+
+                // Welle KI-F4: Die ENERGIETRAEGERVERWALTUNG haengt am Menuepunkt
+                // „Administration → Kosten → Energietraegerverwaltung…" - siehe
+                // ENERGIETRAEGER_VERWALTUNG. Die saisonalen Leistungspreis-Saetze und
+                // das Kostenprofil gehen als UEBERLAGERUNG aus ihr auf und brauchen
+                // einen gewaehlten Traeger; kontextfrei gibt es beide nicht, und ihr
+                // Ziel ist deshalb die Maske, aus der sie aufgehen - dieselbe
+                // Begruendung wie bei den Katalogeditoren der Erzeuger.
+                { KiMaskennamen.ENERGIETRAEGER,        ENERGIETRAEGER_VERWALTUNG },
+                { KiMaskennamen.LEISTUNGSPREISREIHE,   ENERGIETRAEGER_VERWALTUNG },
+                { KiMaskennamen.KOSTENPROFIL,          ENERGIETRAEGER_VERWALTUNG },
+
+                // „Energietraeger-Variante anlegen" ist eine eigene Ansicht der
+                // AppWurzel - siehe VARIANTE_ANLEGEN.
+                { KiMaskennamen.ENERGIETRAEGER_VARIANTE, VARIANTE_ANLEGEN }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

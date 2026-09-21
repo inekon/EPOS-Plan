@@ -27,7 +27,9 @@
    TASTATUR: Esc schliesst. Enter ist NICHT belegt - "OK" speichert. *@
 
 @namespace EPOS.UI.Dialoge.Kosten
+@using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 @inherits Farbwahlwirt
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
@@ -324,7 +326,53 @@
                 int i = t * 24 + h;
                 _woche[t, h] = i < Wochenwerte.Count ? Wochenwerte[i] : 0.0;
             }
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KOSTENPROFIL,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KostenprofilKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: Bezeichner und Wochentag. Die 36 Zahlenfelder der
+    /// Monats- und Wochentafel bleiben draußen — siehe der Dateikopf oben.
+    /// </summary>
+    private KostenprofilKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KostenprofilKiSicht
+        {
+            BezeichnerLesen = () => _bezeichner,
+            BezeichnerSetzen = w => _bezeichner = w,
+
+            TagLesen = () => _tag,
+            TagSetzen = BeiTagwechsel,
+            TagEintraege = () => KiMaskenanmeldung.Eintraege(
+                Wochentage, z => z.Id, z => z.Text),
+
+            EinheitLesen = () => Einheit
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Das OK schreibt Bezeichner und beide Tafeln in die
+    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
+    /// Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

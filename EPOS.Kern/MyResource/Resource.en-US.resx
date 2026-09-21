@@ -21335,4 +21335,160 @@ Do you want to allow this?</value>
   <data name="KI_DLG_KLIMA_TRY_PAKET_ERL" xml:space="preserve">
     <value>The selected TRY package. It may stay empty; then the supplied package is used.</value>
   </data>
+  <data name="KI_DLG_MASKE_ET" xml:space="preserve">
+    <value>Energy carrier management</value>
+  </data>
+  <data name="KI_DLG_MASKE_ETV" xml:space="preserve">
+    <value>Create energy carrier variant</value>
+  </data>
+  <data name="KI_DLG_MASKE_LPR" xml:space="preserve">
+    <value>Seasonal demand charge rates</value>
+  </data>
+  <data name="KI_DLG_MASKE_KPR" xml:space="preserve">
+    <value>Cost profile</value>
+  </data>
+  <data name="KI_DLG_ET_AKTIV_VORLAGE" xml:space="preserve">
+    <value>{0} — component maintained</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_NAME" xml:space="preserve">
+    <value>Energy carrier</value>
+  </data>
+  <data name="KI_DLG_ET_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier selected in the list. Everything on the carrier card belongs to it; setting it loads its prices, units and emissions.</value>
+  </data>
+  <data name="KI_DLG_ET_SUCHE_ERL" xml:space="preserve">
+    <value>Filter text above the carrier list. It hides carriers whose name or group does not contain it; the selection is kept.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMNAME_ERL" xml:space="preserve">
+    <value>Name of the catalog record. Available only in catalog management; it is written by Save or OK.</value>
+  </data>
+  <data name="KI_DLG_ET_STAMMGRUPPE_ERL" xml:space="preserve">
+    <value>The group the carrier is listed under. It only orders the display and does not enter the calculation.</value>
+  </data>
+  <data name="KI_DLG_ET_ARBEITSPREIS_ERL" xml:space="preserve">
+    <value>The consumption-dependent price of the carrier, relative to the price basis below. Together with the calorific value it yields the price per kilowatt hour used in the economic calculation.</value>
+  </data>
+  <data name="KI_DLG_ET_GRUNDPREIS_ERL" xml:space="preserve">
+    <value>The consumption-independent annual amount of the supply contract — meter rent, provision, billing.</value>
+  </data>
+  <data name="KI_DLG_ET_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>The price per kilowatt of connected load. Whether it applies per year or per month is stated by the adjacent switch.</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_NAME" xml:space="preserve">
+    <value>Demand charge monthly</value>
+  </data>
+  <data name="KI_DLG_ET_LPMODUS_ERL" xml:space="preserve">
+    <value>Does the demand charge apply per month instead of per year? Monthly mode uses each month's peak load, annual mode the annual peak.</value>
+  </data>
+  <data name="KI_DLG_ET_HEIZWERT_ERL" xml:space="preserve">
+    <value>Calorific value of the fuel. It converts the billing unit into kilowatt hours; without it no price per kilowatt hour can be formed.</value>
+  </data>
+  <data name="KI_DLG_ET_BRENNWERT_ERL" xml:space="preserve">
+    <value>Gross calorific value of the fuel. Needed for condensing appliances; shown only on carriers that carry it.</value>
+  </data>
+  <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
+    <value>The unit the energy price refers to (kilowatt hour, litre, cubic metre, tonne). It determines how the price is converted into kilowatt hours.</value>
+  </data>
+  <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
+    <value>The unit the price chain calculates in — display only. It follows the price basis and the active conversion rules.</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_NAME" xml:space="preserve">
+    <value>Effective price</value>
+  </data>
+  <data name="KI_DLG_ET_EFFEKTIV_ERL" xml:space="preserve">
+    <value>The calculated price per kilowatt hour with its derivation — display only. It follows energy price, calorific value, price basis and the conversion rules.</value>
+  </data>
+  <data name="KI_DLG_ET_GUELTIGAB_ERL" xml:space="preserve">
+    <value>The price date from which the card's values apply (YYYY-MM-DD). On saving, the previous state moves into the price history.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_NAME" xml:space="preserve">
+    <value>Emissions as CO₂ equivalent</value>
+  </data>
+  <data name="KI_DLG_ET_CO2E_ERL" xml:space="preserve">
+    <value>Does the mask calculate in CO₂ equivalent (GWP₁₀₀) instead of pure CO₂? In catalog management the choice is locked — the project's setting applies there.</value>
+  </data>
+  <data name="KI_DLG_ET_CO2_ERL" xml:space="preserve">
+    <value>The carrier's substitute CO₂ value as long as the emission catalog holds none for it.</value>
+  </data>
+  <data name="KI_DLG_ET_SO2_ERL" xml:space="preserve">
+    <value>The carrier's substitute SO₂ value as long as the emission catalog holds none for it.</value>
+  </data>
+  <data name="KI_DLG_ET_NOX_ERL" xml:space="preserve">
+    <value>The carrier's substitute NOx value as long as the emission catalog holds none for it.</value>
+  </data>
+  <data name="KI_DLG_ET_ANTEIL_AKTIV_ERL" xml:space="preserve">
+    <value>Is this component maintained? Switched off means "no component", not "zero" — the amount next to it then has no effect and does not enter the total.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_BESCHAFFUNG_ERL" xml:space="preserve">
+    <value>The procurement share of the electricity price — what the supplier pays for the energy itself.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_VERTRIEB_ERL" xml:space="preserve">
+    <value>The sales share of the electricity price — the supplier's margin, billing and customer service.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NETZ_ERL" xml:space="preserve">
+    <value>The energy-related share of the grid fee. The demand-related share is in the carrier card's demand charge.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_STEUER_ERL" xml:space="preserve">
+    <value>The electricity tax per kilowatt hour. The standard and reduced rates are offered as quick choices next to it.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KONZESSION_ERL" xml:space="preserve">
+    <value>The municipal concession levy per kilowatt hour.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_UMLAGEN_ERL" xml:space="preserve">
+    <value>The statutory levies as ONE total. It applies as long as the switch "itemise levies" is off.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_EINZELN_ERL" xml:space="preserve">
+    <value>Are the levies itemised instead of totalled? When on, the CHP, offshore and section 19 StromNEV levies replace the summary line.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_KWKG_ERL" xml:space="preserve">
+    <value>The CHP levy per kilowatt hour — visible only when the levies are itemised.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_OFFSHORE_ERL" xml:space="preserve">
+    <value>The offshore grid levy per kilowatt hour — visible only when the levies are itemised.</value>
+  </data>
+  <data name="KI_DLG_ET_STROM_NEV_ERL" xml:space="preserve">
+    <value>The levy under section 19 StromNEV per kilowatt hour — visible only when the levies are itemised.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_ENERGIESTEUER_ERL" xml:space="preserve">
+    <value>The energy tax within the fuel's energy price. The block breaks the price down; it does not change it.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_CO2_ERL" xml:space="preserve">
+    <value>The CO₂ component under the German fuel emissions trading act within the fuel's energy price.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_NETZ_ERL" xml:space="preserve">
+    <value>The grid and metering fee within the fuel's energy price.</value>
+  </data>
+  <data name="KI_DLG_ET_BS_VERTRIEB_ERL" xml:space="preserve">
+    <value>Procurement and sales within the fuel's energy price — what remains after tax, CO₂ and grid fee.</value>
+  </data>
+  <data name="KI_DLG_ETV_TRAEGER_ERL" xml:space="preserve">
+    <value>The energy carrier the new variant derives from. Setting it pre-fills the variant name.</value>
+  </data>
+  <data name="KI_DLG_ETV_NAME_ERL" xml:space="preserve">
+    <value>The name of the new variant. It must not be empty, otherwise the dialog stays open on OK.</value>
+  </data>
+  <data name="KI_DLG_LPR_JAHR_ERL" xml:space="preserve">
+    <value>The year the twelve monthly rates apply to. There is exactly one series per carrier and year.</value>
+  </data>
+  <data name="KI_DLG_EINHEIT_NAME" xml:space="preserve">
+    <value>Unit</value>
+  </data>
+  <data name="KI_DLG_LPR_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the twelve monthly rates — display only. It follows the carrier's demand charge mode.</value>
+  </data>
+  <data name="KI_DLG_KONTEXT_NAME" xml:space="preserve">
+    <value>Context</value>
+  </data>
+  <data name="KI_DLG_LPR_KONTEXT_ERL" xml:space="preserve">
+    <value>Which energy carrier the series belongs to — display only.</value>
+  </data>
+  <data name="KI_DLG_KPR_BEZEICHNER_ERL" xml:space="preserve">
+    <value>The name of the cost profile. It appears under this name in the catalog and on the carrier card.</value>
+  </data>
+  <data name="KI_DLG_KPR_WOCHENTAG_ERL" xml:space="preserve">
+    <value>The weekday whose 24 hourly values the "week" tab shows. Changing it shows a different daily curve; the values themselves are maintained with the mask's own controls.</value>
+  </data>
+  <data name="KI_DLG_KPR_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit the monthly and weekly values are given in — display only.</value>
+  </data>
 </root>
