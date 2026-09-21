@@ -29,7 +29,9 @@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
 
+@using System.Globalization
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -291,6 +293,9 @@
         _modusWahlen = TarifWahlen.Modus(_t);
         _leistungswahlen = TarifWahlen.Leistungsmodell(_t);
 
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.TARIFSTRUKTUR,
+                                          () => KiSicht(), KiHaken());
+
         TarifParameter p = Tarif ?? new TarifParameter();
 
         _aktiv = p.Aktiv;
@@ -538,4 +543,92 @@
 
     private Task BeiTaste(KeyboardEventArgs e) =>
         e.Key == "Escape" ? BeiErgebnis(false) : Task.CompletedTask;
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private TarifstrukturKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die lebenden Eingabefelder der Maske. Der
+    /// <c>TarifParameter</c> des Kerns wird erst im OK-Weg beschrieben; ein Katalog
+    /// an ihm zeigte den Stand von vorhin.
+    /// </summary>
+    private TarifstrukturKiSicht KiSicht()
+    {
+        return _kiSicht ??= new TarifstrukturKiSicht
+        {
+            AktivLesen = () => _aktiv,
+            AktivSetzen = w => _aktiv = w,
+
+            ModellLesen = () => TarifWahlen.WertZu(_modusWahlen, _modusNr),
+            ModellSetzen = w => _modusNr = TarifWahlen.NummerZu(_modusWahlen, w),
+            ModellEintraege = () => KiMaskenanmeldung.Eintraege(
+                _modusWahlen, z => z.Wert, z => z.Text),
+            LeistungsmodellEintraege = () => KiMaskenanmeldung.Eintraege(
+                _leistungswahlen, z => z.Wert, z => z.Text),
+
+            GueltigAbLesen = () => _gueltigAb?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "",
+            GueltigAbSetzen = w => _gueltigAb = Tag(w),
+
+            WinterVonLesen = () => _winterVon, WinterVonSetzen = w => _winterVon = w,
+            WinterBisLesen = () => _winterBis, WinterBisSetzen = w => _winterBis = w,
+            HtVonLesen = () => _htVon, HtVonSetzen = w => _htVon = w,
+            HtBisLesen = () => _htBis, HtBisSetzen = w => _htBis = w,
+
+            BezugWinterHtLesen = () => _bezugWinterHt, BezugWinterHtSetzen = w => _bezugWinterHt = w,
+            BezugWinterNtLesen = () => _bezugWinterNt, BezugWinterNtSetzen = w => _bezugWinterNt = w,
+            BezugSommerHtLesen = () => _bezugSommerHt, BezugSommerHtSetzen = w => _bezugSommerHt = w,
+            BezugSommerNtLesen = () => _bezugSommerNt, BezugSommerNtSetzen = w => _bezugSommerNt = w,
+
+            EinspWinterHtLesen = () => _einspWinterHt, EinspWinterHtSetzen = w => _einspWinterHt = w,
+            EinspWinterNtLesen = () => _einspWinterNt, EinspWinterNtSetzen = w => _einspWinterNt = w,
+            EinspSommerHtLesen = () => _einspSommerHt, EinspSommerHtSetzen = w => _einspSommerHt = w,
+            EinspSommerNtLesen = () => _einspSommerNt, EinspSommerNtSetzen = w => _einspSommerNt = w,
+
+            StaffelGrenzeLesen = () => _staffelGrenze, StaffelGrenzeSetzen = w => _staffelGrenze = w,
+            StaffelPreis1Lesen = () => _staffelPreis1, StaffelPreis1Setzen = w => _staffelPreis1 = w,
+            StaffelPreis2Lesen = () => _staffelPreis2, StaffelPreis2Setzen = w => _staffelPreis2 = w,
+
+            BezugArbeitLesen = () => _bezug.Arbeit, BezugArbeitSetzen = w => _bezug.Arbeit = w,
+            BezugGrundLesen = () => _bezug.Grund, BezugGrundSetzen = w => _bezug.Grund = w,
+            BezugMonatLesen = () => _bezug.Monat, BezugMonatSetzen = w => _bezug.Monat = w,
+            BezugModellLesen = () => TarifWahlen.WertZu(_leistungswahlen, _bezug.ModellNr),
+            BezugModellSetzen = w => _bezug.ModellNr = TarifWahlen.NummerZu(_leistungswahlen, w),
+
+            RestArbeitLesen = () => _rest.Arbeit, RestArbeitSetzen = w => _rest.Arbeit = w,
+            RestGrundLesen = () => _rest.Grund, RestGrundSetzen = w => _rest.Grund = w,
+            RestMonatLesen = () => _rest.Monat, RestMonatSetzen = w => _rest.Monat = w,
+            RestModellLesen = () => TarifWahlen.WertZu(_leistungswahlen, _rest.ModellNr),
+            RestModellSetzen = w => _rest.ModellNr = TarifWahlen.NummerZu(_leistungswahlen, w),
+
+            EinspArbeitLesen = () => _einspArbeit, EinspArbeitSetzen = w => _einspArbeit = w,
+            EinspGrundLesen = () => _einspGrund, EinspGrundSetzen = w => _einspGrund = w
+        };
+    }
+
+    /// <summary>Ein ISO-Datum als <c>DateOnly</c>; leer bleibt leer.</summary>
+    private static DateOnly? Tag(string? wert)
+    {
+        if (string.IsNullOrWhiteSpace(wert)) return null;
+        return DateOnly.TryParse(wert, CultureInfo.InvariantCulture, out DateOnly d)
+            || DateOnly.TryParse(wert, CultureInfo.CurrentCulture, out d) ? d : null;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Speichern" schreibt die Tarifstruktur in die
+    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
+    /// Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 }

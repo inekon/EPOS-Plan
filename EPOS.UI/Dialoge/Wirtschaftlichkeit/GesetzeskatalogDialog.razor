@@ -66,6 +66,7 @@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog epos-gesetzeskatalog" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
@@ -357,7 +358,68 @@
         // Ueberlagerung des Kostendialogs mit leerer Suche an.
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(GesetzKatalog.KATALOG);
         Filtertexte.SpalteWahl = SpalteWahlText;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.GESETZESKATALOG,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GesetzeskatalogKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Klassenwahl und die Markierung in der
+    /// Katalogliste. Die Liste selbst ist ein Baustein mit eigenem Filter und
+    /// bleibt draußen.
+    /// </summary>
+    private GesetzeskatalogKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GesetzeskatalogKiSicht
+        {
+            KlasseLesen = () => GewaehlteKlasse,
+            KlasseSetzen = wert => _ = KlasseSetzenAsync(wert),
+            KlassenEintraege = () => KiMaskenanmeldung.Eintraege(
+                _klassen, z => z.Wert, z => z.Anzeige),
+
+            ZeileLesen = () => _gewaehlt,
+            ZeileSetzen = wert => _gewaehlt = wert ?? "",
+            ZeilenEintraege = () => KiMaskenanmeldung.Eintraege(
+                _zeilen, z => z.Bezeichner, z => z.Bezeichner)
+        };
+    }
+
+    /// <summary>
+    /// Die Klasse über den Assistenten wechseln — derselbe Weg wie ein Griff in
+    /// die Klappliste: Er lädt die Zeilen der neuen Klasse nach.
+    /// </summary>
+    private async Task KlasseSetzenAsync(string wert)
+    {
+        for (int i = 0; i < _klassen.Count; i++)
+        {
+            if (!string.Equals(_klassen[i].Wert, wert, StringComparison.Ordinal)) continue;
+            await BeiKlasse(i);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Neu", „Ändern" und „Löschen" schreiben unmittelbar
+    /// in den Katalog; alle drei sind datenbankwirksam und laufen über
+    /// <c>dialog_speichern</c> samt Rückfrage und Sicherungspunkt.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

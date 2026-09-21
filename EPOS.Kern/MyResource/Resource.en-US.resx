@@ -21710,4 +21710,307 @@ Do you want to allow this?</value>
   <data name="KI_DLG_CSE_ZUSCHUSS_ERL" xml:space="preserve">
     <value>Is the position a subsidy rather than an expense? The switch appears only where a subsidy is possible at all.</value>
   </data>
+  <data name="KI_DLG_BLOCK_VORLAGE" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="KI_DLG_MASKE_WPA" xml:space="preserve">
+    <value>Economic parameters</value>
+  </data>
+  <data name="KI_DLG_WPA_ZINS_ERL" xml:space="preserve">
+    <value>The discount rate i of the present value calculation under VDI 2067. It determines how strongly later payments are discounted against present ones.</value>
+  </data>
+  <data name="KI_DLG_WPA_JAHRE_ERL" xml:space="preserve">
+    <value>The study period T in years. The present value calculation runs over it; replacements and residual values follow from it.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_E_ERL" xml:space="preserve">
+    <value>The annual price increase of energy costs p_E. It indexes fuel and electricity prices over the study period.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_B_ERL" xml:space="preserve">
+    <value>The annual price increase of operating costs p_B — maintenance, servicing, operation.</value>
+  </data>
+  <data name="KI_DLG_WPA_PREIS_I_ERL" xml:space="preserve">
+    <value>The annual price increase of the investment p_I. Empty means "as operation", not "0 %/a"; the rate indexes replacements and the price basis of the residual value.</value>
+  </data>
+  <data name="KI_DLG_WPA_EINSP_ERL" xml:space="preserve">
+    <value>The feed-in tariff for PV electricity. It applies throughout the application: it values exported electricity AND provides the selling price used by the storage model.</value>
+  </data>
+  <data name="KI_DLG_WPA_CO2_ERL" xml:space="preserve">
+    <value>The constant CO₂ price; 0 means "path from the statutory catalog", not "no price".</value>
+  </data>
+  <data name="KI_DLG_WPA_PARK_ERL" xml:space="preserve">
+    <value>The reference power plant mix the electricity credit is calculated against.</value>
+  </data>
+  <data name="KI_DLG_WPA_BILANZJAHR_ERL" xml:space="preserve">
+    <value>The balance year of the emission calculation; 0 means "not maintained".</value>
+  </data>
+  <data name="KI_DLG_WPA_METHODE_ERL" xml:space="preserve">
+    <value>How the emissions of CHP electricity are accounted — from the catalog, with electricity credit, without credit, or by substitution.</value>
+  </data>
+  <data name="KI_DLG_WPA_BIOMASSE_ERL" xml:space="preserve">
+    <value>How the combustion of biomass is accounted — zero approach or actual combustion emissions.</value>
+  </data>
+  <data name="KI_DLG_WPA_NACHWEIS_ERL" xml:space="preserve">
+    <value>Is a sustainability certificate available for the biomass used? Without it the zero approach does not apply.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ZINS_ERL" xml:space="preserve">
+    <value>The discount rate in this scenario. The field shows the EFFECTIVE rate — the default is one percentage point away from the expected value; typing maintains an own value.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_E_ERL" xml:space="preserve">
+    <value>The energy cost price increase in this scenario — effective value, default one percentage point away from the expected value.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_B_ERL" xml:space="preserve">
+    <value>The operating cost price increase in this scenario — effective value, default one percentage point away from the expected value.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_PREIS_I_ERL" xml:space="preserve">
+    <value>The investment price increase in this scenario — effective value, default one percentage point away from the effective expected rate.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_INVEST_ERL" xml:space="preserve">
+    <value>The change in investment in this scenario. It applies ONLY to positions without their own scenario value.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_ERTRAG_ERL" xml:space="preserve">
+    <value>The change in revenues in this scenario. It applies to feed-in revenue and PV remuneration, not to the statutory revenue series.</value>
+  </data>
+  <data name="KI_DLG_WPA_SZ_DAUER_ERL" xml:space="preserve">
+    <value>The change in service lives in this scenario, in years. It governs how often replacement occurs within the study period.</value>
+  </data>
+  <data name="KI_DLG_MASKE_BHW" xml:space="preserve">
+    <value>CHP economics</value>
+  </data>
+  <data name="KI_DLG_BHW_MODUL_ERL" xml:space="preserve">
+    <value>The CHP unit whose data appear below. All fields prefixed "unit" belong to it; the fields prefixed "project" apply to all units.</value>
+  </data>
+  <data name="KI_DLG_BHW_STICHTAG_A_ERL" xml:space="preserve">
+    <value>The order or approval date of this unit. It determines eligibility under the German CHP act.</value>
+  </data>
+  <data name="KI_DLG_BHW_IBN_A_ERL" xml:space="preserve">
+    <value>The commissioning of this unit. Support duration and the full-load hours schedule start from it.</value>
+  </data>
+  <data name="KI_DLG_BHW_ART_ERL" xml:space="preserve">
+    <value>The unit category under the CHP act. It determines the bonus schedule and whether tendering is required.</value>
+  </data>
+  <data name="KI_DLG_BHW_FALL_ERL" xml:space="preserve">
+    <value>The self-supply case under section 6(3) of the CHP act — it determines whether self-consumed electricity receives a bonus at all.</value>
+  </data>
+  <data name="KI_DLG_BHW_SATZ_EINSP_ERL" xml:space="preserve">
+    <value>The CHP bonus on exported electricity of this unit; 0 means "no own rate" — the statutory schedule then applies.</value>
+  </data>
+  <data name="KI_DLG_BHW_SATZ_EIGEN_ERL" xml:space="preserve">
+    <value>The CHP bonus on self-consumed electricity of this unit; 0 means "no own rate".</value>
+  </data>
+  <data name="KI_DLG_BHW_KONTINGENT_ERL" xml:space="preserve">
+    <value>The full-load hours quota of this unit; 0 means "derived under section 8".</value>
+  </data>
+  <data name="KI_DLG_BHW_DECKEL_ERL" xml:space="preserve">
+    <value>The annual full-load hours cap; 0 means "degressive schedule from the commissioning year".</value>
+  </data>
+  <data name="KI_DLG_BHW_KOSTENANTEIL_ERL" xml:space="preserve">
+    <value>This unit's share of the total investment. It is needed for the tier selection under section 8.</value>
+  </data>
+  <data name="KI_DLG_BHW_ES_A_ERL" xml:space="preserve">
+    <value>The energy tax option of THIS unit. It takes precedence over the project default below.</value>
+  </data>
+  <data name="KI_DLG_BHW_AUF_A_ERL" xml:space="preserve">
+    <value>The fuel allocation method for THIS unit — it determines which share is attributed to electricity and which to heat.</value>
+  </data>
+  <data name="KI_DLG_BHW_HILFS_ERL" xml:space="preserve">
+    <value>The auxiliary energy share of the unit. 0 is a valid value and means "no auxiliary energy".</value>
+  </data>
+  <data name="KI_DLG_BHW_EINSP_KWK_ERL" xml:space="preserve">
+    <value>The feed-in tariff for CHP electricity; 0 means "not maintained" — the PV rate from the economic parameters then applies.</value>
+  </data>
+  <data name="KI_DLG_BHW_ABSCHLAG_ERL" xml:space="preserve">
+    <value>The deduction for negative spot prices — the share of hours for which no bonus is paid.</value>
+  </data>
+  <data name="KI_DLG_BHW_PAUSCHAL_ERL" xml:space="preserve">
+    <value>The lump-sum payment under section 9 of the CHP act. It applies only up to 2 kW electrical output and is paid once.</value>
+  </data>
+  <data name="KI_DLG_BHW_STICHTAG_P_ERL" xml:space="preserve">
+    <value>The project-wide CHP act reference date. It applies to units without their own date.</value>
+  </data>
+  <data name="KI_DLG_BHW_IBN_P_ERL" xml:space="preserve">
+    <value>The support start — the first year of the project's CHP act series.</value>
+  </data>
+  <data name="KI_DLG_BHW_ES_P_ERL" xml:space="preserve">
+    <value>The energy tax option of the PROJECT. It applies to units without their own option.</value>
+  </data>
+  <data name="KI_DLG_BHW_AUF_P_ERL" xml:space="preserve">
+    <value>The allocation method of the PROJECT. It applies to units without their own method.</value>
+  </data>
+  <data name="KI_DLG_BHW_NUTZUNGSGRAD_ERL" xml:space="preserve">
+    <value>The annual utilisation rate of the CHP plant; 0 means "not recorded". It is needed only for section 53a of the energy tax act (70 % threshold).</value>
+  </data>
+  <data name="KI_DLG_BHW_UA_ERL" xml:space="preserve">
+    <value>The type of undertaking under the electricity tax act. It determines which exemptions apply.</value>
+  </data>
+  <data name="KI_DLG_BHW_RAEUMLICH_ERL" xml:space="preserve">
+    <value>Is the spatial connection of 4.5 km between generation and consumption given? Without it the electricity tax exemption does not apply.</value>
+  </data>
+  <data name="KI_DLG_BHW_HOCHEFFIZIENZ_ERL" xml:space="preserve">
+    <value>Is a high-efficiency certificate available? It is a prerequisite for some of the exemptions.</value>
+  </data>
+  <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
+    <value>The mode of section 9(1) no. 3 of the electricity tax act — it determines which exemption is applied.</value>
+  </data>
+  <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
+    <value>Tariff structure</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG" xml:space="preserve">
+    <value>Supply</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSPEISUNG" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="KI_DLG_TAR_REST" xml:space="preserve">
+    <value>Residual supply</value>
+  </data>
+  <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
+    <value>Is the tariff structure applied at all? When off, the simulation uses the plain energy price of the carrier.</value>
+  </data>
+  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
+    <value>Zone model or role model. The zone model uses four price zones and a demand schedule, the role model one energy, base and demand price per role.</value>
+  </data>
+  <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
+    <value>The price date from which the tariff structure applies (ISO, YYYY-MM-DD).</value>
+  </data>
+  <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
+    <value>The month the winter zone begins with.</value>
+  </data>
+  <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
+    <value>The month the winter zone ends with.</value>
+  </data>
+  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
+    <value>The hour the peak tariff begins with — zone model only.</value>
+  </data>
+  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
+    <value>The hour the peak tariff ends with (exclusive) — zone model only.</value>
+  </data>
+  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
+    <value>The supply price of this price zone in the zone model.</value>
+  </data>
+  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
+    <value>The export price of this price zone in the zone model. It applies to PV AND CHP — both share the field.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>The demand threshold above which the second tier price applies.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
+    <value>The demand price below the tier threshold.</value>
+  </data>
+  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
+    <value>The demand price above the tier threshold.</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
+    <value>The energy price of the supply role in the role model.</value>
+  </data>
+  <data name="KI_DLG_TAR_BEZUG_GRUND_ERL" xml:space="preserve">
+    <value>The base price of the supply role in the role model.</value>
+  </data>
+  <data name="KI_DLG_TAR_REST_ARBEIT_ERL" xml:space="preserve">
+    <value>The energy price of the residual supply role — the electricity the project must buy despite its own generation.</value>
+  </data>
+  <data name="KI_DLG_TAR_REST_GRUND_ERL" xml:space="preserve">
+    <value>The base price of the residual supply role.</value>
+  </data>
+  <data name="KI_DLG_TAR_LM_ERL" xml:space="preserve">
+    <value>The demand price model of this role — monthly, tiered or by annual peak load.</value>
+  </data>
+  <data name="KI_DLG_TAR_MONAT_ERL" xml:space="preserve">
+    <value>The monthly price of this role — it applies only in the monthly demand price model.</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSP_ARBEIT_ERL" xml:space="preserve">
+    <value>The export price of the export role in the role model.</value>
+  </data>
+  <data name="KI_DLG_TAR_EINSP_GRUND_ERL" xml:space="preserve">
+    <value>The base price of the export role in the role model.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PVV" xml:space="preserve">
+    <value>Photovoltaic remuneration</value>
+  </data>
+  <data name="KI_DLG_PVV_AKTIV_ERL" xml:space="preserve">
+    <value>Is the remuneration calculation applied at all? When off, the economic calculation values exported electricity with the rate from the economic parameters.</value>
+  </data>
+  <data name="KI_DLG_PVV_LEISTUNG_ERL" xml:space="preserve">
+    <value>The specified plant capacity; 0 means "none" — the calculated capacity from the project's plants then applies.</value>
+  </data>
+  <data name="KI_DLG_PVV_IBN_ERL" xml:space="preserve">
+    <value>The commissioning of the plant (ISO). It determines the applicable value and is mandatory when the calculation applies.</value>
+  </data>
+  <data name="KI_DLG_PVV_DEGRADATION_ERL" xml:space="preserve">
+    <value>The annual performance decline of the modules; 0 means "none".</value>
+  </data>
+  <data name="KI_DLG_PVV_EINSPEISEART_ERL" xml:space="preserve">
+    <value>Surplus or full export. It determines the applicable value and whether self-consumption is calculated at all.</value>
+  </data>
+  <data name="KI_DLG_PVV_AW_ERL" xml:space="preserve">
+    <value>The specified applicable value; 0 means "rate from the statutory catalog".</value>
+  </data>
+  <data name="KI_DLG_PVV_VERMARKTUNG_ERL" xml:space="preserve">
+    <value>The marketing form — feed-in tariff, market premium, other direct marketing, or none.</value>
+  </data>
+  <data name="KI_DLG_PVV_DV_ERL" xml:space="preserve">
+    <value>The direct marketing fee. It applies only with the market premium.</value>
+  </data>
+  <data name="KI_DLG_PVV_PPA_ERL" xml:space="preserve">
+    <value>The agreed PPA price; 0 means "none". It applies only with other direct marketing.</value>
+  </data>
+  <data name="KI_DLG_PVV_PPA_AUFSCHLAG_ERL" xml:space="preserve">
+    <value>The premium or discount on the spot price in the PPA. It applies only with other direct marketing.</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51_NAME" xml:space="preserve">
+    <value>Apply section 51</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51_ERL" xml:space="preserve">
+    <value>Does section 51 of the renewable energy act apply (no revenue at negative prices)? Automatic means "decide from commissioning and capacity".</value>
+  </data>
+  <data name="KI_DLG_PVV_IMSYS_ERL" xml:space="preserve">
+    <value>The installation year of the smart metering system; 0 means "none". It exempts the plant from part of the curtailment.</value>
+  </data>
+  <data name="KI_DLG_PVV_AUSFALL_ERL" xml:space="preserve">
+    <value>The assumed share of revenue lost to negative prices.</value>
+  </data>
+  <data name="KI_DLG_PVV_PAR51A_ERL" xml:space="preserve">
+    <value>Is the loss under section 51a of the renewable energy act compensated by extending the support period?</value>
+  </data>
+  <data name="KI_DLG_PVV_BEZUG_ERL" xml:space="preserve">
+    <value>Is self-consumption valued from the electricity carrier's price series instead of the fixed energy price?</value>
+  </data>
+  <data name="KI_DLG_PVV_KAPPUNG_ERL" xml:space="preserve">
+    <value>Does the 60 percent export curtailment apply? Automatic means "decide from commissioning and metering system".</value>
+  </data>
+  <data name="KI_DLG_MASKE_GSK" xml:space="preserve">
+    <value>Statutory parameters</value>
+  </data>
+  <data name="KI_DLG_MASKE_GSZ" xml:space="preserve">
+    <value>Statutory parameters — entry</value>
+  </data>
+  <data name="KI_DLG_GSK_KLASSE_ERL" xml:space="preserve">
+    <value>The class whose annual entries the list shows — CO₂ price path, CHP rates, energy and electricity tax, and the catalog's remaining categories.</value>
+  </data>
+  <data name="KI_DLG_GSK_ZEILE_NAME" xml:space="preserve">
+    <value>Selected entry</value>
+  </data>
+  <data name="KI_DLG_GSK_ZEILE_ERL" xml:space="preserve">
+    <value>The annual entry selected in the list. It determines what Edit and Delete apply to.</value>
+  </data>
+  <data name="KI_DLG_GSZ_SCHLUESSEL_ERL" xml:space="preserve">
+    <value>The key of the entry — the language-neutral name the calculation finds the rate by. It is locked when editing.</value>
+  </data>
+  <data name="KI_DLG_GSZ_KLASSE_ERL" xml:space="preserve">
+    <value>The class the entry belongs to. It is locked when editing — an entry does not change its category.</value>
+  </data>
+  <data name="KI_DLG_GSZ_JAHR_ERL" xml:space="preserve">
+    <value>The year from which the value applies. It applies until the next entry with the same key.</value>
+  </data>
+  <data name="KI_DLG_GSZ_WERT_ERL" xml:space="preserve">
+    <value>The value itself. An empty field means "the rate ceased from this year on", not "zero".</value>
+  </data>
+  <data name="KI_DLG_GSZ_EINHEIT_ERL" xml:space="preserve">
+    <value>The unit of the value. It belongs to the entry, not to the class.</value>
+  </data>
+  <data name="KI_DLG_GSZ_STATUS_ERL" xml:space="preserve">
+    <value>The status of the entry — enacted, forecast or ceased. It states how reliable the value is.</value>
+  </data>
+  <data name="KI_DLG_GSZ_QUELLE_ERL" xml:space="preserve">
+    <value>The source the value comes from — law, ordinance or publication with its date.</value>
+  </data>
 </root>

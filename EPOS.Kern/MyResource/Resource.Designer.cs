@@ -25298,6 +25298,240 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Abschlag bei negativen Spotpreisen — der Anteil der Stunden, für die kein Zuschlag gezahlt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_ABSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_ABSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenart nach KWKG. Sie entscheidet über die Zuschlagsstaffel und die Ausschreibungspflicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_ART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_ART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufteilungsmethode des Brennstoffs für DIESE Anlage — sie entscheidet, welcher Anteil auf Strom und welcher auf Wärme entfällt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_AUF_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_AUF_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Aufteilungsmethode des PROJEKTS. Sie gilt für Module ohne eigene Methode. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_AUF_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_AUF_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Vollbenutzungsstunden-Deckel je Jahr; 0 heißt „degressive Staffel ab dem Inbetriebnahmejahr“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_DECKEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_DECKEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisevergütung für KWK-Strom; 0 heißt „nicht gepflegt“ — dann gilt der PV-Satz aus den Wirtschaftlichkeits-Parametern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_EINSP_KWK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_EINSP_KWK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energiesteuerwahl DIESER Anlage. Sie hat Vorrang vor der Projektvorgabe darunter. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_ES_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_ES_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Energiesteuerwahl des PROJEKTS. Sie gilt für Module ohne eigene Wahl. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_ES_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_ES_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Eigenstromfall nach § 6 Abs. 3 KWKG — er entscheidet, ob eigenverbrauchter Strom überhaupt einen Zuschlag bekommt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_FALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_FALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Hilfsenergieanteil der Anlage. 0 ist ein gültiger Wert und heißt „keine Hilfsenergie“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_HILFS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_HILFS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liegt ein Hocheffizienznachweis vor? Er ist Voraussetzung für einen Teil der Befreiungstatbestände. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_HOCHEFFIZIENZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_HOCHEFFIZIENZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Inbetriebnahme dieser Anlage. Ab ihr laufen Förderdauer und Vollbenutzungsstunden-Staffel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_IBN_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_IBN_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Förderbeginn — das Startjahr der KWKG-Reihen des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_IBN_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_IBN_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Vollbenutzungsstunden-Kontingent dieser Anlage; 0 heißt „nach § 8 abgeleitet“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_KONTINGENT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_KONTINGENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anteil dieser Anlage an der Gesamtinvestition. Er wird für die Stufenwahl nach § 8 gebraucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_KOSTENANTEIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_KOSTENANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das BHKW-Modul, dessen Angaben darunter stehen. Alle Felder mit der Vorsilbe „Anlage“ gehören zu ihm; die Felder mit „Projekt“ gelten für alle Module. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_MODUL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_MODUL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_MODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_MODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Jahresnutzungsgrad der KWK-Anlage; 0 heißt „nicht erfasst“. Er wird nur für § 53a Energiesteuergesetz gebraucht (Schwelle 70 %). ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_NUTZUNGSGRAD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_NUTZUNGSGRAD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Pauschalvergütung nach § 9 KWKG. Sie gilt nur bis 2 kW elektrischer Leistung und wird einmalig gezahlt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_PAUSCHAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_PAUSCHAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ist der räumliche Zusammenhang von 4,5 km zwischen Erzeugung und Verbrauch gegeben? Ohne ihn entfällt die Stromsteuerbefreiung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_RAEUMLICH_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_RAEUMLICH_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der KWKG-Zuschlag auf eigenverbrauchten Strom dieser Anlage; 0 heißt „kein eigener Satz“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_SATZ_EIGEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_SATZ_EIGEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der KWKG-Zuschlag auf eingespeisten Strom dieser Anlage; 0 heißt „kein eigener Satz“ — dann gilt die gesetzliche Staffel. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_SATZ_EINSP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_SATZ_EINSP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Stichtag der Bestellung oder Genehmigung dieser Anlage. Er entscheidet über die Förderfähigkeit nach KWKG. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_STICHTAG_A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_STICHTAG_A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der projektweite KWKG-Stichtag. Er gilt für Module ohne eigenen Stichtag. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_STICHTAG_P_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_STICHTAG_P_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Unternehmensart nach Stromsteuergesetz. Sie entscheidet über die Befreiungstatbestände. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_UA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_UA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: {1} ähnelt.
+        /// </summary>
+        public static string KI_DLG_BLOCK_VORLAGE {
+            get {
+                return ResourceManager.GetString("KI_DLG_BLOCK_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Profils aus seinem Kopfsatz. ähnelt.
         /// </summary>
         public static string KI_DLG_BPF_BESCHREIBUNG_ERL {
@@ -26729,6 +26963,96 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse, deren Jahreszeilen die Liste zeigt — CO₂-Preispfad, KWKG-Sätze, Energie- und Stromsteuer und die übrigen Rubriken des Katalogs. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSK_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSK_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die in der Liste markierte Jahreszeile. Sie entscheidet, worauf „Ändern“ und „Löschen“ greifen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSK_ZEILE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSK_ZEILE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Markierte Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSK_ZEILE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSK_ZEILE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit des Wertes. Sie gehört zur Zeile, nicht zur Klasse. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Jahr, ab dem der Wert gilt. Er gilt bis zur nächsten Zeile desselben Schlüssels. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_JAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_JAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klasse, zu der die Zeile gehört. Beim Ändern ist sie gesperrt — eine Zeile wechselt ihre Rubrik nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_KLASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_KLASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Fundstelle, aus der der Wert stammt — Gesetz, Verordnung oder Veröffentlichung samt Datum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Schlüssel der Zeile — der sprachneutrale Name, unter dem die Rechnung den Satz findet. Beim Ändern ist er gesperrt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_SCHLUESSEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_SCHLUESSEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Status der Zeile — gesetzt, Prognose oder entfallen. Er sagt, wie belastbar der Wert ist. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_STATUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_STATUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert selbst. Ein leeres Feld heißt „der Satz ist ab diesem Jahr entfallen“ und nicht „null“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GSZ_WERT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GSZ_WERT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
         /// </summary>
         public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
@@ -27476,6 +27800,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die BHKW-Wirtschaftlichkeit ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_BHW {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_BHW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfsprofile im Projekt ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BPF {
@@ -27553,6 +27886,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_GEBW {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_GEBW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GSK {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GSK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzliche Parameter — Zeile ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_GSZ {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_GSZ", resourceCulture);
             }
         }
         
@@ -27692,6 +28043,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik-Vergütung ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PVV {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PVV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle Erdreich ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_QERD {
@@ -27764,6 +28124,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tarifstruktur ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_TAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_TAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wochen-Stundenprofil eines Typs ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_TPROF {
@@ -27814,6 +28183,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_WP {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeits-Parameter ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WPA {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WPA", resourceCulture);
             }
         }
         
@@ -28282,6 +28660,159 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PSP_VOLUMEN_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_PSP_VOLUMEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Vergütungsrechnung überhaupt angewendet? Ausgeschaltet bewertet die Wirtschaftlichkeit den eingespeisten Strom mit dem Satz aus den Wirtschaftlichkeits-Parametern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der angenommene Anteil der Erlöse, der durch negative Preise ausfällt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_AUSFALL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_AUSFALL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der gesetzte anzulegende Wert; 0 heißt „Satz aus dem Gesetzeskatalog“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_AW_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_AW_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird der Eigenverbrauch aus der Preisreihe des Stromträgers bewertet statt mit dem festen Arbeitspreis? ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_BEZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_BEZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die jährliche Leistungsabnahme der Module; 0 heißt „keine“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_DEGRADATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_DEGRADATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Direktvermarktungsentgelt. Es wirkt nur bei der Marktprämie. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_DV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_DV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überschuss- oder Volleinspeisung. Sie entscheidet über den anzulegenden Wert und darüber, ob Eigenverbrauch überhaupt gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_EINSPEISEART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_EINSPEISEART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Inbetriebnahme der Anlage (ISO). Sie entscheidet über den anzulegenden Wert und ist Pflicht, wenn die Rechnung gilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_IBN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_IBN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Einbaujahr des intelligenten Messsystems; 0 heißt „keins“. Es verschont die Anlage von einem Teil der Kappung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_IMSYS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_IMSYS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt die 60-Prozent-Kappung der Einspeiseleistung? Automatisch heißt „nach Inbetriebnahme und Messsystem entscheiden“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_KAPPUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_KAPPUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gesetzte Anlagenleistung; 0 heißt „keine“ — dann gilt die rechnerische Leistung aus den Anlagen des Projekts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_LEISTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_LEISTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird der Ausfall nach § 51a EEG durch eine Verlängerung der Förderdauer ausgeglichen? ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_PAR51A_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_PAR51A_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt § 51 EEG (kein Erlös bei negativen Preisen)? Automatisch heißt „nach Inbetriebnahme und Leistung entscheiden“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_PAR51_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_PAR51_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die § 51 anwenden ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_PAR51_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_PAR51_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Auf- oder Abschlag auf den Spotpreis im PPA. Er wirkt nur bei sonstiger Direktvermarktung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_PPA_AUFSCHLAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_PPA_AUFSCHLAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der vereinbarte PPA-Preis; 0 heißt „keiner“. Er wirkt nur bei sonstiger Direktvermarktung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_PPA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_PPA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vermarktungsform — Einspeisevergütung, Marktprämie, sonstige Direktvermarktung oder keine. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PVV_VERMARKTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PVV_VERMARKTUNG_ERL", resourceCulture);
             }
         }
         
@@ -29744,6 +30275,213 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wird die Tarifstruktur überhaupt angewendet? Ausgeschaltet rechnet die Simulation mit dem einfachen Arbeitspreis des Energieträgers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_AKTIV_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_AKTIV_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezug ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_BEZUG {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_BEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Arbeitspreis der Bezugsrolle im Rollenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_BEZUG_ARBEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_BEZUG_ARBEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Grundpreis der Bezugsrolle im Rollenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_BEZUG_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_BEZUG_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einspeisepreis der Einspeiserolle im Rollenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_EINSP_ARBEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_EINSP_ARBEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Grundpreis der Einspeiserolle im Rollenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_EINSP_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_EINSP_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Preisstand, ab dem die Tarifstruktur gilt (ISO, JJJJ-MM-TT). ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_GUELTIGAB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_GUELTIGAB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde, mit der der Hochtarif endet (exklusiv) — nur im Zonenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_HTBIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_HTBIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stunde, mit der der Hochtarif beginnt — nur im Zonenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_HTVON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_HTVON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Leistungspreismodell dieser Rolle — monatlich, gestaffelt oder nach Jahreshöchstlast. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_LM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_LM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zonenmodell oder Rollenmodell. Das Zonenmodell rechnet mit vier Preiszonen und einer Leistungsstaffel, das Rollenmodell mit je einem Arbeits-, Grund- und Leistungspreis je Rolle. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_MODELL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_MODELL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monatspreis dieser Rolle — er gilt nur im monatlichen Leistungspreismodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Reststrom ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_REST {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_REST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Arbeitspreis der Reststromrolle — der Strom, den das Projekt trotz eigener Erzeugung beziehen muss. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_REST_ARBEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_REST_ARBEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Grundpreis der Reststromrolle. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_REST_GRUND_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_REST_GRUND_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungsgrenze, ab der der zweite Staffelpreis gilt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_STAFFEL_GRENZE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_GRENZE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis oberhalb der Staffelgrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_STAFFEL_OBEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_OBEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Leistungspreis unterhalb der Staffelgrenze. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_STAFFEL_UNTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_STAFFEL_UNTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterzone endet. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_WINTERBIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_WINTERBIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Monat, mit dem die Winterzone beginnt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_WINTERVON_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_WINTERVON_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezugspreis dieser Preiszone im Zonenmodell. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_ZONE_BEZUG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_ZONE_BEZUG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Einspeisepreis dieser Preiszone im Zonenmodell. Er gilt für PV UND KWK — beide teilen sich das Feld. ähnelt.
+        /// </summary>
+        public static string KI_DLG_TAR_ZONE_EINSP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_TAR_ZONE_EINSP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; er geht mit dem Speichern in die Datenbank. ähnelt.
         /// </summary>
         public static string KI_DLG_TPROF_BESCHREIBUNG_ERL {
@@ -30050,11 +30788,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Bilanzjahr der Emissionsrechnung; 0 heißt „nicht gepflegt“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BILANZJAHR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BILANZJAHR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die Verbrennung von Biomasse bilanziert wird — Nullansatz oder tatsächliche Verbrennungsemissionen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_BIOMASSE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_BIOMASSE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Arbeitet die Wärmepumpe bivalent, also zusammen mit einem zweiten Wärmeerzeuger? Ja verlangt eine Betriebsart. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_BIVALENT_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_BIVALENT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der konstante CO₂-Preis; 0 heißt „Pfad aus dem Gesetzeskatalog“ und nicht „kein Preis“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_CO2_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_CO2_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einspeisevergütung für PV-Strom. Sie gilt für die ganze Anwendung: Sie bewertet den eingespeisten Strom UND stellt den Verkaufspreis der Speicherwelt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_EINSP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_EINSP_ERL", resourceCulture);
             }
         }
         
@@ -30086,6 +30860,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrachtungszeitraum T in Jahren. Über ihn läuft die Barwertrechnung; Ersatzbeschaffungen und Restwerte richten sich nach ihm. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_JAHRE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_JAHRE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Kühlleistung des Geräts in kW; Kommazahlen sind zulässig, leer heißt „nicht gepflegt“. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_KUEHLLEISTUNG_ERL {
@@ -30095,11 +30878,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wie die Emissionen des KWK-Stroms bilanziert werden — aus dem Katalog, mit Stromgutschrift, ohne Gutschrift oder über Substitution. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_METHODE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_METHODE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Gerätekosten in Euro — Anzeige; gepflegt werden sie in der Kostenverwaltung, nicht auf dieser Maske. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_MODULKOSTEN_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_MODULKOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Liegt ein Nachhaltigkeitsnachweis für die eingesetzte Biomasse vor? Ohne ihn gilt der Nullansatz nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_NACHWEIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_NACHWEIS_ERL", resourceCulture);
             }
         }
         
@@ -30118,6 +30919,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_NUTZUNGSDAUER_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Referenz-Kraftwerkspark, gegen den die Stromgutschrift gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_PARK_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_PARK_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die jährliche Preissteigerung der Betriebskosten p_B — Wartung, Instandhaltung, Bedienung. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_PREIS_B_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_PREIS_B_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die jährliche Preissteigerung der Energiekosten p_E. Sie indiziert Brennstoff- und Strompreise über den Betrachtungszeitraum. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_PREIS_E_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_PREIS_E_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die jährliche Preissteigerung der Investition p_I. Leer heißt „wie Betrieb“, nicht „0 %/a“; der Satz indiziert Ersatzbeschaffungen und die Preisbasis des Restwerts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_PREIS_I_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_PREIS_I_ERL", resourceCulture);
             }
         }
         
@@ -30167,6 +31004,69 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung der Nutzungsdauern in diesem Szenario, in Jahren. Sie steuert, wie oft im Betrachtungszeitraum ersetzt wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_DAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_DAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung der Erträge in diesem Szenario. Sie greift auf Einspeiseerlös und PV-Vergütung, nicht auf die gesetzlichen Erlösreihen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_ERTRAG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_ERTRAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Änderung der Investition in diesem Szenario. Sie greift NUR auf Positionen ohne eigenen Szenariowert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_INVEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_INVEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preissteigerung der Betriebskosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_PREIS_B_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_PREIS_B_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preissteigerung der Energiekosten in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem Erwartungswert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_PREIS_E_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_PREIS_E_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Preissteigerung der Investition in diesem Szenario — wirksamer Wert, Vorgabe ein Prozentpunkt neben dem wirksamen Erwartungssatz. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_PREIS_I_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_PREIS_I_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalkulationszins in diesem Szenario. Das Feld zeigt den WIRKSAMEN Satz — die Vorgabe liegt einen Prozentpunkt neben dem Erwartungswert; wer tippt, pflegt einen eigenen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_SZ_ZINS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_SZ_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Energieträger der Wärmepumpe; er bestimmt Preis und Emissionen des Antriebsstroms. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_TRAEGER_ERL {
@@ -30190,6 +31090,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_VORLAUF_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kalkulationszinssatz i der Barwertrechnung nach VDI 2067. Er bestimmt, wie stark spätere Zahlungen gegenüber heutigen abgewertet werden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_ZINS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_ZINS_ERL", resourceCulture);
             }
         }
         

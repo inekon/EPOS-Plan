@@ -52,6 +52,7 @@
 
 @using WindowsFormsApplication1
 @using Microsoft.AspNetCore.Components.QuickGrid
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -652,6 +653,9 @@
 
     protected override void OnInitialized()
     {
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT,
+                                          () => KiSicht(), KiHaken());
+
         _artA = BhkwWahlen.Anlagenart(false);
         _fallA = BhkwWahlen.Eigenfall(false);
         _esA = BhkwWahlen.Energiesteuer(true);
@@ -1330,4 +1334,71 @@
     /// <summary>Esc wirkt wie Abbrechen — geschrieben wird nichts.</summary>
     private Task BeiTaste(KeyboardEventArgs e) =>
         e.Key == "Escape" ? Verwerfen() : Task.CompletedTask;
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private BhkwWirtschaftlichkeitKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die zwei Arbeitsstände der Maske — die Angaben der
+    /// gewählten Anlage und die projektweiten Vorgaben.
+    /// </summary>
+    /// <remarks>
+    /// Beide sind veränderliche Klassen mit öffentlichen FELDERN; die Maskenbrücke
+    /// löst über Eigenschaften auf. Jedes Setzen läuft durch <see cref="Setze"/> —
+    /// derselbe Weg, den ein Tastendruck des Anwenders nimmt, samt Änderungsmerker.
+    /// </remarks>
+    private BhkwWirtschaftlichkeitKiSicht KiSicht()
+    {
+        return _kiSicht ??= new BhkwWirtschaftlichkeitKiSicht
+        {
+            AnlageLesen = () => AktuellerStand,
+            VorgabenLesen = () => _vorgaben,
+
+            WahlLesen = () => _aktuell >= 0 ? _aktuell : (int?)null,
+            WahlSetzen = nummer =>
+            {
+                if (nummer is null || nummer < 0 || nummer >= Anlagen.Count) return;
+                Waehle(Anlagen[nummer.Value]);
+            },
+            AnlagenEintraege = () => KiMaskenanmeldung.Eintraege(
+                Anlagen.Select(a => a.Bezeichner).ToList()),
+
+            AnlagenartEintraege = () => Wahleintraege(_artA),
+            EigenfallEintraege = () => Wahleintraege(_fallA),
+            EnergiesteuerAEintraege = () => Wahleintraege(_esA),
+            AufteilungAEintraege = () => Wahleintraege(_aufA),
+            EnergiesteuerPEintraege = () => Wahleintraege(_esP),
+            AufteilungPEintraege = () => Wahleintraege(_aufP),
+            UnternehmensartEintraege = () => Wahleintraege(_uaP),
+            BefreiungsmodusEintraege = () => Wahleintraege(_modus),
+
+            // Der Aenderungsmerker und die Schlussleiste gehoeren dem Renderfaden:
+            // Setze() leert die Leiste, und das ist ein Zeichenlauf.
+            Nachziehen = () => _ = InvokeAsync(() => Setze(() => { }))
+        };
+    }
+
+    /// <summary>Eine Steuerwahl-Liste als Einträge des Assistenten — Schlüssel ist der
+    /// STEUERWERT und nicht der Listenplatz.</summary>
+    private static IReadOnlyList<KiWahleintrag> Wahleintraege(IReadOnlyList<Steuerwahl> liste)
+        => KiMaskenanmeldung.Eintraege(liste, z => z.Wert, z => z.Text);
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> „Speichern" schreibt Anlagen und Parametersatz in die
+    /// Datenbank; das läuft über <c>dialog_speichern</c> samt Rückfrage und
+    /// Sicherungspunkt (Anwenderentscheid KI‑D‑Q4).
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 }

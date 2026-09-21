@@ -853,4 +853,35 @@ public class GesetzeskatalogDialogTests : EposBunitContext
         Assert.True(zeile.FindAll(".epos-formularraster .epos-feld").Count >= 6);
         Assert.True(zeile.FindAll(".epos-formularraster .epos-feld--kurz").Count >= 2);
     }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser ZWEI Masken an der Maskenbrücke.</b> Der Katalog meldet
+    /// Klassenwahl und Listenmarkierung an; sein Zeileneditor führt einen eigenen
+    /// Katalogschlüssel, weil er einen anderen Gegenstand pflegt.
+    /// </summary>
+    [Fact]
+    public void Katalog_und_Zeileneditor_melden_sich_getrennt_beim_Assistenten_an()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.GESETZESKATALOG));
+
+        KiFeldzugang klasse =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GESETZESKATALOG, "klasse");
+        Assert.NotNull(klasse);
+        Assert.True(klasse.Setzbar);
+
+        KiFeldzugang zeile =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.GESETZESKATALOG, "zeile");
+        Assert.NotNull(zeile);
+        Assert.True(zeile.Setzbar);
+
+        // Der Zeileneditor steht erst, wenn er offen ist - und traegt dann sieben
+        // eigene Felder unter seinem eigenen Schluessel.
+        Assert.Equal(7, KiDialoge.Katalog.Finde(KiMaskennamen.GESETZESKATALOG_ZEILE)!
+                                 .Felder.Count);
+    }
 }

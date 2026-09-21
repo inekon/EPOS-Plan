@@ -714,4 +714,48 @@ public class WirtschaftlichkeitParameterDialogTests : EposBunitContext
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
                         f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
     }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>WirtschaftlichkeitParameterKiSicht</c> auf DREI Objekte: den
+    /// Parametersatz und die zwei Szenariosätze. Ein Szenariofeld zeigt den
+    /// WIRKSAMEN Wert und schreibt den gepflegten.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_Satz_und_Szenario()
+    {
+        var satz = Satz();
+        var cut = Aufbauen(satz, brennstoff: true);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER));
+
+        KiFeldzugang zins = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "zinssatz");
+        Assert.NotNull(zins);
+        Assert.True(zins.Setzbar);
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(zins, "4,5");
+        Assert.True(neu.Ok, neu.Grund);
+        zins.Setzen(neu.Wert);
+        cut.Render();
+        Assert.Equal(4.5, satz.Zinssatz, 3);
+
+        // Ein SZENARIOFELD: Es liegt an einem anderen Objekt und zeigt den
+        // wirksamen Wert - die Vorgabe ist ein Prozentpunkt neben dem Erwartungswert.
+        KiFeldzugang best = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, "best_zinssatz");
+        Assert.NotNull(best);
+        Assert.True(best.Setzbar);
+
+        KiFeldumsetzung neuBest = KiFeldwandler.Wandle(best, "3,0");
+        Assert.True(neuBest.Ok, neuBest.Grund);
+        best.Setzen(neuBest.Wert);
+        cut.Render();
+        Assert.Equal(3.0, Convert.ToDouble(best.Lesen(), CultureInfo.InvariantCulture), 3);
+        Assert.Equal(3.0, satz.SatzBest!.Zinssatz!.Value, 3);
+    }
 }

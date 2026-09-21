@@ -1892,4 +1892,48 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains(cut.FindAll(".epos-formularraster .epos-feld--kurz"),
                         f => f.QuerySelector(".epos-feld-zeile .epos-einheit") is not null);
     }
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F4)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Sie bindet über die
+    /// Sichtklasse <c>BhkwWirtschaftlichkeitKiSicht</c> auf ZWEI Arbeitsstände —
+    /// die gewählte Anlage und die projektweiten Vorgaben. Die Wahlfelder tragen
+    /// ihren STEUERWERT als Schlüssel.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_beide_Staende()
+    {
+        var cut = Aufbauen();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT));
+
+        // Ein Feld der ANLAGE.
+        KiFeldzugang satz = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, "anlage_satz_einspeisung");
+        Assert.NotNull(satz);
+        Assert.True(satz.Setzbar);
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(satz, "8,5");
+        Assert.True(neu.Ok, neu.Grund);
+        satz.Setzen(neu.Wert);
+        cut.Render();
+        Assert.Equal(8.5, cut.Instance.AktuellerStand!.SatzEinspCt!.Value, 3);
+
+        // Ein Feld des PROJEKTS - derselbe Feldsatz, andere Ebene.
+        KiFeldzugang raeumlich = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, "projekt_raeumlich");
+        Assert.NotNull(raeumlich);
+        KiFeldumsetzung an = KiFeldwandler.Wandle(raeumlich, "ja");
+        Assert.True(an.Ok, an.Grund);
+        raeumlich.Setzen(an.Wert);
+        cut.Render();
+        Assert.True(cut.Instance.Vorgabenstand.RaeumlicherZusammenhang);
+
+        // Ein WAHLFELD traegt seinen Steuerwert, nicht den Listenplatz.
+        KiFeldzugang art = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, "anlage_anlagenart");
+        Assert.NotEmpty(art.Wahleintraege());
+        Assert.DoesNotContain(art.Wahleintraege(), e => e.Schluessel == "0");
+    }
 }

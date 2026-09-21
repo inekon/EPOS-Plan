@@ -43,6 +43,7 @@
 
 @namespace EPOS.UI.Dialoge.Wirtschaftlichkeit
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-gesetz-zeile" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -221,6 +222,9 @@
     {
         if (!_ersterAufbau) return;
 
+        _kiMaske ??= KiMaskenanmeldung.Fuer(KiMaskennamen.GESETZESKATALOG_ZEILE,
+                                            () => KiSicht(), KiHaken());
+
         _schluessel = Schluessel ?? "";
         _quelle = Quelle ?? "";
         _jahr = JahrVon;
@@ -251,6 +255,89 @@
     // =====================================================================
     // Eingaben
     // =====================================================================
+
+    // =============================================================================
+    // Der Hilfe-Assistent (Welle KI-F4)
+    // =============================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private GesetzeskatalogZeileKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die sieben lebenden Felder des Editors. Ein
+    /// Daten-Objekt gibt es nicht — <c>Zeilenwerte</c> entsteht erst beim OK.
+    /// </summary>
+    private GesetzeskatalogZeileKiSicht KiSicht()
+    {
+        return _kiSicht ??= new GesetzeskatalogZeileKiSicht
+        {
+            SchluesselLesen = () => _schluessel,
+            SchluesselSetzen = BeiSchluessel,
+
+            KlasseLesen = () => _klasseIndex.HasValue && _klasseIndex.Value < Klassen.Count
+                              ? Klassen[_klasseIndex.Value].Wert : "",
+            KlasseSetzen = KiKlasse,
+            KlassenEintraege = () => KiMaskenanmeldung.Eintraege(
+                Klassen, z => z.Wert, z => z.Anzeige),
+
+            JahrLesen = () => _jahr,
+            JahrSetzen = BeiJahr,
+            WertLesen = () => _wert,
+            WertSetzen = BeiWert,
+
+            EinheitLesen = () => Eintrag(Einheiten, _einheitIndex),
+            EinheitSetzen = wert => _einheitIndex = Stelle(Einheiten, wert),
+            EinheitEintraege = () => KiMaskenanmeldung.Eintraege(
+                Einheiten, z => z, z => z),
+
+            StatusLesen = () => Eintrag(Statuswerte, _statusIndex),
+            StatusSetzen = wert => _statusIndex = Stelle(Statuswerte, wert),
+            StatusEintraege = () => KiMaskenanmeldung.Eintraege(
+                Statuswerte, z => z, z => z),
+
+            QuelleLesen = () => _quelle,
+            QuelleSetzen = wert => _quelle = wert ?? ""
+        };
+    }
+
+    /// <summary>Der Text einer Liste an der Stelle; leer, wenn es sie nicht gibt.</summary>
+    private static string Eintrag(IReadOnlyList<string> liste, int? stelle)
+        => stelle.HasValue && stelle.Value >= 0 && stelle.Value < liste.Count
+               ? liste[stelle.Value] : "";
+
+    /// <summary>Die Stelle eines Textes in der Liste; <c>null</c>, wenn er fehlt.</summary>
+    private static int? Stelle(IReadOnlyList<string> liste, string? wert)
+    {
+        for (int i = 0; i < liste.Count; i++)
+            if (string.Equals(liste[i], wert, StringComparison.Ordinal)) return i;
+        return null;
+    }
+
+    /// <summary>Die Klasse über ihren Steuerwert setzen — nur bei einer Neuanlage.</summary>
+    private void KiKlasse(string wert)
+    {
+        for (int i = 0; i < Klassen.Count; i++)
+        {
+            if (!string.Equals(Klassen[i].Wert, wert, StringComparison.Ordinal)) continue;
+            BeiKlasse(i);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Der Editor meldet seine Zeile an den Katalog; der
+    /// schreibt sie mit seinem eigenen Weg.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     private void BeiSchluessel(string text) { _schluessel = text ?? ""; _meldung = ""; }
     private void BeiKlasse(int? index) { _klasseIndex = index; _meldung = ""; }

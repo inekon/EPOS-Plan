@@ -151,6 +151,29 @@ namespace WindowsFormsApplication1
         /// </remarks>
         public const string NUTZUNGSDAUER_VERWALTUNG = "NUTZUNGSDAUER_VERWALTUNG";
 
+        /// <summary>
+        /// Der Seitenschluessel des Dialogs „BHKW-Wirtschaftlichkeit" (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Wie <see cref="VARIANTE_ANLEGEN"/> einer der wenigen Schluessel dieser Welle,
+        /// den die <c>AppWurzel</c> WIRKLICH bedient
+        /// (<c>Seitenschluessel.BhkwWirtschaftlichkeit</c>): Auf iOS geht der Dialog
+        /// damit auf. Unter Windows kennt <c>WinFormsNavigation</c> ihn nicht — dort
+        /// steht er als Ueberlagerung der Wirtschaftlichkeitsseite und in einem eigenen
+        /// Fenster, und <c>dialog_oeffnen</c> lehnt benannt ab.
+        /// </remarks>
+        public const string BHKW_WIRTSCHAFTLICHKEIT = "BHKW_WIRTSCHAFTLICHKEIT";
+
+        /// <summary>
+        /// Der Seitenschluessel der GESETZLICHEN PARAMETER (Welle KI‑F4).
+        /// </summary>
+        /// <remarks>
+        /// Menuepunkt „Administration → Gesetzliche Parameter"; dieselbe Lage wie bei
+        /// <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn im
+        /// Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht.
+        /// </remarks>
+        public const string GESETZESKATALOG = "GESETZESKATALOG";
+
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
@@ -306,7 +329,27 @@ namespace WindowsFormsApplication1
                 // Zeile; ihr Ziel ist deshalb die Maske, aus der sie aufgehen.
                 { KiMaskennamen.KOSTENFAKTOR_KATALOG, KOSTENVERWALTUNG },
                 { KiMaskennamen.VORLAGENPOSITION,     KOSTENVERWALTUNG },
-                { KiMaskennamen.CASE_EINGABE,         KOSTENVERWALTUNG }
+                { KiMaskennamen.CASE_EINGABE,         KOSTENVERWALTUNG },
+
+                // Welle KI-F4: Die WIRTSCHAFTLICHKEITSMASKEN gehen aus der Fussleiste
+                // der Wirtschaftlichkeitsseite auf; die ist das dritte Reiterblatt der
+                // Ansicht „Berichte und Kosten" (Ansichten.BerichteKosten), und die
+                // bedient die AppWurzel auf beiden Plattformen. Anders als bei den
+                // Kostenmasken fuehrt hier also ein Ziel wirklich irgendwohin.
+                { KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, Ansichten.BerichteKosten },
+                { KiMaskennamen.TARIFSTRUKTUR,                Ansichten.BerichteKosten },
+                { KiMaskennamen.PV_VERGUETUNG,                Ansichten.BerichteKosten },
+
+                // Die BHKW-Wirtschaftlichkeit ist zusaetzlich eine eigene Ansicht der
+                // AppWurzel (Seitenschluessel.BhkwWirtschaftlichkeit) - der einzige
+                // Dialog dieser Welle, den die Wurzel unmittelbar zeigt.
+                { KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, BHKW_WIRTSCHAFTLICHKEIT },
+
+                // Die GESETZLICHEN PARAMETER haengen am Menuepunkt „Administration →
+                // Gesetzliche Parameter"; der Zeileneditor geht als Ueberlagerung aus
+                // ihnen auf und braucht eine gewaehlte Zeile.
+                { KiMaskennamen.GESETZESKATALOG,       GESETZESKATALOG },
+                { KiMaskennamen.GESETZESKATALOG_ZEILE, GESETZESKATALOG }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

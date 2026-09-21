@@ -147,6 +147,18 @@ public class KiDialogkatalogTests
           typeof(EPOS.UI.Dialoge.Kosten.VorlagenPositionKiSicht) },
         { KiMaskennamen.CASE_EINGABE,
           typeof(EPOS.UI.Dialoge.Kosten.CaseEingabeKiSicht) },
+        { KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.WirtschaftlichkeitParameterKiSicht) },
+        { KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitKiSicht) },
+        { KiMaskennamen.TARIFSTRUKTUR,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturKiSicht) },
+        { KiMaskennamen.PV_VERGUETUNG,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungKiSicht) },
+        { KiMaskennamen.GESETZESKATALOG,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogKiSicht) },
+        { KiMaskennamen.GESETZESKATALOG_ZEILE,
+          typeof(EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogZeileKiSicht) },
 
         { KiMaskennamen.BEDARF_ERGEBNIS,
           typeof(EPOS.UI.Dialoge.Bedarf.BedarfErgebnisKiSicht) },
@@ -254,11 +266,11 @@ public class KiDialogkatalogTests
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_dreiundvierzig_Masken()
+    public void Der_Katalog_fuehrt_neunundvierzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
-        Assert.Equal(43, katalog.Anzahl);
+        Assert.Equal(49, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -702,7 +714,27 @@ public class KiDialogkatalogTests
             "lebenden Felder; Zeuge ist VorlagenPositionDialogTests",
         [KiMaskennamen.CASE_EINGABE] =
             "bindet über die Sichtklasse CaseEingabeKiSicht auf die sieben lebenden " +
-            "Felder; Zeuge ist CaseEingabeDialogTests"
+            "Felder; Zeuge ist CaseEingabeDialogTests",
+        [KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER] =
+            "bindet über die Sichtklasse WirtschaftlichkeitParameterKiSicht auf den " +
+            "Parametersatz UND beide Szenariosätze; Zeuge ist " +
+            "WirtschaftlichkeitParameterDialogTests",
+        [KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT] =
+            "bindet über die Sichtklasse BhkwWirtschaftlichkeitKiSicht auf die zwei " +
+            "Arbeitsstände; Zeuge ist BhkwWirtschaftlichkeitDialogTests",
+        [KiMaskennamen.TARIFSTRUKTUR] =
+            "bindet über die Sichtklasse TarifstrukturKiSicht auf die lebenden " +
+            "Eingabefelder; Zeuge ist TarifstrukturDialogTests",
+        [KiMaskennamen.PV_VERGUETUNG] =
+            "bindet über die Sichtklasse PhotovoltaikVerguetungKiSicht auf das " +
+            "Vergütungsmodell, gesetzt über die Wege der Maske; Zeuge ist " +
+            "PhotovoltaikVerguetungDialogTests",
+        [KiMaskennamen.GESETZESKATALOG] =
+            "bindet über die Sichtklasse GesetzeskatalogKiSicht auf Klassenwahl und " +
+            "Listenmarkierung; Zeuge ist GesetzeskatalogDialogTests",
+        [KiMaskennamen.GESETZESKATALOG_ZEILE] =
+            "bindet über die Sichtklasse GesetzeskatalogZeileKiSicht auf die sieben " +
+            "lebenden Felder; Zeuge ist GesetzeskatalogDialogTests"
     };
 
     /// <summary>
