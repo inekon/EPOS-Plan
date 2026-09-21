@@ -76,6 +76,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Nutzungsdauerkatalog, Kostenvorlagen, Wirtschaftlichkeitsparameter, BHKW-Wirtschaftlichkeit,
   Tarifstruktur, Photovoltaik-Vergütung, gesetzliche Parameter) sowie die Seiten Kosten und
   Wirtschaftlichkeit. (#423)
+- Seit 26.09.2026: Der Hilfe-Assistent liest und setzt auch die Katalogmasken der Erzeuger
+  (BHKW, Solarkollektor, PV‑Module, Stromspeicher, Wechselrichter). (#424)
 
 *Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
 Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
