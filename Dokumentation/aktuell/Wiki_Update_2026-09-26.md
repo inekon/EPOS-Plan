@@ -82,6 +82,11 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   das Zeitintervall der Stromganglinien-Verwaltung, Projektkopie und Projektvariante, die Seiten
   Übersicht und Bericht sowie alle vier Stationen der Stromspeicher-Auslegung; damit arbeitet er
   in allen Masken mit Einstellwerten mit. (#425)
+- Seit 26.09.2026: Der Hilfe-Assistent erreicht in der Photovoltaik auch die Auslegungstemperaturen
+  und die Anlagenwerte des Wechselrichters sowie in der Kostenverwaltung die Komponentenwahl und die
+  Wahl der Photovoltaik-Vergütung; die Modulkosten der Wärmepumpe zeigt er nur noch an. (#427)
+- Seit 26.09.2026: Das Übernehmen eines Standard-Stromprofils im Projekt-Assistenten funktioniert
+  wieder; scheitert eine Katalogkopie, meldet der Assistent es benannt. (#426)
 
 *Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
 Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
