@@ -179,12 +179,14 @@ public class KiSimulationMaskeTests : IDisposable
                                            string schritt = "1 Konfiguration",
                                            string reiter = "",
                                            SimulationErgebnisDienste? speicherwege = null,
-                                           SimulationKonfigDienste? konfigwege = null)
+                                           SimulationKonfigDienste? konfigwege = null,
+                                           Action<double>? autarkiespeicher = null)
     {
         SimulationParameterDienste wege = probe.Wege();
         return new SimulationKiSicht(() => konfig, () => probe.Stand, () => wege,
                                      () => ergebnis, () => schritt, () => reiter,
-                                     () => speicherwege, () => konfigwege);
+                                     () => speicherwege, () => konfigwege,
+                                     autarkiespeicher);
     }
 
     // =====================================================================
@@ -192,13 +194,17 @@ public class KiSimulationMaskeTests : IDisposable
     // =====================================================================
 
     /// <summary>
-    /// Neununddreissig: Zu den siebzehn Feldern der Ablaufleiste kommen die BLÄTTER der
+    /// Vierzig: Zu den siebzehn Feldern der Ablaufleiste kommen die BLÄTTER der
     /// Ansicht — der Lesepunkt aus der Fußzeile von Schritt ① und die zweiundzwanzig
     /// Einstellwerte des Reiters „Stromspeicher" von Schritt ③, darunter die Preisreihe.
     /// Sie gehen nicht auf, sie stehen auf der Ansicht; eine Maske ist, was offen ist.
+    ///
+    /// <para>Mit der Welle KI‑F6 kommt die SPEICHERKAPAZITÄT der Autarkierechnung auf
+    /// dem Blatt „Ergebnis" dazu — das einzige echte Eingabefeld der neun
+    /// Reiterblätter. Alles andere darauf schaltet ein BILD.</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_neununddreissig_Felder_an()
+    public void Die_Ansicht_meldet_vierzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -207,7 +213,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(39, felder.Count);
+        Assert.Equal(40, felder.Count);
     }
 
     [Fact]
@@ -350,7 +356,9 @@ public class KiSimulationMaskeTests : IDisposable
         // Kennzahlen des Laufs sind ABGELEITET und haben keinen Setzer. Setzbar sind
         // die vier Laufparameter und - seit der Welle KI-F2 - der Lesepunkt sowie die
         // zwanzig EINGEBBAREN Felder des Reiters "Stromspeicher"; der stromgefuehrte
-        // BHKW-Betrieb steht dort sichtbar, aber dauerhaft gesperrt.
+        // BHKW-Betrieb steht dort sichtbar, aber dauerhaft gesperrt. Seit der Welle
+        // KI-F6 kommt die Speicherkapazitaet des Blatts "Ergebnis" dazu - das einzige
+        // echte Eingabefeld der neun Reiterblaetter.
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
             KiMaskennamen.SIMULATION, () => Sicht(probe), new KiMaskenhaken());
@@ -365,7 +373,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.Equal(new[]
         {
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "lesepunkt_davor",
+            "kessel_bereitschaft", "autarkie_speicher", "lesepunkt_davor",
             "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",
             "speicher_kapazitaet", "speicher_ladeschwelle", "speicher_betriebsart",
             "speicher_berechnungsart", "speicher_peakziel", "speicher_peakziel_adaptiv",
@@ -621,5 +629,66 @@ public class KiSimulationMaskeTests : IDisposable
         vorbereitung.Freigabe.Erteilen();
         return await schicht.AusfuehrenAsync(geprueft.Aufruf, vorbereitung.Freigabe,
                                              CancellationToken.None);
+    }
+
+    // =====================================================================
+    //  Das Blatt „Ergebnis" (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Speicherkapazität der Autarkierechnung ist lesbar und setzbar</b> — das
+    /// einzige echte Eingabefeld der neun Reiterblätter. Gesetzt wird über denselben
+    /// Weg wie das Feld selbst; steht das Blatt nicht, bleibt sie lesbar.
+    /// </summary>
+    [Fact]
+    public void Die_Speicherkapazitaet_des_Ergebnisblatts_ist_lesbar_und_setzbar()
+    {
+        var probe = new Schreibprobe();
+        SimulationErgebnisDaten stand = Ergebnisstand();
+        stand.Autarkie = new AutarkieDaten { HatPv = true, SpeicherKwh = 25.0 };
+
+        var gesetzt = new List<double>();
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION,
+            () => Sicht(probe, ergebnis: stand, autarkiespeicher: gesetzt.Add),
+            new KiMaskenhaken());
+
+        KiFeldzugang feld = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SIMULATION, "autarkie_speicher");
+        Assert.NotNull(feld);
+        Assert.True(feld.Setzbar);
+        Assert.Equal(25.0, Convert.ToDouble(feld.Lesen(),
+                                            System.Globalization.CultureInfo.InvariantCulture));
+
+        KiFeldumsetzung wert = KiFeldwandler.Wandle(feld, "40,5");
+        Assert.True(wert.Ok, wert.Grund);
+        feld.Setzen(wert.Wert);
+
+        Assert.Equal(new[] { 40.5 }, gesetzt);
+    }
+
+    /// <summary>
+    /// <b>Ohne den Schreibweg bleibt sie lesbar und läuft nicht ins Leere.</b> Steht
+    /// das Blatt „Ergebnis" nicht, gibt es niemanden, der die Autarkie neu rechnet;
+    /// die Setzung darf dann nichts behaupten.
+    /// </summary>
+    [Fact]
+    public void Ohne_offenes_Ergebnisblatt_bleibt_die_Kapazitaet_stehen()
+    {
+        var probe = new Schreibprobe();
+        SimulationErgebnisDaten stand = Ergebnisstand();
+        stand.Autarkie = new AutarkieDaten { HatPv = true, SpeicherKwh = 25.0 };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION,
+            () => Sicht(probe, ergebnis: stand),
+            new KiMaskenhaken());
+
+        KiFeldzugang feld = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SIMULATION, "autarkie_speicher");
+        feld.Setzen(99.0);
+
+        Assert.Equal(25.0, stand.Autarkie.SpeicherKwh);
     }
 }

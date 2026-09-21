@@ -666,7 +666,12 @@
                                          () => SchrittText,
                                          () => ReiterText,
                                          () => _ergebnisSeite?.Dienste,
-                                         () => _konfigSeite?.Dienste);
+                                         () => _konfigSeite?.Dienste,
+                                         // Welle KI-F6: das EINZIGE echte Eingabefeld
+                                         // der neun Reiterblaetter - die
+                                         // Speicherkapazitaet der Autarkierechnung auf
+                                         // dem Blatt "Ergebnis".
+                                         kwh => _ergebnisSeite?.SpeicherkapazitaetSetzen(kwh));
 
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.SIMULATION, () => _kiSicht, KiHaken());
     }

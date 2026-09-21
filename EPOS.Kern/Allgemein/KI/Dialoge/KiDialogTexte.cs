@@ -2077,5 +2077,9 @@
         internal static string PrvBezeichnerErl => MyResource.Resource.KI_DLG_PRV_BEZEICHNER_ERL;
         internal static string PrvZielnameName => MyResource.Resource.KI_DLG_PRV_ZIELNAME_NAME;
         internal static string PrvZielnameErl => MyResource.Resource.KI_DLG_PRV_ZIELNAME_ERL;
+
+        // ---- Welle KI-F6, Schritt 3: die Ansicht „Simulation"
+        internal static string SimAutarkieName => MyResource.Resource.SIM_DASH_SPEICHER_INFO;
+        internal static string SimAutarkieErl => MyResource.Resource.KI_DLG_SIM_AUTARKIE_ERL;
     }
 }

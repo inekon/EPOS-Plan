@@ -30347,6 +30347,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_AUTARKIE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_AUTARKIE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wert für „{0}“ muss zwischen {1} und {2} liegen. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_BEREICH {

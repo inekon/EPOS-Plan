@@ -22767,4 +22767,7 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_PRV_ZIELNAME_ERL" xml:space="preserve">
     <value>Der Name, unter dem die Variante entsteht — gerechnet aus Stammprojekt und Bezeichner, samt Zähler bei Namensgleichheit.</value>
   </data>
+  <data name="KI_DLG_SIM_AUTARKIE_ERL" xml:space="preserve">
+    <value>Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht.</value>
+  </data>
 </root>

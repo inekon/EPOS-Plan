@@ -22760,4 +22760,7 @@ Do you want to allow this?</value>
   <data name="KI_DLG_PRV_ZIELNAME_ERL" xml:space="preserve">
     <value>The name the variant is created under — derived from master project and identifier, with a counter on name clashes.</value>
   </data>
+  <data name="KI_DLG_SIM_AUTARKIE_ERL" xml:space="preserve">
+    <value>The storage size the 'Result' sheet uses to calculate the PV self-sufficiency; it is an assumption of the display and does not change the simulation run.</value>
+  </data>
 </root>

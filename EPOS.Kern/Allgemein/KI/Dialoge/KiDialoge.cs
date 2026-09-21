@@ -5479,6 +5479,23 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.SimHinweiseName, KiParameterTyp.Text,
                                      KiDialogTexte.SimHinweiseErl, leerErlaubt: true),
 
+                    // ---- Das Blatt „Ergebnis" von ③ (Welle KI-F6) -------------------
+                    //
+                    // Das EINZIGE echte Eingabefeld der neun Reiterblaetter. Alles
+                    // andere darauf sind Schalter EINES BILDES - „sortiert", die
+                    // Reihenhaken, die Streuwolken, die Nullzeilen, die Farbwahl -;
+                    // sie schreiben nichts und leben in privaten Feldern, die der
+                    // Reiter bei jedem Zeichenlauf neu aufbaut. Ein Setzer darauf
+                    // schriebe in ein Feld, das der naechste Aufbau verwirft. Die zwei
+                    // GANGLINIENreiter merken ihren Stand zwar ueber die Sitzung
+                    // (Ganglinienregister), lesen ihn aber nur EINMAL beim Aufbau
+                    // (_erstBelegt) - ein gesetzter Wert stuende im Gedaechtnis und
+                    // nicht im offenen Bild.
+                    new KiDialogFeld("autarkie_speicher", "SimulationKiSicht.AutarkieSpeicherKWh",
+                                     KiDialogTexte.SimAutarkieName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.SimAutarkieErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH),
+
                     // ---- Der Lesepunkt der Fusszeile von ① (Welle KI-F2) -----------
                     new KiDialogFeld("lesepunkt_davor", "SimulationKiSicht.LesepunktDavor",
                                      KiDialogTexte.SimLesepunktName,
