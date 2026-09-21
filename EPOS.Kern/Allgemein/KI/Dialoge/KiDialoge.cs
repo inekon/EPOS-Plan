@@ -378,6 +378,57 @@ namespace WindowsFormsApplication1
         /// <c>Wechselrichter</c>) — sechsundzwanzig Felder in drei Gruppen.
         /// </summary>
         public const string WECHSELRICHTER_KATALOG = "Form_AdminWechselrichter";
+
+        // =================================================================
+        //  Welle KI-F6: STROM, BERICHTE und PROJEKT
+        // =================================================================
+        //
+        // Die letzte Welle des Entscheids KI-D-Q5. Drei der fuenf Schluessel
+        // sind wieder WinForms-Maskennamen des Bestands - sie stehen so im
+        // Aktionsprotokoll und in den Hilfeschluesseln der Dialoge
+        // (Form_PeakShaving.btn_Help, Form_Stromganglinie_Admin.btn_Help,
+        // Form_ProjektSpeichernUnter.btn_Help) - und zugleich in der
+        // Navigationstabelle der Windows-Huelle. Die uebrigen hatten nie eine
+        // WinForms-Fassung und tragen deshalb keine Form_-Vorsilbe.
+
+        /// <summary>Lastspitzenkappung (<c>PeakShavingDialog</c>).</summary>
+        public const string PEAK_SHAVING = "Form_PeakShaving";
+
+        /// <summary>
+        /// Die Leseregeln einer Speicher-Zeitreihe (<c>SpeicherZeitreihenDialog</c>).
+        /// </summary>
+        public const string SPEICHER_ZEITREIHEN = "Speicherzeitreihen";
+
+        /// <summary>
+        /// Stammdatenverwaltung der Stromganglinien (<c>StromganglinieAdminDialog</c>).
+        /// </summary>
+        public const string STROMGANGLINIE_ADMIN = "Form_Stromganglinie_Admin";
+
+        /// <summary>
+        /// Das Reiterblatt „Uebersicht" der Ansicht „Berichte und Kosten"
+        /// (<c>UebersichtSeite</c>).
+        /// </summary>
+        /// <remarks>
+        /// Es steht neben <see cref="KOSTENSEITE"/> und
+        /// <see cref="WIRTSCHAFTLICHKEITSSEITE"/> der Welle KI-F4; die vier Blaetter
+        /// derselben Ansicht tragen je einen eigenen Schluessel, weil sie ganz
+        /// verschiedene Felder fuehren.
+        /// </remarks>
+        public const string BERICHTE_UEBERSICHT = "Berichtsuebersicht";
+
+        /// <summary>
+        /// Das Reiterblatt „Bericht" derselben Ansicht (<c>BerichtSeite</c>).
+        /// </summary>
+        public const string BERICHTSEITE = "Berichtsseite";
+
+        /// <summary>
+        /// „Projekt speichern unter" (<c>ProjektKopieDialog</c>) - der Nachfolger der
+        /// WinForms-Maske <c>Form_ProjektSpeichernUnter</c>, deren Namen er behaelt.
+        /// </summary>
+        public const string PROJEKT_KOPIE = "Form_ProjektSpeichernUnter";
+
+        /// <summary>„Als Variante speichern" (<c>ProjektVarianteDialog</c>).</summary>
+        public const string PROJEKT_VARIANTE = "Projektvariante";
     }
 
     /// <summary>
@@ -523,7 +574,296 @@ namespace WindowsFormsApplication1
                 Solarkollektor(),
                 PvModulkatalog(),
                 Stromspeicherkatalog(),
-                Wechselrichterkatalog());
+                Wechselrichterkatalog(),
+                PeakShaving(),
+                Speicherzeitreihen(),
+                StromganglinieAdmin());
+        }
+
+        // =====================================================================
+        // Form_PeakShaving  ->  PeakShavingDialog   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Lastspitzenkappung — die zweiundzwanzig Felder, die
+        /// <c>PeakShavingDialog</c> sichtbar traegt, ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Strom.PeakShavingKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Sie ist die erste freigegebene Maske, die NICHTS ablegt.</b> „Abgelegt
+        /// wird nichts" steht woertlich als Hinweiszeile darin, und ihr einziger
+        /// Fussknopf schliesst sie. Es gibt deshalb keinen Speicherweg — wohl aber
+        /// eine PRUEFUNG: dieselben sieben Pflichtzahlen und vier Fachregeln, die auch
+        /// der Rechenknopf zieht (<c>PeakShavingEingaben.Pruefe</c>).
+        /// </para>
+        /// <para>
+        /// <b>Drei Felder sind ABGELEITET und nur lesbar</b> — das offene Reiterblatt,
+        /// die Reihenzeile und die Herkunftszeile. Ein Blattwechsel ist eine
+        /// Bedienhandlung und kein Feldwert (dieselbe Begruendung wie beim Schritt der
+        /// Stromspeicher-Ansicht); Reihen- und Herkunftszeile sind Anzeigen des
+        /// geladenen Lastgangs.
+        /// </para>
+        /// <para>
+        /// <b>Die DATEIWAHL bleibt draussen</b> (KI-D-Q6): Eine Datei einzulesen ist
+        /// ein Ladevorgang. Die QUELLE steht trotzdem im Katalog — sie ist ein
+        /// Optionsfeld der Maske, und auf „Datei importieren" umzustellen ist dasselbe
+        /// wie ein Klick darauf. Der Pfad selbst laedt nichts.
+        /// </para>
+        /// <para>
+        /// <b>Keine Knoepfe.</b> „Berechnen", „Minimale Schwelle" und „In Variante
+        /// uebernehmen" sind rechnende bzw. datenbankwirksame Aktionen der Stufen 2 und
+        /// 3 — dieselbe Begruendung wie bei der Stromspeicher-Ansicht.
+        /// </para>
+        /// </remarks>
+        private static KiDialog PeakShaving()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PEAK_SHAVING,
+                anzeigename: KiDialogTexte.MaskePeakShaving,
+                felder: new[]
+                {
+                    // ---- Der Lastgang -----------------------------------------------
+                    new KiDialogFeld("quelle", "PeakShavingKiSicht.Quelle",
+                                     KiDialogTexte.PeakQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PeakQuelleErl),
+                    new KiDialogFeld("ganglinie", "PeakShavingKiSicht.Ganglinie",
+                                     KiDialogTexte.PeakGanglinieName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PeakGanglinieErl, leerErlaubt: true),
+                    new KiDialogFeld("reihe", "PeakShavingKiSicht.Reihe",
+                                     KiDialogTexte.PeakReiheName, KiParameterTyp.Text,
+                                     KiDialogTexte.PeakReiheErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("herkunft", "PeakShavingKiSicht.Herkunft",
+                                     KiDialogTexte.PeakHerkunftName, KiParameterTyp.Text,
+                                     KiDialogTexte.PeakHerkunftErl,
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- Der Speicher -----------------------------------------------
+                    new KiDialogFeld("leistung", "PeakShavingKiSicht.Leistung",
+                                     KiDialogTexte.PeakPName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakPErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("kapazitaet", "PeakShavingKiSicht.Kapazitaet",
+                                     KiDialogTexte.PeakKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH, leerErlaubt: true),
+                    new KiDialogFeld("wirkungsgrad", "PeakShavingKiSicht.Wirkungsgrad",
+                                     KiDialogTexte.PeakEtaName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakEtaErl, leerErlaubt: true),
+                    new KiDialogFeld("soc_min", "PeakShavingKiSicht.SocMin",
+                                     KiDialogTexte.PeakSocMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakSocMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("soc_max", "PeakShavingKiSicht.SocMax",
+                                     KiDialogTexte.PeakSocMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakSocMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("start_soc", "PeakShavingKiSicht.StartSoc",
+                                     KiDialogTexte.PeakStartSocName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakStartSocErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+
+                    // ---- Die Schwelle -----------------------------------------------
+                    new KiDialogFeld("adaptiv", "PeakShavingKiSicht.Adaptiv",
+                                     KiDialogTexte.PeakAdaptivName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PeakAdaptivErl),
+                    new KiDialogFeld("zielschwelle", "PeakShavingKiSicht.Zielschwelle",
+                                     KiDialogTexte.PeakZielName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakZielErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+
+                    // ---- Die Wirtschaftlichkeit -------------------------------------
+                    new KiDialogFeld("leistungspreis", "PeakShavingKiSicht.Leistungspreis",
+                                     KiDialogTexte.PeakLpName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakLpErl, leerErlaubt: true),
+                    new KiDialogFeld("bezugspreis", "PeakShavingKiSicht.Bezugspreis",
+                                     KiDialogTexte.PeakBezugspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakBezugspreisErl, leerErlaubt: true),
+                    new KiDialogFeld("kompatibel", "PeakShavingKiSicht.Kompatibel",
+                                     KiDialogTexte.PeakKompatName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PeakKompatErl),
+                    new KiDialogFeld("kosten_kapazitaet", "PeakShavingKiSicht.KostenKapazitaet",
+                                     KiDialogTexte.PeakCCapName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakCCapErl, leerErlaubt: true),
+                    new KiDialogFeld("kosten_leistung", "PeakShavingKiSicht.KostenLeistung",
+                                     KiDialogTexte.PeakCPowName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakCPowErl, leerErlaubt: true),
+                    new KiDialogFeld("investition_fix", "PeakShavingKiSicht.InvestitionFix",
+                                     KiDialogTexte.PeakIFixName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakIFixErl, leerErlaubt: true),
+                    new KiDialogFeld("zins", "PeakShavingKiSicht.Zins",
+                                     KiDialogTexte.PeakZinsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakZinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
+                    new KiDialogFeld("nutzungsdauer", "PeakShavingKiSicht.Nutzungsdauer",
+                                     KiDialogTexte.PeakNutzungsdauerName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.PeakNutzungsdauerErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR, leerErlaubt: true),
+
+                    // ---- Die Anzeige ------------------------------------------------
+                    new KiDialogFeld("ladezustand", "PeakShavingKiSicht.Ladezustand",
+                                     KiDialogTexte.PeakSocName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.PeakSocErl),
+                    new KiDialogFeld("reiter", "PeakShavingKiSicht.Reiter",
+                                     KiDialogTexte.PeakReiterName, KiParameterTyp.Text,
+                                     KiDialogTexte.PeakReiterErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
+        }
+
+        // =====================================================================
+        // Speicherzeitreihen  ->  SpeicherZeitreihenDialog   (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Leseregeln einer Speicher-Zeitreihe — die achtzehn Felder, die
+        /// <c>SpeicherZeitreihenDialog</c> sichtbar traegt, ueber die Sichtklasse
+        /// <c>EPOS.UI.Dialoge.Strom.SpeicherZeitreihenKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Maske, die REGELN einstellt, ist kein Ladevorgang.</b> Draussen
+        /// bleibt nach KI-D-Q6, was LAEDT — die Dateiwahl und der Knopf „Uebernehmen";
+        /// hier steht, WIE die gewaehlte Datei gelesen wird. Jedes Setzen rechnet die
+        /// Vorschau neu, genau wie ein Griff in die Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Zwei Felder sind ABGELEITET</b> — der Dateiname der Herleitungszeile und
+        /// die Rolle der Reihe. Die Rolle kommt als Parameter des Wirtes herein (Last,
+        /// PV oder Bezugspreis) und entscheidet, welche Einheiten zur Wahl stehen; sie
+        /// hier zu setzen hiesse, eine andere Reihe einzulesen als die, fuer die der
+        /// Anwender den Knopf gedrueckt hat.
+        /// </para>
+        /// <para>
+        /// <b>Datums- und Uhrzeitfelder stehen NEBEN dem Zeitstempel.</b> Die Maske
+        /// zeigt je nach Zeitangabe das eine oder das andere Paar — beide gehoeren zu
+        /// ihr, und welches gerade sichtbar ist, sagt das Feld <c>zeitangabe</c>. Ein
+        /// Katalog, der nur die gerade sichtbare Haelfte fuehrte, wechselte seinen
+        /// Umfang mit einer Klappliste.
+        /// </para>
+        /// <para>
+        /// <b>Die VORSCHAUTABELLE bleibt draussen</b>: Sie ist eine Anzeige der ersten
+        /// zwanzig Zeilen und kein Eingabefeld.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Speicherzeitreihen()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.SPEICHER_ZEITREIHEN,
+                anzeigename: KiDialogTexte.MaskeSpeicherzeitreihen,
+                felder: new[]
+                {
+                    // ---- Woran der Anwender gerade arbeitet -------------------------
+                    new KiDialogFeld("datei", "SpeicherZeitreihenKiSicht.Datei",
+                                     KiDialogTexte.SzrDateiName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrDateiErl,
+                                     leerErlaubt: true, nurLesen: true),
+                    new KiDialogFeld("rolle", "SpeicherZeitreihenKiSicht.Rolle",
+                                     KiDialogTexte.SzrRolleName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrRolleErl,
+                                     leerErlaubt: true, nurLesen: true),
+
+                    // ---- CSV-Format -------------------------------------------------
+                    new KiDialogFeld("trennzeichen", "SpeicherZeitreihenKiSicht.Trennzeichen",
+                                     KiDialogTexte.SzrTrennzeichenName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrTrennzeichenErl),
+                    new KiDialogFeld("dezimaltrenner", "SpeicherZeitreihenKiSicht.Dezimaltrenner",
+                                     KiDialogTexte.SzrDezimalName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrDezimalErl),
+                    new KiDialogFeld("kodierung", "SpeicherZeitreihenKiSicht.Kodierung",
+                                     KiDialogTexte.SzrKodierungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrKodierungErl),
+                    new KiDialogFeld("kopfzeile", "SpeicherZeitreihenKiSicht.Kopfzeile",
+                                     KiDialogTexte.SzrKopfzeileName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.SzrKopfzeileErl),
+                    new KiDialogFeld("zeilen_ueberspringen",
+                                     "SpeicherZeitreihenKiSicht.ZeilenUeberspringen",
+                                     KiDialogTexte.SzrUeberspringenName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.SzrUeberspringenErl),
+
+                    // ---- Spalten und Zeit -------------------------------------------
+                    new KiDialogFeld("zeitangabe", "SpeicherZeitreihenKiSicht.Zeitangabe",
+                                     KiDialogTexte.SzrZeitangabeName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrZeitangabeErl),
+                    new KiDialogFeld("zeitstempelspalte",
+                                     "SpeicherZeitreihenKiSicht.Zeitstempelspalte",
+                                     KiDialogTexte.SzrZeitstempelspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrZeitstempelspalteErl),
+                    new KiDialogFeld("zeitstempelformat",
+                                     "SpeicherZeitreihenKiSicht.Zeitstempelformat",
+                                     KiDialogTexte.SzrZeitstempelformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrZeitstempelformatErl, leerErlaubt: true),
+                    new KiDialogFeld("datumsspalte", "SpeicherZeitreihenKiSicht.Datumsspalte",
+                                     KiDialogTexte.SzrDatumsspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrDatumsspalteErl),
+                    new KiDialogFeld("datumsformat", "SpeicherZeitreihenKiSicht.Datumsformat",
+                                     KiDialogTexte.SzrDatumsformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrDatumsformatErl, leerErlaubt: true),
+                    new KiDialogFeld("uhrzeitspalte", "SpeicherZeitreihenKiSicht.Uhrzeitspalte",
+                                     KiDialogTexte.SzrUhrzeitspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrUhrzeitspalteErl),
+                    new KiDialogFeld("uhrzeitformat", "SpeicherZeitreihenKiSicht.Uhrzeitformat",
+                                     KiDialogTexte.SzrUhrzeitformatName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrUhrzeitformatErl, leerErlaubt: true),
+                    new KiDialogFeld("wertspalte", "SpeicherZeitreihenKiSicht.Wertspalte",
+                                     KiDialogTexte.SzrWertspalteName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrWertspalteErl),
+                    new KiDialogFeld("zeitzone", "SpeicherZeitreihenKiSicht.Zeitzone",
+                                     KiDialogTexte.SzrZeitzoneName, KiParameterTyp.Text,
+                                     KiDialogTexte.SzrZeitzoneErl, leerErlaubt: true),
+                    new KiDialogFeld("intervallbezug", "SpeicherZeitreihenKiSicht.Intervall",
+                                     KiDialogTexte.SzrIntervallName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrIntervallErl),
+                    new KiDialogFeld("einheit", "SpeicherZeitreihenKiSicht.Einheit",
+                                     KiDialogTexte.SzrEinheitName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SzrEinheitErl)
+                });
+        }
+
+        // =====================================================================
+        // Form_Stromganglinie_Admin  ->  StromganglinieAdminDialog  (Welle KI-F6)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Stammdatenverwaltung der Stromganglinien — zwei Felder ueber die
+        /// Sichtklasse <c>EPOS.UI.Dialoge.Strom.StromganglinieAdminKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Diese Maske fuehrt genau EINEN Einstellwert</b>: das Zeitraster, mit dem
+        /// eine eingelesene Datei abgelegt wird. Alles andere darauf ist SUCHE, AUSWAHL
+        /// und ANZEIGE — die virtualisierte Katalogliste samt Filterstand, die
+        /// gerechneten Spalten Jahresarbeit und Spitze, der Loeschweg mit seiner
+        /// Rueckfrage und die Importkette. Nach KI-D-Q5 bleibt beides draussen: Eine
+        /// Menge von Verweisen ist kein Feldwert, und eine Datei einzulesen ist ein
+        /// Ladevorgang.
+        /// </para>
+        /// <para>
+        /// <b>Freigegeben ist sie trotzdem</b>, damit <c>dialog_lesen</c> nennt, woran
+        /// der Anwender gerade arbeitet, und <c>feld_setzen</c> benannt ablehnt statt
+        /// „Maske nicht freigegeben" — dieselbe Begruendung wie beim Reiterblatt
+        /// „Kosten" und bei der Leistungspreisreihe der Welle KI-F4. Die MARKIERUNG
+        /// steht als Anzeige daneben: Sie entscheidet, was der Loeschknopf traefe.
+        /// </para>
+        /// </remarks>
+        private static KiDialog StromganglinieAdmin()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STROMGANGLINIE_ADMIN,
+                anzeigename: KiDialogTexte.MaskeStromganglinieAdmin,
+                felder: new[]
+                {
+                    new KiDialogFeld("zeitintervall",
+                                     "StromganglinieAdminKiSicht.Zeitintervall",
+                                     KiDialogTexte.SgaZeitintervallName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.SgaZeitintervallErl),
+                    new KiDialogFeld("markierte_ganglinie",
+                                     "StromganglinieAdminKiSicht.Gewaehlt",
+                                     KiDialogTexte.SgaGewaehltName, KiParameterTyp.Text,
+                                     KiDialogTexte.SgaGewaehltErl,
+                                     leerErlaubt: true, nurLesen: true)
+                });
         }
 
         // =====================================================================
@@ -4474,9 +4814,322 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("ergebnis_kapitalwert", "StromspeicherKiSicht.KapitalwertEuro",
                                      KiDialogTexte.SpaKapitalwertName, KiParameterTyp.Zahl,
                                      KiDialogTexte.SpaKapitalwertErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true)
+                                     einheit: KiDialogTexte.EINHEIT_EURO, leerErlaubt: true),
+
+                    // =================================================================
+                    //  Welle KI-F6: die STATIONEN 1 bis 4 der Ansicht
+                    // =================================================================
+                    //
+                    // Bis hierher fuehrte die Ansicht nur, was auf Station 1 als SUMME
+                    // und auf Station 4 als Suchergebnis steht. Die Bloecke selbst -
+                    // Einheiteneditor, Datenquellen und Kostensaetze, Betriebsfuehrung,
+                    // Netzgrenzen, Prognose und Suchraum - blieben aussen vor
+                    // (Statuszeile #420, Punkt b). Sie kommen jetzt als FELDER DER
+                    // ANSICHT dazu und nicht als eigene Masken: Keiner der sieben
+                    // Bausteine macht ein Fenster auf, alle sieben stehen auf einem
+                    // ihrer fuenf Blaetter - dieselbe Begruendung wie beim Reiter
+                    // „Stromspeicher" der Simulationsansicht (Welle KI-F2).
+
+                    // ---- Station 1: je EINHEIT eine Zeile ---------------------------
+                    //
+                    // Eine SAMMLUNG und keine Einzelfelder: Wie viele Einheiten eine
+                    // Flotte fuehrt, steht erst zur Laufzeit fest. Die RAINFLOW-Kurve
+                    // bleibt draussen - eine Tabelle IN der Zeile mit eigenem Editor.
+                    new KiDialogFeld("einheit_name", "StromspeicherKiSicht.Einheitenzeilen[].Name",
+                                     KiDialogTexte.FleNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.FleNameErl,
+                                     leerErlaubt: true, zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_kapazitaet",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Kapazitaet",
+                                     KiDialogTexte.FleKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_ladeleistung",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Ladeleistung",
+                                     KiDialogTexte.FleLadeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleLadeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_entladeleistung",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Entladeleistung",
+                                     KiDialogTexte.FleEntladeleistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleEntladeleistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_ladewirkungsgrad",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Ladewirkungsgrad",
+                                     KiDialogTexte.FleLadewirkungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleLadewirkungsgradErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_entladewirkungsgrad",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Entladewirkungsgrad",
+                                     KiDialogTexte.FleEntladewirkungsgradName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleEntladewirkungsgradErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_soc_min",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].SocMin",
+                                     KiDialogTexte.FleSocMinName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleSocMinErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_soc_max",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].SocMax",
+                                     KiDialogTexte.FleSocMaxName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleSocMaxErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_soc_start",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].SocStart",
+                                     KiDialogTexte.FleSocStartName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleSocStartErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_peak_reserve",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].PeakReserve",
+                                     KiDialogTexte.FlePeakReserveName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FlePeakReserveErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_hilfsverbrauch",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Hilfsverbrauch",
+                                     KiDialogTexte.FleHilfsverbrauchName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleHilfsverbrauchErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_grenzverschleiss",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Grenzverschleiss",
+                                     KiDialogTexte.FleGrenzverschleissName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleGrenzverschleissErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_eigene_kosten",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].EigeneKosten",
+                                     KiDialogTexte.FleEigeneKostenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.FleEigeneKostenErl,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_investition_fix",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].InvestitionFix",
+                                     KiDialogTexte.FleInvestFixName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleInvestFixErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_investition_kapazitaet",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].InvestitionProKWh",
+                                     KiDialogTexte.FleInvestKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleInvestKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_investition_leistung",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].InvestitionProKw",
+                                     KiDialogTexte.FleInvestLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleInvestLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_betrieb_fix",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].BetriebFix",
+                                     KiDialogTexte.FleOpexFixName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleOpexFixErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_A,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_betrieb_kapazitaet",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].BetriebProKWh",
+                                     KiDialogTexte.FleOpexKapazitaetName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleOpexKapazitaetErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH_A,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_betrieb_leistung",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].BetriebProKw",
+                                     KiDialogTexte.FleOpexLeistungName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleOpexLeistungErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_durchsatzkosten",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Durchsatzkosten",
+                                     KiDialogTexte.FleDurchsatzkostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleDurchsatzkostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_ersatzkosten",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Ersatzkosten",
+                                     KiDialogTexte.FleErsatzkostenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleErsatzkostenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_ersatzintervall",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Ersatzintervall",
+                                     KiDialogTexte.FleErsatzintervallName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.FleErsatzintervallErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+                    new KiDialogFeld("einheit_restwert",
+                                     "StromspeicherKiSicht.Einheitenzeilen[].Restwert",
+                                     KiDialogTexte.FleRestwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.FleRestwertErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO,
+                                     zeilenkennzeichen: EINHEITENKENNZEICHEN),
+
+                    // ---- Station 2: Datenquellen und Kostensaetze -------------------
+                    new KiDialogFeld("lastquelle", "StromspeicherKiSicht.Lastquelle",
+                                     KiDialogTexte.Spa2LastquelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2LastquelleErl),
+                    new KiDialogFeld("pv_quelle", "StromspeicherKiSicht.PvQuelle",
+                                     KiDialogTexte.Spa2PvQuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2PvQuelleErl),
+                    new KiDialogFeld("preisquelle", "StromspeicherKiSicht.Preisquelle",
+                                     KiDialogTexte.Spa2PreisquelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2PreisquelleErl),
+                    new KiDialogFeld("modelljahr_zuordnen",
+                                     "StromspeicherKiSicht.EposModelljahrZuordnen",
+                                     KiDialogTexte.Spa2ModelljahrName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.Spa2ModelljahrErl),
+                    new KiDialogFeld("investitionsquelle", "StromspeicherKiSicht.Investitionsquelle",
+                                     KiDialogTexte.Spa2InvestquelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2InvestquelleErl),
+                    new KiDialogFeld("betriebsquelle", "StromspeicherKiSicht.Betriebsquelle",
+                                     KiDialogTexte.Spa2BetriebsquelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2BetriebsquelleErl),
+                    new KiDialogFeld("investition_leistung", "StromspeicherKiSicht.InvestitionProKw",
+                                     KiDialogTexte.Spa2InvestKwName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2InvestKwErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW),
+                    new KiDialogFeld("investition_kapazitaet", "StromspeicherKiSicht.InvestitionProKWh",
+                                     KiDialogTexte.Spa2InvestKwhName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2InvestKwhErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    new KiDialogFeld("betrieb_leistung", "StromspeicherKiSicht.BetriebProKw",
+                                     KiDialogTexte.Spa2BetriebKwName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2BetriebKwErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A),
+                    new KiDialogFeld("betrieb_kapazitaet", "StromspeicherKiSicht.BetriebProKWh",
+                                     KiDialogTexte.Spa2BetriebKwhName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2BetriebKwhErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH_A),
+                    new KiDialogFeld("betrieb_entladen", "StromspeicherKiSicht.BetriebProKWhEntladen",
+                                     KiDialogTexte.Spa2BetriebEntladenName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2BetriebEntladenErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH),
+                    new KiDialogFeld("leistungspreis", "StromspeicherKiSicht.Leistungspreis",
+                                     KiDialogTexte.Spa2LeistungspreisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2LeistungspreisErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A),
+                    new KiDialogFeld("energie_ausgleich", "StromspeicherKiSicht.EnergieAusgleich",
+                                     KiDialogTexte.Spa2AusgleichName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2AusgleichErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
+                    new KiDialogFeld("kalkulationszins", "StromspeicherKiSicht.KalkulationszinsProzent",
+                                     KiDialogTexte.Spa2ZinsName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2ZinsErl,
+                                     einheit: KiDialogTexte.EINHEIT_PROZENT),
+                    new KiDialogFeld("jahresprojektion", "StromspeicherKiSicht.Jahresprojektion",
+                                     KiDialogTexte.Spa2ProjektionsartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa2ProjektionsartErl),
+                    new KiDialogFeld("projektjahre", "StromspeicherKiSicht.Projektjahre",
+                                     KiDialogTexte.Spa2ProjektjahreName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.Spa2ProjektjahreErl,
+                                     einheit: KiDialogTexte.EINHEIT_JAHR),
+                    new KiDialogFeld("restwert_studie", "StromspeicherKiSicht.RestwertStudieEuro",
+                                     KiDialogTexte.Spa2RestwertName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa2RestwertErl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO),
+
+                    // ---- Station 3: Betriebsfuehrung, Netz und Prognose --------------
+                    new KiDialogFeld("verteilung", "StromspeicherKiSicht.Verteilung",
+                                     KiDialogTexte.Spa3VerteilungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa3VerteilungErl),
+                    new KiDialogFeld("erzeuger_prioritaet", "StromspeicherKiSicht.ErzeugerPrioritaet",
+                                     KiDialogTexte.Spa3PrioritaetName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa3PrioritaetErl),
+                    new KiDialogFeld("batterieexport", "StromspeicherKiSicht.BatterieexportErlaubt",
+                                     KiDialogTexte.Spa3ExportName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.Spa3ExportErl),
+                    new KiDialogFeld("netzbezug_grenze", "StromspeicherKiSicht.NetzbezugGrenzeKw",
+                                     KiDialogTexte.Spa3BezugsgrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa3BezugsgrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("netzeinspeisung_grenze",
+                                     "StromspeicherKiSicht.NetzeinspeisungGrenzeKw",
+                                     KiDialogTexte.Spa3EinspeisegrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa3EinspeisegrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("informationsstand", "StromspeicherKiSicht.Informationsstand",
+                                     KiDialogTexte.Spa3InformationsstandName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa3InformationsstandErl),
+                    new KiDialogFeld("planungshorizont",
+                                     "StromspeicherKiSicht.PlanungshorizontIntervalle",
+                                     KiDialogTexte.Spa3PlanungshorizontName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.Spa3PlanungshorizontErl),
+                    new KiDialogFeld("neuplanung", "StromspeicherKiSicht.NeuplanungAlleIntervalle",
+                                     KiDialogTexte.Spa3NeuplanungName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.Spa3NeuplanungErl),
+                    new KiDialogFeld("endbedingung", "StromspeicherKiSicht.Endbedingung",
+                                     KiDialogTexte.Spa3EndbedingungName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa3EndbedingungErl),
+                    new KiDialogFeld("prognose_fallback",
+                                     "StromspeicherKiSicht.PrognoseFallbackErlaubt",
+                                     KiDialogTexte.Spa3FallbackName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.Spa3FallbackErl),
+
+                    // ---- Station 4: je SUCHACHSE eine Zeile --------------------------
+                    new KiDialogFeld("achse_variieren",
+                                     "StromspeicherKiSicht.Suchachsen[].Variieren",
+                                     KiDialogTexte.Spa4VariierenName, KiParameterTyp.Wahrheitswert,
+                                     KiDialogTexte.Spa4VariierenErl,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_quelle", "StromspeicherKiSicht.Suchachsen[].Quelle",
+                                     KiDialogTexte.Spa4QuelleName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.Spa4QuelleErl,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_kapazitaet_von",
+                                     "StromspeicherKiSicht.Suchachsen[].KapazitaetVon",
+                                     KiDialogTexte.Spa4KapazitaetVonName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa4KapazitaetVonErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_kapazitaet_bis",
+                                     "StromspeicherKiSicht.Suchachsen[].KapazitaetBis",
+                                     KiDialogTexte.Spa4KapazitaetBisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa4KapazitaetBisErl,
+                                     einheit: KiDialogTexte.EINHEIT_KWH,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_leistung_von",
+                                     "StromspeicherKiSicht.Suchachsen[].LeistungVon",
+                                     KiDialogTexte.Spa4LeistungVonName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa4LeistungVonErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_leistung_bis",
+                                     "StromspeicherKiSicht.Suchachsen[].LeistungBis",
+                                     KiDialogTexte.Spa4LeistungBisName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.Spa4LeistungBisErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_anzahl_von",
+                                     "StromspeicherKiSicht.Suchachsen[].AnzahlVon",
+                                     KiDialogTexte.Spa4AnzahlVonName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.Spa4AnzahlVonErl,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN),
+                    new KiDialogFeld("achse_anzahl_bis",
+                                     "StromspeicherKiSicht.Suchachsen[].AnzahlBis",
+                                     KiDialogTexte.Spa4AnzahlBisName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.Spa4AnzahlBisErl,
+                                     zeilenkennzeichen: ACHSENKENNZEICHEN)
                 });
         }
+
+        /// <summary>
+        /// Die Eigenschaft, aus der eine Einheitenzeile der Flotte ihren Klartextnamen
+        /// bekommt — „Speicher Halle · Kapazitaet" statt „Kapazitaet 2" (Welle KI-F6).
+        /// </summary>
+        private const string EINHEITENKENNZEICHEN = "Name";
+
+        /// <summary>
+        /// Dasselbe fuer die Suchkarten der Station „Optimierung": Ihr Name ist der
+        /// Name der Einheit, die die Achse ersetzt — so beschriftet der Block sie auch.
+        /// </summary>
+        private const string ACHSENKENNZEICHEN = "Achse";
 
         // =====================================================================
         // Simulation  ->  SimulationSeite

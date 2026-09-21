@@ -79,6 +79,10 @@
         /// </summary>
         internal const string EINHEIT_EURO_KW_A = "€/(kW·a)";
 
+        /// <summary>Einheit eines kapazitaetsbezogenen Jahresbetrags (Welle KI-F6).</summary>
+        internal const string EINHEIT_EURO_KWH_A = "€/(kWh·a)";
+
+
         /// <summary>Einheit einer Laenge in Metern (Welle KI-F2).</summary>
         internal const string EINHEIT_METER = "m";
 
@@ -1798,5 +1802,230 @@
         internal static string WrkPStandbyErl => MyResource.Resource.KI_DLG_WRK_P_STANDBY_ERL;
         internal static string WrkPNachtName => MyResource.Resource.WRK_LBL_P_NACHT;
         internal static string WrkPNachtErl => MyResource.Resource.KI_DLG_WRK_P_NACHT_ERL;
+
+        // ==================================================== Welle KI-F6: STROM
+        //
+        // Die Anzeigenamen sind ueberall die BESCHRIFTUNGEN der Masken; nur wo eine
+        // Maske ihre Beschriftung im Markup als deutsches Literal traegt
+        // (SpeicherZeitreihenDialog) oder zwei Bedienelemente sich eine teilen,
+        // steht ein eigener Schluessel.
+
+        internal static string MaskePeakShaving => MyResource.Resource.KI_DLG_MASKE_PEAK;
+        internal static string MaskeSpeicherzeitreihen => MyResource.Resource.KI_DLG_MASKE_SZR;
+        internal static string MaskeStromganglinieAdmin => MyResource.Resource.KI_DLG_MASKE_SGA;
+
+        // ---- Form_PeakShaving
+        internal static string PeakQuelleName => MyResource.Resource.PEAK_GRP_QUELLE;
+        internal static string PeakQuelleErl => MyResource.Resource.KI_DLG_PEAK_QUELLE_ERL;
+        internal static string PeakGanglinieName => MyResource.Resource.PEAK_OPT_GANGLINIE;
+        internal static string PeakGanglinieErl => MyResource.Resource.KI_DLG_PEAK_GANGLINIE_ERL;
+        internal static string PeakPName => MyResource.Resource.PEAK_LBL_P;
+        internal static string PeakPErl => MyResource.Resource.KI_DLG_PEAK_P_ERL;
+        internal static string PeakKapazitaetName => MyResource.Resource.PEAK_LBL_KAPAZITAET;
+        internal static string PeakKapazitaetErl => MyResource.Resource.KI_DLG_PEAK_KAPAZITAET_ERL;
+        internal static string PeakEtaName => MyResource.Resource.PEAK_LBL_ETA;
+        internal static string PeakEtaErl => MyResource.Resource.KI_DLG_PEAK_ETA_ERL;
+        internal static string PeakSocMinName => MyResource.Resource.PEAK_LBL_SOCMIN;
+        internal static string PeakSocMinErl => MyResource.Resource.KI_DLG_PEAK_SOCMIN_ERL;
+        internal static string PeakSocMaxName => MyResource.Resource.PEAK_LBL_SOCMAX;
+        internal static string PeakSocMaxErl => MyResource.Resource.KI_DLG_PEAK_SOCMAX_ERL;
+        internal static string PeakStartSocName => MyResource.Resource.PEAK_LBL_STARTSOC;
+        internal static string PeakStartSocErl => MyResource.Resource.KI_DLG_PEAK_STARTSOC_ERL;
+        internal static string PeakAdaptivName => MyResource.Resource.PEAK_CHK_ADAPTIV;
+        internal static string PeakAdaptivErl => MyResource.Resource.KI_DLG_PEAK_ADAPTIV_ERL;
+        internal static string PeakZielName => MyResource.Resource.PEAK_LBL_ZIEL;
+        internal static string PeakZielErl => MyResource.Resource.KI_DLG_PEAK_ZIEL_ERL;
+        internal static string PeakLpName => MyResource.Resource.PEAK_LBL_LP;
+        internal static string PeakLpErl => MyResource.Resource.KI_DLG_PEAK_LP_ERL;
+        internal static string PeakBezugspreisName => MyResource.Resource.PEAK_LBL_BEZUGSPREIS;
+        internal static string PeakBezugspreisErl => MyResource.Resource.KI_DLG_PEAK_BEZUGSPREIS_ERL;
+        internal static string PeakKompatName => MyResource.Resource.PEAK_CHK_KOMPAT;
+        internal static string PeakKompatErl => MyResource.Resource.KI_DLG_PEAK_KOMPAT_ERL;
+        internal static string PeakCCapName => MyResource.Resource.PEAK_LBL_CCAP;
+        internal static string PeakCCapErl => MyResource.Resource.KI_DLG_PEAK_CCAP_ERL;
+        internal static string PeakCPowName => MyResource.Resource.PEAK_LBL_CPOW;
+        internal static string PeakCPowErl => MyResource.Resource.KI_DLG_PEAK_CPOW_ERL;
+        internal static string PeakIFixName => MyResource.Resource.PEAK_LBL_IFIX;
+        internal static string PeakIFixErl => MyResource.Resource.KI_DLG_PEAK_IFIX_ERL;
+        internal static string PeakZinsName => MyResource.Resource.PEAK_LBL_ZINS;
+        internal static string PeakZinsErl => MyResource.Resource.KI_DLG_PEAK_ZINS_ERL;
+        internal static string PeakNutzungsdauerName => MyResource.Resource.PEAK_LBL_NUTZUNGSDAUER;
+        internal static string PeakNutzungsdauerErl => MyResource.Resource.KI_DLG_PEAK_NUTZUNGSDAUER_ERL;
+        internal static string PeakSocName => MyResource.Resource.PEAK_CHK_SOC;
+        internal static string PeakSocErl => MyResource.Resource.KI_DLG_PEAK_SOC_ERL;
+        internal static string PeakReiterName => MyResource.Resource.KI_DLG_PEAK_REITER_NAME;
+        internal static string PeakReiterErl => MyResource.Resource.KI_DLG_PEAK_REITER_ERL;
+        internal static string PeakReiheName => MyResource.Resource.KI_DLG_PEAK_REIHE_NAME;
+        internal static string PeakReiheErl => MyResource.Resource.KI_DLG_PEAK_REIHE_ERL;
+        internal static string PeakHerkunftName => MyResource.Resource.KI_DLG_PEAK_HERKUNFT_NAME;
+        internal static string PeakHerkunftErl => MyResource.Resource.KI_DLG_PEAK_HERKUNFT_ERL;
+
+        // ---- Speicherzeitreihen
+        internal static string SzrDateiName => MyResource.Resource.KI_DLG_SZR_DATEI_NAME;
+        internal static string SzrDateiErl => MyResource.Resource.KI_DLG_SZR_DATEI_ERL;
+        internal static string SzrRolleName => MyResource.Resource.KI_DLG_SZR_ROLLE_NAME;
+        internal static string SzrRolleErl => MyResource.Resource.KI_DLG_SZR_ROLLE_ERL;
+        internal static string SzrTrennzeichenName => MyResource.Resource.KI_DLG_SZR_TRENNZEICHEN_NAME;
+        internal static string SzrTrennzeichenErl => MyResource.Resource.KI_DLG_SZR_TRENNZEICHEN_ERL;
+        internal static string SzrDezimalName => MyResource.Resource.KI_DLG_SZR_DEZIMAL_NAME;
+        internal static string SzrDezimalErl => MyResource.Resource.KI_DLG_SZR_DEZIMAL_ERL;
+        internal static string SzrKodierungName => MyResource.Resource.KI_DLG_SZR_KODIERUNG_NAME;
+        internal static string SzrKodierungErl => MyResource.Resource.KI_DLG_SZR_KODIERUNG_ERL;
+        internal static string SzrKopfzeileName => MyResource.Resource.KI_DLG_SZR_KOPFZEILE_NAME;
+        internal static string SzrKopfzeileErl => MyResource.Resource.KI_DLG_SZR_KOPFZEILE_ERL;
+        internal static string SzrUeberspringenName => MyResource.Resource.KI_DLG_SZR_UEBERSPRINGEN_NAME;
+        internal static string SzrUeberspringenErl => MyResource.Resource.KI_DLG_SZR_UEBERSPRINGEN_ERL;
+        internal static string SzrZeitangabeName => MyResource.Resource.KI_DLG_SZR_ZEITANGABE_NAME;
+        internal static string SzrZeitangabeErl => MyResource.Resource.KI_DLG_SZR_ZEITANGABE_ERL;
+        internal static string SzrZeitstempelspalteName => MyResource.Resource.KI_DLG_SZR_ZSTEMPELSPALTE_NAME;
+        internal static string SzrZeitstempelspalteErl => MyResource.Resource.KI_DLG_SZR_ZSTEMPELSPALTE_ERL;
+        internal static string SzrZeitstempelformatName => MyResource.Resource.KI_DLG_SZR_ZSTEMPELFORMAT_NAME;
+        internal static string SzrZeitstempelformatErl => MyResource.Resource.KI_DLG_SZR_ZSTEMPELFORMAT_ERL;
+        internal static string SzrDatumsspalteName => MyResource.Resource.KI_DLG_SZR_DATUMSPALTE_NAME;
+        internal static string SzrDatumsspalteErl => MyResource.Resource.KI_DLG_SZR_DATUMSPALTE_ERL;
+        internal static string SzrDatumsformatName => MyResource.Resource.KI_DLG_SZR_DATUMFORMAT_NAME;
+        internal static string SzrDatumsformatErl => MyResource.Resource.KI_DLG_SZR_DATUMFORMAT_ERL;
+        internal static string SzrUhrzeitspalteName => MyResource.Resource.KI_DLG_SZR_UHRZEITSPALTE_NAME;
+        internal static string SzrUhrzeitspalteErl => MyResource.Resource.KI_DLG_SZR_UHRZEITSPALTE_ERL;
+        internal static string SzrUhrzeitformatName => MyResource.Resource.KI_DLG_SZR_UHRZEITFORMAT_NAME;
+        internal static string SzrUhrzeitformatErl => MyResource.Resource.KI_DLG_SZR_UHRZEITFORMAT_ERL;
+        internal static string SzrWertspalteName => MyResource.Resource.KI_DLG_SZR_WERTSPALTE_NAME;
+        internal static string SzrWertspalteErl => MyResource.Resource.KI_DLG_SZR_WERTSPALTE_ERL;
+        internal static string SzrZeitzoneName => MyResource.Resource.KI_DLG_SZR_ZEITZONE_NAME;
+        internal static string SzrZeitzoneErl => MyResource.Resource.KI_DLG_SZR_ZEITZONE_ERL;
+        internal static string SzrIntervallName => MyResource.Resource.KI_DLG_SZR_INTERVALL_NAME;
+        internal static string SzrIntervallErl => MyResource.Resource.KI_DLG_SZR_INTERVALL_ERL;
+        internal static string SzrEinheitName => MyResource.Resource.KI_DLG_SZR_EINHEIT_NAME;
+        internal static string SzrEinheitErl => MyResource.Resource.KI_DLG_SZR_EINHEIT_ERL;
+
+        // ---- Form_Stromganglinie_Admin
+        internal static string SgaZeitintervallName => MyResource.Resource.IMPORT_LBL_ZEITINTERVAL;
+        internal static string SgaZeitintervallErl => MyResource.Resource.KI_DLG_SGA_ZEITINTERVALL_ERL;
+        internal static string SgaGewaehltName => MyResource.Resource.KI_DLG_SGA_GEWAEHLT_NAME;
+        internal static string SgaGewaehltErl => MyResource.Resource.KI_DLG_SGA_GEWAEHLT_ERL;
+
+        // ---- Station 1 der Stromspeicher-Auslegung: die Einheiten der Flotte
+        internal static string FleNameName => MyResource.Resource.FLOTTE_ED_NAME;
+        internal static string FleNameErl => MyResource.Resource.KI_DLG_FLE_NAME_ERL;
+        internal static string FleKapazitaetName => MyResource.Resource.FLOTTE_ED_KAPAZITAET;
+        internal static string FleKapazitaetErl => MyResource.Resource.KI_DLG_FLE_KAPAZITAET_ERL;
+        internal static string FleLadeleistungName => MyResource.Resource.FLOTTE_ED_LADELEISTUNG;
+        internal static string FleLadeleistungErl => MyResource.Resource.KI_DLG_FLE_LADELEISTUNG_ERL;
+        internal static string FleEntladeleistungName => MyResource.Resource.FLOTTE_ED_ENTLADELEISTUNG;
+        internal static string FleEntladeleistungErl => MyResource.Resource.KI_DLG_FLE_ENTLADELEISTUNG_ERL;
+        internal static string FleLadewirkungsgradName => MyResource.Resource.FLOTTE_ED_LADEWIRKUNGSGRAD;
+        internal static string FleLadewirkungsgradErl => MyResource.Resource.KI_DLG_FLE_LADEWIRKUNGSGRAD_ERL;
+        internal static string FleEntladewirkungsgradName => MyResource.Resource.FLOTTE_ED_ENTLADEWIRKUNGSGRAD;
+        internal static string FleEntladewirkungsgradErl => MyResource.Resource.KI_DLG_FLE_ENTLADEWIRKUNGSGRAD_ERL;
+        internal static string FleSocMinName => MyResource.Resource.FLOTTE_ED_SOC_MIN;
+        internal static string FleSocMinErl => MyResource.Resource.KI_DLG_FLE_SOC_MIN_ERL;
+        internal static string FleSocMaxName => MyResource.Resource.FLOTTE_ED_SOC_MAX;
+        internal static string FleSocMaxErl => MyResource.Resource.KI_DLG_FLE_SOC_MAX_ERL;
+        internal static string FleSocStartName => MyResource.Resource.FLOTTE_ED_SOC_START;
+        internal static string FleSocStartErl => MyResource.Resource.KI_DLG_FLE_SOC_START_ERL;
+        internal static string FlePeakReserveName => MyResource.Resource.FLOTTE_ED_PEAK_RESERVE;
+        internal static string FlePeakReserveErl => MyResource.Resource.KI_DLG_FLE_PEAK_RESERVE_ERL;
+        internal static string FleHilfsverbrauchName => MyResource.Resource.FLOTTE_ED_HILFSVERBRAUCH;
+        internal static string FleHilfsverbrauchErl => MyResource.Resource.KI_DLG_FLE_HILFSVERBRAUCH_ERL;
+        internal static string FleGrenzverschleissName => MyResource.Resource.FLOTTE_ED_GRENZVERSCHLEISS;
+        internal static string FleGrenzverschleissErl => MyResource.Resource.KI_DLG_FLE_GRENZVERSCHLEISS_ERL;
+        internal static string FleEigeneKostenName => MyResource.Resource.FLOTTE_ED_EIGENE_KOSTEN;
+        internal static string FleEigeneKostenErl => MyResource.Resource.KI_DLG_FLE_EIGENE_KOSTEN_ERL;
+        internal static string FleInvestFixName => MyResource.Resource.FLOTTE_ED_INVEST_FIX;
+        internal static string FleInvestFixErl => MyResource.Resource.KI_DLG_FLE_INVEST_FIX_ERL;
+        internal static string FleInvestKapazitaetName => MyResource.Resource.FLOTTE_ED_INVEST_KAPAZITAET;
+        internal static string FleInvestKapazitaetErl => MyResource.Resource.KI_DLG_FLE_INVEST_KAPAZITAET_ERL;
+        internal static string FleInvestLeistungName => MyResource.Resource.FLOTTE_ED_INVEST_LEISTUNG;
+        internal static string FleInvestLeistungErl => MyResource.Resource.KI_DLG_FLE_INVEST_LEISTUNG_ERL;
+        internal static string FleOpexFixName => MyResource.Resource.FLOTTE_ED_OPEX_FIX;
+        internal static string FleOpexFixErl => MyResource.Resource.KI_DLG_FLE_OPEX_FIX_ERL;
+        internal static string FleOpexKapazitaetName => MyResource.Resource.FLOTTE_ED_OPEX_KAPAZITAET;
+        internal static string FleOpexKapazitaetErl => MyResource.Resource.KI_DLG_FLE_OPEX_KAPAZITAET_ERL;
+        internal static string FleOpexLeistungName => MyResource.Resource.FLOTTE_ED_OPEX_LEISTUNG;
+        internal static string FleOpexLeistungErl => MyResource.Resource.KI_DLG_FLE_OPEX_LEISTUNG_ERL;
+        internal static string FleDurchsatzkostenName => MyResource.Resource.FLOTTE_ED_DURCHSATZKOSTEN;
+        internal static string FleDurchsatzkostenErl => MyResource.Resource.KI_DLG_FLE_DURCHSATZKOSTEN_ERL;
+        internal static string FleErsatzkostenName => MyResource.Resource.FLOTTE_ED_ERSATZKOSTEN;
+        internal static string FleErsatzkostenErl => MyResource.Resource.KI_DLG_FLE_ERSATZKOSTEN_ERL;
+        internal static string FleErsatzintervallName => MyResource.Resource.FLOTTE_ED_ERSATZINTERVALL;
+        internal static string FleErsatzintervallErl => MyResource.Resource.KI_DLG_FLE_ERSATZINTERVALL_ERL;
+        internal static string FleRestwertName => MyResource.Resource.FLOTTE_ED_RESTWERT_EINHEIT;
+        internal static string FleRestwertErl => MyResource.Resource.KI_DLG_FLE_RESTWERT_ERL;
+
+        // ---- Station 2: Daten und Kosten
+        internal static string Spa2LastquelleName => MyResource.Resource.FLOTTE_AUS_LASTQUELLE;
+        internal static string Spa2LastquelleErl => MyResource.Resource.KI_DLG_SPA2_LASTQUELLE_ERL;
+        internal static string Spa2PvQuelleName => MyResource.Resource.FLOTTE_AUS_PVQUELLE;
+        internal static string Spa2PvQuelleErl => MyResource.Resource.KI_DLG_SPA2_PVQUELLE_ERL;
+        internal static string Spa2PreisquelleName => MyResource.Resource.FLOTTE_AUS_PREISQUELLE;
+        internal static string Spa2PreisquelleErl => MyResource.Resource.KI_DLG_SPA2_PREISQUELLE_ERL;
+        internal static string Spa2ModelljahrName => MyResource.Resource.FLOTTE_AUS_MODELLJAHR;
+        internal static string Spa2ModelljahrErl => MyResource.Resource.KI_DLG_SPA2_MODELLJAHR_ERL;
+        internal static string Spa2InvestquelleName => MyResource.Resource.FLOTTE_AUS_INVESTQUELLE;
+        internal static string Spa2InvestquelleErl => MyResource.Resource.KI_DLG_SPA2_INVESTQUELLE_ERL;
+        internal static string Spa2BetriebsquelleName => MyResource.Resource.FLOTTE_AUS_BETRIEBSQUELLE;
+        internal static string Spa2BetriebsquelleErl => MyResource.Resource.KI_DLG_SPA2_BETRIEBSQUELLE_ERL;
+        internal static string Spa2InvestKwName => MyResource.Resource.FLOTTE_AUS_INVEST_KW;
+        internal static string Spa2InvestKwErl => MyResource.Resource.KI_DLG_SPA2_INVEST_KW_ERL;
+        internal static string Spa2InvestKwhName => MyResource.Resource.FLOTTE_AUS_INVEST_KWH;
+        internal static string Spa2InvestKwhErl => MyResource.Resource.KI_DLG_SPA2_INVEST_KWH_ERL;
+        internal static string Spa2BetriebKwName => MyResource.Resource.FLOTTE_AUS_BETRIEB_KW;
+        internal static string Spa2BetriebKwErl => MyResource.Resource.KI_DLG_SPA2_BETRIEB_KW_ERL;
+        internal static string Spa2BetriebKwhName => MyResource.Resource.FLOTTE_AUS_BETRIEB_KWH;
+        internal static string Spa2BetriebKwhErl => MyResource.Resource.KI_DLG_SPA2_BETRIEB_KWH_ERL;
+        internal static string Spa2BetriebEntladenName => MyResource.Resource.FLOTTE_AUS_BETRIEB_ENTLADEN;
+        internal static string Spa2BetriebEntladenErl => MyResource.Resource.KI_DLG_SPA2_BETRIEB_ENTLADEN_ERL;
+        internal static string Spa2LeistungspreisName => MyResource.Resource.OPT_LBL_LEISTUNGSPREIS;
+        internal static string Spa2LeistungspreisErl => MyResource.Resource.KI_DLG_SPA2_LEISTUNGSPREIS_ERL;
+        internal static string Spa2AusgleichName => MyResource.Resource.FLOTTE_ED_AUSGLEICH;
+        internal static string Spa2AusgleichErl => MyResource.Resource.KI_DLG_SPA2_AUSGLEICH_ERL;
+        internal static string Spa2ZinsName => MyResource.Resource.FLOTTE_ED_ZINS;
+        internal static string Spa2ZinsErl => MyResource.Resource.KI_DLG_SPA2_ZINS_ERL;
+        internal static string Spa2ProjektionsartName => MyResource.Resource.FLOTTE_ED_PROJEKTIONSART;
+        internal static string Spa2ProjektionsartErl => MyResource.Resource.KI_DLG_SPA2_PROJEKTIONSART_ERL;
+        internal static string Spa2ProjektjahreName => MyResource.Resource.FLOTTE_ED_PROJEKTJAHRE;
+        internal static string Spa2ProjektjahreErl => MyResource.Resource.KI_DLG_SPA2_PROJEKTJAHRE_ERL;
+        internal static string Spa2RestwertName => MyResource.Resource.FLOTTE_ED_RESTWERT_GESAMT;
+        internal static string Spa2RestwertErl => MyResource.Resource.KI_DLG_SPA2_RESTWERT_ERL;
+
+        // ---- Station 3: Betriebsfuehrung und Netz
+        internal static string Spa3VerteilungName => MyResource.Resource.FLOTTE_BETRIEB_LBL_VERTEILUNG;
+        internal static string Spa3VerteilungErl => MyResource.Resource.KI_DLG_SPA3_VERTEILUNG_ERL;
+        internal static string Spa3PrioritaetName => MyResource.Resource.FLOTTE_BETRIEB_LBL_PRIORITAET;
+        internal static string Spa3PrioritaetErl => MyResource.Resource.KI_DLG_SPA3_PRIORITAET_ERL;
+        internal static string Spa3ExportName => MyResource.Resource.FLOTTE_BETRIEB_CHK_EXPORT;
+        internal static string Spa3ExportErl => MyResource.Resource.KI_DLG_SPA3_EXPORT_ERL;
+        internal static string Spa3BezugsgrenzeName => MyResource.Resource.FLOTTE_ED_BEZUGSGRENZE;
+        internal static string Spa3BezugsgrenzeErl => MyResource.Resource.KI_DLG_SPA3_BEZUGSGRENZE_ERL;
+        internal static string Spa3EinspeisegrenzeName => MyResource.Resource.FLOTTE_ED_EINSPEISEGRENZE;
+        internal static string Spa3EinspeisegrenzeErl => MyResource.Resource.KI_DLG_SPA3_EINSPEISEGRENZE_ERL;
+        internal static string Spa3InformationsstandName => MyResource.Resource.FLOTTE_ED_INFORMATIONSSTAND;
+        internal static string Spa3InformationsstandErl => MyResource.Resource.KI_DLG_SPA3_INFORMATIONSSTAND_ERL;
+        internal static string Spa3PlanungshorizontName => MyResource.Resource.FLOTTE_ED_PLANUNGSHORIZONT;
+        internal static string Spa3PlanungshorizontErl => MyResource.Resource.KI_DLG_SPA3_PLANUNGSHORIZONT_ERL;
+        internal static string Spa3NeuplanungName => MyResource.Resource.FLOTTE_ED_NEUPLANUNG;
+        internal static string Spa3NeuplanungErl => MyResource.Resource.KI_DLG_SPA3_NEUPLANUNG_ERL;
+        internal static string Spa3EndbedingungName => MyResource.Resource.FLOTTE_ED_ENDBEDINGUNG;
+        internal static string Spa3EndbedingungErl => MyResource.Resource.KI_DLG_SPA3_ENDBEDINGUNG_ERL;
+        internal static string Spa3FallbackName => MyResource.Resource.FLOTTE_ED_FALLBACK;
+        internal static string Spa3FallbackErl => MyResource.Resource.KI_DLG_SPA3_FALLBACK_ERL;
+
+        // ---- Station 4: der Suchraum
+        internal static string Spa4VariierenName => MyResource.Resource.FLOTTE_OPT_SP_VARIIEREN;
+        internal static string Spa4VariierenErl => MyResource.Resource.KI_DLG_SPA4_VARIIEREN_ERL;
+        internal static string Spa4QuelleName => MyResource.Resource.FLOTTE_OPT_QUELLE;
+        internal static string Spa4QuelleErl => MyResource.Resource.KI_DLG_SPA4_QUELLE_ERL;
+        internal static string Spa4KapazitaetVonName => MyResource.Resource.FLOTTE_ED_KAPAZITAET_VON;
+        internal static string Spa4KapazitaetVonErl => MyResource.Resource.KI_DLG_SPA4_KAPAZITAET_VON_ERL;
+        internal static string Spa4KapazitaetBisName => MyResource.Resource.FLOTTE_ED_KAPAZITAET_BIS;
+        internal static string Spa4KapazitaetBisErl => MyResource.Resource.KI_DLG_SPA4_KAPAZITAET_BIS_ERL;
+        internal static string Spa4LeistungVonName => MyResource.Resource.FLOTTE_ED_LEISTUNG_VON;
+        internal static string Spa4LeistungVonErl => MyResource.Resource.KI_DLG_SPA4_LEISTUNG_VON_ERL;
+        internal static string Spa4LeistungBisName => MyResource.Resource.FLOTTE_ED_LEISTUNG_BIS;
+        internal static string Spa4LeistungBisErl => MyResource.Resource.KI_DLG_SPA4_LEISTUNG_BIS_ERL;
+        internal static string Spa4AnzahlVonName => MyResource.Resource.FLOTTE_ED_ANZAHL_VON;
+        internal static string Spa4AnzahlVonErl => MyResource.Resource.KI_DLG_SPA4_ANZAHL_VON_ERL;
+        internal static string Spa4AnzahlBisName => MyResource.Resource.FLOTTE_ED_ANZAHL_BIS;
+        internal static string Spa4AnzahlBisErl => MyResource.Resource.KI_DLG_SPA4_ANZAHL_BIS_ERL;
     }
 }

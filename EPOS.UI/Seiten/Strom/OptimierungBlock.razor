@@ -460,7 +460,11 @@
     /// wird ausschließlich über Kapazität und Leistung, die C-Rate ist die abgeleitete
     /// Kennzahl jedes gefundenen Geräts.
     /// </summary>
-    private static IReadOnlyList<(int Id, string Text)> Quellen => new[]
+    /// <remarks>
+    /// <b>Öffentlich, weil der Hilfe-Assistent dieselbe Liste braucht</b> (KI‑F1b):
+    /// Klappliste und Assistentenauswahl können so nicht auseinanderlaufen.
+    /// </remarks>
+    public static IReadOnlyList<(int Id, string Text)> Quellen => new[]
     {
         ((int)FlottenKandidatenquelle.Projektkatalog, Resource.FLOTTE_OPT_QUELLE_PROJEKT),
         ((int)FlottenKandidatenquelle.Stammdaten, Resource.FLOTTE_OPT_QUELLE_STAMM)

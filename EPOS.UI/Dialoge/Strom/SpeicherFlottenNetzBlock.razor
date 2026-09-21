@@ -107,12 +107,18 @@
     public bool HatPrognoseplanung => Wert.Betriebsziel
         is FlottenBetriebsziel.PvPlanung or FlottenBetriebsziel.Arbitrage or FlottenBetriebsziel.MultiUse;
 
-    private static readonly IReadOnlyList<(int Id, string Text)> Prognosearten = new[]
+    /// <summary>
+    /// Die zwei Informationsstände — öffentlich, weil der Hilfe-Assistent dieselbe
+    /// Liste führt (KI‑F1b); so können Klappliste und Assistentenauswahl nicht
+    /// auseinanderlaufen.
+    /// </summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> Prognosearten = new[]
     {
         (0, "Archivierte Prognose-Snapshots"), (1, "Idealwissen (optimistische Vergleichsgrenze)")
     };
 
-    private static readonly IReadOnlyList<(int Id, string Text)> Endbedingungen = new[]
+    /// <summary>Die drei Horizont-Endbedingungen — öffentlich für den Hilfe-Assistenten.</summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> Endbedingungen = new[]
     {
         (0, "Keine Vorgabe"), (1, "Zielenergie je Speicher"), (2, "Endenergie wie Anfang")
     };

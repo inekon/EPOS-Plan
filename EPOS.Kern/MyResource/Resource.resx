@@ -22317,4 +22317,379 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WRK_P_NACHT_ERL" xml:space="preserve">
     <value>Die Verlustleistung des Geräts in der Nacht.</value>
   </data>
+  <data name="KI_DLG_MASKE_PEAK" xml:space="preserve">
+    <value>Lastspitzenkappung</value>
+  </data>
+  <data name="KI_DLG_MASKE_SZR" xml:space="preserve">
+    <value>Zeitreihe einlesen</value>
+  </data>
+  <data name="KI_DLG_MASKE_SGA" xml:space="preserve">
+    <value>Stromganglinien-Verwaltung</value>
+  </data>
+  <data name="KI_DLG_PEAK_REITER_NAME" xml:space="preserve">
+    <value>Reiterblatt</value>
+  </data>
+  <data name="KI_DLG_PEAK_REIHE_NAME" xml:space="preserve">
+    <value>Geladene Reihe</value>
+  </data>
+  <data name="KI_DLG_PEAK_HERKUNFT_NAME" xml:space="preserve">
+    <value>Herkunft der Vorgaben</value>
+  </data>
+  <data name="KI_DLG_PEAK_QUELLE_ERL" xml:space="preserve">
+    <value>Woher der Lastgang kommt: aus einer vorhandenen Ganglinie oder aus einer eingelesenen Datei.</value>
+  </data>
+  <data name="KI_DLG_PEAK_GANGLINIE_ERL" xml:space="preserve">
+    <value>Die gewählte Ganglinie des Katalogs; sie wird beim Wechsel sofort geladen.</value>
+  </data>
+  <data name="KI_DLG_PEAK_P_ERL" xml:space="preserve">
+    <value>Die höchste Lade- und Entladeleistung des Speichers.</value>
+  </data>
+  <data name="KI_DLG_PEAK_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Die nutzbare Speicherkapazität; zusammen mit dem SoC-Band ergibt sie den Arbeitsbereich.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ETA_ERL" xml:space="preserve">
+    <value>Der Umlaufwirkungsgrad des Speichers; er wird je zur Hälfte auf Laden und Entladen verteilt.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOCMIN_ERL" xml:space="preserve">
+    <value>Die untere Grenze des Ladezustands; darunter wird nicht entladen.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOCMAX_ERL" xml:space="preserve">
+    <value>Die obere Grenze des Ladezustands; darüber wird nicht geladen.</value>
+  </data>
+  <data name="KI_DLG_PEAK_STARTSOC_ERL" xml:space="preserve">
+    <value>Der Ladezustand zu Beginn des Laufs.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ADAPTIV_ERL" xml:space="preserve">
+    <value>Zieht die Schwelle im Lauf nach, sobald der Speicher eine Spitze nicht halten kann; sonst steht sie fest.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ZIEL_ERL" xml:space="preserve">
+    <value>Die feste Zielschwelle des Netzbezugs; sie gilt nur ohne adaptive Nachführung.</value>
+  </data>
+  <data name="KI_DLG_PEAK_LP_ERL" xml:space="preserve">
+    <value>Der Leistungspreis des Netzanschlusses; er bewertet die gekappte Spitze.</value>
+  </data>
+  <data name="KI_DLG_PEAK_BEZUGSPREIS_ERL" xml:space="preserve">
+    <value>Der mittlere Arbeitspreis des Netzbezugs; er bewertet die Umwandlungsverluste.</value>
+  </data>
+  <data name="KI_DLG_PEAK_KOMPAT_ERL" xml:space="preserve">
+    <value>Rechnet ohne Verluste und ohne untere SoC-Grenze — die Betriebsart des Vorläufers.</value>
+  </data>
+  <data name="KI_DLG_PEAK_CCAP_ERL" xml:space="preserve">
+    <value>Der kapazitätsbezogene Anteil der Investition.</value>
+  </data>
+  <data name="KI_DLG_PEAK_CPOW_ERL" xml:space="preserve">
+    <value>Der leistungsbezogene Anteil der Investition.</value>
+  </data>
+  <data name="KI_DLG_PEAK_IFIX_ERL" xml:space="preserve">
+    <value>Der feste Anteil der Investition, unabhängig von Größe und Leistung.</value>
+  </data>
+  <data name="KI_DLG_PEAK_ZINS_ERL" xml:space="preserve">
+    <value>Der Kalkulationszins der Annuität.</value>
+  </data>
+  <data name="KI_DLG_PEAK_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Die Nutzungsdauer des Speichers; sie bestimmt den Annuitätsfaktor.</value>
+  </data>
+  <data name="KI_DLG_PEAK_SOC_ERL" xml:space="preserve">
+    <value>Zeigt die Ladezustandskurve auf der zweiten Achse des Diagramms.</value>
+  </data>
+  <data name="KI_DLG_PEAK_REITER_ERL" xml:space="preserve">
+    <value>Welches Blatt gerade offen steht: Kennzahlen, Diagramm oder Monatswerte.</value>
+  </data>
+  <data name="KI_DLG_PEAK_REIHE_ERL" xml:space="preserve">
+    <value>Die geladene Reihe samt Zahl der Werte und ihrem Höchstwert.</value>
+  </data>
+  <data name="KI_DLG_PEAK_HERKUNFT_ERL" xml:space="preserve">
+    <value>Woher die vorbelegten Zahlen stammen — aus einer Projektvariante oder aus den Vorgabewerten.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATEI_NAME" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="KI_DLG_SZR_DATEI_ERL" xml:space="preserve">
+    <value>Die Datei, deren Leseregeln hier eingestellt werden.</value>
+  </data>
+  <data name="KI_DLG_SZR_ROLLE_NAME" xml:space="preserve">
+    <value>Rolle der Reihe</value>
+  </data>
+  <data name="KI_DLG_SZR_ROLLE_ERL" xml:space="preserve">
+    <value>Wofür die Reihe steht: Last, PV-Erzeugung oder Bezugspreis. Sie bestimmt die wählbaren Einheiten.</value>
+  </data>
+  <data name="KI_DLG_SZR_TRENNZEICHEN_NAME" xml:space="preserve">
+    <value>Trennzeichen</value>
+  </data>
+  <data name="KI_DLG_SZR_TRENNZEICHEN_ERL" xml:space="preserve">
+    <value>Das Zeichen, das die Spalten der Datei trennt.</value>
+  </data>
+  <data name="KI_DLG_SZR_DEZIMAL_NAME" xml:space="preserve">
+    <value>Dezimaltrenner</value>
+  </data>
+  <data name="KI_DLG_SZR_DEZIMAL_ERL" xml:space="preserve">
+    <value>Das Zeichen, das in den Zahlen der Datei Ganz- und Nachkommateil trennt.</value>
+  </data>
+  <data name="KI_DLG_SZR_KODIERUNG_NAME" xml:space="preserve">
+    <value>Kodierung</value>
+  </data>
+  <data name="KI_DLG_SZR_KODIERUNG_ERL" xml:space="preserve">
+    <value>Die Zeichenkodierung der Datei; sie wird nicht geraten.</value>
+  </data>
+  <data name="KI_DLG_SZR_KOPFZEILE_NAME" xml:space="preserve">
+    <value>Kopfzeile</value>
+  </data>
+  <data name="KI_DLG_SZR_KOPFZEILE_ERL" xml:space="preserve">
+    <value>Trägt die erste Datenzeile die Spaltennamen statt Werte?</value>
+  </data>
+  <data name="KI_DLG_SZR_UEBERSPRINGEN_NAME" xml:space="preserve">
+    <value>Zeilen überspringen</value>
+  </data>
+  <data name="KI_DLG_SZR_UEBERSPRINGEN_ERL" xml:space="preserve">
+    <value>Wie viele Zeilen vor der Kopfzeile übergangen werden.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITANGABE_NAME" xml:space="preserve">
+    <value>Zeitangabe</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITANGABE_ERL" xml:space="preserve">
+    <value>Steht die Zeit in einer Zeitstempelspalte oder in getrennten Spalten für Datum und Uhrzeit?</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELSPALTE_NAME" xml:space="preserve">
+    <value>Zeitstempelspalte</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem vollständigen Zeitstempel.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELFORMAT_NAME" xml:space="preserve">
+    <value>Zeitstempelformat</value>
+  </data>
+  <data name="KI_DLG_SZR_ZSTEMPELFORMAT_ERL" xml:space="preserve">
+    <value>Das Format des Zeitstempels; leer bedeutet das Standardformat.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMSPALTE_NAME" xml:space="preserve">
+    <value>Datumsspalte</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Datum; sie gilt nur bei getrennter Zeitangabe.</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMFORMAT_NAME" xml:space="preserve">
+    <value>Datumsformat</value>
+  </data>
+  <data name="KI_DLG_SZR_DATUMFORMAT_ERL" xml:space="preserve">
+    <value>Das Format des Datums; leer bedeutet das Standardformat.</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITSPALTE_NAME" xml:space="preserve">
+    <value>Uhrzeitspalte</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit der Uhrzeit; sie gilt nur bei getrennter Zeitangabe.</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITFORMAT_NAME" xml:space="preserve">
+    <value>Uhrzeitformat</value>
+  </data>
+  <data name="KI_DLG_SZR_UHRZEITFORMAT_ERL" xml:space="preserve">
+    <value>Das Format der Uhrzeit; leer bedeutet das Standardformat.</value>
+  </data>
+  <data name="KI_DLG_SZR_WERTSPALTE_NAME" xml:space="preserve">
+    <value>Wertspalte</value>
+  </data>
+  <data name="KI_DLG_SZR_WERTSPALTE_ERL" xml:space="preserve">
+    <value>Die Spalte mit dem Messwert der Reihe.</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITZONE_NAME" xml:space="preserve">
+    <value>Zeitzone</value>
+  </data>
+  <data name="KI_DLG_SZR_ZEITZONE_ERL" xml:space="preserve">
+    <value>Die Zeitzone, in der die Zeitangaben der Datei stehen.</value>
+  </data>
+  <data name="KI_DLG_SZR_INTERVALL_NAME" xml:space="preserve">
+    <value>Intervallbezug</value>
+  </data>
+  <data name="KI_DLG_SZR_INTERVALL_ERL" xml:space="preserve">
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+  </data>
+  <data name="KI_DLG_SZR_EINHEIT_NAME" xml:space="preserve">
+    <value>Einheit der Werte</value>
+  </data>
+  <data name="KI_DLG_SZR_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Einheit der Werte in der Datei; welche zur Wahl stehen, sagt die Rolle der Reihe.</value>
+  </data>
+  <data name="KI_DLG_SGA_ZEITINTERVALL_ERL" xml:space="preserve">
+    <value>Mit welchem Zeitraster eine eingelesene Datei abgelegt wird — Stunde oder Viertelstunde.</value>
+  </data>
+  <data name="KI_DLG_SGA_GEWAEHLT_NAME" xml:space="preserve">
+    <value>Markierte Ganglinie</value>
+  </data>
+  <data name="KI_DLG_SGA_GEWAEHLT_ERL" xml:space="preserve">
+    <value>Der Bezeichner der markierten Katalogzeile; er entscheidet, was der Löschknopf trifft.</value>
+  </data>
+  <data name="KI_DLG_FLE_NAME_ERL" xml:space="preserve">
+    <value>Die Bezeichnung der Speichereinheit; sie steht auch in der Aufstellung der Ansicht.</value>
+  </data>
+  <data name="KI_DLG_FLE_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Die Nennkapazität dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_LADELEISTUNG_ERL" xml:space="preserve">
+    <value>Die höchste Ladeleistung dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ENTLADELEISTUNG_ERL" xml:space="preserve">
+    <value>Die höchste Entladeleistung dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_LADEWIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad beim Laden dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ENTLADEWIRKUNGSGRAD_ERL" xml:space="preserve">
+    <value>Der Wirkungsgrad beim Entladen dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_MIN_ERL" xml:space="preserve">
+    <value>Die untere Grenze des Ladezustands dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_MAX_ERL" xml:space="preserve">
+    <value>Die obere Grenze des Ladezustands dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_SOC_START_ERL" xml:space="preserve">
+    <value>Der Ladezustand dieser Einheit zu Beginn des Laufs.</value>
+  </data>
+  <data name="KI_DLG_FLE_PEAK_RESERVE_ERL" xml:space="preserve">
+    <value>Die Energie, die diese Einheit für die Lastspitzenkappung zurückhält.</value>
+  </data>
+  <data name="KI_DLG_FLE_HILFSVERBRAUCH_ERL" xml:space="preserve">
+    <value>Der dauernde Eigenverbrauch der Einheit auf der Wechselstromseite.</value>
+  </data>
+  <data name="KI_DLG_FLE_GRENZVERSCHLEISS_ERL" xml:space="preserve">
+    <value>Die marginalen Verschleißkosten je entladener Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_FLE_EIGENE_KOSTEN_ERL" xml:space="preserve">
+    <value>Rechnet diese Einheit mit eigenen Kostensätzen statt mit denen der Studie?</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_FIX_ERL" xml:space="preserve">
+    <value>Der feste Anteil der Investition dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Der kapazitätsbezogene Anteil der Investition dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_INVEST_LEISTUNG_ERL" xml:space="preserve">
+    <value>Der leistungsbezogene Anteil der Investition dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_FIX_ERL" xml:space="preserve">
+    <value>Die festen jährlichen Betriebskosten dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_KAPAZITAET_ERL" xml:space="preserve">
+    <value>Die kapazitätsbezogenen jährlichen Betriebskosten dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_OPEX_LEISTUNG_ERL" xml:space="preserve">
+    <value>Die leistungsbezogenen jährlichen Betriebskosten dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_DURCHSATZKOSTEN_ERL" xml:space="preserve">
+    <value>Die Kosten je entladener Kilowattstunde dieser Einheit.</value>
+  </data>
+  <data name="KI_DLG_FLE_ERSATZKOSTEN_ERL" xml:space="preserve">
+    <value>Was ein Ersatz dieser Einheit kostet.</value>
+  </data>
+  <data name="KI_DLG_FLE_ERSATZINTERVALL_ERL" xml:space="preserve">
+    <value>Nach wie vielen Jahren diese Einheit ersetzt wird; 0 = kein Ersatz.</value>
+  </data>
+  <data name="KI_DLG_FLE_RESTWERT_ERL" xml:space="preserve">
+    <value>Der Restwert dieser Einheit am Ende der Betrachtung.</value>
+  </data>
+  <data name="KI_DLG_SPA2_LASTQUELLE_ERL" xml:space="preserve">
+    <value>Woher der Strombedarf kommt: aus der EPOS-Rechnung oder aus einer eingelesenen Datei.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PVQUELLE_ERL" xml:space="preserve">
+    <value>Woher die PV-Erzeugung kommt: aus der EPOS-Simulation, aus einer Datei oder gar nicht.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PREISQUELLE_ERL" xml:space="preserve">
+    <value>Woher der Bezugspreis kommt: aus dem EPOS-Stromtarif, aus einer Datei oder aus einem Preisprofil.</value>
+  </data>
+  <data name="KI_DLG_SPA2_MODELLJAHR_ERL" xml:space="preserve">
+    <value>Ordnet die Zeitachse einer eingelesenen Datei dem EPOS-Modelljahr zu; nötig, sobald Datei und EPOS-Reihe nebeneinander stehen.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVESTQUELLE_ERL" xml:space="preserve">
+    <value>Woher die Investitionskosten kommen: aus diesem Dialog oder aus dem Kostenmodul.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEBSQUELLE_ERL" xml:space="preserve">
+    <value>Woher die Betriebskosten kommen: aus diesem Dialog oder aus dem Kostenmodul.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVEST_KW_ERL" xml:space="preserve">
+    <value>Der leistungsbezogene Anteil der Investition; er lässt sich nur bei der Quelle ‚Im Dialog‘ eingeben.</value>
+  </data>
+  <data name="KI_DLG_SPA2_INVEST_KWH_ERL" xml:space="preserve">
+    <value>Der kapazitätsbezogene Anteil der Investition; er lässt sich nur bei der Quelle ‚Im Dialog‘ eingeben.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_KW_ERL" xml:space="preserve">
+    <value>Die leistungsbezogenen jährlichen Betriebskosten der Studie.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_KWH_ERL" xml:space="preserve">
+    <value>Die kapazitätsbezogenen jährlichen Betriebskosten der Studie.</value>
+  </data>
+  <data name="KI_DLG_SPA2_BETRIEB_ENTLADEN_ERL" xml:space="preserve">
+    <value>Die Betriebskosten je entladener Kilowattstunde.</value>
+  </data>
+  <data name="KI_DLG_SPA2_LEISTUNGSPREIS_ERL" xml:space="preserve">
+    <value>Der Leistungspreis des Netzanschlusses; er steht zugleich im Tarif der Flotte.</value>
+  </data>
+  <data name="KI_DLG_SPA2_AUSGLEICH_ERL" xml:space="preserve">
+    <value>Der Wert, mit dem am Jahresende eine veränderte Speicherfüllung ausgeglichen wird.</value>
+  </data>
+  <data name="KI_DLG_SPA2_ZINS_ERL" xml:space="preserve">
+    <value>Der Kalkulationszins der Studie.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PROJEKTIONSART_ERL" xml:space="preserve">
+    <value>Ob die eingelesenen Jahre einzeln bewertet oder ein Referenzjahr wiederholt wird.</value>
+  </data>
+  <data name="KI_DLG_SPA2_PROJEKTJAHRE_ERL" xml:space="preserve">
+    <value>Über wie viele Jahre ein wiederholtes Referenzjahr gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_SPA2_RESTWERT_ERL" xml:space="preserve">
+    <value>Ein zusätzlicher Restwert der Studie, über die Restwerte der Einheiten hinaus.</value>
+  </data>
+  <data name="KI_DLG_SPA3_VERTEILUNG_ERL" xml:space="preserve">
+    <value>Wie sich die geforderte Leistung auf mehrere Einheiten verteilt.</value>
+  </data>
+  <data name="KI_DLG_SPA3_PRIORITAET_ERL" xml:space="preserve">
+    <value>Welcher Erzeuger den Speicher zuerst lädt — Photovoltaik oder BHKW.</value>
+  </data>
+  <data name="KI_DLG_SPA3_EXPORT_ERL" xml:space="preserve">
+    <value>Darf die Batterie ins Netz einspeisen?</value>
+  </data>
+  <data name="KI_DLG_SPA3_BEZUGSGRENZE_ERL" xml:space="preserve">
+    <value>Eine harte Obergrenze des Netzbezugs; leer bedeutet keine Grenze.</value>
+  </data>
+  <data name="KI_DLG_SPA3_EINSPEISEGRENZE_ERL" xml:space="preserve">
+    <value>Eine harte Obergrenze der Netzeinspeisung; leer bedeutet keine Grenze.</value>
+  </data>
+  <data name="KI_DLG_SPA3_INFORMATIONSSTAND_ERL" xml:space="preserve">
+    <value>Mit welchem Wissen der Fahrplaner rechnet — mit archivierten Prognosen oder mit Idealwissen.</value>
+  </data>
+  <data name="KI_DLG_SPA3_PLANUNGSHORIZONT_ERL" xml:space="preserve">
+    <value>Über wie viele Intervalle der Fahrplaner vorausplant.</value>
+  </data>
+  <data name="KI_DLG_SPA3_NEUPLANUNG_ERL" xml:space="preserve">
+    <value>Nach wie vielen Intervallen der Fahrplan neu gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_SPA3_ENDBEDINGUNG_ERL" xml:space="preserve">
+    <value>Was am Ende des Planungshorizonts für die Speicherfüllung gelten soll.</value>
+  </data>
+  <data name="KI_DLG_SPA3_FALLBACK_ERL" xml:space="preserve">
+    <value>Darf der Lauf auf die reaktive Regel zurückfallen, wenn der Plan scheitert? Der Rückfall wird protokolliert.</value>
+  </data>
+  <data name="KI_DLG_SPA4_VARIIEREN_ERL" xml:space="preserve">
+    <value>Nimmt diese Achse an der Suche teil?</value>
+  </data>
+  <data name="KI_DLG_SPA4_QUELLE_ERL" xml:space="preserve">
+    <value>Woher die Geräte kommen, unter denen die Größensuche wählt — aus dem Projektkatalog oder aus den Stammdaten.</value>
+  </data>
+  <data name="KI_DLG_SPA4_KAPAZITAET_VON_ERL" xml:space="preserve">
+    <value>Die kleinste Kapazität des Suchbereichs dieser Achse.</value>
+  </data>
+  <data name="KI_DLG_SPA4_KAPAZITAET_BIS_ERL" xml:space="preserve">
+    <value>Die größte Kapazität des Suchbereichs dieser Achse.</value>
+  </data>
+  <data name="KI_DLG_SPA4_LEISTUNG_VON_ERL" xml:space="preserve">
+    <value>Die kleinste Leistung des Suchbereichs dieser Achse.</value>
+  </data>
+  <data name="KI_DLG_SPA4_LEISTUNG_BIS_ERL" xml:space="preserve">
+    <value>Die größte Leistung des Suchbereichs dieser Achse.</value>
+  </data>
+  <data name="KI_DLG_SPA4_ANZAHL_VON_ERL" xml:space="preserve">
+    <value>Die kleinste Stückzahl dieser Achse; 0 bedeutet ‚diese Einheit entfällt‘.</value>
+  </data>
+  <data name="KI_DLG_SPA4_ANZAHL_BIS_ERL" xml:space="preserve">
+    <value>Die größte Stückzahl dieser Achse.</value>
+  </data>
 </root>

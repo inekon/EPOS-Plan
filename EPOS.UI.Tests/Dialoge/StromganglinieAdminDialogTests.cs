@@ -3,6 +3,7 @@ using System.Globalization;
 using Bunit;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
+using KiKern;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using SpeicherEngine;
@@ -342,5 +343,57 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Das Zeitintervall ist ein
+    /// WAHLFELD über seinen angezeigten Text; die Markierung steht als Anzeige
+    /// daneben und lässt sich nicht setzen.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_das_Zeitraster()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.STROMGANGLINIE_ADMIN));
+
+        KiFeldzugang raster = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.STROMGANGLINIE_ADMIN, "zeitintervall");
+        Assert.NotNull(raster);
+        Assert.True(raster.Setzbar);
+
+        // Die Klappliste führt genau zwei Einträge (Befund W12-B15).
+        IReadOnlyList<KiWahleintrag> eintraege = raster.Wahleintraege();
+        Assert.Equal(2, eintraege.Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(raster, eintraege[1].Text);
+        Assert.True(wahl.Ok, wahl.Grund);
+        raster.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(1, Convert.ToInt32(raster.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Die Markierung ist eine ANZEIGE.</b> Sie zu setzen hieße, in einer Liste zu
+    /// blättern, die nach einem Import eine andere ist — der Assistent nennt sie und
+    /// lehnt das Setzen benannt ab.
+    /// </summary>
+    [Fact]
+    public void Die_markierte_Ganglinie_bleibt_lesbar()
+    {
+        var cut = Zeige();
+        Waehle(cut, 0);
+
+        KiFeldzugang markiert = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.STROMGANGLINIE_ADMIN, "markierte_ganglinie");
+        Assert.NotNull(markiert);
+        Assert.False(markiert.Setzbar);
+        Assert.False(string.IsNullOrEmpty(Convert.ToString(markiert.Lesen(),
+                                                           CultureInfo.InvariantCulture)));
     }
 }

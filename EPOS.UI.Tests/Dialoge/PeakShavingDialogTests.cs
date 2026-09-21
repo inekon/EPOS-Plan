@@ -481,4 +481,98 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.NotEmpty(cut.FindAll(
             ".epos-formularraster .epos-feld--kurz .epos-feld-zeile .epos-einheit"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Gelesen wird die
+    /// Vorbelegung, gesetzt wird der Leistungspreis — beides über denselben Weg,
+    /// den auch eine Hand am Eingabefeld nimmt.
+    /// </summary>
+    [Fact]
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_eine_Zahl()
+    {
+        var cut = Zeige();
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PEAK_SHAVING));
+
+        KiFeldzugang lp = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PEAK_SHAVING, "leistungspreis");
+        Assert.NotNull(lp);
+        Assert.True(lp.Setzbar);
+        Assert.Equal(120.0, Convert.ToDouble(lp.Lesen(), CultureInfo.InvariantCulture));
+
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(lp, "150,5");
+        Assert.True(neu.Ok, neu.Grund);
+        lp.Setzen(neu.Wert);
+        cut.Render();
+
+        Assert.Equal(150.5, Convert.ToDouble(lp.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Das WAHLFELD „Lastgang" trifft über den angezeigten Text</b> (KI‑D‑Q6):
+    /// Der Assistent nennt eine Ganglinie beim Namen, und die Maske lädt sie.
+    /// </summary>
+    [Fact]
+    public void Die_Ganglinie_laesst_sich_ueber_ihren_Namen_setzen()
+    {
+        var cut = Zeige();
+
+        KiFeldzugang gang = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.PEAK_SHAVING, "ganglinie");
+        Assert.NotNull(gang);
+        Assert.NotEmpty(gang.Wahleintraege());
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(gang, "Auslieferung");
+        Assert.True(wahl.Ok, wahl.Grund);
+        gang.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(1, Convert.ToInt32(gang.Lesen(), CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// <b>Die drei abgeleiteten Felder sind NICHT setzbar</b> — Reihenzeile,
+    /// Herkunft und das offene Blatt. Ein Blattwechsel ist eine Bedienhandlung.
+    /// </summary>
+    [Fact]
+    public void Reihe_Herkunft_und_Reiter_bleiben_lesbar()
+    {
+        Zeige();
+
+        foreach (string name in new[] { "reihe", "herkunft", "reiter" })
+        {
+            KiFeldzugang f = KiMaskenbruecke.Feldzugang(KiMaskennamen.PEAK_SHAVING, name);
+            Assert.NotNull(f);
+            Assert.False(f.Setzbar, name);
+        }
+    }
+
+    /// <summary>
+    /// <b>Der Prüfhaken zieht dieselben Regeln wie der Rechenknopf.</b> Ein SoC-Band
+    /// verkehrt herum ist ein Befund — und zwar derselbe, den die Maske zeigt.
+    /// </summary>
+    [Fact]
+    public void Der_Pruefhaken_meldet_ein_verkehrtes_SoC_Band()
+    {
+        var cut = Zeige();
+
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.PEAK_SHAVING);
+        Assert.NotNull(haken);
+        Assert.NotNull(haken.Pruefen);
+
+        // Mit der Vorbelegung steht alles.
+        Assert.True(string.IsNullOrEmpty(haken.Pruefen()));
+
+        KiFeldzugang min = KiMaskenbruecke.Feldzugang(KiMaskennamen.PEAK_SHAVING, "soc_min");
+        KiFeldzugang max = KiMaskenbruecke.Feldzugang(KiMaskennamen.PEAK_SHAVING, "soc_max");
+        min.Setzen(90.0);
+        max.Setzen(10.0);
+        cut.Render();
+
+        Assert.False(string.IsNullOrEmpty(haken.Pruefen()));
+    }
 }

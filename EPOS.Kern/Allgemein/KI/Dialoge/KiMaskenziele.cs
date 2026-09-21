@@ -374,7 +374,27 @@ namespace WindowsFormsApplication1
                 // Katalogschluessel.
                 { KiMaskennamen.PV_MODULKATALOG,        Masken.PvAdmin },
                 { KiMaskennamen.STROMSPEICHER_KATALOG,  Masken.StromspeicherAdmin },
-                { KiMaskennamen.WECHSELRICHTER_KATALOG, Masken.WechselrichterAdmin }
+                { KiMaskennamen.WECHSELRICHTER_KATALOG, Masken.WechselrichterAdmin },
+
+                // ---- Welle KI-F6: STROM -------------------------------------
+                //
+                // Die LASTSPITZENKAPPUNG und die STROMGANGLINIEN-VERWALTUNG sind
+                // eigene Fenster mit einem Weg im Menue; ihre Katalogschluessel
+                // sind zugleich ihre Navigationsschluessel - dieselbe Lage wie
+                // bei der Waermepumpenverwaltung. WinFormsNavigation.OeffneMaske
+                // kennt beide; auf iOS uebersetzt IosNavigation keinen von
+                // ihnen, die Wurzel antwortet false, und dialog_oeffnen lehnt
+                // benannt ab.
+                { KiMaskennamen.PEAK_SHAVING,        Masken.PeakShaving },
+                { KiMaskennamen.STROMGANGLINIE_ADMIN, Masken.StromganglinieAdmin },
+
+                // Die LESEREGELN einer Speicher-Zeitreihe gehen als Ueberlagerung
+                // aus Station 2 der Stromspeicher-Auslegung auf und brauchen eine
+                // gewaehlte Datei; kontextfrei gibt es sie nicht. Ihr Ziel ist
+                // deshalb die Ansicht, aus der sie aufgehen - dieselbe
+                // Begruendung wie bei den Ueberlagerungen der
+                // Energietraegerverwaltung.
+                { KiMaskennamen.SPEICHER_ZEITREIHEN, STROMSPEICHER_AUSLEGUNG }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>

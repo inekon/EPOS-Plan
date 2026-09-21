@@ -29,6 +29,7 @@
 @namespace EPOS.UI.Dialoge.Strom
 @using SpeicherEngine
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-stromganglinie-admin" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -214,7 +215,52 @@
         List<string> texte = GanglinienOptionenModell.AdminRasterTexte();
         for (int i = 0; i < texte.Count; i++) liste.Add((i, texte[i]));
         _rasterliste = liste;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.STROMGANGLINIE_ADMIN,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private StromganglinieAdminKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: das Zeitintervall und zwei Anzeigen. Alles andere
+    /// auf dieser Maske ist Suche, Auswahl und Ladevorgang.
+    /// </summary>
+    private StromganglinieAdminKiSicht KiSicht()
+    {
+        return _kiSicht ??= new StromganglinieAdminKiSicht
+        {
+            ZeitintervallLesen = () => _iRaster,
+            ZeitintervallSetzen = i => _iRaster = i ?? 0,
+            ZeitintervallEintraege = () => KiMaskenanmeldung.Eintraege(
+                _rasterliste, z => z.Id, z => z.Text),
+
+            GewaehltLesen = () => _gewaehlt,
+            MeldungLesen = () => _meldung
+        };
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg und keine Prüfung.</b> Die Maske legt nichts von sich aus
+    /// ab — geschrieben wird allein durch den Importlauf und den Löschknopf, und
+    /// beide sind Aktionen mit eigener Rückfrage. Ihr einziges Feld kennt keine
+    /// ungültige Stellung: Die Klappliste führt genau zwei Einträge.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

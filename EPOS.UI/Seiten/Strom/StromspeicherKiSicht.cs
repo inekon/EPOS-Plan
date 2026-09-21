@@ -393,8 +393,370 @@ public sealed class StromspeicherKiSicht
     public double? KapitalwertEuro => _ergebnis()?.Studie?.Wirtschaftlichkeit?.KapitalwertEuro;
 
     // =====================================================================
+    //  Station 1 — die EINHEITEN der Flotte als SPALTEN (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// Je Speichereinheit eine Zeile mit den Feldern, die der Einheiteneditor zeigt.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Eine SAMMLUNG und keine zwanzig Einzelfelder</b> (<c>KiEigenschaftspfad</c>,
+    /// Spaltenform): Wie viele Einheiten eine Flotte führt, steht erst zur Laufzeit
+    /// fest — dieselbe Lage wie bei den Positionen der Kostenverwaltung. Die
+    /// Aufstellung <see cref="EinheitenListe"/> bleibt daneben stehen: Sie beantwortet
+    /// „wie sieht die Flotte aus?" in einem Satz, die Spalten beantworten „setze bei
+    /// Speicher 2 die Kapazität auf 500 kWh".
+    /// </para>
+    /// <para>
+    /// <b>Die Zeile ist eine HÜLLE und nicht <c>FlottenEinheit</c> selbst.</b> Fünf
+    /// Werte stehen in der Engine als Anteil 0…1 und auf der Maske in PROZENT
+    /// (Lade- und Entladewirkungsgrad, die drei SoC-Grenzen). Ein unmittelbar
+    /// angemeldetes Modell böte an, 95 zu setzen, wo der Anwender 95 % liest und die
+    /// Engine 0,95 rechnet — genau die stille Setzung, die Fachkonzept 11.6
+    /// ausschließt. Die Hülle rechnet an EINER Stelle um.
+    /// </para>
+    /// <para>
+    /// <b>Die RAINFLOW-Kurve bleibt draußen.</b> Sie ist eine Tabelle IN der Zeile —
+    /// eine zweite Sammlungsstufe, die der Eigenschaftspfad nicht kennt — und trägt
+    /// ihren eigenen Editor samt „Punkt hinzufügen/entfernen" (KI‑D‑Q6).
+    /// </para>
+    /// </remarks>
+    public IReadOnlyList<FlottenEinheitKiZeile> Einheitenzeilen
+    {
+        get
+        {
+            IReadOnlyList<FlottenEinheit> einheiten = Einheiten;
+            var zeilen = new List<FlottenEinheitKiZeile>(einheiten.Count);
+            for (int i = 0; i < einheiten.Count; i++)
+                zeilen.Add(new FlottenEinheitKiZeile(einheiten[i], i));
+            return zeilen;
+        }
+    }
+
+    // =====================================================================
+    //  Station 2 — Daten und Kosten (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>Die zwei Quellen des Lastgangs.</summary>
+    public IReadOnlyList<KiWahleintrag> LastquelleWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherAuslegungEditor.LastQuellen);
+
+    /// <summary>Woher der Strombedarf kommt — aus EPOS oder aus einer CSV-Datei.</summary>
+    public SpeicherAuslegungQuelle Lastquelle
+    {
+        get => Konfiguration?.Lastquelle ?? SpeicherAuslegungQuelle.Epos;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Lastquelle = value; }
+    }
+
+    /// <summary>Die drei Quellen der PV-Erzeugung.</summary>
+    public IReadOnlyList<KiWahleintrag> PvQuelleWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherAuslegungEditor.PvQuellen);
+
+    /// <summary>Woher die PV-Erzeugung kommt.</summary>
+    public SpeicherAuslegungQuelle PvQuelle
+    {
+        get => Konfiguration?.PvQuelle ?? SpeicherAuslegungQuelle.Epos;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.PvQuelle = value; }
+    }
+
+    /// <summary>Die drei Quellen des Bezugspreises.</summary>
+    public IReadOnlyList<KiWahleintrag> PreisquelleWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherAuslegungEditor.PreisQuellen);
+
+    /// <summary>Woher der Bezugspreis kommt.</summary>
+    public SpeicherAuslegungQuelle Preisquelle
+    {
+        get => Konfiguration?.Preisquelle ?? SpeicherAuslegungQuelle.Epos;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Preisquelle = value; }
+    }
+
+    /// <summary>
+    /// Ordnet die CSV-Zeitachse dem EPOS-Modelljahr zu — nötig, sobald eine Datei
+    /// neben einer EPOS-Reihe steht.
+    /// </summary>
+    public bool EposModelljahrZuordnen
+    {
+        get => Konfiguration?.EposModelljahrZuordnen == true;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.EposModelljahrZuordnen = value; }
+    }
+
+    /// <summary>Die zwei Quellen der Kostensätze.</summary>
+    public IReadOnlyList<KiWahleintrag> InvestitionsquelleWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherAuslegungEditor.KostenQuellen);
+
+    /// <summary>Woher die Investitionskosten kommen — aus dem Dialog oder dem Kostenmodul.</summary>
+    public SpeicherKostenQuelle Investitionsquelle
+    {
+        get => Konfiguration?.Investitionsquelle ?? SpeicherKostenQuelle.Dialog;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Investitionsquelle = value; }
+    }
+
+    /// <summary>Die zwei Quellen der Kostensätze.</summary>
+    public IReadOnlyList<KiWahleintrag> BetriebsquelleWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherAuslegungEditor.KostenQuellen);
+
+    /// <summary>Woher die Betriebskosten kommen.</summary>
+    public SpeicherKostenQuelle Betriebsquelle
+    {
+        get => Konfiguration?.Betriebsquelle ?? SpeicherKostenQuelle.Dialog;
+        set { SpeicherAuslegungKonfiguration? k = Konfiguration; if (k is not null) k.Betriebsquelle = value; }
+    }
+
+    /// <summary>
+    /// Leistungsbezogene Investition [€/kW] des Dialogsatzes.
+    /// </summary>
+    /// <remarks>
+    /// <b>Gelesen wird, was die Maske ZEIGT</b> — steht die Quelle auf Kostenmodul,
+    /// ist das der Modulsatz; geschrieben wird immer in den DIALOGSATZ, weil allein
+    /// er eingebbar ist. Genau so verhält sich das Eingabefeld: Es ist bei
+    /// Kostenmodul gesperrt.
+    /// </remarks>
+    public double InvestitionProKw
+    {
+        get => InvestAnzeige?.InvestEurProKw ?? 0.0;
+        set => KostenSetzen(k => k.InvestEurProKw = value, invest: true);
+    }
+
+    /// <summary>Kapazitätsbezogene Investition [€/kWh].</summary>
+    public double InvestitionProKWh
+    {
+        get => InvestAnzeige?.InvestEurProKwh ?? 0.0;
+        set => KostenSetzen(k => k.InvestEurProKwh = value, invest: true);
+    }
+
+    /// <summary>Leistungsbezogene Betriebskosten [€/(kW·a)].</summary>
+    public double BetriebProKw
+    {
+        get => BetriebAnzeige?.BetriebEurProKwJahr ?? 0.0;
+        set => KostenSetzen(k => k.BetriebEurProKwJahr = value, invest: false);
+    }
+
+    /// <summary>Kapazitätsbezogene Betriebskosten [€/(kWh·a)].</summary>
+    public double BetriebProKWh
+    {
+        get => BetriebAnzeige?.BetriebEurProKwhJahr ?? 0.0;
+        set => KostenSetzen(k => k.BetriebEurProKwhJahr = value, invest: false);
+    }
+
+    /// <summary>Betriebskosten je entladener Energie [€/kWh].</summary>
+    public double BetriebProKWhEntladen
+    {
+        get => BetriebAnzeige?.BetriebEurProKwhEntladen ?? 0.0;
+        set => KostenSetzen(k => k.BetriebEurProKwhEntladen = value, invest: false);
+    }
+
+    /// <summary>Der Leistungspreis L_P des Netzanschlusses [€/(kW·a)].</summary>
+    /// <remarks>
+    /// <b>Er steht an ZWEI Orten und wird an beiden geschrieben</b> — im
+    /// Optimierungsstand und im Tarif der Flotte; genau so tut es der Wirt, wenn der
+    /// Anwender das Feld verlässt. Ein Setzer, der nur einen Ort träfe, ließe die
+    /// Wirtschaftlichkeit mit der alten Zahl rechnen.
+    /// </remarks>
+    public double Leistungspreis
+    {
+        get => _eingaben()?.LeistungspreisEurProKwA ?? 0.0;
+        set
+        {
+            SpeicherOptimierungEingaben? e = _eingaben();
+            if (e is null) return;
+            e.LeistungspreisEurProKwA = value;
+
+            FlottenStudieKonfiguration? f = Flotte;
+            if (f is not null) (f.Tarif ??= new FlottenTarif()).LeistungspreisEuroProKw = value;
+        }
+    }
+
+    /// <summary>Energie-Ausgleichswert [€/kWh gespeichert]; <c>null</c> = keiner.</summary>
+    public double? EnergieAusgleich
+    {
+        get => Optionen?.EnergieAusgleichEuroProKWh;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.EnergieAusgleichEuroProKWh = value; }
+    }
+
+    /// <summary>Kalkulationszins der Studie [%].</summary>
+    /// <remarks>Die Engine führt ihn als Anteil 0…1, die Maske zeigt Prozent.</remarks>
+    public double KalkulationszinsProzent
+    {
+        get => (Wirtschaft?.Kalkulationszins ?? 0.0) * 100.0;
+        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.Kalkulationszins = value / 100.0; }
+    }
+
+    /// <summary>Die zwei Jahresprojektionen.</summary>
+    public IReadOnlyList<KiWahleintrag> JahresprojektionWahl
+        => Quellenwahl(EPOS.UI.Dialoge.Strom.SpeicherFlottenWirtschaftBlock.Projektionsarten);
+
+    /// <summary>
+    /// 0 = eingelesene Jahre einzeln bewerten, 1 = Referenzjahr ausdrücklich
+    /// wiederholen.
+    /// </summary>
+    public int Jahresprojektion
+    {
+        get => Wirtschaft?.ReferenzjahrExplizitWiederholen == true ? 1 : 0;
+        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.ReferenzjahrExplizitWiederholen = value == 1; }
+    }
+
+    /// <summary>Projektlaufzeit bei wiederholtem Referenzjahr [a].</summary>
+    public int Projektjahre
+    {
+        get => Wirtschaft?.ProjektjahreBeiWiederholung ?? 0;
+        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.ProjektjahreBeiWiederholung = value; }
+    }
+
+    /// <summary>Zusätzlicher Restwert der Studie [€] — über die Restwerte der Einheiten hinaus.</summary>
+    public double RestwertStudieEuro
+    {
+        get => Wirtschaft?.RestwertEuro ?? 0.0;
+        set { FlottenWirtschaftlichkeitEingang? w = Wirtschaft; if (w is not null) w.RestwertEuro = value; }
+    }
+
+    // =====================================================================
+    //  Station 3 — Betriebsführung und Netz (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>Die drei Verteilungsregeln der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> VerteilungWahl
+        => Aufzaehlungswahl<FlottenVerteilung>(
+               EPOS.UI.Dialoge.Strom.SpeicherFlottenBetriebEditor.Verteilungen);
+
+    /// <summary>Wie sich die Leistung auf die Einheiten verteilt.</summary>
+    public FlottenVerteilung Verteilung
+    {
+        get => Optionen?.Verteilung ?? FlottenVerteilung.KapazitaetsProportional;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.Verteilung = value; }
+    }
+
+    /// <summary>Die zwei Erzeugerreihenfolgen der Maske.</summary>
+    public IReadOnlyList<KiWahleintrag> ErzeugerPrioritaetWahl
+        => Aufzaehlungswahl<FlottenErzeugerPrioritaet>(
+               EPOS.UI.Dialoge.Strom.SpeicherFlottenBetriebEditor.ErzeugerPrioritaeten);
+
+    /// <summary>Welcher Erzeuger den Speicher zuerst lädt.</summary>
+    public FlottenErzeugerPrioritaet ErzeugerPrioritaet
+    {
+        get => Optionen?.ErzeugerPrioritaet ?? FlottenErzeugerPrioritaet.PvVorBhkw;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.ErzeugerPrioritaet = value; }
+    }
+
+    /// <summary>Ist die Einspeisung aus der Batterie ins Netz freigegeben?</summary>
+    public bool BatterieexportErlaubt
+    {
+        get => Optionen?.BatterieexportErlaubt == true;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.BatterieexportErlaubt = value; }
+    }
+
+    /// <summary>Harte Bezugsgrenze am Netzanschluss [kW]; <c>null</c> = keine.</summary>
+    public double? NetzbezugGrenzeKw
+    {
+        get => Optionen?.NetzbezugGrenzeKw;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NetzbezugGrenzeKw = value; }
+    }
+
+    /// <summary>Harte Einspeisegrenze am Netzanschluss [kW]; <c>null</c> = keine.</summary>
+    public double? NetzeinspeisungGrenzeKw
+    {
+        get => Optionen?.NetzeinspeisungGrenzeKw;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NetzeinspeisungGrenzeKw = value; }
+    }
+
+    /// <summary>Die zwei Informationsstände der Planung.</summary>
+    public IReadOnlyList<KiWahleintrag> InformationsstandWahl
+        => Aufzaehlungswahl<PrognoseArt>(
+               EPOS.UI.Dialoge.Strom.SpeicherFlottenNetzBlock.Prognosearten);
+
+    /// <summary>Mit welchem Wissen der Fahrplaner rechnet.</summary>
+    public PrognoseArt Informationsstand
+    {
+        get => Optionen?.PrognoseArt ?? PrognoseArt.VerifiziertBekannt;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PrognoseArt = value; }
+    }
+
+    /// <summary>Planungshorizont in Intervallen.</summary>
+    public int PlanungshorizontIntervalle
+    {
+        get => Optionen?.PlanungshorizontIntervalle ?? 0;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PlanungshorizontIntervalle = value; }
+    }
+
+    /// <summary>Abstand zweier Planungsläufe in Intervallen.</summary>
+    public int NeuplanungAlleIntervalle
+    {
+        get => Optionen?.NeuplanungAlleIntervalle ?? 0;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.NeuplanungAlleIntervalle = value; }
+    }
+
+    /// <summary>Die drei Horizont-Endbedingungen.</summary>
+    public IReadOnlyList<KiWahleintrag> EndbedingungWahl
+        => Aufzaehlungswahl<FlottenEndbedingung>(
+               EPOS.UI.Dialoge.Strom.SpeicherFlottenNetzBlock.Endbedingungen);
+
+    /// <summary>Was am Ende des Planungshorizonts gelten soll.</summary>
+    public FlottenEndbedingung Endbedingung
+    {
+        get => Optionen?.Endbedingung ?? FlottenEndbedingung.KeineVorgabe;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.Endbedingung = value; }
+    }
+
+    /// <summary>Darf der Lauf auf die reaktive Regel zurückfallen, wenn der Plan scheitert?</summary>
+    public bool PrognoseFallbackErlaubt
+    {
+        get => Optionen?.PrognoseFallbackErlaubt == true;
+        set { FlottenSimulationOptionen? o = Optionen; if (o is not null) o.PrognoseFallbackErlaubt = value; }
+    }
+
+    // =====================================================================
+    //  Station 4 — der SUCHRAUM als Spalten (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// Die zwei Gerätequellen der Suchkarte — Begleiteigenschaft der Spalte
+    /// <c>Suchachsen[].Quelle</c>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Sie steht HIER und nicht an der Zeile:</b> Die Maskenbrücke sucht die
+    /// Begleiteigenschaft <c>&lt;Eigenschaft&gt;Wahl</c> immer am Daten-Objekt der
+    /// Maske (<c>KiMaskenanmeldung.Wahlquelle</c>), auch für eine Spalte.
+    /// </remarks>
+    public IReadOnlyList<KiWahleintrag> QuelleWahl
+        => Aufzaehlungswahl<FlottenKandidatenquelle>(
+               EPOS.UI.Seiten.Strom.OptimierungBlock.Quellen);
+
+    /// <summary>
+    /// Je Suchachse eine Zeile — die Karte, die Station 4 für jede Einheit zeigt.
+    /// </summary>
+    /// <remarks>
+    /// <b>Eine Achse je Einheit</b>: <c>SpeicherFlottenEditor.Normalisieren</c> hält
+    /// das so, und die Karte trägt den Namen ihrer Einheit. Die GERÄTETABELLE der
+    /// Karte bleibt draußen — sie ist eine gerechnete Anzeige
+    /// (<c>FlottenGeraetewahl.Waehle</c>) und kein Eingabefeld.
+    /// </remarks>
+    public IReadOnlyList<FlottenAchseKiZeile> Suchachsen
+    {
+        get
+        {
+            List<FlottenAuslegungsAchse>? achsen = Auslegung?.Achsen;
+            if (achsen is null) return Array.Empty<FlottenAchseKiZeile>();
+
+            IReadOnlyList<FlottenEinheit> einheiten = Einheiten;
+            var zeilen = new List<FlottenAchseKiZeile>(achsen.Count);
+            for (int i = 0; i < achsen.Count; i++)
+            {
+                FlottenAuslegungsAchse a = achsen[i];
+                string name = "";
+                foreach (FlottenEinheit e in einheiten)
+                    if (e.Id == a.ErsetztEinheitId) { name = e.Name; break; }
+
+                zeilen.Add(new FlottenAchseKiZeile(a, i, name));
+            }
+            return zeilen;
+        }
+    }
+
+    // =====================================================================
     //  Die Ketten — einmal hier und nirgends sonst
     // =====================================================================
+
+    private SpeicherAuslegungKonfiguration? Konfiguration => _eingaben()?.Auslegung;
 
     private FlottenStudieKonfiguration? Flotte => _eingaben()?.Auslegung?.Flotte;
 
@@ -427,10 +789,360 @@ public sealed class StromspeicherKiSicht
         }
     }
 
+    private FlottenWirtschaftlichkeitEingang? Wirtschaft
+    {
+        get
+        {
+            FlottenStudieKonfiguration? f = Flotte;
+            return f is null ? null : f.Wirtschaftlichkeit ??= new FlottenWirtschaftlichkeitEingang();
+        }
+    }
+
+    /// <summary>Der Kostensatz, den die Maske im Investitionsblock ZEIGT.</summary>
+    private SpeicherKostensaetze? InvestAnzeige
+        => Konfiguration is not { } k
+               ? null
+               : k.Investitionsquelle == SpeicherKostenQuelle.Kostenmodul
+                     ? k.VerwendeteKosten
+                     : k.DirekteKosten;
+
+    /// <summary>Der Kostensatz, den die Maske im Betriebsblock ZEIGT.</summary>
+    private SpeicherKostensaetze? BetriebAnzeige
+        => Konfiguration is not { } k
+               ? null
+               : k.Betriebsquelle == SpeicherKostenQuelle.Kostenmodul
+                     ? k.VerwendeteKosten
+                     : k.DirekteKosten;
+
+    /// <summary>
+    /// Schreibt in den DIALOGSATZ und setzt die Vorhandenmarke — wörtlich wie
+    /// <c>SpeicherAuslegungEditor.InvestitionSetzen</c> bzw. <c>BetriebSetzen</c>.
+    /// </summary>
+    private void KostenSetzen(Action<SpeicherKostensaetze> schreiben, bool invest)
+    {
+        SpeicherAuslegungKonfiguration? k = Konfiguration;
+        if (k is null) return;
+
+        SpeicherKostensaetze satz = k.DirekteKosten ??= new SpeicherKostensaetze();
+        schreiben(satz);
+        if (invest) satz.InvestVorhanden = true; else satz.BetriebVorhanden = true;
+    }
+
+    /// <summary>
+    /// Eine feste Klappliste der Maske als Wahleinträge — Schlüssel ist die Id, die
+    /// die Maske führt.
+    /// </summary>
+    private static IReadOnlyList<KiWahleintrag> Quellenwahl(
+        IReadOnlyList<(int Id, string Text)> liste)
+    {
+        var eintraege = new List<KiWahleintrag>(liste.Count);
+        foreach ((int id, string text) in liste)
+            eintraege.Add(new KiWahleintrag(id.ToString(CultureInfo.InvariantCulture), text));
+        return eintraege;
+    }
+
+    /// <summary>
+    /// Dasselbe für eine Klappliste, deren Zielfeld eine AUFZÄHLUNG ist: Der
+    /// Schlüssel ist dann der NAME des Aufzählungswertes und nicht seine Zahl —
+    /// dieselbe Bauart wie bei <see cref="BetriebszielWahl"/>.
+    /// </summary>
+    private static IReadOnlyList<KiWahleintrag> Aufzaehlungswahl<T>(
+        IReadOnlyList<(int Id, string Text)> liste) where T : struct, Enum
+    {
+        var eintraege = new List<KiWahleintrag>(liste.Count);
+        foreach ((int id, string text) in liste)
+            eintraege.Add(new KiWahleintrag(((T)(object)id).ToString() ?? "", text));
+        return eintraege;
+    }
+
     private double Summe(Func<FlottenEinheit, double> welche)
     {
         double summe = 0.0;
         foreach (FlottenEinheit e in Einheiten) summe += welche(e);
         return summe;
+    }
+}
+
+/// <summary>
+/// EINE Speichereinheit der Flotte, wie der Einheiteneditor sie zeigt (Welle KI‑F6).
+///
+/// <para><b>Eine Hülle und kein zweites Modell.</b> Jede Eigenschaft schreibt
+/// unmittelbar in die <see cref="FlottenEinheit"/> der offenen Maske; gehalten wird
+/// nichts. Fünf Werte rechnet sie um: Die Engine führt Wirkungsgrade und SoC-Grenzen
+/// als Anteil 0…1, die Maske zeigt Prozent.</para>
+/// </summary>
+public sealed class FlottenEinheitKiZeile
+{
+    private readonly FlottenEinheit _einheit;
+
+    /// <summary>Legt die Zeile über die Einheit; <paramref name="platz"/> ist ihre Nummer.</summary>
+    public FlottenEinheitKiZeile(FlottenEinheit einheit, int platz)
+    {
+        _einheit = einheit ?? throw new ArgumentNullException(nameof(einheit));
+        Platz = platz;
+    }
+
+    /// <summary>Der Platz der Einheit in der Flotte (0-basiert).</summary>
+    public int Platz { get; }
+
+    /// <summary>
+    /// Der Klartextname der Zeile — er steht im Feldblock statt „Kapazität 2".
+    /// </summary>
+    /// <remarks>
+    /// Eine Einheit ohne Bezeichnung fällt auf ihre Nummer zurück, genau wie die
+    /// Aufstellung der Ansicht (<see cref="StromspeicherKiSicht.EinheitenListe"/>).
+    /// </remarks>
+    public string Name
+    {
+        get => string.IsNullOrWhiteSpace(_einheit.Name)
+                   ? (Platz + 1).ToString(CultureInfo.CurrentCulture)
+                   : _einheit.Name;
+        set => _einheit.Name = value ?? "";
+    }
+
+    /// <summary>Nennkapazität [kWh].</summary>
+    public double Kapazitaet
+    {
+        get => _einheit.KapazitaetKWh;
+        set => _einheit.KapazitaetKWh = value;
+    }
+
+    /// <summary>Höchste Ladeleistung [kW].</summary>
+    public double Ladeleistung
+    {
+        get => _einheit.LadeleistungKw;
+        set => _einheit.LadeleistungKw = value;
+    }
+
+    /// <summary>Höchste Entladeleistung [kW].</summary>
+    public double Entladeleistung
+    {
+        get => _einheit.EntladeleistungKw;
+        set => _einheit.EntladeleistungKw = value;
+    }
+
+    /// <summary>Ladewirkungsgrad [%].</summary>
+    public double Ladewirkungsgrad
+    {
+        get => _einheit.Ladewirkungsgrad * 100.0;
+        set => _einheit.Ladewirkungsgrad = value / 100.0;
+    }
+
+    /// <summary>Entladewirkungsgrad [%].</summary>
+    public double Entladewirkungsgrad
+    {
+        get => _einheit.Entladewirkungsgrad * 100.0;
+        set => _einheit.Entladewirkungsgrad = value / 100.0;
+    }
+
+    /// <summary>Untere Grenze des Ladezustands [%].</summary>
+    public double SocMin
+    {
+        get => _einheit.SocMin * 100.0;
+        set => _einheit.SocMin = value / 100.0;
+    }
+
+    /// <summary>Obere Grenze des Ladezustands [%].</summary>
+    public double SocMax
+    {
+        get => _einheit.SocMax * 100.0;
+        set => _einheit.SocMax = value / 100.0;
+    }
+
+    /// <summary>Ladezustand zu Beginn [%].</summary>
+    public double SocStart
+    {
+        get => _einheit.SocStart * 100.0;
+        set => _einheit.SocStart = value / 100.0;
+    }
+
+    /// <summary>Geschützte Peak-Reserve [kWh].</summary>
+    public double PeakReserve
+    {
+        get => _einheit.PeakReserveKWh;
+        set => _einheit.PeakReserveKWh = value;
+    }
+
+    /// <summary>AC-Hilfsverbrauch [kW].</summary>
+    public double Hilfsverbrauch
+    {
+        get => _einheit.HilfsverbrauchKw;
+        set => _einheit.HilfsverbrauchKw = value;
+    }
+
+    /// <summary>Marginale Verschleißkosten der Entladung [€/kWh].</summary>
+    public double Grenzverschleiss
+    {
+        get => _einheit.GrenzverschleissEuroProKWhEntladung;
+        set => _einheit.GrenzverschleissEuroProKWhEntladung = value;
+    }
+
+    /// <summary>Rechnet diese Einheit mit eigenen Kostensätzen?</summary>
+    public bool EigeneKosten
+    {
+        get => _einheit.EigeneKosten;
+        set => _einheit.EigeneKosten = value;
+    }
+
+    /// <summary>Feste Investition [€].</summary>
+    public double InvestitionFix
+    {
+        get => _einheit.InvestitionEuro;
+        set => _einheit.InvestitionEuro = value;
+    }
+
+    /// <summary>Kapazitätsbezogene Investition [€/kWh].</summary>
+    public double InvestitionProKWh
+    {
+        get => _einheit.InvestitionEuroProKWh;
+        set => _einheit.InvestitionEuroProKWh = value;
+    }
+
+    /// <summary>Leistungsbezogene Investition [€/kW].</summary>
+    public double InvestitionProKw
+    {
+        get => _einheit.InvestitionEuroProKw;
+        set => _einheit.InvestitionEuroProKw = value;
+    }
+
+    /// <summary>Feste Betriebskosten [€/a].</summary>
+    public double BetriebFix
+    {
+        get => _einheit.JaehrlicheFixeOpexEuro;
+        set => _einheit.JaehrlicheFixeOpexEuro = value;
+    }
+
+    /// <summary>Kapazitätsbezogene Betriebskosten [€/(kWh·a)].</summary>
+    public double BetriebProKWh
+    {
+        get => _einheit.JaehrlicheOpexEuroProKWhKapazitaet;
+        set => _einheit.JaehrlicheOpexEuroProKWhKapazitaet = value;
+    }
+
+    /// <summary>Leistungsbezogene Betriebskosten [€/(kW·a)].</summary>
+    public double BetriebProKw
+    {
+        get => _einheit.JaehrlicheOpexEuroProKw;
+        set => _einheit.JaehrlicheOpexEuroProKw = value;
+    }
+
+    /// <summary>Kosten je entladener Energie [€/kWh].</summary>
+    public double Durchsatzkosten
+    {
+        get => _einheit.DurchsatzkostenEuroProKWhEntladung;
+        set => _einheit.DurchsatzkostenEuroProKWhEntladung = value;
+    }
+
+    /// <summary>Ersatzkosten [€].</summary>
+    public double Ersatzkosten
+    {
+        get => _einheit.ErsatzkostenEuro;
+        set => _einheit.ErsatzkostenEuro = value;
+    }
+
+    /// <summary>Ersatzintervall [a].</summary>
+    public int Ersatzintervall
+    {
+        get => _einheit.ErsatzintervallJahre;
+        set => _einheit.ErsatzintervallJahre = value;
+    }
+
+    /// <summary>Restwert der Einheit am Ende der Laufzeit [€].</summary>
+    public double Restwert
+    {
+        get => _einheit.RestwertEuro;
+        set => _einheit.RestwertEuro = value;
+    }
+}
+
+/// <summary>
+/// EINE Suchachse der Station „Optimierung" (Welle KI‑F6) — die Karte, die dort je
+/// Einheit steht.
+///
+/// <para><b>Eine Hülle wie <see cref="FlottenEinheitKiZeile"/>.</b> Sie schreibt
+/// unmittelbar in die <see cref="FlottenAuslegungsAchse"/> der offenen Maske; den
+/// KARTENNAMEN bekommt sie von der Einheit, die die Achse ersetzt — genau so
+/// beschriftet der Block seine Karten.</para>
+/// </summary>
+public sealed class FlottenAchseKiZeile
+{
+    private readonly FlottenAuslegungsAchse _achse;
+    private readonly string _einheitenname;
+
+    /// <summary>Legt die Zeile über die Achse.</summary>
+    public FlottenAchseKiZeile(FlottenAuslegungsAchse achse, int platz, string einheitenname)
+    {
+        _achse = achse ?? throw new ArgumentNullException(nameof(achse));
+        _einheitenname = einheitenname ?? "";
+        Platz = platz;
+    }
+
+    /// <summary>Der Platz der Achse (0-basiert).</summary>
+    public int Platz { get; }
+
+    /// <summary>Der Klartextname der Karte — Anzeige, kein Eingabefeld.</summary>
+    public string Achse => string.IsNullOrWhiteSpace(_einheitenname)
+                               ? (Platz + 1).ToString(CultureInfo.CurrentCulture)
+                               : _einheitenname;
+
+    /// <summary>Nimmt diese Achse an der Suche teil?</summary>
+    public bool Variieren
+    {
+        get => _achse.Aktiv;
+        set => _achse.Aktiv = value;
+    }
+
+    /// <summary>Woher die Geräte kommen, unter denen die Größensuche wählt.</summary>
+    /// <remarks>
+    /// Die Einträge dazu stehen an der SICHT (<c>StromspeicherKiSicht.QuelleWahl</c>)
+    /// und nicht hier: Die Maskenbrücke sucht die Begleiteigenschaft eines Wahlfeldes
+    /// immer am Daten-Objekt der Maske, auch bei einer Spalte.
+    /// </remarks>
+    public FlottenKandidatenquelle Quelle
+    {
+        get => _achse.Quelle;
+        set => _achse.Quelle = value;
+    }
+
+    /// <summary>Kleinste Kapazität des Suchbereichs [kWh].</summary>
+    public double KapazitaetVon
+    {
+        get => _achse.KapazitaetVonKWh;
+        set => _achse.KapazitaetVonKWh = value;
+    }
+
+    /// <summary>Größte Kapazität des Suchbereichs [kWh].</summary>
+    public double KapazitaetBis
+    {
+        get => _achse.KapazitaetBisKWh;
+        set => _achse.KapazitaetBisKWh = value;
+    }
+
+    /// <summary>Kleinste Leistung des Suchbereichs [kW].</summary>
+    public double LeistungVon
+    {
+        get => _achse.LeistungVonKw;
+        set => _achse.LeistungVonKw = value;
+    }
+
+    /// <summary>Größte Leistung des Suchbereichs [kW].</summary>
+    public double LeistungBis
+    {
+        get => _achse.LeistungBisKw;
+        set => _achse.LeistungBisKw = value;
+    }
+
+    /// <summary>Kleinste Stückzahl der Achse.</summary>
+    public int AnzahlVon
+    {
+        get => _achse.AnzahlVon;
+        set => _achse.AnzahlVon = value;
+    }
+
+    /// <summary>Größte Stückzahl der Achse.</summary>
+    public int AnzahlBis
+    {
+        get => _achse.AnzahlBis;
+        set => _achse.AnzahlBis = value;
     }
 }

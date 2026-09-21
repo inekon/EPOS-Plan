@@ -49,6 +49,7 @@
 @using SpeicherEngine
 @using WindowsFormsApplication1
 @using WindowsFormsApplication1.Zeichnung
+@implements IDisposable
 
 <div class="epos-dialog epos-peakshaving" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -581,7 +582,162 @@
         else _quelle = QuelleDatei;
 
         _reiheText = TextKeineReihe;
+
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.PEAK_SHAVING,
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle KI-F6)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private PeakShavingKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf die LEBENDEN Felder der Maske.
+    /// </summary>
+    /// <remarks>
+    /// Der Dialog führt keinen veränderlichen Arbeitsstand: Die achtzehn Zahlen und
+    /// Schalter liegen in privaten Feldern, und <c>PeakShavingEingaben</c> entsteht
+    /// erst im Rechenweg. Die Sicht löst beides an EINER Stelle auf — Lesen und
+    /// Setzen gehen denselben Weg wie eine Hand am Eingabefeld.
+    /// </remarks>
+    private PeakShavingKiSicht KiSicht()
+    {
+        return _kiSicht ??= new PeakShavingKiSicht
+        {
+            QuelleLesen = () => _quelle,
+            QuelleSetzen = q => _ = QuelleGeaendert(q),
+            QuelleEintraege = () => KiMaskenanmeldung.Eintraege(
+                Quellen, z => z.Id, z => z.Text),
+
+            GanglinieLesen = () => _iGanglinie,
+            GanglinieSetzen = g => _ = GanglinieGeaendert(g),
+            GanglinieEintraege = () => KiMaskenanmeldung.Eintraege(
+                Ganglinien, z => z.Id, z => z.Text),
+
+            ReiheLesen = () => _reiheText,
+            HerkunftLesen = () => _herkunft,
+            ReiterLesen = () => _reiter,
+
+            ZahlLesen = KiZahl,
+            ZahlSetzen = KiZahlSetzen,
+            SchalterLesen = KiSchalter,
+            SchalterSetzen = KiSchalterSetzen
+        };
+    }
+
+    private double? KiZahl(string feld) => feld switch
+    {
+        PeakShavingKiSicht.F_LEISTUNG       => _pKw,
+        PeakShavingKiSicht.F_KAPAZITAET     => _kapazitaet,
+        PeakShavingKiSicht.F_WIRKUNGSGRAD   => _eta,
+        PeakShavingKiSicht.F_SOC_MIN        => _socMin,
+        PeakShavingKiSicht.F_SOC_MAX        => _socMax,
+        PeakShavingKiSicht.F_START_SOC      => _startSoC,
+        PeakShavingKiSicht.F_ZIEL           => _ziel,
+        PeakShavingKiSicht.F_LEISTUNGSPREIS => _lp,
+        PeakShavingKiSicht.F_BEZUGSPREIS    => _bezugspreis,
+        PeakShavingKiSicht.F_C_CAP          => _cCap,
+        PeakShavingKiSicht.F_C_POW          => _cPow,
+        PeakShavingKiSicht.F_I_FIX          => _iFix,
+        PeakShavingKiSicht.F_ZINS           => _zins,
+        PeakShavingKiSicht.F_NUTZUNGSDAUER  => _nutzungsdauer,
+        _                                   => null
+    };
+
+    /// <summary>
+    /// Setzt eine Zahl — und verwirft dabei das Ergebnis, genau wie ein Tastendruck
+    /// im Eingabefeld (<c>ErgebnisLeeren</c> hängt dort am <c>WertChanged</c>).
+    /// </summary>
+    private void KiZahlSetzen(string feld, double? wert)
+    {
+        switch (feld)
+        {
+            case PeakShavingKiSicht.F_LEISTUNG:       _pKw = wert; break;
+            case PeakShavingKiSicht.F_KAPAZITAET:     _kapazitaet = wert; break;
+            case PeakShavingKiSicht.F_WIRKUNGSGRAD:   _eta = wert; break;
+            case PeakShavingKiSicht.F_SOC_MIN:        _socMin = wert; break;
+            case PeakShavingKiSicht.F_SOC_MAX:        _socMax = wert; break;
+            case PeakShavingKiSicht.F_START_SOC:      _startSoC = wert; break;
+            case PeakShavingKiSicht.F_ZIEL:           _ziel = wert; break;
+            case PeakShavingKiSicht.F_LEISTUNGSPREIS: _lp = wert; break;
+            case PeakShavingKiSicht.F_BEZUGSPREIS:    _bezugspreis = wert; break;
+            case PeakShavingKiSicht.F_C_CAP:          _cCap = wert; break;
+            case PeakShavingKiSicht.F_C_POW:          _cPow = wert; break;
+            case PeakShavingKiSicht.F_I_FIX:          _iFix = wert; break;
+            case PeakShavingKiSicht.F_ZINS:           _zins = wert; break;
+            case PeakShavingKiSicht.F_NUTZUNGSDAUER:  _nutzungsdauer = wert; break;
+            default: return;
+        }
+        ErgebnisLeeren();
+    }
+
+    private bool KiSchalter(string feld) => feld switch
+    {
+        PeakShavingKiSicht.S_ADAPTIV     => _adaptiv,
+        PeakShavingKiSicht.S_KOMPATIBEL  => _kompatibel,
+        PeakShavingKiSicht.S_LADEZUSTAND => _socZeigen,
+        _                                => false
+    };
+
+    private void KiSchalterSetzen(string feld, bool wert)
+    {
+        switch (feld)
+        {
+            case PeakShavingKiSicht.S_ADAPTIV:     AdaptivGeaendert(wert); break;
+            case PeakShavingKiSicht.S_KOMPATIBEL:  _kompatibel = wert; ErgebnisLeeren(); break;
+            case PeakShavingKiSicht.S_LADEZUSTAND: SoCGeaendert(wert); break;
+        }
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg.</b> Die Maske legt nichts ab — das steht wörtlich als
+    /// Hinweiszeile darin, und ihr einziger Fußknopf schließt sie. Geprüft wird
+    /// dagegen mit DENSELBEN Regeln wie am Rechenknopf: die sieben Pflichtzahlen und
+    /// die vier Fachregeln aus <c>PeakShavingEingaben.Pruefe</c>.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Pruefen = KiPruefung
+    };
+
+    private string KiPruefung()
+    {
+        string? fehlt = Pflicht(_pKw, LabelP) ?? Pflicht(_kapazitaet, LabelKapazitaet)
+                     ?? Pflicht(_socMin, LabelSoCMin) ?? Pflicht(_socMax, LabelSoCMax)
+                     ?? Pflicht(_startSoC, LabelStartSoC) ?? Pflicht(_eta, LabelEta)
+                     ?? Pflicht(_nutzungsdauer, LabelNutzungsdauer);
+
+        if (fehlt is null && !_adaptiv) fehlt = Pflicht(_ziel, LabelZiel);
+        if (fehlt is not null)
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                                 MeldungZahlUngueltig, fehlt);
+
+        PeakShavingEingaben e = new PeakShavingEingaben
+        {
+            PKw = _pKw ?? 0.0,
+            KapazitaetKwh = _kapazitaet ?? 0.0,
+            SoCMinProzent = _socMin ?? 0.0,
+            SoCMaxProzent = _socMax ?? 0.0,
+            StartSoCProzent = _startSoC ?? 0.0,
+            WirkungsgradRt = _eta ?? 0.0,
+            ZielschwelleKw = _ziel ?? 0.0,
+            NutzungsdauerA = _nutzungsdauer ?? 0.0,
+            Adaptiv = _adaptiv,
+            Kompatibilitaetsmodus = _kompatibel
+        };
+
+        return e.Pruefe(out PeakShavingEingaben.Feld _) ?? "";
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

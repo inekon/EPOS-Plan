@@ -141,12 +141,18 @@
         (2, Resource.FLOTTE_ZIEL_PVPLANUNG), (3, Resource.FLOTTE_ZIEL_ARBITRAGE),
         (4, Resource.FLOTTE_ZIEL_MULTIUSE)
     };
-    private static IReadOnlyList<(int Id, string Text)> Verteilungen => new[]
+    /// <summary>
+    /// Die drei Verteilungsregeln — öffentlich aus demselben Grund wie
+    /// <see cref="Betriebsziele"/>: Der Hilfe-Assistent führt dieselbe Liste.
+    /// </summary>
+    public static IReadOnlyList<(int Id, string Text)> Verteilungen => new[]
     {
         (0, Resource.FLOTTE_VERT_KAPAZITAET), (1, Resource.FLOTTE_VERT_KASKADE),
         (2, Resource.FLOTTE_VERT_GRENZKOSTEN)
     };
-    private static IReadOnlyList<(int Id, string Text)> ErzeugerPrioritaeten => new[]
+
+    /// <summary>Die zwei Erzeugerreihenfolgen — öffentlich für den Hilfe-Assistenten.</summary>
+    public static IReadOnlyList<(int Id, string Text)> ErzeugerPrioritaeten => new[]
     {
         (0, Resource.FLOTTE_PRIO_PV_VOR_BHKW), (1, Resource.FLOTTE_PRIO_BHKW_VOR_PV)
     };

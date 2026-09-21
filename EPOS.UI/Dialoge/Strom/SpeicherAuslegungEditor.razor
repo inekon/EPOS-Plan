@@ -179,10 +179,16 @@
     private bool _kostenprofilOffen;
 
     private SpeicherAuslegungKonfiguration Auslegung => _wert.Auslegung ??= new();
-    private static readonly IReadOnlyList<(int Id, string Text)> LastQuellen = new[] { (0,"EPOS: Strombedarf / Stromlastgang"), (1,"Separate CSV-Datei") };
-    private static readonly IReadOnlyList<(int Id, string Text)> PvQuellen = new[] { (0,"EPOS: PV-Simulation"), (1,"Separate CSV-Datei"), (2,"Keine PV") };
-    private static readonly IReadOnlyList<(int Id, string Text)> PreisQuellen = new[] { (0,"EPOS: Stromtarif"), (1,"Separate CSV-Datei"), (3,"Editierbares Strompreisprofil") };
-    private static readonly IReadOnlyList<(int Id, string Text)> KostenQuellen = new[] { (0,"Im Dialog"), (1,"Kostenmodul") };
+    // ÖFFENTLICH, weil der Hilfe-Assistent dieselben Listen fuehrt (KI-F1b): Klappliste
+    // und Assistentenauswahl koennen so nicht auseinanderlaufen.
+    /// <summary>Die zwei Quellen des Lastgangs.</summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> LastQuellen = new[] { (0,"EPOS: Strombedarf / Stromlastgang"), (1,"Separate CSV-Datei") };
+    /// <summary>Die drei Quellen der PV-Erzeugung.</summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> PvQuellen = new[] { (0,"EPOS: PV-Simulation"), (1,"Separate CSV-Datei"), (2,"Keine PV") };
+    /// <summary>Die drei Quellen des Bezugspreises.</summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> PreisQuellen = new[] { (0,"EPOS: Stromtarif"), (1,"Separate CSV-Datei"), (3,"Editierbares Strompreisprofil") };
+    /// <summary>Die zwei Quellen der Kostensaetze.</summary>
+    public static readonly IReadOnlyList<(int Id, string Text)> KostenQuellen = new[] { (0,"Im Dialog"), (1,"Kostenmodul") };
     private IReadOnlyList<(int Id,string Text)> Profile => Auslegungsprofile.Select((x,i)=>(i,x.Name)).ToArray();
     private IReadOnlyList<(int Id,string Text)> Preisprofile => Strompreisprofile.Select((x,i)=>(i,x.Bezeichner)).ToArray();
     private int? PreisprofilIndex { get { int i=Strompreisprofile.ToList().FindIndex(x => Auslegung.Strompreisprofil is not null && x.ID == Auslegung.Strompreisprofil.ID); return i < 0 ? null : i; } }

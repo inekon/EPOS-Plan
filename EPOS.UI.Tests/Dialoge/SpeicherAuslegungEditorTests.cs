@@ -219,4 +219,87 @@ public sealed class SpeicherAuslegungEditorTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent an den LESEREGELN (Welle KI-F6)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Maske „Zeitreihe einlesen" an der Maskenbrücke.</b> Gesetzt
+    /// wird das Trennzeichen über seinen angezeigten Text — und die Maske liest ihre
+    /// Vorschau daraufhin neu: Mit dem Komma zerfällt dieselbe Zeile in andere
+    /// Spalten.
+    /// </summary>
+    [Fact]
+    public void Die_Leseregeln_melden_sich_beim_Assistenten_an_und_ziehen_die_Vorschau_nach()
+    {
+        byte[] csv = Encoding.UTF8.GetBytes("Zeit;Wert\n2026-01-01 00:00;1,5\n2026-01-01 00:15;2,0\n");
+        var cut = Render<SpeicherZeitreihenDialog>(p => p
+            .Add(x => x.Datei, new SpeicherImportDatei { Dateiname = "last.csv", Inhalt = csv })
+            .Add(x => x.Rolle, SpeicherZeitreihenRolle.Bezug));
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.SPEICHER_ZEITREIHEN));
+
+        // Die ROLLE kommt vom Wirt und bleibt lesbar; sie bestimmt die Einheiten.
+        KiFeldzugang rolle = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "rolle");
+        Assert.False(rolle.Setzbar);
+        Assert.Equal(nameof(SpeicherZeitreihenRolle.Bezug), rolle.Lesen());
+
+        KiFeldzugang einheit = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "einheit");
+        Assert.Equal(3, einheit.Wahleintraege().Count);
+
+        // Das TRENNZEICHEN über seinen Text setzen: aus einer Spalte werden zwei.
+        KiFeldzugang trenner = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "trennzeichen");
+        Assert.True(trenner.Setzbar);
+
+        KiFeldumsetzung komma = KiFeldwandler.Wandle(trenner, "Komma");
+        Assert.True(komma.Ok, komma.Grund);
+        trenner.Setzen(komma.Wert);
+        cut.Render();
+
+        Assert.Equal(1, Convert.ToInt32(trenner.Lesen(),
+                                        System.Globalization.CultureInfo.InvariantCulture));
+
+        // Mit dem Komma zerfällt „2026-01-01 00:00;1,5" anders — die Vorschau ist
+        // neu gelesen und zeigt die ungeteilte Spalte.
+        Assert.Contains("2026-01-01 00:00;1", cut.Markup);
+    }
+
+    /// <summary>
+    /// <b>Die ZEITANGABE zieht drei Spaltennummern gleich</b> — genau wie der Griff
+    /// in die Klappliste. Ein Setzer, der nur den Schalter legte, ließe die Maske mit
+    /// widersprüchlichen Spalten stehen.
+    /// </summary>
+    [Fact]
+    public void Die_Zeitangabe_stellt_die_drei_Spalten_mit_um()
+    {
+        byte[] csv = Encoding.UTF8.GetBytes("Datum;Zeit;Wert\n2026-01-01;00:00;1,5\n");
+        var cut = Render<SpeicherZeitreihenDialog>(p => p
+            .Add(x => x.Datei, new SpeicherImportDatei { Dateiname = "last.csv", Inhalt = csv })
+            .Add(x => x.Rolle, SpeicherZeitreihenRolle.Last));
+
+        KiFeldzugang art = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "zeitangabe");
+        KiFeldumsetzung getrennt = KiFeldwandler.Wandle(art, "Getrennte");
+        Assert.True(getrennt.Ok, getrennt.Grund);
+        art.Setzen(getrennt.Wert);
+        cut.Render();
+
+        KiFeldzugang stempel = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "zeitstempelspalte");
+        KiFeldzugang datum = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "datumsspalte");
+        KiFeldzugang uhrzeit = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.SPEICHER_ZEITREIHEN, "uhrzeitspalte");
+
+        Assert.Equal(-1, Convert.ToInt32(stempel.Lesen(),
+                                         System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(0, Convert.ToInt32(datum.Lesen(),
+                                        System.Globalization.CultureInfo.InvariantCulture));
+        Assert.Equal(1, Convert.ToInt32(uhrzeit.Lesen(),
+                                        System.Globalization.CultureInfo.InvariantCulture));
+    }
 }
