@@ -50192,6 +50192,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) liegt ganz oder teilweise außerhalb der Tage 1 bis 365. Abgesenkt werden nur die Tage innerhalb des Jahres. ähnelt.
+        /// </summary>
+        public static string SIMENG_FERIEN_AUSSERHALB_JAHR {
+            get {
+                return ResourceManager.GetString("SIMENG_FERIEN_AUSSERHALB_JAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum 1 wird als Jahreswechsel gelesen (Tag {1} bis Jahresende und Jahresanfang bis Tag {2}). Weil der Beginn nicht nach dem Ende liegt, ist damit das ganze Jahr abgesenkt. ähnelt.
+        /// </summary>
+        public static string SIMENG_FERIEN_JAHRESWECHSEL {
+            get {
+                return ResourceManager.GetString("SIMENG_FERIEN_JAHRESWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf, Gebäude „{0}“: Der Ferienzeitraum {1} (Tag {2} bis {3}) bleibt ohne Wirkung — Beginn und Ende ergeben keinen Ferientag. ähnelt.
+        /// </summary>
+        public static string SIMENG_FERIEN_OHNE_WIRKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_FERIEN_OHNE_WIRKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kalender: In den Klimadaten ist in den ersten 14 Tagen kein Wochenende (Samstag und Sonntag) erkennbar. Die Bedarfsprofile werden deshalb wie bisher ab Sonntag als 1. Januar über das Jahr verteilt. ähnelt.
         /// </summary>
         public static string SIMENG_KALENDER_WOCHENENDE_UNBESTIMMT {

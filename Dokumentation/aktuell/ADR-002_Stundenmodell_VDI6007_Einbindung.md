@@ -39,7 +39,7 @@ diente der Entwicklung; maßgeblich ist nach Nachtrag N1.2 allein das Normband.
 
 ### Kräfte, die die Entscheidung formen
 
-1. **Regressionsnetz.** Die Basis `2026-09-19_R10_BhkwWirkungsgrad` umfasst dreizehn Projekte
+1. **Regressionsnetz.** Die Basis `2026-09-22_R11_Bestandsbefunde` umfasst dreizehn Projekte
    bei einer Toleranz von 1e-4. Jede Änderung am Gebäudemodell ändert alle dreizehn
    Projekte; der Prototyp liegt je Projekt 7 bis 33 % über dem Tagesmodell (Befund F). Ohne
    Neu-Einfrieren gibt es keinen Nachweis mehr.

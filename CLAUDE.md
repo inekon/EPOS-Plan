@@ -142,7 +142,8 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-19_R10_BhkwWirkungsgrad`, dreizehn Projekte; Aufbau, Herleitung und Schemastand in
+`2026-09-22_R11_Bestandsbefunde`, dreizehn Projekte, die letzte Basis allein auf dem
+Tagesbilanz-Weg der Gebäude; Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045 und 1046; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
@@ -156,7 +157,10 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - gesäte PV-Modulkoeffizienten (`alpha_SC`, `beta_OC`, `gamma_PMP`, `T_NOCT`) oder ein neues
   Modul, das ein Referenzprojekt benutzt;
 - der Flottenstand `@Projektflotte` des Projekts 1046 in `Tab_SpeicherAuslegung` und dessen
-  Projektzeilen.
+  Projektzeilen;
+- gesäte Gebäudedaten: `Tab_Gebaeude(_STAMM)` mit `Bauweise`, U-Werten, Flächen, Sollwerten,
+  `Luftwechselrate`, `Fensterdurchlassgrad`, die Gebäudezuordnungen der Referenzprojekte und
+  das Anlegen oder Entfernen eines ihrer Gebäude.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter
 [`Dokumentation/ueberholt/Referenzbasen/`](Dokumentation/ueberholt/Referenzbasen/LIESMICH.md).
