@@ -462,13 +462,17 @@ namespace WindowsFormsApplication1
             catch { return ""; }
         }
 
-        /// <summary>ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung als Texte.</summary>
-        private static List<string> Deklarationen()
+        /// <summary>
+        /// ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung als Texte. Die Risikozeile
+        /// folgt dem gepflegten Text der nicht monetären Wirkungen (Empfehlung Q5): ohne
+        /// Text „keine benannt".
+        /// </summary>
+        private List<string> Deklarationen()
         {
             var texte = new List<string>();
             try
             {
-                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen())
+                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen(NichtMonetaer()))
                     texte.Add(d.Text);
             }
             catch { }

@@ -1545,8 +1545,25 @@ namespace WindowsFormsApplication1
         public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int idReferenz, bool persistieren)
         {
+            List<SensitivitaetZeile> sensitivitaet;
+            return Berechne(daten, p, idReferenz, persistieren, out sensitivitaet);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A) — dieselbe Rechnung, die zusätzlich ihre
+        /// <b>Sensitivitätszeilen</b> herausgibt (Szenario Erwartet, gegen die Referenz
+        /// DIESES Laufs). Ein Lauf ohne Persistenz (Sicht 2) schreibt sie nicht in die
+        /// Datenbank; Seite und Bericht brauchen sie trotzdem — sonst stünde neben den
+        /// Differenzen gegen A eine Sensitivität gegen die Gruppenreferenz.
+        /// </summary>
+        /// <param name="sensitivitaet">Die Zeilen dieses Laufs, mit Stufe und Steigung.</param>
+        public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz, bool persistieren,
+            out List<SensitivitaetZeile> sensitivitaet)
+        {
             var alle = new List<WirtschaftlichkeitErgebnis>();
             var sens = new List<SensitivitaetZeile>();
+            sensitivitaet = sens;
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
             if (daten == null || daten.Varianten.Count == 0 || p == null) return alle;
             StelleTabellenSicher();

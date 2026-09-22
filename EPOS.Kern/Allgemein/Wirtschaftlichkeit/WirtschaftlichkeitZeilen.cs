@@ -206,10 +206,11 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// ETAPPE E5 (V‑A, Entscheid V‑3): Die Kennzahl ist <b>nachrichtlich</b> — der
         /// Kapitalwert ist das einzige Maß der Vorteilhaftigkeit (DIN EN 17463 Anhang C,
-        /// Konzept § 2.11.1). Gesetzt an Annuität, dynamischer Amortisation und internem
-        /// Zinsfuß (<see cref="WirtschaftlichkeitZeilen.IstNachrichtlich"/>); Seite, Kachel
-        /// und Bericht zeigen das Label <c>WIRT_KZ_NACHRICHTLICH</c> daneben. Die Zahlen
-        /// bleiben, wie sie sind.
+        /// Konzept § 2.11.1). Gesetzt an dynamischer Amortisation und internem Zinsfuß
+        /// (<see cref="WirtschaftlichkeitZeilen.IstNachrichtlich"/>, Empfehlung Q3 vom
+        /// 22.09.2026: die Annuität ist der Kapitalwert als gleichmäßiger Jahresbetrag und
+        /// trägt kein Label); Seite, Kachel und Wortbericht zeigen das Label
+        /// <c>WIRT_KZ_NACHRICHTLICH</c> daneben. Die Zahlen bleiben, wie sie sind.
         /// </summary>
         public bool Nachrichtlich;
 
@@ -348,18 +349,50 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E5 (V‑A, Entscheid V‑3) — welche Kennzahlen <b>nachrichtlich</b> sind:
-        /// Annuität, dynamische Amortisation und interner Zinsfuß (Mockup Kategorie 8,
-        /// Tafel „ValERI-Bewertung — die fünf Blöcke", Block 3; DIN EN 17463 Anhang C).
-        /// Die Regel steht EINMAL hier: Die Zeilendefinition setzt damit
-        /// <see cref="WirtZeile.Nachrichtlich"/>, die Hülle ihre Kacheln.
+        /// dynamische Amortisation und interner Zinsfuß (DIN EN 17463 Anhang C; Mockup
+        /// Kategorie 8, Kennzahltafel „Lohnt es sich?").
+        ///
+        /// <para><b>Die Annuität trägt kein Label</b> (Empfehlung Q3, gilt bis zum
+        /// Anwenderentscheid): Sie ist der Kapitalwert, mit dem Annuitätenfaktor auf
+        /// gleichmäßige Jahresbeträge umgelegt — dieselbe Aussage in anderer Einheit, keine
+        /// zweite Entscheidungsgröße (VDI 2067). Das Mockup führt sie als „gleichmäßiger
+        /// Jahresvorteil" ohne Einordnung.</para>
+        ///
+        /// <para>Die Regel steht EINMAL hier: Die Zeilendefinition setzt damit
+        /// <see cref="WirtZeile.Nachrichtlich"/>, die Hülle ihre Kacheln.</para>
         /// </summary>
-        /// <param name="schluessel">Der sprachneutrale Zeilenschlüssel (<c>ANNUITAET</c>,
-        /// <c>AMORTISATION</c>, <c>IRR</c>).</param>
+        /// <param name="schluessel">Der sprachneutrale Zeilenschlüssel (<c>AMORTISATION</c>,
+        /// <c>IRR</c>).</param>
         public static bool IstNachrichtlich(string schluessel)
         {
-            return string.Equals(schluessel, "ANNUITAET", StringComparison.Ordinal) ||
-                   string.Equals(schluessel, "AMORTISATION", StringComparison.Ordinal) ||
+            return string.Equals(schluessel, "AMORTISATION", StringComparison.Ordinal) ||
                    string.Equals(schluessel, "IRR", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U2, Mockup Kategorie 8 „Lohnt es sich?") — die Zeilen der
+        /// <b>Kennzahltafel</b> in ihrer Reihenfolge: Kapitalwertdifferenz, Annuität,
+        /// dynamische Amortisation, interner Zinsfuß, Wärmegestehungskosten, Nettobarwert
+        /// absolut. Alle übrigen Zeilen der Definition gliedern den Kapitalwert
+        /// („Woraus entsteht die Zahl?").
+        /// </summary>
+        public static readonly string[] KENNZAHLTAFEL =
+        {
+            "KAPITALWERT_DIFF", "ANNUITAET", "AMORTISATION", "IRR", "GESTEHUNGSKOSTEN", "NETTOBARWERT"
+        };
+
+        /// <summary>
+        /// ETAPPE E5 (U2): Der Nettobarwert steht in BEIDEN Tafeln — als letzte Kennzahl
+        /// und als Summe der Gliederung (Mockup: „Gliederung des Kapitalwerts" endet mit
+        /// ihm).
+        /// </summary>
+        public const string GLIEDERUNGSSUMME = "NETTOBARWERT";
+
+        /// <summary>ETAPPE E5 (U2): Steht die Zeile in der Kennzahltafel
+        /// (<see cref="KENNZAHLTAFEL"/>)?</summary>
+        public static bool IstKennzahl(string schluessel)
+        {
+            return Array.IndexOf(KENNZAHLTAFEL, schluessel) >= 0;
         }
 
         private static List<WirtZeile> Baue(IList<WirtschaftlichkeitErgebnis> menge,
@@ -915,8 +948,9 @@ namespace WindowsFormsApplication1
             // Wärmegestehungskosten, zuletzt der Nettobarwert absolut. Der absolute
             // Barwert steht bewusst UNTER der Differenz: Er ist bei jedem
             // Versorgungskonzept negativ und taugt nicht zum Vergleich — nur der Abstand
-            // zur Referenz tut das. Annuität, Amortisation und Zinsfuß tragen das
-            // Kennzeichen „nachrichtlich" (V‑A, Entscheid V‑3). Keine Zahl ändert sich.
+            // zur Referenz tut das. Amortisation und Zinsfuß tragen das Kennzeichen
+            // „nachrichtlich" (V‑A, Entscheid V‑3; die Annuität nach Empfehlung Q3 nicht).
+            // Keine Zahl ändert sich.
             WirtZeile diff = Zahl("KAPITALWERT_DIFF", MyResource.Resource.WIRT_ZEILE_KAPITALWERT_DIFF,
                                   e => e.KapitalwertDiff);
             diff.StammAnzeige = MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ;

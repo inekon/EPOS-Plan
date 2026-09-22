@@ -77,6 +77,39 @@ namespace WindowsFormsApplication1
         /// </summary>
         public Vergleichssicht Sicht { get; } = new Vergleichssicht();
 
+        // =====================================================================
+        // ETAPPE E5 (U2, Entscheid V‑1/K8) — die Darstellung der Ergebnisseite
+        // =====================================================================
+
+        /// <summary>Darstellung „Kennzahlen" — die vier Abschnitte (Vorgabe).</summary>
+        public const int DARSTELLUNG_KENNZAHLEN = 0;
+
+        /// <summary>Darstellung „ValERI-Bewertung" — die Blöcke nach DIN EN 17463.</summary>
+        public const int DARSTELLUNG_VALERI = 1;
+
+        /// <summary>
+        /// Der Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Ergebnisseite
+        /// (Konzept § 2.11.4, V‑1). Er steht HIER, neben Häkchen und Sicht, weil er
+        /// dieselbe Lebensdauer hat — die Sitzung: Wer die Bewertung aufgeschlagen hat,
+        /// findet sie nach einem Seitenwechsel wieder so vor. Anders als die Sicht bleibt
+        /// er beim Gruppenwechsel stehen: Er wählt eine Darstellung, keine Stände.
+        /// Vorgabe ist <see cref="DARSTELLUNG_KENNZAHLEN"/>.
+        /// </summary>
+        public int Darstellung { get; private set; }
+
+        /// <summary>
+        /// Wechselt die Darstellung; ein unbekannter Wert gilt als „Kennzahlen".
+        /// </summary>
+        /// <returns>true, wenn sich etwas geändert hat.</returns>
+        public bool DarstellungWaehlen(int darstellung)
+        {
+            int neu = darstellung == DARSTELLUNG_VALERI ? DARSTELLUNG_VALERI : DARSTELLUNG_KENNZAHLEN;
+            if (neu == Darstellung) return false;
+            Darstellung = neu;
+            Melde();
+            return true;
+        }
+
         /// <summary>
         /// Trägt die Gruppe überhaupt zwei Stände? Sonst ist Sicht 2 gesperrt — eine
         /// Paarwahl mit einem Stand wäre eine Differenz gegen sich selbst.

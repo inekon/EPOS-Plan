@@ -46,15 +46,27 @@ namespace WindowsFormsApplication1
         public double? Best;
 
         /// <summary>
-        /// Die <b>Spanne</b> Best − Worst [€] — dieselbe Definition, die der Bericht seit
-        /// E2 (G8) schreibt; eine reine Ableitung der beiden Nachbarwerte. Fehlt einer,
-        /// gibt es keine Spanne: Eine Spanne aus einer Zahl gibt es nicht.
+        /// Die <b>Spanne</b> [€] — ETAPPE E5 (Empfehlung Q4, 22.09.2026): der BETRAG
+        /// zwischen dem größten und dem kleinsten der drei Szenariowerte, nicht mehr
+        /// Best − Worst. Die Etiketten „ungünstig" und „günstig" beschreiben die Sätze,
+        /// nicht ihre Wirkung: Ein höherer Zins kann eine Variante mit kleinerer
+        /// Investition als die Referenz BESSER stellen, und dann wäre Best − Worst negativ.
+        /// Eine reine Ableitung der drei Nachbarwerte, gerechnet wird nichts. Fehlt Worst
+        /// oder Best, gibt es keine Spanne: Eine Spanne aus einer Zahl gibt es nicht.
         /// </summary>
         public double? Spanne
         {
             get
             {
-                return Worst.HasValue && Best.HasValue ? Best.Value - Worst.Value : (double?)null;
+                if (!Worst.HasValue || !Best.HasValue) return null;
+                double klein = Math.Min(Worst.Value, Best.Value);
+                double gross = Math.Max(Worst.Value, Best.Value);
+                if (Erwartet.HasValue)
+                {
+                    klein = Math.Min(klein, Erwartet.Value);
+                    gross = Math.Max(gross, Erwartet.Value);
+                }
+                return gross - klein;
             }
         }
 
@@ -145,11 +157,12 @@ namespace WindowsFormsApplication1
 
             // U5: Die Einstufung urteilt über ALLE drei Szenarien der Stände — dieselbe
             // Menge, aus der der Vorschlagssatz entsteht. Die Referenz trägt keine
-            // Differenz und damit kein Urteil.
+            // Differenz und damit kein Urteil. ETAPPE E5 (Q7): JEDER andere Stand bekommt
+            // eines — ist eine Variante die Referenz, auch der Stamm.
             var menge = new List<WirtschaftlichkeitErgebnis>();
             foreach (WirtschaftlichkeitErgebnis e in liste)
                 if (ids.Contains(e.IdProjekt)) menge.Add(e);
-            b.Urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(menge);
+            b.Urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(menge, idReferenz);
 
             foreach (KeyValuePair<int, string> s in gruppe)
             {
@@ -270,6 +283,32 @@ namespace WindowsFormsApplication1
         public List<OhneNachweisStand> OhneNachweis = new List<OhneNachweisStand>();
 
         /// <summary>
+        /// ETAPPE E5 (V‑A, V‑G6) — die <b>Sensitivitätszeilen</b> des Laufs (Szenario
+        /// Erwartet, je Stand außer der Referenz), jede mit ihrer Steigung
+        /// (<see cref="SensitivitaetZeile.Steigung"/>). Wort- und Tabellenbericht lesen die
+        /// Tafel hier statt aus eigener Bildung.
+        /// </summary>
+        public List<SensitivitaetZeile> Sensitivitaet = new List<SensitivitaetZeile>();
+
+        /// <summary>
+        /// ETAPPE E5 (Nr. 31) — die Zeile „‹Stände›: Nachweis liegt mit der nächsten
+        /// Rechnung vor" für Seite und Bericht; leer, wenn jeder Stand seinen Nachweis
+        /// trägt. Dieselbe Form wie die Nutzungsdauer-Hinweise: die Namen vorn, der Satz
+        /// einmal.
+        /// </summary>
+        public static string Nachweiszeile(IEnumerable<OhneNachweisStand> staende)
+        {
+            if (staende == null) return "";
+            var namen = new List<string>();
+            foreach (OhneNachweisStand s in staende)
+                if (s != null && !string.IsNullOrEmpty(s.Anzeige) && !namen.Contains(s.Anzeige))
+                    namen.Add(s.Anzeige);
+            if (namen.Count == 0) return "";
+            return string.Join(", ", namen.ToArray()) + ": " +
+                   MyResource.Resource.WIRT_NACHWEIS_NAECHSTE_RECHNUNG;
+        }
+
+        /// <summary>
         /// Die Stände ohne Nachweisumschlag unter den Ergebnissen — je Stand einmal, in
         /// Listenreihenfolge der Gruppe (Nr. 31).
         /// </summary>
@@ -309,6 +348,22 @@ namespace WindowsFormsApplication1
                                                               WirtschaftlichkeitParameter p,
                                                               CultureInfo kultur)
         {
+            return FuerBericht(daten, alle, p, kultur, null);
+        }
+
+        /// <summary>
+        /// Dieselbe Bewertung mit den Sensitivitätszeilen DES LAUFS, der die Ergebnisse
+        /// geliefert hat (ETAPPE E5: in Sicht 2 der Lauf gegen A, der nichts speichert).
+        /// </summary>
+        /// <param name="sensitivitaet">Die Zeilen des Laufs; <c>null</c> = die gespeicherten
+        /// der Stände (<see cref="WirtschaftlichkeitCtrl.LadeSensitivitaet"/>) — der
+        /// Rückfall des Berichts, wenn die Rechnung scheiterte.</param>
+        public static WirtschaftlichkeitBewertung FuerBericht(BerichtsDaten daten,
+                                                              IEnumerable<WirtschaftlichkeitErgebnis> alle,
+                                                              WirtschaftlichkeitParameter p,
+                                                              CultureInfo kultur,
+                                                              IEnumerable<SensitivitaetZeile> sensitivitaet)
+        {
             var b = new WirtschaftlichkeitBewertung();
             if (daten == null) return b;
             if (kultur == null) kultur = CultureInfo.CurrentCulture;
@@ -321,8 +376,9 @@ namespace WindowsFormsApplication1
             b.Vorschlagstext = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
                 b.Bandbreite.Urteile, kultur, b.Bandbreite.Referenzname);
             b.Szenariohinweis = ValeriAusweis.Szenariohinweis(p, kultur);
-            b.Deklarationen = ValeriAusweis.Deklarationen();
+            b.Deklarationen = ValeriAusweis.Deklarationen(p != null ? p.NichtMonetaer : null);
             b.OhneNachweis = StaendeOhneNachweis(staende, alle);
+            b.Sensitivitaet = Sensitivitaetszeilen(staende, sensitivitaet, b.Bandbreite.IdReferenz);
             try
             {
                 b.Nutzungsdauer = NutzungsdauerHinweisCtrl.Bilde(
@@ -330,6 +386,34 @@ namespace WindowsFormsApplication1
             }
             catch { b.Nutzungsdauer = new NutzungsdauerHinweise(); }
             return b;
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A) — die Sensitivitätszeilen in der Reihenfolge der Stände, ohne
+        /// die Referenz (sie trägt keine Differenz). Ohne Zeilen des Laufs die
+        /// gespeicherten; ein Lesefehler kostet die Tafel, nie den Bericht.
+        /// </summary>
+        public static List<SensitivitaetZeile> Sensitivitaetszeilen(
+            IEnumerable<KeyValuePair<int, string>> staende,
+            IEnumerable<SensitivitaetZeile> zeilen, int idReferenz)
+        {
+            var liste = new List<SensitivitaetZeile>();
+            if (staende == null) return liste;
+            var ids = new List<int>();
+            foreach (KeyValuePair<int, string> s in staende)
+                if (s.Key > 0 && s.Key != idReferenz && !ids.Contains(s.Key)) ids.Add(s.Key);
+            if (ids.Count == 0) return liste;
+
+            IEnumerable<SensitivitaetZeile> quelle = zeilen;
+            if (quelle == null)
+            {
+                try { quelle = new WirtschaftlichkeitCtrl().LadeSensitivitaet(new List<int>(ids)); }
+                catch { quelle = new List<SensitivitaetZeile>(); }
+            }
+            foreach (int id in ids)
+                foreach (SensitivitaetZeile z in quelle)
+                    if (z != null && z.IdProjekt == id) liste.Add(z);
+            return liste;
         }
     }
 }

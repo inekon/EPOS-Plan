@@ -424,7 +424,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Deklarationsliste_steht_in_fester_Reihenfolge()
         {
-            IReadOnlyList<ValeriDeklaration> liste = ValeriAusweis.Deklarationen();
+            IReadOnlyList<ValeriDeklaration> liste = ValeriAusweis.Deklarationen("Versorgungssicherheit");
 
             Assert.Equal(new[]
                          {
@@ -446,17 +446,19 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// „nachrichtlich" tragen genau Annuität, Amortisation und interner Zinsfuß (V‑3);
-        /// der Kapitalwert bleibt das einzige Maß.
+        /// „nachrichtlich" tragen genau Amortisation und interner Zinsfuß (V‑3); der
+        /// Kapitalwert bleibt das einzige Maß. ETAPPE E5 Teil b (Empfehlung Q3): Die
+        /// Annuität ist der Kapitalwert als gleichmäßiger Jahresbetrag und trägt kein Label.
         /// </summary>
         [Fact]
-        public void Nachrichtlich_sind_Annuitaet_Amortisation_und_Zinsfuss()
+        public void Nachrichtlich_sind_Amortisation_und_Zinsfuss()
         {
             List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Kennzahlen(VolleMenge(), null);
             string[] nachrichtlich = zeilen.Where(z => z.Nachrichtlich).Select(z => z.Schluessel).ToArray();
 
-            Assert.Equal(new[] { "ANNUITAET", "AMORTISATION", "IRR" }, nachrichtlich);
+            Assert.Equal(new[] { "AMORTISATION", "IRR" }, nachrichtlich);
             Assert.True(WirtschaftlichkeitZeilen.IstNachrichtlich("IRR"));
+            Assert.False(WirtschaftlichkeitZeilen.IstNachrichtlich("ANNUITAET"));
             Assert.False(WirtschaftlichkeitZeilen.IstNachrichtlich("KAPITALWERT_DIFF"));
             Assert.Equal(R.WIRT_KZ_NACHRICHTLICH, ValeriAusweis.NachrichtlichLabel());
         }
@@ -818,7 +820,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(R.WIRT_KZ_NACHRICHTLICH, irr.Kennzeichen);
             Assert.Equal("— " + R.WIRT_IZF_KEIN_WERT, irr.Wert);
             Assert.Equal("", ansicht.Kacheln[0].Kennzeichen);
-            Assert.Equal(R.WIRT_KZ_NACHRICHTLICH, ansicht.Kacheln[1].Kennzeichen);
+            Assert.Equal("", ansicht.Kacheln[1].Kennzeichen);       // Annuität (Q3)
             Assert.Equal(R.WIRT_KZ_NACHRICHTLICH, ansicht.Kacheln[2].Kennzeichen);
 
             // U39, U10, V‑A — am Stand.

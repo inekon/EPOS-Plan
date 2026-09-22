@@ -148,6 +148,32 @@ namespace WindowsFormsApplication1
                                                bool mitZeitreihen,
                                                IProgress<Fortschritt> fortschritt, CancellationToken abbruch)
         {
+            return SammleFuerBericht(idStamm, stammName, variantenIds, mitZeitreihen,
+                                     fortschritt, abbruch, null);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (Empfehlung Q6, 22.09.2026) — derselbe Berichtslauf mit der
+        /// <b>Vergleichssicht</b> (§ 2.15), die VOR der Wirtschaftlichkeitsrechnung am
+        /// Berichtsbaum steht.
+        ///
+        /// <para><b>Der Befund.</b> Bis hierher setzte die Berichtshülle die Sicht erst NACH
+        /// dem Sammeln: Gerechnet war gegen die Referenz der Gruppe, die Tafeln von Wort-
+        /// und Tabellenbericht nannten in Sicht 2 aber A als Referenz — Differenzen und
+        /// Tafeln sprachen von verschiedenen Ständen.</para>
+        ///
+        /// <para><b>Jetzt</b> gilt die Sicht schon im Rechenschritt: Der GESPEICHERTE Lauf
+        /// rechnet weiter gegen die Referenz der Gruppe (aus ihm soll der Bericht
+        /// reproduzierbar sein), und in Sicht 2 rechnet derselbe Rechenweg zusätzlich gegen
+        /// A, ohne zu speichern — Muster der Ergebnisseite. Aus diesem Lauf entstehen
+        /// Kennzahlen, Bandbreite, Sensitivität und Empfehlung des Berichts.</para>
+        /// </summary>
+        /// <param name="sicht">Die Vergleichssicht der Sitzung; <c>null</c> = Sicht 1.</param>
+        public BerichtsDaten SammleFuerBericht(int idStamm, string stammName, List<int> variantenIds,
+                                               bool mitZeitreihen,
+                                               IProgress<Fortschritt> fortschritt, CancellationToken abbruch,
+                                               Vergleichssicht sicht)
+        {
             // Der Wirtschaftlichkeitsschritt ist ein zusätzlicher Fortschrittsschritt
             // hinter den Projekten — sonst stünde der Balken schon auf 100 %, während
             // noch gerechnet wird.
@@ -157,6 +183,10 @@ namespace WindowsFormsApplication1
             BerichtsDaten daten = Sammle(idStamm, stammName, variantenIds,
                                          true /* immer frisch simulieren */, mitZeitreihen,
                                          melder, abbruch);
+
+            // Q6: die Sicht als Momentaufnahme VOR dem Rechnen — sie ändert sich während
+            // des Berichtslaufs nicht mehr.
+            if (daten != null) daten.Sicht = sicht != null ? sicht.Kopie() : null;
 
             RechneWirtschaftlichkeit(daten, fortschritt, abbruch);
             return daten;
@@ -174,9 +204,9 @@ namespace WindowsFormsApplication1
         /// <see cref="BerichtsDaten.Warnungen"/> gemeldet (Abschlussmeldung des Dialogs
         /// und Anhang-Kapitel „Hinweise dieses Berichtslaufs").
         /// </summary>
-        private void RechneWirtschaftlichkeit(BerichtsDaten daten,
-                                              IProgress<Fortschritt> fortschritt,
-                                              CancellationToken abbruch)
+        internal void RechneWirtschaftlichkeit(BerichtsDaten daten,
+                                               IProgress<Fortschritt> fortschritt,
+                                               CancellationToken abbruch)
         {
             if (daten == null || daten.Varianten.Count == 0) return;
             abbruch.ThrowIfCancellationRequested();
@@ -188,15 +218,39 @@ namespace WindowsFormsApplication1
             {
                 var ctrl = new WirtschaftlichkeitCtrl();
                 WirtschaftlichkeitParameter p = ctrl.LadeParameter(daten.IdStamm);
-                daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p) ?? new List<WirtschaftlichkeitErgebnis>();
+                daten.IdGruppenreferenz = p.IdReferenzprojekt;
+
+                // ETAPPE E5 (Q6): Der GESPEICHERTE Lauf rechnet gegen die Referenz der
+                // GRUPPE — ausdrücklich, damit eine Sicht 2 am Baum ihn nicht auf A
+                // umlenkt (Berechne nimmt sonst A aus der Sicht). 0 heißt Stamm, und den
+                // nennt der Aufruf beim Namen.
+                int idGruppe = p.IdReferenzprojekt > 0 ? p.IdReferenzprojekt : daten.IdStamm;
+                List<SensitivitaetZeile> sens;
+                daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p, idGruppe, true, out sens)
+                                           ?? new List<WirtschaftlichkeitErgebnis>();
+
+                // In Sicht 2 rechnet DERSELBE Rechenweg gegen A, ohne zu speichern — aus
+                // diesem Lauf entstehen Tafeln, Bandbreite und Empfehlung des Berichts, damit
+                // Differenzen und Tafeln dieselbe Referenz nennen. Die Gruppenrechnung oben
+                // bleibt der gebuchte Stand.
+                if (daten.Sicht != null && daten.Sicht.IstPaar && daten.Wirtschaftlichkeit.Count > 0)
+                {
+                    List<SensitivitaetZeile> sensPaar;
+                    List<WirtschaftlichkeitErgebnis> paar = ctrl.Berechne(
+                        daten, p, daten.Sicht.Referenz, false, out sensPaar);
+                    if (paar != null && paar.Count > 0)
+                    {
+                        daten.Wirtschaftlichkeit = paar;
+                        sens = sensPaar;
+                    }
+                }
 
                 // ETAPPE E5: die BEWERTUNG dieses Laufs — Bandbreite mit Einstufungen,
-                // Vorschlagssatz, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise und
-                // die Stände ohne Nachweis — aus denselben Kernmethoden, die die Hülle der
-                // Seite ruft. Die Referenz ist die, gegen die Berechne eben gerechnet hat:
-                // die der Gruppe (die Sicht setzt der Wirt erst nach dem Sammeln).
-                daten.IdGruppenreferenz = p.IdReferenzprojekt;
-                daten.Bewertung = Bewertung(daten, daten.Wirtschaftlichkeit, p);
+                // Vorschlagssatz, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise, die
+                // Stände ohne Nachweis und die Sensitivität — aus denselben Kernmethoden,
+                // die die Hülle der Seite ruft, und gegen DIESELBE Referenz wie die Zahlen
+                // (Sicht 2: A, sonst die Gruppe).
+                daten.Bewertung = Bewertung(daten, daten.Wirtschaftlichkeit, p, sens);
 
                 if (daten.Wirtschaftlichkeit.Count == 0)
                     daten.Warnungen.Add("Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis — " +
@@ -238,6 +292,13 @@ namespace WindowsFormsApplication1
                 // ETAPPE E5 (Nr. 31): Die Bausteine fallen hier auf den GESPEICHERTEN
                 // Stand zurück — die Bewertung folgt ihnen dorthin, und genau dort
                 // tragen Zeilen ohne Umschlag ihr Kennzeichen.
+                //
+                // ETAPPE E5 (Q6): Der gespeicherte Stand rechnet gegen die Referenz der
+                // GRUPPE. Eine Sicht 2 darüber nennte A als Referenz neben Zahlen, die
+                // gegen die Gruppe gerechnet sind — genau der Befund, den Q6 behebt. Der
+                // Rückfall zeigt deshalb Sicht 1; die Warnung darüber sagt, dass es der
+                // gespeicherte Stand ist.
+                daten.Sicht = null;
                 try
                 {
                     var ctrl = new WirtschaftlichkeitCtrl();
@@ -245,7 +306,7 @@ namespace WindowsFormsApplication1
                     var ids = new List<int>();
                     foreach (VariantenDaten v in daten.Varianten) ids.Add(v.IdProjekt);
                     daten.IdGruppenreferenz = p.IdReferenzprojekt;
-                    daten.Bewertung = Bewertung(daten, ctrl.LadeErgebnisse(ids), p);
+                    daten.Bewertung = Bewertung(daten, ctrl.LadeErgebnisse(ids), p, null);
                 }
                 catch { daten.Bewertung = null; }
             }
@@ -255,13 +316,17 @@ namespace WindowsFormsApplication1
         /// ETAPPE E5 — die Bewertung eines Berichtslaufs in der Berichtskultur. Ein Fehler
         /// hier kostet die Bewertung, nie den Bericht.
         /// </summary>
+        /// <param name="sensitivitaet">Die Sensitivitätszeilen des Laufs; <c>null</c> = die
+        /// gespeicherten (Rückfall auf den gebuchten Stand).</param>
         private static WirtschaftlichkeitBewertung Bewertung(BerichtsDaten daten,
                                                              List<WirtschaftlichkeitErgebnis> alle,
-                                                             WirtschaftlichkeitParameter p)
+                                                             WirtschaftlichkeitParameter p,
+                                                             List<SensitivitaetZeile> sensitivitaet)
         {
             try
             {
-                return WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur);
+                return WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur,
+                                                              sensitivitaet);
             }
             catch { return null; }
         }
