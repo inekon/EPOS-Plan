@@ -37,9 +37,21 @@ namespace EPOS.UI.Tests.Dialoge.Hilfe;
 /// und Emissionsgruppen verlor und der Katalog die neun Felder trotzdem weiterführte:
 /// Die Eigenschaften gibt es am DTO noch — die Hülle liest und schreibt die Spalten —,
 /// nur zeigt die Maske sie nicht mehr. Der erste Wächter blieb dabei grün.</para>
+///
+/// <para><b>Die Klasse pinnt ihre Kultur auf <c>de-DE</c>.</b> Sie hält deutsche
+/// Maskenbeschriftungen gegen die Anzeigenamen des Katalogs — der Windows-Läufer steht
+/// auf <c>en-US</c>, und <c>Resource.*</c> löst über <c>CurrentUICulture</c> auf
+/// (Hausregel „Kulturpinnung", <c>EPOS.Kern/CLAUDE.md</c>). Sie zeichnet nichts, führt
+/// also die <see cref="Kulturvorrichtung"/> unmittelbar statt über
+/// <c>EposBunitContext</c>.</para>
 /// </summary>
-public class KiDialogkatalogTests
+public class KiDialogkatalogTests : IDisposable
 {
+    private readonly Kulturvorrichtung _kultur = new Kulturvorrichtung();
+
+    /// <summary>Stellt die vier Kulturwerte zurück.</summary>
+    public void Dispose() => _kultur.Dispose();
+
     /// <summary>Die Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
     /// <remarks>
     /// <b>Ein Daten-Objekt darf MEHRERE Masken tragen.</b> Die Erzeugermasken des

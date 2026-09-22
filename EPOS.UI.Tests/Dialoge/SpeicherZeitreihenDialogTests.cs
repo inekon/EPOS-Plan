@@ -270,22 +270,9 @@ public sealed class SpeicherZeitreihenDialogTests : EposBunitContext
 /// </summary>
 public sealed class SpeicherZeitreihenDialogEnglischTests : EposBunitContext
 {
-    /// <summary>
-    /// Die Maske spricht hier Englisch — der KI-Dialogkatalog aber nicht.
-    /// </summary>
-    /// <remarks>
-    /// <b>Der Katalog ist ein Bau-einmal-Zwischenspeicher der SITZUNG</b>
-    /// (<c>KiDialoge.Katalog</c>): Seine Anzeigenamen frieren in der Sprache ein, in
-    /// der ihn der ERSTE Zugriff baut. Diese Maske meldet sich beim Zeichnen am
-    /// Assistenten an und fasst ihn damit an — waere sie der erste Zugriff des
-    /// Testlaufs, stuende der Katalog danach fuer ALLE Faelle auf Englisch, und
-    /// <c>KiDialogkatalogTests</c> verglichen englische Katalognamen mit deutschen
-    /// Maskenbeschriftungen. Der Katalog wird deshalb hier ausdruecklich auf Deutsch
-    /// vorgewaermt; danach gilt wieder <c>en-US</c>.
-    /// </remarks>
+    /// <summary>Die Oberflaechenkultur dieser Klasse ist <c>en-US</c>.</summary>
     public SpeicherZeitreihenDialogEnglischTests() : base("en-US")
     {
-        using (new Kulturvorrichtung("de-DE")) _ = KiDialoge.Katalog;
     }
 
     /// <summary>Die frueheren Literale der Maske — sie duerfen nirgends mehr stehen.</summary>
