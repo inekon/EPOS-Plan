@@ -425,3 +425,10 @@ DB_Test/
 *.sqlite
 *.accdb
 !Referenzlaeufe/Kenndaten_Test.sqlite
+
+# Normpruefdaten der Gebaeudesimulation (Umsetzungskonzept VDI 6007, Abschnitt 1.9; Entscheid E27 zu U8):
+# Die Referenz- und Eingangszahlen der Normtestfaelle liegen nur lokal beim Anwender und werden nie
+# versioniert oder ausgeliefert - das Ausliefern waere eine Vervielfaeltigung (Konzept N1.2). Versioniert
+# ist allein das LIESMICH, das sagt, woher die Dateien kommen und wohin sie gehoeren.
+Referenzlaeufe/Normzahlen/*
+!Referenzlaeufe/Normzahlen/LIESMICH.md
