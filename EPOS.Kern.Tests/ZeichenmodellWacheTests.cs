@@ -84,8 +84,12 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Jede Zeichenmethode gibt ihr Modell an den Maler: 26 öffentliche
+        /// Jede Zeichenmethode gibt ihr Modell an den Maler: 28 öffentliche
         /// Bildmethoden, und keine eigene Zeichenfläche mehr.
+        ///
+        /// <para>ETAPPE E6 der Wirtschaftlichkeit brachte zwei dazu:
+        /// <c>KapitalwertSzenarien</c> (Verlauf mit drei Szenarien) und
+        /// <c>KapitalwertSpanne</c> (Spannenbild) — beide über <c>SkiaMaler.Png</c>.</para>
         /// </summary>
         [Fact]
         public void JedeZeichenmethodeGibtIhrModellAnDenMaler()
@@ -93,7 +97,7 @@ namespace EPOS.Kern.Tests
             string text = RendererQuelle();
 
             int bildmethoden = Regex.Matches(text, @"public static byte\[\] ").Count;
-            Assert.Equal(26, bildmethoden);
+            Assert.Equal(28, bildmethoden);
 
             // Kein Bild entsteht mehr auf einer eigenen Flaeche; jedes geht durch
             // SkiaMaler.Png - auch die vier gemeinsamen Rumpfmethoden.
