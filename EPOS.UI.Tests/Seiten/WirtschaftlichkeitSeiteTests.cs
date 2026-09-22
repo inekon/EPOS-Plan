@@ -144,7 +144,10 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Equal(6, cut.FindAll(".epos-raster:not(.epos-matrix) thead th").Count);
         Assert.Equal(2, cut.FindAll(".epos-raster tbody input[type=checkbox]").Count);
         Assert.Single(cut.FindAll("select"));                          // Szenario
-        Assert.Contains("Referenz: Stammprojekt", cut.Find(".epos-herleitung-text").TextContent);
+        // ETAPPE E6: Der Abschnitt „Verlauf" trägt eigene Herleitungszeilen — gesucht wird
+        // die Parameterzeile, nicht die erste Zeile der Seite.
+        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                        e => e.TextContent.Contains("Referenz: Stammprojekt"));
         Assert.Single(cut.FindAll(".epos-matrix"));
     }
 
@@ -373,8 +376,9 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             return LeererSatz();
         }));
 
-        // Die Zeile trägt das Auswahlfeld UND den Knopf.
-        IElement zeile = cut.Find(".epos-seite-zeile");
+        // Die Zeile trägt das Auswahlfeld UND den Knopf. ETAPPE E6: Auch die Bedienleiste
+        // des Verlaufs ist eine .epos-seite-zeile — gemeint ist die der Szenariowahl.
+        IElement zeile = cut.Find(".epos-wirt-szenariozeile");
         Assert.Single(zeile.QuerySelectorAll("select"));
         IElement knopf = zeile.QuerySelector("button")!;
         Assert.Equal("Parameter…", knopf.TextContent.Trim());
