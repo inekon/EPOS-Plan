@@ -809,11 +809,12 @@ namespace EPOS.Kern.Tests
             Assert.Equal(131844.18.ToString("N0", DE), ansicht.Bandbreite.Zeilen[1].Zellen[1]);
             Assert.Equal(R.WIRT_EMPF_STUFE_NEIN, ansicht.Bandbreite.Zeilen[2].Zellen[4]);
 
-            // Nr. 31 — je Spalte ohne Umschlag das Kennzeichen.
-            MatrixZeile nachweis = ansicht.Matrix.Zeilen.FirstOrDefault(
+            // Nr. 31 — ETAPPE E5 Teil b: EINE Zeile unter den Annahmen mit den Ständen ohne
+            // Umschlag (die Hinweiszeile der Tafel ist entfallen, dieselbe Aussage stand
+            // sonst zweimal auf der Seite).
+            Assert.Equal("Stamm, Test1, Test2: " + R.WIRT_NACHWEIS_NAECHSTE_RECHNUNG, ansicht.Nachweiszeile);
+            Assert.DoesNotContain(ansicht.Matrix.Zeilen,
                 z => z.Zellen.Count > 0 && z.Zellen.All(c => c == R.WIRT_NACHWEIS_NAECHSTE_RECHNUNG));
-            Assert.NotNull(nachweis);
-            Assert.Equal(3, nachweis.Zellen.Count);
 
             // V‑A — die Kacheln: nachrichtlich, und der Grund statt des Strichs.
             KachelZeile irr = ansicht.Kacheln[3];
@@ -829,6 +830,119 @@ namespace EPOS.Kern.Tests
             Assert.Equal(string.Format(DE, R.WIRT_T_OHNE_DAUER, 20), stand.Zeitraumzeile);
             Assert.StartsWith("Was ein Szenario heute variiert", stand.Szenariohinweis);
             Assert.Equal(4, stand.Deklarationen.Count);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 Teil b — was die Hülle der Seite zusätzlich liefert (Gruppe „Wöhler"):
+        /// die Kennzahltafel im Erwartungsfall mit Label „nachrichtlich" an Amortisation
+        /// und Zinsfuß; die Vergleichstabelle mit Abschnitten (Kennzahlen, Gliederung,
+        /// Hinweise); Fußtext der Bandbreite; Annahmentafel; Rahmen der ValERI-Ansicht;
+        /// die Darstellung als Sitzungswahl. <b>Karten und Kennzahltafel bleiben beim
+        /// Szenariowechsel im Erwartungsfall</b> — die Klappliste steuert nur die Tafeln
+        /// darunter.
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_traegt_die_Teile_der_Ergebnisansicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var seite = new WirtschaftlichkeitSeiteGaben(WOEHLER, "Wöhler");
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)gaben["Laden"])();
+            ErgebnisAnsicht ansicht = stand.Ansicht;
+
+            // Die Kennzahltafel: nur Kennzahlzeilen, Label an Amortisation und Zinsfuß.
+            Assert.NotEmpty(ansicht.Kennzahltafel.Zeilen);
+            Assert.All(ansicht.Kennzahltafel.Zeilen,
+                       z => Assert.Equal(MatrixZeile.ABSCHNITT_KENNZAHL, z.Abschnitt));
+            MatrixZeile amo = ansicht.Kennzahltafel.Zeilen.First(z => z.Titel == R.WIRT_ZEILE_AMORTISATION);
+            Assert.Equal(R.WIRT_KZ_NACHRICHTLICH, amo.Kennzeichen);
+            MatrixZeile ann = ansicht.Kennzahltafel.Zeilen.First(z => z.Titel == R.WIRT_ZEILE_ANNUITAET);
+            Assert.Equal("", ann.Kennzeichen);
+            Assert.Equal(ansicht.Matrix.Spalten, ansicht.Kennzahltafel.Spalten);
+
+            // Die Vergleichstabelle: Kennzahlen, Gliederung (mit dem Nettobarwert als
+            // Summe) und Hinweise getrennt.
+            Assert.Contains(ansicht.Matrix.Zeilen, z => z.Abschnitt == MatrixZeile.ABSCHNITT_KENNZAHL);
+            Assert.Contains(ansicht.Matrix.Zeilen, z => z.Titel == R.WIRT_ZEILE_NETTOBARWERT &&
+                                                        z.Abschnitt == MatrixZeile.ABSCHNITT_GLIEDERUNG);
+            Assert.Contains(ansicht.Matrix.Zeilen, z => z.Titel == R.WIRT_ZEILE_INVESTITION &&
+                                                        z.Abschnitt == MatrixZeile.ABSCHNITT_GLIEDERUNG);
+            Assert.DoesNotContain(ansicht.Matrix.Ohne(MatrixZeile.ABSCHNITT_KENNZAHL).Zeilen,
+                                  z => z.Titel == R.WIRT_ZEILE_KAPITALWERT_DIFF);
+
+            // Fußtext der Bandbreite mit der Referenz beim Namen, wie im Bericht.
+            Assert.Equal(string.Format(DE, R.WIRT_SZ_DELTA_FUSS, "Stamm"), ansicht.Bandbreitenfuss);
+
+            // Annahmentafel: fünf Spalten, der Betrachtungszeitraum als letzte Zeile.
+            Assert.Equal(5, stand.Annahmen.Spalten.Count);
+            Assert.Equal(R.WIRT_SZEN_WORST, stand.Annahmen.Spalten[1]);
+            Assert.Equal(R.WIRT_ANN_ZEITRAUM, stand.Annahmen.Zeilen.Last().Titel);
+
+            // Rahmen der ValERI-Ansicht: Maßnahme, Referenz, Zeitraum, Zins.
+            Assert.Equal(new[] { R.WIRT_VALERI_MASSNAHME, R.WIRT_SICHT_REF_SPALTE, R.WIRT_ANN_ZEITRAUM, R.WPAR_SZ_ZINS },
+                         ansicht.Rahmen.Zeilen.Select(z => z.Titel).ToArray());
+            Assert.Equal("Wöhler: Test1, Test2", ansicht.Rahmen.Zeilen[0].Zellen[0]);
+            Assert.Equal("Stamm", ansicht.Rahmen.Zeilen[1].Zellen[0]);
+
+            // Die Darstellung ist eine Sitzungswahl: Vorgabe Kennzahlen, gemerkt über
+            // den Rückruf, beim nächsten Laden wieder da.
+            Assert.Equal(WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN, stand.Darstellung);
+            ((Action<int>)gaben["DarstellungGewaehlt"])(WirtschaftlichkeitStand.DARSTELLUNG_VALERI);
+            Assert.Equal(WirtschaftlichkeitStand.DARSTELLUNG_VALERI,
+                         ((Func<WirtschaftlichkeitStand>)gaben["Laden"])().Darstellung);
+
+            // Ohne Berichtsweg kein Knopf; mit ihm steht er im Satz.
+            Assert.False(gaben.ContainsKey("BerichtErzeugen"));
+            seite.Berichtsweg = (v, m) => System.Threading.Tasks.Task.FromResult(new LaufErgebnis());
+            Assert.True(seite.Gaben().ContainsKey("BerichtErzeugen"));
+            Assert.True(seite.Gaben().ContainsKey("DateiOeffnen"));
+
+            // Die Klappliste steuert nur die Tafeln darunter: Karten und Kennzahltafel
+            // bleiben im Erwartungsfall, die Tafel folgt dem gewählten Szenario.
+            var anzeigen = (Func<int, ErgebnisAnsicht>)gaben["Anzeigen"];
+            ErgebnisAnsicht worst = anzeigen(2);
+            Assert.Equal(ansicht.Kacheln.Select(k => k.Wert).ToArray(), worst.Kacheln.Select(k => k.Wert).ToArray());
+            Assert.Equal(ansicht.Kennzahltafel.Zeilen.SelectMany(z => z.Zellen).ToArray(),
+                         worst.Kennzahltafel.Zeilen.SelectMany(z => z.Zellen).ToArray());
+            Assert.Contains(R.WIRT_SZEN_WORST, worst.Szenariozeile);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 Teil b (V‑A, V‑G6) — die Sensitivitätstafel der Seite: je Stand außer
+        /// der Referenz seine gebuchten Zeilen, der Name an der ersten, die Steigung mit
+        /// ihrer Einheit in der letzten Spalte (Prüfgruppe 1040–1042 nach einem Lauf).
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_zeigt_die_Sensitivitaet_mit_Steigung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            new WirtschaftlichkeitCtrl().Berechne(Gruppe1040(), Parametersatz1040());
+            List<SensitivitaetZeile> gebucht =
+                new WirtschaftlichkeitCtrl().LadeSensitivitaet(new List<int> { 1041, 1042 });
+
+            var seite = new WirtschaftlichkeitSeiteGaben(1040, "Stammprojekt");
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)seite.Gaben()["Laden"])();
+            ErgebnisMatrix sens = stand.Ansicht.Sensitivitaet;
+
+            Assert.Equal(1040, stand.IdReferenz);
+            Assert.Equal(6, sens.Spalten.Count);
+            Assert.Equal(R.WIRT_SENS_SP_STEIGUNG, sens.Spalten[5]);
+            Assert.Equal(gebucht.Count, sens.Zeilen.Count);
+
+            // Der Name steht an der ersten Zeile eines Standes; die Referenz hat keine.
+            string name1041 = stand.Staende.First(s => s.Id == 1041).Text;
+            string name1042 = stand.Staende.First(s => s.Id == 1042).Text;
+            Assert.Equal(new[] { name1041, name1042 },
+                         sens.Zeilen.Where(z => z.Titel.Length > 0).Select(z => z.Titel).ToArray());
+
+            SensitivitaetZeile erste = gebucht.First(z => z.IdProjekt == 1041);
+            Assert.Equal(erste.Parameter, sens.Zeilen[0].Zellen[0]);
+            Assert.Equal(erste.Steigung.Value.ToString("N2", BerichtTexte.Kultur) + " " + erste.SteigungEinheit,
+                         sens.Zeilen[0].Zellen[4]);
         }
 
         // =====================================================================
