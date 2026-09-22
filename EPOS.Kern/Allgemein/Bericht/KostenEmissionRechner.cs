@@ -31,6 +31,11 @@ namespace WindowsFormsApplication1
     ///  - Netzbezug: Faktor des projektzugeordneten Strom-Trägers über dieselbe
     ///    Kette (Projektwert → Tab_Brennstoff_Stamm → energy_carrier); erst wenn
     ///    dort nichts gepflegt ist, greift STROMMIX_CO2_G_JE_KWH als Vorgabewert.
+    ///  - STROMBEDARF OHNE VERWENDUNG (Anwenderentscheide 22.09.2026): Führt das Projekt
+    ///    keinen Erzeuger, der Strom verwendet
+    ///    (<see cref="ProjektEnergietraegerCtrl.StromOhneVerwendung"/>), gehen
+    ///    Stromkosten und Emissionen des Netzbezugs mit 0 ein — unabhängig von
+    ///    Trägerzuordnung und Preis; ein Hinweis nennt die ausgelassene Menge.
     ///  - CO2Brennstoff (BEHG-Basis, Phase 7/W2): nur ABGABEPFLICHTIGE Träger —
     ///    Brennstoff-Kategorien Gas/Öl/Koks/Kohle/Sonstige (Tab_BrennstoffKategorien),
     ///    ausgenommen „Biogas“. Näherung: Bio-Heizöl-Blends zählen voll als fossil,
@@ -98,7 +103,8 @@ namespace WindowsFormsApplication1
             {
                 return T("WIRT_GRUND_KEIN_STROMTRAEGER",
                     "Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, " +
-                    "Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. " +
+                    "Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) " +
+                    "ist kein Energieträger zugeordnet. " +
                     "Ausweg: unter „Berichte & Kosten › Energieträger“ einen Stromträger zuordnen.");
             }
         }
@@ -193,10 +199,11 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// <b>Strombedarf ohne Verwendung</b> (Anwenderentscheid 22.09.2026): Das Projekt
-        /// führt einen Netzbezug, aber keinen Erzeuger, der Strom verwendet. Die
-        /// Energiekosten entstehen dann OHNE Stromkosten — und das wird gesagt, statt
-        /// die ganze Zahl ausfallen zu lassen.
+        /// <b>Strombedarf ohne Verwendung</b> (Anwenderentscheide 22.09.2026): Das Projekt
+        /// führt einen Netzbezug, aber keinen Erzeuger, der Strom verwendet
+        /// (<see cref="ProjektEnergietraegerCtrl.StromOhneVerwendung"/>). Energiekosten
+        /// UND Emissionen entstehen dann OHNE diesen Strom — und das wird gesagt, statt
+        /// still zu wirken.
         /// </summary>
         internal static string HINWEIS_STROMBEDARF_OHNE_VERWENDUNG
         {
@@ -204,8 +211,8 @@ namespace WindowsFormsApplication1
             {
                 return T("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG",
                     "Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von " +
-                    "{0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten " +
-                    "sind ohne Stromkosten bestimmt.");
+                    "{0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und " +
+                    "Emissionen sind ohne diesen Strom bestimmt.");
             }
         }
 
@@ -471,6 +478,40 @@ namespace WindowsFormsApplication1
 
             // ---------------- Netzbezug Strom ----------------
             double netzbezugMWh = m.Energiebedarf != null ? m.Energiebedarf.Stromrestbedarf : 0;
+
+            // ---- STROMBEDARF OHNE VERWENDUNG (Anwenderentscheide 22.09.2026) ----
+            //
+            // „Energiekosten (Strom, Gas, …) sollen nur anfallen, falls sie auch
+            // Verwendung finden." Führt das Projekt einen Netzbezug, aber keinen
+            // Erzeuger, der Strom verwendet (Wärmepumpe, Photovoltaik, Stromspeicher,
+            // Heizstab, Elektrokessel, BHKW, Hilfsenergie einer Brenneranlage), dann
+            // bleibt dieser Strom in Energiekosten UND Emissionen außen vor — gleich, ob
+            // dem Projekt ein Stromträger zugeordnet ist oder der Auslieferungsträger
+            // einen Katalogpreis trägt.
+            //
+            // DIE FRAGE STELLT DIE EINE FASSUNG (ProjektEnergietraegerCtrl.
+            // StromOhneVerwendung) — dieselbe, aus der Stromträger-Automatik, Rückfallträger
+            // und Kohärenzprüfung ihre Antwort nehmen. Hier wird sie EINMAL gestellt, und
+            // alles, was den Netzbezug bewertet, hängt an ihrem Ergebnis:
+            //  - KOSTEN: Der Preisträger wird gar nicht erst geladen; StromkostenNetz bleibt
+            //    null (nicht 0), damit auch Tarifstruktur und Rollenpfad der
+            //    Wirtschaftlichkeit, die StromkostenNetz ersetzen, keinen Strom
+            //    nachträglich bepreisen. Kein Rückfallvermerk — bepreist wurde nichts.
+            //  - EMISSIONEN: kein Netzstromfaktor, netzCO2t = 0 (CO₂ bzw. im Modus CO2E
+            //    das Äquivalent aller Arten — weitere Schadstoffe leitet dieser Rechner
+            //    aus dem Netzbezug nicht ab); weder Strommix- noch Trägerrückfall.
+            //  - ANLAGENZEILE „Netzbezug" der Energiekosten je Anlage: entfällt.
+            //  - HINWEIS: v.StrombedarfOhneVerwendungMWh trägt die Menge; die
+            //    Wirtschaftlichkeit macht daraus die Warnzeile (kein Fehlgrund).
+            bool stromOhneVerwendung =
+                ProjektEnergietraegerCtrl.StromOhneVerwendung(v.IdProjekt, netzbezugMWh);
+            if (stromOhneVerwendung) v.StrombedarfOhneVerwendungMWh = netzbezugMWh;
+
+            // Der Netzbezug, den Kosten- UND CO₂-Seite bewerten. Ohne Verwendung ist er
+            // null — damit greift unten derselbe Zweig wie bei einem Projekt ganz ohne
+            // Netzbezug: Energiekosten = Brennstoffkosten, kein Fehlgrund.
+            double netzbezugBewertet = stromOhneVerwendung ? 0.0 : netzbezugMWh;
+
             double? stromKosten = null;
             double stromCO2 = STROMMIX_CO2_G_JE_KWH;   // Vorgabewert, falls kein Träger gepflegt
             int stromCarrier = stromCarrierId;   // bereits vor der Brennstoffschleife bestimmt (KD4)
@@ -482,8 +523,8 @@ namespace WindowsFormsApplication1
 
             // #267: DIE KOSTENSEITE fragt den Träger mit Rückfall (stromCarrierKosten),
             // die CO₂-Seite den ZUGEORDNETEN (stromCarrier). Sind beide gleich — der
-            // Regelfall —, wird auch nur EINMAL geladen.
-            if (stromCarrierKosten > 0)
+            // Regelfall —, wird auch nur EINMAL geladen. Ohne Verwendung gar nicht.
+            if (!stromOhneVerwendung && stromCarrierKosten > 0)
             {
                 TraegerInfo preistraeger = LadeTraeger(v.IdProjekt, stromCarrierKosten);
                 stromPreisTraeger = TraegerName(stromCarrierKosten);
@@ -571,8 +612,12 @@ namespace WindowsFormsApplication1
             // nichts hergibt, rechnet weiter mit dem Vorgabewert und meldet das über
             // CO2StrommixRueckfall. Verändert wird nur die Lage, in der bis hierher
             // gar keine Projektzahl stand: kein Stromträger, anonymer Vorgabewert.
-            Emissionsfaktoren netz = Emissionsquelle.Netzstrom(v.IdProjekt, stromCarrier, modus);
-            if (netz.Co2Gepflegt && netz.Co2GKwh > 0)
+            //
+            // OHNE VERWENDUNG wird kein Faktor gezogen: Der Netzbezug geht mit 0 MWh in
+            // die Bilanz, und ein Faktor dafür wäre eine Herleitung ohne Rechnung.
+            Emissionsfaktoren netz = stromOhneVerwendung
+                ? null : Emissionsquelle.Netzstrom(v.IdProjekt, stromCarrier, modus);
+            if (netz != null && netz.Co2Gepflegt && netz.Co2GKwh > 0)
             {
                 stromCO2 = netz.Co2GKwh;
                 strommixRueckfall = false;
@@ -580,14 +625,14 @@ namespace WindowsFormsApplication1
                 // DIE HERLEITUNG. Sie steht nur, wenn der geliehene Faktor auch wirklich
                 // eine Menge getragen hat — sonst behauptete die Zeile eine Rechnung,
                 // die gar nicht stattgefunden hat (dieselbe Klemme wie beim Preisträger).
-                if (netz.RueckfallTraegerId > 0 && netzbezugMWh > 0)
+                if (netz.RueckfallTraegerId > 0 && netzbezugBewertet > 0)
                     v.CO2TraegerRueckfall = TraegerName(netz.RueckfallTraegerId);
             }
-            // Ohne Netzbezug ändert der Vorgabewert nichts - dann ist er kein Rückfall,
-            // sondern eine Zahl, die mit 0 MWh multipliziert wird.
-            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugMWh > 0;
+            // Ohne (bewerteten) Netzbezug ändert der Vorgabewert nichts - dann ist er kein
+            // Rückfall, sondern eine Zahl, die mit 0 MWh multipliziert wird.
+            v.CO2StrommixRueckfall = strommixRueckfall && netzbezugBewertet > 0;
 
-            double netzCO2t = netzbezugMWh * stromCO2 / 1000.0;
+            double netzCO2t = netzbezugBewertet * stromCO2 / 1000.0;
 
             // ---------------- ETAPPE B7: Energiekosten JE ANLAGE (Konzept § 3.5) ----
             //
@@ -607,10 +652,10 @@ namespace WindowsFormsApplication1
             // Die Stromseite als EINE Zeile: Netzbezug × Arbeitspreis. Sie steht für
             // alles, was Strom bezieht (Wärmepumpe, Hilfsenergie, Gebäude) — der
             // Rechenkern führt den Restbezug als eine Menge, und eine Aufteilung nach
-            // Verbrauchern gäbe es nur als Schätzung.
-            if (netzbezugMWh > 0 && stromCarrierKosten > 0)
+            // Verbrauchern gäbe es nur als Schätzung. Ohne Verwendung keine Zeile.
+            if (netzbezugBewertet > 0 && stromCarrierKosten > 0)
                 AnlageZeile(jeAnlage, v.IdProjekt, MyResource.Resource.WIRT_ENK_NETZBEZUG,
-                            stromCarrierKosten, netzbezugMWh);
+                            stromCarrierKosten, netzbezugBewertet);
             v.EnergiekostenJeAnlage = jeAnlage;
 
             // ---------------- Kennzahlen setzen ----------------
@@ -618,44 +663,11 @@ namespace WindowsFormsApplication1
             v.BiogenBehgMengeMWh = biogenBehgMWh;
             v.StromkostenNetz = stromKosten;
 
-            // ---- STROMBEDARF OHNE VERWENDUNG (Anwenderentscheid 22.09.2026) ----
-            //
-            // „Falls es einen Bedarf Strom gibt … und keinen Erzeuger mit Zuordnung
-            // Strombedarf, gebe nur eine Warnung aus … und bestimme die Energiekosten
-            // ohne Stromkosten.“
-            //
-            // DIE LAGE. Ein Gaskesselprojekt mit einer Kachel Strombedarf führt einen
-            // Netzbezug, aber keine Anlage, die Strom verwendet. Bis hierher fiel damit
-            // die GANZE Zahl aus: Der Zweig darunter setzte GRUND_KEIN_STROMTRAEGER und
-            // verlangte, „der elektrischen Erzeugung“ einen Träger zuzuordnen — einer
-            // Erzeugung, die es nicht gibt. Die Gaskosten waren dabei die ganze Zeit
-            // rechenbar.
-            //
-            // DIE FRAGE STELLT DIE EINE FASSUNG (ProjektEnergietraegerCtrl): Wärmepumpe,
-            // Photovoltaik, Stromspeicher, Heizstab, Elektrokessel — oder eine
-            // Brenneranlage mit Hilfsenergie-Anteil. Sie kostet eine Abfrage und wird
-            // deshalb erst gestellt, wenn die Kostenseite wirklich in der Sackgasse
-            // steht (Kurzschlussauswertung).
-            //
-            // WAS SICH NICHT ÄNDERT: Trägt der Rückfallträger einen Preis, wird der
-            // Netzbezug wie bisher bepreist und der Rückfall benannt
-            // (HINWEIS_STROMTRAEGER_RUECKFALL) — hier greift nur der Ausgang, der bisher
-            // gar keine Zahl lieferte. Und die CO₂-Bilanz bleibt unberührt: Der
-            // Netzbezug findet physisch statt, gleich ob ihm ein Erzeuger zugeordnet ist.
-            bool stromOhneVerwendung =
-                netzbezugMWh > 0 && !stromKosten.HasValue &&
-                (stromCarrierKosten <= 0 || stromAusRueckfall) &&
-                !ProjektEnergietraegerCtrl.BrauchtStromTraeger(v.IdProjekt);
-            if (stromOhneVerwendung) v.StrombedarfOhneVerwendungMWh = netzbezugMWh;
-
-            // Der Netzbezug, der die KOSTENseite noch angeht. Ohne Verwendung ist er
-            // null — damit greift unten derselbe Zweig wie bei einem Projekt ganz ohne
-            // Netzbezug: Energiekosten = Brennstoffkosten, kein Fehlgrund.
-            double netzbezugKosten = stromOhneVerwendung ? 0.0 : netzbezugMWh;
-
+            // Ohne Verwendung ist netzbezugBewertet null (Regel oben, beim Netzbezug):
+            // Die Energiekosten sind dann die Brennstoffkosten, ohne Fehlgrund.
             v.Energiekosten = (kostenVollstaendig && stromKosten.HasValue)
                 ? (double?)(brennstoffKosten + stromKosten.Value)
-                : (kostenVollstaendig && verbrauchJeTraeger.Count > 0 && netzbezugKosten <= 0
+                : (kostenVollstaendig && verbrauchJeTraeger.Count > 0 && netzbezugBewertet <= 0
                     ? (double?)brennstoffKosten : null);
 
             // AUFTRAG #267 — KEIN STILLES NULL. Bleibt die Zahl aus, steht ab hier im
@@ -664,7 +676,7 @@ namespace WindowsFormsApplication1
             // fehlende Preis, zuletzt der Verbrauch ohne Trägerzuordnung.
             if (!v.Energiekosten.HasValue)
             {
-                if (verbrauchJeTraeger.Count == 0 && verbrauchOhneTraeger <= 0 && netzbezugKosten <= 0)
+                if (verbrauchJeTraeger.Count == 0 && verbrauchOhneTraeger <= 0 && netzbezugBewertet <= 0)
                     v.EnergiekostenGrund = GRUND_KEIN_VERBRAUCH;
                 else if (verbrauchOhneTraeger > 0)
                     v.EnergiekostenGrund = string.Format(GRUND_VERBRAUCH_OHNE_TRAEGER,
@@ -677,10 +689,10 @@ namespace WindowsFormsApplication1
                 // OHNE NETZBEZUG kein Stromgrund: Ein reines Kesselprojekt ohne
                 // Strombezug hat kein Stromloch, sondern ein Preisloch — der Zweig
                 // darunter nennt dann den Brennstoff beim Namen.
-                else if (netzbezugKosten > 0 && !stromKosten.HasValue &&
+                else if (netzbezugBewertet > 0 && !stromKosten.HasValue &&
                          (stromCarrierKosten <= 0 || stromAusRueckfall))
                     v.EnergiekostenGrund = GRUND_KEIN_STROMTRAEGER;
-                else if (netzbezugKosten > 0 && !stromKosten.HasValue)
+                else if (netzbezugBewertet > 0 && !stromKosten.HasValue)
                     v.EnergiekostenGrund = string.Format(GRUND_STROMPREIS_FEHLT,
                         stromPreisTraeger ?? "?");
                 else if (ohnePreis.Count > 0)

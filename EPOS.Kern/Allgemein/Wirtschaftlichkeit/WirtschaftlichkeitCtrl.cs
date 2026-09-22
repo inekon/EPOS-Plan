@@ -2024,8 +2024,17 @@ namespace WindowsFormsApplication1
                 e.Erloes += e.ErloesKwk;   // ETAPPE E7: derselbe Betrag, zusätzlich benannt
             }
 
+            // ANWENDERENTSCHEIDE 22.09.2026 — STROMBEDARF OHNE VERWENDUNG. Die Regel
+            // (ProjektEnergietraegerCtrl.StromOhneVerwendung) hat der
+            // KostenEmissionRechner EINMAL gestellt; ihr Ergebnis steht an der Variante.
+            // Der Netzbezug ist dann in den Flat-Kosten nicht bepreist, und kein Tarif
+            // darf ihn nachträglich bepreisen: kein Tarifersatz und keine Tarifmeldung
+            // („Flat-Energiekosten unvollständig" wäre falsch — sie sind vollständig).
+            // Einzuspeisen gibt es ohne stromverwendenden Erzeuger nichts.
+            bool stromOhneVerwendung = v.StrombedarfOhneVerwendungMWh.HasValue;
+
             // ---------------- Tarif-Rollenmodell (ETAPPE E5) ----------------
-            bool rollen = tarif != null && tarif.Aktiv && tarif.RollenModus;
+            bool rollen = !stromOhneVerwendung && tarif != null && tarif.Aktiv && tarif.RollenModus;
             if (rollen) RechneRollentarif(v, tarif, e);
 
             // Tarifkosten ersetzen die Flat-Stromkosten NUR, wenn beide Seiten
@@ -2033,7 +2042,7 @@ namespace WindowsFormsApplication1
             // Zonenpreise gepflegt wurden (Review Phase 8: Aktiv + Nullpreise würde
             // den Strom sonst still kostenlos machen). Der Tarifersatz umfasst
             // Arbeits-, Grund- UND Leistungspreis der Kostenmaske.
-            if (tarif != null && tarif.Aktiv && !rollen)
+            if (!stromOhneVerwendung && tarif != null && tarif.Aktiv && !rollen)
             {
                 bool preiseGepflegt = tarif.PreisBezugWinterHT > 0 || tarif.PreisBezugWinterNT > 0 ||
                                       tarif.PreisBezugSommerHT > 0 || tarif.PreisBezugSommerNT > 0;
@@ -3623,7 +3632,13 @@ namespace WindowsFormsApplication1
 
             // Netzbezug: die Stundenreihe, sonst die Jahressumme des Laufs — beides sind
             // gerechnete Größen desselben Laufs, keine Näherung.
-            eingabe.NetzbezugMWh = matrix != null ? matrix.BezugGesamtMWh
+            //
+            // STROMBEDARF OHNE VERWENDUNG (Anwenderentscheide 22.09.2026): 0. Die
+            // Entlastung nach § 9b StromStG ist eine Gutschrift auf den bezogenen Strom;
+            // wo dieser Strom weder bepreist noch bewertet wird, gibt es auch nichts zu
+            // entlasten — sonst stünde eine Gutschrift auf Kosten, die nicht angesetzt sind.
+            eingabe.NetzbezugMWh = v.StrombedarfOhneVerwendungMWh.HasValue ? 0.0
+                : matrix != null ? matrix.BezugGesamtMWh
                 : (v.Ergebnis.Energiebedarf != null ? v.Ergebnis.Energiebedarf.Stromrestbedarf : 0);
 
             return eingabe;
@@ -5607,8 +5622,10 @@ namespace WindowsFormsApplication1
                     v.CO2TraegerRueckfall));
 
             // ANWENDERENTSCHEID 22.09.2026 — STROMBEDARF OHNE VERWENDUNG. Das Projekt
-            // führt einen Netzbezug, aber keinen Erzeuger, der Strom verwendet: Die
-            // Energiekosten sind dann OHNE Stromkosten bestimmt (KostenEmissionRechner).
+            // führt einen Netzbezug, aber keinen Erzeuger, der Strom verwendet: Energiekosten
+            // und Emissionen sind dann OHNE diesen Strom bestimmt (KostenEmissionRechner,
+            // Regel ProjektEnergietraegerCtrl.StromOhneVerwendung). Die Rückfallzeilen
+            // darüber stehen in dieser Lage nie — bepreist und bewertet wurde nichts.
             // Eine WARNUNG, kein Fehlgrund — die Zahl steht, nur nicht die Stromseite.
             // Sie reist denselben Weg wie die beiden Rückfallzeilen darüber und erreicht
             // damit Warnband, Vergleichstabelle, Wort- und Excelbericht.

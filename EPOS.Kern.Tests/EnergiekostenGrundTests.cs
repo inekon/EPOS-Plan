@@ -327,6 +327,14 @@ namespace EPOS.Kern.Tests
         // kein Erzeuger, der Strom verwendet. Die Gaskosten waren rechenbar, trotzdem
         // blieb JEDE Kennzahl leer — samt der Aufforderung, „der elektrischen Erzeugung“
         // einen Träger zuzuordnen, die es gar nicht gibt.
+        //
+        // DIE ZWEI FOLGEENTSCHEIDE DESSELBEN TAGES („1. Kostenentscheid folgen und diesen
+        // Strom ebenfalls auslassen 2. auch auf 0 setzen“): Ohne Verwendung fallen auch
+        // die EMISSIONEN des Netzbezugs weg, und die Regel greift UNABHÄNGIG vom Preis —
+        // mit zugeordnetem Stromträger ebenso wie mit Katalogpreis des
+        // Auslieferungsträgers. Grundsatz: „Energiekosten (Strom, Gas, …) sollen nur
+        // anfallen, falls sie auch Verwendung finden.“ Die eine Regel steht in
+        // ProjektEnergietraegerCtrl.StromOhneVerwendung; das BHKW zählt als Verwendung.
 
         /// <summary>„Beispiel WP WG 1 - Andere WP“ — Gaskessel UND Wärmepumpe, dem Projekt
         /// ist nur „Erdgas E“ zugeordnet, das gespeicherte Ergebnis führt 16,12 MWh/a
@@ -339,6 +347,19 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Der Netzbezug des gespeicherten Laufs von 1027 [MWh/a].</summary>
         private const double NETZBEZUG = 16.12;
+
+        /// <summary>„Simulation Referenz BHKW-Kaskade“ — Gaskessel, zwei Gas-BHKW, Puffer;
+        /// „Elektrische Energie“ zugeordnet zu 0,25 €/kWh (Grundpreis 2.400 €/a).</summary>
+        private const int PROJEKT_BHKW = 1030;
+
+        /// <summary>Der Netzbezug (Reststrom nach BHKW) des gespeicherten Laufs von 1030 [MWh/a].</summary>
+        private const double NETZBEZUG_BHKW = 4357.78;
+
+        /// <summary>Eine PV-Gerätezeile (<c>Tab_PV</c>) der Testdatenbank.</summary>
+        private const int PV_GERAET = 1015244;
+
+        /// <summary>Eine BHKW-Gerätezeile (<c>Tab_BHKW</c>) der Testdatenbank.</summary>
+        private const int BHKW_GERAET = 1018148;
 
         /// <summary>
         /// DER BEFUND SELBST. Ohne Erzeuger, der Strom verwendet, tragen die Energiekosten
@@ -360,6 +381,226 @@ namespace EPOS.Kern.Tests
             Assert.Equal(50.0, v.Energiekosten.Value, 4);
             Assert.Null(v.StromkostenNetz);
             Assert.Equal(NETZBEZUG, v.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.Null(v.StromTraegerRueckfall);
+            Assert.DoesNotContain(v.EnergiekostenJeAnlage, z => z.Anlage == NETZBEZUGSZEILE);
+        }
+
+        /// <summary>
+        /// DER ERSTE FOLGEENTSCHEID („Kostenentscheid folgen und diesen Strom ebenfalls
+        /// auslassen“): Ohne Verwendung trägt der Netzbezug auch zur CO₂-Bilanz nichts
+        /// bei — dieselbe Zahl wie ohne jeden Netzbezug. Vorher bewertete der Rechner die
+        /// 16,12 MWh/a mit dem Vorgabewert 435 g/kWh (+7,01 t/a) und meldete den Rückfall.
+        /// </summary>
+        [Fact]
+        public void Strombedarf_ohne_Verwendung_laesst_auch_die_Emissionen_aus()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+            VariantenDaten ohneBezug = RechneOhneNetzbezug(PROJEKT_KESSEL);
+
+            Assert.NotNull(v.StrombedarfOhneVerwendungMWh);
+            Assert.True(v.CO2Gesamt.HasValue);
+            Assert.Equal(ohneBezug.CO2Gesamt.Value, v.CO2Gesamt.Value, 6);
+            // Kein Faktor gezogen — also auch keine Herleitung eines Faktors.
+            Assert.False(v.CO2StrommixRueckfall);
+            Assert.Null(v.CO2TraegerRueckfall);
+        }
+
+        /// <summary>
+        /// DER ZWEITE FOLGEENTSCHEID („auch auf 0 setzen“): Die Regel greift UNABHÄNGIG
+        /// vom Preis. Mit ZUGEORDNETEM Stromträger samt Projektpreis 0,30 €/kWh bleiben
+        /// Stromkosten und Stromemissionen außen vor, solange kein Erzeuger Strom
+        /// verwendet — vorher 50 + 16,12 MWh × 300 €/MWh = 4.886 €/a, jetzt 50 €/a.
+        /// </summary>
+        [Fact]
+        public void Mit_zugeordnetem_Stromtraeger_bleibt_der_Strom_ohne_Verwendung_aussen_vor()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+            Stromtraeger_zuordnen(PROJEKT_KESSEL, STROM, 0.30);
+            Assert.Equal(STROM, Emissionsquelle.StromTraeger(PROJEKT_KESSEL));
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+            VariantenDaten ohneBezug = RechneOhneNetzbezug(PROJEKT_KESSEL);
+
+            Assert.Null(v.EnergiekostenGrund);
+            Assert.Equal(50.0, v.Energiekosten.Value, 4);      // nur das Gas
+            Assert.Null(v.StromkostenNetz);
+            Assert.Equal(NETZBEZUG, v.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.Null(v.StromTraegerRueckfall);
+            Assert.DoesNotContain(v.EnergiekostenJeAnlage, z => z.Anlage == NETZBEZUGSZEILE);
+            Assert.Equal(ohneBezug.CO2Gesamt.Value, v.CO2Gesamt.Value, 6);
+            Assert.False(v.CO2StrommixRueckfall);
+            Assert.Null(v.CO2TraegerRueckfall);
+        }
+
+        /// <summary>
+        /// Dasselbe mit einem KATALOGPREIS des Auslieferungsträgers — ohne Zuordnung und
+        /// mit Zuordnung ohne Projektpreis (dann gilt der Katalogpreis): Er bepreist den
+        /// Strom ohne Verwendung nicht, und ein Rückfallvermerk entsteht nicht.
+        /// </summary>
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Ein_Katalogpreis_bepreist_den_Strom_ohne_Verwendung_nicht(bool zugeordnet)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+            Katalogpreis(STROM, 0.35);
+            if (zugeordnet) Stromtraeger_zuordnen(PROJEKT_KESSEL, STROM, 0.0);
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+
+            Assert.Null(v.EnergiekostenGrund);
+            Assert.Equal(50.0, v.Energiekosten.Value, 4);
+            Assert.Null(v.StromkostenNetz);
+            Assert.Null(v.StromTraegerRueckfall);
+            Assert.Equal(NETZBEZUG, v.StrombedarfOhneVerwendungMWh.Value, 2);
+        }
+
+        /// <summary>
+        /// DIE EINE REGEL (<see cref="ProjektEnergietraegerCtrl.StromOhneVerwendung"/>):
+        /// Netzbezug UND kein stromverwendender Erzeuger. Wärmepumpe (1027) und BHKW
+        /// (1030) sind Verwendung; ohne Netzbezug oder ohne Projekt gibt es nichts
+        /// auszulassen.
+        /// </summary>
+        [Fact]
+        public void Die_eine_Regel_fragt_Netzbezug_und_Verwendung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.False(ProjektEnergietraegerCtrl.StromOhneVerwendung(PROJEKT_KESSEL, NETZBEZUG));
+            Assert.False(ProjektEnergietraegerCtrl.StromOhneVerwendung(PROJEKT_BHKW, NETZBEZUG_BHKW));
+
+            Kesselprojekt();
+            Assert.True(ProjektEnergietraegerCtrl.StromOhneVerwendung(PROJEKT_KESSEL, NETZBEZUG));
+            Assert.False(ProjektEnergietraegerCtrl.StromOhneVerwendung(PROJEKT_KESSEL, 0.0));
+            Assert.False(ProjektEnergietraegerCtrl.StromOhneVerwendung(0, NETZBEZUG));
+        }
+
+        /// <summary>
+        /// DIE GEGENPROBEN: Verwendet ein Erzeuger Strom — Wärmepumpe, Photovoltaik oder
+        /// BHKW —, wird derselbe Netzbezug weiter bepreist (hier über den Rückfallträger
+        /// mit Katalogpreis: 50 €/a Gas + 16,12 MWh × 350 €/MWh = 5.692 €/a) und bewertet
+        /// (Netzbezug × Faktor des Rückfallträgers).
+        /// </summary>
+        [Theory]
+        [InlineData("WP")]
+        [InlineData("PV")]
+        [InlineData("BHKW")]
+        public void Ein_stromverwendender_Erzeuger_haelt_den_Netzbezug_in_der_Rechnung(string erzeuger)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            if (erzeuger == "WP")
+            {
+                Gaspreis();
+                Kesselverbrauch();
+            }
+            else
+            {
+                Kesselprojekt();
+                ErzeugerHinzu(erzeuger);
+            }
+            Katalogpreis(STROM, 0.35);
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT_KESSEL));
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+            VariantenDaten ohneBezug = RechneOhneNetzbezug(PROJEKT_KESSEL);
+
+            Assert.Null(v.StrombedarfOhneVerwendungMWh);
+            Assert.Null(v.EnergiekostenGrund);
+            Assert.Equal(50.0 + NETZBEZUG * 1000.0 * 0.35, v.Energiekosten.Value, 2);
+            Assert.Equal("Elektrische Energie", v.StromTraegerRueckfall);
+
+            double faktor = Emissionsquelle.Netzstrom(
+                PROJEKT_KESSEL, Emissionsquelle.Modus(PROJEKT_KESSEL)).Co2GKwh;
+            Assert.True(faktor > 0);
+            Assert.Equal(NETZBEZUG * faktor / 1000.0,
+                         v.CO2Gesamt.Value - ohneBezug.CO2Gesamt.Value, 6);
+        }
+
+        /// <summary>
+        /// DAS BHKW VERWENDET STROM. 1030 (Gaskessel, zwei Gas-BHKW, Puffer, „Elektrische
+        /// Energie“ zu 0,25 €/kWh) behält die Bepreisung seines Reststroms: 4.357,78 MWh/a ×
+        /// 250 €/MWh = 1.089.445 €/a Arbeitspreis gegenüber einem Lauf ohne Netzbezug.
+        /// Ohne das BHKW in der Regel fiele dieser Betrag unter „ohne Verwendung“ auf 0.
+        /// </summary>
+        [Fact]
+        public void Ein_BHKW_Projekt_bepreist_seinen_Netzbezug_weiter()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            VariantenDaten v = Rechne(PROJEKT_BHKW);
+            VariantenDaten ohneBezug = RechneOhneNetzbezug(PROJEKT_BHKW);
+
+            Assert.Null(v.StrombedarfOhneVerwendungMWh);
+            Assert.True(v.StromkostenNetz.HasValue);
+            Assert.True(ohneBezug.StromkostenNetz.HasValue);
+            Assert.Equal(NETZBEZUG_BHKW * 1000.0 * 0.25,
+                         v.StromkostenNetz.Value - ohneBezug.StromkostenNetz.Value, 2);
+        }
+
+        /// <summary>
+        /// Ein BHKW-Projekt OHNE zugeordneten Stromträger bekommt den Rückfallträger wie
+        /// ein Wärmepumpenprojekt: Der Netzbezug wird mit dem Katalogpreis bepreist, der
+        /// Rückfall benannt — kein „Strombedarf ohne Verwendung“, kein „kein Stromträger“.
+        /// </summary>
+        [Fact]
+        public void Ein_BHKW_Projekt_ohne_Stromtraeger_bekommt_den_Rueckfalltraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            DataRepository.ExecuteSQL(
+                "DELETE FROM energy_project_settings WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@p", PROJEKT_BHKW), new DbParam("@c", STROM));
+            DataRepository.ExecuteSQL(
+                "DELETE FROM energy_price WHERE id_projekt = ? AND carrier_id = ?",
+                new DbParam("@p", PROJEKT_BHKW), new DbParam("@c", STROM));
+            Assert.Equal(0, Emissionsquelle.StromTraeger(PROJEKT_BHKW));
+            Katalogpreis(STROM, 0.35);
+
+            VariantenDaten v = Rechne(PROJEKT_BHKW);
+
+            Assert.Null(v.StrombedarfOhneVerwendungMWh);
+            Assert.Null(v.EnergiekostenGrund);
+            Assert.Equal("Elektrische Energie", v.StromTraegerRueckfall);
+            Assert.Equal(NETZBEZUG_BHKW * 1000.0 * 0.35, v.StromkostenNetz.Value, 2);
+        }
+
+        /// <summary>
+        /// Die Entlastung nach § 9b StromStG ist eine Gutschrift auf den bezogenen Strom —
+        /// ohne Verwendung gibt es nichts zu entlasten. Am selben Projekt: MIT seinen BHKW
+        /// steht die Entlastung, OHNE sie entfällt sie, und der Hinweis nennt den Grund.
+        /// </summary>
+        [Fact]
+        public void Ohne_Verwendung_entfaellt_die_Stromsteuer_Entlastung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.True(ProduzierendesGewerbe(PROJEKT_BHKW).StromsteuerEntlastungJahr1 > 0);
+
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_BHKW > 0",
+                new DbParam("@p", PROJEKT_BHKW));
+            WirtschaftlichkeitErgebnis ohne = ProduzierendesGewerbe(PROJEKT_BHKW);
+
+            Assert.Equal(0.0, ohne.StromsteuerEntlastungJahr1, 6);
+            Assert.NotNull(ohne.Hinweis);
+            Assert.Contains("Strombedarf ohne Verwendung", ohne.Hinweis);
         }
 
         /// <summary>
@@ -433,6 +674,9 @@ namespace EPOS.Kern.Tests
             Assert.Null(erg.Fehlgrund);
             Assert.NotNull(erg.Hinweis);
             Assert.Contains("Strombedarf ohne Verwendung", erg.Hinweis);
+            // Der Folgeentscheid: Der Hinweis nennt Kosten UND Emissionen.
+            Assert.Contains("Energiekosten und Emissionen sind ohne diesen Strom bestimmt",
+                            erg.Hinweis);
         }
 
         /// <summary>
@@ -507,6 +751,59 @@ namespace EPOS.Kern.Tests
                 "WHERE ID_ErgebnisHeizkessel IN (SELECT h.ID FROM Tab_ErgebnisHeizkessel AS h " +
                 "INNER JOIN Tab_Ergebnis AS e ON h.ID_Ergebnis = e.ID WHERE e.ID_Projekt = ?)",
                 new DbParam("@v", 1.0), new DbParam("@p", PROJEKT_KESSEL));
+        }
+
+        /// <summary>Die Anlagenbezeichnung der Netzbezugszeile in den Energiekosten je Anlage.</summary>
+        private static string NETZBEZUGSZEILE
+            => WindowsFormsApplication1.MyResource.Resource.WIRT_ENK_NETZBEZUG;
+
+        /// <summary>Fügt dem Projekt 1027 eine Anlagenzeile mit PV- bzw. BHKW-Gerät hinzu.</summary>
+        private static void ErzeugerHinzu(string erzeuger)
+        {
+            if (erzeuger == "PV")
+                DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_Energieanlagen (ID_Projekt, Bezeichner, ID_PV) VALUES (?, ?, ?)",
+                    new DbParam("@p", PROJEKT_KESSEL), new DbParam("@b", "PV (Prüfstand)"),
+                    new DbParam("@g", PV_GERAET));
+            else
+                DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_Energieanlagen (ID_Projekt, Bezeichner, ID_BHKW) VALUES (?, ?, ?)",
+                    new DbParam("@p", PROJEKT_KESSEL), new DbParam("@b", "BHKW (Prüfstand)"),
+                    new DbParam("@g", BHKW_GERAET));
+        }
+
+        /// <summary>Derselbe Lauf mit Netzbezug 0 — die Bilanz ohne jeden Strombezug.</summary>
+        private static VariantenDaten RechneOhneNetzbezug(int idProjekt)
+        {
+            ErgebnisModel erg = new ErgebnisCtrl().Load(idProjekt);
+            Assert.NotNull(erg);
+            Assert.NotNull(erg.Energiebedarf);
+            erg.Energiebedarf.Stromrestbedarf = 0;
+            var v = new VariantenDaten { IdProjekt = idProjekt, Ergebnis = erg };
+            KostenEmissionRechner.Berechne(v);
+            return v;
+        }
+
+        /// <summary>Rechnet das Projekt als Stamm für ein Unternehmen des produzierenden
+        /// Gewerbes — dann rechnet die Stromseite § 9b StromStG.</summary>
+        private static WirtschaftlichkeitErgebnis ProduzierendesGewerbe(int idProjekt)
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(idProjekt);
+            p.Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE;
+            ctrl.SpeichereParameter(p);
+
+            VariantenDaten stamm = Rechne(idProjekt);
+            stamm.IstStamm = true;
+            var daten = new BerichtsDaten { IdStamm = idProjekt };
+            daten.Varianten.Add(stamm);
+
+            WirtschaftlichkeitErgebnis erg = null;
+            foreach (WirtschaftlichkeitErgebnis e in new WirtschaftlichkeitCtrl().Berechne(daten, p))
+                if (e.Szenario == WirtschaftlichkeitSzenario.ERWARTET && e.IdProjekt == idProjekt)
+                    erg = e;
+            Assert.NotNull(erg);
+            return erg;
         }
 
         /// <summary>Gibt jeder Anlage des Projekts einen Hilfsenergie-Anteil [%].</summary>

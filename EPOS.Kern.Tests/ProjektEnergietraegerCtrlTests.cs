@@ -77,9 +77,10 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            // Das BHKW zählt seit den Anwenderentscheiden vom 22.09.2026 als Stromverwendung.
             object o = DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_Projekt WHERE ID NOT IN (SELECT ID_Projekt FROM Tab_Energieanlagen " +
-                "WHERE ID_WP > 0 OR ID_PV > 0 OR ID_SP > 0 OR Heizstab = 1) ORDER BY ID");
+                "WHERE ID_WP > 0 OR ID_PV > 0 OR ID_SP > 0 OR ID_BHKW > 0 OR Heizstab = 1) ORDER BY ID");
             if (o == null || o == DBNull.Value) return;
             int projekt = Convert.ToInt32(o);
 
