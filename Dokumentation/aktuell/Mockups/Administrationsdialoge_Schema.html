@@ -1,0 +1,1579 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Administrationsdialoge im einheitlichen Schema</title>
+<meta name="description" content="Mockup: ein Gerüst mit sechs Zonen für alle Verwaltungs- und Projektdialoge, gezeigt an Heizkessel, Wärmepumpe, Klimadaten, Kostenfaktoren und Brauchwasser">
+<!--
+  MOCKUP zum Anwenderentscheid vom 22.09.2026 (abends):
+
+    "Mockup: Administration_Heizkessel_Neuordnung.html - Variante B
+     (Mehrfachauswahl). Weitere Vorschlaege auf dieser Basis. Ziel soll sein:
+     einheitliches und uebersichtliches Design auch fuer die anderen
+     Administrationsdialoge."
+
+  Gehoert zu Dokumentation/aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md,
+  Abschnitte 3 (Einheitliches Schema) und 4 (Vorschlaege V8 ff.); die Kennungen
+  V1 bis V17 und AD-Q1 bis AD-Q11 verweisen dorthin.
+
+  FENSTERMASS wie im ersten Mockup: 1 088 x 624 CSS-Pixel (Fenstermass 85 % x 90 %
+  von 1 920 x 1 040 Geraetepixeln bei 150 % Skalierung); der Reiter "Schmal" zeigt
+  400 x 624. Zeilenhoehe 46 px (V4).
+
+  EIGENSTAENDIG: kein CDN, keine Schriftdatei von aussen, ein kleines Skript fuer
+  die Reiter (ohne Skript stehen alle Blaetter untereinander). Farben, Masse und
+  Schrift aus EPOS.UI/wwwroot/epos-ui.css; keine neue Maskenfarbe. Die rot
+  gestrichelten Zonenrahmen und Ziffern im Reiter "Geruest" sowie die Marken
+  "dialogspezifisch" sind Mockup-Zeichen.
+
+  KEINE HERSTELLER- UND PRODUKTDATEN: Geraete heissen "Kessel 1", "Waermepumpe 3",
+  Hersteller "Hersteller A", Klimaregionen "Region Nord", Orte "Ort A"; alle Werte
+  sind rund und erfunden. Die Kostenfaktoren tragen allgemeine Positionsnamen.
+-->
+<style>
+:root {
+    --epos-schrift: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", sans-serif;
+    --epos-schriftgroesse: 13px;
+
+    --epos-rahmen: #b4b2a9;
+    --epos-rahmen-leise: #d9d7cf;
+    --epos-text: #2c2c2a;
+    --epos-text-leise: #5f5e5a;
+    --epos-text-sehr-leise: #888780;
+    --epos-flaeche: #f5f4ef;
+
+    --epos-karte-rahmen: #D1D5DB;
+    --epos-karte-rahmen-hover: #3B82F6;
+    --epos-karte-flaeche: #ffffff;
+    --epos-karte-flaeche-hover: #EFF6FF;
+    --epos-karte-titel: #0F1F3D;
+    --epos-gruppenkopf-flaeche: #0F1F3D;
+    --epos-gruppenkopf-text: #ffffff;
+    --epos-quelle-rahmen: #378ADD;
+    --epos-quelle-text: #185FA5;
+    --epos-senke-text: #993C1D;
+    --epos-marke: #005aa0;
+    --epos-marke-trennlinie: #dee3e8;
+
+    --epos-warn-rahmen: rgb(200, 138, 0);
+    --epos-warn-flaeche: rgb(255, 246, 224);
+    --epos-warn-text: rgb(138, 91, 0);
+    --epos-ampel-gruen: #007800;
+    --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
+
+    --epos-rand: 10px;
+    --epos-ecke: 6px;
+    --epos-karte-rand: 16px;
+    --epos-touchziel: 44px;
+    --epos-gruppenkopf-hoehe: 40px;
+
+    /* nur Mockup */
+    --mock-zeile: 46px;          /* V4: Zeile = Beruehrungsziel 44 px + Luft */
+    --mock-fenster-b: 1088px;
+    --mock-fenster-h: 624px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0 0 48px 0;
+    font-family: var(--epos-schrift);
+    font-size: var(--epos-schriftgroesse);
+    color: var(--epos-text);
+    background: #ffffff;
+    line-height: 1.45;
+}
+
+/* ================= Seite (nicht Teil der Maske) ========================= */
+.mockup-kopf {
+    border-bottom: 1px solid var(--epos-marke-trennlinie);
+    padding: 14px 24px 10px 24px;
+}
+.mockup-kopf h1 { margin: 0; font-size: 20px; color: var(--epos-marke); }
+.mockup-kopf p  { margin: 6px 0 0 0; color: var(--epos-text-leise); max-width: 110ch; }
+
+.mockup-inhalt { padding: 0 16px; max-width: 1240px; }
+@media (min-width: 720px) { .mockup-inhalt { padding: 0 24px; } }
+
+.mockup-hinweis {
+    margin: 16px 0 10px 0; padding: 8px 12px;
+    border-left: 4px solid var(--epos-marke);
+    background: var(--epos-karte-flaeche-hover); color: var(--epos-karte-titel);
+    max-width: 110ch;
+}
+
+.mockup-reiter {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin: 14px 0 16px 0;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+}
+.mockup-reiter button {
+    min-height: var(--epos-touchziel); padding: 4px 14px;
+    font: inherit; color: var(--epos-text); cursor: pointer;
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-bottom: none;
+    border-radius: var(--epos-ecke) var(--epos-ecke) 0 0;
+}
+.mockup-reiter button[aria-selected="true"] {
+    background: #ffffff; color: var(--epos-quelle-text);
+    border-color: var(--epos-quelle-rahmen); font-weight: 600;
+}
+.mockup-blatt { margin-bottom: 28px; }
+.mockup-blatt[hidden] { display: none; }
+.mockup-blatt > h2 { font-size: 16px; margin: 4px 0 8px 0; color: var(--epos-karte-titel); }
+
+.rahmen-mass { margin: 0 0 6px 0; font-size: 12px; color: var(--epos-text-leise); }
+.rahmenfolge { display: flex; flex-direction: column; gap: 22px; align-items: flex-start; }
+.rahmenpaar { display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start; }
+
+.legende {
+    margin-top: 14px; padding: 10px 14px;
+    border: 1px dashed var(--epos-rahmen); border-radius: var(--epos-ecke);
+    max-width: 1088px;
+}
+.legende h3 { margin: 0 0 6px 0; font-size: 14px; color: var(--epos-karte-titel); }
+.legende h4 { margin: 0 0 4px 0; font-size: 13px; color: var(--epos-karte-titel); }
+.legende ol, .legende ul { margin: 4px 0 6px 0; padding-left: 22px; }
+.legende li { margin: 3px 0; }
+.legende p { margin: 6px 0; }
+.gleich-spez { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px 24px; }
+.v {
+    display: inline-block; padding: 0 7px; margin-right: 4px; border-radius: 10px;
+    font-size: 12px; font-weight: 600;
+    color: var(--epos-quelle-text); background: var(--epos-karte-flaeche-hover);
+    border: 1px solid var(--epos-quelle-rahmen);
+}
+.v--frage { color: var(--epos-warn-text); background: var(--epos-warn-flaeche); border-color: var(--epos-warn-rahmen); }
+.mock-spez {
+    display: inline-block; padding: 0 6px; border-radius: 10px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+    color: var(--epos-senke-text); border: 1px dashed var(--epos-senke-text); background: #ffffff;
+}
+
+kbd {
+    display: inline-block; min-width: 22px; padding: 0 5px; text-align: center;
+    font: inherit; font-size: 12px; border: 1px solid var(--epos-rahmen); border-bottom-width: 2px;
+    border-radius: 4px; background: var(--epos-flaeche);
+}
+
+table.tabelle { width: 100%; border-collapse: collapse; margin: 6px 0; }
+.tabelle th, .tabelle td { padding: 5px 8px; border-bottom: 1px solid var(--epos-rahmen-leise); text-align: left; vertical-align: top; }
+.tabelle thead th { background: var(--epos-flaeche); }
+.zonennr {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--epos-senke-text); color: #ffffff; font-size: 12px; font-weight: 700;
+}
+
+/* ================= Bausteine der Maske ================================== */
+.knopf {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: var(--epos-touchziel); min-width: 88px; padding: 4px 12px;
+    font: inherit; color: var(--epos-text);
+    background: var(--epos-flaeche);
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    cursor: pointer; white-space: nowrap;
+}
+.knopf:hover { border-color: var(--epos-karte-rahmen-hover); background: var(--epos-karte-flaeche-hover); }
+.knopf--primaer { color: var(--epos-gruppenkopf-text); background: var(--epos-karte-titel); border-color: var(--epos-karte-titel); }
+.knopf--primaer:hover { background: var(--epos-quelle-text); border-color: var(--epos-quelle-text); }
+.knopf[aria-disabled="true"] { color: var(--epos-text-sehr-leise); border-style: dashed; cursor: default; }
+.knopf[aria-disabled="true"]:hover { background: var(--epos-flaeche); border-color: var(--epos-rahmen); }
+.knopf--klein { min-width: 0; }
+.knopf[aria-pressed="true"] { color: var(--epos-quelle-text); border-color: var(--epos-quelle-rahmen); background: #ffffff; font-weight: 600; }
+.fueller { flex: 1 1 auto; }
+
+.textknopf {
+    min-height: var(--epos-touchziel); padding: 0 6px;
+    font: inherit; color: var(--epos-quelle-text); background: none; border: none;
+    text-decoration: underline; cursor: pointer; white-space: nowrap;
+}
+.textknopf[aria-disabled="true"] { color: var(--epos-text-sehr-leise); text-decoration: none; cursor: default; }
+
+.infoknopf {
+    flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid var(--epos-rahmen); background: var(--epos-flaeche);
+    color: var(--epos-quelle-text); font-weight: 700; font-size: 13px;
+}
+.kreuz {
+    flex: 0 0 auto; min-width: var(--epos-touchziel); min-height: var(--epos-touchziel);
+    border: none; background: none; font-size: 18px; color: var(--epos-text-leise); cursor: pointer;
+}
+
+.gk {
+    display: flex; align-items: center; gap: 8px;
+    min-height: var(--epos-gruppenkopf-hoehe); padding: 0 10px;
+    background: var(--epos-gruppenkopf-flaeche); color: var(--epos-gruppenkopf-text);
+    font-weight: 700; border-radius: 0;
+}
+.gk .fueller { flex: 1 1 auto; }
+.gk .gk-zusatz { font-weight: 400; color: #93C5FD; }
+
+.eingabe {
+    min-height: 40px; width: 100%; min-width: 0; padding: 4px 8px;
+    font: inherit; color: var(--epos-text); background: #ffffff;
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+}
+.eingabe--kurz { width: 7em; }
+.eingabe.geaendert { border-color: var(--epos-quelle-rahmen); box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); }
+
+.schalter { display: inline-flex; align-items: center; gap: 8px; min-height: var(--epos-touchziel); cursor: pointer; white-space: nowrap; }
+.schalter input { width: 18px; height: 18px; margin: 0; accent-color: var(--epos-karte-titel); }
+
+.ico { display: block; flex: 0 0 auto; }
+
+/* ================= Dialograhmen (V1) ==================================== */
+.dlg {
+    container-type: inline-size;
+    width: var(--mock-fenster-b); max-width: 100%;
+    height: var(--mock-fenster-h);
+    display: flex; flex-direction: column; gap: var(--epos-rand);
+    padding: var(--epos-karte-rand);
+    background: var(--epos-karte-flaeche);
+    border: 1px solid var(--epos-karte-rahmen); border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(15, 31, 61, 0.12);
+    overflow: hidden;                 /* V1: der Dialog selbst rollt nicht */
+}
+.dlg--schmal { width: 400px; }
+.dlg--ueberlagerung { width: 560px; height: auto; }
+
+/* Zone 1 — Titelzeile */
+.dlg-kopf { flex: 0 0 auto; display: flex; align-items: center; gap: var(--epos-rand); }
+.dlg-titel {
+    flex: 1 1 auto; min-width: 0; margin: 0;
+    font-size: 16px; font-weight: 700; color: var(--epos-karte-titel);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Zone 2 — Werkzeugleiste */
+.werkzeug { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.umschalter { display: inline-flex; border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke); overflow: hidden; }
+.umschalter button {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-height: var(--epos-touchziel); padding: 0 14px;
+    font: inherit; color: var(--epos-text); background: var(--epos-flaeche);
+    border: none; cursor: pointer; white-space: nowrap;
+}
+.umschalter button + button { border-left: 1px solid var(--epos-rahmen); }
+.umschalter button[aria-pressed="true"] {
+    background: #ffffff; color: var(--epos-quelle-text); font-weight: 600;
+    box-shadow: inset 0 -3px 0 var(--epos-quelle-rahmen);
+}
+.anzahl {
+    display: inline-block; min-width: 22px; padding: 0 6px; border-radius: 10px;
+    font-size: 12px; font-weight: 600; text-align: center;
+    background: var(--epos-rahmen-leise); color: var(--epos-text);
+}
+.umschalter button[aria-pressed="true"] .anzahl { background: var(--epos-karte-flaeche-hover); color: var(--epos-quelle-text); }
+
+.suche { flex: 1 1 220px; min-width: 0; display: flex; align-items: center; gap: 8px; }
+.suche > span { color: var(--epos-text-leise); white-space: nowrap; }
+.treffer { color: var(--epos-text-leise); white-space: nowrap; }
+
+/* Rueckmeldung nach einem Versuch (Warnband, verfaellt) */
+.warnband {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+    min-height: 44px; padding: 0 4px 0 12px;
+    border: 1px solid var(--epos-warn-rahmen); border-left-width: 4px; border-radius: var(--epos-ecke);
+    background: var(--epos-warn-flaeche); color: var(--epos-warn-text);
+}
+.warnband .wb-text { flex: 1 1 auto; min-width: 0; }
+
+/* Arbeitsflaeche: Liste links, Stammblatt rechts (V3). Nur hier rollt etwas. */
+.arbeit {
+    flex: 1 1 auto; min-height: 0;
+    display: grid; gap: var(--epos-rand);
+    grid-template-columns: minmax(0, 1fr) clamp(340px, 36%, 440px);
+}
+.spalte { min-height: 0; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+
+/* Zone 4 — Auswahlleiste */
+.auswahl {
+    flex: 0 0 auto; display: flex; flex-wrap: nowrap; align-items: center; gap: 6px;
+    min-height: 50px; padding: 2px 4px 2px 10px; overflow: hidden;
+    border: 1px solid var(--epos-quelle-rahmen); border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche-hover);
+}
+.auswahl .aw-was {
+    flex: 0 1 auto; min-width: 0; max-width: 34%;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-weight: 700; color: var(--epos-quelle-text);
+}
+.auswahl .aw-leise { color: var(--epos-text-leise); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.auswahl .knopf { min-width: 0; padding: 4px 10px; }
+
+/* Zone 3 — Liste */
+.liste {
+    flex: 1 1 auto; min-height: 0;
+    overflow-y: auto; overflow-x: hidden;   /* V1 + V2: senkrecht ja, waagerecht nie */
+    border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+}
+
+table.raster { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.raster th, .raster td {
+    height: var(--mock-zeile); padding: 0 8px;
+    border-bottom: 1px solid var(--epos-rahmen-leise);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: left; vertical-align: middle;
+}
+.raster thead th {
+    position: sticky; top: 0; z-index: 1;
+    background: var(--epos-flaeche); border-bottom: 1px solid var(--epos-rahmen);
+    font-weight: 600;
+}
+.raster .zahlsp { text-align: right; font-variant-numeric: tabular-nums; }
+.raster tbody tr { cursor: pointer; }
+.raster tbody tr:hover td { background: #fafaf7; }
+.raster tbody tr[aria-selected="true"] td { background: var(--epos-karte-flaeche-hover); }
+.raster tbody tr[aria-selected="true"] td:first-child { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); }
+.raster tbody tr.markiert td { background: var(--epos-flaeche); }
+.raster tbody tr.markiert[aria-selected="true"] td { background: var(--epos-karte-flaeche-hover); }
+.raster .leise { color: var(--epos-text-leise); }
+
+.sp-kasten { width: 44px; padding: 0 !important; }
+.kasten { display: flex; align-items: center; justify-content: center; width: 44px; height: calc(var(--mock-zeile) - 1px); cursor: pointer; }
+.kasten input { width: 18px; height: 18px; margin: 0; accent-color: var(--epos-karte-titel); }
+
+.kopf { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.kopf.rechts { justify-content: flex-end; }
+.kopf-titel {
+    min-width: 0; min-height: var(--epos-touchziel); padding: 0;
+    font: inherit; font-weight: 600; color: inherit; background: none; border: none;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+}
+.kopf-titel .pfeil { color: var(--epos-text-sehr-leise); margin-left: 3px; }
+.trichter {
+    flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center;
+    min-width: 24px; min-height: var(--epos-touchziel); padding: 0;
+    border: none; background: none; color: var(--epos-text-sehr-leise); cursor: pointer;
+}
+.trichter--gesetzt { color: var(--epos-marke); }
+
+/* Bezeichnerzelle mit Kennzeichen (V10): der Flexkasten steht IN der Zelle */
+.bez { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bez-text { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kennz {
+    flex: 0 0 auto; display: inline-flex; align-items: center; gap: 4px;
+    padding: 0 7px; min-height: 20px; border-radius: 10px;
+    font-size: 12px; font-weight: 600; white-space: nowrap; border: 1px solid;
+}
+.kennz--schloss { color: var(--epos-text-leise); background: var(--epos-flaeche); border-color: var(--epos-rahmen); }
+.kennz--verwendet { color: var(--epos-warn-text); background: var(--epos-warn-flaeche); border-color: var(--epos-warn-rahmen); }
+.kennz--projekt { color: var(--epos-ampel-gruen); background: var(--epos-ampel-gruen-flaeche); border-color: var(--epos-ampel-gruen); }
+
+.sp-projekt { width: 104px; }
+.zelle-aktion { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.plus {
+    flex: 0 0 auto; width: var(--epos-touchziel); height: var(--epos-touchziel);
+    font: inherit; font-size: 18px; line-height: 1; color: var(--epos-karte-titel);
+    background: var(--epos-flaeche); border: 1px solid var(--epos-rahmen); border-radius: var(--epos-ecke);
+    cursor: pointer;
+}
+.plus:hover { border-color: var(--epos-karte-rahmen-hover); background: var(--epos-karte-flaeche-hover); }
+
+/* Zone 5 — Stammblatt (V3, V9) */
+.stammblatt {
+    min-height: 0; min-width: 0; display: flex; flex-direction: column;
+    border: 1px solid var(--epos-karte-rahmen); border-radius: var(--epos-ecke); overflow: hidden;
+}
+.stamm-inhalt { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.stamm-kopf { display: flex; flex-direction: column; gap: 4px; }
+.stamm-name { font-size: 15px; font-weight: 700; color: var(--epos-karte-titel); overflow-wrap: anywhere; }
+.stamm-unter { color: var(--epos-text-leise); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.kennzahlen { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.kz { padding: 6px 8px; border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke); background: var(--epos-flaeche); }
+.kz b { display: block; font-size: 16px; color: var(--epos-karte-titel); }
+.kz span { color: var(--epos-text-leise); font-size: 12px; }
+.sb-gruppe { border-top: 1px solid var(--epos-rahmen-leise); padding-top: 6px; display: flex; flex-direction: column; gap: 6px; }
+.sb-gruppe > h4 { margin: 0; min-height: 28px; display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--epos-karte-titel); }
+.sb-gruppe > h4 .fueller { flex: 1 1 auto; }
+.knopfzeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.formular { display: grid; grid-template-columns: minmax(0, 10rem) minmax(0, 1fr); gap: 4px 10px; align-items: center; margin: 0; }
+.formular dt { color: var(--epos-text-leise); overflow-wrap: anywhere; }
+.formular dd { margin: 0; min-height: 30px; display: flex; align-items: center; gap: 6px; }
+.formular dd .einheit { color: var(--epos-text-leise); }
+.aufklapper { border-top: 1px solid var(--epos-rahmen-leise); padding-top: 6px; }
+.aufklapper summary { min-height: var(--epos-touchziel); display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; list-style: none; }
+.aufklapper summary::-webkit-details-marker { display: none; }
+.aufklapper summary::before { content: "▸"; color: var(--epos-text-leise); }
+.aufklapper[open] summary::before { content: "▾"; }
+.hinweiszeile { color: var(--epos-text-leise); font-size: 12px; margin: 0; }
+.blattkopf { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--epos-rahmen-leise); padding: 0 6px; }
+.stamm-fuss {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+    min-height: 54px; padding: 4px 10px;
+    border-top: 1px solid var(--epos-rahmen-leise); background: var(--epos-flaeche);
+}
+.stamm-fuss .status { flex: 1 1 auto; min-width: 0; }
+.stamm-fuss--nurlesen { color: var(--epos-text-leise); gap: 6px; }
+
+/* Vergleich und kleine Tabellen im Stammblatt (V12) */
+table.vergleich { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.vergleich th, .vergleich td { padding: 5px 6px; border-bottom: 1px solid var(--epos-rahmen-leise); text-align: left; overflow-wrap: anywhere; vertical-align: top; }
+.vergleich thead th { background: var(--epos-flaeche); }
+.vergleich tr.abweichend td { font-weight: 600; }
+.vergleich .stufe { display: block; font-size: 11px; color: var(--epos-text-leise); font-weight: 400; }
+.vergleich tr.abweichend .stufe { color: var(--epos-warn-text); }
+.vergleich .zahlsp { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Diagramm-Skizzen (Kennlinie, Jahresverlauf, Wochenprofil) */
+.skizze { display: block; width: 100%; height: auto; border: 1px solid var(--epos-rahmen-leise); border-radius: var(--epos-ecke); background: #ffffff; }
+.skizze text { font-family: var(--epos-schrift); font-size: 10px; fill: var(--epos-text-leise); }
+.skizze .gitter { stroke: var(--epos-rahmen-leise); stroke-width: 1; }
+.skizze .achse { stroke: var(--epos-rahmen); stroke-width: 1; }
+.skizze .linie-1 { fill: none; stroke: var(--epos-quelle-text); stroke-width: 2; }
+.skizze .linie-2 { fill: none; stroke: var(--epos-senke-text); stroke-width: 2; stroke-dasharray: 5 3; }
+.skizze .band { fill: var(--epos-karte-flaeche-hover); stroke: var(--epos-quelle-rahmen); stroke-width: 0.5; }
+.skizze .balken { fill: var(--epos-quelle-text); }
+.skizze .punkt { fill: var(--epos-quelle-text); }
+.skizze-legende { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--epos-text-leise); font-size: 12px; }
+.skizze-legende i { display: inline-block; width: 18px; vertical-align: middle; margin-right: 4px; border-top: 2px solid var(--epos-quelle-text); }
+.skizze-legende i.l2 { border-top: 2px dashed var(--epos-senke-text); }
+.skizze-legende i.l3 { height: 8px; border: 1px solid var(--epos-quelle-rahmen); background: var(--epos-karte-flaeche-hover); }
+
+/* Zone 6 — Fussleiste */
+.fuss { flex: 0 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.status { color: var(--epos-text-leise); min-width: 0; }
+
+.fortschritt { height: 8px; border-radius: 4px; background: var(--epos-rahmen-leise); overflow: hidden; }
+.fortschritt > span { display: block; height: 100%; width: 60%; background: var(--epos-quelle-text); }
+
+/* Schmaler Rahmen: Liste allein, Stammblatt als Blatt darueber (V3) */
+@container (max-width: 899px) {
+    .arbeit { grid-template-columns: minmax(0, 1fr); }
+    .arbeit > .stammblatt.nur-breit { display: none; }
+    .sp-rang2 { display: none; }
+    .kennz-wort { display: none; }
+}
+.nur-schmal { display: none; }
+@container (max-width: 899px) {
+    .nur-schmal { display: inline-flex; }
+}
+
+/* ================= Reiter "Geruest": Zonen sichtbar machen =============== */
+.dlg--geruest .zone { position: relative; outline: 2px dashed var(--epos-senke-text); outline-offset: 2px; }
+.dlg--geruest .zone::before {
+    content: attr(data-zone); position: absolute; left: -12px; top: -12px; z-index: 5;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--epos-senke-text); color: #ffffff; font-size: 12px; font-weight: 700;
+}
+.zonenhuelle { min-height: 0; min-width: 0; display: flex; flex-direction: column; }
+.spalte > .zonenhuelle { flex: 1 1 auto; }
+.zonenhuelle > .liste, .zonenhuelle > .stammblatt { flex: 1 1 auto; }
+.platzhalter {
+    display: inline-flex; align-items: center; min-height: 32px; padding: 0 10px;
+    color: var(--epos-text-leise); border: 1px dashed var(--epos-rahmen); border-radius: var(--epos-ecke);
+    white-space: nowrap;
+}
+.sb-steck { border: 1px dashed var(--epos-senke-text); border-radius: var(--epos-ecke); padding: 6px 8px; color: var(--epos-text-leise); }
+
+@media (forced-colors: active) {
+    .raster tbody tr[aria-selected="true"] td { outline: 2px solid Highlight; outline-offset: -2px; }
+    .kennz, .auswahl, .warnband { border-color: CanvasText; }
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="sym-trichter" viewBox="0 0 16 16"><path d="M1.5 2.5 h13 l-5 6 v5.5 l-3 1.5 v-7 z" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></symbol>
+    <symbol id="sym-trichter-voll" viewBox="0 0 16 16"><path d="M1.5 2.5 h13 l-5 6 v5.5 l-3 1.5 v-7 z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+    <symbol id="sym-schloss" viewBox="0 0 12 12"><rect x="2" y="5.5" width="8" height="5.5" rx="1" fill="currentColor"/><path d="M4 5.5 V4 a2 2 0 0 1 4 0 V5.5" fill="none" stroke="currentColor" stroke-width="1.4"/></symbol>
+  </defs>
+</svg>
+
+<header class="mockup-kopf">
+  <h1>Administrationsdialoge im einheitlichen Schema</h1>
+  <p>Variante B (Mehrfachauswahl) als Grundlage für alle Verwaltungs- und Projektdialoge: ein Gerüst mit sechs Zonen,
+  die überall an derselben Stelle stehen; was ein Dialog Eigenes braucht, steckt als Gruppe im Stammblatt.
+  Jeder Rahmen hat die Größe des Fensters beim Anwender (1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel). Konzept, Bestand und Fragen:
+  <code>Dokumentation/aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md</code>, Abschnitte 3 und 4.</p>
+</header>
+
+<main class="mockup-inhalt">
+
+<p class="mockup-hinweis">Schema, kein Abbild: Geräte heißen „Kessel 1“, „Wärmepumpe 3“, Hersteller „Hersteller A“, Regionen „Region Nord“;
+alle Werte sind rund und erfunden. Der Reiter „Gerüst“ zeigt die Zonen; die Reiter 1 bis 5 zeigen fünf Dialoge im selben Gerüst, jeder
+mit einem Kasten „gleich / dialogspezifisch“; „Schmal“ zeigt einen Dialog bei 400&nbsp;px Breite.</p>
+
+<div class="mockup-reiter" role="tablist" aria-label="Dialoge">
+  <button type="button" role="tab" id="reiter-geruest" aria-controls="blatt-geruest" aria-selected="true">Gerüst</button>
+  <button type="button" role="tab" id="reiter-kessel" aria-controls="blatt-kessel" aria-selected="false">1 · Heizkessel (Verwaltung)</button>
+  <button type="button" role="tab" id="reiter-wp" aria-controls="blatt-wp" aria-selected="false">2 · Wärmepumpe (Projekt)</button>
+  <button type="button" role="tab" id="reiter-klima" aria-controls="blatt-klima" aria-selected="false">3 · Klimadaten</button>
+  <button type="button" role="tab" id="reiter-kosten" aria-controls="blatt-kosten" aria-selected="false">4 · Kostenfaktoren</button>
+  <button type="button" role="tab" id="reiter-bw" aria-controls="blatt-bw" aria-selected="false">5 · Brauchwasser</button>
+  <button type="button" role="tab" id="reiter-schmal" aria-controls="blatt-schmal" aria-selected="false">Schmal · Wärmepumpe</button>
+</div>
+
+<!-- ===================================================================== -->
+<!-- GERUEST                                                               -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-geruest" role="tabpanel" aria-labelledby="reiter-geruest">
+  <h2>Das Gerüst — sechs Zonen, in jedem Verwaltungs- und Projektdialog an derselben Stelle</h2>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · Platzhalter statt Fachinhalt · Ziffern und rote Rahmen sind Mockup-Zeichen</p>
+
+  <div class="dlg dlg--geruest" aria-label="Gerüst eines Administrationsdialogs">
+    <div class="dlg-kopf zone" data-zone="1">
+      <h3 class="dlg-titel">Titel des Dialogs</h3>
+      <span class="infoknopf" aria-hidden="true" title="Hilfe (Wiki)">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+
+    <div class="werkzeug zone" data-zone="2">
+      <div class="umschalter" role="group" aria-label="Ansicht (nur Projektdialog)">
+        <button type="button" aria-pressed="true">Katalog <span class="anzahl">63</span></button>
+        <button type="button" aria-pressed="false">Im Projekt <span class="anzahl">3</span></button>
+      </div>
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" placeholder="* und ? erlaubt"></label>
+      <span class="treffer">12 von 63</span>
+      <span class="platzhalter">dialogspezifischer Schalter</span>
+      <button type="button" class="textknopf">Filter zurücksetzen</button>
+    </div>
+
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl zone" data-zone="4" role="region" aria-label="Auswahl">
+          <span class="aw-was">3 gewählt</span>
+          <button type="button" class="knopf">＋ Ins Projekt</button>
+          <button type="button" class="knopf" aria-pressed="true">Vergleichen</button>
+          <button type="button" class="knopf">Duplizieren</button>
+          <button type="button" class="knopf">Löschen…</button>
+          <span class="fueller"></span>
+          <button type="button" class="textknopf">Auswahl aufheben</button>
+        </div>
+        <div class="zonenhuelle zone" data-zone="3">
+          <div class="liste" tabindex="0" aria-label="Liste">
+            <table class="raster" role="grid" aria-multiselectable="true">
+              <thead><tr>
+                <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+                <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichner<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichner"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+                <th class="sp-rang2" style="width:130px"><div class="kopf"><button type="button" class="kopf-titel">Spalte Rang 2</button><button type="button" class="trichter" aria-label="Filter"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+                <th class="zahlsp" style="width:116px"><div class="kopf rechts"><button type="button" class="kopf-titel">Zahl Rang 1</button><button type="button" class="trichter" aria-label="Filter"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+                <th class="sp-projekt">Im Projekt</th>
+              </tr></thead>
+              <tbody>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Satz 1 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 1</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">10</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Satz 1 ins Projekt">＋</button></div></td></tr>
+                <tr class="markiert"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Satz 2 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 2</span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">20</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 1 Zeile">✓</span><button type="button" class="plus" aria-label="Satz 2 ins Projekt">＋</button></div></td></tr>
+                <tr class="markiert" aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Satz 3 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 3 – Fokuszeile, ihr Stammblatt steht rechts</span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">30</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Satz 3 ins Projekt">＋</button></div></td></tr>
+                <tr class="markiert"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Satz 4 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 4</span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">40</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 2 Zeilen">✓ 2×</span><button type="button" class="plus" aria-label="Satz 4 ins Projekt">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Satz 5 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 5</span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">50</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Satz 5 ins Projekt">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Satz 6 wählen"></label></td><td><div class="bez"><span class="bez-text">Satz 6</span></div></td><td class="sp-rang2">Text</td><td class="zahlsp">60</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Satz 6 ins Projekt">＋</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="zonenhuelle zone" data-zone="5">
+        <section class="stammblatt nur-breit" aria-label="Stammblatt">
+          <div class="gk">Stammblatt <span class="gk-zusatz">Satz 3</span></div>
+          <div class="stamm-inhalt">
+            <div class="stamm-kopf">
+              <div class="stamm-name">Satz 3</div>
+              <div class="stamm-unter">Hersteller · Herkunft (Auslieferung, eigener Satz, Projektkopie) · Kennzeichen</div>
+            </div>
+            <div class="kennzahlen">
+              <div class="kz"><b>30</b><span>Kennzahl 1</span></div>
+              <div class="kz"><b>0,95</b><span>Kennzahl 2</span></div>
+              <div class="kz"><b>ja</b><span>Kennzahl 3</span></div>
+            </div>
+            <div class="sb-steck"><b>Dialogspezifische Gruppe</b> — Im Projekt · Kennlinie · Jahresverlauf · Wochenprofil · Ganglinie · Positionen</div>
+            <section class="sb-gruppe"><h4>Kenndaten</h4>
+              <dl class="formular"><dt>Feld</dt><dd><input class="eingabe eingabe--kurz" value="30"> <span class="einheit">kW</span></dd><dt>Feld</dt><dd><input class="eingabe" value="Text"></dd></dl>
+            </section>
+            <section class="sb-gruppe"><h4>Kosten</h4>
+              <dl class="formular"><dt>Feld</dt><dd><input class="eingabe eingabe--kurz" value="10 000"> <span class="einheit">€</span></dd></dl>
+            </section>
+            <details class="aufklapper"><summary>Alle Daten <span class="anzahl">21</span></summary><p class="hinweiszeile">alle Felder des Satzes samt ihrer Verwendung im Rechenweg</p></details>
+          </div>
+          <div class="stamm-fuss">
+            <span class="status">2 Felder geändert</span>
+            <button type="button" class="knopf knopf--klein">Verwerfen</button>
+            <button type="button" class="knopf knopf--klein">Speichern</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <div class="fuss zone" data-zone="6">
+      <button type="button" class="knopf">Neu…</button>
+      <button type="button" class="knopf">Import…</button>
+      <span class="status" role="status">Statuszeile: letzte Rückmeldung</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf">Abbrechen</button>
+      <button type="button" class="knopf knopf--primaer">OK / Beenden</button>
+    </div>
+  </div>
+
+  <div class="legende">
+    <h3>Die sechs Zonen</h3>
+    <table class="tabelle">
+      <thead><tr><th style="width:42px">Zone</th><th style="width:22%">Was dort steht</th><th>gleich in allen Dialogen</th><th style="width:30%">je Dialog verschieden</th></tr></thead>
+      <tbody>
+        <tr><td><span class="zonennr">1</span></td><td><b>Titelzeile</b></td><td>Titel, Info (Wiki), ✕ rechts außen; das Kreuz steht beim Titel — trägt eine Überlagerung den Titel, trägt sie auch das Kreuz</td><td>nur der Titeltext</td></tr>
+        <tr><td><span class="zonennr">2</span></td><td><b>Werkzeugleiste</b></td><td>Suche über alle Spalten, Trefferzahl, „Filter zurücksetzen“; im Projektdialog vorn der Umschalter „Katalog | Im Projekt (n)“. Sortierpfeil und Trichter bleiben im Spaltenkopf</td><td>ein Schalter, der einen Trichter setzt („nur mit Kühlfunktion“); nie ein zweiter Filterweg</td></tr>
+        <tr><td><span class="zonennr">3</span></td><td><b>Liste</b></td><td>ein Rollbereich; Kästchenspalte; die Zeile ist die Wahl (Fokuszeile → Stammblatt); Spalten nach Rang, nie waagerecht rollend; Kennzeichen an der Zeile (Schloss „Auslieferung“, „✓ im Projekt“); im Projektdialog „＋“ je Zeile</td><td>die Spalten und ihr Rang (Profil im Kern)</td></tr>
+        <tr><td><span class="zonennr">4</span></td><td><b>Auswahlleiste</b></td><td>nennt, worauf sie wirkt: die Fokuszeile oder „n gewählt“; trägt alle Handlungen an Zeilen; ein Knopf, der gerade nicht geht, ist weich gesperrt und sagt warum</td><td>welche Handlungen: Ins Projekt, Vergleichen, Duplizieren, Löschen, Entfernen</td></tr>
+        <tr><td><span class="zonennr">5</span></td><td><b>Stammblatt</b></td><td>Kopf (Name, Herkunft, drei Kennzahlen), Gruppen „Kenndaten“, „Kosten“, „Alle Daten“; Fuß „Verwerfen · Speichern“ mit Änderungszahl; ab zwei gewählten Zeilen der Vergleich; Auslieferungssätze nur lesbar; unter 900&nbsp;px als Blatt über der Liste</td><td>eine steckbare Gruppe: Im Projekt, Kennlinie, Jahresverlauf, Wochenprofil, Ganglinie, Positionen</td></tr>
+        <tr><td><span class="zonennr">6</span></td><td><b>Fußleiste</b></td><td>links die Handlungen am ganzen Dialog (Neu…, Import…), dann die Statuszeile, Füller, zuletzt der eine primäre Knopf: in der Verwaltung „Beenden“, im Projektdialog „Abbrechen · OK“</td><td>ob es Neu… und Import… gibt</td></tr>
+      </tbody>
+    </table>
+
+    <div class="gleich-spez">
+      <div>
+        <h4>Drei Orte für Handlungen</h4>
+        <ul>
+          <li><b>an Zeilen</b> → Auswahlleiste (Zone 4), dazu „＋“ bzw. „Entfernen“ in der Zeile selbst;</li>
+          <li><b>an Feldern</b> → Fuß des Stammblatts (Zone 5): Verwerfen · Speichern;</li>
+          <li><b>am Dialog</b> → Fußleiste (Zone 6): Neu…, Import…, Schlussknopf.</li>
+        </ul>
+        <p>Wer einen Knopf sucht, weiß damit, wo er steht. Keine Handlung steht an zwei Orten.</p>
+      </div>
+      <div>
+        <h4>Verhalten</h4>
+        <ul>
+          <li><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Pos1</kbd> <kbd>Ende</kbd> bewegen die Fokuszeile, das Stammblatt folgt; <kbd>Leertaste</kbd> setzt ihr Kästchen.</li>
+          <li><kbd>Esc</kbd> wirkt wie ✕ — erst schließt die oberste Überlagerung, im schmalen Fenster dann das Blatt, danach der Dialog.</li>
+          <li><kbd>Enter</kbd> bleibt unbelegt. Doppelklick nur im Projektdialog: wie „＋“.</li>
+          <li>Rückmeldung in der Statuszeile; ein Warnband erst nach einem gescheiterten Versuch, es verfällt. Eine Rückfrage gibt es nur vor dem Löschen.</li>
+          <li>Ungespeicherte Felder halten die Wahl fest: Der Zeilenwechsel bleibt stehen, der Stammblattfuß sagt „Speichern oder Verwerfen“.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- 1 HEIZKESSEL, VERWALTUNG                                              -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-kessel" role="tabpanel" aria-labelledby="reiter-kessel">
+  <h2>1 · Verwaltung Heizkessel — Variante B verfeinert</h2>
+  <div class="rahmenfolge">
+  <div>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · drei Zeilen über das Kästchen gewählt, Kessel 5 ist Fokuszeile · das Stammblatt zeigt den Vergleich</p>
+  <div class="dlg" aria-label="Verwaltung Heizkessel, Mehrfachwahl">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Verwaltung Heizkessel</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" placeholder="* und ? erlaubt"></label>
+      <span class="treffer">63 Sätze</span>
+      <button type="button" class="textknopf" aria-disabled="true" title="Kein Filter gesetzt">Filter zurücksetzen</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">3 gewählt</span>
+          <button type="button" class="knopf" aria-pressed="true">Vergleichen</button>
+          <button type="button" class="knopf" aria-disabled="true" title="Duplizieren gilt für genau eine Zeile">Duplizieren</button>
+          <button type="button" class="knopf">Löschen…</button>
+          <span class="fueller"></span>
+          <button type="button" class="textknopf">Auswahl aufheben</button>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Katalog Heizkessel">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichner<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichner"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:118px"><div class="kopf"><button type="button" class="kopf-titel">Hersteller</button><button type="button" class="trichter" aria-label="Filter Hersteller"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:104px"><div class="kopf"><button type="button" class="kopf-titel">Brennstoff</button><button type="button" class="trichter" aria-label="Filter Brennstoff"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:92px"><div class="kopf rechts"><button type="button" class="kopf-titel">P_th kW</button><button type="button" class="trichter" aria-label="Filter P_th"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp sp-rang2" style="width:60px"><div class="kopf rechts"><button type="button" class="kopf-titel">η</button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 1 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 1</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">15</td><td class="zahlsp sp-rang2">0,96</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 2 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 2</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">20</td><td class="zahlsp sp-rang2">0,96</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 3 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Kessel 3 – Brennwert, wandhängend, modulierend">Kessel 3 – Brennwert, wandhängend, modulierend</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">20</td><td class="zahlsp sp-rang2">0,97</td></tr>
+              <tr class="markiert"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Kessel 4 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 4</span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">25</td><td class="zahlsp sp-rang2">0,96</td></tr>
+              <tr class="markiert" aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Kessel 5 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 5</span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">30</td><td class="zahlsp sp-rang2">0,95</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 6 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 6</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Heizöl</td><td class="zahlsp">40</td><td class="zahlsp sp-rang2">0,94</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 7 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 7</span></div></td><td class="sp-rang2">Hersteller D</td><td class="sp-rang2">Holzpellets</td><td class="zahlsp">50</td><td class="zahlsp sp-rang2">0,92</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 8 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 8</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">60</td><td class="zahlsp sp-rang2">0,96</td></tr>
+              <tr class="markiert"><td class="sp-kasten"><label class="kasten"><input type="checkbox" checked aria-label="Kessel 9 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 9</span></div></td><td class="sp-rang2">Hersteller D</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">80</td><td class="zahlsp sp-rang2">0,97</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 10 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 10</span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Heizöl</td><td class="zahlsp">100</td><td class="zahlsp sp-rang2">0,93</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 11 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 11</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">120</td><td class="zahlsp sp-rang2">0,95</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 12 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 12</span></div></td><td class="sp-rang2" title="Hersteller E Heiztechnik Handelsgesellschaft mbH">Hersteller E Heiztechnik Handelsgesellschaft mbH</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">150</td><td class="zahlsp sp-rang2">0,96</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Vergleich der gewählten Zeilen">
+        <div class="gk">Vergleich <span class="gk-zusatz">3 Kessel</span></div>
+        <div class="stamm-inhalt">
+          <label class="schalter"><input type="checkbox"> nur abweichende Werte</label>
+          <table class="vergleich">
+            <colgroup><col style="width:32%"><col><col><col></colgroup>
+            <thead><tr><th>Parameter</th><th>Kessel 4</th><th>Kessel 5</th><th>Kessel 9</th></tr></thead>
+            <tbody>
+              <tr class="abweichend"><td>Hersteller<span class="stufe">≠ abweichend</span></td><td>Hersteller B</td><td>Hersteller C</td><td>Hersteller D</td></tr>
+              <tr><td>Brennstoff<span class="stufe">✓ gleich</span></td><td>Erdgas</td><td>Erdgas</td><td>Erdgas</td></tr>
+              <tr class="abweichend"><td>Nennleistung<span class="stufe">≠ abweichend</span></td><td>25 kW</td><td>30 kW</td><td>80 kW</td></tr>
+              <tr class="abweichend"><td>Wirkungsgrad<span class="stufe">≠ abweichend</span></td><td>0,96</td><td>0,95</td><td>0,97</td></tr>
+              <tr><td>Brennwert<span class="stufe">✓ gleich</span></td><td>ja</td><td>ja</td><td>ja</td></tr>
+              <tr class="abweichend"><td>Investition<span class="stufe">≠ abweichend</span></td><td>6 000 €</td><td>7 000 €</td><td>14 000 €</td></tr>
+              <tr class="abweichend"><td>Nutzungsdauer<span class="stufe">≠ abweichend</span></td><td>20 Jahre</td><td>20 Jahre</td><td>25 Jahre</td></tr>
+              <tr><td>Herkunft<span class="stufe">✓ gleich</span></td><td>eigener Satz</td><td>eigener Satz</td><td>eigener Satz</td></tr>
+            </tbody>
+          </table>
+          <button type="button" class="textknopf" style="align-self:flex-start">‹ Stammblatt von Kessel 5</button>
+        </div>
+        <div class="stamm-fuss stamm-fuss--nurlesen"><span class="status">Der Vergleich ist nur lesbar; geändert wird im Stammblatt einer Zeile.</span></div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Neu…</button>
+      <button type="button" class="knopf">Import…</button>
+      <span class="status" role="status">63 Sätze, davon 40 Auslieferung</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf knopf--primaer">Beenden</button>
+    </div>
+  </div>
+  </div>
+
+  <div>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · keine Zeile über das Kästchen gewählt · Fokuszeile Kessel 7 (eigener Satz), zwei Felder geändert</p>
+  <div class="dlg" aria-label="Verwaltung Heizkessel, Einzelwahl mit Bearbeitung">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Verwaltung Heizkessel</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" value="kessel 1*" aria-label="Suche über alle Spalten"></label>
+      <span class="treffer">4 von 63 Sätzen</span>
+      <button type="button" class="textknopf">Filter zurücksetzen</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">Kessel 7</span>
+          <button type="button" class="knopf" aria-disabled="true" title="Zwei oder drei Zeilen über das Kästchen wählen">Vergleichen</button>
+          <button type="button" class="knopf">Duplizieren</button>
+          <button type="button" class="knopf">Löschen…</button>
+          <span class="fueller"></span>
+          <span class="aw-leise">Kästchen: mehrere wählen</span>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Katalog Heizkessel">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichner<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichner"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:118px"><div class="kopf"><button type="button" class="kopf-titel">Hersteller</button><button type="button" class="trichter" aria-label="Filter Hersteller"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:104px"><div class="kopf"><button type="button" class="kopf-titel">Brennstoff</button><button type="button" class="trichter" aria-label="Filter Brennstoff"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:92px"><div class="kopf rechts"><button type="button" class="kopf-titel">P_th kW</button><button type="button" class="trichter" aria-label="Filter P_th"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp sp-rang2" style="width:60px"><div class="kopf rechts"><button type="button" class="kopf-titel">η</button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 6 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 6</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Heizöl</td><td class="zahlsp">40</td><td class="zahlsp sp-rang2">0,94</td></tr>
+              <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 7 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 7</span></div></td><td class="sp-rang2">Hersteller D</td><td class="sp-rang2">Holzpellets</td><td class="zahlsp">50</td><td class="zahlsp sp-rang2">0,92</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 8 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 8</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Erdgas</td><td class="zahlsp">60</td><td class="zahlsp sp-rang2">0,96</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Kessel 10 wählen"></label></td><td><div class="bez"><span class="bez-text">Kessel 10</span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Heizöl</td><td class="zahlsp">100</td><td class="zahlsp sp-rang2">0,93</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Stammblatt Kessel 7">
+        <div class="gk">Stammblatt <span class="gk-zusatz">Kessel 7</span></div>
+        <div class="stamm-inhalt">
+          <div class="stamm-kopf">
+            <div class="stamm-name">Kessel 7</div>
+            <div class="stamm-unter">Hersteller D · Holzpellets · eigener Satz</div>
+          </div>
+          <div class="kennzahlen">
+            <div class="kz"><b>50 kW</b><span>Nennleistung</span></div>
+            <div class="kz"><b>0,93</b><span>Wirkungsgrad</span></div>
+            <div class="kz"><b>nein</b><span>Brennwert</span></div>
+          </div>
+          <section class="sb-gruppe"><h4>Kenndaten</h4>
+            <dl class="formular">
+              <dt>Bezeichner</dt><dd><input class="eingabe" value="Kessel 7" aria-label="Bezeichner"></dd>
+              <dt>Hersteller</dt><dd><input class="eingabe" value="Hersteller D" aria-label="Hersteller"></dd>
+              <dt>Brennstoff</dt><dd><select class="eingabe" aria-label="Brennstoff"><option>Holzpellets</option></select></dd>
+              <dt>Nennleistung</dt><dd><input class="eingabe eingabe--kurz" value="50" aria-label="Nennleistung"> <span class="einheit">kW</span></dd>
+              <dt>Wirkungsgrad</dt><dd><input class="eingabe eingabe--kurz geaendert" value="0,93" aria-label="Wirkungsgrad, geändert"></dd>
+            </dl>
+          </section>
+          <section class="sb-gruppe"><h4>Kosten</h4>
+            <dl class="formular">
+              <dt>Investition</dt><dd><input class="eingabe eingabe--kurz geaendert" value="15 000" aria-label="Investition, geändert"> <span class="einheit">€</span></dd>
+              <dt>Wartung</dt><dd><input class="eingabe eingabe--kurz" value="2" aria-label="Wartung"> <span class="einheit">% der Investition je Jahr</span></dd>
+              <dt>Nutzungsdauer</dt><dd><input class="eingabe eingabe--kurz" value="20" aria-label="Nutzungsdauer"> <span class="einheit">Jahre</span></dd>
+            </dl>
+          </section>
+          <details class="aufklapper"><summary>Alle Daten <span class="anzahl">21</span></summary><p class="hinweiszeile">alle Felder samt Emissionen und ihrer Verwendung im Rechenweg</p></details>
+          <p class="hinweiszeile"><span class="infoknopf" aria-hidden="true">?</span> Berechnungsweg Heizkessel</p>
+        </div>
+        <div class="stamm-fuss">
+          <span class="status">2 Felder geändert</span>
+          <button type="button" class="knopf knopf--klein">Verwerfen</button>
+          <button type="button" class="knopf knopf--klein">Speichern</button>
+        </div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Neu…</button>
+      <button type="button" class="knopf">Import…</button>
+      <span class="status" role="status">Kessel 10 gespeichert</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf knopf--primaer">Beenden</button>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <div class="legende">
+    <h3>Heizkessel: was gleich ist, was dem Dialog gehört</h3>
+    <div class="gleich-spez">
+      <div>
+        <h4>gleich (Gerüst)</h4>
+        <ul>
+          <li>Zonen 1 bis 6 wie im Gerüst; kein Umschalter, kein „＋“ — die Verwaltung kennt kein Projekt (AD-Q7).</li>
+          <li><span class="v">V8</span> Die <b>Auswahlleiste</b> steht auch für eine Zeile: oben „3 gewählt“, unten „Kessel 7“. Duplizieren gilt für genau eine Zeile und ist sonst weich gesperrt (der Kurztext sagt warum).</li>
+          <li><span class="v">V12</span> <b>Vergleich im Stammblatt</b> ab zwei gewählten Zeilen, abweichende Werte fett und mit Wort, Schalter „nur abweichende Werte“; „‹ Stammblatt von Kessel 5“ führt zur Fokuszeile zurück.</li>
+          <li><span class="v">V9</span> Das Stammblatt ist <b>direkt bedienbar</b>; geänderte Felder tragen den blauen Balken, der Fuß zählt sie und bietet Verwerfen · Speichern (AD-Q5, AD-Q6). „Bearbeiten…“ entfällt.</li>
+          <li><span class="v">V10</span> <b>Schloss „Auslieferung“</b> am Bezeichner statt einer Spalte; das Stammblatt eines solchen Satzes ist nur lesbar (Reiter 3).</li>
+          <li><span class="v">V15</span> Fußleiste: Neu… · Import… · Status · <b>Beenden</b>; Speichern, Bearbeiten und Löschen stehen nicht mehr dort.</li>
+          <li><span class="v v--frage">AD-Q9</span> Löschen… wirkt auf die Auswahl — drei Zeilen, eine Rückfrage, die sie nennt.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>dialogspezifisch</h4>
+        <ul>
+          <li>Spalten Bezeichner, Hersteller, Brennstoff, P_th, η; Brennwert steht als Rang 3 nur im Stammblatt.</li>
+          <li>Kennzahlen Nennleistung, Wirkungsgrad, Brennwert; Gruppen Kenndaten und Kosten genügen — keine steckbare Gruppe.</li>
+          <li>Import… öffnet den Herstellerdaten-Import (VDI 3805) als Überlagerung im selben Fenster; die neuen Sätze stehen danach gewählt in der Liste.</li>
+          <li>Gleich gebaut: BHKW, Solarkollektoren, Pufferspeicher, PV-Module, Wechselrichter, Stromspeicher — nur Spalten, Kennzahlen und Importquelle wechseln.</li>
+        </ul>
+        <p><b>Gegenüber B</b> heißt die Sammelleiste Auswahlleiste und steht immer, sobald eine Zeile gewählt ist; Löschen und Duplizieren sind aus der Fußleiste zu ihr gewandert.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- 2 WAERMEPUMPE, PROJEKTDIALOG                                          -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-wp" role="tabpanel" aria-labelledby="reiter-wp">
+  <h2>2 · Wärmepumpen im Projekt — Katalog mit Übernahme, Kennlinie im Stammblatt</h2>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · Projektdialog (Kachel oder Assistent) · Schalter „nur mit Kühlfunktion“ an · Wärmepumpe 3 ist Fokuszeile</p>
+
+  <div class="dlg" aria-label="Wärmepumpen im Projekt">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Wärmepumpen im Projekt</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Abbrechen)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <div class="umschalter" role="group" aria-label="Ansicht">
+        <button type="button" aria-pressed="true">Katalog <span class="anzahl">51</span></button>
+        <button type="button" aria-pressed="false">Im Projekt <span class="anzahl">2</span></button>
+      </div>
+      <label class="suche"><span>Suche</span><input class="eingabe" placeholder="über alle Spalten, * und ? erlaubt"></label>
+      <span class="treffer">9 von 51</span>
+      <label class="schalter"><input type="checkbox" checked> nur mit Kühlfunktion</label>
+      <button type="button" class="textknopf">Filter zurücksetzen</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">Wärmepumpe 3</span>
+          <button type="button" class="knopf">＋ Ins Projekt</button>
+          <button type="button" class="knopf" aria-disabled="true" title="Zwei oder drei Zeilen über das Kästchen wählen">Vergleichen</button>
+          <span class="fueller"></span>
+          <span class="aw-leise">Kästchen: mehrere wählen</span>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Katalog Wärmepumpen">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Modell<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Modell"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:98px"><div class="kopf"><button type="button" class="kopf-titel">Hersteller</button><button type="button" class="trichter" aria-label="Filter Hersteller"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:82px"><div class="kopf"><button type="button" class="kopf-titel">Quelle</button><button type="button" class="trichter" aria-label="Filter Quelle"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:90px"><div class="kopf rechts"><button type="button" class="kopf-titel">P_N kW</button><button type="button" class="trichter" aria-label="Filter Nennleistung"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:92px"><div class="kopf rechts"><button type="button" class="kopf-titel">Kühl kW</button><button type="button" class="trichter trichter--gesetzt" aria-label="Filter Kühlleistung: größer 0"><svg class="ico" width="14" height="14"><use href="#sym-trichter-voll"/></svg></button></div></th>
+                            <th class="sp-projekt">Im Projekt</th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 1 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 1</span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Luft</td><td class="zahlsp">8</td><td class="zahlsp">6</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 1 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 2 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 2</span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Luft</td><td class="zahlsp">10</td><td class="zahlsp">8</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 1 Zeile">✓</span><button type="button" class="plus" aria-label="Wärmepumpe 2 noch einmal ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 3 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 3</span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Sole</td><td class="zahlsp">12</td><td class="zahlsp">10</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 3 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 4 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 4</span></div></td><td class="sp-rang2">Hersteller B</td><td class="sp-rang2">Luft</td><td class="zahlsp">14</td><td class="zahlsp">12</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 4 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 5 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 5</span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Wasser</td><td class="zahlsp">16</td><td class="zahlsp">14</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 1 Zeile">✓</span><button type="button" class="plus" aria-label="Wärmepumpe 5 noch einmal ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 6 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 6</span></div></td><td class="sp-rang2">Hersteller C</td><td class="sp-rang2">Luft</td><td class="zahlsp">20</td><td class="zahlsp">16</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 6 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 7 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 7</span></div></td><td class="sp-rang2">Hersteller D</td><td class="sp-rang2">Sole</td><td class="zahlsp">25</td><td class="zahlsp">20</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 7 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 8 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 8</span></div></td><td class="sp-rang2">Hersteller D</td><td class="sp-rang2">Luft</td><td class="zahlsp">30</td><td class="zahlsp">25</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 8 ins Projekt übernehmen">＋</button></div></td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 9 wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe 9</span></div></td><td class="sp-rang2">Hersteller A</td><td class="sp-rang2">Luft</td><td class="zahlsp">40</td><td class="zahlsp">32</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 9 ins Projekt übernehmen">＋</button></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Stammblatt Wärmepumpe 3">
+        <div class="gk">Stammblatt <span class="gk-zusatz">Katalogsatz</span></div>
+        <div class="stamm-inhalt">
+          <div class="stamm-kopf">
+            <div class="stamm-name">Wärmepumpe 3</div>
+            <div class="stamm-unter">Hersteller B · Sole/Wasser · noch nicht im Projekt</div>
+          </div>
+          <div class="kennzahlen">
+            <div class="kz"><b>12 kW</b><span>Nennleistung</span></div>
+            <div class="kz"><b>4,6</b><span>COP B0/W35</span></div>
+            <div class="kz"><b>10 kW</b><span>Kühlleistung</span></div>
+          </div>
+          <section class="sb-gruppe"><h4>Kennlinie <span class="mock-spez">dialogspezifisch</span><span class="fueller"></span></h4>
+            <div class="umschalter" role="group" aria-label="Kennlinie" style="align-self:flex-start">
+              <button type="button" aria-pressed="true">Heizen</button>
+              <button type="button" aria-pressed="false">Kühlen</button>
+            </div>
+            <svg class="skizze" viewBox="0 0 340 150" role="img" aria-label="Skizze: COP über der Quelltemperatur, zwei Vorlauftemperaturen">
+              <line class="gitter" x1="36" y1="14" x2="330" y2="14"/><line class="gitter" x1="36" y1="40.5" x2="330" y2="40.5"/><line class="gitter" x1="36" y1="67" x2="330" y2="67"/><line class="gitter" x1="36" y1="93.5" x2="330" y2="93.5"/><line class="achse" x1="36" y1="120" x2="330" y2="120"/>
+              <text x="30" y="17" text-anchor="end">6</text><text x="30" y="43.5" text-anchor="end">5</text><text x="30" y="70" text-anchor="end">4</text><text x="30" y="96.5" text-anchor="end">3</text><text x="30" y="123" text-anchor="end">2</text>
+              <text x="36" y="9">COP</text>
+              <text x="36" y="133" text-anchor="middle">−5</text><text x="109.5" y="133" text-anchor="middle">0</text><text x="183" y="133" text-anchor="middle">5</text><text x="256.5" y="133" text-anchor="middle">10</text><text x="330" y="133" text-anchor="end">15</text>
+              <text x="183" y="146" text-anchor="middle">Quelltemperatur °C</text>
+              <polyline class="linie-1" points="36,67 109.5,51.1 183,35.2 256.5,22 330,14"/>
+              <polyline class="linie-2" points="36,101.5 109.5,90.9 183,80.3 256.5,69.7 330,61.7"/>
+              <circle class="punkt" cx="109.5" cy="51.1" r="3.5"/><text x="115" y="47">4,6</text>
+            </svg>
+            <div class="skizze-legende"><span><i></i>Vorlauf 35 °C</span><span><i class="l2"></i>Vorlauf 55 °C</span><span>● Normpunkt</span></div>
+          </section>
+          <section class="sb-gruppe"><h4>Kenndaten</h4>
+            <dl class="formular">
+              <dt>Quelle</dt><dd>Sole</dd>
+              <dt>Vorlauf min / max</dt><dd>25 / 65 <span class="einheit">°C</span></dd>
+              <dt>Zuheizung</dt><dd>6 <span class="einheit">kW</span></dd>
+              <dt>Regelung</dt><dd>modulierend</dd>
+            </dl>
+          </section>
+          <section class="sb-gruppe"><h4>Kosten</h4>
+            <dl class="formular"><dt>Modulkosten</dt><dd>14 000 <span class="einheit">€ (aus dem Katalog)</span></dd></dl>
+          </section>
+          <details class="aufklapper"><summary>Alle Daten <span class="anzahl">18</span></summary><p class="hinweiszeile">Katalogsatz, hier nur lesbar.</p></details>
+        </div>
+        <div class="stamm-fuss stamm-fuss--nurlesen"><span class="status">Katalogsatz — die Felder der Projektzeile stehen unter „Im Projekt“.</span></div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Katalog verwalten…</button>
+      <span class="status" role="status">Im Projekt: 2 Wärmepumpen</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf">Abbrechen</button>
+      <button type="button" class="knopf knopf--primaer">OK</button>
+    </div>
+  </div>
+
+  <div class="legende">
+    <h3>Wärmepumpe im Projekt: was gleich ist, was dem Dialog gehört</h3>
+    <div class="gleich-spez">
+      <div>
+        <h4>gleich (Gerüst)</h4>
+        <ul>
+          <li><span class="v">V5</span> Umschalter <b>„Katalog | Im Projekt (n)“</b> vorn in der Werkzeugleiste; die Zahl ist die Rückmeldung jeder Übernahme.</li>
+          <li><span class="v">V5</span> <b>„＋“ je Zeile</b>, immer sichtbar; „✓“ bzw. „✓ 2×“ zeigt die Projektzeilen. Doppelklick wirkt wie „＋“ (AD-Q3).</li>
+          <li><span class="v">V8</span> Die Auswahlleiste trägt „＋ Ins Projekt“ für die Fokuszeile, bei gewählten Kästchen „＋ n ins Projekt“ (AD-Q4).</li>
+          <li><span class="v">V9</span> Im Katalog ist das Stammblatt nur lesbar; die Projektfelder (Betriebsart, Vorlauf, Rücklauf, Kosten) stehen im Stammblatt der Projektzeile unter „Im Projekt“ — bearbeitbar, geschrieben mit OK.</li>
+          <li><span class="v">V15</span> Fußleiste: Status · Abbrechen · OK. <span class="v v--frage">AD-Q10</span> Links „Katalog verwalten…“ öffnet die Verwaltung als Überlagerung; Neu, Duplizieren und Löschen gibt es im Projektdialog nicht mehr.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>dialogspezifisch</h4>
+        <ul>
+          <li><b>Schalter „nur mit Kühlfunktion“</b> in der Werkzeugleiste: Er setzt den Trichter der Spalte Kühlleistung auf „&gt;&nbsp;0“ — der Trichter ist gefüllt, und die Spalte bleibt deshalb sichtbar (V2). Kein zweiter Filterweg.</li>
+          <li>Spalten Modell, Hersteller, Quelle, P_N, Kühlleistung; COP (als Kennzahl), Vorlauf min/max und Zuheizung stehen als Rang 3 im Stammblatt.</li>
+          <li><b>Gruppe „Kennlinie“</b> mit Umschalter Heizen | Kühlen (nur, wenn Kühlkenndaten da sind); „Kennlinien bearbeiten…“ steht im Stammblatt der Projektzeile.</li>
+          <li>Keine Trägerwahl bei der Übernahme — die Wärmepumpe bezieht Strom.</li>
+          <li>„Markierte auf diese Wärmepumpe umstellen“ wird im Stammblatt der Projektzeile zu „Gerät tauschen…“: Es wechselt in den Katalog, und „＋“ heißt dort einmal „Einsetzen“.</li>
+          <li>„In den Katalog übernehmen…“ (Projektkopie → Katalogsatz, AD-Q5) bleibt eine eigene Handlung im Kopf der Gruppe „Alle Daten“.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- 3 KLIMADATEN, VERWALTUNG                                              -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-klima" role="tabpanel" aria-labelledby="reiter-klima">
+  <h2>3 · Klimadaten — Regionen statt Geräte, Jahresverlauf im Stammblatt, Einlesen als Überlagerung</h2>
+  <div class="rahmenfolge">
+  <div>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · Region Nord (Auslieferung) ist Fokuszeile · Stammblatt nur lesbar</p>
+  <div class="dlg" aria-label="Klimadaten">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Klimadaten</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" placeholder="* und ? erlaubt"></label>
+      <span class="treffer">10 Regionen</span>
+      <button type="button" class="textknopf" aria-disabled="true" title="Kein Filter gesetzt">Filter zurücksetzen</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">Region Nord</span>
+          <button type="button" class="knopf" aria-disabled="true" title="Zwei oder drei Regionen über das Kästchen wählen">Vergleichen</button>
+          <button type="button" class="knopf" aria-disabled="true" title="Region Nord gehört zur Auslieferung und bleibt stehen">Löschen…</button>
+          <span class="fueller"></span>
+          <span class="aw-leise">Kästchen: mehrere wählen</span>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Klimaregionen">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichner<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichner"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:146px"><div class="kopf"><button type="button" class="kopf-titel">Quelle</button><button type="button" class="trichter" aria-label="Filter Quelle"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:86px"><div class="kopf"><button type="button" class="kopf-titel">Standort</button></div></th>
+              <th class="zahlsp" style="width:104px"><div class="kopf rechts"><button type="button" class="kopf-titel">eingelesen</button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Nord wählen"></label></td><td><div class="bez"><span class="bez-text">Region Nord</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort A</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Nordost wählen"></label></td><td><div class="bez"><span class="bez-text">Region Nordost</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort B</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Mitte wählen"></label></td><td><div class="bez"><span class="bez-text">Region Mitte</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort C</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region West wählen"></label></td><td><div class="bez"><span class="bez-text">Region West</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort D</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Süd wählen"></label></td><td><div class="bez"><span class="bez-text">Region Süd</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort E</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Südost wählen"></label></td><td><div class="bez"><span class="bez-text">Region Südost</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort F</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Region Gebirge wählen"></label></td><td><div class="bez"><span class="bez-text">Region Gebirge</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">TRY-Regionaldaten</td><td class="sp-rang2">Ort G</td><td class="zahlsp">15.08.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Standort A wählen"></label></td><td><div class="bez"><span class="bez-text">Standort A</span></div></td><td class="sp-rang2">PVGIS TMY</td><td class="sp-rang2">Ort H</td><td class="zahlsp">02.09.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Standort B wählen"></label></td><td><div class="bez"><span class="bez-text">Standort B</span></div></td><td class="sp-rang2">PVGIS TMY</td><td class="sp-rang2">Ort I</td><td class="zahlsp">10.09.2026</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Standort C wählen"></label></td><td><div class="bez"><span class="bez-text">Standort C</span></div></td><td class="sp-rang2">TRY-Datei</td><td class="sp-rang2">Ort J</td><td class="zahlsp">18.09.2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Stammblatt Region Nord">
+        <div class="gk">Stammblatt <span class="gk-zusatz">Region Nord</span></div>
+        <div class="stamm-inhalt">
+          <div class="stamm-kopf">
+            <div class="stamm-name">Region Nord</div>
+            <div class="stamm-unter"><span class="kennz kennz--schloss"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg>Auslieferung</span> TRY-Regionaldaten · Ort A</div>
+          </div>
+          <div class="kennzahlen">
+            <div class="kz"><b>9 °C</b><span>Jahresmittel</span></div>
+            <div class="kz"><b>−12 °C</b><span>Tiefstwert</span></div>
+            <div class="kz"><b>1 000</b><span>kWh/m² Globalstr.</span></div>
+          </div>
+          <section class="sb-gruppe"><h4>Jahresverlauf <span class="mock-spez">dialogspezifisch</span><span class="fueller"></span></h4>
+            <div class="umschalter" role="group" aria-label="Jahresverlauf" style="align-self:flex-start">
+              <button type="button" aria-pressed="true">Temperatur</button>
+              <button type="button" aria-pressed="false">Sonnenstand</button>
+            </div>
+            <svg class="skizze" viewBox="0 0 340 146" role="img" aria-label="Skizze: Monatsmittel der Außentemperatur mit Band zwischen Tiefst- und Höchstwert">
+              <line class="gitter" x1="36" y1="21" x2="330" y2="21"/><line class="gitter" x1="36" y1="43" x2="330" y2="43"/><line class="gitter" x1="36" y1="65" x2="330" y2="65"/><line class="achse" x1="36" y1="87" x2="330" y2="87"/><line class="gitter" x1="36" y1="109" x2="330" y2="109"/>
+              <text x="30" y="24" text-anchor="end">30</text><text x="30" y="46" text-anchor="end">20</text><text x="30" y="68" text-anchor="end">10</text><text x="30" y="90" text-anchor="end">0</text><text x="30" y="112" text-anchor="end">−10</text>
+              <text x="36" y="10">°C</text>
+              <polygon class="band" points="36,60.6 62.7,56.2 89.5,45.2 116.2,32 142.9,23.2 169.6,16.6 196.4,12.2 223.1,14.4 249.8,25.4 276.5,36.4 303.3,51.8 330,58.4 330,109 303.3,100.2 276.5,91.4 249.8,80.4 223.1,71.6 196.4,69.4 169.6,76 142.9,84.8 116.2,93.6 89.5,102.4 62.7,111.2 36,113.4"/>
+              <polyline class="linie-1" points="36,87 62.7,84.8 89.5,78.2 116.2,69.4 142.9,58.4 169.6,51.8 196.4,47.4 223.1,47.4 249.8,56.2 276.5,67.2 303.3,76 330,82.6"/>
+              <text x="36" y="132" text-anchor="middle">J</text><text x="62.7" y="132" text-anchor="middle">F</text><text x="89.5" y="132" text-anchor="middle">M</text><text x="116.2" y="132" text-anchor="middle">A</text><text x="142.9" y="132" text-anchor="middle">M</text><text x="169.6" y="132" text-anchor="middle">J</text><text x="196.4" y="132" text-anchor="middle">J</text><text x="223.1" y="132" text-anchor="middle">A</text><text x="249.8" y="132" text-anchor="middle">S</text><text x="276.5" y="132" text-anchor="middle">O</text><text x="303.3" y="132" text-anchor="middle">N</text><text x="330" y="132" text-anchor="middle">D</text>
+            </svg>
+            <div class="skizze-legende"><span><i></i>Monatsmittel</span><span><i class="l3"></i>Tiefst- bis Höchstwert</span></div>
+          </section>
+          <section class="sb-gruppe"><h4>Herkunft</h4>
+            <dl class="formular">
+              <dt>Quelle</dt><dd>TRY-Regionaldaten, mittleres Jahr</dd>
+              <dt>Lage</dt><dd>54° N · 10° O · 20 m</dd>
+              <dt>eingelesen</dt><dd>15.08.2026</dd>
+            </dl>
+          </section>
+        </div>
+        <div class="stamm-fuss stamm-fuss--nurlesen"><svg class="ico" width="12" height="12" aria-hidden="true"><use href="#sym-schloss"/></svg><span class="status">Auslieferung — nur lesbar, nicht löschbar.</span></div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Daten einlesen…</button>
+      <span class="status" role="status">10 Regionen, davon 7 Auslieferung</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf knopf--primaer">Beenden</button>
+    </div>
+  </div>
+  </div>
+
+  <div>
+  <p class="rahmen-mass">„Daten einlesen…“ — Überlagerung im selben Fenster, 560&nbsp;CSS-Pixel breit; nach dem Einlesen steht die neue Region gewählt in der Liste</p>
+  <div class="dlg dlg--ueberlagerung" aria-label="Daten einlesen">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Daten einlesen</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Abbrechen)">✕</button>
+    </div>
+    <div class="umschalter" role="group" aria-label="Quelle" style="align-self:flex-start">
+      <button type="button" aria-pressed="false">PVGIS TMY</button>
+      <button type="button" aria-pressed="true">TRY-Datei</button>
+      <button type="button" aria-pressed="false">TRY-Regionaldaten</button>
+    </div>
+    <dl class="formular">
+      <dt>Datei</dt><dd><input class="eingabe" value="Standort_D.dat" readonly aria-label="Datei"><button type="button" class="knopf knopf--klein">Durchsuchen…</button></dd>
+      <dt>Bezeichnung</dt><dd><input class="eingabe" value="Standort D" aria-label="Bezeichnung"></dd>
+      <dt>Lage</dt><dd>52° N · 10° O <span class="einheit">aus dem Dateikopf</span></dd>
+      <dt>Jahr</dt><dd><select class="eingabe" aria-label="Jahr"><option>mittleres Jahr</option></select></dd>
+    </dl>
+    <div>
+      <p class="hinweiszeile">Lese 5&nbsp;256 von 8&nbsp;760 Stunden …</p>
+      <div class="fortschritt" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+    </div>
+    <div class="fuss">
+      <span class="fueller"></span>
+      <button type="button" class="knopf">Abbrechen</button>
+      <button type="button" class="knopf knopf--primaer">Einlesen</button>
+    </div>
+  </div>
+  </div>
+  </div>
+
+  <div class="legende">
+    <h3>Klimadaten: was gleich ist, was dem Dialog gehört</h3>
+    <div class="gleich-spez">
+      <div>
+        <h4>gleich (Gerüst)</h4>
+        <ul>
+          <li>Zonen 1 bis 6; eine Katalogliste mit Kästchen, Suche und Trichtern.</li>
+          <li><span class="v">V10</span> Das <b>Schloss „Auslieferung“</b> ersetzt die Spalte „Schreibschutz“.</li>
+          <li><span class="v">V13</span> Das Stammblatt eines Auslieferungssatzes ist <b>nur lesbar</b>, sein Fuß sagt es; Löschen… ist weich gesperrt und nennt im Kurztext den Grund.</li>
+          <li><span class="v">V14</span> Die Import-Handlung steht <b>links in der Fußleiste</b> und öffnet eine Überlagerung; nach dem Einlesen ist die neue Zeile gewählt, die Statuszeile meldet es.</li>
+          <li>Fußleiste endet mit <b>Beenden</b>.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>dialogspezifisch</h4>
+        <ul>
+          <li>Die Zeilen sind <b>Regionen</b>; Spalten Bezeichner, Quelle, Standort, eingelesen — Länge und Breite stehen als Rang 3 im Stammblatt.</li>
+          <li><b>Gruppe „Jahresverlauf“</b> mit Umschalter Temperatur | Sonnenstand (heute zwei Reiter), <b>Gruppe „Herkunft“</b>; keine Kenndaten zum Bearbeiten, keine Kosten, kein Duplizieren.</li>
+          <li><b>Einlesen:</b> Quellenwahl, Datei, Ort, Jahr und Fortschritt stehen heute als Block unter der Liste; im Schema sind sie die Überlagerung „Daten einlesen“. „Region ermitteln“ der TRY-Regionaldaten bleibt dort als Vorschau.</li>
+          <li><span class="v">V12</span> Vergleichen (neu): Kennzahlen nebeneinander, Jahresverläufe übereinander im Stammblatt.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- 4 KOSTENFAKTOREN, VERWALTUNG                                          -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-kosten" role="tabpanel" aria-labelledby="reiter-kosten">
+  <h2>4 · Kostenfaktoren — Verwendung als Spalten, Positionen im Stammblatt, Löschen gesperrt mit Grund</h2>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · heute eine Überlagerung der Kostenverwaltung („Katalog…“) · Zustand nach einem Löschversuch an „Wartung“</p>
+
+  <div class="dlg" aria-label="Kostenfaktoren">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Kostenfaktoren</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" placeholder="* und ? erlaubt"></label>
+      <span class="treffer">75 Einträge</span>
+      <button type="button" class="textknopf" aria-disabled="true" title="Kein Filter gesetzt">Filter zurücksetzen</button>
+    </div>
+    <div class="warnband" role="alert">
+      <span class="wb-text"><b>„Wartung“ bleibt stehen:</b> 4 Positionen in 3 Projekten und 2 Vorlagen verwenden diesen Kostenfaktor.</span>
+      <button type="button" class="kreuz" aria-label="Meldung schließen">✕</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">Wartung</span>
+          <button type="button" class="knopf" aria-disabled="true" title="In 3 Projekten und 2 Vorlagen verwendet">Löschen…</button>
+          <span class="fueller"></span>
+          <span class="aw-leise">Kästchen: mehrere wählen</span>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Kostenfaktoren">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichnung<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichnung"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:108px"><div class="kopf rechts"><button type="button" class="kopf-titel">Positionen</button><button type="button" class="trichter" aria-label="Filter Positionen"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp sp-rang2" style="width:90px"><div class="kopf rechts"><button type="button" class="kopf-titel">Projekte</button></div></th>
+              <th class="zahlsp sp-rang2" style="width:90px"><div class="kopf rechts"><button type="button" class="kopf-titel">Vorlagen</button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Abgasanlage wählen"></label></td><td><div class="bez"><span class="bez-text">Abgasanlage</span></div></td><td class="zahlsp">2</td><td class="zahlsp sp-rang2">2</td><td class="zahlsp sp-rang2">1</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="BHKW wählen"></label></td><td><div class="bez"><span class="bez-text">BHKW</span><span class="kennz kennz--schloss" title="Hauptposition der Kostenrechnung – nicht löschbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Hauptposition</span></span></div></td><td class="zahlsp">5</td><td class="zahlsp sp-rang2">4</td><td class="zahlsp sp-rang2">2</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Elektroanschluss wählen"></label></td><td><div class="bez"><span class="bez-text">Elektroanschluss</span></div></td><td class="zahlsp leise">0</td><td class="zahlsp sp-rang2 leise">0</td><td class="zahlsp sp-rang2 leise">0</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Erdgasanschluss wählen"></label></td><td><div class="bez"><span class="bez-text">Erdgasanschluss</span></div></td><td class="zahlsp">5</td><td class="zahlsp sp-rang2">4</td><td class="zahlsp sp-rang2">2</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Heizkessel wählen"></label></td><td><div class="bez"><span class="bez-text">Heizkessel</span><span class="kennz kennz--schloss" title="Hauptposition der Kostenrechnung – nicht löschbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Hauptposition</span></span></div></td><td class="zahlsp">14</td><td class="zahlsp sp-rang2">12</td><td class="zahlsp sp-rang2">3</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Heizraum wählen"></label></td><td><div class="bez"><span class="bez-text">Heizraum</span></div></td><td class="zahlsp">1</td><td class="zahlsp sp-rang2">1</td><td class="zahlsp sp-rang2">1</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Nebenkosten wählen"></label></td><td><div class="bez"><span class="bez-text">Nebenkosten</span></div></td><td class="zahlsp">8</td><td class="zahlsp sp-rang2">6</td><td class="zahlsp sp-rang2">5</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Photovoltaik wählen"></label></td><td><div class="bez"><span class="bez-text">Photovoltaik</span><span class="kennz kennz--schloss" title="Hauptposition der Kostenrechnung – nicht löschbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Hauptposition</span></span></div></td><td class="zahlsp">7</td><td class="zahlsp sp-rang2">6</td><td class="zahlsp sp-rang2">2</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Schornstein wählen"></label></td><td><div class="bez"><span class="bez-text">Schornstein</span></div></td><td class="zahlsp">3</td><td class="zahlsp sp-rang2">3</td><td class="zahlsp sp-rang2">2</td></tr>
+              <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wartung wählen"></label></td><td><div class="bez"><span class="bez-text">Wartung</span></div></td><td class="zahlsp">4</td><td class="zahlsp sp-rang2">3</td><td class="zahlsp sp-rang2">2</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe wählen"></label></td><td><div class="bez"><span class="bez-text">Wärmepumpe</span><span class="kennz kennz--schloss" title="Hauptposition der Kostenrechnung – nicht löschbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Hauptposition</span></span></div></td><td class="zahlsp">10</td><td class="zahlsp sp-rang2">9</td><td class="zahlsp sp-rang2">4</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Zähler wählen"></label></td><td><div class="bez"><span class="bez-text">Zähler</span></div></td><td class="zahlsp">6</td><td class="zahlsp sp-rang2">5</td><td class="zahlsp sp-rang2">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Stammblatt Wartung">
+        <div class="gk">Stammblatt <span class="gk-zusatz">Wartung</span></div>
+        <div class="stamm-inhalt">
+          <div class="stamm-kopf">
+            <div class="stamm-name">Wartung</div>
+            <div class="stamm-unter">Position · eigener Eintrag <span class="kennz kennz--verwendet" title="Löschen ist gesperrt, solange Positionen darauf zeigen">in 3 Projekten verwendet</span></div>
+          </div>
+          <div class="kennzahlen">
+            <div class="kz"><b>4</b><span>Positionen</span></div>
+            <div class="kz"><b>3</b><span>Projekte</span></div>
+            <div class="kz"><b>2</b><span>Vorlagen</span></div>
+          </div>
+          <section class="sb-gruppe"><h4>Kenndaten</h4>
+            <dl class="formular">
+              <dt>Bezeichnung</dt><dd><input class="eingabe" value="Wartung" aria-label="Bezeichnung"></dd>
+              <dt>Art</dt><dd>Position <span class="einheit">(Hauptpositionen legt die Kostenrechnung an)</span></dd>
+            </dl>
+          </section>
+          <section class="sb-gruppe"><h4>Positionen <span class="mock-spez">dialogspezifisch</span></h4>
+            <table class="vergleich">
+              <colgroup><col style="width:36%"><col style="width:22%"><col><col style="width:18%"></colgroup>
+              <thead><tr><th>verwendet in</th><th>Kostenart</th><th>Bemessung</th><th class="zahlsp">Satz</th></tr></thead>
+              <tbody>
+                <tr><td><span class="bez"><span class="bez-text">Vorlage Heizkessel</span><span class="kennz kennz--schloss" title="Auslieferungsvorlage – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg></span></span></td><td>betriebs&shy;gebunden</td><td>% der Investition</td><td class="zahlsp">2 %</td></tr>
+                <tr><td><span class="bez"><span class="bez-text">Vorlage Wärmepumpe</span><span class="kennz kennz--schloss" title="Auslieferungsvorlage – nur lesbar"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg></span></span></td><td>betriebs&shy;gebunden</td><td>% der Investition</td><td class="zahlsp">1,5 %</td></tr>
+                <tr><td>Projekt A</td><td>betriebs&shy;gebunden</td><td>Jahresbetrag</td><td class="zahlsp">300 €/a</td></tr>
+                <tr><td>Projekt B · 2 Positionen</td><td>betriebs&shy;gebunden</td><td>Jahresbetrag</td><td class="zahlsp">250 €/a</td></tr>
+                <tr><td>Projekt C</td><td>betriebs&shy;gebunden</td><td>% der Investition</td><td class="zahlsp">2 %</td></tr>
+              </tbody>
+            </table>
+            <p class="hinweiszeile">Gelöscht wird erst, wenn keine Position mehr auf den Kostenfaktor zeigt — sonst stünde sie ohne Namen da.</p>
+          </section>
+        </div>
+        <div class="stamm-fuss">
+          <span class="status">keine Änderung</span>
+          <button type="button" class="knopf knopf--klein" aria-disabled="true" title="Nichts geändert">Verwerfen</button>
+          <button type="button" class="knopf knopf--klein" aria-disabled="true" title="Nichts geändert">Speichern</button>
+        </div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Neu…</button>
+      <span class="status" role="status">75 Einträge, davon 10 Hauptpositionen</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf knopf--primaer">Beenden</button>
+    </div>
+  </div>
+
+  <div class="legende">
+    <h3>Kostenfaktoren: was gleich ist, was dem Dialog gehört</h3>
+    <div class="gleich-spez">
+      <div>
+        <h4>gleich (Gerüst)</h4>
+        <ul>
+          <li><span class="v">V16</span> Die <b>Katalogliste</b> mit Suche, Sortierung und Trichtern ersetzt das Raster mit eigener Wahlspalte.</li>
+          <li><span class="v">V8</span> Löschen… steht in der Auswahlleiste und ist <b>weich gesperrt</b>: Der Kurztext nennt die Verwendung. Wer trotzdem drückt, bekommt das <b>Warnband</b> (verfällt) — keine Rückfrage, weil nichts gelöscht werden kann.</li>
+          <li><span class="v">V9</span> Die Bezeichnung ist im Stammblatt direkt bedienbar; Speichern benennt um. Nichts geändert: beide Knöpfe weich gesperrt.</li>
+          <li><span class="v">V10</span> Kennzeichen an der Zeile und im Kopf: Schloss, „in 3 Projekten verwendet“.</li>
+          <li>Fußleiste: Neu… · Status · Beenden.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>dialogspezifisch</h4>
+        <ul>
+          <li><b>Titelzeile:</b> Der Katalog öffnet als Überlagerung der Kostenverwaltung — dort tragen Überlagerung und Kreuz den Titel, die Komponente keinen eigenen.</li>
+          <li>Spalten <b>Positionen, Projekte, Vorlagen</b> zählen die Verwendung — dieselbe Zählung, mit der der Kern heute das Löschen ablehnt.</li>
+          <li><b>Das Schloss heißt hier „Hauptposition“:</b> Kostenfaktoren kennen kein Auslieferungskennzeichen; geschützt sind die zehn Hauptpositionen der Kostenrechnung, die der Katalog heute gar nicht zeigt. Das Wort „Auslieferung“ mit Schloss steht an den Vorlagen in der Gruppe „Positionen“.</li>
+          <li><b>Gruppe „Positionen“</b>: wo der Kostenfaktor steht, mit Kostenart, Bemessung und Satz.</li>
+          <li>Neu… legt einen Entwurf an, dessen Stammblatt den Namen erfragt (heute eine Eingabezeile über der Liste). Kein Vergleichen, kein Duplizieren.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- 5 BRAUCHWASSER, VERWALTUNG                                            -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-bw" role="tabpanel" aria-labelledby="reiter-bw">
+  <h2>5 · Verwaltung Brauchwasser — Profile mit Wochenprofil im Stammblatt</h2>
+  <p class="rahmen-mass">1&nbsp;088&nbsp;×&nbsp;624 CSS-Pixel · Profil Wohnen 3 (eigener Satz) ist Fokuszeile · gleich gebaut: Prozesswärme, Stromverbraucher</p>
+
+  <div class="dlg" aria-label="Verwaltung Brauchwasser">
+    <div class="dlg-kopf">
+      <h3 class="dlg-titel">Verwaltung Brauchwasser</h3>
+      <span class="infoknopf" aria-hidden="true">?</span>
+      <button type="button" class="kreuz" aria-label="Schließen (wie Esc)">✕</button>
+    </div>
+    <div class="werkzeug">
+      <label class="suche"><span>Suche über alle Spalten</span><input class="eingabe" placeholder="* und ? erlaubt"></label>
+      <span class="treffer">16 Profile</span>
+      <button type="button" class="textknopf" aria-disabled="true" title="Kein Filter gesetzt">Filter zurücksetzen</button>
+    </div>
+    <div class="arbeit">
+      <div class="spalte">
+        <div class="auswahl" role="region" aria-label="Auswahl">
+          <span class="aw-was">Profil Wohnen 3</span>
+          <button type="button" class="knopf" aria-disabled="true" title="Zwei oder drei Zeilen über das Kästchen wählen">Vergleichen</button>
+          <button type="button" class="knopf">Duplizieren</button>
+          <button type="button" class="knopf">Löschen…</button>
+          <span class="fueller"></span>
+          <span class="aw-leise">Kästchen: mehrere wählen</span>
+        </div>
+        <div class="liste" tabindex="0" aria-label="Brauchwasserprofile">
+          <table class="raster" role="grid" aria-multiselectable="true">
+            <thead><tr>
+              <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+              <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Bezeichner<span class="pfeil">▲</span></button><button type="button" class="trichter" aria-label="Filter Bezeichner"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="sp-rang2" style="width:124px"><div class="kopf"><button type="button" class="kopf-titel">Typ</button><button type="button" class="trichter" aria-label="Filter Typ"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+              <th class="zahlsp" style="width:160px"><div class="kopf rechts"><button type="button" class="kopf-titel">Jahressumme MWh</button><button type="button" class="trichter" aria-label="Filter Jahressumme"><svg class="ico" width="14" height="14"><use href="#sym-trichter"/></svg></button></div></th>
+            </tr></thead>
+            <tbody>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Büro wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Büro</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Büro</td><td class="zahlsp">5</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Gaststätte wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Gaststätte</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Gastronomie</td><td class="zahlsp">40</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Hotel wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Hotel</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Hotel</td><td class="zahlsp">60</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Kita wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Kita</span></div></td><td class="sp-rang2">Schule</td><td class="zahlsp">8</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Pflegeheim wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Pflegeheim</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Pflege</td><td class="zahlsp">80</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Schule wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Schule</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Schule</td><td class="zahlsp">10</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Sporthalle wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Sporthalle</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Sport</td><td class="zahlsp">25</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Wohnen 1 wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Wohnen 1</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Wohnen</td><td class="zahlsp">20</td></tr>
+              <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Wohnen 2 wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Wohnen 2</span><span class="kennz kennz--schloss" title="Auslieferung – nur lesbar; zum Ändern duplizieren"><svg class="ico" width="11" height="11"><use href="#sym-schloss"/></svg><span class="kennz-wort">Auslieferung</span></span></div></td><td class="sp-rang2">Wohnen</td><td class="zahlsp">35</td></tr>
+              <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Profil Wohnen 3 wählen"></label></td><td><div class="bez"><span class="bez-text">Profil Wohnen 3</span></div></td><td class="sp-rang2">Wohnen</td><td class="zahlsp">30</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <section class="stammblatt nur-breit" aria-label="Stammblatt Profil Wohnen 3">
+        <div class="gk">Stammblatt <span class="gk-zusatz">Profil Wohnen 3</span></div>
+        <div class="stamm-inhalt">
+          <div class="stamm-kopf">
+            <div class="stamm-name">Profil Wohnen 3</div>
+            <div class="stamm-unter">Typ Wohnen · eigener Satz, dupliziert aus Profil Wohnen 2</div>
+          </div>
+          <div class="kennzahlen">
+            <div class="kz"><b>30 MWh</b><span>Jahressumme</span></div>
+            <div class="kz"><b>82 kWh</b><span>Tagesmittel</span></div>
+            <div class="kz"><b>7 Uhr</b><span>Spitze werktags</span></div>
+          </div>
+          <section class="sb-gruppe"><h4>Wochenprofil <span class="mock-spez">dialogspezifisch</span><span class="fueller"></span><button type="button" class="textknopf">bearbeiten…</button></h4>
+            <svg class="skizze" viewBox="0 0 340 112" role="img" aria-label="Skizze: Anteil je Stunde über eine Woche, fünf Werktage und zwei Wochenendtage">
+              <defs>
+                <g id="bw-werktag"><rect x="0" y="82.4" width="1.3" height="7.6"/><rect x="1.8" y="86.2" width="1.3" height="3.8"/><rect x="3.6" y="86.2" width="1.3" height="3.8"/><rect x="5.4" y="86.2" width="1.3" height="3.8"/><rect x="7.1" y="82.4" width="1.3" height="7.6"/><rect x="8.9" y="67.2" width="1.3" height="22.8"/><rect x="10.7" y="29.2" width="1.3" height="60.8"/><rect x="12.5" y="14" width="1.3" height="76"/><rect x="14.3" y="36.8" width="1.3" height="53.2"/><rect x="16.1" y="59.6" width="1.3" height="30.4"/><rect x="17.9" y="67.2" width="1.3" height="22.8"/><rect x="19.6" y="67.2" width="1.3" height="22.8"/><rect x="21.4" y="59.6" width="1.3" height="30.4"/><rect x="23.2" y="63.4" width="1.3" height="26.6"/><rect x="25" y="71" width="1.3" height="19"/><rect x="26.8" y="74.8" width="1.3" height="15.2"/><rect x="28.6" y="71" width="1.3" height="19"/><rect x="30.4" y="59.6" width="1.3" height="30.4"/><rect x="32.1" y="44.4" width="1.3" height="45.6"/><rect x="33.9" y="36.8" width="1.3" height="53.2"/><rect x="35.7" y="44.4" width="1.3" height="45.6"/><rect x="37.5" y="55.8" width="1.3" height="34.2"/><rect x="39.3" y="67.2" width="1.3" height="22.8"/><rect x="41.1" y="78.6" width="1.3" height="11.4"/></g>
+                <g id="bw-wochenende"><rect x="0" y="82.4" width="1.3" height="7.6"/><rect x="1.8" y="86.2" width="1.3" height="3.8"/><rect x="3.6" y="86.2" width="1.3" height="3.8"/><rect x="5.4" y="86.2" width="1.3" height="3.8"/><rect x="7.1" y="86.2" width="1.3" height="3.8"/><rect x="8.9" y="82.4" width="1.3" height="7.6"/><rect x="10.7" y="74.8" width="1.3" height="15.2"/><rect x="12.5" y="59.6" width="1.3" height="30.4"/><rect x="14.3" y="36.8" width="1.3" height="53.2"/><rect x="16.1" y="21.6" width="1.3" height="68.4"/><rect x="17.9" y="29.2" width="1.3" height="60.8"/><rect x="19.6" y="44.4" width="1.3" height="45.6"/><rect x="21.4" y="52" width="1.3" height="38"/><rect x="23.2" y="59.6" width="1.3" height="30.4"/><rect x="25" y="67.2" width="1.3" height="22.8"/><rect x="26.8" y="71" width="1.3" height="19"/><rect x="28.6" y="67.2" width="1.3" height="22.8"/><rect x="30.4" y="59.6" width="1.3" height="30.4"/><rect x="32.1" y="48.2" width="1.3" height="41.8"/><rect x="33.9" y="40.6" width="1.3" height="49.4"/><rect x="35.7" y="44.4" width="1.3" height="45.6"/><rect x="37.5" y="55.8" width="1.3" height="34.2"/><rect x="39.3" y="67.2" width="1.3" height="22.8"/><rect x="41.1" y="78.6" width="1.3" height="11.4"/></g>
+              </defs>
+              <line class="gitter" x1="76.9" y1="10" x2="76.9" y2="90"/><line class="gitter" x1="119.7" y1="10" x2="119.7" y2="90"/><line class="gitter" x1="162.6" y1="10" x2="162.6" y2="90"/><line class="gitter" x1="205.4" y1="10" x2="205.4" y2="90"/><line class="gitter" x1="248.3" y1="10" x2="248.3" y2="90"/><line class="gitter" x1="291.1" y1="10" x2="291.1" y2="90"/>
+              <g class="balken">
+                <use href="#bw-werktag" x="34"/><use href="#bw-werktag" x="76.9"/><use href="#bw-werktag" x="119.7"/><use href="#bw-werktag" x="162.6"/><use href="#bw-werktag" x="205.4"/>
+                <use href="#bw-wochenende" x="248.3"/><use href="#bw-wochenende" x="291.1"/>
+              </g>
+              <line class="achse" x1="34" y1="90" x2="334" y2="90"/>
+              <text x="34" y="8">Anteil je Stunde</text>
+              <text x="55.4" y="104" text-anchor="middle">Mo</text><text x="98.3" y="104" text-anchor="middle">Di</text><text x="141.1" y="104" text-anchor="middle">Mi</text><text x="184" y="104" text-anchor="middle">Do</text><text x="226.8" y="104" text-anchor="middle">Fr</text><text x="269.7" y="104" text-anchor="middle">Sa</text><text x="312.5" y="104" text-anchor="middle">So</text>
+            </svg>
+            <p class="hinweiszeile">Das Wochenprofil (168 Stunden) gehört zum Typ „Wohnen“; „bearbeiten…“ öffnet den Stundeneditor als Überlagerung und wirkt auf alle Profile dieses Typs. <button type="button" class="textknopf">Monatsverlauf…</button></p>
+          </section>
+          <section class="sb-gruppe"><h4>Kenndaten</h4>
+            <dl class="formular">
+              <dt>Bezeichner</dt><dd><input class="eingabe" value="Profil Wohnen 3" aria-label="Bezeichner"></dd>
+              <dt>Typ</dt><dd><select class="eingabe" aria-label="Typ"><option>Wohnen</option></select></dd>
+              <dt>Jahressumme</dt><dd><input class="eingabe eingabe--kurz" value="30" aria-label="Jahressumme"> <select class="eingabe eingabe--kurz" aria-label="Einheit"><option>MWh</option></select></dd>
+              <dt>Beschreibung</dt><dd><input class="eingabe" value="Mehrfamilienhaus, 12 Wohnungen" aria-label="Beschreibung"></dd>
+            </dl>
+          </section>
+        </div>
+        <div class="stamm-fuss">
+          <span class="status">keine Änderung</span>
+          <button type="button" class="knopf knopf--klein" aria-disabled="true" title="Nichts geändert">Verwerfen</button>
+          <button type="button" class="knopf knopf--klein" aria-disabled="true" title="Nichts geändert">Speichern</button>
+        </div>
+      </section>
+    </div>
+    <div class="fuss">
+      <button type="button" class="knopf">Neu…</button>
+      <span class="status" role="status">Profil Wohnen 2 dupliziert als „Profil Wohnen 3“</span>
+      <span class="fueller"></span>
+      <button type="button" class="knopf knopf--primaer">Beenden</button>
+    </div>
+  </div>
+
+  <div class="legende">
+    <h3>Brauchwasser: was gleich ist, was dem Dialog gehört</h3>
+    <div class="gleich-spez">
+      <div>
+        <h4>gleich (Gerüst)</h4>
+        <ul>
+          <li>Zonen 1 bis 6; das <b>Schloss</b> ersetzt die Spalte „Auslieferung ja/nein“.</li>
+          <li><span class="v">V13</span> <b>Duplizieren</b> ist der Weg vom Auslieferungsprofil zum eigenen: Die Statuszeile meldet die Kopie, das Stammblatt sagt, woher sie kommt.</li>
+          <li><span class="v">V9</span> Bezeichner, Typ, Jahressumme und Beschreibung sind im Stammblatt direkt bedienbar — heute zeigt der Detailblock sie nur, geändert wird in der Überlagerung „Ändern…“.</li>
+          <li>Fußleiste: Neu… · Status · Beenden; „Grafik…“, „Typ ändern…“, „Ändern…“ und „Löschen“ stehen nicht mehr dort.</li>
+        </ul>
+      </div>
+      <div>
+        <h4>dialogspezifisch</h4>
+        <ul>
+          <li>Spalten Bezeichner, Typ, Jahressumme; die Beschreibung ist Rang 3 und steht im Stammblatt.</li>
+          <li><b>Gruppe „Wochenprofil“</b> als Skizze der 168 Stunden; „bearbeiten…“ öffnet den Stundeneditor (heute „Typ ändern…“), „Monatsverlauf…“ die Ergebnisgrafik (heute „Grafik…“).</li>
+          <li>Kennzahlen Jahressumme, Tagesmittel, Spitzenstunde.</li>
+          <li>Gleich gebaut sind die Zeitreihen-Verwaltungen (Wärmebedarf extern, Solarthermie-, Stromganglinie): Gruppe „Ganglinie“ statt „Wochenprofil“, „Import…“ statt „Neu…“, Löschen gesperrt, solange ein Projekt die Zeitreihe führt.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================================================================== -->
+<!-- SCHMAL — Waermepumpe im Projekt bei 400 px                            -->
+<!-- ===================================================================== -->
+<section class="mockup-blatt" id="blatt-schmal" role="tabpanel" aria-labelledby="reiter-schmal">
+  <h2>Schmal · Wärmepumpen im Projekt bei 400&nbsp;CSS-Pixeln — Liste allein, Stammblatt als Blatt</h2>
+  <p class="rahmen-mass">je 400&nbsp;×&nbsp;624 CSS-Pixel (Fenster schmal gezogen, Tablet hochkant, iOS); links die Liste, rechts nach „Stammblatt ›“</p>
+
+  <div class="rahmenpaar">
+    <div class="dlg dlg--schmal" aria-label="Schmales Fenster, Liste">
+      <div class="dlg-kopf">
+        <h3 class="dlg-titel">Wärmepumpen im Projekt</h3>
+        <span class="infoknopf" aria-hidden="true">?</span>
+        <button type="button" class="kreuz" aria-label="Schließen (wie Abbrechen)">✕</button>
+      </div>
+      <div class="werkzeug">
+        <div class="umschalter" role="group" aria-label="Ansicht">
+          <button type="button" aria-pressed="true">Katalog <span class="anzahl">51</span></button>
+          <button type="button" aria-pressed="false">Im Projekt <span class="anzahl">2</span></button>
+        </div>
+        <label class="suche"><input class="eingabe" placeholder="Suche über alle Spalten" aria-label="Suche über alle Spalten"></label>
+        <span class="treffer">9 von 51</span>
+        <label class="schalter"><input type="checkbox" checked> nur mit Kühlfunktion</label>
+      </div>
+      <div class="arbeit">
+        <div class="spalte">
+          <div class="auswahl" role="region" aria-label="Auswahl">
+            <span class="aw-was" style="max-width:40%">Wärmepumpe 3</span>
+            <button type="button" class="knopf">＋ Ins Projekt</button>
+            <span class="fueller"></span>
+            <button type="button" class="knopf nur-schmal">Stammblatt ›</button>
+          </div>
+          <div class="liste" tabindex="0" aria-label="Katalog Wärmepumpen">
+            <table class="raster" role="grid" aria-multiselectable="true">
+              <thead><tr>
+                <th class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Alle sichtbaren wählen"></label></th>
+                <th aria-sort="ascending"><div class="kopf"><button type="button" class="kopf-titel">Modell<span class="pfeil">▲</span></button></div></th>
+                <th class="zahlsp" style="width:42px"><div class="kopf rechts"><button type="button" class="kopf-titel">kW</button></div></th>
+                <th class="zahlsp" style="width:68px"><div class="kopf rechts"><button type="button" class="kopf-titel">Kühl</button><button type="button" class="trichter trichter--gesetzt" aria-label="Filter Kühlleistung: größer 0"><svg class="ico" width="14" height="14"><use href="#sym-trichter-voll"/></svg></button></div></th>
+                <th style="width:92px">Projekt</th>
+              </tr></thead>
+              <tbody>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 1 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 1">Wärmepumpe 1</span></div></td><td class="zahlsp">8</td><td class="zahlsp">6</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 1 ins Projekt übernehmen">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 2 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 2">Wärmepumpe 2</span></div></td><td class="zahlsp">10</td><td class="zahlsp">8</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 1 Zeile">✓</span><button type="button" class="plus" aria-label="Wärmepumpe 2 noch einmal ins Projekt übernehmen">＋</button></div></td></tr>
+                <tr aria-selected="true"><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 3 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 3">Wärmepumpe 3</span></div></td><td class="zahlsp">12</td><td class="zahlsp">10</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 3 ins Projekt übernehmen">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 4 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 4">Wärmepumpe 4</span></div></td><td class="zahlsp">14</td><td class="zahlsp">12</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 4 ins Projekt übernehmen">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 5 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 5">Wärmepumpe 5</span></div></td><td class="zahlsp">16</td><td class="zahlsp">14</td><td><div class="zelle-aktion"><span class="kennz kennz--projekt" title="Im Projekt: 1 Zeile">✓</span><button type="button" class="plus" aria-label="Wärmepumpe 5 noch einmal ins Projekt übernehmen">＋</button></div></td></tr>
+                <tr><td class="sp-kasten"><label class="kasten"><input type="checkbox" aria-label="Wärmepumpe 6 wählen"></label></td><td><div class="bez"><span class="bez-text" title="Wärmepumpe 6">Wärmepumpe 6</span></div></td><td class="zahlsp">20</td><td class="zahlsp">16</td><td><div class="zelle-aktion"><button type="button" class="plus" aria-label="Wärmepumpe 6 ins Projekt übernehmen">＋</button></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="fuss">
+        <button type="button" class="knopf knopf--klein">Katalog verwalten…</button>
+        <span class="fueller"></span>
+        <button type="button" class="knopf">Abbrechen</button>
+        <button type="button" class="knopf knopf--primaer">OK</button>
+      </div>
+    </div>
+
+    <div class="dlg dlg--schmal" aria-label="Schmales Fenster, Stammblatt">
+      <div class="dlg-kopf">
+        <h3 class="dlg-titel">Wärmepumpen im Projekt</h3>
+        <span class="infoknopf" aria-hidden="true">?</span>
+        <button type="button" class="kreuz" aria-label="Schließen (wie Abbrechen)">✕</button>
+      </div>
+      <div class="auswahl" role="region" aria-label="Auswahl">
+        <span class="aw-was" style="max-width:50%">Wärmepumpe 3</span>
+        <button type="button" class="knopf">＋ Ins Projekt</button>
+      </div>
+      <div class="arbeit">
+        <section class="stammblatt" aria-label="Stammblatt Wärmepumpe 3">
+          <div class="blattkopf"><button type="button" class="textknopf">‹ Liste</button><b>Wärmepumpe 3</b></div>
+          <div class="stamm-inhalt">
+            <div class="stamm-kopf">
+              <div class="stamm-name">Wärmepumpe 3</div>
+              <div class="stamm-unter">Hersteller B · Sole/Wasser</div>
+            </div>
+            <div class="kennzahlen">
+              <div class="kz"><b>12 kW</b><span>Nennleistung</span></div>
+              <div class="kz"><b>4,6</b><span>COP B0/W35</span></div>
+              <div class="kz"><b>10 kW</b><span>Kühlleistung</span></div>
+            </div>
+            <section class="sb-gruppe"><h4>Kennlinie</h4>
+              <svg class="skizze" viewBox="0 0 340 150" role="img" aria-label="Skizze: COP über der Quelltemperatur">
+                <line class="gitter" x1="36" y1="14" x2="330" y2="14"/><line class="gitter" x1="36" y1="40.5" x2="330" y2="40.5"/><line class="gitter" x1="36" y1="67" x2="330" y2="67"/><line class="gitter" x1="36" y1="93.5" x2="330" y2="93.5"/><line class="achse" x1="36" y1="120" x2="330" y2="120"/>
+                <text x="30" y="17" text-anchor="end">6</text><text x="30" y="70" text-anchor="end">4</text><text x="30" y="123" text-anchor="end">2</text>
+                <text x="36" y="9">COP</text>
+                <text x="36" y="133" text-anchor="middle">−5</text><text x="183" y="133" text-anchor="middle">5</text><text x="330" y="133" text-anchor="end">15</text>
+                <text x="183" y="146" text-anchor="middle">Quelltemperatur °C</text>
+                <polyline class="linie-1" points="36,67 109.5,51.1 183,35.2 256.5,22 330,14"/>
+                <polyline class="linie-2" points="36,101.5 109.5,90.9 183,80.3 256.5,69.7 330,61.7"/>
+              </svg>
+            </section>
+            <section class="sb-gruppe"><h4>Kenndaten</h4>
+              <dl class="formular">
+                <dt>Quelle</dt><dd>Sole</dd>
+                <dt>Vorlauf min / max</dt><dd>25 / 65 <span class="einheit">°C</span></dd>
+                <dt>Zuheizung</dt><dd>6 <span class="einheit">kW</span></dd>
+              </dl>
+            </section>
+          </div>
+        </section>
+      </div>
+      <div class="fuss">
+        <button type="button" class="knopf knopf--klein">Katalog verwalten…</button>
+        <span class="fueller"></span>
+        <button type="button" class="knopf">Abbrechen</button>
+        <button type="button" class="knopf knopf--primaer">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legende">
+    <h3>Schmal: was sich unter 900&nbsp;px Dialogbreite ändert</h3>
+    <ul>
+      <li><span class="v">V3</span> Die <b>Liste steht allein</b>; „Stammblatt ›“ in der Auswahlleiste schiebt das Stammblatt als Blatt über Werkzeugleiste und Liste. „‹ Liste“ und <kbd>Esc</kbd> führen zurück.</li>
+      <li><span class="v">V2</span> Die Spalten mit Rang 2 (Hersteller, Quelle) fallen weg. <b>Die gefilterte Kühlleistung bleibt</b> — eine Spalte mit gesetztem Trichter wird nie ausgeblendet. Das Wort am Kennzeichen fällt, das Zeichen bleibt.</li>
+      <li><span class="v">V8</span> Die <b>Auswahlleiste bleibt in beiden Ansichten stehen</b>, ebenso die Fußleiste: „＋ Ins Projekt“ und OK sind auch vom Blatt aus erreichbar.</li>
+      <li>Der Bezeichner endet mit „…“, sobald er nicht passt; der volle Name steht im Kurztext und in der Auswahlleiste.</li>
+      <li>Die Statuszeile rückt, wenn es etwas zu melden gibt, als eigene Zeile über die Fußleiste; die Zahl am Umschalter meldet die Übernahme ohnehin.</li>
+      <li>Dieselbe Anordnung trägt die iOS-Hülle: Die Komponente fragt ihre eigene Breite (Containerabfrage), nicht die Plattform.</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function () {
+    var reiter = Array.prototype.slice.call(document.querySelectorAll('.mockup-reiter [role="tab"]'));
+    function zeige(id) {
+        reiter.forEach(function (r) {
+            var an = r.getAttribute('aria-controls') === id;
+            r.setAttribute('aria-selected', an ? 'true' : 'false');
+            r.tabIndex = an ? 0 : -1;
+            document.getElementById(r.getAttribute('aria-controls')).hidden = !an;
+        });
+        try { history.replaceState(null, '', '#' + id); } catch (e) { /* ohne Adresse */ }
+    }
+    reiter.forEach(function (r, i) {
+        r.addEventListener('click', function () { zeige(r.getAttribute('aria-controls')); });
+        r.addEventListener('keydown', function (ev) {
+            var n = ev.key === 'ArrowRight' ? i + 1 : ev.key === 'ArrowLeft' ? i - 1 : null;
+            if (n === null) return;
+            var ziel = reiter[(n + reiter.length) % reiter.length];
+            zeige(ziel.getAttribute('aria-controls'));
+            ziel.focus();
+            ev.preventDefault();
+        });
+    });
+    var start = (location.hash || '').slice(1);
+    zeige(document.getElementById(start) && start.indexOf('blatt-') === 0 ? start : 'blatt-geruest');
+})();
+</script>
+</body>
+</html>
