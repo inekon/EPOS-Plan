@@ -15,6 +15,10 @@ Nachgezogen am 22.09.2026 mit **E27** (N1.32): Q24, Q25 und Q26 sind entschieden
 wird beauftragbar, sobald das Ablösekriterium aus Q24 erfüllt ist, ihr Umfang ist die Löschliste
 (Q25), der Stufenplan der Anlagenkopplung folgt der Empfehlung (Q26); Kapitel 0, 4.1, 4.4, 6.1,
 6.4, 10.4, 11, 13, 15 und 16 folgen.
+Nachgezogen am 22.09.2026 mit **E28** (N1.33): U4 und U9 sind nach Empfehlung entschieden — der
+Glossarabschnitt „Gebäudehülle und Gebäudemodell" entsteht vor den Übersetzungen (vor G1), die
+Grenze von 100 Gebäuden im Bestandsweg fällt in GB; vor G0, GB und G1 ist kein Anwenderentscheid
+mehr offen, das Register zählt 20 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3042,3 +3046,33 @@ Abschnitte 1 bis 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md
 Punkt, Kapitel 0 neu gefasst, Zählung 22). Die Fragentabellen von Umsetzungskonzept,
 Softwarearchitektur, Kühlkonzept, Mehrzonenkonzept und Datenaustauschkonzept sowie die Indexzeile
 in [`Dokumentation/LIESMICH.md`](../LIESMICH.md) tragen den Entscheid in einem eigenen Nachzug.
+
+### N1.33 Entscheid E28 — U4 und U9 nach Empfehlung: vor dem Start kein Anwenderentscheid mehr offen
+
+**Entscheid E28 (Anwender, 22.09.2026).** Der Anwender entscheidet die beiden Punkte **U4** und
+**U9** des [Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md)
+nach dessen Empfehlung. Beide waren nach E27 (N1.32) die letzten offenen Punkte, die vor dem
+Start fällig sind (U9 vor GB, U4 vor G1). Wie in E27 gilt die Empfehlung im Wortlaut des
+jeweiligen Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt vor |
+|---|---|---|
+| **U4** | Ja — der Abschnitt „13. Gebäudehülle und Gebäudemodell" in [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md) entsteht, **bevor** die englischen Werte der Ressourcen geschrieben werden; ohne ihn entstünden zwei Übersetzungen desselben Begriffs | G1 (Ressourcen des Gebäudedialogs) |
+| **U9** | Ja, in GB — die feste Grenze von 100 Gebäuden im Bestandsweg wird dort behoben, wo die Schleife ohnehin angefasst wird: das ungelesene Feld wird gelöscht, das andere auf die tatsächliche Zeilenzahl dimensioniert; ergebnisneutral, also ohne Einfrieranlass, und vor der Verschiebung nach `Altweg/` (E20) | GB |
+
+**Was offen bleibt.** Vor dem Start (G0, GB, G1) ist **kein Anwenderentscheid mehr offen**. Es
+bleiben die Folgeaufgaben aus E27 (U6 Endwahl vor dem Einfrieren von G1 + G2, K22 vor KU2, D6 vor
+der Stufe über die semantische hinaus) und der Widerspruchsvorbehalt zu den Festlegungen F-Ü1 bis
+F-D1 bis zur Beauftragung von G1 (Register 8.4). Das Register zählt **20 offene Punkte** — U13–U15
+(G4), M3, M5–M8 und M11–M13 (G6b bis G6d), K4–K9, K12, K21 und K23 (KU1, KU2).
+
+**Betroffene Stufen:** GB (U9), G1 (U4).
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 bis 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter
+U4 und U9, Kopf, Kapitel 0, 2 und 9, Zählung 20);
+[Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Vorspann, 1.1,
+2.9, 4 (Stufe GB) und 5; [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md)
+(Verweise auf U4 und U9); die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
