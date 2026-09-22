@@ -35,6 +35,11 @@ Zeilennummern und Messungen:
 > **Nachtrag 22.09.2026 (#432, #434).** Gebaut sind inzwischen auch **E4** (#432) und **E5** (#434); die
 > nächste Etappe ist der **A13-Schnitt** (nach E5, vor E6), dann **E6** Verlauf mit drei Szenarien.
 
+> **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
+> [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
+> § 4 bleibt als Teil dieser Analyse mit ihrem Datum stehen. Der Schnitt A13 ist mit #435 ausgeführt;
+> die nächste Etappe ist E6.
+
 ## 0 Das Ergebnis in acht Sätzen
 
 1. **Der Rechenkern ist weiter als sein Konzept.** Kaskade, Zuschussklemme, Ersatz und Restwert mit
@@ -403,7 +408,7 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 | **A10** | entschieden (entkernen, als **eigener Auftrag** nach den Schemaschritten dieser Reihe) | eigener Auftrag |
 | **A11** | entschieden **und gebaut** — die Ankertests stehen seit **#380** (§ 6.2 des Konzepts) | E1, erledigt |
 | **A12** | entschieden (Näherung, ausgewiesen), **gebaut #432** (`VermiedenAnlageNachweis.Verteile()`, Herleitung nennt „Näherung"; U6‑Q1 entschieden 22.09.2026 — Bezugsgröße ohne jede Eigenerzeugung mit E7, Konzept § 6.3 Nr. 32) | E4 |
-| **A13** | entschieden (**ja**, Schnitt in drei Papiere), **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht, E0c die Fortschreibung | **nach E5, vor E6** (Anwender 22.09.2026 nach Empfehlung: erst wenn E4 und E5 die § 2.6 und § 2.13 umgebaut haben) |
+| **A13** | entschieden (**ja**, Schnitt in drei Papiere), **A13 ausgeführt #435** — Konzept (gültiger Stand), Entscheidungsregister und Protokoll der Entscheidwege; E0 (#379) hatte nur die Pflege gemacht, E0c die Fortschreibung | **nach E5, vor E6** (Anwender 22.09.2026 nach Empfehlung: erst wenn E4 und E5 die § 2.6 und § 2.13 umgebaut haben) — erledigt |
 | **A14** | entschieden (Konzeptfassung ohne Roadmap-Satz; G9 nennt die Referenz beim Namen) **und gebaut** — der **G9-Teil mit #405**, der Hinweistext (U10) **gebaut #434** als `WIRT_SZEN_HINWEIS` de/en (die Zahlen im Text sind die wirksamen, Vorgaben oder gepflegte Sätze) | E5, erledigt |
 | **A15** | entschieden (ein Auftrag), nicht gebaut | offener Auftrag |
 | **A16** | entschieden („Höfingen" neutralisieren), nicht ausgeführt | E12 |
@@ -425,7 +430,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 
 | Etappe | Inhalt | Größe | Rechenwirkung | Nachweis | Schema | Wiki | Modell | Voraussetzung |
 |---|---|---|---|---|---|---|---|---|
-| **E0 Papierpflege** — **umgesetzt #379** (Rest: A13-Schnitt offen) | Kopfzeile, Geltungsblock, Quelltabelle, Artifacts (`07/§ 2.1–2.4`); § 6.1 um acht Zeilen, § 6.3 um neun Erledigte bereinigen, § 6.4/§ 6.5/§ 7 berichtigen; die vier falschen Sätze der §§ 3.2/3.4 (`01/§ 7`), die Kern-Aussagen aus `02/§ 8`, die Schemaaussagen aus `03/§ 6.2`, die WinForms-Reste `04/§ 3`, die Etappenkürzel `05/§ 8.2`; Übersetzungstafel `07/§ 2.12`; Mockup-Prüfung P1; dann der Schnitt in drei Papiere (A13) | M, Schnitt L | keine | Dokumentationswache | — | — | Sonnet (Pflege), Fable (Schnitt) | keine |
+| **E0 Papierpflege** — **umgesetzt #379** (A13 ausgeführt #435) | Kopfzeile, Geltungsblock, Quelltabelle, Artifacts (`07/§ 2.1–2.4`); § 6.1 um acht Zeilen, § 6.3 um neun Erledigte bereinigen, § 6.4/§ 6.5/§ 7 berichtigen; die vier falschen Sätze der §§ 3.2/3.4 (`01/§ 7`), die Kern-Aussagen aus `02/§ 8`, die Schemaaussagen aus `03/§ 6.2`, die WinForms-Reste `04/§ 3`, die Etappenkürzel `05/§ 8.2`; Übersetzungstafel `07/§ 2.12`; Mockup-Prüfung P1; dann der Schnitt in drei Papiere (A13) | M, Schnitt L | keine | Dokumentationswache | — | — | Sonnet (Pflege), Fable (Schnitt) | keine |
 | **E1 Nachweisfundament** — **umgesetzt #380** | drei fehlende § 6.2-Anker und ein absoluter Kapitalwert je Referenzprojekt als Theorie-Klasse; `SteuerGutschriftRechnerTests`, `EegSatzRechnerTests`, `PvErloesRechner`-EEG-Fälle; Wache über die Blattstruktur von Excel und Word; Wächter `Format`/`ExcelFormat`; Runde‑2-Fall der Kaskade | M | keine | die Tests selbst; Referenzlauf unverändert | — | — | Opus | keine |
 | **E2 Kleine Kernkorrekturen** — **umgesetzt #405** (als W‑E2) | CO₂-Kohärenzfall (R5), Kohärenzzeilen in Rubrik und Bericht (R6), Kaskadenrunde 2 (R4), V‑3 PV-Spalte, B‑7, I‑5, S‑3, S‑5-Hinweis, Strommix-Zeile, G9-Referenztext, G7 in Excel, Bandbreite „Spanne" und Referenzzeile, Hi/Ho-Leser, Kommentare (`WirtschaftlichkeitSeiteGaben.cs:727`, `StrompreisZerlegungModel.cs:86`); dazu P3 der Mockup-Prüfung | M | R4 ja (Sonderfall), sonst Ausweis | Anker, Kern-Tests, Berichtsprobe | — | Kleinigkeiten, kein Logbuch | Opus | E1 |
 | **E3 Plattform** — **umgesetzt #431** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |

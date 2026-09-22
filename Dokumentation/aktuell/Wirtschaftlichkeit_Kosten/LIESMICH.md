@@ -1,6 +1,12 @@
 # Wirtschaftlichkeit und Kosten — Rechenwege und Zahlenprobe
 
-Führende Fassung: `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` in diesem Ordner.
+Führende Fassung: `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` in diesem Ordner — der
+**gültige Stand**. Zwei Schwesterpapiere gehören dazu: das
+[`Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md`](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md)
+führt jeden Entscheid des Feldes (Frage, Wortlaut, Datum und Weg, Ort der Regel, Umsetzungsstand) und
+ist die eine Stelle, an der neue Entscheide eingetragen werden; das
+[Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
+führt die Geschichte des Konzepts — nie Regelquelle.
 
 Dieser Ordner enthält das **Funktionsbild** der Kostendialoge und der Ergebnisseite sowie zu jeder
 Kostenkategorie den **dokumentierten Rechenweg** — Formel, Rechtsgrundlage, Codestelle und eine
@@ -17,6 +23,8 @@ Anhang „Umsetzungsstand" — und nur dort.
 ```
 Wirtschaftlichkeit_Kosten/
 ├── LIESMICH.md                          diese Datei — Einstieg und Lesereihenfolge
+├── Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md   das Konzept: der gültige Stand
+├── Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md  alle Entscheide; hier werden neue eingetragen
 ├── Beispielprojekt.md                   die eine Zahlenquelle: Eingangsgrößen, Mengenbilanz, Preise
 ├── 2026-09-19_Pruefung_Mockups_Wirtschaftlichkeit.md   Prüfung der Mockups: Befund und Änderungsplan
 ├── 2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md   Analyse des Konzepts für die Umsetzung: Stand, Lücken, Entscheide, Etappen
@@ -56,6 +64,10 @@ gehört einem anderen Konto und ist abgelöst.
    nicht zusammenpasst, mit Änderungsplan (§ 3) und den Entscheidfragen Q1–Q25 (§ 4).
 6. **`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`** — wer umsetzen will, liest
    zuletzt dieses: Stand gegen Code, Lücken, die Entscheide A1–A20 und der Etappenplan E0–E12.
+
+Quer zu dieser Reihenfolge steht das **`Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md`**: Wer
+wissen will, was entschieden ist und wo die Regel steht, oder wer einen neuen Entscheid einträgt, liest
+dort. Wie ein Entscheid zustande kam, steht im Protokoll der Entscheidwege.
 
 ## Aufbau jeder Rechenweg-Datei
 
@@ -101,6 +113,8 @@ Das Beispielprojekt rechnet durchgängig mit **einer** BHKW-Größe (300 kW, I�
 ## Verwandte Dokumente
 
 - `Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md` — Gesamtkonzept, § 3 Rechenwege
+- `Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md` — die Entscheide des Feldes, je Familie eine Tafel
+- `../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md` — Protokoll der Entscheidwege (Geschichte, keine Regelquelle)
 - `../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md` — Rechtsstand mit Quellen
 - `../../ueberholt/KONTEXT_Kosten_Energie_Wirtschaftlichkeit.md` — Datenwelten und Festlegungen (Geschichte, keine Regelquelle)
 - `../../ueberholt/Konzept_BHKW_Wirtschaftlichkeit_EPOS-Plan.md` — Etappenkonzept bis B4 (Geschichte, keine Regelquelle)
