@@ -2681,7 +2681,7 @@ Davon sind **E0 (#379), E1 (#380) und E2 (#405)** gebaut; die nächste Etappe is
 
 **Wiederaufnahme 22.09.2026.** Die Umsetzung war am 20.09.2026 zurückgestellt (Statusdatei, Block
 „Nach #405" (f)); der Anwender hat sie am 22.09.2026 mit dem Auftrag wieder aufgenommen, das Mockup
-[`Dialog_Formel_Zahlenprobe.html`](../Mockups/Dialog_Formel_Zahlenprobe.html) umzusetzen.
+`../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen.
 
 ## Entscheide vor der nächsten Codeetappe
 
