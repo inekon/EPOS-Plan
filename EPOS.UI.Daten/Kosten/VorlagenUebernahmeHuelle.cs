@@ -5,7 +5,9 @@ using EPOS.UI.Dialoge.Kosten;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HUELLE des Dialogs „Übernahme ins Projekt" (iU9-W1.4).
+    /// Die HUELLE des Dialogs „Übernahme ins Projekt" (iU9-W1.4), seit Etappe E3
+    /// Schritt 1 plattformfrei in <c>EPOS.UI.Daten</c>: keine WinForms-Anweisung,
+    /// kein Fenster, alle Quellen im Kern.
     ///
     /// <para><b>Hier liegt die Datenseite.</b> Die Komponente
     /// <see cref="VorlagenUebernahmeDialog"/> kennt keine Datenbank (Hausregel

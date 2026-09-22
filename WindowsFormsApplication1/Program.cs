@@ -268,6 +268,18 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
+            // Etappe E3, Schritt 1: Die vier nahtlosen Huellen der Kosten- und
+            // Wirtschaftlichkeitsseite liegen jetzt in EPOS.UI.Daten. Zwei Wege, die
+            // sie rufen, zeigen bis E3 Schritt 6 noch ein eigenes Fenster und bleiben
+            // deshalb hier - sie kommen als benannte Naht herein. Ohne diese Haken
+            // zeigt der Wirtschaftlichkeits-Parameterdialog den Gesetzeskatalog nicht
+            // und der Abschnitt "Ertrag/Bonus" keinen Weg in die PV-Verguetung; genau
+            // der Stand auf iOS.
+            Wirtschaftlichkeitswege.GesetzeskatalogGaben =
+                klasse => GesetzeskatalogHuelle.Gaben(klasse);
+            Wirtschaftlichkeitswege.PvVerguetungOeffnen =
+                idProjekt => PhotovoltaikVerguetungHuelle.Oeffnen(null, idProjekt);
+
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,
             // Tests, Konsolenlauf - wird keine Anfrage an den Anbieter gesendet.

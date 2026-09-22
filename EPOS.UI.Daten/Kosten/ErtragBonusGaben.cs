@@ -229,8 +229,14 @@ namespace WindowsFormsApplication1
             // Kostendialog steht weiter, der Vergütungsdialog legt sich als
             // eigenes Fenster darüber. Beim Anfassen von Welle 5 wird daraus eine
             // Überlagerung.
-            werte["PvOeffnen"] = EventCallback.Factory.Create<int>(new object(),
-                id => PhotovoltaikVerguetungHuelle.Oeffnen(null, id));
+            //
+            // E3/1: Weil der Vergütungsdialog bis E3 Schritt 6 ein eigenes Fenster
+            // zeigt, bleibt seine Hülle in der Windows-Schale; der Sprung kommt als
+            // benannte Naht herein (Wirtschaftlichkeitswege.PvVerguetungOeffnen).
+            Action<int> pvOeffnen = Wirtschaftlichkeitswege.PvVerguetungOeffnen;
+            if (pvOeffnen != null)
+                werte["PvOeffnen"] = EventCallback.Factory.Create<int>(new object(),
+                    id => pvOeffnen(id));
         }
 
         /// <summary>
@@ -303,7 +309,9 @@ namespace WindowsFormsApplication1
             if (pvc.Lies(idProjekt) == null) pvc.Speichern(pvc.VorlageAusStamm(idProjekt));
             else pvc.SetzeUebernahme(idProjekt, false);
 
-            PhotovoltaikVerguetungHuelle.Oeffnen(null, idProjekt);
+            // E3/1: derselbe Weg wie am Knopf — über die benannte Naht, weil die
+            // gerufene Hülle bis E3 Schritt 6 ein eigenes Fenster zeigt.
+            Wirtschaftlichkeitswege.PvVerguetungOeffnen?.Invoke(idProjekt);
         }
 
         private static string T(string schluessel, string rueckfall)
