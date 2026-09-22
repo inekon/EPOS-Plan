@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dienste;
@@ -212,11 +213,56 @@ namespace WindowsFormsApplication1
             {
                 if (_berichte == null)
                 {
-                    _berichte = new BerichteKostenHuelle(() => _besitzer?.Invoke() as Form);
+                    // E3/8: Die Huelle liegt plattformfrei in EPOS.UI.Daten; die
+                    // zwei Wege, die nur Windows kennt, kommen als benannte Naht
+                    // herein - der Variantendialog als zweites Fenster (Regel (b):
+                    // eine Nachricht spaeter) und das Umbenennen mit Nachlauf.
+                    _berichte = new BerichteKostenHuelle(VarianteAnlegenAusUebersicht,
+                                                         ProjektUmbenennen);
                     _berichte.SetzeProjekt(_kontext.Id, _kontext.Name);
                 }
                 return _berichte;
             }
+        }
+
+        /// <summary>
+        /// Der WINDOWS-Weg in den Variantendialog, den die Übersichtsseite von
+        /// „Berichte &amp; Kosten" ruft (E3/8; bis dahin stand er in
+        /// <c>UebersichtSeiteGaben</c> selbst).
+        ///
+        /// <para><b>Eine Nachricht später</b> (<see cref="Blazorsprung"/>, Befund
+        /// W16b‑B‑1): Aus dem Blazor-Klick heraus bliebe das Fenster der zweiten
+        /// WebView leer. Der Seite antwortet deshalb eine Zusage, die erst fällt,
+        /// wenn der Dialog wieder zu ist — sie lädt danach ihre Liste neu.</para>
+        ///
+        /// <para><b>Und sie fällt auf jeden Fall.</b> <c>Blazorsprung</c> führt
+        /// einen Riegel: Steht schon ein Sprung an, wird dieser still verworfen.
+        /// Ohne Rückfall bliebe die Zusage dann für immer offen, und die Seite
+        /// stünde bis zu ihrem nächsten Aufbau auf „läuft" (Knöpfe gesperrt).
+        /// Läuft der Sprung nicht binnen fünf Sekunden an — das ist die Frist,
+        /// nach der auch der Riegel selbst verfällt —, antwortet die Zusage
+        /// <c>false</c>.</para>
+        /// </summary>
+        private Task<bool> VarianteAnlegenAusUebersicht(int idStamm, string stammName)
+        {
+            var zusage = new TaskCompletionSource<bool>();
+            int gestartet = 0;
+
+            Blazorsprung.Verzoegert(_besitzer?.Invoke(), () =>
+            {
+                System.Threading.Interlocked.Exchange(ref gestartet, 1);
+                bool angelegt = false;
+                try { angelegt = AlsVarianteHuelle.Zeige(_besitzer?.Invoke(), idStamm, stammName); }
+                finally { zusage.TrySetResult(angelegt); }
+            });
+
+            // Rueckfall fuer den verworfenen Sprung (siehe oben).
+            Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ =>
+            {
+                if (System.Threading.Volatile.Read(ref gestartet) == 0) zusage.TrySetResult(false);
+            });
+
+            return zusage.Task;
         }
 
         // =====================================================================

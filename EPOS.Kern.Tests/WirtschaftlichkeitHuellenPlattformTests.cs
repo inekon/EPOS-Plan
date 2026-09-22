@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
@@ -356,6 +357,60 @@ namespace EPOS.Kern.Tests
             Assert.True(gaben.ContainsKey("FarbeSetzen"), "Die Farbwahl gehört zum Satz.");
             Assert.NotNull(neuGesammelt);
             Assert.False(neuGesammelt(), "Vor dem ersten Lauf ist nichts gesammelt.");
+        }
+
+        // =================================================================
+        //  (9) Berichte und Kosten — E3 Schritt 8
+        // =================================================================
+
+        /// <summary>
+        /// Die Gaben-Fabrik hinter <c>IosProjektQuelle.BerichteKostenGaben</c>:
+        /// Dieselbe Hülle, die unter Windows das sechste Reiterblatt und die
+        /// Ansicht speist, baut ihre vier Seiten ohne Schale. Das ist der
+        /// Nachweis für den iOS-Weg — die Schale steuert dort nichts bei.
+        /// </summary>
+        [Fact]
+        public void Berichte_und_Kosten_bauen_ihre_vier_Seiten_ohne_Windows_Dienst()
+        {
+            var huelle = new BerichteKostenHuelle();
+            huelle.SetzeProjekt(PROJEKT_BHKW, "");
+
+            IReadOnlyDictionary<string, object> gaben = huelle.Gaben();
+            Assert.NotNull(gaben);
+
+            var seiten = (Func<string, IReadOnlyDictionary<string, object>>)gaben["SeitenGaben"];
+
+            Assert.NotNull(seiten(BerichteKostenSeite.SEITE_UEBERSICHT));
+            Assert.NotNull(seiten(BerichteKostenSeite.SEITE_KOSTEN));
+            Assert.NotNull(seiten(BerichteKostenSeite.SEITE_WIRTSCHAFT));
+            Assert.NotNull(seiten(BerichteKostenSeite.SEITE_BERICHT));
+        }
+
+        /// <summary>
+        /// <b>Benannt abgelehnt bleibt genau eines:</b> der Knopf „Variante
+        /// anlegen" der Übersichtsseite. Er führt unter Windows in ein ZWEITES
+        /// Fenster; ohne diesen Weg steht der Schlüssel gar nicht erst im Satz
+        /// (kein Delegat, kein Knopf), und auf iOS ist der Variantendialog eine
+        /// eigene Ansicht der Wurzel.
+        /// </summary>
+        [Fact]
+        public void Die_Uebersicht_ohne_Naht_bietet_das_Anlegen_einer_Variante_nicht_an()
+        {
+            var ohne = new BerichteKostenHuelle();
+            ohne.SetzeProjekt(PROJEKT_BHKW, "");
+            var seitenOhne = (Func<string, IReadOnlyDictionary<string, object>>)
+                             ohne.Gaben()["SeitenGaben"];
+
+            Assert.False(seitenOhne(BerichteKostenSeite.SEITE_UEBERSICHT)
+                             .ContainsKey("VarianteAnlegenOeffnen"));
+
+            var mit = new BerichteKostenHuelle((_, _) => Task.FromResult(false));
+            mit.SetzeProjekt(PROJEKT_BHKW, "");
+            var seitenMit = (Func<string, IReadOnlyDictionary<string, object>>)
+                            mit.Gaben()["SeitenGaben"];
+
+            Assert.True(seitenMit(BerichteKostenSeite.SEITE_UEBERSICHT)
+                            .ContainsKey("VarianteAnlegenOeffnen"));
         }
     }
 }

@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
+using System.Threading.Tasks;
 using EPOS.UI.Dienste;
 using EPOS.UI.Seiten.Berichte;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Reiters „Berichte &amp; Kosten" (iU9-W5.6) —
+    /// Die PLATTFORMFREIE Hülle des Reiters „Berichte &amp; Kosten" (iU9-W5.6) —
     /// Nachfolge von <c>Views/BerichteKosten/UcBerichteKosten.cs</c> (810 Z.).
     ///
-    /// <para><b>Sie ist die NICHT-MODALE Hülle</b>
-    /// (<see cref="BlazorSeite{T}"/>) und sitzt in
-    /// <c>Form_Start.tabPage6</c>. Eine WebView trägt alle vier Seiten
-    /// (Risiko R5); umgeschaltet wird in der Komponente.</para>
+    /// <para><b>Seit Etappe E3, Schritt 8 liegt sie in <c>EPOS.UI.Daten</c></b>
+    /// und baut die Parametersätze ihrer vier Seiten allein aus
+    /// Kern-Controllern. Unter Windows sitzt sie in einer
+    /// <c>BlazorSeite</c> in <c>Form_Start.tabPage6</c> und speist zugleich die
+    /// Ansicht der <c>AppWurzel</c>; auf iOS liefert sie dieselben Sätze über
+    /// <c>IProjektQuelle.BerichteKostenGaben</c>. Eine WebView trägt alle vier
+    /// Seiten (Risiko R5); umgeschaltet wird in der Komponente.</para>
     ///
     /// <para><b>Der geteilte Zustand.</b> Was der Vorläufer über vier Felder und
     /// zwei Ereignisse der Übersichtsseite hielt, hält die plattformfreie
@@ -31,7 +34,16 @@ namespace WindowsFormsApplication1
     internal sealed class BerichteKostenHuelle
     {
         private readonly SeitenZustand _zustand = new SeitenZustand();
-        private readonly Func<Form> _besitzer;
+
+        /// <summary>
+        /// Die zwei Wege, die nur die SCHALE kennt (E3/8): der Variantendialog
+        /// als zweites Fenster und das Umbenennen mit Nachlauf der Startseite.
+        /// Beide sind <c>null</c>, wo es sie nicht gibt — dann zeichnet die
+        /// Übersicht den Anlegeknopf nicht und benennt über den plattformfreien
+        /// Weg um.
+        /// </summary>
+        private readonly Func<int, string, Task<bool>> _varianteAnlegen;
+        private readonly Func<int, string, string, string> _umbenennen;
 
         private UebersichtSeiteGaben _uebersicht;
         private KostenSeiteGaben _kosten;
@@ -61,9 +73,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         private readonly Vergleichsauswahl _vergleich = new Vergleichsauswahl();
 
-        internal BerichteKostenHuelle(Func<Form> besitzer)
+        /// <summary>
+        /// Baut die Hülle. Beide Wege sind freiwillig: Wo eine Schale sie nicht
+        /// stellt, fällt der Knopf weg bzw. der plattformfreie Weg ein.
+        /// </summary>
+        internal BerichteKostenHuelle(Func<int, string, Task<bool>> varianteAnlegen = null,
+                                      Func<int, string, string, string> umbenennen = null)
         {
-            _besitzer = besitzer;
+            _varianteAnlegen = varianteAnlegen;
+            _umbenennen = umbenennen;
         }
 
         /// <summary>Der Parametersatz der Reiterkomponente.</summary>
@@ -120,7 +138,10 @@ namespace WindowsFormsApplication1
             {
                 if (_uebersicht == null)
                 {
-                    _uebersicht = new UebersichtSeiteGaben(_besitzer, _stand) { Vergleich = _vergleich };
+                    _uebersicht = new UebersichtSeiteGaben(_varianteAnlegen, _stand, _umbenennen)
+                    {
+                        Vergleich = _vergleich
+                    };
                     _uebersicht.StammGewechselt += StammWechsel;
                     _uebersicht.ProjektMarkiert += Markierung;
                 }

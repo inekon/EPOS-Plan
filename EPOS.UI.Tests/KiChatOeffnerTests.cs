@@ -522,14 +522,24 @@ public sealed class KiChatOeffnerTests
                                 && !z.TrimStart().StartsWith("*", StringComparison.Ordinal))
                     .ToArray();
 
+    /// <summary>
+    /// Die Quelltexte beider Hüllenorte. <c>EPOS.UI.Daten</c> kam mit
+    /// <b>E3/8</b> dazu: Die Hüllen wandern seit Auftrag #208 Stück für Stück
+    /// dorthin, und <c>Dienste.Datei.MitSystemOeffnen</c> steht ihnen dort
+    /// genauso offen — ein Leser, der nur die Schale liest, verlöre mit jedem
+    /// Umzug ein Stück seiner Reichweite (und fiel zuletzt unter die
+    /// Selbstprobe).
+    /// </summary>
     private static IEnumerable<string> Quelldateien()
-        => Directory.EnumerateFiles(Path.Combine(Wurzel(), "WindowsFormsApplication1"),
-                                    "*.cs", SearchOption.AllDirectories)
-                    .Where(p => !p.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar,
-                                            StringComparison.Ordinal)
-                                && !p.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar,
-                                               StringComparison.Ordinal))
-                    .OrderBy(p => p, StringComparer.Ordinal);
+        => new[] { "WindowsFormsApplication1", "EPOS.UI.Daten" }
+            .Select(o => Path.Combine(Wurzel(), o))
+            .Where(Directory.Exists)
+            .SelectMany(o => Directory.EnumerateFiles(o, "*.cs", SearchOption.AllDirectories))
+            .Where(p => !p.Contains(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar,
+                                    StringComparison.Ordinal)
+                        && !p.Contains(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar,
+                                       StringComparison.Ordinal))
+            .OrderBy(p => p, StringComparer.Ordinal);
 
     private static string Lies(params string[] teile)
     {

@@ -591,6 +591,82 @@ public class AppWurzelTests : EposBunitContext
         };
     }
 
+    // =====================================================================
+    //  Die DREI Masken der Wirtschaftlichkeit (E3/8, Anwenderentscheid A19)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Wurzel FÜHRT die drei Schlüssel</b> — bis E3/8 fielen sie durch, und
+    /// der Kern lehnte sie unter iOS benannt ab („kein Weg"), obwohl ihre Hüllen
+    /// seither plattformfrei sind. Plattformfrei heißt nicht erreichbar; dieser
+    /// Fall ist der Unterschied.
+    /// </summary>
+    [Theory]
+    [InlineData(Seitenschluessel.Kostenverwaltung)]
+    [InlineData(Seitenschluessel.NutzungsdauerVerwaltung)]
+    [InlineData(Seitenschluessel.Gesetzeskatalog)]
+    public void Mit_Parametersatz_zeichnet_die_Wurzel_die_drei_Wirtschaftsmasken(string schluessel)
+    {
+        var cut = Aufbauen(MitAllenDreien());
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-seite"));
+        Assert.Single(cut.FindAll(".epos-dialog"));
+    }
+
+    /// <summary>Ohne Parametersatz bleibt die Liste stehen und sagt warum (E3/8).</summary>
+    [Theory]
+    [InlineData(Seitenschluessel.Kostenverwaltung)]
+    [InlineData(Seitenschluessel.NutzungsdauerVerwaltung)]
+    [InlineData(Seitenschluessel.Gesetzeskatalog)]
+    public void Ohne_Parametersatz_bleiben_die_drei_Wirtschaftsmasken_zu(string schluessel)
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-dialog"));
+        Assert.NotEmpty(cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Alle ACHT Ablehnungen sind voneinander verschieden</b> — die fünf aus
+    /// KI‑D‑Q8 und die drei aus E3/8.
+    /// </summary>
+    [Fact]
+    public void Die_acht_Ablehnungen_sind_voneinander_verschieden()
+    {
+        AppWurzel wurzel = Aufbauen(new TestProjektquelle(ZweiProjekte)).Instance;
+
+        string[] gruende =
+        {
+            wurzel.KeineKlimadatenText,
+            wurzel.KeineProjektvarianteText,
+            wurzel.KeineProjektkopieText,
+            wurzel.KeinPeakShavingText,
+            wurzel.KeineStromganglinienText,
+            wurzel.KeineKostenverwaltungText,
+            wurzel.KeineNutzungsdauernText,
+            wurzel.KeinGesetzeskatalogText
+        };
+
+        Assert.DoesNotContain(gruende, g => string.IsNullOrWhiteSpace(g));
+        Assert.Equal(gruende.Length, gruende.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    /// <summary>Eine Quelle, die die drei Wirtschaftsmasken führt.</summary>
+    private static TestProjektquelle MitAllenDreien()
+        => new TestProjektquelle(ZweiProjekte)
+        {
+            Kostenverwaltung = new Dictionary<string, object>(),
+            Nutzungsdauern = new Dictionary<string, object>(),
+            Gesetzeskatalog = new Dictionary<string, object>()
+        };
+
     /// <summary>
     /// Ohne Argument bleibt es bei der Übersicht — der Zustand vor KI‑D‑Q8.
     /// </summary>

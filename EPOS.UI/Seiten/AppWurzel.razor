@@ -161,6 +161,25 @@ else if (_ansicht == Seitenschluessel.StromganglinieAdmin && _stromganglinien is
     <EPOS.UI.Dialoge.Strom.StromganglinieAdminDialog @attributes="_stromganglinien"
                                                      Geschlossen="BeiStromganglinienFertig" />
 }
+@* DIE DREI MASKEN DER WIRTSCHAFTLICHKEIT (Etappe E3/8, Anwenderentscheid A19).
+   Dasselbe Muster wie die fuenf darueber; unter Windows wird keiner dieser Zweige
+   erreicht - dort fuehrt der Menuepunkt „Administration" in ein eigenes Fenster
+   (KostenKomponenteFenster, NutzungsdauerFenster, GesetzeskatalogFenster). *@
+else if (_ansicht == Seitenschluessel.Kostenverwaltung && _kostenverwaltung is not null)
+{
+    <EPOS.UI.Dialoge.Kosten.KostenKomponenteDialog @attributes="_kostenverwaltung"
+                                                   Geschlossen="BeiKostenverwaltungFertig" />
+}
+else if (_ansicht == Seitenschluessel.NutzungsdauerVerwaltung && _nutzungsdauern is not null)
+{
+    <EPOS.UI.Dialoge.Kosten.NutzungsdauerDialog @attributes="_nutzungsdauern"
+                                                Geschlossen="BeiNutzungsdauernFertig" />
+}
+else if (_ansicht == Seitenschluessel.Gesetzeskatalog && _gesetzeskatalog is not null)
+{
+    <EPOS.UI.Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog @attributes="_gesetzeskatalog"
+                                                              Geschlossen="BeiGesetzeskatalogFertig" />
+}
 else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not null)
 {
     <EPOS.UI.Dialoge.Wirtschaftlichkeit.BhkwWirtschaftlichkeitDialog
@@ -362,6 +381,12 @@ else
     private IReadOnlyDictionary<string, object>? _projektKopie;
     private IReadOnlyDictionary<string, object>? _peakShaving;
     private IReadOnlyDictionary<string, object>? _stromganglinien;
+
+    // Die DREI Masken der Wirtschaftlichkeit, die die Wurzel seit E3/8 zeigt
+    // (A19). Derselbe Lebenslauf wie die fuenf darueber.
+    private IReadOnlyDictionary<string, object>? _kostenverwaltung;
+    private IReadOnlyDictionary<string, object>? _nutzungsdauern;
+    private IReadOnlyDictionary<string, object>? _gesetzeskatalog;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -1105,6 +1130,31 @@ else
             return true;
         }
 
+        // ---- Die DREI Masken der Wirtschaftlichkeit (E3/8, A19) -----------------
+        if (maske == Seitenschluessel.Kostenverwaltung)
+        {
+            _kostenverwaltung = Quelle.KostenverwaltungGaben();
+            if (_kostenverwaltung is null) { _statuszeile = KeineKostenverwaltungText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.NutzungsdauerVerwaltung)
+        {
+            _nutzungsdauern = Quelle.NutzungsdauerGaben();
+            if (_nutzungsdauern is null) { _statuszeile = KeineNutzungsdauernText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.Gesetzeskatalog)
+        {
+            _gesetzeskatalog = Quelle.GesetzeskatalogGaben();
+            if (_gesetzeskatalog is null) { _statuszeile = KeinGesetzeskatalogText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
         if (maske == Seitenschluessel.BhkwWirtschaftlichkeit)
         {
             _bhkw = Quelle.BhkwDaten(_projekt?.Id ?? 0);
@@ -1288,6 +1338,11 @@ else
         _projektKopie = null;
         _peakShaving = null;
         _stromganglinien = null;
+
+        // Dasselbe gilt fuer die drei Masken aus E3/8.
+        _kostenverwaltung = null;
+        _nutzungsdauern = null;
+        _gesetzeskatalog = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
 
@@ -1333,6 +1388,18 @@ else
 
     /// <summary>Die Stromganglinien-Verwaltung ist zu.</summary>
     private void BeiStromganglinienFertig(bool ok) => ZurueckZurListe();
+
+    // ---- Rueckwege der drei Masken aus E3/8 ---------------------------------
+
+    /// <summary>Die Kostenverwaltung ist zu — sie schreibt in ihrem OK-Weg.</summary>
+    private void BeiKostenverwaltungFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Nutzungsdauern sind zu; <c>null</c> = abgebrochen.</summary>
+    private void BeiNutzungsdauernFertig(
+        EPOS.UI.Dialoge.Kosten.NutzungsdauerErgebnis? ergebnis) => ZurueckZurListe();
+
+    /// <summary>Der Gesetzeskatalog ist zu.</summary>
+    private void BeiGesetzeskatalogFertig(bool ok) => ZurueckZurListe();
 
     /// <summary>
     /// „Als Variante speichern" ist zu. <c>null</c> = abgebrochen; sonst geht die
@@ -1608,7 +1675,17 @@ else
                     || maske == Seitenschluessel.ProjektAlsVariante
                     || maske == Seitenschluessel.ProjektSpeichernUnter
                     || maske == Seitenschluessel.PeakShaving
-                    || maske == Seitenschluessel.StromganglinieAdmin;
+                    || maske == Seitenschluessel.StromganglinieAdmin
+
+                    // Die drei Masken der Wirtschaftlichkeit (E3/8, A19). Die
+                    // vier uebrigen Stuecke dieses Feldes - Parameter, PV-
+                    // Verguetung, Tarifstruktur und Kapitalwert-Verlauf - haben
+                    // keinen eigenen Schluessel: Sie sind Ueberlagerungen der
+                    // Wirtschaftlichkeitsseite und damit ueber BERICHTE_KOSTEN
+                    // zu erreichen.
+                    || maske == Seitenschluessel.Kostenverwaltung
+                    || maske == Seitenschluessel.NutzungsdauerVerwaltung
+                    || maske == Seitenschluessel.Gesetzeskatalog;
 
         if (!bekannt) return false;
 
@@ -1796,4 +1873,19 @@ else
     /// <summary>Meldung, wenn die Stromganglinien-Verwaltung nicht aufzubauen ist.</summary>
     [Parameter] public string KeineStromganglinienText { get; set; } =
         "Die Stromganglinien-Verwaltung steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    // ---- Die drei Masken aus E3/8 (A19) ---------------------------------
+    // Auch sie nennen je einen eigenen Grund.
+
+    /// <summary>Meldung, wenn die Kostenverwaltung nicht aufzubauen ist.</summary>
+    [Parameter] public string KeineKostenverwaltungText { get; set; } =
+        "Die Kostenverwaltung steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>Meldung, wenn die Nutzungsdauern nicht aufzubauen sind.</summary>
+    [Parameter] public string KeineNutzungsdauernText { get; set; } =
+        "Die Nutzungsdauern stehen auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>Meldung, wenn der Gesetzeskatalog nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinGesetzeskatalogText { get; set; } =
+        "Der Gesetzeskatalog steht auf diesem Gerät noch nicht zur Verfügung.";
 }
