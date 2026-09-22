@@ -94,6 +94,11 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   „automatisch erkennen" wählen. (#428)
 - Seit 26.09.2026: Der Hilfe-Assistent nennt Masken und Felder nach einem Sprachwechsel in der
   neuen Sprache. (#430)
+- Seit 26.09.2026: Die Knöpfe „BHKW-Tarif…", „Stromtarif…" und „Tarif…" der Wirtschaftlichkeitsseite
+  und des PV-Vergütungsdialogs öffnen die Tarifstruktur als Einblendung in der Seite; der
+  PV-Vergütungsdialog aus dem Reiter „Ertrag/Bonus" erscheint ebenfalls als Einblendung statt als
+  eigenes Fenster. Die zuletzt bearbeitete Vergleichsgruppe der Übersicht wird nach dem Update einmal
+  nicht erinnert. (#431)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
