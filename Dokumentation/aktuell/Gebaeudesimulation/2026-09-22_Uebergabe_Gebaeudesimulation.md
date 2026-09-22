@@ -30,6 +30,8 @@ kein Konzept; die Sachlage steht in den Papieren selbst.
 ### 2.1 Restabgleich (ein Auftrag, rund 1–2 Stunden Agentenarbeit)
 
 Am 22.09.2026 gestartet und vor der ersten Änderung abgebrochen; nichts davon ist halb erledigt.
+**Erledigt am 22.09.2026** (zweiter Anlauf, Punkte 1–6; Ergebnis in den genannten Papieren, Kapitel 4
+und 5 des Prüfprotokolls).
 
 1. **Klimaspalten sind umgesetzt** (Schemaschritt 95, Anwenderentscheid 19.09.2026, Aufträge
    KL-3/KL-4): `Tab_Solar` und `Tab_Solar_STAMM` führen `Gegenstrahlung`, `Luftfeuchte`,
@@ -85,6 +87,9 @@ vertagt). Kurz und übersichtlich, ein Satz je Punkt.
 
 ### 2.4 Word-Kurzfassung — Entscheid des Anwenders
 
+**Entschieden am 22.09.2026: Weg 3** — die Word-Datei ruht bis zur Beauftragung von G1; bis dahin
+gilt das Prüfprotokoll als Kurzfassung (Statusdatei, Zeile Word-Dokument).
+
 Die Word-Datei
 [`Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx`](Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx)
 steht auf **E1–E25 (16.09.2026)**. Ihre Markdown-Quelle (rund 2 300 Zeilen, 16 Mermaid-Bilder,
@@ -109,7 +114,7 @@ Wege, zwischen denen der Anwender wählt:
 - Entscheide nur als Nachtrag N1.x im Leitkonzept plus Statuszeile; Nachträge nie umschreiben,
   nur Vermerke nach dem Muster von N1.1 anfügen. Hauptteil und Papiere im Fließtext umschreiben,
   nicht relativieren; Kapitelnummern stabil.
-- Wortwahl: „Bestandsweg" für den Altweg, „bis zur Ablösung (Stufe GA, Zeitpunkt offen)" statt
+- Wortwahl: „Bestandsweg" für den Altweg, „bis zur Ablösung (Stufe GA, fällig nach dem Ablösekriterium Q24, E27)" statt
   „dauerhaft"; Schemaschritte mit Papiernamen (M3, M4, KU-S1, AK-S1 …), die Zielnummer nur als
   datierte Momentaufnahme aus `SchemaStand.Zielversion`.
 - Keine Normzahlen der VDI 6007/6020/2078 in den Papieren; keine Hersteller- oder Produktdaten;

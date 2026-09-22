@@ -1,8 +1,8 @@
 # Konzept: Kühlung in der Gebäudesimulation und in der Simulation von EPOS-Plan
 
-> **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Altweg ist der
+> **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Bestandsweg ist der
 > **Bestandsweg als Übergang**, und die Stufe **GA — Altweg ablösen** kehrt als letzte Stufe ohne
-> Termin zurück (Q24 wieder offen); **K20 ist durch die Umsetzung erledigt**, und die Belege des
+> Termin zurück (Q24 damals wieder offen, seit E27 entschieden); **K20 ist durch die Umsetzung erledigt**, und die Belege des
 > Kapitels 5.0 und des Anhangs sind am Arbeitsbaum nachgemessen (Stand 22.09.2026,
 > `SchemaStand.Zielversion = 100`); die Stellenliste des vierten Kanals ist um Anzeige-, Schema-
 > und Berichtsstellen ergänzt; Bedarfs- und Deckungsprobe der
@@ -13,6 +13,23 @@
 > [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.25 und N1.31,
 > Protokolle: [Gegenlesen](Gebaeudesimulation/2026-09-16_Gegenlesen_Kuehlkonzept.md),
 > [Prüfung 17.09.2026](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md).**
+>
+> **Nachzug 22.09.2026:** Die Zusicherung zu Heizen und Kühlen gilt **je Abschnitt** der
+> Stundenschleife, nicht je Stunde; eine Stunde mit Fallwechsel trägt beides und wird als Hinweis
+> gezählt (F-K3, 3.3, 3.5, 6.4, 8.5, 10.2).
+>
+> **Nachzug 22.09.2026 — E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32):** Der Anwender hat die Kühlfragen
+> des Registers entschieden. **K2** (Kältekanal positiv), **K11** (eigener Sollwert und eigene
+> Grenze in KU1, Zeitprofil in KU3) und **K19** (eigener Einfrierschritt für KU2) nach Empfehlung;
+> der Kältestrom bleibt **Skalar** (Projektsumme in der Kennzahlendatei), bis der Bericht die Spalte
+> je Anlage verlangt — dann im selben Schemaschritt wie `KU-S4`, nicht nachträglich (im Register
+> K24, hier K18a; nach Empfehlung, Korrektur des Anwenders vom 22.09.2026; 7.4, 7.6). **K22** bleibt Prüfaufgabe vor KU2. **K10 ist abweichend von
+> der Empfehlung entschieden:** Eine **Programmeinstellung** legt fest, ob neue Projekte mit
+> eingeschalteter Kühlung angelegt werden, Vorgabe aus; Bestands- und Referenzprojekte bleiben aus,
+> bis ihre Projekteinstellung ausdrücklich eingeschaltet wird; die Projekteinstellung bleibt je
+> Projekt schaltbar (F-K20, 7.2, 8.3, 10.3, 10.5, 11.1, 12.1). Mit E27 ist auch **Q24** entschieden:
+> Die Stufe GA wird fällig, sobald ihre vier Bedingungen erfüllt sind — eine davon ist die Abnahme
+> von KU1 (10.5, 11.2).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -22,10 +39,10 @@ Bedarf wird durch Kälteerzeuger gedeckt
 **Drei Entscheide vom 16.09.2026 prägen diese Fassung; ein vierter vom 17.09.2026 schärft sie:**
 
 - **E20 (16.09.2026)** trennt die beiden Rechenwege vollständig: VDI 6007 ist die Vorgabe, der
-  Altweg lebt als abgeschlossenes Modul `Altweg/` ohne neue Funktion weiter; eine **Weiche am
+  Bestandsweg lebt als abgeschlossenes Modul `Altweg/` ohne neue Funktion weiter; eine **Weiche am
   Eingang** der Fassade `SimulationWaermebedarf` ruft genau ein
   Modul, davor steht ein modellfreier Vorbereitungsschritt. **Für die Kühlung heißt das: Ein
-  Gebäude auf dem Altweg hat keine Kühllast** — sein Kältebedarf ist 0 **mit benanntem Hinweis**,
+  Gebäude auf dem Bestandsweg hat keine Kühllast** — sein Kältebedarf ist 0 **mit benanntem Hinweis**,
   nicht mit stiller Null ([ADR-006](ADR-006_Trennung_Altweg_VDI6007.md),
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.25).
 - **E21 (16.09.2026)** verlangt, die **Simulation Kältebedarf analog zur Simulation Wärmebedarf**
@@ -33,20 +50,21 @@ Bedarf wird durch Kälteerzeuger gedeckt
   Kennzahlmuster, dieselben Dialog- und Berichtsbausteine, dieselbe Deckungsform. **Die Symmetrie
   ist damit Bauvorschrift, nicht Geschmack** — jede Abweichung wird benannt und begründet. Damit
   ist **K1** in der Sache entschieden (12.1).
-- **E23 (16.09.2026)** hält den Altweg im Produkt: Er ist der **eingefrorene Bestandsweg**,
+- **E23 (16.09.2026)** hält den Bestandsweg im Produkt: Er ist **eingefroren**,
   ausdrücklich wählbar neben dem VDI-Weg. **Für die Kühlung heißt das:** Der Ausweis lautet
   „Tagesbilanz (Bestandsweg)", und der Kältebedarf 0 mit benanntem Hinweis ist die Eigenschaft
   dieses Wegs, nicht eine stille Null bis zu einem Stichtag (1.3, 8.1, 10.5).
-- **E26 (17.09.2026)** sagt, wie E23 zu lesen ist: Der Altweg bleibt **jetzt** — als
+- **E26 (17.09.2026)** sagt, wie E23 zu lesen ist: Der Bestandsweg bleibt **jetzt** — als
   funktionierender **Übergang**, nicht auf Dauer; das VDI-Modell löst ihn später vollständig ab
   und muss eigenständig arbeiten. Die Stufe **GA — Altweg ablösen** ist damit wieder die letzte
-  Stufe des Plans, **ohne Termin** (**Q24** ist wieder offen) und in keiner Summe. **Für die
+  Stufe des Plans, **ohne Datum** und in keiner Summe; wann sie fällig wird, sagt **Q24**, mit
+  **E27** entschieden: sobald ihre vier Bedingungen erfüllt sind. **Für die
   Kühlung heißt das:** Der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" samt
   Ressourcenschlüssel und Proben gilt **bis zur Ablösung** und ist im selben Auftrag, der ihn
   anlegt, in die Löschliste der Stufe GA einzutragen (10.5, 11.2;
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31).
 
-**Stand:** 17.09.2026. **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
+**Stand:** 22.09.2026 (Nachzug E27). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
 Rev. 3 trug E20, E21 und E23, Rev. 2 war aus drei Blickwinkeln gegengelesen (Bestand, Konsistenz,
 Entscheid E15).
 
@@ -55,15 +73,15 @@ Kühlkanal vom Gebäudemodell bis zum Wiki bedeutet: Rechenweg, Kanalarchitektur
 Strom und Wirtschaftlichkeit, Datenmodell, Dialogführung, Import und Export, Nachweis und
 Regressionsnetz, eine Stufung KU0–KU3 und die Fragen K1–K23 mit Empfehlung. **Es entscheidet
 nichts, was der Anwender zu entscheiden hat** — Kapitel 12 trennt „jetzt zu entscheiden" von
-„technische Festlegung zur Kenntnis"; was E20, E21, E23 und E26 bereits entschieden haben, trägt
-dort den Vermerk und wird nicht erneut vorgelegt.
+„technische Festlegung zur Kenntnis"; was E20, E21, E23, E26 und E27 bereits entschieden haben,
+trägt dort den Vermerk und wird nicht erneut vorgelegt.
 
 **Es steht neben, nicht über den Schwesterpapieren:**
 
 | Papier | Was dort steht, worauf dieses Papier aufsetzt |
 |---|---|
 | [Konzept Gebäudesimulation](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Physik und Regelung (4.5), Ergebnisreihen (4.6), Bericht (9), Abgrenzung (15), Entscheide E1–E26 (Nachtrag 1; E12 in N1.18, **E15 in N1.20**, **E20 in N1.25**, **E26 in N1.31**) |
-| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Weiche am Eingang, Modul `Altweg/` ohne neue Funktion, Dialoge in VDI-Struktur, eingeklappter Abschnitt „Tagesbilanz (Bestandsweg)"; mit E23 bleibt der Altweg als Bestandsweg, mit E26 als **Übergang** bis zur Stufe GA (Zeitpunkt offen, Q24); dazu die Regel, dass jede Stufe ihren Altweg-Sonderfall in die Löschliste von GA einträgt |
+| [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Trennung der Rechenwege (E20): Weiche am Eingang, Modul `Altweg/` ohne neue Funktion, Dialoge in VDI-Struktur, eingeklappter Abschnitt „Tagesbilanz (Bestandsweg)"; mit E23 bleibt der Bestandsweg im Produkt, mit E26 als **Übergang** bis zur Stufe GA (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27); dazu die Regel, dass jede Stufe ihren Bestandsweg-Sonderfall in die Löschliste von GA einträgt |
 | [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) | Einbindung in den Kern (1.4–1.8), der Gebäude-Schemaschritt (1.6), Gebäudedialog (2), Reihenfolge und Abnahme (4) |
 | [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) | Anforderungen F1–F17 / N1–N10 / B1–B14, Datenfluss (3), Speicherung (5), Einfrierkette (8.3), Abwägung 10 |
 | [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) | Datenmodell (2.2), Dialogführung (3), Bericht und Kennzahlen (4.3), Referenzlauf-Export (4.4) |
@@ -112,10 +130,10 @@ Kältetechnik über das hinaus, was ein Energiekonzept braucht — die Grenze st
    Sollwert, ohne Nachtlüftung (Konzept 4.5). Damit er einen Erzeuger tragen kann, braucht er
    **einen eigenen Kühlsollwert, eine Kühlleistungsgrenze und die Sommerlüftung aus G2** — sonst
    wird ein Kälteerzeuger auf eine nachweislich überzeichnete Last ausgelegt (Kapitel 3). **Und er
-   entsteht allein auf dem VDI-Weg:** Ein Gebäude auf dem Altweg (Tagesbilanz, Bestandsweg)
+   entsteht allein auf dem VDI-Weg:** Ein Gebäude auf dem Bestandsweg (Tagesbilanz)
    liefert **keine** Kühllast; sein Kältebedarf ist 0 **mit dem Hinweis** „Tagesbilanz
    (Bestandsweg) liefert keine Kühllast" — kein stiller Nullwert. Das gilt, solange es den
-   Altweg gibt: **bis zur Stufe GA**, deren Zeitpunkt offen ist (E20, E23 und E26; 3.1, 8.1,
+   Bestandsweg gibt: **bis zur Stufe GA**, deren Zeitpunkt offen ist (E20, E23 und E26; 3.1, 8.1,
    10.2, 10.5).
 4. **Der Kälteerzeuger steht zur Hälfte schon da und wird nicht gerechnet.** Jede Wärmepumpe kann
    eine Kühlleistung und eine Kühlkennlinie führen — importiert, gefiltert, gezeichnet — und
@@ -182,12 +200,12 @@ lange** der zweite Rechenweg daneben steht:
 
 | Ebene | Nach E12 allein | Nach E20, E21, E23 und E26 |
 |---|---|---|
-| Woher der Bedarf kommt | „aus dem Gebäudemodell" | **allein aus dem VDI-Weg**; ein Altweg-Gebäude liefert 0 mit benanntem Hinweis (E20) |
+| Woher der Bedarf kommt | „aus dem Gebäudemodell" | **allein aus dem VDI-Weg**; ein Bestandsweg-Gebäude liefert 0 mit benanntem Hinweis (E20) |
 | Wie oft das Gebäude gerechnet wird | offen | **einmal** — das Modul `Gebaeude/` liefert Heiz- und Kühllast in einem Lauf (E21) |
 | Wer den Bedarf verteilt | `SimulationWaermebedarf` | zwei Fassaden: `SimulationWaermebedarf` und **`SimulationKaeltebedarf`** (E21) |
 | Wie Kennzahlen, Dialoge und Bericht aussehen | „analog, im Einzelnen offen" | **dieselben Muster und Bausteine wie die Wärmeseite**, Abweichungen benannt (E21) |
-| Wo die Kühleingaben stehen | Gruppe „Kühlung", nur bei VDI 6007 sichtbar (U2) | Gruppe „Kühlung" als **Teil der VDI-Struktur** — immer sichtbar und bearbeitbar, bei einem Altweg-Gebäude mit dem Hinweis, dass sie gelten, sobald das Gebäude auf VDI 6007 rechnet (E20; **U2 ist überholt**) |
-| Wie lange es den Altweg gibt | offen — ein Weg auf Zeit, bis zu einer Stufe GA | **Übergang ohne festes Ende**: der Altweg ist der eingefrorene Bestandsweg und bleibt ausdrücklich wählbar, bis die Stufe **GA** ihn ablöst; ihr Zeitpunkt ist offen (E23, geschärft durch **E26** — Q24) |
+| Wo die Kühleingaben stehen | Gruppe „Kühlung", nur bei VDI 6007 sichtbar (U2) | Gruppe „Kühlung" als **Teil der VDI-Struktur** — immer sichtbar und bearbeitbar, bei einem Bestandsweg-Gebäude mit dem Hinweis, dass sie gelten, sobald das Gebäude auf VDI 6007 rechnet (E20; **U2 ist überholt**) |
+| Wie lange es den Bestandsweg gibt | offen — ein Weg auf Zeit, bis zu einer Stufe GA | **Übergang ohne festes Ende**: der Bestandsweg ist eingefroren und bleibt ausdrücklich wählbar, bis die Stufe **GA** ihn ablöst; ihr Zeitpunkt ist offen (E23, geschärft durch **E26** — Q24) |
 
 ### 1.3 Was ausdrücklich **nicht** aufgehoben wird
 
@@ -205,18 +223,19 @@ hier **bestätigt** (Kapitel 14 führt sie vollständig):
   eine benannte Erweiterung mit eigenem Papier ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md)); die Kälteseite folgt dort
   spiegelbildlich, dieses Papier liefert Bedarf und Kälteerzeuger.
 
-**Hinzu kommt eine Festlegung, kein Ausschluss:** Die Kühlung hat **keinen Altweg**. Sie entsteht
+**Hinzu kommt eine Festlegung, kein Ausschluss:** Die Kühlung hat **keinen Bestandsweg**. Sie entsteht
 allein im VDI-Modul, und der Tagesbilanz-Weg bekommt sie auch nicht nachträglich — er ist der
 eingefrorene Bestandsweg ohne neue Funktion (E20 und E23,
 [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Das ist kein Mangel dieses Konzepts, sondern die
 Bedingung dafür, dass es nur **einen** Kälterechenweg gibt: Der Bestandsweg trägt Kältebedarf 0
 mit benanntem Hinweis.
 
-**Wie lange, sagt E26 (17.09.2026):** Der Altweg ist ein **Übergang**. Er bleibt, solange das
-VDI-Modell ihn nicht abgelöst hat, und die Stufe **GA — Altweg ablösen** steht ohne Termin am Ende
-des Plans (Q24). Für die Kühlung folgt daraus zweierlei: Der Sonderfall „Kältebedarf 0 mit
+**Wie lange, sagt E26 (17.09.2026):** Der Bestandsweg ist ein **Übergang**. Er bleibt, solange das
+VDI-Modell ihn nicht abgelöst hat, und die Stufe **GA — Altweg ablösen** steht ohne Datum am Ende
+des Plans; nach **Q24** — entschieden mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) — wird sie fällig,
+sobald ihre vier Bedingungen erfüllt sind, darunter die Abnahme von KU1. Für die Kühlung folgt daraus zweierlei: Der Sonderfall „Kältebedarf 0 mit
 Hinweis" ist für die Dauer des Übergangs zu bauen und zu prüfen — und er ist im selben Auftrag in
-die **Löschliste der Stufe GA** einzutragen, damit er mit dem Altweg verschwindet und nicht als
+die **Löschliste der Stufe GA** einzutragen, damit er mit dem Bestandsweg verschwindet und nicht als
 toter Zweig zurückbleibt ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31,
 8.5, 10.5).
 
@@ -248,7 +267,7 @@ später zusammenwachsen können, ohne dass Nummern kollidieren.
 |---|---|---|---|---|
 | **F-K1** | Je Gebäude ist ein **Kühlsollwert** eingebbar; NULL bedeutet „Kühlung aus", und der Rückfall auf `Maximaleraumtemperatur` ist **ausdrücklich**, nicht still | E12; Konzept 4.5 | Datenbankfall: NULL ergibt keinen Kühlbedarf im Kanal | KU1 |
 | **F-K2** | Je Gebäude ist eine **Kühlleistungsgrenze** eingebbar (NULL = unbegrenzt) — das Gegenstück zu `Heizleistung_Max` (Q7, E-Tabelle N1.17) | Befund W 4.2 | Rechenprobe: mit Grenze steigt θ_air über den Sollwert, Kühlbedarf gekappt | KU1 |
-| **F-K3** | Der **Kühlbedarf je Stunde** steht als eigener Kanal `KUEHLUNG` im Kanalsatz, positiv geführt | E12 | Kanalsummenprobe; Wächter „Kühlkanal nie negativ" | KU1 |
+| **F-K3** | Der **Kühlbedarf je Stunde** steht als eigener Kanal `KUEHLUNG` im Kanalsatz, positiv geführt. Dazu gilt je Gebäude bzw. Zone: in einem **Abschnitt** der Stundenschleife nie Heiz- und Kühlanteil zugleich; in einer **Stunde** ist beides möglich, wenn der Betriebsfall innerhalb der Stunde wechselt (3.3) | E12 | Kanalsummenprobe; Wächter „Kühlkanal nie negativ"; Abschnittsprobe scharf, Stunden mit beidem als Hinweis gezählt, nicht als Fehler (10.2) | KU1 |
 | **F-K4** | Der Kühlkanal geht **nicht** in `Kanalsatz.Summe()`, nicht in `Waermebedarf_Max`, nicht in die Dauerlinie und nicht in `Kanalsatz.NetzverlusteVerteilen` ein | 4.2 | Referenzlauf: Projekte ohne Kühlung byte-gleich; Projekt mit Kühlung hat unveränderte `Waermelast_Max` | KU1 |
 | **F-K5** | Eine **externe Ganglinie** darf den Kanal `Kühlung` tragen — Kältebedarf ohne Gebäudemodell | K3 | Datenbankfall über `Z_ProjektWaermebedarf.Kanal` | KU1 |
 | **F-K6** | Der Kühlbedarf wird von **Kälteerzeugern gedeckt**; Wärmeerzeuger können ihn nicht decken, und das ist erzwungen, nicht verabredet | E12 | **zwei** Laufproben (4.4): die **Bedarfsprobe Kälte** in `SimulationKaeltebedarf` (Muster `SimulationWaermebedarf.Energieprobe`, `:390`, `:458`) und die **Deckungsprobe Kälte** in `SimulationControl.KanalganglinienProbe()` — kein Wärmeerzeuger schreibt in `Deckung_Kuehlung`. Beide melden einmal je Lauf mit der Stufe Fehler und setzen das Gesamtergebnis auf fehlgeschlagen. Die **statischen** Zusicherungen (Kanallisten disjunkt und vollständig, Ziel ↔ Senke der Kälteseite) stehen daneben im Selbsttest | KU1/KU2 |
@@ -263,8 +282,9 @@ später zusammenwachsen können, ohne dass Nummern kollidieren.
 | **F-K15** | **Mehrzonen**: Kühlbedarf entsteht je Zone; in den Kanal geht die Gebäudesumme, und gleichzeitiges Heizen und Kühlen wird **ausgewiesen, nicht saldiert** | Mehrzonen 7; K6 | Probe: zwei Zonen, eine heizt, eine kühlt — beide Kanäle tragen ihren Betrag | KU3 |
 | **F-K16** | **Bericht**: eine Kanalzeile Kühlung, ein Kühlbild (Monatsstapel bzw. Jahresganglinie), der Deckungsanteil je Kälteerzeuger | Konzept 9; N1.18 | Berichtsprobe; `Proben/ChartProben` grün | KU2 |
 | **F-K17** | Der Anwender kann im **Katalog gezielt Wärmepumpen mit Kühlfunktion auswählen** und ihren Kühlbetrieb je Anlage konfigurieren; die Übernahme in das Projekt bringt die Kühlkennlinie mit | **E15** | Katalogprobe (Filter findet genau die kühlfähigen Sätze); Datenbankfall „Katalogübernahme kopiert die Kühlkennlinie vollständig" (10.3) | KU2 |
-| **F-K18** | Ein Gebäude auf dem **Altweg** (Tagesbilanz, Bestandsweg) liefert **Kältebedarf 0 mit benanntem Hinweis** — „Tagesbilanz (Bestandsweg) liefert keine Kühllast" —, nie eine stille Null; seine Kühleingaben bleiben erhalten und gelten, sobald das Gebäude auf VDI 6007 rechnet. Die Anforderung gilt **für die Dauer des Übergangs**, also bis zur Stufe GA (Zeitpunkt offen, Q24); Hinweistext, Ressourcenschlüssel und die beiden Proben werden im selben Auftrag in die **Löschliste der Stufe GA** eingetragen | **E20**, **E23**, **E26** | Rechenprobe „Altweg-Gebäude liefert Kältebedarf 0 mit Hinweis" (10.2); Meldung in beiden Sprachen (8.5); bunit-Fall am Gebäude- und Bedarfsdialog (8.6); Eintrag in der Löschliste (10.5) | KU1 |
+| **F-K18** | Ein Gebäude auf dem **Bestandsweg** (Tagesbilanz) liefert **Kältebedarf 0 mit benanntem Hinweis** — „Tagesbilanz (Bestandsweg) liefert keine Kühllast" —, nie eine stille Null; seine Kühleingaben bleiben erhalten und gelten, sobald das Gebäude auf VDI 6007 rechnet. Die Anforderung gilt **für die Dauer des Übergangs**, also bis zur Stufe GA (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27); Hinweistext, Ressourcenschlüssel und die beiden Proben werden im selben Auftrag in die **Löschliste der Stufe GA** eingetragen | **E20**, **E23**, **E26** | Rechenprobe „Bestandsweg-Gebäude liefert Kältebedarf 0 mit Hinweis" (10.2); Meldung in beiden Sprachen (8.5); bunit-Fall am Gebäude- und Bedarfsdialog (8.6); Eintrag in der Löschliste (10.5) | KU1 |
 | **F-K19** | Die Kälteseite trägt zu **jeder** Größe der Wärmeseite ein benanntes Gegenstück — Fassade, Jahressumme, Spitze, Dauerlinie, Deckungsgrad, Restgröße, Bedarfsdialogabschnitt, Berichtsabschnitt — **oder** die Abweichung steht benannt in der Abweichungsliste | **E21** | Probe „Symmetrie der Kennzahlen" (10.2) gegen die Gegenüberstellungen in 4.2, 5.5, 6.4 und 8.4 | KU1/KU2 |
+| **F-K20** | Eine **Programmeinstellung** „Neue Projekte mit Kühlung anlegen" (Vorgabe **aus**, abgelegt über `Dienste.Einstellungen`) bestimmt den **Anfangswert** von `Tab_Einstellungen.Kuehlbetrieb` eines **neu angelegten** Projekts; Bestands- und Referenzprojekte tragen 0, bis ihre Projekteinstellung ausdrücklich eingeschaltet wird, und die Projekteinstellung bleibt je Projekt schaltbar | **E27** (K10) | Datenbankfälle „neues Projekt übernimmt die Programmeinstellung", „Bestandsprojekt bleibt aus", „Speichern der Kaskade erhält `Kuehlbetrieb`", „Projektduplikat übernimmt den Wert der Quelle" (10.3); bunit-Fall am Einstellungsdialog (8.6) | KU1 |
 
 ### 2.2 Nichtfunktionale Anforderungen
 
@@ -284,7 +304,7 @@ später zusammenwachsen können, ohne dass Nummern kollidieren.
 | # | Randbedingung | Wirkung |
 |---|---|---|
 | **B-K1** | **E12** ist verbindlich; **E5** (keine Datenträger), **E6** (nichts aus VDI 6020:2022 in Code, Tests, Wiki, Bericht, Auslieferung), **E10** (Produktausweis im Wortlaut) gelten unverändert | keine neuen Normbeschaffungen; keine Normzahlen in diesem Papier |
-| **B-K2** | **E1** — das Stundenmodell ist Vorgabe; nur es liefert Kühllast je Stunde. **E20** und **E23** schärfen: Der Altweg ist der eingefrorene Bestandsweg **ohne** Kühllast; **E26** setzt die Frist: Er ist ein Übergang und wird mit der Stufe GA abgelöst (Zeitpunkt offen, Q24) | KU1 setzt G1 voraus; ein Altweg-Gebäude trägt Kältebedarf 0 mit Hinweis (F-K18), und dieser Sonderfall steht auf der Löschliste der Stufe GA |
+| **B-K2** | **E1** — das Stundenmodell ist Vorgabe; nur es liefert Kühllast je Stunde. **E20** und **E23** schärfen: Der Bestandsweg ist eingefroren, **ohne** Kühllast; **E26** setzt die Frist: Er ist ein Übergang und wird mit der Stufe GA abgelöst (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27) | KU1 setzt G1 voraus; ein Bestandsweg-Gebäude trägt Kältebedarf 0 mit Hinweis (F-K18), und dieser Sonderfall steht auf der Löschliste der Stufe GA |
 | **B-K3** | **E7** — Einzonen zuerst; Mehrzonen sind Stufe G6 | Kühlung je Zone ist KU3, nicht KU1 |
 | **B-K4** | [**ADR-001**](ADR-001_Schema-Ausrollung.md) — jede Schemaänderung ist ein nummerierter Schritt über `SchemaMigration`; drei Eintragungen je neuer Tabelle (Schritt, Auslieferungsvorlage, Schemapflege der Testdatenbank) | die Kühlschritte sind nummerierte Schritte, keine tolerante Migration |
 | **B-K5** | [**ADR-002**](ADR-002_Stundenmodell_VDI6007_Einbindung.md) — eine Naht, kein zweiter Rechenweg — in der Form, die ihr [**ADR-006**](ADR-006_Trennung_Altweg_VDI6007.md) gibt: **eine Weiche am Eingang**, zwei getrennte Module (`Gebaeude/`, `Altweg/`), ein modellfreier Vorbereitungsschritt davor (E20) | die Kälterechnung hängt an **derselben** Weiche und liegt allein im VDI-Modul; sie erzeugt keinen zweiten Verzweigungspunkt |
@@ -325,10 +345,10 @@ Leistungsgrenze; die Kühlseite hat einen Wert und keine Grenze
 **Und der Betriebsfall existiert nur im VDI-Modul.** Der Tagesbilanz-Weg kennt keine
 Stundenschleife und damit keinen Kühlfall; er ist nach **E20 und E23** der abgeschlossene
 Bestandsweg im Modul `Altweg/` und bekommt ihn auch nicht nachträglich — „keine Änderung außer
-Fehlerbehebung" ([ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Ein Gebäude auf dem Altweg trägt
+Fehlerbehebung" ([ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Ein Gebäude auf dem Bestandsweg trägt
 deshalb **Kältebedarf 0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert keine Kühllast"
 (F-K18); seine Kühleingaben bleiben erhalten und gelten, sobald das Gebäude auf VDI 6007 rechnet
-(8.1). Nach **E26** ist das der Zustand des Übergangs: Mit der Stufe GA fällt der Altweg weg, und
+(8.1). Nach **E26** ist das der Zustand des Übergangs: Mit der Stufe GA fällt der Bestandsweg weg, und
 mit ihm dieser Sonderfall (10.5).
 
 ### 3.2 Zwei Sollwerte, zwei Grenzen — das Zielbild
@@ -402,20 +422,31 @@ am Stundenende:
     KuehlbedarfKwh[h]  = akkQ_kuehl / 3600 / 1000     [kWh] -> Kanal KUEHLUNG
 ```
 
-Daraus folgen zwei Zusicherungen, die als Wächter zu bauen sind: **beide Reihen sind nie
-negativ**, und **in keiner Stunde sind beide gleichzeitig größer null**. Die zweite ist die
-schärfere — sie fällt, sobald jemand Heiz- und Kühlsollwert falsch parametriert, und sie fällt
-laut. **Erst mit den getrennten Akkumulatoren ist sie überhaupt eine Probe:** Aus einem einzigen
-vorzeichenbehafteten Skalar können `max(Φ,0)` und `max(−Φ,0)` nie beide positiv sein, die Zusage
-wäre also wahr, ohne etwas zu prüfen.
+Daraus folgen zwei Zusicherungen, die als Wächter zu bauen sind (Festlegung F-K3):
 
-**Auf welcher Ebene die schärfere Zusicherung gilt.** Sie prüft die beiden Reihen **eines Gebäudes
-bzw. einer Zone** aus `GebaeudeModellErgebnis` (`HeizlastW` gegen `KuehlbedarfKwh`) — nicht die
-Projektkanäle. Die Kanalreihen summieren über alle Gebäude und tragen zusätzlich externe
+- **Beide Reihen sind nie negativ** — auf jeder Ebene, bis in die Projektkanäle.
+- **Je Abschnitt nie beides.** Ein Abschnitt hat genau einen Betriebsfall (3.2): „Heizen geregelt"
+  und „Heizgrenze" buchen nur in `akkQ_heiz`, „Kühlen geregelt" und „Kühlgrenze" nur in
+  `akkQ_kuehl`, das Totband in keinen. Das ist die **scharfe** Zusicherung; ein Verstoß ist ein
+  Fehler. Sie fällt, sobald ein Betriebsfall eine Leistung mit falschem Vorzeichen bucht oder
+  Heiz- und Kühlsollwert falsch parametriert sind, und sie fällt laut.
+
+**Je Stunde ist beides möglich.** Wechselt der Betriebsfall innerhalb einer Stunde vom Heizen über
+das Totband ins Kühlen oder umgekehrt — die Umschaltstunde von oben —, sind `HeizlastW[h]` und
+`KuehlbedarfKwh[h]` beide größer null. Das ist kein Fehler: Die Probe zählt solche Stunden und
+meldet die Zahl als **Hinweis** (10.2). **Erst mit den getrennten Akkumulatoren ist beides
+prüfbar:** Aus einem einzigen vorzeichenbehafteten Stundenmittel können `max(Φ,0)` und `max(−Φ,0)`
+nie beide positiv sein — die Umschaltstunde wäre unsichtbar, und eine Zusage über sie wäre wahr,
+ohne etwas zu prüfen.
+
+**Auf welcher Ebene die Abschnittsregel gilt.** Sie prüft die Buchungen **eines Gebäudes bzw. einer
+Zone** in der Stundenschleife des Moduls `Gebaeude/`; die Zählung der Stunden mit beidem läuft an
+den beiden Reihen aus `GebaeudeModellErgebnis` (`HeizlastW` gegen `KuehlbedarfKwh`) — beides nicht
+an den Projektkanälen. Die Kanalreihen summieren über alle Gebäude und tragen zusätzlich externe
 Ganglinien (K3); dort können Heizung und Kühlung in derselben Stunde rechtmäßig beide tragen,
 sobald ein Gebäude heizt, während ein anderes kühlt. Auf Kanalebene gilt deshalb allein die
-schwächere Zusicherung „nie negativ", und der gleichzeitige Fall wird **ausgewiesen**, nicht
-verboten (3.5, 10.2).
+Zusicherung „nie negativ", und der gleichzeitige Fall wird **ausgewiesen**, nicht verboten
+(3.5, 10.2).
 
 ### 3.4 Sommerlüftung und Nachtlüftung stehen **vor** der Kühlung
 
@@ -478,17 +509,18 @@ Kanal KUEHLUNG [h]  = Summe ueber Zonen von max( -Phi_h,z(h) , 0 )
 
 Eine Saldierung (Heizlast minus Kühllast) wäre physikalisch falsch: Die Wärme der Nordzone
 erreicht die Südzone nicht, und wer sie verrechnet, erfindet eine Wärmerückgewinnung, die es
-nicht gibt. Der Preis ist, dass Heiz- und Kühlkanal in derselben Stunde tragen können — genau
-der Fall, den die schärfere Zusicherung aus 3.3 auf der Ebene **einer** Rechenzelle ausschließt.
-Deshalb:
+nicht gibt. Der Preis ist, dass Heiz- und Kühlkanal in derselben Stunde tragen können — nicht nur
+in einer Umschaltstunde (3.3), sondern auch ohne jeden Fallwechsel, allein weil zwei Zonen
+Verschiedenes tun. Deshalb:
 
-- Die Zusicherung „nie beide gleichzeitig" gilt **je Zone** — sie ist die Zusicherung aus 3.3,
-  nur auf die kleinere Rechenzelle bezogen. Auf Gebäude- und erst recht auf Kanalebene gilt sie
-  nicht.
+- Die scharfe Zusicherung „je Abschnitt nie beides" gilt **je Zone** — sie ist die Abschnittsregel
+  aus 3.3, auf die Rechenzelle Zone bezogen. Auf Gebäude- und erst recht auf Kanalebene gilt sie
+  nicht, denn dort summieren sich Zonen in verschiedenen Betriebsfällen.
 - Eine **Kennzahl „Stunden mit gleichzeitigem Heizen und Kühlen"** weist den Fall aus. Sie ist
-  keine Nebensache: Ein hoher Wert heißt entweder falsche Zonierung oder ein Gebäude, das
-  wirklich beides braucht — und beides muss der Planer sehen.
-- Im **Einzonenfall** bleibt die Kennzahl 0, und der Wächter aus 3.3 bleibt scharf.
+  keine Nebensache: Ein hoher Wert heißt falsche Zonierung, auffällig viele Umschaltstunden oder
+  ein Gebäude, das wirklich beides braucht — und das muss der Planer sehen.
+- Im **Einzonenfall** zählt die Kennzahl allein die Umschaltstunden aus 3.3; die Abschnittsregel
+  bleibt scharf.
 
 ### 3.6 Was auch im Rechenweg ausgeschlossen bleibt
 
@@ -520,11 +552,11 @@ wären. Was danach geschieht, ist **Verteilung, nicht Rechnung**:
 | Schritt | Wer | Was |
 |---|---|---|
 | **Vorbereitung** | modellfreier Vorbereitungsschritt vor der Weiche (E20) | Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach E8, Klimareihen — **einmal**, für beide Wege und beide Fassaden |
-| **Weiche** | Fassade `SimulationWaermebedarf` (E20) | liest den Rechenweg des Gebäudes und ruft **genau ein** Modul: `Gebaeude/` (VDI 6007) oder `Altweg/` (Tagesbilanz, Bestandsweg) |
+| **Weiche** | Fassade `SimulationWaermebedarf` (E20) | liest den Rechenweg des Gebäudes und ruft **genau ein** Modul: `Gebaeude/` (VDI 6007) oder `Altweg/` (Tagesbilanz) |
 | **Gebäuderechnung** | Modul `Gebaeude/`, Schritt F | Stundenschleife mit fünf Betriebsfällen (3.2); Ergebnis sind **beide** Reihen, beide nicht negativ (3.3) |
 | **Verteilung Wärme** | `SimulationWaermebedarf` | `HeizlastW` → Kanal `HEIZUNG`; `Kanalsatz.Summe()`, Dauerlinie, `Waermebedarf_Max` (4.2) |
 | **Verteilung Kälte** | **`SimulationKaeltebedarf`** (E21) | `KuehlbedarfKwh` → Kanal `KUEHLUNG`; `SummeKaelte()`, eigene Dauerlinie, `Kaeltebedarf_Max` (4.2, 6.4) |
-| **Altweg** | Modul `Altweg/` | liefert **nur Wärme**; die Kältefassade erhält für dieses Gebäude keinen Beitrag und trägt 0 **mit Hinweis** (F-K18) |
+| **Bestandsweg** | Modul `Altweg/` | liefert **nur Wärme**; die Kältefassade erhält für dieses Gebäude keinen Beitrag und trägt 0 **mit Hinweis** (F-K18) |
 
 ```mermaid
 flowchart TD
@@ -746,7 +778,7 @@ beziehen sich auf `EPOS.Kern/Allgemein/Simulation/SimulationKanaele.cs`.
 | **25** | **`Warnkriterien.Set_BedientKanal`** | **neu** — `Warnkriterien.cs:1001-1010` | `switch` mit `default:` → `Set.Heizung`. Ein unbehandelter Kanal meldet „der Speicher bedient ihn" | KU3 |
 | **26** | **`SchemaModell.PufferBedient` und `SchemaModell.DirektsenkeBedient`** | **neu** — `SchemaModell.cs:225-236`, `:245-260` | `PufferBedient` fällt über `default:` auf `set.Heizung`; `DirektsenkeBedient` liefert für „Beides" am Ende `return true` — **jeder unbehandelte Kanal gilt damit als bedient** | KU2 |
 | **27** | **`PufferSpCtrl.KlassenSet`** | **neu** — `PufferSpCtrl.cs:685-696` | drei `bool`-Felder (`Heizung`, `Brauchwasser`, `Prozess`); ein vierter Kanal braucht ein viertes Feld oder eine benannte Ausnahme | KU3 |
-| **28** | **Weiche und Vorbereitungsschritt der Fassade `SimulationWaermebedarf`** | **neu** — E20, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Weiche ruft `Gebaeude/` **oder** `Altweg/`; der Altweg liefert keine Kühllast, die Kältefassade trägt für dieses Gebäude 0 **mit Hinweis** (F-K18). **Die Kühlung baut die Weiche nicht** — sie setzt sie voraus (11.2) | Vorbedingung aus G1 |
+| **28** | **Weiche und Vorbereitungsschritt der Fassade `SimulationWaermebedarf`** | **neu** — E20, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) | die Weiche ruft `Gebaeude/` **oder** `Altweg/`; der Bestandsweg liefert keine Kühllast, die Kältefassade trägt für dieses Gebäude 0 **mit Hinweis** (F-K18). **Die Kühlung baut die Weiche nicht** — sie setzt sie voraus (11.2) | Vorbedingung aus G1 |
 | **29** | **Fassade `SimulationKaeltebedarf`** | **neu** — E21 | Gegenstück zu `SimulationWaermebedarf`: `SummeKaelte()`, `Kaeltebedarf_Max`, eigene Dauerlinie, `Kaeltebedarf_Gesamt`, `Kaelterestbedarf`. Sie **rechnet das Gebäude nicht**, sie verteilt (3.7, 4.2) | KU1 |
 | **30** | **Bedarfsprobe Kälte** | **neu** — E21, Muster `SimulationWaermebedarf.Energieprobe` (angelegt `:172`, gerufen `:390`, gerechnet `:458`) | in `SimulationKaeltebedarf`: `probeKaelte` gegen `SummeKaelte()`; zählt Verletzungen und die größte Abweichung, meldet **einmal je Lauf** mit der Stufe **Fehler** und setzt das Gesamtergebnis auf **fehlgeschlagen** (4.4) | KU1 |
 | **31** | **Deckungsprobe Kälte** | **neu** — E21; Ort im Bestand: `SimulationControl.KanalganglinienProbe()` (`EPOS.Kern/Allgemein/Simulation/SimulationControl.cs:2543`, Kopf ab `:2527`) | dort werden die Kanalganglinien der Erzeuger gegen ihre Bestandsskalare gehalten; die Kälteregel tritt daneben: **kein Wärmeerzeuger hat in `Deckung_Kuehlung` gebucht**, kein Kälteerzeuger in einen Wärmekanal. Schärfe wie #30 (4.4, F-K6) | KU2 |
@@ -1064,7 +1096,7 @@ der Strombilanz, Kosten und Emissionen, Kennzahlen und Bericht.
 
 **Nicht zugesagt ist ein Termin, der vor der Kette liegt.** Die Zusage gilt **frühestens nach
 G1 + G2 + KU1 + KU2**: G1 liefert die Kühllast je Stunde — und beginnt nach **E20** mit der
-byte-gleichen Verschiebung des Altwegs, der Weiche und dem Vorbereitungsschritt (11.2) —, G2 die
+byte-gleichen Verschiebung des Bestandswegs, der Weiche und dem Vorbereitungsschritt (11.2) —, G2 die
 Sommerlüftung (ohne sie wird auf eine überzeichnete Last ausgelegt, 3.4), KU1 den Kanal samt der
 Fassade `SimulationKaeltebedarf` (E21), KU2 den Erzeuger. Die
 Katalogauswahl und die Konfiguration aus diesem Abschnitt gehören zu **KU2** und sind in seinem
@@ -1149,7 +1181,8 @@ das Kälteverhältnis; sie wird **nicht umbenannt** (eingefrorene Spalte), aber 
 Bericht als **EER** geführt und beschriftet. Das ist der eine Fall, in dem Spaltenname und
 Anzeigename bewusst auseinandergehen, und er gehört ins Glossar. **Zu prüfen ist, ob die Spalte
 wirklich den EER führt** und nicht den COP eines Heizbetriebs bei Kühlvorlauf — der VDI-3805-Import
-trennt beide Blöcke, aber die Herstellerangaben dahinter sind nicht gegengelesen (**K22**).
+trennt beide Blöcke, aber die Herstellerangaben dahinter sind nicht gegengelesen (**K22**; mit
+E27 als Prüfaufgabe vor KU2 festgelegt, Ergebnis ins Glossar).
 
 **(5) Die Rückkühlung der reversiblen Wärmepumpe ist ihre Quelle, rückwärts gelesen.** Eine
 Sole-Wasser-Maschine gibt die Abwärme ins Erdreich, eine Luft-Wasser-Maschine an die Außenluft.
@@ -1377,7 +1410,7 @@ Kältemittelverlusts ist ein eigenes Thema mit eigener Datenlage; EPOS-Plan rech
 | **Überhitzungsstunden** | (Gebäudeskalar) | h/a | Zählung der Stunden über `Maximaleraumtemperatur` im freien Lauf (7.1) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
 | **Jahresarbeitszahl Kälte** (EER-Jahreswert) | Gruppe `GR_KAELTE` (K15) | — | Kälteerzeugung / Kältestrom | aus den beiden Summen |
 | **Ungedeckte Kälte** (`Kaelterestbedarf`) | Gruppe `GR_KAELTE` (K15) | MWh/a | Kanal minus Deckung | Summe |
-| **Stunden mit gleichzeitigem Heizen und Kühlen** | (Projektskalar) | h/a | Zählung (3.5) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
+| **Stunden mit gleichzeitigem Heizen und Kühlen** | (Projektskalar) | h/a | Zählung der Stunden mit Heiz- und Kühlanteil > 0 je Gebäude (3.3, 3.5) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
 
 **Die Schlüsselnamen sind übernommen, nicht erfunden.** `kaelte.jahresbedarf`, `kaelte.spitze`,
 `kaelte.stunden` und `kaelte.deckungsgrad` sind die Schlüssel, die die
@@ -1453,7 +1486,7 @@ die Symmetrie prüfbar (Probe „Symmetrie der Kennzahlen", 10.2; F-K19):
 **Zwei Kennzahlen hat die Kälteseite, die die Wärmeseite nicht kennt** — und das ist keine
 Unsymmetrie, sondern Gegenstand: Die **Überhitzungsstunden** messen, was **ohne** Anlage geschieht
 (Stunden über `Maximaleraumtemperatur`, 7.1), die **Stunden mit gleichzeitigem Heizen und Kühlen**
-messen die Zonierung (3.5). Beide hängen an der Kühlung, nicht an der Wärme, und beide stehen
+messen Zonierung und Umschaltstunden (3.3, 3.5). Beide hängen an der Kühlung, nicht an der Wärme, und beide stehen
 deshalb in der Abweichungsliste als **Zugewinn**, nicht als Lücke.
 
 ---
@@ -1495,7 +1528,8 @@ Gebäude wird gekühlt"), der Sollwert den Wert. Ohne Schalter müsste ein Anwen
 löschen, um die Kühlung abzuschalten — und bekäme ihn beim Wiedereinschalten nicht zurück. Das ist
 dieselbe Trennung, die `Aussenbauteile_Strahlung` von seinen Parametern trennt.
 
-**Kein Zeitprofil in KU1 (K11).** Die Heizseite führt vier Sollwerte (Tag, Nacht, Wochenende,
+**Kein Zeitprofil in KU1 — K11 ist entschieden** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32), nach
+Empfehlung): eigener Sollwert und eigene Leistungsgrenze in KU1, der Nachtwert in KU3. Die Heizseite führt vier Sollwerte (Tag, Nacht, Wochenende,
 Ferien). Die Kühlseite bekommt sie **nicht** in KU1: Vier Kühlsollwerte ohne ein Nutzungsprofil,
 das sie füllt, sind vier leere Felder, und die Ferien- und Wochenendlogik des Bestands ist auf der
 Heizseite bereits als fehlerhaft belegt (Ferienmaske, Umsetzungskonzept 1.8/GB). Der
@@ -1521,6 +1555,68 @@ Kälteerzeuger, und jedes Bestandsprojekt bleibt byte-gleich (N-K3). Er ist kein
 sondern die Antwort auf die Einfrierfrage: Ein Erzeuger, der in jedem Projekt mit kühlfähiger
 Wärmepumpe von selbst anspringt, bewegt **alle** Referenzprojekte auf einmal — und niemand könnte
 danach sagen, welche Änderung woher kam.
+
+**K10 ist entschieden — abweichend von der Empfehlung** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)). Die
+Empfehlung war der Schalter je Projekt mit Vorgabe 0 und sonst nichts. Der Anwender hat eine
+Programmebene davorgesetzt:
+
+- **Programmeinstellung „Neue Projekte mit Kühlung anlegen"** — sie gilt für die Installation,
+  nicht für ein Projekt; **Vorgabe aus**. Sie bestimmt allein den **Anfangswert** von
+  `Kuehlbetrieb`, den ein **neu angelegtes** Projekt erhält, und schaltet sonst nichts.
+- **Bestands- und Referenzprojekte bleiben aus.** `KU-S2` legt die Spalte mit 0 an; kein
+  Schemaschritt, keine Migration und kein Lauf liest die Programmeinstellung für ein vorhandenes
+  Projekt. Ein Bestands- oder Referenzprojekt rechnet Kälte erst, wenn seine Projekteinstellung
+  ausdrücklich eingeschaltet wird — der Schutz der Referenzprojekte (10.5) bleibt, wie er war.
+- **Die Projekteinstellung bleibt je Projekt schaltbar** (8.3), in beide Richtungen, gleich, mit
+  welchem Anfangswert das Projekt angelegt wurde.
+
+**Die Ablage der Programmeinstellung: `Dienste.Einstellungen`.** Nachgemessen am Arbeitsbaum
+(22.09.2026):
+
+- `Dienste.Einstellungen` (`EPOS.Kern/Allgemein/Dienste/Dienste.cs:52`) ist die
+  Schlüssel-Wert-Ablage `IEinstellungen` mit `LiesZahl(schluessel, vorgabe)` und
+  `SchreibZahl(schluessel, wert)` (`IEinstellungen.cs:24`, `:30`). Die Windows-Fassung
+  `SettingsEinstellungen` (belegt in `WindowsFormsApplication1/Program.cs:137`) liest zuerst
+  `Properties.Settings`, dann die Registry unter `HKCU\Software\wp-plan`, und **schreibt
+  ausschließlich in die Registry**; die iOS-Fassung `IosEinstellungen` (belegt in
+  `EPOS.iOS/MauiProgram.cs:98`) legt dieselben Schlüssel mit dem Präfix `wp-plan.` in den
+  MAUI-`Preferences` ab (`EPOS.iOS/Dienste/IosEinstellungen.cs:29`).
+- Ohne Oberfläche — Referenzlauf, Prüfstand, Konsolenwerkzeug — bleibt die Vorbelegung
+  `FluechtigeEinstellungen` stehen (`Dienste.cs:52`): eine Ablage im Arbeitsspeicher, die für einen
+  nie gesetzten Schlüssel die Vorgabe liefert. **Ein Prüfstand sieht also „aus"**, gleich, was
+  auf der Maschine eingestellt ist, und kann den Wert setzen, ohne Registry oder Datei anzufassen.
+- Das Muster eines Zahlenschalters über diese Ablage steht im Bestand:
+  `EPOS.UI.Daten/Bericht/UebersichtSeiteGaben.cs:631` und `:637` (`SchreibZahl` und `LiesZahl` mit
+  Vorgabe) sowie `EPOS.iOS/Dienste/IosSprache.cs:62`.
+- **Nicht** über diese Ablage läuft heute der Einstellungsdialog: `EinstellungenCtrl`
+  (`EPOS.Kern/Controller/EinstellungenCtrl.cs:85`) liest und schreibt seine zwölf Werte
+  (`Einstellungensatz`, `:24`) unmittelbar in `Properties.Settings` (`Lesen` `:111`, `Speichern`
+  `:160`). Der neue Schalter wird deshalb **nicht** der dreizehnte `Properties.Settings`-Schlüssel,
+  sondern ein Feld des Einstellungssatzes, das `Lesen` und `Speichern` über
+  `Dienste.Einstellungen.LiesZahl` und `SchreibZahl` führen — so, wie E27 es verlangt, und so,
+  dass der Kern den Wert ohne Windows-Ablage lesen kann. Der Schlüssel ist ASCII und eingefroren
+  wie jeder Persistenzwert (B-K11); sein Name wird mit KU1 vergeben.
+
+**Wo der Anfangswert geschrieben wird — nachgemessen, mit einer Lücke.** Die beiden Anlagewege
+eines Projekts (`EPOS.Kern/Controller/ProjektCtrl.cs:242`, `EPOS.Kern/Controller/WizardCtrl.cs:2495`)
+schreiben `Tab_Projekt`, aber **keinen** Satz in `Tab_Einstellungen`. Der einzige Einfügeweg ist
+`KonfigurationCtrl.Insert` (`EPOS.Kern/Controller/KonfigurationCtrl.cs:731`), und er wird beim
+Speichern der Kaskade als **Löschen und Neuanlegen** der ganzen Zeile gerufen
+(`EPOS.UI.Daten/Simulation/SimulationKonfigHuelle.cs:1864-1865`). Daraus folgen zwei
+Bauvorschriften für KU1:
+
+1. **Die Projektanlage schreibt den Anfangswert** aus der Programmeinstellung — für beide
+   Anlagewege an einer Stelle im Kern. Ob sie dazu den Einstellungssatz anlegt oder den Wert
+   anders vormerkt, legt die Beauftragung von KU1 fest. **Ausgeschlossen ist, die
+   Programmeinstellung zur Laufzeit als Rückfall zu lesen**, wenn ein Projekt keinen
+   Einstellungssatz hat: Das schaltete Bestandsprojekte ohne Satz mit.
+2. **`Kuehlbetrieb` reist beim Speichern der Kaskade mit** — wie `Extrapolation_erlaubt` und die
+   Merkspalte der gepflegten Kaskade (Schemaschritt 82), die dieselbe Hülle nach Löschen und
+   Neuanlegen nachreicht (`SimulationKonfigHuelle.cs:1866-1877`). Sonst schaltet das Speichern
+   der Kaskade die Kühlung eines Projekts still ab.
+
+Ein **Projektduplikat** übernimmt den Wert seiner Quelle, nicht die Programmeinstellung: Es ist
+ein kopiertes, kein neu angelegtes Projekt (Festlegung dieses Papiers; Datenbankfall 10.3).
 
 ### 7.3 `KU-S3` — Kühlbetrieb am Erzeuger
 
@@ -1574,6 +1670,13 @@ Nenner des Deckungsgrads und für `Waermerestbedarf` (`:857`) als Restgröße. *
 `KU-S4` von sechs auf neun Spalten**; Schrittname und Papiernummer bleiben (7.1 ff.), der Schritt
 wird **nicht** geteilt.
 
+**Der Kältestrom je Anlage ist keine Spalte von `KU-S4` — entschieden mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32),
+nach Empfehlung (K18a, im Register K24).** Der Kältestrom bleibt **Skalar**: die Projektsumme in
+der Kennzahlendatei `aggregate.csv`, gebildet aus der Reihe `Stromverbrauch_Kuehlung_stuendlich`
+(6.1). Verlangt der Bericht den Kältestrom **je Anlage**, kommt eine Ergebnisspalte in
+`Tab_ErgebnisWaermepumpe` hinzu — dann **im selben Schemaschritt wie `KU-S4`**, nicht nachträglich
+als eigener Schritt mit eigenem Einfrieranlass.
+
 **`Kaeltebedarf_Gesamt` ist heute wertgleich mit `Waermebedarf_Kuehlung` — und wird trotzdem
 geführt.** Mit `KANAELE_KAELTE = { KUEHLUNG }` (4.2) ist `SummeKaelte()` der Kanalbedarf selbst;
 die beiden Spalten tragen in KU1 und KU2 dieselbe Zahl. Die Spalte bleibt aus drei Gründen: Sie
@@ -1613,7 +1716,7 @@ erDiagram
         int Kuehlung_Aktiv "Block aus KU-S1 Mehrzonen 4.2"
     }
     Tab_Einstellungen {
-        int Kuehlbetrieb "KU-S2 Vorgabe 0"
+        int Kuehlbetrieb "KU-S2 Vorgabe 0 neues Projekt aus Programmeinstellung"
     }
     Tab_WP ||--o{ Tab_Kenndaten_Kuehlung : "Kuehlkennlinie im Bestand"
     Tab_WP {
@@ -1646,10 +1749,10 @@ erDiagram
   wie für alle Ergebnisreihen (Systementwurf 5.2). Sie reisen über den Referenzlauf-Export.
 - **Kein `VERWENDUNG_KAELTE`** in der Pufferverwendung, solange kein Kältespeicher gerechnet wird
   (4.6, K7). Ein Persistenzwert ohne Rechenweg ist eine Zusage ohne Deckung.
-- **Keine neue Spalte für den Kältestrom** in `Tab_ErgebnisWaermepumpe`, solange die Größe als
-  Skalar in `aggregate.csv` reist — **offen (K18a)**: Wird der Kältestrom im Bericht je Anlage
-  gebraucht, ist eine siebte Ergebnisspalte fällig, und dann gehört sie in denselben Schritt wie
-  `KU-S4`.
+- **Keine Spalte für den Kältestrom** in `Tab_ErgebnisWaermepumpe`, solange die Größe als
+  Skalar in `aggregate.csv` reist — so mit **E27** entschieden, nach Empfehlung (K18a, im Register
+  K24): Wird der Kältestrom im Bericht je Anlage gebraucht, ist eine weitere Ergebnisspalte fällig,
+  und dann gehört sie in denselben Schritt wie `KU-S4`, nicht in einen eigenen.
 
 ---
 
@@ -1671,13 +1774,13 @@ Rev. 2 wollte sie bei einem Gebäude auf dem Tagesbilanz-Weg ausblenden und beri
 die Regel „verstecken statt sperren" (U2). **Diese Regel ist mit E20 überholt**, und mit ihr die
 Ausblendung: Der Gebäudedialog folgt künftig allein der VDI-6007-Struktur, die Modellparameter —
 und damit auch die Kühleingaben — sind **immer** sichtbar und bearbeitbar, weil sie gelten,
-sobald das Gebäude auf VDI 6007 rechnet. Umgekehrt steht das, was **nur der Altweg** liest, in
+sobald das Gebäude auf VDI 6007 rechnet. Umgekehrt steht das, was **nur der Bestandsweg** liest, in
 einem eingeklappten Abschnitt **„Tagesbilanz (Bestandsweg)"**, der allein bei einem
-Altweg-Gebäude erscheint und mit dem Altweg **bis zu dessen Ablösung** bleibt — Stufe GA,
+Bestandsweg-Gebäude erscheint und mit dem Bestandsweg **bis zu dessen Ablösung** bleibt — Stufe GA,
 Zeitpunkt offen (E23, E26, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Die Kühleingaben gehören
 **nicht** in diesen Abschnitt — sie sind VDI-Eingaben.
 
-**Bei einem Altweg-Gebäude sagt die Gruppe, was sie ist: eine Vorbereitung.** Sie trägt dann die
+**Bei einem Bestandsweg-Gebäude sagt die Gruppe, was sie ist: eine Vorbereitung.** Sie trägt dann die
 Herleitungszeile „Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten,
 sobald das Gebäude auf VDI 6007 rechnet", und der Bedarfsdialog zeigt für dieses Gebäude
 Kältebedarf **0 mit demselben Hinweis** (F-K18, 8.4). **Kein gesperrtes Feld, keine stille Null,
@@ -1766,6 +1869,13 @@ Ein Schalter „Kühlung rechnen" in den Projekteinstellungen, gebunden an
 sagt, warum. Das ist die einzige Stelle, an der ein Anwender die Kühlung projektweit an- und
 abschaltet — und sie ist bewusst nicht im Gebäudedialog, weil sie das ganze Projekt betrifft.
 
+**Davor steht die Programmeinstellung (E27, K10).** Im Einstellungsdialog des Programms steht der
+Schalter „Neue Projekte mit Kühlung anlegen", **Vorgabe aus**, gelesen und geschrieben über
+`Dienste.Einstellungen` (7.2). Er schaltet **kein** vorhandenes Projekt und keinen Lauf; er setzt
+nur den Anfangswert des Projektschalters, wenn ein Projekt neu angelegt wird. Danach ist der
+Projektschalter frei — ein Projekt, das mit Kühlung angelegt wurde, lässt sich ausschalten, ein
+Bestands- oder Referenzprojekt nur ausdrücklich einschalten.
+
 **Er ist vom Schalter „Rechenweg" unabhängig** (E20), und beide sagen Verschiedenes: Der
 Rechenweg sagt, **womit** ein Gebäude gerechnet wird; die Projekteinstellung sagt, **ob** Kälte
 gerechnet wird. Beides zugleich — Rechenweg „Tagesbilanz" und Kühlung rechnen „ein" —
@@ -1789,7 +1899,7 @@ mit der Kältereihe gefüllt. Wer den Wärmebedarf lesen kann, kann den Kältebe
 
 | Ort | Was dazukommt |
 |---|---|
-| **Bedarfsdialog Gebäude** | ein Abschnitt **„Kältebedarf"** neben „Wärmebedarf" (`Kennzahlkachel`): Jahreskälte, Kältespitze, Stunden mit Kühlbedarf, Überhitzungsstunden; ein Monatsstapel mit Heiz- und Kühlanteil. Bei einem **Altweg-Gebäude** zeigt er **0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (F-K18, E20) |
+| **Bedarfsdialog Gebäude** | ein Abschnitt **„Kältebedarf"** neben „Wärmebedarf" (`Kennzahlkachel`): Jahreskälte, Kältespitze, Stunden mit Kühlbedarf, Überhitzungsstunden; ein Monatsstapel mit Heiz- und Kühlanteil. Bei einem **Bestandsweg-Gebäude** zeigt er **0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (F-K18, E20) |
 | **Bedarfsdialog Projekt** | ein Abschnitt **„Kältebedarf"** mit derselben Gliederung wie „Wärmebedarf": vierte Kanalzeile „Kühlung" in der Kanalübersicht, Monatsstapel und die Dauerlinie der Kälteseite als **eigenes** Bild, nicht im Wärmebild (4.2) |
 | **Ergebnisdialog** | Das Dashboard des [Simulationsablaufs](Konzept_Simulationsablauf_EPOS-Plan.md) 8.2 hat **zwei Spalten „Wärme \| Strom"**, jede mit fünf Bändern (Kopf, Ring, Erzeugertabelle, Hinweisband, Ganglinie). Die Kälte wird **kein drittes Spaltenpaar**, sondern ein **dritter Block unter den beiden Spalten** mit denselben Bändern: Kopf „Kältedeckung", Deckungsring, **eigene** Erzeugertabelle der Kälteerzeuger (4.3 #32 — die Wärmeerzeugertabelle bleibt bei drei Kanälen), ungedeckte Kälte (`Kaelterestbedarf`), Jahresarbeitszahl Kälte. Der Block ist **nur sichtbar bei Kältebedarf > 0**; ein Projekt ohne Kühlung sieht das Dashboard unverändert |
 | **Bericht** | ein Abschnitt **„Kältebedarf und -deckung"** nach dem Muster der Wärmeseite: Kanalzeile, Kühlbild, Kälteerzeuger, Kältestrom in der Strombilanz, Ausweis je Kanal; der Abschnitt **entfällt vollständig**, wenn kein Objekt einen Wert trägt — „Eine Tabelle voller ‚—' wäre keine Aussage, sondern eine Frage" |
@@ -1810,9 +1920,9 @@ Sprachneutral im Kern, Text in der Oberfläche. Die neuen Meldungen, je zweispra
 | Nennkühlleistung ohne Kühlkennlinie (`Kuehlleistung > 0`, `HatKenndatenProjekt` falsch) | **Warnung** | die Maschine rechnet nur Wärme; der Kühlbetrieb bleibt gesperrt (5.0.1, 8.2) |
 | Kühlbetrieb an einer Anlage mit Quellspeicher (`WQ_Typ = Pufferspeicher`) | **Warnung**, am Feld und im Protokoll | „Kühlbetrieb mit Quellspeicher wird nicht gerechnet" — der Kühlbetrieb bleibt gesperrt (5.1, Festlegung 6) |
 | Kühl-Vorlauf außerhalb der Stützstellen | **Hinweis**, einmal je Gerät und Vorlauf | wie auf der Heizseite (`SimulationWaermepumpe.cs:1900`) |
-| Stunden mit gleichzeitigem Heizen und Kühlen | **Info** | Anzahl, mit dem Hinweis auf die Zonierung |
+| Stunden mit gleichzeitigem Heizen und Kühlen | **Info** | Anzahl, mit dem Hinweis auf Zonierung bzw. Umschaltstunden (3.3, 3.5) — kein Fehler |
 | Kälte ohne Entfeuchtung | **Info**, einmal je Lauf | die gerechnete Kältemenge ist sensibel (K5) |
-| Gebäude auf dem Altweg mit eingeschalteter Kühlung | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) liefert keine Kühllast — die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (E20, F-K18). Der Schlüssel lebt **bis zur Stufe GA** und steht in ihrer Löschliste (E26, 10.5) |
+| Gebäude auf dem Bestandsweg mit eingeschalteter Kühlung | **Hinweis**, einmal je Gebäude und Lauf | „Tagesbilanz (Bestandsweg) liefert keine Kühllast — die Kühleingaben gelten, sobald das Gebäude auf VDI 6007 rechnet" (E20, F-K18). Der Schlüssel lebt **bis zur Stufe GA** und steht in ihrer Löschliste (E26, 10.5) |
 
 Nach jedem neuen Ressourcenschlüssel wird `Werkzeuge/ResourceDesigner` gezogen
 (`python3 Werkzeuge/ResourceDesigner/designer_neu.py schreiben`) — sonst reißt der Bau.
@@ -1822,7 +1932,8 @@ Nach jedem neuen Ressourcenschlüssel wird `Werkzeuge/ResourceDesigner` gezogen
 Die Reihenfolge, in der ein Anwender die Kühlung einrichtet, ist zugleich die Reihenfolge, in der
 die Masken zu bauen sind:
 
-1. **Projekteinstellung** „Kühlung rechnen" (8.3) — ohne sie ist alles Weitere wirkungslos.
+1. **Projekteinstellung** „Kühlung rechnen" (8.3) — ohne sie ist alles Weitere wirkungslos; ihr
+   Anfangswert in einem neuen Projekt kommt aus der Programmeinstellung (E27, 7.2).
 2. **Gebäudedialog**, Gruppe „Kühlung" (8.1) — hier entsteht der Bedarf.
 3. **Bedarfsdialog** — hier wird er sichtbar, noch ungedeckt (das ist KU1, und es ist eine
    vollständige, abnehmbare Auskunft).
@@ -1840,17 +1951,24 @@ schlechter (**K12**).
 
 **Drei Fälle kommen mit E20 und E21 hinzu:**
 
-- **Gebäudedialog, Altweg-Gebäude** (E20): Die Gruppe „Kühlung" ist **sichtbar und bearbeitbar**,
+- **Gebäudedialog, Bestandsweg-Gebäude** (E20): Die Gruppe „Kühlung" ist **sichtbar und bearbeitbar**,
   trägt die Herleitungszeile „Tagesbilanz (Bestandsweg) liefert keine Kühllast", und **kein Feld
   ist gesperrt**. Der Fall prüft ausdrücklich das Gegenteil dessen, was Rev. 2 vorsah — er ist der
   Wächter gegen einen Rückfall auf U2.
-- **Bedarfsdialog, Altweg-Gebäude** (E20): Der Abschnitt „Kältebedarf" zeigt **0 mit Hinweis**,
+- **Bedarfsdialog, Bestandsweg-Gebäude** (E20): Der Abschnitt „Kältebedarf" zeigt **0 mit Hinweis**,
   nicht „—" und nicht eine leere Gruppe. Das ist die eine Stelle, an der die Regel „‚—' statt 0"
   (K18) **nicht** gilt: Hier ist die 0 eine Aussage, und der Hinweis sagt, wessen Aussage.
 - **Bedarfsdialog, Symmetrie** (E21): Der Abschnitt „Kältebedarf" führt dieselben Bausteine in
   derselben Reihenfolge wie „Wärmebedarf". Der Fall vergleicht die **Bausteinfolge** beider
   Abschnitte, nicht ihre Zahlen — er fällt, sobald einer der beiden einen Baustein bekommt, den
   der andere nicht hat und der nicht in der Abweichungsliste steht (F-K19).
+
+**Ein Fall kommt mit E27 hinzu:**
+
+- **Einstellungsdialog, Programmeinstellung** (K10): Der Schalter „Neue Projekte mit Kühlung
+  anlegen" steht auf aus, wenn nichts hinterlegt ist, und schreibt über `Dienste.Einstellungen`,
+  nicht über `Properties.Settings` (7.2); der Fall setzt die Ablage über
+  `FluechtigeEinstellungen` und liest zurück (F-K20).
 
 ---
 
@@ -1870,7 +1988,7 @@ heute auf `Maximaleraumtemperatur` ab (`:417` für gbXML, `:822` für IFC) — r
 Kühlung informativ war. Mit KU1 gilt: Der importierte Wert ist ein **Kühlsollwert**
 (`Kuehl_Sollwert`). `Maximaleraumtemperatur` behält den Wert ebenfalls — sie ist die
 Überhitzungsgrenze des Stundenmodells (7.1) und zugleich der Wert, mit dem ein Gebäude auf dem
-Altweg rechnet, solange es ihn gibt (E20, E23, E26). Die Spalte bleibt auch nach der Stufe GA,
+Bestandsweg rechnet, solange es ihn gibt (E20, E23, E26). Die Spalte bleibt auch nach der Stufe GA,
 weil das Stundenmodell sie als Überhitzungsgrenze liest — sie steht nicht auf der Löschliste.
 Beide tragen die **Herkunftsmarke** des Imports (`IFC` bzw. `GBXML`) — Anforderung N10 des
 Systementwurfs, ein zweiter Wertevorrat entsteht nicht.
@@ -1971,8 +2089,8 @@ verlangt keinen zweiten.
 | Kühlsollwert sehr hoch | Kühlkanal ist überall 0, Heizreihe unverändert (**Paritätsprobe**) |
 | Kühlsollwert = höchster Heizsollwert + 1 K, Winter | Kühlkanal 0 — kein Kühlen bei Frost |
 | Kühlleistungsgrenze wirkt | θ_air steigt über den Sollwert, Kühlbedarf exakt auf die Grenze gekappt |
-| Vorzeichen | Heizreihe und Kühlreihe **beide** nie negativ; je Gebäude bzw. Zone — geprüft an `HeizlastW` und `KuehlbedarfKwh` aus `GebaeudeModellErgebnis`, nicht an den Projektkanälen — in keiner Stunde beide > 0 (3.3, 3.5) |
-| Umschaltstunde | Bisektion findet den Übergang Heizen → frei → Kühlen; zwei Läufe byte-gleich |
+| Vorzeichen | Heizreihe und Kühlreihe **beide** nie negativ. Je Gebäude bzw. Zone **scharf:** in keinem Abschnitt der Stundenschleife Heiz- und Kühlanteil zugleich — Heizfälle buchen nur Heizanteil, Kühlfälle nur Kühlanteil; ein Verstoß ist ein Fehler. **Als Hinweis**, nicht als Fehler: die Zahl der Stunden, in denen `HeizlastW` und `KuehlbedarfKwh` aus `GebaeudeModellErgebnis` beide > 0 sind (Fallwechsel in der Stunde). Geprüft wird am Gebäudeergebnis, nicht an den Projektkanälen (3.3, 3.5, F-K3) |
+| Umschaltstunde | Bisektion findet den Übergang Heizen → frei → Kühlen; die Stunde trägt Heiz- und Kühlanteil > 0 und zählt als Hinweis (3.3); zwei Läufe byte-gleich |
 | Kanallisten | `KANAELE_WAERME ∪ KANAELE_KAELTE` vollständig und disjunkt; `Kanalsatz.Summe()` ohne Kühlanteil |
 | Netzverluste | ein Projekt mit Kühlung bekommt dieselben Netzverluste wie dasselbe Projekt ohne |
 | Knappheitsparser | jede heute gespeicherte Dreierfolge ergibt dieselbe Rangfolge wie bisher, **ohne Warnung** |
@@ -1982,7 +2100,7 @@ verlangt keinen zweiten.
 | **Deckungsgrad, zwei Nenner** | `DeckungKanal` liefert für Heizung, Brauchwasser und Prozess unverändert dieselben Werte wie vor KU1; der Kühlkanal wird über `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` gebildet. **Gegenprobe:** dieselbe Kältemenge über den Wärmenenner gerechnet ergibt eine andere Zahl — die Probe hält beide auseinander (6.4) |
 | **EER-Stützstellenprobe je Vorlauf** | Für **jede** Vorlauf-Stützstelle der Kühlkennlinie wird die Stützstelle exakt getroffen und ein Zwischenwert linear interpoliert. Zwei Vorläufe ergeben zwei verschiedene EER bei derselben Außentemperatur — die Probe zeigt, dass `Kuehl_Vorlauf` wirkt und nicht ignoriert wird (5.1, Festlegung 2) |
 | **Kühl-Vorlauf, Vorbelegung und Extrapolation** | `Kuehl_Vorlauf = NULL` wählt den kleinsten Stützwert; ein Wert außerhalb der Stützstellen erzeugt genau **einen** Hinweis je Gerät und Vorlauf |
-| **Altweg-Gebäude liefert Kältebedarf 0 mit Hinweis** | Ein Gebäude mit Rechenweg „Tagesbilanz", `Kuehlung_Aktiv = 1` und gesetztem Kühlsollwert ergibt einen Kühlkanal, der **überall 0** ist, **und genau einen Hinweis** je Gebäude und Lauf. **Gegenprobe:** dasselbe Gebäude auf VDI 6007 ergibt einen Kühlkanal > 0 und **keinen** Hinweis (E20, F-K18) |
+| **Bestandsweg-Gebäude liefert Kältebedarf 0 mit Hinweis** | Ein Gebäude mit Rechenweg „Tagesbilanz", `Kuehlung_Aktiv = 1` und gesetztem Kühlsollwert ergibt einen Kühlkanal, der **überall 0** ist, **und genau einen Hinweis** je Gebäude und Lauf. **Gegenprobe:** dasselbe Gebäude auf VDI 6007 ergibt einen Kühlkanal > 0 und **keinen** Hinweis (E20, F-K18) |
 | **Symmetrie der Kennzahlen** | Zu jeder Kennzahl der Wärmeseite aus der Gegenüberstellung in 6.4 liegt das benannte Gegenstück der Kälteseite vor — oder die Abweichung steht in der Abweichungsliste (4.2, 5.5, 6.4). Die Probe läuft über die **Liste**, nicht über Zahlen: Sie fällt, sobald eine Größe auf einer Seite hinzukommt und auf der anderen weder gebaut noch benannt abgelehnt wird (E21, F-K19) |
 | **Ein Lauf, zwei Reihen** | Das Gebäudemodell wird je Gebäude und Lauf **einmal** gerufen; Heiz- und Kühlreihe stammen aus demselben Ergebnis. Die Probe zählt die Aufrufe des Moduls `Gebaeude/` — sie fällt, sobald eine zweite Gebäuderechnung für die Kälte entsteht (E21, 3.7) |
 
@@ -2013,6 +2131,17 @@ Kühlvektor (Hausregel „Eine Auskunft ruft den Rechenweg des Laufs").
   gezählte Menge gehalten, nicht gegen eine Zahl im Test (sonst bricht der Fall bei jedem
   Katalogimport).
 
+**Dazu vier Fälle aus E27** (K10, 7.2, F-K20) — die Programmeinstellung wird im Fall über
+`FluechtigeEinstellungen` gesetzt, ohne Registry:
+
+- **„Neues Projekt übernimmt die Programmeinstellung."** Programmeinstellung aus → das neu
+  angelegte Projekt trägt `Kuehlbetrieb = 0`; ein → 1 — über beide Anlagewege.
+- **„Bestandsprojekt bleibt aus."** Nach `KU-S2` trägt jedes vorhandene Projekt 0, auch wenn die
+  Programmeinstellung eingeschaltet ist; ein Lauf liest die Programmeinstellung nicht.
+- **„Speichern der Kaskade erhält `Kuehlbetrieb`."** Ein Projekt mit `Kuehlbetrieb = 1` trägt nach
+  Löschen und Neuanlegen des Einstellungssatzes weiter 1.
+- **„Projektduplikat übernimmt den Wert der Quelle"** — nicht die Programmeinstellung.
+
 Nach jeder neuen oder geänderten SQL-Anweisung:
 `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite`.
 
@@ -2034,10 +2163,10 @@ Begründung, mit der Q14 das Gebäudemodell-Referenzprojekt verlangt. Der Vorsch
   Schritte, zwei Begründungen, jede für sich prüfbar.
 - **Eine Einfrierregel „gesäte Kältedaten"** wird angelegt, nach dem Muster der vorhandenen
   Regeln. **Sie bekommt keine Ordnungszahl.** Der
-  [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.3 (`:841-848`) hält
+  [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.3 (`:1031-1032`) hält
   ausdrücklich fest: „Die Regel wird über ihren **Gegenstand** benannt, nicht über eine
   Ordnungszahl" — neben „gesäte Gebäudedaten" (mit GB, E4, `:148`), „gesäte Klimareihen" (mit
-  dem Klimaschritt) und „gesäte Zonendaten" (mit G6d) tritt „gesäte Kältedaten". Eine „fünfte
+  G1 + G2, dem ersten Leser) und „gesäte Zonendaten" (mit G6d) tritt „gesäte Kältedaten". Eine „fünfte
   Regel" zu schreiben, wie Rev. 1 es tat, erzeugt genau die Ordnungszahl, die dort vermieden
   wird — und sie wäre schon falsch, sobald zwei Regeln in derselben Woche entstehen.
 - Ihr Gegenstand: gesäte Kühlleistung, gesäte Kühlkennlinie samt ihren Vorlauf-Stützstellen,
@@ -2049,8 +2178,8 @@ Begründung, mit der Q14 das Gebäudemodell-Referenzprojekt verlangt. Der Vorsch
 ### 10.5 Die Einfrierschritte — und warum KU1 zu G1 + G2 gehört
 
 Die Einfrierkette der Gebäudesimulation benennt ihre Anlässe über den Gegenstand, nicht über
-eine Zählung: **GB**, **G1 + G2**, **G6d**, **KU2** (K19), **AK1 bis AK3** und **GA** — dazu eine
-ergebniswirksame Fehlerbehebung im Altweg als eigener, begründeter Anlass (Systementwurf 8.3).
+eine Zählung: **GB**, **G1 + G2**, **G6d**, **KU2** (K19, entschieden mit E27), **AK1 bis AK3** und **GA** — dazu eine
+ergebniswirksame Fehlerbehebung im Bestandsweg als eigener, begründeter Anlass (Systementwurf 8.3).
 KU1 erzeugt **eine neue Vektordatei** und **neun neue
 `aggregate.csv`-Schlüssel** je Projekt mit Kühlung (7.4) — und die beiden sind **nicht gleich
 schwer**:
@@ -2084,7 +2213,7 @@ stateDiagram-v2
   Basis_GB --> Basis_G1G2KU1 : G1 und G2 und KU1 — stuendliche Rechnung und Kuehlkanal
   Basis_G1G2KU1 --> Basis_KU2 : KU2 — Kuehlbetrieb eingeschaltet, EIN Projekt bewegt sich
   Basis_KU2 --> Basis_G6 : G6d — Zonenprojekt
-  Basis_G6 --> Basis_GA : GA — Altweg abgeloest, Kaeltebedarf-0-Hinweis entfernt, Zeitpunkt offen (Q24)
+  Basis_G6 --> Basis_GA : GA — Bestandsweg abgeloest, Kaeltebedarf-0-Hinweis entfernt, faellig nach den vier Bedingungen aus Q24
   Basis_GA --> [*]
 ```
 
@@ -2099,19 +2228,25 @@ Neu-Einfrieren zu fahren. Das stimmt technisch — solange **kein** Referenzproj
 einschaltet, bewegt sich nichts. Es stimmt aber nur um den Preis, dass die Kältedeckung im
 Regressionsnetz **nie** geprüft wird. Dieses Papier hält das für den schlechteren Handel: lieber
 ein kleiner, begründeter Einfrierschritt, der genau ein Projekt bewegt, als eine Rechenfunktion
-ohne Regressionsschutz. **K10 bleibt trotzdem richtig** — es schützt die zwölf anderen Projekte,
-und darin liegt sein Wert.
+ohne Regressionsschutz. **So ist es mit K19 entschieden** (E27): ein eigener, kleiner
+Einfrierschritt für KU2. **K10 ist ebenfalls entschieden** (E27) — abweichend von der Empfehlung um
+die Programmeinstellung für neue Projekte ergänzt (7.2). Am Schutz ändert das nichts:
+Referenzprojekte sind vorhandene Projekte und bleiben aus, bis ihre Projekteinstellung ausdrücklich
+eingeschaltet wird, und kein Lauf liest die Programmeinstellung. Das eine Referenzprojekt mit
+Kühlung wird für KU2 ausdrücklich eingeschaltet; die zwölf übrigen bleiben der Beweis.
 
-**Der Altweg bleibt bis zur Stufe GA (E23, E26); die Kühlung hat auf ihm keinen Kanal.** Die
+**Der Bestandsweg bleibt bis zur Stufe GA (E23, E26); die Kühlung hat auf ihm keinen Kanal.** Die
 Stufe **GA — Altweg ablösen** — Modul `Altweg/`, Weiche, Schalter „Rechenweg" und die Spalten,
-die nur der Altweg liest — steht ohne Termin am Ende des Plans; ihr Zeitpunkt ist **Q24**, ihr
-Umfang die Löschliste im Umsetzungskonzept Kapitel 6 (Q25). Für die Einfrierkette der Kühlung
+die nur der Bestandsweg liest — steht ohne Datum am Ende des Plans. Nach **Q24** und **Q25**,
+beide entschieden mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32), wird sie fällig, sobald ihre vier
+Bedingungen erfüllt sind — eine davon ist die Abnahme von KU1 —, und ihr Umfang ist die
+vollständige Ablösung nach der Löschliste im Umsetzungskonzept Kapitel 6. Für die Einfrierkette der Kühlung
 heißt das zweierlei. Erstens ändert sich an den Schritten dieses Abschnitts **nichts**: Die
-Kühlung hat keinen Altweg (1.3), und **GA ist ein eigener Einfrierschritt** des Gebäudekonzepts,
+Kühlung hat keinen Bestandsweg (1.3), und **GA ist ein eigener Einfrierschritt** des Gebäudekonzepts,
 kein Kühlschritt. Zweitens ist der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast"
-samt Ressourcenschlüssel (8.5) und den beiden Proben aus 10.2 ein **Altweg-Sonderfall auf Zeit**:
+samt Ressourcenschlüssel (8.5) und den beiden Proben aus 10.2 ein **Bestandsweg-Sonderfall auf Zeit**:
 KU1 baut ihn, prüft ihn — und trägt ihn **im selben Auftrag** in die Löschliste der Stufe GA ein
-(ADR-006, F-K18). Mit GA verschwinden Hinweis, Schlüssel und Proben zusammen mit dem Altweg; bis
+(ADR-006, F-K18). Mit GA verschwinden Hinweis, Schlüssel und Proben zusammen mit dem Bestandsweg; bis
 dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwischenstand.
 
 ### 10.6 CI und iOS
@@ -2135,9 +2270,9 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
-| **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Altweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Altweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
-| **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
+| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K22 bleibt Prüfaufgabe vor KU2) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
+| **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
+| **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
 | **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6); Kühlsollwert Nacht; Export nach IFC und gbXML | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
 
 **Warum KU2 gegenüber Rev. 1 wächst (14–22 → 16–26 in Rev. 2).** Drei Posten kamen aus dem
@@ -2156,7 +2291,7 @@ groß:
 |---|---|---|
 | Fassade `SimulationKaeltebedarf` | **+ rund 0,5 PT** in KU1 | eine Klasse nach vorhandenem Muster; der Kanal wäre ohnehin zu füllen gewesen, nur ohne Besitzer |
 | drei zusätzliche Ergebnisspalten in `KU-S4` (7.4) | **+ rund 0,5 PT** in KU1 | derselbe Schemaschritt, drei Zeilen mehr; der Nachweis ist derselbe Lauf |
-| Hinweis und Proben zum Altweg (E20) | **+ rund 0,5 PT** in KU1 | ein Ressourcenschlüssel, zwei Proben, zwei bunit-Fälle |
+| Hinweis und Proben zum Bestandsweg (E20) | **+ rund 0,5 PT** in KU1 | ein Ressourcenschlüssel, zwei Proben, zwei bunit-Fälle |
 | Bedarfsdialog, Kennzahlen, Bericht | **− rund 1,5 PT** in KU2 | Bausteine, Kachelsätze, Bildformen und Textmuster werden **übernommen** statt entworfen; die Entscheidung „wie sieht das aus" entfällt |
 | Proben und Wächter | **− rund 0,5 PT** in KU2 | die Bedarfsprobe Kälte folgt der Energieprobe Zeile für Zeile, die Deckungsprobe Kälte tritt in `KanalganglinienProbe()` neben den Bestand; die Symmetrieprobe ersetzt mehrere Einzelfälle |
 
@@ -2182,22 +2317,23 @@ Kalenderzeit, nicht die Prüfzeit.
 |---|---|---|
 | 1 | **G0** — Löser und Normtests | Testbeispiel 11 wird hier gelöst oder bleibt benannt offen (3.6, 10.1) |
 | 2 | **GB** — Bestandsbefunde, Einfrierregel „gesäte Gebäudedaten" | — |
-| 3 | **M2–M4** — Umbenennung, Schema, Klimaspalten | **`KU-S1`, `KU-S2`, `KU-S4` laufen hier mit** — byte-gleich, kein Leser; sie gehören zu den Schemaschritten, nicht zur Rechnung |
-| 4 | **G1, erster Schritt** — Altweg nach `Altweg/`, Weiche, Vorbereitungsschritt, **byte-gleich** (E20) | **Vorbedingung, kein Kühlschritt** — erst danach gibt es einen VDI-Weg, an dem eine Kühllast entstehen kann. Die Kühlung baut hier nichts und wartet den Nachweis ab (4.3 #28) |
+| 3 | **M2–M4** — Umbenennung, Schema, Klimaspalten (M4 ist durch einen bereits umgesetzten Schemaschritt vorweggenommen, Stand 22.09.2026: Schritt 95; [Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)) | **`KU-S1`, `KU-S2`, `KU-S4` laufen hier mit** — byte-gleich, kein Leser; sie gehören zu den Schemaschritten, nicht zur Rechnung |
+| 4 | **G1, erster Schritt** — Bestandsweg nach `Altweg/`, Weiche, Vorbereitungsschritt, **byte-gleich** (E20) | **Vorbedingung, kein Kühlschritt** — erst danach gibt es einen VDI-Weg, an dem eine Kühllast entstehen kann. Die Kühlung baut hier nichts und wartet den Nachweis ab (4.3 #28) |
 | 5 | **G1 + G2 + KU1** — das Modell, seine Darstellung **und der Kanal** | **hier** — ein Einfrierschritt |
 | 6 | **KU2** — der Erzeuger, seine Auswahl im Katalog und seine Konfiguration (E15) | eigener, kleiner Einfrierschritt |
 | 7 | G3, G4a, G4c … | — |
 | 8 | **KU3** — das Umfeld | nach G6 (Zonen) und G7 (Export) |
-| 9 | **GA — Altweg ablösen** (letzte Stufe, Zeitpunkt offen — Q24) | **kein Kühlschritt, aber ein Eintrag der Kühlung in ihrer Löschliste:** der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast", sein Ressourcenschlüssel, die zwei Proben aus 10.2 und die zwei bunit-Fälle aus 8.6 (F-K18, 10.5) |
+| 9 | **GA — Altweg ablösen** (letzte Stufe, ohne Datum; fällig nach den vier Bedingungen aus Q24, E27 — darunter KU1 abgenommen) | **kein Kühlschritt, aber ein Eintrag der Kühlung in ihrer Löschliste:** der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast", sein Ressourcenschlüssel, die zwei Proben aus 10.2 und die zwei bunit-Fälle aus 8.6 (F-K18, 10.5) |
 
 **Die eine Regel, die Läufe spart:** KU1 gehört in **denselben** Merge und **denselben**
 Einfrierschritt wie G1 + G2. **Die zweite Regel, die Fehler spart:** KU2 kommt **nach** G2, nie
 davor. **Die dritte, die mit E20 hinzukommt:** KU1 beginnt erst, wenn die Verschiebung des
-Altwegs byte-gleich abgenommen ist — eine Kühlrechnung, die auf einen noch wandernden Rumpf
+Bestandswegs byte-gleich abgenommen ist — eine Kühlrechnung, die auf einen noch wandernden Rumpf
 gesetzt wird, macht den Nachweis der Verschiebung unlesbar. **Die vierte, die mit E26 gilt:** Die
-Stufe GA schließt die Reihe — ohne Termin (Q24) —, und die Kälteseite hat an ihr nur eines zu
-tun: ihren Altweg-Sonderfall im selben Auftrag, der ihn baut, in die Löschliste einzutragen
-(10.5). Die KU-Stufen selbst hängen nicht an GA.
+Stufe GA schließt die Reihe — ohne Datum, fällig nach den vier Bedingungen aus Q24 (E27) —, und die Kälteseite hat an ihr nur eines zu
+tun: ihren Bestandsweg-Sonderfall im selben Auftrag, der ihn baut, in die Löschliste einzutragen
+(10.5). Die KU-Stufen selbst hängen nicht an GA — umgekehrt aber GA an KU1: Die Abnahme von KU1
+ist eine der vier Bedingungen, unter denen GA fällig wird (Q24, E27).
 
 ### 11.3 Wiki und Logbuch
 
@@ -2235,9 +2371,16 @@ erledigt** (5.0.3) und steht nur noch als Zeile mit diesem Vermerk.
 entschieden und bleibt als Zeile stehen, ohne neue Nummer (unten). **U2** — „Felder je nach
 Modell verstecken oder sperren" — ist mit **E20** überholt und war nie eine K-Frage, sondern eine
 Frage des Gebäudekonzepts; die Folge für den Gebäudedialog steht in 8.1. **Q24** (Zeitpunkt der
-Stufe GA) ist mit **E26** wieder offen — die Stufe ist die letzte des Plans, ohne Termin; die
-Kühlung hat daran nichts zu entscheiden, sie trägt nur ihren Sonderfall in die Löschliste ein
-(10.5, 11.2). Eine neue Frage entsteht nicht.
+Stufe GA), mit **E26** wieder geöffnet, ist mit **E27** entschieden: GA wird fällig, sobald die vier
+Bedingungen erfüllt sind — eine davon ist die Abnahme von KU1; die Kühlung trägt im Übrigen nur
+ihren Sonderfall in die Löschliste ein (10.5, 11.2). Eine neue Frage entsteht nicht.
+
+**E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) entscheidet die Kühlfragen des Registers:** **K10**
+(abweichend von der Empfehlung, 7.2), **K11** und **K19** nach Empfehlung, **K2** bestätigt
+(12.2), den Kältestrom als Skalar bis zu einem Berichtsbedarf je Anlage (**K18a**, im Register
+**K24**, nach Empfehlung; 12.2, 7.4, 7.6); **K22** bleibt als Prüfaufgabe vor KU2 stehen. Die entschiedenen Zeilen tragen den Vermerk in
+der Spalte „Empfehlung"; die Fragen stehen als Begründung weiter da. K4–K9, K12, K21 und K23 sind
+nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
 
 ### 12.1 Jetzt zu entscheiden
 
@@ -2250,20 +2393,20 @@ Kühlung hat daran nichts zu entscheiden, sie trägt nur ihren Sonderfall in die
 | **K7** | Kältespeicher ja oder nein? | **Vertagen nach KU3**, gemeinsam mit der Kältemaschine — und bis dahin kein Persistenzwert ohne Rechenweg (4.6) | 3–5 PT, ein Pufferverwendungswert, ein Klassen-Set-Eintrag |
 | **K8** | Freie Kühlung und Rückkühlung — bauen oder benannt ablehnen? | **Bauen, aber keine als eigener Erzeuger**: Nachtlüftung in G2, freie Kühlung als Betriebsfall, Rückkühlung als Bestandteil der Kältemaschine (5.4) | ohne Rückkühlung ist die Kältemaschine energetisch unvollständig |
 | **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose (6.3) | eine zweite Tarifzeile oder keine |
-| **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | **Ja** (`Tab_Einstellungen.Kuehlbetrieb`, Vorgabe 0) — **aber nicht, um das Einfrieren zu vermeiden**, sondern um die zwölf übrigen Projekte zu schützen (7.2, 10.5) | Rückwärtsverträglichkeit aller Bestandsprojekte |
-| **K11** | Eigener Kühlsollwert mit Zeitprofil und `Kuehlleistung_Max` — oder bleibt `Maximaleraumtemperatur` die einzige Kühleingabe? | **Eigener Sollwert und eigene Grenze in KU1; Zeitprofil erst in KU3** (Nachtwert), die übrigen drei erst bei Bedarf (7.1) | Schemaumfang und Dialogumfang |
+| **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | **Entschieden mit E27 (22.09.2026), abweichend von der Empfehlung:** Eine **Programmeinstellung** (über `Dienste.Einstellungen`) legt fest, ob **neue** Projekte mit Kühlung angelegt werden, Vorgabe aus; Bestands- und Referenzprojekte bleiben aus, bis ihre Projekteinstellung `Tab_Einstellungen.Kuehlbetrieb` ausdrücklich eingeschaltet wird; die Projekteinstellung bleibt je Projekt schaltbar; fällig mit KU1 (7.2, 8.3, 10.3, 10.5). Die Empfehlung lautete: Ja, Vorgabe 0 — nicht, um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Projekte zu schützen | Rückwärtsverträglichkeit aller Bestandsprojekte |
+| **K11** | Eigener Kühlsollwert mit Zeitprofil und `Kuehlleistung_Max` — oder bleibt `Maximaleraumtemperatur` die einzige Kühleingabe? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Sollwert und eigene Grenze in KU1; Zeitprofil erst in KU3** (Nachtwert), die übrigen drei erst bei Bedarf (7.1) | Schemaumfang und Dialogumfang |
 | **K12** | Gilt Kühlung auf iOS? | **Ja** — der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel, und ein iOS-Lauf ist für KU1/KU2 nicht begründet (8.6, 10.6) | Rückfragepflicht und Laufzeitkontingent |
-| **K19** | Wird KU2 mit einem eigenen, kleinen Einfrierschritt abgenommen (ein Projekt bewegt sich) — oder bleibt die Kältedeckung im Regressionsnetz unsichtbar? | **Eigener Einfrierschritt** (10.5) | ob die Kältedeckung je regressionsgeprüft wird |
+| **K19** | Wird KU2 mit einem eigenen, kleinen Einfrierschritt abgenommen (ein Projekt bewegt sich) — oder bleibt die Kältedeckung im Regressionsnetz unsichtbar? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Einfrierschritt** (10.5) | ob die Kältedeckung je regressionsgeprüft wird |
 | **K20** | **Katalogfilter „nur mit Kühlfunktion" (E15):** benannte Ausnahme von der Regel „Kennzeichenspalten sind nicht filterbar" (`Katalogfilterprofil.cs:79`, [Katalogfilter](Konzept_Katalogfilter_EPOS-Plan.md) 5.6.2) — oder eine eigene Filterart? | **Durch die Umsetzung erledigt, auf einem dritten Weg:** Die Ja/Nein-Spalte „Kühlen" ist durch die Zahlenspalte „Kühlleistung [kW]" mit Trichter ersetzt (`SpKuehlleistung`, `:353`), der Schalter „nur mit Kühlfunktion" schreibt `AUSDRUCK_MIT_KUEHLUNG` (`:360`) in den Trichter; die Regel in `:79` steht unverändert (5.0.3, 8.2). Kein Entscheid mehr offen, kein Personentag in KU2 | die Bedienbarkeit von E15 — 15 von 51 Katalogsätzen sind kühlfähig, und der Filter findet sie |
 | **K21** | **Kühl-Vorlauf:** **Auswahl** aus den Stützstellen der Kennlinie — oder **freie Eingabe** mit Interpolation zwischen zwei Vorläufen? | **Auswahl** (5.1, Festlegung 2; 8.2). In der Testdatenbank stehen zwei Stützstellen; eine Interpolation über den Vorlauf hat die Heizseite ebenfalls nicht, und **eine** Regel für beide Seiten ist mehr wert als ein Sonderweg | Dialogumfang, Extrapolationsregel, und ob Kühl- und Heizseite denselben Kennlinienleser teilen |
-| **K22** | **Führt die Spalte `COP` der Kühltabelle wirklich den EER** — oder in manchen Datensätzen den COP eines Heizbetriebs bei Kühlvorlauf? Der VDI-3805-Import trennt Heiz- und Kühlblock, die Herstellerangaben dahinter sind nicht gegengelesen | **Vor KU2 an den vorhandenen Kühlkennlinien prüfen** (sieben Katalogsätze, 174 Zeilen) und das Ergebnis im Glossar festhalten. Ist die Lage uneinheitlich, wird die Größe beim Import **benannt** umgerechnet oder der Satz abgelehnt — nie stillschweigend als EER gelesen | jede Kältekennzahl und jede Wirtschaftlichkeitszahl der Kühlseite; eine verwechselte Kennzahl ist hier ein Faktor, kein Rundungsfehler |
+| **K22** | **Führt die Spalte `COP` der Kühltabelle wirklich den EER** — oder in manchen Datensätzen den COP eines Heizbetriebs bei Kühlvorlauf? Der VDI-3805-Import trennt Heiz- und Kühlblock, die Herstellerangaben dahinter sind nicht gegengelesen | **Mit E27 (22.09.2026) nach Empfehlung festgelegt, bleibt Prüfaufgabe: vor KU2 an den vorhandenen Kühlkennlinien prüfen** (sieben Katalogsätze, 174 Zeilen) und das Ergebnis im Glossar festhalten. Ist die Lage uneinheitlich, wird die Größe beim Import **benannt** umgerechnet oder der Satz abgelehnt — nie stillschweigend als EER gelesen | jede Kältekennzahl und jede Wirtschaftlichkeitszahl der Kühlseite; eine verwechselte Kennzahl ist hier ein Faktor, kein Rundungsfehler |
 | **K23** | **Hilfsstrom des Kältekreises:** Anteil **je Anlage** (`Kuehl_Hilfsstromanteil` in `Tab_WP`) — oder **pauschal je Projekt** in den Einstellungen? | **Je Anlage** (6.1, 7.3) — er hängt an der Hydraulik der Maschine, nicht am Projekt; NULL = kein Zuschlag, damit keine geratene Zahl entsteht | eine Spalte je WP-Tabelle gegen eine Spalte in `Tab_Einstellungen`; und die Frage, ob eine Kältemaschine (KU3) später dieselbe Eingabe erbt |
 
 ### 12.2 Technische Festlegung — zur Kenntnis, Widerspruch möglich
 
 | Nr. | Festlegung | Begründung |
 |---|---|---|
-| **K2** | **Vorzeichen:** Norm innen (Φ_h < 0 = Kühlen), Betrag außen — der Kanal führt positive Kältemengen | ein Kanal mit negativen Werten bräche jede Summen- und Deckungsrechnung, und zwar still (3.3) |
+| **K2** | **Vorzeichen:** Norm innen (Φ_h < 0 = Kühlen), Betrag außen — der Kanal führt positive Kältemengen. **Bestätigt mit E27 (22.09.2026)** | ein Kanal mit negativen Werten bräche jede Summen- und Deckungsrechnung, und zwar still (3.3) |
 | **K3** | Eine **externe Ganglinie darf „Kühlung" tragen** — Kältebedarf ohne Gebäudemodell, über `Z_ProjektWaermebedarf.Kanal` | sonst ist Kühlung ohne G1 nicht nutzbar, und gemessene Kältegänge gibt es in der Praxis |
 | **K8a** | **Umschaltung je Tag**, Mindestverweildauer ein Tag — die Tagesbetriebsart gilt für den **Heizkanal**; der Brauchwasserkanal bleibt am Kühltag bedienbar (Brauchwasser zuerst, Rest Kälte) | deterministisch, ohne neue Eingabe, näher an einer realen Anlage als „je Stunde"; eine Maschine, die den ganzen Tag kein Warmwasser bereitet, gibt es nicht (5.2) |
 | **K8b** | **Eine** Teillastlogik für Wärme und Kälte, nicht zwei: KU2 rechnet mit der Kennlinie der höchsten Laststufe (`MAX(Last)`) und skaliert bei Teilauslastung linear mit konstantem EER | dieselbe Vereinfachung, die die Heizseite macht — `Tab_Kenndaten` führt keine Laststufe; `KenndatenKuehlungCtrl.Reihen` liest heute nur `MAX(Last)` (5.1) |
@@ -2273,9 +2416,9 @@ Kühlung hat daran nichts zu entscheiden, sie trägt nur ihren Sonderfall in die
 | **K15** | **Eine** neue Kennzahlgruppe `GR_KAELTE` für die Erzeugergrößen; die Kanalgrößen bleiben in der Kanalgruppe | eine Gruppe je Sache, nicht je Kanal (6.4) |
 | **K16** | **`Waermelast_Max` bleibt unberührt**; die Kälteseite bekommt `Kaeltebedarf_Max` (Rohfeld der Fassade `SimulationKaeltebedarf`), ausgewiesen als `Kaeltelast_Max` (Ergebnisfeld) — dieselbe Kette wie `Waermebedarf_Max` → `Waermelast_Max` (4.4) —, dazu `Kaeltebedarf_Gesamt` und `Kaelterestbedarf` (E21, 7.4). Die zwei Kanallisten heißen **`KANAELE_WAERME`** und **`KANAELE_KAELTE`** — nicht `WAERMEKANAELE`, weil `Waermekanaele` im Kern bereits eine Klasse ist (4.1, 4.2). Der Deckungsgrad der Kälteseite entsteht in einem **eigenen** Zweig neben `DeckungKanal`, nicht als vierter Fall darin (6.4) | sonst legt der Kühlkanal jeden Wärmeerzeuger neu aus (4.2) — die teuerste stille Änderung des Vorhabens; und ein Deckungsgrad mit dem Wärmenenner wäre die zweitteuerste, weil er eine Zahl liefert statt eines Fehlers |
 | **K17** | Reihenname `waermebedarf_kuehlung.csv`, **bedingt** geschrieben | Der Vergleich kennt einen **Schlüssel**-Ausschluss (`--ohne`), aber keinen **Datei**-Ausschluss: eine Datei, die nur im neuen Lauf liegt, ist FAIL ohne Schalter dagegen (4.7, 10.5). Die beiden Bestandskanaldateien werden zwar unbedingt geschrieben (`Ergebnisexport.cs:57-63`) — die Kühldatei bedingt zu schreiben, spart zwölf Reihen voller Nullen und ist deshalb die bewusste Abweichung |
-| **K18** | **„—" statt 0** in Dialogen, Kacheln und Bericht; ein Projekt ohne Kühlung zeigt keine Kühlgruppe. **Eine benannte Ausnahme (E20):** Ein Gebäude auf dem Altweg zeigt **0 mit Hinweis**, nicht „—" (F-K18, 8.6) | „eine 0 wäre eine Aussage, die niemand getroffen hat" (8.4) — beim Altweg-Gebäude **ist** die 0 eine Aussage, und der Hinweis sagt, wessen |
+| **K18** | **„—" statt 0** in Dialogen, Kacheln und Bericht; ein Projekt ohne Kühlung zeigt keine Kühlgruppe. **Eine benannte Ausnahme (E20):** Ein Gebäude auf dem Bestandsweg zeigt **0 mit Hinweis**, nicht „—" (F-K18, 8.6) | „eine 0 wäre eine Aussage, die niemand getroffen hat" (8.4) — beim Bestandsweg-Gebäude **ist** die 0 eine Aussage, und der Hinweis sagt, wessen |
 | **K24** | **Symmetrie als Bauvorschrift (E21):** Jede Größe der Wärmeseite hat ein benanntes Gegenstück auf der Kälteseite oder steht in der Abweichungsliste | die Abweichungen sind abschließend genannt: keine Kältenetzverluste, keine Knappheitsreihenfolge, dafür zwei Kennzahlen mehr (4.2, 5.5, 6.4, Kapitel 14). Geprüft wird über die Liste, nicht über Zahlen (10.2, F-K19) |
-| **K18a** | Kältestrom reist zunächst als **Skalar** in `aggregate.csv`, nicht als Ergebnisspalte je Anlage | eine siebte Spalte gehört in denselben Schemaschritt oder gar nicht — **offen**, bis der Bericht sie verlangt (7.6) |
+| **K18a** | Kältestrom reist zunächst als **Skalar** in `aggregate.csv`, nicht als Ergebnisspalte je Anlage. **Entschieden mit E27 (22.09.2026; im Register K24) nach Empfehlung:** Skalar, bis der Bericht die Spalte je Anlage verlangt; dann im selben Schemaschritt wie `KU-S4` | eine weitere Spalte gehört in denselben Schemaschritt oder gar nicht — nachträglich kostete sie einen eigenen Schritt und einen eigenen Einfrieranlass (7.4, 7.6) |
 
 ---
 
@@ -2291,18 +2434,20 @@ Kühlung hat daran nichts zu entscheiden, sie trägt nur ihren Sonderfall in die
 | **Der Import schaltet die Kühlung von selbst ein** (9.1) | `DesignCoolT` und `SpaceTemperatureSummerMax` fehlen oft und stehen sonst als Vorlagenwert des Autorensystems — ein `Kuehlung_Aktiv = 1` daraus erzeugt Kältebedarf, den niemand geplant hat, und tut es still | Import setzt **nur** `Kuehl_Sollwert` mit Herkunftsmarke; `Kuehlung_Aktiv` bleibt 0; der Importbericht nennt die Zonen mit Kühlsollwert |
 | **Netzverluste auf dem Kühlkanal** (4.2 b) | Kältebedarf zu hoch, Wärmekanäle zu niedrig — beides klein, beides falsch, beides unsichtbar | `Kanalsatz.NetzverlusteVerteilen` über `KANAELE_WAERME`; Probe „gleiche Netzverluste mit und ohne Kühlung" |
 | **Der Bivalenzpunkt wandert in den Sommer** (4.2 c) | `Kaskadenschleife.cs:978` sammelt die Außentemperatur, solange `RestSumme(rest) > 0` — mit einem vierten Kanal zählt offener Kältebedarf mit, und `Bivalenzpunkt = biv.Max()` (`SimulationWaermepumpe.cs:1237`) wird zur höchsten Sommertemperatur; die Zahl steht im Bericht, ohne Fehlermeldung | `rest` an allen fünf Stellen über `KANAELE_WAERME` füllen (4.2); eine Rechenprobe „Bivalenzpunkt mit und ohne Kühlung gleich" |
-| **Der Altweg-Sonderfall bleibt nach GA als toter Zweig zurück** (E26) | Hinweistext, Ressourcenschlüssel und Proben zu „Kältebedarf 0 mit Hinweis" überleben die Ablösung des Altwegs, weil niemand sie mit ihm entfernt | Eintrag in die Löschliste der Stufe GA **im selben Auftrag**, der sie baut (ADR-006, F-K18, 10.5); die Ausbauprobe des Umsetzungskonzepts findet, was übrig bleibt |
+| **Der Bestandsweg-Sonderfall bleibt nach GA als toter Zweig zurück** (E26) | Hinweistext, Ressourcenschlüssel und Proben zu „Kältebedarf 0 mit Hinweis" überleben die Ablösung des Bestandswegs, weil niemand sie mit ihm entfernt | Eintrag in die Löschliste der Stufe GA **im selben Auftrag**, der sie baut (ADR-006, F-K18, 10.5); die Ausbauprobe des Umsetzungskonzepts findet, was übrig bleibt |
 | **Grüner Build, roter Lauf** (4.3, #20) | `ANZAHL = 4` ohne den vierten Platzhalter im INSERT macht jedes Ergebnisschreiben rot | Reihenfolge innerhalb KU1 erzwingen: Schema und Persistenz **vor** `ANZAHL`; ein Datenbankfall, der genau das prüft |
 | **Auslegung auf überzeichnete Last** (3.4) | ohne Sommer-/Nachtlüftung ist die Kühlkennzahl nachweislich zu hoch; ein darauf ausgelegter Erzeuger ist zu groß gekauft | **KU2 setzt G2 voraus**; bis dahin trägt jede Kühlzahl den Vermerk „vorläufig" |
 | **Kältemenge ohne Entfeuchtung wird als Anlagenkältebedarf gelesen** (K5) | ein Planer legt die Anlage zu klein aus | die Grenze steht an jeder Zahl — Dialog, Bericht, Wiki, **und in der Exporteigenschaft** |
 | **Testbeispiel 11 bleibt offen** (3.6) | der einzige Prüffall, der die Kühlseite belastet, liegt neben dem Band | in G0 klären; der Produktausweis nennt es im Wortlaut; die Kühlkennzahlen tragen den Ausweis |
 | **Zwei Neu-Einfrierungen für dieselbe Sache** (10.5) | doppelte Nacharbeit, doppelte Begründung, zwei Runden CI | KU1 in denselben Einfrierschritt wie G1 + G2 |
+| **Das Speichern der Kaskade schaltet die Kühlung ab** (7.2) | Der Einstellungssatz wird beim Speichern der Kaskade gelöscht und neu angelegt; eine neue Zeile trägt `Kuehlbetrieb = 0` — die Kühlung eines Projekts ginge still aus | `Kuehlbetrieb` reist mit wie die Merkspalte der gepflegten Kaskade; Datenbankfall in 10.3 |
+| **Die Programmeinstellung schaltet Bestandsprojekte mit** (E27, 7.2) | Ein Rückfall „kein Einstellungssatz → Programmeinstellung" rechnete Bestandsprojekte plötzlich mit Kälte, sobald ein Anwender die Programmeinstellung einschaltet | Die Programmeinstellung wird nur bei der Projektanlage gelesen, nie im Lauf; Datenbankfall „Bestandsprojekt bleibt aus" (10.3) |
 | **Kältedeckung ohne Regressionsschutz** (K19) | eine Rechenfunktion, die nie gegen eine Basis läuft | ein Referenzprojekt mit `Kuehlbetrieb = 1` und ein kleiner Einfrierschritt mit KU2 |
 | **Der Kältespeicher als Persistenzwert ohne Rechenweg** (K7) | ein Anwender wählt eine Verwendung, die nichts tut | kein `VERWENDUNG_KAELTE` vor KU3; der Dialog sagt, dass kein Kältespeicher gerechnet wird |
 | **Gleichzeitiges Heizen und Kühlen bleibt unbemerkt** (3.5) | eine falsche Zonierung sieht aus wie ein hoher Bedarf | eigene Kennzahl, eigene Meldung |
 | **Die Kältemaschine wächst zum Kältetechnikpaket** (Kapitel 14) | ein Vorhaben, das nicht endet | Kapitel 14 ist die Grenze, und sie wird nicht stillschweigend verschoben |
 | **Eine zweite Gebäuderechnung für die Kälte** (3.7) | Zwei Läufe desselben Modells können zwei verschiedene Ergebnisse liefern — und niemand sieht es, weil beide plausibel sind; dazu die doppelte Rechenzeit (N-K7) | **Ein** Lauf des Moduls `Gebaeude/` liefert beide Reihen, die Fassaden verteilen (E21). Probe „Ein Lauf, zwei Reihen" zählt die Modulaufrufe je Gebäude (10.2) |
-| **Die Kühlung wird im Altweg nachgebaut** (E20, E23, E26) | Der Bestandsweg bekäme eine neue Funktion und würde ein zweites Produkt — bis zur Stufe GA doppelt zu pflegen, und mit GA wäre die Funktion wieder weg | **Festlegung, kein Vorbehalt:** Der Altweg bekommt keine Änderung außer Fehlerbehebung ([ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Ein Altweg-Gebäude trägt Kältebedarf 0 **mit Hinweis** (F-K18); die Probe in 10.2 hält beide Seiten fest, auch die Gegenprobe auf VDI 6007 |
+| **Die Kühlung wird im Bestandsweg nachgebaut** (E20, E23, E26) | Der Bestandsweg bekäme eine neue Funktion und würde ein zweites Produkt — bis zur Stufe GA doppelt zu pflegen, und mit GA wäre die Funktion wieder weg | **Festlegung, kein Vorbehalt:** Der Bestandsweg bekommt keine Änderung außer Fehlerbehebung ([ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Ein Bestandsweg-Gebäude trägt Kältebedarf 0 **mit Hinweis** (F-K18); die Probe in 10.2 hält beide Seiten fest, auch die Gegenprobe auf VDI 6007 |
 | **Die Symmetrie zerfasert** (E21) | Auf der Wärmeseite wächst eine Größe, auf der Kälteseite fehlt sie — ohne Fehlermeldung, weil nichts sie vergleicht | Probe „Symmetrie der Kennzahlen" über die Gegenüberstellung in 6.4; jede Abweichung steht **benannt** in der Abweichungsliste (4.2, 5.5) statt unausgesprochen zu fehlen (F-K19, K24) |
 
 ---
@@ -2329,10 +2474,10 @@ Mehrzonen 12):
   nichts in Code, Tests, Testdaten, Wiki, Bericht oder Auslieferung.
 - **Normzahlen.** Dieses Papier nennt keine Ergebniswerte der VDI-6007-Testbeispiele, nur ihre
   Nummern.
-- **Kühlung auf dem Tagesbilanz-Weg.** Der Altweg ist der eingefrorene Bestandsweg ohne neue
+- **Kühlung auf dem Tagesbilanz-Weg.** Der Bestandsweg ist eingefroren, ohne neue
   Funktion, ein Übergang bis zur Stufe GA (Zeitpunkt offen); er bekommt keine Kühllast, weder
   jetzt noch bis zu seiner Ablösung (E20, E23, E26, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)).
-  Das ist eine **Festlegung**, kein Vorbehalt — ein Altweg-Gebäude trägt 0 mit Hinweis (F-K18),
+  Das ist eine **Festlegung**, kein Vorbehalt — ein Bestandsweg-Gebäude trägt 0 mit Hinweis (F-K18),
   und dieser Sonderfall steht auf der Löschliste von GA.
 - **Kältenetzverluste.** Die Verteilverluste eines Kaltwassernetzes werden nicht gerechnet; die
   Wärmenetzverluste bleiben auf der Wärmeseite (4.2 b). Eine Entsprechung zu
@@ -2382,7 +2527,7 @@ Mehrzonen 12):
 [ADR-001](ADR-001_Schema-Ausrollung.md), [ADR-002](ADR-002_Stundenmodell_VDI6007_Einbindung.md),
 [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md),
 [**ADR-006 — Trennung des Altwegs**](ADR-006_Trennung_Altweg_VDI6007.md) (E20: Weiche am Eingang,
-Modul `Altweg/`, Dialoge in VDI-Struktur; E23 und E26: der Altweg bleibt als Übergang bis zur
+Modul `Altweg/`, Dialoge in VDI-Struktur; E23 und E26: der Bestandsweg bleibt als Übergang bis zur
 Stufe GA, Zeitpunkt offen; Regel der Löschliste),
 [Konzept Hilfesystem](Konzept_Hilfesystem_Wikidokumentation.md) (13.3),
 [Konzept Katalogfilter](Konzept_Katalogfilter_EPOS-Plan.md) (5.6.2, 5.6.3),
@@ -2430,7 +2575,8 @@ Bivalenzsammlung `:978`); `SimulationBHKW.cs` (`:1907`, `:1911`), `SimulationSPK
 `EPOS.Kern/Allgemein/Update/SchemaKatalog.cs` (Schritt 52 `:2417-2502`, Feld
 `Schritt52_ErgebnisJeKanal` `:2599`); `EPOS.Kern/Allgemein/Update/SchemaStand.cs`
 (`SchemaStand.Zielversion` — die Nummer eines Kühlschritts vergibt erst seine Beauftragung; die
-Momentaufnahme `Zielversion = 100` in `:341` gilt für den Stand 22.09.2026);
+Momentaufnahme `Zielversion = 100` in `:341` gilt für den Stand 22.09.2026, nächste freie Nummer
+101);
 `EPOS.Kern/Allgemein/Update/AnlagenEindeutigkeit.cs` (`:103`);
 `EPOS.Kern/Allgemein/Bericht/KennzahlenKatalog.cs` (`BedarfKanal` `:62-68`, `DeckungKanal`
 `:85-101` mit Erzeugerliste `:95-98` und Bezug `:100`, `Waermelast_Max` als Kennzahl `:217`,

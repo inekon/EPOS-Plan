@@ -1,7 +1,7 @@
 # Konzept: Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur (Anlagenkopplung)
 
 > **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet.** Was diese Fassung ändert: Der Altweg ist
-> **Übergang bis zur Stufe GA** (Zeitpunkt offen, Q24) statt dauerhafter Bestandsweg, und seine
+> **Übergang bis zur Stufe GA** (Zeitpunkt damals offen, Q24; seit E27 entschieden) statt dauerhafter Bestandsweg, und seine
 > Sonderfälle stehen in der Löschliste dieser Stufe; die Verteilung in AK2 ist als **Zweipass**
 > samt Randfällen, zweiter Stufe auf die Zonen und benannter Pfadabhängigkeit ausgeschrieben; AK3
 > bekommt eine **Iterationsschranke**; Verfügbarkeits- und Begrenzungsgrund sind zwei benannte
@@ -19,6 +19,15 @@
 > [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md) (Trennung der Rechenwege, E20 und E23),
 > [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (E12, E21),
 > [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md).**
+>
+> **Nachzug 22.09.2026 — E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32):** Der Anwender hat den
+> **Stufenplan entschieden (Q26, Option (a), nach Empfehlung):** **AK1 nach G2**; **AK2 nach
+> abgenommenem AK1 und einer Feldphase**; **AK3 danach** — nach H6 (E24) weiterhin erst nach der
+> Feldphase von AK1 und AK2 zugesagt. Aufwand AK0 1–2, AK1 10–15, AK2 11–15, AK3 23–38 PT, zusammen
+> 45–70 PT. **H6** war bereits mit E24 entschieden und ist mit E27 zur Kenntnis genommen. Mit E27
+> ist auch **Q24** entschieden: Die Stufe GA wird fällig, sobald ihre vier Bedingungen erfüllt
+> sind — eine davon ist die Abnahme von KU1 und, falls beauftragt, von AK1 (11.4). Kapitel 0, 1.2,
+> 12 und 13 tragen den entschiedenen Stand.
 
 **Frage des Anwenders (16.09.2026):** „kann das Gebäudesimulationskonzept erweitert werden um die
 Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
@@ -26,8 +35,8 @@ Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die Raumtemperatur?"
 **Auftrag, im Wortlaut (Entscheid E22):** „trage es als Nachtrag mit einer neuen Frage Q26 zum
 Stufenplan ein und schreibe ein eigenes Konzeptpapier dazu".
 
-**Stand:** 17.09.2026. **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und **E26**
-fortgeschrieben.
+**Stand:** 22.09.2026 (Nachzug E27). **Fassung:** Rev. 2 — mit **E23**, **E24**, **E25** und
+**E26** fortgeschrieben, **E27** nachgezogen.
 
 **Zweck.** Dieses Papier ist das in N1.27 angekündigte eigene Konzept. Es beschreibt, was die
 Anlagenkopplung vom Heizkörper bis zum Wiki bedeutet: die Physik der Übergabe, Heizkurve und
@@ -35,9 +44,10 @@ Regelung, den Erzeugerfahrplan als Verfügbarkeit je Stunde, die drei Kopplungss
 Datenmodell, die Dialogführung, einen neuen Rechenschritt **H**, den Nachweis, eine Stufung
 **AK0–AK3** und die Fragen **H1–H12**, die am 16.09.2026 mit **E24** sämtlich nach Empfehlung des
 Papiers entschieden worden sind (Konzept N1.29). **Es entscheidet nichts, was der Anwender zu
-entscheiden hat.** Offen ist allein der **Stufenplan** — welche Stufe wann beauftragt wird —, und
-das ist **Frage Q26**; sie wird im
-[Gebäudekonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Kapitel 13, geführt, nicht hier.
+entscheiden hat.** Auch der **Stufenplan** — welche Stufe wann beauftragt wird — ist entschieden:
+**Q26**, mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) nach Empfehlung (a): AK1 nach G2, AK2 nach
+abgenommenem AK1 und einer Feldphase, AK3 danach (12.1, 12.3). Geführt wird die Frage im
+[Gebäudekonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md), Kapitel 13, nicht hier.
 
 **Es steht neben, nicht über den Schwesterpapieren:**
 
@@ -81,7 +91,7 @@ Quelltextbelege tragen `Datei:Zeile` und sind für dieses Papier **selbst nachge
    **kippt den Grundsatz „erst Bedarf, dann Deckung"**: Der Bedarf wird Ergebnis der Deckung. Das
    ist der teuerste Satz dieses Papiers, und er steht in Kapitel 6. **Alle drei wirken auf
    Gebäude des VDI-Wegs**; ein Gebäude auf dem Altweg — dem Bestandsweg, der nach **E23** und
-   **E26** bis zu seiner Ablösung durch die Stufe **GA** weiterläuft (Zeitpunkt offen, Q24) —
+   **E26** bis zu seiner Ablösung durch die Stufe **GA** weiterläuft (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27) —
    geht in Deckung, Verfügbarkeit und Kopplung als **feste Last** ein: sein Bedarfsvektor wie
    heute, ohne Rückwirkung und ohne Komfortstunden, im Bericht benannt (6.2, 6.4, 9.4).
 3. **Der größte sichtbare Gewinn kommt aus der billigsten Stufe.** AK1 kappt die **Aufheizspitze**,
@@ -118,8 +128,9 @@ Quelltextbelege tragen `Datei:Zeile` und sind für dieses Papier **selbst nachge
    Komfortstunden (**11–15 PT**), AK3 den geschlossenen Kreis (**23–38 PT**); je Stufe rund 0,5 PT
    für das Neu-Einfrieren. **Vorgabe ist überall „aus"**, und ein Bestandsprojekt rechnet
    unverändert, solange sie aus ist (Kapitel 12). **Die Fragen H1–H12 sind mit E24 entschieden**
-(Konzept N1.29); **offen ist allein der Stufenplan — Q26 im Gebäudekonzept.** AK2 setzt AK1 und
-eine Feldphase voraus, AK3 folgt auf AK2 und eine Feldphase (E23; 12.1, 12.3).
+(Konzept N1.29), **und der Stufenplan ist es mit E27 (Q26, (a))**: AK1 nach G2, AK2 nach
+abgenommenem AK1 und einer Feldphase, AK3 danach und — nach H6 — erst nach der Feldphase von AK1
+und AK2 zugesagt (E23; 12.1, 12.3).
 
 ---
 
@@ -172,7 +183,9 @@ dieses Papiers.
 
 **Und was E23 und E26 daran ändern (16./17.09.2026).** Der Altweg läuft als eingefrorener
 Bestandsweg neben dem VDI-Weg weiter — **als Übergang**, den die Stufe **GA** ablöst, sobald der
-VDI-Weg bewährt genug ist; der Zeitpunkt ist offen (**Q24**). Für die Anlagenkopplung heißt das:
+VDI-Weg bewährt genug ist; wann das ist, sagt **Q24**, mit E27 entschieden: sobald die vier
+Bedingungen erfüllt sind, darunter die Abnahme von KU1 und, falls beauftragt, von AK1 (11.4). Für
+die Anlagenkopplung heißt das:
 Über die ganze Laufzeit dieses Vorhabens stehen **zwei Bedarfsbegriffe je Gebäude nebeneinander**
 — der Kanal führt beide, die Deckung unterscheidet sie nicht; **nur der VDI-Weg hat eine
 Rückwirkung**. Ein Gebäude auf dem Altweg geht als **feste Last** ein (6.2, 6.4). AK2 und AK3
@@ -577,7 +590,7 @@ auf 24 Stunden verteilt wird. **Das stündliche Zwischenergebnis wird verworfen.
 Das ist die genaue Stelle, an der der Altweg für dieses Vorhaben unbrauchbar ist: Er rechnet eine
 Raumtemperatur — und wirft sie weg. **Der Altweg bekommt daher keine Anlagenkopplung, weder jetzt
 noch später** (E20, B-A5); ein Gebäude auf dem Altweg trägt den benannten Hinweis aus F-A18. Und
-weil der Altweg mit **E23** und **E26** bis zu seiner Ablösung (Stufe GA, Zeitpunkt offen)
+weil der Altweg mit **E23** und **E26** bis zu seiner Ablösung (Stufe GA, ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27)
 unverändert weiterläuft, bleiben `WE_Absenkung`, `Ferien_Absenkung` und der ganze Zweig so lange
 bei ihm: Das Zeitprogramm aus 4.3 ist **nicht** ihr Nachfolger, sondern ihr Gegenstück auf dem
 VDI-Weg — beide Wege führen ihre eigene Absenkung, und keiner erbt die des anderen.
@@ -946,7 +959,7 @@ Stellt der Anwender ein Altweg-Gebäude auf den VDI-Weg um, ändert sich sein Be
 damit der Verteilungsschlüssel jeder Stunde; die Verfügbarkeitsanteile **der übrigen Gebäude**
 verschieben sich, und ihre Komfortkennzahlen ändern sich, obwohl an ihnen nichts geändert wurde.
 Dasselbe geschieht in einem Zug mit der Stufe **GA**, die alle verbliebenen Altweg-Gebäude umstellt
-(Zeitpunkt offen, Q24). **Festlegung: Der Bericht nennt je Projekt, wie viele Gebäude als feste
+(ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27). **Festlegung: Der Bericht nennt je Projekt, wie viele Gebäude als feste
 Last eingehen** — eine Komfortkennzahl aus einem gemischten Projekt ist ohne diese Zahl nicht
 vergleichbar. Die Umstellung ist kein Fehler, sondern das gewollte Ergebnis eines genaueren
 Modells; unbenannt wäre sie ein stiller Ergebnissprung.
@@ -1117,7 +1130,7 @@ Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
    Tagesbilanz-Weg (E20, E21, E23); der Hinweis aus F-A18 hat auf der Kälteseite kein Gegenstück,
    weil es dort nichts gibt, worauf er zeigen könnte. Ein Altweg-Gebäude liefert Kältebedarf 0 mit
    benanntem Hinweis (Kühlkonzept F-K18), und das bleibt so, bis die Stufe **GA** den Altweg ablöst
-   (Zeitpunkt offen, Q24).
+   (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27).
 3. **Keine Kältenetzverluste** — das ist bereits eine benannte Abweichung des Kühlkonzepts (14) und
    bleibt eine; die Anlagenkopplung ändert daran nichts.
 4. **Der Auslegungspunkt der Kühlübergabe kommt aus der Anlage, nicht aus dem Gebäude.** Auf der
@@ -1137,7 +1150,7 @@ Vier, und alle vier haben denselben Grund: Die Kälteseite ist jünger.
 Die Schemaschritte tragen in diesem Papier **Papiernamen** (`AK-S1` …). **Die Nummer vergibt der
 Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigration`, wie ADR-001 und
 die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 2.4 es verlangen
-(**A11**). **Die Nummer steht in diesem Papier an keiner Stelle**, denn die Gebäude-, Zonen- und
+(**A11**, mit E27 entschieden). **Die Nummer steht in diesem Papier an keiner Stelle**, denn die Gebäude-, Zonen- und
 Kühlschritte entstehen parallel und würden kollidieren; sie wird **bei der Beauftragung** an
 `SchemaStand.Zielversion` abgelesen. Zur Einordnung, nicht zur Verwendung — eine Momentaufnahme
 mit Datum: Am Arbeitsbaum (Stand 22.09.2026) steht der Zielstand auf **100**, die nächste freie
@@ -1839,8 +1852,8 @@ die Probe **„ein Erzeuger ohne Grenzen ist bitgleich zu AK1"** als Gate — da
 ### 11.4 Referenzprojekt, Einfrierschritte und die Reihenfolge, die Läufe spart
 
 **Die Einfrierkette der Gebäudesimulation** kennt GB, G1 + G2 (mit KU1) und G6d; KU2 kommt hinzu,
-und die Stufe **GA** schließt sie ab — sie ist mit **E26** ein eigener Einfrieranlass, ihr
-Zeitpunkt ist offen (**Q24**)
+und die Stufe **GA** schließt sie ab — sie ist mit **E26** ein eigener Einfrieranlass und wird
+nach **Q24** (entschieden mit E27) fällig, sobald ihre vier Bedingungen erfüllt sind
 ([Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 10.5,
 [Referenzlaeufe/LIESMICH.md](../../Referenzlaeufe/LIESMICH.md)). Die Anlagenkopplung fügt **je
 aktivierter Stufe einen** hinzu — und **jede Stufe erzeugt eine neue Datei**, also gibt es keinen
@@ -1871,13 +1884,14 @@ stateDiagram-v2
   Basis_G1G2 --> Basis_AK1 : AK1 — Heizkreis, EIN Projekt bewegt sich
   Basis_AK1 --> Basis_AK2 : AK2 — Fahrplan und Komfortstunden, nach einer Feldphase
   Basis_AK2 --> Basis_AK3 : AK3 — geschlossener Kreis
-  Basis_AK3 --> Basis_GA : GA — Altweg abloesen, Zeitpunkt offen (Q24)
+  Basis_AK3 --> Basis_GA : GA — Altweg abloesen, faellig nach den vier Bedingungen aus Q24
   Basis_GA --> [*]
 ```
 
 Die Stufe **GA** steht hier am Ende, weil sie die letzte des Stufenplans ist; sie ist **keine**
-Vorbedingung der AK-Stufen und kann jede von ihnen überholen, sobald das Ablösekriterium erfüllt
-ist (E26). Für dieses Papier hat sie genau eine Wirkung: Der Sonderfall „feste Last" und die drei
+Vorbedingung der AK-Stufen. Umgekehrt gilt seit **Q24** (entschieden mit E27): Die Abnahme von
+**AK1** ist — sofern AK1 beauftragt ist — eine der vier Bedingungen, unter denen GA fällig wird;
+AK2 und AK3 sind es nicht, und GA kann sie überholen (E26). Für dieses Papier hat sie genau eine Wirkung: Der Sonderfall „feste Last" und die drei
 Einträge aus 9.5 entfallen, und die Verteilung aus 6.2 kennt nur noch einen Bedarfsbegriff.
 
 **Das Referenzprojekt.** Ein Projekt der Testdatenbank (Kopie eines Einzelgebäude-Projekts)
@@ -1919,13 +1933,13 @@ eingeschalteter Kopplung rechnen wollte, würde die Referenz verlassen** — die
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), offen bleibt Q26 im Gebäudekonzept | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
-| **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** (ohne Stundenmodell im Produkt keine stündliche Raumtemperatur); das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
-| **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
-| **AK3** | **Der geschlossene Kreis.** Iterationsrahmen `Anlagenkopplung` nach dem Muster von ADR-005 (feste Reihenfolge, drei Abbruchmaße, Höchstzahl 20, im Mehrzonenfall Produktschranke 120, benannter Fehler); Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl`; Vorlaufabhängige Kennlinienauswertung je Stunde für die Wärmepumpe; Ladezustand des Speichers in der Verfügbarkeit; raumgeführte Korrektur der Heizkurve (H2); Prüforakel, Vergleichsrechnung gegen AK2, **gemessene** Laufzeit | **AK2 abgenommen und eine Feldphase**; der Entscheid, ob überhaupt, fällt dann (**H6**, mit E24 so festgelegt) | Prüforakel getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen (N-A4); Referenzlauf gegen die neue Basis | **ja** | **23–38** |
+| **AK0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 15, Kühlkonzept 1.3/14, Systementwurf 12 und Umsetzungskonzept auf E22, E23 und **E26**; die Fragen **H1–H12** sind mit **E24** entschieden (13.1), der Stufenplan **Q26** mit **E27** (12.3) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
+| **AK1** | **Heizkreis als Randbedingung.** Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) samt Sichtneubau und NULL-erhaltender Katalogkopie; Klasse `Waermeuebergabe`; Heizkurve und Sollwertvektor in `GebaeudeModellEingang`; vierter Betriebsfall in `Zonenmodell2K` samt Sekantenleitwert; `Stundenrand`/`Stundenergebnis` erweitert; Gruppe „Wärmeübergabe" im Gebäudedialog samt Wochenraster-Baustein; Hülle nach `EPOS.UI.Daten`; zwei Kennzahlkacheln, Bild „Vorlauf und Rücklauf", Berichtsabschnitt; drei bedingte Reihen im Export; **Kennlinienwahl der Wärmepumpe am gerechneten Vorlauf** (6.1, Erzeugerseite); Texte, Meldungen, Wiki-Abschnitt | **G1 und G2 stehen** — AK1 kommt nach G2 (Q26, E27); ohne Stundenmodell im Produkt keine stündliche Raumtemperatur; das Gebäudeschema mit `Heizleistung_Max` und `Heizung_Strahlungsanteil` ist ausgerollt | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kopplung byte-gleich; die beiden Grenzfallproben aus 11.1; `ChartProben` grün | **ja** | **10–15** |
+| **AK2** | **Erzeugerfahrplan als Verfügbarkeit.** Schemaschritt `AK-S2` (Zeitprogramm, `Vorlauf_Max`) und der Komfortteil von `AK-S3`; Klasse `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` (Profilweg, mit Speichervorrat über die Sperrdauer); **Zweipass der Verteilung** samt Randfall, Rundungsrest und zweiter Stufe auf die Zonen (6.2); Wochenraster im Erzeugerdialog; vierte Grenze in der Kette (4.5); Komfortkennzahlen, Bild „Raumtemperatur und Sollwert", Berichtszeile; Meldungen; Eintrag der neuen Klasse in die `Modultrennungswache` | **AK1 abgenommen und eine Feldphase** (B-A6; Q26, E27); Gebäude auf dem Altweg gehen als feste Last ein (E23, E26, 6.2) | Kern-Gate grün; Referenzlauf gegen die neue Basis; die AK2-Proben aus 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander (5.5) | **ja** | **11–15** |
+| **AK3** | **Der geschlossene Kreis.** Iterationsrahmen `Anlagenkopplung` nach dem Muster von ADR-005 (feste Reihenfolge, drei Abbruchmaße, Höchstzahl 20, im Mehrzonenfall Produktschranke 120, benannter Fehler); Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl`; Vorlaufabhängige Kennlinienauswertung je Stunde für die Wärmepumpe; Ladezustand des Speichers in der Verfügbarkeit; raumgeführte Korrektur der Heizkurve (H2); Prüforakel, Vergleichsrechnung gegen AK2, **gemessene** Laufzeit | **AK2 abgenommen und eine Feldphase**; AK3 folgt nach dem Stufenplan (Q26, E27) danach, zugesagt wird es aber erst nach der Feldphase von AK1 und AK2 (**H6**, mit E24 so festgelegt, mit E27 zur Kenntnis genommen) | Prüforakel getroffen; „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen (N-A4); Referenzlauf gegen die neue Basis | **ja** | **23–38** |
 
 **Summen:** AK0 + AK1 = 11–17 PT; AK0–AK2 = 22–32 PT; AK0–AK3 = **45–70 PT**, jeweils zuzüglich
-rund 0,5 PT je Einfrierschritt. Aufwände sind Größenordnungen für Entwicklung **und** Nachweis;
+rund 0,5 PT je Einfrierschritt — so mit dem Stufenplan (Q26) am 22.09.2026 entschieden (E27). Aufwände sind Größenordnungen für Entwicklung **und** Nachweis;
 Agentenarbeit verkürzt die Kalenderzeit, nicht die Prüfzeit.
 
 ### 12.2 Der Aufwand, hergeleitet
@@ -1974,18 +1988,25 @@ braucht.
 | 4 | **G1, erster Schritt** — Altweg nach `Altweg/`, Weiche, Vorbereitungsschritt, byte-gleich (E20) | **Vorbedingung, kein AK-Schritt** — die Kopplung baut hier nichts |
 | 5 | **G1 + G2 + KU1** — Modell, Darstellung, Kühlkanal | **Vorbedingung von AK1 (Wärmeseite: G1 + G2)**; KU1 steht hier nur, weil es mit G1 + G2 ausgeliefert wird — die **Kälteseite** von AK1 setzt KU1 **und KU2** voraus (7.4, H9, Zeile 6) |
 | 6 | **KU2** — Kältedeckung | Vorbedingung der **Kälteseite** von AK1 (7.4, **H9**) |
-| 7 | **AK1** — Heizkreis als Randbedingung | **hier** — eigener, kleiner Einfrierschritt |
+| 7 | **AK1** — Heizkreis als Randbedingung | **hier**, nach G2 (Q26, E27) — eigener, kleiner Einfrierschritt |
 | 8 | G3, G4, G6 … | — (die Übergabe je Zone kommt mit G6, 6.5) |
-| 9 | **AK2** — Fahrplan und Komfortstunden | nach **AK1 und einer Feldphase** (B-A6); Altweg-Gebäude gehen als feste Last ein (E23) |
-| 10 | **AK3** — geschlossener Kreis | nach AK2 **und einer Feldphase**; ob überhaupt, wird dann entschieden (**H6**, E24) |
+| 9 | **AK2** — Fahrplan und Komfortstunden | nach **abgenommenem AK1 und einer Feldphase** (B-A6; Q26, E27); Altweg-Gebäude gehen als feste Last ein (E23) |
+| 10 | **AK3** — geschlossener Kreis | danach (Q26, E27): nach AK2 **und einer Feldphase**; zugesagt erst nach der Feldphase von AK1 und AK2 (**H6**, E24) |
 
 **Die Regel, die Läufe spart:** `AK-S1` und `AK-S3` gehören in **denselben** Schemamerge wie die
 Gebäude- und Kühlspalten — drei Schemaschritte mit drei Einfriernachweisen für dieselbe Sache wären
 der einzige vermeidbare Posten der Rechnung. **Die Regel, die Fehler spart:** AK1 kommt **nach**
 G2, nie davor; eine Übergaberechnung auf einem Modell, das noch wandert, macht jeden Nachweis
 unlesbar. **Die Regel, die mit E23 und E26 hinzukommt:** AK2 wartet nicht auf die Stufe GA
-(Zeitpunkt offen, Q24), sondern hängt an **AK1 und einer Feldphase** — der Altweg läuft bis zu
+(ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27), sondern hängt an **AK1 und einer Feldphase** — der Altweg läuft bis zu
 seiner Ablösung weiter, und seine Gebäude gehen so lange als feste Last ein (6.2, 12.1).
+
+**Der Stufenplan ist entschieden** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32), Q26, Option (a)
+nach Empfehlung): **AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase; AK3 danach**, nach
+H6 (E24) weiterhin erst nach der Feldphase von AK1 und AK2 zugesagt. Beauftragt wird damit ein
+**Plan**, nicht ein Termin: Jede Stufe wird beauftragbar, sobald ihre Vorbedingung aus 12.1 erfüllt
+ist. Die verworfenen Möglichkeiten — nur AK1, alles in einem Auftrag nach G3, gar nicht — bleiben
+im Gebäudekonzept Kapitel 13 und im Register als Begründung stehen.
 
 ### 12.4 Wiki und Logbuch
 
@@ -2022,13 +2043,17 @@ seiner Ablösung weiter, und seine Gebäude gehen so lange als feste Last ein (6
 Stufe wann beauftragt wird**, ist **Q26** und wird im
 [Gebäudekonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 13 geführt — nicht hier;
 das [Register der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) führt sie
-dort ebenfalls.
+ebenfalls. **Sie ist mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) entschieden** — Option (a) nach
+Empfehlung: AK1 nach G2; AK2 nach abgenommenem AK1 und einer Feldphase; AK3 danach (12.3). Damit
+hat dieses Papier keine offene Frage mehr; **H6** ist mit E27 zur Kenntnis genommen.
 
 ### 13.1 Jetzt zu entscheiden
 
 **Alle zwölf Fragen sind am 16.09.2026 mit E24 sämtlich nach Empfehlung entschieden
 (Konzept N1.29); H1 ist mit E25 um die Wahl des Bandes ergänzt (N1.30).** Die Spalte „Empfehlung"
-führt den Wortlaut unverändert weiter; sie ist jetzt der Entscheid.
+führt den Wortlaut unverändert weiter; sie ist jetzt der Entscheid. **E27 (22.09.2026) nimmt H6
+zur Kenntnis** und setzt es in den Stufenplan Q26 ein: AK3 steht dort nach AK2, zugesagt wird es
+erst nach der Feldphase von AK1 und AK2.
 
 | Nr. | Frage | Empfehlung | Was daran hängt |
 |---|---|---|---|
@@ -2109,7 +2134,7 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
   Nutzungsprofile für Nichtwohngebäude.
 - **Anlagenkopplung auf dem Tagesbilanz-Weg.** Der Altweg ist der eingefrorene Bestandsweg ohne
   neue Funktion, der als Übergang bis zu seiner Ablösung durch die Stufe **GA** weiterläuft
-  (Zeitpunkt offen, Q24); er bekommt keine Kopplung, weder jetzt noch später (E20, E23, E26,
+  (ohne Datum; fällig nach den vier Bedingungen aus Q24, entschieden mit E27); er bekommt keine Kopplung, weder jetzt noch später (E20, E23, E26,
   [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)). Das ist eine **Festlegung**, kein Vorbehalt — ein
   Altweg-Gebäude trägt den Hinweis aus F-A18 und geht als **feste Last** ein (6.2), bis GA den
   Sonderfall mit dem Modul entfernt.
@@ -2144,7 +2169,8 @@ Widerspruch bleibt möglich, solange die zugehörige Stufe nicht beauftragt ist.
   Ladezustand; beide rechnen den Speicher nicht neu.
 - **Die Entscheidung, ob und wann AK1 bis AK3 beauftragt werden** — **Q26**, geführt im
   [Gebäudekonzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 13 und im
-  [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md). Dieses Papier legt vor.
+  [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), mit E27 (22.09.2026) entschieden
+  (12.3). Dieses Papier legt vor; der Stufenplan steht in 12.1 und 12.3.
 
 ---
 

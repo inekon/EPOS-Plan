@@ -2,6 +2,16 @@
 
 **15.09.2026 — Architekturentwurf, zur Abnahme durch Philipp**
 
+> **Nachgezogen 22.09.2026 — Entscheid E27** ([Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): Die offenen Architekturfragen sind
+> entschieden — A1, A2, A3, A6, A10–A15, A17 und A18 nach Empfehlung, A4 = U1, A5 = U3 und
+> A9 = U5 unter ihrer U-Nummer —, dazu Q24 und Q25 für die Stufe GA, D1 (gbXML-Import vor
+> IFC-Import) und D17 (Schemakopie außerhalb des Repositoriums). Nachgezogen in 0, 1.8, 2.2, 2.4,
+> 2.8, 2.9, 3.1, 3.2, 3.4, 4.1, 4.3, 4.5, 4.6 und in den Kapiteln 5, 6 und 7.
+> **Rev. 5 — Restabgleich 22.09.2026:** Der Klimaspalten-Schritt **M4** ist durch den Schemaschritt 95
+> vorweggenommen (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4; [Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)):
+> `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad` statt einer Windspalte, die Einfrierregel
+> „gesäte Klimareihen" mit dem ersten Leser in G1 + G2. Nachgezogen in 0, Bild 1.1, 1.2, 2.1–2.4,
+> 2.8 und Kapitel 5.
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet:** Der Altweg ist der **Übergang**, nicht der
 > Dauerzustand. Diese Fassung holt die Stufe **GA — Altweg ablösen** als letzte Stufe ohne Termin
 > zurück (Kap. 5), nennt im Einfrierplan alle Anlässe samt KU2, AK1–AK3 und GA (2.8), schreibt den
@@ -64,9 +74,9 @@ die Hausregeln der vier
 `CLAUDE.md` ([Wurzel](../../CLAUDE.md), [`EPOS.Kern`](../../EPOS.Kern/CLAUDE.md),
 [`EPOS.UI`](../../EPOS.UI/CLAUDE.md), [`EPOS.iOS`](../../EPOS.iOS/CLAUDE.md)).
 
-Die Anwenderentscheide **E1–E26** (Konzept Nachtrag 1,
+Die Anwenderentscheide **E1–E27** (Konzept Nachtrag 1,
 [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)) sind verbindlich und werden nicht neu
-verhandelt. Die vier jüngsten prägen dieses Papier durchgehend:
+verhandelt. Die fünf jüngsten prägen dieses Papier durchgehend:
 
 - **E20** (16.09.2026, Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md)): Die neue
   Berechnung nach VDI 6007 und die alte Tagesbilanz werden **vollständig getrennt**, die neue löst
@@ -85,9 +95,18 @@ verhandelt. Die vier jüngsten prägen dieses Papier durchgehend:
   Modell nach VDI 6007 löst es **später vollständig ab** und arbeitet eigenständig. E23 heißt damit:
   Der Altweg bleibt **jetzt**, für die Dauer des Übergangs. Die Stufe **GA — Altweg ablösen** ist
   wieder die letzte Stufe des Plans, ohne Termin und in keiner Summe; **Q24** (wann wird GA
-  beauftragt?) und **Q25** (Umfang von GA) sind wieder offen. Fassade und Vorbereitungsschritt
+  beauftragt?) und **Q25** (Umfang von GA) waren damit wieder offen — **E27** hat beide
+  entschieden. Fassade und Vorbereitungsschritt
   bleiben über die Ablösung hinaus; Weiche, `IGebaeudeRechenweg` und Wache leben bis GA. Folgen in
   0, 1.2, 1.3, 1.5, 1.7, 2.2–2.4, 2.8, 2.9, 3.2, 4.1, 4.4, Kapitel 5, Kapitel 6 und Kapitel 7.
+- **E27** (22.09.2026, [Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): Der Anwender entscheidet die offenen Punkte nach Empfehlung —
+  für dieses Papier **alle Architekturfragen** (Kap. 6), dazu **Q24**: GA wird beauftragbar und
+  fällig, sobald die vier Bedingungen des Ablösekriteriums erfüllt sind (Referenz- und
+  Bestandsprojekte auf VDI 6007 gerechnet und die Abweichung erklärt; Feldphase von mindestens
+  einer Heizperiode ohne offenen Fehler; KU1 und, falls beauftragt, AK1 abgenommen; Ausbauprobe
+  grün), geprüft mit jeder Abnahme, Stand in der Statusdatei; und **Q25**: die vollständige
+  Ablösung nach der Löschliste des Umsetzungskonzepts Kap. 6. Folgen in 0, 1.8, 2.2, 2.4, 2.8,
+  2.9, 3.1, 3.2, 3.4, 4.1, 4.3, 4.5, 4.6, Kapitel 5, Kapitel 6 und Kapitel 7.
 
 **E11** (Gebäudebetrachter mit zwei Ansichten auf **einem** Zonengeometrie-Modell, Konzept N1.16)
 wirkt unverändert fort; der Konzepttext überlässt die endgültigen Namen ausdrücklich diesem Papier.
@@ -110,12 +129,16 @@ Seine Architekturfolgen stehen in 1.2, 1.3, 3.2, 3.4, 3.6, 3.8, 4.5, 4.6 und in 
    Ausprägungen) und `Dienste.Datei` (Dateiwahl und Ablage, asynchron, aus der Hülle). Dazu die
    vierte, vorhandene Naht für Fortschritt und Abbruch. Was eine Plattform nicht kann, ist **kein
    Knopf** oder eine **benannte Ablehnung** — ein Knopf, der nichts tut, kommt im Haus nicht vor.
-3. **Das Datenmodell wächst um 15 + 3 Spalten und elf Tabellen** — neun für Baustoffe, Aufbauten,
-   Schichten, Zonen, Bauteile und Luftströme, zwei für die Importherkunft —, bei **einem**
-   Sichtneubau, sobald **A9 = U5** die beiden Gebäudespalten-Schritte verschmilzt; bleiben sie
-   getrennt, sind es zwei. Der Klimaschritt bleibt in beiden Fällen getrennt und berührt die Sicht
-   nicht. Die Ergebnisreihen bleiben draußen: Sie gehen als CSV und Skalare aus dem Lauf,
-   nicht in die Datenbank.
+3. **Das Datenmodell wächst um 15 Gebäudespalten und elf Tabellen** — neun für Baustoffe,
+   Aufbauten, Schichten, Zonen, Bauteile und Luftströme, zwei für die Importherkunft —, bei
+   **einem** Sichtneubau: **A9 = U5** ist mit E27 entschieden, die beiden Gebäudespalten-Schritte
+   sind zu **einem** verschmolzen (M3). **Die Klimaspalten liegen schon:** Der Schemaschritt 95
+   (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4) hat den Klimaspalten-Schritt **M4**
+   vorweggenommen — `Tab_Solar` und `Tab_Solar_STAMM` führen `Gegenstrahlung`, `Luftfeuchte` und
+   `Bedeckungsgrad`, `Tab_Klimaregion(_STAMM)` führt `Quelle` und `Importdatum`, Schritt 97 dazu
+   Szenario und Bezugsjahr; eine Spalte `Windgeschwindigkeit` gibt es nicht
+   ([Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)). Die Sicht berührt das nicht. Die Ergebnisreihen
+   bleiben draußen: Sie gehen als CSV und Skalare aus dem Lauf, nicht in die Datenbank.
 4. **Ein Schreibweg je Dialog, vier Überlagerungsebenen statt zweiter Fenster.** Arbeitsstand im
    Speicher, vorläufige Zeilen mit negativer Id, geschrieben wird im OK-Weg in der Reihenfolge
    Entfernen → Ändern → Anlegen; die Prüfregeln stehen einmal, im Rückruf der `SpeichernLeiste`.
@@ -128,17 +151,19 @@ Seine Architekturfolgen stehen in 1.2, 1.3, 3.2, 3.4, 3.6, 3.8, 4.5, 4.6 und in 
    zwei getrennte Module** — `Gebaeude/` für den VDI-Weg, `Altweg/` für die Tagesbilanz —, davor
    ein **modellfreier Vorbereitungsschritt**; keines der beiden Module ruft das andere (E20). Der
    Altweg ist **eingefrorener Bestandsweg**: Er trägt den Übergang und wird mit der Stufe **GA**
-   abgelöst (Zeitpunkt offen, Q24 — E23, E26). **Neben der Wärmefassade
+   abgelöst, sobald das Ablösekriterium Q24 erfüllt ist (E23, E26, E27). **Neben der Wärmefassade
    steht die Fassade `SimulationKaeltebedarf`** (E21): Beide lesen denselben Vorbereitungsschritt
    und werden vom VDI-Modul bedient, das Heiz- und Kühllast je Stunde in **einem** Lauf liefert —
    die Fassaden verteilen, sie rechnen nicht doppelt. Auf der Kälteseite gibt es **keinen Altweg**.
 6. **Die Referenzbasis wird an benannten Anlässen neu eingefroren** — GB, G1 + G2 und G6d in der
-   laufenden Kette, dazu KU2, AK1–AK3 und, als letzter, **GA** (2.8) —, und **fünfzehn
-   der neunzehn Architekturfragen A1–A19** liegen beim Anwender; **A7** (ADR-004) und **A8**
+   laufenden Kette, dazu KU2, AK1–AK3 und, als letzter, **GA** (2.8) —, und **alle neunzehn
+   Architekturfragen A1–A19 sind entschieden oder überholt**: **A7** (ADR-004) und **A8**
    (ADR-005) sind angenommen (E16, E17) — der gbXML-Import hat seinen Leseweg, das Mehrzonenmodell
-   seine Kopplung —, **A16** ist durch **E20** entschieden und **A19 (= U2)** durch **E20**
-   überholt. **E26** stellt den Altweg als Übergang fest: Die Stufe **GA — Altweg ablösen** ist die
-   letzte Stufe des Plans; **Q24** (Zeitpunkt) und **Q25** (Umfang) sind wieder offen.
+   seine Kopplung —, **A16** ist durch **E20** entschieden, **A19 (= U2)** durch **E20**
+   überholt, alle übrigen mit **E27** (22.09.2026) nach Empfehlung. **E26** stellt den Altweg als
+   Übergang fest: Die Stufe **GA — Altweg ablösen** ist die letzte Stufe des Plans; mit **E27** wird
+   sie fällig, sobald das Ablösekriterium **Q24** erfüllt ist, und ihr Umfang ist die vollständige
+   Ablösung (**Q25**).
 
 ---
 
@@ -184,10 +209,10 @@ flowchart TB
     KCTRL["EPOS.Kern/Controller/<br/>BaustoffCtrl · BauteilaufbauCtrl<br/>GebaeudeZonenCtrl · GebaeudeImportCtrl"]
     KPHY["EPOS.Kern/Allgemein/Simulation/Gebaeude/<br/>14 Bausteine: Physik und Zonengeometrie"]
     KIO["EPOS.Kern/Allgemein/Import + /Export/<br/>Gebaeude · Ifc · Gbxml"]
-    KSCH["EPOS.Kern/Allgemein/Update/<br/>6 Schema-Klassen"]
+    KSCH["EPOS.Kern/Allgemein/Update/<br/>5 Schema-Klassen<br/>Klimaspalten in SchemaKatalog, Schritt 95"]
   end
   REF["EPOS.Referenzlauf · Referenzlauf<br/>3 bedingte Reihen je Gebaeude"]
-  DB[("Kenndaten.sqlite<br/>15+3 Spalten · 11 Tabellen · 1 Sicht")]
+  DB[("Kenndaten.sqlite<br/>15 Spalten · 11 Tabellen · 1 Sicht<br/>Klimaspalten seit Schritt 95")]
 
   WIN --> UID
   IOS --> UID
@@ -214,8 +239,8 @@ einzigen flachen Namensraum; ein Unternamensraum wäre die erste Ausnahme und br
 |---|---|---|
 | `EPOS.Kern/Allgemein/Simulation/` | **die zwei Fassaden** `SimulationWaermebedarf.cs` (Weiche am Eingang, E20) und `SimulationKaeltebedarf.cs` (Kälteseite, E21) sowie `GebaeudeVorbereitung.cs` — der modellfreie Vorbereitungsschritt **vor** der Weiche, den beide Fassaden lesen, dazu `IGebaeudeRechenweg.cs` (die Naht der Weiche, 1.5) und `Anlagenfahrplan.cs` samt der Naht `Anlagenverfuegbarkeit` (AK2) — er liegt **außerhalb** beider Module und wird von der Fassade gerufen | G1 · KU1 · AK2 |
 | `EPOS.Kern/Allgemein/Simulation/Gebaeude/` | `Zonenmodell2K.cs` (mit `Stundenrand` und `Stundenergebnis`), `ErsatzparameterRC.cs`, `Bauteilreduktion.cs`, `GebaeudeKlimaweg.cs`, `GebaeudeModellEingang.cs`, `GebaeudeModellErgebnis.cs`, `Gebaeudepruefung.cs`, `Zonenkopplung.cs`, `ZonenEingang.cs`, `ZonenErgebnis.cs`, **`Zonengeometrie.cs`** (mit `Zonenumriss`, E11), **`Waermeuebergabe.cs`** (die Übergabegleichung der Anlagenkopplung) | G0 · G1 · G3 · G6 · G6c · AK1 |
-| `EPOS.Kern/Allgemein/Simulation/Altweg/` | `TagesbilanzWaermebedarf.cs` — der Tagesbilanz-Weg, **Zeichen für Zeichen** aus `SimulationWaermebedarf` hierher verschoben (E20). Er bekommt keine neue Funktion mehr, kennt **keine** Kälteseite und **bleibt als eingefrorener Bestandsweg, bis die Stufe GA ihn ablöst** (E23, E26; Zeitpunkt offen) | G1 (Verschiebung) · GA (Rückbau) |
-| `EPOS.Kern/Allgemein/Update/` | `GebaeudeSchema.cs`, `SolarKlimaSchema.cs`, `BaustoffSchema.cs`, `BauteilaufbauSchema.cs`, `ZonenSchema.cs`, `ImportzuordnungSchema.cs` | G1 · G3 · G6 · G4 |
+| `EPOS.Kern/Allgemein/Simulation/Altweg/` | `TagesbilanzWaermebedarf.cs` — der Tagesbilanz-Weg, **Zeichen für Zeichen** aus `SimulationWaermebedarf` hierher verschoben (E20). Er bekommt keine neue Funktion mehr, kennt **keine** Kälteseite und **bleibt als eingefrorener Bestandsweg, bis die Stufe GA ihn ablöst** (E23, E26; GA fällig nach Q24, E27) | G1 (Verschiebung) · GA (Rückbau) |
+| `EPOS.Kern/Allgemein/Update/` | `GebaeudeSchema.cs`, `BaustoffSchema.cs`, `BauteilaufbauSchema.cs`, `ZonenSchema.cs`, `ImportzuordnungSchema.cs`; die Klimaspalten (M4) stehen ohne eigene Klasse in `SchemaKatalog.Schritt95_Klimaspalten` (Schemaschritt 95, umgesetzt) | G1 · G3 · G6 · G4 |
 | `EPOS.Kern/Allgemein/Import/Gebaeude/` | `IGebaeudeLeser.cs`, `GebaeudeImportAblauf.cs`, `GebaeudeImportProfil.cs`, `GebaeudeImportSatz.cs`, `GebaeudeAbbild.cs`, `GebaeudeZuordnungsModell.cs`, `GebaeudeFeldzeile.cs` | G4 |
 | `EPOS.Kern/Allgemein/Import/Ifc/` | `IfcLeser.cs`, `IfcGebaeudeAbbild.cs`, `IfcBauteilAbbild.cs`, `IfcSchichtAbbild.cs`, `IfcRaumAbbild.cs`, `IfcSchemaStand.cs`, `IfcSektor.cs`, `IfcImportProfil.cs` | G4a |
 | `EPOS.Kern/Allgemein/Import/Gbxml/` | `GbxmlLeser.cs`, `GbxmlAbbild.cs`, `GbxmlImportProfil.cs` | G4c |
@@ -663,7 +688,7 @@ fünf Stellen ohne Halt:
 
 | Neu | Was er prüft | Warum |
 |---|---|---|
-| **`Modultrennungswache`** (Test `EPOS.Kern.Tests/ModultrennungswacheTests.cs`) | **Vier Sätze.** (1) Keine Datei unter `EPOS.Kern/Allgemein/Simulation/Gebaeude/` nennt einen Bezeichner aus `Altweg/` **oder eine Altweg-Datenquelle** — `Sol_N`/`Sol_O`/`Sol_S`/`Sol_W`, `A_Temp`, `TagTyp_W`/`TagTyp_NW`, `Tab_DBTagV`, `Abfrage_Tagverteilung`, `Fensterflaeche_Ost_West`, `Typ` als Verteilungsschlüssel, `Klimakalender.Altweg`. (2) Keine Datei unter `Altweg/` nennt einen Bezeichner aus `Gebaeude/`. (3) Die **Kältefassade** `SimulationKaeltebedarf` nennt `Altweg/` nicht (E21), und der `Anlagenfahrplan` nennt keinen der beiden Ordner (AK2). (4) **Ausbauprobe, statischer Teil:** Außer der Weiche in `SimulationWaermebedarf`, dem Rückweg-Test und der Wache selbst nennt **keine** Datei des Kerns `Altweg/`. Die Namensliste beider Ordner ist die Quelle, die Gegenprobe hält Liste gegen Dateien. **Muster ist `EinheitenWacheTests`** mit seiner festen Namensliste (`:201-206`) und ihrer Gegenprobe (`:362`); die Bauform ist die eines reinen Textwächters wie `ParallelitaetWacheTests` — er braucht keinen Lauf. Die Wache entsteht mit der Verschiebung in G1 und lebt **bis zur Stufe GA** (Zeitpunkt offen, E26) | E20 trennt die Rechenwege; ohne Halt wandert beim ersten gemeinsam gebrauchten Hilfsstück wieder ein Aufruf über die Grenze, und der byte-gleiche Nachweis des Altwegs wäre nicht mehr zu führen. Satz (4) ist zugleich die Vorstufe des **Gates von GA** — der vollständigen Ausbauprobe (Kap. 4) |
+| **`Modultrennungswache`** (Test `EPOS.Kern.Tests/ModultrennungswacheTests.cs`) | **Vier Sätze.** (1) Keine Datei unter `EPOS.Kern/Allgemein/Simulation/Gebaeude/` nennt einen Bezeichner aus `Altweg/` **oder eine Altweg-Datenquelle** — `Sol_N`/`Sol_O`/`Sol_S`/`Sol_W`, `A_Temp`, `TagTyp_W`/`TagTyp_NW`, `Tab_DBTagV`, `Abfrage_Tagverteilung`, `Fensterflaeche_Ost_West`, `Typ` als Verteilungsschlüssel, `Klimakalender.Altweg`. (2) Keine Datei unter `Altweg/` nennt einen Bezeichner aus `Gebaeude/`. (3) Die **Kältefassade** `SimulationKaeltebedarf` nennt `Altweg/` nicht (E21), und der `Anlagenfahrplan` nennt keinen der beiden Ordner (AK2). (4) **Ausbauprobe, statischer Teil:** Außer der Weiche in `SimulationWaermebedarf`, dem Rückweg-Test und der Wache selbst nennt **keine** Datei des Kerns `Altweg/`. Die Namensliste beider Ordner ist die Quelle, die Gegenprobe hält Liste gegen Dateien. **Muster ist `EinheitenWacheTests`** mit seiner festen Namensliste (`:201-206`) und ihrer Gegenprobe (`:362`); die Bauform ist die eines reinen Textwächters wie `ParallelitaetWacheTests` — er braucht keinen Lauf. Die Wache entsteht mit der Verschiebung in G1 und lebt **bis zur Stufe GA** (fällig nach Q24; E26, E27) | E20 trennt die Rechenwege; ohne Halt wandert beim ersten gemeinsam gebrauchten Hilfsstück wieder ein Aufruf über die Grenze, und der byte-gleiche Nachweis des Altwegs wäre nicht mehr zu führen. Satz (4) ist zugleich die Vorstufe des **Gates von GA** — der vollständigen Ausbauprobe (Kap. 4) |
 | **`SichtQuelleWache`** | Im ganzen Baum steht **kein zweites** `CREATE VIEW` für `Abfrage_Projektgebaeude`; ab M3 ist `GebaeudeSchema.SQL_VIEW_NEU` die einzige Quelle, `sql/schema/002_views.sql` bleibt der eingefrorene Stand 61 | SQLite kennt kein `ALTER VIEW`; zwei Quellen laufen beim ersten Nachtrag auseinander, und der Fehler fiele erst im Leser auf (W17) |
 | **Determinismusprobe** | Dasselbe Gebäude zweimal hintereinander gerechnet liefert **byte-gleiche** Reihen; ein Projekt mit zwei Gebäuden liefert dasselbe Ergebnis in umgekehrter Zeilenreihenfolge. **Ab G6c dazu die Geometrie:** dieselbe Eingabe ergibt dieselben Polygone in derselben Reihenfolge — und damit einen byte-gleichen Export (E11) | Die Gegenprobe zur statischen Falle des Bestands und zur Pflicht von `Zuruecksetzen`; für die Geometrie die Bedingung dafür, dass Ansicht und Export dasselbe Gebäude zeigen |
 | **`KiDialogkatalog`** (vorhandener Wächter, neue Einträge) | Jede neue Maske steht im Dialogkatalog des Assistenten; die Zahl ist namentlich geprüft (heute `Assert.Equal(7, katalog.Anzahl)`, `EPOS.UI.Tests/Dialoge/Hilfe/KiDialogkatalogTests.cs:112`) — mit den fünf neuen Masken bis G6 sind es **zwölf**, mit der Exportmaske in G7 **dreizehn** | Eine neue Maske ohne Eintrag macht den Wächter rot — und lässt die Maske ohne Assistenten (3.8) |
@@ -699,9 +724,9 @@ Fremddateien dauerhaft in der Geschichte.
 
 | Sorte | Ort | Regel |
 |---|---|---|
-| **Normprüfdaten** (die zwölf Testbeispiele) | `Referenzlaeufe/Normzahlen/`, **gitignoriert**, mit versionierter `LIESMICH.md` **ohne eine einzige Zahl** und einer Vorrichtung `Normzahlen` mit Kennzeichen `Vorhanden`. Die Prüfklasse, die sie benutzt, heißt **`EPOS.Kern.Tests/GebaeudeModellNormfallTests`**: Sie prüft mit dem Band nach E10 und weist die Reserve aus; ohne die Datei schweigt jeder Fall (Muster `TestDatenbank.cs`) | Sie werden **nicht ausgeliefert** und nicht versioniert; ohne Datei **schweigt** jeder Fall. Folge: Der Normfallnachweis ist ein **lokaler** Nachweis, kein CI-Nachweis — die Lücke im Gate gehört ins Protokoll (U8) |
-| **Importproben** (`.ifc`, `.ifcxml`, `.ifczip`, `.xml`) | im **vorhandenen** Ordner `Referenzlaeufe/Importproben/`, neben den Proben der übrigen Importwege (CEC-Listen, `.pan`/`.ond`, VDI-3805-Kessel, Ganglinie), versioniert, gewöhnliche Blobs. **Namensregel:** Vorsatz `ifc_` bzw. `gbxml_`, damit die neuen Dateien von den vorhandenen zu unterscheiden sind | Kleinstdateien je Fehlerbild werden **selbst geschrieben**; die gbXML-Prüfdateien erzeugt der eigene Exporteur im Rundlauf (D3). Eine große Fremddatei kommt nur mit einer `.gitattributes`-Zeile für LFS **im selben Schritt** hinein, dazu ein Vermerk im Abschnitt „Git LFS" von [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) (M10) |
-| **Schemakopien** (gbXML-XSD) | lokale Kopie im Test, **nie aus dem Netz**, nicht im Installationspaket | Ablage im Repositorium ist offen (D3): Kopie unter `EPOS.Kern.Tests/` mit ausgeschriebener Begründung **oder** gitignoriert mit Einrichtungshinweis und benannt übersprungenem Validierungstest |
+| **Normprüfdaten** (die zwölf Testbeispiele) | `Referenzlaeufe/Normzahlen/`, **gitignoriert**, mit versionierter `LIESMICH.md` **ohne eine einzige Zahl** und einer Vorrichtung `Normzahlen` mit Kennzeichen `Vorhanden`. Die Prüfklasse, die sie benutzt, heißt **`EPOS.Kern.Tests/GebaeudeModellNormfallTests`**: Sie prüft mit dem Band nach E10 und weist die Reserve aus; ohne die Datei schweigt jeder Fall (Muster `TestDatenbank.cs`) | Sie werden **nicht ausgeliefert** und nicht versioniert; ohne Datei **schweigt** jeder Fall. Folge: Der Normfallnachweis ist ein **lokaler** Nachweis, kein CI-Nachweis — die Lücke im Gate gehört ins Protokoll (U8, mit E27 entschieden) |
+| **Importproben** (`.ifc`, `.ifcxml`, `.ifczip`, `.xml`) | im **vorhandenen** Ordner `Referenzlaeufe/Importproben/`, neben den Proben der übrigen Importwege (CEC-Listen, `.pan`/`.ond`, VDI-3805-Kessel, Ganglinie), versioniert, gewöhnliche Blobs. **Namensregel:** Vorsatz `ifc_` bzw. `gbxml_`, damit die neuen Dateien von den vorhandenen zu unterscheiden sind | Kleinstdateien je Fehlerbild werden **selbst geschrieben**; die gbXML-Prüfdateien erzeugt der eigene Exporteur im Rundlauf (D3). Eine große Fremddatei kommt nur mit einer `.gitattributes`-Zeile für LFS **im selben Schritt** hinein, dazu ein Vermerk im Abschnitt „Git LFS" von [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) (M10, mit E27 entschieden) |
+| **Schemakopien** (gbXML-XSD) | lokale Kopie im Test, **nie aus dem Netz**, nicht im Installationspaket | **Außerhalb des Repositoriums** — mit E27 entschieden (D17, zu D3): gitignoriert, mit Einrichtungshinweis und einer LIESMICH-Zeile mit Herkunft, Abrufdatum und Lizenzstand „keine"; fehlt die Datei, wird der Validierungstest **benannt übersprungen** (Muster U8). Die verworfene Alternative war eine Kopie unter `EPOS.Kern.Tests/` mit ausgeschriebener Begründung |
 
 **`RepositoryOrdnungWacheTests` greift auf allen drei Wegen** — kein `.work/`, keine
 Datenbankkopie, keine `*.bak`. Und **keine Hersteller- und Produktdaten** in einer Probendatei,
@@ -720,9 +745,9 @@ Der Bestand steuert bei: `Tab_Gebaeude` (55 Spalten) mit dem Katalogzwilling `Ta
 Kindtabelle des Gebäudes und die `Tab_Ergebnis*`-Familie mit **ausnahmslos** Skalaren je Lauf
 (Befund V 2).
 
-Hinzu kommen **15 Spalten** an `Tab_Gebaeude(_STAMM)`, **drei** an `Tab_Solar(_STAMM)` und **elf
-Tabellen**: neun für Baustoffe, Aufbauten, Schichten, Zonen, Bauteile und Luftströme, zwei für die
-Importherkunft.
+Hinzu kommen **15 Spalten** an `Tab_Gebaeude(_STAMM)` und **elf Tabellen**: neun für Baustoffe,
+Aufbauten, Schichten, Zonen, Bauteile und Luftströme, zwei für die Importherkunft. Die Klimaspalten
+an `Tab_Solar(_STAMM)` und `Tab_Klimaregion(_STAMM)` sind bereits angelegt (Schemaschritt 95, 2.2).
 
 ```mermaid
 erDiagram
@@ -731,7 +756,7 @@ erDiagram
     Tab_Gebaeude_STAMM ||..o{ Tab_Gebaeude : "CopyFromStamm, NULL-erhaltend ab G1"
     Tab_Gebaeude ||--|| VIEW_Abfrage_Projektgebaeude : "mit M3 neu gebaut, 73 Spalten"
     Tab_Gebaeude ||--o{ Tab_DBTagV : "Bestand, Eingang des Altwegs, bleibt bis GA"
-    Tab_Klimaregion ||--o{ Tab_Solar : "Bestand, plus 3 Klimaspalten"
+    Tab_Klimaregion ||--o{ Tab_Solar : "Bestand, Klimaspalten seit Schritt 95"
     Tab_Gebaeude ||--o{ Tab_Zone : "G3, ID_Gebaeude, CASCADE"
     Tab_Zone ||--o{ Tab_Bauteil : "G3, ID_Zone, CASCADE"
     Tab_Bauteil }o--o| Tab_Bauteilaufbau : "G3, ID_Aufbau, OHNE Kaskade"
@@ -801,7 +826,9 @@ erDiagram
     }
 ```
 
-> **Unverändert:** `Tab_Projekt`, `Z_ProjektGebaeude`, `Tab_Klimaregion`, `Tab_Klimadaten`,
+> **Unverändert durch dieses Vorhaben:** `Tab_Projekt`, `Z_ProjektGebaeude`, `Tab_Klimaregion` (seine
+> Spalten `Quelle`, `Importdatum`, `Szenario` und `Bezugsjahr` kamen mit den Schritten 95 und 97),
+> `Tab_Klimadaten`,
 > `Tab_DBTagV(-Daten)` und die 17 `Tab_Ergebnis*`-Tabellen. **Keine `Tab_Zonenkopplung`:** Die
 > Trennfläche ist **ein** Bauteil mit `Randbedingung = 'ZONE'` und `ID_Nachbarzone`; eine zweite
 > Tabelle wäre eine zweite Wahrheit über dieselbe Fläche.
@@ -823,7 +850,7 @@ handgeschriebenes `CHECK`. **Kein DDL-DEFAULT auf einem Fachwert** (R5).
 
 | Spalte | Typangabe | SQLite | NULL bedeutet | Stufe |
 |---|---|---|---|---|
-| `Gebaeude_Modell` | `TEXT(20)` | TEXT | **`VDI6007`** (E1, W12) | G1 · **bleibt bis GA** (E23, E26; Zeitpunkt offen) |
+| `Gebaeude_Modell` | `TEXT(20)` | TEXT | **`VDI6007`** (E1, W12) | G1 · **bleibt bis GA** (E23, E26; GA fällig nach Q24, E27) |
 | `Fensterflaeche_Ost` | `DOUBLE` | REAL | die Hälfte der **Bestandsspalte** `Fensterflaeche_Ost_West` (Modellfeld ab M2: `Fensterflaeche_OstWest`) | G1 |
 | `Fensterflaeche_West` | `DOUBLE` | REAL | die Hälfte der **Bestandsspalte** `Fensterflaeche_Ost_West` | G1 |
 | `Rahmenanteil` | `DOUBLE` | REAL | Vorgabe | G1 |
@@ -842,7 +869,7 @@ handgeschriebenes `CHECK`. **Kein DDL-DEFAULT auf einem Fachwert** (R5).
 **Zwei Bestandsspalten bleiben, und ihr Verhältnis zu den neuen ist zu benennen.**
 `Fensterflaeche_Ost_West` (`sql/schema/001_grundschema.sql:1144`, `:1201`) wird **nicht** umbenannt
 und **nicht** gelöscht — umbenannt wird allein das Modellfeld (M2, unten). Sie bleibt der Wert des
-Altwegs und **bleibt mit ihm bis zur Stufe GA** (E23, E26; Zeitpunkt offen); die zwei neuen Spalten
+Altwegs und **bleibt mit ihm bis zur Stufe GA** (E23, E26; GA fällig nach Q24, E27); die zwei neuen Spalten
 sind die Auflösung nach Himmelsrichtungen, und ihr NULL verweist auf sie zurück. Die NULL-Vorgabe
 bildet der **Vorbereitungsschritt** (1.3); **GA füllt beide Spalten einmalig aus ihr, bevor sie die
 Bestandsspalte entfernt**. `Luftwechselrate` (`:1170`, `:1227`) bleibt ebenso: Sie ist der Wert, mit
@@ -860,12 +887,27 @@ Bestandsspalte.
 **Wer die neue Spalte anlegt, bevor das Feld umbenannt ist, verliert die Ost-/Westfenster des
 Tagesmodells ohne Meldung.** Reihenfolge: Umbenennung vor Schema, Schema vor Modell.
 
-**Die drei neuen Spalten an `Tab_Solar` und `Tab_Solar_STAMM`** (`SolarKlimaSchema`, eigener
-Schritt): `Gegenstrahlung`, `Windgeschwindigkeit`, `Luftfeuchte`, je `REAL`. Die Werte liegen in der
-PVGIS-Antwort vor und werden heute verworfen. **Bestandsregionen bleiben NULL, bis der Anwender neu
-importiert** — diese Zusage gehört in den Schrittbericht; der Schätzweg für die Gegenstrahlung steht
-im Umsetzungskonzept 1.7 und läuft im `GebaeudeKlimaweg` mit einer Warnung über
-`SimulationProtokoll`.
+**Die Klimaspalten sind umgesetzt** — der Klimaspalten-Schritt **M4** ist durch den Schemaschritt 95
+vorweggenommen (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4; Quellen und Zuordnung im
+[Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)). Er hat **keine eigene
+Schema-Klasse**; die eine Liste für Migration, Testdatenbankschema und Nachweis ist
+`SchemaKatalog.Schritt95_Klimaspalten`.
+
+| Tabelle | Spalte | Typ | Quelle | NULL bedeutet |
+|---|---|---|---|---|
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Gegenstrahlung` | REAL (W/m²) | PVGIS `IR(h)`, TRY `A` | nicht verfügbar; im Stundenweg gilt Δθ_lw = 0 und α_str,A = 5,0 W/(m²K) (Rechenschritte 1.2) |
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Luftfeuchte` | REAL (%) | PVGIS `RH`, TRY `RF` | nicht verfügbar; in G1/G2 nicht rechenwirksam |
+| `Tab_Solar`, `Tab_Solar_STAMM` | `Bedeckungsgrad` | REAL (Achtel, 0…8) | TRY `N`; PVGIS führt ihn nicht | nicht verfügbar; kein Rechenweg der Gebäudesimulation liest ihn |
+| `Tab_Klimaregion`, `Tab_Klimaregion_STAMM` | `Quelle`, `Importdatum` | TEXT | Importweg | Altbestand, nie nachdatiert |
+
+Schritt 97 ergänzt `Tab_Klimaregion(_STAMM)` um `Szenario` und `Bezugsjahr`. **Eine Spalte
+`Windgeschwindigkeit` gibt es nicht** (F-S3): Sie hätte keinen Leser, weil der äußere Wärmeübergang
+beim festen Vorgabewert bleibt; kommt ein windabhängiger Übergang, ist sie ein eigener
+Schemaschritt mit eigener Stufe. Beide Schritte sind reines DDL: **Bestandsregionen bleiben NULL,
+bis der Anwender neu importiert**, und der Referenzlauf blieb byte-gleich. **Fehlt die
+Gegenstrahlung, wird nicht geschätzt:** `GebaeudeKlimaweg` setzt Δθ_lw = 0 und α_str,A = 5,0 W/(m²K)
+und meldet das einmal je Region und Lauf über `SimulationProtokoll`; eine Schätzung aus dem
+Bedeckungsgrad wäre möglich, wird aber nicht gerechnet.
 
 **`Tab_Baustoff_STAMM` / `Tab_Baustoff`** (`BaustoffSchema`, spaltengleich nach R9):
 
@@ -1002,12 +1044,12 @@ Empfehlung mehr.
 | **W10** | Die Herkunftskennung heißt **`Quellkennung`**, `CHECK (length ≤ 64)`; es gibt **keine** Spalte `IfcGuid` | Eine gbXML-`id` in einer Spalte namens `IfcGuid` wäre eine Unwahrheit, und 22 Zeichen reichen für eine `xsd:ID` nicht. Die Spalten existieren noch nicht, die Festlegung kostet nichts |
 | **W11** | `Tab_Bauteilschicht.ID_Baustoff` → `Tab_Baustoff`, `Tab_Bauteilschicht_STAMM.ID_Baustoff` → `Tab_Baustoff_STAMM`; gleicher Name, der Kopierweg setzt über die Id-Abbildung um | Zeigte die Stammseite auf Projektdaten, trüge die Auslieferungsdatenbank Verweise auf gelöschte Projektzeilen und die Auslieferungsvorlage bräche |
 | **W12** | `Gebaeude_Modell = NULL` bedeutet **`VDI6007`** (E1); die XML-Doku der Spaltenkonstante in `GebaeudeSchema` **und** der `DbWerte`-Konstanten trägt diesen Satz, Konzept 6.1 wird fortgeschrieben | E1 kehrt die Fassung von Konzept 6.1 um; stünde die alte Bedeutung irgendwo weiter, rechneten Bestandsgebäude das falsche Modell, ohne dass es auffiele |
-| **W13** | Die zwei Gebäudespalten-Schritte des Konzepts werden **zu einem verschmolzen** (Papiername **M3**): 15 Spalten je Tabelle, 30 Einträge, die Umbenennung `Wohnflaeche` → `Nutzflaeche` in beiden Tabellen (E19), **ein** Sichtneubau; die drei Klimaspalten bleiben ein eigener Schritt (**M4**). **Spalten, die allein der Altweg liest, fasst M3 nicht an** — sie bleiben unverändert stehen, **bis die Stufe GA sie entfernt** (E23, E26; Zeitpunkt offen); es entsteht **kein zweites Datenmodell** (E20). Welche Spalten das sind, weist [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) je Feld aus (Klasse „nur Altweg", „beide", „nur VDI"). Vorbehalt: A9 = U5. Feste Schrittnummern trägt dieses Papier nicht; die Nummer vergibt der Schritt bei seiner Beauftragung (2.4, A11) | G1 und G2 werden nach E1 gemeinsam ausgeliefert; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Ein zweiter Spaltensatz für den Altweg hieße zwei Wahrheiten über dasselbe Gebäude und einen Kopierweg zwischen ihnen |
+| **W13** | Die zwei Gebäudespalten-Schritte des Konzepts werden **zu einem verschmolzen** (Papiername **M3**): 15 Spalten je Tabelle, 30 Einträge, die Umbenennung `Wohnflaeche` → `Nutzflaeche` in beiden Tabellen (E19), **ein** Sichtneubau; die Klimaspalten sind ein eigener Schritt (**M4**), durch den Schemaschritt 95 vorweggenommen (2.2). **Spalten, die allein der Altweg liest, fasst M3 nicht an** — sie bleiben unverändert stehen, **bis die Stufe GA sie entfernt** (E23, E26; GA fällig nach Q24, E27); es entsteht **kein zweites Datenmodell** (E20). Welche Spalten das sind, weist [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) je Feld aus (Klasse „nur Altweg", „beide", „nur VDI"). Vorbehalt: A9 = U5. Feste Schrittnummern trägt dieses Papier nicht; die Nummer vergibt der Schritt bei seiner Beauftragung (2.4, A11) | G1 und G2 werden nach E1 gemeinsam ausgeliefert; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Ein zweiter Spaltensatz für den Altweg hieße zwei Wahrheiten über dasselbe Gebäude und einen Kopierweg zwischen ihnen |
 | **W14** | `GebaeudeStammCtrl.CopyFromStamm` **und `Insert` und `Overwrite`** werden auf die Spaltenlisten-Bauweise (`GebaeudeSchema.Fachspalten`) mit NULL-erhaltender Bindung umgebaut; der Umbau ist **Sperrpunkt von G1** und läuft als eigener Merge gegen die Basis byte-gleich | Der heutige Weg bildet jedes `DBNull` auf 0,0 bzw. Leertext ab; bei `Rahmenanteil`, `Verschattungsfaktor`, `Masseanteil_Aussen`, `Innenflaechenfaktor` und `Heizung_Strahlungsanteil` ist 0 kein Vorgabewert, sondern ein anderes Gebäude. **Dieselbe Handliste steckt in `Insert` und `Overwrite`** (Befund Q-1) — nur `CopyFromStamm` umzubauen ließe „NULL = Vorgabe" auf dem Anlege- und Überschreibweg gebrochen |
 | **W15** | Die Kaskade `Tab_Zone` → `Tab_Gebaeude` **bleibt**; vor G3 wird der Gebäude-Schreibweg **gemessen**, und wenn er löscht und neu anlegt, entsteht die Rettung dort, wo das Löschen steht: `GebaeudekinderSichern`/`GebaeudekinderWiederherstellen` in `WizardCtrl` (Muster `StraengeSichern`). Bleibt offen als **A1** | Ohne Kaskade bleiben Waisen; mit Kaskade räumt ein gewöhnlicher Speichervorgang über den Wizard-Weg die Zonen ab. Die Probe prüft **beides**: nach dem Löschen des Gebäudes sind die Kindtabellen leer, nach einem gewöhnlichen Speichern stehen sie unverändert |
 | **W16** | `Tab_Gebaeude.ID_Projekt` bleibt **ohne** Fremdschlüssel; die Doppelbindung wird in `GebaeudeSchema` ausdrücklich benannt. **Kein Kind des Gebäudes bekommt ein eigenes `ID_Projekt`** — es hängt über seinen **unmittelbaren** Elternteil am Projekt: das Bauteil an der Zone, der Luftstrom an seinen beiden Zonen, die Schicht am Aufbau, die Zuordnung an der Importquelle. Die **Projektkataloge** `Tab_Baustoff` und `Tab_Bauteilaufbau` tragen `ID_Projekt` wie ihre Vorbilder im Bestand | Ein nachgerüsteter Fremdschlüssel änderte den Löschweg eines Projekts und wäre eine Verhaltensänderung; ein zweites `ID_Projekt` am Kind wäre eine zweite Wahrheit. Zugleich ist das die Bedingung, unter der `ProjektDuplizierenCtrl.ErmittlePlan()` eine Tabelle überhaupt aufnimmt — wer kein `ID_Projekt` trägt, reist nur über seinen `KINDER`-Eintrag (2.6) |
 | **W17** | Ab dem Sichtneubau in **M3** ist **`GebaeudeSchema.SQL_VIEW_NEU` die einzige Quelle** der Sichtdefinition; `sql/schema/002_views.sql` bleibt der eingefrorene Stand 61 und wird **nicht** nachgezogen. Der Wächter `SichtQuelleWache` hält das (1.7) | SQLite kennt kein `ALTER VIEW`; jeder weitere Gebäudespalten-Schritt ist wieder ein Sichtneubau. Zwei Quellen derselben Sicht laufen beim ersten Nachtrag auseinander, und der Fehler fiele erst im Leser nach Spaltenindex auf |
-| **W18** | Drei neue Einfrierregeln, **benannt nach ihrem Gegenstand statt nach einer Ordnungszahl**: „gesäte Gebäudedaten" wird im Schritt **GB** eingetragen, „gesäte Klimareihen" (`Tab_Solar.Gegenstrahlung`, `Windgeschwindigkeit`, `Luftfeuchte`) im Schritt **M4**, „gesäte Zonendaten" im Schritt **G6d** — jeweils an **beiden** Orten: [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) und Abschnitt „Regressionsnetz" der [Wurzel-`CLAUDE.md`](../../CLAUDE.md) | Eine Regel, die später nachgetragen wird, schützt die Saat nicht, die sie schützen soll. Die Klimaregel ist neu gegenüber Befund V: M4 ist byte-gleich **nur, solange kein Leser die Klimaspalten liest**; ab G1 liest sie `GebaeudeKlimaweg`, und ein späterer PVGIS-Neuimport einer Referenzregion verschöbe die Basis sonst still. **Ordinalzahlen stehen bewusst nicht dabei:** M4 läuft lange vor G6d, und wer beide Regeln durchzählte, trüge in `Referenzlaeufe/LIESMICH.md` eine Nummernlücke ein |
+| **W18** | Drei neue Einfrierregeln, **benannt nach ihrem Gegenstand statt nach einer Ordnungszahl**: „gesäte Gebäudedaten" wird im Schritt **GB** eingetragen, „gesäte Klimareihen" (`Tab_Solar.Gegenstrahlung`, `Luftfeuchte`, `Bedeckungsgrad`) im Schritt **G1 + G2**, „gesäte Zonendaten" im Schritt **G6d** — jeweils an **beiden** Orten: [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) und Abschnitt „Regressionsnetz" der [Wurzel-`CLAUDE.md`](../../CLAUDE.md) | Eine Regel, die später nachgetragen wird, schützt die Saat nicht, die sie schützen soll. Die Klimaregel ist neu gegenüber Befund V: Der Schemaschritt 95 (M4) war byte-gleich, weil kein Leser die Klimaspalten liest und die Referenzregionen NULL tragen; ab G1 + G2 liest `GebaeudeKlimaweg` die Gegenstrahlung, und ein späterer Neuimport einer Referenzregion verschöbe die Basis sonst still — deshalb steht die Regel beim ersten Leser, nicht beim Spaltenschritt. **Ordinalzahlen stehen bewusst nicht dabei:** G1 + G2 läuft lange vor G6d, und wer beide Regeln durchzählte, trüge in `Referenzlaeufe/LIESMICH.md` eine Nummernlücke ein |
 | **L1** | `Tab_Bauteilschicht_STAMM` bekommt **keine** Spalte `ReadOnly`; `Werkzeuge/Auslieferungsvorlage` behält Kindkataloge ohne `ReadOnly` **vollständig** (Muster `Tab_Solar_STAMM`), führt diese Tabellen in einer **namentlichen** Liste und prüft, dass keine davon auf null Zeilen fällt | Eine Kindtabelle mit eigenem `ReadOnly` hätte zwei Wahrheiten über die Auslieferungszugehörigkeit; ohne die namentliche Liste risse der Katalog beim Bereinigen über die Kaskade ab und der Wächter meldete einen leeren Katalog |
 | **L2** | `Z_ProjektWaermebedarf.Kanal` bleibt **Text**; es gibt keinen Umbauauftrag. Jede **neue** Beziehung läuft über IDs, der geerbte Textvergleich wird hier als **benannter Bestand** geführt | Das Gebäudemodell schreibt in den Heizungskanal und erbt damit den einzigen Textverweis des Gebäudeumfelds; ihn im selben Vorhaben umzubauen mischte eine Altlastbehebung in einen Einfrierschritt, der dreizehn Projekte bewegt |
 
@@ -1016,7 +1058,7 @@ Empfehlung mehr.
 | Nr. | Berichtigung | Beleg |
 |---|---|---|
 | **W19** | Die Sammlung heißt **`FK_MAP`**, nicht `ID_MAP`; daneben stehen `FK_OVERRIDE` und `KINDER`. Befund V 5.1 und Mehrzonenkonzept 4.4 werden an dieser Stelle fortgeschrieben | `EPOS.Kern/Controller/ProjektDuplizierenCtrl.cs:85` (`FK_MAP`), `:140` (`FK_OVERRIDE`), `:152` (`KINDER`); Datenaustauschkonzept 7.4 sagt es ausdrücklich. Wer nach `ID_MAP` sucht, sucht nach einem Bezeichner, den der Bestand nicht führt |
-| **W20** | Die Schema-Klassen heißen `GebaeudeSchema`, **`SolarKlimaSchema`**, `BaustoffSchema`, **`BauteilaufbauSchema`**, `ZonenSchema`, `ImportzuordnungSchema`. Befund V R1 nennt `BauteilSchema` und kennt `SolarKlimaSchema` nicht — R1 wird hier berichtigt | Die Klasse trägt **Aufbau und Schicht** (W5), nicht das Bauteil; das Bauteil liegt in `ZonenSchema`, weil es mit der Zone in **einem** Schritt entsteht. Der Klimaschritt hat andere Wirkung, anderen Mitläufercode und anderes Risiko und bekommt deshalb eine eigene Klasse |
+| **W20** | Die Schema-Klassen heißen `GebaeudeSchema`, `BaustoffSchema`, **`BauteilaufbauSchema`**, `ZonenSchema`, `ImportzuordnungSchema`. Befund V R1 nennt `BauteilSchema` — R1 wird hier berichtigt. Die Klimaspalten (M4) haben **keine** eigene Klasse: Der Schemaschritt 95 führt sie in `SchemaKatalog.Schritt95_Klimaspalten` | Die Klasse trägt **Aufbau und Schicht** (W5), nicht das Bauteil; das Bauteil liegt in `ZonenSchema`, weil es mit der Zone in **einem** Schritt entsteht. Der Klimaschritt hat andere Wirkung, anderen Mitläufercode und anderes Risiko und steht deshalb für sich — als eigener Schritt mit eigener Katalogliste, nicht in `GebaeudeSchema` |
 | **W21** | Der Registerschlüssel des Aufbaukatalogs heißt **`BAUTEILAUFBAU`**, nicht `AUFBAU` | Alle Bestandsschlüssel spiegeln den Tabellennamen: `HEIZKESSEL` (`EPOS.Kern/Allgemein/Katalog/KatalogRegistry.cs:139`), `PUFFERSPEICHER` (`:149`), `WECHSELRICHTER` (`:179`), `GEBAEUDE` (`:218`), `BRAUCHWASSERTYP` (`:257`). `AUFBAU` wäre der erste, der das nicht tut, und neben `GEBAEUDE` mehrdeutig |
 
 ### 2.4 Schrittfolge und Schema-Klassen
@@ -1033,7 +1075,7 @@ und der Nachweis hängen.
 | **M2** | — | kein DDL: Umbenennung `Fensterflaeche_Ost` → `Fensterflaeche_OstWest` im Modell, 15 Stellen | **ja**, byte-gleich | — | — |
 | **M3** | `GebaeudeSchema` | 15 Spalten × 2 Tabellen, `RENAME COLUMN Wohnflaeche → Nutzflaeche` (E19), Sicht `DROP` + `CREATE`, Leser auf **Namenszugriff**, `DbWerte`; **die Altweg-Spalten bleiben unberührt** (W13, E20) | **ja**, solange kein Leser rechnet | keine — neue Spalten bleiben NULL (= Vorgabe), `Nutzflaeche` behält die Werte von `Wohnflaeche` | läuft ohne Handgriff mit |
 | **S-E** | — | kein DDL: Umbau von `GebaeudeStammCtrl.CopyFromStamm`, `Insert` und `Overwrite` auf die Spaltenlisten-Bauweise mit NULL-erhaltender Bindung (W14). **In den Nachbarpapieren ist S-E genau dieser Schritt** (Mehrzonenkonzept 4.4, Datenaustauschkonzept 7.4); hier ist er **Sperrpunkt und Bestandteil von M3**, nicht ein eigener Migrationsschritt — er trägt kein DDL | **ja**, byte-gleich: Der Kopierweg läuft im Referenzlauf nicht | — | — |
-| **M4** | `SolarKlimaSchema` | 3 Spalten × `Tab_Solar(_STAMM)`, Leseweg der PVGIS-Antwort, Einfrierregel **„gesäte Klimareihen"** | **ja** | keine — Zusage in den Schrittbericht | `Tab_Solar_STAMM` bleibt vollständig (kein `ReadOnly`) |
+| **M4** | `SchemaKatalog.Schritt95_Klimaspalten` (keine eigene Klasse) | **umgesetzt als Schemaschritt 95** (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4): `Gegenstrahlung`, `Luftfeuchte`, `Bedeckungsgrad` × `Tab_Solar(_STAMM)`, `Quelle`, `Importdatum` × `Tab_Klimaregion(_STAMM)`, Leseweg der PVGIS- und der TRY-Antwort; **keine** `Windgeschwindigkeit` (F-S3); Schritt 97 bringt `Szenario` und `Bezugsjahr`. Die Einfrierregel **„gesäte Klimareihen"** steht bei G1 + G2 (2.8) | **ja**, byte-gleich — reines DDL, kein Leser | keine — alle Spalten im Bestand NULL | `Tab_Solar_STAMM` bleibt vollständig (kein `ReadOnly`) |
 | **S-A** | `BaustoffSchema` | `Tab_Baustoff_STAMM` + `Tab_Baustoff`, Baustoffsaat mit `ReadOnly = 1` | **ja** (legt an und sät) | über `SaatSchreiben()` mit `?`-Parametern, feste Ids, idempotent | **Pflicht:** Name exakt `_STAMM`, Saat `ReadOnly = 1`, sonst Katalog leer und Wächter rot |
 | **S-B** | `BauteilaufbauSchema` | `Tab_Bauteilaufbau(_STAMM)` + `Tab_Bauteilschicht(_STAMM)`, Index `(ID_Aufbau, Reihenfolge)` | **ja** | keine | L1: Schicht ohne `ReadOnly`, namentliche Liste in der Auslieferungsvorlage |
 | **S-C** | `ZonenSchema.Anweisungen` | `Tab_Zone` + `Tab_Bauteil`, Indizes `(ID_Gebaeude, Rang)` und `(ID_Zone, Rang)` — **`Tab_Zone` entsteht hier**, mit G3, weil `Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt. **Stehen `KU-S1` bzw. `AK-S1` schon, legt S-C deren Zonenspalten gleich mit an** (`Kuehl_Sollwert`, `Kuehlleistung_Max`, `Kuehlung_Aktiv`, `Kuehl_Sollwert_Nacht`; `Uebergabe_Art`, `Uebergabe_Exponent`, `Uebergabe_Leistung_Nenn` — [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 4.2) | **ja**, solange kein Rechenweg liest | keine | — |
@@ -1058,12 +1100,13 @@ Gelegenheit, bei der die Sicht ohnehin neu gebaut wird.
 
 **Dieses Papier vergibt keine Schrittnummern, und feste Nummern älterer Papiere gelten nicht.**
 Verbindlich sind **Reihenfolge und Inhalt** je Schritt; die Nummer vergibt der Schritt bei seiner
-Beauftragung (**A11**), weil jede vergebene Nummer ältere Projektpakete entwertet — der Schemastand
+Beauftragung (**A11**, mit E27 entschieden), weil jede vergebene Nummer ältere Projektpakete entwertet — der Schemastand
 steht im Transportmanifest. **Der Zielstand wird bei der Beauftragung an `SchemaStand.Zielversion`
-abgelesen;** am Arbeitsbaum steht er auf **100** (Stand 22.09.2026,
-`EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`), die nächste freie Nummer ist damit **101**. Wo
-ältere Papiere feste Zahlen für die Gebäude- und die Klimaspalten nennen, sind die **Papiernamen
-M3 und M4** gemeint; Befund V geht noch von einem älteren Stand aus.
+abgelesen;** Momentaufnahme **Stand 22.09.2026: 100, nächste freie 101**
+(`EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`). Eine Nummer trägt bisher allein der
+Klimaspalten-Schritt **M4**, weil er als Schemaschritt 95 umgesetzt ist; wo ältere Papiere feste
+Zahlen für die Gebäudespalten nennen, ist der **Papiername M3** gemeint. Befund V geht noch von
+einem älteren Stand aus.
 
 **Die Papiernamen sind die verlässliche Adresse zwischen den Papieren, und sie sind in allen vier
 Papieren dieselben:** **S-E** ist der Umbau von `CopyFromStamm` (Mehrzonenkonzept 4.4,
@@ -1159,7 +1202,7 @@ flowchart LR
 | `Werkzeuge/Auslieferungsvorlage` | Kindkataloge ohne `ReadOnly` **namentlich** führen und auf „nicht leer" prüfen (L1); **Prüfregel: `Tab_Importquelle` und `Tab_Importzuordnung` sind in der Auslieferungsdatenbank leer** | Sonst trüge eine ausgelieferte `Kenndaten.sqlite` Dateinamen und SHA-256 fremder Importe mit; und ein auf null Zeilen fallender Katalog bricht die Vorlage mit Abbruchcode ab |
 
 **Die sichtbare Seite von „NULL = Vorgabe"** ist die Probe darauf, dass der Umbau geglückt ist: Jedes
-leere Parameterfeld zeigt die Vorgabe an — im Feld als Platzhalter (A5 = U3) oder als
+leere Parameterfeld zeigt die Vorgabe an — im Feld als Platzhalter (A5 = U3, mit E27 entschieden), ergänzend als
 `Herleitungszeile` darunter. **Steht dort eine 0, wo eine Vorgabe stehen müsste, ist der Kopierweg
 noch der alte.**
 
@@ -1229,7 +1272,8 @@ stehen: **KU2** bringt die Deckung der Kälteseite
 **AK3** bringen je einen eigenen Einfrierschritt mit
 ([Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), B-A2), und die Stufe
 **GA** friert die Basis ein letztes Mal ein, wenn das Referenzprojekt des Altwegs auf VDI 6007
-umgestellt und der Rückweg-Test eingestellt ist (E26; Zeitpunkt offen, Q24). Dazu ein Anlass, der
+umgestellt und der Rückweg-Test eingestellt ist (E26; fällig nach dem Ablösekriterium Q24, E27).
+Dazu ein Anlass, der
 sich nicht planen lässt: **eine erst nach der Verschiebung gefundene, ergebniswirksame
 Fehlerbehebung im Altweg** — sie ist ein eigener, ausdrücklich begründeter Einfrierschritt, kein
 Nebenwerk eines anderen Merges. Alle Tabellen-, Saat- und Sichtschritte sind ergebnisneutral —
@@ -1240,14 +1284,15 @@ durchgezählt: Wer sie nummerierte, müsste die Zahlen bei jeder wählbaren Stuf
 stateDiagram-v2
     [*] --> Basis_Ist : aktuelle Basis nach Referenzlaeufe/LIESMICH.md
     Basis_Ist --> Basis_GB : GB — Instanzzustand, Ferienmaske, 100er-Grenze<br/>NEU EINFRIEREN, Regel Gebaeudedaten
-    Basis_GB --> Basis_GB : M2 Umbenennung · M3 Gebaeudespalten · M4 Klimaspalten<br/>byte-gleich, Regel Klimareihen mit M4
+    Basis_Ist --> Basis_Ist : M4 Klimaspalten, als Schritt 95 vorweggenommen<br/>byte-gleich, kein Leser
+    Basis_GB --> Basis_GB : M2 Umbenennung · M3 Gebaeudespalten<br/>byte-gleich
     Basis_GB --> Basis_GB : G1 erster Schritt — Altweg nach Altweg-Modul verschoben<br/>byte-gleich, vor der Anbindung
-    Basis_GB --> Basis_G1G2 : G1 + G2 — stuendliche Rechnung<br/>NEU EINFRIEREN, drei neue Reihen je Gebaeude
+    Basis_GB --> Basis_G1G2 : G1 + G2 — stuendliche Rechnung<br/>NEU EINFRIEREN, drei neue Reihen je Gebaeude<br/>Regel Klimareihen
     Basis_G1G2 --> Basis_G1G2 : S-A bis S-G — Tabellen und Saat<br/>byte-gleich, kein Leser
     Basis_G1G2 --> Basis_G6 : G6d — Zonenprojekt gesaet<br/>NEU EINFRIEREN, Regel Zonendaten
     Basis_G1G2 --> Basis_KU2 : KU2 — Deckung der Kaelteseite<br/>NEU EINFRIEREN, Kuehlkonzept K19
     Basis_G1G2 --> Basis_AK : AK1, AK2, AK3 — je Stufe ein eigener Schritt<br/>NEU EINFRIEREN, Anlagenkopplung B-A2
-    Basis_G6 --> Basis_GA : GA — Altweg abgeloest, Referenzprojekt auf VDI 6007<br/>Rueckweg-Test eingestellt, NEU EINFRIEREN, Zeitpunkt offen
+    Basis_G6 --> Basis_GA : GA — Altweg abgeloest, Referenzprojekt auf VDI 6007<br/>Rueckweg-Test eingestellt, NEU EINFRIEREN, faellig nach Q24
     Basis_KU2 --> Basis_GA
     Basis_AK --> Basis_GA
     Basis_GA --> [*] : ein Rechenweg, eine Basis
@@ -1258,13 +1303,13 @@ stateDiagram-v2
 | **GB** | Lauf, Vergleich, Begründung, grüner Kern-Lauf; die zwei betroffenen Projekte namentlich mit alter und neuer Zahl. Diese Basis ist die **letzte reine Bestandsbasis** (A15) |
 | **M2** | `GESAMT: PASS` byte-gleich gegen die GB-Basis. Eigener Merge, weil jede der 15 Stellen in die solaren Gewinne mündet |
 | **M3** | byte-gleich; die Probe **ist** der Sichtneubau: Der Leser liefert alle 58 Bestandsfelder unverändert, `Nutzflaeche` mit den Werten der alten `Wohnflaeche` (E19); `SqlDialektPruefer` grün |
-| **M4** | byte-gleich; die Importprobe gegen die eingefrorene PVGIS-Antwort liefert dieselben Strahlungsreihen wie bisher; **Einfrierregel „gesäte Klimareihen" eingetragen** |
-| **G1 + G2** | **Erster Schritt: die Verschiebung des Altwegs nach `Altweg/` — byte-gleich gegen die GB-Basis, vor jeder Anbindung des VDI-Wegs** (E20). Danach ändern alle dreizehn Projekte sich; Basis vollständig neu. Dazu der **Rückweg-Test** auf einer gitignorierten Arbeitskopie gegen die GB-Basis — **danach misst er allein das eine Referenzprojekt, das auf dem Altweg steht**, in der jeweils aktuellen Basis (A15, 4.4); `ChartProben` grün; Sichtabnahme Windows |
+| **M4** (Schemaschritt 95, erbracht) | byte-gleich — reines DDL, kein Rechenweg liest die Spalten, alle Bestandsregionen NULL; die Importprobe gegen die eingefrorene PVGIS-Antwort liefert dieselben Strahlungsreihen wie bisher. Die Einfrierregel „gesäte Klimareihen" gehört **nicht** hierher, sondern zu G1 + G2 |
+| **G1 + G2** | **Erster Schritt: die Verschiebung des Altwegs nach `Altweg/` — byte-gleich gegen die GB-Basis, vor jeder Anbindung des VDI-Wegs** (E20). Danach ändern alle dreizehn Projekte sich; Basis vollständig neu. Dazu der **Rückweg-Test** auf einer gitignorierten Arbeitskopie gegen die GB-Basis — **danach misst er allein das eine Referenzprojekt, das auf dem Altweg steht**, in der jeweils aktuellen Basis (A15, mit E27 entschieden; 4.4); `ChartProben` grün; Sichtabnahme Windows; **Einfrierregel „gesäte Klimareihen" eingetragen** |
 | **S-A bis S-G** | je Schritt: Zeilenzahl, Dateigröße, Tabellenzahl, Projektzahl, und der Satz, dass der Referenzlauf byte-gleich ist — **weil kein Leser die neuen Tabellen liest** |
 | **G6d** | grüner Kern-Lauf, neue Basis begründet; **Einfrierregel „gesäte Zonendaten" eingetragen** |
 | **KU2** | eigener Einfrierschritt (Kühlkonzept K19): Projekte **ohne** Kühlung byte-gleich, das Kühlprojekt mit neuer Basis und begründetem Wechsel |
 | **AK1 · AK2 · AK3** | je Stufe ein eigener Einfrierschritt (Anlagenkopplung B-A2): Projekte mit `Anlagenkopplung = AUS` byte-gleich, das gekoppelte Projekt mit neuer Basis |
-| **GA** | Altweg abgelöst: Modul, Weiche, `IGebaeudeRechenweg`, Wache, Schalter, Bestandswegabschnitt, Spalten und `Tab_DBTagV(-Daten)` entfernt; das Referenzprojekt des Altwegs auf VDI 6007 umgestellt, der Rückweg-Test eingestellt — **neue Basis, Zeitpunkt offen** (Q24). **Gate ist die Ausbauprobe** (1.7, 4.4) |
+| **GA** | Altweg abgelöst: Modul, Weiche, `IGebaeudeRechenweg`, Wache, Schalter, Bestandswegabschnitt, Spalten und `Tab_DBTagV(-Daten)` entfernt; das Referenzprojekt des Altwegs auf VDI 6007 umgestellt, der Rückweg-Test eingestellt — **neue Basis**, fällig nach dem Ablösekriterium Q24 (E27). **Gate ist die Ausbauprobe** (1.7, 4.4) |
 | **Fehlerbehebung im Altweg** | Ein erst **nach** der Verschiebung gefundener, **ergebniswirksamer** Fehler des Altwegs wird behoben und die Basis in einem eigenen, begründeten Schritt neu eingefroren; die Begründung nennt Fehlerbild, betroffene Projekte und die geänderten Zahlen |
 
 **Die drei neuen Einfrierregeln — benannt nach ihrem Gegenstand, nicht durchgezählt** (R18, W18);
@@ -1273,13 +1318,15 @@ und Abschnitt „Regressionsnetz" der [Wurzel-`CLAUDE.md`](../../CLAUDE.md):
 
 - **„gesäte Gebäudedaten"** (mit GB): Bauweise, U-Werte, Flächen, Sollwerte, Luftwechselrate,
   Fensterdurchlassgrad sowie ab G1 die fünfzehn neuen Spalten;
-- **„gesäte Klimareihen"** (mit M4): `Tab_Solar.Gegenstrahlung`, `Windgeschwindigkeit`,
-  `Luftfeuchte` der Referenzregionen. Ohne sie verschiebt ein späterer PVGIS-Neuimport die Basis
-  still, sobald `GebaeudeKlimaweg` die Spalten liest;
+- **„gesäte Klimareihen"** (mit G1 + G2): `Tab_Solar.Gegenstrahlung`, `Luftfeuchte` und
+  `Bedeckungsgrad` der Referenzregionen. Der Schemaschritt 95 hat die Spalten angelegt, aber weder
+  gefüllt noch einen Leser mitgebracht — dort hätte die Regel nichts geschützt. Ab G1 + G2 liest
+  `GebaeudeKlimaweg` die Gegenstrahlung, und ohne die Regel verschöbe ein späterer PVGIS- oder
+  TRY-Neuimport einer Referenzregion die Basis still;
 - **„gesäte Zonendaten"** (mit G6d): Zonen-, Bauteil-, Schicht- und Luftstromzeilen des umgestellten
   Referenzprojekts.
 
-**Die Reihenfolge ist die der Eintragung, und sie trägt bewusst keine Ordnungszahlen.** M4 läuft
+**Die Reihenfolge ist die der Eintragung, und sie trägt bewusst keine Ordnungszahlen.** G1 + G2 läuft
 lange vor G6d; wer die Regeln durchzählte, müsste die Zahlen später umhängen oder eine Lücke
 eintragen. Genannt wird jede Regel über ihren Gegenstand — so steht in beiden Papieren dasselbe.
 
@@ -1312,7 +1359,8 @@ Zahlen stehen im [Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 
 sind der Eingang des **Tagesbilanz-Wegs**, der nach **E20**, **E23** und **E26** der
 **Bestandsweg** neben dem VDI-Weg ist, solange der Übergang läuft, und liegen zu allen
 Testgebäuden vor. Sie werden **nicht erweitert**, und der VDI-Weg liest sie **nicht** (4.1); sie
-bleiben mit ihrem einzigen Leser stehen, bis die Stufe **GA** beide entfernt (2.4; Zeitpunkt offen).
+bleiben mit ihrem einzigen Leser stehen, bis die Stufe **GA** beide entfernt (2.4; GA fällig nach
+Q24, E27).
 
 **Zonen im Katalog gibt es nicht.** `Tab_Zone` hat keine `_STAMM`-Entsprechung — eine Zone ist
 Projektware, wiederverwendbar ist der **Bauteilaufbau**, nicht die Zone. Folge für „Speichern
@@ -1360,8 +1408,8 @@ gehört als Knopf **in** den Gebäudedialog.
 | Baustoffkatalog | `Seitenschluessel.BaustoffKatalog = "BAUSTOFF_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Bauteilkatalog → Baustoffe* | eigener Katalogeditor, über das Menü erreichbar wie jeder andere Katalog |
 | Bauteilaufbau-Katalog | `Seitenschluessel.BauteilaufbauKatalog = "BAUTEILAUFBAU_KATALOG"` | **`AppWurzel.razor`** — freie Ansicht | *Administration → Bauteilkatalog → Bauteilaufbauten* | **die zwei Kataloge müssen gemeinsam eingehängt werden** — ein Untermenü mit nur einem Punkt ist verboten |
 | Zonendialog, Bauteildialog | **keiner** | — | keine | Sie sind Überlagerungen **im** Gebäudedialog, vier Ebenen tief; ein Schlüssel wäre ein zweites Fenster |
-| Gebäudeimport (IFC, gbXML) | **offen, A17** | bei einem Schlüssel: `AppWurzel.razor` | offen | Empfehlung: **keiner** — Überlagerung im Gebäudedialog, aufgemacht über zwei Knöpfe in der Katalogleiste („Aus IFC-Datei übernehmen …", „Aus gbXML-Datei übernehmen …"), je mit eigenem Profil und der Regel „kein Delegat, kein Knopf" |
-| Gebäudeexport (G7) | **offen, A17** | bei einem Schlüssel: `AppWurzel.razor` | offen | Empfehlung: **keiner**, aus demselben Grund — und der Einstieg zusätzlich dort, wo die Ergebnisse liegen (Bedarfsdialog) |
+| Gebäudeimport (IFC, gbXML) | **keiner** (A17, mit E27 entschieden) | — | keine | **Überlagerung** statt Schlüssel — im Gebäudedialog, aufgemacht über zwei Knöpfe in der Katalogleiste („Aus IFC-Datei übernehmen …", „Aus gbXML-Datei übernehmen …"), je mit eigenem Profil und der Regel „kein Delegat, kein Knopf" |
+| Gebäudeexport (G7) | **keiner** (A17, mit E27 entschieden) | — | keine | **Überlagerung**, aus demselben Grund — und der Einstieg zusätzlich dort, wo die Ergebnisse liegen (Bedarfsdialog) |
 | Gebäude, Gebäudetypen (Bestand) | `Masken.GebaeudeAdmin`, `Masken.GebaeudetypenAdmin` | Windows: die **Plattformhülle** (modales Fenster, Bestand). iOS: **`AppWurzel.razor`** — mit G1 kommt je Maske ein Fall hinzu | unverändert | Ohne diesen Fall läuft die Übersetzungszeile in `IosNavigation` ins Leere: Sie bildet einen Maskenschlüssel auf einen Seitenschlüssel ab, **den die Wurzel kennen muss** — „Unbekanntes bleibt unverändert, die Wurzel antwortet dann selbst mit `false`" (`EPOS.iOS/Dienste/IosNavigation.cs:64-78`). Der Hüllenumzug allein macht den Gebäudedialog auf dem iPad **nicht** erreichbar |
 
 **Zwei Folgerungen, die in dieser Tabelle stecken.** Erstens: Die beiden neuen Katalogeditoren
@@ -1373,11 +1421,12 @@ Bestandskatalogeditoren laufen dagegen über `Masken.*` und die Hülle
 Zweitens: **Erreichbarkeit auf iOS ist ein Fall in der Wurzel plus eine Zeile in `IosNavigation`**,
 nie eine Zeile allein.
 
-**A17 ist ein echter Widerspruch zwischen zwei geltenden Papieren**, und er ist beim Anwender: Das
+**A17 war ein echter Widerspruch zwischen zwei geltenden Papieren**: Das
 Datenaustauschkonzept 11.2 (D14) sagt „als Überlagerung im Gebäudedialog — kein neuer Menüpunkt,
 kein neuer Maskenschlüssel"; Befund U 1.3 sagt „der IFC-/gbXML-Import ist je eine `Menuepunkt`-Zeile
-mit Seitenschlüssel". Solange A17 offen ist, führt dieses Papier **beide** Wege mit ihren
-Handgriffen: Der Menüweg brauchte zwei flache Zeilen unter *Daten & Import*
+mit Seitenschlüssel". **Mit E27 (22.09.2026, [Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) ist entschieden: kein
+Maskenschlüssel, keine Menüzeile, Überlagerung im Gebäudedialog** (D14). Der verworfene Menüweg
+hätte zwei flache Zeilen unter *Daten & Import*
 (`Menuetabelle.cs:235`), die auf **einen** Schlüssel mit verschiedenem **Argument** zeigen —
 Muster ist der PV-Import, dessen Schlüssel das Argument `"CEC"` bzw. `"PAN"` trägt
 (`Masken.cs:75`, `:80`).
@@ -1498,8 +1547,8 @@ stateDiagram-v2
    **Rückfrage vor der ersten Zone** („Ab jetzt rechnet dieses Gebäude über seine Bauteile statt über
    die U-Wert-Gruppen"), dazu eine `Herleitungszeile` am Schalter „Rechenweg", die in **beiden**
    Stellungen
-   sagt, was gilt. Ob die Datenlage der Träger bleibt oder ein dritter Persistenzwert entsteht, ist
-   **A14**.
+   sagt, was gilt. **Die Datenlage bleibt der Träger**, kein dritter Persistenzwert — **A14**, mit
+   E27 entschieden.
 4. **Der Schalter „Rechenweg" versteckt keinen Modellparameter.** Der Dialog steht in
    VDI-6007-Struktur; die Modellparameterfelder des Reiters 3 sind **immer sichtbar und
    bearbeitbar** — auch bei einem Gebäude auf dem Altweg, denn sie gelten dort nach der Umstellung
@@ -1507,8 +1556,8 @@ stateDiagram-v2
    Felder, die **nur** der Altweg liest, erscheinen nur bei einem Altweg-Gebäude, mit dem Hinweis,
    dass dieser Weg keine neue Funktion mehr bekommt. Der Schalter trägt die Werte **„VDI 6007"**
    (Vorgabe, NULL) und **„Tagesbilanz"** und eine `Herleitungszeile`, die in **beiden** Stellungen
-   sagt, was gilt; **Schalter und Abschnitt bleiben bis zur Stufe GA** (E23, E26; Zeitpunkt
-   offen — sie sind Teil ihrer Löschliste). Der Feldbestandstest je
+   sagt, was gilt; **Schalter und Abschnitt bleiben bis zur Stufe GA** (E23, E26; fällig nach
+   Q24, E27 — sie sind Teil ihrer Löschliste). Der Feldbestandstest je
    Reiter (3.7) prüft den Reiter **einmal** — sein Feldbestand hängt nicht mehr vom Rechenweg ab —
    und den Bestandswegabschnitt als **eigenen** Fall. **A19 (= U2) ist damit überholt.**
 5. **Die Katalogseite des Wirts wird virtualisiert, bevor die Listen lang werden** — Umstellung auf
@@ -1580,7 +1629,7 @@ Zonierungsregeln —, **nicht im Quelltext des Dialogs**.
 > in `EPOS.UI/Dialoge/Import/GebaeudeImportDialog.razor` und
 > `EPOS.UI.Daten/Bedarf/GebaeudeImportHuelle.cs` — ein Format im Namen einer Maske, die zwei
 > Formate trägt, ist eine Unwahrheit, und der Dialog erbt den Ablauf des Katalogimports, neben dem
-> er deshalb liegt. **Offen ist damit nur Name und Ordner (A3), nicht die Zahl der Dialoge.**
+> er deshalb liegt. **Auch Name und Ordner sind entschieden (A3, E27): `GebaeudeImportDialog` in `Dialoge/Import/`.**
 
 Der Aufbau folgt dem Hausmuster (Befund U 4.1/4.2): Kopf mit Datei, Format, Schema, Gebäudewahl und
 Bilanz; Zeilenliste mit Gruppe, Feld, gelesenem Wert, Beleg, Vorgabewert, **Herkunft** und Haken;
@@ -1672,7 +1721,7 @@ keinen neuen Baustein, nur ihren Platz.
 | Raumtemperatur (Luft und operativ), stündlich | `GebaeudeBedarfDialog`, **zweites Bild** mit eigenem `BereichGewaehlt`/`Zurueckgesetzt` | Renderer-Bild über `ChartBild` im Baustein `Diagramm`; Ganglinie mit Sollwertband, dazu die Dauerlinie desselben Vektors. **Nur bei Stundenmodell** |
 | Kühlbedarf (Jahressumme, Monatswerte) | `GebaeudeBedarfDialog`, Abschnitt **„Kältebedarf"**; Monatsblatt des Ergebnisdialogs als zweite Reihe | `Kennzahlkachel`; Monatsbild als Stapel mit Heiz- und Kühlanteil. **Vierter Kanal `KUEHLUNG`** (E12) — mit **E21** trägt der Abschnitt dieselben Bausteine wie der Abschnitt „Wärmebedarf": Kennzahlkachel, Kanalzeile, Monatsstapel und eine **eigene Dauerlinie**; die Folgen für Kennzahlen, Bericht und Export regelt das [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) (Konzept N1.18) |
 | Spitzenlast (Stunde), Spitzenlast (Tagesmittel), 95-%-Quantil, Übertemperaturstunden | eigene Kennzahlkategorie „Spitzen" | `Kennzahlkachel` mit der Stunde bzw. dem Datum als leiser Herkunftszeile |
-| Vergleich Altweg ↔ VDI 6007 | `GebaeudeBedarfDialog`, Tabelle mit vier Spalten (Kennzahl · Tagesbilanz (Bestandsweg) · VDI 6007 · Abweichung) über fünf Zeilen | **Zwei Auskünfte desselben Controllers**, keine zweite Rechnung (1.4); die Abweichung als `Kohaerenzzeile`. **Sie bleibt, solange zwei Rechenwege nebeneinander stehen** — bis zur Stufe GA (E20, E23, E26; Zeitpunkt offen) |
+| Vergleich Altweg ↔ VDI 6007 | `GebaeudeBedarfDialog`, Tabelle mit vier Spalten (Kennzahl · Tagesbilanz (Bestandsweg) · VDI 6007 · Abweichung) über fünf Zeilen | **Zwei Auskünfte desselben Controllers**, keine zweite Rechnung (1.4); die Abweichung als `Kohaerenzzeile`. **Sie bleibt, solange zwei Rechenwege nebeneinander stehen** — bis zur Stufe GA (E20, E23, E26; fällig nach Q24, E27) |
 | Ausweis des Rechenwegs | `GebaeudeBedarfDialog` und Berichtskopf | Ein Gebäude auf dem Altweg trägt die Zeile **„Tagesbilanz (Bestandsweg)"** statt des Produktausweises nach E10 (E20, E23); im Abschnitt „Kältebedarf" steht daneben der benannte Hinweis, dass dieser Weg **keine Kühllast** liefert (E21). Beides bleibt bis zur Stufe GA und steht in ihrer Löschliste (Umsetzungskonzept Kap. 6) |
 | Zonenzeilen (G6) | Reiter „Zonen" des Editors; im Ergebnis eine Tabelle je Zone | `Zeilenraster` mit Summenfuß — **kein** `Raster`, weil die Zeile Bedienelemente trägt; unbeheizte Zonen bekommen **eigene** Zeilen (sie tragen keine Heizlast, aber Temperatur und Übertemperaturstunden) |
 | Schichtenraster (G3) | `BauteilaufbauDialog` | `Zeilenraster` mit Summenfuß über Wärmedurchlasswiderstand, U-Wert und wirksame Kapazität |
@@ -1855,7 +1904,7 @@ bekommt **keine neue Funktion** mehr. Die Verschiebung ist **ergebnisneutral und
 byte-gleichen Referenzlauf abzunehmen** — als **eigener, erster Schritt innerhalb von G1, vor** der
 Anbindung des VDI-Wegs (E20). Der VDI-Weg braucht keine Tagesverteilung und **erbt deshalb auch
 deren Abbruch nicht**; er füllt denselben Puffer, in **Watt**, und gibt `true` zurück. **Modul,
-Weiche und Schalter tragen den Übergang und fallen mit der Stufe GA** (E23, E26; Zeitpunkt offen);
+Weiche und Schalter tragen den Übergang und fallen mit der Stufe GA** (E23, E26; fällig nach Q24, E27);
 bis dahin bleibt es bei **einer** Verzweigung, und die steht am Eingang. **A16** ist damit gegenstandslos: Es gibt keinen zweiten Verzweigungspunkt (Kap. 6).
 
 **Die Kälteseite ist symmetrisch gebaut — und rechnet das Gebäude nicht ein zweites Mal** (E21).
@@ -2014,8 +2063,8 @@ Schlüssel. **Dieses Papier gibt ihn nicht wieder**, weil es keine Zahlen des Na
 ihn baut, holt ihn dort und schreibt ihn nicht ab. In den Exportdateien ist er bereits geregelt
 (Datenaustauschkonzept 6.5): das Validierungsfeld trägt den E10-Wortlaut, das Rechenmodellfeld die
 Kurzform, und **im Mehrzonenfall gilt der Ausweis je Zone** — das Mehrzonenmodell selbst ist eine
-EPOS-Erweiterung, keine Norm, und die Datei darf das Gegenteil nicht nahelegen. Offen ist nur noch
-die Frage nach Wiki-Seite und Berichtskopf (**A12**). Der Ausweis wechselt, sobald G0 den offenen
+EPOS-Erweiterung, keine Norm, und die Datei darf das Gegenteil nicht nahelegen. Für Wiki-Seite und
+Berichtskopf ist mit E27 entschieden (**A12**): Beide tragen ihn, im Wortlaut von E10. Der Ausweis wechselt, sobald G0 den offenen
 Testfall löst.
 
 **Die Kennzeichnung der Testversion** liegt an derselben Stelle wie der Produktausweis: Eine
@@ -2050,7 +2099,7 @@ Information.
 | **`ios.yml`** | Nur auf Zuruf und **nur nach Rückfrage beim Anwender**, jedes Mal. **Begründet ist ein iOS-Lauf allein, wenn die Änderung die iOS-Hülle selbst trifft** — Dateifilter, Navigationszeile, Seed-Datenbank, Prüfmodus, ein `Dienste.*`-Adapter — oder wenn der Anwender ihn verlangt. Die einmalige Trimming-Messung des Gerätebaus (U16) ist ein solcher Fall |
 | **Der Prüfmodus der iOS-Schale** (nicht zu verwechseln mit dem Schalter `Pruefmodus` des Eingangsbaus, 1.3) | prüft die Seed-Datenbank über die **Zahl der `STRICT`-Tabellen**; sie wächst mit jedem Tabellenschritt (2.2, 2.4) und ist je Schemastand nachzuziehen. **Richtigstellung:** Der iOS-Lauf rechnet heute ein Projekt, das **kein** Gebäude führt — er kann das Gebäudemodell also **nicht** berühren. Er prüft die **Schale**: dass die App startet, die Seed-Datenbank findet, das Schema stimmt und ein Lauf durchläuft. Wer das Gebäudemodell auf iOS nachweisen will, muss dafür ein anderes Projekt wählen; **solange das nicht geschieht, ist der grüne Kern-Lauf auf ubuntu der Nachweis**, und das gehört so ins Protokoll |
 | **Seed-Datenbank** | je Schemaschritt neu zu erzeugen: Die Migration läuft auf iOS **nicht** |
-| **Setup und Lizenzseite** | `Setup/` führt heute **keine** Seite für Fremdbibliotheken. Für xBIM verlangt die Lizenz den dauerhaften **Quellenverweis an den Empfänger** (ADR-003, E3). Es entsteht eine Datei mit je Fremdbibliothek Name, Fassung, Lizenz, Copyright-Vermerk und Quellenverweis — **erster Eintrag xBIM**, **zweiter `three.js` (MIT)** nach E11, dazu die schon ausgelieferten Fremdanteile —, eine Kopierzeile im Installationsskript und als Pflegeweg eine Zeile je ausgelieferter Fassung. **Ohne diese Seite ist weder der IFC-Weg noch die Körperansicht auslieferbar**, Import wie Export (U10) |
+| **Setup und Lizenzseite** | `Setup/` führt heute **keine** Seite für Fremdbibliotheken. Für xBIM verlangt die Lizenz den dauerhaften **Quellenverweis an den Empfänger** (ADR-003, E3). Es entsteht eine Datei mit je Fremdbibliothek Name, Fassung, Lizenz, Copyright-Vermerk und Quellenverweis — **erster Eintrag xBIM**, **zweiter `three.js` (MIT)** nach E11, dazu die schon ausgelieferten Fremdanteile —, eine Kopierzeile im Installationsskript und als Pflegeweg eine Zeile je ausgelieferter Fassung. **Ohne diese Seite ist weder der IFC-Weg noch die Körperansicht auslieferbar**, Import wie Export (U10, mit E27 entschieden: mit der ersten IFC-Stufe, für alle Fremdanteile) |
 
 ### 4.6 Export und Round-Trip
 
@@ -2062,9 +2111,9 @@ Der Export ist nach **E9** entschieden — er ist Stufe G7, kein Ausblick. Archi
 | Naht | `IGebaeudeSchreiber` mit `IfcSchreiber` und `GbxmlSchreiber` (1.5) | Die Dateiwahl bleibt **außerhalb**, über `Dienste.Datei` aus der Hülle |
 | Ablauf | `GebaeudeExportAblauf` + `GebaeudeExportProfil`; er bekommt den **fertig gelesenen** Satz und berührt die Datenbank nicht (1.6, Punkt 5) | Was je Format verschieden ist, steht als **Daten** im Profil. Gelesen wird in der **Hülle**, vor dem Fadenwechsel, über `GebaeudeZonenCtrl.LesenJeGebaeude`, `BauteilaufbauCtrl.LesenJeAufbau` und `ProjektGebaeudeCtrl` — dieselbe Regel wie im Import, nur in Gegenrichtung, und deshalb **kein** eigener Exportcontroller |
 | Maske | `GebaeudeExportDialog` + `GebaeudeExportHuelle` (1.2, 3.2) — **eine eigene Maske**, nicht der Importdialog in Gegenrichtung: Format, Umfang und Kennzeichnung sind zu wählen, eine Zuordnungsliste gibt es nicht | Sie zählt wie jede Maske: vier Pflegestellen (3.8), Ressourcenpräfix `GEXP_` (3.6), bunit-Fall (3.7) |
-| Einstieg | Überlagerung im Gebäudedialog **und** im Bedarfsdialog (dort liegen die Ergebnisse) | **A17**; Empfehlung: kein Menüpunkt, kein Maskenschlüssel (D14) |
+| Einstieg | Überlagerung im Gebäudedialog **und** im Bedarfsdialog (dort liegen die Ergebnisse) | **A17**, mit E27 entschieden: kein Menüpunkt, kein Maskenschlüssel (D14) |
 | Geometriequelle | das **Zonengeometrie-Modell** (1.3, E11) — `PolyLoop` in G7b und `IfcExtrudedAreaSolid` in G7e **lesen** es | **Die Exportgeometrie wird gelesen, nicht im Exporteur gerechnet.** Sonst gäbe es zwei Herleitungen derselben Körper — eine für die Ansicht, eine für die Datei — und zwei Bilder desselben Gebäudes, die nicht zueinander passen |
-| Kennungen | deterministisch, aus dem Schlüsselpfad der **IDs**, nie aus Namen | Voraussetzung für jeden Modellvergleich beim Empfänger und für den Rundlauf; nachträglich nicht einzuführen (D5) |
+| Kennungen | deterministisch, aus dem Schlüsselpfad der **IDs**, nie aus Namen | Voraussetzung für jeden Modellvergleich beim Empfänger und für den Rundlauf; nachträglich nicht einzuführen (D5, mit E27 entschieden) |
 | Ablage | Windows: Zielwahl über `DateiSpeichernAsync`. iOS: **kein** „Speichern unter" — Ablage im Dokumentenordner, Weitergabe über das **Teilen-Blatt** | Der Knopf heißt auf iOS entsprechend anders; ohne Delegat gibt es ihn nicht |
 | Kennzeichnung | Produktausweis nach E10 im Validierungsfeld, Kurzform im Rechenmodellfeld, **im Mehrzonenfall je Zone**; dazu das Wasserzeichen der Testlizenz (4.3) | Eine schematisch erzeugte Geometrie wird **an drei Stellen** gekennzeichnet und heißt nie „Gebäudemodell" |
 | **Round-Trip-Sperre** | `Tab_Importquelle.FehlendeEntitaeten > 0` **sperrt** den Round-Trip; ebenso ein Schemastand, den der Weg nicht trägt | Eine fremde Datei beschädigt zurückzugeben ist kein Fehlerbild, das man erklären kann. Die Sperre ist **Sperre**, nicht Warnung |
@@ -2115,38 +2164,39 @@ Stufe **GA** steht in keiner Summe (E26).
 | **GB** | Instanzzustand statt statischem Feld, Warnungen in der Ferienmaske, die 100er-Grenze (U9), Einfrierregel **„gesäte Gebäudedaten"** | G0 | zwei Referenzprojekte ändern sich — **eigener Einfrierschritt**; letzte reine Bestandsbasis (A15) |
 | **Merge M2** | Umbenennung des Ostfensterfeldes, 15 Stellen | GB | **byte-gleich** gegen die GB-Basis; eigener Merge, weil jede Zeile in die solaren Gewinne mündet |
 | **Merge M3** | `GebaeudeSchema` samt Sichtneubau, Namensleser, `DbWerte`, **Katalogkopie NULL-erhaltend über alle drei Schreibstellen** (W14), `SichtQuelleWache` | M2 | byte-gleich; die Probe **ist** der Sichtneubau; SQL-Dialekt-Prüfer grün |
-| **Merge M4** | `SolarKlimaSchema`, Leseweg der Klimaspalten, Einfrierregel **„gesäte Klimareihen"** | M3 | byte-gleich; Importprobe liefert dieselben Strahlungsreihen |
-| **G1 + G2** | **Erster Schritt: der Altweg wandert Zeichen für Zeichen nach `Altweg/`** (`TagesbilanzWaermebedarf`), die Fassade `SimulationWaermebedarf` und der Vorbereitungsschritt `GebaeudeVorbereitung` entstehen, dazu `Modultrennungswache` (E20). **Danach erst** die Anbindung: `GebaeudeKlimaweg`, `GebaeudeModellEingang` samt `Bauen`, `GebaeudeModellErgebnis`, `Gebaeudepruefung`; **die eine Weiche am Eingang**; der vierte Parameter der Auskunft; **ein Schreibweg im Editor** (A4), Reiter 3 in VDI-6007-Struktur, Platzhalter am Zahlenfeld (A5), Schalter „Rechenweg" samt eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)", Skalierungsdialog auf die Nutzfläche (E19); **Hüllenumzug nach `EPOS.UI.Daten`** samt `Gebaeudewege` (A10); Bedarfsdialog mit Vergleich, zweitem Bild, drei Spitzenkennzahlen und dem Ausweis „Tagesbilanz (Bestandsweg)"; Kennzahlen und Gruppe `GR_GEBAEUDE`; drei bedingte Reihen im Export; Glossarabschnitt, beide `.resx`, Dialogkatalog-Einträge; Wiki-Seite und Logbuch-Entwurf | M4 | **die Verschiebung des Altwegs byte-gleich gegen die GB-Basis, vor der Anbindung**; danach ändern **alle dreizehn Projekte sich — Basis vollständig neu**; dazu der Rückweg-Test auf der Arbeitskopie; `ChartProben` grün; Sichtabnahme Windows; **Versionsnummer beim Anwender erfragt** |
+| **M4** (vorweggenommen) | **umgesetzt als Schemaschritt 95** (Anwenderentscheid 19.09.2026): Klimaspalten in `SchemaKatalog.Schritt95_Klimaspalten`, Leseweg der PVGIS- und der TRY-Antwort; keine `Windgeschwindigkeit` ([Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)) | — (lief vor GB) | erbracht: byte-gleich; Importprobe liefert dieselben Strahlungsreihen |
+| **G1 + G2** | **Erster Schritt: der Altweg wandert Zeichen für Zeichen nach `Altweg/`** (`TagesbilanzWaermebedarf`), die Fassade `SimulationWaermebedarf` und der Vorbereitungsschritt `GebaeudeVorbereitung` entstehen, dazu `Modultrennungswache` (E20). **Danach erst** die Anbindung: `GebaeudeKlimaweg` (liest die Klimaspalten aus Schritt 95; Einfrierregel **„gesäte Klimareihen"**), `GebaeudeModellEingang` samt `Bauen`, `GebaeudeModellErgebnis`, `Gebaeudepruefung`; **die eine Weiche am Eingang**; der vierte Parameter der Auskunft; **ein Schreibweg im Editor** (A4), Reiter 3 in VDI-6007-Struktur, Platzhalter am Zahlenfeld (A5), Schalter „Rechenweg" samt eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)", Skalierungsdialog auf die Nutzfläche (E19); **Hüllenumzug nach `EPOS.UI.Daten`** samt `Gebaeudewege` (A10); Bedarfsdialog mit Vergleich, zweitem Bild, drei Spitzenkennzahlen und dem Ausweis „Tagesbilanz (Bestandsweg)"; Kennzahlen und Gruppe `GR_GEBAEUDE`; drei bedingte Reihen im Export; Glossarabschnitt, beide `.resx`, Dialogkatalog-Einträge; Wiki-Seite und Logbuch-Entwurf | M3 (M4 liegt mit Schritt 95 bereit) | **die Verschiebung des Altwegs byte-gleich gegen die GB-Basis, vor der Anbindung**; danach ändern **alle dreizehn Projekte sich — Basis vollständig neu**; dazu der Rückweg-Test auf der Arbeitskopie; `ChartProben` grün; Sichtabnahme Windows; **Versionsnummer beim Anwender erfragt** |
 | **KU0** | **Papiere, nichts bauen:** die Fortschreibung dieses Papiers auf E12, E15 und E21 (1.2, 1.3, 3.5, 4.1, 4.3); führend ist das [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kap. 11 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün |
 | **KU1** (mit G1 + G2) | **Fassade `SimulationKaeltebedarf`** nach dem Muster der Wärmefassade, Kanal `KUEHLUNG` samt den zwei Kanallisten `KANAELE_WAERME`/`KANAELE_KAELTE`, `Kaeltebedarf_Max` und Kältedauerlinie, die vier Kältekennzahlen (4.3), der Abschnitt „Kältebedarf" im Bedarfsdialog mit denselben Bausteinen wie der Abschnitt „Wärmebedarf"; benannter Hinweis bei einem Altweg-Gebäude (E21) | G1 + G2 (nur das Stundenmodell liefert Kühllast) | Projekte **ohne** Kühlung byte-gleich, `Waermelast_Max` unverändert; Kanalsummenprobe; Wächter „Kühlkanal nie negativ"; `ChartProben` grün |
 | **G3** | `Bauteilreduktion` gefüllt, `ErsatzparameterRC.AusBauteilweg`; `BaustoffSchema`, `BauteilaufbauSchema`, `ZonenSchema.Anweisungen` (Schritte S-A bis S-C — **`Tab_Zone` entsteht hier**, und S-C legt die Zonenspalten aus KU-S1 bzw. AK-S1 mit an, sofern diese Stufen stehen, 2.4); `BaustoffCtrl`, `BauteilaufbauCtrl`, Modelle; `BaustoffKatalogDialog`, `BauteilaufbauDialog` mit Schichtenraster; **zwei Menüzeilen gemeinsam**; der Knopf „Gebäude als eine Zone übernehmen" (W1); **`BauteilDialog` und der Zonenreiter in der Grundform** — ohne sie wäre der Bauteilweg dieser Stufe nur über Import oder Testdaten zu füllen (3.2); Registerpflege S-D; **Katalogseite auf `Katalogliste`** samt `Proben/Rasterprobe` (Befund U L4) | G1 + G2 | Reduktion trifft die Vergleichswerte; Bauteilweg gleich Klassenweg im Grenzfall; Referenzlauf **byte-gleich** (kein Leser); Auslieferungsvorlage grün (Katalog nicht leer) |
-| **G4a** (IFC-Import) | `IGebaeudeLeser`, `IfcLeser` samt Abbildern und Profil; `GebaeudeImportAblauf`, `-Profil`, `-Satz`, `GebaeudeZuordnungsModell`; `GebaeudeImportDialog` + Hülle; `ImportzuordnungSchema` (Schritt S-F), `GebaeudeImportCtrl`, Kaskadenrettung (W15); **Lizenzhinweisseite** (U10); iOS-Dateifilter | G1 + G2 (G3 für Schichten) | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; iOS-Lauf **nur nach Rückfrage** |
+| **G4a** (IFC-Import) | `IGebaeudeLeser`, `IfcLeser` samt Abbildern und Profil; `GebaeudeImportAblauf`, `-Profil`, `-Satz`, `GebaeudeZuordnungsModell`; `GebaeudeImportDialog` + Hülle; `ImportzuordnungSchema` (Schritt S-F), `GebaeudeImportCtrl`, Kaskadenrettung (W15); **Lizenzhinweisseite** (U10); iOS-Dateifilter | G1 + G2 (G3 für Schichten); G4c vorher (D1, E27) | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; iOS-Lauf **nur nach Rückfrage** |
 | **G4b** | Bauteilebene des IFC-Imports | G3, G4a | nach G4a im Feld |
-| **G4c** (gbXML-Import) | `GbxmlLeser`, `GbxmlAbbild`, `GbxmlImportProfil`; zweites Profil am selben Dialog; Zonenregel für den Einzonenfall | G1 + G2 (A7/ADR-004 angenommen, E16); G3 für Schichten | Importprobe bestanden; Referenzlauf unverändert. **Reihenfolge zu G4a ist ein Anwenderentscheid** (D1); **D16 ist vor der Beauftragung zu entscheiden** — er verschiebt die Zonenregeln nach G6c |
+| **G4c** (gbXML-Import) | `GbxmlLeser`, `GbxmlAbbild`, `GbxmlImportProfil`; zweites Profil am selben Dialog; Zonenregel für den Einzonenfall | G1 + G2 (A7/ADR-004 angenommen, E16); G3 für Schichten | Importprobe bestanden; Referenzlauf unverändert. **G4c kommt vor G4a** (D1, mit E27 entschieden); **D16 ist mit E27 bejaht** — die Zonenregeln des gbXML-Imports kommen damit mit G6c |
 | **G5** (Geometrieableitung) | nichts aus diesem Papier | G4 | **unabhängiger Zweig** — G6 braucht ihn nicht; nur bei Bedarf aus der Praxis |
 | **G6a** | `GebaeudeZonenCtrl`, Modelle, Kopierwege, Registerpflege, Bericht-Zonentabelle | G3 | Migrationstests grün; Referenzlauf byte-gleich |
 | **G6b** | `ZonenSchema.AnweisungenKopplung` (Schritt **S-G**: `Tab_Zonenluftstrom`, `ID_Nachbarzone` — **hier**, nicht in G6a: W1 und die Bilder in 2.1 führen ihn mit G6b); `Zonenkopplung`, `ZonenEingang`, `ZonenErgebnis`; `ZonenDialog` um Mehrzonenfelder und Luftaustausch erweitert; `Gebaeudepruefung` auf Zonenebene samt Trennflächenwächter | G6a (A8/ADR-005 angenommen, E17) | Migrationstests grün; die Probe „eine Zone bitgleich zum Stand nach G3" ist **Gate**; Vergleichsrechnung gegen den einfacheren Kopplungsweg; Laufzeit an einem echten Mehrzonengebäude **gemessen** |
-| **G6c** | Zonenimport (IFC, mit D16 auch gbXML): Zuordnung Zone ↔ Quellentität, Hierarchie im Zuordnungsdialog; **`Zonengeometrie` samt `Zonenumriss`** und die **Grundrissansicht** `GebaeudeAnsicht` im Zuordnungsschritt (E11, 3.4) | G4, G6b | Importproben; **Determinismusprobe der Geometrie** (gleiche Eingabe, gleiche Polygone, 1.7); bunit-Fall der Ansicht samt Pflichttext „schematisch"; iOS-Lauf nach Rückfrage |
+| **G6c** | Zonenimport (IFC und, nach D16 mit E27, gbXML): Zuordnung Zone ↔ Quellentität, Hierarchie im Zuordnungsdialog; **`Zonengeometrie` samt `Zonenumriss`** und die **Grundrissansicht** `GebaeudeAnsicht` im Zuordnungsschritt (E11, 3.4) | G4, G6b | Importproben; **Determinismusprobe der Geometrie** (gleiche Eingabe, gleiche Polygone, 1.7); bunit-Fall der Ansicht samt Pflichttext „schematisch"; iOS-Lauf nach Rückfrage |
 | **G6d** | Zonendaten in der Testdatenbank, Einfrierregel **„gesäte Zonendaten"** | G6c | grüner Kern-Lauf, neue Basis begründet |
-| **G7** | `IGebaeudeSchreiber`, `GebaeudeExportAblauf`, `-Profil`, `IfcSchreiber`, `GbxmlSchreiber`; `GebaeudeExportDialog` + `GebaeudeExportHuelle` als **sechste** neue Maske samt ihren vier Pflegestellen; Einstieg, Kennzeichnung, Round-Trip-Sperre (4.6); **mit G7b die Körperansicht** (`three.js` lokal, `GebaeudeAnsicht`), die dasselbe `Zonengeometrie`-Modell liest wie der Export | **G6** (der Export bildet dessen Datenmodell ab), G4a für Paket und Lizenzseite; **`three.js` auf der Lizenzhinweisseite** und die iOS-Messung (3.7) | je Teilstufe eigene Proben; der Körper zeigt, was die Datei schreibt — Sichtprüfung gegen `PolyLoop` und `IfcExtrudedAreaSolid`; **die vertragliche Frage der Rückgabe ist vor dem Round-Trip zu klären** (D11) |
+| **G7** | `IGebaeudeSchreiber`, `GebaeudeExportAblauf`, `-Profil`, `IfcSchreiber`, `GbxmlSchreiber`; `GebaeudeExportDialog` + `GebaeudeExportHuelle` als **sechste** neue Maske samt ihren vier Pflegestellen; Einstieg, Kennzeichnung, Round-Trip-Sperre (4.6); **mit G7b die Körperansicht** (`three.js` lokal, `GebaeudeAnsicht`), die dasselbe `Zonengeometrie`-Modell liest wie der Export | **G6** (der Export bildet dessen Datenmodell ab), G4a für Paket und Lizenzseite; **`three.js` auf der Lizenzhinweisseite** und die iOS-Messung (3.7) | je Teilstufe eigene Proben; der Körper zeigt, was die Datei schreibt — Sichtprüfung gegen `PolyLoop` und `IfcExtrudedAreaSolid`; **die Rückgabe angereicherter fremder Dateien ist zulässig** — mit Kennung in der Datei und Beipackzettel (D11, mit E27 entschieden) |
 | **KU2** | **Deckung der Kälteseite**: `DeckungKanalKaelte` neben `DeckungKanal`, Kältesenke und Kälteziel, reversible Wärmepumpe über die vorhandene Kühlkennlinie, Kältestrom als eigene Verbrauchsposition, Kanalzeile und Kältebild im Bericht — **jeweils nach dem Muster der Wärmeseite** (E21) | KU1 | **Kälteprobe je Stunde** (Muster `Energieprobe`): kein Wärmeerzeuger schreibt in `Deckung_Kuehlung`; Selbsttest: Kanallisten vollständig und disjunkt; Strombilanz schließt |
 | **KU3** | **Kältemaschine als eigener Erzeugertyp** samt Umfeld, Kühlung je Zone im Mehrzonenfall, Export der Kältegrößen — dieselben Klassenmuster wie beim jeweiligen Gegenstück der Wärmeseite (E21) | KU2, G6 für die Zonenseite | Rechenproben je Erzeuger; Rundlaufprobe des Exports; Referenzlauf: Projekte ohne Kühlung unverändert |
 | **AK0** | **Papiere, nichts bauen:** die Bausteine der Anlagenkopplung in diesem Papier (1.2, 1.3, 1.5, 1.7, 2.8) auf E22; führend ist die [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md) Kap. 12 | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün |
 | **AK1** | **Heizkreis als Randbedingung:** `Waermeuebergabe` in `Gebaeude/`; `Stundenrand` um `VorlaufC`, `UebergabeKennwerte`, `ReglerbandK` und `Stundenergebnis` um `VorlaufC`, `RuecklaufC`, `Begrenzungsgrund` erweitert (1.3); Schemaschritte `AK-S1` und `AK-S3` (Wärmeteil) mit Sichtneubau und NULL-erhaltender Katalogkopie (2.4, 2.5); ein Gebäude auf dem Altweg geht als **feste Last** ein — ein Altweg-Sonderfall, der in die Löschliste der Stufe GA gehört | G1 + G2 (Wärmeseite); die Kälteseite setzt KU1 und KU2 voraus (Anlagenkopplung 12.3) | eigener Einfrierschritt (2.8): Projekte mit `Anlagenkopplung = AUS` byte-gleich, das gekoppelte Projekt mit neuer Basis; die Grenzfallproben der Anlagenkopplung 11.1; `ChartProben` grün |
 | **AK2** | **Erzeugerfahrplan als Verfügbarkeit:** `Anlagenfahrplan` samt Naht `Anlagenverfuegbarkeit` neben den Fassaden, außerhalb beider Module (1.3, 1.5); Schemaschritt `AK-S2` und der Komfortteil von `AK-S3`; der Zweipass der Verteilung auf mehrere Gebäude; die Wache prüft, dass der Fahrplan keinen der beiden Ordner nennt (1.7) | AK1 abgenommen und eine Feldphase (Anlagenkopplung B-A6) | eigener Einfrierschritt (2.8); die AK2-Proben der Anlagenkopplung 11.1; Restbedarf und Komfortstunden stehen im Bericht nebeneinander |
 | **AK3** | **Der geschlossene Kreis:** Iterationsrahmen nach dem Muster von ADR-005 (feste Reihenfolge, Abbruchmaße, Höchstzahl, benannter Fehler), Umkehr der Laufordnung in `SimulationWaermebedarf`/`SimulationControl` | AK2 abgenommen und eine Feldphase; ob überhaupt, wird dann entschieden (Anlagenkopplung H6) | eigener Einfrierschritt (2.8); „ein Erzeuger ohne Grenzen bitgleich zu AK1" als Gate; Laufzeit an einem Mehrzonengebäude gemessen |
-| **GA — Altweg ablösen** (letzte Stufe, Zeitpunkt offen) | Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache` (1.2, 1.3, 1.5, 1.7); Schalter „Rechenweg" und Abschnitt „Tagesbilanz (Bestandsweg)" (3.2); Vergleich alt/neu, Ausweis und Kältebedarf-0-Hinweis (3.5, 4.1); `DROP COLUMN` der nur vom Altweg gelesenen Spalten samt `Gebaeude_Modell` je Tabelle mit Sichtneubau, davor `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen (2.2, 2.4); `Tab_DBTagV(-Daten)` samt Leser (2.9); der Prüfpunkt der Auslieferungsvorlage (2.7); der AK-Sonderfall „feste Last"; das Referenzprojekt des Altwegs auf VDI 6007 umstellen, den Rückweg-Test einstellen (4.4). Die vollständige **Löschliste** führt das Umsetzungskonzept Kap. 6 (Q25) | Ablösekriterium **Q24** (Empfehlung, Konzept N1.31): alle Referenz- und Bestandsprojekte einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg je Projekt erklärt; eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; KU1 und, falls beauftragt, AK1 abgenommen; die Ausbauprobe grün | **Gate ist die Ausbauprobe** (1.7, 4.4): Ein Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; danach die **Basis neu eingefroren** (2.8). 5–8 PT, in keiner Summe |
+| **GA — Altweg ablösen** (letzte Stufe, fällig nach Q24) | Modul `Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache` (1.2, 1.3, 1.5, 1.7); Schalter „Rechenweg" und Abschnitt „Tagesbilanz (Bestandsweg)" (3.2); Vergleich alt/neu, Ausweis und Kältebedarf-0-Hinweis (3.5, 4.1); `DROP COLUMN` der nur vom Altweg gelesenen Spalten samt `Gebaeude_Modell` je Tabelle mit Sichtneubau, davor `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen (2.2, 2.4); `Tab_DBTagV(-Daten)` samt Leser (2.9); der Prüfpunkt der Auslieferungsvorlage (2.7); der AK-Sonderfall „feste Last"; das Referenzprojekt des Altwegs auf VDI 6007 umstellen, den Rückweg-Test einstellen (4.4). Die vollständige **Löschliste** führt das Umsetzungskonzept Kap. 6 (Q25: vollständige Ablösung, E27) | Ablösekriterium **Q24**, mit E27 entschieden ([Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)): GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind — alle Referenz- und Bestandsprojekte einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg je Projekt erklärt; eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; KU1 und, falls beauftragt, AK1 abgenommen; die Ausbauprobe grün. Geprüft wird mit jeder Abnahme, der Stand steht in der Statusdatei | **Gate ist die Ausbauprobe** (1.7, 4.4): Ein Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; danach die **Basis neu eingefroren** (2.8). 5–8 PT, in keiner Summe |
 
 ```mermaid
 flowchart TB
   G0["G0 — Loeser im Kern<br/>ohne Aufrufer"] --> GB["GB — Instanzzustand<br/>EINFRIEREN, Regel Gebaeudedaten"]
   GB --> M2["Merge M2 — Umbenennung<br/>byte-gleich"]
   M2 --> M3["Merge M3 — Gebaeudespalten<br/>Sichtneubau + Namensleser<br/>SPERRPUNKT: CopyFromStamm NULL-erhaltend"]
-  M3 --> M4["Merge M4 — Klimaspalten<br/>Regel Klimareihen"]
-  M4 --> G12["G1 + G2 — Modell und Darstellung<br/>EINFRIEREN, Basis vollstaendig neu"]
+  M3 --> G12["G1 + G2 — Modell und Darstellung<br/>EINFRIEREN, Basis vollstaendig neu<br/>Regel Klimareihen"]
+  M4["M4 — Klimaspalten<br/>vorweggenommen als Schritt 95"] -.->|liegt bereit| G12
   G12 --> G3["G3 — Bauteilkatalog<br/>SPERRPUNKT: Katalogliste + Rasterprobe"]
   G3 --> G4A["G4a — IFC-Import<br/>SPERRPUNKT: Lizenzhinweisseite"]
   G3 --> G4C["G4c — gbXML-Import<br/>A7 (ADR-004) angenommen"]
+  G4C -.->|D1 zuerst| G4A
   G3 --> G6A["G6a — Zonen-Datenmodell"]
   G4A --> G6C
   G4C --> G6C
@@ -2162,7 +2212,7 @@ flowchart TB
   KU2 -.->|Kaelteseite| AK1
   AK1 --> AK2["AK2 — Fahrplan als Verfuegbarkeit<br/>nach Feldphase, EINFRIEREN"]
   AK2 --> AK3["AK3 — geschlossener Kreis<br/>ob ueberhaupt: H6, EINFRIEREN"]
-  G7 --> GA["GA — Altweg abloesen, letzte Stufe<br/>Zeitpunkt offen (Q24), Gate Ausbauprobe<br/>EINFRIEREN"]
+  G7 --> GA["GA — Altweg abloesen, letzte Stufe<br/>faellig nach Kriterium Q24, Gate Ausbauprobe<br/>EINFRIEREN"]
   KU1 --> GA
   AK1 -.->|falls beauftragt| GA
 ```
@@ -2171,41 +2221,47 @@ flowchart TB
 
 ## 6. Offene Architekturentscheide
 
-Neunzehn Fragen. Vier davon (**A4**, **A5**, **A9**, **A19**) liegen bereits unter einer Nummer des
-Umsetzungskonzepts beim Anwender und stehen hier **nur als Sperrpunkt dieses Papiers** — entschieden
-werden sie unter ihrer alten Nummer, damit nicht zwei Register zwei Antworten bekommen. **Vier sind
-erledigt:** **A7** und **A8** durch E16 und E17, **A16** durch **E20** (es gibt keinen zweiten
-Verzweigungspunkt) und **A19 (= U2)** durch **E20** überholt (kein Feld wird mehr versteckt).
-**A15** bleibt offen; seine Empfehlung ist die Fassung des Systementwurfs 8.4 (F-Ü7): kein zweiter
-Basisordner, ein Referenzprojekt auf dem Altweg in der jeweils aktuellen Basis, der Rückweg-Test
-allein darauf — bis zur Stufe GA (E26).
+Neunzehn Fragen — **alle entschieden oder überholt**. Vier davon (**A4**, **A5**, **A9**, **A19**)
+lagen unter einer Nummer des Umsetzungskonzepts beim Anwender und standen hier **nur als Sperrpunkt
+dieses Papiers** — entschieden sind sie unter ihrer alten Nummer (U1, U3, U5, U2), damit nicht zwei
+Register zwei Antworten bekommen. **A7** und **A8** sind durch E16 und E17 entschieden, **A16** durch
+**E20** (es gibt keinen zweiten Verzweigungspunkt), **A19 (= U2)** ist durch **E20** überholt (kein
+Feld wird mehr versteckt). **Alle übrigen — A1, A2, A3, A6, A10 bis A15, A17 und A18, dazu A4, A5
+und A9 über U1, U3 und U5 — sind mit E27 (22.09.2026, [Konzept N1.32](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) nach Empfehlung
+entschieden.** **A15** gilt damit in der Fassung des Systementwurfs 8.4 (F-Ü7): kein zweiter
+Basisordner, **genau ein** Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` in der jeweils
+aktuellen Basis bis GA, die Arbeitskopie gegen die GB-Basis nur bis zum Merge G1 + G2, der
+Rückweg-Test allein auf diesem Projekt — er endet mit GA (E26). Die Tabelle bleibt als Begründung
+stehen: Die Spalte „Empfehlung" nennt, was entschieden ist, die Alternativen sind verworfen.
 
-| Nr. | Sachverhalt | Empfehlung | Alternative | Ohne Entscheid blockiert |
+| Nr. | Sachverhalt | Empfehlung — Stand 22.09.2026 | Alternative (verworfen) | Ohne Entscheid wäre blockiert gewesen |
 |---|---|---|---|---|
-| **A1** | Bleibt die Kaskade der Gebäudekinder auf `Tab_Gebaeude`, obwohl der Gebäude-Schreibweg möglicherweise löscht und neu anlegt? Bei `Tab_Zonenluftstrom` greift die Falle **doppelt** (zwei Eltern) | **Kaskade behalten**, den Schreibweg **vor G3 messen** und die Rettung dort einbauen, wo das Löschen steht (`GebaeudekinderSichern` in `WizardCtrl`); die Probe prüft beide Fälle | (b) ohne Kaskade, Waisen über ein Werkzeug entfernen — verlagert die Verantwortung in ein Werkzeug, das beim Anwender nie läuft. (c) Schreibweg auf „Ändern statt Löschen" umbauen — sauber, aber ein Eingriff in den Bestandsweg mitten in der Einfrierkette | G3 (Anlage von `Tab_Zone`) |
-| **A2** | Bleibt das IFC-Paket am Kern, oder zieht der Leser in ein eigenes Projekt hinter `IGebaeudeLeser`? | **Am Kern bleiben** (ADR-003), aber `IGebaeudeLeser` **von Anfang an** ziehen: Vermisst der iOS-Gerätebau Typen, kostet der Umzug eine Fabrikzeile statt eines Umbaus | (b) sofort eigenes Projekt — iOS verlöre den Import von vornherein. (c) ohne Naht binden — spart eine Schnittstelle, macht jeden Umzug zum Umbau | nichts; die Messung steht in G4 an |
-| **A3** | **Name und Ordner** des Zuordnungsdialogs: `GebaeudeImportDialog` in `Dialoge/Import/` (dieses Papier) oder `IfcZuordnungDialog` in `Dialoge/Bedarf/` (Datenaustauschkonzept 2.4)? Dass es **einer** ist, ist dort entschieden | **`GebaeudeImportDialog`** — ein Format im Namen einer Maske, die zwei Formate trägt, ist eine Unwahrheit; der Dialog erbt den Ablauf des Katalogimports | (b) den Namen aus 2.4 behalten und die Zweiformatigkeit nur im Profil führen | G4 |
-| **A4** | Ein Schreibweg im Katalogeditor statt der heutigen vier Aus- und Schreibwege — **für den Anwender sichtbar** | **= U1, Empfehlung dort: ja**, mit G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf | siehe U1 | G1 (sonst hängen zehn Prüfregeln an drei Schreibstellen) |
-| **A5** | Platzhalter am Zahlenfeld — ein Eingriff in einen Standardbaustein, den jeder Dialog benutzt | **= U3, Empfehlung dort: ja**, rein additiv; zieht `StilblattTests` nach sich | siehe U3 | G1 (Reiter 3 bekommt rund zehn Vorgabefelder) |
-| **A6** | Werden Zonen, Bauteile und Luftströme als **ein** Aggregat je Gebäude geschrieben oder je Zone einzeln — und schreibt das Aggregat durch **Löschen + Neuanlegen** oder durch **Abgleich über die Ids**? | **Ein Aggregat** (`GebaeudeZonenCtrl`), und darin **Ändern statt Löschen**: Abgleich über die Ids des Arbeitsstands in der Reihenfolge Entfernen → Ändern → Anlegen, alles in **einer** Transaktion (1.4, 2.7). Nur so bleibt der eine Schreibweg über vier Überlagerungsebenen einer **und** bleiben die Ids stehen, an denen `Tab_Importzuordnung` (ohne Kaskade) und `Tab_Zonenluftstrom` (Kaskade an **beiden** Zonen, `CHECK ID_ZoneA < ID_ZoneB`) hängen | (b) Löschen + Neuanlegen je Gebäude — einfacher zu schreiben, zerstört aber bei **jedem** gewöhnlichen Speichern die Importherkunft und damit den Round-Trip. (c) je Zone schreiben — der Bauteildialog müsste selbst schreiben, und Abbrechen auf der Zonenebene ließe geschriebene Bauteile stehen | G6b |
+| **A1** | Bleibt die Kaskade der Gebäudekinder auf `Tab_Gebaeude`, obwohl der Gebäude-Schreibweg möglicherweise löscht und neu anlegt? Bei `Tab_Zonenluftstrom` greift die Falle **doppelt** (zwei Eltern) | **Mit E27 entschieden:** **Kaskade behalten**, den Schreibweg **vor G3 messen** und die Rettung dort einbauen, wo das Löschen steht (`GebaeudekinderSichern` in `WizardCtrl`); die Probe prüft beide Fälle | (b) ohne Kaskade, Waisen über ein Werkzeug entfernen — verlagert die Verantwortung in ein Werkzeug, das beim Anwender nie läuft. (c) Schreibweg auf „Ändern statt Löschen" umbauen — sauber, aber ein Eingriff in den Bestandsweg mitten in der Einfrierkette | G3 (Anlage von `Tab_Zone`) |
+| **A2** | Bleibt das IFC-Paket am Kern, oder zieht der Leser in ein eigenes Projekt hinter `IGebaeudeLeser`? | **Mit E27 entschieden:** **Am Kern bleiben** (ADR-003), aber `IGebaeudeLeser` **von Anfang an** ziehen: Vermisst der iOS-Gerätebau Typen, kostet der Umzug eine Fabrikzeile statt eines Umbaus | (b) sofort eigenes Projekt — iOS verlöre den Import von vornherein. (c) ohne Naht binden — spart eine Schnittstelle, macht jeden Umzug zum Umbau | nichts; die Messung steht in G4 an |
+| **A3** | **Name und Ordner** des Zuordnungsdialogs: `GebaeudeImportDialog` in `Dialoge/Import/` (dieses Papier) oder `IfcZuordnungDialog` in `Dialoge/Bedarf/` (Datenaustauschkonzept 2.4)? Dass es **einer** ist, ist dort entschieden | **Mit E27 entschieden:** **`GebaeudeImportDialog`** — ein Format im Namen einer Maske, die zwei Formate trägt, ist eine Unwahrheit; der Dialog erbt den Ablauf des Katalogimports | (b) den Namen aus 2.4 behalten und die Zweiformatigkeit nur im Profil führen | G4 |
+| **A4** | Ein Schreibweg im Katalogeditor statt der heutigen vier Aus- und Schreibwege — **für den Anwender sichtbar** | **= U1, mit E27 entschieden: ja**, mit G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf | siehe U1 | G1 (sonst hängen zehn Prüfregeln an drei Schreibstellen) |
+| **A5** | Platzhalter am Zahlenfeld — ein Eingriff in einen Standardbaustein, den jeder Dialog benutzt | **= U3, mit E27 entschieden: ja**, rein additiv; zieht `StilblattTests` nach sich | siehe U3 | G1 (Reiter 3 bekommt rund zehn Vorgabefelder) |
+| **A6** | Werden Zonen, Bauteile und Luftströme als **ein** Aggregat je Gebäude geschrieben oder je Zone einzeln — und schreibt das Aggregat durch **Löschen + Neuanlegen** oder durch **Abgleich über die Ids**? | **Mit E27 entschieden:** **Ein Aggregat** (`GebaeudeZonenCtrl`), und darin **Ändern statt Löschen**: Abgleich über die Ids des Arbeitsstands in der Reihenfolge Entfernen → Ändern → Anlegen, alles in **einer** Transaktion (1.4, 2.7). Nur so bleibt der eine Schreibweg über vier Überlagerungsebenen einer **und** bleiben die Ids stehen, an denen `Tab_Importzuordnung` (ohne Kaskade) und `Tab_Zonenluftstrom` (Kaskade an **beiden** Zonen, `CHECK ID_ZoneA < ID_ZoneB`) hängen | (b) Löschen + Neuanlegen je Gebäude — einfacher zu schreiben, zerstört aber bei **jedem** gewöhnlichen Speichern die Importherkunft und damit den Round-Trip. (c) je Zone schreiben — der Bauteildialog müsste selbst schreiben, und Abbrechen auf der Zonenebene ließe geschriebene Bauteile stehen | G6b |
 | **A7** | Wird ADR-004 angenommen (gbXML über LINQ to XML mit handgeschriebenem Lesemodell)? | **entschieden 16.09.2026 (E16): angenommen** — das aus dem Schema erzeugte Modell ist unbrauchbar; G4c hat damit seinen Leseweg | (b) Serialisierer mit erzeugtem Modell — scheidet schon unter Windows aus und erzeugt Laufzeitcode, den iOS nicht trägt. (c) Fremdbibliothek — es gibt für .NET keine | — (entschieden) |
 | **A8** | Wird ADR-005 angenommen (Zonenkopplung über die Nachbarraum-Randbedingung, Durchlauf je Stunde)? | **entschieden 16.09.2026 (E17): angenommen, M1 und M4 damit festgelegt — mit Messpflicht:** der einfachere Weg als Vergleichsrechnung, das Gesamtsystem für zwei Zonen als Prüforakel, die Probe „eine Zone bitgleich" als Gate | (b) Vorstundenkopplung — einfacher und schneller, trägt aber den Zonen-Luftaustausch nicht. (c) Gesamtsystem — exakt, aber teuer genau dort, wo das Regelungsmuster je Stunde festgehalten wird | — (entschieden) |
-| **A9** | Die **zwei Gebäudespalten-Schritte** des Konzepts zu **einem** verschmelzen (Papiername **M3**)? Die Zahlen, die das Konzept dafür nennt, sind anderweitig vergeben (2.4) | **= U5, Empfehlung dort: ja** — 15 Spalten je Tabelle, ein Sichtneubau; der Klimaschritt bleibt getrennt | siehe U5 | M3 |
-| **A10** | Zieht der Gebäudedialog schon mit G1 nach `EPOS.UI.Daten` oder erst mit G6? | **Mit G1** — die Hülle wird ohnehin neu geschnitten, und der Importweg setzt einen plattformfreien Schreibweg voraus | (b) erst mit G6 — spart im ersten Schritt Arbeit, verdoppelt sie aber, und der Import bleibt auf iOS bis dahin benannt abgelehnt | G4 (plattformfreie Importhülle) |
-| **A11** | Werden die Schrittnummern jetzt verbindlich vergeben oder erst bei Beauftragung? | **Erst bei Beauftragung**; verbindlich sind jetzt **Reihenfolge und Inhalt**. Jede vergebene Nummer entwertet ältere Projektpakete, weil der Schemastand im Transportmanifest steht | (b) jetzt fest vergeben — gibt allen Papieren feste Zahlen, erzwingt aber genau diese Auslieferungsreihenfolge | nichts; die Papiere führen bis dahin GB, M2–M4, S-A bis S-G, KU-S1 bis KU-S4 (Kühlkonzept Kap. 7) und AK-S1 bis AK-S3 (Anlagenkopplung Kap. 8); mehrere davon legen Spalten an `Tab_Gebaeude(_STAMM)` und kosten je einen Sichtneubau (2.4, 2.5) |
-| **A12** | Wo erscheint der Produktausweis nach E10 — **Wiki-Seite und Berichtskopf**? (In den Exportdateien ist er mit Datenaustauschkonzept 6.5 entschieden, je Zone im Mehrzonenfall) | **Beides**, im Wortlaut von E10, unverändert und ohne Umschreibung; er wechselt, sobald G0 den offenen Testfall löst | (b) nur im Wiki — der Leser eines Berichts erführe nicht, mit welchem Rechenkern die Zahlen entstanden sind | G2 (Wiki-Seite), G1 (Berichtskopf) |
-| **A13** | Bekommt `Tab_Gebaeude` die Spalten `Herkunft` und `Quellkennung`, wie Zone, Bauteil, Aufbau und Baustoff sie tragen? | **Nein — Regel „Gebäudeherkunft nur in `Tab_Importzuordnung`"** (2.7). `Tab_Gebaeude` hat einen Katalogzwilling, an dem eine Importherkunft nichts bedeutet, und die Spaltengleichheit (R9) zwänge sie dorthin; jede weitere Gebäudespalte ist außerdem ein weiterer Sichtneubau | (b) beide Spalten mit Schritt S-F an beide Tabellen — dann 17 statt 15 neue Spalten und ein **zweiter** Sichtneubau | G4 (Schritt S-F) |
-| **A14** | Was trägt den Umschalter **Klassenweg → Bauteilweg**? Heute die Datenlage: `Tab_Zone` leer heißt Klassenweg (Mehrzonenkonzept 4.3). Damit ändert das Anlegen der **ersten** Zone die Zahlen eines Projekts ohne Schalter | **Datenlage behalten, aber den Übergang benennen**: Rückfrage vor der ersten Zone, `Herleitungszeile` am Schalter „Rechenweg" in **beiden** Stellungen, und der Übergang ist ein Einfrieranlass nur dort, wo ein Referenzprojekt Zonen bekommt (G6d) | (b) dritter Persistenzwert an `Gebaeude_Modell` — der Weg steht dann ausdrücklich in der Datenbank, kostet aber einen Wert, der beim Löschen der letzten Zone wieder falsch wäre; er hinge zudem an `Gebaeude_Modell`, einer Spalte, die mit der Stufe GA fällt (E26) | G3 (der Übernahmeknopf entsteht dort) |
-| **A15** | Was geschieht mit der letzten reinen Bestandsbasis (GB), gegen die der Rückweg-Nachweis läuft? Befund V 5.2 will sie aufheben; die Hausregel sagt „frühere Basen liegen nicht mehr im Repositorium, gerechnet wird ausschließlich gegen die aktuelle Basis" | **Keine zweite Basis im Repositorium, sondern ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ`, das in der jeweils aktuellen Basis mit eingefroren wird** (Fassung des Systementwurfs 8.4, F-Ü7); **der Rückweg-Test misst allein dieses Projekt und läuft bis zur Stufe GA** (E26), die es auf VDI 6007 umstellt und die Basis neu einfriert. So prüft jeder Lauf **beide** Wege gegen dieselbe, aktuelle Basis, und die drei neuen Reihen entstehen für dieses Projekt gar nicht erst — genau die Bedingung, die der Vergleich ohnehin stellt. Die GB-Basis bleibt nur bis zum Merge G1 + G2 und wandert dann mit ihrem Protokoll nach `Dokumentation/ueberholt/Referenzbasen/`; **A15 bleibt offen**, dies ist die Empfehlung | (b) zwei Basen nebeneinander — gegen die Hausregel, und jeder Lauf müsste sagen, gegen welche er misst. (c) ein Dateiausschluss im Vergleich — löste es technisch, kostet aber einen neuen Schalter an einem Werkzeug, an dem die ganze Nachweiskette hängt | G1 + G2 |
+| **A9** | Die **zwei Gebäudespalten-Schritte** des Konzepts zu **einem** verschmelzen (Papiername **M3**)? Die Zahlen, die das Konzept dafür nennt, sind anderweitig vergeben (2.4) | **= U5, mit E27 entschieden: ja** — ein Schritt, 15 Spalten je Tabelle, ein Sichtneubau; der Klimaschritt ist getrennt und als Schemaschritt 95 umgesetzt | siehe U5 | M3 |
+| **A10** | Zieht der Gebäudedialog schon mit G1 nach `EPOS.UI.Daten` oder erst mit G6? | **Mit E27 entschieden:** **Mit G1** — die Hülle wird ohnehin neu geschnitten, und der Importweg setzt einen plattformfreien Schreibweg voraus | (b) erst mit G6 — spart im ersten Schritt Arbeit, verdoppelt sie aber, und der Import bleibt auf iOS bis dahin benannt abgelehnt | G4 (plattformfreie Importhülle) |
+| **A11** | Werden die Schrittnummern jetzt verbindlich vergeben oder erst bei Beauftragung? | **Mit E27 entschieden:** **Erst bei Beauftragung**; verbindlich sind jetzt **Reihenfolge und Inhalt**. Jede vergebene Nummer entwertet ältere Projektpakete, weil der Schemastand im Transportmanifest steht | (b) jetzt fest vergeben — gibt allen Papieren feste Zahlen, erzwingt aber genau diese Auslieferungsreihenfolge | nichts; die Papiere führen bis dahin GB, M2–M4, S-A bis S-G, KU-S1 bis KU-S4 (Kühlkonzept Kap. 7) und AK-S1 bis AK-S3 (Anlagenkopplung Kap. 8); mehrere davon legen Spalten an `Tab_Gebaeude(_STAMM)` und kosten je einen Sichtneubau (2.4, 2.5) |
+| **A12** | Wo erscheint der Produktausweis nach E10 — **Wiki-Seite und Berichtskopf**? (In den Exportdateien ist er mit Datenaustauschkonzept 6.5 entschieden, je Zone im Mehrzonenfall) | **Mit E27 entschieden:** **Beides**, im Wortlaut von E10, unverändert und ohne Umschreibung; er wechselt, sobald G0 den offenen Testfall löst | (b) nur im Wiki — der Leser eines Berichts erführe nicht, mit welchem Rechenkern die Zahlen entstanden sind | G2 (Wiki-Seite), G1 (Berichtskopf) |
+| **A13** | Bekommt `Tab_Gebaeude` die Spalten `Herkunft` und `Quellkennung`, wie Zone, Bauteil, Aufbau und Baustoff sie tragen? | **Mit E27 entschieden:** **Nein — Regel „Gebäudeherkunft nur in `Tab_Importzuordnung`"** (2.7). `Tab_Gebaeude` hat einen Katalogzwilling, an dem eine Importherkunft nichts bedeutet, und die Spaltengleichheit (R9) zwänge sie dorthin; jede weitere Gebäudespalte ist außerdem ein weiterer Sichtneubau | (b) beide Spalten mit Schritt S-F an beide Tabellen — dann 17 statt 15 neue Spalten und ein **zweiter** Sichtneubau | G4 (Schritt S-F) |
+| **A14** | Was trägt den Umschalter **Klassenweg → Bauteilweg**? Heute die Datenlage: `Tab_Zone` leer heißt Klassenweg (Mehrzonenkonzept 4.3). Damit ändert das Anlegen der **ersten** Zone die Zahlen eines Projekts ohne Schalter | **Mit E27 entschieden:** **Datenlage behalten, aber den Übergang benennen**: Rückfrage vor der ersten Zone, `Herleitungszeile` am Schalter „Rechenweg" in **beiden** Stellungen, und der Übergang ist ein Einfrieranlass nur dort, wo ein Referenzprojekt Zonen bekommt (G6d) | (b) dritter Persistenzwert an `Gebaeude_Modell` — der Weg steht dann ausdrücklich in der Datenbank, kostet aber einen Wert, der beim Löschen der letzten Zone wieder falsch wäre; er hinge zudem an `Gebaeude_Modell`, einer Spalte, die mit der Stufe GA fällt (E26) | G3 (der Übernahmeknopf entsteht dort) |
+| **A15** | Was geschieht mit der letzten reinen Bestandsbasis (GB), gegen die der Rückweg-Nachweis läuft? Befund V 5.2 will sie aufheben; die Hausregel sagt „frühere Basen liegen nicht mehr im Repositorium, gerechnet wird ausschließlich gegen die aktuelle Basis" | **Mit E27 entschieden:** **Keine zweite Basis im Repositorium, sondern ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ`, das in der jeweils aktuellen Basis mit eingefroren wird** (Fassung des Systementwurfs 8.4, F-Ü7); **der Rückweg-Test misst allein dieses Projekt und läuft bis zur Stufe GA** (E26), die es auf VDI 6007 umstellt und die Basis neu einfriert. So prüft jeder Lauf **beide** Wege gegen dieselbe, aktuelle Basis, und die drei neuen Reihen entstehen für dieses Projekt gar nicht erst — genau die Bedingung, die der Vergleich ohnehin stellt. Die GB-Basis bleibt nur bis zum Merge G1 + G2 und wandert dann mit ihrem Protokoll nach `Dokumentation/ueberholt/Referenzbasen/`; **mit E27 (22.09.2026) so entschieden** | (b) zwei Basen nebeneinander — gegen die Hausregel, und jeder Lauf müsste sagen, gegen welche er misst. (c) ein Dateiausschluss im Vergleich — löste es technisch, kostet aber einen neuen Schalter an einem Werkzeug, an dem die ganze Nachweiskette hängt | G1 + G2 |
 | **A16** | **Welchen Zuschnitt bekommt der Verzweigungspunkt in `Bewohner_und_Flaeche_berechnen`?** Die Frage setzte **zwei** Verzweigungspunkte im Rumpf voraus (`:581` und `:647`) | **Entschieden durch E20 (16.09.2026): kein zweiter Verzweigungspunkt.** Es gibt **eine Weiche am Eingang** (Fassade `SimulationWaermebedarf`), davor einen modellfreien Vorbereitungsschritt, der Klimakalender, bisherigen Verbrauch, Flächen, Einheit und Jahresnutzungsgrad für **beide** Wege bereitstellt (1.3); Bewohnerzahl und Skalierungsfaktor nach E8 entstehen je Modul aus dessen erstem Lauf, und die Fassade führt die Schleife. Der Tagesbilanz-Weg wird dabei **Zeichen für Zeichen nach `Altweg/` verschoben** (4.1, ADR-006) | entfallen — die Alternativen (b) und (c) setzten den zweiten Punkt voraus | — (entschieden) |
-| **A17** | Bekommen Gebäudeimport und ‑export einen **Maskenschlüssel und eine Menüzeile**? Zwei geltende Papiere widersprechen sich: Datenaustauschkonzept 11.2 (D14) sagt nein, Befund U 1.3 sagt ja | **Nein** (D14): Überlagerung im Gebäudedialog, aufgemacht über Knöpfe in der Katalogleiste, je Format ein Profil — das spart vier Pflegestellen je Schlüssel und macht die Regel „kein Untermenü mit nur einem Punkt" gegenstandslos | (b) zwei flache Menüzeilen auf **einen** Schlüssel mit Argument (Muster PV-Import) — sichtbarer Einstieg auch ohne geöffnetes Gebäude | G4 (3.1) |
-| **A18** | Bleibt `GebaeudeKlimaweg` eine **eigene Klasse**, oder fällt sie in `GebaeudeModellEingang.Bauen` zurück? Das Umsetzungskonzept 1.4 sagt „hier — und nur hier — fällt die Entscheidung über den Zeitbezug, die Azimutzuordnung und die Erdreichtemperatur", und U6 sagt „an der einen Stelle im Eingangsbauer" | **Eigene Klasse behalten** — aber **ausschließlich** von `GebaeudeModellEingang.Bauen` gerufen, sodass „an einer Stelle" als Aufrufstelle gilt. Grund: Genau diese vier Entscheidungen muss der Prüfmodus umschalten, und sie ohne den ganzen Eingangsbauer prüfen zu können, spart in G1 die Messung, die U6 verlangt | (b) in `Bauen` zurückfalten — hält den Wortlaut von 1.4 buchstäblich, macht die Messung zu U6 aber teurer, weil jeder Probefall den vollen Eingang bauen muss | G1 (die Klassenliste in 1.3) |
+| **A17** | Bekommen Gebäudeimport und ‑export einen **Maskenschlüssel und eine Menüzeile**? Zwei geltende Papiere widersprechen sich: Datenaustauschkonzept 11.2 (D14) sagt nein, Befund U 1.3 sagt ja | **Mit E27 entschieden:** **Nein** (D14): Überlagerung im Gebäudedialog, aufgemacht über Knöpfe in der Katalogleiste, je Format ein Profil — das spart vier Pflegestellen je Schlüssel und macht die Regel „kein Untermenü mit nur einem Punkt" gegenstandslos | (b) zwei flache Menüzeilen auf **einen** Schlüssel mit Argument (Muster PV-Import) — sichtbarer Einstieg auch ohne geöffnetes Gebäude | G4 (3.1) |
+| **A18** | Bleibt `GebaeudeKlimaweg` eine **eigene Klasse**, oder fällt sie in `GebaeudeModellEingang.Bauen` zurück? Das Umsetzungskonzept 1.4 sagt „hier — und nur hier — fällt die Entscheidung über den Zeitbezug, die Azimutzuordnung und die Erdreichtemperatur", und U6 sagt „an der einen Stelle im Eingangsbauer" | **Mit E27 entschieden:** **Eigene Klasse behalten** — aber **ausschließlich** von `GebaeudeModellEingang.Bauen` gerufen, sodass „an einer Stelle" als Aufrufstelle gilt. Grund: Genau diese vier Entscheidungen muss der Prüfmodus umschalten, und sie ohne den ganzen Eingangsbauer prüfen zu können, spart in G1 die Messung, die U6 verlangt | (b) in `Bauen` zurückfalten — hält den Wortlaut von 1.4 buchstäblich, macht die Messung zu U6 aber teurer, weil jeder Probefall den vollen Eingang bauen muss | G1 (die Klassenliste in 1.3) |
 | **A19** | Werden die sieben Modellparameterfelder des Reiters 3 im Tagesbilanz-Weg **versteckt** oder **gesperrt gezeigt**? Das ist ein Zustand der Maske (3.2) und für den Anwender sichtbar | **Durch E20 überholt (16.09.2026):** Der Dialog steht in VDI-6007-Struktur, die Modellparameter sind **immer sichtbar und bearbeitbar** — auch bei einem Gebäude auf dem Altweg, denn sie gelten dort nach der Umstellung. Versteckt wird nichts; was **nur** der Altweg liest, steht im eingeklappten Abschnitt „Tagesbilanz (Bestandsweg)" und bleibt mit ihm (3.2). **U2 ist damit gegenstandslos** | entfallen | — (überholt) |
 
 **Zwei Fragen, die dieses Papier ausdrücklich nicht neu stellt:** Die Reihenfolge von gbXML- und
 IFC-Import (D1) und ob der gbXML-Export ohne synthetische Geometrie lohnt (D2) sind
-Anwenderentscheide des Datenaustauschkonzepts und stehen dort. Ebenso bleiben **U1–U16**, **M1–M14**
-und **D1 ff.** dort offen, wo die Konzeptpapiere sie führen.
+Anwenderentscheide des Datenaustauschkonzepts; beide sind mit **E27** entschieden (gbXML-Import vor
+IFC-Import; gbXML-Export erst mit der zweiten Stufe). Den Stand der **U-**, **M-** und **D-Fragen**
+führen die Konzeptpapiere, die sie stellen, und das
+[Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md).
 
 ---
 
@@ -2260,14 +2316,17 @@ und **D1 ff.** dort offen, wo die Konzeptpapiere sie führen.
   sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG oder DIN V 18599, Verschattung durch
   Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude, Scan-to-BIM,
   Validierung an gemessenen Verbräuchen.
-- **Entscheide.** Dieses Papier entscheidet nichts, was dem Anwender zusteht: **A1 bis A19** sind
-  Fragen mit Empfehlung, davon **vier erledigt**: ADR-004 und ADR-005 sind angenommen (E16, E17),
-  **A7** und **A8** damit entschieden; **A16 ist durch E20 entschieden** (eine Weiche am Eingang,
-  kein zweiter Verzweigungspunkt) und **A19 (= U2) durch E20 überholt**. **ADR-006 ist angenommen**
+- **Entscheide.** Dieses Papier entscheidet nichts, was dem Anwender zusteht: **A1 bis A19** waren
+  Fragen mit Empfehlung und sind **alle entschieden oder überholt**: ADR-004 und ADR-005 sind
+  angenommen (E16, E17), **A7** und **A8** damit entschieden; **A16 ist durch E20 entschieden** (eine
+  Weiche am Eingang, kein zweiter Verzweigungspunkt), **A19 (= U2) durch E20 überholt**, alle
+  übrigen hat **E27** (22.09.2026) nach Empfehlung entschieden, **A15** in der Fassung des
+  Systementwurfs 8.4. **ADR-006 ist angenommen**
   (E20, 16.09.2026), **ADR-002 trägt seinen Ergänzungsvermerk**, und beide tragen den Nachtrag aus
   **E23**, den **E26** klarstellt: Der Altweg bleibt für die Dauer des Übergangs, die Stufe **GA —
-  Altweg ablösen** ist die letzte Stufe des Plans, **Q24** (Zeitpunkt) und **Q25** (Umfang) sind
-  offen, **A15** bleibt offen mit der Empfehlung nach Systementwurf 8.4. **E21** legt die
+  Altweg ablösen** ist die letzte Stufe des Plans; nach **E27** wird sie fällig, sobald das
+  Ablösekriterium **Q24** erfüllt ist, und ist die vollständige Ablösung nach der Löschliste
+  (**Q25**). **E21** legt die
   Kälteseite symmetrisch zur Wärmeseite an und entscheidet damit **K1** des Kühlkonzepts.
 
 **Was nach der Abnahme mit den Befunden geschieht.** Die Befunde unter

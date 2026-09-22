@@ -1,5 +1,7 @@
 # Prüfung der Konzeptfamilie Gebäudesimulation auf Konsistenz und Umsetzbarkeit
 
+**Stand 22.09.2026 (Nachziehen vervollständigt).**
+
 **Datum:** 17.09.2026 — **Gegenstand:** alle geltenden Papiere zur Gebäudesimulation nach
 VDI 6007 (Leitkonzept, Umsetzungskonzept, Rechenschritte, Softwarearchitektur, Systementwurf,
 Kühlkonzept, Anlagenkopplung, Mehrzonenmodell, Datenaustausch, ADR-002/003/004/005/006, Register,
@@ -420,7 +422,8 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
   Papiernamen **M3** (Gebäudespalten-Schritt, G1) und **M4** (Klimaspalten, G2); Konzept 6.1 heißt
   „Gebäudespalten-Schritt (Papiername M3) — `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`". Der Zielstand
   wird bei der Beauftragung an `SchemaStand.Zielversion` abgelesen; beim Schreiben (17.09.2026)
-  steht er auf **84**, die nächste freie Nummer ist **85**. Betroffen: Konzept (neun Stellen),
+  stand er auf **84**, die nächste freie Nummer war **85**; Stand 22.09.2026: **100**, nächste
+  freie **101**. Betroffen: Konzept (neun Stellen),
   Umsetzungskonzept 1.6 (Kasten und Fließtext), Rechenschritte 1.1, Softwarearchitektur 2.4,
   Anlagenkopplung 8, Kühlkonzept Anhang, Mehrzonen 2.6/4.4, Datenaustausch 7.4.
 - **F-S2 Gebäudespalten-Schritt M3:** Schrittkörper in der Reihenfolge aus N1.24 (1. je Tabelle
@@ -431,10 +434,16 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
   Bezugsfläche: `Nutzflaeche` statt `Wohnflaeche` in Konzept 6.1 (Zeile `Innenflaechenfaktor`),
   5 (Formel A_IW) und 5.x (Prüfgrenzen).
 - **F-S3 M4:** Die Spalte `Windgeschwindigkeit` wird **nicht** angelegt (kein Leser; der äußere
-  Wärmeübergang bleibt beim festen Vorgabewert); M4 hat damit zwei Spalten — Zahlen in
-  Umsetzungskonzept 1.7, Rechenschritte 1.2/1.3 und Konzept 12 nachziehen. Gegenstrahlung NULL:
-  Δθ_lw = 0 und α_str,A auf dem Vorgabewert (E5) — die „Schätzung nach Blatt 3" entfällt
-  (Rechenschritte 1.2, Umsetzungskonzept 1.7).
+  Wärmeübergang bleibt beim festen Vorgabewert). Gegenstrahlung NULL: Δθ_lw = 0 und α_str,A auf
+  dem Vorgabewert (E5) — die „Schätzung nach Blatt 3" entfällt (Rechenschritte 1.2,
+  Umsetzungskonzept 1.7). **Stand 22.09.2026:** M4 (Stufe G2) ist durch Schemaschritt 95
+  vorweggenommen (Anwenderentscheid 19.09.2026, Aufträge KL-3/KL-4): `Tab_Solar` und
+  `Tab_Solar_STAMM` führen `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad`,
+  `Tab_Klimaregion(_STAMM)` führen `Quelle` und `Importdatum`, Schemaschritt 97 bringt Szenario
+  und Bezugsjahr; eine Windspalte gibt es nicht. Die NULL-Regel gilt weiter; eine Schätzung aus
+  dem Bedeckungsgrad wäre möglich, wird aber nicht gerechnet
+  ([Konzept Klimadatenquellen](../Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)). Umsetzungskonzept 1.7,
+  Rechenschritte 1.2/1.3 und Konzept 12 folgen dem umgesetzten Schritt.
 - **F-S4 Kennzahlen je Gebäude: acht**, die achte heißt `Ueberhitzungsstunden` [h] = Stunden der
   Nutzungszeit mit θ_op > `Maximaleraumtemperatur` (ab KU1: > `Kuehl_Sollwert`); gleich in
   Rechenschritte 8.2, Umsetzungskonzept 1.4, Systementwurf F7, Mehrzonen M5.
@@ -452,7 +461,7 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
   Abnahmekriterium (4) in Konzept 10.4 wird in G0 aus der wiederholten Messung (mit R_si-Abzug,
   Fensterabminderung, Hay-Davies, Ortszeit, konvektivem Anteil) neu bestimmt; bis dahin informativ.
 - **F-S7 Register Kapitel 0** nimmt U6 und U7 auf; Q26-Aufwand nach Anlagenkopplung 12.2
-  (AK0 1–2, AK1 9–13, AK2 11–15, AK3 23–38 PT); A11-Liste der Papiernamen: GB, M2–M4, S-A bis S-G,
+  (AK0 1–2, AK1 10–15, AK2 11–15, AK3 23–38 PT; zusammen 45–70 PT); A11-Liste der Papiernamen: GB, M2–M4, S-A bis S-G,
   KU-S1 bis KU-S4, AK-S1 bis AK-S3.
 - **F-S8 Aufwand:** Umsetzungskonzept Kapitel 4 ist die Quelle der verbindlichen Aufwände; Konzept
   11 und 12 verweisen darauf; Zitat in Umsetzungskonzept auf „G1 10–16 PT, G2 3–5 PT";
@@ -525,7 +534,12 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
   Lauf gilt als fehlgeschlagen — so ausdrücklich festlegen, der Halbsatz „dieselbe Schärfe wie die
   Energieprobe" entfällt) und **Deckungsprobe Kälte** in
   `SimulationControl.KanalganglinienProbe()`. Die Zusicherung „nie beide größer null" gilt je
-  Gebäude bzw. Zone aus `GebaeudeModellErgebnis`, nicht auf Kanalebene.
+  Gebäude bzw. Zone aus `GebaeudeModellErgebnis`, nicht auf Kanalebene, und zwar je
+  **Abschnitt**: In keinem Abschnitt trägt ein Gebäude oder eine Zone Heiz- und Kühlanteil
+  zugleich. Je **Stunde** ist beides bei einem Fallwechsel möglich, weil die Rechenschritte (7.1)
+  beide Anteile je Abschnitt getrennt akkumulieren (F-P3). Die Probe prüft die Abschnittsregel
+  scharf und zählt die Stunden mit beidem als Hinweis, nicht als Fehler (Ergänzung vom
+  22.09.2026).
 - **F-K4 Reversible Wärmepumpe:** Die Tagesbetriebsart gilt für den **Heizkanal**; der
   Brauchwasserkanal bleibt am Kühltag bedienbar (Stundenleistung zuerst Brauchwasser, Rest Kälte).
   Kältedeckung läuft in einer eigenen Stundenschleife `Kaeltekaskade` **nach** der Wärmekaskade,
@@ -590,6 +604,9 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
 
 ## 4 Was nachgezogen wurde
 
+Das Nachziehen hat am 17.09.2026 begonnen und ist am 22.09.2026 vervollständigt worden; die
+Revisionsstände unten sind die nach dem 22.09.2026.
+
 - **[Leitkonzept](../Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) (Rev. 3):** Nachtrag N1.31
   mit E26, die Stufe GA zurück in Kapitel 11, Schemastand und Papiernamen M3/M4 statt fester
   Schrittnummern, Bezugsfläche `Nutzflaeche`, die vier Rev.-1-Kapitel (Keller, langwelliger Term,
@@ -636,15 +653,24 @@ VDI 2078 stehen nicht hier, sondern in den Fachpapieren.
   Zahlenspalte „Kühlleistung [kW]" und den Schalter „nur mit Kühlfunktion" umgestellt.
 - **[Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md):** Q24 und Q25 wieder offen,
   U17 neu, D17 und K24 als eigene Punkte, U6 und U7 in Kapitel 0, A15 mit Empfehlung, Q26-Aufwand,
-  Kapitel 8 mit den Festlegungen dieser Prüfung, Zählung neu auf 67.
+  Kapitel 8 mit den Festlegungen dieser Prüfung; die Zählung steht nach dem Nachziehen auf
+  **66 offenen Punkten** (K20 durch die Umsetzung erledigt, F-K1).
 - **[Statusdatei](../Status_Gebaeudesimulation_VDI6007.md):** Zeile zu E26, Q24/Q25 wieder offen,
   Stufentabelle mit GA und allen Stufen der Schwesterpapiere, Registerzeile im Wortlaut des
-  Registers, Revisionszeilen aller neun Papiere; die Zeilenzahlen der Papiere entfallen.
+  Registers, Revisionszeilen aller neun Papiere; die Zeilenzahlen der Papiere entfallen; am
+  22.09.2026 der Aufwand der Anlagenkopplung und der vorweggenommene Klimaspalten-Schritt M4.
+- **Klimaspalten (M4):** durch Schemaschritt 95 vorweggenommen (Anwenderentscheid 19.09.2026,
+  Stufe G2): `Tab_Solar(_STAMM)` mit `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad`, keine
+  Windgeschwindigkeit; Schemastand am 22.09.2026: 100, nächste freie 101 (F-S1, F-S3,
+  [Konzept Klimadatenquellen](../Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)).
 - **Index (`Dokumentation/LIESMICH.md`):** Zeilen zu Konzept, Statusdatei, Register, ADR-006,
   Anlagenkopplung, Kühlkonzept, Mehrzonen und Softwarearchitektur auf den Stand vom 17.09.2026;
   neue Indexzeile für dieses Prüfprotokoll.
 - **[Word-Kurzfassung](Gebaeudesimulation_VDI6007_Architektur_Design_Rechenweg_2026-09-16.docx):**
-  auf den Stand nach E26 gebracht (Stufe GA, Ausbauprobe, Verträge, Kühlung).
+  **nicht** neu gebaut; sie steht weiter auf E1–E25 (16.09.2026), weil Markdown-Quelle und
+  Werkzeuge des Word-Baus verloren sind ([Übergabe](2026-09-22_Uebergabe_Gebaeudesimulation.md),
+  Abschnitt 2.4). Arbeitsentscheid des Anwenders vom 22.09.2026: Die Word-Datei ruht bis zur
+  Beauftragung von G1 (Weg 3); bis dahin gilt dieses Prüfprotokoll als Kurzfassung.
 
 
 ## 5 Offene Punkte nach der Prüfung
@@ -682,7 +708,7 @@ und F-Ü7 (Umfang des Rückweg-Tests).
 
 ### 5.4 Vor G1 fällig
 
-Register Kapitel 0 führt nach der Ergänzung um U6 und U7 **35 Punkte**, die vor der Beauftragung
+Register Kapitel 0 führt nach der Ergänzung um U6 und U7 **36 Punkte** (nachgezählt am 22.09.2026), die vor der Beauftragung
 von G1 zu entscheiden sind, weil sie Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
 unwiderruflich festlegen. Sie werden hier nicht wiederholt; maßgeblich ist
 [das Register](../Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), Kapitel 0.
@@ -690,7 +716,11 @@ unwiderruflich festlegen. Sie werden hier nicht wiederholt; maßgeblich ist
 ### 5.5 Weiteres
 
 - **Q26 — Stufenplan der Anlagenkopplung:** offen; der Aufwand steht jetzt im Register nach
-  Anlagenkopplung 12.2 (AK0 1–2, AK1 9–13, AK2 11–15, AK3 23–38 PT). Die Entscheidung, ob und wann
+  Anlagenkopplung 12.2 (AK0 1–2, AK1 10–15, AK2 11–15, AK3 23–38 PT; zusammen 45–70 PT). Die Entscheidung, ob und wann
   AK0 bis AK3 beauftragt werden, steht beim Anwender.
+- **Klimaspalten (M4):** keine Aufgabe mehr für G2 — der Schritt ist durch Schemaschritt 95
+  vorweggenommen (F-S3); Schemastand am 22.09.2026: 100, nächste freie 101 (F-S1).
+- **Word-Kurzfassung:** ruht nach dem Arbeitsentscheid des Anwenders vom 22.09.2026 bis zur
+  Beauftragung von G1; bis dahin ist dieses Prüfprotokoll die Kurzfassung.
 - **H6 — vertagt.** Der Punkt bleibt zurückgestellt; er wird erst mit der Beauftragung von AK1
   wieder aufgerufen.

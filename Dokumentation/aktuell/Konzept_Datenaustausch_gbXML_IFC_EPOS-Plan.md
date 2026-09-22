@@ -5,6 +5,18 @@
 > **Was Rev. 2 ändert:** 7.4 nennt keine festen Schrittnummern mehr — die Gebäudespalten-Schritte
 > tragen die Papiernamen **M3** und **M4**, der Zielstand wird an `SchemaStand.Zielversion`
 > abgelesen; sonst bleibt der Stand der Rev. 1.
+>
+> **Nachzug 22.09.2026 — E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32):** Der Anwender hat alle acht
+> D-Fragen des Registers entschieden, sämtlich nach der Empfehlung dieses Papiers: **D1** gbXML-Import
+> vor IFC-Import (G4c vor G4a); **D2** gbXML-Export nur mit Stufe 2 (G7a und G7b zusammen);
+> **D4** kWh mit ausdrücklicher Einheit; **D5** deterministische Kennungen in beiden Formaten;
+> **D6** die semantische Stufe G7c zuerst — das Gegenüber des IFC-Exports benennt der Anwender vor
+> der Stufe, die über die semantische hinausgeht; **D11** die Rückgabe angereicherter fremder
+> IFC-Dateien ist zulässig, mit Kennung in der Datei und Beipackzettel; **D16** die gbXML-Zonenbildung
+> erweitert E7 auf ein zweites Format; **D17** (der Rest aus D3) die gbXML-XSD liegt **außerhalb**
+> des Repositoriums, der Validierungstest wird benannt übersprungen, wenn sie fehlt. Mit E27 ist
+> auch **U10** entschieden (Lizenzhinweisseite mit der ersten IFC-Stufe). Die Fließtexte in 0, 1.3,
+> 1.4, 3.3, 5.1, 6.1, 6.4, 6.6, 8.1, 8.2, 9, 10, 11 und 12 tragen den entschiedenen Stand.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -38,7 +50,8 @@ unverändertes NuGet-Paket, `MemoryModel` ohne Esent) und
 [`ADR-004_gbXML_LINQ_to_XML.md`](ADR-004_gbXML_LINQ_to_XML.md) (LINQ to XML mit handgeschriebenem
 Modell; angenommen 16.09.2026, E16). Der Stand der Entscheide steht in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md).
 Normzahlen der VDI 6007 stehen hier nicht; aus VDI 6020:2022 ist nach **E6** nichts herangezogen.
-Jede Aussage über den Quelltext trägt Datei und Zeile. **Dieses Papier entscheidet nichts; es legt vor.**
+Jede Aussage über den Quelltext trägt Datei und Zeile. **Dieses Papier entscheidet nichts; es legt
+vor** — seine Fragen D1 bis D17 hat der Anwender mit E27 (22.09.2026) entschieden (11).
 
 ---
 
@@ -88,11 +101,13 @@ Jede Aussage über den Quelltext trägt Datei und Zeile. **Dieses Papier entsche
 
 6. **Lizenz: eine Auflage, zwei Verzichte.** xBIM bleibt unverändertes NuGet-Paket unter CDDL-1.0
    (**E3**), und § 3.1 verlangt den Quellenverweis an den Empfänger — die Lizenzhinweisseite im
-   Installationspaket ist Vorbedingung der Auslieferung (Umsetzungskonzept 3.6, Frage U10). Das
+   Installationspaket ist Vorbedingung der Auslieferung und kommt mit der ersten IFC-Stufe
+   (Umsetzungskonzept 3.6, U10, entschieden mit E27). Das
    gbXML-Schema hat **keine Lizenz** und wird nicht ausgeliefert, sondern nur im Test aus einer
    lokalen Kopie benutzt; die vier gbxml.org-Beispieldateien kommen **nicht** ins Repositorium —
-   die Prüfdateien erzeugt der eigene Exporteur (Befund R, 1.10/4.4). **Offen bleibt**, ob die
-   XSD-Kopie im Repositorium liegen darf (**D3**). **Aufwand: G4c 17–28 PT, G7a–G7e 42–72 PT,
+   die Prüfdateien erzeugt der eigene Exporteur (Befund R, 1.10/4.4). **Die XSD-Kopie liegt nicht
+   im Repositorium** (D3/D17, entschieden mit E27): `.gitignore`, Einrichtungshinweis, und der
+   Validierungstest wird benannt übersprungen, wenn sie fehlt (8.2). **Aufwand: G4c 17–28 PT, G7a–G7e 42–72 PT,
    mit der 3D-Ansicht aus E11 (4–7 PT) zusammen 46–79 PT** (Kapitel 10; die Befundzahlen
    enthalten die Persistenz noch nicht, die Summe G7 den Anteil des Gebäudebetrachters aus
    Nachtrag 1).
@@ -152,8 +167,9 @@ zwischen zwei EPOS-Installationen — dafür gibt es `ProjektExportImportCtrl`.
 | Bibliothek für .NET | **keine** — Eigenimplementierung, rund 25 Elemente | xBIM unter CDDL-1.0 (E3), rund 10 MB Assemblies |
 | Lizenz des Schemas | **keine** (dreifach geprüft, Befund R, 1.10) | frei, buildingSMART |
 
-Daraus folgt kein „gbXML statt IFC", sondern eine Reihenfolgefrage: gbXML ist die **kleinere**
-Aufgabe, die dasselbe Zuordnungsgerüst schafft, das der IFC-Weg dann mitbenutzt (Frage **D1**).
+Daraus folgt kein „gbXML statt IFC", sondern eine Reihenfolge: gbXML ist die **kleinere**
+Aufgabe, die dasselbe Zuordnungsgerüst schafft, das der IFC-Weg dann mitbenutzt. **Entschieden ist
+mit E27: der gbXML-Import kommt vor dem IFC-Import** (**D1**; 10).
 
 ### 1.4 Was dieses Papier an den Nachbarpapieren präzisiert
 
@@ -167,7 +183,7 @@ Sieben Stellen, je mit Grund — alles andere gilt unverändert weiter.
 | 4 | Konzept 11 führt gbXML unter **G5** mit 10–15 PT, Befund C ordnet es in Stufe 3 ein | Nach **E9** ist der gbXML-Import **Pflicht in G4**. Befund R misst **14–22 PT** für das Lesen allein; mit der Persistenz aus Kapitel 7 werden daraus **17–28 PT** (Kapitel 10) |
 | 5 | Der Stufenplan des Umsetzungskonzepts (Kapitel 4) endet bei G5 | **G7** kommt hinzu, mit fünf Teilstufen (Kapitel 10) |
 | 6 | `IfcImportSatz.cs` / `IfcZuordnungsModell.cs` in `Import/Ifc/` (Umsetzungskonzept 3.3) | heißen **`GebaeudeImportSatz.cs`** / **`GebaeudeZuordnungsModell.cs`** und liegen in `Import/Gebaeude/`: Satz und Zuordnungsregeln beschreiben das **Ziel**, nicht die Datei, und beide Leser füllen dieselben Zielfelder (2.1) |
-| 7 | **E7** nennt für das Mehrzonenmodell den IFC-Import; G6c führt nur `Z1…Z5` (Mehrzonenkonzept 9) | Die Zonenbildung aus gbXML (`X1…X3`) läuft mit **G6c** mit, `X4` (Einzonen-Rückfall) schon in **G4c** (3.3). Das erweitert E7 auf ein zweites Format und ist deshalb Frage **D16** |
+| 7 | **E7** nennt für das Mehrzonenmodell den IFC-Import; G6c führt nur `Z1…Z5` (Mehrzonenkonzept 9) | Die Zonenbildung aus gbXML (`X1…X3`) läuft mit **G6c** mit, `X4` (Einzonen-Rückfall) schon in **G4c** (3.3). Das erweitert E7 auf ein zweites Format — **entschieden mit E27 (D16): ja** |
 
 ---
 
@@ -402,7 +418,7 @@ fehlt das Attribut, entscheidet der Name nach derselben Musterliste wie beim IFC
 wählbare Regel und der Import schreibt in `Tab_Gebaeude` wie G4a. **X1 bis X3 entstehen mit G6c**
 und werden dort zusammen mit Z1…Z5 freigeschaltet; G4c baut allein X4. Dass damit auch der
 gbXML-Weg in Zonen führt, erweitert **E7** (dort: Mehrzonenmodell über den IFC-Import) auf ein
-zweites Format — deshalb Frage **D16** und Zeile 7 in 1.4. Der Zuwachs von G6c (Mehrzonenkonzept 9,
+zweites Format — das ist mit **E27** entschieden (**D16**: ja; Zeile 7 in 1.4). Der Zuwachs von G6c (Mehrzonenkonzept 9,
 heute 16–26 PT für Z1…Z5, B1…B6 und den Grundriss aus
 Nachtrag 1) ist dort nachzuziehen.
 
@@ -600,9 +616,9 @@ von Befund R (6) und trägt die Entscheidung, ob G7 sich lohnt:
   **belegt ist das nicht** (die Hersteller dokumentieren den Import aus AutoCAD/Revit, nicht aus
   beliebigen Quellen).
 
-Daraus folgt Frage **D2**: G7a allein ist ein Datenblatt in XML-Form. Das kann legitim sein — als
-Beleg- und Archivformat und als Grundlage des Rundlauf-Regressionstests —, aber es ist keine
-Interoperabilität.
+Daraus folgt **D2**, entschieden mit E27: **Der gbXML-Export kommt erst mit Stufe 2** — G7a und
+G7b werden zusammen gebaut. G7a allein wäre ein Datenblatt in XML-Form — legitim als Beleg- und
+Archivformat und als Grundlage des Rundlauf-Regressionstests, aber keine Interoperabilität.
 
 ### 5.2 Stufe G7a — der schemagültige Datenexport
 
@@ -799,8 +815,9 @@ Quellenlage zu erwarten, nicht gemessen:** belegt ist allein die xBIM-Aussage zu
 geometrielosen Beispiel, dazu der Revit-`DirectShape`-Fall und die BIMvision-Baumansicht; einen
 veröffentlichten systematischen Test gibt es nicht (Befund S, 1.8). **Was jeder Betrachter öffnet,
 anzeigt und meldet, erhebt Probe 16** (rund 1 PT) — erst danach ist die Aussage tragfähig. **Ohne
-benannten Empfänger lässt sich zwischen S1 und S3 nicht wählen** — das ist Frage **D6** und geht an
-den Anwender, nicht an die Technik.
+benannten Empfänger lässt sich zwischen S1 und S3 nicht wählen.** **Entschieden ist mit E27
+(D6): die semantische Stufe S1 (G7c) zuerst.** Das Gegenüber — Werkzeug und Zweck — benennt der
+Anwender; fällig ist das vor der Stufe, die über die semantische hinausgeht (10).
 
 ### 6.2 Schema, Paket, Grenzen
 
@@ -870,7 +887,8 @@ Die letzten fünf sind der eigentliche Wert des Satzes: **ein Ergebnis ohne Anga
 gerechnet wurde, ist in fremder Hand wertlos.** Mengen gehören nicht hierher, sondern in
 `IfcElementQuantity`, dessen `MethodOfMeasurement` die vorgesehene Stelle für „nach VDI 6007" ist.
 
-**Die Einheitenentscheidung ist unwiderruflich** (Frage **D4**). `IfcPropertySingleValue.Unit` ist
+**Die Einheitenentscheidung ist unwiderruflich** — und mit E27 gefallen (**D4**): kWh mit
+ausdrücklicher Einheit. `IfcPropertySingleValue.Unit` ist
 OPTIONAL; fehlt es, gilt die globale Einheitenzuweisung des `IfcProject`. Wer `IfcEnergyMeasure`
 ohne `Unit` schreibt, behauptet damit **Joule**. Zwei saubere Wege: in Joule schreiben und die
 kWh-Entsprechung ins `Description` — oder an **jeder** Energie-Eigenschaft ein explizites `Unit`
@@ -890,7 +908,7 @@ es nicht gesetzt, entsteht `$` an Position 1 und damit eine schemawidrige Datei 
 Verbindliche Auflage: **eine EPOS-eigene Erzeugungsfunktion**, die für jede `IIfcRoot`-Instanz beides
 belegt.
 
-**Deterministisch, von Anfang an** (Frage **D5**): namensbasierte UUID (RFC 4122, Version 5) aus
+**Deterministisch, von Anfang an** (**D5**, entschieden mit E27, für IFC und gbXML): namensbasierte UUID (RFC 4122, Version 5) aus
 einem festen EPOS-Namensraum und dem **Schlüsselpfad aus IDs**, nie aus Namen, **mit einem
 Rollenglied am Ende**:
 
@@ -987,12 +1005,14 @@ Sechs Bedingungen:
 5. **Die Datei behauptet sonst weiter ihre Herkunft.** `OriginatingSystem` und
    `PreprocessorVersion` bleiben stehen; EPOS ergänzt deshalb `FILE_DESCRIPTION` um einen Vermerk und
    legt eine eigene `IfcApplication` an.
-6. **Die vertragliche Frage ist vor der Umsetzung zu klären, nicht danach** (Frage **D11**). Die
-   Reference View sagt ausdrücklich, dass der Empfänger das Modell nicht verändern soll und
-   Änderungswünsche als BCF-Meldung an den Urheber zurückgehen. EPOS' Anreicherung ist genau das, was
-   die RV nicht vorsieht. Das ist **kein technisches, sondern ein vertragliches Thema** und gehört in
-   den Beipackzettel und in die Anwenderführung: Der Anwender muss wissen, dass er eine fremde Datei
-   verändert weitergibt.
+6. **Die vertragliche Frage ist entschieden** (**D11**, E27): Die Rückgabe angereicherter
+   fremder IFC-Dateien ist **zulässig, mit Kennung in der Datei und Beipackzettel**. Die Begründung
+   der Auflagen bleibt: Die Reference View sagt ausdrücklich, dass der Empfänger das Modell nicht
+   verändern soll und Änderungswünsche als BCF-Meldung an den Urheber zurückgehen; EPOS'
+   Anreicherung ist genau das, was die RV nicht vorsieht. Deshalb trägt die Datei die Kennung
+   (`FILE_DESCRIPTION`-Vermerk und eigene `IfcApplication`, Nr. 5; neuer Dateiname, Nr. 4), und der
+   Beipackzettel sowie ein Hinweis im Dialog, den der Anwender bestätigt, sagen ihm, dass er eine
+   fremde Datei verändert weitergibt.
 
 Vorhandene `GlobalId`-Werte sind gewöhnliche Attribute und werden unverändert zurückgeschrieben —
 GUID-Stabilität für Bestandsentitäten ist kostenlos. Nur die **neuen** Entitäten (Eigenschaftssätze,
@@ -1126,9 +1146,10 @@ des Aufbaus, und ihre Stoffwerte sind ohnehin Kopien zum Zeitpunkt der Zuordnung
 `SchemaStand.Zielversion` abgelesen (`EPOS.Kern/Allgemein/Update/SchemaStand.cs`); Stand 22.09.2026
 steht er auf **100**, die nächste freie Nummer ist damit **101** — eine Momentaufnahme, keine
 Festlegung. Bis zur Beauftragung
-tragen die Schritte nur ihre Papiernamen: **M3** für die Gebäudespalten (G1) und **M4** für die
-Klimaspalten (G2) — ob beide zusammenlaufen, ist **offen** (Umsetzungskonzept 1.7, Frage **U5** —
-dort als Empfehlung, nicht als Entscheid). Dazu ein eigener Schritt für die
+tragen die Schritte nur ihre Papiernamen: **M3** für die Gebäudespalten — die Spalten von G1 und
+G2 in **einem** Schritt, so ist es mit E27 entschieden (Umsetzungskonzept 1.7, **U5**) — und
+**M4** für die Klimaspalten, der mit Schemaschritt 95 bereits vorweggenommen ist und getrennt
+bleibt. Die Nummern vergibt erst die Beauftragung (A11, ebenfalls mit E27 entschieden). Dazu ein eigener Schritt für die
 `Tab_Solar`-Klimaspalten und die Mehrzonenschritte **S-A** bis **S-D** sowie **S-G**
 (Mehrzonenkonzept 4.4). (**S-E** ist der Umbau von `GebaeudeStammCtrl.CopyFromStamm` und läuft als
 eigener Einfrierschritt mit **G1**; er berührt die Nummernfolge nicht.)
@@ -1191,7 +1212,8 @@ Quellenverweis **an den Empfänger**, und dafür fehlt im Setup heute die Stelle
 `Setup/EPOS-Plan.iss:164-165` setzt `LicenseFile={#SetupDir}Lizenz.rtf`, `:330-331` kopiert dieselbe
 Datei nach `{app}` — eine Seite für Fremdbibliotheken gibt es nicht.
 
-**Der Vorschlag steht im Umsetzungskonzept (3.6, Frage U10) und wird hier nur bekräftigt:** eine
+**Die Festlegung steht im Umsetzungskonzept (3.6, U10 — mit E27 entschieden: die Seite kommt
+mit der ersten IFC-Stufe) und wird hier nur bekräftigt:** eine
 `Setup/Vorlage/Lizenzhinweise.txt` mit je Fremdbibliothek Name, Version, Lizenz, Copyright-Vermerk
 und Quelltextverweis, eine `Source:`-Zeile nach dem Muster `:330-331`, und als Pflegeweg eine Zeile
 je ausgelieferter `PackageVersion` aus `Directory.Packages.props`. **Ohne diese Seite ist der
@@ -1199,7 +1221,7 @@ IFC-Weg nicht auslieferbar** — und das gilt für den Export genauso wie für d
 dasselbe Paket benutzen.
 
 Der gbXML-Weg braucht **kein** Paket und fügt der Seite nichts hinzu. Das ist ein weiteres Argument
-für die Reihenfolge aus Frage **D1**: G4c ist ohne die Lizenzarbeit auslieferbar.
+für die Reihenfolge aus **D1** (entschieden mit E27): G4c ist ohne die Lizenzarbeit auslieferbar.
 
 ### 8.2 Das gbXML-Schema: keine Lizenz, also nicht ausliefern
 
@@ -1209,22 +1231,24 @@ durchgängig als „open and free" beworben, aber ohne ausdrückliche Lizenz ist
 Weitergabe unklar.
 
 **Für EPOS ist das entschärft, weil das XSD nicht gebraucht wird:** Der Exporteur ist
-handgeschrieben und führt die Aufzählungswerte als C#-Konstanten. **Vorschlag (Frage D3):**
+handgeschrieben und führt die Aufzählungswerte als C#-Konstanten. **Festlegung (D3; der Rest D17
+entschieden mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)):**
 
 - Das XSD wird **nicht ausgeliefert**. Es dient allein der Validierung des Exports im
   Regressionstest gegen die Schemakopie `GreenBuildingXML_Ver8.01.xsd` — deren `versionEnum` bei
   **6.01** endet, weil 8.01 byteweise 7.04 ist (Befund R, 1.1); `XmlSchemaSet.Compile()` kostet 4 ms.
 - Es wird **nie aus dem Netz geladen** — weder im Test noch zur Laufzeit.
-- **Für das Installationspaket ist die Frage damit gegenstandslos. Offen bleibt die Ablage der Kopie
-  im Repositorium.** Die Vorsicht, die Befund R (1.10) für die Beispieldateien anmeldet („nicht
-  ungeprüft in ein EPOS-Regressionstest-Repositorium übernehmen"), gilt dem Buchstaben nach genauso
-  für ein Schema ohne ausdrückliche Lizenz — hier wird die Datei ja ebenfalls weitergegeben, nur an
-  einen anderen Kreis. Zu entscheiden ist deshalb (Teil von **D3**): entweder die Kopie liegt unter
-  `EPOS.Kern.Tests/`, und der Unterschied zwischen Weitergabe an Kunden und Ablage im Repositorium
-  wird ausgeschrieben — oder sie bleibt außerhalb (Eintrag in `.gitignore`, Einrichtungshinweis), und
-  der Validierungstest wird **benannt übersprungen**, wenn sie fehlt. In beiden Fällen gehört an den
-  Ablageort eine LIESMICH-Zeile mit Herkunft, Abrufdatum und Lizenzstand „keine", wie 8.3 sie für
-  `Referenzlaeufe/Importproben/` schon verlangt.
+- **Für das Installationspaket ist die Frage damit gegenstandslos. Die Ablage der Kopie ist
+  entschieden (D17, E27): außerhalb des Repositoriums.** Die Vorsicht, die Befund R (1.10) für die
+  Beispieldateien anmeldet („nicht ungeprüft in ein EPOS-Regressionstest-Repositorium übernehmen"),
+  gilt dem Buchstaben nach genauso für ein Schema ohne ausdrückliche Lizenz — im Repositorium würde
+  die Datei ebenfalls weitergegeben, nur an einen anderen Kreis. Deshalb: ein Eintrag in
+  `.gitignore`, ein **Einrichtungshinweis**, wie die Kopie lokal beigestellt wird, und eine
+  **LIESMICH-Zeile** mit Herkunft, Abrufdatum und Lizenzstand „keine", wie 8.3 sie für
+  `Referenzlaeufe/Importproben/` schon verlangt. Fehlt die Datei, wird der Validierungstest
+  **benannt übersprungen** — dasselbe Muster wie für die lokal beigestellten Normzahlen (U8), nie
+  ein stilles Grün. Die verworfene Möglichkeit — die Kopie unter `EPOS.Kern.Tests/` mit
+  ausgeschriebener Begründung — bleibt hier als Begründung stehen.
 
 ### 8.3 Testdateien: selbst erzeugen statt herunterladen
 
@@ -1275,7 +1299,7 @@ Geschmacksfrage, und sie steht an drei Stellen:
 |---|---|---|
 | 1 | **Rundlauf gbXML** — Export Stufe 1 aus einem gesäten Testgebäude, Import derselben Datei | Zonenfläche, Volumen, **Luftwechsel**, jede Bauteilfläche, Azimut, Neigung, U-Wert, Schichtdicke und λ/ρ/c auf 1e‑6 gleich. Das gesäte Gebäude trägt einen **unsymmetrischen Aufbau (Innendämmung)** mit fest erwarteter `Reihenfolge`, damit eine vergessene Umkehr (3.4/5.2) nicht symmetrisch durchrutscht. **Das ist der tragende Regressionstest und zugleich die Quelle der eigenen Prüfdateien** |
 | 2 | **Rundlauf gbXML Stufe 2** — dieselbe Datei mit `PolyLoop` | zusätzlich: jede `PolyLoop` ist geschlossen, jede Kante trifft die Kante einer Nachbarfläche auf 1 mm, Σ Flächen = Σ Bauteilflächen, **und eine Trennfläche zwischen zwei Zonen ist von beiden Seiten geometrisch dieselbe** (5.5, Punkt 3). Ist keine widerspruchsfreie Anordnung ableitbar, prüft die Probe die **benannte Ablehnung** |
-| 3 | **XSD-Validierung des Exports** | beide Stufen validieren gegen die lokale Schemakopie `GreenBuildingXML_Ver8.01.xsd` **fehlerfrei** — ihr `versionEnum` endet bei 6.01, weil 8.01 byteweise 7.04 ist (Befund R, 1.1). Stufe 2 **einschließlich `Results`**; findet sich für eine Ergebnisgröße kein zulässiger `unit`-Wert, entfällt der `Results`-Block benannt (5.6). Nur im Test, nie in der Auslieferung, nie aus dem Netz (8.2) |
+| 3 | **XSD-Validierung des Exports** | beide Stufen validieren gegen die lokale Schemakopie `GreenBuildingXML_Ver8.01.xsd` **fehlerfrei** — ihr `versionEnum` endet bei 6.01, weil 8.01 byteweise 7.04 ist (Befund R, 1.1). Stufe 2 **einschließlich `Results`**; findet sich für eine Ergebnisgröße kein zulässiger `unit`-Wert, entfällt der `Results`-Block benannt (5.6). Nur im Test, nie in der Auslieferung, nie aus dem Netz; die Kopie liegt außerhalb des Repositoriums, und fehlt sie, wird die Probe **benannt übersprungen** (8.2, D17) |
 | 4 | **Import validiert nie** | Wächtertest über den Quelltext: kein `XmlSchemaSet` im Leser; ebenso kein `File.ReadAllText`, kein `XDocument.Parse` (3.1) |
 | 5 | **Kodierungsprobe** | die selbst erzeugte UTF-16LE-Datei mit BOM wird gelesen und liefert dieselben Zahlen wie ihre UTF-8-Entsprechung |
 | 6 | **Einheitenprobe** | Fuß/Fahrenheit-Datei und Meter/Celsius-Datei liefern dieselben SI-Werte; ein lokales `unit` schlägt das globale; ein unbekanntes `unit` ergibt `null`, nie 0 |
@@ -1321,7 +1345,7 @@ Rückfrage.
 | **G7a — gbXML-Export Stufe 1** | `GbXmlExportAblauf`/`-Profil`, Wurzelattribute mit `version="6.01"`, `Campus`/`Building`/`Location`/`Space`/`Zone`/`Surface` mit `RectangularGeometry`/`Opening`, vollständige `Construction`-Kette mit **Schichtumkehr**, **Ersatzschichtung samt Kennzeichnung** (5.3), deterministische Kennungen, XSD-Prüfung im Test | Proben 1, 3, 11, 12 | **9–14 PT** |
 | **G7b — gbXML Stufe 2** | synthetische Quadergeometrie, kantenschlüssige `PolyLoop`, Fenster als Rechtecke, `ShellGeometry`, `Results` je Zone, Kennzeichnung in Datei und Oberfläche; **die Geometrie kommt aus dem Zonengeometrie-Modell** (Nachtrag 1) | Probe 2; Sichtprobe in mindestens einem Zielwerkzeug | **7–12 PT** † |
 | **G7c — IFC-Export S1** | `IfcExportAblauf`/`-Profil`, vollständige Abbildung aus 6.3, `EPOS_*`-Sätze, vollständige `IfcUnitAssignment` und `IfcConversionBasedUnit` für kWh, eigene `GlobalId`/`OwnerHistory`-Erzeugung mit Rollenglied, Validator mit Attributprüfung, kein MVD-Eintrag, IDS in der Auslieferung (Windows und iOS), Beipackzettel | Proben 10–12, 15, 16, 22, 23; Lizenzhinweisseite vorhanden | **12–20 PT** |
-| **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; **vertragliche Frage vorher geklärt** (D11) | **6–11 PT** |
+| **G7d — IFC-Export S2 (Round-Trip)** | Wiederfinden über `Tab_Importzuordnung` (die Tabellen stehen schon aus G4), erneute Dateiwahl mit Hash-Abgleich, Schema- und Protokollsperre, Ergänzen statt Doppeln, neuer Name, `FILE_DESCRIPTION` und eigene `IfcApplication` | Probe 13; Kennung in der Datei und Beipackzettel vorhanden (D11, mit E27 entschieden: zulässig mit diesen Auflagen) | **6–11 PT** |
 | **G7e — IFC-Export S3 (Körper)** | Quader je Zone, Platte je Bauteil **aus dem Zonengeometrie-Modell** (Nachtrag 1), Placement-Kette, Azimut als Drehung, `TrueNorth` auf der Vorgabe, Kennzeichnung, Prüfbilder | Probe 16 mit Bildern; Validator grün trotz Placement-Pflicht | **8–15 PT** † |
 | **Gebäudebetrachter (E11)** | Zonengeometrie-Modell im Kern (Polygon, Höhe, Geschoss, Kantenzuordnung), **2D-Grundriss je Geschoss mit G6c**, **3D-Ansicht mit G7b** — eine Komponente, Umschalter „Grundriss \| Körper", three.js lokal, Kennzeichnung „schematisch" (Kapitel 14) | Proben 25–27; Sichtabnahme Windows und iOS | **10–17 PT**, davon **4–7 PT hier** (3D-Ansicht); Zonengeometrie und 2D-Grundriss (**6–10 PT**) rechnet das [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) unter G6c |
 | | **Summe G7** (einschließlich der 3D-Ansicht aus E11) | | **46–79 PT** |
@@ -1354,15 +1378,16 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
 |---|---|---|
 | G4c | **G1 + G2** | sonst importiert man in ein Tagesmodell, das die Daten nicht nutzt — dasselbe Argument, mit dem G4a hinter G2 steht |
 | G4c mit Schichten | **G3** (Bauteilkatalog) | ohne `Tab_Bauteilaufbau`/`Tab_Bauteilschicht` gibt es kein Ziel für `Construction`/`Layer`/`Material`; **ohne G3 läuft G4c auf U-Werte und Flächen** und ist damit die kleinere Hälfte |
-| G4c mit Zonen | **G6** | ohne `Tab_Zone` bleibt nur X4; X1…X3 laufen mit G6c (3.3, Frage D16) |
+| G4c mit Zonen | **G6** | ohne `Tab_Zone` bleibt nur X4; X1…X3 laufen mit G6c (3.3, D16) |
 | G7a/G7b | **G3** | ein Export ohne Schichten erzeugt im Ziel ein masseloses Gebäude (5.3) |
 | G7c | **G4a** (Paket, Lizenzhinweisseite) und **G1/G2** (Ergebnisse) | das Paket ist dasselbe, die Ergebnisse sind der Inhalt |
 | G7d | **G7c** und ein **genutzter** IFC-Import | ohne Fremddateien im Feld hat der Weg keinen Gegenstand (D7) |
-| G7e | **G7c** | Körper ohne Semantik sind nichts |
+| G7e | **G7c** und das vom Anwender **benannte Gegenüber** des IFC-Exports (D6, E27) | Körper ohne Semantik sind nichts, und ohne Empfänger ist zwischen S1 und S3 nicht zu wählen (6.1) |
 
 **Reihenfolge und Begründung.**
 
-1. **G4c vor G4a** (Frage **D1**, Anwenderentscheid): gbXML ist die kleinere Aufgabe, braucht kein
+1. **G4c vor G4a** — **entschieden mit E27 (D1)**; der Anwender hatte keine Präferenz, es gilt
+   die Empfehlung dieses Papiers. Die Begründung: gbXML ist die kleinere Aufgabe, braucht kein
    Paket, keine Lizenzarbeit und keinen Geometriekernel-Ersatz; es schafft das Zuordnungsgerüst,
    das der IFC-Weg dann mitbenutzt. Die thermische Topologie kommt zuverlässiger mit — das Schema
    erzwingt sie zwar nicht, aber alle vier ausgezählten Dateien schreiben sie, während die
@@ -1370,12 +1395,14 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
    Autorensystem-Weg, der die thermischen Daten am vollständigsten liefern **dürfte** (Befund R, 6)
    — belegt ist das nicht: keine der vier Messdateien stammt von dort, die Feldzuordnung ist nicht
    aus der Primärquelle belegbar, und ein Fehlerbericht zum Export ist bis AC28 offen (1.2).
-   **Dagegen** spricht die Praxislage: die deutsche Normungsarbeit läuft auf IFC, und was im Feld
-   ankommt, weiß der Anwender.
-2. **G7a und G7b zusammen oder gar nicht** (Frage **D2**): ohne Stufe 2 ist der Export kein
-   Simulationsmodell (5.1).
-3. **G7c → G7d → G7e**: S3 zuletzt, weil es den geringsten fachlichen und den höchsten
-   Missverständnisertrag hat (Befund S, 6).
+   **Dagegen** sprach die Praxislage: die deutsche Normungsarbeit läuft auf IFC, und was im Feld
+   ankommt, weiß der Anwender — er hat keine Präferenz angegeben.
+2. **G7a und G7b zusammen oder gar nicht** — **entschieden mit E27 (D2)**: ohne Stufe 2 ist der
+   Export kein Simulationsmodell (5.1).
+3. **G7c → G7d → G7e**: die semantische Stufe zuerst — **entschieden mit E27 (D6)** —, S3
+   zuletzt, weil es den geringsten fachlichen und den höchsten Missverständnisertrag hat (Befund S,
+   6). Vor der Stufe, die über die semantische hinausgeht, benennt der Anwender das Gegenüber des
+   IFC-Exports.
 4. **Die Persistenz (Kapitel 7) gehört in die erste gebaute Importstufe**, egal welche — sie
    nachzurüsten hieße, für alle vorher importierten Gebäude keine Zuordnung zu haben.
 
@@ -1386,22 +1413,26 @@ für G4c noch die kleinere Zahl; sie ist dort nachzuziehen.
 Nur **neue** Fragen; Q1–Q23 des Konzepts, U1–U16 des Umsetzungskonzepts und M1–M14 des
 Mehrzonenkonzepts stehen dort.
 
-**Drei Antworten braucht dieses Papier, um zur Beauftragung zu werden:** die Reihenfolge (**D1**),
-ob G7 für gbXML überhaupt lohnt (**D2**) und wer das Gegenüber des IFC-Exports ist (**D6**). Die
-übrigen Fragen des ersten Blocks sind technische Festlegungen, die **unwiderruflich** sind und
-deshalb einen Zeitpunkt tragen; der zweite Block ist zur Kenntnis.
+**Die drei Antworten, die dieses Papier zur Beauftragung brauchte, sind mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)
+gegeben:** die Reihenfolge (**D1**: gbXML vor IFC), ob G7 für gbXML lohnt (**D2**: nur mit
+Stufe 2) und wie mit dem Gegenüber des IFC-Exports umzugehen ist (**D6**: semantische Stufe
+zuerst; das Gegenüber benennt der Anwender vor der Stufe, die über die semantische hinausgeht).
+Auch die übrigen Fragen des ersten Blocks — die **unwiderruflichen** technischen Festlegungen —
+und der Rest D17 aus D3 sind entschieden, sämtlich nach Empfehlung. Die Fragen und Empfehlungen
+bleiben als Begründung stehen; die Spalte „Empfehlung" trägt den Entscheidvermerk. Der zweite
+Block ist zur Kenntnis.
 
 ### 11.1 Jetzt zu entscheiden
 
 | Nr. | Frage | Empfehlung | Wann spätestens |
 |---|---|---|---|
-| **D1** | **Reihenfolge: gbXML-Import vor IFC-Import?** | **Vorschlag ja, Entscheid beim Anwender.** gbXML ist kleiner (kein Paket, keine CDDL-Auflage, kein Geometriekernel-Ersatz), liefert die thermische Topologie zuverlässiger und schafft dasselbe Zuordnungsgerüst. Die Frage hängt allein daran, **welche Dateien im Feld ankommen** — und das weiß nur der Anwender. Ohne Antwort bleibt es bei der Reihenfolge des Umsetzungskonzepts (G4a zuerst) | **vor der Beauftragung** von G4c/G4a |
-| **D2** | **Lohnt G7 für gbXML nur mit Stufe 2?** | **Ja.** Ohne synthetische Geometrie ist der Export ein Datenblatt in XML-Form — legitim als Beleg-, Archiv- und Rundlaufformat, aber keine Interoperabilität: OpenStudio liest `RectangularGeometry` nicht, IES VE verlangt `PolyLoop`, DesignBuilder repariert Polygone, erfindet aber keine. **Ausnahme:** Ist das benannte Gegenüber Solar-Computer oder EVEBI, genügt G7a — dann ist aber vorher zu **belegen**, dass deren Importe eine geometriearme Datei annehmen; in Befund R ist es nicht belegt | **vor der Beauftragung** von G7 |
-| **D4** | **Ergebnisgrößen in kWh mit explizitem `Unit` — oder in Joule mit Hinweis?** | **kWh mit explizitem `Unit`.** Kostet eine einmalige Helferfunktion und ist die ehrlichere Angabe; ohne `Unit` behauptet die Datei Joule. **Unwiderruflich** — eine spätere Umstellung entwertet alte Exporte | **vor der ersten Zeile Quelltext** (G7c) |
-| **D5** | **Deterministische Kennungen (IFC-`GlobalId`, gbXML-`id`)?** | **Ja, von Anfang an**, aus dem Schlüsselpfad der **IDs**, nie aus Namen. Voraussetzung für jeden Modellvergleich beim Empfänger und für den Rundlauf. Nachträglich nicht mehr einzuführen | **vor der ersten Zeile Quelltext** (G7a und G7c) |
-| **D6** | **Wer ist das Gegenüber des IFC-Exports — welches Werkzeug, welcher Anwender, welcher Zweck?** | **Diese Frage geht an den Anwender, nicht an die Technik.** Ohne benannten Empfänger ist zwischen S1 (Rechenwerkzeug, Betrachter bleibt leer) und S3 (Betrachter zeigt etwas, Verwechslungsgefahr hoch) nicht sinnvoll zu wählen. **Zwischenweg: G7c bauen, G7e zurückstellen**, bis ein Empfänger benannt ist | vor **G7e**; G7c geht auch ohne |
-| **D11** | **Vertragliche Zulässigkeit der Rückgabe fremder IFC-Dateien** | **Vor G7d zu klären, nicht danach.** Die Reference View sagt ausdrücklich, dass der Empfänger das Modell nicht verändern soll. Technisch ist der Weg billig; rechtlich ist er der Grund, ihn zu lassen. Mindestens: Beipackzettel, eigene `IfcApplication`, neuer Dateiname, und ein Hinweis im Dialog, den der Anwender bestätigt | vor **G7d** |
-| **D16** | **Erweitert die Zonenbildung aus gbXML (X1…X3) den Entscheid E7 auf ein zweites Format?** | **Vorschlag ja.** E7 nennt für das Mehrzonenmodell den IFC-Import; G6c führt heute nur Z1…Z5 (Mehrzonenkonzept 9, 16–26 PT einschließlich Grundrissansicht aus Nachtrag 1). Die gbXML-Regeln X1…X3 sind dieselbe Bauform auf denselben Tabellen und laufen sinnvoll **mit G6c** mit; **X4** (Einzonen-Rückfall) gehört ohnehin in G4c. Sagt der Anwender nein, bleibt gbXML dauerhaft einzonig, und der Zuwachs von G6c entfällt | **vor der Beauftragung** von G4c |
+| **D1** | **Reihenfolge: gbXML-Import vor IFC-Import?** | **Entschieden mit E27 (22.09.2026): ja** — der Anwender hat keine Präferenz, es gilt die Empfehlung. Begründung: gbXML ist kleiner (kein Paket, keine CDDL-Auflage, kein Geometriekernel-Ersatz), liefert die thermische Topologie zuverlässiger und schafft dasselbe Zuordnungsgerüst. Die Frage hing allein daran, **welche Dateien im Feld ankommen**; die Reihenfolge des Umsetzungskonzepts (G4a zuerst) ist damit abgelöst | **vor der Beauftragung** von G4c/G4a |
+| **D2** | **Lohnt G7 für gbXML nur mit Stufe 2?** | **Entschieden mit E27 (22.09.2026): ja**, der gbXML-Export kommt erst mit der zweiten Stufe. Ohne synthetische Geometrie ist der Export ein Datenblatt in XML-Form — legitim als Beleg-, Archiv- und Rundlaufformat, aber keine Interoperabilität: OpenStudio liest `RectangularGeometry` nicht, IES VE verlangt `PolyLoop`, DesignBuilder repariert Polygone, erfindet aber keine. **Ausnahme:** Ist das benannte Gegenüber Solar-Computer oder EVEBI, genügt G7a — dann ist aber vorher zu **belegen**, dass deren Importe eine geometriearme Datei annehmen; in Befund R ist es nicht belegt | **vor der Beauftragung** von G7 |
+| **D4** | **Ergebnisgrößen in kWh mit explizitem `Unit` — oder in Joule mit Hinweis?** | **Entschieden mit E27 (22.09.2026): kWh mit explizitem `Unit`.** Kostet eine einmalige Helferfunktion und ist die ehrlichere Angabe; ohne `Unit` behauptet die Datei Joule. **Unwiderruflich** — eine spätere Umstellung entwertet alte Exporte | **vor der ersten Zeile Quelltext** (G7c) |
+| **D5** | **Deterministische Kennungen (IFC-`GlobalId`, gbXML-`id`)?** | **Entschieden mit E27 (22.09.2026): ja, von Anfang an**, in beiden Exportformaten, aus dem Schlüsselpfad der **IDs**, nie aus Namen. Voraussetzung für jeden Modellvergleich beim Empfänger und für den Rundlauf. Nachträglich nicht mehr einzuführen | **vor der ersten Zeile Quelltext** (G7a und G7c) |
+| **D6** | **Wer ist das Gegenüber des IFC-Exports — welches Werkzeug, welcher Anwender, welcher Zweck?** | **Entschieden mit E27 (22.09.2026) nach Empfehlung: die semantische Stufe zuerst** — G7c bauen, G7e zurückstellen. **Das Gegenüber (Werkzeug, Zweck) bleibt beim Anwender zu benennen**, fällig vor der Stufe, die über die semantische hinausgeht. Begründung: Ohne benannten Empfänger ist zwischen S1 (Rechenwerkzeug, Betrachter bleibt leer) und S3 (Betrachter zeigt etwas, Verwechslungsgefahr hoch) nicht sinnvoll zu wählen | Benennung des Gegenübers vor **G7e**; G7c geht ohne |
+| **D11** | **Vertragliche Zulässigkeit der Rückgabe fremder IFC-Dateien** | **Entschieden mit E27 (22.09.2026): zulässig, mit Kennung in der Datei und Beipackzettel** (6.6). Die Reference View sagt ausdrücklich, dass der Empfänger das Modell nicht verändern soll. Technisch ist der Weg billig; rechtlich ist er der Grund, ihn zu lassen. Mindestens: Beipackzettel, eigene `IfcApplication`, neuer Dateiname, und ein Hinweis im Dialog, den der Anwender bestätigt | vor **G7d** |
+| **D16** | **Erweitert die Zonenbildung aus gbXML (X1…X3) den Entscheid E7 auf ein zweites Format?** | **Entschieden mit E27 (22.09.2026): ja.** E7 nennt für das Mehrzonenmodell den IFC-Import; G6c führt heute nur Z1…Z5 (Mehrzonenkonzept 9, 16–26 PT einschließlich Grundrissansicht aus Nachtrag 1). Die gbXML-Regeln X1…X3 sind dieselbe Bauform auf denselben Tabellen und laufen sinnvoll **mit G6c** mit; **X4** (Einzonen-Rückfall) gehört ohnehin in G4c. Ein Nein hätte gbXML einzonig gelassen; der Zuwachs von G6c ist damit gesetzt | **vor der Beauftragung** von G4c |
 
 ### 11.2 Technische Festlegungen zur Kenntnis
 
@@ -1410,7 +1441,7 @@ damit er entscheiden muss.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
-| **D3** | **XSD und Testdateien ohne Lizenz** | **XSD nicht ausliefern**, nur als lokale Kopie im Test, nie aus dem Netz. **Die vier gbxml.org-Beispieldateien nicht ins Repositorium** — die Prüfdateien erzeugt der eigene Exporteur im Rundlauf, dazu von Hand geschriebene Kleinstdateien je Fehlerbild (8.3). **Für das Installationspaket ist die Rechtslage damit gegenstandslos. Offen bleibt die Ablage der XSD-Kopie im Repositorium** — Kopie unter `EPOS.Kern.Tests/` mit ausgeschriebener Begründung, oder außerhalb (`.gitignore`, Einrichtungshinweis) und der Validierungstest wird benannt übersprungen (8.2). Zu entscheiden, bevor die Kopie committet wird |
+| **D3** | **XSD und Testdateien ohne Lizenz** | **XSD nicht ausliefern**, nur als lokale Kopie im Test, nie aus dem Netz. **Die vier gbxml.org-Beispieldateien nicht ins Repositorium** — die Prüfdateien erzeugt der eigene Exporteur im Rundlauf, dazu von Hand geschriebene Kleinstdateien je Fehlerbild (8.3). **Für das Installationspaket ist die Rechtslage damit gegenstandslos. Die Ablage der XSD-Kopie ist entschieden (D17, E27 vom 22.09.2026): außerhalb des Repositoriums** — `.gitignore`, Einrichtungshinweis, LIESMICH-Zeile mit Herkunft, Abrufdatum und Lizenzstand „keine"; der Validierungstest wird benannt übersprungen, wenn die Datei fehlt (8.2) |
 | **D7** | **S2 (Round-Trip) streichen, wenn der IFC-Import im Feld kaum genutzt wird?** | **Zurückstellen, nicht streichen.** S2 hat das beste Verhältnis von Nutzen zu Aufwand, aber nur, wenn fremde Dateien ankommen — und für den Wohngebäudebestand verneint Befund C das ausdrücklich. **Die Persistenz (Kapitel 7) wird trotzdem in G4 gebaut**, weil sie auch die Herkunft trägt; sie ist nicht der teure Teil |
 | **D8** | **`IfcHerkunft` → `Importherkunft` mit dem Wert `GbXml`?** | **Ja, je Format ein eigener Wert** (`Ifc`, `GbXml`), nicht ein gemeinsames `Datei` mit dem Format eine Tabelle weiter. Der Anwender soll in der Zelle sehen, woher die Zahl kommt |
 | **D9** | **`Tab_Zone.IfcGuid`/`Tab_Bauteil.IfcGuid` in `Quellkennung` umbenennen, bevor S-C gebaut wird?** | **Ja.** Die Spalten gibt es noch nicht, die Umbenennung kostet nichts, und eine gbXML-`id` in einer Spalte namens `IfcGuid` ist eine Unwahrheit. Zugleich `Herkunft` um `'GBXML'` erweitern und die Länge auf 64 Zeichen setzen |
@@ -1433,10 +1464,10 @@ damit er entscheiden muss.
 | **Datenlage.** Für den deutschen Wohngebäudebestand gibt es kaum IFC- und kaum gbXML-Dateien | Beide Importe laufen im Feld selten an | **Beide sind Komfort, kein Ersatz für die manuelle Eingabe** — das gehört in die Anwenderführung und in die Aufwandsabwägung, nicht erst in die Enttäuschung |
 | **Stiller Entitätenverlust beim Round-Trip.** Was der Leser nicht instanziieren konnte, ist nach dem Zurückschreiben weg | Eine fremde Datei wird beschädigt zurückgegeben | Protokollprüfung auf **beide** Verlustkanäle als **Sperre**, nicht als Warnung; `ignoreTypes` nie setzen (6.6, Probe 13) |
 | **Der Round-Trip trifft eine 2x3-Datei.** Die EPOS-Ergänzungen lassen sich nur mit den konkreten Schematypen anlegen; `IfcRelSpaceBoundary2ndLevel` gibt es dort nicht | Entweder eine zweite Schemabaugruppe gegen **E3** — oder ein Weg, der im Feld auf halber Strecke stehen bleibt | G7d auf Quelldateien im Schema **IFC4** begrenzen und alles andere benannt ablehnen; `Tab_Importquelle.Schemastand` ist das Kriterium (6.6, 7.1) |
-| **Unwiderrufliche Festlegungen** (Kennungen, Einheiten) werden spät getroffen | Alte Exporte werden entwertet, Modellvergleiche beim Empfänger brechen | D4 und D5 **vor** der ersten Zeile Quelltext entscheiden — sie stehen mit ihrem Zeitpunkt in **11.1** |
+| **Unwiderrufliche Festlegungen** (Kennungen, Einheiten) werden spät getroffen | Alte Exporte werden entwertet, Modellvergleiche beim Empfänger brechen | D4 und D5 sind **vor** der ersten Zeile Quelltext entschieden (E27, 11.1) — kWh mit ausdrücklicher Einheit, deterministische Kennungen in beiden Formaten |
 | **Speicher auf iOS.** `MemoryModel` hält das IFC-Modell, `XDocument` das gbXML-Dokument vollständig im Arbeitsspeicher | Abbruch ohne erklärbares Fehlerbild | Größengrenzen je Plattform, **gemessen** (D15, Frage U11); benannte Ablehnung statt Versuch |
-| **CDDL § 3.1 nicht erfüllt** — die Lizenzhinweisseite fehlt | Der IFC-Weg ist **nicht auslieferbar**, Import wie Export | Seite mit G4-1 anlegen, für **alle** Fremdanteile (8.1, Frage U10); nie forken, nie patchen |
-| **Vertragliche Frage der Rückgabe** wird erst nach der Umsetzung gestellt | 6–11 PT für einen Weg, den man nicht anbieten darf | D11 vor G7d |
+| **CDDL § 3.1 nicht erfüllt** — die Lizenzhinweisseite fehlt | Der IFC-Weg ist **nicht auslieferbar**, Import wie Export | Seite mit G4-1 anlegen, für **alle** Fremdanteile (8.1, U10, entschieden mit E27); nie forken, nie patchen |
+| **Vertragliche Frage der Rückgabe** wird erst nach der Umsetzung gestellt | 6–11 PT für einen Weg, den man nicht anbieten darf | D11 ist vor G7d entschieden (E27): zulässig mit Kennung in der Datei und Beipackzettel — die Auflagen sind Abnahmekriterium von G7d (10) |
 | **Zwei Formate, ein Dialog** wächst zu einer Maske mit Sonderfällen | Der Dialog wird unwartbar, die Formate laufen auseinander | Was sich unterscheidet, steht als **Daten** im Profil (2.4); ein Wächtertest hält Formatnamen aus der Komponente heraus |
 
 ---

@@ -10,6 +10,19 @@
 > Schemaschritte tragen Papiernamen statt fester Nummern (2.6, 4.4); die Summe G6 trägt den
 > Vorbehalt X1…X3 (Kapitel 0 und 9); M5 nennt die Kennzahl `Ueberhitzungsstunden`; 2.9 nennt
 > den Altweg als Übergang bis zur Ablösung (E26).
+>
+> **Nachzug 22.09.2026 — E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32):** Der Anwender hat die Punkte
+> dieses Papiers aus dem Register entschieden, sämtlich nach Empfehlung: **M2** Raumseitenmaß
+> (6.2), **M9** Synonymtabelle in der Auslieferung (3.5), **M10** die große Testdatei ins
+> Repositorium, nur mit LFS-Eintrag im selben Schritt (8.2), **M14** Projektkopie und Wertekopie
+> beide behalten (4.2); dazu aus Softwarearchitektur und Umsetzungskonzept **A6** (ein Aggregat in
+> einer Transaktion, 4.1), **A2** (IFC-Paket am Kern, Naht `IGebaeudeLeser` von Anfang an), **A3**
+> (formatfreier Name des Zuordnungsdialogs), **A13** (keine Herkunftsspalten am Gebäude), **A17**
+> (kein eigener Maskenschlüssel, Überlagerung im Gebäudedialog), **U10** (Lizenzhinweisseite mit der
+> ersten IFC-Stufe) und **U12** (Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog) —
+> diese stehen in 6 und 6.4, soweit sie den Zonenimport berühren. Mit E27 sind auch **D16**
+> (gbXML-Zonenbildung) und **Q24** (Fälligkeit der Stufe GA) entschieden (0, 2.8, Kapitel 9).
+> M3, M5–M8 und M11–M13 sind nicht Gegenstand von E27 und bleiben mit ihrer Stufe zu entscheiden.
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
 > [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Mehrzonenkonzept.md)** — dort auch die
@@ -46,7 +59,8 @@ die Kopplungsentscheidung selbst steht in
 Normzitate tragen Seite und Gleichungsnummer nach Befund O; Wortlaut und Zahlenreihen der
 Richtlinien bleiben draußen. VDI 6020:2022 ist nach Entscheid E6 **nicht** herangezogen — keine
 Aussage dieses Papiers stützt sich darauf. Jede Aussage über den Quelltext trägt Datei und Zeile.
-Dieses Papier entscheidet nichts; es legt vor.
+Dieses Papier entscheidet nichts; es legt vor — M2, M9, M10 und M14 hat der Anwender mit E27
+(22.09.2026) entschieden (Kapitel 10).
 
 ---
 
@@ -96,7 +110,8 @@ Dieses Papier entscheidet nichts; es legt vor.
    Speichern (`AnlageStrangCtrl.cs:33-43`, `sql/schema/001_grundschema.sql:1187`) und der
    entnullende Kopierweg `GebaeudeStammCtrl.CopyFromStamm` (`…/GebaeudeStammCtrl.cs:439`, `:459`),
    der „NULL = Vorgabe" bricht (Befund Q-1). Aufwand für G6: **40–62 PT — ohne die
-   gbXML-Zonenregeln X1…X3 (Frage D16)** (mit dem Grundriss aus dem Nachtrag unten); was zwischen
+   gbXML-Zonenregeln X1…X3** (D16, mit E27 entschieden: ja; ihr Zuwachs wird mit der Beauftragung
+   von G6c beziffert) (mit dem Grundriss aus dem Nachtrag unten); was zwischen
    den Stufen verschoben ist, steht in Kapitel 9.
 
 **Nachtrag zu Punkt 4 (Entscheid E11, 15.09.2026).** Dieselben Raumgrenzen, aus denen Flächen und
@@ -233,7 +248,7 @@ Vier Punkte, die das Einzonenmodell nicht kennt:
 
 **Flächen:** Außenbauteile brutto, Innenbauteile und Trennflächen zu anders temperierten Zonen
 netto, Fenster mit Rahmen (VDI 2078, 6.1, S. 18). Die Regel gilt für Gl. (27), (29)/(31) und (42)
-gleichermaßen; der Import folgt ihr (6.2, **offen (M2)**).
+gleichermaßen; der Import folgt ihr mit dem Raumseitenmaß (6.2; **M2**, entschieden mit E27).
 
 ### 2.3 Nachbarzonen über θ_NR,eq
 
@@ -432,7 +447,8 @@ dass es Zonen gibt.** `SimulationWaermebedarf.Waermebedarf_Max` bleibt das Maxim
 Kanalsummenvektors (`:401`); die Ergebnisgröße `Waermelast_Max` wird davon unverändert abgeleitet
 (`SimulationRunner.cs:358`, Konzept 4.5). **Die Skalierung** `Z_AuswahlWohnflaeche / Wohnflaeche`
 (Konzept 4.7, Entscheid E8) steht im Altweg — dem eingefrorenen Bestandsweg nach E20 und E23, der
-nach E26 mit der Stufe GA abgelöst wird (Zeitpunkt offen, Q24) — in
+nach E26 mit der Stufe GA abgelöst wird (ohne Datum; fällig nach den vier Bedingungen aus Q24,
+entschieden mit E27) — in
 der Physikfunktion selbst (`EPOS.Kern/Allgemein/BhkwPlan.cs:435`, Argumente `:392`) — die in
 Entscheid E8 genannte Fundstelle
 in `SimulationWaermebedarf.cs` trifft den Kopfkommentar von `SummenvektorAusKanaelen` und ist dort
@@ -638,8 +654,9 @@ Sprachwechsel zur Laufzeit hätte die Rückabbildung aus dem Zelltext zerrissen)
 | N7 | **Anwenderzuordnung** mit Merkfunktion: eine getroffene Zuordnung IFC-Name → Baustoff wird behalten | alles übrige |
 
 Die Liste ist kurz: gemessen **6 bis 13 Namen je Datei**. Die Synonymtabelle ist eine
-**Datentabelle**, kein Anzeigetext, und gehört nicht in die `.resx`. **Offen (M9):** ob sie in die
-Auslieferung geht (`_STAMM`) oder Projektgröße bleibt.
+**Datentabelle**, kein Anzeigetext, und gehört nicht in die `.resx`. **Entschieden mit E27 (M9):
+Sie geht in die Auslieferung** (`_STAMM`) — die Namen der Autorensysteme wiederholen sich
+projektübergreifend; je Projekt gepflegte Zuordnungen (N7) ergänzen sie.
 
 **Ein Stoffwert ≤ 0 ist kein Wert.** λ, ρ und c werden nur übernommen, wenn sie im Band liegen: λ
 in [0,005; 500] W/(mK), ρ in [5; 8 000] kg/m³, c in [100; 5 000] J/(kgK); alles andere gilt als
@@ -694,7 +711,8 @@ neue Schlüssel. Genau daran hängen aber die Zuordnungen des Imports: `Tab_Baut
 `Quellkennung` (Kapitel 6) zeigen auf Ids, die ein zweiter Speichervorgang sonst wegwirft.
 **Geschrieben wird deshalb als ein Aggregat je Gebäude durch Abgleich über die Ids** (Entfernen →
 Ändern → Anlegen) in **einer** Transaktion — Muster **A6** des
-[Registers](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md): Was in der Oberfläche fehlt, wird
+[Registers](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md), mit E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)
+entschieden: Was in der Oberfläche fehlt, wird
 gelöscht;
 was vorhanden ist, wird über seine `ID` geändert; was neu ist, wird angelegt. Der `Rang` wird
 danach lückenlos neu gesetzt, ohne die Schlüssel anzurühren.
@@ -824,7 +842,7 @@ muss also still bleiben (`:4883-4891`).
 Die Schritte S-A bis S-D und S-G werden als **nummerierte** Migrationsschritte nach ADR-001
 geführt; die Nummern werden vergeben, wenn der Schemastand bei Beauftragung der jeweiligen Stufe
 feststeht. Die Gebäudespalten-Schritte tragen bis dahin die Papiernamen **M3** und **M4**; die
-Zahlen 77 und 78 sind im Bestand anderweitig vergeben (Softwarearchitektur 2.4, A11). Der
+Zahlen 77 und 78 sind im Bestand anderweitig vergeben (Softwarearchitektur 2.4; A11, mit E27 entschieden: Nummern erst bei Beauftragung). Der
 Zielstand wird an `SchemaStand.Zielversion` abgelesen. Jede Nummer bekommt ihre Konstante,
 ihre Registrierung und ihren Zweig in `SchemaMigration.cs`.
 
@@ -961,6 +979,13 @@ Alles, was Befund N für den Einzonenimport festlegt — Ablauf `Lesen`/`Ueberne
 Meldungsschlüssel `IMP_IFC_PROT_*`, Einheitenauswertung über `IIfcProject.UnitsInContext`,
 Azimutkette, Größenlimit (50 MB Windows / 20 MB iOS), Lizenzlage xBIM unter CDDL-1.0 nach
 Entscheid E3, iOS-Trimming — gilt unverändert weiter. Hier steht nur, was darüber hinausgeht.
+
+**Was E27 für die Naht des Imports festlegt** (E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32)): Das
+IFC-Paket bleibt am Kern, und die Naht `IGebaeudeLeser` wird **von Anfang an** gezogen (**A2**) —
+der Zonenimport liest über dieselbe Naht wie der Einzonenimport. Die Lizenzhinweisseite kommt mit
+der **ersten** IFC-Stufe ins Installationspaket (**U10**); ohne sie ist auch G6c nicht auslieferbar.
+Die Gebäudetabelle bekommt **keine** Herkunftsspalten (**A13**) — die Herkunft des Gebäudes steht
+allein in der Importzuordnung; Herkunft je Feld tragen Zone, Bauteil, Aufbau und Baustoff (4.2).
 
 **Der Import merkt sich, woher jede Zeile stammt.** Beim Übernehmen wird die Zuordnung EPOS-Zone ↔
 `IfcSpace.GlobalId` und EPOS-Gebäude ↔ `IfcBuilding.GlobalId` **persistiert**, dazu Name, SHA-256
@@ -1121,10 +1146,11 @@ Zahl und Fläche sind im Dialog zu zeigen (gemessen: FZK-Haus 8 Türgrenzen / 17
 **Raumseitenmaß.** Raumgrenzen sind Raumseitenflächen und damit systematisch kleiner als das
 Bruttomaß, das die Bemaßungsregel verlangt — belegt in VDI 2078, 6.1, S. 18 (Innenbauteile netto,
 Außenbauteile brutto, anders temperierte Nebenräume netto, Fenster einschließlich Rahmen; damit ist
-der Merkposten aus Konzept N1.11 erledigt). **Vorschlag: Raumseitenmaß durchhalten und im Dialog
-benennen** — eine halbe Umrechnung erzeugt eine Hülle, die weder brutto noch netto ist, und die
+der Merkposten aus Konzept N1.11 erledigt). **Entschieden mit E27 (M2): Raumseitenmaß
+durchhalten und im Dialog benennen** — eine halbe Umrechnung erzeugt eine Hülle, die weder brutto noch netto ist, und die
 Umrechnung selbst bräuchte Bauteildicken und die Gehrung an jeder Ecke, also Geometrie. Die
-Abweichung ist zu **beziffern** (Kapitel 8). **Offen (M2).**
+Abweichung ist zu **beziffern** (Kapitel 8, Probe 17); das Bruttomaß bleibt als verworfene
+Möglichkeit Teil der Begründung.
 
 ### 6.3 Materialien → Aufbauten
 
@@ -1190,6 +1216,11 @@ Aufbau, Herkunft, Beleg, mit den Filtern „nur Fehler", „nur ohne Gegenstück
 „nur ohne Stoffwerte". (4) **Baustoffe** — IFC-Name, Abgleichstufe N1…N7, zugeordneter Baustoff,
 λ/ρ/c, Herkunft; **diese Liste ist die Arbeit des Anwenders**, und sie ist kurz: 6 bis 13 Namen je
 Datei.
+
+**Name und Ort sind mit E27 entschieden:** Der Dialog trägt einen **formatfreien** Namen (**A3**)
+— er zeigt IFC und gbXML, und ein Format im Namen einer Maske, die zwei Formate trägt, wäre eine
+Unwahrheit (Datenaustauschkonzept 1.4, Nr. 6). Er bekommt **keinen eigenen Maskenschlüssel und
+keine Menüzeile**, sondern erscheint als **Überlagerung im Gebäudedialog** (**A17**).
 
 **Was der Anwender ändern kann:** Regel wählen (der Vorschlag wird neu gebildet, Handeingriffe nach
 Rückfrage verworfen), Zone umbenennen, Räume zusammenlegen (Innengrenzen zwischen ihnen entfallen),
@@ -1357,7 +1388,12 @@ Gemessen erfüllt das nur `FM_ARC_DigitalHub_with_SB_v1.ifc` (17,6 MB, 59 Räume
 Abrufdatum zu belegen:** MIT ist für `github.com/RWTH-E3D/DigitalHub` belegt (Lizenz-API,
 `spdx_id: MIT`), die hier gemeinte `…_with_SB`-Fassung stammt nach Konzept 7.8 aus dem E3D-GitLab
 und ist damit **nicht** gedeckt; auch die U-Wert-Zahl weicht ab (Konzept 7.8 zählt 719, dieses
-Papier 359). Beides gehört vor der Aufnahme in **einen** Vermerk, sonst bleibt M10 offen.
+Papier 359). **M10 ist mit E27 entschieden:** Die Datei kommt ins Repositorium, **nur**
+zusammen mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in
+`.gitattributes` im selben Schritt und dem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git
+LFS". Die Lizenz der `…_with_SB`-Fassung ist nachzufragen und bis dahin nur außerhalb des
+Repositoriums zu messen; Lizenzbeleg und abweichende U-Wert-Zahl gehören vor der Aufnahme in
+**einen** Vermerk.
 Die Auflage ist wie bei den KIT-Dateien Lizenztext und Vermerk.
 
 | Nr. | Probe | Kriterium |
@@ -1396,7 +1432,7 @@ zu ziehen, sobald eine neue Spaltenart oder eine geänderte Zeilenhöhe entsteht
 |---|---|---|---|
 | **G6a — Datenmodell und Pflege** | Schritt S-D und der Rest von S-B (nummeriert nach ADR-001) samt Schema-Klassen und Testdatenbankwerkzeug; `Tab_Zone`, `Tab_Bauteil`, `Tab_Bauteilschicht` und `Tab_Baustoff(_STAMM)` entstehen schon mit **G3** (S-A bis S-C, 3.5 und 4.4), **G6a legt `Tab_Bauteilaufbau(_STAMM)` an**, `Tab_Zonenluftstrom` und `Tab_Bauteil.ID_Nachbarzone` kommen mit G6b (S-G); Baustoffsaat (rund 60 Stoffe, DIN 4108-4 / ISO 10456); Baustoff- **und Aufbaukatalog** in der Administration; Aufbau- und Schichteditor mit Summenfuß R/U/C und T_BT; Controller und Kopierwege; `FK_MAP`/`KINDER`; Bericht-Zonentabelle | Migrationstests grün, Auslieferungsvorlage grün (Katalog nicht leer), Referenzlauf **byte-gleich** (kein Leser), `SqlDialektPruefer` grün | **10–15 PT** |
 | **G6b — Zoneneingabe und Rechenweg** | Schritt **S-G** (`Tab_Zonenluftstrom`, `Tab_Bauteil.ID_Nachbarzone`); Zonenreiter, Zonendialog, Bauteilliste, Bauteildialog, Hülle nach `EPOS.UI.Daten`; die Zonenschleife in `HeizwaermeEinesGebaeudes`; Gruppenbildung AW/IW mit adiabatem Vorlauf für die 4-K-Regel, Gl. (29)/(31), θ_NR,eq nach (40), Gewichtung (41)/(42) mit Σ B_v = 1; Gauß-Seidel mit fester Reihenfolge und den Schwellen 0,01 K / 0,1 W; unbeheizte Zonen; Konsistenzprüfungen; Proben 1–12 samt 12a | Testbeispiel 10 im Normband, Probe 10 **bitgleich zum Stand nach G3** (trägt nur mit der Ausnahme N = 1, 2.4/2.9), Probe 12a ergebnisneutral, Probe 6 gemessen und begründet | **12–18 PT** |
-| **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **mit Entscheid D16 zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, Frage **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit D16 beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle; Zuordnungsdialog mit vier Abschnitten; Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
+| **G6c — Zonenimport aus IFC** (mit **D16** auch aus gbXML) | Zonierungsregeln Z1…Z5 (samt Messung von `IfcSpatialZone`) und B1…B6; **nach D16 — entschieden mit E27 — zusätzlich die gbXML-Zonenregeln X1…X3** ([Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 3.3, **D16** in 11.1; `X4`, der Einzonen-Rückfall, gehört zu **G4c** und ist hier nicht enthalten) — in den 16–26 PT stecken X1…X3 noch **nicht**, ihr Zuwachs wird mit der Beauftragung von G6c beziffert; Polygonflächen, Normale, Azimut/Neigung; `CorrespondingBoundary` und Rekonstruktion; Persistenz der Zuordnung Zone ↔ `GlobalId` samt Dateikennung (Kapitel 6); Öffnungsabzug je Fläche; Schichtrichtung nach `DirectionSense` und Grenznormale; Namensabgleich N1…N7 mit Synonymtabelle aus der Auslieferung (M9); Zuordnungsdialog mit vier Abschnitten, formatfrei benannt, als Überlagerung im Gebäudedialog (A3, A17); Importprobe auf der Datei mit LFS-Zeile (M10); Meldungen in beiden `.resx`; Importproben; **Zonengeometrie-Modell und 2D-Grundriss je Geschoss im Zuordnungsdialog (E11, 6.7)** | Proben 13–18 und die beiden Proben aus 6.7; iOS-Lauf nach Rückfrage (Trimming, Größenlimit gemessen) | **16–26 PT** |
 | **G6d — Referenzprojekt und Einfrieren** | Zonenprojekt in der Testdatenbank säen; Einfrierregel „gesäte Zonendaten" (benannt, nicht durchgezählt); Referenzlauf, Vergleich, Begründung; Wiki-Seite und Logbuch-Eintrag | grüner Kern-Lauf, neue Basis begründet | **2–3 PT** |
 | | **Summe G6** | | **40–62 PT — ohne X1…X3 (D16)** |
 
@@ -1420,8 +1456,8 @@ Absatz.
 **Was E11 hinzufügt.** Der Gebäudebetrachter (Konzept N1.16, 15.09.2026) legt **6–10 PT** auf G6c:
 das **Zonengeometrie-Modell** im Kern (3–5 PT) und den **2D-Grundriss** im Zuordnungsdialog
 (3–5 PT, 6.7). Damit steht **G6c bei 16–26 PT** und die **Summe G6 bei 40–62 PT** statt 34–52 PT —
-in beiden Zahlen stecken die gbXML-Zonenregeln X1…X3 **nicht**, ihr Zuwachs wird mit **D16**
-beziffert.
+in beiden Zahlen stecken die gbXML-Zonenregeln X1…X3 **nicht**; **D16** ist mit E27 entschieden
+(ja), ihr Zuwachs wird mit der Beauftragung von G6c beziffert.
 Die zweite Ansicht — schematische Körper, 4–7 PT — hängt an G7b und steht im
 [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) (Nachtrag 1); sie ist hier
 **nicht** mitgezählt.
@@ -1436,22 +1472,27 @@ behoben sein.
 
 ## 10. Fragen mit Empfehlung
 
+**E27 (22.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32) hat M2, M9, M10 und M14 entschieden**, sämtlich nach
+Empfehlung; die Zeilen tragen den Vermerk, Frage und Empfehlung bleiben als Begründung stehen. M1
+und M4 sind seit dem 16.09.2026 entschieden (E17); M3, M5–M8 und M11–M13 bleiben mit ihrer Stufe zu
+entscheiden.
+
 | Nr. | Frage | Empfehlung |
 |---|---|---|
 | **M1** | Kopplungsweg: A (Vorstunde), B (Gauß-Seidel) oder C (Gesamtsystem)? | **B bleibt es auch nach dem Gegenlesen**, mit A als Vergleichsrechnung und C für N = 2 als Prüforakel (2.4): Die berichtigte Gewichtung (Σ B_v = 1, 2.3) dämpft den Kopplungspfad eher, das zusätzliche Abbruchmaß 0,1 W verschärft nur die Schwelle, und das Festhalten des Regelungsmusters je Stunde ist gerade der Punkt, an dem C teuer würde. Die Wahl wird durch Probe 6 **gemessen** bestätigt, nicht vorausgesetzt; festgehalten in [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) — **angenommen 16.09.2026 (E17)** |
-| **M2** | Raumseitenmaß oder Bruttomaß beim Import? | **Raumseitenmaß durchhalten und im Dialog benennen** (6.2). Das weicht von der Bemaßungsregel des Einzonenmodells ab (VDI 2078, 6.1, S. 18) und ist ein Entscheid; Probe 17 beziffert den Abstand vorher |
+| **M2** | Raumseitenmaß oder Bruttomaß beim Import? | **Entschieden mit E27 (22.09.2026): Raumseitenmaß durchhalten und im Dialog benennen** (6.2). Das weicht von der Bemaßungsregel des Einzonenmodells ab (VDI 2078, 6.1, S. 18) — deshalb ein Entscheid; Probe 17 beziffert den Abstand |
 | **M3** | Gilt die 4-K-Regel als feste Vorgabe oder je Trennfläche übersteuerbar? | **Vorgabe mit Übersteuerung je Trennfläche**, Anzeige des Δϑ als Beleg; gemessen wird es an den **gerechneten Raumkonditionen** eines adiabaten Vorlaufs, nicht an den Sollwerten (VDI 2078, 7.2, S. 46), und die Zuordnung fällt einmal vor dem Lauf, nie während (2.2). Nach dem Lauf wird eine Überschreitung von 4 K benannt |
 | **M4** | Kommt der Zonen-Luftaustausch in G6 oder später? | **In G6b**, als Paare mit `CHECK (ID_ZoneA < ID_ZoneB)`. Ohne ihn ist Treppenhaus und offene Küche nicht darstellbar — und er ist der Grund gegen Vorschlag A. Wer ihn streicht, kann A nehmen und spart 2–3 PT — **entschieden 16.09.2026 mit ADR-005 (E17): in G6b** |
 | **M5** | Bekommen unbeheizte Zonen eigene Zeilen im Bedarfsdialog? | **Ja** — sie tragen keine Heizlast, aber Temperatur und die achte Gebäudekennzahl **`Ueberhitzungsstunden`** [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, ab KU1 über `Kuehl_Sollwert`) — derselbe Name und dieselbe Bildungsregel wie in Rechenschritte 8.2, Umsetzungskonzept 1.4 und Systementwurf F7; ohne Zeile ist die Kellertemperatur unsichtbar, und sie ist der fachliche Gewinn (2.5) |
 | **M6** | Vorlauf: 30 Tage mit Konvergenzprobe oder fest 90 Tage? | **30 Tage mit Probe** (2.9); feste 90 Tage kosten Rechenzeit ohne Aussage bei leichten Gebäuden |
 | **M7** | Zonenregel als Vorgabe beim Import: Z4 (je Geschoss) oder stets Z5? | **Z4, Rückfall Z5** — Z4 trägt in allen vier Messdateien; bei fehlenden Grenzen zwingend Z5 (6.5) |
 | **M8** | Mindestgröße einer Zone: max(2 m², 2 %)? | **Ja**, mit Zuschlag zum Nachbarn mit der größten gemeinsamen Grenzfläche; sonst werden aus der Institute-Datei 78 Zonen (6.1) |
-| **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |
-| **M10** | Testdateien im Repositorium: DigitalHub (17,6 MB) als Blob? Lizenz der `…_with_SB`-Fassung nachfragen? | **DigitalHub ja — dann aber mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in `.gitattributes` im selben Schritt** und einem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS"; ohne sie liegt ein 17,6-MB-Blob dauerhaft in der Geschichte (er ist die einzige Datei mit Schichten **und** echten 2nd-Level-Paaren). **Lizenz der `…_with_SB`-Fassung nachfragen** — MIT ist für das GitHub-Repositorium belegt, nicht für die E3D-GitLab-Fassung (8.2) —, bis dahin nur außerhalb des Repositoriums messen. Alternative: Test holt die Datei zur Laufzeit und schweigt ohne sie |
+| **M9** | Synonymtabelle: Auslieferung (`_STAMM`) oder Projektgröße? | **Entschieden mit E27 (22.09.2026): Auslieferung** — die Namen der Autorensysteme wiederholen sich projektübergreifend; je Projekt gepflegte Zuordnungen ergänzen sie |
+| **M10** | Testdateien im Repositorium: DigitalHub (17,6 MB) als Blob? Lizenz der `…_with_SB`-Fassung nachfragen? | **Entschieden mit E27 (22.09.2026): DigitalHub ja — aber nur mit der Zeile `Referenzlaeufe/Importproben/**/*.ifc filter=lfs diff=lfs merge=lfs -text` in `.gitattributes` im selben Schritt** und einem Vermerk in `Referenzlaeufe/LIESMICH.md`, Abschnitt „Git LFS"; ohne sie liegt ein 17,6-MB-Blob dauerhaft in der Geschichte (er ist die einzige Datei mit Schichten **und** echten 2nd-Level-Paaren). **Lizenz der `…_with_SB`-Fassung nachfragen** — MIT ist für das GitHub-Repositorium belegt, nicht für die E3D-GitLab-Fassung (8.2) —, bis dahin nur außerhalb des Repositoriums messen. Alternative: Test holt die Datei zur Laufzeit und schweigt ohne sie |
 | **M11** | Referenzprojekt mit Zonen: bestehendes umstellen oder vierzehntes anlegen? | **Bestehendes umstellen**, im Einfrierschritt G6d — ein vierzehntes Projekt verlängert jeden CI-Lauf dauerhaft |
 | **M12** | Obergrenze 50 Zonen je Gebäude — und wie hart? | **Ja, 50 als Vorgabe**, aber **im Import als Warnung mit Rückfrage** und dem Vorschlag „auf Geschosse zusammenlegen" (6.6); die Rechnung selbst lehnt darüber benannt ab (2.9). Die Zahl selbst ist eine Setzung aus der Rechenzeit, kein Messergebnis — sie bleibt offen, bis Probe 6 die Laufzeit an einem echten Mehrzonengebäude gemessen hat |
 | **M13** | Wie weit soll die Archicad-Rekonstruktion gehen? | **Vollständig** (Paarbildung über Geometrie, 6.2) — die magere Alternative wäre, Mehrzonigkeit nur bei echten 2nd-Level-Entitäten anzubieten und Archicad auf Z5 zu beschränken; das spart 2–3 PT und schließt die einzige lizenzfreie kleine Referenzdatei aus |
-| **M14** | Wird `Tab_Baustoff` (Projektkopie) gebraucht, oder genügt `_STAMM` mit der Wertekopie an der Schicht? | **Beides behalten** — die Wertekopie an der Schicht schützt gerechnete Ergebnisse, die Projektkopie erlaubt projekteigene Stoffe; wer die Projektkopie streicht, spart eine Tabelle und verliert den Weg „eigener Stoff ohne Katalogeintrag" |
+| **M14** | Wird `Tab_Baustoff` (Projektkopie) gebraucht, oder genügt `_STAMM` mit der Wertekopie an der Schicht? | **Entschieden mit E27 (22.09.2026): beides behalten** — die Wertekopie an der Schicht schützt gerechnete Ergebnisse, die Projektkopie erlaubt projekteigene Stoffe; wer die Projektkopie streicht, spart eine Tabelle und verliert den Weg „eigener Stoff ohne Katalogeintrag" |
 
 ---
 
@@ -1469,7 +1510,7 @@ behoben sein.
 | **Zonenbildung ohne `IfcZone`** trifft nicht die thermische Gliederung; **stillschweigend entkoppelte Zonen** bei fehlenden Raumgrenzen | Der Anwender bekommt Zonen, die er nicht wollte, im zweiten Fall schlechter als die Einzonenrechnung | Regel offenlegen, Z1…Z5 umschaltbar, Bilanz nach jeder Änderung, „alles in eine Zone" als Rückweg (6.4); bei fehlenden Grenzen **Z5 erzwingen** (6.5) |
 | **Strahlungsaustausch endet an der Zonengrenze** (Gl. (29)/(31), (55)–(57), S. 25); der eine von der Richtlinie vorgesehene Weg über die Grenze, Q̇_str,A,NR in Gl. (40), wird zu null gesetzt (2.6) | Eine Zone, die viel Umfassungsfläche verliert, bekommt einen strukturellen Fehler in der operativen Temperatur (Gl. (103), S. 29); ein besonntes Treppenhaus wirkt nur über seine Lufttemperatur | Argument für **große** Zonen; 4-K-Regel und Mindestgröße wirken in dieselbe Richtung; im Dialog benennen |
 | **Rechenzeit bei vielen Zonen** | 50 Zonen × 6 Durchläufe ≈ 1,7 s je Gebäude und Jahr, mit zweitem Vorlauf und Umschaltsuche; dazu der ungekoppelte Vorlauf der 4-K-Zuordnung (≈ 0,25 s), zusammen rund 2,0 s | Obergrenze 50 (M12), Mindestgröße (M8); fällt nur bei Mehrzonengebäuden an |
-| **Normstatus**; **Lizenz der `…_with_SB`-Fassungen ungeklärt** | „Mehrzonensimulation nach VDI 6007" wäre falsch; der Prüfstand mit Schichten **und** echten 2nd-Level-Entitäten steht auf einer Datei, deren Lizenz nicht belegt ist | Ausweis nach Entscheid E10 **je Zone** (Kapitel 7); M10: Lizenz mit Repositorium, Commit und Abrufdatum belegen, LFS-Zeile im selben Schritt |
+| **Normstatus**; **Lizenz der `…_with_SB`-Fassungen ungeklärt** | „Mehrzonensimulation nach VDI 6007" wäre falsch; der Prüfstand mit Schichten **und** echten 2nd-Level-Entitäten steht auf einer Datei, deren Lizenz nicht belegt ist | Ausweis nach Entscheid E10 **je Zone** (Kapitel 7); M10 (entschieden mit E27): LFS-Zeile im selben Schritt, Lizenz mit Repositorium, Commit und Abrufdatum belegen, bis dahin nur außerhalb messen |
 
 ---
 
