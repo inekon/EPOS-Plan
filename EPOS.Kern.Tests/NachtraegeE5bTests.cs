@@ -4,10 +4,15 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
 using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
+using ASVG = DocumentFormat.OpenXml.Office2019.Drawing.SVG;
 using R = WindowsFormsApplication1.MyResource.Resource;
+using W = DocumentFormat.OpenXml.Wordprocessing;
+using Z = WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.Kern.Tests
 {
@@ -25,6 +30,10 @@ namespace EPOS.Kern.Tests
     ///   nimmt den Baustein Wirtschaftlichkeit NUR für diesen Lauf hinzu; die gemerkte
     ///   Berichtskonfiguration der Gruppe bleibt unverändert. Gemerkt wird allein beim
     ///   Lauf der Berichtsseite.</description></item>
+    ///   <item><description>Frage (4) — das Spannenbild gehört zu E6: die Bandbreite je
+    ///   Version als Balken (Ungünstig bis Günstig, Erwartet markiert, Referenz als
+    ///   Nulllinie), aus demselben Modell wie die Tafel, auf der Seite in „Wie sicher ist
+    ///   das?" und im Wortbericht neben der Bandbreitentafel.</description></item>
     /// </list>
     /// </summary>
     [Collection("Testdatenbank")]
@@ -244,6 +253,234 @@ namespace EPOS.Kern.Tests
         private static void Aufraeumen(string ordner)
         {
             try { if (Directory.Exists(ordner)) Directory.Delete(ordner, true); } catch { }
+        }
+
+        // =====================================================================
+        //  Frage (4) — das Spannenbild
+        // =====================================================================
+
+        private const int VARIANTE_3 = 904;
+
+        /// <summary>
+        /// Stamm (1.200 / 1.500 / 1.700) und Variante 2 (−300 / 800 / 600: Erwartet liegt
+        /// AUSSERHALB von Worst und Best) mit allen drei Szenarien, Variante 3 nur mit dem
+        /// Erwartungsfall; Variante 1 ist die Referenz.
+        /// </summary>
+        private static WirtschaftlichkeitBandbreite Spannengruppe()
+        {
+            var alle = new List<WirtschaftlichkeitErgebnis>
+            {
+                Ergebnis(STAMM, WirtschaftlichkeitSzenario.WORST, 1200.0, true, "Stamm"),
+                Ergebnis(STAMM, WirtschaftlichkeitSzenario.ERWARTET, 1500.0, true, "Stamm"),
+                Ergebnis(STAMM, WirtschaftlichkeitSzenario.BEST, 1700.0, true, "Stamm"),
+                Ergebnis(VARIANTE_2, WirtschaftlichkeitSzenario.WORST, -300.0, false, "Variante 2"),
+                Ergebnis(VARIANTE_2, WirtschaftlichkeitSzenario.ERWARTET, 800.0, false, "Variante 2"),
+                Ergebnis(VARIANTE_2, WirtschaftlichkeitSzenario.BEST, 600.0, false, "Variante 2"),
+                Ergebnis(VARIANTE_3, WirtschaftlichkeitSzenario.ERWARTET, 250.0, false, "Variante 3")
+            };
+            foreach (string sz in WirtschaftlichkeitSzenario.Alle)
+                alle.Add(Ergebnis(VARIANTE_1, sz, null, false, "Variante 1"));
+
+            return WirtschaftlichkeitBandbreite.Bilde(
+                new[]
+                {
+                    new KeyValuePair<int, string>(STAMM, "Stamm"),
+                    new KeyValuePair<int, string>(VARIANTE_1, "Variante 1"),
+                    new KeyValuePair<int, string>(VARIANTE_2, "Variante 2"),
+                    new KeyValuePair<int, string>(VARIANTE_3, "Variante 3")
+                }, alle, VARIANTE_1, "Variante 1");
+        }
+
+        /// <summary>
+        /// Die Balken lesen DIESELBE Bandbreite wie die Tafel: je Stand außer der Referenz
+        /// einer, in der Reihenfolge der Gruppe. Der Balken reicht vom kleinsten bis zum
+        /// größten der drei Werte (Q4 — auch wenn Erwartet außerhalb von Worst und Best
+        /// liegt), seine Länge ist die Spanne der Tafel; ohne Worst oder Best gibt es keinen
+        /// Balken, nur den Punkt.
+        /// </summary>
+        [Fact]
+        public void Die_Spannenbalken_folgen_der_Bandbreite()
+        {
+            WirtschaftlichkeitBandbreite b = Spannengruppe();
+            List<ChartRenderer.Spannenbalken> balken = ChartRenderer.Spannenbalken.Aus(b);
+
+            Assert.Equal(new[] { "Stamm", "Variante 2", "Variante 3" }, balken.Select(x => x.Name).ToArray());
+
+            Assert.Equal(1200.0, balken[0].Von);
+            Assert.Equal(1700.0, balken[0].Bis);
+            Assert.Equal(1500.0, balken[0].Punkt);
+
+            Assert.Equal(-300.0, balken[1].Von);
+            Assert.Equal(800.0, balken[1].Bis);
+            Assert.Equal(b.Zeile(VARIANTE_2).Spanne.Value, balken[1].Bis.Value - balken[1].Von.Value, 9);
+
+            Assert.Null(balken[2].Von);
+            Assert.Null(balken[2].Bis);
+            Assert.Equal(250.0, balken[2].Punkt);
+            Assert.True(balken[2].Zeichenbar);
+
+            Assert.False(new ChartRenderer.Spannenbalken { Name = "leer", Erwartet = double.NaN }.Zeichenbar);
+        }
+
+        /// <summary>
+        /// Das Bild: je Version EINE Zeile als Datenelement (<c>reihe:‹Version›</c>) mit allen
+        /// drei Werten am Element, die Referenz als Nulllinie und beim Namen im Achsentitel;
+        /// ein reines Pixelbild (keine Zeichenfläche, keine Datenreihe). Die Höhe wächst je
+        /// Version um eine Zeile. Der Legendeneintrag „unter der Referenz" steht nur, wenn
+        /// ein Wert darunter liegt.
+        /// </summary>
+        [Fact]
+        public void Das_Spannenbild_traegt_je_Version_eine_Zeile_und_die_Referenz_als_Nulllinie()
+        {
+            var texte = new ChartRenderer.SpannenTexte();
+            Z.Zeichenmodell m = ChartRenderer.KapitalwertSpanneModell(
+                ChartRenderer.Spannenbalken.Aus(Spannengruppe()), "Variante 1", texte);
+
+            Assert.Equal(1240, m.Breite);
+            Assert.Equal(290 + 2 * (int)ChartRenderer.SPANNE_ZEILE, m.Hoehe);
+            Assert.Null(m.Flaeche);
+            Assert.Empty(m.Reihen);
+
+            string[] marken = m.Befehle.Select(x => x.Marke)
+                               .Where(x => x != null && x.StartsWith("reihe:", StringComparison.Ordinal))
+                               .Distinct().ToArray();
+            Assert.Equal(new[] { "reihe:Stamm", "reihe:Variante 2", "reihe:Variante 3" }, marken);
+            Assert.Equal("Variante 2: Ungünstig -300 € · Erwartet 800 € · Günstig 600 €",
+                         m.Befehle.First(x => x.Marke == "reihe:Variante 2").Wert);
+
+            Assert.Single(m.Befehle, x => x.Marke == "nulllinie");
+            List<string> texteImBild = m.Befehle.OfType<Z.Text>().Select(t => t.Inhalt).ToList();
+            Assert.Contains(string.Format(CultureInfo.InvariantCulture, texte.Achse, "Variante 1"), texteImBild);
+            Assert.Contains(texte.UnterReferenz, texteImBild);
+
+            // GEGENPROBE: Alles über der Referenz — kein Eintrag „unter der Referenz".
+            Z.Zeichenmodell oben = ChartRenderer.KapitalwertSpanneModell(new List<ChartRenderer.Spannenbalken>
+            {
+                new ChartRenderer.Spannenbalken { Name = "A", Worst = 100.0, Erwartet = 200.0, Best = 300.0 }
+            }, "Stamm", texte);
+            Assert.Equal(290, oben.Hoehe);
+            Assert.DoesNotContain(texte.UnterReferenz, oben.Befehle.OfType<Z.Text>().Select(t => t.Inhalt));
+        }
+
+        /// <summary>
+        /// Die Seite: Die Hülle legt das Spannenbild an die Ansicht — je Zeile der
+        /// Bandbreitentafel mit Zahl eine Zeile im Bild, in derselben Reihenfolge (Gruppe
+        /// „Wöhler" der Testdatenbank mit gespeicherten Ergebnissen).
+        /// </summary>
+        [Fact]
+        public void Die_Huelle_legt_das_Spannenbild_an_die_Ansicht()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var seite = new WirtschaftlichkeitSeiteGaben(1019, "Wöhler");
+            WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)seite.Gaben()["Laden"])();
+            ErgebnisAnsicht ansicht = stand.Ansicht;
+
+            Assert.True(ansicht.Bandbreite.Zeilen.Count > 1, "Die Gruppe trägt keine Bandbreite.");
+            Assert.NotNull(ansicht.Spannenbild);
+
+            string[] zeilen = ansicht.Bandbreite.Zeilen.Skip(1)                       // ohne Referenzzeile
+                .Where(z => z.Zellen.Take(3).Any(c => c != "—"))
+                .Select(z => "reihe:" + z.Titel).ToArray();
+            string[] marken = ansicht.Spannenbild.Befehle.Select(x => x.Marke)
+                .Where(x => x != null && x.StartsWith("reihe:", StringComparison.Ordinal))
+                .Distinct().ToArray();
+            Assert.NotEmpty(marken);
+            Assert.Equal(zeilen, marken);
+        }
+
+        /// <summary>
+        /// Der Wortbericht: Das Spannenbild steht NEBEN der Bandbreitentafel — unmittelbar
+        /// nach Tafel und Fußtext, als Bild mit SVG-Teil, und dieser SVG-Teil ist das
+        /// Spannenbild (Nulllinie, je Variante eine Zeile). Prüfgruppe 1040–1042, frisch
+        /// bewertet.
+        /// </summary>
+        [Fact]
+        public void Der_Wortbericht_traegt_das_Spannenbild_neben_der_Bandbreitentafel()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BewerteteGruppe1040();
+            string ordner = Zielordner();
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                string ziel = Path.Combine(ordner, "spanne.docx");
+                var konfig = new BerichtsKonfiguration();
+                konfig.AktiveBausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+                new WordBerichtGenerator().Erzeuge(daten, konfig, ziel);
+
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                MainDocumentPart main = doc.MainDocumentPart;
+                List<OpenXmlElement> elemente = main.Document.Body.Elements().ToList();
+
+                int tafel = elemente.FindIndex(e => e is W.Table t && Kopf(t).Contains(R.WIRT_SZ_SP_SPANNE)
+                                                                   && Kopf(t).Contains(R.WIRT_EMPF_SPALTE));
+                Assert.True(tafel >= 0, "Die Bandbreitentafel fehlt im Wortbericht.");
+
+                OpenXmlElement bild = elemente.Skip(tafel + 1).Take(3)
+                                              .FirstOrDefault(e => e.Descendants<W.Drawing>().Any());
+                Assert.NotNull(bild);
+
+                ASVG.SVGBlip svgBlip = bild.Descendants<ASVG.SVGBlip>().FirstOrDefault();
+                Assert.NotNull(svgBlip);
+                string svg;
+                using (Stream s = ((ImagePart)main.GetPartById(svgBlip.Embed.Value)).GetStream())
+                using (var r = new StreamReader(s))
+                    svg = r.ReadToEnd();
+                Assert.Contains("data-marke=\"nulllinie\"", svg);
+                Assert.Contains("data-marke=\"reihe:Variante A\"", svg);
+                Assert.Contains("data-marke=\"reihe:Variante B\"", svg);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        private static IReadOnlyList<string> Kopf(W.Table t)
+        {
+            W.TableRow erste = t.Elements<W.TableRow>().FirstOrDefault();
+            return erste == null
+                ? new List<string>()
+                : erste.Elements<W.TableCell>().Select(c => c.InnerText).ToList();
+        }
+
+        /// <summary>Die Prüfgruppe 1040–1042 mit synthetischen Energiekosten, bewertet über
+        /// den Rechenweg des Berichts (Muster <see cref="ErgebnisansichtEntscheideTests"/>).</summary>
+        private static BerichtsDaten BewerteteGruppe1040()
+        {
+            var daten = new BerichtsDaten { IdStamm = GRUPPE, Stammprojektname = "Stammprojekt" };
+            daten.Varianten.Add(Stand(1040, true, "Stammprojekt", 12000.0));
+            daten.Varianten.Add(Stand(1041, false, "Variante A", 9000.0));
+            daten.Varianten.Add(Stand(1042, false, "Variante B", 7000.0));
+
+            var p = new WirtschaftlichkeitParameter
+            {
+                IdStamm = GRUPPE,
+                IdReferenzprojekt = 0,
+                Zinssatz = 3.0,
+                Betrachtungszeitraum = 20,
+                PreissteigerungEnergie = 0.0,
+                PreissteigerungBetrieb = 0.0
+            };
+            List<SensitivitaetZeile> sens;
+            daten.Wirtschaftlichkeit = new WirtschaftlichkeitCtrl().Berechne(daten, p, 0, true, out sens);
+            daten.Bewertung = WirtschaftlichkeitBewertung.FuerBericht(
+                daten, daten.Wirtschaftlichkeit, p, BerichtTexte.Kultur, sens);
+            return daten;
+        }
+
+        private static VariantenDaten Stand(int id, bool istStamm, string name, double energie)
+        {
+            return new VariantenDaten
+            {
+                IdProjekt = id,
+                IstStamm = istStamm,
+                Projektname = "Stammprojekt",
+                Variantenname = istStamm ? "" : name,
+                Ergebnis = new ErgebnisModel(),
+                Energiekosten = energie
+            };
         }
 
         // =====================================================================

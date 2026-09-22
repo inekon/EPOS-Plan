@@ -254,6 +254,7 @@
         <Gruppenkopf Titel="@Texte.AbsSicher">
             <KindInhalt>
                 @Bandbreitenteil
+                @Spannenteil
 
                 @* ETAPPE E6 (Konzept § 2.13 (5), U3): DER VERLAUF MIT ALLEN DREI
                    SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
@@ -1371,6 +1372,21 @@
             {
                 <Herleitungszeile Text="@_stand.Ansicht.Bandbreitenfuss" />
             }
+        }
+    </div>;
+
+    /// <summary>
+    /// ETAPPE E6 (Nachtrag E5b, Anwenderentscheid 22.09.2026 zu Frage (4), Mockup
+    /// <c>valeri-f2</c>): das SPANNENBILD unter der Bandbreitentafel — dieselben Zahlen als
+    /// Balken je Version, der Erwartungsfall als Punkt, die Referenz als Nulllinie. Es ist
+    /// ein reines Pixelbild ohne Zoom; die Legende schaltet nichts. Ohne Bandbreite steht
+    /// kein Bild.
+    /// </summary>
+    private RenderFragment Spannenteil => @<div class="epos-wirt-spanne-teil">
+        @if (_stand.Ansicht.Spannenbild is not null)
+        {
+            <DiagrammSvg Modell="@_stand.Ansicht.Spannenbild" Kennung="kapitalwert-spanne"
+                         Bezeichnung="@Texte.SpanneBild" OhneZoom="true" LegendeSchaltbar="false" />
         }
     </div>;
 

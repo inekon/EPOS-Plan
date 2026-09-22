@@ -1225,6 +1225,10 @@ namespace ChartProben
             // Gegen- und SVG-Proben in Program.Szenarien.cs.
             SzenarienProben(ziel);
 
+            // ETAPPE E6, Nachtrag E5b - das Spannenbild (Bandbreite je Version als Balken):
+            // Mass-, Gegen- und SVG-Proben in Program.Spanne.cs.
+            SpannenProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

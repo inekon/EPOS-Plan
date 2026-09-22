@@ -64672,6 +64672,60 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertdifferenz zu {0} [€] — Nulllinie = Referenz ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_ACHSE {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Version mit Szenarienwerten. ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erwartungsfall ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_LEG_ERWARTET {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_LEG_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spanne ungünstig bis günstig ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_LEG_SPANNE {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_LEG_SPANNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die unter der Referenz ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_LEG_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_LEG_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spanne der Kapitalwertdifferenz je Version ähnelt.
+        /// </summary>
+        public static string WIRT_SPANNE_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_SPANNE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
         /// </summary>
         public static string WIRT_SP_KENNZAHL {

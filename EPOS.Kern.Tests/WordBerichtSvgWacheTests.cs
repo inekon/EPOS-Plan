@@ -59,9 +59,10 @@ namespace EPOS.Kern.Tests
         /// <c>asvg:svgBlip</c> darin zeigt. Der SVG-Teil beginnt wohlgeformt mit
         /// <c>&lt;svg</c> und trägt keinen BOM.
         ///
-        /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die vier
-        /// übrigen die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell
-        /// bekommen haben und seither ebenfalls über den Modellweg gehen.</para>
+        /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die nächsten vier
+        /// die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell bekommen haben
+        /// und seither ebenfalls über den Modellweg gehen; die letzten zwei sind die Bilder
+        /// der Etappe E6 (Verlauf mit drei Szenarien, Spannenbild).</para>
         /// </summary>
         [Theory]
         [InlineData("jahresverlauf")]
@@ -73,6 +74,7 @@ namespace EPOS.Kern.Tests
         [InlineData("balken")]
         [InlineData("kapitalwert")]
         [InlineData("kapitalwert_szenarien")]
+        [InlineData("kapitalwert_spanne")]
         public void EinModellLegtBeideTeileAb(string bild)
         {
             Zeichenmodell m = Bildmodell(bild);
@@ -388,6 +390,15 @@ namespace EPOS.Kern.Tests
                                           "Kumulierte Barwerte je Version", Barwerte(), null);
                 // ETAPPE E6: das Dreierbild des Wortberichts (Verlauf mit drei Szenarien).
                 case "kapitalwert_szenarien": return Dreierbild();
+                // ETAPPE E6, Nachtrag E5b: das Spannenbild neben der Bandbreitentafel.
+                case "kapitalwert_spanne": return ChartRenderer.KapitalwertSpanneModell(
+                                          new List<ChartRenderer.Spannenbalken>
+                                          {
+                                              new ChartRenderer.Spannenbalken
+                                              {
+                                                  Name = "Variante A", Worst = -4000.0, Erwartet = 6000.0, Best = 11000.0
+                                              }
+                                          }, "Stamm", null);
                 default: throw new ArgumentOutOfRangeException(nameof(bild), bild, "unbekanntes Bild");
             }
         }

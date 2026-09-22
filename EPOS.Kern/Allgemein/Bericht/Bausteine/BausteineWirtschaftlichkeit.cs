@@ -1093,6 +1093,16 @@ namespace WindowsFormsApplication1
             k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS,
                                        band.Referenzname));
 
+            // ---- ETAPPE E6 (Nachtrag E5b, Frage (4)): das SPANNENBILD neben der Tafel ----
+            // Dieselbe Bandbreite als Balken je Version (Mockup valeri-f2): der Balken vom
+            // kleinsten bis zum größten Szenariowert, der Erwartungsfall als Punkt, die
+            // Referenz als Nulllinie — dasselbe Modell wie auf der Seite. Die Anzeigegröße
+            // folgt der Bildhöhe, die mit den Versionen wächst.
+            Zeichnung.Zeichenmodell spanne = Sicher(() => ChartRenderer.KapitalwertSpanneModell(
+                ChartRenderer.Spannenbalken.Aus(band), band.Referenzname,
+                ChartRenderer.SpannenTexte.AusRessourcen()));
+            if (spanne != null) k.Bild(spanne, 620, spanne.Hoehe / 2);
+
             // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----
             //
             // Der Nachweis nennt den WIRKSAMEN Satz (i, p_E, p_B, Investition, Erträge,

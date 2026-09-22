@@ -70,6 +70,10 @@
     <!-- Etappe E6 der Wirtschaftlichkeit: der Verlauf mit drei Szenarien und die
          dritte Strichart - Mass-, Gegen- und SVG-Proben. -->
     <Compile Include="Program.Szenarien.cs" />
+
+    <!-- Etappe E6, Nachtrag E5b: das Spannenbild (Bandbreite je Version als Balken) -
+         Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Spanne.cs" />
   </ItemGroup>
 
   <ItemGroup>

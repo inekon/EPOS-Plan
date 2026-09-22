@@ -364,6 +364,46 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E6, Nachtrag E5b (Anwenderentscheid 22.09.2026 zu Frage (4)): Das
+    /// SPANNENBILD steht in „Wie sicher ist das?" unter der Bandbreitentafel und vor dem
+    /// Verlauf — die Bandbreite als Balken, die Referenz als Nulllinie. Ohne Bild an der
+    /// Ansicht (keine Bandbreite) steht dort kein Diagramm.
+    /// </summary>
+    [Fact]
+    public void Das_Spannenbild_steht_unter_der_Bandbreite_vor_dem_Verlauf()
+    {
+        WirtschaftlichkeitStand stand = Stand();
+        stand.Ansicht.Spannenbild = ChartRenderer.KapitalwertSpanneModell(
+            new List<ChartRenderer.Spannenbalken>
+            {
+                new ChartRenderer.Spannenbalken { Name = "WP klein", Worst = 10100.0, Erwartet = 12300.0, Best = 14600.0 }
+            }, "Stamm", null);
+
+        var cut = Render<WirtschaftlichkeitSeite>(p => p
+            .Add(x => x.Laden, () => stand)
+            .Add(x => x.Verlauf, new VerlaufDienste { Zeichnen = _ => Ansicht() }));
+
+        IElement sicher = cut.FindAll("section.epos-gruppenkopf")[1];
+        string[] teile = sicher.QuerySelectorAll(
+                ".epos-wirt-bandbreite-teil, .epos-wirt-spanne-teil, .epos-wirt-verlauf-teil")
+            .Select(e => e.ClassName ?? "").ToArray();
+        Assert.Equal(3, teile.Length);
+        Assert.Contains("epos-wirt-bandbreite-teil", teile[0]);
+        Assert.Contains("epos-wirt-spanne-teil", teile[1]);
+        Assert.Contains("epos-wirt-verlauf-teil", teile[2]);
+
+        IElement spanne = sicher.QuerySelector(".epos-wirt-spanne-teil")!;
+        Assert.Single(spanne.QuerySelectorAll(".epos-diagramm-svg"));
+        Assert.NotNull(spanne.QuerySelector("[data-marke='nulllinie']"));
+        Assert.NotNull(spanne.QuerySelector("[data-marke='reihe:WP klein']"));
+
+        // GEGENPROBE: ohne Bild an der Ansicht kein Diagramm in diesem Teil.
+        var ohne = Render<WirtschaftlichkeitSeite>(p => p.Add(x => x.Laden, () => Stand()));
+        IElement sicherOhne = ohne.FindAll("section.epos-gruppenkopf")[1];
+        Assert.Empty(sicherOhne.QuerySelector(".epos-wirt-spanne-teil")!.QuerySelectorAll(".epos-diagramm-svg"));
+    }
+
+    /// <summary>
     /// K8 und der Rest von U2: Die Fußleiste trägt höchstens VIER Knöpfe — Photovoltaik,
     /// BHKW, Strombezug, Berechnen —, und einen Verlaufsdialog gibt es nicht mehr: kein
     /// Knopf „Verlauf…", kein Unterdialog „Verlauf".

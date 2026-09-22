@@ -23177,4 +23177,22 @@ Do you want to allow this?</value>
   <data name="WIRT_EMPF_SATZ_STAMM" xml:space="preserve">
     <value>Decision proposal: keep the base project — net present value difference to {3} {1} (expected){2}.</value>
   </data>
+  <data name="WIRT_SPANNE_TITEL" xml:space="preserve">
+    <value>Range of the net present value difference per version</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_SPANNE" xml:space="preserve">
+    <value>Range unfavourable to favourable</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_ERWARTET" xml:space="preserve">
+    <value>Expected case</value>
+  </data>
+  <data name="WIRT_SPANNE_LEG_UNTER" xml:space="preserve">
+    <value>below the reference</value>
+  </data>
+  <data name="WIRT_SPANNE_ACHSE" xml:space="preserve">
+    <value>Net present value difference to {0} [€] — zero line = reference</value>
+  </data>
+  <data name="WIRT_SPANNE_LEER" xml:space="preserve">
+    <value>No version with scenario values.</value>
+  </data>
 </root>

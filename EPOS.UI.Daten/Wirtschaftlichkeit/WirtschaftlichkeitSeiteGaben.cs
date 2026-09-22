@@ -806,6 +806,8 @@ namespace WindowsFormsApplication1
                 // ValERI-Ansicht (Block 1).
                 Bandbreitenfuss = bandbreite == null || bandbreite.Leer ? ""
                     : string.Format(kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS, bandbreite.Referenzname),
+                // ETAPPE E6 (Nachtrag E5b, Frage (4)): das Spannenbild neben der Tafel.
+                Spannenbild = Spannenbild(bandbreite),
                 Sensitivitaet = SensitivitaetTafel(staendeDerAnsicht, idReferenz, kultur),
                 Nachweiszeile = WirtschaftlichkeitBewertung.Nachweiszeile(
                     WirtschaftlichkeitBewertung.StaendeOhneNachweis(staendeDerAnsicht, _ergebnisse)),
@@ -966,6 +968,26 @@ namespace WindowsFormsApplication1
                 return WirtschaftlichkeitBandbreite.Bilde(staende, _ergebnisse, idReferenz, Name(idReferenz));
             }
             catch { return new WirtschaftlichkeitBandbreite(); }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 (Nachtrag E5b, Anwenderentscheid 22.09.2026 zu Frage (4)): das
+        /// <b>Spannenbild</b> aus DERSELBEN Bandbreite wie die Tafel — je Version ein Balken,
+        /// der Erwartungsfall als Punkt, die Referenz als Nulllinie. Gezeichnet vom Renderer
+        /// des Kerns (<see cref="ChartRenderer.KapitalwertSpanneModell"/>); ohne Bandbreite
+        /// oder bei einem Fehler kein Bild — die Tafel bleibt.
+        /// </summary>
+        private static WindowsFormsApplication1.Zeichnung.Zeichenmodell Spannenbild(
+            WirtschaftlichkeitBandbreite bandbreite)
+        {
+            try
+            {
+                if (bandbreite == null || bandbreite.Leer) return null;
+                return ChartRenderer.KapitalwertSpanneModell(
+                    ChartRenderer.Spannenbalken.Aus(bandbreite), bandbreite.Referenzname,
+                    ChartRenderer.SpannenTexte.AusRessourcen());
+            }
+            catch { return null; }
         }
 
         /// <summary>

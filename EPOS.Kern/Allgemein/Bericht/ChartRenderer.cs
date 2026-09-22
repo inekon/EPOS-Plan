@@ -1533,6 +1533,370 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // ====================== Spanne der Kapitalwertdifferenz je Version (E6, Nachtrag E5b)
+
+        /// <summary>
+        /// ETAPPE E6 (Nachträge E5b, Anwenderentscheid 22.09.2026 zu Frage (4)) — EIN Balken
+        /// des Spannenbilds: die Kapitalwertdifferenz einer Version zur Referenz in den drei
+        /// Szenarien. Ein fehlender oder nicht endlicher Wert zählt als nicht vorhanden.
+        ///
+        /// <para><b>Die Spanne ist dieselbe wie in der Tafel</b>
+        /// (<see cref="BandbreitenZeile.Spanne"/>, Entscheid Q4 aus E5): vom kleinsten bis zum
+        /// größten der drei Werte — nicht vom Etikett „ungünstig" zum Etikett „günstig" —, und
+        /// nur, wenn Ungünstig UND Günstig vorliegen; eine Spanne aus einer Zahl gibt es
+        /// nicht. Der Erwartungsfall steht dann allein als Punkt.</para>
+        /// </summary>
+        public sealed class Spannenbalken
+        {
+            /// <summary>Der Anzeigename der Version — die Beschriftung links.</summary>
+            public string Name { get; set; } = "";
+
+            /// <summary>Die Differenz im Szenario „Worst" (Ungünstig) [€].</summary>
+            public double? Worst { get; set; }
+
+            /// <summary>Die Differenz im Erwartungsfall [€] — der Punkt.</summary>
+            public double? Erwartet { get; set; }
+
+            /// <summary>Die Differenz im Szenario „Best" (Günstig) [€].</summary>
+            public double? Best { get; set; }
+
+            /// <summary>Das linke Ende des Balkens: der kleinste der drei Werte;
+            /// <c>null</c> = keine Spanne.</summary>
+            public double? Von => Grenze(true);
+
+            /// <summary>Das rechte Ende des Balkens: der größte der drei Werte;
+            /// <c>null</c> = keine Spanne.</summary>
+            public double? Bis => Grenze(false);
+
+            /// <summary>Der Erwartungsfall, wenn er endlich ist — sonst kein Punkt.</summary>
+            public double? Punkt => EndlicherWert(Erwartet);
+
+            /// <summary>Gibt es etwas zu zeichnen — einen Balken oder einen Punkt?</summary>
+            public bool Zeichenbar => Von.HasValue || Punkt.HasValue;
+
+            private double? Grenze(bool klein)
+            {
+                double? w = EndlicherWert(Worst), b = EndlicherWert(Best), e = EndlicherWert(Erwartet);
+                if (!w.HasValue || !b.HasValue) return null;
+                double g = klein ? Math.Min(w.Value, b.Value) : Math.Max(w.Value, b.Value);
+                if (e.HasValue) g = klein ? Math.Min(g, e.Value) : Math.Max(g, e.Value);
+                return g;
+            }
+
+            /// <summary>
+            /// Die Balken einer Bandbreite — je Zeile (jeder Stand außer der Referenz) einer,
+            /// in der Reihenfolge der Gruppe. Tafel und Bild lesen damit DASSELBE Modell.
+            /// </summary>
+            public static List<Spannenbalken> Aus(WirtschaftlichkeitBandbreite bandbreite)
+            {
+                var liste = new List<Spannenbalken>();
+                if (bandbreite == null) return liste;
+                foreach (BandbreitenZeile z in bandbreite.Zeilen)
+                    if (z != null)
+                        liste.Add(new Spannenbalken
+                        {
+                            Name = z.Anzeige ?? "", Worst = z.Worst, Erwartet = z.Erwartet, Best = z.Best
+                        });
+                return liste;
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 (Nachtrag E5b) — die Texte des Spannenbilds. Die Vorgaben sind der
+        /// deutsche Wortlaut (die ChartProben hängen so nicht an der Sprache des Rechners);
+        /// <see cref="AusRessourcen"/> liest die Oberflächensprache.
+        /// </summary>
+        public sealed class SpannenTexte
+        {
+            /// <summary>Die Überschrift (<c>WIRT_SPANNE_TITEL</c>); „[€]" hängt das Bild an.</summary>
+            public string Titel { get; set; } = "Spanne der Kapitalwertdifferenz je Version";
+
+            /// <summary>Der Legendeneintrag des Balkens (<c>WIRT_SPANNE_LEG_SPANNE</c>).</summary>
+            public string Spanne { get; set; } = "Spanne ungünstig bis günstig";
+
+            /// <summary>Der Legendeneintrag des Punkts (<c>WIRT_SPANNE_LEG_ERWARTET</c>).</summary>
+            public string Erwartungsfall { get; set; } = "Erwartungsfall";
+
+            /// <summary>Der Legendeneintrag der Marken unter null (<c>WIRT_SPANNE_LEG_UNTER</c>) —
+            /// er steht nur, wenn ein Wert unter der Referenz liegt.</summary>
+            public string UnterReferenz { get; set; } = "unter der Referenz";
+
+            /// <summary>Der Achsentitel; <c>{0}</c> = die Referenz (<c>WIRT_SPANNE_ACHSE</c>).</summary>
+            public string Achse { get; set; } = "Kapitalwertdifferenz zu {0} [€] — Nulllinie = Referenz";
+
+            /// <summary>Die Referenz ohne Namen (<c>WIRT_EMPF_REFERENZ_UNBENANNT</c>).</summary>
+            public string ReferenzUnbenannt { get; set; } = "dem Referenzfall";
+
+            /// <summary>Der Leerhinweis ohne zeichenbaren Balken (<c>WIRT_SPANNE_LEER</c>).</summary>
+            public string Leer { get; set; } = "Keine Version mit Szenarienwerten.";
+
+            /// <summary>Das Szenario „Worst" (<c>WIRT_SZEN_WORST</c>) — im Wert am Element.</summary>
+            public string Worst { get; set; } = "Ungünstig";
+
+            /// <summary>Das Szenario „Erwartet" (<c>WIRT_SZEN_ERWARTET</c>).</summary>
+            public string Erwartet { get; set; } = "Erwartet";
+
+            /// <summary>Das Szenario „Best" (<c>WIRT_SZEN_BEST</c>).</summary>
+            public string Best { get; set; } = "Günstig";
+
+            /// <summary>Dieselben Texte in der Oberflächensprache (<c>MyResource</c>).</summary>
+            public static SpannenTexte AusRessourcen()
+            {
+                return new SpannenTexte
+                {
+                    Titel = MyResource.Resource.WIRT_SPANNE_TITEL,
+                    Spanne = MyResource.Resource.WIRT_SPANNE_LEG_SPANNE,
+                    Erwartungsfall = MyResource.Resource.WIRT_SPANNE_LEG_ERWARTET,
+                    UnterReferenz = MyResource.Resource.WIRT_SPANNE_LEG_UNTER,
+                    Achse = MyResource.Resource.WIRT_SPANNE_ACHSE,
+                    ReferenzUnbenannt = MyResource.Resource.WIRT_EMPF_REFERENZ_UNBENANNT,
+                    Leer = MyResource.Resource.WIRT_SPANNE_LEER,
+                    Worst = MyResource.Resource.WIRT_SZEN_WORST,
+                    Erwartet = MyResource.Resource.WIRT_SZEN_ERWARTET,
+                    Best = MyResource.Resource.WIRT_SZEN_BEST
+                };
+            }
+        }
+
+        /// <summary>Der Abstand zweier Balken [px].</summary>
+        public const float SPANNE_ZEILE = 72f;
+
+        /// <summary>Die Deckung des Balkens — die Hausfarbe hell, wie das Band im Mockup.</summary>
+        private const byte SPANNE_BAND_DECKUNG = 64;
+
+        /// <summary>
+        /// ETAPPE E6 — das Spannenbild als PNG (Wortbericht). Siehe
+        /// <see cref="KapitalwertSpanneModell"/>.
+        /// </summary>
+        public static byte[] KapitalwertSpanne(IReadOnlyList<Spannenbalken> balken, string referenz,
+                                               SpannenTexte texte)
+            => SkiaMaler.Png(KapitalwertSpanneModell(balken, referenz, texte));
+
+        /// <summary>
+        /// ETAPPE E6 (Nachträge E5b, Anwenderentscheid 22.09.2026 zu Frage (4), Mockup
+        /// <c>valeri-f2</c> „Spanne der Kapitalwertdifferenz je Variante") — die
+        /// <b>Bandbreite je Version als Balken</b>: je Version eine Zeile, der Balken vom
+        /// kleinsten bis zum größten der drei Szenariowerte, der Erwartungsfall als Punkt mit
+        /// seinem Betrag darüber, die <b>Referenz als Nulllinie</b>.
+        ///
+        /// <para><b>Die Achse</b> zählt Euro und schließt die Null immer ein — ein Balken
+        /// ganz rechts von ihr liegt vollständig über der Referenz, einer, der sie kreuzt,
+        /// fällt im ungünstigen Fall unter sie. Die Stufen sind die „schönen" Stufen des
+        /// Verlaufsbilds (etwa fünf Rasterlinien).</para>
+        ///
+        /// <para><b>Die Farben sagen das Vorzeichen</b> (Regel der Jahresprojektion: eine
+        /// negative Säule ist rot): Punkt, Betrag und Balkenenden stehen in
+        /// <see cref="Farbrolle.RASTER_GUT"/>, solange ihr Wert nicht unter der Referenz
+        /// liegt, sonst in <see cref="Farbrolle.RASTER_SCHLECHT"/>; der Balken selbst ist die
+        /// Hausfarbe, hell. Die Legende nennt Balken und Punkt und — nur wenn es ihn gibt —
+        /// den Wert unter der Referenz.</para>
+        ///
+        /// <para><b>Ein reines Pixelbild</b> wie <see cref="BalkenHorizontalModell"/>: keine
+        /// Zeichenfläche, keine Datenreihe. Eine ZEILE ist das Datenelement — Name, Balken,
+        /// Enden, Punkt und Betrag stehen in der Klammer <c>reihe:&lt;Version&gt;</c> und
+        /// tragen alle drei Werte am Element. Die Legende schaltet nichts (Marke
+        /// <c>legende</c> ohne Namen).</para>
+        ///
+        /// <para><b>Das Bildmaß:</b> 1240 breit, die Höhe wächst mit den Versionen um
+        /// <see cref="SPANNE_ZEILE"/> je Zeile (eine Version: 290, drei: 434); ohne
+        /// zeichenbare Version 1240 × 200 mit dem Leerhinweis.</para>
+        /// </summary>
+        /// <param name="balken">Die Versionen (<see cref="Spannenbalken.Aus"/>).</param>
+        /// <param name="referenz">Der Name der Referenz — im Achsentitel.</param>
+        /// <param name="texte">Überschrift, Legende, Achse; <c>null</c> = die Vorgabe.</param>
+        public static Zeichenmodell KapitalwertSpanneModell(IReadOnlyList<Spannenbalken> balken,
+                                                            string referenz, SpannenTexte texte)
+        {
+            texte = texte ?? new SpannenTexte();
+            const int W = 1240;
+            string titel = (texte.Titel ?? "") + "  [€]";
+
+            var gueltig = new List<Spannenbalken>();
+            if (balken != null)
+                foreach (Spannenbalken b in balken)
+                    if (b != null && b.Zeichenbar) gueltig.Add(b);
+
+            if (gueltig.Count == 0)
+            {
+                var leer = Modell(W, 200);
+                leer.Markiert("titel", zt => Titel(zt, titel, W));
+                using (var f = Schrift(18f))
+                {
+                    List<string> zeilen = Umbruchzeilen(texte.Leer ?? "", f, W - 150f, 3);
+                    leer.Markiert("leerhinweis", zl =>
+                    {
+                        for (int i = 0; i < zeilen.Count; i++)
+                            Text(zl, zeilen[i], f, Farbrolle.ACHSE, 110f, 80f + i * (TextHoehe(f) + 6f));
+                    });
+                }
+                return leer;
+            }
+
+            // Die Beschriftungsspalte: so breit wie der längste Name, in Grenzen.
+            float links;
+            using (var lf = Schrift(17f))
+            {
+                float laengster = 0f;
+                foreach (Spannenbalken b in gueltig) laengster = Math.Max(laengster, lf.MeasureText(b.Name ?? ""));
+                links = Math.Max(220f, Math.Min(480f, laengster + 64f));
+            }
+            float rechts = W - 80f;
+            float oben = 70f;                                    // Oberkante der Zeichenfläche
+            float erste = oben + 50f;                            // Mitte der ersten Zeile
+            float unten = erste + (gueltig.Count - 1) * SPANNE_ZEILE + 40f;
+            int H = (int)(unten + 130f);
+
+            var z = Modell(W, H);
+            z.Markiert("titel", zt => Titel(zt, titel, W));
+
+            // Die Skala schließt die Null (die Referenz) immer ein.
+            double lo = 0.0, hi = 0.0;
+            foreach (Spannenbalken b in gueltig)
+                foreach (double? w in new[] { b.Von, b.Bis, b.Punkt })
+                    if (w.HasValue) { lo = Math.Min(lo, w.Value); hi = Math.Max(hi, w.Value); }
+            SchoeneStufen(ref lo, ref hi, out double schritt);
+            float X(double w) => links + (float)((w - lo) / (hi - lo)) * (rechts - links);
+
+            // Raster und Beschriftung der Euro-Achse.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            int stufen = (int)Math.Round((hi - lo) / schritt);
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                    for (int k = 0; k <= stufen; k++)
+                    {
+                        double wert = lo + k * schritt;
+                        if (Math.Abs(wert) < schritt * 1e-9) wert = 0.0;   // keine „-0"
+                        float x = X(wert);
+                        zx.Linie(x, oben, x, unten, raster);
+                        string lab = wert.ToString("N0", DE);
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, unten + 8f);
+                    }
+            });
+            using (var f = Schrift(15f))
+            {
+                string achse = string.Format(CultureInfo.InvariantCulture, texte.Achse ?? "",
+                                             string.IsNullOrEmpty(referenz) ? texte.ReferenzUnbenannt : referenz);
+                z.Markiert("xachse", zx =>
+                    Text(zx, achse, f, Farbrolle.ACHSE,
+                         links + (rechts - links - f.MeasureText(achse)) / 2f, unten + 34f));
+            }
+
+            // Die Grundlinie bleibt ohne Marke (Regel des Achsenkreuzes); die Nulllinie ist
+            // die Referenz und trägt ihre Marke.
+            z.Linie(links, unten, rechts, unten, Stift(Farbrolle.ACHSE, 1f));
+            float x0 = X(0.0);
+            z.Markiert("nulllinie", zn => zn.Linie(x0, oben - 6f, x0, unten, Stift(Farbrolle.ACHSE, 2f)));
+
+            // Je Version eine Zeile: Name, Balken samt Enden, Punkt und Betrag.
+            var band = Flaeche(Farbton.Aus(Farbrolle.STAMM).MitDeckung(SPANNE_BAND_DECKUNG));
+            var ring = Stift(Farbrolle.HINTERGRUND, 2f);
+            bool unter = false;
+            using (var lf = Schrift(17f))
+            using (var wf = Schrift(15f, fett: true))
+            {
+                for (int i = 0; i < gueltig.Count; i++)
+                {
+                    Spannenbalken b = gueltig[i];
+                    float y = erste + i * SPANNE_ZEILE;
+                    string name = b.Name ?? "";
+                    float nb = lf.MeasureText(name);
+                    double? von = b.Von, bis = b.Bis, punkt = b.Punkt;
+                    if ((von.HasValue && von.Value < 0.0) || (punkt.HasValue && punkt.Value < 0.0)) unter = true;
+
+                    z.Markiert("reihe:" + name, Spannenwert(b, texte), zr =>
+                    {
+                        Text(zr, name, lf, Farbrolle.TEXT, links - 16f - nb, y - TextHoehe(lf) / 2f);
+                        if (von.HasValue && bis.HasValue)
+                        {
+                            float x1 = X(von.Value), x2 = X(bis.Value);
+                            zr.Rechteck(x1, y - 11f, Math.Max(x2 - x1, 1f), 22f, null, band);
+                            zr.Linie(x1, y - 17f, x1, y + 17f, Stift(Vorzeichenrolle(von.Value), 3f));
+                            zr.Linie(x2, y - 17f, x2, y + 17f, Stift(Vorzeichenrolle(bis.Value), 3f));
+                        }
+                        if (punkt.HasValue)
+                        {
+                            float xe = X(punkt.Value);
+                            Farbrolle rolle = Vorzeichenrolle(punkt.Value);
+                            zr.Kreis(xe, y, 9f, ring, Flaeche(rolle));
+                            string betrag = punkt.Value.ToString("N0", DE) + " €";
+                            float bb = wf.MeasureText(betrag);
+                            float bx = Math.Max(links, Math.Min(rechts - bb, xe - bb / 2f));
+                            Text(zr, betrag, wf, rolle, bx, y - 20f - TextHoehe(wf));
+                        }
+                    });
+                }
+            }
+
+            // Die Legende: Balken, Punkt und — nur wenn es ihn gibt — der Wert unter null.
+            float ly = unten + 76f;
+            using (var f = Schrift(16f))
+            {
+                string spanne = texte.Spanne ?? "", erwartet = texte.Erwartungsfall ?? "",
+                       unterText = texte.UnterReferenz ?? "";
+                bool mitUnter = unter;
+                z.Markiert("legende", zl =>
+                {
+                    float ex = 110f;
+                    zl.Rechteck(ex, ly + 5f, 40f, 12f, null, band);
+                    zl.Linie(ex, ly + 1f, ex, ly + 21f, Stift(Farbrolle.RASTER_GUT, 3f));
+                    zl.Linie(ex + 40f, ly + 1f, ex + 40f, ly + 21f, Stift(Farbrolle.RASTER_GUT, 3f));
+                    Text(zl, spanne, f, Farbrolle.TEXT, ex + 50f, ly + 1f);
+                    ex += 50f + f.MeasureText(spanne) + 32f;
+
+                    zl.Kreis(ex + 11f, ly + 11f, 8f, ring, Flaeche(Farbrolle.RASTER_GUT));
+                    Text(zl, erwartet, f, Farbrolle.TEXT, ex + 28f, ly + 1f);
+                    ex += 28f + f.MeasureText(erwartet) + 32f;
+
+                    if (mitUnter)
+                    {
+                        zl.Kreis(ex + 11f, ly + 11f, 8f, ring, Flaeche(Farbrolle.RASTER_SCHLECHT));
+                        Text(zl, unterText, f, Farbrolle.TEXT, ex + 28f, ly + 1f);
+                    }
+                });
+            }
+            return z;
+        }
+
+        /// <summary>Die Farbe eines Werts im Spannenbild: unter der Referenz rot, sonst grün.</summary>
+        private static Farbrolle Vorzeichenrolle(double wert)
+            => wert < 0.0 ? Farbrolle.RASTER_SCHLECHT : Farbrolle.RASTER_GUT;
+
+        /// <summary>Der Wert am Element einer Zeile: „BHKW: Ungünstig 1.506.740 € · Erwartet
+        /// 1.660.205 € · Günstig 1.811.714 €" — „—" für einen fehlenden Wert.</summary>
+        private static string Spannenwert(Spannenbalken b, SpannenTexte t)
+        {
+            string Betrag(double? x)
+            {
+                double? w = EndlicherWert(x);
+                return w.HasValue ? w.Value.ToString("N0", DE) + " €" : "—";
+            }
+            return (b.Name ?? "") + ": " + t.Worst + " " + Betrag(b.Worst) + " · " +
+                   t.Erwartet + " " + Betrag(b.Erwartet) + " · " + t.Best + " " + Betrag(b.Best);
+        }
+
+        /// <summary>Ein Wert, wenn er endlich ist — sonst <c>null</c> (nicht endliche Werte
+        /// fallen weg, statt das Bild zu Fall zu bringen).</summary>
+        private static double? EndlicherWert(double? x)
+            => x.HasValue && !double.IsNaN(x.Value) && !double.IsInfinity(x.Value) ? x : null;
+
+        /// <summary>
+        /// „Schöne" Stufen für eine Wertachse mit etwa fünf Rasterlinien — derselbe Weg wie
+        /// in <see cref="VerlaufAchsen"/>: Schritt 1, 2, 2,5, 5 oder 10 mal einer
+        /// Zehnerpotenz, die Grenzen auf ganze Schritte erweitert.
+        /// </summary>
+        private static void SchoeneStufen(ref double unten, ref double oben, out double schritt)
+        {
+            if (oben - unten < 1e-9) oben = unten + 1.0;
+            double roh = (oben - unten) / 5.0;
+            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+            schritt = zehner;
+            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                if (zehner * f >= roh) { schritt = zehner * f; break; }
+            unten = Math.Floor(unten / schritt) * schritt;
+            oben = Math.Ceiling(oben / schritt) * schritt;
+        }
+
         // =================================================================== Kostenprofil
 
         /// <summary>
