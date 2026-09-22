@@ -1656,6 +1656,23 @@ namespace WindowsFormsApplication1
             return alle;
         }
 
+        /// <summary>
+        /// ETAPPE E5 (U4) — die <b>Bandbreite dreier Szenarien</b>: DERSELBE Rechenweg wie
+        /// <see cref="Berechne(BerichtsDaten, WirtschaftlichkeitParameter, int, bool)"/> —
+        /// drei vollständige Läufe mit je eigenem Parametersatz —, aber <b>ohne zu
+        /// persistieren</b> (Muster: Sicht 2 aus § 2.15). Sie ist eine Auskunft über die
+        /// Gruppe, kein gebuchter Lauf; der gespeicherte Stand bleibt der, aus dem der
+        /// Bericht reproduzierbar sein soll.
+        /// </summary>
+        /// <param name="idReferenz">0 = die Gruppenreferenz (bzw. A in Sicht 2), und die
+        /// wiederum 0 = Stamm — dieselbe Kette wie in <c>Berechne</c>.</param>
+        public WirtschaftlichkeitBandbreite BerechneBandbreite(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz)
+        {
+            List<WirtschaftlichkeitErgebnis> alle = Berechne(daten, p, idReferenz, false);
+            return WirtschaftlichkeitBandbreite.Bilde(daten, alle, Referenz(daten, p, idReferenz));
+        }
+
         // ------------------------------------------------------------- Verlauf (Phase 11)
 
         /// <summary>

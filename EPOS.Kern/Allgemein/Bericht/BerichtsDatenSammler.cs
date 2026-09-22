@@ -190,6 +190,14 @@ namespace WindowsFormsApplication1
                 WirtschaftlichkeitParameter p = ctrl.LadeParameter(daten.IdStamm);
                 daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p) ?? new List<WirtschaftlichkeitErgebnis>();
 
+                // ETAPPE E5: die BEWERTUNG dieses Laufs — Bandbreite mit Einstufungen,
+                // Vorschlagssatz, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise und
+                // die Stände ohne Nachweis — aus denselben Kernmethoden, die die Hülle der
+                // Seite ruft. Die Referenz ist die, gegen die Berechne eben gerechnet hat:
+                // die der Gruppe (die Sicht setzt der Wirt erst nach dem Sammeln).
+                daten.IdGruppenreferenz = p.IdReferenzprojekt;
+                daten.Bewertung = Bewertung(daten, daten.Wirtschaftlichkeit, p);
+
                 if (daten.Wirtschaftlichkeit.Count == 0)
                     daten.Warnungen.Add("Wirtschaftlichkeit: die Rechnung lieferte kein Ergebnis — " +
                                         "Kostenpositionen und Parameter der Vergleichsgruppe prüfen.");
@@ -226,7 +234,36 @@ namespace WindowsFormsApplication1
                 daten.WirtschaftlichkeitFehler = ex.Message;
                 daten.Warnungen.Add("Wirtschaftlichkeit konnte für diesen Berichtslauf nicht " +
                                     "berechnet werden: " + ex.Message);
+
+                // ETAPPE E5 (Nr. 31): Die Bausteine fallen hier auf den GESPEICHERTEN
+                // Stand zurück — die Bewertung folgt ihnen dorthin, und genau dort
+                // tragen Zeilen ohne Umschlag ihr Kennzeichen.
+                try
+                {
+                    var ctrl = new WirtschaftlichkeitCtrl();
+                    WirtschaftlichkeitParameter p = ctrl.LadeParameter(daten.IdStamm);
+                    var ids = new List<int>();
+                    foreach (VariantenDaten v in daten.Varianten) ids.Add(v.IdProjekt);
+                    daten.IdGruppenreferenz = p.IdReferenzprojekt;
+                    daten.Bewertung = Bewertung(daten, ctrl.LadeErgebnisse(ids), p);
+                }
+                catch { daten.Bewertung = null; }
             }
+        }
+
+        /// <summary>
+        /// ETAPPE E5 — die Bewertung eines Berichtslaufs in der Berichtskultur. Ein Fehler
+        /// hier kostet die Bewertung, nie den Bericht.
+        /// </summary>
+        private static WirtschaftlichkeitBewertung Bewertung(BerichtsDaten daten,
+                                                             List<WirtschaftlichkeitErgebnis> alle,
+                                                             WirtschaftlichkeitParameter p)
+        {
+            try
+            {
+                return WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur);
+            }
+            catch { return null; }
         }
 
         /// <summary>
