@@ -333,6 +333,47 @@ namespace EPOS.Kern.Tests
             finally { Aufraeumen(ordner); }
         }
 
+        /// <summary>
+        /// ETAPPE E6 — der Differenzkopf des Verlaufs nennt die REFERENZ, gegen die der
+        /// Verlauf rechnet: In Sicht 2 mit A = Variante A läuft die eine Differenzlinie
+        /// B − A, und ihr Kopf heißt „Δ Stamm − Variante A" in allen drei Spaltengruppen —
+        /// nicht fest „− Stamm" (das hieße hier „Δ Stamm − Stamm"). In Sicht 1 bleibt es bei
+        /// „Δ Variante A − Stamm" (Zeile 75 der Ankerprobe).
+        /// </summary>
+        [Fact]
+        public void Excel_Verlauf_nennt_die_Referenz_im_Differenzkopf()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                BerichtsDaten daten = Gruppendaten();
+                daten.Sicht = new Vergleichssicht { Sicht = Vergleichssicht.PAAR, IdA = VARIANTE_A, IdB = STAMM };
+
+                string ziel = Path.Combine(ordner, "sicht2.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                int titel = w.CellsUsed(c => c.Address.ColumnNumber == 1 &&
+                                             c.GetString() == "Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]")
+                             .Select(c => c.Address.RowNumber).FirstOrDefault();
+                Assert.True(titel > 0, "Der Verlaufsblock fehlt.");
+
+                int kopf = titel + 2;                                // über ihm die Gruppennamen
+                Assert.Equal("Jahr", w.Cell(kopf, 1).GetString());
+                List<string> delta = w.Row(kopf).CellsUsed()
+                                      .Select(c => c.GetString())
+                                      .Where(t => t.StartsWith("Δ ", StringComparison.Ordinal))
+                                      .ToList();
+                Assert.Equal(3, delta.Count);                         // eine Δ-Spalte je Szenario
+                Assert.All(delta, t => Assert.Equal("Δ Stamm − Variante A", t));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
         // =====================================================================
         //  Word
         // =====================================================================

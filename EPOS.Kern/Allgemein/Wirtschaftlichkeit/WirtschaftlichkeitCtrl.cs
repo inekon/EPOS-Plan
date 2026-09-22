@@ -1745,6 +1745,9 @@ namespace WindowsFormsApplication1
             // in Berechne — sonst zeigte der Verlauf eine andere Referenz als die
             // Kennzahltafel.
             Referenzwahl wahl = Referenzwahl.Bestimme(daten, Referenz(daten, p, idReferenz));
+            // ETAPPE E6: Der Verlauf nennt seine Referenz — ein Kopf „Δ ‹Stand› − ‹Referenz›"
+            // liest sie hier statt „Stamm" anzunehmen.
+            verlauf.IdReferenz = wahl.IdReferenz;
 
             // KONZEPT § 2.15 (VG‑Q5): In Sicht 2 wird EINE Differenzkurve gezeichnet,
             // B − A; ihr Nulldurchgang ist die dynamische Amortisation des Paars. Mit

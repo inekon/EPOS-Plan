@@ -761,6 +761,10 @@ namespace WindowsFormsApplication1
                         }
                         r++;
 
+                        // Der Δ-Kopf nennt die REFERENZ, gegen die der Verlauf rechnet (in
+                        // Sicht 2 A, sonst die Gruppenreferenz) — mit dem Namen ihrer
+                        // Spalte daneben, nicht fest „Stamm".
+                        string referenz = Referenzspalte(verlauf);
                         ws.Cell(r, 1).Value = BerichtTexte.T("Jahr");
                         int cv = 2;
                         foreach (WirtschaftlichkeitVerlauf lauf in gruppen)
@@ -768,7 +772,7 @@ namespace WindowsFormsApplication1
                             foreach (VerlaufSerie s in mitReihe)
                             { ws.Cell(r, cv).Value = s.Anzeige; cv++; }
                             foreach (VerlaufSerie s in mitDiff)
-                            { ws.Cell(r, cv).Value = "Δ " + s.Anzeige + " − Stamm"; cv++; }
+                            { ws.Cell(r, cv).Value = "Δ " + s.Anzeige + " − " + referenz; cv++; }
                         }
                         ws.Range(r, 1, r, cv - 1).Style.Font.Bold = true;
                         ws.Range(r, 1, r, cv - 1).Style.Fill.BackgroundColor = KOPF;
@@ -1045,6 +1049,22 @@ namespace WindowsFormsApplication1
                 zelle.Style.NumberFormat.Format = "#,##0";
                 return;
             }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — der Name der Referenz eines Verlaufs, so wie ihre Spalte im selben
+        /// Block ihn trägt (<see cref="WirtschaftlichkeitVerlauf.IdReferenz"/>). Ohne
+        /// aufgelöste Referenz der Stamm — dann rechnet der Verlauf gegen ihn.
+        /// </summary>
+        private static string Referenzspalte(WirtschaftlichkeitVerlauf verlauf)
+        {
+            VerlaufSerie referenz = null;
+            if (verlauf != null)
+                referenz = verlauf.Absolut.FirstOrDefault(s => s != null && verlauf.IdReferenz > 0 &&
+                                                               s.IdProjekt == verlauf.IdReferenz)
+                        ?? verlauf.Absolut.FirstOrDefault(s => s != null && s.IstStamm);
+            return referenz != null && !string.IsNullOrEmpty(referenz.Anzeige)
+                 ? referenz.Anzeige : BerichtTexte.T("Stamm");
         }
 
         // ------------------------------------------------- Mehrjahresübersicht (E7)
