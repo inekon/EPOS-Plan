@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 17.09.2026, nach den Entscheiden E16–E26 und der Prüfung vom 17.09.2026.**
+**Stand 22.09.2026, nach den Entscheiden E16–E27 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -12,15 +12,18 @@ weiterhin im Konzept-Nachtrag und in der Statusdatei**: der ausführliche Entsch
 N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
-Entscheid um den betroffenen Punkt gekürzt.
+Entscheid um den betroffenen Punkt gekürzt; die mit **E27** (22.09.2026) entschiedenen Punkte stehen
+ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
-- **Kapitel 0** nennt die Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
-  Stufe** fällig sind — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt. Wer wenig Zeit hat, liest nur dieses Kapitel.
-- **Kapitel 1 bis 6** führen je Papier alle offenen Punkte einzeln aus (Kapitel 1 trägt Q24 und
-  Q25, die E26 wieder geöffnet hat, und die Frage Q26), immer im selben Aufbau; **Kapitel 7** hält
+- **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
+  Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 22 Punkte, die
+  noch offen sind, nach Fälligkeit. Wer wenig Zeit hat, liest nur dieses Kapitel.
+- **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
+  immer im selben Aufbau; die mit E27 entschiedenen tragen unter der Überschrift den Vermerk
+  „**Entschieden: E27 (22.09.2026, Konzept N1.32)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
@@ -32,64 +35,83 @@ Entscheid um den betroffenen Punkt gekürzt.
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** 66 offene Punkte: 3 im Konzept (Q24, Q25, Q26), 14 im Umsetzungskonzept
-(U1, U3–U10, U12–U15, U17), 12 im Mehrzonenkonzept (M2, M3, M5–M14), 8 im Datenaustauschkonzept
-(D1, D2, D4, D5, D6, D11, D16, D17), 15 in der Softwarearchitektur (A1–A6, A9–A15, A17, A18, davon
-drei reine Verweise auf U-Nummern) und 14 im Kühlkonzept (K4–K12, K19, K21–K24). Die Entscheide
-E16–E25 vom 16.09.2026 haben Q10, Q11a, H1–H12, U2, U11, U16, M1, M4, A7, A8, A16, A19 und K1 aus
-diesem Register genommen und Q26 hinzugefügt; **E26** (17.09.2026) hat Q24 und Q25 wieder
-geöffnet; die Prüfung vom 17.09.2026 hat U17 hinzugefügt, die Reste D17 (aus D3) und K24 (aus K18a)
-als eigene Punkte gezählt und K20 als durch die Umsetzung erledigt gekürzt (F-K1). Die zwölf Fragen
-H1–H12 der Anlagenkopplung sind mit E24 entschieden. ADR-004 und ADR-005 sind angenommen; dazu
-drei Listen zur Kenntnis und die Festlegungen F-Ü1 bis F-D1 der Prüfung (8.4).
+**Umfang in Zahlen.** **22 offene Punkte** (Stand E27, 22.09.2026): 5 im Umsetzungskonzept (U4,
+U9, U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 9 im Kühlkonzept (K4–K9, K12,
+K21, K23); Konzept, Datenaustauschkonzept und Softwarearchitektur haben keinen offenen Punkt mehr.
+**E27** hat 44 der bisher 66 Punkte entschieden — 3 im Konzept (Q24, Q25, Q26), 9 im
+Umsetzungskonzept (U1, U3, U5–U8, U10, U12, U17), 4 im Mehrzonenkonzept (M2, M9, M10, M14), 8 im
+Datenaustauschkonzept (D1, D2, D4, D5, D6, D11, D16, D17), 15 in der Softwarearchitektur (A1–A6,
+A9–A15, A17, A18; A4, A5 und A9 über U1, U3 und U5) und 5 im Kühlkonzept (K10, K11, K19, K22,
+K24) — und die Festlegung K2 (8.2) bestätigt; alle bis auf **K10** nach Empfehlung. Drei
+entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1), **K22**
+(Prüfung vor KU2), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
+Davor: Die Entscheide E16–E25 vom 16.09.2026 haben Q10, Q11a, H1–H12, U2, U11, U16, M1, M4, A7,
+A8, A16, A19 und K1 aus diesem Register genommen und Q26 hinzugefügt; **E26** (17.09.2026) hat Q24
+und Q25 wieder geöffnet; die Prüfung vom 17.09.2026 hat U17 hinzugefügt, die Reste D17 (aus D3)
+und K24 (aus K18a) als eigene Punkte gezählt und K20 als durch die Umsetzung erledigt gekürzt
+(F-K1). ADR-004 und ADR-005 sind angenommen; dazu drei Listen zur Kenntnis und die Festlegungen
+F-Ü1 bis F-D1 der Prüfung (8.4).
 
 ---
 
-## 0. Was jetzt zu entscheiden ist
+## 0. Die vor dem Start fälligen Punkte — mit E27 entschieden
 
 Kriterium dieser Liste: Der Punkt legt **Schema, Referenzbasis, Datenmodell oder eine
 Fremdbibliothek unwiderruflich** fest, oder er ist für den Anwender in der Oberfläche sichtbar und
 lässt sich nachträglich nicht stillschweigend ändern. Alles Übrige steht in den Kapiteln 1 bis 7
 und darf mit der Stufe entschieden werden, zu der es gehört.
 
-| Nr. | Frage in einem Satz | Empfehlung in einem Satz | Spätestens vor |
+**Stand 22.09.2026: Alle 36 Punkte dieser Liste sind mit E27 entschieden**
+([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.32,
+[Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Abschnitt 1) — 35 gezählte Punkte und die
+Festlegung K2 (8.2). Bis auf **K10** folgen alle der Empfehlung; bei D1 gilt mangels Präferenz des
+Anwenders der Vorschlag des Papiers. Die Liste bleibt in Reihenfolge und Fälligkeit stehen; statt
+Frage und Empfehlung nennt sie den Entscheid in einem Satz und, wo eine bleibt, die Folgeaufgabe.
+Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
+
+| Nr. | Entscheid (E27) in einem Satz | Spätestens vor | Folgeaufgabe |
 |---|---|---|---|
-| **U8** | Werden die Normzahlen als gitignorierte, lokal beizustellende Datei geführt — mit der Folge, dass der Normfallnachweis lokal und nicht in der CI läuft? | Ja; das Ausliefern wäre eine Vervielfältigung, und die Lücke im Gate gehört ins Protokoll. | **G0** |
-| **U5** | Werden die zwei Gebäudespalten-Schemaschritte zu **einem** verschmolzen (ein Sichtneubau statt zwei)? | Ja — G1 und G2 werden gemeinsam ausgeliefert; der Klimaschritt bleibt getrennt. | **G1** |
-| **U1** | Bekommt der Katalogeditor **einen** Schreibweg statt der heutigen mehreren — eine für den Anwender sichtbare Änderung? | Ja, mit G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf. | **G1** |
-| **U3** | Bekommt das `Zahlenfeld` einen `Platzhalter` — ein Eingriff in einen Standardbaustein, den jeder Dialog benutzt? | Ja, rein additiv; zieht die Stilblatt-Tests nach sich. | **G1** |
-| **U7** | Woher nimmt das Stundenmodell die Wochenendmaske `WE[365]` — aus dem Ortszeit-Kalender des Referenzjahres (Konzept 4.4, Q21) oder aus `Tab_Klimadaten.WE` wie der Altweg? | Ortszeit-Kalender: der Vorbereitungsschritt bildet die Maske aus dem Wochentag des 1. Januar des Referenzjahres, eine Probe hält sie gegen `Tab_Klimadaten.WE` derselben Region (F-Ü8). | **G1** |
-| **A15** | Was geschieht mit der letzten reinen Bestandsbasis, gegen die der Rückweg-Nachweis läuft? | Keine zweite Basis, sondern ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ`, das bis zur Stufe GA in der jeweils aktuellen Basis mit eingefroren wird; die Arbeitskopie gegen die GB-Basis nur bis G1 + G2 (E20, E23, E26; F-Ü7). | **G1 + G2** |
-| **U6** | Rechnet das Stundenmodell die Sonnengeometrie auf den Stundenanfang wie der Bestand oder auf die Stundenmitte wie Blatt 3? | In G1 an der einen Stelle (Klimaklasse, A18) beide Wege messen und die Wirkung auf Ost und West beziffern; der Entscheid fällt vor dem Neu-Einfrieren, weil die Wahl in die Basis eingeht. | **Einfrieren von G1 + G2** |
-| **A18** | Bleibt der Klimaweg des Gebäudemodells eine **eigene Klasse** oder fällt er in den Eingangsbauer zurück? | Eigene Klasse behalten, aber ausschließlich vom Eingangsbauer gerufen. | **G1** |
-| **A10** | Zieht der Gebäudedialog schon mit G1 nach `EPOS.UI.Daten` oder erst mit G6? | Mit G1 — die Hülle wird ohnehin neu geschnitten, und der Importweg setzt einen plattformfreien Schreibweg voraus. | **G1** |
-| **A12** | Wo erscheint der Produktausweis — Wiki-Seite **und** Berichtskopf? | Beides, im Wortlaut von E10, unverändert und ohne Umschreibung. | **G1** (Berichtskopf), G2 (Wiki) |
-| **K2** | Vorzeichen: Norm innen, Betrag außen — führt der Kanal positive Kältemengen? | Ja; ein Kanal mit negativen Werten bräche jede Summen- und Deckungsrechnung, und zwar still. | **KU1** |
-| **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | Ja, Vorgabe 0 — nicht um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Referenzprojekte zu schützen. | **KU1** |
-| **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze — oder bleibt die vorhandene Maximaltemperatur die einzige Kühleingabe? | Eigener Sollwert und eigene Grenze in KU1, Zeitprofil erst in KU3. | **KU1** |
-| **K19** | Bekommt KU2 einen eigenen, kleinen Einfrierschritt? | Ja — sonst bleibt die Kältedeckung im Regressionsnetz unsichtbar. | **KU2** |
-| **K22** | Führt die COP-Spalte der Kühlkennlinie wirklich das Kälteverhältnis — oder in manchen Datensätzen das Wärmeverhältnis? | Vor KU2 an den vorhandenen Kühlkennlinien prüfen und das Ergebnis im Glossar festhalten; nie stillschweigend als EER lesen. | **KU2** |
-| **A11** | Werden die Schemaschrittnummern jetzt verbindlich vergeben oder erst bei Beauftragung? | Erst bei Beauftragung; verbindlich sind jetzt Reihenfolge und Inhalt. | **erste Auslieferung** eines Schemaschritts |
-| **A1** | Bleibt die Kaskade der Gebäudekinder, obwohl der Gebäude-Schreibweg möglicherweise löscht und neu anlegt? | Kaskade behalten, den Schreibweg vor G3 messen, die Rettung dort einbauen, wo das Löschen steht. | **G3** |
-| **A14** | Was trägt den Umschalter Klassenweg → Bauteilweg — die Datenlage oder ein eigener Wert? | Datenlage behalten, aber den Übergang benennen: Rückfrage vor der ersten Zone, Herleitungszeile in beiden Stellungen. | **G3** |
-| **A2** | Bleibt das IFC-Paket am Kern, oder zieht der Leser hinter eine Naht in ein eigenes Projekt? | Am Kern bleiben, aber die Naht `IGebaeudeLeser` von Anfang an ziehen. | **G4** |
-| **A3** | Welchen **Namen und Ordner** bekommt der Zuordnungsdialog — zwei Papiere nennen verschiedene? | Der formatfreie Name; ein Format im Namen einer Maske, die zwei Formate trägt, ist eine Unwahrheit. | **G4** |
-| **A13** | Bekommt die Gebäudetabelle Herkunfts- und Quellkennungsspalten wie Zone, Bauteil, Aufbau und Baustoff? | Nein — Gebäudeherkunft nur in der Importzuordnung; sonst 17 statt 15 neue Spalten und ein zweiter Sichtneubau. | **G4** (Herkunftsschritt) |
-| **A17** | Bekommen Gebäudeimport und ‑export einen Maskenschlüssel und eine Menüzeile? | Nein — Überlagerung im Gebäudedialog; hier widersprechen sich zwei geltende Papiere. | **G4** |
-| **U10** | Kommt eine Lizenzhinweisseite ins Installationspaket — und dann gleich für **alle** ausgelieferten Fremdanteile? | Ja, mit der ersten IFC-Stufe und für alle; ohne sie ist der IFC-Import nicht auslieferbar. | **G4** |
-| **U12** | Woher kommen die Vorgaben je Baualtersklasse? | Eigene Werte aus dem EPOS-Gebäudekatalog ableiten — lizenzfrei und hausgemacht. | **G4** |
-| **D1** | Kommt der gbXML-Import **vor** dem IFC-Import? | Vorschlag ja, Entscheid beim Anwender — es hängt allein daran, welche Dateien im Feld ankommen. | **Beauftragung G4c/G4a** |
-| **D16** | Erweitert die gbXML-Zonenbildung den Entscheid E7 auf ein zweites Format? | Vorschlag ja; sagt der Anwender nein, bleibt gbXML dauerhaft einzonig. | **Beauftragung G4c** |
-| **M9** | Steht die Synonymtabelle in der Auslieferung oder je Projekt? | Auslieferung — die Namen der Autorensysteme wiederholen sich projektübergreifend. | **G6a** (Schema) |
-| **M14** | Wird die Projektkopie der Baustoffe gebraucht, oder genügt der Auslieferungskatalog mit der Wertekopie an der Schicht? | Beides behalten — die Wertekopie schützt gerechnete Ergebnisse, die Projektkopie erlaubt eigene Stoffe. | **G6a** (Schema) |
-| **A6** | Werden Zonen, Bauteile und Luftströme als **ein** Aggregat geschrieben, und schreibt es durch Abgleich über die Ids statt durch Löschen? | Ein Aggregat, Ändern statt Löschen, alles in einer Transaktion — sonst zerstört jedes gewöhnliche Speichern die Importherkunft. | **G6b** |
-| **M2** | Raumseitenmaß oder Bruttomaß beim Import? | Raumseitenmaß durchhalten und im Dialog benennen; das weicht von der Bemaßung des Einzonenmodells ab und ist ein Entscheid. | **G6c** |
-| **M10** | Kommt die große Testdatei ins Repositorium — und ist die Lizenz der Fassung mit Raumgrenzen geklärt? | Ja, **aber nur zusammen mit der LFS-Zeile im selben Schritt**; die Lizenz ist nachzufragen. | **G6c** (vor dem ersten Commit der Datei) |
-| **D4** | Ergebnisgrößen im Export in kWh mit ausdrücklicher Einheit — oder in Joule mit Hinweis? | kWh mit ausdrücklicher Einheit; **unwiderruflich**, eine spätere Umstellung entwertet alte Exporte. | **vor der ersten Zeile Quelltext (G7c)** |
-| **D5** | Deterministische Kennungen in beiden Exportformaten? | Ja, von Anfang an, aus dem Schlüsselpfad der IDs; nachträglich nicht mehr einzuführen. | **vor der ersten Zeile Quelltext (G7a/G7c)** |
-| **D2** | Lohnt der gbXML-Export nur mit der zweiten Stufe (synthetische Geometrie)? | Ja — ohne sie ist der Export ein Datenblatt in XML-Form, keine Interoperabilität. | **Beauftragung G7** |
-| **D6** | Wer ist das Gegenüber des IFC-Exports — welches Werkzeug, welcher Anwender, welcher Zweck? | Frage an den Anwender; Zwischenweg: die semantische Stufe bauen, die Körperstufe zurückstellen. | **G7e** |
-| **D11** | Ist die Rückgabe angereicherter fremder IFC-Dateien vertraglich zulässig? | Vor der Round-Trip-Stufe zu klären, nicht danach; mindestens Beipackzettel, eigene Anwendungskennung, neuer Dateiname, bestätigter Hinweis im Dialog. | **G7d** |
+| **U8** | Normzahlen lokal und gitignoriert; der Normfallnachweis läuft lokal, die Lücke im Gate steht im Protokoll. | **G0** | — |
+| **U5** | Die zwei Gebäudespalten-Schemaschritte werden zu einem verschmolzen (M3, ein Sichtneubau). | **G1** | — |
+| **U1** | Ein Schreibweg im Katalogeditor ab G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf. | **G1** | — |
+| **U3** | `Platzhalter` am `Zahlenfeld`, rein additiv. | **G1** | — |
+| **U7** | Ortszeit-Kalender (Option (a)); die Probe gegen `Tab_Klimadaten.WE` bleibt. | **G1** | — |
+| **A15** | Option (a): ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` bis GA in der jeweils aktuellen Basis; GB-Arbeitskopie nur bis zum Merge G1 + G2; Rückweg-Test nur dieses Projekt, endet mit GA. | **G1 + G2** | — |
+| **U6** | Verfahren: in G1 beide Zeitbezüge an der einen Stelle (Klimaklasse, A18) messen, Entscheid vor dem Einfrieren. | **Einfrieren von G1 + G2** | **Endwahl** nach der Messung in G1 |
+| **A18** | Der Klimaweg bleibt eigene Klasse, ausschließlich vom Eingangsbauer gerufen. | **G1** | — |
+| **A10** | Der Gebäudedialog zieht mit G1 nach `EPOS.UI.Daten`. | **G1** | — |
+| **A12** | Produktausweis in Wiki und Berichtskopf, im Wortlaut von E10. | **G1** (Berichtskopf), G2 (Wiki) | — |
+| **K2** | Der Kältekanal führt positive Kältemengen. | **KU1** | — |
+| **K10** | **Abweichend von der Empfehlung:** eine Programmeinstellung legt fest, ob **neue** Projekte mit eingeschalteter Kühlung angelegt werden (Vorgabe aus); bestehende Projekte samt Referenzprojekten bleiben aus, bis die je Projekt schaltbare Projekteinstellung ausdrücklich eingeschaltet wird; Umsetzung über `Dienste.Einstellungen`. | **KU1** | — |
+| **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze in KU1 nach Empfehlung (a); das Zeitprofil nach deren Wortlaut in KU3. | **KU1** | — |
+| **K19** | KU2 bekommt einen eigenen, kleinen Einfrierschritt. | **KU2** | — |
+| **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung** vor KU2 |
+| **A11** | Schemaschrittnummern erst bei Beauftragung; verbindlich sind Reihenfolge und Inhalt. | **erste Auslieferung** eines Schemaschritts | — |
+| **A1** | Die Kaskade bleibt; Schreibweg vor G3 messen, Rettung an der Löschstelle. | **G3** | — |
+| **A14** | Umschalter Klassenweg → Bauteilweg nach Datenlage, Übergang benannt. | **G3** | — |
+| **A2** | IFC-Paket am Kern, Naht `IGebaeudeLeser` von Anfang an. | **G4** | — |
+| **A3** | Der formatfreie Name des Zuordnungsdialogs. | **G4** | — |
+| **A13** | Keine Herkunftsspalten an der Gebäudetabelle. | **G4** (Herkunftsschritt) | — |
+| **A17** | Kein eigener Maskenschlüssel; Überlagerung im Gebäudedialog. | **G4** | — |
+| **U10** | Lizenzhinweisseite mit der ersten IFC-Stufe, für alle Fremdanteile. | **G4** | — |
+| **U12** | Vorgaben je Baualtersklasse aus dem eigenen EPOS-Gebäudekatalog. | **G4** | — |
+| **D1** | gbXML-Import vor IFC-Import. | **Beauftragung G4c/G4a** | — |
+| **D16** | Ja — die gbXML-Zonenbildung erweitert E7. | **Beauftragung G4c** | — |
+| **M9** | Synonymtabelle in der Auslieferung. | **G6a** (Schema) | — |
+| **M14** | Beides behalten — Wertekopie an der Schicht und Projektkopie der Baustoffe. | **G6a** (Schema) | — |
+| **A6** | Ein Aggregat, Ändern statt Löschen, in einer Transaktion. | **G6b** | — |
+| **M2** | Raumseitenmaß beim Import. | **G6c** | — |
+| **M10** | Große Testdatei ins Repositorium, nur mit LFS-Eintrag im selben Schritt. | **G6c** (vor dem ersten Commit der Datei) | Lizenz der Fassung mit Raumgrenzen nachfragen (Wortlaut der Empfehlung) |
+| **D4** | Export in kWh mit ausdrücklicher Einheit. | **vor der ersten Zeile Quelltext (G7c)** | — |
+| **D5** | Deterministische Kennungen in beiden Exportformaten. | **vor der ersten Zeile Quelltext (G7a/G7c)** | — |
+| **D2** | gbXML-Export erst mit der zweiten Stufe (synthetische Geometrie). | **Beauftragung G7** | — |
+| **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
+| **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
+
+**Was noch offen ist — 22 Punkte, keiner erfüllt das Kriterium dieser Liste.** Nach Fälligkeit:
+**GB** U9; **G1** U4; **G4** U13, U14, U15; **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d**
+M11; **KU1** K4, K5, K6, K7, K12; **KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
+Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
 ihr entschieden werden. Die vollständige Erläuterung jedes Punktes steht in den folgenden
@@ -97,7 +119,7 @@ Kapiteln.
 
 ---
 
-## 1. Konzept Gebäudesimulation VDI 6007 — Q24, Q25, Q26
+## 1. Konzept Gebäudesimulation VDI 6007 — Q24, Q25, Q26 (entschieden)
 
 Quelle: [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Kapitel 13 und Nachträge N1.25, N1.28 und N1.31. Alle 23 ursprünglichen Fragen des Konzepts sind
@@ -106,9 +128,13 @@ Trennung der Rechenwege, der Altweg als getrennter Bestandsweg — sind zwei Fra
 Q25 aus Befund X); **E23** („der Altweg bleibt", N1.28) hatte sie geschlossen, **E26** (17.09.2026,
 N1.31) stellt klar, dass der Altweg Übergang ist und der VDI-Weg ihn später vollständig ablöst, und
 öffnet beide wieder; mit **E22** (Anlagenkopplung, N1.27) kam Q26 hinzu. Die Fragen, die aus E15
-entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
+entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6). Mit **E27** (22.09.2026,
+N1.32) sind **Q24, Q25 und Q26 entschieden**, jede nach Option (a); die Abschnitte tragen den
+Vermerk und bleiben als Begründung stehen.
 
 ### Q24 — wann ist der VDI-Weg bewährt genug, dass GA beauftragt wird?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), das Ablösekriterium — GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind: (1) alle Referenz- und Bestandsprojekte des Anwenders sind auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt, (2) eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg, (3) KU1 und, falls beauftragt, AK1 sind abgenommen, (4) die Ausbauprobe ist grün. Geprüft wird mit jeder Abnahme; der Stand steht in der [Statusdatei](Status_Gebaeudesimulation_VDI6007.md), Abschnitt 2, Zeile GA.
 
 - **Frage:** Wann ist der VDI-Weg so bewährt, dass die Stufe **GA — Altweg ablösen** beauftragt
   wird — die letzte Stufe des Plans, ohne Termin und in keiner Summe (5–8 PT)?
@@ -145,6 +171,8 @@ entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
 
 ### Q25 — Umfang der Stufe GA
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) — vollständige Ablösung nach der Löschliste ([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) Kapitel 6).
+
 - **Frage:** Was entfernt die Stufe GA — welche Module, Nähte, Dialogteile, Spalten, Tabellen und
   Prüfmittel stehen auf der Löschliste, und was bleibt?
 - **Hintergrund:** Mit E26 ist GA wieder die letzte Stufe des Plans. Ihre Löschliste führt das
@@ -179,6 +207,8 @@ entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
 
 ### Q26 — Stufenplan der Anlagenkopplung
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — AK1 nach G2; AK2 nach abgenommenem AK1 und Feldphase; AK3 danach, nach H6 (E24) weiter erst nach der Feldphase von AK1 und AK2 zugesagt. Aufwand AK0 1–2, AK1 10–15, AK2 11–15, AK3 23–38, zusammen 45–70 PT.
+
 - **Frage:** Welche Stufen der Anlagenkopplung werden beauftragt und wann — **AK1** (Heizkreis als
   Randbedingung: Heizkurve, Übergabe, Rücklauf; Einbahnstraße Anlage → Gebäude) nach G2, **AK2**
   (Erzeugerfahrplan als Verfügbarkeit je Stunde, Komfortstunden) nach abgenommenem AK1 und einer
@@ -196,9 +226,9 @@ entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
   - **(b) Nur AK1** — Heizkreis als Randbedingung, kein Fahrplan; Unterdeckung bleibt eine Zahl.
   - **(c) Alles in einem Auftrag nach G3** — ein Einfrierschritt; der frühe Nutzen entfällt.
   - **(d) Gar nicht** — der Ausschluss in Konzept 15 bliebe in voller Breite.
-- **Empfehlung des Papiers:** **(a)**; Aufwand nach Bestandsaufnahme AK0 1–2 PT, AK1 9–13 PT,
-  AK2 11–15 PT, AK3 23–38 PT, zusammen 44–68 PT zuzüglich rund 0,5 PT je Einfrierschritt
-  (Anlagenkopplung 12.2).
+- **Empfehlung des Papiers:** **(a)**; Aufwand nach Bestandsaufnahme AK0 1–2 PT, AK1 10–15 PT,
+  AK2 11–15 PT, AK3 23–38 PT, zusammen 45–70 PT zuzüglich rund 0,5 PT je Einfrierschritt
+  (Anlagenkopplung Rev. 2, 12.1 und 12.2).
 - **Folge bei Nichtentscheid:** Das Papier bleibt Konzept ohne Stufe; nichts blockiert G0 bis G7.
 - **Fällig vor:** **Beauftragung von G2** (für AK1); AK2 und AK3 mit der Abnahme von AK1.
 - **Quelle:** [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.27 und 13 (Q26);
@@ -209,8 +239,9 @@ entstanden sind, führt das Kühlkonzept als K20 bis K23 (Kapitel 6).
 ## 2. Umsetzungskonzept — U1 bis U17
 
 Quelle: [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
-Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 4) und 1.5 (U17). Vierzehn der
-siebzehn Fragen sind offen; **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
+Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 4) und 1.5 (U17). Von den
+siebzehn Fragen sind nach **E27** (22.09.2026, N1.32) noch fünf offen — **U4, U9, U13, U14,
+U15**; neun sind mit E27 entschieden und tragen den Vermerk (U1, U3, U5–U8, U10, U12, U17); **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
 (16.09.2026) beantwortet — alle drei hier gekürzt; **U17** ist mit der Prüfung vom 17.09.2026
 hinzugekommen (F-Ü6).
 Vier von ihnen führt die Softwarearchitektur unter eigener Nummer als Sperrpunkt: **U1 = A4**,
@@ -218,6 +249,8 @@ Vier von ihnen führt die Softwarearchitektur unter eigener Nummer als Sperrpunk
 zwei Register zwei Antworten bekommen.
 
 ### U1 — ein Schreibweg im Katalogeditor
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — ein Schreibweg im Katalogeditor ab G1; „Speichern unter…" bleibt als nicht schließender Zweitknopf. Gilt zugleich für A4.
 
 - **Frage:** Bekommt der Gebäude-Katalogeditor **einen** Schreibweg (OK/Abbrechen) statt der
   heutigen mehreren Aus- und Schreibwege? Das ist eine für den Anwender **sichtbare** Änderung.
@@ -249,6 +282,8 @@ erscheint (für die Dauer des Übergangs bis zur Stufe GA, E23, E26). Festlegung
 N1.25, N1.28, N1.31, ADR-006.
 
 ### U3 — `Platzhalter` am Standardbaustein `Zahlenfeld`
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — `Platzhalter` am `Zahlenfeld`, rein additiv; die Stilblatt-Tests ziehen nach. Gilt zugleich für A5.
 
 - **Frage:** Wird der Standardbaustein `Zahlenfeld` um einen `Platzhalter` ergänzt (für Texte wie
   „Vorgabe 0,3" im leeren Feld)? Das ist ein Eingriff in einen Baustein, den **alle** Dialoge
@@ -294,18 +329,23 @@ N1.25, N1.28, N1.31, ADR-006.
 
 ### U5 — die zwei Gebäudespalten-Schemaschritte verschmelzen
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — die zwei Gebäudespalten-Schemaschritte werden zu einem (M3) verschmolzen; der Klimaspalten-Schritt bleibt getrennt (mit Schemaschritt 95 vorweggenommen). Gilt zugleich für A9.
+
 - **Frage:** Werden die beiden Schemaschritte für die Gebäudespalten (G1-Spalten und G2-Spalten)
   zu **einem** Schritt verschmolzen — 15 Spalten je Tabelle, **ein** Sichtneubau?
 - **Hintergrund:** Entscheid **E1** liefert G1 und G2 **gemeinsam** aus. Zwei Sichtneubauten
   hintereinander sind zwei Gelegenheiten, die Sichtdefinitionen auseinanderlaufen zu lassen — und
   der Sichtneubau ist die Stelle, an der der Namensleser hängt. Der Klimaspalten-Schritt
-  (`Tab_Solar`) hat eine andere Wirkung, anderen Mitläufercode und ein anderes Risiko.
+  (Papiername M4, `Tab_Solar`) hat eine andere Wirkung, anderen Mitläufercode und ein anderes
+  Risiko; er ist mit Schemaschritt 95 (Anwenderentscheid 19.09.2026) bereits ausgerollt und steht
+  hier nicht mehr zur Wahl (F-S3, [Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)).
 - **Optionen:**
   - **(a) Verschmelzen** — ein Schritt, ein Sichtneubau, eine Prüfung; der Schritt wird größer und
     ist im Fehlerfall als Ganzes zurückzunehmen.
   - **(b) Getrennt lassen** — zwei kleinere, je für sich prüfbare Schritte; zwei Sichtneubauten
     hintereinander und zwei Gelegenheiten für abweichende Definitionen.
-- **Empfehlung des Papiers:** **Ja, verschmelzen** — der `Tab_Solar`-Schritt bleibt **getrennt**.
+- **Empfehlung des Papiers:** **Ja, verschmelzen** — der `Tab_Solar`-Schritt bleibt **getrennt**;
+  er ist mit Schemaschritt 95 vorweggenommen.
   Die Softwarearchitektur bestätigt das unter A9 und weist darauf hin, dass die Schrittnummern,
   die das Konzept nennt, anderweitig vergeben sind (siehe A11).
 - **Folge bei Nichtentscheid:** Die Vorgabe „zwei Schritte" greift; nach der Auslieferung des
@@ -316,6 +356,8 @@ N1.25, N1.28, N1.31, ADR-006.
   (A9) und 2.4.
 
 ### U6 — Zeitbezug der Sonnengeometrie: Stundenanfang oder Stundenmitte
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — Verfahren nach Empfehlung — in G1 werden beide Zeitbezüge (Stundenanfang und Stundenmitte) an der einen Stelle (Klimaklasse, A18) gemessen und die Wirkung auf Ost und West beziffert; der Entscheid fällt vor dem Einfrieren. **Offen bleibt als Folgeaufgabe die Endwahl:** Sie folgt mit der Messung in G1, vor dem Einfrieren von G1 + G2.
 
 - **Frage:** Rechnet das Gebäudemodell die Sonnengeometrie auf den **Stundenanfang** wie der
   Bestand — oder auf die **Stundenmitte** wie Blatt 3 der Richtlinie?
@@ -343,6 +385,8 @@ N1.25, N1.28, N1.31, ADR-006.
   [Prüfprotokoll](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md) 3.1 (F-Ü8).
 
 ### U7 — Wochenendmaske aus dem Ortszeit-Kalender oder aus der Klimatabelle
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) Ortszeit-Kalender, nach Empfehlung — der Vorbereitungsschritt bildet die Maske aus dem Wochentag des 1. Januar des Referenzjahres; die Probe gegen `Tab_Klimadaten.WE` derselben Region bleibt (F-Ü8).
 
 - **Frage:** Woher nimmt das Stundenmodell die Wochenendmaske `WE[365]` — aus dem Ortszeit-Kalender
   des Referenzjahres (Konzept 4.4, Entscheid Q21) oder aus der Spalte `WE` der Klimatabelle, die
@@ -372,6 +416,8 @@ N1.25, N1.28, N1.31, ADR-006.
   [Prüfprotokoll](Gebaeudesimulation/2026-09-17_Pruefung_Konsistenz_Umsetzbarkeit.md) 3.1 (F-Ü8).
 
 ### U8 — Normzahlen lokal statt im Repositorium
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — Normzahlen lokal und gitignoriert; der Normfallnachweis läuft lokal, die Lücke im Gate steht im Protokoll.
 
 - **Frage:** Werden die Normreferenzwerte als **gitignorierte, lokal beizustellende** Datei
   geführt, deren Testfälle ohne sie schweigen — mit der Folge, dass der Normfallnachweis **lokal**
@@ -418,6 +464,8 @@ N1.25, N1.28, N1.31, ADR-006.
 
 ### U10 — Lizenzhinweisseite im Installationspaket, und zwar für alle Fremdanteile
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — Lizenzhinweisseite mit der ersten IFC-Stufe, für alle ausgelieferten Fremdanteile.
+
 - **Frage:** Kommt eine Lizenzhinweisseite ins Installationspaket — und dann gleich für **alle**
   ausgelieferten Fremdanteile, nicht nur für das IFC-Paket?
 - **Hintergrund:** Die Lizenz des IFC-Pakets ist ein Datei-Copyleft: Ihr Abschnitt 3.1 verlangt,
@@ -444,6 +492,8 @@ N1.25, N1.28, N1.31, ADR-006.
 iOS-Zahl wird in G4 gemessen, nicht geschätzt.** Konzept N1.23, Statusdatei Abschnitt 1; hier gekürzt.
 
 ### U12 — Herkunft der Vorgaben je Baualtersklasse
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — die Vorgaben je Baualtersklasse werden aus dem eigenen EPOS-Gebäudekatalog abgeleitet, (b) bleibt benannter Rückfallweg.
 
 - **Frage:** Woher kommen die Vorgabewerte je Baualtersklasse, die der Import setzt?
 - **Hintergrund:** Die naheliegende öffentliche Quelle hat weder eine dauerhafte Kennung noch eine
@@ -527,6 +577,8 @@ hier gekürzt.
 
 ### U17 — Altweg-Gebäude ohne Tagesverteilung: Lauf abbrechen oder Gebäude benannt ablehnen
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (c), nach Empfehlung — ein Altweg-Gebäude ohne Tagesverteilung wird benannt abgelehnt, mit GA; bis dahin gilt (a).
+
 - **Frage:** Bricht ein Altweg-Gebäude ohne Tagesverteilung wie heute den **gesamten** Lauf ab —
   auch für die VDI-Gebäude desselben Projekts — oder wird das Gebäude künftig benannt abgelehnt,
   während die übrigen Gebäude rechnen?
@@ -561,7 +613,8 @@ Quelle: [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](Konzept_Mehrzonenmodell_IFC
 Kapitel 10 (das Papier steht in Rev. 2). Die Stufen sind G6a (Datenmodell und Pflege), G6b
 (Zoneneingabe und Rechenweg), G6c (Zonenimport) und G6d (Referenzprojekt und Einfrieren). **M1** und
 **M4** sind mit [ADR-005](ADR-005_Zonenkopplung_Mehrzonenmodell.md) am 16.09.2026 entschieden (E17)
-und hier gekürzt.
+und hier gekürzt. Mit **E27** (22.09.2026, N1.32) sind **M2, M9, M10 und M14** entschieden
+(Vermerk je Abschnitt); offen bleiben M3, M5–M8 und M11–M13.
 
 ### M1 — Kopplungsweg der Zonen
 
@@ -571,6 +624,8 @@ wird gemessen bestätigt (Probe 6, Gate „eine Zone bitgleich"). Konzept N1.22,
 Abschnitt 1; hier gekürzt.
 
 ### M2 — Raumseitenmaß oder Bruttomaß beim Import
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — Raumseitenmaß beim Import durchhalten und im Dialog benennen; eine eigene Probe beziffert den Abstand zum Einzonenweg vorher.
 
 - **Frage:** Wird beim Zonenimport durchgehend das **Raumseitenmaß** verwendet oder das
   **Bruttomaß**?
@@ -689,6 +744,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M9 — Synonymtabelle in der Auslieferung oder je Projekt
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — die Synonymtabelle steht in der Auslieferung.
+
 - **Frage:** Steht die Synonymtabelle, die Namen der Autorensysteme auf EPOS-Begriffe abbildet, im
   **Auslieferungskatalog** oder **je Projekt**?
 - **Hintergrund:** Die Namen der Autorensysteme wiederholen sich projektübergreifend — dieselben
@@ -705,6 +762,8 @@ Abschnitt 1; hier gekürzt.
 - **Quelle:** [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 6.3, 4.2 und 10 (M9).
 
 ### M10 — große Testdatei im Repositorium und ihre Lizenz
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — die große Testdatei kommt ins Repositorium, nur zusammen mit dem LFS-Eintrag im selben Schritt. Nach dem Wortlaut der Empfehlung ist die Lizenz der Fassung mit Raumgrenzen vor dem ersten Commit der Datei nachzufragen.
 
 - **Frage:** Kommt die 17,6 MB große Importprobe ins Repositorium — und ist die Lizenz der Fassung
   mit Raumgrenzen zu klären?
@@ -786,6 +845,8 @@ Abschnitt 1; hier gekürzt.
 
 ### M14 — Projektkopie der Baustoffe neben dem Auslieferungskatalog
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — beides behalten: der Auslieferungskatalog mit der Wertekopie an der Schicht und die Projektkopie der Baustoffe.
+
 - **Frage:** Wird eine **Projektkopie** der Baustoffe gebraucht, oder genügt der
   Auslieferungskatalog zusammen mit der Wertekopie an der Schicht?
 - **Hintergrund:** Die Wertekopie an der Schicht schützt **gerechnete Ergebnisse**: Ändert jemand
@@ -805,7 +866,7 @@ Abschnitt 1; hier gekürzt.
 
 ---
 
-## 4. Datenaustausch gbXML und IFC — D1, D2, D4, D5, D6, D11, D16, D17
+## 4. Datenaustausch gbXML und IFC — D1, D2, D4, D5, D6, D11, D16, D17 (entschieden)
 
 Quelle: [`Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md`](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md),
 Kapitel 11.1 („Jetzt zu entscheiden"). Das Papier sagt selbst: **Drei Antworten braucht es, um zur
@@ -816,9 +877,12 @@ zweite Block (11.2) ist zur Kenntnis und steht in Kapitel 8 dieses Registers; se
 Ablageort der gbXML-Schemakopie aus **D3** — ist seit der Prüfung vom 17.09.2026 der eigene Punkt
 **D17**.
 Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026 entschieden
-(E16).
+(E16). Mit **E27** (22.09.2026, N1.32) sind **alle acht Punkte entschieden**; D6 trägt die
+Folgeaufgabe, das Gegenüber des IFC-Exports zu benennen.
 
 ### D1 — Reihenfolge: gbXML-Import vor IFC-Import?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja — der gbXML-Import kommt vor dem IFC-Import. Der Anwender hat keine Präferenz genannt; es gilt der Vorschlag des Papiers.
 
 - **Frage:** Wird der gbXML-Import **vor** dem IFC-Import gebaut?
 - **Hintergrund:** gbXML ist die kleinere Aufgabe: kein Fremdpaket, keine Lizenzauflage, kein
@@ -842,6 +906,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 ### D2 — lohnt der gbXML-Export nur mit der zweiten Stufe?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — der gbXML-Export kommt nur mit der zweiten Stufe (synthetische Geometrie).
+
 - **Frage:** Lohnt sich der gbXML-Export nur zusammen mit der zweiten Stufe (synthetische
   Geometrie) — oder genügt die erste?
 - **Hintergrund:** Ohne synthetische Geometrie ist der Export **ein Datenblatt in XML-Form** —
@@ -864,6 +930,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 ### D4 — Ergebnisgrößen in kWh mit ausdrücklicher Einheit
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — Ergebnisgrößen im Export in kWh mit ausdrücklicher Einheit.
+
 - **Frage:** Werden Ergebnisgrößen im Export in **kWh mit ausdrücklichem Einheitenattribut**
   geschrieben — oder in der Grundeinheit mit einem Hinweis?
 - **Hintergrund:** Ohne ausdrückliche Einheitenangabe **behauptet die Datei die Grundeinheit**;
@@ -883,6 +951,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
   (D4).
 
 ### D5 — deterministische Kennungen in beiden Formaten
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — deterministische Kennungen in beiden Exportformaten, von Anfang an.
 
 - **Frage:** Werden die Kennungen der exportierten Objekte **deterministisch** aus dem
   Schlüsselpfad der IDs gebildet?
@@ -905,6 +975,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 ### D6 — wer ist das Gegenüber des IFC-Exports?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — die semantische Stufe (G7c) wird zuerst gebaut. **Offen bleibt als Folgeaufgabe:** Das Gegenüber des IFC-Exports (Werkzeug, Zweck) benennt der Anwender, fällig vor der Stufe, die über die semantische hinausgeht.
+
 - **Frage:** Welches Werkzeug, welcher Anwender, welcher Zweck ist das Gegenüber des IFC-Exports?
 - **Hintergrund:** Das Papier sagt ausdrücklich: „**Diese Frage geht an den Anwender, nicht an die
   Technik.**" Ohne benannten Empfänger ist zwischen einem rein semantischen Export (das
@@ -926,6 +998,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 ### D11 — vertragliche Zulässigkeit der Rückgabe fremder Dateien
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — die Rückgabe angereicherter fremder IFC-Dateien ist zulässig, mit Kennung in der Datei und Beipackzettel.
+
 - **Frage:** Ist es zulässig, eine **fremde** IFC-Datei anzureichern und zurückzugeben?
 - **Hintergrund:** Die einschlägige Austauschsicht sagt ausdrücklich, dass der Empfänger das
   Modell **nicht verändern** soll. Technisch ist der Weg billig — die Zuordnungstabellen stehen
@@ -944,6 +1018,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
   11.1 (D11).
 
 ### D16 — erweitert die gbXML-Zonenbildung den Entscheid E7?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — die gbXML-Zonenbildung erweitert E7 auf ein zweites Format.
 
 - **Frage:** Wird der Entscheid **E7** (Mehrzonenmodell über den IFC-Import) auf ein **zweites**
   Format erweitert, sodass auch gbXML Zonen bildet?
@@ -964,6 +1040,8 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.12 (E7).
 
 ### D17 — Ablageort der gbXML-Schemakopie
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (b), nach der Empfehlung dieses Registers — die gbXML-XSD liegt außerhalb des Repositoriums (`.gitignore`, Einrichtungshinweis, LIESMICH-Zeile mit Herkunft, Abrufdatum und Lizenzstand „keine"); der Validierungstest wird benannt übersprungen, wenn die Datei fehlt (Muster U8).
 
 - **Frage:** Wo liegt die lokale Kopie des gbXML-Schemas (XSD), gegen die der Validierungstest des
   Exports läuft — im Testprojekt mit ausgeschriebener Begründung oder außerhalb des Repositoriums
@@ -995,7 +1073,7 @@ Der Leseweg selbst ist mit [ADR-004](ADR-004_gbXML_LINQ_to_XML.md) am 16.09.2026
 
 ---
 
-## 5. Softwarearchitektur — A1 bis A19
+## 5. Softwarearchitektur — A1 bis A19 (entschieden)
 
 Quelle: [`Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md`](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md),
 Kapitel 6 („Offene Architekturentscheide"; das Papier steht in Rev. 4). **Neunzehn Fragen, davon
@@ -1008,7 +1086,12 @@ das Papier **D1** und **D2** ausdrücklich nicht neu — sie stehen im Datenaust
 
 Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig vor**.
 
+Mit **E27** (22.09.2026, N1.32) sind **alle fünfzehn Punkte entschieden** — zwölf unmittelbar,
+A4, A5 und A9 über U1, U3 und U5 (Kapitel 2).
+
 ### A1 — Kaskade der Gebäudekinder gegen einen löschenden Schreibweg
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — die Kaskade (Löschen/Neuanlegen) bleibt; der Schreibweg wird vor G3 gemessen, die Rettung an der Löschstelle eingebaut.
 
 - **Frage:** Bleibt das kaskadierende Löschen der Gebäudekinder bestehen, obwohl der
   Gebäude-Schreibweg möglicherweise löscht und neu anlegt? Bei der Luftstromtabelle greift die
@@ -1033,6 +1116,8 @@ Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig
 
 ### A2 — bleibt das IFC-Paket am Kern?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — das IFC-Paket bleibt am Kern, die Naht `IGebaeudeLeser` wird von Anfang an gezogen.
+
 - **Frage:** Bleibt das IFC-Paket am Rechenkern, oder zieht der Leser hinter eine Schnittstelle in
   ein eigenes Projekt?
 - **Hintergrund:** [ADR-003](ADR-003_IFC_xBIM_ohne_Geometriekernel.md) bindet das Paket
@@ -1055,6 +1140,8 @@ Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig
 
 ### A3 — Name und Ordner des Zuordnungsdialogs
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — der formatfreie Name.
+
 - **Frage:** Wie heißt der Zuordnungsdialog und wo liegt er? **Zwei geltende Papiere nennen
   verschiedene Namen und Ordner.** Dass es **ein** Dialog ist, ist im Datenaustauschkonzept
   entschieden.
@@ -1075,6 +1162,8 @@ Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig
 
 ### A4 — ein Schreibweg im Katalogeditor (= U1)
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — über **U1** — ein Schreibweg im Katalogeditor ab G1.
+
 - **Frage und Erläuterung:** siehe **U1** in Kapitel 2.
 - **Empfehlung des Papiers:** „**= U1, Empfehlung dort: ja**, mit G1; ‚Speichern unter…' bleibt als
   nicht schließender Zweitknopf."
@@ -1086,6 +1175,8 @@ Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig
 
 ### A5 — Platzhalter am Zahlenfeld (= U3)
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — über **U3** — `Platzhalter` am `Zahlenfeld`.
+
 - **Frage und Erläuterung:** siehe **U3** in Kapitel 2.
 - **Empfehlung des Papiers:** „**= U3, Empfehlung dort: ja**, rein additiv; zieht `StilblattTests`
   nach sich."
@@ -1096,6 +1187,8 @@ Die Spalte „Ohne Entscheid blockiert" des Papiers ist hier die Zeile **Fällig
   entschieden wird unter U3.
 
 ### A6 — ein Aggregat je Gebäude, und Ändern statt Löschen
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — ein Aggregat, Ändern statt Löschen, in einer Transaktion.
 
 - **Frage:** Werden Zonen, Bauteile und Luftströme als **ein Aggregat je Gebäude** geschrieben oder
   je Zone einzeln — und schreibt das Aggregat durch **Löschen und Neuanlegen** oder durch
@@ -1132,6 +1225,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A9 — zwei Gebäudespalten-Schritte zu einem (= U5)
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — über **U5** — ein Gebäudespalten-Schemaschritt.
+
 - **Frage und Erläuterung:** siehe **U5** in Kapitel 2.
 - **Zusatz dieses Papiers:** Die Schrittnummern, die das Konzept dafür nennt, sind **anderweitig
   vergeben**; die Papiere führen bis zur Beauftragung Buchstabenkürzel statt Zahlen (siehe A11).
@@ -1143,6 +1238,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
   2.4; entschieden wird unter U5.
 
 ### A10 — zieht der Gebäudedialog mit G1 nach `EPOS.UI.Daten`?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — der Gebäudedialog zieht mit G1 nach `EPOS.UI.Daten`.
 
 - **Frage:** Zieht der Gebäudedialog schon mit G1 in die plattformfreie Hüllenschicht — oder erst
   mit G6?
@@ -1160,6 +1257,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
   1.4; [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 2.8.
 
 ### A11 — Schemaschrittnummern jetzt vergeben oder erst bei Beauftragung?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — Schemaschrittnummern erst bei Beauftragung.
 
 - **Frage:** Werden die Nummern der Schemaschritte jetzt verbindlich vergeben — oder erst bei
   Beauftragung?
@@ -1182,6 +1281,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A12 — wo erscheint der Produktausweis?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung — der Produktausweis steht auf der Wiki-Seite und im Berichtskopf, im Wortlaut von E10.
+
 - **Frage:** Erscheint der Produktausweis (der Satz, mit welchem Rechenkern und in welchem Prüfband
   gerechnet wurde) auf der **Wiki-Seite** und im **Berichtskopf**?
 - **Hintergrund:** In den Exportdateien ist der Ausweis mit dem Datenaustauschkonzept bereits
@@ -1202,6 +1303,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A13 — Herkunftsspalten an der Gebäudetabelle?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) nein, nach Empfehlung — keine Herkunftsspalten an der Gebäudetabelle.
+
 - **Frage:** Bekommt `Tab_Gebaeude` die Spalten für **Herkunft** und **Quellkennung**, wie Zone,
   Bauteil, Aufbau und Baustoff sie tragen?
 - **Hintergrund:** Das Gebäude hat einen Katalogzwilling, an dem eine Importherkunft nichts
@@ -1219,6 +1322,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
   2.7; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 7.3.
 
 ### A14 — was trägt den Umschalter Klassenweg → Bauteilweg?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — der Umschalter Klassenweg → Bauteilweg folgt der Datenlage, der Übergang wird benannt.
 
 - **Frage:** Woran erkennt der Rechenkern, ob er den Klassenweg oder den Bauteilweg rechnet — an
   der **Datenlage** (leere Zonentabelle heißt Klassenweg) oder an einem eigenen Wert?
@@ -1240,6 +1345,8 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
 
 ### A15 — was geschieht mit der letzten reinen Bestandsbasis?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — ein Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` bis GA in der jeweils aktuellen Basis; die GB-Arbeitskopie nur bis zum Merge G1 + G2; der Rückweg-Test umfasst nur dieses Projekt und endet mit GA.
+
 - **Frage:** Was geschieht mit der letzten Referenzbasis, die noch ohne Stundenmodell entstanden
   ist und gegen die der Nachweis des Rückwegs (Tagesbilanz) läuft?
 - **Hintergrund:** Ein Befund will sie aufheben; die Hausregel sagt dagegen: „frühere Basen liegen
@@ -1260,7 +1367,7 @@ sein Lösungsschema. Konzept N1.22, Statusdatei Abschnitte 1 und 3; hier gekürz
   aktuellen Basis; Umfang des Rückweg-Tests allein dieses Referenzprojekt, nicht alle Gebäude; der
   Test endet mit GA, dann geht das Projekt auf VDI 6007 über und die Basis wird neu eingefroren.
   **E23 (16.09.2026), präzisiert durch E26:** das Projekt bleibt bis zur Stufe GA auf dem Altweg
-  (Konzept N1.28, N1.31). A15 bleibt offen; dieser Abschnitt ist die Empfehlung, die vorliegt.
+  (Konzept N1.28, N1.31). A15 ist mit E27 nach dieser Empfehlung entschieden.
 - **Folge bei Nichtentscheid:** **G1 + G2 blockiert**: Der Einfrierschritt kann nicht abgenommen
   werden, weil unklar ist, wogegen der Rückweg künftig gemessen wird.
 - **Fällig vor:** **G1 + G2** (der gemeinsame Einfrierschritt).
@@ -1278,6 +1385,8 @@ brauchen (Bewohner, Skalierungsfaktor, Klimareihen), liefert ein modellfreier Vo
 Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md).
 
 ### A17 — Maskenschlüssel und Menüzeile für Import und Export?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) nein, nach Empfehlung — kein eigener Maskenschlüssel; Überlagerung im Gebäudedialog.
 
 - **Frage:** Bekommen Gebäudeimport und ‑export einen **eigenen Maskenschlüssel und eine
   Menüzeile**? **Zwei geltende Papiere widersprechen sich:** Das Datenaustauschkonzept sagt nein,
@@ -1298,6 +1407,8 @@ Konzept N1.25, [ADR-006](ADR-006_Trennung_Altweg_VDI6007.md).
   3.1; [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) 11.2 (D14).
 
 ### A18 — bleibt der Klimaweg eine eigene Klasse?
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a) ja, nach Empfehlung — der Klimaweg bleibt eigene Klasse, ausschließlich vom Eingangsbauer gerufen.
 
 - **Frage:** Bleibt der Klimaweg des Gebäudemodells eine **eigene Klasse**, oder fällt er in den
   Eingangsbauer zurück?
@@ -1341,6 +1452,10 @@ der Rest aus der Festlegung K18a (12.2) — die Ergebnisspalte des Kältestroms 
 Prüfung vom 17.09.2026 als eigener Punkt mit der Nummer aus dem Prüfprotokoll gezählt; das
 Kühlkonzept selbst vergibt K24 in 12.2 für die Festlegung der Symmetrie (E21), die in Kapitel 8.2
 dieses Registers steht.
+
+Mit **E27** (22.09.2026, N1.32) sind **K10, K11, K19, K22 und K24** entschieden — **K10
+abweichend von der Empfehlung** —, und die Festlegung **K2** (Kapitel 0 und 8.2) ist bestätigt;
+offen bleiben K4–K9, K12, K21 und K23.
 
 ### K1 — vierter Kanal oder eigene Kältestruktur
 
@@ -1458,6 +1573,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 
 ### K10 — Kühlbetrieb als ausdrückliche Projekteinstellung
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — **abweichend von der Empfehlung.** Der Anwender legt in den Programmeinstellungen fest, ob **neue** Projekte mit eingeschalteter Kühlung angelegt werden; Vorgabe dieser Einstellung: aus. Bestehende Projekte (Bestandsprojekte, Referenzprojekte der Testdatenbank) bleiben aus, bis die Projekteinstellung ausdrücklich eingeschaltet wird; der Schutz der Referenzprojekte bleibt damit bestehen. Die Projekteinstellung selbst bleibt, je Projekt schaltbar. Umsetzung der Programmeinstellung über die vorhandene Schnittstelle `Dienste.Einstellungen`; fällig mit KU1. Gegenüber der Empfehlung („Ja — Vorgabe 0", allein als Projekteinstellung) kommt die Programmeinstellung für neue Projekte hinzu.
+
 - **Frage:** Bleibt der Kühlbetrieb so lange aus, bis eine **ausdrückliche Projekteinstellung** ihn
   einschaltet?
 - **Hintergrund:** Ein Kanal, der in jedem Projekt sofort rechnet, bewegt **alle** Referenzprojekte
@@ -1476,6 +1593,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
   (K10).
 
 ### K11 — eigener Kühlsollwert und eigene Leistungsgrenze
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung (a) — eigener Kühlsollwert mit Zeitprofil und eigene Kühlleistungsgrenze; nach dem Wortlaut der Empfehlung kommen Sollwert und Grenze in KU1, das Zeitprofil in KU3.
 
 - **Frage:** Bekommt das Gebäude einen **eigenen Kühlsollwert** mit Zeitprofil und eine eigene
   **Kühlleistungsgrenze** — oder bleibt die vorhandene Maximaltemperatur die einzige Kühleingabe?
@@ -1513,6 +1632,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
   (K12).
 
 ### K19 — eigener Einfrierschritt für KU2
+
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — ja, nach Empfehlung — eigener, kleiner Einfrierschritt für KU2.
 
 - **Frage:** Wird KU2 mit einem **eigenen, kleinen Einfrierschritt** abgenommen — oder bleibt die
   Kältedeckung im Regressionsnetz unsichtbar?
@@ -1566,6 +1687,8 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 
 ### K22 — führt die COP-Spalte der Kühltabelle wirklich den EER?
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — vor KU2 wird an den vorhandenen Kühlkennlinien geprüft, ob die COP-Spalte das Kälteverhältnis führt, und das Ergebnis im Glossar festgehalten. **Offen bleibt als Folgeaufgabe die Prüfung selbst**, fällig vor KU2.
+
 - **Frage:** Führt die Spalte `COP` der Kühlkennlinie **wirklich das Kälteverhältnis (EER)** — oder
   in manchen Datensätzen das Wärmeverhältnis eines Heizbetriebs bei Kühlvorlauf?
 - **Hintergrund:** Der Herstellerdaten-Import trennt Heiz- und Kühlblock, **die Herstellerangaben
@@ -1612,6 +1735,8 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 
 ### K24 — Ergebnisspalte des Kältestroms je Anlage
 
+**Entschieden: E27 (22.09.2026, Konzept N1.32)** — nach Empfehlung: (a) der Kältestrom bleibt Skalar in der Kennzahlendatei, bis der Bericht ihn je Anlage verlangt; dann (b) im selben Schemaschritt wie `KU-S4`, nicht nachträglich (K18a).
+
 - **Frage:** Reist der Kältestrom nur als Skalar in der Kennzahlendatei (`aggregate.csv`) — oder
   bekommt er eine Ergebnisspalte je Anlage in `Tab_ErgebnisWaermepumpe`, und wenn ja, in welchem
   Schemaschritt?
@@ -1643,8 +1768,8 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 Quelle: [`Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md`](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), Kapitel 13.1. Die zwölf Fragen sind am 16.09.2026 mit **E24**
 („H-Fragen sind entschieden — ok") sämtlich **nach Empfehlung des Papiers** entschieden, H1 mit **E25**
 um die Wahl des Bandes ergänzt; die technischen
-Festlegungen H-F1 bis H-F12 (13.2) sind damit zur Kenntnis genommen. Der Stufenplan bleibt **Q26**
-(Kapitel 1). Die Nummer dieses Kapitels bleibt stehen, damit Verweise gelten; die ausführlichen
+Festlegungen H-F1 bis H-F12 (13.2) sind damit zur Kenntnis genommen. Der Stufenplan ist **Q26**
+(Kapitel 1, mit E27 entschieden; H6 gilt unverändert). Die Nummer dieses Kapitels bleibt stehen, damit Verweise gelten; die ausführlichen
 Erläuterungen stehen im Papier, hier nur der Entscheid je Frage.
 
 | Nr. | Entscheid (E24, 16.09.2026) | Wirkt in |
@@ -1712,7 +1837,7 @@ Kapitel 12.2.
 
 | Nr. | Gegenstand der Festlegung |
 |---|---|
-| **K2** | Vorzeichen: Norm innen, Betrag außen — der Kanal führt positive Kältemengen. **Steht zusätzlich in Kapitel 0**, weil die Festlegung unwiderruflich in Persistenz und Kanalrechnung eingeht |
+| **K2** | Vorzeichen: Norm innen, Betrag außen — der Kanal führt positive Kältemengen. **Steht zusätzlich in Kapitel 0**, weil die Festlegung unwiderruflich in Persistenz und Kanalrechnung eingeht; mit **E27** (22.09.2026) bestätigt |
 | **K3** | Eine externe Ganglinie darf den Kühlkanal tragen — Kältebedarf ohne Gebäudemodell |
 | **K8a** | Umschaltung Heizen ↔ Kühlen **je Tag**, Mindestverweildauer ein Tag |
 | **K8b** | **Eine** Teillastlogik für Wärme und Kälte, nicht zwei; die Kühlkennlinie zunächst über die höchste Laststufe — eine bewusste, benannte Vereinfachung |
@@ -1765,13 +1890,13 @@ Wirkung: F-P4, F-K4, F-A3 und F-Ü7. Zahlen der Richtlinien stehen nicht in dies
 | **F-Ü8** | Die Wochenendmaske `WE[365]` bildet der Vorbereitungsschritt aus dem Wochentag des 1. Januar des Referenzjahres (Ortszeit-Kalender, Konzept 4.4, Q21), eine Probe hält sie gegen `Tab_Klimadaten.WE` derselben Region; **U7** bleibt offen und steht mit **U6** in Kapitel 0 |
 | **F-Ü9** | `Werkzeuge/Auslieferungsvorlage` weist im Prüfbericht jede Zeile von `Tab_Gebaeude_STAMM` mit gesetztem `Gebaeude_Modell` aus; Vorgabe ist NULL |
 | **F-Ü10** | Der Ergänzungsvermerk in ADR-002 beschränkt sich auf Entscheidung 3, Satz 3, und ersetzt diesen Satz durch den Hinweis auf E20 und ADR-006 |
-| **F-S1** | Kein Papier nennt feste Schemaschrittnummern mehr: der Gebäudespalten-Schritt heißt **M3** (G1), der Klimaspalten-Schritt **M4** (G2); der Zielstand wird bei der Beauftragung an `SchemaStand.Zielversion` abgelesen (Stand 22.09.2026: 100), jede Zahl im Papier ist eine datierte Momentaufnahme |
+| **F-S1** | Kein Papier nennt feste Schemaschrittnummern mehr: der Gebäudespalten-Schritt heißt **M3** (G1), der Klimaspalten-Schritt **M4** (G2); der Zielstand wird bei der Beauftragung an `SchemaStand.Zielversion` abgelesen (Stand 22.09.2026: 100, nächste freie 101), jede Zahl im Papier ist eine datierte Momentaufnahme |
 | **F-S2** | M3 läuft in der Reihenfolge aus N1.24 (je Tabelle `RENAME COLUMN Wohnflaeche → Nutzflaeche`, neue Spalten, Sicht neu); `GebaeudeSchema.SQL_VIEW_NEU` ist ab M3 die einzige Quelle der Sichtdefinition, `sql/schema/002_views.sql` bleibt der eingefrorene Stand 61; zwölf (G1) plus drei (G2) Spalten je Tabelle, 30 Einträge; Bezugsfläche ist `Nutzflaeche` |
-| **F-S3** | M4 legt keine Spalte `Windgeschwindigkeit` an (kein Leser, der äußere Wärmeübergang bleibt beim festen Vorgabewert) und hat damit zwei Spalten; bei Gegenstrahlung NULL gilt Δθ_lw = 0 und α_str,A auf dem Vorgabewert (E5), die Schätzung nach Blatt 3 entfällt |
+| **F-S3** | M4 legt keine Spalte `Windgeschwindigkeit` an (kein Leser, der äußere Wärmeübergang bleibt beim festen Vorgabewert); bei Gegenstrahlung NULL gilt Δθ_lw = 0 und α_str,A auf dem Vorgabewert (E5), die Schätzung nach Blatt 3 entfällt. **Stand 22.09.2026:** M4 (Stufe G2) ist durch Schemaschritt 95 vorweggenommen (Anwenderentscheid 19.09.2026) — `Tab_Solar` und `Tab_Solar_STAMM` führen `Gegenstrahlung`, `Luftfeuchte` und `Bedeckungsgrad`, `Tab_Klimaregion(_STAMM)` führen `Quelle` und `Importdatum`, Schemaschritt 97 bringt Szenario und Bezugsjahr; eine Windspalte gibt es nicht; die NULL-Regel gilt weiter, eine Schätzung aus dem Bedeckungsgrad wäre möglich, wird aber nicht gerechnet ([Konzept Klimadatenquellen](Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md)) |
 | **F-S4** | Je Gebäude gibt es acht Kennzahlen, die achte `Ueberhitzungsstunden` [h] (Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur`, ab KU1 über `Kuehl_Sollwert`); `JahresheizwaermeMwh` ist die Summe nach der Skalierung, `VerbrauchAltKwh` der unskalierte Wert des ersten Laufs; Temperaturreihen reisen im Referenzlauf-Export in °C, nur der Kühlbedarf in kWh; `GebaeudeModellErgebnis` bleibt `internal` mit `InternalsVisibleTo` für beide Referenzläufe und liegt in einem je Lauf gehaltenen Träger, den beide Fassaden lesen |
 | **F-S5** | `IGebaeudeRechenweg` ist Vertrag **V16** des Systementwurfs (4.1, Bild 5) mit den Ausprägungen `Vdi6007Rechenweg` und `TagesbilanzRechenweg`; Softwarearchitektur 1.5 nennt die Naht |
 | **F-S6** | Die Rechenzeit wird in G0 mit Kappung an θ_kuehl, gesetztem Φ_h,max und Φ_c,max getrennt ohne und mit Kühlung neu gemessen; Abnahmekriterium (4) in Konzept 10.4 wird in G0 aus der wiederholten Messung neu bestimmt und ist bis dahin informativ |
-| **F-S7** | Kapitel 0 dieses Registers nimmt U6 und U7 auf; der Q26-Aufwand folgt Anlagenkopplung 12.2 (AK0 1–2, AK1 9–13, AK2 11–15, AK3 23–38 PT); die A11-Liste der Papiernamen lautet GB, M2–M4, S-A bis S-G, KU-S1 bis KU-S4, AK-S1 bis AK-S3 |
+| **F-S7** | Kapitel 0 dieses Registers nimmt U6 und U7 auf; der Q26-Aufwand folgt Anlagenkopplung Rev. 2, 12.1/12.2 (AK0 1–2, AK1 10–15, AK2 11–15, AK3 23–38 PT, zusammen 45–70 PT); die A11-Liste der Papiernamen lautet GB, M2–M4, S-A bis S-G, KU-S1 bis KU-S4, AK-S1 bis AK-S3 |
 | **F-S8** | Umsetzungskonzept Kapitel 4 ist die Quelle der verbindlichen Aufwände, Konzept 11 und 12 verweisen darauf (G1 10–16 PT, G2 3–5 PT); Kühlkonzept 11.1 nennt 16–22 PT, Mehrzonen 9 die Summe 40–62 PT ohne X1…X3 (D16) |
 | **F-P0** | Die Rev.-1-Kapitel des Konzepts sind nachgezogen: Keller als θ_NR,eq mit `Kellertemperatur`, langwelliger Term als geometrischer Sichtfaktor mit Bewölkung nur über E_A, Validierung auf das Prüfband nach E10, Vorzeichen Heizen positiv und Kühlen negativ (allein die AixLib-Reihe von Fall 6 wird beim Einlesen gespiegelt) |
 | **F-P1** | Fensterzweig nach E14: Schritt C bleibt bei fünf Knoten, Wand- und Fensterzweig der Außenwandgruppe werden zu einem R_Rest,AW/R_1,AW zusammengefasst (Gl. (27)/(28) mit den Klemmfällen der Richtlinie), A7a bildet R_AF mit benanntem Abbruch bei R_AF ≤ 0, E7 gewichtet θ_eq über alle Außenflächen einschließlich Fenster, A_AW = A_AW,opak + A_w geht in R_conv,AW, A_rad, Strahlungsverteilung und θ_op ein, die stationäre Probe 10.4 enthält den Fensterzweig; Wärmebrückenterm im masselosen Zweig, A_rad = min(A_AW,opak, A_IW) und die flächenproportionale Verteilung des Fenstersolareintrags sind benannte Abweichungen mit Messung in G0 |
@@ -1783,7 +1908,7 @@ Wirkung: F-P4, F-K4, F-A3 und F-Ü7. Zahlen der Richtlinien stehen nicht in dies
 | **F-P7** | Die Rechenschritte bekommen ein Kapitel „Schritt H — Einschub der Anlagenkopplung (ab AK1)": vierter Betriebsfall „Übergabe begrenzt" mit Sekantenleitwert, Verletzungsmaß zweiseitig je Sättigungszustand, Leitwert im Regelbereich G = Φ_ue,max/Xp + y·G_H, θ_R und θ_m nach der Begrenzung neu gebildet, Verzweigung nach „Φ_verlangt ≤ Φ_ue,max und Xp = 0", Rechnung in W und W/K mit Umrechnung einmal im Eingangsbauer |
 | **F-K1** | K20 ist durch die Umsetzung erledigt (Spalte „Kühlleistung [kW]" filterbar, Schalter „nur mit Kühlfunktion" über `AUSDRUCK_MIT_KUEHLUNG`); die Belege in Kühlkonzept 5.0 und 8.2 sind am Arbeitsbaum nachgemessen, das Katalogfilter-Konzept stellt auf die Zahlenspalte um |
 | **F-K2** | Kühlkonzept 4.2 nennt die Stellen, die den Stundenzustand selbst aufbauen, und den Bivalenzpunkt (`RestSumme` über `KANAELE_WAERME`); `rest` wird über `KANAELE_WAERME` gefüllt; die Kacheln bleiben bei drei Wärmekanälen und die Kälte bekommt eine eigene Tabelle, `SchemaModell.cs` führt Badges und Kanten namentlich, `BerichtsDaten.KANAL_SCHLUESSEL` wird um `"KUEHLUNG"` erweitert |
-| **F-K3** | Kältebeiträge gehen in `probeKaelte`, nicht in den Referenzakkumulator der Energieprobe; es gibt eine Bedarfsprobe Kälte in `SimulationKaeltebedarf` (Muster `Energieprobe`: Verletzungen zählen, größte Abweichung, eine Meldung der Stufe Fehler je Lauf, Lauf fehlgeschlagen) und eine Deckungsprobe Kälte in `SimulationControl.KanalganglinienProbe()`; „nie beide größer null" gilt je Gebäude bzw. Zone aus `GebaeudeModellErgebnis`, nicht auf Kanalebene |
+| **F-K3** | Kältebeiträge gehen in `probeKaelte`, nicht in den Referenzakkumulator der Energieprobe; es gibt eine Bedarfsprobe Kälte in `SimulationKaeltebedarf` (Muster `Energieprobe`: Verletzungen zählen, größte Abweichung, eine Meldung der Stufe Fehler je Lauf, Lauf fehlgeschlagen) und eine Deckungsprobe Kälte in `SimulationControl.KanalganglinienProbe()`; „nie beide größer null" gilt je Gebäude bzw. Zone aus `GebaeudeModellErgebnis`, nicht auf Kanalebene, und zwar je **Abschnitt**: in keinem Abschnitt Heiz- und Kühlanteil zugleich; je **Stunde** ist beides bei einem Fallwechsel möglich, weil die Rechenschritte (7.1) beide Anteile je Abschnitt getrennt akkumulieren (F-P3); die Probe prüft die Abschnittsregel scharf und zählt die Stunden mit beidem als Hinweis, nicht als Fehler (Ergänzung 22.09.2026) |
 | **F-K4** | Die Tagesbetriebsart der reversiblen Wärmepumpe gilt für den Heizkanal, der Brauchwasserkanal bleibt am Kühltag bedienbar (zuerst Brauchwasser, Rest Kälte); die Kältedeckung läuft in einer eigenen Stundenschleife `Kaeltekaskade` nach der Wärmekaskade in der Reihenfolge der Kaskadenplätze, gefiltert auf kühlfähige Erzeuger; Kälteerzeugung und Kältestrom in eigenen Reihen (`Kaelteproduktion_stuendlich`, `Stromverbrauch_Kuehlung_stuendlich`), der Kältestrom geht an der benannten Stelle in `SimulationControl` in die Stufenrechnung; Anlagen mit Quellspeicher werden in KU2 für Kühlung benannt abgelehnt; KU2 rechnet mit der Kennlinie der höchsten Laststufe (`MAX(Last)`), linear bei Teilauslastung, EER konstant; `KenndatenKuehlungCtrl` bekommt `Last`, zwei Prüfungen `HatKenndatenStamm`/`HatKenndatenProjekt`, `Kuehl_Vorlauf` als INTEGER, `KU-S3` mit `Kuehlbetrieb`, `Kuehl_Vorlauf`, `Kuehl_Hilfsstromanteil` (`Kuehl_Umschaltung` entfällt); `Kaeltebedarf_Gesamt` bleibt und ist heute wertgleich mit `Waermebedarf_Kuehlung` |
 | **F-K5** | Der Ergebnisdialog zeigt die Kälte als dritten Block unter „Wärme | Strom", nur bei Kältebedarf > 0; `Konzept_Simulationsablauf` kommt in die Schwesterpapiertabelle |
 | **F-K6** | Der Auslegungspunkt der Kühlübergabe kommt aus der Anlage (`Tab_WP.Kuehl_Vorlauf`, feste Spreizung 5 K) — als vierte benannte Abweichung in Anlagenkopplung 7.4, kein gebäudeseitiges Spaltenpaar |
@@ -1803,8 +1928,8 @@ Wirkung: F-P4, F-K4, F-A3 und F-Ü7. Zahlen der Richtlinien stehen nicht in dies
 [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 — mit dem Wortlaut des Anwenders, dem Entscheid, den berührten Stellen und, wo nötig, der
 Aufhebung des bisherigen Stands; die **eine Zeile** je Entscheid kommt in Abschnitt 1 von
-[`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md); die offenen
-Konzeptfragen Q24, Q25 und Q26 stehen dort in derselben Tabelle mit dem Stand „offen". Betrifft der Entscheid ein
+[`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md); die
+Konzeptfragen Q24, Q25 und Q26 stehen dort in derselben Tabelle, seit E27 mit dem Stand „entschieden". Betrifft der Entscheid ein
 Architekturpapier, wird dessen Fragentabelle im selben Schritt nachgezogen; betrifft er einen
 **ADR**, wechselt dort die Kopfzeile **Status** von „Vorgeschlagen" auf „Angenommen" mit Datum,
 und die Papiertabelle der Statusdatei sowie die Indexzeile in
@@ -1812,6 +1937,9 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
-entfällt das Kapitel. Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
+entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** (22.09.2026) entschiedenen Punkte
+mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept N1.32)" weiter in ihren Kapiteln, weil ihre
+Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
+(U6, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.
