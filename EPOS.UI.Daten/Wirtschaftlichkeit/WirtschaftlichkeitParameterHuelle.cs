@@ -4,7 +4,11 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Dialogs „Wirtschaftlichkeits-Parameter" (iU9-W2.5).
+    /// Die HÜLLE des Dialogs „Wirtschaftlichkeits-Parameter" (iU9-W2.5), seit
+    /// Etappe E3 Schritt 1 plattformfrei in <c>EPOS.UI.Daten</c>: Sie führt keine
+    /// einzige WinForms-Anweisung, ihre Quellen sind Kern-Controller, und sie
+    /// kennt kein Fenster. Was die Plattform beisteuert, kommt über
+    /// <see cref="Wirtschaftlichkeitswege"/> herein.
     ///
     /// <para>Der Dialog lebt als Razor-Komponente
     /// <c>WirtschaftlichkeitParameterDialog</c> in <c>EPOS.UI</c>; die
@@ -64,7 +68,7 @@ namespace WindowsFormsApplication1
                 refKessel = Referenzkesselzeile(ctrl, parameter);
             }
 
-            return new Dictionary<string, object>
+            var werte = new Dictionary<string, object>
             {
                 ["Parameter"] = parameter,
                 ["HatBhkw"] = bhkw,
@@ -73,20 +77,26 @@ namespace WindowsFormsApplication1
                 ["ReferenzkesselZeile"] = refKessel,
                 ["Co2PrognoseAb"] = Co2PrognoseAb(),
 
-                // iU9-W14c.3: Der Gesetzeskatalog laeuft nicht mehr ueber die
-                // Sprungbruecke, sondern als Ueberlagerung IM Dialog - mit der
-                // Vorwahl der Klasse CO2_PREIS, die Sprungbruecke.cs:100 setzte.
-                // Damit ist dies der ERSTE Dialog des Bestands, der ohne Sprungziel
-                // auskommt, seit er eines hatte (Ersteinsatz war iU9-W2.2).
-                ["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS)),
-
                 ["Speichern"] = new Func<bool>(() =>
                 {
                     try { return ctrl.SpeichereParameter(parameter); }
                     catch { return false; }
                 })
             };
+
+            // iU9-W14c.3: Der Gesetzeskatalog laeuft nicht mehr ueber die
+            // Sprungbruecke, sondern als Ueberlagerung IM Dialog - mit der
+            // Vorwahl der Klasse CO2_PREIS, die Sprungbruecke.cs:100 setzte.
+            // Damit ist dies der ERSTE Dialog des Bestands, der ohne Sprungziel
+            // auskommt, seit er eines hatte (Ersteinsatz war iU9-W2.2).
+            //
+            // E3/6: Die gerufene Huelle liegt selbst in EPOS.UI.Daten; die Naht
+            // der Schale (Wirtschaftlichkeitswege.GesetzeskatalogGaben) ist weg,
+            // und die Ueberlagerung erscheint auf JEDER Plattform.
+            werte["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                () => GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS));
+
+            return werte;
         }
 
         /// <summary>

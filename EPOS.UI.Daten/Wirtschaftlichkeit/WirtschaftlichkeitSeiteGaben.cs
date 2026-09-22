@@ -4,15 +4,20 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Seiten.Berichte;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die DATENSEITE der Wirtschaftlichkeitsseite (iU9-W5.3/W5.6) — Nachfolge
-    /// von <c>Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.cs</c> (831 Z.).
+    /// von <c>Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.cs</c> (831 Z.), seit
+    /// Etappe E3 Schritt 3 plattformfrei in <c>EPOS.UI.Daten</c>: keine
+    /// WinForms-Anweisung, kein Fenster. Vier der fünf Unterdialoge zeigen
+    /// daneben noch ein eigenes Fenster und kommen deshalb über
+    /// <see cref="Wirtschaftlichkeitswege"/> herein, bis sie mit E3 Schritt 6
+    /// selbst wandern.
     ///
     /// <para><b>Was hier liegt.</b> Laden und Rechnen über
     /// <see cref="WirtschaftlichkeitCtrl"/> und
@@ -32,7 +37,6 @@ namespace WindowsFormsApplication1
     {
         private readonly int _idStamm;
         private readonly string _stammName;
-        private readonly Func<Form> _besitzer;
 
         private readonly WirtschaftlichkeitCtrl _ctrl = new WirtschaftlichkeitCtrl();
 
@@ -79,11 +83,10 @@ namespace WindowsFormsApplication1
             WirtschaftlichkeitSzenario.WORST
         };
 
-        internal WirtschaftlichkeitSeiteGaben(int idStamm, string stammName, Func<Form> besitzer)
+        internal WirtschaftlichkeitSeiteGaben(int idStamm, string stammName)
         {
             _idStamm = idStamm;
             _stammName = stammName ?? "";
-            _besitzer = besitzer;
         }
 
         /// <summary>Läuft gerade eine Berechnung?</summary>
@@ -129,6 +132,12 @@ namespace WindowsFormsApplication1
                 ["PhotovoltaikText"] = T("PVW_KNOPF", "Photovoltaik…"),
                 ["BhkwText"] = T("BHW_KNOPF", "BHKW-Wirtschaftlichkeit…"),
                 ["StrombezugText"] = T("WIRT_BTN_STROM_TARIF", "Strombezug…"),
+
+                // E3/7: die Titel der Tarif-Ueberlagerung, wenn sie als ZIEL
+                // eines Sprungs aufgeht. Sie kommen aus demselben Textbuendel,
+                // das der Dialog selbst fuehrt - kein neuer Schluessel.
+                ["TarifBhkwText"] = TarifstrukturHuelle.Titel(TarifSicht.Bhkw),
+                ["TarifPvText"] = TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik),
                 ["ParameterText"] = T("WIRT_BTN_PARAMETER", "Parameter…"),
                 ["VerlaufText"] = T("WIRT_BTN_VERLAUF", "Verlauf…"),
                 ["BerechnenText"] = T("WIRT_BTN_BERECHNEN", "Berechnen"),
@@ -821,7 +830,11 @@ namespace WindowsFormsApplication1
                 // eine Zeile, die „nicht neu gerechnet" sagt, während gerechnet wird.
                 bool mitZeitreihen = MitZeitreihen(p, tarif);
 
-                _ergebnisse = await Task.Run(() =>
+                // E3/3: In EPOS.UI.Daten gilt der Wächter ParallelitaetWache — ein
+                // nackter Task.Run liest den VERAENDERLICHEN prozessweiten
+                // Kulturvorgabewert. Derselbe Arbeitsfaden, dieselbe Abbruchmarke,
+                // nur mit weitergereichter Kultur (Muster der Hüllen aus #428).
+                _ergebnisse = await Kulturweitergabe.Starten(() =>
                 {
                     BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
                         _idStamm, _stammName, varianten, false, mitZeitreihen, melde, ct);
@@ -885,17 +898,33 @@ namespace WindowsFormsApplication1
         {
             try
             {
+                // E3/6: Alle fuenf Huellen liegen jetzt selbst in EPOS.UI.Daten;
+                // die Naht der Schale (Wirtschaftlichkeitswege) ist weg, und
+                // jede Ueberlagerung erscheint auf JEDER Plattform. null heisst
+                // hier nur noch das, was es immer hiess: Der Satz liess sich
+                // nicht bauen (kein Stammprojekt, keine Anlagen).
                 switch (art)
                 {
                     case WirtschaftlichkeitSeite.Unterdialog.Photovoltaik:
-                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm, _besitzer);
+                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
+                        // Der Titel gehoert zum FENSTER; als Ueberlagerung traegt
+                        // ihn der Wirt, deshalb verfaellt er hier.
                         string titel;
                         return BhkwWirtschaftlichkeitHuelle.Gaben(_idStamm, _ergebnisse, out titel);
 
+                    // E3/7: Dieselbe Huelle, drei Sichten - der Knopf
+                    // "Strombezug..." und die zwei Sprungziele aus dem BHKW-
+                    // und dem PV-Dialog. Die Ueberlagerung ist EINE.
                     case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
                         return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
+
+                    case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
+                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Bhkw);
+
+                    case WirtschaftlichkeitSeite.Unterdialog.TarifPv:
+                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Photovoltaik);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                         return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
@@ -944,7 +973,11 @@ namespace WindowsFormsApplication1
                 case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
                     return T("BHW_MELD_GESPEICHERT",
                              "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen.");
+                // E3/7: Dieselbe Meldung fuer alle drei Sichten - gespeichert
+                // wurde dieselbe Tarifstruktur, egal auf welchem Weg sie aufging.
                 case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
+                case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
+                case WirtschaftlichkeitSeite.Unterdialog.TarifPv:
                     return T("WIRT_MELD_TARIF", "Tarifstruktur gespeichert — bitte neu berechnen.");
                 case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                     return T("WIRT_MELD_PARAMETER", "Parameter gespeichert — bitte neu berechnen.");

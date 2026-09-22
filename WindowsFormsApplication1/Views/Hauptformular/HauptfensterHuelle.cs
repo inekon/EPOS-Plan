@@ -300,7 +300,7 @@ namespace WindowsFormsApplication1
                     return () => KlimadatenFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Kostenverwaltung:
-                    return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());
+                    return () => KostenKomponenteFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.EnergietraegerVerwaltung:
                     return () => EnergietraegerFenster.Oeffnen(_besitzer?.Invoke(), 0);
@@ -316,7 +316,7 @@ namespace WindowsFormsApplication1
                     return () => EinstellungenHuelle.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Gesetzeskatalog:
-                    return () => GesetzeskatalogHuelle.Oeffnen(_besitzer?.Invoke());
+                    return () => GesetzeskatalogFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.KatalogDubletten:
                     return () => KatalogDublettenHuelle.Oeffnen(_besitzer?.Invoke());

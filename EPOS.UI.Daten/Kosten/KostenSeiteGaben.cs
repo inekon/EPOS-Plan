@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
-using System.Windows.Forms;
 using EPOS.UI.Seiten.Berichte;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die DATENSEITE der Kostenseite (iU9-W5.4/W5.6) — Nachfolge von
-    /// <c>Views/BerichteKosten/UcBkKosten.cs</c> (1 311 Z.).
+    /// <c>Views/BerichteKosten/UcBkKosten.cs</c> (1 311 Z.), seit Etappe E3
+    /// Schritt 3 plattformfrei in <c>EPOS.UI.Daten</c>: keine WinForms-Anweisung,
+    /// kein Fenster. Der eine Weg, der noch ein Fenster zeigt — die
+    /// Kostenverwaltung —, kommt über <see cref="Wirtschaftlichkeitswege"/>
+    /// herein, bis sie mit E3 Schritt 5 selbst wandert.
     ///
     /// <para><b>Keine eigene Rechenwelt.</b> Investition und Betrieb kommen aus
     /// derselben Leselogik wie die Kapitalwertrechnung
@@ -27,8 +30,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class KostenSeiteGaben
     {
-        private readonly Func<Form> _besitzer;
-
         private int _idProjekt = -1;
         private string _projektname = "";
 
@@ -55,11 +56,6 @@ namespace WindowsFormsApplication1
         private readonly Dictionary<int, ProjektEnergietraegerCtrl.AnlagenEintrag> _anlagen =
             new Dictionary<int, ProjektEnergietraegerCtrl.AnlagenEintrag>();
         private readonly Dictionary<int, string> _loseKomponenten = new Dictionary<int, string>();
-
-        internal KostenSeiteGaben(Func<Form> besitzer)
-        {
-            _besitzer = besitzer;
-        }
 
         /// <summary>Setzt das anzuzeigende Projekt (Stamm ODER Variante).</summary>
         internal void SetzeProjekt(int idProjekt, string projektname)
@@ -930,12 +926,17 @@ namespace WindowsFormsApplication1
         {
             if (_idProjekt <= 0) return null;
 
+            // E3/5: Die Kostenverwaltung liegt selbst in EPOS.UI.Daten; ihr
+            // Parametersatz kommt unmittelbar von dort. Die Naht der Schale
+            // (Wirtschaftlichkeitswege.KostenVerwaltungGaben) ist damit weg —
+            // die Ueberlagerung erscheint auf JEDER Plattform.
             ProjektEnergietraegerCtrl.AnlagenEintrag a = null;
             if (zeile != null) _anlagen.TryGetValue(zeile.Schluessel, out a);
 
-            return KostenKomponenteHuelle.GabenProjekt(_idProjekt, _projektname,
-                                                       a != null ? a.Komponente : null,
-                                                       false, a != null ? a.AnlageId : 0);
+            return KostenKomponenteHuelle.GabenProjekt(
+                _idProjekt, _projektname,
+                a != null ? a.Komponente : null,
+                false, a != null ? a.AnlageId : 0);
         }
 
         /// <summary>

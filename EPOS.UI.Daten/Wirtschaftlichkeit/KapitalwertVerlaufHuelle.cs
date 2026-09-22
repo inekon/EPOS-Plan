@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
-using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HUELLE des Dialogs „Kapitalwert-Verlauf" (iU9-W1.6).
+    /// Die PLATTFORMFREIE Hülle des Dialogs „Kapitalwert-Verlauf" (iU9-W1.6).
+    ///
+    /// <para><b>Seit Etappe E3, Schritt 6 liegt sie in <c>EPOS.UI.Daten</c>,
+    /// und sie hat keine Fensterhälfte mehr</b> (P7): Sammeln, Rechnen und
+    /// Zeichnen sind plattformfrei — der Renderer des Kerns kommt ohne Windows
+    /// aus, und der Arbeitsfaden entsteht über
+    /// <c>SpeicherEngine.Kulturweitergabe</c> statt über ein nacktes
+    /// <c>Task.Run</c> (Wächter <c>ParallelitaetWacheTests</c>). Der Dialog
+    /// erscheint ausschließlich als <c>Ueberlagerung</c> der
+    /// Wirtschaftlichkeitsseite.</para>
     ///
     /// <para><b>Hier liegt die Rechnung.</b> Die Komponente
     /// <see cref="KapitalwertVerlaufDialog"/> kennt weder Datenbank noch
@@ -47,43 +54,6 @@ namespace WindowsFormsApplication1
 
         private static string SzenarioZu(int id)
             => (id >= 0 && id < SZENARIEN.Length) ? SZENARIEN[id] : WirtschaftlichkeitSzenario.ERWARTET;
-
-        /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn beim Sammeln neu simuliert
-        /// wurde — der Aufrufer frischt dann seine Anzeige auf (Review Phase 11).
-        /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
-        /// <param name="idStamm">Stammprojekt der Vergleichsgruppe.</param>
-        /// <param name="stammName">Name des Stammprojekts (steht im Fenstertitel).</param>
-        /// <param name="variantenIds">Die angehakten Varianten.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, int idStamm, string stammName,
-                                     List<int> variantenIds)
-        {
-            Func<bool> neuGesammelt;
-            BlazorDialogForm<KapitalwertVerlaufDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(
-                Gaben(idStamm, stammName, variantenIds, out neuGesammelt))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create(new object(), () =>
-                {
-                    if (dlg != null) dlg.Schliessen(true);
-                })
-            };
-
-            // Das Entwurfsmaß 898 x 744 des Designers, auf den Arbeitsbereich
-            // gedeckelt — dasselbe tat GroesseAufArbeitsflaecheDeckeln. Die Hülle
-            // klemmt zusätzlich auf 92 % des Bildschirms.
-            int hoehe = Math.Max(560, Math.Min(760, Screen.PrimaryScreen.WorkingArea.Height - 90));
-            dlg = new BlazorDialogForm<KapitalwertVerlaufDialog>(
-                Titel(stammName ?? ""), new Size(1000, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return neuGesammelt();
-        }
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
@@ -133,8 +103,13 @@ namespace WindowsFormsApplication1
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
+                // E3/6: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten
+                // statt ueber ein nacktes Task.Run - in EPOS.UI.Daten gilt der
+                // Waechter ParallelitaetWacheTests, und ein Faden ohne eigene
+                // Kultur liest den VERAENDERLICHEN prozessweiten Vorgabewert.
+                // Derselbe Faden, dieselbe Rechnung, derselbe Abbruchschalter.
                 ["Berechnen"] = new Func<int, int, CancellationToken, Task<KapitalwertVerlaufBilder>>(
-                    (jahre, szenarioId, ct) => Task.Run(() =>
+                    (jahre, szenarioId, ct) => Kulturweitergabe.Starten(() =>
                     {
                         string szenario = SzenarioZu(szenarioId);
                         WirtschaftlichkeitParameter p = ctrl.LadeParameter(idStamm);

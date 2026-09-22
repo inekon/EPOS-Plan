@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Kosten;
-using Microsoft.AspNetCore.Components;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Kostenverwaltung (iU9-W4.2) — Nachfolge der
+    /// Die PLATTFORMFREIE Hülle der Kostenverwaltung (iU9-W4.2) — Nachfolge der
     /// gelöschten Maske <c>Views/Kosten/Form_KostenKomponente</c> (918 Z.).
+    ///
+    /// <para><b>Seit Etappe E3, Schritt 5 liegt sie in <c>EPOS.UI.Daten</c>.</b>
+    /// Ihre Quellen sind Kern-Controller, sie kennt kein Fenster; Windows steuert
+    /// nur noch den Adapter <c>Views/Kosten/KostenKomponenteFenster</c> bei
+    /// (Muster <c>EnergietraegerFenster</c>, <c>NutzungsdauerFenster</c>). Auf
+    /// iOS zeigt dieselbe Hülle dieselbe Komponente ohne diesen Adapter — über
+    /// die Kostenseite, die ihren Parametersatz als <c>Ueberlagerung</c>
+    /// einbettet.</para>
     ///
     /// <para><b>Hier liegt die Datenseite.</b> Die Komponente
     /// <see cref="KostenKomponenteDialog"/> kennt keine Datenbank (Hausregel
@@ -36,8 +43,12 @@ namespace WindowsFormsApplication1
     {
         /// <summary>Innenmaß des Fensters. Die WinForms-Fassung maß 1004 × 721;
         /// das Positionsraster braucht seine Breite (Befund 03.09.2026:
-        /// Tabellen ohne Umbruch).</summary>
-        private static readonly System.Drawing.Size FENSTER = new System.Drawing.Size(1100, 800);
+        /// Tabellen ohne Umbruch). Der Fenster-Adapter holt es hier ab — dieselbe
+        /// Aufteilung wie bei <c>EnergietraegerHuelle</c>.</summary>
+        internal const int FENSTER_BREITE = 1100;
+
+        /// <summary>Innenhöhe des Fensters; siehe <see cref="FENSTER_BREITE"/>.</summary>
+        internal const int FENSTER_HOEHE = 800;
 
         // ---- Kontext -------------------------------------------------------
 
@@ -91,28 +102,23 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Stammkontext (Katalogpflege) — Nachfolge von
+        /// Eine Hülle für den STAMMKONTEXT (Katalogpflege) — Nachfolge von
         /// <c>new Form_KostenKomponente()</c> samt <c>SetControls</c>/<c>WaehleBetrieb</c>.
+        /// Den Parametersatz holt der Aufrufer danach mit <see cref="Gaben"/>.
         /// </summary>
-        /// <param name="besitzer">Besitzerfenster (für die mittige Lage).</param>
-        /// <param name="komponente">Vorwahl der Komponente; <c>null</c> = die erste.</param>
-        /// <param name="betrieb"><c>true</c> = auf die Betriebskostensicht schalten.</param>
-        internal static void Oeffnen(IWin32Window besitzer, string komponente = null,
-                                     bool betrieb = false)
+        internal static KostenKomponenteHuelle FuerStamm()
         {
-            new KostenKomponenteHuelle(0, "").Zeigen(besitzer, komponente, betrieb, 0);
+            return new KostenKomponenteHuelle(0, "");
         }
 
         /// <summary>
-        /// PROJEKTMODUS (KD6a) — Nachfolge von <c>SetProjekt</c>: derselbe Dialog
-        /// pflegt die <c>Tab_ProjektWerte</c>-Positionen des Projekts.
+        /// Eine Hülle für den PROJEKTMODUS (KD6a) — Nachfolge von
+        /// <c>SetProjekt</c>: derselbe Dialog pflegt die
+        /// <c>Tab_ProjektWerte</c>-Positionen des Projekts.
         /// </summary>
-        internal static void OeffnenProjekt(IWin32Window besitzer, int idProjekt, string projektname,
-                                            string komponente = null, bool betrieb = false,
-                                            int idAnlage = 0)
+        internal static KostenKomponenteHuelle FuerProjekt(int idProjekt, string projektname)
         {
-            new KostenKomponenteHuelle(idProjekt, projektname)
-                .Zeigen(besitzer, komponente, betrieb, idAnlage);
+            return new KostenKomponenteHuelle(idProjekt, projektname);
         }
 
         /// <summary>
@@ -130,31 +136,16 @@ namespace WindowsFormsApplication1
         {
             string titel;
             return new KostenKomponenteHuelle(idProjekt, projektname)
-                .GabenIntern(komponente, betrieb, idAnlage, out titel);
+                .Gaben(komponente, betrieb, idAnlage, out titel);
         }
 
-        private void Zeigen(IWin32Window besitzer, string komponente, bool betrieb, int idAnlage)
-        {
-            BlazorDialogForm<KostenKomponenteDialog> dlg = null;
-
-            string titel;
-            var werte = new Dictionary<string, object>(
-                GabenIntern(komponente, betrieb, idAnlage, out titel))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), ok =>
-                {
-                    if (dlg != null) dlg.Schliessen(ok);
-                })
-            };
-
-            dlg = new BlazorDialogForm<KostenKomponenteDialog>(titel, FENSTER, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-        }
-
-        private IReadOnlyDictionary<string, object> GabenIntern(
+        /// <summary>
+        /// Der PARAMETERSATZ dieser Hülleninstanz samt dem Titel, den ein
+        /// eigenes Fenster tragen müsste. Der Fenster-Adapter unter Windows ruft
+        /// genau das; die Kostenseite nimmt <see cref="GabenProjekt"/>.
+        /// </summary>
+        /// <param name="titel">Der Fenster- bzw. Bereichstitel.</param>
+        internal IReadOnlyDictionary<string, object> Gaben(
             string komponente, bool betrieb, int idAnlage, out string titel)
         {
             _komponenten = KostenVorlagenCtrl.Komponenten();
@@ -170,7 +161,7 @@ namespace WindowsFormsApplication1
                                 _eintraege.Count > 0 ? _eintraege[Math.Max(0, vorwahl)].Text : "", _projektname)
                 : T("KDLG_TITEL", "Kostenverwaltung {0}").Replace(" {0}", "");
 
-            return new Dictionary<string, object>
+            var satz = new Dictionary<string, object>
             {
                 ["Eintraege"] = (IReadOnlyList<ValueTuple<int, string>>)eintraege,
                 ["EintragVorwahl"] = vorwahl >= 0 ? (int?)vorwahl : null,
@@ -197,19 +188,6 @@ namespace WindowsFormsApplication1
                 ["UebernahmeGaben"] = new Func<IReadOnlyDictionary<string, object>>(UebernahmeGaben),
                 ["KatalogGaben"] = new Func<IReadOnlyDictionary<string, object>>(
                     () => KostenfaktorKatalogHuelle.Gaben()),
-
-                // iU9-W14c.3: die SECHSTE Ueberlagerung. Bis dahin sprang das
-                // Reiterblatt "Ertrag/Bonus" ueber die Sprungbruecke in das
-                // WinForms-Fenster Form_Gesetzesparameter; das Ziel ist jetzt selbst
-                // Razor (Risiko R2). Ohne diese Gaben bleibt der Knopf im Blatt weg.
-                // #187: Die Ueberlagerung traegt den Titel schon (GesetzeTitel,
-                // Vorgabewert Resource.GESETZ_TITEL, derselbe wie der Dialog
-                // selbst) - GesetzeskatalogHuelle.Gaben() bleibt UNVERAENDERT
-                // (sie liefert auch das eigenstaendige Fenster "Hilfe > ..."
-                // und den Aufruf aus WirtschaftlichkeitParameterDialog), nur
-                // HIER wird TitelText im geholten Satz auf leer gesetzt.
-                ["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => OhneTitel(GesetzeskatalogHuelle.Gaben())),
 
                 ["BannerText"] = T("KDLG_BANNER", "Alle Beträge und alle Bezugsgrößen sind NETTO."),
                 ["BannerZuKurztext"] = T("KKOMP_BANNER_ZU", "Hinweis ausblenden"),
@@ -314,6 +292,43 @@ namespace WindowsFormsApplication1
                 ["VorlageGespeichert"] = T("KDLG_GESPEICHERT", "gespeichert {0:HH:mm} Uhr")
                     .Replace("{0:HH:mm}", "{0}")
             };
+
+            // iU9-W14c.3: die SECHSTE Ueberlagerung. Bis dahin sprang das
+            // Reiterblatt "Ertrag/Bonus" ueber die Sprungbruecke in das
+            // WinForms-Fenster Form_Gesetzesparameter; das Ziel ist jetzt selbst
+            // Razor (Risiko R2). Ohne diese Gaben bleibt der Knopf im Blatt weg.
+            // #187: Die Ueberlagerung traegt den Titel schon (GesetzeTitel,
+            // Vorgabewert Resource.GESETZ_TITEL, derselbe wie der Dialog
+            // selbst) - der geholte Satz bleibt UNVERAENDERT (er liefert auch das
+            // eigenstaendige Fenster "Administration > ..." und den Aufruf aus
+            // WirtschaftlichkeitParameterDialog), nur HIER wird TitelText auf
+            // leer gesetzt.
+            satz["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                () => OhneTitel(GesetzeskatalogHuelle.Gaben()));
+
+            // E3/6: die SIEBTE Ueberlagerung - die PV-Verguetung. Bis dahin fuhr
+            // der Knopf des Reiterblatts "Ertrag/Bonus" ein ZWEITES WinForms-
+            // Fenster ueber diesem hoch (Risiko R2, deshalb nachgelagert); seit
+            // die PV-Huelle selbst in EPOS.UI.Daten liegt, ist daraus die
+            // Ueberlagerung geworden, die schon der Kommentar von iU9-W2.4
+            // angekuendigt hat. Den Titel traegt die Ueberlagerung (PvTitel);
+            // der Dialog selbst bekommt TitelAnzeigen="false" am Tag der
+            // Einbettung - anders als der Gesetzeskatalog kennt er keinen
+            // leerbaren TitelText.
+            satz["PvGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(
+                PhotovoltaikVerguetungHuelle.Gaben);
+            satz["PvTitel"] = PhotovoltaikVerguetungHuelle.Titel();
+
+            // E3/7: die ACHTE Ueberlagerung - das Ziel des Sprungknopfs
+            // "Tarif..." im Verguetungsdialog. Er nimmt seit #405 den OK-Weg
+            // (pruefen, schreiben, springen); das Ziel war bis dahin ein zweites
+            // WinForms-Fenster. Die Sicht ist Photovoltaik, der Bezug dasselbe
+            // STAMMPROJEKT, fuer das der Verguetungsdialog aufging.
+            satz["TarifGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(
+                id => TarifstrukturHuelle.Gaben(id, TarifSicht.Photovoltaik));
+            satz["TarifTitel"] = TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik);
+
+            return satz;
         }
 
         // =====================================================================
@@ -1329,14 +1344,13 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// #187: Nimmt einen fertigen Parametersatz (hier von
-        /// <see cref="GesetzeskatalogHuelle.Gaben"/>, der AUCH das
-        /// eigenstaendige Fenster und den zweiten Aufrufer bedient) und setzt
-        /// darin nur <c>TitelText</c> auf leer — die Ueberlagerung, in der
-        /// der Satz hier landet, traegt den Titel bereits selbst
-        /// (Hausregel W11b-B-9). <see cref="GesetzeskatalogHuelle.Gaben"/>
-        /// bleibt dafuer unangetastet, ihre anderen Aufrufer behalten ihren
-        /// eigenen Fenstertitel.
+        /// #187: Nimmt einen fertigen Parametersatz (hier den des
+        /// Gesetzeskatalogs, der AUCH das eigenstaendige Fenster und den
+        /// zweiten Aufrufer bedient) und setzt darin nur <c>TitelText</c> auf
+        /// leer — die Ueberlagerung, in der der Satz hier landet, traegt den
+        /// Titel bereits selbst (Hausregel W11b-B-9). Die gerufene Hülle bleibt
+        /// dafuer unangetastet, ihre anderen Aufrufer behalten ihren eigenen
+        /// Fenstertitel.
         /// </summary>
         private static IReadOnlyDictionary<string, object> OhneTitel(
             IReadOnlyDictionary<string, object> gaben)

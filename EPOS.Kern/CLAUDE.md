@@ -30,7 +30,7 @@ Einzige verlinkte Datei: `../sql/schema/SchemaTypKatalog.g.cs` (Quelle `sql/tool
 | Oberflächenbausteine (`BaseForm`, `GrafikTools/*`, Hilfefenster, Blazor-Hülle) | WinForms und GDI+ — sie **sind** die Oberfläche |
 | `SchemaMigration` der Schale | Schemapflege des Windows-Programmstarts; Access-Altbestände werden nicht übernommen |
 | Belegung der `Dienste.*`, Datenbankbereitstellung der Schale | jede Schale beantwortet sie selbst |
-| `BerichtsDatenSammler`, `HilfeKontext`, `KiAusfuehrungWindows`, `KlimaregionStammCtrl`, `MenueCtrl` | hängen an einer WinForms-Ansicht, am aktiven Fenster, an `ComboBox`/`ListBox` oder der Navigation |
+| `HilfeKontext`, `KiAusfuehrungWindows`, `KlimaregionStammCtrl`, `MenueCtrl` | hängen an einer WinForms-Ansicht, am aktiven Fenster, an `ComboBox`/`ListBox` oder der Navigation |
 | `Bericht/Vorlagen/Berichtsvorlage.docx` | keine Quelldatei: Sie liegt neben der EXE, dort sucht `WordBerichtGenerator.FindeVorlage()` |
 | `EPOS.UI.Daten` (die Hüllen) | referenzieren den Kern — nicht umgekehrt |
 

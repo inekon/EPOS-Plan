@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -267,6 +268,14 @@ namespace WindowsFormsApplication1
             // Fenster). Ohne diesen Haken zeigt die Pufferverwaltung den Knopf
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
+
+            // ETAPPE E3, SCHRITTE 5 UND 6: Die Uebergangsnaht Wirtschaftlichkeitswege
+            // ist WEG. Alle Huellen der Kosten- und Wirtschaftlichkeitsseite liegen
+            // jetzt in EPOS.UI.Daten und rufen einander unmittelbar; ihre Dialoge
+            // erscheinen als Ueberlagerung im selben Fenster. Windows steuert nur noch
+            // zwei Fenster-Adapter bei (KostenKomponenteFenster fuer den Menuepunkt
+            // "Kostenverwaltung", GesetzeskatalogFenster fuer "Gesetzeskatalog"), und
+            // die ruft die Hauptfensterhuelle unmittelbar - kein Haken noetig.
 
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,

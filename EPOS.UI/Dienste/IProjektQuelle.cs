@@ -329,6 +329,38 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? StromganglinieAdminGaben() => null;
 
+    // =====================================================================
+    //  Die DREI Masken der Wirtschaftlichkeit, die die Wurzel seit E3/8 zeigt
+    //  (Anwenderentscheid A19)
+    // =====================================================================
+    //
+    //  Dieselbe Form und derselbe Grund wie die fünf darüber. Unter Windows
+    //  stehen sie im Menü „Administration" und gehen dort als eigenes Fenster
+    //  auf (`KostenKomponenteFenster`, `NutzungsdauerFenster`,
+    //  `GesetzeskatalogFenster`); auf iOS gibt es kein Menü, und die Wurzel
+    //  zeigt dieselbe Komponente als Ansicht.
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der KOSTENVERWALTUNG im Katalogkontext
+    /// (<c>Dialoge.Kosten.KostenKomponenteDialog</c>); <c>null</c> = diese Hülle
+    /// führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KostenverwaltungGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der NUTZUNGSDAUERN (AfA,
+    /// <c>Dialoge.Kosten.NutzungsdauerDialog</c>); <c>null</c> = diese Hülle
+    /// führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? NutzungsdauerGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ des GESETZESKATALOGS
+    /// (<c>Dialoge.Wirtschaftlichkeit.GesetzeskatalogDialog</c>); <c>null</c> =
+    /// diese Hülle führt ihn nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? GesetzeskatalogGaben() => null;
+
     /// <summary>
     /// Das LAGEBILD DER LIZENZ für das Banner der <see cref="EPOS.UI.Seiten.AppWurzel"/>
     /// (Welle iF30); <c>null</c> = kein Banner.

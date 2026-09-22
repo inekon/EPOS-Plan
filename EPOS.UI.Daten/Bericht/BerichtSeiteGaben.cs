@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Seiten.Berichte;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -154,8 +154,13 @@ namespace WindowsFormsApplication1
             stand.AktiveBausteine = aktiv;
 
             stand.AusgabeId = AusgabeNummer(konfig.Ausgabe);
+            // E3/8: Der Vorgabeordner kommt ueber Dienste.Pfade statt ueber
+            // Environment.SpecialFolder - das ist Windows und in EPOS.UI.Daten
+            // verboten (Waechter SimulationAnsichtQuelleTests). Unter Windows
+            // antwortet WindowsPfade denselben Ordner "Dokumente"; auf iOS den
+            // Sandkasten-Ordner Documents, in den dort geschrieben werden darf.
             stand.Zielordner = string.IsNullOrWhiteSpace(konfig.ZielOrdner)
-                ? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+                ? Dienste.Pfade.Dokumente
                 : konfig.ZielOrdner;
 
             return stand;
@@ -191,7 +196,11 @@ namespace WindowsFormsApplication1
                                      KostenEmissionRechner.StromLeistungspreisGepflegt(
                                          _idStamm, konfig.VariantenIds);
 
-                BerichtsDaten daten = await Task.Run(() =>
+                // E3/8: Der Arbeitsfaden entsteht ueber Kulturweitergabe.Starten
+                // statt ueber ein nacktes Task.Run - in EPOS.UI.Daten gilt der
+                // Waechter ParallelitaetWacheTests, und ein Bericht, der mitten
+                // im Lauf die Sprache wechselte, traegt zwei Zahlenbilder.
+                BerichtsDaten daten = await Kulturweitergabe.Starten(() =>
                     new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
                                                                  konfig.VariantenIds,
                                                                  mitZeitreihen, melde, ct), ct);
@@ -210,13 +219,15 @@ namespace WindowsFormsApplication1
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_WORD));
                     ct.ThrowIfCancellationRequested();
-                    wordPfad = await Task.Run(() => _bericht.ErzeugeWord(daten, konfig), ct);
+                    wordPfad = await Kulturweitergabe.Starten(
+                        () => _bericht.ErzeugeWord(daten, konfig), ct);
                 }
                 if (konfig.Ausgabe == AUSGABE_EXCEL || konfig.Ausgabe == AUSGABE_BEIDE)
                 {
                     melder(new Laufschritt(0, 0, MyResource.Resource.BK_BER_STATUS_EXCEL));
                     ct.ThrowIfCancellationRequested();
-                    excelPfad = await Task.Run(() => _bericht.ErzeugeExcel(daten, konfig), ct);
+                    excelPfad = await Kulturweitergabe.Starten(
+                        () => _bericht.ErzeugeExcel(daten, konfig), ct);
                 }
 
                 string erster = wordPfad ?? excelPfad;

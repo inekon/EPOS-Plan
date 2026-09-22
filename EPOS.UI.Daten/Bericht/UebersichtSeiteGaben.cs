@@ -4,10 +4,9 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Berichte;
 using EPOS.UI.Seiten.Berichte;
-using Microsoft.Win32;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
@@ -31,12 +30,18 @@ namespace WindowsFormsApplication1
     internal sealed class UebersichtSeiteGaben
     {
         /// <summary>
-        /// Registry-Zweig der Variantenprobe — derselbe Pfad, den der mit
-        /// iU9-W0 gelöschte Altdialog „Projektvarianten" benutzt hat, damit die
-        /// zuletzt bearbeitete Gruppe eines Bestandsstands erhalten bleibt.
+        /// Der Merkwert „zuletzt bearbeitete Vergleichsgruppe" in
+        /// <c>Dienste.Einstellungen</c> (E3/8).
+        ///
+        /// <para><b>Er hat die Ablage gewechselt.</b> Bis dahin stand er
+        /// unmittelbar in <c>HKCU\Software\EPOS_PLAN\Variantentest</c> — dem
+        /// Zweig des mit iU9-W0 gelöschten Altdialogs „Projektvarianten". Die
+        /// Registry ist Windows; über den Dienst steht derselbe Wert auf jeder
+        /// Plattform, und die Wache des Kerns bleibt leer. Der Preis ist eine
+        /// EINMALIGE Vergesslichkeit beim ersten Start nach dem Umbau: Dann
+        /// steht wieder der erste Stamm der Liste.</para>
         /// </summary>
-        private const string RegPfad = @"Software\EPOS_PLAN\Variantentest";
-        private const string RegWertStamm = "LetzterStammID";
+        private const string EinstellungLetzterStamm = "Varianten.LetzterStammID";
 
         /// <summary>
         /// Höchstzahl der Variantenspalten in der Gegenüberstellung. Mehr sind
@@ -48,15 +53,35 @@ namespace WindowsFormsApplication1
         private readonly VariantenCtrl _ctrl = new VariantenCtrl();
 
         /// <summary>
-        /// Das Wirtsfenster für den Variantendialog (Auftrag <b>#240</b>) — dieselbe
-        /// Gabe, die auch <c>KostenSeiteGaben</c> und <c>WirtschaftlichkeitSeiteGaben</c>
-        /// bekommen. <c>null</c> heißt: kein Öffner, also kein Knopf.
+        /// Der WEG in den Variantendialog (Auftrag <b>#240</b>, seit E3/8 eine
+        /// benannte Naht): Stammprojekt und Stammname hinein, <c>true</c> heraus,
+        /// wenn eine Variante entstanden ist. <c>null</c> heißt: kein Öffner, also
+        /// kein Knopf.
+        ///
+        /// <para><b>Warum ein Delegat und kein Fensterbesitzer.</b> Unter Windows
+        /// ist der Dialog ein zweites Fenster und muss deshalb über
+        /// <c>Blazorsprung</c> laufen (Regel (b) der Hüllenschicht); das weiß nur
+        /// die Schale. Auf iOS gibt es den Weg nicht — dort führt die Wurzel den
+        /// Variantendialog als eigene Ansicht, und die Seite zeigt den Knopf gar
+        /// nicht erst (benannt abgelehnt statt still übergangen).</para>
         /// </summary>
-        private readonly Func<Form> _besitzer;
+        private readonly Func<int, string, Task<bool>> _varianteAnlegen;
 
-        internal UebersichtSeiteGaben(Func<Form> besitzer = null, Berichtsgruppe stand = null)
+        /// <summary>
+        /// Das UMBENENNEN mit Nachlauf der Schale (Projektkontext und
+        /// Variantenanzeige der Startseite): Id, neuer Bezeichner, bisheriger
+        /// Name hinein, Meldung heraus. <c>null</c> = der plattformfreie Weg über
+        /// <c>VariantenCtrl.Umbenennen</c>; er schreibt dasselbe, frischt nur die
+        /// Startseite nicht mit auf.
+        /// </summary>
+        private readonly Func<int, string, string, string> _umbenennen;
+
+        internal UebersichtSeiteGaben(Func<int, string, Task<bool>> varianteAnlegen = null,
+                                      Berichtsgruppe stand = null,
+                                      Func<int, string, string, string> umbenennen = null)
         {
-            _besitzer = besitzer;
+            _varianteAnlegen = varianteAnlegen;
+            _umbenennen = umbenennen;
             _stand = stand ?? new Berichtsgruppe();
         }
 
@@ -135,7 +160,7 @@ namespace WindowsFormsApplication1
         /// <summary>Der Parametersatz der Seite.</summary>
         internal IReadOnlyDictionary<string, object> Gaben()
         {
-            return new Dictionary<string, object>
+            var satz = new Dictionary<string, object>
             {
                 ["Laden"] = new Func<UebersichtStand>(Laden),
                 ["StammGewechselt"] = new Action<int>(StammSetzen),
@@ -144,7 +169,6 @@ namespace WindowsFormsApplication1
                 ["VergleichGewaehlt"] = new Action<IReadOnlyList<int>>(VergleichSetzen),
                 ["LabelVergleich"] = MyResource.Resource.BK_LBL_VERGLEICHSWAHL,
                 ["StammFestTipp"] = MyResource.Resource.BK_BER_MSG_STAMM_REFERENZ,
-                ["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(VarianteAnlegenOeffnen),
                 ["VarianteUmbenennen"] = new Func<string, string>(VarianteUmbenennen),
                 ["UmbenennenText"] = MyResource.Resource.VAR_BTN_UMBENENNEN,
                 ["LoeschFrage"] = new Func<string>(LoeschFrage),
@@ -195,6 +219,15 @@ namespace WindowsFormsApplication1
                 ["StatusAbgebrochen"] = MyResource.Resource.BK_BER_STATUS_ABGEBROCHEN,
                 ["HilfeSchluessel"] = "UcBkUebersicht.btn_Help"
             };
+
+            // E3/8 — kein Delegat, kein Knopf: Der Variantendialog ist ein
+            // ZWEITES Fenster und gehoert damit der Schale. Wo sie ihn nicht
+            // stellt (iOS), zeichnet die Seite "Variante anlegen" nicht; der Weg
+            // dorthin ist die eigene Ansicht der Wurzel (PROJEKT_ALS_VARIANTE).
+            if (_varianteAnlegen != null)
+                satz["VarianteAnlegenOeffnen"] = new Func<Task<bool>>(VarianteAnlegenOeffnen);
+
+            return satz;
         }
 
         // =====================================================================
@@ -586,30 +619,22 @@ namespace WindowsFormsApplication1
             Melde();
         }
 
+        /// <summary>
+        /// E3/8: gemerkt wird über <c>Dienste.Einstellungen</c> statt unmittelbar
+        /// in der Registry — dieselbe Ablage, die auch jede andere Merkgröße des
+        /// Hauses nimmt, und auf jeder Plattform beantwortet. Persistenz ist hier
+        /// optional: Fällt sie aus, steht beim nächsten Öffnen der erste Stamm.
+        /// </summary>
         private static void SpeichereLetztenStamm(int idProjekt)
         {
-            try
-            {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegPfad))
-                {
-                    if (key != null) key.SetValue(RegWertStamm, idProjekt, RegistryValueKind.DWord);
-                }
-            }
+            try { Dienste.Einstellungen.SchreibZahl(EinstellungLetzterStamm, idProjekt); }
             catch { /* Persistenz ist optional */ }
         }
 
         private static int LiesLetztenStamm()
         {
-            try
-            {
-                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(RegPfad))
-                {
-                    object v = key?.GetValue(RegWertStamm);
-                    if (v != null) return Convert.ToInt32(v);
-                }
-            }
-            catch { }
-            return -1;
+            try { return Dienste.Einstellungen.LiesZahl(EinstellungLetzterStamm, -1); }
+            catch { return -1; }
         }
 
         // =====================================================================
@@ -629,46 +654,21 @@ namespace WindowsFormsApplication1
         /// muss nicht das geöffnete Projekt sein. Meldungskasten, Wartezeiger und das
         /// Nachziehen der Startseite bringt der Ablauf selbst mit.</para>
         ///
-        /// <para><b>Eine Nachricht später</b> (<see cref="Blazorsprung"/>, Befund
-        /// W16b‑B‑1): Aus dem Blazor-Klick heraus bliebe das Fenster der zweiten
-        /// WebView leer. Der Seite antwortet deshalb eine Zusage, die erst fällt, wenn
-        /// der Dialog wieder zu ist — sie lädt danach ihre Liste neu.</para>
-        ///
-        /// <para><b>Und sie fällt auf jeden Fall.</b> <c>Blazorsprung</c> führt einen
-        /// Riegel: Steht schon ein Sprung an, wird dieser still verworfen. Ohne
-        /// Rückfall bliebe die Zusage dann für immer offen, und die Seite stünde bis zu
-        /// ihrem nächsten Aufbau auf „läuft" (Knöpfe gesperrt). Läuft der Sprung nicht
-        /// binnen fünf Sekunden an — das ist die Frist, nach der auch der Riegel selbst
-        /// verfällt —, antwortet die Zusage <c>false</c>.</para>
+        /// <para><b>E3/8: Der Weg ist eine benannte NAHT.</b> Wie das zweite
+        /// Fenster unter Windows hochzufahren ist — eine Nachricht später über
+        /// <c>Blazorsprung</c>, samt Rückfall für den verworfenen Sprung —, weiß
+        /// allein die Schale; sie reicht den fertigen Weg herein. Auf iOS gibt es
+        /// ihn nicht: Dort führt die Wurzel den Variantendialog als eigene
+        /// Ansicht, und ohne Delegat zeichnet die Seite den Knopf gar nicht
+        /// erst.</para>
         /// </summary>
-        private Task<bool> VarianteAnlegenOeffnen()
+        private async Task<bool> VarianteAnlegenOeffnen()
         {
-            if (_stand.IdStamm <= 0) return Task.FromResult(false);
+            if (_stand.IdStamm <= 0 || _varianteAnlegen == null) return false;
 
-            int idStamm = _stand.IdStamm;
-            string stammName = _stand.StammName;
-            var zusage = new TaskCompletionSource<bool>();
-            int gestartet = 0;
-
-            Blazorsprung.Verzoegert(_besitzer?.Invoke(), () =>
-            {
-                System.Threading.Interlocked.Exchange(ref gestartet, 1);
-                bool angelegt = false;
-                try
-                {
-                    angelegt = AlsVarianteHuelle.Zeige(_besitzer?.Invoke(), idStamm, stammName);
-                    if (angelegt) VerwirfDetails();
-                }
-                finally { zusage.TrySetResult(angelegt); }
-            });
-
-            // Rueckfall fuer den verworfenen Sprung (siehe oben).
-            Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(_ =>
-            {
-                if (System.Threading.Volatile.Read(ref gestartet) == 0) zusage.TrySetResult(false);
-            });
-
-            return zusage.Task;
+            bool angelegt = await _varianteAnlegen(_stand.IdStamm, _stand.StammName);
+            if (angelegt) VerwirfDetails();
+            return angelegt;
         }
 
         /// <summary>
@@ -685,8 +685,11 @@ namespace WindowsFormsApplication1
                 if (vi.IdProjekt == _stand.IdMarkiert) { bisher = vi.Variantenname ?? ""; break; }
             try
             {
-                string meldung = StartseiteHuelle.Aktuelle != null
-                    ? StartseiteHuelle.Aktuelle.ProjektUmbenennen(_stand.IdMarkiert, bezeichner, bisher)
+                // E3/8: Der Weg mit Nachlauf (Projektkontext und Variantenanzeige
+                // der Startseite) kommt als benannte Naht herein; ohne ihn steht
+                // der plattformfreie Weg, der dasselbe SCHREIBT.
+                string meldung = _umbenennen != null
+                    ? _umbenennen(_stand.IdMarkiert, bezeichner, bisher)
                     : UmbenennenOhneStartseite(bezeichner, bisher);
                 VerwirfDetails();
                 return meldung;
@@ -786,7 +789,10 @@ namespace WindowsFormsApplication1
                     Tuple<int, string> lauf = laeufe[i];
                     melder(new Laufschritt(i, laeufe.Count, lauf.Item2));
 
-                    await Task.Run(() =>
+                    // E3/8: Der Arbeitsfaden entsteht ueber die Kulturweitergabe
+                    // statt ueber ein nacktes Task.Run (Waechter
+                    // ParallelitaetWacheTests) - derselbe Faden, derselbe Lauf.
+                    await Kulturweitergabe.Starten(() =>
                     {
                         // Headless-Lauf: neue Instanz je Projekt.
                         string fehler;

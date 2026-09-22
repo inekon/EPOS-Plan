@@ -18,6 +18,17 @@ namespace WindowsFormsApplication1
     /// (Nutzeranforderung 15.08.2026). <see cref="Sammle"/> bleibt der Einstieg für
     /// den Wirtschaftlichkeits-Reiter und den Verlaufsdialog, die anschließend selbst
     /// rechnen.
+    ///
+    /// <para><b>Er liegt im KERN</b> (Etappe E3, Schritt 4 — Befund P1). Bis dahin
+    /// stand er in der Windows-Schale, obwohl er keine einzige WinForms-Anweisung
+    /// führt: Damit war der EINE Rechenaufruf der Wirtschaftlichkeit
+    /// (<c>WirtschaftlichkeitCtrl.Berechne</c> über <see cref="Sammle"/>,
+    /// <c>KostenEmissionRechner.Berechne</c> über <see cref="SammleFuerBericht"/>)
+    /// auf iOS nicht zu haben. Seine Quellen sind ausschließlich Kern-Controller;
+    /// die einzige Naht, die er brauchte — die Brennstoffmengen aus
+    /// <see cref="EnergieMengen"/> —, war selbst plattformfrei und steht jetzt
+    /// daneben. Beide Schalen rufen dieselbe Stelle; einen zweiten Aufbau gibt es
+    /// nicht.</para>
     /// </summary>
     public class BerichtsDatenSammler
     {

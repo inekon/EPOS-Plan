@@ -223,14 +223,14 @@ namespace WindowsFormsApplication1
                 werte["HerkunftText"] = StammZeile(idProjekt);
             }
 
-            // iU9-W2.4: der PV-Vergütungsdialog ist selbst eine Blazor-Hülle. Zwei
-            // WebViews übereinander sind Risiko R2 — der Sprung bleibt deshalb
-            // NACHGELAGERT (Muster BhkwWirtschaftlichkeitHuelle.TarifOeffnen): Der
-            // Kostendialog steht weiter, der Vergütungsdialog legt sich als
-            // eigenes Fenster darüber. Beim Anfassen von Welle 5 wird daraus eine
-            // Überlagerung.
-            werte["PvOeffnen"] = EventCallback.Factory.Create<int>(new object(),
-                id => PhotovoltaikVerguetungHuelle.Oeffnen(null, id));
+            // E3/6: Der Weg in die PV-Vergütung gehört jetzt dem WIRT. Bis dahin
+            // fuhr dieser Satz ein zweites WinForms-Fenster über dem Kostendialog
+            // hoch (Risiko R2, nachgelagert, über die Naht
+            // Wirtschaftlichkeitswege.PvVerguetungOeffnen); seit die PV-Hülle
+            // selbst in EPOS.UI.Daten liegt, zeigt <c>KostenKomponenteDialog</c>
+            // sie als ÜBERLAGERUNG und setzt <c>PvOeffnen</c> selbst — genau wie
+            // <c>GesetzeGewuenscht</c>. Kein Delegat, kein Knopf: Reicht der Wirt
+            // keinen Rückruf herein, zeichnet das Reiterblatt den Knopf nicht.
         }
 
         /// <summary>
@@ -287,9 +287,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Wahl schreiben (Konzept § 2.16). „Eigene Vergütung" legt die STAMMWERTE
-        /// vor (VV‑Q6) und öffnet danach den Vergütungsdialog für diese Variante — der
-        /// Anwender will die Abweichung gleich eingeben, nicht erst einen zweiten Knopf
-        /// suchen. „Übernehmen" lässt die Zeile stehen: Sie ist der Rückweg.
+        /// vor (VV‑Q6); den Vergütungsdialog öffnet danach die Komponente selbst —
+        /// der Anwender will die Abweichung gleich eingeben, nicht erst einen zweiten
+        /// Knopf suchen. „Übernehmen" lässt die Zeile stehen: Sie ist der Rückweg.
+        ///
+        /// <para><b>E3/6:</b> Bis dahin fuhr diese Methode den Vergütungsdialog selbst
+        /// hoch (über die Naht der Schale). Das Öffnen gehört aber zur Anzeige, nicht
+        /// zum Schreibweg — die Komponente ruft jetzt nach dem Schreiben denselben
+        /// Rückruf, den auch ihr Knopf ruft.</para>
         /// </summary>
         private static void WahlSchreiben(int idProjekt, bool uebernehmen)
         {
@@ -302,8 +307,6 @@ namespace WindowsFormsApplication1
 
             if (pvc.Lies(idProjekt) == null) pvc.Speichern(pvc.VorlageAusStamm(idProjekt));
             else pvc.SetzeUebernahme(idProjekt, false);
-
-            PhotovoltaikVerguetungHuelle.Oeffnen(null, idProjekt);
         }
 
         private static string T(string schluessel, string rueckfall)

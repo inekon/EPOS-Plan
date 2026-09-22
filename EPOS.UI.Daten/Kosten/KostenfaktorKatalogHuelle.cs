@@ -5,7 +5,9 @@ using EPOS.UI.Dialoge.Kosten;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HUELLE des Dialogs „Administration Kostenfaktoren" (iU9-W1.5).
+    /// Die HUELLE des Dialogs „Administration Kostenfaktoren" (iU9-W1.5), seit
+    /// Etappe E3 Schritt 1 plattformfrei in <c>EPOS.UI.Daten</c>: keine
+    /// WinForms-Anweisung, kein Fenster, alle Quellen im Kern.
     ///
     /// <para><b>Hier liegt die Datenseite.</b> Die Komponente
     /// <see cref="KostenfaktorKatalogDialog"/> kennt keine Datenbank; alle drei

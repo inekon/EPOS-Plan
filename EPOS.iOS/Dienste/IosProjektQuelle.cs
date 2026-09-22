@@ -499,6 +499,63 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     // =====================================================================
+    //  Berichte, Kosten und Wirtschaftlichkeit (Etappe E3, Schritt 8; A19)
+    // =====================================================================
+
+    /// <summary>
+    /// Die Huelle des Reiters „Berichte &amp; Kosten" wird je Sitzung GEHALTEN —
+    /// wie die <c>SimulationAnsichtQuelle</c> seit #208. Sie fuehrt den geteilten
+    /// Gruppenstand (Stammprojekt, Markierung, Vergleichswahl) der vier Seiten;
+    /// eine neue Instanz je Ansichtswechsel verwuerfe ihn.
+    /// </summary>
+    private BerichteKostenHuelle? _berichte;
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Benannt abgelehnt bleibt genau eines:</b> der Knopf „Variante anlegen"
+    /// der Uebersichtsseite. Er fuehrt unter Windows in ein ZWEITES Fenster;
+    /// auf iOS ist der Variantendialog eine eigene Ansicht der Wurzel
+    /// (<c>PROJEKT_ALS_VARIANTE</c>), und ohne Delegat zeichnet die Seite den
+    /// Knopf gar nicht erst. Umbenennen, Loeschen, Simulieren, Uebernehmen und
+    /// alle drei Nachbarseiten arbeiten vollstaendig.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt)
+    {
+        try
+        {
+            _berichte ??= new BerichteKostenHuelle();
+            _berichte.SetzeProjekt(idProjekt, Projektname(idProjekt));
+            return _berichte.Gaben();
+        }
+        catch (Exception ex) { Console.WriteLine("Berichte und Kosten: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? KostenverwaltungGaben()
+    {
+        try
+        {
+            string titel;
+            return KostenKomponenteHuelle.FuerStamm().Gaben(null, false, 0, out titel);
+        }
+        catch (Exception ex) { Console.WriteLine("Kostenverwaltung: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? NutzungsdauerGaben()
+    {
+        try { return new NutzungsdauerHuelle().Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Nutzungsdauern: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben()
+    {
+        try { return GesetzeskatalogHuelle.Gaben(""); }
+        catch (Exception ex) { Console.WriteLine("Gesetzeskatalog: " + ex.Message); return null; }
+    }
+
+    // =====================================================================
 
     private static int Zahl(object wert)
     {

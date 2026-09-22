@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Gesetzeskatalogs (iU9-W14c.2).
+    /// Die PLATTFORMFREIE Hülle des Gesetzeskatalogs (iU9-W14c.2).
+    ///
+    /// <para><b>Seit Etappe E3, Schritt 6 liegt sie in <c>EPOS.UI.Daten</c>.</b>
+    /// Ihre Quellen sind Kern-Controller, sie kennt kein Fenster; Windows steuert
+    /// nur noch den Adapter <c>Views/Admin/GesetzeskatalogFenster</c> für den
+    /// Menüpunkt „Administration → Gesetzeskatalog" bei (Muster
+    /// <c>EnergietraegerFenster</c>). Die beiden anderen Aufrufer — der
+    /// Kostendialog und der Wirtschaftlichkeits-Parameterdialog — holen den
+    /// Parametersatz unmittelbar und zeigen ihn als <c>Ueberlagerung</c>; das
+    /// gilt auf jeder Plattform.</para>
     ///
     /// <para><b>Die Datenbankseite steht hier, nicht in der Komponente.</b> Sie
     /// besteht ausschließlich aus Aufrufen von
@@ -19,11 +25,11 @@ namespace WindowsFormsApplication1
     /// Maske lag schon vollständig im Kern (1 123 Zeilen), die Maske hielt nur
     /// Anzeige, zwei Listen und eine Dublettenprüfung.</para>
     ///
-    /// <para><b>Drei Aufrufer, zwei Betriebsarten.</b> Über
-    /// <see cref="Oeffnen"/> erscheint der Katalog als eigenes Fenster (Menü
-    /// Administration). Über <see cref="Gaben"/> liefert die Hülle denselben
-    /// Parametersatz an einen Razor-Wirt, der ihn als <c>Ueberlagerung</c> zeigt —
-    /// den Kostendialog und den Wirtschaftlichkeits-Parameterdialog. <b>Die zwei
+    /// <para><b>Drei Aufrufer, zwei Betriebsarten.</b> Über den Fenster-Adapter
+    /// erscheint der Katalog als eigenes Fenster (Menü Administration). Über
+    /// <see cref="Gaben"/> liefert die Hülle denselben Parametersatz an einen
+    /// Razor-Wirt, der ihn als <c>Ueberlagerung</c> zeigt — den Kostendialog und
+    /// den Wirtschaftlichkeits-Parameterdialog. <b>Die zwei
     /// <c>Sprungziel</c>-Zweige entfallen damit</b> (Befund W14c-B13): Beide
     /// Sprungquellen waren schon vorher Razor, und zwei WebViews übereinander sind
     /// Risiko R2 des Wellenplans.</para>
@@ -33,37 +39,17 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class GesetzeskatalogHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 940 × 560, Mindestmaß 760 × 420).</summary>
-        private static readonly Size MASS = new Size(940, 560);
+        /// <summary>Gewünschte Innenbreite (Vorläufer: 940 × 560, Mindestmaß
+        /// 760 × 420). Der Fenster-Adapter holt das Maß hier ab.</summary>
+        internal const int FENSTER_BREITE = 940;
 
-        /// <summary>
-        /// Zeigt den Katalog als eigenes Fenster — der Weg von
-        /// <c>Hauptfensterrahmen.InitGesetzeMenue</c>.
-        /// </summary>
-        /// <param name="besitzer">Das Fenster, über dem der Dialog erscheint.</param>
-        /// <param name="vorwahlKlasse">Vorgewählter Bereich; leer = der erste.</param>
-        internal static bool Oeffnen(IWin32Window besitzer, string vorwahlKlasse = "")
+        /// <summary>Gewünschte Innenhöhe; siehe <see cref="FENSTER_BREITE"/>.</summary>
+        internal const int FENSTER_HOEHE = 560;
+
+        /// <summary>Der Fenstertitel — derselbe Text wie in der Komponente.</summary>
+        internal static string Titel()
         {
-            bool ok = false;
-            BlazorDialogForm<GesetzeskatalogDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(vorwahlKlasse))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<GesetzeskatalogDialog>(
-                MyResource.Resource.GESETZ_TITEL, MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
+            return MyResource.Resource.GESETZ_TITEL;
         }
 
         /// <summary>

@@ -106,6 +106,23 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? StromganglinieAdminGaben() => Stromganglinien;
 
+    // ---- Die drei Masken der Wirtschaftlichkeit (E3/8, A19) ----------------
+
+    /// <summary>Der Parametersatz der Kostenverwaltung.</summary>
+    internal IReadOnlyDictionary<string, object>? Kostenverwaltung { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KostenverwaltungGaben() => Kostenverwaltung;
+
+    /// <summary>Der Parametersatz der Nutzungsdauern (AfA).</summary>
+    internal IReadOnlyDictionary<string, object>? Nutzungsdauern { get; set; }
+
+    public IReadOnlyDictionary<string, object>? NutzungsdauerGaben() => Nutzungsdauern;
+
+    /// <summary>Der Parametersatz des Gesetzeskatalogs.</summary>
+    internal IReadOnlyDictionary<string, object>? Gesetzeskatalog { get; set; }
+
+    public IReadOnlyDictionary<string, object>? GesetzeskatalogGaben() => Gesetzeskatalog;
+
     /// <summary>
     /// Das Lagebild der Lizenz (Welle iF30) — <c>null</c> = kein Banner, und das ist
     /// die Vorgabe: Kein bestehender Fall soll durch die Erweiterung ein Banner bekommen.

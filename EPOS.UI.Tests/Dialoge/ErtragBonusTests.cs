@@ -70,7 +70,9 @@ public class ErtragBonusTests : BunitContext
             .Add(x => x.Projekte, PROJEKTE)
             .Add(x => x.PvErklaerungText, "Die PV-Vergütung wird STAMMPROJEKTBEZOGEN gepflegt")
             .Add(x => x.LabelPvProjekt, "Stammprojekt:")
-            .Add(x => x.PvOeffnenText, "PV-Vergütungsdialog öffnen…"));
+            .Add(x => x.PvOeffnenText, "PV-Vergütungsdialog öffnen…")
+            // E3/6: kein Delegat, kein Knopf — der Weg gehört dem Wirt.
+            .Add(x => x.PvOeffnen, (int id) => { }));
 
         Assert.Single(cut.FindAll(".epos-gruppenkopf"));
         Assert.Contains("STAMMPROJEKTBEZOGEN", cut.Markup);
@@ -132,9 +134,28 @@ public class ErtragBonusTests : BunitContext
     {
         var cut = Render<ErtragBonus>(p => p
             .Add(x => x.IstPv, true)
-            .Add(x => x.Projekte, Array.Empty<(int, string)>()));
+            .Add(x => x.Projekte, Array.Empty<(int, string)>())
+            .Add(x => x.PvOeffnen, (int id) => { }));
 
         Assert.True(cut.Find("button").HasAttribute("disabled"));
+    }
+
+    /// <summary>
+    /// E3/6: <b>Kein Delegat, kein Knopf</b> — dieselbe Wache wie am
+    /// Katalogknopf. Bis dahin stand der Knopf immer da und war ohne Weg nur
+    /// GESPERRT; das sagte dem Anwender, es fehle die Projektwahl, obwohl der
+    /// Wirt den Dialog gar nicht zeigen kann. <b>Die Sperre bleibt daneben
+    /// bestehen</b>: Sie meint das Ziel, nicht den Weg — der Fall darüber hält
+    /// beides auseinander.
+    /// </summary>
+    [Fact]
+    public void Ohne_Rueckruf_fehlt_der_Verguetungsknopf()
+    {
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.Projekte, PROJEKTE));
+
+        Assert.Empty(cut.FindAll("button"));
     }
 
     // =====================================================================
@@ -327,5 +348,33 @@ public class ErtragBonusTests : BunitContext
         Assert.Empty(cut.FindAll("select"));
         cut.Find("button").Click();
         Assert.Equal(9, gemeldet);
+    }
+
+    /// <summary>
+    /// E3/6: „Eigene Vergütung" schreibt die Wahl UND öffnet danach den
+    /// Vergütungsdialog — bis dahin tat das Öffnen die Hülle selbst (sie fuhr
+    /// ein zweites Fenster hoch). Jetzt ist es derselbe Rückruf, den auch der
+    /// Knopf nimmt; „übernehmen" öffnet nichts.
+    /// </summary>
+    [Fact]
+    public void Eigene_Verguetung_oeffnet_danach_den_Verguetungsdialog()
+    {
+        bool uebernehmen = true;
+        int geoeffnet = 0;
+
+        var cut = Render<ErtragBonus>(p => p
+            .Add(x => x.IstPv, true)
+            .Add(x => x.ProjektlisteZeigen, false)
+            .Add(x => x.ProjektVorwahl, 9)
+            .Add(x => x.Projekte, PROJEKTE)
+            .Add(x => x.IstVariante, true)
+            .Add(x => x.Uebernommen, true)
+            .Add(x => x.WahlGeaendert, (bool b) => uebernehmen = b)
+            .Add(x => x.PvOeffnen, (int id) => geoeffnet = id));
+
+        cut.FindAll("input[type=radio]")[1].Change(true);
+
+        Assert.False(uebernehmen);
+        Assert.Equal(9, geoeffnet);
     }
 }

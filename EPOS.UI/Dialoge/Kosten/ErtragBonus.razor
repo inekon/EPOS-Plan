@@ -104,8 +104,17 @@
                     </Formularraster>
                 }
 
-                <button type="button" class="epos-knopf" disabled="@KnopfGesperrt"
-                        @onclick="BeiPvOeffnen">@PvOeffnenText</button>
+                @* E3/6: Kein Delegat, kein Knopf - dieselbe Wache wie unten am
+                   Gesetzeskatalog. Bis dahin stand der Knopf immer da und war
+                   ohne Weg nur GESPERRT; das sagte dem Anwender, es fehle die
+                   Projektwahl, obwohl der Wirt den Dialog gar nicht zeigen
+                   kann. Die Sperre bleibt daneben bestehen: Sie meint das Ziel,
+                   nicht den Weg. *@
+                @if (PvOeffnen.HasDelegate)
+                {
+                    <button type="button" class="epos-knopf" disabled="@KnopfGesperrt"
+                            @onclick="BeiPvOeffnen">@PvOeffnenText</button>
+                }
 
                 @* ETAPPE E2 (Mockup-Pruefung 03/#29): Der Knopf in die
                    Gesetzesparameter stand nur im BHKW-Zweig. Die EEG-Saetze der
@@ -185,7 +194,8 @@
     /// <summary>
     /// Die neue Wahl (<c>true</c> = uebernehmen). Die HUELLE schreibt sie — diese
     /// Komponente kennt keine Datenbank. „Eigene Verguetung" legt dabei die
-    /// Stammwerte vor (VV‑Q6) und oeffnet den Verguetungsdialog.
+    /// Stammwerte vor (VV‑Q6); den Verguetungsdialog oeffnet danach
+    /// <see cref="PvOeffnen"/>.
     /// </summary>
     [Parameter] public EventCallback<bool> WahlGeaendert { get; set; }
 
@@ -313,8 +323,17 @@
         bool uebernehmen = nummer != EIGENE;
         if (uebernehmen == Uebernommen) return;
 
+        int? ziel = _projektId;
         Uebernommen = uebernehmen;
         await WahlGeaendert.InvokeAsync(uebernehmen);
+
+        // E3/6: „Eigene Verguetung" oeffnet danach den Verguetungsdialog - bis
+        // dahin tat das die Huelle selbst (sie fuhr ein zweites Fenster hoch).
+        // Das Oeffnen gehoert zur Anzeige: Es ist derselbe Rueckruf, den auch
+        // der Knopf nimmt, und ohne Rueckruf geschieht schlicht nichts.
+        if (!uebernehmen && ziel.HasValue && PvOeffnen.HasDelegate)
+            await PvOeffnen.InvokeAsync(ziel.Value);
+
         await NeuLaden.InvokeAsync();
     }
 
