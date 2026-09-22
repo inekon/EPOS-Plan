@@ -37,10 +37,11 @@ Berechnungserläuterung, Ergebnisseite und den beiden Anhängen — und
 `Ergebnis_Bandbreite_Herkunft.html`; beide lokal im Browser öffnen.
 
 Die Mockup-Seite ist zugleich als Artifact veröffentlicht:
-[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f).
-**Die Repo-Datei führt** — das Artifact ist nicht neu veröffentlicht und trägt einen älteren
-Zahlenstand. Die HTML-Datei hier ist die Quelle; ein Redeploy erfolgt über den Artifact-Link
-(`url`), damit die Adresse stabil bleibt.
+[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/artifact/1WeFMXrpxrCSu1jUtvTRCw)
+(neu veröffentlicht am 22.09.2026 aus dieser Datei, mit Systemschrift-Kette statt Google-Schrift —
+Entscheid Q22). **Die Repo-Datei führt:** Die HTML-Datei hier ist die Quelle; ein Redeploy erfolgt
+über den Artifact-Link (`url`), damit die Adresse stabil bleibt. Das frühere Artifact `739d3cca…`
+gehört einem anderen Konto und ist abgelöst.
 
 ## Lesereihenfolge
 

@@ -57,7 +57,7 @@ Entstehung des Papiers, nicht seinen heutigen Geltungsumfang.
 
 | Artifact | Inhalt | entspricht |
 |---|---|---|
-| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform — **die Repo-Datei `../Mockups/Dialog_Formel_Zahlenprobe.html` führt** | § 2.12 |
+| [**Dialog, Formel, Zahlenprobe**](https://claude.ai/artifact/1WeFMXrpxrCSu1jUtvTRCw) | acht Kostenkategorien, je Dialog-Mockup + Berechnungsgrundlage + durchgerechnete Zahlenprobe an einem Beispielprojekt; Schwerpunkt Vergütungen BHKW (Mengentafel brutto/netto, Mischsatz, Jahresreihe mit Deckel) und PV (AW, Marktprämie, § 51/51a, Kappung); Komponentenkosten BHKW und PV in derselben Dialogform — **die Repo-Datei `../Mockups/Dialog_Formel_Zahlenprobe.html` führt** | § 2.12 |
 
 Fünf weitere Artifacts sind durch Repo-Dateien abgelöst und stehen nur noch im Protokoll: das
 B5-Dialogmockup durch `../Mockups/Dialog_Formel_Zahlenprobe.html` Kat. 5 und den gebauten
@@ -915,8 +915,8 @@ welcher Wortlaut die Ressource `WIRT_SZEN_HINWEIS` trägt, ist nicht entschieden
 eine konsolidierte Mockup**: alle acht Kategorien mit Dialog, Berechnungsgrundlage,
 Berechnungserläuterung, Beschriftungen und Abnahmezeile, die Ergebnisseite in Kategorie 8 und zwei
 Anhänge (Umsetzungsstand, Herkunft der Zahlen); zugleich Artifact
-[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/code/artifact/739d3cca-3b6c-4e2b-af8a-d1a7f73ddc9f)
-— **die Repo-Datei führt**, das Artifact trägt einen älteren Zahlenstand.
+[Dialog, Formel, Zahlenprobe, Ergebnis](https://claude.ai/artifact/1WeFMXrpxrCSu1jUtvTRCw)
+— **die Repo-Datei führt**; das Artifact ist am 22.09.2026 aus ihr neu veröffentlicht (Q22, Systemschrift).
 Dazu `Rechenweg/01…08` — je Kategorie Dialog → Berechnungsgrundlage → Berechnungserläuterung →
 Befunde. Der Auftrag: je Kostenkategorie ein Mockup mit Berechnungsgrundlage und
 Berechnungserläuterung, Schwerpunkt Vergütungen BHKW und PV. Dieser Abschnitt ist die Kurzfassung;
@@ -2706,7 +2706,7 @@ Etappe; ausgeführt sind sie damit nicht.
 | **A2** | Befund **K-1**: Vor der Umsetzung wird gemessen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile (§ 3.6, § 4) | entschieden, nicht gebaut — E7 |
 | **A5** | **Degradation: V-E rechnet sie nicht ein.** Der Entscheid „G3 nicht umsetzen" des Szenarienkonzepts (§ 2.11.2, dort V‑G2) gilt; V-E (§ 2.11.4) wird **ohne Degradation** geplant | entschieden — der Widerspruch zwischen beiden Papieren ist aufgelöst |
 | **A11** | Nachweis der Wirtschaftlichkeitsgrößen: **Ankertests zuerst**; die Erweiterung des Referenzlaufs ist eine Frage für die nächste Basis (§ 6.2, § 6.3 Nr. 21) | entschieden **und gebaut** mit E1 (#380) |
-| **A13** | Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister · Protokoll der Entscheidwege) — **ja**, vor der ersten Codeetappe; Papierpflege ohne Entscheid zuerst | entschieden, **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht, der Schnitt steht aus |
+| **A13** | Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister · Protokoll der Entscheidwege) — **ja**, vor der ersten Codeetappe; Papierpflege ohne Entscheid zuerst | entschieden, **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht; Anwender 22.09.2026 nach Empfehlung: **Ausführung nach E5, vor E6**, wenn E4 und E5 die § 2.6 und § 2.13 umgebaut haben |
 
 Die übrigen Entscheide A3, A4, A6–A10, A12, A14–A20 stehen mit ihrer Empfehlung und ihrer Etappe im
 Analysepapier § 4 und § 5; sie gelten seit dem 20.09.2026 ebenso nach Empfehlung. **Nicht** vom
