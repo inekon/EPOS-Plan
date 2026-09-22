@@ -19671,7 +19671,43 @@ Do you want to allow this?</value>
     <value>own value {0} — proposal {1}</value>
   </data>
   <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax credit on fuel (sec. 53/53a(5) EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_54" xml:space="preserve">
+    <value>Energy tax relief on heating fuel (sec. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_GESAMT" xml:space="preserve">
     <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_HERLEITUNG" xml:space="preserve">
+    <value>Derivation</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF" xml:space="preserve">
+    <value>no fuel under sec. 53/53a in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF" xml:space="preserve">
+    <value>no boiler fuel under sec. 54 in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_MENGE" xml:space="preserve">
+    <value>no CHP generation eligible for the bonus in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_SATZ" xml:space="preserve">
+    <value>no CHP bonus rate maintained at the units</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_KONTINGENT" xml:space="preserve">
+    <value>full-load-hour quota already exhausted in the first year</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_EINSPEISUNG" xml:space="preserve">
+    <value>no feed-in in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_OHNE_VERGUETUNG" xml:space="preserve">
+    <value>feed-in in this run, but no tariff maintained</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} {1} × {2} €/{1} = {3} €/a</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_SOCKEL" xml:space="preserve">
+    <value>less base amount €{0}/a</value>
   </data>
   <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
     <value>Electricity tax relief on grid supply (sec. 9b StromStG) [€/a]</value>
@@ -19693,6 +19729,36 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
     <value>Avoided electricity cost, effective [€/a] (disclosure)</value>
+  </data>
+  <data name="WIRT_ERL_KOMPONENTE" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="WIRT_ERL_PROJEKTWEIT" xml:space="preserve">
+    <value>project-wide</value>
+  </data>
+  <data name="WIRT_ERL_TEILSUMME" xml:space="preserve">
+    <value>Total {0}</value>
+  </data>
+  <data name="WIRT_ERL_K_BHKW" xml:space="preserve">
+    <value>Combined heat and power unit</value>
+  </data>
+  <data name="WIRT_ERL_K_PV" xml:space="preserve">
+    <value>Photovoltaics</value>
+  </data>
+  <data name="WIRT_ERL_K_KESSEL" xml:space="preserve">
+    <value>Boiler</value>
+  </data>
+  <data name="WIRT_ERL_B1_ANTEIL" xml:space="preserve">
+    <value>{0} MWh avoided purchase · share {1} %</value>
+  </data>
+  <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
+    <value>approximation: allocated by net electricity share per unit</value>
+  </data>
+  <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
+    <value>avoided cost, effective — {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE" xml:space="preserve">
+    <value>no peak demand calculated</value>
   </data>
   <data name="WIRT_GRUND_KWKG" xml:space="preserve">
     <value>no CHP bonus rate maintained, or quota exhausted</value>

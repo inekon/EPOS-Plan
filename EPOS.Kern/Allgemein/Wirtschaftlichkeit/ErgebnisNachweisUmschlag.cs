@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 3;
+        public const int FASSUNG = 6;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -115,6 +115,49 @@ namespace WindowsFormsApplication1
         /// (Fassung 3). <c>WhenWritingNull</c> lässt ihn dann aus dem JSON.</summary>
         public string PvVerguetungQuelle;
 
+        // ---- AUFTRAG U7 (Fassung 4) — die Energiesteuer in zwei Beträgen ----
+        //
+        // Die Ergebnisspalte führt weiterhin die SUMME; getrennt sind die beiden
+        // Paragrafenbeträge nur hier. Ein Umschlag der Fassung 1 bis 3 kennt die
+        // Felder nicht, liest sich mit 0 — und sagt über
+        // WirtschaftlichkeitErgebnis.EnergiesteuerAufgeteilt = false, dass es eben
+        // KEINE Aufteilung gibt. Genau das trifft auf einen damals gebuchten Lauf zu.
+
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.Energiesteuer53Jahr1"/>
+        public double Energiesteuer53Jahr1;
+
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.Energiesteuer54Jahr1"/>
+        public double Energiesteuer54Jahr1;
+
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.Energiesteuer54SockelJahr1"/>
+        public double Energiesteuer54SockelJahr1;
+
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.EnergiesteuerNachweise"/>
+        public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+            new List<EnergiesteuerNachweis>();
+
+        /// <summary>
+        /// AUFTRAG 9d (Fassung 5) — die Begründung je Position der Erlösrubrik.
+        /// Einem Umschlag der Fassung 1 bis 4 fehlt sie; die Rubrik nennt dann wie
+        /// zuvor nur die Bedingung der Position.
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.PositionsGruende"/>
+        public Dictionary<string, string> PositionsGruende =
+            new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// AUFTRAG U6 (Fassung 6) — die Aufteilung der vermiedenen Stromkosten auf die
+        /// Anlagen: Mengen, Verteilschluessel und Naeherungskennzeichen.
+        ///
+        /// <para>Einem Umschlag der Fassung 1 bis 5 fehlt sie; die Rubrik bleibt fuer
+        /// diesen Stand bei der EINEN projektweiten Kette — genau die Auskunft, die ein
+        /// damals gebuchter Lauf traegt. Eine Aufteilung zu behaupten, die er nicht
+        /// gerechnet hat, waere schlimmer als keine.</para>
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.VermiedenJeAnlage"/>
+        public List<VermiedenAnlageNachweis> VermiedenJeAnlage =
+            new List<VermiedenAnlageNachweis>();
+
         /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
@@ -155,7 +198,16 @@ namespace WindowsFormsApplication1
                     KwkgPauschaleEur = e.KwkgPauschaleEur,
                     PvVerguetungUebernommen = e.PvVerguetungUebernommen,
                     PvVerguetungQuelle = string.IsNullOrEmpty(e.PvVerguetungQuelle)
-                                       ? null : e.PvVerguetungQuelle
+                                       ? null : e.PvVerguetungQuelle,
+                    Energiesteuer53Jahr1 = e.Energiesteuer53Jahr1,
+                    Energiesteuer54Jahr1 = e.Energiesteuer54Jahr1,
+                    Energiesteuer54SockelJahr1 = e.Energiesteuer54SockelJahr1,
+                    EnergiesteuerNachweise = e.EnergiesteuerNachweise
+                                           ?? new List<EnergiesteuerNachweis>(),
+                    PositionsGruende = e.PositionsGruende
+                                     ?? new Dictionary<string, string>(StringComparer.Ordinal),
+                    VermiedenJeAnlage = e.VermiedenJeAnlage
+                                      ?? new List<VermiedenAnlageNachweis>()
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -211,6 +263,12 @@ namespace WindowsFormsApplication1
                 if (u.EnergiekostenJeAnlage == null) u.EnergiekostenJeAnlage = new List<EnergieAnlageNachweis>();
                 if (u.Betriebskosten == null) u.Betriebskosten = new List<KostenPositionNachweis>();
                 if (u.KohaerenzHinweise == null) u.KohaerenzHinweise = new List<KohaerenzHinweis>();
+                if (u.EnergiesteuerNachweise == null)
+                    u.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>();
+                if (u.PositionsGruende == null)
+                    u.PositionsGruende = new Dictionary<string, string>(StringComparer.Ordinal);
+                if (u.VermiedenJeAnlage == null)
+                    u.VermiedenJeAnlage = new List<VermiedenAnlageNachweis>();
                 return u;
             }
             catch { return null; }
@@ -233,6 +291,24 @@ namespace WindowsFormsApplication1
             e.KwkgPauschaleEur = KwkgPauschaleEur;
             e.PvVerguetungUebernommen = PvVerguetungUebernommen;
             e.PvVerguetungQuelle = PvVerguetungQuelle ?? "";
+
+            // AUFTRAG U7 — die Aufteilung gibt es erst ab Fassung 4. Ein älterer
+            // Umschlag trägt 0/0, was zusammen mit EnergiesteuerJahr1 > 0 eine
+            // Behauptung wäre; der Merker sagt deshalb, dass es sie NICHT gibt, und
+            // die Rubrik bleibt für diesen Stand bei der einen Zeile.
+            e.EnergiesteuerAufgeteilt = Version >= 4;
+            e.Energiesteuer53Jahr1 = Energiesteuer53Jahr1;
+            e.Energiesteuer54Jahr1 = Energiesteuer54Jahr1;
+            e.Energiesteuer54SockelJahr1 = Energiesteuer54SockelJahr1;
+            e.EnergiesteuerNachweise = EnergiesteuerNachweise
+                                     ?? new List<EnergiesteuerNachweis>();
+            e.PositionsGruende = PositionsGruende
+                               ?? new Dictionary<string, string>(StringComparer.Ordinal);
+
+            // AUFTRAG U6 — die Aufteilung gibt es erst ab Fassung 6. Ein aelterer
+            // Umschlag traegt eine leere Liste, und die Rubrik bleibt fuer diesen Stand
+            // bei der einen projektweiten Kette.
+            e.VermiedenJeAnlage = VermiedenJeAnlage ?? new List<VermiedenAnlageNachweis>();
         }
     }
 }

@@ -931,9 +931,69 @@ namespace WindowsFormsApplication1
         // nicht gewählt, Bedingung nicht erfüllt, Satz nicht gepflegt oder Menge nicht
         // in die gesetzliche Einheit umrechenbar.
 
-        /// <summary>Energiesteuer-Entlastung nach § 53 bzw. § 53a Abs. 5 EnergieStG
-        /// im Jahr 1 [€/a] — nur auf den BHKW-Brennstoff, nie auf Kessel.</summary>
+        /// <summary>Energiesteuer-Entlastung GESAMT im Jahr 1 [€/a] — die Summe aus
+        /// <see cref="Energiesteuer53Jahr1"/> und <see cref="Energiesteuer54Jahr1"/>.
+        /// Sie steht in der Ergebnisspalte und in der Erlösreihe des Kapitalwerts;
+        /// die Aufteilung darunter ändert an ihr nichts (U7).</summary>
         public double EnergiesteuerJahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der Anteil nach <b>§ 53 bzw. § 53a Abs. 5 EnergieStG</b>
+        /// [€/a]: der Brennstoff der Stromerzeugung, also das Blockheizkraftwerk.
+        /// Gültig nur, wenn <see cref="EnergiesteuerAufgeteilt"/> gesetzt ist.
+        /// </summary>
+        public double Energiesteuer53Jahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der Anteil nach <b>§ 54 EnergieStG</b> [€/a] nach Abzug des
+        /// Sockelbetrags: der Heizstoff des produzierenden Gewerbes, also auch der
+        /// Kessel. Gültig nur, wenn <see cref="EnergiesteuerAufgeteilt"/> gesetzt ist.
+        /// </summary>
+        public double Energiesteuer54Jahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der abgezogene Sockelbetrag des § 54 [€/a]; 0 = keine
+        /// § 54-Position oder kein Sockel im Katalog.
+        /// </summary>
+        public double Energiesteuer54SockelJahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — <b>ist die Aufteilung bekannt?</b> Ein frisch gerechneter Lauf
+        /// kennt sie immer; ein vor U7 gebuchter Stand trägt sie nicht
+        /// (Nachweisumschlag der Fassung ≤ 3) und liest sich deshalb mit
+        /// <c>false</c>.
+        ///
+        /// <para><b>Wozu der Merker.</b> Ohne ihn wären 0 und 0 von „beide Paragrafen
+        /// haben 0 ergeben" nicht zu unterscheiden — und die Rubrik zeigte für einen
+        /// alten Stand zwei Nullzeilen, obwohl die Ergebnisspalte einen Betrag führt.
+        /// Ist er nicht gesetzt, bleibt es bei der EINEN Zeile über beide Vorschriften;
+        /// die Summe des Blocks A ist damit in jedem Fall zahlengleich.</para>
+        /// </summary>
+        public bool EnergiesteuerAufgeteilt;
+
+        /// <summary>
+        /// AUFTRAG U7 — je gerechneter Energiesteuerposition eine Zeile mit Paragraf,
+        /// Menge, Satz und Betrag; sie trägt die Herleitung der beiden Rubrikzeilen.
+        /// Leer = keine Entlastung gerechnet oder gebuchter Stand vor U7.
+        /// <b>Im Nachweisumschlag persistiert</b> (Fassung 4).
+        /// </summary>
+        public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+            new List<EnergiesteuerNachweis>();
+
+        /// <summary>
+        /// AUFTRAG 9d (Konzept § 6.3, Punkt B7-4) — die Begründung JE POSITION der
+        /// Erlösrubrik: Schlüssel ist eine Kennung aus <c>SteuerPosition</c>, Wert der
+        /// Satz, mit dem der Steuerrechner die Null begründet hat.
+        ///
+        /// <para>Bis 9d stand dieselbe Auskunft ausschließlich in
+        /// <see cref="Hinweis"/> — als EIN mit „ | " verbundener Text über alle
+        /// Positionen. Die Rubrik konnte daraus keine Zeile bedienen und nannte
+        /// deshalb nur die BEDINGUNG der Position. Leer = der Lauf hat zu dieser
+        /// Position nichts festgestellt (oder ein Stand vor 9d).
+        /// <b>Im Nachweisumschlag persistiert</b> (Fassung 5).</para>
+        /// </summary>
+        public Dictionary<string, string> PositionsGruende =
+            new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG im Jahr 1
         /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
@@ -1024,6 +1084,25 @@ namespace WindowsFormsApplication1
         {
             get { return VermiedenGesamtJahr - VermiedenEntlastung9bJahr; }
         }
+
+        /// <summary>
+        /// AUFTRAG U6 (Q15/A12, 22.09.2026) — die AUFTEILUNG der vermiedenen Stromkosten
+        /// auf die Anlagen. Leer = keine Aufteilung im Lauf (kein Rollenmodell, keine
+        /// Eigenverbrauchsmengen) — dann steht die Rubrik wie vor U6 bei EINER
+        /// projektweiten Zeile.
+        ///
+        /// <para><b>Nur Ausweis, nie Rechenweg.</b> Die Summe der Zeilen ist zahlengleich
+        /// der projektweiten Groesse, aus der sie entstanden sind
+        /// (<see cref="VermiedenArbeitJahr"/>, <see cref="VermiedenMengeMWh"/>,
+        /// <see cref="VermiedenEntlastung9bJahr"/>); verteilt wird, nicht gerechnet. Der
+        /// LEISTUNGSANTEIL bleibt projektweit (Anwenderentscheid Q15) und steht deshalb
+        /// in keiner dieser Zeilen.</para>
+        ///
+        /// <para>Im Nachweisumschlag mitgespeichert (Fassung 6) — der gebuchte Stand
+        /// traegt die Komponentenbloecke ebenso wie der frisch gerechnete.</para>
+        /// </summary>
+        public List<VermiedenAnlageNachweis> VermiedenJeAnlage =
+            new List<VermiedenAnlageNachweis>();
 
         /// <summary>
         /// Betrag, um den die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
@@ -1239,6 +1318,195 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
         public double KostenEur;
+    }
+
+    /// <summary>
+    /// AUFTRAG U6 (Befund R8, Anwenderentscheid Q15/A12 vom 22.09.2026) — der Anteil
+    /// EINER Komponente an den vermiedenen Stromkosten.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Die vermiedenen Stromkosten entstehen als
+    /// Differenz zweier PROJEKTweiter Rollenrechnungen (Bezug ohne Anlage gegen
+    /// Reststrom mit Anlage). Wer fragt „was bringt das Blockheizkraftwerk?", bekommt
+    /// aus dieser Differenz keine Antwort — sie kennt die Anlage nicht. Die Strommatrix
+    /// hilft nicht weiter: Sie trennt nach TARIFZONE, nicht nach Anlage (Befund R8).</para>
+    ///
+    /// <para><b>Die Naeherung V‑4, ausgewiesen.</b> Verteilt wird nach dem
+    /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>), also nach dem Netto-Stromanteil
+    /// derselben Groesse, mit der schon der KWKG-Rechner seine Mengen auf die Module
+    /// legt. Bei genau EINER Anlage ist das exakt; bei mehreren ist es eine Annahme, und
+    /// <see cref="IstNaeherung"/> sagt es. Modulscharfe Stundenreihen waeren die
+    /// Alternative — ein Simulationsthema, kein Rubrikthema (A12).</para>
+    ///
+    /// <para><b>Es wird verteilt, nicht gerechnet:</b> Die Summe von
+    /// <see cref="MengeMWh"/>, <see cref="ArbeitEur"/> und
+    /// <see cref="Entlastung9bEur"/> ueber alle Zeilen ist zahlengleich der
+    /// projektweiten Groesse. Kein Kapitalwert, keine Reihe, keine Summe aendert sich.</para>
+    /// </summary>
+    public class VermiedenAnlageNachweis
+    {
+        /// <summary>Sprachneutrale Kennung der Komponente
+        /// (<c>WirtZeile.KOMPONENTE_BHKW</c>, <c>_PV</c>) — kein Anzeigetext.</summary>
+        public string Komponente = "";
+
+        /// <summary>Bezeichner der Anlage — ein Datenwert des Anwenders; leer = die
+        /// Komponente steht fuer mehrere Anlagen (Sammelzeile der Technik).</summary>
+        public string Anlage = "";
+
+        /// <summary>Eigenverbrauch dieser Komponente [MWh/a] — der VERTEILSCHLUESSEL,
+        /// nicht das Ergebnis.</summary>
+        public double EigenMWh;
+
+        /// <summary>Anteil am gesamten Eigenverbrauch [0…1].</summary>
+        public double Anteil;
+
+        /// <summary>Zugeteilte vermiedene Menge [MWh/a].</summary>
+        public double MengeMWh;
+
+        /// <summary>Zugeteilter ARBEITSanteil der vermiedenen Kosten [€/a]. Der
+        /// Leistungsanteil bleibt projektweit (Q15) und steht hier nie.</summary>
+        public double ArbeitEur;
+
+        /// <summary>Zugeteilte entgangene Entlastung nach § 9b StromStG [€/a],
+        /// positiv; in der Rubrik steht sie als Abzug.</summary>
+        public double Entlastung9bEur;
+
+        /// <summary>true, wenn der Verteilschluessel eine Naeherung ist (mehr als eine
+        /// Komponente) — die Zwischensumme sagt es dann (A12).</summary>
+        public bool IstNaeherung;
+
+        /// <summary>Wirksamer Anteil dieser Komponente [€/a] — Arbeit abzueglich der
+        /// entgangenen Entlastung.</summary>
+        public double WirksamEur
+        {
+            get { return ArbeitEur - Entlastung9bEur; }
+        }
+
+        /// <summary>
+        /// AUFTRAG U6 — <b>der Verteilschluessel, an einer Stelle</b>: Er nimmt die
+        /// Eigenverbrauchsmengen je Komponente (<see cref="EigenMWh"/> der uebergebenen
+        /// Zeilen) und legt die projektweiten Groessen anteilig darauf.
+        ///
+        /// <para><b>Verteilt, nicht gerechnet.</b> Die LETZTE Zeile bekommt den Rest,
+        /// damit die Summe der Anteile die projektweite Groesse BITGENAU trifft — eine
+        /// Rubrik, deren Bloecke um ein Rundungsbit neben der Ausgangsgroesse liegen,
+        /// waere ein Fehler, den niemand mehr findet.</para>
+        ///
+        /// <para>Ohne Eigenverbrauch (Summe 0) kommt eine LEERE Liste zurueck; die
+        /// Rubrik bleibt dann bei der einen projektweiten Kette. Eine Aufteilung ohne
+        /// Schluessel waere eine Behauptung.</para>
+        /// </summary>
+        /// <param name="schluessel">Je Komponente eine Zeile mit
+        /// <see cref="Komponente"/>, <see cref="Anlage"/> und <see cref="EigenMWh"/>.</param>
+        public static List<VermiedenAnlageNachweis> Verteile(
+            IList<VermiedenAnlageNachweis> schluessel,
+            double mengeMWh, double arbeitEur, double entlastung9bEur)
+        {
+            var zeilen = new List<VermiedenAnlageNachweis>();
+            if (schluessel == null) return zeilen;
+
+            double summe = 0;
+            foreach (VermiedenAnlageNachweis s in schluessel)
+                if (s != null && s.EigenMWh > 0) summe += s.EigenMWh;
+            if (summe <= 0) return zeilen;
+
+            foreach (VermiedenAnlageNachweis s in schluessel)
+            {
+                if (s == null || s.EigenMWh <= 0) continue;
+                zeilen.Add(new VermiedenAnlageNachweis
+                {
+                    Komponente = s.Komponente ?? "",
+                    Anlage = s.Anlage ?? "",
+                    EigenMWh = s.EigenMWh,
+                    Anteil = s.EigenMWh / summe
+                });
+            }
+            if (zeilen.Count == 0) return zeilen;
+
+            bool naeherung = zeilen.Count > 1;
+            double restMenge = mengeMWh, restArbeit = arbeitEur, restEntlastung = entlastung9bEur;
+            for (int i = 0; i < zeilen.Count; i++)
+            {
+                VermiedenAnlageNachweis n = zeilen[i];
+                n.IstNaeherung = naeherung;
+                if (i == zeilen.Count - 1)
+                {
+                    n.MengeMWh = restMenge;
+                    n.ArbeitEur = restArbeit;
+                    n.Entlastung9bEur = restEntlastung;
+                }
+                else
+                {
+                    n.MengeMWh = mengeMWh * n.Anteil;
+                    n.ArbeitEur = arbeitEur * n.Anteil;
+                    n.Entlastung9bEur = entlastung9bEur * n.Anteil;
+                    restMenge -= n.MengeMWh;
+                    restArbeit -= n.ArbeitEur;
+                    restEntlastung -= n.Entlastung9bEur;
+                }
+            }
+            return zeilen;
+        }
+    }
+
+    /// <summary>
+    /// AUFTRAG U7 (Befund B7‑1) — der Nachweis EINER Energiesteuerposition: welche
+    /// Vorschrift, welche Anlage, welche Menge, welcher Satz, welcher Betrag.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Bis U7 kam die Energiesteuer als EINE Summe
+    /// aus dem Rechner zurück. Die Rubrik konnte deshalb weder § 53/§ 53a von § 54
+    /// trennen noch sagen, aus welcher Menge und welchem Satz ein Betrag entstanden
+    /// ist — die Herleitung stand allenfalls als Fließtext in der Herkunftszeile.
+    /// Hier steht sie als Zahl, einmal, und Rubrik, Wort- und Excelbericht schreiben
+    /// sie ab, statt sie nachzurechnen.</para>
+    ///
+    /// <para><b>Nur Ausweis.</b> Die Summe der Beträge ist der gerechnete Wert; aus
+    /// diesen Zeilen wird nichts gerechnet, was der Steuerrechner nicht schon
+    /// gerechnet hat. Sie reisen im Nachweisumschlag mit
+    /// (<see cref="ErgebnisNachweisUmschlag"/>, Fassung 4) — der gebuchte Stand
+    /// trägt seine Herleitung damit ebenso wie der frisch gerechnete.</para>
+    /// </summary>
+    public class EnergiesteuerNachweis
+    {
+        /// <summary>§ 53 EnergieStG — voller Satz auf den Brennstoff der Stromerzeugung.</summary>
+        public const string PARAGRAF_53 = "53";
+
+        /// <summary>§ 53a Abs. 5 EnergieStG — Teilsatz, hocheffiziente KWK.</summary>
+        public const string PARAGRAF_53A = "53A";
+
+        /// <summary>§ 54 EnergieStG — Heizstoffe des produzierenden Gewerbes.</summary>
+        public const string PARAGRAF_54 = "54";
+
+        /// <summary>Bezeichner der Anlage — ein Datenwert des Anwenders, kein
+        /// Anzeigetext; leer = unbenannte Anlagenzeile.</summary>
+        public string Anlage = "";
+
+        /// <summary>Die angewandte Vorschrift, sprachneutral: <see cref="PARAGRAF_53"/>,
+        /// <see cref="PARAGRAF_53A"/> oder <see cref="PARAGRAF_54"/>.</summary>
+        public string Paragraf = "";
+
+        /// <summary>Menge in der GESETZLICHEN Einheit des Satzes (also bereits
+        /// umgerechnet — bei Erdgas brennwertbezogen).</summary>
+        public double Menge;
+
+        /// <summary>Gesetzliche Einheit des Satzes (<c>DbWerte.GESETZ_EINHEIT_*</c>,
+        /// etwa <c>EUR/MWh</c>) — sie bestimmt zugleich die Einheit von
+        /// <see cref="Menge"/>.</summary>
+        public string Einheit = "";
+
+        /// <summary>Angesetzter Satz [€ je gesetzlicher Mengeneinheit].</summary>
+        public double SatzEur;
+
+        /// <summary>Betrag dieser Position [€/a], <b>vor</b> dem Sockelbetrag des
+        /// § 54 — der fällt einmal je Lauf an, nicht je Anlage.</summary>
+        public double BetragEur;
+
+        /// <summary>true, wenn die Position zu § 54 gehört (Heizstoff, Sockelbetrag,
+        /// produzierendes Gewerbe) — die Trennung, an der die zwei Rubrikzeilen
+        /// hängen.</summary>
+        public bool Ist54
+        {
+            get { return string.Equals(Paragraf, PARAGRAF_54, StringComparison.Ordinal); }
+        }
     }
 
     public class KwkgModulNachweis

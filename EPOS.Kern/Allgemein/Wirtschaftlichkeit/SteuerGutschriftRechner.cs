@@ -124,6 +124,27 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>
+    /// AUFTRAG 9d — die Positionen, denen der Steuerrechner eine Begründung
+    /// zuordnet. Sprachneutrale ASCII-Kennungen; sie stehen in
+    /// <see cref="SteuerErgebnis.PositionsGruende"/> und reisen so bis in die
+    /// Herleitungszeile der Erlösrubrik.
+    /// </summary>
+    public static class SteuerPosition
+    {
+        /// <summary>Energiesteuer nach § 53 bzw. § 53a Abs. 5 EnergieStG.</summary>
+        public const string ENERGIEST_53 = "ENERGIEST_53";
+
+        /// <summary>Energiesteuer nach § 54 EnergieStG.</summary>
+        public const string ENERGIEST_54 = "ENERGIEST_54";
+
+        /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG.</summary>
+        public const string STROMST_BEFREIUNG = "STROMST_BEFREIUNG";
+
+        /// <summary>Stromsteuer-Entlastung nach § 9b StromStG.</summary>
+        public const string STROMST_ENTLASTUNG = "STROMST_ENTLASTUNG";
+    }
+
     /// <summary>Eingabesatz einer Jahresrechnung der Steuergutschriften (Etappe E4).</summary>
     public sealed class SteuerEingabe
     {
@@ -176,8 +197,58 @@ namespace WindowsFormsApplication1
     /// <summary>Ergebnis EINER Jahresrechnung (Etappe E4).</summary>
     public sealed class SteuerErgebnis
     {
-        /// <summary>Energiesteuer-Entlastung [€/a] nach der gewählten Norm.</summary>
-        public double EnergiesteuerEur;
+        /// <summary>
+        /// AUFTRAG U7 (Befund B7‑1) — Energiesteuer-Entlastung nach <b>§ 53 bzw.
+        /// § 53a Abs. 5 EnergieStG</b> [€/a]: der Teil, der am Brennstoff der
+        /// STROMERZEUGUNG hängt und deshalb zum Blockheizkraftwerk gehört.
+        ///
+        /// <para><b>Warum getrennt.</b> Bis U7 gab der Rechner EINE Summe zurück
+        /// (<see cref="EnergiesteuerEur"/>), und die Erlösrubrik konnte beide
+        /// Vorschriften nur gemeinsam ausweisen — eine Zeile, deren Titel zwei
+        /// Rechtsgrundlagen nannte und die bei zwei Anlagenarten nicht zuzuordnen war.
+        /// Getrennt sind es zwei Größen, die je bei ihrer Anlage stehen können.</para>
+        ///
+        /// <para><b>Kein Sockelbetrag.</b> § 53 und § 53a Abs. 5 haben keinen
+        /// (Grundlagen, Abschnitt 4) — der Sockel gehört allein zu § 54.</para>
+        /// </summary>
+        public double Energiesteuer53Eur;
+
+        /// <summary>
+        /// AUFTRAG U7 — Energiesteuer-Entlastung nach <b>§ 54 EnergieStG</b> [€/a],
+        /// <b>nach</b> Abzug des Sockelbetrags: der Teil, der am Heizstoff des
+        /// produzierenden Gewerbes hängt und deshalb auch einen Kessel trifft.
+        /// </summary>
+        public double Energiesteuer54Eur;
+
+        /// <summary>
+        /// AUFTRAG U7 — der abgezogene Sockelbetrag des § 54 [€/a]; 0 = keine
+        /// § 54-Position im Lauf oder kein Sockel im Katalog. Er ist ein
+        /// Kalenderjahresbetrag des Antragstellers, keine Anlagengröße, und steht
+        /// deshalb neben den Anlagenzeilen statt in ihnen.
+        /// </summary>
+        public double Energiesteuer54SockelEur;
+
+        /// <summary>
+        /// Energiesteuer-Entlastung GESAMT [€/a] — die Summe der beiden
+        /// Paragrafenbeträge.
+        ///
+        /// <para><b>Sie wird nicht mehr gesetzt, sondern gerechnet.</b> Damit ist
+        /// zahlengleich, was vor U7 eine einzelne Größe war: Die Erlösreihe des
+        /// Kapitalwerts, die Ergebnisspalte und jeder Anker lesen weiterhin diese
+        /// Summe, und sie kann sich von den zwei Zeilen darüber nicht lösen.</para>
+        /// </summary>
+        public double EnergiesteuerEur
+        {
+            get { return Energiesteuer53Eur + Energiesteuer54Eur; }
+        }
+
+        /// <summary>
+        /// AUFTRAG U7 — je gerechneter Anlagenposition ein Nachweis mit Paragraf,
+        /// Menge in der gesetzlichen Einheit, Satz und Betrag. Leer = keine
+        /// Entlastung gerechnet (der Grund steht dann in <see cref="Begruendungen"/>).
+        /// </summary>
+        public readonly List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+            new List<EnergiesteuerNachweis>();
 
         /// <summary>Stromsteuer-Befreiung [€/a] nach § 9 Abs. 1 Nr. 3 StromStG.</summary>
         public double StromsteuerBefreiungEur;
@@ -187,6 +258,29 @@ namespace WindowsFormsApplication1
 
         /// <summary>Begründungen für jede NICHT gewährte Gutschrift — nie eine stille Null.</summary>
         public readonly List<string> Begruendungen = new List<string>();
+
+        /// <summary>
+        /// AUFTRAG 9d (Konzept § 6.3, Punkt B7-4) — dieselben Begründungen, aber
+        /// <b>ihrer Position zugeordnet</b>: Schlüssel ist eine Kennung aus
+        /// <see cref="SteuerPosition"/>, Wert der fertige Satz.
+        ///
+        /// <para><b>Der Befund, der das erzwang.</b> <see cref="Begruendungen"/> ist
+        /// eine flache Liste über alle Vorschriften; im Ergebnis steht sie als EIN mit
+        /// „ | " verbundener Text. Welche Zeile der Erlösrubrik zu welchem Satz
+        /// gehört, war daraus nicht mehr zu lesen — die Rubrik konnte an einer
+        /// Nullzeile nur die BEDINGUNG der Position nennen („nur produzierendes
+        /// Gewerbe"), nicht die Feststellung des Laufs. Sie einer Position
+        /// nachträglich zuzuordnen hieße, einen Parser zu erfinden; deshalb entsteht
+        /// die Zuordnung hier, wo der Grund entsteht.</para>
+        ///
+        /// <para><b>Der ERSTE Grund je Position gilt.</b> Er ist der, an dem die
+        /// Rechnung ausgestiegen ist; alles danach ist Folge. Mehrere Anlagen
+        /// derselben Vorschrift melden deshalb nicht mehrere Gründe an dieselbe
+        /// Zeile — die vollständige Aufzählung bleibt in
+        /// <see cref="Begruendungen"/>.</para>
+        /// </summary>
+        public readonly Dictionary<string, string> PositionsGruende =
+            new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>Herkunft der tatsächlich verwendeten Sätze, je Satz eine Zeile.</summary>
         public readonly List<string> Herkunft = new List<string>();
@@ -300,8 +394,15 @@ namespace WindowsFormsApplication1
             // ist; sonst wäre sie an jedem Wärmepumpenprojekt Rauschen.
             if (!IrgendeineWahl(e))
             {
+                // AUFTRAG 9d: Dieser Satz gilt BEIDEN Paragrafenzeilen — es ist
+                // überhaupt nichts gewählt, also fehlt beiden die Grundlage.
                 if (BrennstoffGesamt(e) > 0)
-                    r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_NICHT_GEWAEHLT);
+                {
+                    Grund(r, SteuerPosition.ENERGIEST_53,
+                          MyResource.Resource.STEUER_ENERGIEST_NICHT_GEWAEHLT);
+                    r.PositionsGruende[SteuerPosition.ENERGIEST_54] =
+                          MyResource.Resource.STEUER_ENERGIEST_NICHT_GEWAEHLT;
+                }
                 return;
             }
 
@@ -313,8 +414,12 @@ namespace WindowsFormsApplication1
             // weiter.
             bool? nutzungsgradOk = null;
 
-            double summeGesamt = 0;      // alle Vorschriften zusammen
-            double summe54 = 0;          // der Teil, den der Sockel des § 54 mindert
+            // AUFTRAG U7 — zwei Töpfe statt einer Summe. Bis U7 lief eine Gesamtsumme
+            // mit, von der am Ende der Sockel abgezogen wurde; der § 54-Teil war nur
+            // ein Hilfswert dafür. Jetzt sind beide Paragrafen das ERGEBNIS, und die
+            // Gesamtsumme entsteht erst aus ihnen (SteuerErgebnis.EnergiesteuerEur).
+            double summe53 = 0;          // § 53 und § 53a Abs. 5 — ohne Sockelbetrag
+            double summe54 = 0;          // § 54 — der Teil, den der Sockel mindert
 
             foreach (SteuerAnlage a in e.Anlagen)
             {
@@ -332,7 +437,7 @@ namespace WindowsFormsApplication1
                 // ETAPPE B3 — § 53/§ 53a setzen Stromerzeugung voraus.
                 if (!a.Stromerzeuger && !nach54)
                 {
-                    r.Begruendungen.Add(string.Format(kultur,
+                    Grund(r, SteuerPosition.ENERGIEST_53, string.Format(kultur,
                         T("STEUER_ENERGIEST_NUR_54",
                           "{0}: § 53 und § 53a Abs. 5 EnergieStG entlasten nur Anlagen mit " +
                           "Stromerzeugung. Für diese Anlage kommt allein § 54 EnergieStG in Betracht."),
@@ -360,15 +465,22 @@ namespace WindowsFormsApplication1
                 // nicht mehr erzeugt.
                 if (nach54 && !ProduzierendesGewerbe(e))
                 {
-                    r.Begruendungen.Add(MyResource.Resource.STEUER_ENERGIEST_54_UNTERNEHMENSART);
+                    Grund(r, SteuerPosition.ENERGIEST_54,
+                          MyResource.Resource.STEUER_ENERGIEST_54_UNTERNEHMENSART);
                     continue;
                 }
+
+                // AUFTRAG 9d — ab hier hängt die Position an der Wahl DIESER Anlage:
+                // Was unter § 54 scheitert, steht in der § 54-Zeile, alles übrige in
+                // der § 53/§ 53a-Zeile.
+                string position = nach54 ? SteuerPosition.ENERGIEST_54
+                                         : SteuerPosition.ENERGIEST_53;
 
                 string schluessel = nach53 ? a.SchluesselSatzVoll
                                            : (nach54 ? a.SchluesselSatz54 : a.SchluesselSatz53a);
                 if (string.IsNullOrEmpty(schluessel))
                 {
-                    r.Begruendungen.Add(string.Format(kultur,
+                    Grund(r, position, string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_TRAEGER_UNKLAR, a.Klartext(kultur)));
                     continue;
                 }
@@ -376,7 +488,7 @@ namespace WindowsFormsApplication1
                 GesetzParameter p = satz(schluessel);
                 if (p == null || !p.Wert.HasValue)
                 {
-                    r.Begruendungen.Add(string.Format(kultur,
+                    Grund(r, position, string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_SATZ_FEHLT, a.Klartext(kultur), schluessel));
                     continue;
                 }
@@ -388,7 +500,7 @@ namespace WindowsFormsApplication1
                 double brennstoffMWh = nach53 ? Stromanteil(Methode(a, e), a) : a.BrennstoffMWh;
                 if (brennstoffMWh <= 0)
                 {
-                    r.Begruendungen.Add(string.Format(kultur,
+                    Grund(r, position, string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_MENGE_UNKLAR, a.Klartext(kultur)));
                     continue;
                 }
@@ -397,13 +509,28 @@ namespace WindowsFormsApplication1
                 double? menge = MengeInGesetzlicherEinheit(p.Einheit, brennstoffMWh, a, kultur, r, out grund);
                 if (!menge.HasValue)
                 {
-                    r.Begruendungen.Add(grund);
+                    Grund(r, position, grund);
                     continue;
                 }
 
                 double betrag = p.Wert.Value * menge.Value;
-                summeGesamt += betrag;
-                if (nach54) summe54 += betrag;
+                if (nach54) summe54 += betrag; else summe53 += betrag;
+
+                // AUFTRAG U7 — der Nachweis DIESER Position: Paragraf, Menge in der
+                // gesetzlichen Einheit des Satzes, Satz und Betrag. Er ist der
+                // einzige Ort, an dem die drei Zahlen zusammen stehen; die Rubrik
+                // schreibt daraus ihre Herleitungszeile, statt sie nachzurechnen.
+                r.EnergiesteuerNachweise.Add(new EnergiesteuerNachweis
+                {
+                    Anlage = a.Bezeichner,
+                    Paragraf = nach54 ? EnergiesteuerNachweis.PARAGRAF_54
+                             : (nach53a ? EnergiesteuerNachweis.PARAGRAF_53A
+                                        : EnergiesteuerNachweis.PARAGRAF_53),
+                    Menge = menge.Value,
+                    Einheit = p.Einheit,
+                    SatzEur = p.Wert.Value,
+                    BetragEur = betrag
+                });
                 r.Herkunft.Add(Herkunft(p, kultur));
             }
 
@@ -423,19 +550,22 @@ namespace WindowsFormsApplication1
                 double netto = summe54 - sockel;
                 if (netto <= 0)
                 {
-                    r.Begruendungen.Add(string.Format(kultur,
+                    Grund(r, SteuerPosition.ENERGIEST_54, string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_54_SOCKEL,
                         summe54.ToString("N2", kultur), sockel.ToString("N0", kultur)));
-                    summeGesamt -= summe54;       // 0 € mit Hinweis, nie eine stille Null
+                    r.Energiesteuer54SockelEur = sockel;
+                    summe54 = 0;                  // 0 € mit Hinweis, nie eine stille Null
                 }
                 else
                 {
-                    summeGesamt -= sockel;
+                    r.Energiesteuer54SockelEur = sockel;
+                    summe54 = netto;
                     if (sockelZeile != null) r.Herkunft.Add(Herkunft(sockelZeile, kultur));
                 }
             }
 
-            r.EnergiesteuerEur = summeGesamt;
+            r.Energiesteuer53Eur = summe53;
+            r.Energiesteuer54Eur = summe54;
         }
 
         /// <summary>
@@ -492,6 +622,26 @@ namespace WindowsFormsApplication1
             catch { return rueckfall; }
         }
 
+        /// <summary>
+        /// AUFTRAG 9d — eine Begründung EINMAL schreiben, an ZWEI Stellen: in die
+        /// flache Liste <see cref="SteuerErgebnis.Begruendungen"/>, die unverändert
+        /// ins Hinweisfeld des Laufs wandert, und unter ihre Position in
+        /// <see cref="SteuerErgebnis.PositionsGruende"/>, aus der die Erlösrubrik
+        /// ihre Herleitungszeile schreibt.
+        ///
+        /// <para>Die Liste bleibt dabei wortgleich zu vorher — auch Doppelungen: Sie
+        /// werden erst in <c>WirtschaftlichkeitCtrl.BaueSteuerReihen</c> entfernt,
+        /// und diese Arbeitsteilung wird hier nicht verschoben. In der Zuordnung
+        /// gewinnt dagegen der ERSTE Grund; er ist der, an dem die Rechnung
+        /// ausgestiegen ist.</para>
+        /// </summary>
+        private static void Grund(SteuerErgebnis r, string position, string text)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            r.Begruendungen.Add(text);
+            if (!r.PositionsGruende.ContainsKey(position)) r.PositionsGruende[position] = text;
+        }
+
         /// <summary>Produzierendes Gewerbe oder Land- und Forstwirtschaft — die
         /// gemeinsame Voraussetzung von § 9b StromStG und § 54 EnergieStG (K6).</summary>
         /// <summary>
@@ -524,20 +674,21 @@ namespace WindowsFormsApplication1
             GesetzParameter schwelle = satz(DbWerte.GESETZ_ENERGIEST_53A_NUTZUNGSGRAD);
             if (schwelle == null || !schwelle.Wert.HasValue)
             {
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_SATZ_FEHLT,
+                Grund(r, SteuerPosition.ENERGIEST_53, string.Format(kultur,
+                    MyResource.Resource.STEUER_SATZ_FEHLT,
                     DbWerte.GESETZ_ENERGIEST_53A_NUTZUNGSGRAD));
                 return false;
             }
             if (!e.JahresnutzungsgradProzent.HasValue)
             {
-                r.Begruendungen.Add(string.Format(kultur,
+                Grund(r, SteuerPosition.ENERGIEST_53, string.Format(kultur,
                     MyResource.Resource.STEUER_ENERGIEST_53A_NUTZUNGSGRAD_FEHLT,
                     schwelle.Wert.Value.ToString("N0", kultur)));
                 return false;
             }
             if (e.JahresnutzungsgradProzent.Value < schwelle.Wert.Value)
             {
-                r.Begruendungen.Add(string.Format(kultur,
+                Grund(r, SteuerPosition.ENERGIEST_53, string.Format(kultur,
                     MyResource.Resource.STEUER_ENERGIEST_53A_NUTZUNGSGRAD,
                     e.JahresnutzungsgradProzent.Value.ToString("N1", kultur),
                     schwelle.Wert.Value.ToString("N0", kultur)));
@@ -673,29 +824,32 @@ namespace WindowsFormsApplication1
 
             if (!e.HocheffizienzNachweis)
             {
-                r.Begruendungen.Add(MyResource.Resource.STEUER_STROMST_HOCHEFFIZIENZ);
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG,
+                      MyResource.Resource.STEUER_STROMST_HOCHEFFIZIENZ);
                 return;
             }
 
             GesetzParameter radius = satz(DbWerte.GESETZ_STROMST_RADIUS_RAEUMLICH);
             if (!e.RaeumlicherZusammenhang)
             {
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_RAEUMLICH,
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_STROMST_RAEUMLICH,
                     radius != null && radius.Wert.HasValue ? radius.Wert.Value.ToString("N1", kultur) : "?"));
                 return;
             }
 
             if (!e.KwkEigenMWh.HasValue)
             {
-                r.Begruendungen.Add(MyResource.Resource.STEUER_STROMST_EIGEN_UNKLAR);
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG,
+                      MyResource.Resource.STEUER_STROMST_EIGEN_UNKLAR);
                 return;
             }
 
             GesetzParameter regelsatz = satz(DbWerte.GESETZ_STROMST_REGELSATZ);
             if (regelsatz == null || !regelsatz.Wert.HasValue)
             {
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_SATZ_FEHLT,
-                    DbWerte.GESETZ_STROMST_REGELSATZ));
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_SATZ_FEHLT, DbWerte.GESETZ_STROMST_REGELSATZ));
                 return;
             }
 
@@ -703,8 +857,9 @@ namespace WindowsFormsApplication1
             GesetzParameter co2Grenze = satz(DbWerte.GESETZ_STROMST_CO2_GRENZWERT);
             if (grenze == null || !grenze.Wert.HasValue || co2Grenze == null || !co2Grenze.Wert.HasValue)
             {
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_SATZ_FEHLT,
-                    DbWerte.GESETZ_STROMST_GRENZE_BEFREIUNG + " / " + DbWerte.GESETZ_STROMST_CO2_GRENZWERT));
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_SATZ_FEHLT,
+                      DbWerte.GESETZ_STROMST_GRENZE_BEFREIUNG + " / " + DbWerte.GESETZ_STROMST_CO2_GRENZWERT));
                 return;
             }
 
@@ -744,13 +899,16 @@ namespace WindowsFormsApplication1
 
             string rest = pelBefreit.ToString("N0", kultur);
             if (ueberGrenze.Count > 0)
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_LEISTUNG,
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_STROMST_LEISTUNG,
                     grenze.Wert.Value.ToString("N0", kultur), string.Join(", ", ueberGrenze.ToArray()), rest));
             if (ueberCo2.Count > 0)
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2,
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_STROMST_CO2,
                     co2Grenze.Wert.Value.ToString("N0", kultur), string.Join(", ", ueberCo2.ToArray()), rest));
             if (co2Unklar.Count > 0)
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_CO2_UNKLAR,
+                Grund(r, SteuerPosition.STROMST_BEFREIUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_STROMST_CO2_UNKLAR,
                     string.Join(", ", co2Unklar.ToArray())));
 
             double anteil = stromGesamt > 0 ? stromBefreit / stromGesamt : 0;
@@ -815,15 +973,16 @@ namespace WindowsFormsApplication1
             if (!berechtigt)
             {
                 if (e.NetzbezugMWh > 0)
-                    r.Begruendungen.Add(MyResource.Resource.STEUER_STROMST_9B_UNTERNEHMENSART);
+                    Grund(r, SteuerPosition.STROMST_ENTLASTUNG,
+                          MyResource.Resource.STEUER_STROMST_9B_UNTERNEHMENSART);
                 return;
             }
 
             GesetzParameter entlastung = satz(DbWerte.GESETZ_STROMST_ENTLASTUNG_9B);
             if (entlastung == null || !entlastung.Wert.HasValue)
             {
-                r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_SATZ_FEHLT,
-                    DbWerte.GESETZ_STROMST_ENTLASTUNG_9B));
+                Grund(r, SteuerPosition.STROMST_ENTLASTUNG, string.Format(kultur,
+                      MyResource.Resource.STEUER_SATZ_FEHLT, DbWerte.GESETZ_STROMST_ENTLASTUNG_9B));
                 return;
             }
 
@@ -835,7 +994,8 @@ namespace WindowsFormsApplication1
             if (netto <= 0)
             {
                 if (e.NetzbezugMWh > 0)
-                    r.Begruendungen.Add(string.Format(kultur, MyResource.Resource.STEUER_STROMST_9B_SOCKEL,
+                    Grund(r, SteuerPosition.STROMST_ENTLASTUNG, string.Format(kultur,
+                          MyResource.Resource.STEUER_STROMST_9B_SOCKEL,
                         roh.ToString("N2", kultur), sockel.ToString("N0", kultur)));
                 return;
             }

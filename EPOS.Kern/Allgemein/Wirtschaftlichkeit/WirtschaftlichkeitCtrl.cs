@@ -1853,6 +1853,21 @@ namespace WindowsFormsApplication1
             public double StromsteuerEntlastungJahr1;
             public string SteuerHerkunft;
 
+            // AUFTRAG U7 — dieselbe Zahl in zwei Beträgen: § 53/§ 53a (Brennstoff der
+            // Stromerzeugung) und § 54 (Heizstoff des produzierenden Gewerbes, nach
+            // Sockel). EnergiesteuerJahr1 bleibt ihre Summe — die Erlösreihe und die
+            // Ergebnisspalte lesen weiter dort.
+            public double Energiesteuer53Jahr1;
+            public double Energiesteuer54Jahr1;
+            public double Energiesteuer54SockelJahr1;
+            public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+                new List<EnergiesteuerNachweis>();
+
+            /// <summary>AUFTRAG 9d — die Begründung je Rubrikposition, aus dem
+            /// Steuerrechner des ersten Jahres.</summary>
+            public Dictionary<string, string> PositionsGruende =
+                new Dictionary<string, string>(StringComparer.Ordinal);
+
             /// <summary>ETAPPE B6: true = § 9 Abs. 1 Nr. 3 StromStG ist als Erlösreihe
             /// angehängt (Modus <c>ERLOES</c>); false = ausgewiesen, aber nicht im
             /// Kapitalwert (Vorgabe <c>AUSWEIS</c>).</summary>
@@ -3455,6 +3470,20 @@ namespace WindowsFormsApplication1
                 entlastung[t] = r.StromsteuerEntlastungEur;
 
                 if (t != 1) continue;                       // Texte nur aus dem ersten Jahr
+
+                // AUFTRAG U7 — die Aufteilung und ihre Herleitung stammen aus
+                // DEMSELBEN Jahr wie die ausgewiesene Jahr-1-Zahl; eine spätere
+                // Satzänderung darf die Zeilen darunter nicht verschieben.
+                e.Energiesteuer53Jahr1 = r.Energiesteuer53Eur;
+                e.Energiesteuer54Jahr1 = r.Energiesteuer54Eur;
+                e.Energiesteuer54SockelJahr1 = r.Energiesteuer54SockelEur;
+                e.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>(r.EnergiesteuerNachweise);
+
+                // AUFTRAG 9d — die Begründungen JE POSITION, ebenfalls aus dem ersten
+                // Jahr: Sie erklären die Jahr-1-Zahl, die die Rubrik zeigt.
+                e.PositionsGruende = new Dictionary<string, string>(r.PositionsGruende,
+                                                                    StringComparer.Ordinal);
+
                 foreach (string s in r.Begruendungen) if (!begruendungen.Contains(s)) begruendungen.Add(s);
                 foreach (string s in r.Herkunft) if (!herkunft.Contains(s)) herkunft.Add(s);
             }
@@ -5316,6 +5345,63 @@ namespace WindowsFormsApplication1
             catch { return null; }
         }
 
+        /// <summary>
+        /// AUFTRAG U6 — der VERTEILSCHLÜSSEL der vermiedenen Stromkosten: je Komponente
+        /// ihr Eigenverbrauch [MWh/a], daraus die Anteile.
+        ///
+        /// <para><b>Die Näherung V‑4, ausgewiesen (Entscheid A12).</b> Die Strommatrix
+        /// trennt nach TARIFZONE, nicht nach Anlage (Befund R8); modulscharfe
+        /// Stundenreihen gibt es im Modell nicht. Der Eigenverbrauch je Modul kommt
+        /// deshalb aus demselben Modulnachweis, mit dem der KWKG-Rechner seine Mengen
+        /// gebildet hat — bei genau einem Modul exakt, bei mehreren eine Annahme.
+        /// Mehrere Module werden zu EINER Komponentenzeile zusammengefasst: Die
+        /// Rubrikzeilen darüber (Zuschlag, § 53, Befreiung) sind ebenfalls Summen über
+        /// alle Module, und zwei verschiedene Schnitte im selben Block wären zwei
+        /// Wahrheiten.</para>
+        ///
+        /// <para>Leer = kein Eigenverbrauch bestimmbar; dann bleibt die Rubrik bei der
+        /// einen projektweiten Kette.</para>
+        /// </summary>
+        private static List<VermiedenAnlageNachweis> VermiedenAufteilung(
+            ProjektEingabe eingabe, WirtschaftlichkeitErgebnis erg)
+        {
+            var leer = new List<VermiedenAnlageNachweis>();
+            if (eingabe == null || erg == null) return leer;
+            if (erg.VermiedenMengeMWh <= 0 && erg.VermiedenArbeitJahr == 0) return leer;
+
+            double kwkEigenMWh = 0;
+            string name = "";
+            int module = 0;
+            if (eingabe.KwkgModule != null)
+                foreach (KwkgModulNachweis n in eingabe.KwkgModule)
+                {
+                    if (n == null || n.EigenMWh <= 0) continue;
+                    kwkEigenMWh += n.EigenMWh;
+                    module++;
+                    if (module == 1) name = n.Bezeichner ?? "";
+                }
+            // Ohne Modulnachweis (Ersatzweg, kein gepflegter Satz) trägt die Matrix die
+            // Menge — sie ist dieselbe Größe, nur ohne die Aufteilung auf die Module.
+            if (kwkEigenMWh <= 0 && eingabe.Matrix != null)
+                kwkEigenMWh = eingabe.Matrix.KwkEigenGesamtMWh;
+            if (kwkEigenMWh <= 0) return leer;
+
+            var schluessel = new List<VermiedenAnlageNachweis>
+            {
+                new VermiedenAnlageNachweis
+                {
+                    Komponente = WirtZeile.KOMPONENTE_BHKW,
+                    // Der Anlagenname steht nur, wenn er EINE Anlage meint; bei mehreren
+                    // Modulen ist die Zeile die Technik, nicht das Gerät.
+                    Anlage = module == 1 ? name : "",
+                    EigenMWh = kwkEigenMWh
+                }
+            };
+            return VermiedenAnlageNachweis.Verteile(schluessel, erg.VermiedenMengeMWh,
+                                                    erg.VermiedenArbeitJahr,
+                                                    erg.VermiedenEntlastung9bJahr);
+        }
+
         /// <summary>Arbeitspreis Strom [€/kWh] des Projekt-Stromträgers; null = keiner gepflegt.
         /// <para><c>custom_price</c> ist eine Lazy-Spalte und fehlt auf nie berührten
         /// Datenbanken (Produktiv-Befund 26.08.2026) - sie wird deshalb vor dem
@@ -5382,6 +5468,15 @@ namespace WindowsFormsApplication1
             erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
             erg.KwkgPauschaleEur = PauschaleBetrag(eingabe);  // U17: Einmalzahlung Jahr 0
             erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
+            // AUFTRAG U7 — ein frisch gerechneter Lauf kennt die Aufteilung IMMER,
+            // auch wenn beide Beträge 0 sind (kein BHKW, nichts gewählt). Der Merker
+            // unterscheidet „zweimal 0 gerechnet" von „nicht aufgeteilt gebucht".
+            erg.EnergiesteuerAufgeteilt = true;
+            erg.Energiesteuer53Jahr1 = eingabe.Energiesteuer53Jahr1;
+            erg.Energiesteuer54Jahr1 = eingabe.Energiesteuer54Jahr1;
+            erg.Energiesteuer54SockelJahr1 = eingabe.Energiesteuer54SockelJahr1;
+            erg.EnergiesteuerNachweise = eingabe.EnergiesteuerNachweise;
+            erg.PositionsGruende = eingabe.PositionsGruende;                 // 9d
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;
@@ -5455,6 +5550,25 @@ namespace WindowsFormsApplication1
                         erg.VermiedenEntlastung9bJahr = satz.Value * eingabe.VermiedenMengeMWh;
                 }
             }
+
+            // AUFTRAG U6 (Anwenderentscheid Q15/A12 vom 22.09.2026) — die AUFTEILUNG
+            // der vermiedenen Stromkosten auf die Anlagen. Sie entsteht HIER, im Kern,
+            // einmal: Rubrik, Wort- und Excelbericht und die BHKW-Vorschau lesen sie,
+            // statt sie je selbst zu bilden.
+            //
+            // Verteilt wird der ARBEITSanteil samt der auf ihn entfallenden entgangenen
+            // § 9b-Entlastung; der LEISTUNGSanteil bleibt projektweit (Q15) — er haengt
+            // an der Bezugsspitze des ganzen Projekts.
+            //
+            // GEMESSEN, und es bestimmt den Schluessel: Die vermiedene Menge ist
+            // „Bedarf OHNE Anlage minus Restbezug", und „Bedarf ohne Anlage" ist in
+            // StromMatrix.Baue bereits um die PV-Eigennutzung gemindert. Die Menge
+            // traegt damit den KWK-Eigenverbrauch — und nur ihn. Eingebracht wird
+            // deshalb, was tatsaechlich in ihr steckt; der vermiedene Bezug der
+            // Photovoltaik steht wie bisher in seiner eigenen Ausweiszeile
+            // (PvVermiedenerBezug), jetzt im Komponentenblock Photovoltaik.
+            erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
+
             erg.Hinweis = eingabe.Hinweis;
 
             // Trägerzuordnungs-Etappe: Fiel die Emissionsrechnung mangels zugeordnetem

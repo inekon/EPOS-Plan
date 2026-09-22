@@ -19678,7 +19678,43 @@ Möchten Sie das zulassen?</value>
     <value>eigener Wert {0} — Vorschlag {1}</value>
   </data>
   <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energiesteuer-Gutschrift Brennstoff (§ 53/§ 53a Abs. 5 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_54" xml:space="preserve">
+    <value>Energiesteuer-Entlastung Heizstoff (§ 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_GESAMT" xml:space="preserve">
     <value>Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_HERLEITUNG" xml:space="preserve">
+    <value>Herleitung</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF" xml:space="preserve">
+    <value>kein Brennstoff unter § 53/§ 53a im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF" xml:space="preserve">
+    <value>kein Kesselbrennstoff unter § 54 im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_MENGE" xml:space="preserve">
+    <value>keine zuschlagsfähige KWK-Erzeugung im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_SATZ" xml:space="preserve">
+    <value>kein KWK-Zuschlagssatz an den Anlagen gepflegt</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent schon im ersten Betrachtungsjahr erschöpft</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_EINSPEISUNG" xml:space="preserve">
+    <value>keine Einspeisung im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_OHNE_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisung im Lauf, aber keine Vergütung gepflegt</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} {1} × {2} €/{1} = {3} €/a</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_SOCKEL" xml:space="preserve">
+    <value>abzüglich Sockelbetrag {0} €/a</value>
   </data>
   <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
     <value>Stromsteuer-Entlastung Netzbezug (§ 9b StromStG) [€/a]</value>
@@ -19700,6 +19736,36 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
     <value>Vermiedene Stromkosten, effektiv [€/a] (Ausweis)</value>
+  </data>
+  <data name="WIRT_ERL_KOMPONENTE" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="WIRT_ERL_PROJEKTWEIT" xml:space="preserve">
+    <value>projektweit</value>
+  </data>
+  <data name="WIRT_ERL_TEILSUMME" xml:space="preserve">
+    <value>Summe {0}</value>
+  </data>
+  <data name="WIRT_ERL_K_BHKW" xml:space="preserve">
+    <value>Blockheizkraftwerk</value>
+  </data>
+  <data name="WIRT_ERL_K_PV" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="WIRT_ERL_K_KESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="WIRT_ERL_B1_ANTEIL" xml:space="preserve">
+    <value>{0} MWh vermiedener Bezug · Anteil {1} %</value>
+  </data>
+  <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
+    <value>Näherung: verteilt nach dem Netto-Stromanteil je Anlage</value>
+  </data>
+  <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
+    <value>vermiedene Kosten wirksam — {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE" xml:space="preserve">
+    <value>keine Bezugsspitze gerechnet</value>
   </data>
   <data name="WIRT_GRUND_KWKG" xml:space="preserve">
     <value>kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft</value>
