@@ -1,8 +1,10 @@
 # Konzept: Nutzungsdauer je Technik und Positionsart aus einer AfA-Tabelle
 
-Stand 18.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1 und S2
+Stand 22.09.2026 — Anwenderentscheid 14.09.2026: ND-Q1 bis ND-Q8 nach Empfehlung. **Die Stufen S1 und S2
 sind umgesetzt**; S3 (Instandsetzung, Wartung, Gerätekataloge) steht aus und braucht einen eigenen
-Entscheid (Abschnitte 3 und 6).
+Entscheid (Abschnitte 3 und 6). Codestand `3b71871c`, `SchemaStand.Zielversion` = **100** (neue
+Schritte ab 101). **ND‑S3 ist die Etappe E10** des Etappenplans E0–E12 im Analysepapier
+[`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
 
 **Anlass (Anwenderwunsch 14.09.2026, Bildschirmfoto der Kostenverwaltung):** „In allen Kostendialogen
 soll die Nutzungsdauer nach Technik/Kategorie standardmäßig vorbelegt werden können. Grundlage ist eine
@@ -73,8 +75,9 @@ rechnen mit ihrer eigenen Nutzungsdauer (Vorgabe ± 2 Jahre). Der Betrachtungsze
 
 Administration → Kostenverwaltung führt „Kostenvorlagen" und „Energieträger" (`Menuetabelle.cs`). Die
 Menüwache zählt 59 Punkte, 8 Trenner, 13 klappbare und 46 nicht klappbare Knoten; ein neuer Punkt
-verschiebt diese Zahlen. Schemastand: **Zielversion 96** (Stand 19.09.2026); neue Fachtabellen sind
-STRICT und laufen als nummerierter Schritt über `SchemaMigration`.
+verschiebt diese Zahlen. Schemastand: **Zielversion 100** (Stand 22.09.2026), Schritte 90–100
+vergeben, **neue ab 101**; neue Fachtabellen sind STRICT und laufen als nummerierter Schritt über
+`SchemaMigration`.
 
 ### 1.6 VDI 2067 im Bestand
 
@@ -226,11 +229,27 @@ Restwert nach VDI 2067. Die Herleitungszeile und der Bericht nennen die Quelle d
 | **S2 Vorbelegung** — **umgesetzt** | Neue Position, Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Vorlagenübernahme, Herleitung je Zeile, Tafel „Ersatz und Restwert" samt Hinweis; Wiki „Programm Dokumentation/Kosten" | bunit-Fälle je Weg, Kern-Fall gegen die Kapitalwertrechnung, Referenzlauf byte-gleich |
 | **S3 Instandsetzung und Wartung** | Spalten in der Tabelle sichtbar, `BetriebskostenCtrl` liest Sätze je Technik statt Konstanten; Vorbelegung der Gerätekataloge | eigener Entscheid, Referenzlauf mit Abweichungen nur in Betriebskosten → neue Basis |
 
-S3 nur nach Entscheid. **Offen aus S2:** Die Hülle der Kostenverwaltung liegt weiter in der
-Windows-Schale (`WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs`); plattformfrei nach
-`EPOS.UI.Daten` gehört sie mit dem Schritt, der den Dialog auf iOS bringt. Ebenso offen: die
-Entkopplung von Ersatz und Restwert je Position, die geräteeigenen Dauerspalten und der Anschluss der
-Speicherflotte (Mockup-Anhang U39).
+S3 nur nach Entscheid; es ist die Etappe **E10** des Etappenplans E0–E12.
+
+**Offen aus S2 (nachgemessen 22.09.2026, Codestand `3b71871c`):** Die Hülle der Kostenverwaltung liegt
+weiter in der Windows-Schale (`WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs`);
+plattformfrei nach `EPOS.UI.Daten` gehört sie mit dem Schritt, der den Dialog auf iOS bringt — das ist
+**E3 Schritt 5** („`KostenKomponenteHuelle` mit Fenster-Adapter"), entschieden mit **A1** und **Q14**
+am 20.09.2026. **Das Muster liegt seit #428 (KI‑F8) vor:** Vier Hüllen (`KlimadatenHuelle`,
+`ProjektKopieHuelle`, `PeakShavingHuelle`, `StromganglinieAdminHuelle`) sind plattformfrei nach
+`EPOS.UI.Daten` gewandert, während Windows je einen **Fenster-Adapter** behielt (`KlimadatenFenster`,
+`ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster`) und die Wurzel dieselben
+Masken auf iOS über Nähte in `IProjektQuelle` öffnet.
+
+Ebenso offen: die Entkopplung von Ersatz und Restwert je Position, die geräteeigenen Dauerspalten und
+der Anschluss der Speicherflotte (Mockup-Anhang U39). Dazu sind zwei Entscheide gefallen
+(**20.09.2026, nach Empfehlung**): **A7** — die Speicherflotte wird **mit ND‑S3** an
+`Tab_Nutzungsdauer` angeschlossen, als eigener Auftrag mit Neueinfrieren der Referenzbasis (Projekt
+1046); **A8** — die geräteeigenen Nutzungsdauer-Spalten (`Tab_BHKW`, `Tab_Heizkessel`) werden **nicht
+jetzt** abgekündigt, sondern nur **gekennzeichnet**; die Speichervariante sollte die Positionsarten
+20/21 lesen. Ein Schemaschritt dafür (vormals „104") bekommt seine Nummer erst bei der Umsetzung.
+Die Entkopplung von Ersatz und Restwert ist mit **A6** entschieden (Kennzeichen je **Position**,
+nullbar, NULL = wie bisher) und gehört zu **E7**.
 
 ## 4. Fragen mit Empfehlung
 

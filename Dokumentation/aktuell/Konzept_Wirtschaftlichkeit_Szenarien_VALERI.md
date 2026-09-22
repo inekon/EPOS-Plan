@@ -3,6 +3,13 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
+**Stand 22.09.2026** · Codestand `3b71871c` · `SchemaStand.Zielversion` = **100**, Schemaschritte
+90–100 vergeben, neue ab **101**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
+unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im Etappenplan **E0–E12** des
+Analysepapiers. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die Degradation nicht
+ein** — der Entscheid „G3 nicht umsetzen" dieses Papiers gilt, der Widerspruch zum konsolidierten
+Konzept ist aufgelöst (§ 7.3, § 9.4).
+
 ---
 
 ## 1 Ausgangsbefund (08.09.2026)
@@ -268,7 +275,7 @@ offengelegten Annahmen.
 |---|---|---|---|---|
 | **G1** | **Endjahr je Position.** EPOS kennt seit KD6 ein Startjahr je Kostenzeile, aber kein Endjahr. | VALERI führt je Faktor Start- **und** Endjahr (`99` = ganze Betriebszeit). | Spalte + Rechenweg; Datenmodell | **nicht umsetzen** — als Vereinfachung offenlegen (§ 9.4) |
 | **G2** | **Preisänderung je Kostenart.** Heute zwei Töpfe (p_B, p_E) plus CO₂-Pfad. | VALERI führt eine eigene Preisänderung je Faktor. | Spalte je Zeile + Rechenkern; Datenmodell | **umgesetzt W5‑B‑12** — nur als dritter Satz p_I, nicht je Zeile (§ 10) |
-| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4). **Entscheid A5 offen (Analyse vom 19.09.2026):** Das konsolidierte Konzept führt die Degradation als `V-G2` in der Etappe **V-E** (§ 2.11.4) und widerspricht damit diesem Entscheid |
+| **G3** | **Degradation je Faktor.** Nur die PV-Ertragsdegradation ist modelliert. | VALERI führt eine Degradation je Nutzen-/Lastenfaktor. | Spalte je Zeile; Datenmodell | **nicht umsetzen** — offenlegen (§ 9.4). **Bestätigt mit Entscheid A5 vom 20.09.2026 (nach Empfehlung):** Das konsolidierte Konzept führte die Degradation als `V-G2` in der Etappe **V-E** (§ 2.11.4); der Widerspruch ist zugunsten dieses Papiers **aufgelöst — V-E wird ohne Degradation geplant**, § 2.11.2 und § 2.11.4 des Konzepts sind nachgezogen |
 | **G4** | **Preisindizierung der Ersatzbeschaffung.** Ersatz wird nominal unverändert angesetzt (Vereinfachung W1). | VDI 2067/VALERI setzen Ersatzbeschaffungen üblicherweise preisindiziert an. | Rechenkern; **fachlicher Entscheid** | **umgesetzt W5‑B‑12** — Preissteigerungssatz p_I, Migrationsschritt 72 (§ 10) |
 | **G5** | **Startjahr für die Energiekosten.** Die Simulation kennt keine Startjahre je Komponente; die Energiekosten sind die Gesamtrechnung des Laufs (dokumentierte Vereinfachung FK10). | VALERI aktiviert jeden Faktor ab seinem Betriebsjahr. | Simulation; groß | **nicht umsetzen** — offenlegen (§ 9.4) |
 | **G6** | **Nicht monetisierbare Wirkungen.** Kein Freitextfeld für Komfort, Versorgungssicherheit, Arbeitssicherheit. | VALERI verlangt eine qualitative Beschreibung im Bewertungsbericht. | Feld + Berichtsbaustein | **umgesetzt W5‑B‑12** — Freitextfeld (§ 10.5) |
@@ -317,8 +324,9 @@ Migrationsschritt 72).
 
 Maßstab ist die **Kapitalwertdifferenz zur gewählten Referenz** (`KapitalwertDiff`), nicht der
 absolute Kapitalwert: Die Referenz ist die Unterlassensalternative (§ 7.1, Referenzfall). Seit
-#358 ist sie je Vergleichsgruppe wählbar; ohne Wahl gilt das Stammprojekt. **Nachzuziehen:** Die
-Ressource `WIRT_EMPF_KEINE` nennt weiterhin das Stammprojekt.
+#358 ist sie je Vergleichsgruppe wählbar; ohne Wahl gilt das Stammprojekt. Die Ressource
+`WIRT_EMPF_KEINE` nennt die **gewählte Referenz** beim Namen (parametrierter Text „gegenüber {0}") —
+**umgesetzt #405** (G9-Referenztext, zusammen mit der Δ-Fußzeile).
 
 | Stufe | Bedingung |
 |---|---|
@@ -465,7 +473,7 @@ Nicht_Monetaer                MEMO   → TEXT (ohne Längenprüfung, Freitext, G
   nicht berührt.
 * **Zielstand dieser Etappe:** `SchemaStand.Zielversion = 72`. Systemimmanent weist
   `ProjektExportImportCtrl` damit `.wpx`-Pakete auf Stand 71 ab. Der **heutige** Schemastand ist
-  ein anderer (19.09.2026: Zielversion 96, neue Schritte ab 97) — die 72 beziffert, womit diese
+  ein anderer (22.09.2026: Zielversion 100, neue Schritte ab 101) — die 72 beziffert, womit diese
   Etappe abgeschlossen wurde, nicht den Stand des Programms.
 
 ### 10.4 Parametersatz und Dialog (Teil b)
@@ -553,6 +561,21 @@ Referenzlauf ist nicht berührt: Er rechnet Simulationen, keine Wirtschaftlichke
 Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6, § 2.11.7,
 § 2.13) berühren die Etappen dieses Papiers; sie sind **nicht umgesetzt**, das Papier
 beschreibt weiterhin den gebauten Stand W5‑B‑9 bis W5‑B‑12.
+
+**Stand 22.09.2026: alle drei unverändert nicht gebaut**, aber im Etappenplan **E0–E12** des
+Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5)
+eingeordnet:
+
+| Entscheid | Etappe | Bemerkung |
+|---|---|---|
+| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | **E5** (Hinweistext U10), die Abdeckung selbst **E9** | Der Hinweistext braucht den Ressourcenschlüssel `WIRT_SZEN_HINWEIS` (Mockup-Anhang U10); Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz) |
+| **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | **E5**; der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit **E6** | Bis dahin gilt § 7.1 unverändert |
+| **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **E8** (V-C und V-D) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6 |
+
+**Mit #405 (E2) ist aus diesem Umkreis erledigt:** die Bandbreite im Bericht mit Spalte „Spanne" und
+Referenzzeile (G8, § 9.2) in Word **und** Excel, der Zeitraumhinweis im Excel-Blatt (G7, § 9.3) und
+der Empfehlungssatz mit der gewählten Referenz (G9, § 9.1). Der Excel-Bericht bleibt eine
+**Wertfassung** — die Formeln kommen mit E8.
 
 * **V-4 — vollständige Szenarioabdeckung erst nach der Darstellungsetappe, mit
   Hinweistext.** Der Parametersatz aus § 2 bleibt, wie er ist: Best und Worst ersetzen

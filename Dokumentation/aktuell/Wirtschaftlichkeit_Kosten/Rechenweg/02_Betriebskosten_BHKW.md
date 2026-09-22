@@ -166,6 +166,6 @@ sind die Prozentwerte verschiedener Anlagen nicht vergleichbar.
 | ⚠ B-1 | **Kessel-Endenergie ist strukturell 0** — der Rechenkern setzt `Verbrauch` nie; Endenergie-Positionen am Kessel liefern 0 € | Herleitungszeile zeigt „× 0 kWh" und macht den Befund sichtbar; Behebung: Verbrauch aus dem Lauf nachziehen |
 | B-3 | „Jüngster Lauf" ist die höchste ID, nicht der Zeitstempel | Banner nennt Datum und Uhrzeit des Laufs |
 | B-5 | `InvestSummeFuer` summiert `EingegebenerWert` — abgeleitete Beträge fehlen | Mockup zeigt den Kaskadenbetrag; Umsetzung muss auf den Kaskadenbetrag umstellen |
-| B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0) | Strich statt 0, Warnzeile |
-| B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€" | Herleitungszeile nennt kWh bzw. € ausdrücklich |
+| B-6 | Fehler werden geschluckt (`catch {}` ⇒ still 0) | Strich statt 0, Warnzeile — **offen**, gehört mit S‑2 zur Etappe **E7** (Konzept § 7, B8) |
+| ✔ B-7 | `MengenEinheit` beschriftet die neuen Arten mit „€" | **umgesetzt #405**: Die Bezugsmenge kommt aus dem `BemessungKatalog` und trägt ihre eigene Einheit; die Herleitungszeile nennt kWh bzw. € ausdrücklich |
 | K10 | Hilfsenergie-Bemessung doppelt: Seed gegen Altkatalog | in B5/B6 nachziehen |

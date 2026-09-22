@@ -107,7 +107,7 @@ kleine Prozentposition am Ende einen fünfstelligen Betrag.
 
 | Nr. | Befund | Behandlung im Entwurf |
 |---|---|---|
-| ⚠ I-2 | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag | Zeile zeigt „—" mit Herleitung „Satz fehlt" |
-| ⚠ I-3 | Runde 3 ist reihenfolgeabhängig — zwei `PROZENT_INVESTITION`-Zeilen, die zweite rechnet die erste ein; ohne ORDER BY entscheidet ACE | Spalte „Runde" macht die Reihenfolge sichtbar; ORDER BY ist in der Umsetzung nachzuziehen |
-| I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung | vereinheitlichen |
+| ✔ I-2 | Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag | **erledigt** (Entscheid 30.08.2026, Konzept § 4): Ist die Ableitung nicht rechenbar, gilt der **erfasste Betrag**; eine ermittelte Menge 0 rechnet zu 0 |
+| ✔ I-3 | Runde 3 war reihenfolgeabhängig — zwei `PROZENT_INVESTITION`-Zeilen, die zweite rechnete die erste ein | **erledigt mit FX2** (Konzept § 4): Runde 3 friert ihre Basiszeilen vorher ein und ist reihenfolgeunabhängig. **Runde 2 ebenso — umgesetzt #380** (Befund R4): `InvestKaskade` fährt sie in zwei Phasen wie Runde 3; A/B über 25 Projekte × 3 Szenarien zeilenweise identisch (`InvestKaskadeTests`) |
+| ✔ I-5 | Vergleichsstrenge uneinheitlich: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung | **umgesetzt #405**: Steuerwerte werden im ganzen Kern zeichengenau verglichen (`Ordinal`); die tolerante Stelle `IstZuschuss` und ihr Gegenstück in `SpeicherAuslegungCtrl` sind nachgezogen |
 | I-6 | Nicht migrierte Datenbank: keine Kaskade, keine Zuschusserkennung | Migrationsprüfung beim Öffnen |

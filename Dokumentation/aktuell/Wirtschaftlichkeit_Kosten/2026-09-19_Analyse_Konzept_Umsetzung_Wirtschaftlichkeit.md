@@ -1,6 +1,8 @@
 # Analyse des Wirtschaftlichkeitskonzepts für die Umsetzung in EPOS-Plan
 
-**Stand 19.09.2026 (abends)** · Gegenstand: das konsolidierte Konzept
+**Stand 22.09.2026** (Erhebung vom 19.09.2026 abends, seither fortgeschrieben) · Codestand
+`3b71871c` · `SchemaStand.Zielversion` = **100**, Schemaschritte 90–100 vergeben, **nächster freier
+Schritt 101** · Gegenstand: das konsolidierte Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 mit den Nebenkonzepten [Nutzungsdauer/AfA](../Konzept_Nutzungsdauer_AfA_EPOS-Plan.md),
 [Szenarien/VALERI](../Konzept_Wirtschaftlichkeit_Szenarien_VALERI.md) und
@@ -20,6 +22,16 @@ Zeilennummern und Messungen:
 > Kosten/Energie, `02` Rechenkern Vergütung/Steuern, `03` Datenmodell, `04` Oberfläche/Hüllen,
 > `05` Berichte/VALERI/Nutzungsdauer, `06` Wiki/Hilfe, `07` Konzeptqualität/Entscheide, `08` Altanwendung.
 
+> **Fortschreibung 22.09.2026 (E0c).** Die Erhebung selbst bleibt, wie sie war; hinzugekommen sind die
+> Standmarken. **Entschieden:** Der Anwender hat am 20.09.2026 **alle Entscheide A1–A20 nach der
+> Empfehlung** dieses Papiers entschieden (§ 4) — ebenso Q1–Q25 der Mockup-Prüfung. **Gebaut:** E0
+> (#379), E1 (#380) und E2 (#405) des Umsetzungsplans § 5, dazu DL‑2e (#390) für die Knopfleisten der
+> beiden Kostendialoge und KI‑F4 (#423) für die Freigabe der Kosten- und Wirtschaftlichkeitsmasken an
+> den Hilfe-Assistenten. **Nicht ausgeführt:** der Schnitt in drei Papiere (A13) — E0 hat nur die Pflege
+> gemacht. **Nächste Etappe:** E3 Plattform; das Hüllen- und Adaptermuster dafür liegt seit #428 vor.
+> Die **Schemaschritte 97–100** sind inzwischen anderweitig vergeben — § 6 ist entsprechend
+> umgeschrieben.
+
 ## 0 Das Ergebnis in acht Sätzen
 
 1. **Der Rechenkern ist weiter als sein Konzept.** Kaskade, Zuschussklemme, Ersatz und Restwert mit
@@ -31,7 +43,9 @@ Zeilennummern und Messungen:
    Stromkennzahl — braucht zwei Anlagenspalten), das projektweite Doppelentlastungsverbot § 53 gegen § 54
    und die Bewertung des § 51a mit dem anzulegenden Wert statt der Einspeisevergütung; dazu als neuer
    Befund eine Restreihenfolgeabhängigkeit in Kaskadenrunde 2 und als Ausweislücke die fehlende
-   CO₂-Kohärenzzeile (`01/§ 6`, `02/§ 7`).
+   CO₂-Kohärenzzeile (`01/§ 6`, `02/§ 7`). — **Stand:** Kaskadenrunde 2 ist **umgesetzt #380**, die
+   CO₂-Kohärenzzeile **umgesetzt #405**; die drei rechenwirksamen Lücken bleiben offen und sind mit
+   A2, A3 und A4 entschieden (E7).
 3. **Die größte Lücke ist keine Formel, sondern die Schicht:** Die Energiekosten- und
    Wirtschaftlichkeitsrechnung des Berichts wird allein aus der Windows-Schale gerufen
    (`WindowsFormsApplication1/Allgemein/Bericht/BerichtsDatenSammler.cs`, Zeilen 180 und 421), 6 631
@@ -45,7 +59,8 @@ Zeilennummern und Messungen:
    für drei Szenarien (`04/§ 6`, `05/§ 1, § 3, § 4`).
 5. **Das Datenmodell ist gesünder als das Konzept sagt:** alle 20 Wirtschaftlichkeitstabellen sind
    `STRICT`, sechs der acht als „neu" geführten Rahmen-Szenariospalten stehen seit Schritt 71; nötig sind
-   sieben ergebnisneutrale DDL-Schritte (ab 97) und ein DML-Schritt für den Einheitenbruch, der
+   sieben ergebnisneutrale DDL-Schritte (Schritte **A–G**, § 6; Nummern bei der Umsetzung, heute ab
+   **101**) und ein DML-Schritt für den Einheitenbruch, der
    entgegen dem Konzept nie gelaufen ist (Schritt 62 löscht Klimawaisen). Nur der Anschluss der
    Speicherflotte berührt die Einfrierregel der Referenzbasis. Der zweite Migrationsmechanismus im
    `WirtschaftlichkeitCtrl` legt fünf Tabellen ohne `STRICT` und ohne Fremdschlüssel an — gegen ADR‑001,
@@ -53,13 +68,20 @@ Zeilennummern und Messungen:
 6. **Der Nachweis trägt nicht:** Der Referenzlauf friert nur Simulationsgrößen ein, kein Test sichert
    einen absoluten Kapitalwert, drei der sechs Regressionsanker aus § 6.2 stehen in keinem Test,
    `SteuerGutschriftRechner`, `EegSatzRechner` und die EEG-Logik des `PvErloesRechner` haben keine
-   Testklasse, und weder Excel- noch Word-Generator sind gedeckt (`01/§ 3–5`, `02/§ 6`, `05/§ 3.2`).
+   Testklasse, und weder Excel- noch Word-Generator sind gedeckt (`01/§ 3–5`, `02/§ 6`, `05/§ 3.2`). —
+   **Erledigt mit E1 (#380):** neun Anker in `WirtschaftlichkeitAnkerTests` (darunter absolute
+   Kapitalwerte für 1024 und 1030), die drei fehlenden Rechnerklassen, `BerichtBlattstrukturWacheTests`
+   für Excel **und** Word und `WirtZeileFormatWacheTests`. Offen bleibt die Frage der
+   Referenzlauf-Erweiterung — sie fällt mit der nächsten Basis an (A11).
 7. **Als Umsetzungsvorlage ist das Konzept nicht reif:** Der Geltungsblock sagt „ausdrücklich nicht
    implementiert", § 6.1 führt sechzehn abgeschlossene Etappen, § 7 schlägt den seit #286 gebauten
    BHKW-Dialog als nächste Etappe vor, zwei Quelldokumente der Kopftabelle haben das Repositorium nie
    erreicht, und von 151 Kennungen aus neun Quellen sind 41 offen, 34 als offen geführt, obwohl
    erledigt; fünf Kennungen sind doppelt belegt. Ein fachlicher Widerspruch ist ungelöst: das Konzept
-   rechnet die Degradation in V‑E ein, das Szenarienkonzept hat sie als G3 abgelehnt (`07`).
+   rechnet die Degradation in V‑E ein, das Szenarienkonzept hat sie als G3 abgelehnt (`07`). —
+   **Stand:** Die Papierpflege E0 (**#379**) hat Geltungsblock, Kopf, Quellen, § 6.1, § 6.3 und § 7
+   nachgezogen; der **Widerspruch zur Degradation ist mit A5 (20.09.2026) aufgelöst — V‑E ohne
+   Degradation**. Offen bleibt allein der Schnitt in drei Papiere (A13).
 8. **Wiki, Hilfe und Altanwendung:** 34 von 39 Bedienstücken sind beschrieben, drei erledigte Punkte
    fehlen noch (U17, U23, U36), die Hilfe-Taste der Tarifstruktur zeigt auf die falsche Seite, das
    Beispiel „Höfingen" ist ein reales Altprojekt und gehört vor jeder Wiki-Verwendung neutralisiert
@@ -202,6 +224,39 @@ Stand-Schlüssel: **gebaut** · **teils** · **fehlt** · **überholt** (Konzept
 | P6 | **Zweiter Migrationsmechanismus:** `WirtschaftlichkeitCtrl.StelleTabellenSicher` legt fünf Tabellen per `CREATE TABLE` ohne `STRICT` und ohne Fremdschlüssel an und rüstet 55 Spalten per `SpalteSicher` nach — wörtlich die in ADR‑001 verworfene Bauart; im Normalbetrieb wirkungslos (die Vorlage bringt alles `STRICT` mit), aber `SpalteSicher` kann gelöschte Spalten wieder anlegen (Schritt 91 musste einen Eintrag entfernen). Das Konzept verlangt den Umbau nicht, § 6.5 führt die Doppelpflicht als Regel | `03/§ 2` | eigener Auftrag, M |
 | P7 | Verlaufs-Ablauffolge (sammeln, rechnen, zeichnen) liegt in `KapitalwertVerlaufHuelle` (Windows); `EPOS.UI.Daten` hat keinen Ordner `Wirtschaftlichkeit`; die Zeilenliste der Seite entsteht in `WirtschaftlichkeitSeiteGaben` — der Kern liefert die Texte bereits (`NutzungsdauerAbgleich.Hinweis`), die Hülle sammelt nur die Positionen | `04/§ 4.5`, `05/§ 4.3` | M |
 
+**Stand 22.09.2026 — nachgemessen am Codestand `3b71871c`.** Keiner der sieben Punkte ist gebaut; sie
+sind der Gegenstand der Etappe **E3 Plattform**, die der Anwender mit **A1** als eigene Welle vor der
+Ergebnisansicht entschieden hat (20.09.2026).
+
+- **P1** unverändert: `ctrl.Berechne(daten, p)` steht weiterhin in
+  `WindowsFormsApplication1/Allgemein/Bericht/BerichtsDatenSammler.cs:180`,
+  `KostenEmissionRechner.Berechne(v)` in derselben Datei `:421`. **Kleiner als geplant** (Befund aus
+  #380): `BerichtsDatenSammler` ist selbst WinForms-frei — ihn bindet nur seine **Lage**; einzige Naht
+  ist `EnergieMengen.BaueBrennstoffmengen`. E3 Schritt 4 ist damit ein Umzug, kein Umbau.
+- **P2** unverändert: Die vier nahtlosen Hüllen liegen weiterhin in der Windows-Schale —
+  `WindowsFormsApplication1/Views/Wirtschaftlichkeit/WirtschaftlichkeitParameterHuelle.cs` und
+  `Views/Kosten/{KostenfaktorKatalogHuelle,VorlagenUebernahmeHuelle,ErtragBonusGaben}.cs`. Ebenso
+  `Views/Kosten/KostenKomponenteHuelle.cs` (E3 Schritt 5, Q14).
+- **P3 neu gemessen:** Die Positivliste der Wurzel steht heute in
+  `EPOS.UI/Seiten/AppWurzel.razor:1590–1611` (vorher `:1431–1445`) und führt **18 Schlüssel** — mit
+  **#428** sind fünf Masken hinzugekommen (Klimadaten, Projektvariante, Projektkopie, Peak-Shaving,
+  Stromganglinien-Verwaltung). **Von der Wirtschaftlichkeit stehen darin weiterhin nur
+  `BhkwWirtschaftlichkeit`, `Energietraeger` und `BerichteKosten`** — und für `BerichteKosten` gilt
+  unverändert die zweite Bedingung: `IosProjektQuelle` überschreibt `BerichteKostenGaben` nicht, die
+  Vorgabeumsetzung in `EPOS.UI/Dienste/IProjektQuelle.cs:272` liefert `null`. E3 Schritt 8 steht
+  vollständig aus; der Umfang der Erweiterung ist mit **A19** entschieden (alle, in der Reihenfolge des
+  Hüllen-Umzugs).
+- **P4, P5, P6, P7** unverändert. Zu **P7:** `EPOS.UI.Daten` hat weiterhin **keinen** Ordner
+  `Wirtschaftlichkeit` (heute `Allgemein`, `Assistent`, `Bedarf`, `Klimadaten`, `Kosten`, `Projekt`,
+  `Pufferspeicher`, `Simulation`, `Strom`, `Stromspeicher`).
+
+**Das Muster für den Umzug liegt vor.** Mit **#428** (KI‑F8) sind vier Hüllen plattformfrei nach
+`EPOS.UI.Daten` gewandert (`KlimadatenHuelle`, `ProjektKopieHuelle`, `PeakShavingHuelle`,
+`StromganglinieAdminHuelle`), während Windows je Hülle einen **Fenster-Adapter** behielt
+(`KlimadatenFenster`, `ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster`) und
+die Wurzel dieselben Masken auf iOS über **Nähte in `IProjektQuelle`** öffnet. Nach genau diesem
+Muster laufen die Schritte 1, 5 und 8 der Etappe E3.
+
 ### 3.3 Ergebnisansicht, ValERI, Verlauf, Bericht
 
 | Nr | Befund | Beleg | Umfang |
@@ -286,17 +341,25 @@ die Mengenprobe über die Stundenreihen.
 
 Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: blockiert mehr als eine Etappe.
 
+> **Alle zwanzig Entscheide sind gefallen: „entschieden 20.09.2026 nach Empfehlung"**
+> (Anwenderauftrag vom 20.09.2026 „fahre fort mit der Umsetzung der Wirtschaftlichkeitsberechnung nach
+> Konzept wie im Mockup" mit dem Zusatz „Entscheidung nach Empfehlung"; Statuszeile **#405**).
+> Die Empfehlungsspalte unten **ist damit der Entscheid** — sie bleibt im Wortlaut stehen. Ausdrücklich
+> bestätigt hat der Anwender **A5** (V‑E ohne Degradation), **A3** (Sperre mit Begründungszeile) und
+> **A4** (§ 51a mit dem anzulegenden Wert, eigener Testfall). Was jeder Entscheid für den Bau bedeutet,
+> steht in der Tafel unter der Entscheidtabelle.
+
 | # | Frage | Empfehlung |
 |---|---|---|
 | **A1\*** | Rechenaufruf und Datenseite aus der Windows-Schale holen (P1, P2, P3) — als eigene Welle vor der Ergebnisansicht, oder erst mit ihr? | **Vorher**, in der gemessenen Reihenfolge (§ 5 E3): sonst entsteht jedes neue Stück der Ergebnisansicht ein zweites Mal nur für Windows |
-| **A2\*** | K‑1: Stromkennzahl und Abwärmeabfuhr je Anlage (Schritt 97) — Nutzwärme je Modul aus dem Ergebnismodell oder Aufteilung nach Leistung? | Vor der Umsetzung messen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile |
+| **A2\*** | K‑1: Stromkennzahl und Abwärmeabfuhr je Anlage (Schritt **A**, § 6) — Nutzwärme je Modul aus dem Ergebnismodell oder Aufteilung nach Leistung? | Vor der Umsetzung messen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile |
 | **A3** | S‑2: Mischlage § 53/53a neben § 54 sperren (§ 54-Betrag verwerfen) oder als Warnung hochstufen? | **Sperre** mit Begründungszeile — solange R‑U1 offen ist, ist die Kombination nie zulässig |
 | **A4** | V‑2: § 51a mit der Einspeisevergütung bewerten, wenn die Anlage feste Vergütung fährt? | Ja, nach Volltextprüfung; eine Zeile, eigener Testfall |
 | **A5\*** | Degradation: V‑E des Konzepts rechnet sie ein, G3 des Szenarienkonzepts lehnt sie ab | Entscheid neu stellen; bis dahin V‑E ohne Degradation planen |
-| **A6** | Ersatz/Restwert-Kennzeichen je Position (Schritt 101) oder je Technik? | **Position**, nullbar, NULL = wie bisher |
+| **A6** | Ersatz/Restwert-Kennzeichen je Position (Schritt **E**, § 6) oder je Technik? | **Position**, nullbar, NULL = wie bisher |
 | **A7** | Speicherflotte an `Tab_Nutzungsdauer` anschließen (Basis neu einfrieren) — jetzt oder mit ND‑S3? | Mit ND‑S3, als eigener Auftrag mit Neueinfrieren |
 | **A8** | Geräteeigene Nutzungsdauer-Spalten (`Tab_BHKW`, `Tab_Heizkessel`) abkündigen? | **Nicht jetzt** — kennzeichnen; die Speichervariante sollte die Positionsarten 20/21 lesen |
-| **A9** | U‑1 Einheitenbruch (Gase `m³` → `Nm³`) als DML-Schritt 103 freigeben? | Ja, vor dem nächsten Vorlagenbau; die fünf Randfragen ins Register |
+| **A9** | U‑1 Einheitenbruch (Gase `m³` → `Nm³`) als DML-Schritt **G** (§ 6) freigeben? | Ja, vor dem nächsten Vorlagenbau; die fünf Randfragen ins Register |
 | **A10** | Zweiten Migrationsmechanismus entkernen (fünf `CREATE`, 55 `SpalteSicher`, Rückfallebene `SchemaKatalog.Alle`)? | Ja, als eigener Auftrag nach den Schritten 97–102 — bis dahin gilt die Doppelpflicht |
 | **A11\*** | Nachweis: Referenzlauf um Wirtschaftlichkeitsgrößen erweitern oder Ankertests im Kern? | **Ankertests zuerst** (drei fehlende § 6.2-Anker, ein absoluter Kapitalwert je Referenzprojekt), Referenzlauf-Erweiterung als Frage für die nächste Basis |
 | **A12** | Erlösrubrik U6: Eigenverbrauch je Anlage nach der Näherung V‑4 verteilen (Zwischensumme sagt „Näherung") oder modulscharfe Stundenreihen? | Näherung, ausgewiesen — Stundenreihen sind ein Simulationsthema |
@@ -309,6 +372,36 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 | **A19** | iOS-Whitelist: welche Wirtschaftlichkeitsseiten sollen auf dem Gerät erreichbar sein (Kostenverwaltung, Parameter, Nutzungsdauern, PV, Tarif, Verlauf, Berichte & Kosten)? | Alle, in der Reihenfolge des Hüllen-Umzugs; iOS-Lauf nur nach Rückfrage |
 | **A20** | Katalogpflege ohne Leser: `KWKG_MINDESTALTER_*` (Mindestabstand § 8 Abs. 2) lesen, Förderende 2030 säen, EU‑ETS‑2-Schlüssel anlegen? | Förderende ja (R‑U5), Mindestabstand nur mit Inbetriebnahmedatum der Altanlage, ETS 2 mit dem Preispfad |
 
+**Stand je Entscheid am 22.09.2026.** Alle zwanzig sind entschieden; gebaut ist, was die Spalte sagt.
+
+| # | Umsetzungsstand | Etappe |
+|---|---|---|
+| **A1** | entschieden, **nicht gebaut** — E3 ist die nächste Etappe; Muster aus #428 liegt vor | E3 |
+| **A2** | entschieden, nicht gebaut; die Messung der modulscharfen Nutzwärme steht aus | E7 |
+| **A3** | entschieden (**Sperre** mit Begründungszeile), nicht gebaut — Befund S‑2 | E7 |
+| **A4** | entschieden (§ 51a mit dem anzulegenden Wert, **eigener Testfall**), nicht gebaut; der heutige Weg ist mit `PvErloesRechnerEegTests` **gepinnt** (#380) | E7 |
+| **A5** | entschieden: **V‑E ohne Degradation** — der Widerspruch zum Szenarienkonzept (G3) ist aufgelöst; beide Papiere sind nachgezogen | E9 |
+| **A6** | entschieden (Kennzeichen je **Position**, nullbar), nicht gebaut | E7 |
+| **A7** | entschieden (Speicherflotte **mit ND‑S3**, eigener Auftrag mit Neueinfrieren), nicht gebaut | E10 |
+| **A8** | entschieden (geräteeigene Spalten **nicht jetzt**, nur kennzeichnen), nicht ausgeführt | E10 |
+| **A9** | entschieden (U‑1 freigeben, vor dem nächsten Vorlagenbau), nicht gebaut | E7 |
+| **A10** | entschieden (entkernen, als **eigener Auftrag** nach den Schemaschritten dieser Reihe) | eigener Auftrag |
+| **A11** | entschieden **und gebaut** — die Ankertests stehen seit **#380** (§ 6.2 des Konzepts) | E1, erledigt |
+| **A12** | entschieden (Näherung, ausgewiesen), nicht gebaut | E4 |
+| **A13** | entschieden (**ja**, Schnitt in drei Papiere), **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht, E0c die Fortschreibung | offene Aufgabe |
+| **A14** | entschieden (Konzeptfassung ohne Roadmap-Satz; G9 nennt die Referenz beim Namen). Der **G9-Teil ist umgesetzt #405**; der Hinweistext (U10) steht aus | E5 |
+| **A15** | entschieden (ein Auftrag), nicht gebaut | offener Auftrag |
+| **A16** | entschieden („Höfingen" neutralisieren), nicht ausgeführt | E12 |
+| **A17** | entschieden (`_kap` als Blatt; Referenzmappe aus dem Bestand). **Rest:** Die Mappe ist noch nicht benannt — die vom Anwender genannte Ablage war am 22.09.2026 nicht erreichbar | E11 |
+| **A18** | entschieden (Abschnitt auf der Seite Kosten), nicht ausgeführt | E12 |
+| **A19** | entschieden (**alle**, in der Reihenfolge des Hüllen-Umzugs; iOS-Lauf nur nach Rückfrage) | E3 Schritt 8 |
+| **A20** | entschieden (Förderende ja; Mindestabstand nur mit Inbetriebnahmedatum, ETS 2 mit dem Preispfad), nicht gebaut | E7 |
+
+**Nicht** von diesem Entscheid gedeckt sind die drei Punkte, die erst mit E0 und E2 entstanden sind und
+keine Empfehlung tragen: **Hi/Ho am CO₂-Grenzwert (R11)**, die sieben Energieanlagen mit leerer
+`KWKG_Anlagenart` und `Nachweis_Json` in 0 von 78 Ergebniszeilen (Konzept § 6.3 Nr. 29, 30, 31). Sie
+brauchen je ein eigenes Wort des Anwenders, mit E7.
+
 ## 5 Umsetzungsplan
 
 Größe: S ≤ ½ Tag · M 1–2 Tage · L > 2 Tage. Modell nach `CLAUDE.md`: Opus 5 für Umsetzung, Tests und
@@ -317,19 +410,61 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 
 | Etappe | Inhalt | Größe | Rechenwirkung | Nachweis | Schema | Wiki | Modell | Voraussetzung |
 |---|---|---|---|---|---|---|---|---|
-| **E0 Papierpflege** | Kopfzeile, Geltungsblock, Quelltabelle, Artifacts (`07/§ 2.1–2.4`); § 6.1 um acht Zeilen, § 6.3 um neun Erledigte bereinigen, § 6.4/§ 6.5/§ 7 berichtigen; die vier falschen Sätze der §§ 3.2/3.4 (`01/§ 7`), die Kern-Aussagen aus `02/§ 8`, die Schemaaussagen aus `03/§ 6.2`, die WinForms-Reste `04/§ 3`, die Etappenkürzel `05/§ 8.2`; Übersetzungstafel `07/§ 2.12`; Mockup-Prüfung P1; dann der Schnitt in drei Papiere (A13) | M, Schnitt L | keine | Dokumentationswache | — | — | Sonnet (Pflege), Fable (Schnitt) | keine |
-| **E1 Nachweisfundament** | drei fehlende § 6.2-Anker und ein absoluter Kapitalwert je Referenzprojekt als Theorie-Klasse; `SteuerGutschriftRechnerTests`, `EegSatzRechnerTests`, `PvErloesRechner`-EEG-Fälle; Wache über die Blattstruktur von Excel und Word; Wächter `Format`/`ExcelFormat`; Runde‑2-Fall der Kaskade | M | keine | die Tests selbst; Referenzlauf unverändert | — | — | Opus | keine |
-| **E2 Kleine Kernkorrekturen** | CO₂-Kohärenzfall (R5), Kohärenzzeilen in Rubrik und Bericht (R6), Kaskadenrunde 2 (R4), V‑3 PV-Spalte, B‑7, I‑5, S‑3, S‑5-Hinweis, Strommix-Zeile, G9-Referenztext, G7 in Excel, Bandbreite „Spanne" und Referenzzeile, Hi/Ho-Leser, Kommentare (`WirtschaftlichkeitSeiteGaben.cs:727`, `StrompreisZerlegungModel.cs:86`); dazu P3 der Mockup-Prüfung | M | R4 ja (Sonderfall), sonst Ausweis | Anker, Kern-Tests, Berichtsprobe | — | Kleinigkeiten, kein Logbuch | Opus | E1 |
-| **E3 Plattform** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |
+| **E0 Papierpflege** — **umgesetzt #379** (Rest: A13-Schnitt offen) | Kopfzeile, Geltungsblock, Quelltabelle, Artifacts (`07/§ 2.1–2.4`); § 6.1 um acht Zeilen, § 6.3 um neun Erledigte bereinigen, § 6.4/§ 6.5/§ 7 berichtigen; die vier falschen Sätze der §§ 3.2/3.4 (`01/§ 7`), die Kern-Aussagen aus `02/§ 8`, die Schemaaussagen aus `03/§ 6.2`, die WinForms-Reste `04/§ 3`, die Etappenkürzel `05/§ 8.2`; Übersetzungstafel `07/§ 2.12`; Mockup-Prüfung P1; dann der Schnitt in drei Papiere (A13) | M, Schnitt L | keine | Dokumentationswache | — | — | Sonnet (Pflege), Fable (Schnitt) | keine |
+| **E1 Nachweisfundament** — **umgesetzt #380** | drei fehlende § 6.2-Anker und ein absoluter Kapitalwert je Referenzprojekt als Theorie-Klasse; `SteuerGutschriftRechnerTests`, `EegSatzRechnerTests`, `PvErloesRechner`-EEG-Fälle; Wache über die Blattstruktur von Excel und Word; Wächter `Format`/`ExcelFormat`; Runde‑2-Fall der Kaskade | M | keine | die Tests selbst; Referenzlauf unverändert | — | — | Opus | keine |
+| **E2 Kleine Kernkorrekturen** — **umgesetzt #405** (als W‑E2) | CO₂-Kohärenzfall (R5), Kohärenzzeilen in Rubrik und Bericht (R6), Kaskadenrunde 2 (R4), V‑3 PV-Spalte, B‑7, I‑5, S‑3, S‑5-Hinweis, Strommix-Zeile, G9-Referenztext, G7 in Excel, Bandbreite „Spanne" und Referenzzeile, Hi/Ho-Leser, Kommentare (`WirtschaftlichkeitSeiteGaben.cs:727`, `StrompreisZerlegungModel.cs:86`); dazu P3 der Mockup-Prüfung | M | R4 ja (Sonderfall), sonst Ausweis | Anker, Kern-Tests, Berichtsprobe | — | Kleinigkeiten, kein Logbuch | Opus | E1 |
+| **E3 Plattform** — **offen, nächste Etappe** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |
 | **E4 Erlösrubrik und Steuerzeilen** | U7 (zwei Beträge, zwei Zeilen, Umschlagfassung), 9d (Gründe je Position), dann U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit", Näherung ausgewiesen) | M + L | keine (Summen unverändert) | Anker; `ErloesrubrikTests`; Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a | — | Wirtschaftlichkeit `block-a`, `energiekosten-je-anlage`; U6 wesentlich | Opus | Q15, A12; E1 |
 | **E5 Ergebnisansicht und V‑A** | U2 Umschalter, U10 Hinweistext (A14), U4 Bandbreite, U5 Empfehlungskarten, Kennzahl-Reihenfolge, Strich/Null (Q16), V‑A (Deklarationen, IZF-Warnung, Steigung, „nachrichtlich"), Hinweiszeile „k von n ohne Dauer" über den Kern (N1) | L | keine | bunit, Kern-Tests, Berichtsprobe, Sichtprüfung | — | Wirtschaftlichkeit, neue Anker; wesentlich | Opus | E3 (sonst nur Windows), Q8/Q9/Q13 für neue Rahmen |
 | **E6 Verlauf mit drei Szenarien** | dritte Strichart (Aufzählung, Vorgabe byte-gleich), `VerlaufsReihen` Farbe = Variante / Strichart = Szenario, Dreierlauf, Legende und Bildmaß, Hülle nach `EPOS.UI.Daten`, Knopf „Verlauf…" entfällt, Spaltengruppen je Szenario im Tabellenbericht, zweites Bild im Wortbericht | M–L | keine | **ChartProben** (Bild und Gegenprobe), Berichtsprobe, bunit | — | Wirtschaftlichkeit `verlauf` neu; wesentlich | Opus | E5 (Umschalter), E1 (Wache) |
-| **E7 Rechenwirksame Lücken** | K‑1 (Schritt 97, Dialogfeld Gruppe 1b, Schreibweg), S‑2 (A3), V‑2/V‑1 (A4), Ersatz/Restwert-Kennzeichen (Schritt 101), Preisbasis-Spalte (Schritt 102), U‑1 (Schritt 103), B‑4 Rest, Förderende (A20) | L | **ja**, je Punkt mit A/B | Anker als Vorher/Nachher, Referenzlauf byte-gleich (Simulation unberührt), neue Testklassen aus E1 | 97, 101, 102, 103 | Wirtschaftlichkeit `kwk-abwaermeabfuhr` neu; Kosten `ersatz-restwert` | Opus | A2, A3, A4, A6, A9; E1 |
+| **E7 Rechenwirksame Lücken** | K‑1 (Schritt **A**, Dialogfeld Gruppe 1b, Schreibweg), S‑2 (A3), V‑2/V‑1 (A4), Ersatz/Restwert-Kennzeichen (Schritt **E**), Preisbasis-Spalte (Schritt **F**), U‑1 (Schritt **G**), B‑4 Rest, B‑6, Hi/Ho-Leser (R11, eigener Entscheid), Förderende (A20) | L | **ja**, je Punkt mit A/B | Anker als Vorher/Nachher, Referenzlauf byte-gleich (Simulation unberührt), neue Testklassen aus E1 | A, E, F, G (Nummern ab 101) | Wirtschaftlichkeit `kwk-abwaermeabfuhr` neu; Kosten `ersatz-restwert` | Opus | A2, A3, A4, A6, A9; E1 |
 | **E8 V‑C und V‑D** | fünf ValERI-Blöcke hinter dem Umschalter; Formelbericht Stufe 0 (Parameterblock), 1 (Mehrjahrestabelle), 2 (NBW/RMZ/IKV über Differenzreihe), 3 (Betriebskostenblock); Anhang-E-Checkliste; Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne` | L | keine (Werte bleiben gleich) | Blattstruktur-Wache vorher/nachher, Kern-Fall mit Normsollwerten | — | Wirtschaftlichkeit `bericht`, je Stufe ein Logbuch-Satz | Opus; Fable für die Stufenauslegung und die ClosedXML-Fragen | E1, E5; ClosedXML-Fragen aus `05/§ 3.3` geklärt |
-| **E9 V‑E Szenarioabdeckung** | Schritte 98–100 (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | 98, 99, 100 | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 (Degradation), E5, E7 |
+| **E9 V‑E Szenarioabdeckung** | Schritte **B–D** (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt; **ohne Degradation** (A5) | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | B, C, D (Nummern ab 101) | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 entschieden; E5, E7 |
 | **E10 Nutzungsdauer S3 und Speicherflotte** | Instandsetzung/Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge; Speicherflotte an `Tab_Nutzungsdauer` mit **Neueinfrieren der Basis**; geräteeigene Spalten kennzeichnen (A8) | M + M | **ja** | A/B, neue Referenzbasis mit Begründung in `Referenzlaeufe/LIESMICH.md` | (104 optional) | Kosten `nutzungsdauern` | Opus | ND‑S3-Entscheid, A7 |
 | **E11 Zahlenprobe A8/B9** | Referenzmappe festlegen (A17), Generation und Zelltafel einfrieren, Eingabespiegel, Neutralschaltung, fünf Teilproben (Annuität, Brennstoff, § 53, KWKG, Kapitalwert), erwartete Abweichungen vorab benennen (Grundlagen § 5) | M | keine | Protokoll unter `ueberholt/Protokolle/Reporting/` | — | — | Opus | A17 |
 | **E12 Wiki-Runden** | Sammel-Upload 28.09.2026: die 14+1 Sätze der Mockup-Prüfung, die fünf Lücken, U17/U23/U36, `help_mapping` (Tarifstruktur, BHKW, PV, acht Anker), Höfingen neutralisiert (A16), Hilfesystem 13.2 ergänzt; danach je Etappe die Sätze aus `06/§ 3` | S je Runde | — | Tabuwort-Regex, Produktdaten-Wache | — | — | Sonnet | A16, A18 |
+
+**Stand der Etappen am 22.09.2026.**
+
+**E0 — umgesetzt #379.** Gebaut ist die Papierpflege ohne Entscheid: Konzept (2 427 → 2 632 Zeilen),
+Szenarienkonzept, Nutzungsdauer-Konzept, Rechenwege 04/05/08 und der Wegweiser des Ordners (E0a); das
+Hauptmockup an rund 90 Stellen, vier weitere Mockups und der Index (E0b). **Nicht ausgeführt: der
+Schnitt in drei Papiere (A13)** — er bleibt als eigene Aufgabe stehen. E0c hat die Papiere am
+22.09.2026 auf den Stand nach #428 nachgezogen.
+
+**E1 — umgesetzt #380.** `WirtschaftlichkeitAnkerTests` (9), `SteuerGutschriftRechnerTests` (39),
+`EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23), `BerichtBlattstrukturWacheTests` (5),
+`WirtZeileFormatWacheTests` (4) und die reihenfolgeunabhängige Kaskadenrunde 2 (R4). **Zwei Befunde
+gegen das Konzept:** Kaskade 1042 ±0,00 € statt +20.927,61 €, Kapitalwert 1024 −2.896.359,13 € statt
+−2.220.322,32 € (Differenz −676.036,81 €, Ursache mit E7 nachzurechnen). **Ein Befund verkleinert
+E3 Schritt 4:** `BerichtsDatenSammler` ist bereits WinForms-frei; nur seine **Lage** muss wandern,
+einzige Naht ist `EnergieMengen.BaueBrennstoffmengen`.
+
+**E2 — umgesetzt #405** (in der Statusdatei als **W‑E2** geführt), **ohne Rechenwirkung**. Erledigt:
+R5, R6, R4 (schon mit E1), V‑3, B‑7, I‑5, S‑3, S‑5-Hinweis, Strommix-Zeile, G7, G8 („Spanne" und
+Referenzzeile), G9-Referenztext, Formel `N4` sowie P3 der Mockup-Prüfung. **Was „Nach #405" offen
+lässt:** Hi/Ho am CO₂-Grenzwert (R11, bewusst offen, Entscheid für E7), die trägerscharfe Aufteilung
+der CO₂-Warnung (so gelassen), 22 gleichlautende Knopfschlüssel außerhalb dieses Feldes und
+`WIRT_ENK_ANLAGE` ohne Leser (mit der Fußleisten-Welle, Q8). Der **Hi/Ho-Leser** stand in der Zeile
+oben als Inhalt von E2, ist aber **nicht** gebaut worden — er gehört zu E7. Von B8 bleiben damit
+**S‑2** (≡ A3) und **B‑6**.
+
+**E3 — offen, nächste Etappe.** Stand je Schritt, nachgemessen am Codestand `3b71871c`:
+
+| Schritt | Stand |
+|---|---|
+| (1) vier nahtlose Hüllen verschieben | **offen** — `WirtschaftlichkeitParameterHuelle`, `KostenfaktorKatalogHuelle`, `VorlagenUebernahmeHuelle` und `ErtragBonusGaben` liegen unverändert unter `WindowsFormsApplication1/Views/` |
+| (2) `OpenFileDialog` → `Dienste.Datei` | offen |
+| (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben | offen |
+| (4) Rechenaufruf aus `BerichtsDatenSammler` | offen, aber **kleiner als geplant** (Befund #380): reiner Umzug, einzige Naht `EnergieMengen.BaueBrennstoffmengen` |
+| (5) `KostenKomponenteHuelle` mit Fenster-Adapter | **offen** — die Hülle liegt weiter unter `Views/Kosten/`. **Das Adapter-Muster ist seit #428 vorhanden:** `KlimadatenFenster`, `ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster` |
+| (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle | offen |
+| (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog` | offen |
+| (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern | **offen** — `IosProjektQuelle` überschreibt die Gaben nicht, die Vorgabe in `IProjektQuelle.cs:272` liefert `null`; die Whitelist (`AppWurzel.razor:1590–1611`, 18 Schlüssel) führt von diesem Feld nur `BhkwWirtschaftlichkeit`, `Energietraeger` und `BerichteKosten`. Umfang mit **A19** entschieden |
+
+**E4 bis E12** sind unverändert offen. **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
+zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
+wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.
 
 **Reihenfolge und Begründung.** E0 und E1 haben keine Voraussetzung und sichern alles Folgende ab —
 ohne Anker und Wachen ist keine Rechen- oder Berichtsänderung dieses Feldes abnehmbar (N1–N4). E2 und
@@ -339,24 +474,38 @@ brauchen die Anker aus E1 und je einen A/B-Nachweis, der Referenzlauf sieht sie 
 einzige Etappe mit belastbarer Beschreibung im Konzept (§ 2.11.6). Ein iOS-Lauf ist erst mit E3
 Schritt 8 begründet und läuft nur nach Rückfrage.
 
-## 6 Schemaschritte ab 97
+## 6 Schemaschritte dieser Etappen
 
-Vorschlag aus `03/§ 6.1`, um zwei verschoben (95 ist mit KL‑3, 96 mit FK‑2 vergeben). Alle Schritte außer 103 sind
-reines DDL ohne DML, ergebnisneutral bis zur ersten Pflege; Testdatenbank über
-`Werkzeuge/Testdatenbankschema`, Auslieferungsvorlage und Erstbereitstellung ohne Sonderbehandlung.
+**Die Nummern stehen nicht mehr im Plan.** Als dieses Papier entstand, war 97 der nächste freie
+Schritt; inzwischen sind **97–100 anderweitig vergeben** — 97 Szenario und Bezugsjahr der Klimaregion
+(`Schritt97_KlimaSzenario`, KL‑6, #382), 98 BHKW-Gesamtwirkungsgrad als Faktor (reines DML, BW‑1,
+#383), 99 die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1) und 100 die
+Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426). `SchemaStand.Zielversion` steht auf **100**, der
+**nächste freie Schritt ist 101**.
 
-| Nr | Inhalt | Tabelle | Doppelpflicht `SpalteSicher` | Einfrierregel | Etappe |
-|---|---|---|---|---|---|
-| 97 | K‑1: `KWKG_Abwaermeabfuhr` (0/1, CHECK), `KWKG_Stromkennzahl` (nullbar) | `Tab_Energieanlagen` | nein | nein | E7 |
-| 98 | Szenariorahmen: `Szen_Best/Worst_Zeitraum`, `Szen_Best/Worst_Menge` (nicht `_Dauer`) | `Tab_ProjektWirtschaftlichkeit` | **ja** | nein | E9 |
-| 99 | Trägerpreise best/worst: `custom_price_work/base/power_best/_worst` | `energy_project_settings` | nein | nein | E9 |
-| 100 | Erlössätze best/worst: `Einspeiseverguetung(_KWK)_Best/_Worst`; `DvEntgelt_Best/_Worst`, `PpaPreis_Best/_Worst` | `Tab_ProjektWirtschaftlichkeit`, `Tab_ProjektPhotovoltaik` | **ja** (PPV) | nein | E9 |
-| 101 | `ErsatzFuehren`, `RestwertAnsetzen` (nullbar, CHECK; NULL = wie bisher) | `Tab_ProjektWerte`, `Tab_KostenVorlagePosition` | nein | nein | E7 |
-| 102 | `Preisbasis` (TEXT, nullbar) mit einmaligem DML aus `ID_Umrechnung` | `energy_project_settings` | nein | nein | E7 |
-| 103 | U‑1: `Einheit`/`PreisEinheit` der fünf Gase auf `Nm³`, eine `energy_price`-Zeile — **reines DML**, vor dem Vorlagenbau | `Tab_Brennstoff_Stamm`, `energy_price` | nein | nein (Einfrierliste nennt nur CO₂/SO₂/NOx/Staub) | E7 |
-| (104) | optional: geräteeigene Nutzungsdauer entfernen | `Tab_BHKW`, `Tab_Heizkessel` | nein | nein | E10, nach A8 |
-| — | Speicherflotte an `Tab_Nutzungsdauer` | JSON in `Tab_SpeicherAuslegung` | — | **ja** (Projekt 1046) | E10, eigener Auftrag |
-| — | `SteuerErgebnis`-Trennung, Anlagenbezug der Erlöszeilen | nur im Nachweisumschlag | — | nein | E4 |
+Damit keine Nummer zweimal vergeben wird, führt dieses Papier die geplanten Schritte fortan mit
+**Buchstaben**. Jeder bekommt seine Nummer **bei der Umsetzung**, aus dem dann freien Bereich (heute ab
+101), und der Umsetzende misst sie an `SchemaStand.Zielversion` neu — nicht an diesem Papier. Alle
+Schritte außer **G** sind reines DDL ohne DML, ergebnisneutral bis zur ersten Pflege; Testdatenbank
+über `Werkzeuge/Testdatenbankschema`, Auslieferungsvorlage und Erstbereitstellung ohne
+Sonderbehandlung.
+
+| Schritt | vormals | Inhalt | Tabelle | Doppelpflicht `SpalteSicher` | Einfrierregel | Etappe |
+|---|---|---|---|---|---|---|
+| **A** | 97 | K‑1: `KWKG_Abwaermeabfuhr` (0/1, CHECK), `KWKG_Stromkennzahl` (nullbar) | `Tab_Energieanlagen` | nein | nein | E7 |
+| **B** | 98 | Szenariorahmen: `Szen_Best/Worst_Zeitraum`, `Szen_Best/Worst_Menge` (nicht `_Dauer`) | `Tab_ProjektWirtschaftlichkeit` | **ja** | nein | E9 |
+| **C** | 99 | Trägerpreise best/worst: `custom_price_work/base/power_best/_worst` | `energy_project_settings` | nein | nein | E9 |
+| **D** | 100 | Erlössätze best/worst: `Einspeiseverguetung(_KWK)_Best/_Worst`; `DvEntgelt_Best/_Worst`, `PpaPreis_Best/_Worst` | `Tab_ProjektWirtschaftlichkeit`, `Tab_ProjektPhotovoltaik` | **ja** (PPV) | nein | E9 |
+| **E** | 101 | `ErsatzFuehren`, `RestwertAnsetzen` (nullbar, CHECK; NULL = wie bisher) | `Tab_ProjektWerte`, `Tab_KostenVorlagePosition` | nein | nein | E7 |
+| **F** | 102 | `Preisbasis` (TEXT, nullbar) mit einmaligem DML aus `ID_Umrechnung` | `energy_project_settings` | nein | nein | E7 |
+| **G** | 103 | U‑1: `Einheit`/`PreisEinheit` der fünf Gase auf `Nm³`, eine `energy_price`-Zeile — **reines DML**, vor dem Vorlagenbau | `Tab_Brennstoff_Stamm`, `energy_price` | nein | nein (Einfrierliste nennt nur CO₂/SO₂/NOx/Staub) | E7 |
+| **(H)** | (104) | optional: geräteeigene Nutzungsdauer entfernen | `Tab_BHKW`, `Tab_Heizkessel` | nein | nein | E10, nach A8 |
+| — | — | Speicherflotte an `Tab_Nutzungsdauer` | JSON in `Tab_SpeicherAuslegung` | — | **ja** (Projekt 1046) | E10, eigener Auftrag |
+| — | — | `SteuerErgebnis`-Trennung, Anlagenbezug der Erlöszeilen | nur im Nachweisumschlag | — | nein | E4 |
+
+*Die Spalte „vormals" nennt die Nummer aus der Fassung vom 19.09.2026, damit Verweise aus Protokollen,
+Mockup-Anhang und Statuszeilen weiter treffen. **Der Mockup-Anhang nennt bei U1 und U32 denselben
+Schritt A** (dort als „Schemaschritt 97" geführt; mit E0c auf „Nummer bei der Umsetzung" geändert).*
 
 ## 7 Berichtigungen an den Papieren
 
@@ -364,6 +513,19 @@ Vollständige Listen mit Zeile, alt und neu: `01/§ 7` (13 Stellen Kern), `02/§
 Vergütung/Steuern), `03/§ 6.2` (14 Stellen Schema), `04/§ 3` und `§ 8.2` (15 WinForms-Reste, 7 Stellen),
 `05/§ 8.1` (9 Stellen Bericht/Nutzungsdauer), `07/§ 2` (Geltung, Kopf, Quellen, § 6.3–§ 7). Die
 Mockup-Prüfung § 3.2 bleibt daneben gültig (Kopfzeile, § 2.2–2.4, § 2.7, § 2.13, § 6.1). Die schwersten:
+
+> **Stand 22.09.2026: mit E0 (#379) ausgeführt** — die Berichtigungen am konsolidierten Konzept
+> (Geltungsblock, Kopfzeile, Quelltabelle und Artifacts, § 3.1 Formelkarte, §§ 3.2/3.4, die
+> Schemaaussagen, § 2.13 (3)/(4)/(5), § 6.1, § 6.3, § 6.4, § 6.5, § 7), am Szenarienkonzept, am
+> Nutzungsdauer-Konzept und an den Rechenwegen 04/05/08. **Offen geblieben und mit E0c (22.09.2026)
+> nachgezogen:** die Kopfzeile trägt jetzt Stand 22.09.2026, Codestand `3b71871c` und Zielversion
+> **100** (nicht mehr 96/97 wie in der Tafel unten); `WIRT_EMPF_KEINE` ist mit **#405** nachgezogen
+> (G9-Referenztext); die Degradationsfrage ist mit **A5** entschieden. **Noch offen:** die drei
+> `help_mapping`-Zeilen und der Satz im Konzept Hilfesystem § 13.2 (beide E12), die Neutralisierung von
+> „Höfingen" (A16, E12) und die Benennung der Referenzmappe (A17, E11).
+>
+> Wo die Tafel unten **Schemaschritte** nennt (97, 103), gelten die Buchstaben aus § 6: Schritt **A**
+> statt 97, Schritt **G** statt 103.
 
 | Papier · Stelle | Berichtigung | Quelle |
 |---|---|---|

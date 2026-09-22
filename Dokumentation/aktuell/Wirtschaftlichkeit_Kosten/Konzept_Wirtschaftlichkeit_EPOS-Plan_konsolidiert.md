@@ -1,6 +1,12 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 19.09.2026** · Codestand `e1c4275e` (vor dem Umschreiben der Geschichte am 12.09.2026: `922228a`) · `SchemaStand.Zielversion` = 96 · Schemaschritte 90–96 vergeben, neue ab 97 · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 22.09.2026** · Codestand `3b71871c` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+
+Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
+Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
+BW‑1), **99** die zwei Wirkungsgrade des BHKW (`Schritt99_BhkwWirkungsgradAnteile`, BW‑1), **100** die
+Vorgabe 0 der Fremdschlüsselspalten (FK‑1, #426). Wer hier einen Schritt plant, nimmt die nächste
+freie Nummer **bei der Umsetzung** — nicht im Papier.
 
 Dieses Dokument führt zusammen, was heute auf Formelkarte, Feldkarte, sechs Konzepte und
 gut zwanzig Etappenprotokolle verteilt liegt. Es beantwortet die beiden Fragen, die vor der
@@ -698,7 +704,7 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | hier | Szenarienkonzept | Gegenstand dort |
 |---|---|---|
 | V-G1 Preisschwankungsraten | **G2** | Preisänderung je Kostenart — umgesetzt |
-| V-G2 Degradation | **G3** | Degradation — *Entscheid A5 offen (Analyse vom 19.09.2026)*: das Szenarienkonzept führt G3 als „nicht umsetzen", § 2.11.4 nennt Degradation als Teil von V-E |
+| V-G2 Degradation | **G3** | Degradation — **Entscheid A5 vom 20.09.2026 (nach Empfehlung)**: Der Entscheid „G3 nicht umsetzen" gilt, V-E (§ 2.11.4) wird **ohne** Degradation geplant; die Vereinfachung bleibt offengelegt |
 | V-G6 Sensitivität mit Steigung €/% | **G6** | nicht monetisierbare Wirkungen — **andere Sache**, trotz gleicher Ziffer |
 | V-G10 Formelbericht | **G10** | Herleitung Eigen/Einspeisung — **andere Sache** |
 | V-G11 nicht monetisierbare Wirkungen | **G11** | investitionsgekoppelte Betriebskosten — **andere Sache**; der Freitext ist mit W5‑B‑12/G6 gebaut |
@@ -743,17 +749,24 @@ Die Spalte „entspricht / bereits geliefert durch" löst die zweite Etappenreih
 Szenarienkonzepts (`W5‑B‑9` … `W5‑B‑12`) gegen diese auf — beide Reihen meinen teilweise dieselbe
 Arbeit.
 
-| Etappe | Inhalt | entspricht / bereits geliefert durch | Wirkung |
-|---|---|---|---|
-| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | offen | keine |
-| **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe |
-| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | offen | Ausweis |
-| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe |
-| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), Degradation (V-G2), n-jährliche Zeitpunkte (V-G3) | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral |
+| Etappe | Inhalt | entspricht / bereits geliefert durch | Wirkung | Stand im Etappenplan E0–E12 |
+|---|---|---|---|---|
+| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | offen | keine | **E5** (mit der Ergebnisansicht) |
+| **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | offen | Ausweis | **E8** |
+| **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe | **E8** |
+| **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** |
 
-*Entscheid A5 offen (Analyse vom 19.09.2026):* V-E nennt die **Degradation (V-G2)** als Teil der
-Etappe; das Szenarienkonzept führt dieselbe Sache als `G3` mit dem Entscheid vom 09.09.2026 „nicht
-umsetzen". Ob die Nummer falsch ist oder der Entscheid gekippt wird, ist nicht entschieden.
+*Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
+[`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
+gebaut sind daraus E0 (#379), E1 (#380) und E2 (#405).*
+
+**Entscheid A5 (20.09.2026, nach Empfehlung): V-E rechnet die Degradation nicht ein.** V-E nannte die
+**Degradation (V-G2)** als Teil der Etappe; das Szenarienkonzept führt dieselbe Sache als `G3` mit dem
+Entscheid vom 09.09.2026 „nicht umsetzen". Der Entscheid vom 20.09.2026 löst den Widerspruch zugunsten
+des Szenarienkonzepts auf: **V-E wird ohne Degradation geplant**, die Vereinfachung bleibt offengelegt
+(Szenarienkonzept § 9.4). Die Nummerierung `V-G2` ↔ `G3` bleibt, wie sie ist — die Übersetzungstafel
+steht am Anfang von § 2.11.2.
 
 | Nr. | Entscheidungsfrage | Empfehlung |
 |---|---|---|
@@ -1044,8 +1057,19 @@ Dazu: Die Hinweiszeile füllt heute nur die Windows-Hülle (`WirtschaftlichkeitS
 ist deren **einziger** Schreiber, und die Textbildung liegt bereits im Kern
 (`NutzungsdauerAbgleich.Hinweis`); zu tun ist das Einsammeln der Positionen, nicht der Text. Für die
 iOS-Schale muss sie in eine plattformfreie Hülle unter `EPOS.UI.Daten`; **einen Ordner
-`Wirtschaftlichkeit` gibt es dort noch nicht** (heute nur `Allgemein`, `Assistent`, `Bedarf`,
-`Kosten`, `Projekt`, `Pufferspeicher`, `Simulation`, `Stromspeicher`) — er ist mit anzulegen.
+`Wirtschaftlichkeit` gibt es dort noch nicht** (heute `Allgemein`, `Assistent`, `Bedarf`,
+`Klimadaten`, `Kosten`, `Projekt`, `Pufferspeicher`, `Simulation`, `Strom`, `Stromspeicher`) — er ist
+mit anzulegen.
+
+**Entscheid A1 (20.09.2026, nach Empfehlung): der Umzug kommt vor der Ergebnisansicht.** Rechenaufruf
+und Datenseite werden als eigene Welle **E3 Plattform** aus der Windows-Schale geholt, nicht erst mit
+der Ergebnisansicht — sonst entsteht jedes Stück dieser Ansicht ein zweites Mal nur für Windows.
+**Das Muster liegt seit #428 (KI‑F8) vor:** Vier Hüllen (`KlimadatenHuelle`, `ProjektKopieHuelle`,
+`PeakShavingHuelle`, `StromganglinieAdminHuelle`) sind plattformfrei nach `EPOS.UI.Daten` gewandert,
+während Windows je Hülle einen **Fenster-Adapter** behielt (`KlimadatenFenster`, `ProjektKopieFenster`,
+`PeakShavingFenster`, `StromganglinieAdminFenster`); die Wurzel öffnet dieselben Masken auf iOS über
+Nähte in `IProjektQuelle`. Nach diesem Muster ziehen die Hüllen dieses Papiers um — allen voran
+`KostenKomponenteHuelle` (Q14, E3 Schritt 5).
 
 **(4) Erlöse und Vorteile je Komponente.** B7 hat die Rubrik nach der Achse **zahlungswirksam /
 Ausweis** gebaut (Block A mit Summe, Block B ohne); der Anwender verlangt die Gliederung nach
@@ -2294,7 +2318,8 @@ die Wirtschaftlichkeitsrechnung nicht, wohl aber den gemeinsamen Schema-Nummernr
 | **U-1** | Einheitenbruch `Tab_Brennstoff_Stamm.Einheit` ↔ `energy_conversion` (BK3 § 6 Nr. 4): die Identitätsregel-Ableitung liefert für 9 von 25 Brennstoffen `-1` | **entschieden 30.08.2026 — Weg (a)**: Der Stammtext der fünf Gase (Brennstoffe 1, 2, 3, 14, 25) wird „m³" → „Nm³" gezogen (Muster Schritt 26a; Leitentscheidung L4 auf die Stammseite fortgeschrieben). Die Wege (b) Identitätsregel-Saat und (c) `billing_unit`-Ableitung sind **nicht beauftragt** |
 
 **Der Schemaschritt ist noch nicht vergeben.** Der einst genannte **Schritt 62 ist anderweitig
-belegt** (`Schritt_62_KlimaWaisen`); U-1 steht aus und bekommt **Schritt 103**. Gemessen am
+belegt** (`Schritt_62_KlimaWaisen`); U-1 steht aus und bekommt seine Nummer **bei der Umsetzung**
+(nächster freier Schritt am 22.09.2026: **101** — 90–100 sind vergeben). Gemessen am
 19.09.2026: Die fünf Gase führen in `Tab_Brennstoff_Stamm.Einheit` unverändert `m³`;
 `energy_carrier.billing_unit` steht dagegen seit Schritt 26a auf `Nm³`. **Die Umsetzung ist nicht
 freigegeben** und gehört auf den Pufferspeicher-Strang.
@@ -2357,20 +2382,40 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **Nutzungsdauern S2** (#357) | Knopf „Nutzungsdauern vorbelegen…" als vierter der Rasterleiste (U8) und die Tafel „Ersatz und Restwert" im Kostendialog (U30); Positionsart als Klappliste im Zeileneditor (§ 2.13 (3)) | keine, solange keine Dauer gepflegt wird; danach **ja** — Ersatz und Restwert entstehen |
 | **Übernahme aus der Kostenverwaltung** (#363) | „Aus Vorlage übernehmen…" öffnet den **Katalogblock** der Administration (Komponente · Kategorie · Variante · Positionsvorschau mit Spalte „Ziel") statt der bisherigen Klappliste | keine — reine Auswahlseite |
 | **Bezugsgrößen** (#364) | Betriebskosten: Bezugsgrößen aus dem gespeicherten Lauf, jeder Fehlgrund benannt; Grundlage der Live-Frisch-Anzeige (§ 2.8 Punkt 3, § 6.3 B5-Kernaufgabe 2) | **ja** — zuvor ungerechnete Hilfsenergiekosten entstehen |
-| **E2 Kleine Kernkorrekturen** (20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
+| **E0 Papierpflege** (#379) | Papierpflege ohne Entscheid: Kopfzeile, Geltungsblock, Quelltabelle und Artifacts dieses Papiers; § 2.2/§ 2.3/§ 2.4/§ 2.7/§ 2.8/§ 2.12 auf den Razor-Stand; § 3.1 Formelkarte mit Endenergie-Topf und p_I; § 6.1 um acht Etappenzeilen, § 6.3 um neun Erledigte bereinigt, § 6.4/§ 6.5/§ 7 berichtigt; neuer Anhang „Kürzel und Etappen"; dazu Szenarienkonzept, Nutzungsdauer-Konzept, Rechenwege 04/05/08, Mockups und Index (E0b). **Nicht ausgeführt:** der Schnitt in drei Papiere (A13) | **keine** — kein Code berührt |
+| **E1 Nachweisfundament** (#380) | Das Nachweisfundament dieses Feldes: `WirtschaftlichkeitAnkerTests` (9 Anker, § 6.2), `SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23, Befund V‑2 gepinnt), `BerichtBlattstrukturWacheTests` (5), `WirtZeileFormatWacheTests` (4); **Kaskadenrunde 2** (`InvestKaskade`) in zwei Phasen wie Runde 3, damit reihenfolgeunabhängig | **keine** — A/B über 25 Projekte × 3 Szenarien zeilenweise identisch; Referenzlauf unverändert |
+| **DL‑2e Knopfleisten** (#390) | Die Fußleisten der beiden Kostendialoge dieses Papiers auf den Hausstil: `KostenKomponenteDialog` und `EnergietraegerDialog` tragen die `SpeichernLeiste` mit Status · Speichern · Abbrechen · OK; die vier Rasterknöpfe des Reiters „Kosten" (§ 2.8) bleiben Blattleiste; „Bezeichnung speichern" der Energieträgerkarte entfällt zugunsten **eines** Schreibwegs | keine — reine Bedienung |
+| **E2 Kleine Kernkorrekturen** (#405, 20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
 
 ## 6.2 Regressionsanker
 
-| Anker | Wert |
-|---|---|
-| `LiesBetriebskosten(1024)` | **99,00 €/a** |
-| Kapitalwert 1024 | **−2.220.322,32 €** |
-| `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 |
-| Kaskadenregression 1042 | +20.927,61 |
-| Referenzbasis | `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` |
+Die Anker stehen seit **E1 (#380)** als Testklasse im Kern: `WirtschaftlichkeitAnkerTests` (9 Fälle)
+fährt den Weg `LadeParameter → ErgebnisCtrl.Load → KostenEmissionRechner.Berechne →
+WirtschaftlichkeitCtrl.Berechne` und hält damit die Größen dieses Papiers fest, ohne den
+Berichtssammler der Windows-Schale nachzubauen. Dazu kommen die Rechnerklassen
+`SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23), die
+Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFormatWacheTests` (4).
 
-1030 ist auf der **Investitionsseite neu verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`);
-**Kapitalwert und Betriebskosten von 1030 tragen weiterhin keinen Anker.**
+| Anker | Wert | Herkunft |
+|---|---|---|
+| `LiesBetriebskosten(1024)` | **99,00 €/a** | gemessen = Konzept (#380) |
+| Kapitalwert 1024 | **−2.896.359,13 €** | gemessen (#380) — das Konzept führte **−2.220.322,32 €** |
+| Kapitalwert 1030 | **−21.895.377,28 €** | gemessen (#380) |
+| `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
+| Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
+| Referenzbasis | `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` | |
+
+**Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
+Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
+heutigen Datenstand keinen Einheitpreis. Der Kapitalwert 1024 liegt mit −2.896.359,13 € um
+**−676.036,81 €** unter dem Konzeptwert; die Abweichung ist eingegrenzt, aber nicht nachgerechnet
+(Kandidaten: Kesselbrennstoff B‑1/#331, Hilfsstrom #365/#366, Schemaschritte 93–96) und gehört zu
+**E7**. Bis dahin gilt der **gemessene** Wert als Anker.
+
+1030 ist auf der **Investitionsseite verankert** (410.000,00 €, `InvestKaskadeTests.cs:281`) und seit
+#380 auch im Kapitalwert; **die Betriebskosten von 1030 tragen weiterhin keinen Anker.** Die Projekte
+1007, 1017, 1045 und 1046 führen in der Testdatenbank keinen gebuchten Ergebnisstand und keine
+Kategorie‑1-Zeilen — ihre absoluten Anker fallen an, sobald die nächste Basis einen führt (#380).
 
 ## 6.3 Offene Punkte
 
@@ -2486,7 +2531,15 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     gemeinte Stelle ist, ist nicht gegengeprüft — nachmessen, dann streichen
 19. Asymmetrie „Wartung BHKW" gegen „Vollwartung / Wartung Kessel"
 
-**Aus Etappe E2 (20.09.2026) — geschlossen**
+**Aus Etappe E1 (#380) — geschlossen**
+
+*Ohne eigene Nummer, weil der Punkt erst im Umsetzungsplan des Analysepapiers entstand:* **R4
+Kaskadenrunde 2.** Runde 2 der Drei-Runden-Kaskade (§ 3.2) hing an der Reihenfolge der Zeilen.
+`InvestKaskade` fährt sie seit #380 in zwei Phasen wie Runde 3 und ist damit
+reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist zeilenweise identisch
+(`InvestKaskadeTests`, 25 Fälle).
+
+**Aus Etappe E2 (#405, 20.09.2026) — geschlossen**
 
 25. ~~**CO₂ doppelt gebucht** (R5): aktiver CO₂-Bestandteil im Arbeitspreis und gebuchte
     BEHG-Reihe nebeneinander blieben unbemerkt.~~ — **erledigt**: neuer Fall der Kohärenzprüfung,
@@ -2510,9 +2563,13 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     Zähler rund 10 % zu hoch aus und die Befreiung entfiele in Grenzfällen zu Unrecht. Die Wahl
     der Bezugsgröße ändert den gebuchten Befreiungsbetrag und damit den Kapitalwert — sie gehört
     zu E7, zusammen mit dem Beleg, auf welche Bezugsgröße die Vorschrift abstellt. Das heutige
-    Verhalten ist gepinnt (`KleinkorrekturenE2Tests`).
+    Verhalten ist gepinnt (`KleinkorrekturenE2Tests`). **Vom Entscheid „nach Empfehlung" des
+    20.09.2026 nicht gedeckt:** Die Frage entstand erst mit E2 und trägt keine Empfehlung.
 
-**Aus der Papierpflege E0 — Sachpunkte der Datenaufnahme**
+**Aus der Papierpflege E0 (#379) — Sachpunkte der Datenaufnahme**
+
+*Beide Punkte sind neue Anwenderfragen ohne Empfehlung; der Entscheid „nach Empfehlung" vom
+20.09.2026 deckt sie **nicht**.*
 
 30. **Sieben Energieanlagen tragen `KWKG_Anlagenart = ''`** (leere Zeichenkette statt NULL oder
     eines Steuerwerts). Die Anlagenart entscheidet über Kontingent und Satzstaffel; eine leere
@@ -2528,10 +2585,17 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 20. **Zahlenprobe gegen die Altanwendung (A8, ≡ B9) — die Vorbedingung ist entfallen:** Die
     BHKW-Plan-Excel liegt vor, die Inventarisierung steht in
     [`ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md).
-    Der Punkt ist damit **planbar**, nicht mehr blockiert; Prüfumfang s. § 7 (B9)
+    Der Punkt ist damit **planbar**, nicht mehr blockiert; Prüfumfang s. § 7 (B9). Was fehlt, ist
+    die **benannte Referenzmappe**: Entscheid A17 (20.09.2026 nach Empfehlung) legt `_kap` als
+    maßgebliches Kapitalwertblatt fest und verlangt eine Mappe aus dem Bestand mit 41 Blättern und
+    echten Zahlen. Die Ablage der BHKW-Plan-Mappen selbst **wartet auf Zulieferung** — die vom
+    Anwender genannten Orte auf dem Z:-Laufwerk waren am 22.09.2026 nicht erreichbar (E0c)
 21. ~~Basiswechsel der Referenzläufe entscheiden~~ — **erledigt mit #333** (neue Basis
-    `2026-09-18_R9_Kesselbrennstoff`, § 6.2); **offen bleibt**: Kapitalwert und Betriebskosten von
-    1030 verankern (die Investitionsseite ist verankert)
+    `2026-09-18_R9_Kesselbrennstoff`, § 6.2; heute `2026-09-19_R10_BhkwWirkungsgrad`).
+    ~~**Offen bleibt**: Kapitalwert und Betriebskosten von 1030 verankern.~~ — **Entscheid A11
+    (20.09.2026 nach Empfehlung): Ankertests zuerst**, die Erweiterung des Referenzlaufs ist eine
+    Frage für die nächste Basis. Mit **E1 (#380)** gebaut: Der Kapitalwert 1030 ist verankert
+    (−21.895.377,28 €); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;
@@ -2604,7 +2668,7 @@ die beiden Etappen dieser Tafel:
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
-| **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot), der **PV-Teil von V-3** (ein Aufruf in `Mehrjahresbild.Baue` und ein Ressourcenschlüssel), **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0) und **I-5** (uneinheitliche Vergleichsstrenge: ZUSCHUSS ohne, `PROZENT_*` mit Groß-/Kleinschreibung) | **ja** bei S-2 — jeder Punkt einzeln mit A/B-Nachweis; V-3, B-6 und I-5 sind Ausweis bzw. Robustheit |
+| **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot) und **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0). Der **PV-Teil von V-3** und **I-5** sind mit **E2 (#405)** erledigt. S‑2 ist mit **A3** entschieden (20.09.2026 nach Empfehlung): **Sperre mit Begründungszeile**, nicht Warnung. Beide Punkte laufen in **E7** des Etappenplans mit | **ja** bei S-2 — jeder Punkt einzeln mit A/B-Nachweis; B-6 ist Robustheit |
 | **B9** ≡ A8 | Zahlenprobe gegen die Altanwendung. **Planbar** — die Excel liegt vor und ist inventarisiert ([`Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md)); **was fehlt, ist die benannte Referenzmappe**. Abnahmeliste ist § 5 der [Grundlagen](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md) — neun Abweichungen der Altanwendung, darunter drei, die eine Zahlenprobe sofort auseinanderlaufen lassen (Öl je 1 000 l statt je MWh, Flüssiggas nicht zuordenbar, Stromsteuer als Restbelastung statt Erstattung) | Nachweis |
 
 Zur Einordnung: **I-1, I-2, I-3, B-1/N1, N3, B-5 und S-6 sind erledigt** (§ 4); die frühere
@@ -2613,24 +2677,30 @@ B6") ist mit B5, B6, B7, BK1, BK1a, BK1b, VG, VV und der Hilfsstrom-Umstellung �
 Reihenfolge der **heute** offenen Etappen — V-A…V-E (§ 2.11.4), U39 (§ 2.13 (3)),
 Erlösrubrik-Ausbau (§ 6.3 9a/9d/9i), ND-S3, B8, B9 — steht im Etappenplan E0–E12 des
 Analysepapiers [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
+Davon sind **E0 (#379), E1 (#380) und E2 (#405)** gebaut; die nächste Etappe ist **E3 Plattform**.
 
-## Offene Entscheide vor der nächsten Codeetappe
+**Wiederaufnahme 22.09.2026.** Die Umsetzung war am 20.09.2026 zurückgestellt (Statusdatei, Block
+„Nach #405" (f)); der Anwender hat sie am 22.09.2026 mit dem Auftrag wieder aufgenommen, das Mockup
+[`Dialog_Formel_Zahlenprobe.html`](../Mockups/Dialog_Formel_Zahlenprobe.html) umzusetzen.
 
-Nicht Gestaltungsfragen von gestern, sondern die heute **offenen** Entscheide des Anwenders — jeder
-blockiert mindestens eine der Etappen oben (Kennungen nach dem Analysepapier vom 19.09.2026, § 4):
+## Entscheide vor der nächsten Codeetappe
 
-- **A1** — Rechenaufruf und Datenseite aus der Windows-Schale holen: eigene Welle **vor** der
-  Ergebnisansicht oder erst mit ihr? (betrifft § 2.13 (5), die plattformfreie Hülle)
-- **A2** — Befund **K-1**: Stromkennzahl und Abwärmeabfuhr je Anlage (Schemaschritt 97) —
-  modulscharfe Nutzwärme aus dem Ergebnismodell oder Aufteilung nach Leistung? (§ 3.6, § 4)
-- **A5** — Degradation: V-E (§ 2.11.4) gegen den Entscheid „G3 nicht umsetzen" des
-  Szenarienkonzepts (§ 2.11.2)
-- **A11** — Nachweis der Wirtschaftlichkeitsgrößen: Referenzlauf erweitern oder Ankertests im
-  Kern? (§ 6.2, § 6.3 Nr. 21)
-- **A13** — Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister ·
-  Protokoll der Entscheidwege)
+Kennungen nach dem Analysepapier vom 19.09.2026, § 4. **Anwenderentscheid 20.09.2026: alle Entscheide
+A1–A20 gelten nach der Empfehlung der Papiere.** Damit blockiert keiner dieser Entscheide noch eine
+Etappe; ausgeführt sind sie damit nicht.
 
-Alle fünf sind **offen**, keiner ist entschieden.
+| # | Entscheid (20.09.2026, nach Empfehlung) | Stand |
+|---|---|---|
+| **A1** | Rechenaufruf und Datenseite kommen **vor** der Ergebnisansicht aus der Windows-Schale — als eigene Welle **E3 Plattform**, in der gemessenen Reihenfolge; sonst entsteht jedes Stück der Ergebnisansicht ein zweites Mal nur für Windows (betrifft § 2.13 (5), die plattformfreie Hülle) | entschieden, **nicht gebaut** — E3 ist die nächste Etappe |
+| **A2** | Befund **K-1**: Vor der Umsetzung wird gemessen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile (§ 3.6, § 4) | entschieden, nicht gebaut — E7 |
+| **A5** | **Degradation: V-E rechnet sie nicht ein.** Der Entscheid „G3 nicht umsetzen" des Szenarienkonzepts (§ 2.11.2, dort V‑G2) gilt; V-E (§ 2.11.4) wird **ohne Degradation** geplant | entschieden — der Widerspruch zwischen beiden Papieren ist aufgelöst |
+| **A11** | Nachweis der Wirtschaftlichkeitsgrößen: **Ankertests zuerst**; die Erweiterung des Referenzlaufs ist eine Frage für die nächste Basis (§ 6.2, § 6.3 Nr. 21) | entschieden **und gebaut** mit E1 (#380) |
+| **A13** | Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister · Protokoll der Entscheidwege) — **ja**, vor der ersten Codeetappe; Papierpflege ohne Entscheid zuerst | entschieden, **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht, der Schnitt steht aus |
+
+Die übrigen Entscheide A3, A4, A6–A10, A12, A14–A20 stehen mit ihrer Empfehlung und ihrer Etappe im
+Analysepapier § 4 und § 5; sie gelten seit dem 20.09.2026 ebenso nach Empfehlung. **Nicht** vom
+Entscheid gedeckt sind die Punkte 29, 30 und 31 des § 6.3 — sie entstanden erst mit E0 und E2 und
+tragen keine Empfehlung.
 
 ---
 
@@ -2656,13 +2726,28 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **VG** (§ 2.9, § 2.15) ≡ **V-B** | W5‑B‑11 | — | **#358** | Vergleichsprojekt, Schritt 92 |
 | **VV** (§ 2.16) | — | — | **#359** | Vergütung je Variante, Schritt 93 |
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
-| **B8** | — | — | offen | Befunde S-2, V-3-Rest, B-6, I-5 (§ 7) |
-| **B9** ≡ A8 | — | — | offen | Zahlenprobe gegen die Altanwendung |
-| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | keine im Bereich #300–#369 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72), V-A/V-C/V-D/V-E offen |
-| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354 | Ergebnisansicht |
+| **B8** | — | — | offen (in **E7**) | Befunde S-2 (≡ A3) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
+| **B9** ≡ A8 | — | — | offen (**E11**) | Zahlenprobe gegen die Altanwendung |
+| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | keine im Bereich #300–#428 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5**, V-C/V-D = **E8**, V-E = **E9** |
+| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357** | Nutzungsdauer, Ersatz, Restwert |
-| — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen | AfA-Tabelle |
-| Mockup-Anhang **U1…U40** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
+| — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
+| Mockup-Anhang **U1…U45** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
+
+**Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
+
+| Etappe | Gegenstand | Statuszeile |
+|---|---|---|
+| **E0** Papierpflege | Kopf, § 6.1/§ 6.3/§ 6.4/§ 6.5/§ 7 und die Nebenkonzepte; **A13-Schnitt nicht ausgeführt** | **#379**; Nachpflege auf den Stand vom 22.09.2026 mit **E0c** |
+| **E1** Nachweisfundament | Ankertests, fünf neue Testklassen, Kaskadenrunde 2 (R4) | **#380** |
+| **E2** Kleine Kernkorrekturen | R5, R6, V-3, B-7, I-5, S-3, S-5, G7/G8/G9, Formel `N4`, P3 der Mockup-Prüfung | **#405** |
+| **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | offen — **nächste Etappe** |
+| **E4** … **E12** | Erlösrubrik · Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8) · V-C/V-D · V-E · ND-S3 · Zahlenprobe A8/B9 · Wiki | offen |
+
+Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
+Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
+#428) geben die Masken für den Hilfe-Assistenten frei — davon berührt **KI‑F4** (#423) die Kosten- und
+Wirtschaftlichkeitsmasken; **KI‑F8** (#428) liefert das Hüllen- und Adaptermuster für E3.
 
 **Zwei Fallen bei den Kennungen.** (1) Die Statusnummern **#302, #304, #328 und #331** sind je
 **doppelt** vergeben (zwei Rechner); jede Zeile der Statusdatei trägt den Zusatz, ein Verweis
