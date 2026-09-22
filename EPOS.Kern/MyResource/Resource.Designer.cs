@@ -62917,6 +62917,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag zur Entscheidung: Stammprojekt beibehalten — Kapitalwertdifferenz zu {3} {1} (Erwartet){2}. ähnelt.
+        /// </summary>
+        public static string WIRT_EMPF_SATZ_STAMM {
+            get {
+                return ResourceManager.GetString("WIRT_EMPF_SATZ_STAMM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Einstufung ähnelt.
         /// </summary>
         public static string WIRT_EMPF_SPALTE {

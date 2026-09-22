@@ -23174,4 +23174,7 @@ Do you want to allow this?</value>
   <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
     <value>Scenarios {0} / {1} / {2}</value>
   </data>
+  <data name="WIRT_EMPF_SATZ_STAMM" xml:space="preserve">
+    <value>Decision proposal: keep the base project — net present value difference to {3} {1} (expected){2}.</value>
+  </data>
 </root>
