@@ -55,6 +55,14 @@ namespace WindowsFormsApplication1
 
             // ---------------- Methodik + Parameternachweis (Normanforderung) ----------------
             WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
+
+            // ETAPPE E5 Teil b: die BEWERTUNG dieses Laufs — Bandbreite mit Einstufungen,
+            // Vorschlag, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise, Stände ohne
+            // Nachweis und Sensitivität. Der Sammler legt sie an den Baum; wer den Baustein
+            // ohne Sammler ruft (Proben, Rückfall), bekommt sie aus denselben Kernmethoden.
+            // Word bildet keine dieser Tafeln mehr selbst.
+            WirtschaftlichkeitBewertung bewertung = daten.Bewertung
+                ?? WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, k.Kultur);
             k.Text("Bewertung nach der Kapitalwertmethode in Anlehnung an DIN EN 17463 (ValERI): " +
                    "alle Zahlungsströme der Projekte werden über den Betrachtungszeitraum auf den " +
                    "Entscheidungszeitpunkt abgezinst. Referenz (Unterlassensalternative) ist das " +
@@ -91,7 +99,7 @@ namespace WindowsFormsApplication1
             //          angenommen. Ohne den Satz hält der Leser sie für eine Schätzung.
             //   G1/G3/G5 — die drei bewusst NICHT umgesetzten Lücken, benannt statt
             //          verschwiegen (Anwenderentscheid 09.09.2026).
-            SchreibeValeriAusweise(k, daten, provider, p);
+            SchreibeValeriAusweise(k, daten, provider, bewertung);
 
             // Aktualität gegen den Simulationsstand prüfen. Nach der verbindlichen
             // Kette (Simulation → Wirtschaftlichkeit) darf hier nichts mehr auflaufen;
@@ -137,7 +145,7 @@ namespace WindowsFormsApplication1
             // Betriebskosten mit (G11). Ein Bericht, der nur eine der beiden Quellen
             // nennt, erklärt seine eigenen Zahlen nicht.
             k.HinweisRoh(MyResource.Resource.WIRT_SZ_QUELLEN);
-            SchreibeSzenarien(k, daten, alle, p);
+            SchreibeSzenarien(k, bewertung, p);
 
             // ---- ETAPPE W5‑B‑12 (VALERI-Lücke G6): die nicht monetären Wirkungen ----
             //
@@ -154,7 +162,9 @@ namespace WindowsFormsApplication1
             }
 
             // ---------------- Sensitivitätsanalyse (W2, Normanforderung) ----------------
-            List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);
+            // ETAPPE E5 Teil b (V‑A): aus der Bewertung des Laufs — in Sicht 2 also gegen A —
+            // und mit der Steigungsspalte (€ je %-Punkt bzw. je %).
+            List<SensitivitaetZeile> sens = bewertung.Sensitivitaet ?? new List<SensitivitaetZeile>();
             if (sens.Count > 0)
             {
                 k.Ueberschrift2("Sensitivitätsanalyse (Szenario „Erwartet“)");
@@ -724,7 +734,12 @@ namespace WindowsFormsApplication1
                     // Summe. Word hat kein Aufklappmuster, also steht der Einzug im
                     // Text („    davon …") und die Überschrift fett — dieselbe Ordnung
                     // wie im Reiter, mit den Mitteln der Tabelle.
-                    string titel = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                    //
+                    // ETAPPE E5 (V‑A, Entscheid V‑3, Q3): Amortisation und Zinsfuß tragen
+                    // das Label „nachrichtlich (Anhang C)" am Titel — dieselbe Einordnung
+                    // wie Kachel und Kennzahltafel der Seite. Die Zahl bleibt, wie sie ist.
+                    string titel = (z.Einzug > 0 ? "    " : "") + z.Titel +
+                                   (z.Nachrichtlich ? " — " + ValeriAusweis.NachrichtlichLabel() : "");
                     tr.Append(k.Zelle(titel, w[0], z.IstUeberschrift || z.IstSumme,
                                       z.IstUeberschrift ? WordBerichtGenerator.HEAD_FILL : null,
                                       JustificationValues.Left,
@@ -744,6 +759,20 @@ namespace WindowsFormsApplication1
                     t.Append(tr);
                 }
                 k.Fuege(t);
+
+                // ETAPPE E5 (V‑A, Befund A2): die WARNUNG einer Zelle — heute die
+                // Mehrdeutigkeit des Zinsfußes bei mehr als einem Vorzeichenwechsel. Die
+                // Zelle bleibt die Zahl; die Warnung steht unter der Tafel, je Stand einmal.
+                foreach (WirtZeile z in zeilen)
+                    for (int i = 0; i < spalten.Count; i++)
+                    {
+                        WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
+                            x.IdProjekt == spalten[i].IdProjekt && x.Szenario == szenario);
+                        string warnung = z.Warnung(e);
+                        if (string.IsNullOrEmpty(warnung)) continue;
+                        k.HinweisRoh("⚠ " + (spalten[i].IstStamm ? "Stamm" : spalten[i].Anzeige) +
+                                     " — " + z.Titel + ": " + warnung);
+                    }
                 k.Beschriftung(" ");
             }
         }
@@ -878,20 +907,26 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Sensitivitätstabellen: je Variante 4 Parameterzeilen (−Δ · Basis · +Δ → KW).</summary>
+        /// <summary>
+        /// Sensitivitätstabellen: je Stand außer der Referenz die Parameterzeilen
+        /// (−Δ · Basis · +Δ → KW) und — ETAPPE E5 Teil b (V‑A, V‑G6) — die
+        /// <b>Steigung</b> je %-Punkt bzw. je %. Die Zeilen kommen aus der Bewertung des
+        /// Laufs (<see cref="WirtschaftlichkeitBewertung.Sensitivitaet"/>); welche Stände
+        /// Zeilen tragen, sagt sie — ist eine Variante die Referenz, auch der Stamm.
+        /// </summary>
         private static void SchreibeSensitivitaet(WordKontext k, BerichtsDaten daten,
                                                   List<SensitivitaetZeile> sens)
         {
-            foreach (VariantenDaten v in daten.Varianten.Where(x => !x.IstStamm))
+            foreach (VariantenDaten v in daten.Varianten)
             {
                 List<SensitivitaetZeile> zeilen = sens.Where(x => x.IdProjekt == v.IdProjekt).ToList();
                 if (zeilen.Count == 0) continue;
 
-                k.Ueberschrift3("Variante — " + v.Anzeige);
+                k.Ueberschrift3((v.IstStamm ? "Stamm — " : "Variante — ") + v.Anzeige);
 
-                int wLabel = 3600;
-                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 3;
-                int[] w = { wLabel, wCol, wCol, wCol };
+                int wLabel = 3300;
+                int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 4;
+                int[] w = { wLabel, wCol, wCol, wCol, wCol };
 
                 Table t = k.NeueTabelle(w);
                 var kopf = new TableRow();
@@ -899,6 +934,7 @@ namespace WindowsFormsApplication1
                 kopf.Append(k.Zelle("KW bei −Δ [€]", w[1], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 kopf.Append(k.Zelle("KW Basis [€]", w[2], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
                 kopf.Append(k.Zelle("KW bei +Δ [€]", w[3], true, WordBerichtGenerator.HEAD_FILL, JustificationValues.Center));
+                kopf.Append(Kopfzelle(k, MyResource.Resource.WIRT_SENS_SP_STEIGUNG, w[4], JustificationValues.Center));
                 t.Append(kopf);
 
                 foreach (SensitivitaetZeile z in zeilen)
@@ -910,6 +946,13 @@ namespace WindowsFormsApplication1
                         tr.Append(k.Zelle(werte[i], w[i + 1], false,
                             i == 1 ? WordBerichtGenerator.STAMM_FILL : null,
                             werte[i] == "—" ? JustificationValues.Center : JustificationValues.Right));
+                    // Die Steigung ist eine Ableitung der beiden Randwerte; ohne stetige
+                    // Stufe (Wegfall des KWKG-Zuschlags) gibt es keine — dann „—".
+                    string steigung = z.Steigung.HasValue
+                        ? k.FW(z.Steigung, "N2") + " " + z.SteigungEinheit : "—";
+                    tr.Append(k.Zelle(steigung, w[4], false, null,
+                        steigung == "—" ? JustificationValues.Center : JustificationValues.Right,
+                        false, WordBerichtGenerator.SCHRIFT_TABELLE));
                     t.Append(tr);
                 }
                 k.Fuege(t);
@@ -934,21 +977,22 @@ namespace WindowsFormsApplication1
         /// <para>Unter der Tabelle stehen die ANNAHMEN von Best und Worst (der
         /// wirksame Parametersatz mit seiner Herkunft) und der Vorschlag zur
         /// Entscheidung. Beides ist Ausgabe; gerechnet wird hier nichts.</para>
+        ///
+        /// <para><b>ETAPPE E5 Teil b:</b> Die Tafel entsteht aus der Bandbreite der
+        /// Bewertung (<see cref="WirtschaftlichkeitBewertung.Bandbreite"/>) — dieselben
+        /// Zeilen, Spannen (Betrag aus größtem und kleinstem Wert, Q4) und Einstufungen
+        /// wie die Karten und die Bandbreite der Seite. Unter den Annahmen steht der
+        /// Hinweistext (U10), dann der Vorschlag derselben Bewertung.</para>
         /// </summary>
-        private static void SchreibeSzenarien(WordKontext k, BerichtsDaten daten,
-                                              List<WirtschaftlichkeitErgebnis> alle,
+        private static void SchreibeSzenarien(WordKontext k, WirtschaftlichkeitBewertung bewertung,
                                               WirtschaftlichkeitParameter p)
         {
             // ETAPPE E2 (G8/G9): die REFERENZ der Gruppe — in der Paarsicht der Stand A,
             // sonst die Gruppenreferenz, ohne Wahl der Stamm. Sie bekommt eine eigene
-            // Zeile und steht deshalb nicht noch einmal in der Variantenliste.
-            int idReferenz = daten.Sicht != null && daten.Sicht.IstPaar
-                           ? daten.Sicht.IdA : daten.IdGruppenreferenz;
-            Referenzwahl referenz = Referenzwahl.Bestimme(daten, idReferenz);
-
-            List<VariantenDaten> varianten = daten.Varianten
-                .Where(v => v.IdProjekt != referenz.IdReferenz).ToList();
-            if (varianten.Count == 0)
+            // Zeile und steht deshalb nicht noch einmal in der Variantenliste. Seit E5
+            // Teil b löst sie die Bewertung auf, nicht dieser Baustein.
+            WirtschaftlichkeitBandbreite band = bewertung.Bandbreite ?? new WirtschaftlichkeitBandbreite();
+            if (band.Leer)
             {
                 k.Hinweis("Keine Varianten ausgewählt — die Szenarienübersicht entfällt.");
                 return;
@@ -960,8 +1004,6 @@ namespace WindowsFormsApplication1
             int wLabel = 2100;
             int wCol = (WordBerichtGenerator.INHALT_B - wLabel) / 6;
             int[] w = { wLabel, wCol, wCol, wCol, wCol, wCol, wCol };
-
-            List<VariantenEmpfehlung> urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
 
             Table t = k.NeueTabelle(w);
             var kopf = new TableRow();
@@ -983,7 +1025,7 @@ namespace WindowsFormsApplication1
             // Kennzahlentabelle (WirtZeile.StammAnzeige) — eine 0 wäre eine gerechnete
             // Zahl, und gerechnet ist hier nichts.
             var refZeile = new TableRow();
-            refZeile.Append(k.Zelle(referenz.Anzeige, w[0], true,
+            refZeile.Append(k.Zelle(band.Referenzname, w[0], true,
                                     WordBerichtGenerator.STAMM_FILL, JustificationValues.Left));
             for (int i = 1; i <= 4; i++)
                 refZeile.Append(k.Zelle(MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ, w[i], false,
@@ -993,50 +1035,41 @@ namespace WindowsFormsApplication1
                                         WordBerichtGenerator.STAMM_FILL, JustificationValues.Center));
             t.Append(refZeile);
 
-            foreach (VariantenDaten v in varianten)
+            foreach (BandbreitenZeile z in band.Zeilen)
             {
                 var tr = new TableRow();
-                tr.Append(k.Zelle(v.Anzeige, w[0], false, null, JustificationValues.Left));
+                tr.Append(k.Zelle(z.Anzeige, w[0], false, null, JustificationValues.Left));
                 int spalte = 1;
-                double? worst = null, best = null;
-                foreach (string sz in new[] { WirtschaftlichkeitSzenario.WORST,
-                                              WirtschaftlichkeitSzenario.ERWARTET,
-                                              WirtschaftlichkeitSzenario.BEST })
+                foreach (double? wert in new[] { z.Worst, z.Erwartet, z.Best })
                 {
-                    WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(x =>
-                        x.IdProjekt == v.IdProjekt && x.Szenario == sz);
-                    if (e != null && sz == WirtschaftlichkeitSzenario.WORST) worst = e.KapitalwertDiff;
-                    if (e != null && sz == WirtschaftlichkeitSzenario.BEST) best = e.KapitalwertDiff;
-                    string txt = e == null ? "—" : k.FW(e.KapitalwertDiff, "N0");
+                    string txt = k.FW(wert, "N0");
                     tr.Append(k.Zelle(txt, w[spalte], false, null,
                         txt == "—" ? JustificationValues.Center : JustificationValues.Right));
                     spalte++;
                 }
 
-                // ETAPPE E2 (G8): die SPANNE — Best minus Worst, eine reine Ableitung
-                // der beiden Nachbarspalten. Fehlt eine der beiden Zahlen, bleibt sie
-                // „—": Eine Spanne aus einer Zahl gibt es nicht.
-                string sp = worst.HasValue && best.HasValue
-                          ? k.FW(best.Value - worst.Value, "N0") : "—";
+                // ETAPPE E2 (G8), E5 (Q4): die SPANNE des Modells — der Betrag aus größtem
+                // und kleinstem Szenariowert. Fehlt Worst oder Best, bleibt sie „—": Eine
+                // Spanne aus einer Zahl gibt es nicht.
+                string sp = k.FW(z.Spanne, "N0");
                 tr.Append(k.Zelle(sp, w[4], false, null,
                     sp == "—" ? JustificationValues.Center : JustificationValues.Right));
 
-                WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                string am = erw == null ? "—" : k.FW(erw.AmortisationJahre, "N1");
+                string am = k.FW(z.AmortisationJahre, "N1");
                 tr.Append(k.Zelle(am, w[5], false, null,
                     am == "—" ? JustificationValues.Center : JustificationValues.Right));
 
-                // W5‑B‑11 (G9): die Einstufung derselben Variante. „—", solange kein
-                // Erwartet-Ergebnis vorliegt — ein Urteil ohne Zahl gibt es nicht.
-                VariantenEmpfehlung u = urteile.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
+                // W5‑B‑11 (G9), E5 (U5): die Einstufung — derselbe Text wie auf der Karte.
+                // „—", solange kein Erwartet-Ergebnis vorliegt — ein Urteil ohne Zahl gibt
+                // es nicht.
+                VariantenEmpfehlung u = z.Urteil;
                 tr.Append(k.Zelle(u == null ? "—" : u.StufeText, w[6], false, null,
                     u == null ? JustificationValues.Center : JustificationValues.Left));
                 t.Append(tr);
             }
             k.Fuege(t);
             k.HinweisRoh(string.Format(k.Kultur, MyResource.Resource.WIRT_SZ_DELTA_FUSS,
-                                       referenz.Anzeige));
+                                       band.Referenzname));
 
             // ---- W5‑B‑11 (G8): die ANNAHMEN der Bandbreite, je Szenario eine Zeile ----
             //
@@ -1046,13 +1079,18 @@ namespace WindowsFormsApplication1
             // Seite — drei Formulierungen derselben Auskunft wären drei Wahrheiten.
             SchreibeSzenarioAnnahmen(k, p);
 
+            // ---- ETAPPE E5 (U10): der Hinweistext unter den Annahmen -------------------
+            // Was ein Szenario heute variiert und was nicht — derselbe Text wie unter der
+            // Annahmentafel der Seite.
+            if (!string.IsNullOrEmpty(bewertung.Szenariohinweis))
+                k.HinweisRoh(bewertung.Szenariohinweis);
+
             // ---- W5‑B‑11 (G9): der Vorschlag zur Entscheidung ----------------------
             // ETAPPE E2: Er nennt die REFERENZ beim Namen. Seit § 2.9 rechnet ΔKW gegen
             // die gewählte Referenz, nicht mehr fest gegen den Stamm — „gegenüber dem
-            // Stammprojekt" war bei gewählter Variantenreferenz schlicht falsch.
-            string vorschlag = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
-                urteile, k.Kultur, referenz.Anzeige);
-            if (!string.IsNullOrEmpty(vorschlag)) k.TextRoh(vorschlag);
+            // Stammprojekt" war bei gewählter Variantenreferenz schlicht falsch. Seit E5
+            // Teil b ist es der Satz der Bewertung — derselbe wie auf der Seite.
+            if (!string.IsNullOrEmpty(bewertung.Vorschlagstext)) k.TextRoh(bewertung.Vorschlagstext);
             k.Beschriftung(" ");
         }
 
@@ -1099,22 +1137,20 @@ namespace WindowsFormsApplication1
         /// des ERWARTET-Laufs — dieselbe Liste, mit der der Kapitalwert gerechnet hat.
         /// Ein Lesefehler darf den Bericht nicht kippen; die Zeile entfällt dann
         /// still, denn sie ist Beiwerk, kein Ergebnis.</para>
+        ///
+        /// <para><b>ETAPPE E5 Teil b:</b> Zeitraumzeile und die Hinweiszeilen „k von n
+        /// Positionen ohne Nutzungsdauer" (U39) kommen aus der Bewertung — derselbe
+        /// Kern-Controller wie auf der Seite. Unter den Vereinfachungen stehen die
+        /// Deklarationen der Bewertung nach DIN EN 17463 (V‑A) und, wo Ergebniszeilen
+        /// keinen Nachweis tragen, die Nr.-31-Zeile.</para>
         /// </summary>
         private static void SchreibeValeriAusweise(WordKontext k, BerichtsDaten daten,
                                                    WirtschaftlichkeitCtrl provider,
-                                                   WirtschaftlichkeitParameter p)
+                                                   WirtschaftlichkeitBewertung bewertung)
         {
-            try
-            {
-                var positionen = new List<KapitalwertRechner.InvestPosition>();
-                foreach (VariantenDaten v in daten.Varianten)
-                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
-                        v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET));
-                string zeitraum = NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum,
-                                                                positionen, k.Kultur);
-                if (!string.IsNullOrEmpty(zeitraum)) k.HinweisRoh(zeitraum);
-            }
-            catch { }
+            NutzungsdauerHinweise nutzungsdauer = bewertung.Nutzungsdauer ?? new NutzungsdauerHinweise();
+            if (!string.IsNullOrEmpty(nutzungsdauer.Zeitraumzeile)) k.HinweisRoh(nutzungsdauer.Zeitraumzeile);
+            foreach (string zeile in nutzungsdauer.Zeilen) k.HinweisRoh(zeile);
 
             try
             {
@@ -1125,6 +1161,19 @@ namespace WindowsFormsApplication1
             catch { }
 
             k.HinweisRoh(ValeriAusweis.Vereinfachungen());
+
+            // ETAPPE E5 (V‑A): die Deklarationen in EINER Zeile — nominal · Steuern ·
+            // Restwert · Risiko, die Risikozeile nach Q5 mit „keine benannt", wenn kein
+            // Text gepflegt ist.
+            var deklarationen = new List<string>();
+            if (bewertung.Deklarationen != null)
+                foreach (ValeriDeklaration d in bewertung.Deklarationen)
+                    if (d != null && !string.IsNullOrEmpty(d.Text)) deklarationen.Add(d.Text);
+            if (deklarationen.Count > 0) k.HinweisRoh(string.Join(" · ", deklarationen.ToArray()));
+
+            // ETAPPE E5 (Nr. 31): Stände, deren Zeilen keinen Nachweisumschlag tragen.
+            string nachweis = WirtschaftlichkeitBewertung.Nachweiszeile(bewertung.OhneNachweis);
+            if (!string.IsNullOrEmpty(nachweis)) k.HinweisRoh(nachweis);
         }
     }
 }

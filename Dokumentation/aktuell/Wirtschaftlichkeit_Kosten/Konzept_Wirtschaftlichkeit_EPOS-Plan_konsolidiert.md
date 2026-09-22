@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 22.09.2026** · Codestand `1190622c` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 22.09.2026** · Codestand `deba5e57` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -716,10 +716,10 @@ die `V-G`-Nummern; die Tafel übersetzt:
 | V-G3 | **Zeitpunktattribut** je Cashflow: Periode 0 · jährlich · alle n Jahre · einmalig in k (6.3.1) | teilweise (StartJahr, Ersatz über Nutzungsdauer) | „alle n Jahre" fehlt (z. B. Dichtheitsprüfung alle 2 a) — kleiner Ausbau der Bemessung |
 | V-G4 | **Kein Restwertverfahren** — Endzahlungen (Demontage, Veräußerung) gehören als explizite Cashflows in die Endperiode (6.4) | Restwert linear | **dokumentierte Abweichung**: Restwert bleibt als Schätzer des Veräußerungswerts, wird aber im Bericht als Modellannahme deklariert; Endzahlungs-Positionen sind über StartJahr bereits abbildbar |
 | V-G5 | **Szenarien = gleichzeitige Variation aller Einstellparameter** — auch r, T, Preisraten, Mengen (7.3) | Best/Worst variieren nur die Kosten-/Betragsspalten; r, T, p sind je Szenario fix | **entschieden 31.08.2026: vollständige Abdeckung** — alle Parameter (Investition, Energiekosten, Betriebskosten, Erlöse, Rahmen, Mengen) erhalten Best/Worst-Werte; Modell in § 2.11.5 |
-| V-G6 | **Sensitivität**: die 7 Regelparameter, Ausweis mit **Steigung €/%** und Liniendiagramm (7.2, 8.1.3) | 5 Fälle vorhanden (Zins, p_E, Invest, Energie, KWKG-Wegfall) | fehlt: T-Variation, Endzahlungen; Ausgabeformat um Steigungsspalte + Diagramm ergänzen |
+| V-G6 | **Sensitivität**: die 7 Regelparameter, Ausweis mit **Steigung €/%** und Liniendiagramm (7.2, 8.1.3) | 5 Fälle vorhanden (Zins, p_E, Invest, Energie, KWKG-Wegfall) | fehlt: T-Variation, Endzahlungen; Ausgabeformat um Steigungsspalte + Diagramm ergänzen. **Stand: Steigungsspalte gebaut #434** (V‑A; Seite, Wort- und Tabellenbericht); T-Variation, Endzahlungen und Diagramm offen |
 | V-G7 | **Risiko**: Zinszuschlag **oder** Abzug `R_loss × p_loss` auf die Periodennettosumme, nur t > 0 (6.5, Anhang F) | fehlt | optionales Risikomodul; Anhang F bevorzugt den Zahlungsstromabzug; Vorgabe aus |
-| V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme |
-| V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt" |
+| V-G8 | **IZF/Amortisation nur nachrichtlich** (Anhang C) | Kacheln zeigen beide gleichrangig neben dem Kapitalwert | Kacheln behalten, aber als „nachrichtlich (Anhang C)" gekennzeichnet; **IZF-Mehrdeutigkeitswarnung** bei > 1 Vorzeichenwechsel der Differenzreihe — bei EPOS-Projekten durch Ersatzjahre und KWKG-Auslauf der Regelfall, nicht die Ausnahme. **Stand: gebaut #434** (V‑A) — Label an Amortisation und Zinsfuß, die Annuität ohne (E5‑Q3, Statusdatei „Nach #434"); Warnung bei mehr als einem Vorzeichenwechsel, ohne Wechsel „kein Zinsfuß bestimmbar" |
+| V-G9 | **Steuerdeklaration Pflicht**: „Steuern berücksichtigt: ja/nein"; Abschreibungen nie als Cashflow, nur als Steuerschild (7.1.2) | Steuer-**Gutschriften** ja (Energie-/Stromsteuer), **Ertragsteuern** nein; keine AfA ✓ | zweiteilige Deklarationszeile: „Energie-/Stromsteuerentlastungen: berücksichtigt · Ertragsteuern: nicht berücksichtigt". **Stand: gebaut #434** (V‑A) — `WIRT_DEKL_STEUERN` in der Deklarationsliste auf Seite und in beiden Berichten |
 | V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen, Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 |
 | V-G11 | **Nicht monetarisierbare Wirkungen**: erfassen, kategorisieren (Energiefluss / finanziell / sonstig), beurteilen nach Dauer × Wirkung auf Organisation/Mitarbeiter/Umwelt (6.1, 8.2) | **Freitext umgesetzt** (W5‑B‑12/G6 des Szenarienkonzepts) | es fehlen **Kategorie und Beurteilung** nach Dauer × Wirkung; fließt nie in den NPV, immer in den Bericht |
 | V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne Abnahmecheckliste der Etappe |
@@ -751,15 +751,15 @@ Arbeit.
 
 | Etappe | Inhalt | entspricht / bereits geliefert durch | Wirkung | Stand im Etappenplan E0–E12 |
 |---|---|---|---|---|
-| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | offen | keine | **E5** (mit der Ergebnisansicht) |
+| **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | gebaut **#434** (Merge `deba5e57`): `WirtschaftlichkeitZeilen.IstNachrichtlich` (Amortisation und Zinsfuß, E5‑Q3), `KapitalwertRechner.Vorzeichenwechsel` mit Nachweisumschlag Fassung 7, `ValeriAusweis.Deklarationen()`, `SensitivitaetZeile.Steigung` — auf der Seite und in beiden Berichten | keine | **E5** (mit der Ergebnisansicht) — gebaut |
 | **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
-| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | offen | Ausweis | **E8** |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | teilweise vorgezogen mit **#434**: die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5; offen Block 2 (Zahlungsreihen, an seiner Stelle eine Hinweiszeile) und das Cashflow-Bild | Ausweis | **E8** |
 | **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe | **E8** |
 | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** |
 
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
-gebaut sind daraus E0 (#379), E1 (#380) und E2 (#405).*
+gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432) und E5 (#434).*
 
 **Entscheid A5 (20.09.2026, nach Empfehlung): V-E rechnet die Degradation nicht ein.** V-E nannte die
 **Degradation (V-G2)** als Teil der Etappe; das Szenarienkonzept führt dieselbe Sache als `G3` mit dem
@@ -770,10 +770,10 @@ steht am Anfang von § 2.11.2.
 
 | Nr. | Entscheidungsfrage | Empfehlung |
 |---|---|---|
-| **V-1** | Fünf Blöcke als Aufklappabschnitte unter der Vergleichstabelle oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K8, § 2.7): Umschalter im Kopf der Seite |
+| **V-1** | Fünf Blöcke als Aufklappabschnitte unter der Vergleichstabelle oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K8, § 2.7): Umschalter im Kopf der Seite — **gebaut #434** (Sitzungswahl; die Blöcke 1, 3, 4, 5 in der Darstellung „ValERI-Bewertung") |
 | **V-2** | XLSX-Formelexport: nur das ValERI-Blatt oder den ganzen Bericht formelbasiert? | Empfehlung war: nur das ValERI-Blatt (drei Szenariotabellen + Parameterblock), der übrige Bericht bleibt Werte. **Gekippt 18.09.2026 durch den Entscheid zu V-G10: der ganze Bericht, soweit ableitbar** — was ableitbar ist und was Wert bleibt, steht in § 2.11.6 |
-| **V-3** | IZF/Amortisation von den Kacheln nehmen oder mit „nachrichtlich"-Label behalten? | behalten mit Label — Anwender kennen die Größen, die Norm verlangt nur die richtige Einordnung |
-| **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5). **Zeitpunkt entschieden 18.09.2026 nach Empfehlung: danach**, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis — **mit Hinweistext** bis dahin (§ 2.11.7) |
+| **V-3** | IZF/Amortisation von den Kacheln nehmen oder mit „nachrichtlich"-Label behalten? | behalten mit Label — Anwender kennen die Größen, die Norm verlangt nur die richtige Einordnung. **Gebaut #434:** Kacheln mit Label über den Empfehlungskarten |
+| **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5). **Zeitpunkt entschieden 18.09.2026 nach Empfehlung: danach**, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis — **mit Hinweistext** bis dahin (§ 2.11.7); der Hinweistext ist **gebaut #434** |
 
 ### 2.11.5 Vollständige Szenarioabdeckung (Entscheidung 31.08.2026)
 
@@ -889,7 +889,7 @@ Betrachtungszeitraum, die Trägerpreise, die Erlössätze, die Mengen und die ge
 bleiben in allen drei Szenarien gleich. (Die Spalte „EPOS heute" der Zeile V-G5 beschreibt den
 Stand vor der Etappe W5‑B‑9; seitdem variieren Zins und Preisraten sehr wohl.)
 
-**Wortlaut** (beide Sprachen als Ressource, sobald die Ansicht gebaut wird):
+**Wortlaut** (beide Sprachen als Ressource — **umgesetzt #434 als `WIRT_SZEN_HINWEIS`**, ohne den letzten Satz, siehe A14 unten):
 
 > **Was ein Szenario heute variiert — und was nicht.** Ungünstig und Günstig verändern gegenüber
 > Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und
@@ -905,8 +905,12 @@ Die Vorgabewerte im Text (±10 %, ±2 a) sind die Vorgaben aus § 2.1 des Szenar
 das Projekt gepflegte Sätze, nennt der Hinweis die gepflegten Werte. Der Hinweis entfällt mit der
 Etappe, die ihn überflüssig macht.
 
-*Entscheid A14 offen (Analyse vom 19.09.2026):* Das Mockup führt einen abweichenden Schlusssatz;
-welcher Wortlaut die Ressource `WIRT_SZEN_HINWEIS` trägt, ist nicht entschieden.
+*Entscheid A14 (Analyse vom 19.09.2026, entschieden 20.09.2026 nach Empfehlung):* Die Ressource
+`WIRT_SZEN_HINWEIS` trägt die Konzeptfassung **ohne den Roadmap-Satz** (den letzten Satz des Wortlauts
+oben); das Mockup führte einen abweichenden Schlusssatz. **Umgesetzt #434:** Die Zahlen im Text sind die
+wirksamen — ohne Pflege die Vorgaben (±10 %, ±10 %, ±2 a), mit gepflegtem Satz die gepflegten Werte,
+ungünstig vor günstig (`WirtschaftlichkeitEmpfehlung.Szenariohinweis`); der Hinweis steht unter der
+Annahmentafel, in Block 4 der Darstellung „ValERI-Bewertung" und in Wort- und Tabellenbericht.
 
 ## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026; Mockup vom Anwender abgenommen 22.09.2026)
 
@@ -1053,12 +1057,14 @@ Klappliste im Zeileneditor (`KostenProjektPositionenCtrl.NutzungsdauerArtZuordne
    Flottenstands** (`ErsatzintervallJahre`, `RestwertEuro` als JSON in `Tab_SpeicherAuslegung`) führt
    — nicht über Spalten; der Anschluss berührt deshalb die **Einfrierregel** des Projekts 1046.
 
-Dazu: Die Hinweiszeile hat weiterhin nur `WirtschaftlichkeitSeiteGaben` als **einzigen** Schreiber,
-und die Textbildung liegt bereits im Kern (`NutzungsdauerAbgleich.Hinweis`); zu tun ist das Einsammeln
+Dazu: Die Hinweiszeile hatte nur `WirtschaftlichkeitSeiteGaben` als **einzigen** Schreiber,
+und die Textbildung lag bereits im Kern (`NutzungsdauerAbgleich.Hinweis`); zu tun war das Einsammeln
 der Positionen, nicht der Text. **Stand: Die Hülle selbst liegt seit E3 plattformfrei (umgesetzt
 #431)** unter `EPOS.UI.Daten/Wirtschaftlichkeit/` — den Ordner `Wirtschaftlichkeit`, den es dort noch
-nicht gab, gibt es damit jetzt. **Offen bleibt allein das Einsammeln der Positionen in einem
-Kern-Controller (U39) — das gehört zu E5.**
+nicht gab, gibt es damit jetzt. **Das Einsammeln der Positionen im Kern ist umgesetzt #434**
+(`NutzungsdauerHinweisCtrl`: Zeitraumzeile und je Stand und Technik „k von n", der Satz aus
+`ErsatzRestwertTafel.Hinweis`); die Hinweiszeile steht auf der Seite und in Wort- und Tabellenbericht,
+die Hülle sammelt nicht mehr selbst. Offen bleiben die drei Stücke oben (U39).
 
 **Entscheid A1 (20.09.2026, nach Empfehlung): der Umzug kommt vor der Ergebnisansicht.** Rechenaufruf
 und Datenseite werden als eigene Welle **E3 Plattform** aus der Windows-Schale geholt, nicht erst mit
@@ -1136,7 +1142,7 @@ in die Differenzrechnung greift und die Gliederung von § 2.9 braucht (Ist, Soll
 Abnahme, Etappe); das Mockup zeigt beide Sichten in Kategorie 8.
 
 **Weitere Festlegungen des Mockups:** Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite
-(K8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7); der Kopfabschnitt „Was
+(K8/V-1); Hinweistext zu den Szenarien unter der Annahmentafel (§ 2.11.7) — beide **umgesetzt #434**; der Kopfabschnitt „Was
 sich gegenüber der heutigen Seite ändert", der alle fünf Punkte führt, steht bislang nur im
 abzulösenden Mockup `../Mockups/Ergebnis_Bandbreite_Herkunft.html`. Die drei Entscheide, die den
 Zuschnitt änderten: K-3 ist mit B6 erledigt (Statuszeile #328, anderer Rechner), B-1 (Kessel) behebt
@@ -2392,6 +2398,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **E2 Kleine Kernkorrekturen** (#405, 20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
 | **E3 Plattform** (#431, Merge `2cfee66b`) | Acht Schritte: vier nahtlose Hüllen, PV-Dateiwahl über `Dienste.Datei`, `KostenSeiteGaben`/`WirtschaftlichkeitSeiteGaben` und der Rechenaufruf (`BerichtsDatenSammler`) nach `EPOS.Kern`/`EPOS.UI.Daten` verschoben, `KostenKomponenteHuelle` und `GesetzeskatalogHuelle` mit Fenster-Adapter, Tarif-Sprünge als Überlagerung statt Zweitfenster, `IosProjektQuelle.BerichteKostenGaben` beliefert alle vier Seiten, Whitelist 18 → 21 Schlüssel | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte innerhalb der Toleranz (Teil a und Teil b) |
 | **E4 Erlösrubrik und Steuerzeilen** (#432, Merge `1190622c`) | U7: `SteuerErgebnis` mit § 53/§ 53a und § 54 als getrennten Beträgen samt Sockel und `EnergiesteuerNachweis`, zwei Rubrikzeilen mit Herleitung, Nachweisumschlag Fassung 4; 9d: `SteuerPosition` und `PositionsGruende`, je Geldzeile eine Herleitungszeile mit Herleitung oder Grund des Laufs, Fassung 5; U6: `WirtZeile.Komponente`, Komponentenköpfe und Zwischensummen in A und B, Block „projektweit", `VermiedenAnlageNachweis.Verteile()` (Näherung V‑4, ausgewiesen; Leistungsanteil projektweit), Fassung 6; 22 Ressourcenschlüssel de/en, kein Schemaschritt; Blattstruktur-Wache nachgezogen | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte, 357 CSV byte-gleich; die Rubrik steht nicht im Referenzexport (A11), Nachweis sind die Ankertests (Blocksumme A 14.575 €/a unverändert, Zahlenprobe 316.159,6 €/a) |
+| **E5 Ergebnisansicht und V‑A** (#434, Merge `deba5e57`) | Teil a: V‑A im Kern — „nachrichtlich" an Amortisation und Zinsfuß (`WirtschaftlichkeitZeilen.IstNachrichtlich`, E5‑Q3), Vorzeichenwechsel der Differenzreihe (`KapitalwertRechner.Vorzeichenwechsel`, Nachweisumschlag Fassung 7; mehr als einer ⇒ Warnung, keiner ⇒ „kein Zinsfuß bestimmbar" statt Abbruch), Deklarationen (`ValeriAusweis.Deklarationen()`), Steigungsspalte der Sensitivität; Einstufung je Version (`WirtschaftlichkeitBandbreite`), `WirtschaftlichkeitCtrl.BerechneBandbreite` (drei Szenarioläufe ohne Speichern), `WirtschaftlichkeitBewertung` als ein Modell für Seite und Berichte, Nutzungsdauer-Hinweis im Kern (`NutzungsdauerHinweisCtrl`, Teil von U39), Nr. 31 (`OhneNachweis`), Q16 („— ‹Grund›", Excel leer), Kennzahlen in der Reihenfolge des Mockups; Teil b: Umschalter „Kennzahlen / ValERI-Bewertung" als Sitzungswahl (K8/V‑1, U2), vier Abschnitte, Empfehlungskarten je Version (U5), Bandbreite nebeneinander (U4), Sensitivitätstafel mit Steigung, Hinweistext `WIRT_SZEN_HINWEIS` (U10, A14), Darstellung „ValERI-Bewertung" mit den Blöcken 1, 3, 4 und 5, „Bericht erzeugen" über den bestehenden Berichtsweg (U44); Wort- und Tabellenbericht lesen `BerichtsDaten.Bewertung`, Sicht 2 rechnet im Bericht gegen A (E5‑Q6); 52 Ressourcenschlüssel de/en neu, drei geändert, einer gestrichen; kein Schemaschritt | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte, 357 CSV byte-gleich; der gebuchte Lauf rechnet unverändert gegen die Referenz der Gruppe, Bandbreite und Sicht 2 rechnen ohne Speichern; die Wirtschaftlichkeit steht nicht im Referenzexport (A11), Nachweis sind die Kern- und bunit-Tests (Gate: 10 624 Tests grün) |
 
 ## 6.2 Regressionsanker
 
@@ -2518,7 +2525,10 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     der Speicherflotte; dazu der Hinweis „T über Vorgabe, Position ohne Dauer" auf Seite und
     Bericht und die plattformfreie Hülle der Zeitraumzeile. **Erledigt mit #357:** die Nachpflege
     des Bestands (Knopf „Nutzungsdauern vorbelegen…") und der Pflegeort der Positionsart
-    (Klappliste im Zeileneditor) — s. § 2.13 (3).
+    (Klappliste im Zeileneditor) — s. § 2.13 (3). **Erledigt mit E5 (#434):** der Hinweis „T über
+    Vorgabe, Position ohne Dauer" auf der Seite und in Wort- und Tabellenbericht und die Zeitraumzeile,
+    beide aus dem Kern (`NutzungsdauerHinweisCtrl`) über die plattformfreie Hülle. Offen bleiben die
+    drei Stücke (E7/E10).
 9i. ~~**Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
     Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.~~ — **erledigt mit E4/3 (#432,
     U6; Q15, A12):** `WirtZeile.Komponente` mit den Kennungen `KOMPONENTE_BHKW`, `_PV`, `_KESSEL`,
@@ -2607,14 +2617,16 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
     „Anlagenart fehlt", der Dialog zeigt „bitte wählen". Ein geratener Wert würde Kontingent und
     Satzstaffel setzen, die niemand eingegeben hat. Umsetzung mit E7** (Schemaschritt, Nummer bei
     der Umsetzung; Projekte 1032 und 1043 der Testdatenbank, Live-Datenbank vorher prüfen).
-31. **`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.** Die Persistenz der Nachweise
-    (B7P, Punkt 9b) ist gebaut, aber kein Bestandsergebnis trägt den Umschlag: Er entsteht erst
-    beim nächsten Rechenlauf. **Entschieden 22.09.2026 (Anwender, nach Empfehlung): kein
-    Nachziehlauf.** Ergebniszeilen ohne Nachweis werden in Ansicht und Bericht als „Nachweis liegt
-    mit der nächsten Rechnung vor" gekennzeichnet; der Umschlag entsteht beim nächsten Rechenlauf.
-    Ein Nachziehlauf würde 78 Bestandsergebnisse mit den heutigen Rechenwegen neu rechnen und
-    Zahlen ändern, die der Anwender bereits gesehen hat. Umsetzung der Kennzeichnung mit E5
-    (Ergebnisansicht) und dem Berichtsbaustein.
+31. ~~**`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.**~~ — **erledigt mit E5 (#434):** Die
+    Kennzeichnung ist gebaut — `WirtschaftlichkeitErgebnis.OhneNachweis` erkennt eine Ergebniszeile
+    ohne Umschlag, und sie trägt „Nachweis liegt mit der nächsten Rechnung vor"
+    (`WIRT_NACHWEIS_NAECHSTE_RECHNUNG`) unter den Annahmen der Seite, in Block 5 der Darstellung
+    „ValERI-Bewertung" und in Wort- und Tabellenbericht; ein frisch gebuchter Lauf trägt den Umschlag
+    und keine Kennzeichnung, auch nach dem Neuladen. Die Persistenz der Nachweise (B7P, Punkt 9b) war
+    gebaut, aber kein Bestandsergebnis trug den Umschlag: Er entsteht erst beim nächsten Rechenlauf.
+    **Entschieden 22.09.2026 (Anwender, nach Empfehlung): kein Nachziehlauf** — er würde 78
+    Bestandsergebnisse mit den heutigen Rechenwegen neu rechnen und Zahlen ändern, die der Anwender
+    bereits gesehen hat.
 32. **Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1).
     `StromMatrix.Baue` bildet „Bedarf ohne Anlage" als Strombedarf abzüglich PV-Eigennutzung;
     `VermiedenMengeMWh` ist damit allein der KWK-Eigenverbrauch, und der Verteilschlüssel der
@@ -2725,8 +2737,8 @@ B6") ist mit B5, B6, B7, BK1, BK1a, BK1b, VG, VV und der Hilfsstrom-Umstellung �
 Reihenfolge der **heute** offenen Etappen — V-A…V-E (§ 2.11.4), U39 (§ 2.13 (3)),
 Erlösrubrik-Ausbau (§ 6.3 9a/9d/9i), ND-S3, B8, B9 — steht im Etappenplan E0–E12 des
 Analysepapiers [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
-Davon sind **E0 (#379), E1 (#380), E2 (#405) und E3 (#431)** gebaut; die nächste Etappe ist **E4
-Erlösrubrik und Steuerzeilen**.
+Davon sind **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432) und E5 (#434)** gebaut; als
+Nächstes kommt der **A13-Schnitt** dieses Papiers, dann **E6 Verlauf mit drei Szenarien**.
 
 **Wiederaufnahme 22.09.2026.** Die Umsetzung war am 20.09.2026 zurückgestellt (Statusdatei, Block
 „Nach #405" (f)); der Anwender hat sie am 22.09.2026 mit dem Auftrag wieder aufgenommen, das Mockup
@@ -2744,7 +2756,7 @@ Etappe; ausgeführt sind sie damit nicht.
 | **A2** | Befund **K-1**: Vor der Umsetzung wird gemessen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile (§ 3.6, § 4) | entschieden, nicht gebaut — E7 |
 | **A5** | **Degradation: V-E rechnet sie nicht ein.** Der Entscheid „G3 nicht umsetzen" des Szenarienkonzepts (§ 2.11.2, dort V‑G2) gilt; V-E (§ 2.11.4) wird **ohne Degradation** geplant | entschieden — der Widerspruch zwischen beiden Papieren ist aufgelöst |
 | **A11** | Nachweis der Wirtschaftlichkeitsgrößen: **Ankertests zuerst**; die Erweiterung des Referenzlaufs ist eine Frage für die nächste Basis (§ 6.2, § 6.3 Nr. 21) | entschieden **und gebaut** mit E1 (#380) |
-| **A13** | Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister · Protokoll der Entscheidwege) — **ja**, vor der ersten Codeetappe; Papierpflege ohne Entscheid zuerst | entschieden, **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht; Anwender 22.09.2026 nach Empfehlung: **Ausführung nach E5, vor E6**, wenn E4 und E5 die § 2.6 und § 2.13 umgebaut haben |
+| **A13** | Schnitt dieses Papiers in drei Papiere (gültiger Stand · Entscheidungsregister · Protokoll der Entscheidwege) — **ja**, vor der ersten Codeetappe; Papierpflege ohne Entscheid zuerst | entschieden, **nicht ausgeführt** — E0 (#379) hat nur die Pflege gemacht; Anwender 22.09.2026 nach Empfehlung: **Ausführung nach E5, vor E6**, wenn E4 und E5 die § 2.6 und § 2.13 umgebaut haben — mit E5 (#434) ist das geschehen, der Schnitt ist die nächste Etappe |
 
 Die übrigen Entscheide A3, A4, A6–A10, A12, A14–A20 stehen mit ihrer Empfehlung und ihrer Etappe im
 Analysepapier § 4 und § 5; sie gelten seit dem 20.09.2026 ebenso nach Empfehlung. **Nicht** vom
@@ -2777,9 +2789,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
 | **B8** | — | — | offen (in **E7**) | Befunde S-2 (≡ A3) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
 | **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
-| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | keine im Bereich #300–#428 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5**, V-C/V-D = **E8**, V-E = **E9** |
-| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen |
-| § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357** | Nutzungsdauer, Ersatz, Restwert |
+| **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, sonst keine im Bereich #300–#434 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 der ValERI-Ansicht mit #434 vorgezogen), V-E = **E9** |
+| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3) |
+| § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile) | Nutzungsdauer, Ersatz, Restwert |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
 | Mockup-Anhang **U1…U45** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
 
@@ -2792,7 +2804,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E2** Kleine Kernkorrekturen | R5, R6, V-3, B-7, I-5, S-3, S-5, G7/G8/G9, Formel `N4`, P3 der Mockup-Prüfung | **#405** |
 | **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | **umgesetzt #431** (Merge `2cfee66b`) |
 | **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | **#432** |
-| **E5** … **E12** | Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8, dazu Nr. 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E5** |
+| **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
+| **E6** … **E12** | Verlauf · rechenwirksame Lücken (B8, dazu Nr. 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: A13-Schnitt, dann E6** |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

@@ -70,5 +70,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal(new[] { 1030 }, w.Gewaehlte(GRUPPE, STAMM));
             Assert.Equal(2, w.AnzahlAbgewaehlt);
         }
+
+        /// <summary>
+        /// ETAPPE E5 (U2, V‑1/K8): Der Umschalter „Kennzahlen / ValERI-Bewertung" ist eine
+        /// SITZUNGSWAHL neben Häkchen und Sicht — Vorgabe „Kennzahlen", ein unbekannter
+        /// Wert gilt als „Kennzahlen", gemeldet wird nur ein echter Wechsel, und ein
+        /// Gruppenwechsel lässt die Darstellung stehen (er setzt nur die Sicht zurück).
+        /// </summary>
+        [Fact]
+        public void Die_Darstellung_ist_eine_Sitzungswahl_mit_Vorgabe_Kennzahlen()
+        {
+            var w = new Vergleichsauswahl();
+            int gemeldet = 0;
+            w.Geaendert += () => gemeldet++;
+
+            Assert.Equal(Vergleichsauswahl.DARSTELLUNG_KENNZAHLEN, w.Darstellung);
+
+            Assert.True(w.DarstellungWaehlen(Vergleichsauswahl.DARSTELLUNG_VALERI));
+            Assert.Equal(Vergleichsauswahl.DARSTELLUNG_VALERI, w.Darstellung);
+            Assert.Equal(1, gemeldet);
+
+            Assert.False(w.DarstellungWaehlen(Vergleichsauswahl.DARSTELLUNG_VALERI));
+            Assert.Equal(1, gemeldet);
+
+            w.SichtWaehlen(Vergleichssicht.PAAR, new List<int>(GRUPPE), 0, STAMM);
+            w.GruppeGewechselt();
+            Assert.Equal(Vergleichssicht.ALLE, w.Sicht.Sicht);
+            Assert.Equal(Vergleichsauswahl.DARSTELLUNG_VALERI, w.Darstellung);
+
+            Assert.True(w.DarstellungWaehlen(7));
+            Assert.Equal(Vergleichsauswahl.DARSTELLUNG_KENNZAHLEN, w.Darstellung);
+        }
     }
 }

@@ -22,6 +22,12 @@ namespace EPOS.UI.Tests.Seiten;
 /// Strombezug — je nach Ausstattung), „Verlauf…", „Berechnen" und der
 /// Abbrechen-Knopf während eines Laufs.</para>
 ///
+/// <para><b>ETAPPE E5 Teil b:</b> Karten, Szenariowahl, Nachweis, Tabelle und
+/// Bewertungsblock stehen seither in den vier Abschnitten der Darstellung „Kennzahlen"
+/// (Mockup Kategorie 8); die Fälle fragen nach dem Bereich, nicht nach der Stellung unter
+/// der Seitenwurzel. Umschalter, Abschnitte, Karten, Bandbreite, Annahmen, Bericht und
+/// ValERI-Ansicht prüft <see cref="WirtschaftlichkeitErgebnisansichtTests"/>.</para>
+///
 /// <para><b>Kulturpinnung</b> (Auftrag #267): Die Beschriftung des Rechenknopfs
 /// im Warnband kommt seit dem Ressourcennachtrag aus <c>MyResource</c>. Der
 /// CI-Läufer läuft unter <c>en-US</c>; die Hausvorrichtung
@@ -263,12 +269,13 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// ETAPPE W5‑B‑11 (VALERI-Lücke G9): Der Vorschlag zur Entscheidung steht
-    /// unmittelbar UNTER der Vergleichstabelle — dort, wo die Zahlen stehen, aus
-    /// denen er sich ergibt.
+    /// ETAPPE W5‑B‑11 (VALERI-Lücke G9): der Vorschlag zur Entscheidung. ETAPPE E5 Teil b
+    /// (Mockup „Lohnt es sich?"): Er steht im ERSTEN Abschnitt unter den Karten, aus
+    /// deren Urteilen er entsteht — und damit VOR der Gliederung, nicht mehr unter einer
+    /// langen Vergleichstabelle.
     /// </summary>
     [Fact]
-    public void Die_Empfehlungszeile_steht_unter_der_Vergleichstabelle()
+    public void Die_Empfehlungszeile_steht_im_Abschnitt_Lohnt_es_sich()
     {
         WirtschaftlichkeitStand stand = Standard();
         stand.Ansicht.Empfehlungszeile =
@@ -276,15 +283,15 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             "Kapitalwertdifferenz zum Stammprojekt +12.300 € (Erwartet).";
         var cut = Zeige(stand: stand);
 
-        var texte = cut.FindAll(".epos-herleitung-text").Select(e => e.TextContent).ToList();
-        Assert.Contains(texte, z => z.StartsWith("Vorschlag zur Entscheidung:"));
+        IElement lohnt = cut.FindAll("section.epos-gruppenkopf")[0];
+        Assert.Contains("Vorschlag zur Entscheidung:", lohnt.TextContent);
 
-        // Reihenfolge im gezeichneten Baum: erst die Matrix, dann die Zeile.
-        var knoten = cut.FindAll(".epos-matrix, .epos-herleitung-text");
-        int matrix = knoten.ToList().FindIndex(e => e.ClassList.Contains("epos-matrix"));
+        // Reihenfolge im gezeichneten Baum: erst der Satz, dann die Gliederung.
+        var knoten = cut.FindAll(".epos-wirt-gliederung, .epos-herleitung-text");
+        int gliederung = knoten.ToList().FindIndex(e => e.ClassList.Contains("epos-wirt-gliederung"));
         int satz = knoten.ToList().FindIndex(
             e => e.TextContent.StartsWith("Vorschlag zur Entscheidung:"));
-        Assert.True(matrix >= 0 && satz > matrix);
+        Assert.True(satz >= 0 && gliederung > satz);
     }
 
     /// <summary>
@@ -452,6 +459,12 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.False(haken[1].HasAttribute("disabled"));
     }
 
+    /// <summary>
+    /// Ein Szenariowechsel zeigt neu, OHNE zu rechnen und ohne neu zu laden. ETAPPE E5
+    /// Teil b (U4): <b>Die Klappliste steuert nur die Tafeln darunter</b> — die
+    /// Gliederung zeigt das gewählte Szenario, die Karten darüber bleiben stehen (sie
+    /// zeigen den Erwartungsfall).
+    /// </summary>
     [Fact]
     public void Ein_Szenariowechsel_zeigt_neu_ohne_zu_rechnen()
     {
@@ -459,13 +472,21 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         var cut = Zeige(p => p.Add(x => x.Anzeigen, (int id) =>
         {
             gefragt = id;
-            return Ansicht("9.000 €");
+            ErgebnisAnsicht a = Ansicht("9.000 €");
+            a.Matrix = new ErgebnisMatrix
+            {
+                Spalten = new[] { "Kennzahl", "Stamm", "WP klein" },
+                Zeilen = new[] { new MatrixZeile { Titel = "Kapitalwert", Zellen = new[] { "-91.000", "-80.000" } } }
+            };
+            return a;
         }));
 
         cut.Find("select").Change("2");
 
         Assert.Equal(2, gefragt);
-        Assert.Equal("9.000 €", cut.FindAll(".epos-kennzahlkachel-wert")[0].TextContent);
+        Assert.Equal("-80.000",
+                     cut.Find(".epos-wirt-gliederung tbody tr").QuerySelectorAll(".epos-matrix-zelle")[1].TextContent);
+        Assert.Equal("12.500 €", cut.FindAll(".epos-kennzahlkachel-wert")[0].TextContent);
         Assert.Equal(1, _geladen);   // NICHT neu geladen
     }
 
@@ -658,10 +679,17 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>Der Speichernknopf des Bewertungsblocks — er steht ohne Leiste da,
-    /// damit die Seite genau EINE Fussleiste behält.</summary>
+    /// damit die Seite genau EINE Fussleiste behält. ETAPPE E5 Teil b: Der Block steht
+    /// seither im Abschnitt „Was ist angenommen?", der Knopf also nicht mehr unmittelbar
+    /// unter der Seitenwurzel — gesucht wird er dort, wo er steht, und nie in einer
+    /// Leiste.</summary>
     private static IElement Speichernknopf(IRenderedComponent<WirtschaftlichkeitSeite> cut)
-        => cut.FindAll(".epos-seite > button.epos-knopf")
-              .First(k => k.TextContent.Trim() == "Speichern");
+    {
+        IElement knopf = cut.FindAll(".epos-gruppenkopf-koerper button.epos-knopf")
+                            .First(k => k.TextContent.Trim() == "Speichern");
+        Assert.Null(knopf.Closest(".epos-leiste"));
+        return knopf;
+    }
 
     // =====================================================================
     // Unterdialoge in der Überlagerung

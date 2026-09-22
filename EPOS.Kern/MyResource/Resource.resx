@@ -9157,9 +9157,6 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="WIRT_KACHEL_IRR" xml:space="preserve">
     <value>Interner Zinsfuß</value>
   </data>
-  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
-    <value>keine</value>
-  </data>
   <data name="WIRT_KACHEL_KW" xml:space="preserve">
     <value>Kapitalwert ggü. Stamm</value>
   </data>
@@ -9842,7 +9839,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>CO₂-Bilanz: Netzbezug mit dem Emissionsfaktor des Energieträgers „{0}“ gerechnet — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen.</value>
   </data>
   <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
-    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
+    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
   </data>
   <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
     <value>Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
@@ -9869,7 +9866,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
   </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
-    <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten sind ohne Stromkosten bestimmt.</value>
+    <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
@@ -11491,10 +11488,10 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Erwartet</value>
   </data>
   <data name="WIRT_SZEN_BEST" xml:space="preserve">
-    <value>Best Case</value>
+    <value>Günstig</value>
   </data>
   <data name="WIRT_SZEN_WORST" xml:space="preserve">
-    <value>Worst Case</value>
+    <value>Ungünstig</value>
   </data>
   <data name="BHKWV_TITEL" xml:space="preserve">
     <value>Verwaltung BHKW</value>
@@ -16194,6 +16191,162 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
   </data>
+  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
+    <value>Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung, Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze.</value>
+  </data>
+  <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
+    <value>Rechnung nominal</value>
+  </data>
+  <data name="WIRT_DEKL_STEUERN" xml:space="preserve">
+    <value>Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern nicht berücksichtigt</value>
+  </data>
+  <data name="WIRT_DEKL_RESTWERT" xml:space="preserve">
+    <value>keine Abschreibungen als Zahlung · Restwert linear — dokumentierte Abweichung von 6.4</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO" xml:space="preserve">
+    <value>Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen benannt</value>
+  </data>
+  <data name="WIRT_KZ_NACHRICHTLICH" xml:space="preserve">
+    <value>nachrichtlich (Anhang C)</value>
+  </data>
+  <data name="WIRT_IZF_MEHRDEUTIG" xml:space="preserve">
+    <value>mehrdeutig — die Differenzreihe wechselt {0}-mal das Vorzeichen, die Zinsfußgleichung hat mehrere Lösungen (Anhang C)</value>
+  </data>
+  <data name="WIRT_IZF_KEIN_WERT" xml:space="preserve">
+    <value>kein Zinsfuß bestimmbar</value>
+  </data>
+  <data name="WIRT_GRUND_KEINE_AMORTISATION" xml:space="preserve">
+    <value>keine Amortisation im Betrachtungszeitraum</value>
+  </data>
+  <data name="WIRT_NACHWEIS_NAECHSTE_RECHNUNG" xml:space="preserve">
+    <value>Nachweis liegt mit der nächsten Rechnung vor</value>
+  </data>
+  <data name="WIRT_SENS_EINHEIT_PUNKT" xml:space="preserve">
+    <value>€/%-Pkt.</value>
+  </data>
+  <data name="WIRT_SENS_EINHEIT_PROZENT" xml:space="preserve">
+    <value>€/%</value>
+  </data>
+  <data name="WIRT_UMSCH_KENNZAHLEN" xml:space="preserve">
+    <value>Kennzahlen</value>
+  </data>
+  <data name="WIRT_UMSCH_VALERI" xml:space="preserve">
+    <value>ValERI-Bewertung</value>
+  </data>
+  <data name="WIRT_UMSCH_TITEL" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="WIRT_ABS_LOHNT" xml:space="preserve">
+    <value>Lohnt es sich?</value>
+  </data>
+  <data name="WIRT_ABS_SICHER" xml:space="preserve">
+    <value>Wie sicher ist das?</value>
+  </data>
+  <data name="WIRT_ABS_WORAUS" xml:space="preserve">
+    <value>Woraus entsteht die Zahl?</value>
+  </data>
+  <data name="WIRT_ABS_ANNAHMEN" xml:space="preserve">
+    <value>Was ist angenommen?</value>
+  </data>
+  <data name="WIRT_BTN_BERICHT" xml:space="preserve">
+    <value>Bericht erzeugen</value>
+  </data>
+  <data name="WIRT_LBL_EINZELHEITEN" xml:space="preserve">
+    <value>Einzelheiten anzeigen für Szenario:</value>
+  </data>
+  <data name="WIRT_EMPF_REGEL" xml:space="preserve">
+    <value>Einstufung: empfohlen, wenn die Kapitalwertdifferenz in allen drei Szenarien positiv ist · bedingt empfohlen, wenn sie im Erwartungsfall positiv, im ungünstigsten der drei Szenarien aber nicht positiv ist · nicht empfohlen, wenn sie schon im Erwartungsfall nicht positiv ist.</value>
+  </data>
+  <data name="WIRT_EMPF_KARTE_UNTER" xml:space="preserve">
+    <value>Kapitalwertdifferenz, Szenario Erwartet</value>
+  </data>
+  <data name="WIRT_KZ_TAFEL_TITEL" xml:space="preserve">
+    <value>Die Kennzahlen dazu — Szenario Erwartet</value>
+  </data>
+  <data name="WIRT_BB_TITEL" xml:space="preserve">
+    <value>Bandbreite der Kapitalwertdifferenz — alle drei Szenarien</value>
+  </data>
+  <data name="WIRT_SENS_TITEL" xml:space="preserve">
+    <value>Sensitivität der Kapitalwertdifferenz — Szenario Erwartet</value>
+  </data>
+  <data name="WIRT_SENS_SP_PARAMETER" xml:space="preserve">
+    <value>Einflussgröße</value>
+  </data>
+  <data name="WIRT_SENS_SP_MINUS" xml:space="preserve">
+    <value>bei −Δ [€]</value>
+  </data>
+  <data name="WIRT_SENS_SP_BASIS" xml:space="preserve">
+    <value>Basis [€]</value>
+  </data>
+  <data name="WIRT_SENS_SP_PLUS" xml:space="preserve">
+    <value>bei +Δ [€]</value>
+  </data>
+  <data name="WIRT_SENS_SP_STEIGUNG" xml:space="preserve">
+    <value>Steigung</value>
+  </data>
+  <data name="WIRT_SENS_SP_EINHEIT" xml:space="preserve">
+    <value>Einheit</value>
+  </data>
+  <data name="WIRT_ANN_TITEL" xml:space="preserve">
+    <value>Annahmen und ihre Herkunft</value>
+  </data>
+  <data name="WIRT_ANN_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="WIRT_ANN_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum</value>
+  </data>
+  <data name="WIRT_ANN_VORGABE" xml:space="preserve">
+    <value>Vorgabe</value>
+  </data>
+  <data name="WIRT_ANN_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="WIRT_ANN_PROJEKTWERT" xml:space="preserve">
+    <value>Projektwert — in allen drei Szenarien gleich</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO_OHNE_NM" xml:space="preserve">
+    <value>Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen: keine benannt</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_1" xml:space="preserve">
+    <value>1 · Gegenstand und Rahmen</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_2" xml:space="preserve">
+    <value>2 · Zahlungsreihen</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_3" xml:space="preserve">
+    <value>3 · Kennzahlen</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_4" xml:space="preserve">
+    <value>4 · Unsicherheit</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_5" xml:space="preserve">
+    <value>5 · Deklarationen</value>
+  </data>
+  <data name="WIRT_VALERI_NORM_1" xml:space="preserve">
+    <value>DIN EN 17463 · 6.1 · 7.3</value>
+  </data>
+  <data name="WIRT_VALERI_NORM_2" xml:space="preserve">
+    <value>DIN EN 17463 · 6.1 bis 6.4</value>
+  </data>
+  <data name="WIRT_VALERI_NORM_3" xml:space="preserve">
+    <value>DIN EN 17463 · 7 · Anhang C</value>
+  </data>
+  <data name="WIRT_VALERI_NORM_4" xml:space="preserve">
+    <value>DIN EN 17463 · 7.3 · 8.1.3</value>
+  </data>
+  <data name="WIRT_VALERI_NORM_5" xml:space="preserve">
+    <value>DIN EN 17463 · 7 · 9 · Anhang E</value>
+  </data>
+  <data name="WIRT_VALERI_BLOCK_2_HINWEIS" xml:space="preserve">
+    <value>Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht).</value>
+  </data>
+  <data name="WIRT_VALERI_MASSNAHME" xml:space="preserve">
+    <value>Maßnahme</value>
+  </data>
+  <data name="WIRT_VALERI_KZ_HINWEIS" xml:space="preserve">
+    <value>Maß der Vorteilhaftigkeit ist allein der Kapitalwert — als Differenz zur Referenz; die Annuität legt ihn auf gleiche Jahresbeträge um. Dynamische Amortisation und interner Zinsfuß stehen nachrichtlich (Anhang C).</value>
+  </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.</value>
   </data>
@@ -16222,7 +16375,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>dem Referenzfall</value>
   </data>
   <data name="WIRT_SZ_DELTA_FUSS" xml:space="preserve">
-    <value>ΔKW = Kapitalwert der Variante abzüglich Kapitalwert von {0} (Referenz); „—" = Referenz nicht in der Vergleichsgruppe oder Szenario nicht gerechnet. Spanne = Best − Worst.</value>
+    <value>ΔKW = Kapitalwert der Variante abzüglich Kapitalwert von {0} (Referenz); „—" = Referenz nicht in der Vergleichsgruppe oder Szenario nicht gerechnet. Spanne = größter minus kleinster der drei Szenariowerte.</value>
   </data>
   <data name="WIRT_NM_TITEL" xml:space="preserve">
     <value>Nicht monetäre Wirkungen</value>

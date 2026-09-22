@@ -101,8 +101,8 @@ Anmerkung 1 zu Tabelle 1: „Für die Sommertyptage ist keine Unterscheidung nac
 | 3 | Nordwestdeutsches Tiefland | Hamburg-Fuhlsbüttel | 8,5 |
 | 4 | Nordostdeutsches Tiefland | Potsdam | 9,5 |
 | 5 | Nordrhein-westfälische Bucht und Emsland | Essen | 8,1 |
-| 6 | Nördliche/westliche Mittelgebirge, Randgebiete | Bad Marienberg | 6,8 |
-| 7 | Nördliche/westliche Mittelgebirge, zentrale Bereiche | Kassel | 8,8 |
+| 6 | Nördliche und westliche Mittelgebirge, Randgebiete | Bad Marienberg | 6,8 |
+| 7 | Nördliche und westliche Mittelgebirge, zentrale Bereiche | Kassel | 8,8 |
 | 8 | Oberharz und Schwarzwald (mittlere Lage) | Braunlage | 6,0 |
 | 9 | Thüringer Becken und sächsisches Hügelland | Chemnitz | 7,9 |
 | 10 | Südöstliche Mittelgebirge bis 1000 m | Hof | 6,3 |
@@ -287,12 +287,12 @@ Quelle: Tabellen 17–31 (Bestand, S. 29–36) bzw. Tabellen 32–46 (NEH, S. 36
 |---|---|---|---|---|---|---|---|---|---|---|
 | TRY01 | 1,8209E-05 | 9,2697E-06 | 9,2697E-06 | 2,2184E-05 | −4,8345E-05 | −3,9405E-05 | 3,4104E-05 | 3,3110E-05 | 2,6157E-05 | 2,0197E-05 |
 | TRY02 | 1,4390E-05 | 5,4628E-06 | 5,4628E-06 | 1,8359E-05 | −5,2072E-05 | −4,3145E-05 | 3,0263E-05 | 2,9270E-05 | 2,2327E-05 | 1,6375E-05 |
-| TRY03 | 1,5168E-05 | 6,2391E-06 | 6,2391E-06 | 1,9139E-05 | −5,1312E-05 | −4,2382E-05 | 3,1046E-05 | 3,0053E-05 | 2,3108E-05 | 1,7154E-05 |
+| TRY03 | 1,5169E-05 | 6,2391E-06 | 6,2391E-06 | 1,9139E-05 | −5,1312E-05 | −4,2382E-05 | 3,1046E-05 | 3,0053E-05 | 2,3108E-05 | 1,7154E-05 |
 | TRY04 | 1,8048E-05 | 9,1085E-06 | 9,1085E-06 | 2,2022E-05 | −4,8503E-05 | −3,9563E-05 | 3,3941E-05 | 3,2948E-05 | 2,5995E-05 | 2,0035E-05 |
 | TRY05 | 2,0260E-05 | 1,1314E-05 | 1,1314E-05 | 2,4237E-05 | −4,6344E-05 | −3,7397E-05 | 3,6166E-05 | 3,5172E-05 | 2,8214E-05 | 2,2249E-05 |
 | TRY06 | 8,0501E-06 | −8,5675E-07 | −8,5675E-07 | 1,2010E-05 | −5,8260E-05 | −4,9352E-05 | 2,3886E-05 | 2,2896E-05 | 1,5969E-05 | 1,0030E-05 |
 | TRY07 | 1,5139E-05 | 6,2092E-06 | 6,2092E-06 | 1,9109E-05 | −5,1342E-05 | −4,2411E-05 | 3,1016E-05 | 3,0023E-05 | 2,3078E-05 | 1,7124E-05 |
-| TRY08 | 6,6528E-06 | −2,8477E-06 | −2,8477E-06 | 1,0010E-05 | −6,0209E-05 | −5,1308E-05 | 2,1877E-05 | 2,0888E-05 | 1,3965E-05 | 8,0312E-06 |
+| TRY08 | 6,0528E-06 | −2,8477E-06 | −2,8477E-06 | 1,0010E-05 | −6,0209E-05 | −5,1308E-05 | 2,1877E-05 | 2,0888E-05 | 1,3965E-05 | 8,0312E-06 |
 | TRY09 | 1,2185E-05 | 3,2642E-06 | 3,2642E-06 | 1,6150E-05 | −5,4225E-05 | −4,5304E-05 | 2,8044E-05 | 2,7053E-05 | 2,0115E-05 | 1,4167E-05 |
 | TRY10 | 7,6613E-06 | −1,2443E-06 | −1,2443E-06 | 1,1620E-05 | −5,8639E-05 | −4,9733E-05 | 2,3495E-05 | 2,2505E-05 | 1,5579E-05 | 9,6409E-06 |
 | TRY11 | 1,4024E-07 | −8,7410E-06 | −8,7410E-06 | 4,0885E-06 | −6,5979E-05 | −5,7097E-05 | 1,5930E-05 | 1,4943E-05 | 8,0358E-06 | 2,1144E-06 |
@@ -319,11 +319,11 @@ Quelle: Tabellen 17–31 (Bestand, S. 29–36) bzw. Tabellen 32–46 (NEH, S. 36
 | TRY10 | −9,3155E-05 | 1,2041E-06 | 5,1508E-04 | 2,7749E-04 | −2,8080E-04 | −5,2386E-05 | 1,9177E-04 | 7,8605E-05 | 4,7033E-04 | 3,8759E-04 |
 | TRY11 | −1,2717E-04 | −3,4024E-05 | 4,7325E-04 | 2,3872E-04 | −3,1240E-04 | −8,6925E-05 | 1,5409E-04 | 4,2382E-05 | 4,2907E-04 | 3,4739E-04 |
 | TRY12 | −2,3014E-05 | 7,3847E-05 | 6,0134E-04 | 3,5746E-04 | −2,1563E-04 | 1,8836E-05 | 2,6946E-04 | 1,5330E-04 | 5,5541E-04 | 4,7047E-04 |
-| TRY13 | −7,2725E-05 | 3,2719E-05 | 5,5250E-04 | 3,1219E-04 | −2,5252E-04 | −2,1487E-05 | 2,2547E-04 | 1,1101E-04 | 5,0724E-04 | 4,2354E-04 |
-| TRY14 | **−1,2637E-05 ⚠** | 1,2413E-05 | 5,2839E-04 | 2,8983E-04 | −2,7074E-04 | −4,1396E-05 | 2,0376E-04 | 9,0131E-05 | 4,8346E-04 | 4,0038E-04 |
+| TRY13 | −6,2725E-05 | 3,2719E-05 | 5,5250E-04 | 3,1219E-04 | −2,5252E-04 | −2,1487E-05 | 2,2547E-04 | 1,1101E-04 | 5,0724E-04 | 4,2354E-04 |
+| TRY14 | −8,2332E-05 | 1,2413E-05 | 5,2839E-04 | 2,8983E-04 | −2,7074E-04 | −4,1396E-05 | 2,0376E-04 | 9,0131E-05 | 4,8346E-04 | 4,0038E-04 |
 | TRY15 | −8,4823E-05 | 9,8331E-06 | 5,2533E-04 | 2,8699E-04 | −2,7305E-04 | −4,3925E-05 | 2,0100E-04 | 8,7478E-05 | 4,8044E-04 | 3,9743E-04 |
 
-**⚠ Unsicherer Wert:** TRY14 / ÜWH (`−1,2637E-05`) passt nicht in das Muster der Nachbarzonen (TRY13: −7,27E-05; TRY15: −8,48E-05; erwartbar ca. −8E-05 bis −9E-05). Zusätzlich stimmt die Ziffernfolge exakt mit F_el,ÜWH von TRY15 (−1,2637E-04) überein → **Verdacht auf Extraktions-/OCR-Fehler**. Wert vor Nutzung an der Norm bzw. CD-ROM (Ordner C1) verifizieren.
+Der zuvor hier vermerkte Verdachtsfall TRY14 / ÜWH war ein Übertragungsfehler; der Wert ist gegen das PDF (Tabelle 45, S. 41) geprüft und in der Tabelle berichtigt (Vermerk in 3.3.4).
 
 #### 3.3.4 Verifikationsregeln für die Implementierung (eigene Ableitung, an der Norm geprüft)
 
@@ -335,11 +335,13 @@ Aus dem Aufbau der Gleichungen (1)–(3) und der Aussage in 6.5 („Die Summe al
 ```
 
 Verifiziert an TRY05:
-- **F_Heiz, EFH Bestand:** Σ n_TT·F_Heiz,TT = **0,99999** ✓
-- **F_TWE, EFH Bestand:** Σ n_TT·F_TWE,TT = **+3,1E-04**; bei N_Pers = 3 entspricht das **+0,09 %** Abweichung von 1 → reiner Rundungseffekt ✓
-- **F_TWE, MFH Bestand:** Σ n_TT·F_TWE,TT = **+9,3E-05**; bei N_WE = 25 → **+0,23 %** ✓
+- **F_Heiz, EFH Bestand:** Σ n_TT·F_Heiz,TT = **1,0000003** ✓
+- **F_TWE, EFH Bestand:** Σ n_TT·F_TWE,TT = **+4,2E-07**; bei N_Pers = 3 entspricht das **+1,3E-06** (+0,0001 %) Abweichung von 1 → reiner Rundungsrest ✓
+- **F_TWE, MFH Bestand:** Σ n_TT·F_TWE,TT = **+2,6E-08**; bei N_WE = 25 → **+6,5E-07** (+0,0001 %) ✓
 
-→ Diese Prüfsummen eignen sich als **automatischer Unit-Test** beim Einlesen der Faktoren in WP-Plan (Toleranz ≤ 0,5 %). Sie hätten den TRY14/ÜWH-Verdachtsfall vermutlich nicht aufgedeckt (Effekt zu klein), aber sie sichern gegen Zeilen-/Spaltenvertauschungen.
+→ Diese Prüfsummen eignen sich als **automatischer Unit-Test** beim Einlesen der Faktoren in WP-Plan (Toleranz |Σ n_TT·F_TWE,TT| < 1E-06; mit den geprüften Werten liegt der Betrag in allen 45 Blöcken unter 6E-07). Sie melden Übertragungsfehler einzelner Werte ab etwa der zweiten signifikanten Stelle – den früheren TRY14/ÜWH-Verdachtsfall mit Σ = +2,4E-03 deutlich – und sichern gegen Zeilen-/Spaltenvertauschungen; ein Fehler in der letzten Ziffer bleibt unter der Schwelle.
+
+**Berichtigung 2026-09-22 (gegen das PDF geprüft):** Die drei Prüfsummen für TRY05 waren falsch gerechnet und sind mit den Typtagzahlen aus Tabelle 4 neu bestimmt. Zugleich wurden in 3.3 vier Einzelwerte F_TWE,ÜWH nach der Textschicht des lizenzierten PDF berichtigt: MFH Bestand TRY03 (Tabelle 19, S. 30, letzte Ziffer) und TRY08 (Tabelle 24, S. 32), EFH NEH TRY13 (Tabelle 44, S. 40) und TRY14 (Tabelle 45, S. 41, der frühere Verdachtsfall). Drei der vier alten Werte verletzten die Prüfsumme deutlich (TRY08: +2,4E-05; TRY13: −2,3E-04; TRY14: +2,4E-03); nur der Letztzifferfehler bei TRY03 blieb unter der Schwelle.
 
 ### 3.4 Verhältnis TWW zu Heizung in den Typtagprofilen
 
@@ -605,7 +607,7 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 
 ## 8. Offene Punkte und Unsicherheiten (ausdrücklich gekennzeichnet)
 
-1. **⚠ TRY14 / EFH-NEH / F_TWE,ÜWH = −1,2637E-05** – passt nicht ins Muster, Ziffernfolge identisch mit einem Nachbarwert. **Verdacht auf Extraktionsfehler.** Am Original bzw. der CD-ROM verifizieren.
+1. **TRY14 / EFH-NEH / F_TWE,ÜWH** – der frühere Verdachtsfall war ein Übertragungsfehler; Wert gegen das PDF geprüft und in 3.3.3 berichtigt, ebenso drei weitere Einzelwerte F_TWE,ÜWH (Vermerk in 3.3.4). **Erledigt 2026-09-22.** Der Abgleich mit der CD-ROM (Punkt 3) bleibt offen.
 2. **⚠ MFH-Tabellen:** F_TWE,ÜWB ≡ F_TWE,ÜSH und F_el,ÜSH ≡ F_el,ÜSB in allen 15 Zonen. Im Normtext nicht erläutert. Klären, ob real oder Datenfehler.
 3. **⚠ Alle in diesem Bericht wiedergegebenen Zahlenwerte** wurden aus der gerenderten PDF-Darstellung übernommen. Vor produktiver Nutzung sind sie gegen die maschinenlesbaren CD-ROM-Datensätze (Ordner C1/C2) abzugleichen. Die Prüfsummen aus 3.3.4 fangen Struktur-, nicht Einzelziffernfehler.
 4. **⚠ F_el,vent,TT** (nur NEH-Tabellen 32–46) ist im gedruckten Normteil **nicht definiert**. Bedeutung (vermutlich Lüftungsstrom) unbestätigt.
@@ -614,7 +616,4 @@ Die bisherige Konzeptbegründung („implizite 100-%-Gleichzeitigkeit", „Mitte
 7. **⚠ Alle Aussagen zu demandlib 0.2.2** in Abschnitt 6 sind Indizienschlüsse ohne Codeeinsicht. Ebenso ist der Vergleich mit der Ausgabe 2008-05 nicht am Original erfolgt.
 8. **⚠ Bild 4 (kumuliertes EFH-ÜWH-Profil)** wurde grafisch abgelesen; die genannten Stufenhöhen (~0,55 nach dem Morgenblock, ~0,77 nach 12 Uhr) sind Schätzwerte aus der Abbildung, keine Tabellenwerte.
 9. **CD-ROM nicht vorhanden:** Der ausgewertete PDF-Auszug enthält den Datenträgerinhalt nicht (S. 51: „Hier ist ein Datenträger eingeklebt."). Sämtliche Formvektoren F_*,n,TT(t), die Typtag-Reihenfolgen und die PV-Profile fehlen damit für die Implementierung.
-10. **DIN EN 12831-3 und DIN V 18599-10 lagen für diesen Bericht nicht vor.** Die Aussagen in 7.6 zum Verhältnis beruhen auf dem, was die VDI 4655 selbst zitiert bzw. nicht zitiert, sowie auf allgemeiner Normkenntnis; konkrete Zahlenvergleiche wurden bewusst unterlassen.agentId: a7cf8a986c16a4faf (use SendMessage with to: 'a7cf8a986c16a4faf', summary: '<5-10 word recap>' to continue this agent)
-<usage>subagent_tokens: 158364
-tool_uses: 3
-duration_ms: 670310</usage>
+10. **DIN EN 12831-3 und DIN V 18599-10 lagen für diesen Bericht nicht vor.** Die Aussagen in 7.6 zum Verhältnis beruhen auf dem, was die VDI 4655 selbst zitiert bzw. nicht zitiert, sowie auf allgemeiner Normkenntnis; konkrete Zahlenvergleiche wurden bewusst unterlassen.

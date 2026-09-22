@@ -422,5 +422,27 @@ namespace EPOS.Kern.Tests
             Assert.True(seitenMit(BerichteKostenSeite.SEITE_UEBERSICHT)
                             .ContainsKey("VarianteAnlegenOeffnen"));
         }
+
+        /// <summary>
+        /// ETAPPE E5 (U44, Entscheid Q18): Im Rahmen trägt die Wirtschaftlichkeitsseite
+        /// den Knopf „Bericht erzeugen" — sein Weg ist der der Berichtsseite, kein
+        /// zweiter Generator, und er entsteht auf JEDER Plattform. Allein, ohne Rahmen,
+        /// fehlt der Schlüssel (kein Delegat, kein Knopf).
+        /// </summary>
+        [Fact]
+        public void Die_Wirtschaftlichkeitsseite_im_Rahmen_bietet_den_Bericht_an()
+        {
+            var huelle = new BerichteKostenHuelle();
+            huelle.SetzeProjekt(PROJEKT_BHKW, "");
+            var seiten = (Func<string, IReadOnlyDictionary<string, object>>)
+                         huelle.Gaben()["SeitenGaben"];
+
+            IReadOnlyDictionary<string, object> wirtschaft = seiten(BerichteKostenSeite.SEITE_WIRTSCHAFT);
+            Assert.True(wirtschaft.ContainsKey("BerichtErzeugen"));
+            Assert.True(wirtschaft.ContainsKey("DateiOeffnen"));
+
+            Assert.False(new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "")
+                             .Gaben().ContainsKey("BerichtErzeugen"));
+        }
     }
 }

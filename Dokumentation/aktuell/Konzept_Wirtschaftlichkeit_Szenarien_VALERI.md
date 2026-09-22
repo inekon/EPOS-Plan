@@ -559,17 +559,17 @@ Referenzlauf ist nicht berührt: Er rechnet Simulationen, keine Wirtschaftlichke
 ## 11 Entscheide vom 18.09.2026 mit Wirkung auf dieses Papier
 
 Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6, § 2.11.7,
-§ 2.13) berühren die Etappen dieses Papiers; sie sind **nicht umgesetzt**, das Papier
-beschreibt weiterhin den gebauten Stand W5‑B‑9 bis W5‑B‑12.
+§ 2.13) berühren die Etappen dieses Papiers; das Papier beschreibt weiterhin den gebauten Stand
+W5‑B‑9 bis W5‑B‑12, den Stand der drei Entscheide nennt die Tafel.
 
-**Stand 22.09.2026: alle drei unverändert nicht gebaut**, aber im Etappenplan **E0–E12** des
-Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5)
-eingeordnet:
+**Stand 22.09.2026: V-4 (Hinweistext) und K8/V-1 (Umschalter) sind mit E5 (#434) gebaut, V-G10
+steht mit E8 aus** — eingeordnet im Etappenplan **E0–E12** des
+Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5):
 
 | Entscheid | Etappe | Bemerkung |
 |---|---|---|
-| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | **E5** (Hinweistext U10), die Abdeckung selbst **E9** | Der Hinweistext braucht den Ressourcenschlüssel `WIRT_SZEN_HINWEIS` (Mockup-Anhang U10); Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz) |
-| **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | **E5**; der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit **E6** | Bis dahin gilt § 7.1 unverändert |
+| **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung selbst **E9** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht |
+| **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | Umschalter **gebaut #434** (E5); der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit **E6** | Bis E6 gilt § 7.1 unverändert — der Knopf „Verlauf…" steht weiter in der Fußleiste |
 | **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **E8** (V-C und V-D) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6 |
 
 **Mit #405 (E2) ist aus diesem Umkreis erledigt:** die Bandbreite im Bericht mit Spalte „Spanne" und
@@ -584,12 +584,14 @@ der Empfehlungssatz mit der gewählten Referenz (G9, § 9.1). Der Excel-Bericht 
   Erlössätze, Mengen und gesetzliche Sätze bleiben in allen drei Szenarien gleich. Bis die
   vollständigen Sätze kommen (Rahmen, Trägerpreise, Erlössätze, Mengenfaktor), sagt ein
   Hinweis unter der Annahmentafel der Seite genau das; Wortlaut im konsolidierten Konzept
-  § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen.
+  § 2.11.7. Die Statuszeile aus § 5 bleibt daneben bestehen. **Gebaut #434** als
+  `WIRT_SZEN_HINWEIS`.
 * **K8 / V-1 — Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite** statt
   eines weiteren Knopfes. Die Ergebnisansicht bringt den kumulierten Barwert der Differenz
   mit allen drei Szenarien in einem Bild (Farbe = Variante, Strichart = Szenario) auf die
   Seite; der Knopf „Verlauf…" entfällt damit. Bis dahin gilt § 7.1 unverändert: Der
-  Verlaufsdialog rechnet ein Szenario je Lauf mit frei wählbarem Horizont.
+  Verlaufsdialog rechnet ein Szenario je Lauf mit frei wählbarem Horizont. **Der Umschalter ist
+  gebaut (#434)**; das Verlaufsbild und der Wegfall des Knopfes kommen mit E6.
 * **V-G10 — der ganze Bericht formelbasiert, soweit ableitbar** (abweichend von der
   Empfehlung „nur das ValERI-Blatt"; kippt V-2). Der Excel-Bericht dieses Papiers (G8,
   § 9.2: Annahmenzeile je Blocküberschrift, Bandbreite als drei Blöcke) bleibt bis zur
@@ -610,7 +612,8 @@ niemand zweimal baut:
 | **W5‑B‑10** VALERI-Abgleich (§ 7) | Grundlage der Gap-Tafel **V-G1…V-G12** (§ 2.11.2) | gebaut |
 | **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
 | **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |
-| — | **V-A** Ausweis, **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | offen |
+| — | **V-A** Ausweis („nachrichtlich", Zinsfuß-Warnung, Deklarationen, Steigung) | gebaut — E5, **#434** |
+| — | **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | offen (E8) — von V-C sind die Blöcke 1, 3, 4 und 5 mit #434 vorgezogen |
 
 **Nummernvorsicht:** Die Lückennummern `G1…G11` dieses Papiers und `V-G1…V-G12` des
 konsolidierten Konzepts meinen bei gleicher Ziffer Verschiedenes (G2 Preisänderung je Kostenart

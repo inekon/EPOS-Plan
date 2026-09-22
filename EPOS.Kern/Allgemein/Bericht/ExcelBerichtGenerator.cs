@@ -365,6 +365,14 @@ namespace WindowsFormsApplication1
 
             WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
             TarifParameter tarifP = provider.LadeTarif(daten.IdStamm);
+
+            // ETAPPE E5 Teil b: die BEWERTUNG dieses Laufs — Bandbreite mit Einstufungen,
+            // Vorschlag, Hinweistext, Deklarationen, Nutzungsdauer-Hinweise, Stände ohne
+            // Nachweis und Sensitivität; dieselbe, die der Wortbericht liest. Ohne Sammler
+            // (Proben, Rückfall) entsteht sie aus denselben Kernmethoden.
+            WirtschaftlichkeitBewertung bewertung = daten.Bewertung
+                ?? WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur);
+
             ws.Cell(r, 1).Value = p.Nachweis(BerichtTexte.Kultur) +
                 // ETAPPE E7 (Divergenz D1): Der TARIFnachweis stand bisher nur im
                 // Word-Bericht. Er nennt Modell, Arbeitspreise und Preisstand — ohne ihn
@@ -411,22 +419,21 @@ namespace WindowsFormsApplication1
             // DIN EN 17463 verlangt die Begründung des Zeitraums in JEDER Ausgabe, und
             // die Zahl T steht oben im Parameternachweis ohne jede Einordnung.
             // Derselbe Aufruf wie im Wortbericht (NutzungsdauerAbgleich.Hinweis).
-            try
+            //
+            // ETAPPE E5 Teil b (U39): Zeile und die Hinweiszeilen „k von n Positionen ohne
+            // Nutzungsdauer" kommen aus der Bewertung — derselbe Kern-Controller wie auf
+            // der Seite und im Wortbericht; je Hinweis eine Zeile.
+            NutzungsdauerHinweise nutzungsdauer = bewertung.Nutzungsdauer ?? new NutzungsdauerHinweise();
+            var nutzungsdauerZeilen = new List<string>();
+            if (!string.IsNullOrEmpty(nutzungsdauer.Zeitraumzeile))
+                nutzungsdauerZeilen.Add(nutzungsdauer.Zeitraumzeile);
+            nutzungsdauerZeilen.AddRange(nutzungsdauer.Zeilen);
+            foreach (string zeile in nutzungsdauerZeilen)
             {
-                var positionen = new List<KapitalwertRechner.InvestPosition>();
-                foreach (VariantenDaten v in daten.Varianten)
-                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
-                        v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET));
-                string zeitraum = NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum,
-                                                                positionen, BerichtTexte.Kultur);
-                if (!string.IsNullOrEmpty(zeitraum))
-                {
-                    ws.Cell(r, 1).Value = zeitraum;
-                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
-                    r++;
-                }
+                ws.Cell(r, 1).Value = zeile;
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r++;
             }
-            catch { }
             r++;
 
             // ETAPPE E7: EINE Zeilendefinition für Word, Excel und Ergebnisreiter
@@ -587,9 +594,10 @@ namespace WindowsFormsApplication1
             // fehlte, war die ZUSAMMENSCHAU — ΔKW in Worst/Erwartet/Best nebeneinander,
             // die Spanne dazwischen und die Zeile des Standes, gegen den gerechnet
             // wurde. Word führt dieselbe Tafel (BausteineWirtschaftlichkeit); gerechnet
-            // wird nichts Neues, die Spanne ist Best − Worst.
-            Referenzwahl referenz = Referenzwahl.Bestimme(daten, idReferenz);
-            r = BandbreitenTafel(ws, r, daten, alle, referenz);
+            // wird nichts Neues. ETAPPE E5 Teil b: Die Tafel liest die Bandbreite der
+            // Bewertung — Spanne als Betrag aus größtem und kleinstem Wert (Q4), die
+            // Einstufungen wie auf den Karten, in Sicht 2 gegen A (Q6).
+            r = BandbreitenTafel(ws, r, bewertung);
 
             // ---------------- ETAPPE W5‑B‑11 (G9): Vorschlag zur Entscheidung ----------
             //
@@ -597,9 +605,9 @@ namespace WindowsFormsApplication1
             // Satz wie in Word und auf der Seite (WirtschaftlichkeitEmpfehlung). Leer
             // bleibt sie, solange keine Variante ein Erwartet-Ergebnis gegenüber der
             // Referenz hat; ein Vorschlag ohne Zahlen wäre eine Behauptung.
-            // ETAPPE E2 (G9): Er nennt die Referenz beim Namen.
-            string empfehlung = WirtschaftlichkeitEmpfehlung.Vorschlagstext(
-                alle, BerichtTexte.Kultur, referenz.Anzeige);
+            // ETAPPE E2 (G9): Er nennt die Referenz beim Namen. ETAPPE E5 Teil b: der Satz
+            // der Bewertung.
+            string empfehlung = bewertung.Vorschlagstext;
             if (!string.IsNullOrEmpty(empfehlung))
             {
                 ws.Cell(r, 1).Value = empfehlung;
@@ -755,20 +763,23 @@ namespace WindowsFormsApplication1
             r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r);
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
-            List<SensitivitaetZeile> sens = provider.LadeSensitivitaet(ids);
+            // ETAPPE E5 Teil b (V‑A, V‑G6): die Zeilen der Bewertung dieses Laufs (in
+            // Sicht 2 gegen A) samt Steigung — die Wertspalte bleibt NUMERISCH, die Einheit
+            // steht daneben als Text (€/%-Pkt. oder €/%).
+            List<SensitivitaetZeile> sens = bewertung.Sensitivitaet ?? new List<SensitivitaetZeile>();
             if (sens.Count > 0)
             {
                 ws.Cell(r, 1).Value = BerichtTexte.T("Sensitivitätsanalyse (Szenario „Erwartet“)");
                 ws.Cell(r, 1).Style.Font.Bold = true;
-                ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = GRUPPE;
+                ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
 
-                foreach (VariantenDaten v in daten.Varianten.Where(x => !x.IstStamm))
+                foreach (VariantenDaten v in daten.Varianten)
                 {
                     var zeilenSens = sens.Where(x => x.IdProjekt == v.IdProjekt).ToList();
                     if (zeilenSens.Count == 0) continue;
 
-                    ws.Cell(r, 1).Value = BerichtTexte.T("Variante") + ": " + v.Anzeige;
+                    ws.Cell(r, 1).Value = BerichtTexte.T(v.IstStamm ? "Stamm" : "Variante") + ": " + v.Anzeige;
                     ws.Cell(r, 1).Style.Font.Bold = true;
                     r++;
 
@@ -776,8 +787,10 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, 2).Value = BerichtTexte.T("KW bei −Δ [€]");
                     ws.Cell(r, 3).Value = BerichtTexte.T("KW Basis [€]");
                     ws.Cell(r, 4).Value = BerichtTexte.T("KW bei +Δ [€]");
-                    ws.Range(r, 1, r, 4).Style.Font.Bold = true;
-                    ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = KOPF;
+                    ws.Cell(r, 5).Value = MyResource.Resource.WIRT_SENS_SP_STEIGUNG;
+                    ws.Cell(r, 6).Value = MyResource.Resource.WIRT_SENS_SP_EINHEIT;
+                    ws.Range(r, 1, r, 6).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = KOPF;
                     r++;
 
                     foreach (SensitivitaetZeile z in zeilenSens)
@@ -790,6 +803,14 @@ namespace WindowsFormsApplication1
                                 ws.Cell(r, 2 + i).Value = werte[i].Value;
                                 ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0";
                             }
+                        // Ohne stetige Stufe (Wegfall des KWKG-Zuschlags) keine Steigung —
+                        // beide Zellen bleiben leer.
+                        if (z.Steigung.HasValue)
+                        {
+                            ws.Cell(r, 5).Value = z.Steigung.Value;
+                            ws.Cell(r, 5).Style.NumberFormat.Format = "#,##0.00";
+                            ws.Cell(r, 6).Value = z.SteigungEinheit;
+                        }
                         r++;
                     }
                     r++;
@@ -914,6 +935,38 @@ namespace WindowsFormsApplication1
                         bz(MyResource.Resource.BILANZ_ZEILE_GUTSCHRIFT, null, b.CO2GutschriftStromT);
                     r++;
                 }
+            }
+
+            // ---------------- ETAPPE E5 Teil b: Bewertung nach DIN EN 17463 ----------------
+            //
+            // Die Deklarationen der Bewertung (nominal · Steuern · Restwert · Risiko, die
+            // Risikozeile nach Q5 ohne gepflegten Text „keine benannt") und die Nr.-31-Zeile.
+            // Der Block steht am ENDE des Blattes: Er ist Ausweis, keine Tafel, und die
+            // Ankerzeilen der Tafeln darüber bleiben, wo sie sind.
+            var deklarationen = new List<string>();
+            if (bewertung.Deklarationen != null)
+                foreach (ValeriDeklaration d in bewertung.Deklarationen)
+                    if (d != null && !string.IsNullOrEmpty(d.Text)) deklarationen.Add(d.Text);
+            string nachweis = WirtschaftlichkeitBewertung.Nachweiszeile(bewertung.OhneNachweis);
+            if (deklarationen.Count > 0 || !string.IsNullOrEmpty(nachweis))
+            {
+                ws.Cell(r, 1).Value = MyResource.Resource.WPAR_G_BEWERTUNG;
+                ws.Cell(r, 1).Style.Font.Bold = true;
+                ws.Range(r, 1, r, 4).Style.Fill.BackgroundColor = GRUPPE;
+                r++;
+                foreach (string d in deklarationen)
+                {
+                    ws.Cell(r, 1).Value = d;
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+                if (!string.IsNullOrEmpty(nachweis))
+                {
+                    ws.Cell(r, 1).Value = nachweis;
+                    ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                    r++;
+                }
+                r++;
             }
 
             ws.Column(1).Width = 32;
@@ -1054,16 +1107,16 @@ namespace WindowsFormsApplication1
         /// <para>Die Wertspalten bleiben NUMERISCH (Divergenz D5) — die Referenzzeile
         /// trägt ihren Text deshalb nur in der Beschriftungsspalte, ihre Δ-Zellen
         /// bleiben leer statt „(Referenz)" zu tragen.</para>
+        ///
+        /// <para><b>ETAPPE E5 Teil b:</b> Die Tafel liest die Bandbreite der Bewertung
+        /// (<see cref="WirtschaftlichkeitBewertung.Bandbreite"/>) statt sie selbst zu
+        /// bilden — dieselben Zeilen, Spannen und Einstufungen wie Seite und Wortbericht.
+        /// Unter dem Fußtext steht der Hinweistext der Szenarien (U10).</para>
         /// </summary>
-        private static int BandbreitenTafel(IXLWorksheet ws, int r, BerichtsDaten daten,
-                                            List<WirtschaftlichkeitErgebnis> alle,
-                                            Referenzwahl referenz)
+        private static int BandbreitenTafel(IXLWorksheet ws, int r, WirtschaftlichkeitBewertung bewertung)
         {
-            List<VariantenDaten> varianten = daten.Varianten
-                .Where(v => v.IdProjekt != referenz.IdReferenz).ToList();
-            if (varianten.Count == 0) return r;
-
-            List<VariantenEmpfehlung> urteile = WirtschaftlichkeitEmpfehlung.Einstufungen(alle);
+            WirtschaftlichkeitBandbreite band = bewertung.Bandbreite ?? new WirtschaftlichkeitBandbreite();
+            if (band.Leer) return r;
 
             ws.Cell(r, 1).Value = MyResource.Resource.WIRT_SZ_BANDBREITE_TITEL;
             ws.Cell(r, 1).Style.Font.Bold = true;
@@ -1088,52 +1141,46 @@ namespace WindowsFormsApplication1
             r++;
 
             // Die Referenzzeile — der Stand, gegen den jede Δ-Zahl gerechnet ist.
-            ws.Cell(r, 1).Value = referenz.Anzeige;
+            ws.Cell(r, 1).Value = band.Referenzname;
             ws.Range(r, 1, r, 7).Style.Fill.BackgroundColor = STAMM;
             r++;
 
-            foreach (VariantenDaten v in varianten)
+            foreach (BandbreitenZeile z in band.Zeilen)
             {
-                ws.Cell(r, 1).Value = v.IstStamm ? BerichtTexte.T("Stamm") : v.Anzeige;
+                ws.Cell(r, 1).Value = z.IstStamm ? BerichtTexte.T("Stamm") : z.Anzeige;
 
-                double? worst = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.WORST);
-                double? erwartet = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.ERWARTET);
-                double? best = Diff(alle, v.IdProjekt, WirtschaftlichkeitSzenario.BEST);
+                Betrag(ws, r, 2, z.Worst);
+                Betrag(ws, r, 3, z.Erwartet);
+                Betrag(ws, r, 4, z.Best);
+                Betrag(ws, r, 5, z.Spanne);
 
-                Betrag(ws, r, 2, worst);
-                Betrag(ws, r, 3, erwartet);
-                Betrag(ws, r, 4, best);
-                Betrag(ws, r, 5, worst.HasValue && best.HasValue
-                                 ? best.Value - worst.Value : (double?)null);
-
-                WirtschaftlichkeitErgebnis erw = alle.FirstOrDefault(x =>
-                    x.IdProjekt == v.IdProjekt && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
-                if (erw != null && erw.AmortisationJahre.HasValue)
+                if (z.AmortisationJahre.HasValue)
                 {
-                    ws.Cell(r, 6).Value = erw.AmortisationJahre.Value;
+                    ws.Cell(r, 6).Value = z.AmortisationJahre.Value;
                     ws.Cell(r, 6).Style.NumberFormat.Format = "#,##0.0";
                 }
 
-                VariantenEmpfehlung u = urteile.FirstOrDefault(x => x.IdProjekt == v.IdProjekt);
-                if (u != null) ws.Cell(r, 7).Value = u.StufeText;
+                // ETAPPE E5 (U5): derselbe Stufentext wie auf der Empfehlungskarte.
+                if (z.Urteil != null) ws.Cell(r, 7).Value = z.Urteil.StufeText;
                 r++;
             }
 
             ws.Cell(r, 1).Value = string.Format(BerichtTexte.Kultur,
                                                 MyResource.Resource.WIRT_SZ_DELTA_FUSS,
-                                                referenz.Anzeige);
+                                                band.Referenzname);
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
-            r += 2;
-            return r;
-        }
+            r++;
 
-        /// <summary>ΔKW eines Standes in einem Szenario; <c>null</c> = nicht gerechnet.</summary>
-        private static double? Diff(List<WirtschaftlichkeitErgebnis> alle, int idProjekt,
-                                    string szenario)
-        {
-            WirtschaftlichkeitErgebnis e = alle.FirstOrDefault(
-                x => x.IdProjekt == idProjekt && x.Szenario == szenario);
-            return e == null ? null : e.KapitalwertDiff;
+            // ETAPPE E5 (U10): der Hinweistext — was ein Szenario heute variiert und was
+            // nicht; derselbe Text wie unter der Annahmentafel der Seite und im Wortbericht.
+            if (!string.IsNullOrEmpty(bewertung.Szenariohinweis))
+            {
+                ws.Cell(r, 1).Value = bewertung.Szenariohinweis;
+                ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+                r++;
+            }
+            r++;
+            return r;
         }
 
         /// <summary>Eine €-Zelle der Bandbreitentafel; ohne Wert bleibt sie leer (D5).</summary>

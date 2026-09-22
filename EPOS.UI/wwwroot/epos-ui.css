@@ -82,6 +82,19 @@
     --epos-ampel-rot-flaeche: rgb(255, 236, 238);
     --epos-ampel-gruen-flaeche: rgb(236, 248, 239);
 
+    /* Die drei Stufen der Empfehlungskarten der Wirtschaftlichkeitsseite (Etappe E5,
+       U5: empfohlen / bedingt empfohlen / nicht empfohlen). EIGENE Token der Seite
+       (Hausregel "meint ein Vorbild nur EINE Seite, bekommt sie ein eigenes Token"),
+       belegt mit den GEBAUTEN Farben: Gruen und Gelb der Ampel, Rot = die
+       Fehlerfarbe --epos-stufe-fehler (#B00020). Die Kontraste sind die der Ampel -
+       alle ueber 4,5:1 auf ihrer Flaeche. */
+    --epos-wirt-empf-ja: var(--epos-ampel-gruen);
+    --epos-wirt-empf-ja-flaeche: var(--epos-ampel-gruen-flaeche);
+    --epos-wirt-empf-bedingt: var(--epos-ampel-gelb);
+    --epos-wirt-empf-bedingt-flaeche: var(--epos-ampel-gelb-flaeche);
+    --epos-wirt-empf-nein: var(--epos-stufe-fehler);
+    --epos-wirt-empf-nein-flaeche: var(--epos-ampel-rot-flaeche);
+
     /* ---- Einstiegs-/Aktionskarten (KartenStil, zweiter Block) --------- */
     --epos-karte-rahmen: #D1D5DB;           /* KARTE_RAHMEN                 */
     --epos-karte-rahmen-hover: #3B82F6;     /* KARTE_RAHMEN_HOVER           */
@@ -471,6 +484,185 @@ body {
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Die Ergebnisansicht der Wirtschaftlichkeitsseite (Etappe E5, Mockup
+   Dialog_Formel_Zahlenprobe.html Kategorie 8, abgenommen 22.09.2026).
+
+   KOPF MIT UMSCHALTER (U2, V-1/K8): Die Seite hat kein eigenes Band - Titel und
+   Hilfe traegt der Rahmen -, der Umschalter steht deshalb als erste Zeile RECHTS.
+   Bauform wie der Umschalter "Liste / Schema" der Simulationskonfiguration: zwei
+   Knoepfe in einer Gruppe, der gewaehlte in der aktiven Form; die Hoehe ist das
+   Beruehrungsziel des Hauses.
+   -------------------------------------------------------------------------- */
+.epos-wirt-kopf {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.epos-wirt-umschalter {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.epos-wirt-umschalter-knopf {
+    border: 1px solid var(--epos-rahmen-leise);
+    background: var(--epos-karte-flaeche);
+    color: var(--epos-text-leise);
+    padding: 5px 14px;
+    min-height: var(--epos-touchziel);
+    cursor: pointer;
+    font-size: var(--epos-schriftgroesse);
+}
+
+.epos-wirt-umschalter-knopf--aktiv {
+    background: var(--epos-flaeche);
+    border-color: var(--epos-rahmen);
+    color: var(--epos-text);
+    font-weight: 600;
+}
+
+/* EMPFEHLUNGSKARTEN (U5): je Version eine Karte - Name, Betrag, leise Zeile, Stufe.
+   Die Stufe faerbt Rand, Flaeche der Marke und Schrift der Marke ueber die
+   Seitentoken --epos-wirt-empf-*. Mehrere Karten nebeneinander, auf schmalem
+   Schirm untereinander (auto-fill statt Medienabfrage). */
+.epos-wirt-karten {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--epos-rand);
+    margin-top: var(--epos-rand);
+}
+
+.epos-wirt-karte {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 12px;
+    border: 1px solid var(--epos-karte-rahmen);
+    border-left-width: 4px;
+    border-radius: var(--epos-ecke);
+    background: var(--epos-karte-flaeche);
+}
+
+.epos-wirt-karte--ja { border-left-color: var(--epos-wirt-empf-ja); }
+.epos-wirt-karte--bedingt { border-left-color: var(--epos-wirt-empf-bedingt); }
+.epos-wirt-karte--nein { border-left-color: var(--epos-wirt-empf-nein); }
+
+.epos-wirt-karte-name {
+    font-weight: 600;
+    color: var(--epos-text);
+}
+
+.epos-wirt-karte-wert {
+    font-size: 19px;
+    font-variant-numeric: tabular-nums;
+    color: var(--epos-text);
+}
+
+.epos-wirt-karte-unter {
+    color: var(--epos-text-leise);
+}
+
+.epos-wirt-stufe {
+    margin-top: 4px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.epos-wirt-stufe--ja {
+    background: var(--epos-wirt-empf-ja-flaeche);
+    color: var(--epos-wirt-empf-ja);
+}
+
+.epos-wirt-stufe--bedingt {
+    background: var(--epos-wirt-empf-bedingt-flaeche);
+    color: var(--epos-wirt-empf-bedingt);
+}
+
+.epos-wirt-stufe--nein {
+    background: var(--epos-wirt-empf-nein-flaeche);
+    color: var(--epos-wirt-empf-nein);
+}
+
+/* Der Vorschlag zur Entscheidung - die Zeile, nach der entschieden wird, steht
+   nicht leise, sondern in Textfarbe und halbfett. */
+.epos-wirt-vorschlag .epos-herleitung {
+    color: var(--epos-text);
+    font-weight: 600;
+}
+
+/* Das Label "nachrichtlich (Anhang C)" unter dem Titel einer Kennzahl - leise und
+   in eigener Zeile, damit die nowrap-Titelspalte nicht breiter wird. */
+.epos-wirt-kennzeichen {
+    display: block;
+    font-weight: 400;
+    white-space: normal;
+    color: var(--epos-text-leise);
+}
+
+.epos-kennzahlkachel-kennzeichen {
+    color: var(--epos-text-leise);
+}
+
+/* Die Warnung einer Zelle (mehrdeutiger Zinsfuss): ein Zeichen in der Zelle, der
+   Satz steht unter der Tafel. Warnfarbe des Hauses. */
+.epos-wirt-zellwarnung,
+.epos-kennzahlkachel-warnung {
+    color: var(--epos-warn-text);
+}
+
+.epos-wirt-zellwarnung {
+    margin-left: 4px;
+    cursor: help;
+}
+
+/* Die Tafeln der Ansicht (Bandbreite, Sensitivitaet, Annahmen, Rahmen): Hausraster,
+   Zahlen rechts, die Textspalten links; die Referenzzeile der Bandbreite hinterlegt
+   wie die Referenzspalte im Bericht. */
+.epos-wirt-tafel {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.epos-wirt-textzelle {
+    text-align: left;
+}
+
+.epos-wirt-referenzzeile {
+    background: var(--epos-flaeche);
+}
+
+/* Der Hinweistext unter der Annahmentafel (U10) und die Luecke an der Stelle von
+   Block 2: je ein leiser Kasten, damit der Absatz als Hinweis lesbar bleibt. */
+.epos-wirt-szenariohinweis,
+.epos-wirt-block-luecke {
+    margin-top: var(--epos-rand);
+    padding: 6px 10px;
+    border-left: 3px solid var(--epos-rahmen-leise);
+    background: var(--epos-flaeche);
+}
+
+/* Der Fuss eines Abschnitts (U44 "Bericht erzeugen"): rechts, ohne Leiste - die
+   Seite traegt genau EINE Fussleiste. */
+.epos-wirt-abschnitt-fuss {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--epos-rand);
+}
+
+@media (forced-colors: active) {
+    .epos-wirt-karte--ja,
+    .epos-wirt-karte--bedingt,
+    .epos-wirt-karte--nein { border-left-color: CanvasText; }
+    .epos-wirt-stufe--ja,
+    .epos-wirt-stufe--bedingt,
+    .epos-wirt-stufe--nein { border: 1px solid CanvasText; color: CanvasText; }
+    .epos-wirt-zellwarnung,
+    .epos-kennzahlkachel-warnung { color: LinkText; }
+    .epos-wirt-umschalter-knopf--aktiv { border: 2px solid Highlight; }
 }
 
 /* ==========================================================================

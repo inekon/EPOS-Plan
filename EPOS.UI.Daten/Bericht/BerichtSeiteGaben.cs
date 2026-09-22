@@ -201,19 +201,21 @@ namespace WindowsFormsApplication1
                 // statt ueber ein nacktes Task.Run - in EPOS.UI.Daten gilt der
                 // Waechter ParallelitaetWacheTests, und ein Bericht, der mitten
                 // im Lauf die Sprache wechselte, traegt zwei Zahlenbilder.
-                BerichtsDaten daten = await Kulturweitergabe.Starten(() =>
-                    new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
-                                                                 konfig.VariantenIds,
-                                                                 mitZeitreihen, melde, ct), ct);
-
                 // KONZEPT § 2.9 und § 2.15 (VG-Q4): DER BERICHT FOLGT DER SICHT - so wie
                 // er den Haekchen folgt. Sicht 2 druckt A | B mit A als Referenz und der
                 // Deklarationszeile; Sicht 1 alle Staende gegen die Referenz der Gruppe.
                 // Beides ist eine SITZUNGSWAHL und wandert als Momentaufnahme mit.
-                try { daten.IdGruppenreferenz = new WirtschaftlichkeitCtrl()
-                                                    .LadeParameter(_idStamm).IdReferenzprojekt; }
-                catch { }
-                daten.Sicht = Vergleich.Sicht.Kopie();
+                //
+                // ETAPPE E5 (Empfehlung Q6, 22.09.2026): Die Sicht geht VOR dem Sammeln
+                // hinein. Bis hierher setzte diese Huelle sie erst danach - gerechnet war
+                // dann gegen die Referenz der Gruppe, waehrend die Tafeln A nannten. Jetzt
+                // rechnet der Sammler in Sicht 2 gegen A (ohne zu speichern) und bucht die
+                // Gruppenrechnung wie bisher; die Gruppenreferenz setzt er selbst.
+                Vergleichssicht sicht = Vergleich.Sicht.Kopie();
+                BerichtsDaten daten = await Kulturweitergabe.Starten(() =>
+                    new BerichtsDatenSammler().SammleFuerBericht(_idStamm, _stammName,
+                                                                 konfig.VariantenIds,
+                                                                 mitZeitreihen, melde, ct, sicht), ct);
 
                 string wordPfad = null, excelPfad = null;
                 if (konfig.Ausgabe == AUSGABE_WORD || konfig.Ausgabe == AUSGABE_BEIDE)
@@ -268,11 +270,53 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// ETAPPE E5 (U44, Entscheid Q18): <b>„Bericht erzeugen" auf der
+        /// Wirtschaftlichkeitsseite</b> — DERSELBE Berichtsweg wie der Knopf dieser Seite
+        /// (<see cref="Erstellen"/>), kein zweiter Generator. Er nimmt die gespeicherte
+        /// Konfiguration (Bausteine, Ausgabe, Zielordner) und die Versionen, die die
+        /// Ergebnisseite gerade vergleicht; die Sicht kommt aus der geteilten
+        /// Vergleichswahl wie bei jedem Berichtslauf (Q6: vor dem Sammeln).
+        ///
+        /// <para>Der Baustein „Wirtschaftlichkeit" ist immer dabei — ein Bericht, der von
+        /// der Wirtschaftlichkeitsseite aus entsteht und sie nicht enthält, wäre ein
+        /// anderer Bericht als der, um den gebeten wurde. Wie jeder Lauf merkt sich der
+        /// Weg die Auswahl als Konfiguration der Gruppe.</para>
+        /// </summary>
+        /// <param name="varianten">Die gewählten Versionen OHNE Stamm.</param>
+        internal Task<LaufErgebnis> ErzeugeFuerVergleich(IReadOnlyList<int> varianten, Action<Laufschritt> melder)
+        {
+            BerichtsKonfiguration k;
+            try { k = _bericht.Lade(_idStamm); }
+            catch { k = BerichtsKonfiguration.Standard(); }
+            if (k == null) k = BerichtsKonfiguration.Standard();
+
+            var bausteine = new List<string>(k.AktiveBausteine ?? new List<string>());
+            if (bausteine.Count == 0)
+                foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
+                    if (d.Standard) bausteine.Add(d.Schluessel);
+            if (!bausteine.Contains(BerichtsKonfiguration.B_WIRTSCHAFT))
+                bausteine.Add(BerichtsKonfiguration.B_WIRTSCHAFT);
+
+            var ids = new List<int>(varianten ?? new List<int>());
+            var auftrag = new BerichtAuftrag
+            {
+                VariantenIds = ids,
+                Bausteine = bausteine,
+                AusgabeId = AusgabeNummer(k.Ausgabe),
+                Zielordner = string.IsNullOrWhiteSpace(k.ZielOrdner) ? Dienste.Pfade.Dokumente : k.ZielOrdner,
+                AnzahlMitStamm = ids.Count + 1
+            };
+            return Erstellen(auftrag, melder);
+        }
+
         // =====================================================================
         // Umgebung
         // =====================================================================
 
-        private void Abbrechen()
+        /// <summary>Bricht einen laufenden Bericht ab — ETAPPE E5 (U44): auch einen, den
+        /// die Wirtschaftlichkeitsseite gestartet hat.</summary>
+        internal void Abbrechen()
         {
             if (_cts != null) _cts.Cancel();
         }

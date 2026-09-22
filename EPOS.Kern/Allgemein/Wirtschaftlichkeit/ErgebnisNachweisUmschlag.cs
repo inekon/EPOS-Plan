@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 6;
+        public const int FASSUNG = 7;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -159,6 +159,18 @@ namespace WindowsFormsApplication1
             new List<VermiedenAnlageNachweis>();
 
         /// <summary>
+        /// ETAPPE E5 (Fassung 7, V‑A) — die Vorzeichenwechsel der Differenzreihe, an denen
+        /// die Mehrdeutigkeitswarnung des internen Zinsfußes hängt.
+        ///
+        /// <para>Einem Umschlag der Fassung 1 bis 6 fehlt das Feld; es liest sich als
+        /// <c>null</c> — „nicht gezählt" —, und die Zeile warnt dann nicht. Eine Warnung zu
+        /// behaupten, die der damalige Lauf nicht gezählt hat, wäre schlimmer als keine.
+        /// <c>WhenWritingNull</c> lässt es bei der Referenz aus dem JSON.</para>
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.IrrVorzeichenwechsel"/>
+        public int? IrrVorzeichenwechsel;
+
+        /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
         /// sie auch wieder ein, ohne zu klagen.
@@ -207,7 +219,8 @@ namespace WindowsFormsApplication1
                     PositionsGruende = e.PositionsGruende
                                      ?? new Dictionary<string, string>(StringComparer.Ordinal),
                     VermiedenJeAnlage = e.VermiedenJeAnlage
-                                      ?? new List<VermiedenAnlageNachweis>()
+                                      ?? new List<VermiedenAnlageNachweis>(),
+                    IrrVorzeichenwechsel = e.IrrVorzeichenwechsel
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -309,6 +322,10 @@ namespace WindowsFormsApplication1
             // Umschlag traegt eine leere Liste, und die Rubrik bleibt fuer diesen Stand
             // bei der einen projektweiten Kette.
             e.VermiedenJeAnlage = VermiedenJeAnlage ?? new List<VermiedenAnlageNachweis>();
+
+            // ETAPPE E5 — die Zählung gibt es erst ab Fassung 7; ein älterer Umschlag
+            // trägt null („nicht gezählt"), und die Zinsfußzeile warnt dann nicht.
+            e.IrrVorzeichenwechsel = IrrVorzeichenwechsel;
         }
     }
 }

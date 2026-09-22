@@ -317,12 +317,6 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// ET‑2 (Anwenderbefund 08.09.2026): Nach dem Schreiben einer Anlage der elektrischen
-        /// Welt (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) bekommt das Projekt seinen
-        /// Stromträger — bis hierher tat das nur der Assistent. Idempotent; ein Fehlschlag
-        /// bricht das Speichern der Anlage nicht ab.
-        /// </summary>
-        /// <summary>
         /// AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Eine geschriebene Anlagenzeile
         /// ändert die Eingangsgrößen der Simulation — das gespeicherte Ergebnis ist danach
         /// älter als das Projekt. Die Marke sitzt im SCHREIBCONTROLLER, nicht in der Kachel:
@@ -335,14 +329,23 @@ namespace WindowsFormsApplication1
             MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(ID_Projekt);
         }
 
+        /// <summary>
+        /// ET‑2 (Anwenderbefund 08.09.2026): Nach dem Schreiben einer Anlage, die Strom
+        /// verwendet, bekommt das Projekt seinen Stromträger — bis hierher tat das nur der
+        /// Assistent. Idempotent; ein Fehlschlag bricht das Speichern der Anlage nicht ab.
+        ///
+        /// <para><b>Keine eigene Bedingung</b> (Anwenderentscheide 22.09.2026): Ob das
+        /// Projekt einen Stromträger braucht, beantwortet allein
+        /// <see cref="ProjektEnergietraegerCtrl.BrauchtStromTraeger"/> — sie wird in
+        /// <see cref="ProjektEnergietraegerCtrl.StromTraegerSicherstellen"/> gestellt und
+        /// kennt auch Elektrokessel, BHKW und Hilfsenergie, die diese Anlagenzeile allein
+        /// nicht verrät.</para>
+        /// </summary>
         private void StromTraegerNachziehen()
         {
             if (ID_Projekt <= 0) return;
-            if (ID_WP > 0 || ID_PV > 0 || ID_SP > 0 || Heizstab)
-            {
-                try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(ID_Projekt); }
-                catch { }
-            }
+            try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(ID_Projekt); }
+            catch { }
         }
 
         public void ReadAllFilter(string filter = "")

@@ -5,9 +5,22 @@
    .Designer.cs (11 Kartenzeilen) - Konzept_Wirtschaftlichkeit.md, Kap. 6
    (Kapitalwertmethode DIN EN 17463).
 
-   AUFBAU. Vier Kennzahl-Karten (KD6a), darunter die Vergleichsgruppe mit
-   Haken und die Szenariowahl, dann der Parameternachweis (L12/L13) und die
-   Vergleichstabelle. Die Fussleiste traegt die Sichten und "Berechnen".
+   AUFBAU (Etappe E5, Mockup Dialog_Formel_Zahlenprobe.html, Kategorie 8, vom
+   Anwender abgenommen 22.09.2026). Im Kopf der Umschalter "Kennzahlen /
+   ValERI-Bewertung" (U2, Entscheid V-1/K8), darunter Warnband, Vergleichsgruppe
+   mit Haken und Referenzspalte, Vergleichssicht. Dann je nach Umschalter:
+   - "Kennzahlen": vier Abschnitte - "Lohnt es sich?" (Kennzahl-Karten mit Label,
+     Empfehlungskarten je Version, Vorschlag, Kennzahltafel im Szenario Erwartet),
+     "Wie sicher ist das?" (Bandbreite nebeneinander, Sensitivitaet mit Steigung,
+     darunter die Szenario-Klappliste - sie steuert NUR die Tafeln darunter),
+     "Woraus entsteht die Zahl?" (Gliederung des gewaehlten Szenarios) und
+     "Was ist angenommen?" (Annahmentafel, Hinweistext, Parameternachweis,
+     Nutzungsdauer-Hinweise, Nr.-31-Zeile, Bewertungsblock mit den
+     Deklarationen, Knopf "Bericht erzeugen").
+   - "ValERI-Bewertung": die Bloecke 1, 3, 4, 5 der Norm; an der Stelle von
+     Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile.
+   Die Fussleiste traegt die Sichten, "Verlauf..." (bis E6) und "Berechnen" -
+   in beiden Zustaenden dieselbe; der Umschalter wechselt nur den Leib.
 
    DIE FUENF UNTERDIALOGE STEHEN IN EINER UEBERLAGERUNG - nicht in einem
    zweiten Fenster. Bis Welle 4 oeffnete diese Maske sie ueber vier
@@ -37,7 +50,26 @@
 <div class="epos-seite" tabindex="-1" @ref="_wurzel">
 
     @* KEIN EIGENER KOPF (08.09.2026): Titel und Hilfeknopf traegt der Rahmen
-       BerichteKostenSeite - hier standen beide ein zweites Mal. *@
+       BerichteKostenSeite - hier standen beide ein zweites Mal.
+
+       ETAPPE E5 (U2, Entscheid V-1/K8): DER UMSCHALTER IM KOPF DER SEITE. Das
+       Mockup zeichnet ihn im Band der Seite; ein eigenes Band gibt es hier nicht
+       (siehe oben), er steht deshalb als erste Zeile rechts - dieselbe Bauform wie
+       der Umschalter "Liste / Schema" der Simulationskonfiguration: zwei Knoepfe mit
+       aria-pressed in EINER Gruppe. Er wechselt nur den Leib; Warnband,
+       Vergleichsgruppe, Sicht und Fussleiste bleiben. Der Zustand ist eine
+       Sitzungswahl der Huelle (DarstellungGewaehlt); ohne Huelle schaltet er trotzdem,
+       er zeigt nur an. *@
+    <div class="epos-wirt-kopf">
+        <span class="epos-wirt-umschalter" role="group" aria-label="@Texte.UmschalterTitel">
+            <button type="button" class="@Umschalterklasse(WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN)"
+                    aria-pressed="@(IstValeri ? "false" : "true")"
+                    @onclick="() => DarstellungWaehlen(WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN)">@Texte.UmschalterKennzahlen</button>
+            <button type="button" class="@Umschalterklasse(WirtschaftlichkeitStand.DARSTELLUNG_VALERI)"
+                    aria-pressed="@(IstValeri ? "true" : "false")"
+                    @onclick="() => DarstellungWaehlen(WirtschaftlichkeitStand.DARSTELLUNG_VALERI)">@Texte.UmschalterValeri</button>
+        </span>
+    </div>
 
     @if (!string.IsNullOrEmpty(_fehler))
     {
@@ -93,17 +125,9 @@
         </div>
     }
 
-    @* ------------------------------------------------- Kennzahl-Karten *@
-    <Kachelraster Mindestbreite="240">
-        <KindInhalt>
-            @foreach (KachelZeile k in _stand.Ansicht.Kacheln)
-            {
-                <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle" />
-            }
-        </KindInhalt>
-    </Kachelraster>
-
-    @* ------------------------------------------------ Vergleichsgruppe *@
+    @* ------------------------------------------------ Vergleichsgruppe
+       ETAPPE E5: Die Kennzahl-Karten stehen seither im Abschnitt "Lohnt es sich?"
+       (V-3: behalten, mit Label). *@
     <p class="epos-untergruppe">@LabelVarianten</p>
 
     <Raster TZeile="VarianteZeile" Zeilen="@_stand.Varianten.AsQueryable()" Bearbeitbar="true">
@@ -151,57 +175,6 @@
         </KindInhalt>
     </Raster>
 
-    @* AUFTRAG #325 (Anwenderwunsch 17.09.2026): "button parameter nach oben …
-       auf Ebene Szenario". Der Einstieg in die Wirtschaftlichkeits-Parameter
-       stand bis hierher in der Fussleiste UNTER der langen Vergleichstabelle und
-       war auf dem Bildschirm des Anwenders nicht zu sehen - derselbe Befund, den
-       schon der Rechenknopf des Warnbandes hatte (#267). Er steht jetzt dort, wo
-       die Groessen gewaehlt werden, mit denen er rechnet.
-
-       KEINE EIGENE STILREGEL. Die Zeile ist eine .epos-seite-zeile, und die
-       richtet ihre Kinder an der UNTERKANTE aus (align-items: flex-end): Das
-       beschriftete Auswahlfeld und der unbeschriftete Knopf sitzen damit auf einer
-       Grundlinie, nicht versetzt. Dieselbe Bauform traegt die Variantenzeile der
-       Simulationsseite (Auswahlfeld + Knoepfe in einer Zeile). *@
-    <div class="epos-seite-zeile">
-        <Auswahlfeld Bezeichnung="@LabelSzenario" Eintraege="@_stand.Szenarien"
-                     Auswahl="@_stand.SzenarioId" Aktiv="@(!_laeuft)"
-                     AuswahlChanged="BeiSzenario" />
-        @if (Gaben is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                    @onclick="() => Oeffne(Unterdialog.Parameter)">@ParameterText</button>
-        }
-    </div>
-
-    @* W5-B-9: Erst der Satz DIESES Szenarios, dann der Projekt-Parameternachweis.
-       Eine leere Szenariozeile wird gar nicht erst gezeichnet - eine leere
-       Herleitungszeile ist kein Hinweis, sondern eine Luecke. *@
-    @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenariozeile))
-    {
-        <Herleitungszeile Text="@_stand.Ansicht.Szenariozeile" />
-    }
-    <Herleitungszeile Text="@_stand.Parameterzeile" />
-
-    @* W5-B-11 (VALERI G7 / G10 / G1,G3,G5): Der Nachweisblock sagt zusaetzlich,
-       wie der Betrachtungszeitraum zu den Nutzungsdauern steht, woher
-       Eigenverbrauchsquote und Einspeiseanteil kommen und welche Vereinfachungen
-       gelten. Leere Zeilen werden - wie die Szenariozeile - nicht gezeichnet. *@
-    @if (!string.IsNullOrEmpty(_stand.Zeitraumzeile))
-    {
-        <Herleitungszeile Text="@_stand.Zeitraumzeile" />
-    }
-    @if (!string.IsNullOrEmpty(_stand.Vereinfachungszeile))
-    {
-        <Herleitungszeile Text="@_stand.Vereinfachungszeile" />
-    }
-
-    @* W5-B-12 (VALERI G6): die nicht monetaeren Wirkungen stehen NICHT MEHR HIER.
-       Sie haben ihre eine Stelle auf dieser Seite weiter unten - im Kopf des
-       Bewertungsblocks, der sie auch pflegt (AUFTRAG #328). Im Bericht bleiben
-       sie, wo sie waren: Word und Excel lesen unveraendert
-       WirtschaftlichkeitParameter.NichtMonetaer, nicht diese Seite. *@
-
     @* ------------------------------------------- Vergleichssicht (§ 2.15)
 
        WELCHE STAENDE GEGENEINANDER. Entweder alle angehakten Varianten gegen die
@@ -244,117 +217,290 @@
         }
     }
 
-    @* --------------------------------------------- Vergleichstabelle *@
-    @if (_stand.Ansicht.Matrix.Zeilen.Count > 0)
+    @if (!IstValeri)
     {
-        <div class="epos-raster-huelle">
-            <table class="epos-raster epos-matrix">
-                <thead>
-                    <tr>
-                        @foreach (string kopf in _stand.Ansicht.Matrix.Spalten)
+        @* ============== Darstellung "Kennzahlen": die vier Abschnitte (U2) ==============
+
+           DIE KOEPFE SIND GRUPPENKOEPFE - der Abschnittsbalken des Hauses
+           (SectionPanel-Vorbild), kein eigener Stil. Die Reihenfolge ist die des
+           Mockups: Lohnt es sich? - Wie sicher ist das? - Woraus entsteht die Zahl? -
+           Was ist angenommen? *@
+
+        @* ---------------------------------------------- 1 · Lohnt es sich? *@
+        <Gruppenkopf Titel="@Texte.AbsLohnt">
+            <KindInhalt>
+                @* V-3: Die vier Kennzahl-Karten bleiben - Amortisation und Zinsfuss mit
+                   dem Label "nachrichtlich", die Zinsfusskarte mit ihrer Warnung. Sie
+                   stehen UEBER der Szenario-Klappliste und zeigen deshalb den
+                   Erwartungsfall (die Huelle bildet sie so). *@
+                <Kachelraster Mindestbreite="240">
+                    <KindInhalt>
+                        @foreach (KachelZeile k in _stand.Ansicht.Kacheln)
                         {
-                            <th scope="col">@kopf</th>
+                            <Kennzahlkachel Titel="@k.Titel" Wert="@k.Wert" Quelle="@k.Quelle"
+                                            Kennzeichen="@k.Kennzeichen" Warnung="@k.Warnung" />
                         }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (MatrixZeile z in _stand.Ansicht.Matrix.Zeilen)
+                    </KindInhalt>
+                </Kachelraster>
+                @Empfehlungsteil
+                @Kennzahlteil
+            </KindInhalt>
+        </Gruppenkopf>
+
+        @* ------------------------------------------- 2 · Wie sicher ist das? *@
+        <Gruppenkopf Titel="@Texte.AbsSicher">
+            <KindInhalt>
+                @Bandbreitenteil
+                @Sensitivitaetsteil
+
+                @* U4: DIE KLAPPLISTE STEUERT NUR DIE TAFELN DARUNTER. Sie steht deshalb
+                   unter Bandbreite und Sensitivitaet (die zeigen alle drei Szenarien
+                   bzw. den Erwartungsfall) und ueber der Gliederung, die ihr folgt.
+
+                   AUFTRAG #325 (Anwenderwunsch 17.09.2026): "button parameter nach oben
+                   ... auf Ebene Szenario" - der Einstieg in die Parameter steht in der
+                   Zeile der Szenariowahl, dort, wo die Groessen gewaehlt werden, mit
+                   denen er rechnet. KEINE EIGENE STILREGEL: .epos-seite-zeile richtet
+                   Auswahlfeld und Knopf an der Unterkante aus. *@
+                <div class="epos-seite-zeile epos-wirt-szenariozeile">
+                    <Auswahlfeld Bezeichnung="@LabelSzenario" Eintraege="@_stand.Szenarien"
+                                 Auswahl="@_stand.SzenarioId" Aktiv="@(!_laeuft)"
+                                 AuswahlChanged="BeiSzenario" />
+                    @if (Gaben is not null)
                     {
-                        <tr>
-                            <th scope="row" class="epos-matrix-titel">@z.Titel</th>
-                            @foreach (string zelle in z.Zellen)
-                            {
-                                <td class="epos-matrix-zelle">@zelle</td>
-                            }
-                        </tr>
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="() => Oeffne(Unterdialog.Parameter)">@ParameterText</button>
                     }
-                </tbody>
-            </table>
-        </div>
+                </div>
+
+                @* W5-B-9: der Satz DIESES Szenarios. Eine leere Szenariozeile wird gar
+                   nicht erst gezeichnet - eine leere Herleitungszeile ist kein Hinweis,
+                   sondern eine Luecke. *@
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Szenariozeile))
+                {
+                    <Herleitungszeile Text="@_stand.Ansicht.Szenariozeile" />
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+
+        @* ------------------------------------- 3 · Woraus entsteht die Zahl? *@
+        <Gruppenkopf Titel="@Texte.AbsWoraus">
+            <KindInhalt>
+                @* Die Gliederungstafeln der Zeilendefinition (Investition, Betrieb,
+                   Energie, Erloesrubrik, Ersatz und Restwert, Nettobarwert) im GEWAEHLTEN
+                   Szenario - ohne die Kennzahlen, die in Abschnitt 1 stehen - und darunter
+                   die Hinweiszeilen, die sagen, WELCHE Spalte eine Warnung traegt. *@
+                @{ ErgebnisMatrix gliederung = _stand.Ansicht.Matrix.Ohne(MatrixZeile.ABSCHNITT_KENNZAHL); }
+                @if (gliederung.Zeilen.Count > 0)
+                {
+                    @Matrixtafel(gliederung, "epos-raster epos-matrix epos-wirt-gliederung")
+                }
+            </KindInhalt>
+        </Gruppenkopf>
+
+        @* ------------------------------------------ 4 · Was ist angenommen? *@
+        <Gruppenkopf Titel="@Texte.AbsAnnahmen">
+            <KindInhalt>
+                @if (_stand.Annahmen.Zeilen.Count > 0)
+                {
+                    <p class="epos-untergruppe">@Texte.AnnahmenTitel</p>
+                    @Tafel(_stand.Annahmen, "epos-raster epos-wirt-tafel epos-wirt-annahmen", false, 3)
+                }
+
+                @* U10: der Hinweistext UNMITTELBAR unter der Annahmentafel - was ein
+                   Szenario heute variiert und was nicht, mit den wirksamen Spannen. *@
+                @if (!string.IsNullOrEmpty(_stand.Szenariohinweis))
+                {
+                    <div class="epos-wirt-szenariohinweis">
+                        <Herleitungszeile Text="@_stand.Szenariohinweis" />
+                    </div>
+                }
+
+                @* Der Parameternachweis (L12/L13) und der Nachweisblock W5-B-11 (VALERI
+                   G7 / G10 / G1,G3,G5): Betrachtungszeitraum gegen die Nutzungsdauern,
+                   U39 "k von n Positionen ohne Nutzungsdauer" (ein Pruefauftrag, keine
+                   Fehlermeldung), Herkunft der Eigennutzung und die Vereinfachungen,
+                   zuletzt Nr. 31. Leere Zeilen werden nicht gezeichnet. *@
+                @if (!string.IsNullOrEmpty(_stand.Parameterzeile))
+                {
+                    <Herleitungszeile Text="@_stand.Parameterzeile" />
+                }
+                @if (!string.IsNullOrEmpty(_stand.Zeitraumzeile))
+                {
+                    <Herleitungszeile Text="@_stand.Zeitraumzeile" />
+                }
+                @foreach (string hinweis in _stand.Nutzungsdauerhinweise)
+                {
+                    <div class="epos-wirt-pruefauftrag">
+                        <Herleitungszeile Text="@hinweis" />
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(_stand.Vereinfachungszeile))
+                {
+                    <Herleitungszeile Text="@_stand.Vereinfachungszeile" />
+                }
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Nachweiszeile))
+                {
+                    <div class="epos-wirt-nachweis">
+                        <Herleitungszeile Text="@_stand.Ansicht.Nachweiszeile" />
+                    </div>
+                }
+
+                @* ------------------------- Bewertung nach DIN EN 17463 (#325) *@
+                @* AUFTRAG #325 (Anwenderentscheid 17.09.2026): "heraus nehmen aus
+                   Parameter Dialog: 1. Bewertung nach DIN EN 17463". Der Text steht DA,
+                   WO AUCH DER KAPITALWERT STEHT - die Norm will beides nebeneinander.
+
+                   AUFKLAPPBAR ueber den Hausknopf .epos-modulparameter-knopf (W6-E-1):
+                   Der Offen-Zustand gehoert der Seite und ueberlebt jeden Auffrischlauf;
+                   aria-expanded sagt ihn an. Keine neue Stilregel. DIESELBE WAHRHEIT,
+                   andere Eingabestelle: WirtschaftlichkeitParameter.NichtMonetaer.
+
+                   AUFTRAG #328 (Anwenderentscheid 18.09.2026): DER AUSWEIS STEHT IM KOPF
+                   DIESES BLOCKS - zugeklappt neben dem Titel, aufgeklappt im Feld
+                   darunter; derselbe Satz zweimal auf einem Bildschirm waere einer zu
+                   viel. Im Markup steht der gepflegte Text GANZ, gekuerzt wird erst im
+                   Browser (text-overflow: ellipsis); der title traegt ihn noch einmal.
+                   LEER BLEIBT LEER: ohne gepflegten Text nur der Titel.
+
+                   ETAPPE E5 (V-A, Mockup "Was ist angenommen?"): DIE DEKLARATIONEN ALS
+                   KLAPPBLOCK - aufgeklappt stehen sie ueber dem Freitext (nominal ·
+                   Steuern · Restwert · Risiko; ohne gepflegten Text "keine benannt",
+                   Q5). Den Block gibt es deshalb auch ohne Schreibweg, sobald es
+                   Deklarationen gibt; Feld und Speicherknopf nur mit ihm.
+
+                   EINE SEITE HAT KEIN OK. Geschrieben wird auf Zuruf ueber den Knopf
+                   daneben - nicht bei jedem Tastendruck und nicht still beim Verlassen
+                   der Seite. Danach frischt die Seite auf. *@
+                @if (WirkungSpeichern is not null || _stand.Deklarationen.Count > 0)
+                {
+                    @* null statt "" - so laesst Blazor das title-Attribut ganz weg, und der
+                       leere Zustand traegt auch keinen leeren Tooltip. *@
+                    bool ausweisZeigen = !_bewertungOffen && !string.IsNullOrWhiteSpace(_stand.NichtMonetaer);
+                    string? ausweis = ausweisZeigen ? _stand.NichtMonetaer.Trim() : null;
+
+                    <button type="button" class="epos-modulparameter-knopf"
+                            aria-expanded="@(_bewertungOffen ? "true" : "false")"
+                            title="@ausweis"
+                            @onclick="BewertungUmschalten">
+                        <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_bewertungOffen ? "▾" : "▸")</span>
+                        <span>@BewertungTitel</span>
+                        @if (ausweisZeigen)
+                        {
+                            <span class="epos-modulparameter-ausweis">@ausweis</span>
+                        }
+                    </button>
+
+                    @if (_bewertungOffen)
+                    {
+                        @if (_stand.Deklarationen.Count > 0)
+                        {
+                            <div class="epos-wirt-deklarationen">
+                                @foreach (string deklaration in _stand.Deklarationen)
+                                {
+                                    <Herleitungszeile Text="@deklaration" />
+                                }
+                            </div>
+                        }
+                        @if (WirkungSpeichern is not null)
+                        {
+                            <Formularraster>
+                                <KindInhalt>
+                                    <Textfeld Bezeichnung="@NichtMonetaerText" Mehrzeilig="true" Zeilen="5"
+                                              Platzhalter="@NichtMonetaerPlatz" NurLesen="@_laeuft"
+                                              Wert="@_nichtMonetaer"
+                                              WertChanged="@(w => _nichtMonetaer = w)" />
+                                </KindInhalt>
+                            </Formularraster>
+                            <Herleitungszeile Text="@NichtMonetaerHinweis" />
+                            @* KEIN .epos-leiste um diesen einen Knopf: Die Fussleiste der
+                               Seite ist genau eine. Ein einzelner Knopf steht ohne Wirt -
+                               wie "Vorgaben" im Parameterdialog. *@
+                            <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                    @onclick="WirkungSchreiben">@BewertungSpeichernText</button>
+                        }
+                    }
+                }
+
+                @BerichtKnopfteil
+            </KindInhalt>
+        </Gruppenkopf>
     }
-
-    @* W5-B-11 (VALERI G9): der Vorschlag zur Entscheidung - unmittelbar unter der
-       Vergleichstabelle, aus der er sich ergibt. Ohne Variante mit Erwartet-Ergebnis
-       bleibt der Text leer, und die Zeile entfaellt ganz. *@
-    @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
+    else
     {
-        <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
-    }
+        @* ============== Darstellung "ValERI-Bewertung" (V-1, V-C) ==============
 
-    @* ------------------------------------ Bewertung nach DIN EN 17463 (#325) *@
-    @* AUFTRAG #325 (Anwenderentscheid 17.09.2026): "heraus nehmen aus Parameter
-       Dialog: 1. Bewertung nach DIN EN 17463". Der Text steht jetzt DA, WO AUCH
-       DER KAPITALWERT STEHT - die Norm will beides nebeneinander; in einem
-       Unterdialog stand er neben Rechengroessen, die ihn nichts angehen.
+           IN DIESER ETAPPE NUR, WAS DATEN HAT: Block 1 (Gegenstand und Rahmen aus
+           dem Parametersatz), Block 3 (Kennzahlen), Block 4 (Unsicherheit) und
+           Block 5 (Deklarationen). Block 2 - die Zahlungsreihen je Jahr samt
+           Zahlungsstrombild - kommt mit E8; an seiner Stelle steht EINE benannte
+           Hinweiszeile, kein leerer Rahmen. Der Normbezug steht als Untertitel im
+           Balken (Mockup-Tafel "ValERI-Bewertung - die fuenf Bloecke"). *@
+        <Gruppenkopf Titel="@Texte.Block1" Summe="@Texte.Norm1">
+            <KindInhalt>
+                @if (_stand.Ansicht.Rahmen.Zeilen.Count > 0)
+                {
+                    @Tafel(_stand.Ansicht.Rahmen, "epos-raster epos-wirt-tafel epos-wirt-rahmen", false, 0)
+                }
+                <Herleitungszeile Text="@Texte.RechnungNominal" />
+            </KindInhalt>
+        </Gruppenkopf>
 
-       AUFKLAPPBAR ueber den Hausknopf .epos-modulparameter-knopf (W6-E-1, dieselbe
-       Form fuer denselben Zweck): Der Offen-Zustand gehoert der Seite und ueberlebt
-       jeden Auffrischlauf; aria-expanded sagt ihn an. Keine neue Stilregel.
+        <Gruppenkopf Titel="@Texte.Block2" Summe="@Texte.Norm2">
+            <KindInhalt>
+                <div class="epos-wirt-block-luecke">
+                    <Herleitungszeile Text="@Texte.Block2Hinweis" />
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
 
-       DIESELBE WAHRHEIT, andere Eingabestelle: Es ist unveraendert
-       WirtschaftlichkeitParameter.NichtMonetaer.
+        <Gruppenkopf Titel="@Texte.Block3" Summe="@Texte.Norm3">
+            <KindInhalt>
+                @Kennzahlteil
+                <Herleitungszeile Text="@Texte.KennzahlHinweis" />
+            </KindInhalt>
+        </Gruppenkopf>
 
-       AUFTRAG #328 (Anwenderentscheid 18.09.2026): "Ausweis ausblenden solange
-       offen · Ausweis als Blockueberschrift". DER AUSWEIS STEHT JETZT IM KOPF
-       DIESES BLOCKS - dort, wo man ihn aufklappen wuerde - und im Nachweisblock
-       oben gar nicht mehr. So steht der Text je Zustand an GENAU EINER Stelle:
-       zugeklappt neben dem Titel, aufgeklappt im Feld darunter. Aufgeklappt
-       traegt der Kopf deshalb nur seinen Titel; der volle Text steht zwei Zeilen
-       tiefer, und derselbe Satz zweimal auf einem Bildschirm waere einer zu viel.
+        <Gruppenkopf Titel="@Texte.Block4" Summe="@Texte.Norm4">
+            <KindInhalt>
+                @Bandbreitenteil
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
+                {
+                    <div class="epos-wirt-vorschlag">
+                        <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(_stand.Szenariohinweis))
+                {
+                    <div class="epos-wirt-szenariohinweis">
+                        <Herleitungszeile Text="@_stand.Szenariohinweis" />
+                    </div>
+                }
+                @Sensitivitaetsteil
+            </KindInhalt>
+        </Gruppenkopf>
 
-       NICHT GEKUERZT IM QUELLTEXT: Im Markup steht der gepflegte Text GANZ, und
-       zu schmal wird er erst im Browser (.epos-modulparameter-ausweis mit
-       text-overflow: ellipsis - die Hausform, die auch .epos-zeilenwahl-text
-       nimmt). Eine zweite Kuerzungsregel waere eine zweite Wahrheit. Der title
-       des Knopfes traegt denselben Text noch einmal, damit er auch dann ganz
-       lesbar ist, wenn der Browser abgeschnitten hat.
-
-       LEER BLEIBT LEER: Ohne gepflegten Text traegt der Kopf nur seinen Titel -
-       kein "—", kein leeres span. Eine leere Angabe waere die Behauptung, es
-       gaebe keine nicht monetaeren Wirkungen.
-
-       EINE SEITE HAT KEIN OK. Geschrieben wird deshalb auf Zuruf ueber den Knopf
-       daneben - nicht bei jedem Tastendruck (das Textfeld meldet jede Eingabe) und
-       nicht still beim Verlassen der Seite. Danach frischt die Seite auf, damit der
-       Ausweis im Kopf dem folgt, was gerade geschrieben wurde. *@
-    @if (WirkungSpeichern is not null)
-    {
-        @* null statt "" - so laesst Blazor das title-Attribut ganz weg, und der
-           leere Zustand traegt auch keinen leeren Tooltip. *@
-        bool ausweisZeigen = !_bewertungOffen && !string.IsNullOrWhiteSpace(_stand.NichtMonetaer);
-        string? ausweis = ausweisZeigen ? _stand.NichtMonetaer.Trim() : null;
-
-        <button type="button" class="epos-modulparameter-knopf"
-                aria-expanded="@(_bewertungOffen ? "true" : "false")"
-                title="@ausweis"
-                @onclick="BewertungUmschalten">
-            <span class="epos-modulparameter-pfeil" aria-hidden="true">@(_bewertungOffen ? "▾" : "▸")</span>
-            <span>@BewertungTitel</span>
-            @if (ausweisZeigen)
-            {
-                <span class="epos-modulparameter-ausweis">@ausweis</span>
-            }
-        </button>
-
-        @if (_bewertungOffen)
-        {
-            <Formularraster>
-                <KindInhalt>
-                    <Textfeld Bezeichnung="@NichtMonetaerText" Mehrzeilig="true" Zeilen="5"
-                              Platzhalter="@NichtMonetaerPlatz" NurLesen="@_laeuft"
-                              Wert="@_nichtMonetaer"
-                              WertChanged="@(w => _nichtMonetaer = w)" />
-                </KindInhalt>
-            </Formularraster>
-            <Herleitungszeile Text="@NichtMonetaerHinweis" />
-            @* KEIN .epos-leiste um diesen einen Knopf: Die Fussleiste der Seite ist
-               genau eine, und eine zweite Leiste unmittelbar im Seitenwirt waere
-               keine Leiste mehr, sondern eine zweite Fussleiste mitten im Text.
-               Ein einzelner Knopf steht ohne Wirt - wie "Vorgaben" im
-               Parameterdialog. *@
-            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                    @onclick="WirkungSchreiben">@BewertungSpeichernText</button>
-        }
+        <Gruppenkopf Titel="@Texte.Block5" Summe="@Texte.Norm5">
+            <KindInhalt>
+                <div class="epos-wirt-deklarationen">
+                    @foreach (string deklaration in _stand.Deklarationen)
+                    {
+                        <Herleitungszeile Text="@deklaration" />
+                    }
+                </div>
+                @if (!string.IsNullOrWhiteSpace(_stand.NichtMonetaer))
+                {
+                    <Herleitungszeile Text="@string.Format(Texte.NichtMonetaerZeile, _stand.NichtMonetaer.Trim())" />
+                }
+                @if (!string.IsNullOrEmpty(_stand.Ansicht.Nachweiszeile))
+                {
+                    <div class="epos-wirt-nachweis">
+                        <Herleitungszeile Text="@_stand.Ansicht.Nachweiszeile" />
+                    </div>
+                }
+                @BerichtKnopfteil
+            </KindInhalt>
+        </Gruppenkopf>
     }
 
     @if (_laeuft)
@@ -485,6 +631,13 @@
             }
         </KindInhalt>
     </Ueberlagerung>
+
+    @* ETAPPE E5 (U44): die zwei Rueckfragen des Knopfes "Bericht erzeugen" - dieselben
+       wie auf der Berichtsseite (Baustein Rueckfrage, im selben Fenster): vor dem Lauf,
+       weil er alle Versionen neu simuliert, und danach "oeffnen?". *@
+    <Rueckfrage Offen="@(_berichtsfrage != Berichtsfrage.Keine)" Frage="@_berichtsfrageText"
+                TitelText="@Texte.BerichtTitel" Beantwortet="BerichtBeantwortet"
+                JaText="@Texte.Ja" NeinText="@Texte.Nein" />
 </div>
 
 @code {
@@ -601,6 +754,35 @@
     /// </summary>
     [Parameter] public Func<string, bool>? WirkungSpeichern { get; set; }
 
+    /// <summary>
+    /// ETAPPE E5 (U2, Entscheid V‑1/K8): Der Umschalter „Kennzahlen / ValERI-Bewertung"
+    /// hat gewechselt (<see cref="WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN"/> bzw.
+    /// <see cref="WirtschaftlichkeitStand.DARSTELLUNG_VALERI"/>). Die Hülle merkt sich die
+    /// Wahl für die Sitzung (Muster Vergleichsauswahl). Ohne Delegat schaltet der
+    /// Umschalter trotzdem — er wechselt nur die Darstellung und schreibt nichts.
+    /// </summary>
+    [Parameter] public Action<int>? DarstellungGewaehlt { get; set; }
+
+    /// <summary>
+    /// ETAPPE E5 (U44, Entscheid Q18): „Bericht erzeugen" — DERSELBE Berichtsweg wie der
+    /// Knopf der Berichtsseite, mit der aktuellen Vergleichsgruppe (die gewählten
+    /// Versionen ohne Stamm, wie bei <see cref="Berechnen"/>) und der Sicht der Sitzung.
+    /// Der zweite Parameter ist der Fortschrittsmelder. <b>Kein Delegat, kein Knopf.</b>
+    /// </summary>
+    [Parameter] public Func<IReadOnlyList<int>, Action<Laufschritt>, Task<LaufErgebnis>>? BerichtErzeugen { get; set; }
+
+    /// <summary>
+    /// Öffnet einen erzeugten Bericht mit dem System (die Antwort „Ja" auf „öffnen?").
+    /// Ohne Delegat gibt es die Frage nicht.
+    /// </summary>
+    [Parameter] public Func<string, Task>? DateiOeffnen { get; set; }
+
+    /// <summary>
+    /// ETAPPE E5 Teil b: die Beschriftungen der Ergebnisansicht als BÜNDEL — es füllt sich
+    /// selbst aus <c>MyResource</c>; die Hülle muss nichts beisteuern.
+    /// </summary>
+    [Parameter] public WirtschaftlichkeitSeiteTexte Texte { get; set; } = new();
+
     /// <summary>Hilfeschlüssel — der der alten Maske.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "UcWirtschaftlichkeit.btn_Help";
 
@@ -614,7 +796,9 @@
 
     /// <inheritdoc cref="TitelText" path="/summary/text()[last()]"/>
     [Parameter] public string LabelVarianten { get; set; } = Resource.WIRT_LBL_GRUPPE;
-    [Parameter] public string LabelSzenario { get; set; } = "Szenario:";
+    /// <summary>Die Beschriftung der Szenario-Klappliste — seit E5 (U4) „Einzelheiten
+    /// anzeigen für Szenario:", denn sie steuert nur die Tafeln darunter.</summary>
+    [Parameter] public string LabelSzenario { get; set; } = Resource.WIRT_LBL_EINZELHEITEN;
     [Parameter] public string LabelFortschritt { get; set; } = "Fortschritt";
 
     [Parameter] public string SpalteArt { get; set; } = "Art";
@@ -773,6 +957,18 @@
     /// <summary>Der Arbeitsstand des Freitextes (AUFTRAG #325). Geschrieben wird er
     /// erst auf Zuruf; bis dahin bleibt der geladene Stand unangetastet.</summary>
     private string _nichtMonetaer = "";
+
+    /// <summary>ETAPPE E5 (U44): welche Rückfrage des Berichtsknopfs offen ist.</summary>
+    private enum Berichtsfrage { Keine, Start, Oeffnen }
+
+    private Berichtsfrage _berichtsfrage = Berichtsfrage.Keine;
+    private string _berichtsfrageText = "";
+
+    /// <summary>Der zuletzt erzeugte Bericht — was ein „Ja" auf „öffnen?" öffnet.</summary>
+    private string _berichtDatei = "";
+
+    /// <summary>Die gewählte Darstellung (Prüfhilfe): 0 = Kennzahlen, 1 = ValERI-Bewertung.</summary>
+    public int Darstellung => _stand.Darstellung;
 
     /// <summary>Steht der Bewertungsblock offen? (Prüfhilfe)</summary>
     public bool BewertungOffen => _bewertungOffen;
@@ -971,8 +1167,350 @@
     private void BeiSzenario(int? id)
     {
         _stand.SzenarioId = id ?? 0;
-        if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
+        if (Anzeigen is not null) SzenarioTeileUebernehmen(Anzeigen(_stand.SzenarioId));
         WarnbandAuffrischen();          // #267: jedes Szenario hat seine eigenen Gründe
+    }
+
+    /// <summary>
+    /// ETAPPE E5 (U4, Mockup „Wie sicher ist das?"): <b>Die Klappliste steuert nur die
+    /// Tafeln darunter.</b> Aus der Ansicht des gewählten Szenarios werden deshalb allein
+    /// die szenarioabhängigen Teile übernommen — die Vergleichstabelle (Gliederung und
+    /// Hinweise, sie speist auch das Warnband) und die Szenariozeile. Karten,
+    /// Kennzahltafel, Bandbreite, Sensitivität und Empfehlung stehen darüber und bleiben,
+    /// wie sie sind; ein Wechsel der Vergleichswahl tauscht dagegen die ganze Ansicht.
+    /// </summary>
+    private void SzenarioTeileUebernehmen(ErgebnisAnsicht? neu)
+    {
+        if (neu is null) return;
+        _stand.Ansicht.Matrix = neu.Matrix ?? new ErgebnisMatrix();
+        _stand.Ansicht.Szenariozeile = neu.Szenariozeile ?? "";
+    }
+
+    // =====================================================================
+    // ETAPPE E5 — Umschalter, Karten und Tafeln der Ergebnisansicht
+    // =====================================================================
+
+    /// <summary>Steht der Umschalter auf „ValERI-Bewertung"?</summary>
+    private bool IstValeri => _stand.Darstellung == WirtschaftlichkeitStand.DARSTELLUNG_VALERI;
+
+    /// <summary>Die Klassen eines Umschalterknopfs — der gewählte trägt die aktive Form.</summary>
+    private string Umschalterklasse(int darstellung)
+        => (darstellung == WirtschaftlichkeitStand.DARSTELLUNG_VALERI) == IstValeri
+           ? "epos-wirt-umschalter-knopf epos-wirt-umschalter-knopf--aktiv"
+           : "epos-wirt-umschalter-knopf";
+
+    /// <summary>
+    /// U2: die Darstellung wechseln. Die Wahl steht am Stand (die Seite zeichnet daraus)
+    /// und geht an die Hülle, die sie für die Sitzung behält; ein unbekannter Wert gilt
+    /// als „Kennzahlen".
+    /// </summary>
+    private void DarstellungWaehlen(int darstellung)
+    {
+        int neu = darstellung == WirtschaftlichkeitStand.DARSTELLUNG_VALERI
+                ? WirtschaftlichkeitStand.DARSTELLUNG_VALERI
+                : WirtschaftlichkeitStand.DARSTELLUNG_KENNZAHLEN;
+        if (neu == _stand.Darstellung) return;
+        _stand.Darstellung = neu;
+        DarstellungGewaehlt?.Invoke(neu);
+    }
+
+    /// <summary>U5: die Klassen einer Empfehlungskarte — die Stufe färbt über die Tokens
+    /// des Stilblatts (<c>--epos-wirt-empf-*</c>).</summary>
+    private static string Kartenklasse(EmpfehlungKarte karte)
+        => "epos-wirt-karte epos-wirt-karte--" + Stufenform(karte.Stufe);
+
+    /// <summary>U5: die Klassen der Stufenmarke einer Karte.</summary>
+    private static string Stufenklasse(EmpfehlungKarte karte)
+        => "epos-wirt-stufe epos-wirt-stufe--" + Stufenform(karte.Stufe);
+
+    private static string Stufenform(string? stufe) => stufe switch
+    {
+        EmpfehlungKarte.STUFE_JA => "ja",
+        EmpfehlungKarte.STUFE_BEDINGT => "bedingt",
+        EmpfehlungKarte.STUFE_NEIN => "nein",
+        _ => "offen"
+    };
+
+    /// <summary>
+    /// V‑A (Befund A2): die Zellwarnungen einer Tafel als Zeilen unter ihr — „⚠ ‹Spalte›
+    /// — ‹Kennzahl›: ‹Warnung›", jede einmal. Die Zelle selbst trägt nur das Zeichen.
+    /// </summary>
+    private static IReadOnlyList<string> Zellwarnungstexte(ErgebnisMatrix tafel)
+    {
+        var liste = new List<string>();
+        foreach (MatrixZeile z in tafel.Zeilen)
+            for (int i = 0; i < z.Zellen.Count; i++)
+            {
+                string warnung = z.Zellwarnung(i);
+                if (warnung.Length == 0) continue;
+                string spalte = i + 1 < tafel.Spalten.Count ? tafel.Spalten[i + 1] : "";
+                string text = "⚠ " + (spalte.Length > 0 ? spalte + " — " : "") + z.Titel + ": " + warnung;
+                if (!liste.Contains(text)) liste.Add(text);
+            }
+        return liste;
+    }
+
+    /// <summary>
+    /// U5: „Lohnt es sich?" — die Empfehlungskarten je Version (Stufe, Stufentext,
+    /// Kapitalwertdifferenz), der Vorschlagssatz aus denselben Urteilen und die
+    /// Einstufungsregel. Ohne Karten weder Karten noch Regel.
+    /// </summary>
+    private RenderFragment Empfehlungsteil => @<div class="epos-wirt-empfehlung">
+        @if (_stand.Ansicht.Empfehlungen.Count > 0)
+        {
+            <div class="epos-wirt-karten">
+                @foreach (EmpfehlungKarte karte in _stand.Ansicht.Empfehlungen)
+                {
+                    <div class="@Kartenklasse(karte)">
+                        <span class="epos-wirt-karte-name">@karte.Name</span>
+                        <span class="epos-wirt-karte-wert">@karte.Differenz</span>
+                        <span class="epos-wirt-karte-unter">@Texte.KarteUnter</span>
+                        <span class="@Stufenklasse(karte)">@karte.StufeText</span>
+                    </div>
+                }
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(_stand.Ansicht.Empfehlungszeile))
+        {
+            <div class="epos-wirt-vorschlag">
+                <Herleitungszeile Text="@_stand.Ansicht.Empfehlungszeile" />
+            </div>
+        }
+        @if (_stand.Ansicht.Empfehlungen.Count > 0)
+        {
+            <Herleitungszeile Text="@Texte.EmpfehlungRegel" />
+        }
+    </div>;
+
+    /// <summary>
+    /// U2 und V‑A: die Kennzahltafel im Szenario Erwartet — Label „nachrichtlich" am
+    /// Titel, das Warnzeichen in der Zelle, „— ‹Grund›" statt einer Null (Q16, die Hülle
+    /// liefert den Text), und die Warnungen als Zeilen darunter.
+    /// </summary>
+    private RenderFragment Kennzahlteil => @<div class="epos-wirt-kennzahlen">
+        @if (_stand.Ansicht.Kennzahltafel.Zeilen.Count > 0)
+        {
+            ErgebnisMatrix tafel = _stand.Ansicht.Kennzahltafel;
+            <p class="epos-untergruppe">@Texte.KennzahltafelTitel</p>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-matrix epos-wirt-kennzahltafel">
+                    <thead>
+                        <tr>
+                            @foreach (string kopf in tafel.Spalten)
+                            {
+                                <th scope="col">@kopf</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (MatrixZeile z in tafel.Zeilen)
+                        {
+                            <tr>
+                                <th scope="row" class="epos-matrix-titel">
+                                    @z.Titel
+                                    @if (!string.IsNullOrEmpty(z.Kennzeichen))
+                                    {
+                                        <span class="epos-wirt-kennzeichen">@z.Kennzeichen</span>
+                                    }
+                                </th>
+                                @for (int i = 0; i < z.Zellen.Count; i++)
+                                {
+                                    string warnung = z.Zellwarnung(i);
+                                    <td class="epos-matrix-zelle">
+                                        @z.Zellen[i]
+                                        @if (warnung.Length > 0)
+                                        {
+                                            <span class="epos-wirt-zellwarnung" title="@warnung"
+                                                  aria-label="@warnung">⚠</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            @foreach (string warnzeile in Zellwarnungstexte(tafel))
+            {
+                <Herleitungszeile Text="@warnzeile" />
+            }
+        }
+    </div>;
+
+    /// <summary>
+    /// U4: die Bandbreite NEBENEINANDER — je Version Ungünstig · Erwartet · Günstig, die
+    /// Spanne und die Einstufung, als erste Zeile die Referenz; darunter der Fußtext. Sie
+    /// folgt der Vergleichswahl, nicht der Klappliste.
+    /// </summary>
+    private RenderFragment Bandbreitenteil => @<div class="epos-wirt-bandbreite-teil">
+        @if (_stand.Ansicht.Bandbreite.Zeilen.Count > 0)
+        {
+            <p class="epos-untergruppe">@Texte.BandbreiteTitel</p>
+            @Tafel(_stand.Ansicht.Bandbreite, "epos-raster epos-wirt-tafel epos-wirt-bandbreite", true, 4)
+            @if (!string.IsNullOrEmpty(_stand.Ansicht.Bandbreitenfuss))
+            {
+                <Herleitungszeile Text="@_stand.Ansicht.Bandbreitenfuss" />
+            }
+        }
+    </div>;
+
+    /// <summary>
+    /// V‑A (V‑G6): die Sensitivitätstafel mit der Steigungsspalte (Szenario Erwartet) —
+    /// bis E5 nur im Bericht.
+    /// </summary>
+    private RenderFragment Sensitivitaetsteil => @<div class="epos-wirt-sensitivitaet-teil">
+        @if (_stand.Ansicht.Sensitivitaet.Zeilen.Count > 0)
+        {
+            <p class="epos-untergruppe">@Texte.SensitivitaetTitel</p>
+            @Tafel(_stand.Ansicht.Sensitivitaet, "epos-raster epos-wirt-tafel epos-wirt-sensitivitaet", false, 0)
+        }
+    </div>;
+
+    /// <summary>
+    /// U44: der Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks. Er ist KEIN
+    /// Primärknopf — die Seite trägt genau einen, „Berechnen" in der Fußleiste (Q8).
+    /// </summary>
+    private RenderFragment BerichtKnopfteil => @<div class="epos-wirt-abschnitt-fuss">
+        @if (BerichtErzeugen is not null)
+        {
+            <button type="button" class="epos-knopf epos-wirt-berichtknopf" disabled="@_laeuft"
+                    @onclick="BerichtFragen">@Texte.BerichtKnopf</button>
+        }
+    </div>;
+
+    /// <summary>
+    /// Eine Tafel aus einer Matrix: Spaltenköpfe (falls es welche gibt), je Zeile der
+    /// Titel als Zeilenkopf und die Zellen — Zahlen rechts, die genannten Textspalten
+    /// links. Die erste Zeile kann die Referenzzeile sein (Bandbreite).
+    /// </summary>
+    private RenderFragment Tafel(ErgebnisMatrix m, string klasse, bool ersteIstReferenz,
+                                 params int[] textspalten) => @<div class="epos-raster-huelle">
+        <table class="@klasse">
+            @if (m.Spalten.Count > 0)
+            {
+                <thead>
+                    <tr>
+                        @foreach (string kopf in m.Spalten)
+                        {
+                            <th scope="col">@kopf</th>
+                        }
+                    </tr>
+                </thead>
+            }
+            <tbody>
+                @for (int r = 0; r < m.Zeilen.Count; r++)
+                {
+                    MatrixZeile z = m.Zeilen[r];
+                    <tr class="@(ersteIstReferenz && r == 0 ? "epos-wirt-referenzzeile" : null)">
+                        <th scope="row" class="epos-matrix-titel">@z.Titel</th>
+                        @for (int i = 0; i < z.Zellen.Count; i++)
+                        {
+                            <td class="@(Array.IndexOf(textspalten, i) >= 0 ? "epos-wirt-textzelle" : "epos-matrix-zelle")">@z.Zellen[i]</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>;
+
+    /// <summary>
+    /// Die Vergleichstabelle (Gliederung und Hinweise) — dieselbe Bauform wie bis E5:
+    /// eine Matrix mit Laufzeitspalten, keine <c>Raster</c>-Komponente.
+    /// </summary>
+    private RenderFragment Matrixtafel(ErgebnisMatrix m, string klasse) => @<div class="epos-raster-huelle">
+        <table class="@klasse">
+            <thead>
+                <tr>
+                    @foreach (string kopf in m.Spalten)
+                    {
+                        <th scope="col">@kopf</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (MatrixZeile z in m.Zeilen)
+                {
+                    <tr>
+                        <th scope="row" class="epos-matrix-titel">@z.Titel</th>
+                        @foreach (string zelle in z.Zellen)
+                        {
+                            <td class="epos-matrix-zelle">@zelle</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>;
+
+    // =====================================================================
+    // ETAPPE E5 (U44) — „Bericht erzeugen"
+    // =====================================================================
+
+    /// <summary>
+    /// Die Rückfrage vor dem Lauf — derselbe Wortlaut wie auf der Berichtsseite: Jeder
+    /// Berichtslauf simuliert alle gewählten Versionen neu.
+    /// </summary>
+    private void BerichtFragen()
+    {
+        if (_laeuft || BerichtErzeugen is null) return;
+        _berichtsfrageText = string.Format(Texte.BerichtFrageStart, _gewaehlt.Count);
+        _berichtsfrage = Berichtsfrage.Start;
+    }
+
+    private async Task BerichtBeantwortet(bool? antwort)
+    {
+        Berichtsfrage war = _berichtsfrage;
+        _berichtsfrage = Berichtsfrage.Keine;
+        if (antwort != true) return;
+
+        if (war == Berichtsfrage.Start)
+            await BerichtLaufen();
+        else if (war == Berichtsfrage.Oeffnen && DateiOeffnen is not null && _berichtDatei.Length > 0)
+            await DateiOeffnen(_berichtDatei);
+    }
+
+    /// <summary>
+    /// Der Lauf über den bestehenden Berichtsweg: die gewählten Versionen ohne Stamm,
+    /// Fortschritt in der Statuszeile, danach „öffnen?". Der Berichtslauf simuliert und
+    /// rechnet neu und bucht den Gruppenlauf — die Seite liest danach neu.
+    /// </summary>
+    private async Task BerichtLaufen()
+    {
+        if (_laeuft || BerichtErzeugen is null) return;
+
+        var varianten = new List<int>();
+        foreach (VarianteZeile z in _stand.Varianten)
+            if (!z.IstStamm && _gewaehlt.Contains(z.IdProjekt)) varianten.Add(z.IdProjekt);
+
+        _laeuft = true;
+        _aktuell = 0;
+        _gesamt = 1;
+        _fehler = "";
+        StateHasChanged();
+
+        try
+        {
+            LaufErgebnis erg = await BerichtErzeugen(varianten, Melden);
+
+            if (erg.Abgebrochen) { _status = StatusAbgebrochen; return; }
+
+            if (erg.Erfolg) Auffrischen();
+            _fehler = erg.Fehler ?? "";
+            if (!string.IsNullOrEmpty(erg.Statuszeile)) _status = erg.Statuszeile;
+
+            if (erg.Erfolg && !string.IsNullOrEmpty(erg.Frage) && DateiOeffnen is not null &&
+                !string.IsNullOrEmpty(erg.Datei))
+            {
+                _berichtDatei = erg.Datei;
+                _berichtsfrageText = erg.Frage;
+                _berichtsfrage = Berichtsfrage.Oeffnen;
+            }
+        }
+        finally
+        {
+            _laeuft = false;
+            StateHasChanged();
+        }
     }
 
     // =====================================================================

@@ -104,6 +104,17 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   vermiedenen Stromkosten je Anlage aus. Die Energiesteuer-Entlastung steht als zwei Zeilen (§ 53/§ 53a
   beim Blockheizkraftwerk, § 54 beim Kessel) mit Herleitung; eine Nullzeile nennt den Grund des
   Rechenlaufs. (#432)
+- Seit 26.09.2026: Die Wirtschaftlichkeitsseite schaltet im Kopf zwischen den Darstellungen
+  „Kennzahlen" und „ValERI-Bewertung" um; die Kennzahlen stehen in den vier Abschnitten „Lohnt es
+  sich?", „Wie sicher ist das?", „Woraus entsteht die Zahl?" und „Was ist angenommen?". (#434)
+- Seit 26.09.2026: Jede Version bekommt eine Empfehlungskarte mit ihrer Einstufung, und die Bandbreite
+  zeigt die Szenarien Ungünstig, Erwartet und Günstig nebeneinander mit ihrer Spanne. (#434)
+- Seit 26.09.2026: Die Sensitivitätstafel der Seite nennt je Einflussgröße die Steigung, und unter der
+  Annahmentafel steht, was ein Szenario verändert und was nicht. (#434)
+- Seit 26.09.2026: Der Knopf „Bericht erzeugen" auf der Wirtschaftlichkeitsseite erzeugt den Bericht für
+  die gewählte Vergleichsgruppe. (#434)
+- Seit 26.09.2026: Wort- und Tabellenbericht führen die Bandbreite mit Einstufung, den Hinweis zu den
+  Szenarien und die Deklarationen nach DIN EN 17463. (#434)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
@@ -186,9 +197,12 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
 
 - Die drei Gerätemeldungen (Statuszeile #415: Klimaregionenliste, Auswahlfeld, sortiert)
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
-- Die Wirtschaftlichkeits-Umsetzung ist mit Statuszeile #405 zurückgestellt („Stelle die
-  Wirtschaftlichkeitsberechnung zurück“); solange keine neue Beauftragung vorliegt, kommt aus
-  diesem Strang keine weitere Wiki-Änderung.
+- Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
+  22.09.2026 wieder aufgenommen (E4 #432, E5 #434). Die Repo-Quelle
+  `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` beschreibt die Ergebnisseite
+  noch ohne die Änderungen aus #434 (Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte,
+  Szenarien „Ungünstig"/„Günstig" statt „Best"/„Worst", „Bericht erzeugen") und ist vor dem
+  Hochladen nachzuziehen; die Logbuch-Sätze zu #432 und #434 stehen oben.
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,
   KI‑D‑Q5); je Welle wächst die Maskenliste der Seite Hilfe-Assistent, und ein Logbuch-Satz
   kommt dazu.
