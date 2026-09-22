@@ -27,10 +27,20 @@ namespace EPOS.Kern.Tests
     /// eingehängten Weg.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class WirtschaftlichkeitHuellenPlattformTests
+    public class WirtschaftlichkeitHuellenPlattformTests : IDisposable
     {
         /// <summary>Ein Referenzprojekt mit BHKW — Stammprojekt der Parameterhülle.</summary>
         private const int PROJEKT_BHKW = 1030;
+
+        /// <summary>
+        /// Die ARBEITSKOPIE der Testdatenbank je Fall (xUnit baut die Klasse je Fall neu).
+        /// Ohne sie läse jeder Fall die Datenbank, auf die <c>DataRepository</c> gerade
+        /// zeigt — auf Windows die Standarddatenbank des Rechners, auf Linux nichts; so
+        /// war der Kern-Lauf auf Ubuntu rot (leere Komponentenliste, keine Seiten).
+        /// </summary>
+        private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         // =================================================================
         //  (1) WirtschaftlichkeitParameterHuelle
