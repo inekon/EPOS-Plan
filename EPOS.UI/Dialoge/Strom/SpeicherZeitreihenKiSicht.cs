@@ -1,5 +1,6 @@
 ﻿using KiKern;
 using WindowsFormsApplication1;
+using WindowsFormsApplication1.MyResource;
 
 namespace EPOS.UI.Dialoge.Strom;
 
@@ -94,11 +95,24 @@ public sealed class SpeicherZeitreihenKiSicht
         new KiWahleintrag("1", "Getrennte Datums- und Uhrzeitspalten")
     };
 
-    /// <summary>Was der Zeitstempel bezeichnet — Anfang oder Ende des Intervalls.</summary>
-    public static readonly IReadOnlyList<KiWahleintrag> KonventionEintraege = new[]
+    /// <summary>
+    /// Was der Zeitstempel bezeichnet — in der Reihenfolge der Aufzählung, also
+    /// „automatisch erkennen" zuerst.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein <c>static readonly</c>:</b> Die Anzeigetexte kommen aus den Ressourcen,
+    /// und die Sprache wechselt zur Laufzeit; ein Feld hielte den Text des ersten
+    /// Zugriffs fest. Die Schlüssel bleiben die Namen der Aufzählung — sie sind
+    /// sprachneutral und gehen so auch in einen englischen Chat.
+    /// </remarks>
+    public static IReadOnlyList<KiWahleintrag> KonventionEintraege => new[]
     {
-        new KiWahleintrag(nameof(SpeicherEngine.IntervallKonvention.Anfang), "Anfang"),
-        new KiWahleintrag(nameof(SpeicherEngine.IntervallKonvention.Ende), "Ende")
+        new KiWahleintrag(nameof(SpeicherEngine.IntervallKonvention.Automatisch),
+                          Resource.IMPORT_KONV_AUTO),
+        new KiWahleintrag(nameof(SpeicherEngine.IntervallKonvention.Anfang),
+                          Resource.IMPORT_KONV_ANFANG),
+        new KiWahleintrag(nameof(SpeicherEngine.IntervallKonvention.Ende),
+                          Resource.IMPORT_KONV_ENDE)
     };
 
     // =====================================================================

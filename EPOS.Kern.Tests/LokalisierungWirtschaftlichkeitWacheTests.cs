@@ -53,12 +53,25 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Einzelne Dateien außerhalb der Ordner, die zur selben Sache
         /// gehören: die Seite der Wirtschaftlichkeit und der Auflöser, dessen
-        /// Herleitungsprosa mit dieser Etappe zweisprachig geworden ist.</summary>
+        /// Herleitungsprosa mit dieser Etappe zweisprachig geworden ist.
+        ///
+        /// <para>Dazu kommen einzelne Masken anderer Bereiche, sobald ihre Welle sie
+        /// zweisprachig gemacht hat — die Regel ist dieselbe, nur der erreichte Stand
+        /// wächst. <c>Dialoge/Strom</c> steht deshalb NICHT als Ordner da: Der
+        /// Nachbardialog <c>SpeicherFlottenCsvDialog.razor</c> führt noch zwei nackte
+        /// deutsche Ausnahmetexte („Die Übernahme der Prognosen ist nicht
+        /// verfügbar.") und bestünde die Prüfung nicht; er kommt mit seinem eigenen
+        /// Auftrag dazu.</para></summary>
         private static readonly string[] Dateien =
         {
             Path.Combine("EPOS.UI", "Seiten", "Berichte", "WirtschaftlichkeitSeite.razor"),
             Path.Combine("EPOS.Kern", "Allgemein", "Wirtschaftlichkeit", "EndenergieAufloeser.cs"),
             Path.Combine("EPOS.Kern", "Allgemein", "Wirtschaftlichkeit", "KohaerenzPruefung.cs"),
+            // Welle KI-F8 (Entscheid KI-D-Q9, 21.09.2026): die Leseregeln der
+            // Speicher-Zeitreihen tragen ihre sechzehn Beschriftungen, drei
+            // Gruppentitel, zwei Knopftexte und alle Klapplisteneintraege in
+            // MyResource; dieser Fall haelt den Stand.
+            Path.Combine("EPOS.UI", "Dialoge", "Strom", "SpeicherZeitreihenDialog.razor"),
         };
 
         [Fact]

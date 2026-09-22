@@ -13,48 +13,48 @@
 
     <Formularraster>
         <KindInhalt>
-            <Formulargruppe Titel="CSV-Format">
+            <Formulargruppe Titel="@Texte.CsvFormat">
                 <KindInhalt>
-                    <Auswahlfeld Bezeichnung="Trennzeichen:" Eintraege="@Trennzeichen"
+                    <Auswahlfeld Bezeichnung="@Texte.Trennzeichen" Eintraege="@Trennzeichen"
                                  Auswahl="@TrennzeichenIndex" AuswahlChanged="TrennzeichenSetzen" />
-                    <Auswahlfeld Bezeichnung="Dezimaltrenner:" Eintraege="@Dezimaltrenner"
+                    <Auswahlfeld Bezeichnung="@Texte.Dezimaltrenner" Eintraege="@Dezimaltrenner"
                                  Auswahl="@DezimalIndex" AuswahlChanged="DezimalSetzen" />
-                    <Auswahlfeld Bezeichnung="Kodierung:" Eintraege="@Kodierungen"
+                    <Auswahlfeld Bezeichnung="@Texte.Kodierung" Eintraege="@Kodierungen"
                                  Auswahl="@((int)_optionen.Encoding)" AuswahlChanged="KodierungSetzen" />
-                    <Schalter Bezeichnung="Erste Datenzeile ist eine Kopfzeile" Wert="@_optionen.Kopfzeile"
+                    <Schalter Bezeichnung="@Texte.Kopfzeile" Wert="@_optionen.Kopfzeile"
                               WertChanged="KopfzeileSetzen" />
-                    <Ganzzahlfeld Bezeichnung="Zeilen davor überspringen:" Wert="@_optionen.ZuUeberspringendeZeilen"
+                    <Ganzzahlfeld Bezeichnung="@Texte.Ueberspringen" Wert="@_optionen.ZuUeberspringendeZeilen"
                                   Min="0" WertChanged="UeberspringenSetzen" />
                 </KindInhalt>
             </Formulargruppe>
-            <Formulargruppe Titel="Spalten und Zeit">
+            <Formulargruppe Titel="@Texte.SpaltenUndZeit">
                 <KindInhalt>
-                    <Auswahlfeld Bezeichnung="Zeitangabe:" Eintraege="@Zeitarten" Auswahl="@(_getrennteZeit ? 1 : 0)"
+                    <Auswahlfeld Bezeichnung="@Texte.Zeitangabe" Eintraege="@Zeitarten" Auswahl="@(_getrennteZeit ? 1 : 0)"
                                  AuswahlChanged="ZeitartSetzen" />
                     @if (!_getrennteZeit)
                     {
-                        <Auswahlfeld Bezeichnung="Zeitstempelspalte:" Eintraege="@Spalten" Auswahl="@_optionen.ZeitstempelSpalte"
+                        <Auswahlfeld Bezeichnung="@Texte.Zeitstempelspalte" Eintraege="@Spalten" Auswahl="@_optionen.ZeitstempelSpalte"
                                      AuswahlChanged="ZeitstempelSpalteSetzen" />
-                        <Textfeld Bezeichnung="Zeitstempelformat (leer = Standard):" Wert="@_optionen.ZeitstempelFormat"
+                        <Textfeld Bezeichnung="@Texte.Zeitstempelformat" Wert="@_optionen.ZeitstempelFormat"
                                   WertChanged="ZeitstempelFormatSetzen" />
                     }
                     else
                     {
-                        <Auswahlfeld Bezeichnung="Datumsspalte:" Eintraege="@Spalten" Auswahl="@_optionen.DatumSpalte"
+                        <Auswahlfeld Bezeichnung="@Texte.Datumsspalte" Eintraege="@Spalten" Auswahl="@_optionen.DatumSpalte"
                                      AuswahlChanged="DatumSpalteSetzen" />
-                        <Auswahlfeld Bezeichnung="Uhrzeitspalte:" Eintraege="@Spalten" Auswahl="@_optionen.UhrzeitSpalte"
+                        <Auswahlfeld Bezeichnung="@Texte.Uhrzeitspalte" Eintraege="@Spalten" Auswahl="@_optionen.UhrzeitSpalte"
                                      AuswahlChanged="UhrzeitSpalteSetzen" />
-                        <Textfeld Bezeichnung="Datumsformat (leer = Standard):" Wert="@_optionen.DatumFormat"
+                        <Textfeld Bezeichnung="@Texte.Datumsformat" Wert="@_optionen.DatumFormat"
                                   WertChanged="DatumFormatSetzen" />
-                        <Textfeld Bezeichnung="Uhrzeitformat (leer = Standard):" Wert="@_optionen.UhrzeitFormat"
+                        <Textfeld Bezeichnung="@Texte.Uhrzeitformat" Wert="@_optionen.UhrzeitFormat"
                                   WertChanged="UhrzeitFormatSetzen" />
                     }
-                    <Auswahlfeld Bezeichnung="Wertspalte:" Eintraege="@Spalten" Auswahl="@_optionen.WertSpalte"
+                    <Auswahlfeld Bezeichnung="@Texte.Wertspalte" Eintraege="@Spalten" Auswahl="@_optionen.WertSpalte"
                                  AuswahlChanged="WertSpalteSetzen" />
-                    <Textfeld Bezeichnung="Zeitzone:" Wert="@_optionen.ZeitzoneId" WertChanged="ZeitzoneSetzen" />
-                    <Auswahlfeld Bezeichnung="Zeitstempel bezeichnet Intervall:" Eintraege="@Konventionen"
+                    <Textfeld Bezeichnung="@Texte.Zeitzone" Wert="@_optionen.ZeitzoneId" WertChanged="ZeitzoneSetzen" />
+                    <Auswahlfeld Bezeichnung="@Texte.Intervalllage" Eintraege="@Konventionen"
                                  Auswahl="@((int)_optionen.Konvention)" AuswahlChanged="KonventionSetzen" />
-                    <Auswahlfeld Bezeichnung="Einheit:" Eintraege="@Einheiten"
+                    <Auswahlfeld Bezeichnung="@Texte.Einheit" Eintraege="@Einheiten"
                                  Auswahl="@((int)_optionen.Einheit)" AuswahlChanged="EinheitSetzen" />
                 </KindInhalt>
             </Formulargruppe>
@@ -65,7 +65,7 @@
 
     @if (_vorschau is not null)
     {
-        <section><Gruppenkopf Titel="Vorschau" />
+        <section><Gruppenkopf Titel="@Texte.Vorschau" />
             <div class="epos-raster-huelle"><table class="epos-tabelle"><tbody>
                 @foreach (string[] zeile in _vorschau.Zeilen)
                 { <tr>@foreach (string feld in zeile) { <td>@feld</td> }</tr> }
@@ -74,8 +74,8 @@
     }
 
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="Geschlossen">Abbrechen</button>
-        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(_vorschau is null || !string.IsNullOrEmpty(_fehler))" @onclick="Uebernehmen">Übernehmen</button>
+        <button type="button" class="epos-knopf" @onclick="Geschlossen">@Texte.Abbrechen</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(_vorschau is null || !string.IsNullOrEmpty(_fehler))" @onclick="Uebernehmen">@Texte.Uebernehmen</button>
     </div>
 </div>
 
@@ -85,20 +85,57 @@
     [Parameter] public EventCallback<SpeicherZeitreihe> Uebernommen { get; set; }
     [Parameter] public EventCallback Geschlossen { get; set; }
 
+    /// <summary>Die Beschriftungen der Maske — ein Buendel, ein Parameter.</summary>
+    [Parameter] public SpeicherZeitreihenTexte Texte { get; set; } = new();
+
     private SpeicherZeitreihenOptionen _optionen = new();
     private SpeicherZeitreihenVorschau? _vorschau;
     private string _fehler = "";
     private bool _getrennteZeit;
     private bool _initialisiert;
-    private static readonly IReadOnlyList<(int Id,string Text)> Trennzeichen=new[]{(0,"Semikolon (;)"),(1,"Komma (,)"),(2,"Tabulator")};
-    private static readonly IReadOnlyList<(int Id,string Text)> Dezimaltrenner=new[]{(0,"Komma (,)"),(1,"Punkt (.)")};
-    private static readonly IReadOnlyList<(int Id,string Text)> Kodierungen=new[]{(0,"UTF-8"),(1,"Windows-1252")};
-    private static readonly IReadOnlyList<(int Id,string Text)> Zeitarten=new[]{(0,"Eine Zeitstempelspalte"),(1,"Getrennte Datums- und Uhrzeitspalten")};
-    private static readonly IReadOnlyList<(int Id,string Text)> Konventionen=new[]{(0,"Anfang"),(1,"Ende")};
+
+    // KEIN static readonly: Die Texte kommen aus den Ressourcen bzw. aus dem
+    // Textbuendel, und die Sprache wechselt zur Laufzeit (#184). Reine
+    // Einheitenzeichen (kW, MW, €/kWh) bleiben Literale - sie werden nicht uebersetzt.
+    private IReadOnlyList<(int Id,string Text)> Trennzeichen => new[]
+        { (0,Texte.Semikolon), (1,Texte.Komma), (2,Texte.Tabulator) };
+    private IReadOnlyList<(int Id,string Text)> Dezimaltrenner => new[]
+        { (0,Texte.DezKomma), (1,Texte.DezPunkt) };
+    private IReadOnlyList<(int Id,string Text)> Kodierungen => new[]
+        { (0,Texte.Utf8), (1,Texte.Windows1252) };
+    private IReadOnlyList<(int Id,string Text)> Zeitarten => new[]
+        { (0,Texte.ZeitEineSpalte), (1,Texte.ZeitGetrennt) };
+
+    /// <summary>
+    /// Die Intervallkonvention als Klappliste — Werte UND Texte aus
+    /// <see cref="GanglinienOptionenModell"/>, also in der Reihenfolge der
+    /// Aufzaehlung mit „automatisch erkennen" zuerst.
+    /// </summary>
+    /// <remarks>
+    /// <b>Die Id IST der Aufzaehlungswert</b>, nicht der Listenplatz. Vorher fuehrte
+    /// die Liste zwei Eintraege mit den Ids 0 und 1, waehrend
+    /// <see cref="IntervallKonvention.Anfang"/> den Wert 1 traegt: Die Maske stand
+    /// beim ersten Zeichnen auf „Ende", obwohl „Anfang" galt, und „Automatisch" war
+    /// gar nicht waehlbar (Befund KI‑D‑Q9). Weil <c>Auswahl</c> die Id meldet, genuegt
+    /// jetzt der Cast in beide Richtungen — ohne Sonderfall.
+    /// </remarks>
+    private static IReadOnlyList<(int Id,string Text)> Konventionen
+    {
+        get
+        {
+            IntervallKonvention[] werte = GanglinienOptionenModell.Konventionswerte;
+            List<string> texte = GanglinienOptionenModell.KonventionTexte();
+            var liste = new (int Id,string Text)[werte.Length];
+            for (int i = 0; i < liste.Length; i++) liste[i] = ((int)werte[i], texte[i]);
+            return liste;
+        }
+    }
+
     private IReadOnlyList<(int Id,string Text)> Einheiten => Rolle==SpeicherZeitreihenRolle.Bezug
         ? new[]{(3,"€/kWh"),(4,"ct/kWh"),(5,"€/MWh")}
-        : new[]{(0,"kW"),(1,"MW"),(2,"kWh je Intervall")};
-    private IReadOnlyList<(int Id,string Text)> Spalten => Enumerable.Range(0,Math.Max(1,_vorschau?.Spaltenzahl??2)).Select(i=>(i,$"Spalte {i+1}")).ToArray();
+        : new[]{(0,"kW"),(1,"MW"),(2,Texte.KwhJeIntervall)};
+    private IReadOnlyList<(int Id,string Text)> Spalten => Enumerable.Range(0,Math.Max(1,_vorschau?.Spaltenzahl??2))
+        .Select(i=>(i,string.Format(System.Globalization.CultureInfo.CurrentCulture,Texte.Spalte,i+1))).ToArray();
     private int TrennzeichenIndex => _optionen.Trennzeichen switch {','=>1,'\t'=>2,_=>0};
     private int DezimalIndex => _optionen.Dezimaltrenner=='.'?1:0;
 
@@ -183,7 +220,89 @@
     private void DatumFormatSetzen(string v){_optionen.DatumFormat=v;Geaendert();}
     private void UhrzeitFormatSetzen(string v){_optionen.UhrzeitFormat=v;Geaendert();}
     private void ZeitzoneSetzen(string v){_optionen.ZeitzoneId=v;Geaendert();}
-    private void KonventionSetzen(int? v){_optionen.Konvention=v==1?IntervallKonvention.Ende:IntervallKonvention.Anfang;Geaendert();}
+    private void KonventionSetzen(int? v){_optionen.Konvention=(IntervallKonvention)(v??(int)IntervallKonvention.Anfang);Geaendert();}
     private void EinheitSetzen(int? v){_optionen.Einheit=(SpeicherZeitreihenEinheit)(v??0);Geaendert();}
     private async Task Uebernehmen(){try{var reihe=SpeicherZeitreihenImport.Lesen(Datei.Inhalt,Datei.Dateiname,_optionen);_fehler="";await Uebernommen.InvokeAsync(reihe);}catch(Exception ex){_fehler=ex.Message;}}
+
+    /// <summary>
+    /// Die Anzeigetexte der Maske — Beschriftungen, Gruppentitel, Knopftexte und die
+    /// Eintraege der festen Klapplisten, je mit ihrem Ressourcenschluessel.
+    /// </summary>
+    /// <remarks>
+    /// Die drei Texte der INTERVALLKONVENTION stehen bewusst nicht hier: Sie benennen
+    /// die Aufzaehlungswerte selbst und kommen deshalb aus
+    /// <see cref="GanglinienOptionenModell.KonventionTexte"/>
+    /// (<c>IMPORT_KONV_AUTO</c>, <c>_ANFANG</c>, <c>_ENDE</c>) — dieselbe Quelle wie
+    /// im Lastgang-Importdialog.
+    /// </remarks>
+    public sealed class SpeicherZeitreihenTexte
+    {
+        /// <summary>SZR_GRP_FORMAT</summary>
+        public string CsvFormat { get; set; } = Resource.SZR_GRP_FORMAT;
+        /// <summary>SZR_GRP_SPALTEN</summary>
+        public string SpaltenUndZeit { get; set; } = Resource.SZR_GRP_SPALTEN;
+        /// <summary>SZR_GRP_VORSCHAU</summary>
+        public string Vorschau { get; set; } = Resource.SZR_GRP_VORSCHAU;
+
+        /// <summary>SZR_LBL_TRENNZEICHEN</summary>
+        public string Trennzeichen { get; set; } = Resource.SZR_LBL_TRENNZEICHEN;
+        /// <summary>SZR_LBL_DEZIMALTRENNER</summary>
+        public string Dezimaltrenner { get; set; } = Resource.SZR_LBL_DEZIMALTRENNER;
+        /// <summary>SZR_LBL_KODIERUNG</summary>
+        public string Kodierung { get; set; } = Resource.SZR_LBL_KODIERUNG;
+        /// <summary>SZR_LBL_KOPFZEILE</summary>
+        public string Kopfzeile { get; set; } = Resource.SZR_LBL_KOPFZEILE;
+        /// <summary>SZR_LBL_UEBERSPRINGEN</summary>
+        public string Ueberspringen { get; set; } = Resource.SZR_LBL_UEBERSPRINGEN;
+        /// <summary>SZR_LBL_ZEITANGABE</summary>
+        public string Zeitangabe { get; set; } = Resource.SZR_LBL_ZEITANGABE;
+        /// <summary>SZR_LBL_ZEITSTEMPELSPALTE</summary>
+        public string Zeitstempelspalte { get; set; } = Resource.SZR_LBL_ZEITSTEMPELSPALTE;
+        /// <summary>SZR_LBL_ZEITSTEMPELFORMAT</summary>
+        public string Zeitstempelformat { get; set; } = Resource.SZR_LBL_ZEITSTEMPELFORMAT;
+        /// <summary>SZR_LBL_DATUMSSPALTE</summary>
+        public string Datumsspalte { get; set; } = Resource.SZR_LBL_DATUMSSPALTE;
+        /// <summary>SZR_LBL_UHRZEITSPALTE</summary>
+        public string Uhrzeitspalte { get; set; } = Resource.SZR_LBL_UHRZEITSPALTE;
+        /// <summary>SZR_LBL_DATUMSFORMAT</summary>
+        public string Datumsformat { get; set; } = Resource.SZR_LBL_DATUMSFORMAT;
+        /// <summary>SZR_LBL_UHRZEITFORMAT</summary>
+        public string Uhrzeitformat { get; set; } = Resource.SZR_LBL_UHRZEITFORMAT;
+        /// <summary>SZR_LBL_WERTSPALTE</summary>
+        public string Wertspalte { get; set; } = Resource.SZR_LBL_WERTSPALTE;
+        /// <summary>SZR_LBL_ZEITZONE</summary>
+        public string Zeitzone { get; set; } = Resource.SZR_LBL_ZEITZONE;
+        /// <summary>SZR_LBL_INTERVALLLAGE</summary>
+        public string Intervalllage { get; set; } = Resource.SZR_LBL_INTERVALLLAGE;
+        /// <summary>SZR_LBL_EINHEIT</summary>
+        public string Einheit { get; set; } = Resource.SZR_LBL_EINHEIT;
+
+        /// <summary>SZR_BTN_ABBRECHEN</summary>
+        public string Abbrechen { get; set; } = Resource.SZR_BTN_ABBRECHEN;
+        /// <summary>SZR_BTN_UEBERNEHMEN</summary>
+        public string Uebernehmen { get; set; } = Resource.SZR_BTN_UEBERNEHMEN;
+
+        /// <summary>SZR_OPT_SEMIKOLON</summary>
+        public string Semikolon { get; set; } = Resource.SZR_OPT_SEMIKOLON;
+        /// <summary>SZR_OPT_KOMMA</summary>
+        public string Komma { get; set; } = Resource.SZR_OPT_KOMMA;
+        /// <summary>SZR_OPT_TABULATOR</summary>
+        public string Tabulator { get; set; } = Resource.SZR_OPT_TABULATOR;
+        /// <summary>SZR_OPT_DEZ_KOMMA</summary>
+        public string DezKomma { get; set; } = Resource.SZR_OPT_DEZ_KOMMA;
+        /// <summary>SZR_OPT_DEZ_PUNKT</summary>
+        public string DezPunkt { get; set; } = Resource.SZR_OPT_DEZ_PUNKT;
+        /// <summary>SZR_OPT_UTF8</summary>
+        public string Utf8 { get; set; } = Resource.SZR_OPT_UTF8;
+        /// <summary>SZR_OPT_WINDOWS1252</summary>
+        public string Windows1252 { get; set; } = Resource.SZR_OPT_WINDOWS1252;
+        /// <summary>SZR_OPT_ZEIT_EINE_SPALTE</summary>
+        public string ZeitEineSpalte { get; set; } = Resource.SZR_OPT_ZEIT_EINE_SPALTE;
+        /// <summary>SZR_OPT_ZEIT_GETRENNT</summary>
+        public string ZeitGetrennt { get; set; } = Resource.SZR_OPT_ZEIT_GETRENNT;
+        /// <summary>SZR_OPT_KWH_INTERVALL</summary>
+        public string KwhJeIntervall { get; set; } = Resource.SZR_OPT_KWH_INTERVALL;
+        /// <summary>SZR_OPT_SPALTE — Vorlage mit <c>{0}</c> fuer die Spaltennummer.</summary>
+        public string Spalte { get; set; } = Resource.SZR_OPT_SPALTE;
+    }
 }

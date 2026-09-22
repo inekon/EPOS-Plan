@@ -164,6 +164,84 @@ namespace EPOS.Kern.Tests
                 r.ZeitstempelUtc[1]);
         }
 
+        // =============================================================
+        //  "Automatisch" (Entscheid KI-D-Q9, 21.09.2026)
+        // =============================================================
+
+        /// <summary>
+        /// <b>Die Automatik liest die WANDUHR der Datei.</b> Eine Berliner Reihe, die
+        /// am 01.01. um 00:15 beginnt, traegt Intervallenden — der Import verschiebt
+        /// sie um ein Quellintervall zurueck, Zeitstempel fuer Zeitstempel genau wie
+        /// die ausdrueckliche Wahl "Ende". Derselbe erste Zeitstempel stuende in UTC
+        /// am 31.12. um 23:15; nach der Uhr der Erkennung waere das gar kein Neujahr,
+        /// und die Automatik liefe ins Leere.
+        /// </summary>
+        [Fact]
+        public void Automatisch_erkennt_das_Intervallende_an_der_ersten_Viertelstunde()
+        {
+            byte[] csv = Csv("Zeit;Last\n2026-01-01 00:15;1\n2026-01-01 00:30;2\n");
+            SpeicherZeitreihenOptionen automatisch = Optionen();
+            automatisch.Konvention = IntervallKonvention.Automatisch;
+            SpeicherZeitreihenOptionen ende = Optionen();
+            ende.Konvention = IntervallKonvention.Ende;
+
+            SpeicherZeitreihe a = SpeicherZeitreihenImport.Lesen(csv, "auto.csv", automatisch);
+            SpeicherZeitreihe e = SpeicherZeitreihenImport.Lesen(csv, "ende.csv", ende);
+
+            Assert.Equal(e.ZeitstempelUtc, a.ZeitstempelUtc);
+            Assert.Equal(new DateTimeOffset(2025, 12, 31, 23, 0, 0, TimeSpan.Zero),
+                a.ZeitstempelUtc[0]);
+
+            // Die fertige Reihe fuehrt den AUFGELOESTEN Wert, nicht die Bitte:
+            // "Automatisch" beschreibt keinen Zustand, den ein zweiter Lauf
+            // nachvollziehen koennte.
+            Assert.Equal(IntervallKonvention.Ende, a.Optionen.Konvention);
+            Assert.Equal(IntervallKonvention.Automatisch, automatisch.Konvention);
+        }
+
+        /// <summary>
+        /// Eine Reihe ab Mitternacht des 01.01. traegt Intervallanfaenge — die
+        /// Automatik verschiebt nichts und ist zeitstempelgleich mit der
+        /// ausdruecklichen Wahl "Anfang".
+        /// </summary>
+        [Fact]
+        public void Automatisch_erkennt_den_Intervallanfang_um_Mitternacht()
+        {
+            byte[] csv = Csv("Zeit;Last\n2026-01-01 00:00;1\n2026-01-01 00:15;2\n");
+            SpeicherZeitreihenOptionen automatisch = Optionen();
+            automatisch.Konvention = IntervallKonvention.Automatisch;
+
+            SpeicherZeitreihe a = SpeicherZeitreihenImport.Lesen(csv, "auto.csv", automatisch);
+            SpeicherZeitreihe anfang = SpeicherZeitreihenImport.Lesen(csv, "anfang.csv", Optionen());
+
+            Assert.Equal(anfang.ZeitstempelUtc, a.ZeitstempelUtc);
+            Assert.Equal(new DateTimeOffset(2025, 12, 31, 23, 0, 0, TimeSpan.Zero),
+                a.ZeitstempelUtc[0]);
+            Assert.Equal(IntervallKonvention.Anfang, a.Optionen.Konvention);
+        }
+
+        /// <summary>
+        /// <b>Die Grundangabenpruefung laesst "Automatisch" zu</b> — sie hat es bis
+        /// KI-D-Q9 hart abgewiesen, obwohl die Klappliste den Wert gar nicht anbot.
+        /// Ein Wert AUSSERHALB der Aufzaehlung bleibt ein Fehler.
+        /// </summary>
+        [Fact]
+        public void Nur_ein_undefinierter_Konventionswert_wird_noch_abgewiesen()
+        {
+            byte[] csv = Csv("Zeit;Last\n2026-01-01 00:00;1\n2026-01-01 00:15;2\n");
+            SpeicherZeitreihenOptionen automatisch = Optionen();
+            automatisch.Konvention = IntervallKonvention.Automatisch;
+
+            SpeicherZeitreihenImport.PruefeGrundangaben(csv, automatisch, true);
+
+            SpeicherZeitreihenOptionen unbekannt = Optionen();
+            unbekannt.Konvention = (IntervallKonvention)99;
+
+            ArgumentException ex = Assert.Throws<ArgumentException>(() =>
+                SpeicherZeitreihenImport.Lesen(csv, "unbekannt.csv", unbekannt));
+            Assert.Contains("Zeitstempelkonvention", ex.Message);
+        }
+
         [Fact]
         public void Luecken_und_Dubletten_werden_abgewiesen()
         {

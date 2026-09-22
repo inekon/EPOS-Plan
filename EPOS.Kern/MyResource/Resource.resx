@@ -22501,7 +22501,7 @@ Möchten Sie das zulassen?</value>
     <value>Intervallbezug</value>
   </data>
   <data name="KI_DLG_SZR_INTERVALL_ERL" xml:space="preserve">
-    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet.</value>
+    <value>Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. „Automatisch (aus der Reihe erkennen)“ entscheidet es am ersten Zeitstempel der Datei: Eine Reihe mit Intervallende beginnt genau ein Intervall nach Mitternacht des 01.01.</value>
   </data>
   <data name="KI_DLG_SZR_EINHEIT_NAME" xml:space="preserve">
     <value>Einheit der Werte</value>
@@ -22808,5 +22808,101 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_KV_PV_PROJEKT_ERL" xml:space="preserve">
     <value>Im Reiter „Ertrag“: das Stammprojekt, dessen PV-Vergütung der Knopf „PV-Vergütungsdialog öffnen…“ aufruft. Nur im Administrationskontext wählbar; bei geöffnetem Projekt steht es fest.</value>
+  </data>
+  <data name="SZR_GRP_FORMAT" xml:space="preserve">
+    <value>CSV-Format</value>
+  </data>
+  <data name="SZR_GRP_SPALTEN" xml:space="preserve">
+    <value>Spalten und Zeit</value>
+  </data>
+  <data name="SZR_GRP_VORSCHAU" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="SZR_LBL_TRENNZEICHEN" xml:space="preserve">
+    <value>Trennzeichen:</value>
+  </data>
+  <data name="SZR_LBL_DEZIMALTRENNER" xml:space="preserve">
+    <value>Dezimaltrenner:</value>
+  </data>
+  <data name="SZR_LBL_KODIERUNG" xml:space="preserve">
+    <value>Kodierung:</value>
+  </data>
+  <data name="SZR_LBL_KOPFZEILE" xml:space="preserve">
+    <value>Erste Datenzeile ist eine Kopfzeile</value>
+  </data>
+  <data name="SZR_LBL_UEBERSPRINGEN" xml:space="preserve">
+    <value>Zeilen davor überspringen:</value>
+  </data>
+  <data name="SZR_LBL_ZEITANGABE" xml:space="preserve">
+    <value>Zeitangabe:</value>
+  </data>
+  <data name="SZR_LBL_ZEITSTEMPELSPALTE" xml:space="preserve">
+    <value>Zeitstempelspalte:</value>
+  </data>
+  <data name="SZR_LBL_ZEITSTEMPELFORMAT" xml:space="preserve">
+    <value>Zeitstempelformat (leer = Standard):</value>
+  </data>
+  <data name="SZR_LBL_DATUMSSPALTE" xml:space="preserve">
+    <value>Datumsspalte:</value>
+  </data>
+  <data name="SZR_LBL_UHRZEITSPALTE" xml:space="preserve">
+    <value>Uhrzeitspalte:</value>
+  </data>
+  <data name="SZR_LBL_DATUMSFORMAT" xml:space="preserve">
+    <value>Datumsformat (leer = Standard):</value>
+  </data>
+  <data name="SZR_LBL_UHRZEITFORMAT" xml:space="preserve">
+    <value>Uhrzeitformat (leer = Standard):</value>
+  </data>
+  <data name="SZR_LBL_WERTSPALTE" xml:space="preserve">
+    <value>Wertspalte:</value>
+  </data>
+  <data name="SZR_LBL_ZEITZONE" xml:space="preserve">
+    <value>Zeitzone:</value>
+  </data>
+  <data name="SZR_LBL_INTERVALLLAGE" xml:space="preserve">
+    <value>Zeitstempel bezeichnet Intervall:</value>
+  </data>
+  <data name="SZR_LBL_EINHEIT" xml:space="preserve">
+    <value>Einheit:</value>
+  </data>
+  <data name="SZR_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="SZR_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="SZR_OPT_SEMIKOLON" xml:space="preserve">
+    <value>Semikolon (;)</value>
+  </data>
+  <data name="SZR_OPT_KOMMA" xml:space="preserve">
+    <value>Komma (,)</value>
+  </data>
+  <data name="SZR_OPT_TABULATOR" xml:space="preserve">
+    <value>Tabulator</value>
+  </data>
+  <data name="SZR_OPT_DEZ_KOMMA" xml:space="preserve">
+    <value>Komma (,)</value>
+  </data>
+  <data name="SZR_OPT_DEZ_PUNKT" xml:space="preserve">
+    <value>Punkt (.)</value>
+  </data>
+  <data name="SZR_OPT_UTF8" xml:space="preserve">
+    <value>UTF-8</value>
+  </data>
+  <data name="SZR_OPT_WINDOWS1252" xml:space="preserve">
+    <value>Windows-1252</value>
+  </data>
+  <data name="SZR_OPT_ZEIT_EINE_SPALTE" xml:space="preserve">
+    <value>Eine Zeitstempelspalte</value>
+  </data>
+  <data name="SZR_OPT_ZEIT_GETRENNT" xml:space="preserve">
+    <value>Getrennte Datums- und Uhrzeitspalten</value>
+  </data>
+  <data name="SZR_OPT_KWH_INTERVALL" xml:space="preserve">
+    <value>kWh je Intervall</value>
+  </data>
+  <data name="SZR_OPT_SPALTE" xml:space="preserve">
+    <value>Spalte {0}</value>
   </data>
 </root>

@@ -22494,7 +22494,7 @@ Do you want to allow this?</value>
     <value>Interval reference</value>
   </data>
   <data name="KI_DLG_SZR_INTERVALL_ERL" xml:space="preserve">
-    <value>Whether the timestamp denotes the start or the end of the interval.</value>
+    <value>Whether the timestamp denotes the start or the end of the interval. 'Automatic (detect from the series)' decides it from the first timestamp of the file: a series with end-of-interval stamps starts exactly one interval after midnight of 1 January.</value>
   </data>
   <data name="KI_DLG_SZR_EINHEIT_NAME" xml:space="preserve">
     <value>Unit of the values</value>
@@ -22801,5 +22801,101 @@ Do you want to allow this?</value>
   </data>
   <data name="KI_DLG_KV_PV_PROJEKT_ERL" xml:space="preserve">
     <value>On the 'Yield' tab: the master project whose PV remuneration the button 'Open PV remuneration dialogue…' calls up. Selectable only in the administration context; with a project open it is fixed.</value>
+  </data>
+  <data name="SZR_GRP_FORMAT" xml:space="preserve">
+    <value>CSV format</value>
+  </data>
+  <data name="SZR_GRP_SPALTEN" xml:space="preserve">
+    <value>Columns and time</value>
+  </data>
+  <data name="SZR_GRP_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="SZR_LBL_TRENNZEICHEN" xml:space="preserve">
+    <value>Separator:</value>
+  </data>
+  <data name="SZR_LBL_DEZIMALTRENNER" xml:space="preserve">
+    <value>Decimal separator:</value>
+  </data>
+  <data name="SZR_LBL_KODIERUNG" xml:space="preserve">
+    <value>Encoding:</value>
+  </data>
+  <data name="SZR_LBL_KOPFZEILE" xml:space="preserve">
+    <value>First data row is a header</value>
+  </data>
+  <data name="SZR_LBL_UEBERSPRINGEN" xml:space="preserve">
+    <value>Rows to skip before:</value>
+  </data>
+  <data name="SZR_LBL_ZEITANGABE" xml:space="preserve">
+    <value>Time reference:</value>
+  </data>
+  <data name="SZR_LBL_ZEITSTEMPELSPALTE" xml:space="preserve">
+    <value>Timestamp column:</value>
+  </data>
+  <data name="SZR_LBL_ZEITSTEMPELFORMAT" xml:space="preserve">
+    <value>Timestamp format (empty = default):</value>
+  </data>
+  <data name="SZR_LBL_DATUMSSPALTE" xml:space="preserve">
+    <value>Date column:</value>
+  </data>
+  <data name="SZR_LBL_UHRZEITSPALTE" xml:space="preserve">
+    <value>Time column:</value>
+  </data>
+  <data name="SZR_LBL_DATUMSFORMAT" xml:space="preserve">
+    <value>Date format (empty = default):</value>
+  </data>
+  <data name="SZR_LBL_UHRZEITFORMAT" xml:space="preserve">
+    <value>Time format (empty = default):</value>
+  </data>
+  <data name="SZR_LBL_WERTSPALTE" xml:space="preserve">
+    <value>Value column:</value>
+  </data>
+  <data name="SZR_LBL_ZEITZONE" xml:space="preserve">
+    <value>Time zone:</value>
+  </data>
+  <data name="SZR_LBL_INTERVALLLAGE" xml:space="preserve">
+    <value>Timestamp denotes interval:</value>
+  </data>
+  <data name="SZR_LBL_EINHEIT" xml:space="preserve">
+    <value>Unit:</value>
+  </data>
+  <data name="SZR_BTN_ABBRECHEN" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SZR_BTN_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="SZR_OPT_SEMIKOLON" xml:space="preserve">
+    <value>Semicolon (;)</value>
+  </data>
+  <data name="SZR_OPT_KOMMA" xml:space="preserve">
+    <value>Comma (,)</value>
+  </data>
+  <data name="SZR_OPT_TABULATOR" xml:space="preserve">
+    <value>Tab</value>
+  </data>
+  <data name="SZR_OPT_DEZ_KOMMA" xml:space="preserve">
+    <value>Comma (,)</value>
+  </data>
+  <data name="SZR_OPT_DEZ_PUNKT" xml:space="preserve">
+    <value>Point (.)</value>
+  </data>
+  <data name="SZR_OPT_UTF8" xml:space="preserve">
+    <value>UTF-8</value>
+  </data>
+  <data name="SZR_OPT_WINDOWS1252" xml:space="preserve">
+    <value>Windows-1252</value>
+  </data>
+  <data name="SZR_OPT_ZEIT_EINE_SPALTE" xml:space="preserve">
+    <value>One timestamp column</value>
+  </data>
+  <data name="SZR_OPT_ZEIT_GETRENNT" xml:space="preserve">
+    <value>Separate date and time columns</value>
+  </data>
+  <data name="SZR_OPT_KWH_INTERVALL" xml:space="preserve">
+    <value>kWh per interval</value>
+  </data>
+  <data name="SZR_OPT_SPALTE" xml:space="preserve">
+    <value>Column {0}</value>
   </data>
 </root>
