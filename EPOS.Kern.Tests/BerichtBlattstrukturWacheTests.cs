@@ -173,29 +173,37 @@ namespace EPOS.Kern.Tests
                 Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(4, 1).GetString());
 
                 // Die drei Szenario-Blöcke, jeder mit seinem eigenen Tabellenkopf.
+                //
+                // AUFTRAG U6: Jeder Block ist um ZWEI Zeilen gewachsen — die Erlösrubrik
+                // gliedert innen nach Komponente, und die Prüfgruppe führt weder BHKW
+                // noch Photovoltaik; übrig bleibt der Block „projektweit" mit seinem
+                // Kopf und seiner Zwischensumme. Die ZAHLEN sind unverändert; U6 hat
+                // keine Rechenwirkung. Alles hinter den Blöcken wandert um sechs Zeilen.
                 Assert.Equal("Szenario: Erwartet", w.Cell(8, 1).GetString());
                 Zeile(w, 9, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Best", w.Cell(24, 1).GetString());
-                Zeile(w, 26, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Worst", w.Cell(41, 1).GetString());
-                Zeile(w, 43, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("projektweit", w.Cell(15, 1).GetString());
+                Assert.Equal("Summe projektweit", w.Cell(18, 1).GetString());
+                Assert.Equal("Szenario: Best", w.Cell(26, 1).GetString());
+                Zeile(w, 28, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Worst", w.Cell(45, 1).GetString());
+                Zeile(w, 47, "Kennzahl", "Stamm", "Variante A");
 
                 // ETAPPE E2 (VALERI-Lücke G8): die Bandbreitentafel mit der Spalte
                 // „Spanne" und der Referenzzeile darüber.
                 Assert.Equal("Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)",
-                             w.Cell(58, 1).GetString());
-                Zeile(w, 59, "Variante", "ΔKW Worst [€]", "ΔKW Erwartet [€]");
-                Assert.Equal("Spanne [€]", w.Cell(59, 5).GetString());
-                Assert.Equal("Stammprojekt", w.Cell(60, 1).GetString());   // Referenzzeile
-                Assert.Equal("Variante A", w.Cell(61, 1).GetString());
+                             w.Cell(64, 1).GetString());
+                Zeile(w, 65, "Variante", "ΔKW Worst [€]", "ΔKW Erwartet [€]");
+                Assert.Equal("Spanne [€]", w.Cell(65, 5).GetString());
+                Assert.Equal("Stammprojekt", w.Cell(66, 1).GetString());   // Referenzzeile
+                Assert.Equal("Variante A", w.Cell(67, 1).GetString());
 
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
                 Assert.Equal("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]",
-                             w.Cell(66, 1).GetString());
-                Zeile(w, 67, "Jahr", "Stamm", "Variante A");
-                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(91, 1).GetString());
-                Assert.Equal("Stamm", w.Cell(94, 1).GetString());
-                Zeile(w, 95, "Jahr", "Energiekosten", "Netto nominal");
+                             w.Cell(72, 1).GetString());
+                Zeile(w, 73, "Jahr", "Stamm", "Variante A");
+                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(97, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(100, 1).GetString());
+                Zeile(w, 101, "Jahr", "Energiekosten", "Netto nominal");
 
                 // ---- Variantenblatt -------------------------------------------
                 IXLWorksheet s = wb.Worksheet("Stamm");
@@ -218,6 +226,11 @@ namespace EPOS.Kern.Tests
         /// Zeitraumhinweis (G7) steht jetzt über den Blöcken, und die
         /// Differenzkennzahl steht nach Q19 ÜBER dem Nettobarwert. Die ZAHLEN sind
         /// unverändert; E2 hat keine Rechenwirkung.</para>
+        ///
+        /// <para><b>AUFTRAG U6:</b> Und von 20 auf 22 — die Erlösrubrik gliedert innen
+        /// nach Komponente, die Prüfgruppe bekommt dadurch den Kopf „projektweit" und
+        /// seine Zwischensumme dazu. Die ZAHLEN sind wieder unverändert; U6 verteilt,
+        /// es rechnet nicht.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -234,25 +247,31 @@ namespace EPOS.Kern.Tests
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
 
-                Assert.Equal("Nettobarwert über T [€]", w.Cell(20, 1).GetString());
-                Assert.Equal(-178529.70, w.Cell(20, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(20, 3).GetDouble(), 2);
+                Assert.Equal("Nettobarwert über T [€]", w.Cell(22, 1).GetString());
+                Assert.Equal(-178529.70, w.Cell(22, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(22, 3).GetDouble(), 2);
 
                 // ANWENDERENTSCHEID Q19 (E2): Die Differenzkennzahl steht DARÜBER.
-                Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(19, 1).GetString());
-                Assert.Equal(44632.42, w.Cell(19, 3).GetDouble(), 2);
+                Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(21, 1).GetString());
+                Assert.Equal(44632.42, w.Cell(21, 3).GetDouble(), 2);
+
+                // AUFTRAG U6: Die Zwischensumme des einzigen Komponentenblocks IST hier
+                // die Summe des Blocks A — die Gliederung ordnet, sie rechnet nicht.
+                Assert.Equal("Summe projektweit", w.Cell(18, 1).GetString());
+                Assert.Equal(w.Cell(19, 2).GetDouble(), w.Cell(18, 2).GetDouble(), 2);
+                Assert.Equal(w.Cell(19, 3).GetDouble(), w.Cell(18, 3).GetDouble(), 2);
 
                 // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl.
-                Assert.Equal(20.0, w.Cell(88, 1).GetDouble(), 6);
-                Assert.Equal(-178529.70, w.Cell(88, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(88, 3).GetDouble(), 2);
+                Assert.Equal(20.0, w.Cell(94, 1).GetDouble(), 6);
+                Assert.Equal(-178529.70, w.Cell(94, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(94, 3).GetDouble(), 2);
 
                 // Die Mehrjahrestabelle des Stamms: nominale Energiekosten je Jahr.
-                Assert.Equal(-12000.00, w.Cell(97, 2).GetDouble(), 2);
-                Assert.Equal(-12000.00, w.Cell(97, 3).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(103, 2).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(103, 3).GetDouble(), 2);
 
                 // ETAPPE E2 (G8): die Spanne der Bandbreitentafel = Best − Worst.
-                Assert.Equal(44957.21 - 44312.12, w.Cell(61, 5).GetDouble(), 2);
+                Assert.Equal(44957.21 - 44312.12, w.Cell(67, 5).GetDouble(), 2);
             }
             finally { Aufraeumen(ordner); }
         }
