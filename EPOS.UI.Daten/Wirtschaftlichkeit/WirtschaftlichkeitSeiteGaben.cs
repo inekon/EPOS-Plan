@@ -132,6 +132,12 @@ namespace WindowsFormsApplication1
                 ["PhotovoltaikText"] = T("PVW_KNOPF", "Photovoltaik…"),
                 ["BhkwText"] = T("BHW_KNOPF", "BHKW-Wirtschaftlichkeit…"),
                 ["StrombezugText"] = T("WIRT_BTN_STROM_TARIF", "Strombezug…"),
+
+                // E3/7: die Titel der Tarif-Ueberlagerung, wenn sie als ZIEL
+                // eines Sprungs aufgeht. Sie kommen aus demselben Textbuendel,
+                // das der Dialog selbst fuehrt - kein neuer Schluessel.
+                ["TarifBhkwText"] = TarifstrukturHuelle.Titel(TarifSicht.Bhkw),
+                ["TarifPvText"] = TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik),
                 ["ParameterText"] = T("WIRT_BTN_PARAMETER", "Parameter…"),
                 ["VerlaufText"] = T("WIRT_BTN_VERLAUF", "Verlauf…"),
                 ["BerechnenText"] = T("WIRT_BTN_BERECHNEN", "Berechnen"),
@@ -908,8 +914,17 @@ namespace WindowsFormsApplication1
                         string titel;
                         return BhkwWirtschaftlichkeitHuelle.Gaben(_idStamm, _ergebnisse, out titel);
 
+                    // E3/7: Dieselbe Huelle, drei Sichten - der Knopf
+                    // "Strombezug..." und die zwei Sprungziele aus dem BHKW-
+                    // und dem PV-Dialog. Die Ueberlagerung ist EINE.
                     case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
                         return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
+
+                    case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
+                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Bhkw);
+
+                    case WirtschaftlichkeitSeite.Unterdialog.TarifPv:
+                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Photovoltaik);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                         return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
@@ -958,7 +973,11 @@ namespace WindowsFormsApplication1
                 case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
                     return T("BHW_MELD_GESPEICHERT",
                              "BHKW-Wirtschaftlichkeit gespeichert — bitte neu berechnen.");
+                // E3/7: Dieselbe Meldung fuer alle drei Sichten - gespeichert
+                // wurde dieselbe Tarifstruktur, egal auf welchem Weg sie aufging.
                 case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
+                case WirtschaftlichkeitSeite.Unterdialog.TarifBhkw:
+                case WirtschaftlichkeitSeite.Unterdialog.TarifPv:
                     return T("WIRT_MELD_TARIF", "Tarifstruktur gespeichert — bitte neu berechnen.");
                 case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                     return T("WIRT_MELD_PARAMETER", "Parameter gespeichert — bitte neu berechnen.");

@@ -445,6 +445,22 @@
         </KindInhalt>
     </Ueberlagerung>
 
+    @* Die ACHTE Ueberlagerung (E3/7): das Ziel des Sprungknopfs „Tarif…" im
+       PV-Verguetungsdialog. Er nimmt seit #405 den OK-Weg (pruefen, schreiben,
+       springen) - bis hierher lief der Sprung aber in ein zweites Fenster, und
+       nach dessen Fall ins Leere. Kein Delegat, kein Sprungziel: Ohne TarifGaben
+       schliesst der Verguetungsdialog nur. *@
+    <Ueberlagerung Offen="@(_tarifGaben is not null)"
+                   Titel="@TarifTitel" Geschlossen="TarifFertigMachen">
+        <KindInhalt>
+            @if (_tarifGaben is not null)
+            {
+                <TarifstrukturDialog @attributes="_tarifGaben" TitelAnzeigen="false"
+                                     Geschlossen="@((bool ok) => TarifFertigMachen())" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
     <Rueckfrage Offen="@(_frage.Length > 0)" Frage="@_frage" TitelText="@FrageTitel"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="FrageBeantwortet" />
 </div>
@@ -678,7 +694,7 @@
     [Parameter] public Func<IReadOnlyDictionary<string, object>>? GesetzeGaben { get; set; }
 
     /// <summary>Überschrift der PV-Vergütungs-Überlagerung (E3/6).</summary>
-    [Parameter] public string PvTitel { get; set; } = "PV-Vergütung (EEG)";
+    [Parameter] public string PvTitel { get; set; } = Resource.PVW_TITEL;
 
     /// <summary>
     /// Der Parametersatz der PV-Vergütung zu EINEM Projekt
@@ -686,6 +702,16 @@
     /// Reiterblatt „Ertrag/Bonus" weg (kein Delegat, kein Knopf).
     /// </summary>
     [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? PvGaben { get; set; }
+
+    /// <summary>Überschrift der Tarif-Überlagerung (E3/7).</summary>
+    [Parameter] public string TarifTitel { get; set; } = Resource.TARIF_TITEL_PV;
+
+    /// <summary>
+    /// Der Parametersatz der Tarifstruktur in der Sicht Photovoltaik
+    /// (<c>TarifstrukturHuelle.Gaben</c>) — das ZIEL des Sprungknopfs „Tarif…"
+    /// im PV-Vergütungsdialog. Ohne ihn schließt der Vergütungsdialog nur.
+    /// </summary>
+    [Parameter] public Func<int, IReadOnlyDictionary<string, object>>? TarifGaben { get; set; }
 
     /// <summary>
     /// 14.09.2026: Vorlage EINER Zeile des Hinweises unter dem Raster — Bezeichnung
@@ -754,6 +780,10 @@
     private IReadOnlyDictionary<string, object>? _katalogGaben;
     private IReadOnlyDictionary<string, object>? _gesetzeGaben;
     private IReadOnlyDictionary<string, object>? _pvGaben;
+    private IReadOnlyDictionary<string, object>? _tarifGaben;
+
+    /// <summary>Das Projekt, für das die PV-Vergütung offen war (E3/7).</summary>
+    private int _pvProjekt;
 
     private string _frage = "";
     private Func<Task>? _frageJa;
@@ -792,7 +822,7 @@
     public bool UeberlagerungOffen => _caseZeile is not null || _editorZeile is not null
         || _variantenGaben is not null || _uebernahmeGaben is not null
         || _katalogGaben is not null || _gesetzeGaben is not null
-        || _pvGaben is not null || _frage.Length > 0;
+        || _pvGaben is not null || _tarifGaben is not null || _frage.Length > 0;
 
     // =====================================================================
     // Der Hilfe-Assistent (Anwenderbefund vom 14.09.2026)
@@ -1343,6 +1373,7 @@
     private void PvOeffnen(int idProjekt)
     {
         if (PvGaben is null) return;
+        _pvProjekt = idProjekt;
         _pvGaben = PvGaben(idProjekt);
     }
 
@@ -1350,10 +1381,27 @@
     /// Nach der Vergütung werden die Gaben des Reiterblatts neu gebaut — dieselbe
     /// Arbeitsteilung wie nach dem Gesetzeskatalog: Die Herkunftszeile und die
     /// Wahl der Variante hängen an dem, was der Dialog geschrieben hat.
+    ///
+    /// <para><b>E3/7:</b> Meldet der Dialog einen Sprung, geht danach die
+    /// Tarifstruktur als Überlagerung auf — der Nachfolger des zweiten
+    /// Fensters, das der Sprung bis dahin hochfuhr.</para>
     /// </summary>
     private void PvFertigMachen(PvVerguetungErgebnis? ergebnis)
     {
         _pvGaben = null;
+        KontextLaden(_stand.VarianteId);
+
+        if (ergebnis is null || ergebnis.Sprung == PvSprung.Keiner) return;
+        if (TarifGaben is null) return;
+
+        _tarifGaben = TarifGaben(_pvProjekt);
+    }
+
+    /// <summary>Die Tarifstruktur schließt; geschrieben hat sie über ihren
+    /// eigenen OK-Weg (E3/7).</summary>
+    private void TarifFertigMachen()
+    {
+        _tarifGaben = null;
         KontextLaden(_stand.VarianteId);
     }
 

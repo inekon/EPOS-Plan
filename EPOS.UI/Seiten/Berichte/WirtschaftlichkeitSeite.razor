@@ -403,8 +403,12 @@
                    also zeigt der Dialog seinen eigenen Kopf hier nicht.
                    TitelAnzeigen="false" steht RECHTS vom Satz und gilt deshalb auch
                    dann, wenn er den Schluessel mitbraechte. *@
+                @* E3/7: Der Sprung „Tarif…" fuehrte bis hierher ins Leere - der
+                   Dialog meldete ihn, und dieser Wirt verwarf ihn. Jetzt geht
+                   die Tarifstruktur als zweite Ueberlagerung auf, in der Sicht
+                   Photovoltaik. *@
                 <PhotovoltaikVerguetungDialog @attributes="_gaben" TitelAnzeigen="false"
-                    Geschlossen="@((PvVerguetungErgebnis e) => Fertig(e is not null))" />
+                    Geschlossen="@((PvVerguetungErgebnis e) => PvFertig(e))" />
             }
         </KindInhalt>
     </Ueberlagerung>
@@ -417,14 +421,22 @@
                 @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
                    also zeigt der Dialog seinen eigenen Kopf hier nicht.
                    TitelAnzeigen="false" steht RECHTS vom Satz. *@
+                @* E3/7: wie beim PV-Dialog - die zwei Sprungknoepfe der
+                   Stromsteuergruppe fuehren in die Tarifstruktur, Sicht BHKW
+                   bzw. Strombezug. *@
                 <BhkwWirtschaftlichkeitDialog @attributes="_gaben" TitelAnzeigen="false"
-                    Geschlossen="@((BhkwWirtschaftlichkeitErgebnis e) => Fertig(e is { Gespeichert: true }))" />
+                    Geschlossen="@((BhkwWirtschaftlichkeitErgebnis e) => BhkwFertig(e))" />
             }
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Strombezug)"
-                   Titel="@StrombezugText" Geschlossen="() => Fertig(false)">
+    @* EINE Ueberlagerung fuer alle drei Tarif-Sichten (E3/7): der Knopf
+       „Strombezug…" und die zwei Sprungziele aus BHKW- und PV-Dialog. Welche
+       Sicht der Dialog baut, entscheidet die Huelle am Schluessel; der Titel
+       kommt von ihr und nennt die Sicht. *@
+    <Ueberlagerung Offen="@(_offen is Unterdialog.Strombezug or Unterdialog.TarifBhkw
+                                   or Unterdialog.TarifPv)"
+                   Titel="@TarifTitel" Geschlossen="() => Fertig(false)">
         <KindInhalt>
             @if (_gaben is not null)
             {
@@ -467,7 +479,15 @@
 </div>
 
 @code {
-    /// <summary>Die fünf Unterdialoge der Seite — Schlüssel für die Hülle.</summary>
+    /// <summary>
+    /// Die Unterdialoge der Seite — Schlüssel für die Hülle.
+    ///
+    /// <para>Fünf davon haben einen eigenen Knopf. <see cref="TarifBhkw"/> und
+    /// <see cref="TarifPv"/> haben keinen: Sie sind die ZIELE der beiden
+    /// Tarif-Sprünge aus dem BHKW- und dem PV-Dialog (E3/7) und unterscheiden
+    /// sich von <see cref="Strombezug"/> nur in der <c>TarifSicht</c>, die die
+    /// Hülle daraus macht. Sie erscheinen in derselben Überlagerung.</para>
+    /// </summary>
     public enum Unterdialog
     {
         /// <summary>Kein Bereich offen.</summary>
@@ -481,7 +501,11 @@
         /// <summary>Wirtschaftlichkeitsparameter (<c>WirtschaftlichkeitParameterDialog</c>).</summary>
         Parameter,
         /// <summary>Kapitalwertverlauf (<c>KapitalwertVerlaufDialog</c>).</summary>
-        Verlauf
+        Verlauf,
+        /// <summary>Tarifstruktur, Sicht BHKW — Ziel des Sprungs „BHKW-Tarif…".</summary>
+        TarifBhkw,
+        /// <summary>Tarifstruktur, Sicht Photovoltaik — Ziel des Sprungs „Tarif…".</summary>
+        TarifPv
     }
 
     // =====================================================================
@@ -625,6 +649,17 @@
     [Parameter] public string PhotovoltaikText { get; set; } = "Photovoltaik…";
     [Parameter] public string BhkwText { get; set; } = "BHKW-Wirtschaftlichkeit…";
     [Parameter] public string StrombezugText { get; set; } = "Strombezug…";
+
+    /// <summary>
+    /// Titel der Tarif-Überlagerung, wenn sie als ZIEL eines Sprungs aufgeht:
+    /// die Sicht BHKW bzw. Photovoltaik (E3/7). Beide Texte kommen aus der
+    /// Hülle — es sind dieselben, die der Dialog selbst führt; der Rückfall ist
+    /// derselbe Ressourcenschlüssel.
+    /// </summary>
+    [Parameter] public string TarifBhkwText { get; set; } = Resource.TARIF_TITEL_BHKW;
+
+    /// <summary>Siehe <see cref="TarifBhkwText"/>.</summary>
+    [Parameter] public string TarifPvText { get; set; } = Resource.TARIF_TITEL_PV;
     [Parameter] public string ParameterText { get; set; } = "Parameter…";
     [Parameter] public string VerlaufText { get; set; } = "Verlauf…";
     [Parameter] public string BerechnenText { get; set; } = "Berechnen";
@@ -1055,6 +1090,48 @@
 
         _gaben = gaben;
         _offen = art;
+    }
+
+    /// <summary>
+    /// Der Titel der Tarif-Überlagerung — je nachdem, auf welchem Weg sie
+    /// aufgegangen ist (E3/7).
+    /// </summary>
+    private string TarifTitel => _offen switch
+    {
+        Unterdialog.TarifBhkw => TarifBhkwText,
+        Unterdialog.TarifPv => TarifPvText,
+        _ => StrombezugText
+    };
+
+    /// <summary>
+    /// E3/7: Der BHKW-Dialog meldet seinen Sprung im Ergebnis. Bis hierher
+    /// verwarf dieser Wirt ihn, und der Knopf tat nichts (der alte Weg, ein
+    /// zweites WinForms-Fenster, war mit dem Umzug der Hülle gefallen). Jetzt
+    /// schließt der Dialog wie bisher — er hat im OK-Weg geschrieben — und die
+    /// Tarifstruktur geht in der passenden Sicht als Überlagerung auf.
+    /// </summary>
+    private void BhkwFertig(BhkwWirtschaftlichkeitErgebnis? ergebnis)
+    {
+        Fertig(ergebnis is { Gespeichert: true });
+
+        if (ergebnis is null || ergebnis.Sprung == BhkwSprung.Keiner) return;
+
+        Oeffne(ergebnis.Sprung == BhkwSprung.BhkwTarif
+               ? Unterdialog.TarifBhkw : Unterdialog.Strombezug);
+    }
+
+    /// <summary>
+    /// Dasselbe für den PV-Dialog: Sein Sprungknopf nimmt seit #405 den OK-Weg
+    /// (prüfen, schreiben, springen); hier geht danach die Tarifstruktur in der
+    /// Sicht Photovoltaik auf (E3/7).
+    /// </summary>
+    private void PvFertig(PvVerguetungErgebnis? ergebnis)
+    {
+        Fertig(ergebnis is not null);
+
+        if (ergebnis is null || ergebnis.Sprung == PvSprung.Keiner) return;
+
+        Oeffne(Unterdialog.TarifPv);
     }
 
     private void Fertig(bool gespeichert)

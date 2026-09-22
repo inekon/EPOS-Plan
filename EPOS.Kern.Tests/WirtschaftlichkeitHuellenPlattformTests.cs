@@ -253,6 +253,32 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
         }
 
+        /// <summary>
+        /// E3/7: Die zwei SPRUNGZIELE der Seite bauen dieselbe Tarifstruktur in
+        /// der Sicht, die der springende Dialog meint — der Nachfolger des
+        /// zweiten WinForms-Fensters.
+        /// </summary>
+        [Fact]
+        public void Die_zwei_Sprungziele_bauen_die_Tarifstruktur_in_ihrer_Sicht()
+        {
+            var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
+            IReadOnlyDictionary<string, object> satz = seite.Gaben();
+            var weg = (Func<WirtschaftlichkeitSeite.Unterdialog,
+                            IReadOnlyDictionary<string, object>>)satz["Gaben"];
+
+            Assert.Equal(TarifSicht.Bhkw,
+                         weg(WirtschaftlichkeitSeite.Unterdialog.TarifBhkw)["Sicht"]);
+            Assert.Equal(TarifSicht.Photovoltaik,
+                         weg(WirtschaftlichkeitSeite.Unterdialog.TarifPv)["Sicht"]);
+            Assert.Equal(TarifSicht.Strombezug,
+                         weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug)["Sicht"]);
+
+            // Die Titel der Ueberlagerung kommen aus demselben Textbuendel wie
+            // der Dialog selbst - kein neuer Ressourcenschluessel.
+            Assert.Equal(TarifstrukturHuelle.Titel(TarifSicht.Bhkw), satz["TarifBhkwText"]);
+            Assert.Equal(TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik), satz["TarifPvText"]);
+        }
+
         // =================================================================
         //  (8) Die fünf Hüllen aus E3 Schritt 6
         // =================================================================

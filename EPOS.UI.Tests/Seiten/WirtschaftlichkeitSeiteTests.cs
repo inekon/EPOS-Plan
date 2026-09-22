@@ -690,6 +690,88 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
     }
 
+    // =====================================================================
+    // Die zwei Tarif-Sprünge (E3/7)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>E3/7 — der Sprung wird zur ÜBERLAGERUNG.</b> Bis dahin öffnete der
+    /// Knopf „BHKW-Tarif…" ein ZWEITES WinForms-Fenster über dem ersten (Risiko
+    /// R2); in der Überlagerung meldete der Dialog seinen Sprung, und dieser
+    /// Wirt verwarf ihn — der Knopf tat dort gar nichts. Jetzt schließt der
+    /// Dialog (er hat im OK-Weg geschrieben), und die Tarifstruktur geht in der
+    /// gewünschten SICHT im selben Fenster auf.
+    /// </summary>
+    [Theory]
+    [InlineData(BhkwSprung.BhkwTarif, WirtschaftlichkeitSeite.Unterdialog.TarifBhkw)]
+    [InlineData(BhkwSprung.Strombezug, WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
+    public void Der_Bhkw_Sprung_oeffnet_die_Tarifstruktur_in_seiner_Sicht(
+        BhkwSprung sprung, WirtschaftlichkeitSeite.Unterdialog erwartet)
+    {
+        var gefragt = new List<WirtschaftlichkeitSeite.Unterdialog>();
+        var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) =>
+        {
+            gefragt.Add(a);
+            return LeererSatz();
+        }));
+
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Bhkw).Click();
+
+        var dialog = cut.FindComponent<BhkwWirtschaftlichkeitDialog>();
+        cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new BhkwWirtschaftlichkeitErgebnis(true, sprung)));
+
+        Assert.Equal(erwartet, cut.Instance.OffenerUnterdialog);
+        Assert.Equal(erwartet, gefragt[^1]);
+        Assert.Single(cut.FindAll(".epos-ueberlagerung"));
+        Assert.Single(cut.FindComponents<TarifstrukturDialog>());
+    }
+
+    /// <summary>
+    /// Ohne Sprung schließt der BHKW-Dialog wie bisher — die Gegenprobe zum
+    /// Fall darüber.
+    /// </summary>
+    [Fact]
+    public void Ohne_Sprung_schliesst_der_Bhkw_Dialog_nur()
+    {
+        var cut = Zeige(p => p.Add(x => x.Gaben,
+            (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
+
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Bhkw).Click();
+
+        var dialog = cut.FindComponent<BhkwWirtschaftlichkeitDialog>();
+        cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new BhkwWirtschaftlichkeitErgebnis(true, BhkwSprung.Keiner)));
+
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.Keins, cut.Instance.OffenerUnterdialog);
+    }
+
+    /// <summary>
+    /// Dasselbe für den PV-Vergütungsdialog: Sein Sprungknopf nimmt seit #405
+    /// den OK-Weg (prüfen, schreiben, springen) — das Ziel ist die Tarifstruktur
+    /// in der Sicht Photovoltaik (E3/7).
+    /// </summary>
+    [Fact]
+    public void Der_Pv_Sprung_oeffnet_die_Tarifstruktur_in_der_Sicht_Photovoltaik()
+    {
+        var gefragt = new List<WirtschaftlichkeitSeite.Unterdialog>();
+        var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) =>
+        {
+            gefragt.Add(a);
+            return LeererSatz();
+        }));
+
+        Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Photovoltaik).Click();
+
+        var dialog = cut.FindComponent<PhotovoltaikVerguetungDialog>();
+        cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new PvVerguetungErgebnis(true, PvSprung.Tarif)));
+
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.TarifPv, cut.Instance.OffenerUnterdialog);
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.TarifPv, gefragt[^1]);
+        Assert.Single(cut.FindComponents<TarifstrukturDialog>());
+    }
+
     /// <summary>
     /// Ein Titel, eine Stelle (Befund „Doppeltes Kreuz dürfen nicht sein!",
     /// 15.09.2026): Jede der fünf Überlagerungen trägt Titel UND Kreuz, der

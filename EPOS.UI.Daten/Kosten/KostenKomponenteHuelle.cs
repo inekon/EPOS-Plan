@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using EPOS.UI.Dialoge.Kosten;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
@@ -317,6 +318,15 @@ namespace WindowsFormsApplication1
             satz["PvGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(
                 PhotovoltaikVerguetungHuelle.Gaben);
             satz["PvTitel"] = PhotovoltaikVerguetungHuelle.Titel();
+
+            // E3/7: die ACHTE Ueberlagerung - das Ziel des Sprungknopfs
+            // "Tarif..." im Verguetungsdialog. Er nimmt seit #405 den OK-Weg
+            // (pruefen, schreiben, springen); das Ziel war bis dahin ein zweites
+            // WinForms-Fenster. Die Sicht ist Photovoltaik, der Bezug dasselbe
+            // STAMMPROJEKT, fuer das der Verguetungsdialog aufging.
+            satz["TarifGaben"] = new Func<int, IReadOnlyDictionary<string, object>>(
+                id => TarifstrukturHuelle.Gaben(id, TarifSicht.Photovoltaik));
+            satz["TarifTitel"] = TarifstrukturHuelle.Titel(TarifSicht.Photovoltaik);
 
             return satz;
         }

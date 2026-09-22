@@ -1388,6 +1388,82 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     /// <summary>
+    /// <b>E3/7 — der Sprung „Tarif…" wird zur ACHTEN Überlagerung.</b> Der
+    /// PV-Vergütungsdialog nimmt für ihn seit #405 den OK-Weg (prüfen,
+    /// schreiben, springen); das Ziel war bis dahin ein zweites Fenster und
+    /// nach dessen Fall ein Sprung ins Leere.
+    /// </summary>
+    [Fact]
+    public void Der_Tarif_Sprung_der_Pv_Verguetung_oeffnet_die_achte_Ueberlagerung()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["ProjektlisteZeigen"] = false,
+            ["ProjektVorwahl"] = (int?)9
+        };
+
+        int tarifFuer = 0;
+        var cut = Zeige(p => p
+            .Add(x => x.PvGaben, (int id) =>
+                (IReadOnlyDictionary<string, object>)new Dictionary<string, object>())
+            .Add(x => x.TarifGaben, (int id) =>
+            {
+                tarifFuer = id;
+                return (IReadOnlyDictionary<string, object>)new Dictionary<string, object>();
+            }), stand: mit);
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+        cut.Find(".epos-ertragbonus button").Click();
+
+        var dialog = cut.FindComponent<
+            EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungDialog>();
+        cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new EPOS.UI.Dialoge.Wirtschaftlichkeit.PvVerguetungErgebnis(
+                true, EPOS.UI.Dialoge.Wirtschaftlichkeit.PvSprung.Tarif)));
+
+        Assert.Equal(9, tarifFuer);
+        Assert.True(cut.Instance.UeberlagerungOffen);
+        Assert.Single(cut.FindComponents<
+            EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturDialog>());
+    }
+
+    /// <summary>
+    /// Kein Delegat, kein Sprungziel: Ohne <c>TarifGaben</c> schließt der
+    /// Vergütungsdialog nur (E3/7).
+    /// </summary>
+    [Fact]
+    public void Ohne_Tarif_Gaben_bleibt_der_Sprung_folgenlos()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["ProjektlisteZeigen"] = false,
+            ["ProjektVorwahl"] = (int?)9
+        };
+
+        var cut = Zeige(p => p.Add(x => x.PvGaben, (int id) =>
+            (IReadOnlyDictionary<string, object>)new Dictionary<string, object>()), stand: mit);
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+        cut.Find(".epos-ertragbonus button").Click();
+
+        var dialog = cut.FindComponent<
+            EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungDialog>();
+        cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
+            new EPOS.UI.Dialoge.Wirtschaftlichkeit.PvVerguetungErgebnis(
+                true, EPOS.UI.Dialoge.Wirtschaftlichkeit.PvSprung.Tarif)));
+
+        Assert.False(cut.Instance.UeberlagerungOffen);
+        Assert.Empty(cut.FindComponents<
+            EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturDialog>());
+    }
+
+    /// <summary>
     /// Ohne Gaben bleibt der Knopf im Reiterblatt weg — „kein Delegat, kein
     /// Knopf", dieselbe Wache wie beim Gesetzeskatalog (E3/6).
     /// </summary>
