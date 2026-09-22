@@ -65077,6 +65077,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine berechenbaren Reihen. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_KEINE_REIHE {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenarien: ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_LEG_SZENARIEN {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_LEG_SZENARIEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Varianten: ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_LEG_VARIANTEN {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_LEG_VARIANTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang = dynamische Amortisation ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_NULLDURCHGANG {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_NULLDURCHGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mehr als {0} Varianten gewählt — der Verlauf unterscheidet Varianten über die Farbe und kennt {0} Farben. Bitte höchstens {0} Varianten anhaken. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_ZU_VIELE {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_ZU_VIELE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation, dynamisch [a] ähnelt.
         /// </summary>
         public static string WIRT_ZEILE_AMORTISATION {

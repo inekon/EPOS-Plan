@@ -910,70 +910,11 @@ namespace WindowsFormsApplication1
                              rc.Left, rc.Top + 20f));
                 return z;
             }
-            int n = gueltig.Max(r => r.Werte.Length);          // Stützstellen (Jahre + 1)
 
-            // Vorzeichenfähige Skala mit „schönen" Stufen (5 Rasterlinien).
-            double min = Math.Min(0, gueltig.Min(r => r.Werte.Min()));
-            double max = Math.Max(0, gueltig.Max(r => r.Werte.Max()));
-            if (max - min < 1e-9) { max = min + 1; }
-            double roh = (max - min) / 5.0;
-            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
-            double schritt = zehner;
-            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
-                if (zehner * f >= roh) { schritt = zehner * f; break; }
-            min = Math.Floor(min / schritt) * schritt;
-            max = Math.Ceiling(max / schritt) * schritt;
-
-            // Raster + y-Beschriftung.
-            var raster = Stift(Farbrolle.RASTER, 1f);
-            z.Markiert("yachse", zy =>
-            {
-                using (var f = Schrift(15f))
-                    for (double wert = min; wert <= max + schritt / 2; wert += schritt)
-                    {
-                        float y = (float)(rc.Bottom - (wert - min) / (max - min) * rc.Height);
-                        zy.Linie(rc.Left, y, rc.Right, y, raster);
-                        string lab = wert.ToString("N0", DE);
-                        float breite = f.MeasureText(lab);
-                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
-                    }
-            });
-
-            // X-Achse: Jahre 0…N, Beschriftung in sinnvollen Schritten.
-            int jahre = n - 1;
-            int xschritt = jahre <= 12 ? 1 : jahre <= 25 ? 2 : jahre <= 50 ? 5 : 10;
-            var xraster = Stift(Farbrolle.RASTER, 1f);
-            z.Markiert("xachse", zx =>
-            {
-                using (var f = Schrift(15f))
-                    for (int t = 0; t <= jahre; t += xschritt)
-                    {
-                        float x = rc.Left + (float)t / Math.Max(jahre, 1) * rc.Width;
-                        zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
-                        string lab = t.ToString(DE);
-                        float breite = f.MeasureText(lab);
-                        Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
-                    }
-            });
-            using (var f = Schrift(15f))
-                z.Markiert("xachse", zx =>
-                    Text(zx, BerichtTexte.T("Jahr"), f, Farbrolle.ACHSE,
-                         rc.Right + 10f, rc.Bottom + 8f));
-
-            // Achsen + hervorgehobene Nulllinie. Das ACHSENKREUZ bleibt ohne Marke
-            // (Regel aus E2): Es muss auch dann stehen, wenn die Oberfläche beim Zoom
-            // die Teilung einer Achse ausblendet.
-            Achsenkreuz(z, rc);
-            float y0 = (float)(rc.Bottom - (0 - min) / (max - min) * rc.Height);
-            z.Markiert("nulllinie", zn =>
-                zn.Linie(rc.Left, y0, rc.Right, y0,
-                         Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f))));
-
-            // DIE ZEICHENFLAECHE SAMT DATENFENSTER (DG-E3-4). x zaehlt das PROJEKTJAHR
-            // 0 … N - eine freie Groesse in Jahren, keine Jahresstunde.
-            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(),
-                                           new Datenfenster(0, jahre, min, max),
-                                           Achsenart.Wert, "a");
+            // ETAPPE E6: Skala, Raster, Achsen, Nulllinie und Zeichenfläche stehen in
+            // VerlaufAchsen — dieselben Befehle in derselben Reihenfolge wie bisher, damit
+            // teilt das Bild sie mit dem Verlauf der drei Szenarien.
+            VerlaufAchsen(z, rc, gueltig, out double min, out double max, out int jahre, out _);
 
             // Linien (kürzere Reihen enden früher; x bezieht sich auf N).
             foreach (Reihe r in gueltig)
@@ -1015,6 +956,581 @@ namespace WindowsFormsApplication1
                 using (var f = Schrift(14f, kursiv: true))
                     Text(z, fussnote, f, Farbrolle.ACHSE, 110f, H - 28f);
             return z;
+        }
+
+        /// <summary>
+        /// Skala, Raster, Achsen, Nulllinie und Zeichenfläche des Kapitalwert-Verlaufs —
+        /// für das Bild je Version (<see cref="KapitalwertVerlaufModell"/>) und für den
+        /// Verlauf mit drei Szenarien (<see cref="KapitalwertSzenarienModell"/>).
+        ///
+        /// <para><b>Befehl für Befehl der bisherige Rumpf</b> (ETAPPE E6): Die Befehle stehen
+        /// in derselben Reihenfolge wie vor dem Auszug, das Bild je Version bleibt damit
+        /// byte-gleich — die ChartProben halten es fest.</para>
+        /// </summary>
+        /// <param name="min">Untere Grenze der y-Skala [€].</param>
+        /// <param name="max">Obere Grenze der y-Skala [€].</param>
+        /// <param name="jahre">Die Zahl der Jahre N (Stützstellen − 1).</param>
+        /// <param name="y0">Die Nulllinie in Bildpunkten.</param>
+        private static void VerlaufAchsen(Zeichenmodell z, SKRect rc, List<Reihe> gueltig,
+                                          out double min, out double max, out int jahre,
+                                          out float y0)
+        {
+            int n = gueltig.Max(r => r.Werte.Length);          // Stützstellen (Jahre + 1)
+
+            // Vorzeichenfähige Skala mit „schönen" Stufen (5 Rasterlinien).
+            double unten = Math.Min(0, gueltig.Min(r => r.Werte.Min()));
+            double oben = Math.Max(0, gueltig.Max(r => r.Werte.Max()));
+            if (oben - unten < 1e-9) { oben = unten + 1; }
+            double roh = (oben - unten) / 5.0;
+            double zehner = Math.Pow(10, Math.Floor(Math.Log10(roh)));
+            double schritt = zehner;
+            foreach (double f in new[] { 1.0, 2.0, 2.5, 5.0, 10.0 })
+                if (zehner * f >= roh) { schritt = zehner * f; break; }
+            unten = Math.Floor(unten / schritt) * schritt;
+            oben = Math.Ceiling(oben / schritt) * schritt;
+            double lo = unten, hi = oben;                       // fest fuer die Klammern
+
+            // Raster + y-Beschriftung.
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (double wert = lo; wert <= hi + schritt / 2; wert += schritt)
+                    {
+                        float y = (float)(rc.Bottom - (wert - lo) / (hi - lo) * rc.Height);
+                        zy.Linie(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString("N0", DE);
+                        float breite = f.MeasureText(lab);
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - breite - 6f, y - TextHoehe(f) / 2f);
+                    }
+            });
+
+            // X-Achse: Jahre 0…N, Beschriftung in sinnvollen Schritten.
+            int nJahre = n - 1;
+            int xschritt = nJahre <= 12 ? 1 : nJahre <= 25 ? 2 : nJahre <= 50 ? 5 : 10;
+            var xraster = Stift(Farbrolle.RASTER, 1f);
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                    for (int t = 0; t <= nJahre; t += xschritt)
+                    {
+                        float x = rc.Left + (float)t / Math.Max(nJahre, 1) * rc.Width;
+                        zx.Linie(x, rc.Top, x, rc.Bottom, xraster);
+                        string lab = t.ToString(DE);
+                        float breite = f.MeasureText(lab);
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - breite / 2f, rc.Bottom + 8f);
+                    }
+            });
+            using (var f = Schrift(15f))
+                z.Markiert("xachse", zx =>
+                    Text(zx, BerichtTexte.T("Jahr"), f, Farbrolle.ACHSE,
+                         rc.Right + 10f, rc.Bottom + 8f));
+
+            // Achsen + hervorgehobene Nulllinie. Das ACHSENKREUZ bleibt ohne Marke
+            // (Regel aus E2): Es muss auch dann stehen, wenn die Oberfläche beim Zoom
+            // die Teilung einer Achse ausblendet.
+            Achsenkreuz(z, rc);
+            float null0 = (float)(rc.Bottom - (0 - lo) / (hi - lo) * rc.Height);
+            z.Markiert("nulllinie", zn =>
+                zn.Linie(rc.Left, null0, rc.Right, null0,
+                         Stift(Farbrolle.ACHSE, 2f, new Strichmuster(3f * 2f, 1f * 2f))));
+
+            // DIE ZEICHENFLAECHE SAMT DATENFENSTER (DG-E3-4). x zaehlt das PROJEKTJAHR
+            // 0 … N - eine freie Groesse in Jahren, keine Jahresstunde.
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(),
+                                           new Datenfenster(0, nJahre, lo, hi),
+                                           Achsenart.Wert, "a");
+
+            min = lo; max = hi; jahre = nJahre; y0 = null0;
+        }
+
+        // ================================ Kapitalwert-Verlauf mit drei Szenarien (E6)
+
+        /// <summary>
+        /// ETAPPE E6 — die BESCHRIFTUNGEN des Verlaufs mit drei Szenarien. Sie kommen vom
+        /// Aufrufer: Hülle und Bericht nehmen <see cref="AusRessourcen"/> (Oberflächensprache),
+        /// die ChartProben die deutsche Vorgabe — so hängt kein Probebild an der Sprache des
+        /// Rechners, auf dem es gezeichnet wird.
+        /// </summary>
+        public sealed class VerlaufSzenarienTexte
+        {
+            /// <summary>Kopf des ersten Legendenteils (<c>WIRT_VERL_LEG_VARIANTEN</c>).</summary>
+            public string Varianten { get; set; } = "Varianten:";
+
+            /// <summary>Kopf des zweiten Legendenteils (<c>WIRT_VERL_LEG_SZENARIEN</c>).</summary>
+            public string Szenarien { get; set; } = "Szenarien:";
+
+            /// <summary>Legendeneintrag der Marken (<c>WIRT_VERL_NULLDURCHGANG</c>).</summary>
+            public string Nulldurchgang { get; set; } = "Nulldurchgang = dynamische Amortisation";
+
+            /// <summary>
+            /// Die benannte Ablehnung über acht Stände; <c>{0}</c> = so viele Farben führt das
+            /// Bild (<c>WIRT_VERL_ZU_VIELE</c>).
+            /// </summary>
+            public string ZuVieleVarianten { get; set; }
+                = "Mehr als {0} Varianten gewählt — der Verlauf unterscheidet Varianten über die Farbe "
+                  + "und kennt {0} Farben. Bitte höchstens {0} Varianten anhaken.";
+
+            /// <summary>Der Leerhinweis ohne berechenbare Linie (<c>WIRT_VERL_KEINE_REIHE</c>).</summary>
+            public string KeineReihen { get; set; } = "Keine berechenbaren Reihen.";
+
+            /// <summary>Das Szenario „Worst" (<c>WIRT_SZEN_WORST</c>).</summary>
+            public string Worst { get; set; } = "Ungünstig";
+
+            /// <summary>Das Szenario „Erwartet" (<c>WIRT_SZEN_ERWARTET</c>).</summary>
+            public string Erwartet { get; set; } = "Erwartet";
+
+            /// <summary>Das Szenario „Best" (<c>WIRT_SZEN_BEST</c>).</summary>
+            public string Best { get; set; } = "Günstig";
+
+            /// <summary>Der Anzeigename eines Szenarios (Persistenzwert); ein unbekannter
+            /// Wert steht, wie er ist.</summary>
+            public string Szenarioname(string szenario)
+            {
+                if (string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal)) return Worst;
+                if (string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal)) return Best;
+                if (string.Equals(szenario, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal)) return Erwartet;
+                return szenario ?? "";
+            }
+
+            /// <summary>Dieselben Texte in der Oberflächensprache (<c>MyResource</c>).</summary>
+            public static VerlaufSzenarienTexte AusRessourcen()
+            {
+                return new VerlaufSzenarienTexte
+                {
+                    Varianten = MyResource.Resource.WIRT_VERL_LEG_VARIANTEN,
+                    Szenarien = MyResource.Resource.WIRT_VERL_LEG_SZENARIEN,
+                    Nulldurchgang = MyResource.Resource.WIRT_VERL_NULLDURCHGANG,
+                    ZuVieleVarianten = MyResource.Resource.WIRT_VERL_ZU_VIELE,
+                    KeineReihen = MyResource.Resource.WIRT_VERL_KEINE_REIHE,
+                    Worst = MyResource.Resource.WIRT_SZEN_WORST,
+                    Erwartet = MyResource.Resource.WIRT_SZEN_ERWARTET,
+                    Best = MyResource.Resource.WIRT_SZEN_BEST
+                };
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — ein Nulldurchgang im Verlauf mit drei Szenarien: die dynamische
+        /// Amortisation EINER Linie.
+        /// </summary>
+        /// <param name="Reihe">Name der Linie („Stand · Szenario").</param>
+        /// <param name="Stand">Der Stand (Anzeigename).</param>
+        /// <param name="Szenario">Das Szenario (Anzeigename).</param>
+        /// <param name="Jahr">Das Jahr des Durchgangs [a], linear im Jahr interpoliert.</param>
+        public sealed record Nulldurchgangsmarke(string Reihe, string Stand, string Szenario, double Jahr);
+
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — die Linien des Verlaufs mit drei Szenarien samt
+        /// der ZWEIGETEILTEN Legende und den Nulldurchgängen, gebildet von
+        /// <see cref="VerlaufsReihenSzenarien"/>.
+        /// </summary>
+        public sealed class Szenarienreihen
+        {
+            /// <summary>Je Stand und Szenario eine Linie: Name „Stand · Szenario",
+            /// Farbe = Stand, Strichart = Szenario.</summary>
+            public List<Reihe> Reihen { get; } = new List<Reihe>();
+
+            /// <summary>Legende, erster Teil: je Stand sein Name und seine Farbe.</summary>
+            public List<(string Name, Farbton Ton)> Varianten { get; } = new List<(string, Farbton)>();
+
+            /// <summary>Legende, zweiter Teil: je Szenario sein Name und seine Strichart — so
+            /// viele Einträge wie Varianten, dazu drei, nicht Varianten mal drei.</summary>
+            public List<(string Name, Strichart Strichart)> Szenarien { get; }
+                = new List<(string, Strichart)>();
+
+            /// <summary>Die Nulldurchgänge der Linien, je Linie höchstens einer.</summary>
+            public List<Nulldurchgangsmarke> Marken { get; } = new List<Nulldurchgangsmarke>();
+
+            /// <summary>
+            /// Die BENANNTE Ablehnung: mehr Stände als Farben (<see cref="HoechstensStaende"/>).
+            /// <c>null</c> = das Bild wird gezeichnet.
+            /// </summary>
+            public string Ablehnung { get; set; }
+        }
+
+        /// <summary>
+        /// Wie viele Stände der Verlauf mit drei Szenarien unterscheiden kann: so viele Farben
+        /// führt die Palette der Variantenreihen (acht, <see cref="Serienrolle"/> — dieselben
+        /// Hausfarben wie <see cref="C_SERIEN"/>, aber als ROLLE). Darüber lehnt die
+        /// Reihenbildung BENANNT ab, statt Farben doppelt zu vergeben.
+        /// </summary>
+        public static int HoechstensStaende => SERIENROLLEN.Length;
+
+        /// <summary>Der Trenner im Namen einer Linie: „Stand · Szenario".</summary>
+        public const string REIHENTRENNER = " · ";
+
+        /// <summary>
+        /// ETAPPE E6 — die Strichart eines Szenarios (Mockup Kategorie 8, „Wie sicher ist
+        /// das?"): Erwartet durchgezogen, Ungünstig gestrichelt, Günstig gepunktet.
+        /// </summary>
+        public static Strichart StrichartDesSzenarios(string szenario)
+        {
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal))
+                return Strichart.Gestrichelt;
+            if (string.Equals(szenario, WirtschaftlichkeitSzenario.BEST, StringComparison.Ordinal))
+                return Strichart.Gepunktet;
+            return Strichart.Durchgezogen;
+        }
+
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — die REIHENBILDUNG des Verlaufs mit drei
+        /// Szenarien: je Stand mit Differenzlinie EINE Farbe, je Szenario EINE Strichart,
+        /// der Name „Stand · Szenario" — dasselbe Projekt in drei Szenarien bekommt also
+        /// eine Farbe und drei unterscheidbare Namen, nicht drei beliebige Farben und
+        /// dreimal denselben Namen (Befund A3).
+        ///
+        /// <para><b>Die Farbe hängt am PLATZ in der Gruppe</b>, solange sie höchstens acht
+        /// Stände mit Linie führt: Ein abgewählter Stand färbt die übrigen nicht um. Führt
+        /// die Gruppe mehr, zählt der Platz unter den gewählten. <b>Mehr als acht gewählte
+        /// Stände lehnt die Reihenbildung BENANNT ab</b> (<see cref="Szenarienreihen.Ablehnung"/>) —
+        /// die Palette kennt acht Farben, eine doppelt vergebene wäre eine stille Lüge.</para>
+        ///
+        /// <para><b>Nulldurchgang je Linie</b> über <see cref="KapitalwertRechner.Nulldurchgang"/>
+        /// — dieselbe Regel wie die Amortisationskennzahl.</para>
+        /// </summary>
+        /// <param name="verlauf">Die drei Läufe (<see cref="WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien"/>).</param>
+        /// <param name="texte">Szenarionamen und Ablehnungstext; <c>null</c> = die Vorgabe.</param>
+        /// <param name="nurStaende">Nur diese Stände (<c>Tab_Projekt.ID</c>); <c>null</c> = alle.</param>
+        /// <param name="nurSzenarien">Nur diese Szenarien (Persistenzwerte); <c>null</c> = alle drei.</param>
+        public static Szenarienreihen VerlaufsReihenSzenarien(WirtschaftlichkeitVerlaufSzenarien verlauf,
+                                                             VerlaufSzenarienTexte texte,
+                                                             ICollection<int> nurStaende = null,
+                                                             ICollection<string> nurSzenarien = null)
+        {
+            texte = texte ?? new VerlaufSzenarienTexte();
+            var ergebnis = new Szenarienreihen();
+            if (verlauf == null) return ergebnis;
+
+            List<KeyValuePair<int, string>> alle = verlauf.Versionen();
+            var gewaehlt = new List<KeyValuePair<int, string>>();
+            foreach (KeyValuePair<int, string> v in alle)
+                if (nurStaende == null || nurStaende.Contains(v.Key)) gewaehlt.Add(v);
+
+            if (gewaehlt.Count > SERIENROLLEN.Length)
+            {
+                ergebnis.Ablehnung = string.Format(DE, texte.ZuVieleVarianten ?? "", SERIENROLLEN.Length);
+                return ergebnis;
+            }
+
+            var szenarien = new List<string>();
+            foreach (string s in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+                if (nurSzenarien == null || nurSzenarien.Contains(s)) szenarien.Add(s);
+
+            bool festerPlatz = alle.Count <= SERIENROLLEN.Length;
+            for (int i = 0; i < gewaehlt.Count; i++)
+            {
+                int platz = i;
+                if (festerPlatz)
+                    for (int k = 0; k < alle.Count; k++)
+                        if (alle[k].Key == gewaehlt[i].Key) { platz = k; break; }
+
+                string stand = gewaehlt[i].Value ?? "";
+                Farbton ton = Farbton.Aus(SERIENROLLEN[platz]);
+                ergebnis.Varianten.Add((stand, ton));
+
+                foreach (string s in szenarien)
+                {
+                    VerlaufSerie d = verlauf.Differenz(gewaehlt[i].Key, s);
+                    if (d == null) continue;
+                    string szenario = texte.Szenarioname(s);
+                    string name = stand + REIHENTRENNER + szenario;
+                    ergebnis.Reihen.Add(new Reihe(name, d.Kumuliert, ton)
+                    {
+                        Strichart = StrichartDesSzenarios(s),
+                        // Erwartet trägt die Aussage und steht kräftiger (Mockup: 2,4 zu 1,8).
+                        Breite = string.Equals(s, WirtschaftlichkeitSzenario.ERWARTET, StringComparison.Ordinal)
+                               ? 3f : 2.5f
+                    });
+                    double? jahr = KapitalwertRechner.Nulldurchgang(d.Kumuliert);
+                    if (jahr.HasValue)
+                        ergebnis.Marken.Add(new Nulldurchgangsmarke(name, stand, szenario, jahr.Value));
+                }
+            }
+
+            foreach (string s in szenarien)
+                ergebnis.Szenarien.Add((texte.Szenarioname(s), StrichartDesSzenarios(s)));
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — der Verlauf mit drei Szenarien als PNG (Wortbericht). Siehe
+        /// <see cref="KapitalwertSzenarienModell"/>.
+        /// </summary>
+        public static byte[] KapitalwertSzenarien(string titel, Szenarienreihen inhalt,
+                                                  VerlaufSzenarienTexte texte, string fussnote)
+            => SkiaMaler.Png(KapitalwertSzenarienModell(titel, inhalt, texte, fussnote));
+
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5), Mockup Kategorie 8 „Der Verlauf über die Zeit —
+        /// alle drei Szenarien") — der <b>kumulierte Barwert der Differenz zur Referenz</b>
+        /// je Jahr, für jeden Stand in drei Stricharten: <b>Farbe = Stand, Strichart =
+        /// Szenario</b>, dazu je Linie ihr Nulldurchgang (die dynamische Amortisation in
+        /// diesem Szenario) als Marke auf der Nulllinie.
+        ///
+        /// <para><b>Dieselbe Skala und Achsenführung wie das Bild je Version</b>
+        /// (<see cref="VerlaufAchsen"/>): x ist das Projektjahr, die Nulllinie ist
+        /// hervorgehoben, die Zeichenfläche trägt das Datenfenster für den Zoom der
+        /// Oberfläche.</para>
+        ///
+        /// <para><b>Die Legende ist ZWEIGETEILT</b>: erst die Stände mit ihrer Farbe, in
+        /// einer neuen Zeile die drei Szenarien mit ihrer Strichart (in Textfarbe, denn die
+        /// Strichart gilt für jede Farbe) und die Marke — so viele Einträge wie Stände,
+        /// dazu drei, nicht Stände mal drei.</para>
+        ///
+        /// <para><b>Das Bildmaß</b> (Konzept: mehr als etwa zwei Legendenzeilen passen nicht
+        /// in 1240 × 620): Zwei Legendenzeilen — ein Teil je Zeile — tragen das feste Maß;
+        /// jede weitere Zeile, die viele oder lange Namen brauchen, verlängert das Bild um
+        /// eine Legendenzeile (<see cref="LEGENDE_ZEILE"/>). Die Zeichenfläche bleibt
+        /// 1090 × 400 — ein Bild mit vielen Ständen wird länger, nicht flacher.</para>
+        ///
+        /// <para><b>Die Beschriftung der Marken</b> („Ungünstig 3,02 a" bei EINEM Stand,
+        /// sonst „3,02 a") steht in bis zu drei Zeilen neben der Nulllinie; was keinen Platz
+        /// findet, bleibt ohne Text — der Wert steht am Element (<c>data-wert</c>) und in
+        /// der Zeile unter dem Bild.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift ohne Einheit; „[€]" hängt das Bild an.</param>
+        /// <param name="inhalt">Die Linien (<see cref="VerlaufsReihenSzenarien"/>).</param>
+        /// <param name="texte">Legendenköpfe und Hinweise; <c>null</c> = die Vorgabe.</param>
+        /// <param name="fussnote">Kursive Zeile unter der Legende; leer = keine.</param>
+        public static Zeichenmodell KapitalwertSzenarienModell(string titel, Szenarienreihen inhalt,
+                                                               VerlaufSzenarienTexte texte,
+                                                               string fussnote)
+        {
+            texte = texte ?? new VerlaufSzenarienTexte();
+            inhalt = inhalt ?? new Szenarienreihen();
+            const int W = 1240;
+            var rc = SKRect.Create(110f, 80f, W - 150f, 400f);
+            float legendeOben = rc.Bottom + 36f;
+
+            var gueltig = new List<Reihe>();
+            if (inhalt.Ablehnung == null)
+                foreach (Reihe r in inhalt.Reihen)
+                    if (r != null && r.Werte != null && r.Werte.Length >= 2 &&
+                        r.Werte.All(w => !double.IsNaN(w) && !double.IsInfinity(w)))
+                        gueltig.Add(r);
+
+            int zeilen = gueltig.Count == 0 ? 0
+                       : LegendeZweigeteilt(null, inhalt, texte, 110f, legendeOben, W - 30f);
+            int H = 620 + (int)LEGENDE_ZEILE * Math.Max(0, zeilen - 2);
+
+            var z = Modell(W, H);
+            z.Markiert("titel", zt => Titel(zt, (titel ?? "") + "  [€]", W));
+
+            if (gueltig.Count == 0)
+            {
+                // Die benannte Ablehnung ist ein Satz, kein Wort: Sie bricht an der Breite
+                // der Zeichenfläche um (höchstens vier Zeilen).
+                string hinweis = inhalt.Ablehnung ?? texte.KeineReihen ?? "";
+                using (var f = Schrift(18f))
+                {
+                    List<string> zeilenText = Umbruchzeilen(hinweis, f, rc.Width, 4);
+                    z.Markiert("leerhinweis", zl =>
+                    {
+                        for (int i = 0; i < zeilenText.Count; i++)
+                            Text(zl, zeilenText[i], f, Farbrolle.ACHSE, rc.Left,
+                                 rc.Top + 20f + i * (TextHoehe(f) + 6f));
+                    });
+                }
+                return z;
+            }
+
+            VerlaufAchsen(z, rc, gueltig, out double min, out double max, out int jahre, out float y0);
+
+            // Linien: Farbe = Stand (die Rolle der Reihe), Strichart = Szenario.
+            foreach (Reihe r in gueltig)
+            {
+                var punkte = new SKPoint[r.Werte.Length];
+                for (int t = 0; t < r.Werte.Length; t++)
+                {
+                    float x = rc.Left + (float)t / Math.Max(jahre, 1) * rc.Width;
+                    float y = (float)(rc.Bottom - (r.Werte[t] - min) / (max - min) * rc.Height);
+                    punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+                float staerke = r.Breite > 0 ? r.Breite : 2.5f;
+                Strichmuster muster = Strichfolge(r.Strichart);
+                Farbton ton = Ton(r);
+                z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    Linienzug(zr, punkte, Stift(ton, staerke, muster, Strichverbindung.Rund)));
+                z.FuegeReihe(new Datenreihe(r.Name ?? "", ton, staerke, muster, r.Werte,
+                                            Reihenfenster(z.Flaeche.Daten, r.Werte.Length),
+                                            Reihenart.Linie, null, null, null, "€"));
+            }
+
+            Nulldurchgaenge(z, rc, inhalt, gueltig, jahre, y0);
+
+            LegendeZweigeteilt(z, inhalt, texte, 110f, legendeOben, W - 30f);
+            if (!string.IsNullOrEmpty(fussnote))
+                using (var f = Schrift(14f, kursiv: true))
+                    Text(z, fussnote, f, Farbrolle.ACHSE, 110f,
+                         legendeOben + zeilen * LEGENDE_ZEILE + 16f);
+            return z;
+        }
+
+        /// <summary>Wie viele Zeilen die Beschriftung der Nulldurchgänge nutzen darf.</summary>
+        private const int MARKENZEILEN = 3;
+
+        /// <summary>
+        /// ETAPPE E6 — die Nulldurchgänge als Marken auf der Nulllinie: ein Punkt in
+        /// Textfarbe mit hellem Rand, dazu — wo Platz ist — eine gestrichelte Senkrechte und
+        /// das Jahr. Die Beschriftung sucht sich von links nach rechts die erste der
+        /// <see cref="MARKENZEILEN"/> Zeilen, in der sie keine andere berührt; über der
+        /// Nulllinie, wenn dort Platz ist, sonst darunter. Jede Marke trägt ihren Wert
+        /// („Stand · Szenario: 3,02 a") am Element.
+        /// </summary>
+        private static void Nulldurchgaenge(Zeichenmodell z, SKRect rc, Szenarienreihen inhalt,
+                                            List<Reihe> gueltig, int jahre, float y0)
+        {
+            var namen = new HashSet<string>(gueltig.Select(r => r.Name ?? ""), StringComparer.Ordinal);
+            var marken = inhalt.Marken
+                .Where(m => m != null && namen.Contains(m.Reihe ?? "") && m.Jahr >= 0 && m.Jahr <= jahre)
+                .OrderBy(m => m.Jahr).ThenBy(m => m.Reihe, StringComparer.Ordinal)
+                .ToList();
+            if (marken.Count == 0) return;
+
+            bool einStand = inhalt.Varianten.Count == 1;
+            var belegt = new List<List<(float Von, float Bis)>>();
+            for (int k = 0; k < MARKENZEILEN; k++) belegt.Add(new List<(float, float)>());
+
+            using (var f = Schrift(13f))
+            {
+                float hoehe = TextHoehe(f);
+                // Über der Nulllinie, wenn alle Zeilen dort Platz haben; sonst darunter.
+                bool oberhalb = y0 - 24f - (MARKENZEILEN - 1) * 20f - hoehe >= rc.Top;
+
+                foreach (Nulldurchgangsmarke m in marken)
+                {
+                    float x = rc.Left + (float)(m.Jahr / Math.Max(jahre, 1)) * rc.Width;
+                    string jahr = m.Jahr.ToString("N2", DE) + " a";
+                    string text = (einStand ? m.Szenario + " " : "") + jahr;
+                    string wert = m.Reihe + ": " + jahr;
+
+                    float breite = f.MeasureText(text);
+                    float von = x + 5f, bis = x + 5f + breite;
+                    if (bis > rc.Right) { von = x - 5f - breite; bis = x - 5f; }
+
+                    int zeile = -1;
+                    for (int k = 0; k < belegt.Count && zeile < 0; k++)
+                    {
+                        bool frei = true;
+                        foreach ((float Von, float Bis) b in belegt[k])
+                            if (von < b.Bis + 8f && bis > b.Von - 8f) { frei = false; break; }
+                        if (frei) zeile = k;
+                    }
+                    if (zeile >= 0) belegt[zeile].Add((von, bis));
+
+                    float ty = oberhalb ? y0 - 24f - zeile * 20f - hoehe : y0 + 12f + zeile * 20f;
+                    float px = x, tx = von;
+                    bool beschriftet = zeile >= 0;
+                    z.Markiert("nulldurchgang", wert, zm =>
+                    {
+                        if (beschriftet)
+                        {
+                            float ende = ty + hoehe / 2f;
+                            zm.Linie(px, y0, px, ende,
+                                     Stift(Farbrolle.ACHSE, 1.2f, new Strichmuster(4f, 3f)));
+                            Text(zm, text, f, Farbrolle.TEXT, tx, ty);
+                        }
+                        zm.Kreis(px, y0, 6f, Stift(Farbrolle.HINTERGRUND, 2f), Flaeche(Farbrolle.TEXT));
+                    });
+                }
+            }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — die ZWEIGETEILTE Legende des Verlaufs mit drei Szenarien: in der
+        /// ersten Zeile der Kopf „Varianten:" und je Stand ein gefülltes Farbfeld, in einer
+        /// neuen Zeile der Kopf „Szenarien:", je Szenario ein Linienmuster in seiner Strichart
+        /// und — gibt es Marken — der Eintrag des Nulldurchgangs. Umgebrochen wird je Teil
+        /// mit hängendem Einzug hinter dem breiteren der beiden Köpfe.
+        ///
+        /// <para>Mit <paramref name="z"/> = <c>null</c> MISST sie nur — das Bild braucht die
+        /// Zeilenzahl, bevor es sein Maß kennt; gemessen und gezeichnet wird mit derselben
+        /// Regel.</para>
+        /// </summary>
+        /// <returns>Die Zahl der Legendenzeilen.</returns>
+        private static int LegendeZweigeteilt(IZeichenziel z, Szenarienreihen inhalt,
+                                              VerlaufSzenarienTexte texte, float x, float y,
+                                              float rechts)
+        {
+            var rahmen = Stift(Farbrolle.LEGENDENRAHMEN, 1f);
+            using (var fk = Schrift(16f, fett: true))
+            using (var f = Schrift(16f))
+            {
+                string kopfVarianten = texte.Varianten ?? "";
+                string kopfSzenarien = texte.Szenarien ?? "";
+                float kopf = Math.Max(fk.MeasureText(kopfVarianten), fk.MeasureText(kopfSzenarien)) + 16f;
+                float start = x + kopf;
+                int zeilen = 1;
+                float ey = y, ex = start;
+
+                // ---- Teil 1: die Stände mit ihrer Farbe ----
+                if (z != null)
+                {
+                    float ky = ey;
+                    Text(z, kopfVarianten, fk, Farbrolle.TEXT, x, ky + 1f);
+                }
+                foreach ((string Name, Farbton Ton) v in inhalt.Varianten)
+                {
+                    string name = v.Name ?? "";
+                    float breite = 40f + f.MeasureText(name) + 24f;
+                    if (ex > start && ex + breite > rechts) { ex = start; ey += LEGENDE_ZEILE; zeilen++; }
+                    if (z != null)
+                    {
+                        float px = ex, py = ey;
+                        Farbton ton = v.Ton;
+                        z.Markiert("legende:" + name, ze =>
+                        {
+                            ze.Rechteck(px, py, 22f, 22f, null, Flaeche(ton));
+                            ze.Rechteck(px, py, 22f, 22f, rahmen);
+                            Text(ze, name, f, Farbrolle.TEXT, px + 28f, py + 1f);
+                        });
+                    }
+                    ex += breite;
+                }
+
+                // ---- Teil 2: die Szenarien mit ihrer Strichart, dann die Marke ----
+                ey += LEGENDE_ZEILE; zeilen++; ex = start;
+                if (z != null)
+                {
+                    float ky = ey;
+                    Text(z, kopfSzenarien, fk, Farbrolle.TEXT, x, ky + 1f);
+                }
+                foreach ((string Name, Strichart Strichart) s in inhalt.Szenarien)
+                {
+                    string name = s.Name ?? "";
+                    float breite = 48f + f.MeasureText(name) + 24f;
+                    if (ex > start && ex + breite > rechts) { ex = start; ey += LEGENDE_ZEILE; zeilen++; }
+                    if (z != null)
+                    {
+                        float px = ex, py = ey;
+                        Strichmuster muster = Strichfolge(s.Strichart);
+                        z.Markiert("legende:" + name, ze =>
+                        {
+                            ze.Linie(px, py + 11f, px + 40f, py + 11f, Stift(Farbrolle.TEXT, 3f, muster));
+                            Text(ze, name, f, Farbrolle.TEXT, px + 48f, py + 1f);
+                        });
+                    }
+                    ex += breite;
+                }
+                if (inhalt.Marken.Count > 0)
+                {
+                    string name = texte.Nulldurchgang ?? "";
+                    float breite = 40f + f.MeasureText(name) + 24f;
+                    if (ex > start && ex + breite > rechts) { ex = start; ey += LEGENDE_ZEILE; zeilen++; }
+                    if (z != null)
+                    {
+                        float px = ex, py = ey;
+                        z.Markiert("legende:" + name, ze =>
+                        {
+                            ze.Kreis(px + 11f, py + 11f, 6f, Stift(Farbrolle.HINTERGRUND, 2f),
+                                     Flaeche(Farbrolle.TEXT));
+                            Text(ze, name, f, Farbrolle.TEXT, px + 28f, py + 1f);
+                        });
+                    }
+                }
+                return zeilen;
+            }
         }
 
         // =================================================================== Kostenprofil

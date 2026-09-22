@@ -23130,4 +23130,19 @@ Möchten Sie das zulassen?</value>
   <data name="SZR_OPT_SPALTE" xml:space="preserve">
     <value>Spalte {0}</value>
   </data>
+  <data name="WIRT_VERL_LEG_VARIANTEN" xml:space="preserve">
+    <value>Varianten:</value>
+  </data>
+  <data name="WIRT_VERL_LEG_SZENARIEN" xml:space="preserve">
+    <value>Szenarien:</value>
+  </data>
+  <data name="WIRT_VERL_NULLDURCHGANG" xml:space="preserve">
+    <value>Nulldurchgang = dynamische Amortisation</value>
+  </data>
+  <data name="WIRT_VERL_ZU_VIELE" xml:space="preserve">
+    <value>Mehr als {0} Varianten gewählt — der Verlauf unterscheidet Varianten über die Farbe und kennt {0} Farben. Bitte höchstens {0} Varianten anhaken.</value>
+  </data>
+  <data name="WIRT_VERL_KEINE_REIHE" xml:space="preserve">
+    <value>Keine berechenbaren Reihen.</value>
+  </data>
 </root>
