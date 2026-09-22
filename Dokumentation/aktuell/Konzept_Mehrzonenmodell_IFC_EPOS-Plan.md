@@ -8,7 +8,8 @@
 > KU-S1 und AK-S1 (4.2); der Schreibweg ist ein Abgleich über die Ids statt Löschen + Neuanlegen
 > (4.1); bei N = 1 entfallen adiabater Vorlauf und Konvergenzprobe (2.4, 2.9, 8.1); die
 > Schemaschritte tragen Papiernamen statt fester Nummern (2.6, 4.4); die Summe G6 trägt den
-> Vorbehalt X1…X3 (Kapitel 0 und 9); M5 nennt die Kennzahl `Ueberhitzungsstunden`.
+> Vorbehalt X1…X3 (Kapitel 0 und 9); M5 nennt die Kennzahl `Ueberhitzungsstunden`; 2.9 nennt
+> den Altweg als Übergang bis zur Ablösung (E26).
 
 > **Rev. 2 — Korrekturen des Gegenlesens vom 15.09.2026 eingearbeitet, Protokoll:
 > [Gegenlesen](Gebaeudesimulation/2026-09-15_Gegenlesen_Mehrzonenkonzept.md)** — dort auch die
@@ -824,8 +825,8 @@ Die Schritte S-A bis S-D und S-G werden als **nummerierte** Migrationsschritte n
 geführt; die Nummern werden vergeben, wenn der Schemastand bei Beauftragung der jeweiligen Stufe
 feststeht. Die Gebäudespalten-Schritte tragen bis dahin die Papiernamen **M3** und **M4**; die
 Zahlen 77 und 78 sind im Bestand anderweitig vergeben (Softwarearchitektur 2.4, A11). Der
-Zielstand wird an `SchemaStand.Zielversion` abgelesen. Jede Nummer bekommt ihre Konstante
-(`SchemaMigration.cs:2762`), ihre Registrierung (`:3703`) und ihren Zweig (`:4893`).
+Zielstand wird an `SchemaStand.Zielversion` abgelesen. Jede Nummer bekommt ihre Konstante,
+ihre Registrierung und ihren Zweig in `SchemaMigration.cs`.
 
 **S-A bis S-C fallen nach 3.5 schon mit G3 an** — also auch `Tab_Zone`, weil
 `Tab_Bauteil.ID_Zone` NOT NULL auf sie zeigt und der Zonenreiter der Grundform schon in G3 steht —

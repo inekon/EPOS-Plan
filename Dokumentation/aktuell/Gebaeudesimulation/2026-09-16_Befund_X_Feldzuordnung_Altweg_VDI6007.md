@@ -446,7 +446,7 @@ Liste.
 | Spalte **„Modell"** in der Projektliste des Gebäudedialogs | Umsetzungskonzept 2.7 Punkt 1 |
 | **Vergleich alt/neu** im Bedarfsdialog | die vierspaltige Tabelle und `GebaeudeBedarfDaten.Vergleich` (Umsetzungskonzept 2.7) |
 | Ausweis **„Tagesbilanz (Bestandsweg)"** in Bericht und Bedarfsdialog | Konzept N1.25 Punkt 5; danach gilt allein der Produktausweis nach E10 |
-| **Schreibstellen der Flags `Wochenende` und `Ferien`** | `GebaeudeKatalogDialog.razor:809` und `:811` setzen sie beim Übernehmen des zweiten Reiters auf 0/1; die Träger stehen in `GebaeudeKatalogDaten.cs:139` und `:142`. Sie entfallen mit den Spalten; bis dahin bleiben sie, damit ein Gebäude auf dem Altweg dieselben Werte behält (X1) |
+| **Schreibstellen der Flags `Wochenende` und `Ferien`** | `GebaeudeKatalogDialog.razor:953` und `:955` (Stand 22.09.2026) setzen sie beim Übernehmen des zweiten Reiters auf 0/1; die Träger stehen in `GebaeudeKatalogDaten.cs:139` und `:142`. Sie entfallen mit den Spalten; bis dahin bleiben sie, damit ein Gebäude auf dem Altweg dieselben Werte behält (X1) |
 
 ### 4.4 Tests und Nachweise
 

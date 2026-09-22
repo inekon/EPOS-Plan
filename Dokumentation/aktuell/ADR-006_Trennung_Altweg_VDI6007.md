@@ -1,7 +1,7 @@
 # ADR-006: Ablösung des Tagesbilanz-Wegs — zwei getrennte Rechenwege, der Altweg als Übergang bis zur Ablösung
 
 **Status:** Angenommen (16.09.2026, Entscheid E20 des Anwenders — Konzept-Nachtrag N1.25)
-**Ergänzung (16.09.2026, E23; 17.09.2026, E26):** E23 („GA: altweg soll bleiben") heißt: Der Altweg bleibt **jetzt** — als eingefrorenes Modul ohne neue Funktion, mit Referenzprojekt und Rückweg-Test. E26 stellt klar, dass dies ein **Übergang** ist: Der VDI-Weg löst den Altweg später vollständig ab und muss eigenständig arbeiten. Entscheidung 4 lautet deshalb wieder: Die Ablösung ist die **Stufe GA**, ihr Zeitpunkt ist offen (Q24), ihr Umfang ist Q25; bis dahin keine neue Funktion im Altweg. Der Text ist auf den Stand E20 + E23 + E26 gebracht (Konzept N1.25, N1.28, N1.31); die Entscheidungen 1 bis 3 und 5 gelten unverändert, 6 ist neu.
+**Ergänzung (16.09.2026, E23; 17.09.2026, E26):** E23 („GA: altweg soll bleiben") heißt: Der Altweg bleibt **jetzt** — als eingefrorenes Modul ohne neue Funktion, mit Referenzprojekt und Rückweg-Test. E26 stellt klar, dass dies ein **Übergang** ist: Der VDI-Weg löst den Altweg später vollständig ab und muss eigenständig arbeiten. Entscheidung 4 lautet deshalb wieder: Die Ablösung ist die **Stufe GA**, ihr Zeitpunkt ist offen (Q24), ihr Umfang ist Q25; bis dahin keine neue Funktion im Altweg. Der Text ist auf den Stand E20 + E23 + E26 gebracht (Konzept N1.25, N1.28, N1.31); die Entscheidungen 1 bis 3 und 5 gelten unverändert (1 mit dem Vertrag des Vorbereitungsschritts nach Softwarearchitektur 1.3 und Konzept N1.31), 6 ist neu.
 **Datum:** 16.09.2026
 **Entscheider:** Anwender (Projektverantwortung EPOS-Plan)
 **Betrifft:** [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
@@ -49,11 +49,12 @@ es später vollständig ablöst; die Ablösung ist die Stufe GA, ihr Zeitpunkt i
 ## Entscheidung
 
 1. **Eine Weiche, zwei Module.** `SimulationWaermebedarf` wird zur Fassade: Ein modellfreier
-   Vorbereitungsschritt liefert, was beide Wege brauchen (Bewohner aus der Nutzfläche,
-   Skalierungsfaktor nach E8, Klimareihen); dann liest die Weiche den Rechenweg des Gebäudes und
-   ruft genau ein Modul. Modellfrei sind Klimakalender, Bewohner, die beiden Flächen und der
-   Flächenfaktor; die Verbrauchs-Rückrechnung braucht ein Ergebnis des gewählten Moduls und läuft
-   innerhalb des Moduls (zweiter Aufruf), nie über die Modulgrenze (Befund X, X5). Der
+   Vorbereitungsschritt (`GebaeudeVorbereitung`) liefert, was beide Wege brauchen und ohne
+   Modellauf feststeht — Klimakalender (dem VDI-Modul nur der gemeinsame Teil), bisheriger
+   Verbrauch, Flächen, Einheit und Jahresnutzungsgrad (Vertrag: Softwarearchitektur 1.3);
+   dann liest die Weiche den Rechenweg des Gebäudes und ruft genau ein Modul. Bewohnerzahl
+   und Skalierungsfaktor nach E8 entstehen je Modul aus dessen erstem Lauf; die Fassade führt
+   die Schleife, und nichts läuft über die Modulgrenze (Befund X, X5). Der
    Tagesbilanz-Weg wandert **Zeichen für Zeichen** nach `EPOS.Kern/Allgemein/Simulation/Altweg/`
    und bekommt keine Funktion mehr; der VDI-Weg lebt in
    `Gebaeude/` und ruft nichts aus dem Altweg. Es gibt keinen zweiten Verzweigungspunkt (A16
@@ -161,7 +162,7 @@ ADR-002 in konsequenter Form; ADR-002 bleibt gültig und bekommt einen Ergänzun
 5. [x] Entscheide E23 (16.09.2026) und E26 (17.09.2026): Der Altweg bleibt jetzt und arbeitet als
        Übergang; die Ablösung ist die Stufe GA mit offenem Zeitpunkt. **Q24 und Q25 sind wieder
        offen** (Konzept N1.28, N1.31). Die Tagesverteilungstabellen `Tab_DBTagV` und
-       `Tab_DBTagV_Daten` behalten mit dem Altweg ihren Leser und entfallen mit GA; die leserlosen
+       `Tab_DBTagVDaten` behalten mit dem Altweg ihren Leser und entfallen mit GA; die leserlosen
        Spalten `WW_Bedarf` und `Waermebedarf` (Befund X) stehen in derselben Löschliste.
 6. [ ] Löschliste der Stufe GA im Umsetzungskonzept, Kapitel 6, führen und bei jedem Auftrag
        fortschreiben, der einen Altweg-Sonderfall einführt (Entscheidung 6).

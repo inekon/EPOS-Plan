@@ -792,9 +792,13 @@ kommt **keine neue Farbe** dazu (W16b‑E‑5).
 
 **Spalten ohne sinnvollen Filter tragen NUR den Sortierpfeil** — genau wie `PRIORITÄT ⇅` im
 Vorbild. Das sind die Wahlspalte (weder Sortierung noch Trichter) und die **Kennzeichen
-ja/nein**: `Brennwert` beim Heizkessel, `Kühlen` bei der Wärmepumpe, „im Projekt verwendet"
-(Q12). Begründung: Ein Feld „enthält ja" für zwei Werte ist ein Bedienelement ohne Gewinn —
-die Sortierung stellt die sechs bzw. fünfzehn Sätze ohnehin zusammen. Umgesetzt wird das über
+ja/nein**: `Brennwert` beim Heizkessel, „im Projekt verwendet" (Q12). Begründung: Ein Feld
+„enthält ja" für zwei Werte ist ein Bedienelement ohne Gewinn — die Sortierung stellt die sechs
+Brennwertsätze ohnehin zusammen. Die Kühlfähigkeit der Wärmepumpe ist deshalb **kein**
+Kennzeichen, sondern die **Zahlenspalte „Kühlleistung [kW]"** mit Trichter; der Schalter „nur
+mit Kühlfunktion" schreibt den Ausdruck `>0` in diesen Trichter
+(`Katalogfilterprofil.SpKuehlleistung`, `AUSDRUCK_MIT_KUEHLUNG`; Kühlkonzept 5.0.3).
+Umgesetzt wird das über
 `ColumnBase.ColumnOptions`: **wird es nicht gesetzt, zeichnet QuickGrid keinen Optionsknopf** —
 es braucht also kein Ausschalten, nur ein Weglassen.
 
@@ -878,7 +882,7 @@ Fensterbreite):
 | Reiter | Parameterspalten | vorher (neben dem Eingabeblock) |
 |---|---|---|
 | **M1 Heizkessel** | **6** — Bezeichner · Hersteller · Brennstoff · P_th · η · Brennwert | 5 |
-| **M2 Wärmepumpe** | **9** — Hersteller · Modell · Quelle · P_N · VL min · VL max · Zuheizung · Kühlen · COP A2/W35 | 6 (und die Liste rollte um 118 px in sich) |
+| **M2 Wärmepumpe** | **9** — Hersteller · Modell · Quelle · P_N · VL min · VL max · Zuheizung · Kühlleistung · COP A2/W35 | 6 (und die Liste rollte um 118 px in sich) |
 | **M3 PV-Modul** | **7** — Bezeichner · Hersteller · P_STC · η · Technologie · A_Modul · T_NOCT | 5 |
 
 Damit stehen die **Spalten**-Zeilen aus Kapitel 4 vollständig da — mit **zwei gemessenen
@@ -1008,7 +1012,7 @@ Die Eingabefelder selbst sind schreibgeschützt; das Blatt rechnet nicht, es zei
 | Reiter | zeigt | Datenherkunft |
 |---|---|---|
 | **M1 — Heizkessel (Verwaltung)** | das Schema vollständig: Suchzeile mit Trefferzahl, **sechs** Parameterspalten über die ganze Breite, Eingabeblock **darunter** im `Formularraster`, Parameterübersicht, Aktionsleiste. `Brennwert` trägt **nur den Sortierpfeil**. Gefiltert: `Brennstoff` enthält „Gas" · `P_th` `10..60` · `η` `>=0,95`; das Popover ist an **Brennstoff** offen → **„15 von 63 Sätzen"** | `Tab_Heizkessel_STAMM` (63 Sätze) |
-| **M2 — Wärmepumpe (Projektauswahl)** | **denselben** Aufbau, gestapelt: Projektliste oben über die ganze Breite (sortierbar, ohne Trichter, vier Zeilen hoch), darunter die Übernahmeleiste („▲ ins Projekt übernehmen", „▼ aus dem Projekt entfernen"), darunter Suchzeile und Katalogliste mit **denselben Spaltenköpfen** wie M1/M3 (**neun** Parameterspalten), darunter die Kenndaten. `Kühlen` trägt nur den Sortierpfeil. Gefiltert: `Quelle` enthält „Luft" · `P_N` `5..12` · `VL max` `>=60`; das Popover ist an **Quelle** offen → **„7 von 51 Sätzen"** | `Tab_WP` (Projekt 1008), `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` (VL min/max und COP A2/W35 aus den Kennlinien) |
+| **M2 — Wärmepumpe (Projektauswahl)** | **denselben** Aufbau, gestapelt: Projektliste oben über die ganze Breite (sortierbar, ohne Trichter, vier Zeilen hoch), darunter die Übernahmeleiste („▲ ins Projekt übernehmen", „▼ aus dem Projekt entfernen"), darunter Suchzeile und Katalogliste mit **denselben Spaltenköpfen** wie M1/M3 (**neun** Parameterspalten), darunter die Kenndaten. `Kühlleistung [kW]` trägt Zahl, Sortierpfeil und Trichter (Schalter „nur mit Kühlfunktion"). Gefiltert: `Quelle` enthält „Luft" · `P_N` `5..12` · `VL max` `>=60`; das Popover ist an **Quelle** offen → **„7 von 51 Sätzen"** | `Tab_WP` (Projekt 1008), `Tab_WP_STAMM` + `Tab_Kenndaten_STAMM` (VL min/max und COP A2/W35 aus den Kennlinien) |
 | **M3 — PV-Module (Verwaltung, 20 749 Zeilen)** | derselbe Aufbau wie M1 mit **sieben** Parameterspalten. Das Popover ist hier an einer **Zahlenspalte** offen (`P_STC` mit `500..600`) — die Bedienung, zu der **W14a‑E‑10‑Q1** gestellt ist. Gefiltert zusätzlich: `Hersteller` enthält „LONGi" · `η` `>=21,5` → **„15 von 20 749 Sätzen"** | `VDI-3805-Daten/PV/CEC Modules.csv` (20 743 Datenzeilen, 258 Hersteller, 5 Technologien) plus die 6 Sätze aus `Tab_PV_STAMM` |
 
 **Geprüft am Bild, nicht am Gefühl** — Chromium, `1 366 × 768` und `1 920 × 1 080`, je Reiter
@@ -1083,7 +1087,7 @@ unverändert der größte Posten.**
 | Schritt | Inhalt |
 |---|---|
 | S2.1 | Dieselben Profile in den Projektdialogen — Heizkessel, BHKW, Pufferspeicher, PV, Stromspeicher, Solarkollektoren, **Wärmepumpe**: Katalogliste über die ganze Breite, Suchzeile unmittelbar darüber (#76). **Umgesetzt** in `e3c4a51` (sechs Dialoge) und `5370b5a` (Wärmepumpe). Die zwei Filterklapplisten je Hülle sind gefallen — Q5 |
-| S2.2 | **Wärmepumpe:** Die elf Bedienelemente des `WaermepumpenKatalogDialog` fallen in die Spalten — 7 Klapplisten (Hersteller, Auslegung, Quelle/`Typ`, Regelung, Bauart, Aufstellung, Zuheizung) werden Textspalten, die 4 Zahlenfelder (VL min/max, P_N min/max) werden **zwei** Zahlenspalten mit je einem Feld. Damit ist der Dialog wie M1 und M3 gebaut — der Kern des Entscheids. **Umgesetzt** in `5370b5a`: neun Spalten, **vier** der elf werden KEINE Spalte (Bauart 45/51 leer, Auslegung ist dieselbe Aussage wie „Kühlen", Regelung und Aufstellung stehen im Kenndatenblock — alles gemessen, siehe 9.2). Dabei fällt auch der Knopf „Modul-Katalog…" im `WaermepumpeStammDialog`: Er zeigte danach dieselbe Liste, die dahinter schon steht |
+| S2.2 | **Wärmepumpe:** Die elf Bedienelemente des `WaermepumpenKatalogDialog` fallen in die Spalten — 7 Klapplisten (Hersteller, Auslegung, Quelle/`Typ`, Regelung, Bauart, Aufstellung, Zuheizung) werden Textspalten, die 4 Zahlenfelder (VL min/max, P_N min/max) werden **zwei** Zahlenspalten mit je einem Feld. Damit ist der Dialog wie M1 und M3 gebaut — der Kern des Entscheids. **Umgesetzt** in `5370b5a`: neun Spalten, **vier** der elf werden KEINE Spalte (Bauart 45/51 leer, Auslegung ist dieselbe Aussage wie „Kühlleistung > 0", Regelung und Aufstellung stehen im Kenndatenblock — alles gemessen, siehe 9.2). Dabei fällt auch der Knopf „Modul-Katalog…" im `WaermepumpeStammDialog`: Er zeigte danach dieselbe Liste, die dahinter schon steht |
 | S2.3 | Spalte **„im Projekt verwendet"** (eine Zählabfrage für die ganze Liste, nicht je Zeile) — Q12. **Umgesetzt** in `84bd1a0` als `Katalogverwendung.Stempeln` — **aus der lebenden Projektliste** statt aus einer Abfrage; damit entsteht keine neue SQL und die Spalte stimmt auch nach der ersten Übernahme (9.1 Q12) |
 | S2.4 | Der Assistent (Seiten 4, 5, 7) erbt das Schema über dieselben Komponenten. **Umgesetzt** in `df07e18` — und zwar ohne eine Zeile Anwendungscode: Die Seitentabelle nennt seit iU9‑W16a.5 die Komponenten selbst. Drei Wächterfälle halten das fest |
 | S2.5 | `Katalogfilterstand` je Katalog über die Sitzung, gemeinsam für Verwaltung und Projektdialog (Q2 aus Kapitel 8) — jetzt mit Sortierspalte und ‑richtung. **Umgesetzt** in `84bd1a0` als `EPOS.Kern/Allgemein/Katalog/Katalogfilterregister.cs` (kein `static` in einer Razor-Komponente); `Filterstandvorgabe` ist der benannte Rückweg je Dialog |
@@ -1302,12 +1306,12 @@ Stammsätze) und stehen als Prüffall in `EPOS.Kern.Tests/KatalogspaltenfilterTe
 | VL min | **Zahlenspalte** | `Min(Vorlauf)` je `ID_WP` aus `Tab_Kenndaten_STAMM` |
 | VL max | **Zahlenspalte** | `Max(Vorlauf)` je `ID_WP`; `>=60` trifft 18 |
 | **Bauart** | *keine Spalte* | **45 von 51 Sätzen leer** (5 Split, 1 Monoblock). Eine Spalte, die fast immer leer ist, kostet Breite und trägt nichts — sie steht im Kenndatenblock |
-| **Auslegung** | *keine Spalte* | „Heizen"/„Heizen/Kühlen" ist **gerechnet** aus `Kuehlleistung > 0` — und genau das sagt die Spalte „Kühlen" schon. Die zwei Mengen sind Satz für Satz gleich (**15 von 51**) |
+| **Auslegung** | *keine Spalte* | „Heizen"/„Heizen/Kühlen" ist **gerechnet** aus `Kuehlleistung > 0` — und genau das sagt die Zahlenspalte „Kühlleistung [kW]" mit dem Trichter `>0` schon. Die zwei Mengen sind Satz für Satz gleich (**15 von 51**) |
 | **Regelung** | *keine Spalte* | im Kenndatenblock; der Planer sucht nicht danach |
 | **Aufstellung** | *keine Spalte* | ebenso |
 
-Dazu die zwei Spalten, die der Katalog schon in der Verwaltung führt (Modell, Kennzeichen
-Kühlen) und der abgeleitete **COP bei A2/W35** — zusammen **neun**. Der Filterstand des
+Dazu die zwei Spalten, die der Katalog schon in der Verwaltung führt (Modell, Kühlleistung
+als Zahl mit Trichter) und der abgeleitete **COP bei A2/W35** — zusammen **neun**. Der Filterstand des
 Mockups M2 (Quelle „Luft" **und** P_N `5..12` **und** VL max `>=60`) trifft damit **7 von
 51** — dieselbe Zahl wie über die elf Bedienelemente des Vorläufers; der Vergleich beider
 Wege steht als Prüffall
@@ -1361,7 +1365,7 @@ Gemessen am 07.09.2026 gegen `Referenzlaeufe/Kenndaten_Test.sqlite` und
 | Hersteller im Wärmepumpenkatalog | 5 (Bosch 19, Wolf 15, STIEBEL ELTRON 9, „test" 5, MAX WEISHAUPT 3) |
 | `Tab_WP_STAMM.Bauart` gepflegt | **6 von 51** (Split 5, Monoblock 1) — deshalb im Mockup keine Spalte |
 | `Tab_WP_STAMM.Heizung` (el. Zuheizung) > 0 | **37 von 51**; Werte 0, 5, 6, 8, 9, 10, 12 kW |
-| `Tab_WP_STAMM.Kuehlleistung` > 0 → Spalte „Kühlen = ja" | **15 von 51** (18 Sätze stehen auf 0, 18 sind leer) |
+| `Tab_WP_STAMM.Kuehlleistung` > 0 → Trichter `>0` der Spalte „Kühlleistung [kW]" (Schalter „nur mit Kühlfunktion") | **15 von 51** (18 Sätze stehen auf 0, 18 sind leer) |
 | VL min aus `Tab_Kenndaten_STAMM` | nur **zwei** Werte: 25 °C (10 Sätze), 35 °C (40), einer ohne Kennlinie |
 | `Tab_Heizkessel_STAMM.Brennwert = 1` | **6 von 63** — und **keiner** davon ist unter den 15 Treffern des Mockups (Befund D‑1) |
 | `Tab_Heizkessel_STAMM.Vorlauf` / `.Ruecklauf` gepflegt | **0 von 63** / **0 von 63** — deshalb keine Spalten |
@@ -1410,7 +1414,7 @@ nachrechenbar):
 | **M2 `COP A2/W35`** | `COP` aus `Tab_Kenndaten_STAMM` bei `Vorlauf = 35` und `Temperatur = 2`; leer, wo der Punkt fehlt (Halbgeviertstrich, nicht 0 — W6‑E‑1) |
 | **M2 `VL min`** | `MIN(Vorlauf)` je `ID_WP` über `Tab_Kenndaten_STAMM` |
 | **M2 `Zuheizung`** | `Tab_WP_STAMM.Heizung` [kW] |
-| **M2 `Kühlen`** | `Tab_WP_STAMM.Kuehlleistung > 0` → „ja"/„nein"; leer zählt als „nein" |
+| **M2 `Kühlleistung [kW]`** | `Tab_WP_STAMM.Kuehlleistung` als Zahl; leer bleibt leer (Halbgeviertstrich). Der Schalter „nur mit Kühlfunktion" setzt den Trichter auf `>0` (`AUSDRUCK_MIT_KUEHLUNG`); leer und 0 fallen damit heraus |
 | **M1 `Brennwert`** | `Tab_Heizkessel_STAMM.Brennwert` → „ja"/„nein" |
 | **M3 `η [%]`** | gerechnet: `STC / A_c / 10`. Die CEC-Liste führt keine Wirkungsgradspalte; `Tab_PV_STAMM.Wirkungsgrad` entsteht beim Import genauso |
 | **M3 `A_Modul`** | die CEC-Spalte `A_c` [m²]; in `Tab_PV_STAMM` `Laenge × Breite`. `Length` und `Width` sind in der CEC-Liste **leer** — die Fläche kommt dort nur aus `A_c` |

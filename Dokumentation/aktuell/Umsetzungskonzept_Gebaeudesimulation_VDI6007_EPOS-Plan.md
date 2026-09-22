@@ -22,7 +22,7 @@ Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
 Grundlage ist das Konzept
 [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
-(Rev. 1 mit Nachtrag 1) und die dort getroffenen Entscheide **E1** (Stundenmodell ist die Vorgabe
+(Rev. 3 mit Nachtrag 1) und die dort getroffenen Entscheide **E1** (Stundenmodell ist die Vorgabe
 für alle Gebäude), **E2** (Bestandsgewichte im Stundenmodell gestrichen, Dialog auf U·A),
 **E3** (xBIM als unverändertes NuGet-Paket), **E4** (GB als eigener Einfrierschritt vor G1),
 **E5** (Klimabasis sind die vorliegenden PVGIS-TMY-Reihen), **E7/E8** (Einzonenmodell zuerst, Skalierung bleibt), **E9** (Import **und**
@@ -68,12 +68,15 @@ korrigiert, ist je Stelle benannt (1.10).
    die Wärme eines Gebäudes entsteht; `GebaeudeBedarfCtrl.Rechnen`
    (`EPOS.Kern/Controller/GebaeudeBedarfCtrl.cs:94`) ruft dieselben zwei Methoden (`:112`, `:117`)
    und trägt die Weiche damit automatisch mit. Vor der Weiche steht ein **modellfreier
-   Vorbereitungsschritt** (Klimakalender, Bewohner aus der Nutzfläche, `VerbrauchNeu`, die beiden
-   Flächen der Skalierung nach E8); hinter ihr stehen **zwei getrennte Module**:
+   Vorbereitungsschritt** (Klimakalender in zwei Teilen, `VerbrauchNeu`, die beiden Flächen der
+   Skalierung nach E8; sein Vertrag steht an einer Stelle, Softwarearchitektur 1.3 — F-Ü1);
+   hinter ihr stehen **zwei getrennte Module**:
    `Simulation/Altweg/` (die Tagesbilanz, Zeichen für Zeichen verschoben, ohne neue Funktion) und
    `Simulation/Gebaeude/` (VDI 6007), und keines ruft das andere. Die
-   Verbrauchs-Rückrechnung ruft **dasselbe** Modul ein zweites Mal, statt an einer zweiten Stelle
-   zu verzweigen — damit ist der frühere zweite Verzweigungspunkt gegenstandslos (A16). Der Puffer
+   Verbrauchs-Rückrechnung nimmt `VerbrauchAltKwh` aus **demselben** Modul — das VDI-Modul liefert
+   ihn aus einem Lauf, den Altweg ruft die Fassade wie im Bestand zweimal (F-Ü2) —, statt an einer
+   zweiten Stelle zu verzweigen; damit ist der frühere zweite Verzweigungspunkt gegenstandslos
+   (A16). Der Puffer
    (`:188`, Watt) und die eine Umrechnung nach kW (`:222`) bleiben unberührt. Der Altweg ist der
    **eingefrorene Bestandsweg des Übergangs** (E23, E26): Er steht neben dem VDI-Weg, samt Weiche,
    Schalter und Spalten, bekommt keine neue Funktion und fällt mit der Stufe **GA — Altweg
@@ -252,7 +255,7 @@ ganzen Bestand keinen Leser haben (Befund X 2.3). Die drei Spitzenkennzahlen des
 
 | # | Stufe | Fundstelle | Was das Stundenmodell davon braucht |
 |---|---|---|---|
-| 1 | `KlimakalenderLesen(int)` füllt sieben Tagesreihen `Sol_N/_O/_S/_w`, `A_Temp`, `WE`, `TagTyp_W`, `TagTyp_NW` | `SimulationWaermebedarf.cs:513`, `:519-526` | **nur `WE[365]`** (`:524`) als Wochenendmaske; die Tagesverteilung entfällt |
+| 1 | `KlimakalenderLesen(int)` füllt sieben Tagesreihen `Sol_N/_O/_S/_w`, `A_Temp`, `WE`, `TagTyp_W`, `TagTyp_NW` | `SimulationWaermebedarf.cs:513`, `:519-526` | **nichts als Rechengröße**: die Wochenendmaske `WE[365]` bildet der Vorbereitungsschritt aus dem Ortszeit-Kalender (F-Ü8), `WE` aus `:524` ist die Probe dagegen; die Tagesverteilung entfällt |
 | 2 | `Stundentemperatur_aus_DB(int)` ruft `ReadOrtszeit` und nimmt **nur** `Außen_Temp` | `:912`, `:915`, `:919` | die ganze Zeilenliste ist zu behalten statt zu verwerfen (`:914-920`) — ein Feld `_solarOrtszeit` |
 | 3 | `SolardatenCtrl.ReadOrtszeit(idKlimaregion, idProjekt)` liest 8 760 Zeilen, merkt die UTC-Herkunft je Zeile und sortiert auf Ortszeit um | `EPOS.Kern/Controller/SolardatenCtrl.cs:156`, `:160-162`, `:174-175`, `:181`, `:195-199` | `Außen_Temp`, `Globalstrahlung`, `Direktstrahlung`, `Diffusstrahlung`, `TagUtc`, `StundeUtc` |
 | 4 | `SolarZeitbasis` — datenbankfrei, EU-Regel fest verdrahtet, kein `TimeZoneInfo` | `EPOS.Kern/Allgemein/Simulation/SolarZeitbasis.cs:36`, `:135` | nichts Neues: Sonnenstand auf UTC, Bilanz auf Ortszeit — wie `SimulationPV` und `SimulationSolarthermie` |
@@ -292,11 +295,13 @@ innerhalb ± 5 W/m². Das trägt Q20.
   der aktiven Spotpreisreihe (`:228-232`, sonst `DbWerte.SOLAR_REFERENZJAHR_STANDARD`, `:242`) und
   entscheidet heute **ausschließlich** über die zwei Sommerzeit-Umstelltage. `Tab_Klimadaten.WE`
   dagegen entsteht im Import aus `datum.DayOfWeek` der TMY-Zeitmarke
-  (`KlimaImportAblauf.cs:354`) — also aus dem PVGIS-Jahr 2020. Der in Konzept 4.4 verlangte Test
-  (Maske gegen `Tab_Klimadaten.WE`) ist damit **nicht führbar**, sobald ein Projekt eine Preisreihe
-  ≠ 2020 führt. Das Stundenmodell nimmt deshalb `WE[365]` aus `KlimakalenderLesen:524` — dieselbe
-  Quelle wie der Bestand; dann rechnen beide Wege denselben Kalender und der Vergleich im
-  Bedarfsdialog (Konzept 8.2) bleibt gültig. Frage U7, Konzeptkorrektur 1.9.
+  (`KlimaImportAblauf.cs:354`) — also aus dem PVGIS-Jahr 2020. Die Empfehlung stellt die Maske auf
+  den **Ortszeit-Kalender** (F-Ü8, Konzept 4.4): Der Vorbereitungsschritt bildet `WE[365]` aus dem
+  Wochentag des 1. Januar des Referenzjahres, und eine **Probe** hält die Maske gegen
+  `Tab_Klimadaten.WE` derselben Klimaregion — weicht sie ab, ist das ein Befund der Probe, kein
+  Rechenfehler; führt ein Projekt eine Preisreihe ≠ 2020, benennt die Probe genau das. Der
+  Bestandsweg liest `WE` weiter aus `KlimakalenderLesen:524`. Frage U7 bleibt offen (Kapitel 5;
+  Register Kapitel 0, fällig vor G1), Konzeptkorrektur 1.10.
 
 ### 1.3 Stufe G0 — der Löser im Kern, ohne jede Wirkung
 
@@ -336,7 +341,8 @@ Lasten `PhiRadAW`/`PhiRadIW`/`PhiConv` [W], `HeizleistungMaxW` (`NaN` = unbegren
 `HeizungStrahlungsanteil`; `Stundenergebnis` trägt `HeizleistungW` und `KuehlleistungW` (Blockmittel,
 beide ≥ 0), `ThetaAirMittel`, `ThetaOpMittel` sowie die beiden Endzustände `ThetaMAwEnde`,
 `ThetaMIwEnde`. Zustand je Instanz sind zwei `double` — mehr nicht. `Zuruecksetzen` ist keine
-Bequemlichkeit, sondern Bedingung: Verbrauchsgebäude werden **zweimal** gerechnet (1.5).
+Bequemlichkeit, sondern Bedingung: Der Löser läuft je Lauf und je Auskunft neu, und der
+Bedarfsdialog holt zwei Auskünfte nacheinander (1.5, 2.7).
 
 **`Bauteilreduktion.cs`** (Kettenmatrix, `System.Numerics.Complex`) ist hier nur als leerer Platz
 vorgemerkt; sie kommt mit G3.
@@ -352,7 +358,12 @@ die Grenze `E = 0 ab Z > 170` aus Blatt 1, 6.8.
 **G0 ändert keine einzige Zeile des Bestandswegs.** Es gibt keinen Aufrufer; der Referenzlauf kann
 sich nicht bewegen. Abnahme: Kern-Filter grün; **elf der zwölf Normtestfälle im Band nach E10**,
 Testfall 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung), bis der eigene Knoten der Kühldecke ihn löst
-— mit der Einschränkung aus 1.8.
+— mit der Einschränkung aus 1.8. **Dazu misst G0 die Rechenzeit neu** (F-S6): je Gebäude und Jahr,
+mit Kappung an θ_kuehl, gesetztem Φ_h,max und Φ_c,max, getrennt ohne und mit Kühlung
+([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 10.5) — die Planungsgröße
+des Konzepts (4.8/5.13) ist eine Prototypmessung. Und das **Abnahmekriterium (4) aus Konzept 10.4**
+wird in G0 aus der wiederholten Messung mit dem Auslieferungsweg (R_si-Abzug, F_W = 0,9,
+Hay-Davies, Ortszeit, a_kon = 0,09) neu bestimmt; bis dahin ist es informativ.
 
 ### 1.4 Stufe G1 — die vier neuen Kernklassen
 
@@ -363,7 +374,7 @@ Randbedingungen:
 internal static GebaeudeModellEingang Bauen(
     ProjektGebaeudeModel gebaeude,
     IReadOnlyList<SolardatenModel> solarOrtszeit,  // aus ReadOrtszeit, 8760 Zeilen
-    bool[] wochenende,                             // WE[365] aus KlimakalenderLesen:524
+    bool[] wochenende,                             // WE[365] aus Klimakalender.Gemeinsam (F-Ü3, F-Ü8)
     double laengengrad, double breitengrad);
 ```
 
@@ -522,18 +533,20 @@ Daraus zwei harte Folgen:
    **und alle Gebäude** trägt und der Lauf sonst nicht byte-gleich ist (Befund X 3.4). **Der Löser
    muss trotzdem zustandsfrei mehrfach hintereinander laufen dürfen** — der Bedarfsdialog holt zwei
    Auskünfte nacheinander (2.7): `Zonenmodell2K.Zuruecksetzen` ist Pflicht, die Rechenprobe „zwei
-   Läufe byte-gleich" die Gegenprobe; bei rund 5 ms je Lauf (Konzept 4.8/5.13) kostet sie nichts.
+   Läufe byte-gleich" die Gegenprobe; bei rund 5 ms je Lauf (Prototypmessung Konzept 4.8/5.13,
+   Planungsgröße in G0 neu zu messen, F-S6) kostet sie nichts.
 2. **`VerbrauchAlt = 0` ist heute ungeschützt** (`:650` → Division durch null → `Infinity`).
    Konzept 4.8 verlangt hier eine benannte Prüfung; sie gehört in das **VDI-Modul** (im Altweg
    bleibt es bei einer Warnung, damit die Basis unberührt bleibt — Q18).
 
 ### 1.6 Stufe G1 — Gebäudespalten-Schritt M3, vollständig
 
-> **Papiername statt Schrittnummer (F-S1, 17.09.2026):** Dieses Papier nennt den Schritt bei seinem **Papiernamen M3** — den Gebäudespalten-Schritt für `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`; die Klimaspalten sind **M4** (1.7). Feste Schrittnummern stehen hier nicht mehr: **Die tatsächliche Nummer vergibt der Schritt bei seiner Beauftragung**, und der Zielstand wird dann an `SchemaStand.Zielversion` abgelesen. Beim Schreiben dieses Papiers (17.09.2026) steht er auf **84** (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:155`), die nächste freie Nummer ist **85**. **E19 (16.09.2026):** derselbe Schritt benennt `Wohnflaeche` in beiden Gebäudetabellen in `Nutzflaeche` um, und der Sichtneubau liefert die Spalte unter dem neuen Namen (Konzept N1.24). Die Softwarearchitektur führt ihn unter demselben Namen M3.
+> **Papiername statt Schrittnummer (F-S1, 17.09.2026):** Dieses Papier nennt den Schritt bei seinem **Papiernamen M3** — den Gebäudespalten-Schritt für `Tab_Gebaeude` und `Tab_Gebaeude_STAMM`; die Klimaspalten sind **M4** (1.7). Feste Schrittnummern stehen hier nicht mehr: **Die tatsächliche Nummer vergibt der Schritt bei seiner Beauftragung**, und der Zielstand wird dann an `SchemaStand.Zielversion` abgelesen. Am Arbeitsbaum steht er auf **100** (Stand 22.09.2026, `EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`), die nächste freie Nummer ist **101**; der Klimaspalten-Schritt M4 trägt seine Nummer bereits (95, 1.7). **E19 (16.09.2026):** derselbe Schritt benennt `Wohnflaeche` in beiden Gebäudetabellen in `Nutzflaeche` um, und der Sichtneubau liefert die Spalte unter dem neuen Namen (Konzept N1.24). Die Softwarearchitektur führt ihn unter demselben Namen M3.
 
 `SchemaMigration` liegt in der **Schale**
 (`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs`); der Kern kennt nur die Zielzahl
-`SchemaStand.Zielversion` (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:155`). Das Rezept steht
+`SchemaStand.Zielversion` (`EPOS.Kern/Allgemein/Update/SchemaStand.cs:341`, Stand 22.09.2026). Das
+Rezept steht
 im Quelltext selbst (`SchemaMigration.cs:3784-3801`): Nummer ab 62 lückenlos aufsteigend; der
 Schrittkörper benutzt **ausschließlich** `SqliteDdl` (`:4328`), `SqliteSpalteAnlegen` (`:4467`),
 `SqliteSpalteVorhanden` (`:4444`) und `SqliteTabelleVorhanden` (`:4427`) — nie `Ddl`/`NonQuery`, die
@@ -760,15 +773,18 @@ dateien += Vektor(zielOrdner, "operative_temperatur_" + n + ".csv", geb.Operativ
 dateien += Vektor(zielOrdner, "kuehlbedarf_"          + n + ".csv", geb.KuehlbedarfKwh,      summen);
 ```
 
-**Die drei neuen Reihen werden in kWh exportiert** (Einheitenregel 1 des Kerns: Zeitreihen führen
-kWh); die Watt-Form bleibt intern. Nur die eingefrorenen Bestandsdateien behalten ihre Einheit —
-siehe die Inkonsistenz oben.
+**`kuehlbedarf_<n>.csv` führt kWh** (Einheitenregel 1 des Kerns: Energiezeitreihen führen kWh);
+**`raumtemperatur_<n>.csv` und `operative_temperatur_<n>.csv` führen °C** — Temperaturen sind
+keine Energiemengen (F-S4; [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+8.1). Die Watt-Form der Heizlast bleibt intern. Nur die eingefrorenen Bestandsdateien behalten
+ihre Einheit — siehe die Inkonsistenz oben.
 
 Der Index `n` ist der Schleifenindex des Gebäudes — Vorbild `"quellspeicher_" + kennung + "_soc.csv"`
 (`:99`). Die Skalare folgen dem Muster `Erdreich[i].…` (`:256-271`) mit Präfix `Geb[i].`:
-`ID_Gebaeude`, `Modell`, `SpitzeKw`, `SpitzeTagesmittelKw`, `Spitze95Kw`, `KuehlenergieMwh`,
-`StundenMitKuehlbedarf`, `MittlereRaumtemperaturHeizzeit`, `HeizwaermeMwh` — Einheit im Namen,
-Jahressummen in MWh (Einheitenregel 2).
+`ID_Gebaeude`, `Modell`, `JahresheizwaermeMwh`, `SpitzeKw`, `SpitzeTagesmittelKw`, `Spitze95Kw`,
+`KuehlenergieMwh`, `StundenMitKuehlbedarf`, `MittlereRaumtemperaturHeizzeit` und
+`Ueberhitzungsstunden` — die acht Kennzahlen aus 1.4 (F-S4), Einheit im Namen, Jahressummen in
+MWh (Einheitenregel 2).
 
 **Warum der bedingte Block Bedingung ist und nicht Bequemlichkeit.** `Vergleich`
 (`Referenzlauf/Vergleich.cs:41`) kennt nur einen **Schlüssel**-Ausschluss innerhalb einer Datei
@@ -780,8 +796,11 @@ schärfen (1.10). `EPOS.Referenzlauf` und das Windows-Werkzeug teilen sich dabei
 von `Ergebnisexport.cs` und `Vergleich.cs` (`EPOS.Referenzlauf.csproj:42-51`, `<Compile Include…
 Link…>`): eine Änderung wirkt auf beiden Wegen.
 
-**Die Einfrierschritte** (E23, 16.09.2026: **GB** und **G1 + G2** in diesem Papier, **G6d** später
-im Mehrzonenmodell — eine Stufe „Altweg entfernen" gibt es nicht).
+**Die Einfrierschritte.** In diesem Papier frieren **GB** und **G1 + G2** neu ein; die weiteren
+Anlässe der Kette stehen in den Schwesterpapieren — **G6d** im Mehrzonenmodell, **KU2** im
+Kühlkonzept, **AK1–AK3** in der Anlagenkopplung —, und **GA — Altweg ablösen** schließt sie ab
+(E26; Zeitpunkt offen, Q24). Dazu gilt als eigener, begründeter Anlass eine **ergebniswirksame
+Fehlerbehebung im Altweg nach der Verschiebung** (Softwarearchitektur 2.8, Systementwurf 8.3).
 
 - **GB** (Stufe vor G1, E4): `_prevRoomTemp` wird von `static` (`EPOS.Kern/Allgemein/BhkwPlan.cs:51`,
   gesetzt `:433`, zurückgesetzt nur über `ResetState()` `:54`) auf Instanzzustand umgestellt — heute
@@ -804,17 +823,21 @@ im Mehrzonenmodell — eine Stufe „Altweg entfernen" gibt es nicht).
   [`Referenzlaeufe/LIESMICH.md`](../../Referenzlaeufe/LIESMICH.md) (nach `:100-121`) und im
   Abschnitt „Regressionsnetz" der [`CLAUDE.md`](../../CLAUDE.md).
 - **G1 + G2:** alle dreizehn Referenzprojekte rechnen stündlich (+7 bis +33 % Jahresheizwärme,
-  Konzept 5.5), dazu drei neue CSV je VDI-Gebäude. Basis vollständig neu; die GB-Basis bleibt als
-  **letzte reine Bestandsbasis**, gegen die der ausdrücklich gewählte Tagesbilanz-Weg
-  **dauerhaft** regressionsgeprüft wird (E23).
+  Konzept 5.5), dazu drei neue CSV je VDI-Gebäude. Basis vollständig neu — und **ein
+  Referenzprojekt mit `Gebaeude_Modell = TAGESBILANZ` wird darin mit eingefroren** (F-Ü7;
+  Empfehlung zu A15, A15 bleibt offen). Die GB-Basis ist bis zu diesem Merge die aktuelle Basis
+  und wandert danach mit ihrem Protokoll nach `Dokumentation/ueberholt/Referenzbasen/`, wie jede
+  Basis vor ihr; **einen zweiten Basisordner gibt es nicht**
+  ([Systementwurf](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.4).
 - **G6d** (Mehrzonenmodell, [`Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md`](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) 9):
   das Zonenprojekt der Testdatenbank und die Regel „gesäte Zonendaten"; außerhalb dieses Papiers,
   hier nur genannt, damit die Einfrierkette vollständig ist.
 
-**Eine Stufe „Altweg entfernen" friert nichts ein, weil es sie nicht gibt** (E23, 16.09.2026). Das
-Referenzprojekt auf dem Altweg (A15) bleibt dauerhaft auf dem Altweg, der Rückweg-Test bleibt
-dauerhaft in Betrieb, die vier Altweg-Spalten bleiben im Schema
-([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md)).
+**GA — Altweg ablösen ist ein eigener Einfrierschritt** (E26; Zeitpunkt offen, Q24). Bis dahin
+stehen das Referenzprojekt auf dem Altweg (A15) und der Rückweg-Test in **jeder** Basis, und die
+vier Altweg-Spalten bleiben im Schema ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md)). Mit GA
+geht das Referenzprojekt auf VDI 6007 über, der Rückweg-Test wird eingestellt, die Altweg-Spalten
+fallen, und die Basis wird neu eingefroren — Umfang: Löschliste in Kapitel 6.
 
 **Der erste Schritt von G1 friert nichts ein: er muss byte-gleich sein.** Die Verschiebung des
 Altwegs nach `Simulation/Altweg/` samt Fassade und Vorbereitungsschritt ist ergebnisneutral und
@@ -834,21 +857,26 @@ Plausibilitätsprüfungen werfen benannte Fehler.
 (`EPOS.Kern.Tests/GebaeudeBedarfCtrlTests.cs:30-35`; die Sammlung ist die **eine** serielle,
 definiert in `EPOS.Kern.Tests/TestDatenbank.cs:29`, Wächter `DiensteSammlungTests`; Kulturpinnung
 über `Kulturvorrichtung.cs:29`, alle vier Werte auf `de-DE`, `:38-50`): der Bedarfsdialog liefert
-für ein umgestelltes Gebäude dieselbe Reihe wie der Lauf; Schemaschritt 77 auf der Arbeitskopie
-(Muster `EPOS.Kern.Tests/Migration74Tests.cs:34-40` — Teil 1 prüft Texte ohne Datenbank, Teil 2 den
-Umbau); der Namensleser hält alle 58 Bestandsfelder; **die Katalogkopie hält NULL**; die
-Ost/West-Summe ist konsistent; der Mischfall Gebäude plus Ganglinie (Projekt 1041) summiert richtig.
-Dazu **der Rückweg-Test** (E1/N1.1): Er läuft auf einer Arbeitskopie mit
-`Gebaeude_Modell = 'TAGESBILANZ'` gegen die GB-Basis und **bleibt dauerhaft** (E23, 16.09.2026),
-zusammen mit dem eigenen Modus des Referenzlaufs, der ihn trägt — er ist der laufende Nachweis,
-dass der Bestandsweg unverändert rechnet.
+für ein umgestelltes Gebäude dieselbe Reihe wie der Lauf; der Gebäudespalten-Schritt M3 auf der
+Arbeitskopie (Muster `EPOS.Kern.Tests/Migration74Tests.cs:34-40` — Teil 1 prüft Texte ohne
+Datenbank, Teil 2 den Umbau); der Namensleser hält alle 58 Bestandsfelder; **die Katalogkopie hält
+NULL**; die Ost/West-Summe ist konsistent; der Mischfall Gebäude plus Ganglinie (Projekt 1041)
+summiert richtig. Dazu **der Rückweg-Test** (E1/N1.1) in der Fassung des
+[Systementwurfs](Systementwurf_Gebaeudesimulation_EPOS-Plan.md) 8.4 (F-Ü7): **Bis zum Merge
+G1 + G2** läuft er auf einer gitignorierten Arbeitskopie mit `Gebaeude_Modell = 'TAGESBILANZ'`
+gegen die GB-Basis, getragen von einem eigenen Modus des Referenzlaufs; **ab dem Einfrieren von
+G1 + G2** ist sein Gegenstand allein das **eine Referenzprojekt auf dem Altweg in der jeweils
+aktuellen Basis** — nicht jedes Altweg-Gebäude —, und er **endet mit der Stufe GA**. Bis dahin ist
+er der laufende Nachweis, dass der Bestandsweg unverändert rechnet.
 
 **`TestDatenbank` zieht das Schema selbst nach** (`:197-241`, Spalten über `SpalteSicherstellen`,
 Tabellen über die Kern-Schemaklasse `:224-239`, zuletzt
-`UPDATE Tab_Applikation SET SchemaVersion = …` `:241`). **Schritt 77 und der Tab_Solar-Schritt
-müssen hier eingetragen werden**, sonst laufen die Datenbankfälle auf einer Kopie ohne die neuen
-Spalten; die Sicht wird über `DataRepository.ExecuteNonQuery(GebaeudeSchema.SQL_VIEW_DROP)` **und
-danach** `…SQL_VIEW_NEU` nachgezogen — dieselbe Zweierfolge wie in Schritt 77, nach dem Muster der
+`UPDATE Tab_Applikation SET SchemaVersion = …` `:241`). **Der Gebäudespalten-Schritt M3 muss hier
+eingetragen werden** — der Klimaspalten-Schritt M4 steht dort bereits als Schritt 95
+(`TestDatenbank.cs:350-355`, Stand 22.09.2026) —, sonst laufen die Datenbankfälle auf einer Kopie
+ohne die neuen Spalten; die Sicht wird über
+`DataRepository.ExecuteNonQuery(GebaeudeSchema.SQL_VIEW_DROP)` **und danach** `…SQL_VIEW_NEU`
+nachgezogen — dieselbe Zweierfolge wie in M3, nach dem Muster der
 `NutzungsdauerSchema.Anweisungen`-Schleife (`:224-225`). Ein einzelnes `CREATE VIEW` scheitert auf
 der Kopie, weil die Sicht dort besteht, und der Fehler verschwindet im `catch`
 (`TestDatenbank.cs:243-246`, `Console.WriteLine`).
@@ -862,21 +890,32 @@ der Kopie, weil die Sicht dort besteht, und der Fehler verschwindet im `catch`
 | `RechenrandTests` (`EPOS.Kern.Tests/RechenrandTests.cs:29`) | prüft `Rechenrand` selbst (`EPOS.Kern/Allgemein/Simulation/Rechenrand.cs:78`, `:95`) | **greift nicht automatisch**, aber die Regel gilt: Kappung an `Maximaleraumtemperatur`, Grenze `Heizleistung_Max` und die Bisektion des Umschaltzeitpunkts sind Betriebsschwellen und nehmen `SchwelleErreicht`, nicht `>=` |
 | `ParallelitaetWacheTests` | vier plattformfreie Projekte, sieben Muster (`:75-84`) | **greift.** Der Löser ist einfädig; ein `Parallel.For` über die Gebäude widerspräche dem Determinismusversprechen. Nicht tun |
 
-**Ein fünfter Wächter kommt hinzu: die Trennung der Module** (E20, 16.09.2026). Vorschlag:
-`EPOS.Kern.Tests/RechenwegTrennungWacheTests.cs` nach dem Muster von
-`DoubleWacheTests.Der_Waechter_sieht_den_Bestand_und_jede_Ausnahme_existiert` (`:137`) — er liest
-die `.cs`-Dateien unter `EPOS.Kern/Allgemein/Simulation/Gebaeude/` und hält drei Sätze fest:
+**Ein fünfter Wächter kommt hinzu: die `Modultrennungswache`** (E20, 16.09.2026; F-Ü4). Ein Name
+in allen Papieren — Klasse `Modultrennungswache`, Test
+`EPOS.Kern.Tests/ModultrennungswacheTests.cs` —, Bauform ein reiner Textwächter nach dem Muster von
+`DoubleWacheTests.Der_Waechter_sieht_den_Bestand_und_jede_Ausnahme_existiert` (`:137`): Er liest
+die `.cs`-Dateien beider Ordner und hält vier Sätze fest:
 
-1. **Kein Bezeichner aus `Altweg/`** erscheint darin (weder der Namensraum noch eine der
-   verschobenen Methoden `Berechnung_Gebaeude_Tageswerte`, `DBTagesVeteilung`, `StdWerte`,
-   `SolareGewinneC`, `SpezWaermeverlusteC`, `TaeglHeizlastWG`).
-2. **Der Ordner `Altweg/` existiert und ist nicht leer** — sonst prüft der Wächter nichts und ist
-   still grün (dieselbe Gegenprobe, die `DoubleWacheTests` für seine Ausnahmeliste führt).
-3. **Kein Bezeichner aus `Gebaeude/`** erscheint in `Altweg/` — der Altweg bekommt keine neue
-   Funktion (E20).
+1. **Keine Datei unter `EPOS.Kern/Allgemein/Simulation/Gebaeude/` nennt einen Bezeichner aus
+   `Altweg/` oder eine Altweg-Datenquelle** — weder den Namensraum noch eine der verschobenen
+   Methoden (`Berechnung_Gebaeude_Tageswerte`, `DBTagesVeteilung`, `StdWerte`, `SolareGewinneC`,
+   `SpezWaermeverlusteC`, `TaeglHeizlastWG`) noch `Sol_N`/`Sol_O`/`Sol_S`/`Sol_W`, `A_Temp`,
+   `TagTyp_W`/`TagTyp_NW`, `Tab_DBTagV`, `Abfrage_Tagverteilung`, `Fensterflaeche_Ost_West`, `Typ`
+   als Verteilungsschlüssel oder `Klimakalender.Altweg` (1.5).
+2. **Keine Datei unter `Altweg/` nennt einen Bezeichner aus `Gebaeude/`** — der Altweg bekommt
+   keine neue Funktion (E20).
+3. **Die Kältefassade `SimulationKaeltebedarf` nennt `Altweg/` nicht** (E21).
+4. **Ausbauprobe, statischer Teil:** Außer der Weiche in `SimulationWaermebedarf`, dem
+   Rückweg-Test und der Wache selbst nennt **keine** Datei des Kerns `Altweg/`.
 
-**Der Wächter bleibt dauerhaft** — mit dem Ordner `Altweg/`, den es dauerhaft gibt (E23,
-16.09.2026). Dazu
+Die Gegenprobe hält Liste gegen Dateien: **Der Ordner `Altweg/` existiert und ist nicht leer**,
+sonst prüft der Wächter nichts und ist still grün (dieselbe Gegenprobe, die `DoubleWacheTests` für
+seine Ausnahmeliste führt).
+
+**Die Wache lebt bis zur Stufe GA** (E26; Zeitpunkt offen, Q24) — mit dem Ordner `Altweg/`, den
+sie bewacht; Satz 4 ist die Vorstufe des **Gates von GA**, der vollständigen **Ausbauprobe**: Ein
+Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der
+Referenzlauf **aller** Projekte ohne Altweg-Gebäude bleibt byte-gleich (Kapitel 6). Dazu
 `DokumentationLinkWacheTests` (`:133` Verweise, `:170` „Der_Index_nennt_jedes_Papier") und
 `HuellenwegTests` beim Hüllenumzug (2.8).
 
@@ -910,17 +949,17 @@ als Tabelle in die Dokumentation. Frage U8.
 | Stelle im Konzept | Korrektur | Beleg |
 |---|---|---|
 | 4.1 / 11, Klassenname | `Zonenmodell2K` statt `Zonenmodell7R2C` — die Richtlinie sagt „2-K-Modell" | Konzept N1.3 |
-| 4.4, Wochenendkalender | aus `Tab_Klimadaten.WE` (`SimulationWaermebedarf.cs:524`), **nicht** aus `SolardatenCtrl.Referenzjahr` — sonst ist der dort verlangte Test nicht führbar | `KlimaImportAblauf.cs:354`, `SolardatenCtrl.cs:222` |
+| 4.4, Wochenendkalender | der Ortszeit-Kalender gilt (F-Ü8): Der Vorbereitungsschritt bildet `WE[365]` aus dem Wochentag des 1. Januar des Referenzjahres; der dort verlangte Test ist eine **Probe** gegen `Tab_Klimadaten.WE` derselben Klimaregion (`SimulationWaermebedarf.cs:524`), deren Abweichung ein Befund ist, kein Rechenfehler — U7 bleibt offen (Kapitel 5; Register Kapitel 0, fällig vor G1) | [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) E8; `KlimaImportAblauf.cs:354`, `SolardatenCtrl.cs:222` |
 | 4.4, Erdreich | der Kusuda-Ansatz liegt fertig im Kern; die Zahlen 0,68/22 Tage fallen aus dem Vorgabeboden. Kein neuer Code | `ErdreichTemperatur.cs:411`, `:47`/`:188` |
 | 4.6, Vorlauf | der Bestandsvorlauf sind **15** Tage — die Zahl ist belegt | `SimulationWaermebedarf.cs:748` |
 | 6.1, NULL-Semantik | `Gebaeude_Modell` NULL = **`VDI6007`**; die Tabelle in 6.1 sagt noch das Gegenteil | Konzept N1.1 |
-| 6.1, Schritt 78 | mit 77 verschmelzen, weil G1 und G2 gemeinsam ausgeliefert werden | 1.7, Frage U5 |
+| 6.1, G2-Spalten | mit dem Gebäudespalten-Schritt M3 verschmelzen, weil G1 und G2 gemeinsam ausgeliefert werden; feste Schrittnummern nennt kein Papier mehr (F-S1) | 1.7, Frage U5 |
 | 6.2, Sichtdefinition | „das Schemaskript und der Migrationsschritt führen dieselbe Definition" trifft nicht zu: `sql/schema/002_views.sql` wird zur Laufzeit **nicht ausgeführt** und ist eingefroren. Die Definition gehört in `GebaeudeSchema` | von der Anwendung nicht ausgeführt; gelesen allein von `sql/tools/baue_leere_db.py:71` und `sql/tools/Reduziere-Testdatenbank.probe.py:55`; `WechselrichterSchema.cs:33-38` |
 | 8.1, Randbedingung | die Randbedingung der Grundfläche steht als **Spalte der U·A-Tabelle**, nicht als zwölftes Feld der Modellgruppe | E2/N1.6, Befund M 5.3 |
 | 10.4, neue Reihen | sie dürfen für Tagesbilanz-Gebäude **gar nicht entstehen** — `Vergleich` kennt keinen Dateiausschluss | `Vergleich.cs:183-190` |
 | 10.5, Wächter | `EinheitenWacheTests` greift auf einer neuen Datei nur halb; die Liste `Simulationsklassen` ist zu erweitern — mit Unterordner | `EinheitenWacheTests.cs:201-206`, `:447-455` |
 | N1.6, Gruppenname | drei Gruppen statt einer „Hülle und Rechenmodell": die U·A-Tabelle trägt die Hülle, die Summen stehen als eigene Gruppe, „Rechenmodell" bleibt für die sieben Parameter | 2.3, 2.5 |
-| N1.25, Vorbereitungsschritt | „modellfrei" gilt für Klimakalender, Bewohner, `VerbrauchNeu` und die beiden Flächen — **nicht für die Rückrechnung selbst**: `VerbrauchAlt` kommt aus dem gewählten Modul, das die Fassade hinter der Weiche ein zweites Mal ruft. E20 ist damit erfüllt (kein Weg ruft den anderen), die Rechenfolge des Bestands bleibt | 1.1, 1.5; Befund X 2.4 |
+| N1.25, Vorbereitungsschritt | „modellfrei" gilt für Klimakalender, `VerbrauchNeu`, `FlaecheAlt`, `Flaeche_Nutzer`, `Einheit` und `Jahresnutzungsgrad` — **nicht für Bewohnerzahl, Skalierungsfaktor und die Rückrechnung**: `VerbrauchAltKwh` kommt aus dem gewählten Modul (VDI-Modul: ein Lauf, Nachmultiplikation; Altweg: zweiter Aufruf wie im Bestand); der Vertrag steht an einer Stelle, Softwarearchitektur 1.3 (F-Ü1, F-Ü2). E20 ist damit erfüllt (kein Weg ruft den anderen), die Rechenfolge des Bestands bleibt | 1.1, 1.5; Befund X 2.4 |
 | 6.1, Spaltenliste | die Tabelle nennt elf Spalten und **lässt `Kellertemperatur` aus**, obwohl Rechenschritte 1.1, 1.8 und 2.4 sie führen | [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 1.1; Befund X 5.4 |
 | 6.4, Leser von `Gebaeude_Modell` | nicht mehr „in `HeizwaermeEinesGebaeudes`", sondern **in der Weiche der Fassade** und in der Anzeige; der Eingangsbauer liest die Spalte nicht | E20, 1.1 |
 
@@ -1035,8 +1074,8 @@ und meldet den **ersten** fehlenden mit seinem *Feldnamen* (`:963-979`, Sprung a
 **Die Maske folgt allein der VDI-6007-Struktur** (E20, 16.09.2026). Die **Modellparameter stehen
 immer** — auch bei einem Gebäude auf dem Altweg —, sind immer bearbeitbar und gelten dort nach der
 Umstellung; sie sind der Parametersatz des Gebäudes, nicht der Rechenweg. Der Schalter heißt
-**„Rechenweg"** und trägt **dauerhaft** zwei Werte (E23, 16.09.2026): **„VDI 6007"** (Vorgabe,
-Spaltenwert NULL) und **„Tagesbilanz"**; darunter steht eine Herleitungszeile, die in beiden
+**„Rechenweg"** und trägt **für die Dauer des Übergangs** zwei Werte (E23, E26): **„VDI 6007"**
+(Vorgabe, Spaltenwert NULL) und **„Tagesbilanz"**; darunter steht eine Herleitungszeile, die in beiden
 Stellungen sagt, was gilt — bei „Tagesbilanz" zusätzlich, dass dieser Weg der eingefrorene
 Bestandsweg ist und weder Kühllast noch Anlagenkopplung kennt.
 
@@ -1047,7 +1086,8 @@ vier Spalten, davon zwei sichtbare: **Gebäudetyp** (die Tagesverteilung hängt 
 **Fensterfläche Ost/West** (schreibgesperrt, gerechnete Summe aus Ost und West); `Wochenende` und
 `Ferien` sind abgeleitete Flags, die die Hülle setzt und die der Dialog nicht zeigt (Befund X 5.1).
 Dazu tritt unter „Wärmeleitwerte" die vierte Zeile mit dem gewichteten Wert (2.5). **Der Abschnitt
-bleibt dauerhaft** (E23); bei einem Gebäude auf VDI 6007 erscheint er nicht.
+bleibt bis zur Ablösung** (Stufe GA, Zeitpunkt offen; E23, E26) und steht mit dem Schalter in der
+Löschliste (Kapitel 6); bei einem Gebäude auf VDI 6007 erscheint er nicht.
 
 **Reiter 2 „Temperaturen und Ferien"** bleibt, verliert aber die Gruppen
 „Wärmebrückenverlustkoeffizienten" und „Abmessung Anschluß" (ihre sechs Werte stehen jetzt in der
@@ -1079,14 +1119,14 @@ Summenzeile derselben Ansicht steht.
 | Raumhöhe | m | `Raumhoehe` | — | **ja** | beide | > 0 |
 | Luftwechselrate | 1/h | `Luftwechselrate` | — | **ja** | beide | > 0 |
 
-*Gruppe „Tagesbilanz (Bestandsweg)"* — eingeklappt, **nur bei einem Gebäude auf dem Altweg**,
-dauerhaft (E23):
+*Gruppe „Tagesbilanz (Bestandsweg)"* — eingeklappt, **nur bei einem Gebäude auf dem Altweg**, bis
+zur Stufe GA (E23, E26):
 
 | Feld | Einheit | Bindung | Weg | Bemerkung |
 |---|---|---|---|---|
 | Gebäudetyp | — | `Typ` | nur Altweg | wählt die Tagesverteilung aus `Abfrage_Tagverteilung` |
 | Fensterfläche Ost/West | m² | `Fensterflaeche_Ost_West` | nur Altweg | **schreibgesperrt**: gerechnete Summe aus Ost und West (2.6) |
-| (`Wochenende`, `Ferien`) | 0/1 | abgeleitete Flags der Hülle (`GebaeudeKatalogDialog.razor:809`) | nur Altweg | **nicht gezeigt** — Ableitungen, keine Eingaben |
+| (`Wochenende`, `Ferien`) | 0/1 | abgeleitete Flags, gesetzt beim Übernehmen des zweiten Reiters (`GebaeudeKatalogDialog.razor:953`, `:955`; Träger `GebaeudeKatalogDaten.cs:139`, `:142`; Stand 22.09.2026) | nur Altweg | **nicht gezeigt** — Ableitungen, keine Eingaben. Die Schreibstellen bleiben bis GA, damit ein Gebäude auf dem Altweg dieselben Werte behält (Befund X 4.3, X1), und stehen in der Löschliste (Kapitel 6) |
 
 **Fußnote zur Bauart.** Bei leerer Auswahl liefert `BauweiseAusBauart` ein **absolutes** 50
 (`Gebaeudebauweise.cs:66`), nicht `Wohnfläche × 50`; die neue Prüfregel fiele damit für jedes
@@ -1101,7 +1141,7 @@ bearbeitbar** (E20) — auch bei einem Gebäude auf dem Altweg, wo sie nach der 
 
 | Feld | Einheit | Bindung (neue Spalte, 1.6) | Vorgabe-Anzeige | Weg | Prüfregel | Sichtbar |
 |---|---|---|---|---|---|---|
-| **Rechenweg** | — | `Modell` (`Gebaeude_Modell`); **NULL = „VDI 6007"**, zweiter Wert „Tagesbilanz" (E1, E20, E23) | — | Weiche | Wert aus `DbWerte.GEBAEUDE_MODELL_*` | immer, **dauerhaft** |
+| **Rechenweg** | — | `Modell` (`Gebaeude_Modell`); **NULL = „VDI 6007"**, zweiter Wert „Tagesbilanz" (E1, E20, E23) | — | Weiche | Wert aus `DbWerte.GEBAEUDE_MODELL_*` | immer, **bis GA** |
 | Rahmenanteil | — | `Rahmenanteil` | Vorgabe 0,3 | nur VDI | 0 ≤ x < 1 | **immer** |
 | Verschattungsfaktor | — | `Verschattungsfaktor` | Vorgabe 0,9 | nur VDI | 0 < x ≤ 1 | **immer** |
 | Masseanteil außen | — | `Masseanteil_Aussen` | Vorgabe 0,3 | nur VDI | 0,05 ≤ x ≤ 0,95 | **immer** |
@@ -1234,7 +1274,8 @@ IFC-Import. Heute leitet die Hülle sie aus drei Feldern ab
 **`GebaeudeDialog.razor` bekommt drei Dinge:**
 
 1. eine **Spalte „Rechenweg"** in der Projektliste (heute Wahl + Name, `:75-89`) — ohne sie ist E1
-   für den Anwender unsichtbar; sie **bleibt dauerhaft**, weil es dauerhaft zwei Wege gibt (E23);
+   für den Anwender unsichtbar; sie bleibt, **solange es zwei Wege gibt**, also bis zur Stufe GA
+   (E23, E26; Löschliste Kapitel 6);
 2. **zwei leise Kennzahlen** im Detailblock „Gebäude: Verbrauch" (`:154-195`): H_ges [W/K] und den
    Rechenweg als Text — bei einem Gebäude auf dem Altweg **„Tagesbilanz (Bestandsweg)"** statt des
    Produktausweises nach E10 (E20, E23) —, beide nur lesend wie die fünf vorhandenen Felder;
@@ -1247,11 +1288,13 @@ Wärmebedarf Heizung (MWh/kWh nach Einheitenwahl), Spitzenlast (Stunde), Spitzen
 95-%-Quantil der Stundenlast, Vollbenutzungsstunden. **Beide Spalten sind Auskünfte über
 `GebaeudeBedarfCtrl`** — zwei Aufrufe desselben Controllers, keine zweite Rechnung. Dafür braucht
 der Controller den vierten Parameter `modellErzwungen` und sein Ergebnis die sechs neuen
-Kennzahlen; beides steht in 1.4 und gehört in den Merge G1+G2. **Der Vergleich bleibt dauerhaft**
-(E23, 16.09.2026) — mit ihm `modellErzwungen` und das Feld `Vergleich` des DTO: Solange beide
-Rechenwege wählbar sind, ist die Gegenüberstellung die Entscheidungshilfe des Anwenders. Ein
-Gebäude auf dem Altweg trägt in diesem Dialog — wie im Bericht — die Zeile
-**„Tagesbilanz (Bestandsweg)"**.
+Kennzahlen; beides steht in 1.4 und gehört in den Merge G1+G2. **Der Vergleich bleibt, solange
+der Altweg besteht** (E23, E26) — mit ihm `modellErzwungen` und das Feld `Vergleich` des DTO: Er
+ist Teil des Übergangs, die Entscheidungshilfe des Anwenders, solange beide Rechenwege wählbar
+sind, und fällt mit der Stufe GA (Löschliste Kapitel 6). Die Eigenständigkeit des VDI-Wegs berührt
+er nicht: Das VDI-Modul rechnet ohne den Altweg, der Vergleich ist eine Anzeige, die der Controller
+aus zwei Auskünften zusammensetzt. Ein Gebäude auf dem Altweg trägt in diesem Dialog — wie im
+Bericht — die Zeile **„Tagesbilanz (Bestandsweg)"**.
 
 Dazu ein **zweites Bild „Raumtemperatur"** (Jahresverlauf Luft und operativ mit Sollwertband),
 gezeichnet im Kern über `ChartRenderer` und hereingereicht als zweiter Delegat
@@ -1290,8 +1333,9 @@ Herleitungszeile sagt, dass aus Fläche und Verbrauch der **Skalierungsfaktor** 
 entsteht. Die vier Größen dieses Dialogs liest **jeder** Rechenweg (Befund X 1.3); ein
 Bestandswegabschnitt gehört hier deshalb nicht hinein. Der Dialog heißt in diesem Papier fortan
 **Skalierungsdialog**; der Klassenname folgt, wenn die Hülle umzieht (2.8). `GebaeudetypDialog` ist
-von E1/E2 nicht betroffen — seine Tagesverteilungen behalten ihren Rechenleser im Bestandsweg
-dauerhaft (E23).
+von E1/E2 nicht betroffen — seine Tagesverteilungen behalten ihren Rechenleser im Bestandsweg bis
+zur Stufe GA (E23, E26); was dann aus `Tab_DBTagV`/`Tab_DBTagVDaten` und dem Dialog wird, ist Teil
+von Q25 (Kapitel 6).
 
 ### 2.8 Die Hülle nach `EPOS.UI.Daten`
 
@@ -1428,9 +1472,10 @@ Ohne Zutun greifen außerdem `ParametersatzTests` (neue Gaben-Schlüssel), `Schl
 | **M-l** | **Bestandswegabschnitt „Tagesbilanz (Bestandsweg)" (E20, E23)**: eingeklappter Block mit zwei sichtbaren Feldern und dem gewichteten Wert der Wärmeleitwerte, Herleitungszeile am Schalter „Rechenweg", Ausweis „Tagesbilanz (Bestandsweg)" in Wirt und Bedarfsdialog, Skalierungsdialog in VDI-Struktur (2.7), die beiden Ersatzfälle aus 2.10 | **1,0 PT** |
 | | **Summe** | **9,0 PT** |
 
-**Das ist der Grund, warum der G1-Rahmen des Konzepts (6–10 PT für Schemaschritt, Namensleser,
-Eingangsbauer, Verzweigung, Dialog, Hülle und Texte zusammen) nicht trägt.** Die Oberfläche allein
-ist 9,0 PT; Kapitel 4 rechnet neu. **Was der Bestandswegabschnitt kostet, spart die entfallene
+**Das ist der Grund, warum der G1-Rahmen des Konzepts (10–16 PT für Trennung, Schemaschritt,
+Namensleser, Eingangsbauer, Verzweigung, Dialog, Hülle und Texte zusammen) nicht trägt.** Die
+Oberfläche allein ist 9,0 PT; Kapitel 4 rechnet neu und ist die Quelle der verbindlichen Aufwände
+(F-S8). **Was der Bestandswegabschnitt kostet, spart die entfallene
 Modellzustandslogik zum Teil wieder ein** — die sieben bedingten Felder aus dem Bestandsentwurf
 sind sieben unbedingte geworden (2.4).
 
@@ -1791,39 +1836,40 @@ ebenfalls in jenem Papier.
 
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
-| **G0 — Löser** | `Zonenmodell2K`, `ErsatzparameterRC`, Diskretisierung, ideale Regelung; Normfälle und Rechenproben (1.3, 1.9); Testfall 11 lösen, Testfall 6 klären, α_kon je Bauteil, Band-Prüfregel, Vorlaufkonvergenz. **Keine Datenbank, kein Aufrufer** | Kern-Filter grün; **elf der zwölf Normtestfälle** im Band ± 0,15 K / ± 1,5 W nach E10 (Druckrundung), Testfall 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) — **lokal**, in der CI schweigend (1.9). Referenzlauf **unberührt**, weil keine Zeile des Bestandswegs angefasst wird | 2–4 PT |
+| **G0 — Löser** | `Zonenmodell2K`, `ErsatzparameterRC`, Diskretisierung, ideale Regelung; Normfälle und Rechenproben (1.3, 1.9); Testfall 11 lösen, Testfall 6 klären, α_kon je Bauteil, Band-Prüfregel, Vorlaufkonvergenz. **Keine Datenbank, kein Aufrufer** | Kern-Filter grün; **elf der zwölf Normtestfälle** im Band ± 0,15 K / ± 1,5 W nach E10 (Druckrundung), Testfall 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) — **lokal**, in der CI schweigend (1.9); Rechenzeit je Gebäude und Jahr neu gemessen und Abnahmekriterium (4) aus Konzept 10.4 neu bestimmt (F-S6, 1.3). Referenzlauf **unberührt**, weil keine Zeile des Bestandswegs angefasst wird | 2–4 PT |
 | **GB — Bestandsbefunde** | `_prevRoomTemp` als Instanzzustand (`BhkwPlan.cs:51`, `:433`), Warnungen statt stiller Fehlgriffe in der Ferienmaske (`SimulationWaermebedarf.cs:689-733`) **und die nicht nachgeführte `Ferien_Absenkung` der Jahresschleife** (`:845-850`, Befund X 3.4), `Bauweise` 10576 auf 15 200 Wh/K, **vierte Einfrierregel** in `Referenzlaeufe/LIESMICH.md` und `CLAUDE.md`; dazu die 100-Gebäude-Grenze (U9). **GB läuft vor der Verschiebung** (E20): Das verschobene Modul soll der geprüfte Stand sein | **1008 und 1039 ändern sich** — eigener Einfrierschritt: Lauf, Vergleich, Begründung, grüner CI-Lauf. Diese Basis ist die **letzte reine Bestandsbasis** | 1–2 PT |
 | **M2 — Umbenennung** | `Fensterflaeche_Ost` → `Fensterflaeche_OstWest`, 15 Stellen (`GebaeudeModel.cs:20`/`:76`, `ProjektGebaeudeModel.cs:26`/`:88`, `GebaeudeCtrl.cs:66`, `GebaeudeStammCtrl.cs:291`/`:358`, `ProjektGebaeudeCtrl.cs:56`, `SimulationWaermebedarf.cs:752`/`:756`/`:822`/`:826`, `GebaeudeKatalogHuelle.cs:364`/`:443`/`:453`) | gegen die GB-Basis **byte-gleich**. Eigener Merge, weil jede dieser Zeilen in `SolareGewinneC` mündet | 0,5 PT |
-| **M3 — Schema** | Schritt 77 (+78 verschmolzen, U5), `GebaeudeSchema.cs`, Sichtneubau, Namensleser statt `row[0…57]` — der Leser und `SQL_VIEW_NEU` schreiben die acht nicht-ASCII-Bezeichner **buchstabengetreu** (`k_Wert_Außenwand`, `Flaeche_Außenwand`, `WBVK_Anschluß_*`, `Abmessung_Anschluß_*`), Umlautregel [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) § 6.1, und der Feldbestandstest prüft sie namentlich; `DbWerte`, Katalogkopie NULL-erhaltend, `TestDatenbank` nachziehen | gegen die GB-Basis **byte-gleich** (Spalten bleiben NULL, kein Leser rechnet damit). Die Probe ist der Sichtneubau: `ProjektGebaeudeCtrl` liefert alle 58 Bestandsfelder unverändert; dazu `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` grün | 1,5–2 PT |
-| **M4 — Klimaspalten** | eigener Schritt: `Gegenstrahlung`, `Windgeschwindigkeit`, `Luftfeuchte` in `Tab_Solar(_STAMM)`; `TmyHourlyData`, `SaveTmyData`, `SolardatenCtrl` | gegen die GB-Basis **byte-gleich**; die Importprobe gegen `pvgis_tmy_stuttgart_72h.json` liefert dieselben `Sol_*` wie bisher; `SqlDialektPruefer` grün | 0,5–1 PT |
-| **G1.0 — Trennung der Rechenwege** (erster Schritt von G1, E20) | Modul `Simulation/Altweg/` anlegen und den Tagesbilanz-Weg **Zeichen für Zeichen** hineinschieben (drei Methoden aus `SimulationWaermebedarf.cs`, vier Physikfunktionen aus `BhkwPlan.cs` samt Vortemperatur; `BhkwPlan.cs` bleibt als Datei, seine neun Vektorhelfer wandern nicht); Fassade und Weiche in `HeizwaermeEinesGebaeudes`, **modellfreier Vorbereitungsschritt**, `IGebaeudeRechenweg`, Wache „der VDI-Weg referenziert nichts aus `Altweg/`" (1.9); `BhkwPlanRueckgabeTests` nachziehen | gegen die GB-Basis **byte-gleich** — die Verschiebung ist ergebnisneutral, **kein Einfrieranlass**. Eine Abweichung ist ein Fehler der Verschiebung; nach der Anbindung des VDI-Wegs wäre sie nicht mehr von der Modellwirkung zu trennen. Kern-Filter grün, `SqlDialektPruefer` unberührt | **3–5 PT** |
-| **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test**: er läuft auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, und hält jedes Referenzprojekt gegen die GB-Basis; die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs. **Er bleibt dauerhaft** (E23). `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2)–(4); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
+| **M3 — Schema** | der Gebäudespalten-Schritt M3 (die drei G2-Spalten verschmolzen, U5; Nummer bei Beauftragung, F-S1), Umbenennung `Wohnflaeche` → `Nutzflaeche` zuerst (E19, F-S2), `GebaeudeSchema.cs`, Sichtneubau, Namensleser statt `row[0…57]` — der Leser und `SQL_VIEW_NEU` schreiben die acht nicht-ASCII-Bezeichner **buchstabengetreu** (`k_Wert_Außenwand`, `Flaeche_Außenwand`, `WBVK_Anschluß_*`, `Abmessung_Anschluß_*`), Umlautregel [`BETRIEB_SQLITE.md`](BETRIEB_SQLITE.md) § 6.1, und der Feldbestandstest prüft sie namentlich; `DbWerte`, Katalogkopie NULL-erhaltend, `TestDatenbank` nachziehen | gegen die GB-Basis **byte-gleich** (Spalten bleiben NULL, kein Leser rechnet damit). Die Probe ist der Sichtneubau: `ProjektGebaeudeCtrl` liefert alle 58 Bestandsfelder unverändert; dazu `python3 Werkzeuge/SqlDialektPruefer/pruefer.py --db Referenzlaeufe/Kenndaten_Test.sqlite` grün | 1,5–2 PT |
+| **M4 — Klimaspalten** | eigener Schritt (Nummer 95, 1.7): `Gegenstrahlung`, `Luftfeuchte`, `Bedeckungsgrad` in `Tab_Solar(_STAMM)`, `Quelle` und `Importdatum` in `Tab_Klimaregion(_STAMM)`; keine `Windgeschwindigkeit` (F-S3); `TmyHourlyData`, `SaveTmyData`, `SolardatenCtrl`, `DwdTryLeser` | gegen die GB-Basis **byte-gleich**; die Importprobe gegen `pvgis_tmy_stuttgart_72h.json` liefert dieselben `Sol_*` wie bisher; `SqlDialektPruefer` grün | 0,5–1 PT |
+| **G1.0 — Trennung der Rechenwege** (erster Schritt von G1, E20) | Modul `Simulation/Altweg/` anlegen und den Tagesbilanz-Weg **Zeichen für Zeichen** hineinschieben (drei Methoden aus `SimulationWaermebedarf.cs`, vier Physikfunktionen aus `BhkwPlan.cs` samt Vortemperatur; `BhkwPlan.cs` bleibt als Datei, seine neun Vektorhelfer wandern nicht); Fassade und Weiche in `HeizwaermeEinesGebaeudes`, **modellfreier Vorbereitungsschritt**, `IGebaeudeRechenweg`, `Modultrennungswache` (1.9); `BhkwPlanRueckgabeTests` nachziehen | gegen die GB-Basis **byte-gleich** — die Verschiebung ist ergebnisneutral, **kein Einfrieranlass**. Eine Abweichung ist ein Fehler der Verschiebung; nach der Anbindung des VDI-Wegs wäre sie nicht mehr von der Modellwirkung zu trennen. Kern-Filter grün, `SqlDialektPruefer` unberührt | **3–5 PT** |
+| **G1 + G2 — das Modell und seine Darstellung** | `GebaeudeModellEingang`, `GebaeudeModellErgebnis`, das Modul `Simulation/Gebaeude/` hinter der Weiche (G1.0), Vorlauf 30 Tage, Plausibilitätsprüfungen, Ergebnisexport; Dialogumbau in VDI-Struktur (Kapitel 2, **9,0 PT** einschließlich Bestandswegabschnitt), Hülle nach `EPOS.UI.Daten`, 63 Texte; Raumtemperatur-Bild, Kühlbedarf, drei Spitzenwerte, Vergleich im Bedarfsdialog, Sommerlüftung und Infiltration/Nutzerlüftung, Wiki-Seite | **alle dreizehn Referenzprojekte ändern sich** (+7 bis +33 %), drei neue CSV je VDI-Gebäude — **Basis vollständig neu einfrieren** (E1/Q14). Dazu der **Rückweg-Test** (F-Ü7): bis zu diesem Merge auf einer **Arbeitskopie** (`Referenzlaeufe/Arbeitskopie/`, gitignoriert), die `Gebaeude_Modell = 'TAGESBILANZ'` setzt, gegen die GB-Basis — die eingefrorene Testdatenbank bleibt unberührt, der Schalter dafür ist ein eigener Modus des Referenzlaufs; **ab dem Einfrieren ein Referenzprojekt auf dem Altweg in der neuen Basis** (A15), das **bis zur Stufe GA** in jeder Basis steht. `ChartProben` grün; Sichtabnahme Windows; Kriterien Konzept 10.4 (2) und (3), (4) in der in G0 neu bestimmten Fassung (F-S6); **Strahlungsweg: VDI 2078 Testbeispiel 7.1/7.2 (Typ 2, ± 0,2 °C / ± 5 W), aus den gedruckten Klimaparametern Anhang A1/B1 ohne TRY** (Konzept N1.9); **Logbuch-Eintrag entworfen, Versionsnummer beim Anwender erfragt**, Wiki-Seite „Gebäudemodell VDI 6007" und die geänderte Seite „Gebäude" im nächsten gebündelten Upload | 16–22 PT |
 | **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog samt **Zeile in `EPOS.UI/Bausteine/Menuetabelle.cs`** unter Administration (das Menü ist Daten; kein Untermenü mit nur einem Punkt), Bauteilweg mit Kettenmatrix-Reduktion, geneigte Fenster, echte Hülle statt Nachmultiplikation | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | 8–12 PT |
 | **G4a — IFC-Import** | Kapitel 3: Paket und Lizenzseite, Leser, Azimut, Zuordnung, Vorgabetabelle, Dialog und Hülle, Importprobe, iOS | Importprobe bestanden; **Referenzlauf unverändert**; Windows-Sichtabnahme; iOS-Lauf nach Rückfrage | 13,5–21 PT |
 | **G4b — IFC auf Bauteilebene** | je Bauteil eine Zeile mit Schichten, Azimut, Neigung, Herkunft `Ifc` in `Tab_Bauteil` | nach G3 und erst, wenn G4a im Feld war | 4–6 PT |
 | **G4c — gbXML-Import** | **Pflicht nach E9** (Konzept N1.13): Lesemodell und Einheiten, Aggregation auf das Zonenmodell, Zuordnungsdialog mit Herkunft je Feld, Beispieldateien; LINQ to XML statt `XmlSerializer`, Versionswert `6.01` | Importprobe bestanden; **Referenzlauf unverändert**; Reihenfolge zu G4a offen (D1, 3.8) | **17–28 PT** nach [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md), Kapitel 10 (einschließlich der dorthin vorgezogenen Persistenz der Zuordnung) |
 | **G5 — Geometrieableitung** | eigene Auswertung von `IfcExtrudedAreaSolid` und Placement-Kette, Öffnungsabzug | nur bei Bedarf aus der Praxis | 30–60 PT |
 | **G7 — Exporte** | gbXML- und IFC-Export (E9) — eigenes Papier: [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md). Dort steht auch der **Gebäudebetrachter (E11)**: ein Zonengeometrie-Modell im Kern, 2D-Grundriss je Geschoss mit G6c, schematische Körper mit G7b (Nachtrag 1; Konzept N1.16) | dort | dort |
-| **~~GA — Altweg entfernen~~** | **Entfällt (E23, 16.09.2026).** Der Tagesbilanz-Weg bleibt **dauerhaft** als eingefrorener Bestandsweg: Modul `Simulation/Altweg/`, Weiche, `IGebaeudeRechenweg`, Trennungswache, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte „Rechenweg" im Wirt, Vergleich alt/neu samt `modellErzwungen`, Ausweis „Tagesbilanz (Bestandsweg)", die vier Altweg-Spalten in beiden Gebäudetabellen, das Referenzprojekt auf dem Altweg (A15) und der Rückweg-Test — alles bleibt. Es gibt keinen Schemaschritt mit `DROP COLUMN` und keinen weiteren Einfrierschritt. Offen bleibt allein ein **Aufräumpunkt ohne Stufe**: die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` | — | **0 PT** (5–8 PT fallen weg) |
+| **GA — Altweg ablösen** (letzte Stufe; Zeitpunkt offen, Q24) | Modul `Simulation/Altweg/`, Weiche, `IGebaeudeRechenweg`, `Modultrennungswache`, Schalter „Rechenweg", Abschnitt „Tagesbilanz (Bestandsweg)", Spalte „Rechenweg" im Wirt, Vergleich alt/neu samt `modellErzwungen`, Ausweis „Tagesbilanz (Bestandsweg)", Kältebedarf-0-Hinweis, AK-Sonderfall „feste Last", Spalte `Gebaeude_Modell` und die nur vom Altweg gelesenen Spalten (`DROP COLUMN` je Tabelle, Sichtneubau; davor `Fensterflaeche_Ost`/`_West` einmalig füllen), `Tab_DBTagV`/`Tab_DBTagVDaten`, Schreibstellen der Flags `Wochenende`/`Ferien`, Referenzprojekt auf VDI 6007 umstellen, Rückweg-Test einstellen — **Löschliste in Kapitel 6** (Q25; Quellen Konzept N1.25 Punkt 4, N1.31, Befund X Kapitel 4) | **Ausbauprobe** grün: ein Bau mit umbenanntem Ordner `Altweg/` übersetzt nach Entfernen der Weiche, und der Referenzlauf aller Projekte ohne Altweg-Gebäude bleibt byte-gleich; **eigener, begründeter Einfrierschritt**; Logbuch-Eintrag | **5–8 PT** — in keiner Summe; Ablösekriterium Q24 (Kapitel 5) |
 
 **Summen:** G0 + GB 3–6 PT; **G1.0 (Trennung) 3–5 PT**; bis einschließlich G1+G2
-**24,5–36,5 PT**; bis G3 32,5–48,5 PT; bis G4a 46–69,5 PT. **Die 5–8 PT der früher vorgesehenen
-Stufe GA fallen weg** (E23, 16.09.2026); keine Summe oben enthielt sie. Der gbXML-Import (G4c) kommt
+**24,5–36,5 PT**; bis G3 32,5–48,5 PT; bis G4a 46–69,5 PT. **Die 5–8 PT der Stufe GA stecken in
+keiner Summe** — ihr Zeitpunkt ist offen (Q24, E26). Der gbXML-Import (G4c) kommt
 mit **17–28 PT** hinzu — **er steckt in keiner der Summen oben**. Diese Zahl und die Exporte (G7)
 rechnet das [Datenaustauschkonzept](Konzept_Datenaustausch_gbXML_IFC_EPOS-Plan.md) in Kapitel 10;
 sie schließt die Persistenz der Zuordnung ein (Schemaschritt S-F, zwei Tabellen), die dort zu G4c
 gehört.
 
-**Warum das über dem Konzeptrahmen liegt.** Konzept 11 veranschlagt G1 mit 6–10 PT und G2 mit
-3–5 PT. Allein die Oberfläche ist gemessen 9,0 PT (2.11), und dazu kommen vier Dinge, die das
-Konzept in dieser Form nicht kannte: die **Trennung der Rechenwege samt byte-gleichem Nachweis**
-(G1.0, E20, 3–5 PT), der erste Sichtneubau des SQLite-Zweigs samt Namensleser (1.6), die
-NULL-erhaltende Katalogkopie (1.6) und die Vorrichtung für nicht ausgelieferte Normzahlen (1.9).
-Die Aufwände sind Größenordnungen für Entwicklung **und Nachweis**; Agentenarbeit verkürzt die
-Kalenderzeit, nicht die Prüfzeit.
+**Warum das über dem Konzeptrahmen liegt.** Konzept 11 veranschlagt G1 mit 10–16 PT (darin die
+3–5 PT der Trennung nach E20) und G2 mit 3–5 PT. Allein die Oberfläche ist gemessen 9,0 PT (2.11),
+und dazu kommen drei Dinge, die das Konzept in dieser Form nicht kannte: der erste Sichtneubau des
+SQLite-Zweigs samt Namensleser (1.6), die NULL-erhaltende Katalogkopie (1.6) und die Vorrichtung
+für nicht ausgelieferte Normzahlen (1.9). **Dieses Kapitel ist die Quelle der verbindlichen
+Aufwände; Konzept 11 und 12 verweisen darauf** (F-S8). Die Aufwände sind Größenordnungen für
+Entwicklung **und Nachweis**; Agentenarbeit verkürzt die Kalenderzeit, nicht die Prüfzeit.
 
 **Was zwischen GB und G1+G2 gilt:** jeder Merge läuft gegen die GB-Basis und muss `GESAMT: PASS`
-melden — **G1.0 ausdrücklich byte-gleich**. **Nur GB und G1+G2 frieren neu ein** (E23). Wer M3 und G1
+melden — **G1.0 ausdrücklich byte-gleich**. **In diesem Papier frieren nur GB und G1+G2 neu ein**; die
+weiteren Anlässe der Kette bis GA stehen in 1.8. Wer M3 und G1
 zusammenlegt, kann hinterher nicht mehr sagen, ob eine Abweichung vom Schema oder vom Modell kommt —
 genau die Trennung, die E4 für GB begründet; dasselbe gilt für G1.0 und die Anbindung des VDI-Wegs.
 
@@ -1842,11 +1888,15 @@ die Klasse entsteht.
 
 ## 5. Fragen mit Empfehlung
 
-Nur **neue** Fragen; Q1–Q23 des Konzepts sind dort beantwortet oder durch **E1–E21** entschieden
+Nur **neue** Fragen; Q1–Q23 des Konzepts sind dort beantwortet oder durch **E1–E26** entschieden
 (E9 Austauschformate, E10 Druckrundung, E19 Nutzfläche, E20 Trennung der Rechenwege, E21
-Kältebedarf). **Q24** — der Zeitpunkt der Stufe GA — ist mit **E23** beantwortet: **nie**, die
-Stufe entfällt; **Q25** (ihr Schemaschritt) ist damit gegenstandslos. Beide stehen im Konzept,
-nicht hier.
+Kältebedarf, E26 Altweg als Übergang). **Q24** — wann der VDI-Weg bewährt genug ist, dass die
+Stufe GA beauftragt wird — und **Q25** — ihr Umfang — sind mit **E26** wieder **offen** (Konzept
+N1.31). Empfohlenes Ablösekriterium zu Q24: (1) alle Referenz- und Bestandsprojekte des Anwenders
+sind einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt; (2) eine
+Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; (3) KU1 und, falls
+beauftragt, AK1 sind abgenommen; (4) die Ausbauprobe ist grün. Zu Q25 ist die Löschliste in
+Kapitel 6 die Empfehlung. Beide Fragen führt das Konzept, nicht dieses Papier.
 
 | Nr. | Frage | Empfehlung |
 |---|---|---|
@@ -1854,9 +1904,9 @@ nicht hier.
 | **U2** | ~~Die sieben Modellparameterfelder im Tagesbilanz-Weg **verstecken** oder **gesperrt zeigen**?~~ | **Durch E20 überholt (16.09.2026).** Die Modellparameter stehen **immer** sichtbar und bearbeitbar — sie sind der Parametersatz des Gebäudes, nicht der Rechenweg, und gelten nach der Umstellung. Bedingt ist allein der eingeklappte Abschnitt „Tagesbilanz (Bestandsweg)" mit den vier Feldern, die nur der Altweg liest (2.3, 2.4). Die Frage entfällt, die Nummer bleibt vergeben |
 | **U3** | `Platzhalter` am `Zahlenfeld` ergänzen (für „Vorgabe 0,3" im leeren Feld) — ein Eingriff in einen Standardbaustein, den alle Dialoge benutzen | **Ja**, rein additiv (ein `[Parameter] string`, ein `placeholder`-Attribut); zieht `StilblattTests` nach sich. Sonst je Feld eine `Herleitungszeile` — zehn Zeilen statt zehn Platzhalter |
 | **U4** | Ein Abschnitt „13. Gebäudehülle und Gebäudemodell" im [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md), **bevor** die 63 en-US-Werte geschrieben werden | **Ja** — das Glossar kennt heute weder Wärmebrücke noch Verschattung, Rahmenanteil, Bodenplatte, Randbedingung oder operative Temperatur. Ohne den Abschnitt entstehen zwei Übersetzungen desselben Begriffs |
-| **U5** | Schemaschritt 77 und 78 zu **einem** Schritt verschmelzen (15 Spalten je Tabelle, ein Sichtneubau)? | **Ja** — E1 liefert G1 und G2 gemeinsam aus; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Der Tab_Solar-Schritt bleibt **getrennt** (andere Wirkung, anderer Mitläufercode, anderes Risiko) |
-| **U6** | Zeitbezug der Sonnengeometrie im Gebäudemodell: **Stundenanfang** wie im Bestand (`KlimaImportAblauf.cs:318-322`) oder **Stundenmitte** wie Blatt 3 (Konzept N1.10)? | **In G1 messen und dann entscheiden** — an der einen Stelle im Eingangsbauer. Der Unterschied sind 7,5° Stundenwinkel und trifft genau Ost und West. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt (Referenzbasis) |
-| **U7** | Wochenendkalender des Stundenmodells aus `Tab_Klimadaten.WE` (wie der Bestand) statt aus `SolardatenCtrl.Referenzjahr` (wie Konzept 4.4)? | **Ja, aus `WE`.** `WE` stammt aus dem PVGIS-Jahr 2020 (`KlimaImportAblauf.cs:354`); der in 4.4 verlangte Test wäre mit einer Preisreihe ≠ 2020 nicht führbar, und beide Wege rechnen sonst verschiedene Kalender |
+| **U5** | Den Gebäudespalten-Schritt M3 und die drei G2-Spalten zu **einem** Schritt verschmelzen (15 Spalten je Tabelle, ein Sichtneubau)? | **Ja** — E1 liefert G1 und G2 gemeinsam aus; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Der Tab_Solar-Schritt bleibt **getrennt** (andere Wirkung, anderer Mitläufercode, anderes Risiko) |
+| **U6** | Zeitbezug der Sonnengeometrie im Gebäudemodell: **Stundenanfang** wie im Bestand (`KlimaImportAblauf.cs:318-322`) oder **Stundenmitte** wie Blatt 3 (Konzept N1.10)? | **In G1 messen und dann entscheiden** — an der einen Stelle im Eingangsbauer, fällig vor dem Einfrieren von G1+G2 (Register Kapitel 0). Der Unterschied sind 7,5° Stundenwinkel und trifft genau Ost und West. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt (Referenzbasis) |
+| **U7** | Wochenendmaske des Stundenmodells: Ortszeit-Kalender aus dem Wochentag des 1. Januar des Referenzjahres (Konzept 4.4) oder `Tab_Klimadaten.WE` (wie der Bestand)? | **Ortszeit-Kalender** (F-Ü8): Der Vorbereitungsschritt bildet `WE[365]` aus dem Wochentag des 1. Januar des Referenzjahres; eine Probe hält die Maske gegen `Tab_Klimadaten.WE` derselben Klimaregion (`KlimaImportAblauf.cs:354`), eine Abweichung ist ein Befund der Probe. Die Frage bleibt offen und ist vor G1 fällig (Register Kapitel 0) |
 | **U8** | Normzahlen als **gitignorierte, lokal beizustellende** Datei (`Referenzlaeufe/Normzahlen/`) mit schweigenden Testfällen — Folge: der Normfallnachweis ist **lokal**, nicht CI | **Ja** — das Ausliefern der Normzahlen wäre eine Vervielfältigung (Konzept N1.2), und LFS ist keine Zugriffsbeschränkung. Die Lücke im Gate gehört ins Protokoll, der Laufauszug (Abweichung je Fall, ohne Absolutwerte) in die Dokumentation |
 | **U9** | Die Grenze von 100 Gebäuden beheben (`HeizwaermebedarfGeb[100]`, `:31`; `MaxP[100]`, `:56`; `IndexOutOfRangeException` an `:816`)? | **Ja, in GB**, wo die Schleife ohnehin angefasst wird: `MaxP` **löschen** (wird nirgends gelesen — wie `Anzahl_Bewohner` `:11` und `Wohnflaeche` `:12`, Befund X 2.3), `HeizwaermebedarfGeb` auf `ctrl.rows` dimensionieren. Ergebnisneutral — und **vor** der Verschiebung nach `Altweg/`, damit das verschobene Modul der geprüfte Stand ist (E20) |
 | **U10** | Eine Lizenzhinweisseite im Installationspaket — und dann gleich für **alle** ausgelieferten Fremdanteile, nicht nur xBIM? | **Ja, mit G4-1 und für alle.** CDDL § 3.1 verlangt den Quellenverweis an den Empfänger; ohne die Seite ist der IFC-Import nicht auslieferbar. Die übrigen Fremdanteile sind ohnehin fällig — darunter **three.js (MIT)** des Gebäudebetrachters (E11, Konzept N1.16) |
@@ -1866,6 +1916,7 @@ nicht hier.
 | **U14** | Fensterabzug: Wandfläche = `GrossSideArea` **minus** Fenster und Außentüren — oder die Öffnungen in der Wandfläche belassen, wie `GrossSideArea` sie liefert? | **Abziehen.** Das Modell führt Wand und Fenster getrennt mit je eigenem U-Wert; ohne Abzug zählt die Öffnung zweimal. Wird die Differenz negativ: `NetSideArea`, sonst Warnung und 0 |
 | **U15** | Die drei ψ-Werte und die drei Anschlusslängen beim IFC-Import als **Vorgabe je Baualtersklasse** setzen oder **leer** lassen? | **ψ als Vorgabe, Längen leer.** IFC liefert weder das eine noch das andere; eine geratene Anschlusslänge sähe aus wie eine gemessene, ein ψ-Vorgabewert ist als Klassenwert erkennbar. Beide tragen Herkunft `Vorgabe` bzw. `Leer` |
 | **U16** | Soll `ios.yml` um einen **Gerätebau** ergänzt werden (heute baut der Lauf für den Simulator, `:123-127`, und dort wird nie getrimmt) — oder genügt ein einmaliger Nachweis von Hand? | **Einmaliger Nachweis in G4-8**, nach Rückfrage. Ein dauerhafter Release-Zweig verdoppelt die Laufzeit eines Workflows, der zehnfach zählt; erst wenn xBIM im Feld ist, lohnt die Dauerprüfung — **mit E18 (16.09.2026) nach Empfehlung entschieden** |
+| **U17** | Ein Altweg-Gebäude ohne Tagesverteilung bricht heute den **ganzen** Lauf ab (`SimulationWaermebedarf.cs:197`, `:590-595`) — auch für die VDI-Gebäude desselben Projekts (1.5). Lauf abbrechen wie heute oder das Gebäude benannt ablehnen? | **Benannt ablehnen, aber erst mit GA** — bis dahin bleibt das Verhalten des Bestands, weil die Änderung Altweg-Verhalten ändert und den byte-gleichen Nachweis berührt (F-Ü6) |
 
 ---
 
@@ -1889,8 +1940,9 @@ nicht hier.
   16.09.2026 nimmt ihn auf** — die Folgen regelt das Kühlkonzept, Konzept N1.18),
   Bauteilaktivierung, Kopplung von Vorlauftemperatur und Erzeugerfahrplan an die
   Raumtemperatur (seit E22 eigenes Papier [Anlagenkopplung](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md), Stufen AK1 nach G2, AK2 und AK3
-  danach — **an keine Stufe „Altweg entfernen" gebunden** (E23): Sie wirken auf VDI-Gebäude, ein
-  Gebäude auf dem Bestandsweg geht als feste Last ein), sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
+  danach — **sie warten nicht auf die Stufe GA** (E23, E26): Sie wirken auf VDI-Gebäude, ein
+  Gebäude auf dem Bestandsweg geht bis GA als feste Last ein — ein Altweg-Sonderfall, der in der
+  Löschliste unten steht), sommerlicher Wärmeschutz nach DIN 4108-2, Nachweise nach GEG/DIN V 18599,
   Verschattung durch Nachbarbebauung, Wärmerückgewinnung, Nutzungsprofile für Nichtwohngebäude,
   Scan-to-BIM, die Validierung an gemessenen Verbräuchen.
 - **Normnachweise, die ohne Datenträger nicht führbar sind.** Nach E5 werden weder die Datenträger
@@ -1912,18 +1964,42 @@ nicht hier.
 - **Die Auslegungsheizlast im Stundenmodell** (Heating Design Period) ist Gegenstand eines späteren
   Papiers. `Waermelast_Max` bleibt unverändert das Maximum des Kanalsummenvektors
   (`SimulationWaermebedarf.cs:401`), die drei Spitzenkennzahlen stehen **zusätzlich** je Gebäude.
-- **Jede Weiterentwicklung des Tagesbilanz-Wegs.** Nach **E20** und **E23** ist der Altweg der
-  **eingefrorene Bestandsweg**: Er wird nach `Simulation/Altweg/` verschoben und bekommt danach
-  **dauerhaft keine Änderung außer Fehlerbehebung** — keine neue Größe, keinen neuen Ausweis, keine
-  neue Eingabe, keine Kühllast (0 mit benanntem Hinweis), keine Anlagenkopplung, keine Zonen. Was an
-  ihm zu beheben ist, gehört in die Stufe **GB**, also **vor** die Verschiebung (Kapitel 4). Eine
-  Verbesserung, die beide Wege beträfe, wird allein im VDI-Weg gebaut.
-- **Eine Stufe „Altweg entfernen" gibt es nicht** (**E23**, 16.09.2026). Der Bestandsweg bleibt
-  dauerhaft; die Konzeptfrage Q24 ist beantwortet (nie), Q25 gegenstandslos. Was Kapitel 4 der
-  [Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) dazu ausbreitet,
-  ist damit überholt. Ohne Stufe bleibt ein **Aufräumpunkt**: die beiden leserlosen Spalten
-  `WW_Bedarf` und `Waermebedarf`; sie bekommen bei Gelegenheit einen eigenen Auftrag, aber keinen
-  Platz in der Stufenfolge.
+- **Jede Weiterentwicklung des Tagesbilanz-Wegs.** Nach **E20**, **E23** und **E26** ist der
+  Altweg der **eingefrorene Bestandsweg des Übergangs**: Er wird nach `Simulation/Altweg/`
+  verschoben und bekommt danach **für die Dauer des Übergangs keine Änderung außer
+  Fehlerbehebung** — keine neue Größe, keinen neuen Ausweis, keine neue Eingabe, keine Kühllast
+  (0 mit benanntem Hinweis), keine Anlagenkopplung, keine Zonen. Was an ihm zu beheben ist, gehört
+  in die Stufe **GB**, also **vor** die Verschiebung (Kapitel 4); eine ergebniswirksame
+  Fehlerbehebung nach der Verschiebung ist ein eigener, begründeter Einfrieranlass (1.8). Eine
+  Verbesserung, die beide Wege beträfe, wird allein im VDI-Weg gebaut. Das Risiko „zwei Rechenwege
+  nebeneinander" gilt **bis GA**; Modultrennung, `Modultrennungswache` und Ausbauprobe halten seine
+  Kosten klein.
+- **Die Bauweise der Stufe GA selbst.** Was sie entfernt, führt die Löschliste in 6.1; wie ihr
+  Schemaschritt gebaut und die Basis eingefroren wird, folgt den Regeln von 1.6 und 1.8, sobald
+  GA beauftragt ist (Q24).
+
+### 6.1 Löschliste der Stufe GA — Altweg ablösen
+
+Die Stufe **GA** ist die letzte des Plans (E26, 17.09.2026); ihr Zeitpunkt ist offen (**Q24**,
+Ablösekriterium in Kapitel 5), ihr Umfang ist diese Liste (**Q25**), ihr Aufwand **5–8 PT** steckt
+in keiner Summe (Kapitel 4). Quellen: Konzept N1.25 Punkt 4 und N1.31,
+[Befund X](Gebaeudesimulation/2026-09-16_Befund_X_Feldzuordnung_Altweg_VDI6007.md) Kapitel 4
+(dort die Erhebung je Stelle). **Regel** ([`ADR-006`](ADR-006_Trennung_Altweg_VDI6007.md),
+Entscheidung 6): **Jede Stufe, die einen Altweg-Sonderfall einführt** — Hinweistext,
+Ressourcenschlüssel, Sonderweg in Verteilung, Deckung oder Bericht —, **trägt ihn im selben
+Auftrag hier ein.**
+
+| Bereich | Was die Stufe GA entfernt oder umstellt | Quelle |
+|---|---|---|
+| **Datenbank** | zuerst `Fensterflaeche_Ost`/`_West` einmalig aus `Fensterflaeche_Ost_West` füllen (je die Hälfte, wo NULL; F-Ü5); dann je `Tab_Gebaeude` und `Tab_Gebaeude_STAMM` `DROP COLUMN` für `Gebaeude_Modell`, `Fensterflaeche_Ost_West`, `Wochenende`, `Ferien`; im selben Schritt die leserlosen Spalten `WW_Bedarf` und `Waermebedarf`; Sicht `Abfrage_Projektgebaeude` neu aus `GebaeudeSchema.SQL_VIEW_NEU` ohne diese Spalten, der Namensleser zieht mit; `Tab_DBTagV`/`Tab_DBTagVDaten` samt `_STAMM` und `GebaeudetypDialog` (Q25); `DbWerte.GEBAEUDE_MODELL_*`; Testdatenbank auf den Schemastand; der Prüfpunkt der Auslieferungsvorlage zu `Gebaeude_Modell` (F-Ü9) entfällt mit der Spalte | Befund X 4.1; 1.6; Konzept 6.1, 6.4 |
+| **Quelltext** | Modul `Simulation/Altweg/` (`TagesbilanzRechenweg`, `TagesbilanzPhysik`, rund 435 Zeilen); die Weiche in `HeizwaermeEinesGebaeudes` und `IGebaeudeRechenweg` — die Fassade wird zum geraden Aufruf des einen Moduls; `Klimakalender.Altweg` (`Sol_*`, `A_Temp`, `TagTyp_W/NW`) samt dem Aufbau je Lauf (1.5); `modellErzwungen` an `GebaeudeBedarfCtrl.Rechnen` (1.4); die `Modultrennungswache` (1.9) | Befund X 4.2; 1.1, 1.4, 1.5, 1.9 |
+| **Altweg-Sonderfälle der Schwesterstufen** | KU1: der Kältebedarf-0-Hinweis der Kältefassade samt Ressourcenschlüssel (Kühlkonzept F-K18); AK1/AK2: der Sonderfall „feste Last" in Verteilung und Deckung samt Meldungsschlüssel (Anlagenkopplung F-A18). Jede weitere Stufe trägt ihren Sonderfall hier nach (Regel oben) | Kühlkonzept, Anlagenkopplung |
+| **Oberfläche** | Schalter „Rechenweg" (Klappliste, Herleitungszeile, Ressourcenschlüssel; 2.3); Abschnitt „Tagesbilanz (Bestandsweg)" samt Aufklapplogik und die vierte Zeile der Wärmeleitwerte (2.3, 2.5); Spalte „Rechenweg" und der Rechenweg-Text im Wirt (2.7); Vergleich alt/neu im Bedarfsdialog samt `GebaeudeBedarfDaten.Vergleich` (2.7); Ausweis „Tagesbilanz (Bestandsweg)" in Bericht und Bedarfsdialog — danach gilt allein der Produktausweis nach E10; die Schreibstellen der Flags `Wochenende`/`Ferien` (`GebaeudeKatalogDialog.razor:953`, `:955`; Träger `GebaeudeKatalogDaten.cs:139`, `:142`; Hülle `GebaeudeKatalogHuelle.cs:471-472`; Stand 22.09.2026) — sie bleiben bis dahin, damit ein Gebäude auf dem Altweg dieselben Werte behält (X1) | Befund X 4.3; 2.3, 2.4, 2.7 |
+| **Tests und Nachweise** | Rückweg-Test einstellen, mit ihm der eigene Modus des Referenzlaufs (F-Ü7); die Fälle zu `SolareGewinneC`, `SpezWaermeverlusteC`, `TaeglHeizlastWG` in `BhkwPlanRueckgabeTests`; der Datenbankfall „Tagesbilanz ergibt dieselbe Reihe wie der Lauf"; die bunit-Fälle des Abschnitts und des Schalters (2.10); das Referenzprojekt des Altwegs (A15) auf VDI 6007 umstellen; **Basis neu einfrieren** — GA ist ein eigener, begründeter Einfrierschritt (1.8), Begründung in `Referenzlaeufe/LIESMICH.md`, Logbuch-Eintrag im Wiki | Befund X 4.4; 1.8, 1.9 |
+| **Gate** | die **Ausbauprobe**: Ein Bau mit umbenanntem Ordner `Altweg/` übersetzt, nachdem die Weiche entfernt ist, und der Referenzlauf **aller** Projekte ohne Altweg-Gebäude bleibt byte-gleich; ihr statischer Teil läuft ab G1 in der `Modultrennungswache` mit (1.9) | Konzept N1.31; Softwarearchitektur 1.7 |
+
+Der Schemaschritt mit den `DROP COLUMN` je Tabelle und dem Sichtneubau ist der aufwendigste Teil,
+das Neu-Einfrieren der teuerste Nachweis (Befund X 4).
 - **Die Kälteseite.** E21 legt nur die **Bauform** fest (Fassade `SimulationKaeltebedarf`,
   derselbe Vorbereitungsschritt, dieselbe Gebäuderechnung, kein Altweg auf der Kälteseite; 1.1 und
   1.4). Kanal, Senkenzuordnung, Kälteerzeuger, Dialoge, Schema und Bericht der Kühlung stehen im
