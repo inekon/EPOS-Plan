@@ -1,9 +1,9 @@
-# Die Protokolle der 27 entfernten Referenzbasen
+# Die Protokolle der 28 entfernten Referenzbasen
 
-**Was hier liegt.** Für jede der **27 historischen Referenzbasen** unter `Referenzlaeufe/` das
+**Was hier liegt.** Für jede der **28 historischen Referenzbasen** unter `Referenzlaeufe/` das
 Protokoll ihrer Entstehung — `lauf_protokoll.md` beziehungsweise `protokoll.txt`, byte-gleich
 aus dem Stand `b02f986^` (= dem letzten Commit vor der Löschung) gesichert; das Protokoll von R7 kam am
-16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026. **28 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
+16.09.2026 dazu, das von R8 am 18.09.2026, das von R9 am 19.09.2026, das von R10 am 22.09.2026. **29 Dateien.** Nur Text: was gemessen wurde, gegen welche Vorgängerbasis, mit welchem
 Ergebnis, welche Abweichung gewollt war und welche Gegenprobe sie belegt.
 
 **Warum hier.** Die Ordner der Basen sind am 11.09.2026 mit dem Sync-Commit `b02f986` aus dem
@@ -16,7 +16,7 @@ Deshalb sind die Protokolle **vor** dem Umschreiben hierher gesichert worden.
 > **Die Messdaten selbst sind endgültig weg.** Die rund **8 000 CSV-Dateien** der 25 Basen
 > sind weder im Arbeitsbaum noch in der Git-Geschichte. Wer eine alte Zahl braucht, findet
 > sie **nur noch im Protokoll** — oder rechnet sie neu. Die einzige lauffähige Basis ist
-> [`Referenzlaeufe/2026-09-19_R10_BhkwWirkungsgrad`](../../../Referenzlaeufe/2026-09-19_R10_BhkwWirkungsgrad/);
+> [`Referenzlaeufe/2026-09-22_R11_Bestandsbefunde`](../../../Referenzlaeufe/2026-09-22_R11_Bestandsbefunde/);
 > gegen sie prüfen Gate und CI.
 
 Die Übersicht der Basen mit Datum und Zweck steht — samt der Begründung der Löschung — im
@@ -55,6 +55,7 @@ dort übernommen und um die Spalte des gesicherten Protokolls ergänzt.
 | `2026-09-11_R7_Speicherflotte` | 11.09.2026 | CI-Basis nach Anwenderentscheid SP‑O‑8 mit dem Prüfprojekt 1046 „Prüfprojekt Speicherflotte" (Mehrspeicherpfad im gewöhnlichen Projektlauf); dreizehn Projekte, 345 CSV, 1 937 Skalare — abgelöst durch R8 am 16.09.2026 | [`2026-09-11_R7_Speicherflotte/protokoll.txt`](2026-09-11_R7_Speicherflotte/protokoll.txt) |
 | `2026-09-16_R8_Heizkessel_Kaskade` | 16.09.2026 | CI-Basis nach Anwenderentscheid HK‑E‑1 (ein Heizkessel im Projekt bekommt seinen Kaskadenplatz automatisch, nachrangig); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R9 am 18.09.2026 | [`2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt`](2026-09-16_R8_Heizkessel_Kaskade/protokoll.txt) |
 | `2026-09-18_R9_Kesselbrennstoff` | 18.09.2026 | CI-Basis nach Befund `B-1` (der Brennstoffverbrauch des Heizkessels steht in der Modulzeile); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R10 am 19.09.2026 | [`2026-09-18_R9_Kesselbrennstoff/protokoll.txt`](2026-09-18_R9_Kesselbrennstoff/protokoll.txt) |
+| `2026-09-19_R10_BhkwWirkungsgrad` | 19.09.2026 | CI-Basis nach Anwenderentscheid BH1‑O1 (der BHKW-Wirkungsgrad ist ein Faktor, Katalog vereinheitlicht, Schemaschritt 98); dreizehn Projekte, 357 CSV, 2 057 Skalare — abgelöst durch R11 am 22.09.2026 | [`2026-09-19_R10_BhkwWirkungsgrad/protokoll.txt`](2026-09-19_R10_BhkwWirkungsgrad/protokoll.txt) |
 
 ## Die Basis R7 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
 
@@ -587,6 +588,122 @@ zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
 > **Die Vorgängerbasis `2026-09-16_R8_Heizkessel_Kaskade`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu `HK‑E‑1`, den Nachträgen zu den
 > Schemaständen 83 bis 89 und dem Beleg zur Netzladung der Preissteuerung steht in
+> [`Dokumentation/ueberholt/Referenzbasen/`](../Referenzbasen/LIESMICH.md).
+> Gerechnet wird ausschließlich gegen die aktuelle Basis.
+
+<!-- ÜBERNOMMENER ABSCHNITT, ENDE -->
+
+## Die Basis R10 im Einzelnen (aus `Referenzlaeufe/LIESMICH.md` übernommen)
+
+Der Abschnitt „Aktuelle Basis“ hat vom 19. bis zum 22.09.2026 die Basis R10
+beschrieben — Anlass (BH1‑O1), die Tabelle der 13 Abweichungen und die Nachträge zu den
+Schemaständen 99 und 100, mit denen die unter Stand 98 eingefrorene Basis
+ergebnisneutral geblieben ist. Er steht hier im Wortlaut, weil diese Nachträge die
+Ergebnisneutralität der Schritte 99 und 100 belegen.
+
+**Abgelöst wurde R10 durch `2026-09-22_R11_Bestandsbefunde`** (Stufe GB der
+Gebäudesimulation, vom Anwender am 22.09.2026 freigegeben: Bestandsbefunde des
+Tagesbilanz-Wegs und die Korrektur der `Bauweise` von Gebäude 10576 in der
+Testdatenbank). Eines der dreizehn Projekte verschiebt sich dadurch (1008), zwölf bleiben
+byte-gleich; die Tabelle der Abweichungen steht im Abschnitt „Aktuelle Basis“ von
+[`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md).
+
+<!-- ÜBERNOMMENER ABSCHNITT, BEGINN -->
+
+**`2026-09-19_R10_BhkwWirkungsgrad/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023,
+1024, 1030, 1039, 1040, 1041, 1042, 1045, 1046), **357 CSV**, **2 057 Skalare**, gerechnet mit
+dem plattformfreien `EPOS.Referenzlauf` auf Linux gegen `Kenndaten_Test.sqlite`
+(gerechnet auf **Schemastand 98**). Anders als ihre Vorgängerinnen ist diese Basis **auf ihrem
+eigenen Schemastand gerechnet**: Schritt 98 ändert Werte, die der Rechenweg liest, also gibt
+es hier nichts nachzutragen — was die Schritte 90 bis 97 an dieser Stelle zu erklären hatten,
+steht beim Abschnitt „Die Basis R9 im Einzelnen" in
+[`Dokumentation/ueberholt/Referenzbasen/`](../Referenzbasen/LIESMICH.md).
+
+**Die Testdatenbank steht inzwischen auf Schemastand 99** — reines Nachziehen: Schritt 99
+legt `Wirkungsgrad_el` und `Wirkungsgrad_th` an `Tab_BHKW_STAMM` und `Tab_BHKW` an und teilt
+den gepflegten Gesamtwirkungsgrad im Verhältnis der Leistungen auf (78 Katalogsätze und 6
+Projektkopien; ein Satz ohne Gesamtwirkungsgrad bleibt benannt ausgewiesen). **Die Spalte
+`Wirkungsgrad` bleibt unverändert**, und nur sie liest `SimulationBHKW` — die **Referenzbasis
+R10 bleibt**, der Lauf der fünf CI-Projekte gegen sie ist **PASS und byte-gleich gemessen**
+(1 656 417 Werte, 143 Dateien).
+
+**Und inzwischen auf Schemastand 100** — wieder reines Nachziehen: Schritt 100 nimmt
+**41 Fremdschlüsselspalten in 25 Tabellen** ihre Vorgabe `DEFAULT 0`. Eine Elterntabelle mit
+einer Zeile 0 gibt es nicht, also war die Vorgabe eine Falle: Ein Schreibweg, der eine solche
+Spalte weglässt, bekam still die 0 und damit eine Fremdschlüsselmeldung weit weg von der
+Ursache. `NOT NULL` bleibt stehen, wo es steht. **Kein Wert ist angefasst** — keine Zeile trug
+den Wert 0, Zeilenzahlen, Ids, `sqlite_sequence`-Stände, Indizes, Sichten und
+`integrity_check` sind vor und nach dem Lauf gleich —, die **Referenzbasis R10 bleibt**, und
+der Lauf der fünf CI-Projekte gegen sie ist **PASS und byte-gleich gemessen** (1 656 417
+Werte, 143 Dateien).
+**Ohne eigenen Schritt** trägt die Testdatenbank zusätzlich die Spalte `Nachweis_Json` an
+`Tab_ErgebnisWirtschaftlichkeit` — eine **Konservenspalte**: Diese Ergebnistabelle ist keine
+Schematabelle, sie entsteht und wächst erst beim ersten Programmlauf über
+`WirtschaftlichkeitCtrl.SpalteSicher`. Der SQL-Dialektprüfer löst das INSERT des Ergebnisses
+aber gegen genau diese Datei auf und meldete ohne die Spalte eine Fundstelle, die in der
+Anwendung keine ist; angelegt wird sie deshalb von `Werkzeuge/Testdatenbankschema` (leer, kein
+Wert, ohne eigene `Zielversion`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+1007, 1017, 1045, **1046**) jeden Push, `ios.yml` den iZ6-Vergleich für 1030; das Gate der
+Orchestrierung zieht getrennt nach. Sie ist die **einzige** Basis im Arbeitsbaum.
+
+> **Anlass: der Anwenderentscheid vom 19.09.2026, „Katalog vereinheitlichen + Basis neu"
+> (BH1‑O1).** `Tab_BHKW[_STAMM].Wirkungsgrad` ist der GESAMTwirkungsgrad als **Faktor** — so
+> sagt es die Maske, so rechnet `SimulationBHKW.Auswertung`
+> (`Verbrauch = (Wärme + Strom) / Wirkungsgrad`). Ein Teil des Katalogs trug dort einen
+> **Prozentwert**, und zwar den des **elektrischen** Wirkungsgrads; geteilt wurde dann durch
+> 29,5 statt durch 0,92, und Brennstoff, Gasspitze, Emissionen und Brennstoffkosten des BHKW
+> fielen um rund **Faktor 32** zu klein aus. **Schemaschritt 98** rechnet den Bestand um —
+> `(Ptherm + Pel) · Wirkungsgrad / 100 / Pel`, vier Stellen, übernommen nur im Band
+> **[0,5; 1,05]**. Herleitung, Zählung und die benannt ausgewiesenen Zeilen stehen im Protokoll
+> [`BW1_BhkwWirkungsgrad_Protokoll.md`](../Protokolle/Update/BW1_BhkwWirkungsgrad_Protokoll.md).
+>
+> **13 Abweichungen von 3 882 737 Werten — alle in zwei Projekten, alle am BHKW, keine
+> unerklärte.** Betroffen ist genau, wer ein umgerechnetes Modul fährt: **1018** („BHKW Test
+> München", EC‑POWER XRGI 15, 29,5 → 0,9216) und **1030** („Referenz BHKW-Kaskade", EC‑POWER
+> XRGI 9, 29,3 → 0,9474; das zweite Modul der Kaskade trug schon einen Faktor). Die elf
+> übrigen Projekte sind **byte-gleich**.
+>
+> | Projekt | `BHKW.Gasverbrauch` [MWh/a] | `Em.Bhkw.Co2T` [t/a] | `Em.Bhkw.NoxKg` [kg/a] |
+> |---|---:|---:|---:|
+> | 1018 | 1,56 → **49,94** | 0,374 → **11,986** | 0,172 → **5,494** |
+> | 1030 | 1 048,29 → **1 241,55** | 251,589 → **297,971** | 115,312 → **136,570** |
+>
+> Dazu je Projekt `Em.Bhkw.So2Kg` und `Em.Bhkw.StaubKg` im selben Verhältnis und die
+> Modulzeilen `BHKWModul[i].Verbrauch` — sie sind die anteilige Aufteilung des Anlagenwerts
+> nach Wärmeproduktion (`ErgebnisCtrl`) und wandern deshalb im Gleichschritt mit ihm: eine
+> Zeile in 1018, zwei in 1030. 6 + 7 = 13.
+>
+> **Was byte-gleich geblieben ist:** **alle 357 Ganglinien- und Vektordateien** — keine
+> Zeitreihe hat sich bewegt, auch nicht in 1018 und 1030; je Projekt weicht höchstens die
+> `aggregate.csv` ab. Und in den Skalaren jede andere Größe: Wärme- und Stromproduktion des
+> BHKW, Betriebsstunden, Vollbenutzungsstunden, Kessel, Puffer, Speicherflotte, Wirtschaft-
+> lichkeit. Keine Zeile kommt hinzu, keine fällt weg, die Skalarzahl bleibt Projekt für
+> Projekt dieselbe.
+>
+> **Die Gegenprobe:** 1018 fährt ein Modul mit 1 016 Volllaststunden; (30,8 + 14,5) kW ×
+> 1 016 h / 0,9216 = **49,9 MWh/a** — genau der Wert, den der Lauf jetzt ausweist, und genau
+> das Bild, das der Anwender erwartet hatte. Der Rechenweg ist dafür **nicht angefasst**
+> worden: `SimulationBHKW` steht unverändert, geändert haben sich allein die Daten.
+>
+> **Die Testdatenbank ist angefasst worden** (Schemastand 97 → 98, 34 Katalogsätze und 3
+> Projektkopien umgerechnet); **keine der drei Einfrierregeln ist berührt** — weder ein
+> Emissionsfaktor noch ein PV-Modulkoeffizient noch der Flottenstand des Projekts 1046.
+>
+> **Determinismus geprüft:** zweiter Lauf desselben Standes **13/13 byte-gleich**,
+> Laufzeit 00:00:05.
+>
+> ```bash
+> dotnet run --project EPOS.Referenzlauf -c Release -- lauf \
+>   --quelle Referenzlaeufe/Kenndaten_Test.sqlite \
+>   --projekte 1007,1008,1017,1018,1023,1024,1030,1039,1040,1041,1042,1045,1046 \
+>   --ziel Referenzlaeufe/2026-09-19_R10_BhkwWirkungsgrad
+> ```
+>
+> Ablauf, Warnungen und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
+
+> **Die Vorgängerbasis `2026-09-18_R9_Kesselbrennstoff`** ist mit dieser Einfrierung aus dem
+> Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zum Befund `B-1` und den Nachträgen
+> zu den Schemaständen 90 bis 97 steht in
 > [`Dokumentation/ueberholt/Referenzbasen/`](../Referenzbasen/LIESMICH.md).
 > Gerechnet wird ausschließlich gegen die aktuelle Basis.
 

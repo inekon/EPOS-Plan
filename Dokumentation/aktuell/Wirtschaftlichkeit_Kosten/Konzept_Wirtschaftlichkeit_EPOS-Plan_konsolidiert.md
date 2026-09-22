@@ -2297,7 +2297,7 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 **Nachweis und Betrieb**
 
 20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — entfällt (→ Register R‑NR), siehe Protokoll
-21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll; **offen bleiben allein die Betriebskosten von 1030**
+21. ~~Basiswechsel der Referenzläufe entscheiden~~ — erledigt mit #333 und E1 (#380), siehe Protokoll (heute gilt die Basis `2026-09-22_R11_Bestandsbefunde`); **offen bleiben allein die Betriebskosten von 1030**
 22. Sichtabnahmen: Brennstoffblock (B2), Kosten-Seite (BK1), Stromsteuer-Hervorhebung (B4)
 23. resx-Sammelnachtrag der Textschlüssel aus B3a, B3b, B4 und der F-Serie
 24. Datenpflege: Projekt 1018 Kessel ohne Energieträger, Puffer ohne Temperaturpaar;

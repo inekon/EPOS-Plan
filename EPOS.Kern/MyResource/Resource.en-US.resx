@@ -3178,6 +3178,15 @@ Both point to {0} "{1}".</value>
   <data name="SIMENG_TAGESVERTEILUNG_FEHLT" xml:space="preserve">
     <value>Heat demand: no data is stored for the daily distribution type "{0}". The demand calculation was aborted at this point; the result is incomplete.</value>
   </data>
+  <data name="SIMENG_FERIEN_AUSSERHALB_JAHR" xml:space="preserve">
+    <value>Heat demand, building "{0}": holiday period {1} (day {2} to {3}) lies wholly or partly outside days 1 to 365. Only the days within the year are set back.</value>
+  </data>
+  <data name="SIMENG_FERIEN_JAHRESWECHSEL" xml:space="preserve">
+    <value>Heat demand, building "{0}": holiday period 1 is read as spanning the turn of the year (day {1} to the end of the year and the start of the year to day {2}). Because the start is not after the end, the whole year is set back.</value>
+  </data>
+  <data name="SIMENG_FERIEN_OHNE_WIRKUNG" xml:space="preserve">
+    <value>Heat demand, building "{0}": holiday period {1} (day {2} to {3}) has no effect — start and end do not yield a single holiday day.</value>
+  </data>
   <data name="SIMENG_WP_BIVALENZTEMPERATUR_VORBELEGUNG" xml:space="preserve">
     <value>The unit '{0}' calculates in bivalent-alternative mode with a bivalent temperature of 0 °C — the default value of the input field. Below 0 °C the heat pump remains off and the second heat generator takes over alone. If this is not intended, maintain the unit's bivalent temperature.</value>
   </data>

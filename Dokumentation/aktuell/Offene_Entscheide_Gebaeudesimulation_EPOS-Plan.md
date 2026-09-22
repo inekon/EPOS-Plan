@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 22.09.2026, nach den Entscheiden E16–E27 und der Prüfung vom 17.09.2026.**
+**Stand 22.09.2026, nach den Entscheiden E16–E28 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -12,18 +12,19 @@ weiterhin im Konzept-Nachtrag und in der Statusdatei**: der ausführliche Entsch
 N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
-Entscheid um den betroffenen Punkt gekürzt; die mit **E27** (22.09.2026) entschiedenen Punkte stehen
-ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
+Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026) entschiedenen Punkte
+stehen ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
 - **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 22 Punkte, die
-  noch offen sind, nach Fälligkeit. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 20 Punkte, die
+  noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen. Wer wenig Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
-  immer im selben Aufbau; die mit E27 entschiedenen tragen unter der Überschrift den Vermerk
-  „**Entschieden: E27 (22.09.2026, Konzept N1.32)**"; **Kapitel 7** hält
+  immer im selben Aufbau; die mit E27 oder E28 entschiedenen tragen unter der Überschrift den Vermerk
+  „**Entschieden: E27 (22.09.2026, Konzept N1.32)**" bzw. „**Entschieden: E28 (22.09.2026, Konzept
+  N1.33)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
@@ -35,8 +36,8 @@ ausnahmsweise mit Entscheidvermerk weiter in ihren Kapiteln (Kapitel 9).
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **22 offene Punkte** (Stand E27, 22.09.2026): 5 im Umsetzungskonzept (U4,
-U9, U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 9 im Kühlkonzept (K4–K9, K12,
+**Umfang in Zahlen.** **20 offene Punkte** (Stand E28, 22.09.2026): 3 im Umsetzungskonzept
+(U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 9 im Kühlkonzept (K4–K9, K12,
 K21, K23); Konzept, Datenaustauschkonzept und Softwarearchitektur haben keinen offenen Punkt mehr.
 **E27** hat 44 der bisher 66 Punkte entschieden — 3 im Konzept (Q24, Q25, Q26), 9 im
 Umsetzungskonzept (U1, U3, U5–U8, U10, U12, U17), 4 im Mehrzonenkonzept (M2, M9, M10, M14), 8 im
@@ -45,6 +46,8 @@ A9–A15, A17, A18; A4, A5 und A9 über U1, U3 und U5) und 5 im Kühlkonzept (K1
 K24) — und die Festlegung K2 (8.2) bestätigt; alle bis auf **K10** nach Empfehlung. Drei
 entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1), **K22**
 (Prüfung vor KU2), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
+**E28** (22.09.2026) hat danach **U4** und **U9** nach Empfehlung entschieden; vor G0, GB und G1
+ist damit kein Anwenderentscheid mehr offen.
 Davor: Die Entscheide E16–E25 vom 16.09.2026 haben Q10, Q11a, H1–H12, U2, U11, U16, M1, M4, A7,
 A8, A16, A19 und K1 aus diesem Register genommen und Q26 hinzugefügt; **E26** (17.09.2026) hat Q24
 und Q25 wieder geöffnet; die Prüfung vom 17.09.2026 hat U17 hinzugefügt, die Reste D17 (aus D3)
@@ -108,9 +111,10 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 22 Punkte, keiner erfüllt das Kriterium dieser Liste.** Nach Fälligkeit:
-**GB** U9; **G1** U4; **G4** U13, U14, U15; **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d**
-M11; **KU1** K4, K5, K6, K7, K12; **KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
+**Was noch offen ist — 20 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+(G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
+ist damit kein Anwenderentscheid mehr offen. Nach Fälligkeit: **G4** U13, U14, U15; **G6b** M3,
+M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11; **KU1** K4, K5, K6, K7, K12; **KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -240,8 +244,8 @@ Vermerk und bleiben als Begründung stehen.
 
 Quelle: [`Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md),
 Kapitel 5 („Fragen mit Empfehlung"; das Papier steht in Rev. 4) und 1.5 (U17). Von den
-siebzehn Fragen sind nach **E27** (22.09.2026, N1.32) noch fünf offen — **U4, U9, U13, U14,
-U15**; neun sind mit E27 entschieden und tragen den Vermerk (U1, U3, U5–U8, U10, U12, U17); **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
+siebzehn Fragen sind nach **E27** (22.09.2026, N1.32) noch drei offen — **U13, U14,
+U15**; neun sind mit E27 entschieden und tragen den Vermerk (U1, U3, U5–U8, U10, U12, U17), **U4** und **U9** mit **E28** (22.09.2026, N1.33); **U2** ist durch E20 überholt, **U11** und **U16** sind mit E18
 (16.09.2026) beantwortet — alle drei hier gekürzt; **U17** ist mit der Prüfung vom 17.09.2026
 hinzugekommen (F-Ü6).
 Vier von ihnen führt die Softwarearchitektur unter eigener Nummer als Sperrpunkt: **U1 = A4**,
@@ -306,6 +310,8 @@ N1.25, N1.28, N1.31, ADR-006.
   (U3) und 2.4; [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 6 (A5).
 
 ### U4 — Glossarabschnitt „Gebäudehülle und Gebäudemodell" vor den Übersetzungen
+
+**Entschieden: E28 (22.09.2026, Konzept N1.33)** — ja, nach Empfehlung — der Abschnitt „13. Gebäudehülle und Gebäudemodell" im Glossar entsteht, bevor die englischen Werte geschrieben werden; ohne ihn entstünden zwei Übersetzungen desselben Begriffs. Fällig vor G1 (Ressourcen des Gebäudedialogs).
 
 - **Frage:** Entsteht ein Abschnitt „13. Gebäudehülle und Gebäudemodell" im
   [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md), **bevor** die 63 englischen Werte
@@ -443,6 +449,8 @@ N1.25, N1.28, N1.31, ADR-006.
   (U8) und 1.9; [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.2 und N1.11 (E6).
 
 ### U9 — die Grenze von 100 Gebäuden im Bestandsweg
+
+**Entschieden: E28 (22.09.2026, Konzept N1.33)** — (a) ja, in GB, nach Empfehlung — die feste Grenze von 100 Gebäuden im Bestandsweg wird in GB behoben, wo die Schleife ohnehin angefasst wird: das ungelesene Feld wird gelöscht, das andere auf die tatsächliche Zeilenzahl dimensioniert. Ergebnisneutral, also ohne Einfrieranlass.
 
 - **Frage:** Wird die feste Grenze von 100 Gebäuden im Bestandsweg behoben, und in welchem
   Schritt?
@@ -1937,8 +1945,9 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
-entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** (22.09.2026) entschiedenen Punkte
-mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept N1.32)" weiter in ihren Kapiteln, weil ihre
+entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026) entschiedenen
+Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept N1.32)" bzw. „Entschieden: E28
+(22.09.2026, Konzept N1.33)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
 (U6, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer

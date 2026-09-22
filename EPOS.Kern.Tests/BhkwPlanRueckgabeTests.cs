@@ -26,9 +26,9 @@ namespace EPOS.Kern.Tests
     /// um 0,39 % (<c>protokoll.txt</c> der Basis <c>2026-09-07_R4_Double</c>).</para>
     ///
     /// <para>Ohne Datenbank — die drei Funktionen sind reine Rechnungen über ihre
-    /// Argumente. Einzige Ausnahme ist der globale Zustand der Vortemperatur in
-    /// <see cref="BhkwPlan.TaeglHeizlastWG"/>; jeder Fall setzt ihn über
-    /// <see cref="BhkwPlan.ResetState"/> zurück.</para>
+    /// Argumente. Einzige Ausnahme ist die Vortemperatur in
+    /// <see cref="BhkwPlan.TaeglHeizlastWG"/>; jeder Fall bringt dafür seinen eigenen,
+    /// frischen <see cref="Tagesbilanzzustand"/> mit.</para>
     /// </summary>
     public class BhkwPlanRueckgabeTests
     {
@@ -88,7 +88,6 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Tagesheizlast_ist_keine_ganze_Zahl_mehr()
         {
-            BhkwPlan.ResetState();
             double wert = Tagesheizlast(gesamtflaeche: 137.0, wohnflaeche: 120.0);
 
             Assert.True(wert > 0, "Das Probegebäude heizt gar nicht — der Fall prüft dann nichts.");
@@ -106,10 +105,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Flaechenskalierung_wirkt_jetzt_ungerundet()
         {
-            BhkwPlan.ResetState();
             double a = Tagesheizlast(gesamtflaeche: 137.0, wohnflaeche: 120.0);
-
-            BhkwPlan.ResetState();
             double b = Tagesheizlast(gesamtflaeche: 137.000001, wohnflaeche: 120.0);
 
             Assert.NotEqual(a, b);
@@ -153,6 +149,7 @@ namespace EPOS.Kern.Tests
         private static double Tagesheizlast(double gesamtflaeche, double wohnflaeche)
         {
             return BhkwPlan.TaeglHeizlastWG(
+                zustand: new Tagesbilanzzustand(),
                 day: 1, weAbsenkung: 0, weTemp: 20.0, ferienAbsenkung: 0, ferienTemp: 20.0,
                 raumsolltempTag: 20.0, raumsolltempNacht: 20.0,
                 innereGewinne: 0.0, solareGewinne: 0.0,
