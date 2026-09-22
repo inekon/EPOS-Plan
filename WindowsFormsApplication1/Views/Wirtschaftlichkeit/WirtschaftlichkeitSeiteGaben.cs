@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Seiten.Berichte;
 
@@ -32,7 +31,6 @@ namespace WindowsFormsApplication1
     {
         private readonly int _idStamm;
         private readonly string _stammName;
-        private readonly Func<Form> _besitzer;
 
         private readonly WirtschaftlichkeitCtrl _ctrl = new WirtschaftlichkeitCtrl();
 
@@ -79,11 +77,10 @@ namespace WindowsFormsApplication1
             WirtschaftlichkeitSzenario.WORST
         };
 
-        internal WirtschaftlichkeitSeiteGaben(int idStamm, string stammName, Func<Form> besitzer)
+        internal WirtschaftlichkeitSeiteGaben(int idStamm, string stammName)
         {
             _idStamm = idStamm;
             _stammName = stammName ?? "";
-            _besitzer = besitzer;
         }
 
         /// <summary>Läuft gerade eine Berechnung?</summary>
@@ -888,7 +885,7 @@ namespace WindowsFormsApplication1
                 switch (art)
                 {
                     case WirtschaftlichkeitSeite.Unterdialog.Photovoltaik:
-                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm, _besitzer);
+                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
                         string titel;

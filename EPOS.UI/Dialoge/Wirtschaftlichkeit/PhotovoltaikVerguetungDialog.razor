@@ -296,8 +296,13 @@
     /// Der Marktwert-Import (P6): Dateiauswahl und Einlesen liegen in der Hülle
     /// — <c>null</c> als Rückgabe heißt „abgebrochen". <c>null</c> als Delegat
     /// heißt „diese Umgebung kann keine Datei wählen"; dann fehlt der Knopf.
+    ///
+    /// <para><b>Asynchron</b>, weil die Hülle den Dateiwähler seit E3 Schritt 2
+    /// über <c>Dienste.Datei.DateiOeffnenAsync</c> öffnet: Ein Wähler, der
+    /// unmittelbar aus dem Blazor-Ereignis erschiene, pumpte dort eine
+    /// verschachtelte Nachrichtenschleife (Regel (b) der Hüllenschicht).</para>
     /// </summary>
-    [Parameter] public Func<MarktwertImport?>? MarktwerteImportieren { get; set; }
+    [Parameter] public Func<Task<MarktwertImport?>>? MarktwerteImportieren { get; set; }
 
     /// <summary>Was der Dialog beim Schließen meldet.</summary>
     [Parameter] public EventCallback<PvVerguetungErgebnis> Geschlossen { get; set; }
@@ -651,12 +656,12 @@
     // Knoepfe
     // =====================================================================
 
-    private void MarktwerteKlick()
+    private async Task MarktwerteKlick()
     {
         _hinweis = ""; _fehler = "";
         if (MarktwerteImportieren is null) return;
 
-        MarktwertImport? ergebnis = MarktwerteImportieren();
+        MarktwertImport? ergebnis = await MarktwerteImportieren();
         if (ergebnis is null) return;   // Dateiauswahl abgebrochen
 
         if (ergebnis.Ok) _hinweis = _t.ImportOk + ergebnis.Bericht;

@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Dienste;
@@ -64,7 +65,7 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
         double einspeisungMWh = 0,
         Func<bool>? speichern = null,
         Action<PvVerguetungErgebnis>? geschlossen = null,
-        Func<MarktwertImport?>? import = null,
+        Func<Task<MarktwertImport?>>? import = null,
         bool titelAnzeigen = true)
     {
         return Render<PhotovoltaikVerguetungDialog>(p => p
@@ -446,21 +447,27 @@ public class PhotovoltaikVerguetungDialogTests : EposBunitContext
     [Fact]
     public void Der_Marktwertimport_meldet_Erfolg_und_Fehler_als_Banner()
     {
-        var cut = Aufbauen(Satz(), import: () => new MarktwertImport(true, "18 Zeilen"));
+        // E3/2: Die Huelle waehlt ueber Dienste.Datei und antwortet deshalb
+        // asynchron; der Pruefstand wartet auf den Zeichenlauf.
+        var cut = Aufbauen(Satz(),
+            import: () => Task.FromResult<MarktwertImport?>(new MarktwertImport(true, "18 Zeilen")));
         cut.FindAll("button.epos-sprung")[0].Click();
-        Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
-                        e => e.TextContent.Contains("18 Zeilen"));
+        cut.WaitForAssertion(() =>
+            Assert.Contains(cut.FindAll(".epos-warnbanner-text"),
+                            e => e.TextContent.Contains("18 Zeilen")));
 
-        var cut2 = Aufbauen(Satz(), import: () => new MarktwertImport(false, "Spalte fehlt"));
+        var cut2 = Aufbauen(Satz(),
+            import: () => Task.FromResult<MarktwertImport?>(new MarktwertImport(false, "Spalte fehlt")));
         cut2.FindAll("button.epos-sprung")[0].Click();
-        Assert.Contains(cut2.FindAll(".epos-warnbanner-text"),
-                        e => e.TextContent.Contains("Spalte fehlt"));
+        cut2.WaitForAssertion(() =>
+            Assert.Contains(cut2.FindAll(".epos-warnbanner-text"),
+                            e => e.TextContent.Contains("Spalte fehlt")));
     }
 
     [Fact]
     public void Ein_abgebrochener_Dateidialog_sagt_nichts()
     {
-        var cut = Aufbauen(Satz(), import: () => null);
+        var cut = Aufbauen(Satz(), import: () => Task.FromResult<MarktwertImport?>(null));
 
         cut.FindAll("button.epos-sprung")[0].Click();
 

@@ -161,7 +161,7 @@ namespace WindowsFormsApplication1
                     GruppenseitenPruefen();
                     if (_wirtschaft == null)
                         _wirtschaft = new WirtschaftlichkeitSeiteGaben(
-                            _stand.IdStamm, _stand.StammName, _besitzer)
+                            _stand.IdStamm, _stand.StammName)
                         {
                             Vergleich = _vergleich
                         };
