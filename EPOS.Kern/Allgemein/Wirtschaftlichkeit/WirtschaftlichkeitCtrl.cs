@@ -1545,8 +1545,25 @@ namespace WindowsFormsApplication1
         public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
             WirtschaftlichkeitParameter p, int idReferenz, bool persistieren)
         {
+            List<SensitivitaetZeile> sensitivitaet;
+            return Berechne(daten, p, idReferenz, persistieren, out sensitivitaet);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A) — dieselbe Rechnung, die zusätzlich ihre
+        /// <b>Sensitivitätszeilen</b> herausgibt (Szenario Erwartet, gegen die Referenz
+        /// DIESES Laufs). Ein Lauf ohne Persistenz (Sicht 2) schreibt sie nicht in die
+        /// Datenbank; Seite und Bericht brauchen sie trotzdem — sonst stünde neben den
+        /// Differenzen gegen A eine Sensitivität gegen die Gruppenreferenz.
+        /// </summary>
+        /// <param name="sensitivitaet">Die Zeilen dieses Laufs, mit Stufe und Steigung.</param>
+        public List<WirtschaftlichkeitErgebnis> Berechne(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz, bool persistieren,
+            out List<SensitivitaetZeile> sensitivitaet)
+        {
             var alle = new List<WirtschaftlichkeitErgebnis>();
             var sens = new List<SensitivitaetZeile>();
+            sensitivitaet = sens;
             var matrizen = new Dictionary<int, StromMatrix>();   // W3: je Projekt (szenariounabhängig)
             if (daten == null || daten.Varianten.Count == 0 || p == null) return alle;
             StelleTabellenSicher();
@@ -1636,6 +1653,10 @@ namespace WindowsFormsApplication1
                             KapitalwertRechner.Annuitaet(ps.Zinssatz / 100.0, ps.Betrachtungszeitraum);
                         erg.AmortisationJahre = KapitalwertRechner.AmortisationDifferenz(bild, refBild);
                         erg.IRR = KapitalwertRechner.InternerZinsfuss(bild, refBild);   // W2
+                        // ETAPPE E5 (V‑A, Befund A2): Wie oft wechselt DIESELBE Reihe ihr
+                        // Vorzeichen? Mehr als einmal = der Zinsfuß ist mehrdeutig, keinmal =
+                        // es gibt keinen. Reiner Ausweis; der Zinsfuß selbst bleibt, wie er ist.
+                        erg.IrrVorzeichenwechsel = KapitalwertRechner.Vorzeichenwechsel(bild, refBild);
 
                         // Sensitivitätsanalyse (W2): nur Szenario Erwartet.
                         if (szenario == WirtschaftlichkeitSzenario.ERWARTET &&
@@ -1650,6 +1671,23 @@ namespace WindowsFormsApplication1
 
             if (persistieren) Persistiere(alle, sens, matrizen, p);
             return alle;
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U4) — die <b>Bandbreite dreier Szenarien</b>: DERSELBE Rechenweg wie
+        /// <see cref="Berechne(BerichtsDaten, WirtschaftlichkeitParameter, int, bool)"/> —
+        /// drei vollständige Läufe mit je eigenem Parametersatz —, aber <b>ohne zu
+        /// persistieren</b> (Muster: Sicht 2 aus § 2.15). Sie ist eine Auskunft über die
+        /// Gruppe, kein gebuchter Lauf; der gespeicherte Stand bleibt der, aus dem der
+        /// Bericht reproduzierbar sein soll.
+        /// </summary>
+        /// <param name="idReferenz">0 = die Gruppenreferenz (bzw. A in Sicht 2), und die
+        /// wiederum 0 = Stamm — dieselbe Kette wie in <c>Berechne</c>.</param>
+        public WirtschaftlichkeitBandbreite BerechneBandbreite(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int idReferenz)
+        {
+            List<WirtschaftlichkeitErgebnis> alle = Berechne(daten, p, idReferenz, false);
+            return WirtschaftlichkeitBandbreite.Bilde(daten, alle, Referenz(daten, p, idReferenz));
         }
 
         // ------------------------------------------------------------- Verlauf (Phase 11)
@@ -5198,16 +5236,21 @@ namespace WindowsFormsApplication1
             };
             double z = p.Zinssatz, pe = p.PreissteigerungEnergie;
 
+            // ETAPPE E5 (V‑A, V‑G6): Jede stetige Zeile nennt ihren Ausschlag auch als
+            // ZAHL (Schritt) — daraus bildet die Zeile ihre Steigung. Die Kapitalwerte
+            // sind unverändert dieselben.
             var zeilenListe = new List<SensitivitaetZeile>
             {
                 new SensitivitaetZeile { IdProjekt = idProjekt,
                     Parameter = "Zinssatz ±" + SENS_DELTA_ZINS.ToString("0.#") + " %-Pkt",
                     KwMinus = diff(z - SENS_DELTA_ZINS, pe, 1, 1), KwBasis = kwBasis,
-                    KwPlus = diff(z + SENS_DELTA_ZINS, pe, 1, 1) },
+                    KwPlus = diff(z + SENS_DELTA_ZINS, pe, 1, 1),
+                    Schritt = SENS_DELTA_ZINS, SchrittInProzentpunkten = true },
                 new SensitivitaetZeile { IdProjekt = idProjekt,
                     Parameter = "Energiepreissteigerung ±" + SENS_DELTA_PREIS.ToString("0.#") + " %-Pkt",
                     KwMinus = diff(z, pe - SENS_DELTA_PREIS, 1, 1), KwBasis = kwBasis,
-                    KwPlus = diff(z, pe + SENS_DELTA_PREIS, 1, 1) },
+                    KwPlus = diff(z, pe + SENS_DELTA_PREIS, 1, 1),
+                    Schritt = SENS_DELTA_PREIS, SchrittInProzentpunkten = true },
                 // PAKET FX5-a: Der Investitions-Ausschlag skaliert seit dem 03.09.2026
                 // NICHT mehr nur die Investitionspositionen, sondern auch die davon
                 // abgeleiteten Betriebskosten („x % der Investitionssumme") — die
@@ -5215,11 +5258,13 @@ namespace WindowsFormsApplication1
                 new SensitivitaetZeile { IdProjekt = idProjekt,
                     Parameter = "Investition Variante ±" + SENS_DELTA_INVEST.ToString("0.#") + " %",
                     KwMinus = diff(z, pe, 1.0 - SENS_DELTA_INVEST / 100.0, 1), KwBasis = kwBasis,
-                    KwPlus = diff(z, pe, 1.0 + SENS_DELTA_INVEST / 100.0, 1) },
+                    KwPlus = diff(z, pe, 1.0 + SENS_DELTA_INVEST / 100.0, 1),
+                    Schritt = SENS_DELTA_INVEST, SchrittInProzentpunkten = false },
                 new SensitivitaetZeile { IdProjekt = idProjekt,
                     Parameter = "Energiekosten Variante ±" + SENS_DELTA_ENERGIE.ToString("0.#") + " % (inkl. CO₂-Abgabe)",
                     KwMinus = diff(z, pe, 1, 1.0 - SENS_DELTA_ENERGIE / 100.0), KwBasis = kwBasis,
-                    KwPlus = diff(z, pe, 1, 1.0 + SENS_DELTA_ENERGIE / 100.0) }
+                    KwPlus = diff(z, pe, 1, 1.0 + SENS_DELTA_ENERGIE / 100.0),
+                    Schritt = SENS_DELTA_ENERGIE, SchrittInProzentpunkten = false }
             };
             // Novellen-Szenario (Kap. 8.5.7, Phase 9): KWKG-Bonus entfällt komplett
             // (−Δ) vs. Fortschreibung der heutigen Sätze (Basis = +Δ).
@@ -7360,6 +7405,14 @@ namespace WindowsFormsApplication1
                         // Auskunft: genau EIN Kohärenzhinweis, kein Dialog und keine
                         // Meldung — er läuft über den Weg, den Reiter, Word und Excel
                         // ohnehin zeigen.
+                        // ETAPPE E5 (Konzept § 6.3 Nr. 31, entschieden 22.09.2026): Eine
+                        // Zeile OHNE Umschlag — Spalte fehlt, NULL oder leer — wird
+                        // gekennzeichnet, nicht nachgerechnet. Ein vorhandener, aber
+                        // unlesbarer Umschlag sagt es bereits selbst (Kohärenzzeile unten).
+                        e.OhneNachweis = !r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) ||
+                                         r[SPALTE_NACHWEIS_JSON] == DBNull.Value ||
+                                         string.IsNullOrWhiteSpace(Convert.ToString(r[SPALTE_NACHWEIS_JSON]));
+
                         if (r.Table.Columns.Contains(SPALTE_NACHWEIS_JSON) &&
                             r[SPALTE_NACHWEIS_JSON] != DBNull.Value)
                         {
@@ -7407,14 +7460,26 @@ namespace WindowsFormsApplication1
                         new DbParam("@p", idProjekt));
                     if (dt == null) continue;
                     foreach (DataRow r in dt.Rows)
-                        liste.Add(new SensitivitaetZeile
+                    {
+                        var z = new SensitivitaetZeile
                         {
                             IdProjekt = idProjekt,
                             Parameter = r["Parameter"] != DBNull.Value ? r["Parameter"].ToString() : "",
                             KwMinus = D(r, "KwMinus"),
                             KwBasis = D(r, "KwBasis"),
                             KwPlus = D(r, "KwPlus")
-                        });
+                        };
+                        // ETAPPE E5 (V‑A): Die Stufe steht im Text der Zeile — daraus
+                        // entsteht die Steigung, ohne dass eine Spalte dazukommt.
+                        double schritt;
+                        bool punkte;
+                        if (SensitivitaetZeile.SchrittAusParameter(z.Parameter, out schritt, out punkte))
+                        {
+                            z.Schritt = schritt;
+                            z.SchrittInProzentpunkten = punkte;
+                        }
+                        liste.Add(z);
+                    }
                 }
             }
             catch { }

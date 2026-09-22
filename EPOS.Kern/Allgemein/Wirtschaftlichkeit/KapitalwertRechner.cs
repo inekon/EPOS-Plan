@@ -762,20 +762,91 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE E5 (V‑A, Befund A2) — die <b>Differenzreihe</b> Variante − Referenz:
+        /// nominal, unabgezinst, Index 0 = Differenz der Anfangszahlung, im letzten Jahr
+        /// zusätzlich die Restwertdifferenz. Genau diese Reihe setzt der interne Zinsfuß
+        /// gleich null; sie steht deshalb EINMAL hier, damit Zinsfuß und
+        /// Vorzeichenzähler dieselbe Reihe lesen.
+        /// </summary>
+        /// <returns><c>null</c>, wenn eines der beiden Bilder fehlt oder keine Reihe führt.</returns>
+        public static double[] Differenzreihe(Zahlungsbild variante, Zahlungsbild referenz)
+        {
+            if (variante == null || referenz == null ||
+                variante.NominalReihe == null || referenz.NominalReihe == null) return null;
+            int T = Math.Min(variante.NominalReihe.Length, referenz.NominalReihe.Length) - 1;
+            if (T < 0) return null;
+
+            double[] fluss = new double[T + 1];
+            for (int t = 0; t <= T; t++) fluss[t] = variante.NominalReihe[t] - referenz.NominalReihe[t];
+            fluss[T] += variante.RestwertNominal - referenz.RestwertNominal;
+            return fluss;
+        }
+
+        /// <summary>
+        /// Betrag [€], unter dem ein Jahreswert der Differenzreihe als NULL gilt. Die
+        /// Reihe entsteht als Differenz zweier getrennt gerechneter Bilder; zwei gleiche
+        /// Posten können dabei im letzten Bit auseinanderliegen — ein solcher Rest ist
+        /// kein Vorzeichen.
+        /// </summary>
+        public const double VORZEICHEN_NULLGRENZE_EUR = 1e-6;
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A, Befund A2) — die <b>Zahl der Vorzeichenwechsel</b> einer
+        /// Zahlungsreihe. Nullwerte (|w| ≤ <see cref="VORZEICHEN_NULLGRENZE_EUR"/>) und
+        /// nicht bestimmte Werte zählen nicht; gezählt wird jeder Übergang zwischen zwei
+        /// von null verschiedenen Werten entgegengesetzten Vorzeichens.
+        ///
+        /// <para><b>Warum es den Zähler gibt.</b> DIN EN 17463 verwirft den internen
+        /// Zinsfuß als Entscheidungsgrundlage, weil die Zinsfußgleichung bei MEHR als
+        /// einem Vorzeichenwechsel mehrere Lösungen hat (Anhang C). Ersatzbeschaffungen
+        /// und der auslaufende KWKG-Zuschlag erzeugen solche Reihen. Ohne jeden Wechsel
+        /// gibt es gar keine Lösung — dann ist der Zinsfuß nicht bestimmbar, und das ist
+        /// eine Auskunft, kein Abbruch.</para>
+        /// </summary>
+        public static int Vorzeichenwechsel(double[] reihe)
+        {
+            if (reihe == null) return 0;
+            int wechsel = 0, letztes = 0;
+            foreach (double w in reihe)
+            {
+                if (double.IsNaN(w) || Math.Abs(w) <= VORZEICHEN_NULLGRENZE_EUR) continue;
+                int vorzeichen = w > 0 ? 1 : -1;
+                if (letztes != 0 && vorzeichen != letztes) wechsel++;
+                letztes = vorzeichen;
+            }
+            return wechsel;
+        }
+
+        /// <summary>
+        /// Die Vorzeichenwechsel der <see cref="Differenzreihe"/> Variante − Referenz —
+        /// dieselbe Reihe, deren Nullstelle <see cref="InternerZinsfuss"/> sucht.
+        /// <c>null</c> = keine Reihe (ein Bild fehlt).
+        /// </summary>
+        public static int? Vorzeichenwechsel(Zahlungsbild variante, Zahlungsbild referenz)
+        {
+            double[] reihe = Differenzreihe(variante, referenz);
+            return reihe == null ? (int?)null : Vorzeichenwechsel(reihe);
+        }
+
+        /// <summary>
         /// Interner Zinsfuß [%] der Differenzreihe Variante − Stamm (inkl. Restwert-
         /// differenz im letzten Jahr): Nullstelle von KW(r) per Bisektion in
         /// (−99 %, 1000 %). null = kein Vorzeichenwechsel (keine klassische
         /// Investitionsreihe) oder keine Konvergenz.
+        ///
+        /// <para><b>ETAPPE E5 (Befund A2):</b> Das <c>null</c> ist seither eine Auskunft
+        /// mit Grund: Der Lauf zählt die Vorzeichenwechsel derselben Reihe
+        /// (<see cref="Vorzeichenwechsel(Zahlungsbild, Zahlungsbild)"/>,
+        /// <c>WirtschaftlichkeitErgebnis.IrrVorzeichenwechsel</c>), und die Zeile nennt
+        /// „kein Zinsfuß bestimmbar" bzw. warnt vor der Mehrdeutigkeit
+        /// (<c>ValeriAusweis.IzfGrund</c>, <c>ValeriAusweis.IzfWarnung</c>). Die Rechnung
+        /// selbst ist unverändert.</para>
         /// </summary>
         public static double? InternerZinsfuss(Zahlungsbild variante, Zahlungsbild stamm)
         {
-            if (variante == null || stamm == null ||
-                variante.NominalReihe == null || stamm.NominalReihe == null) return null;
-            int T = Math.Min(variante.NominalReihe.Length, stamm.NominalReihe.Length) - 1;
-
-            double[] fluss = new double[T + 1];
-            for (int t = 0; t <= T; t++) fluss[t] = variante.NominalReihe[t] - stamm.NominalReihe[t];
-            fluss[T] += variante.RestwertNominal - stamm.RestwertNominal;
+            double[] fluss = Differenzreihe(variante, stamm);
+            if (fluss == null) return null;
+            int T = fluss.Length - 1;
 
             Func<double, double> kw = r =>
             {

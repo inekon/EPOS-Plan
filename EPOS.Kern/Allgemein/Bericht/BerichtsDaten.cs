@@ -61,6 +61,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Referenz der GRUPPE (§ 2.9); 0 = Stamm.</summary>
         public int IdGruppenreferenz;
+
+        /// <summary>
+        /// ETAPPE E5 — die <b>Bewertung</b> dieses Berichtslaufs: Bandbreite dreier
+        /// Szenarien mit Einstufungen und Vorschlagssatz (U4, U5), Hinweistext (U10),
+        /// Deklarationen (V‑A), Nutzungsdauer-Hinweise (U39) und die Stände ohne
+        /// Nachweisumschlag (Nr. 31). Der Berichtsdatensammler legt sie nach der
+        /// Wirtschaftlichkeitsrechnung an; Wort- und Tabellenbericht lesen daraus
+        /// dieselben Zeilen wie die Seite.
+        ///
+        /// <para><c>null</c> = nicht gebildet (Sammellauf ohne Wirtschaftlichkeit).</para>
+        /// </summary>
+        public WirtschaftlichkeitBewertung Bewertung;
     }
 
     /// <summary>Alle Daten eines einzelnen Projekts (Stamm oder Variante).</summary>

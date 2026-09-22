@@ -237,14 +237,17 @@ namespace EPOS.Kern.Tests
             WirtZeile kwkg = Zeile(zeilen, "ERL_A_KWKG");
             Assert.NotNull(kwkg);
 
+            // ETAPPE E5 (Entscheid Q16): Die Zelle zeigt „— ‹Grund›" statt „0 — ‹Grund›" —
+            // eine 0 steht nur, wo null gerechnet wurde; hier fehlt die Grundlage.
             string anzeige = kwkg.Anzeige(e, CultureInfo.GetCultureInfo("de-DE"));
-            Assert.StartsWith("0", anzeige);
-            Assert.Contains("—", anzeige);
+            Assert.StartsWith("— ", anzeige);
+            Assert.DoesNotContain("0 —", anzeige);
             Assert.Contains("KWK-Zuschlagssatz", anzeige);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_GRUND_KWKG, kwkg.Grund(e));
 
-            // Excel bekommt trotzdem die blanke Zahl — sonst wären Filter und
-            // Diagramme des Blattes hinüber.
-            Assert.Equal(0.0, kwkg.ExcelWert(e).Value, 6);
+            // Excel bleibt numerisch: keine 0 als Wert und kein Text — die Zelle bleibt
+            // leer, damit Filter und Diagramme des Blattes keine Null behaupten.
+            Assert.Null(kwkg.ExcelWert(e));
         }
 
         /// <summary>
@@ -499,10 +502,11 @@ namespace EPOS.Kern.Tests
             Assert.Contains("produzierenden Gewerbes", grund.Text(e));
 
             // Die Bedingung steht weiterhin an der Geldzeile selbst (B7) — Diagnose
-            // und Bedingung sind zwei verschiedene Auskünfte.
+            // und Bedingung sind zwei verschiedene Auskünfte. ETAPPE E5 (Q16): als
+            // „— ‹Grund›", nicht mehr als „0 — ‹Grund›".
             string zelle = Zeile(zeilen, "ERL_A_ENERGIESTEUER_54")
                            .Anzeige(e, CultureInfo.GetCultureInfo("de-DE"));
-            Assert.StartsWith("0", zelle);
+            Assert.StartsWith("— ", zelle);
             Assert.Contains("produzierendes Gewerbe", zelle);
         }
 

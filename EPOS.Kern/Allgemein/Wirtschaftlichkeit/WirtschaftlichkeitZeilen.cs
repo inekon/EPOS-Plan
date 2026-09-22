@@ -189,10 +189,47 @@ namespace WindowsFormsApplication1
         public bool ImmerZeigen;
 
         /// <summary>
-        /// Klartext der fehlenden Grundlage, wenn der Betrag 0 ist („— kein
+        /// Klartext der fehlenden Grundlage einer Zelle OHNE Wert („kein
         /// KWK-Zuschlagssatz gepflegt"). <c>null</c> oder leer = ohne Zusatz.
+        ///
+        /// <para><b>ETAPPE E5 (Entscheid Q16):</b> Er greift, wenn die Zelle keinen Wert
+        /// trägt — und ebenso, wenn sie 0 trägt und die Funktion einen Grund nennt: Dann
+        /// ist die 0 keine gerechnete Null, sondern eine fehlende Grundlage (siehe
+        /// <see cref="Grund"/>).</para>
         /// </summary>
         public Func<WirtschaftlichkeitErgebnis, string> Grundtext;
+
+        // =====================================================================
+        // ETAPPE E5 (V‑A) — die Einordnung nach DIN EN 17463 Anhang C
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A, Entscheid V‑3): Die Kennzahl ist <b>nachrichtlich</b> — der
+        /// Kapitalwert ist das einzige Maß der Vorteilhaftigkeit (DIN EN 17463 Anhang C,
+        /// Konzept § 2.11.1). Gesetzt an dynamischer Amortisation und internem Zinsfuß
+        /// (<see cref="WirtschaftlichkeitZeilen.IstNachrichtlich"/>, Empfehlung Q3 vom
+        /// 22.09.2026: die Annuität ist der Kapitalwert als gleichmäßiger Jahresbetrag und
+        /// trägt kein Label); Seite, Kachel und Wortbericht zeigen das Label
+        /// <c>WIRT_KZ_NACHRICHTLICH</c> daneben. Die Zahlen bleiben, wie sie sind.
+        /// </summary>
+        public bool Nachrichtlich;
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A): eine WARNUNG zur Zelle, die ihren Wert nicht ändert — heute
+        /// allein die Mehrdeutigkeit des internen Zinsfußes bei mehr als einem
+        /// Vorzeichenwechsel (<see cref="ValeriAusweis.IzfWarnung"/>). <c>null</c> oder
+        /// leer = keine Warnung. Sie steht NICHT in <see cref="Anzeige"/>: Die Zelle
+        /// bleibt die Zahl; wie die Warnung daneben erscheint, entscheidet die Ausgabe.
+        /// </summary>
+        public Func<WirtschaftlichkeitErgebnis, string> Warntext;
+
+        /// <summary>Die Warnung einer Zelle; <c>""</c> = keine (E5, V‑A).</summary>
+        public string Warnung(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null || Warntext == null) return "";
+            if (IstReferenz(e) && StammAnzeige != null) return "";
+            return Warntext(e) ?? "";
+        }
 
         /// <summary>Kennung des zahlungswirksamen Blocks A (Konzept § 2.6).</summary>
         public const string BLOCK_A = "A";
@@ -201,36 +238,65 @@ namespace WindowsFormsApplication1
         public const string BLOCK_B = "B";
 
         /// <summary>
+        /// ETAPPE E5 (Entscheid Q16, Prüfpapier 19.09.2026): der <b>Grund</b> einer
+        /// Ergebniszelle ohne Wert — <c>null</c>, wenn die Zelle eine Zahl trägt.
+        ///
+        /// <para>Ohne Wert ist eine Zelle, deren Größe fehlt, UND eine, die 0 trägt,
+        /// während <see cref="Grundtext"/> einen Grund nennt: Diese 0 ist keine gerechnete
+        /// Null, sondern die Folge einer fehlenden Grundlage (kein Satz gepflegt, keine
+        /// Anlage, keine Bezugsspitze). Eine gerechnete Null ohne Grund bleibt eine 0.</para>
+        ///
+        /// <para>Die Referenzzelle einer Differenzkennzahl trägt ihren Platzhalter
+        /// (<see cref="StammAnzeige"/>) und keinen Grund; eine Textzeile keinen.</para>
+        /// </summary>
+        /// <returns>Der Grund; <c>""</c> = ohne Wert, aber ohne benannten Grund
+        /// (Anzeige „—"); <c>null</c> = die Zelle trägt einen Wert.</returns>
+        public string Grund(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null || IstText || Wert == null) return null;
+            if (IstReferenz(e) && StammAnzeige != null) return null;
+            double? v = Wert(e);
+            string g = Grundtext == null ? null : Grundtext(e);
+            if (!v.HasValue) return g ?? "";
+            if (v.Value == 0 && !string.IsNullOrEmpty(g)) return g;
+            return null;
+        }
+
+        /// <summary>
         /// Der formatierte Zellinhalt für Word und Reiter; <c>„—"</c>, wenn es keinen
         /// Wert gibt.
+        ///
+        /// <para><b>ETAPPE E5 (Q16):</b> Eine Zelle ohne Wert zeigt „— ‹Grund›" statt einer
+        /// Null — dem Mockup folgend: „Eine Zelle ohne Betrag trägt einen Gedankenstrich
+        /// und den Grund; eine 0 steht nur, wo null gerechnet wurde." Bis E5 stand hier
+        /// „0 — ‹Grund›" (B7). Excel bleibt numerisch (<see cref="ExcelWert"/>).</para>
         /// </summary>
         public string Anzeige(WirtschaftlichkeitErgebnis e, System.Globalization.CultureInfo kultur)
         {
             if (e == null) return "—";
             if (IstText) { string t = Text(e); return string.IsNullOrEmpty(t) ? "—" : t; }
             if (IstReferenz(e) && StammAnzeige != null) return StammAnzeige;
-            double? v = Wert == null ? null : Wert(e);
-            if (!v.HasValue) return "—";
-            string zahl = v.Value.ToString(Format, kultur);
 
-            // ETAPPE B7: Eine 0 ohne Begründung ist eine Behauptung. Steht hinter der
-            // Position eine ungepflegte Grundlage, sagt die Zelle es im Klartext — in
-            // ALLEN drei Ausgaben, weil es hier steht und nicht dreimal im Rendercode.
-            // Excel bekommt die Zahl weiter numerisch (ExcelWert), sonst wären Filter
-            // und Diagramme des Blattes hinüber.
-            if (Grundtext != null && v.Value == 0)
-            {
-                string g = Grundtext(e);
-                if (!string.IsNullOrEmpty(g)) return zahl + " — " + g;
-            }
-            return zahl;
+            string grund = Grund(e);
+            if (grund != null) return grund.Length == 0 ? "—" : "— " + grund;
+
+            double? v = Wert == null ? null : Wert(e);
+            return v.HasValue ? v.Value.ToString(Format, kultur) : "—";
         }
 
-        /// <summary>Der Zahlenwert für Excel; <c>null</c> = Zelle bleibt leer.</summary>
+        /// <summary>
+        /// Der Zahlenwert für Excel; <c>null</c> = Zelle bleibt leer.
+        ///
+        /// <para><b>ETAPPE E5 (Q16):</b> Eine Zelle ohne Wert bleibt LEER — keine 0 als
+        /// Wert und kein Text in der Wertspalte; ihr Grund steht in Seite und Wortbericht
+        /// (<see cref="Grund"/>). So bleiben Filter und Diagramme des Blattes numerisch
+        /// und behaupten keine Null, die niemand gerechnet hat.</para>
+        /// </summary>
         public double? ExcelWert(WirtschaftlichkeitErgebnis e)
         {
             if (e == null || IstText || Wert == null) return null;
             if (IstReferenz(e) && StammAnzeige != null) return null;
+            if (Grund(e) != null) return null;
             return Wert(e);
         }
     }
@@ -279,6 +345,54 @@ namespace WindowsFormsApplication1
             if (idReferenz > 0)
                 foreach (WirtZeile z in zeilen) z.IdReferenz = idReferenz;
             return zeilen;
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (V‑A, Entscheid V‑3) — welche Kennzahlen <b>nachrichtlich</b> sind:
+        /// dynamische Amortisation und interner Zinsfuß (DIN EN 17463 Anhang C; Mockup
+        /// Kategorie 8, Kennzahltafel „Lohnt es sich?").
+        ///
+        /// <para><b>Die Annuität trägt kein Label</b> (Empfehlung Q3, gilt bis zum
+        /// Anwenderentscheid): Sie ist der Kapitalwert, mit dem Annuitätenfaktor auf
+        /// gleichmäßige Jahresbeträge umgelegt — dieselbe Aussage in anderer Einheit, keine
+        /// zweite Entscheidungsgröße (VDI 2067). Das Mockup führt sie als „gleichmäßiger
+        /// Jahresvorteil" ohne Einordnung.</para>
+        ///
+        /// <para>Die Regel steht EINMAL hier: Die Zeilendefinition setzt damit
+        /// <see cref="WirtZeile.Nachrichtlich"/>, die Hülle ihre Kacheln.</para>
+        /// </summary>
+        /// <param name="schluessel">Der sprachneutrale Zeilenschlüssel (<c>AMORTISATION</c>,
+        /// <c>IRR</c>).</param>
+        public static bool IstNachrichtlich(string schluessel)
+        {
+            return string.Equals(schluessel, "AMORTISATION", StringComparison.Ordinal) ||
+                   string.Equals(schluessel, "IRR", StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U2, Mockup Kategorie 8 „Lohnt es sich?") — die Zeilen der
+        /// <b>Kennzahltafel</b> in ihrer Reihenfolge: Kapitalwertdifferenz, Annuität,
+        /// dynamische Amortisation, interner Zinsfuß, Wärmegestehungskosten, Nettobarwert
+        /// absolut. Alle übrigen Zeilen der Definition gliedern den Kapitalwert
+        /// („Woraus entsteht die Zahl?").
+        /// </summary>
+        public static readonly string[] KENNZAHLTAFEL =
+        {
+            "KAPITALWERT_DIFF", "ANNUITAET", "AMORTISATION", "IRR", "GESTEHUNGSKOSTEN", "NETTOBARWERT"
+        };
+
+        /// <summary>
+        /// ETAPPE E5 (U2): Der Nettobarwert steht in BEIDEN Tafeln — als letzte Kennzahl
+        /// und als Summe der Gliederung (Mockup: „Gliederung des Kapitalwerts" endet mit
+        /// ihm).
+        /// </summary>
+        public const string GLIEDERUNGSSUMME = "NETTOBARWERT";
+
+        /// <summary>ETAPPE E5 (U2): Steht die Zeile in der Kennzahltafel
+        /// (<see cref="KENNZAHLTAFEL"/>)?</summary>
+        public static bool IstKennzahl(string schluessel)
+        {
+            return Array.IndexOf(KENNZAHLTAFEL, schluessel) >= 0;
         }
 
         private static List<WirtZeile> Baue(IList<WirtschaftlichkeitErgebnis> menge,
@@ -827,28 +941,45 @@ namespace WindowsFormsApplication1
             // Differenzkennzahl steht ÜBER dem Nettobarwert. Sie ist die Zahl, nach der
             // entschieden wird; der absolute Barwert ist die Herleitung dazu. Gerechnet
             // wird nichts anders, beide Zeilen führen dieselben Werte wie vorher.
+            //
+            // ETAPPE E5 — DIE REIHENFOLGE DER KENNZAHLTAFEL des abgenommenen Mockups
+            // („Lohnt es sich?", Kategorie 8): Kapitalwertdifferenz, Annuität der
+            // Differenz, dynamische Amortisation, interner Zinsfuß,
+            // Wärmegestehungskosten, zuletzt der Nettobarwert absolut. Der absolute
+            // Barwert steht bewusst UNTER der Differenz: Er ist bei jedem
+            // Versorgungskonzept negativ und taugt nicht zum Vergleich — nur der Abstand
+            // zur Referenz tut das. Amortisation und Zinsfuß tragen das Kennzeichen
+            // „nachrichtlich" (V‑A, Entscheid V‑3; die Annuität nach Empfehlung Q3 nicht).
+            // Keine Zahl ändert sich.
             WirtZeile diff = Zahl("KAPITALWERT_DIFF", MyResource.Resource.WIRT_ZEILE_KAPITALWERT_DIFF,
                                   e => e.KapitalwertDiff);
             diff.StammAnzeige = MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ;
             z.Add(diff);
 
-            z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,
-                       e => e.Kapitalwert));
-
             WirtZeile ann = Zahl("ANNUITAET", MyResource.Resource.WIRT_ZEILE_ANNUITAET,
                                  e => e.AnnuitaetKW);
             ann.StammAnzeige = "—";
+            ann.Nachrichtlich = IstNachrichtlich(ann.Schluessel);
             z.Add(ann);
 
             WirtZeile amo = Zahl("AMORTISATION", MyResource.Resource.WIRT_ZEILE_AMORTISATION,
                                  e => e.AmortisationJahre);
             amo.Format = "N1"; amo.ExcelFormat = "#,##0.0"; amo.StammAnzeige = "—";
+            amo.Nachrichtlich = IstNachrichtlich(amo.Schluessel);
+            // ETAPPE E5 (Q16): Amortisiert sich eine Variante im Zeitraum nicht, sagt die
+            // Zelle das — statt eines stummen Strichs.
+            amo.Grundtext = ValeriAusweis.AmortisationGrund;
             z.Add(amo);
 
             if (Irgendein(menge, e => e.IRR.HasValue))
             {
                 WirtZeile irr = Zahl("IRR", MyResource.Resource.WIRT_ZEILE_IRR, e => e.IRR);
                 irr.Format = "N1"; irr.ExcelFormat = "#,##0.0"; irr.StammAnzeige = "—";
+                irr.Nachrichtlich = IstNachrichtlich(irr.Schluessel);
+                // ETAPPE E5 (V‑A, Befund A2): kein Vorzeichenwechsel → „kein Zinsfuß
+                // bestimmbar" statt eines stummen Strichs; mehr als einer → Warnung.
+                irr.Grundtext = ValeriAusweis.IzfGrund;
+                irr.Warntext = ValeriAusweis.IzfWarnung;
                 z.Add(irr);
             }
 
@@ -856,6 +987,9 @@ namespace WindowsFormsApplication1
                                    e => e.Gestehungskosten);
             geste.Format = "N3"; geste.ExcelFormat = "#,##0.000";
             z.Add(geste);
+
+            z.Add(Zahl("NETTOBARWERT", MyResource.Resource.WIRT_ZEILE_NETTOBARWERT,
+                       e => e.Kapitalwert));
 
             // ETAPPE E7 — die Herkunft der verwendeten Steuersätze stand bisher NUR im
             // Ergebnisreiter. Der Bericht ist aber das Dokument, mit dem der Rechtsstand

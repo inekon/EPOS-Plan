@@ -1232,6 +1232,44 @@ namespace WindowsFormsApplication1
 
         public double? IRR;                    // interner Zinsfuß der Differenzreihe [%] (null beim Stamm/nie)
 
+        /// <summary>
+        /// ETAPPE E5 (V‑A, Befund A2) — die Zahl der <b>Vorzeichenwechsel</b> der
+        /// Differenzreihe gegen die Referenz, derselben Reihe, deren Nullstelle der
+        /// interne Zinsfuß ist (<see cref="KapitalwertRechner.Vorzeichenwechsel(KapitalwertRechner.Zahlungsbild, KapitalwertRechner.Zahlungsbild)"/>).
+        ///
+        /// <para>Mehr als einer: Der Zinsfuß ist mehrdeutig (DIN EN 17463 Anhang C) —
+        /// Kachel und Bericht warnen (<see cref="ValeriAusweis.IzfWarnung"/>). Keiner:
+        /// Es gibt keinen Zinsfuß, und die Zelle nennt den Grund
+        /// (<see cref="ValeriAusweis.IzfGrund"/>).</para>
+        ///
+        /// <para><c>null</c> = nicht gezählt: die Referenz selbst, ein Stand ohne
+        /// Differenzrechnung oder ein gebuchter Stand, dessen Nachweisumschlag älter als
+        /// Fassung 7 ist. Reiner Ausweis, im Nachweisumschlag persistiert — keine
+        /// Kennzahl ändert sich dadurch.</para>
+        /// </summary>
+        public int? IrrVorzeichenwechsel;
+
+        /// <summary>E5: Wechselt die Differenzreihe mehr als einmal das Vorzeichen?</summary>
+        public bool IrrMehrdeutig
+        {
+            get { return IrrVorzeichenwechsel.HasValue && IrrVorzeichenwechsel.Value > 1; }
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (Konzept § 6.3 Nr. 31, entschieden 22.09.2026) — dieses Ergebnis
+        /// wurde aus der Datenbank geladen und trägt <b>keinen Nachweisumschlag</b>
+        /// (<c>Nachweis_Json</c> leer): Es ist vor B7P gebucht oder sein Umschlag
+        /// konnte nicht geschrieben werden. Seine Unterzeilen (Module, Anlagen,
+        /// Positionen, Kohärenz) fehlen deshalb, bis der nächste Rechenlauf ihn
+        /// schreibt — Ansicht und Bericht kennzeichnen das mit
+        /// <see cref="ValeriAusweis.NachweisKennzeichen"/>, statt die Lücke still zu
+        /// lassen. Kein Nachziehlauf (Entscheid Nr. 31).
+        ///
+        /// <para>Ein frisch gerechnetes Ergebnis trägt immer <c>false</c>: Es hält seine
+        /// Nachweise im Speicher.</para>
+        /// </summary>
+        public bool OhneNachweis;
+
         // Stufe W3 (Phase 8)
         public double? StromkostenTarif;       // Bezugskosten nach Tarifmatrix [€/a] (null = Flat-Rechnung)
         public string Hinweis;                 // nicht-fataler Hinweis (z. B. Tarif ohne Stundenreihen)
@@ -1672,6 +1710,81 @@ namespace WindowsFormsApplication1
         public double? KwMinus;
         public double? KwBasis;
         public double? KwPlus;
+
+        // ---- ETAPPE E5 (V‑A, V‑G6) — die Steigungsspalte der Sensitivität ----
+        //
+        // DIN EN 17463 (7.2) weist je Größe die STEIGUNG aus: um wie viel Euro der
+        // Kapitalwert je Prozent(punkt) Änderung reagiert. Die Tafel führte bis hierher
+        // nur die drei Kapitalwerte. Die Steigung ist eine reine Ableitung der beiden
+        // Randwerte — gerechnet wird nichts Neues, und persistiert wird nichts Neues:
+        // Die Stufe der Zeile steht in ihrem eigenen Text („±1 %-Pkt", „±10 %").
+
+        /// <summary>
+        /// Der Ausschlag ±Δ der Zeile in der Einheit ihres Parameters (%-Punkte bei Zins
+        /// und Preissteigerung, % bei Investition und Energiekosten); <c>null</c> = die
+        /// Zeile variiert keine stetige Größe (Wegfall des KWKG-Zuschlags) und hat
+        /// deshalb keine Steigung.
+        /// </summary>
+        public double? Schritt;
+
+        /// <summary><c>true</c>: <see cref="Schritt"/> zählt in Prozentpunkten (Zins,
+        /// Preissteigerung); <c>false</c>: in Prozent der Größe (Investition,
+        /// Energiekosten).</summary>
+        public bool SchrittInProzentpunkten;
+
+        /// <summary>
+        /// Die Steigung [€ je %-Punkt bzw. € je %]: (KW(+Δ) − KW(−Δ)) / (2 · Δ) — der
+        /// mittlere Differenzenquotient über die Zeile. <c>null</c> ohne Schritt oder
+        /// ohne einen der beiden Randwerte.
+        /// </summary>
+        public double? Steigung
+        {
+            get
+            {
+                if (!Schritt.HasValue || Schritt.Value <= 0 ||
+                    !KwMinus.HasValue || !KwPlus.HasValue) return null;
+                return (KwPlus.Value - KwMinus.Value) / (2.0 * Schritt.Value);
+            }
+        }
+
+        /// <summary>Die Einheit der Steigung — „€/%-Pkt." oder „€/%"; leer ohne
+        /// Steigung.</summary>
+        public string SteigungEinheit
+        {
+            get
+            {
+                if (!Schritt.HasValue) return "";
+                return SchrittInProzentpunkten
+                     ? MyResource.Resource.WIRT_SENS_EINHEIT_PUNKT
+                     : MyResource.Resource.WIRT_SENS_EINHEIT_PROZENT;
+            }
+        }
+
+        /// <summary>
+        /// Liest den Ausschlag aus dem Parametertext einer gespeicherten Zeile
+        /// („Zinssatz ±1 %-Pkt", „Investition Variante ±10 %"). Die Zeile trägt ihre
+        /// Stufe seit W2 im Text; eine eigene Spalte gibt es nicht, und ein Schemaschritt
+        /// allein für eine Ableitung wäre eine zweite Wahrheit.
+        /// </summary>
+        /// <returns><c>true</c>, wenn der Text eine Stufe „±x %" oder „±x %-Pkt" nennt.</returns>
+        public static bool SchrittAusParameter(string parameter, out double schritt,
+                                               out bool inProzentpunkten)
+        {
+            schritt = 0;
+            inProzentpunkten = false;
+            if (string.IsNullOrEmpty(parameter)) return false;
+            System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(
+                parameter, @"±\s*(\d+(?:[.,]\d+)?)\s*%(-Pkt)?");
+            if (!m.Success) return false;
+            double wert;
+            if (!double.TryParse(m.Groups[1].Value.Replace(',', '.'),
+                                 System.Globalization.NumberStyles.Float,
+                                 System.Globalization.CultureInfo.InvariantCulture, out wert) ||
+                wert <= 0) return false;
+            schritt = wert;
+            inProzentpunkten = m.Groups[2].Success;
+            return true;
+        }
     }
 
     /// <summary>

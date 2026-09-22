@@ -184,24 +184,43 @@ namespace WindowsFormsApplication1
                         _wirtschaft = new WirtschaftlichkeitSeiteGaben(
                             _stand.IdStamm, _stand.StammName)
                         {
-                            Vergleich = _vergleich
+                            Vergleich = _vergleich,
+
+                            // ETAPPE E5 (U44, Entscheid Q18): "Bericht erzeugen" auf der
+                            // Ergebnisseite nimmt DENSELBEN Berichtsweg wie die
+                            // Berichtsseite - dieselbe Huelle, dieselbe Sicht, kein zweiter
+                            // Generator. Die Berichtshuelle entsteht erst beim Klick.
+                            Berichtsweg = (varianten, melder) =>
+                                BerichtGaben().ErzeugeFuerVergleich(varianten, melder),
+                            BerichtAbbrechen = () =>
+                            {
+                                if (_bericht != null) _bericht.Abbrechen();
+                            }
                         };
                     return _wirtschaft.Gaben();
 
                 case BerichteKostenSeite.SEITE_BERICHT:
                     if (_stand.IdStamm <= 0) return null;
                     GruppenseitenPruefen();
-                    if (_bericht == null)
-                        _bericht = new BerichtSeiteGaben(_stand.IdStamm, _stand.StammName)
-                        {
-                            // KONZEPT § 2.15 (VG-Q4): Der Bericht folgt derselben Sicht
-                            // wie die Ergebnisansicht - dieselbe Sitzungswahl, dieselbe
-                            // Instanz.
-                            Vergleich = _vergleich
-                        };
-                    return _bericht.Gaben();
+                    return BerichtGaben().Gaben();
             }
             return null;
+        }
+
+        /// <summary>
+        /// Die Hülle der Berichtsseite — einmal je Vergleichsgruppe, entstanden beim ersten
+        /// Aufruf der Seite ODER beim ersten „Bericht erzeugen" der Ergebnisseite (U44).
+        /// </summary>
+        private BerichtSeiteGaben BerichtGaben()
+        {
+            if (_bericht == null)
+                _bericht = new BerichtSeiteGaben(_stand.IdStamm, _stand.StammName)
+                {
+                    // KONZEPT § 2.15 (VG-Q4): Der Bericht folgt derselben Sicht wie die
+                    // Ergebnisansicht - dieselbe Sitzungswahl, dieselbe Instanz.
+                    Vergleich = _vergleich
+                };
+            return _bericht;
         }
 
         // =====================================================================

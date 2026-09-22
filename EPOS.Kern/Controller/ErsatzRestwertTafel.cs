@@ -223,19 +223,26 @@ namespace WindowsFormsApplication1
         internal static string Hinweis(IEnumerable<Eingabe> positionen, int komponentenId,
                                        string komponente, int jahre)
         {
-            if (positionen == null || jahre <= 0) return "";
-            CultureInfo k = CultureInfo.CurrentCulture;
+            return Hinweis(positionen, komponentenId, komponente, jahre, CultureInfo.CurrentCulture);
+        }
 
-            int alle = 0;
+        /// <summary>
+        /// Derselbe Satz in einer ausdrücklich genannten Kultur — ETAPPE E5 (U39): Die
+        /// Ergebnisseite und der Bericht bilden ihre Hinweiszeile „k von n Positionen
+        /// ohne Nutzungsdauer" aus DIESEM Satz (<see cref="NutzungsdauerHinweisCtrl"/>),
+        /// der Bericht in seiner Berichtskultur.
+        /// </summary>
+        internal static string Hinweis(IEnumerable<Eingabe> positionen, int komponentenId,
+                                       string komponente, int jahre, CultureInfo kultur)
+        {
+            if (positionen == null || jahre <= 0) return "";
+            CultureInfo k = kultur ?? CultureInfo.CurrentCulture;
+
+            int alle;
+            List<Eingabe> ohneDauer = OhneDauer(positionen, out alle);
             var ohne = new List<string>();
-            foreach (Eingabe e in positionen)
-            {
-                if (e == null || e.IstErloes || e.Betrag == 0) continue;
-                alle++;
-                if (e.Nutzungsdauer >= 1.0) continue;
-                ohne.Add(string.Format(k, MyResource.Resource.ND_TAFEL_OHNE_EINTRAG,
-                                       e.Bezeichnung ?? "", Geld(e.Betrag, k)));
-            }
+            foreach (Eingabe e in ohneDauer)
+                ohne.Add(Eintrag(e, k));
             if (alle == 0) return "";
 
             var teile = new List<string>();
@@ -255,6 +262,36 @@ namespace WindowsFormsApplication1
 
             string satz = string.Join("; ", teile.ToArray()) + ".";
             return ohne.Count > 0 ? satz + " " + MyResource.Resource.ND_TAFEL_HINWEIS_SCHLUSS : satz;
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U39): die betragstragenden Positionen OHNE Nutzungsdauer — dieselbe
+        /// Regel, nach der <see cref="Hinweis(IEnumerable{Eingabe}, int, string, int, CultureInfo)"/>
+        /// zählt: Erlöszeilen und Zeilen ohne Betrag zählen nicht, „ohne Dauer" heißt
+        /// n &lt; 1 oder leer (im Rechenkern „wie T").
+        /// </summary>
+        /// <param name="alle">Die Zahl der betragstragenden Positionen (das n).</param>
+        internal static List<Eingabe> OhneDauer(IEnumerable<Eingabe> positionen, out int alle)
+        {
+            alle = 0;
+            var ohne = new List<Eingabe>();
+            if (positionen == null) return ohne;
+            foreach (Eingabe e in positionen)
+            {
+                if (e == null || e.IstErloes || e.Betrag == 0) continue;
+                alle++;
+                if (e.Nutzungsdauer >= 1.0) continue;
+                ohne.Add(e);
+            }
+            return ohne;
+        }
+
+        /// <summary>E5: der Eintrag „Bezeichnung, Betrag €" einer Position ohne Dauer.</summary>
+        internal static string Eintrag(Eingabe e, CultureInfo k)
+        {
+            if (e == null) return "";
+            return string.Format(k ?? CultureInfo.CurrentCulture, MyResource.Resource.ND_TAFEL_OHNE_EINTRAG,
+                                 e.Bezeichnung ?? "", Geld(e.Betrag, k ?? CultureInfo.CurrentCulture));
         }
 
         // ----------------------------------------------------------------- intern ---
