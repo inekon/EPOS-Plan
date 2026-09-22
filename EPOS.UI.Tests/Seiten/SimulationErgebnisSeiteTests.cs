@@ -331,6 +331,44 @@ public class SimulationErgebnisSeiteTests : EposBunitContext
     }
 
     /// <summary>
+    /// <b>Anwenderbefund 22.09.2026: Der Lauf speichert selbst.</b> Seine Rückmeldung
+    /// trägt seither den ERFOLGSSATZ „Simulationsergebnis gespeichert.“ — und den zeigt
+    /// die Seite an. Bis dahin wurde nur ein FEHLSCHLAG gemeldet; ein gelungener Lauf
+    /// schwieg, und ob überhaupt etwas geschrieben wurde, blieb offen.
+    /// </summary>
+    [Fact]
+    public void Ein_gelungener_Lauf_meldet_sein_gespeichertes_Ergebnis()
+    {
+        var seite = Zeichnen();
+
+        seite.InvokeAsync(() => seite.Instance.LaufStarten());
+        seite.InvokeAsync(() => _laufFertig!.SetResult(
+            new Rueckmeldung(true, Resource.SIM_MSG_ERGEBNIS_GESPEICHERT)));
+        seite.WaitForState(() => !seite.Instance.Laeuft);
+
+        seite.WaitForAssertion(() => Assert.Contains(
+            Resource.SIM_MSG_ERGEBNIS_GESPEICHERT, seite.Markup, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Ein ABGEBROCHENER Lauf meldet weiterhin mit leerem Text (<c>Rueckmeldung.Still</c>)
+    /// und schreibt damit nichts in die Meldezeile — sonst stünde nach jedem Abbruch
+    /// eine leere Erfolgsmeldung da.
+    /// </summary>
+    [Fact]
+    public void Ein_stiller_Lauf_meldet_nichts()
+    {
+        var seite = Zeichnen();
+
+        seite.InvokeAsync(() => seite.Instance.LaufStarten());
+        seite.InvokeAsync(() => _laufFertig!.SetResult(Rueckmeldung.Still));
+        seite.WaitForState(() => !seite.Instance.Laeuft);
+
+        seite.WaitForAssertion(() => Assert.DoesNotContain(
+            Resource.SIM_MSG_ERGEBNIS_GESPEICHERT, seite.Markup, StringComparison.Ordinal));
+    }
+
+    /// <summary>
     /// Der Sperrzustand (Schemamigration, ADR-001): Grund als Banner, alles
     /// gesperrt — „Beenden" muss trotzdem gehen.
     /// </summary>

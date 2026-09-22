@@ -1256,7 +1256,20 @@ namespace WindowsFormsApplication1
             _flotteProjektGeaendert = false;
             _autarkieGesetzt = false;
 
-            return EPOS.UI.Seiten.Simulation.Rueckmeldung.Still;
+            // DER LAUF SPEICHERT SELBST (Anwenderbefund 22.09.2026).
+            //
+            // Bis hierher endete die Kachel „Simulation“ mit einem gerechneten, aber
+            // UNGESPEICHERTEN Ergebnis: Wer danach nicht eigens „Ergebnis speichern“
+            // drückte, sah in Übersicht, Bericht und Wirtschaftlichkeit weiter den alten
+            // Lauf — während der Weg über die Übersichtsseite
+            // (SimulationRunner.SimuliereUndSpeichere) längst in EINEM Zug rechnete und
+            // speicherte. Zwei Wege, dieselbe Rechnung, verschiedene Folgen.
+            //
+            // DER KNOPF BLEIBT — er schreibt ein stehendes Ergebnis erneut fest.
+            // SCHEITERT das Speichern, bleibt der Zustand GÜLTIG (gerechnet ist
+            // gerechnet), und die benannte Meldung geht an die Seite;
+            // ErgebnisSpeichern prüft ErgebnisIstGueltig selbst.
+            return ErgebnisSpeichern();
         }
 
         private static string Phasentext(LaufFortschritt f)

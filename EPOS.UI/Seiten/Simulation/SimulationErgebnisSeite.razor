@@ -598,10 +598,14 @@
 
         Neuladen();
 
-        if (!antwort.Erfolg && !string.IsNullOrEmpty(antwort.Text))
+        // Seit der Lauf selbst speichert (Anwenderbefund 22.09.2026), traegt seine
+        // Rueckmeldung auch den ERFOLGSSATZ "Ergebnis gespeichert" - und der gehoert
+        // angezeigt, sonst bliebe die wichtigste Auskunft des Laufs stumm. Ein Abbruch
+        // meldet weiterhin mit leerem Text (Rueckmeldung.Still) und schreibt nichts.
+        if (!string.IsNullOrEmpty(antwort.Text))
         {
             _meldung = antwort.Text;
-            _meldungStufe = WarnStufe.Fehler;
+            _meldungStufe = antwort.Erfolg ? WarnStufe.Erfolg : WarnStufe.Fehler;
         }
 
         StateHasChanged();
