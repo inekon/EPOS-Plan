@@ -1,8 +1,9 @@
 # Prüfung der Mockups zur Wirtschaftlichkeit — Konsistenz, Darstellung, Berechnung, Einheitlichkeit
 
-**Stand 19.09.2026** · Prüfgegenstand: die sechs HTML-Mockups unter `../Mockups/` und die
-einschlägigen Papiere dieses Ordners · Schemastand 94 zur Prüfzeit; nach dem Zusammenführen vom Abend
-(KL‑3 Schritt 95, FK‑2 Schritt 96) ist Schritt **97** der nächste freie ·
+**Stand 22.09.2026** (Prüfung vom 19.09.2026, seither fortgeschrieben) · Codestand `3b71871c` ·
+Prüfgegenstand: die sechs HTML-Mockups unter `../Mockups/` und die
+einschlägigen Papiere dieses Ordners · Schemastand 94 zur Prüfzeit; heute steht
+`SchemaStand.Zielversion` auf **100** (90–100 vergeben), **nächster freier Schritt 101** ·
 Prüfprotokolle mit allen Einzelbefunden:
 [`ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/`](../../ueberholt/Protokolle/Reporting/Pruefung_Mockups_2026-09-19/)
 
@@ -204,7 +205,13 @@ Sammel-Upload am 28.09.2026 liegen geprüft vor, ein fünfzehnter (#361) zur Bes
 ## 3 Änderungsplan — wo welche Änderungen
 
 Ziel-Kürzel: **M** Mockup · **P** Papier · **C** Code · **W** Wiki. Schwere: hoch / mittel / gering.
-Ein Stern (*) heißt: erst nach dem Entscheid in § 4.
+Ein Stern (*) heißt: erst nach dem Entscheid in § 4 — **alle diese Entscheide sind am 20.09.2026 nach
+Empfehlung gefallen**, der Stern bedeutet also keine Blockade mehr, sondern nur die Herkunft.
+
+> **Stand 22.09.2026.** Erledigte Zeilen tragen am Ende ihrer Änderungsspalte eine Standmarke
+> (**umgesetzt #…**). Zeilen ohne Marke sind **nicht** geprüft worden oder unverändert offen; das gilt
+> besonders für § 3.1 (Mockup) und § 3.2 (Papiere), wo E0 (#379) und E0c vieles, aber nicht
+> zeilengenau belegbar nachgezogen haben.
 
 ### 3.1 Mockups
 
@@ -291,31 +298,31 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 
 | Datei | Änderung | Quelle | Schwere |
 |---|---|---|---|
-| `EPOS.Kern/Allgemein/Wirtschaftlichkeit/KohaerenzPruefung.cs` | neuer Fall „CO₂-Bestandteil im Arbeitspreis aktiv **und** BEHG-Reihe gebucht" (Warnung mit Betrag), Anzeige in Kat. 5 des BHKW-Dialogs und in der Rubrik | `01/B1` | hoch |
-| `EPOS.Kern/Controller/EnergietraegerPreiskarte.cs` `Formel` | Arbeitspreis mit `N4` statt `N2` | `01/B9` | gering |
-| `EPOS.Kern/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitZeilen.cs` | Reihenfolge `KAPITALWERT_DIFF` vor `NETTOBARWERT`; *Q16 Wert nullbar führen, `Anzeige` liefert „— ‹Grund›" ohne Wert und eine grundlose 0 bei gerechneter Null; *Q15 U6: Komponentenblöcke, Teilsummen, Block „projektweit", Gründe `WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF`/`_KEINE_BEZUGSSPITZE`, Leistungsanteil projektweit; Fußzeile „Block B wird nicht summiert" | `03/#62–#71` | hoch |
+| `EPOS.Kern/Allgemein/Wirtschaftlichkeit/KohaerenzPruefung.cs` | neuer Fall „CO₂-Bestandteil im Arbeitspreis aktiv **und** BEHG-Reihe gebucht" (Warnung mit Betrag), Anzeige in Kat. 5 des BHKW-Dialogs und in der Rubrik — **umgesetzt #405** (Fall R5, `KohaerenzCo2Tests`) | `01/B1` | hoch |
+| `EPOS.Kern/Controller/EnergietraegerPreiskarte.cs` `Formel` | Arbeitspreis mit `N4` statt `N2` — **umgesetzt #405** (Q7) | `01/B9` | gering |
+| `EPOS.Kern/Allgemein/Wirtschaftlichkeit/WirtschaftlichkeitZeilen.cs` | Reihenfolge `KAPITALWERT_DIFF` vor `NETTOBARWERT`; *Q16 Wert nullbar führen, `Anzeige` liefert „— ‹Grund›" ohne Wert und eine grundlose 0 bei gerechneter Null; *Q15 U6: Komponentenblöcke, Teilsummen, Block „projektweit", Gründe `WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF`/`_KEINE_BEZUGSSPITZE`, Leistungsanteil projektweit; Fußzeile „Block B wird nicht summiert" — **Reihenfolge umgesetzt #405** (Q19); Q16 (E5) und U6/Q15 (E4) bleiben offen | `03/#62–#71` | hoch |
 | `EPOS.Kern/Allgemein/Wirtschaftlichkeit/SteuerGutschriftRechner.cs` | U7: `SteuerErgebnis` mit zwei Beträgen (§ 53/53a und § 54), zwei Rubrikzeilen | `03/#64` | hoch |
-| `EPOS.Kern/Allgemein/Bericht/Bausteine/BausteineWirtschaftlichkeit.cs` | Bandbreite im Bericht mit Spalte „Spanne" und Referenzzeile; Kommentar „an genau einem Ort" um den Dialogvorbehalt ergänzen; Tabellenbericht mit Spaltengruppe je Szenario (U13/U15) | `03/#72, #96, #89` | mittel |
-| `EPOS.Kern/MyResource/Resource.resx` (+ en‑US) | `KDLG_ERTRAG_G_PV` ohne „(V4/F7)", `KDLG_ERTRAG_PV` mit „(eine Vergütungswahrheit je Projekt)"; `PVV_SPRUNG_HINWEIS` neu fassen (mit E5); Emoji aus `ETV_BTN_SPEICHERN`; Standardknöpfe auf `ALLG_BTN_OK`/`ALLG_BTN_ABBRECHEN`/`ADM_BTN_SPEICHERN`; `WIRT_ENK_KOPF` bauen oder streichen | `03/#34, §6.2`, `04/B05, B11, B21` | mittel |
-| `WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs` `GabenIntern` | `TitelReiterKosten`/`TitelReiterErtrag` aus `KDLG_TAB_KOSTEN`/`KDLG_TAB_ERTRAG` belegen (en‑US) | `03/§6.2` | mittel |
-| `EPOS.UI/Dialoge/Kosten/ErtragBonus.razor` | Knopf „Gesetzesparameter…" auch im PV-Zweig (mit `GesetzeGewuenscht.HasDelegate`-Wache) | `03/#29` | hoch |
-| `EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` | Bemessungs-Klappliste der Neuzeile `Aktiv="@(Schreibbar && !Neuzeile)"` oder Auswahl an `PositionNeu` durchreichen | `03/#10` | mittel |
-| `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` | Knopf „Nutzungsdauern vorbelegen…" nur sichtbar, wenn wirksam (`_stand.NutzungsdauerVorbelegbar`); Rückfrage vor Kontextwechsel mit ungespeicherten Eingaben; Netto-Banner durch Kontextzeile ersetzen | `03/#26`, `04/B18, B10` | mittel |
+| `EPOS.Kern/Allgemein/Bericht/Bausteine/BausteineWirtschaftlichkeit.cs` | Bandbreite im Bericht mit Spalte „Spanne" und Referenzzeile; Kommentar „an genau einem Ort" um den Dialogvorbehalt ergänzen; Tabellenbericht mit Spaltengruppe je Szenario (U13/U15) — **Bandbreite mit „Spanne" und Referenzzeile umgesetzt #405** (G8, in Word und Excel), die Spaltengruppe je Szenario bleibt offen (E6) | `03/#72, #96, #89` | mittel |
+| `EPOS.Kern/MyResource/Resource.resx` (+ en‑US) | `KDLG_ERTRAG_G_PV` ohne „(V4/F7)", `KDLG_ERTRAG_PV` mit „(eine Vergütungswahrheit je Projekt)"; `PVV_SPRUNG_HINWEIS` neu fassen (mit E5); Emoji aus `ETV_BTN_SPEICHERN`; Standardknöpfe auf `ALLG_BTN_OK`/`ALLG_BTN_ABBRECHEN`/`ADM_BTN_SPEICHERN`; `WIRT_ENK_KOPF` bauen oder streichen — **teilweise umgesetzt #405**: acht neue Schlüssel, drei parametriert, zwei ohne Leser gestrichen, `PVV_SPRUNG_HINWEIS` neu gefasst, Standardknöpfe auf die Hausschlüssel; **offen:** `WIRT_ENK_ANLAGE` ohne Leser (mit der Fußleisten-Welle, Q8) | `03/#34, §6.2`, `04/B05, B11, B21` | mittel |
+| `WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs` `GabenIntern` | `TitelReiterKosten`/`TitelReiterErtrag` aus `KDLG_TAB_KOSTEN`/`KDLG_TAB_ERTRAG` belegen (en‑US) — **umgesetzt #405** (Reiterbeschriftungen en‑US) | `03/§6.2` | mittel |
+| `EPOS.UI/Dialoge/Kosten/ErtragBonus.razor` | Knopf „Gesetzesparameter…" auch im PV-Zweig (mit `GesetzeGewuenscht.HasDelegate`-Wache) — **umgesetzt #405** | `03/#29` | hoch |
+| `EPOS.UI/Dialoge/Kosten/VorlagenZeile.razor` | Bemessungs-Klappliste der Neuzeile `Aktiv="@(Schreibbar && !Neuzeile)"` oder Auswahl an `PositionNeu` durchreichen — **umgesetzt #405** | `03/#10` | mittel |
+| `EPOS.UI/Dialoge/Kosten/KostenKomponenteDialog.razor` | Knopf „Nutzungsdauern vorbelegen…" nur sichtbar, wenn wirksam (`_stand.NutzungsdauerVorbelegbar`); Rückfrage vor Kontextwechsel mit ungespeicherten Eingaben; Netto-Banner durch Kontextzeile ersetzen — **Knopfsichtbarkeit umgesetzt #405**; die Fußleiste dieses Dialogs ist mit **#390 (DL‑2e)** auf die `SpeichernLeiste` umgebaut; Rückfrage und Kontextzeile bleiben offen | `03/#26`, `04/B18, B10` | mittel |
 | `EPOS.UI/Dialoge/Kosten/EnergietraegerEinstellungen.razor` | „Saisonale Sätze…" und „Katalogwerte übernehmen" in einer Leiste; Hinweiszeile hinter das Verstoßbanner | `03/#41, #42` | gering |
 | `EPOS.UI/Dialoge/Kosten/BrennstoffBestandteile.razor`, `EPOS.UI/Bausteine/Ueberlagerung.razor` | *Fußzeile der Schnellwahl (Statustext, „Schließen"); `Ueberlagerung` mit optionalem `HilfeSchluessel`, damit eingebettete Dialoge den ⓘ erben | `03/#38`, `04/B07` | mittel |
-| `EPOS.UI/Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` | *Q12 `TarifKlick` auf den OK-Weg (`nurBeiAenderung: true`) wie im BHKW-Dialog; Kennzahlenzeilen mit Umbruch (`white-space: pre-line` an `.epos-herleitung`) | `04/B11`, `03/#60` | hoch |
-| `EPOS.UI/Dialoge/Wirtschaftlichkeit/BhkwWirtschaftlichkeitDialog.razor` (+ `…Texte.cs`) | OK-Weg nur bei Änderung (`Schreiben(Keiner, nurBeiAenderung: true)`); veralteten Kommentar Z. 1214 und Rückfalltext `BHW_G1B` bereinigen; Vorschau *nach Q15 auf die Rubrik | `04/B30`, `03/#58, #59, #54` | gering |
+| `EPOS.UI/Dialoge/Wirtschaftlichkeit/PhotovoltaikVerguetungDialog.razor` | *Q12 `TarifKlick` auf den OK-Weg (`nurBeiAenderung: true`) wie im BHKW-Dialog; Kennzahlenzeilen mit Umbruch (`white-space: pre-line` an `.epos-herleitung`) — **beides umgesetzt #405** (`PVV_SPRUNG_HINWEIS` neu) | `04/B11`, `03/#60` | hoch |
+| `EPOS.UI/Dialoge/Wirtschaftlichkeit/BhkwWirtschaftlichkeitDialog.razor` (+ `…Texte.cs`) | OK-Weg nur bei Änderung (`Schreiben(Keiner, nurBeiAenderung: true)`); veralteten Kommentar Z. 1214 und Rückfalltext `BHW_G1B` bereinigen; Vorschau *nach Q15 auf die Rubrik — **OK-Weg und Kommentare umgesetzt #405**, die Vorschau auf die Rubrik bleibt offen (E4) | `04/B30`, `03/#58, #59, #54` | gering |
 | `EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor` (+ `WirtschaftlichkeitDaten.cs`, Windows `WirtschaftlichkeitSeiteGaben.cs`) | Ergebnisansicht U2–U5, U10, U13: Umschalter, vier Fragen, Bandbreitentafel mit Spanne, Gliederung mit Nominalsummen, Annahmentafel (Ungünstig/Erwartet/Günstig), Empfehlungskarten, Verlauf mit drei Szenarien und Haken, Spannen-/Brücken-/Zahlungsstrombild, Deklarationszeilen, Hinweistext; Hinweiszeile Nutzungsdauer plattformfrei (U39); *Q18 Berichtserzeugung auf der Seite | `03/#72–#90, #97` | hoch |
 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/WirtschaftlichkeitParameterDialog.razor`, `…/TarifstrukturDialog.razor` | *Q8 Beschriftung des OK-Knopfs; Statuszeile im Fuß | `04/B04`, `03/#94` | gering |
-| `EPOS.UI/Dialoge/Kosten/KostenfaktorKatalogDialog.razor`, `LeistungspreisReiheDialog.razor`, `EmissionskatalogDialog.razor` | `Rueckfrage` mit `VorgabeNein` vor jedem Löschen | `04/B17` | mittel |
-| die elf Dialoge mit eigener `.epos-leiste` (Liste in `04/B01`) | *Q8: Abschluss immer `SpeichernLeiste` (mit `RenderFragment Aktionen`), Reihenfolge Status → Aktionen · Speichern · Abbrechen · OK; Bauform K (Sofortschreiber) mit „Schließen" und Rückfrage je Änderung | `04/B01–B03` | hoch |
+| `EPOS.UI/Dialoge/Kosten/KostenfaktorKatalogDialog.razor`, `LeistungspreisReiheDialog.razor`, `EmissionskatalogDialog.razor` | `Rueckfrage` mit `VorgabeNein` vor jedem Löschen — **umgesetzt #405** | `04/B17` | mittel |
+| die elf Dialoge mit eigener `.epos-leiste` (Liste in `04/B01`) | *Q8: Abschluss immer `SpeichernLeiste` (mit `RenderFragment Aktionen`), Reihenfolge Status → Aktionen · Speichern · Abbrechen · OK; Bauform K (Sofortschreiber) mit „Schließen" und Rückfrage je Änderung — **zwei der elf umgesetzt #390 (DL‑2e)**: `KostenKomponenteDialog` und `EnergietraegerDialog` tragen die `SpeichernLeiste` (Status · Speichern · Abbrechen · OK); die Zeilenaktionen bleiben Sofortschreiber, Abbrechen trägt dafür einen Kurztext (Entscheid DL‑Q3 a) | `04/B01–B03` | hoch |
 | alle 21 Dialoge | neuer Baustein `Dialogkopf` (Titel, Kontextzeile „{Projekt} · {Variante} · netto", `InfoKnopf` mit `Dialogname`, `Schliesskreuz`), eine Bauart `TitelAnzeigen`; Titel der `Ueberlagerung` aus der Quelle des Dialogs; *Q13 Fenstertitel trägt den Langtitel, der Dialog keinen; Wache `UeberlagerungstitelTests` um die Bauarten c/d und den Fensterfall | `04/B06–B09, B12, B23` | hoch |
 | `EPOS.UI/wwwroot/epos-ui.css` | *Q9 `.epos-dialog-kopf` mit `background: var(--epos-karte-titel)` und heller Schrift; ein Token `--epos-fehler-text`; `.epos-herleitung { white-space: pre-line }` | `04/B13, B14`, `03/#60` | mittel |
 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/GesetzeskatalogDialog.razor`, `EmissionskatalogDialog.razor`, `KostenfaktorKatalogDialog.razor`, `NutzungsdauerDialog.razor` | *Q10 `Katalogliste`/Spaltenfilter mit Suchfeld und Trefferzahl, Filterstand über `Katalogfilterregister` | `04/B20` | hoch |
 | `EPOS.UI/Standards/Zahlen.cs` | benannte Stellenzahlen je Größenart (Geld 2 · ct/kWh 2 · Faktor 4 · Prozent 2 · Jahr/Stück 0 · Leistung 1) | `04/B28` | mittel |
-| `EPOS.UI.Daten/` | *Q14 Hüllen der Wirtschaftlichkeits- und Admin-Dialoge sowie `KostenKomponenteHuelle` plattformfrei, Adapter nach dem Muster `EnergietraegerFenster.cs` | `04/B22` | mittel |
+| `EPOS.UI.Daten/` | *Q14 Hüllen der Wirtschaftlichkeits- und Admin-Dialoge sowie `KostenKomponenteHuelle` plattformfrei, Adapter nach dem Muster `EnergietraegerFenster.cs` — **offen** (E3 Schritte 1, 5, 6); **das Muster ist seit #428 vierfach erprobt**: `KlimadatenHuelle`, `ProjektKopieHuelle`, `PeakShavingHuelle` und `StromganglinieAdminHuelle` liegen plattformfrei, Windows behielt je einen Fenster-Adapter | `04/B22` | mittel |
 | `EPOS.UI/Bausteine/Menuetabelle.cs` | *Q11 Menüpunkt „Administration → Kostenverwaltung → Tarifstruktur" auf `TarifstrukturHuelle.Oeffnen` | `04/B29` | mittel |
-| `WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` | Zeile `Form_BhkwWirtschaftlichkeit.btn_Help = Wirtschaftlichkeit#…`; `Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung`; Anker für Kostenverwaltung, Energieträger, Parameter, Nutzungsdauern, Übernahme, Verlauf (Anker „Verlauf" auf der Wiki-Seite anlegen) | `05/§6` | mittel |
+| `WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` | Zeile `Form_BhkwWirtschaftlichkeit.btn_Help = Wirtschaftlichkeit#…`; `Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung`; Anker für Kostenverwaltung, Energieträger, Parameter, Nutzungsdauern, Übernahme, Verlauf (Anker „Verlauf" auf der Wiki-Seite anlegen) — **umgesetzt #405** (`help_mapping.txt` und Wiki-Anker); die Zuordnung der gesetzlichen Parameter (A18) bleibt für E12 | `05/§6` | mittel |
 | `EPOS.Kern.Tests/DokumentationLinkWacheTests.cs` | Gegenprobe Z. 398/402 vor dem Umzug des Katalogfilter-Mockups auf eine bleibende Datei umhängen | `02/g‑7` | hoch |
 | `EPOS.Kern.Tests/WikiProduktdatenWacheTests.cs` | *Q24: Mockups in den Prüfpfad aufnehmen oder Regel im Konzept Hilfesystem (Neutralisierung vor der Übernahme) | `05/§5.2` | gering |
 
@@ -330,6 +337,24 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | alle Seiten | Beispiele aus den drei Mockups mit Herstellerdaten nur neutralisiert übernehmen („Wärmepumpe A", „Speicher 1, 100 kWh") | `05/§5.2` |
 
 ## 4 Entscheide des Anwenders — Fragen mit Empfehlung
+
+> **Alle fünfundzwanzig Fragen sind beantwortet: „entschieden 20.09.2026 nach Empfehlung"**
+> (Anwenderauftrag vom 20.09.2026 mit dem Zusatz „Entscheidung nach Empfehlung"; Statuszeile **#405**,
+> zugleich für A1–A20 des Analysepapiers). **Die Empfehlungsspalte ist damit der Entscheid** — sie
+> bleibt im Wortlaut stehen.
+>
+> **Umgesetzt seither:** **Q3** (Weg a, CO₂-Zeile als Ausweis) · **Q7** (Formel `N4`) · **Q12**
+> (schreiben und springen, `PVV_SPRUNG_HINWEIS` neu) · **Q19** (Kapitalwertdifferenz über dem
+> Nettobarwert) — alle vier **umgesetzt #405**. **Q16** (Gedankenstrich oder Null) ist entschieden und
+> für **E5** vorgemerkt. **Q8** (Fußleistenregel) ist für die beiden Dialoge dieses Feldes mit **#390
+> (DL‑2e)** gebaut, für die übrigen neun offen. **Q14** (Hüllenumzug) gehört zu **E3**.
+>
+> **Sieben Fragen tragen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht:**
+> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q11** (die fachliche Frage
+> HT/NT bleibt offen) · **Q15** (die Vorfrage, ob der Leistungsanteil projektweit bleibt) · **Q18**
+> (die Anhangzeile ist angelegt — U43/U44 —, der Bau braucht einen Folgeentscheid) · **Q20**
+> (ergänzen **oder** als Ausschnitt kennzeichnen) · **Q22** (Artifact redeployen **oder** Vermerk
+> „Repo-Datei führt") · **Q23** (die Versionsnummer ist vor dem Upload zu bestätigen).
 
 | # | Frage | Empfehlung |
 |---|---|---|
@@ -361,14 +386,22 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 
 ## 5 Vorgeschlagene Reihenfolge
 
+**Stand 22.09.2026.** Diese Reihe entstand am Vormittag des 19.09.2026, vor dem Etappenplan **E0–E12**
+des Analysepapiers (§ 5 dort). Beide meinen in weiten Teilen dieselbe Arbeit; maßgeblich für die
+Umsetzung ist **E0–E12**. Die Zuordnung: **P6 ≈ E4** · **P7 ≈ E5** · **P8 ≈ Teil von E3** (die Hüllen
+aus Q14) und Q1/Q21 als eigene Aufträge · **P9 ≈ E12**. **P5 „Hausstil Dialoge" hat keine
+Entsprechung im Etappenplan** — die Arbeit läuft heute unter der eigenen Wellenreihe **DL‑2**
+(Knopfleisten), von der **DL‑2e (#390)** die beiden Dialoge dieses Feldes erledigt hat; eine
+Einordnung von P5 in E0–E12 ist **nicht** vorgenommen worden und bleibt zu klären.
+
 | Etappe | Inhalt | Rechenwirkung |
 |---|---|---|
-| **P1 Papierpflege ohne Entscheid** | Mockup: CSS-Überlauf, U40-Anhangzeile, Schemaschritt 97, Ressourcentafel-Nachzüge, Wortlaute der Herleitungszeilen, Zählungen der Kat. 5, Rundungen; Konzept: Kopfzeile, § 2.2/2.3/2.4/2.7/2.8/2.12/2.13/6.1/6.3, Kopfblöcke der drei Konzepte; LIESMICH-Pfade; Index-Daten; Statuseinträge | keine |
-| **P2 Entscheide Q1–Q25** einholen | die Tabelle in § 4 | — |
-| **P3 Kleine Codekorrekturen** | Formel `N4`, Kennzahl-Reihenfolge, Gesetzesparameter-Knopf im PV-Reiter, Neuzeile-Klappliste, Reiterbeschriftungen en‑US, `help_mapping.txt`, Kommentare und Rückfalltexte, PV-Sprungknopf (Q12), Löschrückfragen, Knopfsichtbarkeit | keine auf den Referenzlauf; Gate mit Kern- und UI-Tests |
-| **P4 Kohärenzzeile CO₂ und Zellensemantik** | `KohaerenzPruefung` neuer Fall; `WirtschaftlichkeitZeilen` nullbar (Q16) | Ausweis; Referenzlauf byte-gleich, Berichtsprobe |
-| **P5 Hausstil Dialoge** | Fußleistenregel (Q8), Baustein `Dialogkopf`, Kontextzeile, Kopfband (Q9), Fenstertitel (Q13), Zahlenformat, Spaltenfilter (Q10), Menüpunkt Tarifstruktur (Q11); Konzeptabschnitt „Hausstil Dialoge" und `EPOS.UI/CLAUDE.md` | keine; bunit und Wachen |
-| **P6 Erlösrubrik und Steuerzeilen** | U6 (Q15), U7, Gründe der Nullzeilen, BHKW-Vorschau auf die Rubrik | Zeilenstruktur; A/B-Nachweis am Beispiel 293.245,6 + 22.914,0 |
-| **P7 Ergebnisansicht** | U2–U5, U10, U13, U39; Bericht mit Spanne, Nominalsummen, Spaltengruppen je Szenario | Ausweis; ChartProben, Berichtsprobe |
-| **P8 Ablösungen und Umzüge** | Q1 (zweites Mockup), Q21 (drei Mockups mit Konzepten, Test-Gegenprobe), Hüllen (Q14) | keine |
-| **P9 Wiki** | fünf Lücken, Anker, Logbuch 14+1 Sätze, Klimadaten-Zeile — im Sammel-Upload 28.09.2026 | — |
+| **P1 Papierpflege ohne Entscheid** — **umgesetzt #379** (E0a/E0b); auf den Stand nach #428 nachgezogen mit E0c | Mockup: CSS-Überlauf, U40-Anhangzeile, Schemaschritt 97, Ressourcentafel-Nachzüge, Wortlaute der Herleitungszeilen, Zählungen der Kat. 5, Rundungen; Konzept: Kopfzeile, § 2.2/2.3/2.4/2.7/2.8/2.12/2.13/6.1/6.3, Kopfblöcke der drei Konzepte; LIESMICH-Pfade; Index-Daten; Statuseinträge | keine |
+| **P2 Entscheide Q1–Q25** einholen — **erledigt 20.09.2026**, alle nach Empfehlung (#405) | die Tabelle in § 4 | — |
+| **P3 Kleine Codekorrekturen** — **umgesetzt #405** (in W‑E2 enthalten; alle zehn Punkte) | Formel `N4`, Kennzahl-Reihenfolge, Gesetzesparameter-Knopf im PV-Reiter, Neuzeile-Klappliste, Reiterbeschriftungen en‑US, `help_mapping.txt`, Kommentare und Rückfalltexte, PV-Sprungknopf (Q12), Löschrückfragen, Knopfsichtbarkeit | keine auf den Referenzlauf; Gate mit Kern- und UI-Tests |
+| **P4 Kohärenzzeile CO₂ und Zellensemantik** — **Kohärenzzeile umgesetzt #405** (Fall R5, dazu R6 und die Strommix-Zeile); die Zellensemantik (Q16) bleibt offen und gehört zu **E5** | `KohaerenzPruefung` neuer Fall; `WirtschaftlichkeitZeilen` nullbar (Q16) | Ausweis; Referenzlauf byte-gleich, Berichtsprobe |
+| **P5 Hausstil Dialoge** — **offen**; die Fußleisten der beiden Kostendialoge sind mit **#390 (DL‑2e)** gebaut, der Rest läuft unter der Wellenreihe DL‑2 und ist im Etappenplan E0–E12 **nicht** eingeordnet | Fußleistenregel (Q8), Baustein `Dialogkopf`, Kontextzeile, Kopfband (Q9), Fenstertitel (Q13), Zahlenformat, Spaltenfilter (Q10), Menüpunkt Tarifstruktur (Q11); Konzeptabschnitt „Hausstil Dialoge" und `EPOS.UI/CLAUDE.md` | keine; bunit und Wachen |
+| **P6 Erlösrubrik und Steuerzeilen** — offen, **≈ E4** | U6 (Q15), U7, Gründe der Nullzeilen, BHKW-Vorschau auf die Rubrik | Zeilenstruktur; A/B-Nachweis am Beispiel 293.245,6 + 22.914,0 |
+| **P7 Ergebnisansicht** — offen, **≈ E5** (der Verlauf mit drei Szenarien in E6) | U2–U5, U10, U13, U39; Bericht mit Spanne, Nominalsummen, Spaltengruppen je Szenario | Ausweis; ChartProben, Berichtsprobe |
+| **P8 Ablösungen und Umzüge** — offen; die Hüllen (Q14) sind **Teil von E3**, Q1 und Q21 bleiben eigene Aufträge | Q1 (zweites Mockup), Q21 (drei Mockups mit Konzepten, Test-Gegenprobe), Hüllen (Q14) | keine |
+| **P9 Wiki** — offen, **≈ E12**; die `help_mapping`-Anker sind mit **#405** gesetzt | fünf Lücken, Anker, Logbuch 14+1 Sätze, Klimadaten-Zeile — im Sammel-Upload 28.09.2026 | — |
