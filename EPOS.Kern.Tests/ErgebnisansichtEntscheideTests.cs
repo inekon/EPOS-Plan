@@ -152,9 +152,11 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         /// <summary>
-        /// Referenz ist Variante 1 (−2): Der Stamm (−1) trägt eine Differenz gegen sie und
+        /// Referenz ist Variante 1 (902): Der Stamm (901) trägt eine Differenz gegen sie und
         /// bekommt deshalb ein Urteil und eine Zeile der Bandbreite — die Referenz keines.
-        /// Ohne Referenz (Bestand) bleibt der Stamm ohne Urteil.
+        /// Ohne Referenz (Bestand) bleibt der Stamm ohne Urteil. Die Ids sind POSITIV wie
+        /// jede <c>Tab_Projekt.ID</c>: 0 und kleiner heißt im Vertrag „der Stamm ist die
+        /// Referenz".
         /// </summary>
         [Fact]
         public void Q7_Ist_eine_Variante_die_Referenz_bekommt_der_Stamm_ein_Urteil()
@@ -162,32 +164,32 @@ namespace EPOS.Kern.Tests
             var alle = new List<WirtschaftlichkeitErgebnis>();
             foreach (string sz in WirtschaftlichkeitSzenario.Alle)
             {
-                alle.Add(Ergebnis(-1, sz, -300.0, true));   // Stamm gegen Variante 1
-                alle.Add(Ergebnis(-2, sz, null, false));    // die Referenz
-                alle.Add(Ergebnis(-3, sz, 800.0, false));   // Variante 2 gegen Variante 1
+                alle.Add(Ergebnis(901, sz, -300.0, true));   // Stamm gegen Variante 1
+                alle.Add(Ergebnis(902, sz, null, false));    // die Referenz
+                alle.Add(Ergebnis(903, sz, 800.0, false));   // Variante 2 gegen Variante 1
             }
 
-            List<VariantenEmpfehlung> mitReferenz = WirtschaftlichkeitEmpfehlung.Einstufungen(alle, -2);
-            Assert.Equal(new[] { -1, -3 }, mitReferenz.Select(u => u.IdProjekt).ToArray());
+            List<VariantenEmpfehlung> mitReferenz = WirtschaftlichkeitEmpfehlung.Einstufungen(alle, 902);
+            Assert.Equal(new[] { 901, 903 }, mitReferenz.Select(u => u.IdProjekt).ToArray());
             Assert.Equal(EmpfehlungStufe.Nicht, mitReferenz[0].Stufe);
             Assert.Equal(EmpfehlungStufe.Empfohlen, mitReferenz[1].Stufe);
 
             // Bestand: ohne Referenz urteilt die Regel nicht über den Stamm.
-            Assert.Equal(new[] { -3 },
+            Assert.Equal(new[] { 903 },
                          WirtschaftlichkeitEmpfehlung.Einstufungen(alle).Select(u => u.IdProjekt).ToArray());
 
             WirtschaftlichkeitBandbreite b = WirtschaftlichkeitBandbreite.Bilde(
                 new[]
                 {
-                    new KeyValuePair<int, string>(-1, "Stamm"),
-                    new KeyValuePair<int, string>(-2, "Variante 1"),
-                    new KeyValuePair<int, string>(-3, "Variante 2")
-                }, alle, -2, "Variante 1");
-            Assert.Equal(new[] { -1, -3 }, b.Zeilen.Select(z => z.IdProjekt).ToArray());
-            Assert.True(b.Zeile(-1).IstStamm);
-            Assert.NotNull(b.Zeile(-1).Urteil);
-            Assert.Equal(EmpfehlungStufe.Nicht, b.Zeile(-1).Urteil.Stufe);
-            Assert.Null(b.Zeile(-2));
+                    new KeyValuePair<int, string>(901, "Stamm"),
+                    new KeyValuePair<int, string>(902, "Variante 1"),
+                    new KeyValuePair<int, string>(903, "Variante 2")
+                }, alle, 902, "Variante 1");
+            Assert.Equal(new[] { 901, 903 }, b.Zeilen.Select(z => z.IdProjekt).ToArray());
+            Assert.True(b.Zeile(901).IstStamm);
+            Assert.NotNull(b.Zeile(901).Urteil);
+            Assert.Equal(EmpfehlungStufe.Nicht, b.Zeile(901).Urteil.Stufe);
+            Assert.Null(b.Zeile(902));
         }
 
         // =====================================================================

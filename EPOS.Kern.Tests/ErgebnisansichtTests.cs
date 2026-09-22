@@ -912,7 +912,9 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// ETAPPE E5 Teil b (V‑A, V‑G6) — die Sensitivitätstafel der Seite: je Stand außer
         /// der Referenz seine gebuchten Zeilen, der Name an der ersten, die Steigung mit
-        /// ihrer Einheit in der letzten Spalte (Prüfgruppe 1040–1042 nach einem Lauf).
+        /// ihrer Einheit in der letzten Spalte. Prüfgruppe ist „Wöhler" mit ihren gebuchten
+        /// Zeilen (je Variante vier) — 1040 bis 1042 sind in der Testdatenbank keine Gruppe,
+        /// die Hülle sähe dort nur den Stamm.
         /// </summary>
         [Fact]
         public void Die_Huelle_zeigt_die_Sensitivitaet_mit_Steigung()
@@ -920,26 +922,24 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            new WirtschaftlichkeitCtrl().Berechne(Gruppe1040(), Parametersatz1040());
-            List<SensitivitaetZeile> gebucht =
-                new WirtschaftlichkeitCtrl().LadeSensitivitaet(new List<int> { 1041, 1042 });
+            List<SensitivitaetZeile> gebucht = new WirtschaftlichkeitCtrl().LadeSensitivitaet(
+                new List<int> { WOEHLER_TEST1, WOEHLER_TEST2 });
+            Assert.Equal(8, gebucht.Count);
 
-            var seite = new WirtschaftlichkeitSeiteGaben(1040, "Stammprojekt");
+            var seite = new WirtschaftlichkeitSeiteGaben(WOEHLER, "Wöhler");
             WirtschaftlichkeitStand stand = ((Func<WirtschaftlichkeitStand>)seite.Gaben()["Laden"])();
             ErgebnisMatrix sens = stand.Ansicht.Sensitivitaet;
 
-            Assert.Equal(1040, stand.IdReferenz);
+            Assert.Equal(WOEHLER, stand.IdReferenz);
             Assert.Equal(6, sens.Spalten.Count);
             Assert.Equal(R.WIRT_SENS_SP_STEIGUNG, sens.Spalten[5]);
             Assert.Equal(gebucht.Count, sens.Zeilen.Count);
 
             // Der Name steht an der ersten Zeile eines Standes; die Referenz hat keine.
-            string name1041 = stand.Staende.First(s => s.Id == 1041).Text;
-            string name1042 = stand.Staende.First(s => s.Id == 1042).Text;
-            Assert.Equal(new[] { name1041, name1042 },
+            Assert.Equal(new[] { "Test1", "Test2" },
                          sens.Zeilen.Where(z => z.Titel.Length > 0).Select(z => z.Titel).ToArray());
 
-            SensitivitaetZeile erste = gebucht.First(z => z.IdProjekt == 1041);
+            SensitivitaetZeile erste = gebucht.First(z => z.IdProjekt == WOEHLER_TEST1);
             Assert.Equal(erste.Parameter, sens.Zeilen[0].Zellen[0]);
             Assert.Equal(erste.Steigung.Value.ToString("N2", BerichtTexte.Kultur) + " " + erste.SteigungEinheit,
                          sens.Zeilen[0].Zellen[4]);
