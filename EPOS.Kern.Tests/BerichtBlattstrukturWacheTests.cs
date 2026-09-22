@@ -197,13 +197,18 @@ namespace EPOS.Kern.Tests
                 Assert.Equal("Stammprojekt", w.Cell(66, 1).GetString());   // Referenzzeile
                 Assert.Equal("Variante A", w.Cell(67, 1).GetString());
 
+                // ETAPPE E5 Teil b (U10): Unter dem Fußtext der Bandbreite steht der
+                // Hinweistext der Szenarien — eine Zeile; alles darunter wandert um EINE
+                // Zeile. Die ZAHLEN sind unverändert.
+                Assert.StartsWith("Was ein Szenario heute variiert", w.Cell(69, 1).GetString());
+
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
                 Assert.Equal("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]",
-                             w.Cell(72, 1).GetString());
-                Zeile(w, 73, "Jahr", "Stamm", "Variante A");
-                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(97, 1).GetString());
-                Assert.Equal("Stamm", w.Cell(100, 1).GetString());
-                Zeile(w, 101, "Jahr", "Energiekosten", "Netto nominal");
+                             w.Cell(73, 1).GetString());
+                Zeile(w, 74, "Jahr", "Stamm", "Variante A");
+                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(98, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(101, 1).GetString());
+                Zeile(w, 102, "Jahr", "Energiekosten", "Netto nominal");
 
                 // ---- Variantenblatt -------------------------------------------
                 IXLWorksheet s = wb.Worksheet("Stamm");
@@ -236,6 +241,10 @@ namespace EPOS.Kern.Tests
         /// Reihenfolge der Kennzahltafel des Mockups: Differenz, Annuität, Amortisation
         /// (Zinsfuß und Gestehungskosten führt die Prüfgruppe nicht), zuletzt der
         /// Nettobarwert absolut. Die ZAHLEN sind unverändert; E5 ordnet, es rechnet nicht.</para>
+        ///
+        /// <para><b>ETAPPE E5 Teil b:</b> Der Nettobarwert bleibt in Zeile 24; Verlauf und
+        /// Mehrjahrestabelle wandern um EINE Zeile (Hinweistext der Szenarien unter der
+        /// Bandbreite). Die ZAHLEN sind unverändert.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -271,16 +280,19 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(w.Cell(19, 2).GetDouble(), w.Cell(18, 2).GetDouble(), 2);
                 Assert.Equal(w.Cell(19, 3).GetDouble(), w.Cell(18, 3).GetDouble(), 2);
 
-                // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl.
-                Assert.Equal(20.0, w.Cell(94, 1).GetDouble(), 6);
-                Assert.Equal(-178529.70, w.Cell(94, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(94, 3).GetDouble(), 2);
+                // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl. ETAPPE E5
+                // Teil b: eine Zeile tiefer (Hinweistext unter der Bandbreite).
+                Assert.Equal(20.0, w.Cell(95, 1).GetDouble(), 6);
+                Assert.Equal(-178529.70, w.Cell(95, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(95, 3).GetDouble(), 2);
 
                 // Die Mehrjahrestabelle des Stamms: nominale Energiekosten je Jahr.
-                Assert.Equal(-12000.00, w.Cell(103, 2).GetDouble(), 2);
-                Assert.Equal(-12000.00, w.Cell(103, 3).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(104, 2).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(104, 3).GetDouble(), 2);
 
-                // ETAPPE E2 (G8): die Spanne der Bandbreitentafel = Best − Worst.
+                // ETAPPE E2 (G8): die Spanne der Bandbreitentafel — seit E5 (Q4) der Betrag
+                // aus größtem und kleinstem Szenariowert; hier liegt Erwartet zwischen Worst
+                // und Best, der Wert ist derselbe wie Best − Worst.
                 Assert.Equal(44957.21 - 44312.12, w.Cell(67, 5).GetDouble(), 2);
             }
             finally { Aufraeumen(ordner); }

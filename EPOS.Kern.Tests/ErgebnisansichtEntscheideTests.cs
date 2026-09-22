@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 using WindowsFormsApplication1;
 using Xunit;
 using R = WindowsFormsApplication1.MyResource.Resource;
@@ -464,6 +468,108 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Wort- und Tabellenbericht aus der Bewertung (Teil b, Punkt 4)
+        // =====================================================================
+
+        /// <summary>
+        /// <b>Tabellenbericht:</b> Unter dem Fußtext der Bandbreite steht der Hinweistext
+        /// (U10); die Bandbreite trägt die Zahlen und Stufen der Bewertung; die
+        /// Sensitivitätstafel führt die Steigung als ZAHL (Spalte 5) und ihre Einheit als
+        /// Text daneben; am Ende des Blattes stehen die Deklarationen — ohne gepflegten
+        /// Text mit „keine benannt" (Q5).
+        /// </summary>
+        [Fact]
+        public void Excel_traegt_Hinweistext_Steigung_und_Deklarationen_aus_der_Bewertung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BewerteteGruppe1040(out WirtschaftlichkeitParameter p);
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "teilb.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+
+                // Bandbreite: Titel, Kopf, Referenzzeile, 1041, 1042, Fußtext, Hinweistext.
+                int titel = ZeileMitText(w, R.WIRT_SZ_BANDBREITE_TITEL);
+                Assert.True(titel > 0, "Die Bandbreitentafel fehlt.");
+                BandbreitenZeile a = daten.Bewertung.Bandbreite.Zeile(1041);
+                Assert.Equal("Variante A", w.Cell(titel + 3, 1).GetString());
+                Assert.Equal(a.Erwartet.Value, w.Cell(titel + 3, 3).GetDouble(), 2);
+                Assert.Equal(a.Spanne.Value, w.Cell(titel + 3, 5).GetDouble(), 2);
+                Assert.Equal(a.Urteil.StufeText, w.Cell(titel + 3, 7).GetString());
+                Assert.StartsWith(string.Format(DE, R.WIRT_SZ_DELTA_FUSS, "").Substring(0, 10),
+                                  w.Cell(titel + 5, 1).GetString());
+                Assert.Equal(daten.Bewertung.Szenariohinweis, w.Cell(titel + 6, 1).GetString());
+
+                // Sensitivität: Steigung als Zahl, Einheit als Text.
+                int kopf = 0;
+                int letzte = w.LastRowUsed().RowNumber();
+                for (int r = 1; r <= letzte && kopf == 0; r++)
+                    if (w.Cell(r, 5).GetString() == R.WIRT_SENS_SP_STEIGUNG) kopf = r;
+                Assert.True(kopf > 0, "Die Sensitivitätstafel trägt keine Steigungsspalte.");
+                Assert.Equal(R.WIRT_SENS_SP_EINHEIT, w.Cell(kopf, 6).GetString());
+                SensitivitaetZeile erste = daten.Bewertung.Sensitivitaet.First(
+                    z => z.IdProjekt == 1041 && z.Steigung.HasValue);
+                Assert.Equal(XLDataType.Number, w.Cell(kopf + 1, 5).DataType);
+                Assert.Equal(erste.Steigung.Value, w.Cell(kopf + 1, 5).GetDouble(), 2);
+                Assert.Equal(R.WIRT_SENS_EINHEIT_PUNKT, w.Cell(kopf + 1, 6).GetString());
+
+                // Die Deklarationen am Ende des Blattes, Q5 ohne gepflegten Text.
+                int block = ZeileMitText(w, R.WPAR_G_BEWERTUNG);
+                Assert.True(block > kopf, "Der Bewertungsblock steht nicht am Ende des Blattes.");
+                Assert.Equal(R.WIRT_DEKL_NOMINAL, w.Cell(block + 1, 1).GetString());
+                Assert.Equal(string.IsNullOrWhiteSpace(p.NichtMonetaer)
+                                 ? R.WIRT_DEKL_RISIKO_OHNE_NM : R.WIRT_DEKL_RISIKO,
+                             w.Cell(block + 4, 1).GetString());
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// <b>Wortbericht:</b> Hinweistext unter den Annahmen, die Deklarationen in einer
+        /// Zeile, die Sensitivitätstafel mit der Spalte „Steigung", die Kennzahltafel mit
+        /// dem Label „nachrichtlich" an der Amortisation (Q3) und ohne Label an der
+        /// Annuität, und derselbe Vorschlagssatz wie die Bewertung.
+        /// </summary>
+        [Fact]
+        public void Word_traegt_Hinweistext_Steigung_und_Deklarationen_aus_der_Bewertung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            BerichtsDaten daten = BewerteteGruppe1040(out WirtschaftlichkeitParameter _);
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "teilb.docx");
+                new WordBerichtGenerator().Erzeuge(daten, VolleKonfiguration(), ziel);
+                using WordprocessingDocument doc = WordprocessingDocument.Open(ziel, false);
+                Body body = doc.MainDocumentPart.Document.Body;
+
+                List<string> absaetze = body.Elements<Paragraph>().Select(x => x.InnerText).ToList();
+                Assert.Contains(daten.Bewertung.Szenariohinweis, absaetze);
+                Assert.Contains(daten.Bewertung.Vorschlagstext, absaetze);
+                Assert.Contains(absaetze, x => x.StartsWith(R.WIRT_DEKL_NOMINAL + " · ", StringComparison.Ordinal));
+
+                List<Table> tabellen = body.Descendants<Table>().ToList();
+                Assert.Contains(tabellen, t => Kopf(t).LastOrDefault() == R.WIRT_SENS_SP_STEIGUNG);
+
+                List<string> zellen = body.Descendants<TableCell>().Select(c => c.InnerText).ToList();
+                Assert.Contains(R.WIRT_ZEILE_AMORTISATION + " — " + R.WIRT_KZ_NACHRICHTLICH, zellen);
+                Assert.Contains(R.WIRT_ZEILE_ANNUITAET, zellen);
+                Assert.DoesNotContain(R.WIRT_ZEILE_ANNUITAET + " — " + R.WIRT_KZ_NACHRICHTLICH, zellen);
+                Assert.Contains(zellen, z => z.EndsWith(" " + R.WIRT_SENS_EINHEIT_PUNKT, StringComparison.Ordinal));
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        // =====================================================================
         //  Hilfsmittel
         // =====================================================================
 
@@ -493,6 +599,65 @@ namespace EPOS.Kern.Tests
                 x => x.IdProjekt == id && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
             Assert.NotNull(e);
             return e;
+        }
+
+        /// <summary>
+        /// Die Prüfgruppe 1040–1042, gerechnet und gebucht wie im Berichtslauf, mit der
+        /// Bewertung aus den Zeilen DIESES Laufs (Sensitivität eingeschlossen).
+        /// </summary>
+        private static BerichtsDaten BewerteteGruppe1040(out WirtschaftlichkeitParameter p)
+        {
+            BerichtsDaten daten = Gruppe1040();
+            p = new WirtschaftlichkeitParameter
+            {
+                IdStamm = 1040,
+                IdReferenzprojekt = 0,
+                Zinssatz = 3.0,
+                Betrachtungszeitraum = 20,
+                PreissteigerungEnergie = 0.0,
+                PreissteigerungBetrieb = 0.0
+            };
+            List<SensitivitaetZeile> sens;
+            daten.Wirtschaftlichkeit = new WirtschaftlichkeitCtrl().Berechne(daten, p, 0, true, out sens);
+            daten.Bewertung = WirtschaftlichkeitBewertung.FuerBericht(
+                daten, daten.Wirtschaftlichkeit, p, BerichtTexte.Kultur, sens);
+            Assert.NotEmpty(daten.Bewertung.Sensitivitaet);
+            return daten;
+        }
+
+        private static int ZeileMitText(IXLWorksheet w, string text)
+        {
+            int letzte = w.LastRowUsed() != null ? w.LastRowUsed().RowNumber() : 0;
+            for (int r = 1; r <= letzte; r++)
+                if (string.Equals(w.Cell(r, 1).GetString().Trim(), text, StringComparison.Ordinal)) return r;
+            return 0;
+        }
+
+        private static string[] Kopf(Table t)
+        {
+            TableRow r = t.Elements<TableRow>().FirstOrDefault();
+            return r == null ? new string[0] : r.Elements<TableCell>().Select(c => c.InnerText).ToArray();
+        }
+
+        /// <summary>Alle Bausteine an — sonst fehlte gerade der Block, um den es geht.</summary>
+        private static BerichtsKonfiguration VolleKonfiguration()
+        {
+            var k = new BerichtsKonfiguration();
+            foreach (BerichtsKonfiguration.BausteinDef d in BerichtsKonfiguration.AlleBausteine)
+                k.AktiveBausteine.Add(d.Schluessel);
+            return k;
+        }
+
+        private static string TempOrdner()
+        {
+            string o = Path.Combine(Path.GetTempPath(), "epos-e5b-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(o);
+            return o;
+        }
+
+        private static void Aufraeumen(string ordner)
+        {
+            try { Directory.Delete(ordner, true); } catch { /* Aufräumen darf nicht scheitern */ }
         }
 
         /// <summary>Die Prüfgruppe 1040–1042 (gebuchter Stand in der Testdatenbank) mit
