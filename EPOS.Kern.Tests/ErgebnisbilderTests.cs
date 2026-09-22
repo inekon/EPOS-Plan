@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
                 new List<ChartRenderer.Reihe>
                 { new ChartRenderer.Reihe("Restwaerme", Reihe(10, 8), SKColors.Green) },
                 new ChartRenderer.Reihe("Gesamt", Reihe(80, 60), SKColors.Green,
-                                        ChartRenderer.Stapelart.Keine, false, 4f),
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                 "kW", ChartRenderer.Achse.Monate, false,
                 new List<ChartRenderer.Reihe>
                 { new ChartRenderer.Reihe("Waermebedarf", Reihe(90, 70), SKColors.DarkCyan) },
@@ -433,7 +433,7 @@ namespace EPOS.Kern.Tests
             {
                 new ChartRenderer.Reihe("oben", Reihe(60.1, 0.05), SKColors.Red),
                 new ChartRenderer.Reihe("unten", Reihe(59.9, 0.05), SKColors.Red,
-                                        ChartRenderer.Stapelart.Keine, true)
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt)
             };
 
             byte[] png = ChartRenderer.Temperaturverlauf("Speichertemperaturen", eng, true);
@@ -444,7 +444,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die GESTRICHELTE Zwillingsreihe muss ein anderes Bild ergeben als dieselbe
-        /// Reihe durchgezogen — sonst waere <c>Reihe.Gestrichelt</c> wirkungslos.
+        /// Reihe durchgezogen — sonst waere <c>Reihe.Strichart</c> wirkungslos.
         /// </summary>
         [Fact]
         public void Temperaturverlauf_zeichnet_gestrichelt_anders()
@@ -456,7 +456,7 @@ namespace EPOS.Kern.Tests
 
             byte[] gestrichelt = ChartRenderer.Temperaturverlauf("T", new List<ChartRenderer.Reihe>
             { new ChartRenderer.Reihe("unten", w, SKColors.Red,
-                                      ChartRenderer.Stapelart.Keine, true) }, true);
+                                      ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt) }, true);
 
             Assert.NotEqual(durchgezogen, gestrichelt);
         }
@@ -495,7 +495,7 @@ namespace EPOS.Kern.Tests
             var r = new ChartRenderer.Reihe("A", new double[] { 1, 2 }, SKColors.Red);
 
             Assert.Equal(ChartRenderer.Stapelart.Keine, r.Stapelgruppe);
-            Assert.False(r.Gestrichelt);
+            Assert.Equal(ChartRenderer.Strichart.Durchgezogen, r.Strichart);
             Assert.Equal(0f, r.Breite);
         }
 
@@ -651,7 +651,7 @@ namespace EPOS.Kern.Tests
             {
                 new ChartRenderer.Reihe("oben", Reihe(60, 20), SKColors.Red),
                 new ChartRenderer.Reihe("unten", Reihe(45, 20, 2000), SKColors.Blue,
-                                        ChartRenderer.Stapelart.Keine, true)
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt)
             };
         }
 

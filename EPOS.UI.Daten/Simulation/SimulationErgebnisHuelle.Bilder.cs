@@ -161,7 +161,8 @@ namespace WindowsFormsApplication1
         private static ChartRenderer.Reihe Reihe(string name, double[] werte, Farbrolle rolle,
                                                  ChartRenderer.Stapelart art = ChartRenderer.Stapelart.Keine,
                                                  float breite = 0f)
-            => new ChartRenderer.Reihe(name, Kopie(werte), rolle, art, false, breite);
+            => new ChartRenderer.Reihe(name, Kopie(werte), rolle, art,
+                                       ChartRenderer.Strichart.Durchgezogen, breite);
 
         // ---- B1: die zwei normierten Ganglinien des Bedarfsreiters ------
 
@@ -453,7 +454,9 @@ namespace WindowsFormsApplication1
             var reihen = new List<ChartRenderer.Reihe>();
             foreach (Temperaturreihe r in Temperaturreihen())
                 reihen.Add(new ChartRenderer.Reihe(r.Legende, Kopie(r.Werte), r.Rolle,
-                                                   ChartRenderer.Stapelart.Keine, r.Gestrichelt));
+                                                   ChartRenderer.Stapelart.Keine,
+                                                   r.Gestrichelt ? ChartRenderer.Strichart.Gestrichelt
+                                                                 : ChartRenderer.Strichart.Durchgezogen));
 
             return ChartRenderer.TemperaturverlaufModell(
                 MyResource.Resource.CHART_TITEL_SPEICHERTEMPERATUR, reihen, true);
@@ -808,7 +811,7 @@ namespace WindowsFormsApplication1
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_WAERMEERZEUGUNG,
                                                  gesamt, Farbrolle.ERZEUGUNG_GESAMT,
-                                                 ChartRenderer.Stapelart.Keine, false, 4f);
+                                                 ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f);
             }
 
             // Die Bedarfslinie liegt auf der PRIMÄRACHSE (#234): Wärmelast und
@@ -890,7 +893,7 @@ namespace WindowsFormsApplication1
 
                 kontur = new ChartRenderer.Reihe(MyResource.Resource.CHART_LEGENDE_SUMME_STROMVERBRAUCH,
                                                  Kopie(gesamt), Farbrolle.VERBRAUCH_GESAMT,
-                                                 ChartRenderer.Stapelart.Keine, false, 2f);
+                                                 ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,2f);
             }
 
             return ChartRenderer.ErzeugerStapelModell(

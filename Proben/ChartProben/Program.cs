@@ -442,7 +442,7 @@ namespace ChartProben
                             b2Stapel,
                             new List<ChartRenderer.Reihe>(),
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
-                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                                                    ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                             "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
                             new List<ChartRenderer.Reihe>
                             { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan) },
@@ -474,9 +474,9 @@ namespace ChartProben
                             new List<ChartRenderer.Reihe>
                             { new ChartRenderer.Reihe("Waermebedarf", gesamtlast,
                                                       SKColors.DarkCyan,
-                                                      ChartRenderer.Stapelart.Keine, false, 2f) },
+                                                      ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,2f) },
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
-                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                                                    ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                             "Leistung [kW]", ChartRenderer.Achse.Monate, false,
                             b2Speicher, "Speicherinhalt [kWh]"));
 
@@ -537,7 +537,7 @@ namespace ChartProben
                                 new ChartRenderer.Reihe("Gesamt",
                                                         Viertelstundenreihe(140, 95, 30, 0),
                                                         SKColors.Green, ChartRenderer.Stapelart.Keine,
-                                                        false, 2f)
+                                                        ChartRenderer.Strichart.Durchgezogen, 2f)
                             },
                             null, "Leistung [kW]", ChartRenderer.Achse.Monate, false));
 
@@ -602,7 +602,7 @@ namespace ChartProben
                             b2Stapel,
                             new List<ChartRenderer.Reihe>(),
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
-                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                                                    ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                             "Waermelast [kW]", ChartRenderer.Achse.Jahresstunden, false,
                             null, null,
                             new ChartRenderer.Achsenfenster(3000, 3500, 0.6)));
@@ -711,12 +711,12 @@ namespace ChartProben
                                                         Temperaturreihe(62, 8, 0, 0), TEMP_ROT),
                                 new ChartRenderer.Reihe("Puffer 1 unten",
                                                         Temperaturreihe(48, 6, 0, 0), TEMP_ROT,
-                                                        ChartRenderer.Stapelart.Keine, true),
+                                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt),
                                 new ChartRenderer.Reihe("Puffer 2 oben",
                                                         Temperaturreihe(55, 7, 1, 0), TEMP_BLAU),
                                 new ChartRenderer.Reihe("Puffer 2 unten",
                                                         Temperaturreihe(41, 5, 1, 0), TEMP_BLAU,
-                                                        ChartRenderer.Stapelart.Keine, true),
+                                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt),
                                 new ChartRenderer.Reihe("Quelltemperatur Erdreich",
                                                         Temperaturreihe(11, 4, 0, -Math.PI / 2),
                                                         TEMP_QUELLE)
@@ -734,7 +734,7 @@ namespace ChartProben
                                                         Temperaturreihe(60, 0.4, 0, 0), TEMP_ROT),
                                 new ChartRenderer.Reihe("Puffer 1 unten",
                                                         Temperaturreihe(59, 0.4, 0, 0), TEMP_ROT,
-                                                        ChartRenderer.Stapelart.Keine, true)
+                                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt)
                             },
                             minAuto: true));
 
@@ -941,7 +941,7 @@ namespace ChartProben
                             new List<ChartRenderer.Reihe>
                             {
                                 new ChartRenderer.Reihe("Betrieb", projektionBetrieb,
-                                                        ChartRenderer.C_BHKW) { Gestrichelt = true }
+                                                        ChartRenderer.C_BHKW) { Strichart = ChartRenderer.Strichart.Gestrichelt }
                             },
                             "Zahlung [€]", "Projektjahr"));
 
@@ -1202,7 +1202,7 @@ namespace ChartProben
             // AUFTRAG U18 - die zwei Gegenproben zur Legende des Kapitalwert-Verlaufs.
             //
             // Erstens die STRICHART: Masse, Farben und Determinismus stimmen auch dann,
-            // wenn der Renderer das Merkmal Gestrichelt einer Reihe stillschweigend
+            // wenn der Renderer das Merkmal Strichart einer Reihe stillschweigend
             // uebergeht - beide Bilder waeren dann byte-gleich. Genau so war es bis zu
             // diesem Auftrag: Das Feld stand an Reihe, dieses Bild las es nicht.
             Unterschiedlich("kapitalwert_verlauf_gestrichelt_wirkt",
@@ -1385,10 +1385,10 @@ namespace ChartProben
             {
                 new ChartRenderer.Reihe("Puffer 1 oben", Temperaturreihe(62, 8, 0, 0), TEMP_ROT),
                 new ChartRenderer.Reihe("Puffer 1 unten", Temperaturreihe(48, 6, 0, 0), TEMP_ROT,
-                                        ChartRenderer.Stapelart.Keine, true),
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt),
                 new ChartRenderer.Reihe("Puffer 2 oben", Temperaturreihe(55, 7, 1, 0), TEMP_BLAU),
                 new ChartRenderer.Reihe("Puffer 2 unten", Temperaturreihe(41, 5, 1, 0), TEMP_BLAU,
-                                        ChartRenderer.Stapelart.Keine, true),
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt),
                 new ChartRenderer.Reihe("Quelltemperatur Erdreich",
                                         Temperaturreihe(11, 4, 0, -Math.PI / 2), TEMP_QUELLE)
             };
@@ -1424,7 +1424,7 @@ namespace ChartProben
                     () => ChartRenderer.ErzeugerStapelModell("Waermeproduktion Jahresganglinie",
                             b2Stapel, new List<ChartRenderer.Reihe>(),
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
-                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                                                    ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                             "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
                             new List<ChartRenderer.Reihe>
                             { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan) },
@@ -1434,9 +1434,9 @@ namespace ChartProben
                             b2Stapel,
                             new List<ChartRenderer.Reihe>
                             { new ChartRenderer.Reihe("Waermebedarf", gesamtlast, SKColors.DarkCyan,
-                                                      ChartRenderer.Stapelart.Keine, false, 2f) },
+                                                      ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,2f) },
                             new ChartRenderer.Reihe("Gesamt", gesamtlast, SKColors.Green,
-                                                    ChartRenderer.Stapelart.Keine, false, 4f),
+                                                    ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                             "Leistung [kW]", ChartRenderer.Achse.Monate, false,
                             b2Speicher, "Speicherinhalt [kWh]")),
                 Modellprobe("temperaturverlauf",
@@ -1451,7 +1451,7 @@ namespace ChartProben
                                 new ChartRenderer.Reihe("Netzbezug mit Speicher", bezugMit,
                                                         SKColors.SteelBlue),
                                 new ChartRenderer.Reihe("Kappungsschwelle", kappung, SKColors.Red,
-                                                        ChartRenderer.Stapelart.Keine, true),
+                                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt),
                                 new ChartRenderer.Reihe("Speicherleistung", speicherleistung,
                                                         SKColors.Green)
                             },

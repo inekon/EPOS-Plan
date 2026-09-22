@@ -75,18 +75,66 @@ namespace WindowsFormsApplication1
             public string Label; public double Wert; public SKColor Farbe;
 
             /// <summary>
-            /// AUFTRAG U18 — der Eintrag gehört zu einer GESTRICHELTEN Linie; sein
-            /// Farbfeld wird dann nicht gefüllt, sondern gestrichelt umrandet.
+            /// AUFTRAG U18 — die STRICHART der Linie, zu der der Eintrag gehört. Zu einer
+            /// gestrichelten oder gepunkteten Linie wird das Farbfeld nicht gefüllt, sondern
+            /// in derselben Strichart umrandet (ETAPPE E6: seit der dritten Strichart eine
+            /// Aufzählung statt eines Schalters).
             ///
-            /// <para><b>Vorgabe false</b>, damit jedes Bild, das das Merkmal nicht
-            /// setzt, byte-gleich bleibt — die ChartProben vergleichen Bilder.</para>
+            /// <para><b>Vorgabe <see cref="Strichart.Durchgezogen"/></b>, damit jedes Bild,
+            /// das das Merkmal nicht setzt, byte-gleich bleibt — die ChartProben
+            /// vergleichen Bilder.</para>
             /// </summary>
-            public bool Gestrichelt;
+            public Strichart Strichart;
 
             public Segment(string l, double w, SKColor f) { Label = l; Wert = w; Farbe = f; }
 
-            public Segment(string l, double w, SKColor f, bool gestrichelt)
-            { Label = l; Wert = w; Farbe = f; Gestrichelt = gestrichelt; }
+            public Segment(string l, double w, SKColor f, Strichart strichart)
+            { Label = l; Wert = w; Farbe = f; Strichart = strichart; }
+        }
+
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — die <b>Strichart</b> einer Linie. Bis E6 trug
+        /// eine Reihe nur einen Schalter „gestrichelt"; der Verlauf mit allen drei
+        /// Szenarien braucht eine DRITTE Art (Farbe = Variante, Strichart = Szenario).
+        ///
+        /// <para><b>Wertgleich zum Schalter:</b> <see cref="Durchgezogen"/> ist der alte
+        /// Wert <c>false</c>, <see cref="Gestrichelt"/> der alte Wert <c>true</c> — mit
+        /// derselben Strichfolge 8/5. Jedes Bild, das die dritte Art nicht setzt, bleibt
+        /// damit byte-gleich.</para>
+        /// </summary>
+        public enum Strichart
+        {
+            /// <summary>Durchgezogen — die Vorgabe.</summary>
+            Durchgezogen = 0,
+            /// <summary>Gestrichelt, Strichfolge 8/5 (der alte Schalter <c>true</c>).</summary>
+            Gestrichelt = 1,
+            /// <summary>Gepunktet, Strichfolge <see cref="PUNKT_STRICH"/>/<see cref="PUNKT_LUECKE"/> (ETAPPE E6).</summary>
+            Gepunktet = 2
+        }
+
+        /// <summary>Strichlänge der gepunkteten Linie [px] — kurz wie ein Punkt.</summary>
+        public const float PUNKT_STRICH = 2.5f;
+
+        /// <summary>Lücke der gepunkteten Linie [px].</summary>
+        public const float PUNKT_LUECKE = 3.5f;
+
+        /// <summary>
+        /// ETAPPE E6 — die Strichfolge einer <see cref="Strichart"/>: <c>null</c> für
+        /// durchgezogen, 8/5 für gestrichelt (dieselbe Folge wie der alte Schalter),
+        /// <see cref="PUNKT_STRICH"/>/<see cref="PUNKT_LUECKE"/> für gepunktet.
+        ///
+        /// <para><b>Stumpfe Kappe auch für die Punkte:</b> Eine <see cref="Datenreihe"/>
+        /// führt keine Kappe; mit einer runden Kappe im PNG zeichnete das SVG der Oberfläche
+        /// eine andere Linie als das Bild des Berichts.</para>
+        /// </summary>
+        public static Strichmuster Strichfolge(Strichart art)
+        {
+            switch (art)
+            {
+                case Strichart.Gestrichelt: return new Strichmuster(8f, 5f);
+                case Strichart.Gepunktet: return new Strichmuster(PUNKT_STRICH, PUNKT_LUECKE);
+                default: return null;
+            }
         }
 
         public class Balken
@@ -127,11 +175,14 @@ namespace WindowsFormsApplication1
             public Stapelart Stapelgruppe = Stapelart.Keine;
 
             /// <summary>
-            /// Gestrichelt zeichnen (iU9-W11a.6). Im Bestand traegt die UNTERE
+            /// Die STRICHART der Linie (iU9-W11a.6, ETAPPE E6). Im Bestand traegt die UNTERE
             /// Speicherschicht <c>ChartDashStyle.Dash</c> — zwei Temperaturen desselben
-            /// Behaelters gehoeren zusammen und sollen sich trotzdem unterscheiden.
+            /// Behaelters gehoeren zusammen und sollen sich trotzdem unterscheiden. Bis E6
+            /// ein Schalter „gestrichelt"; seit dem Verlauf mit drei Szenarien eine
+            /// Aufzählung mit der Vorgabe <see cref="Strichart.Durchgezogen"/> — der alte
+            /// Wert <c>true</c> ist <see cref="Strichart.Gestrichelt"/>.
             /// </summary>
-            public bool Gestrichelt;
+            public Strichart Strichart;
 
             /// <summary>
             /// Strichstaerke; <c>0</c> = die Vorgabe des jeweiligen Bildes. Im Bestand
@@ -143,10 +194,10 @@ namespace WindowsFormsApplication1
             public Reihe(string n, double[] w, SKColor f) { Name = n; Werte = w; Farbe = f; }
 
             public Reihe(string n, double[] w, SKColor f, Stapelart gruppe,
-                         bool gestrichelt = false, float breite = 0f)
+                         Strichart strichart = Strichart.Durchgezogen, float breite = 0f)
             {
                 Name = n; Werte = w; Farbe = f;
-                Stapelgruppe = gruppe; Gestrichelt = gestrichelt; Breite = breite;
+                Stapelgruppe = gruppe; Strichart = strichart; Breite = breite;
             }
 
             /// <summary>
@@ -160,8 +211,8 @@ namespace WindowsFormsApplication1
 
             /// <summary>Dieselbe Reihe mit Stapelart, Strichfolge und Stärke.</summary>
             public Reihe(string n, double[] w, Farbrolle rolle, Stapelart gruppe,
-                         bool gestrichelt = false, float breite = 0f)
-                : this(n, w, Farbton.Aus(rolle), gruppe, gestrichelt, breite) { }
+                         Strichart strichart = Strichart.Durchgezogen, float breite = 0f)
+                : this(n, w, Farbton.Aus(rolle), gruppe, strichart, breite) { }
 
             /// <summary>
             /// Die Reihe mit einem fertigen <see cref="Farbton"/> — der Weg für eine
@@ -176,10 +227,10 @@ namespace WindowsFormsApplication1
 
             /// <summary>Derselbe Farbton mit Stapelart, Strichfolge und Stärke.</summary>
             public Reihe(string n, double[] w, Farbton ton, Stapelart gruppe,
-                         bool gestrichelt = false, float breite = 0f)
+                         Strichart strichart = Strichart.Durchgezogen, float breite = 0f)
                 : this(n, w, ton)
             {
-                Stapelgruppe = gruppe; Gestrichelt = gestrichelt; Breite = breite;
+                Stapelgruppe = gruppe; Strichart = strichart; Breite = breite;
             }
         }
 
@@ -810,7 +861,7 @@ namespace WindowsFormsApplication1
                 {
                     if (mitStamm)
                         reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_STAMM)
-                        { Gestrichelt = stammGestrichelt });
+                        { Strichart = stammGestrichelt ? Strichart.Gestrichelt : Strichart.Durchgezogen });
                     continue;
                 }
                 reihen.Add(new Reihe(s.Anzeige, s.Kumuliert, C_SERIEN[i++ % C_SERIEN.Length]));
@@ -934,13 +985,13 @@ namespace WindowsFormsApplication1
                     float y = (float)(rc.Bottom - (r.Werte[t] - min) / (max - min) * rc.Height);
                     punkte[t] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
                 }
-                // AUFTRAG U18: Das Merkmal Gestrichelt der Reihe wird hier gelesen
+                // AUFTRAG U18: Das Merkmal Strichart der Reihe wird hier gelesen
                 // — dieselbe Strichfolge wie in den übrigen Linienbildern (8/5).
                 // Ohne gesetztes Merkmal entsteht kein Pfadeffekt und das Bild bleibt
                 // byte-gleich dem von vorher.
                 float staerke = r.Breite > 0 ? r.Breite
                               : Traegt(r, Farbrolle.STAMM, C_STAMM) ? 3.5f : 2.5f;
-                Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
+                Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
                     Linienzug(zr, punkte,
                               Stift(r.Farbe, staerke, muster, Strichverbindung.Rund)));
@@ -958,7 +1009,7 @@ namespace WindowsFormsApplication1
             // Strichart. Im Wortbericht ist dieses Bild der einzige Ort, an dem die
             // Versionen nebeneinander stehen; ohne Legende wären die Linien
             // ununterscheidbar.
-            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Gestrichelt)).ToList(),
+            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
                     110f, H - 104f, W - 30f);   // Umbruch: 2 Zeilen Platz (Review 11)
             if (!string.IsNullOrEmpty(fussnote))
                 using (var f = Schrift(14f, kursiv: true))
@@ -3153,8 +3204,8 @@ namespace WindowsFormsApplication1
         /// Rundungsfehler seiner letzten Nachkommastelle ueber die volle Bildhoehe.</para>
         /// </summary>
         /// <param name="titel">Ueberschrift.</param>
-        /// <param name="reihen">Die Temperaturreihen; <see cref="Reihe.Gestrichelt"/>
-        /// kennzeichnet die untere Schicht.</param>
+        /// <param name="reihen">Die Temperaturreihen; <see cref="Reihe.Strichart"/>
+        /// (gestrichelt) kennzeichnet die untere Schicht.</param>
         /// <param name="minAuto">
         /// <c>true</c> = die Achse beginnt beim kleinsten vorkommenden Wert (der Regelfall
         /// des Vorlaeufers). <c>false</c> = sie beginnt bei null.
@@ -3373,9 +3424,9 @@ namespace WindowsFormsApplication1
             {
                 double[] werte = sortiert ? AbsteigendKopie(r.Werte) : r.Werte;
                 float staerke = r.Breite > 0 ? r.Breite : 2f;
-                Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
+                Strichmuster muster = Strichfolge(r.Strichart);
                 z.Markiert("reihe:" + (r.Name ?? ""), zr =>
-                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Gestrichelt));
+                    VerlaufLinie(zr, rc, werte, min, max, r.Farbe, staerke, r.Strichart));
                 z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, werte,
                                             Reihenfenster(fensterLinks, werte.Length)));
             }
@@ -3389,10 +3440,10 @@ namespace WindowsFormsApplication1
                 if (max2 <= 0) max2 = 1;
 
                 float staerke2 = zweiteAchse.Breite > 0 ? zweiteAchse.Breite : 2f;
-                Strichmuster muster2 = zweiteAchse.Gestrichelt ? new Strichmuster(8f, 5f) : null;
+                Strichmuster muster2 = Strichfolge(zweiteAchse.Strichart);
                 z.Markiert("reihe:" + (zweiteAchse.Name ?? ""), zr =>
                     VerlaufLinie(zr, rc, w2, 0, max2, zweiteAchse.Farbe, staerke2,
-                                 zweiteAchse.Gestrichelt));
+                                 zweiteAchse.Strichart));
                 // DG-E3-12: Die Reihe SAGT, dass sie rechts steht.
                 z.FuegeReihe(new Datenreihe(zweiteAchse.Name ?? "", Ton(zweiteAchse),
                                             staerke2, muster2, w2,
@@ -3441,7 +3492,7 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static void VerlaufLinie(IZeichenziel z, SKRect rc, double[] werte,
                                          double min, double max, SKColor farbe,
-                                         float staerke, bool gestrichelt)
+                                         float staerke, Strichart strichart)
         {
             if (werte == null || werte.Length < 2 || max - min <= 0.0) return;
 
@@ -3455,8 +3506,7 @@ namespace WindowsFormsApplication1
             }
 
             Linienzug(z, punkte.ToArray(),
-                      Stift(farbe, staerke, gestrichelt ? new Strichmuster(8f, 5f) : null,
-                            Strichverbindung.Rund));
+                      Stift(farbe, staerke, Strichfolge(strichart), Strichverbindung.Rund));
         }
 
         /// <summary>Mindestspanne der Temperaturachse [K] — woertlich aus dem Vorlaeufer.</summary>
@@ -4678,7 +4728,7 @@ namespace WindowsFormsApplication1
                     punkte[i] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
                 }
                 float staerke = r.Breite > 0 ? r.Breite : 3f;
-                Strichmuster muster = r.Gestrichelt ? new Strichmuster(8f, 5f) : null;
+                Strichmuster muster = Strichfolge(r.Strichart);
                 // Ein Zug über alle Jahre zeigt keine einzelne Zahl — er nennt seinen
                 // Namen (Regel der Gruppe (c)); die Zeigerzeile liest die Reihe.
                 z.Markiert("reihe:" + (r.Name ?? ""), r.Name ?? "", zr =>
@@ -4732,7 +4782,7 @@ namespace WindowsFormsApplication1
             var stellen = new double[m];
             for (int i = 0; i < m; i++) { werte[i] = r.Werte[i]; stellen[i] = jahre[i]; }
             return new Datenreihe(r.Name ?? "", Ton(r), staerke,
-                                  r.Gestrichelt ? new Strichmuster(8f, 5f) : null,
+                                  Strichfolge(r.Strichart),
                                   werte, null, Reihenart.Linie, null, null, stellen, "€");
         }
 
@@ -5287,8 +5337,9 @@ namespace WindowsFormsApplication1
                         // gestricheltes Feld in der Reihenfarbe statt einer vollen Füllung —
                         // sonst sagt die Legende über die Strichart nichts, und im
                         // Schwarz-Weiß-Ausdruck sind zwei Linien nicht auseinanderzuhalten.
-                        if (s.Gestrichelt)
-                            ze.Rechteck(ex, ey, 22f, 22f, Stift(s.Farbe, 3f, new Strichmuster(8f, 5f)));
+                        // ETAPPE E6: dasselbe für die gepunktete Linie, in IHRER Folge.
+                        if (s.Strichart != Strichart.Durchgezogen)
+                            ze.Rechteck(ex, ey, 22f, 22f, Stift(s.Farbe, 3f, Strichfolge(s.Strichart)));
                         else
                             ze.Rechteck(ex, ey, 22f, 22f, null, Flaeche(s.Farbe));
                         ze.Rechteck(ex, ey, 22f, 22f, rahmen);
@@ -5530,8 +5581,8 @@ namespace WindowsFormsApplication1
         private static Reihe Mit(Reihe r, double[] werte)
         {
             Reihe kopie = r.Ton != null
-                ? new Reihe(r.Name, werte, r.Ton, r.Stapelgruppe, r.Gestrichelt, r.Breite)
-                : new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Gestrichelt, r.Breite);
+                ? new Reihe(r.Name, werte, r.Ton, r.Stapelgruppe, r.Strichart, r.Breite)
+                : new Reihe(r.Name, werte, r.Farbe, r.Stapelgruppe, r.Strichart, r.Breite);
             kopie.Farbe = r.Farbe;
             return kopie;
         }
