@@ -8,8 +8,9 @@ durchgerechnete Zahlenprobe an einem einzigen Beispielprojekt. Er ist die ausgel
 von § 2.12 des konsolidierten Konzepts; maßgeblich bei Widerspruch ist das Konzept.
 
 Das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` beschreibt den Zustand **nach** der
-Umsetzung. Was davon noch nicht gebaut ist, steht gesammelt in seinem Anhang
-„Umsetzungsstand" — und nur dort.
+Umsetzung. **Der Anwender hat es am 22.09.2026 abgenommen**; es ist die verbindliche Zielvorgabe
+der Etappen E4 ff. des Analysepapiers. Was davon noch nicht gebaut ist, steht gesammelt in seinem
+Anhang „Umsetzungsstand" — und nur dort.
 
 ## Struktur
 

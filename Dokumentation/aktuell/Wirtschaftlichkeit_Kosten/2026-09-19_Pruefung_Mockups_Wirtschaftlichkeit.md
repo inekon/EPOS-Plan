@@ -352,9 +352,9 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 > **Sieben Fragen trugen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht.**
 > Entschieden 22.09.2026: **Q11** („kein HT/NT" — der Zeitzonentarif entfällt, offen nur die
 > Leistungspreis-Staffel), **Q23** („letzte Nummer erhöhen" — Version 1.2.0.4), **Q15** (U6 ja, der
-> Leistungsanteil bleibt projektweit) und **Q18** (U43 mit E5, U44 mit E8). Offen:
-> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q20** (ergänzen **oder**
-> als Ausschnitt kennzeichnen) · **Q22** (Artifact redeployen **oder** Vermerk „Repo-Datei führt").
+> Leistungsanteil bleibt projektweit), **Q18** (U43 mit E5, U44 mit E8) und **Q20** (mit der Abnahme
+> des Mockups gegenstandslos). Offen: **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist
+> offen) · **Q22** (Artifact redeployen **oder** Vermerk „Repo-Datei führt").
 
 | # | Frage | Empfehlung |
 |---|---|---|
@@ -377,7 +377,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | **Q17** | Endenergie-Tafel vier oder sechs Spalten? | **Vier** — Zeichnung kürzen; Träger und Arbeitspreis stehen in der Energieträgerverwaltung |
 | **Q18** | „Bericht erzeugen" und „Anhang‑E‑Checkliste…" auf der Wirtschaftlichkeitsseite? | Zweiter Einstieg in den Bericht vertretbar; die Checkliste ist eigene Arbeit — **Anhangzeile anlegen, dann entscheiden**. **Anwenderentscheid 22.09.2026 (nach Empfehlung): U43 „Bericht erzeugen" wird mit E5 gebaut (ruft den bestehenden Berichtsweg), U44 „Anhang‑E‑Checkliste…" mit E8, wenn V‑C und V‑D den Inhalt liefern** |
 | **Q19** | Kennzahltafel: Nettobarwert unter die Differenz? | **Ja**, reine Anzeige |
-| **Q20** | Parameterdialog im Mockup vollständig zeichnen? | **Ergänzen** (mindestens Szenariotafel und Gruppe „Bewertung") oder als Ausschnitt kennzeichnen |
+| **Q20** | Parameterdialog im Mockup vollständig zeichnen? | **Ergänzen** (mindestens Szenariotafel und Gruppe „Bewertung") oder als Ausschnitt kennzeichnen. **Mit der Anwenderabnahme des Mockups am 22.09.2026 gegenstandslos:** Die Zeichnung bleibt, wie abgenommen; der vollständige Dialog steht gebaut im Programm (Szenarienkonzept § 4, § 10.4) |
 | **Q21** | Katalogfilter, Wechselrichter, Stromspeicher-Dialoge nach `ueberholt/`; Hydraulik-Entwurf weiterverfolgen? | **Ja**, als ein Auftrag je Thema mit Konzept, Index, Code-Spannen und Test-Gegenprobe; Hydraulik-Entwurf ohne Konzept → `ueberholt/` |
 | **Q22** | Google-Schrift im Mockup; Artifact neu veröffentlichen? | Systemschrift-Kette; Artifact redeployen oder Vermerk „Repo-Datei führt" |
 | **Q23** | Logbuch: #346 ohne Eintrag lassen, #361 aufnehmen; Version 1.2.0.2? | **#346 ohne, #361 mit**; **Anwenderentscheid 22.09.2026: „letzte Nummer erhöhen"** — Version **1.2.0.4** (das Programm trägt 1.2.0.3 in `AssemblyInfo.cs`; die Anhebung gehört zur Auslieferung, das Update-Papier führt 1.2.0.4) |

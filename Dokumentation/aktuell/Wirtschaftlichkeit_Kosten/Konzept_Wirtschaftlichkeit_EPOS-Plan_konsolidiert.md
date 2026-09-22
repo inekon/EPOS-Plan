@@ -908,7 +908,7 @@ Etappe, die ihn überflüssig macht.
 *Entscheid A14 offen (Analyse vom 19.09.2026):* Das Mockup führt einen abweichenden Schlusssatz;
 welcher Wortlaut die Ressource `WIRT_SZEN_HINWEIS` trägt, ist nicht entschieden.
 
-## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026)
+## 2.12 Kategorien-Mockups mit Rechenweg (Auftrag 02.09.2026; Mockup vom Anwender abgenommen 22.09.2026)
 
 *Ausgelagert in den Ordner [`Wirtschaftlichkeit_Kosten/`](LIESMICH.md):
 `Beispielprojekt.md` (die eine Zahlenquelle), `../Mockups/Dialog_Formel_Zahlenprobe.html` — **das
