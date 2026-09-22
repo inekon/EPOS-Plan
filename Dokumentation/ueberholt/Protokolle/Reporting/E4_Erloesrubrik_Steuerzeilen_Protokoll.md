@@ -128,6 +128,8 @@ neu gerechnet ist.
   (heutiger Stand) oder *ohne jede Eigenerzeugung* (Mockup-Beispiel)? Nur im zweiten Fall enthält die vermiedene Menge den
   PV-Eigenverbrauch und die § 9b-Korrektur greift auch auf ihn; betroffen `VermiedenArbeit`, `VermiedenLeistung`,
   `VermiedenGesamt`, `VermiedenEntlastung9b` — Ausweisgrößen, aber gespeicherte Spalten; Kapitalwert unberührt.
+  **Entschieden 22.09.2026 (Anwender, nach Empfehlung und genauerer Erläuterung): ohne jede Eigenerzeugung**, KWK-Split
+  unverändert, Umsetzung mit E7 und A/B-Nachweis, Anker 316.159,6 €/a.
 - **U6‑Q2 bis U7‑Q2 — entschieden 22.09.2026 (Anwender, nach Empfehlung):** Block-A-Kopf „projektweit" bleibt kurz
   (kein zweiter Schlüssel); Komponentenname „Kessel" statt des Anlagennamens; „Herleitung" bleibt der eine Titel der
   Herleitungszeile für Herleitung wie Grund; vor U7 gerechnete Stände zeigen bis zum nächsten Lauf die eine

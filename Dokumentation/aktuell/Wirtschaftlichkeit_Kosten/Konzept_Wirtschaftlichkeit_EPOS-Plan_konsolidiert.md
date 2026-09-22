@@ -1084,7 +1084,10 @@ vermiedenen Kosten). Für die Umsetzung: Die Zeilen des Katalogs brauchen einen 
 heute **projektweit** aus `VermiedenMengeMWh` gebildet — eine Aufteilung je Anlage braucht einen
 **Verteilschlüssel je Anlage**: die Strommatrix trennt nur nach **Tarifzone** (`StromMatrix.Zone`),
 nicht nach Anlage, und der Kern verteilt heute nach dem Netto-Stromanteil (Befund V-4); der
-Leistungsanteil bleibt projektweit.
+Leistungsanteil bleibt projektweit. **Stand: umgesetzt #432** — Anlagenbezug `WirtZeile.Komponente`,
+Verteilschlüssel `VermiedenAnlageNachweis.Verteile()` (Näherung ausgewiesen), Leistungsanteil projektweit
+(Q15); die Bezugsgröße der vermiedenen Menge wird mit E7 auf den Bedarf ohne jede Eigenerzeugung
+gestellt (Entscheid U6‑Q1, § 6.3 Nr. 32).
 
 **(5) Der Verlauf mit allen drei Szenarien.** Gemessen: Der Knopf „Verlauf…" öffnet
 `KapitalwertVerlaufDialog`, der **ein** Szenario je Lauf rechnet, immer bei Erwartet beginnt (die
@@ -2617,11 +2620,15 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
     `VermiedenMengeMWh` ist damit allein der KWK-Eigenverbrauch, und der Verteilschlüssel der
     Erlösrubrik (V‑4) bringt nur das Blockheizkraftwerk ein — der vermiedene Bezug der Photovoltaik
     bleibt seine eigene Ausweiszeile im Block Photovoltaik. Das Mockup-Beispiel rechnet dagegen
-    „ohne jede Eigenerzeugung" (1.179,7 = 1.094,2 + 85,5 MWh). **Entscheid ausstehend (U6‑Q1):**
-    Bleibt „Bedarf ohne Anlage" ohne Blockheizkraftwerk, oder wird es ohne jede Eigenerzeugung
-    gebildet? Im zweiten Fall greift auch die § 9b-Korrektur auf den PV-Eigenverbrauch; betroffen
-    sind die gespeicherten Ausweisspalten `VermiedenArbeit`, `VermiedenLeistung`, `VermiedenGesamt`
-    und `VermiedenEntlastung9b`, der Kapitalwert nicht. Rechenwirksam — mit E7 und A/B-Nachweis.
+    „ohne jede Eigenerzeugung" (1.179,7 = 1.094,2 + 85,5 MWh). **Entschieden 22.09.2026 (Anwender, nach Empfehlung): ohne jede Eigenerzeugung.**
+    Bezugsgröße des Ausweises ist der Strombedarf des Projekts ohne jede Eigenerzeugung; die
+    vermiedene Menge führt KWK- und PV-Eigenverbrauch, die § 9b-Korrektur greift auf beide, der
+    Verteilschlüssel der Erlösrubrik bringt beide Anlagen ein. Der KWK-Eigenanteil (min-Regel auf
+    den Bedarf nach Abzug der Photovoltaik) bleibt unverändert, ebenso der Kapitalwert (er rechnet
+    mit dem tatsächlichen Restbezug). Betroffen sind die gespeicherten Ausweisspalten
+    `VermiedenArbeit`, `VermiedenLeistung`, `VermiedenGesamt` und `VermiedenEntlastung9b` sowie der
+    projektweite Leistungsanteil (Lastbild ohne Photovoltaik). Umsetzung mit E7: A/B-Nachweis über
+    die dreizehn Basisprojekte, Anker 316.159,6 €/a am Beispielprojekt (293.245,6 + 22.914,0).
 
 **Nachweis und Betrieb**
 
