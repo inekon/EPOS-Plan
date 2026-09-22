@@ -282,8 +282,21 @@ namespace WindowsFormsApplication1
                     KiDialog eintrag = KiDialoge.Katalog.Finde(a.Text("maske").Trim());
                     string ziel = KiMaskenziele.Ziel(eintrag.Maskenname);
 
+                    // DAS ARGUMENT (Anwenderentscheid KI-D-Q8): Der Reiter der
+                    // Startseite bzw. das Blatt der Ansicht „Berichte und Kosten".
+                    // Ohne Argument bleibt der Ruf wie bisher einstellig - die
+                    // Navigationstabellen lesen ihr erstes Argument je Schluessel,
+                    // und eine leere Zeichenkette waere dort ein Wunsch, der nichts
+                    // benennt.
+                    string argument = KiMaskenziele.Argument(eintrag.Maskenname);
+
                     bool offen;
-                    try { offen = Dienste.Navigation.OeffneMaske(ziel); }
+                    try
+                    {
+                        offen = argument.Length > 0
+                                    ? Dienste.Navigation.OeffneMaske(ziel, argument)
+                                    : Dienste.Navigation.OeffneMaske(ziel);
+                    }
                     catch (Exception ex)
                     {
                         return KiErgebnis.Fehlgeschlagen(

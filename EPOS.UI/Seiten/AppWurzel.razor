@@ -117,7 +117,13 @@ else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not n
        bleibt bestehen - es ist die Kachelfassung derselben Seite -, nur der
        MENUEWEG fuehrt jetzt in die Ansicht. Der Rueckweg ist derselbe wie bei
        den zwei Simulationsansichten. *@
+    @* DAS BLATT (Anwenderentscheid KI-D-Q8, 21.09.2026): Wer die Ansicht mit einem
+       Auftrag zeigt, nennt das Blatt, mit dem sie aufmacht - „erklaere mir die
+       Kostenseite" landet auf KOSTEN und nicht auf der Uebersicht. Leer = die Seite
+       entscheidet selbst (Rueckfall UEBERSICHT). Die Angabe steht RECHTS von
+       @@attributes und gewinnt deshalb gegen den Parametersatz der Huelle. *@
     <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten"
+                                                 Startseite="@_berichteKostenBlatt"
                                                  Geschlossen="ZurueckZurListe" />
 }
 else if (_ansicht == Seitenschluessel.Energietraeger)
@@ -277,10 +283,25 @@ else
 
     /// <summary>
     /// Der Reiterwunsch für den NÄCHSTEN Aufbau der Startseite; gesetzt vom Rückweg
-    /// „Projekt angelegt" (<see cref="BeiProjektAngelegt"/>), verbraucht im
-    /// Startseiten-Zweig von <see cref="Zeige"/>.
+    /// „Projekt angelegt" (<see cref="BeiProjektAngelegt"/>) und seit dem
+    /// Anwenderentscheid KI‑D‑Q8 vom Argument in <see cref="OeffneMaske"/>,
+    /// verbraucht im Startseiten-Zweig von <see cref="Zeige"/>.
     /// </summary>
     private string _reiterwunschOffen = "";
+
+    /// <summary>
+    /// Das BLATT, mit dem die Ansicht „Berichte und Kosten" aufmacht (KI‑D‑Q8);
+    /// leer = die Seite entscheidet selbst. Es wird bei JEDEM Aufbau gesetzt — auch
+    /// auf leer, damit ein Wunsch nicht am nächsten Besuch kleben bleibt.
+    /// </summary>
+    private string _berichteKostenBlatt = "";
+
+    /// <summary>
+    /// Der Blattwunsch für den NÄCHSTEN Aufbau der Berichtsansicht; gesetzt vom
+    /// Argument in <see cref="OeffneMaske"/>, verbraucht in <see cref="Zeige"/> —
+    /// derselbe Verbrauch wie beim Reiterwunsch der Startseite.
+    /// </summary>
+    private string _blattwunschOffen = "";
 
     /// <summary>
     /// Der EINSTIEG des stehenden Assistentenlaufs (16.09.2026) — Vorgabe ist der
@@ -982,6 +1003,13 @@ else
                 _statuszeile = KeineBerichteText;
                 return false;
             }
+
+            // DAS BLATT (KI-D-Q8): Es gilt fuer DIESEN Aufbau und wird dabei
+            // verbraucht - sonst stuende die Ansicht auch beim naechsten Besuch
+            // wieder auf dem gewuenschten Blatt (Muster Reiterwunsch der Startseite).
+            _berichteKostenBlatt = _blattwunschOffen;
+            _blattwunschOffen = "";
+
             _ansicht = maske;
             return true;
         }
@@ -1462,12 +1490,43 @@ else
         // „schritt=3;blatt=STROMSPEICHER" aus dem Rueckwegstapel.
         string marke = Marke(maske, argumente);
 
+        // DER REITER der Startseite und das BLATT der Berichtsansicht (Anwenderentscheid
+        // KI-D-Q8, 21.09.2026): Beide Ziele fuehren MEHRERE Masken des Dialogkatalogs -
+        // die sechs Erzeugermasken stehen auf dem Reiter „Energieerzeuger", die
+        // Kostenseite auf dem Blatt KOSTEN. Welcher Platz gemeint ist, sagt der Kern als
+        // Zeichenkette (KiMaskenziele.ARGUMENTE); ohne Argument entscheidet die Ansicht
+        // selbst. Gesetzt wird auf dem RENDERFADEN und vor Zeige - genau dort verbraucht
+        // der Startseiten-Zweig schon den Reiterwunsch des Rueckwegs.
+        string platz = Textargument(maske, argumente);
+
         _ = InvokeAsync(() =>
         {
+            if (maske == Seitenschluessel.Startseite) _reiterwunschOffen = platz;
+            else if (maske == Seitenschluessel.BerichteKosten) _blattwunschOffen = platz;
+
             Zeige(maske, betriebsart, marke);
             StateHasChanged();
         });
         return true;
+    }
+
+    /// <summary>
+    /// Das TEXTARGUMENT aus dem ersten Argument — der Reiter der Startseite
+    /// (<c>"ERZEUGER"</c>) und das Blatt der Berichtsansicht (<c>"KOSTEN"</c>);
+    /// leer, wenn keines mitkam.
+    /// </summary>
+    /// <remarks>
+    /// Wie <see cref="Marke"/> JE ZIEL geprüft: Ein Text, der an einem anderen
+    /// Schlüssel hängt, gehört nicht hierher — der Assistent reicht an derselben
+    /// Stelle seine Betriebsart und der Hilfe-Assistent seinen Aufrufkontext.
+    /// </remarks>
+    private static string Textargument(string maske, object[] argumente)
+    {
+        if (maske != Seitenschluessel.Startseite
+            && maske != Seitenschluessel.BerichteKosten) return "";
+
+        if (argumente is null || argumente.Length == 0) return "";
+        return argumente[0] as string ?? "";
     }
 
     /// <summary>

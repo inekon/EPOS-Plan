@@ -366,6 +366,110 @@ public class AppWurzelTests : EposBunitContext
     }
 
     // =====================================================================
+    //  Der PLATZ als Argument (Anwenderentscheid KI-D-Q8, 21.09.2026)
+    // =====================================================================
+
+    private static TestProjektquelle MitStartseite()
+        => new TestProjektquelle(ZweiProjekte)
+        {
+            Startseite = new Dictionary<string, object>
+            {
+                ["ProjektId"] = new Func<int>(() => 1030)
+            }
+        };
+
+    /// <summary>
+    /// <b>Der Reiter kommt als Argument mit.</b> Die sechs Erzeugermasken des
+    /// Projekts haben die Startseite als Ziel; ohne den Reiter „Energieerzeuger"
+    /// landete der Anwender auf „Projekt" und müsste selbst weitersuchen. Der Kern
+    /// nennt ihn als Zeichenkette (<c>KiMaskenziele.REITER_ERZEUGER</c>), die Wurzel
+    /// verbraucht ihn als Reiterwunsch.
+    /// </summary>
+    [Fact]
+    public void Das_Argument_der_Startseite_holt_den_Erzeugerreiter_nach_vorn()
+    {
+        var cut = Aufbauen(MitStartseite());
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.Startseite,
+                                             EPOS.UI.Seiten.Start.Reiterschluessel.Erzeuger));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-startseite"));
+        Assert.Equal("true", cut.FindAll("[role='tab']")[3].GetAttribute("aria-selected"));
+    }
+
+    /// <summary>
+    /// <b>Der Wunsch bleibt nicht kleben.</b> Er gilt für DIESEN Aufbau; der nächste
+    /// Aufruf ohne Argument macht wieder auf „Projekt" auf — derselbe Verbrauch wie
+    /// beim Rückweg „Projekt angelegt".
+    /// </summary>
+    [Fact]
+    public void Ohne_Argument_steht_die_Startseite_wieder_auf_dem_ersten_Reiter()
+    {
+        var cut = Aufbauen(MitStartseite());
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Startseite,
+                                 EPOS.UI.Seiten.Start.Reiterschluessel.Erzeuger);
+        cut.Render();
+        Assert.Equal("true", cut.FindAll("[role='tab']")[3].GetAttribute("aria-selected"));
+
+        cut.Instance.OeffneMaske(Seitenschluessel.Projektliste);
+        cut.Render();
+        cut.Instance.OeffneMaske(Seitenschluessel.Startseite);
+        cut.Render();
+
+        Assert.Equal("true", cut.FindAll("[role='tab']")[0].GetAttribute("aria-selected"));
+    }
+
+    /// <summary>
+    /// <b>Dasselbe für das BLATT der Ansicht „Berichte und Kosten".</b> Sie führt
+    /// vier Blätter, und vier Masken des Dialogkatalogs zeigen darauf; ohne das
+    /// Argument stünde immer die Übersicht vorn.
+    /// </summary>
+    [Fact]
+    public void Das_Argument_der_Berichtsansicht_waehlt_das_Blatt()
+    {
+        var quelle = MitStartseite();
+        quelle.BerichteKosten = new Dictionary<string, object>
+        {
+            ["ZurueckText"] = "◀ Zurück"
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+
+        Assert.True(cut.Instance.OeffneMaske(
+            Seitenschluessel.BerichteKosten,
+            EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_KOSTEN));
+        cut.Render();
+
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_KOSTEN,
+                     cut.FindComponent<EPOS.UI.Seiten.Berichte.BerichteKostenSeite>()
+                        .Instance.AktiveSeite);
+    }
+
+    /// <summary>
+    /// Ohne Argument bleibt es bei der Übersicht — der Zustand vor KI‑D‑Q8.
+    /// </summary>
+    [Fact]
+    public void Ohne_Argument_macht_die_Berichtsansicht_auf_der_Uebersicht_auf()
+    {
+        var quelle = MitStartseite();
+        quelle.BerichteKosten = new Dictionary<string, object>
+        {
+            ["ZurueckText"] = "◀ Zurück"
+        };
+        Services.AddSingleton<IProjektQuelle>(quelle);
+        var cut = Render<AppWurzel>(p => p.Add(x => x.Startansicht, Seitenschluessel.Startseite));
+
+        Assert.True(cut.Instance.OeffneMaske(Seitenschluessel.BerichteKosten));
+        cut.Render();
+
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_UEBERSICHT,
+                     cut.FindComponent<EPOS.UI.Seiten.Berichte.BerichteKostenSeite>()
+                        .Instance.AktiveSeite);
+    }
+
+    // =====================================================================
     //  Der PROJEKTASSISTENT als freie Ansicht (W16a-E-1 / W16b-O-5, #62b)
     // =====================================================================
 
