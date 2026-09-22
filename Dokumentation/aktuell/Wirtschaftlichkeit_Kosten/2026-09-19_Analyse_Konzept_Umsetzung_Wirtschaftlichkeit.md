@@ -35,6 +35,10 @@ Zeilennummern und Messungen:
 > **Nachtrag 22.09.2026 (#432, #434).** Gebaut sind inzwischen auch **E4** (#432) und **E5** (#434); die
 > nächste Etappe ist der **A13-Schnitt** (nach E5, vor E6), dann **E6** Verlauf mit drei Szenarien.
 
+> **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
+> [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (A1–A20 unter R‑A);
+> § 4 bleibt als Teil dieser Analyse mit ihrem Datum stehen.
+
 ## 0 Das Ergebnis in acht Sätzen
 
 1. **Der Rechenkern ist weiter als sein Konzept.** Kaskade, Zuschussklemme, Ersatz und Restwert mit
