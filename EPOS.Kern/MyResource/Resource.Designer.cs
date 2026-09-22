@@ -65077,6 +65077,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_BLATT {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierter Barwert der Differenz zur Referenz je Jahr [€] — ohne Restwert ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_BLATT_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_BLATT_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine berechenbaren Reihen. ähnelt.
         /// </summary>
         public static string WIRT_VERL_KEINE_REIHE {
@@ -65109,6 +65127,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_VERL_NULLDURCHGANG {
             get {
                 return ResourceManager.GetString("WIRT_VERL_NULLDURCHGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertdifferenz = Endwert + Restwert-Barwert [€] ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_ZEILE_KW {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_ZEILE_KW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang (dynamische Amortisation) [a] ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_ZEILE_NULL {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_ZEILE_NULL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert-Barwert am Horizontende [€] ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_ZEILE_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_ZEILE_RESTWERT", resourceCulture);
             }
         }
         

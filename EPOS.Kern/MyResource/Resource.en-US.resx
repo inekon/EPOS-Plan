@@ -23138,4 +23138,19 @@ Do you want to allow this?</value>
   <data name="WIRT_VERL_KEINE_REIHE" xml:space="preserve">
     <value>No series could be calculated.</value>
   </data>
+  <data name="WIRT_VERL_BLATT" xml:space="preserve">
+    <value>Trend</value>
+  </data>
+  <data name="WIRT_VERL_BLATT_TITEL" xml:space="preserve">
+    <value>Cumulative present value of the difference to the reference per year [€] — without residual value</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_NULL" xml:space="preserve">
+    <value>Zero crossing (dynamic payback) [a]</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_RESTWERT" xml:space="preserve">
+    <value>Present value of the residual value at the end of the horizon [€]</value>
+  </data>
+  <data name="WIRT_VERL_ZEILE_KW" xml:space="preserve">
+    <value>NPV difference = end value + present value of the residual value [€]</value>
+  </data>
 </root>
