@@ -196,6 +196,9 @@ und an der Stelle von Block 2 die Hinweiszeile. (10) Englisch. (11) Schmales Fen
 - **U39-Rest:** Entkopplung von Ersatz und Restwert, geräteeigene Dauerspalten, Anschluss der Speicherflotte (E7/E10).
 - **Referenzexport ohne Wirtschaftlichkeit:** `Referenzlauf/Ergebnisexport.cs` liest `Tab_ErgebnisWirtschaftlichkeit`
   nicht; die Erweiterung ist eine Frage der nächsten Basis (A11, E7).
+- **Überschrift im Wortbericht:** `BausteineWirtschaftlichkeit` schreibt die Überschrift der Szenarienübersicht fest als
+  „Szenarien Worst / Erwartet / Best", ohne Ressourcenschlüssel; nach E5‑Q2 heißen die Szenarien „Ungünstig"/„Günstig"
+  (bei der Papierpflege am Merge-Stand gefunden) — Kleinigkeit für die nächste Codewelle.
 - **Wiki:** Die Quelle `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` beschreibt die Seite noch ohne
   Umschalter und vier Abschnitte (Szenarien „Best"/„Worst", kein „Bericht erzeugen") — Nachzug vor dem Sammel-Upload
   26.09.2026. Die Logbuch-Sätze (Version 1.2.0.4) stehen im Update-Papier (#434).
