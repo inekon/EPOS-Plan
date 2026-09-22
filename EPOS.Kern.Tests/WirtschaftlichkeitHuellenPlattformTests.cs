@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
@@ -46,47 +47,23 @@ namespace EPOS.Kern.Tests
             Assert.True(gaben.ContainsKey("Speichern"), "Der Schreibweg gehört zum Satz.");
         }
 
+        /// <summary>
+        /// E3/6: Der Gesetzeskatalog liegt selbst in <c>EPOS.UI.Daten</c> — die
+        /// Überlagerung des Parameterdialogs steht damit ohne Windows-Schale,
+        /// vorgewählt auf die Klasse des CO₂-Preises.
+        /// </summary>
         [Fact]
-        public void Parameterhuelle_ohne_Naht_bietet_den_Gesetzeskatalog_nicht_an()
+        public void Parameterhuelle_traegt_den_Gesetzeskatalog_ohne_Naht_der_Schale()
         {
-            Func<string, IReadOnlyDictionary<string, object>> vorher =
-                Wirtschaftlichkeitswege.GesetzeskatalogGaben;
-            try
-            {
-                Wirtschaftlichkeitswege.GesetzeskatalogGaben = null;
+            IReadOnlyDictionary<string, object> gaben =
+                WirtschaftlichkeitParameterHuelle.Gaben(PROJEKT_BHKW);
 
-                IReadOnlyDictionary<string, object> gaben =
-                    WirtschaftlichkeitParameterHuelle.Gaben(PROJEKT_BHKW);
+            Assert.True(gaben.ContainsKey("GesetzeGaben"));
+            var weg = (Func<IReadOnlyDictionary<string, object>>)gaben["GesetzeGaben"];
 
-                Assert.False(gaben.ContainsKey("GesetzeGaben"),
-                             "Kein Delegat, kein Knopf: ohne Naht kein Schlüssel.");
-            }
-            finally { Wirtschaftlichkeitswege.GesetzeskatalogGaben = vorher; }
-        }
-
-        [Fact]
-        public void Parameterhuelle_mit_Naht_reicht_die_Klasse_des_Co2_Preises_durch()
-        {
-            Func<string, IReadOnlyDictionary<string, object>> vorher =
-                Wirtschaftlichkeitswege.GesetzeskatalogGaben;
-            try
-            {
-                string gerufen = null;
-                Wirtschaftlichkeitswege.GesetzeskatalogGaben = klasse =>
-                {
-                    gerufen = klasse;
-                    return new Dictionary<string, object>();
-                };
-
-                IReadOnlyDictionary<string, object> gaben =
-                    WirtschaftlichkeitParameterHuelle.Gaben(PROJEKT_BHKW);
-
-                Assert.True(gaben.ContainsKey("GesetzeGaben"));
-                var weg = (Func<IReadOnlyDictionary<string, object>>)gaben["GesetzeGaben"];
-                Assert.NotNull(weg());
-                Assert.Equal(DbWerte.GESETZ_KLASSE_CO2_PREIS, gerufen);
-            }
-            finally { Wirtschaftlichkeitswege.GesetzeskatalogGaben = vorher; }
+            IReadOnlyDictionary<string, object> katalog = weg();
+            Assert.NotNull(katalog);
+            Assert.Equal(DbWerte.GESETZ_KLASSE_CO2_PREIS, katalog["Vorwahl"]);
         }
 
         // =================================================================
@@ -138,37 +115,19 @@ namespace EPOS.Kern.Tests
             Assert.NotEmpty(gaben);
         }
 
+        /// <summary>
+        /// E3/6: Der Weg in die PV-Vergütung gehört seither dem WIRT
+        /// (<c>KostenKomponenteDialog</c> zeigt sie als Überlagerung und setzt
+        /// <c>PvOeffnen</c> selbst) — dieser Satz führt ihn nicht mehr.
+        /// </summary>
         [Fact]
-        public void Ertragbonus_ohne_Naht_bietet_keinen_Weg_in_die_Pv_Verguetung()
+        public void Ertragbonus_fuehrt_den_Weg_in_die_Pv_Verguetung_nicht_mehr()
         {
-            Action<int> vorher = Wirtschaftlichkeitswege.PvVerguetungOeffnen;
-            try
-            {
-                Wirtschaftlichkeitswege.PvVerguetungOeffnen = null;
+            IReadOnlyDictionary<string, object> gaben =
+                ErtragBonusGaben.Bauen(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK);
 
-                IReadOnlyDictionary<string, object> gaben =
-                    ErtragBonusGaben.Bauen(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK);
-
-                Assert.False(gaben.ContainsKey("PvOeffnen"),
-                             "Kein Delegat, kein Knopf: ohne Naht kein Schlüssel.");
-            }
-            finally { Wirtschaftlichkeitswege.PvVerguetungOeffnen = vorher; }
-        }
-
-        [Fact]
-        public void Ertragbonus_mit_Naht_traegt_den_Weg_in_die_Pv_Verguetung()
-        {
-            Action<int> vorher = Wirtschaftlichkeitswege.PvVerguetungOeffnen;
-            try
-            {
-                Wirtschaftlichkeitswege.PvVerguetungOeffnen = _ => { };
-
-                IReadOnlyDictionary<string, object> gaben =
-                    ErtragBonusGaben.Bauen(DbWerte.KOSTEN_KOMPONENTE_PHOTOVOLTAIK);
-
-                Assert.True(gaben.ContainsKey("PvOeffnen"));
-            }
-            finally { Wirtschaftlichkeitswege.PvVerguetungOeffnen = vorher; }
+            Assert.False(gaben.ContainsKey("PvOeffnen"),
+                         "Den Rückruf setzt der Wirt, nicht die Gaben des Blatts.");
         }
 
         // =================================================================
@@ -189,24 +148,68 @@ namespace EPOS.Kern.Tests
             Assert.True(gaben.ContainsKey("VerwaltungGaben"));
         }
 
+        /// <summary>
+        /// E3/5: Die Kostenverwaltung braucht keine Naht mehr — ihre Hülle liegt
+        /// selbst in <c>EPOS.UI.Daten</c>. Die Überlagerung der Kostenseite steht
+        /// damit OHNE Windows-Schale, also auch auf iOS.
+        /// </summary>
         [Fact]
-        public void Kostenseite_ohne_Naht_zeigt_die_Kostenverwaltung_nicht()
+        public void Kostenseite_zeigt_die_Kostenverwaltung_ohne_Naht_der_Schale()
         {
-            var vorher = Wirtschaftlichkeitswege.KostenVerwaltungGaben;
-            try
-            {
-                Wirtschaftlichkeitswege.KostenVerwaltungGaben = null;
+            var seite = new KostenSeiteGaben();
+            seite.SetzeGruppe(PROJEKT_BHKW, "");
+            seite.SetzeProjekt(PROJEKT_BHKW, "");
 
-                var seite = new KostenSeiteGaben();
-                seite.SetzeGruppe(PROJEKT_BHKW, "");
-                seite.SetzeProjekt(PROJEKT_BHKW, "");
+            var weg = (Func<KostenZeile, IReadOnlyDictionary<string, object>>)
+                      seite.Gaben()["VerwaltungGaben"];
 
-                var weg = (Func<KostenZeile, IReadOnlyDictionary<string, object>>)
-                          seite.Gaben()["VerwaltungGaben"];
+            IReadOnlyDictionary<string, object> gaben = weg(null);
 
-                Assert.Null(weg(null));
-            }
-            finally { Wirtschaftlichkeitswege.KostenVerwaltungGaben = vorher; }
+            Assert.NotNull(gaben);
+            Assert.True(gaben.ContainsKey("Laden"), "Der Ladeweg gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("Speichern"), "Der Schreibweg gehört zum Satz.");
+        }
+
+        // =================================================================
+        //  (7) KostenKomponenteHuelle — E3 Schritt 5
+        // =================================================================
+
+        [Fact]
+        public void Kostenverwaltung_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            string titel;
+            IReadOnlyDictionary<string, object> gaben =
+                KostenKomponenteHuelle.FuerStamm().Gaben(null, false, 0, out titel);
+
+            Assert.NotNull(gaben);
+            Assert.True(gaben.ContainsKey("Eintraege"), "Die Klappliste gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("NutzungsdauerVorbelegen"),
+                        "Die Nutzungsdauern-Vorbelegung gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("UebernahmeGaben"), "Die Übernahme gehört zum Satz.");
+            Assert.False(string.IsNullOrEmpty(titel), "Der Titel entsteht in der Hülle.");
+        }
+
+        /// <summary>
+        /// E3/6: Die Kostenverwaltung trägt ZWEI Überlagerungen, die bis dahin an
+        /// der Schale hingen — den Gesetzeskatalog (jeweils ohne eigenen Titel,
+        /// #187) und die PV-Vergütung. Beide stehen ohne Windows.
+        /// </summary>
+        [Fact]
+        public void Kostenverwaltung_traegt_Gesetzeskatalog_und_Pv_ohne_Naht_der_Schale()
+        {
+            IReadOnlyDictionary<string, object> gaben =
+                KostenKomponenteHuelle.GabenProjekt(PROJEKT_BHKW, "");
+
+            Assert.True(gaben.ContainsKey("GesetzeGaben"));
+            var gesetze = (Func<IReadOnlyDictionary<string, object>>)gaben["GesetzeGaben"];
+            Assert.Equal("", gesetze()["TitelText"]);
+
+            Assert.True(gaben.ContainsKey("PvGaben"));
+            Assert.True(gaben.ContainsKey("PvTitel"));
+            var pv = (Func<int, IReadOnlyDictionary<string, object>>)gaben["PvGaben"];
+            IReadOnlyDictionary<string, object> pvSatz = pv(PROJEKT_BHKW);
+            Assert.NotNull(pvSatz);
+            Assert.True(pvSatz.ContainsKey("Modell"), "Der PV-Satz führt sein Modell.");
         }
 
         // =================================================================
@@ -231,40 +234,102 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(stand);
         }
 
+        /// <summary>
+        /// E3/6: Alle FÜNF Unterdialoge der Seite stehen ohne Windows-Schale —
+        /// die Übergangsnaht <c>Wirtschaftlichkeitswege</c> ist weg, und damit ist
+        /// die Seite auf iOS vollständig, nicht nur zur Hälfte.
+        /// </summary>
         [Fact]
-        public void Wirtschaftlichkeitsseite_ohne_Naht_zeigt_die_vier_Fensterdialoge_nicht()
+        public void Wirtschaftlichkeitsseite_zeigt_alle_fuenf_Unterdialoge_ohne_Schale()
         {
-            var pv = Wirtschaftlichkeitswege.PvVerguetungGaben;
-            var bhkw = Wirtschaftlichkeitswege.BhkwGaben;
-            var tarif = Wirtschaftlichkeitswege.TarifGaben;
-            var verlauf = Wirtschaftlichkeitswege.VerlaufGaben;
-            try
-            {
-                Wirtschaftlichkeitswege.PvVerguetungGaben = null;
-                Wirtschaftlichkeitswege.BhkwGaben = null;
-                Wirtschaftlichkeitswege.TarifGaben = null;
-                Wirtschaftlichkeitswege.VerlaufGaben = null;
+            var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
+            var weg = (Func<WirtschaftlichkeitSeite.Unterdialog,
+                            IReadOnlyDictionary<string, object>>)seite.Gaben()["Gaben"];
 
-                var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
-                var weg = (Func<WirtschaftlichkeitSeite.Unterdialog,
-                                IReadOnlyDictionary<string, object>>)seite.Gaben()["Gaben"];
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik));
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Bhkw));
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug));
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Verlauf));
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
+        }
 
-                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik));
-                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Bhkw));
-                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug));
-                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Verlauf));
+        // =================================================================
+        //  (8) Die fünf Hüllen aus E3 Schritt 6
+        // =================================================================
 
-                // Der fünfte Unterdialog liegt seit E3/1 selbst in EPOS.UI.Daten
-                // und braucht keine Naht.
-                Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
-            }
-            finally
-            {
-                Wirtschaftlichkeitswege.PvVerguetungGaben = pv;
-                Wirtschaftlichkeitswege.BhkwGaben = bhkw;
-                Wirtschaftlichkeitswege.TarifGaben = tarif;
-                Wirtschaftlichkeitswege.VerlaufGaben = verlauf;
-            }
+        [Fact]
+        public void Gesetzeskatalog_baut_seinen_Satz_ohne_Windows_Dienst()
+        {
+            IReadOnlyDictionary<string, object> gaben =
+                GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS);
+
+            Assert.True(gaben.ContainsKey("Klassen"), "Die Klassenliste gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("Zeilen"), "Der Zeilenweg gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("Anlegen"), "Der Schreibweg gehört zum Satz.");
+            Assert.Equal(DbWerte.GESETZ_KLASSE_CO2_PREIS, gaben["Vorwahl"]);
+            Assert.False(string.IsNullOrEmpty(GesetzeskatalogHuelle.Titel()));
+        }
+
+        [Fact]
+        public void Tarifstruktur_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            IReadOnlyDictionary<string, object> gaben =
+                TarifstrukturHuelle.Gaben(PROJEKT_BHKW, TarifSicht.Strombezug);
+
+            Assert.NotNull(gaben["Tarif"]);
+            Assert.Equal(TarifSicht.Strombezug, gaben["Sicht"]);
+            Assert.True(gaben.ContainsKey("Speichern"), "Der Schreibweg gehört zum Satz.");
+            Assert.False(string.IsNullOrEmpty(TarifstrukturHuelle.Titel(TarifSicht.Bhkw)));
+        }
+
+        [Fact]
+        public void Pv_Verguetung_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            IReadOnlyDictionary<string, object> gaben =
+                PhotovoltaikVerguetungHuelle.Gaben(PROJEKT_BHKW);
+
+            Assert.NotNull(gaben["Modell"]);
+            Assert.True(gaben.ContainsKey("Speichern"), "Der Schreibweg gehört zum Satz.");
+
+            // Die Dateiwahl des Marktwert-Imports läuft seit E3/2 über
+            // Dienste.Datei und braucht keinen Fensterbesitzer mehr.
+            Assert.True(gaben.ContainsKey("MarktwerteImportieren"));
+            Assert.False(string.IsNullOrEmpty(PhotovoltaikVerguetungHuelle.Titel()));
+        }
+
+        [Fact]
+        public void Bhkw_Wirtschaftlichkeit_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            string titel;
+            IReadOnlyDictionary<string, object> gaben =
+                BhkwWirtschaftlichkeitHuelle.Gaben(PROJEKT_BHKW, null, out titel);
+
+            Assert.Equal(PROJEKT_BHKW, gaben["IdStamm"]);
+            Assert.NotNull(gaben["Anlagen"]);
+            Assert.True(gaben.ContainsKey("SpeichereAnlage"), "Der erste Schreibweg fehlt.");
+            Assert.True(gaben.ContainsKey("SpeichereVorgaben"), "Der zweite Schreibweg fehlt.");
+            Assert.False(string.IsNullOrEmpty(titel));
+        }
+
+        /// <summary>
+        /// P7: Sammeln, Rechnen und Zeichnen des Verlaufs laufen plattformfrei —
+        /// der Renderer des Kerns braucht kein Windows, und der Arbeitsfaden
+        /// entsteht über <c>Kulturweitergabe</c>. Gerechnet wird hier nicht (das
+        /// wäre ein Simulationslauf); geprüft ist, dass der Satz ohne Schale
+        /// steht und seinen Rechenweg trägt.
+        /// </summary>
+        [Fact]
+        public void Kapitalwertverlauf_baut_seinen_Satz_ohne_Windows_Dienst()
+        {
+            Func<bool> neuGesammelt;
+            IReadOnlyDictionary<string, object> gaben = KapitalwertVerlaufHuelle.Gaben(
+                PROJEKT_BHKW, "", new List<int>(), out neuGesammelt);
+
+            Assert.True(gaben.ContainsKey("Szenarien"), "Die drei Szenarien gehören zum Satz.");
+            Assert.True(gaben.ContainsKey("Berechnen"), "Der Rechenweg gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("FarbeSetzen"), "Die Farbwahl gehört zum Satz.");
+            Assert.NotNull(neuGesammelt);
+            Assert.False(neuGesammelt(), "Vor dem ersten Lauf ist nichts gesammelt.");
         }
     }
 }

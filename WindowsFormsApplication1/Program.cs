@@ -269,41 +269,13 @@ namespace WindowsFormsApplication1
             // "Katalog ansehen" nicht - genau der Stand auf iOS.
             Katalogwege.PufferKatalogGaben = () => PufferSpAdminHuelle.Gaben(true);
 
-            // Etappe E3, Schritt 1: Die vier nahtlosen Huellen der Kosten- und
-            // Wirtschaftlichkeitsseite liegen jetzt in EPOS.UI.Daten. Zwei Wege, die
-            // sie rufen, zeigen bis E3 Schritt 6 noch ein eigenes Fenster und bleiben
-            // deshalb hier - sie kommen als benannte Naht herein. Ohne diese Haken
-            // zeigt der Wirtschaftlichkeits-Parameterdialog den Gesetzeskatalog nicht
-            // und der Abschnitt "Ertrag/Bonus" keinen Weg in die PV-Verguetung; genau
-            // der Stand auf iOS.
-            Wirtschaftlichkeitswege.GesetzeskatalogGaben =
-                klasse => GesetzeskatalogHuelle.Gaben(klasse);
-            Wirtschaftlichkeitswege.PvVerguetungOeffnen =
-                idProjekt => PhotovoltaikVerguetungHuelle.Oeffnen(null, idProjekt);
-
-            // Etappe E3, Schritt 3: Dasselbe fuer die Ueberlagerungen der zwei
-            // Seiten, die jetzt in EPOS.UI.Daten liegen. Die fuenf gerufenen
-            // Huellen zeigen DANEBEN noch ein eigenes Fenster und wandern erst mit
-            // E3 Schritt 5 bzw. 6; bis dahin holt die Seite ihren Parametersatz
-            // hier ab. Ohne Haken bleibt die Ueberlagerung aus - der Stand auf iOS.
-            Wirtschaftlichkeitswege.KostenVerwaltungGaben =
-                (idProjekt, projektname, komponente, betrieb, idAnlage) =>
-                    KostenKomponenteHuelle.GabenProjekt(idProjekt, projektname,
-                                                        komponente, betrieb, idAnlage);
-            Wirtschaftlichkeitswege.PvVerguetungGaben =
-                idStamm => PhotovoltaikVerguetungHuelle.Gaben(idStamm);
-            Wirtschaftlichkeitswege.BhkwGaben = (idStamm, ergebnisse) =>
-            {
-                // Der Titel gehoert zum FENSTER; als Ueberlagerung traegt ihn der
-                // Wirt, deshalb verfaellt er hier.
-                string titel;
-                return BhkwWirtschaftlichkeitHuelle.Gaben(idStamm, ergebnisse, out titel);
-            };
-            Wirtschaftlichkeitswege.TarifGaben =
-                (idStamm, sicht) => TarifstrukturHuelle.Gaben(idStamm, sicht);
-            Wirtschaftlichkeitswege.VerlaufGaben =
-                (int idStamm, string stammName, List<int> varianten, out Func<bool> neuGesammelt) =>
-                    KapitalwertVerlaufHuelle.Gaben(idStamm, stammName, varianten, out neuGesammelt);
+            // ETAPPE E3, SCHRITTE 5 UND 6: Die Uebergangsnaht Wirtschaftlichkeitswege
+            // ist WEG. Alle Huellen der Kosten- und Wirtschaftlichkeitsseite liegen
+            // jetzt in EPOS.UI.Daten und rufen einander unmittelbar; ihre Dialoge
+            // erscheinen als Ueberlagerung im selben Fenster. Windows steuert nur noch
+            // zwei Fenster-Adapter bei (KostenKomponenteFenster fuer den Menuepunkt
+            // "Kostenverwaltung", GesetzeskatalogFenster fuer "Gesetzeskatalog"), und
+            // die ruft die Hauptfensterhuelle unmittelbar - kein Haken noetig.
 
             // Rechtshinweis des KI-Assistenten einhaengen: erst damit gibt es ueberhaupt
             // einen Weg zu einer Einwilligung. Ohne diesen Aufruf - Aktionsharnisch,

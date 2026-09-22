@@ -926,18 +926,17 @@ namespace WindowsFormsApplication1
         {
             if (_idProjekt <= 0) return null;
 
-            // E3/3: Die Kostenverwaltung zeigt bis E3 Schritt 5 daneben ein eigenes
-            // Fenster und bleibt deshalb in der Schale; ihr Parametersatz kommt als
-            // benannte Naht herein. Kein Delegat, keine Ueberlagerung.
-            var weg = Wirtschaftlichkeitswege.KostenVerwaltungGaben;
-            if (weg == null) return null;
-
+            // E3/5: Die Kostenverwaltung liegt selbst in EPOS.UI.Daten; ihr
+            // Parametersatz kommt unmittelbar von dort. Die Naht der Schale
+            // (Wirtschaftlichkeitswege.KostenVerwaltungGaben) ist damit weg —
+            // die Ueberlagerung erscheint auf JEDER Plattform.
             ProjektEnergietraegerCtrl.AnlagenEintrag a = null;
             if (zeile != null) _anlagen.TryGetValue(zeile.Schluessel, out a);
 
-            return weg(_idProjekt, _projektname,
-                       a != null ? a.Komponente : null,
-                       false, a != null ? a.AnlageId : 0);
+            return KostenKomponenteHuelle.GabenProjekt(
+                _idProjekt, _projektname,
+                a != null ? a.Komponente : null,
+                false, a != null ? a.AnlageId : 0);
         }
 
         /// <summary>

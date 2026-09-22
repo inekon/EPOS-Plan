@@ -90,16 +90,11 @@ namespace WindowsFormsApplication1
             // Damit ist dies der ERSTE Dialog des Bestands, der ohne Sprungziel
             // auskommt, seit er eines hatte (Ersteinsatz war iU9-W2.2).
             //
-            // E3/1: Die gerufene Huelle zeigt noch ein eigenes Fenster und liegt
-            // deshalb bis E3 Schritt 6 in der Windows-Schale; der Weg kommt als
-            // benannte Naht herein. Kein Delegat, kein Knopf - ohne eingehaengte
-            // Naht bleibt der Schluessel weg, und der Dialog zeigt den Katalog
-            // gar nicht erst an (@if (GesetzeGaben is not null)).
-            Func<string, IReadOnlyDictionary<string, object>> gesetze =
-                Wirtschaftlichkeitswege.GesetzeskatalogGaben;
-            if (gesetze != null)
-                werte["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => gesetze(DbWerte.GESETZ_KLASSE_CO2_PREIS));
+            // E3/6: Die gerufene Huelle liegt selbst in EPOS.UI.Daten; die Naht
+            // der Schale (Wirtschaftlichkeitswege.GesetzeskatalogGaben) ist weg,
+            // und die Ueberlagerung erscheint auf JEDER Plattform.
+            werte["GesetzeGaben"] = new Func<IReadOnlyDictionary<string, object>>(
+                () => GesetzeskatalogHuelle.Gaben(DbWerte.GESETZ_KLASSE_CO2_PREIS));
 
             return werte;
         }

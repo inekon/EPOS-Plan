@@ -1350,6 +1350,66 @@ public class KostenKomponenteDialogTests : BunitContext
     }
 
     /// <summary>
+    /// <b>Die SIEBTE Ueberlagerung: die PV-Verguetung</b> (E3/6). Bis dahin fuhr
+    /// der Knopf des Reiterblatts ein ZWEITES WinForms-Fenster ueber diesem hoch
+    /// (nachgelagert, ueber eine Naht der Windows-Schale); seit die PV-Huelle
+    /// selbst plattformfrei ist, steht sie als Ueberlagerung im selben Fenster —
+    /// auf Windows wie auf iOS. Der Satz kommt je PROJEKT, denn im Admin-Kontext
+    /// waehlt das Reiterblatt das Stammprojekt selbst.
+    /// </summary>
+    [Fact]
+    public void Die_Pv_Verguetung_erscheint_als_siebte_Ueberlagerung()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["ProjektlisteZeigen"] = false,
+            ["ProjektVorwahl"] = (int?)9
+        };
+
+        int gerufenFuer = 0;
+        var cut = Zeige(p => p.Add(x => x.PvGaben, (int id) =>
+        {
+            gerufenFuer = id;
+            return (IReadOnlyDictionary<string, object>)new Dictionary<string, object>();
+        }), stand: mit);
+
+        cut.FindAll(".epos-reiter-knopf")[1].Click();          // Reiter Ertrag/Bonus
+        Assert.False(cut.Instance.UeberlagerungOffen);
+
+        cut.Find(".epos-ertragbonus button").Click();          // "PV-Verguetungsdialog..."
+
+        Assert.Equal(9, gerufenFuer);
+        Assert.True(cut.Instance.UeberlagerungOffen);
+        Assert.Single(cut.FindComponents<
+            EPOS.UI.Dialoge.Wirtschaftlichkeit.PhotovoltaikVerguetungDialog>());
+    }
+
+    /// <summary>
+    /// Ohne Gaben bleibt der Knopf im Reiterblatt weg — „kein Delegat, kein
+    /// Knopf", dieselbe Wache wie beim Gesetzeskatalog (E3/6).
+    /// </summary>
+    [Fact]
+    public void Ohne_Pv_Gaben_fehlt_der_Verguetungsknopf()
+    {
+        KostenKomponenteStand mit = Standard();
+        mit.ErtragSichtbar = true;
+        mit.ErtragGaben = new Dictionary<string, object>
+        {
+            ["IstPv"] = true,
+            ["ProjektlisteZeigen"] = false,
+            ["ProjektVorwahl"] = (int?)9
+        };
+
+        var cut = Zeige(stand: mit);
+        cut.FindAll(".epos-reiter-knopf")[1].Click();
+
+        Assert.Empty(cut.FindAll(".epos-ertragbonus button"));
+    }
+
+    /// <summary>
     /// Ohne Gaben bleibt der Knopf im Reiterblatt weg - "kein Delegat, kein Knopf".
     /// </summary>
     [Fact]

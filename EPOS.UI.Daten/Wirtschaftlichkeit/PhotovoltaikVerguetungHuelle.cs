@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Dialogs „PV-Vergütung (EEG)" (iU9-W2.4).
+    /// Die PLATTFORMFREIE Hülle des Dialogs „PV-Vergütung (EEG)" (iU9-W2.4).
+    ///
+    /// <para><b>Seit Etappe E3, Schritt 6 liegt sie in <c>EPOS.UI.Daten</c>,
+    /// und sie hat keine Fensterhälfte mehr.</b> Der Dialog erscheint
+    /// ausschließlich als <c>Ueberlagerung</c> — auf der
+    /// Wirtschaftlichkeitsseite und im Reiterblatt „Ertrag/Bonus" der
+    /// Kostenverwaltung. Das zweite WinForms-Fenster, das der Knopf des
+    /// Reiterblatts bis dahin hochfuhr, war Risiko R2 und ist ersatzlos
+    /// weg.</para>
     ///
     /// <para>Der Dialog lebt als Razor-Komponente
     /// <see cref="PhotovoltaikVerguetungDialog"/> in <c>EPOS.UI</c>; die
@@ -24,76 +30,29 @@ namespace WindowsFormsApplication1
     /// Strompreis und Wirtschaftlichkeitsparameter. Geschrieben wird über
     /// <c>ProjektPhotovoltaikCtrl.Speichern</c>.</para>
     ///
-    /// <para><b>Zwei Wege nach draußen.</b> Der Marktwert-Import wählt seine
+    /// <para><b>Ein Weg nach draußen.</b> Der Marktwert-Import wählt seine
     /// Datei seit E3 Schritt 2 über <c>Dienste.Datei.DateiOeffnenAsync</c> —
     /// plattformfrei, hinter dem Blazor-Ereignis, ohne Fensterbesitzer (Muster
-    /// <see cref="SpotpreisImportHuelle"/>). Der Sprung in den
-    /// Tarifdialog dagegen führt in eine BLAZOR-Hülle und bleibt deshalb
-    /// nachgelagert (Risiko R2): Die Komponente meldet den Wunsch im Ergebnis,
-    /// diese Hülle schließt den Dialog, öffnet das Ziel und bringt den Dialog
-    /// mit frisch geladenen Daten zurück — Muster
-    /// <see cref="BhkwWirtschaftlichkeitHuelle"/>.</para>
+    /// <see cref="SpotpreisImportHuelle"/>). Den Sprung in den Tarifdialog
+    /// meldet die Komponente in ihrem Ergebnis (<c>PvSprung</c>); ihn bedient der
+    /// WIRT der Überlagerung, nicht diese Hülle (E3 Schritt 7).</para>
     /// </summary>
     internal static class PhotovoltaikVerguetungHuelle
     {
-        /// <summary>Gewünschtes Innenmaß. Die Maske maß 914 × 724.</summary>
-        private const int FENSTER_BREITE = 980;
-
-        /// <summary>
-        /// Zeigt den Dialog. Liefert <c>true</c>, wenn „Übernehmen" geschrieben
-        /// hat — dann rechnet der Aufrufer neu (Bestandsverhalten von
-        /// <c>Form_PhotovoltaikVerguetung.Gespeichert</c>).
-        /// </summary>
-        internal static bool Oeffnen(IWin32Window besitzer, int idStamm)
+        /// <summary>Bereichstitel — derselbe Text wie in der Komponente.</summary>
+        internal static string Titel()
         {
-            bool gespeichert = false;
-
-            // Der Sprung in den Tarifdialog schliesst dieses Fenster und bringt
-            // es danach zurueck; deshalb eine Schleife statt eines Aufrufs.
-            while (true)
-            {
-                PvVerguetungErgebnis ergebnis = EinmalZeigen(besitzer, idStamm);
-                if (ergebnis == null) return gespeichert;
-                if (ergebnis.Gespeichert) gespeichert = true;
-                if (ergebnis.Sprung == PvSprung.Keiner) return gespeichert;
-
-                TarifstrukturHuelle.Oeffnen(besitzer, idStamm, TarifSicht.Photovoltaik);
-            }
-        }
-
-        /// <summary>Ein Durchgang: laden, zeigen, Ergebnis melden.</summary>
-        private static PvVerguetungErgebnis EinmalZeigen(IWin32Window besitzer, int idStamm)
-        {
-            PvVerguetungErgebnis ergebnis = null;
-            BlazorDialogForm<PhotovoltaikVerguetungDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(idStamm))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<PvVerguetungErgebnis>(
-                    new object(), e =>
-                    {
-                        ergebnis = e;
-                        if (dlg != null) dlg.Schliessen(e != null && e.Gespeichert);
-                    })
-            };
-
-            int hoehe = Math.Max(420, Screen.PrimaryScreen.WorkingArea.Height - 90);
-            dlg = new BlazorDialogForm<PhotovoltaikVerguetungDialog>(
-                new PhotovoltaikVerguetungTexte().Titel, new Size(FENSTER_BREITE, hoehe), werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ergebnis;
+            return new PhotovoltaikVerguetungTexte().Titel;
         }
 
         /// <summary>
         /// Der PARAMETERSATZ des Dialogs (iU9-W5.3). Seit die
         /// Wirtschaftlichkeitsseite selbst eine Razor-Komponente ist, erscheint
         /// er in einer <c>Ueberlagerung</c> darin — dasselbe Fenster, dieselbe
-        /// WebView (Risiko R2). <c>Geschlossen</c> setzt der Wirt; den Sprung in
-        /// den Tarifdialog wertet er selbst aus (<c>PvSprung</c>).
+        /// WebView (Risiko R2). Dasselbe tut seit E3 Schritt 6 das Reiterblatt
+        /// „Ertrag/Bonus" der Kostenverwaltung. <c>Geschlossen</c> setzt der
+        /// Wirt; den Sprung in den Tarifdialog wertet er selbst aus
+        /// (<c>PvSprung</c>).
         ///
         /// <para>Seit E3 Schritt 2 braucht dieser Satz KEINEN Fensterbesitzer
         /// mehr: Der Marktwert-Import wählt über <c>Dienste.Datei</c>.</para>

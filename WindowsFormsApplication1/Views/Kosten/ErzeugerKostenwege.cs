@@ -68,8 +68,8 @@ namespace WindowsFormsApplication1
             string projektname = Projektname(projektId);
 
             return Blazornachlauf.Nachgelagert(() =>
-                KostenKomponenteHuelle.OeffnenProjekt(besitzer, projektId, projektname,
-                                                      erzeugerart, betrieb, idAnlage));
+                KostenKomponenteFenster.OeffnenProjekt(besitzer, projektId, projektname,
+                                                       erzeugerart, betrieb, idAnlage));
         }
 
         /// <summary>

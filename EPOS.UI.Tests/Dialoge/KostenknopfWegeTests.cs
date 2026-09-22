@@ -157,7 +157,7 @@ public sealed class KostenknopfWegeTests
     {
         string quelltext = Lesen(WEGE);
 
-        foreach (string ziel in new[] { "KostenKomponenteHuelle.OeffnenProjekt",
+        foreach (string ziel in new[] { "KostenKomponenteFenster.OeffnenProjekt",
                                         "EnergietraegerFenster.Oeffnen" })
         {
             var treffer = Regex.Matches(quelltext,

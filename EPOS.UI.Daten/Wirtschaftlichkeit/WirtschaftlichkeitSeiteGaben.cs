@@ -892,34 +892,33 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                // E3/3: Vier der fuenf Huellen zeigen bis E3 Schritt 6 DANEBEN noch
-                // ein eigenes Fenster und bleiben deshalb in der Schale; ihre
-                // Parametersaetze kommen als benannte Naht herein. Kein Delegat,
-                // keine Ueberlagerung - die Seite meldet dann nichts anderes, als
-                // sie auch bei einem Ladefehler meldet (null).
+                // E3/6: Alle fuenf Huellen liegen jetzt selbst in EPOS.UI.Daten;
+                // die Naht der Schale (Wirtschaftlichkeitswege) ist weg, und
+                // jede Ueberlagerung erscheint auf JEDER Plattform. null heisst
+                // hier nur noch das, was es immer hiess: Der Satz liess sich
+                // nicht bauen (kein Stammprojekt, keine Anlagen).
                 switch (art)
                 {
                     case WirtschaftlichkeitSeite.Unterdialog.Photovoltaik:
-                        return Wirtschaftlichkeitswege.PvVerguetungGaben == null ? null
-                             : Wirtschaftlichkeitswege.PvVerguetungGaben(_idStamm);
+                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
-                        return Wirtschaftlichkeitswege.BhkwGaben == null ? null
-                             : Wirtschaftlichkeitswege.BhkwGaben(_idStamm, _ergebnisse);
+                        // Der Titel gehoert zum FENSTER; als Ueberlagerung traegt
+                        // ihn der Wirt, deshalb verfaellt er hier.
+                        string titel;
+                        return BhkwWirtschaftlichkeitHuelle.Gaben(_idStamm, _ergebnisse, out titel);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
-                        return Wirtschaftlichkeitswege.TarifGaben == null ? null
-                             : Wirtschaftlichkeitswege.TarifGaben(_idStamm, TarifSicht.Strombezug);
+                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                         return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Verlauf:
-                        if (Wirtschaftlichkeitswege.VerlaufGaben == null) return null;
                         var varianten = new List<int>();
                         foreach (WirtschaftlichkeitErgebnis e in _ergebnisse)
                             if (!e.IstStamm && !varianten.Contains(e.IdProjekt)) varianten.Add(e.IdProjekt);
-                        return Wirtschaftlichkeitswege.VerlaufGaben(
+                        return KapitalwertVerlaufHuelle.Gaben(
                             _idStamm, _stammName, varianten, out _verlaufNeuGesammelt);
                 }
             }

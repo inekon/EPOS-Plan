@@ -473,6 +473,14 @@ public sealed class ParametersatzTests
     /// ihren Parametersatz nicht in einer <c>*Huelle</c>, sondern in der Quelle, die
     /// den Lauf haelt — und derselbe Fehler, ein Schluessel ohne
     /// <c>[Parameter]</c>, bricht dort genauso beim ersten Zeichnen.</para>
+    ///
+    /// <para>Seit <b>E3/6</b> zaehlen auch die <c>*Fenster.cs</c> dazu — die
+    /// Windows-ADAPTER aus dem Muster von #428 (<c>EnergietraegerFenster</c>,
+    /// <c>KlimadatenFenster</c>, <c>KostenKomponenteFenster</c>, …). Sie sind
+    /// seither die Stelle, an der die <c>BlazorDialogForm&lt;T&gt;</c> entsteht:
+    /// Die Huelle liefert den Satz, der Adapter macht das Fenster daraus. Ohne
+    /// dieses Muster laesen die zwei Faelle oben an den Adaptern vorbei, und die
+    /// Selbstprobe fiele mit jedem Umzug weiter ab.</para>
     /// </summary>
     private static string[] Huellen()
     {
@@ -482,7 +490,7 @@ public sealed class ParametersatzTests
             Path.Combine(Wurzel(), "EPOS.UI.Daten")
         };
 
-        var muster = new[] { "*Huelle.cs", "*AnsichtQuelle.cs" };
+        var muster = new[] { "*Huelle.cs", "*AnsichtQuelle.cs", "*Fenster.cs" };
 
         var dateien = new List<string>();
         foreach (string o in ordner)
