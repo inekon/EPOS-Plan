@@ -9823,7 +9823,7 @@ The switch is only shown if the project contains such a generator.</value>
     <value>CO₂ balance: grid supply calculated with the emission factor of energy carrier “{0}” — no electricity carrier is assigned to the project. Remedy: assign one under “Reports &amp; Costs › Energy carriers”.</value>
   </data>
   <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
-    <value>Energy costs cannot be determined: no energy carrier is assigned to the electric generation (heat pump, photovoltaics, battery storage, heating element). Remedy: assign an electricity carrier under “Reports &amp; Costs › Energy carriers”.</value>
+    <value>Energy costs cannot be determined: no energy carrier is assigned to the electric generation (heat pump, photovoltaics, battery storage, heating element, electric boiler, CHP, auxiliary energy). Remedy: assign an electricity carrier under “Reports &amp; Costs › Energy carriers”.</value>
   </data>
   <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
     <value>Energy costs cannot be determined: no energy price is maintained for the electricity carrier “{0}”. Remedy: enter the energy price under “Reports &amp; Costs › Energy carriers”.</value>
@@ -9850,7 +9850,7 @@ The switch is only shown if the project contains such a generator.</value>
     <value>The simulation result is older than the last change to the project — please run the simulation again.</value>
   </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
-    <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. The energy costs are determined without electricity costs.</value>
+    <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. Energy costs and emissions are determined without this electricity.</value>
   </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>

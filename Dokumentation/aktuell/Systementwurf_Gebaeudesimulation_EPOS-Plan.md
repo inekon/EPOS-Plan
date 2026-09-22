@@ -814,7 +814,7 @@ Die Tagesverteilungen des Bestands bleiben der **Eingang des Bestandswegs** (F2)
 nicht gepflegt, nicht gelöscht — das Modul `Gebaeude/` liest sie nicht. Daraus folgt für dieses
 Papier eine Systemeigenschaft **für die Dauer des Übergangs**: Eine Bestandsdatenquelle bleibt im
 Spiel, und für sie gilt dieselbe Regel wie für das Modul — **keine Änderung außer Fehlerbehebung**
-(E23). Ihr Ende ist die Stufe **GA**, die `Tab_DBTagV` und `Tab_DBTagV_Daten` mit dem Altweg
+(E23). Ihr Ende ist die Stufe **GA**, die `Tab_DBTagV` und `Tab_DBTagVDaten` mit dem Altweg
 entfernt (Zeitpunkt offen, Q24); ob die **leserlosen** Bestandsspalten `WW_Bedarf` und
 `Waermebedarf` schon vorher fallen, ist ein gewöhnlicher Aufräumpunkt ohne eigene Stufe. Tabellen,
 Stand je Testgebäude und die Belege stehen im Schwesterpapier 2.9.

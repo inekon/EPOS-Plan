@@ -954,6 +954,10 @@ namespace EPOS.Kern.Tests
                         "Die Übernahme wurde nicht eingeengt.");
         }
 
+        /// <summary><c>energy_carrier.id</c> von „Fernwärme" — ein Träger, den keine Anlage
+        /// des Projekts 1030 beziehen kann.</summary>
+        private const int FERNWAERME = 51;
+
         [Fact]
         public void Ein_zugeordneter_Traeger_ausserhalb_der_Vereinigung_bleibt_in_der_Liste()
         {
@@ -961,19 +965,45 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            // Fernwärme hält im Projekt 1030 keine Anlage - sie wird trotzdem zugeordnet.
+            // (Bis zum Anwenderentscheid vom 22.09.2026 stand hier der STROM: Die zwei
+            // BHKW des Projekts zählen seither als Stromverwendung, siehe den Fall
+            // darunter.)
+            Assert.True(new WizardCtrl().TraegerSatzAnlegen(PROJEKT, FERNWAERME));
+
             IReadOnlyList<string> vereinigung =
                 EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT);
             Assert.NotNull(vereinigung);
-            // Strom hält im Projekt 1030 keine Anlage - er ist trotzdem zugeordnet.
-            Assert.DoesNotContain(Gruppe(STROM), vereinigung);
+            Assert.DoesNotContain(Gruppe(FERNWAERME), vereinigung);
 
             IReadOnlyDictionary<string, object> gaben = new EnergietraegerHuelle(PROJEKT).Gaben();
 
             // Die linke Liste führt die Träger des PROJEKTS; eine vorhandene Zuordnung
             // wird nicht versteckt - eingeengt wird allein die Übernahme.
-            Assert.Contains(STROM, Ids(gaben));
+            Assert.Contains(FERNWAERME, Ids(gaben));
             foreach (ValueTuple<int, string> f in Freie(gaben))
-                Assert.NotEqual(STROM, f.Item1);
+                Assert.NotEqual(FERNWAERME, f.Item1);
+        }
+
+        /// <summary>
+        /// <b>Das BHKW verwendet Strom</b> (Anwenderentscheide 22.09.2026): Es erzeugt ihn,
+        /// sein Eigenverbrauch deckt den Strombedarf, der Rest wird bezogen. Die
+        /// Trägerauswahl eines BHKW-Projekts bietet deshalb Strom an — dieselbe Antwort,
+        /// die Stromträger-Automatik, Rückfallträger und Wirtschaftlichkeit geben.
+        /// </summary>
+        [Fact]
+        public void Ein_BHKW_Projekt_bietet_den_Strom_an()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT));
+            IReadOnlyList<string> vereinigung =
+                EnergietraegerZulaessigkeit.ZulaessigeGruppenFuerProjekt(PROJEKT);
+            Assert.NotNull(vereinigung);
+            Assert.Contains(Gruppe(STROM), vereinigung);
+            Assert.Contains(Gruppe(ERDGAS_E), vereinigung);
         }
 
         [Fact]

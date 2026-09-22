@@ -60,9 +60,17 @@ namespace EPOS.Kern.Tests
         /// zugeordnet sind — die gepflegte Null.</summary>
         private const int PROJEKT_MIT_NULL = 1017;
 
-        /// <summary>„Wärmemischer 1" — reines Kesselprojekt ohne Wärmepumpe, PV,
-        /// Stromspeicher und Heizstab.</summary>
+        /// <summary>„Simulation Referenz BHKW-Kaskade" — Gaskessel, zwei Gas-BHKW und ein
+        /// Puffer, ohne Wärmepumpe, PV, Stromspeicher und Heizstab; „Elektrische Energie"
+        /// zugeordnet mit Projekt-CO₂-Wert 560 g/kWh, Netzbezug 4.357,78 MWh/a. Ohne
+        /// seine BHKW (<see cref="OhneBhkw"/>) ist es ein reines Kesselprojekt.</summary>
         private const int PROJEKT_OHNE_ELEKTRIK = 1030;
+
+        /// <summary>Der Netzbezug des Projekts 1030 [MWh/a] aus dem gespeicherten Lauf.</summary>
+        private const double NETZBEZUG_1030_MWH = 4357.78;
+
+        /// <summary>Der Projekt-CO₂-Wert des zugeordneten Stromträgers von 1030 [g/kWh].</summary>
+        private const double FAKTOR_1030 = 560.0;
 
         /// <summary><c>energy_carrier.id</c> von „Elektrische Energie" — der
         /// Auslieferungsträger des Katalogs.</summary>
@@ -201,9 +209,13 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Ein reines Kesselprojekt bekommt keinen Rückfall: Sein Netzbezug ist
-        /// Haushaltsstrom der Bedarfsseite, und ein Träger, den niemand zugeordnet hat,
-        /// wäre dort eine Erfindung. Dieselbe Klemme wie auf der Kostenseite.
+        /// Ein reines Kesselprojekt bekommt keinen Rückfall: Kein Erzeuger verwendet dort
+        /// Strom, und ein Träger, den niemand zugeordnet hat, wäre eine Erfindung.
+        /// Dieselbe Klemme wie auf der Kostenseite.
+        ///
+        /// <para>Bis zum Anwenderentscheid vom 22.09.2026 stand hier 1030 UNVERÄNDERT —
+        /// seine zwei BHKW zählen seither als Stromverwendung (siehe den Fall darunter);
+        /// das reine Kesselprojekt entsteht deshalb erst ohne sie.</para>
         /// </summary>
         [Fact]
         public void Ohne_elektrisches_Gewerk_gibt_es_keinen_Rueckfalltraeger()
@@ -211,8 +223,111 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            OhneBhkw(PROJEKT_OHNE_ELEKTRIK);
             Assert.Equal(0, Emissionsquelle.KatalogStromTraeger(PROJEKT_OHNE_ELEKTRIK));
             Assert.Equal(STROM, Emissionsquelle.KatalogStromTraeger(PROJEKT_OHNE_STROM));
+        }
+
+        /// <summary>
+        /// <b>Das BHKW verwendet Strom</b> (Anwenderentscheide 22.09.2026): Es erzeugt ihn,
+        /// sein Eigenverbrauch deckt den Strombedarf, der Rest wird bezogen. Ein
+        /// BHKW-Projekt bekommt deshalb denselben Rückfallträger wie ein
+        /// Wärmepumpenprojekt.
+        /// </summary>
+        [Fact]
+        public void Ein_BHKW_zaehlt_als_Stromverwendung_und_bekommt_den_Rueckfalltraeger()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT_OHNE_ELEKTRIK));
+            Assert.Equal(STROM, Emissionsquelle.KatalogStromTraeger(PROJEKT_OHNE_ELEKTRIK));
+        }
+
+        // =================================================================
+        // 2b — Strombedarf ohne Verwendung (Anwenderentscheide 22.09.2026)
+        // =================================================================
+
+        /// <summary>
+        /// <b>Ohne Verwendung keine Emission</b> — auch mit ZUGEORDNETEM Stromträger und
+        /// gepflegtem Projektfaktor. 1030 ohne seine BHKW führt einen Netzbezug von
+        /// 4.357,78 MWh/a, aber keinen Erzeuger, der Strom verwendet: Der Netzbezug trägt
+        /// zur CO₂-Bilanz nichts mehr bei — die Differenz zum Lauf MIT BHKW ist genau
+        /// 4.357,78 MWh × 560 g/kWh ÷ 1000 = 2.440,36 t/a. Der Brennstoffanteil bleibt
+        /// (das gespeicherte Ergebnis ist in beiden Rechnungen dasselbe).
+        /// </summary>
+        [Fact]
+        public void Ohne_Verwendung_traegt_der_Netzbezug_nichts_zur_Bilanz_bei()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            VariantenDaten mit = Rechne(PROJEKT_OHNE_ELEKTRIK);
+            Assert.Null(mit.StrombedarfOhneVerwendungMWh);
+            Assert.True(mit.CO2Gesamt.HasValue);
+
+            OhneBhkw(PROJEKT_OHNE_ELEKTRIK);
+            VariantenDaten ohne = Rechne(PROJEKT_OHNE_ELEKTRIK);
+
+            Assert.Equal(NETZBEZUG_1030_MWH, ohne.StrombedarfOhneVerwendungMWh.Value, 2);
+            Assert.True(ohne.CO2Gesamt.HasValue);
+            Assert.Equal(NETZBEZUG_1030_MWH * FAKTOR_1030 / 1000.0,
+                         mit.CO2Gesamt.Value - ohne.CO2Gesamt.Value, 4);
+            // Kein Faktor gezogen - also auch keine Herleitung eines geliehenen oder
+            // vorgegebenen Werts.
+            Assert.False(ohne.CO2StrommixRueckfall);
+            Assert.Null(ohne.CO2TraegerRueckfall);
+            // Die BEHG-Basis kennt ohnehin nur Brennstoff: unverändert.
+            Assert.Equal(mit.CO2Brennstoff, ohne.CO2Brennstoff);
+        }
+
+        /// <summary>
+        /// Ohne Verwendung und OHNE zugeordneten Stromträger: weder der Rückfallträger noch
+        /// der Vorgabewert werden gezogen — auch dann nicht, wenn der Auslieferungsträger
+        /// einen Faktor trägt.
+        /// </summary>
+        [Fact]
+        public void Ohne_Verwendung_greift_weder_Rueckfall_noch_Vorgabewert()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            OhneBhkw(PROJEKT_OHNE_ELEKTRIK);
+            DataRepository.ExecuteSQL(
+                "DELETE FROM energy_project_settings WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@p", PROJEKT_OHNE_ELEKTRIK), new DbParam("@c", STROM));
+            Assert.Equal(0, Emissionsquelle.StromTraeger(PROJEKT_OHNE_ELEKTRIK));
+            KatalogFaktor(STROM, 500.0);
+
+            VariantenDaten v = Rechne(PROJEKT_OHNE_ELEKTRIK);
+
+            Assert.NotNull(v.StrombedarfOhneVerwendungMWh);
+            Assert.False(v.CO2StrommixRueckfall);
+            Assert.Null(v.CO2TraegerRueckfall);
+        }
+
+        /// <summary>
+        /// <b>Die Gegenprobe mit BHKW:</b> Der Netzbezug wird weiter mit dem Faktor des
+        /// zugeordneten Trägers bewertet — 4.357,78 MWh × 560 g/kWh ÷ 1000 = 2.440,36 t/a
+        /// gegenüber einem Lauf ohne Netzbezug.
+        /// </summary>
+        [Fact]
+        public void Mit_BHKW_wird_der_Netzbezug_weiter_bewertet()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            VariantenDaten mit = Rechne(PROJEKT_OHNE_ELEKTRIK);
+
+            ErgebnisModel ohneBezug = new ErgebnisCtrl().Load(PROJEKT_OHNE_ELEKTRIK);
+            ohneBezug.Energiebedarf.Stromrestbedarf = 0;
+            var v0 = new VariantenDaten { IdProjekt = PROJEKT_OHNE_ELEKTRIK, Ergebnis = ohneBezug };
+            KostenEmissionRechner.Berechne(v0);
+
+            Assert.Null(mit.StrombedarfOhneVerwendungMWh);
+            Assert.False(mit.CO2StrommixRueckfall);
+            Assert.Equal(NETZBEZUG_1030_MWH * FAKTOR_1030 / 1000.0,
+                         mit.CO2Gesamt.Value - v0.CO2Gesamt.Value, 4);
         }
 
         // =================================================================
@@ -361,6 +476,16 @@ namespace EPOS.Kern.Tests
             var v = new VariantenDaten { IdProjekt = idProjekt, Ergebnis = erg };
             KostenEmissionRechner.Berechne(v);
             return v;
+        }
+
+        /// <summary>Nimmt dem Projekt seine BHKW-Anlagenzeilen — aus 1030 wird ein reines
+        /// Kesselprojekt. Das gespeicherte Ergebnis bleibt, wie es ist.</summary>
+        private static void OhneBhkw(int idProjekt)
+        {
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_BHKW > 0",
+                new DbParam("@p", idProjekt));
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt));
         }
 
         /// <summary>Setzt den AKTIVEN CO₂-Katalogwert eines Trägers (Ebene KATALOG).</summary>

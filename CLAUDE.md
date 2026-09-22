@@ -17,15 +17,16 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Das beste verfügbare Sprachmodell (gegenwärtig Fable 5.1) orchestriert:** Es plant,
-  zerlegt Aufträge, prüft Ergebnisse, führt zusammen und berichtet. Es übernimmt selbst nur
-  Aufgaben, die andere Modelle nicht leisten können (Konzeptentscheide, schwierige Analysen,
-  Zusammenführung widersprüchlicher Stände). **Konzeptarbeit** — Konzepte, Mockups,
-  schwierige Analysen — läuft auf demselben Modell, als Agent mit `model: fable`.
+- **Opus (gegenwärtig Opus 5.5) orchestriert und implementiert:** Es plant, zerlegt Aufträge,
+  führt Agenten, prüft Ergebnisse, führt zusammen und berichtet. **Fable** kommt nur dort zum
+  Einsatz, wo Opus die Orchestrierung nicht leisten kann — schwierige Konzeptentscheide,
+  Zusammenführung widersprüchlicher Stände, Konzeptarbeit an Konzepten und Mockups (dann als
+  Agent mit `model: fable`, mit Begründung im Auftrag).
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` für Implementierung, Tests, Hüllen, Konfliktauflösung und
-  Fehlersuche; `model: sonnet` für Suchen, Dateilisten, Zählungen, kleine Textpflege und
-  Vorlagen; `model: fable` nur für Konzeptarbeit. Das Modell bei jedem Agentenaufruf
+  und Nutzung: `model: opus` für Implementierung, Tests, Hüllen, Konfliktauflösung,
+  Fehlersuche und Papiere nach Vorlage; `model: sonnet` für Suchen mit Bewertung und kleine
+  Textpflege; `model: haiku` für Dateilisten, Zählungen, Encoding-Prüfungen und mechanische
+  Pflege nach Vorlage; `model: fable` nur mit Begründung. Das Modell bei jedem Agentenaufruf
   **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,

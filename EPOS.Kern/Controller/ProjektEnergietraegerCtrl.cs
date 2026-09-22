@@ -445,18 +445,32 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Führt das Projekt eine Anlage der elektrischen Welt (Wärmepumpe, Photovoltaik,
-        /// Stromspeicher, gesetzter Heizstab, ein ELEKTROKESSEL — oder eine Brenneranlage
-        /// mit gepflegtem HILFSENERGIE-Anteil? Dieselbe Bedingung
-        /// wie in <see cref="Verwendete"/> und <c>WizardCtrl.BrauchtStromTraeger</c> —
-        /// beide Fassungen müssen dieselbe Welt meinen, sonst zeigt die Kostenseite einen
-        /// Träger an, den niemand zuordnet.
+        /// Führt das Projekt einen Erzeuger, der Strom VERWENDET — eine Anlage der
+        /// elektrischen Welt (Wärmepumpe, Photovoltaik, Stromspeicher, gesetzter Heizstab,
+        /// ein ELEKTROKESSEL), ein BHKW oder eine Brenneranlage mit gepflegtem
+        /// HILFSENERGIE-Anteil? Dieselbe Fassung fragen <c>WizardCtrl.BrauchtStromTraeger</c>,
+        /// die Stromträger-Automatik (<see cref="StromTraegerSicherstellen"/>), der
+        /// Rückfallträger (<see cref="Emissionsquelle.KatalogStromTraeger"/>), die
+        /// Trägerauswahl des Projekts (<see cref="EnergietraegerZulaessigkeit"/>) und die
+        /// Regel „Strombedarf ohne Verwendung" (<see cref="StromOhneVerwendung"/>) — eine
+        /// Welt, sonst zeigt die Kostenseite einen Träger an, den niemand zuordnet.
         ///
         /// <para><b>Der HILFSSTROM</b> (Anwenderentscheid 22.09.2026): Eine Anlage mit
         /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil &gt; 0</c> bezieht Strom und wird mit
         /// dem Stromträger des PROJEKTS bepreist (<see cref="EndenergieAufloeser"/>) — ohne
         /// zugeordneten Träger fiel dieser Anteil bis hierher still aus. Sie zählt deshalb
         /// wie eine Anlage der elektrischen Welt.</para>
+        ///
+        /// <para><b>Das BHKW</b> (Anwenderentscheid 22.09.2026: „Energiekosten … sollen nur
+        /// anfallen, falls sie auch Verwendung finden"): Es ERZEUGT Strom. Sein
+        /// Eigenverbrauch deckt den Strombedarf, der Rest wird bezogen, der Überschuss
+        /// eingespeist — der Strombedarf findet damit Verwendung, und Reststrombezug,
+        /// Eigenstrom und Einspeisung brauchen einen Strompreis. Ohne das BHKW fiele der
+        /// Netzbezug eines Gas-BHKW-Projekts unter „Strombedarf ohne Verwendung" auf 0
+        /// (Referenzprojekt 1030: 4.357,78 MWh/a Reststrom neben 432,31 MWh/a
+        /// BHKW-Strom). In <see cref="Verwendete"/> steht das BHKW dagegen weiter beim
+        /// BRENNSTOFFträger: Dort steht, was eine Anlage BEZIEHT, und das BHKW bezieht
+        /// Brennstoff, keinen Strom.</para>
         ///
         /// <para>Der Kesselweg und der Hilfsstromweg kosten je eine ZWEITE Abfrage und
         /// werden deshalb erst gezogen, wenn keine der anderen Anlagen schon geantwortet
@@ -470,7 +484,8 @@ namespace WindowsFormsApplication1
             bool mitKessel = false;
             foreach (DataRow r in anlagen.Rows)
             {
-                if (Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0 || Ja(r, "Heizstab"))
+                if (Ganz(r, "ID_WP") > 0 || Ganz(r, "ID_PV") > 0 || Ganz(r, "ID_SP") > 0 ||
+                    Ganz(r, "ID_BHKW") > 0 || Ja(r, "Heizstab"))
                     return true;
                 if (Ganz(r, "ID_Kessel") > 0) mitKessel = true;
             }
@@ -483,6 +498,33 @@ namespace WindowsFormsApplication1
             }
 
             return HilfsenergieGepflegt(projektID);
+        }
+
+        /// <summary>
+        /// <b>DIE EINE REGEL „Strombedarf ohne Verwendung"</b> (Anwenderentscheide
+        /// 22.09.2026: „Energiekosten (Strom, Gas, …) sollen nur anfallen, falls sie auch
+        /// Verwendung finden" — Kosten UND Emissionen, unabhängig davon, ob ein Preis
+        /// vorhanden wäre). Das Projekt führt einen Netzbezug, aber keinen Erzeuger, der
+        /// Strom verwendet (<see cref="BrauchtStromTraeger"/>): Dann bleibt der Netzbezug
+        /// in Energiekosten und Emissionen außen vor — auch wenn dem Projekt ein
+        /// Stromträger zugeordnet ist oder der Auslieferungsträger einen Katalogpreis
+        /// trägt.
+        ///
+        /// <para><b>Jeder Rechenweg, der den Netzbezug bepreist oder bewertet, fragt
+        /// HIER</b> (<see cref="KostenEmissionRechner"/>; Wirtschaftlichkeit, Bericht,
+        /// Excel, KI-Sicht und Diagramme lesen dessen Ergebnis) — eine Wahrheit, keine
+        /// kopierte Bedingung.</para>
+        ///
+        /// <para>Ohne Projekt (<paramref name="projektID"/> ≤ 0) oder ohne Netzbezug gibt
+        /// es nichts auszulassen: <c>false</c>.</para>
+        /// </summary>
+        /// <param name="projektID"><c>Tab_Projekt.ID</c>.</param>
+        /// <param name="netzbezugMWh">Netzbezug des Laufs (Reststrombedarf) [MWh/a].</param>
+        internal static bool StromOhneVerwendung(int projektID, double netzbezugMWh)
+        {
+            if (projektID <= 0 || netzbezugMWh <= 0) return false;
+            try { return !BrauchtStromTraeger(projektID); }
+            catch { return false; }
         }
 
         /// <summary>

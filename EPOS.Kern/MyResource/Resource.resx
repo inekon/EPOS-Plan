@@ -9830,7 +9830,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>CO₂-Bilanz: Netzbezug mit dem Emissionsfaktor des Energieträgers „{0}“ gerechnet — dem Projekt ist kein Stromträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ zuordnen.</value>
   </data>
   <data name="WIRT_GRUND_KEIN_STROMTRAEGER" xml:space="preserve">
-    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
+    <value>Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen.</value>
   </data>
   <data name="WIRT_GRUND_STROMPREIS_FEHLT" xml:space="preserve">
     <value>Energiekosten nicht bestimmbar: Für den Stromträger „{0}“ ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen.</value>
@@ -9857,7 +9857,7 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
     <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
   </data>
   <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
-    <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten sind ohne Stromkosten bestimmt.</value>
+    <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt.</value>
   </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>

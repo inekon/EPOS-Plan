@@ -1123,8 +1123,9 @@ des Aufbaus, und ihre Stoffwerte sind ohnehin Kopien zum Zeitpunkt der Zuordnung
 ### 7.4 Schemaschritt
 
 **Schrittnummern stehen in keinem Papier.** Der Zielstand wird bei der Beauftragung an
-`SchemaStand.Zielversion` abgelesen (`EPOS.Kern/Allgemein/Update/SchemaStand.cs`); beim Schreiben
-dieses Papiers steht er auf **84**, die nächste freie Nummer ist damit **85**. Bis zur Beauftragung
+`SchemaStand.Zielversion` abgelesen (`EPOS.Kern/Allgemein/Update/SchemaStand.cs`); Stand 22.09.2026
+steht er auf **100**, die nächste freie Nummer ist damit **101** — eine Momentaufnahme, keine
+Festlegung. Bis zur Beauftragung
 tragen die Schritte nur ihre Papiernamen: **M3** für die Gebäudespalten (G1) und **M4** für die
 Klimaspalten (G2) — ob beide zusammenlaufen, ist **offen** (Umsetzungskonzept 1.7, Frage **U5** —
 dort als Empfehlung, nicht als Entscheid). Dazu ein eigener Schritt für die

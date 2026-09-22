@@ -63250,7 +63250,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel, BHKW, Hilfsenergie) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen. ähnelt.
         /// </summary>
         public static string WIRT_GRUND_KEIN_STROMTRAEGER {
             get {
@@ -63313,7 +63313,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten sind ohne Stromkosten bestimmt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Energiekosten und Emissionen sind ohne diesen Strom bestimmt. ähnelt.
         /// </summary>
         public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {
             get {

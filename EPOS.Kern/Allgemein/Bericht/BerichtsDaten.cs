@@ -291,19 +291,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>STROMBEDARF OHNE VERWENDUNG</b> [MWh/a] — das Projekt führt einen Netzbezug,
         /// aber keinen Erzeuger, der Strom verwendet (keine Wärmepumpe, Photovoltaik,
-        /// kein Stromspeicher, Heizstab, Elektrokessel und keine Anlage mit
-        /// Hilfsenergie-Anteil). <c>null</c> = nicht betroffen.
+        /// kein Stromspeicher, Heizstab, Elektrokessel, BHKW und keine Anlage mit
+        /// Hilfsenergie-Anteil; die eine Regel steht in
+        /// <see cref="ProjektEnergietraegerCtrl.StromOhneVerwendung"/>). <c>null</c> =
+        /// nicht betroffen.
         ///
-        /// <para><b>Anwenderentscheid 22.09.2026:</b> „Falls es einen Bedarf Strom gibt …
-        /// und keinen Erzeuger mit Zuordnung Strombedarf, gebe nur eine Warnung aus … und
-        /// bestimme die Energiekosten ohne Stromkosten.“ Bis dahin blieb in dieser Lage
-        /// die GANZE Zahl aus — ein Gaskesselprojekt mit einer Kachel Strombedarf zeigte
-        /// „—“ statt seiner rechenbaren Gaskosten, samt der Aufforderung, der
-        /// elektrischen Erzeugung einen Träger zuzuordnen, die es gar nicht führt.</para>
+        /// <para><b>Anwenderentscheide 22.09.2026:</b> „Energiekosten (Strom, Gas, …)
+        /// sollen nur anfallen, falls sie auch Verwendung finden." Der Netzbezug geht dann
+        /// weder in die Energiekosten noch in die Emissionen ein — unabhängig davon, ob
+        /// ein Stromträger zugeordnet ist oder ein Preis gepflegt wäre.</para>
         ///
         /// <para>Die Menge steht hier, weil der HINWEIS sie nennt; gerechnet wird mit ihr
-        /// auf der Kostenseite nichts. Die CO₂-Bilanz bleibt unberührt: Der Netzbezug
-        /// findet physisch statt, gleich ob ihm ein Erzeuger zugeordnet ist.</para>
+        /// nichts.</para>
         /// </summary>
         public double? StrombedarfOhneVerwendungMWh;
 
