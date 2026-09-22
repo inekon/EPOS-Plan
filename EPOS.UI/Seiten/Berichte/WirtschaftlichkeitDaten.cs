@@ -17,8 +17,9 @@ public sealed class KachelZeile
 
     /// <summary>
     /// ETAPPE E5 (V‑A, Entscheid V‑3): die Einordnung der Kennzahl nach DIN EN 17463
-    /// Anhang C — „nachrichtlich (Anhang C)" an Annuität, Amortisation und internem
-    /// Zinsfuß; leer beim Kapitalwert, dem einzigen Maß der Vorteilhaftigkeit.
+    /// Anhang C — „nachrichtlich (Anhang C)" an Amortisation und internem Zinsfuß; leer
+    /// beim Kapitalwert, dem einzigen Maß der Vorteilhaftigkeit, und bei der Annuität
+    /// (Empfehlung Q3: sie ist der Kapitalwert als gleichmäßiger Jahresbetrag).
     /// </summary>
     public string Kennzeichen { get; set; } = "";
 
@@ -71,11 +72,48 @@ public sealed class EmpfehlungKarte
 /// </summary>
 public sealed class MatrixZeile
 {
+    /// <summary>ETAPPE E5 (U2): Die Zeile steht in der Kennzahltafel („Lohnt es sich?").</summary>
+    public const string ABSCHNITT_KENNZAHL = "KENNZAHL";
+
+    /// <summary>ETAPPE E5 (U2): Die Zeile gliedert den Kapitalwert („Woraus entsteht die
+    /// Zahl?") — Vorgabe.</summary>
+    public const string ABSCHNITT_GLIEDERUNG = "GLIEDERUNG";
+
+    /// <summary>ETAPPE E5 (U2): eine Hinweiszeile (Fehlgrund, Hinweis, „nicht
+    /// berechnet") — sie steht unter der Gliederung und speist das Warnband.</summary>
+    public const string ABSCHNITT_HINWEIS = "HINWEIS";
+
     /// <summary>Der Kennzahltitel (erste Spalte, fett).</summary>
     public string Titel { get; set; } = "";
 
     /// <summary>Je Version eine fertig formatierte Zelle.</summary>
     public IReadOnlyList<string> Zellen { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// ETAPPE E5 (U2): in welchen Abschnitt der Seite die Zeile gehört
+    /// (<see cref="ABSCHNITT_KENNZAHL"/>, <see cref="ABSCHNITT_GLIEDERUNG"/>,
+    /// <see cref="ABSCHNITT_HINWEIS"/>). Die Hülle setzt es aus der Zeilendefinition des
+    /// Kerns; die Seite teilt danach, sie urteilt nicht selbst.
+    /// </summary>
+    public string Abschnitt { get; set; } = ABSCHNITT_GLIEDERUNG;
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A, V‑3): das Label am Titel — „nachrichtlich (Anhang C)" an
+    /// Amortisation und Zinsfuß; leer = keines.
+    /// </summary>
+    public string Kennzeichen { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A, Befund A2): je Zelle eine Warnung, die den Wert stehen lässt (der
+    /// mehrdeutige Zinsfuß); leer oder kürzer als <see cref="Zellen"/> = keine. Nicht zu
+    /// verwechseln mit <see cref="ErgebnisMatrix.Warnungen"/>, den Warnzellen des Bandes.
+    /// </summary>
+    public IReadOnlyList<string> Zellwarnungen { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Warnung der Zelle <paramref name="spalte"/>; <c>""</c> = keine.</summary>
+    public string Zellwarnung(int spalte)
+        => Zellwarnungen is not null && spalte >= 0 && spalte < Zellwarnungen.Count
+           ? Zellwarnungen[spalte] ?? "" : "";
 }
 
 /// <summary>
@@ -95,6 +133,20 @@ public sealed class ErgebnisMatrix
 
     /// <summary>Die Zeilen in Anzeigereihenfolge.</summary>
     public IReadOnlyList<MatrixZeile> Zeilen { get; set; } = Array.Empty<MatrixZeile>();
+
+    /// <summary>
+    /// ETAPPE E5 (U2): dieselbe Matrix OHNE die Zeilen eines Abschnitts — die Seite
+    /// zeichnet in „Woraus entsteht die Zahl?" die Gliederung und die Hinweise, nicht die
+    /// Kennzahlen, die schon in „Lohnt es sich?" stehen. Spalten bleiben, wie sie sind.
+    /// </summary>
+    public ErgebnisMatrix Ohne(string abschnitt)
+    {
+        var zeilen = new List<MatrixZeile>();
+        foreach (MatrixZeile z in Zeilen)
+            if (z is not null && !string.Equals(z.Abschnitt, abschnitt, StringComparison.Ordinal))
+                zeilen.Add(z);
+        return new ErgebnisMatrix { Spalten = Spalten, Zeilen = zeilen };
+    }
 
     /// <summary>
     /// Das Zeichen, mit dem eine WARNZELLE der Matrix beginnt (Hinweis, Fehlgrund,
@@ -152,11 +204,46 @@ public sealed class ErgebnisMatrix
 /// </summary>
 public sealed class ErgebnisAnsicht
 {
-    /// <summary>Die vier Kennzahl-Karten (Kapitalwert, Annuität, Amortisation, IRR).</summary>
+    /// <summary>
+    /// Die vier Kennzahl-Karten (Kapitalwert, Annuität, Amortisation, IRR). ETAPPE E5
+    /// Teil b: Sie stehen in „Lohnt es sich?" über der Szenario-Klappliste und zeigen
+    /// deshalb den Erwartungsfall — die Klappliste steuert nur die Tafeln darunter.
+    /// </summary>
     public IReadOnlyList<KachelZeile> Kacheln { get; set; } = Array.Empty<KachelZeile>();
 
-    /// <summary>Die Vergleichstabelle.</summary>
+    /// <summary>
+    /// Die Vergleichstabelle des GEWÄHLTEN Szenarios — alle Zeilen der Definition, je mit
+    /// ihrem <see cref="MatrixZeile.Abschnitt"/>. Die Seite zeichnet daraus „Woraus entsteht
+    /// die Zahl?" (<see cref="ErgebnisMatrix.Ohne"/> ohne die Kennzahlen); das Warnband
+    /// liest ihre Hinweiszeilen.
+    /// </summary>
     public ErgebnisMatrix Matrix { get; set; } = new();
+
+    /// <summary>
+    /// ETAPPE E5 (U2, Mockup „Lohnt es sich?" — „Die Kennzahlen dazu"): die
+    /// Kennzahltafel im Szenario ERWARTET — Kapitalwertdifferenz, Annuität, Amortisation,
+    /// Zinsfuß, Wärmegestehungskosten, Nettobarwert, mit Label und Zellwarnung.
+    /// </summary>
+    public ErgebnisMatrix Kennzahltafel { get; set; } = new();
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A, V‑G6): die Sensitivitätstafel (Szenario Erwartet) — Spalten
+    /// Version · Einflussgröße · bei −Δ · Basis · bei +Δ · Steigung; der Name der Version
+    /// steht an ihrer ersten Zeile. Leer = keine Sensitivität gerechnet.
+    /// </summary>
+    public ErgebnisMatrix Sensitivitaet { get; set; } = new();
+
+    /// <summary>
+    /// ETAPPE E5 (Konzept § 6.3 Nr. 31): „‹Stände›: Nachweis liegt mit der nächsten
+    /// Rechnung vor" — leer, wenn jede gezeigte Ergebniszeile ihren Nachweis trägt.
+    /// </summary>
+    public string Nachweiszeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (V‑1, ValERI-Block 1 „Gegenstand und Rahmen"): Maßnahme, Referenz,
+    /// Betrachtungszeitraum und Kalkulationszins — je Zeile der Titel und EINE Zelle.
+    /// </summary>
+    public ErgebnisMatrix Rahmen { get; set; } = new();
 
     /// <summary>
     /// ETAPPE W5‑B‑9 (Anwenderentscheid 09.09.2026): die Statuszeile des GEWÄHLTEN
@@ -205,6 +292,13 @@ public sealed class ErgebnisAnsicht
     /// nicht der Szenario-Klappliste. Leer (keine Zeilen) = nichts gerechnet.
     /// </summary>
     public ErgebnisMatrix Bandbreite { get; set; } = new();
+
+    /// <summary>
+    /// ETAPPE E5 (U4): der Fußtext der Bandbreite — was ΔKW heißt, gegen welche Referenz
+    /// gerechnet ist und wie die Spanne entsteht (<c>WIRT_SZ_DELTA_FUSS</c>, derselbe wie
+    /// im Bericht). Leer ohne Bandbreite.
+    /// </summary>
+    public string Bandbreitenfuss { get; set; } = "";
 }
 
 /// <summary>
@@ -214,6 +308,26 @@ public sealed class ErgebnisAnsicht
 /// </summary>
 public sealed class WirtschaftlichkeitStand
 {
+    /// <summary>ETAPPE E5 (U2): Darstellung „Kennzahlen" — die vier Abschnitte (Vorgabe).</summary>
+    public const int DARSTELLUNG_KENNZAHLEN = 0;
+
+    /// <summary>ETAPPE E5 (U2): Darstellung „ValERI-Bewertung" — die Blöcke der Norm.</summary>
+    public const int DARSTELLUNG_VALERI = 1;
+
+    /// <summary>
+    /// ETAPPE E5 (U2, Entscheid V‑1/K8): der Zustand des Umschalters „Kennzahlen /
+    /// ValERI-Bewertung" — eine Sitzungswahl der Hülle (Muster Vergleichsauswahl), Vorgabe
+    /// <see cref="DARSTELLUNG_KENNZAHLEN"/>.
+    /// </summary>
+    public int Darstellung { get; set; }
+
+    /// <summary>
+    /// ETAPPE E5 (U2, Mockup „Was ist angenommen?"): die Annahmentafel — Spalten Größe ·
+    /// Ungünstig · Erwartet · Günstig · Herkunft, je Größe eine Zeile mit den WIRKSAMEN
+    /// Werten. Sie hängt am Parametersatz, nicht an der Wahl.
+    /// </summary>
+    public ErgebnisMatrix Annahmen { get; set; } = new();
+
     /// <summary>Stamm und Varianten der Vergleichsgruppe, Stamm zuerst.</summary>
     public IReadOnlyList<VarianteZeile> Varianten { get; set; } = Array.Empty<VarianteZeile>();
 

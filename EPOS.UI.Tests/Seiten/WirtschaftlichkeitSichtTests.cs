@@ -257,11 +257,15 @@ public class WirtschaftlichkeitSichtTests : EposBunitContext
 
     private static IReadOnlyList<IElement> Listen(IRenderedComponent<WirtschaftlichkeitSeite> cut)
     {
-        var alle = cut.FindAll(".epos-seite-zeile select");
+        // ETAPPE E5 Teil b: Die Szenariowahl steht seither im Abschnitt „Wie sicher ist
+        // das?" UNTER der Vergleichssicht. A und B sind die Klapplisten DER Zeile, die
+        // die Optionsgruppe der Sicht trägt — nicht mehr die letzten zwei der Seite.
+        IElement zeile = cut.FindAll(".epos-seite-zeile")
+                            .First(z => z.QuerySelector(".epos-optionsgruppe") is not null);
         var l = new List<IElement>();
-        foreach (IElement e in alle) l.Add(e);
-        // Die erste Klappliste der Seite ist die SZENARIOWAHL; A und B folgen ihr.
-        return l.GetRange(l.Count - 2, 2);
+        foreach (IElement e in zeile.QuerySelectorAll("select")) l.Add(e);
+        Assert.Equal(2, l.Count);
+        return l;
     }
 
     private static IElement Tauschknopf(IRenderedComponent<WirtschaftlichkeitSeite> cut)

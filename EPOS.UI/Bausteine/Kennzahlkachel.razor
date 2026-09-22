@@ -13,13 +13,26 @@
    "—" STATT NULL. Der Wert wird fertig formatiert uebergeben; ein leerer Wert
    erscheint als Gedankenstrich. Das ist die Hausregel der Kostenseite: Eine 0
    waere eine Aussage, die niemand getroffen hat (Nutzerentscheidung 4 vom
-   18.08.2026). *@
+   18.08.2026).
+
+   KENNZEICHEN UND WARNUNG (Etappe E5, V-A, Entscheid V-3): Eine Kennzahl, die nach
+   DIN EN 17463 nur nachrichtlich steht, traegt ihr Label unter dem Titel; eine
+   Warnung, die den Wert stehen laesst (mehrdeutiger Zinsfuss), steht unter dem Wert.
+   Beide sind leer die Vorgabe - dann bleibt die Karte, wie sie war. *@
 
 @namespace EPOS.UI.Bausteine
 
 <div class="epos-kennzahlkachel">
     <span class="epos-kennzahlkachel-titel">@Titel</span>
+    @if (!string.IsNullOrEmpty(Kennzeichen))
+    {
+        <span class="epos-kennzahlkachel-kennzeichen">@Kennzeichen</span>
+    }
     <span class="epos-kennzahlkachel-wert">@(string.IsNullOrEmpty(Wert) ? "—" : Wert)</span>
+    @if (!string.IsNullOrEmpty(Warnung))
+    {
+        <span class="epos-kennzahlkachel-warnung" role="note">⚠ @Warnung</span>
+    }
     @if (!string.IsNullOrEmpty(Quelle))
     {
         <span class="epos-kennzahlkachel-quelle">@Quelle</span>
@@ -35,4 +48,10 @@
 
     /// <summary>Leise Zeile darunter: woher der Wert stammt.</summary>
     [Parameter] public string Quelle { get; set; } = "";
+
+    /// <summary>Das Label der Einordnung („nachrichtlich (Anhang C)"); leer = keines.</summary>
+    [Parameter] public string Kennzeichen { get; set; } = "";
+
+    /// <summary>Eine Warnung, die den Wert stehen lässt; leer = keine.</summary>
+    [Parameter] public string Warnung { get; set; } = "";
 }
