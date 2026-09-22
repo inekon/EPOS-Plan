@@ -7845,20 +7845,70 @@ Ressourcen (resx beide Sprachen + Designer), zugehörige Testklassen in `EPOS.Ke
 Testfälle, 10 davon vor der Änderung rot belegt; Windows-Schale 0 Fehler; SqlDialektPrüfer
 1567 Texte, 0 Fundstellen; kein Rechenweg der Simulation berührt, kein Referenzlauf nötig.
 
-**Was offen bleibt.** (1) Emissionen aus Netzbezug ohne Verwendung sind bewusst nicht auf 0
-gesetzt — CO₂ trägt einen benannten Vorgabewert von 435 g/kWh und meldet den Rückfall;
-Anwenderentscheid offen, ob die CO₂-Bilanz dem Kostenentscheid folgen soll. (2) Trägt der
-Auslieferungs-Stromträger einen Katalogpreis, wird der Netzbezug wie bisher bepreist und der
-Rückfall benannt; streng nach dem Entscheid müsste auch das 0 sein — Anwenderentscheid offen.
-(3) `ErgebnisAktuell` wirkt auch auf vier weitere Aufrufer (Bausteine Wirtschaftlichkeit,
-Excel-Bericht, Verlauf, KI-Aktionen): Fehlgrund-Zeilen mit passender Lauf-Id gelten dort jetzt
-ebenfalls als aktuell. (4) Der Stromzweig von `ProfilBedarf` sucht Stromverbraucher weiterhin
-nur über den Bezeichner ohne Projektfilter (offener Punkt K1‑O1) — der Kopfsatz eines fremden
-Projekts kann in die Summe geraten; eigener Auftrag.
+**Was offen bleibt.** (1) Emissionen und Stromkosten bei Strombedarf ohne
+stromverwendenden Erzeuger sind mit dem Nachtrag vom 22.09.2026 (Commit `ae1bb3c8`)
+erledigt (siehe unten): Beide sind null, unabhängig davon, ob ein Träger zugeordnet oder
+ein Katalogpreis vorhanden ist. (2) Die Kennzahl „Stromkosten Netzbezug“ zeigt bei
+Strombedarf ohne Verwendung „—“ statt 0 — bewusst, damit kein Tarif den Strom
+nachträglich bepreist; Anwenderentscheid offen, ob 0 stehen soll. (3) Neue
+Schreibwirkung: Beim Speichern einer Anlage ordnet `WErzeugerCtrl` jetzt auch bei BHKW,
+Elektrokessel und Hilfsenergie automatisch einen Stromträger zu. (4) Scheitert das Lesen
+der Anlagen, gilt der Strom still als „ohne Verwendung“. (5) Der Wegfall der Tarif- und
+Rollenmeldung ohne Verwendung ist nicht durch einen Test gedeckt. (6) `ErgebnisAktuell`
+wirkt auch auf vier weitere Aufrufer (Bausteine Wirtschaftlichkeit, Excel-Bericht,
+Verlauf, KI-Aktionen): Fehlgrund-Zeilen mit passender Lauf-Id gelten dort jetzt
+ebenfalls als aktuell. (7) Der Stromzweig von `ProfilBedarf` sucht Stromverbraucher
+weiterhin nur über den Bezeichner ohne Projektfilter (offener Punkt K1‑O1) — der
+Kopfsatz eines fremden Projekts kann in die Summe geraten; eigener Auftrag.
+
+**Nachtrag 22.09.2026, Anwenderentscheide (Commit `ae1bb3c8`).** Antwort auf die zwei
+offenen Punkte aus „Was offen bleibt“: „1. Kostenentscheid folgen und diesen Strom
+ebenfalls auslassen. 2. Auch auf 0 setzen.“ Emissionen aus dem Netzbezug ohne
+stromverwendenden Erzeuger sind damit null; Stromkosten sind null, unabhängig davon, ob
+ein Träger zugeordnet oder ein Katalogpreis vorhanden ist.
+
+**Umsetzung.** Eine Regelstelle
+`ProjektEnergietraegerCtrl.StromOhneVerwendung(idProjekt, netzbezugMWh)` entscheidet
+(Netzbezug > 0 und kein Erzeuger, der Strom verwendet). `KostenEmissionRechner` fragt
+sie einmal ab: kein Strompreis geladen, keine Rückfallzeile „Stromträger aus dem
+Katalog“, `StromkostenNetz` bleibt leer (Kennzahl zeigt „—“), Emissionen aus dem
+Netzbezug null, keine Zeile „Netzbezug“ in den Energiekosten je Anlage; Tarifstruktur,
+Rollenmodell und Stromsteuer-Entlastung nach § 9b rechnen ohne diesen Strom;
+`WErzeugerCtrl.StromTraegerNachziehen` nutzt dieselbe Regel statt einer Kopie. Der
+Hinweis `WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG` endet jetzt mit „Energiekosten und
+Emissionen sind ohne diesen Strom bestimmt“; die Meldung „kein Stromträger“ nennt
+zusätzlich Elektrokessel, BHKW und Hilfsenergie. Geprüft ohne Änderung: Kohärenzprüfung,
+`EndenergieAufloeser` (bepreist nur mit Verwendung), `EmissionsBilanzRechner` (nur
+KWK-Gutschrift), Bericht, Excel und KI lesen über `KennzahlenKatalog`; SO₂, NOₓ und
+Staub werden nirgends aus dem Netzbezug abgeleitet.
+
+**BHKW zählt als Stromverwender.** Ohne diese Ergänzung hätte die neue Regel Projekt
+1030 (Gaskessel, zwei Gas-BHKW, Puffer, Netzbezug 4 357,78 MWh/a, „Elektrische Energie“
+0,25 €/kWh) falsch behandelt: 1 089 445 €/a Arbeitspreis plus 2 400 €/a Grundpreis und
+2 440,36 t/a CO₂ wären auf null gefallen. `BrauchtStromTraeger` prüft jetzt auch
+`ID_BHKW > 0` (Eigenverbrauch deckt den Bedarf; Reststrom, Eigenstrom und Einspeisung
+brauchen einen Preis). Damit bekommen BHKW-Projekte ohne Stromträger Rückfallträger,
+Automatik und das Angebot „Strom“ auf der Energieträger-Seite — vorher fehlte das dort
+ganz. Betrifft in der Testdatenbank auch 1018 und 1031 (gespeicherter Netzbezug
+negativ, keine Zahl ändert sich).
+
+**Tests.** 16 neue Fälle (Emissionen ohne Verwendung; zugeordneter Träger 0,30 €/kWh: 50
+€/a statt 4 886 €/a; Katalogpreis mit/ohne Zuordnung: 0; Regel selbst; Gegenproben
+WP/PV/BHKW; 1030 Differenzen 1 089 445 €/a und 2 440,36 t/a; 1030 ohne Träger über
+Rückfall 1 525 223 €/a; § 9b mit/ohne BHKW; Energieträger-Seite bietet BHKW-Projekt
+Strom an). Vier bestehende Tests nachgezogen (`Co2StromtraegerRueckfallTests`,
+`EnergietraegerHuelleTests`, `ProjektEnergietraegerCtrlTests`,
+`EnergiekostenGrundTests`).
+
+**Gate.** Kern-Filter 0 Fehler; `EPOS.Kern.Tests` 4330, `EPOS.UI.Tests` 5218, KiKern
+524, SpeicherEngine 386, SpeicherPlanung 27 (1 übersprungen) — alle grün; Windows-Schale
+0 Fehler; SqlDialektPrüfer 1567 Texte, 0 Fundstellen; kein Referenzlauf nötig (die Basis
+exportiert nur Simulationsgrößen, der Simulationscode ist unberührt).
 
 **Logbuch-Vorschlag** (Version 1.2.0.4):
 
-> Seit 22.09.2026 rechnet die Wirtschaftlichkeit ein Projekt mit Strombedarf, aber ohne
-> stromverwendenden Erzeuger, ohne Stromkosten und weist nur einen Hinweis aus. Seit
-> 22.09.2026 speichert „Simulation starten“ das Ergebnis sofort, und die Wirtschaftlichkeit
-> warnt, wenn das Simulationsergebnis älter als die letzte Projektänderung ist.
+> Seit 22.09.2026 gehen ein Strombedarf ohne stromverwendenden Erzeuger weder in die
+> Energiekosten noch in die Emissionen ein, und ein BHKW gilt als Stromverwender. Seit
+> 22.09.2026 speichert „Simulation starten“ das Ergebnis sofort, und die
+> Wirtschaftlichkeit warnt, wenn das Simulationsergebnis älter als die letzte
+> Projektänderung ist.
