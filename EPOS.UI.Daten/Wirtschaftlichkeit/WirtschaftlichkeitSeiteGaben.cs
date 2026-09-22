@@ -179,7 +179,8 @@ namespace WindowsFormsApplication1
                         Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(st.IdProjekt),
                         SimStand = st.SimStandText,
                         IstStamm = st.IstStamm,
-                        Auffaellig = !st.SimStand.HasValue || st.Veraltet
+                        Auffaellig = !st.SimStand.HasValue || st.Veraltet,
+                        Veraltet = st.Veraltet
                     });
                     if (st.SimStand.HasValue) _simStaende.Add(st.SimStand.Value);
                     _gruppe.Add(st.IdProjekt);
@@ -252,8 +253,13 @@ namespace WindowsFormsApplication1
             // gespeicherte Lauf bleibt der gegen die Unterlassensalternative der Gruppe.
             bool paarLaufFehlt = Vergleich.Sicht.IstPaar && !PaarErgebnisse();
 
+            // AUCH EINE ZEILE MIT FEHLGRUND VERALTET (Anwenderbefund 22.09.2026): Die
+            // Frage „passt das Ergebnis zum Simulationsstand“ hat mit der Frage „steht
+            // eine Kennzahl“ nichts zu tun. Solange beide hier zusammenhingen, blieb die
+            // Statuszeile bei genau den Zeilen stumm, bei denen der Anwender am ehesten
+            // neu rechnen muss.
             bool veraltet = _ergebnisse.Count > 0 &&
-                            _ergebnisse.Any(x => x.Fehlgrund == null && !_ctrl.ErgebnisAktuell(x));
+                            _ergebnisse.Any(x => !_ctrl.ErgebnisAktuell(x));
             BilanzenAuffrischen();
             stand.Ansicht = Ansicht(0);
 

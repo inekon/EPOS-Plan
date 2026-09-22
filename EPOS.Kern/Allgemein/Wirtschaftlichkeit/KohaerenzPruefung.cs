@@ -977,6 +977,13 @@ namespace WindowsFormsApplication1
             int carrier = StrompreisZerlegungCtrl.StromCarrierId(idProjekt);
             if (carrier <= 0)
             {
+                // ANWENDERENTSCHEID 22.09.2026 — DIESELBE REGEL WIE AUF DER KOSTENSEITE.
+                // Führt das Projekt keinen Erzeuger, der Strom verwendet, dann FEHLT der
+                // Stromträger nicht, er wird nicht gebraucht: Ein Befund darüber wäre eine
+                // Aufgabe ohne Gegenstand. Gefragt wird die EINE Fassung
+                // (ProjektEnergietraegerCtrl), nicht eine zweite hier.
+                if (!ProjektEnergietraegerCtrl.BrauchtStromTraeger(idProjekt)) return;
+
                 Fall2Strom(lauf, T("KOH_GRUND_KEIN_STROMTRAEGER",
                     "dem Projekt ist kein Strom-Energieträger zugeordnet"), kultur, liste);
                 return;

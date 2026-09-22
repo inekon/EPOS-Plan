@@ -295,7 +295,8 @@ namespace WindowsFormsApplication1
                             ? st.SimStand.Value.ToString("dd.MM.yy HH:mm")
                             : "",
                         IstStamm = vi.IstStamm,
-                        Auffaellig = st != null && (!st.SimStand.HasValue || st.Veraltet)
+                        Auffaellig = st != null && (!st.SimStand.HasValue || st.Veraltet),
+                        Veraltet = st != null && st.Veraltet
                     });
                 }
             }

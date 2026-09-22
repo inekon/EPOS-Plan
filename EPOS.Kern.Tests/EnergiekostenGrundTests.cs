@@ -265,6 +265,8 @@ namespace EPOS.Kern.Tests
         [InlineData("WIRT_STROMTRAEGER_RUECKFALL")]
         [InlineData("WIRT_BTN_NEU_BERECHNEN")]
         [InlineData("WIRT_BAND_NACHRECHNEN")]
+        [InlineData("WIRT_BAND_SIMULATION_VERALTET")]
+        [InlineData("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG")]
         public void Jeder_Schluessel_steht_in_beiden_Ressourcendateien(string schluessel)
         {
             ResourceManager rm = WindowsFormsApplication1.MyResource.Resource.ResourceManager;
@@ -314,8 +316,206 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        // 5 — STROMBEDARF OHNE VERWENDUNG (Anwenderentscheid 22.09.2026)
+        // =================================================================
+        //
+        // „Falls es einen Bedarf Strom gibt … und keinen Erzeuger mit Zuordnung
+        // Strombedarf, gebe nur eine Warnung aus … und bestimme die Energiekosten ohne
+        // Stromkosten.“
+        //
+        // DIE LAGE DES BEFUNDS: Gaskessel mit Pufferspeicher, eine Kachel Strombedarf,
+        // kein Erzeuger, der Strom verwendet. Die Gaskosten waren rechenbar, trotzdem
+        // blieb JEDE Kennzahl leer — samt der Aufforderung, „der elektrischen Erzeugung“
+        // einen Träger zuzuordnen, die es gar nicht gibt.
+
+        /// <summary>„Beispiel WP WG 1 - Andere WP“ — Gaskessel UND Wärmepumpe, dem Projekt
+        /// ist nur „Erdgas E“ zugeordnet, das gespeicherte Ergebnis führt 16,12 MWh/a
+        /// Netzbezug. Nimmt man die Wärmepumpe heraus, steht genau die Lage des
+        /// Befunds.</summary>
+        private const int PROJEKT_KESSEL = 1027;
+
+        /// <summary><c>energy_carrier.id</c> von „Erdgas E“.</summary>
+        private const int GAS = 63;
+
+        /// <summary>Der Netzbezug des gespeicherten Laufs von 1027 [MWh/a].</summary>
+        private const double NETZBEZUG = 16.12;
+
+        /// <summary>
+        /// DER BEFUND SELBST. Ohne Erzeuger, der Strom verwendet, tragen die Energiekosten
+        /// den Brennstoff — ohne Stromkosten, ohne Fehlgrund, mit benanntem Hinweis.
+        /// </summary>
+        [Fact]
+        public void Strombedarf_ohne_Verwendung_bepreist_nur_den_Brennstoff()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+
+            Assert.Null(v.EnergiekostenGrund);
+            Assert.True(v.Energiekosten.HasValue);
+            // 1 MWh = 1.000 kWh ÷ 10 kWh/Nm³ = 100 Nm³ × 0,50 €
+            Assert.Equal(50.0, v.Energiekosten.Value, 4);
+            Assert.Null(v.StromkostenNetz);
+            Assert.Equal(NETZBEZUG, v.StrombedarfOhneVerwendungMWh.Value, 2);
+        }
+
+        /// <summary>
+        /// DIE GEGENPROBE. Dasselbe Projekt MIT seiner Wärmepumpe: Jetzt verwendet ein
+        /// Erzeuger Strom, der fehlende Träger ist eine echte Lücke — und der bisherige
+        /// Fehlgrund bleibt Wort für Wort stehen.
+        /// </summary>
+        [Fact]
+        public void Mit_Waermepumpe_bleibt_der_Fehlgrund_stehen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Gaspreis();
+            Kesselverbrauch();
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+
+            Assert.Equal(KostenEmissionRechner.GRUND_KEIN_STROMTRAEGER, v.EnergiekostenGrund);
+            Assert.False(v.Energiekosten.HasValue);
+            Assert.Null(v.StrombedarfOhneVerwendungMWh);
+        }
+
+        /// <summary>
+        /// DER HILFSSTROM ZÄHLT ALS VERWENDUNG. Eine Brenneranlage mit gepflegtem
+        /// <c>Hilfsenergie_Anteil</c> bezieht Strom und wird mit dem Projekt-Stromträger
+        /// bepreist; ohne Träger fiel dieser Anteil bis hierher still aus. Das Projekt
+        /// braucht damit einen Stromträger — und der Fehlgrund gehört zurück.
+        /// </summary>
+        [Fact]
+        public void Ein_Hilfsenergie_Anteil_macht_den_Stromtraeger_noetig()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+            Assert.False(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT_KESSEL));
+
+            Hilfsenergie(5.0);
+            Assert.True(ProjektEnergietraegerCtrl.BrauchtStromTraeger(PROJEKT_KESSEL));
+
+            VariantenDaten v = Rechne(PROJEKT_KESSEL);
+            Assert.Equal(KostenEmissionRechner.GRUND_KEIN_STROMTRAEGER, v.EnergiekostenGrund);
+            Assert.Null(v.StrombedarfOhneVerwendungMWh);
+        }
+
+        /// <summary>
+        /// Der Hinweis reist als WARNUNG (nicht als Fehlgrund) in die Wirtschaftlichkeit —
+        /// denselben Weg wie die beiden Rückfallzeilen, und damit bis ins Warnband der
+        /// Seite.
+        /// </summary>
+        [Fact]
+        public void Der_Hinweis_erreicht_die_Wirtschaftlichkeit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kesselprojekt();
+
+            var daten = new BerichtsDaten { IdStamm = PROJEKT_KESSEL };
+            VariantenDaten stamm = Rechne(PROJEKT_KESSEL);
+            stamm.IstStamm = true;
+            daten.Varianten.Add(stamm);
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitErgebnis erg = null;
+            foreach (WirtschaftlichkeitErgebnis e in ctrl.Berechne(daten, ctrl.LadeParameter(PROJEKT_KESSEL)))
+                if (e.Szenario == WirtschaftlichkeitSzenario.ERWARTET) erg = e;
+
+            Assert.NotNull(erg);
+            Assert.Null(erg.Fehlgrund);
+            Assert.NotNull(erg.Hinweis);
+            Assert.Contains("Strombedarf ohne Verwendung", erg.Hinweis);
+        }
+
+        /// <summary>
+        /// DIESELBE REGEL IN DER KOHÄRENZPRÜFUNG. Führt das Projekt keinen Erzeuger, der
+        /// Strom verwendet, dann FEHLT der Stromträger nicht — er wird nicht gebraucht;
+        /// die Zeile „dem Projekt ist kein Strom-Energieträger zugeordnet“ wäre eine
+        /// Aufgabe ohne Gegenstand. MIT Wärmepumpe bleibt sie stehen.
+        /// </summary>
+        [Fact]
+        public void Die_Kohaerenzpruefung_schweigt_ohne_Verwendung()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const string zeile = "kein Strom-Energieträger zugeordnet";
+
+            // MIT Wärmepumpe: Der Befund steht.
+            Assert.Contains(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
+                            h => h.Text.Contains(zeile, StringComparison.Ordinal));
+
+            // OHNE: Er fällt weg.
+            Kesselprojekt();
+            Assert.DoesNotContain(KohaerenzPruefung.Pruefe(PROJEKT_KESSEL, StromsteuerLauf()),
+                                  h => h.Text.Contains(zeile, StringComparison.Ordinal));
+        }
+
+        // =================================================================
         // Handgriffe
         // =================================================================
+
+        /// <summary>Ein Lauf mit gebuchter § 9b-Entlastung für ein produzierendes
+        /// Gewerbe — nur dann prüft die Stromseite überhaupt.</summary>
+        private static KohaerenzLauf StromsteuerLauf()
+            => new KohaerenzLauf
+            {
+                Jahr = 2026,
+                StromsteuerEntlastungEur = 1000.0,
+                Steuer = new SteuerEingabe
+                {
+                    Unternehmensart = DbWerte.UNTERNEHMENSART_PROD_GEWERBE
+                }
+            };
+
+        /// <summary>Macht aus 1027 ein reines BRENNSTOFFprojekt: Wärmepumpe heraus,
+        /// Gaspreis und Kesselverbrauch hinein.</summary>
+        private static void Kesselprojekt()
+        {
+            DataRepository.ExecuteSQL(
+                "DELETE FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_WP > 0",
+                new DbParam("@p", PROJEKT_KESSEL));
+            Gaspreis();
+            Kesselverbrauch();
+        }
+
+        /// <summary>Runde Werte statt der gepflegten: 10 kWh je Nm³, 0,50 € je Nm³.</summary>
+        private static void Gaspreis()
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE energy_project_settings SET custom_price_work = ?, custom_hi = ? " +
+                "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
+                new DbParam("@w", 0.5), new DbParam("@h", 10.0),
+                new DbParam("@p", PROJEKT_KESSEL), new DbParam("@c", GAS));
+        }
+
+        /// <summary>Der gespeicherte Lauf von 1027 führt eine Modulzeile OHNE Verbrauch
+        /// (Stand vor Befund B-1). Ein frischer Lauf füllt die Spalte; hier wird sie
+        /// gesetzt, damit der Brennstoff überhaupt eine Menge hat.</summary>
+        private static void Kesselverbrauch()
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_ErgebnisHeizkesselModul SET Verbrauch = ? " +
+                "WHERE ID_ErgebnisHeizkessel IN (SELECT h.ID FROM Tab_ErgebnisHeizkessel AS h " +
+                "INNER JOIN Tab_Ergebnis AS e ON h.ID_Ergebnis = e.ID WHERE e.ID_Projekt = ?)",
+                new DbParam("@v", 1.0), new DbParam("@p", PROJEKT_KESSEL));
+        }
+
+        /// <summary>Gibt jeder Anlage des Projekts einen Hilfsenergie-Anteil [%].</summary>
+        private static void Hilfsenergie(double anteil)
+        {
+            DataRepository.ExecuteSQL(
+                "UPDATE Tab_Energieanlagen SET Hilfsenergie_Anteil = ? WHERE ID_Projekt = ?",
+                new DbParam("@a", anteil), new DbParam("@p", PROJEKT_KESSEL));
+        }
 
         private static VariantenDaten Rechne(int idProjekt)
         {

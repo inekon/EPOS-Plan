@@ -129,7 +129,8 @@ namespace WindowsFormsApplication1
                         Speicher = SpeicherAnzeigeCtrl.SpeicherKontextText(st.IdProjekt),
                         SimStand = st.SimStandText,
                         IstStamm = st.IstStamm,
-                        Auffaellig = !st.SimStand.HasValue || st.Veraltet
+                        Auffaellig = !st.SimStand.HasValue || st.Veraltet,
+                        Veraltet = st.Veraltet
                     });
 
                     // Neuzustand: alles an — wortgleich zum Vorlaeufer.

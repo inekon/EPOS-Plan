@@ -5606,6 +5606,18 @@ namespace WindowsFormsApplication1
                       KostenEmissionRechner.HINWEIS_CO2_TRAEGER_RUECKFALL),
                     v.CO2TraegerRueckfall));
 
+            // ANWENDERENTSCHEID 22.09.2026 — STROMBEDARF OHNE VERWENDUNG. Das Projekt
+            // führt einen Netzbezug, aber keinen Erzeuger, der Strom verwendet: Die
+            // Energiekosten sind dann OHNE Stromkosten bestimmt (KostenEmissionRechner).
+            // Eine WARNUNG, kein Fehlgrund — die Zahl steht, nur nicht die Stromseite.
+            // Sie reist denselben Weg wie die beiden Rückfallzeilen darüber und erreicht
+            // damit Warnband, Vergleichstabelle, Wort- und Excelbericht.
+            if (v.StrombedarfOhneVerwendungMWh.HasValue)
+                erg.Hinweis = Anhaengen(erg.Hinweis, string.Format(
+                    T("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG",
+                      KostenEmissionRechner.HINWEIS_STROMBEDARF_OHNE_VERWENDUNG),
+                    v.StrombedarfOhneVerwendungMWh.Value.ToString("N1", BerichtTexte.Kultur)));
+
             // BEFUNDE B-1/N1 (Anwenderentscheid 30.08.2026): Hat ein Heizkessel Wärme
             // erzeugt, ohne dass sein Brennstoffverbrauch im Ergebnis steht, fehlt sein
             // Brennstoff still in Energiekosten, CO₂-Bilanz und BEHG-Menge (Fahne aus
@@ -7431,10 +7443,21 @@ namespace WindowsFormsApplication1
             return map;
         }
 
-        /// <summary>true, wenn ein gespeichertes Ergebnis zum aktuellen Simulationslauf passt.</summary>
+        /// <summary>
+        /// true, wenn ein gespeichertes Ergebnis zum aktuellen Simulationslauf passt.
+        ///
+        /// <para><b>Die Frage ist NUR der Simulationsstand</b> (Anwenderbefund
+        /// 22.09.2026). Bis dahin stand hier zusätzlich <c>Fehlgrund == null</c> — eine
+        /// Zeile mit Fehlgrund galt damit als „veraltet“ und wurde von jedem Aufrufer,
+        /// der beides zugleich prüfte, wieder herausgefiltert: Die Statuszeile
+        /// „Gespeicherte Ergebnisse passen nicht mehr zum Simulationsstand“ erschien für
+        /// solche Zeilen NIE. Ob eine Kennzahl fehlt, sagt der Fehlgrund; ob das
+        /// Ergebnis zum Lauf passt, sagt diese Methode. Wer beides braucht, fragt
+        /// beides — die zwei Berichtsstellen tun das unverändert.</para>
+        /// </summary>
         public bool ErgebnisAktuell(WirtschaftlichkeitErgebnis e)
         {
-            return e != null && e.Fehlgrund == null &&
+            return e != null &&
                    e.IdErgebnis > 0 && e.IdErgebnis == LiesErgebnisId(e.IdProjekt);
         }
 

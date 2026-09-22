@@ -62314,6 +62314,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten. ähnelt.
+        /// </summary>
+        public static string WIRT_BAND_SIMULATION_VERALTET {
+            get {
+                return ResourceManager.GetString("WIRT_BAND_SIMULATION_VERALTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig. ähnelt.
         /// </summary>
         public static string WIRT_BK_ABWEICHUNG {
@@ -63255,6 +63264,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER {
             get {
                 return ResourceManager.GetString("WIRT_GRUND_VERBRAUCH_OHNE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten sind ohne Stromkosten bestimmt. ähnelt.
+        /// </summary>
+        public static string WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG {
+            get {
+                return ResourceManager.GetString("WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG", resourceCulture);
             }
         }
         

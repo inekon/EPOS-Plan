@@ -104,6 +104,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             SpVariantenSichern(projektID, TYP_ALLE);
             SenkenSichern(projektID);
             // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
@@ -124,6 +130,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             SpVariantenSichern(projektID, nType);
 
@@ -148,6 +160,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             // Ä21: Das gezielte Entfernen EINER Anlage nimmt ihre Kostenpositionen
             // mit (Nutzerauftrag 27.08.2026: eine nicht angelegte Anlage darf keine
@@ -174,6 +192,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             // Tagesverteilungen der Projekt-Gebaeude entfernen (Detail vor Kopf).
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
@@ -197,6 +221,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             // ID = Z_ProjektGebaeude.ID; zugehoerige Gebaeude-Kopie via ID_ProjektGebaeude.
             DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_DBTagVDaten WHERE ID_TagV IN " +
@@ -219,6 +249,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektWaermebedarf WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
@@ -228,6 +264,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Prozesswaerme WHERE ID_Projekt = ?";
@@ -244,6 +286,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektStromganglinie WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
@@ -254,6 +302,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             return DataRepository.ExecuteSQL("DELETE FROM Z_ProjektSolarganglinie WHERE ID_Projekt = ?",
                 new DbParam[] { new DbParam("@pID", projektID) });
         }
@@ -263,6 +317,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Stromverbraucher WHERE ID_Projekt = ?";
@@ -278,6 +338,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             string sql = (ID > 0) ? "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ? AND ID = ?"
                                   : "DELETE FROM Z_Projekt_Brauchwasser WHERE ID_Projekt = ?";
@@ -1649,6 +1715,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             try
             {
                 // Ein Zwischenspeicher fuer den ganzen Durchlauf: dieselbe Puffer-ID
@@ -2191,7 +2263,7 @@ namespace WindowsFormsApplication1
             // Anlage den Stromtraeger schon ueber ID_Carrier beigetragen hat, und
             // TraegerSatzAnlegen selbst prueft per COUNT gegen
             // energy_Project_settings. Zweiter Wizard-Save = keine zweite Zeile.
-            if (BrauchtStromTraeger(list))
+            if (BrauchtStromTraeger(projektID, list))
             {
                 int stromId = ProjektEnergietraegerCtrl.StandardStromTraeger(projektID);
                 if (stromId > 0 && !erledigt.Contains(stromId))
@@ -2209,8 +2281,16 @@ namespace WindowsFormsApplication1
         /// Wärmepumpe, Photovoltaik, Stromspeicher — oder eine beliebige Anlage mit
         /// gesetztem Heizstab. Dieselbe Bedingung wie in
         /// <c>ProjektEnergietraegerCtrl.Verwendete</c> (siehe Begründung dort).
+        ///
+        /// <para><b>Was die Liste nicht weiß, weiß die Datenbank</b> (22.09.2026): Der
+        /// ELEKTROKESSEL steckt im Brennstoff seines Geräts und der HILFSSTROM in
+        /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil</c> — beides trägt
+        /// <see cref="WErzeugerModel"/> nicht. Sagt die Liste nein, entscheidet deshalb die
+        /// EINE Fassung in <c>ProjektEnergietraegerCtrl.BrauchtStromTraeger</c>; die
+        /// Anlagenzeilen stehen zu diesem Zeitpunkt bereits
+        /// (<see cref="Add_WP_Waermeerzeuger"/> läuft vorher).</para>
         /// </summary>
-        private static bool BrauchtStromTraeger(List<WErzeugerModel> list)
+        private static bool BrauchtStromTraeger(int projektID, List<WErzeugerModel> list)
         {
             foreach (var item in list)
             {
@@ -2218,7 +2298,9 @@ namespace WindowsFormsApplication1
                 if (item.ID_WP > 0 || item.ID_PV > 0 || item.ID_SP > 0 || item.Heizstab)
                     return true;
             }
-            return false;
+
+            try { return ProjektEnergietraegerCtrl.BrauchtStromTraeger(projektID); }
+            catch { return false; }
         }
 
         /// <summary>
@@ -2374,6 +2456,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             GebaeudeStammCtrl ctrlStamm = new GebaeudeStammCtrl();
             foreach (var item in list)
             {
@@ -2465,6 +2553,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             int nextID = DataRepository.GetMaxID("Z_ProjektWaermebedarf", "ID_Z") + 1;
 
             // Migrationsschritt 48 (F18): Der Speicherweg der Zuordnung ist LOESCHEN +
@@ -2504,6 +2598,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             int nextID = DataRepository.GetMaxID("Z_Projekt_Prozesswaerme", "ID") + 1;
 
@@ -2550,6 +2650,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             int nextID = DataRepository.GetMaxID("Z_Projekt_Stromverbraucher", "ID") + 1;
 
             foreach (var item in list)
@@ -2595,6 +2701,12 @@ namespace WindowsFormsApplication1
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
 
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
+
             foreach (var item in list)
             {
                 // Stamm-Ganglinie (+ Daten) bei Bedarf ins Projekt kopieren und die Projekt-Ganglinie-ID verwenden.
@@ -2619,6 +2731,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             int nextID = DataRepository.GetMaxID("Z_ProjektSolarganglinie", "ID") + 1;
 
@@ -2647,6 +2765,12 @@ namespace WindowsFormsApplication1
             // iU9-W16a-O-1: Der hereingereichte Vorgang gilt fuer ALLES, was dieser
             // Schritt schreibt und liest - bis in die Katalogcontroller darunter.
             using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+
+            // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Jeder Schreibweg, der die
+            // Eingangsgroessen der Simulation aendert, markiert das Projekt als
+            // geaendert - sonst meldet die Uebersicht ein veraltetes Ergebnis als
+            // aktuell. EINE Stelle je Weg, nicht eine je Kachel.
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(projektID);
 
             int nextID = DataRepository.GetMaxID("Z_Projekt_Brauchwasser", "ID") + 1;
 

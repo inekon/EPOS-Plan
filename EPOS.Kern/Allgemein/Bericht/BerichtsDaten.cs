@@ -276,6 +276,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public string CO2TraegerRueckfall;
 
+        /// <summary>
+        /// <b>STROMBEDARF OHNE VERWENDUNG</b> [MWh/a] — das Projekt führt einen Netzbezug,
+        /// aber keinen Erzeuger, der Strom verwendet (keine Wärmepumpe, Photovoltaik,
+        /// kein Stromspeicher, Heizstab, Elektrokessel und keine Anlage mit
+        /// Hilfsenergie-Anteil). <c>null</c> = nicht betroffen.
+        ///
+        /// <para><b>Anwenderentscheid 22.09.2026:</b> „Falls es einen Bedarf Strom gibt …
+        /// und keinen Erzeuger mit Zuordnung Strombedarf, gebe nur eine Warnung aus … und
+        /// bestimme die Energiekosten ohne Stromkosten.“ Bis dahin blieb in dieser Lage
+        /// die GANZE Zahl aus — ein Gaskesselprojekt mit einer Kachel Strombedarf zeigte
+        /// „—“ statt seiner rechenbaren Gaskosten, samt der Aufforderung, der
+        /// elektrischen Erzeugung einen Träger zuzuordnen, die es gar nicht führt.</para>
+        ///
+        /// <para>Die Menge steht hier, weil der HINWEIS sie nennt; gerechnet wird mit ihr
+        /// auf der Kostenseite nichts. Die CO₂-Bilanz bleibt unberührt: Der Netzbezug
+        /// findet physisch statt, gleich ob ihm ein Erzeuger zugeordnet ist.</para>
+        /// </summary>
+        public double? StrombedarfOhneVerwendungMWh;
+
         // LEITENTSCHEIDUNG L13 — die beiden MENGEN, an denen die Bilanzierungskonvention
         // für Biomasse ansetzt. Bewusst Mengen und keine fertigen Emissionen: Der
         // Emissionsfaktor hängt an der gewählten Konvention und am Bilanzjahr, und beides

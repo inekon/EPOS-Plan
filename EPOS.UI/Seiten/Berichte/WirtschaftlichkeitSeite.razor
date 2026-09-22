@@ -63,12 +63,21 @@
        Gerechnet wird weiterhin NUR auf Zuruf (Vorbild UcWirtschaftlichkeit:
        btn_Berechnen); eine Rechnung beim Oeffnen wuerde jeden Seitenwechsel zu
        einem Simulationslauf machen. *@
-    @if (_warnungen.Count > 0 || _nachrechnen)
+    @if (_warnungen.Count > 0 || _nachrechnen || _simVeraltet)
     {
         <div class="epos-wirt-warnband">
             @if (_nachrechnen)
             {
                 <Warnbanner Stufe="WarnStufe.Warnung" Text="@NachrechnenText" />
+            }
+            @* Anwenderbefund 22.09.2026: Das SIMULATIONSergebnis ist aelter als die
+               letzte Projektaenderung. Das stand bis hierher nur als Farbe in der
+               Spalte "Simulation" der Vergleichstabelle - der Anwender rechnete die
+               Wirtschaftlichkeit neu und bekam dieselben Zahlen, weil der LAUF alt
+               war, nicht die Rechnung darueber. *@
+            @if (_simVeraltet)
+            {
+                <Warnbanner Stufe="WarnStufe.Warnung" Text="@SimulationVeraltetText" />
             }
             @foreach (string w in _warnungen)
             {
@@ -675,6 +684,10 @@
     /// zum Stand passen — der Grund, warum der Knopf daneben steht.</summary>
     [Parameter] public string NachrechnenText { get; set; } = Resource.WIRT_BAND_NACHRECHNEN;
 
+    /// <summary>Der Satz des Warnbandes, wenn das SIMULATIONSergebnis einer gewählten
+    /// Version älter ist als die letzte Änderung ihres Projekts.</summary>
+    [Parameter] public string SimulationVeraltetText { get; set; } = Resource.WIRT_BAND_SIMULATION_VERALTET;
+
     // ---- Bewertung nach DIN EN 17463 (AUFTRAG #325) ----------------------
     //
     // DIE VIER SCHLUESSEL ZIEHEN UNVERAENDERT MIT aus dem Parameterdialog:
@@ -748,6 +761,10 @@
     /// der Rechenknopf oben im Warnband (Auftrag #267).</summary>
     private bool _nachrechnen;
 
+    /// <summary>Mindestens eine GEWÄHLTE Version trägt ein Simulationsergebnis, das
+    /// älter ist als die letzte Änderung ihres Projekts (Anwenderbefund 22.09.2026).</summary>
+    private bool _simVeraltet;
+
     /// <summary>Steht der Bewertungsblock offen? (AUFTRAG #325) Der Zustand gehört der
     /// Seite und überlebt jeden Auffrischlauf — das ist der Grund für den Knopf statt
     /// eines <c>&lt;details&gt;</c>.</summary>
@@ -765,6 +782,9 @@
 
     /// <summary>Die Warnungen des Bandes (Prüfhilfe).</summary>
     public IReadOnlyList<string> Warnungen => _warnungen;
+
+    /// <summary>Steht das Band „Simulationsergebnis veraltet“? (Prüfhilfe)</summary>
+    public bool SimulationVeraltet => _simVeraltet;
 
     /// <summary>Läuft gerade eine Berechnung? (Prüfhilfe; der Wirt darf dann nicht schließen.)</summary>
     public bool Beschaeftigt => _laeuft;
@@ -902,6 +922,12 @@
         // die Warnzellen der Tabelle tragen.
         WarnbandAuffrischen();
         _nachrechnen = _status.Contains(ErgebnisMatrix.WARN_PRAEFIX.Trim());
+
+        // Die Fahne kommt aus der Hülle (VarianteZeile.Veraltet) und gilt nur für die
+        // GEWÄHLTEN Versionen: Eine abgewählte Variante steht in keiner Zahl dieser
+        // Seite, ihr alter Lauf ist hier also kein Anlass.
+        _simVeraltet = _stand.Varianten.Any(z => z.Veraltet && _gewaehlt.Contains(z.IdProjekt));
+
         StateHasChanged();
     }
 

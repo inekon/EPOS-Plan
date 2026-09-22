@@ -59,6 +59,18 @@ public sealed class VarianteZeile
     /// dafür ziegelrot (<c>ForeColor = Color.Firebrick</c>).
     /// </summary>
     public bool Auffaellig { get; set; }
+
+    /// <summary>
+    /// <b>Das Simulationsergebnis ist älter als die letzte Projektänderung</b>
+    /// (<c>BerichtsDatenSammler.VariantenStatus.Veraltet</c>) — anders als
+    /// <see cref="Auffaellig"/> NICHT zugleich der Fall „nie simuliert“.
+    ///
+    /// <para>Das Warnband der Wirtschaftlichkeitsseite hängt daran: „nie simuliert“
+    /// sagt schon die Statuszeile („Noch keine Berechnung gespeichert“), „veraltet“
+    /// sagte bis zum Anwenderbefund 22.09.2026 allein die Farbe einer Tabellenzelle —
+    /// und eine Farbe ist kein Satz.</para>
+    /// </summary>
+    public bool Veraltet { get; set; }
 }
 
 /// <summary>Ein Berichtsbaustein zur Auswahl (Vorbild <c>BerichtsKonfiguration.BausteinDef</c>).</summary>

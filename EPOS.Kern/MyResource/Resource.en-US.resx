@@ -9849,6 +9849,12 @@ The switch is only shown if the project contains such a generator.</value>
   <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
     <value>The values shown come from an earlier run — please recalculate.</value>
   </data>
+  <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
+    <value>The simulation result is older than the last change to the project — please run the simulation again.</value>
+  </data>
+  <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
+    <value>Electricity demand without use: The project has an electricity demand of {0} MWh/a but no generator that uses electricity. The energy costs are determined without electricity costs.</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>CHP Act: An auxiliary energy share is maintained for at least one unit, but unit rows and result rows cannot be matched — the bonus is calculated on gross electricity generation.</value>
   </data>

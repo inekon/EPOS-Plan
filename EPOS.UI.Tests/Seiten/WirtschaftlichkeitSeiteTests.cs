@@ -1152,6 +1152,74 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         Assert.Single(cut.FindAll(".epos-wirt-warnband .epos-leiste button"));
     }
+
+    /// <summary>
+    /// <b>Anwenderbefund 22.09.2026.</b> Ist das SIMULATIONSergebnis einer gewählten
+    /// Version älter als die letzte Änderung ihres Projekts, sagt das Band es. Bis
+    /// hierher stand das allein als Farbe in der Spalte „Simulation“ — der Anwender
+    /// rechnete die Wirtschaftlichkeit neu und bekam dieselben Zahlen, weil der LAUF
+    /// alt war und nicht die Rechnung darüber.
+    /// </summary>
+    [Fact]
+    public void Ein_veraltetes_Simulationsergebnis_stellt_das_Band_auf()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Varianten[1].Veraltet = true;
+
+        var cut = Zeige(null, stand);
+
+        Assert.True(cut.Instance.SimulationVeraltet);
+        Assert.Contains("Simulationsergebnis",
+                        cut.Find(".epos-wirt-warnband").TextContent);
+    }
+
+    /// <summary>
+    /// DIE GEGENPROBE: Dieselbe veraltete Version, aber ABGEWÄHLT. Sie steht in keiner
+    /// Zahl dieser Seite — ihr alter Lauf ist hier also kein Anlass, und das Band
+    /// bleibt weg.
+    /// </summary>
+    [Fact]
+    public void Eine_abgewaehlte_Version_stellt_kein_Band_auf()
+    {
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Varianten[1].Veraltet = true;
+        stand.GewaehlteVarianten = new[] { 1030 };
+
+        var cut = Zeige(null, stand);
+
+        Assert.False(cut.Instance.SimulationVeraltet);
+        Assert.Empty(cut.FindAll(".epos-wirt-warnband"));
+    }
+
+    /// <summary>
+    /// Der Hinweis „Strombedarf ohne Verwendung“ des Kerns (Anwenderentscheid
+    /// 22.09.2026) reist als Hinweiszeile der Vergleichstabelle und wird oben im Band
+    /// gezeichnet — dort, wo der Anwender die Erklärung zu den Zahlen sucht.
+    /// </summary>
+    [Fact]
+    public void Der_Hinweis_Strombedarf_ohne_Verwendung_steht_im_Band()
+    {
+        const string satz = "Strombedarf ohne Verwendung: Das Projekt führt einen " +
+                            "Strombedarf von 16,1 MWh/a, aber keinen Erzeuger, der Strom " +
+                            "verwendet. Die Energiekosten sind ohne Stromkosten bestimmt.";
+
+        WirtschaftlichkeitStand stand = Standard();
+        stand.Ansicht.Matrix = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Kennzahl", "Stamm" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Hinweis",
+                                  Zellen = new[] { ErgebnisMatrix.WARN_PRAEFIX + satz } }
+            }
+        };
+
+        var cut = Zeige(null, stand);
+
+        Assert.Contains(satz, cut.Instance.Warnungen);
+        Assert.Contains("Strombedarf ohne Verwendung",
+                        cut.Find(".epos-wirt-warnband").TextContent);
+    }
     // =====================================================================
     //  Der Hilfe-Assistent (Welle KI-F4)
     // =====================================================================

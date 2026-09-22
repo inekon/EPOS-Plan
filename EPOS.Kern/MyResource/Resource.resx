@@ -9856,6 +9856,12 @@ Der Schalter erscheint nur, wenn das Projekt einen solchen Erzeuger führt.</val
   <data name="WIRT_BAND_NACHRECHNEN" xml:space="preserve">
     <value>Die angezeigten Werte stammen aus einem älteren Lauf — bitte neu berechnen.</value>
   </data>
+  <data name="WIRT_BAND_SIMULATION_VERALTET" xml:space="preserve">
+    <value>Das Simulationsergebnis ist älter als die letzte Projektänderung — bitte die Simulation neu starten.</value>
+  </data>
+  <data name="WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG" xml:space="preserve">
+    <value>Strombedarf ohne Verwendung: Das Projekt führt einen Strombedarf von {0} MWh/a, aber keinen Erzeuger, der Strom verwendet. Die Energiekosten sind ohne Stromkosten bestimmt.</value>
+  </data>
   <data name="WIRT_KWKG_HILFSSTROM_UNKLAR" xml:space="preserve">
     <value>KWKG: Für mindestens eine Anlage ist ein Hilfsenergieanteil gepflegt, Anlagen- und Ergebniszeilen lassen sich aber nicht zuordnen — der Zuschlag rechnet mit der Bruttostromerzeugung.</value>
   </data>

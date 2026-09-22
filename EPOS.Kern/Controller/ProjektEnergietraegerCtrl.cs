@@ -446,13 +446,21 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Führt das Projekt eine Anlage der elektrischen Welt (Wärmepumpe, Photovoltaik,
-        /// Stromspeicher, gesetzter Heizstab oder ein ELEKTROKESSEL)? Dieselbe Bedingung
+        /// Stromspeicher, gesetzter Heizstab, ein ELEKTROKESSEL — oder eine Brenneranlage
+        /// mit gepflegtem HILFSENERGIE-Anteil? Dieselbe Bedingung
         /// wie in <see cref="Verwendete"/> und <c>WizardCtrl.BrauchtStromTraeger</c> —
         /// beide Fassungen müssen dieselbe Welt meinen, sonst zeigt die Kostenseite einen
         /// Träger an, den niemand zuordnet.
         ///
-        /// <para>Der Kesselweg kostet eine ZWEITE Abfrage und wird deshalb erst gezogen,
-        /// wenn keine der anderen Anlagen schon geantwortet hat.</para>
+        /// <para><b>Der HILFSSTROM</b> (Anwenderentscheid 22.09.2026): Eine Anlage mit
+        /// <c>Tab_Energieanlagen.Hilfsenergie_Anteil &gt; 0</c> bezieht Strom und wird mit
+        /// dem Stromträger des PROJEKTS bepreist (<see cref="EndenergieAufloeser"/>) — ohne
+        /// zugeordneten Träger fiel dieser Anteil bis hierher still aus. Sie zählt deshalb
+        /// wie eine Anlage der elektrischen Welt.</para>
+        ///
+        /// <para>Der Kesselweg und der Hilfsstromweg kosten je eine ZWEITE Abfrage und
+        /// werden deshalb erst gezogen, wenn keine der anderen Anlagen schon geantwortet
+        /// hat.</para>
         /// </summary>
         internal static bool BrauchtStromTraeger(int projektID)
         {
@@ -466,13 +474,39 @@ namespace WindowsFormsApplication1
                     return true;
                 if (Ganz(r, "ID_Kessel") > 0) mitKessel = true;
             }
-            if (!mitKessel) return false;
+            if (mitKessel)
+            {
+                Dictionary<int, int> kesselBrennstoff =
+                    GeraeteBrennstoff(projektID, "ID_Kessel", "Tab_Heizkessel");
+                foreach (DataRow r in anlagen.Rows)
+                    if (IstElektrokessel(kesselBrennstoff, Ganz(r, "ID_Kessel"))) return true;
+            }
 
-            Dictionary<int, int> kesselBrennstoff =
-                GeraeteBrennstoff(projektID, "ID_Kessel", "Tab_Heizkessel");
-            foreach (DataRow r in anlagen.Rows)
-                if (IstElektrokessel(kesselBrennstoff, Ganz(r, "ID_Kessel"))) return true;
-            return false;
+            return HilfsenergieGepflegt(projektID);
+        }
+
+        /// <summary>
+        /// Führt eine Anlage des Projekts einen HILFSENERGIE-Anteil größer null
+        /// (<c>Tab_Energieanlagen.Hilfsenergie_Anteil</c>, Schema-Schritt 61)? Dann bezieht
+        /// sie Strom, und der Netzbezug dieses Anteils wird mit dem Stromträger des
+        /// Projekts bepreist.
+        ///
+        /// <para>EIGENE, TOLERANTE Abfrage statt einer Spalte in <see cref="Anlagen"/>:
+        /// Eine Datei ohne Schritt 61 ließe sonst jede Trager-Frage dieses Controllers
+        /// scheitern, nicht nur diese eine. Ohne die Spalte gibt es schlicht keinen
+        /// Hilfsstrom — dasselbe Ergebnis wie ein Anteil von null.</para>
+        /// </summary>
+        private static bool HilfsenergieGepflegt(int projektID)
+        {
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM [" + SchemaKatalog.TAB_ENERGIEANLAGEN + "] " +
+                    "WHERE ID_Projekt = ? AND [" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] > 0",
+                    new DbParam("@p", (Int32)projektID));
+                return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
+            }
+            catch { return false; }
         }
 
         /// <summary>
