@@ -62512,6 +62512,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnung nominal ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_NOMINAL {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_NOMINAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Abschreibungen als Zahlung · Restwert linear — dokumentierte Abweichung von 6.4 ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen benannt ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_RISIKO {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_RISIKO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern nicht berücksichtigt ähnelt.
+        /// </summary>
+        public static string WIRT_DEKL_STEUERN {
+            get {
+                return ResourceManager.GetString("WIRT_DEKL_STEUERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Preis BEHG [€/t] (0 = Pfad): ähnelt.
         /// </summary>
         public static string WIRT_DLG_CO2 {
@@ -63205,6 +63241,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Amortisation im Betrachtungszeitraum ähnelt.
+        /// </summary>
+        public static string WIRT_GRUND_KEINE_AMORTISATION {
+            get {
+                return ResourceManager.GetString("WIRT_GRUND_KEINE_AMORTISATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Der elektrischen Erzeugung (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab) ist kein Energieträger zugeordnet. Ausweg: unter „Berichte &amp; Kosten › Energieträger“ einen Stromträger zuordnen. ähnelt.
         /// </summary>
         public static string WIRT_GRUND_KEIN_STROMTRAEGER {
@@ -63277,6 +63322,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Zinsfuß bestimmbar ähnelt.
+        /// </summary>
+        public static string WIRT_IZF_KEIN_WERT {
+            get {
+                return ResourceManager.GetString("WIRT_IZF_KEIN_WERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrdeutig — die Differenzreihe wechselt {0}-mal das Vorzeichen, die Zinsfußgleichung hat mehrere Lösungen (Anhang C) ähnelt.
+        /// </summary>
+        public static string WIRT_IZF_MEHRDEUTIG {
+            get {
+                return ResourceManager.GetString("WIRT_IZF_MEHRDEUTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Amortisation ähnelt.
         /// </summary>
         public static string WIRT_KACHEL_AMORTISATION {
@@ -63309,15 +63372,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KACHEL_IRR {
             get {
                 return ResourceManager.GetString("WIRT_KACHEL_IRR", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
-        /// </summary>
-        public static string WIRT_KACHEL_KEINE {
-            get {
-                return ResourceManager.GetString("WIRT_KACHEL_KEINE", resourceCulture);
             }
         }
         
@@ -63808,6 +63862,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nachrichtlich (Anhang C) ähnelt.
+        /// </summary>
+        public static string WIRT_KZ_NACHRICHTLICH {
+            get {
+                return ResourceManager.GetString("WIRT_KZ_NACHRICHTLICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vergleichsgruppe: ähnelt.
         /// </summary>
         public static string WIRT_LBL_GRUPPE {
@@ -64042,6 +64105,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nachweis liegt mit der nächsten Rechnung vor ähnelt.
+        /// </summary>
+        public static string WIRT_NACHWEIS_NAECHSTE_RECHNUNG {
+            get {
+                return ResourceManager.GetString("WIRT_NACHWEIS_NAECHSTE_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tarif dieses Rechenlaufs ähnelt.
         /// </summary>
         public static string WIRT_NACHWEIS_TARIF {
@@ -64191,6 +64263,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_REIHE_STROMSTEUER_ENTLASTUNG {
             get {
                 return ResourceManager.GetString("WIRT_REIHE_STROMSTEUER_ENTLASTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/% ähnelt.
+        /// </summary>
+        public static string WIRT_SENS_EINHEIT_PROZENT {
+            get {
+                return ResourceManager.GetString("WIRT_SENS_EINHEIT_PROZENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/%-Pkt. ähnelt.
+        /// </summary>
+        public static string WIRT_SENS_EINHEIT_PUNKT {
+            get {
+                return ResourceManager.GetString("WIRT_SENS_EINHEIT_PUNKT", resourceCulture);
             }
         }
         
@@ -64443,6 +64533,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_SZEN_ERWARTET {
             get {
                 return ResourceManager.GetString("WIRT_SZEN_ERWARTET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Eins [rest der Zeichenfolge wurde abgeschnitten]&amp;quot; ähnelt.
+        /// </summary>
+        public static string WIRT_SZEN_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_SZEN_HINWEIS", resourceCulture);
             }
         }
         

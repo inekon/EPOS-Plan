@@ -9148,9 +9148,6 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="WIRT_KACHEL_IRR" xml:space="preserve">
     <value>Interner Zinsfuß</value>
   </data>
-  <data name="WIRT_KACHEL_KEINE" xml:space="preserve">
-    <value>keine</value>
-  </data>
   <data name="WIRT_KACHEL_KW" xml:space="preserve">
     <value>Kapitalwert ggü. Stamm</value>
   </data>
@@ -16184,6 +16181,42 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   </data>
   <data name="WIRT_PV_HERLEITUNG" xml:space="preserve">
     <value>Eigenverbrauchsquote und Einspeiseanteil der Photovoltaik sind aus der Stundensimulation abgeleitet, nicht als Annahme gesetzt.</value>
+  </data>
+  <data name="WIRT_SZEN_HINWEIS" xml:space="preserve">
+    <value>Was ein Szenario heute variiert — und was nicht. Ungünstig und Günstig verändern gegenüber Erwartet den Kalkulationszins, die drei Preissteigerungsraten (Energie, Betrieb, Investition und Ersatz), die Investition der Positionen ohne eigenen Szenariowert ({0} %), die Erträge aus Einspeisung und Photovoltaik-Vergütung ({1} %) und die Nutzungsdauer der Positionen ohne eigenen Szenariowert ({2} a). In allen drei Szenarien gleich bleiben der Betrachtungszeitraum, die Energiepreise je Träger, die Erlössätze (Einspeisevergütung, Direktvermarktung), die Mengen aus der Simulation und alle gesetzlichen Sätze.</value>
+  </data>
+  <data name="WIRT_DEKL_NOMINAL" xml:space="preserve">
+    <value>Rechnung nominal</value>
+  </data>
+  <data name="WIRT_DEKL_STEUERN" xml:space="preserve">
+    <value>Energie- und Stromsteuerentlastungen berücksichtigt · Ertragsteuern nicht berücksichtigt</value>
+  </data>
+  <data name="WIRT_DEKL_RESTWERT" xml:space="preserve">
+    <value>keine Abschreibungen als Zahlung · Restwert linear — dokumentierte Abweichung von 6.4</value>
+  </data>
+  <data name="WIRT_DEKL_RISIKO" xml:space="preserve">
+    <value>Risikozuschlag nicht angesetzt (6.5 optional) · nicht monetäre Wirkungen benannt</value>
+  </data>
+  <data name="WIRT_KZ_NACHRICHTLICH" xml:space="preserve">
+    <value>nachrichtlich (Anhang C)</value>
+  </data>
+  <data name="WIRT_IZF_MEHRDEUTIG" xml:space="preserve">
+    <value>mehrdeutig — die Differenzreihe wechselt {0}-mal das Vorzeichen, die Zinsfußgleichung hat mehrere Lösungen (Anhang C)</value>
+  </data>
+  <data name="WIRT_IZF_KEIN_WERT" xml:space="preserve">
+    <value>kein Zinsfuß bestimmbar</value>
+  </data>
+  <data name="WIRT_GRUND_KEINE_AMORTISATION" xml:space="preserve">
+    <value>keine Amortisation im Betrachtungszeitraum</value>
+  </data>
+  <data name="WIRT_NACHWEIS_NAECHSTE_RECHNUNG" xml:space="preserve">
+    <value>Nachweis liegt mit der nächsten Rechnung vor</value>
+  </data>
+  <data name="WIRT_SENS_EINHEIT_PUNKT" xml:space="preserve">
+    <value>€/%-Pkt.</value>
+  </data>
+  <data name="WIRT_SENS_EINHEIT_PROZENT" xml:space="preserve">
+    <value>€/%</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Szenariowerte aus zwei Quellen: Gepflegte Best-/Worst-Case-Felder der Kostenpositionen (Betrag und Nutzungsdauer) haben Vorrang; wo keiner gepflegt ist, gilt der pauschale Parametersatz des Szenarios (Zins, Preissteigerung Energie und Betrieb, Investitions-, Ertrags- und Nutzungsdaueränderung). Investitionsgekoppelte Betriebskosten folgen dem Investitionsausschlag des Szenarios. Die Preissteigerung der kapitalgebundenen Kosten p_I indiziert die Ersatzbeschaffungen und die Preisbasis des Restwerts; ohne eigene Pflege gilt sie „wie Betrieb“ (p_B), im Szenario mit demselben Abstand von 1 Prozentpunkt wie p_E und p_B.</value>

@@ -216,7 +216,7 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die Werte EINER festen Ankerzeile — „Nettobarwert über T" im Szenario
-        /// „Erwartet" (Zeile 20). Sie ist der Zahlenanker des Blattes: Bewegt sich
+        /// „Erwartet" (Zeile 24). Sie ist der Zahlenanker des Blattes: Bewegt sich
         /// der Rechenweg, fällt dieser Fall, auch wenn die Struktur steht.
         ///
         /// <para>Gegengeprüft gegen das Ende des Kapitalwert-Verlaufs (Jahr 20,
@@ -231,6 +231,11 @@ namespace EPOS.Kern.Tests
         /// nach Komponente, die Prüfgruppe bekommt dadurch den Kopf „projektweit" und
         /// seine Zwischensumme dazu. Die ZAHLEN sind wieder unverändert; U6 verteilt,
         /// es rechnet nicht.</para>
+        ///
+        /// <para><b>ETAPPE E5:</b> Und von 22 auf 24 — die Kennzahlen stehen in der
+        /// Reihenfolge der Kennzahltafel des Mockups: Differenz, Annuität, Amortisation
+        /// (Zinsfuß und Gestehungskosten führt die Prüfgruppe nicht), zuletzt der
+        /// Nettobarwert absolut. Die ZAHLEN sind unverändert; E5 ordnet, es rechnet nicht.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -247,13 +252,18 @@ namespace EPOS.Kern.Tests
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
 
-                Assert.Equal("Nettobarwert über T [€]", w.Cell(22, 1).GetString());
-                Assert.Equal(-178529.70, w.Cell(22, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(22, 3).GetDouble(), 2);
+                Assert.Equal("Nettobarwert über T [€]", w.Cell(24, 1).GetString());
+                Assert.Equal(-178529.70, w.Cell(24, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(24, 3).GetDouble(), 2);
 
-                // ANWENDERENTSCHEID Q19 (E2): Die Differenzkennzahl steht DARÜBER.
+                // ANWENDERENTSCHEID Q19 (E2): Die Differenzkennzahl steht DARÜBER — und
+                // seit E5 unmittelbar unter ihr Annuität und Amortisation (nachrichtlich).
                 Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(21, 1).GetString());
                 Assert.Equal(44632.42, w.Cell(21, 3).GetDouble(), 2);
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_ZEILE_ANNUITAET,
+                             w.Cell(22, 1).GetString());
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_ZEILE_AMORTISATION,
+                             w.Cell(23, 1).GetString());
 
                 // AUFTRAG U6: Die Zwischensumme des einzigen Komponentenblocks IST hier
                 // die Summe des Blocks A — die Gliederung ordnet, sie rechnet nicht.
