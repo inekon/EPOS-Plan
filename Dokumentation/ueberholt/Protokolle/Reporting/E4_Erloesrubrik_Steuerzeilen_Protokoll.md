@@ -128,10 +128,10 @@ neu gerechnet ist.
   (heutiger Stand) oder *ohne jede Eigenerzeugung* (Mockup-Beispiel)? Nur im zweiten Fall enthält die vermiedene Menge den
   PV-Eigenverbrauch und die § 9b-Korrektur greift auch auf ihn; betroffen `VermiedenArbeit`, `VermiedenLeistung`,
   `VermiedenGesamt`, `VermiedenEntlastung9b` — Ausweisgrößen, aber gespeicherte Spalten; Kapitalwert unberührt.
-- **U6‑Q2:** Block-A-Kopf „projektweit" kurz belassen oder zweiter Schlüssel „projektweit — hängt an keiner Anlage"?
-- **U6‑Q3:** Komponentenname „Kessel" statt „Gas-Brennwertkessel" bestätigen?
-- **U7‑Q1:** „Herleitung" als Titel der Herleitungszeile für beide Inhalte (Herleitung und Grund) belassen?
-- **U7‑Q2:** Vor U7 gerechnete Stände zeigen eine Energiesteuerzeile; ein Nachziehlauf ist nicht vorgesehen (Nr. 31:
-  kein Nachziehlauf) — bestätigen, dass der nächste Lauf genügt?
+- **U6‑Q2 bis U7‑Q2 — entschieden 22.09.2026 (Anwender, nach Empfehlung):** Block-A-Kopf „projektweit" bleibt kurz
+  (kein zweiter Schlüssel); Komponentenname „Kessel" statt des Anlagennamens; „Herleitung" bleibt der eine Titel der
+  Herleitungszeile für Herleitung wie Grund; vor U7 gerechnete Stände zeigen bis zum nächsten Lauf die eine
+  Energiesteuerzeile, kein Nachziehlauf (wie Nr. 31). Das Mockup ist an den zwei Kopfwortlauten der Kategorie 7
+  angeglichen („projektweit", „Kessel"); die Abweichungen 2 und 3 oben sind damit der abgenommene Stand.
 - **Mockup-Nachzug:** Schlüsseltafeln (die `geplant`-Marken zu U6 und U7, die neuen Schlüssel aus Abweichung 3 und 4) und
   Anhangzeilen U6/U7 auf „erledigt" — mit den Papieren dieser Statuszeile.
