@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 5;
+        public const int FASSUNG = 6;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -146,6 +146,19 @@ namespace WindowsFormsApplication1
             new Dictionary<string, string>(StringComparer.Ordinal);
 
         /// <summary>
+        /// AUFTRAG U6 (Fassung 6) — die Aufteilung der vermiedenen Stromkosten auf die
+        /// Anlagen: Mengen, Verteilschluessel und Naeherungskennzeichen.
+        ///
+        /// <para>Einem Umschlag der Fassung 1 bis 5 fehlt sie; die Rubrik bleibt fuer
+        /// diesen Stand bei der EINEN projektweiten Kette — genau die Auskunft, die ein
+        /// damals gebuchter Lauf traegt. Eine Aufteilung zu behaupten, die er nicht
+        /// gerechnet hat, waere schlimmer als keine.</para>
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.VermiedenJeAnlage"/>
+        public List<VermiedenAnlageNachweis> VermiedenJeAnlage =
+            new List<VermiedenAnlageNachweis>();
+
+        /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
         /// sie auch wieder ein, ohne zu klagen.
@@ -192,7 +205,9 @@ namespace WindowsFormsApplication1
                     EnergiesteuerNachweise = e.EnergiesteuerNachweise
                                            ?? new List<EnergiesteuerNachweis>(),
                     PositionsGruende = e.PositionsGruende
-                                     ?? new Dictionary<string, string>(StringComparer.Ordinal)
+                                     ?? new Dictionary<string, string>(StringComparer.Ordinal),
+                    VermiedenJeAnlage = e.VermiedenJeAnlage
+                                      ?? new List<VermiedenAnlageNachweis>()
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -252,6 +267,8 @@ namespace WindowsFormsApplication1
                     u.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>();
                 if (u.PositionsGruende == null)
                     u.PositionsGruende = new Dictionary<string, string>(StringComparer.Ordinal);
+                if (u.VermiedenJeAnlage == null)
+                    u.VermiedenJeAnlage = new List<VermiedenAnlageNachweis>();
                 return u;
             }
             catch { return null; }
@@ -287,6 +304,11 @@ namespace WindowsFormsApplication1
                                      ?? new List<EnergiesteuerNachweis>();
             e.PositionsGruende = PositionsGruende
                                ?? new Dictionary<string, string>(StringComparer.Ordinal);
+
+            // AUFTRAG U6 — die Aufteilung gibt es erst ab Fassung 6. Ein aelterer
+            // Umschlag traegt eine leere Liste, und die Rubrik bleibt fuer diesen Stand
+            // bei der einen projektweiten Kette.
+            e.VermiedenJeAnlage = VermiedenJeAnlage ?? new List<VermiedenAnlageNachweis>();
         }
     }
 }

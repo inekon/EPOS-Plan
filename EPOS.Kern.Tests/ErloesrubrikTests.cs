@@ -601,6 +601,311 @@ namespace EPOS.Kern.Tests
             Assert.Null(grund.ExcelWert(e));       // keine Zahl in der Wertspalte
         }
 
+        // =================================================================
+        //  AUFTRAG U6 — die Komponente gliedert innen (Konzept § 2.6, Q15/A12)
+        // =================================================================
+
+        /// <summary>
+        /// <b>DIE ZAHLENPROBE DER ETAPPE</b> (Mockup Kategorie 7, Abschnitt „Erlösrubrik"):
+        /// Die § 9b-Kette ergibt 339.753,6 − 23.594,0 = 316.159,6 €/a, und sie teilt
+        /// sich nach den Eigenverbrauchsmengen je Anlage auf
+        /// <b>293.245,6</b> (Blockheizkraftwerk, 1.179,7 − 85,5 MWh) und
+        /// <b>22.914,0</b> (Photovoltaik, 85,5 MWh).
+        ///
+        /// <para>Gemessen wird der VERTEILSCHLÜSSEL selbst — er ist die eine Stelle, an
+        /// der die Aufteilung entsteht. Die Gegenprobe steht gleich darunter: Die Summe
+        /// der Anteile ist bitgenau die projektweite Größe; verteilt wird, nicht
+        /// gerechnet.</para>
+        /// </summary>
+        [Fact]
+        public void Zahlenprobe_U6_die_vermiedenen_Kosten_teilen_sich_nach_Eigenverbrauch()
+        {
+            const double MENGE = 1179.7;                 // vermiedener Bezug [MWh/a]
+            const double PV_MWH = 85.5;                  // Eigenverbrauch Photovoltaik
+            const double BHKW_MWH = MENGE - PV_MWH;      // 1.094,2 — der Rest
+            const double ARBEIT = MENGE * 1000.0 * 0.2880;        // 28,80 ct/kWh
+            const double ENTLASTUNG = MENGE * 20.00;              // § 9b, 20,00 €/MWh
+
+            List<VermiedenAnlageNachweis> zeilen = VermiedenAnlageNachweis.Verteile(
+                new List<VermiedenAnlageNachweis>
+                {
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_BHKW, EigenMWh = BHKW_MWH },
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_PV, EigenMWh = PV_MWH }
+                },
+                MENGE, ARBEIT, ENTLASTUNG);
+
+            Assert.Equal(2, zeilen.Count);
+            VermiedenAnlageNachweis bhkw = zeilen[0];
+            VermiedenAnlageNachweis pv = zeilen[1];
+
+            Assert.Equal(BHKW_MWH, bhkw.MengeMWh, 4);
+            Assert.Equal(PV_MWH, pv.MengeMWh, 4);
+
+            // Blockheizkraftwerk: 1.094,2 MWh × 28,80 ct − 1.094,2 MWh × 20,00 €/MWh
+            Assert.Equal(315129.6, bhkw.ArbeitEur, 2);
+            Assert.Equal(21884.0, bhkw.Entlastung9bEur, 2);
+            Assert.Equal(293245.6, bhkw.WirksamEur, 2);
+
+            // Photovoltaik: 85,5 MWh × 28,80 ct − 85,5 MWh × 20,00 €/MWh
+            Assert.Equal(24624.0, pv.ArbeitEur, 2);
+            Assert.Equal(1710.0, pv.Entlastung9bEur, 2);
+            Assert.Equal(22914.0, pv.WirksamEur, 2);
+
+            // … und zusammen 316.159,6 €/a — die Zahl der Abnahme.
+            Assert.Equal(316159.6, bhkw.WirksamEur + pv.WirksamEur, 2);
+
+            // Verteilt, nicht gerechnet: die Summe ist die Ausgangsgröße.
+            Assert.Equal(MENGE, bhkw.MengeMWh + pv.MengeMWh, 10);
+            Assert.Equal(ARBEIT, bhkw.ArbeitEur + pv.ArbeitEur, 10);
+            Assert.Equal(ENTLASTUNG, bhkw.Entlastung9bEur + pv.Entlastung9bEur, 10);
+
+            // Zwei Anlagen teilen — der Schlüssel ist die Näherung V-4 und sagt es.
+            Assert.True(bhkw.IstNaeherung);
+            Assert.True(pv.IstNaeherung);
+        }
+
+        /// <summary>
+        /// Bei genau EINER Anlage ist die Aufteilung exakt — sie bekommt alles und
+        /// trägt kein Näherungskennzeichen. Ohne Eigenverbrauch gibt es gar keine
+        /// Aufteilung; eine ohne Schlüssel wäre eine Behauptung.
+        /// </summary>
+        [Fact]
+        public void Eine_Anlage_bekommt_alles_und_ohne_Schluessel_gibt_es_keine_Aufteilung()
+        {
+            List<VermiedenAnlageNachweis> eine = VermiedenAnlageNachweis.Verteile(
+                new List<VermiedenAnlageNachweis>
+                {
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_BHKW, EigenMWh = 20 }
+                },
+                20, 4662, 400);
+
+            Assert.Single(eine);
+            Assert.Equal(1.0, eine[0].Anteil, 10);
+            Assert.Equal(4662.0, eine[0].ArbeitEur, 6);
+            Assert.Equal(4262.0, eine[0].WirksamEur, 6);
+            Assert.False(eine[0].IstNaeherung);
+
+            Assert.Empty(VermiedenAnlageNachweis.Verteile(
+                new List<VermiedenAnlageNachweis>
+                {
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_BHKW, EigenMWh = 0 }
+                },
+                20, 4662, 400));
+            Assert.Empty(VermiedenAnlageNachweis.Verteile(null, 20, 4662, 400));
+        }
+
+        /// <summary>
+        /// <b>Die Gegenprobe zum ganzen Umbau:</b> Die Zwischensummen der
+        /// Komponentenblöcke ergeben zusammen GENAU die Blocksumme A — dieselbe Zahl
+        /// wie vor U6. Die Gliederung ordnet, sie rechnet nicht.
+        /// </summary>
+        [Fact]
+        public void Die_Zwischensummen_ergeben_zusammen_die_Blocksumme_A()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            double teile = 0;
+            int bloecke = 0;
+            foreach (WirtZeile z in zeilen)
+            {
+                if (!z.IstTeilsumme || z.Block != WirtZeile.BLOCK_A) continue;
+                bloecke++;
+                teile += z.Wert(e).Value;
+            }
+
+            Assert.True(bloecke >= 2, "Die Rubrik führt keine zwei Komponentenblöcke — " +
+                                      "der Prüffall misst nichts.");
+            Assert.Equal(14575.0, teile, 6);
+            Assert.Equal(Zeile(zeilen, "ERL_A_SUMME").Wert(e).Value, teile, 6);
+        }
+
+        /// <summary>
+        /// Jede Zeile der Rubrik trägt ihren Anlagenbezug, und zwar den richtigen:
+        /// § 53/§ 53a den Brennstoff der Stromerzeugung (Blockheizkraftwerk), § 54 den
+        /// Heizstoff (Kessel), § 9b den Netzbezug (projektweit — er hängt am Restbezug,
+        /// nicht an einer Anlage).
+        /// </summary>
+        [Fact]
+        public void Jede_Zeile_traegt_ihren_Anlagenbezug()
+        {
+            List<WirtZeile> zeilen = Rubrik(Lauf());
+
+            Assert.Equal(WirtZeile.KOMPONENTE_BHKW, Zeile(zeilen, "ERL_A_KWKG").Komponente);
+            Assert.Equal(WirtZeile.KOMPONENTE_BHKW,
+                         Zeile(zeilen, "ERL_A_ENERGIESTEUER").Komponente);
+            Assert.Equal(WirtZeile.KOMPONENTE_KESSEL,
+                         Zeile(zeilen, "ERL_A_ENERGIESTEUER_54").Komponente);
+            Assert.Equal(WirtZeile.KOMPONENTE_PROJEKTWEIT,
+                         Zeile(zeilen, "ERL_A_STROMST_ENTLASTUNG").Komponente);
+
+            // Und die Köpfe stehen in der Reihenfolge der Rubrik: BHKW, Kessel,
+            // projektweit — „projektweit" zuletzt.
+            var koepfe = new List<string>();
+            foreach (WirtZeile z in zeilen)
+                if (z.IstKomponentenkopf && z.Block == WirtZeile.BLOCK_A)
+                    koepfe.Add(z.Komponente);
+            Assert.Equal(new[] { WirtZeile.KOMPONENTE_BHKW, WirtZeile.KOMPONENTE_KESSEL,
+                                 WirtZeile.KOMPONENTE_PROJEKTWEIT }, koepfe);
+        }
+
+        /// <summary>
+        /// Der LEISTUNGSANTEIL bleibt projektweit (Anwenderentscheid Q15): Er hängt an
+        /// der Bezugsspitze des ganzen Projekts. In keinem Komponentenblock steht er.
+        /// Fehlt die Spitze, steht dort eine Nullzeile MIT Grund statt einer stillen 0.
+        /// </summary>
+        [Fact]
+        public void Der_Leistungsanteil_bleibt_projektweit_und_nennt_die_fehlende_Spitze()
+        {
+            WirtschaftlichkeitErgebnis e = MitAufteilung();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            WirtZeile leistung = Zeile(zeilen, "VERMIEDEN_LEISTUNG");
+            Assert.NotNull(leistung);
+            Assert.Equal(WirtZeile.KOMPONENTE_PROJEKTWEIT, leistung.Komponente);
+            Assert.Equal(WirtZeile.BLOCK_B, leistung.Block);
+
+            // Ohne gerechnete Bezugsspitze: 0 mit Grund, nicht 0 ohne Auskunft.
+            Assert.Null(e.BezugsspitzeKW);
+            string anzeige = leistung.Anzeige(e, CultureInfo.GetCultureInfo("de-DE"));
+            Assert.Contains("Bezugsspitze", anzeige);
+
+            // Mit gerechneter Spitze steht der Betrag da, ohne Zusatz.
+            e.BezugsspitzeKW = 480.0;
+            e.VermiedenLeistungJahr = -4180.0;
+            WirtZeile mitSpitze = Zeile(Rubrik(e), "VERMIEDEN_LEISTUNG");
+            Assert.DoesNotContain("Bezugsspitze",
+                                  mitSpitze.Anzeige(e, CultureInfo.GetCultureInfo("de-DE")));
+            Assert.Equal(-4180.0, mitSpitze.Wert(e).Value, 6);
+        }
+
+        /// <summary>
+        /// Mit Aufteilung zerfällt der Ausweis in Komponentenblöcke: je Anlage der
+        /// Bruttobetrag, der Abzug und die Abschlusszeile „vermiedene Kosten wirksam".
+        /// Die eine projektweite Kette von vor U6 steht dann NICHT mehr daneben — sonst
+        /// stünde derselbe Betrag zweimal im Block.
+        /// </summary>
+        [Fact]
+        public void Mit_Aufteilung_zerfaellt_der_Ausweis_in_Komponentenbloecke()
+        {
+            WirtschaftlichkeitErgebnis e = MitAufteilung();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            Assert.Equal(315129.6, Zeile(zeilen, "VERMIEDEN_BRUTTO_BHKW").Wert(e).Value, 2);
+            Assert.Equal(-21884.0, Zeile(zeilen, "ERL_B1_ABZUG_9B_BHKW").Wert(e).Value, 2);
+            Assert.Equal(293245.6, Zeile(zeilen, "ERL_B1_EFFEKTIV_BHKW").Wert(e).Value, 2);
+            Assert.Equal(24624.0, Zeile(zeilen, "VERMIEDEN_BRUTTO_PV").Wert(e).Value, 2);
+            Assert.Equal(22914.0, Zeile(zeilen, "ERL_B1_EFFEKTIV_PV").Wert(e).Value, 2);
+
+            // Die projektweite Kette von vor U6 ist verschwunden.
+            Assert.Null(Zeile(zeilen, "VERMIEDEN_GESAMT"));
+            Assert.Null(Zeile(zeilen, "ERL_B1_EFFEKTIV"));
+
+            // Die Abschlusszeilen sind KEINE Blocksumme — Block B wird nicht summiert.
+            foreach (WirtZeile z in zeilen)
+                if (z.Block == WirtZeile.BLOCK_B && z.IstSumme) Assert.True(z.IstTeilsumme);
+        }
+
+        /// <summary>
+        /// Die Herleitungszeile unter dem Bruttobetrag nennt Menge und Anteil — und das
+        /// Wort „Näherung", sobald mehr als eine Anlage teilt (Entscheid A12). Als
+        /// TEXTzeile erreicht sie auch Excel, ohne dort eine Wertspalte zu verderben.
+        /// </summary>
+        [Fact]
+        public void Die_Herleitung_nennt_den_Anteil_und_die_Naeherung()
+        {
+            WirtschaftlichkeitErgebnis e = MitAufteilung();
+            WirtZeile herleitung = Zeile(Rubrik(e), "VERMIEDEN_HERLEITUNG_PV");
+
+            Assert.NotNull(herleitung);
+            Assert.True(herleitung.IstText);
+            string text = herleitung.Text(e);
+            Assert.Contains("85,5", text);
+            Assert.Contains("Näherung", text);
+            Assert.Null(herleitung.ExcelWert(e));       // keine Zahl in der Wertspalte
+        }
+
+        /// <summary>
+        /// DER RÜCKFALL: Ein vor U6 gebuchter Stand trägt keine Aufteilung. Dann bleibt
+        /// es bei der einen projektweiten Kette — Komponentenblöcke ohne Zahlen wären
+        /// eine Behauptung. Genau dieses Verhalten zeigt <c>Lauf()</c>, und alle
+        /// B7-Prüfstände darüber messen weiterhin dasselbe.
+        /// </summary>
+        [Fact]
+        public void Ohne_Aufteilung_bleibt_es_bei_der_einen_projektweiten_Kette()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            Assert.Empty(e.VermiedenJeAnlage);
+
+            List<WirtZeile> zeilen = Rubrik(e);
+            Assert.NotNull(Zeile(zeilen, "VERMIEDEN_GESAMT"));
+            Assert.NotNull(Zeile(zeilen, "ERL_B1_EFFEKTIV"));
+            Assert.Null(Zeile(zeilen, "VERMIEDEN_BRUTTO_BHKW"));
+            Assert.Equal(WirtZeile.KOMPONENTE_PROJEKTWEIT,
+                         Zeile(zeilen, "VERMIEDEN_GESAMT").Komponente);
+        }
+
+        /// <summary>
+        /// Die neuen Kopf- und Summenzeilen lassen die Wertspalten von Excel NUMERISCH:
+        /// Ein Komponentenkopf trägt gar keinen Wert, eine Zwischensumme eine blanke
+        /// Zahl. Das ist dieselbe Regel, an der die Herkunftszeilen aus U23 hängen.
+        /// </summary>
+        [Fact]
+        public void Kopf_und_Zwischensumme_lassen_die_Excel_Wertspalten_numerisch()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            int koepfe = 0, summen = 0;
+            foreach (WirtZeile z in Rubrik(e))
+            {
+                if (z.IstKomponentenkopf) { koepfe++; Assert.Null(z.ExcelWert(e)); }
+                else if (z.IstTeilsumme)
+                {
+                    summen++;
+                    Assert.False(z.IstText);
+                    Assert.True(z.ExcelWert(e).HasValue);
+                }
+            }
+            Assert.True(koepfe >= 2 && summen >= 2,
+                        "Die Rubrik führt keine zwei Komponentenblöcke — der Prüffall misst nichts.");
+        }
+
+        /// <summary>
+        /// Ein Lauf MIT Aufteilung: das Beispiel der Kategorie 7, auf die Größen des
+        /// Kerns gelegt — 1.179,7 MWh vermiedener Bezug zu 28,80 ct/kWh, davon
+        /// 85,5 MWh Photovoltaik, § 9b mit 20,00 €/MWh.
+        /// </summary>
+        private static WirtschaftlichkeitErgebnis MitAufteilung()
+        {
+            const double MENGE = 1179.7;
+            const double PV_MWH = 85.5;
+            var e = new WirtschaftlichkeitErgebnis
+            {
+                IdProjekt = 1,
+                Anzeige = "Beide Anlagen",
+                Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+                ProduzierendesGewerbe = true,
+                VermiedenArbeitJahr = MENGE * 1000.0 * 0.2880,
+                VermiedenLeistungJahr = 0,
+                VermiedenGesamtJahr = MENGE * 1000.0 * 0.2880,
+                VermiedenMengeMWh = MENGE,
+                VermiedenEntlastung9bJahr = SATZ_9B_EUR_MWH * MENGE
+            };
+            e.VermiedenJeAnlage = VermiedenAnlageNachweis.Verteile(
+                new List<VermiedenAnlageNachweis>
+                {
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_BHKW, EigenMWh = MENGE - PV_MWH },
+                    new VermiedenAnlageNachweis
+                    { Komponente = WirtZeile.KOMPONENTE_PV, EigenMWh = PV_MWH }
+                },
+                e.VermiedenMengeMWh, e.VermiedenArbeitJahr, e.VermiedenEntlastung9bJahr);
+            return e;
+        }
+
         /// <summary>
         /// Das Beispielprojekt der Kategorie 7 als Ergebniszeile — BHKW nach
         /// § 53a Abs. 5, Kessel nach § 54, Sockelbetrag 250 €/a. Die Zahlen stammen

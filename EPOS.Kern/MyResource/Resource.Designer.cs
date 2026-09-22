@@ -62917,6 +62917,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} MWh vermiedener Bezug · Anteil {1} % ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_ANTEIL {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_ANTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vermiedene Stromkosten, brutto [€/a] (Ausweis) ähnelt.
         /// </summary>
         public static string WIRT_ERL_B1_BRUTTO {
@@ -62931,6 +62940,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_B1_EFFEKTIV {
             get {
                 return ResourceManager.GetString("WIRT_ERL_B1_EFFEKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: verteilt nach dem Netto-Stromanteil je Anlage ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_NAEHERUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_NAEHERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die vermiedene Kosten wirksam — {0} [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_B1_WIRKSAM {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_B1_WIRKSAM", resourceCulture);
             }
         }
         
@@ -62967,6 +62994,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_ENERGIEST_SOCKEL {
             get {
                 return ResourceManager.GetString("WIRT_ERL_ENERGIEST_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Bezugsspitze gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE", resourceCulture);
             }
         }
         
@@ -63061,6 +63097,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_KOMPONENTE {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_KOMPONENTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Erlöse und Vorteile — zahlungswirksam (Jahr 1) ähnelt.
         /// </summary>
         public static string WIRT_ERL_KOPF_A {
@@ -63075,6 +63120,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_KOPF_B {
             get {
                 return ResourceManager.GetString("WIRT_ERL_KOPF_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Blockheizkraftwerk ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_K_BHKW {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_K_BHKW", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kessel ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_K_KESSEL {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_K_KESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Photovoltaik ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_K_PV {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_K_PV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die projektweit ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_PROJEKTWEIT {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_PROJEKTWEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe {0} ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_TEILSUMME {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_TEILSUMME", resourceCulture);
             }
         }
         

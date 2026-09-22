@@ -1505,6 +1505,53 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("Sockelbetrag 250", ganz);
     }
 
+    /// <summary>
+    /// AUFTRAG U6 (Anwenderentscheid Q15) — die Vorschau ist nach KOMPONENTEN
+    /// gegliedert: der Block „Blockheizkraftwerk" mit seiner Zwischensumme
+    /// „Summe Blockheizkraftwerk", und zuletzt „projektweit" fuer alles, was an
+    /// keiner Anlage haengt (die § 9b-Entlastung haengt am Restbezug).
+    ///
+    /// <para>Die Vorschau baut dafuer NICHTS eigenes: Sie liest denselben
+    /// Zeilenkatalog wie Ergebnisseite, Wort- und Excelbericht. Genau das ist der
+    /// Pruefgegenstand — eine zweite Gliederung an dieser Stelle waere die Stelle,
+    /// an der die vier Ausgaben auseinanderlaufen.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_gliedert_nach_Komponenten_mit_Zwischensumme()
+    {
+        var ergebnis = new WirtschaftlichkeitErgebnis
+        {
+            IdProjekt = STAMM,
+            Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+            KwkgVbhElektrisch = 5500,
+            KwkgErloesJahr1 = 32022.2,
+            ProduzierendesGewerbe = true,
+            EnergiesteuerJahr1 = 24088.43,
+            EnergiesteuerAufgeteilt = true,
+            Energiesteuer53Jahr1 = 21202.71,
+            Energiesteuer54Jahr1 = 2885.72,
+            StromsteuerEntlastungJahr1 = 28344.0,
+            Zeitstempel = new DateTime(2026, 9, 22, 12, 3, 0)
+        };
+
+        var cut = Aufbauen(ausLauf: new[] { ergebnis });
+
+        var zeilen = new List<string>();
+        foreach (IElement e in Koerper(cut, 7).QuerySelectorAll("p.epos-herleitung"))
+            zeilen.Add(e.TextContent.Trim());
+        string ganz = string.Join(" | ", zeilen);
+
+        // Der Komponentenkopf und seine Zwischensumme.
+        Assert.Contains("Blockheizkraftwerk", ganz);
+        Assert.Contains("Summe Blockheizkraftwerk", ganz);
+        // Der Kessel traegt den § 54 — eine eigene Komponente, nicht das BHKW.
+        Assert.Contains("Summe Kessel", ganz);
+        // Und zuletzt, was an keiner Anlage haengt.
+        Assert.Contains("projektweit", ganz);
+        // Die Gesamtsumme des Blocks A bleibt daneben stehen.
+        Assert.Contains("zahlungswirksam", ganz);
+    }
+
     // =====================================================================
     //  Die Fussleiste — OK und Abbrechen, geschrieben wird im OK-Weg
     //  (Auftrag #286; die Abnahme misst den Datenbankstand, nicht die Anzeige)

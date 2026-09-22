@@ -19737,6 +19737,36 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_ERL_B1_EFFEKTIV" xml:space="preserve">
     <value>Vermiedene Stromkosten, effektiv [€/a] (Ausweis)</value>
   </data>
+  <data name="WIRT_ERL_KOMPONENTE" xml:space="preserve">
+    <value>{0}</value>
+  </data>
+  <data name="WIRT_ERL_PROJEKTWEIT" xml:space="preserve">
+    <value>projektweit</value>
+  </data>
+  <data name="WIRT_ERL_TEILSUMME" xml:space="preserve">
+    <value>Summe {0}</value>
+  </data>
+  <data name="WIRT_ERL_K_BHKW" xml:space="preserve">
+    <value>Blockheizkraftwerk</value>
+  </data>
+  <data name="WIRT_ERL_K_PV" xml:space="preserve">
+    <value>Photovoltaik</value>
+  </data>
+  <data name="WIRT_ERL_K_KESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="WIRT_ERL_B1_ANTEIL" xml:space="preserve">
+    <value>{0} MWh vermiedener Bezug · Anteil {1} %</value>
+  </data>
+  <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
+    <value>Näherung: verteilt nach dem Netto-Stromanteil je Anlage</value>
+  </data>
+  <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
+    <value>vermiedene Kosten wirksam — {0} [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE" xml:space="preserve">
+    <value>keine Bezugsspitze gerechnet</value>
+  </data>
   <data name="WIRT_GRUND_KWKG" xml:space="preserve">
     <value>kein KWK-Zuschlagssatz gepflegt oder Kontingent erschöpft</value>
   </data>

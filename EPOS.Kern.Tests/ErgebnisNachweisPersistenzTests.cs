@@ -420,6 +420,86 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  AUFTRAG U6 — die Aufteilung der vermiedenen Kosten (Fassung 6)
+        // =================================================================
+
+        /// <summary>
+        /// Der Umschlag trägt die Aufteilung je Anlage mit: Komponente, Menge,
+        /// Verteilschlüssel und Näherungskennzeichen. Ohne ihn könnte die Rubrik eines
+        /// gebuchten Stands keine Komponentenblöcke zeichnen — die Ergebnisspalten
+        /// führen nur die projektweiten Summen.
+        /// </summary>
+        [Fact]
+        public void Der_Umschlag_traegt_die_Aufteilung_je_Anlage()
+        {
+            var e = new WirtschaftlichkeitErgebnis
+            {
+                VermiedenArbeitJahr = 339753.6,
+                VermiedenLeistungJahr = -4180.0,
+                VermiedenGesamtJahr = 335573.6,
+                VermiedenMengeMWh = 1179.7,
+                VermiedenEntlastung9bJahr = 23594.0
+            };
+            e.VermiedenJeAnlage.Add(new VermiedenAnlageNachweis
+            {
+                Komponente = WirtZeile.KOMPONENTE_BHKW,
+                Anlage = "BHKW 1",
+                EigenMWh = 1094.2,
+                Anteil = 1094.2 / 1179.7,
+                MengeMWh = 1094.2,
+                ArbeitEur = 315129.6,
+                Entlastung9bEur = 21884.0,
+                IstNaeherung = true
+            });
+
+            string grund;
+            string json = ErgebnisNachweisUmschlag.Schreiben(e, out grund);
+            Assert.Null(grund);
+
+            var zurueck = new WirtschaftlichkeitErgebnis();
+            ErgebnisNachweisUmschlag.Lesen(json).Uebernimm(zurueck);
+
+            Assert.Single(zurueck.VermiedenJeAnlage);
+            VermiedenAnlageNachweis n = zurueck.VermiedenJeAnlage[0];
+            Assert.Equal(WirtZeile.KOMPONENTE_BHKW, n.Komponente);
+            Assert.Equal("BHKW 1", n.Anlage);
+            Assert.Equal(1094.2, n.EigenMWh, 4);
+            Assert.Equal(1094.2, n.MengeMWh, 4);
+            Assert.Equal(315129.6, n.ArbeitEur, 2);
+            Assert.Equal(21884.0, n.Entlastung9bEur, 2);
+            Assert.True(n.IstNaeherung);
+            Assert.Equal(293245.6, n.WirksamEur, 2);
+        }
+
+        /// <summary>
+        /// Ein Umschlag der Fassung 5 — der Stand unmittelbar vor U6 — lädt weiter, und
+        /// zwar OHNE Aufteilung: Er hat keine gerechnet. Die Rubrik bleibt für diesen
+        /// Stand bei der einen projektweiten Kette, statt eine Aufteilung zu behaupten,
+        /// die es nie gab. Die Felder der Fassungen 1 bis 5 bleiben dabei lesbar.
+        /// </summary>
+        [Fact]
+        public void Ein_Umschlag_der_Fassung_5_laedt_ohne_Aufteilung()
+        {
+            ErgebnisNachweisUmschlag alt = ErgebnisNachweisUmschlag.Lesen(
+                "nw1:{\"Version\":5,\"KwkgPauschaleEur\":4320,\"Energiesteuer53Jahr1\":4119," +
+                "\"VermiedenMengeMWh\":20,\"PositionsGruende\":{\"ENERGIEST_54\":\"kein Kessel\"}}");
+
+            Assert.NotNull(alt);
+            Assert.Equal(5, alt.Version);
+
+            var e = new WirtschaftlichkeitErgebnis();
+            alt.Uebernimm(e);
+
+            Assert.Empty(e.VermiedenJeAnlage);
+            // … und alles, was die Fassung 5 konnte, kann sie weiterhin.
+            Assert.True(e.EnergiesteuerAufgeteilt);
+            Assert.Equal(4119.0, e.Energiesteuer53Jahr1, 6);
+            Assert.Equal(4320.0, e.KwkgPauschaleEur, 6);
+            Assert.Equal(20.0, e.VermiedenMengeMWh, 6);
+            Assert.Equal("kein Kessel", e.PositionsGruende[SteuerPosition.ENERGIEST_54]);
+        }
+
+        // =================================================================
         //  Prüfstand
         // =================================================================
 

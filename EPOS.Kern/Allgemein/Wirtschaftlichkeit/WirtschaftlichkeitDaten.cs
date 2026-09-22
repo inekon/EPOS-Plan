@@ -1086,6 +1086,25 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// AUFTRAG U6 (Q15/A12, 22.09.2026) — die AUFTEILUNG der vermiedenen Stromkosten
+        /// auf die Anlagen. Leer = keine Aufteilung im Lauf (kein Rollenmodell, keine
+        /// Eigenverbrauchsmengen) — dann steht die Rubrik wie vor U6 bei EINER
+        /// projektweiten Zeile.
+        ///
+        /// <para><b>Nur Ausweis, nie Rechenweg.</b> Die Summe der Zeilen ist zahlengleich
+        /// der projektweiten Groesse, aus der sie entstanden sind
+        /// (<see cref="VermiedenArbeitJahr"/>, <see cref="VermiedenMengeMWh"/>,
+        /// <see cref="VermiedenEntlastung9bJahr"/>); verteilt wird, nicht gerechnet. Der
+        /// LEISTUNGSANTEIL bleibt projektweit (Anwenderentscheid Q15) und steht deshalb
+        /// in keiner dieser Zeilen.</para>
+        ///
+        /// <para>Im Nachweisumschlag mitgespeichert (Fassung 6) — der gebuchte Stand
+        /// traegt die Komponentenbloecke ebenso wie der frisch gerechnete.</para>
+        /// </summary>
+        public List<VermiedenAnlageNachweis> VermiedenJeAnlage =
+            new List<VermiedenAnlageNachweis>();
+
+        /// <summary>
         /// Betrag, um den die Aufschläge (Netzentgelt, Umlagen, Stromsteuer, Konzession,
         /// Vertrieb) die Energiekosten des Jahres 1 erhöhen [€/a]. 0 = Schalter aus oder
         /// nichts gepflegt. Der Wert steht getrennt, damit die Wirkung sichtbar bleibt,
@@ -1299,6 +1318,134 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
         public double KostenEur;
+    }
+
+    /// <summary>
+    /// AUFTRAG U6 (Befund R8, Anwenderentscheid Q15/A12 vom 22.09.2026) — der Anteil
+    /// EINER Komponente an den vermiedenen Stromkosten.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Die vermiedenen Stromkosten entstehen als
+    /// Differenz zweier PROJEKTweiter Rollenrechnungen (Bezug ohne Anlage gegen
+    /// Reststrom mit Anlage). Wer fragt „was bringt das Blockheizkraftwerk?", bekommt
+    /// aus dieser Differenz keine Antwort — sie kennt die Anlage nicht. Die Strommatrix
+    /// hilft nicht weiter: Sie trennt nach TARIFZONE, nicht nach Anlage (Befund R8).</para>
+    ///
+    /// <para><b>Die Naeherung V‑4, ausgewiesen.</b> Verteilt wird nach dem
+    /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>), also nach dem Netto-Stromanteil
+    /// derselben Groesse, mit der schon der KWKG-Rechner seine Mengen auf die Module
+    /// legt. Bei genau EINER Anlage ist das exakt; bei mehreren ist es eine Annahme, und
+    /// <see cref="IstNaeherung"/> sagt es. Modulscharfe Stundenreihen waeren die
+    /// Alternative — ein Simulationsthema, kein Rubrikthema (A12).</para>
+    ///
+    /// <para><b>Es wird verteilt, nicht gerechnet:</b> Die Summe von
+    /// <see cref="MengeMWh"/>, <see cref="ArbeitEur"/> und
+    /// <see cref="Entlastung9bEur"/> ueber alle Zeilen ist zahlengleich der
+    /// projektweiten Groesse. Kein Kapitalwert, keine Reihe, keine Summe aendert sich.</para>
+    /// </summary>
+    public class VermiedenAnlageNachweis
+    {
+        /// <summary>Sprachneutrale Kennung der Komponente
+        /// (<c>WirtZeile.KOMPONENTE_BHKW</c>, <c>_PV</c>) — kein Anzeigetext.</summary>
+        public string Komponente = "";
+
+        /// <summary>Bezeichner der Anlage — ein Datenwert des Anwenders; leer = die
+        /// Komponente steht fuer mehrere Anlagen (Sammelzeile der Technik).</summary>
+        public string Anlage = "";
+
+        /// <summary>Eigenverbrauch dieser Komponente [MWh/a] — der VERTEILSCHLUESSEL,
+        /// nicht das Ergebnis.</summary>
+        public double EigenMWh;
+
+        /// <summary>Anteil am gesamten Eigenverbrauch [0…1].</summary>
+        public double Anteil;
+
+        /// <summary>Zugeteilte vermiedene Menge [MWh/a].</summary>
+        public double MengeMWh;
+
+        /// <summary>Zugeteilter ARBEITSanteil der vermiedenen Kosten [€/a]. Der
+        /// Leistungsanteil bleibt projektweit (Q15) und steht hier nie.</summary>
+        public double ArbeitEur;
+
+        /// <summary>Zugeteilte entgangene Entlastung nach § 9b StromStG [€/a],
+        /// positiv; in der Rubrik steht sie als Abzug.</summary>
+        public double Entlastung9bEur;
+
+        /// <summary>true, wenn der Verteilschluessel eine Naeherung ist (mehr als eine
+        /// Komponente) — die Zwischensumme sagt es dann (A12).</summary>
+        public bool IstNaeherung;
+
+        /// <summary>Wirksamer Anteil dieser Komponente [€/a] — Arbeit abzueglich der
+        /// entgangenen Entlastung.</summary>
+        public double WirksamEur
+        {
+            get { return ArbeitEur - Entlastung9bEur; }
+        }
+
+        /// <summary>
+        /// AUFTRAG U6 — <b>der Verteilschluessel, an einer Stelle</b>: Er nimmt die
+        /// Eigenverbrauchsmengen je Komponente (<see cref="EigenMWh"/> der uebergebenen
+        /// Zeilen) und legt die projektweiten Groessen anteilig darauf.
+        ///
+        /// <para><b>Verteilt, nicht gerechnet.</b> Die LETZTE Zeile bekommt den Rest,
+        /// damit die Summe der Anteile die projektweite Groesse BITGENAU trifft — eine
+        /// Rubrik, deren Bloecke um ein Rundungsbit neben der Ausgangsgroesse liegen,
+        /// waere ein Fehler, den niemand mehr findet.</para>
+        ///
+        /// <para>Ohne Eigenverbrauch (Summe 0) kommt eine LEERE Liste zurueck; die
+        /// Rubrik bleibt dann bei der einen projektweiten Kette. Eine Aufteilung ohne
+        /// Schluessel waere eine Behauptung.</para>
+        /// </summary>
+        /// <param name="schluessel">Je Komponente eine Zeile mit
+        /// <see cref="Komponente"/>, <see cref="Anlage"/> und <see cref="EigenMWh"/>.</param>
+        public static List<VermiedenAnlageNachweis> Verteile(
+            IList<VermiedenAnlageNachweis> schluessel,
+            double mengeMWh, double arbeitEur, double entlastung9bEur)
+        {
+            var zeilen = new List<VermiedenAnlageNachweis>();
+            if (schluessel == null) return zeilen;
+
+            double summe = 0;
+            foreach (VermiedenAnlageNachweis s in schluessel)
+                if (s != null && s.EigenMWh > 0) summe += s.EigenMWh;
+            if (summe <= 0) return zeilen;
+
+            foreach (VermiedenAnlageNachweis s in schluessel)
+            {
+                if (s == null || s.EigenMWh <= 0) continue;
+                zeilen.Add(new VermiedenAnlageNachweis
+                {
+                    Komponente = s.Komponente ?? "",
+                    Anlage = s.Anlage ?? "",
+                    EigenMWh = s.EigenMWh,
+                    Anteil = s.EigenMWh / summe
+                });
+            }
+            if (zeilen.Count == 0) return zeilen;
+
+            bool naeherung = zeilen.Count > 1;
+            double restMenge = mengeMWh, restArbeit = arbeitEur, restEntlastung = entlastung9bEur;
+            for (int i = 0; i < zeilen.Count; i++)
+            {
+                VermiedenAnlageNachweis n = zeilen[i];
+                n.IstNaeherung = naeherung;
+                if (i == zeilen.Count - 1)
+                {
+                    n.MengeMWh = restMenge;
+                    n.ArbeitEur = restArbeit;
+                    n.Entlastung9bEur = restEntlastung;
+                }
+                else
+                {
+                    n.MengeMWh = mengeMWh * n.Anteil;
+                    n.ArbeitEur = arbeitEur * n.Anteil;
+                    n.Entlastung9bEur = entlastung9bEur * n.Anteil;
+                    restMenge -= n.MengeMWh;
+                    restArbeit -= n.ArbeitEur;
+                    restEntlastung -= n.Entlastung9bEur;
+                }
+            }
+            return zeilen;
+        }
     }
 
     /// <summary>
