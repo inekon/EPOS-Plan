@@ -14,6 +14,55 @@ public sealed class KachelZeile
 
     /// <summary>Leise Zeile darunter: woher der Wert stammt.</summary>
     public string Quelle { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A, Entscheid V‑3): die Einordnung der Kennzahl nach DIN EN 17463
+    /// Anhang C — „nachrichtlich (Anhang C)" an Annuität, Amortisation und internem
+    /// Zinsfuß; leer beim Kapitalwert, dem einzigen Maß der Vorteilhaftigkeit.
+    /// </summary>
+    public string Kennzeichen { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A, Befund A2): eine Warnung, die den Wert stehen lässt — die
+    /// Mehrdeutigkeit des internen Zinsfußes bei mehr als einem Vorzeichenwechsel der
+    /// Differenzreihe; leer = keine.
+    /// </summary>
+    public string Warnung { get; set; } = "";
+}
+
+/// <summary>
+/// ETAPPE E5 (U5) — eine <b>Empfehlungskarte</b> je Version: Stufe und
+/// Kapitalwertdifferenz zur Referenz im Szenario Erwartet (Mockup Kategorie 8, „Lohnt es
+/// sich?"). Die Stufe urteilt über alle drei Szenarien; die Regel steht im Kern
+/// (<c>WirtschaftlichkeitEmpfehlung</c>).
+/// </summary>
+public sealed class EmpfehlungKarte
+{
+    /// <summary>Sprachneutrale Stufe „empfohlen" — die Stilklasse der Karte.</summary>
+    public const string STUFE_JA = "JA";
+
+    /// <summary>Sprachneutrale Stufe „bedingt empfohlen".</summary>
+    public const string STUFE_BEDINGT = "BEDINGT";
+
+    /// <summary>Sprachneutrale Stufe „nicht empfohlen".</summary>
+    public const string STUFE_NEIN = "NEIN";
+
+    /// <summary>Der Anzeigename der Version.</summary>
+    public string Name { get; set; } = "";
+
+    /// <summary>Die Stufe als Schlüssel (<see cref="STUFE_JA"/>, <see cref="STUFE_BEDINGT"/>,
+    /// <see cref="STUFE_NEIN"/>).</summary>
+    public string Stufe { get; set; } = "";
+
+    /// <summary>Die Stufe als Text (<c>WIRT_EMPF_STUFE_*</c>), bei fehlender Bandbreite
+    /// mit dem Zusatz „Bandbreite nicht berechnet".</summary>
+    public string StufeText { get; set; } = "";
+
+    /// <summary>ΔKW Erwartet mit Vorzeichen und Einheit („+1.660.205 €").</summary>
+    public string Differenz { get; set; } = "";
+
+    /// <summary>Fehlen Worst oder Best? Dann urteilt die Stufe allein nach Erwartet.</summary>
+    public bool BandbreiteFehlt { get; set; }
 }
 
 /// <summary>
@@ -135,8 +184,27 @@ public sealed class ErgebnisAnsicht
     ///
     /// <para>Leer = keine Variante mit Erwartet-Ergebnis gegenüber dem Stamm; dann
     /// wird die Zeile gar nicht erst gezeichnet.</para>
+    ///
+    /// <para><b>ETAPPE E5 (U5):</b> Der Satz entsteht aus denselben Einstufungen wie
+    /// <see cref="Empfehlungen"/> und nennt die Referenz beim Namen.</para>
     /// </summary>
     public string Empfehlungszeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (U5): die Empfehlungskarten der gewählten Versionen — je Version mit
+    /// Erwartet-Ergebnis gegen die Referenz eine Karte, in der Reihenfolge der Gruppe.
+    /// Sie hängen wie der Vorschlagssatz an der Vergleichswahl, nicht am gezeigten
+    /// Szenario.
+    /// </summary>
+    public IReadOnlyList<EmpfehlungKarte> Empfehlungen { get; set; } = Array.Empty<EmpfehlungKarte>();
+
+    /// <summary>
+    /// ETAPPE E5 (U4): die <b>Bandbreite</b> der Kapitalwertdifferenz über die drei
+    /// Szenarien nebeneinander — Spalten Version · Ungünstig · Erwartet · Günstig ·
+    /// Spanne · Einstufung, als erste Zeile die Referenz. Sie folgt der Vergleichswahl,
+    /// nicht der Szenario-Klappliste. Leer (keine Zeilen) = nichts gerechnet.
+    /// </summary>
+    public ErgebnisMatrix Bandbreite { get; set; } = new();
 }
 
 /// <summary>
@@ -181,6 +249,26 @@ public sealed class WirtschaftlichkeitStand
     /// nicht dasteht, ist ein Fehler.
     /// </summary>
     public string Vereinfachungszeile { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (U39, Konzept § 2.13 (3)): die Hinweiszeilen „k von n Positionen ohne
+    /// Nutzungsdauer" — je Satz eine Zeile, nur wo der Betrachtungszeitraum über der
+    /// Vorgabe der Technik liegt. Ein Prüfauftrag, keine Fehlermeldung; leer = nichts
+    /// zu prüfen.
+    /// </summary>
+    public IReadOnlyList<string> Nutzungsdauerhinweise { get; set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// ETAPPE E5 (U10, Konzept § 2.11.7): der Hinweistext unter der Annahmentafel — was
+    /// ein Szenario heute variiert und was nicht, mit den wirksamen Spannen.
+    /// </summary>
+    public string Szenariohinweis { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung nach DIN EN 17463 — nominal ·
+    /// Steuern · Restwert · Risiko, in dieser Reihenfolge.
+    /// </summary>
+    public IReadOnlyList<string> Deklarationen { get; set; } = Array.Empty<string>();
 
     /// <summary>
     /// AUFTRAG #325 (Anwenderwunsch 17.09.2026): der GEPFLEGTE Text der nicht

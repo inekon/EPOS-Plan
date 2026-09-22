@@ -306,8 +306,19 @@ namespace WindowsFormsApplication1
             // ETAPPE W5-B-11 (Anwenderentscheid 09.09.2026): die zwei VALERI-Ausweise
             // des Nachweisblocks. Sie haengen am Projekt, nicht an der Wahl - deshalb
             // stehen sie am Stand und nicht an der Ansicht.
-            stand.Zeitraumzeile = Zeitraumzeile();
+            // ETAPPE E5 (U39): Die Positionen sammelt seither der KERN
+            // (NutzungsdauerHinweisCtrl) - dieselbe Stelle liefert dem Bericht seine
+            // Zeile, und sie bildet dazu die Hinweiszeilen „k von n Positionen ohne
+            // Nutzungsdauer" (Konzept § 2.13 (3)).
+            NutzungsdauerHinweise nutzungsdauer = Nutzungsdauerhinweise();
+            stand.Zeitraumzeile = nutzungsdauer.Zeitraumzeile;
+            stand.Nutzungsdauerhinweise = nutzungsdauer.Zeilen;
             stand.Vereinfachungszeile = Vereinfachungszeile(stand.MitPhotovoltaik);
+
+            // ETAPPE E5 (U10, V‑A): der Hinweistext unter der Annahmentafel und die
+            // Deklarationszeilen der Bewertung - beide am Projekt, nicht an der Wahl.
+            stand.Szenariohinweis = Szenariohinweis();
+            stand.Deklarationen = Deklarationen();
 
             // ETAPPE W5-B-12 (Anwenderentscheid 09.09.2026, VALERI-Luecke G6), Form
             // aus AUFTRAG #328: der Freitext "Nicht monetaere Wirkungen" geht ROH
@@ -415,20 +426,53 @@ namespace WindowsFormsApplication1
         /// Nutzungsdauern der Investitionspositionen — gelesen im Szenario ERWARTET,
         /// also aus derselben Liste, mit der der Kapitalwert rechnet. Ein Lesefehler
         /// lässt die Zeile still entfallen; sie ist Ausweis, kein Ergebnis.
+        ///
+        /// <para><b>ETAPPE E5 (U39):</b> Das Einsammeln der Positionen stand bis hierher
+        /// in dieser Hülle; es liegt seither im Kern (<see cref="NutzungsdauerHinweisCtrl"/>),
+        /// der zugleich die Hinweiszeilen „k von n Positionen ohne Nutzungsdauer" bildet —
+        /// derselbe Aufruf, den der Berichtsdatensammler für Wort- und Tabellenbericht
+        /// nimmt.</para>
         /// </summary>
-        private string Zeitraumzeile()
+        private NutzungsdauerHinweise Nutzungsdauerhinweise()
         {
             try
             {
                 WirtschaftlichkeitParameter p = _ctrl.LadeParameter(_idStamm);
-                var positionen = new List<KapitalwertRechner.InvestPosition>();
+                var staende = new List<KeyValuePair<int, string>>();
                 foreach (int id in _gruppe)
-                    positionen.AddRange(WirtschaftlichkeitCtrl.LiesInvestitionen(
-                        id, WirtschaftlichkeitSzenario.ERWARTET));
-                return NutzungsdauerAbgleich.Hinweis(p.Betrachtungszeitraum, positionen,
-                                                     BerichtTexte.Kultur);
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+                return NutzungsdauerHinweisCtrl.Bilde(p.Betrachtungszeitraum, staende,
+                                                      BerichtTexte.Kultur);
             }
+            catch { return new NutzungsdauerHinweise(); }
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U10, Konzept § 2.11.7, Entscheid A14): der Hinweistext unter der
+        /// Annahmentafel — mit den WIRKSAMEN Spannen des Parametersatzes (Vorgaben oder
+        /// gepflegte Werte). Ein Lesefehler lässt den Text mit den Vorgaben stehen: Er
+        /// beschreibt dann, was ein ungepflegtes Projekt tut.
+        /// </summary>
+        private string Szenariohinweis()
+        {
+            WirtschaftlichkeitParameter p = null;
+            try { p = _ctrl.LadeParameter(_idStamm); }
+            catch { }
+            try { return ValeriAusweis.Szenariohinweis(p, BerichtTexte.Kultur); }
             catch { return ""; }
+        }
+
+        /// <summary>ETAPPE E5 (V‑A): die Deklarationszeilen der Bewertung als Texte.</summary>
+        private static List<string> Deklarationen()
+        {
+            var texte = new List<string>();
+            try
+            {
+                foreach (ValeriDeklaration d in ValeriAusweis.Deklarationen())
+                    texte.Add(d.Text);
+            }
+            catch { }
+            return texte;
         }
 
         /// <summary>
@@ -588,15 +632,28 @@ namespace WindowsFormsApplication1
                 }
             }
 
+            // KONZEPT § 2.9 und § 2.15: die REFERENZ dieser Ansicht - in Sicht 2 der
+            // Stand A, sonst die Referenz der Gruppe. Tafel, Bandbreite, Karten und
+            // Vorschlag rechnen alle gegen sie; sie steht deshalb vor allen vieren.
+            int idReferenz = Vergleich.Sicht.IstPaar
+                           ? Vergleich.Sicht.IdA
+                           : Referenzwahl.Bestimme(_gruppe, _idStamm, Gruppenreferenz(), null).IdReferenz;
+
+            // ETAPPE E5 (U4, U5): die Bandbreite dreier Szenarien und die Einstufung je
+            // Version - EIN Modell des Kerns (WirtschaftlichkeitBandbreite), aus dem auch
+            // der Vorschlagssatz entsteht. Es urteilt ueber ALLE drei Szenarien der
+            // GEWAEHLTEN Versionen - nicht nur ueber das angezeigte (W5-B-11).
+            WirtschaftlichkeitBandbreite bandbreite = Bandbreite(gewaehlt, idReferenz);
+
             var ansicht = new ErgebnisAnsicht
             {
                 Kacheln = Kacheln(zeilen, kultur),
                 Szenariozeile = Szenariozeile(szenario, kultur),   // W5-B-9
-                // W5-B-11 (G9): Der Vorschlag urteilt ueber ALLE drei Szenarien der
-                // GEWAEHLTEN Versionen - nicht nur ueber das angezeigte. Deshalb geht
-                // hier _ergebnisse hinein, gefiltert auf die Wahl, und nicht die
-                // Zeilenliste des einen Szenarios.
-                Empfehlungszeile = Empfehlungszeile(gewaehlt, kultur)
+                // ETAPPE E5 (U5): Die Empfehlungszeile wird aus DEMSELBEN Modell
+                // gespeist wie die Karten - mit der Referenz beim Namen, wie im Bericht.
+                Empfehlungszeile = Empfehlungszeile(bandbreite, kultur),
+                Empfehlungen = Karten(bandbreite, kultur),
+                Bandbreite = BandbreitenTafel(bandbreite, kultur)
             };
             if (zeilen.Count == 0) return ansicht;
 
@@ -626,10 +683,7 @@ namespace WindowsFormsApplication1
             // als Word und Excel, entgegen dem Versprechen von E7. Es gibt seither EINE
             // Regel, und sie steht in WirtschaftlichkeitZeilen.Sichtbare.
             // KONZEPT § 2.9 und § 2.15: Die Zeilendefinition kennzeichnet die REFERENZ -
-            // in Sicht 2 den Stand A, sonst die Referenz der Gruppe.
-            int idReferenz = Vergleich.Sicht.IstPaar
-                           ? Vergleich.Sicht.IdA
-                           : Referenzwahl.Bestimme(_gruppe, _idStamm, Gruppenreferenz(), null).IdReferenz;
+            // in Sicht 2 den Stand A, sonst die Referenz der Gruppe (idReferenz oben).
             foreach (WirtZeile z in WirtschaftlichkeitZeilen.Sichtbare(
                          WirtschaftlichkeitZeilen.Kennzahlen(_ergebnisse, _tarifCache, idReferenz),
                          _ergebnisse))
@@ -666,6 +720,12 @@ namespace WindowsFormsApplication1
                 foreach (WirtschaftlichkeitErgebnis e in spaltenErg) zellen.Add(e == null ? nichtBerechnet : "");
                 matrixzeilen.Add(new MatrixZeile { Titel = hinweis, Zellen = zellen });
             }
+
+            // ETAPPE E5 (Konzept § 6.3 Nr. 31, entschieden 22.09.2026): Eine Ergebniszeile
+            // OHNE Nachweisumschlag traegt ihr Kennzeichen in ihrer Spalte - kein
+            // Nachziehlauf, keine Warnung: Der Umschlag entsteht mit der naechsten Rechnung.
+            if (zeilen.Any(x => x.OhneNachweis))
+                matrixzeilen.Add(Zeile(hinweis, spaltenErg, x => ValeriAusweis.NachweisKennzeichen(x)));
 
             // ETAPPE E2 (Befund R6): Die Kohärenzzeilen stehen seither im EINEN
             // Zeilenkatalog des Kerns (WirtschaftlichkeitZeilen) und kommen oben mit
@@ -714,23 +774,120 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// ETAPPE E5 (U4, U5): die Bandbreite der GEWÄHLTEN Versionen über alle drei
+        /// Szenarien — das Modell des Kerns (<see cref="WirtschaftlichkeitBandbreite"/>),
+        /// gebildet aus dem Lauf, der schon im Speicher liegt (gespeichert oder, in
+        /// Sicht 2, gegen A ohne Persistenz gerechnet). Gerechnet wird hier nichts.
+        /// </summary>
+        private WirtschaftlichkeitBandbreite Bandbreite(List<int> gewaehlt, int idReferenz)
+        {
+            try
+            {
+                List<int> ids = gewaehlt != null && gewaehlt.Count > 0
+                    ? gewaehlt : new List<int>(_gruppe);
+                var staende = new List<KeyValuePair<int, string>>();
+                foreach (int id in ids)
+                    staende.Add(new KeyValuePair<int, string>(id, Name(id)));
+                return WirtschaftlichkeitBandbreite.Bilde(staende, _ergebnisse, idReferenz, Name(idReferenz));
+            }
+            catch { return new WirtschaftlichkeitBandbreite(); }
+        }
+
+        /// <summary>
         /// ETAPPE W5‑B‑11 (Anwenderentscheid 09.09.2026, VALERI-Lücke G9): der
         /// Vorschlag zur Entscheidung über die GEWÄHLTEN Versionen.
         ///
         /// <para>Die Regel steht im Kern (<see cref="WirtschaftlichkeitEmpfehlung"/>) —
         /// Seite, Word und Excel sollen denselben Satz zeigen. Leer heißt „keine
         /// Variante mit Erwartet-Ergebnis"; dann zeichnet die Seite die Zeile nicht.</para>
+        ///
+        /// <para><b>ETAPPE E5 (U5):</b> Der Satz entsteht aus den Einstufungen der
+        /// Bandbreite — denselben, die die Empfehlungskarten tragen — und nennt die
+        /// Referenz beim Namen, wie der Bericht seit E2.</para>
         /// </summary>
-        private string Empfehlungszeile(List<int> gewaehlt, CultureInfo kultur)
+        private static string Empfehlungszeile(WirtschaftlichkeitBandbreite bandbreite, CultureInfo kultur)
         {
             try
             {
-                List<WirtschaftlichkeitErgebnis> quelle = gewaehlt != null && gewaehlt.Count > 0
-                    ? _ergebnisse.Where(x => gewaehlt.Contains(x.IdProjekt)).ToList()
-                    : _ergebnisse;
-                return WirtschaftlichkeitEmpfehlung.Vorschlagstext(quelle, kultur);
+                if (bandbreite == null) return "";
+                return WirtschaftlichkeitEmpfehlung.Vorschlagstext(
+                    bandbreite.Urteile, kultur, bandbreite.Referenzname);
             }
             catch { return ""; }
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U5): die Empfehlungskarten — je Version mit Erwartet-Ergebnis ihre
+        /// Stufe und ihre Kapitalwertdifferenz zur Referenz im Szenario Erwartet, in der
+        /// Reihenfolge der Gruppe.
+        /// </summary>
+        private static List<EmpfehlungKarte> Karten(WirtschaftlichkeitBandbreite bandbreite,
+                                                    CultureInfo kultur)
+        {
+            var karten = new List<EmpfehlungKarte>();
+            if (bandbreite == null) return karten;
+            foreach (BandbreitenZeile z in bandbreite.Zeilen)
+            {
+                VariantenEmpfehlung u = z.Urteil;
+                if (u == null) continue;
+                karten.Add(new EmpfehlungKarte
+                {
+                    Name = z.Anzeige,
+                    Stufe = u.Stufe == EmpfehlungStufe.Empfohlen ? EmpfehlungKarte.STUFE_JA
+                          : u.Stufe == EmpfehlungStufe.Bedingt ? EmpfehlungKarte.STUFE_BEDINGT
+                          : EmpfehlungKarte.STUFE_NEIN,
+                    StufeText = u.StufeText,
+                    Differenz = WirtschaftlichkeitEmpfehlung.Geld(u.DiffErwartet, kultur),
+                    BandbreiteFehlt = u.BandbreiteFehlt
+                });
+            }
+            return karten;
+        }
+
+        /// <summary>
+        /// ETAPPE E5 (U4): die Bandbreite als Tafel der Seite — Version, Ungünstig,
+        /// Erwartet, Günstig, Spanne, Einstufung (Mockup Kategorie 8, „Wie sicher ist
+        /// das?"); darüber die Referenzzeile. Die Werte bleiben die des Modells, formatiert
+        /// wie die Kennzahltafel; ohne Zahl steht „—".
+        /// </summary>
+        private static ErgebnisMatrix BandbreitenTafel(WirtschaftlichkeitBandbreite bandbreite,
+                                                       CultureInfo kultur)
+        {
+            var tafel = new ErgebnisMatrix();
+            if (bandbreite == null || bandbreite.Leer) return tafel;
+
+            tafel.Spalten = new List<string>
+            {
+                MyResource.Resource.WIRT_SZ_SP_VARIANTE,
+                MyResource.Resource.WIRT_SZEN_WORST,
+                MyResource.Resource.WIRT_SZEN_ERWARTET,
+                MyResource.Resource.WIRT_SZEN_BEST,
+                MyResource.Resource.WIRT_SZ_SP_SPANNE,
+                MyResource.Resource.WIRT_EMPF_SPALTE
+            };
+
+            var zeilen = new List<MatrixZeile>();
+            string referenz = MyResource.Resource.WIRT_ZEILE_STAMM_REFERENZ;
+            zeilen.Add(new MatrixZeile
+            {
+                Titel = bandbreite.Referenzname,
+                Zellen = new List<string> { referenz, referenz, referenz, "—", "—" }
+            });
+            foreach (BandbreitenZeile z in bandbreite.Zeilen)
+                zeilen.Add(new MatrixZeile
+                {
+                    Titel = z.Anzeige,
+                    Zellen = new List<string>
+                    {
+                        W(z.Worst, "N0", kultur),
+                        W(z.Erwartet, "N0", kultur),
+                        W(z.Best, "N0", kultur),
+                        W(z.Spanne, "N0", kultur),
+                        z.Urteil != null ? z.Urteil.StufeText : "—"
+                    }
+                });
+            tafel.Zeilen = zeilen;
+            return tafel;
         }
 
         private static MatrixZeile Zeile(string titel, List<WirtschaftlichkeitErgebnis> zeilen,
@@ -752,6 +909,14 @@ namespace WindowsFormsApplication1
             var am = new KachelZeile { Titel = T("WIRT_KACHEL_AMORTISATION", "Amortisation") };
             var irr = new KachelZeile { Titel = T("WIRT_KACHEL_IRR", "Interner Zinsfuß") };
 
+            // ETAPPE E5 (V‑A, Entscheid V‑3): Annuität, Amortisation und Zinsfuß bleiben
+            // auf den Kacheln, tragen aber das Label „nachrichtlich" — die Regel, welche
+            // Kennzahlen das sind, steht EINMAL in der Zeilendefinition des Kerns.
+            string nachrichtlich = ValeriAusweis.NachrichtlichLabel();
+            if (WirtschaftlichkeitZeilen.IstNachrichtlich("ANNUITAET")) an.Kennzeichen = nachrichtlich;
+            if (WirtschaftlichkeitZeilen.IstNachrichtlich("AMORTISATION")) am.Kennzeichen = nachrichtlich;
+            if (WirtschaftlichkeitZeilen.IstNachrichtlich("IRR")) irr.Kennzeichen = nachrichtlich;
+
             WirtschaftlichkeitErgebnis beste = null;
             foreach (WirtschaftlichkeitErgebnis x in zeilen)
                 if (!x.IstStamm && x.KapitalwertDiff.HasValue &&
@@ -768,12 +933,19 @@ namespace WindowsFormsApplication1
                 an.Wert = beste.AnnuitaetKW.HasValue
                     ? beste.AnnuitaetKW.Value.ToString("N0", kultur) + " €/a" : "—";
                 an.Quelle = quelle;
+                // ETAPPE E5 (Q16): ohne Wert „— ‹Grund›" — derselbe Grund wie in der
+                // Tafel (ValeriAusweis), nicht mehr das nackte „keine".
                 am.Wert = beste.AmortisationJahre.HasValue
                     ? beste.AmortisationJahre.Value.ToString("N1", kultur) + " a"
-                    : T("WIRT_KACHEL_KEINE", "keine");
+                    : Strich(ValeriAusweis.AmortisationGrund(beste));
                 am.Quelle = quelle;
-                irr.Wert = beste.IRR.HasValue ? beste.IRR.Value.ToString("N1", kultur) + " %" : "—";
+                irr.Wert = beste.IRR.HasValue
+                    ? beste.IRR.Value.ToString("N1", kultur) + " %"
+                    : Strich(ValeriAusweis.IzfGrund(beste));
                 irr.Quelle = quelle;
+                // ETAPPE E5 (V‑A, Befund A2): mehr als ein Vorzeichenwechsel — die
+                // Kachel warnt, der Wert bleibt stehen.
+                irr.Warnung = ValeriAusweis.IzfWarnung(beste);
             }
             else
             {
@@ -1009,6 +1181,12 @@ namespace WindowsFormsApplication1
         private static string W(double? v, string format, CultureInfo kultur)
         {
             return v.HasValue ? v.Value.ToString(format, kultur) : "—";
+        }
+
+        /// <summary>ETAPPE E5 (Q16): „— ‹Grund›", ohne Grund der bloße Strich.</summary>
+        private static string Strich(string grund)
+        {
+            return string.IsNullOrEmpty(grund) ? "—" : "— " + grund;
         }
 
         private static string T(string schluessel, string rueckfall)
