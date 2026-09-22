@@ -64861,7 +64861,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig) ähnelt.
         /// </summary>
         public static string WIRT_SZ_BANDBREITE_TITEL {
             get {
@@ -64915,7 +64915,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Best [€] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Günstig [€] ähnelt.
         /// </summary>
         public static string WIRT_SZ_SP_BEST {
             get {
@@ -64951,7 +64951,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Worst [€] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW Ungünstig [€] ähnelt.
         /// </summary>
         public static string WIRT_SZ_SP_WORST {
             get {

@@ -16347,13 +16347,13 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Variant</value>
   </data>
   <data name="WIRT_SZ_SP_WORST" xml:space="preserve">
-    <value>ΔNPV worst [€]</value>
+    <value>ΔNPV unfavourable [€]</value>
   </data>
   <data name="WIRT_SZ_SP_ERWARTET" xml:space="preserve">
     <value>ΔNPV expected [€]</value>
   </data>
   <data name="WIRT_SZ_SP_BEST" xml:space="preserve">
-    <value>ΔNPV best [€]</value>
+    <value>ΔNPV favourable [€]</value>
   </data>
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Payback [yrs]</value>
@@ -16362,7 +16362,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Range [€]</value>
   </data>
   <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
-    <value>Range of the net present value difference (worst / expected / best)</value>
+    <value>Range of the net present value difference (unfavourable / expected / favourable)</value>
   </data>
   <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
     <value>the reference case</value>

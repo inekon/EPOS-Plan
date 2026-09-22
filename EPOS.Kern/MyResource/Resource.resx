@@ -16336,13 +16336,13 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Variante</value>
   </data>
   <data name="WIRT_SZ_SP_WORST" xml:space="preserve">
-    <value>ΔKW Worst [€]</value>
+    <value>ΔKW Ungünstig [€]</value>
   </data>
   <data name="WIRT_SZ_SP_ERWARTET" xml:space="preserve">
     <value>ΔKW Erwartet [€]</value>
   </data>
   <data name="WIRT_SZ_SP_BEST" xml:space="preserve">
-    <value>ΔKW Best [€]</value>
+    <value>ΔKW Günstig [€]</value>
   </data>
   <data name="WIRT_SZ_SP_AMORT" xml:space="preserve">
     <value>Amortisation [a]</value>
@@ -16351,7 +16351,7 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
     <value>Spanne [€]</value>
   </data>
   <data name="WIRT_SZ_BANDBREITE_TITEL" xml:space="preserve">
-    <value>Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)</value>
+    <value>Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig)</value>
   </data>
   <data name="WIRT_EMPF_REFERENZ_UNBENANNT" xml:space="preserve">
     <value>dem Referenzfall</value>

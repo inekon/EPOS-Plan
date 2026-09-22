@@ -420,6 +420,12 @@ namespace EPOS.Kern.Tests
                                                                    && Kopf(t).Contains(R.WIRT_EMPF_SPALTE));
                 Assert.True(tafel >= 0, "Die Bandbreitentafel fehlt im Wortbericht.");
 
+                // E5‑Q2: Die Spalten der Tafel heißen Ungünstig und Günstig.
+                IReadOnlyList<string> kopf = Kopf((W.Table)elemente[tafel]);
+                Assert.Contains("ΔKW Ungünstig [€]", kopf);
+                Assert.Contains("ΔKW Günstig [€]", kopf);
+                Assert.DoesNotContain(kopf, k => k.Contains("Worst") || k.Contains("Best"));
+
                 OpenXmlElement bild = elemente.Skip(tafel + 1).Take(3)
                                               .FirstOrDefault(e => e.Descendants<W.Drawing>().Any());
                 Assert.NotNull(bild);

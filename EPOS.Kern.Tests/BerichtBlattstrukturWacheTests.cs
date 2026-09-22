@@ -184,16 +184,19 @@ namespace EPOS.Kern.Tests
                 Zeile(w, 9, "Kennzahl", "Stamm", "Variante A");
                 Assert.Equal("projektweit", w.Cell(15, 1).GetString());
                 Assert.Equal("Summe projektweit", w.Cell(18, 1).GetString());
-                Assert.Equal("Szenario: Best", w.Cell(26, 1).GetString());
+                // ETAPPE E6 (E5‑Q2): Die Blöcke tragen den Anzeigenamen des Szenarios,
+                // nicht den gespeicherten Schlüssel.
+                Assert.Equal("Szenario: Günstig", w.Cell(26, 1).GetString());
                 Zeile(w, 28, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Worst", w.Cell(45, 1).GetString());
+                Assert.Equal("Szenario: Ungünstig", w.Cell(45, 1).GetString());
                 Zeile(w, 47, "Kennzahl", "Stamm", "Variante A");
 
                 // ETAPPE E2 (VALERI-Lücke G8): die Bandbreitentafel mit der Spalte
                 // „Spanne" und der Referenzzeile darüber.
-                Assert.Equal("Bandbreite der Kapitalwertdifferenz (Worst / Erwartet / Best)",
+                // ETAPPE E6 (E5‑Q2): Ungünstig / Günstig statt Worst / Best.
+                Assert.Equal("Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig)",
                              w.Cell(64, 1).GetString());
-                Zeile(w, 65, "Variante", "ΔKW Worst [€]", "ΔKW Erwartet [€]");
+                Zeile(w, 65, "Variante", "ΔKW Ungünstig [€]", "ΔKW Erwartet [€]", "ΔKW Günstig [€]");
                 Assert.Equal("Spanne [€]", w.Cell(65, 5).GetString());
                 Assert.Equal("Stammprojekt", w.Cell(66, 1).GetString());   // Referenzzeile
                 Assert.Equal("Variante A", w.Cell(67, 1).GetString());

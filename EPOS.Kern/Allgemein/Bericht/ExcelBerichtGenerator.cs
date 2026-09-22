@@ -502,7 +502,9 @@ namespace WindowsFormsApplication1
                 var block = alle.Where(x => x.Szenario == szenario).ToList();
                 if (block.Count == 0) continue;
 
-                ws.Cell(r, 1).Value = BerichtTexte.T("Szenario") + ": " + szenario;
+                // E5‑Q2: der Anzeigename des Szenarios (Ungünstig / Erwartet / Günstig),
+                // nicht der gespeicherte Schlüssel.
+                ws.Cell(r, 1).Value = BerichtTexte.T("Szenario") + ": " + VerlaufZeilen.Szenarioname(szenario);
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 1 + spalten.Count).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
@@ -1187,7 +1189,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E2 (VALERI-Lücke G8) — die <b>Bandbreitentafel</b> des Excel-Blatts:
-        /// je Variante ΔKW in Worst / Erwartet / Best, die <b>Spanne</b> (Best − Worst),
+        /// je Variante ΔKW in Ungünstig / Erwartet / Günstig (E5‑Q2), die <b>Spanne</b>
+        /// (größter minus kleinster der drei Werte, E5‑Q4),
         /// die Amortisation und die Einstufung, darüber die <b>Referenzzeile</b>.
         ///
         /// <para>Dieselbe Tafel führt der Wortbericht
