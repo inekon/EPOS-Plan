@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
 using R = WindowsFormsApplication1.MyResource.Resource;
@@ -18,6 +21,10 @@ namespace EPOS.Kern.Tests
     ///   (<c>WIRT_EMPF_SATZ_STAMM</c>), nicht „Variante „Stamm"" — derselbe Satz auf Seite,
     ///   Word und Excel, weil alle drei ihn aus den Urteilen der Bandbreite
     ///   bilden.</description></item>
+    ///   <item><description>Frage (3) — „Bericht erzeugen" auf der Wirtschaftlichkeitsseite
+    ///   nimmt den Baustein Wirtschaftlichkeit NUR für diesen Lauf hinzu; die gemerkte
+    ///   Berichtskonfiguration der Gruppe bleibt unverändert. Gemerkt wird allein beim
+    ///   Lauf der Berichtsseite.</description></item>
     /// </list>
     /// </summary>
     [Collection("Testdatenbank")]
@@ -140,6 +147,103 @@ namespace EPOS.Kern.Tests
             }
             Assert.StartsWith("Decision proposal: keep the base project",
                               R.ResourceManager.GetString("WIRT_EMPF_SATZ_STAMM", EN));
+        }
+
+        // =====================================================================
+        //  Frage (3) — „Bericht erzeugen" merkt sich keine Konfiguration
+        // =====================================================================
+
+        /// <summary>Die Prüfgruppe der Testdatenbank: Stamm 1040 mit 1041 und 1042.</summary>
+        private const int GRUPPE = 1040;
+
+        /// <summary>
+        /// Gespeichert ist eine Konfiguration OHNE den Baustein Wirtschaftlichkeit und nur
+        /// mit Version 1041. „Bericht erzeugen" auf der Wirtschaftlichkeitsseite startet den
+        /// Lauf mit 1041 und 1042 und dem Baustein — danach ist die gespeicherte
+        /// Konfiguration Zeichen für Zeichen dieselbe wie vorher. Der Lauf wird sofort
+        /// abgebrochen: Gemerkt würde vor dem Sammeln, der Bericht selbst ist hier nicht
+        /// Gegenstand.
+        /// </summary>
+        [Fact]
+        public async Task Bericht_erzeugen_laesst_die_gemerkte_Konfiguration_unveraendert()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string ziel = Zielordner();
+            try
+            {
+                var bericht = new BerichtCtrl();
+                Assert.True(bericht.Speichere(GRUPPE, Gemerkt(ziel)));
+                string vorher = bericht.Lade(GRUPPE).NachJson();
+                Assert.DoesNotContain(BerichtsKonfiguration.B_WIRTSCHAFT, bericht.Lade(GRUPPE).AktiveBausteine);
+
+                var gaben = new BerichtSeiteGaben(GRUPPE, "Stamm");
+                Task<LaufErgebnis> lauf = gaben.ErzeugeFuerVergleich(new List<int> { 1041, 1042 }, _ => { });
+                gaben.Abbrechen();
+                await lauf;
+                Assert.False(gaben.Beschaeftigt);
+
+                Assert.Equal(vorher, bericht.Lade(GRUPPE).NachJson());
+            }
+            finally { Aufraeumen(ziel); }
+        }
+
+        /// <summary>
+        /// GEGENPROBE: Der Lauf der BERICHTSSEITE (<c>Gaben()["Erstellen"]</c>) merkt sich
+        /// seine Auswahl weiter als Konfiguration der Gruppe — Bausteine und Versionen des
+        /// Auftrags stehen danach gespeichert.
+        /// </summary>
+        [Fact]
+        public async Task Der_Lauf_der_Berichtsseite_merkt_sich_seine_Auswahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            string ziel = Zielordner();
+            try
+            {
+                var bericht = new BerichtCtrl();
+                Assert.True(bericht.Speichere(GRUPPE, Gemerkt(ziel)));
+
+                var gaben = new BerichtSeiteGaben(GRUPPE, "Stamm");
+                var erstellen = (Func<BerichtAuftrag, Action<Laufschritt>, Task<LaufErgebnis>>)gaben.Gaben()["Erstellen"];
+                Task<LaufErgebnis> lauf = erstellen(new BerichtAuftrag
+                {
+                    VariantenIds = new[] { 1041, 1042 },
+                    Bausteine = new[] { BerichtsKonfiguration.B_DECKBLATT, BerichtsKonfiguration.B_WIRTSCHAFT },
+                    AusgabeId = 0,
+                    Zielordner = ziel,
+                    AnzahlMitStamm = 3
+                }, _ => { });
+                gaben.Abbrechen();
+                await lauf;
+
+                BerichtsKonfiguration nachher = bericht.Lade(GRUPPE);
+                Assert.Equal(new[] { 1041, 1042 }, nachher.VariantenIds.ToArray());
+                Assert.Contains(BerichtsKonfiguration.B_WIRTSCHAFT, nachher.AktiveBausteine);
+                Assert.Equal(ziel, nachher.ZielOrdner);
+            }
+            finally { Aufraeumen(ziel); }
+        }
+
+        /// <summary>Die gemerkte Konfiguration der Prüfgruppe: nur 1041, ohne den Baustein
+        /// Wirtschaftlichkeit, Ausgabe Word in einen eigenen Ordner des Falls.</summary>
+        private static BerichtsKonfiguration Gemerkt(string ziel)
+        {
+            var k = new BerichtsKonfiguration { Ausgabe = "Word", ZielOrdner = ziel };
+            k.VariantenIds.Add(1041);
+            k.AktiveBausteine.Add(BerichtsKonfiguration.B_DECKBLATT);
+            k.AktiveBausteine.Add(BerichtsKonfiguration.B_VERGLEICH);
+            return k;
+        }
+
+        private static string Zielordner()
+        {
+            return Path.Combine(Path.GetTempPath(), "EPOS_NachtraegeE5b_" + Guid.NewGuid().ToString("N"));
+        }
+
+        private static void Aufraeumen(string ordner)
+        {
+            try { if (Directory.Exists(ordner)) Directory.Delete(ordner, true); } catch { }
         }
 
         // =====================================================================
