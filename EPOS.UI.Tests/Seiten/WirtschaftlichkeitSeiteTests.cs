@@ -19,8 +19,9 @@ namespace EPOS.UI.Tests.Seiten;
 /// mit Haken, die Szenariowahl MIT dem Einstieg „Parameter…" daneben (AUFTRAG #325), der
 /// Parameternachweis, die Vergleichstabelle, der Bewertungsblock nach
 /// DIN EN 17463 darunter (AUFTRAG #325), die Sicht-Knöpfe (Photovoltaik, BHKW,
-/// Strombezug — je nach Ausstattung), „Verlauf…", „Berechnen" und der
-/// Abbrechen-Knopf während eines Laufs.</para>
+/// Strombezug — je nach Ausstattung), „Berechnen" und der
+/// Abbrechen-Knopf während eines Laufs. „Verlauf…" ist mit ETAPPE E6 entfallen: Der
+/// Verlauf steht als Abschnitt in „Wie sicher ist das?" (<see cref="KapitalwertVerlaufAbschnittTests"/>).</para>
 ///
 /// <para><b>ETAPPE E5 Teil b:</b> Karten, Szenariowahl, Nachweis, Tabelle und
 /// Bewertungsblock stehen seither in den vier Abschnitten der Darstellung „Kennzahlen"
@@ -126,8 +127,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
             {
                 WirtschaftlichkeitSeite.Unterdialog.Photovoltaik => 0,
                 WirtschaftlichkeitSeite.Unterdialog.Bhkw => 1,
-                WirtschaftlichkeitSeite.Unterdialog.Strombezug => 2,
-                _ => 3                                   // Verlauf
+                _ => 2                                   // Strombezug
             }];
 
     // =====================================================================
@@ -338,18 +338,21 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     /// <summary>
     /// AUFTRAG #325: „Parameter…" ist aus der Fussleiste heraus — dort stehen noch
-    /// PV, BHKW, Strombezug, Verlauf und Berechnen. Der Einstieg selbst ist nicht
+    /// PV, BHKW, Strombezug und Berechnen. Der Einstieg selbst ist nicht
     /// verschwunden, er steht in der Zeile der Szenariowahl.
+    ///
+    /// <para><b>ETAPPE E6 (K8, U2):</b> „Verlauf…" ist entfallen — die Leiste trägt
+    /// höchstens VIER Knöpfe; der Verlauf steht als Abschnitt in „Wie sicher ist das?".</para>
     /// </summary>
     [Fact]
     public void Die_drei_Sichtknoepfe_folgen_der_Ausstattung()
     {
         var alle = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
-        Assert.Equal(5, Fussknoepfe(alle).Count);   // PV, BHKW, Strom, Verlauf, Berechnen
+        Assert.Equal(4, Fussknoepfe(alle).Count);   // PV, BHKW, Strom, Berechnen
 
         var ohne = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
                          stand: Standard(pv: false, bhkw: false, strom: false));
-        Assert.Equal(2, Fussknoepfe(ohne).Count);   // Verlauf, Berechnen
+        Assert.Equal(1, Fussknoepfe(ohne).Count);   // Berechnen
     }
 
     /// <summary>
@@ -700,7 +703,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
     public void Jeder_Sichtknopf_oeffnet_seinen_Bereich(
         WirtschaftlichkeitSeite.Unterdialog erwartet)
     {
@@ -802,18 +804,16 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     /// <summary>
     /// Ein Titel, eine Stelle (Befund „Doppeltes Kreuz dürfen nicht sein!",
-    /// 15.09.2026): Jede der fünf Überlagerungen trägt Titel UND Kreuz, der
-    /// eingebettete Dialog darin keins von beiden — die vier Bauart-b-Dialoge über
-    /// <c>TitelAnzeigen="false"</c>, der Kapitalwert-Verlauf über <c>TitelText=""</c>;
-    /// beide stehen RECHTS vom Parametersatz der Hülle und gelten deshalb auch dann,
-    /// wenn dieser einen Titel mitbrächte.
+    /// 15.09.2026): Jede Überlagerung trägt Titel UND Kreuz, der eingebettete Dialog
+    /// darin keins von beiden — über <c>TitelAnzeigen="false"</c>, RECHTS vom
+    /// Parametersatz der Hülle und deshalb auch dann gültig, wenn dieser einen Titel
+    /// mitbrächte. ETAPPE E6: Der Kapitalwert-Verlauf ist keine Überlagerung mehr.
     /// </summary>
     [Theory]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
     public void Jede_Ueberlagerung_zeigt_nur_ein_Kreuz_und_einen_Titel(
         WirtschaftlichkeitSeite.Unterdialog art)
     {
@@ -918,7 +918,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     /// <summary>
     /// Ein Titel, eine Stelle (W11b‑B‑9): Die Überlagerung trägt ihn, der Dialog
-    /// darin zeigt keinen eigenen Kopf — und zwar JEDER der fünf. Die vier
+    /// darin zeigt keinen eigenen Kopf — und zwar JEDER. Die
     /// Geschwister des BHKW-Dialogs beziehen ihren Titel aus einem eigenen
     /// Ausdruck; deshalb sah die Markup-Wache sie bis #289 nicht, und deshalb
     /// steht hier der GEZEICHNETE Nachweis: genau ein Titel je Bereich, der der
@@ -929,7 +929,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Verlauf)]
     public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(
         WirtschaftlichkeitSeite.Unterdialog art)
     {

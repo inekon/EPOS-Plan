@@ -62575,11 +62575,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf… ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf nach Excel… ähnelt.
         /// </summary>
-        public static string WIRT_BTN_VERLAUF {
+        public static string WIRT_BTN_VERLAUF_EXCEL {
             get {
-                return ResourceManager.GetString("WIRT_BTN_VERLAUF", resourceCulture);
+                return ResourceManager.GetString("WIRT_BTN_VERLAUF_EXCEL", resourceCulture);
             }
         }
         
@@ -65077,6 +65077,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierter Barwert der Differenz zur Referenz — drei Szenarien ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_BILD {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_BILD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf ähnelt.
         /// </summary>
         public static string WIRT_VERL_BLATT {
@@ -65095,11 +65104,92 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jede angehakte Variante bekommt eine Farbe, jedes angehakte Szenario eine Strichart; der Nulldurchgang einer Linie ist die dynamische Amortisation in diesem Szenario. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_ERKLAERUNG {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_ERKLAERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwertverlauf_{0}.xlsx ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_EXCEL_DATEI {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_EXCEL_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verlauf konnte nicht nach Excel geschrieben werden: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_EXCEL_FEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_EXCEL_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Verlauf gerechnet — erst „Aktualisieren“. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_EXCEL_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_EXCEL_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf nach Excel geschrieben: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_EXCEL_OK {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_EXCEL_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf nach Excel speichern ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_EXCEL_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_EXCEL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für {0} angehakte Version(en) liegt noch kein Verlauf vor — „Aktualisieren“ rechnet ihn nach. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_FEHLEND {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_FEHLEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierter Barwert der Differenz zur Referenz je Jahr, ohne Restwert; Farbe = Variante, Strichart = Szenario; der Nulldurchgang ist die dynamische Amortisation. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_FUSS {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine berechenbaren Reihen. ähnelt.
         /// </summary>
         public static string WIRT_VERL_KEINE_REIHE {
             get {
                 return ResourceManager.GetString("WIRT_VERL_KEINE_REIHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keiner im Zeitraum ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_KEIN_NULL {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_KEIN_NULL", resourceCulture);
             }
         }
         
@@ -65122,11 +65212,47 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verlauf rechnet aus den Simulationsergebnissen alle drei Szenarien — „Aktualisieren“ startet die Rechnung, „Berechnen“ rechnet ihn mit. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_NOCH_NICHT {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_NOCH_NICHT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang = dynamische Amortisation ähnelt.
         /// </summary>
         public static string WIRT_VERL_NULLDURCHGANG {
             get {
                 return ResourceManager.GetString("WIRT_VERL_NULLDURCHGANG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgänge (dynamische Amortisation): {0} ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_NULLZEILE {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_NULLZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf über {0} Jahre, alle drei Szenarien ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_STATUS {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verlauf über die Zeit — alle drei Szenarien ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_TITEL", resourceCulture);
             }
         }
         
@@ -68328,33 +68454,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf: kumulierte Barwerte je Projekt ähnelt.
-        /// </summary>
-        public static string WVERL_BILD_ABS {
-            get {
-                return ResourceManager.GetString("WVERL_BILD_ABS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf: Differenz zur Stamm-Referenz ähnelt.
-        /// </summary>
-        public static string WVERL_BILD_DIFF {
-            get {
-                return ResourceManager.GetString("WVERL_BILD_DIFF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Schließen ähnelt.
-        /// </summary>
-        public static string WVERL_BTN_SCHLIESSEN {
-            get {
-                return ResourceManager.GetString("WVERL_BTN_SCHLIESSEN", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Aktualisieren ähnelt.
         /// </summary>
         public static string WVERL_BTN_ZEICHNEN {
@@ -68369,15 +68468,6 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WVERL_KEIN_BILD {
             get {
                 return ResourceManager.GetString("WVERL_KEIN_BILD", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
-        /// </summary>
-        public static string WVERL_LBL_SZENARIO {
-            get {
-                return ResourceManager.GetString("WVERL_LBL_SZENARIO", resourceCulture);
             }
         }
         
@@ -68445,56 +68535,11 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verlauf über {0} Jahre, Szenario „{1}“ ähnelt.
-        /// </summary>
-        public static string WVERL_STATUS_KOPF {
-            get {
-                return ResourceManager.GetString("WVERL_STATUS_KOPF", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Berechnung läuft … ähnelt.
         /// </summary>
         public static string WVERL_STATUS_LAEUFT {
             get {
                 return ResourceManager.GetString("WVERL_STATUS_LAEUFT", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert-Verlauf über den Nutzungszeitraum ähnelt.
-        /// </summary>
-        public static string WVERL_TITEL {
-            get {
-                return ResourceManager.GetString("WVERL_TITEL", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — Stamm: {1} ähnelt.
-        /// </summary>
-        public static string WVERL_TITEL_STAMM {
-            get {
-                return ResourceManager.GetString("WVERL_TITEL_STAMM", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierte diskontierte Zahlungsströme (Kosten negativ). Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. ähnelt.
-        /// </summary>
-        public static string WVERL_UNTER_ABS {
-            get {
-                return ResourceManager.GetString("WVERL_UNTER_ABS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierte diskontierte Differenz-Zahlungsströme Variante − Stamm; Schnitt mit der Nulllinie = dynamische Amortisation. Ohne Restwert. ähnelt.
-        /// </summary>
-        public static string WVERL_UNTER_DIFF {
-            get {
-                return ResourceManager.GetString("WVERL_UNTER_DIFF", resourceCulture);
             }
         }
         

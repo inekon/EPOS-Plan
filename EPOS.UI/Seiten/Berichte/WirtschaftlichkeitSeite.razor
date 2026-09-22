@@ -11,7 +11,8 @@
    mit Haken und Referenzspalte, Vergleichssicht. Dann je nach Umschalter:
    - "Kennzahlen": vier Abschnitte - "Lohnt es sich?" (Kennzahl-Karten mit Label,
      Empfehlungskarten je Version, Vorschlag, Kennzahltafel im Szenario Erwartet),
-     "Wie sicher ist das?" (Bandbreite nebeneinander, Sensitivitaet mit Steigung,
+     "Wie sicher ist das?" (Bandbreite nebeneinander, der Verlauf mit allen drei
+     Szenarien - Etappe E6, KapitalwertVerlaufAbschnitt -, Sensitivitaet mit Steigung,
      darunter die Szenario-Klappliste - sie steuert NUR die Tafeln darunter),
      "Woraus entsteht die Zahl?" (Gliederung des gewaehlten Szenarios) und
      "Was ist angenommen?" (Annahmentafel, Hinweistext, Parameternachweis,
@@ -19,14 +20,16 @@
      Deklarationen, Knopf "Bericht erzeugen").
    - "ValERI-Bewertung": die Bloecke 1, 3, 4, 5 der Norm; an der Stelle von
      Block 2 (Zahlungsreihen, E8) EINE benannte Hinweiszeile.
-   Die Fussleiste traegt die Sichten, "Verlauf..." (bis E6) und "Berechnen" -
-   in beiden Zustaenden dieselbe; der Umschalter wechselt nur den Leib.
+   Die Fussleiste traegt die Sichten (Photovoltaik, BHKW, Strombezug - je nach
+   Ausstattung) und "Berechnen" - in beiden Zustaenden dieselbe; der Umschalter
+   wechselt nur den Leib. Den Knopf "Verlauf..." gibt es nicht mehr (Etappe E6,
+   K8): Der Verlauf steht als Abschnitt in "Wie sicher ist das?".
 
-   DIE FUENF UNTERDIALOGE STEHEN IN EINER UEBERLAGERUNG - nicht in einem
-   zweiten Fenster. Bis Welle 4 oeffnete diese Maske sie ueber vier
+   DIE UNTERDIALOGE STEHEN IN EINER UEBERLAGERUNG - nicht in einem
+   zweiten Fenster. Bis Welle 4 oeffnete diese Maske sie ueber
    WinForms-Huellen (TarifstrukturHuelle, PhotovoltaikVerguetungHuelle,
-   WirtschaftlichkeitParameterHuelle, KapitalwertVerlaufHuelle,
-   BhkwWirtschaftlichkeitHuelle), also je ein eigenes Fenster mit eigener
+   WirtschaftlichkeitParameterHuelle, BhkwWirtschaftlichkeitHuelle und die
+   Verlaufshuelle), also je ein eigenes Fenster mit eigener
    WebView. Seit die Seite selbst Blazor ist, waere das eine zweite WebView
    ueber der ersten (Risiko R2); der Baustein Ueberlagerung loest das im
    selben Fenster (W4-O3 erledigt).
@@ -251,11 +254,19 @@
         <Gruppenkopf Titel="@Texte.AbsSicher">
             <KindInhalt>
                 @Bandbreitenteil
+
+                @* ETAPPE E6 (Konzept § 2.13 (5), U3): DER VERLAUF MIT ALLEN DREI
+                   SZENARIEN - nach der Bandbreite, vor der Sensitivitaet, wie im Mockup:
+                   Die Bandbreite zeigt die Spanne am Ende, der Verlauf, wie sie
+                   entsteht. Ohne Datenseite steht nur der Platzhalter. *@
+                <KapitalwertVerlaufAbschnitt Dienste="@Verlauf" Fassung="@_verlaufFassung"
+                                             Gesperrt="@_laeuft" Gerechnet="VerlaufGerechnet" />
+
                 @Sensitivitaetsteil
 
                 @* U4: DIE KLAPPLISTE STEUERT NUR DIE TAFELN DARUNTER. Sie steht deshalb
-                   unter Bandbreite und Sensitivitaet (die zeigen alle drei Szenarien
-                   bzw. den Erwartungsfall) und ueber der Gliederung, die ihr folgt.
+                   unter Bandbreite, Verlauf und Sensitivitaet (die zeigen alle drei
+                   Szenarien bzw. den Erwartungsfall) und ueber der Gliederung, die ihr folgt.
 
                    AUFTRAG #325 (Anwenderwunsch 17.09.2026): "button parameter nach oben
                    ... auf Ebene Szenario" - der Einstieg in die Parameter steht in der
@@ -534,12 +545,9 @@
                     @onclick="() => Oeffne(Unterdialog.Strombezug)">@StrombezugText</button>
         }
         @* AUFTRAG #325: "Parameter…" steht nicht mehr hier, sondern oben in der
-           Zeile der Szenariowahl. Die uebrigen Einstiege bleiben, wo sie sind. *@
-        @if (Gaben is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@_laeuft"
-                    @onclick="() => Oeffne(Unterdialog.Verlauf)">@VerlaufText</button>
-        }
+           Zeile der Szenariowahl. ETAPPE E6 (K8, U2): "Verlauf…" ist entfallen - der
+           Verlauf steht als Abschnitt in "Wie sicher ist das?". Die Leiste traegt damit
+           hoechstens vier Knoepfe. *@
         <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@_laeuft"
                 @onclick="BerechnenLaufen">@BerechnenText</button>
         @if (_laeuft)
@@ -618,20 +626,6 @@
         </KindInhalt>
     </Ueberlagerung>
 
-    <Ueberlagerung Offen="@(_offen == Unterdialog.Verlauf)"
-                   Titel="@VerlaufText" Geschlossen="() => Fertig(false)">
-        <KindInhalt>
-            @if (_gaben is not null)
-            {
-                @* Ein Titel, eine Stelle: Die Ueberlagerung traegt Titel UND Kreuz,
-                   also zeigt der Dialog seinen eigenen Kopf hier nicht.
-                   TitelAnzeigen="false" steht RECHTS vom Satz. *@
-                <KapitalwertVerlaufDialog @attributes="_gaben" TitelAnzeigen="false"
-                    Geschlossen="@(() => Fertig(true))" />
-            }
-        </KindInhalt>
-    </Ueberlagerung>
-
     @* ETAPPE E5 (U44): die zwei Rueckfragen des Knopfes "Bericht erzeugen" - dieselben
        wie auf der Berichtsseite (Baustein Rueckfrage, im selben Fenster): vor dem Lauf,
        weil er alle Versionen neu simuliert, und danach "oeffnen?". *@
@@ -642,9 +636,10 @@
 
 @code {
     /// <summary>
-    /// Die Unterdialoge der Seite — Schlüssel für die Hülle.
+    /// Die Unterdialoge der Seite — Schlüssel für die Hülle. ETAPPE E6 (K8): Der
+    /// Kapitalwert-Verlauf ist keiner mehr — er steht als Abschnitt auf der Seite.
     ///
-    /// <para>Fünf davon haben einen eigenen Knopf. <see cref="TarifBhkw"/> und
+    /// <para>Vier davon haben einen eigenen Knopf. <see cref="TarifBhkw"/> und
     /// <see cref="TarifPv"/> haben keinen: Sie sind die ZIELE der beiden
     /// Tarif-Sprünge aus dem BHKW- und dem PV-Dialog (E3/7) und unterscheiden
     /// sich von <see cref="Strombezug"/> nur in der <c>TarifSicht</c>, die die
@@ -662,8 +657,6 @@
         Strombezug,
         /// <summary>Wirtschaftlichkeitsparameter (<c>WirtschaftlichkeitParameterDialog</c>).</summary>
         Parameter,
-        /// <summary>Kapitalwertverlauf (<c>KapitalwertVerlaufDialog</c>).</summary>
-        Verlauf,
         /// <summary>Tarifstruktur, Sicht BHKW — Ziel des Sprungs „BHKW-Tarif…".</summary>
         TarifBhkw,
         /// <summary>Tarifstruktur, Sicht Photovoltaik — Ziel des Sprungs „Tarif…".</summary>
@@ -854,8 +847,14 @@
     /// <summary>Siehe <see cref="TarifBhkwText"/>.</summary>
     [Parameter] public string TarifPvText { get; set; } = Resource.TARIF_TITEL_PV;
     [Parameter] public string ParameterText { get; set; } = "Parameter…";
-    [Parameter] public string VerlaufText { get; set; } = "Verlauf…";
     [Parameter] public string BerechnenText { get; set; } = "Berechnen";
+
+    /// <summary>
+    /// ETAPPE E6 (Konzept § 2.13 (5)) — die Datenseite des Abschnitts „Verlauf" (Zeichnen,
+    /// Rechnen, „Verlauf nach Excel…"). <c>null</c>: Der Abschnitt steht mit seinem
+    /// Platzhalter da, ohne Knöpfe — kein Delegat, kein Knopf.
+    /// </summary>
+    [Parameter] public VerlaufDienste? Verlauf { get; set; }
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
 
     /// <summary>Beschriftung des Rechenknopfs IM WARNBAND (Auftrag #267) — derselbe
@@ -966,6 +965,13 @@
 
     /// <summary>Der zuletzt erzeugte Bericht — was ein „Ja" auf „öffnen?" öffnet.</summary>
     private string _berichtDatei = "";
+
+    /// <summary>
+    /// ETAPPE E6 — die FASSUNG des Standes für den Abschnitt „Verlauf": Sie steigt mit jedem
+    /// Auffrischen, jedem Wechsel der Vergleichswahl, der Referenz oder der Sicht; der
+    /// Abschnitt holt sich dann seine Ansicht neu (Hausregel „Fassungsnummer statt Kopie").
+    /// </summary>
+    private int _verlaufFassung;
 
     /// <summary>Die gewählte Darstellung (Prüfhilfe): 0 = Kennzahlen, 1 = ValERI-Bewertung.</summary>
     public int Darstellung => _stand.Darstellung;
@@ -1124,7 +1130,20 @@
         // Seite, ihr alter Lauf ist hier also kein Anlass.
         _simVeraltet = _stand.Varianten.Any(z => z.Veraltet && _gewaehlt.Contains(z.IdProjekt));
 
+        _verlaufFassung++;              // E6: der Verlauf folgt dem frisch gelesenen Stand
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// ETAPPE E6: Der Abschnitt „Verlauf" hat gerechnet. Hat er dabei neu simuliert (der
+    /// Sammler braucht frische Stundenreihen), passen die gespeicherten Ergebnisse nicht
+    /// mehr zum Simulationsstand — die Seite liest neu und sagt es in der Statuszeile.
+    /// </summary>
+    private void VerlaufGerechnet(VerlaufAnsicht ansicht)
+    {
+        if (ansicht is null) return;
+        if (ansicht.NeuSimuliert) Auffrischen();
+        if (!string.IsNullOrEmpty(ansicht.Meldung)) _status = ansicht.Meldung;
     }
 
     /// <summary>Die Warnungen der Tabelle einsammeln (Auftrag #267).</summary>
@@ -1162,6 +1181,7 @@
         VergleichGewaehlt?.Invoke(new List<int>(_gewaehlt));
         if (Anzeigen is not null) _stand.Ansicht = Anzeigen(_stand.SzenarioId);
         WarnbandAuffrischen();          // #267: die Spalten wechseln, die Warnungen mit
+        _verlaufFassung++;              // E6: der Verlauf zeichnet die angehakten Stände
     }
 
     private void BeiSzenario(int? id)
@@ -1558,6 +1578,7 @@
         foreach (int id in _stand.GewaehlteVarianten) _gewaehlt.Add(id);
         _status = _stand.Statuszeile ?? "";
         WarnbandAuffrischen();
+        _verlaufFassung++;              // E6: Referenz oder Sicht gewechselt - der Verlauf rechnet nach
         StateHasChanged();
     }
 
@@ -1707,8 +1728,8 @@
         string meldung = Nachlauf?.Invoke(war, gespeichert) ?? "";
 
         // Der Vorlaeufer frischte nach jedem Unterdialog die Parameterzeile
-        // auf (ZeigeParameterzeile) und beim Verlauf zusaetzlich Liste und
-        // Ergebnisse. Auffrischen tut beides in einem.
+        // auf (ZeigeParameterzeile). Auffrischen liest Liste, Parameterzeile und
+        // Ergebnisse in einem.
         Auffrischen();
         if (!string.IsNullOrEmpty(meldung)) _status = meldung;
 

@@ -10474,20 +10474,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="KFAK_MSG_IN_BENUTZUNG" xml:space="preserve">
     <value>{0} project item(s) in {1} project(s) and {2} template item(s) refer to this cost factor.</value>
   </data>
-  <data name="WVERL_TITEL" xml:space="preserve">
-    <value>Net present value over the service life</value>
-  </data>
   <data name="WVERL_LBL_ZEITRAUM" xml:space="preserve">
     <value>Period [years]:</value>
   </data>
-  <data name="WVERL_LBL_SZENARIO" xml:space="preserve">
-    <value>Scenario:</value>
-  </data>
   <data name="WVERL_BTN_ZEICHNEN" xml:space="preserve">
     <value>Refresh</value>
-  </data>
-  <data name="WVERL_BTN_SCHLIESSEN" xml:space="preserve">
-    <value>Close</value>
   </data>
   <data name="WVERL_STATUS_LAEUFT" xml:space="preserve">
     <value>Calculating …</value>
@@ -10497,12 +10488,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="WVERL_MSG_FEHLER" xml:space="preserve">
     <value>Error while calculating the curve: {0}</value>
-  </data>
-  <data name="WVERL_BILD_DIFF" xml:space="preserve">
-    <value>Net present value curve: difference from the master reference</value>
-  </data>
-  <data name="WVERL_BILD_ABS" xml:space="preserve">
-    <value>Net present value curve: cumulative present values per project</value>
   </data>
   <data name="WVERL_KEIN_BILD" xml:space="preserve">
     <value>No chart yet</value>
@@ -11419,9 +11404,6 @@ Overwrite it anyway?</value>
   </data>
   <data name="WIRT_BTN_PARAMETER" xml:space="preserve">
     <value>Parameters…</value>
-  </data>
-  <data name="WIRT_BTN_VERLAUF" xml:space="preserve">
-    <value>Progression…</value>
   </data>
   <data name="WIRT_BTN_BERECHNEN" xml:space="preserve">
     <value>Calculate</value>
@@ -19766,29 +19748,17 @@ Do you want to allow this?</value>
   <data name="AUFLOESER_BASIS_ALLE_WP" xml:space="preserve">
     <value>all heat pump modules</value>
   </data>
-  <data name="WVERL_UNTER_DIFF" xml:space="preserve">
-    <value>Cumulative discounted differential cash flows variant − base; intersection with the zero line = dynamic payback. Without residual value.</value>
-  </data>
-  <data name="WVERL_UNTER_ABS" xml:space="preserve">
-    <value>Cumulative discounted cash flows (costs negative). Without residual value — net present value = final value + present value of the residual value.</value>
-  </data>
   <data name="WVERL_RESTWERTE" xml:space="preserve">
     <value>Present values of residual value at the end of the horizon (not contained in the lines): {0}</value>
   </data>
   <data name="WVERL_OHNE_REIHE" xml:space="preserve">
     <value>⚠ Without series: {0}</value>
   </data>
-  <data name="WVERL_STATUS_KOPF" xml:space="preserve">
-    <value>Profile over {0} years, scenario “{1}”</value>
-  </data>
   <data name="WVERL_STATUS_ABWEICHEND" xml:space="preserve">
     <value> (differs from T = {0} a — display only, stored results unchanged{1}).</value>
   </data>
   <data name="WVERL_STATUS_JENSEITS" xml:space="preserve">
     <value>; zero crossings beyond T do not appear in the stored payback figure</value>
-  </data>
-  <data name="WVERL_TITEL_STAMM" xml:space="preserve">
-    <value>{0} — base project: {1}</value>
   </data>
   <data name="BHW_S_MODUS_HERLEITUNG" xml:space="preserve">
     <value>Disclosure: the exemption is shown and not included in the net present value. Revenue: it is booked as revenue — only if the purchase price includes the electricity tax.</value>
@@ -23133,13 +23103,13 @@ Do you want to allow this?</value>
     <value>Zero crossing = dynamic payback</value>
   </data>
   <data name="WIRT_VERL_ZU_VIELE" xml:space="preserve">
-    <value>More than {0} variants selected — the trend chart tells variants apart by colour and knows {0} colours. Please tick at most {0} variants.</value>
+    <value>More than {0} variants selected — the progression tells variants apart by colour and knows {0} colours. Please tick at most {0} variants.</value>
   </data>
   <data name="WIRT_VERL_KEINE_REIHE" xml:space="preserve">
     <value>No series could be calculated.</value>
   </data>
   <data name="WIRT_VERL_BLATT" xml:space="preserve">
-    <value>Trend</value>
+    <value>Progression</value>
   </data>
   <data name="WIRT_VERL_BLATT_TITEL" xml:space="preserve">
     <value>Cumulative present value of the difference to the reference per year [€] — without residual value</value>
@@ -23152,5 +23122,50 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_VERL_ZEILE_KW" xml:space="preserve">
     <value>NPV difference = end value + present value of the residual value [€]</value>
+  </data>
+  <data name="WIRT_VERL_TITEL" xml:space="preserve">
+    <value>The progression over time — all three scenarios</value>
+  </data>
+  <data name="WIRT_VERL_BILD" xml:space="preserve">
+    <value>Cumulative present value of the difference to the reference — three scenarios</value>
+  </data>
+  <data name="WIRT_VERL_ERKLAERUNG" xml:space="preserve">
+    <value>Each ticked variant gets a colour, each ticked scenario a line style; the zero crossing of a line is the dynamic payback in that scenario.</value>
+  </data>
+  <data name="WIRT_BTN_VERLAUF_EXCEL" xml:space="preserve">
+    <value>Progression to Excel…</value>
+  </data>
+  <data name="WIRT_VERL_FUSS" xml:space="preserve">
+    <value>Cumulative present value of the difference to the reference per year, without residual value; colour = variant, line style = scenario; the zero crossing is the dynamic payback.</value>
+  </data>
+  <data name="WIRT_VERL_NOCH_NICHT" xml:space="preserve">
+    <value>The progression calculates all three scenarios from the simulation results — “Refresh” starts the calculation, “Calculate” includes it.</value>
+  </data>
+  <data name="WIRT_VERL_KEIN_NULL" xml:space="preserve">
+    <value>none within the period</value>
+  </data>
+  <data name="WIRT_VERL_NULLZEILE" xml:space="preserve">
+    <value>Zero crossings (dynamic payback): {0}</value>
+  </data>
+  <data name="WIRT_VERL_STATUS" xml:space="preserve">
+    <value>Progression over {0} years, all three scenarios</value>
+  </data>
+  <data name="WIRT_VERL_FEHLEND" xml:space="preserve">
+    <value>No progression yet for {0} ticked version(s) — “Refresh” calculates it.</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_TITEL" xml:space="preserve">
+    <value>Save progression to Excel</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_DATEI" xml:space="preserve">
+    <value>NPV_progression_{0}.xlsx</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_OK" xml:space="preserve">
+    <value>Progression written to Excel: {0}</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_FEHLER" xml:space="preserve">
+    <value>The progression could not be written to Excel: {0}</value>
+  </data>
+  <data name="WIRT_VERL_EXCEL_LEER" xml:space="preserve">
+    <value>No progression calculated yet — “Refresh” first.</value>
   </data>
 </root>

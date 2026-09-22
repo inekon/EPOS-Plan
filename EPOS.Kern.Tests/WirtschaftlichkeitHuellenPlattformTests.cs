@@ -246,22 +246,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// E3/6: Alle FÜNF Unterdialoge der Seite stehen ohne Windows-Schale —
-        /// die Übergangsnaht <c>Wirtschaftlichkeitswege</c> ist weg, und damit ist
-        /// die Seite auf iOS vollständig, nicht nur zur Hälfte.
+        /// E3/6: Alle Unterdialoge der Seite stehen ohne Windows-Schale — die
+        /// Übergangsnaht <c>Wirtschaftlichkeitswege</c> ist weg, und damit ist die Seite
+        /// auf iOS vollständig, nicht nur zur Hälfte. ETAPPE E6 (K8): Der
+        /// Kapitalwert-Verlauf ist kein Unterdialog mehr, sondern ein Abschnitt der Seite
+        /// mit eigener Datenseite (<c>Verlauf</c>).
         /// </summary>
         [Fact]
-        public void Wirtschaftlichkeitsseite_zeigt_alle_fuenf_Unterdialoge_ohne_Schale()
+        public void Wirtschaftlichkeitsseite_zeigt_alle_Unterdialoge_ohne_Schale()
         {
             var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
+            IReadOnlyDictionary<string, object> satz = seite.Gaben();
             var weg = (Func<WirtschaftlichkeitSeite.Unterdialog,
-                            IReadOnlyDictionary<string, object>>)seite.Gaben()["Gaben"];
+                            IReadOnlyDictionary<string, object>>)satz["Gaben"];
 
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik));
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Bhkw));
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug));
-            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Verlauf));
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
+
+            // Der Verlauf: eine Datenseite mit allen drei Wegen, kein Knopftext mehr.
+            Assert.False(satz.ContainsKey("VerlaufText"), "Den Knopf „Verlauf…“ gibt es nicht mehr.");
+            var verlauf = Assert.IsType<VerlaufDienste>(satz["Verlauf"]);
+            Assert.NotNull(verlauf.Zeichnen);
+            Assert.NotNull(verlauf.Berechnen);
+            Assert.NotNull(verlauf.NachExcel);
         }
 
         /// <summary>
@@ -349,24 +358,31 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// P7: Sammeln, Rechnen und Zeichnen des Verlaufs laufen plattformfrei —
-        /// der Renderer des Kerns braucht kein Windows, und der Arbeitsfaden
-        /// entsteht über <c>Kulturweitergabe</c>. Gerechnet wird hier nicht (das
-        /// wäre ein Simulationslauf); geprüft ist, dass der Satz ohne Schale
-        /// steht und seinen Rechenweg trägt.
+        /// P7 und ETAPPE E6: Sammeln, Rechnen und Zeichnen des Verlaufs laufen
+        /// plattformfrei — der Renderer des Kerns braucht kein Windows, und der
+        /// Arbeitsfaden entsteht über <c>Kulturweitergabe</c>. Gerechnet wird hier nicht
+        /// (das wäre ein Simulationslauf); geprüft ist, dass die Datenseite des Abschnitts
+        /// ohne Schale steht, alle drei Wege trägt und ohne Rechnung eine Ansicht OHNE Bild
+        /// mit ihrem Grund liefert — kein vorbelegtes Bild.
         /// </summary>
         [Fact]
-        public void Kapitalwertverlauf_baut_seinen_Satz_ohne_Windows_Dienst()
+        public void Kapitalwertverlauf_baut_seine_Datenseite_ohne_Windows_Dienst()
         {
-            Func<bool> neuGesammelt;
-            IReadOnlyDictionary<string, object> gaben = KapitalwertVerlaufHuelle.Gaben(
-                PROJEKT_BHKW, "", new List<int>(), out neuGesammelt);
+            var huelle = new KapitalwertVerlaufHuelle(PROJEKT_BHKW, "",
+                () => new VerlaufKontext { Gewaehlt = new List<int> { PROJEKT_BHKW } });
+            VerlaufDienste wege = huelle.Seitenwege();
 
-            Assert.True(gaben.ContainsKey("Szenarien"), "Die drei Szenarien gehören zum Satz.");
-            Assert.True(gaben.ContainsKey("Berechnen"), "Der Rechenweg gehört zum Satz.");
-            Assert.True(gaben.ContainsKey("FarbeSetzen"), "Die Farbwahl gehört zum Satz.");
-            Assert.NotNull(neuGesammelt);
-            Assert.False(neuGesammelt(), "Vor dem ersten Lauf ist nichts gesammelt.");
+            Assert.NotNull(wege.Zeichnen);
+            Assert.NotNull(wege.Berechnen);
+            Assert.NotNull(wege.NachExcel);
+            Assert.InRange(wege.JahreVorgabe, 2, 60);
+
+            VerlaufAnsicht leer = wege.Zeichnen(VerlaufWahl.Alle);
+            Assert.NotNull(leer);
+            Assert.Null(leer.Modell);
+            Assert.False(string.IsNullOrEmpty(leer.Hinweis), "Ohne Rechnung steht der Grund da.");
+            Assert.Equal(3, leer.Szenarien.Count);
+            Assert.False(huelle.Gerechnet);
         }
 
         // =================================================================
