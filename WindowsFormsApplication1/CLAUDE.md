@@ -94,8 +94,8 @@ $msb = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe
   **eingebettet** und bewusst nicht im Ausgabeordner — eine gleichnamige Datei neben der EXE
   übersteuert sie); `KI/` (nur was an lebenden
   `Control`/`Form` hängt: `HilfeKontext`, `KiAusfuehrungWindows` — Wissen und Aktionen des
-  Assistenten liegen im Kern); `Bericht/BerichtsDatenSammler.cs` mit der
-  `.docx`-Rahmenvorlage; `GrafikTools/`; `BaseForm`, `FensterEinpassung`, `Programmsymbol`.
+  Assistenten liegen im Kern); `Bericht/Vorlagen/` mit der `.docx`-Rahmenvorlage;
+  `GrafikTools/`; `BaseForm`, `FensterEinpassung`, `Programmsymbol`.
 - **Schemapflege:** `SchemaMigration` liegt hier, ein neuer nummerierter Schritt entsteht
   hier; die Zielnummer steht als `SchemaStand.Zielversion` im Kern
   ([`ADR-001`](../Dokumentation/aktuell/ADR-001_Schema-Ausrollung.md)). Sie läuft einmal je
