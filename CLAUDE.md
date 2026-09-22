@@ -17,16 +17,16 @@ Antworten, Bezeichner und Kommentare auf Deutsch.
 
 ## Modellwahl und Agenten
 
-- **Das beste verfügbare Sprachmodell (gegenwärtig Fable 5.1) orchestriert:** Es plant,
-  zerlegt Aufträge, prüft Ergebnisse, führt zusammen und berichtet. Es übernimmt selbst nur
-  Aufgaben, die andere Modelle nicht leisten können (Konzeptentscheide, schwierige Analysen,
-  Zusammenführung widersprüchlicher Stände). **Konzeptarbeit** — Konzepte, Mockups,
-  schwierige Analysen — läuft auf demselben Modell, als Agent mit `model: fable`.
+- **Opus 5.5 orchestriert und arbeitet:** Es plant, zerlegt Aufträge, prüft Ergebnisse,
+  führt zusammen und berichtet; Konzeptarbeit, schwierige Analysen und die Zusammenführung
+  widersprüchlicher Stände übernimmt es selbst oder gibt sie an Agenten mit `model: opus`.
+  **Fable 5.1 nur, wenn Opus eine Aufgabe nachweislich nicht leisten kann** — dann als Agent
+  mit `model: fable` und mit der Begründung im Auftrag.
 - **Für jede delegierte Aufgabe das geeignete, günstigste Modell wählen** — das spart Token
-  und Zeit: `model: opus` für Implementierung, Tests, Hüllen, Konfliktauflösung und
-  Fehlersuche; `model: sonnet` für Suchen, Dateilisten, Zählungen, kleine Textpflege und
-  Vorlagen; `model: fable` nur für Konzeptarbeit. Das Modell bei jedem Agentenaufruf
-  **ausdrücklich** setzen, nie erben lassen.
+  und Zeit: `model: opus` für Konzeptpapiere, Nachzüge, Implementierung, Tests, Hüllen,
+  Konfliktauflösung und Fehlersuche; `model: sonnet` für Suchen, Dateilisten, kleine
+  Textpflege und Vorlagen; `model: haiku` für Zählungen, Encoding- und Zeilenendenprüfungen.
+  Das Modell bei jedem Agentenaufruf **ausdrücklich** setzen, nie erben lassen.
 - **Agentenaufträge** sind vollständig und repo-relativ formuliert (keine absoluten Pfade —
   sie lenken Worktree-Sitzungen in den Hauptbaum), nennen das Ziel, die Abnahme (Build,
   Tests, Referenzlauf) und die Regeln dieser Datei, die gelten. Agenten arbeiten im eigenen
@@ -212,7 +212,7 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   unaufgelöst sind oder Konfliktmarker in den Änderungen stehen.
 - **Regeln für Claude:** kein Commit und kein Push ohne Auftrag; beauftragte Commits sofort,
   atomar und mit genauen Pfaden (`git add <pfad>`, nie `-A`); Betreff kurz (höchstens
-  72 Zeichen), Einzelheiten im Rumpf; Trailer `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`;
+  72 Zeichen), Einzelheiten im Rumpf; Trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`;
   keine Pull Requests, kein Tag-Push. Reihenfolge einer Welle: **Merge → Gate → Statuszeile und Protokoll →
   Push (auf Zuruf) → iOS-Lauf (nur nach Rückfrage) → Nachweis.**
 - Nach Runden mit parallelen Sitzungen repoweit nach Konfliktmarkern suchen (`^<{7}`, `^={7}$`,
