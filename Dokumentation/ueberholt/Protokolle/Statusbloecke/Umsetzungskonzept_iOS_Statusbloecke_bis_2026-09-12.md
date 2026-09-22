@@ -7785,3 +7785,80 @@ Zuordnung“ zugeschlagen werden und `KostenEmissionRechner` sie als `verbrauchO
 
 Der Entwurf für Version 1.2.0.2 ist mit der Absage hinfällig: Es hat sich nichts geändert,
 was ein Anwender sehen würde.
+
+## #433 — Wirtschaftlichkeit: Strombedarf ohne Verwendung, Simulationslauf speichert automatisch, Veraltung sichtbar (22.09.2026)
+
+Anwendermeldung 22.09.2026 am Projekt „Test: G+SP“ (Gaskessel Erdgas LL mit zugeordnetem
+Energieträger, Pufferspeicher, Strombedarf aus der Kachel Strombedarf): Die Wirtschaftlichkeit
+meldete „Energiekosten nicht bestimmbar: Der elektrischen Erzeugung … ist kein Energieträger
+zugeordnet“, die Energieträger-Seite bot Strom gar nicht an (eingeengt auf Gas, Wasserstoff);
+nach Entfernen des Strombedarfs blieb die Meldung stehen; „Simulation starten“ auf der Kachel
+Simulation half nicht, dieselbe Schaltfläche in der Übersicht schon. Commits `2398ca99`
+(Wirtschaftlichkeit/Kern), `23c7bbbc` (Simulationslauf speichert), `9354c1ea` (Änderungsdatum
+in den Schreibcontrollern).
+
+**Befund — drei Ursachen.** (1) Zwei Maßstäbe fragten Verschiedenes: Die Energieträger-Seite
+prüft anlagenbasiert (Wärmepumpe, Photovoltaik, Stromspeicher, Heizstab, Elektrokessel), die
+Wirtschaftlichkeit ergebnisbasiert (Netzbezug > 0 ohne Strompreis → Fehlgrund, alle Kennzahlen
+bleiben leer); der gemeldete Netzbezug war in diesem Projekt der Gebäudestrombedarf der
+Bedarfsseite, keine elektrische Erzeugung. (2) Die Simulationsseite rechnete, speicherte das
+Ergebnis aber nicht — Speichern war ein eigener Knopf neben „Simulation starten“; die
+Übersicht dagegen rechnet und speichert in einem Zug, beide Wege rechnen identisch. (3) Die
+Veraltungsprüfung der Wirtschaftlichkeit übersprang Zeilen mit Fehlgrund, ein veraltetes
+Simulationsergebnis blieb deshalb unsichtbar; das Änderungsdatum des Projekts wurde bei
+Wärmepumpe, BHKW, Strom- und Pufferspeicher gar nicht gesetzt.
+
+**Anwenderentscheid 22.09.2026.** „Falls es einen Bedarf Strom gibt und keinen Erzeuger mit
+Zuordnung Strombedarf, gebe nur eine Warnung aus (Strombedarf ohne Verwendung) und bestimme
+die Energiekosten ohne Stromkosten. Energiekosten (Strom, Gas, …) sollen nur anfallen, falls
+sie auch Verwendung finden.“
+
+**Teil a — Energiekosten ohne Verwendung (Commit `2398ca99`).** `KostenEmissionRechner` weist
+bei Netzbezug ohne stromverwendenden Erzeuger die Energiekosten nur noch als Brennstoffkosten
+aus, mit dem Hinweis `WIRT_HINWEIS_STROMBEDARF_OHNE_VERWENDUNG` als Warnband statt als
+Fehlgrund; `KohaerenzPruefung` folgt derselben Regel. `ProjektEnergietraegerCtrl.BrauchtStromTraeger`
+gilt zusätzlich wahr bei Brenneranlagen mit `Hilfsenergie_Anteil > 0` (nicht beim reinen
+Strombedarf), `WizardCtrl.BrauchtStromTraeger` nutzt dieselbe Kernfassung.
+
+**Teil b — Simulationslauf speichert automatisch (Commit `23c7bbbc`).** `SimulationErgebnisHuelle`
+legt nach einem gültigen Lauf das Ergebnis automatisch über `ErgebnisSpeichern` ab, die Seite
+meldet den Erfolg, der Knopf „Ergebnis speichern“ bleibt bedienbar; Startseiten-Reiter und iOS
+laufen über denselben Dienst.
+
+**Teil c — Veraltung sichtbar, Änderungsdatum vollständig (Commit `9354c1ea`).**
+`WirtschaftlichkeitCtrl.ErgebnisAktuell` prüft nicht mehr `Fehlgrund == null`, damit ein
+veraltetes Ergebnis mit Fehlgrund nicht mehr als aktuell gilt; neues Warnband
+`WIRT_BAND_SIMULATION_VERALTET` und die Fahne `VarianteZeile.Veraltet` erscheinen in
+Wirtschaftlichkeit, Bericht und Übersicht. `MerkmalUebernahmeCtrl.MarkiereProjektGeaendert`
+setzt das Änderungsdatum jetzt in `WErzeugerCtrl.Insert/Update/Delete` und in 19
+`Add_/Del_`-Wegen von `WizardCtrl` — vorher fehlte es bei Wärmepumpe, BHKW, Strom- und
+Pufferspeicher; die bisherigen Kachelaufrufe in `StartseiteHuelle` entfallen (−48 Zeilen).
+
+**Dateien.** `EPOS.Kern/Controller/{KostenEmissionRechner,KohaerenzPruefung,
+ProjektEnergietraegerCtrl,WirtschaftlichkeitCtrl,MerkmalUebernahmeCtrl,WErzeugerCtrl,
+WizardCtrl}.cs`, die Simulationsergebnis-Hülle, `WindowsFormsApplication1/.../StartseiteHuelle.cs`,
+Ressourcen (resx beide Sprachen + Designer), zugehörige Testklassen in `EPOS.Kern.Tests` und
+`EPOS.UI.Tests`.
+
+**Prüfung.** Kern-Filter 0 Fehler; Tests KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen), `EPOS.UI.Tests` 5218, `EPOS.Kern.Tests` 4314 — 0 Fehlschläge; 18 neue
+Testfälle, 10 davon vor der Änderung rot belegt; Windows-Schale 0 Fehler; SqlDialektPrüfer
+1567 Texte, 0 Fundstellen; kein Rechenweg der Simulation berührt, kein Referenzlauf nötig.
+
+**Was offen bleibt.** (1) Emissionen aus Netzbezug ohne Verwendung sind bewusst nicht auf 0
+gesetzt — CO₂ trägt einen benannten Vorgabewert von 435 g/kWh und meldet den Rückfall;
+Anwenderentscheid offen, ob die CO₂-Bilanz dem Kostenentscheid folgen soll. (2) Trägt der
+Auslieferungs-Stromträger einen Katalogpreis, wird der Netzbezug wie bisher bepreist und der
+Rückfall benannt; streng nach dem Entscheid müsste auch das 0 sein — Anwenderentscheid offen.
+(3) `ErgebnisAktuell` wirkt auch auf vier weitere Aufrufer (Bausteine Wirtschaftlichkeit,
+Excel-Bericht, Verlauf, KI-Aktionen): Fehlgrund-Zeilen mit passender Lauf-Id gelten dort jetzt
+ebenfalls als aktuell. (4) Der Stromzweig von `ProfilBedarf` sucht Stromverbraucher weiterhin
+nur über den Bezeichner ohne Projektfilter (offener Punkt K1‑O1) — der Kopfsatz eines fremden
+Projekts kann in die Summe geraten; eigener Auftrag.
+
+**Logbuch-Vorschlag** (Version 1.2.0.4):
+
+> Seit 22.09.2026 rechnet die Wirtschaftlichkeit ein Projekt mit Strombedarf, aber ohne
+> stromverwendenden Erzeuger, ohne Stromkosten und weist nur einen Hinweis aus. Seit
+> 22.09.2026 speichert „Simulation starten“ das Ergebnis sofort, und die Wirtschaftlichkeit
+> warnt, wenn das Simulationsergebnis älter als die letzte Projektänderung ist.
