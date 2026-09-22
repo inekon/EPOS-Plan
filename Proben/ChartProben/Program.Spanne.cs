@@ -91,6 +91,16 @@ namespace ChartProben
             SvgPixelbildprobe("kapitalwert_spanne",
                 () => ChartRenderer.KapitalwertSpanneModell(Mockupbalken(), SPANNE_REFERENZ, texte));
             SpannenNulllinienprobe(texte);
+
+            // Sichtprüfung (--svg-alle): beide Modelle als Dateien neben den Skia-PNG.
+            if (_svgordner != null)
+                SvgOrdnerSchreiben(new List<KeyValuePair<string, Func<Zeichenmodell>>>
+                {
+                    new KeyValuePair<string, Func<Zeichenmodell>>("kapitalwert_spanne",
+                        () => ChartRenderer.KapitalwertSpanneModell(Mockupbalken(), SPANNE_REFERENZ, texte)),
+                    new KeyValuePair<string, Func<Zeichenmodell>>("kapitalwert_spanne_unter_referenz",
+                        () => ChartRenderer.KapitalwertSpanneModell(Gemischtebalken(), SPANNE_REFERENZ, texte))
+                });
         }
 
         /// <summary>

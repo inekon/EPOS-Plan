@@ -115,6 +115,14 @@ namespace ChartProben
             SvgModellprobe("kapitalwert_szenarien",
                 () => ChartRenderer.KapitalwertSzenarienModell(TITEL, Szenarieninhalt(3, texte), texte, FUSS));
             SzenarienStrichprobe(texte);
+
+            // Sichtprüfung (--svg-alle): dasselbe Modell als Datei neben dem Skia-PNG.
+            if (_svgordner != null)
+                SvgOrdnerSchreiben(new List<KeyValuePair<string, Func<Zeichenmodell>>>
+                {
+                    new KeyValuePair<string, Func<Zeichenmodell>>("kapitalwert_szenarien",
+                        () => ChartRenderer.KapitalwertSzenarienModell(TITEL, Szenarieninhalt(3, texte), texte, FUSS))
+                });
         }
 
         /// <summary>
