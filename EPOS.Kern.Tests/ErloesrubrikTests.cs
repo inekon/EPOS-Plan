@@ -471,6 +471,136 @@ namespace EPOS.Kern.Tests
             Assert.Equal(24088.43, e.EnergiesteuerJahr1, 2);
         }
 
+        // =================================================================
+        //  AUFTRAG 9d — der Grund je Position (Befund B7-4)
+        // =================================================================
+
+        /// <summary>
+        /// Eine Nullzeile nennt, was der RECHENWEG festgestellt hat — nicht nur die
+        /// Bedingung der Position. Bis 9d stand dieselbe Auskunft ausschließlich im
+        /// Hinweisfeld des Laufs, als ein mit „ | " verbundener Text über alle
+        /// Vorschriften; einer einzelnen Zeile war sie nicht zuzuordnen.
+        /// </summary>
+        [Fact]
+        public void Eine_Nullzeile_nennt_den_Grund_des_Laufs_in_der_Herleitungszeile()
+        {
+            WirtschaftlichkeitErgebnis e = Beispielprojekt();
+            e.Energiesteuer54Jahr1 = 0;
+            e.Energiesteuer54SockelJahr1 = 0;
+            e.EnergiesteuerNachweise.RemoveAll(n => n.Ist54);
+            e.EnergiesteuerJahr1 = e.Energiesteuer53Jahr1;
+            e.PositionsGruende[SteuerPosition.ENERGIEST_54] =
+                "§ 54 EnergieStG: kein Unternehmen des produzierenden Gewerbes";
+
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            WirtZeile grund = Zeile(zeilen, "ERL_A_ENERGIESTEUER_54_SATZ");
+            Assert.NotNull(grund);
+            Assert.Contains("produzierenden Gewerbes", grund.Text(e));
+
+            // Die Bedingung steht weiterhin an der Geldzeile selbst (B7) — Diagnose
+            // und Bedingung sind zwei verschiedene Auskünfte.
+            string zelle = Zeile(zeilen, "ERL_A_ENERGIESTEUER_54")
+                           .Anzeige(e, CultureInfo.GetCultureInfo("de-DE"));
+            Assert.StartsWith("0", zelle);
+            Assert.Contains("produzierendes Gewerbe", zelle);
+        }
+
+        /// <summary>
+        /// Ohne Feststellung des Laufs bleibt die Herleitungszeile LEER und entfällt.
+        /// Ein erfundener Grund sähe aus wie eine Feststellung — das ist genau der
+        /// Fehler, den 9d abstellt, und nicht einer, den es einführen darf.
+        /// </summary>
+        [Fact]
+        public void Ohne_Feststellung_bleibt_die_Herleitungszeile_weg()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.KwkgModule = new List<KwkgModulNachweis>();     // kein Modulnachweis
+            e.KwkgErloesJahr1 = 0;
+
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            Assert.NotNull(Zeile(zeilen, "ERL_A_KWKG"));
+            Assert.Null(Zeile(zeilen, "ERL_A_KWKG_GRUND"));
+        }
+
+        /// <summary>
+        /// Der KWKG-Grund kommt aus dem MODULNACHWEIS — aus den Größen, mit denen der
+        /// KWKG-Rechner gerechnet hat. Drei Befunde, drei Sätze: keine
+        /// zuschlagsfähige Menge, kein gepflegter Satz, erschöpftes Kontingent.
+        /// </summary>
+        [Theory]
+        [InlineData(0.0, 5.0, 0, "KWK-Erzeugung")]
+        [InlineData(100.0, 0.0, 0, "Zuschlagssatz")]
+        [InlineData(100.0, 5.0, 1, "Kontingent")]
+        public void Der_KWKG_Grund_kommt_aus_dem_Modulnachweis(
+            double mengeMWh, double satzCt, int erschoepftAbJahr, string erwartet)
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.KwkgErloesJahr1 = 0;
+            e.KwkgModule = new List<KwkgModulNachweis>
+            {
+                new KwkgModulNachweis
+                {
+                    Bezeichner = "BHKW 1",
+                    EigenMWh = mengeMWh,
+                    SatzEigenCt = satzCt,
+                    ErschoepftAbJahr = erschoepftAbJahr
+                }
+            };
+
+            WirtZeile grund = Zeile(Rubrik(e), "ERL_A_KWKG_GRUND");
+            Assert.NotNull(grund);
+            Assert.Contains(erwartet, grund.Text(e));
+        }
+
+        /// <summary>
+        /// „Gar keine Einspeisung" und „eingespeist, aber keine Vergütung gepflegt"
+        /// sind zwei verschiedene Befunde; der Modulnachweis unterscheidet sie, weil
+        /// er die eingespeiste MENGE führt.
+        /// </summary>
+        [Theory]
+        [InlineData(0.0, "keine Einspeisung")]
+        [InlineData(495.0, "keine Vergütung")]
+        public void Der_Einspeisegrund_unterscheidet_Menge_und_Verguetung(
+            double einspeisungMWh, string erwartet)
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.EinspeiseerloesJahr = 0;
+            e.EinspeiseerloesKwkJahr = 0;
+            e.KwkgModule = new List<KwkgModulNachweis>
+            {
+                new KwkgModulNachweis { Bezeichner = "BHKW 1", EinspeisungMWh = einspeisungMWh }
+            };
+
+            WirtZeile grund = Zeile(Rubrik(e), "EINSPEISEERLOES_GRUND");
+            Assert.NotNull(grund);
+            Assert.Contains(erwartet, grund.Text(e));
+        }
+
+        /// <summary>
+        /// Der Grund erreicht ALLE drei Ausgaben, weil er eine TEXTzeile des einen
+        /// Zeilenkatalogs ist: Seite und Wortbericht schreiben
+        /// <c>WirtZeile.Anzeige</c>, Excel den Text der Zeile. Der Zelltext einer
+        /// WERTspalte käme dort nie an — die bleibt numerisch.
+        /// </summary>
+        [Fact]
+        public void Der_Grund_erreicht_auch_Excel_weil_er_eine_Textzeile_ist()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.StromsteuerEntlastungJahr1 = 0;
+            e.PositionsGruende[SteuerPosition.STROMST_ENTLASTUNG] =
+                "§ 9b StromStG: Sockelbetrag 250 €/a nicht erreicht";
+
+            WirtZeile grund = Zeile(Rubrik(e), "ERL_A_STROMST_ENTLASTUNG_GRUND");
+            Assert.NotNull(grund);
+            Assert.True(grund.IstText);
+            Assert.Contains("Sockelbetrag", grund.Text(e));
+            Assert.Contains("Sockelbetrag",
+                            grund.Anzeige(e, CultureInfo.GetCultureInfo("de-DE")));
+            Assert.Null(grund.ExcelWert(e));       // keine Zahl in der Wertspalte
+        }
+
         /// <summary>
         /// Das Beispielprojekt der Kategorie 7 als Ergebniszeile — BHKW nach
         /// § 53a Abs. 5, Kessel nach § 54, Sockelbetrag 250 €/a. Die Zahlen stammen

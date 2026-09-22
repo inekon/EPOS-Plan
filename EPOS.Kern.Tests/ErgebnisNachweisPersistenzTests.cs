@@ -336,24 +336,25 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
-        //  AUFTRAG U7 — die Umschlagfassung 4 trägt beide Steuerbeträge
+        //  U7 und 9d — der Umschlag trägt die Aufteilung und die Gründe
         // =================================================================
 
         /// <summary>
-        /// Der Umschlag trägt beide Paragrafenbeträge samt Mengen und Sätzen — die
-        /// Ergebnisspalte führt weiterhin nur die Summe, und ohne den Umschlag
-        /// könnte die Rubrik eines gebuchten Stands die zwei Zeilen nicht zeichnen.
+        /// Der Umschlag trägt beide Paragrafenbeträge samt Mengen und Sätzen (U7)
+        /// sowie die Begründung je Position (9d) — die Ergebnisspalte führt
+        /// weiterhin nur die Summe, und ohne den Umschlag könnte die Rubrik eines
+        /// gebuchten Stands weder die zwei Zeilen noch ihre Gründe zeichnen.
         /// </summary>
         [Fact]
-        public void Die_Fassung_4_traegt_beide_Steuerbetraege_samt_Mengen_und_Saetzen()
+        public void Der_Umschlag_traegt_beide_Steuerbetraege_und_die_Gruende()
         {
             var e = new WirtschaftlichkeitErgebnis
             {
-                EnergiesteuerJahr1 = 24088.43,
+                EnergiesteuerJahr1 = 21202.71,
                 EnergiesteuerAufgeteilt = true,
                 Energiesteuer53Jahr1 = 21202.71,
-                Energiesteuer54Jahr1 = 2885.72,
-                Energiesteuer54SockelJahr1 = 250.0
+                Energiesteuer54Jahr1 = 0.0,
+                Energiesteuer54SockelJahr1 = 0.0
             };
             e.EnergiesteuerNachweise.Add(new EnergiesteuerNachweis
             {
@@ -364,6 +365,8 @@ namespace EPOS.Kern.Tests
                 SatzEur = 4.42,
                 BetragEur = 21202.71
             });
+            e.PositionsGruende[SteuerPosition.ENERGIEST_54] = "kein produzierendes Gewerbe";
+            e.PositionsGruende[SteuerPosition.STROMST_ENTLASTUNG] = "Sockelbetrag nicht erreicht";
 
             string grund;
             string json = ErgebnisNachweisUmschlag.Schreiben(e, out grund);
@@ -371,26 +374,30 @@ namespace EPOS.Kern.Tests
 
             ErgebnisNachweisUmschlag u = ErgebnisNachweisUmschlag.Lesen(json);
             Assert.NotNull(u);
-            Assert.Equal(4, ErgebnisNachweisUmschlag.FASSUNG);
 
             var zurueck = new WirtschaftlichkeitErgebnis();
             u.Uebernimm(zurueck);
 
             Assert.True(zurueck.EnergiesteuerAufgeteilt);
             Assert.Equal(21202.71, zurueck.Energiesteuer53Jahr1, 2);
-            Assert.Equal(2885.72, zurueck.Energiesteuer54Jahr1, 2);
-            Assert.Equal(250.0, zurueck.Energiesteuer54SockelJahr1, 6);
+            Assert.Equal(0.0, zurueck.Energiesteuer54Jahr1, 6);
             Assert.Single(zurueck.EnergiesteuerNachweise);
             Assert.Equal(4796.99, zurueck.EnergiesteuerNachweise[0].Menge, 2);
             Assert.Equal(4.42, zurueck.EnergiesteuerNachweise[0].SatzEur, 6);
             Assert.Equal(DbWerte.GESETZ_EINHEIT_EUR_MWH, zurueck.EnergiesteuerNachweise[0].Einheit);
+
+            Assert.Equal("kein produzierendes Gewerbe",
+                         zurueck.PositionsGruende[SteuerPosition.ENERGIEST_54]);
+            Assert.Equal("Sockelbetrag nicht erreicht",
+                         zurueck.PositionsGruende[SteuerPosition.STROMST_ENTLASTUNG]);
         }
 
         /// <summary>
         /// Ein Umschlag der Fassung 3 wird weiter gelesen — seine Felder sind eine
-        /// echte Teilmenge. Was er NICHT kann, ist die Aufteilung: Sie gab es damals
-        /// nicht, und <c>EnergiesteuerAufgeteilt</c> sagt das, statt zwei Nullen für
-        /// eine Aussage auszugeben.
+        /// echte Teilmenge. Was er NICHT kann, sind Aufteilung (U7) und Gründe je
+        /// Position (9d): Beide gab es damals nicht, und
+        /// <c>EnergiesteuerAufgeteilt</c> sagt das, statt zwei Nullen für eine
+        /// Aussage auszugeben.
         /// </summary>
         [Fact]
         public void Eine_aeltere_Fassung_kennt_die_Aufteilung_nicht_und_sagt_es()
@@ -408,6 +415,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, e.Energiesteuer53Jahr1, 6);
             Assert.Equal(0.0, e.Energiesteuer54Jahr1, 6);
             Assert.Empty(e.EnergiesteuerNachweise);
+            Assert.Empty(e.PositionsGruende);
             Assert.Equal(4320.0, e.KwkgPauschaleEur, 6);     // Fassung 2 bleibt lesbar
         }
 

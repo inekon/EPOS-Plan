@@ -19679,8 +19679,29 @@ Do you want to allow this?</value>
   <data name="WIRT_ERL_ENERGIEST_GESAMT" xml:space="preserve">
     <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
   </data>
-  <data name="WIRT_ERL_ENERGIEST_SATZ" xml:space="preserve">
-    <value>Quantity · rate</value>
+  <data name="WIRT_ERL_HERLEITUNG" xml:space="preserve">
+    <value>Derivation</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF" xml:space="preserve">
+    <value>no fuel under sec. 53/53a in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF" xml:space="preserve">
+    <value>no boiler fuel under sec. 54 in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_MENGE" xml:space="preserve">
+    <value>no CHP generation eligible for the bonus in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_SATZ" xml:space="preserve">
+    <value>no CHP bonus rate maintained at the units</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_KONTINGENT" xml:space="preserve">
+    <value>full-load-hour quota already exhausted in the first year</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_EINSPEISUNG" xml:space="preserve">
+    <value>no feed-in in this run</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_OHNE_VERGUETUNG" xml:space="preserve">
+    <value>feed-in in this run, but no tariff maintained</value>
   </data>
   <data name="WIRT_ERL_ENERGIEST_HERLEITUNG" xml:space="preserve">
     <value>{0} {1} × {2} €/{1} = {3} €/a</value>

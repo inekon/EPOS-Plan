@@ -62962,20 +62962,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Menge · Satz ähnelt.
-        /// </summary>
-        public static string WIRT_ERL_ENERGIEST_SATZ {
-            get {
-                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_SATZ", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die abzüglich Sockelbetrag {0} €/a ähnelt.
         /// </summary>
         public static string WIRT_ERL_ENERGIEST_SOCKEL {
             get {
                 return ResourceManager.GetString("WIRT_ERL_ENERGIEST_SOCKEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Einspeisung im Lauf ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KEINE_EINSPEISUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KEINE_EINSPEISUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Brennstoff unter § 53/§ 53a im Lauf ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Kesselbrennstoff unter § 54 im Lauf ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vbh-Kontingent schon im ersten Betrachtungsjahr erschöpft ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KWKG_KONTINGENT {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KWKG_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine zuschlagsfähige KWK-Erzeugung im Lauf ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KWKG_MENGE {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KWKG_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein KWK-Zuschlagssatz an den Anlagen gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_KWKG_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_KWKG_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einspeisung im Lauf, aber keine Vergütung gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_GRUND_OHNE_VERGUETUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_GRUND_OHNE_VERGUETUNG", resourceCulture);
             }
         }
         
@@ -62994,6 +63048,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_HERKUNFT_VORSCHLAG {
             get {
                 return ResourceManager.GetString("WIRT_ERL_HERKUNFT_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herleitung ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_HERLEITUNG", resourceCulture);
             }
         }
         

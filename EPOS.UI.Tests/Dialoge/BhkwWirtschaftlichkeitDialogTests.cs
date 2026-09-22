@@ -1462,6 +1462,49 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("24.088", ganz);
     }
 
+    /// <summary>
+    /// AUFTRAG 9d (Befund B7-4) — eine Nullzeile der Vorschau nennt, was der
+    /// Rechenweg festgestellt hat, nicht nur die Bedingung der Position. Bis 9d
+    /// stand dieselbe Auskunft allein im Hinweisfeld des Laufs, als ein Text ueber
+    /// alle Vorschriften zusammen.
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_nennt_den_Grund_einer_Nullzeile()
+    {
+        var ergebnis = new WirtschaftlichkeitErgebnis
+        {
+            IdProjekt = STAMM,
+            Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+            KwkgVbhElektrisch = 5500,
+            EnergiesteuerJahr1 = 21202.71,
+            EnergiesteuerAufgeteilt = true,
+            Energiesteuer53Jahr1 = 21202.71,
+            Energiesteuer54Jahr1 = 0.0,
+            StromsteuerEntlastungJahr1 = 0.0,
+            Zeitstempel = new DateTime(2026, 9, 22, 12, 3, 0)
+        };
+        ergebnis.EnergiesteuerNachweise.Add(new EnergiesteuerNachweis
+        {
+            Anlage = "BHKW", Paragraf = EnergiesteuerNachweis.PARAGRAF_53A,
+            Menge = 4796.99, Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+            SatzEur = 4.42, BetragEur = 21202.71
+        });
+        ergebnis.PositionsGruende[SteuerPosition.ENERGIEST_54] =
+            "§ 54 EnergieStG: kein Unternehmen des produzierenden Gewerbes";
+        ergebnis.PositionsGruende[SteuerPosition.STROMST_ENTLASTUNG] =
+            "§ 9b StromStG: Sockelbetrag 250 €/a nicht erreicht";
+
+        var cut = Aufbauen(ausLauf: new[] { ergebnis });
+
+        var zeilen = new List<string>();
+        foreach (IElement e in Koerper(cut, 7).QuerySelectorAll("p.epos-herleitung"))
+            zeilen.Add(e.TextContent.Trim());
+        string ganz = string.Join(" | ", zeilen);
+
+        Assert.Contains("kein Unternehmen des produzierenden Gewerbes", ganz);
+        Assert.Contains("Sockelbetrag 250", ganz);
+    }
+
     // =====================================================================
     //  Die Fussleiste — OK und Abbrechen, geschrieben wird im OK-Weg
     //  (Auftrag #286; die Abnahme misst den Datenbankstand, nicht die Anzeige)

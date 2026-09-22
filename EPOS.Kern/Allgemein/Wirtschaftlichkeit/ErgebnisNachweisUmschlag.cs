@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 4;
+        public const int FASSUNG = 5;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -137,6 +137,15 @@ namespace WindowsFormsApplication1
             new List<EnergiesteuerNachweis>();
 
         /// <summary>
+        /// AUFTRAG 9d (Fassung 5) — die Begründung je Position der Erlösrubrik.
+        /// Einem Umschlag der Fassung 1 bis 4 fehlt sie; die Rubrik nennt dann wie
+        /// zuvor nur die Bedingung der Position.
+        /// </summary>
+        /// <inheritdoc cref="WirtschaftlichkeitErgebnis.PositionsGruende"/>
+        public Dictionary<string, string> PositionsGruende =
+            new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>
         /// <c>IncludeFields</c> ist Pflicht: Alle vier Nachweistypen führen ausschließlich
         /// FELDER. Ohne die Option schriebe der Serialisierer leere Objekte — und läse
         /// sie auch wieder ein, ohne zu klagen.
@@ -181,7 +190,9 @@ namespace WindowsFormsApplication1
                     Energiesteuer54Jahr1 = e.Energiesteuer54Jahr1,
                     Energiesteuer54SockelJahr1 = e.Energiesteuer54SockelJahr1,
                     EnergiesteuerNachweise = e.EnergiesteuerNachweise
-                                           ?? new List<EnergiesteuerNachweis>()
+                                           ?? new List<EnergiesteuerNachweis>(),
+                    PositionsGruende = e.PositionsGruende
+                                     ?? new Dictionary<string, string>(StringComparer.Ordinal)
                 };
 
                 byte[] roh = JsonSerializer.SerializeToUtf8Bytes(u, JsonOptionen);
@@ -239,6 +250,8 @@ namespace WindowsFormsApplication1
                 if (u.KohaerenzHinweise == null) u.KohaerenzHinweise = new List<KohaerenzHinweis>();
                 if (u.EnergiesteuerNachweise == null)
                     u.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>();
+                if (u.PositionsGruende == null)
+                    u.PositionsGruende = new Dictionary<string, string>(StringComparer.Ordinal);
                 return u;
             }
             catch { return null; }
@@ -272,6 +285,8 @@ namespace WindowsFormsApplication1
             e.Energiesteuer54SockelJahr1 = Energiesteuer54SockelJahr1;
             e.EnergiesteuerNachweise = EnergiesteuerNachweise
                                      ?? new List<EnergiesteuerNachweis>();
+            e.PositionsGruende = PositionsGruende
+                               ?? new Dictionary<string, string>(StringComparer.Ordinal);
         }
     }
 }

@@ -359,6 +359,12 @@ namespace WindowsFormsApplication1
                                          e => (double?)e.KwkgErloesJahr1, true);
                 aKwkg.Grundtext = e => MyResource.Resource.WIRT_GRUND_KWKG;
                 z.Add(aKwkg);
+                // AUFTRAG 9d — der GRUND der Null, nicht die Bedingung: Der Zelltext
+                // sagt „kein Satz gepflegt ODER Kontingent erschöpft"; hier steht,
+                // was der Lauf tatsächlich festgestellt hat. Ohne Feststellung bleibt
+                // die Zeile leer und entfällt (Sichtbare) — geraten wird nichts.
+                z.Add(UnterText("ERL_A_KWKG_GRUND", MyResource.Resource.WIRT_ERL_HERLEITUNG,
+                                KwkgGrund, WirtZeile.BLOCK_A));
             }
 
             // Die anlagenscharfe Aufteilung in Einspeisung (§ 7 Abs. 1) und Eigenstrom
@@ -443,8 +449,8 @@ namespace WindowsFormsApplication1
                     a53.Grundtext = e => MyResource.Resource.WIRT_GRUND_ENERGIESTEUER;
                     z.Add(a53);
                     z.Add(UnterText("ERL_A_ENERGIESTEUER_SATZ",
-                                    MyResource.Resource.WIRT_ERL_ENERGIEST_SATZ,
-                                    e => Energiesteuerherleitung(e, false), WirtZeile.BLOCK_A));
+                                    MyResource.Resource.WIRT_ERL_HERLEITUNG,
+                                    e => Energiesteuerzeile(e, false), WirtZeile.BLOCK_A));
 
                     WirtZeile a54 = Erloes(blockA, "ERL_A_ENERGIESTEUER_54",
                                            MyResource.Resource.WIRT_ERL_ENERGIEST_54,
@@ -452,8 +458,8 @@ namespace WindowsFormsApplication1
                     a54.Grundtext = e => MyResource.Resource.WIRT_GRUND_NUR_PROD_GEWERBE;
                     z.Add(a54);
                     z.Add(UnterText("ERL_A_ENERGIESTEUER_54_SATZ",
-                                    MyResource.Resource.WIRT_ERL_ENERGIEST_SATZ,
-                                    e => Energiesteuerherleitung(e, true), WirtZeile.BLOCK_A));
+                                    MyResource.Resource.WIRT_ERL_HERLEITUNG,
+                                    e => Energiesteuerzeile(e, true), WirtZeile.BLOCK_A));
                 }
                 else
                 {
@@ -473,6 +479,14 @@ namespace WindowsFormsApplication1
                                      e => (double?)e.StromsteuerEntlastungJahr1, true);
             aEntl.Grundtext = e => MyResource.Resource.WIRT_GRUND_NUR_PROD_GEWERBE;
             z.Add(aEntl);
+            // AUFTRAG 9d — der Grund des Steuerrechners: Unternehmensart, fehlender
+            // Satz oder Sockelbetrag. Bis 9d stand er nur im Hinweisfeld des Laufs,
+            // verbunden mit allen anderen Sätzen zu einem Text.
+            z.Add(UnterText("ERL_A_STROMST_ENTLASTUNG_GRUND",
+                            MyResource.Resource.WIRT_ERL_HERLEITUNG,
+                            e => e != null && e.StromsteuerEntlastungJahr1 == 0
+                                 ? Positionsgrund(e, SteuerPosition.STROMST_ENTLASTUNG) : "",
+                            WirtZeile.BLOCK_A));
 
             // ---- A7: Stromsteuer-Befreiung Eigenverbrauch (§ 9 Abs. 1 Nr. 3) -----
             // Sie folgt dem Modus aus B6: ERLOES bucht sie (Block A), AUSWEIS zeigt sie
@@ -489,6 +503,11 @@ namespace WindowsFormsApplication1
                                       e => (double?)e.EinspeiseerloesJahr, true);
             aEinsp.Grundtext = e => MyResource.Resource.WIRT_GRUND_EINSPEISUNG;
             z.Add(aEinsp);
+            // AUFTRAG 9d — „keine Vergütung gepflegt" und „gar keine Einspeisung im
+            // Lauf" sind zwei verschiedene Befunde; der Modulnachweis unterscheidet
+            // sie, weil er die eingespeiste MENGE führt.
+            z.Add(UnterText("EINSPEISEERLOES_GRUND", MyResource.Resource.WIRT_ERL_HERLEITUNG,
+                            EinspeisungGrund, WirtZeile.BLOCK_A));
             // Aufschlüsselung nur, wenn beide Anteile vorkommen; bei einem reinen PV-
             // oder reinen KWK-Projekt wäre sie die Gesamtzeile ein zweites Mal.
             if (Irgendein(menge, e => e.EinspeiseerloesPvJahr != 0) &&
@@ -967,6 +986,108 @@ namespace WindowsFormsApplication1
                 teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ERL_ENERGIEST_SOCKEL,
                                         e.Energiesteuer54SockelJahr1.ToString("N0", kultur)));
             return string.Join(" · ", teile.ToArray());
+        }
+
+        // =====================================================================
+        // AUFTRAG 9d — die Gründe je Position (Konzept § 6.3, Punkt B7-4)
+        //
+        // DIE REGEL DIESES ABSCHNITTS: Ein Grund BENENNT, was der Rechenweg
+        // festgestellt hat. Wo er nichts festgestellt hat, bleibt die Zeile LEER und
+        // entfällt über Sichtbare — eine erfundene Begründung wäre schlimmer als
+        // keine, weil sie wie eine Feststellung aussieht.
+        //
+        // Die Zuordnung Position → Text steht HIER, an einem Ort; Ergebnisseite,
+        // Wort- und Excelbericht zeigen dieselbe Zeile, weil sie denselben
+        // Zeilenkatalog lesen. Als TEXTzeile erreicht der Grund auch Excel — der
+        // Zelltext einer Wertspalte tut das nicht, die bleibt numerisch.
+        // =====================================================================
+
+        /// <summary>
+        /// Der vom Steuerrechner festgestellte Grund zu einer Position
+        /// (<see cref="SteuerPosition"/>); leer = nichts festgestellt oder ein vor
+        /// 9d gebuchter Stand.
+        /// </summary>
+        private static string Positionsgrund(WirtschaftlichkeitErgebnis e, string position)
+        {
+            if (e == null || e.PositionsGruende == null) return "";
+            string text;
+            return e.PositionsGruende.TryGetValue(position, out text) && !string.IsNullOrEmpty(text)
+                 ? text : "";
+        }
+
+        /// <summary>
+        /// Die Zeile unter einer der beiden Steuerpositionen: die HERLEITUNG, wenn es
+        /// etwas zu rechnen gab, sonst der GRUND der Null.
+        ///
+        /// <para>Der Rückfall „kein Brennstoff unter dieser Vorschrift" greift nur
+        /// bei einem Lauf, der die Aufteilung selbst gerechnet hat — nur er hat
+        /// nachgesehen. Für einen gebuchten Stand ohne Aufteilung bleibt die Zeile
+        /// leer, statt eine Feststellung zu behaupten, die niemand getroffen hat.</para>
+        /// </summary>
+        private static string Energiesteuerzeile(WirtschaftlichkeitErgebnis e, bool ist54)
+        {
+            if (e == null) return "";
+
+            string herleitung = Energiesteuerherleitung(e, ist54);
+            if (!string.IsNullOrEmpty(herleitung)) return herleitung;
+
+            string grund = Positionsgrund(e, ist54 ? SteuerPosition.ENERGIEST_54
+                                                   : SteuerPosition.ENERGIEST_53);
+            if (!string.IsNullOrEmpty(grund)) return grund;
+
+            double betrag = ist54 ? e.Energiesteuer54Jahr1 : e.Energiesteuer53Jahr1;
+            if (!e.EnergiesteuerAufgeteilt || betrag != 0) return "";
+
+            return ist54 ? MyResource.Resource.WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF
+                         : MyResource.Resource.WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF;
+        }
+
+        /// <summary>
+        /// Warum der KWK-Zuschlag 0 ist — aus dem MODULNACHWEIS des Laufs, also aus
+        /// den Größen, mit denen der KWKG-Rechner gerechnet hat: keine
+        /// zuschlagsfähige Menge, kein gepflegter Satz, erschöpftes Kontingent.
+        ///
+        /// <para>Ohne Modulnachweis (Ersatzweg oder gebuchter Stand vor B7P) bleibt
+        /// die Zeile leer: Dann liegt keine Feststellung vor, sondern nur die
+        /// Bedingung — und die steht bereits im Zelltext der Geldzeile.</para>
+        /// </summary>
+        private static string KwkgGrund(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null || e.KwkgErloesJahr1 != 0) return "";
+            if (e.KwkgModule == null || e.KwkgModule.Count == 0) return "";
+
+            double menge = 0, saetze = 0;
+            bool alleErschoepft = true;
+            foreach (KwkgModulNachweis n in e.KwkgModule)
+            {
+                if (n == null) continue;
+                menge += n.EigenMWh + n.EinspeisungMWh;
+                saetze += n.SatzEigenCt + n.SatzEinspeisungCt;
+                if (n.ErschoepftAbJahr <= 0 || n.ErschoepftAbJahr > 1) alleErschoepft = false;
+            }
+
+            if (menge <= 0) return MyResource.Resource.WIRT_ERL_GRUND_KWKG_MENGE;
+            if (saetze <= 0) return MyResource.Resource.WIRT_ERL_GRUND_KWKG_SATZ;
+            if (alleErschoepft) return MyResource.Resource.WIRT_ERL_GRUND_KWKG_KONTINGENT;
+            return "";
+        }
+
+        /// <summary>
+        /// Warum der Einspeiseerlös 0 ist. Die beiden Fälle sind verschieden und
+        /// werden vom Modulnachweis unterschieden: Wurde gar nichts eingespeist, oder
+        /// wurde eingespeist, ohne dass eine Vergütung gepflegt ist?
+        /// </summary>
+        private static string EinspeisungGrund(WirtschaftlichkeitErgebnis e)
+        {
+            if (e == null || e.EinspeiseerloesJahr != 0) return "";
+            if (e.KwkgModule == null || e.KwkgModule.Count == 0) return "";
+
+            double eingespeist = 0;
+            foreach (KwkgModulNachweis n in e.KwkgModule)
+                if (n != null) eingespeist += n.EinspeisungMWh;
+
+            return eingespeist > 0 ? MyResource.Resource.WIRT_ERL_GRUND_OHNE_VERGUETUNG
+                                   : MyResource.Resource.WIRT_ERL_GRUND_KEINE_EINSPEISUNG;
         }
 
         /// <summary>

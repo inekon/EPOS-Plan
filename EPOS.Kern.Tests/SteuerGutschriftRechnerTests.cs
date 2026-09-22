@@ -697,5 +697,92 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, r.Energiesteuer54Eur, 6);
             Assert.NotEmpty(r.Begruendungen);
         }
+
+        // =====================================================================
+        //  10 — AUFTRAG 9d: die Begründung JE POSITION (Befund B7-4)
+        // =====================================================================
+
+        /// <summary>
+        /// Jede Begründung steht in <see cref="SteuerErgebnis.Begruendungen"/> wie
+        /// bisher UND unter ihrer Position. Ohne die Zuordnung war aus dem flachen
+        /// Hinweistext nicht mehr zu lesen, welche Zeile der Erlösrubrik gemeint ist.
+        /// </summary>
+        [Fact]
+        public void Jede_Begruendung_steht_unter_ihrer_Position()
+        {
+            // § 54 ohne produzierendes Gewerbe, § 9b desgleichen, § 9 Abs. 1 Nr. 3
+            // ohne Hocheffizienznachweis: drei Positionen, drei Gründe.
+            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_54));
+            e.Unternehmensart = DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE;
+            e.NetzbezugMWh = 250.0;
+            e.HocheffizienzNachweis = false;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Contains("54", r.PositionsGruende[SteuerPosition.ENERGIEST_54]);
+            Assert.False(string.IsNullOrEmpty(r.PositionsGruende[SteuerPosition.STROMST_BEFREIUNG]));
+            Assert.False(string.IsNullOrEmpty(r.PositionsGruende[SteuerPosition.STROMST_ENTLASTUNG]));
+
+            // Die flache Liste bleibt, was sie war — sie speist unverändert das
+            // Hinweisfeld des Laufs.
+            foreach (string grund in r.PositionsGruende.Values)
+                Assert.Contains(grund, r.Begruendungen);
+        }
+
+        /// <summary>
+        /// Der Grund landet bei DER Vorschrift, an der die Rechnung ausgestiegen
+        /// ist: Ein Kessel mit der Wahl § 53a begründet die § 53er Zeile, nicht die
+        /// § 54er — dort ist nichts gewählt und also auch nichts festgestellt.
+        /// </summary>
+        [Fact]
+        public void Der_Grund_landet_bei_der_Vorschrift_die_gescheitert_ist()
+        {
+            SteuerEingabe e = Projekt(Kessel());
+            e.Anlagen[0].EnergiesteuerWahl = DbWerte.ENERGIESTEUER_WAHL_53A;
+            e.JahresnutzungsgradProzent = 83.0;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Contains("53", r.PositionsGruende[SteuerPosition.ENERGIEST_53]);
+            Assert.False(r.PositionsGruende.ContainsKey(SteuerPosition.ENERGIEST_54));
+        }
+
+        /// <summary>
+        /// Ist gar keine Entlastungsnorm gewählt, fehlt BEIDEN Paragrafenzeilen die
+        /// Grundlage — der Satz steht deshalb an beiden.
+        /// </summary>
+        [Fact]
+        public void Ohne_jede_Wahl_bekommen_beide_Paragrafenzeilen_denselben_Grund()
+        {
+            SteuerErgebnis r = Rechne(Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_KEINE)));
+
+            Assert.Equal(r.PositionsGruende[SteuerPosition.ENERGIEST_53],
+                         r.PositionsGruende[SteuerPosition.ENERGIEST_54]);
+        }
+
+        /// <summary>
+        /// Der ERSTE Grund je Position gilt — er ist der, an dem die Rechnung
+        /// ausgestiegen ist. Zwei gescheiterte Anlagen derselben Vorschrift melden
+        /// deshalb EINEN Grund an die Zeile, aber ZWEI in die flache Liste.
+        /// </summary>
+        [Fact]
+        public void Der_erste_Grund_je_Position_gilt()
+        {
+            SteuerAnlage a1 = Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A);
+            a1.Bezeichner = "BHKW 1";
+            SteuerAnlage a2 = Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A);
+            a2.Bezeichner = "BHKW 2";
+            a1.SchluesselSatz53a = "";          // Träger ohne Satz — beide scheitern
+            a2.SchluesselSatz53a = "";
+
+            SteuerEingabe e = Projekt(a1, a2);
+            e.JahresnutzungsgradProzent = 83.0;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Single(r.PositionsGruende.Keys.Where(k => k == SteuerPosition.ENERGIEST_53));
+            Assert.Contains("BHKW 1", r.PositionsGruende[SteuerPosition.ENERGIEST_53]);
+            Assert.Equal(2, r.Begruendungen.Count(g => g.Contains("BHKW")));
+        }
     }
 }

@@ -980,6 +980,21 @@ namespace WindowsFormsApplication1
         public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
             new List<EnergiesteuerNachweis>();
 
+        /// <summary>
+        /// AUFTRAG 9d (Konzept § 6.3, Punkt B7-4) — die Begründung JE POSITION der
+        /// Erlösrubrik: Schlüssel ist eine Kennung aus <c>SteuerPosition</c>, Wert der
+        /// Satz, mit dem der Steuerrechner die Null begründet hat.
+        ///
+        /// <para>Bis 9d stand dieselbe Auskunft ausschließlich in
+        /// <see cref="Hinweis"/> — als EIN mit „ | " verbundener Text über alle
+        /// Positionen. Die Rubrik konnte daraus keine Zeile bedienen und nannte
+        /// deshalb nur die BEDINGUNG der Position. Leer = der Lauf hat zu dieser
+        /// Position nichts festgestellt (oder ein Stand vor 9d).
+        /// <b>Im Nachweisumschlag persistiert</b> (Fassung 5).</para>
+        /// </summary>
+        public Dictionary<string, string> PositionsGruende =
+            new Dictionary<string, string>(StringComparer.Ordinal);
+
         /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG im Jahr 1
         /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
         public double StromsteuerBefreiungJahr1;

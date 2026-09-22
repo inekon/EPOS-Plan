@@ -19686,8 +19686,29 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_ERL_ENERGIEST_GESAMT" xml:space="preserve">
     <value>Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a]</value>
   </data>
-  <data name="WIRT_ERL_ENERGIEST_SATZ" xml:space="preserve">
-    <value>Menge · Satz</value>
+  <data name="WIRT_ERL_HERLEITUNG" xml:space="preserve">
+    <value>Herleitung</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF" xml:space="preserve">
+    <value>kein Brennstoff unter § 53/§ 53a im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF" xml:space="preserve">
+    <value>kein Kesselbrennstoff unter § 54 im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_MENGE" xml:space="preserve">
+    <value>keine zuschlagsfähige KWK-Erzeugung im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_SATZ" xml:space="preserve">
+    <value>kein KWK-Zuschlagssatz an den Anlagen gepflegt</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KWKG_KONTINGENT" xml:space="preserve">
+    <value>Vbh-Kontingent schon im ersten Betrachtungsjahr erschöpft</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_KEINE_EINSPEISUNG" xml:space="preserve">
+    <value>keine Einspeisung im Lauf</value>
+  </data>
+  <data name="WIRT_ERL_GRUND_OHNE_VERGUETUNG" xml:space="preserve">
+    <value>Einspeisung im Lauf, aber keine Vergütung gepflegt</value>
   </data>
   <data name="WIRT_ERL_ENERGIEST_HERLEITUNG" xml:space="preserve">
     <value>{0} {1} × {2} €/{1} = {3} €/a</value>
