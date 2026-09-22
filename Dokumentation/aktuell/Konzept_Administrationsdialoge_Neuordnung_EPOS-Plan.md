@@ -5,7 +5,7 @@ AD-Q14 hat der Anwender am 22.09.2026 den Geltungsbereich auf die Verwaltungsdia
 Menügruppen Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme
 eingegrenzt (achtzehn Menüpunkte, elf Komponenten, 1.4), das Kennzeichen auf das Schloss beschränkt
 und den Mockup-Reiter „Schmal" gestrichen. Das Schema (Abschnitt 3) und die Vorschläge (Abschnitt 4)
-sind Vorschlag; offen sind AD-Q9 und AD-Q11 (6.2). Umgesetzt ist noch nichts, die Reihenfolge steht
+sind Vorschlag; AD-Q9 ist entschieden (Ja), offen ist AD-Q11 (6.2). Umgesetzt ist noch nichts, die Reihenfolge steht
 in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
@@ -419,7 +419,7 @@ Die Fragen AD-Q1 bis AD-Q8 sind am **22.09.2026** entschieden: nach Empfehlung, 
 bei AD-Q5. AD-Q12 bis AD-Q14 sind die Rückmeldung des Anwenders zum Schema-Mockup vom selben Tag.
 Hier stehen die Entscheide, die für die Verwaltungen gelten; die nur für die Projektdialoge gefallenen
 (AD-Q2 bis AD-Q5, AD-Q7) und die dort offene AD-Q10 stehen in Abschnitt 8. Den Grundsatzentscheid für
-Variante B nennt 6.1, die offenen Fragen AD-Q9 und AD-Q11 stehen in 6.2.
+Variante B nennt 6.1, AD-Q9 (entschieden: Ja) und die offene AD-Q11 stehen in 6.2.
 
 | Kennung | Frage | Empfehlung | Entscheid |
 |---|---|---|---|
@@ -444,7 +444,7 @@ Auswahlleiste und trägt alle Zeilenhandlungen; der Vergleich im Stammblatt wird
 
 | Kennung | Frage | Variante (a) | Variante (b) | Empfehlung |
 |---|---|---|---|---|
-| **AD-Q9** | Löscht „Löschen…" in der Auswahlleiste auch mehrere gewählte Zeilen auf einmal? | **Ja:** eine Rückfrage nennt alle gewählten Zeilen und die, die stehen bleiben (Schloss, in Verwendung); gelöscht wird der Rest, die Statuszeile nennt beide Zahlen | **Nein:** Löschen nur bei genau einer Zeile, sonst weich gesperrt mit Grund | **(a)** — nach einem Herstellerimport mit Hunderten Sätzen ist Aufräumen Zeile für Zeile keine Bedienung; die Rückfrage bleibt die einzige des Schemas |
+| **AD-Q9** | Löscht „Löschen…" in der Auswahlleiste auch mehrere gewählte Zeilen auf einmal? | **Ja:** eine Rückfrage nennt alle gewählten Zeilen und die, die stehen bleiben (Schloss, in Verwendung); gelöscht wird der Rest, die Statuszeile nennt beide Zahlen | **Nein:** Löschen nur bei genau einer Zeile, sonst weich gesperrt mit Grund | **(a)** — nach einem Herstellerimport mit Hunderten Sätzen ist Aufräumen Zeile für Zeile keine Bedienung; die Rückfrage bleibt die einzige des Schemas — **Entscheid 22.09.2026: Ja, Variante (a).** |
 | **AD-Q11** | Darf ein Auslieferungssatz (`ReadOnly`) in der Verwaltung überschrieben werden? | **Nein:** nur lesbar; „Duplizieren" legt den eigenen Satz an (so hält es die Wärmepumpe) | **Ja, nach Rückfrage** (so hält es das BHKW) | **(a)** — eine Regel für alle, eine Rückfrage weniger, und die Auslieferung bleibt Bezug. Folge: Beim BHKW (in der Testdatenbank 79 von 79 Sätzen `ReadOnly`) beginnt jede Änderung mit Duplizieren |
 
 
