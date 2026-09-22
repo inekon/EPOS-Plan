@@ -1,4 +1,7 @@
-﻿using KiKern;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Globalization;
+using KiKern;
 
 namespace WindowsFormsApplication1
 {
@@ -499,29 +502,52 @@ namespace WindowsFormsApplication1
     /// </remarks>
     public static class KiDialoge
     {
-        private static KiDialogKatalog _katalog;
-        private static readonly object _sperre = new object();
-
         /// <summary>
-        /// Der Katalog dieser Sitzung - einmal gebaut, dann fest.
+        /// JE KULTUR ein Katalog - und nicht einer je Prozess.
         /// </summary>
         /// <remarks>
-        /// Dieselbe Bauart wie <c>KiAusfuehrer.Register</c>: Der Katalog entsteht beim
-        /// ersten Zugriff und wird danach nur noch gelesen. Ein Katalog, dem zur Laufzeit
-        /// eine Maske zuwachsen koennte, waere genau der Weg, auf dem eine nicht
+        /// Die Anzeigenamen der Eintraege stehen uebersetzt in <c>MyResource.Resource</c>.
+        /// Ein einziger Katalog je Prozess truege deshalb auf Dauer die Sprache seines
+        /// ERSTEN Zugriffs: Im Programm folgte er dem Sprachwechsel zur Laufzeit (Menue
+        /// „Sprache") nicht, und im Testlauf entschiede die Reihenfolge der Faelle
+        /// darueber, in welcher Sprache er dasteht. Schluessel ist die Kultur, mit der die
+        /// Ressourcen tatsaechlich aufloesen (<see cref="Kulturschluessel"/>) - so laufen
+        /// Katalog und Ressourcentext nie auseinander.
+        /// </remarks>
+        private static readonly ConcurrentDictionary<string, KiDialogKatalog> _kataloge =
+            new ConcurrentDictionary<string, KiDialogKatalog>(StringComparer.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Der Katalog der aktuellen Anzeigesprache - je Kultur einmal gebaut, dann fest.
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Bauart wie <c>KiAusfuehrer.Register</c>: Der Katalog einer Kultur
+        /// entsteht beim ersten Zugriff und wird danach nur noch gelesen; derselbe Zugriff
+        /// unter derselben Kultur liefert immer dieselbe Instanz. Ein Katalog, dem zur
+        /// Laufzeit eine Maske zuwachsen koennte, waere genau der Weg, auf dem eine nicht
         /// freigegebene Maske doch noch steuerbar wuerde (<see cref="KiDialogKatalog"/>).
         /// </remarks>
         public static KiDialogKatalog Katalog
         {
-            get
-            {
-                if (_katalog != null) return _katalog;
-                lock (_sperre)
-                {
-                    if (_katalog == null) _katalog = Erzeuge();
-                }
-                return _katalog;
-            }
+            get { return _kataloge.GetOrAdd(Kulturschluessel(), _ => Erzeuge()); }
+        }
+
+        /// <summary>
+        /// Die Kultur, mit der <c>MyResource.Resource</c> tatsaechlich aufloest.
+        /// </summary>
+        /// <remarks>
+        /// <c>Resource.Culture</c> ist die Uebersteuerung der erzeugten Ressourcenklasse;
+        /// steht sie auf <c>null</c> - der Regelfall, auch nach einem Sprachwechsel ueber
+        /// <c>Dienste.Sprache</c> -, liest <c>ResourceManager.GetString</c> ueber
+        /// <see cref="CultureInfo.CurrentUICulture"/>. Genau diese Regel gilt hier, damit
+        /// der Schluessel des Zwischenspeichers dieselbe Kultur nennt, die die Texte des
+        /// Katalogs liefert. Der Name reicht als Schluessel: Die invariante Kultur fuehrt
+        /// den leeren Namen, und den fuehrt sonst keine.
+        /// </remarks>
+        private static string Kulturschluessel()
+        {
+            CultureInfo kultur = MyResource.Resource.Culture ?? CultureInfo.CurrentUICulture;
+            return kultur.Name;
         }
 
         /// <summary>Baut den vollstaendigen Katalog.</summary>
