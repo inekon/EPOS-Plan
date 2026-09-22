@@ -656,10 +656,12 @@ namespace EPOS.Kern.Tests
             // … und zusammen 316.159,6 €/a — die Zahl der Abnahme.
             Assert.Equal(316159.6, bhkw.WirksamEur + pv.WirksamEur, 2);
 
-            // Verteilt, nicht gerechnet: die Summe ist die Ausgangsgröße.
-            Assert.Equal(MENGE, bhkw.MengeMWh + pv.MengeMWh, 10);
-            Assert.Equal(ARBEIT, bhkw.ArbeitEur + pv.ArbeitEur, 10);
-            Assert.Equal(ENTLASTUNG, bhkw.Entlastung9bEur + pv.Entlastung9bEur, 10);
+            // Verteilt, nicht gerechnet: die Summe ist die Ausgangsgröße. Sechs
+            // Nachkommastellen liegen vier Größenordnungen unter dem letzten Bit der
+            // Beträge — gemessen wird die REGEL, nicht die Gleitkommaarithmetik.
+            Assert.Equal(MENGE, bhkw.MengeMWh + pv.MengeMWh, 6);
+            Assert.Equal(ARBEIT, bhkw.ArbeitEur + pv.ArbeitEur, 6);
+            Assert.Equal(ENTLASTUNG, bhkw.Entlastung9bEur + pv.Entlastung9bEur, 6);
 
             // Zwei Anlagen teilen — der Schlüssel ist die Näherung V-4 und sagt es.
             Assert.True(bhkw.IstNaeherung);
@@ -683,7 +685,7 @@ namespace EPOS.Kern.Tests
                 20, 4662, 400);
 
             Assert.Single(eine);
-            Assert.Equal(1.0, eine[0].Anteil, 10);
+            Assert.Equal(1.0, eine[0].Anteil, 12);
             Assert.Equal(4662.0, eine[0].ArbeitEur, 6);
             Assert.Equal(4262.0, eine[0].WirksamEur, 6);
             Assert.False(eine[0].IstNaeherung);
