@@ -2556,15 +2556,16 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
     ohne Referenzzeile) · **G9** (`WIRT_EMPF_KEINE` nennt „Stammprojekt" statt der gewählten
     Referenz).~~ — **alle drei erledigt**; Word und Excel führen dieselbe Bandbreitentafel, und
     Empfehlungssatz wie Δ-Fußzeile nennen die Referenz beim Namen.
-29. **Hi/Ho am CO₂-Grenzwert** (R11) — **offen, Entscheid für E7**: Der Katalog führt zum Erdgas
-    einen heizwert- und einen brennwertbezogenen EBeV-Faktor (200,9 bzw. 181,4 g/kWh) samt
-    Umrechnung; gelesen wird der Schlüssel der Anlage, die beiden Ho-Zeilen haben keinen Leser.
-    Ist der Grenzwert 270 g/kWh des § 2 StromStG brennwertbezogen, fällt ein heizwertbezogener
-    Zähler rund 10 % zu hoch aus und die Befreiung entfiele in Grenzfällen zu Unrecht. Die Wahl
-    der Bezugsgröße ändert den gebuchten Befreiungsbetrag und damit den Kapitalwert — sie gehört
-    zu E7, zusammen mit dem Beleg, auf welche Bezugsgröße die Vorschrift abstellt. Das heutige
-    Verhalten ist gepinnt (`KleinkorrekturenE2Tests`). **Vom Entscheid „nach Empfehlung" des
-    20.09.2026 nicht gedeckt:** Die Frage entstand erst mit E2 und trägt keine Empfehlung.
+29. **Hi/Ho am CO₂-Grenzwert** (R11) — **entschieden 22.09.2026 (Anwender): „es gilt immer der
+    Brennwert."** Der Katalog führt zum Erdgas einen heizwert- und einen brennwertbezogenen
+    EBeV-Faktor (200,9 bzw. 181,4 g/kWh) samt Umrechnung; gelesen wird heute der Schlüssel der
+    Anlage, die beiden Ho-Zeilen haben keinen Leser. Der Grenzwert 270 g/kWh des § 2 StromStG wird
+    **brennwertbezogen** geprüft: Der Zähler nimmt den Ho-Faktor (bei heizwertbezogenem Katalogwert
+    die Umrechnung Hi → Ho), sonst fiele er rund 10 % zu hoch aus und die Befreiung entfiele in
+    Grenzfällen zu Unrecht. Umsetzung mit **E7** (Rechenwirkung: der gebuchte Befreiungsbetrag und
+    damit der Kapitalwert ändern sich in Grenzfällen; A/B-Nachweis, die Pinnung in
+    `KleinkorrekturenE2Tests` wird auf den Brennwert umgestellt). Die Frage entstand erst mit E2
+    und war vom Entscheid „nach Empfehlung" des 20.09.2026 nicht gedeckt.
 
 **Aus der Papierpflege E0 (#379) — Sachpunkte der Datenaufnahme**
 

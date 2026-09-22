@@ -349,12 +349,13 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 > für **E5** vorgemerkt. **Q8** (Fußleistenregel) ist für die beiden Dialoge dieses Feldes mit **#390
 > (DL‑2e)** gebaut, für die übrigen neun offen. **Q14** (Hüllenumzug) gehört zu **E3**.
 >
-> **Sieben Fragen tragen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht:**
-> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q11** (die fachliche Frage
-> HT/NT bleibt offen) · **Q15** (die Vorfrage, ob der Leistungsanteil projektweit bleibt) · **Q18**
-> (die Anhangzeile ist angelegt — U43/U44 —, der Bau braucht einen Folgeentscheid) · **Q20**
-> (ergänzen **oder** als Ausschnitt kennzeichnen) · **Q22** (Artifact redeployen **oder** Vermerk
-> „Repo-Datei führt") · **Q23** (die Versionsnummer ist vor dem Upload zu bestätigen).
+> **Sieben Fragen trugen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht.**
+> Entschieden 22.09.2026: **Q11** („kein HT/NT" — der Zeitzonentarif entfällt, offen nur die
+> Leistungspreis-Staffel) und **Q23** („letzte Nummer erhöhen" — Version 1.2.0.4). Offen:
+> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q15** (die Vorfrage, ob
+> der Leistungsanteil projektweit bleibt) · **Q18** (die Anhangzeile ist angelegt — U43/U44 —, der Bau
+> braucht einen Folgeentscheid) · **Q20** (ergänzen **oder** als Ausschnitt kennzeichnen) · **Q22**
+> (Artifact redeployen **oder** Vermerk „Repo-Datei führt").
 
 | # | Frage | Empfehlung |
 |---|---|---|
@@ -368,7 +369,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | **Q8** | Fußleistenregel: OK überall, wo geschrieben und geschlossen wird; Katalogpflege als Sofortschreiber mit „Schließen" und Rückfrage je Änderung; Reihenfolge Status → Aktionen · Speichern · Abbrechen · OK? | **Ja** — Bauform E (Eingabemaske) und K (Katalogpflege) im Dateikopf benennen; sieben Dialoge ändern je eine Zeile |
 | **Q9** | Kopfband `#0F1F3D` einführen oder § 2.7 auf den hellen Kopf umschreiben; welche Fehlerfarbe? | **Band einführen** (Tokens vorhanden, Kontrast 4,5:1 hält); Fehlerfarbe als ein Token, Wert `#B22222` oder `#B00020` nach Wahl |
 | **Q10** | Spaltenfilter für die drei übrigen Kostenkataloge (Emissionsarten, Kostenfaktoren, Nutzungsdauern) nachziehen? Der Gesetzeskatalog hat ihn seit #372 | **Ja**, in dieser Reihenfolge |
-| **Q11** | Tarifstrukturdialog erreichbar machen: Menüpunkt, Schalter in der Kostenverwaltung oder Zonenmodell abkündigen? | **Menüpunkt** als kleinster Schritt; die fachliche Frage HT/NT bleibt offen |
+| **Q11** | Tarifstrukturdialog erreichbar machen: Menüpunkt, Schalter in der Kostenverwaltung oder Zonenmodell abkündigen? | **Menüpunkt** als kleinster Schritt; **Anwenderentscheid 22.09.2026: „kein HT/NT"** — der Zeitzonentarif (Winter/Sommer × HT/NT) wird nicht geführt, das Zonenmodell entfällt in dieser Ausprägung; offen bleibt nur, ob die zweistufige Leistungspreis-Staffel des Dialogs bleibt (Messung `Messung_Pflegewege_Tarifstruktur_Strom.md`). Folge für den Kern: `StromMatrix.Zone` trennt heute nach Tarifzone — mit der Etappe, die die Strommatrix anfasst (E4 U6), auf eine Zone ohne HT/NT zurückführen |
 | **Q12** | Sprungknopf „Tarif…" im PV-Dialog: schreiben und springen oder verwerfen und es sagen? | **Schreiben und springen** wie im BHKW-Dialog; `PVV_SPRUNG_HINWEIS` in beiden Sprachen neu fassen |
 | **Q13** | Beim Öffnen aus dem Menü trägt das Fenster den Titel, der Dialog keinen? | **Ja** — dieselbe Regel wie bei der `Ueberlagerung`; der Fenstertitel muss dann der lange sein |
 | **Q14** | Hüllen der 15 windowsgebundenen Dialoge nach `EPOS.UI.Daten`? | **Ja, gestaffelt:** `KostenKomponenteHuelle` zuerst |
@@ -380,7 +381,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | **Q20** | Parameterdialog im Mockup vollständig zeichnen? | **Ergänzen** (mindestens Szenariotafel und Gruppe „Bewertung") oder als Ausschnitt kennzeichnen |
 | **Q21** | Katalogfilter, Wechselrichter, Stromspeicher-Dialoge nach `ueberholt/`; Hydraulik-Entwurf weiterverfolgen? | **Ja**, als ein Auftrag je Thema mit Konzept, Index, Code-Spannen und Test-Gegenprobe; Hydraulik-Entwurf ohne Konzept → `ueberholt/` |
 | **Q22** | Google-Schrift im Mockup; Artifact neu veröffentlichen? | Systemschrift-Kette; Artifact redeployen oder Vermerk „Repo-Datei führt" |
-| **Q23** | Logbuch: #346 ohne Eintrag lassen, #361 aufnehmen; Version 1.2.0.2? | **#346 ohne, #361 mit**; Version vor dem 28.09. bestätigen |
+| **Q23** | Logbuch: #346 ohne Eintrag lassen, #361 aufnehmen; Version 1.2.0.2? | **#346 ohne, #361 mit**; **Anwenderentscheid 22.09.2026: „letzte Nummer erhöhen"** — Version **1.2.0.4** (das Programm trägt 1.2.0.3 in `AssemblyInfo.cs`; die Anhebung gehört zur Auslieferung, das Update-Papier führt 1.2.0.4) |
 | **Q24** | Gestaltungsfamilien der Mockups vereinheitlichen; Akzentfarben ins Farbregister; Produktdaten-Wache auf Mockups ausdehnen? | Entscheidung nur für **bleibende** Mockups nötig (nach Q1/Q21 bleibt eines); Wache auf Mockups ausdehnen, solange sie Wiki-Vorlage sind |
 | **Q25** | Kopfzeile des konsolidierten Konzepts mit Codestand führen? | **Streichen** — Datum und Zielversion pflegen, die Zielversion ist maschinell prüfbar |
 

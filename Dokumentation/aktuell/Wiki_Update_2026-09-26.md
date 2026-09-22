@@ -36,7 +36,7 @@ Reihenfolge neueste Version oben. Ein Satz je wesentlicher, sichtbarer Änderung
 Einzelheiten und Begründung (Regel: Konzept Hilfesystem 13.4); Kleinigkeiten sind bereits
 ausgefiltert (Statuszeilen mit „Kein Logbuch-Satz“).
 
-### Version 1.2.0.x — beim Anwender erfragen
+### Version 1.2.0.4 — Anwenderentscheid 22.09.2026 („letzte Nummer erhöhen"; das Programm trägt heute 1.2.0.3 in `AssemblyInfo.cs`, die Anhebung gehört zur Auslieferung)
 
 Die Diagramm-Umstellung auf Vektorgrafik (DG-E3) ist mit Statuszeile #413 abgeschlossen. Die
 folgenden vier Sätze fassen die Zwischenstände aus #404 und #411 zusammen, die dieselbe
