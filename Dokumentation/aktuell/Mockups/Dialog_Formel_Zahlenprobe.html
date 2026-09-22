@@ -4493,16 +4493,22 @@ Einstufung
         <tr><td>Abschnittsköpfe der vier Fragen</td><td class="rs">WIRT_ABS_LOHNT · WIRT_ABS_SICHER · WIRT_ABS_WORAUS · WIRT_ABS_ANNAHMEN</td><td>Ergebnisseite</td></tr>
         <tr><td>Einstufungen</td><td class="rs">WIRT_EMPF_STUFE_JA · WIRT_EMPF_STUFE_BEDINGT · WIRT_EMPF_STUFE_NEIN</td><td>Empfehlungskarten, Bandbreite, Bericht</td></tr>
         <tr><td>Einstufungsregel unter den Karten, Unterzeile der Karte „Kapitalwertdifferenz, Szenario Erwartet"</td><td class="rs">WIRT_EMPF_REGEL · WIRT_EMPF_KARTE_UNTER</td><td>Empfehlungskarten</td></tr>
-        <tr><td>„Vorschlag zur Wahl: {0}"</td><td class="rs">WIRT_EMPF_SATZ</td><td>Empfehlungsband</td></tr>
-        <tr><td>Szenarionamen</td><td class="rs">WIRT_SZEN_WORST · WIRT_SZEN_ERWARTET · WIRT_SZEN_BEST</td><td>überall</td></tr>
+        <tr><td>„Vorschlag zur Wahl: {0}"; ist eine Variante die Referenz und schneidet der Stamm am besten ab, „Stammprojekt beibehalten"</td><td class="rs">WIRT_EMPF_SATZ · WIRT_EMPF_SATZ_STAMM</td><td>Empfehlungsband, Block 4, Wort- und Tabellenbericht</td></tr>
+        <tr><td>Szenarionamen; Überschrift der Szenarienübersicht „Szenarien {0} / {1} / {2}"</td><td class="rs">WIRT_SZEN_WORST · WIRT_SZEN_ERWARTET · WIRT_SZEN_BEST · WIRT_SZ_UEBERSCHRIFT</td><td>überall; die Überschrift im Wortbericht</td></tr>
         <tr><td>Titel der Kennzahltafel „Die Kennzahlen dazu — Szenario Erwartet", Marke „nachrichtlich (Anhang C)"</td><td class="rs">WIRT_KZ_TAFEL_TITEL · WIRT_KZ_NACHRICHTLICH</td><td>Kacheln und Kennzahltafel; die Marke auch im Wortbericht</td></tr>
         <tr><td>Zellen ohne Wert „— keine Amortisation im Betrachtungszeitraum", „kein Zinsfuß bestimmbar"; Warnung „mehrdeutig — die Differenzreihe wechselt {0}-mal das Vorzeichen …"</td><td class="rs">WIRT_GRUND_KEINE_AMORTISATION · WIRT_IZF_KEIN_WERT · WIRT_IZF_MEHRDEUTIG</td><td>Kacheln und Kennzahltafel, Wortbericht</td></tr>
         <tr><td>Titel der Bandbreite „Bandbreite der Kapitalwertdifferenz — alle drei Szenarien", Klappliste „Einzelheiten anzeigen für Szenario:"</td><td class="rs">WIRT_BB_TITEL · WIRT_LBL_EINZELHEITEN</td><td>„Wie sicher ist das?"</td></tr>
+        <tr><td>Spannenbild: Titel „Spanne der Kapitalwertdifferenz je Version", Legende „Spanne ungünstig bis günstig" · „Erwartungsfall" · „unter der Referenz", Achse „Kapitalwertdifferenz zu {0} [€] — Nulllinie = Referenz", Hinweis ohne zeichenbare Version</td><td class="rs">WIRT_SPANNE_TITEL · WIRT_SPANNE_LEG_SPANNE · WIRT_SPANNE_LEG_ERWARTET · WIRT_SPANNE_LEG_UNTER · WIRT_SPANNE_ACHSE · WIRT_SPANNE_LEER</td><td>„Wie sicher ist das?" unter der Bandbreite, Wortbericht</td></tr>
+        <tr><td>Verlauf: Abschnittstitel „Der Verlauf über die Zeit — alle drei Szenarien", Bildtitel, Erklärzeile, Fußnote des Bildes, Hinweis im Wortbericht</td><td class="rs">WIRT_VERL_TITEL · WIRT_VERL_BILD · WIRT_VERL_ERKLAERUNG · WIRT_VERL_FUSS · WIRT_VERL_WORT_HINWEIS</td><td>„Wie sicher ist das?", Wortbericht</td></tr>
+        <tr><td>Bedienleiste des Verlaufs: „Zeitraum [Jahre]:", „Aktualisieren", Laufmeldungen, Platzhalter „Noch kein Diagramm"</td><td class="rs">WVERL_LBL_ZEITRAUM · WVERL_BTN_ZEICHNEN · WVERL_STATUS_LAEUFT · WVERL_STATUS_ABBRUCH · WVERL_MSG_FEHLER · WVERL_KEIN_BILD</td><td>Bedienleiste des Verlaufs</td></tr>
+        <tr><td>Knopf „Verlauf nach Excel…", Titel und Dateiname des Speicherdialogs, Meldungen „geschrieben" · „konnte nicht geschrieben werden" · „noch kein Verlauf gerechnet"</td><td class="rs">WIRT_BTN_VERLAUF_EXCEL · WIRT_VERL_EXCEL_TITEL · WIRT_VERL_EXCEL_DATEI · WIRT_VERL_EXCEL_OK · WIRT_VERL_EXCEL_FEHLER · WIRT_VERL_EXCEL_LEER</td><td>Bedienleiste des Verlaufs</td></tr>
+        <tr><td>Haken und Legende des Verlaufs „Varianten:" · „Szenarien:", Marke „Nulldurchgang = dynamische Amortisation"</td><td class="rs">WIRT_VERL_LEG_VARIANTEN · WIRT_VERL_LEG_SZENARIEN · WIRT_VERL_NULLDURCHGANG</td><td>Bedienleiste und Verlaufsbild</td></tr>
+        <tr><td>Zeilen unter dem Verlaufsbild: Nulldurchgänge, „keiner im Zeitraum", Statuszeile, fehlende Stände, noch nicht gerechnet, mehr als acht Varianten, keine berechenbare Reihe</td><td class="rs">WIRT_VERL_NULLZEILE · WIRT_VERL_KEIN_NULL · WIRT_VERL_STATUS · WIRT_VERL_FEHLEND · WIRT_VERL_NOCH_NICHT · WIRT_VERL_ZU_VIELE · WIRT_VERL_KEINE_REIHE</td><td>unter dem Verlaufsbild, Wortbericht</td></tr>
+        <tr><td>Blatt „Verlauf": Name, Titel, Zeilen „Nulldurchgang (dynamische Amortisation) [a]" · „Restwert-Barwert am Horizontende [€]" · „Kapitalwertdifferenz = Endwert + Restwert-Barwert [€]"</td><td class="rs">WIRT_VERL_BLATT · WIRT_VERL_BLATT_TITEL · WIRT_VERL_ZEILE_NULL · WIRT_VERL_ZEILE_RESTWERT · WIRT_VERL_ZEILE_KW</td><td>Tabellenbericht, „Verlauf nach Excel…"</td></tr>
         <tr><td>Sensitivitätstafel: Titel, Spalten „Einflussgröße · bei −Δ [€] · Basis [€] · bei +Δ [€] · Steigung · Einheit", Einheiten „€/%-Pkt." · „€/%"</td><td class="rs">WIRT_SENS_TITEL · WIRT_SENS_SP_PARAMETER · WIRT_SENS_SP_MINUS · WIRT_SENS_SP_BASIS · WIRT_SENS_SP_PLUS · WIRT_SENS_SP_STEIGUNG · WIRT_SENS_SP_EINHEIT · WIRT_SENS_EINHEIT_PUNKT · WIRT_SENS_EINHEIT_PROZENT</td><td>„Wie sicher ist das?", Block 4; Steigung und Einheit auch in Wort- und Tabellenbericht</td></tr>
         <tr><td>Annahmentafel: Titel „Annahmen und ihre Herkunft", Spalte „Herkunft", Zeile „Betrachtungszeitraum", Herkunft „Vorgabe" · „gepflegt" · „Projektwert — in allen drei Szenarien gleich"</td><td class="rs">WIRT_ANN_TITEL · WIRT_ANN_SP_HERKUNFT · WIRT_ANN_ZEITRAUM · WIRT_ANN_VORGABE · WIRT_ANN_GEPFLEGT · WIRT_ANN_PROJEKTWERT</td><td>„Was ist angenommen?"</td></tr>
         <tr><td>Hinweistext „Was ein Szenario variiert"</td><td class="rs">WIRT_SZEN_HINWEIS</td><td>unter der Annahmentafel, Block 4, Wort- und Tabellenbericht</td></tr>
         <tr><td>Kennzeichnung „Nachweis liegt mit der nächsten Rechnung vor"</td><td class="rs">WIRT_NACHWEIS_NAECHSTE_RECHNUNG</td><td>„Was ist angenommen?", Block 5, Wort- und Tabellenbericht</td></tr>
-        <tr><td>Knopf „Verlauf nach Excel…"</td><td class="rs"><span class="rs-geplant">WIRT_BTN_VERLAUF_EXCEL · geplant · U13</span></td><td>Bedienleiste des Verlaufs</td></tr>
         <tr><td>Deklarationszeilen, ohne gepflegten Text „nicht monetäre Wirkungen: keine benannt"</td><td class="rs">WIRT_DEKL_NOMINAL · WIRT_DEKL_STEUERN · WIRT_DEKL_RESTWERT · WIRT_DEKL_RISIKO · WIRT_DEKL_RISIKO_OHNE_NM</td><td>Klappblock, Block 5, Wort- und Tabellenbericht</td></tr>
         <tr><td>Knopf „Bericht erzeugen"</td><td class="rs">WIRT_BTN_BERICHT</td><td>Fuß des Bewertungsblocks, Block 5</td></tr>
         <tr><td>Darstellung „ValERI-Bewertung": Blockköpfe „1 · Gegenstand und Rahmen" bis „5 · Deklarationen", Normbezug „DIN EN 17463 · …", Zeile „Maßnahme", Einordnung unter der Kennzahltafel, Hinweiszeile an der Stelle von Block 2</td><td class="rs">WIRT_VALERI_BLOCK_1 … WIRT_VALERI_BLOCK_5 · WIRT_VALERI_NORM_1 … WIRT_VALERI_NORM_5 · WIRT_VALERI_MASSNAHME · WIRT_VALERI_KZ_HINWEIS · WIRT_VALERI_BLOCK_2_HINWEIS</td><td>Darstellung „ValERI-Bewertung"</td></tr>
@@ -4534,18 +4540,23 @@ Einstufung
   <span class="rs-geplant">geplant</span> einen Schlüssel, dessen beschriftete Größe zu einem Punkt
   dieser Anhangtafel gehört; der Name ist unverbindlich, bis der Punkt gebaut ist.</p>
 
-  <p class="kat-lead"><b>Stand 22.09.2026.</b> Der Anwender hat am 20.09.2026 <b>alle Entscheidfragen
+  <p class="kat-lead"><b>Stand 23.09.2026.</b> Der Anwender hat am 20.09.2026 <b>alle Entscheidfragen
   Q1–Q25 der Mockup-Prüfung und alle Entscheide A1–A20 des Analysepapiers nach der Empfehlung der
-  Papiere entschieden</b>. Für diese Tafel heißt das: <b>kein Punkt wartet mehr auf einen
+  Papiere entschieden</b>. Für diese Tafel heißt das: <b>kein Punkt wartet auf einen
   Grundsatzentscheid</b> — Q18 ist am 22.09.2026 nach Empfehlung entschieden und der Folgeentscheid
   gefallen: U44 „Bericht erzeugen" ist mit E5 gebaut, U43 „Anhang-E-Checkliste…" kommt mit E8 und trägt
-  deshalb den Chip „offen". <b>Gebaut sind mit E4 (#432) U6 und U7, mit E5 (#434) U2, U4, U5, U10 und
-  U44</b>; von U39 ist die Hinweiszeile erledigt. Die
+  deshalb den Chip „offen". Auf ein Wort des Anwenders wartet allein U49 (Frage E6‑Q1: Verlauf und
+  Spannenbild auch in Block 4 der Darstellung „ValERI-Bewertung"). <b>Gebaut sind mit E4 (#432) U6 und
+  U7, mit E5 (#434) U2, U4, U5, U10 und U44, mit E6 (#436) U3, U13 und der Rest von U2</b> (der Wegfall
+  von „Verlauf…"); von U39 ist die Hinweiszeile erledigt, zu U4 ist mit E6 das Spannenbild gebaut. Die
+  Stücke, die nach dem Entscheid vom 22.09.2026 mit E8 kommen — Brückenbild (U41), Nominalsummen und
+  Differenzspalte der Gliederung (U46), Tafel „Was daraus im Lauf wird" (U47), Fußzeile „Drei Szenarien
+  gerechnet…" (U48) —, tragen den Chip „offen · mit E8". Die
   Etappen E1 (Ankertests und Kaskadenrunde 2) und E2 (Kohärenzzeilen, Bandbreite mit Spanne,
   Referenztext, Formel N4, Dialogkorrekturen) haben Stücke berührt, die hier nie als offen standen;
   die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die Etappe E3 Plattform (#431) hat den
-  Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht. Die nächste Etappe ist der
-  <b>A13-Schnitt</b> des Konzepts, dann <b>E6 Verlauf mit drei Szenarien</b> (U3, U13).</p>
+  Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht. Die nächste Etappe ist
+  <b>E7 rechenwirksame Lücken</b>.</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4564,19 +4575,6 @@ Einstufung
             <td>Prüffall: Anlage mit Kennzeichen und σ rechnet
               <span class="mono">min(Netto, Nutzwärme × σ)</span>; ohne Kennzeichen unverändert.
               Kein Referenzprojekt betroffen — keine neue Basis</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U3</td><td class="num">8</td>
-            <td>Verlauf mit drei Szenarien in einem Bild: Der Rechenaufruf nimmt ein Szenario, das
-              Verlaufsmodell trägt eines — nötig sind drei Läufe oder ein Sammelmodell; die
-              Reihenbildung muss Variante (Farbe) und Szenario (Strichart) zugleich unterscheiden;
-              das Merkmal Strichart wird im Verlaufsbild nicht gelesen; Legendenplatz und Bildmaß;
-              <b>plattformfrei</b> in <span class="mono">EPOS.UI.Daten</span> — die Hülle liegt dort seit
-              E3 (#431). Mit dem Bild fällt der Knopf „Verlauf…" aus der Fußleiste, die dann vier Knöpfe
-              trägt (Rest von U2)</td>
-            <td><span class="mono">WirtschaftlichkeitCtrl.BerechneVerlauf</span> ·
-              <span class="mono">ChartRenderer.KapitalwertVerlauf</span> ·
-              <span class="mono">KapitalwertVerlaufHuelle</span></td>
-            <td>Bildprobe: drei Stricharten je Variante, zweigeteilte Legende, Nulldurchgang je
-              Szenario; Bild deterministisch</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U9</td><td>3 · 6</td>
             <td>Degradation mit Quellenangabe — vorhanden ist sie je Stammprojekt als Feld „Degradation [%/a]"
               des Vergütungsdialogs (wirkt in der Erlösreihe) und beim Stromspeicher; eine Quellenangabe dazu
@@ -4598,11 +4596,6 @@ Einstufung
             <td><span class="mono">ExcelBerichtGenerator</span></td>
             <td>Blattprobe je Stufe: Parameterblock aus Zellen, Mehrjahrestabelle mit Formeln,
               NBW/RMZ, bemessene Betriebskostenzeilen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U13</td><td class="num">8</td>
-            <td>Spaltengruppe je Szenario im Tabellenbericht, das zweite Bild im Wortbericht und das
-              Excel-Blatt des Verlaufs (je Jahr eine Zeile, je Variante und Szenario eine Spalte)</td>
-            <td>Konzept § 2.13 (5)</td>
-            <td>Berichtsprobe: drei Spaltengruppen, Blatt „Verlauf" vorhanden</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U14</td><td class="num">8</td>
             <td>Die Spalte des Referenzprojekts an beiden Orten der Schemabeschreibung sowie die
               Randfälle: Referenz ohne Ergebnis, gelöschte Referenz</td>
@@ -4668,12 +4661,13 @@ Einstufung
               Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
             <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
               beiden Plattformen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U41</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U41</td><td class="num">8</td>
             <td>Brückenbild „Von der Investition zur Kapitalwertdifferenz" (Wasserfalldarstellung) auf der
               Ergebnisseite — im Code nirgends vorhanden</td>
             <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
               <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
-            <td>Konzeptentscheid nötig, dann Bildprobe wie bei den anderen Diagrammen</td></tr>
+            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8</b>, dann Bildprobe wie bei den
+              anderen Diagrammen</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U42</td><td class="num">8</td>
             <td>Zahlungsstrombild je Jahr auf der Ergebnisseite — im Code nur die Tabelle
               (<span class="mono">BausteineWirtschaftlichkeit.cs</span>,
@@ -4695,15 +4689,58 @@ Einstufung
               Kopf oder Esc</td>
             <td><span class="mono">BrennstoffBestandteile.razor</span> · <span class="mono">Ueberlagerung.razor</span></td>
             <td>zwei neue Ressourcenschlüssel (de/en), dann Fußzeile wie bei den anderen Überlagerungen</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U46</td><td class="num">8</td>
+            <td>Gliederung „Woraus entsteht die Zahl?" mit der <b>Nominalsumme</b> je Bestandteil neben dem Barwert und
+              der Spalte „Differenz ‹Version› − Referenz", die in der Kapitalwertdifferenz aufgeht. Heute führt die
+              Gliederung Betriebs- und Energiekosten als Werte des ersten Jahres [€/a], Ersatz und Restwert als
+              Barwert, keine Nominalsumme und keine Differenzspalte</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Gliederung) ·
+              <span class="mono">WirtschaftlichkeitZeilen</span></td>
+            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> bunit: je Bestandteil Barwert und
+              Nominalsumme; die Differenzspalte ergibt in der Summe die Kapitalwertdifferenz</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U47</td><td class="num">8</td>
+            <td>Tafel „Was daraus im Lauf wird" unter dem Hinweistext in „Was ist angenommen?": je Szenario die
+              Wirkung auf eine Variante — Investition I₀, die Jahre der fälligen Ersatzbeschaffungen, der Restwert
+              am Ende</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> („Was ist angenommen?") ·
+              <span class="mono">WirtschaftlichkeitBewertung</span></td>
+            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> Prüffall: die drei Spalten gleichen
+              den Szenarioläufen der Bandbreite</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U48</td><td class="num">8</td>
+            <td>Fußzeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" im Fuß des
+              Bewertungsblocks — sie nennt, wie viele Szenarien gerechnet sind und woher ihre Annahmen kommen</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Fuß von „Was ist angenommen?")</td>
+            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> bunit: „Vorgaben" ohne Pflege,
+              „gepflegt" nach einer Pflege im Parameterdialog</td></tr>
+        <tr><td class="stand-zelle"><span class="stand entscheid">Entscheid ausstehend</span></td><td class="mono">U49</td><td class="num">8</td>
+            <td>Verlauf mit drei Szenarien und Spannenbild auch in Block 4 „Unsicherheit" der Darstellung
+              „ValERI-Bewertung" — die Tafel der fünf Blöcke nennt dort den Verlauf; gebaut zeigt Block 4
+              Bandbreite, Vorschlag, Hinweistext und Sensitivität</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Block 4) ·
+              <span class="mono">KapitalwertVerlaufAbschnitt</span></td>
+            <td><b>Frage E6‑Q1</b> (Statusdatei „Nach #436"; Empfehlung: ja, dieselben Bausteine wie unter „Wie
+              sicher ist das?"). bunit: Block 4 zeigt Spannenbild und Verlauf</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U2</td><td class="num">8</td>
             <td>Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite; der Knopf „Verlauf…"
               fällt aus der Fußleiste, die dann vier Knöpfe trägt</td>
             <td><span class="mono">WirtschaftlichkeitSeite.razor</span></td>
-            <td class="grund"><b>erledigt mit E5 (#434):</b> Der Umschalter steht im Kopf der Seite als Sitzungswahl (<span class="mono">Vergleichsauswahl.Darstellung</span>, Vorgabe „Kennzahlen"). Die Darstellung „Kennzahlen" gliedert in die vier Abschnitte „Lohnt es sich?", „Wie sicher ist das?", „Woraus entsteht die Zahl?" und „Was ist angenommen?"; die Darstellung „ValERI-Bewertung" zeigt die Blöcke 1, 3, 4 und 5, an der Stelle von Block 2 eine Hinweiszeile (E8). bunit: beide Zustände gezeichnet. <b>Offen bleibt allein der Wegfall von „Verlauf…"</b> — die Fußleiste ist in beiden Zuständen dieselbe, bis der Verlauf mit drei Szenarien auf die Seite kommt; dieser Rest steht jetzt in U3 (E6)</td></tr>
+            <td class="grund"><b>erledigt mit E5 (#434):</b> Der Umschalter steht im Kopf der Seite als Sitzungswahl (<span class="mono">Vergleichsauswahl.Darstellung</span>, Vorgabe „Kennzahlen"). Die Darstellung „Kennzahlen" gliedert in die vier Abschnitte „Lohnt es sich?", „Wie sicher ist das?", „Woraus entsteht die Zahl?" und „Was ist angenommen?"; die Darstellung „ValERI-Bewertung" zeigt die Blöcke 1, 3, 4 und 5, an der Stelle von Block 2 eine Hinweiszeile (E8). bunit: beide Zustände gezeichnet. <b>Der Rest — der Wegfall von „Verlauf…" — ist erledigt mit E6 (#436):</b> Die Fußleiste ist in beiden Zuständen dieselbe und trägt höchstens vier Knöpfe (Photovoltaik, BHKW, Strombezug je nach Ausstattung, Berechnen); der Verlauf mit drei Szenarien steht als Abschnitt unter „Wie sicher ist das?" (U3), <span class="mono">KapitalwertVerlaufDialog</span> ist entfallen. bunit: vier Fußknöpfe ohne Verlauf</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U3</td><td class="num">8</td>
+            <td>Verlauf mit drei Szenarien in einem Bild: Der Rechenaufruf nimmt ein Szenario, das
+              Verlaufsmodell trägt eines — nötig sind drei Läufe oder ein Sammelmodell; die
+              Reihenbildung muss Variante (Farbe) und Szenario (Strichart) zugleich unterscheiden;
+              das Merkmal Strichart wird im Verlaufsbild nicht gelesen; Legendenplatz und Bildmaß;
+              <b>plattformfrei</b> in <span class="mono">EPOS.UI.Daten</span> — die Hülle liegt dort seit
+              E3 (#431). Mit dem Bild fällt der Knopf „Verlauf…" aus der Fußleiste, die dann vier Knöpfe
+              trägt (Rest von U2)</td>
+            <td><span class="mono">WirtschaftlichkeitCtrl.BerechneVerlauf</span> ·
+              <span class="mono">ChartRenderer.KapitalwertVerlauf</span> ·
+              <span class="mono">KapitalwertVerlaufHuelle</span></td>
+            <td class="grund"><b>erledigt mit E6 (#436):</b> Der Verlauf steht als eigener Abschnitt in „Wie sicher ist das?" zwischen Bandbreite und Sensitivität (<span class="mono">KapitalwertVerlaufAbschnitt</span>). <span class="mono">WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien</span> rechnet je Version drei vollständige Läufe ohne Speichern; <span class="mono">ChartRenderer.KapitalwertSzenarien</span> gibt jeder Version eine Farbe (bis acht, darüber benannt abgelehnt) und jedem Szenario eine Strichart der Aufzählung <span class="mono">ChartRenderer.Strichart</span> — Erwartet durchgezogen, Ungünstig gestrichelt, Günstig gepunktet —, die Legende ist zweigeteilt, der Nulldurchgang jeder Linie ist markiert; das Bild misst 1240 × 620 und wächst je weitere Legendenzeile um 30 px. Bedienleiste: Zeitraum, „Aktualisieren", „Verlauf nach Excel…", je Version und Szenario ein Haken, der nur neu zeichnet. Die Hülle des Abschnitts ist <span class="mono">KapitalwertVerlaufHuelle</span>, plattformfrei in <span class="mono">EPOS.UI.Daten</span>. Abweichungen: Marken schwarz mit hellem Ring statt Bernstein, Szenarionamen an den Marken nur bei einer Version, die Legende schaltet nicht (gefiltert wird über die Haken). ChartProben: 17 neue Bilder, die 91 bisherigen byte-gleich</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U4</td><td class="num">8</td>
             <td>Bandbreite nebeneinander — die Seite hält genau ein Szenario im Stand</td>
             <td><span class="mono">WirtschaftlichkeitSeite.razor</span></td>
-            <td class="grund"><b>erledigt mit E5 (#434):</b> Unter „Wie sicher ist das?" steht die Bandbreite nebeneinander — Ungünstig · Erwartet · Günstig mit Referenzzeile, Spanne und Einstufung — aus <span class="mono">WirtschaftlichkeitBandbreite</span>; <span class="mono">WirtschaftlichkeitCtrl.BerechneBandbreite</span> rechnet dafür drei vollständige Szenarioläufe ohne Speichern, zahlengleich zur Bandbreite der Berichte. Die Klappliste „Einzelheiten anzeigen für Szenario" steht unter der Sensitivitätstafel und steuert nur die Tafeln darunter. Die Spanne ist der Betrag aus größtem und kleinstem Szenariowert (Anwenderentscheid 22.09.2026). Das Spannen-Balkenbild dieser Seite ist nicht gebaut — nach Empfehlung mit E6 (Statusdatei „Nach #434", Frage (4))</td></tr>
+            <td class="grund"><b>erledigt mit E5 (#434):</b> Unter „Wie sicher ist das?" steht die Bandbreite nebeneinander — Ungünstig · Erwartet · Günstig mit Referenzzeile, Spanne und Einstufung — aus <span class="mono">WirtschaftlichkeitBandbreite</span>; <span class="mono">WirtschaftlichkeitCtrl.BerechneBandbreite</span> rechnet dafür drei vollständige Szenarioläufe ohne Speichern, zahlengleich zur Bandbreite der Berichte. Die Klappliste „Einzelheiten anzeigen für Szenario" steht unter der Sensitivitätstafel und steuert nur die Tafeln darunter. Die Spanne ist der Betrag aus größtem und kleinstem Szenariowert (Anwenderentscheid 22.09.2026). <b>Das Spannen-Balkenbild ist gebaut mit E6 (#436)</b> (Entscheid E5b‑4): <span class="mono">ChartRenderer.KapitalwertSpanne</span> zeichnet unter der Bandbreitentafel je Version einen Balken vom kleinsten bis zum größten Szenariowert, den Erwartungsfall als Punkt mit Betrag und die Referenz als Nulllinie — auch im Wortbericht; abweichend von dieser Seite mit der Achse in Euro, Vorzeichenfarben und dem Titel „je Version" (Frage E6‑Q2: so lassen?)</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U5</td><td class="num">8</td>
             <td>Empfehlungskarten je Version — die Einstufung je Version wird im Kern gebildet, die
               Seite zeigt einen Satz</td>
@@ -4741,6 +4778,11 @@ Einstufung
             <td>Der Hinweistext „Was ein Szenario variiert" als Ressource in beiden Sprachen</td>
             <td>Konzept § 2.11.7 · <span class="mono">WIRT_SZEN_HINWEIS</span></td>
             <td class="grund"><b>erledigt mit E5 (#434):</b> <span class="mono">WIRT_SZEN_HINWEIS</span> in beiden Sprachen, Wortlaut der Konzeptfassung ohne den Roadmap-Satz (A14) — der Titel sagt „Was ein Szenario heute variiert", und der Schlusssatz dieser Seite zu den gepflegten Werten entfällt, weil der Text die wirksamen Werte selbst einsetzt: ohne Pflege die Vorgaben ±10 %, ±10 %, ±2 a, sonst die gepflegten Sätze. Er steht unter der Annahmentafel, in Block 4 der Darstellung „ValERI-Bewertung" und in Wort- und Tabellenbericht. Ressourcenwache: Schlüssel in beiden Sprachen</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U13</td><td class="num">8</td>
+            <td>Spaltengruppe je Szenario im Tabellenbericht, das zweite Bild im Wortbericht und das
+              Excel-Blatt des Verlaufs (je Jahr eine Zeile, je Variante und Szenario eine Spalte)</td>
+            <td>Konzept § 2.13 (5)</td>
+            <td class="grund"><b>erledigt mit E6 (#436):</b> Der Tabellenbericht führt im Block „Kapitalwert-Verlauf" des Blattes „Wirtschaftlichkeit" je Szenario eine Spaltengruppe (Ungünstig · Erwartet · Günstig, je Projekt und Differenz; der Δ-Kopf nennt die Referenz) und hängt das Blatt „Verlauf" an (<span class="mono">VerlaufExcel</span>: je Jahr eine Zeile, je Version und Szenario eine Spalte in einer Spaltengruppe je Szenario, darunter Nulldurchgang, Restwert-Barwert und Kapitalwertdifferenz); dasselbe Blatt schreibt der Knopf „Verlauf nach Excel…" als eigene Mappe über <span class="mono">Dienste.Datei</span>. Im Wortbericht tritt das Dreierbild an die Stelle des Differenzbildes im Erwartungsfall, darunter Nulldurchgänge und Restwerte; das Bild „Kumulierte Barwerte je Version" (U18) bleibt. Die Überschrift der Szenarienübersicht kommt aus <span class="mono">WIRT_SZ_UEBERSCHRIFT</span> mit den Szenarionamen, die Szenarientafel und die Excel-Blöcke heißen „Ungünstig"/„Günstig". Blattstruktur-Wache nachgezogen (sechs Blätter)</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U16</td><td class="num">4</td>
             <td>Vorschlagswerte für die Anteile KWKG-Umlage, Offshore-Netzumlage und § 19 StromNEV
               sind im Katalog nicht hinterlegt</td>
