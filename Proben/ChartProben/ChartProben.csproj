@@ -66,6 +66,10 @@
          (DG-E3c). Eigene Datei, damit die Gruppen des Rollouts nebeneinander
          entstehen koennen, ohne sich in Program.cs zu begegnen. -->
     <Compile Include="Program.GruppeC.cs" />
+
+    <!-- Etappe E6 der Wirtschaftlichkeit: der Verlauf mit drei Szenarien und die
+         dritte Strichart - Mass-, Gegen- und SVG-Proben. -->
+    <Compile Include="Program.Szenarien.cs" />
   </ItemGroup>
 
   <ItemGroup>

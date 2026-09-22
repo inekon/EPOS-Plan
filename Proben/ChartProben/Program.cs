@@ -1221,6 +1221,10 @@ namespace ChartProben
                 () => ChartRenderer.KapitalwertVerlauf("Kumulierte Barwerte je Version",
                         VerlaufMitNamen(serien, "Bestand", "Version 1", "Version 2"), null));
 
+            // ETAPPE E6 - der Verlauf mit drei Szenarien und die dritte Strichart: Mass-,
+            // Gegen- und SVG-Proben in Program.Szenarien.cs.
+            SzenarienProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell
