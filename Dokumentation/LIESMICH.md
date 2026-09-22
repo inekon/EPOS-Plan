@@ -106,6 +106,7 @@ und `README.md`.
 | [`aktuell/Konzept_Katalogfilter_EPOS-Plan.md`](aktuell/Konzept_Katalogfilter_EPOS-Plan.md) | Katalogfilter: Spaltenfilter, Suche, Sortierung — Stufen S1–S3 | 2026-09-13 |
 | [`aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md`](aktuell/Konzept_Klimadatenquellen_TMY_TRY_EPOS-Plan.md) | Klimadatenquellen: PVGIS-TMY, DWD-TRY-Datei und offene TRY-Regionaldaten — Bedienweg, TRY-Spaltenbild und Zuordnung, Zeitbasis, Direkt-Normal, benanntes Verwerfen, Regionswahl und Bereichsabruf, Lizenz, Einstellungen (E5, KL-Q2…Q5) | 2026-09-19 |
 | [`aktuell/Konzept_Knopfleisten_Administration_EPOS-Plan.md`](aktuell/Konzept_Knopfleisten_Administration_EPOS-Plan.md) | Knopfleisten der Administrationsdialoge nach der Hausregel: zehn Komponenten heute/Vorschlag, Entscheide DL-Q1…Q6, Umsetzungsreihenfolge (DL-2; Mockup `aktuell/Mockups/Knopfleisten_Administration_DL2.html`) | 2026-09-19 |
+| [`aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`](aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md) | Administrationsdialoge neu ordnen: Befund (drei Rollbereiche ineinander, Übernahmeweg ins Projekt, Detailblock unter der Liste, neunzehn Komponenten), sieben Vorschläge V1–V7 (Gerüst, Spaltenränge, Stammblatt, Zeilenwahl, Übernahme aus der Zeile, Mehrfachwahl, Filter), Fragen AD-Q1…Q8, Reihenfolge (Mockup `aktuell/Mockups/Administration_Heizkessel_Neuordnung.html`) | 2026-09-22 |
 | [`aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md`](aktuell/Konzept_Nutzungsdauer_AfA_EPOS-Plan.md) | Nutzungsdauer je Technik und Positionsart aus einer editierbaren AfA-Tabelle — Zielbild, Saat, Stufen S1–S3, Fragen ND-Q1…Q8 | 2026-09-22 |
 | [`aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md`](aktuell/Konzept_Photovoltaik_Ertragsmodell_EPOS-Plan.md) | PV-Ertragsmodell aus den Modulstammdaten (T_NOCT, Temperaturkoeffizienten) | 2026-09-07 |
 | [`aktuell/Konzept_Projektbeispiele_Dokumentation.md`](aktuell/Konzept_Projektbeispiele_Dokumentation.md) | Projektbeispiele als mitwachsende Online-Dokumentation — Grundlage des Beispiele-Gerüsts | 2026-08-29 |
@@ -149,6 +150,7 @@ Indexzeile): `Dialog_Formel_Zahlenprobe.html` — alle acht Kostenkategorien mit
 Berechnungsgrundlage, Berechnungserläuterung und Ergebnisseite, dazu die Anhänge Umsetzungsstand und
 Herkunft der Zahlen; die Rechenwege verweisen darauf —, `Ergebnis_Bandbreite_Herkunft.html`,
 `Katalogfilter_Vorschlag.html`, `Knopfleisten_Administration_DL2.html`,
+`Administration_Heizkessel_Neuordnung.html`,
 `Wechselrichter_Mockup_2026-09-06.html`,
 `stromspeicher-optimierung-v2.html` und `Entwurf_Hydraulikuebersicht_Konfiguration.html`.
 
