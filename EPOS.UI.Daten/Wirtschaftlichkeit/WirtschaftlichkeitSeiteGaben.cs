@@ -6,12 +6,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 using EPOS.UI.Seiten.Berichte;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
     /// Die DATENSEITE der Wirtschaftlichkeitsseite (iU9-W5.3/W5.6) — Nachfolge
-    /// von <c>Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.cs</c> (831 Z.).
+    /// von <c>Views/Wirtschaftlichkeit/UcWirtschaftlichkeit.cs</c> (831 Z.), seit
+    /// Etappe E3 Schritt 3 plattformfrei in <c>EPOS.UI.Daten</c>: keine
+    /// WinForms-Anweisung, kein Fenster. Vier der fünf Unterdialoge zeigen
+    /// daneben noch ein eigenes Fenster und kommen deshalb über
+    /// <see cref="Wirtschaftlichkeitswege"/> herein, bis sie mit E3 Schritt 6
+    /// selbst wandern.
     ///
     /// <para><b>Was hier liegt.</b> Laden und Rechnen über
     /// <see cref="WirtschaftlichkeitCtrl"/> und
@@ -818,7 +824,11 @@ namespace WindowsFormsApplication1
                 // eine Zeile, die „nicht neu gerechnet" sagt, während gerechnet wird.
                 bool mitZeitreihen = MitZeitreihen(p, tarif);
 
-                _ergebnisse = await Task.Run(() =>
+                // E3/3: In EPOS.UI.Daten gilt der Wächter ParallelitaetWache — ein
+                // nackter Task.Run liest den VERAENDERLICHEN prozessweiten
+                // Kulturvorgabewert. Derselbe Arbeitsfaden, dieselbe Abbruchmarke,
+                // nur mit weitergereichter Kultur (Muster der Hüllen aus #428).
+                _ergebnisse = await Kulturweitergabe.Starten(() =>
                 {
                     BerichtsDaten daten = new BerichtsDatenSammler().Sammle(
                         _idStamm, _stammName, varianten, false, mitZeitreihen, melde, ct);
@@ -882,26 +892,34 @@ namespace WindowsFormsApplication1
         {
             try
             {
+                // E3/3: Vier der fuenf Huellen zeigen bis E3 Schritt 6 DANEBEN noch
+                // ein eigenes Fenster und bleiben deshalb in der Schale; ihre
+                // Parametersaetze kommen als benannte Naht herein. Kein Delegat,
+                // keine Ueberlagerung - die Seite meldet dann nichts anderes, als
+                // sie auch bei einem Ladefehler meldet (null).
                 switch (art)
                 {
                     case WirtschaftlichkeitSeite.Unterdialog.Photovoltaik:
-                        return PhotovoltaikVerguetungHuelle.Gaben(_idStamm);
+                        return Wirtschaftlichkeitswege.PvVerguetungGaben == null ? null
+                             : Wirtschaftlichkeitswege.PvVerguetungGaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Bhkw:
-                        string titel;
-                        return BhkwWirtschaftlichkeitHuelle.Gaben(_idStamm, _ergebnisse, out titel);
+                        return Wirtschaftlichkeitswege.BhkwGaben == null ? null
+                             : Wirtschaftlichkeitswege.BhkwGaben(_idStamm, _ergebnisse);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Strombezug:
-                        return TarifstrukturHuelle.Gaben(_idStamm, TarifSicht.Strombezug);
+                        return Wirtschaftlichkeitswege.TarifGaben == null ? null
+                             : Wirtschaftlichkeitswege.TarifGaben(_idStamm, TarifSicht.Strombezug);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Parameter:
                         return WirtschaftlichkeitParameterHuelle.Gaben(_idStamm);
 
                     case WirtschaftlichkeitSeite.Unterdialog.Verlauf:
+                        if (Wirtschaftlichkeitswege.VerlaufGaben == null) return null;
                         var varianten = new List<int>();
                         foreach (WirtschaftlichkeitErgebnis e in _ergebnisse)
                             if (!e.IstStamm && !varianten.Contains(e.IdProjekt)) varianten.Add(e.IdProjekt);
-                        return KapitalwertVerlaufHuelle.Gaben(
+                        return Wirtschaftlichkeitswege.VerlaufGaben(
                             _idStamm, _stammName, varianten, out _verlaufNeuGesammelt);
                 }
             }

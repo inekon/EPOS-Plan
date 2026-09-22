@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Dialoge.Wirtschaftlichkeit;
 
 namespace WindowsFormsApplication1
 {
@@ -48,5 +49,66 @@ namespace WindowsFormsApplication1
         /// nachgelagert). <c>null</c> = diese Schale kennt den Weg nicht.
         /// </summary>
         internal static Action<int> PvVerguetungOeffnen;
+
+        // =================================================================
+        //  Die Überlagerungen der zwei Seiten (E3 Schritt 3)
+        // =================================================================
+        //
+        // KostenSeiteGaben und WirtschaftlichkeitSeiteGaben liegen seit E3/3 in
+        // EPOS.UI.Daten. Ihre Unterdialoge kommen bereits als Gaben in eine
+        // Ueberlagerung - nur liegen die Huellen, die diese Gaben bauen, noch in
+        // der Schale, weil sie DANEBEN ein eigenes Fenster zeigen (E3 Schritt 5
+        // und 6). Bis dahin holt die Seite sie hier ab; ohne Haken liefert sie
+        // null, und die Ueberlagerung erscheint nicht.
+
+        /// <summary>
+        /// Der Parametersatz der Kostenverwaltung im PROJEKTMODUS
+        /// (<c>idProjekt</c>, <c>projektname</c>, <c>komponente</c>,
+        /// <c>betrieb</c>, <c>idAnlage</c>) — unter Windows
+        /// <c>KostenKomponenteHuelle.GabenProjekt</c>. Wandert mit E3 Schritt 5.
+        /// </summary>
+        internal static Func<int, string, string, bool, int, IReadOnlyDictionary<string, object>>
+            KostenVerwaltungGaben;
+
+        /// <summary>
+        /// Der Parametersatz des PV-Vergütungsdialogs zu einem Stammprojekt —
+        /// unter Windows <c>PhotovoltaikVerguetungHuelle.Gaben</c>.
+        /// Wandert mit E3 Schritt 6.
+        /// </summary>
+        internal static Func<int, IReadOnlyDictionary<string, object>> PvVerguetungGaben;
+
+        /// <summary>
+        /// Der Parametersatz des Sammeldialogs „BHKW-Wirtschaftlichkeit" zu einem
+        /// Stammprojekt und den Ergebnissen des letzten Laufs — unter Windows
+        /// <c>BhkwWirtschaftlichkeitHuelle.Gaben</c>. Dessen Titel wertet die
+        /// Seite nicht aus (sie zeigt den Dialog als Überlagerung); die Schale
+        /// verwirft ihn beim Einhängen. Wandert mit E3 Schritt 6.
+        /// </summary>
+        internal static Func<int, List<WirtschaftlichkeitErgebnis>,
+                             IReadOnlyDictionary<string, object>> BhkwGaben;
+
+        /// <summary>
+        /// Der Parametersatz der Tarifstruktur zu einem Stammprojekt und einer
+        /// Sicht — unter Windows <c>TarifstrukturHuelle.Gaben</c>.
+        /// Wandert mit E3 Schritt 6.
+        /// </summary>
+        internal static Func<int, TarifSicht, IReadOnlyDictionary<string, object>> TarifGaben;
+
+        /// <summary>
+        /// Der Parametersatz des Kapitalwertverlaufs — unter Windows
+        /// <c>KapitalwertVerlaufHuelle.Gaben</c>. Der Rückgabeweg
+        /// <c>neuGesammelt</c> sagt der Seite, ob der Verlauf die Gruppe neu
+        /// gesammelt hat; sie frischt dann ihre Zeilen auf. Wandert mit
+        /// E3 Schritt 6.
+        /// </summary>
+        internal static VerlaufGabenWeg VerlaufGaben;
+
+        /// <summary>
+        /// Die Bauform von <see cref="VerlaufGaben"/> — ein <c>Func&lt;&gt;</c>
+        /// trägt kein <c>out</c>.
+        /// </summary>
+        internal delegate IReadOnlyDictionary<string, object> VerlaufGabenWeg(
+            int idStamm, string stammName, List<int> variantenIds,
+            out Func<bool> neuGesammelt);
     }
 }

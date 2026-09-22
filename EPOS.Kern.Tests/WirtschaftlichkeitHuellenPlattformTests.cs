@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using EPOS.UI.Seiten.Berichte;
 using WindowsFormsApplication1;
 using Xunit;
 
@@ -168,6 +169,102 @@ namespace EPOS.Kern.Tests
                 Assert.True(gaben.ContainsKey("PvOeffnen"));
             }
             finally { Wirtschaftlichkeitswege.PvVerguetungOeffnen = vorher; }
+        }
+
+        // =================================================================
+        //  (5) KostenSeiteGaben — E3 Schritt 3
+        // =================================================================
+
+        [Fact]
+        public void Kostenseite_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            var seite = new KostenSeiteGaben();
+            seite.SetzeGruppe(PROJEKT_BHKW, "");
+            seite.SetzeProjekt(PROJEKT_BHKW, "");
+
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+
+            Assert.NotNull(gaben);
+            Assert.True(gaben.ContainsKey("Laden"), "Der Ladeweg gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("VerwaltungGaben"));
+        }
+
+        [Fact]
+        public void Kostenseite_ohne_Naht_zeigt_die_Kostenverwaltung_nicht()
+        {
+            var vorher = Wirtschaftlichkeitswege.KostenVerwaltungGaben;
+            try
+            {
+                Wirtschaftlichkeitswege.KostenVerwaltungGaben = null;
+
+                var seite = new KostenSeiteGaben();
+                seite.SetzeGruppe(PROJEKT_BHKW, "");
+                seite.SetzeProjekt(PROJEKT_BHKW, "");
+
+                var weg = (Func<KostenZeile, IReadOnlyDictionary<string, object>>)
+                          seite.Gaben()["VerwaltungGaben"];
+
+                Assert.Null(weg(null));
+            }
+            finally { Wirtschaftlichkeitswege.KostenVerwaltungGaben = vorher; }
+        }
+
+        // =================================================================
+        //  (6) WirtschaftlichkeitSeiteGaben — E3 Schritt 3
+        // =================================================================
+
+        [Fact]
+        public void Wirtschaftlichkeitsseite_baut_ihren_Satz_ohne_Windows_Dienst()
+        {
+            var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
+
+            IReadOnlyDictionary<string, object> gaben = seite.Gaben();
+
+            Assert.NotNull(gaben);
+            Assert.True(gaben.ContainsKey("Laden"), "Der Ladeweg gehört zum Satz.");
+            Assert.True(gaben.ContainsKey("Berechnen"), "Der Rechenweg gehört zum Satz.");
+
+            // Der Kern-Weg der Seite läuft ohne Schale: Laden ruft
+            // WirtschaftlichkeitCtrl und BerichtsDatenSammler.ErmittleStatus.
+            var laden = (Func<WirtschaftlichkeitStand>)gaben["Laden"];
+            WirtschaftlichkeitStand stand = laden();
+            Assert.NotNull(stand);
+        }
+
+        [Fact]
+        public void Wirtschaftlichkeitsseite_ohne_Naht_zeigt_die_vier_Fensterdialoge_nicht()
+        {
+            var pv = Wirtschaftlichkeitswege.PvVerguetungGaben;
+            var bhkw = Wirtschaftlichkeitswege.BhkwGaben;
+            var tarif = Wirtschaftlichkeitswege.TarifGaben;
+            var verlauf = Wirtschaftlichkeitswege.VerlaufGaben;
+            try
+            {
+                Wirtschaftlichkeitswege.PvVerguetungGaben = null;
+                Wirtschaftlichkeitswege.BhkwGaben = null;
+                Wirtschaftlichkeitswege.TarifGaben = null;
+                Wirtschaftlichkeitswege.VerlaufGaben = null;
+
+                var seite = new WirtschaftlichkeitSeiteGaben(PROJEKT_BHKW, "");
+                var weg = (Func<WirtschaftlichkeitSeite.Unterdialog,
+                                IReadOnlyDictionary<string, object>>)seite.Gaben()["Gaben"];
+
+                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik));
+                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Bhkw));
+                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug));
+                Assert.Null(weg(WirtschaftlichkeitSeite.Unterdialog.Verlauf));
+
+                // Der fünfte Unterdialog liegt seit E3/1 selbst in EPOS.UI.Daten
+                // und braucht keine Naht.
+                Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
+            }
+            finally
+            {
+                Wirtschaftlichkeitswege.PvVerguetungGaben = pv;
+                Wirtschaftlichkeitswege.BhkwGaben = bhkw;
+                Wirtschaftlichkeitswege.TarifGaben = tarif;
+                Wirtschaftlichkeitswege.VerlaufGaben = verlauf;
+            }
         }
     }
 }

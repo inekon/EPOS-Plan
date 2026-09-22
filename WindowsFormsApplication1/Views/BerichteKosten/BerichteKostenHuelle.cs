@@ -132,7 +132,7 @@ namespace WindowsFormsApplication1
         {
             get
             {
-                if (_kosten == null) _kosten = new KostenSeiteGaben(_besitzer) { Vergleich = _vergleich };
+                if (_kosten == null) _kosten = new KostenSeiteGaben { Vergleich = _vergleich };
                 return _kosten;
             }
         }
