@@ -320,7 +320,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | `EPOS.UI/wwwroot/epos-ui.css` | *Q9 `.epos-dialog-kopf` mit `background: var(--epos-karte-titel)` und heller Schrift; ein Token `--epos-fehler-text`; `.epos-herleitung { white-space: pre-line }` | `04/B13, B14`, `03/#60` | mittel |
 | `EPOS.UI/Dialoge/Wirtschaftlichkeit/GesetzeskatalogDialog.razor`, `EmissionskatalogDialog.razor`, `KostenfaktorKatalogDialog.razor`, `NutzungsdauerDialog.razor` | *Q10 `Katalogliste`/Spaltenfilter mit Suchfeld und Trefferzahl, Filterstand über `Katalogfilterregister` | `04/B20` | hoch |
 | `EPOS.UI/Standards/Zahlen.cs` | benannte Stellenzahlen je Größenart (Geld 2 · ct/kWh 2 · Faktor 4 · Prozent 2 · Jahr/Stück 0 · Leistung 1) | `04/B28` | mittel |
-| `EPOS.UI.Daten/` | *Q14 Hüllen der Wirtschaftlichkeits- und Admin-Dialoge sowie `KostenKomponenteHuelle` plattformfrei, Adapter nach dem Muster `EnergietraegerFenster.cs` — **offen** (E3 Schritte 1, 5, 6); **das Muster ist seit #428 vierfach erprobt**: `KlimadatenHuelle`, `ProjektKopieHuelle`, `PeakShavingHuelle` und `StromganglinieAdminHuelle` liegen plattformfrei, Windows behielt je einen Fenster-Adapter | `04/B22` | mittel |
+| `EPOS.UI.Daten/` | *Q14 Hüllen der Wirtschaftlichkeits- und Admin-Dialoge sowie `KostenKomponenteHuelle` plattformfrei, Adapter nach dem Muster `EnergietraegerFenster.cs` — **umgesetzt #431** (E3 Schritte 1, 5, 6; Muster aus #428 angewandt) | `04/B22` | mittel |
 | `EPOS.UI/Bausteine/Menuetabelle.cs` | *Q11 Menüpunkt „Administration → Kostenverwaltung → Tarifstruktur" auf `TarifstrukturHuelle.Oeffnen` | `04/B29` | mittel |
 | `WindowsFormsApplication1/Allgemein/Hilfe/help_mapping.txt` | Zeile `Form_BhkwWirtschaftlichkeit.btn_Help = Wirtschaftlichkeit#…`; `Form_PhotovoltaikVerguetung.btn_Help = Wirtschaftlichkeit#pv-verguetung`; Anker für Kostenverwaltung, Energieträger, Parameter, Nutzungsdauern, Übernahme, Verlauf (Anker „Verlauf" auf der Wiki-Seite anlegen) — **umgesetzt #405** (`help_mapping.txt` und Wiki-Anker); die Zuordnung der gesetzlichen Parameter (A18) bleibt für E12 | `05/§6` | mittel |
 | `EPOS.Kern.Tests/DokumentationLinkWacheTests.cs` | Gegenprobe Z. 398/402 vor dem Umzug des Katalogfilter-Mockups auf eine bleibende Datei umhängen | `02/g‑7` | hoch |
@@ -347,7 +347,7 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 > (schreiben und springen, `PVV_SPRUNG_HINWEIS` neu) · **Q19** (Kapitalwertdifferenz über dem
 > Nettobarwert) — alle vier **umgesetzt #405**. **Q16** (Gedankenstrich oder Null) ist entschieden und
 > für **E5** vorgemerkt. **Q8** (Fußleistenregel) ist für die beiden Dialoge dieses Feldes mit **#390
-> (DL‑2e)** gebaut, für die übrigen neun offen. **Q14** (Hüllenumzug) gehört zu **E3**.
+> (DL‑2e)** gebaut, für die übrigen neun offen. **Q14** (Hüllenumzug) ist mit **E3 umgesetzt #431**.
 >
 > **Sieben Fragen trugen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht.**
 > Entschieden 22.09.2026: **Q11** („kein HT/NT" — der Zeitzonentarif entfällt, offen nur die
@@ -404,5 +404,5 @@ Einordnung von P5 in E0–E12 ist **nicht** vorgenommen worden und bleibt zu kl�
 | **P5 Hausstil Dialoge** — **offen**; die Fußleisten der beiden Kostendialoge sind mit **#390 (DL‑2e)** gebaut, der Rest läuft unter der Wellenreihe DL‑2 und ist im Etappenplan E0–E12 **nicht** eingeordnet | Fußleistenregel (Q8), Baustein `Dialogkopf`, Kontextzeile, Kopfband (Q9), Fenstertitel (Q13), Zahlenformat, Spaltenfilter (Q10), Menüpunkt Tarifstruktur (Q11); Konzeptabschnitt „Hausstil Dialoge" und `EPOS.UI/CLAUDE.md` | keine; bunit und Wachen |
 | **P6 Erlösrubrik und Steuerzeilen** — offen, **≈ E4** | U6 (Q15), U7, Gründe der Nullzeilen, BHKW-Vorschau auf die Rubrik | Zeilenstruktur; A/B-Nachweis am Beispiel 293.245,6 + 22.914,0 |
 | **P7 Ergebnisansicht** — offen, **≈ E5** (der Verlauf mit drei Szenarien in E6) | U2–U5, U10, U13, U39; Bericht mit Spanne, Nominalsummen, Spaltengruppen je Szenario | Ausweis; ChartProben, Berichtsprobe |
-| **P8 Ablösungen und Umzüge** — offen; die Hüllen (Q14) sind **Teil von E3**, Q1 und Q21 bleiben eigene Aufträge | Q1 (zweites Mockup), Q21 (drei Mockups mit Konzepten, Test-Gegenprobe), Hüllen (Q14) | keine |
+| **P8 Ablösungen und Umzüge** — Hüllen-Teil (Q14) **umgesetzt #431**; Q1 und Q21 (Mockup-Ablösungen) bleiben **offen**, eigene Aufträge | Q1 (zweites Mockup), Q21 (drei Mockups mit Konzepten, Test-Gegenprobe), Hüllen (Q14) — erledigt | keine |
 | **P9 Wiki** — offen, **≈ E12**; die `help_mapping`-Anker sind mit **#405** gesetzt | fünf Lücken, Anker, Logbuch 14+1 Sätze, Klimadaten-Zeile — im Sammel-Upload 28.09.2026 | — |

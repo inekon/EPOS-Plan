@@ -231,15 +231,12 @@ Restwert nach VDI 2067. Die Herleitungszeile und der Bericht nennen die Quelle d
 
 S3 nur nach Entscheid; es ist die Etappe **E10** des Etappenplans E0–E12.
 
-**Offen aus S2 (nachgemessen 22.09.2026, Codestand `3b71871c`):** Die Hülle der Kostenverwaltung liegt
-weiter in der Windows-Schale (`WindowsFormsApplication1/Views/Kosten/KostenKomponenteHuelle.cs`);
-plattformfrei nach `EPOS.UI.Daten` gehört sie mit dem Schritt, der den Dialog auf iOS bringt — das ist
-**E3 Schritt 5** („`KostenKomponenteHuelle` mit Fenster-Adapter"), entschieden mit **A1** und **Q14**
-am 20.09.2026. **Das Muster liegt seit #428 (KI‑F8) vor:** Vier Hüllen (`KlimadatenHuelle`,
-`ProjektKopieHuelle`, `PeakShavingHuelle`, `StromganglinieAdminHuelle`) sind plattformfrei nach
-`EPOS.UI.Daten` gewandert, während Windows je einen **Fenster-Adapter** behielt (`KlimadatenFenster`,
-`ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster`) und die Wurzel dieselben
-Masken auf iOS über Nähte in `IProjektQuelle` öffnet.
+**Offen aus S2 — umgesetzt #431 (Merge `2cfee66b`):** Die Hülle der Kostenverwaltung liegt seit E3
+Schritt 5 plattformfrei in `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs`; die Windows-Schale behält
+den Fenster-Adapter `KostenKomponenteFenster` (Muster aus #428/KI‑F8: Hülle in `EPOS.UI.Daten`,
+Fenster-Adapter in der Schale, Nähte in `IProjektQuelle`). Damit ist **E3 Schritt 5**
+(„`KostenKomponenteHuelle` mit Fenster-Adapter", entschieden mit **A1** und **Q14** am 20.09.2026)
+gebaut.
 
 Ebenso offen: die Entkopplung von Ersatz und Restwert je Position, die geräteeigenen Dauerspalten und
 der Anschluss der Speicherflotte (Mockup-Anhang U39). Dazu sind zwei Entscheide gefallen
@@ -278,6 +275,6 @@ Wirtschaftlichkeitsparameter. Die Betriebskostenprozentsätze nach VDI 2067 blei
 | Auftrag | Inhalt | Voraussetzung |
 |---|---|---|
 | A (Stufe S1) — **umgesetzt** | Schema-Schritt mit `Tab_Nutzungsdauer`, Saat nach Tabelle 2.6, Spalten `NutzungsdauerID` in Vorlagen- und Projektposition mit Saat-Zuordnung, `NutzungsdauerCtrl`, Vorbelegung beim Anlegen und Übernehmen im Kern, Administrationsdialog mit plattformfreier Hülle, Menüpunkt, Ressourcen, Testdatenbank, Auslieferungsvorlage | nächster freier Schema-Schritt |
-| B (Stufe S2) — **umgesetzt** | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Herleitung je Zeile, Tafel „Ersatz und Restwert" mit Hinweis; Wiki „Programm Dokumentation/Kosten". Die Hülle der Kostenverwaltung bleibt vorerst in der Windows-Schale | nach A |
+| B (Stufe S2) — **umgesetzt** | Kostenverwaltung: Knopf „Nutzungsdauern vorbelegen…", Positionsart im Zeileneditor, Herleitung je Zeile, Tafel „Ersatz und Restwert" mit Hinweis; Wiki „Programm Dokumentation/Kosten". Die Hülle der Kostenverwaltung liegt seit **E3 (#431)** plattformfrei in `EPOS.UI.Daten/Kosten/KostenKomponenteHuelle.cs` mit Fenster-Adapter `KostenKomponenteFenster` | nach A |
 | S3 | Instandsetzung/Wartung, Gerätekataloge | eigener Entscheid |
 
