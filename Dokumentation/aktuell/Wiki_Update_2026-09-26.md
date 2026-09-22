@@ -87,10 +87,13 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Wahl der Photovoltaik-Vergütung; die Modulkosten der Wärmepumpe zeigt er nur noch an. (#427)
 - Seit 26.09.2026: Das Übernehmen eines Standard-Stromprofils im Projekt-Assistenten funktioniert
   wieder; scheitert eine Katalogkopie, meldet der Assistent es benannt. (#426)
+- Seit 26.09.2026: Der Hilfe-Assistent öffnet unter Windows auch die Kostenverwaltung, die
+  Energieträgerverwaltung, die Nutzungsdauern, die gesetzlichen Parameter, die Klimadaten und die
+  Projektvariante, führt zu den Erzeugermasken auf den Reiter „Energieerzeuger" und zu den Blättern
+  der Ansicht „Berichte und Kosten"; im Speicher-Zeitreihen-Dialog lässt sich die Intervallkonvention
+  „automatisch erkennen" wählen. (#428)
 
-*Nachzutragen, sobald die laufenden Wellen gemergt sind:* die weiteren Freigabewellen des
-Assistenten (KI‑F2 bis F6 — ein Satz je Welle, die Maskenliste der Seite Hilfe-Assistent wächst
-mit). Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
+Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
 
 *Zurückgestellt gegenüber den Rohentwürfen:* der engere Klimadaten-Satz aus #404 und die
