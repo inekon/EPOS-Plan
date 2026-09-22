@@ -60,6 +60,52 @@ internal sealed class TestProjektquelle : IProjektQuelle
 
     public IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => BerichteKosten;
 
+    // =====================================================================
+    //  Die fuenf Masken, die die Wurzel seit KI-D-Q8 selbst zeigt
+    // =====================================================================
+    //
+    //  Vorgabe ist ueberall null - der Zustand einer Huelle, die die Maske nicht
+    //  fuehrt. Die Wurzel bleibt dann stehen und nennt den Grund.
+
+    /// <summary>Der Parametersatz der Klimadaten.</summary>
+    internal IReadOnlyDictionary<string, object>? Klimadaten { get; set; }
+
+    public IReadOnlyDictionary<string, object>? KlimadatenGaben() => Klimadaten;
+
+    /// <summary>Der Parametersatz von „Als Variante speichern".</summary>
+    internal IReadOnlyDictionary<string, object>? Projektvariante { get; set; }
+
+    public IReadOnlyDictionary<string, object>? ProjektVarianteGaben(int idProjekt)
+        => Projektvariante;
+
+    /// <summary>Die zuletzt uebergebene Antwort des Variantendialogs.</summary>
+    internal EPOS.UI.Dialoge.Projekt.ProjektVarianteWahl? VarianteUebernommen { get; private set; }
+
+    /// <summary>Was <see cref="ProjektVarianteUebernehmen"/> zurueckgeben soll.</summary>
+    internal string VariantenAntwort { get; set; } = "";
+
+    public string ProjektVarianteUebernehmen(
+        int idProjekt, EPOS.UI.Dialoge.Projekt.ProjektVarianteWahl wahl)
+    {
+        VarianteUebernommen = wahl;
+        return VariantenAntwort;
+    }
+
+    /// <summary>Der Parametersatz von „Projekt Speichern unter".</summary>
+    internal IReadOnlyDictionary<string, object>? Projektkopie { get; set; }
+
+    public IReadOnlyDictionary<string, object>? ProjektKopieGaben() => Projektkopie;
+
+    /// <summary>Der Parametersatz der Lastspitzenkappung.</summary>
+    internal IReadOnlyDictionary<string, object>? PeakShaving { get; set; }
+
+    public IReadOnlyDictionary<string, object>? PeakShavingGaben(int idProjekt) => PeakShaving;
+
+    /// <summary>Der Parametersatz der Stromganglinien-Verwaltung.</summary>
+    internal IReadOnlyDictionary<string, object>? Stromganglinien { get; set; }
+
+    public IReadOnlyDictionary<string, object>? StromganglinieAdminGaben() => Stromganglinien;
+
     /// <summary>
     /// Das Lagebild der Lizenz (Welle iF30) — <c>null</c> = kein Banner, und das ist
     /// die Vorgabe: Kein bestehender Fall soll durch die Erweiterung ein Banner bekommen.

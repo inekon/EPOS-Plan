@@ -117,7 +117,13 @@ else if (_ansicht == Seitenschluessel.BerichteKosten && _berichteKosten is not n
        bleibt bestehen - es ist die Kachelfassung derselben Seite -, nur der
        MENUEWEG fuehrt jetzt in die Ansicht. Der Rueckweg ist derselbe wie bei
        den zwei Simulationsansichten. *@
+    @* DAS BLATT (Anwenderentscheid KI-D-Q8, 21.09.2026): Wer die Ansicht mit einem
+       Auftrag zeigt, nennt das Blatt, mit dem sie aufmacht - „erklaere mir die
+       Kostenseite" landet auf KOSTEN und nicht auf der Uebersicht. Leer = die Seite
+       entscheidet selbst (Rueckfall UEBERSICHT). Die Angabe steht RECHTS von
+       @@attributes und gewinnt deshalb gegen den Parametersatz der Huelle. *@
     <EPOS.UI.Seiten.Berichte.BerichteKostenSeite @attributes="_berichteKosten"
+                                                 Startseite="@_berichteKostenBlatt"
                                                  Geschlossen="ZurueckZurListe" />
 }
 else if (_ansicht == Seitenschluessel.Energietraeger)
@@ -125,6 +131,35 @@ else if (_ansicht == Seitenschluessel.Energietraeger)
     <EPOS.UI.Dialoge.Kosten.EnergietraegerVarianteDialog
         Energietraeger="@_energietraeger"
         Geschlossen="BeiEnergietraegerFertig" />
+}
+@* DIE FUENF MASKEN, die die Wurzel seit KI-D-Q8 selbst zeigt. Alle folgen dem Muster
+   des Zweigs darueber: Parametersatz aus der Quelle, Rueckweg ueber Geschlossen.
+   Unter Windows wird keiner dieser Zweige erreicht - dort fuehrt WinFormsNavigation
+   jede der fuenf in ein eigenes modales Fenster. *@
+else if (_ansicht == Seitenschluessel.Klimadaten && _klimadaten is not null)
+{
+    <EPOS.UI.Dialoge.Klimadaten.KlimadatenDialog @attributes="_klimadaten"
+                                                 Geschlossen="BeiKlimadatenFertig" />
+}
+else if (_ansicht == Seitenschluessel.ProjektAlsVariante && _projektVariante is not null)
+{
+    <EPOS.UI.Dialoge.Projekt.ProjektVarianteDialog @attributes="_projektVariante"
+                                                   Geschlossen="BeiProjektVarianteFertig" />
+}
+else if (_ansicht == Seitenschluessel.ProjektSpeichernUnter && _projektKopie is not null)
+{
+    <EPOS.UI.Dialoge.Projekt.ProjektKopieDialog @attributes="_projektKopie"
+                                                Geschlossen="BeiProjektKopieFertig" />
+}
+else if (_ansicht == Seitenschluessel.PeakShaving && _peakShaving is not null)
+{
+    <EPOS.UI.Dialoge.Strom.PeakShavingDialog @attributes="_peakShaving"
+                                             Geschlossen="BeiPeakShavingFertig" />
+}
+else if (_ansicht == Seitenschluessel.StromganglinieAdmin && _stromganglinien is not null)
+{
+    <EPOS.UI.Dialoge.Strom.StromganglinieAdminDialog @attributes="_stromganglinien"
+                                                     Geschlossen="BeiStromganglinienFertig" />
 }
 else if (_ansicht == Seitenschluessel.BhkwWirtschaftlichkeit && _bhkw is not null)
 {
@@ -277,10 +312,25 @@ else
 
     /// <summary>
     /// Der Reiterwunsch für den NÄCHSTEN Aufbau der Startseite; gesetzt vom Rückweg
-    /// „Projekt angelegt" (<see cref="BeiProjektAngelegt"/>), verbraucht im
-    /// Startseiten-Zweig von <see cref="Zeige"/>.
+    /// „Projekt angelegt" (<see cref="BeiProjektAngelegt"/>) und seit dem
+    /// Anwenderentscheid KI‑D‑Q8 vom Argument in <see cref="OeffneMaske"/>,
+    /// verbraucht im Startseiten-Zweig von <see cref="Zeige"/>.
     /// </summary>
     private string _reiterwunschOffen = "";
+
+    /// <summary>
+    /// Das BLATT, mit dem die Ansicht „Berichte und Kosten" aufmacht (KI‑D‑Q8);
+    /// leer = die Seite entscheidet selbst. Es wird bei JEDEM Aufbau gesetzt — auch
+    /// auf leer, damit ein Wunsch nicht am nächsten Besuch kleben bleibt.
+    /// </summary>
+    private string _berichteKostenBlatt = "";
+
+    /// <summary>
+    /// Der Blattwunsch für den NÄCHSTEN Aufbau der Berichtsansicht; gesetzt vom
+    /// Argument in <see cref="OeffneMaske"/>, verbraucht in <see cref="Zeige"/> —
+    /// derselbe Verbrauch wie beim Reiterwunsch der Startseite.
+    /// </summary>
+    private string _blattwunschOffen = "";
 
     /// <summary>
     /// Der EINSTIEG des stehenden Assistentenlaufs (16.09.2026) — Vorgabe ist der
@@ -303,6 +353,15 @@ else
     private bool _auslegungGeklaert;
     private IReadOnlyDictionary<string, object>? _startseite;
     private IReadOnlyDictionary<string, object>? _berichteKosten;
+
+    // Die fuenf Parametersaetze der Masken, die die Wurzel seit KI-D-Q8 selbst zeigt.
+    // Sie entstehen beim Betreten und fallen beim Verlassen - keine davon traegt
+    // Zustand ueber einen Ansichtswechsel hinweg.
+    private IReadOnlyDictionary<string, object>? _klimadaten;
+    private IReadOnlyDictionary<string, object>? _projektVariante;
+    private IReadOnlyDictionary<string, object>? _projektKopie;
+    private IReadOnlyDictionary<string, object>? _peakShaving;
+    private IReadOnlyDictionary<string, object>? _stromganglinien;
     private ProjektZeile? _projekt;
     private string _statuszeile = "";
 
@@ -982,6 +1041,13 @@ else
                 _statuszeile = KeineBerichteText;
                 return false;
             }
+
+            // DAS BLATT (KI-D-Q8): Es gilt fuer DIESEN Aufbau und wird dabei
+            // verbraucht - sonst stuende die Ansicht auch beim naechsten Besuch
+            // wieder auf dem gewuenschten Blatt (Muster Reiterwunsch der Startseite).
+            _berichteKostenBlatt = _blattwunschOffen;
+            _blattwunschOffen = "";
+
             _ansicht = maske;
             return true;
         }
@@ -989,6 +1055,52 @@ else
         if (maske == Seitenschluessel.Energietraeger)
         {
             _energietraeger = Quelle.Energietraeger();
+            _ansicht = maske;
+            return true;
+        }
+
+        // ---- Die FUENF Masken aus KI-D-Q8 ---------------------------------------
+        // Dasselbe Muster wie beim BHKW-Dialog darunter: Liefert die Quelle keinen
+        // Parametersatz, bleibt die Ansicht stehen und SAGT WARUM - benannt
+        // abgelehnt, nicht still uebergangen (Regel EPOS.UI.Daten).
+        if (maske == Seitenschluessel.Klimadaten)
+        {
+            _klimadaten = Quelle.KlimadatenGaben();
+            if (_klimadaten is null) { _statuszeile = KeineKlimadatenText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.ProjektAlsVariante)
+        {
+            // Die Maske gilt dem AKTIVEN Projekt; welcher STAMM daraus folgt,
+            // entscheidet die Huelle (eine Variante haengt immer am Stamm).
+            _projektVariante = Quelle.ProjektVarianteGaben(_projekt?.Id ?? 0);
+            if (_projektVariante is null) { _statuszeile = KeineProjektvarianteText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.ProjektSpeichernUnter)
+        {
+            _projektKopie = Quelle.ProjektKopieGaben();
+            if (_projektKopie is null) { _statuszeile = KeineProjektkopieText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.PeakShaving)
+        {
+            _peakShaving = Quelle.PeakShavingGaben(_projekt?.Id ?? 0);
+            if (_peakShaving is null) { _statuszeile = KeinPeakShavingText; return false; }
+            _ansicht = maske;
+            return true;
+        }
+
+        if (maske == Seitenschluessel.StromganglinieAdmin)
+        {
+            _stromganglinien = Quelle.StromganglinieAdminGaben();
+            if (_stromganglinien is null) { _statuszeile = KeineStromganglinienText; return false; }
             _ansicht = maske;
             return true;
         }
@@ -1168,6 +1280,14 @@ else
         _assistent = null;
         _berichteKosten = null;   // W16c-E-3: auch diese Ansicht wird verlassen
         _auslegung = null;
+
+        // Die fuenf Masken aus KI-D-Q8 tragen keinen Zustand ueber den Rueckweg
+        // hinaus - beim naechsten Betreten holt Zeige() ihren Satz neu.
+        _klimadaten = null;
+        _projektVariante = null;
+        _projektKopie = null;
+        _peakShaving = null;
+        _stromganglinien = null;
         _auslegungGeklaert = true;
         _rueckweg.Clear();
 
@@ -1186,6 +1306,45 @@ else
             // Der Schreibweg liegt in der Huelle - dieselbe Aufteilung wie unter
             // Windows, wo Form_Kosten nach dem Schliessen weiterarbeitet.
             string name = Quelle.EnergietraegerUebernehmen(_projekt?.Id ?? 0, ergebnis);
+            _statuszeile = string.IsNullOrEmpty(name)
+                ? MeldungNichtAngelegt
+                : string.Format(MeldungAngelegt, name);
+        }
+
+        ZurueckZurListe();
+    }
+
+    // =====================================================================
+    // Rueckwege der fuenf Masken aus KI-D-Q8
+    // =====================================================================
+
+    /// <summary>Die Klimadaten sind zu — ob importiert wurde, sagt der Dialog.</summary>
+    private void BeiKlimadatenFertig(bool geaendert) => ZurueckZurListe();
+
+    /// <summary>„Projekt Speichern unter" ist zu.</summary>
+    private void BeiProjektKopieFertig(bool dupliziert)
+    {
+        _statuszeile = dupliziert ? MeldungGespeichert : "";
+        ZurueckZurListe();
+    }
+
+    /// <summary>Die Lastspitzenkappung ist zu — sie schreibt nichts beim Schließen.</summary>
+    private void BeiPeakShavingFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>Die Stromganglinien-Verwaltung ist zu.</summary>
+    private void BeiStromganglinienFertig(bool ok) => ZurueckZurListe();
+
+    /// <summary>
+    /// „Als Variante speichern" ist zu. <c>null</c> = abgebrochen; sonst geht die
+    /// Antwort an den Schreibweg der Hülle — dieselbe Aufteilung wie bei
+    /// <see cref="BeiEnergietraegerFertig"/>: Die Wurzel kennt keinen
+    /// Kern-Controller.
+    /// </summary>
+    private void BeiProjektVarianteFertig(EPOS.UI.Dialoge.Projekt.ProjektVarianteWahl? wahl)
+    {
+        if (wahl is not null)
+        {
+            string name = Quelle.ProjektVarianteUebernehmen(_projekt?.Id ?? 0, wahl.Value);
             _statuszeile = string.IsNullOrEmpty(name)
                 ? MeldungNichtAngelegt
                 : string.Format(MeldungAngelegt, name);
@@ -1440,7 +1599,16 @@ else
                     || maske == Seitenschluessel.Startseite
                     || maske == Seitenschluessel.BerichteKosten
                     || maske == Seitenschluessel.StromspeicherAuslegung
-                    || maske == Seitenschluessel.Projektliste;
+                    || maske == Seitenschluessel.Projektliste
+
+                    // Die fuenf Masken aus KI-D-Q8. „Bekannt" heisst hier nur „die
+                    // Wurzel fuehrt den Schluessel" - ob sie ihn ZEIGEN kann,
+                    // entscheidet Zeige() an der Quelle und sagt es sonst im Banner.
+                    || maske == Seitenschluessel.Klimadaten
+                    || maske == Seitenschluessel.ProjektAlsVariante
+                    || maske == Seitenschluessel.ProjektSpeichernUnter
+                    || maske == Seitenschluessel.PeakShaving
+                    || maske == Seitenschluessel.StromganglinieAdmin;
 
         if (!bekannt) return false;
 
@@ -1462,12 +1630,43 @@ else
         // „schritt=3;blatt=STROMSPEICHER" aus dem Rueckwegstapel.
         string marke = Marke(maske, argumente);
 
+        // DER REITER der Startseite und das BLATT der Berichtsansicht (Anwenderentscheid
+        // KI-D-Q8, 21.09.2026): Beide Ziele fuehren MEHRERE Masken des Dialogkatalogs -
+        // die sechs Erzeugermasken stehen auf dem Reiter „Energieerzeuger", die
+        // Kostenseite auf dem Blatt KOSTEN. Welcher Platz gemeint ist, sagt der Kern als
+        // Zeichenkette (KiMaskenziele.ARGUMENTE); ohne Argument entscheidet die Ansicht
+        // selbst. Gesetzt wird auf dem RENDERFADEN und vor Zeige - genau dort verbraucht
+        // der Startseiten-Zweig schon den Reiterwunsch des Rueckwegs.
+        string platz = Textargument(maske, argumente);
+
         _ = InvokeAsync(() =>
         {
+            if (maske == Seitenschluessel.Startseite) _reiterwunschOffen = platz;
+            else if (maske == Seitenschluessel.BerichteKosten) _blattwunschOffen = platz;
+
             Zeige(maske, betriebsart, marke);
             StateHasChanged();
         });
         return true;
+    }
+
+    /// <summary>
+    /// Das TEXTARGUMENT aus dem ersten Argument — der Reiter der Startseite
+    /// (<c>"ERZEUGER"</c>) und das Blatt der Berichtsansicht (<c>"KOSTEN"</c>);
+    /// leer, wenn keines mitkam.
+    /// </summary>
+    /// <remarks>
+    /// Wie <see cref="Marke"/> JE ZIEL geprüft: Ein Text, der an einem anderen
+    /// Schlüssel hängt, gehört nicht hierher — der Assistent reicht an derselben
+    /// Stelle seine Betriebsart und der Hilfe-Assistent seinen Aufrufkontext.
+    /// </remarks>
+    private static string Textargument(string maske, object[] argumente)
+    {
+        if (maske != Seitenschluessel.Startseite
+            && maske != Seitenschluessel.BerichteKosten) return "";
+
+        if (argumente is null || argumente.Length == 0) return "";
+        return argumente[0] as string ?? "";
     }
 
     /// <summary>
@@ -1510,7 +1709,11 @@ else
     // Texte - deutscher Rueckfall wie in den Dialogen (iU8-Muster)
     // =====================================================================
 
-    /// <summary>Meldung nach dem Anlegen einer Energietraeger-Variante ({0} = Name).</summary>
+    /// <summary>
+    /// Meldung nach dem Anlegen einer Variante ({0} = Name) — der Rückweg der
+    /// Energieträger-Variante und, seit KI‑D‑Q8, auch der Projektvariante. Der Satz
+    /// benennt beide richtig; zwei Fassungen desselben Satzes wären zwei Wahrheiten.
+    /// </summary>
     [Parameter] public string MeldungAngelegt { get; set; } = "Variante „{0}“ wurde angelegt.";
 
     /// <summary>Meldung, wenn nichts angelegt wurde.</summary>
@@ -1564,4 +1767,33 @@ else
     /// </summary>
     [Parameter] public string KeineAuslegungText { get; set; } =
         "Die Stromspeicher-Auslegung steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    // ---- Die fuenf Masken aus KI-D-Q8 -----------------------------------
+    // Jede nennt ihren EIGENEN Grund: „geht hier nicht" ist keine Auskunft,
+    // wenn fuenf Masken denselben Satz bekaemen.
+
+    /// <summary>Meldung, wenn die Klimadaten nicht aufzubauen sind.</summary>
+    [Parameter] public string KeineKlimadatenText { get; set; } =
+        "Die Klimadaten stehen auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>
+    /// Meldung, wenn „Als Variante speichern" nicht aufgeht — es ist kein Projekt
+    /// offen, zu ihm ist kein Stammprojekt zu finden, oder die Hülle führt die
+    /// Maske nicht.
+    /// </summary>
+    [Parameter] public string KeineProjektvarianteText { get; set; } =
+        "„Als Variante speichern“ steht hier nicht zur Verfügung: Es ist kein Projekt "
+        + "mit einem Stammprojekt geöffnet.";
+
+    /// <summary>Meldung, wenn „Projekt Speichern unter" nicht aufzubauen ist.</summary>
+    [Parameter] public string KeineProjektkopieText { get; set; } =
+        "„Speichern unter“ steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>Meldung, wenn die Lastspitzenkappung nicht aufzubauen ist.</summary>
+    [Parameter] public string KeinPeakShavingText { get; set; } =
+        "Die Lastspitzenkappung steht auf diesem Gerät noch nicht zur Verfügung.";
+
+    /// <summary>Meldung, wenn die Stromganglinien-Verwaltung nicht aufzubauen ist.</summary>
+    [Parameter] public string KeineStromganglinienText { get; set; } =
+        "Die Stromganglinien-Verwaltung steht auf diesem Gerät noch nicht zur Verfügung.";
 }

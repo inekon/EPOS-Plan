@@ -49,6 +49,18 @@ namespace WindowsFormsApplication1
                     .Select(f => (string)f.GetRawConstantValue()),
                 StringComparer.Ordinal);
 
+        /// <summary>
+        /// Die zuletzt gebaute Hülle — der Weg der übrigen Windows-Wege an den
+        /// Menüablauf. Muster und Instanzenzahl wie bei
+        /// <see cref="StartseiteHuelle.Aktuelle"/>: eine.
+        ///
+        /// <para>Sie trägt <see cref="Springe"/> und damit den EINEN Ablauf hinter den
+        /// Menüpunkten „Klimadaten", „Kostenverwaltung", „Energieträgerverwaltung",
+        /// „Nutzungsdauern", „Gesetzliche Parameter" und „Als Variante speichern" —
+        /// <c>WinFormsNavigation</c> schreibt ihn nicht ab, sondern ruft ihn.</para>
+        /// </summary>
+        internal static HauptfensterHuelle Aktuelle { get; private set; }
+
         internal HauptfensterHuelle(Func<IWin32Window> besitzer, ProjektKontextCtrl kontext)
         {
             _besitzer = besitzer ?? throw new ArgumentNullException(nameof(besitzer));
@@ -59,6 +71,8 @@ namespace WindowsFormsApplication1
             // fort, und zwei Saetze waeren zwei Wahrheiten ueber dasselbe Projekt.
             _simulation = new SimulationHuelle(() => besitzer() as Form, kontext,
                                                _startseite.Bedarf);
+
+            Aktuelle = this;
         }
 
         // =====================================================================
@@ -194,6 +208,37 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Derselbe Ablauf, für einen Aufrufer OHNE Menü: <c>true</c> = dieser Weg
+        /// führt den Schlüssel und hat den Sprung angestoßen, <c>false</c> = er kennt
+        /// ihn nicht.
+        /// </summary>
+        /// <remarks>
+        /// <para><b>Wozu.</b> Sechs Ziele des Hilfe-Assistenten sind Menüpunkte und
+        /// keine Maskenschlüssel (Anwenderentscheid KI‑D‑Q8): Klimadaten,
+        /// Kostenverwaltung, Energieträgerverwaltung, Nutzungsdauern, Gesetzliche
+        /// Parameter und „Als Variante speichern". Ihr Öffnungscode steht in
+        /// <see cref="Ablauf"/>; <c>WinFormsNavigation</c> ruft ihn hier, statt ihn
+        /// abzuschreiben — ein Weg, eine Wahrheit.</para>
+        /// <para><b>Modal nur verzögert</b> (Regel (b) der Hüllenschicht): Der Ruf
+        /// kommt aus dem <c>WebMessageReceived</c>-Rückruf der ersten WebView2 — beim
+        /// Assistenten sogar aus einem Werkzeugaufruf des Modells —, und ein
+        /// <c>ShowDialog</c> von dort baut seine verschachtelte Nachrichtenschleife
+        /// INNERHALB dieses Rückrufs auf. <see cref="Blazorsprung.Wirtsfenster"/> holt
+        /// das Wirtsfenster; ohne aktives Fenster fällt es auf das Hauptfenster
+        /// zurück (Befund KI‑D‑B‑3).</para>
+        /// <para>Die Antwort kommt SOFORT — wie bei <see cref="Weg"/> beantwortet sie
+        /// „behandle ich den Schlüssel?" und nicht „steht das Fenster schon?".</para>
+        /// </remarks>
+        internal bool Springe(string ziel)
+        {
+            Action ablauf = Ablauf(ziel);
+            if (ablauf == null) return false;
+
+            Blazorsprung.Verzoegert(Blazorsprung.Wirtsfenster(_besitzer?.Invoke()), ablauf);
+            return true;
+        }
+
+        /// <summary>
         /// Der EINE Ablauf zu einem Schlüssel — oder <c>null</c>, wenn dieser
         /// Weg ihn nicht führt.
         ///
@@ -252,7 +297,7 @@ namespace WindowsFormsApplication1
 
                 // ---- Menü „Administration" ----------------------------------
                 case Seitenschluessel.Klimadaten:
-                    return () => KlimadatenHuelle.Oeffnen(_besitzer?.Invoke());
+                    return () => KlimadatenFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Kostenverwaltung:
                     return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());

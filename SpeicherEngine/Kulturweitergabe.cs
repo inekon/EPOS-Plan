@@ -200,6 +200,35 @@ namespace SpeicherEngine
                 finally { halter.Dispose(); }
             }, abbruch);
         }
+
+        /// <summary>
+        /// Dasselbe MIT Ergebnis (<c>Task.Run(async () =&gt; … )</c> auf einen
+        /// <c>Func&lt;Task&lt;T&gt;&gt;</c>), mit der Kultur des Aufrufers.
+        /// </summary>
+        /// <typeparam name="T">Typ des Ergebnisses.</typeparam>
+        /// <param name="arbeit">Die Arbeit; ihre Aufgabe wird ausgepackt wie bei <c>Task.Run</c>.</param>
+        /// <param name="abbruch">Abbruchmarke wie bei <c>Task.Run</c>.</param>
+        /// <remarks>
+        /// <b>Warum es die Ueberladung gibt.</b> Die drei Huellen darueber decken
+        /// „ohne Ergebnis, mit Ergebnis, asynchron ohne Ergebnis" ab; die vierte
+        /// Ecke fehlte, und ein asynchroner Ladeweg MIT Ergebnis — Klimaimport,
+        /// Ganglinienimport — musste sich mit <c>Starten&lt;Task&lt;T&gt;&gt;</c> und
+        /// einem doppelten <c>await</c> behelfen. Dieselbe Kulturbehandlung wie in
+        /// <see cref="StartenAsync(Func{Task}, CancellationToken)"/>: gesetzt und
+        /// zurueckgestellt um den SYNCHRONEN Anlauf herum.
+        /// </remarks>
+        public static Task<T> StartenAsync<T>(Func<Task<T>> arbeit, CancellationToken abbruch = default)
+        {
+            if (arbeit == null) throw new ArgumentNullException(nameof(arbeit));
+
+            Kulturstand stand = Erfassen();
+            return Task.Run(() =>
+            {
+                Kulturstand.Halter halter = stand.Auftragen();
+                try { return arbeit(); }
+                finally { halter.Dispose(); }
+            }, abbruch);
+        }
     }
 
     /// <summary>

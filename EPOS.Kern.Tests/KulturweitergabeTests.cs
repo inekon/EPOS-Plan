@@ -374,6 +374,34 @@ namespace EPOS.Kern.Tests
             Assert.Equal(KapazitaetDe, erfasst.Text);
         }
 
+        /// <summary>
+        /// Dieselbe Zusage MIT Ergebnis: <c>StartenAsync&lt;T&gt;</c> packt die Aufgabe
+        /// aus wie <c>Task.Run</c> und trägt die Kultur über das <c>await</c> hinweg.
+        /// </summary>
+        /// <remarks>
+        /// Die Überladung kam mit Auftrag KI‑F8 dazu — ein asynchroner Ladeweg MIT
+        /// Ergebnis (Klimaimport, Ganglinienimport) musste sich sonst mit
+        /// <c>Starten&lt;Task&lt;T&gt;&gt;</c> und einem doppelten <c>await</c> behelfen.
+        /// </remarks>
+        [Fact]
+        public async Task StartenAsync_mit_Ergebnis_traegt_die_Kultur_auch_ueber_ein_await()
+        {
+            Task<Marke> aufgabe;
+            using (ExecutionContext.SuppressFlow())
+            {
+                aufgabe = Kulturweitergabe.StartenAsync(async () =>
+                {
+                    await Task.Yield();
+                    return Aufzeichnen();
+                });
+            }
+            Marke erfasst = await aufgabe;
+
+            Assert.Equal("de-AT", erfasst.Oberflaeche);
+            Assert.Equal("1234,5", erfasst.Zahl);
+            Assert.Equal(KapazitaetDe, erfasst.Text);
+        }
+
         // =====================================================================
         //  Der Halter
         // =====================================================================

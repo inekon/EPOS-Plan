@@ -703,6 +703,58 @@ public class KiDialogkatalogTests
     }
 
     /// <summary>
+    /// <b>Der Wächter über die zwei Fundstellen der vier MENÜZIELE</b> (Welle KI‑F8):
+    /// Kostenverwaltung, Energieträgerverwaltung, Nutzungsdauern und Gesetzliche
+    /// Parameter sind Menüpunkte, keine Maskenschlüssel. Ihr Ziel steht im Kern als
+    /// Zeichenkette und in <c>EPOS.UI</c> als <c>Seitenschluessel</c>; laufen beide
+    /// auseinander, führt <c>dialog_oeffnen</c> ins Leere — dasselbe Muster wie bei
+    /// den Klimadaten.
+    /// </summary>
+    [Fact]
+    public void Die_Menueziele_der_Verwaltungsmasken_sind_ihre_Seitenschluessel()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Kostenverwaltung,
+                     KiMaskenziele.KOSTENVERWALTUNG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.EnergietraegerVerwaltung,
+                     KiMaskenziele.ENERGIETRAEGER_VERWALTUNG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.NutzungsdauerVerwaltung,
+                     KiMaskenziele.NUTZUNGSDAUER_VERWALTUNG);
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.Gesetzeskatalog,
+                     KiMaskenziele.GESETZESKATALOG);
+    }
+
+    /// <summary>
+    /// <b>Der Wächter über die zwei Fundstellen der ARGUMENTE</b> (Anwenderentscheid
+    /// KI‑D‑Q8): Der Reiter der Startseite und das Blatt der Ansicht „Berichte und
+    /// Kosten" stehen im Kern als Zeichenkette, weil der Kern die Oberfläche nicht
+    /// kennt. Läuft eine der sechs auseinander, öffnet der Assistent die richtige
+    /// Ansicht am falschen Platz — und das fiele nur am Gerät auf.
+    /// </summary>
+    [Fact]
+    public void Die_Argumente_der_Zieltabelle_sind_Reiter_und_Blaetter_der_Oberflaeche()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Start.Reiterschluessel.Erzeuger,
+                     KiMaskenziele.REITER_ERZEUGER);
+        Assert.Equal(EPOS.UI.Seiten.Start.Reiterschluessel.Waermebedarf,
+                     KiMaskenziele.REITER_WAERMEBEDARF);
+
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_UEBERSICHT,
+                     KiMaskenziele.BLATT_UEBERSICHT);
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_KOSTEN,
+                     KiMaskenziele.BLATT_KOSTEN);
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_WIRTSCHAFT,
+                     KiMaskenziele.BLATT_WIRTSCHAFT);
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_BERICHT,
+                     KiMaskenziele.BLATT_BERICHT);
+
+        // Und die Tabelle selbst, an einem Beispiel je Art.
+        Assert.Equal(EPOS.UI.Seiten.Start.Reiterschluessel.Erzeuger,
+                     KiMaskenziele.Argument(KiMaskennamen.WAERMEPUMPE_ANLAGE));
+        Assert.Equal(EPOS.UI.Seiten.Berichte.BerichteKostenSeite.SEITE_KOSTEN,
+                     KiMaskenziele.Argument(KiMaskennamen.KOSTENSEITE));
+    }
+
+    /// <summary>
     /// <b>Die vier Masken der Welle KI‑F6, Schritt 2, führen 6, 5, 5 und 4 Felder.</b>
     /// </summary>
     /// <remarks>

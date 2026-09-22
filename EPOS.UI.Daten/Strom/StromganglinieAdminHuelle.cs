@@ -1,68 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using EPOS.UI.Dialoge.Strom;
-using Microsoft.AspNetCore.Components;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Stromganglinien-Verwaltung (iU9-W12.4).
+    /// Die DATENSEITE der Stromganglinien-Verwaltung (iU9-W12.4; Umzug nach
+    /// <c>EPOS.UI.Daten</c> mit Auftrag KI‑F8).
     ///
     /// <para><b>Die Datenbankseite steht hier, nicht in der Komponente.</b> Der
-    /// Katalog kommt aus <see cref="StromganglinieStammCtrl"/>, die Importkette aus
+    /// Katalog kommt aus <see cref="ZeitreihenKatalogCtrl"/>, das Löschen aus
+    /// <see cref="StromganglinieStammCtrl"/>, die Importkette aus
     /// <see cref="GanglinienImportAblauf"/> — die Komponente sieht davon nur
-    /// Delegaten.</para>
+    /// Delegaten. Die Plattform steuert allein die Dateiwahl bei, und die kommt über
+    /// <c>Dienste.Datei</c> herein.</para>
     ///
-    /// <para><b>Die Kette läuft in <c>Task.Run</c>.</b> Lesen und Prüfen einer
+    /// <para><b>Die Kette läuft nebenher.</b> Lesen und Prüfen einer
     /// 525 600-Zeilen-Datei dauert; in einer WebView ist der Renderfaden derselbe
     /// Faden. Die drei Entscheidungen kommen aber aus der Oberfläche zurück — sie
-    /// werden deshalb über den <see cref="TaskScheduler"/> des Bedienfadens
-    /// gerufen, damit die Überlagerung dort erscheint, wo Blazor zeichnet.</para>
+    /// werden deshalb über den <see cref="TaskScheduler"/> des Bedienfadens gerufen,
+    /// damit die Überlagerung dort erscheint, wo Blazor zeichnet.</para>
+    ///
+    /// <para>Das FENSTER steht unter Windows in
+    /// <c>Views/Stromverbraucher/StromganglinieAdminFenster</c>; auf iOS zeigt die
+    /// <c>AppWurzel</c> dieselbe Komponente als Ansicht.</para>
     /// </summary>
     internal static class StromganglinieAdminHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 664 × 316).</summary>
-        private static readonly Size MASS = new Size(880, 620);
+        /// <summary>Der Fenstertitel — derselbe Text wie die Dialogüberschrift.</summary>
+        internal static string Titel() => MyResource.Resource.IMPORT_TITEL_ADMIN;
 
         /// <summary>
-        /// Zeigt die Verwaltung als eigenes Fenster — der Weg von
-        /// <c>WinFormsNavigation</c> (<c>Masken.StromganglinieAdmin</c>) und von
-        /// <c>MenueCtrl.Stromganglinie</c>.
-        /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
-        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
-        internal static bool Oeffnen(IWin32Window besitzer)
-        {
-            bool ok = false;
-            BlazorDialogForm<StromganglinieAdminDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<StromganglinieAdminDialog>(
-                MyResource.Resource.IMPORT_TITEL_ADMIN, MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
-
-        /// <summary>
-        /// Der PARAMETERSATZ der Komponente — für die Überlagerung in
-        /// <c>StromganglinieDialog</c> (W12.5), die kein zweites Fenster aufmachen
-        /// darf (Risiko R2).
+        /// Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>; so nimmt ihn
+        /// auch die Überlagerung in <c>StromganglinieDialog</c> (W12.5), die kein
+        /// zweites Fenster aufmachen darf (Risiko R2).
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
@@ -72,7 +44,7 @@ namespace WindowsFormsApplication1
                 // Spitze aus EINER Gruppenabfrage ueber die 78 840 Wertzeilen.
                 ["Katalogzeilen"] = new Func<Task<IReadOnlyList<Katalogfilterzeile>>>(KatalogLesen),
                 ["Katalogprofil"] = Katalogfilterprofil.FuerZeitreihe(
-                    Zeitreihenart.Stromganglinie, BedarfAdminHuelle.Filtertext),
+                    Zeitreihenart.Stromganglinie, Katalogtexte.Fuer),
                 ["Loeschen"] = new Func<string, Task<bool>>(Loeschen),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
                 ["Einlesen"] = new Func<string, GanglinienRaster, GanglinienImportRueckrufe,
@@ -123,16 +95,17 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Importkette MIT Ablage. Sie läuft in <c>Task.Run</c>; die drei
+        /// Die Importkette MIT Ablage. Sie läuft nebenher; die drei
         /// Rückrufe der Komponente werden von dort aus gerufen und laufen über die
         /// <c>InvokeAsync</c> des Blazor-Verteilers wieder auf dem richtigen Faden.
         /// </summary>
         internal static Task<GanglinienImportErgebnis> Einlesen(
             string pfad, GanglinienRaster raster, GanglinienImportRueckrufe rueckrufe)
-            => Task.Run(() => GanglinienImportAblauf.MitAblage(pfad, raster, rueckrufe));
+            => Kulturweitergabe.StartenAsync(
+                   () => GanglinienImportAblauf.MitAblage(pfad, raster, rueckrufe));
 
         /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
         internal static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
-            => Task.Run(() => GanglinienDatei.Vorschau(pfad, optionen));
+            => Kulturweitergabe.Starten(() => GanglinienDatei.Vorschau(pfad, optionen));
     }
 }

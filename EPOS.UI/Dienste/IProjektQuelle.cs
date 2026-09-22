@@ -271,6 +271,64 @@ public interface IProjektQuelle
     /// </summary>
     IReadOnlyDictionary<string, object>? BerichteKostenGaben(int idProjekt) => null;
 
+    // =====================================================================
+    //  Die FÜNF Masken, die die Wurzel seit KI-F8 selbst zeigt
+    //  (Anwenderentscheid KI-D-Q8, 21.09.2026)
+    // =====================================================================
+    //
+    //  Alle fünf haben dieselbe Form und denselben Grund wie die Gaben darüber:
+    //  ein Wörterbuch, das die Wurzel mit @attributes hineinschüttet, und eine
+    //  Standardumsetzung, damit eine vorhandene Quelle durch die Erweiterung
+    //  nicht bricht. Liefert die Quelle null, WECHSELT die Wurzel die Ansicht
+    //  nicht, sondern nennt den Grund — das ist der Windows-Zustand „Fenster
+    //  geht nicht auf" und keine stille Ablehnung.
+    //
+    //  UNTER WINDOWS werden diese Wege NICHT gegangen: Dort führt
+    //  WinFormsNavigation jede der fünf Masken in ein eigenes modales Fenster.
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der KLIMADATEN (<c>Dialoge.Klimadaten.KlimadatenDialog</c>);
+    /// <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? KlimadatenGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ von „Als Variante speichern"
+    /// (<c>Dialoge.Projekt.ProjektVarianteDialog</c>) zum AKTIVEN Projekt;
+    /// <c>null</c> = kein offenes Projekt, kein Stamm oder diese Hülle führt ihn nicht.
+    /// </summary>
+    /// <param name="idProjekt">Das geöffnete Projekt (Stamm ODER Variante); 0 = keines.</param>
+    IReadOnlyDictionary<string, object>? ProjektVarianteGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Legt die Variante an — der Schreibweg hinter dem OK des Dialogs, genau wie
+    /// <see cref="EnergietraegerUebernehmen"/>.
+    /// </summary>
+    /// <returns>Der Bezeichner der angelegten Variante; <c>""</c>, wenn nichts entstand.</returns>
+    string ProjektVarianteUebernehmen(int idProjekt,
+                                      EPOS.UI.Dialoge.Projekt.ProjektVarianteWahl wahl) => "";
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ von „Projekt Speichern unter"
+    /// (<c>Dialoge.Projekt.ProjektKopieDialog</c>); <c>null</c> = diese Hülle führt ihn nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? ProjektKopieGaben() => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der LASTSPITZENKAPPUNG
+    /// (<c>Dialoge.Strom.PeakShavingDialog</c>); <c>null</c> = diese Hülle führt sie nicht.
+    /// </summary>
+    /// <param name="idProjekt">Das geöffnete Projekt; 0 = ohne Projekt (dann bleiben
+    /// Stammganglinien und Direktimport).</param>
+    IReadOnlyDictionary<string, object>? PeakShavingGaben(int idProjekt) => null;
+
+    /// <summary>
+    /// Der fertige PARAMETERSATZ der STROMGANGLINIEN-VERWALTUNG
+    /// (<c>Dialoge.Strom.StromganglinieAdminDialog</c>); <c>null</c> = diese Hülle
+    /// führt sie nicht.
+    /// </summary>
+    IReadOnlyDictionary<string, object>? StromganglinieAdminGaben() => null;
+
     /// <summary>
     /// Das LAGEBILD DER LIZENZ für das Banner der <see cref="EPOS.UI.Seiten.AppWurzel"/>
     /// (Welle iF30); <c>null</c> = kein Banner.

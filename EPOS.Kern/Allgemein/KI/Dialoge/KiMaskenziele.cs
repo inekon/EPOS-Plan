@@ -26,7 +26,9 @@ using System.Collections.Generic;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die Zuordnung Katalogmaske → Navigationsschluessel fuer <c>dialog_oeffnen</c>.
+    /// Die Zuordnung Katalogmaske → Navigationsschluessel und ARGUMENT fuer
+    /// <c>dialog_oeffnen</c> — zwei Datenspalten, <see cref="Ziel"/> und
+    /// <see cref="Argument"/>.
     /// </summary>
     public static class KiMaskenziele
     {
@@ -48,14 +50,16 @@ namespace WindowsFormsApplication1
         /// Der Seitenschluessel der Kostenverwaltung.
         /// </summary>
         /// <remarks>
-        /// <b>Ein Ziel, das heute nirgends aufgeht — und das ist die richtige Angabe.</b>
-        /// Die Kostenverwaltung haengt an einer gewaehlten KOMPONENTE eines Projekts;
-        /// einen kontextfreien Weg dorthin gibt es nicht, und einen zu erfinden hiesse,
-        /// die Maske ohne Bezug zu oeffnen. <c>OeffneMaske</c> liefert deshalb
-        /// <c>false</c>, und <c>dialog_oeffnen</c> lehnt benannt ab, statt still nichts
-        /// zu tun — genau wie bei der Stromspeicher-Ansicht unter Windows. LESEN und
-        /// SETZEN erreichen die Maske trotzdem, sobald der Anwender sie offen hat: Dafuer
-        /// zaehlt die Anmeldung an der Maskenbruecke, nicht dieses Ziel.
+        /// <b>Der Weg ist der des Menues</b> („Administration → Kosten →
+        /// Kostenverwaltung…"). Unter Windows reicht <c>WinFormsNavigation.OeffneMaske</c>
+        /// den Schluessel an den Ablauf der Hauptfensterhuelle weiter, und der oeffnet
+        /// dieselbe Maske wie der Menuepunkt — ein Weg, eine Wahrheit. Die Kostenzeilen
+        /// einer KOMPONENTE waehlt der Anwender dann dort; das ist der Weg, den er auch
+        /// von Hand ginge. Auf iOS ist die Kostenverwaltung nicht angebunden, die
+        /// <c>AppWurzel</c> antwortet <c>false</c>, und <c>dialog_oeffnen</c> lehnt
+        /// benannt ab. LESEN und SETZEN erreichen die Maske ohnehin, sobald der Anwender
+        /// sie offen hat: Dafuer zaehlt die Anmeldung an der Maskenbruecke, nicht dieses
+        /// Ziel.
         /// </remarks>
         public const string KOSTENVERWALTUNG = "KOSTENVERWALTUNG";
 
@@ -74,21 +78,22 @@ namespace WindowsFormsApplication1
         /// von Hand ginge.
         /// </para>
         /// <para>
-        /// <b>Ein Reiterwunsch geht dabei nicht mit.</b> Die <c>AppWurzel</c> fuehrt
-        /// zwar einen (<c>Reiterwunsch</c> der <c>Startseite</c>), sie setzt ihn aber
-        /// aus ihrem RUECKWEG und nicht aus den Argumenten von <c>OeffneMaske</c>; es
-        /// gibt also keinen Schluessel, der die Startseite auf dem Reiter
-        /// „Energieerzeuger" aufmachte. Ein solcher waere eine neue Naht durch drei
-        /// Schichten und gehoert nicht in diese Welle.
+        /// <b>Der REITER geht als Argument mit</b> (Anwenderentscheid KI‑D‑Q8). Die
+        /// Zuordnung steht in <see cref="ARGUMENTE"/> und ist DATEN wie die Zieltabelle
+        /// selbst: Die sechs Erzeugermasken nennen <see cref="REITER_ERZEUGER"/>, die
+        /// Gebaeude- und Ganglinienmasken ihren eigenen Reiter. <c>dialog_oeffnen</c>
+        /// reicht ihn an <c>Dienste.Navigation.OeffneMaske(ziel, argument)</c> durch,
+        /// und die <c>AppWurzel</c> verbraucht ihn als Reiterwunsch — derselbe Weg, den
+        /// ihr Rueckweg „Projekt angelegt" schon ging. Wo die Startseite keinen eigenen
+        /// Reiter fuehrt (die Bedarfsprofile stehen auf zweien), geht kein Argument mit.
         /// </para>
         /// <para>
         /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.Startseite</c>:</b>
         /// dieselbe Begruendung wie bei <see cref="STROMSPEICHER_AUSLEGUNG"/> — jene
         /// Konstante steht in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht.
         /// Ein Waechter in <c>EPOS.UI.Tests</c> haelt beide gegeneinander. Unter
-        /// Windows kennt <c>WinFormsNavigation</c> den Schluessel nicht; dort liefert
-        /// <c>OeffneMaske</c> <c>false</c>, und <c>dialog_oeffnen</c> lehnt benannt ab,
-        /// statt still nichts zu tun. Auf iOS wechselt die Wurzel die Ansicht.
+        /// Windows reicht <c>WinFormsNavigation.OeffneMaske</c> den Schluessel samt
+        /// Reiter an die gezeichnete Wurzel weiter; auf iOS tut die Wurzel dasselbe.
         /// </para>
         /// </remarks>
         public const string STARTSEITE = "STARTSEITE";
@@ -101,9 +106,12 @@ namespace WindowsFormsApplication1
         /// dieselbe Begruendung wie bei <see cref="STARTSEITE"/> — jene Konstante steht
         /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Dieser
         /// Schluessel hat als einziger der Welle KEINEN <c>Masken.*</c>-Zwilling: Die
-        /// Klimadaten haengen am Menuepunkt „Administration → Klimadaten", und die
-        /// Windows-Huelle faengt ihn selbst ab. Ein Waechter in <c>EPOS.UI.Tests</c>
-        /// haelt beide Fundstellen gegeneinander.
+        /// Klimadaten haengen am Menuepunkt „Administration → Klimadaten", und unter
+        /// Windows reicht <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
+        /// Hauptfensterhuelle weiter, der denselben Menueweg geht. Auf iOS zeigt die
+        /// <c>AppWurzel</c> denselben Dialog als Ansicht — ihre Datenseite liegt
+        /// plattformfrei in <c>EPOS.UI.Daten</c>. Ein Waechter in
+        /// <c>EPOS.UI.Tests</c> haelt beide Fundstellen gegeneinander.
         /// </remarks>
         public const string KLIMADATEN = "KLIMADATEN";
 
@@ -115,14 +123,13 @@ namespace WindowsFormsApplication1
         /// dieselbe Begruendung wie bei <see cref="KLIMADATEN"/> — jene Konstante steht
         /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Der Schluessel
         /// gehoert zum Menuepunkt „Administration → Kosten → Energietraegerverwaltung…";
-        /// die Windows-Huelle faengt ihn im Menueweg selbst ab
-        /// (<c>HauptfensterHuelle.Weg</c>), <c>WinFormsNavigation.OeffneMaske</c> kennt
-        /// ihn nicht. <c>dialog_oeffnen</c> lehnt dort also benannt ab, statt still
-        /// nichts zu tun — genau wie bei der Kostenverwaltung. Auf iOS ist die
-        /// Kostenverwaltung insgesamt noch nicht angebunden; die <c>AppWurzel</c>
-        /// meldet <c>false</c>. LESEN und SETZEN erreichen die Maske trotzdem, sobald
-        /// der Anwender sie offen hat: Dafuer zaehlt die Anmeldung an der
-        /// Maskenbruecke, nicht dieses Ziel.
+        /// unter Windows reicht <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf
+        /// der Hauptfensterhuelle weiter (<c>HauptfensterHuelle.Ablauf</c>), der denselben
+        /// Menueweg geht — genau wie bei der Kostenverwaltung. Auf iOS ist die
+        /// Kostenverwaltung insgesamt nicht angebunden; die <c>AppWurzel</c>
+        /// meldet <c>false</c>, und <c>dialog_oeffnen</c> lehnt benannt ab. LESEN und
+        /// SETZEN erreichen die Maske trotzdem, sobald der Anwender sie offen hat:
+        /// Dafuer zaehlt die Anmeldung an der Maskenbruecke, nicht dieses Ziel.
         /// </remarks>
         public const string ENERGIETRAEGER_VERWALTUNG = "ENERGIETRAEGER_VERWALTUNG";
 
@@ -144,10 +151,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Der dritte Punkt der Rubrik „Administration → Kosten"; dieselbe Lage wie
-        /// bei <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn
-        /// im Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht, und
-        /// auf iOS ist die Kostenverwaltung noch nicht angebunden. <c>dialog_oeffnen</c>
-        /// lehnt deshalb auf beiden Plattformen benannt ab.
+        /// bei <see cref="ENERGIETRAEGER_VERWALTUNG"/> — unter Windows geht der Weg
+        /// ueber den Ablauf der Hauptfensterhuelle auf, auf iOS ist die
+        /// Kostenverwaltung nicht angebunden, und <c>dialog_oeffnen</c> lehnt dort
+        /// benannt ab.
         /// </remarks>
         public const string NUTZUNGSDAUER_VERWALTUNG = "NUTZUNGSDAUER_VERWALTUNG";
 
@@ -169,8 +176,10 @@ namespace WindowsFormsApplication1
         /// </summary>
         /// <remarks>
         /// Menuepunkt „Administration → Gesetzliche Parameter"; dieselbe Lage wie bei
-        /// <see cref="ENERGIETRAEGER_VERWALTUNG"/> — die Windows-Huelle faengt ihn im
-        /// Menueweg ab, <c>WinFormsNavigation.OeffneMaske</c> kennt ihn nicht.
+        /// <see cref="ENERGIETRAEGER_VERWALTUNG"/> — unter Windows reicht
+        /// <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
+        /// Hauptfensterhuelle weiter, auf iOS antwortet die <c>AppWurzel</c>
+        /// <c>false</c>.
         /// </remarks>
         public const string GESETZESKATALOG = "GESETZESKATALOG";
 
@@ -181,15 +190,57 @@ namespace WindowsFormsApplication1
         /// <b>Warum die Zeichenkette und nicht <c>Seitenschluessel.ProjektAlsVariante</c>:</b>
         /// dieselbe Begruendung wie bei <see cref="KLIMADATEN"/> — jene Konstante steht
         /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Der Schluessel
-        /// gehoert zum Menuepunkt „Projekt → Als Variante speichern…"; die
-        /// Windows-Huelle faengt ihn im Menueweg selbst ab
-        /// (<c>HauptfensterHuelle.Weg</c>), <c>WinFormsNavigation.OeffneMaske</c> kennt
-        /// ihn nicht. <c>dialog_oeffnen</c> lehnt dort also benannt ab, statt still
-        /// nichts zu tun — genau wie bei der Kostenverwaltung. LESEN und SETZEN
-        /// erreichen die Maske trotzdem, sobald der Anwender sie offen hat: Dafuer
-        /// zaehlt die Anmeldung an der Maskenbruecke, nicht dieses Ziel.
+        /// gehoert zum Menuepunkt „Projekt → Als Variante speichern…"; unter Windows
+        /// reicht <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
+        /// Hauptfensterhuelle weiter (<c>HauptfensterHuelle.Ablauf</c>), der denselben
+        /// Menueweg geht; auf iOS zeigt die <c>AppWurzel</c> denselben Dialog als
+        /// Ansicht. Die Maske gilt dem AKTIVEN Projekt — den Stamm bestimmt der Weg
+        /// selbst, denn eine Variante haengt immer am Stamm. LESEN und SETZEN
+        /// erreichen sie ohnehin, sobald der Anwender sie offen hat: Dafuer zaehlt die
+        /// Anmeldung an der Maskenbruecke, nicht dieses Ziel.
         /// </remarks>
         public const string PROJEKT_VARIANTE = "PROJEKT_ALS_VARIANTE";
+
+        // =================================================================
+        //  Die ARGUMENTE - zweite Datenspalte neben dem Ziel (KI-D-Q8)
+        // =================================================================
+
+        /// <summary>
+        /// Der Reiter „Energieerzeuger" der Startseite — das Argument der sechs
+        /// Erzeugermasken des Projekts.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum die Zeichenkette und nicht <c>Reiterschluessel.Erzeuger</c>:</b>
+        /// dieselbe Begruendung wie bei <see cref="STARTSEITE"/> — jene Konstante steht
+        /// in <c>EPOS.UI</c>, und der Kern kennt die Oberflaeche nicht. Ein Waechter in
+        /// <c>EPOS.UI.Tests</c> haelt beide Fundstellen gegeneinander.
+        /// </remarks>
+        public const string REITER_ERZEUGER = "ERZEUGER";
+
+        /// <summary>
+        /// Der Reiter „Wärmebedarf" der Startseite; dieselbe Lage wie bei
+        /// <see cref="REITER_ERZEUGER"/>.
+        /// </summary>
+        public const string REITER_WAERMEBEDARF = "WAERMEBEDARF";
+
+        /// <summary>
+        /// Das Blatt „Übersicht" der Ansicht „Berichte und Kosten".
+        /// </summary>
+        /// <remarks>
+        /// Dieselbe Lage wie bei <see cref="REITER_ERZEUGER"/>: Die vier Blattschluessel
+        /// stehen in <c>EPOS.UI</c> (<c>BerichteKostenSeite.SEITE_*</c>), und ein
+        /// Waechter in <c>EPOS.UI.Tests</c> haelt sie gegen diese vier Zeichenketten.
+        /// </remarks>
+        public const string BLATT_UEBERSICHT = "UEBERSICHT";
+
+        /// <summary>Das Blatt „Kosten" der Ansicht „Berichte und Kosten".</summary>
+        public const string BLATT_KOSTEN = "KOSTEN";
+
+        /// <summary>Das Blatt „Wirtschaftlichkeit" der Ansicht „Berichte und Kosten".</summary>
+        public const string BLATT_WIRTSCHAFT = "WIRTSCHAFT";
+
+        /// <summary>Das Blatt „Bericht" der Ansicht „Berichte und Kosten".</summary>
+        public const string BLATT_BERICHT = "BERICHT";
 
         private static readonly Dictionary<string, string> ZIELE =
             new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -374,9 +425,8 @@ namespace WindowsFormsApplication1
                 { KiMaskennamen.GESETZESKATALOG_ZEILE, GESETZESKATALOG },
 
                 // Die zwei REITERBLAETTER sind Teile der Ansicht „Berichte und
-                // Kosten"; ein Reiterwunsch geht dabei nicht mit (dieselbe Lage wie
-                // beim Reiterwunsch der Startseite, siehe STARTSEITE). Die Ansicht
-                // bedient die AppWurzel auf beiden Plattformen.
+                // Kosten"; welches vorn steht, sagt das Argument (siehe ARGUMENTE).
+                // Die Ansicht bedient die AppWurzel auf beiden Plattformen.
                 { KiMaskennamen.KOSTENSEITE,              Ansichten.BerichteKosten },
                 { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE, Ansichten.BerichteKosten },
 
@@ -404,9 +454,8 @@ namespace WindowsFormsApplication1
                 // eigene Fenster mit einem Weg im Menue; ihre Katalogschluessel
                 // sind zugleich ihre Navigationsschluessel - dieselbe Lage wie
                 // bei der Waermepumpenverwaltung. WinFormsNavigation.OeffneMaske
-                // kennt beide; auf iOS uebersetzt IosNavigation keinen von
-                // ihnen, die Wurzel antwortet false, und dialog_oeffnen lehnt
-                // benannt ab.
+                // kennt beide; auf iOS zeigt die AppWurzel dieselben Dialoge als
+                // Ansicht, weil ihre Datenseite plattformfrei liegt.
                 { KiMaskennamen.PEAK_SHAVING,        Masken.PeakShaving },
                 { KiMaskennamen.STROMGANGLINIE_ADMIN, Masken.StromganglinieAdmin },
 
@@ -422,7 +471,7 @@ namespace WindowsFormsApplication1
                 //
                 // Die zwei REITERBLAETTER gehoeren zur Ansicht „Berichte und
                 // Kosten" - wie schon Kostenseite und Wirtschaftlichkeitsseite
-                // der Welle KI-F4; ein Reiterwunsch geht dabei nicht mit. Die
+                // der Welle KI-F4; welches vorn steht, sagt das Argument. Die
                 // Ansicht bedient die AppWurzel auf beiden Plattformen.
                 { KiMaskennamen.BERICHTE_UEBERSICHT, Ansichten.BerichteKosten },
                 { KiMaskennamen.BERICHTSEITE,        Ansichten.BerichteKosten },
@@ -430,14 +479,71 @@ namespace WindowsFormsApplication1
                 // „Projekt speichern unter" IST eine Maske der Windows-
                 // Navigationstabelle - hier fallen Katalogschluessel und
                 // Navigationsschluessel zusammen, wie bei der
-                // Waermepumpenverwaltung. Auf iOS uebersetzt IosNavigation den
-                // Schluessel nicht, die Wurzel antwortet false, und
-                // dialog_oeffnen lehnt benannt ab.
+                // Waermepumpenverwaltung. Auf iOS zeigt die AppWurzel denselben
+                // Dialog als Ansicht.
                 { KiMaskennamen.PROJEKT_KOPIE, Masken.ProjektSpeichernUnter },
 
                 // „Als Variante speichern" haengt am Menuepunkt „Projekt → Als
                 // Variante speichern…" - siehe PROJEKT_VARIANTE.
                 { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE }
+            };
+
+        /// <summary>
+        /// Die zweite Datenspalte: das ARGUMENT, mit dem das Ziel aufmacht
+        /// (Anwenderentscheid KI‑D‑Q8, 21.09.2026).
+        ///
+        /// <para><b>Auch sie ist DATEN und keine Logik</b> — eine Tabelle neben der
+        /// Zieltabelle, kein <c>switch</c> mit Sonderfaellen. Wer hier fehlt, oeffnet
+        /// sein Ziel so, wie es von selbst aufmacht; das ist kein Fehlerzustand,
+        /// sondern die Angabe „kein eigener Platz".</para>
+        ///
+        /// <para><b>Zwei Arten von Argument.</b> Das Ziel <see cref="STARTSEITE"/>
+        /// nimmt einen REITER, die Ansicht „Berichte und Kosten" ein BLATT. Beide
+        /// Ziele fuehren mehrere Masken; ohne das Argument landete der Anwender auf
+        /// dem ersten Reiter bzw. der Uebersicht und muesste selbst weitersuchen.</para>
+        /// </summary>
+        private static readonly Dictionary<string, string> ARGUMENTE =
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                // Die sechs Erzeugermasken des Projekts gehen aus der Erzeugerkarte
+                // der Startseite auf - Reiter 4.
+                { KiMaskennamen.HEIZKESSEL_PROJEKT,       REITER_ERZEUGER },
+                { KiMaskennamen.BHKW_PROJEKT,             REITER_ERZEUGER },
+                { KiMaskennamen.PUFFERSPEICHER_PROJEKT,   REITER_ERZEUGER },
+                { KiMaskennamen.STROMSPEICHER_PROJEKT,    REITER_ERZEUGER },
+                { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, REITER_ERZEUGER },
+                { KiMaskennamen.WAERMEPUMPE_ANLAGE,       REITER_ERZEUGER },
+
+                // Die SOLARGANGLINIEN haengen an der Kachel „Solarthermie" - sie
+                // steht ebenfalls auf dem Erzeugerreiter, und welche der zwei
+                // Masken aufgeht, entscheidet die Weiche der Kachel.
+                { KiMaskennamen.SOLARGANGLINIE,           REITER_ERZEUGER },
+
+                // Gebaeudedaten, Wohnflaeche und der gerechnete Bedarf gehen aus der
+                // Kachel „Gebaeudedaten eingeben" auf, die externen Ganglinien aus
+                // „Daten importieren" - beide auf Reiter 2.
+                { KiMaskennamen.GEBAEUDE_WOHNFLAECHE,     REITER_WAERMEBEDARF },
+                { KiMaskennamen.GEBAEUDE_BEDARF,          REITER_WAERMEBEDARF },
+                { KiMaskennamen.WAERMEBEDARF_EXTERN,      REITER_WAERMEBEDARF },
+
+                // KiMaskennamen.BEDARFSPROFILE steht hier BEWUSST NICHT: Dieselbe
+                // Maske geht aus den Kacheln ZWEIER Reiter auf („Waermebedarf" mit
+                // Prozesswaerme und Brauchwasser, „Strombedarf" mit den drei
+                // Stromprofilen). Einen davon zu nennen hiesse, die Haelfte der
+                // Aufrufe an den falschen Platz zu fuehren.
+
+                // Die Ansicht „Berichte und Kosten" fuehrt vier Blaetter; jede
+                // Maske nennt das ihre.
+                { KiMaskennamen.KOSTENSEITE,                  BLATT_KOSTEN },
+                { KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE,     BLATT_WIRTSCHAFT },
+                { KiMaskennamen.BERICHTE_UEBERSICHT,          BLATT_UEBERSICHT },
+                { KiMaskennamen.BERICHTSEITE,                 BLATT_BERICHT },
+
+                // Die drei Wirtschaftlichkeitsmasken gehen aus der Fussleiste des
+                // Blattes „Wirtschaftlichkeit" auf.
+                { KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER, BLATT_WIRTSCHAFT },
+                { KiMaskennamen.TARIFSTRUKTUR,                BLATT_WIRTSCHAFT },
+                { KiMaskennamen.PV_VERGUETUNG,                BLATT_WIRTSCHAFT }
             };
 
         /// <summary>Alle zugeordneten Katalogmasken.</summary>
@@ -455,5 +561,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gibt es fuer diese Katalogmaske ein Ziel?</summary>
         public static bool Kennt(string maskenname) => Ziel(maskenname).Length > 0;
+
+        /// <summary>
+        /// Das ARGUMENT, mit dem das Ziel dieser Katalogmaske aufmacht — der Reiter
+        /// der Startseite bzw. das Blatt der Ansicht „Berichte und Kosten"; leer,
+        /// wenn keines mitgeht.
+        /// </summary>
+        /// <remarks>
+        /// Leer statt <c>null</c> — dieselbe Form wie bei <see cref="Ziel"/>: Ein
+        /// Aufrufer muss nicht zwei Abwesenheiten unterscheiden, und der Kern laeuft
+        /// ohne Nullbarkeitsannotation.
+        /// </remarks>
+        public static string Argument(string maskenname)
+        {
+            if (string.IsNullOrWhiteSpace(maskenname)) return "";
+            string argument;
+            return ARGUMENTE.TryGetValue(maskenname.Trim(), out argument) ? argument : "";
+        }
     }
 }

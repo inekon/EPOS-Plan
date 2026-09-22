@@ -1,38 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Klimadaten;
-using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Klimadaten (iU9-W14c.7).
+    /// Die DATENSEITE der Klimadaten (Auftrag KI‑F8, Anwenderentscheid KI‑D‑Q8) — sie
+    /// lag bis hierher vollständig in <c>WindowsFormsApplication1/Views/Admin</c> und
+    /// war damit auf dem iPad unerreichbar, obwohl sie keine einzige Windows-Zeile
+    /// führt.
     ///
-    /// <para><b>Sie heisst wieder KLIMADATEN</b> (Entscheid E-3, Anwender 04.09.2026:
+    /// <para><b>Was hier steht.</b> Die Datenbank-, Netz- und Rechenseite: die
+    /// Regionsliste aus <see cref="KlimaregionStammCtrl"/>, die Stundenwerte aus
+    /// <see cref="SolardatenCtrl"/>, die zwei Zeichenmodelle aus
+    /// <c>ChartRenderer.JahresgangModell</c>, der Import als
+    /// <see cref="KlimaImportAblauf"/> und der Bereichsabruf der TRY-Regionaldaten.
+    /// Die Plattform steuert nur zwei Dinge bei, und beide kommen über die
+    /// Kern-Dienste herein: die Dateiwahl (<c>Dienste.Datei</c>) und die Ablagewurzel
+    /// der Ortsliste (<c>Dienste.Pfade</c>).</para>
+    ///
+    /// <para><b>Was NICHT hier steht:</b> das Fenster. Unter Windows zeigt
+    /// <c>Views/Admin/KlimadatenFenster</c> dieselbe Komponente modal und zieht
+    /// danach die Startseite nach; auf iOS zeigt die <c>AppWurzel</c> sie als
+    /// Ansicht. Muster <see cref="NutzungsdauerHuelle"/>.</para>
+    ///
+    /// <para><b>Sie heisst KLIMADATEN</b> (Entscheid E-3, Anwender 04.09.2026:
     /// „Klimaregion ist eigentlich für Deutschland gedacht, Klimadaten für den
-    /// Download weltweit mit TMY-Daten."). Der Menütext heisst „Klimadaten", die
-    /// Komponente ebenso. <b>KLIMAREGION</b> meint dagegen die DEUTSCHEN
-    /// Klimaregionen (Klimazonenkarte, Projektbezug über <c>ID_Klimaregion</c>) —
-    /// <see cref="KlimaregionStammCtrl"/>, <c>Tab_Klimaregion_STAMM</c> und
-    /// <c>KlimazonenkarteDialog</c> behalten ihren Namen.</para>
+    /// Download weltweit mit TMY-Daten."). <b>KLIMAREGION</b> meint dagegen die
+    /// DEUTSCHEN Klimaregionen (Klimazonenkarte, Projektbezug über
+    /// <c>ID_Klimaregion</c>) — <see cref="KlimaregionStammCtrl"/>,
+    /// <c>Tab_Klimaregion_STAMM</c> und <c>KlimazonenkarteDialog</c> behalten ihren
+    /// Namen.</para>
     ///
-    /// <para><b>Die Datenbank-, Netz- und Rechenseite steht hier</b>, nicht in der
-    /// Komponente: die Regionsliste aus <see cref="KlimaregionStammCtrl"/> (seit
-    /// W14c.0d im Kern), die Stundenwerte aus <see cref="SolardatenCtrl"/>, die zwei
-    /// Bilder aus <c>ChartRenderer.Jahresgang</c> und der Import als
-    /// <see cref="KlimaImportAblauf"/> (W14c.0e).</para>
-    ///
-    /// <para><b>Der Import läuft in <c>Task.Run</c> und lässt sich abbrechen</b>
+    /// <para><b>Der Import läuft nebenher und lässt sich abbrechen</b>
     /// (A-4): Er holt eine PVGIS-Antwort über das Netz, rechnet 8 760 Sonnenstände
     /// und schreibt 9 125 Zeilen in einer Transaktion. In einer WebView ist der
     /// Renderfaden derselbe Faden.</para>
@@ -44,11 +52,11 @@ namespace WindowsFormsApplication1
     /// Dateien. Der Kern kennt weder <c>HttpClient</c> noch eine Adresse.</para>
     ///
     /// <para><b>Drei Klimaquellen</b> (Auftrag KL1-B): PVGIS-TMY wie bisher, eine
-    /// DWD-TRY-Datei vom Rechner des Anwenders (ganz ohne Netz) und die offenen
+    /// DWD-TRY-Datei vom Gerät des Anwenders (ganz ohne Netz) und die offenen
     /// TRY-Regionaldaten — über Bereichsabrufe auf <c>data.zip</c> oder aus einer
     /// lokalen Kopie dieses Pakets.</para>
     ///
-    /// <para><b>Die Ortsliste ist eine VORSCHLAGSLISTE, kein Startbedingung</b>
+    /// <para><b>Die Ortsliste ist eine VORSCHLAGSLISTE, keine Startbedingung</b>
     /// (Befund W14c-B15, Entscheid E-7): <c>Form_Klimadaten_Load</c> las
     /// <c>&lt;BenutzerLokal&gt;\Ortsliste\Ortsnamen.txt</c> ohne <c>File.Exists</c>
     /// und ohne <c>try</c> — die Datei liegt weder im Repo noch im Setup, und auf
@@ -57,9 +65,6 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal static class KlimadatenHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 757 × 641).</summary>
-        private static readonly Size MASS = new Size(1180, 780);
-
         /// <summary>Der Ordner der Ortsliste unterhalb von <c>Dienste.Pfade.BenutzerLokal</c>.</summary>
         private const string ORDNER_ORTSLISTE = "Ortsliste";
 
@@ -69,52 +74,10 @@ namespace WindowsFormsApplication1
         /// <summary>Die Abbruchmarke des laufenden Imports (A-4).</summary>
         private static CancellationTokenSource _abbruch;
 
-        /// <summary>
-        /// Zeigt die Klimadaten als eigenes Fenster — der Weg von
-        /// <c>Hauptfensterrahmen.MenuItem_Klimadaten_Click</c>.
-        ///
-        /// <para><b>Mit Besitzer und in einem <c>using</c></b> (Befund W14c-B34).</para>
-        ///
-        /// <para><b>Nach dem Schließen frischt die Startseite ihre Klimaregionen
-        /// auf</b> (Welle GM‑1): Sie liest die Liste nur in <c>Startseite.Laden</c>,
-        /// also beim Aufbau und auf Meldung des <c>SeitenZustand</c>. Ohne diesen
-        /// Rückweg fehlte eine hier importierte Region in ihrem Auswahlfeld bis zum
-        /// Projektwechsel, und eine gelöschte stünde weiter darin. Aufgefrischt wird
-        /// IMMER — ob importiert, gelöscht oder nichts geändert wurde, sagt der
-        /// Rückgabewert des Fensters nicht, und die paar Dutzend Regionen neu zu
-        /// lesen kostet nichts.</para>
-        /// </summary>
-        internal static bool Oeffnen(IWin32Window besitzer)
-        {
-            bool ok = false;
-            BlazorDialogForm<KlimadatenDialog> dlg = null;
+        /// <summary>Der Fenstertitel und zugleich die Dialogüberschrift.</summary>
+        internal static string Titel() => MyResource.Resource.KLIMA_TITEL;
 
-            var werte = new Dictionary<string, object>(Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<KlimadatenDialog>(
-                MyResource.Resource.KLIMA_TITEL, MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-
-            // Die Startseite hinter dem Fenster liest ihre Regionsliste neu. Steht
-            // keine (das Fenster ging aus einer anderen Maske auf), laeuft der
-            // Aufruf leer - derselbe Weg wie VariantenAnzeigeAktualisieren.
-            StartseiteHuelle.Aktuelle?.KlimaregionenAktualisieren();
-
-            return ok;
-        }
-
-        /// <summary>Der PARAMETERSATZ der Komponente.</summary>
+        /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
         {
             return new Dictionary<string, object>
@@ -139,9 +102,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Der Dateiwähler für die TRY-Datei und das Regionalpaket. <b>Die ASYNCHRONE
-        /// Fassung</b> (Befund W13-B-1): <c>OpenFileDialog.ShowDialog()</c> öffnete
-        /// seine verschachtelte Nachrichtenschleife INNERHALB des
+        /// Der Dateiwähler der Plattform für die TRY-Datei und das Regionalpaket.
+        /// <b>Die ASYNCHRONE Fassung</b> (Befund W13-B-1): <c>OpenFileDialog.ShowDialog()</c>
+        /// öffnete seine verschachtelte Nachrichtenschleife INNERHALB des
         /// WebView2-Rückrufs; <c>DateiOeffnenAsync</c> fährt das Fenster hinter dem
         /// Blazor-Ereignis hoch.
         /// </summary>
@@ -265,7 +228,7 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
-        // Import (A-4: Task.Run mit Abbruch)
+        // Import (A-4: nebenher mit Abbruch)
         // =====================================================================
 
         private static async Task<KlimaImportErgebnis> Importieren(
@@ -276,7 +239,10 @@ namespace WindowsFormsApplication1
 
             CancellationToken marke = _abbruch.Token;
 
-            return await Task.Run(() => KlimaImportAblauf.Laufen(
+            // Der Arbeitsfaden bekommt die Kultur des Aufrufers (Auftrag #232): Ein
+            // Faden ohne eigene Kultur laese den veraenderlichen prozessweiten
+            // Vorgabewert und koennte mitten im Import die Sprache wechseln.
+            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.Laufen(
                 auftrag,
                 (lon, lat, azimut) => PVGIS_EPW_Downloader.GetTMY(lon, lat, azimut),
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
@@ -293,14 +259,14 @@ namespace WindowsFormsApplication1
         /// Sagt vor dem Einlesen, welche TRY-Region der Standort trifft — über
         /// DIESELBEN Nahtstellen wie der Import (Ortsauflösung und Bereichsabruf).
         ///
-        /// <para><b>Auch sie läuft in <c>Task.Run</c></b>: Sie holt das
+        /// <para><b>Auch sie läuft nebenher</b>: Sie holt das
         /// Zentralverzeichnis des Pakets über das Netz, und in einer WebView ist der
         /// Renderfaden derselbe Faden. Eine eigene Abbruchmarke braucht sie nicht —
         /// die Vorschau dauert einen Bruchteil des Imports.</para>
         /// </summary>
         private static async Task<KlimaVorschauErgebnis> RegionErmitteln(KlimaImportAuftrag auftrag)
         {
-            return await Task.Run(() => KlimaImportAblauf.RegionErmittelnAsync(
+            return await Kulturweitergabe.StartenAsync(() => KlimaImportAblauf.RegionErmittelnAsync(
                 auftrag,
                 ort => PVGIS_EPW_Downloader.GetCoordinatesAsync(ort),
                 CancellationToken.None,

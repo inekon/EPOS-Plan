@@ -25,6 +25,19 @@ namespace EPOS.iOS;
 /// Ausgang wie <see cref="KeineNavigation"/>, und der Aufrufer wertet ihn wie
 /// „Abbrechen". Mit dem Assistenten (iU10-9, iL5) kommen die uebrigen
 /// Schluessel dazu.</para>
+///
+/// <para><b>Warum <see cref="Uebersetze"/> nur EINEN Fall fuehrt</b>
+/// (Anwenderentscheid KI-D-Q8, 21.09.2026): Die <c>Seitenschluessel</c> von
+/// <c>EPOS.UI</c> sind fuer alle Maskenschluessel VERWEISE auf <c>Masken.*</c> -
+/// dieselbe Zeichenkette, nicht eine zweite. Die Verwaltungsschluessel der
+/// Kataloge, <c>Masken.PeakShaving</c>, <c>Masken.StromganglinieAdmin</c> und
+/// <c>Masken.ProjektSpeichernUnter</c> laufen deshalb UNUEBERSETZT durch, und es
+/// gibt fuer sie nichts zu ergaenzen; toter Uebersetzungscode waere eine zweite
+/// Wahrheit ueber denselben Text. Was mit einem Schluessel geschieht, entscheidet
+/// allein die WURZEL (<c>AppWurzel.OeffneMaske</c>): Sie fuehrt die Positivliste
+/// der Ansichten und lehnt alles Uebrige benannt ab. Die eine Ausnahme unten ist
+/// <c>Masken.ProjektAuswahl</c> — dort heisst dieselbe Sache auf iOS anders
+/// (<c>PROJEKTLISTE</c>).</para>
 /// </summary>
 public sealed class IosNavigation : WindowsFormsApplication1.INavigation   // voll qualifiziert: MAUI fuehrt Microsoft.Maui.Controls.INavigation als globales using (CS0104, dritter CI-Lauf 03.09.2026)
 {

@@ -237,6 +237,141 @@ namespace EPOS.Kern.Tests
         }
 
         // ==================================================================
+        //  dialog_oeffnen: die ARGUMENTTABELLE (Anwenderentscheid KI-D-Q8)
+        // ==================================================================
+
+        /// <summary>
+        /// <b>Die sechs Erzeugermasken des Projekts nennen ihren Reiter.</b> Ihr Ziel
+        /// ist die Startseite, und die fuehrt sechs Reiter; ohne das Argument landete
+        /// der Anwender auf dem ersten und muesste selbst weitersuchen.
+        /// </summary>
+        [Fact]
+        public void Die_sechs_Erzeugermasken_nennen_den_Reiter_Energieerzeuger()
+        {
+            foreach (string maske in new[]
+                     {
+                         KiMaskennamen.HEIZKESSEL_PROJEKT,
+                         KiMaskennamen.BHKW_PROJEKT,
+                         KiMaskennamen.PUFFERSPEICHER_PROJEKT,
+                         KiMaskennamen.STROMSPEICHER_PROJEKT,
+                         KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
+                         KiMaskennamen.WAERMEPUMPE_ANLAGE
+                     })
+            {
+                Assert.Equal(KiMaskenziele.STARTSEITE, KiMaskenziele.Ziel(maske));
+                Assert.Equal(KiMaskenziele.REITER_ERZEUGER, KiMaskenziele.Argument(maske));
+            }
+        }
+
+        /// <summary>
+        /// <b>Die Blaetter der Ansicht „Berichte und Kosten" stehen ebenfalls in der
+        /// Tabelle</b> — je Maske genau eines.
+        /// </summary>
+        [Fact]
+        public void Die_Berichtsmasken_nennen_ihr_Blatt()
+        {
+            Assert.Equal(KiMaskenziele.BLATT_KOSTEN,
+                         KiMaskenziele.Argument(KiMaskennamen.KOSTENSEITE));
+            Assert.Equal(KiMaskenziele.BLATT_WIRTSCHAFT,
+                         KiMaskenziele.Argument(KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE));
+            Assert.Equal(KiMaskenziele.BLATT_UEBERSICHT,
+                         KiMaskenziele.Argument(KiMaskennamen.BERICHTE_UEBERSICHT));
+            Assert.Equal(KiMaskenziele.BLATT_BERICHT,
+                         KiMaskenziele.Argument(KiMaskennamen.BERICHTSEITE));
+
+            // Die drei Masken der Fussleiste gehen aus dem Blatt „Wirtschaftlichkeit" auf.
+            Assert.Equal(KiMaskenziele.BLATT_WIRTSCHAFT,
+                         KiMaskenziele.Argument(KiMaskennamen.TARIFSTRUKTUR));
+            Assert.Equal(KiMaskenziele.BLATT_WIRTSCHAFT,
+                         KiMaskenziele.Argument(KiMaskennamen.PV_VERGUETUNG));
+            Assert.Equal(KiMaskenziele.BLATT_WIRTSCHAFT,
+                         KiMaskenziele.Argument(KiMaskennamen.WIRTSCHAFTLICHKEIT_PARAMETER));
+        }
+
+        /// <summary>
+        /// <b>Eine Maske ohne eigenen Platz nennt kein Argument</b> — und das ist kein
+        /// Fehlerzustand, sondern die Angabe „das Ziel macht auf, wie es von selbst
+        /// aufmacht". Die Bedarfsprofile gehen aus den Kacheln ZWEIER Reiter auf; einen
+        /// davon zu nennen fuehrte die Haelfte der Aufrufe an den falschen Platz.
+        /// </summary>
+        [Fact]
+        public void Eine_Maske_ohne_eigenen_Platz_nennt_kein_Argument()
+        {
+            Assert.Equal("", KiMaskenziele.Argument(KiMaskennamen.BEDARFSPROFILE));
+            Assert.Equal("", KiMaskenziele.Argument(KiMaskennamen.KLIMADATEN));
+            Assert.Equal("", KiMaskenziele.Argument("Form_GibtEsNicht"));
+            Assert.Equal("", KiMaskenziele.Argument(""));
+            Assert.Equal("", KiMaskenziele.Argument(null));
+        }
+
+        /// <summary>
+        /// <b>Der Weg durch die drei Schichten:</b> <c>dialog_oeffnen</c> reicht das
+        /// Argument der Tabelle an <c>Dienste.Navigation.OeffneMaske</c> durch. Ohne
+        /// ihn waere die Tabelle eine Angabe, die niemand liest.
+        /// </summary>
+        [Fact]
+        public async Task Dialog_oeffnen_reicht_den_Reiter_an_die_Navigation_durch()
+        {
+            INavigation vorher = Dienste.Navigation;
+            var mitschrift = new Mitschreibnavigation();
+            try
+            {
+                Dienste.Navigation = mitschrift;
+
+                KiErgebnis ergebnis = await Frisch().AusfuehrenAsync(
+                    "dialog_oeffnen",
+                    new Dictionary<string, object> { ["maske"] = KiMaskennamen.BHKW_PROJEKT });
+
+                Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+                Assert.Equal(KiMaskenziele.STARTSEITE, mitschrift.Maske);
+                Assert.Equal(new object[] { KiMaskenziele.REITER_ERZEUGER }, mitschrift.Argumente);
+            }
+            finally { Dienste.Navigation = vorher; }
+        }
+
+        /// <summary>
+        /// <b>Ohne Argument bleibt der Ruf einstellig.</b> Eine leere Zeichenkette waere
+        /// dort ein Wunsch, der nichts benennt — und die Navigationstabellen lesen ihr
+        /// erstes Argument je Schluessel.
+        /// </summary>
+        [Fact]
+        public async Task Dialog_oeffnen_ruft_ohne_Argument_einstellig()
+        {
+            INavigation vorher = Dienste.Navigation;
+            var mitschrift = new Mitschreibnavigation();
+            try
+            {
+                Dienste.Navigation = mitschrift;
+
+                KiErgebnis ergebnis = await Frisch().AusfuehrenAsync(
+                    "dialog_oeffnen",
+                    new Dictionary<string, object> { ["maske"] = KiMaskennamen.KLIMADATEN });
+
+                Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+                Assert.Equal(KiMaskenziele.KLIMADATEN, mitschrift.Maske);
+                Assert.Empty(mitschrift.Argumente);
+            }
+            finally { Dienste.Navigation = vorher; }
+        }
+
+        /// <summary>Eine Navigation, die mitschreibt, was sie zu oeffnen bekam.</summary>
+        private sealed class Mitschreibnavigation : INavigation
+        {
+            internal string Maske { get; private set; } = "";
+            internal object[] Argumente { get; private set; } = Array.Empty<object>();
+
+            public bool OeffneMaske(string maske, params object[] argumente)
+            {
+                Maske = maske ?? "";
+                Argumente = argumente ?? Array.Empty<object>();
+                return true;
+            }
+
+            public void MenueAktualisieren() { }
+            public void AnsichtAktualisieren(string bereich) { }
+        }
+
+        // ==================================================================
         //  feld_setzen ueber die Bruecke
         // ==================================================================
 

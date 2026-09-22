@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Windows.Forms;
 using EPOS.UI.Dialoge.Projekt;
+using EPOS.UI.Seiten;
 namespace WindowsFormsApplication1
 {
     /// <summary>
@@ -77,7 +78,7 @@ namespace WindowsFormsApplication1
                 // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
                 // StromganglinieAdminDialog; die Huelle zeigt sie modal.
                 case Masken.StromganglinieAdmin:
-                    return StromganglinieAdminHuelle.Oeffnen(null);
+                    return StromganglinieAdminFenster.Oeffnen(null);
 
                 // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
                 // Razor-Komponente SolarganglinieAdminDialog; die Huelle zeigt sie
@@ -163,12 +164,12 @@ namespace WindowsFormsApplication1
                 // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
                 // einziger Fussknopf trug DialogResult.Cancel.
                 case Masken.PeakShaving:
-                    return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
+                    return PeakShavingFenster.Oeffnen(null, Ganzzahl(argumente, 0));
 
                 // iU9-W15a.4: „Speichern unter" ist die Razor-Komponente ProjektKopieDialog;
                 // ausgewertet wird wie beim Vorlaeufer nur das DialogResult.
                 case Masken.ProjektSpeichernUnter:
-                    return ProjektKopieHuelle.Oeffnen(null);
+                    return ProjektKopieFenster.Oeffnen(null);
 
                 // --- Masken, die eine Projektwahl herausgeben -------------------------
                 // iU9-W15a.3: Beide Schluessel zeigen auf DIESELBE Razor-Komponente
@@ -240,6 +241,43 @@ namespace WindowsFormsApplication1
                 // dasselbe - es ist derselbe Weg.
                 case Masken.Simulation:
                     return SimulationZeigen(Marke(argumente));
+
+                // --- Die MENUEWEGE des Hauptfensters (Auftrag KI-F8) ------------------
+                // ANWENDERENTSCHEID KI-D-Q8 (21.09.2026): Sechs Ziele des
+                // Hilfe-Assistenten sind MENUEPUNKTE und keine Maskenschluessel - ihr
+                // Oeffnungscode steht in HauptfensterHuelle.Ablauf, hinter denselben
+                // Zeilen, die der Anwender von Hand anklickt. Hier wird er GERUFEN und
+                // nicht abgeschrieben: ein Weg, eine Wahrheit.
+                //
+                // Die Faelle stehen AUSDRUECKLICH da und nicht als Sammelfall - diese
+                // Tabelle beantwortet „behandle ich den Schluessel?", und ein default,
+                // der alles an die Huelle weiterreichte, saehe von aussen aus wie eine
+                // Zusage fuer jeden Text.
+                //
+                // Der Sprung selbst laeuft ueber Blazorsprung (Springe), weil die
+                // sechs Wege modale Fenster oeffnen und der Ruf aus dem
+                // WebMessageReceived-Rueckruf der ersten WebView2 kommt - dieselbe
+                // Lage wie beim KiAssistent. „true" heisst deshalb auch hier
+                // „behandelt" und nicht „mit OK beendet". Steht das Hauptfenster noch
+                // nicht (Aktuelle == null), fuehrt diese Tabelle den Schluessel nicht.
+                case Seitenschluessel.Klimadaten:
+                case Seitenschluessel.Kostenverwaltung:
+                case Seitenschluessel.EnergietraegerVerwaltung:
+                case Seitenschluessel.NutzungsdauerVerwaltung:
+                case Seitenschluessel.Gesetzeskatalog:
+                case Seitenschluessel.ProjektAlsVariante:
+                    return HauptfensterHuelle.Aktuelle?.Springe(maske) ?? false;
+
+                // --- Die freien ANSICHTEN der Wurzel (Auftrag KI-F8) ------------------
+                // „Berichte und Kosten" und die Startseite sind ANSICHTEN und keine
+                // Fenster - derselbe Weg wie bei der Simulation (#207): Der Schluessel
+                // samt Textargument geht an die gezeichnete Wurzel. Das Argument ist
+                // der REITER der Startseite bzw. das BLATT der Berichtsansicht
+                // (KiMaskenziele.ARGUMENTE); ohne Argument entscheidet die Ansicht
+                // selbst.
+                case Ansichten.BerichteKosten:
+                case Seitenschluessel.Startseite:
+                    return AnsichtZeigen(maske, Marke(argumente));
 
             }
 
@@ -316,6 +354,23 @@ namespace WindowsFormsApplication1
         {
             return EPOS.UI.Dienste.Navigationsziel.Aktuell?
                        .OeffneMaske(Masken.Simulation, marke) ?? false;
+        }
+
+        /// <summary>
+        /// Eine freie ANSICHT der gezeichneten Wurzel (Auftrag KI‑F8) — „Berichte und
+        /// Kosten" und die Startseite. Derselbe Weg wie <see cref="SimulationZeigen"/>,
+        /// und dieselbe Bedeutung der Rückgabe: <c>true</c> = „die Ansicht ist
+        /// gewechselt", <c>false</c> = „es zeichnet gerade keine Oberfläche".
+        /// </summary>
+        /// <param name="ansicht">Der Ansichtsschlüssel der Wurzel.</param>
+        /// <param name="argument">
+        /// Der Reiter der Startseite (<c>"ERZEUGER"</c>) bzw. das Blatt der
+        /// Berichtsansicht (<c>"KOSTEN"</c>); leer = die Ansicht entscheidet selbst.
+        /// </param>
+        private static bool AnsichtZeigen(string ansicht, string argument)
+        {
+            return EPOS.UI.Dienste.Navigationsziel.Aktuell?
+                       .OeffneMaske(ansicht, argument) ?? false;
         }
 
         /// <summary>Die MARKE aus dem ersten Argument; leer = keine.</summary>
