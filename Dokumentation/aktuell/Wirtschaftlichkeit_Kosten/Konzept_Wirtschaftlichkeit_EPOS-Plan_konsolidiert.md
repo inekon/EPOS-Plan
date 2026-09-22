@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 22.09.2026** · Codestand `3b71871c` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 22.09.2026** · Codestand `2cfee66b` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -1053,13 +1053,12 @@ Klappliste im Zeileneditor (`KostenProjektPositionenCtrl.NutzungsdauerArtZuordne
    Flottenstands** (`ErsatzintervallJahre`, `RestwertEuro` als JSON in `Tab_SpeicherAuslegung`) führt
    — nicht über Spalten; der Anschluss berührt deshalb die **Einfrierregel** des Projekts 1046.
 
-Dazu: Die Hinweiszeile füllt heute nur die Windows-Hülle (`WirtschaftlichkeitSeiteGaben:404`) — sie
-ist deren **einziger** Schreiber, und die Textbildung liegt bereits im Kern
-(`NutzungsdauerAbgleich.Hinweis`); zu tun ist das Einsammeln der Positionen, nicht der Text. Für die
-iOS-Schale muss sie in eine plattformfreie Hülle unter `EPOS.UI.Daten`; **einen Ordner
-`Wirtschaftlichkeit` gibt es dort noch nicht** (heute `Allgemein`, `Assistent`, `Bedarf`,
-`Klimadaten`, `Kosten`, `Projekt`, `Pufferspeicher`, `Simulation`, `Strom`, `Stromspeicher`) — er ist
-mit anzulegen.
+Dazu: Die Hinweiszeile hat weiterhin nur `WirtschaftlichkeitSeiteGaben` als **einzigen** Schreiber,
+und die Textbildung liegt bereits im Kern (`NutzungsdauerAbgleich.Hinweis`); zu tun ist das Einsammeln
+der Positionen, nicht der Text. **Stand: Die Hülle selbst liegt seit E3 plattformfrei (umgesetzt
+#431)** unter `EPOS.UI.Daten/Wirtschaftlichkeit/` — den Ordner `Wirtschaftlichkeit`, den es dort noch
+nicht gab, gibt es damit jetzt. **Offen bleibt allein das Einsammeln der Positionen in einem
+Kern-Controller (U39) — das gehört zu E5.**
 
 **Entscheid A1 (20.09.2026, nach Empfehlung): der Umzug kommt vor der Ergebnisansicht.** Rechenaufruf
 und Datenseite werden als eigene Welle **E3 Plattform** aus der Windows-Schale geholt, nicht erst mit
@@ -1068,8 +1067,8 @@ der Ergebnisansicht — sonst entsteht jedes Stück dieser Ansicht ein zweites M
 `PeakShavingHuelle`, `StromganglinieAdminHuelle`) sind plattformfrei nach `EPOS.UI.Daten` gewandert,
 während Windows je Hülle einen **Fenster-Adapter** behielt (`KlimadatenFenster`, `ProjektKopieFenster`,
 `PeakShavingFenster`, `StromganglinieAdminFenster`); die Wurzel öffnet dieselben Masken auf iOS über
-Nähte in `IProjektQuelle`. Nach diesem Muster ziehen die Hüllen dieses Papiers um — allen voran
-`KostenKomponenteHuelle` (Q14, E3 Schritt 5).
+Nähte in `IProjektQuelle`. Nach diesem Muster sind die Hüllen dieses Papiers umgezogen — allen voran
+`KostenKomponenteHuelle` (Q14, E3 Schritt 5). **Stand: umgesetzt #431** (Merge `2cfee66b`).
 
 **(4) Erlöse und Vorteile je Komponente.** B7 hat die Rubrik nach der Achse **zahlungswirksam /
 Ausweis** gebaut (Block A mit Summe, Block B ohne); der Anwender verlangt die Gliederung nach
@@ -1123,9 +1122,10 @@ Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
   trägt damit **zwei** Stricharten — drei Szenarien brauchen eine dritte;
 - im Tabellenbericht je Szenario eine Spaltengruppe (die heutige Tabelle „Jahr, je Projekt eine
   Spalte, dann die Δ-Spalten" ist dafür nicht vorbereitet), im Wortbericht ein zusätzliches Bild;
-- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten` — dort gibt
-  es **keinen Ordner `Wirtschaftlichkeit`**, er ist mit anzulegen; sonst entsteht sie wie der
-  heutige Verlauf nur für die Windows-Schale (`KapitalwertVerlaufHuelle`).
+- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten` — **Stand:
+  umgesetzt #431**, der Ordner `Wirtschaftlichkeit` besteht, `KapitalwertVerlaufHuelle` liegt darin
+  und sammelt, rechnet und zeichnet bereits plattformfrei über den Renderer des Kerns; offen bleibt
+  allein die Dreiszenarien-Erweiterung dieses Punkts (E6).
 
 **(6) Vergleichssicht — alle Varianten gegen die Referenz oder zwei Stände.** Die Anforderung vom
 18.09.2026 zur Tafel „Gliederung des Kapitalwerts" steht als eigener Abschnitt in § 2.15, weil sie
@@ -1461,11 +1461,12 @@ Stammänderung → die übernehmende Variante folgt, die eigene nicht (Test).
 4. Dialoge: Optionsgruppe und Erklärzeile in `ErtragBonus.razor`, Projekt-Id in
    `ErtragBonusGaben.Bauen` (die Vorwahl ist das geöffnete Projekt, nicht das erste der Liste),
    Hinweiszeile und Knopf „eigene Werte" in `PhotovoltaikVerguetungDialog.razor`; die Hülle
-   (`PhotovoltaikVerguetungHuelle`, Windows-Schale) öffnet für das gewählte Projekt; auf iOS ist der
-   Dialog **aus zwei Gründen** nicht erreichbar, und beide müssen fallen: es gibt keine
-   plattformfreie Hülle in `EPOS.UI.Daten`, **und** sein Wirt bleibt leer, solange
-   `IProjektQuelle.BerichteKostenGaben` `null` liefert und kein Seitenschlüssel in der Whitelist
-   von `AppWurzel.razor` steht;
+   (`PhotovoltaikVerguetungHuelle`) öffnet für das gewählte Projekt; auf iOS war der Dialog **aus
+   zwei Gründen** nicht erreichbar. **Stand: umgesetzt #431** — beide sind gefallen:
+   `PhotovoltaikVerguetungHuelle` liegt jetzt plattformfrei in `EPOS.UI.Daten/Wirtschaftlichkeit/`,
+   und `IosProjektQuelle.BerichteKostenGaben` liefert nicht mehr `null` (erreichbar als Überlagerung
+   der Wirtschaftlichkeitsseite über `BERICHTE_KOSTEN`); ein bestätigender `ios.yml`-Lauf steht noch
+   aus;
 5. Ressourcen (beide Sprachen): Optionsgruppe, Erklärzeilen, Hinweiszeile, Knopf, Nachweiszeile,
    Kohärenztext;
 6. Tests: Auflösung (Stamm; Variante eigene; Variante übernommen; Stamm ohne Zeile), Kopierlauf ohne
@@ -2386,13 +2387,15 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **E1 Nachweisfundament** (#380) | Das Nachweisfundament dieses Feldes: `WirtschaftlichkeitAnkerTests` (9 Anker, § 6.2), `SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23, Befund V‑2 gepinnt), `BerichtBlattstrukturWacheTests` (5), `WirtZeileFormatWacheTests` (4); **Kaskadenrunde 2** (`InvestKaskade`) in zwei Phasen wie Runde 3, damit reihenfolgeunabhängig | **keine** — A/B über 25 Projekte × 3 Szenarien zeilenweise identisch; Referenzlauf unverändert |
 | **DL‑2e Knopfleisten** (#390) | Die Fußleisten der beiden Kostendialoge dieses Papiers auf den Hausstil: `KostenKomponenteDialog` und `EnergietraegerDialog` tragen die `SpeichernLeiste` mit Status · Speichern · Abbrechen · OK; die vier Rasterknöpfe des Reiters „Kosten" (§ 2.8) bleiben Blattleiste; „Bezeichnung speichern" der Energieträgerkarte entfällt zugunsten **eines** Schreibwegs | keine — reine Bedienung |
 | **E2 Kleine Kernkorrekturen** (#405, 20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
+| **E3 Plattform** (#431, Merge `2cfee66b`) | Acht Schritte: vier nahtlose Hüllen, PV-Dateiwahl über `Dienste.Datei`, `KostenSeiteGaben`/`WirtschaftlichkeitSeiteGaben` und der Rechenaufruf (`BerichtsDatenSammler`) nach `EPOS.Kern`/`EPOS.UI.Daten` verschoben, `KostenKomponenteHuelle` und `GesetzeskatalogHuelle` mit Fenster-Adapter, Tarif-Sprünge als Überlagerung statt Zweitfenster, `IosProjektQuelle.BerichteKostenGaben` beliefert alle vier Seiten, Whitelist 18 → 21 Schlüssel | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte innerhalb der Toleranz (Teil a und Teil b) |
 
 ## 6.2 Regressionsanker
 
 Die Anker stehen seit **E1 (#380)** als Testklasse im Kern: `WirtschaftlichkeitAnkerTests` (9 Fälle)
 fährt den Weg `LadeParameter → ErgebnisCtrl.Load → KostenEmissionRechner.Berechne →
 WirtschaftlichkeitCtrl.Berechne` und hält damit die Größen dieses Papiers fest, ohne den
-Berichtssammler der Windows-Schale nachzubauen. Dazu kommen die Rechnerklassen
+Berichtssammler (`BerichtsDatenSammler`, seit E3 in `EPOS.Kern/Allgemein/Bericht/`, umgesetzt #431)
+nachzubauen. Dazu kommen die Rechnerklassen
 `SteuerGutschriftRechnerTests` (39), `EegSatzRechnerTests` (49), `PvErloesRechnerEegTests` (23), die
 Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFormatWacheTests` (4).
 
@@ -2676,7 +2679,8 @@ B6") ist mit B5, B6, B7, BK1, BK1a, BK1b, VG, VV und der Hilfsstrom-Umstellung �
 Reihenfolge der **heute** offenen Etappen — V-A…V-E (§ 2.11.4), U39 (§ 2.13 (3)),
 Erlösrubrik-Ausbau (§ 6.3 9a/9d/9i), ND-S3, B8, B9 — steht im Etappenplan E0–E12 des
 Analysepapiers [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
-Davon sind **E0 (#379), E1 (#380) und E2 (#405)** gebaut; die nächste Etappe ist **E3 Plattform**.
+Davon sind **E0 (#379), E1 (#380), E2 (#405) und E3 (#431)** gebaut; die nächste Etappe ist **E4
+Erlösrubrik und Steuerzeilen**.
 
 **Wiederaufnahme 22.09.2026.** Die Umsetzung war am 20.09.2026 zurückgestellt (Statusdatei, Block
 „Nach #405" (f)); der Anwender hat sie am 22.09.2026 mit dem Auftrag wieder aufgenommen, das Mockup
@@ -2690,7 +2694,7 @@ Etappe; ausgeführt sind sie damit nicht.
 
 | # | Entscheid (20.09.2026, nach Empfehlung) | Stand |
 |---|---|---|
-| **A1** | Rechenaufruf und Datenseite kommen **vor** der Ergebnisansicht aus der Windows-Schale — als eigene Welle **E3 Plattform**, in der gemessenen Reihenfolge; sonst entsteht jedes Stück der Ergebnisansicht ein zweites Mal nur für Windows (betrifft § 2.13 (5), die plattformfreie Hülle) | entschieden, **nicht gebaut** — E3 ist die nächste Etappe |
+| **A1** | Rechenaufruf und Datenseite kommen **vor** der Ergebnisansicht aus der Windows-Schale — als eigene Welle **E3 Plattform**, in der gemessenen Reihenfolge; sonst entsteht jedes Stück der Ergebnisansicht ein zweites Mal nur für Windows (betrifft § 2.13 (5), die plattformfreie Hülle) | entschieden **und gebaut** — E3 ist umgesetzt (**#431**) |
 | **A2** | Befund **K-1**: Vor der Umsetzung wird gemessen, ob die modulscharfe Nutzwärme vorliegt; sonst Aufteilung nach P_el mit Herleitungszeile (§ 3.6, § 4) | entschieden, nicht gebaut — E7 |
 | **A5** | **Degradation: V-E rechnet sie nicht ein.** Der Entscheid „G3 nicht umsetzen" des Szenarienkonzepts (§ 2.11.2, dort V‑G2) gilt; V-E (§ 2.11.4) wird **ohne Degradation** geplant | entschieden — der Widerspruch zwischen beiden Papieren ist aufgelöst |
 | **A11** | Nachweis der Wirtschaftlichkeitsgrößen: **Ankertests zuerst**; die Erweiterung des Referenzlaufs ist eine Frage für die nächste Basis (§ 6.2, § 6.3 Nr. 21) | entschieden **und gebaut** mit E1 (#380) |
@@ -2740,8 +2744,9 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E0** Papierpflege | Kopf, § 6.1/§ 6.3/§ 6.4/§ 6.5/§ 7 und die Nebenkonzepte; **A13-Schnitt nicht ausgeführt** | **#379**; Nachpflege auf den Stand vom 22.09.2026 mit **E0c** |
 | **E1** Nachweisfundament | Ankertests, fünf neue Testklassen, Kaskadenrunde 2 (R4) | **#380** |
 | **E2** Kleine Kernkorrekturen | R5, R6, V-3, B-7, I-5, S-3, S-5, G7/G8/G9, Formel `N4`, P3 der Mockup-Prüfung | **#405** |
-| **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | offen — **nächste Etappe** |
-| **E4** … **E12** | Erlösrubrik · Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8) · V-C/V-D · V-E · ND-S3 · Zahlenprobe A8/B9 · Wiki | offen |
+| **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | **umgesetzt #431** (Merge `2cfee66b`) |
+| **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | offen — **nächste Etappe** |
+| **E5** … **E12** | Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8) · V-C/V-D · V-E · ND-S3 · Zahlenprobe A8/B9 · Wiki | offen |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

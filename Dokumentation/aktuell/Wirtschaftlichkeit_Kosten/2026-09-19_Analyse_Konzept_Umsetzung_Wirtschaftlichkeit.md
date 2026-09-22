@@ -25,10 +25,10 @@ Zeilennummern und Messungen:
 > **Fortschreibung 22.09.2026 (E0c).** Die Erhebung selbst bleibt, wie sie war; hinzugekommen sind die
 > Standmarken. **Entschieden:** Der Anwender hat am 20.09.2026 **alle Entscheide A1–A20 nach der
 > Empfehlung** dieses Papiers entschieden (§ 4) — ebenso Q1–Q25 der Mockup-Prüfung. **Gebaut:** E0
-> (#379), E1 (#380) und E2 (#405) des Umsetzungsplans § 5, dazu DL‑2e (#390) für die Knopfleisten der
-> beiden Kostendialoge und KI‑F4 (#423) für die Freigabe der Kosten- und Wirtschaftlichkeitsmasken an
-> den Hilfe-Assistenten. **Nicht ausgeführt:** der Schnitt in drei Papiere (A13) — E0 hat nur die Pflege
-> gemacht. **Nächste Etappe:** E3 Plattform; das Hüllen- und Adaptermuster dafür liegt seit #428 vor.
+> (#379), E1 (#380), E2 (#405) und E3 (#431, Merge `2cfee66b`) des Umsetzungsplans § 5, dazu DL‑2e
+> (#390) für die Knopfleisten der beiden Kostendialoge und KI‑F4 (#423) für die Freigabe der Kosten-
+> und Wirtschaftlichkeitsmasken an den Hilfe-Assistenten. **Nicht ausgeführt:** der Schnitt in drei
+> Papiere (A13) — E0 hat nur die Pflege gemacht. **Nächste Etappe:** E4 Erlösrubrik und Steuerzeilen.
 > Die **Schemaschritte 97–100** sind inzwischen anderweitig vergeben — § 6 ist entsprechend
 > umgeschrieben.
 
@@ -51,7 +51,11 @@ Zeilennummern und Messungen:
    (`WindowsFormsApplication1/Allgemein/Bericht/BerichtsDatenSammler.cs`, Zeilen 180 und 421), 6 631
    Zeilen Datenseite der Wirtschaftlichkeit und Kostenverwaltung liegen in `Views/` bei nur 341 Zeilen
    echter Fensternaht, und die iOS-Schale erreicht von der ganzen Wirtschaftlichkeit einen Dialog
-   (`04/§ 4`). Auf iOS ist die Wirtschaftlichkeit heute nicht rechenbar.
+   (`04/§ 4`). Auf iOS ist die Wirtschaftlichkeit heute nicht rechenbar. — **Stand:** Mit E3
+   (**umgesetzt #431**) liegt der Rechenaufruf jetzt plattformfrei in
+   `EPOS.Kern/Allgemein/Bericht/BerichtsDatenSammler.cs`, und `IosProjektQuelle.BerichteKostenGaben`
+   liefert alle vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht). Ein bestätigender
+   `ios.yml`-Lauf steht noch aus und läuft nur nach Rückfrage beim Anwender.
 4. **Das größte offene Stück der Oberfläche ist die Ergebnisansicht § 2.13:** Umschalter, Bandbreite,
    Gliederung, Empfehlungskarten, Hinweistext, Dreiszenarien-Verlauf und die fünf ValERI-Blöcke fehlen
    auf `WirtschaftlichkeitSeite.razor` durchweg; von den ValERI-Etappen ist allein V‑B (Referenzwahl)
@@ -224,38 +228,41 @@ Stand-Schlüssel: **gebaut** · **teils** · **fehlt** · **überholt** (Konzept
 | P6 | **Zweiter Migrationsmechanismus:** `WirtschaftlichkeitCtrl.StelleTabellenSicher` legt fünf Tabellen per `CREATE TABLE` ohne `STRICT` und ohne Fremdschlüssel an und rüstet 55 Spalten per `SpalteSicher` nach — wörtlich die in ADR‑001 verworfene Bauart; im Normalbetrieb wirkungslos (die Vorlage bringt alles `STRICT` mit), aber `SpalteSicher` kann gelöschte Spalten wieder anlegen (Schritt 91 musste einen Eintrag entfernen). Das Konzept verlangt den Umbau nicht, § 6.5 führt die Doppelpflicht als Regel | `03/§ 2` | eigener Auftrag, M |
 | P7 | Verlaufs-Ablauffolge (sammeln, rechnen, zeichnen) liegt in `KapitalwertVerlaufHuelle` (Windows); `EPOS.UI.Daten` hat keinen Ordner `Wirtschaftlichkeit`; die Zeilenliste der Seite entsteht in `WirtschaftlichkeitSeiteGaben` — der Kern liefert die Texte bereits (`NutzungsdauerAbgleich.Hinweis`), die Hülle sammelt nur die Positionen | `04/§ 4.5`, `05/§ 4.3` | M |
 
-**Stand 22.09.2026 — nachgemessen am Codestand `3b71871c`.** Keiner der sieben Punkte ist gebaut; sie
-sind der Gegenstand der Etappe **E3 Plattform**, die der Anwender mit **A1** als eigene Welle vor der
-Ergebnisansicht entschieden hat (20.09.2026).
+**Stand 22.09.2026 — umgesetzt #431, nachgemessen am Codestand `2cfee66b`.** Die Etappe **E3
+Plattform**, die der Anwender mit **A1** als eigene Welle vor der Ergebnisansicht entschieden hat
+(20.09.2026), ist mit Zweig `e3` (sieben Commits) und Merge `2cfee66b` gebaut; P1–P4 und P7 sind
+umgesetzt, P5 und P6 bleiben unverändert.
 
-- **P1** unverändert: `ctrl.Berechne(daten, p)` steht weiterhin in
-  `WindowsFormsApplication1/Allgemein/Bericht/BerichtsDatenSammler.cs:180`,
-  `KostenEmissionRechner.Berechne(v)` in derselben Datei `:421`. **Kleiner als geplant** (Befund aus
-  #380): `BerichtsDatenSammler` ist selbst WinForms-frei — ihn bindet nur seine **Lage**; einzige Naht
-  ist `EnergieMengen.BaueBrennstoffmengen`. E3 Schritt 4 ist damit ein Umzug, kein Umbau.
-- **P2** unverändert: Die vier nahtlosen Hüllen liegen weiterhin in der Windows-Schale —
-  `WindowsFormsApplication1/Views/Wirtschaftlichkeit/WirtschaftlichkeitParameterHuelle.cs` und
-  `Views/Kosten/{KostenfaktorKatalogHuelle,VorlagenUebernahmeHuelle,ErtragBonusGaben}.cs`. Ebenso
-  `Views/Kosten/KostenKomponenteHuelle.cs` (E3 Schritt 5, Q14).
-- **P3 neu gemessen:** Die Positivliste der Wurzel steht heute in
-  `EPOS.UI/Seiten/AppWurzel.razor:1590–1611` (vorher `:1431–1445`) und führt **18 Schlüssel** — mit
-  **#428** sind fünf Masken hinzugekommen (Klimadaten, Projektvariante, Projektkopie, Peak-Shaving,
-  Stromganglinien-Verwaltung). **Von der Wirtschaftlichkeit stehen darin weiterhin nur
-  `BhkwWirtschaftlichkeit`, `Energietraeger` und `BerichteKosten`** — und für `BerichteKosten` gilt
-  unverändert die zweite Bedingung: `IosProjektQuelle` überschreibt `BerichteKostenGaben` nicht, die
-  Vorgabeumsetzung in `EPOS.UI/Dienste/IProjektQuelle.cs:272` liefert `null`. E3 Schritt 8 steht
-  vollständig aus; der Umfang der Erweiterung ist mit **A19** entschieden (alle, in der Reihenfolge des
+- **P1 umgesetzt #431:** `ctrl.Berechne(daten, p)` und `KostenEmissionRechner.Berechne(v)` stehen
+  jetzt in `EPOS.Kern/Allgemein/Bericht/BerichtsDatenSammler.cs` — ein Umzug, kein Umbau: Der
+  Befund aus #380 (`BerichtsDatenSammler` war schon WinForms-frei, einzige Naht
+  `EnergieMengen.BaueBrennstoffmengen`) hat sich bestätigt.
+- **P2 umgesetzt #431:** Die Datenseite liegt jetzt in `EPOS.UI.Daten/{Kosten,Wirtschaftlichkeit,
+  Bericht}`. In der Windows-Schale bleiben nur die zwei Fenster-Adapter `KostenKomponenteFenster`
+  und `GesetzeskatalogFenster` sowie `Views/Kosten/ErzeugerKostenwege.cs`, das den Fensterbesitzer
+  an die beiden Adapter weiterreicht.
+- **P3 umgesetzt #431:** Die Positivliste der Wurzel (`EPOS.UI/Seiten/AppWurzel.razor`) führt jetzt
+  **21 Schlüssel** — mit E3 Schritt 8 sind `KOSTENVERWALTUNG`, `NUTZUNGSDAUER_VERWALTUNG` und
+  `GESETZESKATALOG` hinzugekommen, je Zweig mit Ablehnungstext. `IosProjektQuelle.BerichteKostenGaben`
+  liefert jetzt alle vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht) aus einer je
+  Sitzung gehaltenen Hülle — der Umfang wie mit **A19** entschieden (alle, in der Reihenfolge des
   Hüllen-Umzugs).
-- **P4, P5, P6, P7** unverändert. Zu **P7:** `EPOS.UI.Daten` hat weiterhin **keinen** Ordner
-  `Wirtschaftlichkeit` (heute `Allgemein`, `Assistent`, `Bedarf`, `Klimadaten`, `Kosten`, `Projekt`,
-  `Pufferspeicher`, `Simulation`, `Strom`, `Stromspeicher`).
+- **P4 umgesetzt #431:** Die Zweitfenster sind weg. Die Tarif-Sprünge (BHKW-Tarif, Strombezug,
+  PV-Tarif) öffnen die Tarifstruktur jetzt als Überlagerung; der `MessageBox`-Sprung aus dem
+  BHKW-Dialog ist mit dem Fall der alten Fensternaht ersatzlos entfallen (kein Aufrufer mehr,
+  `Dienste.Dialog` war dafür nicht nötig). Die PV-Dateiwahl läuft über
+  `Dienste.Datei.DateiOeffnenAsync` statt `OpenFileDialog`.
+- **P5 unverändert** — nicht Gegenstand von E3.
+- **P6 unverändert** — eigener Auftrag (A10).
+- **P7 umgesetzt #431:** Der Verlauf (sammeln, rechnen, zeichnen) läuft jetzt plattformfrei über den
+  Renderer des Kerns; `EPOS.UI.Daten` hat jetzt einen Ordner `Wirtschaftlichkeit`, der unter anderem
+  `KapitalwertVerlaufHuelle` trägt.
 
-**Das Muster für den Umzug liegt vor.** Mit **#428** (KI‑F8) sind vier Hüllen plattformfrei nach
+**Das Muster für den Umzug lag vor** — mit **#428** (KI‑F8) waren vier Hüllen plattformfrei nach
 `EPOS.UI.Daten` gewandert (`KlimadatenHuelle`, `ProjektKopieHuelle`, `PeakShavingHuelle`,
-`StromganglinieAdminHuelle`), während Windows je Hülle einen **Fenster-Adapter** behielt
-(`KlimadatenFenster`, `ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster`) und
-die Wurzel dieselben Masken auf iOS über **Nähte in `IProjektQuelle`** öffnet. Nach genau diesem
-Muster laufen die Schritte 1, 5 und 8 der Etappe E3.
+`StromganglinieAdminHuelle`), während Windows je Hülle einen **Fenster-Adapter** behielt und die
+Wurzel dieselben Masken auf iOS über **Nähte in `IProjektQuelle`** öffnet. Nach genau diesem Muster
+sind die Schritte 1, 5 und 8 der Etappe E3 gelaufen (#431).
 
 ### 3.3 Ergebnisansicht, ValERI, Verlauf, Bericht
 
@@ -381,7 +388,7 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 
 | # | Umsetzungsstand | Etappe |
 |---|---|---|
-| **A1** | entschieden, **nicht gebaut** — E3 ist die nächste Etappe; Muster aus #428 liegt vor | E3 |
+| **A1** | entschieden **und gebaut** — E3 ist umgesetzt (**#431**) | E3, erledigt |
 | **A2** | entschieden, nicht gebaut; die Messung der modulscharfen Nutzwärme steht aus | E7 |
 | **A3** | entschieden (**Sperre** mit Begründungszeile), nicht gebaut — Befund S‑2 | E7 |
 | **A4** | entschieden (§ 51a mit dem anzulegenden Wert, **eigener Testfall**), nicht gebaut; der heutige Weg ist mit `PvErloesRechnerEegTests` **gepinnt** (#380) | E7 |
@@ -399,7 +406,7 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 | **A16** | entschieden („Höfingen" neutralisieren), nicht ausgeführt | E12 |
 | **A17** | **gegenstandslos** — Anwenderentscheid 22.09.2026 „BHKW-Plan-Mappen: nicht relevant": die Zahlenprobe gegen die Altanwendung entfällt, eine Referenzmappe wird nicht benannt | E11 entfällt |
 | **A18** | entschieden (Abschnitt auf der Seite Kosten), nicht ausgeführt | E12 |
-| **A19** | entschieden (**alle**, in der Reihenfolge des Hüllen-Umzugs; iOS-Lauf nur nach Rückfrage) | E3 Schritt 8 |
+| **A19** | entschieden **und gebaut #431** (**alle**, in der Reihenfolge des Hüllen-Umzugs; iOS-Lauf nur nach Rückfrage) | E3 Schritt 8, erledigt |
 | **A20** | entschieden (Förderende ja; Mindestabstand nur mit Inbetriebnahmedatum, ETS 2 mit dem Preispfad), nicht gebaut | E7 |
 
 **Nicht** von diesem Entscheid gedeckt sind die drei Punkte, die erst mit E0 und E2 entstanden sind und
@@ -418,7 +425,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E0 Papierpflege** — **umgesetzt #379** (Rest: A13-Schnitt offen) | Kopfzeile, Geltungsblock, Quelltabelle, Artifacts (`07/§ 2.1–2.4`); § 6.1 um acht Zeilen, § 6.3 um neun Erledigte bereinigen, § 6.4/§ 6.5/§ 7 berichtigen; die vier falschen Sätze der §§ 3.2/3.4 (`01/§ 7`), die Kern-Aussagen aus `02/§ 8`, die Schemaaussagen aus `03/§ 6.2`, die WinForms-Reste `04/§ 3`, die Etappenkürzel `05/§ 8.2`; Übersetzungstafel `07/§ 2.12`; Mockup-Prüfung P1; dann der Schnitt in drei Papiere (A13) | M, Schnitt L | keine | Dokumentationswache | — | — | Sonnet (Pflege), Fable (Schnitt) | keine |
 | **E1 Nachweisfundament** — **umgesetzt #380** | drei fehlende § 6.2-Anker und ein absoluter Kapitalwert je Referenzprojekt als Theorie-Klasse; `SteuerGutschriftRechnerTests`, `EegSatzRechnerTests`, `PvErloesRechner`-EEG-Fälle; Wache über die Blattstruktur von Excel und Word; Wächter `Format`/`ExcelFormat`; Runde‑2-Fall der Kaskade | M | keine | die Tests selbst; Referenzlauf unverändert | — | — | Opus | keine |
 | **E2 Kleine Kernkorrekturen** — **umgesetzt #405** (als W‑E2) | CO₂-Kohärenzfall (R5), Kohärenzzeilen in Rubrik und Bericht (R6), Kaskadenrunde 2 (R4), V‑3 PV-Spalte, B‑7, I‑5, S‑3, S‑5-Hinweis, Strommix-Zeile, G9-Referenztext, G7 in Excel, Bandbreite „Spanne" und Referenzzeile, Hi/Ho-Leser, Kommentare (`WirtschaftlichkeitSeiteGaben.cs:727`, `StrompreisZerlegungModel.cs:86`); dazu P3 der Mockup-Prüfung | M | R4 ja (Sonderfall), sonst Ausweis | Anker, Kern-Tests, Berichtsprobe | — | Kleinigkeiten, kein Logbuch | Opus | E1 |
-| **E3 Plattform** — **offen, nächste Etappe** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |
+| **E3 Plattform** — **umgesetzt #431** | (1) vier nahtlose Hüllen verschieben; (2) `OpenFileDialog` → `Dienste.Datei`; (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben; (4) Rechenaufruf aus `BerichtsDatenSammler` in einen Kern-Controller oder nach `EPOS.UI.Daten` (P1); (5) `KostenKomponenteHuelle` mit Fenster-Adapter; (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle; (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog`; (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern (A19) | L gesamt, S–M je Schritt | keine | alle Tests unverändert grün, Windows-Schale 0 Fehler, Referenzlauf; iOS-Prüflauf nur nach Rückfrage | — | kein Logbuch (keine sichtbare Änderung auf Windows) | Opus | E1; Schritte 1–3 sofort |
 | **E4 Erlösrubrik und Steuerzeilen** | U7 (zwei Beträge, zwei Zeilen, Umschlagfassung), 9d (Gründe je Position), dann U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit", Näherung ausgewiesen) | M + L | keine (Summen unverändert) | Anker; `ErloesrubrikTests`; Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a | — | Wirtschaftlichkeit `block-a`, `energiekosten-je-anlage`; U6 wesentlich | Opus | Q15, A12; E1 |
 | **E5 Ergebnisansicht und V‑A** | U2 Umschalter, U10 Hinweistext (A14), U4 Bandbreite, U5 Empfehlungskarten, Kennzahl-Reihenfolge, Strich/Null (Q16), V‑A (Deklarationen, IZF-Warnung, Steigung, „nachrichtlich"), Hinweiszeile „k von n ohne Dauer" über den Kern (N1) | L | keine | bunit, Kern-Tests, Berichtsprobe, Sichtprüfung | — | Wirtschaftlichkeit, neue Anker; wesentlich | Opus | E3 (sonst nur Windows), Q8/Q9/Q13 für neue Rahmen |
 | **E6 Verlauf mit drei Szenarien** | dritte Strichart (Aufzählung, Vorgabe byte-gleich), `VerlaufsReihen` Farbe = Variante / Strichart = Szenario, Dreierlauf, Legende und Bildmaß, Hülle nach `EPOS.UI.Daten`, Knopf „Verlauf…" entfällt, Spaltengruppen je Szenario im Tabellenbericht, zweites Bild im Wortbericht | M–L | keine | **ChartProben** (Bild und Gegenprobe), Berichtsprobe, bunit | — | Wirtschaftlichkeit `verlauf` neu; wesentlich | Opus | E5 (Umschalter), E1 (Wache) |
@@ -454,20 +461,22 @@ der CO₂-Warnung (so gelassen), 22 gleichlautende Knopfschlüssel außerhalb di
 oben als Inhalt von E2, ist aber **nicht** gebaut worden — er gehört zu E7. Von B8 bleiben damit
 **S‑2** (≡ A3) und **B‑6**.
 
-**E3 — offen, nächste Etappe.** Stand je Schritt, nachgemessen am Codestand `3b71871c`:
+**E3 — umgesetzt #431.** Stand je Schritt, nachgemessen am Codestand `2cfee66b` (Merge; Zweig `e3`,
+sieben Commits):
 
 | Schritt | Stand |
 |---|---|
-| (1) vier nahtlose Hüllen verschieben | **offen** — `WirtschaftlichkeitParameterHuelle`, `KostenfaktorKatalogHuelle`, `VorlagenUebernahmeHuelle` und `ErtragBonusGaben` liegen unverändert unter `WindowsFormsApplication1/Views/` |
-| (2) `OpenFileDialog` → `Dienste.Datei` | offen |
-| (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben | offen |
-| (4) Rechenaufruf aus `BerichtsDatenSammler` | offen, aber **kleiner als geplant** (Befund #380): reiner Umzug, einzige Naht `EnergieMengen.BaueBrennstoffmengen` |
-| (5) `KostenKomponenteHuelle` mit Fenster-Adapter | **offen** — die Hülle liegt weiter unter `Views/Kosten/`. **Das Adapter-Muster ist seit #428 vorhanden:** `KlimadatenFenster`, `ProjektKopieFenster`, `PeakShavingFenster`, `StromganglinieAdminFenster` |
-| (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle | offen |
-| (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog` | offen |
-| (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern | **offen** — `IosProjektQuelle` überschreibt die Gaben nicht, die Vorgabe in `IProjektQuelle.cs:272` liefert `null`; die Whitelist (`AppWurzel.razor:1590–1611`, 18 Schlüssel) führt von diesem Feld nur `BhkwWirtschaftlichkeit`, `Energietraeger` und `BerichteKosten`. Umfang mit **A19** entschieden |
+| (1) vier nahtlose Hüllen verschieben | **umgesetzt #431** — `WirtschaftlichkeitParameterHuelle` → `EPOS.UI.Daten/Wirtschaftlichkeit/`; `KostenfaktorKatalogHuelle`, `VorlagenUebernahmeHuelle`, `ErtragBonusGaben` → `EPOS.UI.Daten/Kosten/` |
+| (2) `OpenFileDialog` → `Dienste.Datei` | **umgesetzt #431** — `PhotovoltaikVerguetungHuelle.MarktwerteImportieren` über `Dienste.Datei.DateiOeffnenAsync` |
+| (3) `KostenSeiteGaben`, `WirtschaftlichkeitSeiteGaben` verschieben | **umgesetzt #431**, nach `EPOS.UI.Daten/Kosten/` bzw. `.../Wirtschaftlichkeit/` — **Abweichung:** lief nach Schritt 4, weil `WirtschaftlichkeitSeiteGaben` die geschachtelten Typen des Sammlers benutzt und erst übersetzt, wenn er plattformfrei ist |
+| (4) Rechenaufruf aus `BerichtsDatenSammler` | **umgesetzt #431** — nach `EPOS.Kern/Allgemein/Bericht/` (statt `Controller/`); reiner Umzug (Befund #380), einzige Naht `EnergieMengen.BaueBrennstoffmengen`; **Abweichung:** lief vor Schritt 3 |
+| (5) `KostenKomponenteHuelle` mit Fenster-Adapter | **umgesetzt #431**, mit Adapter `KostenKomponenteFenster` — **Abweichung:** in einem Commit mit Schritt 6 (Schritt 5 brauchte den Haken, den Schritt 6 löscht; getrennt gäbe es einen nicht bauenden Zwischenstand) |
+| (6) PV-, Tarif-, Gesetzeskatalog-, Verlaufs-Hülle | **umgesetzt #431** — `GesetzeskatalogHuelle` mit Adapter `GesetzeskatalogFenster`; **Abweichung:** `TarifstrukturHuelle`, `PhotovoltaikVerguetungHuelle`, `BhkwWirtschaftlichkeitHuelle` und `KapitalwertVerlaufHuelle` bekamen **keinen** Fenster-Adapter — ihre Fensterhälften hatten keinen Aufrufer mehr und sind ersatzlos gefallen; damit ist auch die `MessageBox` aus P4 weg |
+| (7) Tarif-Sprünge zu Überlagerungen, `MessageBox` → `Dienste.Dialog` | **umgesetzt #431** — BHKW-Tarif, Strombezug und PV-Tarif öffnen die Tarifstruktur als Überlagerung; **Abweichung:** die `MessageBox` war bereits mit Schritt 6 ersatzlos entfallen, keine Ablösung durch `Dienste.Dialog` |
+| (8) `IosProjektQuelle.BerichteKostenGaben` belegen, Whitelist erweitern | **umgesetzt #431** — liefert jetzt alle vier Seiten (Übersicht, Kosten, Wirtschaftlichkeit, Bericht); **Abweichung:** zusätzlich `UebersichtSeiteGaben`, `BerichteKostenHuelle` und `BerichtSeiteGaben` → `EPOS.UI.Daten/Bericht/`; Whitelist jetzt 21 Schlüssel (`KOSTENVERWALTUNG`, `NUTZUNGSDAUER_VERWALTUNG`, `GESETZESKATALOG`), Umfang wie mit **A19** entschieden |
 
-**E4 bis E12** sind unverändert offen. **Wiederaufnahme:** Die Umsetzung war am 20.09.2026
+**Nächste Etappe: E4** Erlösrubrik und Steuerzeilen. **E5 bis E12** bleiben unverändert offen.
+**Wiederaufnahme:** Die Umsetzung war am 20.09.2026
 zurückgestellt (Statusdatei, „Nach #405" (f)); der Anwender hat sie am **22.09.2026** mit dem Auftrag
 wieder aufgenommen, das Mockup `Dialog_Formel_Zahlenprobe.html` umzusetzen.
 
