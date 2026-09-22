@@ -92,6 +92,8 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Projektvariante, führt zu den Erzeugermasken auf den Reiter „Energieerzeuger" und zu den Blättern
   der Ansicht „Berichte und Kosten"; im Speicher-Zeitreihen-Dialog lässt sich die Intervallkonvention
   „automatisch erkennen" wählen. (#428)
+- Seit 26.09.2026: Der Hilfe-Assistent nennt Masken und Felder nach einem Sprachwechsel in der
+  neuen Sprache. (#430)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
