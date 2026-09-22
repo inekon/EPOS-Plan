@@ -1815,6 +1815,29 @@ namespace WindowsFormsApplication1
             return verlauf;
         }
 
+        /// <summary>
+        /// ETAPPE E6 (Konzept § 2.13 (5)) — der Verlauf mit <b>allen drei Szenarien</b>: DREI
+        /// vollständige Läufe von <see cref="BerechneVerlauf(BerichtsDaten, WirtschaftlichkeitParameter, int, string, int)"/>
+        /// (Ungünstig, Erwartet, Günstig), jeder mit seinem Parametersatz und derselben
+        /// Referenz, gesammelt in <see cref="WirtschaftlichkeitVerlaufSzenarien"/>.
+        ///
+        /// <para><b>Ohne Speichern</b> (Muster <see cref="BerechneBandbreite"/>): Der Verlauf
+        /// ist eine Auskunft, kein gebuchter Lauf. <b>Keine eigene Rechnung:</b> Jede Linie
+        /// ist Zahl für Zahl die des Einzellaufs — dieselbe Methode, dieselben Eingaben.</para>
+        /// </summary>
+        /// <param name="jahre">Der Horizont [a]; er darf vom Betrachtungszeitraum abweichen.</param>
+        /// <param name="idReferenz">0 = die Gruppenreferenz (in Sicht 2 A), und die
+        /// wiederum 0 = Stamm — dieselbe Kette wie in <see cref="BerechneVerlauf(BerichtsDaten, WirtschaftlichkeitParameter, int, string, int)"/>.</param>
+        public WirtschaftlichkeitVerlaufSzenarien BerechneVerlaufSzenarien(BerichtsDaten daten,
+            WirtschaftlichkeitParameter p, int jahre, int idReferenz = 0)
+        {
+            var modell = new WirtschaftlichkeitVerlaufSzenarien { Jahre = Math.Max(1, jahre) };
+            if (daten == null || daten.Varianten.Count == 0 || p == null) return modell;
+            foreach (string szenario in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+                modell.Laeufe[szenario] = BerechneVerlauf(daten, p, jahre, szenario, idReferenz);
+            return modell;
+        }
+
         // ------------------------------------------------------------- Eingaben (W2)
 
         /// <summary>Zahlungsgerüst-Eingaben eines Projekts (Basis für Rechnung + Sensitivität).</summary>
