@@ -57,6 +57,13 @@ namespace WindowsFormsApplication1
         /// Es entsteht kein Teilstundenergebnis (Rechenschritte 7.1).
         /// </summary>
         AbschnittsdeckelErreicht,
+
+        /// <summary>
+        /// Der Vorlauf hat nach der Höchstzahl an Durchläufen die Schwelle der Zustandsänderung
+        /// nicht unterschritten (<see cref="Vorlauf2K"/>, Rechenschritte 7.2). Kein stiller
+        /// Weiterlauf.
+        /// </summary>
+        VorlaufNichtKonvergiert,
     }
 
     /// <summary>

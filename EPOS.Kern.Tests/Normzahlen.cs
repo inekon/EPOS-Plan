@@ -232,10 +232,34 @@ namespace EPOS.Kern.Tests
     /// </summary>
     internal static class Normfallpruefung
     {
+        /// <summary>Die Messkette der AixLib: Start aus <see cref="Normfall.ThetaStart"/>, kein Vorlauf.</summary>
         internal static List<Normzelle> Rechnen(Normfall fall)
         {
             var modell = new Zonenmodell2K(fall.Parameter, "Normfall " + fall.Nummer);
             modell.Zuruecksetzen(fall.ThetaStart);
+            return Auswerten(fall, modell);
+        }
+
+        /// <summary>
+        /// Wie <see cref="Rechnen"/>, aber aus dem eingeschwungenen Zustand: vorher läuft
+        /// <see cref="Vorlauf2K"/> über die erste Woche der Randreihe, beginnend bei
+        /// <see cref="Normfall.ThetaStart"/>. Nur für den berichtenden Vergleich — die
+        /// Normprüfung selbst folgt der Messkette ohne Vorlauf.
+        /// </summary>
+        internal static List<Normzelle> RechnenMitVorlauf(Normfall fall, out Vorlaufergebnis vorlauf)
+        {
+            var modell = new Zonenmodell2K(fall.Parameter, "Normfall " + fall.Nummer);
+            vorlauf = Vorlauf2K.Einschwingen(modell, fall.ThetaStart, Vorlaufwoche(fall));
+            return Auswerten(fall, modell);
+        }
+
+        /// <summary>Die Randfolge des Vorlaufs: die erste Woche der Randreihe (oder alles, wenn kürzer).</summary>
+        internal static ReadOnlySpan<Stundenrand> Vorlaufwoche(Normfall fall)
+            => new ReadOnlySpan<Stundenrand>(fall.Raender, 0, Math.Min(Vorlauf2K.WOCHE_H, fall.Raender.Length));
+
+        /// <summary>Rechnet den Fall vom gegenwärtigen Zustand des Modells aus und prüft jede Zelle.</summary>
+        internal static List<Normzelle> Auswerten(Normfall fall, Zonenmodell2K modell)
+        {
             int stunden = fall.Reihen.Count == 0 ? 0 : fall.Reihen.Max(r => r.Tag) * 24;
             var ergebnis = new Stundenergebnis[stunden];
             for (int h = 0; h < stunden; h++) ergebnis[h] = modell.Schritt(in fall.Raender[h]);

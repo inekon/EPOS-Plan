@@ -33,6 +33,9 @@ namespace EPOS.Kern.Tests
         /// <summary>Größte zugelassene Überschreitung der zwei Umschaltstunden von Testfall 11 [W].</summary>
         private const double GRENZE_TESTFALL_11_W = 5.0;
 
+        /// <summary>Weiter Deckel der Durchläufe, nur um die nötige Zahl auszuweisen (ein Jahr in Wochen).</summary>
+        private const int HOECHSTZAHL_DIAGNOSE = 52;
+
         private readonly Normzahlen _n;
         private readonly ITestOutputHelper _ausgabe;
 
@@ -75,6 +78,76 @@ namespace EPOS.Kern.Tests
             Assert.True(draussen.Count <= zugelasseneAusreisser && draussen.All(z => z.Ueberschreitung <= grenze),
                 "Normfall " + nummer + ": " + draussen.Count + " Zellen außerhalb des Bands nach E10:\n" +
                 string.Join("\n", draussen.Select(z => z.ToString())));
+        }
+
+        // =====================================================================
+        //  Vorlauf an den Normfällen (nur lokal, berichtend)
+        // =====================================================================
+
+        /// <summary>
+        /// Rechnet jeden Normfall zusätzlich aus dem eingeschwungenen Zustand
+        /// (<see cref="Vorlauf2K"/> über die erste Woche, Start bei T_start) und weist Durchläufe,
+        /// Rechenzeit und die Änderung gegenüber der Messkette aus. Die Prüfung im Band bleibt
+        /// bei der Messkette ohne Vorlauf (<see cref="ImBand"/>) — die Normfälle prüfen den
+        /// Einschwingvorgang aus T_start, ein Vorlauf nähme ihn vorweg. Verlangt wird hier nur,
+        /// dass jeder Fall nach dem Abbruchkriterium konvergiert oder benannt scheitert und dann
+        /// mit weitem Deckel einschwingt; die nötige Zahl der Durchläufe wird ausgewiesen.
+        /// </summary>
+        [Fact]
+        public void Normfaelle_mit_Vorlauf_werden_berichtet()
+        {
+            if (!_n.Vorhanden) return;
+            var nichtKonvergiert = new List<string>();
+            for (int nummer = 1; nummer <= 12; nummer++)
+            {
+                Normfall fall = _n.Lesen(nummer);
+                List<Normzelle> ohne = Normfallpruefung.Rechnen(fall);
+
+                var modell = new Zonenmodell2K(fall.Parameter, "Normfall " + nummer);
+                Vorlaufergebnis v;
+                System.Diagnostics.Stopwatch uhr;
+                try
+                {
+                    Vorlauf2K.Einschwingen(modell, fall.ThetaStart, Normfallpruefung.Vorlaufwoche(fall));   // Warmlauf
+                    uhr = System.Diagnostics.Stopwatch.StartNew();
+                    v = Vorlauf2K.Einschwingen(modell, fall.ThetaStart, Normfallpruefung.Vorlaufwoche(fall));
+                }
+                catch (GebaeudeModellException f) when (f.Grund == GebaeudeModellFehler.VorlaufNichtKonvergiert)
+                {
+                    // Wie viele Durchläufe bräuchte er? Derselbe Vorlauf mit weitem Deckel.
+                    var ohneDeckel = new Zonenmodell2K(fall.Parameter, "Normfall " + nummer);
+                    Vorlaufergebnis w = Vorlauf2K.Einschwingen(ohneDeckel, fall.ThetaStart, Normfallpruefung.Vorlaufwoche(fall),
+                                                               hoechstzahl: HOECHSTZAHL_DIAGNOSE);
+                    double tauN = -1.0 / ohneDeckel.Eigenwerte.Max() / 3600.0;
+                    string zeile = "Normfall " + nummer.ToString("00", CultureInfo.InvariantCulture) + ": " + f.Message +
+                        string.Format(CultureInfo.InvariantCulture, " Ohne Deckel: {0} Durchläufe, Zeitkonstante {1:F0} h.", w.Durchlaeufe, tauN);
+                    nichtKonvergiert.Add(zeile);
+                    _ausgabe.WriteLine(zeile);
+                    _ausgabe.WriteLine("  " + Vorlauf2KTests.Zeile("ohne Deckel", w));
+                    continue;
+                }
+                uhr.Stop();
+                List<Normzelle> mit = Normfallpruefung.Auswerten(fall, modell);
+
+                double tau = -1.0 / new Zonenmodell2K(fall.Parameter).Eigenwerte.Max() / 3600.0;
+                _ausgabe.WriteLine(Vorlauf2KTests.Zeile("Normfall " + nummer.ToString("00", CultureInfo.InvariantCulture), v) +
+                    string.Format(CultureInfo.InvariantCulture, ", Zeitkonstante {0:F0} h, Vorlauf {1:F2} ms", tau, uhr.Elapsed.TotalMilliseconds));
+                foreach (int tag in ohne.Select(z => z.Tag).Distinct().OrderBy(t => t))
+                {
+                    var o = ohne.Where(z => z.Tag == tag).ToList();
+                    var m = mit.Where(z => z.Tag == tag).ToList();
+                    double diff = o.Zip(m, (a, b) => Math.Abs(a.Wert - b.Wert)).Max();
+                    _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        "  Tag {0,2} ({1}): außerhalb ohne/mit Vorlauf {2}/{3}, größte Überschreitung {4:F3}/{5:F3}, größte Änderung durch den Vorlauf {6:F3}",
+                        tag, o[0].Groesse, o.Count(z => z.Ueberschreitung > 0.0), m.Count(z => z.Ueberschreitung > 0.0),
+                        o.Max(z => z.Ueberschreitung), m.Max(z => z.Ueberschreitung), diff));
+                }
+            }
+            // Alle zwölf Fälle schwingen innerhalb der Höchstzahl ein (F-P5); die Diagnose oben
+            // weist die nötige Zahl aus, falls einer sie reißt.
+            _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                "Vorlauf über {0} Durchläufe hinaus nötig: {1} von 12 Fällen", Vorlauf2K.HOECHSTZAHL_DURCHLAEUFE, nichtKonvergiert.Count));
+            Assert.Empty(nichtKonvergiert);
         }
 
         // =====================================================================
