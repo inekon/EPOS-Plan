@@ -176,8 +176,58 @@ namespace WindowsFormsApplication1
     /// <summary>Ergebnis EINER Jahresrechnung (Etappe E4).</summary>
     public sealed class SteuerErgebnis
     {
-        /// <summary>Energiesteuer-Entlastung [€/a] nach der gewählten Norm.</summary>
-        public double EnergiesteuerEur;
+        /// <summary>
+        /// AUFTRAG U7 (Befund B7‑1) — Energiesteuer-Entlastung nach <b>§ 53 bzw.
+        /// § 53a Abs. 5 EnergieStG</b> [€/a]: der Teil, der am Brennstoff der
+        /// STROMERZEUGUNG hängt und deshalb zum Blockheizkraftwerk gehört.
+        ///
+        /// <para><b>Warum getrennt.</b> Bis U7 gab der Rechner EINE Summe zurück
+        /// (<see cref="EnergiesteuerEur"/>), und die Erlösrubrik konnte beide
+        /// Vorschriften nur gemeinsam ausweisen — eine Zeile, deren Titel zwei
+        /// Rechtsgrundlagen nannte und die bei zwei Anlagenarten nicht zuzuordnen war.
+        /// Getrennt sind es zwei Größen, die je bei ihrer Anlage stehen können.</para>
+        ///
+        /// <para><b>Kein Sockelbetrag.</b> § 53 und § 53a Abs. 5 haben keinen
+        /// (Grundlagen, Abschnitt 4) — der Sockel gehört allein zu § 54.</para>
+        /// </summary>
+        public double Energiesteuer53Eur;
+
+        /// <summary>
+        /// AUFTRAG U7 — Energiesteuer-Entlastung nach <b>§ 54 EnergieStG</b> [€/a],
+        /// <b>nach</b> Abzug des Sockelbetrags: der Teil, der am Heizstoff des
+        /// produzierenden Gewerbes hängt und deshalb auch einen Kessel trifft.
+        /// </summary>
+        public double Energiesteuer54Eur;
+
+        /// <summary>
+        /// AUFTRAG U7 — der abgezogene Sockelbetrag des § 54 [€/a]; 0 = keine
+        /// § 54-Position im Lauf oder kein Sockel im Katalog. Er ist ein
+        /// Kalenderjahresbetrag des Antragstellers, keine Anlagengröße, und steht
+        /// deshalb neben den Anlagenzeilen statt in ihnen.
+        /// </summary>
+        public double Energiesteuer54SockelEur;
+
+        /// <summary>
+        /// Energiesteuer-Entlastung GESAMT [€/a] — die Summe der beiden
+        /// Paragrafenbeträge.
+        ///
+        /// <para><b>Sie wird nicht mehr gesetzt, sondern gerechnet.</b> Damit ist
+        /// zahlengleich, was vor U7 eine einzelne Größe war: Die Erlösreihe des
+        /// Kapitalwerts, die Ergebnisspalte und jeder Anker lesen weiterhin diese
+        /// Summe, und sie kann sich von den zwei Zeilen darüber nicht lösen.</para>
+        /// </summary>
+        public double EnergiesteuerEur
+        {
+            get { return Energiesteuer53Eur + Energiesteuer54Eur; }
+        }
+
+        /// <summary>
+        /// AUFTRAG U7 — je gerechneter Anlagenposition ein Nachweis mit Paragraf,
+        /// Menge in der gesetzlichen Einheit, Satz und Betrag. Leer = keine
+        /// Entlastung gerechnet (der Grund steht dann in <see cref="Begruendungen"/>).
+        /// </summary>
+        public readonly List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+            new List<EnergiesteuerNachweis>();
 
         /// <summary>Stromsteuer-Befreiung [€/a] nach § 9 Abs. 1 Nr. 3 StromStG.</summary>
         public double StromsteuerBefreiungEur;
@@ -313,8 +363,12 @@ namespace WindowsFormsApplication1
             // weiter.
             bool? nutzungsgradOk = null;
 
-            double summeGesamt = 0;      // alle Vorschriften zusammen
-            double summe54 = 0;          // der Teil, den der Sockel des § 54 mindert
+            // AUFTRAG U7 — zwei Töpfe statt einer Summe. Bis U7 lief eine Gesamtsumme
+            // mit, von der am Ende der Sockel abgezogen wurde; der § 54-Teil war nur
+            // ein Hilfswert dafür. Jetzt sind beide Paragrafen das ERGEBNIS, und die
+            // Gesamtsumme entsteht erst aus ihnen (SteuerErgebnis.EnergiesteuerEur).
+            double summe53 = 0;          // § 53 und § 53a Abs. 5 — ohne Sockelbetrag
+            double summe54 = 0;          // § 54 — der Teil, den der Sockel mindert
 
             foreach (SteuerAnlage a in e.Anlagen)
             {
@@ -402,8 +456,23 @@ namespace WindowsFormsApplication1
                 }
 
                 double betrag = p.Wert.Value * menge.Value;
-                summeGesamt += betrag;
-                if (nach54) summe54 += betrag;
+                if (nach54) summe54 += betrag; else summe53 += betrag;
+
+                // AUFTRAG U7 — der Nachweis DIESER Position: Paragraf, Menge in der
+                // gesetzlichen Einheit des Satzes, Satz und Betrag. Er ist der
+                // einzige Ort, an dem die drei Zahlen zusammen stehen; die Rubrik
+                // schreibt daraus ihre Herleitungszeile, statt sie nachzurechnen.
+                r.EnergiesteuerNachweise.Add(new EnergiesteuerNachweis
+                {
+                    Anlage = a.Bezeichner,
+                    Paragraf = nach54 ? EnergiesteuerNachweis.PARAGRAF_54
+                             : (nach53a ? EnergiesteuerNachweis.PARAGRAF_53A
+                                        : EnergiesteuerNachweis.PARAGRAF_53),
+                    Menge = menge.Value,
+                    Einheit = p.Einheit,
+                    SatzEur = p.Wert.Value,
+                    BetragEur = betrag
+                });
                 r.Herkunft.Add(Herkunft(p, kultur));
             }
 
@@ -426,16 +495,19 @@ namespace WindowsFormsApplication1
                     r.Begruendungen.Add(string.Format(kultur,
                         MyResource.Resource.STEUER_ENERGIEST_54_SOCKEL,
                         summe54.ToString("N2", kultur), sockel.ToString("N0", kultur)));
-                    summeGesamt -= summe54;       // 0 € mit Hinweis, nie eine stille Null
+                    r.Energiesteuer54SockelEur = sockel;
+                    summe54 = 0;                  // 0 € mit Hinweis, nie eine stille Null
                 }
                 else
                 {
-                    summeGesamt -= sockel;
+                    r.Energiesteuer54SockelEur = sockel;
+                    summe54 = netto;
                     if (sockelZeile != null) r.Herkunft.Add(Herkunft(sockelZeile, kultur));
                 }
             }
 
-            r.EnergiesteuerEur = summeGesamt;
+            r.Energiesteuer53Eur = summe53;
+            r.Energiesteuer54Eur = summe54;
         }
 
         /// <summary>

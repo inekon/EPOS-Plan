@@ -40,6 +40,13 @@ namespace EPOS.Kern.Tests
                 KwkgErloesJahr1 = 7316,
                 KwkgVbhElektrisch = 4200,
                 EnergiesteuerJahr1 = 5119,
+                // AUFTRAG U7 — ein frisch gerechneter Lauf kennt die Aufteilung
+                // immer; 4.119 € nach § 53a am BHKW, 1.000 € nach § 54 am Kessel.
+                // Die SUMME bleibt 5.119 €, und damit bleibt die Summe des Blocks A,
+                // was sie vor U7 war.
+                EnergiesteuerAufgeteilt = true,
+                Energiesteuer53Jahr1 = 4119,
+                Energiesteuer54Jahr1 = 1000,
                 StromsteuerEntlastungJahr1 = 906,
                 StromsteuerBefreiungJahr1 = 86000,
                 StromsteuerBefreiungAlsErloes = false,      // Vorgabe seit B6: AUSWEIS
@@ -317,6 +324,189 @@ namespace EPOS.Kern.Tests
                 e, "BHKW 1", CultureInfo.GetCultureInfo("de-DE"));
             Assert.Contains("kWh", herleitung);
             Assert.Contains("Erdgas", herleitung);
+        }
+
+        // =================================================================
+        //  AUFTRAG U7 — die Energiesteuer in zwei Zeilen (Befund B7-1)
+        // =================================================================
+
+        /// <summary>
+        /// § 53/§ 53a und § 54 stehen in ZWEI Zeilen, und ihre Summe ist die eine
+        /// Zahl, die bis U7 allein dastand. Die Summe des Blocks A ändert sich
+        /// dadurch nicht — die Etappe hat keine Rechenwirkung.
+        /// </summary>
+        [Fact]
+        public void Die_Energiesteuer_steht_in_zwei_Zeilen_und_die_Summe_bleibt()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            WirtZeile a53 = Zeile(zeilen, "ERL_A_ENERGIESTEUER");
+            WirtZeile a54 = Zeile(zeilen, "ERL_A_ENERGIESTEUER_54");
+            Assert.NotNull(a53);
+            Assert.NotNull(a54);
+
+            Assert.Equal(4119.0, a53.Wert(e).Value, 6);
+            Assert.Equal(1000.0, a54.Wert(e).Value, 6);
+            Assert.Equal(e.EnergiesteuerJahr1, a53.Wert(e).Value + a54.Wert(e).Value, 6);
+
+            // Beide Zeilen sind Summanden des Blocks A; die Summe ist die von vor U7.
+            Assert.Equal(WirtZeile.BLOCK_A, a53.Block);
+            Assert.Equal(WirtZeile.BLOCK_A, a54.Block);
+            Assert.Equal(14575.0, Zeile(zeilen, "ERL_A_SUMME").Wert(e).Value, 6);
+
+            // Zwei Zeilen, zwei Rechtsgrundlagen — und der Titel nennt sie.
+            Assert.Contains("53", a53.Titel);
+            Assert.Contains("54", a54.Titel);
+        }
+
+        /// <summary>
+        /// DER RÜCKFALL: Ein vor U7 gebuchter Stand kennt seine Aufteilung nicht
+        /// (Nachweisumschlag der Fassung ≤ 3). Dann bleibt es bei der EINEN Zeile
+        /// über beide Vorschriften, die den ganzen Betrag trägt — zwei Nullzeilen
+        /// neben einer Ergebnisspalte mit Betrag wären eine Behauptung, und die
+        /// Summe des Blocks A fiele um genau diesen Betrag zu klein aus.
+        /// </summary>
+        [Fact]
+        public void Ohne_bekannte_Aufteilung_bleibt_es_bei_einer_Zeile()
+        {
+            WirtschaftlichkeitErgebnis e = Lauf();
+            e.EnergiesteuerAufgeteilt = false;
+            e.Energiesteuer53Jahr1 = 0;
+            e.Energiesteuer54Jahr1 = 0;
+
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            WirtZeile eine = Zeile(zeilen, "ERL_A_ENERGIESTEUER");
+            Assert.NotNull(eine);
+            Assert.Null(Zeile(zeilen, "ERL_A_ENERGIESTEUER_54"));
+
+            Assert.Equal(5119.0, eine.Wert(e).Value, 6);
+            Assert.Equal(14575.0, Zeile(zeilen, "ERL_A_SUMME").Wert(e).Value, 6);
+        }
+
+        /// <summary>
+        /// Ein einziger Stand OHNE Aufteilung zieht die ganze Gruppe auf die
+        /// Gesamtzeile zurück: Word, Excel und Reiter bauen EINE Tabelle über alle
+        /// Spalten, und die darf nicht für die eine Spalte zwei Zeilen zeigen und
+        /// für die andere eine.
+        /// </summary>
+        [Fact]
+        public void Ein_Stand_ohne_Aufteilung_zieht_die_ganze_Gruppe_zurueck()
+        {
+            WirtschaftlichkeitErgebnis frisch = Lauf();
+            WirtschaftlichkeitErgebnis gebucht = Lauf();
+            gebucht.IdProjekt = 2;
+            gebucht.EnergiesteuerAufgeteilt = false;
+            gebucht.Energiesteuer53Jahr1 = 0;
+            gebucht.Energiesteuer54Jahr1 = 0;
+
+            var menge = new List<WirtschaftlichkeitErgebnis> { frisch, gebucht };
+            List<WirtZeile> zeilen = WirtschaftlichkeitZeilen.Sichtbare(
+                WirtschaftlichkeitZeilen.Kennzahlen(menge, null), menge);
+
+            Assert.Null(Zeile(zeilen, "ERL_A_ENERGIESTEUER_54"));
+            WirtZeile eine = Zeile(zeilen, "ERL_A_ENERGIESTEUER");
+            Assert.NotNull(eine);
+            Assert.Equal(5119.0, eine.Wert(frisch).Value, 6);
+            Assert.Equal(5119.0, eine.Wert(gebucht).Value, 6);
+        }
+
+        /// <summary>
+        /// Unter jeder der beiden Geldzeilen steht ihre HERLEITUNG aus dem Nachweis
+        /// des Laufs: Menge in der gesetzlichen Einheit, Satz, Betrag — und beim
+        /// § 54 der abgezogene Sockelbetrag. Die Zahlen des Beispielprojekts
+        /// (Rechenweg 05 und 07): 4.796,99 MWh × 4,42 €/MWh = 21.202,71 €/a und
+        /// 2.272,26 MWh × 1,38 €/MWh = 3.135,72 €/a abzüglich 250 €/a.
+        /// </summary>
+        [Fact]
+        public void Unter_jeder_Steuerzeile_steht_ihre_Herleitung()
+        {
+            WirtschaftlichkeitErgebnis e = Beispielprojekt();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            WirtZeile h53 = Zeile(zeilen, "ERL_A_ENERGIESTEUER_SATZ");
+            WirtZeile h54 = Zeile(zeilen, "ERL_A_ENERGIESTEUER_54_SATZ");
+            Assert.NotNull(h53);
+            Assert.NotNull(h54);
+            Assert.Equal(1, h53.Einzug);
+            Assert.Equal(1, h54.Einzug);
+
+            // Die Mengen stehen mit einer Nachkommastelle — wie im Rechenweg und im
+            // Mockup („4.797,2 MWh (H_s)"); die Beträge mit zweien.
+            string t53 = h53.Text(e);
+            Assert.Contains("4.797,0", t53);
+            Assert.Contains("MWh", t53);
+            Assert.Contains("4,42", t53);
+            Assert.Contains("21.202,71", t53);
+
+            string t54 = h54.Text(e);
+            Assert.Contains("2.272,3", t54);
+            Assert.Contains("1,38", t54);
+            Assert.Contains("Sockelbetrag", t54);
+            Assert.Contains("250", t54);
+
+            // Eine Textzeile bekommt in Excel keine Zahl — sonst stünde Text in
+            // einer Wertspalte.
+            Assert.Null(h53.ExcelWert(e));
+            Assert.Null(h54.ExcelWert(e));
+        }
+
+        /// <summary>
+        /// <b>Die Zahlenprobe der Etappe am Beispielprojekt der Kategorie 7:</b>
+        /// Die Energiesteuerzeile zerfällt in § 53a = 21.202,71 €/a beim
+        /// Blockheizkraftwerk und § 54 = 2.885,72 €/a beim Kessel; zusammen sind es
+        /// die 24.088,43 €/a, die bis U7 als eine Zahl dastanden. Die Sollwerte
+        /// rechnet <c>SteuerGutschriftRechnerTests</c> aus Mengen und Katalogsätzen
+        /// nach — hier wird geprüft, dass die RUBRIK sie unverändert weiterreicht.
+        /// </summary>
+        [Fact]
+        public void Zahlenprobe_Kategorie_7_die_Rubrik_zeigt_beide_Betraege()
+        {
+            WirtschaftlichkeitErgebnis e = Beispielprojekt();
+            List<WirtZeile> zeilen = Rubrik(e);
+
+            Assert.Equal(21202.71, Zeile(zeilen, "ERL_A_ENERGIESTEUER").Wert(e).Value, 2);
+            Assert.Equal(2885.72, Zeile(zeilen, "ERL_A_ENERGIESTEUER_54").Wert(e).Value, 2);
+            Assert.Equal(24088.43, e.EnergiesteuerJahr1, 2);
+        }
+
+        /// <summary>
+        /// Das Beispielprojekt der Kategorie 7 als Ergebniszeile — BHKW nach
+        /// § 53a Abs. 5, Kessel nach § 54, Sockelbetrag 250 €/a. Die Zahlen stammen
+        /// aus dem Rechenweg <c>05_Verguetungen_BHKW.md</c> bzw.
+        /// <c>07_Erloesrubrik.md</c>; der ungerundete Brennwertfaktor 11,6/10,5 des
+        /// Kerns ergibt 21.202,71 statt der 21.203,4 des Mockups (Befund B4).
+        /// </summary>
+        private static WirtschaftlichkeitErgebnis Beispielprojekt()
+        {
+            return new WirtschaftlichkeitErgebnis
+            {
+                IdProjekt = 1,
+                Anzeige = "Beide Anlagen",
+                KwkgVbhElektrisch = 5500,
+                ProduzierendesGewerbe = true,
+                EnergiesteuerJahr1 = 21202.71 + 2885.72,
+                EnergiesteuerAufgeteilt = true,
+                Energiesteuer53Jahr1 = 21202.71,
+                Energiesteuer54Jahr1 = 2885.72,
+                Energiesteuer54SockelJahr1 = 250.0,
+                EnergiesteuerNachweise = new List<EnergiesteuerNachweis>
+                {
+                    new EnergiesteuerNachweis
+                    {
+                        Anlage = "BHKW", Paragraf = EnergiesteuerNachweis.PARAGRAF_53A,
+                        Menge = 4796.99, Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                        SatzEur = 4.42, BetragEur = 21202.71
+                    },
+                    new EnergiesteuerNachweis
+                    {
+                        Anlage = "Gas-Brennwertkessel", Paragraf = EnergiesteuerNachweis.PARAGRAF_54,
+                        Menge = 2272.26, Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                        SatzEur = 1.38, BetragEur = 3135.72
+                    }
+                }
+            };
         }
     }
 }

@@ -412,18 +412,57 @@ namespace WindowsFormsApplication1
                                 ? (double?)e.KwkgPauschaleEur : null
                 });
 
-            // ---- A4/A5: Energiesteuer-Entlastung ---------------------------------
-            // § 53/§ 53a (BHKW-Brennstoff) und § 54 (Heizstoff) stehen in EINER Zahl:
-            // Der Rechner gibt eine Summe zurück (SteuerErgebnis.EnergiesteuerEur), die
-            // Aufteilung wäre eine neue Größe im Rechner. Der Zeilentitel nennt deshalb
-            // beide Vorschriften; welche gegriffen hat, sagt die Herkunft der Sätze.
+            // ---- A4/A5: Energiesteuer-Entlastung, ZWEI Zeilen (AUFTRAG U7) -------
+            //
+            // § 53 und § 53a Abs. 5 entlasten den Brennstoff der STROMERZEUGUNG,
+            // § 54 den Heizstoff des produzierenden Gewerbes. Zwei Vorschriften, zwei
+            // Bedingungen, zwei Anlagenarten. Bis U7 gab der Steuerrechner EINE Summe
+            // zurück (Befund B7-1), und die Rubrik konnte nur eine Zeile zeigen, deren
+            // Titel beide Paragrafen nannte — an einem Projekt mit BHKW UND Kessel war
+            // der Betrag damit keiner der beiden Anlagen zuzuordnen. Seit U7 liefert
+            // der Rechner beide Beträge, und jeder steht bei seiner Vorschrift.
+            //
+            // UNTER JEDER der beiden Zeilen die Herleitung aus dem Nachweis des Laufs:
+            // Menge in der gesetzlichen Einheit, Satz, Betrag — und beim § 54 der
+            // abgezogene Sockelbetrag. Sie reist im Nachweisumschlag mit (Fassung 4),
+            // der gebuchte Stand trägt sie deshalb ebenso wie der frisch gerechnete.
+            //
+            // DER RÜCKFALL: Ein vor U7 gebuchter Stand kennt die Aufteilung nicht.
+            // Dann bleibt es bei der EINEN Zeile über beide Vorschriften — zwei
+            // Nullzeilen neben einer Ergebnisspalte mit Betrag wären eine Behauptung.
+            // Entschieden wird über die GANZE Gruppe, damit Stamm und Varianten
+            // dieselbe Tabelle zeigen und die Summe des Blocks A in jedem Fall
+            // zahlengleich zur bisherigen bleibt.
             if (hatBhkw)
             {
-                WirtZeile aEnst = Erloes(blockA, "ERL_A_ENERGIESTEUER",
-                                         MyResource.Resource.WIRT_ERL_A_ENERGIESTEUER,
-                                         e => (double?)e.EnergiesteuerJahr1, true);
-                aEnst.Grundtext = e => MyResource.Resource.WIRT_GRUND_ENERGIESTEUER;
-                z.Add(aEnst);
+                if (SteuerAufgeteilt(menge))
+                {
+                    WirtZeile a53 = Erloes(blockA, "ERL_A_ENERGIESTEUER",
+                                           MyResource.Resource.WIRT_ERL_A_ENERGIESTEUER,
+                                           e => (double?)e.Energiesteuer53Jahr1, true);
+                    a53.Grundtext = e => MyResource.Resource.WIRT_GRUND_ENERGIESTEUER;
+                    z.Add(a53);
+                    z.Add(UnterText("ERL_A_ENERGIESTEUER_SATZ",
+                                    MyResource.Resource.WIRT_ERL_ENERGIEST_SATZ,
+                                    e => Energiesteuerherleitung(e, false), WirtZeile.BLOCK_A));
+
+                    WirtZeile a54 = Erloes(blockA, "ERL_A_ENERGIESTEUER_54",
+                                           MyResource.Resource.WIRT_ERL_ENERGIEST_54,
+                                           e => (double?)e.Energiesteuer54Jahr1, true);
+                    a54.Grundtext = e => MyResource.Resource.WIRT_GRUND_NUR_PROD_GEWERBE;
+                    z.Add(a54);
+                    z.Add(UnterText("ERL_A_ENERGIESTEUER_54_SATZ",
+                                    MyResource.Resource.WIRT_ERL_ENERGIEST_SATZ,
+                                    e => Energiesteuerherleitung(e, true), WirtZeile.BLOCK_A));
+                }
+                else
+                {
+                    WirtZeile aEnst = Erloes(blockA, "ERL_A_ENERGIESTEUER",
+                                             MyResource.Resource.WIRT_ERL_ENERGIEST_GESAMT,
+                                             e => (double?)e.EnergiesteuerJahr1, true);
+                    aEnst.Grundtext = e => MyResource.Resource.WIRT_GRUND_ENERGIESTEUER;
+                    z.Add(aEnst);
+                }
             }
 
             // ---- A6: Stromsteuer-Entlastung Netzbezug (§ 9b) ---------------------
@@ -862,6 +901,93 @@ namespace WindowsFormsApplication1
                           ? n.Bezeichner + ": " + s : s);
             }
             return teile.Count == 0 ? "" : string.Join(" · ", teile.ToArray());
+        }
+
+        // =====================================================================
+        // AUFTRAG U7 — die Energiesteuer in zwei Beträgen
+        // =====================================================================
+
+        /// <summary>
+        /// Darf die Rubrik die Energiesteuer aufteilen? Nur, wenn KEIN Stand der
+        /// Gruppe einen Betrag führt, dessen Aufteilung er nicht kennt.
+        ///
+        /// <para><b>Die Frage gilt der GRUPPE, nicht dem einzelnen Stand.</b> Word,
+        /// Excel und Reiter bauen EINE Tabelle über alle Spalten; zeigte sie für die
+        /// eine Spalte zwei Zeilen und für die andere eine, wären es zwei Tabellen.
+        /// Und der zweite Fall ist der gefährliche: Ein vor U7 gebuchter Stand trüge
+        /// in beiden Paragrafenzeilen 0, während seine Ergebnisspalte einen Betrag
+        /// führt — die Summe des Blocks A fiele für ihn um genau diesen Betrag
+        /// kleiner aus. Ein solcher Stand zieht deshalb die ganze Gruppe auf die
+        /// Gesamtzeile zurück.</para>
+        /// </summary>
+        private static bool SteuerAufgeteilt(IList<WirtschaftlichkeitErgebnis> menge)
+        {
+            foreach (WirtschaftlichkeitErgebnis e in menge)
+                if (e != null && !e.EnergiesteuerAufgeteilt && e.EnergiesteuerJahr1 != 0)
+                    return false;
+            return true;
+        }
+
+        /// <summary>
+        /// AUFTRAG U7 — die Herleitung EINER der beiden Steuerzeilen als Klartext
+        /// („4.797,2 MWh × 4,42 €/MWh = 21.203,4 €/a"), aus dem Nachweis des Laufs.
+        ///
+        /// <para>Leer = dieser Stand hat zu der Vorschrift nichts gerechnet; dann
+        /// entfällt die Zeile wie jede andere ohne Wert. Führt der Lauf MEHRERE
+        /// Anlagen unter derselben Vorschrift, steht je Anlage ein Abschnitt
+        /// „Bezeichner: Menge × Satz = Betrag" — der Bezeichner ist ein Datenwert,
+        /// Doppelpunkt und Trennzeichen sind Satzzeichen (Drei-Schichten-Regel).</para>
+        ///
+        /// <para>Beim § 54 schließt der SOCKELBETRAG die Kette ab: Er fällt einmal je
+        /// Kalenderjahr an, nicht je Anlage, und ohne ihn ließe sich der Betrag der
+        /// Zeile aus den Anlagenposten nicht nachrechnen.</para>
+        /// </summary>
+        public static string Energiesteuerherleitung(WirtschaftlichkeitErgebnis e, bool ist54)
+        {
+            if (e == null || e.EnergiesteuerNachweise == null) return "";
+            CultureInfo kultur = BerichtTexte.Kultur;
+
+            int zaehler = 0;
+            foreach (EnergiesteuerNachweis n in e.EnergiesteuerNachweise)
+                if (n != null && n.Ist54 == ist54) zaehler++;
+            if (zaehler == 0) return "";
+
+            bool mehrere = zaehler > 1;
+            var teile = new List<string>();
+            foreach (EnergiesteuerNachweis n in e.EnergiesteuerNachweise)
+            {
+                if (n == null || n.Ist54 != ist54) continue;
+                string s = string.Format(kultur, MyResource.Resource.WIRT_ERL_ENERGIEST_HERLEITUNG,
+                                         n.Menge.ToString("N1", kultur), Mengeneinheit(n.Einheit),
+                                         n.SatzEur.ToString("N2", kultur),
+                                         n.BetragEur.ToString("N2", kultur));
+                teile.Add(mehrere && !string.IsNullOrEmpty(n.Anlage) ? n.Anlage + ": " + s : s);
+            }
+            if (ist54 && e.Energiesteuer54SockelJahr1 > 0)
+                teile.Add(string.Format(kultur, MyResource.Resource.WIRT_ERL_ENERGIEST_SOCKEL,
+                                        e.Energiesteuer54SockelJahr1.ToString("N0", kultur)));
+            return string.Join(" · ", teile.ToArray());
+        }
+
+        /// <summary>
+        /// Die MENGENeinheit zur gesetzlichen Einheit eines Satzes: „EUR/MWh" bemisst
+        /// MWh, „EUR/1000l" Tausend Liter. Einheitenzeichen sind — wie überall in
+        /// dieser Klasse — nicht lokalisiert; leer = unbekannte Einheit, dann nennt
+        /// die Herleitung nur die Zahl.
+        /// </summary>
+        private static string Mengeneinheit(string gesetzlich)
+        {
+            if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_MWH, StringComparison.Ordinal))
+                return "MWh";
+            if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_1000L, StringComparison.Ordinal))
+                return "1000 l";
+            if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_1000KG, StringComparison.Ordinal))
+                return "1000 kg";
+            if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_GJ, StringComparison.Ordinal))
+                return "GJ";
+            if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_T, StringComparison.Ordinal))
+                return "t";
+            return "";
         }
 
         /// <summary>

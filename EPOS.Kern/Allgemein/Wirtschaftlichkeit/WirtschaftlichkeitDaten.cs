@@ -931,9 +931,54 @@ namespace WindowsFormsApplication1
         // nicht gewählt, Bedingung nicht erfüllt, Satz nicht gepflegt oder Menge nicht
         // in die gesetzliche Einheit umrechenbar.
 
-        /// <summary>Energiesteuer-Entlastung nach § 53 bzw. § 53a Abs. 5 EnergieStG
-        /// im Jahr 1 [€/a] — nur auf den BHKW-Brennstoff, nie auf Kessel.</summary>
+        /// <summary>Energiesteuer-Entlastung GESAMT im Jahr 1 [€/a] — die Summe aus
+        /// <see cref="Energiesteuer53Jahr1"/> und <see cref="Energiesteuer54Jahr1"/>.
+        /// Sie steht in der Ergebnisspalte und in der Erlösreihe des Kapitalwerts;
+        /// die Aufteilung darunter ändert an ihr nichts (U7).</summary>
         public double EnergiesteuerJahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der Anteil nach <b>§ 53 bzw. § 53a Abs. 5 EnergieStG</b>
+        /// [€/a]: der Brennstoff der Stromerzeugung, also das Blockheizkraftwerk.
+        /// Gültig nur, wenn <see cref="EnergiesteuerAufgeteilt"/> gesetzt ist.
+        /// </summary>
+        public double Energiesteuer53Jahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der Anteil nach <b>§ 54 EnergieStG</b> [€/a] nach Abzug des
+        /// Sockelbetrags: der Heizstoff des produzierenden Gewerbes, also auch der
+        /// Kessel. Gültig nur, wenn <see cref="EnergiesteuerAufgeteilt"/> gesetzt ist.
+        /// </summary>
+        public double Energiesteuer54Jahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — der abgezogene Sockelbetrag des § 54 [€/a]; 0 = keine
+        /// § 54-Position oder kein Sockel im Katalog.
+        /// </summary>
+        public double Energiesteuer54SockelJahr1;
+
+        /// <summary>
+        /// AUFTRAG U7 — <b>ist die Aufteilung bekannt?</b> Ein frisch gerechneter Lauf
+        /// kennt sie immer; ein vor U7 gebuchter Stand trägt sie nicht
+        /// (Nachweisumschlag der Fassung ≤ 3) und liest sich deshalb mit
+        /// <c>false</c>.
+        ///
+        /// <para><b>Wozu der Merker.</b> Ohne ihn wären 0 und 0 von „beide Paragrafen
+        /// haben 0 ergeben" nicht zu unterscheiden — und die Rubrik zeigte für einen
+        /// alten Stand zwei Nullzeilen, obwohl die Ergebnisspalte einen Betrag führt.
+        /// Ist er nicht gesetzt, bleibt es bei der EINEN Zeile über beide Vorschriften;
+        /// die Summe des Blocks A ist damit in jedem Fall zahlengleich.</para>
+        /// </summary>
+        public bool EnergiesteuerAufgeteilt;
+
+        /// <summary>
+        /// AUFTRAG U7 — je gerechneter Energiesteuerposition eine Zeile mit Paragraf,
+        /// Menge, Satz und Betrag; sie trägt die Herleitung der beiden Rubrikzeilen.
+        /// Leer = keine Entlastung gerechnet oder gebuchter Stand vor U7.
+        /// <b>Im Nachweisumschlag persistiert</b> (Fassung 4).
+        /// </summary>
+        public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+            new List<EnergiesteuerNachweis>();
 
         /// <summary>Stromsteuer-Befreiung nach § 9 Abs. 1 Nr. 3 StromStG im Jahr 1
         /// [€/a] — Regelsatz auf den KWK-Eigenverbrauch.</summary>
@@ -1239,6 +1284,67 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kosten dieser Anlage [€/a] — ohne Grund- und Leistungspreis.</summary>
         public double KostenEur;
+    }
+
+    /// <summary>
+    /// AUFTRAG U7 (Befund B7‑1) — der Nachweis EINER Energiesteuerposition: welche
+    /// Vorschrift, welche Anlage, welche Menge, welcher Satz, welcher Betrag.
+    ///
+    /// <para><b>Warum es ihn gibt.</b> Bis U7 kam die Energiesteuer als EINE Summe
+    /// aus dem Rechner zurück. Die Rubrik konnte deshalb weder § 53/§ 53a von § 54
+    /// trennen noch sagen, aus welcher Menge und welchem Satz ein Betrag entstanden
+    /// ist — die Herleitung stand allenfalls als Fließtext in der Herkunftszeile.
+    /// Hier steht sie als Zahl, einmal, und Rubrik, Wort- und Excelbericht schreiben
+    /// sie ab, statt sie nachzurechnen.</para>
+    ///
+    /// <para><b>Nur Ausweis.</b> Die Summe der Beträge ist der gerechnete Wert; aus
+    /// diesen Zeilen wird nichts gerechnet, was der Steuerrechner nicht schon
+    /// gerechnet hat. Sie reisen im Nachweisumschlag mit
+    /// (<see cref="ErgebnisNachweisUmschlag"/>, Fassung 4) — der gebuchte Stand
+    /// trägt seine Herleitung damit ebenso wie der frisch gerechnete.</para>
+    /// </summary>
+    public class EnergiesteuerNachweis
+    {
+        /// <summary>§ 53 EnergieStG — voller Satz auf den Brennstoff der Stromerzeugung.</summary>
+        public const string PARAGRAF_53 = "53";
+
+        /// <summary>§ 53a Abs. 5 EnergieStG — Teilsatz, hocheffiziente KWK.</summary>
+        public const string PARAGRAF_53A = "53A";
+
+        /// <summary>§ 54 EnergieStG — Heizstoffe des produzierenden Gewerbes.</summary>
+        public const string PARAGRAF_54 = "54";
+
+        /// <summary>Bezeichner der Anlage — ein Datenwert des Anwenders, kein
+        /// Anzeigetext; leer = unbenannte Anlagenzeile.</summary>
+        public string Anlage = "";
+
+        /// <summary>Die angewandte Vorschrift, sprachneutral: <see cref="PARAGRAF_53"/>,
+        /// <see cref="PARAGRAF_53A"/> oder <see cref="PARAGRAF_54"/>.</summary>
+        public string Paragraf = "";
+
+        /// <summary>Menge in der GESETZLICHEN Einheit des Satzes (also bereits
+        /// umgerechnet — bei Erdgas brennwertbezogen).</summary>
+        public double Menge;
+
+        /// <summary>Gesetzliche Einheit des Satzes (<c>DbWerte.GESETZ_EINHEIT_*</c>,
+        /// etwa <c>EUR/MWh</c>) — sie bestimmt zugleich die Einheit von
+        /// <see cref="Menge"/>.</summary>
+        public string Einheit = "";
+
+        /// <summary>Angesetzter Satz [€ je gesetzlicher Mengeneinheit].</summary>
+        public double SatzEur;
+
+        /// <summary>Betrag dieser Position [€/a], <b>vor</b> dem Sockelbetrag des
+        /// § 54 — der fällt einmal je Lauf an, nicht je Anlage.</summary>
+        public double BetragEur;
+
+        /// <summary>true, wenn die Position zu § 54 gehört (Heizstoff, Sockelbetrag,
+        /// produzierendes Gewerbe) — die Trennung, an der die zwei Rubrikzeilen
+        /// hängen.</summary>
+        public bool Ist54
+        {
+            get { return string.Equals(Paragraf, PARAGRAF_54, StringComparison.Ordinal); }
+        }
     }
 
     public class KwkgModulNachweis

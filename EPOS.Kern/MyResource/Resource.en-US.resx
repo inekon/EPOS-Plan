@@ -19671,7 +19671,22 @@ Do you want to allow this?</value>
     <value>own value {0} — proposal {1}</value>
   </data>
   <data name="WIRT_ERL_A_ENERGIESTEUER" xml:space="preserve">
+    <value>Energy tax credit on fuel (sec. 53/53a(5) EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_54" xml:space="preserve">
+    <value>Energy tax relief on heating fuel (sec. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_GESAMT" xml:space="preserve">
     <value>Energy tax relief (sec. 53/53a resp. 54 EnergieStG) [€/a]</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_SATZ" xml:space="preserve">
+    <value>Quantity · rate</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_HERLEITUNG" xml:space="preserve">
+    <value>{0} {1} × {2} €/{1} = {3} €/a</value>
+  </data>
+  <data name="WIRT_ERL_ENERGIEST_SOCKEL" xml:space="preserve">
+    <value>less base amount €{0}/a</value>
   </data>
   <data name="WIRT_ERL_A_STROMST_ENTLASTUNG" xml:space="preserve">
     <value>Electricity tax relief on grid supply (sec. 9b StromStG) [€/a]</value>

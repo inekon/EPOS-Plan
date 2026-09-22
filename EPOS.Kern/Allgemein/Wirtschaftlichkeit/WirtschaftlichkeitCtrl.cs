@@ -1853,6 +1853,16 @@ namespace WindowsFormsApplication1
             public double StromsteuerEntlastungJahr1;
             public string SteuerHerkunft;
 
+            // AUFTRAG U7 — dieselbe Zahl in zwei Beträgen: § 53/§ 53a (Brennstoff der
+            // Stromerzeugung) und § 54 (Heizstoff des produzierenden Gewerbes, nach
+            // Sockel). EnergiesteuerJahr1 bleibt ihre Summe — die Erlösreihe und die
+            // Ergebnisspalte lesen weiter dort.
+            public double Energiesteuer53Jahr1;
+            public double Energiesteuer54Jahr1;
+            public double Energiesteuer54SockelJahr1;
+            public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
+                new List<EnergiesteuerNachweis>();
+
             /// <summary>ETAPPE B6: true = § 9 Abs. 1 Nr. 3 StromStG ist als Erlösreihe
             /// angehängt (Modus <c>ERLOES</c>); false = ausgewiesen, aber nicht im
             /// Kapitalwert (Vorgabe <c>AUSWEIS</c>).</summary>
@@ -3455,6 +3465,15 @@ namespace WindowsFormsApplication1
                 entlastung[t] = r.StromsteuerEntlastungEur;
 
                 if (t != 1) continue;                       // Texte nur aus dem ersten Jahr
+
+                // AUFTRAG U7 — die Aufteilung und ihre Herleitung stammen aus
+                // DEMSELBEN Jahr wie die ausgewiesene Jahr-1-Zahl; eine spätere
+                // Satzänderung darf die Zeilen darunter nicht verschieben.
+                e.Energiesteuer53Jahr1 = r.Energiesteuer53Eur;
+                e.Energiesteuer54Jahr1 = r.Energiesteuer54Eur;
+                e.Energiesteuer54SockelJahr1 = r.Energiesteuer54SockelEur;
+                e.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>(r.EnergiesteuerNachweise);
+
                 foreach (string s in r.Begruendungen) if (!begruendungen.Contains(s)) begruendungen.Add(s);
                 foreach (string s in r.Herkunft) if (!herkunft.Contains(s)) herkunft.Add(s);
             }
@@ -5382,6 +5401,14 @@ namespace WindowsFormsApplication1
             erg.KwkgVbhElektrisch = eingabe.VbhElektrisch;    // E2: Bezugsgröße der Deckelung
             erg.KwkgPauschaleEur = PauschaleBetrag(eingabe);  // U17: Einmalzahlung Jahr 0
             erg.EnergiesteuerJahr1 = eingabe.EnergiesteuerJahr1;              // E4
+            // AUFTRAG U7 — ein frisch gerechneter Lauf kennt die Aufteilung IMMER,
+            // auch wenn beide Beträge 0 sind (kein BHKW, nichts gewählt). Der Merker
+            // unterscheidet „zweimal 0 gerechnet" von „nicht aufgeteilt gebucht".
+            erg.EnergiesteuerAufgeteilt = true;
+            erg.Energiesteuer53Jahr1 = eingabe.Energiesteuer53Jahr1;
+            erg.Energiesteuer54Jahr1 = eingabe.Energiesteuer54Jahr1;
+            erg.Energiesteuer54SockelJahr1 = eingabe.Energiesteuer54SockelJahr1;
+            erg.EnergiesteuerNachweise = eingabe.EnergiesteuerNachweise;
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
             erg.StromsteuerEntlastungJahr1 = eingabe.StromsteuerEntlastungJahr1;

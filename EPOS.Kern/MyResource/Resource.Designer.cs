@@ -62854,7 +62854,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a] ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Gutschrift Brennstoff (§ 53/§ 53a Abs. 5 EnergieStG) [€/a] ähnelt.
         /// </summary>
         public static string WIRT_ERL_A_ENERGIESTEUER {
             get {
@@ -62931,6 +62931,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_B1_EFFEKTIV {
             get {
                 return ResourceManager.GetString("WIRT_ERL_B1_EFFEKTIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Entlastung Heizstoff (§ 54 EnergieStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_ENERGIEST_54 {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54 EnergieStG) [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_ENERGIEST_GESAMT {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_GESAMT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} {1} × {2} €/{1} = {3} €/a ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_ENERGIEST_HERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_HERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Menge · Satz ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_ENERGIEST_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die abzüglich Sockelbetrag {0} €/a ähnelt.
+        /// </summary>
+        public static string WIRT_ERL_ENERGIEST_SOCKEL {
+            get {
+                return ResourceManager.GetString("WIRT_ERL_ENERGIEST_SOCKEL", resourceCulture);
             }
         }
         

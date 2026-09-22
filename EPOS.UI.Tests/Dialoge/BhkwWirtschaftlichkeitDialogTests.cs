@@ -1395,6 +1395,73 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Contains("nach dem Speichern neu berechnen", zeilen[zeilen.Count - 1]);
     }
 
+    /// <summary>
+    /// AUFTRAG U7 (Befund B7-1) — die Vorschau zeichnet die Energiesteuer in ZWEI
+    /// Zeilen: § 53/§ 53a beim Brennstoff der Stromerzeugung, § 54 beim Heizstoff,
+    /// darunter je die Herleitung aus Menge und Satz. Bis U7 war es eine Zeile,
+    /// deren Titel beide Vorschriften nannte.
+    ///
+    /// <para>Gemessen wird an den Zahlen des Beispielprojekts (Rechenweg 05 und 07):
+    /// 21.202,71 € nach § 53a Abs. 5 und 2.885,72 € nach § 54 — zusammen die
+    /// 24.088,43 €, die zuvor als eine Zahl dastanden.</para>
+    /// </summary>
+    [Fact]
+    public void Die_Vorschau_zeigt_die_Energiesteuer_in_zwei_Zeilen()
+    {
+        var lauf = new[]
+        {
+            new WirtschaftlichkeitErgebnis
+            {
+                IdProjekt = STAMM,
+                Szenario = WirtschaftlichkeitSzenario.ERWARTET,
+                KwkgVbhElektrisch = 5500,
+                ProduzierendesGewerbe = true,
+                EnergiesteuerJahr1 = 24088.43,
+                EnergiesteuerAufgeteilt = true,
+                Energiesteuer53Jahr1 = 21202.71,
+                Energiesteuer54Jahr1 = 2885.72,
+                Energiesteuer54SockelJahr1 = 250.0,
+                EnergiesteuerNachweise = new List<EnergiesteuerNachweis>
+                {
+                    new EnergiesteuerNachweis
+                    {
+                        Anlage = "BHKW", Paragraf = EnergiesteuerNachweis.PARAGRAF_53A,
+                        Menge = 4796.99, Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                        SatzEur = 4.42, BetragEur = 21202.71
+                    },
+                    new EnergiesteuerNachweis
+                    {
+                        Anlage = "Gas-Brennwertkessel", Paragraf = EnergiesteuerNachweis.PARAGRAF_54,
+                        Menge = 2272.26, Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                        SatzEur = 1.38, BetragEur = 3135.72
+                    }
+                },
+                Zeitstempel = new DateTime(2026, 9, 22, 12, 3, 0)
+            }
+        };
+        var cut = Aufbauen(ausLauf: lauf);
+
+        var zeilen = new List<string>();
+        foreach (IElement e in Koerper(cut, 7).QuerySelectorAll("p.epos-herleitung"))
+            zeilen.Add(e.TextContent.Trim());
+        string ganz = string.Join(" | ", zeilen);
+
+        // Zwei Geldzeilen, je mit ihrer Rechtsgrundlage und ihrem Betrag.
+        Assert.Contains("§ 53a Abs. 5 EnergieStG", ganz);
+        Assert.Contains("21.203", ganz);
+        Assert.Contains("§ 54 EnergieStG", ganz);
+        Assert.Contains("2.886", ganz);
+
+        // Darunter je die Herleitung: Menge, Satz — und beim § 54 der Sockelbetrag.
+        Assert.Contains("4,42", ganz);
+        Assert.Contains("1,38", ganz);
+        Assert.Contains("Sockelbetrag", ganz);
+
+        // Und die Summe des Blocks A ist die alte eine Zahl:
+        // 21.202,71 + 2.885,72 = 24.088,43 €/a.
+        Assert.Contains("24.088", ganz);
+    }
+
     // =====================================================================
     //  Die Fussleiste — OK und Abbrechen, geschrieben wird im OK-Weg
     //  (Auftrag #286; die Abnahme misst den Datenbankstand, nicht die Anzeige)

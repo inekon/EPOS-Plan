@@ -541,5 +541,161 @@ namespace EPOS.Kern.Tests
             Assert.Equal(erwartet, SteuerGutschriftRechner.ProduzierendesGewerbe(
                 new SteuerEingabe { Unternehmensart = art }));
         }
+
+        // =====================================================================
+        //  9 — AUFTRAG U7: zwei Beträge statt einer Summe (Befund B7-1)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kessel des Beispielprojekts (Mockup Kategorie 4 und 7): dieselbe
+        /// Nutzwärme wie das BHKW, Kesselwirkungsgrad 95 %, Wahl § 54 <b>an der
+        /// Anlage</b> — nicht die Projektvorgabe § 53a. Er erzeugt keinen Strom und
+        /// kommt deshalb allein für § 54 in Betracht (BF5).
+        /// </summary>
+        private static SteuerAnlage Kessel()
+        {
+            return new SteuerAnlage
+            {
+                Bezeichner = "Gas-Brennwertkessel",
+                PelKW = 0.0,
+                BrennstoffMWh = WaermeMWh / 0.95,       // 2.056,79 MWh (H_i)
+                StromMWh = 0.0,
+                WaermeMWh = WaermeMWh,
+                SchluesselSatzVoll = DbWerte.GESETZ_ENERGIEST_ERDGAS,
+                SchluesselSatz53a = DbWerte.GESETZ_ENERGIEST_53A5_ERDGAS,
+                SchluesselSatz54 = DbWerte.GESETZ_ENERGIEST_54_ERDGAS,
+                SchluesselCo2 = DbWerte.GESETZ_EF_BILANZ_EBEV_ERDGAS_HI,
+                EffHi = HI,
+                EffHs = HS,
+                Fossil = true,
+                Stromerzeuger = false,
+                EnergiesteuerWahl = DbWerte.ENERGIESTEUER_WAHL_54,
+            };
+        }
+
+        /// <summary>
+        /// <b>Die Zahlenprobe der Etappe (Mockup, Umsetzungsstand U7):</b> Am
+        /// Beispielprojekt mit BHKW UND Kessel zerfällt die Energiesteuer in
+        /// § 53a Abs. 5 beim Blockheizkraftwerk und § 54 beim Kessel — bis U7 kam sie
+        /// als EINE Summe zurück und ließ sich keiner der beiden Anlagen zuordnen.
+        ///
+        /// <para>Gemessen wird am KERN: 4.796,99 MWh (H_s) × 4,42 €/MWh = 21.202,71 €
+        /// und 2.272,26 MWh (H_s) × 1,38 €/MWh − 250 € = 2.885,72 €. Der Mockup nennt
+        /// 21.203,4 und 2.885,7 — die Zahlen des GERUNDETEN Brennwertfaktors 1,1048
+        /// (Befund B4, oben im Klassenkopf); gepinnt ist der ungerundete Quotient.</para>
+        /// </summary>
+        [Fact]
+        public void Zahlenprobe_Die_Energiesteuer_zerfaellt_in_Paragraf_53a_und_Paragraf_54()
+        {
+            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A), Kessel());
+            e.JahresnutzungsgradProzent = 83.0;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Equal(21202.71, r.Energiesteuer53Eur, 2);
+            Assert.Equal(2885.72, r.Energiesteuer54Eur, 2);
+            Assert.Equal(250.0, r.Energiesteuer54SockelEur, 6);
+
+            // Und die eine Zahl, die Erlösreihe, Ergebnisspalte und Anker lesen:
+            Assert.Equal(24088.43, r.EnergiesteuerEur, 2);
+            Assert.Equal(r.Energiesteuer53Eur + r.Energiesteuer54Eur, r.EnergiesteuerEur, 9);
+        }
+
+        /// <summary>
+        /// DIE GEGENPROBE zur Aufteilung: Der Sockelbetrag des § 54 mindert
+        /// ausschließlich den § 54-Teil. Ohne den Kessel wäre der § 53a-Betrag
+        /// derselbe — eine Anlage zahlt nicht den Sockel einer anderen.
+        /// </summary>
+        [Fact]
+        public void Der_Sockel_des_Paragrafen_54_laesst_den_Paragrafen_53a_unberuehrt()
+        {
+            SteuerEingabe allein = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A));
+            allein.JahresnutzungsgradProzent = 83.0;
+
+            SteuerEingabe zusammen = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A), Kessel());
+            zusammen.JahresnutzungsgradProzent = 83.0;
+
+            Assert.Equal(Rechne(allein).Energiesteuer53Eur, Rechne(zusammen).Energiesteuer53Eur, 6);
+            Assert.Equal(0.0, Rechne(allein).Energiesteuer54Eur, 6);
+        }
+
+        /// <summary>
+        /// Jede Wahl landet in IHREM Topf, und die Summe bleibt in jedem Fall die
+        /// Zahl, die der Rechner vor U7 als einzige zurückgab. Die Sollwerte sind die
+        /// der Fälle oben — hier steht, WELCHER der beiden Beträge sie trägt.
+        /// </summary>
+        [Theory]
+        [InlineData("ENERGIESTEUER_WAHL_53", 26383.46, 0.0)]
+        [InlineData("ENERGIESTEUER_WAHL_53A", 21202.71, 0.0)]
+        [InlineData("ENERGIESTEUER_WAHL_54", 0.0, 6369.85)]
+        public void Jede_Wahl_landet_in_ihrem_Betrag_und_die_Summe_bleibt(
+            string wahlName, double erwartet53, double erwartet54)
+        {
+            string wahl = wahlName == "ENERGIESTEUER_WAHL_53" ? DbWerte.ENERGIESTEUER_WAHL_53
+                        : wahlName == "ENERGIESTEUER_WAHL_53A" ? DbWerte.ENERGIESTEUER_WAHL_53A
+                        : DbWerte.ENERGIESTEUER_WAHL_54;
+
+            SteuerEingabe e = Projekt(Bhkw(wahl));
+            e.AufteilungMethode = DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
+            e.JahresnutzungsgradProzent = 83.0;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Equal(erwartet53, r.Energiesteuer53Eur, 2);
+            Assert.Equal(erwartet54, r.Energiesteuer54Eur, 2);
+            Assert.Equal(erwartet53 + erwartet54, r.EnergiesteuerEur, 2);
+        }
+
+        /// <summary>
+        /// Der Nachweis trägt je Position Paragraf, Menge in der gesetzlichen
+        /// Einheit, Satz und Betrag — die drei Zahlen, aus denen die Rubrik ihre
+        /// Herleitungszeile schreibt, ohne sie nachzurechnen.
+        /// </summary>
+        [Fact]
+        public void Der_Nachweis_traegt_Paragraf_Menge_Satz_und_Betrag_je_Position()
+        {
+            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_53A), Kessel());
+            e.JahresnutzungsgradProzent = 83.0;
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Equal(2, r.EnergiesteuerNachweise.Count);
+
+            EnergiesteuerNachweis n53 = r.EnergiesteuerNachweise
+                .Single(n => n.Paragraf == EnergiesteuerNachweis.PARAGRAF_53A);
+            Assert.Equal("BHKW", n53.Anlage);
+            Assert.False(n53.Ist54);
+            Assert.Equal(4796.99, n53.Menge, 2);              // brennwertbezogen
+            Assert.Equal(DbWerte.GESETZ_EINHEIT_EUR_MWH, n53.Einheit);
+            Assert.Equal(4.42, n53.SatzEur, 6);
+            Assert.Equal(21202.71, n53.BetragEur, 2);
+
+            EnergiesteuerNachweis n54 = r.EnergiesteuerNachweise
+                .Single(n => n.Paragraf == EnergiesteuerNachweis.PARAGRAF_54);
+            Assert.True(n54.Ist54);
+            Assert.Equal(2272.26, n54.Menge, 2);
+            Assert.Equal(1.38, n54.SatzEur, 6);
+            // Der Nachweis führt den Betrag VOR dem Sockel — der fällt einmal je
+            // Lauf an und steht deshalb neben den Anlagenzeilen.
+            Assert.Equal(3135.72, n54.BetragEur, 2);
+            Assert.Equal(n54.BetragEur - r.Energiesteuer54SockelEur, r.Energiesteuer54Eur, 6);
+        }
+
+        /// <summary>
+        /// Ohne gerechnete Entlastung bleibt der Nachweis leer — und mit ihm die
+        /// Herleitungszeile der Rubrik. Eine Zeile ohne Zahlen wäre eine Behauptung.
+        /// </summary>
+        [Fact]
+        public void Ohne_Entlastung_bleibt_der_Nachweis_leer()
+        {
+            SteuerEingabe e = Projekt(Bhkw(DbWerte.ENERGIESTEUER_WAHL_KEINE));
+
+            SteuerErgebnis r = Rechne(e);
+
+            Assert.Empty(r.EnergiesteuerNachweise);
+            Assert.Equal(0.0, r.Energiesteuer53Eur, 6);
+            Assert.Equal(0.0, r.Energiesteuer54Eur, 6);
+            Assert.NotEmpty(r.Begruendungen);
+        }
     }
 }

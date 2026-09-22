@@ -336,6 +336,82 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  AUFTRAG U7 — die Umschlagfassung 4 trägt beide Steuerbeträge
+        // =================================================================
+
+        /// <summary>
+        /// Der Umschlag trägt beide Paragrafenbeträge samt Mengen und Sätzen — die
+        /// Ergebnisspalte führt weiterhin nur die Summe, und ohne den Umschlag
+        /// könnte die Rubrik eines gebuchten Stands die zwei Zeilen nicht zeichnen.
+        /// </summary>
+        [Fact]
+        public void Die_Fassung_4_traegt_beide_Steuerbetraege_samt_Mengen_und_Saetzen()
+        {
+            var e = new WirtschaftlichkeitErgebnis
+            {
+                EnergiesteuerJahr1 = 24088.43,
+                EnergiesteuerAufgeteilt = true,
+                Energiesteuer53Jahr1 = 21202.71,
+                Energiesteuer54Jahr1 = 2885.72,
+                Energiesteuer54SockelJahr1 = 250.0
+            };
+            e.EnergiesteuerNachweise.Add(new EnergiesteuerNachweis
+            {
+                Anlage = "BHKW",
+                Paragraf = EnergiesteuerNachweis.PARAGRAF_53A,
+                Menge = 4796.99,
+                Einheit = DbWerte.GESETZ_EINHEIT_EUR_MWH,
+                SatzEur = 4.42,
+                BetragEur = 21202.71
+            });
+
+            string grund;
+            string json = ErgebnisNachweisUmschlag.Schreiben(e, out grund);
+            Assert.Null(grund);
+
+            ErgebnisNachweisUmschlag u = ErgebnisNachweisUmschlag.Lesen(json);
+            Assert.NotNull(u);
+            Assert.Equal(4, ErgebnisNachweisUmschlag.FASSUNG);
+
+            var zurueck = new WirtschaftlichkeitErgebnis();
+            u.Uebernimm(zurueck);
+
+            Assert.True(zurueck.EnergiesteuerAufgeteilt);
+            Assert.Equal(21202.71, zurueck.Energiesteuer53Jahr1, 2);
+            Assert.Equal(2885.72, zurueck.Energiesteuer54Jahr1, 2);
+            Assert.Equal(250.0, zurueck.Energiesteuer54SockelJahr1, 6);
+            Assert.Single(zurueck.EnergiesteuerNachweise);
+            Assert.Equal(4796.99, zurueck.EnergiesteuerNachweise[0].Menge, 2);
+            Assert.Equal(4.42, zurueck.EnergiesteuerNachweise[0].SatzEur, 6);
+            Assert.Equal(DbWerte.GESETZ_EINHEIT_EUR_MWH, zurueck.EnergiesteuerNachweise[0].Einheit);
+        }
+
+        /// <summary>
+        /// Ein Umschlag der Fassung 3 wird weiter gelesen — seine Felder sind eine
+        /// echte Teilmenge. Was er NICHT kann, ist die Aufteilung: Sie gab es damals
+        /// nicht, und <c>EnergiesteuerAufgeteilt</c> sagt das, statt zwei Nullen für
+        /// eine Aussage auszugeben.
+        /// </summary>
+        [Fact]
+        public void Eine_aeltere_Fassung_kennt_die_Aufteilung_nicht_und_sagt_es()
+        {
+            ErgebnisNachweisUmschlag alt = ErgebnisNachweisUmschlag.Lesen(
+                "nw1:{\"Version\":3,\"KwkgPauschaleEur\":4320}");
+
+            Assert.NotNull(alt);
+            Assert.Equal(3, alt.Version);
+
+            var e = new WirtschaftlichkeitErgebnis { EnergiesteuerJahr1 = 5119 };
+            alt.Uebernimm(e);
+
+            Assert.False(e.EnergiesteuerAufgeteilt);
+            Assert.Equal(0.0, e.Energiesteuer53Jahr1, 6);
+            Assert.Equal(0.0, e.Energiesteuer54Jahr1, 6);
+            Assert.Empty(e.EnergiesteuerNachweise);
+            Assert.Equal(4320.0, e.KwkgPauschaleEur, 6);     // Fassung 2 bleibt lesbar
+        }
+
+        // =================================================================
         //  Prüfstand
         // =================================================================
 
