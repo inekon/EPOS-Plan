@@ -64870,6 +64870,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenarien {0} / {1} / {2} ähnelt.
+        /// </summary>
+        public static string WIRT_SZ_UEBERSCHRIFT {
+            get {
+                return ResourceManager.GetString("WIRT_SZ_UEBERSCHRIFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wirtschaftlichkeit (Kapitalwertmethode DIN EN 17463) ähnelt.
         /// </summary>
         public static string WIRT_TITEL {
@@ -65253,6 +65262,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_VERL_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_VERL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kumulierte diskontierte Zahlungsströme je Jahr, ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. Das erste Bild zeigt den kumulierten Barwert der Differenz zur Referenz in allen drei Szenarien (Farbe = Variante, Strichart = Szenario); sein Schnitt mit der Nulllinie ist die dynamische Amortisation. Das zweite Bild zeigt die kumulierten Barwerte je Version im Szenario „Erwartet“. ähnelt.
+        /// </summary>
+        public static string WIRT_VERL_WORT_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_VERL_WORT_HINWEIS", resourceCulture);
             }
         }
         

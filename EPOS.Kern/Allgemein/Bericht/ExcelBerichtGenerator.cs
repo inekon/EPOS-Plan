@@ -166,7 +166,19 @@ namespace WindowsFormsApplication1
                 // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
                 // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
                 if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
-                    BlattWirtschaftlichkeit(wb, daten);
+                {
+                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten);
+
+                    // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
+                    // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
+                    // Wortberichts und dasselbe Blatt, das der Knopf „Verlauf nach Excel…"
+                    // der Seite schreibt. Ohne Verlauf (keine Linie, Zeitreihen fehlen)
+                    // entfällt es — der Grund steht im Blatt „Wirtschaftlichkeit".
+                    if (verlauf != null && !verlauf.Leer)
+                        VerlaufExcel.SchreibeBlatt(wb, verlauf, VerlaufBlattTexte.AusRessourcen(),
+                            string.Format(BerichtTexte.Kultur, MyResource.Resource.WIRT_VERL_STATUS,
+                                          verlauf.Jahre) + ".");
+                }
 
                 if (konfig == null || konfig.IstAktiv(BerichtsKonfiguration.B_ERGEBNISSE))
                     foreach (VariantenDaten v in daten.Varianten)
@@ -335,7 +347,13 @@ namespace WindowsFormsApplication1
         /// Rechnung dieses Berichtslaufs — identische Quelle wie der Word-Baustein.
         /// Echte Zahlenwerte, fehlende Werte bleiben leer.
         /// </summary>
-        private static void BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten)
+        /// <summary>
+        /// Das Blatt „Wirtschaftlichkeit". ETAPPE E6: Es liefert den Verlauf mit drei
+        /// Szenarien zurück, den es für seinen Verlaufsblock gerechnet hat — das Blatt
+        /// „Verlauf" schreibt dieselben Linien, ohne ein zweites Mal zu rechnen.
+        /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
+        /// </summary>
+        private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten)
         {
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
@@ -360,7 +378,7 @@ namespace WindowsFormsApplication1
                     (daten.WirtschaftlichkeitFehler != null
                      ? " (" + daten.WirtschaftlichkeitFehler + ")" : "");
                 ws.Columns().AdjustToContents();
-                return;
+                return null;
             }
 
             WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
@@ -689,6 +707,7 @@ namespace WindowsFormsApplication1
                                         daten.Varianten.Select(x => x.IdProjekt));
             int rStart = r;
             WirtschaftlichkeitVerlauf verlaufFuerMehrjahres = null;
+            WirtschaftlichkeitVerlaufSzenarien verlaufSzenarien = null;
             try
             {
                 if (zeitreihenNoetig &&
@@ -701,25 +720,56 @@ namespace WindowsFormsApplication1
                 }
                 else
                 {
-                    WirtschaftlichkeitVerlauf verlauf = provider.BerechneVerlauf(
-                        daten, p, p.Betrachtungszeitraum, WirtschaftlichkeitSzenario.ERWARTET);
+                    // ETAPPE E6 (U13): alle drei Szenarien — drei vollständige Läufe ohne
+                    // Speichern. Die Mehrjahrestabelle nimmt daraus den Erwartungsfall, Zahl
+                    // für Zahl der bisherige Einzellauf.
+                    WirtschaftlichkeitVerlaufSzenarien drei =
+                        provider.BerechneVerlaufSzenarien(daten, p, p.Betrachtungszeitraum);
+                    WirtschaftlichkeitVerlauf verlauf = drei.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
                     verlaufFuerMehrjahres = verlauf;   // E7: Grundlage der Mehrjahrestabelle
+                    verlaufSzenarien = drei;           // E6: Grundlage des Blattes „Verlauf"
                     var mitReihe = verlauf.Absolut.Where(s => s.Kumuliert != null).ToList();
                     var mitDiff = verlauf.Differenz.Where(x => x.Kumuliert != null).ToList();
                     if (mitReihe.Count > 0)
                     {
+                        // ETAPPE E6 (Konzept § 2.13 (5)): JE SZENARIO EINE SPALTENGRUPPE —
+                        // Ungünstig · Erwartet · Günstig, in jeder dieselben Spalten wie
+                        // bisher (je Projekt, dann die Differenzen), darüber der Name des
+                        // Szenarios. Die Spalten eines Projekts, das in einem Szenario keine
+                        // Reihe hat, bleiben leer.
+                        var gruppen = new List<WirtschaftlichkeitVerlauf>();
+                        foreach (string s in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+                            if (drei.Lauf(s) != null) gruppen.Add(drei.Lauf(s));
+                        int breite = mitReihe.Count + mitDiff.Count;
+                        int letzte = 1 + gruppen.Count * breite;
+
                         ws.Cell(r, 1).Value = BerichtTexte.T("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]");
                         ws.Cell(r, 1).Style.Font.Bold = true;
-                        ws.Range(r, 1, r, 1 + mitReihe.Count + mitDiff.Count)
-                          .Style.Fill.BackgroundColor = GRUPPE;
+                        ws.Range(r, 1, r, letzte).Style.Fill.BackgroundColor = GRUPPE;
+                        r++;
+
+                        int cg = 2;
+                        foreach (WirtschaftlichkeitVerlauf lauf in gruppen)
+                        {
+                            ws.Cell(r, cg).Value = VerlaufZeilen.Szenarioname(lauf.Szenario);
+                            IXLRange kopf = ws.Range(r, cg, r, cg + breite - 1);
+                            if (breite > 1) kopf.Merge();
+                            kopf.Style.Font.Bold = true;
+                            kopf.Style.Fill.BackgroundColor = GRUPPE;
+                            kopf.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                            cg += breite;
+                        }
                         r++;
 
                         ws.Cell(r, 1).Value = BerichtTexte.T("Jahr");
                         int cv = 2;
-                        foreach (VerlaufSerie s in mitReihe)
-                        { ws.Cell(r, cv).Value = s.Anzeige; cv++; }
-                        foreach (VerlaufSerie s in mitDiff)
-                        { ws.Cell(r, cv).Value = "Δ " + s.Anzeige + " − Stamm"; cv++; }
+                        foreach (WirtschaftlichkeitVerlauf lauf in gruppen)
+                        {
+                            foreach (VerlaufSerie s in mitReihe)
+                            { ws.Cell(r, cv).Value = s.Anzeige; cv++; }
+                            foreach (VerlaufSerie s in mitDiff)
+                            { ws.Cell(r, cv).Value = "Δ " + s.Anzeige + " − Stamm"; cv++; }
+                        }
                         ws.Range(r, 1, r, cv - 1).Style.Font.Bold = true;
                         ws.Range(r, 1, r, cv - 1).Style.Fill.BackgroundColor = KOPF;
                         r++;
@@ -728,17 +778,18 @@ namespace WindowsFormsApplication1
                         {
                             ws.Cell(r, 1).Value = t;
                             cv = 2;
-                            foreach (VerlaufSerie s in mitReihe)
+                            foreach (WirtschaftlichkeitVerlauf lauf in gruppen)
                             {
-                                ws.Cell(r, cv).Value = s.Kumuliert[t];
-                                ws.Cell(r, cv).Style.NumberFormat.Format = "#,##0";
-                                cv++;
-                            }
-                            foreach (VerlaufSerie s in mitDiff)
-                            {
-                                ws.Cell(r, cv).Value = s.Kumuliert[t];
-                                ws.Cell(r, cv).Style.NumberFormat.Format = "#,##0";
-                                cv++;
+                                foreach (VerlaufSerie s in mitReihe)
+                                {
+                                    Verlaufszelle(ws.Cell(r, cv), lauf.Absolut, s.IdProjekt, t);
+                                    cv++;
+                                }
+                                foreach (VerlaufSerie s in mitDiff)
+                                {
+                                    Verlaufszelle(ws.Cell(r, cv), lauf.Differenz, s.IdProjekt, t);
+                                    cv++;
+                                }
                             }
                             r++;
                         }
@@ -753,10 +804,11 @@ namespace WindowsFormsApplication1
             {
                 // Halb geschriebenen Block räumen, damit keine Reste unter den
                 // Folgeblöcken stehen bleiben (Review-Verifikation 11).
-                try { ws.Range(rStart, 1, r + 1, 2 * daten.Varianten.Count + 1).Clear(XLClearOptions.All); }
+                try { ws.Range(rStart, 1, r + 1, 6 * daten.Varianten.Count + 1).Clear(XLClearOptions.All); }
                 catch { }
                 r = rStart;
                 verlaufFuerMehrjahres = null;
+                verlaufSzenarien = null;
             }
 
             // ---------------- Mehrjahresübersicht der Zahlungsströme (E7) ----------------
@@ -971,9 +1023,28 @@ namespace WindowsFormsApplication1
 
             ws.Column(1).Width = 32;
             // Spaltenbreiten: die Mehrjahresübersicht (E7) ist mit bis zu 13 Spalten der
-            // breiteste Block des Blattes.
-            for (int i = 2; i <= Math.Max(14, 2 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;
+            // breiteste Block des Blattes. ETAPPE E6: Der Verlauf trägt je Szenario eine
+            // Spaltengruppe — drei Gruppen aus Projekten und Differenzen.
+            for (int i = 2; i <= Math.Max(14, 6 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;
             ws.SheetView.FreezeRows(2);
+            return verlaufSzenarien;
+        }
+
+        /// <summary>
+        /// ETAPPE E6 — eine Zelle des Verlaufsblocks: der kumulierte Barwert des Projekts
+        /// <paramref name="idProjekt"/> im Jahr <paramref name="t"/> aus DIESER Spaltengruppe.
+        /// Ohne Reihe bleibt die Zelle leer (nie 0 — Konzept Kap. 5/9).
+        /// </summary>
+        private static void Verlaufszelle(IXLCell zelle, List<VerlaufSerie> reihen, int idProjekt, int t)
+        {
+            foreach (VerlaufSerie s in reihen)
+            {
+                if (s == null || s.IdProjekt != idProjekt || s.Kumuliert == null || t >= s.Kumuliert.Length)
+                    continue;
+                zelle.Value = s.Kumuliert[t];
+                zelle.Style.NumberFormat.Format = "#,##0";
+                return;
+            }
         }
 
         // ------------------------------------------------- Mehrjahresübersicht (E7)

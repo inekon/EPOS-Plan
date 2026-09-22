@@ -109,10 +109,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Blattzahl und Blattnamen in ihrer Reihenfolge: zwei feste Blätter, das
-        /// Wirtschaftlichkeitsblatt, dann EIN Blatt je Variante.
+        /// Wirtschaftlichkeitsblatt, das Blatt „Verlauf" (ETAPPE E6, U13), dann EIN Blatt
+        /// je Variante.
         /// </summary>
         [Fact]
-        public void Excel_traegt_fuenf_Blaetter_in_fester_Reihenfolge()
+        public void Excel_traegt_sechs_Blaetter_in_fester_Reihenfolge()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -127,9 +128,9 @@ namespace EPOS.Kern.Tests
                 Assert.True(File.Exists(ziel), "Die Mappe wurde nicht geschrieben.");
 
                 using var wb = new XLWorkbook(ziel);
-                Assert.Equal(5, wb.Worksheets.Count);
+                Assert.Equal(6, wb.Worksheets.Count);
                 Assert.Equal(
-                    new[] { "Übersicht", "Vergleich", "Wirtschaftlichkeit", "Stamm", "Variante A" },
+                    new[] { "Übersicht", "Vergleich", "Wirtschaftlichkeit", "Verlauf", "Stamm", "Variante A" },
                     wb.Worksheets.OrderBy(w => w.Position).Select(w => w.Name).ToArray());
             }
             finally { Aufraeumen(ordner); }
@@ -203,12 +204,34 @@ namespace EPOS.Kern.Tests
                 Assert.StartsWith("Was ein Szenario heute variiert", w.Cell(69, 1).GetString());
 
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
+                //
+                // ETAPPE E6 (U13): Der Verlauf trägt je Szenario eine SPALTENGRUPPE —
+                // Ungünstig · Erwartet · Günstig, je drei Spalten (Stamm, Variante A, Δ);
+                // darüber steht eine Zeile mit den Namen der Gruppen. Alles darunter wandert
+                // um EINE Zeile. Die ZAHLEN sind unverändert; E6 rechnet nichts um.
                 Assert.Equal("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]",
                              w.Cell(73, 1).GetString());
-                Zeile(w, 74, "Jahr", "Stamm", "Variante A");
-                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(98, 1).GetString());
-                Assert.Equal("Stamm", w.Cell(101, 1).GetString());
-                Zeile(w, 102, "Jahr", "Energiekosten", "Netto nominal");
+                Assert.Equal("Ungünstig", w.Cell(74, 2).GetString());
+                Assert.Equal("Erwartet", w.Cell(74, 5).GetString());
+                Assert.Equal("Günstig", w.Cell(74, 8).GetString());
+                Assert.True(w.Cell(74, 2).IsMerged(), "Der Kopf einer Spaltengruppe steht über ihren drei Spalten.");
+                Zeile(w, 75, "Jahr", "Stamm", "Variante A", "Δ Variante A − Stamm",
+                      "Stamm", "Variante A", "Δ Variante A − Stamm",
+                      "Stamm", "Variante A", "Δ Variante A − Stamm");
+                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(99, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(102, 1).GetString());
+                Zeile(w, 103, "Jahr", "Energiekosten", "Netto nominal");
+
+                // ---- Verlauf (ETAPPE E6, U13) ---------------------------------
+                // Je Jahr eine Zeile, je Variante und Szenario eine Spalte in der
+                // Spaltengruppe des Szenarios — hier EINE Variante, also je Gruppe eine Spalte.
+                IXLWorksheet v = wb.Worksheet("Verlauf");
+                Assert.Equal("Kumulierter Barwert der Differenz zur Referenz je Jahr [€] — ohne Restwert",
+                             v.Cell(1, 1).GetString());
+                Zeile(v, VerlaufExcel.ZEILE_GRUPPEN, "", "Ungünstig", "Erwartet", "Günstig");
+                Zeile(v, VerlaufExcel.ZEILE_KOPF, "Jahr", "Variante A", "Variante A", "Variante A");
+                Assert.Equal("Nulldurchgang (dynamische Amortisation) [a]",
+                             v.Cell(VerlaufExcel.ZEILE_JAHR0 + 21, 1).GetString());
 
                 // ---- Variantenblatt -------------------------------------------
                 IXLWorksheet s = wb.Worksheet("Stamm");
@@ -245,6 +268,10 @@ namespace EPOS.Kern.Tests
         /// <para><b>ETAPPE E5 Teil b:</b> Der Nettobarwert bleibt in Zeile 24; Verlauf und
         /// Mehrjahrestabelle wandern um EINE Zeile (Hinweistext der Szenarien unter der
         /// Bandbreite). Die ZAHLEN sind unverändert.</para>
+        ///
+        /// <para><b>ETAPPE E6:</b> Der Verlauf trägt je Szenario eine Spaltengruppe mit
+        /// eigenem Kopf; das Ende des Verlaufs steht in Zeile 96, der Erwartungsfall in der
+        /// zweiten Gruppe. Die ZAHLEN sind unverändert.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -281,14 +308,22 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(w.Cell(19, 3).GetDouble(), w.Cell(18, 3).GetDouble(), 2);
 
                 // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl. ETAPPE E5
-                // Teil b: eine Zeile tiefer (Hinweistext unter der Bandbreite).
-                Assert.Equal(20.0, w.Cell(95, 1).GetDouble(), 6);
-                Assert.Equal(-178529.70, w.Cell(95, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(95, 3).GetDouble(), 2);
+                // Teil b: eine Zeile tiefer (Hinweistext unter der Bandbreite). ETAPPE E6:
+                // noch eine Zeile tiefer (Kopf der Spaltengruppen), und der Erwartungsfall
+                // steht in der ZWEITEN Gruppe (Spalten 5 bis 7) — die Zahlen sind dieselben.
+                Assert.Equal(20.0, w.Cell(96, 1).GetDouble(), 6);
+                Assert.Equal(-178529.70, w.Cell(96, 5).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(96, 6).GetDouble(), 2);
+
+                // Die Differenzspalte des Erwartungsfalls ist die Kapitalwertdifferenz
+                // (Restwert 0) — und dieselbe Zahl steht im Blatt „Verlauf".
+                Assert.Equal(44632.42, w.Cell(96, 7).GetDouble(), 1);
+                IXLWorksheet v = wb.Worksheet("Verlauf");
+                Assert.Equal(w.Cell(96, 7).GetDouble(), v.Cell(VerlaufExcel.ZEILE_JAHR0 + 20, 3).GetDouble(), 6);
 
                 // Die Mehrjahrestabelle des Stamms: nominale Energiekosten je Jahr.
-                Assert.Equal(-12000.00, w.Cell(104, 2).GetDouble(), 2);
-                Assert.Equal(-12000.00, w.Cell(104, 3).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(105, 2).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(105, 3).GetDouble(), 2);
 
                 // ETAPPE E2 (G8): die Spanne der Bandbreitentafel — seit E5 (Q4) der Betrag
                 // aus größtem und kleinstem Szenariowert; hier liegt Erwartet zwischen Worst

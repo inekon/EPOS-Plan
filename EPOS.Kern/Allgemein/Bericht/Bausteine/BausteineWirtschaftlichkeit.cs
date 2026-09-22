@@ -132,13 +132,21 @@ namespace WindowsFormsApplication1
 
             // ---------------- Kapitalwert-Verlauf + Mehrjahresübersicht ----------------
             // ETAPPE E7: Beide Blöcke leben von derselben Verlaufsrechnung; sie läuft
-            // deshalb genau einmal.
-            WirtschaftlichkeitVerlauf verlauf = HoleVerlauf(k, daten, provider, p, tarifP);
+            // deshalb genau einmal. ETAPPE E6: Sie rechnet alle drei Szenarien (drei
+            // vollständige Läufe ohne Speichern); die Mehrjahrestabelle nimmt daraus den
+            // Erwartungsfall — Zahl für Zahl der bisherige Einzellauf.
+            WirtschaftlichkeitVerlaufSzenarien verlauf = HoleVerlauf(k, daten, provider, p, tarifP);
             SchreibeVerlauf(k, verlauf);
-            SchreibeMehrjahres(k, daten, verlauf, alle);
+            SchreibeMehrjahres(k, daten, verlauf == null ? null : verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET), alle);
 
-            // ---------------- Szenarienübersicht (Worst / Erwartet / Best) ----------------
-            k.Ueberschrift2("Szenarien Worst / Erwartet / Best");
+            // ---------------- Szenarienübersicht (Ungünstig / Erwartet / Günstig) ----------------
+            // ETAPPE E6 (Befund Nach #434 (d), Entscheid E5‑Q2): Die Überschrift nennt die
+            // Szenarien mit ihren Namen aus MyResource — bis hierher stand „Worst / Erwartet
+            // / Best" fest im Quelltext, ohne Schlüssel und ohne Übersetzung.
+            k.Ueberschrift2Roh(string.Format(k.Kultur, MyResource.Resource.WIRT_SZ_UEBERSCHRIFT,
+                                             MyResource.Resource.WIRT_SZEN_WORST,
+                                             MyResource.Resource.WIRT_SZEN_ERWARTET,
+                                             MyResource.Resource.WIRT_SZEN_BEST));
             // ETAPPE W5‑B‑11 (G8): Der Satz nannte bis hierher nur die ZEILENwerte —
             // seit W5‑B‑9 gibt es die zweite Quelle, den pauschalen Parametersatz je
             // Szenario, und seit W5‑B‑11 zieht er auch die investitionsgekoppelten
@@ -216,13 +224,14 @@ namespace WindowsFormsApplication1
         // ------------------------------------------------------------- Verlauf (Phase 11)
 
         /// <summary>Kapitalwert-Verlauf über den Betrachtungszeitraum als Diagramme
-        /// (Differenz zur Stamm-Referenz + absolute kumulierte Barwerte). Die Reihen
-        /// werden aus den Berichtsdaten frisch gerechnet (Szenario Erwartet, T aus
-        /// den Parametern) — derselbe Rechenkern wie der Verlaufs-Dialog.</summary>
-        private static WirtschaftlichkeitVerlauf HoleVerlauf(WordKontext k, BerichtsDaten daten,
-                                                             WirtschaftlichkeitCtrl provider,
-                                                             WirtschaftlichkeitParameter p,
-                                                             TarifParameter tarifP)
+        /// (Differenz zur Referenz in allen drei Szenarien + absolute kumulierte Barwerte
+        /// je Version). Die Reihen werden aus den Berichtsdaten frisch gerechnet (ETAPPE E6:
+        /// drei vollständige Läufe ohne Speichern, T aus den Parametern) — derselbe
+        /// Rechenkern wie der Abschnitt „Verlauf" der Seite.</summary>
+        private static WirtschaftlichkeitVerlaufSzenarien HoleVerlauf(WordKontext k, BerichtsDaten daten,
+                                                                      WirtschaftlichkeitCtrl provider,
+                                                                      WirtschaftlichkeitParameter p,
+                                                                      TarifParameter tarifP)
         {
             // Konsistenz-Gate (Review 11): sind Tarif oder KWKG aktiv, hängen die
             // Zahlungsreihen an den Stundenreihen. Wurde der Bericht OHNE Zeitreihen
@@ -246,28 +255,41 @@ namespace WindowsFormsApplication1
 
             try
             {
-                return provider.BerechneVerlauf(daten, p, p.Betrachtungszeitraum,
-                                                WirtschaftlichkeitSzenario.ERWARTET);
+                return provider.BerechneVerlaufSzenarien(daten, p, p.Betrachtungszeitraum);
             }
             catch { return null; }
         }
 
-        private static void SchreibeVerlauf(WordKontext k, WirtschaftlichkeitVerlauf verlauf)
+        private static void SchreibeVerlauf(WordKontext k, WirtschaftlichkeitVerlaufSzenarien verlauf)
         {
-            if (verlauf == null || verlauf.Absolut.All(s => s.Kumuliert == null)) return;
+            WirtschaftlichkeitVerlauf erwartet = verlauf == null
+                ? null : verlauf.Lauf(WirtschaftlichkeitSzenario.ERWARTET);
+            if (erwartet == null || erwartet.Absolut.All(s => s.Kumuliert == null)) return;
 
             k.Ueberschrift2("Kapitalwert-Verlauf über den Betrachtungszeitraum");
-            k.Hinweis("Kumulierte diskontierte Zahlungsströme je Jahr (Szenario „Erwartet“). " +
-                      "Ohne Restwert — Nettobarwert = Endwert + Restwert-Barwert. " +
-                      "Der Schnitt der Differenzlinie mit der Nulllinie ist die " +
-                      "dynamische Amortisation. Aus den Berichtsdaten gerechnet, " +
-                      "derselbe Rechenkern wie Reiter und Verlaufs-Dialog.");
+            k.HinweisRoh(MyResource.Resource.WIRT_VERL_WORT_HINWEIS);
 
-            if (verlauf.Differenz.Any(s => s.Kumuliert != null))
-                k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
-                    "Differenz zur Stamm-Referenz",
-                    ChartRenderer.VerlaufsReihen(verlauf.Differenz, false), null)),
-                    620, 310);
+            // ETAPPE E6 (Konzept § 2.13 (5), U13): das DREIERBILD — der kumulierte Barwert der
+            // Differenz zur Referenz in allen drei Szenarien, Farbe = Variante, Strichart =
+            // Szenario, die Legende zweigeteilt, der Nulldurchgang je Linie markiert. Es
+            // tritt an die Stelle des Differenzbildes im Erwartungsfall: dessen Linien sind
+            // die durchgezogenen des Dreierbildes. Das Bildmaß wächst mit der Legende; die
+            // Anzeigegröße folgt ihm, damit nichts verzerrt.
+            if (!verlauf.Leer)
+            {
+                ChartRenderer.VerlaufSzenarienTexte texte = ChartRenderer.VerlaufSzenarienTexte.AusRessourcen();
+                Zeichnung.Zeichenmodell dreier = Sicher(() => ChartRenderer.KapitalwertSzenarienModell(
+                    MyResource.Resource.WIRT_VERL_BILD,
+                    ChartRenderer.VerlaufsReihenSzenarien(verlauf, texte), texte,
+                    MyResource.Resource.WIRT_VERL_FUSS));
+                if (dreier != null) k.Bild(dreier, 620, dreier.Hoehe / 2);
+
+                // Dieselben Zeilen wie unter dem Bild der Seite (VerlaufZeilen).
+                string nulldurchgaenge = VerlaufZeilen.Nulldurchgaenge(verlauf, null, null, k.Kultur);
+                if (!string.IsNullOrEmpty(nulldurchgaenge)) k.HinweisRoh(nulldurchgaenge);
+                string restwerte = VerlaufZeilen.Restwerte(verlauf, null, null, k.Kultur);
+                if (!string.IsNullOrEmpty(restwerte)) k.HinweisRoh(restwerte);
+            }
             else
                 k.Hinweis("Differenzdiagramm entfällt — für das Stammprojekt konnte keine " +
                           "Zahlungsreihe gerechnet werden (siehe Hinweise am Kapitelende).");
@@ -275,16 +297,16 @@ namespace WindowsFormsApplication1
             // an GENAU EINEM Ort — hier im Wortbericht. Seine Legende nennt jede Version
             // mit Namen und Farbe; die Stammlinie ist die Bezugsgröße und keine Version
             // und wird deshalb gestrichelt gezeichnet, damit sie auch im
-            // Schwarz-Weiß-Ausdruck von den Versionen zu trennen ist.
+            // Schwarz-Weiß-Ausdruck von den Versionen zu trennen ist. ETAPPE E6: Es zeigt
+            // den Erwartungsfall, unverändert.
             //
             // ETAPPE E2 — DER VORBEHALT ZUM „EINEN ORT": Gemeint ist der BERICHT. Der
-            // Verlaufsdialog zeichnet dasselbe Bild aus derselben Rechnung (dort ist es
-            // die Sache der Maske, nicht des Berichts), und der Excel-Bericht führt den
-            // Verlauf als ZAHLEN statt als Bild. „An genau einem Ort" heißt also: EIN
-            // erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
+            // Excel-Bericht führt den Verlauf als ZAHLEN statt als Bild (Blatt
+            // „Wirtschaftlichkeit" und Blatt „Verlauf"). „An genau einem Ort" heißt also:
+            // EIN erzeugtes Bild im Berichtsweg, nicht „nirgends sonst im Programm".
             k.Bild(Sicher(() => ChartRenderer.KapitalwertVerlaufModell(
                 "Kumulierte Barwerte je Version",
-                ChartRenderer.VerlaufsReihen(verlauf.Absolut, true, true), null)),
+                ChartRenderer.VerlaufsReihen(erwartet.Absolut, true, true), null)),
                 620, 310);
         }
 

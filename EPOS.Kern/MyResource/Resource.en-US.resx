@@ -23168,4 +23168,10 @@ Do you want to allow this?</value>
   <data name="WIRT_VERL_EXCEL_LEER" xml:space="preserve">
     <value>No progression calculated yet — “Refresh” first.</value>
   </data>
+  <data name="WIRT_VERL_WORT_HINWEIS" xml:space="preserve">
+    <value>Cumulative discounted cash flows per year, without residual value — net present value = end value + present value of the residual value. The first chart shows the cumulative present value of the difference to the reference in all three scenarios (colour = variant, line style = scenario); its crossing of the zero line is the dynamic payback. The second chart shows the cumulative present values per version in the “Expected” scenario.</value>
+  </data>
+  <data name="WIRT_SZ_UEBERSCHRIFT" xml:space="preserve">
+    <value>Scenarios {0} / {1} / {2}</value>
+  </data>
 </root>
