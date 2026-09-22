@@ -412,6 +412,93 @@ public sealed class IosProjektQuelle : IProjektQuelle
     }
 
     // =====================================================================
+    // Die FUENF Masken, die die Wurzel seit KI-D-Q8 selbst zeigt
+    // =====================================================================
+    //
+    // ES WIRD NICHTS NACHGEBAUT: Jede der fuenf ruft dieselbe plattformfreie
+    // Huelle in EPOS.UI.Daten, die auch das Windows-Fenster fuellt. Was die
+    // Plattform beisteuert, kommt ueber die Kern-Dienste - die Dateiwahl ueber
+    // Dienste.Datei, die Ablagewurzeln ueber Dienste.Pfade.
+    //
+    // Eine Ausnahme faengt jede: Ohne Datenbank oder bei einem Fehler im
+    // Ladeweg antwortet die Quelle null, und die Wurzel nennt den Grund im
+    // Banner, statt vor einer leeren Flaeche zu stehen.
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? KlimadatenGaben()
+    {
+        try { return KlimadatenHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Klimadaten: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Der STAMM entscheidet, nicht das geoeffnete Projekt:</b> Eine Variante
+    /// haengt immer am Stamm, nie an einer anderen Variante — das rechnet
+    /// <c>ProjektVarianteHuelle.Vorbereiten</c> aus, dieselbe Stelle, die auch der
+    /// Menueweg unter Windows geht. Ist kein Projekt offen oder kein Stamm zu
+    /// finden, meldet sie es mit einem Schluessel, und hier wird daraus
+    /// <c>null</c>: Die Wurzel nennt den Grund.
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? ProjektVarianteGaben(int idProjekt)
+    {
+        try
+        {
+            var vor = ProjektVarianteHuelle.Vorbereiten(idProjekt, Projektname(idProjekt));
+            if (!vor.Bereit) return null;
+
+            return ProjektVarianteHuelle.Gaben(vor.IdStamm, vor.StammName);
+        }
+        catch (Exception ex) { Console.WriteLine("Projektvariante: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Der Schreibweg selbst liegt im Kern (<c>VariantenCtrl.AnlegenAusStamm</c>);
+    /// hier wird nur der Stamm noch einmal bestimmt. Ein Nachziehen der Anzeige
+    /// gibt es auf iOS nicht — die Wurzel laedt nach dem Rueckweg ohnehin neu.
+    /// </remarks>
+    public string ProjektVarianteUebernehmen(
+        int idProjekt, EPOS.UI.Dialoge.Projekt.ProjektVarianteWahl wahl)
+    {
+        try
+        {
+            var vor = ProjektVarianteHuelle.Vorbereiten(idProjekt, Projektname(idProjekt));
+            if (!vor.Bereit) return "";
+
+            var ergebnis = ProjektVarianteHuelle.Anlegen(vor.IdStamm, vor.StammName, wahl);
+            return ergebnis.Gelungen ? (wahl.Bezeichner ?? "") : "";
+        }
+        catch (Exception ex) { Console.WriteLine("Projektvariante: " + ex.Message); return ""; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? ProjektKopieGaben()
+    {
+        try { return ProjektKopieHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Projektkopie: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Ohne Projekt lauffaehig: Dann bleiben Stammganglinien und Direktimport,
+    /// und der Ausgang in die Speichervariante faellt weg (kein Delegat, kein
+    /// Knopf).
+    /// </remarks>
+    public IReadOnlyDictionary<string, object>? PeakShavingGaben(int idProjekt)
+    {
+        try { return new PeakShavingHuelle(idProjekt).Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Lastspitzenkappung: " + ex.Message); return null; }
+    }
+
+    /// <inheritdoc />
+    public IReadOnlyDictionary<string, object>? StromganglinieAdminGaben()
+    {
+        try { return StromganglinieAdminHuelle.Gaben(); }
+        catch (Exception ex) { Console.WriteLine("Stromganglinien: " + ex.Message); return null; }
+    }
+
+    // =====================================================================
 
     private static int Zahl(object wert)
     {

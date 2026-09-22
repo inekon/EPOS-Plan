@@ -297,7 +297,7 @@ namespace WindowsFormsApplication1
 
                 // ---- Menü „Administration" ----------------------------------
                 case Seitenschluessel.Klimadaten:
-                    return () => KlimadatenHuelle.Oeffnen(_besitzer?.Invoke());
+                    return () => KlimadatenFenster.Oeffnen(_besitzer?.Invoke());
 
                 case Seitenschluessel.Kostenverwaltung:
                     return () => KostenKomponenteHuelle.Oeffnen(_besitzer?.Invoke());

@@ -312,14 +312,13 @@ namespace WindowsFormsApplication1
         /// Der Übersetzer, den <see cref="Katalogfilterprofil.FuerBedarf"/> entgegennimmt:
         /// Schlüssel rein, Text raus — ein fehlender Schlüssel bleibt als Schlüssel stehen,
         /// damit er auffällt (Muster <c>KatalogBrowserProfil.Finde</c>).
+        ///
+        /// <para><b>Er steht seit Auftrag KI‑F8 plattformfrei</b> in
+        /// <see cref="Katalogtexte.Fuer"/> — die Stromganglinien-Verwaltung braucht ihn
+        /// auch auf iOS. Die acht Fundstellen der Schale rufen weiter diesen Namen; er
+        /// ist ihre Weiterleitung, nicht eine zweite Fassung.</para>
         /// </summary>
-        internal static string Filtertext(string schluessel)
-        {
-            string t = null;
-            try { t = MyResource.Resource.ResourceManager.GetString(schluessel); }
-            catch { }
-            return string.IsNullOrEmpty(t) ? schluessel : t;
-        }
+        internal static string Filtertext(string schluessel) => Katalogtexte.Fuer(schluessel);
 
         /// <summary>Die Hilfeadressen aus <c>help_mapping.txt</c>, unverändert.</summary>
         private static string HilfeSchluessel(BedarfsArt art)

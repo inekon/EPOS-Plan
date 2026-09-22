@@ -1,61 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Projekt;
-using Microsoft.AspNetCore.Components;
+using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE von „Projekt Speichern unter" (iU9-W15a.4) — sie löst
-    /// <c>Form_ProjektSpeichernUnter</c> ab.
+    /// Die DATENSEITE von „Projekt Speichern unter" (iU9-W15a.4; Umzug nach
+    /// <c>EPOS.UI.Daten</c> mit Auftrag KI‑F8).
     ///
     /// <para><b>Der Fachteil lag schon vorher im Kern.</b> <c>ProjektDuplizierenCtrl</c>
     /// (768 Z.) kopiert alle Projekttabellen in EINER Transaktion; seit iU9-W15a.0b/0c
     /// liegen dort auch die drei Vorprüfungen und das Schreiben der drei
-    /// Verwaltungsfelder. Diese Hülle reicht nur noch durch.</para>
+    /// Verwaltungsfelder. Diese Hülle reicht nur noch durch — und genau deshalb steht
+    /// sie plattformfrei: Sie führte keine Windows-Zeile, war auf dem iPad aber
+    /// unerreichbar.</para>
     ///
     /// <para><b>Der Kopierlauf läuft NEBENLÄUFIG</b>, wie beim Vorläufer: Der Bedienfaden
-    /// liest und zeigt, <c>Task.Run</c> kopiert, <c>Progress&lt;T&gt;</c> besorgt das
+    /// liest und zeigt, der Arbeitsfaden kopiert, <c>Progress&lt;T&gt;</c> besorgt das
     /// Marshalling. Neu ist der Abbruch (A-2): Ein <c>CancellationToken</c> geht mit in den
     /// Kern, und ein Abbruch rollt die eine Transaktion zurück.</para>
+    ///
+    /// <para>Das FENSTER steht unter Windows in <c>Views/Projekt/ProjektKopieFenster</c>;
+    /// auf iOS zeigt die <c>AppWurzel</c> dieselbe Komponente als Ansicht. Muster
+    /// <see cref="NutzungsdauerHuelle"/>.</para>
     /// </summary>
     internal static class ProjektKopieHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 544 × 622).</summary>
-        private static readonly Size MASS = new Size(940, 660);
-
-        /// <summary>
-        /// Öffnet den Dialog. Rückgabe <c>true</c>, wenn dupliziert wurde —
-        /// <c>WinFormsNavigation</c> reicht das als Ergebnis weiter (der Vorläufer
-        /// wertete ebenfalls nur das <c>DialogResult</c> aus).
-        /// </summary>
-        internal static bool Oeffnen(IWin32Window besitzer)
-        {
-            bool ok = false;
-            BlazorDialogForm<ProjektKopieDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben())
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<ProjektKopieDialog>(
-                Text_("PRJ_KOPIE_TITEL", "Projekt Speichern unter"), MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
+        /// <summary>Der Fenstertitel — derselbe Text wie die Dialogüberschrift.</summary>
+        internal static string Titel() => Text_("PRJ_KOPIE_TITEL", "Projekt Speichern unter");
 
         /// <summary>Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>.</summary>
         internal static IReadOnlyDictionary<string, object> Gaben()
@@ -131,8 +106,11 @@ namespace WindowsFormsApplication1
                 new Progress<ProjektDuplizierenCtrl.Fortschritt>(f =>
                     melder?.Report(new KopierStand(f.Aktuell, f.Gesamt, f.Tabelle ?? "")));
 
-            return Task.Run(() => new ProjektDuplizierenCtrl()
-                                      .Duplizieren(quelle, neu, brueckeninhalt, abbruch));
+            // Mit der Kultur des Aufrufers auf dem Arbeitsfaden (Auftrag #232).
+            return Kulturweitergabe.Starten(
+                () => new ProjektDuplizierenCtrl()
+                          .Duplizieren(quelle, neu, brueckeninhalt, abbruch),
+                abbruch);
         }
 
         private static VerwaltungsfelderErgebnis Verwaltungsfelder(

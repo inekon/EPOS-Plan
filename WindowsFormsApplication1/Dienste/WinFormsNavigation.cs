@@ -78,7 +78,7 @@ namespace WindowsFormsApplication1
                 // iU9-W12.4: Die Verwaltung ist die Razor-Komponente
                 // StromganglinieAdminDialog; die Huelle zeigt sie modal.
                 case Masken.StromganglinieAdmin:
-                    return StromganglinieAdminHuelle.Oeffnen(null);
+                    return StromganglinieAdminFenster.Oeffnen(null);
 
                 // iU9-W14b.2: Die Verwaltung der Solarthermieganglinien ist die
                 // Razor-Komponente SolarganglinieAdminDialog; die Huelle zeigt sie
@@ -164,12 +164,12 @@ namespace WindowsFormsApplication1
                 // war schon beim Vorlaeufer immer false (Befund W12-B24) - sein
                 // einziger Fussknopf trug DialogResult.Cancel.
                 case Masken.PeakShaving:
-                    return PeakShavingHuelle.Oeffnen(null, Ganzzahl(argumente, 0));
+                    return PeakShavingFenster.Oeffnen(null, Ganzzahl(argumente, 0));
 
                 // iU9-W15a.4: „Speichern unter" ist die Razor-Komponente ProjektKopieDialog;
                 // ausgewertet wird wie beim Vorlaeufer nur das DialogResult.
                 case Masken.ProjektSpeichernUnter:
-                    return ProjektKopieHuelle.Oeffnen(null);
+                    return ProjektKopieFenster.Oeffnen(null);
 
                 // --- Masken, die eine Projektwahl herausgeben -------------------------
                 // iU9-W15a.3: Beide Schluessel zeigen auf DIESELBE Razor-Komponente

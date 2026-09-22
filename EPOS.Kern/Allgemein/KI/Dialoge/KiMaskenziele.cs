@@ -108,7 +108,9 @@ namespace WindowsFormsApplication1
         /// Schluessel hat als einziger der Welle KEINEN <c>Masken.*</c>-Zwilling: Die
         /// Klimadaten haengen am Menuepunkt „Administration → Klimadaten", und unter
         /// Windows reicht <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
-        /// Hauptfensterhuelle weiter, der denselben Menueweg geht. Ein Waechter in
+        /// Hauptfensterhuelle weiter, der denselben Menueweg geht. Auf iOS zeigt die
+        /// <c>AppWurzel</c> denselben Dialog als Ansicht — ihre Datenseite liegt
+        /// plattformfrei in <c>EPOS.UI.Daten</c>. Ein Waechter in
         /// <c>EPOS.UI.Tests</c> haelt beide Fundstellen gegeneinander.
         /// </remarks>
         public const string KLIMADATEN = "KLIMADATEN";
@@ -191,10 +193,11 @@ namespace WindowsFormsApplication1
         /// gehoert zum Menuepunkt „Projekt → Als Variante speichern…"; unter Windows
         /// reicht <c>WinFormsNavigation.OeffneMaske</c> ihn an den Ablauf der
         /// Hauptfensterhuelle weiter (<c>HauptfensterHuelle.Ablauf</c>), der denselben
-        /// Menueweg geht. Die Maske gilt dem AKTIVEN Projekt — den Stamm bestimmt der
-        /// Weg selbst. LESEN und SETZEN erreichen sie ohnehin, sobald der Anwender sie
-        /// offen hat: Dafuer zaehlt die Anmeldung an der Maskenbruecke, nicht dieses
-        /// Ziel.
+        /// Menueweg geht; auf iOS zeigt die <c>AppWurzel</c> denselben Dialog als
+        /// Ansicht. Die Maske gilt dem AKTIVEN Projekt — den Stamm bestimmt der Weg
+        /// selbst, denn eine Variante haengt immer am Stamm. LESEN und SETZEN
+        /// erreichen sie ohnehin, sobald der Anwender sie offen hat: Dafuer zaehlt die
+        /// Anmeldung an der Maskenbruecke, nicht dieses Ziel.
         /// </remarks>
         public const string PROJEKT_VARIANTE = "PROJEKT_ALS_VARIANTE";
 
@@ -451,9 +454,8 @@ namespace WindowsFormsApplication1
                 // eigene Fenster mit einem Weg im Menue; ihre Katalogschluessel
                 // sind zugleich ihre Navigationsschluessel - dieselbe Lage wie
                 // bei der Waermepumpenverwaltung. WinFormsNavigation.OeffneMaske
-                // kennt beide; auf iOS uebersetzt IosNavigation keinen von
-                // ihnen, die Wurzel antwortet false, und dialog_oeffnen lehnt
-                // benannt ab.
+                // kennt beide; auf iOS zeigt die AppWurzel dieselben Dialoge als
+                // Ansicht, weil ihre Datenseite plattformfrei liegt.
                 { KiMaskennamen.PEAK_SHAVING,        Masken.PeakShaving },
                 { KiMaskennamen.STROMGANGLINIE_ADMIN, Masken.StromganglinieAdmin },
 
@@ -477,9 +479,8 @@ namespace WindowsFormsApplication1
                 // „Projekt speichern unter" IST eine Maske der Windows-
                 // Navigationstabelle - hier fallen Katalogschluessel und
                 // Navigationsschluessel zusammen, wie bei der
-                // Waermepumpenverwaltung. Auf iOS uebersetzt IosNavigation den
-                // Schluessel nicht, die Wurzel antwortet false, und
-                // dialog_oeffnen lehnt benannt ab.
+                // Waermepumpenverwaltung. Auf iOS zeigt die AppWurzel denselben
+                // Dialog als Ansicht.
                 { KiMaskennamen.PROJEKT_KOPIE, Masken.ProjektSpeichernUnter },
 
                 // „Als Variante speichern" haengt am Menuepunkt „Projekt → Als

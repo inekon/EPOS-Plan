@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Globalization;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Strom;
-using Microsoft.AspNetCore.Components;
 using SpeicherEngine;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der Lastspitzenkappung (iU9-W12.6).
+    /// Die DATENSEITE der Lastspitzenkappung (iU9-W12.6; Umzug nach
+    /// <c>EPOS.UI.Daten</c> mit Auftrag KI‑F8).
     ///
-    /// <para><b>Ohne Projekt lauffähig.</b> <paramref name="projektId"/> darf 0 sein
-    /// — dann bleiben Stammganglinien und Direktimport, genau wie beim Vorläufer
-    /// (Fachkonzept 6.4, Abgrenzung Rev. 4).</para>
+    /// <para><b>Die INSTANZ hält die Ganglinien des Laufs</b> — Muster
+    /// <see cref="NutzungsdauerHuelle"/>. Die Komponente kennt nur Platznummer und
+    /// Beschriftung; welcher Satz dahintersteht, weiß allein die Hülle. Ein statisches
+    /// Feld wäre hier falsch: Die Rückrufe laufen im Blazor-Verteiler, also nicht
+    /// zwingend auf dem Faden, der die Liste gelesen hat.</para>
     ///
-    /// <para><b>Zwei Rechenläufe auf <c>Task.Run</c>.</b>
+    /// <para><b>Ohne Projekt lauffähig.</b> Die Projekt-Id darf 0 sein — dann bleiben
+    /// Stammganglinien und Direktimport, genau wie beim Vorläufer (Fachkonzept 6.4,
+    /// Abgrenzung Rev. 4).</para>
+    ///
+    /// <para><b>Zwei Rechenläufe auf einem Arbeitsfaden.</b>
     /// <see cref="PeakShaving.BerechnePeakShaving"/> über 35 040 Werte und
     /// <see cref="PeakShaving.MinimaleSchwelleKw"/> mit ihrer Suchschleife liefen im
     /// Vorläufer im Oberflächenfaden (Befund W12-B22). In einer WebView ist der
@@ -25,35 +29,32 @@ namespace WindowsFormsApplication1
     /// der Ganglinienwerte. <b>Das Bild nicht mehr:</b> Seit der Etappe DG-E3 reicht
     /// die Hülle das ZEICHENMODELL herein und nicht das gerasterte PNG.</para>
     ///
-    /// <para><b>Der Rückgabewert ist immer <c>false</c></b> — Befund W12-B24: Der
-    /// einzige Fußknopf des Vorläufers trug <c>DialogResult.Cancel</c>, und
-    /// <c>MitOk(frm)</c> in <c>WinFormsNavigation</c> lieferte deshalb nie
-    /// <c>true</c>. Das bleibt so; niemand wertet es aus.</para>
+    /// <para>Das FENSTER steht unter Windows in
+    /// <c>Views/Stromspeicher/PeakShavingFenster</c>; auf iOS zeigt die
+    /// <c>AppWurzel</c> dieselbe Komponente als Ansicht.</para>
     /// </summary>
-    internal static class PeakShavingHuelle
+    internal sealed class PeakShavingHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 1 060 × 830).</summary>
-        private static readonly Size MASS = new Size(1100, 860);
+        private readonly int _projektId;
+        private readonly List<GanglinienEintrag> _ganglinien;
 
-        /// <summary>
-        /// Zeigt die Lastspitzenkappung als eigenes Fenster — der Weg von
-        /// <c>WinFormsNavigation</c> (<c>Masken.PeakShaving</c>).
-        /// </summary>
-        /// <param name="besitzer">Fenster, über dem der Dialog erscheint.</param>
         /// <param name="projektId">Das Projekt; 0 = ohne Projekt.</param>
-        /// <returns>Immer <c>false</c> (Befund W12-B24).</returns>
-        internal static bool Oeffnen(IWin32Window besitzer, int projektId)
+        internal PeakShavingHuelle(int projektId)
         {
-            // Die Ganglinien des Laufs bleiben in DIESEM Aufruf: Die Komponente kennt
-            // nur Platznummer und Beschriftung, welcher Satz dahintersteht, weiß
-            // allein die Hülle. Ein statisches Feld wäre hier falsch — die Rückrufe
-            // laufen im Blazor-Verteiler, also nicht zwingend auf diesem Faden.
-            List<GanglinienEintrag> ganglinien = PeakShavingCtrl.LeseGanglinien(projektId);
+            _projektId = projektId;
+            _ganglinien = PeakShavingCtrl.LeseGanglinien(projektId);
+        }
 
-            List<(int Id, string Text)> eintraege = new List<(int, string)>();
-            for (int i = 0; i < ganglinien.Count; i++)
+        /// <summary>Der Fenstertitel — derselbe Text wie die Dialogüberschrift.</summary>
+        internal static string Titel() => MyResource.Resource.PEAK_TITEL;
+
+        /// <summary>Der PARAMETERSATZ der Komponente — ohne <c>Geschlossen</c>.</summary>
+        internal IReadOnlyDictionary<string, object> Gaben()
+        {
+            var eintraege = new List<(int Id, string Text)>();
+            for (int i = 0; i < _ganglinien.Count; i++)
             {
-                GanglinienEintrag e = ganglinien[i];
+                GanglinienEintrag e = _ganglinien[i];
                 string zusatz = e.AusStamm
                     ? MyResource.Resource.PEAK_QUELLE_STAMM
                     : MyResource.Resource.PEAK_QUELLE_PROJEKT;
@@ -61,13 +62,11 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.PEAK_GANGLINIE_EINTRAG, e.Bezeichner, zusatz)));
             }
 
-            BlazorDialogForm<PeakShavingDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Ganglinien"] = (IReadOnlyList<(int Id, string Text)>)eintraege,
-                ["Vorgaben"] = PeakShavingCtrl.LeseVorbelegung(projektId),
-                ["Werte"] = new Func<int, Task<double[]>>(platz => Reihe(ganglinien, platz)),
+                ["Vorgaben"] = PeakShavingCtrl.LeseVorbelegung(_projektId),
+                ["Werte"] = new Func<int, Task<double[]>>(Reihe),
                 ["DateiWaehlen"] = new Func<string, Task<string>>(DateiWaehlen),
                 ["Einlesen"] = new Func<string, GanglinienImportRueckrufe,
                                         Task<GanglinienImportErgebnis>>(Einlesen),
@@ -82,28 +81,17 @@ namespace WindowsFormsApplication1
                 // DER AUSGANG IN DIE SPEICHERVARIANTE (Entscheid LS-E-1 (a)). OHNE
                 // Projekt gibt es ihn nicht - es gaebe keine Variante, in die zu
                 // schreiben waere, und der Knopf bliebe eine Attrappe.
-                ["VarianteUebernehmen"] = projektId > 0
+                ["VarianteUebernehmen"] = _projektId > 0
                     ? new Func<double, bool, Task<bool>>((ziel, adaptiv) =>
-                        Task.Run(() => PeakShavingCtrl.InVarianteUebernehmen(projektId, ziel, adaptiv)))
+                        Kulturweitergabe.Starten(
+                            () => PeakShavingCtrl.InVarianteUebernehmen(_projektId, ziel, adaptiv)))
                     : null,
-                ["VariantenBerechnungsart"] = projektId > 0
+                ["VariantenBerechnungsart"] = _projektId > 0
                     ? new Func<Task<string>>(() =>
-                        Task.Run(() => PeakShavingCtrl.AktiveBerechnungsart(projektId)))
-                    : null,
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    if (dlg != null) dlg.Schliessen(b);
-                })
+                        Kulturweitergabe.Starten(
+                            () => PeakShavingCtrl.AktiveBerechnungsart(_projektId)))
+                    : null
             };
-
-            dlg = new BlazorDialogForm<PeakShavingDialog>(
-                MyResource.Resource.PEAK_TITEL, MASS, werte);
-
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return false;
         }
 
         // =====================================================================
@@ -115,13 +103,13 @@ namespace WindowsFormsApplication1
         /// bis zu 35 040 Zeilen — der Vorläufer tat das im Oberflächenfaden unter
         /// einer Sanduhr (:290-292).
         /// </summary>
-        private static Task<double[]> Reihe(List<GanglinienEintrag> liste, int platz)
+        private Task<double[]> Reihe(int platz)
         {
-            if (liste == null || platz < 0 || platz >= liste.Count)
+            if (_ganglinien == null || platz < 0 || platz >= _ganglinien.Count)
                 return Task.FromResult(Array.Empty<double>());
 
-            GanglinienEintrag eintrag = liste[platz];
-            return Task.Run(() => PeakShavingCtrl.LeseWerte(eintrag));
+            GanglinienEintrag eintrag = _ganglinien[platz];
+            return Kulturweitergabe.Starten(() => PeakShavingCtrl.LeseWerte(eintrag));
         }
 
         /// <summary>
@@ -142,25 +130,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static Task<GanglinienImportErgebnis> Einlesen(
             string pfad, GanglinienImportRueckrufe rueckrufe)
-            => Task.Run(() => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe));
+            => Kulturweitergabe.StartenAsync(() => GanglinienImportAblauf.OhneAblage(pfad, rueckrufe));
 
         /// <summary>Neuzerlegung mit den gewählten Optionen (für den Optionendialog).</summary>
         private static Task<GanglinienVorschau> Vorschau(string pfad, GanglinienImportOptionen optionen)
-            => Task.Run(() => GanglinienDatei.Vorschau(pfad, optionen));
+            => Kulturweitergabe.Starten(() => GanglinienDatei.Vorschau(pfad, optionen));
 
         // =====================================================================
         // Die zwei Rechenläufe
         // =====================================================================
 
         private static Task<PeakShavingErgebnis> Rechnen(double[] lastgang, PeakShavingEingaben e)
-            => Task.Run(() => new PeakShaving(e.AlsPeakShavingParameter(), e.Modus)
-                                  .BerechnePeakShaving(lastgang, e.AlsSpeicherParameter()));
+            => Kulturweitergabe.Starten(() => new PeakShaving(e.AlsPeakShavingParameter(), e.Modus)
+                                                  .BerechnePeakShaving(lastgang, e.AlsSpeicherParameter()));
 
         private static Task<double> Minimal(double[] lastgang, PeakShavingEingaben e)
-            => Task.Run(() => PeakShaving.MinimaleSchwelleKw(lastgang, e.AlsSpeicherParameter(), e.Modus));
+            => Kulturweitergabe.Starten(
+                   () => PeakShaving.MinimaleSchwelleKw(lastgang, e.AlsSpeicherParameter(), e.Modus));
 
         /// <summary>
-        /// Das Zeichenmodell des Lastgangs (Etappe DG-E3) — <b>ohne <c>Task.Run</c></b>.
+        /// Das Zeichenmodell des Lastgangs (Etappe DG-E3) — <b>ohne Arbeitsfaden</b>.
         ///
         /// <para>Der Vorläufer legte das Zeichnen nebenher, weil ein PNG über 35 040
         /// Werte gerastert werden musste und das in einer WebView auf dem Renderfaden

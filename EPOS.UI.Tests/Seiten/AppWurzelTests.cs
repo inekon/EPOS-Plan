@@ -447,6 +447,150 @@ public class AppWurzelTests : EposBunitContext
                         .Instance.AktiveSeite);
     }
 
+    // =====================================================================
+    //  Die FÜNF Masken, die die Wurzel seit KI-D-Q8 selbst zeigt
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Mit Parametersatz löst der Dialog die Liste ab.</b> Geprüft wird jede der
+    /// fünf Masken mit einem LEEREN Gabensatz — genau das ist der Hausfall „zeichnet
+    /// AUCH OHNE GABEN": Jeder Delegat <c>null</c>, jede Liste leer, jeder Text der
+    /// Rückfall.
+    /// </summary>
+    [Theory]
+    [InlineData(Seitenschluessel.Klimadaten)]
+    [InlineData(Seitenschluessel.ProjektAlsVariante)]
+    [InlineData(Seitenschluessel.ProjektSpeichernUnter)]
+    [InlineData(Seitenschluessel.PeakShaving)]
+    [InlineData(Seitenschluessel.StromganglinieAdmin)]
+    public void Mit_Parametersatz_zeichnet_die_Wurzel_den_Dialog(string schluessel)
+    {
+        var quelle = MitAllenFuenf();
+        var cut = Aufbauen(quelle);
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Empty(cut.FindAll(".epos-seite"));
+        Assert.Single(cut.FindAll(".epos-dialog"));
+    }
+
+    /// <summary>
+    /// <b>Ohne Parametersatz bleibt die Liste stehen und sagt warum</b> — benannt
+    /// abgelehnt, nicht still übergangen. Das ist der Zustand einer Hülle, die die
+    /// Maske nicht führt; unter Windows heißt derselbe Zustand „das Fenster geht
+    /// nicht auf".
+    /// </summary>
+    /// <remarks>
+    /// <c>OeffneMaske</c> antwortet dabei <c>true</c>: Die Frage, die es beantwortet,
+    /// ist „führt die Wurzel diesen Schlüssel?", und die Ansicht wechselt eine
+    /// Nachricht später auf dem Renderfaden. Die ABLEHNUNG steht deshalb im Banner —
+    /// dieselbe Aufteilung wie bei „Berichte und Kosten" und beim Projektassistenten.
+    /// </remarks>
+    [Theory]
+    [InlineData(Seitenschluessel.Klimadaten)]
+    [InlineData(Seitenschluessel.ProjektAlsVariante)]
+    [InlineData(Seitenschluessel.ProjektSpeichernUnter)]
+    [InlineData(Seitenschluessel.PeakShaving)]
+    [InlineData(Seitenschluessel.StromganglinieAdmin)]
+    public void Ohne_Parametersatz_bleibt_die_Liste_stehen_und_sagt_warum(string schluessel)
+    {
+        var cut = Aufbauen(new TestProjektquelle(ZweiProjekte));
+
+        Assert.True(cut.Instance.OeffneMaske(schluessel));
+        cut.Render();
+
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-dialog"));
+        Assert.NotEmpty(cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Jede der fünf nennt ihren EIGENEN Grund.</b> „Geht hier nicht" ist keine
+    /// Auskunft, wenn fünf Masken denselben Satz bekämen.
+    /// </summary>
+    [Fact]
+    public void Die_fuenf_Ablehnungen_sind_voneinander_verschieden()
+    {
+        AppWurzel wurzel = Aufbauen(new TestProjektquelle(ZweiProjekte)).Instance;
+
+        string[] gruende =
+        {
+            wurzel.KeineKlimadatenText,
+            wurzel.KeineProjektvarianteText,
+            wurzel.KeineProjektkopieText,
+            wurzel.KeinPeakShavingText,
+            wurzel.KeineStromganglinienText
+        };
+
+        Assert.DoesNotContain(gruende, g => string.IsNullOrWhiteSpace(g));
+        Assert.Equal(gruende.Length, gruende.Distinct(StringComparer.Ordinal).Count());
+    }
+
+    /// <summary>
+    /// <b>Der Schreibweg liegt in der Hülle, nicht in der Wurzel</b> (Muster
+    /// <c>BeiEnergietraegerFertig</c>): Das OK des Variantendialogs geht an
+    /// <c>IProjektQuelle.ProjektVarianteUebernehmen</c>, und die Wurzel meldet den
+    /// Namen.
+    /// </summary>
+    [Fact]
+    public void Das_OK_des_Variantendialogs_geht_an_die_Huelle()
+    {
+        var quelle = MitAllenFuenf();
+        quelle.VariantenAntwort = "B3-Kaskade V2";
+        var cut = Aufbauen(quelle);
+
+        cut.Instance.OeffneMaske(Seitenschluessel.ProjektAlsVariante);
+        cut.Render();
+
+        cut.Find(".epos-dialog input[type=text]").Input("B3-Kaskade V2");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(quelle.VarianteUebernommen);
+        Assert.Equal("B3-Kaskade V2", quelle.VarianteUebernommen!.Value.Bezeichner);
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Contains("B3-Kaskade V2", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Abbrechen schreibt nicht und führt zurück.</b> Der Rückweg räumt dabei
+    /// auf: Die Wurzel trägt den Parametersatz nicht weiter, sie holt ihn beim
+    /// nächsten Betreten neu.
+    /// </summary>
+    [Fact]
+    public void Abbrechen_im_Variantendialog_fuehrt_ohne_Schreibweg_zurueck()
+    {
+        var quelle = MitAllenFuenf();
+        var cut = Aufbauen(quelle);
+
+        cut.Instance.OeffneMaske(Seitenschluessel.ProjektAlsVariante);
+        cut.Render();
+        Assert.Single(cut.FindAll(".epos-dialog"));
+
+        // Abbrechen ist der letzte nicht-primaere Knopf der Speichernleiste -
+        // derselbe Griff wie in den Faellen der Energietraeger-Variante.
+        cut.FindAll(".epos-dialog button").Last(k => !k.ClassList.Contains("epos-knopf--primaer")).Click();
+        cut.Render();
+
+        Assert.Null(quelle.VarianteUebernommen);
+        Assert.Single(cut.FindAll(".epos-seite"));
+        Assert.Empty(cut.FindAll(".epos-dialog"));
+    }
+
+    /// <summary>Eine Quelle, die alle fünf Masken führt — mit leeren Gabensätzen.</summary>
+    private static TestProjektquelle MitAllenFuenf()
+    {
+        var leer = new Dictionary<string, object>();
+        return new TestProjektquelle(ZweiProjekte)
+        {
+            Klimadaten = new Dictionary<string, object>(leer),
+            Projektvariante = new Dictionary<string, object>(leer),
+            Projektkopie = new Dictionary<string, object>(leer),
+            PeakShaving = new Dictionary<string, object>(leer),
+            Stromganglinien = new Dictionary<string, object>(leer)
+        };
+    }
+
     /// <summary>
     /// Ohne Argument bleibt es bei der Übersicht — der Zustand vor KI‑D‑Q8.
     /// </summary>
