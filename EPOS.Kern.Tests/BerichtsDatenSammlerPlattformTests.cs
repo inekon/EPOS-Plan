@@ -25,10 +25,19 @@ namespace EPOS.Kern.Tests
     /// nicht das Ergebnis — die Zahlen hält <c>WirtschaftlichkeitAnkerTests</c>.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class BerichtsDatenSammlerPlattformTests
+    public class BerichtsDatenSammlerPlattformTests : System.IDisposable
     {
         /// <summary>Ein Referenzprojekt mit gespeichertem Simulationsergebnis.</summary>
         private const int PROJEKT_BHKW = 1030;
+
+        /// <summary>
+        /// Die ARBEITSKOPIE der Testdatenbank je Fall — dieselbe Vorrichtung wie in
+        /// <c>WirtschaftlichkeitAnkerTests</c>; ohne sie hinge der Fall an der
+        /// Datenbank, auf die <c>DataRepository</c> zufällig zeigt.
+        /// </summary>
+        private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         private static BerichtsDatenSammler.VariantenStatus Stammzeile()
         {
