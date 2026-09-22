@@ -2858,7 +2858,7 @@ Stromsteuer
         <tr><td>Stromsteuer: Unternehmensart, zwei Schalter, Modus, Modushinweis, zwei Sprungknöpfe, Sprunghinweis</td><td class="rs">BHW_S_UNTERNEHMENSART · BHW_S_RAEUMLICH · BHW_S_HOCHEFFIZIENZ · BHW_S_MODUS · BHW_S_MODUS_HERLEITUNG · BHW_BTN_STROMBEZUG · BHW_BTN_BHKW_TARIF · BHW_S_SPRUNG_HINWEIS</td><td>Stromsteuer (Projektvorgabe)</td></tr>
         <tr><td>Kohärenz: Leerzeile und Fallzeilen des Laufs · Doppelpflege Hilfsenergie</td><td class="rs">BHW_K_LEER · KOH_FALL1_ENERGIESTEUER … KOH_FALL5_MISCHLAGE · KOH_DOPPEL_STROMST_9_1_3 · KOH_HILFSENERGIE_DOPPELT</td><td>Kohärenzprüfung · Hilfsstrom</td></tr>
         <tr><td>Hilfsstrom: Basiszeile, Mengenkette, Kesselhinweis, ohne Lauf</td><td class="rs">BHW_H_BASIS · BHW_H_KETTE1 · BHW_H_KETTE2 · BHW_H_KESSEL · BHW_H_OHNE_LAUF</td><td>Hilfsstrom</td></tr>
-        <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit: {0}" · ohne Lauf · Standzeile</td><td class="rs"><span class="rs-geplant">WIRT_ERL_TEILSUMME · geplant · U6</span> · <span class="rs-geplant">WIRT_ERL_PROJEKTWEIT · geplant · U6</span> · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
+        <tr><td>Vorschau: Rubrikzeilen „Summe {0}" · „projektweit" · ohne Lauf · Standzeile</td><td class="rs">WIRT_ERL_TEILSUMME · WIRT_ERL_PROJEKTWEIT · BHW_V_OHNE_LAUF · BHW_G6_OHNE_RUBRIK · BHW_V_STAND</td><td>Vorschau</td></tr>
         <tr><td>Fußleiste „Speichern" · „Abbrechen" · Fehlermeldung</td><td class="rs">BHW_BTN_SPEICHERN · ALLG_BTN_ABBRECHEN · BHW_MSG_FEHLER</td><td>Fußleiste</td></tr>
         <tr><td>Knöpfe „Sätze und Herkunft…" · „Wahl und Herkunft…" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_KNOPF_ANLAGE · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_KNOPF_STEUERN · geplant · U22</span></td><td>Angaben der gewählten Anlage · Energiesteuer</td></tr>
         <tr><td>Überlagerung: Titel „Sätze und Herkunft — {0}" · drei Gruppenköpfe · Wirkung je Wahl „→ {0}" · „Wirkung Jahr 1 ({0})" · Knopf „Übernehmen" <b>neu</b></td><td class="rs"><span class="rs-geplant">BHW_UEB_TITEL · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_KWKG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_ENERGIEST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_G_STROMST · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_WIRKUNG_JAHR1 · geplant · U22</span> · <span class="rs-geplant">BHW_UEB_UEBERNEHMEN · geplant · U22</span></td><td>Überlagerung</td></tr>
@@ -3308,7 +3308,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
               <td class="r">15.489,1</td><td class="r">—</td><td class="r">15.489,1</td></tr>
           <tr><td class="ein" style="padding-left:40px">Satz Eigenstrom · Herkunft</td><td class="r">—</td>
               <td class="r">2,4167 ct/kWh · Vorschlag</td><td class="r">—</td><td class="r">2,4167 ct/kWh · Vorschlag</td></tr>
-          <tr><td class="ein">Energiesteuer-Gutschrift Brennstoff <span class="zk vor">Vorschlag U7</span></td><td class="r">—</td>
+          <tr><td class="ein">Energiesteuer-Gutschrift Brennstoff <span class="zk umg">umgesetzt U7</span></td><td class="r">—</td>
               <td class="r">21.203,4</td><td class="r">—</td><td class="r">21.203,4</td></tr>
           <tr><td class="ein">Einspeiseerlös Strom</td><td class="r">—</td>
               <td class="r">24.750,0</td><td class="r">—</td><td class="r">24.750,0</td></tr>
@@ -3320,7 +3320,7 @@ Jahr 1 = Kalenderjahr der Inbetriebnahme                            <span class=
           <tr class="teil"><td>Summe Photovoltaik</td><td class="r">—</td>
               <td class="r">—</td><td class="r">9.001,4</td><td class="r">9.001,4</td></tr>
           <tr class="teil"><td colspan="5">Gas-Brennwertkessel</td></tr>
-          <tr><td class="ein">Energiesteuer-Entlastung Heizstoff <span class="zk vor">Vorschlag U7</span></td><td class="r">2.885,7</td>
+          <tr><td class="ein">Energiesteuer-Entlastung Heizstoff <span class="zk umg">umgesetzt U7</span></td><td class="r">2.885,7</td>
               <td class="r">— <span class="klein">kein Kesselbrennstoff</span></td><td class="r">2.885,7</td>
               <td class="r">— <span class="klein">kein Kesselbrennstoff</span></td></tr>
           <tr class="teil"><td>Summe Gas-Brennwertkessel</td><td class="r">2.885,7</td>
@@ -3440,14 +3440,14 @@ Zuordnung der Zeilen
       <thead><tr><th>Beschriftete Größe</th><th>Ressourcenschlüssel</th><th>Ort</th></tr></thead>
       <tbody>
         <tr><td>Blockköpfe „A — zahlungswirksam" · „B — Ausweis"</td><td class="rs">WIRT_ERL_KOPF_A · WIRT_ERL_KOPF_B</td><td>Erlösrubrik, Word, Excel, BHKW-Vorschau</td></tr>
-        <tr><td>Komponentenkopf „{0}" · „projektweit"</td><td class="rs"><span class="rs-geplant">WIRT_ERL_KOMPONENTE · geplant · U6</span> · <span class="rs-geplant">WIRT_ERL_PROJEKTWEIT · geplant · U6</span></td><td>dito</td></tr>
-        <tr><td>Zwischensumme „Summe {0}"</td><td class="rs"><span class="rs-geplant">WIRT_ERL_TEILSUMME · geplant · U6</span></td><td>dito</td></tr>
+        <tr><td>Komponentenkopf „{0}" · Komponentennamen „Blockheizkraftwerk" · „Photovoltaik" · „Kessel" · „projektweit"</td><td class="rs">WIRT_ERL_KOMPONENTE · WIRT_ERL_K_BHKW · WIRT_ERL_K_PV · WIRT_ERL_K_KESSEL · WIRT_ERL_PROJEKTWEIT</td><td>dito</td></tr>
+        <tr><td>Zwischensumme „Summe {0}" · Abschluss des Blocks B „vermiedene Kosten wirksam — {0}"</td><td class="rs">WIRT_ERL_TEILSUMME · WIRT_ERL_B1_WIRKSAM</td><td>dito</td></tr>
         <tr><td>Zeile „Zuschlag Kraft-Wärme-Kopplung" mit zwei davon-Zeilen</td><td class="rs">WIRT_ERL_A_KWKG · WIRT_ERL_A1_EINSPEISUNG · WIRT_ERL_A2_EIGEN</td><td>dito</td></tr>
-        <tr><td>Zeilen „Energiesteuer-Gutschrift Brennstoff" · „Energiesteuer-Entlastung Heizstoff"</td><td class="rs">WIRT_ERL_A_ENERGIESTEUER · <span class="rs-geplant">WIRT_ERL_ENERGIEST_54 · geplant · U7</span></td><td>dito</td></tr>
-        <tr><td>Gründe der Nullzeilen</td><td class="rs">WIRT_GRUND_KWKG · <span class="rs-geplant">WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF · geplant · U7</span> · <span class="rs-geplant">WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE · geplant · U6</span></td><td>dito</td></tr>
+        <tr><td>Zeilen „Energiesteuer-Gutschrift Brennstoff" · „Energiesteuer-Entlastung Heizstoff" · Gesamtzeile eines Standes vor U7 · Herleitung „{0} {1} × {2} €/{1} = {3} €/a" · „abzüglich Sockelbetrag {0} €/a"</td><td class="rs">WIRT_ERL_A_ENERGIESTEUER · WIRT_ERL_ENERGIEST_54 · WIRT_ERL_ENERGIEST_GESAMT · WIRT_ERL_ENERGIEST_HERLEITUNG · WIRT_ERL_ENERGIEST_SOCKEL</td><td>dito</td></tr>
+        <tr><td>Herleitungszeile „Herleitung" unter jeder Geldzeile · Gründe der Nullzeilen</td><td class="rs">WIRT_GRUND_KWKG · WIRT_ERL_HERLEITUNG · WIRT_ERL_GRUND_KEIN_BHKW_BRENNSTOFF · WIRT_ERL_GRUND_KEIN_KESSELBRENNSTOFF · WIRT_ERL_GRUND_KWKG_MENGE · WIRT_ERL_GRUND_KWKG_SATZ · WIRT_ERL_GRUND_KWKG_KONTINGENT · WIRT_ERL_GRUND_KEINE_EINSPEISUNG · WIRT_ERL_GRUND_OHNE_VERGUETUNG · WIRT_ERL_GRUND_KEINE_BEZUGSSPITZE</td><td>dito</td></tr>
         <tr><td>Hinweis „Block B wird nicht summiert"</td><td class="rs">WIRT_ERL_KOPF_B</td><td>Fuß der Rubrik</td></tr>
         <tr><td>Textzeilen „Satz Einspeisung · Herkunft" und „Satz Eigenstrom · Herkunft" · Vermerk „eigener Wert {0} — Vorschlag {1}" · „Vorschlag"</td><td class="rs">WIRT_ERL_A1_SATZ · WIRT_ERL_A2_SATZ · WIRT_ERL_HERKUNFT_EIGEN · WIRT_ERL_HERKUNFT_VORSCHLAG</td><td>Erlösrubrik, Bericht, Vorschau</td></tr>
-        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG</td><td>Block B</td></tr>
+        <tr><td>Zeilen „Vermiedene Stromkosten wirksam" · „— Leistungsanteil" · Herleitung je Anlage „{0} MWh vermiedener Bezug · Anteil {1} %" · „Näherung: verteilt nach dem Netto-Stromanteil je Anlage"</td><td class="rs">WIRT_ERL_B1_EFFEKTIV · WIRT_ZEILE_VERMIEDEN_LEISTUNG · WIRT_ERL_B1_ANTEIL · WIRT_ERL_B1_NAEHERUNG</td><td>Block B</td></tr>
       </tbody>
     </table>
   </div>
@@ -4528,14 +4528,14 @@ Einstufung
   <p class="kat-lead"><b>Stand 22.09.2026.</b> Der Anwender hat am 20.09.2026 <b>alle Entscheidfragen
   Q1–Q25 der Mockup-Prüfung und alle Entscheide A1–A20 des Analysepapiers nach der Empfehlung der
   Papiere entschieden</b>. Für diese Tafel heißt das: <b>kein Punkt wartet mehr auf einen
-  Grundsatzentscheid</b> — Q18 ist am 22.09.2026 nach Empfehlung entschieden: U43 wird mit E5 gebaut, U44 mit E8; beide Zeilen tragen deshalb den Chip „offen". Die Empfehlung zu Q18
+  Grundsatzentscheid</b> — Q18 ist am 22.09.2026 nach Empfehlung entschieden: U44 „Bericht erzeugen" wird mit E5 gebaut, U43 „Anhang-E-Checkliste…" mit E8; beide Zeilen tragen deshalb den Chip „offen". Die Empfehlung zu Q18
   ausdrücklich lautete, erst die Anhangzeile anzulegen und dann über den Bau zu entscheiden; dieser
-  Folgeentscheid steht aus. <b>Gebaut ist seit dem 19.09.2026 kein Punkt dieser Tafel:</b> Die
+  Folgeentscheid steht aus. <b>Gebaut sind mit E4 (#432, 22.09.2026) U6 und U7.</b> Die
   Etappen E1 (Ankertests und Kaskadenrunde 2) und E2 (Kohärenzzeilen, Bandbreite mit Spanne,
   Referenztext, Formel N4, Dialogkorrekturen) haben Stücke berührt, die hier nie als offen standen;
-  die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die nächste Etappe ist
-  <b>E3 Plattform</b> — der Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span>, der U3,
-  U39 und die iOS-Erreichbarkeit vorbereitet.</p>
+  die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die Etappe E3 Plattform (#431) hat den
+  Umzug der Hüllen nach <span class="mono">EPOS.UI.Daten</span> gebracht; die nächste Etappe ist
+  <b>E5 Ergebnisansicht und V‑A</b> (U2, U4, U5, U10, U44).</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4581,17 +4581,6 @@ Einstufung
             <td><span class="mono">WirtschaftlichkeitEmpfehlung</span> ·
               <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
             <td>bunit: drei Karten mit Stufe und Differenz; derselbe Text auf Seite und im Bericht</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U6</td><td>4 · 7</td>
-            <td>Anlagenbezug je Katalogzeile (die Zeile trägt kein Anlagenfeld) und die vermiedenen
-              Stromkosten je Anlage aus den Eigenverbrauchsmengen der Strommatrix; der Leistungsanteil
-              bleibt projektweit</td>
-            <td><span class="mono">WirtschaftlichkeitZeilen</span> · <span class="mono">StromMatrix</span></td>
-            <td>Zahlenprobe: 293.245,6 + 22.914,0 = 316.159,6 €/a</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U7</td><td class="num">7</td>
-            <td>§ 53/53a und § 54 als getrennte Rückgabegrößen — sie kommen als eine Summe zurück und
-              lassen sich deshalb nicht getrennt bei BHKW und Kessel ausweisen</td>
-            <td><span class="mono">SteuerGutschriftRechner</span></td>
-            <td>Zahlenprobe: 21.203,4 € beim Blockheizkraftwerk, 2.885,7 € beim Kessel</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U9</td><td>3 · 6</td>
             <td>Degradation mit Quellenangabe — vorhanden ist sie je Stammprojekt als Feld „Degradation [%/a]"
               des Vergütungsdialogs (wirkt in der Erlösreihe) und beim Stromspeicher; eine Quellenangabe dazu
@@ -4699,28 +4688,39 @@ Einstufung
             <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
               <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
             <td>Konzeptentscheid nötig, dann Bildprobe wie bei den anderen Diagrammen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 22.09.2026, mit E5</span></td><td class="mono">U43</td><td class="num">8</td>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 22.09.2026, mit E8</span></td><td class="mono">U43</td><td class="num">8</td>
             <td>Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks — die Checkliste ist eigene
               Arbeit und im Code nicht vorhanden</td>
             <td>keine Fundstelle</td>
             <td><b>Entscheid ausstehend:</b> ob dieser Knopf auf die Ergebnisseite gehört, ist offen —
               Anhangzeile angelegt, Bau erst nach dem Entscheid. <b>Frage Q18 entschieden 20.09.2026
               nach Empfehlung</b>, und die Empfehlung lautete genau so: erst die Anhangzeile anlegen,
-              dann entscheiden. Die Zeile steht — der Folgeentscheid steht aus</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 22.09.2026, mit E8</span></td><td class="mono">U44</td><td class="num">8</td>
+              dann entscheiden. Folgeentscheid 22.09.2026: Bau mit E8, sobald V‑C und V‑D den Inhalt der Checkliste liefern</td></tr>
+        <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 22.09.2026, mit E5</span></td><td class="mono">U44</td><td class="num">8</td>
             <td>Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks — zweiter Einstieg in den Bericht,
               im Code nicht vorhanden</td>
             <td>keine Fundstelle — Bericht bisher nur über <span class="mono">BerichtSeite.razor</span></td>
             <td><b>Entscheid ausstehend:</b> ob dieser Knopf auf die Ergebnisseite gehört, ist offen —
               Anhangzeile angelegt, Bau erst nach dem Entscheid. <b>Frage Q18 entschieden 20.09.2026
               nach Empfehlung</b>, und die Empfehlung lautete genau so: zweiter Einstieg vertretbar,
-              Anhangzeile anlegen, dann entscheiden. Die Zeile steht — der Folgeentscheid steht aus</td></tr>
+              Anhangzeile anlegen, dann entscheiden. Folgeentscheid 22.09.2026: Bau mit E5 über den bestehenden Berichtsweg</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U45</td><td class="num">4</td>
             <td>Fuß der Überlagerung „Schnellwahl aus Katalog": Statuszeile „Ein Satz schreibt in das Feld
               seines Bestandteils …" und Knopf „Schließen" fehlen beide — geschlossen wird nur über × im
               Kopf oder Esc</td>
             <td><span class="mono">BrennstoffBestandteile.razor</span> · <span class="mono">Ueberlagerung.razor</span></td>
             <td>zwei neue Ressourcenschlüssel (de/en), dann Fußzeile wie bei den anderen Überlagerungen</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U6</td><td>4 · 7</td>
+            <td>Anlagenbezug je Katalogzeile (die Zeile trägt kein Anlagenfeld) und die vermiedenen
+              Stromkosten je Anlage aus den Eigenverbrauchsmengen der Strommatrix; der Leistungsanteil
+              bleibt projektweit</td>
+            <td><span class="mono">WirtschaftlichkeitZeilen</span> · <span class="mono">StromMatrix</span></td>
+            <td class="grund"><b>erledigt mit E4/3 (#432):</b> Jede Erlöszeile trägt ihre Komponente (<span class="mono">WirtZeile.Komponente</span>); A und B gliedern innen nach Blockheizkraftwerk, Photovoltaik, Kessel und „projektweit", je mit Zwischensumme, Block A darunter die unveränderte Gesamtsumme. Die vermiedenen Stromkosten werden nach den Eigenverbrauchsmengen je Anlage verteilt (<span class="mono">VermiedenAnlageNachweis.Verteile()</span>, Näherung V‑4, ausgewiesen), der Leistungsanteil bleibt projektweit und nennt bei fehlender Bezugsspitze den Grund. Seite, Wort- und Tabellenbericht und BHKW-Vorschau lesen den einen Katalog; Nachweisumschlag Fassung 6, kein Schemaschritt. Zahlenprobe 293.245,6 + 22.914,0 = 316.159,6 €/a als Ankertest. <b>Offen (U6‑Q1, E7):</b> ob die vermiedene Menge auch den PV-Eigenverbrauch führen soll — heute mindert <span class="mono">StromMatrix</span> „Bedarf ohne Anlage" bereits um ihn, der Lauf bringt deshalb nur das Blockheizkraftwerk in den Schlüssel ein</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U7</td><td class="num">7</td>
+            <td>§ 53/53a und § 54 als getrennte Rückgabegrößen — sie kommen als eine Summe zurück und
+              lassen sich deshalb nicht getrennt bei BHKW und Kessel ausweisen</td>
+            <td><span class="mono">SteuerGutschriftRechner</span></td>
+            <td class="grund"><b>erledigt mit E4/1 (#432):</b> <span class="mono">SteuerErgebnis</span> führt § 53/§ 53a und § 54 als getrennte Beträge samt Sockel, je gerechneter Position einen <span class="mono">EnergiesteuerNachweis</span> (Paragraf, Menge in gesetzlicher Einheit, Satz, Betrag); <span class="mono">EnergiesteuerEur</span> ist nur noch ihre Summe. Die Rubrik zeigt zwei Zeilen mit Herleitung — § 53/§ 53a beim Blockheizkraftwerk, § 54 beim Kessel —, der Nachweisumschlag trägt sie ab Fassung 4; ein vor U7 gebuchter Stand fällt benannt auf die eine Gesamtzeile zurück. Zahlenprobe des Kerns 21.202,71 € (§ 53a) und 2.885,72 € (§ 54), zusammen 24.088,43 €/a — die 21.203,4 dieser Seite entstehen aus dem gerundeten Brennwertfaktor, der Kern rechnet 11,6/10,5 ungerundet</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U8</td><td>1 · 8</td>
             <td>Knopf „Nutzungsdauern vorbelegen…" für bestehende Positionen, ein Pflegeort für die
               Positionsart und die Herleitung der Dauer im Raster; der Hinweis mit k, n und Liste am

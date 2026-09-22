@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — konsolidiert
 
-**Stand 22.09.2026** · Codestand `2cfee66b` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 22.09.2026** · Codestand `1190622c` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -2388,6 +2388,7 @@ dem Hauptzollamt bzw. am Volltext zu klären; keine Entscheidung des Anwenders, 
 | **DL‑2e Knopfleisten** (#390) | Die Fußleisten der beiden Kostendialoge dieses Papiers auf den Hausstil: `KostenKomponenteDialog` und `EnergietraegerDialog` tragen die `SpeichernLeiste` mit Status · Speichern · Abbrechen · OK; die vier Rasterknöpfe des Reiters „Kosten" (§ 2.8) bleiben Blattleiste; „Bezeichnung speichern" der Energieträgerkarte entfällt zugunsten **eines** Schreibwegs | keine — reine Bedienung |
 | **E2 Kleine Kernkorrekturen** (#405, 20.09.2026) | Ausweis und Bedienung ohne Rechenwirkung: CO₂-Doppelansatz und Strommix-Rückfall als Kohärenzzeilen (§ 3.9), Kohärenzzeilen im **einen** Zeilenkatalog und damit in Rubrik, Wort- und Excelbericht; Erlaubnisschwelle StromStG mit Leser; PV-Reihe als eigene Spalte der Mehrjahrestabelle; Bezugsmenge aus dem `BemessungKatalog`; zeichengenauer Steuerwertvergleich; Kapitalwertdifferenz über dem Nettobarwert; Bandbreite mit Spalte „Spanne" und Referenzzeile in Wort- und Excelbericht, Empfehlungssatz und Δ-Fußzeile mit der gewählten Referenz, Zeitraumhinweis auch im Excel-Blatt; dazu die Dialogkorrekturen der Mockup-Prüfung (Löschrückfragen mit Vorgabe „Nein", Gesetzesparameter im PV-Zweig, Sprungknopf auf den OK-Weg, OK-Weg nur bei Änderung, Hausschlüssel der Standardknöpfe, `help_mapping`-Anker) | **keine** — die vier Ankertests unverändert, Referenzlauf der fünf CI-Projekte PASS |
 | **E3 Plattform** (#431, Merge `2cfee66b`) | Acht Schritte: vier nahtlose Hüllen, PV-Dateiwahl über `Dienste.Datei`, `KostenSeiteGaben`/`WirtschaftlichkeitSeiteGaben` und der Rechenaufruf (`BerichtsDatenSammler`) nach `EPOS.Kern`/`EPOS.UI.Daten` verschoben, `KostenKomponenteHuelle` und `GesetzeskatalogHuelle` mit Fenster-Adapter, Tarif-Sprünge als Überlagerung statt Zweitfenster, `IosProjektQuelle.BerichteKostenGaben` beliefert alle vier Seiten, Whitelist 18 → 21 Schlüssel | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte innerhalb der Toleranz (Teil a und Teil b) |
+| **E4 Erlösrubrik und Steuerzeilen** (#432, Merge `1190622c`) | U7: `SteuerErgebnis` mit § 53/§ 53a und § 54 als getrennten Beträgen samt Sockel und `EnergiesteuerNachweis`, zwei Rubrikzeilen mit Herleitung, Nachweisumschlag Fassung 4; 9d: `SteuerPosition` und `PositionsGruende`, je Geldzeile eine Herleitungszeile mit Herleitung oder Grund des Laufs, Fassung 5; U6: `WirtZeile.Komponente`, Komponentenköpfe und Zwischensummen in A und B, Block „projektweit", `VermiedenAnlageNachweis.Verteile()` (Näherung V‑4, ausgewiesen; Leistungsanteil projektweit), Fassung 6; 22 Ressourcenschlüssel de/en, kein Schemaschritt; Blattstruktur-Wache nachgezogen | **keine** — Referenzlauf 13/13 Projekte, 3 882 737 Werte, 357 CSV byte-gleich; die Rubrik steht nicht im Referenzexport (A11), Nachweis sind die Ankertests (Blocksumme A 14.575 €/a unverändert, Zahlenprobe 316.159,6 €/a) |
 
 ## 6.2 Regressionsanker
 
@@ -2445,9 +2446,16 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
 
 **Nach B7 — was die Etappe offen lässt**
 
-9a. **B7-1: A4 und A5 stehen in einer Zeile.** `SteuerErgebnis.EnergiesteuerEur` führt § 53/§ 53a
-    und § 54 als Summe; die Rubrik kann sie deshalb nur gemeinsam ausweisen. Für die Trennung
-    braucht der Rechner zwei Rückgabegrößen — ein Eingriff, den B7 ausdrücklich ausschließt.
+9a. ~~**B7-1: A4 und A5 stehen in einer Zeile.**~~ — **erledigt mit E4/1 (#432, U7):**
+    `SteuerErgebnis` führt `Energiesteuer53Eur`, `Energiesteuer54Eur` und `Energiesteuer54SockelEur`
+    getrennt, `EnergiesteuerEur` ist nur noch ihre Summe und kann sich von ihnen nicht lösen; je
+    gerechneter Position ein `EnergiesteuerNachweis` (Paragraf, Menge, Satz, Betrag). Die Rubrik
+    weist § 53/§ 53a beim Blockheizkraftwerk und § 54 beim Kessel als zwei Zeilen mit Herleitung aus
+    (`ERL_A_ENERGIESTEUER`, `ERL_A_ENERGIESTEUER_54`); Nachweisumschlag Fassung 4. Ein vor U7
+    gebuchter Stand kennt seine Aufteilung nicht und fällt auf die eine Gesamtzeile zurück — die
+    Summe des Blocks A bleibt in jedem Fall zahlengleich (keine Rechenwirkung). Vorher kam der
+    Betrag als eine Summe zurück und war an einem Projekt mit Blockheizkraftwerk und Kessel keiner
+    Anlage zuzuordnen.
 9b. ~~**B7-2: `KwkgModulNachweis` und die Energiekosten je Anlage werden nicht persistiert.**~~ —
     erledigt mit B7P (Anwenderentscheid B7-E-1): Modulnachweis, Energiekosten je Anlage,
     Betriebskostenpositionen (E3) und Kohärenzzeilen reisen als JSON-Umschlag in der Spalte
@@ -2462,13 +2470,16 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     (#346)**: Die Zeile ist gebaut (`WirtschaftlichkeitZeilen.cs:405–412`), die Spalte ebenso
     (`:1209`), bewacht von `KwkgPauschaleZeileTests`; sie steht als Jahr-0-Ausweis, nicht in einer
     €/a-Spalte. Siehe § 2.6 (A3).
-9d. **B7-4: Der Grund einer Nullzeile ist aus den Ergebnisdaten abgeleitet, nicht vom Rechner
-    durchgereicht.** Die `STEUER_*`-Begründungen und der KWKG-Ausstieg stehen im Hinweisfeld des
-    Laufs, aber als ein mit „ | " verbundener Text über alle Positionen; ihn einer einzelnen
-    Position zuzuordnen hieße, einen Parser zu erfinden. Die Rubrik nennt deshalb die
-    **Bedingung** der Position („nur produzierendes Gewerbe; abzüglich Sockelbetrag 250 €/a"),
-    nicht die Diagnose des Laufs — die steht unverändert in der Hinweiszeile darunter. Eine
-    saubere Lösung führte die Begründungen je Position im `SteuerErgebnis`.
+9d. ~~**B7-4: Der Grund einer Nullzeile ist aus den Ergebnisdaten abgeleitet, nicht vom Rechner
+    durchgereicht.**~~ — **erledigt mit E4/2 (#432):** `SteuerPosition` (`ENERGIEST_53`,
+    `ENERGIEST_54`, `STROMST_BEFREIUNG`, `STROMST_ENTLASTUNG`) und `SteuerErgebnis.PositionsGruende`
+    ordnen jede Begründung dort zu, wo sie entsteht — der erste Grund je Position gilt, er ist der,
+    an dem die Rechnung ausgestiegen ist; die flache Liste bleibt wortgleich für das Hinweisfeld. Je
+    Geldzeile der Rubrik eine Herleitungszeile (Text, Einzug 1, ohne Summen- und Excelwirkung):
+    Herleitung, wo es eine gibt, sonst der Grund des Laufs; ohne Feststellung entfällt sie. KWKG-
+    und Einspeisegrund kommen aus dem Modulnachweis, erfunden wird nichts; Nachweisumschlag
+    Fassung 5. Vorher stand die Diagnose nur als mit „ | " verbundener Text im Hinweisfeld, und die
+    Rubrik nannte allein die Bedingung der Position.
 
 **Nach BK1 — was die Etappe offen lässt**
 
@@ -2505,8 +2516,18 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     Bericht und die plattformfreie Hülle der Zeitraumzeile. **Erledigt mit #357:** die Nachpflege
     des Bestands (Knopf „Nutzungsdauern vorbelegen…") und der Pflegeort der Positionsart
     (Klappliste im Zeileneditor) — s. § 2.13 (3).
-9i. **Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
-    Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.
+9i. ~~**Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
+    Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.~~ — **erledigt mit E4/3 (#432,
+    U6; Q15, A12):** `WirtZeile.Komponente` mit den Kennungen `KOMPONENTE_BHKW`, `_PV`, `_KESSEL`,
+    `_PROJEKTWEIT`; A und B bleiben die äußere Ordnung, innen je Komponente Kopf, Zeilen und
+    Zwischensumme (`WIRT_ERL_KOMPONENTE`, `WIRT_ERL_TEILSUMME`), zuletzt „projektweit"
+    (`WIRT_ERL_PROJEKTWEIT`); Block A summiert unverändert dieselben Summanden, Block B endet je
+    Komponente mit „vermiedene Kosten wirksam". `VermiedenAnlageNachweis.Verteile()` ist der eine
+    Verteilschlüssel (Näherung V‑4 nach den Eigenverbrauchsmengen, ausgewiesen; die letzte Zeile
+    trägt den Rest, damit die Summe bitgenau trifft), der Leistungsanteil bleibt projektweit und
+    nennt ohne Bezugsspitze den Grund. Seite, Wort- und Tabellenbericht und BHKW-Vorschau lesen den
+    einen Katalog; Nachweisumschlag Fassung 6, kein Schemaschritt. Offen bleibt Nr. 32 (U6‑Q1:
+    die vermiedene Menge führt heute keinen PV-Eigenverbrauch).
 9j. **Verlauf mit drei Szenarien:** Dreierreihe statt eines Szenarios je Lauf, Reihenbildung
     Variante × Szenario, Spaltengruppen je Szenario im Tabellenbericht, plattformfreie Rechen-
     und Zeichenlogik. `Gestrichelt` liest das Verlaufsbild.
@@ -2591,6 +2612,16 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
     Ein Nachziehlauf würde 78 Bestandsergebnisse mit den heutigen Rechenwegen neu rechnen und
     Zahlen ändern, die der Anwender bereits gesehen hat. Umsetzung der Kennzeichnung mit E5
     (Ergebnisansicht) und dem Berichtsbaustein.
+32. **Die vermiedene Bezugsmenge führt keinen PV-Eigenverbrauch** (Befund aus E4/3, Frage U6‑Q1).
+    `StromMatrix.Baue` bildet „Bedarf ohne Anlage" als Strombedarf abzüglich PV-Eigennutzung;
+    `VermiedenMengeMWh` ist damit allein der KWK-Eigenverbrauch, und der Verteilschlüssel der
+    Erlösrubrik (V‑4) bringt nur das Blockheizkraftwerk ein — der vermiedene Bezug der Photovoltaik
+    bleibt seine eigene Ausweiszeile im Block Photovoltaik. Das Mockup-Beispiel rechnet dagegen
+    „ohne jede Eigenerzeugung" (1.179,7 = 1.094,2 + 85,5 MWh). **Entscheid ausstehend (U6‑Q1):**
+    Bleibt „Bedarf ohne Anlage" ohne Blockheizkraftwerk, oder wird es ohne jede Eigenerzeugung
+    gebildet? Im zweiten Fall greift auch die § 9b-Korrektur auf den PV-Eigenverbrauch; betroffen
+    sind die gespeicherten Ausweisspalten `VermiedenArbeit`, `VermiedenLeistung`, `VermiedenGesamt`
+    und `VermiedenEntlastung9b`, der Kapitalwert nicht. Rechenwirksam — mit E7 und A/B-Nachweis.
 
 **Nachweis und Betrieb**
 
@@ -2753,8 +2784,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E1** Nachweisfundament | Ankertests, fünf neue Testklassen, Kaskadenrunde 2 (R4) | **#380** |
 | **E2** Kleine Kernkorrekturen | R5, R6, V-3, B-7, I-5, S-3, S-5, G7/G8/G9, Formel `N4`, P3 der Mockup-Prüfung | **#405** |
 | **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | **umgesetzt #431** (Merge `2cfee66b`) |
-| **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | offen — **nächste Etappe** |
-| **E5** … **E12** | Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8) · V-C/V-D · V-E · ND-S3 · Zahlenprobe A8/B9 · Wiki | offen |
+| **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | **#432** |
+| **E5** … **E12** | Ergebnisansicht und V-A · Verlauf · rechenwirksame Lücken (B8, dazu Nr. 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E5** |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,

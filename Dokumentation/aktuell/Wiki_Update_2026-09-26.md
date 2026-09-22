@@ -99,6 +99,11 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   PV-Vergütungsdialog aus dem Reiter „Ertrag/Bonus" erscheint ebenfalls als Einblendung statt als
   eigenes Fenster. Die zuletzt bearbeitete Vergleichsgruppe der Übersicht wird nach dem Update einmal
   nicht erinnert. (#431)
+- Seit 26.09.2026: Die Erlösrubrik der Wirtschaftlichkeit gliedert innerhalb der Blöcke nach Anlage
+  — Blockheizkraftwerk, Photovoltaik, Kessel und „projektweit", je mit Zwischensumme — und weist die
+  vermiedenen Stromkosten je Anlage aus. Die Energiesteuer-Entlastung steht als zwei Zeilen (§ 53/§ 53a
+  beim Blockheizkraftwerk, § 54 beim Kessel) mit Herleitung; eine Nullzeile nennt den Grund des
+  Rechenlaufs. (#432)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
