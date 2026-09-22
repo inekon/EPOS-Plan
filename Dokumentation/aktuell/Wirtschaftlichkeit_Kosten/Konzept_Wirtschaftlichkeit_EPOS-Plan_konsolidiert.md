@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 22.09.2026** · Codestand `deba5e57` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 23.09.2026** · Codestand NACHTRAG-436-MERGE · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -204,7 +204,9 @@ Eigenstrom  2,4167 ct/kWh — § 7 Abs. 2 mit § 6 Abs. 3 Nr. 2, Stichtagsjahr 2
 Kontingent  30.000 Vbh    — § 8 Abs. 1, neue Anlage                                       [Vorschlag übernehmen]
 ```
 
-*Vorschlag am Feld und Überlagerung „Sätze und Herkunft…" (U22): → Register R‑Q (Q2).*
+**Vorschlag am Feld und Überlagerung gelten beide** (→ Register R‑Q, Q2): Die Grundlagenzeile mit
+dem Knopf „Vorschlag übernehmen" bleibt am Feld; die Überlagerung „Sätze und Herkunft…"
+(Mockup-Anhang U22) ergänzt je Größe die Wahl und die Herleitung.
 
 Fehlt eine Grundlage, ist der Knopf **weich** gesperrt (`aria-disabled`, Grund im `title` — ein
 `disabled`-Knopf zeigt seinen Tooltip nie): keine elektrische Nennleistung, kein Tatbestand nach
@@ -385,7 +387,7 @@ herzuleiten.
 > keine Summe — die Trennung ist kein Flag, sondern zwei verschiedene Wege in die Liste
 > (`Erloes()` gegen `Ausweis()`). Nachweis `EPOS.Kern.Tests/ErloesrubrikTests`.
 >
-> **Drei Abweichungen von der Tabelle unten, jede aus einer Messung:**
+> **Abweichungen und Klarstellungen zur Tabelle unten, jede aus einer Messung:**
 >
 > - **A1 und A2 stehen in einer Zeile** „KWK-Zuschlag (§ 7 KWKG)" mit zwei Unterzeilen
 >   „davon Einspeisung" und „davon Eigenstrom". Die Aufteilung kommt aus dem Modulnachweis
@@ -399,9 +401,11 @@ herzuleiten.
 >   Grenze bleibt der Schalter ohne Wirkung, und der Hinweis des Laufs sagt das. Der Betrag reist
 >   im Nachweisumschlag mit (`KwkgPauschaleEur`, Fassung 2), steht also auch beim gebuchten
 >   Stand. Nachweis `EPOS.Kern.Tests/KwkgPauschaleZeileTests`.
-> - **A4 und A5 stehen in einer Zeile** „Energiesteuer-Entlastung (§ 53/§ 53a bzw. § 54
->   EnergieStG)": `SteuerErgebnis.EnergiesteuerEur` ist eine Summe, ihre Trennung wäre eine neue
->   Größe im Rechner und damit ein Umbau, den die Etappe ausschließt.
+> - **A4 und A5 stehen wie in der Tabelle in zwei Zeilen** (umgesetzt #432, U7): § 53/§ 53a
+>   beim Blockheizkraftwerk (`ERL_A_ENERGIESTEUER`) und § 54 beim Kessel
+>   (`ERL_A_ENERGIESTEUER_54`), je mit Herleitungszeile. `SteuerErgebnis` führt beide als
+>   getrennte Beträge samt Sockel, `EnergiesteuerEur` ist nur ihre Summe; ein Stand, der ohne
+>   diese Aufteilung gebucht ist, fällt benannt auf die eine Gesamtzeile zurück.
 > - **A10 (Restwert) steht nicht in der Summe des Blocks A.** Er ist ein Barwert über T; in einer
 >   €/a-Summe des Jahres 1 wäre er ein Einheitenfehler. Seine Zeile bleibt beim Nettobarwert.
 >
@@ -489,7 +493,7 @@ Stelle erwartet.
 ## 2.7 Hausstil (verbindlich für neue Dialoge)
 
 Kopfband `#0F1F3D`, Titel weiß Segoe UI 12 bold · Vorschau- und Kennzahlstreifen `#1A3261` ·
-Warnung amber `#C88A00` auf `#FFF6E0` · Fehlerzeile Firebrick `#B22222` · Hinweise DimGray ·
+Warnung amber `#C88A00` auf `#FFF6E0` · Fehlerzeile `#B00020` (Token `--epos-stufe-fehler`) · Hinweise DimGray ·
 Segoe UI 9 pt, Gruppentitel fett, Eckenradius 6 · **Fußknöpfe mindestens 88 × 44** (Zielgröße der
 Berührfläche; die alte Angabe 110 × 30 war ein WinForms-Maß) · `InfoKnopf` 28 × 28 ·
 `SpeichernLeiste` (nicht schließender Speichern-Knopf mit Statuszeile) · Razor-Komponenten **ohne
@@ -497,12 +501,14 @@ Designer**: Texte kommen über `[Parameter]`-Vorgaben und die `*Texte`-Bündel u
 Hülle mit `Resource.*` bzw. `T(schlüssel, rückfall)` belegt.
 
 **Die Fußleiste der Wirtschaftlichkeitsseite** (`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`)
-führt **fünf Knöpfe** — Photovoltaik, BHKW, Strombezug, Verlauf…, Berechnen —, nach dem Wegfall von
-„Verlauf…" vier. **Lücke K8 („kein Platz für einen achten Knopf") ist damit gegenstandslos.**
-**Entscheid K8 (→ Register R‑K):** kein weiterer Knopf, sondern ein Umschalter
-„Kennzahlen / ValERI-Bewertung" im Kopf der Seite — links die heutige Kennzahltafel, rechts die
-Abschnitte der Ergebnisansicht (§ 2.13); das bestätigt zugleich V-1 (§ 2.11.4). Der Knopf
-„Verlauf…" entfällt mit der Ergebnisansicht, weil der Verlauf dort steht.
+führt **höchstens vier Knöpfe** — Photovoltaik, BHKW und Strombezug je nach Ausstattung der Gruppe,
+dazu Berechnen; „Parameter…" steht in der Zeile der Szenariowahl. **Lücke K8 („kein Platz für einen
+achten Knopf") ist damit gegenstandslos.** **Entscheid K8 (→ Register R‑K):** kein weiterer Knopf,
+sondern ein Umschalter „Kennzahlen / ValERI-Bewertung" im Kopf der Seite (umgesetzt #434) — die
+Darstellung „Kennzahlen" mit den vier Abschnitten der Ergebnisansicht (§ 2.13), die Darstellung
+„ValERI-Bewertung" mit den Blöcken der Norm; das bestätigt zugleich V-1 (§ 2.11.4). Einen Knopf
+„Verlauf…" gibt es nicht: Der Verlauf steht als Abschnitt in „Wie sicher ist das?" (§ 2.13 (5),
+umgesetzt #436).
 
 *Kopfband, Fehlerfarbe und die Frage eines eigenen Abschnitts „Hausstil Dialoge": → Register R‑Q (Q8, Q9).*
 
@@ -621,8 +627,8 @@ Kennzahl-Kacheln, Vergleichstabelle (Zeilen × Projekte, `<table class="epos-ras
 | Element | Ort auf der Seite |
 |---|---|
 | Referenzwahl (§ 2.9) | in der Vergleichsgruppen-Liste, ein Optionsfeld je Zeile; die gewählte Referenz ist nicht abwählbar |
-| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | unterhalb der Vergleichstabelle als auf-/zuklappbare Abschnitte **oder** als zweite Ansicht der Seite (Umschalter „Kennzahlen / ValERI-Bewertung") — Entscheidung am Mockup |
-| Kumulierter diskontierter Cashflow | inline in den Block „Wirtschaftlichkeit über Nutzungsdauer"; der vorhandene Verlauf-Dialog bleibt als Vollbild-Absprung |
+| Die fünf ValERI-Blöcke (Investition · Betrieb · Erlöse · Energie · Wirtschaftlichkeit über Nutzungsdauer) | als zweite Ansicht der Seite hinter dem Umschalter „Kennzahlen / ValERI-Bewertung" — **V‑1 entschieden** (→ Register R‑V), umgesetzt #434 mit den Blöcken 1, 3, 4 und 5 |
+| Kumulierter diskontierter Cashflow | als Abschnitt „Verlauf" in „Wie sicher ist das?" der Darstellung „Kennzahlen", mit allen drei Szenarien (§ 2.13 (5), umgesetzt #436); einen eigenen Verlaufsdialog gibt es nicht. Ob Block 4 der Darstellung „ValERI-Bewertung" ihn ebenfalls zeigt, ist Frage E6‑Q1 (→ Register R‑E6) |
 | ValERI-Bewertungsbericht (Anhang E der Norm) | als Baustein der **Bericht**-Seite (Word/Excel), gespeist aus derselben Zeilendefinition |
 
 Damit bleibt die Regel „eine Wahrheit je Größe": Die ValERI-Ansicht **rendert** die vorhandenen
@@ -718,13 +724,13 @@ Arbeit.
 |---|---|---|---|---|
 | **V-A** | Ausweis: „nachrichtlich"-Kennzeichnung der Kacheln, IZF-Mehrdeutigkeitswarnung, Deklarationszeilen, Steigungsspalte der Sensitivität | gebaut **#434** (Merge `deba5e57`): `WirtschaftlichkeitZeilen.IstNachrichtlich` (Amortisation und Zinsfuß, E5‑Q3), `KapitalwertRechner.Vorzeichenwechsel` mit Nachweisumschlag Fassung 7, `ValeriAusweis.Deklarationen()`, `SensitivitaetZeile.Steigung` — auf der Seite und in beiden Berichten | keine | **E5** (mit der Ergebnisansicht) — gebaut |
 | **V-B** | Referenzwahl (§ 2.9) — umgesetzt | Etappe **VG**, Statuszeile **#358**, Schemaschritt 92 | keine in der Vorgabe | gebaut |
-| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | teilweise vorgezogen mit **#434**: die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5; offen Block 2 (Zahlungsreihen, an seiner Stelle eine Hinweiszeile) und das Cashflow-Bild | Ausweis | **E8** |
+| **V-C** | ValERI-Ansicht (fünf Blöcke + Cashflow-Chart) in der Wirtschaftlichkeitsseite | teilweise vorgezogen mit **#434**: die Darstellung „ValERI-Bewertung" hinter dem Umschalter mit den Blöcken 1, 3, 4 und 5; das Cashflow-Bild steht mit **#436** als Verlauf mit drei Szenarien unter „Wie sicher ist das?" der Darstellung „Kennzahlen" (ob auch in Block 4: Frage E6‑Q1, → Register R‑E6); offen Block 2 (Zahlungsreihen, an seiner Stelle eine Hinweiszeile) | Ausweis | **E8** |
 | **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe | **E8** |
 | **V-E** | Vollständige Szenarioabdeckung nach § 2.11.5 (V-G5, Umfang entschieden 31.08.2026), Risiko (V-G7), n-jährliche Zeitpunkte (V-G3) — **ohne Degradation (V-G2), A5** | Szenarioabdeckung und Freitext teils geliefert durch **W5‑B‑9** und **W5‑B‑12** (Migrationsschritte 71, 72) | **ja** — je Pflege, mit A/B-Nachweis; NULL = wie Erwartet hält die Etappe bis zur ersten Pflege ergebnisneutral | **E9** |
 
 *Die Spalte „Stand" verweist auf den Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5;
-gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432) und E5 (#434).*
+gebaut sind daraus E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434) und E6 (#436).*
 
 *Entscheid A5 (Degradation) und die Entscheidungsfragen V-1 bis V-4: → Register R‑A (A5) und R‑V;
 der Entscheidweg zu A5: → Protokoll § 5.5.*
@@ -1019,46 +1025,45 @@ Verteilschlüssel `VermiedenAnlageNachweis.Verteile()` (Näherung ausgewiesen), 
 (Q15); die Bezugsgröße der vermiedenen Menge wird mit E7 auf den Bedarf ohne jede Eigenerzeugung
 gestellt (Entscheid U6‑Q1, § 6.3 Nr. 32).
 
-**(5) Der Verlauf mit allen drei Szenarien.** Gemessen: Der Knopf „Verlauf…" öffnet
-`KapitalwertVerlaufDialog`, der **ein** Szenario je Lauf rechnet, immer bei Erwartet beginnt (die
-Seite reicht ihre Szenariowahl nicht durch) und zwei Bilder zeigt (Differenz zur Referenz; kumulierte
-Barwerte je Projekt absolut). Der Renderer (`ChartRenderer.KapitalwertVerlauf`) kennt keine
-Szenarien, zeichnet aber beliebig viele Reihen auf eine Jahresachse und führt eine Legende mit
-Name, Farbe und **Strichart je Reihe** (`Reihe.Gestrichelt` wird gelesen, `Segment.Gestrichelt`
-zeichnet das Legendenfeld gestrichelt statt gefüllt); er kann **nicht**: ein Flächenband, mehr als
-etwa zwei Legendenzeilen im festen Maß 1240 × 620, mehr als acht unterscheidbare Farben. **Entscheid des Entwurfs:** eigener Abschnitt bei „Wie sicher
-ist das?" — die Bandbreite zeigt die Spanne am Ende, der Verlauf über die Zeit; der Knopf entfällt;
-**Farbe = Variante, Strichart = Szenario** (ein Band ist bei mehreren Varianten unlesbar und vom
-Renderer nicht zeichenbar); die Legende zweigeteilt (Varianten + 3 Einträge statt Varianten × 3);
-der Nulldurchgang je Szenario markiert. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der
-Seite: Alle Versionen liegen tief im Negativen und nahezu parallel, entschieden wird über den
-Abstand; der absolute Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der
-Mehrjahresübersicht des Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter
-dem Titel „Kumulierte Barwerte je Version", mit **Legende je Version** (Name und Farbe) und
-gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
-Schwarz-Weiß-Ausdruck davon zu trennen sein. Auf der Seite bleibt allein das Differenzbild.
-Nachweis: `Proben/ChartProben` (Bild `kapitalwert_absolut_legende`, Gegenproben
-`kapitalwert_verlauf_gestrichelt_wirkt` und `kapitalwert_verlauf_legende_nennt_die_version`).
-**Was die Umsetzung braucht:**
+**(5) Der Verlauf mit allen drei Szenarien — umgesetzt #436 (E6).** Der Verlauf steht als eigener
+Abschnitt in „Wie sicher ist das?" zwischen Bandbreite und Sensitivität — die Bandbreite zeigt die
+Spanne am Ende, der Verlauf, wie sie entsteht; einen Knopf „Verlauf…" gibt es nicht (K8). Drei
+Kernaussagen:
 
-- einen Rechenaufruf für die Dreierreihe — `BerechneVerlauf` nimmt einen Szenario-String und
-  `WirtschaftlichkeitVerlauf` trägt genau einen: entweder drei Läufe der bestehenden Methode (die
-  Berichtsdaten werden ohnehin nur einmal gesammelt, der Mehraufwand ist die Zahlungsbildrechnung)
-  oder ein Sammelmodell mit drei Szenarien;
-- eine Reihenbildung, die Variante und Szenario zugleich unterscheidet — heute vergibt
-  `VerlaufsReihen` Farben nach laufendem Index, und die Reihennamen tragen nur den Projektnamen
-  (dasselbe Projekt in drei Szenarien bekäme drei beliebige Farben und dreimal denselben Namen).
-  Die Palette hat **acht** Farben (`ChartRenderer.cs:553–562`); mit „Farbe = Variante" reicht sie
-  bis acht Varianten;
-- Platz für die zweigeteilte Legende und ein passendes Bildmaß (das Lesen von `Gestrichelt` in
-  `KapitalwertVerlauf` steht). **`Reihe.Gestrichelt` ist ein `bool`** (`ChartRenderer.cs:106`) und
-  trägt damit **zwei** Stricharten — drei Szenarien brauchen eine dritte;
-- im Tabellenbericht je Szenario eine Spaltengruppe (die heutige Tabelle „Jahr, je Projekt eine
-  Spalte, dann die Δ-Spalten" ist dafür nicht vorbereitet), im Wortbericht ein zusätzliches Bild;
-- **plattformfrei**: Rechen- und Zeichenlogik der Ansicht gehören nach `EPOS.UI.Daten` — **Stand:
-  umgesetzt #431**, der Ordner `Wirtschaftlichkeit` besteht, `KapitalwertVerlaufHuelle` liegt darin
-  und sammelt, rechnet und zeichnet bereits plattformfrei über den Renderer des Kerns; offen bleibt
-  allein die Dreiszenarien-Erweiterung dieses Punkts (E6).
+- **Dreierreihe.** `WirtschaftlichkeitCtrl.BerechneVerlaufSzenarien` rechnet je Version die drei
+  Szenarien als drei vollständige Läufe über `BerechneVerlauf`, mit derselben Referenz und ohne zu
+  speichern; `WirtschaftlichkeitVerlaufSzenarien` trägt je Stand und Szenario die kumulierte
+  Differenzlinie, die Restwert-Differenz und den Nulldurchgang (`KapitalwertRechner.Nulldurchgang`,
+  dieselbe Regel wie `AmortisationDifferenz`). Keine Rechenwirkung.
+- **Farbe = Variante, Strichart = Szenario.** `ChartRenderer.VerlaufsReihenSzenarien` gibt jedem
+  Stand die Farbe seines Platzes in der Gruppe — die Palette hat acht Farben, mehr als acht gewählte
+  Stände werden benannt abgelehnt — und jedem Szenario eine Strichart der Aufzählung
+  `ChartRenderer.Strichart`: Erwartet durchgezogen und kräftiger, Ungünstig gestrichelt, Günstig
+  gepunktet. Ein Flächenband gibt es nicht, es wäre bei mehreren Varianten unlesbar; der
+  Nulldurchgang jeder Linie ist eine Marke auf der Nulllinie.
+- **Legende zweigeteilt.** Erst die Stände mit ihrer Farbe, dann die drei Szenarien mit ihrer
+  Strichart und die Marke — Stände plus drei Einträge statt Stände mal drei. Das Bild misst
+  1240 × 620 für zwei Legendenzeilen und wächst je weitere Zeile um 30 px; die Zeichenfläche bleibt
+  1090 × 400.
+
+Bedienung und Ausgabe: Zeitraum, „Aktualisieren", „Verlauf nach Excel…" (Blatt „Verlauf" über
+`Dienste.Datei`), je Stand und Szenario ein Haken, der nur neu zeichnet; die Legende schaltet nicht.
+Die Hülle des Abschnitts ist `KapitalwertVerlaufHuelle`, plattformfrei in `EPOS.UI.Daten`. Der
+Tabellenbericht führt je Szenario eine Spaltengruppe und das Blatt „Verlauf", im Wortbericht steht
+das Dreierbild. **Das zweite Bild** (Versionen absolut) bleibt nicht auf der Seite: Alle Versionen
+liegen tief im Negativen und nahezu parallel, entschieden wird über den Abstand; der absolute
+Vergleich steht in der Kennzahltafel (Nettobarwert absolut) und in der Mehrjahresübersicht des
+Berichts. **Als Bild steht er an genau einem Ort: im Wortbericht**, unter dem Titel „Kumulierte
+Barwerte je Version", im Erwartungsfall, mit **Legende je Version** (Name und Farbe) und
+gestrichelter Stammlinie — sie ist die Bezugsgröße und keine Version und muss auch im
+Schwarz-Weiß-Ausdruck davon zu trennen sein. Nachweis: `Proben/ChartProben` (Bilder
+`kapitalwert_szenarien…` und `kapitalwert_absolut_legende`, Gegenproben `strichart_gepunktet_wirkt`,
+`kapitalwert_szenarien_legende_zweigeteilt_wirkt`, `kapitalwert_szenarien_nulldurchgang_wirkt`,
+`kapitalwert_verlauf_gestrichelt_wirkt` und `kapitalwert_verlauf_legende_nennt_die_version`),
+`VerlaufSzenarienTests`, `KapitalwertVerlaufAbschnittTests`. Offen ist Frage E6‑Q1 — Verlauf und
+Spannenbild auch in Block 4 der Darstellung „ValERI-Bewertung" (→ Register R‑E6).
+
+*Die Messung vor der Umsetzung und die Liste dessen, was die Umsetzung brauchte: → Protokoll § 8.1.*
 
 **(6) Vergleichssicht — alle Varianten gegen die Referenz oder zwei Stände.** Die Anforderung vom
 18.09.2026 zur Tafel „Gliederung des Kapitalwerts" steht als eigener Abschnitt in § 2.15, weil sie
@@ -1763,8 +1768,9 @@ Begriff „Nettostromerzeugung" ist der des Gesetzes, keine Erfindung des Konzep
 > **Entscheid K-1 (→ Register R‑EZ, EZ‑5): Kennzeichen und Stromkennzahl je Anlage aufnehmen,
 > Fall 2 rechnen.** Neuer Boden seit BK1: Der Zuschlag gehört der Anlage (Schemaschritt 89,
 > § 6.5) — die zwei Felder sind zwei weitere Anlagenspalten neben den neun `KWKG_*`-Spalten von
-> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **97** (90 BK1a,
-> 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel). Das Kennzeichen
+> `Tab_Energieanlagen`, kein Umbau; nächster freier Schemaschritt ist **101** (90 BK1a,
+> 91 BK1b, 92 Vergleichsprojekt, 93 Vergütung je Variante, 94 Hilfsstrom-Bemessung, 95 KL-3 Klimaspalten, 96 FK-2 Projekt-Fremdschlüssel,
+> 97–100 außerhalb dieses Feldes, siehe Kopf; die Nummer wird bei der Umsetzung vergeben). Das Kennzeichen
 > `KWKG_Abwaermeabfuhr` (0/1, `CHECK`), die Stromkennzahl als nullbare Zahl mit **Vorschlag am
 > Feld** aus P_el / P_th der Gerätezeile (`Tab_BHKW`, wo σ heute nur für die Katalogliste gerechnet
 > wird) — dasselbe Muster wie die Vorschlagszeilen aus BK1. **Wo die Fallunterscheidung sitzt:**
@@ -1906,8 +1912,8 @@ Befreiung setzt Stundenreihen voraus), der Referenzlauf bleibt unverändert.
 | 4a **Einheit nicht vergleichbar** | Katalogsatz je 1.000 kg bzw. je 1.000 l, Projekt rechnet in der anderen Einheit — ohne Dichte keine Brücke | Hinweis (ohne Betrag) |
 | **Doppelzählung § 9 Abs. 1 Nr. 3** | Modus `ERLOES` bucht einen Betrag | Warnung **mit Betrag** |
 | Doppelpflege Hilfsenergie | Anlagenanteil > 0 **und** aktive Kostenposition derselben Anlage | Warnung |
-| **CO₂-Bestandteil im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv** | der Träger weist einen CO₂-Anteil im Arbeitspreis aus **und** die BEHG-Reihe rechnet denselben Brennstoff | Warnung **mit Betrag** — **Soll, nicht gebaut** (Etappe E2) |
-| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | **Laufhinweis** ohne Wertangabe, kein `KohaerenzHinweis` (`WirtschaftlichkeitCtrl.cs:5465`) |
+| **CO₂-Bestandteil im Arbeitspreis und BEHG-Reihe gleichzeitig aktiv** | der Träger weist einen CO₂-Anteil im Arbeitspreis aus **und** die BEHG-Reihe rechnet denselben Brennstoff | Warnung **mit Betrag** — dem gebuchten Jahresbetrag der CO₂-Abgabe; der Rechenweg bleibt (Fall `Co2DoppelansatzBehg`, umgesetzt #405) |
+| Strommix-Rückfall | kein Stromträger, Netzbezug > 0 | Hinweis **mit Wert** — der Strommix-Vorgabewert in g CO₂/kWh, mit dem der Netzbezug gerechnet ist (`KOH_CO2_STROMMIX_RUECKFALL`, umgesetzt #405) |
 
 ## 3.10 Rechenreihenfolge
 
@@ -2067,8 +2073,9 @@ wohl aber den gemeinsamen Schema-Nummernraum:
 belegt** (`Schritt_62_KlimaWaisen`); U-1 steht aus und bekommt seine Nummer **bei der Umsetzung**
 (nächster freier Schritt am 22.09.2026: **101** — 90–100 sind vergeben). Gemessen am
 19.09.2026: Die fünf Gase führen in `Tab_Brennstoff_Stamm.Einheit` unverändert `m³`;
-`energy_carrier.billing_unit` steht dagegen seit Schritt 26a auf `Nm³`. **Die Umsetzung ist nicht
-freigegeben** und gehört auf den Pufferspeicher-Strang.
+`energy_carrier.billing_unit` steht dagegen seit Schritt 26a auf `Nm³`. **Die Umsetzung ist
+freigegeben** (A9, → Register R‑A: vor dem nächsten Vorlagenbau) und läuft als DML-Schritt G mit E7
+des Etappenplans.
 
 **Die Randfragen des Einheitenbruch-Konzepts sind hiermit hierher übernommen** und gelten von hier
 aus: Waisenheilung (`energy_project_settings` Zeile 10076, Projekt 1039), kg-/rm-Abrechnung der
@@ -2140,6 +2147,7 @@ was an einer Etappe offen blieb, steht in § 6.3.*
 | **E4 Erlösrubrik und Steuerzeilen** | Energiesteuer in zwei Beträgen, Gründe je Position, Erlösrubrik nach Komponente innen. | #432 |
 | **E5 Ergebnisansicht und V‑A** | Umschalter „Kennzahlen / ValERI-Bewertung" mit vier Abschnitten, Bandbreite, Empfehlungskarten, V‑A im Kern. | #434 |
 | **A13 Konzeptschnitt** | Dieses Konzept in drei Papiere geschnitten: gültiger Stand, Entscheidungsregister, Protokoll der Entscheidwege. | #435 |
+| **E6 Verlauf mit drei Szenarien** | Der Kapitalwertverlauf aller drei Szenarien als Abschnitt der Seite (Farbe = Variante, Strichart = Szenario), „Verlauf nach Excel…", Berichte mit einer Spaltengruppe je Szenario, Spannenbild der Bandbreite; der Knopf „Verlauf…" entfällt. | #436 |
 
 ## 6.2 Regressionsanker
 
@@ -2158,7 +2166,7 @@ Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFo
 | Kapitalwert 1030 | **−21.895.377,28 €** | gemessen (#380) |
 | `LiesInvestitionen` 1018 / 1024 / 1042 | 45.312,50 · 12.001,00 · 13.000,00 | unverändert |
 | Kaskadenregression 1042 | **±0,00 €** | gemessen (#380) — das Konzept führte **+20.927,61 €** |
-| Referenzbasis | `Referenzlaeufe\2026-09-19_R10_BhkwWirkungsgrad` | |
+| Referenzbasis | `Referenzlaeufe/2026-09-22_R11_Bestandsbefunde` | Aufbau, Herleitung und Schemastand: [`Referenzlaeufe/LIESMICH.md`](../../../Referenzlaeufe/LIESMICH.md) |
 
 **Zwei Abweichungen zum bisherigen Konzepttext, beide als Befund festgehalten (#380):** Die
 Kaskadenprobe 1042 ergibt ±0,00 € statt +20.927,61 € — die drei Prozentzeilen des Projekts tragen im
@@ -2221,9 +2229,7 @@ nicht neu nummeriert, damit Verweise aus Protokollen und Statuszeilen weiter tre
     Zeitraumzeile auf Seite und Bericht (E5, #434) — siehe Protokoll.
 9i. ~~**Erlösrubrik nach Komponente innen:** Anlagenbezug je Katalogzeile, Block „projektweit",
     Eigenverbrauchsmengen je Anlage für die vermiedenen Kosten.~~ — erledigt mit E4/3 (#432, U6; Q15, A12), siehe Protokoll; offen bleibt Nr. 32
-9j. **Verlauf mit drei Szenarien:** Dreierreihe statt eines Szenarios je Lauf, Reihenbildung
-    Variante × Szenario, Spaltengruppen je Szenario im Tabellenbericht, plattformfreie Rechen-
-    und Zeichenlogik. `Gestrichelt` liest das Verlaufsbild.
+9j. ~~**Verlauf mit drei Szenarien**~~ — erledigt mit E6 (#436), siehe Protokoll
 9k. ~~**Persistenz der Nachweise je Anlage** (Energiekosten-Unterzeilen nach dem Neuladen) — Teil
     von B7-2.~~ — erledigt mit B7P zusammen mit 9b, siehe Protokoll
 
@@ -2339,7 +2345,7 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 | ~~Komponenten-IDs hart verdrahtet gegen dynamisch gelesen (`Form_Kosten` gegen `UcBkKosten`)~~ | **gegenstandslos** — beide Klassen gibt es nicht mehr: Die Unterscheidung liegt im Kern (`KostenVorlagenCtrl.IstErfassungsgruppe`), die Oberfläche in `EPOS.UI/Dialoge/Kosten/` |
 | Vorrang Projekt vor Katalog in **zwei** Implementierungen | `KostenEmissionRechner`, `StromPreisCtrl`; dazu die Sicht `Abfrage_Energietraeger_Effektiv` (`sql/schema/002_views.sql:26`) |
 | ~~Die gespeicherte Access-Abfrage kennt die neuen Spalten nicht~~ | **überholt**: Access ist abgelöst; die gespeicherten Abfragen sind Altbestand des eingefrorenen Access-Zweigs |
-| ~~Kennzahlenliste dreifach~~ | aufgelöst mit E7 — `WirtschaftlichkeitZeilen` führt sie einmal |
+| ~~Kennzahlenliste dreifach~~ | aufgelöst mit W4 E7 (vor #300; nicht E7 des Etappenplans) — `WirtschaftlichkeitZeilen` führt sie einmal |
 
 ---
 
@@ -2347,9 +2353,10 @@ Es gilt heute nur noch, was hier ohne Einschränkung steht:
 
 Die Reihenfolge der offenen Etappen steht im Etappenplan E0–E12 des Analysepapiers
 [`2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5.
-Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432) und E5 (#434)**; der
-Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt **E6 Verlauf mit drei
-Szenarien**. Aus der früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen; B9 entfällt:
+Gebaut sind daraus **E0 (#379), E1 (#380), E2 (#405), E3 (#431), E4 (#432), E5 (#434) und E6
+(#436)**; der Schnitt dieses Papiers (A13) ist mit **#435** ausgeführt. Als Nächstes kommt **E7
+rechenwirksame Lücken**. Aus der früheren Etappenreihe B5–B9 dieses Papiers ist nur noch B8 offen
+(es läuft in E7 mit); B9 entfällt:
 
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
@@ -2393,10 +2400,10 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **B8** | — | — | offen (in **E7**) | Befunde S-2 (≡ A3) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
 | **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
 | **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | V-A = **#434**, sonst keine im Bereich #300–#434 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5** (gebaut), V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 der ValERI-Ansicht mit #434 vorgezogen), V-E = **E9** |
-| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3) |
+| § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405**, **#434**, **#436** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen; mit #434 Umschalter, vier Abschnitte, Karten, Bandbreite, Hinweistext und die Hinweiszeile aus (3); mit #436 der Verlauf mit drei Szenarien (5) und das Spannenbild |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357**, **#434** (Hinweiszeile) | Nutzungsdauer, Ersatz, Restwert |
 | — | — | **S1 · S2 · S3** | S1 vor #300, S2 = #357, S3 offen (**E10**) | AfA-Tabelle |
-| Mockup-Anhang **U1…U45** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
+| Mockup-Anhang **U1…U49** | — | — | #342 ff. | Umsetzungsstand je Bildstelle; **U1 = Befund K-1** |
 
 **Die Etappenreihe E0–E12** (Analysepapier § 5) ordnet alles Offene dieses Papiers:
 
@@ -2408,7 +2415,8 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | **umgesetzt #431** (Merge `2cfee66b`) |
 | **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | **#432** |
 | **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
-| **E6** … **E12** | Verlauf · rechenwirksame Lücken (B8, dazu Nr. 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E6** |
+| **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge NACHTRAG-436-MERGE) |
+| **E7** … **E12** | rechenwirksame Lücken (B8, dazu Nr. 29, 30, 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E7** |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
 Dialoge; die beiden Dialoge dieses Papiers mit **DL‑2e**, #390). **KI‑F2 … KI‑F8** (#419–#425, #427,
