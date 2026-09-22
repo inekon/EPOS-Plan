@@ -61,7 +61,7 @@ namespace WindowsFormsApplication1
                 };
 
                 bool ok = DataRepository.ExecuteSQL(sql, ps);
-                if (ok) StromTraegerNachziehen();
+                if (ok) { StromTraegerNachziehen(); ProjektGeaendert(); }
                 return ok;
             }
             catch (Exception ex)
@@ -306,7 +306,7 @@ namespace WindowsFormsApplication1
             {
                 bool ok = DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
                                                     AnlagenSql.AnlagenParameter(ID_Projekt, this));
-                if (ok) StromTraegerNachziehen();
+                if (ok) { StromTraegerNachziehen(); ProjektGeaendert(); }
                 return ok;
             }
             catch (Exception ex)
@@ -322,6 +322,19 @@ namespace WindowsFormsApplication1
         /// Stromträger — bis hierher tat das nur der Assistent. Idempotent; ein Fehlschlag
         /// bricht das Speichern der Anlage nicht ab.
         /// </summary>
+        /// <summary>
+        /// AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Eine geschriebene Anlagenzeile
+        /// ändert die Eingangsgrößen der Simulation — das gespeicherte Ergebnis ist danach
+        /// älter als das Projekt. Die Marke sitzt im SCHREIBCONTROLLER, nicht in der Kachel:
+        /// Bis hierher setzten nur vier der zwölf Kacheln das Datum, und die Kachel
+        /// „Wärmepumpe“ war keine davon.
+        /// </summary>
+        private void ProjektGeaendert()
+        {
+            if (ID_Projekt <= 0) return;
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(ID_Projekt);
+        }
+
         private void StromTraegerNachziehen()
         {
             if (ID_Projekt <= 0) return;

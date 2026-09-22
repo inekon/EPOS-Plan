@@ -859,7 +859,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_Gebaude_Click (:264-287).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjGebModel> liste = Z_ProjGebCtrl.LiesProjekt(_kontext.Id);
 
@@ -867,10 +866,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Projekt_ZuordungGebäude(_kontext.Id);
                 wizctrl.Add_Projekt_ZuordungGebäude(_kontext.Id, liste);
-
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -878,7 +873,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_WBedarfDaten_Click (:239-262).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjWaermebedarfModel> liste = Z_ProjektGebGanglinieCtrl.LiesProjekt(_kontext.Id);
 
@@ -886,9 +880,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_WaermebedarfExtern(_kontext.Id);
                 wizctrl.Add_WaermebedarfExtern(_kontext.Id, liste);
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -896,7 +887,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_Prozess_Click (:213-237).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjektProzesswaermeModel> liste = Z_ProjektProzesswaermeCtrl.LiesProjekt(_kontext.Id);
 
@@ -904,10 +894,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Projekt_Prozess(_kontext.Id);
                 wizctrl.Add_Projekt_Prozess(_kontext.Id, liste);
-
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -915,7 +901,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_Brauchwasser_Click (:1755-1779).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjektBrauchwasserModel> liste = Z_ProjektBrauchwasserCtrl.LiesProjekt(_kontext.Id);
 
@@ -923,10 +908,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Projekt_Brauchwasser(_kontext.Id);
                 wizctrl.Add_Projekt_Brauchwasser(_kontext.Id, liste);
-
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -936,7 +917,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_StdLastProfil_Click (:414-439).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjektStromverbraucherModel> liste =
                 Z_ProjektStromverbraucherCtrl.LiesProjekt(_kontext.Id);
@@ -945,10 +925,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Projekt_Stromverbraucher(_kontext.Id);
                 wizctrl.Add_Projekt_Stromverbraucher(_kontext.Id, liste);
-
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -956,7 +932,6 @@ namespace WindowsFormsApplication1
         {
             // Woertlich pBox_StromMessdaten_Click (:447-477).
             WizardCtrl wizctrl = new WizardCtrl();
-            ProjektCtrl projctrl = new ProjektCtrl();
 
             List<Z_ProjektStromganglinieModel> liste =
                 Z_ProjektStromganglinieCtrl.LiesProjekt(_kontext.Id);
@@ -965,10 +940,6 @@ namespace WindowsFormsApplication1
             {
                 wizctrl.Del_Stromganglinie(_kontext.Id);
                 wizctrl.Add_Stromganglinie(_kontext.Id, liste);
-
-                projctrl.ReadSingle(_kontext.Name);
-                projctrl.m_Aenderungsdatum = DateTime.Now;
-                projctrl.Update();
             }
         }
 
@@ -995,13 +966,14 @@ namespace WindowsFormsApplication1
             wizctrl.Add_WP_Waermeerzeuger(_kontext.Id, liste);
         }
 
-        private void Aenderungsdatum()
-        {
-            ProjektCtrl projctrl = new ProjektCtrl();
-            projctrl.ReadSingle(_kontext.Name);
-            projctrl.m_Aenderungsdatum = DateTime.Now;
-            projctrl.Update();
-        }
+        // DAS AENDERUNGSDATUM SETZT DER SCHREIBWEG (Anwenderbefund 22.09.2026).
+        //
+        // Hier stand bis dahin ein Handgriff Aenderungsdatum(), den nur VIER der zwoelf
+        // Kacheln riefen - Heizkessel, Photovoltaik, Solarthermie und Standardlastprofil.
+        // Waermepumpe, BHKW, Stromspeicher und Pufferspeicher riefen ihn nicht, und ihr
+        // Ergebnis galt danach als aktuell, obwohl die Anlage sich geaendert hatte. Die
+        // Marke sitzt jetzt in WizardCtrl und WErzeugerCtrl - an jedem Schreibweg, also
+        // auf jeder Kachel und auf jedem anderen Weg dorthin.
 
         private void Waermepumpe(IWin32Window wirt)
         {
@@ -1027,7 +999,6 @@ namespace WindowsFormsApplication1
             if (HeizkesselHuelle.Oeffnen(wirt, _kontext.Id, WizardItemClass.KESSEL_TYP, liste))
             {
                 Schreiben(WizardItemClass.KESSEL_TYP, liste);
-                Aenderungsdatum();
             }
         }
 
@@ -1046,7 +1017,6 @@ namespace WindowsFormsApplication1
             if (PhotovoltaikHuelle.Oeffnen(wirt, _kontext.Id, WizardItemClass.PV_TYP, liste))
             {
                 Schreiben(WizardItemClass.PV_TYP, liste);
-                Aenderungsdatum();
             }
         }
 
@@ -1082,7 +1052,6 @@ namespace WindowsFormsApplication1
                 if (SolarkollektorHuelle.Oeffnen(wirt, _kontext.Id, liste))
                 {
                     Schreiben(WizardItemClass.SOLAR_TYP, liste);
-                    Aenderungsdatum();
                 }
                 return;
             }
@@ -1095,7 +1064,6 @@ namespace WindowsFormsApplication1
                 WizardCtrl wizctrl = new WizardCtrl();
                 wizctrl.Del_Solarganglinie(_kontext.Id);
                 wizctrl.Add_Solarganglinie(_kontext.Id, ganglinien);
-                Aenderungsdatum();
             }
         }
 

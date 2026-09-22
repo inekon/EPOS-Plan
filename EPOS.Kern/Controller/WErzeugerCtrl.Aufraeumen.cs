@@ -52,6 +52,12 @@ namespace WindowsFormsApplication1
 
                 if (!DataRepository.ExecuteSQL(sql, ps)) return false;
 
+                // AENDERUNGSDATUM (Anwenderbefund 22.09.2026): Auch das Fallenlassen aller
+                // Anlagenzeilen ist eine Änderung der Simulationseingaben. Auf dem
+                // Projekt-Löschweg läuft die Marke ins Leere — die Projektzeile fällt
+                // gleich mit —, auf dem Variantenweg nicht.
+                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(ID_Projekt);
+
                 // Unmittelbar: GeraeteWaisen liegt im Kern und braucht keine Oberflaeche.
                 // Der Bericht geht NICHT in den Rueckgabewert ein (siehe oben), ein
                 // unvollstaendiger Lauf wird aber gemeldet statt verschluckt.
