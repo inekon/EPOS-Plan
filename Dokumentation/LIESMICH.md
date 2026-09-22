@@ -152,7 +152,8 @@ Herkunft der Zahlen; die Rechenwege verweisen darauf —, `Ergebnis_Bandbreite_H
 `Katalogfilter_Vorschlag.html`, `Knopfleisten_Administration_DL2.html`,
 `Administration_Heizkessel_Neuordnung.html`, `Administrationsdialoge_Schema.html`,
 `Wechselrichter_Mockup_2026-09-06.html`,
-`stromspeicher-optimierung-v2.html` und `Entwurf_Hydraulikuebersicht_Konfiguration.html`.
+`stromspeicher-optimierung-v2.html`, `Entwurf_Hydraulikuebersicht_Konfiguration.html` und
+`Zapfprofilgenerator_Mockup.html` (Konzept TWW-Zapfprofile mit Dialog, Diagrammen und Auslegungs-Ausblick).
 
 ---
 
