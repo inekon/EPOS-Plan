@@ -6,11 +6,13 @@ namespace WindowsFormsApplication1
     /// Die benannten Fehlgründe des Gebäudemodells nach VDI 6007 Blatt 1 (Stufe G0 der
     /// Gebäudesimulation, Umsetzungskonzept 1.3).
     ///
-    /// <para><b>Warum benannt.</b> Blatt 1, 6.8 verbietet den stillen Rückfall: Ein
-    /// Parameter, der das Netz unphysikalisch macht, wird nicht auf einen Klemmwert
-    /// gezogen, sondern bricht die Rechnung mit einem Grund ab, den der Aufrufer lesen und
-    /// dem Anwender nennen kann. Jeder Grund steht hier genau einmal; die Tests prüfen
-    /// gegen den Grund, nicht gegen den Meldungstext.</para>
+    /// <para><b>Warum benannt.</b> Kein stiller Rückfall: Ein Parameter, der das Netz
+    /// unphysikalisch macht, wird nicht auf einen selbst gewählten Klemmwert gezogen,
+    /// sondern bricht die Rechnung mit einem Grund ab, den der Aufrufer lesen und dem
+    /// Anwender nennen kann. Die einzigen Setzwerte sind die, die die Richtlinie selbst
+    /// vorschreibt (Gl. (28a)–(28c) der Außenbauteilgruppe); sie werden im Parametersatz
+    /// ausgewiesen (<see cref="ErsatzparameterRC.Gruppenfall"/>). Jeder Grund steht hier
+    /// genau einmal; die Tests prüfen gegen den Grund, nicht gegen den Meldungstext.</para>
     /// </summary>
     internal enum GebaeudeModellFehler
     {
@@ -21,15 +23,18 @@ namespace WindowsFormsApplication1
         WiderstandUngueltig,
 
         /// <summary>
-        /// Der Restwiderstand der Außenwände R_Rest,AW ist null oder negativ — rechnerisch
-        /// bei sehr schlecht gedämmten Außenbauteilen; ebenso der Restwiderstand der aus
-        /// Wänden und Fenstern zusammengefassten Gruppe. Kein Klemmwert (Rechenschritte A4).
+        /// Die Außenbauteilgruppe hat keinen gültigen Fall nach Gl. (27)–(28c): Im Regelfall
+        /// ist der Restwiderstand null oder negativ und der Grenzfall (28a) greift nicht oder
+        /// ist mangels äußerem Übergangswiderstand nicht prüfbar; oder der Gesamtwiderstand
+        /// eines Zweigs bzw. der Gruppe ist nicht positiv; oder R_Rest,AW ist nicht endlich.
+        /// Rechnerisch bei sehr schlecht gedämmten Außenbauteilen (Rechenschritte A4, A7a).
         /// </summary>
         RRestAwNichtPositiv,
 
         /// <summary>
         /// Der Widerstand des Fensterzweigs ist null oder negativ (R_1,AF bzw. R_Rest,AF),
-        /// oder nur einer der beiden ist gesetzt. Kein Klemmwert (Rechenschritte A7a).
+        /// nur einer der beiden ist gesetzt, oder die Fensterfläche ist null. Kein Klemmwert
+        /// (Rechenschritte A7a).
         /// </summary>
         FensterzweigUngueltig,
 

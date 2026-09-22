@@ -32,7 +32,9 @@ namespace EPOS.Kern.Tests
                 a_IW_M2: 250.0,
                 summeUA_opak_WK: 40.0,
                 r_1_AF_KW: mitFenster ? 0.01 : double.PositiveInfinity,
-                r_Rest_AF_KW: mitFenster ? 0.05 : double.PositiveInfinity,
+                // Zweigsumme R_1,AF + R_Rest,AF + Flächenanteil an R_conv,AW ∥ R_rad (hier 0,01)
+                // = 1/(U·A) des Fensters: der äußere Übergang liegt im Rest (Rechenschritte A7a).
+                r_Rest_AF_KW: mitFenster ? 1.0 / 30.0 - 0.01 - 0.01 : double.PositiveInfinity,
                 a_Fenster_M2: mitFenster ? 20.0 : 0.0,
                 uA_Fenster_WK: mitFenster ? 30.0 : 0.0);
 

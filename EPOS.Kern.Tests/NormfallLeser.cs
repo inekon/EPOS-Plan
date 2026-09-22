@@ -134,7 +134,10 @@ namespace EPOS.Kern.Tests
                     r_ext_KW: double.PositiveInfinity,
                     a_AW_opak_M2: aAW,
                     a_IW_M2: aIW,
-                    summeUA_opak_WK: 0.0);
+                    summeUA_opak_WK: 0.0,
+                    // Äußerer Übergang als Bedingung von Gl. (28a); der Rest enthält ihn
+                    // bereits, also greift stets der Regelfall.
+                    r_alphaAussen_KW: 1.0 / gAussen);
 
                 // Innere Lasten: PrescribedHeatFlow unmittelbar an der Zone.
                 List<string> konvektiv = Quellen(_zone + ".intGainsConv");

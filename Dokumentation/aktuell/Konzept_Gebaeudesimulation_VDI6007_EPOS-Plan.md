@@ -786,7 +786,10 @@ und der IFC-Import (G4), dann entfällt die Nachmultiplikation für diese Gebäu
 Reine 2×2-Arithmetik ohne Zufall; Zustand je Instanz; zwei Läufe liefern byte-gleiche
 Reihen. Rechenzeit rund 5 ms je Gebäude und Jahr, Planungsgröße 10 ms (5.13); die dreizehn
 Referenzprojekte bleiben damit unter 0,2 s gegenüber den 4 s des heutigen Gesamtlaufs. Harte
-Prüfungen vor der Rechnung (benannte Fehler, kein stiller Rückfall): `Nutzflaeche > 0`,
+Prüfungen vor der Rechnung (benannte Fehler, kein stiller Rückfall — das ist **Hausregel**, keine
+Regel der Richtlinie; ihr Programmierhinweis 6.8 verlangt nur, Divisionen durch null
+auszuschließen, und die einzigen Setzwerte, die sie selbst vorschreibt, sind die Grenzfälle
+(28a)–(28c) der Außenbauteilgruppe als Schutzregel für widersprüchliche Eingaben): `Nutzflaeche > 0`,
 `Flaeche_Nutzer > 0`, `Raumhoehe > 0`, `VerbrauchAlt > 0` vor der Rückrechnung,
 `5 ≤ Bauweise/Nutzflaeche ≤ 200 Wh/(m²K)`, 0 < g ≤ 1, U-Werte 0,1–6 W/(m²K), R_Rest,AW > 0
 (4.3), Ferientage 1…365 in einem aktiven Fahrplan (4.4), Summe der Fensterflächen =
@@ -1789,6 +1792,12 @@ der Strahlungslasten mit Ausschluss der Fensterfläche (Gl. (43)–(46)), h_rad 
 (Gl. (30)), h_a = 25 als Summe, die U·A-gewichtete äquivalente Außentemperatur
 (Gl. (41)/(42)), die ideale Regelung mit Sollwerthaltung über die Stunde (Gl. (96)–(102)).
 
+**Vermerk 22.09.2026:** Die Zeile 4.8 oben schreibt dem Programmierhinweis 6.8 das Verbot des
+stillen Rückfalls zu. Das trifft nicht zu: 6.8 verlangt nur, Divisionen durch null bei fehlenden
+Bauteilgruppen auszuschließen. Das Verbot des stillen Rückfalls ist Hausregel; berichtigt im
+Hauptteil 4.8 und in den [Rechenschritten](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
+(A4, A7a, 5, 7.1).
+
 ### N1.4 Erläuterungen
 
 **Q16 — die Bestandsgewichte im neuen Weg streichen.** Der heutige Rechenweg multipliziert
@@ -2375,6 +2384,12 @@ Testbeispiele 5, 8 und 9 im Normband bleiben.
   Die im [Mehrzonenkonzept](Konzept_Mehrzonenmodell_IFC_EPOS-Plan.md) für G3 vorgesehene Umstellung
   des Fensterpfads samt ihrer Einfrierfolge **entfällt**; die Umstellung von R_rad auf Gl. (29)/(31)
   in G3 bleibt davon unberührt.
+
+**Vermerk 22.09.2026:** Der Rest des Fensterzweigs `R_Rest,AF` enthält den äußeren
+Wärmeübergangswiderstand des Fensters, damit die Summe des Zweigs 1/(U·A) ergibt und zu Gl. (27)
+passt; die Angabe 5/6·R_AF oben gilt nur für den Anteil ohne äußeren Übergang. Das ist eine
+Korrektur der Formel beim Abschluss von G0, kein neuer Entscheid — E14 bleibt, wie er ist
+([Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md) A7a, B6).
 
 ### N1.20 Entscheid E15 — Wärmepumpen mit Kühlfunktion: Auswahl und Konfiguration
 

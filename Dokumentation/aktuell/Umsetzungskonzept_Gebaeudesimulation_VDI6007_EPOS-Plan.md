@@ -342,7 +342,11 @@ Prüfungen aus Konzept 4.8 — `R_Rest_AW > 0` mit benanntem Fehler (kein stille
 
 **E14 (16.09.2026): die Fenster liegen im AW-Zweig, nicht im Lüftungszweig.** Der Satz führt
 dafür `R_1_AF_KW` (= R_AF/6, nach den Wänden parallel geschaltet, Gl. (25)–(28)) und
-`R_Rest_AF_KW`; `R_ext_KW` trägt allein Lüftung und Wärmebrücken. Der Fensterpfad des Prototyps
+`R_Rest_AF_KW` (der Rest des Fensterzweigs **einschließlich äußerem Übergang**, so gebildet, dass
+R_1,AF + R_Rest,AF + Flächenanteil am inneren Übergang = 1/(U·A) des Fensters ist und das Fenster
+mit vollem U·A in Gl. (27) eingeht); `R_ext_KW` trägt allein Lüftung und Wärmebrücken. Der Erbauer
+fasst Wände und Fenster nach Gl. (27)/(28) zu einem Paar zusammen; die Grenzfälle (28a)–(28c)
+sind eine Schutzregel für widersprüchliche Eingaben und werden im Satz ausgewiesen. Der Fensterpfad des Prototyps
 entfällt damit für das Produkt (Konzept N1.19, Rechenschritte A7a).
 
 **`Zonenmodell2K.cs`** — der Löser. **Der Name folgt der Norm:** die Richtlinie sagt „2-K-Modell",
