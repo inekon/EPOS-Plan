@@ -2577,12 +2577,20 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
 
 30. **Sieben Energieanlagen tragen `KWKG_Anlagenart = ''`** (leere Zeichenkette statt NULL oder
     eines Steuerwerts). Die Anlagenart entscheidet über Kontingent und Satzstaffel; eine leere
-    Zeichenkette ist weder „nicht gepflegt" noch eine Wahl. Zu klären ist, ob die Saat sie auf
-    NULL setzt oder auf einen benannten Wert — **offen, mit E7**.
+    Zeichenkette ist weder „nicht gepflegt" noch eine Wahl. **Entschieden 22.09.2026 (Anwender,
+    nach Empfehlung): ein DML-Schritt setzt die leere Zeichenkette auf NULL; NULL heißt „nicht
+    gepflegt" — der Kern bucht dann keinen KWKG-Zuschlag und meldet es als Kohärenzzeile
+    „Anlagenart fehlt", der Dialog zeigt „bitte wählen". Ein geratener Wert würde Kontingent und
+    Satzstaffel setzen, die niemand eingegeben hat. Umsetzung mit E7** (Schemaschritt, Nummer bei
+    der Umsetzung; Projekte 1032 und 1043 der Testdatenbank, Live-Datenbank vorher prüfen).
 31. **`Nachweis_Json` ist in 0 von 78 Ergebniszeilen belegt.** Die Persistenz der Nachweise
     (B7P, Punkt 9b) ist gebaut, aber kein Bestandsergebnis trägt den Umschlag: Er entsteht erst
-    beim nächsten Rechenlauf. Zu klären ist, ob ein Nachziehlauf nötig ist oder ob der
-    Bestand bis zur nächsten Rechnung ohne Unterzeilen bleibt — **offen, mit E7**.
+    beim nächsten Rechenlauf. **Entschieden 22.09.2026 (Anwender, nach Empfehlung): kein
+    Nachziehlauf.** Ergebniszeilen ohne Nachweis werden in Ansicht und Bericht als „Nachweis liegt
+    mit der nächsten Rechnung vor" gekennzeichnet; der Umschlag entsteht beim nächsten Rechenlauf.
+    Ein Nachziehlauf würde 78 Bestandsergebnisse mit den heutigen Rechenwegen neu rechnen und
+    Zahlen ändern, die der Anwender bereits gesehen hat. Umsetzung der Kennzeichnung mit E5
+    (Ergebnisansicht) und dem Berichtsbaustein.
 
 **Nachweis und Betrieb**
 

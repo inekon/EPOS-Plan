@@ -351,11 +351,10 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 >
 > **Sieben Fragen trugen trotz „nach Empfehlung" einen Rest, der ein Wort des Anwenders braucht.**
 > Entschieden 22.09.2026: **Q11** („kein HT/NT" — der Zeitzonentarif entfällt, offen nur die
-> Leistungspreis-Staffel) und **Q23** („letzte Nummer erhöhen" — Version 1.2.0.4). Offen:
-> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q15** (die Vorfrage, ob
-> der Leistungsanteil projektweit bleibt) · **Q18** (die Anhangzeile ist angelegt — U43/U44 —, der Bau
-> braucht einen Folgeentscheid) · **Q20** (ergänzen **oder** als Ausschnitt kennzeichnen) · **Q22**
-> (Artifact redeployen **oder** Vermerk „Repo-Datei führt").
+> Leistungspreis-Staffel), **Q23** („letzte Nummer erhöhen" — Version 1.2.0.4), **Q15** (U6 ja, der
+> Leistungsanteil bleibt projektweit) und **Q18** (U43 mit E5, U44 mit E8). Offen:
+> **Q9** (Fehlerfarbe `#B22222` **oder** `#B00020` — die Wahl ist offen) · **Q20** (ergänzen **oder**
+> als Ausschnitt kennzeichnen) · **Q22** (Artifact redeployen **oder** Vermerk „Repo-Datei führt").
 
 | # | Frage | Empfehlung |
 |---|---|---|
@@ -373,10 +372,10 @@ Kohärenzzeile R1 und die Zellensemantik F5 ändern Ausweise, U6/U7 die Zeilenst
 | **Q12** | Sprungknopf „Tarif…" im PV-Dialog: schreiben und springen oder verwerfen und es sagen? | **Schreiben und springen** wie im BHKW-Dialog; `PVV_SPRUNG_HINWEIS` in beiden Sprachen neu fassen |
 | **Q13** | Beim Öffnen aus dem Menü trägt das Fenster den Titel, der Dialog keinen? | **Ja** — dieselbe Regel wie bei der `Ueberlagerung`; der Fenstertitel muss dann der lange sein |
 | **Q14** | Hüllen der 15 windowsgebundenen Dialoge nach `EPOS.UI.Daten`? | **Ja, gestaffelt:** `KostenKomponenteHuelle` zuerst |
-| **Q15** | Erlösrubrik nach Komponente innen (U6) bauen? | **Ja** — sonst bleibt die Zahlenprobe der Kat. 7 im Programm nicht nachvollziehbar; vorher klären, ob der Leistungsanteil projektweit bleibt |
+| **Q15** | Erlösrubrik nach Komponente innen (U6) bauen? | **Ja** — sonst bleibt die Zahlenprobe der Kat. 7 im Programm nicht nachvollziehbar; vorher klären, ob der Leistungsanteil projektweit bleibt. **Anwenderentscheid 22.09.2026 (nach Empfehlung): U6 bauen (E4); der Leistungsanteil der vermiedenen Stromkosten bleibt projektweit** (Block „projektweit", keiner Anlage zuzurechnen), nur der Arbeitsanteil wird nach der Näherung V‑4 je Anlage verteilt und als Näherung ausgewiesen (A12) |
 | **Q16** | Gedankenstrich oder Null in Ergebniszellen? | **Dem Mockup folgen** („— ‹Grund›" ohne Wert); Excel bleibt numerisch; mit Referenzlauf abnehmen |
 | **Q17** | Endenergie-Tafel vier oder sechs Spalten? | **Vier** — Zeichnung kürzen; Träger und Arbeitspreis stehen in der Energieträgerverwaltung |
-| **Q18** | „Bericht erzeugen" und „Anhang‑E‑Checkliste…" auf der Wirtschaftlichkeitsseite? | Zweiter Einstieg in den Bericht vertretbar; die Checkliste ist eigene Arbeit — **Anhangzeile anlegen, dann entscheiden** |
+| **Q18** | „Bericht erzeugen" und „Anhang‑E‑Checkliste…" auf der Wirtschaftlichkeitsseite? | Zweiter Einstieg in den Bericht vertretbar; die Checkliste ist eigene Arbeit — **Anhangzeile anlegen, dann entscheiden**. **Anwenderentscheid 22.09.2026 (nach Empfehlung): U43 „Bericht erzeugen" wird mit E5 gebaut (ruft den bestehenden Berichtsweg), U44 „Anhang‑E‑Checkliste…" mit E8, wenn V‑C und V‑D den Inhalt liefern** |
 | **Q19** | Kennzahltafel: Nettobarwert unter die Differenz? | **Ja**, reine Anzeige |
 | **Q20** | Parameterdialog im Mockup vollständig zeichnen? | **Ergänzen** (mindestens Szenariotafel und Gruppe „Bewertung") oder als Ausschnitt kennzeichnen |
 | **Q21** | Katalogfilter, Wechselrichter, Stromspeicher-Dialoge nach `ueberholt/`; Hydraulik-Entwurf weiterverfolgen? | **Ja**, als ein Auftrag je Thema mit Konzept, Index, Code-Spannen und Test-Gegenprobe; Hydraulik-Entwurf ohne Konzept → `ueberholt/` |
