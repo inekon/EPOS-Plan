@@ -186,7 +186,9 @@ namespace WindowsFormsApplication1
                 throw new FormatException("Die Zeitreihe muss mindestens zwei Datensaetze enthalten.");
 
             TimeSpan quellintervall = ErmittleUndPruefeRaster(zeit);
-            if (optionen.Konvention == IntervallKonvention.Ende)
+            IntervallKonvention konvention =
+                KonventionAufloesen(optionen, zeit[0], quellintervall, ref zeitzone);
+            if (konvention == IntervallKonvention.Ende)
                 for (int i = 0; i < zeit.Count; i++) zeit[i] = zeit[i] - quellintervall;
 
             PruefeEinheit(optionen.Rolle, optionen.Einheit);
@@ -200,8 +202,43 @@ namespace WindowsFormsApplication1
                 ZeitstempelUtc = zielZeit,
                 Werte = zielWerte,
                 SHA256 = Convert.ToHexString(SHA256.HashData(inhalt)),
-                Optionen = Kopiere(optionen)
+                // Die Reihe fuehrt die AUFGELOESTE Konvention: Nur sie beschreibt, was
+                // wirklich gerechnet wurde, und nur mit ihr liest ein zweiter Lauf
+                // dieselbe Datei wieder zu derselben Reihe. "Automatisch" ist eine
+                // Bitte an den Import, kein Ergebnis - es bliebe als Wert schlicht
+                // unbestimmt.
+                Optionen = Kopiere(optionen, konvention)
             };
+        }
+
+        /// <summary>
+        /// Loest <see cref="IntervallKonvention.Automatisch"/> ueber
+        /// <see cref="IntervallKonventionErkennung"/> auf; jede ausdrueckliche Wahl
+        /// bleibt stehen.
+        /// </summary>
+        /// <remarks>
+        /// <b>Die Regel liest die WANDUHR der Quelldatei</b> („die Reihe beginnt eine
+        /// Viertelstunde nach Mitternacht des 01.01."), nicht den UTC-Zeitpunkt: Eine
+        /// Berliner Reihe ab 01.01. 00:15 steht in UTC am 31.12. um 23:15 und waere
+        /// nach der Uhr der Erkennung gar kein Neujahr. Der erste Zeitstempel geht
+        /// deshalb in die Zeitzone der Optionen zurueck. Fehlt eine Zeitzone — nur
+        /// moeglich, wenn jeder Zeitstempel der Datei seinen eigenen Offset trug —,
+        /// bleibt UTC die beste verfuegbare Auskunft.
+        /// </remarks>
+        internal static IntervallKonvention KonventionAufloesen(
+            SpeicherZeitreihenOptionen o, DateTimeOffset erster, TimeSpan quellintervall,
+            ref TimeZoneInfo zeitzone)
+        {
+            if (o.Konvention != IntervallKonvention.Automatisch) return o.Konvention;
+
+            if (zeitzone == null && !string.IsNullOrWhiteSpace(o.ZeitzoneId))
+                zeitzone = FindeZeitzone(o.ZeitzoneId);
+            DateTime ortszeit = zeitzone == null
+                ? erster.UtcDateTime
+                : TimeZoneInfo.ConvertTime(erster, zeitzone).DateTime;
+
+            return IntervallKonventionErkennung.Erkenne(ortszeit,
+                (int)Math.Round(quellintervall.TotalMinutes));
         }
 
         internal static void PruefeGrundangaben(byte[] inhalt, SpeicherZeitreihenOptionen o,
@@ -233,9 +270,11 @@ namespace WindowsFormsApplication1
             bool getrennt = o.DatumSpalte >= 0 && o.UhrzeitSpalte >= 0;
             if (!kombiniert && !getrennt)
                 throw new ArgumentException("Es muss eine Zeitstempelspalte oder je eine Datums- und Uhrzeitspalte angegeben sein.", nameof(o));
-            if (o.Konvention != IntervallKonvention.Anfang &&
-                o.Konvention != IntervallKonvention.Ende)
-                throw new ArgumentException("Die Zeitstempelkonvention muss Anfang oder Ende sein.", nameof(o));
+            // "Automatisch" ist zugelassen: Die Erkennungsregel steht in
+            // IntervallKonventionErkennung, und Lesen loest den Wert am ersten
+            // Zeitstempel auf. Nur ein Wert AUSSERHALB der Aufzaehlung bleibt Fehler.
+            if (!Enum.IsDefined(typeof(IntervallKonvention), o.Konvention))
+                throw new ArgumentException("Unbekannte Zeitstempelkonvention.", nameof(o));
         }
 
         internal static List<string[]> LeseCsv(byte[] inhalt, SpeicherZeitreihenOptionen o, int maximal)
@@ -475,7 +514,13 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static SpeicherZeitreihenOptionen Kopiere(SpeicherZeitreihenOptionen o)
+        /// <summary>
+        /// Die Leseregeln der fertigen Reihe. <paramref name="konvention"/> ist die
+        /// AUFGELOESTE Intervallkonvention — sie ersetzt eine etwaige Bitte
+        /// „automatisch".
+        /// </summary>
+        private static SpeicherZeitreihenOptionen Kopiere(SpeicherZeitreihenOptionen o,
+            IntervallKonvention konvention)
             => new SpeicherZeitreihenOptionen
             {
                 Rolle = o.Rolle,
@@ -492,7 +537,7 @@ namespace WindowsFormsApplication1
                 DatumFormat = o.DatumFormat ?? "",
                 UhrzeitFormat = o.UhrzeitFormat ?? "",
                 ZeitzoneId = o.ZeitzoneId ?? "",
-                Konvention = o.Konvention,
+                Konvention = konvention,
                 Einheit = o.Einheit
             };
     }

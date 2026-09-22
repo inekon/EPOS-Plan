@@ -32120,7 +32120,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Zeitstempel den Anfang oder das Ende des Intervalls bezeichnet. „Automatisch (aus der Reihe erkennen)“ entscheidet es am ersten Zeitstempel der Datei: Eine Reihe mit Intervallende beginnt genau ein Intervall nach Mitternacht des 01.01. ähnelt.
         /// </summary>
         public static string KI_DLG_SZR_INTERVALL_ERL {
             get {
@@ -60481,6 +60481,294 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SUCHAUSWAHL_PLATZHALTER {
             get {
                 return ResourceManager.GetString("SUCHAUSWAHL_PLATZHALTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abbrechen ähnelt.
+        /// </summary>
+        public static string SZR_BTN_ABBRECHEN {
+            get {
+                return ResourceManager.GetString("SZR_BTN_ABBRECHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string SZR_BTN_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("SZR_BTN_UEBERNEHMEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CSV-Format ähnelt.
+        /// </summary>
+        public static string SZR_GRP_FORMAT {
+            get {
+                return ResourceManager.GetString("SZR_GRP_FORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalten und Zeit ähnelt.
+        /// </summary>
+        public static string SZR_GRP_SPALTEN {
+            get {
+                return ResourceManager.GetString("SZR_GRP_SPALTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschau ähnelt.
+        /// </summary>
+        public static string SZR_GRP_VORSCHAU {
+            get {
+                return ResourceManager.GetString("SZR_GRP_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string SZR_LBL_DATUMSFORMAT {
+            get {
+                return ResourceManager.GetString("SZR_LBL_DATUMSFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datumsspalte: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_DATUMSSPALTE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_DATUMSSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dezimaltrenner: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_DEZIMALTRENNER {
+            get {
+                return ResourceManager.GetString("SZR_LBL_DEZIMALTRENNER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_EINHEIT {
+            get {
+                return ResourceManager.GetString("SZR_LBL_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempel bezeichnet Intervall: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_INTERVALLLAGE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_INTERVALLLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kodierung: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_KODIERUNG {
+            get {
+                return ResourceManager.GetString("SZR_LBL_KODIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erste Datenzeile ist eine Kopfzeile ähnelt.
+        /// </summary>
+        public static string SZR_LBL_KOPFZEILE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_KOPFZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Trennzeichen: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_TRENNZEICHEN {
+            get {
+                return ResourceManager.GetString("SZR_LBL_TRENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen davor überspringen: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_UEBERSPRINGEN {
+            get {
+                return ResourceManager.GetString("SZR_LBL_UEBERSPRINGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string SZR_LBL_UHRZEITFORMAT {
+            get {
+                return ResourceManager.GetString("SZR_LBL_UHRZEITFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Uhrzeitspalte: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_UHRZEITSPALTE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_UHRZEITSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wertspalte: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_WERTSPALTE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_WERTSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitangabe: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_ZEITANGABE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_ZEITANGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelformat (leer = Standard): ähnelt.
+        /// </summary>
+        public static string SZR_LBL_ZEITSTEMPELFORMAT {
+            get {
+                return ResourceManager.GetString("SZR_LBL_ZEITSTEMPELFORMAT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitstempelspalte: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_ZEITSTEMPELSPALTE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_ZEITSTEMPELSPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitzone: ähnelt.
+        /// </summary>
+        public static string SZR_LBL_ZEITZONE {
+            get {
+                return ResourceManager.GetString("SZR_LBL_ZEITZONE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma (,) ähnelt.
+        /// </summary>
+        public static string SZR_OPT_DEZ_KOMMA {
+            get {
+                return ResourceManager.GetString("SZR_OPT_DEZ_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Punkt (.) ähnelt.
+        /// </summary>
+        public static string SZR_OPT_DEZ_PUNKT {
+            get {
+                return ResourceManager.GetString("SZR_OPT_DEZ_PUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Komma (,) ähnelt.
+        /// </summary>
+        public static string SZR_OPT_KOMMA {
+            get {
+                return ResourceManager.GetString("SZR_OPT_KOMMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kWh je Intervall ähnelt.
+        /// </summary>
+        public static string SZR_OPT_KWH_INTERVALL {
+            get {
+                return ResourceManager.GetString("SZR_OPT_KWH_INTERVALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Semikolon (;) ähnelt.
+        /// </summary>
+        public static string SZR_OPT_SEMIKOLON {
+            get {
+                return ResourceManager.GetString("SZR_OPT_SEMIKOLON", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spalte {0} ähnelt.
+        /// </summary>
+        public static string SZR_OPT_SPALTE {
+            get {
+                return ResourceManager.GetString("SZR_OPT_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tabulator ähnelt.
+        /// </summary>
+        public static string SZR_OPT_TABULATOR {
+            get {
+                return ResourceManager.GetString("SZR_OPT_TABULATOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die UTF-8 ähnelt.
+        /// </summary>
+        public static string SZR_OPT_UTF8 {
+            get {
+                return ResourceManager.GetString("SZR_OPT_UTF8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Windows-1252 ähnelt.
+        /// </summary>
+        public static string SZR_OPT_WINDOWS1252 {
+            get {
+                return ResourceManager.GetString("SZR_OPT_WINDOWS1252", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Zeitstempelspalte ähnelt.
+        /// </summary>
+        public static string SZR_OPT_ZEIT_EINE_SPALTE {
+            get {
+                return ResourceManager.GetString("SZR_OPT_ZEIT_EINE_SPALTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Getrennte Datums- und Uhrzeitspalten ähnelt.
+        /// </summary>
+        public static string SZR_OPT_ZEIT_GETRENNT {
+            get {
+                return ResourceManager.GetString("SZR_OPT_ZEIT_GETRENNT", resourceCulture);
             }
         }
         

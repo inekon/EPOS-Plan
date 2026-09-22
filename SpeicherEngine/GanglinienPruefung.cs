@@ -700,17 +700,12 @@ namespace SpeicherEngine
         private static DateTime[] KonventionAnwenden(
             DateTime[] zeit, int schrittMinuten, IntervallKonvention gewuenscht, List<PruefMeldung> protokoll)
         {
-            bool ende;
-            if (gewuenscht == IntervallKonvention.Ende) ende = true;
-            else if (gewuenscht == IntervallKonvention.Anfang) ende = false;
-            else
-            {
-                // Automatik: eine Reihe mit Intervallende beginnt genau ein Intervall
-                // nach Mitternacht des 01.01.
-                DateTime erst = zeit[0];
-                ende = erst.Month == 1 && erst.Day == 1 &&
-                       Math.Abs((erst - erst.Date).TotalMinutes - schrittMinuten) < 0.001;
-            }
+            // Die Automatik - "eine Reihe mit Intervallende beginnt genau ein Intervall
+            // nach Mitternacht des 01.01." - steht EINMAL, in
+            // IntervallKonventionErkennung; der CSV-Import der Speicher-Zeitreihen
+            // benutzt denselben Helfer. Das Verhalten hier bleibt unveraendert.
+            bool ende = IntervallKonventionErkennung.Aufloesen(gewuenscht, zeit[0], schrittMinuten)
+                        == IntervallKonvention.Ende;
 
             if (!ende)
             {
