@@ -213,7 +213,8 @@ Gerechnet wird ausschließlich gegen die aktuelle Basis.
   unaufgelöst sind oder Konfliktmarker in den Änderungen stehen.
 - **Regeln für Claude:** kein Commit und kein Push ohne Auftrag; beauftragte Commits sofort,
   atomar und mit genauen Pfaden (`git add <pfad>`, nie `-A`); Betreff kurz (höchstens
-  72 Zeichen), Einzelheiten im Rumpf; Trailer `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`;
+  72 Zeichen), Einzelheiten im Rumpf; Trailer mit dem arbeitenden Modell, gegenwärtig
+  `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`;
   keine Pull Requests, kein Tag-Push. Reihenfolge einer Welle: **Merge → Gate → Statuszeile und Protokoll →
   Push (auf Zuruf) → iOS-Lauf (nur nach Rückfrage) → Nachweis.**
 - Nach Runden mit parallelen Sitzungen repoweit nach Konfliktmarkern suchen (`^<{7}`, `^={7}$`,
