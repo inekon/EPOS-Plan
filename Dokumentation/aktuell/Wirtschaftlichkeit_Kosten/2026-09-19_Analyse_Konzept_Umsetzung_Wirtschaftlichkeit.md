@@ -320,6 +320,11 @@ Muster laufen die Schritte 1, 5 und 8 der Etappe E3.
 
 ### 3.8 Zahlenprobe gegen die Altanwendung (A8, § 6.3 Nr. 20, § 7 B9)
 
+**Anwenderentscheid 22.09.2026: „BHKW-Plan-Mappen: nicht relevant."** Die Zahlenprobe gegen die
+Altanwendung entfällt damit (Etappe E11, § 7 B9, Entscheid A17); der Abschnitt bleibt als Befund der
+Analyse stehen, der Nachweis der Wirtschaftlichkeitsgrößen läuft über die Anker aus E1 und die
+A/B-Nachweise der rechenwirksamen Etappen.
+
 Die Sperre „wartet auf Zulieferung der BHKW-Plan-Excel" ist aufgehoben: Die Mappen liegen auf dem
 Netzlaufwerk und sind maschinell lesbar (`08/§ 1`). Die Programmhülle `BHKW-WP-PLAN.XLSM` (neuere
 Fassung 23.08.2026) enthält keine Rechenlogik in Zellen; die gesamte Wirtschaftlichkeit steckt in der
@@ -392,7 +397,7 @@ Zusätzlich zu Q1–Q25 der Mockup-Prüfung (dort § 4). Ein Stern heißt: block
 | **A14** | entschieden (Konzeptfassung ohne Roadmap-Satz; G9 nennt die Referenz beim Namen). Der **G9-Teil ist umgesetzt #405**; der Hinweistext (U10) steht aus | E5 |
 | **A15** | entschieden (ein Auftrag), nicht gebaut | offener Auftrag |
 | **A16** | entschieden („Höfingen" neutralisieren), nicht ausgeführt | E12 |
-| **A17** | entschieden (`_kap` als Blatt; Referenzmappe aus dem Bestand). **Rest:** Die Mappe ist noch nicht benannt — die vom Anwender genannte Ablage war am 22.09.2026 nicht erreichbar | E11 |
+| **A17** | **gegenstandslos** — Anwenderentscheid 22.09.2026 „BHKW-Plan-Mappen: nicht relevant": die Zahlenprobe gegen die Altanwendung entfällt, eine Referenzmappe wird nicht benannt | E11 entfällt |
 | **A18** | entschieden (Abschnitt auf der Seite Kosten), nicht ausgeführt | E12 |
 | **A19** | entschieden (**alle**, in der Reihenfolge des Hüllen-Umzugs; iOS-Lauf nur nach Rückfrage) | E3 Schritt 8 |
 | **A20** | entschieden (Förderende ja; Mindestabstand nur mit Inbetriebnahmedatum, ETS 2 mit dem Preispfad), nicht gebaut | E7 |
@@ -421,7 +426,7 @@ Hüllen; Sonnet 5 für Suchen, Listen und Textpflege; Fable 5.1 nur für Konzept
 | **E8 V‑C und V‑D** | fünf ValERI-Blöcke hinter dem Umschalter; Formelbericht Stufe 0 (Parameterblock), 1 (Mehrjahrestabelle), 2 (NBW/RMZ/IKV über Differenzreihe), 3 (Betriebskostenblock); Anhang-E-Checkliste; Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne` | L | keine (Werte bleiben gleich) | Blattstruktur-Wache vorher/nachher, Kern-Fall mit Normsollwerten | — | Wirtschaftlichkeit `bericht`, je Stufe ein Logbuch-Satz | Opus; Fable für die Stufenauslegung und die ClosedXML-Fragen | E1, E5; ClosedXML-Fragen aus `05/§ 3.3` geklärt |
 | **E9 V‑E Szenarioabdeckung** | Schritte **B–D** (Zeitraum und Mengenfaktor, Trägerpreise, Erlössätze), ±-Knopf an drei neuen Orten, Kern liest die Paare, Hinweistext entfällt; **ohne Degradation** (A5) | L | **ja**, je Pflege (NULL = wie Erwartet) | A/B je Projekt, Referenzlauf byte-gleich, `SzenarioParameterTests` je Größe | B, C, D (Nummern ab 101) | Wirtschaftlichkeit `szenarien`; wesentlich | Opus | A5 entschieden; E5, E7 |
 | **E10 Nutzungsdauer S3 und Speicherflotte** | Instandsetzung/Wartung je Technik aus den vorhandenen Spalten, Gerätekataloge; Speicherflotte an `Tab_Nutzungsdauer` mit **Neueinfrieren der Basis**; geräteeigene Spalten kennzeichnen (A8) | M + M | **ja** | A/B, neue Referenzbasis mit Begründung in `Referenzlaeufe/LIESMICH.md` | (104 optional) | Kosten `nutzungsdauern` | Opus | ND‑S3-Entscheid, A7 |
-| **E11 Zahlenprobe A8/B9** | Referenzmappe festlegen (A17), Generation und Zelltafel einfrieren, Eingabespiegel, Neutralschaltung, fünf Teilproben (Annuität, Brennstoff, § 53, KWKG, Kapitalwert), erwartete Abweichungen vorab benennen (Grundlagen § 5) | M | keine | Protokoll unter `ueberholt/Protokolle/Reporting/` | — | — | Opus | A17 |
+| **E11 Zahlenprobe A8/B9** — **entfällt** (Anwenderentscheid 22.09.2026: „BHKW-Plan-Mappen: nicht relevant") | ~~Referenzmappe festlegen (A17), Generation und Zelltafel einfrieren, Eingabespiegel, Neutralschaltung, fünf Teilproben (Annuität, Brennstoff, § 53, KWKG, Kapitalwert), erwartete Abweichungen vorab benennen (Grundlagen § 5)~~ — Nachweis der Wirtschaftlichkeitsgrößen über die Anker aus E1 und die A/B-Nachweise von E7, E9, E10 | — | keine | — | — | — | — | entfällt |
 | **E12 Wiki-Runden** | Sammel-Upload 28.09.2026: die 14+1 Sätze der Mockup-Prüfung, die fünf Lücken, U17/U23/U36, `help_mapping` (Tarifstruktur, BHKW, PV, acht Anker), Höfingen neutralisiert (A16), Hilfesystem 13.2 ergänzt; danach je Etappe die Sätze aus `06/§ 3` | S je Runde | — | Tabuwort-Regex, Produktdaten-Wache | — | — | Sonnet | A16, A18 |
 
 **Stand der Etappen am 22.09.2026.**

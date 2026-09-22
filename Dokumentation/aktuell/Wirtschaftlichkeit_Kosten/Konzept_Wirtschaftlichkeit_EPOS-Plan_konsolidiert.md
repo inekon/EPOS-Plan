@@ -2582,14 +2582,12 @@ reihenfolgeunabhängig; der A/B-Nachweis über 25 Projekte × 3 Szenarien ist ze
 
 **Nachweis und Betrieb**
 
-20. **Zahlenprobe gegen die Altanwendung (A8, ≡ B9) — die Vorbedingung ist entfallen:** Die
-    BHKW-Plan-Excel liegt vor, die Inventarisierung steht in
-    [`ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md).
-    Der Punkt ist damit **planbar**, nicht mehr blockiert; Prüfumfang s. § 7 (B9). Was fehlt, ist
-    die **benannte Referenzmappe**: Entscheid A17 (20.09.2026 nach Empfehlung) legt `_kap` als
-    maßgebliches Kapitalwertblatt fest und verlangt eine Mappe aus dem Bestand mit 41 Blättern und
-    echten Zahlen. Die Ablage der BHKW-Plan-Mappen selbst **wartet auf Zulieferung** — die vom
-    Anwender genannten Orte auf dem Z:-Laufwerk waren am 22.09.2026 nicht erreichbar (E0c)
+20. ~~Zahlenprobe gegen die Altanwendung (A8, ≡ B9)~~ — **entfällt, Anwenderentscheid 22.09.2026:
+    „BHKW-Plan-Mappen: nicht relevant."** Die Inventarisierung der Mappen bleibt als Geschichte in
+    [`ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md);
+    Entscheid A17 (Referenzmappe, `_kap`) ist damit gegenstandslos, Etappe E11 des Analysepapiers
+    entfällt. Der Nachweis der Wirtschaftlichkeitsgrößen läuft über die Anker aus E1 (§ 6.2) und
+    die A/B-Nachweise der rechenwirksamen Etappen (E7, E9, E10)
 21. ~~Basiswechsel der Referenzläufe entscheiden~~ — **erledigt mit #333** (neue Basis
     `2026-09-18_R9_Kesselbrennstoff`, § 6.2; heute `2026-09-19_R10_BhkwWirkungsgrad`).
     ~~**Offen bleibt**: Kapitalwert und Betriebskosten von 1030 verankern.~~ — **Entscheid A11
@@ -2669,7 +2667,7 @@ die beiden Etappen dieser Tafel:
 | Etappe | Inhalt | Ergebniswirkung |
 |---|---|---|
 | **B8** | Die verbliebenen Befunde: **S-2** (kein projektweites Doppelentlastungsverbot) und **B-6** (geschluckte Fehler, `catch {}` ⇒ still 0). Der **PV-Teil von V-3** und **I-5** sind mit **E2 (#405)** erledigt. S‑2 ist mit **A3** entschieden (20.09.2026 nach Empfehlung): **Sperre mit Begründungszeile**, nicht Warnung. Beide Punkte laufen in **E7** des Etappenplans mit | **ja** bei S-2 — jeder Punkt einzeln mit A/B-Nachweis; B-6 ist Robustheit |
-| **B9** ≡ A8 | Zahlenprobe gegen die Altanwendung. **Planbar** — die Excel liegt vor und ist inventarisiert ([`Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md)); **was fehlt, ist die benannte Referenzmappe**. Abnahmeliste ist § 5 der [Grundlagen](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md) — neun Abweichungen der Altanwendung, darunter drei, die eine Zahlenprobe sofort auseinanderlaufen lassen (Öl je 1 000 l statt je MWh, Flüssiggas nicht zuordenbar, Stromsteuer als Restbelastung statt Erstattung) | Nachweis |
+| **B9** ≡ A8 | Zahlenprobe gegen die Altanwendung — **entfällt (Anwenderentscheid 22.09.2026: „BHKW-Plan-Mappen: nicht relevant")**. Die Inventur der Mappen ([`Analyse_Altanwendung_BHKW-Plan.md`](../../ueberholt/Protokolle/Reporting/Analyse_Altanwendung_BHKW-Plan.md)) und die neun Abweichungen der Altanwendung (§ 5 der [Grundlagen](../Grundlagen_KWKG_Energiesteuer_Stromsteuer.md)) bleiben als Geschichte stehen; der Nachweis der Wirtschaftlichkeitsgrößen läuft über die Anker aus E1 (§ 6.2) und die A/B-Nachweise der rechenwirksamen Etappen | entfällt |
 
 Zur Einordnung: **I-1, I-2, I-3, B-1/N1, N3, B-5 und S-6 sind erledigt** (§ 4); die frühere
 Reihenfolgebegründung („B5 bleibt ergebnisneutral, die erste gewollte Ergebnisänderung kommt mit
@@ -2727,7 +2725,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **VV** (§ 2.16) | — | — | **#359** | Vergütung je Variante, Schritt 93 |
 | *(namenlos)* | — | — | **#365/#366** | Hilfsenergie am Endenergiebedarf, Schritt 94 |
 | **B8** | — | — | offen (in **E7**) | Befunde S-2 (≡ A3) und B-6; V-3-Rest und I-5 mit **#405** erledigt (§ 7) |
-| **B9** ≡ A8 | — | — | offen (**E11**) | Zahlenprobe gegen die Altanwendung |
+| **B9** ≡ A8 | — | — | entfällt (Anwender 22.09.2026) | Zahlenprobe gegen die Altanwendung — BHKW-Plan-Mappen nicht relevant, E11 entfällt |
 | **V-A…V-E** (§ 2.11.4) | W5‑B‑9…W5‑B‑12 | — | keine im Bereich #300–#428 | ValERI: W5‑B‑9/10/11/12 gebaut (Schritte 71, 72); V-A = **E5**, V-C/V-D = **E8**, V-E = **E9** |
 | § 2.13 Punkte (1)–(6) | — | — | #332, #346, #354, **#405** | Ergebnisansicht; mit #405 Kennzahl-Reihenfolge und die Dialogkorrekturen |
 | § 6.3 Nr. 9h | — | **S2-Rest / U39** | **#357** | Nutzungsdauer, Ersatz, Restwert |
