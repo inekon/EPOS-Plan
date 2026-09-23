@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using WindowsFormsApplication1;
 
@@ -195,7 +196,11 @@ namespace Auslieferungsvorlage
             // ---- Schritt 5: verdichten und pruefen ---------------------------------
             bau.Verdichten();
 
-            var pruefung = new Prueflauf(bericht, sicht);
+            var pruefung = new Prueflauf(bericht, sicht)
+            {
+                Eingaben = new[] { arg.Quelle, arg.Katalogpaket }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
+                TwwMitnahmen = bau.TwwMitnahmen
+            };
             bool abgenommen = pruefung.Ausfuehren(strictVorher);
 
             // Erst JETZT die Verbindungen schliessen: Solange die Zugriffsschicht die

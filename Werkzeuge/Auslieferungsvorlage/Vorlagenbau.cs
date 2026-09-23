@@ -23,6 +23,13 @@ namespace Auslieferungsvorlage
         /// <summary>Traf der Katalogwaechter zu — eine <c>*_STAMM</c>-Tabelle wurde leer?</summary>
         internal List<string> GeleerteKataloge { get; } = new List<string>();
 
+        /// <summary>
+        /// Die Tww-Katalogzeilen, die ein Beispielpaket beim Einspielen mit Status IMPORT
+        /// mitgenommen hat — „Paket: Berichtszeile“. Die Pruefung nennt damit das
+        /// verursachende Paket (<see cref="TwwKataloge.Pruefen"/>).
+        /// </summary>
+        internal List<string> TwwMitnahmen { get; } = new List<string>();
+
         // =================================================================================
         //  SCHRITT 2 - Projektdaten entfernen
         // =================================================================================
@@ -301,7 +308,12 @@ namespace Auslieferungsvorlage
                 }
                 _bericht.Zeile("eingespielt: " + Path.GetFileName(paket) + "  ->  Projekt-Id " +
                                id.ToString(CultureInfo.InvariantCulture));
-                foreach (string z in io.LetzterBericht) _bericht.Zeile("    " + z);
+                foreach (string z in io.LetzterBericht)
+                {
+                    _bericht.Zeile("    " + z);
+                    if (z.Contains("Status " + TwwSchema.STATUS_IMPORT))
+                        TwwMitnahmen.Add(Path.GetFileName(paket) + ": " + z);
+                }
             }
             return true;
         }

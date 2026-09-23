@@ -22,7 +22,9 @@ namespace Auslieferungsvorlage
     /// Die ReadOnly-Regel von <c>--kataloge readonly</c> rührt diese Tabellen deshalb nicht
     /// an (<see cref="IstTww"/>). Gelöscht wird bei eingeschalteten Fremdschlüsseln — die
     /// Kaskaden nehmen Tagesgänge und Ereignisse mit; die Reihenfolge Nutzungsart vor
-    /// Tagesgangsatz folgt dem Verweis <c>ID_Tagesgangsatz</c> (ohne Kaskade).</para>
+    /// Tagesgangsatz folgt dem Verweis <c>ID_Tagesgangsatz</c> (ohne Kaskade). Was bleibt,
+    /// bekommt <c>ReadOnly = 1</c>: Eine Auslieferungszeile ist unveränderlich (Konzept 3.1,
+    /// K7), und die Prüfung verlangt es für jede Zeile mit Status <c>AUSLIEFERUNG</c>.</para>
     ///
     /// <para><b>Die Projekttabellen</b> <c>Tab_TwwZone</c>, <c>Tab_TwwWohnungstyp</c> und
     /// <c>Tab_TwwProjekt</c> sind Projektdaten und fallen in Schritt 2 wie alle anderen
@@ -71,7 +73,7 @@ namespace Auslieferungsvorlage
         /// <summary>Die Typtag-Ablage des lizenzierten Anwenders (Schritt T3) — nie in der Vorlage.</summary>
         internal const string TAB_TYPTAG_IMPORT = "Tab_TwwTyptag_IMPORT";
 
-        /// <summary>Die lokalen Normdaten (ZU11) — der Bericht nennt, dass sie nicht mitreisen.</summary>
+        /// <summary>Die lokalen Normdaten (ZU11) — keine Eingabe des Laufs darf dort liegen.</summary>
         internal const string NORMZAHLEN = "Referenzlaeufe/Normzahlen/";
 
         private readonly Bericht _bericht;
@@ -156,6 +158,14 @@ namespace Auslieferungsvorlage
             bool typtage = DataRepository.TabelleVorhanden(TAB_TYPTAG_IMPORT);
             if (typtage) anweisungen.Add(("DELETE FROM \"" + TAB_TYPTAG_IMPORT + "\"", new DbParam[0]));
 
+            // Was bleibt, ist Auslieferung — und die ist unveraenderlich (Konzept 3.1, 3.2, K7):
+            // ReadOnly = 1, sonst waere eine ausgelieferte, noch unbenutzte Zeile beim Anwender
+            // aenderbar und loeschbar.
+            List<string> mitReadOnly = Vorhandene(KOEPFE)
+                .Where(t => DataRepository.SpalteVorhanden(t, "ReadOnly") && DataRepository.SpalteVorhanden(t, "Status"))
+                .ToList();
+
+            long gesperrt = 0;
             using (DbVorgang v = DataRepository.Vorgang())
             {
                 long fk = Convert.ToInt64(v.Skalar("PRAGMA foreign_keys"));
@@ -164,6 +174,10 @@ namespace Auslieferungsvorlage
                 if (fk != 1) return false;
 
                 foreach (var (sql, werte) in anweisungen) v.Ausfuehren(sql, werte);
+                foreach (string t in mitReadOnly)
+                    gesperrt += v.Ausfuehren("UPDATE \"" + t + "\" SET \"ReadOnly\" = 1 WHERE \"Status\" = ? AND " +
+                                             "(\"ReadOnly\" IS NULL OR \"ReadOnly\" <> 1)",
+                                             new DbParam("?", TwwSchema.STATUS_AUSLIEFERUNG));
                 v.Commit();
             }
 
@@ -171,6 +185,8 @@ namespace Auslieferungsvorlage
             _bericht.Leer();
             _bericht.Tabellenkopf("Tww-Katalogtabelle", "vorher", "nachher");
             foreach (string t in tabellen) _bericht.Tabellenzeile(t, vorher[t], nachher[t]);
+            _bericht.Zeile("ReadOnly = 1 gesetzt: " + gesperrt.ToString(CultureInfo.InvariantCulture) +
+                           " Zeile(n) mit Status AUSLIEFERUNG (Auslieferung ist unveraenderlich)");
             if (typtage)
                 _bericht.Zeile(TAB_TYPTAG_IMPORT + " geleert (Typtage des lizenzierten Anwenders, nie in der Vorlage)");
             return true;
@@ -364,9 +380,12 @@ namespace Auslieferungsvorlage
         /// <summary>
         /// Die Tww-Posten der Abnahme (Konzept 3.2, 6 (b), (c)): keine Zeile mit Status
         /// <c>IMPORT</c>, nur <c>AUSLIEFERUNG</c>, keine verwaiste Kindzeile, keine Herkunftsart
-        /// <c>FIKTIV</c>, keine Normdaten (Herkunftsart <c>IMPORT</c>, <c>Tab_TwwTyptag_IMPORT</c>).
+        /// <c>FIKTIV</c>, keine Normdaten (Herkunftsart <c>IMPORT</c>, <c>Tab_TwwTyptag_IMPORT</c>),
+        /// jede Auslieferungszeile <c>ReadOnly = 1</c>, keine Eingabe aus den lokalen Normdaten
+        /// (ZU11). <paramref name="mitnahmen"/> nennt zu einer IMPORT-Zeile das Beispielpaket,
+        /// das sie mitgebracht hat.
         /// </summary>
-        internal bool Pruefen()
+        internal bool Pruefen(IReadOnlyList<string> eingaben = null, IReadOnlyList<string> mitnahmen = null)
         {
             _bericht.Leer();
             _bericht.Zeile("Zapfprofil-Kataloge (Tww)");
@@ -381,6 +400,7 @@ namespace Auslieferungsvorlage
             // (1) Status IMPORT und (2) alles ausser AUSLIEFERUNG
             var import = new List<string>();
             var fremd = new List<string>();
+            var beschreibbar = new List<string>();
             long auslieferung = 0;
             foreach (string t in koepfe.Where(t => DataRepository.SpalteVorhanden(t, "Status")))
             {
@@ -390,9 +410,19 @@ namespace Auslieferungsvorlage
                 auslieferung += Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" = ?", TwwSchema.STATUS_AUSLIEFERUNG);
                 if (i > 0) import.Add(t + ": " + i);
                 if (f > 0) fremd.Add(t + ": " + f);
+                if (DataRepository.SpalteVorhanden(t, "ReadOnly"))
+                {
+                    long b = Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Status\" = ? AND " +
+                                  "(\"ReadOnly\" IS NULL OR \"ReadOnly\" <> 1)", TwwSchema.STATUS_AUSLIEFERUNG);
+                    if (b > 0) beschreibbar.Add(t + ": " + b);
+                }
             }
+            // Das verursachende Beispielpaket gleich mit nennen — sonst ist die Zeile schwer zu deuten.
+            if (import.Count > 0 && mitnahmen != null)
+                foreach (string m in mitnahmen) import.Add("mitgebracht von Beispielpaket " + m);
             ok &= Posten(import, "keine Zeile mit Status IMPORT");
             ok &= Posten(fremd, "nur Status AUSLIEFERUNG (keine Zeile EIGEN)");
+            ok &= Posten(beschreibbar, "jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1");
 
             // (3) verwaiste Zeilen
             var waisen = new List<string>();
@@ -425,9 +455,13 @@ namespace Auslieferungsvorlage
                 }
             ok &= Posten(fiktiv, "keine Zeile mit Herkunftsart FIKTIV (der Testkatalog bleibt draussen)");
 
-            _bericht.Zeile("        Lokale Normdaten (ZU11): " + NORMZAHLEN + " ist nicht Teil der Auslieferung — " +
-                           "das Werkzeug liest dort nichts,");
-            _bericht.Zeile("        die Vorlage entsteht allein aus Quelle, Katalogpaket und Beispielpaketen.");
+            // (6) Lokale Normdaten (ZU11): keine Eingabe des Laufs liegt dort.
+            var normpfade = new List<string>();
+            foreach (string p in eingaben ?? new List<string>())
+                if (UnterNormzahlen(p)) normpfade.Add(p);
+            ok &= Posten(normpfade, "keine Eingabe aus den lokalen Normdaten (ZU11, " + NORMZAHLEN +
+                                    "; Quelle, Katalogpaket, Beispiele)");
+
             if (DataRepository.TabelleVorhanden(TAB_TYPTAG_IMPORT))
             {
                 long n = Zahl("SELECT COUNT(*) FROM \"" + TAB_TYPTAG_IMPORT + "\"", null);
@@ -438,6 +472,23 @@ namespace Auslieferungsvorlage
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));
             return ok;
+        }
+
+        /// <summary>
+        /// Liegt der Pfad unter einem Ordner <c>Referenzlaeufe/Normzahlen</c>? Verglichen wird
+        /// der volle Pfad (<see cref="Path.GetFullPath(string)"/>) Segment für Segment, ohne
+        /// Groß- und Kleinschreibung — ein Repository-Ort ist dafür nicht nötig.
+        /// </summary>
+        internal static bool UnterNormzahlen(string pfad)
+        {
+            if (string.IsNullOrWhiteSpace(pfad)) return false;
+            string[] teile = Path.GetFullPath(pfad).Replace('\\', '/')
+                                 .Split('/', StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i + 1 < teile.Length; i++)
+                if (string.Equals(teile[i], "Referenzlaeufe", StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(teile[i + 1], "Normzahlen", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            return false;
         }
 
         private bool Posten(List<string> befunde, string text)

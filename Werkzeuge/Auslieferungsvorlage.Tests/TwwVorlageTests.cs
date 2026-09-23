@@ -66,12 +66,17 @@ namespace Auslieferungsvorlage.Tests
             Assert.Contains("ok      keine verwaiste Zeile", e.Ausgabe);
             Assert.Contains("ok      keine Zeile mit Herkunftsart FIKTIV", e.Ausgabe);
             Assert.Contains("ok      keine Zeile aus einem Normimport", e.Ausgabe);
-            Assert.Contains("Referenzlaeufe/Normzahlen/ ist nicht Teil der Auslieferung", e.Ausgabe);
+            Assert.Contains("ok      keine Eingabe aus den lokalen Normdaten (ZU11, Referenzlaeufe/Normzahlen/", e.Ausgabe);
             Assert.Contains("Tww-Auslieferungszeilen (Status AUSLIEFERUNG): 2", e.Ausgabe);
+            // Die Nutzungsart kam mit ReadOnly 0 — die Vorlage sperrt sie (Auslieferung ist unveraenderlich).
+            Assert.Contains("ReadOnly = 1 gesetzt: 1 Zeile(n) mit Status AUSLIEFERUNG", e.Ausgabe);
+            Assert.Contains("ok      jede Zeile mit Status AUSLIEFERUNG traegt ReadOnly = 1", e.Ausgabe);
 
             Lesen(ziel, () =>
             {
                 Assert.Equal(new[] { "Probe Nutzung" }, Namen(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+                Assert.Equal(1L, Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ReadOnly FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = 'Probe Nutzung'")));
                 Assert.Equal(new[] { "Probe Satz" }, Namen(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM));
                 Assert.Equal(4L, Zahl(TwwSchema.TAB_TWW_TAGESGANG_STAMM));
                 foreach (string t in new[]
@@ -174,6 +179,66 @@ namespace Auslieferungsvorlage.Tests
             Werkzeuglauf.Ergebnis falsch = Werkzeuglauf.Starten(quelle, ziel, "--katalogpaket", fremd, "--trocken");
             Assert.True(falsch.Code == 2, falsch.Alles);
             Assert.Contains("Tab_Gebaeude_STAMM.csv ist keine Tww-Katalogtabelle", falsch.Fehlerausgabe);
+        }
+
+        // =============================================================================
+        //  Beispielpakete und lokale Normdaten
+        // =============================================================================
+
+        /// <summary>
+        /// Ein Beispielpaket, dessen Zone eine Nutzungsart nutzt, die die Vorlage nicht führt
+        /// (hier: die fiktive des Testkatalogs, die die Tww-Regel entfernt): Der Import nimmt
+        /// sie mit Status IMPORT mit, die Pruefung faellt — und nennt das Paket.
+        /// </summary>
+        [Fact]
+        public void T6_Ein_Beispielpaket_mit_fehlender_Nutzungsart_faellt_und_wird_genannt()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string quelle = o.Datei("quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+            string werkbank = o.Datei("werkbank.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, werkbank);
+            string beispiel = o.Datei("tww-beispiel.wpx");
+
+            Bearbeiten(werkbank, () =>
+            {
+                long projekt = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT ID FROM Tab_Projekt WHERE Projektname = ?", new DbParam("?", Vorlage.BEISPIELPROJEKT)));
+                long nutzung = Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT MIN(ID) FROM Tab_TwwNutzungsart_STAMM WHERE Status = ?", new DbParam("?", TwwSchema.STATUS_EIGEN)));
+                Assert.True(DataRepository.ExecuteSQL(
+                    "INSERT INTO Tab_TwwZone (ID_Projekt, ID_Nutzungsart, Reihenfolge, Name, Bezugsmenge) VALUES (?, ?, 1, 'Z', 10.0)",
+                    new DbParam("?", projekt), new DbParam("?", nutzung)));
+                Assert.True(new ProjektExportImportCtrl().Exportieren(Vorlage.BEISPIELPROJEKT, beispiel),
+                            "Der Export des Beispielprojekts ist fehlgeschlagen.");
+            });
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"),
+                                                           "--beispiele", beispiel, "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  keine Zeile mit Status IMPORT", e.Ausgabe);
+            Assert.Contains("mitgebracht von Beispielpaket tww-beispiel.wpx: Katalogzeile", e.Ausgabe);
+        }
+
+        /// <summary>
+        /// Eine Eingabe unter <c>Referenzlaeufe/Normzahlen/</c> (ZU11) laesst die Pruefung
+        /// fallen — hier die Quelle selbst, in einem Temp-Ordner mit diesem Pfadstueck.
+        /// </summary>
+        [Fact]
+        public void T7_Eine_Eingabe_aus_den_lokalen_Normdaten_faellt_in_der_Pruefung()
+        {
+            if (Werkzeuglauf.Testdatenbank == null) return;
+            using var o = new Arbeitsordner();
+            string ordner = Path.Combine(o.Pfad, "Referenzlaeufe", "Normzahlen");
+            Directory.CreateDirectory(ordner);
+            string quelle = Path.Combine(ordner, "quelle.sqlite");
+            File.Copy(Werkzeuglauf.Testdatenbank, quelle);
+
+            Werkzeuglauf.Ergebnis e = Werkzeuglauf.Starten(quelle, o.Datei("Kenndaten.sqlite"), "--trocken");
+            Assert.True(e.Code == 5, e.Alles);
+            Assert.Contains("FEHLER  keine Eingabe aus den lokalen Normdaten (ZU11", e.Ausgabe);
+            Assert.Contains(quelle, e.Ausgabe);
         }
 
         // =============================================================================
