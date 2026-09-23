@@ -39,6 +39,16 @@ Alle Commits tragen den Trailer des arbeitenden Modells. Die Schemanummer war zu
 `main`, `origin/ios_migration_september` und allen Worktrees 100; T1 lief zuerst als 101 und wurde nach
 dem Merge des Arbeitszweigs, der 101 an die Wirtschaftlichkeit gab, auf 102 umnummeriert.
 
+**Umnummerierung auf 103.** Beim Merge von `origin/ios_migration_september` nach `z0` stand dort
+Schritt 101 schon veröffentlicht: der Gebäudespalten-Schritt der Gebäudesimulation (`a6dd0fa4`).
+Mit der Sitzung der Wirtschaftlichkeit abgestimmt: 101 bleibt der Gebäudesimulation, der
+KWKG-Schritt (e7) wird 102, T1 wird 103; `SchemaStand.Zielversion` 103 (N4 im Umsetzungskonzept).
+Merge samt Konfliktlösung in `SchemaMigration`, `SchemaStand`, `TestDatenbank`,
+`Werkzeuge/Testdatenbankschema` und `Referenzlaeufe/LIESMICH.md` und der Umnummerierung in
+Kommentaren und Tests: `23437ea1`. Testdatenbank aus der origin-Fassung mit 102 und 103 migriert,
+fiktiver Testkatalog neu eingespielt (LFS): `3d5e5b84`. Statuszeilen #437 und #438, N4 und dieser
+Absatz im Papier-Commit danach.
+
 ## Gates
 
 Im Worktree `z0` auf `4ddebed9`:

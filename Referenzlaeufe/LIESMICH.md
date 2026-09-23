@@ -327,6 +327,12 @@ und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
 > Die erfundene Kaltwasser-Bezugstemperatur der drei Nutzungsarten ist bewusst **kein** Wert,
 > der mit einer Normvorgabe zusammenfällt; das Skript führt vorhandene Zeilen auf seine Werte
 > nach (Zellvergleich: nur `Bezug_Kaltwasser` der drei Nutzungsarten, Schemastand unverändert).
+> **Umnummeriert:** Schritt 101 gehört der Gebäudesimulation, der KWKG-Schritt ist 102, T1 ist 103.
+> Die Testdatenbank ist aus der Fassung auf Schemastand 101 (Gebäudespalten) mit den Schritten 102
+> und 103 und dem Skript neu nachgezogen: Zellvergleich gegen die Fassung 101 nur Schemastand, die
+> sieben Anlagenzeilen und die zehn neuen Tabellen (19 Zeilen), gegen die frühere Fassung 102 nur
+> Schemastand und Gebäudespalten; `integrity_check` ok, `foreign_key_check` leer, 129 Tabellen
+> `STRICT`, 67 727 360 Byte.
 
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den

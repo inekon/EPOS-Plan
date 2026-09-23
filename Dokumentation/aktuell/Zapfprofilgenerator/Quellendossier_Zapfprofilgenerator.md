@@ -8,7 +8,7 @@ keine Kennzahl, keine Bandbreite, keinen Formvektor, keine Bezugstemperatur, kei
 Nachschlagewert — nur Regelwerk, Ausgabe, Fundstellenart und Regel.
 
 **Geltung.** Das Schema steht in `EPOS.Kern/Allgemein/Update/TwwSchema.cs` (Schemaschritt T1, im
-Bestand Schritt 102); die Tabellen und Spalten beschreibt Abschnitt 3.1 des Umsetzungskonzepts. Wo
+Bestand Schritt 103); die Tabellen und Spalten beschreibt Abschnitt 3.1 des Umsetzungskonzepts. Wo
 dieses Dossier und das Umsetzungskonzept auseinanderlaufen, gilt das Umsetzungskonzept; die
 Methodik steht im [Methodikkonzept](../Konzept_TWW-Zapfprofile_WP-Plan_1.md), die Auswertung der
 Regelwerke in den Grundlagenpapieren 1, 2, 3 und 5. Deren Zahlenteile werden nach dem Ergebnis von
