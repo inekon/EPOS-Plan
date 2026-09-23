@@ -854,7 +854,7 @@ namespace WindowsFormsApplication1
                         (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
                         (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                         (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
                         (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
                 */
                 SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
@@ -862,7 +862,7 @@ namespace WindowsFormsApplication1
                        (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                       (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                       (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
@@ -886,7 +886,7 @@ namespace WindowsFormsApplication1
                         (double)A_Temp[Tag],
                         (double)item.Maximaleraumtemperatur,
                         (double)item.Z_AuswahlWohnflaeche,
-                        (double)item.Wohnflaeche);
+                        (double)item.Nutzflaeche);
                 */
                 Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
                         WE_Absenkung,
@@ -902,7 +902,7 @@ namespace WindowsFormsApplication1
                         (double)A_Temp[Tag],
                         (double)item.Maximaleraumtemperatur,
                         (double)item.Z_AuswahlWohnflaeche,
-                        (double)item.Wohnflaeche);
+                        (double)item.Nutzflaeche);
             }
 
             HeizwaermebedarfGeb[GebaeudeNr] = 0;
@@ -923,7 +923,7 @@ namespace WindowsFormsApplication1
                         (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
                         (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                         (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
                         (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
                 */
                 SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
@@ -931,7 +931,7 @@ namespace WindowsFormsApplication1
                      (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
                      (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
                      (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                     (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Wohnflaeche,
+                     (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
                      (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
 
                 WE_Absenkung = 0;
@@ -961,7 +961,7 @@ namespace WindowsFormsApplication1
                     (double)A_Temp[Tag],
                     (double)item.Maximaleraumtemperatur,
                     (double)item.Z_AuswahlWohnflaeche,
-                    (double)item.Wohnflaeche);
+                    (double)item.Nutzflaeche);
                 */
                 Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
                       WE_Absenkung,
@@ -977,7 +977,7 @@ namespace WindowsFormsApplication1
                       (double)A_Temp[Tag],
                       (double)item.Maximaleraumtemperatur,
                       (double)item.Z_AuswahlWohnflaeche,
-                      (double)item.Wohnflaeche);
+                      (double)item.Nutzflaeche);
 
                 HeizwaermebedarfGeb[GebaeudeNr] = HeizwaermebedarfGeb[GebaeudeNr] + Heizlast[Tag];
             }

@@ -3595,6 +3595,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_100_FREMDSCHLUESSEL_VORGABE = 100;
 
+        /// <summary>
+        /// Schritt 101 — der <b>Gebäudespalten-Schritt M3</b> der Gebäudesimulation
+        /// (Stufe G1, Auftrag vom 23.09.2026; Umsetzungskonzept Gebäudesimulation 1.6
+        /// und 1.7, Entscheide E19, E27/U5, F-S1, F-S2).
+        ///
+        /// <para><b>In dieser Reihenfolge</b> (Konzept N1.24): die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> verwerfen — sie nennt <c>Wohnflaeche</c>
+        /// namentlich, und SQLite kennt kein <c>ALTER VIEW</c>; in
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> <c>Wohnflaeche</c> in
+        /// <c>Nutzflaeche</c> umbenennen (E19, Wertübernahme); je fünfzehn neue
+        /// Spalten anlegen (zwölf der Stufe G1, drei der Stufe G2 — ein Schritt, ein
+        /// Sichtneubau, U5); die Sicht neu bauen. Definitionen:
+        /// <see cref="GebaeudeSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral.</b> Die neuen Spalten bleiben NULL (die zwei
+        /// Schalter 0), kein Rechenweg liest sie; die Umbenennung trägt die Werte 1:1.
+        /// Der Referenzlauf bleibt byte-gleich, die Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.</para>
+        ///
+        /// <para><b>Nach Schritt 100</b>: 100 baut <c>Tab_Gebaeude</c> neu (Vorgabe 0
+        /// von <c>ID_ProjektGebaeude</c>), und die Umbenennung und die neuen Spalten
+        /// gehören an die neu gebaute Tabelle.</para>
+        /// </summary>
+        public const int SCHRITT_101_GEBAEUDESPALTEN = 101;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -4957,6 +4983,22 @@ namespace WindowsFormsApplication1
                         "gibt es nicht, und faende der Schritt welche, braeche er benannt " +
                         "ab.",
                         Schritt_100_FremdschluesselVorgabe),
+
+            // AUFTRAG 23.09.2026 (Stufe G1 der Gebaeudesimulation) - der
+            // Gebaeudespalten-Schritt M3. REIN DDL, kein DML; die Quelle ist
+            // GebaeudeSchema. Er steht NACH 100, weil 100 Tab_Gebaeude neu baut.
+            new Schritt(SCHRITT_101_GEBAEUDESPALTEN,
+                        "Tab_Gebaeude(_STAMM): Wohnflaeche heisst Nutzflaeche, fuenfzehn " +
+                        "neue Spalten fuer das Gebaeudemodell, die Sicht " +
+                        "Abfrage_Projektgebaeude neu gebaut",
+                        "Die neuen Spalten erreichten den Leser nicht - die Sicht hat eine " +
+                        "feste Spaltenliste, und SQLite kennt kein ALTER VIEW. Das " +
+                        "Gebaeudemodell liefe fuer jedes Gebaeude auf die Vorgabewerte, " +
+                        "ohne dass eine Eingabe des Anwenders je ankaeme. Die Bezugsflaeche " +
+                        "heisst ab hier, was sie ist: Nutzflaeche; die Werte gehen 1:1 " +
+                        "hinueber. KEIN Rechenergebnis aendert sich - die neuen Spalten " +
+                        "bleiben leer, und kein Rechenweg liest sie.",
+                        Schritt_101_Gebaeudespalten),
         };
 
         /// <summary>
@@ -7513,6 +7555,66 @@ namespace WindowsFormsApplication1
                     "meldet ab hier NOT NULL mit Tabelle und Spalte statt still eine 0 zu " +
                     "setzen. Werte, Ids und Zaehlerstaende bleiben - der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 101 - der Gebaeudespalten-Schritt M3 (Auftrag 23.09.2026, Stufe G1)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 101 — Anlass und Reihenfolge stehen bei
+        /// <see cref="SCHRITT_101_GEBAEUDESPALTEN"/>, die Definitionen bei
+        /// <see cref="GebaeudeSchema"/>.
+        ///
+        /// <para><b>Wiederholbar:</b> Die Sicht fällt mit <c>IF EXISTS</c>, die
+        /// Umbenennung läuft nur, wo <c>Wohnflaeche</c> noch steht,
+        /// <see cref="SqliteSpalteAnlegen"/> übergeht eine vorhandene Spalte, und die
+        /// Sicht wird immer neu gebaut. Die Nachprobe fragt
+        /// <see cref="GebaeudeSchema.Vollstaendig"/>.</para>
+        /// </summary>
+        private static bool Schritt_101_Gebaeudespalten(Lauf l)
+        {
+            // vorweg: die Sicht nennt die Spalte - erst weg damit (kein ALTER VIEW in SQLite)
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_DROP, "Sicht " + GebaeudeSchema.VIEW + " verworfen")) return false;
+
+            // 1. Umbenennung zuerst (E19, Konzept N1.24)
+            foreach (string t in GebaeudeSchema.TABELLEN)
+                if (SqliteSpalteVorhanden(t, GebaeudeSchema.SPALTE_WOHNFLAECHE_ALT)
+                    && !SqliteDdl(l, GebaeudeSchema.UmbenennungSql(t),
+                                  t + ": " + GebaeudeSchema.SPALTE_WOHNFLAECHE_ALT + " -> " +
+                                  GebaeudeSchema.SPALTE_NUTZFLAECHE))
+                    return false;
+
+            // 2. dann die neuen Spalten (fuenfzehn je Tabelle, 30 Eintraege)
+            foreach (SchemaSpalte s in GebaeudeSchema.Gebaeudespalten)
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+
+            // 3. zuletzt die Sicht neu - aus SQL_VIEW_NEU, der einzigen Quelle der Definition
+            if (!SqliteDdl(l, GebaeudeSchema.SQL_VIEW_NEU, "Sicht " + GebaeudeSchema.VIEW)) return false;
+
+            bool vollstaendig;
+            using (DataRepository.EngineModus())
+            {
+                DataRepository.StilleFehlerAbholen();
+                vollstaendig = GebaeudeSchema.Vollstaendig();
+                DataRepository.StilleFehlerAbholen();
+            }
+            if (!vollstaendig)
+            {
+                l.LetzterFehler = "Die Gebaeudetabellen oder die Sicht " + GebaeudeSchema.VIEW +
+                                  " stehen nach dem Schritt nicht auf dem Zielstand.";
+                l.Notiz("101: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("101: Gebaeudespalten-Schritt M3 - Wohnflaeche heisst Nutzflaeche, " +
+                    GebaeudeSchema.Gebaeudespalten.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten stehen, die Sicht fuehrt " +
+                    GebaeudeSchema.SICHT_ALLE.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalten. Die neuen Spalten bleiben leer; KEIN Rechenergebnis aendert " +
+                    "sich durch diesen Schritt.");
             return true;
         }
 

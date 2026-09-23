@@ -41,7 +41,7 @@ namespace WindowsFormsApplication1
         public double Dachflaeche;
         public double Grundflaeche;
         public double Sonstige_Flaechen;
-        public double Wohnflaeche;
+        public double Nutzflaeche;
         public double Raumhoehe;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach;
@@ -103,7 +103,7 @@ namespace WindowsFormsApplication1
             Dachflaeche = 0;
             Grundflaeche = 0;
             Sonstige_Flaechen = 0;
-            Wohnflaeche = 0;
+            Nutzflaeche = 0;
             Raumhoehe = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = 0;

@@ -1111,6 +1111,30 @@ namespace Testdatenbankschema
                                       FremdschluesselVorgabe.ZeilenMitVorgabe(s.Tabelle, s.Name) + ".");
             }
 
+            // ---- Schritt 101: der Gebaeudespalten-Schritt M3 (Auftrag 23.09.2026, Stufe G1
+            //      der Gebaeudesimulation). REIN DDL: Sicht verwerfen, Wohnflaeche ->
+            //      Nutzflaeche in Tab_Gebaeude(_STAMM), fuenfzehn neue Spalten je Tabelle,
+            //      Sicht Abfrage_Projektgebaeude neu. DIESELBE Quelle (GebaeudeSchema), aus
+            //      der sich SchemaMigration.Schritt_101_Gebaeudespalten bedient.
+            //
+            //      ER STEHT NACH 100: 100 baut Tab_Gebaeude neu.
+            //
+            //      ERGEBNISNEUTRAL: Die neuen Spalten bleiben NULL (die zwei Schalter 0),
+            //      kein Rechenweg liest sie; die Umbenennung traegt die Werte 1:1.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 101 - Gebaeudespalten: " +
+                              (GebaeudeSchema.Vollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht101 = new List<string>();
+                int angelegt101 = GebaeudeSchema.Alle(bericht101);
+                angelegt += angelegt101;
+                foreach (string zeile in bericht101)
+                    Console.WriteLine("Schritt 101 - " + zeile + ".");
+                Console.WriteLine("Schritt 101 - vollstaendig: " + GebaeudeSchema.Vollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

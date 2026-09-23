@@ -35,7 +35,7 @@ namespace WindowsFormsApplication1
         public double Dachflaeche;
         public double Grundflaeche;
         public double Sonstige_Flaechen;
-        public double Wohnflaeche;
+        public double Nutzflaeche;
         public double Raumhoehe;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand;
         public double Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach;
@@ -60,6 +60,27 @@ namespace WindowsFormsApplication1
         public string Baualtersklasse;
         public string Gebaeudeart;
         public string Wohngebaeude_Nicht_Wohngebaeude;
+
+        // ---- Gebaeudespalten-Schritt M3 (Schemaschritt 101, Stufe G1/G2) ----------------
+        // NULL-ERHALTEND: NULL heisst "Vorgabe", und diese Vorgabe gehoert dem Leser, nicht
+        // dem Modell. Die Felder tragen den Katalogwert unveraendert durch Lesen, Insert,
+        // Overwrite und die Katalogkopie (Umsetzungskonzept Gebaeudesimulation 1.6).
+        // Kein Rechenweg liest sie in diesem Schritt. Namen: GebaeudeSchema.SPALTE_*.
+        public string Gebaeude_Modell;
+        public double? Fensterflaeche_Ost;
+        public double? Fensterflaeche_West;
+        public double? Rahmenanteil;
+        public double? Verschattungsfaktor;
+        public string Grundflaeche_Randbedingung;
+        public double? Kellertemperatur;
+        public double? Masseanteil_Aussen;
+        public double? Innenflaechenfaktor;
+        public double? Heizung_Strahlungsanteil;
+        public double? Heizleistung_Max;
+        public bool Aussenbauteile_Strahlung;
+        public double? Luftwechsel_Infiltration;
+        public double? Luftwechsel_Nutzer;
+        public bool Sommerlueftung;
  
         public GebaeudeModel()
         {
@@ -91,7 +112,7 @@ namespace WindowsFormsApplication1
             Dachflaeche = 0;
             Grundflaeche = 0;
             Sonstige_Flaechen = 0;
-            Wohnflaeche = 0;
+            Nutzflaeche = 0;
             Raumhoehe = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand = 0;
             Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach = 0;

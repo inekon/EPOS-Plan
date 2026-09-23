@@ -334,11 +334,21 @@ namespace WindowsFormsApplication1
         /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
         /// Referenzlauf bleibt byte-gleich</b>, die Basis
         /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
+        /// Mit dem GEBÄUDESPALTEN-SCHRITT M3 (Schritt 101, Stufe G1 der
+        /// Gebäudesimulation, Auftrag vom 23.09.2026) steht das Ziel auf <b>101</b>:
+        /// <c>Tab_Gebaeude</c> und <c>Tab_Gebaeude_STAMM</c> benennen
+        /// <c>Wohnflaeche</c> in <c>Nutzflaeche</c> um (E19), bekommen je fünfzehn
+        /// neue Spalten (zwölf der Stufe G1, drei der Stufe G2; U5), und die Sicht
+        /// <c>Abfrage_Projektgebaeude</c> wird neu gebaut — der erste Sichtneubau des
+        /// SQLite-Zweigs. Alles steht bei <see cref="GebaeudeSchema"/>. Die neuen
+        /// Spalten bleiben NULL (die zwei Schalter 0), kein Rechenweg liest sie —
+        /// <b>der Referenzlauf bleibt byte-gleich</b>, die Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 100;
+        public const int Zielversion = 101;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

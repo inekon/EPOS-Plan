@@ -400,6 +400,14 @@ namespace EPOS.Kern.Tests
                 // Steht keine Vorgabe mehr, tut der Aufruf nichts.
                 FremdschluesselVorgabe.Alle(null);
 
+                // Schritt 101 (Auftrag 23.09.2026, Stufe G1 der Gebaeudesimulation): der
+                // Gebaeudespalten-Schritt M3 - Wohnflaeche heisst Nutzflaeche, fuenfzehn
+                // neue Spalten je Gebaeudetabelle, die Sicht Abfrage_Projektgebaeude neu.
+                // Aus DERSELBEN Quelle wie Migration und Werkzeug; NACH 100, weil 100
+                // Tab_Gebaeude neu baut. Wiederholbar - steht alles, wird nur die Sicht
+                // neu gebaut.
+                GebaeudeSchema.Alle(null);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

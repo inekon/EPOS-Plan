@@ -285,6 +285,15 @@ iZ6-Vergleich für 1030. Sie ist die **einzige** Basis im Arbeitsbaum.
 >
 > Ablauf und Ausstattung je Projekt stehen im `protokoll.txt` der Basis.
 
+**Und inzwischen auf Schemastand 101** — reines Nachziehen: Schritt 101 ist der
+Gebäudespalten-Schritt M3 der Gebäudesimulation. `Wohnflaeche` heißt in `Tab_Gebaeude` und
+`Tab_Gebaeude_STAMM` jetzt `Nutzflaeche` (Werte 1:1), jede der beiden Tabellen hat fünfzehn
+neue Spalten (alle NULL, die zwei Schalter 0), und die Sicht `Abfrage_Projektgebaeude` ist aus
+`GebaeudeSchema.SQL_VIEW_NEU` neu gebaut (die 58 Bestandsspalten an ihren Stellen, die neuen
+dahinter). `integrity_check` ok, Zeilen- und Tabellenzahl unverändert, beide Tabellen weiter
+`STRICT`; die **Referenzbasis R11 bleibt**, der Lauf aller dreizehn Projekte gegen sie ist **PASS
+und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
+
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
 > Schemaständen 99 und 100 steht in

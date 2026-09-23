@@ -350,7 +350,7 @@ namespace WindowsFormsApplication1
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
                 // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise; die
                 // Bauweise selbst geht mit, weil der Dialog sie ab jetzt bildet.
-                Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Wohnflaeche),
+                Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
 
                 WohnflaecheGesamt = m.Wohnflaeche_gesamt,
@@ -455,7 +455,7 @@ namespace WindowsFormsApplication1
             m.Dachflaeche = d.Dachflaeche ?? 0;
             m.Grundflaeche = d.Grundflaeche ?? 0;
             m.Sonstige_Flaechen = d.SonstigeFlaechen ?? 0;
-            m.Wohnflaeche = wfl;
+            m.Nutzflaeche = wfl;
             m.Raumhoehe = d.Raumhoehe ?? 0;
 
             m.Baualtersklasse = GebaeudeStammCtrl.KlassenBuchstabe(d.Baualtersklasse).ToString();
