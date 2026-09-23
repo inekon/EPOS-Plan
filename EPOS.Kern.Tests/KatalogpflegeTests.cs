@@ -437,8 +437,12 @@ namespace EPOS.Kern.Tests
         {
             // ETAPPE E7c (A20): 225 → 226 Zeilen, Generation 7 → 8 — das Ende der Frist
             // zur Inbetriebnahme (KWKG_INBETRIEBNAHME_FRISTENDE, 2030).
+            // ETAPPE E7c3: Generation 8 → 9 ohne neue Zeile — die Generation 9 PFLEGT nur
+            // (GesetzKatalog.Nachpflege: Brennstoff 24 mit H_i = H_s = 1,0); die jüngste
+            // Saatgeneration bleibt 8.
             Assert.Equal(226, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(8, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(9, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(8, GesetzKatalog.JuengsteSaatgeneration);
         }
 
         // ==================================================================

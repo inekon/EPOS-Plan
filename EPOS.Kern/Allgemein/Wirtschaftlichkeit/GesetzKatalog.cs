@@ -84,6 +84,7 @@ namespace WindowsFormsApplication1
         ///   <item><term>6</term><description>Etappe P4: die Jahresmarktwerte Solar</description></item>
         ///   <item><term>7</term><description>SP-E-3-Q1/S-6 (17.09.2026): der reduzierte Stromsteuersatz und die drei Umlagen (KWKG, Offshore, § 19 StromNEV)</description></item>
         ///   <item><term>8</term><description>Etappe E7c (A20, E7‑Q3, 23.09.2026): das Ende der Frist zur Inbetriebnahme nach KWKG (31.12.2030)</description></item>
+        ///   <item><term>9</term><description>Etappe E7c3 (23.09.2026): keine neue Zeile, nur <see cref="GesetzKatalog.Nachpflege"/> — Brennstoff 24 „Sonstige" mit H_i = H_s = 1,0</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -701,8 +702,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Höchste Generation, die <see cref="Vorbelegung"/> führt (Etappe E6). Nach
-        /// einem Lauf von <see cref="StelleKatalogSicher"/> steht die Markerzeile
+        /// Höchste Generation, die <see cref="Vorbelegung"/> oder die
+        /// <see cref="Nachpflege"/> führt (Etappe E6, E7c3). Nach einem Lauf von
+        /// <see cref="StelleKatalogSicher"/> steht die Markerzeile
         /// <c>DbWerte.GESETZ_KATALOG_GENERATION</c> auf diesem Wert.
         /// </summary>
         public static int AktuelleGeneration
@@ -712,9 +714,36 @@ namespace WindowsFormsApplication1
                 int max = 0;
                 foreach (GesetzParameter p in Vorbelegung())
                     if (p.Generation > max) max = p.Generation;
+                foreach (Nachpflegeschritt s in Nachpflege())
+                    if (s.Generation > max) max = s.Generation;
                 return max;
             }
         }
+
+        /// <summary>
+        /// Höchste Generation, die eine ZEILE der <see cref="Vorbelegung"/> trägt — die
+        /// Generation der letzten Nachsaat im engeren Sinn (neue Zeilen). Sie liegt unter
+        /// <see cref="AktuelleGeneration"/>, wenn eine jüngere Generation nur pflegt
+        /// (ETAPPE E7c3, <see cref="Nachpflege"/>).
+        /// </summary>
+        public static int JuengsteSaatgeneration
+        {
+            get
+            {
+                int max = 0;
+                foreach (GesetzParameter p in Vorbelegung())
+                    if (p.Generation > max) max = p.Generation;
+                return max;
+            }
+        }
+
+        /// <summary>
+        /// Zahl der Zeilen, die der letzte Lauf von <see cref="StelleKatalogSicher"/>
+        /// über die <see cref="Nachpflege"/> geändert hat (ETAPPE E7c3) — 0 bei einer
+        /// Datenbank, die schon auf der aktuellen Generation steht. Diagnosegröße wie
+        /// <see cref="ZuletztNachgesaet"/>.
+        /// </summary>
+        public static int ZuletztNachgepflegt { get; private set; }
 
         /// <summary>
         /// Zahl der Zeilen, die der letzte Lauf von <see cref="StelleKatalogSicher"/>
@@ -804,6 +833,7 @@ namespace WindowsFormsApplication1
         public static void StelleKatalogSicher()
         {
             ZuletztNachgesaet = 0;
+            ZuletztNachgepflegt = 0;
             _saatwarnungen.Clear();
             try
             {
@@ -864,8 +894,15 @@ namespace WindowsFormsApplication1
                             WarnenDublette(p, ex.Message);
                         }
                     }
+
+                    // ETAPPE E7c3 — die Nachpflege der Generationen über dem Saatstand:
+                    // bestehende Zeilen, die eine jüngere Generation pflegt, ohne eine neue
+                    // zu säen. Scheitert ein Schritt, wirft er — der Marker steigt dann
+                    // nicht, und der Grund steht in den SaatWarnungen (wie bei der Saat).
+                    int gepflegt = Nachpflegen(gesaet);
                     MarkerSetzen(ziel, ref id);
                     ZuletztNachgesaet = neu;
+                    ZuletztNachgepflegt = gepflegt;
                 }
                 catch (Exception ex)
                 {
@@ -880,6 +917,119 @@ namespace WindowsFormsApplication1
                 // ohne Tabelle greift die Code-Rückfallebene
                 Warnen(ex);
             }
+        }
+
+        // =====================================================================
+        // ETAPPE E7c3 — Nachpflege: Generationen, die bestehende Zeilen pflegen
+        // =====================================================================
+
+        /// <summary>
+        /// Ein Schritt der <b>Nachpflege</b> (ETAPPE E7c3): Er gehört zu einer Generation
+        /// wie eine Zeile der <see cref="Vorbelegung"/>, sät aber keine neue Zeile,
+        /// sondern pflegt bestehende — in jeder Datenbank, deren Saatstand unter seiner
+        /// Generation liegt, genau einmal (danach steht der Marker darüber).
+        ///
+        /// <para><b>Warum kein Schemaschritt.</b> Die Generationsmarke wirkt beim Start
+        /// jeder Schale und beim ersten Katalogzugriff ohne DDL und ohne Schrittnummer;
+        /// dieselbe Nachsaat, die seit E6 neue Schlüssel bringt (Generation 8), trägt
+        /// damit auch die zwei Pflegen des Auftrags E7c3. Jeder Schritt ist
+        /// <b>bedingt</b> (er schreibt nur, wo der ausgelieferte Stand noch steht) und
+        /// damit wiederholbar; ein Fehlschlag wirft, und der Marker steigt nicht.</para>
+        /// </summary>
+        public sealed class Nachpflegeschritt
+        {
+            /// <summary>Die Generation, zu der der Schritt gehört.</summary>
+            public int Generation { get; }
+
+            /// <summary>Kurzname für Protokoll und Warnung.</summary>
+            public string Name { get; }
+
+            /// <summary>Die Tabelle, die der Schritt pflegt — fehlt sie, gibt es nichts zu
+            /// pflegen, und der Schritt gilt als erledigt.</summary>
+            public string Tabelle { get; }
+
+            /// <summary>Die bedingte Anweisung.</summary>
+            public string Sql { get; }
+
+            private readonly Func<DbParam[]> _parameter;
+
+            internal Nachpflegeschritt(int generation, string name, string tabelle, string sql,
+                                       Func<DbParam[]> parameter)
+            {
+                Generation = generation;
+                Name = name;
+                Tabelle = tabelle;
+                Sql = sql;
+                _parameter = parameter;
+            }
+
+            /// <summary>Die Parameter der Anweisung, je Aufruf frisch.</summary>
+            public DbParam[] Parameter() => _parameter();
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3, Punkt 6 — Brennstoff 24 „Sonstige": H_i = H_s = 1,0 im Stamm. Der
+        /// Stammtext rechnet seit Schemaschritt 113 in kWh (Entscheid E7c2‑Q4), sein
+        /// Heizwert stand aber auf 0 — ein neu zugeordneter Träger bekäme in seiner
+        /// Preishistorie den Heizwert 0 (<c>WizardCtrl.TraegerSatzAnlegen</c> liest
+        /// H_i aus dieser Zeile). 1,0 kWh je kWh wie Strom (13) und Fernwärme (23).
+        /// Gesetzt wird nur, wo BEIDE Werte noch leer oder 0 sind.
+        /// </summary>
+        public const string SQL_NACHPFLEGE_SONSTIGE_HEIZWERT =
+            "UPDATE [Tab_Brennstoff_Stamm] SET [Hi] = ?, [Hs] = ? WHERE [ID] = ? " +
+            "AND COALESCE([Hi], 0) = 0 AND COALESCE([Hs], 0) = 0";
+
+        /// <summary>Der Heizwert des Brennstoffs 24 nach der Nachpflege [kWh je kWh].</summary>
+        public const double SONSTIGE_HEIZWERT = 1.0;
+
+        private static List<Nachpflegeschritt> _nachpflege;
+
+        /// <summary>
+        /// Die Schritte der Nachpflege in Generationsreihenfolge (ETAPPE E7c3).
+        /// <list type="table">
+        ///   <item><term>9</term><description>Brennstoff 24 „Sonstige": H_i = H_s = 1,0 (Punkt 6)</description></item>
+        /// </list>
+        /// </summary>
+        public static IReadOnlyList<Nachpflegeschritt> Nachpflege()
+        {
+            if (_nachpflege != null) return _nachpflege;
+            var l = new List<Nachpflegeschritt>
+            {
+                new Nachpflegeschritt(9, "Brennstoff 24 Sonstige: Hi = Hs = 1,0", "Tab_Brennstoff_Stamm",
+                    SQL_NACHPFLEGE_SONSTIGE_HEIZWERT,
+                    () => new[]
+                    {
+                        new DbParam("@hi", SONSTIGE_HEIZWERT),
+                        new DbParam("@hs", SONSTIGE_HEIZWERT),
+                        new DbParam("@id", GaseNormkubikmeter.SONSTIGE)
+                    }),
+            };
+            _nachpflege = l;
+            return _nachpflege;
+        }
+
+        /// <summary>
+        /// Führt die Schritte der <see cref="Nachpflege"/> aus, deren Generation über
+        /// <paramref name="gesaet"/> liegt, und liefert die Zahl der geänderten Zeilen.
+        /// Fehlt die Tabelle eines Schritts, ist er gegenstandslos. Scheitert eine
+        /// Anweisung, wirft die Methode mit Schrittname und Grund — der Aufrufer hebt den
+        /// Marker dann nicht (dieselbe Regel wie bei der Saat, AUFTRAG US-1).
+        /// </summary>
+        private static int Nachpflegen(int gesaet)
+        {
+            int summe = 0;
+            foreach (Nachpflegeschritt s in Nachpflege())
+            {
+                if (s.Generation <= gesaet) continue;
+                if (!StilleDb.TabelleVorhanden(s.Tabelle)) continue;
+                int n = StilleDb.NonQuery(s.Sql, s.Parameter());
+                if (n < 0)
+                    throw new InvalidOperationException(
+                        "Nachpflege der Generation " + s.Generation.ToString(CultureInfo.InvariantCulture) +
+                        " („" + s.Name + "“) gescheitert: " + StilleDb.LetzterSchreibfehler);
+                summe += n;
+            }
+            return summe;
         }
 
         /// <summary>

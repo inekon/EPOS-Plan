@@ -216,11 +216,14 @@ namespace EPOS.Kern.Tests
 
             int vorherZeilen = Zahl("SELECT COUNT(*) FROM " + GesetzesparameterEindeutig.TABELLE);
 
-            // Marker eine Generation zurueck - die Saat versucht die Zeilen der letzten
-            // Generation noch einmal.
+            // Marker unter die juengste SAATgeneration - die Saat versucht deren Zeilen
+            // noch einmal. ETAPPE E7c3: nicht mehr ziel - 1, weil die juengste Generation
+            // (9) nur pflegt und keine Zeile saet; die Nachpflege laeuft dabei wiederholbar
+            // mit (0 Zeilen).
+            int saat = GesetzKatalog.JuengsteSaatgeneration;
             DataRepository.ExecuteSQL(
                 "UPDATE " + GesetzesparameterEindeutig.TABELLE + " SET \"Wert\" = ? WHERE \"Schluessel\" = ?",
-                new DbParam("@w", DbParamTyp.Double) { Wert = (double)(ziel - 1) },
+                new DbParam("@w", DbParamTyp.Double) { Wert = (double)(saat - 1) },
                 new DbParam("@s", DbParamTyp.VarWChar, 60) { Wert = DbWerte.GESETZ_KATALOG_GENERATION });
 
             GesetzKatalog.StelleKatalogSicher();
