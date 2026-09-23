@@ -24269,6 +24269,9 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_HINW_KONSTRUKTOR" xml:space="preserve">
     <value>Constructor according to A100 NA.5.2.3; the day applies at the design cold water temperature of the catalogue.</value>
   </data>
+  <data name="ZPG_AUS_BANNER_SPITZEN" xml:space="preserve">
+    <value>Peaks underestimated: the design day comes from an hourly profile — draw-off peaks shorter than one hour are not contained in it.</value>
+  </data>
   <data name="ZPG_AUS_LBL_SPEICHERTEMPERATUR" xml:space="preserve">
     <value>Storage temperature</value>
   </data>

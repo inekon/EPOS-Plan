@@ -471,6 +471,64 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Assert.Null(cut.Instance.Eingabe.Entwurf);
     }
 
+    /// <summary>Eine Speichergruppe, der die Vorgaberegel keinen Tag liefert (Kern: KonstruktorOeffnen).</summary>
+    private static ZapfprofilAuslegungsgruppeDaten OhneTag()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Bedarfstag = "";
+        g.KonstruktorOeffnen = true;
+        g.Hauptwert = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.NichtRechenbar, Text = "Bedarfstag fehlt" };
+        g.Empfehlung = new ZapfprofilEmpfehlungDaten { Rechenbar = false, Grund = "Bedarfstag fehlt" };
+        g.Vergleich = null;
+        return g;
+    }
+
+    [Fact]
+    public void Ohne_konstruierten_Tag_oeffnet_die_Auslegung_den_Konstruktor()
+    {
+        bool mitTag = false;
+        var cut = Aufbauen(Start(Ergebnis(OhneTag())), rechnen: _ => Ergebnis(mitTag ? Speichergruppe() : OhneTag()),
+                           konstruieren: Bauen);
+
+        // Beim Öffnen steht der Konstruktor über der Auslegung (Regel 4.5).
+        Assert.True(cut.Instance.KonstruktorOffen);
+        Knopf(cut.FindComponent<BedarfstagKonstruktor>(), "Abbrechen").Click();
+        Assert.False(cut.Instance.KonstruktorOffen);
+
+        // Dieselbe Lage nach einer Neuberechnung öffnet ihn nicht nach jedem Abbrechen erneut …
+        Feld(cut, "Speichertemperatur").Input("62");
+        Assert.False(cut.Instance.KonstruktorOffen);
+
+        // … führt eine Neuberechnung den Fall neu herbei, öffnet er wieder.
+        mitTag = true;
+        Feld(cut, "Speichertemperatur").Input("63");
+        Assert.False(cut.Instance.KonstruktorOffen);
+        mitTag = false;
+        Feld(cut, "Speichertemperatur").Input("64");
+        Assert.True(cut.Instance.KonstruktorOffen);
+    }
+
+    [Fact]
+    public void Ohne_Konstruktor_Delegat_bleibt_es_beim_Eintrag_der_Warnliste()
+    {
+        var cut = Aufbauen(Start(Ergebnis(OhneTag())));
+        Assert.False(cut.Instance.KonstruktorOffen);
+        Assert.Empty(cut.FindComponents<BedarfstagKonstruktor>());
+    }
+
+    [Fact]
+    public void Ein_Tag_aus_dem_Stundenprofil_traegt_das_Warnbanner()
+    {
+        ZapfprofilAuslegungsgruppeDaten stunde = Speichergruppe();
+        stunde.SpitzenUnterschaetzt = true;
+        var cut = Aufbauen(Start(Ergebnis(stunde, Speichergruppe())));
+
+        IElement banner = Assert.Single(cut.FindAll(".epos-warnbanner"),
+                                        b => b.TextContent.Contains("Spitzen unterschätzt"));
+        Assert.Contains("Zapfspitzen unter einer Stunde", banner.TextContent);
+        Assert.Single(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.StartsWith("Spitzen unterschätzt"));
+    }
+
     [Fact]
     public void Abbrechen_und_Esc_im_Konstruktor_schliessen_nur_ihn()
     {

@@ -691,6 +691,7 @@ namespace WindowsFormsApplication1
             t.OptionEntwurf = Text_("ZPG_AUS_OPT_ENTWURF", t.OptionEntwurf);
             t.KnopfKonstruieren = Text_("ZPG_AUS_BTN_KONSTRUIEREN", t.KnopfKonstruieren);
             t.HinweisKonstruktor = Text_("ZPG_AUS_HINW_KONSTRUKTOR", t.HinweisKonstruktor);
+            t.BannerSpitzen = Text_("ZPG_AUS_BANNER_SPITZEN", t.BannerSpitzen);
             t.LabelSpeichertemperatur = Text_("ZPG_AUS_LBL_SPEICHERTEMPERATUR", t.LabelSpeichertemperatur);
             t.LabelErzeugerleistung = Text_("ZPG_AUS_LBL_ERZEUGERLEISTUNG", t.LabelErzeugerleistung);
             t.LabelUebertragerleistung = Text_("ZPG_AUS_LBL_UEBERTRAGERLEISTUNG", t.LabelUebertragerleistung);

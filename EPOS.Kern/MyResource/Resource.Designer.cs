@@ -70803,6 +70803,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzen unterschätzt: Der Bedarfstag stammt aus einem Stundenprofil — Zapfspitzen unter einer Stunde sind darin nicht enthalten. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_BANNER_SPITZEN {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_BANNER_SPITZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarfskennzahl N ähnelt.
         /// </summary>
         public static string ZPG_AUS_BEDARFSKENNZAHL {

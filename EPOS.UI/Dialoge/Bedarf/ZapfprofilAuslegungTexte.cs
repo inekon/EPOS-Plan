@@ -59,6 +59,9 @@ public sealed class ZapfprofilAuslegungTexte
     /// <summary><c>ZPG_AUS_HINW_KONSTRUKTOR</c></summary>
     public string HinweisKonstruktor { get; set; } = "Konstruktor nach A100 NA.5.2.3; der Tag gilt beim Kaltwasser der Auslegung des Katalogs.";
 
+    /// <summary><c>ZPG_AUS_BANNER_SPITZEN</c></summary>
+    public string BannerSpitzen { get; set; } = "Spitzen unterschätzt: Der Bedarfstag stammt aus einem Stundenprofil — Zapfspitzen unter einer Stunde sind darin nicht enthalten.";
+
     /// <summary><c>ZPG_AUS_LBL_SPEICHERTEMPERATUR</c></summary>
     public string LabelSpeichertemperatur { get; set; } = "Speichertemperatur";
 

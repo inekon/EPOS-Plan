@@ -18,6 +18,11 @@
    stammt der Bedarfstag aus dem Stundenprofil, fragt eine Rueckfrage vorher. Abbrechen,
    Esc und das Kreuz verwerfen (null).
 
+   VORGABEREGEL (4.5). Ohne konstruierten Tag oeffnet die Auslegung den Konstruktor, statt
+   still das Stundenprofil zu nehmen: beim Oeffnen und wenn eine Neuberechnung den Fall neu
+   herbeifuehrt (KonstruktorOeffnen einer Gruppe), nicht nach jedem Abbrechen erneut. Ein Tag
+   aus dem Stundenprofil traegt das Warnbanner "Spitzen unterschaetzt" (SpitzenUnterschaetzt).
+
    BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet") und "An Speicherauslegung
    uebergeben..." kommen mit spaeteren Stufen: Sie stehen da, weich gesperrt mit Grund.
 
@@ -114,6 +119,10 @@
                     @if (g.BedarfstagWahl.Length > 0)
                     {
                         <p class="epos-leisezeile epos-zapfausl-wahl">@g.BedarfstagWahl</p>
+                    }
+                    @if (g.SpitzenUnterschaetzt)
+                    {
+                        <Warnbanner Stufe="WarnStufe.Warnung" Text="@Texte.BannerSpitzen" />
                     }
                     <div class="epos-zapfausl-karten">
 
@@ -414,6 +423,7 @@
         _eingabe = (Daten.Eingabe ?? new ZapfprofilAuslegungEingabeDaten()).Kopie();
         _ergebnis = Daten.Ergebnis;
         _aktuell = _ergebnis is not null;
+        _konstruktorOffen = KonstruktorFaellig(null, _ergebnis);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -421,7 +431,8 @@
         StatusNachziehen();
         if (!firstRender || !_ersterAufbau) return;
         _ersterAufbau = false;
-        await _wurzel.FocusAsync();
+        // Steht der Konstruktor schon beim Öffnen, behält seine Überlagerung den Fokus.
+        if (!_konstruktorOffen) await _wurzel.FocusAsync();
     }
 
     /// <inheritdoc/>
@@ -726,12 +737,26 @@
         offen.Dispose();
     }
 
-    private void Neurechnen()
+    /// <summary>Rechnet über den Delegaten neu; führt das Ergebnis den Fall „ohne Tag" neu herbei, öffnet der Konstruktor.</summary>
+    private void Neurechnen(bool konstruktorFolgen = true)
     {
         if (Rechnen is null) return;
+        ZapfprofilAuslegungDaten? vorher = _ergebnis;
         _ergebnis = Rechnen(_eingabe.Kopie());
         _aktuell = _ergebnis is not null;
+        if (konstruktorFolgen && KonstruktorFaellig(vorher, _ergebnis)) _konstruktorOffen = true;
     }
+
+    /// <summary>
+    /// Regel 4.5: Ohne konstruierten Tag öffnet die Auslegung den Konstruktor, statt still das
+    /// Stundenprofil zu nehmen — wenn der Fall NEU eintritt (beim Öffnen oder nach einer
+    /// Neuberechnung, die ihn herbeiführt), nicht nach jedem Abbrechen erneut. Ohne
+    /// Konstruktor-Delegat bleibt es beim Eintrag der Warnliste.
+    /// </summary>
+    private bool KonstruktorFaellig(ZapfprofilAuslegungDaten? vorher, ZapfprofilAuslegungDaten? neu)
+        => Konstruieren is not null && OhneTag(neu) && !OhneTag(vorher);
+
+    private static bool OhneTag(ZapfprofilAuslegungDaten? d) => d is not null && d.Gruppen.Any(g => g.KonstruktorOeffnen);
 
     // =================================================================================
     // Ergebnis
@@ -750,7 +775,7 @@
             return;
         }
         EntprellungAbbrechen();
-        if (!_aktuell) Neurechnen();
+        if (!_aktuell) Neurechnen(konstruktorFolgen: false);
         if (_eingabe.Quelle == ZapfprofilBedarfstagquelle.Stundenprofil && _ergebnis?.Punktgruppe is not null)
         {
             _rueckfrage = true;
