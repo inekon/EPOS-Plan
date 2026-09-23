@@ -363,4 +363,30 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         Assert.Same(Energieeinheit.KWh, cut.Instance.Anzeigeeinheit);
     }
+
+    // =================================================================================
+    // Stufe G1 (ADR-006, Umsetzungskonzept 2.7): der Ausweis des Rechenwegs
+    // =================================================================================
+
+    [Fact]
+    public void Der_Rechenweg_steht_bei_den_Kennzahlen()
+    {
+        GebaeudeBedarfDaten daten = new()
+        {
+            Name = "EFH", HeizwaermeMwh = 50, MaxLastKw = 30, VollbenutzungsstundenH = 1666,
+            MonatswerteMwh = new double[12], Modelltext = "Tagesbilanz (Bestandsweg)"
+        };
+        var cut = Aufbauen(daten);
+
+        Assert.Contains("Rechenweg:", cut.Markup);
+        Assert.Contains("Tagesbilanz (Bestandsweg)", cut.Markup);
+    }
+
+    [Fact]
+    public void Ohne_Rechenweg_steht_keine_Zeile()
+    {
+        var cut = Aufbauen();
+
+        Assert.DoesNotContain("Rechenweg:", cut.Markup);
+    }
 }

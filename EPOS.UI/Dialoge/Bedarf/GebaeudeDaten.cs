@@ -48,6 +48,15 @@ public sealed class GebaeudeProjektZeile
 
     /// <summary>Dezentrale Warmwasserbereitung.</summary>
     public bool DezentralWarmwasser { get; set; }
+
+    /// <summary>
+    /// Der Rechenweg als ANZEIGETEXT (Stufe G1, Konzept 2.7) — so, wie die Weiche rechnet;
+    /// die Hülle setzt ihn aus <c>Gebaeude_Modell</c> und der Vorgabe des Programms.
+    /// </summary>
+    public string Rechenweg { get; set; } = "";
+
+    /// <summary>Der Wärmeleitwert H_ges [W/K]; <c>null</c> = nicht bekannt.</summary>
+    public double? HgesWK { get; set; }
 }
 
 /// <summary>
@@ -68,5 +77,8 @@ public sealed record GebaeudeKatalogZeile(string Name, string Art, string Wohnfl
 /// <param name="Art">Die Gebäudeart.</param>
 /// <param name="Beschreibung">Die Beschreibung.</param>
 /// <param name="Wohnflaeche">Die Gesamtfläche als Text.</param>
+/// <param name="Rechenweg">Der Rechenweg als Anzeigetext (Stufe G1).</param>
+/// <param name="HgesWK">Der Wärmeleitwert H_ges [W/K]; <c>null</c> = nicht bekannt.</param>
 public sealed record GebaeudeStammDetail(
-    string Name, string Art, string Beschreibung, string Wohnflaeche);
+    string Name, string Art, string Beschreibung, string Wohnflaeche,
+    string Rechenweg = "", double? HgesWK = null);

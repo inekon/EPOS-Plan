@@ -1,95 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Windows.Forms;
 using EPOS.UI.Dialoge.Bedarf;
-using Microsoft.AspNetCore.Components;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE des Gebäude-KATALOGEDITORS (iU9-W9.1) — der Ersatz für
-    /// <c>Form_Gebaeude1</c> UND <c>Form_Gebaeude2</c>.
+    /// Die DATENSEITE des Gebäude-KATALOGEDITORS (<c>GebaeudeKatalogDialog</c>) — seit
+    /// Stufe G1 in <c>EPOS.UI.Daten</c> (Umsetzungskonzept Gebäudesimulation 2.8, Entscheid
+    /// E27/A10). Sie baut den Parametersatz aus dem Kern und führt den EINEN Schreibweg
+    /// (E27/U1) aus; ein eigenes Fenster hat der Editor nicht — er erscheint als
+    /// Überlagerung im Gebäudedialog.
     ///
-    /// <para><b>Zwei Masken, ein Satz.</b> Die zweite Maske bekam mit
-    /// <c>frm.model = model</c> DASSELBE <see cref="GebaeudeModel"/> in die Hand; sie war
-    /// nie ein eigener Datensatz. In der Razor-Fassung sind es zwei Reiter auf einem
-    /// Feldsatz.</para>
+    /// <para><b>Die Ableitungen des Vorläufers stehen hier</b>: <c>Bewohner</c>,
+    /// <c>gesamte_Fensterflaeche</c> (Süd + Ost/West + Nord) und die Nutzfläche entstehen
+    /// beim Schreiben; was keine Maske anfasst (<c>ID</c>, <c>spez_Waermeverbrauch</c>,
+    /// <c>Waermebedarf</c>, die drei G2-Spalten), bleibt aus dem geladenen Satz
+    /// erhalten.</para>
     ///
-    /// <para><b>Die Ableitungen des Vorläufers stehen hier</b>, nicht in der Komponente:
-    /// <c>Bewohner</c>, <c>gesamte_Fensterflaeche</c> und
-    /// <c>Wohnflaeche</c> entstehen beim Schreiben (<c>InitModelFromControls</c>:174-215),
-    /// und die drei Kennzahlen, die keine Maske je anfasst
-    /// (<c>spez_Waermeverbrauch</c>, <c>Waermebedarf</c>, <c>ID</c>), bleiben aus dem
-    /// geladenen Satz erhalten — der Vorläufer schrieb ebenfalls das GELADENE Modell
-    /// zurück und nicht ein frisches.</para>
+    /// <para><b>NULL-erhaltend.</b> Die zwölf Felder der VDI-Struktur gehen so in den Kern,
+    /// wie der Dialog sie liefert — ein leeres Feld bleibt NULL, und der Katalogschreibweg
+    /// (<c>GebaeudeStammCtrl.Insert</c>/<c>Overwrite</c>) schreibt NULL.</para>
     ///
-    /// <para><b>Die <c>Bauweise</c> steht seit dem Entscheid des Anwenders vom
-    /// 04.09.2026 NICHT mehr hier</b> (W9‑O‑2 zu Befund W9‑B6). Sie hing am Index der
-    /// GEBÄUDEART-Klappliste; jetzt bestimmt sie die BAUART-Klappliste, und die bedient
-    /// der Dialog. Die Hülle reicht die Größe nur noch durch:
-    /// <c>AusModell</c> gibt sie heraus, <c>NachModell</c> nimmt sie entgegen.</para>
+    /// <para><b>Die ReadOnly-Sperre prüft die HÜLLE</b>, nicht der Controller —
+    /// <c>Overwrite</c> meldete sie über <c>Meldung.Hinweis</c>, und das wäre in einer
+    /// WebView ein modaler Kasten über dem Dialog.</para>
     /// </summary>
     internal static class GebaeudeKatalogHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 707 × 651 und 607 × 591).</summary>
-        private static readonly Size MASS = new Size(1000, 760);
-
-        // =================================================================================
-        // Einstiege
-        // =================================================================================
-
-        /// <summary>„DB ändern" — ein vorhandener Katalogsatz.</summary>
-        internal static void Bearbeiten(IWin32Window besitzer, string bezeichner)
-            => Oeffnen(besitzer, bezeichner, GebaeudeKatalogModus.Bearbeiten);
-
-        /// <summary>„DB neu" — ein neuer Katalogsatz; der Name wird im Dialog eingegeben.</summary>
-        internal static void Neu(IWin32Window besitzer)
-            => Oeffnen(besitzer, "", GebaeudeKatalogModus.Neu);
-
-        /// <summary>
-        /// Katalogverwaltung: die Namensklappliste führt ALLE Sätze, „Speichern" ist
-        /// gesperrt.
-        ///
-        /// <para><b>Befund W9‑B10:</b> Dieser Modus (<c>Form_Gebaeude1.m_bAdmin</c>) hatte
-        /// im ganzen Bestand KEINEN Aufrufer — er war ausgeschriebener, aber unerreichbarer
-        /// Code. Er ist übernommen, weil er vollständig ausformuliert dastand; erreichbar
-        /// wird er erst, wenn ihn jemand aufruft.</para>
-        /// </summary>
-        internal static void Katalogverwaltung(IWin32Window besitzer)
-            => Oeffnen(besitzer, "", GebaeudeKatalogModus.Admin);
-
-        private static void Oeffnen(IWin32Window besitzer, string bezeichner,
-                                    GebaeudeKatalogModus modus)
-        {
-            BlazorDialogForm<GebaeudeKatalogDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(Gaben(besitzer, bezeichner, modus))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(),
-                    _ => { if (dlg != null) dlg.Schliessen(true); })
-            };
-
-            dlg = new BlazorDialogForm<GebaeudeKatalogDialog>(Titel(), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-        }
-
         // =================================================================================
         // Der Parametersatz
         // =================================================================================
 
         /// <summary>
-        /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>, damit ihn ab W9.2 auch
-        /// die Überlagerung in <c>GebaeudeDialog</c> nehmen kann.
+        /// Der PARAMETERSATZ des Dialogs — ohne <c>Geschlossen</c>; die Überlagerung im
+        /// Gebäudedialog setzt ihn selbst.
         /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
-            IWin32Window besitzer, string bezeichner, GebaeudeKatalogModus modus)
+            string bezeichner, GebaeudeKatalogModus modus)
         {
-            // Der geladene Satz bleibt in der Huelle stehen: Er traegt die Felder, die
-            // keine der beiden Masken je anfasst (ID, spez_Waermeverbrauch, Waermebedarf).
             GebaeudeModel geladen = modus == GebaeudeKatalogModus.Neu
                 ? new GebaeudeModel()
                 : Laden(bezeichner) ?? new GebaeudeModel();
@@ -98,7 +46,7 @@ namespace WindowsFormsApplication1
             // Oeffnen der Ueberlagerung gelesen und bei OK zurueckgeschrieben.
             var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
 
-            var werte = new Dictionary<string, object>
+            return new Dictionary<string, object>
             {
                 ["Daten"] = AusModell(geladen),
                 ["Modus"] = modus,
@@ -115,28 +63,20 @@ namespace WindowsFormsApplication1
                 ["Speichern"] = new Func<GebaeudeKatalogDaten, bool, string, GebaeudeKatalogErgebnis>(
                     (d, istNeu, bez) => Schreiben(d, istNeu, bez)),
 
-                // iU9-W9.5: "Brauchwasser..." auf dem zweiten Reiter zeigt die
-                // Brauchwasser-Profilliste des LAUFENDEN Projekts als Ueberlagerung.
-                // Der Vorlaeufer holte sich Projekt-Id und -Name ueber Program.startfrm;
-                // hier kommt beides aus Dienste.Projekt.
-                ["BrauchwasserGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => BrauchwasserGaben(besitzer, brauchwasser)),
+                // "Brauchwasser..." auf dem zweiten Reiter zeigt die Brauchwasser-Profilliste
+                // des LAUFENDEN Projekts als Ueberlagerung - nur, wo die Schale den Weg
+                // eingehaengt hat (Gebaeudewege).
+                ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
+                    ? null
+                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser)),
                 ["BrauchwasserFertig"] = new Action<bool>(
                     ok => BrauchwasserSchreiben(ok, brauchwasser)),
 
+                ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
-                ["ReiterFlaechen"] = Text_("GEBK_REITER_FLAECHEN", "Flächen und U-Werte"),
-                // GEB2_TITEL steht seit H11 im Ressourcenkatalog und war der Titel der
-                // zweiten Maske - er wird jetzt der Titel des zweiten Reiters.
-                ["ReiterTemperaturen"] = MyResource.Resource.GEB2_TITEL,
 
                 ["GruppeKopf"] = Text_("GEBK_GRP_KENNGROESSEN", "Kenngrößen"),
-                ["GruppeFlaechen"] = Text_("GEBK_GRP_FLAECHEN", "Flächen [m²]"),
-                ["GruppeUWerte"] = Text_("GEBK_GRP_UWERTE", "U-Werte [W/m²K]"),
                 ["GruppeRaumtemperaturen"] = Text_("GEBK_GRP_RAUMTEMPERATUREN", "Raumtemperaturen"),
-                ["GruppeWaermebruecken"] = Text_("GEBK_GRP_WAERMEBRUECKEN",
-                    "Wärmebrückenverlustkoeffizienten [W/(mK)]"),
-                ["GruppeAnschlussmasse"] = Text_("GEBK_GRP_ANSCHLUSS", "Abmessung Anschluß [m]"),
                 ["GruppeFerienAnfang"] = Text_("GEBK_GRP_FERIEN_ANFANG", "Ferien Anfang"),
                 ["GruppeFerienEnde"] = Text_("GEBK_GRP_FERIEN_ENDE", "Ferien Ende"),
                 ["GruppeSonstiges"] = Text_("GEBK_GRP_SONSTIGES", "Sonstiges"),
@@ -148,37 +88,24 @@ namespace WindowsFormsApplication1
                 ["LabelBaujahr"] = Text_("GEBK_LBL_BAUJAHR", "Baujahr :"),
                 ["LabelVerwendung"] = Text_("GEBK_LBL_VERWENDUNG", "Verwendung :"),
                 ["LabelBauart"] = Text_("GEBK_LBL_BAUART", "Bauart :"),
-                ["LabelWohnflaeche"] = Text_("GEBK_LBL_WOHNFLAECHE", "Wohn-/Nutzfläche :"),
+                ["LabelWohnflaeche"] = Text_("GEBK_LBL_WOHNFLAECHE", "Nutzfläche :"),
                 ["LabelFlaecheNutzer"] = Text_("GEBK_LBL_FLAECHE_NUTZER", "Fläche / Nutzer :"),
                 ["LabelWaermegewinne"] = Text_("GEBK_LBL_WAERMEGEWINNE", "Interne Wärmegewinne :"),
                 ["LabelFensterdurchlassgrad"] =
                     Text_("GEBK_LBL_FENSTERDURCHLASS", "Fensterdurchlaßgrad :"),
                 ["HinweisFensterdurchlassgrad"] = Text_("GEBK_HINWEIS_FENSTERDURCHLASS", "(z.B. 0,4)"),
                 ["LabelRaumhoehe"] = Text_("GEBK_LBL_RAUMHOEHE", "Raumhöhe :"),
+                ["LabelLuftwechsel"] = Text_("GEBK_LBL_LUFTWECHSEL", "Luftwechselrate :"),
 
                 ["LabelFFNord"] = Text_("GEBK_LBL_FF_NORD", "Fensterfläche Nord :"),
                 ["LabelFFSued"] = Text_("GEBK_LBL_FF_SUED", "Fensterfläche Süd :"),
                 ["LabelFFOstWest"] = Text_("GEBK_LBL_FF_OSTWEST", "Fensterfläche Ost + West :"),
-                ["LabelFlaecheAussenwand"] = Text_("GEBK_LBL_FL_AUSSENWAND", "Fläche Außenwand :"),
-                ["LabelDachflaeche"] = Text_("GEBK_LBL_DACHFLAECHE", "Gebäude Dachfläche :"),
-                ["LabelGrundflaeche"] = Text_("GEBK_LBL_GRUNDFLAECHE", "Gebäude Grundfläche :"),
-                ["LabelSonstigeFlaechen"] = Text_("GEBK_LBL_SONST_FLAECHEN", "sonstige Flächen :"),
-
-                ["LabelUAussenwand"] = Text_("GEBK_LBL_U_AUSSENWAND", "Außenwand :"),
-                ["LabelUFenster"] = Text_("GEBK_LBL_U_FENSTER", "Fenster :"),
-                ["LabelUDachflaeche"] = Text_("GEBK_LBL_U_DACHFLAECHE", "Dachfläche :"),
-                ["LabelUGrundflaeche"] = Text_("GEBK_LBL_U_GRUNDFLAECHE", "Grundfläche :"),
-                ["LabelUSonstiges"] = Text_("GEBK_LBL_U_SONSTIGES", "Sonstiges :"),
 
                 ["LabelSollTag"] = Text_("GEBK_LBL_SOLL_TAG", "Soll am Tag :"),
                 ["LabelNachtAbsenkung"] = Text_("GEBK_LBL_NACHTABSENKUNG", "Nachtabsenkung auf :"),
                 ["LabelMaxTemperatur"] = Text_("GEBK_LBL_MAXTEMPERATUR", "Maximalraumtemperatur :"),
                 ["LabelWEAbsenkung"] = Text_("GEBK_LBL_WE_ABSENKUNG", "Wochenendabsenkung :"),
                 ["LabelSollFerien"] = Text_("GEBK_LBL_SOLL_FERIEN", "Soll in Ferien :"),
-                ["LabelWbvkFenster"] = Text_("GEBK_LBL_FENSTER_WAND", "Fenster-Wand :"),
-                ["LabelWbvkKeller"] = Text_("GEBK_LBL_AUSSENWAND_KELLER", "Außenwand-Keller :"),
-                ["LabelWbvkDach"] = Text_("GEBK_LBL_WAND_DACH", "Wand-Dach :"),
-                ["LabelLuftwechsel"] = Text_("GEBK_LBL_LUFTWECHSEL", "Luftwechselrate :"),
                 ["LabelTag"] = Text_("GEBK_LBL_TAG", "Tag :"),
                 ["LabelMonat"] = Text_("GEBK_LBL_MONAT", "Monat :"),
                 ["LabelBrauchwasserprofile"] =
@@ -189,19 +116,13 @@ namespace WindowsFormsApplication1
                 ["Verwendungen"] = Verwendungen(),
                 ["Verwendungswerte"] = VERWENDUNGSWERTE,
 
-                ["BtnUeberschreibenText"] = Text_("GEBK_BTN_UEBERSCHREIBEN", "Überschreiben"),
+                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
+                ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["BtnSpeichernUnterText"] = Text_("GEBK_BTN_SPEICHERN_UNTER", "Speichern unter"),
-                ["BtnSpeichernText"] = Text_("GEBK_BTN_SPEICHERN", "Speichern"),
-                ["BtnBeendenText"] = Text_("GEBK_BTN_BEENDEN", "Beenden"),
-                ["BtnUebernehmenText"] = Text_("GEBK_BTN_UEBERNEHMEN", "Werte übernehmen"),
                 ["BtnBrauchwasserText"] = Text_("GEBK_BTN_BRAUCHWASSER", "Brauchwasser..."),
 
                 ["MeldungZahlFehlt"] = Text_("GEBK_MSG_ZAHL", "Bitte {0} als Zahl eingeben."),
                 ["MeldungNameFehlt"] = Text_("GEBK_MSG_NAME_LEER", "Gebäudenamen eingeben!"),
-                ["MeldungGespeichert"] = Text_("GEBK_MSG_GESPEICHERT", "Gebäude ist gespeichert!"),
-                ["MeldungUeberschrieben"] =
-                    Text_("GEBK_MSG_UEBERSCHRIEBEN", "Gebäude Datensatz ist überschrieben!"),
-                ["MeldungUebernommen"] = Text_("GEBK_MSG_UEBERNOMMEN", "Werte übernommen."),
                 ["MeldungFerienWinter"] = Text_(Ferienzeit.MELDUNG_WINTER,
                     "Die Ferien müssen über die Jahresgrenze gehen!"),
                 ["MeldungFerienOstern"] = Text_(Ferienzeit.MELDUNG_OSTERN,
@@ -211,14 +132,13 @@ namespace WindowsFormsApplication1
                 ["MeldungFerienHerbst"] = Text_(Ferienzeit.MELDUNG_HERBST,
                     "Fehler: Bei der Eingabe der Herbstferien!"),
 
-                ["FeldWohnflaeche"] = Text_("GEBK_FELD_WOHNFLAECHE", "Wohn-/Nutzfläche"),
+                ["FeldWohnflaeche"] = Text_("GEBK_FELD_WOHNFLAECHE", "Nutzfläche"),
                 ["FeldFlaecheNutzer"] = Text_("GEBK_FELD_FLAECHE_NUTZER", "Fläche / Nutzer"),
                 ["FeldWaermegewinne"] = Text_("GEBK_FELD_WAERMEGEWINNE", "Interne Wärmegewinne"),
                 ["FeldFensterdurchlassgrad"] =
                     Text_("GEBK_FELD_FENSTERDURCHLASS", "Fensterdurchlaßgrad"),
                 ["FeldRaumhoehe"] = Text_("GEBK_FELD_RAUMHOEHE", "Raumhöhe"),
                 ["FeldFFSued"] = Text_("GEBK_FELD_FF_SUED", "Fensterfläche Süd"),
-                ["FeldFFOstWest"] = Text_("GEBK_FELD_FF_OSTWEST", "Fensterfläche Ost + West"),
                 ["FeldFFNord"] = Text_("GEBK_FELD_FF_NORD", "Fensterfläche Nord"),
                 ["FeldFlaecheAussenwand"] = Text_("GEBK_FELD_FL_AUSSENWAND", "Fläche Außenwand"),
                 ["FeldDachflaeche"] = Text_("GEBK_FELD_DACHFLAECHE", "Gebäude Dachfläche"),
@@ -229,16 +149,87 @@ namespace WindowsFormsApplication1
                 ["FeldUDachflaeche"] = Text_("GEBK_FELD_U_DACHFLAECHE", "U-Wert Dachfläche"),
                 ["FeldUGrundflaeche"] = Text_("GEBK_FELD_U_GRUNDFLAECHE", "U-Wert Grundfläche"),
                 ["FeldUSonstiges"] = Text_("GEBK_FELD_U_SONSTIGES", "U-Wert Sonstiges"),
-                ["LabelAnschlussFenster"] =
-                    Text_("GEBK_FELD_ANSCHLUSS_FENSTER", "Anschluß Fenster-Wand"),
-                ["LabelAnschlussDach"] = Text_("GEBK_FELD_ANSCHLUSS_DACH", "Anschluß Wand-Dach"),
-                ["LabelAnschlussKeller"] =
-                    Text_("GEBK_FELD_ANSCHLUSS_KELLER", "Anschluß Außenwand-Keller"),
 
                 ["HilfeSchluessel"] = "Form_Gebaeude1.btn_Help"
             };
+        }
 
-            return werte;
+        /// <summary>Das Textbündel der VDI-6007-Struktur — der Rückfall ist der Vorgabewert des Bündels.</summary>
+        internal static GebaeudeHuelleTexte Texte()
+        {
+            var t = new GebaeudeHuelleTexte();
+            t.ReiterHuelle = Text_("GEBK_REITER_HUELLE", t.ReiterHuelle);
+            t.ReiterTemperaturen = Text_("GEBK_REITER_TEMPERATUREN", t.ReiterTemperaturen);
+            t.GruppeHuelle = Text_("GEBK_GRP_HUELLE", t.GruppeHuelle);
+            t.GruppeLeitwerte = Text_("GEBK_GRP_LEITWERTE", t.GruppeLeitwerte);
+            t.GruppeFenster = Text_("GEBK_GRP_FENSTER_ORIENTIERUNG", t.GruppeFenster);
+            t.GruppeModellparameter = Text_("GEBK_GRP_MODELLPARAMETER", t.GruppeModellparameter);
+            t.GruppeTagesbilanz = Text_("GEBK_GRP_TAGESBILANZ", t.GruppeTagesbilanz);
+
+            t.SpalteBauteil = Text_("GEBK_SP_BAUTEIL", t.SpalteBauteil);
+            t.SpalteKennwert = Text_("GEBK_SP_U_PSI", t.SpalteKennwert);
+            t.SpalteGroesse = Text_("GEBK_SP_A_L", t.SpalteGroesse);
+            t.SpalteRandbedingung = Text_("GEBK_SP_RANDBEDINGUNG", t.SpalteRandbedingung);
+            t.SpalteLeitwert = Text_("GEBK_SP_UA", t.SpalteLeitwert);
+            t.ZeileAussenwand = Text_("GEBK_ZEILE_AUSSENWAND", t.ZeileAussenwand);
+            t.ZeileFenster = Text_("GEBK_ZEILE_FENSTER", t.ZeileFenster);
+            t.ZeileDach = Text_("GEBK_ZEILE_DACH", t.ZeileDach);
+            t.ZeileBodenplatte = Text_("GEBK_ZEILE_BODENPLATTE", t.ZeileBodenplatte);
+            t.ZeileSonstiges = Text_("GEBK_ZEILE_SONSTIGES", t.ZeileSonstiges);
+            t.ZeileWbFenster = Text_("GEBK_ZEILE_WB_FENSTER", t.ZeileWbFenster);
+            t.ZeileWbKeller = Text_("GEBK_ZEILE_WB_KELLER", t.ZeileWbKeller);
+            t.ZeileWbDach = Text_("GEBK_ZEILE_WB_DACH", t.ZeileWbDach);
+            t.RandAussenluft = Text_("GEBK_RAND_AUSSENLUFT", t.RandAussenluft);
+            t.RandErdreich = Text_("GEBK_RAND_ERDREICH", t.RandErdreich);
+            t.RandKeller = Text_("GEBK_RAND_KELLER", t.RandKeller);
+            t.LabelKellertemperatur = Text_("GEBK_LBL_KELLERTEMPERATUR", t.LabelKellertemperatur);
+            t.HinweisFensterflaeche = Text_("GEBK_HINWEIS_FENSTER_SUMME", t.HinweisFensterflaeche);
+
+            t.LabelHT = Text_("GEBK_LBL_HT", t.LabelHT);
+            t.LabelHVe = Text_("GEBK_LBL_HVE", t.LabelHVe);
+            t.LabelHGes = Text_("GEBK_LBL_HGES", t.LabelHGes);
+            t.LabelHTGewichtet = Text_("GEBK_LBL_HT_GEWICHTET", t.LabelHTGewichtet);
+            t.HinweisGewichte = Text_("GEBK_HINWEIS_GEWICHTE", t.HinweisGewichte);
+            t.HinweisLueftung = Text_("GEBK_HINWEIS_LUEFTUNG", t.HinweisLueftung);
+
+            t.LabelFFOst = Text_("GEBK_LBL_FF_OST", t.LabelFFOst);
+            t.LabelFFWest = Text_("GEBK_LBL_FF_WEST", t.LabelFFWest);
+            t.LabelFFSummeOstWest = Text_("GEBK_LBL_FF_SUMME_OW", t.LabelFFSummeOstWest);
+            t.LabelFFGesamt = Text_("GEBK_LBL_FF_GESAMT", t.LabelFFGesamt);
+            t.FeldFFOst = Text_("GEBK_FELD_FF_OST", t.FeldFFOst);
+            t.FeldFFWest = Text_("GEBK_FELD_FF_WEST", t.FeldFFWest);
+
+            t.LabelRahmenanteil = Text_("GEBK_LBL_RAHMENANTEIL", t.LabelRahmenanteil);
+            t.LabelVerschattung = Text_("GEBK_LBL_VERSCHATTUNG", t.LabelVerschattung);
+            t.LabelMasseanteil = Text_("GEBK_LBL_MASSEANTEIL", t.LabelMasseanteil);
+            t.LabelInnenflaechenfaktor = Text_("GEBK_LBL_INNENFLAECHENFAKTOR", t.LabelInnenflaechenfaktor);
+            t.LabelHeizungStrahlung = Text_("GEBK_LBL_HEIZUNG_STRAHLUNG", t.LabelHeizungStrahlung);
+            t.LabelHeizleistungMax = Text_("GEBK_LBL_HEIZLEISTUNG_MAX", t.LabelHeizleistungMax);
+            t.LabelAussenStrahlung = Text_("GEBK_LBL_AUSSEN_STRAHLUNG", t.LabelAussenStrahlung);
+            t.VorgabeFormat = Text_("GEBK_VORGABE", t.VorgabeFormat);
+            t.VorgabeUnbegrenzt = Text_("GEBK_VORGABE_UNBEGRENZT", t.VorgabeUnbegrenzt);
+            t.HinweisModellparameter = Text_("GEBK_HINWEIS_MODELLPARAMETER", t.HinweisModellparameter);
+
+            t.LabelRechenweg = Text_("GEBK_LBL_RECHENWEG", t.LabelRechenweg);
+            t.RechenwegVdi6007 = Text_("GEBK_RECHENWEG_VDI6007", t.RechenwegVdi6007);
+            t.RechenwegTagesbilanz = Text_("GEBK_RECHENWEG_TAGESBILANZ", t.RechenwegTagesbilanz);
+            t.ZeileRechenwegVdi6007 = Text_("GEBK_ZEILE_RECHENWEG_VDI6007", t.ZeileRechenwegVdi6007);
+            t.ZeileRechenwegTagesbilanz = Text_("GEBK_ZEILE_RECHENWEG_TAGESBILANZ", t.ZeileRechenwegTagesbilanz);
+            t.ZeileRechenwegVorgabe = Text_("GEBK_ZEILE_RECHENWEG_VORGABE", t.ZeileRechenwegVorgabe);
+
+            t.HinweisSpeichernUnter = Text_("GEBK_HINWEIS_SPEICHERN_UNTER", t.HinweisSpeichernUnter);
+
+            t.MeldungUngueltig = Text_("GEBK_MSG_UNGUELTIG", t.MeldungUngueltig);
+            t.MeldungNutzflaeche = Text_("GEBK_MSG_NUTZFLAECHE", t.MeldungNutzflaeche);
+            t.MeldungFlaecheNutzer = Text_("GEBK_MSG_FLAECHE_NUTZER", t.MeldungFlaecheNutzer);
+            t.MeldungRaumhoehe = Text_("GEBK_MSG_RAUMHOEHE", t.MeldungRaumhoehe);
+            t.MeldungLuftwechsel = Text_("GEBK_MSG_LUFTWECHSEL", t.MeldungLuftwechsel);
+            t.MeldungGWert = Text_("GEBK_MSG_G_WERT", t.MeldungGWert);
+            t.MeldungUBereich = Text_("GEBK_MSG_U_BEREICH", t.MeldungUBereich);
+            t.MeldungBauweise = Text_("GEBK_MSG_BAUWEISE", t.MeldungBauweise);
+            t.MeldungRRest = Text_("GEBK_MSG_RREST", t.MeldungRRest);
+            t.MeldungOstWest = Text_("GEBK_MSG_OST_WEST", t.MeldungOstWest);
+            return t;
         }
 
         // =================================================================================
@@ -250,16 +241,16 @@ namespace WindowsFormsApplication1
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            IWin32Window besitzer, List<Z_ProjektBrauchwasserModel> ziel)
+            List<Z_ProjektBrauchwasserModel> ziel)
         {
             int projektId = Dienste.Projekt.Id;
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
 
-            var zeilen = new List<EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile>();
+            var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in ziel)
-                zeilen.Add(new EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile
+                zeilen.Add(new BedarfsProfilZeile
                 {
                     IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser,
                     Name = m.szBezeichner ?? "", Summe = m.Summe
@@ -268,7 +259,7 @@ namespace WindowsFormsApplication1
             Action geaendert = () =>
             {
                 ziel.Clear();
-                foreach (EPOS.UI.Dialoge.Bedarf.BedarfsProfilZeile z in zeilen)
+                foreach (BedarfsProfilZeile z in zeilen)
                     ziel.Add(new Z_ProjektBrauchwasserModel
                     {
                         ID_Z = z.IdZ, ID_Projekt = projektId, ID_Brauchwasser = z.IdStamm,
@@ -276,8 +267,7 @@ namespace WindowsFormsApplication1
                     });
             };
 
-            return BedarfsProfileHuelle.Gaben(besitzer, BedarfsArt.Brauchwasser, projektId,
-                                              zeilen, geaendert, wizard: false);
+            return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert);
         }
 
         /// <summary>
@@ -301,31 +291,29 @@ namespace WindowsFormsApplication1
             projctrl.Update();
         }
 
-        private static GebaeudeModel Laden(string bezeichner)
-        {
-            if (string.IsNullOrEmpty(bezeichner)) return null;
-
-            GebaeudeStammCtrl ctrl = new GebaeudeStammCtrl();
-            ctrl.ReadAll("Bezeichner='" + bezeichner + "'");
-            return ctrl.rows > 0 ? ctrl.items[0] : null;
-        }
+        /// <summary>Ein Katalogsatz nach Bezeichner — über den Kern-Controller, mit Parameter.</summary>
+        internal static GebaeudeModel Laden(string bezeichner)
+            => new GebaeudeStammCtrl().Lies(bezeichner);
 
         /// <summary>
-        /// Der Schreibweg samt ReadOnly-Sperre. Die Sperre prüft die HÜLLE, nicht der
-        /// Controller: <c>Overwrite</c> meldet sie über <c>Meldung.Hinweis</c>, und das
-        /// wäre in einer WebView ein modaler Kasten über dem Dialog (Muster W8.1).
+        /// Der EINE Schreibweg des Editors samt ReadOnly-Sperre und Namensprobe. Angelegt
+        /// wird nur unter einem freien Namen; überschrieben wird der URSPRUNGSNAME.
         /// </summary>
-        private static GebaeudeKatalogErgebnis Schreiben(
+        internal static GebaeudeKatalogErgebnis Schreiben(
             GebaeudeKatalogDaten daten, bool istNeu, string bezeichner)
         {
-            GebaeudeStammCtrl ctrl = new GebaeudeStammCtrl();
+            var ctrl = new GebaeudeStammCtrl();
+
+            if (istNeu && ctrl.Lies(daten.Name) != null)
+                return new GebaeudeKatalogErgebnis(false, Text_("GEBK_MSG_NAME_VERGEBEN",
+                    "Ein Gebäude mit diesem Namen steht schon im Katalog."));
 
             if (!istNeu && ctrl.IsReadOnly(bezeichner))
                 return new GebaeudeKatalogErgebnis(false, Text_("GEBK_MSG_READONLY",
                     "Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht " +
                     "überschrieben werden."));
 
-            GebaeudeModel vorher = Laden(istNeu ? daten.Name : bezeichner) ?? new GebaeudeModel();
+            GebaeudeModel vorher = istNeu ? new GebaeudeModel() : Laden(bezeichner) ?? new GebaeudeModel();
             GebaeudeModel modell = NachModell(daten, vorher);
 
             // Ueberschreiben trifft den URSPRUNGSNAMEN (WHERE Bezeichner = Gebaeudename).
@@ -336,7 +324,7 @@ namespace WindowsFormsApplication1
                 ok ? "" : Text_("GEBK_MSG_FEHLER", "Fehler beim Speichern!\nAlle Eingaben überprüfen!"));
         }
 
-        /// <summary>Katalogsatz → Feldsatz (<c>SetControls</c>:46-125 und :31-71).</summary>
+        /// <summary>Katalogsatz → Feldsatz.</summary>
         internal static GebaeudeKatalogDaten AusModell(GebaeudeModel m)
         {
             var d = new GebaeudeKatalogDaten
@@ -348,8 +336,7 @@ namespace WindowsFormsApplication1
                 Verwendung = string.IsNullOrEmpty(m.Wohngebaeude_Nicht_Wohngebaeude)
                     ? VERWENDUNGSWERTE[0] : m.Wohngebaeude_Nicht_Wohngebaeude,
                 Baualtersklasse = GebaeudeStammCtrl.KlassenIndex(m.Baualtersklasse),
-                // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise; die
-                // Bauweise selbst geht mit, weil der Dialog sie ab jetzt bildet.
+                // W9-O-2: Die Bauart bleibt die ANZEIGE der gespeicherten Bauweise.
                 Bauart = GebaeudeStammCtrl.BauartAusBauweise(m.Bauweise, m.Nutzflaeche),
                 Bauweise = m.Bauweise,
 
@@ -392,7 +379,21 @@ namespace WindowsFormsApplication1
                 Ferien = m.Ferien,
                 WwBedarf = m.WW_Bedarf,
                 SpezWaermeverbrauch = m.spez_Waermeverbrauch,
-                Waermebedarf = m.Waermebedarf
+                Waermebedarf = m.Waermebedarf,
+
+                // Stufe G1: die zwoelf Felder der VDI-Struktur - NULL bleibt null.
+                Modell = m.Gebaeude_Modell,
+                GrundflaecheRandbedingung = m.Grundflaeche_Randbedingung,
+                Kellertemperatur = m.Kellertemperatur,
+                FensterflaecheOst = m.Fensterflaeche_Ost,
+                FensterflaecheWest = m.Fensterflaeche_West,
+                Rahmenanteil = m.Rahmenanteil,
+                Verschattungsfaktor = m.Verschattungsfaktor,
+                MasseanteilAussen = m.Masseanteil_Aussen,
+                Innenflaechenfaktor = m.Innenflaechenfaktor,
+                HeizungStrahlungsanteil = m.Heizung_Strahlungsanteil,
+                HeizleistungMax = m.Heizleistung_Max,
+                AussenbauteileStrahlung = m.Aussenbauteile_Strahlung
             };
 
             d.Ferienbeginn = new[]
@@ -409,9 +410,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Feldsatz → Katalogsatz samt der vier Ableitungen aus
-        /// <c>InitModelFromControls</c>:174-215. <paramref name="vorher"/> ist der
-        /// GELADENE Satz; alles, was keine Maske anfasst, bleibt daraus stehen.
+        /// Feldsatz → Katalogsatz samt der Ableitungen des Vorläufers.
+        /// <paramref name="vorher"/> ist der GELADENE Satz; alles, was keine Maske anfasst,
+        /// bleibt daraus stehen.
         /// </summary>
         internal static GebaeudeModel NachModell(GebaeudeKatalogDaten d, GebaeudeModel vorher)
         {
@@ -426,17 +427,14 @@ namespace WindowsFormsApplication1
 
             m.Wohnflaeche_gesamt = wfl;
 
-            // "Flaeche_Nutzer == 0 -> 35" und die Bewohnerzahl daraus (:183-184).
+            // "Flaeche_Nutzer == 0 -> 35" und die Bewohnerzahl daraus.
             m.Flaeche_Nutzer = nutzer;
             if (nutzer == 0) { m.Flaeche_Nutzer = 35; nutzer = 35; }
             m.Bewohner = wfl / nutzer;
 
             m.Interne_Waermegewinne = d.Waermegewinne ?? 0;
 
-            // Entscheid W9-O-2 (Anwender, 04.09.2026) zu Befund W9-B6: Die BAUART
-            // bestimmt die Bauweise, nicht mehr die Gebaeudeart. Gebildet wird sie im
-            // Dialog (GebaeudeKatalogDialog.BauweiseNachfuehren), hier wird sie nur
-            // uebernommen.
+            // W9-O-2: Die Bauweise bildet der Dialog; hier wird sie nur uebernommen.
             m.Bauweise = d.Bauweise;
 
             m.Fensterflaeche_Sued = d.FensterflaecheSued ?? 0;
@@ -450,6 +448,8 @@ namespace WindowsFormsApplication1
             m.k_Wert_Grundflaeche = d.UWertGrundflaeche ?? 0;
             m.k_Wert_Sonstiges = d.UWertSonstiges ?? 0;
             m.Flaeche_Außenwand = d.FlaecheAussenwand ?? 0;
+            // Die gesamte Fensterflaeche ist GERECHNET: Sued + (Ost + West) + Nord
+            // (Konzept 2.6) - dieselbe Summe, die der Dialog zeigt.
             m.gesamte_Fensterflaeche = m.Fensterflaeche_Sued + m.Fensterflaeche_OstWest +
                                        m.Fensterflaeche_Nord;
             m.Dachflaeche = d.Dachflaeche ?? 0;
@@ -462,7 +462,7 @@ namespace WindowsFormsApplication1
             m.Gebaeudeart = d.Gebaeudeart ?? "";
             m.Wohngebaeude_Nicht_Wohngebaeude = d.Verwendung ?? VERWENDUNGSWERTE[0];
 
-            // Reiter 2 - die Ableitungen hat die Komponente beim Uebernehmen gemacht.
+            // Reiter 2 - die Ableitungen hat die Komponente im OK-Weg gemacht.
             m.Raumsolltemperatur_Tag = d.SollTag ?? 0;
             m.Raumsolltemperatur_Nachtabsenkung = d.NachtAbsenkung ?? 0;
             m.Maximaleraumtemperatur = d.MaxTemperatur ?? 0;
@@ -493,6 +493,20 @@ namespace WindowsFormsApplication1
             m.spez_Waermeverbrauch = d.SpezWaermeverbrauch;
             m.Waermebedarf = d.Waermebedarf;
 
+            // Stufe G1: die zwoelf Felder der VDI-Struktur, NULL-erhaltend.
+            m.Gebaeude_Modell = d.Modell;
+            m.Grundflaeche_Randbedingung = d.GrundflaecheRandbedingung;
+            m.Kellertemperatur = d.Kellertemperatur;
+            m.Fensterflaeche_Ost = d.FensterflaecheOst;
+            m.Fensterflaeche_West = d.FensterflaecheWest;
+            m.Rahmenanteil = d.Rahmenanteil;
+            m.Verschattungsfaktor = d.Verschattungsfaktor;
+            m.Masseanteil_Aussen = d.MasseanteilAussen;
+            m.Innenflaechenfaktor = d.Innenflaechenfaktor;
+            m.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
+            m.Heizleistung_Max = d.HeizleistungMax;
+            m.Aussenbauteile_Strahlung = d.AussenbauteileStrahlung;
+
             return m;
         }
 
@@ -502,8 +516,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die beiden STEUERWERTE der Spalte <c>Wohngebaeude_Nicht_Wohngebaeude</c>. Sie
-        /// werden NIE übersetzt — die en-US-Satellitendatei des Vorläufers tat es und
-        /// schrieb damit englischen Text in die Datenbank (Befund W9‑B8).
+        /// werden NIE übersetzt (Befund W9‑B8).
         /// </summary>
         internal static readonly string[] VERWENDUNGSWERTE = { "Wohngebaeude", "Nicht Wohngebaeude" };
 
@@ -537,11 +550,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static string Titel()
-        {
-            // Der Designer schreibt "Flaeschen" - ein Tippfehler; gemeint sind Flaechen.
-            return Text_("GEBK_TITEL", "Gebäudedaten: Flächen, U-Werte");
-        }
+        internal static string Titel() => Text_("GEBK_TITEL", "Gebäudedaten: Flächen, U-Werte");
 
         private static string Text_(string schluessel, string rueckfall)
         {

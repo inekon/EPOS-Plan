@@ -1,40 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
-using Microsoft.AspNetCore.Components;
-using WindowsFormsApplication1.Zeichnung;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Die WINDOWS-HÜLLE der GEBÄUDE eines Projekts (iU9-W9.2) — der Ersatz für
-    /// <c>Form_Gebaeude</c>.
+    /// Die DATENSEITE der GEBÄUDE eines Projekts (<c>GebaeudeDialog</c>) — seit Stufe G1 in
+    /// <c>EPOS.UI.Daten</c> (Umsetzungskonzept Gebäudesimulation 2.8, Entscheid E27/A10).
+    /// Das Fenster bleibt in der Windows-Schale (<c>GebaeudeFenster</c>); die Hülle führt
+    /// keinen <c>IWin32Window</c> mehr — er wurde nur an die Katalogdialoge weitergereicht,
+    /// die Überlagerungen sind, und an die beiden Wege der Naht <see cref="Gebaeudewege"/>.
     ///
-    /// <para><b>Drei Betriebsarten, zwei Einstiege.</b> <see cref="Oeffnen"/> trägt den
-    /// Projekt- und den Assistentenweg, <see cref="Katalogverwaltung"/> den Admin-Weg aus
-    /// <c>Dienste.Navigation</c> (<c>Masken.GebaeudeAdmin</c>). Der Vorläufer unterschied
-    /// sie über zwei Felder und ein <c>Load</c>-Ereignis, das die halbe Maske versteckte.</para>
+    /// <para><b>Die Liste wird GETEILT, nicht kopiert.</b> Die <c>List&lt;Z_ProjGebModel&gt;</c>
+    /// gehört dem Aufrufer; die Hülle baut sie nach jeder Änderung AN ORT UND STELLE aus der
+    /// Anzeigeliste neu auf — der einzige Weg, der auch im Assistenten trägt.</para>
     ///
-    /// <para><b>Die Liste wird GETEILT, nicht kopiert.</b> Wie in den Wellen 6 und 7
-    /// gehört die <c>List&lt;Z_ProjGebModel&gt;</c> dem Aufrufer; die Hülle baut sie nach
-    /// jeder Änderung AN ORT UND STELLE aus der Anzeigeliste neu auf. Das geht, weil eine
-    /// Anzeigezeile ALLE Felder ihres Modells trägt — und es ist der einzige Weg, der
-    /// auch im Assistenten trägt, wo dieselbe Liste über mehrere Seitenbesuche
-    /// hinweg lebt.</para>
+    /// <para><b>Vier Unterdialoge, vier Überlagerungen.</b> Katalogeditor, Skalierungsdialog,
+    /// Gebäudetypen-Verwaltung und Wärmebedarf erscheinen IM selben Fenster; die Hülle reicht
+    /// dafür nur die Parametersätze durch.</para>
     ///
-    /// <para><b>Drei Unterdialoge, drei Überlagerungen.</b> Katalogeditor (W9.1),
-    /// Wohnflächenangabe (W9.3) und Gebäudetypen-Verwaltung (W8.4) erscheinen IM selben
-    /// Fenster (Risiko R2); die Hülle reicht dafür nur die Parametersätze durch.</para>
+    /// <para><b>Stufe G1 (Konzept 2.7):</b> Jede Projektzeile trägt den Rechenweg als
+    /// Anzeigetext und den Wärmeleitwert H_ges — beides so, wie der Kern rechnet
+    /// (<see cref="Gebaeuderechenweg"/>, <see cref="Gebaeudehuellbilanz"/>).</para>
     /// </summary>
     internal static class GebaeudeHuelle
     {
-        /// <summary>Gewünschtes Innenmaß (Vorläufer: 812 × 573).</summary>
-        private static readonly Size MASS = new Size(1060, 720);
-
         /// <summary>
         /// Die vorläufige Id einer noch nicht gespeicherten Zuordnung — derselbe
         /// Startwert wie <c>Form_Gebaeude.startindex</c>.
@@ -42,79 +32,20 @@ namespace WindowsFormsApplication1
         private const int STARTINDEX = 100000;
 
         // =================================================================================
-        // Einstiege
-        // =================================================================================
-
-        /// <summary>
-        /// Zeigt die Gebäude eines Projekts als eigenes Fenster — der Weg von
-        /// <c>Form_Start.pBox_Gebaude_Click</c> und den beiden Kontextmenüpunkten.
-        /// </summary>
-        /// <returns><c>true</c>, wenn mit OK geschlossen wurde.</returns>
-        internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjGebModel> modelle)
-        {
-            bool ok = false;
-            BlazorDialogForm<GebaeudeDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(
-                Gaben(besitzer, projektId, projektName, modelle, wizard: false, admin: false))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<GebaeudeDialog>(Titel(), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
-
-        /// <summary>
-        /// Die KATALOGVERWALTUNG (<c>Masken.GebaeudeAdmin</c>): nur der Katalog, ohne
-        /// Projektteil und ohne die beiden Pfeile.
-        /// </summary>
-        internal static bool Katalogverwaltung(IWin32Window besitzer)
-        {
-            bool ok = false;
-            BlazorDialogForm<GebaeudeDialog> dlg = null;
-
-            var werte = new Dictionary<string, object>(
-                Gaben(besitzer, 0, "", new List<Z_ProjGebModel>(), wizard: false, admin: true))
-            {
-                ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
-                {
-                    ok = b;
-                    if (dlg != null) dlg.Schliessen(b);
-                })
-            };
-
-            dlg = new BlazorDialogForm<GebaeudeDialog>(Titel(), MASS, werte);
-            using (dlg)
-            {
-                if (besitzer != null) dlg.ShowDialog(besitzer); else dlg.ShowDialog();
-            }
-            return ok;
-        }
-
-        // iU9-W16a.5: Die Fabrikmethode AssistentSeite() ist entfallen - der
-        // Assistent ist selbst eine Razor-Seite und braucht kein randloses
-        // WinForms-Formular mehr. AssistentHuelle ruft direkt Gaben(...).
-
-        // =================================================================================
         // Der Parametersatz
         // =================================================================================
 
         internal static IReadOnlyDictionary<string, object> Gaben(
-            IWin32Window besitzer, int projektId, string projektName,
+            int projektId, string projektName,
             List<Z_ProjGebModel> modelle, bool wizard, bool admin)
         {
             var zeilen = new List<GebaeudeProjektZeile>();
-            foreach (Z_ProjGebModel m in modelle) zeilen.Add(AusModell(m));
+            foreach (Z_ProjGebModel m in modelle)
+            {
+                GebaeudeProjektZeile z = AusModell(m);
+                KennwerteSetzen(z, projektId);
+                zeilen.Add(z);
+            }
 
             int[] naechsteId = { STARTINDEX };
 
@@ -146,22 +77,23 @@ namespace WindowsFormsApplication1
                     name => new GebaeudeStammCtrl().Delete(name)),
 
                 ["KatalogGaben"] = new Func<string, IReadOnlyDictionary<string, object>>(
-                    name => GebaeudeKatalogHuelle.Gaben(besitzer, name,
+                    name => GebaeudeKatalogHuelle.Gaben(name,
                         string.IsNullOrEmpty(name)
                             ? GebaeudeKatalogModus.Neu : GebaeudeKatalogModus.Bearbeiten)),
 
                 ["WohnflaecheGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
                     Wohnflaechengaben),
 
-                ["GebaeudetypGaben"] = new Func<IReadOnlyDictionary<string, object>>(
-                    () => GebaeudetypHuelle.Gaben()),
+                // Die Gebaeudetypen-Verwaltung liegt noch in der Windows-Schale - ein
+                // Haken der Naht (Gebaeudewege); ohne ihn kein Knopf.
+                ["GebaeudetypGaben"] = Gebaeudewege.GebaeudetypGaben,
 
                 // Anwenderwunsch W9-E-2 (05.09.2026): der Waermebedarf GENAU DIESES
                 // Gebaeudes. In der Katalogverwaltung gibt es kein Projekt; dort zeigt
                 // die Komponente den Knopf ohnehin nicht (Admin), und der Delegat
                 // antwortet mit null.
                 ["BedarfGaben"] = new Func<GebaeudeProjektZeile, IReadOnlyDictionary<string, object>>(
-                    z => Bedarfsgaben(z, projektId)),
+                    z => GebaeudeBedarfHuelle.Gaben(z, projektId)),
 
                 ["TitelText"] = Titel(),
                 ["KopfbandText"] = Text_("GEB_KOPFBAND", "Eingabe der Energiedaten"),
@@ -177,11 +109,15 @@ namespace WindowsFormsApplication1
                 ["PlatzhalterSuche"] = Text_("GEB_PLATZHALTER_SUCHE", "Suche, z. B. Haus*_1990*"),
                 ["LabelGebaeudename"] = Text_("GEB_LBL_GEBAEUDENAME", "Gebäudename:"),
                 ["LabelBeschreibung"] = Text_("GEB_LBL_BESCHREIBUNG", "Beschreibung:"),
-                ["LabelWohnflaeche"] = Text_("GEB_LBL_WOHNFLAECHE", "Wohn-/Nutzfläche:"),
+                ["LabelWohnflaeche"] = Text_("GEB_LBL_WOHNFLAECHE", "Nutzfläche:"),
                 ["LabelEinheit"] = Text_("GEBW_LBL_ART_ANGABE", "Art der Angabe:"),
                 ["SpalteWahl"] = Text_("KFAK_SP_WAHL", "Wahl"),
                 ["SpalteName"] = Text_("BHKWV_SP_NAME", "Name"),
                 ["SpalteTypFlaeche"] = Text_("GEB_SP_TYP_FLAECHE", "Typ/Wohnfläche"),
+                // Stufe G1 (Konzept 2.7): Spalte und Detailkennzahlen des Rechenwegs.
+                ["SpalteRechenweg"] = Text_("GEB_SP_RECHENWEG", "Rechenweg"),
+                ["LabelHges"] = Text_("GEB_LBL_HGES", "Wärmeleitwert H_ges:"),
+                ["LabelRechenweg"] = Text_("GEB_LBL_RECHENWEG", "Rechenweg:"),
                 ["TextAlle"] = Text_("GEB_TEXT_ALLE", "Alle"),
                 ["TextWohngebaeude"] = Text_("GEBK_VERWENDUNG_WOHN", "Wohngebäude"),
                 ["TextSonstige"] = Text_("GEB_TEXT_SONSTIGE", "Gewerbe+Sonstige"),
@@ -249,14 +185,14 @@ namespace WindowsFormsApplication1
 
         private static GebaeudeStammDetail Stammdetail(string name)
         {
-            var ctrl = new GebaeudeStammCtrl();
-            ctrl.ReadAll("Bezeichner='" + name + "'");
-            if (ctrl.rows == 0) return null;
+            GebaeudeModel m = new GebaeudeStammCtrl().Lies(name);
+            if (m == null) return null;
 
-            GebaeudeModel m = ctrl.items[0];
             return new GebaeudeStammDetail(m.Gebaeudename ?? "", m.Gebaeudeart ?? "",
                                            m.Beschreibung ?? "",
-                                           m.Wohnflaeche_gesamt.ToString("F2"));
+                                           m.Wohnflaeche_gesamt.ToString("F2"),
+                                           Rechenwegtext(m.Gebaeude_Modell),
+                                           Gebaeudehuellbilanz.GesamtWK(m));
         }
 
         /// <summary>
@@ -267,11 +203,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static GebaeudeProjektZeile Aufnehmen(string name, int projektId, int[] naechsteId)
         {
-            var ctrl = new GebaeudeStammCtrl();
-            ctrl.ReadAll("Bezeichner='" + name + "'");
-            if (ctrl.rows == 0) return null;
+            GebaeudeModel m = new GebaeudeStammCtrl().Lies(name);
+            if (m == null) return null;
 
-            GebaeudeModel m = ctrl.items[0];
             return new GebaeudeProjektZeile
             {
                 IdZ = naechsteId[0]++,      // noch nicht gespeichert, also noch unbekannt
@@ -283,7 +217,11 @@ namespace WindowsFormsApplication1
                 Wohnflaeche = m.Wohnflaeche_gesamt,
                 Einheit = "Wohnfläche [m²]",
                 Jahresnutzungsgrad = 1,
-                DezentralWarmwasser = false
+                DezentralWarmwasser = false,
+                // Die Projektkopie entsteht erst beim Speichern - bis dahin gelten die
+                // Werte des Katalogsatzes, aus dem sie entsteht.
+                Rechenweg = Rechenwegtext(m.Gebaeude_Modell),
+                HgesWK = Gebaeudehuellbilanz.GesamtWK(m)
             };
         }
 
@@ -312,146 +250,40 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Der Wärmebedarf EINES Gebäudes (Anwenderwunsch W9-E-2, 05.09.2026)
+        // Stufe G1: Rechenweg und Waermeleitwert je Zeile (Konzept 2.7)
         // =================================================================================
 
         /// <summary>
-        /// Der Parametersatz des Bedarfsdialogs zu EINER Projektzeile — <c>null</c>, wenn
-        /// es dafür keine Zahl gibt.
-        ///
-        /// <para><b>Drei Gründe für <c>null</c>:</b> kein Projekt (Katalogverwaltung), das
-        /// Projekt führt keine Klimaregion (dieselbe Sperre wie im Lauf,
-        /// <c>SimulationLaufCtrl.Vorpruefen</c>) oder die Zeile ist eben erst aufgenommen
-        /// und hat noch keine Projektkopie (<c>IdZ</c> ab 100000, siehe
-        /// <see cref="STARTINDEX"/>). Der Dialog MELDET das, statt eine leere
-        /// Überlagerung aufzumachen.</para>
-        ///
-        /// <para><b>Gerechnet wird im Kern</b> (<c>GebaeudeBedarfCtrl</c>), gezeichnet
-        /// auch (<c>ChartRenderer.GanglinieNormiert</c>) — die Komponente bekommt Zahlen
-        /// und ein PNG.</para>
+        /// Der Rechenweg als ANZEIGETEXT — so, wie die Weiche für diesen Spaltenwert rechnet
+        /// (<see cref="Gebaeuderechenweg.Wirksam"/>). Auf dem Altweg heißt er
+        /// „Tagesbilanz (Bestandsweg)" (ADR-006). Ohne Angabe am Gebäude (NULL) trägt der
+        /// Text den Zusatz „(Vorgabe)", wenn <paramref name="vorgabe"/> gesetzt ist.
         /// </summary>
-        private static IReadOnlyDictionary<string, object> Bedarfsgaben(
-            GebaeudeProjektZeile zeile, int projektId)
+        internal static string Rechenwegtext(string modell, bool vorgabe = true)
         {
-            if (zeile == null || projektId <= 0) return null;
-
-            var projekt = new ProjektCtrl();
-            projekt.ReadSingle(projektId);
-
-            GebaeudeBedarfErgebnis ergebnis =
-                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
-            if (!ergebnis.Erfolgreich) return null;
-
-            var monate = new double[12];
-            for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
-                monate[m] = ergebnis.MonatswerteMwh[m];
-
-            var daten = new GebaeudeBedarfDaten
-            {
-                Name = ergebnis.Name,
-                HeizwaermeMwh = ergebnis.HeizwaermeMwh,
-                MaxLastKw = ergebnis.MaxLastKw,
-                VollbenutzungsstundenH = ergebnis.VollbenutzungsstundenH,
-                MonatswerteMwh = monate
-            };
-
-            return new Dictionary<string, object>
-            {
-                ["Daten"] = daten,
-                ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
-                    sortiert => Bedarfsmodell(ergebnis, sortiert)),
-                ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
-                ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
-
-                // Die Anzeigeeinheit (Entscheid W8-O-5): dieselbe gemerkte Wahl wie im
-                // Bedarfsprofil- und im Bedarfsergebnisdialog.
-                ["Einheit"] = BedarfEinheitWahl.Lies(),
-                ["EinheitGewaehlt"] = new Action<Energieeinheit>(BedarfEinheitWahl.Schreib),
-
-                ["TitelText"] = Text_("GEBB_TITEL", "Wärmebedarf Gebäude"),
-                ["GruppeKennzahlen"] = Text_("GEBB_GRP_KENNZAHLEN", "Kennzahlen"),
-                ["GruppeMonate"] = Text_("BERG_GRP_MONAT", "monatlicher Verlauf:"),
-                ["LabelHeizwaerme"] = Text_("GEBB_LBL_HEIZWAERME", "Wärmebedarf Heizung:"),
-                ["LabelMaxLast"] = Text_("SIMERG_LBL_MAX_WAERMELAST", "max. Wärmelast"),
-                ["LabelVollbenutzung"] =
-                    Text_("GEBB_LBL_VOLLBENUTZUNG", "Vollbenutzungsstunden:"),
-                ["LabelSortiert"] = Text_("SIM_CHK_SORTIERT", "sortiert"),
-                ["LabelEinheit"] = Text_("ALLG_LBL_EINHEIT", "Einheit:"),
-                ["EinheitStunden"] = Text_("GEBB_EINHEIT_STUNDEN", "h/a"),
-                ["Bildtext"] = Text_("CHART_TITEL_WAERMELAST_JAHRESGANGLINIE",
-                                     "Wärmelast Jahresganglinie"),
-                ["Monatsnamen"] = Monatsnamen(),
-                ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
-                ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
-            };
+            string text = Gebaeuderechenweg.IstVdi6007(modell)
+                ? Text_("GEB_RECHENWEG_VDI6007", "VDI 6007")
+                : Text_("GEB_RECHENWEG_TAGESBILANZ", "Tagesbilanz (Bestandsweg)");
+            if (vorgabe && modell == null)
+                text = Text_("GEB_RECHENWEG_VORGABE", "{0} (Vorgabe)").Replace("{0}", text);
+            return text;
         }
 
         /// <summary>
-        /// Die Jahresganglinie des Gebäudes — <b>dasselbe Bild wie B1 der Ergebnisseite</b>
-        /// (<c>SimulationErgebnisHuelle.BildBedarfWaerme</c>): normiert auf den
-        /// Jahreshöchstwert, x wahlweise Monatsgrenzen oder die vier Stundenmarken,
-        /// Farbe <c>F_BEDARF</c> = Rot. Nur die Reihe ist eine andere — hier steht
-        /// GENAU EINE, die Heizwärme dieses Gebäudes.
-        ///
-        /// <para><b>Der Rundlauf-Datenzoom ist entfallen</b> (Entscheid DG-E3-9): Das
-        /// Bild steht seit der Etappe DG-E3, Gruppe (a), als ZEICHENMODELL im Baustein
-        /// <c>DiagrammSvg</c>, und der Zeitausschnitt ist dort die <c>viewBox</c> der
-        /// Zeichenfläche — kein zweiter Renderlauf, kein Bildausschnitt, den der Kern
-        /// zurückrechnen müsste.</para>
+        /// Rechenweg und H_ges einer Projektzeile aus der PROJEKTKOPIE (<c>Tab_Gebaeude</c>),
+        /// so, wie der Lauf sie liest. Eine noch nicht gespeicherte Zeile hat keine Kopie —
+        /// dann bleibt es beim Stand, den <c>Aufnehmen</c> aus dem Katalogsatz gesetzt hat.
         /// </summary>
-        /// <param name="sortiert">Dauerlinie statt Ganglinie.</param>
-        private static Zeichenmodell Bedarfsmodell(GebaeudeBedarfErgebnis ergebnis, bool sortiert)
+        private static void KennwerteSetzen(GebaeudeProjektZeile z, int projektId)
         {
-            double[] werte = ergebnis.Stundenwerte;
+            if (projektId <= 0 || z.IdZ <= 0 || z.IdZ >= STARTINDEX) return;
 
-            var reihen = new List<ChartRenderer.Reihe>
-            {
-                new ChartRenderer.Reihe(Text_("CHART_ACHSE_WAERMELAST", "Wärmelast"),
-                                        Array.ConvertAll(werte, x => (double)x),
-                                        Zeichnung.Farbrolle.BEDARF)
-            };
+            ProjektGebaeudeModel g = GebaeudeBedarfCtrl.Projektgebaeude(projektId, z.IdZ);
+            if (g == null) return;
 
-            return ChartRenderer.GanglinieNormiertModell(
-                Text_("CHART_TITEL_WAERMELAST_JAHRESGANGLINIE", "Wärmelast Jahresganglinie"),
-                reihen,
-                Text_("CHART_ACHSE_WAERMELAST", "Wärmelast"),
-                sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
-                sortiert);
+            z.Rechenweg = Rechenwegtext(g.Gebaeude_Modell);
+            z.HgesWK = Gebaeudehuellbilanz.GesamtWK(g);
         }
-
-        // =====================================================================
-        // Die Farbe einer Reihe (Farbrollen, Bedienung Teil 2)
-        // =====================================================================
-
-        /// <summary>
-        /// Der Klick auf das Farbfeld eines Legendeneintrags: Die Rolle bekommt
-        /// anwendungsweit diese Farbe — Bildschirm wie Bericht.
-        /// </summary>
-        private static Task FarbeSetzen(Farbrolle rolle, Farbe farbe)
-        {
-            Diagrammfarben.Setze(rolle, farbe);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>„Hausfarbe": Der Eintrag fällt aus der Einstellung.</summary>
-        private static Task FarbeZuruecksetzen(Farbrolle rolle)
-        {
-            Diagrammfarben.Zuruecksetzen(rolle);
-            return Task.CompletedTask;
-        }
-
-        /// <summary>Die zwölf Zeilenbeschriftungen der Monatstabelle (mit Doppelpunkt).</summary>
-        private static string[] Monatsnamen()
-        {
-            var namen = new string[12];
-            for (int m = 0; m < 12; m++)
-                namen[m] = Text_("ALLG_MONAT_" + (m + 1), MONATE_DE[m]) + ":";
-            return namen;
-        }
-
-        private static readonly string[] MONATE_DE =
-        { "Januar", "Februar", "März", "April", "Mai", "Juni",
-          "Juli", "August", "September", "Oktober", "November", "Dezember" };
 
         // =================================================================================
         // Abbildung Zeile <-> Modell
@@ -492,7 +324,7 @@ namespace WindowsFormsApplication1
             };
         }
 
-        private static string Titel()
+        internal static string Titel()
         {
             return Text_("GEB_TITEL", "Eingabe der Gebäudedaten");
         }

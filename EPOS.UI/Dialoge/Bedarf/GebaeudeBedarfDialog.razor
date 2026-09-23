@@ -80,6 +80,15 @@
                             <td class="epos-zahl">@Vollbenutzung</td>
                             <td>@EinheitStunden</td>
                         </tr>
+                        @* Stufe G1 (ADR-006, Konzept 2.7): der Rechenweg, auf dem die Zahlen
+                           entstanden - auf dem Altweg "Tagesbilanz (Bestandsweg)". *@
+                        @if (Daten.Modelltext.Length > 0)
+                        {
+                            <tr>
+                                <td>@LabelRechenweg</td>
+                                <td colspan="2">@Daten.Modelltext</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -162,6 +171,9 @@
     [Parameter] public string LabelHeizwaerme { get; set; } = "Wärmebedarf Heizung:";
     [Parameter] public string LabelMaxLast { get; set; } = "max. Wärmelast";
     [Parameter] public string LabelVollbenutzung { get; set; } = "Vollbenutzungsstunden:";
+
+    /// <summary>Beschriftung der Rechenwegzeile (<c>GEB_LBL_RECHENWEG</c>, Stufe G1).</summary>
+    [Parameter] public string LabelRechenweg { get; set; } = "Rechenweg:";
     [Parameter] public string LabelSortiert { get; set; } = "sortiert";
     [Parameter] public string LabelEinheit { get; set; } = "Einheit:";
     [Parameter] public string EinheitKw { get; set; } = "kW";
