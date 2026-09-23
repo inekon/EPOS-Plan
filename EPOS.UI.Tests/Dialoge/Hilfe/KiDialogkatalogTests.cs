@@ -932,6 +932,40 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
+    /// <b>Die Bedarfsverwaltung führt ihre Kenndaten als EINGABEN</b> (Welle #456): Typ
+    /// (Wahl aus der Typliste), Beschreibung und die zwölf Monatswerte sind setzbar;
+    /// Jahressumme und Bedarfsart bleiben Anzeigen, und der Satz ist Satzwahl.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.PROZESSWAERME_ADMIN)]
+    [InlineData(KiMaskennamen.STROMVERBRAUCHER_ADMIN)]
+    [InlineData(KiMaskennamen.BRAUCHWASSER_ADMIN)]
+    public void Die_Bedarfsverwaltung_fuehrt_ihre_Kenndaten_als_Eingaben(string maske)
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(maske)!;
+
+        Assert.Equal(17, d.Felder.Count);
+        Assert.True(d.FindeFeld("satz")!.Satzwahl);
+        Assert.True(d.FindeFeld("typ")!.IstWahl);
+        Assert.False(d.FindeFeld("typ")!.NurLesen);
+        Assert.False(d.FindeFeld("beschreibung")!.NurLesen);
+        Assert.True(d.FindeFeld("jahressumme")!.NurLesen);
+        Assert.True(d.FindeFeld("bedarfsart")!.NurLesen);
+
+        Assert.Equal(12, KiDialoge.MONATSFELDER.Count);
+        for (int m = 0; m < 12; m++)
+        {
+            KiDialogFeld monat = d.FindeFeld(KiDialoge.MONATSFELDER[m])!;
+            Assert.NotNull(monat);
+            Assert.Equal(KiParameterTyp.Zahl, monat.Typ);
+            Assert.False(monat.NurLesen);
+            Assert.Equal(Resource.ResourceManager.GetString("ALLG_MONAT_" + (m + 1)), monat.Anzeigename);
+        }
+
+        Assert.NotNull(d.FindeKnopf("speichern"));
+    }
+
+    /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
     /// der Strangliste.
@@ -1165,14 +1199,14 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
             "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.STROMVERBRAUCHER_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BRAUCHWASSER_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BEDARF_ERGEBNIS] =
             "bindet über die Sichtklasse BedarfErgebnisKiSicht auf die vier Schalter " +
             "der Anzeige; Zeuge ist BedarfErgebnisDialogTests",

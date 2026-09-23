@@ -2930,38 +2930,77 @@ namespace WindowsFormsApplication1
         /// Beschreibung und Jahressumme des markierten Satzes — und genau danach fragt
         /// der Anwender. Die LISTENWAHL ist das Wahlfeld dieser Maske.
         /// </para>
+        /// <para>
+        /// <b>Seit Stufe 4 der Neuordnung sind die Kenndaten EINGABEN</b> (Welle #456):
+        /// Typ, Beschreibung und die zwoelf Monatswerte stehen im Stammblatt als Felder,
+        /// „Speichern" schreibt sie. Der Katalog folgt der Maske — alle vierzehn sind
+        /// setzbar, der Typ als WAHL aus der Typliste. Name, Jahressumme und
+        /// Bedarfsart bleiben Anzeigen. Der Satz ist SATZWAHL: Aus einem
+        /// Auslieferungssatz heraus laesst sich der eigene waehlen.
+        /// </para>
+        /// <para>
+        /// <b>Die Monatswerte sind zwoelf benannte Felder</b> (<c>januar</c> …
+        /// <c>dezember</c>) und keine Spalte: Ein Monat ist kein Zeilentyp, und die Maske
+        /// zeigt sie als zwoelf Zahlenfelder unter ihren Monatsnamen.
+        /// </para>
         /// </remarks>
         private static KiDialog BedarfAdmin(string maskenname, string anzeigename)
         {
+            var felder = new List<KiDialogFeld>
+            {
+                new KiDialogFeld("satz", "BedarfAdminKiSicht.Satz",
+                                 KiDialogTexte.BadmSatzName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.BadmSatzErl, leerErlaubt: true, satzwahl: true),
+                new KiDialogFeld("typ", "BedarfAdminKiSicht.Typ",
+                                 KiDialogTexte.BadmTypName, KiParameterTyp.Wahl,
+                                 KiDialogTexte.BadmTypErl),
+                new KiDialogFeld("beschreibung", "BedarfAdminKiSicht.Beschreibung",
+                                 KiDialogTexte.BadmBeschreibungName, KiParameterTyp.Text,
+                                 KiDialogTexte.BadmBeschreibungErl, leerErlaubt: true),
+                new KiDialogFeld("jahressumme", "BedarfAdminKiSicht.Jahressumme",
+                                 KiDialogTexte.BadmJahressummeName, KiParameterTyp.Text,
+                                 KiDialogTexte.BadmJahressummeErl,
+                                 leerErlaubt: true, nurLesen: true),
+                new KiDialogFeld("bedarfsart", "BedarfAdminKiSicht.Bedarfsart",
+                                 KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
+                                 KiDialogTexte.BedarfsartErl, nurLesen: true)
+            };
+
+            for (int m = 1; m <= 12; m++)
+                felder.Add(new KiDialogFeld(MONATSFELDER[m - 1],
+                                            "BedarfAdminKiSicht." + MONATSEIGENSCHAFTEN[m - 1],
+                                            KiDialogTexte.Monat(m), KiParameterTyp.Zahl,
+                                            KiDialogTexte.BadmMonatErl(m),
+                                            einheit: KiDialogTexte.EINHEIT_MWH));
+
             return new KiDialog(
                 maskenname: maskenname,
                 anzeigename: anzeigename,
-                felder: new[]
-                {
-                    new KiDialogFeld("satz", "BedarfAdminKiSicht.Satz",
-                                     KiDialogTexte.BadmSatzName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.BadmSatzErl, leerErlaubt: true),
-                    new KiDialogFeld("typ", "BedarfAdminKiSicht.Typ",
-                                     KiDialogTexte.BadmTypName, KiParameterTyp.Text,
-                                     KiDialogTexte.BadmTypErl,
-                                     leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("beschreibung", "BedarfAdminKiSicht.Beschreibung",
-                                     KiDialogTexte.BadmBeschreibungName, KiParameterTyp.Text,
-                                     KiDialogTexte.BadmBeschreibungErl,
-                                     leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("jahressumme", "BedarfAdminKiSicht.Jahressumme",
-                                     KiDialogTexte.BadmJahressummeName, KiParameterTyp.Text,
-                                     KiDialogTexte.BadmJahressummeErl,
-                                     leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("bedarfsart", "BedarfAdminKiSicht.Bedarfsart",
-                                     KiDialogTexte.BedarfsartName, KiParameterTyp.Text,
-                                     KiDialogTexte.BedarfsartErl, nurLesen: true)
-                },
+                felder: felder,
                 knoepfe: new[]
                 {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern),
+                    new KiDialogKnopf("verwerfen", "btn_Verwerfen", KiDialogTexte.KnopfVerwerfen),
                     new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfBeenden)
                 });
         }
+
+        /// <summary>
+        /// Die Feldnamen der zwoelf Monatswerte einer Bedarfsverwaltung — sprachneutral,
+        /// ASCII (<see cref="KiName"/>).
+        /// </summary>
+        public static readonly IReadOnlyList<string> MONATSFELDER = new[]
+        {
+            "januar", "februar", "maerz", "april", "mai", "juni",
+            "juli", "august", "september", "oktober", "november", "dezember"
+        };
+
+        /// <summary>Die Eigenschaften der Sichtklasse zu <see cref="MONATSFELDER"/>.</summary>
+        private static readonly string[] MONATSEIGENSCHAFTEN =
+        {
+            "Januar", "Februar", "Maerz", "April", "Mai", "Juni",
+            "Juli", "August", "September", "Oktober", "November", "Dezember"
+        };
 
         // =====================================================================
         // Form_ErgStromverbraucher  ->  BedarfErgebnisDialog   (Welle KI-F3)
