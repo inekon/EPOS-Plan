@@ -463,8 +463,11 @@
        Projekt oder Anlage, Entlastung, Aufteilung) und Stromsteuer des Projekts
        (Unternehmensart, Befreiung § 9 Abs. 1 Nr. 3, Modus).
 
-       ETAPPE E7c3 (E7c2-Q8 b): Die Energiesteuer nennt je Wahl Satz und Betrag aus der
-       Vorschau des Kerns (WirtschaftlichkeitErgebnis.EnergiesteuerVorschau).
+       ETAPPE E7c3 (Mockup U22, E7c2-Q8 b): Jede Wahl steht als ANZEIGEZEILE — Wahlknopf,
+       Text und dahinter ihre Wirkung (Optionsgruppe.Wirkungen); die Energiesteuer nennt je
+       Wahl Satz und Betrag aus der Vorschau des Kerns
+       (WirtschaftlichkeitErgebnis.EnergiesteuerVorschau). Die Klapplisten des Formulars
+       bleiben: gewaehlt wird dort oder hier.
 
        Gerechnet wird NICHTS: Vorschlaege aus KwkgSatzRechner/KwkgKontingentRechner/
        KwkStromRechner, die Wirkung aus KwkgJahresbetrag — denselben Funktionen, die der
@@ -484,7 +487,7 @@
                                            Eintraege="@ArtEintraege()"
                                            Auswahl="@ArtAuswahl()"
                                            AuswahlChanged="UebArt"
-                                           Beschreibungen="@ArtWirkungen()" />
+                                           Wirkungen="@ArtWirkungen()" />
                             <Herleitungszeile Text="@_t.UebArtHinweis" />
                         </div>
 
@@ -493,7 +496,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_fallA)"
                                            Auswahl="@EigenfallAuswahl()"
                                            AuswahlChanged="UebEigenfall"
-                                           Beschreibungen="@EigenfallWirkungen()" />
+                                           Wirkungen="@EigenfallWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-fall">
@@ -501,7 +504,7 @@
                                            Eintraege="@FallEintraege()"
                                            Auswahl="@(_uebA.Abwaermeabfuhr ? 1 : 0)"
                                            AuswahlChanged="UebFall"
-                                           Beschreibungen="@FallWirkungen()" />
+                                           Wirkungen="@FallWirkungen()" />
                         </div>
 
                         <div class="epos-raster-huelle">
@@ -614,7 +617,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_esP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_esP, UebEsWahlWert())"
                                            AuswahlChanged="UebEsWahl"
-                                           Beschreibungen="@EsWirkungen()" />
+                                           Wirkungen="@EsWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-es-aufteilung">
@@ -622,7 +625,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_aufP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_aufP, UebAufteilungWert())"
                                            AuswahlChanged="UebAufteilung"
-                                           Beschreibungen="@AufteilungWirkungen()" />
+                                           Wirkungen="@AufteilungWirkungen()" />
                         </div>
 
                         @if (EsVorschauHinweis() is { Length: > 0 } vorschauHinweis)
@@ -647,7 +650,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_uaP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_uaP, _uebP.Unternehmensart)"
                                            AuswahlChanged="UebUnternehmensart"
-                                           Beschreibungen="@UnternehmensartWirkungen()" />
+                                           Wirkungen="@UnternehmensartWirkungen()" />
                         </div>
 
                         <Formularraster>
@@ -664,7 +667,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_modus)"
                                            Auswahl="@BhkwWahlen.NummerZu(_modus, _uebP.StromsteuerBefreiungModus)"
                                            AuswahlChanged="UebModus"
-                                           Beschreibungen="@ModusWirkungen()" />
+                                           Wirkungen="@ModusWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-wirkung epos-ueb-wirkung-st">

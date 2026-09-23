@@ -496,15 +496,42 @@ public class BhkwSaetzeHerkunftTests : EposBunitContext
     }
 
     // =====================================================================
-    //  ETAPPE E7c3 — die Energiesteuer-Vorschau des Kerns (E7c2‑Q8 b)
+    //  ETAPPE E7c3 — Anzeigezeilen je Wahl (Mockup U22) und die
+    //  Energiesteuer-Vorschau des Kerns (E7c2‑Q8 b)
     // =====================================================================
 
     /// <summary>Die Wirkungszeilen einer Wahlgruppe der Überlagerung, in Anzeigereihenfolge.</summary>
     private static string[] Wirkungen(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut, string gruppe)
         => Gruppe(cut, gruppe).QuerySelectorAll(WIRKUNG).Select(x => x.TextContent).ToArray();
 
-    /// <summary>Wo eine Wahl ihre Wirkung trägt.</summary>
-    private const string WIRKUNG = "p.epos-option-beschreibung";
+    /// <summary>Wo eine Wahl ihre Wirkung trägt: IN ihrer Zeile (U22).</summary>
+    private const string WIRKUNG = "label.epos-option span.epos-option-wirkung";
+
+    /// <summary>Jede Wahl der Überlagerung steht als ANZEIGEZEILE: Wahlknopf, Text und
+    /// dahinter ihre Wirkung in EINEM <c>label</c> — kein Erläuterungsabsatz darunter,
+    /// wie das Mockup U22 die Wahlen zeichnet. Die Klapplisten des Formulars bleiben.</summary>
+    [Fact]
+    public void Jede_Wahl_steht_als_Zeile_mit_ihrer_Wirkung()
+    {
+        var cut = Aufbauen(AnlagenMitSaetzen(), katalog: Katalog());
+        Oeffnen(cut);
+
+        Assert.Empty(Ueb(cut).QuerySelectorAll("p.epos-option-beschreibung"));
+        var art = Gruppe(cut, "epos-ueb-art").QuerySelectorAll("label.epos-option");
+        Assert.Equal(3, art.Length);
+        Assert.Equal("→ 30.000 Vbh", art[0].QuerySelector("span.epos-option-wirkung")!.TextContent);
+        foreach (string gruppe in new[] { "epos-ueb-eigenfall", "epos-ueb-fall", "epos-ueb-es-wahl",
+                                          "epos-ueb-es-aufteilung", "epos-ueb-ua", "epos-ueb-modus" })
+        {
+            var zeilen = Gruppe(cut, gruppe).QuerySelectorAll("label.epos-option");
+            Assert.NotEmpty(zeilen);
+            foreach (IElement zeile in zeilen)
+                Assert.NotNull(zeile.QuerySelector("span.epos-option-wirkung"));
+        }
+
+        // Die Wahl bleibt im Formular: die Klapplisten der Energiesteuer stehen weiter.
+        Assert.NotEmpty(cut.FindAll("select"));
+    }
 
     private static void Vorschau(WirtschaftlichkeitErgebnis e, string anlage, string wahl, string aufteilung,
                                  double? satz, double? menge, double betrag, double sockel = 0,
