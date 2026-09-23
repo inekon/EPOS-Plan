@@ -52,6 +52,22 @@ namespace WindowsFormsApplication1
             }
         }
 
+        /// <summary>
+        /// Liest EINEN Katalogsatz nach seinem Bezeichner in ein frisches Modell;
+        /// <c>null</c>, wenn es ihn nicht gibt (Schreibweg des Gebäudedialogs, Stufe G1).
+        /// </summary>
+        public GebaeudeModel Lies(string szBezeichner)
+        {
+            if (string.IsNullOrEmpty(szBezeichner)) return null;
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM [" + TABLE + "] WHERE Bezeichner = ?",
+                new DbParam("@bez", szBezeichner));
+            if (dt == null || dt.Rows.Count == 0) return null;
+            var item = new GebaeudeModel();
+            FillModel(item, dt.Rows[0]);
+            return item;
+        }
+
         public bool IsReadOnly(string szBezeichner)
         {
             object v = DataRepository.ExecuteScalar(
