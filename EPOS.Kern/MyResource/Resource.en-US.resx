@@ -6587,6 +6587,315 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_MJ_PROBE" xml:space="preserve">
     <value>Check: cumulative present value in T ({0}) + discounted residual value ({1}) = net present value ({2}).</value>
   </data>
+  <data name="WIRT_FM_PARAM_TITEL" xml:space="preserve">
+    <value>Calculation parameters (per scenario)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_NAME" xml:space="preserve">
+    <value>Name in formulas</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS" xml:space="preserve">
+    <value>Discount rate i</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
+    <value>Evaluation period T [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
+    <value>Price change energy p_E (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_B" xml:space="preserve">
+    <value>Price change operation p_B (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_I" xml:space="preserve">
+    <value>Price change investment/replacement p_I (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_INVEST" xml:space="preserve">
+    <value>Investment — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ERTRAG" xml:space="preserve">
+    <value>Revenues — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_DAUER" xml:space="preserve">
+    <value>Service life — change against Expected [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
+    <value>The formulas on this sheet use the column “Expected” (names Zins_i, Zeitraum_T, p_E, p_B, p_I): the discount rate and the price changes can be edited there, and the multi-year table and the key figures of the scenario “Expected” follow. The year rows are fixed — a different evaluation period requires a new report. The columns “Favourable” and “Unfavourable” state the assumptions of their runs; their key figures remain values.</value>
+  </data>
+  <data name="WIRT_FM_GRENZE" xml:space="preserve">
+    <value>The workbook recalculates the evaluation of fixed annual quantities — any change to plant size, demand or operation requires a new hourly simulation that no cell formula provides. The legal logic and the evidence that make the figures valid cannot be represented. Whatever is changed in the workbook never returns to the project: it is traceable evidence, not a second input interface.</value>
+  </data>
+  <data name="WIRT_FM_MJ_BASIS_PB" xml:space="preserve">
+    <value>Operation base with p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_BASIS_PE" xml:space="preserve">
+    <value>Operation base with p_E [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_NOMINAL" xml:space="preserve">
+    <value>Δ nominal against {0} (in T incl. residual value)</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_BARWERT" xml:space="preserve">
+    <value>Δ present value against {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_DELTA_KUMULIERT" xml:space="preserve">
+    <value>Δ cumulative against {0}</value>
+  </data>
+  <data name="WIRT_FM_MJ_AMORT_HILFE" xml:space="preserve">
+    <value>Zero crossing in this year [a]</value>
+  </data>
+  <data name="WIRT_FM_BK_MENGE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
+    <value>Rate</value>
+  </data>
+  <data name="WIRT_AE_TITEL" xml:space="preserve">
+    <value>Checklist for the evaluation report (DIN EN 17463, Annex E)</value>
+  </data>
+  <data name="WIRT_AE_BLATT" xml:space="preserve">
+    <value>Checklist Annex E</value>
+  </data>
+  <data name="WIRT_AE_KNOPF" xml:space="preserve">
+    <value>Annex E checklist…</value>
+  </data>
+  <data name="WIRT_AE_HINWEIS" xml:space="preserve">
+    <value>For each item of the standard: what is required, where the report shows it and what EPOS provides. The rating 1–5 (1 = very good) is given by the reviewer.</value>
+  </data>
+  <data name="WIRT_AE_SP_NR" xml:space="preserve">
+    <value>No.</value>
+  </data>
+  <data name="WIRT_AE_SP_THEMA" xml:space="preserve">
+    <value>Topic</value>
+  </data>
+  <data name="WIRT_AE_SP_ANFORDERUNG" xml:space="preserve">
+    <value>Requirement</value>
+  </data>
+  <data name="WIRT_AE_SP_STELLE" xml:space="preserve">
+    <value>Place in the report</value>
+  </data>
+  <data name="WIRT_AE_SP_STAND" xml:space="preserve">
+    <value>Status in EPOS</value>
+  </data>
+  <data name="WIRT_AE_SP_NOTE" xml:space="preserve">
+    <value>Rating 1–5</value>
+  </data>
+  <data name="WIRT_AE_NOTE_FEHLER" xml:space="preserve">
+    <value>Please enter a whole number from 1 (very good) to 5.</value>
+  </data>
+  <data name="WIRT_AE_STAND_ERFUELLT" xml:space="preserve">
+    <value>met</value>
+  </data>
+  <data name="WIRT_AE_STAND_TEILWEISE" xml:space="preserve">
+    <value>partly</value>
+  </data>
+  <data name="WIRT_AE_STAND_OFFEN" xml:space="preserve">
+    <value>open</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_0" xml:space="preserve">
+    <value>Subject of the evaluation</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_A" xml:space="preserve">
+    <value>A · Structure of the model</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_B" xml:space="preserve">
+    <value>B · Calculation</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_C" xml:space="preserve">
+    <value>C · Evaluation</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_D" xml:space="preserve">
+    <value>D · Reporting</value>
+  </data>
+  <data name="WIRT_AE_OHNE_RECHNUNG" xml:space="preserve">
+    <value>no economic evaluation calculated — calculate first.</value>
+  </data>
+  <data name="WIRT_AE_01_THEMA" xml:space="preserve">
+    <value>Name and date</value>
+  </data>
+  <data name="WIRT_AE_01_ANF" xml:space="preserve">
+    <value>The measure is named and the date of the evaluation is fixed.</value>
+  </data>
+  <data name="WIRT_AE_01_STELLE" xml:space="preserve">
+    <value>Word report: title page · Workbook: sheet “Overview”</value>
+  </data>
+  <data name="WIRT_AE_01_STAND" xml:space="preserve">
+    <value>project, variants and report date are stated in the report.</value>
+  </data>
+  <data name="WIRT_AE_02_THEMA" xml:space="preserve">
+    <value>Description of the measure</value>
+  </data>
+  <data name="WIRT_AE_02_ANF" xml:space="preserve">
+    <value>The measure is described so that a third party understands what it is about.</value>
+  </data>
+  <data name="WIRT_AE_02_STELLE" xml:space="preserve">
+    <value>Word report: “Project description”, “Components &amp; variants” · Workbook: sheet “Overview”</value>
+  </data>
+  <data name="WIRT_AE_02_STAND" xml:space="preserve">
+    <value>plants and deviations per variant from the project data; EPOS does not record a short verbal description of the measure.</value>
+  </data>
+  <data name="WIRT_AE_1_THEMA" xml:space="preserve">
+    <value>Benefits and burdens</value>
+  </data>
+  <data name="WIRT_AE_1_ANF" xml:space="preserve">
+    <value>All effects that follow from the investment decision are recorded.</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE" xml:space="preserve">
+    <value>Word report: “Economic evaluation” › key figures of the scenario “Expected” · Workbook: sheet “Economic evaluation”, block “Expected”</value>
+  </data>
+  <data name="WIRT_AE_1_STAND" xml:space="preserve">
+    <value>investment, operating and energy costs, revenues and benefits, replacement and residual value per case.</value>
+  </data>
+  <data name="WIRT_AE_2A_THEMA" xml:space="preserve">
+    <value>Quantification</value>
+  </data>
+  <data name="WIRT_AE_2A_ANF" xml:space="preserve">
+    <value>Every measurable effect is stated as a quantity.</value>
+  </data>
+  <data name="WIRT_AE_2A_STELLE" xml:space="preserve">
+    <value>Word report: “Results per variant”, “Comparison of variants” · Workbook: sheet “Comparison”, sheets of the variants</value>
+  </data>
+  <data name="WIRT_AE_2A_STAND" xml:space="preserve">
+    <value>energy quantities from the hourly simulation per case.</value>
+  </data>
+  <data name="WIRT_AE_2B_THEMA" xml:space="preserve">
+    <value>Non-quantifiable effects</value>
+  </data>
+  <data name="WIRT_AE_2B_ANF" xml:space="preserve">
+    <value>Effects without a quantity are described and their significance is assessed.</value>
+  </data>
+  <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
+    <value>Word report: “Economic evaluation” › “Non-monetary effects” · Workbook: sheet “Economic evaluation”, line “Non-monetary effects”</value>
+  </data>
+  <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
+    <value>described as text; classification by type and assessment by duration and effect are missing.</value>
+  </data>
+  <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
+    <value>not recorded — enter them in the evaluation block of the results page.</value>
+  </data>
+  <data name="WIRT_AE_3A_THEMA" xml:space="preserve">
+    <value>Monetisation</value>
+  </data>
+  <data name="WIRT_AE_3A_ANF" xml:space="preserve">
+    <value>The cash flows are complete, only real cash flows are included, and each is explained.</value>
+  </data>
+  <data name="WIRT_AE_3A_STELLE" xml:space="preserve">
+    <value>Word report: “Multi-year overview of cash flows” · Workbook: multi-year tables, “Operating costs by cost type”</value>
+  </data>
+  <data name="WIRT_AE_3A_STAND" xml:space="preserve">
+    <value>cash flows per year and item; avoided costs only as evidence, no depreciation as a cash flow.</value>
+  </data>
+  <data name="WIRT_AE_3B_THEMA" xml:space="preserve">
+    <value>Non-monetisable effects</value>
+  </data>
+  <data name="WIRT_AE_3B_ANF" xml:space="preserve">
+    <value>Effects without a monetary value are described and their significance is assessed.</value>
+  </data>
+  <data name="WIRT_AE_4_THEMA" xml:space="preserve">
+    <value>Lifetime and timing of cash flows</value>
+  </data>
+  <data name="WIRT_AE_4_ANF" xml:space="preserve">
+    <value>The evaluation period is chosen appropriately and the timing of the cash flows is determined.</value>
+  </data>
+  <data name="WIRT_AE_4_STELLE" xml:space="preserve">
+    <value>Word report: parameter line and period note in the chapter “Economic evaluation” · Workbook: parameter block, period note, multi-year tables</value>
+  </data>
+  <data name="WIRT_AE_4_ERFUELLT" xml:space="preserve">
+    <value>period checked against the service lives; replacement and residual value per year.</value>
+  </data>
+  <data name="WIRT_AE_4_TEILWEISE" xml:space="preserve">
+    <value>period stated; the check reports items without a service life or is missing.</value>
+  </data>
+  <data name="WIRT_AE_5_THEMA" xml:space="preserve">
+    <value>Discount rate</value>
+  </data>
+  <data name="WIRT_AE_5_ANF" xml:space="preserve">
+    <value>The rate is derived traceably from equity and debt and is explained.</value>
+  </data>
+  <data name="WIRT_AE_5_STELLE" xml:space="preserve">
+    <value>Word report: parameter line · Workbook: parameter block (Zins_i)</value>
+  </data>
+  <data name="WIRT_AE_5_STAND" xml:space="preserve">
+    <value>rate stated and varied per scenario; EPOS does not record its derivation.</value>
+  </data>
+  <data name="WIRT_AE_6_THEMA" xml:space="preserve">
+    <value>Risk, price change, degradation</value>
+  </data>
+  <data name="WIRT_AE_6_ANF" xml:space="preserve">
+    <value>Risks are applied or described, different price changes are considered, loss of performance is taken into account.</value>
+  </data>
+  <data name="WIRT_AE_6_STELLE" xml:space="preserve">
+    <value>Word report: declarations, scenarios Unfavourable / Expected / Favourable · Workbook: parameter block (p_E, p_B, p_I), “Evaluation according to DIN EN 17463”</value>
+  </data>
+  <data name="WIRT_AE_6_STAND" xml:space="preserve">
+    <value>three price change rates (energy, operation, investment/replacement); no risk premium and no degradation — both declared.</value>
+  </data>
+  <data name="WIRT_AE_7_THEMA" xml:space="preserve">
+    <value>Evaluation</value>
+  </data>
+  <data name="WIRT_AE_7_ANF" xml:space="preserve">
+    <value>The evaluation covers all benefits and burdens with a monetary value.</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE" xml:space="preserve">
+    <value>Word report: key figures of the scenario “Expected” · Workbook: block “Expected” (key figures as formulas)</value>
+  </data>
+  <data name="WIRT_AE_7_STAND" xml:space="preserve">
+    <value>net present value per case and as the difference to the reference; annuity, payback and internal rate of return for information.</value>
+  </data>
+  <data name="WIRT_AE_8_THEMA" xml:space="preserve">
+    <value>Sensitivity analysis</value>
+  </data>
+  <data name="WIRT_AE_8_ANF" xml:space="preserve">
+    <value>The influencing factors are varied one at a time and their effect on the net present value is shown.</value>
+  </data>
+  <data name="WIRT_AE_8_STELLE" xml:space="preserve">
+    <value>Word report: “Sensitivity analysis” · Workbook: sensitivity analysis</value>
+  </data>
+  <data name="WIRT_AE_8_TEILWEISE" xml:space="preserve">
+    <value>discount rate, energy price change, investment, energy costs and CHP surcharge with slope; lifetime, end payments and chart are missing.</value>
+  </data>
+  <data name="WIRT_AE_8_OFFEN" xml:space="preserve">
+    <value>not calculated — it needs a variant with a reference.</value>
+  </data>
+  <data name="WIRT_AE_9_THEMA" xml:space="preserve">
+    <value>Scenario analysis</value>
+  </data>
+  <data name="WIRT_AE_9_ANF" xml:space="preserve">
+    <value>An unfavourable and a favourable case are fully calculated.</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE" xml:space="preserve">
+    <value>Word report: scenarios Unfavourable / Expected / Favourable · Workbook: blocks “Favourable” and “Unfavourable”, range, sheet “Profile”</value>
+  </data>
+  <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
+    <value>three complete runs with changed rates, price changes, investments, revenues and service lives; evaluation period and quantities stay unchanged.</value>
+  </data>
+  <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
+    <value>no range calculated.</value>
+  </data>
+  <data name="WIRT_AE_10_THEMA" xml:space="preserve">
+    <value>Evaluation of results</value>
+  </data>
+  <data name="WIRT_AE_10_ANF" xml:space="preserve">
+    <value>A conclusion with a recommendation exists and takes the scenarios and the sensitivity into account.</value>
+  </data>
+  <data name="WIRT_AE_10_STELLE" xml:space="preserve">
+    <value>Word report: recommendation below the range · Workbook: recommendation line below the range</value>
+  </data>
+  <data name="WIRT_AE_10_ERFUELLT" xml:space="preserve">
+    <value>recommendation with range and rating per variant.</value>
+  </data>
+  <data name="WIRT_AE_10_OFFEN" xml:space="preserve">
+    <value>no recommendation — a variant with a net present value against the reference is missing.</value>
+  </data>
+  <data name="WIRT_AE_11_THEMA" xml:space="preserve">
+    <value>Transparent presentation</value>
+  </data>
+  <data name="WIRT_AE_11_ANF" xml:space="preserve">
+    <value>Calculation and results are presented so that a third party can follow them.</value>
+  </data>
+  <data name="WIRT_AE_11_STELLE" xml:space="preserve">
+    <value>Word report: chapters “Economic evaluation” and “Annex” · Workbook: formula workbook (parameter block, multi-year tables, key figures)</value>
+  </data>
+  <data name="WIRT_AE_11_STAND" xml:space="preserve">
+    <value>declarations in the report; the workbook calculates with visible formulas on the parameter block.</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>
   </data>
@@ -16560,13 +16869,142 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>DIN EN 17463 · 7 · 9 · Annex E</value>
   </data>
   <data name="WIRT_VALERI_BLOCK_2_HINWEIS" xml:space="preserve">
-    <value>The cash flow series per year and the cash flow chart are not yet part of this view. The present values per component are shown in the “Key figures” view under “Where does the figure come from?”, the annual series in the spreadsheet report (multi-year overview).</value>
+    <value>The cash flow series per year are shown after the next calculation run (“Calculate”, or “Refresh” in the progression) — stored results carry totals only, no annual series.</value>
   </data>
   <data name="WIRT_VALERI_MASSNAHME" xml:space="preserve">
     <value>Measure</value>
   </data>
   <data name="WIRT_VALERI_KZ_HINWEIS" xml:space="preserve">
     <value>The only measure of profitability is the net present value — as a difference to the reference; the annuity spreads it over equal annual amounts. Dynamic payback and internal rate of return are for information only (Annex C).</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION" xml:space="preserve">
+    <value>Investment I₀</value>
+  </data>
+  <data name="WIRT_GL_BETRIEB" xml:space="preserve">
+    <value>Operating costs</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE" xml:space="preserve">
+    <value>Energy costs</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE" xml:space="preserve">
+    <value>Revenues</value>
+  </data>
+  <data name="WIRT_GL_ERSATZ" xml:space="preserve">
+    <value>Replacements</value>
+  </data>
+  <data name="WIRT_GL_RESTWERT" xml:space="preserve">
+    <value>Residual value at the end</value>
+  </data>
+  <data name="WIRT_GL_NETTOBARWERT" xml:space="preserve">
+    <value>Net present value</value>
+  </data>
+  <data name="WIRT_GL_BESTANDTEIL" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="WIRT_GL_INVESTITION_UNTER" xml:space="preserve">
+    <value>net of grants</value>
+  </data>
+  <data name="WIRT_GL_ENERGIE_UNTER" xml:space="preserve">
+    <value>including CO₂ levy</value>
+  </data>
+  <data name="WIRT_GL_ERLOESE_UNTER" xml:space="preserve">
+    <value>cash-effective — block A</value>
+  </data>
+  <data name="WIRT_GL_TITEL" xml:space="preserve">
+    <value>Breakdown of the net present value — scenario {0}</value>
+  </data>
+  <data name="WIRT_GL_UNTER" xml:space="preserve">
+    <value>Present value, below it the nominal sum · i = {0} % · T = {1} a</value>
+  </data>
+  <data name="WIRT_GL_NOMINAL" xml:space="preserve">
+    <value>nominal {0}</value>
+  </data>
+  <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
+    <value>Difference {0} − {1}</value>
+  </data>
+  <data name="WIRT_LW_TITEL" xml:space="preserve">
+    <value>What this means over the period</value>
+  </data>
+  <data name="WIRT_LW_KOPF" xml:space="preserve">
+    <value>Effect on {0}</value>
+  </data>
+  <data name="WIRT_LW_ERSATZJAHRE" xml:space="preserve">
+    <value>Replacements due in year</value>
+  </data>
+  <data name="WIRT_LW_RESTWERT" xml:space="preserve">
+    <value>Residual value at the end, nominal</value>
+  </data>
+  <data name="WIRT_LW_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
+  <data name="WIRT_BR_TITEL" xml:space="preserve">
+    <value>From the investment to the net present value difference</value>
+  </data>
+  <data name="WIRT_BR_UNTER" xml:space="preserve">
+    <value>{0} compared with {1} · present values · scenario {2}</value>
+  </data>
+  <data name="WIRT_BR_FUSS" xml:space="preserve">
+    <value>Present values compared with {0}, scenario {1} — i = {2} %, T = {3} a</value>
+  </data>
+  <data name="WIRT_BR_ERGEBNIS" xml:space="preserve">
+    <value>ΔNPV</value>
+  </data>
+  <data name="WIRT_BR_LEG_MINDERT" xml:space="preserve">
+    <value>reduces the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_MEHRT" xml:space="preserve">
+    <value>increases the difference</value>
+  </data>
+  <data name="WIRT_BR_LEG_ERGEBNIS" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="WIRT_BR_LEER" xml:space="preserve">
+    <value>No difference to draw — version or reference without a cash flow series.</value>
+  </data>
+  <data name="WIRT_ZS_TITEL" xml:space="preserve">
+    <value>Cash flow per year</value>
+  </data>
+  <data name="WIRT_ZS_UNTER" xml:space="preserve">
+    <value>{0} · scenario {1} · nominal per year, expenditure downwards, without residual value</value>
+  </data>
+  <data name="WIRT_ZS_ERSATZJAHR" xml:space="preserve">
+    <value>Replacement year</value>
+  </data>
+  <data name="WIRT_ZS_LEER" xml:space="preserve">
+    <value>No cash flow to draw — the version carries no annual series.</value>
+  </data>
+  <data name="WIRT_FUSS_DREI" xml:space="preserve">
+    <value>Three scenarios calculated</value>
+  </data>
+  <data name="WIRT_FUSS_TEIL" xml:space="preserve">
+    <value>{0} of three scenarios calculated</value>
+  </data>
+  <data name="WIRT_FUSS_KEINE" xml:space="preserve">
+    <value>No scenario calculated yet</value>
+  </data>
+  <data name="WIRT_FUSS_VORGABEN" xml:space="preserve">
+    <value>assumptions from defaults, nothing maintained</value>
+  </data>
+  <data name="WIRT_FUSS_GEPFLEGT" xml:space="preserve">
+    <value>assumptions maintained: {0}</value>
+  </data>
+  <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
+    <value>The breakdown by present value and nominal sum per component is shown after the next calculation run (“Calculate”, or “Refresh” in the progression) — stored results carry no annual series.</value>
+  </data>
+  <data name="WIRT_ZR_STAND" xml:space="preserve">
+    <value>Version:</value>
+  </data>
+  <data name="WIRT_ZR_SZENARIO" xml:space="preserve">
+    <value>Scenario:</value>
+  </data>
+  <data name="WIRT_ZR_SUMME" xml:space="preserve">
+    <value>Nominal sum</value>
+  </data>
+  <data name="WIRT_ZR_HINWEIS" xml:space="preserve">
+    <value>Nominal and undiscounted, expenses negative; year 0 carries the investment net of grants, the last year the residual value. The row “Present value” discounts every column at i = {0} % — the same figures as the breakdown under “Where does the figure come from?”; their sum is the net present value ({1} €).</value>
+  </data>
+  <data name="WIRT_ZR_ABWEICHEND" xml:space="preserve">
+    <value>{0}: no matching annual series for the stored results — “Calculate” recomputes them.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario. The capital cost escalation p_I indexes the replacement investments and the price basis of the residual value; if it is not maintained separately it follows the operating rate (p_B), in the scenario at the same distance of 1 percentage point as p_E and p_B.</value>
