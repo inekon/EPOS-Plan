@@ -499,8 +499,10 @@ namespace WindowsFormsApplication1
                     new Func<string, IReadOnlyList<BrowserFeldwert>, bool, KatalogSpeicherErgebnis>(
                         (name, felder, schutz) => BhkwAdminHuelle.Wege().Speichern!(name, felder, schutz)),
 
-                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(
-                    name => BhkwAdminHuelle.Wege().IstGeschuetzt!(name)),
+                // Der Schutz kommt unmittelbar aus dem Kern - KatalogBrowserWege.IstGeschuetzt
+                // ist mit Stufe 3 der Neuordnung gefallen (die Verwaltung liest ihn aus der
+                // Zeile der Liste).
+                ["KatalogfelderGeschuetzt"] = new Func<string, bool>(BHKWStammCtrl.IstSchreibgeschuetzt),
 
                 ["BtnFelderSpeichernText"] = Text_("HZK_BTN_FELDER_SPEICHERN", "Speichern"),
                 ["FrageSchutz"] = MyResource.Resource.ADM_SCHUTZ_FRAGE,

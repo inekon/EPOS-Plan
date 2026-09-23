@@ -140,10 +140,12 @@ public class ModulKatalogDialogTests : EposBunitContext
     [Fact]
     public void Der_Stromspeicher_hat_die_zweite_Feldgruppe_der_Geraetetechnik()
     {
+        // Seit Stufe 3 stehen die Gruppen des Profils als leise Zwischenueberschriften
+        // in den Kenndaten des Stammblatts (V9) - Bestand und Geraetetechnik.
         var sp = Aufbauen(ModulKatalogArt.Stromspeicher);
-        var titel = sp.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
+        var titel = sp.FindAll(".epos-formulargruppe-titel").Select(e => e.TextContent).ToList();
 
-        Assert.Equal(3, titel.Count);   // Liste + Bestand + Gerätetechnik
+        Assert.Equal(2, titel.Count);   // Bestand + Gerätetechnik
         Assert.Contains(Profil(ModulKatalogArt.Stromspeicher).GruppeZwei, titel);
 
         var texte = sp.FindAll(".epos-feld-text").Select(e => e.TextContent).ToList();
@@ -151,7 +153,7 @@ public class ModulKatalogDialogTests : EposBunitContext
             Assert.Contains(feld.Bezeichnung, texte);
 
         var pv = Aufbauen(ModulKatalogArt.Photovoltaik);
-        Assert.Equal(2, pv.FindAll(".epos-gruppenkopf-titel").Count);
+        Assert.Single(pv.FindAll(".epos-formulargruppe-titel"));
     }
 
     /// <summary>
@@ -450,7 +452,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(art, wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Handlung(cut, "Löschen").Click();
 
         Assert.True(cut.Instance.Loeschfrage);
         Assert.Contains("Modul A", cut.Find(".epos-rueckfrage").TextContent);
@@ -471,7 +473,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Handlung(cut, "Löschen").Click();
         cut.FindAll(".epos-rueckfrage button")[1].Click();
 
         Assert.False(gerufen);
@@ -492,14 +494,18 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Handlung(cut, "Löschen").Click();
         cut.FindAll(".epos-rueckfrage button")[0].Click();
 
         Assert.Equal("Der Satz ist schreibgeschützt.", cut.Instance.Meldung);
     }
 
+    /// <summary>
+    /// <b>Ohne Zeile kein Löschen</b> (Stufe 3, V8): Die Auswahlleiste zeigt dann nur
+    /// ihre leise Zeile — es gibt keinen Knopf, der ins Leere drückt.
+    /// </summary>
     [Fact]
-    public void Loeschen_ohne_Auswahl_meldet()
+    public void Ohne_Zeile_steht_kein_Loeschknopf()
     {
         var wege = new ModulKatalogWege
         {
@@ -508,11 +514,9 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
-
+        Assert.Empty(cut.FindAll(".epos-auswahlleiste button"));
+        Assert.Single(cut.FindAll(".epos-auswahlleiste-leise"));
         Assert.False(cut.Instance.Loeschfrage);
-        Assert.Equal(Profil(ModulKatalogArt.Stromspeicher).MeldungOhneAuswahl,
-                     cut.Instance.Meldung);
     }
 
     // =================================================================================
@@ -525,7 +529,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[4].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
 
         Assert.NotNull(ergebnis);
         Assert.True(ergebnis!.Bestaetigt);
@@ -659,10 +663,14 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
+        // Stufe 3: Duplizieren... und Loeschen stehen in der Auswahlleiste (V8).
         var texte = cut.FindAll(".epos-leiste .epos-knopf").Select(k => k.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Duplizieren...", "Löschen", "Beenden" }, texte);
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Beenden" }, texte);
+        Assert.Equal(new[] { "Vergleichen", "Duplizieren...", "Löschen" },
+                     cut.FindAll(".epos-auswahlleiste .epos-auswahlleiste-knopf:not(.epos-nur-schmal)")
+                        .Select(k => k.TextContent.Trim()));
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Handlung(cut, "Duplizieren...").Click();
         Assert.Equal("Modul A (Kopie)", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
 
@@ -678,7 +686,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Handlung(cut, "Löschen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
@@ -800,4 +808,89 @@ public class ModulKatalogDialogTests : EposBunitContext
         Assert.NotEqual(KiStatus.Ausgefuehrt, abgelehnt.Status);
         Assert.Null(geschrieben);
     }
+
+    // =================================================================================
+    //  Stufe 3 (Konzept Administrationsdialoge): Stammblatt, Auswahlleiste, Vergleich
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Stammblatt der Modulkataloge</b> (V9): „Kenndaten" mit den Gruppen des
+    /// Profils als Zwischenüberschriften, „Kosten" mit den Kostenfeldern aller Gruppen —
+    /// beim Stromspeicher Modul-, Verschleiß-, Leistungs- und Fixkosten.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_teilt_Kenndaten_und_Kosten()
+    {
+        var cut = Aufbauen(ModulKatalogArt.Stromspeicher);
+
+        var gruppen = cut.FindAll(".epos-stammblattgruppe");
+        Assert.Equal(new[] { "Kenndaten", "Kosten" },
+                     gruppen.Select(g => g.QuerySelector(".epos-stammblattgruppe-titel")!.TextContent));
+
+        var profil = Profil(ModulKatalogArt.Stromspeicher);
+        foreach (var feld in profil.Felder)
+        {
+            var ziel = ModulKatalogProfil.IstKostenfeld(feld.Schluessel) ? gruppen[1] : gruppen[0];
+            Assert.Contains(feld.Bezeichnung, ziel.TextContent);
+        }
+        Assert.Equal("Modul A", cut.Find(".epos-stammblatt-nametext").TextContent);
+    }
+
+    /// <summary>
+    /// <b>Löschen eines Auslieferungssatzes ist weich gesperrt</b> (V13); mit zwei
+    /// Kästchen — einem geschützten, einem eigenen — löscht es den eigenen und lässt den
+    /// anderen stehen (AD-Q9).
+    /// </summary>
+    [Fact]
+    public void Loeschen_laesst_den_Auslieferungssatz_stehen()
+    {
+        var katalog = ZeilenMitAuslieferung().ToList();
+        var geloescht = new List<string>();
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => katalog,
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            Loeschen = n =>
+            {
+                geloescht.Add(n);
+                katalog = katalog.Where(z => z.Bezeichner != n).ToList();
+                return new KatalogSpeicherErgebnis(true, "", n);
+            }
+        };
+        var cut = Aufbauen(wege: wege);
+
+        var loeschen = Handlung(cut, "Löschen");
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        loeschen.Click();
+        Assert.False(cut.Instance.Loeschfrage);
+        Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
+
+        cut.FindAll("td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll("td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Löschen").Click();
+        Assert.Contains("Stehen bleiben (Auslieferungssatz): Modul A", cut.Find(".epos-rueckfrage").TextContent);
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Equal(new[] { "Modul B" }, geloescht);
+        Assert.Equal("1 gelöscht, 1 stehen geblieben", cut.Instance.Status);
+    }
+
+    /// <summary><b>Vergleichen</b> (V12): zwei Kästchen, die Felder des Profils im Stammblatt.</summary>
+    [Fact]
+    public void Zwei_Kaestchen_vergleichen_die_Felder_des_Profils()
+    {
+        var cut = Aufbauen(ModulKatalogArt.Photovoltaik);
+
+        cut.FindAll("td.epos-spalte-kaestchen input")[0].Change(true);
+        cut.FindAll("td.epos-spalte-kaestchen input")[1].Change(true);
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.True(cut.Instance.Vergleicht);
+        Assert.Equal(3, cut.FindAll(".epos-stammblatt .epos-vergleich thead th").Count);
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Herkunft");
+    }
+
+    /// <summary>Ein Knopf der Auswahlleiste nach seiner Beschriftung (Stufe 3, V8).</summary>
+    private static AngleSharp.Dom.IElement Handlung(IRenderedComponent<ModulKatalogDialog> cut, string text)
+        => cut.FindAll(".epos-auswahlleiste button").First(k => k.TextContent.Trim() == text);
 }

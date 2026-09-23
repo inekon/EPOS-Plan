@@ -268,6 +268,26 @@ namespace WindowsFormsApplication1
         public const string FeldKosten = WechselrichterSchema.SPALTE_KOSTEN;
         public const string FeldHerkunft = WechselrichterSchema.SPALTE_HERKUNFT;
 
+        // -----------------------------------------------------------------
+        // Die Gruppe KOSTEN des Stammblatts (Konzept Administrationsdialoge,
+        // Stufe 3, V9) - dieselbe Frage wie KatalogBrowserProfil.IstKostenfeld,
+        // fuer die drei Modulkataloge.
+        // -----------------------------------------------------------------
+
+        private static readonly HashSet<string> KOSTENFELDER = new HashSet<string>(StringComparer.Ordinal)
+        {
+            FeldModulkosten, FeldVerschleisskosten, FeldLeistungskosten, FeldInvestitionFix, FeldKosten
+        };
+
+        /// <summary>
+        /// <b>Gehoert das Feld in die Gruppe „Kosten" des Stammblatts?</b> (Stufe 3, V9) —
+        /// Modulkosten, beim Stromspeicher dazu Verschleiss-, Leistungs- und Fixkosten,
+        /// beim Wechselrichter die Kosten. Alle uebrigen Felder stehen unter „Kenndaten"
+        /// in den Gruppen des Profils.
+        /// </summary>
+        public static bool IstKostenfeld(string schluessel)
+            => schluessel != null && KOSTENFELDER.Contains(schluessel);
+
         // ==================================================================
         // Die zwei Auspraegungen
         // ==================================================================

@@ -451,11 +451,9 @@ namespace EPOS.Kern.Tests
             Assert.True(solar.Zweispaltig);
             Assert.False(puffer.Zweispaltig);
 
-            // Nur das BHKW faerbt geschuetzte Saetze grau und fragt beim Ueberschreiben.
-            Assert.True(bhkw.ZeigtSchreibschutz);
-            Assert.False(heiz.ZeigtSchreibschutz);
-            Assert.False(solar.ZeigtSchreibschutz);
-            Assert.False(puffer.ZeigtSchreibschutz);
+            // ZeigtSchreibschutz ist mit Stufe 3 der Neuordnung gefallen: Den Schutz liest
+            // jede Verwaltung aus der Zeile (Katalogfilterzeile.Geschuetzt, AD-Q11), fuer
+            // alle vier Auspraegungen - kein Profilschalter mehr.
 
             // Der Zeilenbauplan gehoert zur zweiten Spalte - drei Teile beim BHKW,
             // zwei bei den Kollektoren, keiner bei den einspaltigen Listen.
@@ -463,6 +461,34 @@ namespace EPOS.Kern.Tests
             Assert.Equal(2, solar.Zeilenbauplan.Count);
             Assert.Empty(heiz.Zeilenbauplan);
             Assert.Empty(puffer.Zeilenbauplan);
+        }
+
+        /// <summary>
+        /// <b>Die Gruppe „Kosten" des Stammblatts</b> (Konzept Administrationsdialoge,
+        /// Stufe 3, V9): Investition, Wartung und Nutzungsdauer aller vier Kataloge und die
+        /// Kostenposten des BHKW sind Kostenfelder; Leistung, Wirkungsgrad, Emissionen und
+        /// der Bezeichner nicht. Jede Auspraegung fuehrt mindestens ein Kostenfeld.
+        /// </summary>
+        [Fact]
+        public void Die_Kostenfelder_des_Stammblatts_stehen_im_Profil()
+        {
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldInvestitionskosten));
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldNutzungsdauer));
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldKostenModul));
+            Assert.True(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWartungJeKwhel));
+
+            Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldPtherm));
+            Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldWirkungsgrad));
+            Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldCo2));
+            Assert.False(KatalogBrowserProfil.IstKostenfeld(KatalogBrowserProfil.FeldBezeichner));
+            Assert.False(KatalogBrowserProfil.IstKostenfeld(null));
+
+            foreach (KatalogBrowserArt art in Enum.GetValues(typeof(KatalogBrowserArt)))
+            {
+                var profil = KatalogBrowserProfil.Finde(art);
+                Assert.Contains(profil.Detailfelder, f => KatalogBrowserProfil.IstKostenfeld(f.Schluessel));
+                Assert.Contains(profil.Detailfelder, f => !KatalogBrowserProfil.IstKostenfeld(f.Schluessel));
+            }
         }
 
         /// <summary>
@@ -1181,7 +1207,9 @@ namespace EPOS.Kern.Tests
                 // ParameterVerwendung die Investitionskosten weiterhin damit beschriftet.
                 "PSPK_TYP_SOLAR", "PSPK_TYP_PUFFER", "PSPK_TYP_KOMBI", "PSPK_MSG_SCHUTZ",
                 "BHKWK_MSG_SCHUTZ", "MODK_MSG_SCHUTZ", "MODK_MSG_TYP_FEHLT",
-                "KBROW_BTN_NEU", "KBROW_BTN_BEARBEITEN", "KBROW_BTN_LOESCHEN",
+                // KBROW_BTN_BEARBEITEN ist mit AD-Q6 ("Bearbeiten..." entfaellt) verwaist
+                // und mit Stufe 3 der Neuordnung aus beiden Ressourcen gestrichen.
+                "KBROW_BTN_NEU", "KBROW_BTN_LOESCHEN",
                 "KBROW_MSG_AUSWAHL_BHKW", "KBROW_MSG_AUSWAHL_KOLLEKTOR",
                 "KBROW_MSG_SCHUTZ_LOESCHEN", "KBROW_MSG_LOESCHEN_FEHLER", "KBROW_TITEL_SCHUTZ",
                 "KBROW_SPALTE_NAME", "KBROW_SPALTE_EIGENSCHAFTEN"

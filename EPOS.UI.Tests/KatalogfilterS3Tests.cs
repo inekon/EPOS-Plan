@@ -89,8 +89,11 @@ public class KatalogfilterS3Tests : EposBunitContext
         Assert.Equal("2 von 2 Sätzen", cut.Find(".epos-katalog-treffer").TextContent);
 
         // Die vier Spalten des Profils - keine Wahlspalte (die Zeile ist die Wahl, V4)
-        // und keine "Auslieferung" mehr (das Schloss hinter dem Namen, V10).
-        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
+        // und keine "Auslieferung" mehr (das Schloss hinter dem Namen, V10); davor seit
+        // Stufe 3 die Kaestchenspalte der Mehrfachwahl (V6).
+        Assert.Equal(4, cut.FindAll(".epos-katalogliste .epos-spaltenkopf").Count);
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Single(cut.FindAll(".epos-katalogliste thead th.epos-spalte-kaestchen"));
     }
 
     /// <summary>

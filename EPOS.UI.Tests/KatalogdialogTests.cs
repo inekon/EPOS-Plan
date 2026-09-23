@@ -78,7 +78,6 @@ public class KatalogdialogTests : EposBunitContext
                 Wert = f.Schluessel == KatalogBrowserProfil.FeldBezeichner ? name : "1"
             }).ToList(),
             Existiert = _ => false,
-            IstGeschuetzt = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
             Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "", n)
         };
@@ -256,17 +255,25 @@ public class KatalogdialogTests : EposBunitContext
 
     /// <summary>
     /// Wo das Vorbild GESTAPELT war, bleibt es gestapelt:
-    /// <c>Form_AdminWaermeeinlesen</c> (676 × 433, Liste über die volle Breite)
-    /// und <c>Form_Stromverbraucher_Admin</c> (542 × 489, Anzeigefelder unter
-    /// der Liste). Neu ist nur, dass die Liste die Höhe nimmt und der Block
-    /// darunter sichtbar bleibt.
+    /// <c>Form_AdminWaermeeinlesen</c> (676 × 433, Liste über die volle Breite) —
+    /// die Zeitreihen mit ihrem Einleseblock folgen dem Stammblatt erst mit Stufe 4.
+    /// Neu ist nur, dass die Liste die Höhe nimmt und der Block darunter sichtbar
+    /// bleibt.
+    ///
+    /// <para><b>Die Bedarfsverwaltung</b> (<c>Form_Stromverbraucher_Admin</c>, 542 × 489,
+    /// Anzeigefelder unter der Liste) steht seit Stufe 3 im Stammblatt NEBEN der Liste
+    /// (V3): Das Paar trägt die Klasse der Stammblattanordnung, der zweite Bereich ist
+    /// das Stammblatt.</para>
     /// </summary>
     [Fact]
     public void Wo_das_Vorbild_gestapelt_war_bleibt_es_gestapelt()
     {
         RahmenPruefen(Waermebedarfsverwaltung(), gestapelt: true);
-        RahmenPruefen(Bedarfsverwaltung(), gestapelt: true);
         RahmenPruefen(Stromganglinienverwaltung(), gestapelt: true);
+
+        var bedarf = Bedarfsverwaltung();
+        RahmenPruefen(bedarf, gestapelt: false);
+        Assert.Single(bedarf.FindAll(".epos-katalog-paar--stammblatt .epos-katalog-stammblatt .epos-stammblatt"));
     }
 
     /// <summary>

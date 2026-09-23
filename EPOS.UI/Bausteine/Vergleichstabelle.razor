@@ -1,0 +1,78 @@
+﻿@* DIE VERGLEICHSTABELLE (Konzept Administrationsdialoge, Stufe 3, Vorschlag V12).
+
+   EINE Zeile je Parameter, EINE Spalte je gewaehltem Satz. Abweichende Werte
+   stehen hervorgehoben und mit WORT ("abweichend"), gleiche leise - dieselbe
+   Anmutung wie die Vergleichsueberlagerung der Katalogliste und die
+   Kohaerenzzeile; die Kennzeichnung traegt nie nur Farbe.
+
+   DER SCHALTER "nur abweichende Werte" ist ein Zustand DIESER Tabelle, kein
+   Zustand des Wirts: Er blendet aus, er rechnet nichts. Laesst er nichts uebrig,
+   sagt eine leise Zeile, dass die Saetze in jedem Wert gleich sind.
+
+   Wo sie steht, entscheidet der Wirt: im Stammblatt bei zwei oder drei Saetzen,
+   in der breiten Ueberlagerung ab vier (V6). Sie selbst kennt weder Datenbank
+   noch Katalog - die Zeilen baut Vergleichsbau. *@
+
+@namespace EPOS.UI.Bausteine
+
+<div class="epos-vergleichstabelle">
+    <label class="epos-vergleichstabelle-schalter">
+        <input type="checkbox" checked="@_nurAbweichende" @onchange="BeiSchalter" />
+        <span>@Texte.NurAbweichende</span>
+    </label>
+
+    <div class="epos-vergleichstabelle-huelle">
+        <table class="epos-raster epos-vergleich">
+            <thead>
+                <tr>
+                    <th scope="col">@Texte.SpalteParameter</th>
+                    @for (int i = 0; i < Koepfe.Count; i++)
+                    {
+                        <th scope="col" @key="i" title="@Koepfe[i]"><span class="epos-vergleich-kopf">@Koepfe[i]</span></th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (int z = 0; z < Zeilen.Count; z++)
+                {
+                    Vergleichszeile v = Zeilen[z];
+                    if (_nurAbweichende && !v.Abweichend) { continue; }
+                    <tr @key="z" class="@(v.Abweichend ? "epos-vergleich--abweichend" : "epos-vergleich--stimmig")">
+                        <th scope="row" class="epos-vergleich-name">
+                            <span class="epos-vergleich-zeichen" aria-hidden="true">@(v.Abweichend ? "≠" : "✓")</span>
+                            <span>@v.Name</span>
+                            <span class="epos-vergleich-stufe">@(v.Abweichend ? Texte.Abweichend : Texte.Stimmig)</span>
+                        </th>
+                        @foreach (string wert in v.Werte)
+                        {
+                            <td>@wert</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (_nurAbweichende && !Zeilen.Any(z => z.Abweichend))
+    {
+        <p class="epos-vergleichstabelle-leer">@Texte.KeineAbweichung</p>
+    }
+</div>
+
+@code {
+    /// <summary>Die Spaltenköpfe — je gewähltem Satz sein Name, in der Reihenfolge des Wählens.</summary>
+    [Parameter] public IReadOnlyList<string> Koepfe { get; set; } = Array.Empty<string>();
+
+    /// <summary>Die Zeilen — je Parameter eine (<see cref="Vergleichsbau"/>).</summary>
+    [Parameter] public IReadOnlyList<Vergleichszeile> Zeilen { get; set; } = Array.Empty<Vergleichszeile>();
+
+    /// <summary>Die Beschriftungen — dasselbe Bündel wie das Stammblatt.</summary>
+    [Parameter] public Stammblatttexte Texte { get; set; } = new();
+
+    private bool _nurAbweichende;
+
+    /// <summary>Steht der Schalter „nur abweichende Werte"? (Prüfhilfe für Tests.)</summary>
+    public bool NurAbweichende => _nurAbweichende;
+
+    private void BeiSchalter(ChangeEventArgs e) => _nurAbweichende = e.Value is bool b && b;
+}

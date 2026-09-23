@@ -92,6 +92,14 @@ namespace WindowsFormsApplication1
                 ["Loeschen"] = new Func<string, BedarfLoeschAusgang>(name => Loeschen(art, name)),
                 ["Exists"] = new Func<string, bool>(name => BedarfStammCtrl.Exists(art, name)),
 
+                // Stufe 3 der Neuordnung (Konzept Administrationsdialoge; AD-Q11):
+                // "Duplizieren..." legt den eigenen Satz an - der Weg, einen
+                // Auslieferungssatz abzuwandeln. Er steht in der Auswahlleiste.
+                ["Duplizieren"] = new Func<int, string, EPOS.UI.Dialoge.Erzeuger.KatalogSpeicherErgebnis>(
+                    (id, name) => KatalogBrowserHuelle.Kopie(BedarfStammCtrl.Duplizieren(art, id, name))),
+                ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
+                ["MeldungDupliziert"] = MyResource.Resource.ADM_MSG_DUPLIZIERT,
+
                 ["TypStammGaben"] =
                     new Func<string, string, string, bool, IReadOnlyDictionary<string, object>>(
                         (name, beschr, typ, istNeu) => TypStammHuelle.Gaben(

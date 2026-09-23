@@ -17,9 +17,11 @@
    W14a.2. Welcher es ist, entscheidet der Wirt ueber EditorGaben; die Komponente
    zeigt ihn nur an.
 
-   EINWERTIGE AUSWAHL. Alle vier Vorlaeufer arbeiten mit genau einer markierten
-   Zeile (ListBox ohne MultiExtended, DataGridView mit MultiSelect = false) - die
-   Mehrfachwahl aus W13 wird hier NICHT gebraucht.
+   EINE FOKUSZEILE, DAZU KAESTCHEN. Alle vier Vorlaeufer arbeiteten mit genau
+   einer markierten Zeile (ListBox ohne MultiExtended, DataGridView mit
+   MultiSelect = false). Die Fokuszeile ist geblieben - sie traegt das
+   Stammblatt; seit Stufe 3 waehlen Kaestchen daneben mehrere Zeilen fuer die
+   Handlungen der Auswahlleiste (Variante B des Konzepts).
 
    NUR LESEN. Der Pufferspeicher-Browser kennt einen zweiten Zustand
    (m_bReadOnly, gesetzt von Sprungziel.PufferSpAdminNurLesen): Neu, Speichern
@@ -43,16 +45,29 @@
        den Weg - "Duplizieren..." legt einen eigenen Satz an und waehlt ihn. Die
        Rueckfrage des BHKW vor dem Ueberschreiben ist damit entfallen; die
        einzige Rueckfrage der Maske steht vor dem Loeschen.
-     * Die Fussleiste heisst Speichern - Verwerfen - Fueller - Neu... -
-       Duplizieren... - Loeschen - BEENDEN; das Kreuz und Esc tun, was Beenden
-       tut. Sind Felder geaendert, haelt Beenden an und sagt "Speichern oder
-       Verwerfen" - ebenso ein Zeilenwechsel, der die Aenderung sonst still
-       verwuerfe.
+     * Das Kreuz und Esc tun, was Beenden tut. Sind Felder geaendert, haelt
+       Beenden an und sagt "Speichern oder Verwerfen" - ebenso ein
+       Zeilenwechsel, der die Aenderung sonst still verwuerfe.
      * Gelungenes meldet die Statuszeile der Fussleiste, ein Warnband nur, was
-       scheiterte. *@
+       scheiterte.
+
+   STUFE 3 (V3, V6, V8, V9, V12, V13; Pilot der Verwaltungen):
+     * Das STAMMBLATT steht neben der Liste (Katalograhmen, ab 900 px
+       Rahmenbreite; schmal als Blatt ueber ihr): Kopf mit Name, Herkunft,
+       Schloss und drei Kennzahlen, darunter "Kenndaten", "Kosten" und "Alle
+       Daten". Die Liste hat damit die ganze Hoehe.
+     * KAESTCHEN waehlen mehrere Zeilen (Leertaste, Strg-Klick, Kopfkaestchen);
+       die AUSWAHLLEISTE traegt Vergleichen, Duplizieren... und Loeschen - sie
+       wirken auf die gewaehlten Zeilen, sonst auf die Fokuszeile. Loeschen
+       nimmt mehrere Zeilen auf einmal (AD-Q9), Auslieferungssaetze bleiben
+       stehen; sind es nur solche, ist Loeschen weich gesperrt (V13).
+     * VERGLEICHEN zeigt die gewaehlten Saetze im Stammblatt (zwei, drei) bzw.
+       in der breiten Ueberlagerung (ab vier).
+     * Die Fussleiste heisst Speichern - Verwerfen - Fueller - Neu... - BEENDEN. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
 @using WindowsFormsApplication1
 
 <div class="epos-dialog epos-katalog-dialog epos-katalogbrowser" tabindex="-1"
@@ -69,89 +84,91 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Liste LINKS, Detailblock RECHTS (Anwenderwunsch 05.09.2026) -----
-           So stand es in allen vier Vorbildern: Form_Heizkessel_Admin
-           (726 x 383, Liste 302 x 157 links, Felder ab x 448),
-           Form_BHKWAdmin (856 x 517, Liste 403 x 369 links, Gruppe
-           405 x 421 rechts), Form_SolarKollektorenAdmin (825 x 494,
-           Liste 359 x 302 links, Felder ab x 402) und Form_PufferSp_Admin
-           (721 x 330, Liste 299 x 191 links, Felder ab x 346). Bis hierher
-           standen sie untereinander, und der Eingabeblock war nur ueber den
-           Seitenrollbalken zu erreichen. Auf schmalem Schirm bricht das Paar
-           um - dann steht die Liste oben. *@
-    <Katalograhmen>
+    @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): die
+           Liste LINKS ueber die ganze Hoehe, rechts die Auswahlleiste und das
+           STAMMBLATT der Fokuszeile. Bis Stufe 2 stand der Detailblock UNTER der
+           Liste und liess ihr bei 1 088 x 624 drei Zeilen; jetzt sind es acht.
+           Dafuer entfaellt auch der Gruppenkopf ueber der Liste ("Auswahl in
+           DB:") - er nahm ihr 40 px, und die Liste nennt sich selbst ueber ihre
+           Spaltenkoepfe. So stand es auch in allen vier Vorbildern: Liste links,
+           Felder rechts (Form_Heizkessel_Admin 726 x 383, Form_BHKWAdmin
+           856 x 517, Form_SolarKollektorenAdmin 825 x 494, Form_PufferSp_Admin
+           721 x 330). Unter 900 px Rahmenbreite steht die Liste allein, und
+           "Stammblatt ›" schiebt das Blatt ueber sie. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
-
             @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, 07.09.2026):
                Suche ueber alle Spalten, Trefferzahl, und der Filter sitzt im
-               Spaltenkopf. Die zwei Klapplisten "Filtern nach Brennstoffart:"
-               und "Filtern nach Leistung:" sind damit weg - sie standen ohne
-               Rahmen, ohne Trefferzahl und ohne Ruecksetzer ueber der Liste,
-               und ihre sechs FESTEN Leistungsstufen fanden fuer einen
-               30-kW-Kessel jede Zeile unter 50 kW (Konzept 5.1). *@
+               Spaltenkopf. Seit Stufe 3 mit KAESTCHEN (V6): Sie waehlen mehrere
+               Zeilen fuer Vergleichen und Loeschen; die Leertaste setzt das
+               Kaestchen der Fokuszeile. *@
             <Katalogliste Profil="@Profil.Filterprofil" Zeilen="@_zeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            <Gruppenkopf Titel="@Profil.Detailueberschrift">
-                <KindInhalt>
-                @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik "Berechnung".
-                   Er sitzt HIER und nicht im Dialogkopf, weil dieser Block die Werte
-                   fuehrt, die der Rechenweg spaeter liest - Leistung, Wirkungsgrad,
-                   Temperaturen. Der Fensterknopf oben rechts bleibt die Bedienhilfe
-                   des Katalogs. Schluessel und Seite kommen aus dem Profil, weil EINE
-                   Komponente hier VIER Kataloge bedient. *@
-                <div class="epos-berechnungshilfe">
-                    <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
-                               StandardKurztext="@Profil.BerechnungsKurztext" />
-                </div>
-                @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung neben dem Feld,
-                   Zahlenfelder kurz mit der Einheit dahinter, zwei Feldpaare je
-                   Zeile, sobald die Spalte breit genug ist. *@
-                @* DAS RASTER STEHT SEIT DEM 15.09.2026 IM BAUSTEIN Katalogfelder -
-                   derselbe, den der Modulbereich der Erzeugerdialoge benutzt. Zwei
-                   Fassungen derselben Regel (welche Feldart wird wie gezeichnet, wann
-                   ist ein Feld setzbar) waeren zwei Fassungen, die auseinanderlaufen. *@
-                @* Ein Auslieferungssatz ist nur lesbar (AD-Q11) - geaendert wird die
-                   eigene Kopie, die "Duplizieren..." anlegt. *@
-                <Katalogfelder Felder="@_felder" NurLesen="@(NurLesen || Auslieferungssatz)"
-                               Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />
+        <Auswahl>
+            @* ZONE 4, DIE AUSWAHLLEISTE (V8): alle Handlungen an Zeilen an EINER
+               Stelle - Vergleichen, Duplizieren..., Loeschen. Sie wirken auf die
+               gewaehlten Zeilen, sonst auf die Fokuszeile; Loeschen eines
+               Auslieferungssatzes ist WEICH gesperrt und nennt den Grund (V13). *@
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
 
-                @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
-                   (06.09.2026): "Erstelle einen Bearbeiten-Dialog zusaetzlich im
-                   Bearbeiten-Menue (optionale Anzeige), in dem 1. alle verfuegbaren
-                   Parameter und Eigenschaften angezeigt werden und 2. alle
-                   verwendeten Parameter gekennzeichnet sind."
-
-                   Der Block steht UNTER dem Bearbeiten-Formular und ist zugeklappt:
-                   Der Dialog sieht aus wie bisher, bis der Anwender ihn aufklappt.
-                   Ohne den Delegaten gibt es ihn nicht - eine Huelle, die ihn nicht
-                   fuellt, zeigt den Dialog unveraendert. *@
-                @if (Uebersicht is not null)
-                {
-                    <Parameteruebersicht Zeilen="@_uebersicht" />
-                }
-                </KindInhalt>
-            </Gruppenkopf>
-        </Eingabe>
+        <Blatt>
+            @* ZONE 5, DAS STAMMBLATT (V9): Kopf mit Name, Herkunft, Schloss und drei
+               Kennzahlen; die bisherigen Katalogfelder geteilt in "Kenndaten" und
+               "Kosten" (KatalogBrowserProfil.IstKostenfeld); "Alle Daten" ist der
+               Aufklapper der Parameteruebersicht. Ein Auslieferungssatz ist nur
+               lesbar, und der Kopf sagt es in Worten (V13). Ab zwei gewaehlten
+               Zeilen und "Vergleichen" zeigt es den Vergleich (V12). *@
+            <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck" Kosten="@KostenInhalt">
+                <Kenndaten>
+                    @* DAS RASTER STEHT IM BAUSTEIN Katalogfelder - derselbe, den der
+                       Modulbereich der Erzeugerdialoge benutzt. Gesetzt wird nur, wo
+                       der Satz kein Auslieferungssatz ist (AD-Q11). *@
+                    <Katalogfelder Felder="@_kenndaten" NurLesen="@(NurLesen || Auslieferungssatz)"
+                                   Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />
+                </Kenndaten>
+                <AlleDaten>
+                    @* ALLE PARAMETER UND IHRE VERWENDUNG (W14a-E-8) - zugeklappt; ohne
+                       den Delegaten gibt es den Aufklapper nicht. *@
+                    @if (Uebersicht is not null)
+                    {
+                        <Parameteruebersicht Zeilen="@_uebersicht" Beschriftung="@TextAlleDaten" />
+                    }
+                </AlleDaten>
+                <Nachsatz>
+                    @* H13 / O-H13b-5: der Weg in die Wikirubrik "Berechnung" - er steht
+                       bei den Werten, die der Rechenweg liest. *@
+                    <div class="epos-berechnungshilfe">
+                        <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
+                                   StandardKurztext="@Profil.BerechnungsKurztext" />
+                    </div>
+                </Nachsatz>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
-    @* DIE FELDER SIND DIREKT BEDIENBAR (Entscheid AD-Q6, 22.09.2026, Konzept
-       Administrationsdialoge Stufe 1): "Bearbeiten..." entfaellt. Der Editor
-       konnte nichts, was die Felder oben nicht auch koennen - jede fachliche
-       Spalte ausser dem Bezeichner ist dort bearbeitbar und wird mit
-       "Speichern" geschrieben. Dazu kommt "Verwerfen": Es laedt die Felder des
-       gewaehlten Satzes neu und nimmt die Aenderungen zurueck. Beide wirken auf
-       den Eingabeblock und stehen deshalb LINKS vom Fueller (Leseregel des
-       Konzepts Knopfleisten); "Neu..." oeffnet weiter den Editor. *@
-    @* DIE FUSSLEISTE DER VERWALTUNG (V15): Speichern - Verwerfen - Fueller -
-       Neu... - Duplizieren... - Loeschen - Beenden. Der Fueller ist zugleich die
-       STATUSZEILE (role="status"): Dort steht, was gelang ("... dupliziert als
-       ..."); ein Warnband erst, wenn etwas scheiterte (V11).
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15, Stufe 3): Speichern - Verwerfen -
+       Fueller - Neu... - Beenden. Duplizieren... und Loeschen sind in die
+       Auswahlleiste gewandert (V8: keine Handlung an zwei Orten); Speichern und
+       Verwerfen bleiben hier, weil sie die Felder des Stammblatts schreiben
+       bzw. zuruecknehmen und "Beenden" an ihnen haengt. Der Fueller ist die
+       STATUSZEILE (role="status"): Dort steht, was gelang; ein Warnband erst,
+       wenn etwas scheiterte (V11).
 
        SPEICHERN BEI EINEM AUSLIEFERUNGSSATZ (AD-Q11) ist WEICH gesperrt: nicht
        disabled, sondern aria-disabled mit dem Grund im Kurztext - ein Klick nennt
@@ -176,13 +193,6 @@
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" disabled="@NurLesen"
                 @onclick="BeiNeu">@BtnNeuText</button>
-        @if (Wege.Duplizieren is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
-                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
-        }
-        <button type="button" class="epos-knopf" disabled="@NurLesen"
-                @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
@@ -439,8 +449,231 @@
     /// <summary>Verwerfen hat nur etwas zu tun, solange ein Feld geändert ist.</summary>
     private bool VerwerfenErlaubt => _geaendert && _gewaehlt.Length > 0;
 
-    /// <summary>Duplizieren braucht einen gewählten Satz und einen Schreibweg.</summary>
-    private bool DuplizierenErlaubt => !NurLesen && _gewaehlt.Length > 0 && Wege.Duplizieren is not null;
+    /// <summary>
+    /// Duplizieren braucht GENAU EINE Zielzeile (die gewählte oder die Fokuszeile) und
+    /// einen Schreibweg.
+    /// </summary>
+    private bool DuplizierenErlaubt => !NurLesen && _auswahl.Ziele(_gewaehlt).Count == 1
+                                    && Wege.Duplizieren is not null;
+
+    // =====================================================================
+    // Stufe 3: Auswahlleiste, Stammblatt, Vergleich (V3 V6 V8 V9 V12 V13)
+    // =====================================================================
+
+    /// <summary>Die Kästchen, der Vergleich und das Blatt im schmalen Fenster.</summary>
+    private readonly Zeilenauswahl _auswahl = new();
+
+    /// <summary>Die Zeile der Liste zur Fokuszeile — Kopf des Stammblatts.</summary>
+    private Katalogfilterzeile? _fokuszeile;
+
+    /// <summary>Die Bezeichner der Auslieferungssätze — die Frage je Zeile in O(1).</summary>
+    private HashSet<string> _geschuetzt = new(StringComparer.Ordinal);
+
+    /// <summary>Die Felder der Gruppe „Kenndaten" — DIESELBEN Objekte wie in <see cref="_felder"/>.</summary>
+    private List<BrowserFeldwert> _kenndaten = new();
+
+    /// <summary>Die Felder der Gruppe „Kosten" (<c>KatalogBrowserProfil.IstKostenfeld</c>).</summary>
+    private List<BrowserFeldwert> _kosten = new();
+
+    /// <summary>Die Werte beim Laden — daran zählt der Fuß des Stammblatts die geänderten Felder.</summary>
+    private Dictionary<string, string> _geladen = new(StringComparer.Ordinal);
+
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+
+    /// <summary>Was das nächste „Ja" der Rückfrage löscht, und wie viele Auslieferungssätze stehen bleiben.</summary>
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+
+    /// <summary>Der Satz, den „Duplizieren…" kopiert — die gewählte Zeile oder die Fokuszeile.</summary>
+    private string _duplizierQuelle = "";
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _loeschen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    /// <summary>Der Schlüssel der Herkunftszeile im Vergleich — kein Feld des Katalogs.</summary>
+    private const string HERKUNFT = "__HERKUNFT";
+
+    /// <summary>Die über das Kästchen gewählten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen
+        => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+
+    /// <summary>Steht das Stammblatt im schmalen Fenster als Blatt über der Liste? (Prüfhilfe.)</summary>
+    public bool BlattOffen => _auswahl.BlattOffen;
+
+    /// <summary>
+    /// <b>Die Handlungen der Auswahlleiste</b> (V8): Vergleichen ab zwei gewählten Zeilen,
+    /// Duplizieren… für genau eine, Löschen für jede Zahl — weich gesperrt, wenn jede
+    /// Zielzeile ein Auslieferungssatz ist (V13). Im Lesemodus sind Duplizieren und
+    /// Löschen hart gesperrt, wie „Neu…".
+    /// </summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(3)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Wege.Duplizieren is not null)
+            liste.Add(new(BtnDuplizierenText, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND,
+                Aus = NurLesen
+            });
+        liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund, Aus = NurLesen });
+        return liste;
+    }
+
+    /// <summary>
+    /// <b>Löschen eines Auslieferungssatzes ist weich gesperrt</b> (V13): Sind ALLE
+    /// Zielzeilen Auslieferungssätze, nennt der Knopf den Grund und den Weg über
+    /// „Duplizieren…". Ist nur ein Teil geschützt, löscht er den Rest, und die Rückfrage
+    /// nennt, was stehen bleibt (AD-Q9).
+    /// </summary>
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!_geschuetzt.Contains(z)) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    /// <summary>„Stammblatt ›" nur, solange das Blatt nicht schon offen ist.</summary>
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>„Hersteller · Brennstoff · eigener Satz" — aus der Zeile der Liste.</summary>
+    private string Unterzeile => Stammblattkopf.Unterzeile(
+        Profil.Filterprofil, _fokuszeile,
+        _auslieferung ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+
+    /// <summary>Die drei Kennzahlen im Kopf — die ersten Zahlenspalten des Profils.</summary>
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+        => Stammblattkopf.Kennzahlen(Profil.Filterprofil, _fokuszeile);
+
+    /// <summary>„Alle Daten" — der Aufklapper der Parameterübersicht im Stammblatt.</summary>
+    private static string TextAlleDaten => Resource.ADM_SB_ALLE_DATEN;
+
+    /// <summary>
+    /// Der Fuß des Stammblatts: „2 Felder geändert" — gezählt gegen die Werte beim Laden,
+    /// eine Fehleingabe zählt mit (sie hat den Wert noch nicht geschrieben).
+    /// </summary>
+    private string Aenderungshinweis
+    {
+        get
+        {
+            if (!_geaendert) return "";
+            int n = 0;
+            foreach (BrowserFeldwert f in _felder)
+                if (!_geladen.TryGetValue(f.Schluessel, out string? w) || w != f.Wert) n++;
+            n = Math.Max(n, _fehlerhaft.Count);
+            if (n == 0) return "";
+            return n == 1
+                ? Resource.ADM_SB_GEAENDERT_EINS
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_SB_GEAENDERT, n);
+        }
+    }
+
+    /// <summary>Die Liste meldet ihre Kästchen (V6) — ein laufender Vergleich folgt ihnen.</summary>
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    /// <summary>„Auswahl aufheben" — nur über die Leiste; Esc bleibt Beenden.</summary>
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>„Vergleichen" schaltet das Stammblatt auf den Vergleich und zurück (V12).</summary>
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    /// <summary>„‹ Stammblatt von …", Kreuz und Esc der breiten Ansicht.</summary>
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich über die KATALOGFELDER</b> (V12) — dieselben Felder, die das
+    /// Stammblatt zeigt, je gewähltem Satz; dazu die Herkunft. Der Bezeichner steht im
+    /// Spaltenkopf und nicht noch einmal als Zeile. Ohne Detailweg vergleicht er die
+    /// Spalten der Liste. Gerechnet wird beim Anstellen und wenn sich die Kästchen
+    /// ändern, nicht je Zeichenlauf — hinter <c>Wege.Detail</c> steht ein
+    /// Datenbankzugriff je Satz.
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+
+        if (Wege.Detail is null)
+        {
+            var zeilen = new List<Katalogfilterzeile>();
+            foreach (string n in namen)
+            {
+                Katalogfilterzeile? z = _zeilen.FirstOrDefault(x => x.Schluessel == n);
+                if (z is not null) zeilen.Add(z);
+            }
+            _vergleichszeilen = Vergleichsbau.AusSpalten(Profil.Filterprofil, zeilen);
+            return;
+        }
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(namen.Count);
+        foreach (string name in namen)
+        {
+            var felder = new List<Vergleichsfeld>();
+            foreach (BrowserFeldwert f in Wege.Detail(name) ?? Array.Empty<BrowserFeldwert>())
+            {
+                if (f.Schluessel == KatalogBrowserProfil.FeldBezeichner) continue;
+                felder.Add(new Vergleichsfeld(f.Schluessel, Feldbeschriftung(f), Feldanzeige(f)));
+            }
+            felder.Add(new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
+                _geschuetzt.Contains(name) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary>
+    /// Die Gruppe „Kosten" — nur, wo der Satz Kostenfelder führt; ohne Inhalt keine
+    /// Gruppe (ohne Satz gibt es keine Felder).
+    /// </summary>
+    private RenderFragment? KostenInhalt => _kosten.Count == 0 ? null :
+        @<Katalogfelder Felder="@_kosten" NurLesen="@(NurLesen || Auslieferungssatz)"
+                        Geaendert="BeiFeldAenderung" FehlerZustand="BeiFehlerZustand" />;
+
+    private static string Feldbeschriftung(BrowserFeldwert f)
+        => f.Einheit.Length > 0 ? f.Feldname + " [" + f.Einheit + "]" : f.Feldname;
+
+    private string Feldanzeige(BrowserFeldwert f)
+        => f.Art == BrowserFeldArt.Schalter ? (f.Schalterwert ? JaText : NeinText) : f.Wert;
 
     protected override void OnParametersSet()
     {
@@ -459,6 +692,12 @@
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
         if (ProfilVorgabe is null) _profil = KatalogBrowserProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
@@ -489,7 +728,20 @@
     {
         _zeilen = Wege.Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
 
-        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
+        _geschuetzt = new HashSet<string>(_zeilen.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
+                                          StringComparer.Ordinal);
+
+        // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest
+        // die Saetze neu - ein Speichern hat ihre Werte geaendert.
+        _auswahl.Abgleichen(_zeilen.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt))
+        {
+            _fokuszeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+            return;
+        }
 
         // Wie der Bestand: nach dem Aufbau steht die erste Zeile.
         _gewaehlt = _zeilen.Count > 0 ? _zeilen[0].Bezeichner : "";
@@ -503,16 +755,26 @@
 
         // Der Schreibschutz kommt aus der Zeile der Liste (Katalogfilterzeile.Geschuetzt,
         // aus ReadOnly) - fuer alle vier Auspraegungen, nicht nur das BHKW (AD-Q11).
-        _auslieferung = _gewaehlt.Length > 0
-                     && _zeilen.Any(z => z.Bezeichner == _gewaehlt && z.Geschuetzt);
+        // Dieselbe Zeile gibt dem Stammblatt Herkunft und Kennzahlen (V9).
+        _fokuszeile = _gewaehlt.Length > 0 ? _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt) : null;
+        _auslieferung = _fokuszeile?.Geschuetzt == true;
 
         // Die Uebersicht wird AUCH OHNE Auswahl geholt: Sie beantwortet die Frage
         // „welche Parameter gibt es hier ueberhaupt", und die haengt nicht am Satz
         // (W14a-E-8). Ohne Bezeichner stehen lauter Leerwerte darin.
         _uebersicht = Uebersicht?.Invoke(_gewaehlt) ?? Array.Empty<Parameterwert>();
 
-        if (_gewaehlt.Length == 0) { _felder = new List<BrowserFeldwert>(); return; }
-        _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
+        _felder = _gewaehlt.Length == 0
+            ? new List<BrowserFeldwert>()
+            : (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<BrowserFeldwert>()).ToList();
+
+        // Die zwei Gruppen des Stammblatts (V9) teilen DIESELBEN Objekte - geschrieben
+        // wird weiter aus _felder.
+        _kenndaten = _felder.Where(f => !KatalogBrowserProfil.IstKostenfeld(f.Schluessel)).ToList();
+        _kosten = _felder.Where(f => KatalogBrowserProfil.IstKostenfeld(f.Schluessel)).ToList();
+
+        _geladen = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (BrowserFeldwert f in _felder) _geladen[f.Schluessel] = f.Wert;
     }
 
     /// <summary>
@@ -693,8 +955,10 @@
         if (!DuplizierenErlaubt) return;
         if (_geaendert) { Warnen(MeldungUngespeichert); return; }
 
+        // Kopiert wird die EINE Zielzeile: die gewaehlte, sonst die Fokuszeile (V8).
+        _duplizierQuelle = _auswahl.Ziele(_gewaehlt)[0];
         _meldung = "";
-        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_duplizierQuelle, NameVergeben);
         _duplizierfrage = true;
     }
 
@@ -709,10 +973,10 @@
         _duplizierfrage = false;
         if (name is null || Wege.Duplizieren is null) return;
 
-        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _duplizierQuelle);
         if (zeile is null) return;
 
-        string alt = _gewaehlt;
+        string alt = _duplizierQuelle;
         KatalogSpeicherErgebnis ergebnis = Wege.Duplizieren(zeile.Id, name);
         if (!ergebnis.Ok)
         {
@@ -720,7 +984,10 @@
             return;
         }
 
-        // Die Kopie ist gewaehlt - ihr Eingabeblock steht bearbeitbar da.
+        // Die Kopie ist gewaehlt - ihr Stammblatt steht bearbeitbar da, und die
+        // Kaestchen fallen: Die naechste Handlung gilt der Kopie.
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
         _gewaehlt = ergebnis.Name;
         ListeAufbauen();
         DetailLaden();
@@ -783,31 +1050,76 @@
         StateHasChanged();
     }
 
+    /// <summary>
+    /// <b>„Löschen" aus der Auswahlleiste</b> (V8, AD-Q9): wirkt auf die gewählten Zeilen,
+    /// sonst auf die Fokuszeile. Auslieferungssätze bleiben stehen (V13) — sind es alle,
+    /// ist der Knopf weich gesperrt und kommt gar nicht hierher. Die Rückfrage nennt,
+    /// was gelöscht wird und was stehen bleibt; sie ist die einzige der Maske.
+    /// </summary>
     private void BeiLoeschen()
     {
         if (NurLesen) return;
-        if (!Ausgewaehlt()) return;
 
-        _loeschtext = string.Format(FrageLoeschen, _gewaehlt);
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) { Ausgewaehlt(); return; }
+
+        var loeschbar = ziele.Where(z => !_geschuetzt.Contains(z)).ToList();
+        var bleiben = ziele.Where(z => _geschuetzt.Contains(z)).ToList();
+        if (loeschbar.Count == 0) { Warnen(Resource.ADM_AW_LOESCHEN_GESPERRT); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = bleiben.Count;
+
+        string frage = loeschbar.Count == 1
+            ? string.Format(FrageLoeschen, loeschbar[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            loeschbar.Count, string.Join(", ", loeschbar));
+        if (bleiben.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", bleiben));
+
+        _loeschtext = frage;
         _loeschfrage = true;
     }
 
+    /// <summary>
+    /// Nach dem „Ja": je Zeile ein benannter Schreibschritt (Hausregel „Bedienung"). Was
+    /// der Katalog ablehnt (in Verwendung), bleibt stehen und nennt seinen Grund im
+    /// Warnband; die Statuszeile nennt, wie viele gelöscht wurden und wie viele blieben.
+    /// </summary>
     private void BeiLoeschAntwort(bool? antwort)
     {
         _loeschfrage = false;
         if (antwort != true || Wege.Loeschen is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(_gewaehlt);
-        if (!ergebnis.Ok)
+        int geloescht = 0;
+        var gruende = new List<string>();
+        foreach (string name in _loeschziele)
         {
-            _meldung = ergebnis.Meldung;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
+            KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(name);
+            if (ergebnis.Ok)
+            {
+                geloescht++;
+                if (name == _gewaehlt) _gewaehlt = "";
+            }
+            else if (!gruende.Contains(ergebnis.Meldung))
+            {
+                gruende.Add(ergebnis.Meldung);
+            }
         }
 
-        _gewaehlt = "";
-        _meldung = "";
-        ListeAufbauen();
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
+
+        if (gruende.Count > 0) Warnen(string.Join(" ", gruende));
+        else _meldung = "";
+
+        if (geloescht > 0) ListeAufbauen();
+
+        _status = ziele <= 1 || geloescht == 0 ? ""
+                : blieben > 0 ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
     }
 
     /// <summary>
@@ -855,6 +1167,13 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_editorOffen || _namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3), dann den Dialog.
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
 
         return BeiBeenden();
     }

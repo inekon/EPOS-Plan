@@ -138,8 +138,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
             Detail = name => Felder(art, name),
             Existiert = _ => false,
             Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
-            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
-            IstGeschuetzt = n => n == "BHKW A"
+            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n)
         };
 
         return Render<KatalogBrowserDialog>(p => p
@@ -229,8 +228,12 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Equal(spalten, cut.FindAll(".epos-spaltenkopf").Count);
 
         // Keine Wahlspalte mehr (Konzept Administrationsdialoge, V4): Die Zeile
-        // selbst ist die Wahl, der Kopf traegt nur die Spalten des Profils.
-        Assert.Equal(spalten, cut.FindAll("thead th").Count);
+        // selbst ist die Wahl. Seit Stufe 3 (V6) steht davor die KAESTCHENspalte der
+        // Mehrfachwahl - sonst traegt der Kopf nur die Spalten des Profils.
+        var koepfe = cut.FindAll("thead th");
+        Assert.Equal(spalten + 1, koepfe.Count);
+        Assert.Contains("epos-spalte-kaestchen", koepfe[0].ClassName ?? "");
+        Assert.Empty(cut.FindAll("th.epos-spalte-wahl"));
     }
 
     /// <summary>
@@ -242,10 +245,10 @@ public class KatalogBrowserDialogTests : EposBunitContext
     /// anzeigen" der Projektdialoge ihn braucht.
     /// </summary>
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, 5)]
-    [InlineData(KatalogBrowserArt.Bhkw, 5)]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, 5)]
-    [InlineData(KatalogBrowserArt.Pufferspeicher, 5)]
+    [InlineData(KatalogBrowserArt.Heizkessel, 4)]
+    [InlineData(KatalogBrowserArt.Bhkw, 4)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, 4)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, 4)]
     public void Der_Speichern_Knopf_steht_nur_wo_es_einen_Speicherweg_gibt(
         KatalogBrowserArt art, int knoepfe)
     {
@@ -333,15 +336,18 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         int v = Versatz(art);
         var knoepfe = cut.FindAll(".epos-leiste .epos-knopf");
-        Assert.Equal(3 + v, knoepfe.Count);
+        Assert.Equal(2 + v, knoepfe.Count);
         if (v == 2)
         {
             Assert.True(knoepfe[0].HasAttribute("disabled"));           // Speichern
             Assert.True(knoepfe[1].HasAttribute("disabled"));           // Verwerfen
         }
         Assert.True(knoepfe[v].HasAttribute("disabled"));               // Neu...
-        Assert.True(knoepfe[v + 1].HasAttribute("disabled"));           // Löschen
-        Assert.False(knoepfe[v + 2].HasAttribute("disabled"));          // OK
+        Assert.False(knoepfe[v + 1].HasAttribute("disabled"));          // Beenden
+
+        // Loeschen steht seit Stufe 3 in der Auswahlleiste (V8) - im Lesemodus HART
+        // gesperrt wie Neu...
+        Assert.True(Loeschknopf(cut, art).HasAttribute("disabled"));
 
         // Liste und Detailblock stehen unveraendert.
         Assert.Equal(2, cut.Instance.Zeilen.Count);
@@ -396,14 +402,19 @@ public class KatalogBrowserDialogTests : EposBunitContext
         };
         var cut = Aufbauen(art, wege: wege);
 
+        // Die erste Zeile des BHKW ist ein Auslieferungssatz - Loeschen ist dort weich
+        // gesperrt (V13); geloescht wird der eigene Satz daneben.
+        int zeile = art == KatalogBrowserArt.Bhkw ? 1 : 0;
+        if (zeile > 0) Zeilenklick.Zeile(cut, zeile);
+        string name = cut.Instance.Zeilen[zeile].Bezeichner;
+
         Loeschknopf(cut, art).Click();
 
         Assert.True(cut.Instance.Loeschfrage);
-        Assert.Contains(cut.Instance.Zeilen[0].Bezeichner,
-                        cut.Find(".epos-rueckfrage").TextContent);
+        Assert.Contains(name, cut.Find(".epos-rueckfrage").TextContent);
 
         cut.FindAll(".epos-rueckfrage button")[0].Click();
-        Assert.Equal(cut.Instance.Zeilen[0].Bezeichner, geloescht);
+        Assert.Equal(name, geloescht);
     }
 
     [Fact]
@@ -436,6 +447,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
+        Zeilenklick.Zeile(cut, 1);                       // der eigene Satz "BHKW B"
         Loeschknopf(cut, KatalogBrowserArt.Bhkw).Click();
         cut.FindAll(".epos-rueckfrage button")[0].Click();
 
@@ -484,17 +496,18 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// „Löschen" ohne Auswahl meldet dort, wo der Vorläufer meldete (BHKW und
-    /// Solarkollektoren), und schweigt dort, wo er schwieg (Heizkessel,
-    /// Pufferspeicher) — bitgleich. Bis AD-Q6 prüfte der Fall „Bearbeiten…"; die
-    /// Regel dahinter (<c>Ausgewaehlt</c>) ist dieselbe.
+    /// <b>Ohne Zeile gibt es nichts zu löschen — und keinen Knopf dafür</b> (Stufe 3,
+    /// V8): Am Platz der Auswahlleiste steht eine leise Zeile, damit die Liste nicht
+    /// springt; das Stammblatt sagt, dass keine Zeile gewählt ist. Bis Stufe 2 stand
+    /// „Löschen" in der Fußleiste und meldete bei BHKW und Solarkollektoren
+    /// „Bitte … auswählen!" — eine Meldung zu einem Knopf, der nichts tun konnte.
     /// </summary>
     [Theory]
-    [InlineData(KatalogBrowserArt.Heizkessel, "")]
-    [InlineData(KatalogBrowserArt.Bhkw, "Bitte ein BHKW auswählen!")]
-    [InlineData(KatalogBrowserArt.Solarkollektoren, "Bitte einen Kollektor auswählen!")]
-    [InlineData(KatalogBrowserArt.Pufferspeicher, "")]
-    public void Ohne_Auswahl_meldet_nur_wer_es_schon_immer_tat(KatalogBrowserArt art, string meldung)
+    [InlineData(KatalogBrowserArt.Heizkessel)]
+    [InlineData(KatalogBrowserArt.Bhkw)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher)]
+    public void Ohne_Zeile_steht_die_leise_Zeile_statt_der_Handlungen(KatalogBrowserArt art)
     {
         var wege = new KatalogBrowserWege
         {
@@ -504,9 +517,10 @@ public class KatalogBrowserDialogTests : EposBunitContext
         var cut = Aufbauen(art, wege: wege);
 
         Assert.Equal("", cut.Instance.Gewaehlt);
-        Loeschknopf(cut, art).Click();
-
-        Assert.Equal(meldung, cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll(".epos-auswahlleiste button"));
+        Assert.Equal("Keine Zeile gewählt", cut.Find(".epos-auswahlleiste-leise").TextContent.Trim());
+        Assert.Equal("Keine Zeile gewählt.", cut.Find(".epos-stammblatt-leer").TextContent.Trim());
+        Assert.Equal("", cut.Instance.Meldung);
     }
 
     // =================================================================================
@@ -957,8 +971,9 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// <b>Die Fußleiste der Verwaltung</b> (V15): Speichern · Verwerfen · Füller ·
-    /// Neu… · Duplizieren… · Löschen · Beenden — der Füller ist die Statuszeile.
+    /// <b>Die Fußleiste der Verwaltung</b> (V15, Stufe 3): Speichern · Verwerfen · Füller ·
+    /// Neu… · Beenden — der Füller ist die Statuszeile. Duplizieren… und Löschen stehen
+    /// in der Auswahlleiste (V8: keine Handlung an zwei Orten).
     /// </summary>
     [Fact]
     public void Die_Fussleiste_steht_in_der_Reihenfolge_der_Verwaltung()
@@ -974,7 +989,11 @@ public class KatalogBrowserDialogTests : EposBunitContext
 
         var leiste = cut.FindAll(".epos-leiste").Last();
         var texte = leiste.QuerySelectorAll(".epos-knopf").Select(k => k.TextContent.Trim()).ToList();
-        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Duplizieren...", "Löschen", "Beenden" }, texte);
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Beenden" }, texte);
+
+        var handlungen = cut.FindAll(".epos-auswahlleiste .epos-auswahlleiste-knopf:not(.epos-nur-schmal)")
+                            .Select(k => k.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Vergleichen", "Duplizieren...", "Löschen" }, handlungen);
 
         var kinder = leiste.Children.ToList();
         int fueller = kinder.FindIndex(k => (k.ClassName ?? "").Contains("epos-leiste-fueller"));
@@ -1006,7 +1025,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf").First(k => k.TextContent.Trim() == "Duplizieren...").Click();
+        Handlung(cut, "Duplizieren...").Click();
 
         Assert.True(cut.Instance.Duplizierfrage);
         var feld = cut.Find(".epos-ueberlagerung input[type=text]");
@@ -1035,7 +1054,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf").First(k => k.TextContent.Trim() == "Duplizieren...").Click();
+        Handlung(cut, "Duplizieren...").Click();
         cut.Find(".epos-ueberlagerung input[type=text]").Input("BHKW B");
         cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
 
@@ -1044,8 +1063,326 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Stufe 3 (Konzept Administrationsdialoge): Stammblatt, Auswahlleiste, Kästchen,
+    // Vergleich und die Löschsperre der Auslieferung (V3 V6 V8 V9 V12 V13) — Pilot
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Stammblatt statt des Eingabeblocks</b> (V3, V9): Es steht im Rahmen neben
+    /// der Liste; sein Kopf nennt Name, Herkunft (die Textspalten der Zeile und „eigener
+    /// Satz") und drei Kennzahlen; die bisherigen Katalogfelder stehen geteilt in
+    /// „Kenndaten" und „Kosten" — die Investition unter Kosten, die Leistung unter
+    /// Kenndaten.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_steht_neben_der_Liste_mit_Kenndaten_und_Kosten()
+    {
+        var cut = Aufbauen();
+
+        Assert.NotNull(cut.Find(".epos-katalograhmen .epos-katalog-stammblatt .epos-stammblatt"));
+        Assert.Equal("Eintrag A", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal("Vaillant · Erdgas E · eigener Satz", cut.Find(".epos-stammblatt-unter").TextContent);
+        Assert.Equal(3, cut.FindAll(".epos-stammblatt-kennzahl").Count);
+        Assert.Empty(cut.FindAll(".epos-stammblatt-schutz"));
+
+        var gruppen = cut.FindAll(".epos-stammblattgruppe");
+        Assert.Equal(new[] { "Kenndaten", "Kosten" },
+                     gruppen.Select(g => g.QuerySelector(".epos-stammblattgruppe-titel")!.TextContent));
+
+        var profil = Profil(KatalogBrowserArt.Heizkessel);
+        string invest = profil.Detailfelder.Single(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Bezeichnung;
+        string leistung = profil.Detailfelder.Single(f => f.Schluessel == KatalogBrowserProfil.FeldPtherm).Bezeichnung;
+        Assert.Contains(invest, gruppen[1].TextContent);
+        Assert.DoesNotContain(invest, gruppen[0].TextContent);
+        Assert.Contains(leistung, gruppen[0].TextContent);
+    }
+
+    /// <summary>
+    /// <b>Ein Auslieferungssatz: Löschen weich gesperrt, der Grund im Kopf</b> (V13):
+    /// Das Stammblatt trägt das Schloss hinter dem Namen, nennt die Herkunft und sagt in
+    /// Worten, dass der Satz nur lesbar ist. „Löschen" ist <c>aria-disabled</c> mit dem
+    /// Grund im Kurztext; ein Klick nennt ihn im Warnband — keine Rückfrage, kein
+    /// Schreibweg.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_sperrt_Loeschen_weich_und_sagt_es_im_Stammblattkopf()
+    {
+        bool gerufen = false;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Loeschen = n => { gerufen = true; return new KatalogSpeicherErgebnis(true, "", n); },
+            Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n)
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        Assert.Equal("BHKW A", cut.Instance.Gewaehlt);
+        Assert.NotNull(cut.Find(".epos-stammblatt-name .epos-schloss"));
+        Assert.Contains("nur lesen", cut.Find(".epos-stammblatt-schutz").TextContent);
+        Assert.Contains("Auslieferungssatz", cut.Find(".epos-stammblatt-unter").TextContent);
+
+        var loeschen = Loeschknopf(cut, KatalogBrowserArt.Bhkw);
+        Assert.Equal("true", loeschen.GetAttribute("aria-disabled"));
+        Assert.False(loeschen.HasAttribute("disabled"));
+        Assert.Contains("Duplizieren", loeschen.GetAttribute("title") ?? "");
+
+        loeschen.Click();
+
+        Assert.False(cut.Instance.Loeschfrage);
+        Assert.False(gerufen);
+        Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
+
+        // Der eigene Satz desselben Katalogs bleibt löschbar.
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Null(Loeschknopf(cut, KatalogBrowserArt.Bhkw).GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// <b>Die Leertaste setzt das Kästchen der Fokuszeile</b> (V6) — und ein zweites Mal
+    /// nimmt sie es wieder weg; die Fokuszeile bleibt dabei stehen.
+    /// </summary>
+    [Fact]
+    public void Die_Leertaste_setzt_das_Kaestchen_der_Fokuszeile()
+    {
+        var cut = Aufbauen();
+
+        Zeilenklick.Taste(cut, " ");
+        Assert.Equal(new[] { "Eintrag A" }, cut.Instance.Kaestchen);
+        Assert.Equal("Eintrag A", cut.Instance.Gewaehlt);
+        Assert.Equal("1 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+
+        Zeilenklick.Taste(cut, " ");
+        Assert.Empty(cut.Instance.Kaestchen);
+        Assert.Equal("Eintrag A", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+    }
+
+    /// <summary>
+    /// <b>Eine Handlung außerhalb ihrer Zeilenzahl ist weich gesperrt</b> (V8): Ohne
+    /// Kästchen wirkt alles auf die Fokuszeile — „Vergleichen" braucht zwei und nennt
+    /// den Weg; mit zwei Kästchen ist „Duplizieren…" gesperrt, denn es gilt genau einer
+    /// Zeile. Ein Klick meldet den Grund und tut nichts.
+    /// </summary>
+    [Fact]
+    public void Eine_Handlung_ausserhalb_ihrer_Zeilenzahl_ist_weich_gesperrt_und_nennt_den_Grund()
+    {
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
+            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
+            Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n)
+        };
+        var cut = Aufbauen(wege: wege);
+
+        var vergleichen = Handlung(cut, "Vergleichen");
+        Assert.Equal("true", vergleichen.GetAttribute("aria-disabled"));
+        Assert.Contains("zwei", vergleichen.GetAttribute("title") ?? "");
+        vergleichen.Click();
+        Assert.False(cut.Instance.Vergleicht);
+        Assert.Contains("zwei", cut.Instance.Meldung);
+        Assert.Null(Handlung(cut, "Duplizieren...").GetAttribute("aria-disabled"));
+
+        Kaestchen(cut, 0);
+        Kaestchen(cut, 1);
+
+        var duplizieren = Handlung(cut, "Duplizieren...");
+        Assert.Equal("true", duplizieren.GetAttribute("aria-disabled"));
+        Assert.Contains("genau eine", duplizieren.GetAttribute("title") ?? "");
+        duplizieren.Click();
+        Assert.False(cut.Instance.Duplizierfrage);
+        Assert.Null(Handlung(cut, "Vergleichen").GetAttribute("aria-disabled"));
+    }
+
+    /// <summary>
+    /// <b>Vergleichen zeigt die gewählten Sätze im Stammblatt</b> (V12): eine Spalte je
+    /// Satz, eine Zeile je Katalogfeld (ohne den Bezeichner — er steht im Kopf) und die
+    /// Herkunft; „Vergleichen" steht gedrückt. „‹ Stammblatt von …" führt zur Fokuszeile
+    /// zurück, die Kästchen bleiben.
+    /// </summary>
+    [Fact]
+    public void Zwei_Kaestchen_vergleichen_im_Stammblatt()
+    {
+        var cut = Aufbauen();
+
+        Kaestchen(cut, 0);
+        Kaestchen(cut, 1);
+        Assert.Equal(new[] { "Eintrag A", "Eintrag B" }, cut.Instance.Kaestchen);
+        Assert.Equal("2 gewählt", cut.Find(".epos-auswahlleiste-was").TextContent.Trim());
+
+        Handlung(cut, "Vergleichen").Click();
+
+        Assert.True(cut.Instance.Vergleicht);
+        Assert.Equal("true", Handlung(cut, "Vergleichen").GetAttribute("aria-pressed"));
+        Assert.Equal(new[] { "Parameter", "Eintrag A", "Eintrag B" },
+                     cut.FindAll(".epos-stammblatt .epos-vergleich thead th").Select(th => th.TextContent.Trim()));
+        Assert.Empty(cut.FindAll(".epos-stammblattgruppe"));
+        Assert.DoesNotContain(cut.Instance.Vergleichszeilen, z => z.Name.StartsWith("Name", StringComparison.Ordinal));
+        Assert.Contains(cut.Instance.Vergleichszeilen, z => z.Name == "Herkunft" && !z.Abweichend);
+        Assert.Contains("nur lesbar", cut.Find(".epos-stammblatt-hinweis").TextContent);
+
+        cut.Find(".epos-stammblatt-zurueck").Click();
+
+        Assert.False(cut.Instance.Vergleicht);
+        Assert.Equal("Eintrag A", cut.Find(".epos-stammblatt-nametext").TextContent);
+        Assert.Equal(2, cut.Instance.Kaestchen.Count);
+    }
+
+    /// <summary>
+    /// <b>Löschen wirkt auf die gewählten Zeilen und lässt Auslieferungssätze stehen</b>
+    /// (AD-Q9, V13): Die Rückfrage nennt, was gelöscht wird und was stehen bleibt;
+    /// geschrieben wird je Zeile, nur die eigenen; die Statuszeile nennt beide Zahlen,
+    /// und das Kästchen der gelöschten Zeile fällt.
+    /// </summary>
+    [Fact]
+    public void Loeschen_mehrerer_Zeilen_laesst_Auslieferungssaetze_stehen()
+    {
+        var katalog = Zeilen(KatalogBrowserArt.Bhkw).ToList();
+        var geloescht = new List<string>();
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => katalog,
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Loeschen = n =>
+            {
+                geloescht.Add(n);
+                katalog = katalog.Where(z => z.Bezeichner != n).ToList();
+                return new KatalogSpeicherErgebnis(true, "", n);
+            }
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        Kaestchen(cut, 0);                                     // BHKW A, Auslieferung
+        Kaestchen(cut, 1);                                     // BHKW B, eigener Satz
+        Assert.Null(Loeschknopf(cut, KatalogBrowserArt.Bhkw).GetAttribute("aria-disabled"));
+
+        Loeschknopf(cut, KatalogBrowserArt.Bhkw).Click();
+
+        string frage = cut.Find(".epos-rueckfrage").TextContent;
+        Assert.Contains("BHKW B", frage);
+        Assert.Contains("Stehen bleiben (Auslieferungssatz): BHKW A", frage);
+
+        cut.FindAll(".epos-rueckfrage button")[0].Click();
+
+        Assert.Equal(new[] { "BHKW B" }, geloescht);
+        Assert.Equal("1 gelöscht, 1 stehen geblieben", cut.Instance.Status);
+        Assert.Equal(new[] { "BHKW A" }, cut.Instance.Kaestchen);
+        Assert.Single(cut.Instance.Zeilen);
+    }
+
+    /// <summary>
+    /// <b>„Duplizieren…" kopiert die EINE gewählte Zeile</b> — auch wenn sie nicht die
+    /// Fokuszeile ist (V8: Sind Kästchen gesetzt, wirkt die Handlung auf sie). Danach ist
+    /// die Kopie Fokuszeile und die Kästchen sind leer.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_kopiert_die_gewaehlte_Zeile_auch_neben_der_Fokuszeile()
+    {
+        var katalog = Zeilen(KatalogBrowserArt.Bhkw).ToList();
+        (int Id, string Name)? gerufen = null;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => katalog,
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Duplizieren = (id, name) =>
+            {
+                gerufen = (id, name);
+                katalog = katalog.Append(new Katalogfilterzeile(99, name)
+                    .MitText(Katalogfilterprofil.SpBezeichner, name)).ToList();
+                return new KatalogSpeicherErgebnis(true, "", name);
+            }
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        Assert.Equal("BHKW A", cut.Instance.Gewaehlt);
+        Kaestchen(cut, 1);                                     // BHKW B
+        Handlung(cut, "Duplizieren...").Click();
+
+        Assert.Equal("BHKW B (Kopie)", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal((2, "BHKW B (Kopie)"), gerufen);
+        Assert.Equal("BHKW B (Kopie)", cut.Instance.Gewaehlt);
+        Assert.Empty(cut.Instance.Kaestchen);
+    }
+
+    /// <summary>
+    /// <b>„Auswahl aufheben" steht nur bei gesetzten Kästchen</b> und nimmt sie alle weg
+    /// (V8); ohne Kästchen steht dort der leise Hinweis, dass es sie gibt. Esc hebt nicht
+    /// auf — es bleibt Beenden.
+    /// </summary>
+    [Fact]
+    public void Auswahl_aufheben_steht_nur_bei_gesetzten_Kaestchen()
+    {
+        BrowserErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => ergebnis = e);
+
+        Assert.Empty(cut.FindAll(".epos-auswahlleiste-aufheben"));
+        Assert.Equal("Kästchen: mehrere wählen", cut.Find(".epos-auswahlleiste-leise").TextContent.Trim());
+
+        Kaestchen(cut, 1);
+        cut.Find(".epos-auswahlleiste-aufheben").Click();
+
+        Assert.Empty(cut.Instance.Kaestchen);
+        Assert.Empty(cut.FindAll(".epos-auswahlleiste-aufheben"));
+
+        Kaestchen(cut, 0);
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.NotNull(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Im schmalen Fenster</b> (V3): „Stammblatt ›" schiebt das Blatt über die Liste,
+    /// „‹ Liste" führt zurück; Esc schließt erst das Blatt, dann den Dialog (Konzept 3.3).
+    /// Die Knöpfe stehen immer im Markup — ob sie SICHTBAR sind, entscheidet die
+    /// Containerabfrage des Rahmens (Katalogprobe, Fälle N01b bis N04b).
+    /// </summary>
+    [Fact]
+    public void Schmal_schiebt_Stammblatt_das_Blatt_und_Esc_schliesst_erst_das_Blatt()
+    {
+        BrowserErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => ergebnis = e);
+
+        cut.Find(".epos-auswahlleiste .epos-nur-schmal").Click();
+        Assert.True(cut.Instance.BlattOffen);
+        Assert.Contains("epos-katalog-paar--blatt", cut.Find(".epos-katalog-paar").ClassName ?? "");
+        Assert.Empty(cut.FindAll(".epos-auswahlleiste .epos-nur-schmal"));
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.BlattOffen);
+        Assert.Null(ergebnis);
+
+        cut.Find(".epos-auswahlleiste .epos-nur-schmal").Click();
+        cut.Find(".epos-stammblatt-zurliste").Click();
+        Assert.False(cut.Instance.BlattOffen);
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.NotNull(ergebnis);
+    }
+
+    /// <summary>
+    /// <b>Der Fuß des Stammblatts zählt die geänderten Felder</b> (V9) — gegen die Werte
+    /// beim Laden; ohne Änderung steht kein Fuß.
+    /// </summary>
+    [Fact]
+    public void Der_Fuss_des_Stammblatts_zaehlt_die_geaenderten_Felder()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-stammblatt-fuss"));
+
+        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
+        Assert.Equal("1 Feld geändert", cut.Find(".epos-stammblatt-hinweis").TextContent.Trim());
+
+        cut.FindAll("input[inputmode=decimal]")[1].Input("7");
+        Assert.Equal("2 Felder geändert", cut.Find(".epos-stammblatt-hinweis").TextContent.Trim());
+    }
+
+    // =================================================================================
     // Helfer: die Knopfstellen je Ausprägung
     // =================================================================================
+
+    /// <summary>Setzt das Kästchen der Zeile <paramref name="index"/> um (V6).</summary>
+    private static void Kaestchen(IRenderedComponent<KatalogBrowserDialog> cut, int index)
+        => cut.FindAll("td.epos-spalte-kaestchen input")[index].Change(true);
 
     /// <summary>
     /// Mit Speicherweg stehen „Speichern" und „Verwerfen" (AD-Q6) vor dem Füller; ohne
@@ -1058,7 +1395,13 @@ public class KatalogBrowserDialogTests : EposBunitContext
         IRenderedComponent<KatalogBrowserDialog> cut, KatalogBrowserArt art) =>
         cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art)];
 
+    /// <summary>„Löschen" steht seit Stufe 3 in der Auswahlleiste (V8).</summary>
     private static AngleSharp.Dom.IElement Loeschknopf(
         IRenderedComponent<KatalogBrowserDialog> cut, KatalogBrowserArt art) =>
-        cut.FindAll(".epos-leiste .epos-knopf")[Versatz(art) + 1];
+        Handlung(cut, "Löschen");
+
+    /// <summary>Ein Knopf der Auswahlleiste nach seiner Beschriftung.</summary>
+    private static AngleSharp.Dom.IElement Handlung(
+        IRenderedComponent<KatalogBrowserDialog> cut, string text) =>
+        cut.FindAll(".epos-auswahlleiste button").First(k => k.TextContent.Trim() == text);
 }

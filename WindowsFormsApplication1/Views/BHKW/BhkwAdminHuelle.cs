@@ -47,9 +47,10 @@ namespace WindowsFormsApplication1
         /// <b>Dieselben Delegaten, die auch der Katalogbrowser bekommt.</b> Sie stehen
         /// hier und nicht ein zweites Mal im Projektdialog-Wirt: Welche Spalten ein
         /// BHKW-Satz führt und wie sie zurückgeschrieben werden, ist EINE Frage mit
-        /// EINER Antwort. <see cref="KatalogBrowserWege.IstGeschuetzt"/> trägt nur
-        /// dieser Katalog — in der Auslieferungsdatenbank ist jeder Satz von
-        /// <c>Tab_BHKW_STAMM</c> schreibgeschützt.
+        /// EINER Antwort. Den Schreibschutz liest die Verwaltung aus der Zeile
+        /// (<c>Katalogfilterzeile.Geschuetzt</c>, AD-Q11); der Projektdialog fragt ihn
+        /// unmittelbar bei <c>BHKWStammCtrl.IstSchreibgeschuetzt</c> — in der
+        /// Auslieferungsdatenbank ist jeder Satz von <c>Tab_BHKW_STAMM</c> geschützt.
         /// </remarks>
         internal static KatalogBrowserWege Wege()
         {
@@ -66,7 +67,6 @@ namespace WindowsFormsApplication1
                 Existiert = name => BHKWStammCtrl.IdZu(name) > 0,
                 Loeschen = Loeschen,
                 Speichern = Schreiben,
-                IstGeschuetzt = BHKWStammCtrl.IstSchreibgeschuetzt,
                 // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
                 // "Duplizieren..." legt den eigenen Satz an.
                 Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(BHKWStammCtrl.Duplizieren(id, name))

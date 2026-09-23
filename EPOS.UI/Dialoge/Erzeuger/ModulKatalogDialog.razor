@@ -38,10 +38,18 @@
        Loeschen - Beenden; Kreuz und Esc wie Beenden. Geaenderte Felder (auch
        ein angelegter, noch nicht gespeicherter Satz) halten Beenden und den
        Zeilenwechsel an: "Speichern oder Verwerfen".
-     * Gelungenes steht in der Statuszeile, Gescheitertes im Warnband. *@
+     * Gelungenes steht in der Statuszeile, Gescheitertes im Warnband.
+
+   STUFE 3 (V3, V6, V8, V9, V12, V13) - dieselben Regeln wie in der Verwaltung
+   Heizkessel: Stammblatt neben der Liste (Kenndaten in den Gruppen des
+   Profils, Kosten, Alle Daten), Kaestchen und Auswahlleiste (Vergleichen,
+   Duplizieren..., Loeschen - auch mehrere Zeilen, Auslieferungssaetze bleiben
+   stehen), Vergleich im Stammblatt. Die Fussleiste heisst Speichern -
+   Verwerfen - Fueller - Neu... - Beenden. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
+@using System.Globalization
 @using WindowsFormsApplication1
 @implements IDisposable
 
@@ -59,107 +67,91 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Liste LINKS, Felder RECHTS (Anwenderwunsch 05.09.2026) ----------
-           Beide Vorbilder standen so: Form_AdminPV (607 x 489, Liste
-           211 x 259 links, Felder ab x 253) und Form_AdminStromspeicher
-           (614 x 367, Liste 201 x 293 links, Felder ab x 240). *@
-    <Katalograhmen>
+    @* --- STUFE 3 (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13): Liste
+           LINKS ueber die ganze Hoehe, rechts Auswahlleiste und STAMMBLATT - so
+           standen auch beide Vorbilder: Form_AdminPV (607 x 489, Liste 211 x 259
+           links, Felder ab x 253) und Form_AdminStromspeicher (614 x 367, Liste
+           201 x 293 links, Felder ab x 240). Die Ueberschrift ueber der Liste
+           entfaellt: Sie nahm der Liste eine Zeile. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Gruppenkopf Titel="@Profil.Listenbeschriftung" />
-
-            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, 07.09.2026).
-               Die Herstellerklappliste des Wechselrichters entfaellt: "enthaelt SMA"
-               im Spaltenkopf leistet dasselbe und trifft nebenbei die
-               Schreibvarianten desselben Hauses (offener Punkt O-4). Vor allem aber
-               bekommen jetzt AUCH die zwei anderen Auspraegungen einen Filter -
-               PV-Module (20 749 Zeilen nach dem CEC-Import) und Stromspeicher
-               (6 658) hatten bis hierher GAR KEINEN und EINE Spalte
-               (Konzept Befund 1.2/3). *@
+            @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, 07.09.2026) - fuer
+               PV-Module (20 749 Zeilen nach dem CEC-Import) und Stromspeicher (6 658)
+               der einzige Filterweg. Seit Stufe 3 mit Kaestchen (V6). *@
             <Katalogliste Profil="@Profil.Filterprofil" Zeilen="@_zeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            @* --- Die Felder, Gruppe 0 ------------------------------------ *@
-            <Gruppenkopf Titel="@Profil.GruppeBestand">
-                <KindInhalt>
-                    @* H13 / O-H13b-5 (07.09.2026): Der Weg in die Wikirubrik
-                       "Berechnung". Er sitzt am Kopf der ERSTEN Feldgruppe, weil
-                       dort die Kennwerte stehen, die der Rechenweg spaeter liest.
-                       Der Fensterknopf oben rechts bleibt die Bedienhilfe. Modul
-                       und Wechselrichter fuehren auf dieselbe Seite
-                       "Photovoltaik" - der Wechselrichter ist ein Abschnitt
-                       darauf, keine eigene Seite. *@
+        <Auswahl>
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
+
+        <Blatt>
+            @* DAS STAMMBLATT (V9): "Kenndaten" traegt die Gruppen des Profils
+               (Moduldaten; Geraet, Eingang, Wirkungsgrad; Speicherdaten,
+               Geraetetechnik) als leise Zwischenueberschriften, "Kosten" die
+               Kostenfelder aller Gruppen (ModulKatalogProfil.IstKostenfeld), "Alle
+               Daten" die Parameteruebersicht. Ein Auslieferungssatz ist nur lesbar,
+               und der Kopf sagt es in Worten (V13). *@
+            <Stammblatt Name="@Blattname" Unterzeile="@Unterzeile"
+                        Auslieferung="@NurLesbar" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen" Hinweis="@Aenderungshinweis"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck"
+                        Kosten="@KostenInhalt">
+                <Kenndaten>
+                    <Formularraster>
+                        <KindInhalt>
+                            @for (int gruppe = 0; gruppe <= 2; gruppe++)
+                            {
+                                int g = gruppe;
+                                var felder = _felder.Where(f => f.Gruppe == g && !ModulKatalogProfil.IstKostenfeld(f.Schluessel)).ToList();
+                                if (felder.Count == 0) { continue; }
+                                <Formulargruppe Titel="@Gruppentitel(g)">
+                                    <KindInhalt>
+                                        @foreach (ModulFeldwert feld in felder)
+                                        {
+                                            @Feldmarkup(feld)
+                                        }
+                                    </KindInhalt>
+                                </Formulargruppe>
+                            }
+                        </KindInhalt>
+                    </Formularraster>
+                </Kenndaten>
+                <AlleDaten>
+                    @* ALLE PARAMETER UND IHRE VERWENDUNG (W14a-E-8) - zugeklappt; ohne
+                       den Delegaten gibt es den Aufklapper nicht. *@
+                    @if (Uebersicht is not null)
+                    {
+                        <Parameteruebersicht Zeilen="@_uebersicht" Beschriftung="@Resource.ADM_SB_ALLE_DATEN" />
+                    }
+                </AlleDaten>
+                <Nachsatz>
+                    @* H13: der Weg in die Wikirubrik "Berechnung" - Modul und
+                       Wechselrichter fuehren auf dieselbe Seite "Photovoltaik". *@
                     <div class="epos-berechnungshilfe">
                         <InfoKnopf Schluessel="@Profil.BerechnungsSchluessel"
                                    StandardKurztext="@Profil.BerechnungsKurztext" />
                     </div>
-                    @* Formularraster (iU8-E-2 / W14a-E-7): Beschriftung NEBEN dem
-                       Feld, Zahlenfelder kurz mit der Einheit dahinter, zwei
-                       Feldpaare je Zeile, sobald die Spalte breit genug ist.
-                       Der Block war zuvor doppelt so hoch wie der Dialog. *@
-                    <Formularraster>
-                        <KindInhalt>
-                            @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 0))
-                            {
-                                @Feldmarkup(feld)
-                            }
-                        </KindInhalt>
-                    </Formularraster>
-                </KindInhalt>
-            </Gruppenkopf>
-
-            @* --- Die Felder, Gruppe 1 (AP3-Gerätetechnik, nur Stromspeicher) *@
-            @if (_felder.Any(f => f.Gruppe == 1))
-            {
-                <Gruppenkopf Titel="@Profil.GruppeZwei">
-                    <KindInhalt>
-                        <Formularraster>
-                            <KindInhalt>
-                                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 1))
-                                {
-                                    @Feldmarkup(feld)
-                                }
-                            </KindInhalt>
-                        </Formularraster>
-                    </KindInhalt>
-                </Gruppenkopf>
-            }
-
-            @* --- Die Felder, Gruppe 2 (Wirkungsgrad, nur Wechselrichter) ---- *@
-            @if (_felder.Any(f => f.Gruppe == 2))
-            {
-                <Gruppenkopf Titel="@Profil.GruppeDrei">
-                    <KindInhalt>
-                        <Formularraster>
-                            <KindInhalt>
-                                @foreach (ModulFeldwert feld in _felder.Where(f => f.Gruppe == 2))
-                                {
-                                    @Feldmarkup(feld)
-                                }
-                            </KindInhalt>
-                        </Formularraster>
-                    </KindInhalt>
-                </Gruppenkopf>
-            }
-
-            @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
-               (06.09.2026). Zugeklappt die Vorgabe; ohne den Delegaten gibt es
-               den Aufklapper nicht. Er steht UNTER beiden Feldgruppen, weil er
-               ueber den ganzen Katalogsatz Auskunft gibt und nicht ueber eine
-               von ihnen. *@
-            @if (Uebersicht is not null)
-            {
-                <Parameteruebersicht Zeilen="@_uebersicht" />
-            }
-        </Eingabe>
+                </Nachsatz>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
-    @* DIE FUSSLEISTE DER VERWALTUNG (V15) - Muster KatalogBrowserDialog. Der
-       Fueller ist die Statuszeile; "Speichern" eines Auslieferungssatzes ist weich
-       gesperrt und nennt den Grund (AD-Q11). *@
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15, Stufe 3): Speichern - Verwerfen -
+       Fueller (Statuszeile) - Neu... - Beenden. Duplizieren... und Loeschen
+       stehen in der Auswahlleiste (V8). "Speichern" eines Auslieferungssatzes ist
+       weich gesperrt und nennt den Grund (AD-Q11). *@
     <div class="epos-leiste">
         @if (SpeichernWeichGesperrt)
         {
@@ -176,17 +168,10 @@
                 @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
         <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
-        @if (Wege.Duplizieren is not null)
-        {
-            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
-                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
-        }
-        <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiBeenden">@BtnBeendenText</button>
     </div>
 
-    @* --- Rueckfrage vor dem Loeschen (Angleichung E-3) -------------------- *@
     <Rueckfrage Offen="@_loeschfrage" TitelText="@TitelLoeschen" Frage="@_loeschtext"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="BeiLoeschAntwort" />
 
@@ -408,7 +393,192 @@
     /// <summary>„Speichern" eines Auslieferungssatzes ist weich gesperrt (AD-Q11).</summary>
     private bool SpeichernWeichGesperrt => !_neu && _auslieferung && _gewaehlt.Length > 0;
 
-    private bool DuplizierenErlaubt => !_neu && _gewaehlt.Length > 0 && Wege.Duplizieren is not null;
+    private bool DuplizierenErlaubt => !_neu && _auswahl.Ziele(_gewaehlt).Count == 1
+                                    && Wege.Duplizieren is not null;
+
+    // =====================================================================
+    // Stufe 3: Auswahlleiste, Stammblatt, Vergleich (V3 V6 V8 V9 V12 V13)
+    // =====================================================================
+
+    private readonly Zeilenauswahl _auswahl = new();
+    private Katalogfilterzeile? _fokuszeile;
+    private HashSet<string> _geschuetzt = new(StringComparer.Ordinal);
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+    private string _duplizierQuelle = "";
+
+    private EventCallback _vergleichen;
+    private EventCallback _duplizieren;
+    private EventCallback _loeschen;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    private const string HERKUNFT = "__HERKUNFT";
+
+    /// <summary>Die über das Kästchen gewählten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen
+        => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+
+    /// <summary>Die Überschrift einer Feldgruppe des Profils in den Kenndaten.</summary>
+    private string Gruppentitel(int gruppe) => gruppe switch
+    {
+        0 => Profil.GruppeBestand,
+        1 => Profil.GruppeZwei,
+        _ => Profil.GruppeDrei
+    };
+
+    /// <summary>Der Name im Kopf des Stammblatts — bei „Neu…" der Bezeichner des neuen Satzes.</summary>
+    private string Blattname
+    {
+        get
+        {
+            if (!_neu) return _gewaehlt;
+            string name = _felder.FirstOrDefault(f => f.Schluessel == ModulKatalogProfil.FeldBezeichner)?.Wert ?? "";
+            return name.Length > 0 ? name : BtnNeuText;
+        }
+    }
+
+    private string Unterzeile => Stammblattkopf.Unterzeile(
+        Profil.Filterprofil, _neu ? null : _fokuszeile,
+        NurLesbar ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ);
+
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen
+        => _neu ? Array.Empty<Stammblattkennzahl>() : Stammblattkopf.Kennzahlen(Profil.Filterprofil, _fokuszeile);
+
+    private string Aenderungshinweis => Ungespeichert ? Resource.ADM_SB_GEAENDERT_OFFEN : "";
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>Die Gruppe „Kosten" — nur, wo der Satz Kostenfelder führt.</summary>
+    private RenderFragment? KostenInhalt
+    {
+        get
+        {
+            var kosten = _felder.Where(f => ModulKatalogProfil.IstKostenfeld(f.Schluessel)).ToList();
+            if (kosten.Count == 0) return null;
+            return @<Formularraster>
+                        <KindInhalt>
+                            @foreach (ModulFeldwert feld in kosten)
+                            {
+                                @Feldmarkup(feld)
+                            }
+                        </KindInhalt>
+                    </Formularraster>;
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Handlungen der Auswahlleiste</b> (V8) — dieselben drei wie in der
+    /// Verwaltung Heizkessel.
+    /// </summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(3)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Wege.Duplizieren is not null)
+            liste.Add(new(BtnDuplizierenText, _duplizieren)
+            {
+                Hoechstens = 1,
+                ZahlGrund = Resource.ADM_AW_DUPLIZIEREN_GRUND
+            });
+        liste.Add(new(BtnLoeschenText, _loeschen) { Sperrgrund = LoeschSperrgrund });
+        return liste;
+    }
+
+    private string LoeschSperrgrund
+    {
+        get
+        {
+            IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+            if (ziele.Count == 0) return "";
+            foreach (string z in ziele)
+                if (!_geschuetzt.Contains(z)) return "";
+            return Resource.ADM_AW_LOESCHEN_GESPERRT;
+        }
+    }
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>
+    /// <b>Der Vergleich über die Felder des Profils</b> (V12) — je gewähltem Satz sein
+    /// Feldsatz, ohne den Bezeichner (er steht im Kopf), dazu die Herkunft.
+    /// </summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+
+        if (Wege.Detail is null)
+        {
+            var zeilen = namen.Select(n => _zeilen.FirstOrDefault(x => x.Schluessel == n))
+                              .Where(x => x is not null).Select(x => x!).ToList();
+            _vergleichszeilen = Vergleichsbau.AusSpalten(Profil.Filterprofil, zeilen);
+            return;
+        }
+
+        var saetze = new List<IReadOnlyList<Vergleichsfeld>>(namen.Count);
+        foreach (string name in namen)
+        {
+            var felder = new List<Vergleichsfeld>();
+            foreach (ModulFeldwert f in Wege.Detail(name) ?? Array.Empty<ModulFeldwert>())
+            {
+                if (f.Schluessel == ModulKatalogProfil.FeldBezeichner) continue;
+                string titel = f.Feldname + (f.Einheit.Length > 0 ? " [" + f.Einheit + "]" : "");
+                felder.Add(new Vergleichsfeld(f.Schluessel, titel, Anzeigewert(f)));
+            }
+            felder.Add(new Vergleichsfeld(HERKUNFT, Resource.ADM_VG_HERKUNFT,
+                _geschuetzt.Contains(name) ? Resource.ADM_SB_AUSLIEFERUNG : Resource.ADM_SB_EIGENER_SATZ));
+            saetze.Add(felder);
+        }
+        _vergleichszeilen = Vergleichsbau.AusFeldern(saetze);
+    }
+
+    /// <summary>Der Anzeigewert eines Feldes — bei einer Auswahl der Text der Option.</summary>
+    private static string Anzeigewert(ModulFeldwert f)
+    {
+        if (f.Art != BrowserFeldArt.Auswahl) return f.Wert;
+        foreach (var o in f.Optionen)
+            if (string.Equals(o.Wert, f.Wert ?? "", StringComparison.Ordinal)) return o.Text;
+        return f.Wert;
+    }
 
     protected override void OnParametersSet()
     {
@@ -427,6 +597,12 @@
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _duplizieren = EventCallback.Factory.Create(this, BeiDuplizieren);
+        _loeschen = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
         if (ProfilVorgabe is null) _profil = ModulKatalogProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
@@ -541,7 +717,19 @@
     {
         _zeilen = Wege.Katalogzeilen?.Invoke() ?? Array.Empty<Katalogfilterzeile>();
 
-        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt)) return;
+        _geschuetzt = new HashSet<string>(_zeilen.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
+                                          StringComparer.Ordinal);
+
+        // Kaestchen verschwundener Zeilen fallen (V6); ein laufender Vergleich liest neu.
+        _auswahl.Abgleichen(_zeilen.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        if (_gewaehlt.Length > 0 && _zeilen.Any(z => z.Bezeichner == _gewaehlt))
+        {
+            _fokuszeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+            return;
+        }
 
         _gewaehlt = _zeilen.Count > 0 ? _zeilen[0].Bezeichner : "";
         DetailLaden();
@@ -555,9 +743,10 @@
         _schluessel = _gewaehlt;
 
         // Der Schutz kommt aus der Zeile der Liste (ReadOnly der Stammtabelle) - bis
-        // hierher wertete diese Maske ihn nicht aus (Konzept V13, AD-Q11).
-        _auslieferung = _gewaehlt.Length > 0
-                     && _zeilen.Any(z => z.Bezeichner == _gewaehlt && z.Geschuetzt);
+        // hierher wertete diese Maske ihn nicht aus (Konzept V13, AD-Q11). Dieselbe
+        // Zeile gibt dem Stammblatt Herkunft und Kennzahlen (V9).
+        _fokuszeile = _gewaehlt.Length > 0 ? _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt) : null;
+        _auslieferung = _fokuszeile?.Geschuetzt == true;
 
         // Auch ohne Auswahl (W14a-E-8): Was es an Parametern GIBT, haengt am Katalog
         // und nicht am Satz — dann stehen lauter Leerwerte darin.
@@ -766,8 +955,10 @@
         if (!DuplizierenErlaubt) return;
         if (Ungespeichert) { Warnen(MeldungUngespeichert); return; }
 
+        // Kopiert wird die EINE Zielzeile: die gewaehlte, sonst die Fokuszeile (V8).
+        _duplizierQuelle = _auswahl.Ziele(_gewaehlt)[0];
         _meldung = "";
-        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_duplizierQuelle, NameVergeben);
         _duplizierfrage = true;
     }
 
@@ -780,10 +971,10 @@
         _duplizierfrage = false;
         if (name is null || Wege.Duplizieren is null) return;
 
-        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _duplizierQuelle);
         if (zeile is null) return;
 
-        string alt = _gewaehlt;
+        string alt = _duplizierQuelle;
         KatalogSpeicherErgebnis ergebnis = Wege.Duplizieren(zeile.Id, name);
         if (!ergebnis.Ok)
         {
@@ -791,6 +982,9 @@
             return;
         }
 
+        // Die Kopie ist gewaehlt, die Kaestchen fallen: Die naechste Handlung gilt ihr.
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
         _gewaehlt = ergebnis.Name;
         ListeAufbauen();
         DetailLaden();
@@ -838,33 +1032,75 @@
     /// </summary>
     private void BeiLoeschen()
     {
-        if (_gewaehlt.Length == 0)
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0)
         {
             _meldung = Profil.MeldungOhneAuswahl;
             _meldungStufe = WarnStufe.Warnung;
             return;
         }
 
-        _loeschtext = string.Format(FrageLoeschen, _gewaehlt);
+        // Stufe 3 (V8, AD-Q9): auf die gewaehlten Zeilen, sonst die Fokuszeile;
+        // Auslieferungssaetze bleiben stehen (V13).
+        var loeschbar = ziele.Where(z => !_geschuetzt.Contains(z)).ToList();
+        var bleiben = ziele.Where(z => _geschuetzt.Contains(z)).ToList();
+        if (loeschbar.Count == 0) { Warnen(Resource.ADM_AW_LOESCHEN_GESPERRT); return; }
+
+        _loeschziele = loeschbar;
+        _loeschBleiben = bleiben.Count;
+
+        string frage = loeschbar.Count == 1
+            ? string.Format(FrageLoeschen, loeschbar[0])
+            : string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_FRAGE_MEHR,
+                            loeschbar.Count, string.Join(", ", loeschbar));
+        if (bleiben.Count > 0)
+            frage += " " + string.Format(CultureInfo.CurrentCulture, Resource.ADM_LOESCHEN_BLEIBEN,
+                                         string.Join(", ", bleiben));
+        _loeschtext = frage;
         _loeschfrage = true;
     }
 
+    /// <summary>
+    /// Nach dem „Ja": je Zeile ein benannter Schreibschritt; was der Katalog ablehnt,
+    /// nennt seinen Grund im Warnband, die Statuszeile nennt beide Zahlen.
+    /// </summary>
     private void BeiLoeschAntwort(bool? antwort)
     {
         _loeschfrage = false;
         if (antwort != true || Wege.Loeschen is null) return;
 
-        KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(_gewaehlt);
-        if (!ergebnis.Ok)
+        int geloescht = 0;
+        var gruende = new List<string>();
+        foreach (string name in _loeschziele)
         {
-            _meldung = ergebnis.Meldung;
-            _meldungStufe = WarnStufe.Warnung;
-            return;
+            KatalogSpeicherErgebnis ergebnis = Wege.Loeschen(name);
+            if (ergebnis.Ok)
+            {
+                geloescht++;
+                if (name == _gewaehlt) _gewaehlt = "";
+            }
+            else if (!gruende.Contains(ergebnis.Meldung))
+            {
+                gruende.Add(ergebnis.Meldung);
+            }
         }
 
-        _gewaehlt = "";
-        _meldung = "";
-        ListeAufbauen();
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        int blieben = ziele - geloescht;
+        _loeschziele = new List<string>();
+
+        if (gruende.Count > 0)
+        {
+            _meldung = string.Join(" ", gruende);
+            _meldungStufe = WarnStufe.Warnung;
+        }
+        else _meldung = "";
+
+        if (geloescht > 0) ListeAufbauen();
+
+        _status = ziele <= 1 || geloescht == 0 ? ""
+                : blieben > 0 ? string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT_BLEIBEN, geloescht, blieben)
+                : string.Format(CultureInfo.CurrentCulture, Resource.ADM_MSG_GELOESCHT, geloescht);
     }
 
     /// <summary>
@@ -886,6 +1122,12 @@
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
 
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return BeiBeenden();
     }
 
