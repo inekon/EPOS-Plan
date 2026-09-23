@@ -75,6 +75,34 @@ namespace WindowsFormsApplication1
         /// belegt, das Loeschen im Katalog beruehrt keine Projektdaten.
         /// </summary>
         public VerwendungsPruefung[] VerwendungsPruefungen = new VerwendungsPruefung[0];
+
+        /// <summary>
+        /// <b>Eine benutzte Zeile ist unveraenderlich</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 3.2): true, wenn eine Verwendung nach
+        /// <see cref="VerwendungsPruefungen"/> das Loeschen und Umbenennen SPERRT, statt
+        /// nur nachzufragen — ebenso eine Zeile der Auslieferung (<c>ReadOnly</c>).
+        /// <see cref="KatalogBereinigung.SatzLoeschen"/>,
+        /// <see cref="KatalogBereinigung.SatzUmbenennen"/> und
+        /// <see cref="KatalogBereinigung.GruppeBereinigen"/> halten die Sperre selbst, der
+        /// Dublettendialog meldet sie. false (Vorgabe) = die Verwendung ist eine Rueckfrage.
+        /// </summary>
+        public bool VerwendungSperrt;
+
+        /// <summary>
+        /// Steht der Katalog im Dublettendialog der Verwaltung? false fuer Kataloge, deren
+        /// Oberflaeche noch nicht gebaut ist (Anzeigename, Texte) — sie bleiben fuer
+        /// Scan, Bereinigung und Verwendungspruefung im Kern erreichbar.
+        /// </summary>
+        public bool ImDublettendialog = true;
+
+        /// <summary>
+        /// Spalten, die mit dem Namen den NATUERLICHEN SCHLUESSEL bilden — etwa
+        /// <c>Katalogversion</c> bei den Tww-Katalogen, deren Zeilen denselben Bezeichner in
+        /// mehreren Versionen tragen. Die Namensgruppen des Scans bilden sich ueber Name UND
+        /// diese Spalten; zwei Versionen eines Namens sind darum keine Namensdublette.
+        /// Leer (Vorgabe) = der Name allein ist der Schluessel.
+        /// </summary>
+        public string[] SchluesselZusatzSpalten = new string[0];
     }
 
     public static class KatalogRegistry
@@ -273,16 +301,26 @@ namespace WindowsFormsApplication1
             //
             // Der natuerliche Schluessel ist (Bezeichner, Katalogversion), nicht der
             // Bezeichner allein: Zwei Versionen einer Nutzungsart tragen denselben
-            // Namen. "Katalogversion" bleibt darum eine Vergleichsspalte - zwei
-            // Versionen unterscheiden sich stets in ihr, und die Leerkopien-Regel der
-            // KatalogBereinigung haelt beide als "eigener Wert" fest. Ausgeschlossen
-            // sind nur die Verwaltungsfelder: Vorlage, Status, interner Beleg und
-            // Vier-Augen-Vermerk.
+            // Namen. Die Namensgruppen bilden sich deshalb ueber beide Spalten
+            // (SchluesselZusatzSpalten) - zwei Versionen sind keine Namensdublette, und
+            // die Leerkopien-Regel der KatalogBereinigung trifft sie nie.
+            // "Katalogversion" bleibt ausserdem Vergleichsspalte des Inhalts.
+            // Ausgeschlossen sind nur die Verwaltungsfelder: Vorlage, Status, interner
+            // Beleg und Vier-Augen-Vermerk.
+            //
+            // VerwendungSperrt: Eine benutzte oder ausgelieferte Zeile ist gesperrt -
+            // Loeschen, Umbenennen und Bereinigen lehnen ab (Konzept 3.2).
+            // ImDublettendialog = false: Anzeigenamen und Texte kommen erst mit der
+            // Oberflaechenstufe (Konzept 5.4); bis dahin zeigt die Verwaltung die
+            // Kataloge nicht.
             // ------------------------------------------------------------------------
             new KatalogDefinition
             {
                 Schluessel = "TWW_NUTZUNGSART",
                 Tabelle = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
+                VerwendungSperrt = true,
+                ImDublettendialog = false,
+                SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "ID_Vorlage", "Status", "Beleg", "Freigabe" },
                 VerwendungsPruefungen = new[]
                 {
@@ -294,6 +332,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "TWW_TAGESGANGSATZ",
                 Tabelle = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
+                VerwendungSperrt = true,
+                ImDublettendialog = false,
+                SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "Status", "Beleg" },
                 VerwendungsPruefungen = new[]
                 {
@@ -316,6 +357,9 @@ namespace WindowsFormsApplication1
             {
                 Schluessel = "TWW_BEDARFSTAG",
                 Tabelle = TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+                VerwendungSperrt = true,
+                ImDublettendialog = false,
+                SchluesselZusatzSpalten = new[] { "Katalogversion" },
                 AusschlussSpalten = new[] { "Status", "Beleg" },
                 VerwendungsPruefungen = new[]
                 {
@@ -448,6 +492,13 @@ namespace WindowsFormsApplication1
 
         /// <summary>Alle Kataloge des Admin-Menues (Entscheidung 9.5 des Konzepts).</summary>
         public static IReadOnlyList<KatalogDefinition> Alle => _alle;
+
+        /// <summary>
+        /// Die Kataloge, die der Dublettendialog der Verwaltung zeigt und scannt — alle
+        /// mit <see cref="KatalogDefinition.ImDublettendialog"/>, in Registryreihenfolge.
+        /// </summary>
+        public static IReadOnlyList<KatalogDefinition> Dublettendialog
+            => Array.FindAll(_alle, k => k.ImDublettendialog);
 
         /// <summary>
         /// Die Wertspalten eines Tagesgangs: der Tagtyp und die 24 Stundenanteile

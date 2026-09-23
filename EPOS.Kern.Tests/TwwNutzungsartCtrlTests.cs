@@ -320,7 +320,7 @@ namespace EPOS.Kern.Tests
             ScanErgebnis scan = DublettenPruefung.ScanKatalog(k);
             Assert.Null(scan.Fehler);
             Assert.Equal(2, scan.Saetze.Count);
-            Assert.Single(scan.Namensgruppen);            // gleicher Bezeichner, zwei Versionen
+            Assert.Empty(scan.Namensgruppen);             // gleicher Bezeichner, zwei Versionen: natuerlicher Schluessel verschieden
             Assert.Empty(scan.Inhaltsgruppen);            // die Katalogversion unterscheidet sie
 
             // Die Leerkopien-Regel loescht keine der beiden Versionen.

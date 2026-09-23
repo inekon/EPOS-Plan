@@ -46,11 +46,12 @@ namespace EPOS.Kern.Tests
         public KatalogpflegeTests(TestDatenbank db) { _db = db; }
 
         // ==================================================================
-        //  1 — KatalogRegistry: neunzehn Kataloge, eingefroren
+        //  1 — KatalogRegistry: die Kataloge in fester Zahl, eingefroren
         // ==================================================================
 
         /// <summary>
-        /// Die Registry fuehrt <b>20</b> Kataloge — seit dem Anwenderentscheid
+        /// Die Registry fuehrt <b>23</b> Kataloge — die zwanzig des Bestands und die drei
+        /// Tww-Kataloge des Zapfprofilgenerators (P8). Seit dem Anwenderentscheid
         /// <b>W6-E-2</b> vom 06.09.2026 (Stufe S1 des
         /// Konzept_Wechselrichter_EPOS-Plan.md) gehoert der WECHSELRICHTER dazu, bis
         /// dahin die einzige Geraetefamilie ohne Katalog. Der Dublettendialog bildet
@@ -59,7 +60,7 @@ namespace EPOS.Kern.Tests
         /// messen lassen muessen.
         /// </summary>
         [Fact]
-        public void DieRegistryFuehrtNeunzehnKataloge()
+        public void DieRegistryFuehrtAlleKatalogeInFesterZahl()
         {
             // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
             Assert.Equal(23, KatalogRegistry.Alle.Count);
@@ -68,7 +69,7 @@ namespace EPOS.Kern.Tests
         /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
         /// zeichnet die Kataloge in genau dieser Folge (<c>BaumFuellen</c>).</summary>
         [Fact]
-        public void DieNeunzehnSchluesselStehenInDerRegistryreihenfolge()
+        public void DieSchluesselStehenInDerRegistryreihenfolge()
         {
             string[] erwartet =
             {
@@ -124,6 +125,23 @@ namespace EPOS.Kern.Tests
             // Die Tabellen der Registry sind genau die drei Koepfe aus TwwSchema.
             Assert.Same(n, KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
             Assert.Null(KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM));
+
+            // Konzept 3.2: eine benutzte Zeile ist gesperrt, der natuerliche Schluessel ist
+            // (Bezeichner, Katalogversion), und der Dublettendialog zeigt die drei Kataloge
+            // erst mit ihrer Oberflaechenstufe (5.4).
+            foreach (KatalogDefinition tww in new[] { n, s, t })
+            {
+                Assert.True(tww.VerwendungSperrt);
+                Assert.False(tww.ImDublettendialog);
+                Assert.Equal(new[] { "Katalogversion" }, tww.SchluesselZusatzSpalten);
+            }
+            Assert.Equal(new[] { "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG" },
+                         KatalogRegistry.Alle.Where(k => k.VerwendungSperrt).Select(k => k.Schluessel).ToArray());
+            Assert.Equal(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal))
+                                             .Select(k => k.Schluessel).ToArray(),
+                         KatalogRegistry.Dublettendialog.Select(k => k.Schluessel).ToArray());
+            Assert.All(KatalogRegistry.Alle.Where(k => !k.Schluessel.StartsWith("TWW_", StringComparison.Ordinal)),
+                       k => Assert.Empty(k.SchluesselZusatzSpalten));
         }
 
         /// <summary>
@@ -148,7 +166,7 @@ namespace EPOS.Kern.Tests
         /// die drei Tww-Kataloge (P8); die uebrigen sechzehn nicht — der Dublettendialog sagt
         /// das dem Anwender ausdruecklich.</summary>
         [Fact]
-        public void VierKatalogeFuehrenEineVerwendungspruefung()
+        public void DieKatalogeMitVerwendungspruefung()
         {
             string[] mitPruefung = KatalogRegistry.Alle
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
