@@ -1876,7 +1876,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-23_R12_Gebaeudemodell`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-23_R13_Kuehlung`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,
