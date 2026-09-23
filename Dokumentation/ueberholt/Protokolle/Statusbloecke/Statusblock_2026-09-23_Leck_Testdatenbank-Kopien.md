@@ -101,12 +101,16 @@ Testprozess entstand und keine gesperrte Datei enthielt.
 |---|---|---|---|
 | 1 (13:41) | 1 250 Ordner, 82,5 GB | 1 210 Ordner, 80,0 GB | 40 — jünger als die Grenze |
 | 2 (14:07) | 120 Ordner, 7,6 GB | 80 Ordner, 5,0 GB | 40 — jünger als die Grenze |
+| 3 (17:42) | 200 Ordner, 12,6 GB | 200 Ordner, 12,6 GB | keiner |
+| **zusammen** | | **1 490 Ordner, 97,6 GB** | |
 
-Kein Ordner war gesperrt, kein Löschen schlug fehl. Die stehen gelassenen und alle später
-hinzugekommenen Reste ohne Besitzmarke stammen aus Läufen im Hauptbaum mit einem Stand vor
-dem Fix; sie räumt der erste Lauf nach dem nächsten Sync selbst weg, sobald sie älter als
-2 h sind. Die rund 70 alten Ordner `epos-erstbereitstellung-*` (zusammen 0,5 MB) blieben
-unberührt.
+Kein Ordner war gesperrt, kein Löschen schlug fehl. Alle Reste ohne Besitzmarke stammten aus
+Läufen im Hauptbaum mit einem Stand vor dem Fix. Der dritte Durchgang nahm die Läufe von 15:38
+bis 17:10 mit, bevor der Hauptbaum den Fix um 17:12 mit `origin` zusammenführte (`3798d230`);
+die 40 Ordner, die der zweite stehen gelassen hatte, waren da bereits fort. Danach lag keine
+Kopie mehr unter `%TEMP%`. Was künftig doch liegen bleibt, räumt der nächste Lauf selbst weg
+(Marke frei, ohne Marke nach 2 h). Die rund 70 alten Ordner `epos-erstbereitstellung-*`
+(zusammen 0,5 MB) blieben unberührt.
 
 ## 6 Abnahme
 
