@@ -6984,8 +6984,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool IstEnergiepreisArt(string bem)
         {
-            return IstEndenergieArt(bem) ||
-                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
+            return IstEndenergieArt(bem) || IstProjektkostenArt(bem);
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest, Konzept § 4): die zwei projektweiten Alt-Arten
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>. Sie
+        /// eskalieren seit FX4-b mit p_E (<see cref="IstEnergiepreisArt"/>) und holen
+        /// ihre Bezugsgröße seit E7c frisch aus dem jüngsten Lauf wie <c>EUR_PRO_H</c>
+        /// und die <c>EUR_PRO_KWH_*</c>-Arten — die projektweiten Brennstoff- bzw.
+        /// Stromkosten des Laufs (<see cref="EndenergieAufloeser.BrennstoffkostenProjektEuro"/>,
+        /// <see cref="EndenergieAufloeser.StromkostenProjektEuro"/>). Die Menge-Spalte ist
+        /// damit auch hier Ausweisgröße und Konserve nur, wo frisch nichts ermittelbar ist.
+        /// </summary>
+        private static bool IstProjektkostenArt(string bem)
+        {
+            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal);
         }
 
@@ -7057,10 +7071,15 @@ namespace WindowsFormsApplication1
         /// die Stundenzahl kommt aus dem jüngsten Lauf
         /// (<see cref="EndenergieAufloeser.BetriebsstundenH"/>). Damit sind von den vier
         /// Arten des Befundes B-4 drei noch reine Konserve: <c>EUR_PRO_KWH</c>,
-        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>.</para></summary>
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>.</para>
+        /// <para><b>ETAPPE E7c (B‑4 Rest):</b> Die zwei Prozentarten holen ihre
+        /// Bezugsgröße seither ebenfalls frisch aus dem jüngsten Lauf
+        /// (<see cref="IstProjektkostenArt"/>) — die projektweiten Brennstoff- bzw.
+        /// Stromkosten; Konserve bleibt allein <c>EUR_PRO_KWH</c>.</para></summary>
         private static bool IstRueckfallErmittelbareArt(string bem)
         {
-            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
+            return IstProjektkostenArt(bem) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
@@ -7104,6 +7123,24 @@ namespace WindowsFormsApplication1
                     investSummen = BetriebskostenCtrl.Kaskadensummen(idProjekt, satz);
                 return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage,
                                                           investSummen);
+            }
+
+            // ETAPPE E7c (B-4 Rest): „% der Brennstoffkosten" und „% der Stromkosten"
+            // holen ihre Bezugsgröße frisch aus dem jüngsten Lauf — PROJEKTWEIT, denn so
+            // sind die zwei Alt-Arten bemessen (der Vorläufer von Weg A, je Energieart
+            // getrennt). Komponente und Anlage der Zeile spielen keine Rolle. Ohne Lauf,
+            // Menge oder Preis bleibt es bei der gepflegten Menge (Konserve).
+            if (IstProjektkostenArt(bem))
+            {
+                if (!versucht)
+                {
+                    versucht = true;
+                    aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+                }
+                if (aufloeser == null) return null;
+                return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal)
+                    ? aufloeser.BrennstoffkostenProjektEuro()
+                    : aufloeser.StromkostenProjektEuro();
             }
 
             // PAKET FX2 (B-4): „je Stunde" holt seine Stundenzahl aus dem Lauf — sonst
@@ -7274,14 +7311,18 @@ namespace WindowsFormsApplication1
                        (elektrokessel && komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL)
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
 
+            // ETAPPE E7c (B-4 Rest): „% der Brennstoff-/Stromkosten" kommen aus dem
+            // Lauf — projektweit, an jedem Gewerk.
+            if (IstProjektkostenArt(bem)) return BASISGRUND_LAUF;
+
             // Die Arten aus der GERÄTEWELT. Hier unterscheidet die Landkarte selbst,
             // ob die Art zum Gewerk passt (H4c).
             if (IstRueckfallErmittelbareArt(bem))
                 return TechnikPlanwertCtrl.KenntBaugroesse(komponente, bem)
                     ? BASISGRUND_GERAET : BASISGRUND_GEWERK;
 
-            // „je kWh", „% der Brennstoff-/Stromkosten", „% der Erzeugerkosten":
-            // ihre Menge ist gepflegte Eingabe, keine Ermittlung (FX2, Befund B-4).
+            // „je kWh", „% der Erzeugerkosten": ihre Menge ist gepflegte Eingabe,
+            // keine Ermittlung (FX2, Befund B-4).
             return BASISGRUND_KONSERVE;
         }
 
@@ -7337,7 +7378,11 @@ namespace WindowsFormsApplication1
             }
             if (aufloeser == null) return grund;
 
-            string genauer = aufloeser.GrundOhneBasis(komponente, idAnlage, bem);
+            // ETAPPE E7c (B-4 Rest): Die projektweiten Arten fragen nicht nach der
+            // Anlage, sondern nach Lauf, Menge und Preis des ganzen Projekts.
+            string genauer = IstProjektkostenArt(bem)
+                ? aufloeser.GrundOhneProjektkosten(bem)
+                : aufloeser.GrundOhneBasis(komponente, idAnlage, bem);
             return string.IsNullOrEmpty(genauer) ? grund : genauer;
         }
 

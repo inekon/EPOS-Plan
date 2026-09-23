@@ -416,17 +416,33 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// H4c: Die drei Arten, die seit FX2 (Befund B-4) reine Konserve sind, verweisen
-        /// auf die PFLEGE — sie werden bewusst nicht ermittelt.
+        /// H4c: Die Art, die seit FX2 (Befund B-4) reine Konserve ist, verweist auf die
+        /// PFLEGE — sie wird bewusst nicht ermittelt. ETAPPE E7c (B‑4 Rest): Die zwei
+        /// Prozentarten „% der Brennstoff-/Stromkosten" sind es nicht mehr (alt
+        /// KONSERVE, neu LAUF) — siehe den Fall darunter.
         /// </summary>
         [Theory]
         [InlineData(DbWerte.BEMESSUNG_EUR_PRO_KWH)]
-        [InlineData(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN)]
-        [InlineData(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN)]
         public void Die_Konservenarten_verweisen_auf_die_Pflege(string bemessung)
         {
             Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_KONSERVE,
                          WirtschaftlichkeitCtrl.BasisGrund(bemessung, 5));
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest): „% der Brennstoffkosten" und „% der Stromkosten"
+        /// holen ihre Bezugsgröße aus dem jüngsten Lauf — projektweit, an jedem Gewerk.
+        /// Fehlt sie, heißt der Grund LAUF (alt: KONSERVE).
+        /// </summary>
+        [Theory]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, 5)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, 5)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, 7)]
+        [InlineData(DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, 1)]
+        public void Die_Projektkostenarten_kommen_aus_dem_Lauf(string bemessung, int komponente)
+        {
+            Assert.Equal(WirtschaftlichkeitCtrl.BASISGRUND_LAUF,
+                         WirtschaftlichkeitCtrl.BasisGrund(bemessung, komponente));
         }
 
         /// <summary>Ein fester Betrag braucht keine Bezugsgröße — dort gibt es auch
