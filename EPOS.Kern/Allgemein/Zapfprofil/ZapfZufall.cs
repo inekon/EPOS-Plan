@@ -16,7 +16,7 @@ namespace WindowsFormsApplication1
     ///   <item><see cref="Ganzzahl"/>: gleichverteilt in [0; n) nach Lemire (Produkt der
     ///   64-Bit-Zahlen, Verwerfen des verzerrten Rests).</item>
     ///   <item><see cref="Normal"/>: <c>z = Σ_{j=1..12} u_j − 6</c> in fester Folge (4.4) —
-    ///   Mittel 0, Varianz 1, auf [−6; 6] beschränkt.</item>
+    ///   Mittel 0, Varianz 1, auf [−6; 6) beschränkt.</item>
     ///   <item><see cref="Exponential"/>: das Verfahren von J. von Neumann (1951) — nur
     ///   Vergleiche gleichverteilter Zahlen, Mittel 1.</item>
     ///   <item><see cref="Poisson"/>: die Zahl der Ankünfte eines Poisson-Prozesses der Rate 1
@@ -154,8 +154,6 @@ namespace WindowsFormsApplication1
             return (int)oben;
         }
 
-        /// <summary>Wahr mit der Wahrscheinlichkeit <paramref name="p"/>: <c>Gleich() &lt; p</c>.</summary>
-        internal bool Bernoulli(double p) => Gleich() < p;
 
         /// <summary>
         /// Eine näherungsweise standardnormalverteilte Zahl (4.4): <c>z = Σ_{j=1..12} u_j − 6</c>,

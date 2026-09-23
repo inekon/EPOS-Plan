@@ -202,7 +202,8 @@ namespace EPOS.Kern.Tests
             Assert.Contains("Zapfensemble.cs", Dateien);
             Assert.Contains("Jahresensemble.cs", Bilanzdateien);
             foreach (string typ in new[] { "Zapfensemble", "Bedarfstagensemble", "Ensemblezone", "Ensemblezonenstatistik",
-                                           "Perzentilwerte", "Speicherensemble" })
+                                           "Perzentilwerte", "Speicherensemble", "Realisierungskennzahl", "Vertretertag",
+                                           "Volumenauftrag" })
             {
                 Assert.Contains(typ, Deklarationen("Zapfensemble.cs"));
                 Assert.Empty(Verstoesse(Typ(typ), true, Ausnahmen));
@@ -222,9 +223,12 @@ namespace EPOS.Kern.Tests
             Assert.Empty(Bilanzfunde("ZapfprofilAuslegung.cs", auslegung));
             // Gegenprobe: der Bilanzrechenweg ruft das Jahresensemble und wird erkannt.
             Assert.Contains(Bilanzfunde("ZapfprofilRechner.cs", Lesen("ZapfprofilRechner.cs")), f => f.Contains("Jahresensemble"));
-            // Minutenwerte des Ensembles nur als Bedarfstag: die gezogenen Tage sind Bedarfstage.
-            Assert.Equal(typeof(IReadOnlyList<Bedarfstag>), typeof(Bedarfstagensemble).GetProperty("Tage",
-                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).PropertyType);
+            // Minutenwerte des Ensembles nur als Bedarfstag: die aufbewahrten Vertretertage und jeder
+            // nachgezogene Tag sind Bedarfstage.
+            const BindingFlags alle = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+            Assert.Equal(typeof(IReadOnlyList<Vertretertag>), typeof(Bedarfstagensemble).GetProperty("VertreterMinutenspitze", alle).PropertyType);
+            Assert.Equal(typeof(Bedarfstag), typeof(Vertretertag).GetProperty("Tag", alle).PropertyType);
+            Assert.Equal(typeof(Bedarfstag), typeof(Bedarfstagensemble).GetMethod("Tag", alle).ReturnType);
         }
 
         // =====================================================================

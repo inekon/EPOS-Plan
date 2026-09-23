@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using WindowsFormsApplication1;
 using Xunit;
 using static EPOS.Kern.Tests.ZapfprofilTestbau;
@@ -58,7 +59,7 @@ namespace EPOS.Kern.Tests
                 Jahresensemble e = Jahresensemble.Ziehen(z, 1, 10);
                 Jahreskonsistenz k = e.Pruefen(Deterministisch(z));
                 Assert.Equal(10, e.Realisierungen);
-                Assert.Equal(10, e.JeRealisierung.Count);
+                Assert.Equal(10, e.JahresenergienKwh.Count);
                 Assert.Equal(14600.0, k.DeterministischKwh, 6);
                 double toleranz = Math.Max(0.01 * 14600.0, 3.0 * e.StandardabweichungKwh / Math.Sqrt(10));
                 Assert.Equal(toleranz, k.ToleranzKwh, 9);
@@ -70,9 +71,10 @@ namespace EPOS.Kern.Tests
                 // Energieprobe: Die Bilanz ist die Realisierung zum Seed mal dem Faktor — genau die Jahresmenge.
                 Bilanzreihe bilanz = e.Bilanz(k);
                 Assert.Equal(14600.0, bilanz.JahressummeKwh, 6);
-                Assert.Equal(e.JeRealisierung[0].JahressummeKwh, k.JahrZumSeedKwh);
-                Assert.Equal(k.DeterministischKwh / e.JeRealisierung[0].JahressummeKwh, k.Faktor);
-                Assert.Equal(e.JeRealisierung[0].StundenKwh.Select(x => Bits(x * k.Faktor)), bilanz.StundenKwh.Select(Bits));
+                Assert.Equal(e.JahrZumSeed.JahressummeKwh, k.JahrZumSeedKwh);
+                Assert.Equal(e.JahresenergienKwh[0], k.JahrZumSeedKwh);
+                Assert.Equal(k.DeterministischKwh / e.JahrZumSeed.JahressummeKwh, k.Faktor);
+                Assert.Equal(e.JahrZumSeed.StundenKwh.Select(x => Bits(x * k.Faktor)), bilanz.StundenKwh.Select(Bits));
                 // … und nie das Mittel des Ensembles.
                 Assert.NotEqual(e.Mittel.Mal(k.DeterministischKwh / e.Mittel.JahressummeKwh).StundenKwh, bilanz.StundenKwh);
                 // Formvektor = Erwartungswert: die Anteile je Tagesstunde (Ereignisdauer verschiebt nur wenig).
@@ -83,20 +85,33 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Reihenfolge_der_Faeden_aendert_kein_Bit()
         {
-            Jahreszone z = Jahreszone(4);
-            Jahresensemble seriell = Jahresensemble.Ziehen(z, 7, 6, parallel: false);
-            Jahresensemble parallel = Jahresensemble.Ziehen(z, 7, 6, parallel: true);
+            // Mehr Jahre als ein Block (Jahresensemble.BLOCK): die Blockgrenze ändert kein Bit.
+            Jahreszone z = Jahreszone(1);
+            int jahre = Jahresensemble.BLOCK + 3;
+            Jahresensemble seriell = Jahresensemble.Ziehen(z, 7, jahre, parallel: false);
+            Jahresensemble parallel = Jahresensemble.Ziehen(z, 7, jahre, parallel: true);
             Assert.Equal(seriell.Mittel.StundenKwh.Select(Bits), parallel.Mittel.StundenKwh.Select(Bits));
-            for (int r = 0; r < 6; r++)
-                Assert.Equal(seriell.JeRealisierung[r].StundenKwh.Select(Bits), parallel.JeRealisierung[r].StundenKwh.Select(Bits));
+            Assert.Equal(seriell.JahrZumSeed.StundenKwh.Select(Bits), parallel.JahrZumSeed.StundenKwh.Select(Bits));
+            Assert.Equal(seriell.JahresenergienKwh.Select(Bits), parallel.JahresenergienKwh.Select(Bits));
+            Assert.Equal(Bits(seriell.StandardabweichungKwh), Bits(parallel.StandardabweichungKwh));
 
+            // Auslegungsensemble über mehr als einen Block (Zapfensemble.BLOCK), mit Volumenauftrag.
             IReadOnlyList<Ensemblezone> zonen = Gruppe(8, 5.0);
-            Bedarfstagensemble a = Zapfensemble.Ziehen(zonen, 7, 150, 95, parallel: false);
-            Bedarfstagensemble b = Zapfensemble.Ziehen(zonen, 7, 150, 95, parallel: true);
-            for (int r = 0; r < 150; r++)
-                Assert.Equal(a.Tage[r].MinutenKwh.Select(Bits), b.Tage[r].MinutenKwh.Select(Bits));
+            var auftrag = new Volumenauftrag(Speicherparameter(), 10.0);
+            Bedarfstagensemble a = Zapfensemble.Ziehen(zonen, 7, 150, 95, auftrag, parallel: false);
+            Bedarfstagensemble b = Zapfensemble.Ziehen(zonen, 7, 150, 95, auftrag, parallel: true);
+            Assert.Equal(a.Kennzahlen, b.Kennzahlen);
+            Assert.Equal(a.Kennzahlen.Select(k => Bits(k.MinutenspitzeKw)), b.Kennzahlen.Select(k => Bits(k.MinutenspitzeKw)));
+            Assert.Equal(a.Kennzahlen.Select(k => Bits(k.VolumenL.Value)), b.Kennzahlen.Select(k => Bits(k.VolumenL.Value)));
+            Assert.Equal(a.Volumina, b.Volumina);
+            for (int i = 0; i < 4; i++)
+            {
+                Assert.Equal(a.VertreterMinutenspitze[i].Realisierung, b.VertreterMinutenspitze[i].Realisierung);
+                Assert.Equal(a.VertreterMinutenspitze[i].Tag.MinutenKwh.Select(Bits), b.VertreterMinutenspitze[i].Tag.MinutenKwh.Select(Bits));
+            }
             Assert.Equal(Bits(a.WurzelNSchaetzungKw(2.0)), Bits(b.WurzelNSchaetzungKw(2.0)));
             Assert.Equal(a.Zonen[0].SpitzeJeEinheitKw, b.Zonen[0].SpitzeJeEinheitKw);
+            Assert.Equal(a.Zonen[0].VolumenEinheitL, b.Zonen[0].VolumenEinheitL);
         }
 
         [Fact]
@@ -110,7 +125,7 @@ namespace EPOS.Kern.Tests
             Assert.NotEqual(a.StundenKwh, c.StundenKwh);
             // Eine Realisierung ist ein Jahr zum Seed: das Mittel aus einer ist sie selbst.
             Jahresensemble eins = Jahresensemble.Ziehen(z, 11, 1);
-            Assert.Equal(eins.JeRealisierung[0].StundenKwh, eins.Mittel.StundenKwh);
+            Assert.Equal(eins.JahrZumSeed.StundenKwh, eins.Mittel.StundenKwh);
             Assert.Equal(0.0, eins.StandardabweichungKwh);
             // Das Jahr zum Seed hängt nicht von R ab — die Bilanz ist dieselbe bei einem und bei zwei Jahren.
             Jahresensemble zwei = Jahresensemble.Ziehen(z, 11, 2);
@@ -208,10 +223,13 @@ namespace EPOS.Kern.Tests
             Bedarfstagensemble eins = Zapfensemble.Ziehen(Gruppe(1, 8.0), 4, 100, 95);
             Assert.Equal(1.0, eins.GleichzeitigkeitLeistung.Value, 12);
 
-            Bedarfstagensemble e = Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 100, 95);
+            Bedarfstagensemble e = Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 100, 95, new Volumenauftrag(Speicherparameter(), 20.0));
             double glfP = e.GleichzeitigkeitLeistung.Value;
-            Speicherensemble s = Zapfensemble.Volumina(e, Speicherparameter(), 20.0);
+            Speicherensemble s = e.Volumina;
             Assert.Equal(0, s.OhneNachweis);
+            // Der Volumenauftrag ändert die Ziehung nicht: dieselben Spitzen wie ohne ihn.
+            Assert.Equal(Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 100, 95).MinutenspitzeKw, e.MinutenspitzeKw);
+            Assert.Null(Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 100, 95).Volumina);
             double glfV = s.GleichzeitigkeitVolumen.Value;
             Assert.InRange(glfP, 0.0, 1.0);
             Assert.InRange(glfV, 0.0, 1.0);
@@ -225,18 +243,59 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Das_Volumen_waechst_mit_sinkender_Leistung_bis_zur_Tagesmenge()
         {
+            Speicherensemble Bei(double kw) => Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 30, 95,
+                                                                   new Volumenauftrag(Speicherparameter(), kw)).Volumina;
             Bedarfstagensemble e = Zapfensemble.Ziehen(Gruppe(20, 8.0), 4, 30, 95);
-            Speicherensemble gross = Zapfensemble.Volumina(e, Speicherparameter(), 20.0);
-            Speicherensemble klein = Zapfensemble.Volumina(e, Speicherparameter(), 5.0);
-            Speicherensemble winzig = Zapfensemble.Volumina(e, Speicherparameter(), 0.01);
+            Speicherensemble gross = Bei(20.0), klein = Bei(5.0), winzig = Bei(0.01);
             Assert.True(klein.VolumenL.P95 > gross.VolumenL.P95);
             Assert.True(winzig.VolumenL.P95 > klein.VolumenL.P95);
             // Der Tag beginnt mit vollem Speicher: ohne Ladung trägt er die ganze Tagesmenge — nie mehr.
-            double groessterTagL = e.Tage.Max(t => t.TagessummeKwh) * 1000.0
+            double groessterTagL = e.Kennzahlen.Max(k => k.TagessummeKwh) * 1000.0
                                    / (Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * 50.0);
             Assert.InRange(winzig.VolumenL.Maximum, 0.9 * groessterTagL, groessterTagL * 1.000001);
             Assert.Equal(0, winzig.OhneNachweis);
-            Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Volumina(e, Speicherparameter(), 0.0));
+            Assert.Throws<ZapfAuslegungException>(() => Bei(0.0));
+        }
+
+        [Fact]
+        public void Das_Ensemble_haelt_nur_Kennzahlen_und_die_Vertretertage()
+        {
+            Bedarfstagensemble e = Zapfensemble.Ziehen(Gruppe(6, 8.0), 12, 90, 95, new Volumenauftrag(Speicherparameter(), 10.0));
+            // Kein Feld hält R gezogene Tage — nur Kennzahlen je Realisierung und die Vertretertage.
+            const BindingFlags alle = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
+            Assert.DoesNotContain(typeof(Bedarfstagensemble).GetFields(alle), f => typeof(IEnumerable<Bedarfstag>).IsAssignableFrom(f.FieldType));
+            Assert.DoesNotContain(typeof(Ensemblezonenstatistik).GetFields(alle), f => typeof(IEnumerable<Bedarfstag>).IsAssignableFrom(f.FieldType));
+            Assert.Equal(90, e.Kennzahlen.Count);
+            Assert.Equal(Enumerable.Range(0, 90), e.Kennzahlen.Select(k => k.Realisierung));
+
+            // Je Perzentil der Vertretertag: seine Kennzahl ist das Perzentil, sein Tag der nachgezogene.
+            Assert.Equal(new[] { 50, 90, 95, 99 }, e.VertreterMinutenspitze.Select(v => v.Perzentil));
+            Assert.Equal(new[] { 50, 90, 95, 99 }, e.VertreterVolumen.Select(v => v.Perzentil));
+            foreach (Vertretertag v in e.VertreterMinutenspitze)
+            {
+                Assert.Equal(e.MinutenspitzeKw.Wert(v.Perzentil), v.Tag.GroessteMinutenleistungKw);
+                Assert.Equal(e.Kennzahlen[v.Realisierung].MinutenspitzeKw, v.Tag.GroessteMinutenleistungKw);
+                Assert.Equal(e.Tag(v.Realisierung).MinutenKwh.Select(Bits), v.Tag.MinutenKwh.Select(Bits));
+            }
+            foreach (Vertretertag v in e.VertreterVolumen)
+                Assert.Equal(e.Volumina.VolumenL.Wert(v.Perzentil), e.Kennzahlen[v.Realisierung].VolumenL.Value);
+            // Bei gleichen Werten vertritt die kleinste Realisierung: Rangfolge nach Wert, dann nach r.
+            Assert.All(e.VertreterMinutenspitze, v => Assert.DoesNotContain(e.Kennzahlen,
+                k => k.MinutenspitzeKw == e.Kennzahlen[v.Realisierung].MinutenspitzeKw && k.Realisierung < v.Realisierung));
+            // Jeder Tag lässt sich aus seinem Seed nachziehen — mit den Kennzahlen der Ziehung.
+            foreach (int r in new[] { 0, 17, 89 })
+            {
+                Bedarfstag t = e.Tag(r);
+                Assert.Equal(e.Kennzahlen[r].TagessummeKwh, t.TagessummeKwh);
+                Assert.Equal(e.Kennzahlen[r].StundenspitzeKw, t.GroessteStundenleistungKw);
+            }
+            Assert.Throws<ArgumentOutOfRangeException>(() => e.Tag(90));
+            // Ohne Volumenauftrag: keine Volumina, keine Vertreter des Volumens, keine Volumina je Einheit.
+            Bedarfstagensemble ohne = Zapfensemble.Ziehen(Gruppe(6, 8.0), 12, 90, 95);
+            Assert.Null(ohne.Volumina);
+            Assert.Empty(ohne.VertreterVolumen);
+            Assert.Null(ohne.Zonen[0].VolumenEinheitL);
+            Assert.All(ohne.Kennzahlen, k => Assert.Null(k.VolumenL));
         }
 
         private static Summenlinienparameter Speicherparameter() => new Summenlinienparameter
@@ -277,7 +336,14 @@ namespace EPOS.Kern.Tests
             Assert.Equal(50, Zapfensemble.RealisierungenAuslegung(null, 95, ps));
             Assert.Equal(7, Zapfensemble.RealisierungenAuslegung(7, 99, ps));
             Assert.Throws<ParametersatzException>(() => Zapfensemble.RealisierungenAuslegung(null, 99, Parameter()));
-            Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.RealisierungenAuslegung(0, 99, ps));
+            // Außerhalb 1 … Obergrenze: benannt als Stochastik ungültig (Grenze begründet an Zapfensemble.HOECHSTENS).
+            foreach (int r in new[] { 0, Zapfensemble.HOECHSTENS + 1 })
+                Assert.Equal(ZapfEingabefehler.StochastikUngueltig,
+                             Assert.Throws<ZapfprofilEingabeException>(() => Zapfensemble.RealisierungenAuslegung(r, 99, ps)).Fehler);
+            Assert.Equal(Zapfensemble.HOECHSTENS, Zapfensemble.RealisierungenAuslegung(Zapfensemble.HOECHSTENS, 99, ps));
+            Parametersatz riesig = Parameter(new Dictionary<string, double> { [ZapfStochastikParameter.AUSLEGUNG_VIELFACHES] = 2000.0 });
+            Assert.Equal(ZapfEingabefehler.StochastikUngueltig,
+                         Assert.Throws<ZapfprofilEingabeException>(() => Zapfensemble.RealisierungenAuslegung(null, 99, riesig)).Fehler);
         }
 
         [Fact]
@@ -304,8 +370,20 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfEingabefehler.StochastikUngueltig, leer.Fehler);
             Assert.Equal("Zone A", leer.Zone);
             Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 10, 90));
-            Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 0, 95));
             Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(new Ensemblezone[0], 1, 10, 95));
+
+            // Die Obergrenzen (benannt, begründet am Glied): Realisierungen beider Ensembles und Einheitentage.
+            void Ungueltig(Action a) => Assert.Equal(ZapfEingabefehler.StochastikUngueltig, Assert.Throws<ZapfprofilEingabeException>(a).Fehler);
+            Ungueltig(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 0, 95));
+            Ungueltig(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, Zapfensemble.HOECHSTENS + 1, 95));
+            Ungueltig(() => Jahresensemble.Ziehen(Jahreszone(2), 1, Jahresensemble.HOECHSTENS + 1));
+            // R · Σ n_E über der Grenze: abgelehnt, bevor gezogen wird (hier 100 · 100 001 Einheitentage).
+            int n = (int)(Zapfensemble.HOECHSTENS_EINHEITSTAGE / 100) + 1;
+            var ex2 = Assert.Throws<ZapfprofilEingabeException>(() => Zapfensemble.Ziehen(Gruppe(n, 1.0), 1, 100, 95));
+            Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex2.Fehler);
+            Assert.Contains("Einheitentage", ex2.Message);
+            Assert.True(Jahresensemble.HOECHSTENS >= 10, "Die Vorgabe von zehn Jahren (4.4) liegt unter der Grenze.");
+            Assert.True(Zapfensemble.HOECHSTENS >= 10 * Zapfensemble.Mindestzahl(99));
         }
 
         [Fact]
@@ -345,9 +423,11 @@ namespace EPOS.Kern.Tests
         {
             // Sehr kleine Tagesmenge: viele Realisierungen ohne Ereignis.
             Bedarfstagensemble e = Zapfensemble.Ziehen(Gruppe(1, 0.001), 2, 30, 95);
-            Assert.All(e.Tage, t => Assert.True(t.Gezogen));
-            Assert.All(e.Tage, t => Assert.Null(t.Quelle));
-            Assert.Contains(e.Tage, t => t.Ereignisse.Count == 0 && t.TagessummeKwh == 0.0);
+            Bedarfstag[] tage = Enumerable.Range(0, 30).Select(e.Tag).ToArray();
+            Assert.All(tage, t => Assert.True(t.Gezogen));
+            Assert.All(tage, t => Assert.Null(t.Quelle));
+            Assert.Contains(tage, t => t.Ereignisse.Count == 0 && t.TagessummeKwh == 0.0);
+            Assert.All(e.VertreterMinutenspitze, v => Assert.True(v.Tag.Gezogen));
             Assert.Equal(0.0, e.MinutenspitzeKw.Minimum);
         }
 

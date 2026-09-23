@@ -68,8 +68,12 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Nur Bilanz.</b> Das Ensemble ist eine Bilanzreihe und erreicht die Auslegung nie
     /// (Wache <c>ZapfprofilTrennungWacheTests</c>). Rein, deterministisch je Seed; die
-    /// Realisierungen laufen wahlweise parallel über <c>Kulturweitergabe.For</c>, summiert wird in
-    /// fester Folge — parallel und seriell liefern dieselben Bits.</para>
+    /// Realisierungen laufen wahlweise parallel über <c>Kulturweitergabe.For</c>, blockweise, und
+    /// werden in fester Folge summiert — parallel und seriell liefern dieselben Bits.</para>
+    ///
+    /// <para><b>Speicher begrenzt.</b> Von den R Jahren bleiben das Jahr zum Seed (die Bilanz), das
+    /// Mittel der Stundenwerte und die Jahresenergie je Realisierung — nicht R Reihen zu 8760
+    /// Stunden; gerechnet wird in Blöcken zu <see cref="BLOCK"/> Jahren.</para>
     /// </summary>
     internal sealed class Jahresensemble
     {
@@ -79,25 +83,38 @@ namespace WindowsFormsApplication1
         /// <summary>Faktor der Standardabweichung in der Toleranz (4.4: 3 · s_R / √R) — numerische Setzung des Papiers.</summary>
         internal const double TOLERANZ_STREUUNG = 3.0;
 
-        private readonly Bilanzreihe[] _realisierungen;
+        /// <summary>
+        /// <b>Höchstzahl der Jahre der Jahresreihe</b> (numerische Setzung; Vorgabe 10, 4.4).
+        /// Begründung: Die Jahre dienen allein der Konsistenzprobe; ihre statistische Toleranz
+        /// <c>3 · s_R / √R</c> ist bei R = 1000 auf etwa ein Zehntel von s_R gefallen und liegt damit
+        /// unter der Untergrenze von 1 %, sobald s_R unter 10 % der Jahresmenge liegt — mehr Jahre
+        /// schärfen die Probe nicht mehr, sie verlängern nur die Laufzeit (je Jahr n_E · 365
+        /// gezogene Einheitentage).
+        /// </summary>
+        internal const int HOECHSTENS = 1000;
 
-        private Jahresensemble(string zone, long seed, Bilanzreihe[] realisierungen, Bilanzreihe mittel)
+        /// <summary>Jahre je Block der parallelen Rechnung (numerische Setzung: 64 Reihen zu 8760 Stunden, rund 4,5 MB).</summary>
+        internal const int BLOCK = 64;
+
+        private readonly double[] _jahresenergienKwh;
+
+        private Jahresensemble(string zone, long seed, Bilanzreihe jahrZumSeed, double[] jahresenergienKwh, Bilanzreihe mittel)
         {
             Zone = zone ?? "";
             Seed = seed;
-            _realisierungen = realisierungen;
-            JahrZumSeed = realisierungen[0];
+            _jahresenergienKwh = jahresenergienKwh;
+            JahrZumSeed = jahrZumSeed;
             Mittel = mittel;
             double summe = 0.0;
-            foreach (Bilanzreihe r in realisierungen) summe += r.JahressummeKwh;
-            MittelJahresenergieKwh = summe / realisierungen.Length;
+            foreach (double e in jahresenergienKwh) summe += e;
+            MittelJahresenergieKwh = summe / jahresenergienKwh.Length;
             double q = 0.0;
-            foreach (Bilanzreihe r in realisierungen)
+            foreach (double e in jahresenergienKwh)
             {
-                double d = r.JahressummeKwh - MittelJahresenergieKwh;
+                double d = e - MittelJahresenergieKwh;
                 q += d * d;
             }
-            StandardabweichungKwh = realisierungen.Length > 1 ? Math.Sqrt(q / (realisierungen.Length - 1)) : 0.0;
+            StandardabweichungKwh = jahresenergienKwh.Length > 1 ? Math.Sqrt(q / (jahresenergienKwh.Length - 1)) : 0.0;
         }
 
         /// <summary>Die Zone des Ensembles (für benannte Ablehnungen).</summary>
@@ -106,10 +123,10 @@ namespace WindowsFormsApplication1
         internal long Seed { get; }
 
         /// <summary>Die Zahl der Realisierungen R.</summary>
-        internal int Realisierungen => _realisierungen.Length;
+        internal int Realisierungen => _jahresenergienKwh.Length;
 
-        /// <summary>Die Jahresreihe je Realisierung.</summary>
-        internal IReadOnlyList<Bilanzreihe> JeRealisierung => Array.AsReadOnly(_realisierungen);
+        /// <summary>Die Jahresenergie je Realisierung [kWh] (r = 0, 1, …) — die Stichprobe der Konsistenzprobe.</summary>
+        internal IReadOnlyList<double> JahresenergienKwh => Array.AsReadOnly(_jahresenergienKwh);
 
         /// <summary>
         /// Die Realisierung zum Seed (r = 0) vor dem Faktor der Energieprobe — die Grundlage der
@@ -170,15 +187,16 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Zieht R Jahre einer Zone</b> (Formel oben). Seed je Realisierung, Zone und Einheit
         /// (<see cref="ZapfZufall.Realisierungsseed"/>, <see cref="ZapfZufall.Kindseed"/>); ein
-        /// ungültiger Eingang oder R &lt; 1 wird benannt abgelehnt (<see cref="ZapfEingabefehler.StochastikUngueltig"/>).
+        /// ungültiger Eingang oder R außerhalb 1 … <see cref="HOECHSTENS"/> wird benannt abgelehnt
+        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>).
         /// </summary>
         internal static Jahresensemble Ziehen(Jahreszone z, long seed, int realisierungen, bool parallel = true)
         {
             if (z == null) throw new ArgumentNullException(nameof(z));
             string zone = z.Zone ?? "";
-            if (realisierungen < 1 || realisierungen > Zapfensemble.HOECHSTENS)
+            if (realisierungen < 1 || realisierungen > HOECHSTENS)
                 throw Fehler(zone, "Nicht rechenbar — die Zahl der Realisierungen der Jahresreihe liegt nicht in 1 … "
-                                   + Zapfensemble.HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
+                                   + HOECHSTENS.ToString(CultureInfo.InvariantCulture) + ".");
             if (z.Kategorien == null || z.Struktur == null || z.Einheiten < 1 || z.Index < 0)
                 throw Fehler(zone, "Nicht rechenbar — die Zone „" + zone + "“ der Jahresreihe ist unvollständig.");
             if (z.Kalender == null || z.Kalender.Length != Zapfkalender.TAGE || z.We == null || z.We.Length != Zapfkalender.TAGE
@@ -190,19 +208,27 @@ namespace WindowsFormsApplication1
                 throw Fehler(zone, "Nicht rechenbar — der Urlaubsversatz liegt nicht in 0 … 364 Tagen.");
 
             var vorbereitung = new Vorbereitung(z);
-            var reihen = new Bilanzreihe[realisierungen];
-            // Parallel oder seriell; eine Ausnahme eines Fadens kommt ausgepackt heraus (benannt, nicht als AggregateException).
-            Zapfensemble.Lauf(realisierungen, parallel, r => reihen[r] = Realisierung(z, vorbereitung, seed, r));
-
-            // Mittel in fester Folge r = 0, 1, … — unabhängig von der Reihenfolge der Fäden.
+            var energien = new double[realisierungen];
             var mittel = new double[Bilanzreihe.STUNDEN];
-            foreach (Bilanzreihe r in reihen)
+            Bilanzreihe jahrZumSeed = null;
+            for (int start = 0; start < realisierungen; start += BLOCK)
             {
-                IReadOnlyList<double> s = r.StundenKwh;
-                for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] += s[h];
+                int anzahl = Math.Min(BLOCK, realisierungen - start);
+                var teil = new Bilanzreihe[anzahl];
+                // Parallel oder seriell; eine Ausnahme eines Fadens kommt ausgepackt heraus (benannt, nicht als AggregateException).
+                Zapfensemble.Lauf(anzahl, parallel, i => teil[i] = Realisierung(z, vorbereitung, seed, start + i));
+                // Feste Folge r = 0, 1, … — unabhängig von der Reihenfolge der Fäden; die Reihen des Blocks verfallen danach.
+                for (int i = 0; i < anzahl; i++)
+                {
+                    int r = start + i;
+                    if (r == 0) jahrZumSeed = teil[i];
+                    energien[r] = teil[i].JahressummeKwh;
+                    IReadOnlyList<double> s = teil[i].StundenKwh;
+                    for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] += s[h];
+                }
             }
             for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] /= realisierungen;
-            return new Jahresensemble(zone, seed, reihen, new Bilanzreihe(mittel));
+            return new Jahresensemble(zone, seed, jahrZumSeed, energien, new Bilanzreihe(mittel));
         }
 
         /// <summary>Was für alle Realisierungen gleich ist: Monat je Tag, Dichten je Tagtyp, gemeinsame Tagesmengen.</summary>

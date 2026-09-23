@@ -159,7 +159,7 @@ namespace WindowsFormsApplication1
     /// Volumenstroms rechnet.
     ///
     /// <para><b>Exakt für die Ziehung.</b> <c>z = Σ_{j=1..12} u_j − 6</c> ist nicht normal-, sondern
-    /// Irwin-Hall-verteilt (auf [−6; 6] beschränkt). Statt der Normalformel
+    /// Irwin-Hall-verteilt (auf [−6; 6) beschränkt). Statt der Normalformel
     /// <c>μ · F(μ/σ) + σ · f(μ/σ)</c> des Papiers — sie bräuchte erf und exp und träfe die Ziehung
     /// nur auf etwa 0,5 % — rechnet die Klasse das Mittel der tatsächlich gezogenen Verteilung als
     /// Stückpolynom (für −6 &lt; c ≤ 0, b = 6 + c):</para>

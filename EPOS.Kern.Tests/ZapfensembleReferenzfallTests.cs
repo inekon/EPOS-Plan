@@ -56,25 +56,6 @@ namespace EPOS.Kern.Tests
                     Tageszeitdichte.Aus(ZapfereignisgeneratorTests.Struktur(gang), ZapfTagtyp.Werktag));
             }).ToArray();
 
-            // Parallel gerechnet — die feste Summationsfolge macht es gleichgültig.
-            Bedarfstagensemble ens = Zapfensemble.Ziehen(zonen, e.GetProperty("seed").GetInt64(), realisierungen, perzentil);
-            int v = 0;
-            for (int i = 0; i < realisierungen; i++)
-            {
-                Bedarfstag t = ens.Tage[i];
-                v += Gleich(r, "r" + i + "_tagessumme_kwh", t.TagessummeKwh);
-                v += Gleich(r, "r" + i + "_minutenspitze_kw", t.GroessteMinutenleistungKw);
-                v += Gleich(r, "r" + i + "_stundenspitze_kw", t.GroessteStundenleistungKw);
-                for (int m = 0; m < Bedarfstag.MINUTEN; m++)
-                    v += Gleich(r, "r" + i + "_minute_" + m.ToString("0000", CultureInfo.InvariantCulture), t.MinutenKwh[m]);
-            }
-            v += Perzentile(r, "minutenspitze_kw", ens.MinutenspitzeKw);
-            v += Perzentile(r, "stundenspitze_kw", ens.StundenspitzeKw);
-            for (int z = 0; z < zonen.Length; z++)
-                v += Perzentile(r, "zone" + z + "_spitze_je_einheit_kw", ens.Zonen[z].SpitzeJeEinheitKw);
-            v += Gleich(r, "glf_p", ens.GleichzeitigkeitLeistung.Value);
-            v += Gleich(r, "wurzel_n_kw", ens.WurzelNSchaetzungKw(e.GetProperty("quantil").GetDouble()));
-
             JsonElement s = e.GetProperty("summenlinie");
             var p = new Summenlinienparameter
             {
@@ -87,7 +68,32 @@ namespace EPOS.Kern.Tests
                 SpeicherverlustKw = s.GetProperty("speicherverlust_kw").GetDouble(),
                 Zirkulation = Zirkulationslast.Keine
             };
-            Speicherensemble sp = Zapfensemble.Volumina(ens, p, s.GetProperty("leistung_kw").GetDouble());
+
+            // Parallel gerechnet — die feste Summationsfolge macht es gleichgültig. Die Tage zieht das
+            // Ensemble aus ihrem Seed nach (es bewahrt nur Kennzahlen und Vertretertage auf).
+            Bedarfstagensemble ens = Zapfensemble.Ziehen(zonen, e.GetProperty("seed").GetInt64(), realisierungen, perzentil,
+                                                         new Volumenauftrag(p, s.GetProperty("leistung_kw").GetDouble()));
+            int v = 0;
+            for (int i = 0; i < realisierungen; i++)
+            {
+                Bedarfstag t = ens.Tag(i);
+                Realisierungskennzahl k = ens.Kennzahlen[i];
+                v += Gleich(r, "r" + i + "_tagessumme_kwh", k.TagessummeKwh);
+                v += Gleich(r, "r" + i + "_minutenspitze_kw", k.MinutenspitzeKw);
+                v += Gleich(r, "r" + i + "_stundenspitze_kw", k.StundenspitzeKw);
+                Assert.Equal((k.TagessummeKwh, k.MinutenspitzeKw, k.StundenspitzeKw),
+                             (t.TagessummeKwh, t.GroessteMinutenleistungKw, t.GroessteStundenleistungKw));
+                for (int m = 0; m < Bedarfstag.MINUTEN; m++)
+                    v += Gleich(r, "r" + i + "_minute_" + m.ToString("0000", CultureInfo.InvariantCulture), t.MinutenKwh[m]);
+            }
+            v += Perzentile(r, "minutenspitze_kw", ens.MinutenspitzeKw);
+            v += Perzentile(r, "stundenspitze_kw", ens.StundenspitzeKw);
+            for (int z = 0; z < zonen.Length; z++)
+                v += Perzentile(r, "zone" + z + "_spitze_je_einheit_kw", ens.Zonen[z].SpitzeJeEinheitKw);
+            v += Gleich(r, "glf_p", ens.GleichzeitigkeitLeistung.Value);
+            v += Gleich(r, "wurzel_n_kw", ens.WurzelNSchaetzungKw(e.GetProperty("quantil").GetDouble()));
+
+            Speicherensemble sp = ens.Volumina;
             v += Perzentile(r, "volumen_l", sp.VolumenL);
             v += Gleich(r, "glf_v", sp.GleichzeitigkeitVolumen.Value);
             Assert.Equal(0, sp.OhneNachweis);

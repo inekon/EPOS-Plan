@@ -49,8 +49,12 @@ namespace WindowsFormsApplication1
         NichtVerfuegbar = 14,
 
         /// <summary>
-        /// Die stochastische Jahresreihe ist nicht rechenbar (4.4): Zapfkategorien fehlen oder sind
-        /// ungültig, die Einheiten sind nicht bestimmbar oder die Zahl der Realisierungen ist kleiner 1.
+        /// Die Stochastik ist nicht rechenbar (4.4): Zapfkategorien fehlen oder sind ungültig (auch
+        /// eine nicht endliche Rate der Ereignisse), die Einheiten sind nicht bestimmbar, die Zahl der
+        /// Realisierungen liegt außerhalb 1 … Obergrenze (Jahresreihe <c>Jahresensemble.HOECHSTENS</c>,
+        /// Bedarfstag <c>Zapfensemble.HOECHSTENS</c>), das Auslegungsensemble überschreitet die
+        /// Einheitentage (<c>Zapfensemble.HOECHSTENS_EINHEITSTAGE</c>) oder das Jahr zum Seed trägt
+        /// keine Zapfung.
         /// </summary>
         StochastikUngueltig = 15
     }

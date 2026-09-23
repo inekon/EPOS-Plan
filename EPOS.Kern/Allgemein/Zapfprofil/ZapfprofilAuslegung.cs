@@ -571,8 +571,11 @@ namespace WindowsFormsApplication1
                         w.Baustein.TagesmengenKwh[tag - 1],
                         Auslegungspruefung.Spreizung(w.Temperaturen.ZapfC, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung"),
                         Tageszeitdichte.Aus(w.Struktur, w.Kalender[tag - 1])));
-                Bedarfstagensemble ens = Zapfensemble.Ziehen(ensemblezonen, p.Seed, realisierungen, perzentil);
-                Speicherensemble volumen = speicher ? Zapfensemble.Volumina(ens, slp, sl.Punkt.LeistungKw) : null;
+                // Bei Speicher rechnet jede Realisierung ihr Volumen beim Φ_N des Summenlinienpunkts gleich mit
+                // (Volumenauftrag) — das Ensemble bewahrt keine gezogenen Tage auf.
+                Bedarfstagensemble ens = Zapfensemble.Ziehen(ensemblezonen, p.Seed, realisierungen, perzentil,
+                    speicher ? new Volumenauftrag(slp, sl.Punkt.LeistungKw) : null);
+                Speicherensemble volumen = ens.Volumina;
 
                 ergebnis = new Perzentilergebnis
                 {
