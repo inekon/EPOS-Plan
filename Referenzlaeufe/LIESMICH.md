@@ -235,7 +235,8 @@ danach im Wegweiser desselben Ordners.
 **`2026-09-23_R13_Kuehlung/`** — **dreizehn Projekte** (1007, 1008, 1017, 1018, 1023, 1024,
 1030, 1039, 1040, 1041, 1042, 1045, 1046), **387 CSV**, **2 207 Skalare**, gerechnet mit dem
 plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite` (Schemastand
-**113**, LFS-SHA-256 `715759e7…`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
+**113**, LFS-SHA-256 `769143e4…`; die Katalog-Generation 9 aus Auftrag #452 ist enthalten und bewegt
+kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/`). Gegen diese Basis hält `.github/workflows/kern.yml` (1030,
 1007, 1017, 1045, 1046) jeden Push, `ios.yml` den iZ6-Vergleich für 1030, und
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.

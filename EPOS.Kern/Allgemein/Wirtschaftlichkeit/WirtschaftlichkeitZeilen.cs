@@ -1604,9 +1604,11 @@ namespace WindowsFormsApplication1
         /// Die MENGENeinheit zur gesetzlichen Einheit eines Satzes: „EUR/MWh" bemisst
         /// MWh, „EUR/1000l" Tausend Liter. Einheitenzeichen sind — wie überall in
         /// dieser Klasse — nicht lokalisiert; leer = unbekannte Einheit, dann nennt
-        /// die Herleitung nur die Zahl.
+        /// die Herleitung nur die Zahl. ETAPPE E7c3: öffentlich — die Energiesteuer-
+        /// Vorschau der Überlagerung nennt dieselbe Einheit
+        /// (<see cref="EnergiesteuerVorschauZeile.SatzEinheit"/>).
         /// </summary>
-        private static string Mengeneinheit(string gesetzlich)
+        public static string Mengeneinheit(string gesetzlich)
         {
             if (string.Equals(gesetzlich, DbWerte.GESETZ_EINHEIT_EUR_MWH, StringComparison.Ordinal))
                 return "MWh";

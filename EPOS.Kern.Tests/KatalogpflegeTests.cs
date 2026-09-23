@@ -437,8 +437,12 @@ namespace EPOS.Kern.Tests
         {
             // ETAPPE E7c (A20): 225 → 226 Zeilen, Generation 7 → 8 — das Ende der Frist
             // zur Inbetriebnahme (KWKG_INBETRIEBNAHME_FRISTENDE, 2030).
+            // ETAPPE E7c3: Generation 8 → 9 ohne neue Zeile — die Generation 9 PFLEGT nur
+            // (GesetzKatalog.Nachpflege: Brennstoff 24 mit H_i = H_s = 1,0); die jüngste
+            // Saatgeneration bleibt 8.
             Assert.Equal(226, GesetzKatalog.Vorbelegung().Count);
-            Assert.Equal(8, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(9, GesetzKatalog.AktuelleGeneration);
+            Assert.Equal(8, GesetzKatalog.JuengsteSaatgeneration);
         }
 
         // ==================================================================
@@ -859,7 +863,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(DbWerte.GESETZ_KLASSE_EEG, new GesetzKatalog().Klassen());
         }
 
-        /// <summary>Die fuenfzehn Einheiten und die drei Statuswerte, eingefroren samt
+        /// <summary>Die fuenfzehn Einheiten und die vier Statuswerte, eingefroren samt
         /// ihren DB-Schreibweisen.</summary>
         [Fact]
         public void EinheitenUndStatuswerteSindEingefroren()
@@ -870,7 +874,8 @@ namespace EPOS.Kern.Tests
                 "ct/kWh", "g/kWh", "GJ/MWh", "h", "kW", "km", "Prozent", "Jahr", "-"
             }, GesetzKatalog.Einheiten().ToArray());
 
-            Assert.Equal(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE" },
+            // ETAPPE E7c3 (E7c1‑Q8): der vierte Status ABGEKUENDIGT — Zeilen ohne Leser.
+            Assert.Equal(new[] { "GESICHERT", "VORLAEUFIG", "PROGNOSE", "ABGEKUENDIGT" },
                          GesetzKatalog.Statuswerte().ToArray());
         }
 

@@ -44,6 +44,10 @@
                    title="@Sperrtipp(id)"
                    @onchange="@(() => BeiWahl(id))" />
             <span class="epos-feld-text">@eintrag.Text</span>
+            @if (Wirkung(id) is { Length: > 0 } wirkung)
+            {
+                <span class="epos-option-wirkung">@wirkung</span>
+            }
         </label>
         @if (Beschreibung(id) is { Length: > 0 } erlaeuterung)
         {
@@ -99,6 +103,18 @@
     /// reagierten.</para>
     /// </summary>
     [Parameter] public IReadOnlyDictionary<int, string>? Beschreibungen { get; set; }
+
+    /// <summary>
+    /// ETAPPE E7c3 (Mockup U22) — die WIRKUNG einer Option IN ihrer Zeile, Schluessel
+    /// ist die Id; ohne Eintrag steht keine.
+    ///
+    /// <para>Die Ueberlagerung „Saetze und Herkunft" des BHKW-Dialogs zeigt jede Wahl
+    /// als Anzeigezeile: Wahlknopf, Text und dahinter, was die Wahl bewirkt
+    /// („→ 5,50 €/MWh · 26.383,5 €/a"). Anders als die <see cref="Beschreibungen"/>
+    /// steht die Wirkung deshalb IM <c>label</c> — sie gehoert zur Wahl, ein Klick
+    /// darauf waehlt mit, und die Zeile liest sich als eine Aussage.</para>
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? Wirkungen { get; set; }
 
     /// <summary>
     /// WEICH gesperrte Optionen samt ihrem GRUND, Schluessel ist die Id
@@ -193,6 +209,9 @@
 
     private string Beschreibung(int id)
         => Beschreibungen is not null && Beschreibungen.TryGetValue(id, out string? t) ? t : "";
+
+    private string Wirkung(int id)
+        => Wirkungen is not null && Wirkungen.TryGetValue(id, out string? t) ? t : "";
 
     private bool IstWaehlbar(int id)
     {

@@ -430,6 +430,44 @@ namespace EPOS.Kern.Tests
             Assert.Equal(39900.0 * 0.5 * AW_CT / 100.0, r.Kompensation51aEur, 6);
         }
 
+        /// <summary>
+        /// <b>ETAPPE E7c3 — Entscheid E7c2‑Q5 b: Der Satz der Speicherbewertung nimmt den
+        /// ungerundeten EV-Mix.</b> <see cref="PvErloesRechner.VpvCtKwh"/> liefert bei
+        /// fester Vergütung denselben Satz, mit dem <see cref="PvErloesRechner.Rechne"/> die
+        /// Einspeisung vergütet: bei 100 kWp 6,432 − 0,40 = <b>6,032 ct/kWh</b> (alt: über
+        /// den gerundeten AW_mix 6,43 − 0,40 = 6,03 ct/kWh).
+        /// </summary>
+        [Fact]
+        public void Q5_Der_Satz_der_Speicherbewertung_nimmt_den_ungerundeten_EV_Mix()
+        {
+            ProjektPhotovoltaikModel pv = Fest();
+            double? vpv = PvErloesRechner.VpvCtKwh(pv, 100.0, Katalog(), Jahresmarktwert());
+
+            Assert.True(vpv.HasValue);
+            Assert.Equal(6.032, vpv.Value, 9);                     // alt: 6,03
+            Assert.Equal(Rechne(pv, kwp: 100.0).EvCt, vpv.Value, 12);
+        }
+
+        /// <summary>
+        /// E7c3 (E7c2‑Q5 b): Ein gepflegter anzulegender Wert steht, wie er gepflegt ist
+        /// (7,123 − 0,40 ct/kWh); die Marktprämie bleibt beim gerundeten anzulegenden Wert
+        /// wie in <see cref="PvErloesRechner.Rechne"/> — 300 kWp: 4,50 + (6,04 − 4,50) −
+        /// 0,40 = 5,64 ct/kWh.
+        /// </summary>
+        [Fact]
+        public void Q5_Override_und_Marktpraemie_bleiben_wie_sie_sind()
+        {
+            ProjektPhotovoltaikModel ev = Anlage(p =>
+            {
+                p.Vermarktungsform = DbWerte.PV_VERMARKTUNG_EV;
+                p.AwOverride = 7.123;
+            });
+            Assert.Equal(7.123 - 0.40, PvErloesRechner.VpvCtKwh(ev, 30.0, Katalog(), Jahresmarktwert()).Value, 9);
+
+            double? mp = PvErloesRechner.VpvCtKwh(Anlage(), KWP, Katalog(), Jahresmarktwert());
+            Assert.Equal(JAHRESMARKTWERT_CT + (AW_CT - JAHRESMARKTWERT_CT) - DV_CT, mp.Value, 9);
+        }
+
         // =====================================================================
         //  6 — Der Rechner ist gutmütig
         // =====================================================================

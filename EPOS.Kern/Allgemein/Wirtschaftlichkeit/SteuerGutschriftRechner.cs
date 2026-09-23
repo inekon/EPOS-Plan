@@ -125,6 +125,14 @@ namespace WindowsFormsApplication1
             if (!Stromerzeuger) return Bezeichner;
             return Bezeichner + " (" + PelKW.ToString("N0", kultur) + " kW)";
         }
+
+        /// <summary>ETAPPE E7c3 (E7c2‑Q8 b): eine unabhängige Kopie für die Vorschau je
+        /// Wahl. Alle Felder sind Werte oder unveränderliche Texte — die flache Kopie ist
+        /// deshalb vollständig.</summary>
+        internal SteuerAnlage Kopie()
+        {
+            return (SteuerAnlage)MemberwiseClone();
+        }
     }
 
     /// <summary>
@@ -195,6 +203,18 @@ namespace WindowsFormsApplication1
 
         /// <summary>Netzbezug Strom [MWh/a] — Bemessungsgrundlage des § 9b StromStG.</summary>
         public double NetzbezugMWh;
+
+        /// <summary>ETAPPE E7c3 (E7c2‑Q8 b): eine unabhängige Kopie samt kopierter
+        /// Anlagenzeilen — die Vorschau ändert die Wahl EINER Anlage, die Eingabe des Laufs
+        /// bleibt unberührt.</summary>
+        internal SteuerEingabe Kopie()
+        {
+            var k = (SteuerEingabe)MemberwiseClone();
+            k.Anlagen = new List<SteuerAnlage>();
+            foreach (SteuerAnlage a in Anlagen ?? new List<SteuerAnlage>())
+                k.Anlagen.Add(a == null ? null : a.Kopie());
+            return k;
+        }
     }
 
     /// <summary>Ergebnis EINER Jahresrechnung (Etappe E4).</summary>
@@ -446,6 +466,121 @@ namespace WindowsFormsApplication1
             StromsteuerBefreiung(e, satz, kultur, r);
             StromsteuerEntlastung(e, satz, kultur, r);
             return r;
+        }
+
+        // =====================================================================
+        // ETAPPE E7c3 (E7c2‑Q8 b) — die Energiesteuer-Vorschau je Wahl
+        // =====================================================================
+
+        /// <summary>
+        /// Die Energiesteuer-Vorschau je Anlage und Wahl für EIN Kalenderjahr: für jede
+        /// Anlage mit Brennstoff die Zeilen „keine", „§ 53" (volle und energetische
+        /// Aufteilung), „§ 53a Abs. 5" und „§ 54" (<see cref="EnergiesteuerVorschauZeile"/>).
+        ///
+        /// <para><b>Kein zweiter Rechenweg.</b> Jede Zeile ist dieselbe
+        /// Energiesteuerrechnung wie im Lauf (<see cref="Energiesteuer"/>), auf einer
+        /// Kopie der Eingabe, in der allein die Wahl dieser einen Anlage (bei § 53 dazu
+        /// ihre Aufteilung) gesetzt ist. Die Wirkung ist der Unterschied zur selben Kopie
+        /// mit „keine" für diese Anlage; Satz und Menge stammen aus ihrem Nachweis, die
+        /// Gründe sind die, die erst diese Wahl hervorbringt. Die Eingabe <paramref name="e"/>
+        /// bleibt unberührt — der Ausweis des Laufs ändert sich dadurch nicht.</para>
+        /// </summary>
+        /// <param name="e">Die Steuereingabe des Laufs; <c>null</c> ergibt eine leere Liste.</param>
+        /// <param name="jahr">Kalenderjahr — im Lauf das erste Jahr (Förderbeginn).</param>
+        /// <param name="satz">Auflöser Schlüssel → Katalogzeile des Jahres.</param>
+        /// <param name="kultur">Zahlenformat der Gründe.</param>
+        public static List<EnergiesteuerVorschauZeile> Vorschau(SteuerEingabe e, int jahr,
+                                                                Func<string, GesetzParameter> satz,
+                                                                CultureInfo kultur)
+        {
+            var liste = new List<EnergiesteuerVorschauZeile>();
+            if (e == null || e.Anlagen == null || satz == null) return liste;
+            if (kultur == null) kultur = CultureInfo.CurrentCulture;
+
+            for (int i = 0; i < e.Anlagen.Count; i++)
+            {
+                SteuerAnlage a = e.Anlagen[i];
+                if (a == null || a.BrennstoffMWh <= 0) continue;
+
+                SteuerErgebnis ohne = EnergiesteuerMitWahl(e, i, DbWerte.ENERGIESTEUER_WAHL_KEINE, null, satz, kultur);
+                liste.Add(Vorschauzeile(a, DbWerte.ENERGIESTEUER_WAHL_KEINE, "", ohne, ohne));
+                foreach (string methode in new[] { DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF, DbWerte.AUFTEILUNG_ENERGETISCH })
+                    liste.Add(Vorschauzeile(a, DbWerte.ENERGIESTEUER_WAHL_53, methode,
+                        EnergiesteuerMitWahl(e, i, DbWerte.ENERGIESTEUER_WAHL_53, methode, satz, kultur), ohne));
+                foreach (string wahl in new[] { DbWerte.ENERGIESTEUER_WAHL_53A, DbWerte.ENERGIESTEUER_WAHL_54 })
+                    liste.Add(Vorschauzeile(a, wahl, "",
+                        EnergiesteuerMitWahl(e, i, wahl, null, satz, kultur), ohne));
+            }
+            return liste;
+        }
+
+        /// <summary>Die Energiesteuerrechnung auf einer Kopie, in der Anlage
+        /// <paramref name="index"/> die Wahl <paramref name="wahl"/> (und, falls gesetzt,
+        /// die Aufteilung <paramref name="methode"/>) trägt.</summary>
+        private static SteuerErgebnis EnergiesteuerMitWahl(SteuerEingabe e, int index, string wahl,
+                                                          string methode,
+                                                          Func<string, GesetzParameter> satz,
+                                                          CultureInfo kultur)
+        {
+            SteuerEingabe kopie = e.Kopie();
+            kopie.Anlagen[index].EnergiesteuerWahl = wahl;
+            if (methode != null) kopie.Anlagen[index].AufteilungMethode = methode;
+            var r = new SteuerErgebnis();
+            Energiesteuer(kopie, satz, kultur, r);
+            return r;
+        }
+
+        /// <summary>Eine Vorschauzeile aus dem Ergebnis MIT der Wahl gegen das Ergebnis
+        /// mit „keine" für dieselbe Anlage.</summary>
+        private static EnergiesteuerVorschauZeile Vorschauzeile(SteuerAnlage a, string wahl, string methode,
+                                                               SteuerErgebnis mit, SteuerErgebnis ohne)
+        {
+            var z = new EnergiesteuerVorschauZeile
+            {
+                Anlage = a.Bezeichner ?? "",
+                Wahl = wahl,
+                Aufteilung = methode ?? "",
+                BetragEur = mit.EnergiesteuerEur - ohne.EnergiesteuerEur,
+                SockelEur = mit.Energiesteuer54SockelEur - ohne.Energiesteuer54SockelEur
+            };
+
+            string paragraf =
+                string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal) ? EnergiesteuerNachweis.PARAGRAF_53
+              : string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_53A, StringComparison.Ordinal) ? EnergiesteuerNachweis.PARAGRAF_53A
+              : string.Equals(wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal) ? EnergiesteuerNachweis.PARAGRAF_54
+              : null;
+            if (paragraf == null) return z;             // „keine": 0 €, nichts zu nennen
+
+            // Satz und Menge aus dem Nachweis DIESER Anlage. Zwei Anlagen mit demselben
+            // Bezeichner sind nicht zu unterscheiden — dann gilt die erste (dieselbe
+            // Grenze wie im Nachweis selbst, der die Anlage nur beim Namen führt).
+            foreach (EnergiesteuerNachweis n in mit.EnergiesteuerNachweise)
+            {
+                if (n == null || !string.Equals(n.Paragraf, paragraf, StringComparison.Ordinal) ||
+                    !string.Equals(n.Anlage, z.Anlage, StringComparison.Ordinal)) continue;
+                z.SatzEur = n.SatzEur;
+                z.Einheit = n.Einheit ?? "";
+                z.Menge = n.Menge;
+                break;
+            }
+
+            // Die Gründe, die erst DIESE Wahl hervorbringt — was schon ohne sie gilt
+            // (eine andere Anlage, das Projekt), gehört nicht in ihre Zeile.
+            var neu = new List<string>();
+            foreach (string s in mit.Begruendungen)
+                if (!ohne.Begruendungen.Contains(s) && !neu.Contains(s)) neu.Add(s);
+            if (neu.Count == 0 && !z.SatzEur.HasValue)
+            {
+                // Scheitert die Wahl an einem Grund, den eine andere Anlage schon gemeldet
+                // hat (etwa derselbe Nutzungsgrad), nennt die Zeile ihn trotzdem — eine
+                // Null ohne Grund wäre wieder eine stille.
+                string position = paragraf == EnergiesteuerNachweis.PARAGRAF_54
+                    ? SteuerPosition.ENERGIEST_54 : SteuerPosition.ENERGIEST_53;
+                if (mit.PositionsGruende.TryGetValue(position, out string grund) && !string.IsNullOrEmpty(grund))
+                    neu.Add(grund);
+            }
+            if (neu.Count > 0) z.Grund = string.Join(" | ", neu.ToArray());
+            return z;
         }
 
         // =====================================================================

@@ -495,6 +495,115 @@ public class BhkwSaetzeHerkunftTests : EposBunitContext
         Assert.Contains("Ohne gebuchten Lauf keine Mengen", Gruppe(cut, "epos-ueb-wirkung-st").TextContent);
     }
 
+    // =====================================================================
+    //  ETAPPE E7c3 — Anzeigezeilen je Wahl (Mockup U22) und die
+    //  Energiesteuer-Vorschau des Kerns (E7c2‑Q8 b)
+    // =====================================================================
+
+    /// <summary>Die Wirkungszeilen einer Wahlgruppe der Überlagerung, in Anzeigereihenfolge.</summary>
+    private static string[] Wirkungen(IRenderedComponent<BhkwWirtschaftlichkeitDialog> cut, string gruppe)
+        => Gruppe(cut, gruppe).QuerySelectorAll(WIRKUNG).Select(x => x.TextContent).ToArray();
+
+    /// <summary>Wo eine Wahl ihre Wirkung trägt: IN ihrer Zeile (U22).</summary>
+    private const string WIRKUNG = "label.epos-option span.epos-option-wirkung";
+
+    /// <summary>Jede Wahl der Überlagerung steht als ANZEIGEZEILE: Wahlknopf, Text und
+    /// dahinter ihre Wirkung in EINEM <c>label</c> — kein Erläuterungsabsatz darunter,
+    /// wie das Mockup U22 die Wahlen zeichnet. Die Klapplisten des Formulars bleiben.</summary>
+    [Fact]
+    public void Jede_Wahl_steht_als_Zeile_mit_ihrer_Wirkung()
+    {
+        var cut = Aufbauen(AnlagenMitSaetzen(), katalog: Katalog());
+        Oeffnen(cut);
+
+        Assert.Empty(Ueb(cut).QuerySelectorAll("p.epos-option-beschreibung"));
+        var art = Gruppe(cut, "epos-ueb-art").QuerySelectorAll("label.epos-option");
+        Assert.Equal(3, art.Length);
+        Assert.Equal("→ 30.000 Vbh", art[0].QuerySelector("span.epos-option-wirkung")!.TextContent);
+        foreach (string gruppe in new[] { "epos-ueb-eigenfall", "epos-ueb-fall", "epos-ueb-es-wahl",
+                                          "epos-ueb-es-aufteilung", "epos-ueb-ua", "epos-ueb-modus" })
+        {
+            var zeilen = Gruppe(cut, gruppe).QuerySelectorAll("label.epos-option");
+            Assert.NotEmpty(zeilen);
+            foreach (IElement zeile in zeilen)
+                Assert.NotNull(zeile.QuerySelector("span.epos-option-wirkung"));
+        }
+
+        // Die Wahl bleibt im Formular: die Klapplisten der Energiesteuer stehen weiter.
+        Assert.NotEmpty(cut.FindAll("select"));
+    }
+
+    private static void Vorschau(WirtschaftlichkeitErgebnis e, string anlage, string wahl, string aufteilung,
+                                 double? satz, double? menge, double betrag, double sockel = 0,
+                                 string? grund = null)
+        => e.EnergiesteuerVorschau.Add(new EnergiesteuerVorschauZeile
+        {
+            Anlage = anlage, Wahl = wahl, Aufteilung = aufteilung, SatzEur = satz,
+            Einheit = satz is null ? "" : DbWerte.GESETZ_EINHEIT_EUR_MWH, Menge = menge,
+            BetragEur = betrag, SockelEur = sockel, Grund = grund
+        });
+
+    /// <summary>
+    /// E7c2‑Q8 b: Die Energiesteuer nennt JE WAHL Satz und Betrag aus der Vorschau des
+    /// Kerns — § 53 mit der geltenden Aufteilung, § 54 mit dem Sockel, eine Wahl ohne
+    /// Position mit ihrem Grund; die Aufteilung nennt ihren Betrag bei § 53, energetisch
+    /// samt Stromanteil. Die Zeilen einer anderen Anlage erscheinen nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Energiesteuer_nennt_Satz_und_Betrag_je_Wahl()
+    {
+        const string GRUND = "Energiesteuer § 53a EnergieStG: Jahresnutzungsgrad 60,0 % unter der " +
+                             "Schwelle von 70 %; Gutschrift = 0.";
+        var e = new WirtschaftlichkeitErgebnis { IdProjekt = STAMM, Szenario = WirtschaftlichkeitSzenario.ERWARTET };
+        Vorschau(e, GROSS, DbWerte.ENERGIESTEUER_WAHL_KEINE, "", null, null, 0);
+        Vorschau(e, GROSS, DbWerte.ENERGIESTEUER_WAHL_53, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF,
+                 5.5, 4796.9924812030085, 26383.458646616546);
+        Vorschau(e, GROSS, DbWerte.ENERGIESTEUER_WAHL_53, DbWerte.AUFTEILUNG_ENERGETISCH,
+                 5.5, 2196.213425129088, 12079.173838209985);
+        Vorschau(e, GROSS, DbWerte.ENERGIESTEUER_WAHL_53A, "", null, null, 0, grund: GRUND);
+        Vorschau(e, GROSS, DbWerte.ENERGIESTEUER_WAHL_54, "", 1.38, 4796.9924812030085, 6369.849624060152, 250);
+        Vorschau(e, "EC-POWER XRGI 9", DbWerte.ENERGIESTEUER_WAHL_53, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF,
+                 9.99, 1, 9.99);
+
+        var cut = Aufbauen(AnlagenMitSaetzen(), katalog: Katalog(), ergebnisse: new[] { e });
+        Oeffnen(cut);
+
+        Assert.Equal(new[]
+        {
+            "→ keine Entlastung, 0 €",
+            "→ 5,50 €/MWh · 26.383,5 €/a",
+            "→ 0,0 €/a — " + GRUND,
+            "→ 1,38 €/MWh − 250 € · 6.369,8 €/a"
+        }, Wirkungen(cut, "epos-ueb-es-wahl"));
+
+        Assert.Equal(new[]
+        {
+            "→ Vorgabe · 26.383,5 €/a bei § 53",
+            "× 0,458 → 12.079,2 €/a bei § 53 — bewusste Untergrenze"
+        }, Wirkungen(cut, "epos-ueb-es-aufteilung"));
+
+        // § 53 folgt der Aufteilung, die in der Überlagerung gerade gilt.
+        Wahl(cut, "epos-ueb-es-aufteilung", 1);
+        Assert.Equal("→ 5,50 €/MWh · 12.079,2 €/a", Wirkungen(cut, "epos-ueb-es-wahl")[1]);
+        Assert.DoesNotContain("9,99", Gruppe(cut, "epos-ueb-es-wahl").TextContent);
+        Assert.DoesNotContain("nächste Lauf", Ueb(cut).TextContent);
+    }
+
+    /// <summary>Ein gebuchter Stand ohne Vorschau (vor E7c3) nennt die Vorschriften mit
+    /// ihrem Text und sagt, dass der nächste Lauf Satz und Betrag je Wahl nennt.</summary>
+    [Fact]
+    public void Ohne_Vorschau_bleibt_der_Text_der_Vorschrift()
+    {
+        var e = new WirtschaftlichkeitErgebnis { IdProjekt = STAMM, Szenario = WirtschaftlichkeitSzenario.ERWARTET };
+        var cut = Aufbauen(AnlagenMitSaetzen(), katalog: Katalog(), ergebnisse: new[] { e });
+        Oeffnen(cut);
+
+        string wahl = Gruppe(cut, "epos-ueb-es-wahl").TextContent;
+        Assert.Contains("→ voller Steuersatz auf den Brennstoff der Stromerzeugung", wahl);
+        Assert.Contains("→ Heizstoffe, nur produzierendes Gewerbe, abzüglich Sockelbetrag", wahl);
+        Assert.Contains("Satz und Betrag je Wahl nennt der nächste Lauf", Ueb(cut).TextContent);
+    }
+
     /// <summary>Der zweite Weg: „Wahl und Herkunft…" bei der Energiesteuer öffnet dieselbe
     /// Überlagerung für die gewählte Anlage.</summary>
     [Fact]

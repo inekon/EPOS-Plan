@@ -4484,6 +4484,11 @@ namespace WindowsFormsApplication1
                     l.Zeile("Gesetzeskatalog: " + GesetzKatalog.ZuletztNachgesaet +
                             " Zeile(n) nachgesät (Generation " +
                             GesetzKatalog.AktuelleGeneration + ").");
+                // ETAPPE E7c3: die Nachpflege einer Generation, die keine Zeile sät.
+                if (GesetzKatalog.ZuletztNachgepflegt > 0)
+                    l.Zeile("Gesetzeskatalog: " + GesetzKatalog.ZuletztNachgepflegt +
+                            " Zeile(n) nachgepflegt (Generation " +
+                            GesetzKatalog.AktuelleGeneration + ").");
 
                 foreach (string w in GesetzKatalog.SaatWarnungen)
                     l.Zeile("WARNUNG Gesetzeskatalog: " + w);

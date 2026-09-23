@@ -66,6 +66,80 @@ namespace WindowsFormsApplication1
         /// <summary>Lesefassade auf Tab_Gesetzesparameter (E1); eine Instanz je Berechne-Lauf.</summary>
         private GesetzKatalog _gesetze;
 
+        // =====================================================================
+        // ETAPPE E7c3 (Befund B‑6) — gescheiterte Rechenstufen werden sichtbar
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6): Rechenstufen dieses Laufs, die an einem Fehler
+        /// scheiterten — je Projekt (Schlüssel = Projekt-ID) bzw. für die ganze Gruppe
+        /// (Schlüssel 0). Jede Stufe rechnet weiter mit ihrem benannten Rückfall (leere
+        /// Anlagenliste, Vorgabeparameter, Flat-Tarif …), aber jede Ergebniszeile des
+        /// Projekts trägt eine Kohärenzzeile „Rechenstufe „X“ nicht ausführbar:
+        /// &lt;Grund&gt;“ (<see cref="StufenfehlerAnhaengen"/>). Bis E7c3 fing hier
+        /// <c>catch { }</c>, und der Kapitalwert sah aus wie ein vollständiger.
+        /// </summary>
+        private readonly Dictionary<int, List<string>> _stufenfehler = new Dictionary<int, List<string>>();
+
+        /// <summary>Ressourcenschlüssel der Rechenstufen, die scheitern können (B‑6).</summary>
+        internal const string STUFE_PARAMETER = "WIRT_STUFE_PARAMETER";
+        internal const string STUFE_TARIF = "WIRT_STUFE_TARIF";
+        internal const string STUFE_ANLAGEN = "WIRT_STUFE_ANLAGEN";
+        internal const string STUFE_LEISTUNG = "WIRT_STUFE_LEISTUNG";
+        internal const string STUFE_TRAEGER = "WIRT_STUFE_TRAEGER";
+        internal const string STUFE_HEIZOEL = "WIRT_STUFE_HEIZOEL";
+        internal const string STUFE_BETRIEBSKOSTEN = "WIRT_STUFE_BETRIEBSKOSTEN";
+        internal const string STUFE_KATALOG = "WIRT_STUFE_KATALOG";
+        internal const string STUFE_KOHAERENZ = "WIRT_STUFE_KOHAERENZ";
+        internal const string STUFE_SATZHERLEITUNG = "WIRT_STUFE_SATZHERLEITUNG";
+        internal const string STUFE_SPEICHERN = "WIRT_STUFE_SPEICHERN";
+        internal const string STUFE_LADEN = "WIRT_STUFE_LADEN";
+
+        /// <summary>„Rechenstufe „X“ nicht ausführbar: &lt;Grund&gt;“.</summary>
+        internal static string StufeNichtAusfuehrbar(string schluessel, string grund)
+        {
+            return string.Format(BerichtTexte.Kultur,
+                T("WIRT_STUFE_NICHT_AUSFUEHRBAR", "Rechenstufe „{0}“ nicht ausführbar: {1}"),
+                T(schluessel, schluessel), grund);
+        }
+
+        /// <summary>Merkt eine gescheiterte Stufe für ein Projekt (0 = die ganze Gruppe);
+        /// dieselbe Zeile steht nur einmal da.</summary>
+        private void Stufenfehler(int idProjekt, string schluessel, string grund)
+        {
+            if (string.IsNullOrEmpty(grund)) return;
+            string zeile = StufeNichtAusfuehrbar(schluessel, grund);
+            if (!_stufenfehler.TryGetValue(idProjekt, out List<string> liste))
+            {
+                liste = new List<string>();
+                _stufenfehler[idProjekt] = liste;
+            }
+            if (!liste.Contains(zeile)) liste.Add(zeile);
+        }
+
+        /// <summary>
+        /// Hängt die gescheiterten Stufen der Gruppe und des Projekts als WARNUNG an die
+        /// Kohärenzzeilen eines Ergebnisses — ohne Betrag, jede Zeile einmal. Ohne Fehler
+        /// geschieht nichts (Basisprojekte: Zeile für Zeile wie vorher).
+        /// </summary>
+        private void StufenfehlerAnhaengen(WirtschaftlichkeitErgebnis erg)
+        {
+            if (erg == null || _stufenfehler.Count == 0) return;
+            foreach (int schluessel in new[] { 0, erg.IdProjekt })
+            {
+                if (!_stufenfehler.TryGetValue(schluessel, out List<string> liste)) continue;
+                if (erg.KohaerenzHinweise == null) erg.KohaerenzHinweise = new List<KohaerenzHinweis>();
+                foreach (string z in liste)
+                {
+                    bool schon = false;
+                    foreach (KohaerenzHinweis h in erg.KohaerenzHinweise)
+                        if (string.Equals(h.Text, z, StringComparison.Ordinal)) { schon = true; break; }
+                    if (!schon)
+                        erg.KohaerenzHinweise.Add(new KohaerenzHinweis { Schwere = KohaerenzSchwere.WARNUNG, Text = z });
+                }
+            }
+        }
+
         public const string TAB_PARAMETER = "Tab_ProjektWirtschaftlichkeit";
         public const string TAB_ERGEBNIS = "Tab_ErgebnisWirtschaftlichkeit";
         public const string TAB_SENS = "Tab_ErgebnisWirtSensitivitaet";
@@ -306,7 +380,7 @@ namespace WindowsFormsApplication1
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
                     }
                     }
-                    catch { }
+                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
                     try
                     {
                     if (!TabelleVorhanden(TAB_ERGEBNIS))
@@ -340,7 +414,7 @@ namespace WindowsFormsApplication1
                                   "\"KWKGErloes\" REAL, " +
                                   "\"Fehlgrund\" TEXT)");
                     }
-                    catch { }
+                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
                     try
                     {
                     if (!TabelleVorhanden(TAB_SENS))
@@ -353,7 +427,7 @@ namespace WindowsFormsApplication1
                                   "\"KwPlus\" REAL, " +
                                   "\"Zeitstempel\" TEXT)");
                     }
-                    catch { }
+                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
                     try
                     {
                     if (!TabelleVorhanden(TAB_TARIF))
@@ -374,7 +448,7 @@ namespace WindowsFormsApplication1
                             "ON [" + TAB_TARIF + "] (\"ID_Projekt\")");
                     }
                     }
-                    catch { }
+                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
                     try
                     {
                     if (!TabelleVorhanden(TAB_MATRIX))
@@ -389,7 +463,7 @@ namespace WindowsFormsApplication1
                                   "\"MaxBezugKW\" REAL, " +
                                   "\"Zeitstempel\" TEXT)");
                     }
-                    catch { }
+                    catch (Exception ex) { Vorsorgefehler(ex); }   // E7c3 (B‑6): benannt
 
                     // Ältere Tabellenstände additiv nachrüsten (Muster
                     // ErgebnisCtrl.StelleModulSpaltenSicher) — CREATE erfasst nur Neuanlagen.
@@ -588,12 +662,30 @@ namespace WindowsFormsApplication1
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
                 }
             }
-            catch { /* ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge */ }
+            catch (Exception ex)
+            {
+                // Ohne Tabellen laufen Laden/Speichern in ihre eigenen Fänge — die nennen
+                // ihren Grund seit E7c3 selbst (Ladefehler, Rechenstufe „Speichern").
+                Vorsorgefehler(ex);
+            }
 
             // Katalog gesetzlicher Parameter (Etappe E1, Leitentscheidung L2). Eigene
             // Verbindung, eigener Fang: Ein Fehlschlag darf die Tabellen oben nicht
             // gefährden, und umgekehrt.
             GesetzKatalog.StelleKatalogSicher();
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der letzte Fehler der Schemavorsorge
+        /// (<see cref="StelleTabellenSicher"/>, <see cref="SpalteSicher"/>); <c>null</c> =
+        /// keiner. Die Vorsorge bleibt still (kein Dialog beim Start), aber der Grund ist
+        /// abrufbar statt verschluckt; die Folgen nennen Laden und Speichern selbst.
+        /// </summary>
+        public static string Vorsorgewarnung { get; private set; }
+
+        private static void Vorsorgefehler(Exception ex)
+        {
+            Vorsorgewarnung = Fehlergrund.Text(ex);
         }
 
         /// <summary>Fügt eine fehlende Spalte per ALTER TABLE hinzu (still, additiv).
@@ -616,7 +708,11 @@ namespace WindowsFormsApplication1
                 Ddl(StilleDb.AlterTableAddColumn(tabelle, spalte, typ));
                 return true;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Vorsorgefehler(ex);   // E7c3 (B‑6): benannt — der Rückgabewert ist nur Migrationsanker
+                return false;
+            }
         }
 
         private static bool TabelleVorhanden(string name)
@@ -647,7 +743,10 @@ namespace WindowsFormsApplication1
             var p = new WirtschaftlichkeitParameter { IdStamm = idStamm };
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg (StilleDb.TabelleStreng) — ein
+                // Abfragefehler erreicht den benannten Fang, statt als leere Tabelle
+                // still „Vorgaben" zu heißen.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT * FROM " + TAB_PARAMETER + " WHERE ID_Projekt = ?",
                     new DbParam("@p", idStamm));
                 if (dt != null && dt.Rows.Count > 0)
@@ -762,7 +861,12 @@ namespace WindowsFormsApplication1
                     if (r["GeaendertAm"] != DBNull.Value) p.GeaendertAm = Convert.ToDateTime(r["GeaendertAm"]);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — der Lauf rechnet mit den
+                // Vorgaben weiter, jede Ergebniszeile nennt den Grund (Berechne).
+                p.Lesefehler = Fehlergrund.Text(ex);
+            }
             if (p.Betrachtungszeitraum <= 0) p.Betrachtungszeitraum = 20;
 
             // Referenzkessel seit Phase 11 aus der DB (Heizkessel des Stammprojekts) —
@@ -869,11 +973,12 @@ namespace WindowsFormsApplication1
                         "K2/EINHEITEN/" + idStamm + "/" + b.CarrierId + "/" + b.Code,
                         "Energieträger-Einheiten (Projekt " + idStamm + "): " + b);
             }
-            catch
+            catch (Exception)
             {
                 // Eine gescheiterte PRÜFUNG darf niemals eine gelingende RECHNUNG
                 // verhindern. Der Prüfer fängt selbst schon alles ab; dieser Block ist
-                // die zweite Sicherung an der Nahtstelle zum Rechenweg.
+                // die zweite Sicherung an der Nahtstelle zum Rechenweg (ETAPPE E7c3:
+                // benannt, ohne Rechenwirkung — die Prüfung ist reine Protokollwarnung).
             }
         }
 
@@ -962,13 +1067,19 @@ namespace WindowsFormsApplication1
                 info.WirkungsgradProzent = eta;
                 info.IdBrennstoff = idBrennstoff;   // 0 = kein Träger-FK → nur η übernehmen
             }
-            catch { }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall — Gefunden bleibt false, und die
+                // gespeicherten Vorgaben des Referenzkessels gelten weiter (derselbe Weg
+                // wie ohne Kessel im Stammprojekt; die Nachweiszeile nennt die Vorgabe).
+            }
             _refKesselCache[idStamm] = info;
             return info;
         }
 
         public bool SpeichereParameter(WirtschaftlichkeitParameter p)
         {
+            Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (p == null || p.IdStamm <= 0) return false;
             StelleTabellenSicher();
             try
@@ -1204,8 +1315,20 @@ namespace WindowsFormsApplication1
                     RefParam(p.IdReferenzprojekt),
                     new DbParam("@am", DbParamTyp.Date) { Wert = DateTime.Now });
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Speicherfehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6): der Grund, aus dem das letzte Speichern von Parametern
+        /// oder Tarif (<see cref="SpeichereParameter"/>, <c>SpeichereTarif</c>) scheiterte;
+        /// die Methoden melden das Scheitern weiter über <c>false</c>, der Dialog kann den
+        /// Grund daneben nennen. <c>null</c> = kein Fehler seit dem letzten Aufruf.
+        /// </summary>
+        public string Speicherfehler { get; private set; }
 
         /// <summary>ETAPPE W5‑B‑9: der Satz eines Szenarios, nie <c>null</c> — ein
         /// Parametersatz ohne Szenariosatz (etwa aus einem Test) speichert dann lauter
@@ -1267,7 +1390,11 @@ namespace WindowsFormsApplication1
                     foreach (DataRow r in dt.Rows)
                         if (r["ID_Projekt"] != DBNull.Value) ids.Add(Convert.ToInt32(r["ID_Projekt"]));
             }
-            catch { }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall — ohne Variantenliste zählt der
+                // Stamm allein; ErzeugerVorhanden blendet im Zweifel ein (Fail-open).
+            }
 
             f.Bhkw = ErzeugerVorhanden("Tab_BHKW", ids);
             f.Photovoltaik = ErzeugerVorhanden("Tab_PV", ids);
@@ -1287,7 +1414,7 @@ namespace WindowsFormsApplication1
                     " WHERE ID_Projekt IN (" + string.Join(",", projektIds) + ")");
                 return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
             }
-            catch
+            catch (Exception)
             {
                 // Fail-open: im Zweifel Gruppe EINBLENDEN, damit die Parameter
                 // auch bei DB-Störungen editierbar bleiben (Review Phase 10).
@@ -1303,7 +1430,8 @@ namespace WindowsFormsApplication1
             var t = new TarifParameter { IdStamm = idStamm };
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT * FROM " + TAB_TARIF + " WHERE ID_Projekt = ?",
                     new DbParam("@p", idStamm));
                 if (dt != null && dt.Rows.Count > 0)
@@ -1332,7 +1460,13 @@ namespace WindowsFormsApplication1
                     t.Einspeisung.GrundpreisEurJahr = D(r, "Einsp_Grundpreis") ?? 0;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — ein unlesbarer Tarif gilt wie
+                // bisher als nicht aktiv (Flat-Pfad), aber der Grund reist mit (Berechne).
+                t.Aktiv = false;
+                t.Lesefehler = Fehlergrund.Text(ex);
+            }
             return t;
         }
 
@@ -1355,6 +1489,7 @@ namespace WindowsFormsApplication1
 
         public bool SpeichereTarif(TarifParameter t)
         {
+            Speicherfehler = null;   // ETAPPE E7c3 (B‑6)
             if (t == null || t.IdStamm <= 0) return false;
             StelleTabellenSicher();
             try
@@ -1400,7 +1535,11 @@ namespace WindowsFormsApplication1
                     "INSERT INTO " + TAB_TARIF + " (" + namen + ") VALUES (" + frage + ")",
                     insert.ToArray());
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                Speicherfehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
 
         /// <summary>
@@ -1570,6 +1709,9 @@ namespace WindowsFormsApplication1
             _kesselCache.Clear();                                          // Etappe B3 Paket a
             _brennstoffKategorie = null; _carrierBrennstoff = null;        // Nachtrag 2 zu E2
             _traegerCache.Clear();                                         // Etappe E4
+            _stufenfehler.Clear();                                         // Etappe E7c3 (B‑6)
+            if (p.Lesefehler != null) Stufenfehler(0, STUFE_PARAMETER, p.Lesefehler);
+            if (tarif != null && tarif.Lesefehler != null) Stufenfehler(0, STUFE_TARIF, tarif.Lesefehler);
 
             // KONZEPT § 2.9: WOGEGEN gerechnet wird. Der Lauf-Parameter schlaegt die
             // Gruppenreferenz, die Gruppenreferenz schlaegt den Stamm. Steht die
@@ -1923,6 +2065,11 @@ namespace WindowsFormsApplication1
             public List<EnergiesteuerNachweis> EnergiesteuerNachweise =
                 new List<EnergiesteuerNachweis>();
 
+            /// <summary>ETAPPE E7c3 (E7c2‑Q8 b) — die Vorschau je Anlage und Wahl, aus
+            /// dem ersten Jahr; reiner Ausweis.</summary>
+            public List<EnergiesteuerVorschauZeile> EnergiesteuerVorschau =
+                new List<EnergiesteuerVorschauZeile>();
+
             /// <summary>AUFTRAG 9d — die Begründung je Rubrikposition, aus dem
             /// Steuerrechner des ersten Jahres.</summary>
             public Dictionary<string, string> PositionsGruende =
@@ -2029,6 +2176,7 @@ namespace WindowsFormsApplication1
             // "x % der Investitionssumme" bemessen sich damit an der Investition DIESES
             // Szenarios statt immer an der des Erwartungsfalls.
             BetriebsTopfe topfe = LiesBetriebskostenTopfe(v.IdProjekt, szenario, satz);
+            if (topfe.Fehler != null) Stufenfehler(v.IdProjekt, STUFE_BETRIEBSKOSTEN, topfe.Fehler);   // E7c3 (B‑6)
             e.Betrieb = topfe.BetriebSofort;
             e.BetriebAbJahr = topfe.BetriebAbJahr;
             e.Endenergie = topfe.EndenergieSofort;
@@ -2408,7 +2556,12 @@ namespace WindowsFormsApplication1
                                 : werte;
                     }
                 }
-                catch { }
+                catch (Exception)
+                {
+                    // ETAPPE E7c3 (B‑6): benannter Rückfall — ohne Spotreihe rechnet die
+                    // Vergütung in Stufe 1 (Ausfallpauschale); die Herleitung des Rechners
+                    // nennt die Stufe, in der er gerechnet hat.
+                }
 
                 // ETAPPE E2.4 (Paket B des PV-Ertragsmodells): Eigenverbrauch und
                 // Arbeitspreis des Basisjahres - beide NUR fuer den
@@ -2683,7 +2836,11 @@ namespace WindowsFormsApplication1
                     return null;
                 }
 
-                if (!_oelCache.ContainsKey(v.IdProjekt)) _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt);
+                if (!_oelCache.ContainsKey(v.IdProjekt))
+                {
+                    _oelCache[v.IdProjekt] = BhkwMitHeizoel(v.IdProjekt, out string oelFehler);
+                    if (oelFehler != null) Stufenfehler(v.IdProjekt, STUFE_HEIZOEL, oelFehler);   // E7c3 (B‑6)
+                }
                 bool oelGeraetezeile = _oelCache[v.IdProjekt];
                 if (oelAusschluss && oelGeraetezeile)
                 {
@@ -2706,7 +2863,7 @@ namespace WindowsFormsApplication1
                 // Pfad sein, der beim nächsten Ausbau brutto rechnet.
                 double stromNettoMWh = Math.Max(0, stromMWh - hilfsstrom.GesamtMWh);
                 double[] ersatz = ReiheErsatzGewichtet(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
-                                                       stromNettoMWh, vbh, foerderbeginn,
+                                                       stromNettoMWh, stromMWh, vbh, foerderbeginn,
                                                        hinweise, luecken, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
@@ -2836,6 +2993,9 @@ namespace WindowsFormsApplication1
         /// <param name="einspNettoMWh">Ebenso die KWK-Einspeisung [MWh/a].</param>
         /// <param name="stromNettoMWh">Ebenso die Gesamterzeugung [MWh/a] — die
         /// Bezugsgröße des Fallbacks ohne Stundenreihen.</param>
+        /// <param name="stromBruttoMWh">ETAPPE E7c3: die Stromerzeugung des Projekts an den
+        /// Klemmen [MWh/a] — die erzeugte Arbeit der Vbh-Definition; nur für die
+        /// Herleitungszeile des Falls 2, gerechnet wird mit <paramref name="vbh"/>.</param>
         /// <param name="foerderbeginn">Förderbeginn des PROJEKTS; er gilt für jede
         /// Anlage ohne eigenes Inbetriebnahmedatum.</param>
         /// <param name="hinweise">Die Meldungsliste des Aufrufers — dieser Weg hängt
@@ -2845,6 +3005,7 @@ namespace WindowsFormsApplication1
         private double[] ReiheErsatzGewichtet(VariantenDaten v, WirtschaftlichkeitParameter p,
                                               bool mitMatrix, double eigenNettoMWh,
                                               double einspNettoMWh, double stromNettoMWh,
+                                              double stromBruttoMWh,
                                               double vbh, int foerderbeginn,
                                               List<string> hinweise, KwkgLuecken luecken,
                                               out double jahr1)
@@ -2912,25 +3073,27 @@ namespace WindowsFormsApplication1
                                                luecken);
             if (fall2Zeile != null) hinweise.Add(fall2Zeile);
 
-            // ETAPPE E7c — Entscheid E7c1‑Q2 b auf dem Ersatzweg: Trägt eine Anlage das
-            // Kennzeichen, zählen die Vbh der Gesamtanlage aus ihrem KWK-Strom (die
-            // gekürzten Mengen) ÷ ihrer Leistung — dieselbe Regel wie je Anlage auf dem
-            // Regelweg. Ohne Kennzeichen oder ohne Leistung bleibt es bei der
-            // Projektgröße.
+            // ETAPPE E7c3 — VOLLBENUTZUNGSSTUNDEN NACH DEFINITION (Anwenderentscheid vom
+            // 23.09.2026): Vbh = erzeugte Arbeit ÷ P_Nenn — die elektrische Arbeit, die das
+            // Modul an den Klemmen erzeugt (brutto), durch seine elektrische Nennleistung;
+            // ein normierter Auslastungsindikator, in Fall 1 und Fall 2 derselbe. Auf dem
+            // Ersatzweg ist das die Projektgröße aus VbhElektrisch, mit der Kontingent und
+            // Jahresdeckel zählen; der KWK-Strom des Falls 2 bestimmt allein die bezahlte
+            // Menge (die gekürzten Mengen oben). Trägt eine Anlage das Kennzeichen, nennt
+            // eine Herleitungszeile die Rechnung mit Zahlen — ohne Kennzeichen bleibt der
+            // Hinweistext Zeile für Zeile der von vorher.
             if (fall2Zeile != null && nachLeistung && vbh > 0)
             {
                 double kwkMWh = mitMatrix ? eigenNettoMWh + einspNettoMWh : stromNettoMWh;
-                double vbhKwk = Math.Max(0, kwkMWh) * 1000.0 / pelSumme;
                 hinweise.Add(string.Format(BerichtTexte.Kultur, T("WIRT_KWKG_FALL2_VBH_ERSATZ",
-                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem " +
-                    "KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); " +
-                    "Kontingent und Jahresdeckel zählen diese Stunden."),
-                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur),
+                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = " +
+                    "{0} MWh ÷ {1} kW = {2} h/a (brutto an den Klemmen, wie in Fall 1); " +
+                    "Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom " +
+                    "{3} MWh bestimmt allein die bezahlte Menge."),
+                    stromBruttoMWh.ToString("N3", BerichtTexte.Kultur),
                     pelSumme.ToString("N0", BerichtTexte.Kultur),
-                    vbhKwk.ToString("N0", BerichtTexte.Kultur),
-                    vbh.ToString("N0", BerichtTexte.Kultur)));
-                vbh = vbhKwk;
-                if (vbh <= 0) return null;
+                    vbh.ToString("N0", BerichtTexte.Kultur),
+                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur)));
             }
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
@@ -3136,30 +3299,30 @@ namespace WindowsFormsApplication1
                 double bonusVoll = KwkgJahresbetrag.Voll(eigenMWh, satzEigen, einspMWh, satzEinsp);
                 if (bonusVoll <= 0) continue;
 
-                double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
+                // ETAPPE E7c3 — Vbh NACH DEFINITION (Anwenderentscheid vom 23.09.2026):
+                // Vbh = erzeugte Arbeit ÷ P_Nenn, die Arbeit brutto an den Klemmen. Der
+                // Rückfall ohne gespeicherte Modulzahl nimmt deshalb die BRUTTOerzeugung
+                // dieses Moduls (bis E7c3 stand hier die Nettomenge nach Hilfsstrom — nur
+                // wirksam, wo die Ergebniszeile keine Vbh führt UND ein Anteil gepflegt ist).
+                double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromBruttoMWh);
 
-                // ETAPPE E7c — ENTSCHEID E7c1‑Q2 b (23.09.2026): „Vollbenutzungsstunden
-                // betrifft nur den KWK erzeugten Strom". In Fall 2 zählen die Vbh deshalb
-                // aus dem KWK-STROM der Anlage — Vbh = KWK-Strom ÷ P_el —, nicht aus dem
-                // ganzen Modulstrom; Kontingentverbrauch und Jahresdeckel laufen über
-                // diese Stunden (die Reihe wird länger, wo das Kontingent bindet). Ohne
-                // Kennzeichen (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie
-                // vorher. Ohne bestimmbare Kennzahl ist der Zuschlag ohnehin 0 (oben).
-                string vbhZeile = null;
-                if (fall2 != null && fall2.Stromkennzahl.Bestimmbar && a.PelKW > 0)
+                // In Fall 2 bleibt es bei denselben Stunden wie in Fall 1: Kontingent-
+                // verbrauch und Jahresdeckel zählen die Bruttostunden, der KWK-Strom
+                // bestimmt allein die bezahlte Menge (die gekürzten Mengen oben). Die
+                // Herleitungszeile nennt die Rechnung mit Zahlen; ohne Kennzeichen
+                // (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie vorher.
+                if (fall2 != null && a.PelKW > 0 && vbhAnlage > 0)
                 {
-                    double vbhKwk = fall2.KwkStromMWh * 1000.0 / a.PelKW;
                     // WirtschaftlichkeitCtrl.T: die Laufzeit T dieser Methode verdeckt den Namen.
-                    vbhZeile = string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
-                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom " +
-                        "{1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); " +
-                        "Kontingent und Jahresdeckel zählen diese Stunden."),
-                        a.Bezeichner, fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur),
+                    hinweise.Add(string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
+                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vbh = erzeugte Arbeit ÷ P_Nenn = " +
+                        "{1} MWh ÷ {2} kW = {3} h/a (brutto an den Klemmen, wie in Fall 1); " +
+                        "Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom " +
+                        "{4} MWh bestimmt allein die bezahlte Menge."),
+                        a.Bezeichner, stromBruttoMWh.ToString("N3", BerichtTexte.Kultur),
                         a.PelKW.ToString("N0", BerichtTexte.Kultur),
-                        vbhKwk.ToString("N0", BerichtTexte.Kultur),
-                        vbhAnlage.ToString("N0", BerichtTexte.Kultur));
-                    hinweise.Add(vbhZeile);
-                    vbhAnlage = vbhKwk;
+                        vbhAnlage.ToString("N0", BerichtTexte.Kultur),
+                        fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur)));
                 }
                 if (vbhAnlage <= 0) continue;
 
@@ -3229,9 +3392,9 @@ namespace WindowsFormsApplication1
                         n.NutzwaermeMWh = fall2.NutzwaermeMWh;
                         n.KwkStromMWh = fall2.KwkStromMWh;
                         n.KuerzungMWh = fall2.KuerzungMWh;
-                        // E7c1-Q2 b: die Stunden aus dem KWK-Strom stehen in VbhElektrisch
-                        // (oben) und als eigene Hinweiszeile; die Herleitung bleibt die
-                        // der Menge.
+                        // E7c3: VbhElektrisch (oben) trägt in beiden Fällen die Stunden
+                        // nach Definition (erzeugte Arbeit ÷ P_Nenn); die Herleitung ist
+                        // die der Menge.
                         n.HerleitungKwkStrom = fall2Zeile;
                     }
                     try
@@ -3248,7 +3411,13 @@ namespace WindowsFormsApplication1
                         n.VorschlagEigenCt = vs.SatzEigenCt;
                         n.VorschlagEinspeisungCt = vs.SatzEinspeisungCt;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        // ETAPPE E7c3 (B‑6): benannt — der angesetzte Satz steht längst; es
+                        // fehlt nur seine Herleitung im Nachweis, und die Ergebniszeile
+                        // sagt es.
+                        Stufenfehler(v.IdProjekt, STUFE_SATZHERLEITUNG, Fehlergrund.Text(ex));
+                    }
                     nachweise.Add(n);
                 }
 
@@ -3545,7 +3714,15 @@ namespace WindowsFormsApplication1
         /// § 8 Abs. 4 verschieben, obwohl die Anlage genauso lange gelaufen ist. Der
         /// Hilfsstrom wirkt ausschließlich über die Mengen (siehe
         /// <see cref="ReiheJeAnlage"/>).</para>
+        ///
+        /// <para><b>ETAPPE E7c3 — die Definition des Anwenders (23.09.2026):</b>
+        /// Vbh = erzeugte Arbeit ÷ P_Nenn, die elektrische Arbeit an den Klemmen durch die
+        /// installierte elektrische Nennleistung — ein normierter Auslastungsindikator,
+        /// in Fall 1 und Fall 2 des § 2 Nr. 16 KWKG derselbe. Der Aufrufer reicht deshalb
+        /// die BRUTTOerzeugung des Moduls herein, auch für den Rückfall.</para>
         /// </summary>
+        /// <param name="stromMWh">Die Stromerzeugung des Moduls an den Klemmen [MWh/a]
+        /// (brutto, vor Hilfsstrom).</param>
         private static double VbhDerAnlage(BhkwAnlage a, ErgebnisBHKWModulModel modul, double stromMWh)
         {
             if (modul != null && modul.VbhElektrisch > 0) return modul.VbhElektrisch;
@@ -3765,7 +3942,14 @@ namespace WindowsFormsApplication1
                 string s = MyResource.Resource.ResourceManager.GetString(schluessel);
                 return string.IsNullOrEmpty(s) ? rueckfall : s;
             }
-            catch { return rueckfall; }
+            catch (Exception ex) when (ex is System.Resources.MissingManifestResourceException ||
+                                       ex is System.Resources.MissingSatelliteAssemblyException ||
+                                       ex is InvalidOperationException)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — nur die Fehler der Ressourcensuche; der
+                // deutsche Rückfalltext ist der Zweck dieser Methode.
+                return rueckfall;
+            }
         }
 
         // =====================================================================
@@ -3836,6 +4020,11 @@ namespace WindowsFormsApplication1
                 e.Energiesteuer54Jahr1 = r.Energiesteuer54Eur;
                 e.Energiesteuer54SockelJahr1 = r.Energiesteuer54SockelEur;
                 e.EnergiesteuerNachweise = new List<EnergiesteuerNachweis>(r.EnergiesteuerNachweise);
+
+                // ETAPPE E7c3 (E7c2‑Q8 b) — die Vorschau je Wahl aus DEMSELBEN Jahr und
+                // derselben Eingabe; sie rechnet auf Kopien, der Lauf bleibt unberührt.
+                e.EnergiesteuerVorschau = SteuerGutschriftRechner.Vorschau(
+                    eingabe, jahr, s => _gesetze.WertMitHerkunft(s, jahr), kultur);
 
                 // AUFTRAG 9d — die Begründungen JE POSITION, ebenfalls aus dem ersten
                 // Jahr: Sie erklären die Jahr-1-Zahl, die die Rubrik zeigt.
@@ -4248,9 +4437,11 @@ namespace WindowsFormsApplication1
             if (_traegerCache.TryGetValue(key, out gefunden)) return gefunden;
 
             var t = new TraegerEinheit();
+            string lesefehler = null;   // ETAPPE E7c3 (B‑6)
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT billing_unit, eff_hi, eff_hs FROM Abfrage_Energietraeger_Effektiv " +
                     "WHERE ID_Projekt = ? AND carrier_id = ?",
                     new DbParam("@p", idProjekt), new DbParam("@c", carrierId));
@@ -4263,12 +4454,17 @@ namespace WindowsFormsApplication1
                     t.EffHs = D(r, "eff_hs") ?? 0;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall auf den Katalogwert (Stufe 2);
+                // der Grund bleibt stehen, falls auch der Katalog nichts liefert.
+                lesefehler = Fehlergrund.Text(ex);
+            }
 
             if (t.EffHi <= 0 || t.Einheit.Length == 0)
                 try
                 {
-                    DataTable dt = DataRepository.GetDataTable(
+                    DataTable dt = StilleDb.TabelleStreng(
                         "SELECT billing_unit, hi_kwh_per_unit, hs_kwh_per_unit FROM energy_carrier WHERE id = ?",
                         new DbParam("@c", carrierId));
                     if (dt != null && dt.Rows.Count > 0)
@@ -4280,7 +4476,17 @@ namespace WindowsFormsApplication1
                         if (t.EffHs <= 0) t.EffHs = D(r, "hs_kwh_per_unit") ?? 0;
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // ETAPPE E7c3 (B‑6): benannt — Heizwert 0 und leere Einheit hießen sonst
+                    // still „nicht gepflegt"; die Ergebniszeile nennt den Grund.
+                    if (lesefehler == null) lesefehler = Fehlergrund.Text(ex);
+                }
+
+            // Nur ein Fehler, der am Ende OHNE Wert dasteht, ist eine gescheiterte Stufe;
+            // lieferte der Katalog, war die erste Stufe ein benannter Rückfall.
+            if (lesefehler != null && (t.EffHi <= 0 || t.Einheit.Length == 0))
+                Stufenfehler(idProjekt, STUFE_TRAEGER, lesefehler);
 
             _traegerCache[key] = t;
             return t;
@@ -4493,12 +4699,16 @@ namespace WindowsFormsApplication1
         /// überschätzt die Leistung nie nach unten. Ein Projekt ohne jede Angabe liefert 0;
         /// die Aufrufer behandeln das ausdrücklich.</para>
         /// </summary>
-        private static double LiesBhkwLeistungKW(int idProjekt)
+        private static double LiesBhkwLeistungKW(int idProjekt, out string lesefehler)
         {
+            lesefehler = null;
+
             // 1. Σ P_el über die ANLAGENZEILEN — dieselbe Menge, die die Engine rechnet.
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg (StilleDb.ScalarStreng) für
+                // beide Stufen, damit ihre Fänge greifen.
+                object o = StilleDb.ScalarStreng(
                     "SELECT SUM(b.Pel) FROM Tab_Energieanlagen AS a " +
                     "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                     "WHERE a.ID_Projekt = ? AND a.ID_Type = " + WizardItemClass.BHKW_TYP,
@@ -4509,24 +4719,39 @@ namespace WindowsFormsApplication1
                     if (summe > 0) return summe;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall auf Stufe 2; der Grund bleibt
+                // stehen, falls auch sie nichts liefert.
+                lesefehler = Fehlergrund.Text(ex);
+            }
 
             // 2. Rückfall: Σ P_el über die Gerätezeilen (der Weg bis Etappe E2).
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                object o = StilleDb.ScalarStreng(
                     "SELECT SUM(Pel) FROM Tab_BHKW WHERE ID_Projekt = ?",
                     new DbParam("@p", idProjekt));
-                if (o != null && o != DBNull.Value) return Convert.ToDouble(o);
+                if (o != null && o != DBNull.Value) { lesefehler = null; return Convert.ToDouble(o); }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — 0 hieße sonst „keine Leistung gepflegt".
+                if (lesefehler == null) lesefehler = Fehlergrund.Text(ex);
+            }
             return 0;
         }
 
-        /// <summary>Σ P_el des Projekts [kW], einmal je Berechne-Lauf gelesen.</summary>
+        /// <summary>Σ P_el des Projekts [kW], einmal je Berechne-Lauf gelesen. ETAPPE E7c3
+        /// (B‑6): Scheitert das Lesen, bleibt es bei 0, und die Ergebniszeile nennt den
+        /// Grund (statt „keine elektrische Nennleistung gepflegt").</summary>
         private double PelKW(int idProjekt)
         {
-            if (!_pelCache.ContainsKey(idProjekt)) _pelCache[idProjekt] = LiesBhkwLeistungKW(idProjekt);
+            if (!_pelCache.ContainsKey(idProjekt))
+            {
+                _pelCache[idProjekt] = LiesBhkwLeistungKW(idProjekt, out string lesefehler);
+                if (lesefehler != null) Stufenfehler(idProjekt, STUFE_LEISTUNG, lesefehler);
+            }
             return _pelCache[idProjekt];
         }
 
@@ -4821,7 +5046,13 @@ namespace WindowsFormsApplication1
                 if (bis < GesetzKatalog.JAHR_MIN || bis > GesetzKatalog.JAHR_MAX) return null;
                 return new DateTime(bis, 12, 31);
             }
-            catch { return null; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — null heißt „kein Fristende": Der Aufrufer
+                // schreibt dann die Herleitungszeile „Fristende nicht im Katalog —
+                // ungeprüft" (Entscheid E7c1‑Q4 a), nie eine stille Vorgabe.
+                return null;
+            }
         }
 
         /// <summary>Die Herleitungszeile „Fristende nicht im Katalog — ungeprüft";
@@ -4855,7 +5086,12 @@ namespace WindowsFormsApplication1
                 double? katalog = _gesetze.Wert(DbWerte.GESETZ_KWKG_AUSSCHREIBUNG_GRENZE, jahr);
                 if (katalog.HasValue && katalog.Value > 0) return katalog.Value;
             }
-            catch { }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall auf die wertgleiche Konstante
+                // (500 kW, § 8a KWKG); ein Lesefehler des Katalogs steht über
+                // GesetzKatalog.Lesefehler an der Ergebniszeile.
+            }
             return KWKG_MAX_LEISTUNG_KW;
         }
 
@@ -5212,9 +5448,20 @@ namespace WindowsFormsApplication1
                 dt = AnlagenTabelle(idProjekt, idType, true, false, false, false);
                 mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
             }
-            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false, false, false);
-
             var liste = new List<BhkwAnlage>();
+            if (!mitE6)
+            {
+                // ETAPPE E7c3 (B‑6): Die schmalste Stufe liest STRENG — nach ihr gibt es
+                // keine Leiter mehr. Bis E7c3 lieferte der Engine-Modus bei einem
+                // Abfragefehler eine leere Tabelle, und das las sich wie „das Projekt hat
+                // keine solche Anlage"; jetzt nennt die Ergebniszeile den Grund.
+                try { dt = AnlagenTabelle(idProjekt, idType, false, false, false, false, true); }
+                catch (Exception ex)
+                {
+                    Stufenfehler(idProjekt, STUFE_ANLAGEN, Fehlergrund.Text(ex));
+                    return liste;
+                }
+            }
             if (dt == null) return liste;
             try
             {
@@ -5271,7 +5518,14 @@ namespace WindowsFormsApplication1
                     liste.Add(anl);
                 }
             }
-            catch { liste.Clear(); }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { liste.Clear(); } — ohne
+                // Anlagenliste fehlt die KWKG-Reihe (und die Steuerseite dieser Anlagen);
+                // das bleibt der Rückfall, aber die Ergebniszeile nennt den Grund.
+                liste.Clear();
+                Stufenfehler(idProjekt, STUFE_ANLAGEN, Fehlergrund.Text(ex));
+            }
             return liste;
         }
 
@@ -5289,9 +5543,14 @@ namespace WindowsFormsApplication1
         /// behalten, nicht aus der Liste fallen. Beim BHKW bleibt es beim <c>INNER
         /// JOIN</c> des Bestands — dort hängt die 2-MW-Prüfung an <c>Pel</c>, und eine
         /// Zeile ohne Gerät hätte keine.</para>
+        ///
+        /// <para>ETAPPE E7c3 (B‑6): <paramref name="streng"/> liest über
+        /// <see cref="StilleDb.TabelleStreng"/> und reicht einen Abfragefehler weiter —
+        /// für die schmalste Stufe, nach der es keine Leiter mehr gibt.</para>
         /// </summary>
         private static DataTable AnlagenTabelle(int idProjekt, int idType, bool mitE6,
-                                               bool mitB3a, bool mitBk1, bool mitK1)
+                                               bool mitB3a, bool mitBk1, bool mitK1,
+                                               bool streng = false)
         {
             string e6 = mitE6
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STICHTAG + "]" +
@@ -5330,39 +5589,53 @@ namespace WindowsFormsApplication1
             string join = bhkw
                 ? "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID "
                 : "LEFT JOIN Tab_Heizkessel AS b ON a.ID_Kessel = b.ID ";
+            string sql =
+                "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
+                geraet + e6 + b3a + bk1 + k1 + " " +
+                "FROM Tab_Energieanlagen AS a " + join +
+                // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
+                // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
+                // zurück, und die Modulzeilen entstehen in der Reihenfolge von
+                // SimulationControl.BHKW_Liste_Laden bzw. SPK_Liste_Laden, die
+                // beide ebenfalls ohne ORDER BY lesen. Eine Sortierung hier
+                // könnte beide auseinanderlaufen lassen.
+                "WHERE a.ID_Projekt = ? AND a.ID_Type = " +
+                idType.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if (streng) return StilleDb.TabelleStreng(sql, new DbParam("@p", idProjekt));
             try
             {
                 using (DataRepository.EngineModus())
-                    return DataRepository.GetDataTable(
-                        "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
-                        geraet + e6 + b3a + bk1 + k1 + " " +
-                        "FROM Tab_Energieanlagen AS a " + join +
-                        // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
-                        // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
-                        // zurück, und die Modulzeilen entstehen in der Reihenfolge von
-                        // SimulationControl.BHKW_Liste_Laden bzw. SPK_Liste_Laden, die
-                        // beide ebenfalls ohne ORDER BY lesen. Eine Sortierung hier
-                        // könnte beide auseinanderlaufen lassen.
-                        "WHERE a.ID_Projekt = ? AND a.ID_Type = " +
-                        idType.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                        new DbParam("@p", idProjekt));
+                    return DataRepository.GetDataTable(sql, new DbParam("@p", idProjekt));
             }
-            catch { return null; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall der STUFENLEITER — null heißt „diese
+                // Fähigkeitsstufe ist nicht lesbar", LiesAnlagen versucht die nächste,
+                // schmalere; die schmalste liest LiesAnlagen streng und nennt ihren Grund.
+                return null;
+            }
         }
+
+        /// <summary>Die Fehler einer Umwandlung (Zahl, Datum) — ETAPPE E7c3 (B‑6): die
+        /// einzigen, die die Lesehelfer dieser Klasse als „kein Wert" nehmen.</summary>
+        internal static bool IstZahlfehler(Exception ex)
+            => ex is FormatException || ex is InvalidCastException || ex is OverflowException;
 
         /// <summary>Datumsspalte einer Zeile; NULL, fehlende Spalte und Lesefehler ergeben
         /// <c>null</c> („kein eigener Wert" — dann gilt der Projektwert).</summary>
         private static DateTime? Datum(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
-            try { return Convert.ToDateTime(r[spalte]); } catch { return null; }
+            try { return Convert.ToDateTime(r[spalte]); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>Ganzzahlspalte einer Zeile; NULL und Lesefehler ergeben 0.</summary>
         private static int Ganzzahl(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return 0;
-            try { return Convert.ToInt32(r[spalte]); } catch { return 0; }
+            try { return Convert.ToInt32(r[spalte]); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return 0; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>
@@ -5426,10 +5699,20 @@ namespace WindowsFormsApplication1
                 {
                     if (r[0] == DBNull.Value || r[1] == DBNull.Value) continue;
                     try { zuordnung[Convert.ToInt32(r[0])] = Convert.ToInt32(r[1]); }
-                    catch { }
+                    catch (Exception ex) when (IstZahlfehler(ex))
+                    {
+                        // ETAPPE E7c3 (B‑6): benannt — diese eine Zeile fällt aus der
+                        // Zuordnung („0 = nicht ermittelbar, gilt als nicht ölbetrieben").
+                    }
                 }
             }
-            catch { zuordnung.Clear(); }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannter Rückfall — leere Zuordnung (Tabelle fehlt
+                // oder Abfrage scheitert): Der Heizöl-Ausschluss prüft dann über die
+                // Gerätezeilen (BhkwMitHeizoel), deren Lesefehler die Ergebniszeile nennt.
+                zuordnung.Clear();
+            }
             return zuordnung;
         }
 
@@ -5499,18 +5782,25 @@ namespace WindowsFormsApplication1
         /// Gerätezeilen die einzige verfügbare Aussage, genau wie bei
         /// <see cref="LiesBhkwLeistungKW"/>, und sie ist konservativ.</para>
         /// </summary>
-        private static bool BhkwMitHeizoel(int idProjekt)
+        private static bool BhkwMitHeizoel(int idProjekt, out string lesefehler)
         {
+            lesefehler = null;
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                object o = StilleDb.ScalarStreng(
                     "SELECT COUNT(*) FROM Tab_BHKW AS b " +
                     "INNER JOIN Tab_Brennstoff_Stamm AS bs ON b.Brennstoff = bs.ID " +
                     "WHERE b.ID_Projekt = ? AND bs.ID_Kategorie = " + BRENNSTOFF_KATEGORIE_OEL,
                     new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o) > 0;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — „kein Öl" bleibt der Rückfall des
+                // Ersatzwegs, der Grund steht an der Ergebniszeile.
+                lesefehler = Fehlergrund.Text(ex);
+            }
             return false;
         }
 
@@ -5827,7 +6117,12 @@ namespace WindowsFormsApplication1
                 if (!preis.HasValue) return null;
                 return evMWh * 1000.0 * preis.Value;
             }
-            catch { return null; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — reiner Ausweis, KEIN Bestandteil des
+                // Kapitalwerts; null zeigt „—" statt einer Zahl.
+                return null;
+            }
         }
 
         /// <summary>
@@ -5952,14 +6247,20 @@ namespace WindowsFormsApplication1
                 double? katalogwert = D2(r, "price");
                 return katalogwert.HasValue && katalogwert.Value > 0 ? katalogwert : null;
             }
-            catch { return null; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — null heißt „kein Arbeitspreis": der Ausweis
+                // bleibt leer; die Degradation der PV-Reihe rechnet dann ohne Mehrbezug.
+                return null;
+            }
         }
 
 
         private static double? D2(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
-            try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+            try { return Convert.ToDouble(r[spalte]); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>Absolutes Zahlungsbild + Kennzahlen eines Projekts für ein Szenario.</summary>
@@ -6001,6 +6302,7 @@ namespace WindowsFormsApplication1
             erg.Energiesteuer54Jahr1 = eingabe.Energiesteuer54Jahr1;
             erg.Energiesteuer54SockelJahr1 = eingabe.Energiesteuer54SockelJahr1;
             erg.EnergiesteuerNachweise = eingabe.EnergiesteuerNachweise;
+            erg.EnergiesteuerVorschau = eingabe.EnergiesteuerVorschau;         // E7c3 (Q8 b)
             erg.PositionsGruende = eingabe.PositionsGruende;                 // 9d
             erg.StromsteuerBefreiungJahr1 = eingabe.StromsteuerBefreiungJahr1;
             erg.StromsteuerBefreiungAlsErloes = eingabe.StromsteuerBefreiungAlsErloes;   // B6
@@ -6188,7 +6490,18 @@ namespace WindowsFormsApplication1
                     Kwkg = eingabe.KwkgLuecken
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): Der Fangzaun bleibt — kein Kapitalwert kippt an der
+                // Prüfung —, aber sie fehlt nicht mehr still: Die Zeile nennt den Grund.
+                // (Die zehn Teilprüfungen fangen ihre Fehler schon selbst; hier bleibt
+                // der Aufbau des Laufs.)
+                Stufenfehler(v.IdProjekt, STUFE_KOHAERENZ, Fehlergrund.Text(ex));
+            }
+            // ETAPPE E7c3 (B‑6): die gescheiterten Rechenstufen dieses Laufs als WARNUNG.
+            if (_gesetze != null && _gesetze.Lesefehler != null)
+                Stufenfehler(0, STUFE_KATALOG, _gesetze.Lesefehler);
+            StufenfehlerAnhaengen(erg);
             foreach (KapitalwertRechner.InvestPosition pos in eingabe.Investitionen)
                 erg.Investition += pos.Betrag;
 
@@ -6447,7 +6760,12 @@ namespace WindowsFormsApplication1
                 int j = Convert.ToInt32(o);
                 return j > 1 ? j : 0;
             }
-            catch { return 0; }
+            catch (Exception ex) when (ex is ArgumentException || IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — fehlende Spalte oder keine Zahl heißt
+                // „0 = ab t0", wie eine leere Zelle.
+                return 0;
+            }
         }
 
         /// <summary>
@@ -6472,7 +6790,12 @@ namespace WindowsFormsApplication1
                 return string.Equals(Convert.ToString(o).Trim(), DbWerte.KOSTENART_ZUSCHUSS,
                                      StringComparison.Ordinal);
             }
-            catch { return false; }
+            catch (Exception ex) when (ex is ArgumentException || IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — ohne Spalte Kostenart ist eine Zeile kein
+                // Zuschuss (Datenbank vor der Kaskade).
+                return false;
+            }
         }
 
         /// <summary>
@@ -6584,6 +6907,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal sealed class BetriebsTopfe
         {
+            /// <summary>ETAPPE E7c3 (Befund B‑6): der Grund, aus dem die Leseschleife
+            /// abbrach (dann fehlen die Positionen danach) oder die Bemessungsspalten nicht
+            /// sichergestellt werden konnten; <c>null</c> = vollständig gelesen.</summary>
+            public string Fehler;
+
             /// <summary>Betriebskosten p. a. mit Preissteigerung p_B, Zahlung ab t0 [€/a].</summary>
             public double BetriebSofort;
 
@@ -6702,7 +7030,12 @@ namespace WindowsFormsApplication1
             List<KeyValuePair<double, int>> abJahr = topfe.BetriebAbJahr;
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — ohne Bemessungsspalten rechnet die Schleife
+                // im Bestandsweg; der Grund reist mit (BetriebsTopfe.Fehler).
+                topfe.Fehler = Fehlergrund.Text(ex);
+            }
 
             try
             {
@@ -6722,11 +7055,13 @@ namespace WindowsFormsApplication1
                 if (StartjahrSpalteVorhanden())
                     felder += ", [" + SchemaKatalog.SPALTE_PW_STARTJAHR + "]";
 
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg — ein Abfragefehler erreicht den
+                // benannten Fang (topfe.Fehler), statt als leere Tabelle „keine
+                // Betriebskosten" zu heißen.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT " + felder +
                     " FROM Tab_ProjektWerte WHERE ProjektID = ? AND KategorieID = 2",
                     new DbParam("@p", idProjekt));
-                if (dt == null) return topfe;
 
                 // ETAPPE H2: der Endenergie-Auflöser wird je Aufruf höchstens einmal
                 // gebaut — und nur, wenn eine Position ihn wirklich braucht.
@@ -6832,7 +7167,12 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — die Summe bleibt, soweit
+                // sie gelesen ist, aber sie ist als unvollständig benannt.
+                topfe.Fehler = Fehlergrund.Text(ex);
+            }
             topfe.BetriebSofort = summe;
             topfe.EndenergieSofort = summeEnde;
             topfe.InvestGekoppeltSofort = summeInvest;
@@ -6879,7 +7219,12 @@ namespace WindowsFormsApplication1
             var liste = new List<KostenPositionNachweis>();
             bool mitBemessung = false;
             try { mitBemessung = KostenPositionCtrl.StelleSpaltenSicher(); }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — ohne Bemessungsspalten keine Gliederung;
+                // die Summenrechnung (LiesBetriebskostenTopfe) nennt denselben Grund.
+                Vorsorgefehler(ex);
+            }
             if (!mitBemessung) return liste;   // ohne Schritt 19 gibt es nichts zu gliedern
 
             try
@@ -6960,7 +7305,12 @@ namespace WindowsFormsApplication1
                     liste.Add(n);
                 }
             }
-            catch { }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — die Nachweisliste bleibt, soweit gelesen;
+                // dieselbe Tabelle liest die Summe (LiesBetriebskostenTopfe) streng, und
+                // deren Abbruch nennt die Ergebniszeile (Rechenstufe „Betriebskosten").
+            }
             return liste;
         }
 
@@ -7117,14 +7467,20 @@ namespace WindowsFormsApplication1
                 if (r.Table.Columns.Contains("KomponentenID") && r["KomponentenID"] != DBNull.Value)
                     komponente = Convert.ToInt32(r["KomponentenID"]);
             }
-            catch { }
+            catch (Exception ex) when (IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — keine Zahl heißt „nicht gesetzt" (0).
+            }
             try
             {
                 if (r.Table.Columns.Contains(SchemaKatalog.SPALTE_PW_ID_ANLAGE) &&
                     r[SchemaKatalog.SPALTE_PW_ID_ANLAGE] != DBNull.Value)
                     idAnlage = Convert.ToInt32(r[SchemaKatalog.SPALTE_PW_ID_ANLAGE]);
             }
-            catch { }
+            catch (Exception ex) when (IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — keine Zahl heißt „Anlage unbekannt" (0).
+            }
         }
 
         /// <summary>ETAPPE H4a: Bemessungsarten mit Ermittlung der Bezugsgröße
@@ -7473,7 +7829,13 @@ namespace WindowsFormsApplication1
                     new DbParam("@b", SimulationSPK.BRENNSTOFF_STROM));
                 return o != null && o != DBNull.Value && Convert.ToInt32(o) > 0;
             }
-            catch { return false; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — der dokumentierte Zweifelsfall („false bei
+                // jedem Zweifel"): Es gilt die Landkarte allein; nur der Grundtext des
+                // Dialogs hängt daran, keine Zahl.
+                return false;
+            }
         }
 
         /// <summary>
@@ -7530,7 +7892,15 @@ namespace WindowsFormsApplication1
                                             ref aufloeser, ref versucht);
                 return null;
             }
-            catch { grund = ""; return null; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — reine Dialogvorschau vor dem Speichern:
+                // keine Bezugsgröße und kein Grund („—"). Gerechnet wird erst beim
+                // Speichern, frisch; scheitert dort das Lesen, nennt die Ergebniszeile
+                // den Grund (Rechenstufe „Betriebskosten").
+                grund = "";
+                return null;
+            }
         }
 
         /// <summary>
@@ -7597,7 +7967,14 @@ namespace WindowsFormsApplication1
                     p, new DbParam("@id", positionsId));
                 return true;
             }
-            catch { menge = null; return false; }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — der Ausweis ist Anzeige für Dialog und
+                // Fremdleser; die Rechenwege lesen die Menge ohnehin frisch. false lässt
+                // den gespeicherten Ausweis stehen (keine 0).
+                menge = null;
+                return false;
+            }
         }
 
         /// <summary>ID des jüngsten Simulationslaufs (Tab_Ergebnis) des Projekts, 0 = keiner.</summary>
@@ -7611,7 +7988,12 @@ namespace WindowsFormsApplication1
                     new DbParam("@p", idProjekt));
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
-            catch { }
+            catch (Exception)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — 0 heißt „kein Lauf bekannt": Das Ergebnis
+                // gilt dann als nicht auf dem jüngsten Lauf gerechnet (Frischeprüfung),
+                // es wird nichts still als aktuell ausgegeben.
+            }
             return 0;
         }
 
@@ -7821,30 +8203,50 @@ namespace WindowsFormsApplication1
                         }
                         v.Commit();
                     }
-                    catch
+                    catch (Exception)
                     {
-                        try { v.Rollback(); } catch { }
+                        // Aufräumen und weiterwerfen — der äußere Fang benennt den Fehler.
+                        try { v.Rollback(); }
+                        catch (Exception)
+                        {
+                            // ETAPPE E7c3 (B‑6): ein gescheitertes Rollback ändert nichts
+                            // am Ausgang; gemeldet wird der ursprüngliche Fehler (throw).
+                        }
                         throw;
                     }
                 }
             }
-            catch { /* Ergebnisse bleiben im Speicher; der Reiter meldet beim nächsten Laden den alten Stand */ }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): Die Ergebnisse bleiben im Speicher und gelten für die
+                // Anzeige dieses Laufs — aber jede Zeile sagt jetzt, dass sie NICHT
+                // gespeichert ist; beim nächsten Laden erschiene sonst still der alte Stand.
+                string zeile = StufeNichtAusfuehrbar(STUFE_SPEICHERN, Fehlergrund.Text(ex));
+                foreach (WirtschaftlichkeitErgebnis e in ergebnisse ?? new List<WirtschaftlichkeitErgebnis>())
+                {
+                    if (e == null) continue;
+                    if (e.KohaerenzHinweise == null) e.KohaerenzHinweise = new List<KohaerenzHinweis>();
+                    e.KohaerenzHinweise.Add(new KohaerenzHinweis { Schwere = KohaerenzSchwere.WARNUNG, Text = zeile });
+                }
+            }
         }
 
         /// <summary>Persistierte Ergebnisse laden (IWirtschaftlichkeitProvider).</summary>
         public List<WirtschaftlichkeitErgebnis> LadeErgebnisse(List<int> projektIds)
         {
             var liste = new List<WirtschaftlichkeitErgebnis>();
+            Ladefehler = null;   // ETAPPE E7c3 (B‑6)
             if (projektIds == null || projektIds.Count == 0) return liste;
             StelleTabellenSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
                 {
-                    DataTable dt = DataRepository.GetDataTable(
+                    // ETAPPE E7c3 (B‑6): der strenge Leseweg — ein Abfragefehler erreicht
+                    // den benannten Fang (Ladefehler), statt „nie gerechnet" zu heißen.
+                    DataTable dt = StilleDb.TabelleStreng(
                         "SELECT * FROM " + TAB_ERGEBNIS + " WHERE ID_Projekt = ?",
                         new DbParam("@p", idProjekt));
-                    if (dt == null) continue;
                     foreach (DataRow r in dt.Rows)
                     {
                         var e = new WirtschaftlichkeitErgebnis
@@ -7942,8 +8344,10 @@ namespace WindowsFormsApplication1
                                         Text = MyResource.Resource.WIRT_NACHWEIS_UNLESBAR
                                     });
                             }
-                            catch
+                            catch (Exception)
                             {
+                                // Benannt (schon vor E7c3): der Nachweis ist unlesbar,
+                                // die Kernwerte der Zeile bleiben.
                                 e.KohaerenzHinweise.Add(new KohaerenzHinweis
                                 {
                                     Schwere = KohaerenzSchwere.HINWEIS,
@@ -7955,24 +8359,45 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — was bis zum Fehler gelesen
+                // ist, bleibt; jede geladene Zeile und Ladefehler nennen den Grund, statt
+                // dass die übrigen Projekte still fehlen.
+                Ladefehler = Fehlergrund.Text(ex);
+                string zeile = StufeNichtAusfuehrbar(STUFE_LADEN, Ladefehler);
+                foreach (WirtschaftlichkeitErgebnis e in liste)
+                {
+                    if (e.KohaerenzHinweise == null) e.KohaerenzHinweise = new List<KohaerenzHinweis>();
+                    e.KohaerenzHinweise.Add(new KohaerenzHinweis { Schwere = KohaerenzSchwere.WARNUNG, Text = zeile });
+                }
+            }
             return liste;
         }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6): der Grund, aus dem das letzte Laden gespeicherter
+        /// Ergebnisse (<see cref="LadeErgebnisse"/>, <see cref="LadeSensitivitaet"/>,
+        /// <c>LadeStromMatrix</c>) abbrach — dann fehlen die Zeilen danach; <c>null</c> =
+        /// vollständig geladen. Jeder der drei Aufrufe setzt ihn neu; gelesen wird er
+        /// unmittelbar nach dem Aufruf.
+        /// </summary>
+        public string Ladefehler { get; private set; }
 
         /// <summary>Persistierte Sensitivitätszeilen laden (IWirtschaftlichkeitProvider, W2).</summary>
         public List<SensitivitaetZeile> LadeSensitivitaet(List<int> projektIds)
         {
             var liste = new List<SensitivitaetZeile>();
+            Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return liste;
             StelleTabellenSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
                 {
-                    DataTable dt = DataRepository.GetDataTable(
+                    DataTable dt = StilleDb.TabelleStreng(   // E7c3 (B‑6): streng
                         "SELECT * FROM " + TAB_SENS + " WHERE ID_Projekt = ? ORDER BY ID",
                         new DbParam("@p", idProjekt));
-                    if (dt == null) continue;
                     foreach (DataRow r in dt.Rows)
                     {
                         var z = new SensitivitaetZeile
@@ -7996,7 +8421,12 @@ namespace WindowsFormsApplication1
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — was gelesen ist, bleibt; der Grund steht in
+                // Ladefehler statt still fehlender Sensitivitätszeilen.
+                Ladefehler = Fehlergrund.Text(ex);
+            }
             return liste;
         }
 
@@ -8013,16 +8443,17 @@ namespace WindowsFormsApplication1
         public Dictionary<int, StromMatrix> LadeStromMatrix(List<int> projektIds)
         {
             var map = new Dictionary<int, StromMatrix>();
+            Ladefehler = null;   // ETAPPE E7c3 (B‑6): gilt für DIESES Laden
             if (projektIds == null || projektIds.Count == 0) return map;
             StelleTabellenSicher();
             try
             {
                 foreach (int idProjekt in projektIds)
                 {
-                    DataTable dt = DataRepository.GetDataTable(
+                    DataTable dt = StilleDb.TabelleStreng(   // E7c3 (B‑6): streng
                         "SELECT * FROM " + TAB_MATRIX + " WHERE ID_Projekt = ? ORDER BY ID",
                         new DbParam("@p", idProjekt));
-                    if (dt == null || dt.Rows.Count == 0) continue;
+                    if (dt.Rows.Count == 0) continue;
 
                     var m = new StromMatrix();
                     bool gelesen = false;
@@ -8042,7 +8473,11 @@ namespace WindowsFormsApplication1
                     if (gelesen) map[idProjekt] = m;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — der Grund steht in Ladefehler.
+                Ladefehler = Fehlergrund.Text(ex);
+            }
             return map;
         }
 
@@ -8069,20 +8504,23 @@ namespace WindowsFormsApplication1
         internal static bool B(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return false;
-            try { return Convert.ToBoolean(r[spalte]); } catch { return false; }
+            try { return Convert.ToBoolean(r[spalte]); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return false; }   // E7c3 (B‑6): benannt
         }
 
         internal static double? D(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
-            try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+            try { return Convert.ToDouble(r[spalte]); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }    // E7c3 (B‑6): benannt
         }
 
         /// <summary>Textspalte, tolerant gegen fehlende Spalte und NULL (Etappe E3).</summary>
         internal static string Text(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return "";
-            try { return Convert.ToString(r[spalte]).Trim(); } catch { return ""; }
+            try { return Convert.ToString(r[spalte]).Trim(); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return ""; }      // E7c3 (B‑6): benannt
         }
 
         private static double R(double v, int dez = 2) { return Math.Round(v, dez); }

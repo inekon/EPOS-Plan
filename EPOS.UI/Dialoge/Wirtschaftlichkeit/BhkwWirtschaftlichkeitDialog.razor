@@ -463,6 +463,12 @@
        Projekt oder Anlage, Entlastung, Aufteilung) und Stromsteuer des Projekts
        (Unternehmensart, Befreiung § 9 Abs. 1 Nr. 3, Modus).
 
+       ETAPPE E7c3 (Mockup U22, E7c2-Q8 b): Jede Wahl steht als ANZEIGEZEILE — Wahlknopf,
+       Text und dahinter ihre Wirkung (Optionsgruppe.Wirkungen); die Energiesteuer nennt je
+       Wahl Satz und Betrag aus der Vorschau des Kerns
+       (WirtschaftlichkeitErgebnis.EnergiesteuerVorschau). Die Klapplisten des Formulars
+       bleiben: gewaehlt wird dort oder hier.
+
        Gerechnet wird NICHTS: Vorschlaege aus KwkgSatzRechner/KwkgKontingentRechner/
        KwkStromRechner, die Wirkung aus KwkgJahresbetrag — denselben Funktionen, die der
        Lauf ruft — mit den Mengen des zuletzt gebuchten Laufs. Die Ueberlagerung fuehrt
@@ -481,7 +487,7 @@
                                            Eintraege="@ArtEintraege()"
                                            Auswahl="@ArtAuswahl()"
                                            AuswahlChanged="UebArt"
-                                           Beschreibungen="@ArtBeschreibungen()" />
+                                           Wirkungen="@ArtWirkungen()" />
                             <Herleitungszeile Text="@_t.UebArtHinweis" />
                         </div>
 
@@ -490,7 +496,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_fallA)"
                                            Auswahl="@EigenfallAuswahl()"
                                            AuswahlChanged="UebEigenfall"
-                                           Beschreibungen="@EigenfallBeschreibungen()" />
+                                           Wirkungen="@EigenfallWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-fall">
@@ -498,7 +504,7 @@
                                            Eintraege="@FallEintraege()"
                                            Auswahl="@(_uebA.Abwaermeabfuhr ? 1 : 0)"
                                            AuswahlChanged="UebFall"
-                                           Beschreibungen="@FallBeschreibungen()" />
+                                           Wirkungen="@FallWirkungen()" />
                         </div>
 
                         <div class="epos-raster-huelle">
@@ -611,7 +617,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_esP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_esP, UebEsWahlWert())"
                                            AuswahlChanged="UebEsWahl"
-                                           Beschreibungen="@EsBeschreibungen()" />
+                                           Wirkungen="@EsWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-es-aufteilung">
@@ -619,9 +625,13 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_aufP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_aufP, UebAufteilungWert())"
                                            AuswahlChanged="UebAufteilung"
-                                           Beschreibungen="@AufteilungBeschreibungen()" />
+                                           Wirkungen="@AufteilungWirkungen()" />
                         </div>
 
+                        @if (EsVorschauHinweis() is { Length: > 0 } vorschauHinweis)
+                        {
+                            <Herleitungszeile Text="@vorschauHinweis" />
+                        }
                         <Herleitungszeile Text="@Steuerherkunft()" />
 
                         <div class="epos-ueb-wirkung epos-ueb-wirkung-es">
@@ -640,7 +650,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_uaP)"
                                            Auswahl="@BhkwWahlen.NummerZu(_uaP, _uebP.Unternehmensart)"
                                            AuswahlChanged="UebUnternehmensart"
-                                           Beschreibungen="@UnternehmensartBeschreibungen()" />
+                                           Wirkungen="@UnternehmensartWirkungen()" />
                         </div>
 
                         <Formularraster>
@@ -657,7 +667,7 @@
                                            Eintraege="@BhkwWahlen.Eintraege(_modus)"
                                            Auswahl="@BhkwWahlen.NummerZu(_modus, _uebP.StromsteuerBefreiungModus)"
                                            AuswahlChanged="UebModus"
-                                           Beschreibungen="@ModusBeschreibungen()" />
+                                           Wirkungen="@ModusWirkungen()" />
                         </div>
 
                         <div class="epos-ueb-wirkung epos-ueb-wirkung-st">
@@ -1386,7 +1396,7 @@
 
     /// <summary>Die Wirkung je Anlagenart: das Kontingent nach § 8 mit dem Kostenanteil
     /// dieser Anlage — aus KwkgKontingentRechner, wie der Lauf es ableitet.</summary>
-    private IReadOnlyDictionary<int, string> ArtBeschreibungen()
+    private IReadOnlyDictionary<int, string> ArtWirkungen()
     {
         var d = new Dictionary<int, string>();
         if (_uebA is null) return d;
@@ -1413,7 +1423,7 @@
 
     /// <summary>Die Wirkung je Tatbestand: der Eigenstromsatz nach § 7 Abs. 2 aus
     /// KwkgSatzRechner — ohne Satz (Nr. 1 über 100 kW, kein Katalog) der Grund.</summary>
-    private IReadOnlyDictionary<int, string> EigenfallBeschreibungen()
+    private IReadOnlyDictionary<int, string> EigenfallWirkungen()
     {
         var d = new Dictionary<int, string>();
         KwkgAnlagenAngabe? a = Aktuelle;
@@ -1453,7 +1463,7 @@
 
     /// <summary>Die Wirkung je Fall: bei Fall 1 die Nettostromerzeugung des gebuchten
     /// Laufs (aus dem Modulnachweis), bei Fall 2 die Formel.</summary>
-    private IReadOnlyDictionary<int, string> FallBeschreibungen()
+    private IReadOnlyDictionary<int, string> FallWirkungen()
     {
         KwkgAnlagenAngabe? a = Aktuelle;
         KwkgModulNachweis? n = a is null ? null : ModulNachweis(a);
@@ -1698,27 +1708,105 @@
         if (_uebNurAnlage) _uebA.AufteilungMethode = w; else _uebP.AufteilungMethode = w;
     }
 
-    private IReadOnlyDictionary<int, string> EsBeschreibungen()
+    /// <summary>
+    /// ETAPPE E7c3 (E7c2‑Q8 b, Mockup U22) — die Wirkung JE WAHL der Energiesteuer als
+    /// Anzeigezeile: Satz und Betrag im ersten Jahr aus der Vorschau des Kerns
+    /// (<see cref="WirtschaftlichkeitErgebnis.EnergiesteuerVorschau"/>: der Lauf rechnet
+    /// jede Wahl dieser Anlage mit demselben Steuerrechner). § 53 folgt der Aufteilung, die
+    /// in der Überlagerung gerade gilt. Ohne Vorschau (kein Lauf, Stand vor E7c3) bleibt
+    /// der Text der Vorschrift.
+    /// </summary>
+    private IReadOnlyDictionary<int, string> EsWirkungen()
     {
         var d = new Dictionary<int, string>();
+        List<EnergiesteuerVorschauZeile> vorschau = VorschauDerAnlage();
+        string aufteilung = UebAufteilungWert();
         foreach (Steuerwahl w in _esP)
-            d[w.Nummer] = w.Wert switch
+        {
+            bool keine = string.Equals(w.Wert, DbWerte.ENERGIESTEUER_WAHL_KEINE, StringComparison.Ordinal);
+            bool nach53 = string.Equals(w.Wert, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal);
+            EnergiesteuerVorschauZeile? z = keine ? null : vorschau.FirstOrDefault(x =>
+                string.Equals(x.Wahl, w.Wert, StringComparison.Ordinal) &&
+                (!nach53 || string.Equals(x.Aufteilung, aufteilung, StringComparison.Ordinal)));
+            d[w.Nummer] = z is not null ? VorschauText(z) : w.Wert switch
             {
                 DbWerte.ENERGIESTEUER_WAHL_53 => _t.UebEs53,
                 DbWerte.ENERGIESTEUER_WAHL_53A => _t.UebEs53a,
                 DbWerte.ENERGIESTEUER_WAHL_54 => _t.UebEs54,
                 _ => _t.UebEsKeine
             };
+        }
         return d;
     }
 
-    private IReadOnlyDictionary<int, string> AufteilungBeschreibungen()
+    /// <summary>Die Wirkung je Aufteilung — der Betrag bei § 53 aus der Vorschau, bei
+    /// „energetisch" dazu der Anteil des Stroms am Brennstoff; ohne Vorschau der Text.</summary>
+    private IReadOnlyDictionary<int, string> AufteilungWirkungen()
     {
         var d = new Dictionary<int, string>();
+        var k = BhwTexte.Kultur;
+        List<EnergiesteuerVorschauZeile> vorschau = VorschauDerAnlage();
+        EnergiesteuerVorschauZeile? voll = Vorschau53(vorschau, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF);
+        EnergiesteuerVorschauZeile? energetisch = Vorschau53(vorschau, DbWerte.AUFTEILUNG_ENERGETISCH);
         foreach (Steuerwahl w in _aufP)
-            d[w.Nummer] = string.Equals(w.Wert, DbWerte.AUFTEILUNG_ENERGETISCH, StringComparison.Ordinal)
-                ? _t.UebAufEnergetisch : _t.UebAufVoll;
+        {
+            bool istEnergetisch = string.Equals(w.Wert, DbWerte.AUFTEILUNG_ENERGETISCH, StringComparison.Ordinal);
+            if (!istEnergetisch)
+                d[w.Nummer] = voll?.SatzEur is not null
+                    ? string.Format(k, _t.UebAufVorschauVoll, voll.BetragEur.ToString("N1", k))
+                    : _t.UebAufVoll;
+            else if (energetisch?.Menge is double menge && voll?.Menge is double mengeVoll && mengeVoll > 0)
+                d[w.Nummer] = string.Format(k, _t.UebAufVorschauEnergetisch,
+                                            (menge / mengeVoll).ToString("N3", k),
+                                            energetisch.BetragEur.ToString("N1", k));
+            else
+                d[w.Nummer] = _t.UebAufEnergetisch;
+        }
         return d;
+    }
+
+    /// <summary>Die Vorschauzeilen DIESER Anlage aus dem gebuchten Lauf (Erwartet);
+    /// leer ohne Lauf oder bei einem Stand vor E7c3.</summary>
+    private List<EnergiesteuerVorschauZeile> VorschauDerAnlage()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null) return new List<EnergiesteuerVorschauZeile>();
+        WirtschaftlichkeitErgebnis? e = Ergebnisse().FirstOrDefault(x => x.IdProjekt == a.IdProjekt);
+        if (e?.EnergiesteuerVorschau is null) return new List<EnergiesteuerVorschauZeile>();
+        return e.EnergiesteuerVorschau.Where(z => z is not null &&
+            string.Equals(z.Anlage, a.Bezeichner, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    private static EnergiesteuerVorschauZeile? Vorschau53(List<EnergiesteuerVorschauZeile> vorschau, string aufteilung)
+        => vorschau.FirstOrDefault(z =>
+            string.Equals(z.Wahl, DbWerte.ENERGIESTEUER_WAHL_53, StringComparison.Ordinal) &&
+            string.Equals(z.Aufteilung, aufteilung, StringComparison.Ordinal));
+
+    /// <summary>Eine Vorschauzeile als Wirkung: Satz, Einheit und Betrag (bei § 54 mit dem
+    /// Sockel, den diese Wahl auslöst); ohne Position der Betrag; dahinter der Grund.</summary>
+    private string VorschauText(EnergiesteuerVorschauZeile z)
+    {
+        var k = BhwTexte.Kultur;
+        string betrag = z.BetragEur.ToString("N1", k);
+        string text;
+        if (z.SatzEur is null)
+            text = string.Format(k, _t.UebEsVorschauOhneSatz, betrag);
+        else if (string.Equals(z.Wahl, DbWerte.ENERGIESTEUER_WAHL_54, StringComparison.Ordinal) && z.SockelEur > 0)
+            text = string.Format(k, _t.UebEsVorschau54, z.SatzEur.Value.ToString("N2", k), z.SatzEinheit(),
+                                 z.SockelEur.ToString("N0", k), betrag);
+        else
+            text = string.Format(k, _t.UebEsVorschau, z.SatzEur.Value.ToString("N2", k), z.SatzEinheit(), betrag);
+        return string.IsNullOrEmpty(z.Grund) ? text : string.Format(k, _t.UebEsVorschauGrund, text, z.Grund);
+    }
+
+    /// <summary>Der Hinweis unter den Wahlen, wenn ein gebuchter Lauf da ist, aber noch
+    /// keine Vorschau je Wahl trägt (Stand vor E7c3); sonst leer.</summary>
+    private string EsVorschauHinweis()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null) return "";
+        bool lauf = Ergebnisse().Any(x => x.IdProjekt == a.IdProjekt);
+        return lauf && VorschauDerAnlage().Count == 0 ? _t.UebEsVorschauOhne : "";
     }
 
     /// <summary>
@@ -1781,7 +1869,7 @@
             _uebP.StromsteuerBefreiungModus = WertMitVorgabe(_modus, n, DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS);
     }
 
-    private IReadOnlyDictionary<int, string> UnternehmensartBeschreibungen()
+    private IReadOnlyDictionary<int, string> UnternehmensartWirkungen()
     {
         var d = new Dictionary<int, string>();
         foreach (Steuerwahl w in _uaP)
@@ -1794,7 +1882,7 @@
         return d;
     }
 
-    private IReadOnlyDictionary<int, string> ModusBeschreibungen()
+    private IReadOnlyDictionary<int, string> ModusWirkungen()
     {
         var d = new Dictionary<int, string>();
         foreach (Steuerwahl w in _modus)
