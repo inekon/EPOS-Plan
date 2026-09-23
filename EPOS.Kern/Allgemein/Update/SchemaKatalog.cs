@@ -4762,6 +4762,62 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_MENGE"/>
         public const string SPALTE_PW_SZEN_WORST_MENGE = "Szen_Worst_Menge";
 
+        // -------------------------------------------------------------------------
+        // Schritt 117 - die Traegerpreise best/worst (Schritt C des Analysepapiers,
+        //               Etappe E9a, Konzept § 2.11.5 Zeile „Energiepreise je Traeger")
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt C, Schemaschritt 117): die <b>Trägerpreise je Szenario</b> an
+        /// der Projektübersteuerung <c>energy_project_settings</c> — Arbeits-, Grund- und
+        /// Leistungspreis je Best und Worst, in derselben Einheit wie die Erwartet-Spalten
+        /// <c>custom_price_work</c>, <c>custom_price_base</c> und <c>custom_price_power</c>
+        /// (je Abrechnungseinheit, €/a, €/(kW·a) bzw. €/(kW·Monat)).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet"</b> (E9a‑Q5, Lesart a). Ein gepflegter
+        /// Wert ersetzt den wirksamen Erwartet-Preis des Trägers ALS GANZES (E9a‑Q3, Lesart a);
+        /// die Preisanteile der Zerlegung bleiben prozentual. Bei gepflegter
+        /// Leistungspreis-Staffel (Schritt 104) oder saisonaler Leistungspreisreihe gilt diese,
+        /// und ein Szenario-Leistungspreis bleibt mit einer Kohärenzzeile ohne Wirkung.</para>
+        ///
+        /// <para><b>Kein zweiter DDL-Ort.</b> Der Kern legt <c>energy_project_settings</c>
+        /// nirgends selbst an (die Tabelle steht im Grundschema); jeder Leser fragt die Spalten
+        /// tolerant (<c>EnergietraegerPreisCtrl.SzenarioLesen</c>), der Schreibweg prüft sie
+        /// vorher (<c>EnergietraegerPreisCtrl.SzenarioSpaltenVorhanden</c>). KEIN DML; die
+        /// Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — dieselbe Begründung wie bei
+        /// <see cref="Schritt12_Preismodell"/>.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt117_TraegerpreisSzenario =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_ARBEIT_BEST,    "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_ARBEIT_WORST,   "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_GRUND_BEST,     "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_GRUND_WORST,    "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_LEISTUNG_BEST,  "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREIS_LEISTUNG_WORST, "DOUBLE"),
+        };
+
+        /// <summary>Arbeitspreis des BEST-Szenarios je Abrechnungseinheit; NULL = wie Erwartet
+        /// (<c>custom_price_work</c> bzw. dessen Rückfallkette). Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_ARBEIT_BEST = "custom_price_work_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_ARBEIT_BEST"/>
+        public const string SPALTE_EPS_PREIS_ARBEIT_WORST = "custom_price_work_worst";
+
+        /// <summary>Grundpreis des BEST-Szenarios [€/a]; NULL = wie Erwartet
+        /// (<c>custom_price_base</c>). Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_GRUND_BEST = "custom_price_base_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_GRUND_BEST"/>
+        public const string SPALTE_EPS_PREIS_GRUND_WORST = "custom_price_base_worst";
+
+        /// <summary>Leistungspreis des BEST-Szenarios (Einheit wie
+        /// <c>custom_price_power</c>); NULL = wie Erwartet. Schemaschritt 117.</summary>
+        public const string SPALTE_EPS_PREIS_LEISTUNG_BEST = "custom_price_power_best";
+
+        /// <inheritdoc cref="SPALTE_EPS_PREIS_LEISTUNG_BEST"/>
+        public const string SPALTE_EPS_PREIS_LEISTUNG_WORST = "custom_price_power_worst";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -4985,6 +5041,9 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt116_Szenariorahmen"/> (Etappe E9a, Schritt B) ist aus demselben
         /// Grund BEWUSST NICHT aufgeführt: Zeitraum und Mengenfaktor je Szenario hängen an
         /// <c>Tab_ProjektWirtschaftlichkeit</c> und erreichen den Rechenweg als Parameter.
+        /// <see cref="Schritt117_TraegerpreisSzenario"/> (Schritt C) aus dem Grund von
+        /// <see cref="Schritt12_Preismodell"/>: <c>energy_project_settings</c> gehört dem
+        /// Kostenmodul, die Simulation liest die Tabelle nirgends.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

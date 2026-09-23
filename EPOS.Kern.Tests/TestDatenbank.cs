@@ -574,6 +574,11 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
                     SpalteSicherstellen(s);
 
+                // Schritt 117 (Schritt C, Etappe E9a): die Traegerpreise best/worst an
+                // energy_project_settings. Aus DERSELBEN Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

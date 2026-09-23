@@ -1405,6 +1405,17 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 116, trocken);
 
+            // ---- Schritt 117: die Traegerpreise best/worst (Schritt C, Etappe E9a). REIN DDL
+            //      aus DERSELBEN Quelle wie SchemaMigration.Schritt_117_TraegerpreisSzenario
+            //      (SchemaKatalog.Schritt117_TraegerpreisSzenario): custom_price_work/base/
+            //      power_best/_worst an energy_project_settings, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 117, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

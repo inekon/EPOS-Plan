@@ -437,11 +437,16 @@ namespace WindowsFormsApplication1
         /// ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „wie Erwartet"; der
         /// Referenzlauf bleibt byte-gleich. Die Nummer 115 ist dem Zapfprofil (Stufe T2)
         /// zugesagt und bleibt in diesem Stand frei.
+        /// Mit den TRÄGERPREISEN BEST/WORST (Schritt 117, Schritt C) steht das Ziel auf
+        /// <b>117</b>: <c>custom_price_work/base/power_best/_worst</c> an
+        /// <c>energy_project_settings</c>
+        /// (<see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 116;
+        public const int Zielversion = 117;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

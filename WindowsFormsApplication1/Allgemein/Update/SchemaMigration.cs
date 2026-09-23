@@ -3915,6 +3915,21 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_116_SZENARIO_RAHMEN = 116;
 
+        /// <summary>
+        /// Schritt 117 — <b>die Trägerpreise best/worst</b> (Schritt C des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, sechs nullbare Spalten an <c>energy_project_settings</c>:
+        /// <c>custom_price_work_best</c>/<c>_worst</c>, <c>custom_price_base_best</c>/<c>_worst</c>
+        /// und <c>custom_price_power_best</c>/<c>_worst</c> — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_117_TRAEGERPREIS_SZENARIO = 117;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5492,6 +5507,18 @@ namespace WindowsFormsApplication1
                         "Betrachtungszeitraum und eigenem Mengenfaktor rechnen. KEIN Rechenergebnis " +
                         "aendert sich - die Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
                         Schritt_116_SzenarioRahmen),
+
+            // ETAPPE E9a (Schritt C) - die Traegerpreise best/worst an der
+            // Projektuebersteuerung. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt117_TraegerpreisSzenario. Er steht NACH 116 ohne
+            // Reihenfolgebedingung.
+            new Schritt(SCHRITT_117_TRAEGERPREIS_SZENARIO,
+                        "energy_project_settings: Arbeits-, Grund- und Leistungspreis je Szenario " +
+                        "(Best/Worst)",
+                        "Die Energietraeger liessen sich nicht mit eigenen Preisen fuer die Szenarien " +
+                        "Guenstig und Unguenstig rechnen. KEIN Rechenergebnis aendert sich - die " +
+                        "Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_117_TraegerpreisSzenario),
         };
 
         /// <summary>
@@ -8713,6 +8740,37 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + ", " + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE +
                     " (Prozent) an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". KEIN DML: Leer heisst " +
                     "'wie Erwartet' - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 117 - die Traegerpreise best/worst (Schritt C, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 117 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>. <b>Reines DDL</b>,
+        /// dieselbe Schleife wie bei Schritt 116; „DOUBLE" wird <c>REAL</c> an der
+        /// STRICT-Tabelle, nullbar und ohne Vorgabe. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_117_TraegerpreisSzenario(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("117: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt117_TraegerpreisSzenario.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Arbeits-, Grund- und Leistungspreis je Best und Worst an " +
+                    SchemaKatalog.ENERGY_PROJECT_SETTINGS + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
+                    "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
