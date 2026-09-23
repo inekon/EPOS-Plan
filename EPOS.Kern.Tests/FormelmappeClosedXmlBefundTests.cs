@@ -19,10 +19,12 @@ namespace EPOS.Kern.Tests
     ///     nach <c>RecalculateAllFormulas()</c>: Die Rechnung bleibt im Speicher, die Datei
     ///     sieht sie nicht. Nur <c>SaveOptions.EvaluateFormulasBeforeSaving</c> schreibt
     ///     Ergebnisse — mit 15 Stellen und mit den Lücken der eigenen Rechenmaschine.</description></item>
-    ///   <item><description>Die Rechenmaschine von ClosedXML kennt die Finanzfunktionen der
-    ///     Formelmappe nicht: <c>NPV</c> (NBW), <c>PMT</c> (RMZ) und <c>IRR</c> (IKV) ergeben
-    ///     <c>#NAME?</c>. Grundrechenarten, <c>SUM</c>, Potenzen, <c>IF</c>/<c>COUNTIF</c>,
-    ///     <c>MIN</c>, <c>ROUND</c> rechnet sie.</description></item>
+    ///   <item><description>Die Rechenmaschine von ClosedXML kennt zwei der drei
+    ///     Finanzfunktionen der Formelmappe nicht: <c>NPV</c> (NBW) und <c>IRR</c> (IKV) ergeben
+    ///     <c>#NAME?</c>, und jede Zelle, die auf sie verweist, erbt den Fehler (so auch die
+    ///     Annuität, deren <c>PMT</c> auf den NBW zeigt). <c>PMT</c> (RMZ) selbst,
+    ///     Grundrechenarten, <c>SUM</c>, Potenzen, <c>IF</c>/<c>COUNTIF</c>, <c>MIN</c>,
+    ///     <c>ROUND</c> rechnet sie.</description></item>
     /// </list>
     ///
     /// <para><b>Der Entscheid daraus</b> (<c>Formelmappe</c>): Die Formeln schreibt
@@ -67,19 +69,21 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
-        public void ClosedXML_rechnet_NPV_PMT_und_IRR_nicht()
+        public void ClosedXML_rechnet_NPV_und_IRR_nicht_wohl_aber_PMT()
         {
             using XLWorkbook wb = Probe();
             wb.RecalculateAllFormulas();
             IXLWorksheet ws = wb.Worksheet(1);
 
-            // Was sie rechnet: Summe und Potenz.
+            // Was sie rechnet: Summe, Potenz und PMT (RMZ) — mit Zahlen als Eingang.
             Assert.Equal(XLDataType.Number, ws.Cell("C1").Value.Type);
             Assert.Equal(-90000.0 + 30000.0 + 40000.0 + 50000.0, ws.Cell("C1").Value.GetNumber(), 6);
             Assert.Equal(Math.Pow(1.05, -2), ws.Cell("C2").Value.GetNumber(), 12);
+            Assert.Equal(XLDataType.Number, ws.Cell("C4").Value.Type);
+            Assert.Equal(-(0.05 * 90000.0) / (1.0 - Math.Pow(1.05, -3)), ws.Cell("C4").Value.GetNumber(), 6);
 
-            // Was sie nicht rechnet: die drei Finanzfunktionen der Formelmappe.
-            foreach (string adresse in new[] { "C3", "C4", "C5" })
+            // Was sie nicht rechnet: NPV und IRR (in der Mappe erben die Zellen darauf den Fehler).
+            foreach (string adresse in new[] { "C3", "C5" })
                 Assert.True(ws.Cell(adresse).Value.Type == XLDataType.Error,
                     adresse + " (" + ws.Cell(adresse).FormulaA1 + "): ClosedXML rechnet die Funktion " +
                     "jetzt — Entscheid der Formelmappe prüfen.");

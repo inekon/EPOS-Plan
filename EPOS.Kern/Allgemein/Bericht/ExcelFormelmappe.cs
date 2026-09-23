@@ -777,7 +777,7 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Warum es das gibt</b> (Befund E8b/0, <c>FormelmappeClosedXmlBefundTests</c>):
     /// ClosedXML 0.105.1 legt Formeln ohne zwischengespeichertes Ergebnis ab, und seine
-    /// Rechenmaschine kennt NPV, PMT und IRR nicht. Eine Mappe nur aus Formeln zeigte in
+    /// Rechenmaschine kennt NPV und IRR nicht. Eine Mappe nur aus Formeln zeigte in
     /// jedem Betrachter ohne eigene Rechenmaschine leere Zellen. Deshalb merkt sich dieses
     /// Register zu jeder Formelzelle die Zahl, die sie als Wert trug, und trägt sie nach dem
     /// Speichern als Ergebnis ein (OpenXML SDK, volle Stellenzahl); die Mappe verlangt
