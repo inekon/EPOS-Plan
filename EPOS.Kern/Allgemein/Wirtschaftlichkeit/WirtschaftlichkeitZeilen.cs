@@ -829,7 +829,8 @@ namespace WindowsFormsApplication1
                     // (VermiedenJeAnlage); hier wird nur gelesen. Die Herleitungszeile
                     // nennt Menge, Anteil und — bei mehr als einer Anlage — die
                     // Naeherung (A12): Die Strommatrix trennt nach Tarifzone, nicht nach
-                    // Anlage, der Schluessel ist der Netto-Stromanteil (Befund V-4).
+                    // Anlage, der Schluessel ist der Eigenverbrauch je Anlage, brutto aus
+                    // der Strommatrix (Befund V-4, seit E7 Konzept § 6.3 Nr. 32).
                     foreach (string komponente in vermiedenK)
                     {
                         string k = komponente;      // Fangkopie für den Abschluss

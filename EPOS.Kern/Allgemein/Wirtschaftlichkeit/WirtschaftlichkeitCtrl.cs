@@ -5450,14 +5450,23 @@ namespace WindowsFormsApplication1
         /// alle Module, und zwei verschiedene Schnitte im selben Block wären zwei
         /// Wahrheiten.</para>
         ///
-        /// <para><b>ETAPPE E7 — BEIDE ANLAGEN</b> (Konzept § 6.3 Nr. 32, Entscheid
-        /// U6‑Q1 vom 22.09.2026: „der Verteilschlüssel bringt beide Anlagen ein"). Die
-        /// vermiedene Menge ist seit E7 „Bedarf ohne JEDE Eigenerzeugung minus
-        /// Restbezug" und trägt damit KWK- UND PV-Eigenverbrauch. Der Schlüssel bringt
-        /// deshalb neben dem Blockheizkraftwerk die Photovoltaik mit IHRER
-        /// Eigennutzung ein — der Menge, um die die Bezugsgröße mit E7 gewachsen ist
-        /// (<see cref="StromMatrix.PvEigenGesamtMWh"/>). Der Schlüssel des
-        /// Blockheizkraftwerks bleibt, wie er war.</para>
+        /// <para><b>ETAPPE E7 — BEIDE ANLAGEN, BEIDE BRUTTO</b> (Konzept § 6.3 Nr. 32,
+        /// Entscheid U6‑Q1 vom 22.09.2026: „der Verteilschlüssel bringt beide Anlagen
+        /// ein"). Die vermiedene Menge ist seit E7 „Bedarf ohne JEDE Eigenerzeugung minus
+        /// Restbezug" und trägt damit KWK- UND PV-Eigenverbrauch. Der Schlüssel nimmt
+        /// beide aus der STROMMATRIX, derselben Brutto-Welt, aus der die Menge selbst
+        /// entsteht: das Blockheizkraftwerk mit seinem Eigenverbrauch nach der min-Regel
+        /// (<see cref="StromMatrix.KwkEigenGesamtMWh"/>), die Photovoltaik mit ihrer
+        /// Eigennutzung (<see cref="StromMatrix.PvEigenGesamtMWh"/>). Der Hilfsstrom
+        /// berührt diese Menge nicht — er mindert allein die KWKG-Mengen (Mockup
+        /// Kategorie 7, Orchestrator-Entscheid 23.09.2026 nach Empfehlung des Mockups).
+        /// Ohne Speicher ist der Schlüssel damit exakt: Jede Anlage bekommt genau ihren
+        /// Eigenverbrauch. Bis E7 kam der Schlüssel des Blockheizkraftwerks aus dem
+        /// Modulnachweis (NETTO, nach Hilfsstrom); allein war er gleichgültig, neben der
+        /// Photovoltaik nicht mehr.</para>
+        ///
+        /// <para>Der Modulnachweis liefert weiter den ANLAGENNAMEN: Er steht, wenn genau
+        /// ein Modul Eigenverbrauch trägt.</para>
         ///
         /// <para>Leer = kein Eigenverbrauch bestimmbar; dann bleibt die Rubrik bei der
         /// einen projektweiten Kette.</para>
@@ -5481,25 +5490,23 @@ namespace WindowsFormsApplication1
             if (erg == null) return leer;
             if (erg.VermiedenMengeMWh <= 0 && erg.VermiedenArbeitJahr == 0) return leer;
 
-            double kwkEigenMWh = 0;
+            // Der Modulnachweis liefert nur noch den Namen — genau dann, wenn EIN Modul
+            // Eigenverbrauch trägt; bei mehreren ist die Zeile die Technik.
             string name = "";
             int module = 0;
             if (kwkgModule != null)
                 foreach (KwkgModulNachweis n in kwkgModule)
                 {
                     if (n == null || n.EigenMWh <= 0) continue;
-                    kwkEigenMWh += n.EigenMWh;
                     module++;
                     if (module == 1) name = n.Bezeichner ?? "";
                 }
-            // Ohne Modulnachweis (Ersatzweg, kein gepflegter Satz) trägt die Matrix die
-            // Menge — sie ist dieselbe Größe, nur ohne die Aufteilung auf die Module.
-            if (kwkEigenMWh <= 0 && matrix != null)
-                kwkEigenMWh = matrix.KwkEigenGesamtMWh;
 
-            // ETAPPE E7 — die Photovoltaik mit ihrer Eigennutzung, soweit sie Bedarf
-            // deckt: genau die Menge, die die Bezugsgröße „ohne jede Eigenerzeugung"
-            // gegenüber dem Bedarf nach Photovoltaik mehr trägt.
+            // ETAPPE E7 — beide Schlüssel BRUTTO aus der Strommatrix: der
+            // KWK-Eigenverbrauch nach der min-Regel und die PV-Eigennutzung, soweit sie
+            // Bedarf deckt. Ohne Matrix gibt es keine vermiedene Menge und damit nichts
+            // zu verteilen.
+            double kwkEigenMWh = matrix != null ? matrix.KwkEigenGesamtMWh : 0;
             double pvEigenMWh = matrix != null ? matrix.PvEigenGesamtMWh : 0;
 
             var schluessel = new List<VermiedenAnlageNachweis>();
@@ -5688,8 +5695,9 @@ namespace WindowsFormsApplication1
             // ist „Bedarf OHNE JEDE Eigenerzeugung minus Restbezug" — StromMatrix.Baue
             // zieht die PV-Eigennutzung nicht mehr vorab ab. Die Menge traegt damit KWK-
             // UND PV-Eigenverbrauch, die § 9b-Korrektur oben greift auf beide, und der
-            // Schluessel bringt beide Anlagen ein. Die Ausweiszeile PvVermiedenerBezug
-            // (Flat-Preis, auch ohne Rollentarif) bleibt daneben stehen.
+            // Schluessel bringt beide Anlagen ein — beide brutto aus der Strommatrix.
+            // Die Ausweiszeile PvVermiedenerBezug (Flat-Preis, auch ohne Rollentarif)
+            // bleibt daneben stehen.
             erg.VermiedenJeAnlage = VermiedenAufteilung(eingabe, erg);
 
             erg.Hinweis = eingabe.Hinweis;

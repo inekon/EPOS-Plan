@@ -222,6 +222,47 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// <b>Beide Schlüssel brutto aus der Strommatrix</b> (Orchestrator-Entscheid
+        /// 23.09.2026 nach Empfehlung des Mockups: „der Hilfsstrom berührt die vermiedene
+        /// Menge nicht"). Der Modulnachweis des KWKG-Rechners führt den Eigenverbrauch
+        /// NETTO — hier 1.000,0 MWh nach 94,2 MWh Hilfsstrom —, die Strommatrix brutto
+        /// 1.094,2 MWh. Der Schlüssel nimmt die Matrix:
+        /// <code>
+        /// ALT (Netto-Schlüssel 1.000,0 : 85,5): BHKW 1.086,8 MWh, PV 92,9 MWh
+        /// NEU (Brutto-Schlüssel 1.094,2 : 85,5): BHKW 1.094,2 MWh, PV 85,5 MWh — exakt
+        /// </code>
+        /// Der Name des einen Moduls kommt weiter aus dem Modulnachweis.
+        /// </summary>
+        [Fact]
+        public void Beide_Schluessel_sind_brutto_der_Hilfsstrom_beruehrt_die_Menge_nicht()
+        {
+            StromMatrix m = Matrix(BEDARF_MWH, PV_MWH, BHKW_MWH, BEZUG_MWH);
+            var module = new List<KwkgModulNachweis>
+            {
+                new KwkgModulNachweis
+                {
+                    Bezeichner = "BHKW 1",
+                    StromBruttoMWh = BHKW_MWH,
+                    HilfsstromMWh = 94.2,
+                    StromNettoMWh = BHKW_MWH - 94.2,
+                    EigenMWh = BHKW_MWH - 94.2          // 1.000,0 — netto
+                }
+            };
+
+            List<VermiedenAnlageNachweis> zeilen =
+                WirtschaftlichkeitCtrl.VermiedenAufteilung(module, m, Ergebnis(m));
+
+            Assert.Equal(2, zeilen.Count);
+            Assert.Equal(WirtZeile.KOMPONENTE_BHKW, zeilen[0].Komponente);
+            Assert.Equal("BHKW 1", zeilen[0].Anlage);
+            Assert.Equal(BHKW_MWH, zeilen[0].EigenMWh, 6);       // brutto, nicht 1.000,0
+            Assert.Equal(BHKW_MWH, zeilen[0].MengeMWh, 4);
+            Assert.Equal(PV_MWH, zeilen[1].MengeMWh, 4);
+            Assert.Equal(293245.6, zeilen[0].WirksamEur, 2);
+            Assert.Equal(22914.0, zeilen[1].WirksamEur, 2);
+        }
+
+        /// <summary>
         /// Ohne Photovoltaik trägt der Schlüssel allein das Blockheizkraftwerk — eine
         /// Anlage, exakt, ohne Näherungsvermerk; mit Photovoltaik ohne BHKW trägt er allein
         /// die Photovoltaik.

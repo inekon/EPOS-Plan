@@ -1379,11 +1379,13 @@ namespace WindowsFormsApplication1
     /// hilft nicht weiter: Sie trennt nach TARIFZONE, nicht nach Anlage (Befund R8).</para>
     ///
     /// <para><b>Die Naeherung V‑4, ausgewiesen.</b> Verteilt wird nach dem
-    /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>), also nach dem Netto-Stromanteil
-    /// derselben Groesse, mit der schon der KWKG-Rechner seine Mengen auf die Module
-    /// legt. Bei genau EINER Anlage ist das exakt; bei mehreren ist es eine Annahme, und
-    /// <see cref="IstNaeherung"/> sagt es. Modulscharfe Stundenreihen waeren die
-    /// Alternative — ein Simulationsthema, kein Rubrikthema (A12).</para>
+    /// Eigenverbrauch je Anlage (<see cref="EigenMWh"/>) — seit E7 (Konzept § 6.3
+    /// Nr. 32) BRUTTO aus der Strommatrix: das Blockheizkraftwerk mit seinem
+    /// Eigenverbrauch nach der min-Regel, die Photovoltaik mit ihrer Eigennutzung; der
+    /// Hilfsstrom beruehrt die vermiedene Menge nicht. Bei genau EINER Anlage ist das
+    /// exakt; bei mehreren ist es eine Annahme, und <see cref="IstNaeherung"/> sagt es.
+    /// Modulscharfe Stundenreihen waeren die Alternative — ein Simulationsthema, kein
+    /// Rubrikthema (A12).</para>
     ///
     /// <para><b>Es wird verteilt, nicht gerechnet:</b> Die Summe von
     /// <see cref="MengeMWh"/>, <see cref="ArbeitEur"/> und

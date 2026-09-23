@@ -832,6 +832,9 @@ namespace EPOS.Kern.Tests
             string text = herleitung.Text(e);
             Assert.Contains("85,5", text);
             Assert.Contains("Näherung", text);
+            // E7 (Konzept § 6.3 Nr. 32): Der Schlüssel ist der Eigenverbrauch je Anlage,
+            // brutto aus der Strommatrix — ALT hieß es „nach dem Netto-Stromanteil".
+            Assert.Contains("verteilt nach dem Eigenverbrauch je Anlage", text);
             Assert.Null(herleitung.ExcelWert(e));       // keine Zahl in der Wertspalte
         }
 

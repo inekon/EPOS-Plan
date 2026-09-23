@@ -63205,7 +63205,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: verteilt nach dem Netto-Stromanteil je Anlage ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Näherung: verteilt nach dem Eigenverbrauch je Anlage ähnelt.
         /// </summary>
         public static string WIRT_ERL_B1_NAEHERUNG {
             get {

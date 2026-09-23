@@ -19897,7 +19897,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} MWh vermiedener Bezug · Anteil {1} %</value>
   </data>
   <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
-    <value>Näherung: verteilt nach dem Netto-Stromanteil je Anlage</value>
+    <value>Näherung: verteilt nach dem Eigenverbrauch je Anlage</value>
   </data>
   <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
     <value>vermiedene Kosten wirksam — {0} [€/a]</value>

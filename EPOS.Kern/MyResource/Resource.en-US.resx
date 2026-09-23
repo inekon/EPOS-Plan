@@ -19890,7 +19890,7 @@ Do you want to allow this?</value>
     <value>{0} MWh avoided purchase · share {1} %</value>
   </data>
   <data name="WIRT_ERL_B1_NAEHERUNG" xml:space="preserve">
-    <value>approximation: allocated by net electricity share per unit</value>
+    <value>approximation: allocated by self-consumption per unit</value>
   </data>
   <data name="WIRT_ERL_B1_WIRKSAM" xml:space="preserve">
     <value>avoided cost, effective — {0} [€/a]</value>
