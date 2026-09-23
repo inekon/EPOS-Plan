@@ -3,7 +3,7 @@
 **Dialog:** `BhkwWirtschaftlichkeitDialog` (`EPOS.UI/Dialoge/Wirtschaftlichkeit/`) — BW9 (Konzept § 2.2) · **Mockup:**
 `../../Mockups/Dialog_Formel_Zahlenprobe.html#bhkw` · **Recht:** § 2 Nr. 16 und Nr. 20, § 6 Abs. 3,
 § 7, § 8 KWKG 2025 · §§ 53, 53a, 54 EnergieStG · § 9 Abs. 1 Nr. 3, § 9b StromStG · **Code:**
-`KwkgAnlagenCtrl`, `WirtschaftlichkeitCtrl` (Erlösreihen `KWKG_ZUSCHLAG`, `KWKG_PAUSCHALE`,
+`KwkgAnlagenCtrl`, `KwkStromRechner`, `WirtschaftlichkeitCtrl` (Erlösreihen `KWKG_ZUSCHLAG`, `KWKG_PAUSCHALE`,
 `ENERGIESTEUER_GUTSCHRIFT`, `STROMSTEUER_BEFREIUNG`, `STROMSTEUER_ENTLASTUNG`) · **Konzept:** § 2.2,
 § 3.6, § 3.7, § 3.8, § 3.9
 
@@ -109,7 +109,9 @@ Formulars schreibt — gespeichert wird erst mit „Speichern":
    Feld Anteil Neuherstellungskosten; Eigenstrom nach § 6 Abs. 3 mit dem Satz je Option (keiner → 0 ·
    Nr. 1 → nicht möglich bei 300 kW · Nr. 2 → 2,4167 · Nr. 3 → 3,9683 ct/kWh); KWK-Strom Fall 1
    (Nettostromerzeugung) oder Fall 2 (Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ, leer = 0,845 aus
-   P_el ÷ P_th). Darunter die Tafel **Größe · Vorschlag · Herkunft · eigener Wert · gilt** — „eigener Wert" ist
+   P_el ÷ P_th) — dieser Teil ist **gebaut #440**: die Wahl Fall 1 / Fall 2 und die Zeile „Stromkennzahl σ"
+   mit Vorschlag, Herkunft, eigenem Wert und „gilt"; ohne P_el oder P_th gibt es keinen Vorschlag, bei Fall 2
+   dann keinen Zuschlag der Anlage und die Kohärenzzeile „Stromkennzahl fehlt". Darunter die Tafel **Größe · Vorschlag · Herkunft · eigener Wert · gilt** — „eigener Wert" ist
    je Größe ein Eingabefeld mit dem Platzhalter „leer = Vorschlag"; neben einem gesetzten Wert steht der Knopf
    „Vorschlag übernehmen", der das Feld leert:
 
@@ -190,6 +192,13 @@ Mengenkette (§ 2 Nr. 16 und Nr. 20 KWKG)
   Eigen zuerst: Eigen' = max(0, E − H) ;  Einsp' = max(0, F − max(0, H − E))
   Rechtskette: § 7 zahlt auf KWK-Strom → § 2 Nr. 16: bei Anlagen ohne Abwärmeabfuhr ist das
   die Nettostromerzeugung → § 2 Nr. 20: abzüglich Neben- und Hilfsanlagen. Das Netting ist richtig.
+  Fall 2 — Anlage mit Vorrichtung zur Abwärmeabfuhr (KWKG_Abwaermeabfuhr = 1):
+    σ(A)         = gepflegte KWKG_Stromkennzahl ; sonst P_el ÷ P_th der Gerätezeile ; sonst keine
+    Nutzwärme(A) = max(0, Wärme(A) − Wärmeüberschuss × P_el(A) / Σ P_el)
+    KWK-Strom(A) = min(Netto(A), Nutzwärme(A) × σ(A))   ; ohne σ: kein Zuschlag der Anlage
+    Kürzung(A)   = Netto(A) − KWK-Strom(A), zuerst von Einsp', dann von Eigen'
+    Ersatzweg: Nutzwärme und Netto des Projekts nach P_el auf die Anlagen, Kürzung zuerst Einspeisung
+    Vbh und Kontingentverbrauch bleiben beim Bruttostrom (Frage E7c1‑Q2)
 
 Jahresreihe mit Kontingent und Deckel
   Bonus_voll = Eigen × 10 × SatzEigen + Einsp × 10 × SatzEinsp      [€/a bei MWh und ct/kWh]
@@ -197,10 +206,14 @@ Jahresreihe mit Kontingent und Deckel
             Reihe[t] += Bonus_voll × Vergütet / Vbh
             Rest     −= Vergütet
   Kontingent § 8: Override > 0 gewinnt ; sonst neu 30.000 h · modernisiert ab 50 %/25 % →
-  30.000/15.000 · nachgerüstet ab 50/25/10 % → 30.000/15.000/10.000 ; darunter 0 mit Fehlgrund
+  30.000/15.000 · nachgerüstet ab 50/25/10 % → 30.000/15.000/10.000 ; darunter 0 mit Fehlgrund ;
+  ohne Anlagenart 0 mit Grund und die Kohärenzzeile „Anlagenart fehlt" (nur ohne gepflegtes Kontingent)
   Deckelstaffel 5.000 (2021) · 4.000 (2023) · 3.500 (2025) · 3.300 (2026) · 3.100 · 2.900 · 2.700 · 2.500 (ab 2030)
-  Prüfkette vorab: Stichtag ≤ 31.12.2026 · Realisierungsfrist 4 Jahre · Ausschreibung > 500 kW ·
-  Heizöl-Neuanlage ab 2025
+  Prüfkette vorab: Stichtag ≤ 31.12.2026 · Inbetriebnahme bis zum Ende der Frist zur Inbetriebnahme ·
+  Ausschreibung > 500 kW · Heizöl-Neuanlage ab 2025
+  Fristende = KWKG_INBETRIEBNAHME_FRISTENDE (Katalog, 2030 → 31.12.2030), nachgeschlagen mit dem
+  Inbetriebnahmejahr ; geprüft auch ohne Stichtag ; ohne Katalogwert Zeile „ungeprüft", der Zuschlag bleibt ;
+  danach läuft die Reihe bis zum Ende des Kontingents — keine Höchstdauer in Kalenderjahren
   Pauschale § 9 (≤ 2 kW): 0,04 × 60.000 × P_el, einmalig in Index 0
 
 Energiesteuer, anlagenscharf — je Betrachtungsjahr ein Rechnerlauf, Katalog: jüngste Zeile mit
@@ -243,6 +256,8 @@ Kohärenzprüfung (§ 3.9) — Warnzeilen ohne Rechenwirkung
   3 Belastung ohne Entlastung: Anteil ausgewiesen, keine Wahl bzw. kein § 9b → Hinweis
   4 Satz ≠ Katalogsatz (Toleranz 0,005 ct/kWh) → Hinweis
   Doppelpflege Hilfsenergie: Anlagenanteil > 0 UND aktive Kostenposition derselben Anlage → Warnung
+  Stromkennzahl fehlt: Fall 2 gewählt, weder gepflegtes σ noch P_el und P_th → Hinweis (ohne Betrag)
+  Anlagenart fehlt: weder Vbh-Kontingent noch Anlagenart → Hinweis (ohne Betrag)
 ```
 
 ## Berechnungserläuterung am Beispielprojekt
@@ -286,6 +301,37 @@ Gesamtkontingent ist danach erschöpft. Aus einer scheinbaren Dauerförderung wi
 zwölf Jahre mit fallendem Anfang — acht Jahre des Betrachtungszeitraums bleiben ohne Zuschlag. Das
 Mockup zeigt die Reihe als Balkendiagramm.
 
+Das Ende der Frist zur Inbetriebnahme — der 31.12.2030 aus dem Katalog (`KWKG_INBETRIEBNAHME_FRISTENDE`) —
+begrenzt nur, bis wann die Anlage in Betrieb gehen muss: Die Beispielanlage (Inbetriebnahme 01.10.2026)
+liegt davor, und ihre Reihe zahlt bis 2037, bis das Kontingent verbraucht ist. Eine Anlage mit
+Inbetriebnahme im Jahr 2031 bekäme keinen Zuschlag; die Herleitung nennt dann Fristende und Herkunft.
+
+### Fall 2 — Vorrichtung zur Abwärmeabfuhr
+
+Das Beispiel-BHKW führt das Kennzeichen nicht und rechnet Fall 1. Trüge es das Kennzeichen, gälte die
+Stromkennzahl aus der Gerätezeile, σ = 300 ÷ 355 = 0,845 (Herkunft „berechnet"):
+
+| Schritt | Rechnung | Ergebnis | Anmerkung |
+|---|---|---|---|
+| Nutzwärme | 1.953,9 − 0 | 1.953,9 MWh | Wärme des Moduls, kein Wärmeüberschuss |
+| Nutzwärme × σ | 1.953,9 × 300 ÷ 355 | 1.651,2 MWh | ein berechnetes σ trifft etwa die Bruttoerzeugung (1.650,0 MWh) |
+| KWK-Strom | min(1.563,2 ; 1.651,2) | 1.563,2 MWh | gleich der Nettostromerzeugung — keine Kürzung, Zuschlag Jahr 1 unverändert 32.022,2 € |
+
+Mit 300 MWh Wärmeüberschuss (gedachte Variante; bei einer einzigen Anlage ist der ganze Überschuss ihr Anteil):
+
+| Schritt | Rechnung | Ergebnis | Anmerkung |
+|---|---|---|---|
+| Nutzwärme | 1.953,9 − 300,0 | 1.653,9 MWh | der Überschuss geht nach P_el auf die Module |
+| KWK-Strom | min(1.563,2 ; 1.653,9 × 300 ÷ 355) | 1.397,7 MWh | Fall 2 greift |
+| Kürzung | 1.563,2 − 1.397,7 | 165,5 MWh | zuerst von der Einspeisung: 495,0 → 329,5 MWh; Eigenstrom 1.068,2 MWh unverändert |
+| Bonus Einspeisung | 329,5 × 10 × 5,5667 | 18.342,3 € | statt 27.555,2 € |
+| **Bonus_voll** | 18.342,3 + 25.815,2 | **44.157,5 €** | |
+| **Zuschlag Jahr 1** | 44.157,5 × 0,600 | **26.494,5 €** | statt 32.022,2 €; der Deckelanteil bleibt 0,600, weil Vollbenutzungsstunden und Kontingent beim Bruttostrom bleiben (Frage E7c1‑Q2) |
+
+Ohne P_th in der Gerätezeile und ohne gepflegtes σ bekäme die Anlage nach Fall 2 keinen Zuschlag, und die
+Kohärenzprüfung nennt sie in der Zeile „Stromkennzahl fehlt". Die Herleitung je Anlage nennt Fall, σ mit
+Herkunft, Nutzwärme, KWK-Strom und die Kürzung, davon Einspeisung und Eigenverbrauch.
+
 ### Energiesteuer
 
 | Schritt | Rechnung | Ergebnis | Anmerkung |
@@ -307,9 +353,9 @@ Mockup zeigt die Reihe als Balkendiagramm.
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt **A** des Analysepapiers § 6 — die Nummer fällt bei der Umsetzung, heute **105**: 101 trägt die Gebäudespalten der Gebäudesimulation, 102 Konzept § 6.3 Nr. 30 (#437), 103 den Zapfprofilgenerator, 104 die Leistungspreis-Staffel (E7b, #439); Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6. Die Messung nach A2 ist mit E7a (#437) erfolgt: Wärmeüberschuss nur als Projektsumme, es greift die Aufteilung nach P_el; **entschieden 23.09.2026** (E7‑Q2): (1), (3)–(5) nach Empfehlung, (2) mit Auflage — keine willkürliche Vorgabe für σ, Schritt 105, Bau E7c |
+| ✔ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlte:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führte weder Kennzeichen noch Stromkennzahl und rechnete immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | entschieden 18.09.2026 nach Empfehlung, die Teilfragen am 23.09.2026 (E7‑Q2; (2) mit Auflage — keine willkürliche Vorgabe für σ); **umgesetzt #440**: Kennzeichen `KWKG_Abwaermeabfuhr` und Stromkennzahl `KWKG_Stromkennzahl` je Anlage (Schemaschritt 105), Fall 2 in der Mengenbildung je Anlage und auf dem Ersatzweg (`KwkStromRechner`, Rechnung oben), gepflegt in der Überlagerung „Sätze und Herkunft"; kein Referenzprojekt betroffen — Konzept § 3.6. Proben an 1030: σ gepflegt 0,5 → KWKG Jahr 1 7.315,96 → 6.137,94 € (Kürzung 71,02 MWh), σ berechnet 50 ÷ 81 → 7.315,92 € (Kürzung 0,002 MWh aus der Rundung, Frage E7c1‑Q1) |
 | ✔ Nr. 29 | CO₂-Grenzwert heizwertbezogen geprüft (Befund R11, `04`): Zähler mit 200,9 g/kWh, im Beispiel 242,1 g/kWh | **umgesetzt #437**: brennwertbezogen — im Beispiel 218,6 g/kWh, die Befreiung bleibt 23.677,5 €/a; ein Grenzfall mit 72 % Energieertrag bekommt 8.200,00 statt 0,00 €/a (Konzept § 3.8) |
-| A20 | Förderende 2030 (R‑U5) nicht gebaut: Die Prüfkette führt die Realisierungsfrist als Konstante (4 Jahre), die Jahresreihe oben zahlt bis 2037 | **entschieden 23.09.2026** (E7‑Q3, Lesart b): 2030 = Ende der Inbetriebnahmefrist statt fester vier Jahre, Bau E7c |
+| ✔ A20 | Förderende 2030 (R‑U5) fehlte: Die Prüfkette führte die Realisierungsfrist als Konstante (4 Jahre ab dem Stichtag), die Jahresreihe oben zahlt bis 2037 | entschieden 23.09.2026 (E7‑Q3, Lesart b); **gebaut #440** (Teil Förderende): 2030 = Ende der Frist zur Inbetriebnahme als Katalogdatum `KWKG_INBETRIEBNAHME_FRISTENDE` statt fester vier Jahre, geprüft auch ohne Stichtag, ohne Katalogwert die Zeile „ungeprüft"; die Reihe oben zahlt unverändert bis 2037. Proben an 1030: Stichtag 2025 und Inbetriebnahme 06/2030 → 0 → 5.899,97 €; Inbetriebnahme 03/2031 ohne Stichtag → 5.899,97 → 0 €. Mindestabstand und ETS 2 aus A20 bleiben offen |
 | ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht — es entsteht aber gar keine Stromsteuer; gemessen 1.510,84 €/a auf beiden Pfaden (Projekt 1024) | umgesetzt mit B6: Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS, Schemaschritt 88); der Messwert zu 1024 ist am heutigen Stand der Testdatenbank nicht nachstellbar (Hocheffizienznachweis 0) |
 | ✔ K3 | Modusfeld § 9 Nr. 3 | erledigt mit B6: Schemaschritt 88, Feld offen, Vorgabe AUSWEIS |
 | K4 | Tabellenspalte „Brennstoff" ohne Leseweg | kleiner Leser `CarrierId` → Name in B5 |
@@ -317,6 +363,6 @@ Mockup zeigt die Reihe als Balkendiagramm.
 | R-U1 | § 53 neben § 53a — Entweder-oder | als Auswahl modelliert, mit dem Hauptzollamt zu klären |
 | R-U3 | Ausschluss fossiler flüssiger Brennstoffe (nur Sekundärquelle) | als Prüfkette „Heizöl-Neuanlage ab 2025" umgesetzt |
 | ✔ S-1 | Hilfsstrom-Netting des Beispiels: Die Mengentafel teilte die Nettostromerzeugung 1.563,2 MWh anteilig 70/30; `HilfsstromRechner.NettoSplit` und die Formelkarte ziehen den Hilfsstrom **zuerst vom Eigenverbrauch** ab (Eigen' = 1.155,0 − 86,8 = 1.068,2 · Einsp' = 495,0 MWh — „Physik, keine Konvention"); der Rechenkern bewertet die Einspeisung der Strommatrix (`KwkEinspeisungGesamtMWh`) | erledigt (U24): Das Beispiel folgt der Kernregel — Zuschlag Jahr 1 32.022,2 €, Einspeiseerlös 24.750,0 €, Block Blockheizkraftwerk 77.975,6 €; Mengentafel, Vorschau, Jahresreihe, `07`, `Beispielprojekt.md` § 3 und die Abschnitte 5, 7 und 8 des Mockups sind daraus neu gerechnet |
-| U22 | Überlagerung „Sätze und Herkunft" mit Eingabefeld „eigener Wert" je Größe; die Zahlen-, Datums- und Schalterfelder bleiben im Formular, die sechs Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" wandern in die Überlagerung (Anwenderwünsche 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen |
+| U22 | Überlagerung „Sätze und Herkunft" mit Eingabefeld „eigener Wert" je Größe; die Zahlen-, Datums- und Schalterfelder bleiben im Formular, die sechs Klapplisten werden Anzeigezeilen, die Knöpfe „Vorschlag übernehmen" wandern in die Überlagerung (Anwenderwünsche 18.09.2026) | Mockup Abschnitt 5; Konzept § 2.2 („Der Vorschlag steht am Feld, nicht als Sammelknopf") ist damit überholt und nachzuziehen. **Teilweise gebaut #440:** der Knopf „Sätze und Herkunft…" und in der Überlagerung die zwei Felder des Falls 2 (Wahl Fall 1 / Fall 2, Stromkennzahl σ); der Rest (Anlagenart, Tatbestand, Satztafel, Steuern, „Wirkung Jahr 1") mit E7c2 (Frage E7c1‑Q7) |
 | U25 | Staffelzeile unter dem Jahresdeckel und Warnband zum Deckelanteil — Anzeigen, die der Dialog nicht führt | Mockup Abschnitt 5, Anhang Umsetzungsstand |
 | U26 | Die Satzfelder zeigen zwei Nachkommastellen (`Nachkommastellen="2"`): 5,5667 erscheint als 5,57, wer das Feld anfasst, verliert zwei Stellen | Mockup Abschnitt 5, Anhang Umsetzungsstand: vier Nachkommastellen |
