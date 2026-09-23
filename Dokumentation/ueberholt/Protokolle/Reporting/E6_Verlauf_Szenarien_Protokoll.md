@@ -15,7 +15,7 @@ Phasen; Phase 1: `ef84a3ec` (E6/1), `4bb36b7f` (E6/2), `c9cb66df` (E6/3), `10867
 (E6/6), `d8a090b3` (E6/7), `0dcde77d` (E6/8), `a63fb89d` (E6/9), `7bbcb0e6` (E6/10), `946fa043` (E6/11), `921b4472` (E6/12),
 `410d0dd9` (E6/13); dazu die Zusammenführungen `67e56293` (Arbeitszweig `211b7c9b`, nur Papiere, ohne Konflikt) und
 `c54188c2` (origin `d6c89d24`, sechs Commits der Gebäudesimulation mit der Basis R11; ein Konflikt, Konzept § 6.3 Nr. 20/21);
-Phase 2: `0bfee5b1` (E6/14), `d30485bb` (E6/15), `6be317f1` (E6/16), `fa80786a` (E6/17). Merge NACHTRAG-436-MERGE in
+Phase 2: `0bfee5b1` (E6/14), `d30485bb` (E6/15), `6be317f1` (E6/16), `fa80786a` (E6/17). Merge `57b15a7c` in
 `ios_migration_september`. Opus 5.5 im Worktree `.claude/worktrees/e6`.
 
 ## Befund vor der Welle

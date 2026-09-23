@@ -3,7 +3,7 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 23.09.2026** · Codestand NACHTRAG-436-MERGE · `SchemaStand.Zielversion` = **100**, Schemaschritte
+**Stand 23.09.2026** · Codestand `57b15a7c` · `SchemaStand.Zielversion` = **100**, Schemaschritte
 90–100 vergeben, neue ab **101**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
 unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im Etappenplan **E0–E12** des
 Analysepapiers. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die Degradation nicht

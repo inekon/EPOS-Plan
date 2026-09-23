@@ -1,6 +1,6 @@
 # Konzept: Wirtschaftlichkeit EPOS-Plan — gültiger Stand (konsolidiert)
 
-**Stand 23.09.2026** · Codestand NACHTRAG-436-MERGE · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
+**Stand 23.09.2026** · Codestand `57b15a7c` · `SchemaStand.Zielversion` = 100 · Schemaschritte 90–100 vergeben, neue ab **101** · konsolidiert aus drei Quelldokumenten; Mockups und Rechenwege im Ordner `Wirtschaftlichkeit_Kosten/`
 
 Die vier zuletzt vergebenen Schritte gehören nicht diesem Feld: **97** Szenario und Bezugsjahr der
 Klimaregion (`Schritt97_KlimaSzenario`, KL‑6), **98** BHKW-Gesamtwirkungsgrad als Faktor (reines DML,
@@ -2415,7 +2415,7 @@ U-Nummern des Mockup-Anhangs „Umsetzungsstand". Diese Tafel löst sie gegenein
 | **E3** Plattform | acht Schritte: vier nahtlose Hüllen, `Dienste.Datei`, die beiden Gaben, Rechenaufruf, `KostenKomponenteHuelle` mit Fenster-Adapter, PV/Tarif/Katalog/Verlauf, Sprünge, `BerichteKostenGaben` und Whitelist | **umgesetzt #431** (Merge `2cfee66b`) |
 | **E4** Erlösrubrik und Steuerzeilen | U7 (zwei Beträge, zwei Zeilen), 9d (Gründe je Position), U6 (Anlagenfeld, Komponentenblöcke, Zwischensummen, Block „projektweit") | **#432** |
 | **E5** Ergebnisansicht und V‑A | Umschalter und vier Abschnitte (U2), Bandbreite nebeneinander (U4), Empfehlungskarten (U5), Hinweistext (U10), „Bericht erzeugen" (U44), V‑A, Hinweiszeile aus U39, Kennzeichnung Nr. 31 | **#434** (Merge `deba5e57`) |
-| **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge NACHTRAG-436-MERGE) |
+| **E6** Verlauf mit drei Szenarien | dritte Strichart, Dreierreihe, Verlauf als Abschnitt der Seite (U3), „Verlauf nach Excel…" und Berichte (U13), Wegfall von „Verlauf…" (Rest von U2), Spannenbild, Vorschlagssatz für den Stamm, „Bericht erzeugen" ohne Merken | **#436** (Merge `57b15a7c`) |
 | **E7** … **E12** | rechenwirksame Lücken (B8, dazu Nr. 29, 30, 32) · V-C/V-D · V-E · ND-S3 · Wiki (E11 entfällt) | offen — **nächste Etappe: E7** |
 
 Daneben laufen **W‑E2** (die Statuszeilen-Schreibweise für E2, #405) und **DL‑2** (Knopfleisten aller
