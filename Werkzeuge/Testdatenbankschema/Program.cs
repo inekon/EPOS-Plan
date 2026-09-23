@@ -1268,6 +1268,49 @@ namespace Testdatenbankschema
                 if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 
+            // ---- Schritt 108: KU-S1, die vier Kuehleingaben an Tab_Gebaeude(_STAMM)
+            //      (Kuehlkonzept 7.1, Stufe KU1). REIN DDL: Sicht verwerfen, acht Spalten,
+            //      Sicht Abfrage_Projektgebaeude neu - DIESELBE Quelle (GebaeudeSchema), aus
+            //      der sich SchemaMigration.Schritt_108_KuehlungGebaeude bedient.
+            //
+            //      ER STEHT NACH 101, dessen Sicht er erweitert; GebaeudeSchema.Alle oben baut
+            //      die Sicht von M3, dieser Durchgang die mit den Kuehlspalten.
+            //
+            //      ERGEBNISNEUTRAL: Die Spalten bleiben NULL (der Schalter 0), kein Rechenweg
+            //      liest sie.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 108 - Kuehlspalten der Gebaeudetabellen: " +
+                              (GebaeudeSchema.KuehlspaltenVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht108 = new List<string>();
+                int angelegt108 = GebaeudeSchema.KuehlspaltenAlle(bericht108);
+                angelegt += angelegt108;
+                foreach (string zeile in bericht108)
+                    Console.WriteLine("Schritt 108 - " + zeile + ".");
+                Console.WriteLine("Schritt 108 - vollstaendig: " + GebaeudeSchema.KuehlspaltenVollstaendig() +
+                                  " (erwartet True).");
+            }
+
+            // ---- Schritt 109: KU-S2, die Projekteinstellung Kuehlbetrieb (Kuehlkonzept 7.2,
+            //      K10, E27). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_109_KuehlungProjekteinstellung bedient
+            //      (KuehlungSchema.Projekteinstellung): 0/1, Vorgabe 0 - jedes Projekt der
+            //      Testdatenbank steht danach auf "aus".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in KuehlungSchema.Projekteinstellung)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 109, trocken);
+
+            // ---- Schritt 110: KU-S4, die neun Ergebnisspalten des Kuehlkanals (Kuehlkonzept
+            //      7.4). REIN DDL aus DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_110_KuehlungErgebnis bedient
+            //      (KuehlungSchema.Ergebnisspalten): nullbares REAL, ohne Nachtrag.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 110, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

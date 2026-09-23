@@ -20889,6 +20889,18 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>„{0}“ ist keine Farbe in der Schreibweise #RRGGBB.</value>
   </data>
+  <data name="ADM_SET_GRUPPE_NEUE_PROJEKTE" xml:space="preserve">
+    <value>Neue Projekte</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Neue Projekte mit Kühlung anlegen</value>
+  </data>
+  <data name="ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage.</value>
+  </data>
+  <data name="ADM_SET_MSG_KUEHLUNG_FEHLER" xml:space="preserve">
+    <value>Die Einstellung „Neue Projekte mit Kühlung anlegen“ konnte nicht gespeichert werden. Fehler: {0}</value>
+  </data>
   <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
     <value>Verwaltung Heizkessel</value>
   </data>

@@ -740,11 +740,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Projekte ähnelt.
+        /// </summary>
+        public static string ADM_SET_GRUPPE_NEUE_PROJEKTE {
+            get {
+                return ResourceManager.GetString("ADM_SET_GRUPPE_NEUE_PROJEKTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Farbe einer Größe gilt anwendungsweit: Jedes Diagramm und der Bericht zeichnen sie damit. Übernommen wird die Änderung mit „OK“. ähnelt.
         /// </summary>
         public static string ADM_SET_HINT_DIAGRAMMFARBEN {
             get {
                 return ResourceManager.GetString("ADM_SET_HINT_DIAGRAMMFARBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gilt nur für neu angelegte Projekte. Vorhandene Projekte behalten ihre Einstellung, ein kopiertes Projekt übernimmt die seiner Vorlage. ähnelt.
+        /// </summary>
+        public static string ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG", resourceCulture);
             }
         }
         
@@ -808,6 +826,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_LBL_GEOKODIERUNG {
             get {
                 return ResourceManager.GetString("ADM_SET_LBL_GEOKODIERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Neue Projekte mit Kühlung anlegen ähnelt.
+        /// </summary>
+        public static string ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG", resourceCulture);
             }
         }
         
@@ -889,6 +916,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_MSG_KI_FEHLER {
             get {
                 return ResourceManager.GetString("ADM_SET_MSG_KI_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einstellung „Neue Projekte mit Kühlung anlegen“ konnte nicht gespeichert werden. Fehler: {0} ähnelt.
+        /// </summary>
+        public static string ADM_SET_MSG_KUEHLUNG_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SET_MSG_KUEHLUNG_FEHLER", resourceCulture);
             }
         }
         

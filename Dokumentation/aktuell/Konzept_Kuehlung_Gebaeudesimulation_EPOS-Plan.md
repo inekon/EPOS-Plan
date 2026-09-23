@@ -1508,6 +1508,12 @@ Schritt bei seiner Beauftragung** — lückenlos aufsteigend nach `SchemaMigrati
 und das Umsetzungskonzept 1.6 verlangen. Wer hier eine Nummer einträgt, erzeugt eine Kollision mit
 den Gebäude- und Zonenschritten, die parallel entstehen.
 
+**Vergeben mit der ersten Welle von KU1 (23.09.2026):** `KU-S1` ist Schemaschritt **108**, `KU-S2`
+**109**, `KU-S4` **110** — drei Schritte, nicht verschmolzen: Jeder trägt seinen Papiernamen und
+seine Nummer, und die drei treffen verschiedene Tabellenfamilien mit verschiedenem Risiko (Gebäude
+samt Sichtneubau, Projekteinstellung, Ergebnistabellen). Die Definitionen stehen bei
+`GebaeudeSchema` (`KU-S1`) und `KuehlungSchema` (`KU-S2`, `KU-S4`). `KU-S3` bekommt seine Nummer mit KU2.
+
 Für alle neuen Tabellen gilt ohne Ausnahme: **`STRICT`**, Schlüssel
 `INTEGER PRIMARY KEY AUTOINCREMENT`, `CREATE TABLE`/`CREATE INDEX` mit **`IF NOT EXISTS`**
 (wiederholbar), Textlänge als `CHECK (length(...) ≤ n)`, Boolean als `INTEGER NOT NULL DEFAULT 0
@@ -2210,6 +2216,14 @@ sich mit `--ohne Waermebedarf_Kuehlung Deckung_Kuehlung … Kaelterestbedarf` ge
 GB-Basis **byte-gleich nachweisen**, ohne Neu-Einfrieren. Genau so ist die Zeile „KU-S1 … KU-S4
 byte-gleich" unten zu lesen: byte-gleich **in den alten Schlüsseln**, mit benanntem Ausschluss
 der neun neuen. Der Nachweis ist zu **führen**, nicht zu behaupten.
+
+**So umgesetzt — ohne Ausschluss (23.09.2026, Schritte 108 bis 110):** Der Export nimmt die neun
+Spalten erst in `aggregate.csv` auf, wenn ein Lauf sie **erhebt**; eine NULL-Zelle heißt „nicht
+erhoben" und trägt keine Aussage, die der Vergleich prüfen könnte (`Referenzlauf/Ergebnisexport.cs`).
+Damit ist die Schemastufe **byte-gleich in allen Dateien** nachgewiesen (dreizehn Projekte gegen
+`2026-09-23_R12_Gebaeudemodell`, außer `protokoll.txt`), und die CI vergleicht weiter ohne `--ohne`.
+Sobald der Kanal die Spalten schreibt, erscheinen die Schlüssel von selbst — mit dem Einfrierschritt,
+der für KU1 ohnehin fällig ist.
 
 **Was das Einfrieren erzwingt, ist allein die Datei.** Und weil KU1 sie erzeugt, während G1 + G2
 ohnehin alle dreizehn Projekte bewegen: **Getrennt gefahren kostet dasselbe Ergebnis zwei

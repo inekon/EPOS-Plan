@@ -448,6 +448,19 @@ namespace EPOS.Kern.Tests
                 // ohne Treffer.
                 WirtschaftlichkeitFremdverweis.Ausfuehren();
 
+                // Schritte 108 bis 110 (Kuehlkonzept Kapitel 7, Stufe KU1; E27, E31). KU-S1:
+                // die vier Kuehleingaben an Tab_Gebaeude(_STAMM) und der zweite Neubau der
+                // Sicht - NACH 101, dessen Sicht er erweitert (GebaeudeSchema.Alle oben baut
+                // die Sicht von M3, dieser Aufruf die mit den Kuehlspalten). KU-S2: die
+                // Projekteinstellung Kuehlbetrieb (0/1, Vorgabe 0). KU-S4: die neun
+                // Ergebnisspalten des Kuehlkanals, nullbar. Aus DENSELBEN Quellen wie
+                // Migration und Werkzeug; wiederholbar, kein DML.
+                GebaeudeSchema.KuehlspaltenAlle(null);
+                foreach (SchemaSpalte s in KuehlungSchema.Projekteinstellung)
+                    SpalteSicherstellen(s);
+                foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

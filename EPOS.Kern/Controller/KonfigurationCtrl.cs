@@ -225,6 +225,17 @@ namespace WindowsFormsApplication1
                     dt.Columns.Contains(SchemaKatalog.SPALTE_KASKADE_GEPFLEGT) &&
                     WahrOderFalsch(row[SchemaKatalog.SPALTE_KASKADE_GEPFLEGT]);
 
+                // --- Projekteinstellung „Kuehlbetrieb" (Schemaschritt 109, KU-S2, K10) ----
+                //
+                // Viertes Feld nach demselben namensbasierten Muster, wieder in BEIDEN
+                // Zweigen gesetzt. Fehlende Spalte (Datenbank vor Schemastand 109), NULL und
+                // ein unlesbarer Wert heissen „aus" - und NIE „wie die Programmeinstellung":
+                // Die gilt allein fuer den Anfangswert eines NEU angelegten Projekts und wird
+                // nur dort gelesen (KuehlbetriebAnfangswertSetzen, Kuehlkonzept 7.2, E27).
+                model.Kuehlbetrieb =
+                    dt.Columns.Contains(KuehlungSchema.SPALTE_KUEHLBETRIEB) &&
+                    WahrOderFalsch(row[KuehlungSchema.SPALTE_KUEHLBETRIEB]);
+
                 HeizkesselNachziehen(model);
 
                 return true;
@@ -726,6 +737,97 @@ namespace WindowsFormsApplication1
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
 
             return betroffen > 0;
+        }
+
+        // --- Projekteinstellung „Kuehlbetrieb" (Schemaschritt 109, KU-S2; K10, E27) -----
+
+        /// <summary>
+        /// Wird in diesem Projekt Kaelte gerechnet? DIALOGFREI gelesen, wie die Merkspalte.
+        ///
+        /// <para><b>Fehlende Zeile, fehlende Spalte und NULL heissen „aus"</b> - ein
+        /// Bestandsprojekt ohne Einstellungssatz ist aus, gleich, was die
+        /// Programmeinstellung sagt (Kuehlkonzept 7.2: „ausgeschlossen ist, die
+        /// Programmeinstellung zur Laufzeit als Rueckfall zu lesen").</para>
+        /// </summary>
+        public static bool KuehlbetriebLesen(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+
+            return WahrOderFalsch(StilleDb.Scalar(
+                "SELECT [" + KuehlungSchema.SPALTE_KUEHLBETRIEB + "] " +
+                "FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)));
+        }
+
+        /// <summary>
+        /// Schreibt die Projekteinstellung „Kuehlbetrieb" eines Projekts - die Projektschalter
+        /// sind je Projekt in beide Richtungen frei (Kuehlkonzept 7.2, 8.3).
+        ///
+        /// <para>Ein EIGENES, zielgenaues UPDATE wie bei
+        /// <see cref="KaskadeGepflegtSchreiben"/> und aus demselben Grund: Die Spaltenlisten
+        /// von <see cref="Insert"/>/<see cref="Update"/> haengen an der Ordinalkette. Das
+        /// Speichern der Kaskade legt die Zeile neu an und reicht den Wert danach ueber
+        /// diese Methode nach (<c>SimulationKonfigHuelle.Speichern</c>). Geschrieben wird
+        /// 0/1; die Spalte traegt ein <c>CHECK (… IN (0,1))</c>.</para>
+        ///
+        /// Rueckgabe <c>false</c>, wenn keine Zeile getroffen wurde oder die Spalte fehlt.
+        /// </summary>
+        public static bool KuehlbetriebSchreiben(int idProjekt, bool an)
+        {
+            if (idProjekt <= 0) return false;
+
+            int betroffen = StilleDb.NonQuery(
+                "UPDATE Tab_Einstellungen SET [" +
+                KuehlungSchema.SPALTE_KUEHLBETRIEB + "] = ? " +
+                "WHERE ID_Projekt = ?",
+                StilleDb.Par("@wert", DbParamTyp.Integer, an ? 1 : 0),
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
+
+            return betroffen > 0;
+        }
+
+        /// <summary>
+        /// <b>DER ANFANGSWERT EINES NEUEN PROJEKTS</b> (Entscheid E27, K10; Kuehlkonzept 7.2)
+        /// - die EINE Stelle, an der die Programmeinstellung „Neue Projekte mit Kuehlung
+        /// anlegen" in eine Projekteinstellung uebergeht. Gerufen von den beiden
+        /// Anlagewegen, unmittelbar nachdem die Projektzeile steht
+        /// (<see cref="WizardCtrl.Add_Projekt"/>, <see cref="ProjektCtrl.Insert"/>), und von
+        /// nirgends sonst.
+        ///
+        /// <para><b>Programmeinstellung aus (die Vorgabe):</b> Es gibt nichts zu schreiben.
+        /// Ein neues Projekt hat bis zum ersten Speichern der Kaskade keinen
+        /// Einstellungssatz; der traegt dann die Spaltenvorgabe 0, und ohne Satz liest
+        /// <see cref="KuehlbetriebLesen"/> ebenfalls „aus". Die Anlage bleibt damit genau,
+        /// wie sie war.</para>
+        ///
+        /// <para><b>Programmeinstellung an:</b> Das Projekt bekommt seinen Einstellungssatz
+        /// schon beim Anlegen - ueber denselben Einfuegeweg wie beim ersten Speichern der
+        /// Kaskade (<see cref="Insert"/> mit leerem Modell samt der drei Vorbelegungen) -
+        /// und <c>Kuehlbetrieb = 1</c>. Steht schon ein Satz, wird nur der Schalter gesetzt.
+        /// Der Wert haelt, weil das Speichern der Kaskade ihn nach Loeschen und Neuanlegen
+        /// nachreicht.</para>
+        ///
+        /// <para><b>Nie zur Laufzeit.</b> Kein Lesen der Konfiguration, kein Lauf und kein
+        /// Schemaschritt fragt die Programmeinstellung; ein Projektduplikat uebernimmt den
+        /// Wert seiner Quelle (es ist kopiert, nicht neu angelegt). Wer diese Methode
+        /// anderswo ruft, schaltet Bestandsprojekte mit - der Waechter
+        /// <c>KuehlbetriebProgrammeinstellungTests</c> haelt die Aufrufer fest.</para>
+        /// </summary>
+        /// <returns>Der Anfangswert, der jetzt in der Projekteinstellung steht (<c>false</c> auch, wenn das Schreiben scheiterte).</returns>
+        public static bool KuehlbetriebAnfangswertSetzen(int idProjekt)
+        {
+            if (idProjekt <= 0) return false;
+            if (!EinstellungenCtrl.NeueProjekteMitKuehlungLesen()) return false;
+
+            bool satzVorhanden = StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)), 0) > 0;
+
+            // Dasselbe leere Modell, mit dem die Konfigurationsseite ein Projekt ohne Satz
+            // oeffnet - der Satz sieht aus, als waere die Kaskade einmal leer gespeichert.
+            if (!satzVorhanden && !new KonfigurationCtrl().Insert(idProjekt)) return false;
+
+            return KuehlbetriebSchreiben(idProjekt, true);
         }
 
         public bool Insert(int ID_Projekt)

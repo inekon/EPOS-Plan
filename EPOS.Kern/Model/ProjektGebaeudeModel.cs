@@ -110,6 +110,21 @@ namespace WindowsFormsApplication1
         /// <summary>Sommerlüftung (Schalter, Stufe G2, NOT NULL DEFAULT 0).</summary>
         public bool Sommerlueftung;
 
+        // =====================================================================
+        //  Die vier Kühleingaben aus KU-S1 (Schemaschritt 108, Kühlkonzept 7.1) —
+        //  NULL-ERHALTEND wie der Block darüber. Gelesen aus der Sicht, von keinem
+        //  Rechenweg benutzt, bis der Kühlkanal steht (zweite Welle von KU1).
+        // =====================================================================
+
+        /// <summary>Kühlsollwert [°C]; null = Kühlung aus (kein stiller Rückfall auf die Maximaltemperatur).</summary>
+        public double? Kuehl_Sollwert;
+        /// <summary>Kühlleistungsgrenze [kW]; null = unbegrenzt.</summary>
+        public double? Kuehlleistung_Max;
+        /// <summary>„Dieses Gebäude wird gekühlt" (Schalter, NOT NULL DEFAULT 0).</summary>
+        public bool Kuehlung_Aktiv;
+        /// <summary>Kühlsollwert der Nacht [°C]; null = wie <see cref="Kuehl_Sollwert"/>. Gelesen erst ab KU3.</summary>
+        public double? Kuehl_Sollwert_Nacht;
+
         public ProjektGebaeudeModel()
         {
             items = null;

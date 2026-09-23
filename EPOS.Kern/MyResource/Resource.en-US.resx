@@ -20882,6 +20882,18 @@ Do you want to allow this?</value>
   <data name="ADM_SET_MSG_FARBE_UNGUELTIG" xml:space="preserve">
     <value>“{0}” is not a colour in the #RRGGBB notation.</value>
   </data>
+  <data name="ADM_SET_GRUPPE_NEUE_PROJEKTE" xml:space="preserve">
+    <value>New projects</value>
+  </data>
+  <data name="ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Create new projects with cooling</value>
+  </data>
+  <data name="ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG" xml:space="preserve">
+    <value>Applies only to newly created projects. Existing projects keep their setting; a copied project takes over the setting of its source.</value>
+  </data>
+  <data name="ADM_SET_MSG_KUEHLUNG_FEHLER" xml:space="preserve">
+    <value>The setting “Create new projects with cooling” could not be saved. Error: {0}</value>
+  </data>
   <data name="KI_DLG_MASKE_HEIZKESSEL_PROJEKT" xml:space="preserve">
     <value>Boiler management</value>
   </data>
