@@ -3772,6 +3772,10 @@ namespace WindowsFormsApplication1
         /// in <c>Tab_Brennstoff_Stamm</c>, dazu jede Preiszeile ihrer Träger, die noch
         /// „m³" führt — die Quelle ist <see cref="GaseNormkubikmeter"/>.</para>
         ///
+        /// <para><b>Brennstoff 24 „Sonstige"</b> (Entscheid E7c2‑Q4, 23.09.2026): Einheit
+        /// „m³" → „kWh", Preiseinheit → „€/kWh" — reiner Stammtext; Träger, Preiszeilen und
+        /// Projektzuordnungen des Brennstoffs werden nur gezählt (Protokoll) und bleiben.</para>
+        ///
         /// <para><b>Ergebnisneutral:</b> kein Zahlenwert; kein Rechenweg liest den
         /// Stammtext. Die nächste Zuordnung eines Gasträgers findet danach ihre
         /// Identitätsregel. <b>Wiederholbar.</b></para>
@@ -5266,8 +5270,8 @@ namespace WindowsFormsApplication1
                         "Der Brennstoffstamm der fuenf Gase (Stadtgas, Erdgas LL, Erdgas E, " +
                         "Biogas, Wasserstoff) nennt seine Einheit Nm3 statt m3 - wie seine " +
                         "Energietraeger seit jeher. Die naechste Zuordnung eines Gastraegers " +
-                        "findet damit ihre Umrechnungsregel. ERGEBNISNEUTRAL: Kein Zahlenwert " +
-                        "aendert sich.",
+                        "findet damit ihre Umrechnungsregel. Der Brennstoff Sonstige (24) fuehrt " +
+                        "kWh statt m3. ERGEBNISNEUTRAL: Kein Zahlenwert aendert sich.",
                         Schritt_109_GaseNm3),
         };
 

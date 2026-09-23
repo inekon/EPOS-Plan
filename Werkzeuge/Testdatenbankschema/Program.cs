@@ -1269,7 +1269,8 @@ namespace Testdatenbankschema
             //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_109_GaseNm3
             //      (GaseNormkubikmeter): Einheit m3 -> Nm3 und PreisEinheit -> EUR/Nm3 an
             //      den Brennstoffen 1, 2, 3, 14, 25, dazu jede Preiszeile ihrer Traeger,
-            //      die noch m3 fuehrt.
+            //      die noch m3 fuehrt; der Brennstoff 24 (Sonstige) auf kWh und EUR/kWh
+            //      (E7c2-Q4, reiner Stammtext).
             //
             //      REFERENZLAUF BYTE-GLEICH: kein Zahlenwert; kein Rechenweg liest den
             //      Stammtext, die Einfrierliste nennt am Brennstoffstamm nur CO2/SO2/NOx/Staub.
