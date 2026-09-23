@@ -129,7 +129,7 @@ public sealed class ZapfprofilTexte
     public string HinweisNiveauVorgabe { get; set; } = "Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog";
 
     /// <summary><c>ZPG_HINW_WEITERE_VORGABE</c></summary>
-    public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf Vorgabe – die Stufe Erweitert zeigt sie.";
+    public string HinweisWeitereVorgabe { get; set; } = "Weitere Angaben stehen auf den Vorgaben des Katalogs.";
 
     /// <summary><c>ZPG_HINW_NUTZUNGSART_KATALOG</c></summary>
     public string HinweisNutzungsartKatalog { get; set; } = "Katalog · {0}";

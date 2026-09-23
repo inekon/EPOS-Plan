@@ -23625,7 +23625,7 @@ Do you want to allow this?</value>
     <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
   </data>
   <data name="ZPG_HINW_WEITERE_VORGABE" xml:space="preserve">
-    <value>Further inputs are at their default values – the Extended level shows them.</value>
+    <value>Further inputs are at the catalogue defaults.</value>
   </data>
   <data name="ZPG_HINW_NUTZUNGSART_KATALOG" xml:space="preserve">
     <value>Catalogue · {0}</value>

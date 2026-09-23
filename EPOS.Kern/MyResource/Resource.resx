@@ -23632,7 +23632,7 @@ Möchten Sie das zulassen?</value>
     <value>Vorgabe · {0} = {1} kWh/({2}·d) aus dem Katalog</value>
   </data>
   <data name="ZPG_HINW_WEITERE_VORGABE" xml:space="preserve">
-    <value>Weitere Angaben stehen auf Vorgabe – die Stufe Erweitert zeigt sie.</value>
+    <value>Weitere Angaben stehen auf den Vorgaben des Katalogs.</value>
   </data>
   <data name="ZPG_HINW_NUTZUNGSART_KATALOG" xml:space="preserve">
     <value>Katalog · {0}</value>

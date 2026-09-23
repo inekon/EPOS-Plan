@@ -70290,7 +70290,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen auf Vorgabe – die Stufe Erweitert zeigt sie. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Weitere Angaben stehen auf den Vorgaben des Katalogs. ähnelt.
         /// </summary>
         public static string ZPG_HINW_WEITERE_VORGABE {
             get {
