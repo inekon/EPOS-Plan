@@ -8646,3 +8646,103 @@ UI 5 625, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
 übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf
 gegen `2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte
 in Toleranz).
+
+## #458 Stufe 1 — Wächter für die Maskenabdeckung, Ausnahmeliste, benannte Absage, Nachzüge veralteter Feldkarten (24.09.2026)
+
+Anlass: Anwenderentscheid KI‑D‑Q11 vom 23.09.2026 („alle Masken
+außer den nicht sinnvoll steuerbaren sollen steuerbar sein"), nach
+dem Inventar vom 23.09.2026 (151 Razor-Masken unter
+`EPOS.UI/Dialoge/**` und `Seiten/**`, davon 79 angemeldet: 62
+Dateien mit eigener Anmeldung, 18 Kind-Bausteine über ihren Wirt).
+Commits `eac5e34d` (KI: Waechter Maskenabdeckung, Ausnahmeliste,
+benannte Absage), `09e906a4` (KI: Simulation fuehrt Kuehlbetrieb
+und die Werte je Anlage), `47ff167c` (KI: Gebaeudetyp,
+WP-Extrapolation, Leistungspreismodus nachgezogen), `1d44cecc`
+(KI: Kommentare berichtigt, Peak-Shaving-Quelle benannt),
+`111dfd49` (Papiere zu #458 Stufe 1); Zweig
+`worktree-agent-a0079ae45bc09d90a` von `ee84fce5`; Merge
+`4f236bf8` (konfliktfrei, resx/Designer geprüft).
+
+**Befund/Inventar.** Kandidaten für Stufe 2: Kennlinien-Editor,
+Projektkopf, Startseite Klimaregion/Solarart,
+Einstellungen-Teilmenge, „Alle Daten" der Erzeugermasken,
+Anzeigeschalter. Kandidaten für Stufe 3: drei Zapfprofil-Dialoge
+und die Rechenweg-Optionsgruppe, beide erst nach dem Z3-Merge der
+Zapfprofil-Sitzung; dafür braucht es einen Rahmen für Zahlenfolgen
+(TYPPROFIL 7×24, GEBAEUDETYP 24, TYPSTAMM 12, KOSTENPROFIL,
+LEISTUNGSPREISREIHE, QUELLPROFIL, GEBAEUDE_KATALOG).
+
+**Umsetzung.** Wächter
+`EPOS.UI.Tests/Dialoge/Hilfe/KiMaskenabdeckungWacheTests.cs`: jede
+Maske mit Eingabefeldern ist angemeldet, hängt an einem
+anmeldenden Wirt oder steht mit Grund in `KiDialogAusnahmen.Alle`
+(40 Einträge: Anzeige 13, Import 5, Aktion 4, Assistent 3,
+Lizenz/Schlüssel 2, je 1 Export, Rückfrage, Werkzeug,
+Anlegen/Entfernen, FeldDesWirts; 8 „Offen" mit Auftrag — fünf
+„#458 Stufe 2", drei „#458 Stufe 3 nach Z3"); vier Einträge aus
+#456 gestrichen, weil sie nicht mehr zutrafen (LizenzDialog,
+Rueckfrage, WaermebedarfAdminDialog, SolarganglinieAdminDialog).
+Eingabebilanz: die Zahl der Eingabestellen ist für 66 Dateien
+festgeschrieben, Markup-Masken sind gegen ihren Katalog gehalten;
+Altlasten mit Grund in `BewusstDraussen` (Form_WP
+Filterschalter/Kennfeldwahl; Form_PV_Anlagenwerte
+Auslegungstemperaturen, Hersteller/Gerät, Modul/Gerät je Strang;
+„Alle Daten" der fünf Erzeuger-Projektmasken;
+Typstamm-Monatswerte). Benannte Absage: aus einer ausgenommenen
+Maske heraus sagt der Assistent „Diese Maske ist bewusst nicht
+steuerbar: ⟨Grund⟩" bzw. „noch nicht steuerbar" (Erkennung über
+den Hilfeschlüssel des Aufrufs; Ausnahmen ohne eigenen
+Hilfeschlüssel bleiben bei der Maskenliste). Nachzüge: die
+Simulation führt jetzt 46 statt 40 Felder (`kuehlbetrieb`, je
+Karte `quellanlage`, `waermequelle`, `quelltemperatur_konstant`,
+`wp_prioritaet`, `wp_betriebsmodus`, mit denselben Prüfungen und
+Schreibwegen wie die Überlagerungen; eine offene Überlagerung
+oder eine gesperrte Seite lehnt benannt ab); die
+Gebäudetyp-Beschreibung ist setzbar (der Auslieferungstyp bleibt
+geschützt); neue Sichtklasse `WaermepumpeAnlageKiSicht` mit
+Extrapolationsschalter (23 Felder, Muster `PhotovoltaikKiSicht`);
+der Betriebsmodus-Dialog ist Ausnahme `FeldDesWirts` (der Wert
+läuft über `wp_betriebsmodus` der Simulation); die
+Peak-Shaving-Kommentare sind berichtigt, „Datei" ohne eingelesene
+Datei lehnt benannt ab; widersprüchliche Kommentare in
+`KiDialoge.cs` und `KiMaskenanmeldung` sind bereinigt; der
+Energieträger-Modus `leistungspreis_monatlich` geht jetzt über
+`LeistungsModusGewechselt` und wird gespeichert (Nebenbefund aus
+#457).
+
+**Tests.** Voller Lauf im Worktree 11 928 bestanden, 1
+übersprungen, 0 rot (EPOS.UI 5 664, EPOS.Kern 5 327, KiKern 524,
+SpeicherEngine 386, SpeicherPlanung 27); Kern-Filter und
+Windows-Schale 0 Fehler; kein Referenzlauf nötig (kein Rechenweg).
+Neue Tests: `KiDialogAusnahmenTests`, `SimulationKonfigKiTests`
+(12 Fälle), Fälle in `KiMaskenwegTests`, `KiSimulationMaskeTests`,
+`GebaeudetypDialogTests`, `WaermepumpeAnlageDialogTests`,
+`EnergietraegerDialogTests`, `PeakShavingDialogTests`.
+
+**Papiere.** `Konzept_KI-Assistent_Dialogintegration_EPOS-Plan.md`
+(neuer Abschnitt 4 „Abdeckung" mit Regel, Stufenzeile #458/1,
+KI‑D‑Q11 aktualisiert, Abschnitt 5 berichtigt);
+`Konzept_KI-Assistent_Aufgabensteuerung.md` 11.7 (Gruppen, Regel,
+Wächter); `EPOS.UI/CLAUDE.md` (Satz zur Wache); Wiki-Quelle
+`Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki`
+(Absatz Simulation, Absatz zu bewusst nicht steuerbaren Masken;
+Upload ausstehend).
+
+**Logbuch-Vorschlag** (Version beim Anwender erfragen):
+
+> Der Hilfe-Assistent setzt in der Simulation auch Kühlbetrieb,
+> Wärmequelle und Betriebsmodus.
+
+**Was offen bleibt.** Stufe 2 und Stufe 3 wie oben — die
+Zahlenfolgen brauchen noch einen Rahmen, ebenso „Alle Daten" der
+Erzeugermasken. Der Z3-Merge macht die Wache absichtlich rot und
+erzwingt den Entscheid über die Zahlenfolgen. Zusammenführung mit
+#459 steht aus (`GebaeudetypDialog.razor` eine Zeile,
+resx-Zeilenenden). Wiki-Upload Hilfe-Assistent weiterhin
+ausstehend.
+
+**Gate nach Merge auf `4f236bf8`.** Kern-Filter 0 Fehler; Tests
+Kern 5 327, UI 5 664, KiKern 524, SpeicherEngine 386,
+SpeicherPlanung 27 (1 übersprungen) — 0 Fehlschläge; Windows-Schale
+0 Fehler; Referenzlauf gegen `2026-09-23_R13_Kuehlung`: alle 13
+Basisprojekte PASS (4 145 687 Werte in Toleranz).
