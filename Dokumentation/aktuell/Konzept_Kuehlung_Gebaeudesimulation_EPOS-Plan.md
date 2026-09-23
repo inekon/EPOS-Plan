@@ -559,9 +559,11 @@ Verschiedenes tun. Deshalb:
   bräuchte einen eigenen Knoten. Genau daran hängt der **einzige noch offene Prüffall**:
   Testbeispiel 11 (Kühldecke) liegt in zwei Umschaltstunden neben dem Band, und die vermutete —
   diagnostisch belegte, nicht bewiesene — Ursache ist der fehlende eigene Deckenknoten
-  (Konzept N1.15, Rechenschritte 10.3). **Ausblick, keine Zusage:** Löst G0 diesen Fall über
-  einen eigenen Deckenknoten, ist die Bauteilaktivierung als Funktion erstmals in Reichweite —
-  sie bleibt gleichwohl außerhalb dieses Papiers (Kapitel 14).
+  (Konzept N1.15, Rechenschritte 10.3). **Geprüft und verworfen (KU1, vierte Welle,
+  23.09.2026):** Ein eigener Deckenknoten verschlechtert den Fall, statt ihn zu lösen — die
+  Umschaltstunden rücken weiter vom Band ab, weitere Stunden fallen heraus; die Kühldecke ist als
+  Ursache widerlegt, und Fall 11 bleibt dokumentierte Abweichung (Rechenschritte 10.3). Die
+  Bauteilaktivierung als Funktion bleibt außerhalb dieses Papiers (Kapitel 14).
 - **Kopplung an den Erzeugerfahrplan.** Das Modell liefert den Bedarf; die Deckung rechnet der
   Simulationskern, wie auf der Wärmeseite. Keine Rückwirkung der Vorlauftemperatur auf die
   Raumtemperatur in den Stufen KU1 bis KU3; die Rückwirkung ist Gegenstand der

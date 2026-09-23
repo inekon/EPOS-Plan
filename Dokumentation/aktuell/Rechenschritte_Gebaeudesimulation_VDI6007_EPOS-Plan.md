@@ -1614,6 +1614,25 @@ dem Normalwert der übrigen Flächen) — ist diagnostisch belegt, aber **nicht 
 ist der Umschaltversatz, nicht seine Ursache; ein Nachweis bräuchte ein Modell mit getrenntem
 Deckenknoten.
 
+**Versuch mit getrenntem Deckenknoten (Stufe KU1, vierte Welle, 23.09.2026): verworfen.** Außerhalb
+des Produkts (eine nicht eingecheckte Messklasse, lokal gegen die AixLib-Daten) ist der Fall mit
+einem eigenen, masselosen Deckenknoten nachgerechnet worden: Deckenfläche aus dem Unterschied der
+gemischten Innenbeiwerte der Fälle 1 bis 9 und 11 mit α_kon = 5,0 statt 1,7 abgeleitet (rund
+17,4 m² von 75,5 m²), Anschluss an die Innenmasse, Strahlungsleitwert zur Außenwand und innere
+Strahlungslasten flächenanteilig geteilt, die Kühlleistung allein am Deckenknoten; die
+Messklasse traf in der Fassung ohne Teilung den Löser des Kerns auf 0,000 W. Ergebnis: **Der
+eigene Deckenknoten verschlechtert den Fall.** Die beiden Umschaltstunden rücken um rund 27 W
+weiter vom Band ab, vierzehn weitere Stunden fallen heraus (bis rund 59 W); mit einem
+Strahlungsaustausch zwischen Decke und übrigen Innenflächen nähert sich das Ergebnis wieder dem
+Ein-Knoten-Modell, ohne es zu übertreffen. Die Kühldecke als eigener Knoten ist damit als Ursache
+**widerlegt** — die Referenz rechnet die Kühlung, wie der Datensatz sie führt, am gemischten
+Innenknoten. Wahrscheinlicher ist die Messkette der Referenz selbst: Das AixLib-Modell ersetzt
+die ersten 120 s nach jedem Umschalten durch eine Ersatzspalte, die in genau diesen beiden
+Stunden vom Stundenmittel abweicht (Befund E 5.3). Ein eigener Deckenknoten bräuchte zudem
+Parameter, die der Datensatz nicht führt (Fläche, Anteil an Masse und Leitwert, Strahlungsnetz)
+— ein Hilfskonstrukt. **Fall 11 bleibt dokumentierte Abweichung**, der Produktausweis unten
+unverändert.
+
 Der Produktausweis lautet im Wortlaut (Entscheid E10, in Konzept N1.15 nachgezogen: seine Zahl
 3,9 W bezieht sich auf das strenge Band ohne Druckrundung und steht dort jetzt in Klammern hinter
 der Zahl gegen das Band nach 10.2 — siehe Kapitel 13, Befund 7):
