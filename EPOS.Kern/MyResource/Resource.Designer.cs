@@ -27661,6 +27661,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_AKTION {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zum Hilfe-Assistenten selbst. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ASSISTENT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_DATEI {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_EXPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_FELD_DES_WIRTS {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_FELD_DES_WIRTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_IMPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_LIZENZ {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OHNE_EINSTELLWERTE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OHNE_EINSTELLWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist eine Rückfrage, die der Anwender beantwortet. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_WERKZEUG {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_WERKZEUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion wurde abgebrochen. ähnelt.
         /// </summary>
         public static string KI_AUS_ABGEBROCHEN {
@@ -28345,6 +28462,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BERG_TABELLE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist bewusst nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEWUSST_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEWUSST_NICHT_STEUERBAR", resourceCulture);
             }
         }
         
@@ -32548,6 +32674,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_NICHT_SETZBAR {
             get {
                 return ResourceManager.GetString("KI_DLG_NICHT_SETZBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist noch nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_NOCH_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_NOCH_NICHT_STEUERBAR", resourceCulture);
             }
         }
         

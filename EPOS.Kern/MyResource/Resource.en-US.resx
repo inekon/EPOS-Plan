@@ -25835,4 +25835,49 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>There is nothing to save in “{0}” – no field has been changed.</value>
   </data>
+  <data name="KI_DLG_BEWUSST_NICHT_STEUERBAR" xml:space="preserve">
+    <value>This form is deliberately not controllable: {0}</value>
+  </data>
+  <data name="KI_DLG_NOCH_NICHT_STEUERBAR" xml:space="preserve">
+    <value>This form is not controllable yet: {0}</value>
+  </data>
+  <data name="KI_AUSNAHME_ANZEIGE" xml:space="preserve">
+    <value>It displays results; its switches only adjust the view and hold no settings.</value>
+  </data>
+  <data name="KI_AUSNAHME_OHNE_EINSTELLWERTE" xml:space="preserve">
+    <value>It only manages time series and their origin and holds no settings.</value>
+  </data>
+  <data name="KI_AUSNAHME_ANLEGEN" xml:space="preserve">
+    <value>It creates or removes records — that remains the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_IMPORT" xml:space="preserve">
+    <value>It belongs to an import; the user decides what is read in.</value>
+  </data>
+  <data name="KI_AUSNAHME_EXPORT" xml:space="preserve">
+    <value>It belongs to an export or transfer; the user decides what is written out.</value>
+  </data>
+  <data name="KI_AUSNAHME_DATEI" xml:space="preserve">
+    <value>It selects files; choosing paths remains the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_RUECKFRAGE" xml:space="preserve">
+    <value>It is a confirmation prompt that the user answers.</value>
+  </data>
+  <data name="KI_AUSNAHME_LIZENZ" xml:space="preserve">
+    <value>It takes licence or key entries, which remain the user's task.</value>
+  </data>
+  <data name="KI_AUSNAHME_ASSISTENT" xml:space="preserve">
+    <value>It belongs to the help assistant itself.</value>
+  </data>
+  <data name="KI_AUSNAHME_AKTION" xml:space="preserve">
+    <value>It triggers an action (transfer, selection to open) that the user confirms personally.</value>
+  </data>
+  <data name="KI_AUSNAHME_WERKZEUG" xml:space="preserve">
+    <value>It is a maintenance tool whose interventions the user makes personally.</value>
+  </data>
+  <data name="KI_AUSNAHME_FELD_DES_WIRTS" xml:space="preserve">
+    <value>Its value is a field of the form it belongs to; the assistant sets it there.</value>
+  </data>
+  <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
+    <value>Its connection to the assistant is planned but not yet implemented.</value>
+  </data>
 </root>

@@ -25842,4 +25842,49 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
     <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
   </data>
+  <data name="KI_DLG_BEWUSST_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist bewusst nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_DLG_NOCH_NICHT_STEUERBAR" xml:space="preserve">
+    <value>Diese Maske ist noch nicht steuerbar: {0}</value>
+  </data>
+  <data name="KI_AUSNAHME_ANZEIGE" xml:space="preserve">
+    <value>Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_OHNE_EINSTELLWERTE" xml:space="preserve">
+    <value>Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte.</value>
+  </data>
+  <data name="KI_AUSNAHME_ANLEGEN" xml:space="preserve">
+    <value>Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_IMPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_EXPORT" xml:space="preserve">
+    <value>Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender.</value>
+  </data>
+  <data name="KI_AUSNAHME_DATEI" xml:space="preserve">
+    <value>Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders.</value>
+  </data>
+  <data name="KI_AUSNAHME_RUECKFRAGE" xml:space="preserve">
+    <value>Sie ist eine Rückfrage, die der Anwender beantwortet.</value>
+  </data>
+  <data name="KI_AUSNAHME_LIZENZ" xml:space="preserve">
+    <value>Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben.</value>
+  </data>
+  <data name="KI_AUSNAHME_ASSISTENT" xml:space="preserve">
+    <value>Sie gehört zum Hilfe-Assistenten selbst.</value>
+  </data>
+  <data name="KI_AUSNAHME_AKTION" xml:space="preserve">
+    <value>Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt.</value>
+  </data>
+  <data name="KI_AUSNAHME_WERKZEUG" xml:space="preserve">
+    <value>Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt.</value>
+  </data>
+  <data name="KI_AUSNAHME_FELD_DES_WIRTS" xml:space="preserve">
+    <value>Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent.</value>
+  </data>
+  <data name="KI_AUSNAHME_OFFEN" xml:space="preserve">
+    <value>Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt.</value>
+  </data>
 </root>
