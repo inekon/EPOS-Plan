@@ -71298,6 +71298,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine gültige Zahl: {0} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_FEHLEINGABE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_FEHLEINGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Beginn und Ende fehlen oder liegen nicht im Tag (0 ≤ Beginn &lt; Ende ≤ 24 h). ähnelt.
         /// </summary>
         public static string ZPG_AUS_KON_FEHLT_FENSTER {
@@ -71316,6 +71325,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}, Zeile {1} ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_FELD {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_FELD", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_GRUND_LETZTE_ZEILE {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_GRUND_LETZTE_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zeilen nach dem Verfahren der A100 (NA.5.2.3): Zeitfenster in Stunden, Volumen je Zapfregel und Anzahl oder direkt mit Zapftemperatur. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs. ähnelt.
         /// </summary>
         public static string ZPG_AUS_KON_HINWEIS {
@@ -71330,6 +71357,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ZPG_AUS_KON_LBL_NAME {
             get {
                 return ResourceManager.GetString("ZPG_AUS_KON_LBL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}“ ist in der Katalogversion „{1}“ schon vergeben — frei ist etwa „{2}“. ähnelt.
+        /// </summary>
+        public static string ZPG_AUS_KON_NAME_BELEGT {
+            get {
+                return ResourceManager.GetString("ZPG_AUS_KON_NAME_BELEGT", resourceCulture);
             }
         }
         

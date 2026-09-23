@@ -10337,6 +10337,18 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-warn-text);
 }
 
+/* Der Konstruktor: Jedes Feld der Zeilentabelle traegt seine Beschriftung
+   ("Beginn [h], Zeile 2") fuer Sprachausgabe und Sammelmeldung; sichtbar
+   steht sie einmal im Tabellenkopf. */
+.epos-zapfausl-konstruktorzeilen .epos-feld-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
 @media (forced-colors: active) {
     .epos-zapfausl-stufe--warnung,
     .epos-zapfausl-empfehlung,

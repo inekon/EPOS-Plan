@@ -541,6 +541,13 @@ public sealed class ZapfprofilBedarfstagDaten
     /// <summary>Die Ereignisse — nur beim Entwurf gefüllt (er geht mit ihnen zurück).</summary>
     public List<ZapfprofilEreignisDaten> Ereignisse { get; set; } = new();
 
+    /// <summary>
+    /// Die Zeilen, aus denen der Konstruktor den Entwurf baute — ein erneutes Öffnen des
+    /// Konstruktors beginnt mit ihnen. Leer bei einer Katalogzeile und bei einem Entwurf, den der
+    /// Kern zurückgibt (er trägt nur Ereignisse).
+    /// </summary>
+    public List<ZapfprofilKonstruktorZeileDaten> Konstruktorzeilen { get; set; } = new();
+
     /// <summary>Die Energie des Tages [kWh].</summary>
     public double TagessummeKwh { get; set; }
 
@@ -558,6 +565,7 @@ public sealed class ZapfprofilBedarfstagDaten
         Waehlbar = Waehlbar,
         Sperrgrund = Sperrgrund,
         Ereignisse = Ereignisse.ToList(),
+        Konstruktorzeilen = Konstruktorzeilen.Select(z => z.Kopie()).ToList(),
         TagessummeKwh = TagessummeKwh,
         MinutenspitzeKw = MinutenspitzeKw
     };

@@ -24608,6 +24608,18 @@ Do you want to allow this?</value>
   <data name="ZPG_AUS_KON_SUMME" xml:space="preserve">
     <value>{0} rows</value>
   </data>
+  <data name="ZPG_AUS_KON_FELD" xml:space="preserve">
+    <value>{0}, row {1}</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLEINGABE" xml:space="preserve">
+    <value>Not a valid number: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_GRUND_LETZTE_ZEILE" xml:space="preserve">
+    <value>The last row stays — a design day needs at least one row.</value>
+  </data>
+  <data name="ZPG_AUS_KON_NAME_BELEGT" xml:space="preserve">
+    <value>The name “{0}” is already taken in catalogue version “{1}” — “{2}”, for example, is free.</value>
+  </data>
   <data name="ZPG_AUSBILD_SUMMENLINIE" xml:space="preserve">
     <value>Cumulative curve of the design day</value>
   </data>

@@ -398,6 +398,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3 * 40.0 * cw * (40.0 - 12.0) / 1000.0, t.Ereignisse[0].EnergieKwh, 9);   // θ_KW,A des Katalogs: 12 °C
             Assert.Equal(t.Ereignisse.Sum(e => e.EnergieKwh), t.TagessummeKwh, 9);
             Assert.StartsWith("Eigenkonstruktion", t.Herkunft);
+
+            // Der Entwurf trägt die Zeilen, aus denen er entstand — ein erneutes Öffnen beginnt mit ihnen.
+            Assert.Equal(new[] { "Probebrause", "" }, t.Konstruktorzeilen.Select(z => z.Regel).ToArray());
+            Assert.Equal(100.0, t.Konstruktorzeilen[1].VolumenL);
+            Assert.Equal(2, t.Kopie().Konstruktorzeilen.Count);
         }
 
         [Fact]
@@ -566,11 +571,22 @@ namespace EPOS.Kern.Tests
             if (!db.Vorhanden) return;
             AuslegungTestbau.ParameterEinspielen(VERSION);
             BedarfstagKatalogzeile vorhanden = ZapfprofilCtrl.Bedarfstage().First(t => t.Katalogversion == VERSION);
+            var zeilen = new[] { new ZapfprofilKonstruktorZeileDaten { BeginnH = 7, EndeH = 7.5, VolumenL = 120, ZapftemperaturC = 45 } };
 
-            ZapfprofilBedarfstagDaten tag = ZapfprofilHuelle.BedarfstagKonstruieren(new[]
-            {
-                new ZapfprofilKonstruktorZeileDaten { BeginnH = 7, EndeH = 7.5, VolumenL = 120, ZapftemperaturC = 45 }
-            }, vorhanden.Bezeichner).Tag;
+            // Der Konstruktor prüft den Namen schon lesend und nennt einen freien.
+            ZapfprofilKonstruktorErgebnis belegt = ZapfprofilHuelle.BedarfstagKonstruieren(zeilen, vorhanden.Bezeichner);
+            Assert.Null(belegt.Tag);
+            ZapfprofilMeldung m = Assert.Single(belegt.Meldungen);
+            Assert.Equal("ZPG_AUS_KON_NAME_BELEGT", m.Kennung);
+            string frei = ZapfprofilCtrl.FreierBedarfstagname(vorhanden.Bezeichner, VERSION);
+            Assert.NotEqual(vorhanden.Bezeichner, frei);
+            Assert.Equal("Der Name „" + vorhanden.Bezeichner + "“ ist in der Katalogversion „" + VERSION
+                         + "“ schon vergeben — frei ist etwa „" + frei + "“.", m.Text);
+
+            // Wird der Name erst nach dem Konstruktor belegt, lehnt der Schreibweg ab.
+            ZapfprofilBedarfstagDaten tag = ZapfprofilHuelle.BedarfstagKonstruieren(zeilen, frei).Tag;
+            Assert.NotNull(tag);
+            tag.Bezeichner = vorhanden.Bezeichner;
             ZapfprofilEingabeDaten e = Zonen();
             e.Auslegung = new ZapfprofilAuslegungEingabeDaten { Quelle = ZapfprofilBedarfstagquelle.Konstruktor, Entwurf = tag };
             var behaelter = new ZapfprofilBehaelter(PROJEKT);

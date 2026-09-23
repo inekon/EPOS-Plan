@@ -409,4 +409,13 @@ public sealed class ZapfprofilAuslegungTexte
 
     /// <summary><c>ZPG_AUS_KON_SUMME</c></summary>
     public string KonstruktorSumme { get; set; } = "{0} Zeilen";
+
+    /// <summary><c>ZPG_AUS_KON_FELD</c></summary>
+    public string KonstruktorFeld { get; set; } = "{0}, Zeile {1}";
+
+    /// <summary><c>ZPG_AUS_KON_FEHLEINGABE</c></summary>
+    public string KonstruktorFehleingabe { get; set; } = "Keine gültige Zahl: {0}";
+
+    /// <summary><c>ZPG_AUS_KON_GRUND_LETZTE_ZEILE</c></summary>
+    public string KonstruktorGrundLetzteZeile { get; set; } = "Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile.";
 }

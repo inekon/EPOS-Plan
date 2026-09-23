@@ -567,7 +567,11 @@ namespace WindowsFormsApplication1
         /// <b>Der Konstruktor</b> (A100, NA.5.2.3): prüft die Zeilen der Oberfläche benannt
         /// (Name, Fenster, Menge, Regel), baut daraus die Zeilen des Kerns und über
         /// <see cref="ZapfprofilCtrl.BedarfstagKonstruieren"/> den Entwurf bei θ_KW,A des
-        /// Parametersatzes. Geschrieben wird nichts — der Entwurf geht mit dem Arbeitsstand.
+        /// Parametersatzes. Geschrieben wird nichts — der Entwurf geht mit dem Arbeitsstand,
+        /// samt den Zeilen, aus denen er entstand (ein erneutes Öffnen beginnt mit ihnen). Den
+        /// Namen prüft er schon hier LESEND gegen die Katalogversion
+        /// (<see cref="ZapfprofilCtrl.FreierBedarfstagname"/>) und nennt einen freien; der
+        /// Schreibweg prüft ihn erneut.
         /// </summary>
         internal static ZapfprofilKonstruktorErgebnis BedarfstagKonstruieren(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen,
                                                                             string bezeichner)
@@ -586,6 +590,14 @@ namespace WindowsFormsApplication1
                 meldungen.Add(new ZapfprofilMeldung(Schluessel(ex.Fehler), "", Text_(Schluessel(ex.Fehler), ex.Message),
                                                     ZapfprofilMeldungsart.Fehler, ex.Message));
                 return new ZapfprofilKonstruktorErgebnis(null, meldungen);
+            }
+            if (name.Length > 0)
+            {
+                string frei = ZapfprofilCtrl.FreierBedarfstagname(name, ps.Katalogversion);
+                if (!string.Equals(frei, name, StringComparison.Ordinal))
+                    meldungen.Add(Fehler("ZPG_AUS_KON_NAME_BELEGT", "", Format(Text_("ZPG_AUS_KON_NAME_BELEGT",
+                        "Der Name „{0}“ ist in der Katalogversion „{1}“ schon vergeben — frei ist etwa „{2}“."),
+                        name, ps.Katalogversion, frei)));
             }
             IReadOnlyList<Zapfregel> regeln;
             try { regeln = ZapfprofilCtrl.Konstruktorregeln(ps); }
@@ -636,7 +648,9 @@ namespace WindowsFormsApplication1
             try
             {
                 BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps);
-                return new ZapfprofilKonstruktorErgebnis(AlsBedarfstag(t, true), new ZapfprofilMeldung[0]);
+                ZapfprofilBedarfstagDaten tag = AlsBedarfstag(t, true);
+                tag.Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList();
+                return new ZapfprofilKonstruktorErgebnis(tag, new ZapfprofilMeldung[0]);
             }
             catch (ZapfAuslegungException ex)
             {
@@ -804,6 +818,9 @@ namespace WindowsFormsApplication1
             t.KonstruktorZeileEntfernen = Text_("ZPG_AUS_KON_BTN_ZEILE_ENTFERNEN", t.KonstruktorZeileEntfernen);
             t.KonstruktorRegelnOhne = Text_("ZPG_AUS_KON_REGELN_OHNE", t.KonstruktorRegelnOhne);
             t.KonstruktorSumme = Text_("ZPG_AUS_KON_SUMME", t.KonstruktorSumme);
+            t.KonstruktorFeld = Text_("ZPG_AUS_KON_FELD", t.KonstruktorFeld);
+            t.KonstruktorFehleingabe = Text_("ZPG_AUS_KON_FEHLEINGABE", t.KonstruktorFehleingabe);
+            t.KonstruktorGrundLetzteZeile = Text_("ZPG_AUS_KON_GRUND_LETZTE_ZEILE", t.KonstruktorGrundLetzteZeile);
             return t;
         }
 

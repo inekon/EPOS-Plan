@@ -473,6 +473,7 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
     // Konstruktor
     // =================================================================================
 
+    /// <summary>Der Konstruktor wie die Hülle: der Tag samt den Zeilen, aus denen er entstand.</summary>
     private static ZapfprofilKonstruktorErgebnis Bauen(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen, string name)
         => new(new ZapfprofilBedarfstagDaten
         {
@@ -480,7 +481,8 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
             Bezeichner = name,
             Quelle = ZapfprofilBedarfstagquelle.Konstruktor,
             Herkunft = "Eigenkonstruktion",
-            Ereignisse = zeilen.Select((z, i) => new ZapfprofilEreignisDaten((int)((z.BeginnH ?? 0) * 60), 10, 1.0 + i)).ToList()
+            Ereignisse = zeilen.Select((z, i) => new ZapfprofilEreignisDaten((int)((z.BeginnH ?? 0) * 60), 10, 1.0 + i)).ToList(),
+            Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList()
         }, Array.Empty<ZapfprofilMeldung>());
 
     [Fact]
@@ -523,8 +525,14 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         Knopf(cut, "Bedarfstag konstruieren…").Click();
         IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
 
-        // Eine Zeile lässt sich nicht entfernen.
-        Assert.True(Knopf(k, "Entfernen").HasAttribute("disabled"));
+        // Die letzte Zeile lässt sich nicht entfernen — weich gesperrt, der Versuch nennt den Grund.
+        IElement entfernen = Knopf(k, "Entfernen");
+        Assert.Equal("true", entfernen.GetAttribute("aria-disabled"));
+        Assert.False(entfernen.HasAttribute("disabled"));
+        Assert.Equal("Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile.", entfernen.GetAttribute("title"));
+        entfernen.Click();
+        Assert.Single(k.Instance.Zeilen);
+        Assert.Contains("mindestens eine Zeile", k.Find(".epos-zapfausl-konstruktorhinweis").TextContent);
 
         Knopf(k, "OK").Click();
         Assert.True(cut.Instance.KonstruktorOffen);
@@ -589,6 +597,60 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
                                         b => b.TextContent.Contains("Spitzen unterschätzt"));
         Assert.Contains("Zapfspitzen unter einer Stunde", banner.TextContent);
         Assert.Single(cut.FindAll(".epos-warnbanner-text"), b => b.TextContent.StartsWith("Spitzen unterschätzt"));
+    }
+
+    [Fact]
+    public void Erneut_geoeffnet_beginnt_der_Konstruktor_mit_den_Zeilen_des_Entwurfs()
+    {
+        var cut = Aufbauen(rechnen: _ => Ergebnis(Speichergruppe()), konstruieren: Bauen);
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
+        Knopf(k, "Zeile hinzufügen").Click();
+        Feld(k, "Beginn [h], Zeile 2").Input("18");
+        Feld(k, "Ende [h], Zeile 2").Input("19");
+        Feld(k, "Name des Bedarfstags").Input("Tag Neu");
+        Knopf(k, "OK").Click();
+        Assert.Equal(2, cut.Instance.Eingabe.Entwurf!.Konstruktorzeilen.Count);
+
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        k = cut.FindComponent<BedarfstagKonstruktor>();
+        Assert.Equal(2, k.Instance.Zeilen.Count);
+        Assert.Equal(18, k.Instance.Zeilen[1].BeginnH);
+        Assert.Equal("Dusche", k.Instance.Zeilen[0].Regel);
+        Assert.Equal("Tag Neu", Feld(k, "Name des Bedarfstags").GetAttribute("value"));
+
+        // Die Zeilen sind Kopien: Abbrechen lässt den Entwurf, wie er war.
+        Feld(k, "Beginn [h], Zeile 2").Input("20");
+        Knopf(k, "Abbrechen").Click();
+        Assert.Equal(18, cut.Instance.Eingabe.Entwurf!.Konstruktorzeilen[1].BeginnH);
+    }
+
+    [Fact]
+    public void Eine_Fehleingabe_im_Konstruktor_wird_mit_Feld_und_Zeile_genannt()
+    {
+        int gebaut = 0;
+        var cut = Aufbauen(konstruieren: (z, n) => { gebaut++; return Bauen(z, n); });
+        Knopf(cut, "Bedarfstag konstruieren…").Click();
+        IRenderedComponent<BedarfstagKonstruktor> k = cut.FindComponent<BedarfstagKonstruktor>();
+
+        // Jedes Feld trägt Spalte und Zeile als Beschriftung.
+        string[] beschriftungen = k.FindAll("table.epos-zapfausl-konstruktorzeilen .epos-feld-text").Select(s => s.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Beginn [h], Zeile 1", "Ende [h], Zeile 1", "Zapfregel, Zeile 1", "Anzahl, Zeile 1", "Volumen [l], Zeile 1",
+                             "Zapftemperatur [°C], Zeile 1", "Verbraucher, Zeile 1" }, beschriftungen);
+
+        Feld(k, "Beginn [h], Zeile 1").Input("7,x");
+        Knopf(k, "OK").Click();
+        Assert.Equal(0, gebaut);
+        Assert.True(cut.Instance.KonstruktorOffen);
+        Assert.Equal("ZPG_AUS_KON_FEHLEINGABE", Assert.Single(k.Instance.Meldungen).Kennung);
+        Assert.Contains("Keine gültige Zahl: Beginn [h], Zeile 1", k.Markup);
+
+        // Berichtigt baut der Delegat den Tag.
+        Feld(k, "Beginn [h], Zeile 1").Input("7");
+        Feld(k, "Ende [h], Zeile 1").Input("8");
+        Knopf(k, "OK").Click();
+        Assert.Equal(1, gebaut);
+        Assert.False(cut.Instance.KonstruktorOffen);
     }
 
     [Fact]

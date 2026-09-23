@@ -24615,6 +24615,18 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_AUS_KON_SUMME" xml:space="preserve">
     <value>{0} Zeilen</value>
   </data>
+  <data name="ZPG_AUS_KON_FELD" xml:space="preserve">
+    <value>{0}, Zeile {1}</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLEINGABE" xml:space="preserve">
+    <value>Keine gültige Zahl: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_GRUND_LETZTE_ZEILE" xml:space="preserve">
+    <value>Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile.</value>
+  </data>
+  <data name="ZPG_AUS_KON_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name „{0}“ ist in der Katalogversion „{1}“ schon vergeben — frei ist etwa „{2}“.</value>
+  </data>
   <data name="ZPG_AUSBILD_SUMMENLINIE" xml:space="preserve">
     <value>Summenlinie des Bedarfstags</value>
   </data>

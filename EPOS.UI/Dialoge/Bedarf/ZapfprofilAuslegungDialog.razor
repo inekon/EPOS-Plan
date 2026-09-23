@@ -340,7 +340,8 @@
             @if (_konstruktorOffen)
             {
                 <BedarfstagKonstruktor Texte="@Texte" Regeln="@Daten.Regeln" RegelnGrund="@Daten.RegelnGrund"
-                                       Name="@KonstruktorName" Konstruieren="@Konstruieren" HilfeSchluessel="@HilfeRechenweg"
+                                       Name="@KonstruktorName" Startzeilen="@_eingabe.Entwurf?.Konstruktorzeilen"
+                                       Konstruieren="@Konstruieren" HilfeSchluessel="@HilfeRechenweg"
                                        OkText="@OkText" AbbrechenText="@AbbrechenText"
                                        TitelAnzeigen="false" Geschlossen="KonstruktorFertig" />
             }
