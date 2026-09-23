@@ -138,7 +138,11 @@ namespace WindowsFormsApplication1
     /// auf den Vorgänger. Eine freie Zeile (eigen, unbenutzt) lässt sich an Ort und Stelle
     /// ändern; ihr Vier-Augen-Vermerk entfällt dabei, weil er für die alten Werte galt.
     /// Dasselbe gilt für den Tagesgangsatz: <see cref="TagesgangSpeichern"/> schreibt einen
-    /// benutzten oder ausgelieferten Satz nur als neue Zeile.</para>
+    /// benutzten oder ausgelieferten Satz nur als neue Zeile. Die Zapfkategorien (Schemaschritt
+    /// T2) gehören zur Katalogversion ihrer Nutzungsart: Eine ausgelieferte Kategorie
+    /// (<c>ReadOnly</c>) sperrt die Nutzungsart, und jede neue Zeile aus „Speichern unter" oder
+    /// <see cref="TagesgangSpeichern"/> trägt die Kategorien ihrer Vorlage (Status <c>EIGEN</c>,
+    /// <c>ReadOnly = 0</c>).</para>
     ///
     /// <para><b>Provenienz je Wertgruppe (3.1).</b> Beim Ändern und bei „Speichern unter"
     /// vergleicht der Controller jede Wertgruppe mit dem Bezug (gespeicherte Zeile bzw.
@@ -286,14 +290,23 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Nutzungsart samt Tagesgangsatz; <c>null</c>, wenn es sie nicht gibt.</summary>
         internal static Nutzungsart Lies(int id) => ZapfprofilCtrl.LiesNutzungsart(id);
 
-        /// <summary>Gehört die Zeile zur Auslieferung (<c>ReadOnly</c>)? Eine fehlende Zeile ist es nicht.</summary>
+        /// <summary>
+        /// Gehört die Zeile zur Auslieferung (<c>ReadOnly</c> an ihr oder an einer ihrer
+        /// Zapfkategorien)? Eine fehlende Zeile ist es nicht.
+        /// </summary>
         internal static bool IstReadOnly(int id)
         {
             if (!TabellenVorhanden()) return false;
             object v = DataRepository.ExecuteScalar(
                 "SELECT ReadOnly FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
                 new DbParam("@id", id));
-            return v != null && v != DBNull.Value && Convert.ToInt64(v, CultureInfo.InvariantCulture) != 0;
+            if (v == null || v == DBNull.Value) return false;
+            if (Convert.ToInt64(v, CultureInfo.InvariantCulture) != 0) return true;
+            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM)) return false;
+            object k = DataRepository.ExecuteScalar(
+                "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " WHERE ID_Nutzungsart = ? AND ReadOnly <> 0",
+                new DbParam("@id", id));
+            return k != null && k != DBNull.Value && Convert.ToInt64(k, CultureInfo.InvariantCulture) > 0;
         }
 
         /// <summary>Benutzt eine Zone (<c>Tab_TwwZone.ID_Nutzungsart</c>) die Zeile?</summary>
@@ -322,7 +335,8 @@ namespace WindowsFormsApplication1
         /// unverändert mitbringt — Herkunftsart <c>EIGENKONSTRUKTION</c> mit neutraler Quelle.
         /// Der interne Beleg der Vorlage kommt nur mit, wenn keine Gruppe geändert ist. Der
         /// einzige Weg, eine gesperrte Zeile zu „ändern"; die Vorlage bleibt unberührt.
-        /// (Bezeichner, Katalogversion) muss frei sein.
+        /// (Bezeichner, Katalogversion) muss frei sein. Die Zapfkategorien der Vorlage kommen
+        /// mit (Status <c>EIGEN</c>, <c>ReadOnly = 0</c>, Werte und Provenienz unverändert).
         /// </summary>
         internal static TwwKatalogErgebnis SpeichernUnter(int idVorlage, TwwNutzungsartEntwurf e) => Anlegen(e, idVorlage);
 
@@ -424,8 +438,9 @@ namespace WindowsFormsApplication1
         /// <c>EIGEN</c>) samt vier Tagesgängen — die unveränderten mit ihrer Provenienz, die
         /// geänderten als Eigenkonstruktion. Ist die <b>Nutzungsart</b> gesperrt (ReadOnly oder
         /// von einer Zone benutzt), entsteht sie per „Speichern unter" neu (Katalogversion
-        /// <paramref name="katalogversion"/>, <c>ID_Vorlage</c> auf die alte) und trägt Satz und
-        /// Wochenfaktoren; die alte bleibt unberührt. Sonst wird an Ort und Stelle geschrieben
+        /// <paramref name="katalogversion"/>, <c>ID_Vorlage</c> auf die alte) und trägt Satz,
+        /// Wochenfaktoren und die Zapfkategorien der alten (Status <c>EIGEN</c>, <c>ReadOnly = 0</c>);
+        /// die alte bleibt unberührt. Sonst wird an Ort und Stelle geschrieben
         /// und der Freigabevermerk entfällt. <paramref name="katalogversion"/> ist nur Pflicht,
         /// wenn eine neue Zeile entsteht (sonst <see cref="TwwKatalogAusgang.EntwurfUnvollstaendig"/>);
         /// ist ihr natürlicher Schlüssel vergeben, <see cref="TwwKatalogAusgang.NameBelegt"/>.</para>
@@ -542,6 +557,8 @@ namespace WindowsFormsApplication1
                     p.Add(new DbParam("@status", TwwWertemengen.Text(ZapfKatalogstatus.Eigen)));
                     p.Add(new DbParam("@beleg", wocheGeaendert ? null : (object)idNutzungsart));
                     idNeu = v.EinfuegenUndId(SQL_INSERT, p.ToArray());
+                    // Die neue Version rechnet stochastisch wie die alte: ihre Zapfkategorien kommen mit.
+                    KategorienKopieren(v, idNutzungsart, idNeu);
                 }
                 else
                 {
@@ -586,6 +603,8 @@ namespace WindowsFormsApplication1
                 // Der interne Beleg der Vorlage gilt nur für ihre Werte - mit, solange keine Gruppe geändert ist.
                 p.Add(new DbParam("@beleg", idVorlage.HasValue && !geaendert ? (object)idVorlage.Value : null));
                 neu = v.EinfuegenUndId(SQL_INSERT, p.ToArray());
+                // „Speichern unter" nimmt die Zapfkategorien der Vorlage mit (Status EIGEN, ReadOnly 0).
+                if (idVorlage.HasValue) KategorienKopieren(v, idVorlage.Value, neu);
                 return TwwKatalogAusgang.Ausgefuehrt;
             });
             return erg.Ok ? new TwwKatalogErgebnis(TwwKatalogAusgang.Ausgefuehrt, neu) : erg;
@@ -616,18 +635,54 @@ namespace WindowsFormsApplication1
             }
         }
 
-        /// <summary>Die Sperre einer vorhandenen Zeile: NichtGefunden, ReadOnlyGesperrt (Vorrang), BenutztGesperrt oder frei.</summary>
+        /// <summary>
+        /// Die Sperre einer vorhandenen Zeile: NichtGefunden, ReadOnlyGesperrt (Vorrang), BenutztGesperrt oder frei.
+        /// Eine ausgelieferte Zapfkategorie (Schemaschritt T2, <c>ReadOnly</c>) sperrt ihre Nutzungsart wie
+        /// deren eigene Spalte — dieselbe Regel wie <c>KatalogBereinigung.Sperrgrund</c>.
+        /// </summary>
         private static TwwKatalogAusgang Sperre(DbVorgang v, int id)
         {
             object ro = v.Skalar("SELECT ReadOnly FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
                                  new DbParam("@id", id));
             if (ro == null) return TwwKatalogAusgang.NichtGefunden;
             if (Convert.ToInt64(ro, CultureInfo.InvariantCulture) != 0) return TwwKatalogAusgang.ReadOnlyGesperrt;
+            if (KategorientabelleDa(v)
+                && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM +
+                             " WHERE ID_Nutzungsart = ? AND ReadOnly <> 0", id) > 0)
+                return TwwKatalogAusgang.ReadOnlyGesperrt;
 
             if (Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID_Nutzungsart = ?", id) > 0)
                 return TwwKatalogAusgang.BenutztGesperrt;
 
             return TwwKatalogAusgang.Ausgefuehrt;
+        }
+
+        /// <summary>Führt die Datenbank die Zapfkategorien (Schemaschritt T2)? Im laufenden Vorgang gefragt.</summary>
+        private static bool KategorientabelleDa(DbVorgang v)
+        {
+            object n = v.Skalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?",
+                                new DbParam("@tabelle", TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM));
+            return n != null && Convert.ToInt64(n, CultureInfo.InvariantCulture) > 0;
+        }
+
+        /// <summary>
+        /// Die Zapfkategorien der Nutzungsart <paramref name="von"/> als Kategorien der neuen Zeile
+        /// <paramref name="nach"/> (Kopierstellen „Speichern unter" und neue Version aus
+        /// <see cref="TagesgangSpeichern"/>): Werte, Reihenfolge, Provenienz und interner Beleg wie
+        /// im Original — die Werte sind unverändert —, Status wie die Kopie (<c>EIGEN</c>),
+        /// <c>ReadOnly = 0</c>. Ohne Tabelle (Stand vor Schritt 114) nichts.
+        /// </summary>
+        private static void KategorienKopieren(DbVorgang v, int von, int nach)
+        {
+            if (!KategorientabelleDa(v)) return;
+            v.Ausfuehren(
+                "INSERT INTO " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " (ID_Nutzungsart, Kategorie, Reihenfolge, " +
+                "Volumenstrom_l_min, Dauer_min, Anteil, Sigma, Kappung_l_min, Quelle, Ausgabe, Version, Herkunftsart, " +
+                "Status, Beleg, ReadOnly) SELECT ?, Kategorie, Reihenfolge, Volumenstrom_l_min, Dauer_min, Anteil, Sigma, " +
+                "Kappung_l_min, Quelle, Ausgabe, Version, Herkunftsart, ?, Beleg, 0 FROM " +
+                TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + " WHERE ID_Nutzungsart = ? ORDER BY Reihenfolge, ID",
+                new DbParam("@nach", nach), new DbParam("@status", TwwWertemengen.Text(ZapfKatalogstatus.Eigen)),
+                new DbParam("@von", von));
         }
 
         private static long Anzahl(DbVorgang v, string sql, params int[] werte)

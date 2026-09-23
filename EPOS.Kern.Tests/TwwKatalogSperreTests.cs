@@ -208,6 +208,102 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // Zapfkategorien in der Pflege der Nutzungsart (TwwNutzungsartCtrl)
+        // =================================================================================
+
+        /// <summary>Die Kategorien einer Nutzungsart als Zeilentext, nach Reihenfolge — Werte, Provenienz, Status, ReadOnly.</summary>
+        private static string Kategorien(int idNutzungsart)
+            => string.Join("\n", DataRepository.GetDataTable(
+                   "SELECT \"Kategorie\", \"Reihenfolge\", \"Volumenstrom_l_min\", \"Dauer_min\", \"Anteil\", \"Sigma\", " +
+                   "\"Kappung_l_min\", \"Quelle\", \"Version\", \"Herkunftsart\", \"Status\", \"ReadOnly\" " +
+                   "FROM \"Tab_TwwZapfkategorie_STAMM\" WHERE \"ID_Nutzungsart\" = ? ORDER BY \"Reihenfolge\", \"ID\"",
+                   new DbParam("@id", idNutzungsart))
+               .Rows.Cast<System.Data.DataRow>()
+               .Select(r => string.Join("|", r.ItemArray.Select(x => System.Convert.ToString(x, System.Globalization.CultureInfo.InvariantCulture)))));
+
+        /// <summary>
+        /// Eine ausgelieferte Kategorie (<c>ReadOnly</c>) sperrt ihre Nutzungsart auch in der Pflege:
+        /// Ändern und Löschen lehnen benannt ab, und „Tagesgang…" schreibt nicht an Ort und Stelle,
+        /// sondern legt eine neue Version an — samt den Kategorien der alten (Status <c>EIGEN</c>,
+        /// <c>ReadOnly = 0</c>). Die alte bleibt unberührt.
+        /// </summary>
+        [Fact]
+        public void Eine_ausgelieferte_Zapfkategorie_sperrt_auch_die_Pflege_und_Tagesgang_kopiert_sie()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int id = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            TwwTestdatenbank.KategorieAnlegen(id, "Kurz", 1, 4.0, 1, 0.5, 1.0,
+                                              status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+            TwwTestdatenbank.KategorieAnlegen(id, "Lang", 2, 8.0, 5, 0.5, 2.0, kappung: 12.0);
+            string vorher = Kategorien(id);
+
+            Assert.True(TwwNutzungsartCtrl.IstReadOnly(id));
+            TwwNutzungsartEntwurf e = TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(id));
+            Assert.Equal(TwwKatalogAusgang.ReadOnlyGesperrt, TwwNutzungsartCtrl.Aendern(id, e with { Bezeichner = "Nutzung A2" }).Ausgang);
+            Assert.Equal(TwwKatalogAusgang.ReadOnlyGesperrt, TwwNutzungsartCtrl.Loeschen(id).Ausgang);
+            Assert.Equal("Nutzung A", TwwNutzungsartCtrl.Lies(id).Name);
+
+            var gaenge = Enumerable.Range(0, 4)
+                .Select(_ => Enumerable.Range(1, 24).Select(h => h == 7 || h == 19 ? 0.5 : 0.0).ToArray()).ToList();
+            double[] woche = { 0.1, 0.1, 0.2, 0.2, 0.2, 0.1, 0.1 };
+            Assert.Equal(TwwKatalogAusgang.EntwurfUnvollstaendig, TwwNutzungsartCtrl.TagesgangSpeichern(id, gaenge, woche).Ausgang);
+
+            TwwTagesgangErgebnis erg = TwwNutzungsartCtrl.TagesgangSpeichern(id, gaenge, woche, "T2");
+            Assert.True(erg.Ok);
+            Assert.NotEqual(id, erg.IdNutzungsart);
+            Assert.Equal(vorher, Kategorien(id));                                 // die alte bleibt
+            string kopie = Kategorien(erg.IdNutzungsart);
+            Assert.Equal("Kurz|1|4|1|0.5|1||" + TwwTestdatenbank.QUELLE + "|T1|FIKTIV|EIGEN|False\n" +
+                         "Lang|2|8|5|0.5|2|12|" + TwwTestdatenbank.QUELLE + "|T1|FIKTIV|EIGEN|False", kopie);
+            Assert.False(TwwNutzungsartCtrl.IstReadOnly(erg.IdNutzungsart));
+        }
+
+        /// <summary>
+        /// „Speichern unter" nimmt die Kategorien der Vorlage mit — Werte, Reihenfolge und Provenienz
+        /// unverändert, Status wie die Kopie, <c>ReadOnly = 0</c> —, sodass die neue Version
+        /// stochastisch rechnet wie die alte; die Vorlage behält ihre. Ohne Kategorientabelle (Stand
+        /// vor Schritt 114) läuft „Speichern unter" wie zuvor.
+        /// </summary>
+        [Fact]
+        public void Speichern_unter_nimmt_die_Zapfkategorien_der_Vorlage_mit()
+        {
+            using (var db = new TwwTestdatenbank())
+            {
+                int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+                int alt = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz,
+                                                                status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+                TwwTestdatenbank.KategorieAnlegen(alt, "Lang", 2, 8.0, 5, 0.25, 2.0, kappung: 12.0,
+                                                  status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+                TwwTestdatenbank.KategorieAnlegen(alt, "Kurz", 1, 4.0, 1, 0.75, 1.0,
+                                                  status: TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+                string vorher = Kategorien(alt);
+
+                TwwKatalogErgebnis erg = TwwNutzungsartCtrl.SpeichernUnter(alt,
+                    TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(alt)) with { Katalogversion = "T2" });
+                Assert.True(erg.Ok);
+                Assert.Equal(vorher, Kategorien(alt));
+                Assert.Equal("Kurz|1|4|1|0.75|1||" + TwwTestdatenbank.QUELLE + "|T1|FIKTIV|EIGEN|False\n" +
+                             "Lang|2|8|5|0.25|2|12|" + TwwTestdatenbank.QUELLE + "|T1|FIKTIV|EIGEN|False", Kategorien(erg.Id));
+                Assert.False(TwwNutzungsartCtrl.IstReadOnly(erg.Id));
+
+                // Die Kopie rechnet mit denselben Kategorien wie die Vorlage.
+                Zapfkategoriensatz a = Zapfkategoriensatz.Aus(ZapfprofilCtrl.Zapfkategorien(new[] { alt }), alt, "Zone");
+                Zapfkategoriensatz b = Zapfkategoriensatz.Aus(ZapfprofilCtrl.Zapfkategorien(new[] { erg.Id }), erg.Id, "Zone");
+                Assert.Equal(a.Werte.Select(w => w.EnergieJeKelvinKwh), b.Werte.Select(w => w.EnergieJeKelvinKwh));
+            }
+            using (var db = new TwwTestdatenbank(mitTwwSchema: false))
+            {
+                TwwTestdatenbank.SchemaAnlegen(mitT2: false);
+                int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+                int alt = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+                Assert.True(TwwNutzungsartCtrl.SpeichernUnter(alt,
+                    TwwNutzungsartEntwurf.Aus(TwwNutzungsartCtrl.Lies(alt)) with { Katalogversion = "T2" }).Ok);
+                Assert.False(TwwNutzungsartCtrl.IstReadOnly(alt));
+            }
+        }
+
+        // =================================================================================
         // Umbenennen
         // =================================================================================
 
