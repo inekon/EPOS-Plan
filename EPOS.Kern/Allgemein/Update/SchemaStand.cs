@@ -334,11 +334,18 @@ namespace WindowsFormsApplication1
         /// gibt es nicht, und fände er welche, bräche er benannt ab. <b>Der
         /// Referenzlauf bleibt byte-gleich</b>, die Basis
         /// <c>2026-09-19_R10_BhkwWirkungsgrad</c> gilt weiter.
+        /// Mit KATALOG, ZONEN UND PROJEKT DES ZAPFPROFILGENERATORS (Schritt 101,
+        /// Papiername T1, Umsetzungskonzept Zapfprofilgenerator Stufe Z0) steht das Ziel
+        /// auf <b>101</b>: zehn leere Tabellen <c>Tab_Tww*</c>, deren DDL bei
+        /// <see cref="TwwSchema"/> steht. <b>Reines DDL, kein Wert</b> — der Katalog kommt
+        /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
+        /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
+        /// byte-gleich</b>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 100;
+        public const int Zielversion = 101;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
