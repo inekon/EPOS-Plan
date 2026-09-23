@@ -123,7 +123,17 @@
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
                           Vergleichsparameter="@Uebersicht" ZeileIstWahl="true"
                           Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
-                          GewaehlteChanged="BeiKaestchen" />
+                          GewaehlteChanged="BeiKaestchen">
+                <Werkzeug>
+                    @* "NUR MIT KUEHLFUNKTION" (Konzept Administrationsdialoge 3.1, Zone 2;
+                       Stufe 4): derselbe Schalter wie in der Katalogauswahl des
+                       Anlagendialogs (WaermepumpenKatalogDialog). Er fuehrt keinen eigenen
+                       Zustand, er setzt den Trichter ">0" auf die Spalte Kuehlleistung -
+                       nie ein zweiter Filterweg; "Filter zuruecksetzen" nimmt ihn mit. *@
+                    <Schalter Bezeichnung="@SchalterNurKuehlung" Wert="@NurMitKuehlung"
+                              WertChanged="NurMitKuehlungGesetzt" />
+                </Werkzeug>
+            </Katalogliste>
         </Liste>
 
         <Auswahl>
@@ -144,7 +154,10 @@
                         ZurListe="@_blattSchliessen"
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
                         Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
-                        VergleichZurueck="BeiVergleichZurueck">
+                        VergleichZurueck="BeiVergleichZurueck"
+                        Lesemodus="@NurLesbar"
+                        KenndatenWerte="@(NurLesbar ? WaermepumpeStammFelder.Kenndatenwerte(Daten, _felderTexte) : null)"
+                        Kosten="@KostenInhalt">
                 <Gruppen>
                     @* DIE KENNLINIE (V9, dialogspezifisch). "Kennliniendaten..." steht im
                        Kopf der Gruppe und oeffnet den Editor als Ueberlagerung (Konzept
@@ -198,7 +211,7 @@
                        Stufe 3 haelt ein geaendertes Feld Zeilenwechsel, Neu,
                        Duplizieren... und Beenden an ("Speichern oder Verwerfen") - bis
                        dahin verwarf ein Zeilenwechsel die Eingabe still. *@
-                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte"
+                    <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte" MitModulkosten="false"
                                             Typen="@Typen" Leistungsstufen="@Leistungsstufen"
                                             Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
                                             Aktiv="@(!NurLesbar)" Geaendert="BeiFeldAenderung" />
@@ -533,6 +546,23 @@
     /// </summary>
     private Katalogfilterstand _filterstand = new();
 
+    /// <summary>„nur mit Kühlfunktion" — <c>WPK_CHK_NUR_KUEHLUNG</c>, derselbe Text wie im Anlagendialog.</summary>
+    [Parameter] public string SchalterNurKuehlung { get; set; } = Resource.WPK_CHK_NUR_KUEHLUNG;
+
+    /// <summary>
+    /// Steht „nur mit Kühlfunktion"? <b>Der Schalter führt keinen eigenen Zustand</b> —
+    /// er LIEST den Filterstand (Muster <c>WaermepumpenKatalogDialog</c>): „Filter
+    /// zurücksetzen" und der Trichter der Spalte ändern denselben Stand.
+    /// </summary>
+    public bool NurMitKuehlung
+        => _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung) ==
+           Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG;
+
+    /// <summary>Setzt bzw. nimmt den Ausdruck <c>&gt;0</c> auf der Spalte Kühlleistung.</summary>
+    private void NurMitKuehlungGesetzt(bool wert)
+        => _filterstand.Setzen(Katalogfilterprofil.SpKuehlleistung,
+                               wert ? Katalogfilterprofil.AUSDRUCK_MIT_KUEHLUNG : "");
+
     /// <summary>
     /// Der gewählte BEZEICHNER. Die Markierung der <c>Katalogliste</c> hängt am Namen
     /// und nicht an der Zeilennummer — deshalb bleibt sie über einen Filter- oder
@@ -797,6 +827,21 @@
     /// Prüfstand kann weiterhin eine einzelne Beschriftung setzen.
     /// </summary>
     private WaermepumpeStammFelderTexte _felderTexte = new();
+
+    /// <summary>
+    /// <b>Die eigene Gruppe „Kosten"</b> (Konzept Administrationsdialoge, Stufe 4): Die
+    /// Modulkosten standen bis hierher zwischen den Kenndaten; jetzt stehen sie wie bei
+    /// den Gerätekatalogen in der festen Gruppe Kosten des Stammblatts — als LESEWERT mit
+    /// Herleitung, denn gepflegt werden sie in der Kostenverwaltung (W14a-O-1).
+    /// </summary>
+    private RenderFragment KostenInhalt => @<div class="epos-wp-kosten">
+        <Stammblattwerte Werte="@WaermepumpeStammFelder.Kostenwerte(Daten, _felderTexte)" />
+        <Herleitungszeile Text="@_felderTexte.HerleitungModulkosten" />
+        @if (Daten.Modulkosten <= 0)
+        {
+            <Herleitungszeile Text="@_felderTexte.HinweisModulkostenLeer" />
+        }
+    </div>;
 
     protected override void OnParametersSet()
     {

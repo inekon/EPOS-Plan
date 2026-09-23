@@ -283,9 +283,7 @@ namespace WindowsFormsApplication1
             if (double.IsNaN(laufzeitH) || !(laufzeitH > 0) || laufzeitH > Zapfkalender.STUNDEN_TAG)
                 throw new ZapfprofilEingabeException(ZapfEingabefehler.ZirkulationUngueltig, "",
                     "Nicht rechenbar — die Laufzeit der Zirkulation liegt nicht in (0; 24] h.");
-            double beginn = Math.Floor(tagesmitteH - laufzeitH / 2.0 + 0.5);
-            if (beginn < 0) beginn = 0;
-            if (beginn + laufzeitH > Zapfkalender.STUNDEN_TAG) beginn = Math.Floor(Zapfkalender.STUNDEN_TAG - laufzeitH);
+            double beginn = Laufzeitbeginn(laufzeitH, tagesmitteH);
             double ende = beginn + laufzeitH;
             var fenster = new double[Zapfkalender.STUNDEN_TAG];
             for (int h = 0; h < Zapfkalender.STUNDEN_TAG; h++)
@@ -295,6 +293,19 @@ namespace WindowsFormsApplication1
                 fenster[h] = bis > von ? bis - von : 0.0;
             }
             return fenster;
+        }
+
+        /// <summary>
+        /// Der Beginn [h] des Laufzeitfensters: <c>⌊m − t_Lauf/2 + ½⌋</c>, an den Tagesrand
+        /// geschoben (N7 (g)). Auch die Auslegung liest ihn, damit Bilanz und Auslegung dieselben
+        /// Laufzeitstunden haben.
+        /// </summary>
+        internal static double Laufzeitbeginn(double laufzeitH, double tagesmitteH)
+        {
+            double beginn = Math.Floor(tagesmitteH - laufzeitH / 2.0 + 0.5);
+            if (beginn < 0) beginn = 0;
+            if (beginn + laufzeitH > Zapfkalender.STUNDEN_TAG) beginn = Math.Floor(Zapfkalender.STUNDEN_TAG - laufzeitH);
+            return beginn;
         }
 
         /// <summary>

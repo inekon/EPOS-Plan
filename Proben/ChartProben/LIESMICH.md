@@ -270,3 +270,34 @@ von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor
 alle 111 Hashes des Vorstands gleich, 11 neu (122 Zeilen). Die elf Bilder stehen noch nicht in der
 Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
 wie die Bilder der Etappe E6: alle alten Zeilen gleich, elf neu, keines geändert.
+
+---
+
+## Zapfprofilgenerator (Stufe Z2): die Bilder der Auslegung
+
+`ZapfprofilBilder` zeichnet die drei Bilder der Überlagerung „Auslegung" über das neue
+`ChartRenderer.SummenlinieModell` — ein Linienbild über einer x-Größe mit eigener Teilung, linker
+vorzeichenfähiger Achse, optionaler zweiter Achse (gemeinsame Skala von null an) und Marken
+(Strecke oder Punkt mit Beschriftung): die **Summenlinie** des Bedarfstags (Bedarf und Versorgung
+kumuliert über 1 441 Minutenwerte, Speicherinhalt als Strecke, kleinster Abstand als Punkt), die
+**Wertepaarkurve** (Speichervolumen über Leistung mit eigenen x-Stellen, gewählter Punkt) und die
+**maßgebende Woche** der Stundenbilanz (Zapfung als Fläche, Zirkulation gestrichelt, Ladung; Defizit
+und Füllstand rechts, maßgebender Zeitpunkt). Die Proben stehen in `Program.Auslegung.cs`; ihre
+Texte sind die deutsche Vorgabe (`ZapfprofilAuslegungBildtexte`).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `zapfprofil_summenlinie` | 1 441 Minutenwerte, 1244 × 524, Bedarf (`WARMWASSER`) und Versorgung (`SPEICHERLADUNG`) |
+| Maßprobe | `zapfprofil_wertepaarkurve` | fünf Wertepaare mit gewähltem Punkt, 1244 × 524, Rolle `STAMM` |
+| Maßprobe | `zapfprofil_auslegungswoche` | 168 Wochenstunden mit zweiter Achse, 1244 × 524, `WARMWASSER`, `SPEICHERLADUNG`, `SERIE_4`, `SPEICHERFUELLSTAND` |
+| Maßprobe | `summenlinie_leer` | keine gültige Reihe: der Leerhinweis, 1244 × 464 |
+| Gegenprobe | `summenlinie_marken_wirken` | dieselbe Summenlinie mit und ohne Marken |
+| Gegenprobe | `summenlinie_zweite_achse_wirkt` | dieselbe Woche mit und ohne Defizit und Füllstand |
+| Gegenprobe | `summenlinie_xwerte_wirken` | dieselben Werte über ungleichmäßigen x-Stellen und über dem Index |
+| SVG-Probe | `svg_zapfprofil_summenlinie`, `svg_zapfprofil_wertepaarkurve`, `svg_zapfprofil_auslegungswoche` | Modellprobe der Gruppe (a): je Reihe ein `path.epos-reihe`, die Fläche geschlossen, die zweite Achse genau dann, wenn das Modell sie führt |
+
+Das sind vier Maßproben und drei Gegenproben — **10 neue Bilder** — und drei SVG-Proben. Kein Bild
+von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe gemessen,
+alle 122 Hashes des Vorstands gleich, 10 neu (132 Zeilen). Die zehn Bilder stehen noch nicht in der
+Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
+wie die Bilder der Etappe E6: alle alten Zeilen gleich, zehn neu, keines geändert.

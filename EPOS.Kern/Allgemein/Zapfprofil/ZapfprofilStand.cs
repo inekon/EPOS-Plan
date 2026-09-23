@@ -186,8 +186,22 @@ namespace WindowsFormsApplication1
     /// <c>Tab_TwwProjekt</c> trägt: Die Vorgaben stehen dann allein in der DDL
     /// (<see cref="TwwSchema"/>) und entstehen erst mit dem ersten Speichern (Z1) — eine
     /// zweite Abschrift der Vorgabewerte im Quelltext gibt es nicht.</para>
+    ///
+    /// <para><see cref="BedarfstagEntwurf"/> trägt einen vom Konstruktor gebauten, noch nicht
+    /// gespeicherten Bedarfstag der Auslegung (Stufe Z2, Gruppe 2): Er wird erst mit dem
+    /// Arbeitsstand geschrieben — als Katalogzeile im selben Vorgang
+    /// (<c>ZapfprofilCtrl.Speichern</c>); bis dahin verwirft ein Abbrechen ihn mit dem Stand.</para>
     /// </summary>
-    internal sealed record ZapfprofilStand(BrauchwasserWeg Weg, IReadOnlyList<ZonenStand> Zonen, ProjektStand Projekt);
+    internal sealed record ZapfprofilStand(BrauchwasserWeg Weg, IReadOnlyList<ZonenStand> Zonen, ProjektStand Projekt)
+    {
+        /// <summary>
+        /// Der konstruierte, noch ungespeicherte Bedarfstag (Quelle Konstruktor, Id
+        /// <c>ZapfprofilCtrl.ENTWURF_ID</c>); <c>null</c> = keiner. Solange er steht, zeigt die
+        /// Projektzeile mit <see cref="ProjektStand.BedarfstagQuelle"/> Konstruktor auf ihn
+        /// (<see cref="ProjektStand.IdBedarfstag"/> leer).
+        /// </summary>
+        public BedarfstagKatalogzeile BedarfstagEntwurf { get; init; }
+    }
 
     /// <summary>Warum der Zapfprofilgenerator nicht zur Verfügung steht.</summary>
     internal enum ZapfVerfuegbarkeitsgrund

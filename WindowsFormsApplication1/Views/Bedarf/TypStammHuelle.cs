@@ -135,7 +135,7 @@ namespace WindowsFormsApplication1
         /// Überschreiben der URSPRUNGSNAME (der Vorläufer nahm dafür sein Feld
         /// <c>m_szProzessname</c>, nicht den Inhalt des Namensfeldes).
         /// </summary>
-        private static KatalogSpeicherErgebnis Schreiben(BedarfsArt art, TypStammDaten daten,
+        internal static KatalogSpeicherErgebnis Schreiben(BedarfsArt art, TypStammDaten daten,
                                                          bool istNeu, string bezeichner)
         {
             if (!istNeu && BedarfStammCtrl.IstReadOnly(art, bezeichner))
@@ -408,7 +408,7 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static string TypFehltMeldung(BedarfsArt art)
+        internal static string TypFehltMeldung(BedarfsArt art)
         {
             switch (art)
             {
@@ -434,7 +434,7 @@ namespace WindowsFormsApplication1
         /// (<c>MonatswertePruefen</c> der jeweiligen Maske). Wörtlich übernommen,
         /// Befund W8‑O‑1.
         /// </summary>
-        private static string[] Feldnamen(BedarfsArt art)
+        internal static string[] Feldnamen(BedarfsArt art)
         {
             var namen = new string[12];
             if (art == BedarfsArt.Stromverbraucher)

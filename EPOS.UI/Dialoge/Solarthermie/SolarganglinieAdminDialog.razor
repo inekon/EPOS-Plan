@@ -40,7 +40,27 @@
    geleert, nie gelesen - Befund W14-B65), dazu btn_Abbrechen_Click ohne Knopf
    und die tote Methode GetDateiInfo (Befund W14-B75).
 
-   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst die oberste Ebene. Enter ist nicht belegt.
+
+   STUFE 4 DER NEUORDNUNG (Konzept Administrationsdialoge, V3 V6 V8 V9 V12 V13
+   V14; Mockup-Reiter "Solarthermieganglinie"): dasselbe Geruest wie die
+   Waermebedarfsverwaltung (WaermebedarfAdminDialog), nur mit dem EIGENEN
+   Einleseweg (Textdatei mit Kopfzeile, 8 760 Stundenwerte) statt
+   GanglinienImportLauf.
+     * LISTE links ueber die ganze Hoehe, mit Kaestchen (V6).
+     * AUSWAHLLEISTE (V8): Vergleichen und Loeschen - auch mehrere Zeilen
+       (AD-Q9). Loeschen ist WEICH gesperrt, wenn jede Zielzeile ein
+       Auslieferungssatz ist oder ein Projekt sie fuehrt; der Kurztext nennt
+       die Projekte (Konzept 3.4). Kein Neu, kein Duplizieren: Eine Ganglinie
+       entsteht nur durch Einlesen.
+     * STAMMBLATT (V9): Kopf mit Jahresarbeit, Spitze und Volllaststunden; die
+       Gruppe GANGLINIE (Jahresverlauf aus dem Kern, "gross..." breit) und die
+       Gruppe HERKUNFT als Text (V13) mit der Beschreibung aus der Kopfzeile.
+     * EINLESEN ALS UEBERLAGERUNG (V14): "Import..." oeffnet "Ganglinie aus
+       Datei Einlesen" mit Hinweis, Ordner, Dateiwahl, Fortschritt und
+       Anzeigen. Nach dem Erfolg ist sie zu, die neue Ganglinie gewaehlt, die
+       Statuszeile nennt sie.
+     * Fussleiste: Statuszeile - Import... - Beenden. *@
 
 @namespace EPOS.UI.Dialoge.Solarthermie
 @using EPOS.UI.Dialoge.Bedarf
@@ -61,57 +81,112 @@
         <Warnbanner Stufe="@_meldungStufe" Text="@_meldung" />
     }
 
-    @* --- Liste und Einleseblock NEBENEINANDER (Anwenderwunsch 05.09.2026) -
-           Das Vorbild Form_Solarganglinie_Admin (681 x 344) stellte beides
-           nebeneinander: den Einleseblock als groupBox1 (278 x 274) links, die
-           Liste (335 x 191) rechts. Hier steht die Liste links wie in allen
-           anderen Katalogdialogen des Hauses - nebeneinander ist die Aussage
-           des Vorbilds, die Seite nicht. *@
-    <Katalograhmen>
+    @* --- STUFE 4 (V3 V6 V8 V9): Liste links, rechts Auswahlleiste und
+           Stammblatt. Das Vorbild Form_Solarganglinie_Admin (681 x 344) stellte
+           Einleseblock und Liste nebeneinander; das Einlesen ist jetzt eine
+           Ueberlagerung (V14), und die Liste hat die ganze Hoehe. *@
+    <Katalograhmen BlattOffen="@_auswahl.BlattOffen">
         <Liste>
-            <Gruppenkopf Titel="@LabelKatalog" />
-
             @* DIE EINE KATALOGLISTE (Anwenderentscheid W14a-E-10, Stufe S3.2):
-               Suche ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf. Neu
-               sind die zwei Kennzahlen JAHRESARBEIT und SPITZE aus EINER
-               Gruppenabfrage ueber die Wertetabelle. *@
+               Suche ueber alle Spalten, Trefferzahl, Filter im Spaltenkopf; die
+               Kennzahlen JAHRESARBEIT und SPITZE kommen aus EINER Gruppenabfrage.
+               Seit Stufe 4 mit Kaestchen (V6). *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" ZeileIstWahl="true" />
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile" ZeileIstWahl="true"
+                          Kaestchen="true" Gewaehlte="@_auswahl.Gewaehlte"
+                          GewaehlteChanged="BeiKaestchen" />
         </Liste>
 
-        <Eingabe>
-            <Gruppenkopf Titel="@GruppeEinlesenText" />
+        <Auswahl>
+            <Auswahlleiste Fokus="@_gewaehlt" Anzahl="@_auswahl.Anzahl"
+                           Handlungen="@Handlungen()"
+                           Aufheben="BeiAufheben" Gesperrt="Warnen"
+                           Stammblatt="@BlattOeffnenWeg" />
+        </Auswahl>
 
-            <Herleitungszeile Text="@HinweisStundenwerte" />
-
-            @* A-6: Der Ordner war im Bestand UNSICHTBAR (textBox_Ordner.Visible = False
-               in der .resx, Befund W14-B79) - man sah nicht, wohin kopiert wird. *@
-            <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
-
-            <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@DateiText" Filter="@Dateifilter"
-                       Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
-                       Aktiv="@(!_laeuft)" />
-
-            <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
-        </Eingabe>
+        <Blatt>
+            <Stammblatt Name="@_gewaehlt" Unterzeile="@Unterzeile"
+                        Auslieferung="@_auslieferung" SchlossText="@Filtertexte.Schloss"
+                        Kennzahlen="@Kennzahlen" Texte="@_blatttexte"
+                        ZurListe="@_blattSchliessen"
+                        Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
+                        Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
+                        VergleichZurueck="BeiVergleichZurueck">
+                <Gruppen>
+                    <Ganglinienblattgruppe @ref="_ganglinie" Modell="@_ansicht?.Modell"
+                                           Name="@_gewaehlt" Schluessel="@Schluessel"
+                                           Kennung="sgad-ganglinie"
+                                           PlatzhalterText="@Platzhalter" />
+                    <Stammblattgruppe Titel="@GruppeHerkunftText" Lesemodus="true"
+                                      Werte="@Herkunftswerte" />
+                </Gruppen>
+            </Stammblatt>
+        </Blatt>
     </Katalograhmen>
 
+    @* DIE FUSSLEISTE (V14, V15): Statuszeile - Import... - Beenden. Loeschen steht
+       in der Auswahlleiste, "Anzeigen" und "Einlesen" in der Ueberlagerung. *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"
-                @onclick="BeiAnzeigen">@AnzeigenText</button>
-        <button type="button" class="epos-knopf" disabled="@(!EinlesenErlaubt)"
-                @onclick="BeiEinlesen">@EinlesenText</button>
-        <button type="button" class="epos-knopf" disabled="@(!LoeschenErlaubt)"
-                @onclick="BeiLoeschen">@LoeschenText</button>
-        <span class="epos-leiste-fueller"></span>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
+        @if (Einlesen is not null)
+        {
+            <button type="button" class="epos-knopf epos-importknopf"
+                    @onclick="ImportOeffnen">@ImportOeffnenText</button>
+        }
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
-    @* --- Rueckfrage vor dem Loeschen (A-5) ------------------------------- *@
+    @* --- Rueckfrage vor dem Loeschen (A-Zeile) --------------------------- *@
     <Rueckfrage Offen="@_loeschfrageOffen" Frage="@_loeschfrage" TitelText="@TitelLoeschen"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- DAS EINLESEN ALS UEBERLAGERUNG (V14). Das Kreuz steht beim Titel;
+           waehrend der Kette schliessen weder Kreuz noch Esc noch Abbrechen. *@
+    <Ueberlagerung Offen="@_importOffen" Titel="@GruppeEinlesenText" Geschlossen="ImportSchliessen">
+        <KindInhalt>
+            @if (_importOffen)
+            {
+                <div class="epos-einlesen">
+                    @if (_importMeldung.Length > 0)
+                    {
+                        <Warnbanner Stufe="@_importMeldungStufe" Text="@_importMeldung" />
+                    }
+
+                    <Herleitungszeile Text="@HinweisStundenwerte" />
+
+                    @* A-6: Der Ordner war im Bestand UNSICHTBAR (textBox_Ordner.Visible =
+                       False, Befund W14-B79) - man sah nicht, wohin kopiert wird. *@
+                    <Formularraster Einspaltig="true">
+                        <KindInhalt>
+                            <Textfeld Bezeichnung="@LabelOrdner" Wert="@Ordner" NurLesen="true" />
+
+                            <Dateiwahl Bezeichnung="@LabelDatei" KnopfText="@DateiText" Filter="@Dateifilter"
+                                       Pfad="@_pfad" Waehlen="@DateiWaehlen" PfadChanged="BeiDatei"
+                                       Aktiv="@(!_laeuft)" />
+                        </KindInhalt>
+                    </Formularraster>
+
+                    <Fortschritt Sichtbar="@_laeuft" Anteil="@_anteil" Text="@_fortschrittText" />
+
+                    @* Die Leiste der Ueberlagerung: "Inhalt anzeigen..." wirkt auf die
+                       gewaehlte Datei und steht links vom Fueller; Abbrechen schliesst,
+                       ohne zu lesen, "Einlesen" liest und schreibt sofort. *@
+                    <div class="epos-leiste">
+                        <button type="button" class="epos-knopf" disabled="@(!AnzeigenErlaubt)"
+                                @onclick="BeiAnzeigen">@AnzeigenText</button>
+                        <span class="epos-leiste-fueller"></span>
+                        <button type="button" class="epos-knopf" disabled="@_laeuft"
+                                @onclick="ImportSchliessen">@AbbrechenText</button>
+                        <button type="button" class="epos-knopf epos-knopf--primaer" disabled="@(!EinlesenErlaubt)"
+                                @onclick="BeiEinlesen">@EinlesenText</button>
+                    </div>
+                </div>
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
 </div>
 
 @code {
@@ -139,15 +214,30 @@
     [Parameter] public Katalogfilterstand? Filterstandvorgabe { get; set; }
 
     /// <summary>
+    /// <b>Die Ansicht einer Ganglinie im Stammblatt</b> (Stufe 4, V9): Jahresverlauf und
+    /// Kennzahlen aus dem Kern (<c>ZeitreihenAdminWege.Ansicht</c>). Ohne ihn steht der
+    /// Platzhalter.
+    /// </summary>
+    [Parameter] public Func<string, Task<Ganglinienansicht>>? Ansicht { get; set; }
+
+    /// <summary>
+    /// <b>Welche Projekte welche Ganglinie führen</b> (Stufe 4, V8) — je Bezeichner die
+    /// Projektnamen, EINE Abfrage je Liste (<c>ZeitreihenKatalogCtrl.Projektverwendung</c>).
+    /// Daran hängt die weiche Löschsperre samt Projektnamen.
+    /// </summary>
+    [Parameter] public Func<Task<IReadOnlyDictionary<string, IReadOnlyList<string>>>>? Verwendung { get; set; }
+
+    /// <summary>
     /// Gibt es zu dieser Ganglinie eine Projektzuordnung?
-    /// (<c>SolarganglinieStammCtrl.HatProjektzuordnung</c>, seit W14b.0d im Kern.)
+    /// (<c>SolarganglinieStammCtrl.HatProjektzuordnung</c>, W14b.0d.) Die letzte
+    /// Prüfung vor dem Löschen — die Verwendung steht schon im Kurztext.
     /// </summary>
     [Parameter] public Func<string, Task<bool>>? HatProjektzuordnung { get; set; }
 
-    /// <summary>Löscht einen Katalogeintrag; <c>false</c> = er blieb stehen.</summary>
+    /// <summary>Loescht einen Katalogeintrag; <c>false</c> = er blieb stehen.</summary>
     [Parameter] public Func<string, Task<bool>>? Loeschen { get; set; }
 
-    /// <summary>Der Dateiwähler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
+    /// <summary>Der Dateiwaehler der Plattform; ohne ihn bleibt der Knopf weg.</summary>
     [Parameter] public Func<string, Task<string?>>? DateiWaehlen { get; set; }
 
     /// <summary>
@@ -158,16 +248,15 @@
     [Parameter] public Func<string, Task<AblageErgebnis>>? Ablegen { get; set; }
 
     /// <summary>
-    /// Öffnet eine Datei mit der Systemanwendung
-    /// (<c>Dienste.Datei.MitSystemOeffnen</c>) — mit dem VOLLEN Pfad. Der Vorläufer
-    /// verkettete den Ordner mit <c>textBox_Name.Text</c>, das den vollen Pfad
-    /// bereits trug, und verdoppelte ihn damit (Befund W14-B67).
+    /// Öffnet eine Datei mit der Systemanwendung (<c>Dienste.Datei.MitSystemOeffnen</c>) — mit
+    /// dem VOLLEN Pfad (Befund W14-B67: der Vorläufer verdoppelte ihn).
     /// </summary>
     [Parameter] public Func<string, Task<bool>>? MitSystemOeffnen { get; set; }
 
     /// <summary>
     /// Liest, prüft den Namen und schreibt — die ganze Kette in der Hülle, weil sie
-    /// 8 760 Zeilen liest und in einer Transaktion schreibt.
+    /// 8 760 Zeilen liest und in einer Transaktion schreibt. <b>Ohne ihn steht
+    /// „Import…" nicht da.</b>
     /// </summary>
     [Parameter]
     public Func<string, IProgress<ImportFortschritt>, Task<SolarganglinieImportErgebnis>>? Einlesen { get; set; }
@@ -178,7 +267,7 @@
     /// <summary>Der Dialog ist zu Ende.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
 
-    /// <summary>Meldet dem Wirt, dass sich der Katalog geändert hat (Überlagerungsbetrieb).</summary>
+    /// <summary>Meldet dem Wirt, dass sich der Katalog geaendert hat (Ueberlagerungsbetrieb).</summary>
     [Parameter] public Action? Geaendert { get; set; }
 
     // =====================================================================
@@ -186,8 +275,15 @@
     // =====================================================================
 
     [Parameter] public string TitelText { get; set; } = Resource.SGAD_TITEL;
+
+    /// <summary>
+    /// Die frühere Überschrift der Liste — seit Stufe 4 ohne Wirkung (die Liste nennt
+    /// sich über ihre Spaltenköpfe); der Parameter bleibt, damit kein Parametersatz bricht.
+    /// </summary>
     [Parameter] public string LabelKatalog { get; set; } = Resource.SGAD_LBL_KATALOG;
     [Parameter] public string SpalteWahlText { get; set; } = Resource.KFAK_SP_WAHL;
+
+    /// <summary>Der Titel der Überlagerung „Ganglinie aus Datei Einlesen".</summary>
     [Parameter] public string GruppeEinlesenText { get; set; } = Resource.SGAD_GRP_EINLESEN;
     [Parameter] public string HinweisStundenwerte { get; set; } = Resource.SGAD_LBL_STUNDENWERTE;
     [Parameter] public string LabelOrdner { get; set; } = Resource.SGAD_LBL_ORDNER;
@@ -209,7 +305,12 @@
     [Parameter] public string TextSchreibgeschuetzt { get; set; } = Resource.SGAD_MSG_SCHREIBGESCHUETZT;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Solarganglinie_Admin.btn_Help";
+
+    // ---- Stammblatt und Einlesen (Stufe 4) ------------------------------
+    [Parameter] public string ImportOeffnenText { get; set; } = Resource.ADM_BTN_IMPORT;
+    [Parameter] public string GruppeHerkunftText { get; set; } = Resource.ADM_SB_HERKUNFT;
 
     // =====================================================================
     // Zustand
@@ -220,6 +321,7 @@
     private bool _laeuft;
     private double? _anteil;
     private string _fortschrittText = "";
+    private Ganglinienblattgruppe? _ganglinie;
 
     private IReadOnlyList<Katalogfilterzeile> _katalog = Array.Empty<Katalogfilterzeile>();
     private Katalogfilterstand _filterstand = new();
@@ -239,24 +341,156 @@
     private bool _loeschfrageOffen;
     private string _loeschfrage = "";
 
+    // ---- Stufe 4 ---------------------------------------------------------
+    private readonly Zeilenauswahl _auswahl = new();
+    private Katalogfilterzeile? _fokuszeile;
+    private bool _auslieferung;
+    private Ganglinienansicht? _ansicht;
+    private HashSet<string> _geschuetzt = new(StringComparer.Ordinal);
+    private IReadOnlyDictionary<string, IReadOnlyList<string>>? _verwendung;
+    private IReadOnlyList<string>? _vergleichskoepfe;
+    private IReadOnlyList<Vergleichszeile>? _vergleichszeilen;
+    private List<string> _loeschziele = new();
+    private int _loeschBleiben;
+    private string _status = "";
+    private bool _importOffen;
+    private string _importMeldung = "";
+    private WarnStufe _importMeldungStufe = WarnStufe.Hinweis;
+
+    private EventCallback _vergleichen;
+    private EventCallback _loeschenWeg;
+    private EventCallback _blattOeffnen;
+    private EventCallback _blattSchliessen;
+
+    /// <summary>Eine Ganglinie kennt kein Duplizieren — der Hinweis im Kopf sagt es ohne.</summary>
+    private readonly Stammblatttexte _blatttexte = new() { NurLesen = Resource.ADM_SB_NUR_LESEN_OHNE_KOPIE };
+
     /// <summary>Die Zeilen des Katalogs (Prüfhilfe für Tests).</summary>
     public IReadOnlyList<Katalogfilterzeile> Katalog => _katalog;
 
     /// <summary>Der Filterstand der Liste (Prüfhilfe für Tests).</summary>
     public Katalogfilterstand Filterstand => _filterstand;
 
-    /// <summary>Der gewählte Katalogeintrag (Prüfhilfe für Tests).</summary>
+    /// <summary>Der gewaehlte Katalogeintrag (Pruefhilfe fuer Tests).</summary>
     public string Gewaehlt => _gewaehlt;
 
-    /// <summary>Der Text des Warnbanners (Prüfhilfe für Tests).</summary>
+    /// <summary>Der Text des Warnbanners des Dialogs (Pruefhilfe fuer Tests).</summary>
     public string Meldung => _meldung;
 
-    /// <summary>Der Pfad der gewählten Datei (Prüfhilfe für Tests).</summary>
+    /// <summary>Der Text des Warnbanners IN der Überlagerung „Datei einlesen" (Prüfhilfe).</summary>
+    public string Importmeldung => _importMeldung;
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Steht die Überlagerung „Datei einlesen"? (Prüfhilfe für Tests.)</summary>
+    public bool ImportOffen => _importOffen;
+
+    /// <summary>Der Pfad der gewaehlten Datei (Pruefhilfe fuer Tests).</summary>
     public string Pfad => _pfad;
 
-    private bool LoeschenErlaubt => _gewaehlt.Length > 0 && !_laeuft && Loeschen is not null;
+    /// <summary>Die über das Kästchen gewählten Zeilen (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<string> Kaestchen => _auswahl.Gewaehlte;
+
+    /// <summary>Zeigt das Stammblatt den Vergleich? (Prüfhilfe für Tests.)</summary>
+    public bool Vergleicht => _auswahl.Vergleich && _vergleichszeilen is not null;
+
+    /// <summary>Die Zeilen des Vergleichs (Prüfhilfe für Tests).</summary>
+    public IReadOnlyList<Vergleichszeile> Vergleichszeilen => _vergleichszeilen ?? Array.Empty<Vergleichszeile>();
+
     private bool AnzeigenErlaubt => _pfad.Length > 0 && !_laeuft && MitSystemOeffnen is not null;
     private bool EinlesenErlaubt => _pfad.Length > 0 && !_laeuft && Einlesen is not null;
+
+    // =====================================================================
+    // Stammblatt (Stufe 4)
+    // =====================================================================
+
+    private string Schluessel => _fokuszeile?.Id.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "0";
+
+    private string Unterzeile => _fokuszeile is null ? "" : Ganglinienblatt.Herkunft(_auslieferung);
+
+    private IReadOnlyList<Stammblattkennzahl> Kennzahlen => Ganglinienblatt.Kennzahlen(_fokuszeile, _ansicht);
+
+    private string Platzhalter => _ansicht is not null && _ansicht.Meldung.Length > 0
+        ? _ansicht.Meldung : Resource.ADM_SB_KEINE_GANGLINIE;
+
+    /// <summary>Die Gruppe Herkunft als Text (V13): Satz, Beschreibung, Verwendung, Ablageordner.</summary>
+    private IReadOnlyList<Stammblattwert> Herkunftswerte
+    {
+        get
+        {
+            if (_fokuszeile is null) return Stammblattwert.Keine;
+            IReadOnlyList<string> projekte = Ganglinienblatt.Projekte(_verwendung, _gewaehlt);
+            var liste = new List<Stammblattwert>
+            {
+                new(Resource.ADM_SB_SATZ, Ganglinienblatt.Herkunft(_auslieferung)),
+                new(Resource.KFLT_SP_BESCHREIBUNG, _fokuszeile.Text(Katalogfilterprofil.SpBeschreibung)),
+                new(Resource.ADM_SB_VERWENDET, projekte.Count == 0 ? "" : string.Join(", ", projekte))
+            };
+            if (Ordner.Length > 0) liste.Add(new(Resource.ADM_SB_ABLAGE, Ordner));
+            return liste;
+        }
+    }
+
+    private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
+
+    /// <summary>Vergleichen ab zwei Kästchen; Löschen — weich gesperrt mit Grund (V8, V13).</summary>
+    private IReadOnlyList<Auswahlhandlung> Handlungen()
+    {
+        var liste = new List<Auswahlhandlung>(2)
+        {
+            new(Filtertexte.Vergleichen, _vergleichen)
+            {
+                Mindestens = 2,
+                ZahlGrund = Resource.ADM_AW_VERGLEICHEN_GRUND,
+                Gedrueckt = _auswahl.Vergleich
+            }
+        };
+        if (Loeschen is not null)
+            liste.Add(new(LoeschenText, _loeschenWeg)
+            {
+                Sperrgrund = Ganglinienblatt.LoeschSperrgrund(_auswahl.Ziele(_gewaehlt), _geschuetzt, _verwendung),
+                Aus = _laeuft
+            });
+        return liste;
+    }
+
+    private void Warnen(string text) => Melden(text, WarnStufe.Warnung);
+
+    private void BeiKaestchen(IReadOnlyList<string> gewaehlte)
+    {
+        _auswahl.Setzen(gewaehlte);
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiAufheben()
+    {
+        _auswahl.Aufheben();
+        _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichen()
+    {
+        if (_auswahl.VergleichUmschalten()) VergleichBauen();
+        else _vergleichszeilen = null;
+    }
+
+    private void BeiVergleichZurueck()
+    {
+        _auswahl.VergleichBeenden();
+        _vergleichszeilen = null;
+    }
+
+    /// <summary>Der Vergleich (V12): Spalten der Liste, Herkunft und Verwendung.</summary>
+    private void VergleichBauen()
+    {
+        IReadOnlyList<string> namen = _auswahl.Gewaehlte;
+        _vergleichskoepfe = namen;
+        var zeilen = namen.Select(n => _katalog.FirstOrDefault(x => x.Schluessel == n))
+                          .Where(x => x is not null).Select(x => x!).ToList();
+        _vergleichszeilen = Ganglinienblatt.Vergleich(Katalogprofil, zeilen, _verwendung);
+    }
 
     // =====================================================================
     // Aufbau
@@ -270,6 +504,11 @@
 
     protected override void OnInitialized()
     {
+        _vergleichen = EventCallback.Factory.Create(this, BeiVergleichen);
+        _loeschenWeg = EventCallback.Factory.Create(this, BeiLoeschen);
+        _blattOeffnen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = true);
+        _blattSchliessen = EventCallback.Factory.Create(this, () => _auswahl.BlattOffen = false);
+
         // S2.5/S3.2: der Filterstand je Katalog, fuer die Sitzung, gemeinsam mit dem
         // Projektdialog desselben Katalogs (Frage Q2).
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(
@@ -286,84 +525,168 @@
     }
 
     /// <summary>
-    /// Lädt den Katalog neu (<c>SetControls</c> des Vorläufers) — ohne dessen
-    /// wachsende <c>DateiListe</c> (Befund W14-B65).
+    /// Laedt den Katalog neu (<c>SetControls</c> des Vorlaeufers) samt der Verwendung
+    /// in Projekten. <b>Das Stammblatt ist nie leer, solange die Liste Treffer hat</b>
+    /// (Konzept 3.3): Steht die bisherige Wahl nicht mehr da, wird die erste gewählt.
     /// </summary>
     public async Task KatalogLaden()
     {
         if (Katalogzeilen is null) return;
         _katalog = await Katalogzeilen() ?? Array.Empty<Katalogfilterzeile>();
-        if (_katalog.All(z => z.Bezeichner != _gewaehlt)) _gewaehlt = "";
+        _verwendung = Verwendung is null ? null : await Verwendung();
+
+        _geschuetzt = new HashSet<string>(_katalog.Where(z => z.Geschuetzt).Select(z => z.Bezeichner),
+                                          StringComparer.Ordinal);
+
+        _auswahl.Abgleichen(_katalog.Select(z => z.Schluessel));
+        if (_auswahl.Vergleich) VergleichBauen();
+        else _vergleichszeilen = null;
+
+        if (_katalog.Count == 0)
+        {
+            _gewaehlt = "";
+            _fokuszeile = null;
+            _auslieferung = false;
+            _ansicht = null;
+            return;
+        }
+        string ziel = _katalog.Any(z => z.Bezeichner == _gewaehlt) ? _gewaehlt : _katalog[0].Bezeichner;
+        await Waehlen(ziel);
     }
 
-    private void Waehlen(string bezeichner)
+    private Task BeiZeile(string bezeichner)
     {
-        _gewaehlt = bezeichner ?? "";
         _meldung = "";
+        return Waehlen(bezeichner ?? "");
+    }
+
+    /// <summary>Eine Zeile wählen: Fokuszeile, dann Bild und Kennzahlen aus dem Kern.</summary>
+    private async Task Waehlen(string bezeichner)
+    {
+        bool anders = bezeichner != _gewaehlt || _ansicht is null;
+        _gewaehlt = bezeichner ?? "";
+        _fokuszeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        _auslieferung = _fokuszeile?.Geschuetzt == true;
+        if (!anders) return;
+
+        _ansicht = null;
+        if (_gewaehlt.Length == 0 || Ansicht is null) return;
+        _ansicht = await Ansicht(_gewaehlt);
     }
 
     // =====================================================================
-    // Loeschen (btn_Loeschen_Click)
+    // Loeschen (btn_Loeschen_Click) - seit Stufe 4 aus der Auswahlleiste,
+    // auch fuer mehrere Zeilen (AD-Q9)
     // =====================================================================
 
+    /// <summary>
+    /// <b>„Löschen" aus der Auswahlleiste</b>: wirkt auf die gewählten Zeilen, sonst auf
+    /// die Fokuszeile. Stehen bleiben die Auslieferungssätze (V13) und die Ganglinien,
+    /// die ein Projekt führt (Prüfregel 1 des Vorläufers, wörtlich) — die Rückfrage nennt
+    /// sie. A-5: Der Vorläufer löschte OHNE Rückfrage (Befund W14-B68).
+    /// </summary>
     private async Task BeiLoeschen()
     {
-        if (!LoeschenErlaubt) return;
+        if (_laeuft || Loeschen is null) return;
 
-        Katalogfilterzeile? zeile = _katalog.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
-        if (zeile is null) return;
+        IReadOnlyList<string> ziele = _auswahl.Ziele(_gewaehlt);
+        if (ziele.Count == 0) return;
 
-        // Pruefregel 1, woertlich: Eine zugeordnete Ganglinie bleibt stehen.
-        if (HatProjektzuordnung is not null && await HatProjektzuordnung(_gewaehlt))
+        var ausgeliefert = new List<string>();
+        var verwendet = new List<string>();
+        var loeschbar = new List<string>();
+        foreach (string z in ziele)
         {
-            Melden(TextZuordnung, WarnStufe.Warnung);
+            if (_geschuetzt.Contains(z)) { ausgeliefert.Add(z); continue; }
+            if (Ganglinienblatt.Projekte(_verwendung, z).Count > 0
+                || (HatProjektzuordnung is not null && await HatProjektzuordnung(z)))
+            {
+                verwendet.Add(z);
+                continue;
+            }
+            loeschbar.Add(z);
+        }
+
+        if (loeschbar.Count == 0)
+        {
+            // Alles bleibt stehen - der Grund wie am Knopf. Kennt die Karte die
+            // Zuordnung nicht (sie kam erst die Datenbank nach), die Meldung des
+            // Vorlaeufers.
+            string grund = Ganglinienblatt.LoeschSperrgrund(ziele, _geschuetzt, _verwendung);
+            if (grund.Length == 0 || (verwendet.Count > 0
+                                      && verwendet.All(z => Ganglinienblatt.Projekte(_verwendung, z).Count == 0)))
+                grund = verwendet.Count > 0 ? TextZuordnung : TextSchreibgeschuetzt;
+            Warnen(grund);
             return;
         }
 
-        // Pruefregel 2: Auslieferungssaetze bleiben stehen. Delete prueft es selbst;
-        // hier steht es davor, damit die Rueckfrage gar nicht erst kommt.
-        if (zeile.Geschuetzt)
-        {
-            Melden(TextSchreibgeschuetzt, WarnStufe.Warnung);
-            return;
-        }
-
-        // A-5: Der Vorlaeufer loeschte OHNE Rueckfrage (Befund W14-B68).
-        _loeschfrage = string.Format(VorlageLoeschfrage, _gewaehlt);
+        _loeschziele = loeschbar;
+        _loeschBleiben = ausgeliefert.Count + verwendet.Count;
+        _loeschfrage = Ganglinienblatt.Rueckfrage(loeschbar, ausgeliefert, verwendet, VorlageLoeschfrage);
         _loeschfrageOffen = true;
     }
 
+    /// <summary>Nach dem „Ja": je Zeile ein Schritt; die Statuszeile nennt, was gelang.</summary>
     private async Task LoeschfrageBeantwortet(bool? antwort)
     {
         _loeschfrageOffen = false;
         if (antwort != true || Loeschen is null) return;
 
-        string name = _gewaehlt;
+        int geloescht = 0;
+        bool fehler = false;
+        foreach (string name in _loeschziele)
+        {
+            if (await Loeschen(name)) geloescht++;
+            else fehler = true;
+        }
 
-        // A-5: Der Rueckgabewert wurde im Vorlaeufer gar nicht geprueft.
-        bool weg = await Loeschen(name);
+        int ziele = _loeschziele.Count + _loeschBleiben;
+        string einzeln = _loeschziele.Count == 1 ? _loeschziele[0] : "";
+        _loeschziele = new List<string>();
+
         await KatalogLaden();
-        Geaendert?.Invoke();
-        Melden(weg ? string.Format(VorlageGeloescht, name) : TextSchreibgeschuetzt,
-               weg ? WarnStufe.Erfolg : WarnStufe.Warnung);
+        if (geloescht > 0) Geaendert?.Invoke();
+        if (fehler) Warnen(TextSchreibgeschuetzt);
+        if (geloescht > 0)
+            _status = Ganglinienblatt.Geloescht(ziele, geloescht, einzeln, VorlageGeloescht);
     }
 
     // =====================================================================
-    // Datei waehlen und anzeigen (btn_Datei_Click / btn_Oeffnen_Click)
+    // Die Ueberlagerung "Datei einlesen" (V14)
     // =====================================================================
+
+    private void ImportOeffnen()
+    {
+        if (Einlesen is null) return;
+        _meldung = "";
+        _importMeldung = "";
+        _importOffen = true;
+    }
+
+    /// <summary>Kreuz, Esc und „Abbrechen" — nicht, solange die Kette läuft.</summary>
+    private void ImportSchliessen()
+    {
+        if (_laeuft) return;
+        _importOffen = false;
+        _importMeldung = "";
+    }
 
     private async Task BeiDatei(string pfad)
     {
-        _meldung = "";
+        _importMeldung = "";
         if (string.IsNullOrEmpty(pfad)) { _pfad = ""; return; }
 
         if (Ablegen is null) { _pfad = pfad; return; }
 
-        // Die verlustfreie Originalablage im Ganglinienordner. Ein Fehlschlag ist
+        // Die verlustfreie Originalablage im Anwenderordner. Ein Fehlschlag ist
         // eine Warnung - der Import laeuft dann mit der Originaldatei weiter.
         AblageErgebnis erg = await Ablegen(pfad);
         _pfad = erg.Pfad.Length > 0 ? erg.Pfad : pfad;
-        if (erg.Meldung.Length > 0) Melden(erg.Meldung, WarnStufe.Warnung);
+        if (erg.Meldung.Length > 0)
+        {
+            _importMeldung = erg.Meldung;
+            _importMeldungStufe = WarnStufe.Warnung;
+        }
     }
 
     private async Task BeiAnzeigen()
@@ -372,10 +695,12 @@
         await MitSystemOeffnen!(_pfad);
     }
 
-    // =====================================================================
-    // Einlesen (btn_Einlesen_Click)
-    // =====================================================================
-
+    /// <summary>
+    /// „Einlesen" (btn_Einlesen_Click) — der EIGENE Einleseweg (Textdatei mit Kopfzeile,
+    /// 8 760 Stundenwerte). <b>Gelingt es</b>, schließt die Überlagerung, die neue
+    /// Ganglinie steht gewählt, die Statuszeile nennt sie (V14). <b>Scheitert es</b>,
+    /// bleibt sie offen und meldet den Grund in ihrem eigenen Warnband.
+    /// </summary>
     private async Task BeiEinlesen()
     {
         if (!EinlesenErlaubt) return;
@@ -383,7 +708,8 @@
         _laeuft = true;
         _anteil = null;
         _fortschrittText = "";
-        _meldung = "";
+        _importMeldung = "";
+        _status = "";
         await InvokeAsync(StateHasChanged);
 
         try
@@ -397,16 +723,24 @@
 
             SolarganglinieImportErgebnis erg = await Einlesen!(_pfad, melder);
 
-            if (erg.Meldung.Length > 0)
-                Melden(erg.Meldung,
-                       erg.Erfolgreich ? WarnStufe.Erfolg
-                                       : erg.IstFehler ? WarnStufe.Fehler : WarnStufe.Warnung);
-
             if (erg.Erfolgreich)
             {
+                _pfad = "";
+                _importOffen = false;
+                _auswahl.Aufheben();
+                _vergleichszeilen = null;
+                _gewaehlt = erg.Bezeichner ?? "";
+                _ansicht = null;
                 await KatalogLaden();
                 Geaendert?.Invoke();
-                _pfad = "";
+                _status = erg.Meldung.Length > 0
+                    ? erg.Meldung
+                    : string.Format(System.Globalization.CultureInfo.CurrentCulture, Resource.ADM_MSG_EINGELESEN, erg.Bezeichner);
+            }
+            else if (erg.Meldung.Length > 0)
+            {
+                _importMeldung = erg.Meldung;
+                _importMeldungStufe = erg.IstFehler ? WarnStufe.Fehler : WarnStufe.Warnung;
             }
         }
         finally
@@ -430,17 +764,23 @@
     }
 
     /// <summary>
-    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg
-    /// (Konzept Administrationsdialoge, V15). Einlesen und Löschen schreiben sofort,
-    /// es gibt nichts zu verwerfen. Der Vorläufer setzte ein eigenes Feld
-    /// <c>result</c>, das niemand las, und lieferte IMMER <c>false</c> (Befund W14-B4).
+    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc (nach den Wächtern):
+    /// EIN Schlussweg (Konzept Administrationsdialoge, V15). Einlesen und Löschen
+    /// schreiben sofort, es gibt nichts zu verwerfen.
     /// </summary>
-    private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
+    private Task BeiSchliessen() => _laeuft ? Task.CompletedTask : Geschlossen.InvokeAsync(true);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_loeschfrageOffen) return Task.CompletedTask;
+        if (_loeschfrageOffen || _importOffen || _ganglinie?.Offen == true) return Task.CompletedTask;
+
+        // Im schmalen Fenster schliesst Esc zuerst das Blatt (Konzept 3.3).
+        if (_auswahl.BlattOffen)
+        {
+            _auswahl.BlattOffen = false;
+            return Task.CompletedTask;
+        }
         return BeiSchliessen();
     }
 }

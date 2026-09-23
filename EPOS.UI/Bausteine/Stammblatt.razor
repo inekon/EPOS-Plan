@@ -98,13 +98,17 @@
         else if (!string.IsNullOrEmpty(Name))
         {
             @Gruppen
-            @if (Kenndaten is not null)
+            @* IM LESEMODUS (V13, Stufe 4) zeigen Kenndaten und Kosten ihre Werte als
+               Text, sofern der Wirt sie als Werte fuehrt - sonst bleiben seine Felder. *@
+            @if (Kenndaten is not null || (Lesemodus && KenndatenWerte is not null))
             {
-                <Stammblattgruppe Titel="@Texte.Kenndaten" KindInhalt="@Kenndaten" />
+                <Stammblattgruppe Titel="@Texte.Kenndaten" KindInhalt="@Kenndaten"
+                                  Lesemodus="@Lesemodus" Werte="@KenndatenWerte" />
             }
-            @if (Kosten is not null)
+            @if (Kosten is not null || (Lesemodus && KostenWerte is not null && KostenWerte.Count > 0))
             {
-                <Stammblattgruppe Titel="@Texte.Kosten" KindInhalt="@Kosten" />
+                <Stammblattgruppe Titel="@Texte.Kosten" KindInhalt="@Kosten"
+                                  Lesemodus="@Lesemodus" Werte="@KostenWerte" />
             }
             @AlleDaten
             @Nachsatz
@@ -156,6 +160,19 @@
 
     /// <summary>Der Inhalt der Gruppe „Kosten"; ohne ihn keine Gruppe.</summary>
     [Parameter] public RenderFragment? Kosten { get; set; }
+
+    /// <summary>
+    /// <b>Lesemodus</b> (V13, Stufe 4): Kenndaten und Kosten erscheinen als Text
+    /// (<see cref="KenndatenWerte"/>, <see cref="KostenWerte"/>) statt als gesperrte
+    /// Eingabefelder — beim Auslieferungssatz.
+    /// </summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Die Kenndaten als Werte für den Lesemodus; <c>null</c> = die Felder bleiben.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert>? KenndatenWerte { get; set; }
+
+    /// <summary>Die Kosten als Werte für den Lesemodus; <c>null</c> = die Felder bleiben.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert>? KostenWerte { get; set; }
 
     /// <summary>„Alle Daten" — der Aufklapper der Parameterübersicht, wo es ihn gibt.</summary>
     [Parameter] public RenderFragment? AlleDaten { get; set; }

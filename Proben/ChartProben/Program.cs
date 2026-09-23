@@ -1253,6 +1253,10 @@ namespace ChartProben
             // Mass-, Gegen- und SVG-Proben in Program.Zapfprofil.cs.
             ZapfprofilProben(ziel);
 
+            // ZAPFPROFILGENERATOR Z2 - die Bilder der Auslegung (Summenlinie, Wertepaarkurve,
+            // maßgebende Woche): Mass-, Gegen- und SVG-Proben in Program.Auslegung.cs.
+            AuslegungProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

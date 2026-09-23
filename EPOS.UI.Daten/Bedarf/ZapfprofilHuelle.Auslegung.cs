@@ -1,0 +1,855 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using EPOS.UI.Dialoge.Bedarf;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>
+    /// <b>Die Hülle der Überlagerung „Auslegung"</b> (Umsetzungskonzept Zapfprofilgenerator 4.5,
+    /// 4.7, 5.1, 5.5; Stufe Z2, Gruppe 2) — plattformfrei, die zweite Hälfte von
+    /// <see cref="ZapfprofilHuelle"/>.
+    ///
+    /// <para><b>Die Auslegung ruft den Kern.</b> <see cref="Auslegung(int, ZapfprofilEingabeDaten, ZapfprofilAuslegungEingabeDaten, ZapfprofilStand, ZapfprofilStufe)"/>
+    /// bildet aus dem Arbeitsstand des Dialogs und den Eingaben der Überlagerung den Stand des
+    /// Kerns (<see cref="AlsStand"/>) und rechnet ihn über
+    /// <see cref="ZapfprofilCtrl.Auslegung"/> — denselben Eingang wie die Bilanz, dazu
+    /// Bedarfstage, DIN-4708-Katalog, Nenninhalte und die Laufangaben. Die Bilder baut
+    /// <see cref="ZapfprofilBilder"/> aus den Ergebnissen des Kerns; die Hülle rechnet keinen
+    /// Bedarf und keine Kurve.</para>
+    ///
+    /// <para><b>Benannt statt still.</b> Ablehnungen des Kerns (<see cref="ZapfAuslegungException"/>,
+    /// <see cref="ZapfprofilEingabeException"/>, <see cref="ParametersatzException"/>) kommen als
+    /// <see cref="ZapfprofilMeldung"/> mit Ressourcenschlüssel; die Warnliste trägt je Kennung des
+    /// Kerns einen Titel in der Oberflächensprache (<c>ZPG_AUSHINW_…</c>) und den Satz des Kerns
+    /// mit eingesetzten Zahlen.</para>
+    ///
+    /// <para><b>Der Punkt ist Ergebnis, nicht Eingabe.</b> Der mit OK übernommene Punkt geht nur in
+    /// Übernahme und Speichern; der Rechenweg der Überlagerung rechnet ohne ihn
+    /// (<see cref="OhnePunkt"/>) — sonst steuerte ein alter Punkt Großanlagenerkennung,
+    /// Speichertemperatur und Warnliste und damit den neuen Punkt. Ändert der Anwender danach eine
+    /// Zone, ist der Punkt überholt (<see cref="ZapfprofilEingabeDaten.PunktUeberholt"/>) und wird
+    /// beim Speichern verworfen.</para>
+    ///
+    /// <para><b>Geschrieben wird nicht hier.</b> OK der Überlagerung legt die Eingaben samt Punkt
+    /// in den Arbeitsstand des Dialogs (<see cref="ZapfprofilEingabeDaten.Auslegung"/>); das OK
+    /// des Bedarfsprofil-Dialogs schreibt sie im gemeinsamen Vorgang über
+    /// <see cref="AuslegungSpeichern"/> — Projektgrößen in <c>Tab_TwwProjekt</c>, ein
+    /// konstruierter Bedarfstag als Katalogzeile. Erzeugerart und Werkstoff tragen keine Spalte
+    /// und werden nicht gespeichert (N10 (i)).</para>
+    /// </summary>
+    internal static partial class ZapfprofilHuelle
+    {
+        /// <summary>Die Kennungen der Warnliste, die der Rechenweg der Auslegung vergibt — je eine Ressource <c>ZPG_AUSHINW_…</c>.</summary>
+        internal static readonly string[] AUSLEGUNGSHINWEISE =
+        {
+            "KONSTRUKTOR_OEFFNEN", "BEDARFSTAG_NICHT_RECHENBAR", Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT,
+            "ZIRKULATION_NICHT_RECHENBAR", "SPEICHERAUSLEGUNG_NICHT_RECHENBAR", "GROSSANLAGE_NICHT_RECHENBAR",
+            Grossanlage.HINWEIS_GROSSANLAGE, Grossanlage.HINWEIS_OHNE_ZIRKULATION, ZapfprofilAuslegung.HINWEIS_TEMPERATUR_GROSSANLAGE,
+            "SPEICHERTEMPERATUR_UNTER_MINDEST", "SPEICHERVERLUST_NULL", "SUMMENLINIE_NICHT_MONOTON", "UEBERTRAGER_UNPLAUSIBEL",
+            "WERTEPAARKURVE", "WOHNUNGSSTATION_JE_EINHEIT", Dreiergruppe.HINWEIS_REIHENFOLGE, Din4708Kennzahl.HINWEIS_WAERMEPUMPE,
+            Din4708Kennzahl.HINWEIS_TEILGUELTIG, "GUELTIGKEIT_DIN_GLF", TwwSpeicherauslegung.HINWEIS_GLF_WANNEN,
+            "GLF_GUELTIGKEITSGRENZE", "LADELEISTUNG_ZU_KLEIN", "MASSGEBEND_WOCHENENDE", "DEFIZIT_WAECHST",
+            TwwSpeicherauslegung.DMAX_NULL, "SUMMENKONTROLLE", "SUMMENLINIE_AUSSERHALB_BAND", "KLASSISCH_WEIT_UEBER_BAND",
+            "MEHRSPEICHER", "NENNINHALTE_FEHLEN", ZapfprofilCtrl.HINWEIS_NENNINHALTE_EINSTELLUNG,
+            ZapfprofilCtrl.HINWEIS_NENNINHALTE_PARAMETER, "NL_KRITERIUM", ZapfHinweis.PARAMETER_FEHLT
+        };
+
+        // =================================================================================
+        // Parametersatz der Überlagerung
+        // =================================================================================
+
+        /// <summary>
+        /// Der Parametersatz der Komponente <c>ZapfprofilAuslegungDialog.razor</c> zum
+        /// Arbeitsstand <paramref name="eingabe"/> des Zapfprofil-Dialogs: <c>Daten</c>
+        /// (<see cref="ZapfprofilAuslegungStartDaten"/>), <c>Texte</c>, <c>Rechnen</c>,
+        /// <c>Konstruieren</c>, <c>HilfeSchluessel</c>, <c>HilfeRechenweg</c>. Die Delegaten
+        /// rechnen gegen die Zonen, mit denen die Überlagerung öffnete.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, object> AuslegungGaben(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                                           ZapfprofilStand basis, ZapfprofilStufe stufe)
+        {
+            ZapfprofilEingabeDaten zonen = (eingabe ?? new ZapfprofilEingabeDaten()).Kopie();
+            return new Dictionary<string, object>
+            {
+                ["Daten"] = AuslegungStart(idProjekt, zonen, basis, stufe),
+                ["Texte"] = AuslegungTexte(),
+                ["Rechnen"] = new Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>(
+                    a => Auslegung(idProjekt, zonen, a, basis, stufe)),
+                ["Konstruieren"] = new Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>(
+                    BedarfstagKonstruieren),
+                ["HilfeSchluessel"] = HILFE_DIALOG,
+                ["HilfeRechenweg"] = HILFE_RECHENWEG
+            };
+        }
+
+        /// <summary>
+        /// Der Stand der Überlagerung beim Öffnen: die Eingaben (die des Arbeitsstands, sonst aus
+        /// den Projektgrößen), die Bedarfstage des Katalogs, die Zapfregeln samt Namensvorschlag,
+        /// die Verfügbarkeit und das erste Ergebnis.
+        /// </summary>
+        internal static ZapfprofilAuslegungStartDaten AuslegungStart(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                                     ZapfprofilStand basis, ZapfprofilStufe stufe)
+        {
+            eingabe ??= new ZapfprofilEingabeDaten();
+            var start = new ZapfprofilAuslegungStartDaten
+            {
+                Stufe = stufe,
+                Eingabe = eingabe.Auslegung?.Kopie() ?? AuslegungAusStand(basis),
+                Kontext = Format(Text_("ZPG_AUS_KONTEXT", "Summe aller Zonen · {0} Zonen · Stufe {1}"),
+                                 eingabe.Zonen.Count.ToString(CultureInfo.CurrentCulture), Stufenname(stufe))
+            };
+
+            ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
+            start.Verfuegbar = verfuegbar.Ja;
+            start.Sperrgrund = verfuegbar.Ja ? "" : Verfuegbarkeitsgrund(verfuegbar.Grund);
+            if (!verfuegbar.Ja) return start;
+
+            start.Bedarfstage = ZapfprofilCtrl.Bedarfstage().Select(t => AlsBedarfstag(t, false)).ToList();
+            try
+            {
+                Parametersatz ps = ZapfprofilCtrl.Parameter();
+                start.NameVorschlag = ZapfprofilCtrl.FreierBedarfstagname(Text_("ZPG_AUS_KON_NAME_STAMM", "Eigener Bedarfstag"),
+                                                                           ps.Katalogversion);
+                try
+                {
+                    start.Regeln = ZapfprofilCtrl.Konstruktorregeln(ps)
+                        .Select(r => new ZapfprofilRegelDaten(r.Name, r.VolumenstromLJeMin, r.DauerMin, r.ZapftemperaturC)).ToList();
+                }
+                catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException)
+                {
+                    start.RegelnGrund = Format(Text_("ZPG_AUS_KON_REGELN_UNGUELTIG",
+                        "Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}"), ex.Message);
+                }
+            }
+            catch (ParametersatzException) { /* das Ergebnis nennt den Grund */ }
+
+            start.Ergebnis = Auslegung(idProjekt, eingabe, start.Eingabe, basis, stufe);
+            return start;
+        }
+
+        // =================================================================================
+        // Auslegung
+        // =================================================================================
+
+        /// <summary>Die Auslegung zum gespeicherten Stand des Projekts (Stufe Einfach).</summary>
+        internal static ZapfprofilAuslegungDaten Auslegung(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                           ZapfprofilAuslegungEingabeDaten auslegung)
+            => Auslegung(idProjekt, eingabe, auslegung, ZapfprofilCtrl.Lies(idProjekt), ZapfprofilStufe.Einfach);
+
+        /// <summary>
+        /// <b>Die Auslegung</b> zu den Zonen <paramref name="eingabe"/> und den Eingaben
+        /// <paramref name="auslegung"/> — über <see cref="ZapfprofilCtrl.Auslegung"/>, immer auf dem
+        /// Generatorweg. Ohne Zone keine Rechnung; fehlen Tabellen, Katalogversion oder Kalender,
+        /// der benannte Grund.
+        /// </summary>
+        internal static ZapfprofilAuslegungDaten Auslegung(int idProjekt, ZapfprofilEingabeDaten eingabe,
+                                                           ZapfprofilAuslegungEingabeDaten auslegung, ZapfprofilStand basis,
+                                                           ZapfprofilStufe stufe)
+        {
+            if (eingabe == null || eingabe.Zonen.Count == 0)
+                return OhneAuslegung(ZapfprofilAuslegungZustand.NichtGerechnet, "ZPG_AUS_MSG_KEINE_ZONE",
+                    Text_("ZPG_AUS_MSG_KEINE_ZONE", "Es ist keine Zone angelegt — ohne Zone keine Auslegung."), "");
+
+            ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
+            if (!verfuegbar.Ja)
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, VerfuegbarkeitsKennung(verfuegbar.Grund),
+                                     Verfuegbarkeitsgrund(verfuegbar.Grund), verfuegbar.Klartext);
+            if (!ZapfprofilCtrl.KalenderLesen(idProjekt, out int jan1, out bool[] we))
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_MSG_KEINE_KLIMAREGION",
+                    Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau."), "");
+
+            auslegung ??= AuslegungAusStand(basis);
+            ZapfprofilEingabeDaten mit = eingabe.Kopie();
+            mit.Auslegung = auslegung;
+            Auslegungsrechnung r;
+            try
+            {
+                // Der übernommene Punkt (Arbeitsstand oder gespeichert) bleibt draußen: Er ist das
+                // Ergebnis dieser Rechnung, nicht ihre Eingabe.
+                ZapfprofilStand stand = AlsStand(mit, basis);
+                stand = stand with { Weg = BrauchwasserWeg.Generator, Projekt = OhnePunkt(stand.Projekt) };
+                r = ZapfprofilCtrl.Auslegung(idProjekt, stand, jan1, we,
+                    new Auslegungslauf(AlsErzeugerart(auslegung.Erzeugerart), AlsWerkstoff(auslegung.Werkstoff)));
+            }
+            catch (ZapfprofilEingabeException ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
+                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (ParametersatzException ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
+                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (ZapfAuslegungException ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, Schluessel(ex.Fehler),
+                                     Text_(Schluessel(ex.Fehler), ex.Message), ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
+                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
+            }
+
+            try { return AlsAuslegung(r, stufe, auslegung); }
+            catch (Exception ex)
+            {
+                return OhneAuslegung(ZapfprofilAuslegungZustand.Abgebrochen, "ZPG_AUS_MSG_UNERWARTET",
+                    Format(Text_("ZPG_AUS_MSG_UNERWARTET", "Die Auslegung konnte nicht gerechnet werden: {0}"), ex.Message), ex.Message);
+            }
+        }
+
+        private static ZapfprofilAuslegungDaten OhneAuslegung(ZapfprofilAuslegungZustand zustand, string kennung, string grund,
+                                                             string klartext)
+        {
+            var d = new ZapfprofilAuslegungDaten
+            {
+                Zustand = zustand,
+                Grund = grund ?? "",
+                Status = Format(Text_("ZPG_AUS_STATUS_OHNE", "Keine Auslegung — {0}"), grund ?? "")
+            };
+            d.Meldungen.Add(new ZapfprofilMeldung(kennung, "", grund ?? "",
+                zustand == ZapfprofilAuslegungZustand.Abgebrochen ? ZapfprofilMeldungsart.Fehler : ZapfprofilMeldungsart.Hinweis,
+                klartext ?? ""));
+            return d;
+        }
+
+        /// <summary>Das Ergebnis des Kerns als DTO: je Topologiegruppe Dreiergruppe, Empfehlung, Bilder, Vergleich und Warnliste.</summary>
+        internal static ZapfprofilAuslegungDaten AlsAuslegung(Auslegungsrechnung r, ZapfprofilStufe stufe,
+                                                             ZapfprofilAuslegungEingabeDaten eingabe)
+        {
+            if (r == null) throw new ArgumentNullException(nameof(r));
+            var d = new ZapfprofilAuslegungDaten
+            {
+                Zustand = ZapfprofilAuslegungZustand.Gerechnet,
+                Status = Text_("ZPG_AUS_STATUS_GERECHNET", "Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet"),
+                ErzeugerartAngesetzt = AlsErzeugerart(r.Erzeugerart)
+            };
+
+            if (eingabe != null && eingabe.Erzeugerart != ZapfprofilErzeugerart.KeineAngabe)
+                d.ErzeugerartHerkunft = Text_("ZPG_AUS_ERZEUGERART_EINGABE", "Eingabe");
+            else if (r.Bestand?.Vorschlag is ZapfErzeugerart vorschlag)
+                d.ErzeugerartHerkunft = Format(Text_("ZPG_AUS_ERZEUGERART_BESTAND", "Vorschlag aus dem Anlagenbestand: {0}"),
+                                               Erzeugerartname(vorschlag));
+            else if (r.Bestand != null && r.Bestand.Mehrdeutig)
+                d.ErzeugerartHerkunft = Text_("ZPG_AUS_ERZEUGERART_MEHRDEUTIG",
+                                              "Der Anlagenbestand führt Kessel und Wärmepumpe — bitte wählen.");
+            else
+                d.ErzeugerartHerkunft = Text_("ZPG_AUS_ERZEUGERART_OHNE", "Der Anlagenbestand nennt keinen Erzeuger.");
+
+            foreach (Auslegungsablehnung a in r.Ergebnis.Ablehnungen)
+                d.Meldungen.Add(new ZapfprofilMeldung("ZPG_AUS_ZONE_ABGELEHNT", a.Zone ?? "",
+                    Format(Text_("ZPG_AUS_ZONE_ABGELEHNT", "Zone „{0}“ fehlt in der Auslegung: {1}"), a.Zone ?? "", a.Klartext ?? ""),
+                    ZapfprofilMeldungsart.Ablehnung, a.Klartext ?? ""));
+            foreach (Auslegungshinweis h in r.Ergebnis.Hinweise)
+            {
+                ZapfprofilWarnDaten w = Warnung(h);
+                d.Meldungen.Add(new ZapfprofilMeldung(w.Kennung, "", w.Titel + ": " + w.Text,
+                    h.Warnung ? ZapfprofilMeldungsart.Ablehnung : ZapfprofilMeldungsart.Hinweis, h.Text ?? ""));
+            }
+
+            foreach (Auslegungsgruppe g in r.Ergebnis.Gruppen) d.Gruppen.Add(AlsGruppe(g, stufe));
+            return d;
+        }
+
+        /// <summary>Eine Topologiegruppe als DTO.</summary>
+        internal static ZapfprofilAuslegungsgruppeDaten AlsGruppe(Auslegungsgruppe g, ZapfprofilStufe stufe)
+        {
+            bool speicher = g.Topologie == ZapfTopologie.Speicher;
+            var d = new ZapfprofilAuslegungsgruppeDaten
+            {
+                Topologie = Text_("ZPG_AUS_TOPOLOGIE_" + Gross(g.Topologie.ToString()), g.Topologie.ToString()),
+                Speicher = speicher,
+                Zonen = g.Zonen.ToList(),
+                Bedarfstag = g.Bedarfstag?.Bezeichner ?? "",
+                BedarfstagWahl = g.Bedarfstagwahl?.Grund ?? "",
+                KonstruktorOeffnen = g.Bedarfstagwahl?.KonstruktorOeffnen == true && g.Bedarfstag == null,
+                SpitzenUnterschaetzt = g.Bedarfstag?.SpitzenUnterschaetzt == true,
+                SpeicherC = g.Speichertemperatur?.SpeicherC,
+                SpeicherCHerkunft = g.Speichertemperatur == null ? "" : Speichertemperaturherkunft(g.Speichertemperatur.Quelle)
+            };
+
+            IReadOnlyList<Auslegungswert> dreier = g.Dreiergruppe;
+            if (dreier.Count > 0) d.Hauptwert = Karte(dreier[0]);
+            if (dreier.Count > 1) d.Perzentil = Karte(dreier[1]);
+            if (dreier.Count > 2) d.Normvergleich = Karte(dreier[2]);
+
+            Auslegungsempfehlung e = g.Empfehlung;
+            if (e != null)
+                d.Empfehlung = new ZapfprofilEmpfehlungDaten
+                {
+                    Rechenbar = e.Rechenbar,
+                    Speicher = e.Verfahren == ZapfAuslegungsverfahren.Summenlinie,
+                    VolumenL = e.VolumenL,
+                    LeistungKw = e.LeistungKw,
+                    NenninhaltL = e.NenninhaltL,
+                    Schnellauslegung = e.Rechenbar && (e.Schnellauslegung || stufe == ZapfprofilStufe.Einfach),
+                    Vermerk = e.Vermerk ?? "",
+                    Grund = e.Grund ?? ""
+                };
+
+            ZapfprofilAuslegungBildtexte bild = AuslegungBildtexte();
+            Summenlinienergebnis sl = g.Summenlinie;
+            if (sl != null)
+            {
+                d.LadezeitH = sl.Punkt?.LadezeitH;
+                d.ZeitkonstanteMin = sl.ZeitkonstanteMin;
+                d.Wertepaare = sl.Wertepaare.Count;
+                d.Vermerk = sl.Vermerk ?? "";
+                Summenlinienkurven k = ZapfprofilBilder.SummenlinieKurven(g.Bedarfstag, sl.Nachweis);
+                if (k != null) d.SummenlinieModell = ZapfprofilBilder.SummenlinieModell(k.BedarfKwh, k.VersorgungKwh, k.BeruehrungMinute, bild);
+                if (sl.Wertepaare.Count >= 2)
+                    d.WertepaarModell = ZapfprofilBilder.WertepaarkurveModell(
+                        sl.Wertepaare.Select(p => p.LeistungKw).ToArray(), sl.Wertepaare.Select(p => p.VolumenL).ToArray(),
+                        sl.Punkt?.LeistungKw, sl.Punkt?.VolumenL, bild);
+            }
+
+            Din4708Ergebnis din = g.Normvergleich;
+            if (din != null)
+            {
+                d.KennzahlN = din.Gueltig ? din.KennzahlN : null;
+                d.ZonenAusserhalb = din.ZonenAusserhalb.ToList();
+                d.HinweisWaermepumpe = din.Hinweise.Any(h => h.Code == Din4708Kennzahl.HINWEIS_WAERMEPUMPE);
+            }
+
+            if (g.Speicherauslegung != null) d.Vergleich = Vergleich(g.Speicherauslegung, g.Woche, din, bild);
+
+            foreach (Auslegungshinweis h in g.Hinweise) d.Warnliste.Add(Warnung(h));
+            return d;
+        }
+
+        private static ZapfprofilKarteDaten Karte(Auslegungswert w) => new ZapfprofilKarteDaten
+        {
+            Stand = (ZapfprofilKartenstand)(int)w.Status,
+            VolumenL = w.VolumenL,
+            LeistungKw = w.LeistungKw,
+            Empfohlen = w.Empfohlen,
+            Text = w.Text ?? ""
+        };
+
+        /// <summary>Der Verfahrensvergleich nach V4 als DTO samt Wochenbild; der größte Wert im Band ist markiert.</summary>
+        private static ZapfprofilVergleichDaten Vergleich(Speicherauslegungsergebnis sa, Wochenreihe woche, Din4708Ergebnis din,
+                                                          ZapfprofilAuslegungBildtexte bild)
+        {
+            var v = new ZapfprofilVergleichDaten
+            {
+                BandMinL = sa.BandMinL,
+                BandMaxL = sa.BandMaxL,
+                NenninhaltL = sa.NenninhaltL,
+                Mehrspeicher = sa.Mehrspeicher,
+                KennzahlN = din != null && din.Gueltig ? din.KennzahlN : null,
+                LadeleistungKw = sa.Ladeleistung.Angesetzt,
+                LadeManuell = sa.Ladeleistung.IstManuell,
+                LadeRechenweg = sa.LadeRechenweg ?? "",
+                Personen = sa.Personen,
+                Nutzanteil = sa.Nutzanteil,
+                Zuschlag = sa.Zuschlag,
+                DmaxKwh = sa.DmaxKwh,
+                ProfilbasiertVorhanden = sa.ProfilbasiertVorhanden,
+                FuellstandBezugL = sa.FuellstandBezugL,
+                FuellstandBezug = sa.FuellstandBezug ?? "",
+                KapazitaetKwh = sa.KapazitaetKwh,
+                MinFuellstandKwh = sa.MinFuellstandKwh,
+                ReserveAnteil = sa.ReserveAnteil
+            };
+            foreach (Verfahrensvolumen z in sa.Verfahren)
+                v.Verfahren.Add(new ZapfprofilVerfahrenDaten
+                {
+                    Verfahren = Text_("ZPG_AUS_VERFAHREN_" + Gross(z.Verfahren.ToString()), z.Verfahren.ToString()),
+                    VolumenL = z.VolumenL,
+                    Gueltig = z.Gueltig,
+                    ImBand = z.ImBand,
+                    Groesster = z.ImBand && z.VolumenL.HasValue && sa.BandMaxL.HasValue && z.VolumenL.Value == sa.BandMaxL.Value,
+                    Nachrichtlich = z.Verfahren == ZapfSpeicherverfahren.Klassisch,
+                    Kennwert = z.Kennwert ?? "",
+                    Rechenweg = z.Rechenweg ?? ""
+                });
+
+            if (sa.ProfilbasiertVorhanden && sa.StundeDesTags.HasValue && sa.TagInWoche2.HasValue && sa.Wochentag.HasValue)
+                v.Zeitpunkt = Format(Text_("ZPG_AUS_ZEITPUNKT",
+                    "Maßgebender Zeitpunkt der Stundenbilanz: {0}, Tag {1} von 14 (in Woche 2 gezählt), {2}–{3} Uhr."),
+                    Wochentagsname(sa.Wochentag.Value),
+                    (Wochenreihe.TAGE + sa.TagInWoche2.Value).ToString(CultureInfo.CurrentCulture),
+                    sa.StundeDesTags.Value.ToString(CultureInfo.CurrentCulture),
+                    (sa.StundeDesTags.Value + 1).ToString(CultureInfo.CurrentCulture));
+
+            Wochenbildreihen w = ZapfprofilBilder.Wochenreihen(woche, sa);
+            if (w != null)
+                v.WochenModell = ZapfprofilBilder.AuslegungswocheModell(w.ZapfungKw, w.ZirkulationKw, w.LadungKw, w.DefizitKwh,
+                                                                        w.FuellstandKwh, sa.FuellstandBezugL, w.MassgebendStunde, bild);
+            return v;
+        }
+
+        /// <summary>Ein Hinweis des Kerns als Eintrag der Warnliste: Titel aus <c>ZPG_AUSHINW_…</c>, sonst „Hinweis"; Satz des Kerns.</summary>
+        internal static ZapfprofilWarnDaten Warnung(Auslegungshinweis h)
+        {
+            string kennung = AuslegungsHinweisSchluessel(h.Code);
+            string titel = Text_(kennung, null) ?? Text_("ZPG_AUS_HINWEIS", "Hinweis");
+            return new ZapfprofilWarnDaten(kennung, titel, h.Text ?? "",
+                                           h.Warnung ? ZapfprofilWarnstufe.Warnung : ZapfprofilWarnstufe.Hinweis);
+        }
+
+        /// <summary>Der Ressourcenschlüssel des Titels einer Hinweiskennung der Auslegung: <c>ZPG_AUSHINW_</c> + Kennung.</summary>
+        internal static string AuslegungsHinweisSchluessel(string code) => "ZPG_AUSHINW_" + (code ?? "");
+
+        /// <summary>Der Ressourcenschlüssel einer Ablehnung der Auslegung: <c>ZPG_AUSLEGUNG_…</c>.</summary>
+        internal static string Schluessel(ZapfAuslegungsfehler f) => "ZPG_AUSLEGUNG_" + Gross(f.ToString());
+
+        private static string Speichertemperaturherkunft(Speichertemperaturquelle q)
+        {
+            switch (q)
+            {
+                case Speichertemperaturquelle.Projekt: return Text_("ZPG_AUS_SPEICHERC_PROJEKT", "Eingabe");
+                case Speichertemperaturquelle.Grossanlage:
+                    return Text_("ZPG_AUS_SPEICHERC_GROSSANLAGE", "Vorgabe · Großanlage nach DVGW W 551");
+                case Speichertemperaturquelle.Schnellpfad:
+                    return Text_("ZPG_AUS_SPEICHERC_SCHNELLPFAD", "Vorgabe · Vereinfachungsverfahren der A100");
+                default: return Text_("ZPG_AUS_SPEICHERC_VORGABE", "Vorgabe des Katalogs");
+            }
+        }
+
+        private static string Stufenname(ZapfprofilStufe stufe)
+        {
+            switch (stufe)
+            {
+                case ZapfprofilStufe.Erweitert: return Text_("ZPG_STUFE_ERWEITERT", "Erweitert");
+                case ZapfprofilStufe.Experte: return Text_("ZPG_STUFE_EXPERTE", "Experte");
+                default: return Text_("ZPG_STUFE_EINFACH", "Einfach");
+            }
+        }
+
+        private static string Erzeugerartname(ZapfErzeugerart art)
+            => art == ZapfErzeugerart.Waermepumpe ? Text_("ZPG_AUS_ERZEUGER_WAERMEPUMPE", "Wärmepumpe")
+                                                  : Text_("ZPG_AUS_ERZEUGER_KESSEL", "Kessel");
+
+        // =================================================================================
+        // Abbildung Eingaben DTO <-> Projektgrößen
+        // =================================================================================
+
+        /// <summary>
+        /// Die Eingaben der Überlagerung aus dem Stand des Kerns: Projektgrößen (nullbar =
+        /// Vorgabe) und ein noch ungespeicherter Entwurf. Erzeugerart und Werkstoff tragen keine
+        /// Spalte — sie stehen auf „keine Angabe".
+        /// </summary>
+        internal static ZapfprofilAuslegungEingabeDaten AuslegungAusStand(ZapfprofilStand stand)
+        {
+            ProjektStand p = stand?.Projekt;
+            var a = new ZapfprofilAuslegungEingabeDaten();
+            if (p != null)
+            {
+                a.Quelle = p.BedarfstagQuelle.HasValue ? (ZapfprofilBedarfstagquelle)(int)p.BedarfstagQuelle.Value
+                                                       : ZapfprofilBedarfstagquelle.Vorgaberegel;
+                a.IdBedarfstag = p.IdBedarfstag;
+                a.SpeicherC = p.SpeicherC;
+                a.ErzeugerKw = p.ErzeugerKw;
+                a.UebertragerKw = p.UebertragerKw;
+                a.Speicherart = Enum.IsDefined(typeof(ZapfprofilSpeicherart), (int)p.Speicherart)
+                    ? (ZapfprofilSpeicherart)(int)p.Speicherart : ZapfprofilSpeicherart.Ladespeicher;
+                a.SensorhoeheAnteil = p.SensorhoeheAnteil;
+                a.PunktVolumenL = p.AuslegungVolumenL;
+                a.PunktLeistungKw = p.AuslegungLeistungKw;
+            }
+            if (stand?.BedarfstagEntwurf != null)
+            {
+                a.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
+                a.IdBedarfstag = null;
+                a.Entwurf = AlsBedarfstag(stand.BedarfstagEntwurf, true);
+            }
+            return a;
+        }
+
+        /// <summary>
+        /// Die Projektgrößen mit den Eingaben der Überlagerung: Bedarfstag (Quelle und Katalogtag;
+        /// beim Entwurf ohne Id), Speichertemperatur, Erzeuger- und Übertragerleistung, Speicherart,
+        /// Sensorhöhe und der übernommene Punkt. <c>null</c> bleibt <c>null</c>. Der Punkt gilt für
+        /// Übernahme und Speichern; der Rechenweg nimmt ihn mit <see cref="OhnePunkt"/> wieder heraus.
+        /// </summary>
+        internal static ProjektStand MitAuslegung(ProjektStand p, ZapfprofilAuslegungEingabeDaten a)
+        {
+            if (p == null || a == null) return p;
+            bool entwurf = a.Quelle == ZapfprofilBedarfstagquelle.Konstruktor && a.Entwurf != null;
+            return p with
+            {
+                BedarfstagQuelle = a.Quelle == ZapfprofilBedarfstagquelle.Vorgaberegel
+                    ? (ZapfBedarfstagquelle?)null : (ZapfBedarfstagquelle)(int)a.Quelle,
+                IdBedarfstag = entwurf || a.Quelle == ZapfprofilBedarfstagquelle.Vorgaberegel
+                               || a.Quelle == ZapfprofilBedarfstagquelle.Stundenprofil
+                               || a.Quelle == ZapfprofilBedarfstagquelle.Din4708Profil
+                    ? null : a.IdBedarfstag,
+                SpeicherC = a.SpeicherC,
+                ErzeugerKw = a.ErzeugerKw,
+                UebertragerKw = a.UebertragerKw,
+                Speicherart = (ZapfSpeicherart)(int)a.Speicherart,
+                SensorhoeheAnteil = a.SensorhoeheAnteil,
+                AuslegungVolumenL = a.PunktVolumenL,
+                AuslegungLeistungKw = a.PunktLeistungKw
+            };
+        }
+
+        /// <summary>
+        /// Die Projektgrößen ohne Auslegungspunkt — für den Rechenweg der Überlagerung und für einen
+        /// überholten Punkt (<see cref="ZapfprofilEingabeDaten.PunktUeberholt"/>). <c>null</c> bleibt <c>null</c>.
+        /// </summary>
+        internal static ProjektStand OhnePunkt(ProjektStand p)
+            => p == null ? null : p with { AuslegungVolumenL = null, AuslegungLeistungKw = null };
+
+        /// <summary>Der Entwurf der Eingaben als Katalogzeile des Kerns (Quelle Konstruktor); <c>null</c> ohne Entwurf.</summary>
+        internal static BedarfstagKatalogzeile EntwurfAus(ZapfprofilAuslegungEingabeDaten a)
+        {
+            if (a?.Entwurf == null || a.Quelle != ZapfprofilBedarfstagquelle.Konstruktor) return null;
+            ZapfprofilBedarfstagDaten t = a.Entwurf;
+            return new BedarfstagKatalogzeile(ZapfprofilCtrl.ENTWURF_ID, (t.Bezeichner ?? "").Trim(), t.Katalogversion ?? "",
+                ZapfBedarfstagquelle.Konstruktor, null,
+                new Provenienz(TwwNutzungsartCtrl.QUELLE_EIGENKONSTRUKTION, null, t.Katalogversion ?? "", Herkunftsart.Eigenkonstruktion),
+                t.Ereignisse.Select(e => new Zapfereignis(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToArray())
+            {
+                Status = ZapfKatalogstatus.Eigen
+            };
+        }
+
+        /// <summary>
+        /// Ein Bedarfstag des Kerns als DTO: Herkunft als Kurztext, Tagessumme und Minutenspitze;
+        /// ein Normtag des Katalogs ist nicht als Katalogtag wählbar (er rechnet als DIN-4708-Profil,
+        /// N10 (b)); ein ungültiger Tag ist gesperrt mit Grund. Ereignisse nur beim Entwurf.
+        /// </summary>
+        internal static ZapfprofilBedarfstagDaten AlsBedarfstag(BedarfstagKatalogzeile t, bool entwurf)
+        {
+            var d = new ZapfprofilBedarfstagDaten
+            {
+                Id = entwurf ? 0 : t.Id,
+                Bezeichner = t.Bezeichner ?? "",
+                Quelle = (ZapfprofilBedarfstagquelle)(int)t.QuelleArt,
+                Herkunft = Herkunft(t.Herkunft),
+                Katalogversion = t.Katalogversion ?? ""
+            };
+            if (entwurf)
+                d.Ereignisse = t.Ereignisse.Select(e => new ZapfprofilEreignisDaten(e.MinuteBeginn, e.DauerMin, e.EnergieKwh)).ToList();
+            try
+            {
+                Bedarfstag tag = Bedarfstag.AusKatalog(t, 1.0);
+                d.TagessummeKwh = tag.TagessummeKwh;
+                d.MinutenspitzeKw = tag.GroessteMinutenleistungKw;
+            }
+            catch (ZapfAuslegungException ex)
+            {
+                d.Waehlbar = false;
+                d.Sperrgrund = Text_(Schluessel(ex.Fehler), ex.Message);
+            }
+            if (!entwurf && t.QuelleArt == ZapfBedarfstagquelle.Din4708Profil)
+            {
+                d.Waehlbar = false;
+                d.Sperrgrund = Text_("ZPG_AUS_GRUND_NORMTAG",
+                    "Ein Normtag des Katalogs rechnet als DIN-4708-Profil aus der Wohnungstabelle.");
+            }
+            return d;
+        }
+
+        private static ZapfErzeugerart? AlsErzeugerart(ZapfprofilErzeugerart a)
+            => a == ZapfprofilErzeugerart.Kessel ? ZapfErzeugerart.Kessel
+             : a == ZapfprofilErzeugerart.Waermepumpe ? ZapfErzeugerart.Waermepumpe : (ZapfErzeugerart?)null;
+
+        private static ZapfprofilErzeugerart AlsErzeugerart(ZapfErzeugerart? a)
+            => a == ZapfErzeugerart.Kessel ? ZapfprofilErzeugerart.Kessel
+             : a == ZapfErzeugerart.Waermepumpe ? ZapfprofilErzeugerart.Waermepumpe : ZapfprofilErzeugerart.KeineAngabe;
+
+        private static ZapfUebertragerwerkstoff? AlsWerkstoff(ZapfprofilWerkstoff w)
+            => w == ZapfprofilWerkstoff.Stahl ? ZapfUebertragerwerkstoff.Stahl
+             : w == ZapfprofilWerkstoff.Edelstahl ? ZapfUebertragerwerkstoff.Edelstahl : (ZapfUebertragerwerkstoff?)null;
+
+        // =================================================================================
+        // Konstruktor
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Konstruktor</b> (A100, NA.5.2.3): prüft die Zeilen der Oberfläche benannt
+        /// (Name, Fenster, Menge, Regel), baut daraus die Zeilen des Kerns und über
+        /// <see cref="ZapfprofilCtrl.BedarfstagKonstruieren"/> den Entwurf bei θ_KW,A des
+        /// Parametersatzes. Geschrieben wird nichts — der Entwurf geht mit dem Arbeitsstand,
+        /// samt den Zeilen, aus denen er entstand (ein erneutes Öffnen beginnt mit ihnen). Den
+        /// Namen prüft er schon hier LESEND gegen die Katalogversion
+        /// (<see cref="ZapfprofilCtrl.FreierBedarfstagname"/>) und nennt einen freien; der
+        /// Schreibweg prüft ihn erneut.
+        /// </summary>
+        internal static ZapfprofilKonstruktorErgebnis BedarfstagKonstruieren(IReadOnlyList<ZapfprofilKonstruktorZeileDaten> zeilen,
+                                                                            string bezeichner)
+        {
+            var meldungen = new List<ZapfprofilMeldung>();
+            string name = (bezeichner ?? "").Trim();
+            if (name.Length == 0)
+                meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_NAME", "", Text_("ZPG_AUS_KON_OHNE_NAME", "Bitte einen Namen für den Bedarfstag eingeben.")));
+            if (zeilen == null || zeilen.Count == 0)
+                meldungen.Add(Fehler("ZPG_AUS_KON_OHNE_ZEILE", "", Text_("ZPG_AUS_KON_OHNE_ZEILE", "Mindestens eine Zeile eintragen.")));
+
+            Parametersatz ps;
+            try { ps = ZapfprofilCtrl.Parameter(); }
+            catch (ParametersatzException ex)
+            {
+                meldungen.Add(new ZapfprofilMeldung(Schluessel(ex.Fehler), "", Text_(Schluessel(ex.Fehler), ex.Message),
+                                                    ZapfprofilMeldungsart.Fehler, ex.Message));
+                return new ZapfprofilKonstruktorErgebnis(null, meldungen);
+            }
+            if (name.Length > 0)
+            {
+                string frei = ZapfprofilCtrl.FreierBedarfstagname(name, ps.Katalogversion);
+                if (!string.Equals(frei, name, StringComparison.Ordinal))
+                    meldungen.Add(Fehler("ZPG_AUS_KON_NAME_BELEGT", "", Format(Text_("ZPG_AUS_KON_NAME_BELEGT",
+                        "Der Name „{0}“ ist in der Katalogversion „{1}“ schon vergeben — frei ist etwa „{2}“."),
+                        name, ps.Katalogversion, frei)));
+            }
+            IReadOnlyList<Zapfregel> regeln;
+            try { regeln = ZapfprofilCtrl.Konstruktorregeln(ps); }
+            catch (Exception ex) when (ex is ZapfAuslegungException || ex is ParametersatzException) { regeln = new Zapfregel[0]; }
+
+            var kern = new List<Konstruktorzeile>();
+            for (int i = 0; zeilen != null && i < zeilen.Count; i++)
+            {
+                ZapfprofilKonstruktorZeileDaten z = zeilen[i];
+                string nummer = (i + 1).ToString(CultureInfo.CurrentCulture);
+                string grund = null;
+                int beginn = 0, ende = 0;
+                if (z == null || !z.BeginnH.HasValue || !z.EndeH.HasValue || double.IsNaN(z.BeginnH.Value) || double.IsNaN(z.EndeH.Value))
+                    grund = Text_("ZPG_AUS_KON_FEHLT_FENSTER", "Beginn und Ende fehlen oder liegen nicht im Tag (0 ≤ Beginn < Ende ≤ 24 h).");
+                else
+                {
+                    beginn = (int)Math.Round(z.BeginnH.Value * Bedarfstag.MINUTEN_JE_STUNDE, MidpointRounding.AwayFromZero);
+                    ende = (int)Math.Round(z.EndeH.Value * Bedarfstag.MINUTEN_JE_STUNDE, MidpointRounding.AwayFromZero);
+                    if (beginn < 0 || beginn >= Bedarfstag.MINUTEN || ende <= beginn || ende > Bedarfstag.MINUTEN)
+                        grund = Text_("ZPG_AUS_KON_FEHLT_FENSTER", "Beginn und Ende fehlen oder liegen nicht im Tag (0 ≤ Beginn < Ende ≤ 24 h).");
+                }
+
+                if (grund == null)
+                {
+                    string verbraucher = (z.Verbraucher ?? "").Trim();
+                    if (!string.IsNullOrWhiteSpace(z.Regel))
+                    {
+                        Zapfregel regel = regeln.FirstOrDefault(r => string.Equals(r.Name, z.Regel, StringComparison.Ordinal));
+                        if (regel == null)
+                            grund = Format(Text_("ZPG_AUS_KON_REGEL_FEHLT", "Die Zapfregel „{0}“ steht nicht im Katalog."), z.Regel);
+                        else if (!(z.Anzahl >= 0))
+                            grund = Text_("ZPG_AUS_KON_FEHLT_MENGE", "Anzahl bzw. Volumen und Zapftemperatur fehlen.");
+                        else
+                            kern.Add(Konstruktorzeile.AusVorgaengen(beginn, ende, z.Anzahl.Value, regel,
+                                                                     verbraucher.Length > 0 ? verbraucher : null));
+                    }
+                    else if (!(z.VolumenL >= 0) || !z.ZapftemperaturC.HasValue || double.IsNaN(z.ZapftemperaturC.Value))
+                        grund = Text_("ZPG_AUS_KON_FEHLT_MENGE", "Anzahl bzw. Volumen und Zapftemperatur fehlen.");
+                    else
+                        kern.Add(new Konstruktorzeile(beginn, ende, z.VolumenL.Value, z.ZapftemperaturC.Value, verbraucher));
+                }
+
+                if (grund != null)
+                    meldungen.Add(Fehler("ZPG_AUS_KON_ZEILE", "", Format(Text_("ZPG_AUS_KON_ZEILE", "Zeile {0}: {1}"), nummer, grund)));
+            }
+            if (meldungen.Count > 0) return new ZapfprofilKonstruktorErgebnis(null, meldungen);
+
+            try
+            {
+                BedarfstagKatalogzeile t = ZapfprofilCtrl.BedarfstagKonstruieren(kern, name, ps);
+                ZapfprofilBedarfstagDaten tag = AlsBedarfstag(t, true);
+                tag.Konstruktorzeilen = zeilen.Select(z => z.Kopie()).ToList();
+                return new ZapfprofilKonstruktorErgebnis(tag, new ZapfprofilMeldung[0]);
+            }
+            catch (ZapfAuslegungException ex)
+            {
+                string schluessel = Schluessel(ex.Fehler);
+                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
+                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
+                    ZapfprofilMeldungsart.Fehler, ex.Message));
+                return new ZapfprofilKonstruktorErgebnis(null, meldungen);
+            }
+            catch (ParametersatzException ex)
+            {
+                string schluessel = Schluessel(ex.Fehler);
+                meldungen.Add(new ZapfprofilMeldung(schluessel, "",
+                    Format(Text_("ZPG_AUS_KON_NICHT_GEBAUT", "Der Bedarfstag wurde nicht gebaut — {0}"), Text_(schluessel, ex.Message)),
+                    ZapfprofilMeldungsart.Fehler, ex.Message));
+                return new ZapfprofilKonstruktorErgebnis(null, meldungen);
+            }
+        }
+
+        // =================================================================================
+        // Schreibweg (im gemeinsamen Vorgang des Bedarfsprofil-Dialogs, 5.2)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Schreibweg der Auslegung</b> im Vorgang des Aufrufers (kein Commit): Zonen,
+        /// Projektgrößen samt Punkt und Eingaben der Überlagerung und — falls konstruiert — der
+        /// Bedarfstag als Katalogzeile (Status EIGEN, Herkunftsart EIGENKONSTRUKTION, bei θ_KW,A
+        /// des Parametersatzes), alles über <c>ZapfprofilCtrl.Speichern</c>. Eine benannte
+        /// Ablehnung kommt als Meldung zurück; der Aufrufer rollt zurück, der Stand bleibt.
+        /// </summary>
+        internal static ZapfprofilSpeicherergebnis AuslegungSpeichern(int idProjekt, ZapfprofilStand stand, DbVorgang v)
+            => Speichern(idProjekt, stand, v);
+
+        // =================================================================================
+        // Texte
+        // =================================================================================
+
+        /// <summary>Das Textbündel der Überlagerung in der Oberflächensprache; fehlt ein Schlüssel, bleibt der deutsche Rückfall.</summary>
+        internal static ZapfprofilAuslegungTexte AuslegungTexte()
+        {
+            var t = new ZapfprofilAuslegungTexte();
+            t.Titel = Text_("ZPG_AUS_TITEL", t.Titel);
+            t.InfoBedienung = Text_("ZPG_AUS_INFO_BEDIENUNG", t.InfoBedienung);
+            t.InfoRechenweg = Text_("ZPG_AUS_INFO_RECHENWEG", t.InfoRechenweg);
+            t.GrundNochNicht = Text_("ZPG_AUS_GRUND_NOCH_NICHT", t.GrundNochNicht);
+            t.GruppeEingaben = Text_("ZPG_AUS_GRP_EINGABEN", t.GruppeEingaben);
+            t.LabelBedarfstag = Text_("ZPG_AUS_LBL_BEDARFSTAG", t.LabelBedarfstag);
+            t.OptionVorgaberegel = Text_("ZPG_AUS_OPT_VORGABEREGEL", t.OptionVorgaberegel);
+            t.OptionStundenprofil = Text_("ZPG_AUS_OPT_STUNDENPROFIL", t.OptionStundenprofil);
+            t.OptionDin4708 = Text_("ZPG_AUS_OPT_DIN4708", t.OptionDin4708);
+            t.OptionA100 = Text_("ZPG_AUS_OPT_A100", t.OptionA100);
+            t.GrundA100 = Text_("ZPG_AUS_GRUND_A100", t.GrundA100);
+            t.OptionEcodesign = Text_("ZPG_AUS_OPT_ECODESIGN", t.OptionEcodesign);
+            t.GrundEcodesign = Text_("ZPG_AUS_GRUND_ECODESIGN", t.GrundEcodesign);
+            t.OptionKatalogtag = Text_("ZPG_AUS_OPT_KATALOGTAG", t.OptionKatalogtag);
+            t.OptionEntwurf = Text_("ZPG_AUS_OPT_ENTWURF", t.OptionEntwurf);
+            t.KnopfKonstruieren = Text_("ZPG_AUS_BTN_KONSTRUIEREN", t.KnopfKonstruieren);
+            t.HinweisKonstruktor = Text_("ZPG_AUS_HINW_KONSTRUKTOR", t.HinweisKonstruktor);
+            t.BannerSpitzen = Text_("ZPG_AUS_BANNER_SPITZEN", t.BannerSpitzen);
+            t.LabelSpeichertemperatur = Text_("ZPG_AUS_LBL_SPEICHERTEMPERATUR", t.LabelSpeichertemperatur);
+            t.LabelErzeugerleistung = Text_("ZPG_AUS_LBL_ERZEUGERLEISTUNG", t.LabelErzeugerleistung);
+            t.LabelUebertragerleistung = Text_("ZPG_AUS_LBL_UEBERTRAGERLEISTUNG", t.LabelUebertragerleistung);
+            t.LabelSpeicherart = Text_("ZPG_AUS_LBL_SPEICHERART", t.LabelSpeicherart);
+            t.SpeicherartLadespeicher = Text_("ZPG_AUS_SPEICHERART_LADESPEICHER", t.SpeicherartLadespeicher);
+            t.SpeicherartGemischt = Text_("ZPG_AUS_SPEICHERART_GEMISCHT", t.SpeicherartGemischt);
+            t.LabelSensorhoehe = Text_("ZPG_AUS_LBL_SENSORHOEHE", t.LabelSensorhoehe);
+            t.LabelErzeugerart = Text_("ZPG_AUS_LBL_ERZEUGERART", t.LabelErzeugerart);
+            t.LabelWerkstoff = Text_("ZPG_AUS_LBL_WERKSTOFF", t.LabelWerkstoff);
+            t.KeineAngabe = Text_("ZPG_AUS_KEINE_ANGABE", t.KeineAngabe);
+            t.ErzeugerKessel = Text_("ZPG_AUS_ERZEUGER_KESSEL", t.ErzeugerKessel);
+            t.ErzeugerWaermepumpe = Text_("ZPG_AUS_ERZEUGER_WAERMEPUMPE", t.ErzeugerWaermepumpe);
+            t.WerkstoffStahl = Text_("ZPG_AUS_WERKSTOFF_STAHL", t.WerkstoffStahl);
+            t.WerkstoffEdelstahl = Text_("ZPG_AUS_WERKSTOFF_EDELSTAHL", t.WerkstoffEdelstahl);
+            t.HerleitungSpeichertemperatur = Text_("ZPG_AUS_HERL_SPEICHERTEMPERATUR", t.HerleitungSpeichertemperatur);
+            t.HerleitungErzeuger = Text_("ZPG_AUS_HERL_ERZEUGER", t.HerleitungErzeuger);
+            t.HerleitungUebertrager = Text_("ZPG_AUS_HERL_UEBERTRAGER", t.HerleitungUebertrager);
+            t.HerleitungSensorhoehe = Text_("ZPG_AUS_HERL_SENSORHOEHE", t.HerleitungSensorhoehe);
+            t.HerleitungLaufangabe = Text_("ZPG_AUS_HERL_LAUFANGABE", t.HerleitungLaufangabe);
+            t.GruppeTopologie = Text_("ZPG_AUS_GRP_TOPOLOGIE", t.GruppeTopologie);
+            t.BedarfstagGruppe = Text_("ZPG_AUS_BEDARFSTAG_GRUPPE", t.BedarfstagGruppe);
+            t.KarteSummenlinie = Text_("ZPG_AUS_KARTE_SUMMENLINIE", t.KarteSummenlinie);
+            t.KarteSummenlinieUnter = Text_("ZPG_AUS_KARTE_SUMMENLINIE_UNTER", t.KarteSummenlinieUnter);
+            t.KarteMinutenspitze = Text_("ZPG_AUS_KARTE_MINUTENSPITZE", t.KarteMinutenspitze);
+            t.KarteMinutenspitzeUnter = Text_("ZPG_AUS_KARTE_MINUTENSPITZE_UNTER", t.KarteMinutenspitzeUnter);
+            t.KartePerzentil = Text_("ZPG_AUS_KARTE_PERZENTIL", t.KartePerzentil);
+            t.KartePerzentilUnter = Text_("ZPG_AUS_KARTE_PERZENTIL_UNTER", t.KartePerzentilUnter);
+            t.PerzentilOffen = Text_("ZPG_AUS_PERZENTIL_OFFEN", t.PerzentilOffen);
+            t.KarteNorm = Text_("ZPG_AUS_KARTE_NORM", t.KarteNorm);
+            t.KarteNormUnter = Text_("ZPG_AUS_KARTE_NORM_UNTER", t.KarteNormUnter);
+            t.GewaehlterPunkt = Text_("ZPG_AUS_GEWAEHLTER_PUNKT", t.GewaehlterPunkt);
+            t.Ladezeit = Text_("ZPG_AUS_LADEZEIT", t.Ladezeit);
+            t.Zeitkonstante = Text_("ZPG_AUS_ZEITKONSTANTE", t.Zeitkonstante);
+            t.WertepaareOhne = Text_("ZPG_AUS_WERTEPAARE_OHNE", t.WertepaareOhne);
+            t.Bedarfskennzahl = Text_("ZPG_AUS_BEDARFSKENNZAHL", t.Bedarfskennzahl);
+            t.Vergleichspunkt = Text_("ZPG_AUS_VERGLEICHSPUNKT", t.Vergleichspunkt);
+            t.ZonenAusserhalb = Text_("ZPG_AUS_ZONEN_AUSSERHALB", t.ZonenAusserhalb);
+            t.HinweisWaermepumpe = Text_("ZPG_AUS_HINW_WAERMEPUMPE", t.HinweisWaermepumpe);
+            t.Rohrnetz = Text_("ZPG_AUS_ROHRNETZ", t.Rohrnetz);
+            t.GrundRohrnetz = Text_("ZPG_AUS_GRUND_ROHRNETZ", t.GrundRohrnetz);
+            t.StandNichtRechenbar = Text_("ZPG_AUS_STAND_NICHT_RECHENBAR", t.StandNichtRechenbar);
+            t.StandAusserhalb = Text_("ZPG_AUS_STAND_AUSSERHALB", t.StandAusserhalb);
+            t.Empfehlung = Text_("ZPG_AUS_EMPFEHLUNG", t.Empfehlung);
+            t.PunktSpeicher = Text_("ZPG_AUS_PUNKT_SPEICHER", t.PunktSpeicher);
+            t.PunktNenninhalt = Text_("ZPG_AUS_PUNKT_NENNINHALT", t.PunktNenninhalt);
+            t.PunktMinutenspitze = Text_("ZPG_AUS_PUNKT_MINUTENSPITZE", t.PunktMinutenspitze);
+            t.EmpfehlungKeine = Text_("ZPG_AUS_EMPFEHLUNG_KEINE", t.EmpfehlungKeine);
+            t.Schnellauslegung = Text_("ZPG_AUS_SCHNELLAUSLEGUNG", t.Schnellauslegung);
+            t.Entwurfsstand = Text_("ZPG_AUS_ENTWURFSSTAND", t.Entwurfsstand);
+            t.Nachrichtlich = Text_("ZPG_AUS_NACHRICHTLICH", t.Nachrichtlich);
+            t.PunktBleibt = Text_("ZPG_AUS_PUNKT_BLEIBT", t.PunktBleibt);
+            t.Vergleich = Text_("ZPG_AUS_VERGLEICH", t.Vergleich);
+            t.VergleichMarke = Text_("ZPG_AUS_VERGLEICH_MARKE", t.VergleichMarke);
+            t.VergleichUnter = Text_("ZPG_AUS_VERGLEICH_UNTER", t.VergleichUnter);
+            t.VergleichEingaben = Text_("ZPG_AUS_VERGLEICH_EINGABEN", t.VergleichEingaben);
+            t.Auto = Text_("ZPG_AUS_AUTO", t.Auto);
+            t.Manuell = Text_("ZPG_AUS_MANUELL", t.Manuell);
+            t.SpalteVerfahren = Text_("ZPG_AUS_SP_VERFAHREN", t.SpalteVerfahren);
+            t.SpalteVolumen = Text_("ZPG_AUS_SP_VOLUMEN", t.SpalteVolumen);
+            t.SpalteKennwert = Text_("ZPG_AUS_SP_KENNWERT", t.SpalteKennwert);
+            t.SpalteRechenweg = Text_("ZPG_AUS_SP_RECHENWEG", t.SpalteRechenweg);
+            t.GroessterWert = Text_("ZPG_AUS_GROESSTER_WERT", t.GroessterWert);
+            t.NurNachrichtlich = Text_("ZPG_AUS_NUR_NACHRICHTLICH", t.NurNachrichtlich);
+            t.KachelGroesster = Text_("ZPG_AUS_KACHEL_GROESSTER", t.KachelGroesster);
+            t.KachelListe = Text_("ZPG_AUS_KACHEL_LISTE", t.KachelListe);
+            t.KachelKriterium = Text_("ZPG_AUS_KACHEL_KRITERIUM", t.KachelKriterium);
+            t.KachelFuellstand = Text_("ZPG_AUS_KACHEL_FUELLSTAND", t.KachelFuellstand);
+            t.Nenninhalt = Text_("ZPG_AUS_NENNINHALT", t.Nenninhalt);
+            t.Mehrspeicher = Text_("ZPG_AUS_MEHRSPEICHER", t.Mehrspeicher);
+            t.OhneListe = Text_("ZPG_AUS_OHNE_LISTE", t.OhneListe);
+            t.KriteriumNl = Text_("ZPG_AUS_KRITERIUM_NL", t.KriteriumNl);
+            t.KriteriumOhne = Text_("ZPG_AUS_KRITERIUM_OHNE", t.KriteriumOhne);
+            t.Fuellstand = Text_("ZPG_AUS_FUELLSTAND", t.Fuellstand);
+            t.Zeitpunkt = Text_("ZPG_AUS_ZEITPUNKT", t.Zeitpunkt);
+            t.DmaxNull = Text_("ZPG_AUS_DMAX_NULL", t.DmaxNull);
+            t.Wochenbild = Text_("ZPG_AUS_WOCHENBILD", t.Wochenbild);
+            t.KnopfUebergeben = Text_("ZPG_AUS_BTN_UEBERGEBEN", t.KnopfUebergeben);
+            t.GrundUebergeben = Text_("ZPG_AUS_GRUND_UEBERGEBEN", t.GrundUebergeben);
+            t.Warnliste = Text_("ZPG_AUS_WARNLISTE", t.Warnliste);
+            t.WarnlisteUnter = Text_("ZPG_AUS_WARNLISTE_UNTER", t.WarnlisteUnter);
+            t.WarnlisteLeer = Text_("ZPG_AUS_WARNLISTE_LEER", t.WarnlisteLeer);
+            t.Konsistenz = Text_("ZPG_AUS_KONSISTENZ", t.Konsistenz);
+            t.GrundKonsistenz = Text_("ZPG_AUS_GRUND_KONSISTENZ", t.GrundKonsistenz);
+            t.StufeHinweis = Text_("ZPG_AUS_STUFE_HINWEIS", t.StufeHinweis);
+            t.StufeWarnung = Text_("ZPG_AUS_STUFE_WARNUNG", t.StufeWarnung);
+            t.StatusPunkt = Text_("ZPG_AUS_STATUS_PUNKT", t.StatusPunkt);
+            t.StatusOhnePunkt = Text_("ZPG_AUS_STATUS_OHNE_PUNKT", t.StatusOhnePunkt);
+            t.StatusOhne = Text_("ZPG_AUS_STATUS_OHNE", t.StatusOhne);
+            t.RueckfrageTitel = Text_("ZPG_AUS_RUECKFRAGE_TITEL", t.RueckfrageTitel);
+            t.RueckfrageStundenprofil = Text_("ZPG_AUS_RUECKFRAGE_STUNDENPROFIL", t.RueckfrageStundenprofil);
+            t.Ja = Text_("ZPG_AUS_JA", t.Ja);
+            t.Nein = Text_("ZPG_AUS_NEIN", t.Nein);
+            t.KonstruktorTitel = Text_("ZPG_AUS_KON_TITEL", t.KonstruktorTitel);
+            t.KonstruktorName = Text_("ZPG_AUS_KON_LBL_NAME", t.KonstruktorName);
+            t.KonstruktorHinweis = Text_("ZPG_AUS_KON_HINWEIS", t.KonstruktorHinweis);
+            t.KonstruktorBeginn = Text_("ZPG_AUS_KON_SP_BEGINN", t.KonstruktorBeginn);
+            t.KonstruktorEnde = Text_("ZPG_AUS_KON_SP_ENDE", t.KonstruktorEnde);
+            t.KonstruktorRegel = Text_("ZPG_AUS_KON_SP_REGEL", t.KonstruktorRegel);
+            t.KonstruktorAnzahl = Text_("ZPG_AUS_KON_SP_ANZAHL", t.KonstruktorAnzahl);
+            t.KonstruktorVolumen = Text_("ZPG_AUS_KON_SP_VOLUMEN", t.KonstruktorVolumen);
+            t.KonstruktorTemperatur = Text_("ZPG_AUS_KON_SP_TEMPERATUR", t.KonstruktorTemperatur);
+            t.KonstruktorVerbraucher = Text_("ZPG_AUS_KON_SP_VERBRAUCHER", t.KonstruktorVerbraucher);
+            t.KonstruktorRegelFrei = Text_("ZPG_AUS_KON_REGEL_FREI", t.KonstruktorRegelFrei);
+            t.KonstruktorRegelText = Text_("ZPG_AUS_KON_REGEL", t.KonstruktorRegelText);
+            t.KonstruktorZeileNeu = Text_("ZPG_AUS_KON_BTN_ZEILE_NEU", t.KonstruktorZeileNeu);
+            t.KonstruktorZeileEntfernen = Text_("ZPG_AUS_KON_BTN_ZEILE_ENTFERNEN", t.KonstruktorZeileEntfernen);
+            t.KonstruktorRegelnOhne = Text_("ZPG_AUS_KON_REGELN_OHNE", t.KonstruktorRegelnOhne);
+            t.KonstruktorSumme = Text_("ZPG_AUS_KON_SUMME", t.KonstruktorSumme);
+            t.KonstruktorFeld = Text_("ZPG_AUS_KON_FELD", t.KonstruktorFeld);
+            t.KonstruktorFehleingabe = Text_("ZPG_AUS_KON_FEHLEINGABE", t.KonstruktorFehleingabe);
+            t.KonstruktorGrundLetzteZeile = Text_("ZPG_AUS_KON_GRUND_LETZTE_ZEILE", t.KonstruktorGrundLetzteZeile);
+            return t;
+        }
+
+        /// <summary>Die Beschriftungen der Auslegungsbilder in der Oberflächensprache.</summary>
+        internal static ZapfprofilAuslegungBildtexte AuslegungBildtexte()
+        {
+            var t = new ZapfprofilAuslegungBildtexte();
+            t.TitelSummenlinie = Text_("ZPG_AUSBILD_SUMMENLINIE", t.TitelSummenlinie);
+            t.Bedarf = Text_("ZPG_AUSBILD_BEDARF", t.Bedarf);
+            t.Versorgung = Text_("ZPG_AUSBILD_VERSORGUNG", t.Versorgung);
+            t.Speicherinhalt = Text_("ZPG_AUSBILD_SPEICHERINHALT", t.Speicherinhalt);
+            t.Beruehrung = Text_("ZPG_AUSBILD_BERUEHRUNG", t.Beruehrung);
+            t.AchseMinutentakt = Text_("ZPG_AUSBILD_ACHSE_MINUTENTAKT", t.AchseMinutentakt);
+            t.AchseEnergie = Text_("ZPG_AUSBILD_ACHSE_ENERGIE", t.AchseEnergie);
+            t.TitelWertepaare = Text_("ZPG_AUSBILD_WERTEPAARE", t.TitelWertepaare);
+            t.Wertepaare = Text_("ZPG_AUSBILD_REIHE_WERTEPAARE", t.Wertepaare);
+            t.Gewaehlt = Text_("ZPG_AUSBILD_GEWAEHLT", t.Gewaehlt);
+            t.AchseLeistung = Text_("ZPG_ACHSE_LEISTUNG", t.AchseLeistung);
+            t.AchseVolumen = Text_("ZPG_AUSBILD_ACHSE_VOLUMEN", t.AchseVolumen);
+            t.TitelWoche = Text_("ZPG_AUSBILD_WOCHE", t.TitelWoche);
+            t.Zapfung = Text_("ZPG_REIHE_ZAPFUNG", t.Zapfung);
+            t.Zirkulation = Text_("ZPG_REIHE_ZIRKULATION", t.Zirkulation);
+            t.Ladung = Text_("ZPG_AUSBILD_LADUNG", t.Ladung);
+            t.Defizit = Text_("ZPG_AUSBILD_DEFIZIT", t.Defizit);
+            t.Fuellstand = Text_("ZPG_AUSBILD_FUELLSTAND", t.Fuellstand);
+            t.Massgebend = Text_("ZPG_AUSBILD_MASSGEBEND", t.Massgebend);
+            t.AchseWochenstunde = Text_("ZPG_ACHSE_WOCHENSTUNDE", t.AchseWochenstunde);
+            t.AchseSpeicher = Text_("ZPG_AUSBILD_ACHSE_SPEICHER", t.AchseSpeicher);
+            return t;
+        }
+    }
+}

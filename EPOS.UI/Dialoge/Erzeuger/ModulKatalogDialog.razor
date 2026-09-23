@@ -107,7 +107,10 @@
                         Vergleichskoepfe="@(_auswahl.Vergleich ? _vergleichskoepfe : null)"
                         Vergleichszeilen="@(_auswahl.Vergleich ? _vergleichszeilen : null)"
                         VergleichZurueck="BeiVergleichZurueck"
-                        Kosten="@KostenInhalt">
+                        Kosten="@KostenInhalt"
+                        Lesemodus="@NurLesbar"
+                        KenndatenWerte="@(NurLesbar ? Kenndatenwerte : null)"
+                        KostenWerte="@(NurLesbar ? Kostenwerte : null)">
                 <Kenndaten>
                     <Formularraster>
                         <KindInhalt>
@@ -458,6 +461,44 @@
     private EventCallback BlattOeffnenWeg => _auswahl.BlattOffen ? default : _blattOeffnen;
 
     /// <summary>Die Gruppe „Kosten" — nur, wo der Satz Kostenfelder führt.</summary>
+    /// <summary>
+    /// <b>Die Kenndaten im Lesemodus</b> (V13, Stufe 4): Ein Auslieferungssatz zeigt seine
+    /// Felder als TEXT statt als gesperrte Eingaben — je Gruppe des Profils mit ihrer
+    /// Zwischenüberschrift, eine Klappliste mit dem Text ihrer Option.
+    /// </summary>
+    private IReadOnlyList<Stammblattwert> Kenndatenwerte
+    {
+        get
+        {
+            var liste = new List<Stammblattwert>();
+            for (int g = 0; g <= 2; g++)
+            {
+                var felder = _felder.Where(f => f.Gruppe == g && !ModulKatalogProfil.IstKostenfeld(f.Schluessel)).ToList();
+                if (felder.Count == 0) continue;
+                string titel = Gruppentitel(g);
+                if (titel.Length > 0) liste.Add(Stammblattwert.Abschnitt(titel));
+                liste.AddRange(felder.Select(Lesewert));
+            }
+            return liste;
+        }
+    }
+
+    /// <summary>Die Kostenfelder im Lesemodus (V13).</summary>
+    private IReadOnlyList<Stammblattwert> Kostenwerte
+        => _felder.Where(f => ModulKatalogProfil.IstKostenfeld(f.Schluessel)).Select(Lesewert).ToList();
+
+    /// <summary>Ein Feld als Wert: die Klappliste mit dem Text ihrer Option.</summary>
+    private static Stammblattwert Lesewert(ModulFeldwert feld)
+    {
+        string wert = feld.Wert ?? "";
+        if (feld.Art == BrowserFeldArt.Auswahl)
+        {
+            foreach ((string w, string text) in feld.Optionen)
+                if (string.Equals(w, wert, StringComparison.Ordinal)) { wert = text; break; }
+        }
+        return new Stammblattwert(feld.Bezeichnung, wert, feld.Einheit);
+    }
+
     private RenderFragment? KostenInhalt
     {
         get

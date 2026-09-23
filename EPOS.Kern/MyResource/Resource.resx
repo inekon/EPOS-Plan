@@ -24471,6 +24471,708 @@ Möchten Sie das zulassen?</value>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
   </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
+    <value>der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag).</value>
+  </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_NAME_BELEGT" xml:space="preserve">
+    <value>der Name des konstruierten Bedarfstags ist in dieser Katalogversion schon vergeben.</value>
+  </data>
+  <data name="ZPG_AUS_TITEL" xml:space="preserve">
+    <value>Auslegung Brauchwasser</value>
+  </data>
+  <data name="ZPG_AUS_INFO_BEDIENUNG" xml:space="preserve">
+    <value>Bedienung</value>
+  </data>
+  <data name="ZPG_AUS_INFO_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NOCH_NICHT" xml:space="preserve">
+    <value>In dieser Fassung noch nicht verfügbar.</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_NORMTAG" xml:space="preserve">
+    <value>Ein Normtag des Katalogs rechnet als DIN-4708-Profil aus der Wohnungstabelle.</value>
+  </data>
+  <data name="ZPG_AUS_GRP_EINGABEN" xml:space="preserve">
+    <value>Eingaben der Summenlinie</value>
+  </data>
+  <data name="ZPG_AUS_LBL_BEDARFSTAG" xml:space="preserve">
+    <value>Bedarfstag</value>
+  </data>
+  <data name="ZPG_AUS_OPT_VORGABEREGEL" xml:space="preserve">
+    <value>Vorgaberegel (Wohnen: DIN-4708-Profil, sonst Konstruktor)</value>
+  </data>
+  <data name="ZPG_AUS_OPT_STUNDENPROFIL" xml:space="preserve">
+    <value>Stundenprofil der Zonen (Spitzen unterschätzt)</value>
+  </data>
+  <data name="ZPG_AUS_OPT_DIN4708" xml:space="preserve">
+    <value>DIN-4708-Profil aus der Wohnungstabelle</value>
+  </data>
+  <data name="ZPG_AUS_OPT_A100" xml:space="preserve">
+    <value>A100-Referenzprofil aus dem Katalog</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_A100" xml:space="preserve">
+    <value>Die Katalogzeilen der Art A100-Referenzprofil folgen mit dem Katalogpaket.</value>
+  </data>
+  <data name="ZPG_AUS_OPT_ECODESIGN" xml:space="preserve">
+    <value>Ecodesign-Zapfprofil (nur Einfamilienhaus, zur Plausibilisierung)</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ECODESIGN" xml:space="preserve">
+    <value>Das Ecodesign-Zapfprofil kommt mit einer späteren Fassung.</value>
+  </data>
+  <data name="ZPG_AUS_OPT_KATALOGTAG" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="ZPG_AUS_OPT_ENTWURF" xml:space="preserve">
+    <value>{0} (konstruiert, wird mit dem Projekt gespeichert)</value>
+  </data>
+  <data name="ZPG_AUS_BTN_KONSTRUIEREN" xml:space="preserve">
+    <value>Bedarfstag konstruieren…</value>
+  </data>
+  <data name="ZPG_AUS_HINW_KONSTRUKTOR" xml:space="preserve">
+    <value>Konstruktor nach A100 NA.5.2.3; der Tag gilt beim Kaltwasser der Auslegung des Katalogs.</value>
+  </data>
+  <data name="ZPG_AUS_BANNER_SPITZEN" xml:space="preserve">
+    <value>Spitzen unterschätzt: Der Bedarfstag stammt aus einem Stundenprofil — Zapfspitzen unter einer Stunde sind darin nicht enthalten.</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>Speichertemperatur</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ERZEUGERLEISTUNG" xml:space="preserve">
+    <value>Erzeugerleistung</value>
+  </data>
+  <data name="ZPG_AUS_LBL_UEBERTRAGERLEISTUNG" xml:space="preserve">
+    <value>Wärmeübertragerleistung</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SPEICHERART" xml:space="preserve">
+    <value>Speicherart</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERART_LADESPEICHER" xml:space="preserve">
+    <value>Ladespeicher</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERART_GEMISCHT" xml:space="preserve">
+    <value>gemischter Speicher</value>
+  </data>
+  <data name="ZPG_AUS_LBL_SENSORHOEHE" xml:space="preserve">
+    <value>Sensorhöhe h_sensor/h_sto</value>
+  </data>
+  <data name="ZPG_AUS_LBL_ERZEUGERART" xml:space="preserve">
+    <value>Erzeugerart am Speicher</value>
+  </data>
+  <data name="ZPG_AUS_LBL_WERKSTOFF" xml:space="preserve">
+    <value>Werkstoff des Übertragers</value>
+  </data>
+  <data name="ZPG_AUS_KEINE_ANGABE" xml:space="preserve">
+    <value>keine Angabe</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGER_KESSEL" xml:space="preserve">
+    <value>Kessel</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGER_WAERMEPUMPE" xml:space="preserve">
+    <value>Wärmepumpe</value>
+  </data>
+  <data name="ZPG_AUS_WERKSTOFF_STAHL" xml:space="preserve">
+    <value>Stahl</value>
+  </data>
+  <data name="ZPG_AUS_WERKSTOFF_EDELSTAHL" xml:space="preserve">
+    <value>Edelstahl</value>
+  </data>
+  <data name="ZPG_AUS_HERL_SPEICHERTEMPERATUR" xml:space="preserve">
+    <value>angesetzt {0} °C · {1}</value>
+  </data>
+  <data name="ZPG_AUS_HERL_ERZEUGER" xml:space="preserve">
+    <value>leer = angesetzte Ladeleistung der Speicherauslegung; Nachweisleistung Φ_N = min(Erzeuger, Wärmeübertrager)</value>
+  </data>
+  <data name="ZPG_AUS_HERL_UEBERTRAGER" xml:space="preserve">
+    <value>leer = aus U·A, Fläche oder Schätzformel der Erzeugerart</value>
+  </data>
+  <data name="ZPG_AUS_HERL_SENSORHOEHE" xml:space="preserve">
+    <value>leer = Vorgabe des Katalogs</value>
+  </data>
+  <data name="ZPG_AUS_HERL_LAUFANGABE" xml:space="preserve">
+    <value>Laufangabe — wird nicht gespeichert; {0}</value>
+  </data>
+  <data name="ZPG_AUS_GRP_TOPOLOGIE" xml:space="preserve">
+    <value>{0} · Zonen: {1}</value>
+  </data>
+  <data name="ZPG_AUS_BEDARFSTAG_GRUPPE" xml:space="preserve">
+    <value>Bedarfstag: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_SUMMENLINIE" xml:space="preserve">
+    <value>(a) Summenlinie</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_SUMMENLINIE_UNTER" xml:space="preserve">
+    <value>Verfahren nach DIN EN 12831-3 mit den Rechenregeln aus A100/A1, Minutentakt</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_MINUTENSPITZE" xml:space="preserve">
+    <value>(a) Minutenspitze</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_MINUTENSPITZE_UNTER" xml:space="preserve">
+    <value>Größte Minutenleistung des Bedarfstags (größte Stundenleistung nachrichtlich)</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_PERZENTIL" xml:space="preserve">
+    <value>(b) Perzentil</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_PERZENTIL_UNTER" xml:space="preserve">
+    <value>Stochastisch superponierte Minutenlast</value>
+  </data>
+  <data name="ZPG_AUS_PERZENTIL_OFFEN" xml:space="preserve">
+    <value>noch nicht gerechnet — die Stochastik kommt mit einer späteren Fassung; die Empfehlung stützt sich auf (a) und (c).</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_NORM" xml:space="preserve">
+    <value>(c) Normvergleich</value>
+  </data>
+  <data name="ZPG_AUS_KARTE_NORM_UNTER" xml:space="preserve">
+    <value>DIN 4708 nur für Wohnen mit Speicher, mit Gültigkeitsprüfung</value>
+  </data>
+  <data name="ZPG_AUS_GEWAEHLTER_PUNKT" xml:space="preserve">
+    <value>Gewählter Punkt</value>
+  </data>
+  <data name="ZPG_AUS_LADEZEIT" xml:space="preserve">
+    <value>Ladezeit je Tag (Σ t_power,on)</value>
+  </data>
+  <data name="ZPG_AUS_ZEITKONSTANTE" xml:space="preserve">
+    <value>Zeitkonstante τ (informativ)</value>
+  </data>
+  <data name="ZPG_AUS_WERTEPAARE_OHNE" xml:space="preserve">
+    <value>Die Wertepaarkurve entfällt (weniger als zwei Wertepaare).</value>
+  </data>
+  <data name="ZPG_AUS_BEDARFSKENNZAHL" xml:space="preserve">
+    <value>Bedarfskennzahl N</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICHSPUNKT" xml:space="preserve">
+    <value>Vergleichspunkt V_DIN</value>
+  </data>
+  <data name="ZPG_AUS_ZONEN_AUSSERHALB" xml:space="preserve">
+    <value>Außerhalb des Gültigkeitsbereichs: {0}</value>
+  </data>
+  <data name="ZPG_AUS_HINW_WAERMEPUMPE" xml:space="preserve">
+    <value>Die Kennzahl N ist für die Vorlauftemperaturen einer Wärmepumpe kaum aussagefähig.</value>
+  </data>
+  <data name="ZPG_AUS_ROHRNETZ" xml:space="preserve">
+    <value>Rohrnetz-Spitzendurchfluss (nachrichtlich, Verfahren nach DIN 1988-300): noch nicht gerechnet</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_ROHRNETZ" xml:space="preserve">
+    <value>Die Summe der Entnahmearmaturen fehlt im Datenmodell — der Rohrnetz-Spitzendurchfluss kommt mit einer späteren Fassung.</value>
+  </data>
+  <data name="ZPG_AUS_STAND_NICHT_RECHENBAR" xml:space="preserve">
+    <value>nicht rechenbar</value>
+  </data>
+  <data name="ZPG_AUS_STAND_AUSSERHALB" xml:space="preserve">
+    <value>außerhalb des Gültigkeitsbereichs</value>
+  </data>
+  <data name="ZPG_AUS_EMPFEHLUNG" xml:space="preserve">
+    <value>Empfohlener Auslegungspunkt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_SPEICHER" xml:space="preserve">
+    <value>Speicher {0} l · Leistung {1} kW</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_NENNINHALT" xml:space="preserve">
+    <value>nächster Nenninhalt {0} l</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_MINUTENSPITZE" xml:space="preserve">
+    <value>Minutenspitze {0} kW</value>
+  </data>
+  <data name="ZPG_AUS_EMPFEHLUNG_KEINE" xml:space="preserve">
+    <value>Kein Auslegungspunkt — {0}</value>
+  </data>
+  <data name="ZPG_AUS_SCHNELLAUSLEGUNG" xml:space="preserve">
+    <value>Schnellauslegung</value>
+  </data>
+  <data name="ZPG_AUS_ENTWURFSSTAND" xml:space="preserve">
+    <value>Entwurfsstand — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren.</value>
+  </data>
+  <data name="ZPG_AUS_NACHRICHTLICH" xml:space="preserve">
+    <value>nachrichtlich</value>
+  </data>
+  <data name="ZPG_AUS_PUNKT_BLEIBT" xml:space="preserve">
+    <value>Der Auslegungspunkt des Zapfprofils bleibt der Punkt der Summenlinie; der Verfahrensvergleich ist Vergleich, OK übernimmt nur den Punkt.</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH" xml:space="preserve">
+    <value>Speicherauslegung — Verfahrensvergleich (Regel: größtes Volumen)</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_MARKE" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_UNTER" xml:space="preserve">
+    <value>Vorschlag an die Speicherauslegung, getrennt von der Dreiergruppe darüber; alle Verfahren lesen dasselbe Mengengerüst, nie die Jahresreihe.</value>
+  </data>
+  <data name="ZPG_AUS_VERGLEICH_EINGABEN" xml:space="preserve">
+    <value>Ladeleistung {0} kW ({1}) · Personen {2} · Kennzahl N {3} · nutzbarer Anteil {4} · Zuschlag {5}</value>
+  </data>
+  <data name="ZPG_AUS_AUTO" xml:space="preserve">
+    <value>auto</value>
+  </data>
+  <data name="ZPG_AUS_MANUELL" xml:space="preserve">
+    <value>manuell</value>
+  </data>
+  <data name="ZPG_AUS_SP_VERFAHREN" xml:space="preserve">
+    <value>Verfahren</value>
+  </data>
+  <data name="ZPG_AUS_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen</value>
+  </data>
+  <data name="ZPG_AUS_SP_KENNWERT" xml:space="preserve">
+    <value>Kennwert</value>
+  </data>
+  <data name="ZPG_AUS_SP_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
+  </data>
+  <data name="ZPG_AUS_GROESSTER_WERT" xml:space="preserve">
+    <value>größter Wert</value>
+  </data>
+  <data name="ZPG_AUS_NUR_NACHRICHTLICH" xml:space="preserve">
+    <value>nur nachrichtlich</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_GROESSTER" xml:space="preserve">
+    <value>Größter Wert</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_LISTE" xml:space="preserve">
+    <value>Listengröße (Vorschlag)</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_KRITERIUM" xml:space="preserve">
+    <value>Kriterium</value>
+  </data>
+  <data name="ZPG_AUS_KACHEL_FUELLSTAND" xml:space="preserve">
+    <value>Füllstand</value>
+  </data>
+  <data name="ZPG_AUS_NENNINHALT" xml:space="preserve">
+    <value>Nenninhalt {0} l</value>
+  </data>
+  <data name="ZPG_AUS_MEHRSPEICHER" xml:space="preserve">
+    <value>Mehrspeicheranlage prüfen</value>
+  </data>
+  <data name="ZPG_AUS_OHNE_LISTE" xml:space="preserve">
+    <value>ohne Nenninhaltsliste nicht gerundet</value>
+  </data>
+  <data name="ZPG_AUS_KRITERIUM_NL" xml:space="preserve">
+    <value>Speicher mit N_L ≥ {0}</value>
+  </data>
+  <data name="ZPG_AUS_KRITERIUM_OHNE" xml:space="preserve">
+    <value>ohne Kennzahl N kein Kriterium</value>
+  </data>
+  <data name="ZPG_AUS_FUELLSTAND" xml:space="preserve">
+    <value>min. {0} von {1} kWh, {2} Restreserve ({3})</value>
+  </data>
+  <data name="ZPG_AUS_ZEITPUNKT" xml:space="preserve">
+    <value>Maßgebender Zeitpunkt der Stundenbilanz: {0}, Tag {1} von 14 (in Woche 2 gezählt), {2}–{3} Uhr.</value>
+  </data>
+  <data name="ZPG_AUS_DMAX_NULL" xml:space="preserve">
+    <value>D_max = 0: Die Ladeleistung deckt jede Stundenlast; „profilbasiert“ zeigt „–“ statt 0 l — den größten Wert liefert dann DIN 4708.</value>
+  </data>
+  <data name="ZPG_AUS_WOCHENBILD" xml:space="preserve">
+    <value>Maßgebende Woche = Woche mit dem größten Tagesbedarf des Jahres; Woche 2 der Zweiwochenbilanz aus Mengengerüst, Tagesgang und Wochenfaktoren — nicht aus der Jahresreihe.</value>
+  </data>
+  <data name="ZPG_AUS_BTN_UEBERGEBEN" xml:space="preserve">
+    <value>An Speicherauslegung übergeben…</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_UEBERGEBEN" xml:space="preserve">
+    <value>Die Übergabe an die Speicherauslegung kommt mit einer späteren Fassung.</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE" xml:space="preserve">
+    <value>Hinweise und Warnungen der Auslegung</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE_UNTER" xml:space="preserve">
+    <value>Klartext mit eingesetzten Zahlen; nichts davon blockiert OK.</value>
+  </data>
+  <data name="ZPG_AUS_WARNLISTE_LEER" xml:space="preserve">
+    <value>Keine Hinweise.</value>
+  </data>
+  <data name="ZPG_AUS_KONSISTENZ" xml:space="preserve">
+    <value>Konsistenzhinweis (stochastische Spitze gegen die Leistung des Summenlinienpunkts): noch nicht geprüft</value>
+  </data>
+  <data name="ZPG_AUS_GRUND_KONSISTENZ" xml:space="preserve">
+    <value>Der Konsistenzhinweis braucht das Perzentil — beide kommen mit einer späteren Fassung.</value>
+  </data>
+  <data name="ZPG_AUS_STUFE_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="ZPG_AUS_STUFE_WARNUNG" xml:space="preserve">
+    <value>Warnung</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_PUNKT" xml:space="preserve">
+    <value>Punkt gewählt: {0}</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_OHNE_PUNKT" xml:space="preserve">
+    <value>Kein Auslegungspunkt — OK übernimmt nur die Eingaben.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_OHNE" xml:space="preserve">
+    <value>Keine Auslegung — {0}</value>
+  </data>
+  <data name="ZPG_AUS_RUECKFRAGE_TITEL" xml:space="preserve">
+    <value>Bedarfstag aus dem Stundenprofil</value>
+  </data>
+  <data name="ZPG_AUS_RUECKFRAGE_STUNDENPROFIL" xml:space="preserve">
+    <value>Der Bedarfstag stammt aus dem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt. Den Punkt trotzdem übernehmen?</value>
+  </data>
+  <data name="ZPG_AUS_JA" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="ZPG_AUS_NEIN" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="ZPG_AUS_KON_TITEL" xml:space="preserve">
+    <value>Bedarfstag konstruieren</value>
+  </data>
+  <data name="ZPG_AUS_KON_LBL_NAME" xml:space="preserve">
+    <value>Name des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUS_KON_HINWEIS" xml:space="preserve">
+    <value>Zeilen nach dem Verfahren der A100 (NA.5.2.3): Zeitfenster in Stunden, Volumen je Zapfregel und Anzahl oder direkt mit Zapftemperatur. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs.</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_BEGINN" xml:space="preserve">
+    <value>Beginn [h]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_ENDE" xml:space="preserve">
+    <value>Ende [h]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_REGEL" xml:space="preserve">
+    <value>Zapfregel</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_ANZAHL" xml:space="preserve">
+    <value>Anzahl</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_VOLUMEN" xml:space="preserve">
+    <value>Volumen [l]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_TEMPERATUR" xml:space="preserve">
+    <value>Zapftemperatur [°C]</value>
+  </data>
+  <data name="ZPG_AUS_KON_SP_VERBRAUCHER" xml:space="preserve">
+    <value>Verbraucher</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL_FREI" xml:space="preserve">
+    <value>Volumen direkt</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL" xml:space="preserve">
+    <value>{0} · {1} l je Vorgang bei {2} °C</value>
+  </data>
+  <data name="ZPG_AUS_KON_BTN_ZEILE_NEU" xml:space="preserve">
+    <value>Zeile hinzufügen</value>
+  </data>
+  <data name="ZPG_AUS_KON_BTN_ZEILE_ENTFERNEN" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGELN_OHNE" xml:space="preserve">
+    <value>Der Katalog trägt keine Zapfregel — nur Zeilen mit direktem Volumen.</value>
+  </data>
+  <data name="ZPG_AUS_KON_SUMME" xml:space="preserve">
+    <value>{0} Zeilen</value>
+  </data>
+  <data name="ZPG_AUS_KON_FELD" xml:space="preserve">
+    <value>{0}, Zeile {1}</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLEINGABE" xml:space="preserve">
+    <value>Keine gültige Zahl: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_GRUND_LETZTE_ZEILE" xml:space="preserve">
+    <value>Die letzte Zeile bleibt — ein Bedarfstag braucht mindestens eine Zeile.</value>
+  </data>
+  <data name="ZPG_AUS_KON_NAME_BELEGT" xml:space="preserve">
+    <value>Der Name „{0}“ ist in der Katalogversion „{1}“ schon vergeben — frei ist etwa „{2}“.</value>
+  </data>
+  <data name="ZPG_AUSBILD_SUMMENLINIE" xml:space="preserve">
+    <value>Summenlinie des Bedarfstags</value>
+  </data>
+  <data name="ZPG_AUSBILD_BEDARF" xml:space="preserve">
+    <value>Bedarf kumuliert</value>
+  </data>
+  <data name="ZPG_AUSBILD_VERSORGUNG" xml:space="preserve">
+    <value>Versorgung kumuliert</value>
+  </data>
+  <data name="ZPG_AUSBILD_SPEICHERINHALT" xml:space="preserve">
+    <value>Speicherinhalt</value>
+  </data>
+  <data name="ZPG_AUSBILD_BERUEHRUNG" xml:space="preserve">
+    <value>kleinster Abstand</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_MINUTENTAKT" xml:space="preserve">
+    <value>Stunde (Minutentakt)</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_ENERGIE" xml:space="preserve">
+    <value>Energie [kWh]</value>
+  </data>
+  <data name="ZPG_AUSBILD_WERTEPAARE" xml:space="preserve">
+    <value>Wertepaarkurve Speichervolumen über Leistung</value>
+  </data>
+  <data name="ZPG_AUSBILD_REIHE_WERTEPAARE" xml:space="preserve">
+    <value>Wertepaare (Erweiterung des Nachweisverfahrens)</value>
+  </data>
+  <data name="ZPG_AUSBILD_GEWAEHLT" xml:space="preserve">
+    <value>gewählt</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_VOLUMEN" xml:space="preserve">
+    <value>Speichervolumen [l]</value>
+  </data>
+  <data name="ZPG_AUSBILD_WOCHE" xml:space="preserve">
+    <value>Maßgebende Woche der Stundenbilanz</value>
+  </data>
+  <data name="ZPG_AUSBILD_LADUNG" xml:space="preserve">
+    <value>Ladung</value>
+  </data>
+  <data name="ZPG_AUSBILD_DEFIZIT" xml:space="preserve">
+    <value>Defizit kumuliert</value>
+  </data>
+  <data name="ZPG_AUSBILD_FUELLSTAND" xml:space="preserve">
+    <value>Füllstand bei {0} l</value>
+  </data>
+  <data name="ZPG_AUSBILD_MASSGEBEND" xml:space="preserve">
+    <value>maßgebend</value>
+  </data>
+  <data name="ZPG_AUSBILD_ACHSE_SPEICHER" xml:space="preserve">
+    <value>Speicher [kWh]</value>
+  </data>
+  <data name="ZPG_AUS_KONTEXT" xml:space="preserve">
+    <value>Summe aller Zonen · {0} Zonen · Stufe {1}</value>
+  </data>
+  <data name="ZPG_AUS_ZONE_ABGELEHNT" xml:space="preserve">
+    <value>Zone „{0}“ fehlt in der Auslegung: {1}</value>
+  </data>
+  <data name="ZPG_AUS_HINWEIS" xml:space="preserve">
+    <value>Hinweis</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_SPEICHER" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_FRISCHWASSERSTATION" xml:space="preserve">
+    <value>Frischwasserstation</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_DURCHFLUSS" xml:space="preserve">
+    <value>Durchfluss</value>
+  </data>
+  <data name="ZPG_AUS_TOPOLOGIE_WOHNUNGSSTATION" xml:space="preserve">
+    <value>Wohnungsstation</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_PROFILBASIERT" xml:space="preserve">
+    <value>profilbasiert</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_DIN4708" xml:space="preserve">
+    <value>DIN 4708</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_GLEICHZEITIGKEIT" xml:space="preserve">
+    <value>Faustwert mit Gleichzeitigkeit</value>
+  </data>
+  <data name="ZPG_AUS_VERFAHREN_KLASSISCH" xml:space="preserve">
+    <value>klassischer Faustwert</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_STUNDENPROFIL" xml:space="preserve">
+    <value>Stundenprofil</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_A100_REFERENZ" xml:space="preserve">
+    <value>Referenzprofil</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_DIN4708_PROFIL" xml:space="preserve">
+    <value>Normtag</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_KONSTRUKTOR" xml:space="preserve">
+    <value>Konstruktor</value>
+  </data>
+  <data name="ZPG_AUS_QUELLE_ECODESIGN" xml:space="preserve">
+    <value>Ecodesign-Zapfprofil</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_PROJEKT" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_GROSSANLAGE" xml:space="preserve">
+    <value>Vorgabe · Großanlage nach DVGW W 551</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_SCHNELLPFAD" xml:space="preserve">
+    <value>Vorgabe · Vereinfachungsverfahren der A100</value>
+  </data>
+  <data name="ZPG_AUS_SPEICHERC_VORGABE" xml:space="preserve">
+    <value>Vorgabe des Katalogs</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_EINGABE" xml:space="preserve">
+    <value>Eingabe</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_BESTAND" xml:space="preserve">
+    <value>Vorschlag aus dem Anlagenbestand: {0}</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_MEHRDEUTIG" xml:space="preserve">
+    <value>Der Anlagenbestand führt Kessel und Wärmepumpe — bitte wählen.</value>
+  </data>
+  <data name="ZPG_AUS_ERZEUGERART_OHNE" xml:space="preserve">
+    <value>Der Anlagenbestand nennt keinen Erzeuger.</value>
+  </data>
+  <data name="ZPG_AUS_STATUS_GERECHNET" xml:space="preserve">
+    <value>Auslegung gerechnet · deterministisch · Perzentil noch nicht gerechnet</value>
+  </data>
+  <data name="ZPG_AUS_MSG_KEINE_ZONE" xml:space="preserve">
+    <value>Es ist keine Zone angelegt — ohne Zone keine Auslegung.</value>
+  </data>
+  <data name="ZPG_AUS_MSG_UNERWARTET" xml:space="preserve">
+    <value>Die Auslegung konnte nicht gerechnet werden: {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_ZEILE" xml:space="preserve">
+    <value>Zeile {0}: {1}</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLT_FENSTER" xml:space="preserve">
+    <value>Beginn und Ende fehlen oder liegen nicht im Tag (0 ≤ Beginn &lt; Ende ≤ 24 h).</value>
+  </data>
+  <data name="ZPG_AUS_KON_FEHLT_MENGE" xml:space="preserve">
+    <value>Anzahl bzw. Volumen und Zapftemperatur fehlen.</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGEL_FEHLT" xml:space="preserve">
+    <value>Die Zapfregel „{0}“ steht nicht im Katalog.</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_ZEILE" xml:space="preserve">
+    <value>Mindestens eine Zeile eintragen.</value>
+  </data>
+  <data name="ZPG_AUS_KON_OHNE_NAME" xml:space="preserve">
+    <value>Bitte einen Namen für den Bedarfstag eingeben.</value>
+  </data>
+  <data name="ZPG_AUS_KON_NAME_STAMM" xml:space="preserve">
+    <value>Eigener Bedarfstag</value>
+  </data>
+  <data name="ZPG_AUS_KON_NICHT_GEBAUT" xml:space="preserve">
+    <value>Der Bedarfstag wurde nicht gebaut — {0}</value>
+  </data>
+  <data name="ZPG_AUS_KON_REGELN_UNGUELTIG" xml:space="preserve">
+    <value>Die Zapfregeln des Katalogs sind ungültig — nur Zeilen mit direktem Volumen: {0}</value>
+  </data>
+  <data name="ZPG_AUSHINW_KONSTRUKTOR_OEFFNEN" xml:space="preserve">
+    <value>Bedarfstag fehlt</value>
+  </data>
+  <data name="ZPG_AUSHINW_BEDARFSTAG_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Bedarfstag nicht rechenbar</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPITZEN_UNTERSCHAETZT" xml:space="preserve">
+    <value>Spitzen unterschätzt</value>
+  </data>
+  <data name="ZPG_AUSHINW_ZIRKULATION_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Zirkulation</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERAUSLEGUNG_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Speicherauslegung</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE_NICHT_RECHENBAR" xml:space="preserve">
+    <value>Großanlage</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE" xml:space="preserve">
+    <value>Großanlage</value>
+  </data>
+  <data name="ZPG_AUSHINW_GROSSANLAGE_OHNE_ZIRKULATION" xml:space="preserve">
+    <value>Großanlage ohne Zirkulation</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_GROSSANLAGE" xml:space="preserve">
+    <value>Speichertemperatur</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERTEMPERATUR_UNTER_MINDEST" xml:space="preserve">
+    <value>Speichertemperatur</value>
+  </data>
+  <data name="ZPG_AUSHINW_SPEICHERVERLUST_NULL" xml:space="preserve">
+    <value>Speicherverlust</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENLINIE_NICHT_MONOTON" xml:space="preserve">
+    <value>Summenlinie</value>
+  </data>
+  <data name="ZPG_AUSHINW_UEBERTRAGER_UNPLAUSIBEL" xml:space="preserve">
+    <value>Wärmeübertrager</value>
+  </data>
+  <data name="ZPG_AUSHINW_WERTEPAARKURVE" xml:space="preserve">
+    <value>Wertepaarkurve</value>
+  </data>
+  <data name="ZPG_AUSHINW_WOHNUNGSSTATION_JE_EINHEIT" xml:space="preserve">
+    <value>Wohnungsstation</value>
+  </data>
+  <data name="ZPG_AUSHINW_REIHENFOLGE" xml:space="preserve">
+    <value>Reihenfolge der Verfahren</value>
+  </data>
+  <data name="ZPG_AUSHINW_DIN4708_WAERMEPUMPE" xml:space="preserve">
+    <value>DIN 4708 und Wärmepumpe</value>
+  </data>
+  <data name="ZPG_AUSHINW_DIN4708_TEILGUELTIG" xml:space="preserve">
+    <value>Gültigkeit je Verfahren</value>
+  </data>
+  <data name="ZPG_AUSHINW_GUELTIGKEIT_DIN_GLF" xml:space="preserve">
+    <value>Gültigkeit je Verfahren</value>
+  </data>
+  <data name="ZPG_AUSHINW_GUELTIGKEIT_GLF_WANNEN" xml:space="preserve">
+    <value>Gültigkeit je Verfahren</value>
+  </data>
+  <data name="ZPG_AUSHINW_GLF_GUELTIGKEITSGRENZE" xml:space="preserve">
+    <value>Gültigkeit je Verfahren</value>
+  </data>
+  <data name="ZPG_AUSHINW_LADELEISTUNG_ZU_KLEIN" xml:space="preserve">
+    <value>Ladeleistung × Ladezeit</value>
+  </data>
+  <data name="ZPG_AUSHINW_MASSGEBEND_WOCHENENDE" xml:space="preserve">
+    <value>Maßgebender Tag</value>
+  </data>
+  <data name="ZPG_AUSHINW_DEFIZIT_WAECHST" xml:space="preserve">
+    <value>Defizit wächst</value>
+  </data>
+  <data name="ZPG_AUSHINW_DMAX_NULL" xml:space="preserve">
+    <value>Stundenbilanz ohne Defizit</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENKONTROLLE" xml:space="preserve">
+    <value>Summenkontrolle</value>
+  </data>
+  <data name="ZPG_AUSHINW_SUMMENLINIE_AUSSERHALB_BAND" xml:space="preserve">
+    <value>Summenlinie außerhalb des Bands</value>
+  </data>
+  <data name="ZPG_AUSHINW_KLASSISCH_WEIT_UEBER_BAND" xml:space="preserve">
+    <value>Klassischer Faustwert</value>
+  </data>
+  <data name="ZPG_AUSHINW_MEHRSPEICHER" xml:space="preserve">
+    <value>Mehrspeicheranlage</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_FEHLEN" xml:space="preserve">
+    <value>Nenninhalte</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_EINSTELLUNG_UNGUELTIG" xml:space="preserve">
+    <value>Nenninhalte</value>
+  </data>
+  <data name="ZPG_AUSHINW_NENNINHALTE_PARAMETER_UNGUELTIG" xml:space="preserve">
+    <value>Nenninhalte</value>
+  </data>
+  <data name="ZPG_AUSHINW_NL_KRITERIUM" xml:space="preserve">
+    <value>Kriterium N_L</value>
+  </data>
+  <data name="ZPG_AUSHINW_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Katalogparameter</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
+    <value>Der Bedarfstag ist leer oder trägt ein Ereignis außerhalb des Tages.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOCHENREIHE_UNGUELTIG" xml:space="preserve">
+    <value>Die Wochenreihe fehlt oder trägt nicht 168 Stunden.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_TEMPERATUR_UNGUELTIG" xml:space="preserve">
+    <value>Eine Temperaturdifferenz ist nicht positiv.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_GROESSE_UNGUELTIG" xml:space="preserve">
+    <value>Eine Größe ist negativ, nicht endlich oder außerhalb ihres Bereichs.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOHNUNGSTABELLE_FEHLT" xml:space="preserve">
+    <value>Die Wohnungstabelle fehlt — die Kennzahl N ist nicht rechenbar.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
+    <value>Belegung oder Ausstattung eines Wohnungstyps ist nicht bestimmbar.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_LEISTUNG_FEHLT" xml:space="preserve">
+    <value>Weder Erzeuger- noch Übertragerleistung ist bestimmbar.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_KEIN_VOLUMEN" xml:space="preserve">
+    <value>Der Nachweis findet kein Volumen.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Ein Parameter des Katalogs fehlt.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_NICHT_GUELTIG" xml:space="preserve">
+    <value>Das Verfahren gilt für diese Zone oder Topologie nicht.</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_UEBERTRAGER_UNBESTIMMT" xml:space="preserve">
+    <value>Der Übertrager ist nicht bestimmbar — bitte Werkstoff bzw. Erzeugerart oder die Übertragerleistung angeben.</value>
+  </data>
+  <data name="ZPG_STATUS_AUSLEGUNG" xml:space="preserve">
+    <value>Auslegung übernommen: {0}</value>
+  </data>
+  <data name="ZPG_AUSLEGUNG_OHNE_PUNKT" xml:space="preserve">
+    <value>Eingaben ohne Punkt</value>
+  </data>
+  <data name="ZPG_PUNKT_UEBERHOLT" xml:space="preserve">
+    <value>Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.</value>
+  </data>
   <data name="ADM_AW_GEWAEHLT" xml:space="preserve">
     <value>{0} gewählt</value>
   </data>
@@ -24713,5 +25415,65 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
     <value>Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt.</value>
+  </data>
+  <data name="ADM_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ADM_SB_JAHRESVERLAUF" xml:space="preserve">
+    <value>Jahresverlauf</value>
+  </data>
+  <data name="ADM_SB_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="ADM_SB_GANGLINIE" xml:space="preserve">
+    <value>Ganglinie</value>
+  </data>
+  <data name="ADM_SB_GROSS" xml:space="preserve">
+    <value>groß…</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen, nicht löschbar.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
+    <value>Auslieferungssatz – Löschen gesperrt.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen.</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Stehen bleiben (in Projekten verwendet): {0}</value>
+  </data>
+  <data name="ADM_MSG_EINGELESEN" xml:space="preserve">
+    <value>„{0}“ eingelesen.</value>
+  </data>
+  <data name="ADM_SB_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
+  <data name="ADM_SB_ABLAGE" xml:space="preserve">
+    <value>Ablageordner</value>
+  </data>
+  <data name="ADM_SB_VOLLLAST" xml:space="preserve">
+    <value>Volllaststunden</value>
+  </data>
+  <data name="ADM_SB_VERWENDET" xml:space="preserve">
+    <value>Verwendet in</value>
+  </data>
+  <data name="KLIMA_IMPORT_TITEL" xml:space="preserve">
+    <value>Klimadaten einlesen</value>
+  </data>
+  <data name="KLIMA_KZ_MITTEL" xml:space="preserve">
+    <value>Jahresmittel</value>
+  </data>
+  <data name="KLIMA_KZ_TIEFST" xml:space="preserve">
+    <value>Tiefstwert</value>
+  </data>
+  <data name="KLIMA_KZ_HOECHST" xml:space="preserve">
+    <value>Höchstwert</value>
+  </data>
+  <data name="KLIMA_SB_VERMERK" xml:space="preserve">
+    <value>Herkunftsvermerk</value>
+  </data>
+  <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
+    <value>Für diesen Satz liegt keine brauchbare Reihe vor (weder 8 760 noch 35 040 Werte).</value>
   </data>
 </root>

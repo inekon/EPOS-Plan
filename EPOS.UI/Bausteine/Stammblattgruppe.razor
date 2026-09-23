@@ -4,11 +4,18 @@
    Inhalt. Die festen Gruppen "Kenndaten" und "Kosten" zeichnet das Stammblatt
    selbst mit diesem Baustein; eine dialogspezifische Gruppe (Kennlinie,
    Wochenprofil, Jahresverlauf ...) steckt der Wirt mit ihm in den Schlitz
-   Gruppen. *@
+   Gruppen.
+
+   DER LESEMODUS (Stufe 4, V13). Ein Auslieferungssatz zeigt seine Werte als
+   TEXT statt als gesperrte Eingabefelder: Steht Lesemodus und reicht der Wirt
+   Werte herein, zeichnet die Gruppe die Liste aus Name und Wert
+   (Stammblattwerte) an Stelle ihres Inhalts. Ohne Werte bleibt der Inhalt - ein
+   Wirt, der seine Felder nicht als Werte fuehrt, verliert nichts. Eine Gruppe,
+   die nie ein Feld hatte (Herkunft), steht immer im Lesemodus. *@
 
 @namespace EPOS.UI.Bausteine
 
-<section class="epos-stammblattgruppe" aria-label="@Titel">
+<section class="epos-stammblattgruppe@(ZeigtWerte ? " epos-stammblattgruppe--lesen" : "")" aria-label="@Titel">
     <h3 class="epos-stammblattgruppe-kopf">
         <span class="epos-stammblattgruppe-titel">@Titel</span>
         @if (Kopf is not null)
@@ -16,7 +23,15 @@
             <span class="epos-stammblattgruppe-knoepfe">@Kopf</span>
         }
     </h3>
-    @KindInhalt
+    @if (ZeigtWerte)
+    {
+        <Stammblattwerte Werte="@(Werte!)" />
+        @Nachsatz
+    }
+    else
+    {
+        @KindInhalt
+    }
 </section>
 
 @code {
@@ -28,4 +43,19 @@
 
     /// <summary>Der Inhalt der Gruppe.</summary>
     [Parameter] public RenderFragment? KindInhalt { get; set; }
+
+    /// <summary>
+    /// <b>Lesemodus</b> (V13): Die Gruppe zeigt <see cref="Werte"/> als Text statt ihres
+    /// Inhalts — beim Auslieferungssatz und in Gruppen, die nie ein Feld hatten.
+    /// </summary>
+    [Parameter] public bool Lesemodus { get; set; }
+
+    /// <summary>Die Werte des Lesemodus; <c>null</c> = der Inhalt bleibt auch im Lesemodus.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert>? Werte { get; set; }
+
+    /// <summary>Was im Lesemodus unter den Werten steht (eine Herleitungszeile).</summary>
+    [Parameter] public RenderFragment? Nachsatz { get; set; }
+
+    /// <summary>Zeigt die Gruppe ihre Werte als Text? (Prüfhilfe für Tests.)</summary>
+    public bool ZeigtWerte => Lesemodus && Werte is not null;
 }

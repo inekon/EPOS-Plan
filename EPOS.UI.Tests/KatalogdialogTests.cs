@@ -254,22 +254,23 @@ public class KatalogdialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Wo das Vorbild GESTAPELT war, bleibt es gestapelt:
-    /// <c>Form_AdminWaermeeinlesen</c> (676 × 433, Liste über die volle Breite) —
-    /// die Zeitreihen mit ihrem Einleseblock folgen dem Stammblatt erst mit Stufe 4.
-    /// Neu ist nur, dass die Liste die Höhe nimmt und der Block darunter sichtbar
-    /// bleibt.
-    ///
-    /// <para><b>Die Bedarfsverwaltung</b> (<c>Form_Stromverbraucher_Admin</c>, 542 × 489,
-    /// Anzeigefelder unter der Liste) steht seit Stufe 3 im Stammblatt NEBEN der Liste
-    /// (V3): Das Paar trägt die Klasse der Stammblattanordnung, der zweite Bereich ist
-    /// das Stammblatt.</para>
+    /// <b>Keine Verwaltung steht mehr gestapelt.</b> Wo das Vorbild gestapelt war —
+    /// <c>Form_AdminWaermeeinlesen</c> (676 × 433, Liste über die volle Breite, der
+    /// Einleseblock darunter) und die Stromganglinie —, steht seit Stufe 4 der
+    /// Neuordnung das Stammblatt NEBEN der Liste (V3), und das Einlesen ist eine
+    /// Überlagerung (V14). Die Bedarfsverwaltung (<c>Form_Stromverbraucher_Admin</c>)
+    /// kam mit Stufe 3 dorthin.
     /// </summary>
     [Fact]
-    public void Wo_das_Vorbild_gestapelt_war_bleibt_es_gestapelt()
+    public void Die_frueher_gestapelten_Verwaltungen_stehen_im_Stammblatt()
     {
-        RahmenPruefen(Waermebedarfsverwaltung(), gestapelt: true);
-        RahmenPruefen(Stromganglinienverwaltung(), gestapelt: true);
+        var waerme = Waermebedarfsverwaltung();
+        RahmenPruefen(waerme, gestapelt: false);
+        Assert.Single(waerme.FindAll(".epos-katalog-paar--stammblatt .epos-katalog-stammblatt .epos-stammblatt"));
+
+        var strom = Stromganglinienverwaltung();
+        RahmenPruefen(strom, gestapelt: false);
+        Assert.Single(strom.FindAll(".epos-katalog-paar--stammblatt .epos-katalog-stammblatt .epos-stammblatt"));
 
         var bedarf = Bedarfsverwaltung();
         RahmenPruefen(bedarf, gestapelt: false);
@@ -376,7 +377,9 @@ public class KatalogdialogTests : EposBunitContext
         Rasterprobe("KatalogBrowserDialog", Katalogbrowser().FindAll(Suchpfad));
         Rasterprobe("ModulKatalogDialog", Modulkatalog().FindAll(Suchpfad));
         Rasterprobe("BedarfAdminDialog", Bedarfsverwaltung().FindAll(Suchpfad));
-        Rasterprobe("WaermebedarfAdminDialog", Waermebedarfsverwaltung().FindAll(Suchpfad));
+        // Die Waermebedarfsverwaltung hat seit Stufe 4 keinen Eingabeblock mehr: Ihr
+        // Stammblatt zeigt Ganglinie und Herkunft als TEXT (V13), das Einlesen steht in
+        // einer Ueberlagerung (V14) - dort, im Formularraster.
     }
 
     private const string Suchpfad = ".epos-katalog-eingabe .epos-formularraster";

@@ -1,0 +1,309 @@
+﻿@* Der KONSTRUKTOR eines Bedarfstags (A100, NA.5.2.3; Umsetzungskonzept Zapfprofilgenerator
+   4.5 Quelle (4), 5.1; Stufe Z2, Gruppe 2) - Unterueberlagerung der Auslegung.
+
+   WAS ER TUT. Zeilen nach dem Verfahren der A100: je Zeile ein Zeitfenster in Stunden und
+   entweder eine Zapfregel des Katalogs mit der Anzahl ihrer Vorgaenge oder ein Volumen bei
+   einer Zapftemperatur, dazu ein neutraler Verbraucher. OK gibt die Zeilen samt Namen an den
+   Delegaten der Huelle (Konstruieren), der sie BENANNT prueft und den Tag beim Kaltwasser der
+   Auslegung des Katalogs baut; eine Ablehnung steht als Banner da, der Konstruktor bleibt
+   offen. Geschrieben wird nichts - der Tag geht als Entwurf mit dem Arbeitsstand.
+
+   ERNEUT GEOEFFNET beginnt er mit den Zeilen des Entwurfs (Startzeilen, Kopien). Den Namen
+   prueft die Huelle schon beim OK lesend gegen den Katalog.
+
+   FELDER. Jedes Feld der Zeilentabelle traegt seine Beschriftung "Spalte, Zeile n" -
+   sichtbar steht sie im Tabellenkopf (CSS), die Sprachausgabe und die Sammelmeldung nennen
+   sie. Eine Fehleingabe in einem Feld, das die Zeile braucht, haelt das OK an und wird
+   benannt. "Entfernen" der letzten Zeile ist weich gesperrt: der Versuch nennt den Grund.
+
+   WAS ER NICHT TUT. Er rechnet keine Energie selbst. Abbrechen, Esc und das Kreuz der
+   Ueberlagerung verwerfen (null). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+
+<div class="epos-dialog epos-zapfausl-konstruktor" tabindex="-1" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.KonstruktorTitel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.InfoRechenweg" Dialogname="@Texte.KonstruktorTitel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    <p class="epos-leisezeile">@Texte.KonstruktorHinweis</p>
+    @if (Regeln.Count == 0)
+    {
+        <p class="epos-leisezeile epos-zapfausl-regeln-ohne">@(RegelnGrund.Length > 0 ? RegelnGrund : Texte.KonstruktorRegelnOhne)</p>
+    }
+
+    @foreach (ZapfprofilMeldung m in _meldungen)
+    {
+        <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
+    }
+    @if (_hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfausl-konstruktorhinweis" role="status">@_hinweis</p>
+    }
+
+    <Formularraster>
+        <KindInhalt>
+            <Textfeld Bezeichnung="@Texte.KonstruktorName" Wert="@_name" WertChanged="v => _name = v ?? string.Empty" />
+        </KindInhalt>
+    </Formularraster>
+
+    <Gruppenkopf Titel="@Texte.KonstruktorTitel" Summe="@Format(Texte.KonstruktorSumme, _zeilen.Count)">
+        <KindInhalt>
+            <div class="epos-raster-huelle">
+                <table class="epos-raster epos-zapfausl-konstruktorzeilen">
+                    <thead>
+                        <tr>
+                            <th>@Texte.KonstruktorBeginn</th>
+                            <th>@Texte.KonstruktorEnde</th>
+                            <th>@Texte.KonstruktorRegel</th>
+                            <th>@Texte.KonstruktorAnzahl</th>
+                            <th>@Texte.KonstruktorVolumen</th>
+                            <th>@Texte.KonstruktorTemperatur</th>
+                            <th>@Texte.KonstruktorVerbraucher</th>
+                            <th>@Texte.KonstruktorZeileEntfernen</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < _zeilen.Count; i++)
+                        {
+                            int index = i;
+                            ZapfprofilKonstruktorZeileDaten z = _zeilen[i];
+                            bool mitRegel = z.Regel.Length > 0;
+                            <tr @key="z">
+                                <td><Zahlenfeld Bezeichnung="@Feld(SPALTE_BEGINN, index)" Feldname="@Feld(SPALTE_BEGINN, index)"
+                                                Min="0" Max="24" Wert="@z.BeginnH" WertChanged="v => z.BeginnH = v"
+                                                FehlerZustand="f => Fehlerzustand(z, SPALTE_BEGINN, f.Fehlerhaft)" /></td>
+                                <td><Zahlenfeld Bezeichnung="@Feld(SPALTE_ENDE, index)" Feldname="@Feld(SPALTE_ENDE, index)"
+                                                Min="0" Max="24" Wert="@z.EndeH" WertChanged="v => z.EndeH = v"
+                                                FehlerZustand="f => Fehlerzustand(z, SPALTE_ENDE, f.Fehlerhaft)" /></td>
+                                <td><Auswahlfeld Bezeichnung="@Format(Texte.KonstruktorFeld, Texte.KonstruktorRegel, index + 1)"
+                                                 Eintraege="@Regelwahl" Auswahl="@RegelIndex(z)" AuswahlChanged="v => RegelSetzen(z, v)" /></td>
+                                <td><Zahlenfeld Bezeichnung="@Feld(SPALTE_ANZAHL, index)" Feldname="@Feld(SPALTE_ANZAHL, index)"
+                                                Min="0" Aktiv="@mitRegel" Wert="@z.Anzahl" WertChanged="v => z.Anzahl = v"
+                                                FehlerZustand="f => Fehlerzustand(z, SPALTE_ANZAHL, f.Fehlerhaft)" /></td>
+                                <td><Zahlenfeld Bezeichnung="@Feld(SPALTE_VOLUMEN, index)" Feldname="@Feld(SPALTE_VOLUMEN, index)"
+                                                Min="0" Aktiv="@(!mitRegel)" Wert="@z.VolumenL" WertChanged="v => z.VolumenL = v"
+                                                FehlerZustand="f => Fehlerzustand(z, SPALTE_VOLUMEN, f.Fehlerhaft)" /></td>
+                                <td><Zahlenfeld Bezeichnung="@Feld(SPALTE_TEMPERATUR, index)" Feldname="@Feld(SPALTE_TEMPERATUR, index)"
+                                                Aktiv="@(!mitRegel)" Wert="@z.ZapftemperaturC" WertChanged="v => z.ZapftemperaturC = v"
+                                                FehlerZustand="f => Fehlerzustand(z, SPALTE_TEMPERATUR, f.Fehlerhaft)" /></td>
+                                <td><Textfeld Bezeichnung="@Format(Texte.KonstruktorFeld, Texte.KonstruktorVerbraucher, index + 1)"
+                                              Wert="@z.Verbraucher" WertChanged="v => z.Verbraucher = v ?? string.Empty" /></td>
+                                <td>
+                                    <button type="button" class="epos-knopf" aria-disabled="@(_zeilen.Count <= 1 ? "true" : null)"
+                                            title="@(_zeilen.Count <= 1 ? Texte.KonstruktorGrundLetzteZeile : null)"
+                                            @onclick="() => ZeileEntfernen(index)">@Texte.KonstruktorZeileEntfernen</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="epos-leiste epos-zapfausl-konstruktorleiste">
+                <button type="button" class="epos-knopf" @onclick="ZeileNeu">@Texte.KonstruktorZeileNeu</button>
+            </div>
+            @foreach (ZapfprofilRegelDaten r in Regeln)
+            {
+                <p class="epos-leisezeile epos-zapfausl-regel">@Format(Texte.KonstruktorRegelText, r.Name, Zahl(r.VolumenJeVorgangL), Zahl(r.ZapftemperaturC))</p>
+            }
+        </KindInhalt>
+    </Gruppenkopf>
+
+    <SpeichernLeiste OkText="@OkText" AbbrechenText="@AbbrechenText" OkErlaubt="@(Konstruieren is not null)" Ergebnis="BeiErgebnis" />
+</div>
+
+@code {
+    /// <summary>Die Beschriftungen (Textbündel der Auslegung).</summary>
+    [Parameter] public ZapfprofilAuslegungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Zapfregeln des Katalogs.</summary>
+    [Parameter] public IReadOnlyList<ZapfprofilRegelDaten> Regeln { get; set; } = Array.Empty<ZapfprofilRegelDaten>();
+
+    /// <summary>Warum der Katalog keine brauchbare Regel trägt; leer = der Vorgabesatz.</summary>
+    [Parameter] public string RegelnGrund { get; set; } = "";
+
+    /// <summary>Der Name, mit dem der Konstruktor öffnet.</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>
+    /// Die Zeilen, mit denen der Konstruktor öffnet — die des Entwurfs, der erneut bearbeitet
+    /// wird (Kopien; erst OK ändert den Entwurf). Leer = eine Zeile mit der ersten Regel.
+    /// </summary>
+    [Parameter] public IReadOnlyList<ZapfprofilKonstruktorZeileDaten>? Startzeilen { get; set; }
+
+    /// <summary>Der Konstruktor der Hülle — prüft und baut den Tag; kein Delegat = OK gesperrt.</summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+
+    /// <summary>Hilfeschlüssel des Rechenwegs.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil_Berechnung";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: der gebaute Tag bei OK, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<ZapfprofilBedarfstagDaten?> Geschlossen { get; set; }
+
+    private const int SPALTE_BEGINN = 0;
+    private const int SPALTE_ENDE = 1;
+    private const int SPALTE_ANZAHL = 2;
+    private const int SPALTE_VOLUMEN = 3;
+    private const int SPALTE_TEMPERATUR = 4;
+
+    private string _name = "";
+    private readonly List<ZapfprofilKonstruktorZeileDaten> _zeilen = new();
+    private List<ZapfprofilMeldung> _meldungen = new();
+    private string _hinweis = "";
+
+    /// <summary>Die Zahlenfelder mit Fehleingabe: Zeile (als Objekt, übersteht das Entfernen anderer Zeilen) und Spalte.</summary>
+    private readonly HashSet<(ZapfprofilKonstruktorZeileDaten Zeile, int Spalte)> _fehlerhaft = new();
+
+    /// <summary>Die Zeilen — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZapfprofilKonstruktorZeileDaten> Zeilen => _zeilen;
+
+    /// <summary>Die Ablehnungen des letzten OK — Prüfhilfe für die Tests.</summary>
+    public IReadOnlyList<ZapfprofilMeldung> Meldungen => _meldungen;
+
+    /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
+    public string Hinweis => _hinweis;
+
+    protected override void OnInitialized()
+    {
+        _name = Name ?? "";
+        if (Startzeilen is { Count: > 0 }) _zeilen.AddRange(Startzeilen.Select(z => z.Kopie()));
+        else _zeilen.Add(new ZapfprofilKonstruktorZeileDaten { Regel = Regeln.Count > 0 ? Regeln[0].Name : "" });
+    }
+
+    /// <summary>Die Beschriftung eines Feldes: „Spalte, Zeile n".</summary>
+    private string Feld(int spalte, int index) => Format(Texte.KonstruktorFeld, Spaltentitel(spalte), index + 1);
+
+    private string Spaltentitel(int spalte) => spalte switch
+    {
+        SPALTE_BEGINN => Texte.KonstruktorBeginn,
+        SPALTE_ENDE => Texte.KonstruktorEnde,
+        SPALTE_ANZAHL => Texte.KonstruktorAnzahl,
+        SPALTE_VOLUMEN => Texte.KonstruktorVolumen,
+        _ => Texte.KonstruktorTemperatur
+    };
+
+    private void Fehlerzustand(ZapfprofilKonstruktorZeileDaten z, int spalte, bool fehlerhaft)
+    {
+        if (fehlerhaft) _fehlerhaft.Add((z, spalte));
+        else _fehlerhaft.Remove((z, spalte));
+    }
+
+    /// <summary>Die Felder mit Fehleingabe, die ihre Zeile braucht (mit Regel die Anzahl, sonst Volumen und Temperatur).</summary>
+    private List<string> FehlerhafteFelder()
+    {
+        var namen = new List<string>();
+        for (int i = 0; i < _zeilen.Count; i++)
+        {
+            ZapfprofilKonstruktorZeileDaten z = _zeilen[i];
+            int[] spalten = z.Regel.Length > 0
+                ? new[] { SPALTE_BEGINN, SPALTE_ENDE, SPALTE_ANZAHL }
+                : new[] { SPALTE_BEGINN, SPALTE_ENDE, SPALTE_VOLUMEN, SPALTE_TEMPERATUR };
+            foreach (int s in spalten)
+                if (_fehlerhaft.Contains((z, s))) namen.Add(Feld(s, i));
+        }
+        return namen;
+    }
+
+    /// <summary>Die Einträge der Regelwahl: 0 = Volumen direkt, 1 … n = die Regeln des Katalogs.</summary>
+    private IReadOnlyList<(int Id, string Text)> Regelwahl
+    {
+        get
+        {
+            var liste = new List<(int Id, string Text)> { (0, Texte.KonstruktorRegelFrei) };
+            for (int i = 0; i < Regeln.Count; i++) liste.Add((i + 1, Regeln[i].Name));
+            return liste;
+        }
+    }
+
+    private int RegelIndex(ZapfprofilKonstruktorZeileDaten z)
+    {
+        for (int i = 0; i < Regeln.Count; i++)
+            if (string.Equals(Regeln[i].Name, z.Regel, StringComparison.Ordinal)) return i + 1;
+        return 0;
+    }
+
+    private void RegelSetzen(ZapfprofilKonstruktorZeileDaten z, int? id)
+    {
+        int i = id ?? 0;
+        z.Regel = i >= 1 && i <= Regeln.Count ? Regeln[i - 1].Name : "";
+    }
+
+    private void ZeileNeu()
+    {
+        _hinweis = "";
+        _zeilen.Add(new ZapfprofilKonstruktorZeileDaten { Regel = Regeln.Count > 0 ? Regeln[0].Name : "" });
+    }
+
+    /// <summary>Entfernt eine Zeile; die letzte bleibt — der Versuch nennt den Grund.</summary>
+    private void ZeileEntfernen(int index)
+    {
+        if (index < 0 || index >= _zeilen.Count) return;
+        if (_zeilen.Count <= 1)
+        {
+            _hinweis = Texte.KonstruktorGrundLetzteZeile;
+            return;
+        }
+        _hinweis = "";
+        ZapfprofilKonstruktorZeileDaten z = _zeilen[index];
+        _zeilen.RemoveAt(index);
+        _fehlerhaft.RemoveWhere(f => ReferenceEquals(f.Zeile, z));
+    }
+
+    private static string Zahl(double wert) => wert.ToString("0.#", CultureInfo.CurrentCulture);
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    /// <summary>OK: eine Fehleingabe wird benannt, sonst prüft und baut der Delegat; eine Ablehnung bleibt als Banner stehen.</summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+        if (Konstruieren is null) return;
+        _hinweis = "";
+        List<string> falsch = FehlerhafteFelder();
+        if (falsch.Count > 0)
+        {
+            _meldungen = new List<ZapfprofilMeldung>
+            {
+                new("ZPG_AUS_KON_FEHLEINGABE", "", Format(Texte.KonstruktorFehleingabe, string.Join(", ", falsch)),
+                    ZapfprofilMeldungsart.Fehler)
+            };
+            return;
+        }
+        ZapfprofilKonstruktorErgebnis e = Konstruieren(_zeilen.Select(z => z.Kopie()).ToList(), _name);
+        if (e.Tag is null)
+        {
+            _meldungen = e.Meldungen.ToList();
+            return;
+        }
+        _meldungen = new List<ZapfprofilMeldung>();
+        await Geschlossen.InvokeAsync(e.Tag);
+    }
+
+    private Task Abbrechen() => Geschlossen.InvokeAsync(null);
+
+    private Task BeiTaste(KeyboardEventArgs e) => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+}

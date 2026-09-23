@@ -43,7 +43,7 @@
             @foreach (var eintrag in Eintraege)
             {
                 <option @key="eintrag.Id" value="@eintrag.Id" disabled="@IstGesperrt(eintrag.Id)"
-                        title="@(IstGesperrt(eintrag.Id) && GesperrtHinweis.Length > 0 ? GesperrtHinweis : null)"
+                        title="@Sperrtitel(eintrag.Id)"
                         selected="@(Auswahl.HasValue && eintrag.Id == Auswahl.Value)">@eintrag.Text</option>
             }
         </select>
@@ -113,7 +113,23 @@
     /// <summary>Grund der Sperre; er haengt als <c>title</c> an jedem gesperrten Eintrag.</summary>
     [Parameter] public string GesperrtHinweis { get; set; } = "";
 
+    /// <summary>
+    /// Gruende der Sperre JE EINTRAG (Id -> Grund), wo gesperrte Eintraege verschiedene Gruende
+    /// haben - die Quellen eines Bedarfstags etwa: ein Normtag, der als Profil rechnet, und eine
+    /// Quelle, deren Katalogzeilen erst folgen. Ein Eintrag ohne eigenen Grund nimmt
+    /// <see cref="GesperrtHinweis"/>.
+    /// </summary>
+    [Parameter] public IReadOnlyDictionary<int, string>? GesperrtHinweise { get; set; }
+
     private bool IstGesperrt(int id) => GesperrteEintraege is { Count: > 0 } && GesperrteEintraege.Contains(id);
+
+    private string? Sperrtitel(int id)
+    {
+        if (!IstGesperrt(id)) return null;
+        if (GesperrtHinweise is not null && GesperrtHinweise.TryGetValue(id, out string? eigen) && !string.IsNullOrEmpty(eigen))
+            return eigen;
+        return GesperrtHinweis.Length > 0 ? GesperrtHinweis : null;
+    }
 
     private Task BeiAuswahl(ChangeEventArgs e)
     {

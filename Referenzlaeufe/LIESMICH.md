@@ -409,6 +409,17 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > `689a0755…`). Gebaut waren die drei Schritte als 107 bis 109; die Zwischenfassung aus E7c2/12 (`b943f534`, 107 →
 > 110 mit den Nummern 108 bis 110 für diese Schritte) ist ersetzt.
 
+> **Nachtrag: fiktiver Tww-Testkatalog der Stufe Z2 auf Schemastand 113 (Zapfprofilgenerator Z2), die Basis bleibt.**
+> [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) ist nach dem Zusammenführen mit der Fassung 113
+> eingespielt: 63 Zeilen angelegt, 2 nachgeführt — die erfundenen Parameter der Auslegung (Summenlinie, Kennzahl samt
+> Zapfblöcken, Speicherauslegung samt Nenninhaltsliste, Großanlage, Konstruktorregel; `Tab_TwwParameter_STAMM` jetzt
+> 72 Zeilen), zwei weitere Bedarfstage (jetzt drei, neun Ereignisse) und ein weiterer DIN-4708-Wert (jetzt fünf); keine
+> Zone, kein Projekt auf dem Generator, kein Status `AUSLIEFERUNG`/`IMPORT`. Ein zweiter Lauf meldet 0/0, jeder
+> Parameterschlüssel des Rechenwegs ist da (`EPOS.Kern.Tests/TwwKatalogWacheTests` verlangt das von der Repo-Datei).
+> Schemastand unverändert 113, `integrity_check` ok, `foreign_key_check` leer, Größe 67 751 936 Byte. **Keine
+> Einfrierregel ist berührt**, und der Referenzlauf der fünf CI-Projekte ist **5/5 PASS** und byte-gleich gegen diese
+> Basis (1 761 589 Werte) (LFS-SHA-256 `fc13e3a7…`).
+
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
 > der Begründung zur Stufe GB und den Nachträgen zu den Schemaständen 101 bis 103 steht in

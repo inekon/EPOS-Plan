@@ -271,6 +271,15 @@ public sealed class ZapfprofilTexte
     /// <summary><c>ZPG_BTN_AUSLEGUNG</c></summary>
     public string KnopfAuslegung { get; set; } = "Auslegung…";
 
+    /// <summary><c>ZPG_STATUS_AUSLEGUNG</c></summary>
+    public string StatusAuslegung { get; set; } = "Auslegung übernommen: {0}";
+
+    /// <summary><c>ZPG_AUSLEGUNG_OHNE_PUNKT</c></summary>
+    public string AuslegungOhnePunkt { get; set; } = "Eingaben ohne Punkt";
+
+    /// <summary><c>ZPG_PUNKT_UEBERHOLT</c></summary>
+    public string PunktUeberholt { get; set; } = "Die Zonen haben sich geändert — der Auslegungspunkt ist überholt und wird beim Speichern verworfen. „Auslegung…“ öffnen und neu übernehmen.";
+
     /// <summary><c>ZPG_STATUS_VORSCHAU</c></summary>
     public string StatusVorschau { get; set; } = "Vorschau aktuell · deterministisch · Stochastik noch nicht gerechnet";
 
