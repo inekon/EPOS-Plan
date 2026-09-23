@@ -62,6 +62,13 @@ namespace KiKern
         /// tragen einen Setzer, weil die Huelle sie fuellt - nicht, weil der Anwender
         /// sie aendern koennte.
         /// </param>
+        /// <param name="satzwahl">
+        /// WAEHLT das Feld den bearbeiteten SATZ (die Zeile einer Verwaltungsliste)?
+        /// Dann ist es Navigation und kein Wert des Satzes: Der Schreibschutz eines
+        /// Auslieferungssatzes (<c>KiMaskenhaken.Schreibgeschuetzt</c>) gilt fuer es
+        /// nicht - sonst liesse sich aus einem geschuetzten Satz heraus nie ein eigener
+        /// waehlen, und genau dorthin fuehrt der Weg „Duplizieren…".
+        /// </param>
         public KiDialogFeld(string name,
                             string eigenschaftspfad,
                             string anzeigename,
@@ -71,7 +78,8 @@ namespace KiKern
                             bool leerErlaubt = false,
                             string? hilfeSlug = null,
                             string? zeilenkennzeichen = null,
-                            bool nurLesen = false)
+                            bool nurLesen = false,
+                            bool satzwahl = false)
         {
             if (!KiName.IstGueltig(name))
                 throw new ArgumentException(
@@ -119,6 +127,7 @@ namespace KiKern
             HilfeSlug = string.IsNullOrWhiteSpace(hilfeSlug) ? "" : hilfeSlug!.Trim();
             Zeilenkennzeichen = string.IsNullOrWhiteSpace(zeilenkennzeichen) ? "" : zeilenkennzeichen!.Trim();
             NurLesen = nurLesen;
+            Satzwahl = satzwahl;
         }
 
         /// <summary>Logischer, sprachneutraler Schluessel des Feldes.</summary>
@@ -167,6 +176,12 @@ namespace KiKern
         /// Ist das Feld eine Anzeige und kein Eingabefeld? Dann wird es nie gesetzt.
         /// </summary>
         public bool NurLesen { get; }
+
+        /// <summary>
+        /// Waehlt das Feld den bearbeiteten Satz? Dann gilt der Schreibschutz des Satzes
+        /// fuer es nicht (siehe Konstruktor).
+        /// </summary>
+        public bool Satzwahl { get; }
 
         /// <summary>
         /// Ist das Feld eine WAHL aus einer Liste, die die Maske liefert (KI-F1b)?
@@ -224,7 +239,8 @@ namespace KiKern
                 LeerErlaubt,
                 HilfeSlug.Length == 0 ? null : HilfeSlug,
                 Zeilenkennzeichen.Length == 0 ? null : Zeilenkennzeichen,
-                NurLesen);
+                NurLesen,
+                Satzwahl);
         }
 
         /// <inheritdoc/>

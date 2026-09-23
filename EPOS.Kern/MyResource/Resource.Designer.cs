@@ -28187,6 +28187,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMIN_OHNE_AENDERUNG {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMIN_OHNE_AENDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ ist kein Satz gewählt; erst den Satz wählen (Feld „satz“). ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMIN_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMIN_OHNE_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
@@ -28205,7 +28223,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Beschreibung des markierten Satzes als freier Text. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_BESCHREIBUNG_ERL {
             get {
@@ -28232,7 +28250,16 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Bedarf des gewählten Satzes im {0}; alle zwölf Monatswerte sind Pflicht, die Jahressumme ergibt sich aus ihnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BADM_MONAT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BADM_MONAT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_SATZ_ERL {
             get {
@@ -28241,7 +28268,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes aus seinem Kopfsatz. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Typ des markierten Satzes, gewählt aus der Typliste; er bestimmt das Wochenprofil. ähnelt.
         /// </summary>
         public static string KI_DLG_BADM_TYP_ERL {
             get {
@@ -30959,6 +30986,132 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des gewählten Katalogsatzes; er ist der Schlüssel des Satzes und hier nur lesbar – einen anderen Namen bekommt ein Satz über „Duplizieren…“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_BEZEICHNER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_BEZEICHNER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_EMISSION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_EMISSION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogwert „{0}“ des gewählten Satzes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_FELD_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_FELD_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investitionskosten des Geräts laut Katalog in Euro. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_INVEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_INVEST_KWEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_INVEST_KWEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_KOSTENPOSTEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_KOSTENPOSTEN_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Verwaltung ist nur zum Ansehen geöffnet; Werte lassen sich hier nicht ändern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_NURLESEN {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_NURLESEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die erwartete Nutzungsdauer des Geräts in Jahren. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_NUTZUNGSDAUER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_NUTZUNGSDAUER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Platzbedarf des Geräts im Aufstellraum in Kubikmetern. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_RAUMBEDARF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_RAUMBEDARF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalogsatz, dessen Werte das Stammblatt zeigt. Ihn zu setzen wählt die Zeile in der Liste – wie ein Klick; bei ungespeicherten Änderungen erst speichern oder verwerfen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_SATZ_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_SATZ_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gewählter Satz ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_SATZ_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_SATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text). ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_EINHEIT_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_EINHEIT_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro. ähnelt.
+        /// </summary>
+        public static string KI_DLG_KBROW_WARTUNG_KWHEL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_KBROW_WARTUNG_KWHEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}. ähnelt.
         /// </summary>
         public static string KI_DLG_KEINE_OFFEN {
@@ -31814,7 +31967,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern. ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_NICHT_OFFEN {
             get {
@@ -37021,6 +37174,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_FELD_SATZ_GESCHUETZT {
             get {
                 return ResourceManager.GetString("KI_FELD_SATZ_GESCHUETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die In „{0}“ lässt sich gerade nichts setzen: {1} ähnelt.
+        /// </summary>
+        public static string KI_FELD_SATZ_GESCHUETZT_WEG {
+            get {
+                return ResourceManager.GetString("KI_FELD_SATZ_GESCHUETZT_WEG", resourceCulture);
             }
         }
         
@@ -66058,6 +66220,753 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maßnahme ist benannt, das Datum der Bewertung steht fest. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_01_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_01_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projekt, Varianten und Berichtsdatum stehen im Bericht. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_01_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_01_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_01_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_01_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bezeichnung und Datum ähnelt.
+        /// </summary>
+        public static string WIRT_AE_01_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_01_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Maßnahme ist so beschrieben, dass ein Dritter versteht, worum es geht. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_02_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_02_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen und Abweichungen je Variante aus den Projektdaten; eine Kurzbeschreibung der Maßnahme in Worten erfasst EPOS nicht. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_02_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_02_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Projektbeschreibung“, „Komponenten &amp; Varianten“ · Tabellenbericht: Blatt „Übersicht“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_02_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_02_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beschreibung der Maßnahme ähnelt.
+        /// </summary>
+        public static string WIRT_AE_02_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_02_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Schlussfolgerung mit Entscheidungsvorschlag liegt vor und bezieht Szenarien und Sensitivität ein. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag mit Bandbreite und Einstufung je Variante. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_ERFUELLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die kein Vorschlag — es fehlt eine Variante mit Kapitalwert gegenüber der Referenz. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auswertung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_10_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_10_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnung und Ergebnisse sind so dargestellt, dass ein Dritter sie nachvollziehen kann. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_11_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_11_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_11_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_11_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen) ähnelt.
+        /// </summary>
+        public static string WIRT_AE_11_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_11_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Transparente Darstellung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_11_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_11_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzen und Lasten ähnelt.
+        /// </summary>
+        public static string WIRT_AE_1_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_1_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Jede messbare Wirkung ist als Menge angegeben. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2A_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2A_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiemengen aus der Stundensimulation je Stand. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2A_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2A_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2A_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2A_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Quantifizierung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2A_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2A_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2B_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2B_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2B_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2B_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht quantifizierbare Wirkungen ähnelt.
+        /// </summary>
+        public static string WIRT_AE_2B_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_2B_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungen sind vollständig, nur echte Zahlungen fließen ein, und jede ist erklärt. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3A_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3A_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungen je Jahr und Position; vermiedene Kosten nur als Nachweis, keine Abschreibung als Zahlung. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3A_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3A_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3A_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3A_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Monetarisierung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3A_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3A_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkungen ohne Geldwert sind beschrieben und in ihrer Bedeutung eingeschätzt. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3B_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3B_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nicht monetarisierbare Wirkungen ähnelt.
+        /// </summary>
+        public static string WIRT_AE_3B_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_3B_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Betrachtungszeitraum ist angemessen gewählt, die Zeitpunkte der Zahlungen sind bestimmt. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum gegen die Nutzungsdauern abgeglichen; Ersatz und Restwert je Jahr. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_ERFUELLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zeitraum angegeben; der Abgleich meldet Positionen ohne Nutzungsdauer oder fehlt. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_TEILWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laufzeit und Zahlungszeitpunkte ähnelt.
+        /// </summary>
+        public static string WIRT_AE_4_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_4_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zins ist aus Eigen- und Fremdkapital nachvollziehbar hergeleitet und erläutert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_5_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_5_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zins angegeben und je Szenario variiert; seine Herleitung erfasst EPOS nicht. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_5_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_5_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i) ähnelt.
+        /// </summary>
+        public static string WIRT_AE_5_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_5_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins ähnelt.
+        /// </summary>
+        public static string WIRT_AE_5_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_5_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiken sind angesetzt oder beschrieben, unterschiedliche Preisänderungen berücksichtigt, Leistungsminderungen bedacht. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risikozuschlag nicht angesetzt und Degradation nicht gerechnet — beides deklariert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Risiko, Preisänderung, Degradation ähnelt.
+        /// </summary>
+        public static string WIRT_AE_6_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_6_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln) ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bewertung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_7_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_7_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einflussgrößen sind einzeln verändert, ihre Wirkung auf den Kapitalwert ist ausgewiesen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht gerechnet — sie braucht eine Variante mit Referenz. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zins, Energiepreissteigerung, Investition, Energiekosten und KWK-Zuschlag mit Steigung; Laufzeit, Endzahlungen und Diagramm fehlen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_TEILWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sensitivitätsanalyse ähnelt.
+        /// </summary>
+        public static string WIRT_AE_8_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_8_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_ANF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_ANF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Bandbreite gerechnet. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“ ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_TEILWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenarioanalyse ähnelt.
+        /// </summary>
+        public static string WIRT_AE_9_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_9_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Checkliste Anhang E ähnelt.
+        /// </summary>
+        public static string WIRT_AE_BLATT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_BLATT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gegenstand der Bewertung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_GRUPPE_0 {
+            get {
+                return ResourceManager.GetString("WIRT_AE_GRUPPE_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die A · Aufbau des Modells ähnelt.
+        /// </summary>
+        public static string WIRT_AE_GRUPPE_A {
+            get {
+                return ResourceManager.GetString("WIRT_AE_GRUPPE_A", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die B · Berechnung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_GRUPPE_B {
+            get {
+                return ResourceManager.GetString("WIRT_AE_GRUPPE_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die C · Auswertung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_GRUPPE_C {
+            get {
+                return ResourceManager.GetString("WIRT_AE_GRUPPE_C", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die D · Berichterstattung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_GRUPPE_D {
+            get {
+                return ResourceManager.GetString("WIRT_AE_GRUPPE_D", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_AE_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anhang-E-Checkliste… ähnelt.
+        /// </summary>
+        public static string WIRT_AE_KNOPF {
+            get {
+                return ResourceManager.GetString("WIRT_AE_KNOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_NM_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_AE_NM_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_NM_TEILWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_NM_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bitte eine ganze Zahl von 1 (sehr gut) bis 5 eintragen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_NOTE_FEHLER {
+            get {
+                return ResourceManager.GetString("WIRT_AE_NOTE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine Wirtschaftlichkeit gerechnet — erst berechnen. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_OHNE_RECHNUNG {
+            get {
+                return ResourceManager.GetString("WIRT_AE_OHNE_RECHNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anforderung ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_ANFORDERUNG {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_ANFORDERUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beurteilung 1–5 ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_NOTE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_NOTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nr. ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_NR {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_NR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand in EPOS ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stelle im Bericht ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_STELLE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_STELLE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Thema ähnelt.
+        /// </summary>
+        public static string WIRT_AE_SP_THEMA {
+            get {
+                return ResourceManager.GetString("WIRT_AE_SP_THEMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die erfüllt ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STAND_ERFUELLT {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STAND_ERFUELLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die offen ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STAND_OFFEN {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STAND_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die teilweise ähnelt.
+        /// </summary>
+        public static string WIRT_AE_STAND_TEILWEISE {
+            get {
+                return ResourceManager.GetString("WIRT_AE_STAND_TEILWEISE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E) ähnelt.
+        /// </summary>
+        public static string WIRT_AE_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_AE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
         /// </summary>
         public static string WIRT_ANN_GEPFLEGT {
@@ -66234,6 +67143,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_BK_TITEL {
             get {
                 return ResourceManager.GetString("WIRT_BK_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die ΔKW ähnelt.
+        /// </summary>
+        public static string WIRT_BR_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a ähnelt.
+        /// </summary>
+        public static string WIRT_BR_FUSS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_FUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Differenz zu zeichnen — Stand oder Referenz ohne Zahlungsreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ergebnis ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mehrt die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MEHRT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MEHRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mindert die Differenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_LEG_MINDERT {
+            get {
+                return ResourceManager.GetString("WIRT_BR_LEG_MINDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Von der Investition zur Kapitalwertdifferenz ähnelt.
+        /// </summary>
+        public static string WIRT_BR_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_BR_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} gegenüber {1} · Barwerte · Szenario {2} ähnelt.
+        /// </summary>
+        public static string WIRT_BR_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_BR_UNTER", resourceCulture);
             }
         }
         
@@ -67062,6 +68043,375 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ERL_TEILSUMME {
             get {
                 return ResourceManager.GetString("WIRT_ERL_TEILSUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Menge ähnelt.
+        /// </summary>
+        public static string WIRT_FM_BK_MENGE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_BK_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string WIRT_FM_BK_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_FM_BK_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nulldurchgang in diesem Jahr [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_AMORT_HILFE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_AMORT_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis Betrieb mit p_B [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_BASIS_PB {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_BASIS_PB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis Betrieb mit p_E [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_BASIS_PE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_BASIS_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ Barwert gegenüber {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_BARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_BARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ kumuliert gegenüber {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_KUMULIERT {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_KUMULIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Δ nominal gegenüber {0} (in T mit Restwert) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_DELTA_NOMINAL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_DELTA_NOMINAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_DAUER {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erträge — Änderung gegenüber Erwartet ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ERTRAG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition — Änderung gegenüber Erwartet ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_INVEST {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in den Formeln ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_NAME {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb p_B (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_B {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Energie p_E (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_E {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Investition/Ersatz p_I (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_I {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_I", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter der Rechnung (je Szenario) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins i ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ZINS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_DREI {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_DREI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen gepflegt: {0} ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_GEPFLEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Noch kein Szenario gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} von drei Szenarien gerechnet ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_TEIL {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_TEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Annahmen aus Vorgaben, nichts gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_FUSS_VORGABEN {
+            get {
+                return ResourceManager.GetString("WIRT_FUSS_VORGABEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bestandteil ähnelt.
+        /// </summary>
+        public static string WIRT_GL_BESTANDTEIL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_BESTANDTEIL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_BETRIEB {
+            get {
+                return ResourceManager.GetString("WIRT_GL_BETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Differenz {0} − {1} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_DIFFERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_GL_DIFFERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ENERGIE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die einschließlich CO₂-Abgabe ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ENERGIE_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ENERGIE_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlöse ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERLOESE {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERLOESE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zahlungswirksam — Block A ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERLOESE_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERLOESE_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen ähnelt.
+        /// </summary>
+        public static string WIRT_GL_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_GL_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition I₀ ähnelt.
+        /// </summary>
+        public static string WIRT_GL_INVESTITION {
+            get {
+                return ResourceManager.GetString("WIRT_GL_INVESTITION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach Zuschussabzug ähnelt.
+        /// </summary>
+        public static string WIRT_GL_INVESTITION_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_INVESTITION_UNTER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nettobarwert ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NETTOBARWERT {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NETTOBARWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen. ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NICHT_GERECHNET {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NICHT_GERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nominal {0} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_NOMINAL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_NOMINAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende ähnelt.
+        /// </summary>
+        public static string WIRT_GL_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_GL_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gliederung des Kapitalwerts — Szenario {0} ähnelt.
+        /// </summary>
+        public static string WIRT_GL_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_GL_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a ähnelt.
+        /// </summary>
+        public static string WIRT_GL_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_GL_UNTER", resourceCulture);
             }
         }
         
@@ -67962,6 +69312,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_LBL_SZENARIO {
             get {
                 return ResourceManager.GetString("WIRT_LBL_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen fällig im Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_LW_ERSATZJAHRE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_ERSATZJAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung auf {0} ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende, nominal ähnelt.
+        /// </summary>
+        public static string WIRT_LW_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_LW_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was daraus im Lauf wird ähnelt.
+        /// </summary>
+        public static string WIRT_LW_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_LW_TITEL", resourceCulture);
             }
         }
         
@@ -69136,7 +70531,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr und das Zahlungsstrombild stehen in dieser Darstellung noch nicht. Die Barwerte je Bestandteil zeigt die Darstellung „Kennzahlen“ unter „Woraus entsteht die Zahl?“, die Jahresreihen der Tabellenbericht (Mehrjahresübersicht). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen nur Summen, keine Jahresreihen. ähnelt.
         /// </summary>
         public static string WIRT_VALERI_BLOCK_2_HINWEIS {
             get {
@@ -69906,6 +71301,87 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_ZEILE_ZUSCHUSS {
             get {
                 return ResourceManager.GetString("WIRT_ZEILE_ZUSCHUSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zu den gespeicherten Ergebnissen liegen keine passenden Jahresreihen vor — „Berechnen“ rechnet sie neu. ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nominal und unabgezinst, Ausgaben negativ; das Jahr 0 trägt die Investition nach Zuschussabzug, das letzte Jahr den Restwert. Die Zeile „Barwert“ zinst jede Spalte mit i = {0} % ab — dieselben Zahlen wie die Gliederung unter „Woraus entsteht die Zahl?“; ihre Summe ist der Nettobarwert ({1} €). ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stand: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_STAND {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_STAND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Summe nominal ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SUMME {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SUMME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Szenario: ähnelt.
+        /// </summary>
+        public static string WIRT_ZR_SZENARIO {
+            get {
+                return ResourceManager.GetString("WIRT_ZR_SZENARIO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzjahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_ERSATZJAHR {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_ERSATZJAHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Zahlungsstrom zu zeichnen — der Stand trägt keine Jahresreihe. ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_LEER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zahlungsstrom je Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert ähnelt.
+        /// </summary>
+        public static string WIRT_ZS_UNTER {
+            get {
+                return ResourceManager.GetString("WIRT_ZS_UNTER", resourceCulture);
             }
         }
         

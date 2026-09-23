@@ -751,37 +751,106 @@
     };
 
     /// <summary>
-    /// Die Sicht des Assistenten: die Listenwahl und der Infoblock, der ihr folgt.
+    /// Die Sicht des Assistenten: die Listenwahl und die Kenndaten des Stammblatts —
+    /// Typ, Beschreibung und die zwölf Monatswerte schreiben in den ARBEITSSTAND, genau
+    /// wie die Felder der Maske (Welle #456).
     /// </summary>
     private BedarfAdminKiSicht KiSicht()
     {
         return _kiSicht ??= new BedarfAdminKiSicht
         {
             SatzLesen = () => _gewaehlt,
-            SatzSetzen = BeiZeile,
+            SatzSetzen = KiSatzWaehlen,
             SatzEintraege = () => KiMaskenanmeldung.Eintraege(
                 _katalog, z => z.Bezeichner, z => z.Bezeichner),
 
             BeschreibungLesen = () => _arbeitBeschreibung,
+            BeschreibungSetzen = BeiBeschreibung,
             TypLesen = () => _arbeitTyp,
+            TypSetzen = KiTypSetzen,
+            TypEintraege = () => KiMaskenanmeldung.Eintraege(_typliste, t => t, t => t),
+            MonatLesen = m => _arbeitMonate[m],
+            MonatSetzen = BeiMonat,
             JahressummeLesen = () => _jahressumme,
             BedarfsartLesen = () => Art.ToString()
         };
     }
 
     /// <summary>
-    /// Was der Assistent über die Feldwerte hinaus darf (Stufe S3).
+    /// <b>Der Assistent wählt eine Zeile</b> — derselbe Weg wie ein Klick
+    /// (<see cref="BeiZeile"/>). Geänderte Felder halten den Wechsel an (Konzept 3.3);
+    /// der Assistent bekommt denselben Satz, den das Warnband zeigt.
+    /// </summary>
+    private string? KiSatzWaehlen(string bezeichner)
+    {
+        string neu = bezeichner ?? "";
+        if (neu == _gewaehlt) return null;
+
+        if (_geaendert)
+        {
+            Warnen(Resource.ADM_MSG_UNGESPEICHERT);
+            return Resource.ADM_MSG_UNGESPEICHERT;
+        }
+
+        BeiZeile(neu);
+        return null;
+    }
+
+    /// <summary>Der Typ über den Assistenten — der Name aus der Typliste, wie die Klappliste ihn setzt.</summary>
+    private void KiTypSetzen(string typ)
+    {
+        if (_auslieferung) return;
+        _arbeitTyp = typ ?? "";
+        Nachziehen();
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf (Welle #456).
     /// </summary>
     /// <remarks>
-    /// <b>Nur Auffrischen.</b> Diese Maske schreibt nicht selbst: Anlegen und Ändern
-    /// laufen über ihre Überlagerungen, Löschen ist ein Löschweg und bleibt dem
-    /// Assistenten verschlossen (Bauartsperre). <c>dialog_speichern</c> lehnt deshalb
-    /// benannt ab.
+    /// <para><b>Schreibschutz</b> ist der Auslieferungssatz (AD-Q11): Solange er steht,
+    /// lehnt schon <c>feld_setzen</c> ab, und die Absage nennt den Weg über
+    /// „Duplizieren…". Die Wahl des Satzes bleibt frei.</para>
+    /// <para><b>Prüfen und Speichern</b> sind DIESELBEN Wege wie am Knopf
+    /// (<see cref="Pruefbefund"/>, <see cref="BeiSpeichern"/>). Anlegen, Duplizieren,
+    /// Löschen und der Stammkopf bleiben dem Assistenten verschlossen (KI-D-Q11).</para>
     /// </remarks>
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
-        Auffrischen = () => _ = InvokeAsync(StateHasChanged)
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => _auslieferung,
+        Schreibschutzgrund = () => MeldungSpeichernGesperrt,
+        Pruefen = () => Pruefbefund() ?? "",
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// <b>„Speichern" über den Assistenten</b> — derselbe Weg wie der Knopf; ein
+    /// Auslieferungssatz, ein fehlender Satz und ein unveränderter Stand werden benannt
+    /// abgelehnt.
+    /// </summary>
+    private KiErgebnis KiSpeichern()
+    {
+        if (Speichern is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText));
+        if (_gewaehlt.Length == 0)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_SATZ.Replace("{0}", TitelText));
+        if (_auslieferung) return KiErgebnis.Abgelehnt(MeldungSpeichernGesperrt);
+        if (!_geaendert)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_AENDERUNG.Replace("{0}", TitelText));
+
+        string? befund = Pruefbefund();
+        if (befund is not null)
+        {
+            Warnen(befund);
+            return KiErgebnis.Abgelehnt(befund);
+        }
+
+        BeiSpeichern();
+        return _geaendert
+            ? KiErgebnis.Fehlgeschlagen(_meldung)
+            : KiErgebnis.Ok(_status, anzahl: 1);
+    }
 
     /// <inheritdoc/>
     public void Dispose() => _kiMaske?.Dispose();
@@ -1209,23 +1278,8 @@
         if (_auslieferung) { Warnen(MeldungSpeichernGesperrt); return; }
         if (!_geaendert || Speichern is null || _gewaehlt.Length == 0) return;
 
-        if (_fehlerhaft.Count > 0)
-        {
-            Warnen(string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, _fehlerhaft.First()));
-            return;
-        }
-        if (_arbeitTyp.Trim().Length == 0) { Warnen(MeldungTypFehlt); return; }
-        if (Monatswerte is not null)
-        {
-            for (int m = 0; m < 12; m++)
-            {
-                if (_arbeitMonate[m] is null)
-                {
-                    Warnen(string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, Feldname(m)));
-                    return;
-                }
-            }
-        }
+        string? befund = Pruefbefund();
+        if (befund is not null) { Warnen(befund); return; }
 
         var werte = new double[12];
         for (int m = 0; m < 12; m++) werte[m] = _arbeitMonate[m] ?? _monate[m] ?? 0.0;
@@ -1241,6 +1295,23 @@
         KatalogLaden();
         _status = string.Format(CultureInfo.CurrentCulture, Resource.ADM_STATUS_GESPEICHERT,
                                 DateTime.Now.ToString("HH:mm", CultureInfo.CurrentCulture));
+    }
+
+    /// <summary>
+    /// <b>Die Prüfregeln des Stammkopfes</b> — EINMAL, für den Knopf und den Assistenten:
+    /// Ein Feld mit Fehleingabe hält an, der Typ ist Pflicht, jeder der zwölf Monatswerte
+    /// ist Pflicht (die Meldung nennt das erste Feld). <c>null</c> = alles steht.
+    /// </summary>
+    private string? Pruefbefund()
+    {
+        if (_fehlerhaft.Count > 0)
+            return string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, _fehlerhaft.First());
+        if (_arbeitTyp.Trim().Length == 0) return MeldungTypFehlt;
+        if (Monatswerte is not null)
+            for (int m = 0; m < 12; m++)
+                if (_arbeitMonate[m] is null)
+                    return string.Format(CultureInfo.CurrentCulture, MeldungZahlFehlt, Feldname(m));
+        return null;
     }
 
     /// <summary>„Verwerfen" — der Arbeitsstand wird wieder der gespeicherte.</summary>

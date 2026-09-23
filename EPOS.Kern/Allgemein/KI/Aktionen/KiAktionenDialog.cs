@@ -807,6 +807,14 @@ namespace WindowsFormsApplication1
         /// ist.
         /// </para>
         /// <para>
+        /// <b>Mehrdeutig ist nur, was an VERSCHIEDENE Orte fuehrt</b> (Welle #456). Der
+        /// Katalogeditor „Heizkessel bearbeiten" ist eine Ueberlagerung der Verwaltung
+        /// „Administration Heizkessel", beide fuehren <c>wirkungsgrad_gas</c> - und
+        /// beide oeffnet <c>dialog_oeffnen</c> an derselben Stelle. Das ist kein
+        /// Raten zwischen zwei Masken, sondern EIN Weg; genannt wird dann die Maske,
+        /// die dort aufgeht: die Verwaltung (<see cref="Zielmaske"/>).
+        /// </para>
+        /// <para>
         /// <b>Gesucht wird im KATALOG, nicht an der Bruecke</b> - und das ist der Punkt:
         /// Zu diesem Zeitpunkt ist gerade KEINE Maske angemeldet, die Bruecke wuesste also
         /// nichts. Der Katalog dagegen fuehrt alle sieben Masken samt Feldern, immer.
@@ -832,28 +840,74 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die EINE Maske, die alle genannten Felder nach dieser Regel kennt;
+        /// Die EINE Maske, die die genannten Felder nach dieser Regel meint;
         /// <c>null</c> bei keinem oder mehrdeutigem Treffer.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Treffen die Felder MEHRERE Masken</b>, ist das nur dann eindeutig, wenn
+        /// alle auf dasselbe Oeffnungsziel fuehren UND die Maske dieses Ziels selbst
+        /// unter den Treffern steht - der Fall Katalogeditor und Verwaltung. Zwei
+        /// Projektmasken derselben Startseite (Heizkessel und BHKW im Projekt) fuehren
+        /// zwar auch an einen Ort, sind aber zwei Masken; dort wird weiter nicht geraten.
+        /// </para>
+        /// </remarks>
         private static KiDialog Gemeint(string[] felder, Func<KiDialog, string, bool> kennt)
         {
-            KiDialog treffer = null;
+            var treffer = new List<KiDialog>();
 
             foreach (string feld in felder)
             {
                 if (string.IsNullOrWhiteSpace(feld)) continue;
 
                 foreach (KiDialog d in KiDialoge.Katalog.Alle)
-                {
-                    if (!kennt(d, feld.Trim())) continue;
-
-                    // Ein zweiter, ANDERER Treffer macht die Sache mehrdeutig.
-                    if (treffer != null && !ReferenceEquals(treffer, d)) return null;
-                    treffer = d;
-                }
+                    if (kennt(d, feld.Trim()) && !treffer.Contains(d)) treffer.Add(d);
             }
 
-            return treffer;
+            if (treffer.Count == 0) return null;
+            if (treffer.Count == 1) return Zielmaske(treffer[0], felder);
+
+            // Mehrere Treffer: EIN Ziel, und dessen Maske ist dabei - sonst mehrdeutig.
+            string ziel = Zielschluessel(treffer[0]);
+            foreach (KiDialog d in treffer)
+                if (!string.Equals(Zielschluessel(d), ziel, StringComparison.OrdinalIgnoreCase)) return null;
+
+            foreach (KiDialog d in treffer)
+                if (string.Equals(d.Maskenname, ziel, StringComparison.OrdinalIgnoreCase)) return d;
+
+            return null;
+        }
+
+        /// <summary>
+        /// Das Oeffnungsziel einer Maske; ohne hinterlegtes Ziel ihr eigener Name.
+        /// </summary>
+        private static string Zielschluessel(KiDialog d)
+        {
+            string ziel = KiMaskenziele.Ziel(d.Maskenname);
+            return ziel.Length > 0 ? ziel : d.Maskenname;
+        }
+
+        /// <summary>
+        /// <b>Eine Ueberlagerung wird ueber ihre Verwaltung genannt</b> (Welle #456):
+        /// Ist das Ziel der gemeinten Maske selbst eine Katalogmaske, und kennt sie alle
+        /// genannten Felder (auch tolerant, ueber den Anzeigenamen), dann nennt die
+        /// Absage DIESE - dort geht <c>dialog_oeffnen</c> auf, und dort lassen sich die
+        /// Werte setzen. Kennt die Zielmaske die Felder nicht (die Photovoltaik des
+        /// Projekts fuehrt auf den Modulkatalog, der ihre Felder nicht hat), bleibt es
+        /// bei der gemeinten Maske.
+        /// </summary>
+        private static KiDialog Zielmaske(KiDialog gemeint, string[] felder)
+        {
+            KiDialog ziel = KiDialoge.Katalog.Finde(KiMaskenziele.Ziel(gemeint.Maskenname));
+            if (ziel == null || ReferenceEquals(ziel, gemeint)) return gemeint;
+
+            foreach (string feld in felder)
+            {
+                if (string.IsNullOrWhiteSpace(feld)) continue;
+                if (!ziel.KenntFeldTolerant(feld.Trim())) return gemeint;
+            }
+
+            return ziel;
         }
 
         /// <summary>
@@ -957,13 +1011,16 @@ namespace WindowsFormsApplication1
 
             string maske = Maskenschluessel(a.Text("maske"));
 
-            grund = SetzbarkeitAllgemein(maske);
+            grund = Lesemodus();
             if (grund != null) return grund;
 
             KiFeldzugang zugang = KiMaskenbruecke.Feldzugang(maske, a.Text("feld"));
             if (zugang == null) return FeldzugangGrund(maske, a.Text("feld"));
 
             grund = FeldSetzbar(zugang);
+            if (grund != null) return grund;
+
+            grund = Schreibschutz(maske, zugang);
             if (grund != null) return grund;
 
             KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, a.Text("wert"));
@@ -984,7 +1041,7 @@ namespace WindowsFormsApplication1
 
             string maske = Maskenschluessel(a.Text("maske"));
 
-            grund = SetzbarkeitAllgemein(maske);
+            grund = Lesemodus();
             if (grund != null) return grund;
 
             var namen = new List<string>();
@@ -998,6 +1055,9 @@ namespace WindowsFormsApplication1
                 if (zugang == null) return FeldzugangGrund(maske, namen[i]);
 
                 grund = FeldSetzbar(zugang);
+                if (grund != null) return grund;
+
+                grund = Schreibschutz(maske, zugang);
                 if (grund != null) return grund;
 
                 KiFeldumsetzung umsetzung = KiFeldwandler.Wandle(zugang, werte[i]);
@@ -1060,8 +1120,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Was gegen JEDES Setzen in dieser Maske spricht: Lesemodus der Lizenz (iF30)
+        /// Was gegen das SPEICHERN dieser Maske spricht: Lesemodus der Lizenz (iF30)
         /// und ein schreibgeschuetzter Katalogsatz (<c>ReadOnly</c>, Fachkonzept 4.5).
+        /// Das Setzen fragt beides je Feld (<see cref="Lesemodus"/>,
+        /// <see cref="Schreibschutz"/>).
         /// </summary>
         /// <remarks>
         /// <b>Der Lesemodus wird HIER ein zweites Mal gefragt.</b> Der Ausfuehrer prueft
@@ -1072,18 +1134,48 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static string SetzbarkeitAllgemein(string maske)
         {
-            string lesemodus = SimulationLaufCtrl.LesemodusGrund();
+            string lesemodus = Lesemodus();
             if (lesemodus != null) return lesemodus;
 
-            if (KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt())
-            {
-                KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
-                return string.Format(CultureInfo.CurrentCulture,
-                                     MyResource.Resource.KI_FELD_SATZ_GESCHUETZT,
-                                     eintrag == null ? maske : eintrag.Anzeigename);
-            }
+            return KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt() ? Schutzabsage(maske) : null;
+        }
 
-            return null;
+        /// <summary>Der Lesemodus der Lizenz (iF30); <c>null</c> = es darf geschrieben werden.</summary>
+        private static string Lesemodus() => SimulationLaufCtrl.LesemodusGrund();
+
+        /// <summary>
+        /// Der Schreibschutz des bearbeiteten Satzes, gefragt FUER DIESES FELD;
+        /// <c>null</c> = es darf gesetzt werden.
+        /// </summary>
+        /// <remarks>
+        /// <b>Ein Feld, das den SATZ WAEHLT, ist ausgenommen</b>
+        /// (<see cref="KiDialogFeld.Satzwahl"/>, Welle #456): Es schreibt nichts in den
+        /// geschuetzten Satz, es wechselt nur, welcher bearbeitet wird. Ohne diese
+        /// Ausnahme bliebe der Assistent in einer Verwaltung, deren erste Zeile ein
+        /// Auslieferungssatz ist, stecken - er koennte den eigenen Satz nicht waehlen.
+        /// </remarks>
+        private static string Schreibschutz(string maske, KiFeldzugang zugang)
+        {
+            if (zugang != null && zugang.Feld.Satzwahl) return null;
+            return KiMaskenbruecke.Haken(maske).IstSchreibgeschuetzt() ? Schutzabsage(maske) : null;
+        }
+
+        /// <summary>
+        /// Die Absage an einen geschuetzten Satz - mit dem Grund und dem Weg des
+        /// Dialogs, wo er einen anmeldet (<see cref="KiMaskenhaken.Schreibschutzgrund"/>),
+        /// sonst die allgemeine.
+        /// </summary>
+        private static string Schutzabsage(string maske)
+        {
+            KiDialog eintrag = KiMaskenbruecke.Katalogeintrag(maske);
+            string name = eintrag == null ? maske : eintrag.Anzeigename;
+            string grund = KiMaskenbruecke.Haken(maske).Schutzgrund();
+
+            return grund.Length > 0
+                ? string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.KI_FELD_SATZ_GESCHUETZT_WEG, name, grund)
+                : string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.KI_FELD_SATZ_GESCHUETZT, name);
         }
 
         /// <summary>Klartextgrund, warum DIESES Feld nicht setzbar ist; <c>null</c> = es ist es.</summary>

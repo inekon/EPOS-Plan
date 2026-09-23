@@ -166,6 +166,72 @@ public class KiFeldSetzenTests : EposBunitContext, IDisposable
         Assert.Equal(0.97, zeile.WrEta50);
     }
 
+    /// <summary>
+    /// <b>Der Fall des Anwenderauftrags</b> (Welle #456): Die „Administration Heizkessel"
+    /// ist offen, und „setze die Vorlauftemperatur auf 55 °C" landet im Feldsatz des
+    /// Stammblatts — über die FELDTAFEL der Sichtklasse, mit dem toleranten Feldnamen.
+    /// </summary>
+    [Fact]
+    public async Task Administration_Heizkessel_Die_Bestaetigung_setzt_den_Vorlauf()
+    {
+        var vorlauf = new BrowserFeldwert
+        {
+            Schluessel = KatalogBrowserProfil.FeldVorlauf,
+            Bezeichnung = "Vorlauftemperatur:",
+            Einheit = "°C",
+            Art = BrowserFeldArt.Ganzzahl,
+            Editierbar = true,
+            Wert = "70"
+        };
+        int gesetzt = 0;
+        var sicht = new KatalogBrowserKiSicht
+        {
+            Feldsuche = s => s == vorlauf.Schluessel ? vorlauf : null,
+            Gesetzt = () => gesetzt++
+        };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_ADMIN, () => sicht,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_ADMIN, "Vorlauftemperatur", "55");
+
+        Assert.Equal(KiStatus.Ausgefuehrt, ergebnis.Status);
+        Assert.Equal("55", vorlauf.Wert);
+        Assert.Equal(1, gesetzt);
+    }
+
+    /// <summary>
+    /// <b>Ein abgelehnter Satzwechsel kommt mit dem Grund des Dialogs zurück</b> — nicht
+    /// mit der Hülle der Reflection („Exception has been thrown by the target of an
+    /// invocation"), die der Setzer sonst um die Ablehnung legte.
+    /// </summary>
+    [Fact]
+    public async Task Ein_abgelehnter_Satzwechsel_nennt_den_Grund_des_Dialogs()
+    {
+        const string grund = "Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“.";
+        string satz = "Kessel A";
+        var sicht = new KatalogBrowserKiSicht
+        {
+            SatzLesen = () => satz,
+            SatzSetzen = _ => grund,
+            SatzEintraege = () => new[]
+            {
+                new KiWahleintrag("Kessel A", "Kessel A"),
+                new KiWahleintrag("Kessel B", "Kessel B")
+            }
+        };
+
+        using var anmeldung = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_ADMIN, () => sicht,
+                                                     Haken());
+
+        KiErgebnis ergebnis = await Setzen(KiMaskennamen.HEIZKESSEL_ADMIN, "satz", "Kessel B");
+
+        Assert.Equal(KiStatus.Abgelehnt, ergebnis.Status);
+        Assert.Contains("ungespeicherte Änderungen", ergebnis.Text, StringComparison.Ordinal);
+        Assert.DoesNotContain("target of an invocation", ergebnis.Text, StringComparison.Ordinal);
+        Assert.Equal("Kessel A", satz);
+    }
+
     [Fact]
     public async Task Pufferspeicher_Die_Bestaetigung_setzt_das_Gesamtvolumen()
     {

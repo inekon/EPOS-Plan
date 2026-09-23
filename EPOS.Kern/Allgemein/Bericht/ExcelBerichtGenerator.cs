@@ -22,9 +22,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class ExcelBerichtGenerator
     {
-        private static readonly XLColor KOPF = XLColor.FromHtml("#D9E1F2");
-        private static readonly XLColor STAMM = XLColor.FromHtml("#F2F2F2");
-        private static readonly XLColor GRUPPE = XLColor.FromHtml("#EAEDED");
+        // ETAPPE E8b: intern statt privat — die Blöcke der Formelmappe (ExcelFormelmappe)
+        // zeichnen in denselben Farben.
+        internal static readonly XLColor KOPF = XLColor.FromHtml("#D9E1F2");
+        internal static readonly XLColor STAMM = XLColor.FromHtml("#F2F2F2");
+        internal static readonly XLColor GRUPPE = XLColor.FromHtml("#EAEDED");
 
         // =============================================================== Schriftrückfall
         //
@@ -157,17 +159,22 @@ namespace WindowsFormsApplication1
 
             GrafikModulSicherstellen();
 
+            // ETAPPE E8b (Formelmappe): das Register der Formelzellen — jede Formel, die ein
+            // Block schreibt, merkt sich hier ihr Ergebnis; nach dem Speichern wird es
+            // eingetragen (Befund E8b/0: ClosedXML legt keine Ergebnisse ab).
+            var formeln = new Formelregister();
+
             using (var wb = new XLWorkbook())
             {
                 BlattUebersicht(wb, daten);
-                BlattVergleich(wb, daten);
+                BlattVergleich(wb, daten, formeln);
 
                 // Phase 6: Kapitalwert-Ergebnisse dieses Berichtslaufs (gleiche Quelle
                 // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
                 // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
                 if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
                 {
-                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten);
+                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten, formeln);
 
                     // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
                     // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
@@ -184,8 +191,20 @@ namespace WindowsFormsApplication1
                     foreach (VariantenDaten v in daten.Varianten)
                         BlattDetail(wb, v);
 
+                // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
+                // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
+                if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
+                    AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten));
+
+                // ETAPPE E8b: Eine Mappe mit Formeln verlangt beim Öffnen die volle
+                // Neuberechnung — Excel und LibreOffice rechnen dann selbst.
+                if (formeln.Anzahl > 0) wb.FullCalculationOnLoad = true;
                 wb.SaveAs(zielDatei);
             }
+
+            // ETAPPE E8b: die Ergebnisse der Formelzellen nachtragen — dieselben Zahlen, die
+            // die Zellen als Werte trugen; ein Betrachter ohne Rechenmaschine zeigt sie.
+            formeln.Nachtragen(zielDatei);
             return zielDatei;
         }
 
@@ -267,7 +286,7 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Vergleich
 
-        private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten)
+        private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten, Formelregister formeln)
         {
             IXLWorksheet ws = wb.Worksheets.Add("Vergleich");
             // E5/F7: CO₂-Zeilen nach dem gerechneten Modus beschriften.
@@ -325,8 +344,15 @@ namespace WindowsFormsApplication1
                             && Math.Abs(stammWert.Value) > 1e-9)
                         {
                             IXLCell zelle = ws.Cell(r, deltaStart + i);
-                            zelle.Value = (wert.Value - stammWert.Value) / Math.Abs(stammWert.Value) * 100.0;
+                            double delta = (wert.Value - stammWert.Value) / Math.Abs(stammWert.Value) * 100.0;
+                            zelle.Value = delta;
                             zelle.Style.NumberFormat.Format = "+#,##0.0;−#,##0.0;±0,0";
+
+                            // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): der Δ%-Block als
+                            // Zellbezug auf die beiden Wertspalten derselben Zeile.
+                            ExcelFormelmappe.Deltazelle(zelle, r, 4 + daten.Varianten.IndexOf(varianten[i]),
+                                                        4 + daten.Varianten.IndexOf(stamm),
+                                                        wert.Value, stammWert.Value, delta, formeln);
                         }
                     }
                     r++;
@@ -353,7 +379,8 @@ namespace WindowsFormsApplication1
         /// „Verlauf" schreibt dieselben Linien, ohne ein zweites Mal zu rechnen.
         /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
         /// </summary>
-        private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten)
+        private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
+                                                                                  Formelregister formeln)
         {
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
@@ -404,6 +431,13 @@ namespace WindowsFormsApplication1
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r++;
+
+            // ETAPPE E8b, Stufe 0 (Konzept § 2.11.6): der Parameterblock aus ECHTEN Zellen,
+            // unmittelbar unter seiner Prosazeile — je Szenario ein Satz, die Spalte
+            // „Erwartet" benannt. Alles darunter wandert um
+            // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p);
+
             if (!ausDiesemLauf)
             {
                 ws.Cell(r, 1).Value = BerichtTexte.T(
@@ -495,12 +529,18 @@ namespace WindowsFormsApplication1
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r += 2;
 
+            // ETAPPE E8b, Stufe 2: die Lage des Blocks „Erwartet" (Zeile je Kennzahl, Spalte je
+            // Stand) — seine Kennzahlen bekommen nach den Mehrjahrestabellen ihre Formeln.
+            KennzahlBlock erwartetBlock = null;
+
             foreach (string szenario in new[] { WirtschaftlichkeitSzenario.ERWARTET,
                                                 WirtschaftlichkeitSzenario.BEST,
                                                 WirtschaftlichkeitSzenario.WORST })
             {
                 var block = alle.Where(x => x.Szenario == szenario).ToList();
                 if (block.Count == 0) continue;
+                KennzahlBlock lage = szenario == WirtschaftlichkeitSzenario.ERWARTET
+                                   ? (erwartetBlock = new KennzahlBlock()) : null;
 
                 // E5‑Q2: der Anzeigename des Szenarios (Ungünstig / Erwartet / Günstig),
                 // nicht der gespeicherte Schlüssel.
@@ -536,6 +576,7 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, c).Value = v.IstStamm ? "Stamm" : v.Anzeige;
                     // Hinterlegt wird die REFERENZ - ohne gewaehlte wie bisher der Stamm.
                     if (idReferenz > 0 ? v.IdProjekt == idReferenz : v.IstStamm) stammSpalte = c;
+                    if (lage != null) lage.Spalten[v.IdProjekt] = c;
                     c++;
                 }
                 ws.Range(kopfZeile, 1, kopfZeile, c - 1).Style.Font.Bold = true;
@@ -552,6 +593,7 @@ namespace WindowsFormsApplication1
 
                     // Der Titel kommt aus MyResource — kein BerichtTexte.T() darüber.
                     ws.Cell(r, 1).Value = (z.Einzug > 0 ? "    " : "") + z.Titel;
+                    if (lage != null) lage.Zeilen[z.Schluessel] = r;
                     if (z.IstUeberschrift || z.IstSumme)
                         ws.Cell(r, 1).Style.Font.Bold = true;
                     if (z.IstUeberschrift)
@@ -696,7 +738,8 @@ namespace WindowsFormsApplication1
             r = BlattKwkgModule(ws, daten, alle, r);
 
             // ---------------- Betriebskosten nach Kostenarten (E3 → E7) ----------------
-            r = BlattBetriebskosten(ws, daten, alle, r);
+            // ETAPPE E8b, Stufe 3: bemessene Positionen als Menge × Satz.
+            r = BlattBetriebskosten(ws, daten, alle, r, formeln);
 
             // ---------------- Kapitalwert-Verlauf (Phase 11, Szenario Erwartet) ----------------
             // Jahresreihen frisch aus den Berichtsdaten gerechnet (T aus den Parametern);
@@ -819,7 +862,18 @@ namespace WindowsFormsApplication1
             }
 
             // ---------------- Mehrjahresübersicht der Zahlungsströme (E7) ----------------
-            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r);
+            // ETAPPE E8b, Stufe 1: Die Tabellen rechnen in Formeln auf den Parameterblock;
+            // ihre Lage merkt sich die Liste — die Kennzahlen der Stufe 2 beziehen sich darauf.
+            var tafeln = new List<MehrjahresTafel>();
+            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r, p, formeln, tafeln);
+
+            // ETAPPE E8b, Stufe 2 (Konzept § 2.11.6): die Kennzahlen des Szenarios „Erwartet"
+            // in Formeln — Nettobarwert über NBW, Differenz als Zellbezug, Annuität über RMZ
+            // auf die Tabellen; interner Zinsfuß (IKV) und Amortisation über die
+            // Differenzreihe Variante − Referenz, die jede Tabelle einer Variante rechts
+            // bekommt. Gegen dieselbe Referenz wie der Verlauf, aus dem die Tabellen stehen.
+            if (erwartetBlock != null && verlaufFuerMehrjahres != null)
+                ExcelFormelmappe.Kennzahlen(ws, erwartetBlock, tafeln, verlaufFuerMehrjahres, alle, p, formeln);
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
             // ETAPPE E5 Teil b (V‑A, V‑G6): die Zeilen der Bewertung dieses Laufs (in
@@ -1029,7 +1083,12 @@ namespace WindowsFormsApplication1
             // Spaltenbreiten: die Mehrjahresübersicht (E7) ist mit bis zu 13 Spalten der
             // breiteste Block des Blattes. ETAPPE E6: Der Verlauf trägt je Szenario eine
             // Spaltengruppe — drei Gruppen aus Projekten und Differenzen.
-            for (int i = 2; i <= Math.Max(14, 6 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;
+            // ETAPPE E8b: Die Formelmappe hängt rechts an die Mehrjahrestabellen Hilfs- und
+            // Differenzspalten an — auch sie bekommen die Breite der Zahlenspalten.
+            int breit = Math.Max(14, 6 * daten.Varianten.Count);
+            IXLColumn letzteSpalte = ws.LastColumnUsed();
+            if (letzteSpalte != null) breit = Math.Max(breit, letzteSpalte.ColumnNumber());
+            for (int i = 2; i <= breit; i++) ws.Column(i).Width = 18;
             ws.SheetView.FreezeRows(2);
             return verlaufSzenarien;
         }
@@ -1076,7 +1135,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static int BlattMehrjahres(IXLWorksheet ws, BerichtsDaten daten,
                                            WirtschaftlichkeitVerlauf verlauf,
-                                           List<WirtschaftlichkeitErgebnis> alle, int r)
+                                           List<WirtschaftlichkeitErgebnis> alle, int r,
+                                           WirtschaftlichkeitParameter p, Formelregister formeln,
+                                           List<MehrjahresTafel> tafeln)
         {
             if (verlauf == null || verlauf.Absolut.All(s => s.Bild == null)) return r;
 
@@ -1106,6 +1167,7 @@ namespace WindowsFormsApplication1
                 }
 
                 int spalten = bild.Spalten.Count;
+                int kopfZeile = r;   // ETAPPE E8b: Anker der Formeln (Jahr 0 steht darunter)
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_JAHR;
                 for (int i = 0; i < spalten; i++) ws.Cell(r, 2 + i).Value = bild.Spalten[i].Titel;
                 ws.Range(r, 1, r, 1 + spalten).Style.Font.Bold = true;
@@ -1141,6 +1203,14 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, 2 + i).Style.Fill.BackgroundColor = STAMM;
                 }
                 r++;
+
+                // ETAPPE E8b, Stufe 1 (Konzept § 2.11.6): dieselbe Tabelle in Formeln —
+                // Energie als Fortschreibung, Betrieb als zwei Terme über Hilfsspalten,
+                // Netto als Zeilensumme, Barwert, Laufsumme, Abschluss. Die Zellen tragen
+                // danach die Formel UND (über das Register) die Zahl, die hier stand.
+                MehrjahresTafel tafel = ExcelFormelmappe.Mehrjahrestabelle(ws, kopfZeile, v.IdProjekt,
+                                                                           bild, serie, p, formeln);
+                if (tafel != null) tafeln.Add(tafel);
 
                 ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_MJ_PROBE,
                     bild.KumuliertT.ToString("N0", BerichtTexte.Kultur),
@@ -1391,7 +1461,8 @@ namespace WindowsFormsApplication1
         /// <c>Kostenart</c>.
         /// </summary>
         private static int BlattBetriebskosten(IXLWorksheet ws, BerichtsDaten daten,
-                                               List<WirtschaftlichkeitErgebnis> alle, int r)
+                                               List<WirtschaftlichkeitErgebnis> alle, int r,
+                                               Formelregister formeln)
         {
             var mitPositionen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
                                                 x.Betriebskosten != null &&
@@ -1415,6 +1486,7 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 r++;
 
+                int kopfZeile = r;   // ETAPPE E8b: Köpfe „Menge" und „Satz" folgen, wenn es bemessene Zeilen gibt
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SP_POSITION;
                 ws.Cell(r, 2).Value = MyResource.Resource.WIRT_BK_SP_GRUPPE;
                 ws.Cell(r, 3).Value = MyResource.Resource.WIRT_BK_SP_BEMESSUNG;
@@ -1425,6 +1497,7 @@ namespace WindowsFormsApplication1
                 r++;
 
                 double summe = 0;
+                bool bemessen = false;
                 foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
                 {
                     List<KostenPositionNachweis> block = e.Betriebskosten
@@ -1448,15 +1521,21 @@ namespace WindowsFormsApplication1
                         ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung);
                         ws.Cell(r, 4).Value = herleitung;
                         Zahl(ws, r, 5, n.BetragJahr, "#,##0");
+                        // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): eine bemessene Position
+                        // trägt Menge und Satz in eigenen Spalten, der Betrag ist ihr Produkt.
+                        if (ExcelFormelmappe.Betriebskostenzeile(ws, r, n, formeln)) bemessen = true;
                         r++;
                         summe += n.BetragJahr;
                     }
                 }
+                if (bemessen) ExcelFormelmappe.BetriebskostenKopf(ws, kopfZeile);
 
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SUMME;
                 Zahl(ws, r, 5, summe, "#,##0");
                 ws.Range(r, 1, r, 5).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                // ETAPPE E8b, Stufe 3: die Summe als Spaltensumme der Beträge darüber.
+                ExcelFormelmappe.BetriebskostenSumme(ws, r, kopfZeile + 1, r - 1, summe, summe, formeln);
                 r++;
 
                 if (e.BetriebskostenJahr.HasValue &&

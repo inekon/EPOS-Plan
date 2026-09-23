@@ -36,8 +36,11 @@ Norm verwirft ihn als Entscheidungsgrundlage."
 · Energie- und Stromsteuerentlastungen **berücksichtigt** · Ertragsteuern **nicht berücksichtigt** ·
 keine Abschreibungen als Cashflow · Restwert linear — **dokumentierte Abweichung** von 6.4 ·
 Risikozuschlag nicht angesetzt (6.5 optional) · Szenariopflege „12 von 31 Parametern" · Knöpfe
-„Anhang-E-Checkliste…", „XLSX mit Formeln exportieren…" — **beides Mockup-Knöpfe: im Bestand
-gibt es weder ein Element noch einen Ressourcenschlüssel dafür.**
+„Anhang-E-Checkliste…", „XLSX mit Formeln exportieren…" — **„Anhang-E-Checkliste…" ist gebaut
+(`WIRT_AE_KNOPF`, im Fuß des Bewertungsblocks und in Block 5; dieselbe Checkliste schließt Wort- und
+Tabellenbericht ab); „XLSX mit Formeln exportieren…" bleibt ein Mockup-Knopf ohne Element — die
+Formelmappe ist der Tabellenbericht selbst** (Konzept § 2.11.6), erzeugt über „Bericht erzeugen" oder die
+Seite „Bericht".
 
 **Szenarien** — alle Parameter gleichzeitig variiert (7.3): Best +118.430 · Erwartet +65.259 ·
 Worst −12.870 € (Best/Worst im Mockup Beispielwerte). „Ein negativer Worst Case ist nach 8.1.3 kein
@@ -175,14 +178,17 @@ Barwert der Differenz vor Restwert am Horizontende 1.564.393 / 1.744.663 / 1.929
 | V-G7 | Risiko: Zinszuschlag oder Abzug R_loss × p_loss | fehlt | optionales Modul, Vorgabe aus |
 | V-G8 | IZF/Amortisation nur nachrichtlich, Mehrdeutigkeitswarnung | gleichrangig | Label + Warnung |
 | V-G9 | Steuerdeklaration Pflicht | fehlt | zweiteilige Deklarationszeile |
-| V-G10 | Bericht mit editierbarer XLSX mit Formeln (Anhang A) | Werte-Export | **größte Einzellücke mit hartem Muss** — ValERI-Blatt je Szenario |
+| V-G10 | Bericht mit editierbarer XLSX mit Formeln (Anhang A) | Formelmappe in den Stufen 0 bis 3 (gebaut #455) | der ganze Bericht formelbasiert, soweit ableitbar (Konzept § 2.11.6) — EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu |
 | V-G11 | nicht monetarisierbare Wirkungen | fehlt | Freitext + Kategorie + Beurteilung, nie im NPV |
-| V-G12 | Anhang-E-Checkliste (15 Punkte) | fehlt | Abschlussseite des Berichts |
+| V-G12 | Anhang-E-Checkliste (15 Punkte) | gebaut #455 | Abschlussseite beider Berichte, letztes Blatt der Mappe mit der Notenspalte 1–5, Knopf „Anhang-E-Checkliste…" |
 
 Externe Gegenprobe der Etappe: Anhang D der Norm (BHKW 90 kW_th, 18 Jahre, NPV 64.480 €, Worst
 −202.802 €, Best +598.320 €) — EPOS muss mit denselben Eingaben dieselben Zahlen treffen. Zwei
 Zeilen der Sensitivitätstabelle D.6 tragen im Normtext versehentlich Werte des Pumpenbeispiels —
-als Prüfreferenz ungeeignet.
+als Prüfreferenz ungeeignet. **Getroffen** (Kern-Fall `AnhangDFallstudieTests` gegen
+`KapitalwertRechner.Rechne`, #455): 64.479,51 €, −202.801,57 € und 598.319,65 €; ausgenommen ist außerdem die
+D.6-Zeile „Gasverbrauch BHKW" (sie trifft den ganzen Energie-Nettostrom), und Tafel D.7 nennt 348.583 statt
+349.583 kWh/a Strom — ein Tippfehler (Konzept § 2.11.2).
 
 ## Offene Entscheidungen
 

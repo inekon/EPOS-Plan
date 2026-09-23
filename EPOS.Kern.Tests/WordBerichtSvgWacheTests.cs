@@ -61,8 +61,9 @@ namespace EPOS.Kern.Tests
         ///
         /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die nächsten vier
         /// die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell bekommen haben
-        /// und seither ebenfalls über den Modellweg gehen; die letzten zwei sind die Bilder
-        /// der Etappe E6 (Verlauf mit drei Szenarien, Spannenbild).</para>
+        /// und seither ebenfalls über den Modellweg gehen; die nächsten zwei sind die Bilder
+        /// der Etappe E6 (Verlauf mit drei Szenarien, Spannenbild), die letzten zwei die der
+        /// Etappe E8a (Brückenbild U41, Zahlungsstrombild U42).</para>
         /// </summary>
         [Theory]
         [InlineData("jahresverlauf")]
@@ -75,6 +76,8 @@ namespace EPOS.Kern.Tests
         [InlineData("kapitalwert")]
         [InlineData("kapitalwert_szenarien")]
         [InlineData("kapitalwert_spanne")]
+        [InlineData("kapitalwert_bruecke")]
+        [InlineData("zahlungsstrom")]
         public void EinModellLegtBeideTeileAb(string bild)
         {
             Zeichenmodell m = Bildmodell(bild);
@@ -399,6 +402,35 @@ namespace EPOS.Kern.Tests
                                                   Name = "Variante A", Worst = -4000.0, Erwartet = 6000.0, Best = 11000.0
                                               }
                                           }, "Stamm", null);
+                // ETAPPE E8a (U41): das Brückenbild von der Investition zur Kapitalwertdifferenz.
+                case "kapitalwert_bruecke": return ChartRenderer.KapitalwertBrueckeModell(
+                                          new List<ChartRenderer.Brueckenschritt>
+                                          {
+                                              new ChartRenderer.Brueckenschritt { Name = "Investition I₀", Wert = -40000.0 },
+                                              new ChartRenderer.Brueckenschritt { Name = "Energiekosten", Wert = 55000.0 },
+                                              new ChartRenderer.Brueckenschritt { Name = "Restwert am Ende", Wert = 3000.0 }
+                                          }, null);
+                // ETAPPE E8a (U42): das Zahlungsstrombild über der Mehrjahrestafel.
+                case "zahlungsstrom": return ChartRenderer.ZahlungsstromModell(
+                                          new List<ChartRenderer.Zahlungsstromreihe>
+                                          {
+                                              new ChartRenderer.Zahlungsstromreihe
+                                              {
+                                                  Schluessel = ChartRenderer.Zahlungsstromreihe.INVEST_ERSATZ,
+                                                  Name = "Investition und Ersatz",
+                                                  JeJahr = new[] { -40000.0, 0.0, -6000.0, 0.0 }
+                                              },
+                                              new ChartRenderer.Zahlungsstromreihe
+                                              {
+                                                  Schluessel = "ENERGIE", Name = "Energiekosten",
+                                                  JeJahr = new[] { 0.0, -5000.0, -5100.0, -5200.0 }
+                                              },
+                                              new ChartRenderer.Zahlungsstromreihe
+                                              {
+                                                  Schluessel = "EINSPEISUNG", Name = "Einspeiseerlös",
+                                                  JeJahr = new[] { 0.0, 9000.0, 9000.0, 9000.0 }
+                                              }
+                                          }, new[] { 2 }, null);
                 default: throw new ArgumentOutOfRangeException(nameof(bild), bild, "unbekanntes Bild");
             }
         }

@@ -63,19 +63,32 @@
        stehen; sind es nur solche, ist Loeschen weich gesperrt (V13).
      * VERGLEICHEN zeigt die gewaehlten Saetze im Stammblatt (zwei, drei) bzw.
        in der breiten Ueberlagerung (ab vier).
-     * Die Fussleiste heisst Speichern - Verwerfen - Fueller - Neu... - BEENDEN. *@
+     * Die Fussleiste heisst Speichern - Verwerfen - Fueller - Neu... - BEENDEN.
+
+   DER HILFE-ASSISTENT (Welle #456, KI-D-Q11): Die vier Auspraegungen melden sich
+   unter ihren Navigationsschluesseln an (Form_Heizkessel_Admin, Form_BHKWAdmin,
+   Form_SolarKollektorenAdmin, Form_PufferSp_Admin). Die Feldkarte erzeugt der Kern
+   aus dem PROFIL; die Sichtklasse KatalogBrowserKiSicht beantwortet sie als
+   Feldtafel ueber den lebenden Feldsatz. Gesetzt wird wie von Hand
+   (BeiFeldAenderung), gespeichert ueber denselben Schreibweg wie der Knopf. Ein
+   Auslieferungssatz und der Lesemodus bleiben geschuetzt; Neu, Duplizieren,
+   Loeschen und Import gehen nicht ueber den Assistenten. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
 @using System.Globalization
 @using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog epos-katalog-dialog epos-katalogbrowser" tabindex="-1"
      @ref="_wurzel" @onkeydown="BeiTaste">
 
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
-        <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
+        @* Der Dialogname geht an den Hilfe-Assistenten mit (Welle #456): Er nennt die
+           Verwaltung beim Namen, die er steuert - der Hilfeschluessel allein nennt nur
+           den Bereich. *@
+        <InfoKnopf Schluessel="@Profil.HilfeSchluessel" Dialogname="@Profil.Titel" />
         <Schliesskreuz Geschlossen="BeiBeenden" />
     </div>
 
@@ -729,7 +742,113 @@
         if (ProfilVorgabe is null) _profil = KatalogBrowserProfil.Finde(Art);
         _filterstand = Filterstandvorgabe ?? Katalogfilterregister.Stand(Profil.Filterprofil.Art);
         ListeAufbauen();
+
+        // Welle #456: VIER Katalogschluessel auf EINER Komponente - welcher gilt, sagt
+        // das Profil (eine ProfilVorgabe schlaegt den Parameter Art, und angemeldet
+        // gehoert die Maske, die der Anwender vor sich hat).
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KatalogBrowser(Profil.Art),
+                                          () => KiSicht(), KiHaken());
     }
+
+    // =====================================================================
+    // Der Hilfe-Assistent (Welle #456)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KatalogBrowserKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Listenwahl und je Profilfeld ein Eintrag der
+    /// Feldtafel über dem LEBENDEN Feldsatz. Sie wird EINMAL erzeugt und hält nur
+    /// Delegaten — der Feldsatz wechselt mit jeder Zeilenwahl, die Sicht nicht.
+    /// </summary>
+    private KatalogBrowserKiSicht KiSicht()
+    {
+        return _kiSicht ??= new KatalogBrowserKiSicht
+        {
+            Feldsuche = Feld,
+            Gesetzt = BeiFeldAenderung,
+            SatzLesen = () => _gewaehlt,
+            SatzSetzen = KiSatzWaehlen,
+            SatzEintraege = () => KiMaskenanmeldung.Eintraege(
+                _zeilen, z => z.Bezeichner, z => z.Bezeichner)
+        };
+    }
+
+    /// <summary>
+    /// <b>Der Assistent wählt eine Zeile</b> — derselbe Weg wie ein Klick
+    /// (<see cref="BeiZeile"/>). Geänderte Felder halten den Wechsel an (V11); der
+    /// Assistent bekommt dann denselben Satz, den das Warnband zeigt, statt still
+    /// „gesetzt" zu melden.
+    /// </summary>
+    private string? KiSatzWaehlen(string bezeichner)
+    {
+        string neu = bezeichner ?? "";
+        if (neu == _gewaehlt) return null;
+
+        if (_geaendert)
+        {
+            Warnen(MeldungUngespeichert);
+            return MeldungUngespeichert;
+        }
+
+        BeiZeile(neu);
+        return null;
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Schreibschutz</b> ist der Lesemodus des Wirts ODER ein Auslieferungssatz
+    /// (AD-Q11): Solange er steht, lehnt schon <c>feld_setzen</c> ab, nicht erst der
+    /// Speicherknopf — und die Absage nennt den Weg über „Duplizieren…". Die Wahl des
+    /// Satzes bleibt frei; aus einem Auslieferungssatz heraus lässt sich der eigene
+    /// wählen.</para>
+    /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
+    /// (<see cref="EingabenPruefen"/>), der Speicherweg DERSELBE Schreibweg
+    /// (<see cref="Schreiben"/>).</para>
+    /// <para><b>Nicht über den Assistenten</b>: Neu…, Duplizieren…, Löschen, Import… —
+    /// sie legen Sätze an oder nehmen sie weg (KI-D-Q11).</para>
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => NurLesen || Auslieferungssatz,
+        Schreibschutzgrund = () => NurLesen ? Resource.KI_DLG_KBROW_NURLESEN : MeldungSpeichernGesperrt,
+        Pruefen = () => EingabenPruefen() ? "" : _meldung,
+        Speichern = () => Task.FromResult(KiSpeichern())
+    };
+
+    /// <summary>
+    /// <b>„Speichern" über den Assistenten</b> — derselbe Weg wie der Knopf; ein
+    /// Auslieferungssatz und der Lesemodus werden benannt abgelehnt, ebenso ein Aufruf
+    /// ohne Satz oder ohne Änderung.
+    /// </summary>
+    private KiErgebnis KiSpeichern()
+    {
+        if (!Profil.HatSpeicherweg || Wege.Speichern is null)
+            return KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", Profil.Titel));
+
+        if (NurLesen) return KiErgebnis.Abgelehnt(Resource.KI_DLG_KBROW_NURLESEN);
+
+        if (_gewaehlt.Length == 0)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_SATZ.Replace("{0}", Profil.Titel));
+
+        if (_auslieferung) return KiErgebnis.Abgelehnt(MeldungSpeichernGesperrt);
+
+        if (!_geaendert)
+            return KiErgebnis.Abgelehnt(Resource.KI_DLG_ADMIN_OHNE_AENDERUNG.Replace("{0}", Profil.Titel));
+
+        if (!EingabenPruefen()) return KiErgebnis.Abgelehnt(_meldung);
+
+        return Schreiben()
+            ? KiErgebnis.Ok(_status, anzahl: 1)
+            : KiErgebnis.Fehlgeschlagen(_meldung);
+    }
+
+    /// <summary>Die Anmeldung fällt mit dem Dialog.</summary>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

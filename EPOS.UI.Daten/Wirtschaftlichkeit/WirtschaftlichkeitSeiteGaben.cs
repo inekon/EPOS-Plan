@@ -806,6 +806,53 @@ namespace WindowsFormsApplication1
                 Rahmen = Rahmentafel(gewaehlt, idReferenz, kultur)
             };
 
+            // ETAPPE E8a (Konzept § 2.11.4 V‑C, Mockup Kategorie 8): die ZAHLUNGSREIHEN der
+            // gezeigten Stände (ValERI-Block 2) — aus den Zahlungsbildern des Laufs dieser
+            // Sitzung (der Verlauf rechnet sie mit „Berechnen" ohnehin mit), nur wo sie zum
+            // gespeicherten Ergebnis passen. Gerechnet wird hier nichts; die Leitversion ist
+            // die Regel des Kerns. U42: Jede Tafel trägt ihr Zahlungsstrombild.
+            var staendeSpalten = new List<KeyValuePair<int, string>>();
+            foreach (int id in spaltenIds) staendeSpalten.Add(new KeyValuePair<int, string>(id, Name(id)));
+            Zahlungsgliederungen gliederungen = Gliederungen();
+            ansicht.Leitversion = Zahlungsgliederungen.Leitversion(_ergebnisse, spaltenIds, idReferenz);
+            var szenarionamen = new List<string>();
+            for (int i = 0; i < SZENARIEN.Length; i++) szenarionamen.Add(SzenarioAnzeige(i));
+            ansicht.Zahlungsreihen = ZahlungsreihenAnsicht.Jahrestafeln(gliederungen, staendeSpalten, SZENARIEN, kultur,
+                                                                        szenarionamen);
+            ansicht.Zahlungsstaende = ZahlungsreihenAnsicht.Staende(ansicht.Zahlungsreihen, staendeSpalten);
+            ansicht.Zahlungshinweis = ZahlungsreihenAnsicht.Hinweis(gliederungen, staendeSpalten, kultur);
+
+            // ETAPPE E8a (U46): die Gliederung des Kapitalwerts im GEWÄHLTEN Szenario — Barwert
+            // und Nominalsumme je Bestandteil, die Differenzspalte Leitversion − Referenz. Sie
+            // steht unter der Szenario-Klappliste und folgt ihr (SzenarioTeileUebernehmen).
+            ansicht.Bestandteile = ZahlungsreihenAnsicht.Bestandteile(gliederungen, szenario, staendeSpalten,
+                                                                      idReferenz, ansicht.Leitversion, kultur);
+            string szenarioname = SzenarioAnzeige(Math.Max(0, Array.IndexOf(SZENARIEN, szenario)));
+            if (ansicht.Bestandteile.Zeilen.Count > 0)
+            {
+                ansicht.BestandteileTitel = string.Format(kultur, MyResource.Resource.WIRT_GL_TITEL, szenarioname);
+                ansicht.BestandteileUnterzeile = ZahlungsreihenAnsicht.Unterzeile(gliederungen, szenario,
+                                                                                  staendeSpalten, kultur);
+            }
+
+            // ETAPPE E8a (U41): das Brückenbild — dieselben Schritte wie die Differenzspalte,
+            // gezeichnet vom Renderer des Kerns; es folgt wie sie der Szenario-Klappliste.
+            try
+            {
+                ansicht.Bruecke = ZahlungsreihenAnsicht.Bruecke(gliederungen, szenario, ansicht.Leitversion,
+                                                                idReferenz, staendeSpalten, szenarioname, kultur);
+            }
+            catch { ansicht.Bruecke = null; }
+
+            // ETAPPE E8a (U47): „Was daraus im Lauf wird" — die drei Szenarioläufe der
+            // Bandbreite, ihre Wirkung auf die Leitversion.
+            ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
+                                                                    Name(ansicht.Leitversion), kultur);
+
+            // ETAPPE E8a (U48): die Fußzeile von „Was ist angenommen?" — wie viele Szenarien der
+            // gezeigten Stände gerechnet sind und woher ihre Annahmen kommen (Regel des Kerns).
+            ansicht.Szenariofuss = Szenariofuss(spaltenIds, kultur);
+
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
             for (int i = 0; i < spaltenErg.Count; i++)
             {
@@ -904,6 +951,37 @@ namespace WindowsFormsApplication1
 
             ansicht.Matrix = new ErgebnisMatrix { Spalten = spalten, Zeilen = matrixzeilen };
             return ansicht;
+        }
+
+        /// <summary>
+        /// ETAPPE E8a: die Gliederungen der drei Läufe über den Betrachtungszeitraum — aus der
+        /// Verlaufshülle, abgeglichen gegen die Ergebnisse der Seite
+        /// (<see cref="KapitalwertVerlaufHuelle.GliederungenUeberT"/>). <c>null</c> = in dieser
+        /// Sitzung ist nichts gerechnet, oder das Lesen scheiterte — dann stehen die
+        /// Zahlungsreihen nicht da, und die Seite sagt es; eine Kennzahl hängt nie daran.
+        /// </summary>
+        private Zahlungsgliederungen Gliederungen()
+        {
+            try { return Verlauf.GliederungenUeberT(_ergebnisse); }
+            catch { return null; }
+        }
+
+        /// <summary>
+        /// ETAPPE E8a (U48): die Fußzeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben,
+        /// nichts gepflegt" — gezählt werden die Szenarien, für die einer der gezeigten Stände
+        /// ein Ergebnis trägt; die Herkunft der Annahmen nennt der Kern
+        /// (<see cref="ValeriAusweis.Szenarienfuss"/>). Ein Lesefehler lässt die Herkunft weg.
+        /// </summary>
+        private string Szenariofuss(List<int> staende, CultureInfo kultur)
+        {
+            int gerechnet = 0;
+            foreach (string s in SZENARIEN)
+                if (_ergebnisse.Any(e => e.Szenario == s && staende.Contains(e.IdProjekt))) gerechnet++;
+            WirtschaftlichkeitParameter p = null;
+            try { p = _ctrl.LadeParameter(_idStamm); }
+            catch { }
+            try { return ValeriAusweis.Szenarienfuss(gerechnet, p, kultur); }
+            catch { return ""; }
         }
 
         /// <summary>

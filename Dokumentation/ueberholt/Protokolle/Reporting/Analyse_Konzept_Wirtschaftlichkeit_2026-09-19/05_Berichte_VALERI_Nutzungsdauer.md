@@ -203,6 +203,15 @@ und kein Test laufen darf)
 4. Ob die deutschen Funktionsnamen (NBW, RMZ) oder die englischen abzulegen sind; ClosedXML erwartet
    im Allgemeinen die englischen, die Anzeige übersetzt Excel selbst — **vermutet**, zu bestätigen.
 
+> **Nachtrag 23.09.2026 (#455, Etappe E8 Teil b):** Die vier Fragen sind gemessen. ClosedXML 0.105.1 legt zu einer
+> Formel kein Ergebnis ab, auch nicht nach `RecalculateAllFormulas`; seine Rechenmaschine kennt `NPV` und `IRR` nicht
+> (`#NAME?`), `PMT` rechnet sie; abgelegt werden die englischen Namen. Excel (Microsoft 365, Version 16) rechnet jede
+> Formelzelle auf den eingetragenen Wert; LibreOffice war auf dem Rechner nicht prüfbar. Daraus die Regel „EPOS trägt
+> die Werte ein, Excel rechnet neu" (Konzept § 2.11.6) und die Wache `FormelmappeClosedXmlBefundTests`. Befund,
+> Entscheid und Berichtigung (E8b/8: `PMT` rechnet doch):
+> [`E8b_Formelmappe_AnhangE_D_Protokoll.md`](../E8b_Formelmappe_AnhangE_D_Protokoll.md), Abschnitt „Der
+> ClosedXML-Befund und der Entscheid".
+
 ### 3.4 Was Stufe 0 als Erstes braucht
 
 Eine **Wache über die Blattstruktur**, und zwar vor dem Parameterblock. Zuschnitt:
