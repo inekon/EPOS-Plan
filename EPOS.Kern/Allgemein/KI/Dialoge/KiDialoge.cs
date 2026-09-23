@@ -468,6 +468,26 @@ namespace WindowsFormsApplication1
         /// <summary>„Administration Pufferspeicher" (<c>KatalogBrowserDialog</c>).</summary>
         public const string PUFFERSPEICHER_ADMIN = Masken.PufferSpAdmin;
 
+        // =================================================================
+        //  Welle #458, Stufe 2: die uebrigen Masken mit Einstellwerten
+        // =================================================================
+        //
+        // Die Schluessel folgen der Regel des Katalogs: Wo es eine WinForms-Maske
+        // gab, bleibt ihr Name (er steht in den Hilfeschluesseln), sonst ein
+        // sprechender Name ohne Vorsilbe.
+
+        /// <summary>
+        /// Der Kennlinieneditor der Waermepumpe (<c>KennlinienEditorDialog</c>) — eine
+        /// Ueberlagerung der Waermepumpen-Verwaltung und der Waermepumpen-Anlage.
+        /// </summary>
+        /// <remarks>
+        /// Der Name ist der der abgeloesten Maske <c>Views/Waermepumpe/Kenndaten</c>;
+        /// ihr Hilfeschluessel <c>Kenndaten.btn_Help</c> steht noch am Info-Knopf.
+        /// Wie die Ueberlagerung „Anlagenwerte" meldet sie sich nur an, solange sie
+        /// offen steht.
+        /// </remarks>
+        public const string KENNLINIEN = "Kenndaten";
+
         /// <summary>
         /// Der Katalogschluessel der Verwaltung zu einer Auspraegung des Katalogbrowsers —
         /// die EINE Stelle, an der der Dialog erfaehrt, unter welchem Namen er sich anmeldet.
@@ -662,7 +682,8 @@ namespace WindowsFormsApplication1
                 BerichteUebersicht(),
                 Berichtseite(),
                 ProjektKopie(),
-                ProjektVariante());
+                ProjektVariante(),
+                Kennlinien());
         }
 
         // =====================================================================
@@ -6625,6 +6646,86 @@ namespace WindowsFormsApplication1
                 new KiDialogKnopf("neu", "btn_Neu", KiDialogTexte.KnopfNeu),
                 new KiDialogKnopf("beenden", "btn_Beenden", KiDialogTexte.KnopfOk)
             };
+        }
+
+        // =====================================================================
+        // Kenndaten  ->  Dialoge.Waermepumpe.KennlinienEditorDialog   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Kennlinieneditor der Waermepumpe — acht Felder aus
+        /// <c>EPOS.UI.Dialoge.Waermepumpe.KennlinienKiSicht</c>, drei davon SPALTEN.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Ueberlagerung mit eigenem Arbeitsstand</b> — dieselbe Bauart wie
+        /// <see cref="KiMaskennamen.PV_ANLAGENWERTE"/>: Der Editor bearbeitet eine KOPIE
+        /// der Stuetzstellen, „OK" gibt sie an den Wirt zurueck (Waermepumpen-Verwaltung
+        /// oder -Anlage), und der gleicht sie im Kern ab. Angemeldet sind Auffrischen und
+        /// Schreibschutz, KEIN Speicherweg — <c>dialog_speichern</c> lehnt benannt ab.
+        /// </para>
+        /// <para>
+        /// <b>Die Stuetzstellen sind SPALTEN der gewaehlten Vorlaufstufe</b>; nur deren
+        /// Zeilen stehen im Raster. Die Stufe selbst ist ein Wahlfeld und SATZWAHL: Sie
+        /// wechselt, was angezeigt wird, und bleibt auch am Auslieferungssatz frei.
+        /// </para>
+        /// <para>
+        /// <b>Anlegen und Entfernen bleiben beim Anwender</b> (KI-D-Q11): „Neue
+        /// Vorlauftemperatur", „Daten uebernehmen" und der Papierkorb einer Zeile. Der
+        /// Assistent fuellt die Felder davor.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Kennlinien()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.KENNLINIEN,
+                anzeigename: KiDialogTexte.MaskeKennlinien,
+                felder: new[]
+                {
+                    new KiDialogFeld("vorlauf", "KennlinienKiSicht.Vorlauf",
+                                     KiDialogTexte.WpklVorlaufName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.WpklVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true,
+                                     satzwahl: true),
+                    new KiDialogFeld("neuer_vorlauf", "KennlinienKiSicht.NeuerVorlauf",
+                                     KiDialogTexte.WpklNeuerVorlaufName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklNeuerVorlaufErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+
+                    // ---- Die Stuetzstellen der gewaehlten Stufe: SPALTEN --------------
+                    new KiDialogFeld("temperatur", "KennlinienKiSicht.Zeilen[].Temperatur",
+                                     KiDialogTexte.WpklTemperaturName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("cop", "KennlinienKiSicht.Zeilen[].Cop",
+                                     KiDialogTexte.WpklCopName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklCopErl, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+                    new KiDialogFeld("ptherm", "KennlinienKiSicht.Zeilen[].Ptherm",
+                                     KiDialogTexte.WpklPthermName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklPthermErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true,
+                                     zeilenkennzeichen: "Kennzeichen"),
+
+                    // ---- Die Gruppe „Neue Stuetzstelle" ---------------------------------
+                    new KiDialogFeld("neu_temperatur", "KennlinienKiSicht.NeuTemperatur",
+                                     KiDialogTexte.WpklNeuTemperaturName, KiParameterTyp.Ganzzahl,
+                                     KiDialogTexte.WpklNeuTemperaturErl,
+                                     einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
+                    new KiDialogFeld("neu_cop", "KennlinienKiSicht.NeuCop",
+                                     KiDialogTexte.WpklNeuCopName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklNeuCopErl, leerErlaubt: true),
+                    new KiDialogFeld("neu_ptherm", "KennlinienKiSicht.NeuPtherm",
+                                     KiDialogTexte.WpklNeuPthermName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.WpklNeuPthermErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
+                    new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
         }
     }
 }

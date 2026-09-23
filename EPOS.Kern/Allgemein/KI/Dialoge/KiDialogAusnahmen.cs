@@ -232,9 +232,6 @@ namespace WindowsFormsApplication1
                            "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
 
             // ---- Offen: Stufe 2 --------------------------------------------------------
-            new KiAusnahme("KennlinienEditorDialog", KiAusnahmegrund.Offen,
-                           "Die Kennlinie ist eine Zahlentafel mit eigenem Editor.", STUFE_2,
-                           hilfeschluessel: "Kenndaten.btn_Help"),
             new KiAusnahme("ProjektKopfSeite", KiAusnahmegrund.Offen,
                            "Der Projektkopf des Assistenten-Ablaufs.", STUFE_2),
             new KiAusnahme("Startseite", KiAusnahmegrund.Offen,

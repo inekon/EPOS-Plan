@@ -36,6 +36,15 @@ public sealed class KennlinienZeile
     /// <summary>Wärmeleistung [kW]; <c>null</c> = leeres Feld.</summary>
     public double? Ptherm { get; set; }
 
+    /// <summary>
+    /// Das ZEILENKENNZEICHEN für den Hilfe-Assistenten (Welle #458): „Vorlauf/Temperatur",
+    /// etwa „35/-7". Es benennt eine Stützstelle in der Bestätigung des Assistenten
+    /// („Temperatur (35/-7)") statt ihrer Zeilennummer.
+    /// </summary>
+    public string Kennzeichen
+        => Vorlauf.ToString(System.Globalization.CultureInfo.InvariantCulture) + "/" +
+           (Temperatur?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "");
+
     /// <summary>Eine wortgleiche Kopie — die Hülle reicht dem Editor nie ihr Original.</summary>
     public KennlinienZeile Kopie() => new()
     {

@@ -2369,5 +2369,35 @@
         internal static string BadmMonatErl(int monat)
             => string.Format(System.Globalization.CultureInfo.CurrentCulture,
                              MyResource.Resource.KI_DLG_BADM_MONAT_ERL, Monat(monat));
+
+        // ============================================== Welle #458, Stufe 2
+        //
+        // Die Anzeigenamen stehen wo immer moeglich unter dem Schluessel der Maske
+        // selbst; eigene Namen nur, wo die Maske zwei Felder gleich beschriftet (die
+        // Stuetzstelle im Raster und die neue darunter).
+
+        // ---- Der Kennlinieneditor der Waermepumpe (Kenndaten)
+        internal static string MaskeKennlinien => MyResource.Resource.KI_DLG_MASKE_WPKL;
+        internal static string WpklVorlaufName => MyResource.Resource.KI_DLG_WPKL_VORLAUF_NAME;
+        internal static string WpklVorlaufErl => MyResource.Resource.KI_DLG_WPKL_VORLAUF_ERL;
+        internal static string WpklNeuerVorlaufName => MyResource.Resource.WPKL_LBL_NEUVORLAUF;
+        internal static string WpklNeuerVorlaufErl => MyResource.Resource.KI_DLG_WPKL_NEUVORLAUF_ERL;
+        internal static string WpklTemperaturName => MyResource.Resource.WPKL_LBL_TEMPERATUR;
+        internal static string WpklTemperaturErl => MyResource.Resource.KI_DLG_WPKL_TEMPERATUR_ERL;
+        internal static string WpklCopName => MyResource.Resource.WPKL_LBL_COP;
+        internal static string WpklCopErl => MyResource.Resource.KI_DLG_WPKL_COP_ERL;
+        internal static string WpklPthermName => MyResource.Resource.WPKL_LBL_PTHERM;
+        internal static string WpklPthermErl => MyResource.Resource.KI_DLG_WPKL_PTHERM_ERL;
+
+        /// <summary>„Neue Stützstelle: Temperatur" — Gruppe und Beschriftung der Maske.</summary>
+        internal static string WpklNeuTemperaturName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_TEMPERATUR;
+        internal static string WpklNeuTemperaturErl => MyResource.Resource.KI_DLG_WPKL_NEU_TEMPERATUR_ERL;
+        internal static string WpklNeuCopName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_COP;
+        internal static string WpklNeuCopErl => MyResource.Resource.KI_DLG_WPKL_NEU_COP_ERL;
+        internal static string WpklNeuPthermName
+            => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_PTHERM;
+        internal static string WpklNeuPthermErl => MyResource.Resource.KI_DLG_WPKL_NEU_PTHERM_ERL;
     }
 }

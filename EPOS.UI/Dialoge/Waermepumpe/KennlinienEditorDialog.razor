@@ -29,9 +29,16 @@
    und verwarf das Ergebnis stillschweigend - hier ist gar nichts erst
    bedienbar.
 
-   TASTATUR: Esc schliesst mit null. Enter ist nicht belegt. *@
+   TASTATUR: Esc schliesst mit null. Enter ist nicht belegt.
+
+   HILFE-ASSISTENT (Welle #458, Stufe 2): Der Editor meldet sich als EIGENE Maske
+   an (KiMaskennamen.KENNLINIEN) - er ist eine Ueberlagerung mit eigenem
+   Arbeitsstand, und angemeldet ist genau dieser Stand (KennlinienKiSicht). Kein
+   Speicherweg: "OK" bleibt beim Anwender, der Wirt gleicht ab. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
+@using WindowsFormsApplication1
+@implements IDisposable
 
 <div class="epos-dialog" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
 
@@ -254,7 +261,74 @@
         // Der Vorlaeufer filterte beim Aufbau auf den Vorlauf der ERSTEN Zeile
         // (Konstruktor:19, dr[2]) - nicht auf die kleinste Stufe.
         if (Zeilen.Count > 0) _vorlauf = Zeilen[0].Vorlauf;
+
+        // Welle #458, Stufe 2: die Ueberlagerung als EIGENE Maske - solange sie offen
+        // steht; ihr Dispose meldet sie ab.
+        _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.KENNLINIEN, () => KiSicht(), KiHaken());
     }
+
+    // =================================================================================
+    // Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =================================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private KennlinienKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten auf den ARBEITSSTAND des Editors: die Stufenwahl, die
+    /// Stützstellen der gewählten Stufe und die Felder davor. Gesetzt wird auf demselben
+    /// Weg wie von Hand — eine Stufe über die Liste, eine Zahl in die Zeile.
+    /// </summary>
+    private KennlinienKiSicht KiSicht() => _kiSicht ??= new KennlinienKiSicht
+    {
+        VorlaufLesen = () => _vorlauf,
+        VorlaufSetzen = KiVorlaufWaehlen,
+        Vorlaufstufen = () => Vorlaufstufen,
+        NeuerVorlaufLesen = () => _neuerVorlauf,
+        NeuerVorlaufSetzen = w => _neuerVorlauf = w,
+        ZeilenLesen = () => Sichtbar,
+        NeuTemperaturLesen = () => _neuTemperatur,
+        NeuTemperaturSetzen = w => _neuTemperatur = w,
+        NeuCopLesen = () => _neuCop,
+        NeuCopSetzen = w => _neuCop = w,
+        NeuPthermLesen = () => _neuPtherm,
+        NeuPthermSetzen = w => _neuPtherm = w
+    };
+
+    /// <summary>
+    /// Eine Stufe wählen wie in der Liste. Eine Stufe, die die Liste nicht führt, lehnt
+    /// der Editor benannt ab — angelegt wird sie mit „Neue Vorlauftemperatur".
+    /// </summary>
+    private void KiVorlaufWaehlen(int? stufe)
+    {
+        if (stufe is null || !Vorlaufstufen.Contains(stufe.Value))
+            throw new InvalidOperationException(string.Format(
+                System.Globalization.CultureInfo.CurrentCulture,
+                Resource.KI_DLG_WPKL_STUFE_FEHLT, stufe?.ToString() ?? "", BtnNeuVorlaufText));
+
+        VorlaufWaehlen(stufe.Value);
+    }
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf: auffrischen und den
+    /// Schreibschutz melden.
+    /// </summary>
+    /// <remarks>
+    /// <b>Kein Speicherweg</b> — „OK" gibt die Stützstellen an den Wirt zurück, und
+    /// der gleicht sie im Kern ab; das bleibt der Klick des Anwenders
+    /// (<c>dialog_speichern</c> lehnt benannt ab). <b>Schreibgeschützt</b> ist der
+    /// Editor eines Auslieferungssatzes (<see cref="NurLesen"/>); die Stufenwahl bleibt
+    /// dabei frei (Satzwahl), ansehen darf man jede Stufe.
+    /// </remarks>
+    private KiMaskenhaken KiHaken() => new KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => NurLesen,
+        Schreibschutzgrund = () => NurLesenText
+    };
+
+    /// <inheritdoc/>
+    public void Dispose() => _kiMaske?.Dispose();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

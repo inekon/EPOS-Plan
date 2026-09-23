@@ -251,7 +251,12 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.PROJEKT_KOPIE,
           typeof(EPOS.UI.Dialoge.Projekt.ProjektKopieKiSicht) },
         { KiMaskennamen.PROJEKT_VARIANTE,
-          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) }
+          typeof(EPOS.UI.Dialoge.Projekt.ProjektVarianteKiSicht) },
+
+        // Welle #458, Stufe 2: die uebrigen Masken mit Einstellwerten. Die
+        // Ueberlagerung „Kenndaten" meldet ihren Arbeitsstand ueber eine Sichtklasse
+        // an - die Stuetzstellen sind Spalten der gewaehlten Vorlaufstufe.
+        { KiMaskennamen.KENNLINIEN, typeof(KennlinienKiSicht) }
     };
 
     /// <summary>
@@ -353,15 +358,16 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_achtundsechzig_Masken()
+    public void Der_Katalog_fuehrt_neunundsechzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
         // VIERUNDSECHZIG seit der Welle KI-F7: Die Ueberlagerung „Anlagenwerte" der
         // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
-        // Verwaltungen der Erzeugerkataloge (KI-D-Q11).
-        Assert.Equal(68, katalog.Anzahl);
+        // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
+        // Kennlinieneditor.
+        Assert.Equal(69, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1351,7 +1357,13 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse KostenKomponenteKiSicht: den Arbeitsstand " +
             "samt Raster reicht sie unverändert durch, dazu die Komponentenwahl aus " +
             "einem privaten Feld des Dialogs und die PV-Wahl samt PV-Projekt aus dem " +
-            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests"
+            "Baustein ErtragBonus; Zeuge ist KostenKomponenteDialogTests",
+
+        // Welle #458, Stufe 2
+        [KiMaskennamen.KENNLINIEN] =
+            "bindet über die Sichtklasse KennlinienKiSicht auf den Arbeitsstand der " +
+            "Überlagerung: Stufenwahl, die Zeilen der gewählten Stufe als Spalten und " +
+            "die Felder der neuen Stützstelle; Zeuge ist KennlinienEditorDialogTests"
     };
 
     /// <summary>

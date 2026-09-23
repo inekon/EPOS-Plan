@@ -501,7 +501,16 @@ namespace WindowsFormsApplication1
 
                 // „Als Variante speichern" haengt am Menuepunkt „Projekt → Als
                 // Variante speichern…" - siehe PROJEKT_VARIANTE.
-                { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE }
+                { KiMaskennamen.PROJEKT_VARIANTE, PROJEKT_VARIANTE },
+
+                // ---- Welle #458, Stufe 2 --------------------------------------
+                //
+                // Der KENNLINIENEDITOR geht als Ueberlagerung aus der
+                // Waermepumpen-Verwaltung und aus der Waermepumpen-Anlage auf und
+                // braucht eine gewaehlte Waermepumpe; kontextfrei gibt es ihn nicht.
+                // Sein Ziel ist deshalb die Verwaltung - dieselbe Bauart wie die
+                // Ueberlagerung „Anlagenwerte" der Photovoltaik.
+                { KiMaskennamen.KENNLINIEN, Masken.WpAdministration }
             };
 
         /// <summary>

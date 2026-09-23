@@ -25955,4 +25955,37 @@ Do you want to allow this?</value>
   <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
     <value>The list of load profiles contains no stored profile.</value>
   </data>
+  <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
+    <value>Heat pump characteristics</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_NAME" xml:space="preserve">
+    <value>Flow temperature level</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature level whose support points the grid shows, in °C. Choosing it is the same as clicking it in the flow list; a new level is only created with “New flow temperature”.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEUVORLAUF_ERL" xml:space="preserve">
+    <value>The flow temperature of a new level in °C. The level is only created with the “New flow temperature” button, which the user presses.</value>
+  </data>
+  <data name="KI_DLG_WPKL_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The outdoor or source temperature of this support point in °C; it places the point on the curve of the chosen flow temperature level.</value>
+  </data>
+  <data name="KI_DLG_WPKL_COP_ERL" xml:space="preserve">
+    <value>The coefficient of performance (COP) of the heat pump at this support point — heat output divided by electrical input, without unit.</value>
+  </data>
+  <data name="KI_DLG_WPKL_PTHERM_ERL" xml:space="preserve">
+    <value>The heat output of the heat pump at this support point in kW.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_TEMPERATUR_ERL" xml:space="preserve">
+    <value>The temperature of the next support point in °C. The row is only created with “Accept data”, and only when temperature, COP and Ptherm are set.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_COP_ERL" xml:space="preserve">
+    <value>The coefficient of performance (COP) of the next support point, without unit. The row is only created with “Accept data”.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_PTHERM_ERL" xml:space="preserve">
+    <value>The heat output of the next support point in kW. The row is only created with “Accept data”.</value>
+  </data>
+  <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
+    <value>The flow temperature level “{0}” is not in the list. The user creates a new level with “{1}”.</value>
+  </data>
 </root>

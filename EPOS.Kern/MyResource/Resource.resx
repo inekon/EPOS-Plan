@@ -25962,4 +25962,37 @@ Möchten Sie das zulassen?</value>
   <data name="KI_PEAK_KEINE_GANGLINIE" xml:space="preserve">
     <value>Die Liste der Lastgänge führt keine Ganglinie.</value>
   </data>
+  <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
+    <value>Kenndaten der Wärmepumpe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_NAME" xml:space="preserve">
+    <value>Vorlaufstufe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlaufstufe, deren Stützstellen das Raster zeigt, in °C. Sie zu wählen ist derselbe Klick wie in der Vorlaufliste; eine neue Stufe entsteht erst mit „Neue Vorlauftemperatur“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEUVORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur einer neuen Stufe in °C. Angelegt wird die Stufe erst mit dem Knopf „Neue Vorlauftemperatur“, den der Anwender drückt.</value>
+  </data>
+  <data name="KI_DLG_WPKL_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Außen- bzw. Quelltemperatur dieser Stützstelle in °C; sie ordnet die Stützstelle auf der Kennlinie der gewählten Vorlaufstufe ein.</value>
+  </data>
+  <data name="KI_DLG_WPKL_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der Wärmepumpe an dieser Stützstelle — Wärmeleistung geteilt durch elektrische Leistung, ohne Einheit.</value>
+  </data>
+  <data name="KI_DLG_WPKL_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der Wärmepumpe an dieser Stützstelle in kW.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur der nächsten Stützstelle in °C. Die Zeile entsteht erst mit „Daten übernehmen“, und nur, wenn Temperatur, COP und Ptherm gesetzt sind.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der nächsten Stützstelle, ohne Einheit. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der nächsten Stützstelle in kW. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
+    <value>Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an.</value>
+  </data>
 </root>

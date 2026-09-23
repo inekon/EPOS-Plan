@@ -32354,6 +32354,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WPKL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WPKL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe im Projekt ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_WP_ANLAGE {
@@ -36805,6 +36814,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_ZINS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungszahl (COP) der Wärmepumpe an dieser Stützstelle — Wärmeleistung geteilt durch elektrische Leistung, ohne Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_COP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_COP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur einer neuen Stufe in °C. Angelegt wird die Stufe erst mit dem Knopf „Neue Vorlauftemperatur“, den der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEUVORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEUVORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungszahl (COP) der nächsten Stützstelle, ohne Einheit. Die Zeile entsteht erst mit „Daten übernehmen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_COP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_COP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleistung der nächsten Stützstelle in kW. Die Zeile entsteht erst mit „Daten übernehmen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_PTHERM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_PTHERM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur der nächsten Stützstelle in °C. Die Zeile entsteht erst mit „Daten übernehmen“, und nur, wenn Temperatur, COP und Ptherm gesetzt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleistung der Wärmepumpe an dieser Stützstelle in kW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_PTHERM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_PTHERM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_STUFE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_STUFE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außen- bzw. Quelltemperatur dieser Stützstelle in °C; sie ordnet die Stützstelle auf der Kennlinie der gewählten Vorlaufstufe ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufstufe, deren Stützstellen das Raster zeigt, in °C. Sie zu wählen ist derselbe Klick wie in der Vorlaufliste; eine neue Stufe entsteht erst mit „Neue Vorlauftemperatur“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlaufstufe ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_VORLAUF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_VORLAUF_NAME", resourceCulture);
             }
         }
         

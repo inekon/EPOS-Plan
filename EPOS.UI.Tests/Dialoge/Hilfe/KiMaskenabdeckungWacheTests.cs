@@ -127,6 +127,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
+        new("KennlinienEditorDialog", 7),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 3),
         new("KostenKomponenteDialog", 3),
