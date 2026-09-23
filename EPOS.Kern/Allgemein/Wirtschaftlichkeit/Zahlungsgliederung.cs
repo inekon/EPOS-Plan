@@ -336,7 +336,8 @@ namespace WindowsFormsApplication1
         public int Jahre;
 
         /// <summary>Die Stände, deren Reihen in mindestens einem Szenario nicht zum
-        /// gespeicherten Lauf passen (oder in sich nicht stimmig sind).</summary>
+        /// gespeicherten Lauf passen, in sich nicht stimmig sind oder zu einem gerechneten
+        /// Ergebnis ganz fehlen.</summary>
         public HashSet<int> Abweichend = new HashSet<int>();
 
         /// <summary>Die Gliederung eines Standes in einem Szenario; <c>null</c> = keine.</summary>
@@ -409,6 +410,12 @@ namespace WindowsFormsApplication1
                 }
                 satz._je[s] = je;
             }
+
+            // Ein Stand mit gerechnetem Ergebnis, zu dem der Verlauf gar keine Reihe trägt
+            // (nach dem letzten Lauf angehakt), fehlt ebenso — benannt, nicht still.
+            foreach (WirtschaftlichkeitErgebnis e in ergebnisse)
+                if (e.Kapitalwert.HasValue && satz.Von(e.IdProjekt, e.Szenario) == null)
+                    satz.Abweichend.Add(e.IdProjekt);
             return satz;
         }
 

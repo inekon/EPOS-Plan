@@ -69667,7 +69667,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Die Jahresreihen passen nicht zu den gespeicherten Ergebnissen — „Berechnen“ rechnet sie neu. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Zu den gespeicherten Ergebnissen liegen keine passenden Jahresreihen vor — „Berechnen“ rechnet sie neu. ähnelt.
         /// </summary>
         public static string WIRT_ZR_ABWEICHEND {
             get {

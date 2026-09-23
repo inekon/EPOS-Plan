@@ -16683,7 +16683,7 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
     <value>Nominal and undiscounted, expenses negative; year 0 carries the investment net of grants, the last year the residual value. The row “Present value” discounts every column at i = {0} % — the same figures as the breakdown under “Where does the figure come from?”; their sum is the net present value ({1} €).</value>
   </data>
   <data name="WIRT_ZR_ABWEICHEND" xml:space="preserve">
-    <value>{0}: the annual series do not match the stored results — “Calculate” recomputes them.</value>
+    <value>{0}: no matching annual series for the stored results — “Calculate” recomputes them.</value>
   </data>
   <data name="WIRT_SZ_QUELLEN" xml:space="preserve">
     <value>Scenario values from two sources: maintained best/worst case fields of the cost items (amount and service life) take precedence; where none is maintained, the flat parameter set of the scenario applies (interest rate, energy and operating price escalation, investment, revenue and service life change). Investment-linked operating costs follow the investment deviation of the scenario. The capital cost escalation p_I indexes the replacement investments and the price basis of the residual value; if it is not maintained separately it follows the operating rate (p_B), in the scenario at the same distance of 1 percentage point as p_E and p_B.</value>

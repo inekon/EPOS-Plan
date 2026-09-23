@@ -214,6 +214,13 @@ namespace EPOS.Kern.Tests
             Assert.NotNull(satz.Von(900, ERWARTET));
             Assert.Equal(new[] { 901 }, satz.Abweichend.ToArray());
             Assert.False(satz.Vollstaendig(901));
+
+            // Ein gerechneter Stand, zu dem der Verlauf gar keine Reihe trägt (nach dem Lauf
+            // angehakt), fehlt ebenso benannt; einer ohne Kapitalwert (Fehlgrund) nicht.
+            gespeichert.Add(new WirtschaftlichkeitErgebnis { IdProjekt = 902, Szenario = ERWARTET, Kapitalwert = 5.0 });
+            gespeichert.Add(new WirtschaftlichkeitErgebnis { IdProjekt = 903, Szenario = ERWARTET, Fehlgrund = "ohne Preise" });
+            Zahlungsgliederungen mitNeuem = Zahlungsgliederungen.Aus(verlauf, p, gespeichert);
+            Assert.Equal(new[] { 901, 902 }, mitNeuem.Abweichend.OrderBy(x => x).ToArray());
         }
 
         // =====================================================================
