@@ -322,7 +322,7 @@ Nach Abschnitt 8 wurde die Stufe Z2 am selben Tag auf dem Zweig `z2` ausgeführt
   `ZapfprofilAuslegungDialog.razor` samt `BedarfstagKonstruktor.razor`, benannt gesperrte Elemente
   mit Grund, `HuellenTextschluesselWacheTests`, Wiki-Abschnitt „Auslegung" (Repo-Quelle);
   Nachtrag N11.
-- **Statuszeile und Protokoll:** #450, Protokoll
+- **Statuszeile und Protokoll:** #451, Protokoll
   [`2026-09-23_Z2_Auslegung_deterministisch.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-23_Z2_Auslegung_deterministisch.md).
 - **Gate im Worktree (vor dem Merge):** Kern-Filter 0 Fehler; voller Testlauf 11 455 grün, 0 rot,
   1 übersprungen; ChartProben 145 Bilder ohne Verstoß; Windows-Schale 0 Fehler.
@@ -352,7 +352,7 @@ Nach Abschnitt 8 wurde die Stufe Z2 am selben Tag auf dem Zweig `z2` ausgeführt
   konstruierten Tag von selbst; „Bedarfstag konstruieren…" mit Zeilen hinzufügen und entfernen,
   Name (ein belegter wird mit einem freien Vorschlag abgelehnt), eine Fehleingabe hält das OK an
   und wird benannt, erneutes Öffnen beginnt mit den Zeilen des Entwurfs. Dazu englische Oberfläche
-  gegenlesen, Wiki-Upload (gebündelt), Versionsnummer für den Logbuch-Satz (Statuszeile #450) und
+  gegenlesen, Wiki-Upload (gebündelt), Versionsnummer für den Logbuch-Satz (Statuszeile #451) und
   DIN 4708-1 nachbeschaffen (K1, Lücke (a) aus Abschnitt 8).
 - **Folgeposten:** zehn Auslegungsbilder und elf Zapfprofilbilder aus Z1 in die Linux-Messlatte der
   ChartProben; ΣV̇_A der Entnahmearmaturen ins Datenmodell für DIN 1988-300 (Schemaschritt);

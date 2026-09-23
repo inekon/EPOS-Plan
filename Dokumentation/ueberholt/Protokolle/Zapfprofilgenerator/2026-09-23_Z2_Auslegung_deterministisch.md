@@ -1,6 +1,6 @@
 # Z2 — Zapfprofilgenerator: Auslegung deterministisch (Protokoll, 23.09.2026)
 
-Statuszeile #450 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Zeile Z2
+Statuszeile #451 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md); Zeile Z2
 in Kapitel 7 und die Nachträge N10 und N11 im
 [Umsetzungskonzept](../../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md); Abschnitt 9
 der [Übergabe](../../../aktuell/Zapfprofilgenerator/2026-09-23_Uebergabe_Zapfprofilgenerator.md);
@@ -116,7 +116,7 @@ Stufe Einfach („Schnellauslegung"); der Punkt ist Ergebnis, nicht Eingabe; Sä
 - **ChartProben-Messlatte Linux:** zehn Auslegungsbilder (N11 (a)) und elf Zapfprofilbilder aus Z1
   beim nächsten Kern-Lauf auf ubuntu aufnehmen (alte Zeilen gleich).
 - **Wiki und Logbuch:** Upload „Brauchwasser-Zapfprofil" samt Abschnitt „Auslegung" gebündelt;
-  Logbuch-Satz (Statuszeile #450), Versionsnummer beim Anwender.
+  Logbuch-Satz (Statuszeile #451), Versionsnummer beim Anwender.
 - **DIN 1988-300:** ΣV̇_A der Entnahmearmaturen ins Datenmodell (Schemaschritt; N10 (c), N11 (f)).
 - **Erzeugerart und Werkstoff:** Laufangaben ohne Spalte; speichern oder ableiten (N10 (i), Z4).
 - **Katalogpaket:** Auslieferungswerte (Speichertemperatur-Vorgabe, GLF-Grenze, Übertragerpaare,
