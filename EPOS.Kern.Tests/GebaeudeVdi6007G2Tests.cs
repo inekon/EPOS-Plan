@@ -345,7 +345,7 @@ namespace EPOS.Kern.Tests
                 for (int i = 0; i < ctrl.rows; i++)
                 {
                     ProjektGebaeudeModel g = ctrl.items[i];
-                    if (g.Bauweise / g.Nutzflaeche < 5.0) continue;         // 1009-Fall: benannt abgelehnt
+                    if (g.Bauweise / g.Nutzflaeche < 5.0) continue;         // unplausible Bauweise: benannt abgelehnt
                     g.Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
                     gebaeude++;
 
