@@ -23,8 +23,10 @@ namespace EPOS.Kern.Tests
     /// fiele sonst erst in einer Vorlage oder einem Wiki-Beispiel auf.</para>
     ///
     /// <para><b>Vier Fälle:</b> keine Zeile mit <c>Status = 'AUSLIEFERUNG'</c>; jede
-    /// Katalogzeile ist <c>EIGEN</c> oder trägt in jeder Herkunftsspalte <c>FIKTIV</c> (die
-    /// Tagesgänge, die keinen Status haben, tragen <c>FIKTIV</c>); die Katalogversion ist nie
+    /// Katalogzeile ist <c>EIGEN</c> UND trägt in jeder Herkunftsspalte <c>FIKTIV</c> und in
+    /// jeder Quellenspalte „Testkatalog (fiktiv)“ (Kapitel 6 (b) verlangt alles zugleich;
+    /// eine Tabelle ohne Status — die Tagesgänge — prüft nur Herkunft und Quelle, eine ohne
+    /// Herkunftsspalte — der Tagesgangsatz — nur den Status); die Katalogversion ist nie
     /// leer; das Einspielskript <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist
     /// wiederholbar — ein weiterer Lauf auf einer Arbeitskopie ändert keine Tww-Zeile.</para>
     ///
@@ -50,6 +52,12 @@ namespace EPOS.Kern.Tests
 
         private const string SKRIPT = "Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py";
 
+        /// <summary>Die Quelle jeder Zeile des fiktiven Testkatalogs (Kapitel 6 (b)).</summary>
+        private const string QUELLE_FIKTIV = "Testkatalog (fiktiv)";
+
+        /// <summary>Frist eines Skriptlaufs; danach wird abgebrochen statt die CI zu blockieren.</summary>
+        private const int SKRIPT_FRIST_MS = 120000;
+
         [Fact]
         public void Keine_Zeile_mit_Status_AUSLIEFERUNG_in_der_Testdatenbank()
         {
@@ -71,39 +79,113 @@ namespace EPOS.Kern.Tests
                 string.Join("\n", funde));
         }
 
+        /// <summary>
+        /// Kapitel 6 (b) verlangt alles ZUGLEICH: <c>Status = 'EIGEN'</c>, Herkunftsart
+        /// <c>FIKTIV</c> in jeder Herkunftsspalte und die Quelle „Testkatalog (fiktiv)“ in jeder
+        /// Quellenspalte. Eine Zeile <c>EIGEN</c> mit Herkunftsart <c>VERFAHREN</c> wäre genau
+        /// der Weg, auf dem eine echte Normzahl als Anwenderkopie in die Testdatenbank käme;
+        /// eine Zeile <c>IMPORT</c> mit <c>FIKTIV</c> ein mitgenommener Fremdkatalog.
+        /// </summary>
         [Fact]
-        public void Jede_Tww_Katalogzeile_ist_FIKTIV_oder_EIGEN()
+        public void Jede_Tww_Katalogzeile_ist_EIGEN_und_FIKTIV()
         {
             string pfad = Testdatenbank();
             if (pfad == null) return;
             LfsZeigerProbe.Sicherstellen(pfad);
 
             using SqliteConnection c = Oeffnen(pfad);
+            List<string> funde = Verstoesse(c, out long geprueft);
+            Assert.True(funde.Count == 0,
+                "Tww-Katalogzeilen der Testdatenbank, die nicht zugleich EIGEN, FIKTIV und mit der Quelle \"" +
+                QUELLE_FIKTIV + "\" gefuehrt sind (Kapitel 6 (b)):\n" + string.Join("\n", funde));
+            Assert.True(geprueft > 0, "Der fiktive Testkatalog fehlt — die Probe waere leer.");
+        }
+
+        /// <summary>
+        /// Gegenprobe auf einer Arbeitskopie: Genau die zwei Faelle, die eine Regel „EIGEN ODER
+        /// FIKTIV“ durchliesse, schlagen an — eine Nutzungsart EIGEN mit Herkunftsart
+        /// VERFAHREN, ein Parameter IMPORT mit Herkunftsart FIKTIV — und dazu ein Tagesgang
+        /// mit fremder Quelle.
+        /// </summary>
+        [Fact]
+        public void Gegenprobe_EIGEN_mit_VERFAHREN_und_IMPORT_mit_FIKTIV_schlagen_an()
+        {
+            string pfad = Testdatenbank();
+            if (pfad == null) return;
+            LfsZeigerProbe.Sicherstellen(pfad);
+
+            string ordner = Path.Combine(Path.GetTempPath(), "epos-twwwache-" + Guid.NewGuid().ToString("N").Substring(0, 8));
+            Directory.CreateDirectory(ordner);
+            try
+            {
+                string kopie = Path.Combine(ordner, "Kenndaten_Test.sqlite");
+                File.Copy(pfad, kopie);
+                using (var s = new SqliteConnection(new SqliteConnectionStringBuilder
+                       { DataSource = kopie, Pooling = false }.ToString()))
+                {
+                    s.Open();
+                    using SqliteCommand b = s.CreateCommand();
+                    b.CommandText =
+                        "UPDATE \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" SET \"Bedarf_Herkunftsart\" = $v " +
+                        "WHERE \"ID\" = (SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\");" +
+                        "UPDATE \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\" SET \"Status\" = $i " +
+                        "WHERE \"ID\" = (SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_PARAMETER_STAMM + "\");" +
+                        "UPDATE \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM + "\" SET \"Quelle\" = 'Probe' " +
+                        "WHERE \"ID\" = (SELECT MIN(\"ID\") FROM \"" + TwwSchema.TAB_TWW_TAGESGANG_STAMM + "\");";
+                    b.Parameters.AddWithValue("$v", TwwSchema.HERKUNFT_VERFAHREN);
+                    b.Parameters.AddWithValue("$i", TwwSchema.STATUS_IMPORT);
+                    Assert.Equal(3, b.ExecuteNonQuery());
+                }
+
+                using SqliteConnection c = Oeffnen(kopie);
+                List<string> funde = Verstoesse(c, out _);
+                Assert.Equal(new[]
+                {
+                    TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + ": 1", TwwSchema.TAB_TWW_PARAMETER_STAMM + ": 1",
+                    TwwSchema.TAB_TWW_TAGESGANG_STAMM + ": 1"
+                }, funde.ToArray());
+            }
+            finally
+            {
+                try { SqliteConnection.ClearAllPools(); } catch { }
+                try { Directory.Delete(ordner, true); } catch { /* Aufraeumen darf nicht scheitern */ }
+            }
+        }
+
+        /// <summary>
+        /// Die Tabellen mit Zeilen, die nicht zugleich <c>EIGEN</c> (wo es Status gibt),
+        /// <c>FIKTIV</c> in jeder Herkunftsspalte und die fiktive Quelle in jeder
+        /// Quellenspalte tragen; <paramref name="geprueft"/> zaehlt die gepruefte Zeilen.
+        /// </summary>
+        private static List<string> Verstoesse(SqliteConnection c, out long geprueft)
+        {
             var funde = new List<string>();
-            long geprueft = 0;
+            geprueft = 0;
             foreach (string t in KOEPFE.Concat(KINDER))
             {
                 Assert.True(TabelleDa(c, t), t + " fehlt in der Testdatenbank (Schemaschritt 102).");
                 List<string> spalten = Spalten(c, t);
                 List<string> herkunft = spalten.Where(s => s == "Herkunftsart" ||
                                                            s.EndsWith("_Herkunftsart", StringComparison.Ordinal)).ToList();
+                List<string> quelle = spalten.Where(s => s == "Quelle" ||
+                                                         s.EndsWith("_Quelle", StringComparison.Ordinal)).ToList();
                 bool mitStatus = spalten.Contains("Status");
-                if (!mitStatus && herkunft.Count == 0) continue;   // Ereignisse: am Kopf geprueft
+                if (!mitStatus && herkunft.Count == 0 && quelle.Count == 0) continue;   // Ereignisse: am Kopf geprueft
 
-                // Verletzt: weder EIGEN noch in JEDER Herkunftsspalte FIKTIV.
-                string fiktiv = herkunft.Count == 0
-                    ? "0"
-                    : string.Join(" AND ", herkunft.Select(h => "\"" + h + "\" = $f"));
-                string eigen = mitStatus ? "\"Status\" = $e" : "0";
-                long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE NOT ((" + eigen + ") OR (" + fiktiv + "))",
-                              null, ("$f", TwwSchema.HERKUNFT_FIKTIV), ("$e", TwwSchema.STATUS_EIGEN));
+                // Verlangt: EIGEN (wo es Status gibt) UND in JEDER Herkunftsspalte FIKTIV UND in
+                // JEDER Quellenspalte die fiktive Quelle. Verletzt ist jede Zeile, der eines fehlt
+                // (IS statt =, damit NULL ebenfalls verletzt).
+                var bedingung = new List<string>();
+                if (mitStatus) bedingung.Add("\"Status\" IS $e");
+                bedingung.AddRange(herkunft.Select(h => "\"" + h + "\" IS $f"));
+                bedingung.AddRange(quelle.Select(q => "\"" + q + "\" IS $q"));
+                long n = Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\" WHERE NOT (" + string.Join(" AND ", bedingung) + ")",
+                              null, ("$f", TwwSchema.HERKUNFT_FIKTIV), ("$e", TwwSchema.STATUS_EIGEN),
+                              ("$q", QUELLE_FIKTIV));
                 if (n > 0) funde.Add(t + ": " + n);
                 geprueft += Zahl(c, "SELECT COUNT(*) FROM \"" + t + "\"", null);
             }
-            Assert.True(funde.Count == 0,
-                "Tww-Katalogzeilen der Testdatenbank, die weder EIGEN noch FIKTIV sind (Kapitel 6 (b)):\n" +
-                string.Join("\n", funde));
-            Assert.True(geprueft > 0, "Der fiktive Testkatalog fehlt — die Probe waere leer.");
+            return funde;
         }
 
         [Fact]
@@ -219,10 +301,18 @@ namespace EPOS.Kern.Tests
                 {
                     using Process p = Process.Start(start);
                     if (p == null) continue;
-                    string aus = p.StandardOutput.ReadToEnd();
-                    string fehler = p.StandardError.ReadToEnd();
-                    p.WaitForExit();
-                    return (p.ExitCode, aus + fehler);
+                    // Beide Kanaele NEBENEINANDER lesen: Nacheinander blockierten Prozess und
+                    // Test sich gegenseitig, sobald stderr den Pipe-Puffer fuellt.
+                    var aus = p.StandardOutput.ReadToEndAsync();
+                    var fehler = p.StandardError.ReadToEndAsync();
+                    if (!p.WaitForExit(SKRIPT_FRIST_MS))
+                    {
+                        try { p.Kill(entireProcessTree: true); } catch { /* schon beendet */ }
+                        Assert.Fail("Das Einspielskript lief laenger als " + (SKRIPT_FRIST_MS / 1000) +
+                                    " s und wurde abgebrochen: " + skript);
+                    }
+                    p.WaitForExit();   // leert die asynchronen Leser
+                    return (p.ExitCode, aus.GetAwaiter().GetResult() + fehler.GetAwaiter().GetResult());
                 }
                 catch (Win32Exception) { /* Programm nicht vorhanden - naechstes */ }
             }
