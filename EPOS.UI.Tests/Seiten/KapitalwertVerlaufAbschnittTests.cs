@@ -300,6 +300,13 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     //  Die Stelle auf der Seite
     // =====================================================================
 
+    /// <summary>
+    /// Das Markup ohne die Ereigniskennungen des Zeichenlaufs (<c>blazor:onpointerenter="6"</c>):
+    /// bunit zählt sie je Instanz fort, das Bild selbst tragen sie nicht.
+    /// </summary>
+    private static string OhneKennungen(string markup)
+        => System.Text.RegularExpressions.Regex.Replace(markup, @"\s+blazor:[A-Za-z:]+=""[^""]*""", "");
+
     private static WirtschaftlichkeitStand Stand() => new WirtschaftlichkeitStand
     {
         Varianten = new[]
@@ -429,13 +436,13 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         var cut = Render<WirtschaftlichkeitSeite>(p => p
             .Add(x => x.Laden, () => stand)
             .Add(x => x.Verlauf, dienste));
-        // Verglichen wird das gezeichnete SVG (der Rahmen des Bausteins trägt je Instanz
-        // eigene Element- und Ereigniskennungen).
-        string spanneKennzahlen = cut.FindAll("section.epos-gruppenkopf")[1]
-                                     .QuerySelector(".epos-wirt-spanne-teil svg")!.OuterHtml;
+        // Verglichen wird das gezeichnete SVG ohne die Ereigniskennungen des Zeichenlaufs:
+        // Rahmen und Datenelemente tragen je Instanz eigene Kennungen, die bunit fortzählt.
+        string spanneKennzahlen = OhneKennungen(cut.FindAll("section.epos-gruppenkopf")[1]
+                                     .QuerySelector(".epos-wirt-spanne-teil svg")!.OuterHtml);
 
-        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[1].Click();   // ValERI-Bewertung
         int vorher = gezeichnet;
+        cut.FindAll(".epos-wirt-kopf .epos-wirt-umschalter button")[1].Click();   // ValERI-Bewertung
 
         IElement block4 = cut.FindAll("section.epos-gruppenkopf")[3];
         Assert.Equal("4 · Unsicherheit", block4.QuerySelector(".epos-gruppenkopf-titel")!.TextContent.Trim());
@@ -453,7 +460,8 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         IElement spanne = block4.QuerySelector(".epos-wirt-spanne-teil")!;
         Assert.NotNull(spanne.QuerySelector("[data-marke='nulllinie']"));
         Assert.NotNull(spanne.QuerySelector("[data-marke='reihe:WP klein']"));
-        Assert.Equal(spanneKennzahlen, spanne.QuerySelector("svg")!.OuterHtml);
+        Assert.Contains("data-wert=", spanneKennzahlen);
+        Assert.Equal(spanneKennzahlen, OhneKennungen(spanne.QuerySelector("svg")!.OuterHtml));
 
         // Der Verlauf: dieselbe Komponente mit derselben Datenseite, Bild und Haken.
         IRenderedComponent<KapitalwertVerlaufAbschnitt> verlauf = cut.FindComponent<KapitalwertVerlaufAbschnitt>();
