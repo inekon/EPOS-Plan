@@ -70749,6 +70749,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Brauchwasserprofile des Projekts wurden nicht gespeichert — {0} ähnelt.
+        /// </summary>
+        public static string ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT {
+            get {
+                return ResourceManager.GetString("ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die hoch ähnelt.
         /// </summary>
         public static string ZPG_NIVEAU_HOCH {

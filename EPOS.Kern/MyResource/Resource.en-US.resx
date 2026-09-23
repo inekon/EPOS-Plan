@@ -23903,6 +23903,9 @@ Do you want to allow this?</value>
   <data name="ZPG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>The draw-off profile was not saved — {0}</value>
   </data>
+  <data name="ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The project's DHW profiles were not saved — {0}</value>
+  </data>
   <data name="ZPG_MSG_ZONE" xml:space="preserve">
     <value>Zone “{0}”: {1}</value>
   </data>

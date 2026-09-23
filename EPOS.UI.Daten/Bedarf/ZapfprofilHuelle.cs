@@ -654,7 +654,8 @@ namespace WindowsFormsApplication1
         /// Scheitert ein Schritt, rollt der Vorgang alles zurück: ein Fehler der Zuordnungen hat
         /// sich schon selbst gemeldet (<c>DataRepository.FehlerMelden</c>, Meldung <c>null</c>),
         /// eine Ablehnung des Zapfprofils kommt als Meldung zurück. Nach dem Commit gilt der
-        /// Behälter wieder als unverändert. Aufrufer: Startseite und Gebäudekatalog.
+        /// Behälter wieder als unverändert. Aufrufer: <see cref="Schreibweg"/> im OK des
+        /// Bedarfsprofil-Dialogs (Startseite und Gebäudekatalog).
         /// </summary>
         internal static ZapfprofilSpeicherergebnis BrauchwasserSchreiben(int idProjekt,
                                                                          List<Z_ProjektBrauchwasserModel> liste,
@@ -674,6 +675,41 @@ namespace WindowsFormsApplication1
             }
             behaelter?.Geschrieben();
             return e;
+        }
+
+        /// <summary>
+        /// <b>Der Schreibweg im OK des Bedarfsprofil-Dialogs</b> (5.2; Parameter <c>Speichern</c>
+        /// von <c>BedarfsProfileDialog</c>): die Projektzeilen des Dialogs als Brauchwasser-
+        /// Zuordnungen und der <paramref name="behaelter"/> (auch <c>null</c>: nur die Zuordnungen)
+        /// in EINEM Vorgang (<see cref="BrauchwasserSchreiben"/>), gerufen, BEVOR der Dialog
+        /// schließt. Leer = geschrieben. Sonst der Grund in der Oberflächensprache — die Ablehnung
+        /// des Zapfprofils oder, wenn die Zuordnungen scheitern, deren Datenbankmeldung; der Dialog
+        /// bleibt dann offen. Die Datenbankmeldung wird gesammelt statt als Plattformfenster
+        /// gezeigt: Der Rückruf kommt aus einem Ereignis der Oberfläche (Hüllenregel b).
+        /// </summary>
+        internal static string Schreibweg(int idProjekt, IEnumerable<BedarfsProfilZeile> zeilen,
+                                          ZapfprofilBehaelter behaelter)
+        {
+            var liste = new List<Z_ProjektBrauchwasserModel>();
+            foreach (BedarfsProfilZeile z in zeilen ?? Enumerable.Empty<BedarfsProfilZeile>())
+                liste.Add(new Z_ProjektBrauchwasserModel
+                {
+                    ID_Z = z.IdZ, ID_Projekt = idProjekt, ID_Brauchwasser = z.IdStamm,
+                    szBezeichner = z.Name, Summe = z.Summe
+                });
+
+            ZapfprofilSpeicherergebnis e;
+            string[] datenbank;
+            using (DataRepository.EngineModus())
+            {
+                e = BrauchwasserSchreiben(idProjekt, liste, behaelter);
+                datenbank = DataRepository.StilleFehlerAbholen();
+            }
+            if (e.Erfolg) return "";
+            if (e.Meldung != null) return e.Meldung.Text;
+            return Format(Text_("ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT",
+                                "Die Brauchwasserprofile des Projekts wurden nicht gespeichert — {0}"),
+                          string.Join(" ", datenbank));
         }
 
         // =================================================================================

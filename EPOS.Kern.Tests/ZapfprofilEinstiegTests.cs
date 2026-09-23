@@ -215,6 +215,49 @@ namespace EPOS.Kern.Tests
             Assert.True(behaelter.Geaendert);
         }
 
+        /// <summary>
+        /// Der Schreibweg im OK des Bedarfsprofil-Dialogs (Parameter <c>Speichern</c>): die
+        /// Projektzeilen des Dialogs als Zuordnungen, leer = geschrieben; eine Ablehnung liefert
+        /// den Grund in der Oberflächensprache, rollt alles zurück, und ein zweiter Versuch mit
+        /// berichtigtem Stand schreibt — ohne Doppelung der Zuordnungen.
+        /// </summary>
+        [Fact]
+        public void Der_Schreibweg_des_OK_nennt_eine_Ablehnung_und_schreibt_beim_zweiten_Versuch()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            List<BedarfsProfilZeile> zeilen = Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT)
+                .Select(m => new BedarfsProfilZeile { IdZ = m.ID_Z, IdStamm = m.ID_Brauchwasser, Name = m.szBezeichner, Summe = m.Summe })
+                .ToList();
+            Assert.NotEmpty(zeilen);
+            zeilen[0].Summe = 7.25;
+
+            var behaelter = new ZapfprofilBehaelter(PROJEKT);
+            behaelter.Uebernehmen(new ZapfprofilStand(BrauchwasserWeg.Generator,
+                new[] { new ZonenStand { Name = "Zone X", IdNutzungsart = 987654, Bezugsmenge = 5 } }, null));
+
+            string grund = ZapfprofilHuelle.Schreibweg(PROJEKT, zeilen, behaelter);
+
+            Assert.StartsWith("Das Zapfprofil wurde nicht gespeichert — ", grund);
+            Assert.Equal(BrauchwasserWeg.Bestand, ZapfprofilCtrl.Weg(PROJEKT));
+            Assert.NotEqual(7.25, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Single().Summe);
+            Assert.True(behaelter.Geaendert);
+
+            behaelter.Uebernehmen(new ZapfprofilStand(BrauchwasserWeg.Generator,
+                new[] { new ZonenStand { Name = "Zone X", IdNutzungsart = Nutzungsart(), Bezugsmenge = 5 } }, null));
+
+            Assert.Equal("", ZapfprofilHuelle.Schreibweg(PROJEKT, zeilen, behaelter));
+            Assert.Equal(zeilen.Count, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Count);
+            Assert.Equal(7.25, Z_ProjektBrauchwasserCtrl.LiesProjekt(PROJEKT).Single().Summe, 9);
+            Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(PROJEKT));
+            Assert.False(behaelter.Geaendert);
+
+            // Ohne Behälter (Verwaltung) schreibt derselbe Weg nur die Zuordnungen.
+            Assert.Equal("", ZapfprofilHuelle.Schreibweg(PROJEKT, zeilen, null));
+            Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(PROJEKT));
+        }
+
         private static int Nutzungsart()
             => Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID FROM Tab_TwwNutzungsart_STAMM WHERE Bezeichner = ? AND Katalogversion = ?",

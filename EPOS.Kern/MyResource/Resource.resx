@@ -23910,6 +23910,9 @@ Möchten Sie das zulassen?</value>
   <data name="ZPG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
     <value>Das Zapfprofil wurde nicht gespeichert — {0}</value>
   </data>
+  <data name="ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>Die Brauchwasserprofile des Projekts wurden nicht gespeichert — {0}</value>
+  </data>
   <data name="ZPG_MSG_ZONE" xml:space="preserve">
     <value>Zone „{0}“: {1}</value>
   </data>

@@ -46,7 +46,9 @@
    Ueberlagerung mit dem ZapfprofilDialog und die sichtbare Optionsgruppe "Rechenweg
    Brauchwasser". Das OK des Zapfprofils stellt sie auf Zapfprofil; zurueckschalten
    behaelt die Zonen. Geschrieben wird erst mit dem OK DIESES Dialogs, im selben
-   Vorgang wie die Profilzuordnungen (die Huelle). Reicht die Huelle nur einen Grund
+   Vorgang wie die Profilzuordnungen, und zwar VOR dem Schliessen (Delegat "Speichern"):
+   Lehnt der Schreibweg ab, nennt ein Banner den Grund und der Dialog bleibt offen.
+   Reicht die Huelle nur einen Grund
    (kein gespeichertes Projekt, Plattform), steht der Knopf WEICH gesperrt da und nennt
    ihn. *@
 
@@ -387,6 +389,16 @@
 
     /// <summary><c>true</c> = OK, <c>false</c> = Abbrechen.</summary>
     [Parameter] public EventCallback<bool> Geschlossen { get; set; }
+
+    /// <summary>
+    /// Der Schreibweg des OK (Umsetzungskonzept Zapfprofilgenerator 5.2): schreibt, BEVOR der
+    /// Dialog schließt — beim Brauchwasser Profilzuordnungen und Zapfprofil in einem Vorgang.
+    /// Leer = geschrieben, der Dialog schließt mit OK; sonst der Grund: Der Dialog meldet ihn
+    /// und bleibt offen, Zuordnungen und Arbeitsstand bleiben erhalten, ein zweites OK
+    /// schreibt erneut (der gescheiterte Vorgang ist zurückgerollt). Kein Delegat = der Wirt
+    /// schreibt nach dem Schließen.
+    /// </summary>
+    [Parameter] public Func<string>? Speichern { get; set; }
 
     // --- Zapfprofil (Umsetzungskonzept Zapfprofilgenerator 5.2) ------------------
 
@@ -1069,7 +1081,23 @@
         RechenwegGesetzt?.Invoke(weg);
     }
 
-    private Task BeiErgebnis(bool ok) => Geschlossen.InvokeAsync(ok);
+    /// <summary>
+    /// OK schreibt über <see cref="Speichern"/>, bevor der Dialog schließt; lehnt der
+    /// Schreibweg ab, steht sein Grund als Banner da und der Dialog bleibt offen.
+    /// </summary>
+    private Task BeiErgebnis(bool ok)
+    {
+        if (ok && Speichern is not null)
+        {
+            string grund = Speichern() ?? "";
+            if (grund.Length > 0)
+            {
+                Melden(grund, WarnStufe.Fehler);
+                return Task.CompletedTask;
+            }
+        }
+        return Geschlossen.InvokeAsync(ok);
+    }
 
     /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
     private Task Abbrechen() => Geschlossen.InvokeAsync(false);

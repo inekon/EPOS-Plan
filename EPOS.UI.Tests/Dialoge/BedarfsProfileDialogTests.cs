@@ -881,7 +881,8 @@ public class BedarfsProfileDialogTests : EposBunitContext
         List<BedarfsProfilZeile>? zeilen = null,
         Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>?>? simulieren = null,
         Func<string>? simulationMeldung = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        Func<string>? speichern = null)
         => Render<BedarfsProfileDialog>(p => p
             .Add(x => x.Art, art)
             .Add(x => x.TitelText, "Brauchwasserwärme")
@@ -900,6 +901,7 @@ public class BedarfsProfileDialogTests : EposBunitContext
             .Add(x => x.RechenwegGesetzt, wegGesetzt)
             .Add(x => x.ZapfprofilZonen, zonen)
             .Add(x => x.SimulationMeldung, simulationMeldung)
+            .Add(x => x.Speichern, speichern)
             .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
 
     private static IElement? ZapfprofilKnopf(IRenderedComponent<BedarfsProfileDialog> cut)
@@ -1080,5 +1082,54 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         Assert.False(cut.Instance.ErgebnisOffen);
         Assert.Contains("keine Klimaregion", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// 5.2 und die OK-Regel (EPOS.UI/CLAUDE.md): Das OK schreibt über den Schreibweg der Hülle,
+    /// BEVOR der Dialog schließt. Lehnt er ab, steht sein Grund als Banner da, der Dialog bleibt
+    /// offen, Zeilen und Weg bleiben stehen; ein zweites OK schreibt erneut und schließt.
+    /// </summary>
+    [Fact]
+    public void Eine_Ablehnung_des_Schreibwegs_haelt_den_Dialog_offen()
+    {
+        var antworten = new Queue<string>(new[]
+        {
+            "Das Zapfprofil wurde nicht gespeichert — Zone „Zone 1“: Die Nutzungsart steht nicht im Katalog.",
+            ""
+        });
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, weg: ZapfprofilWeg.Generator, zonen: 1,
+                                     wegGesetzt: _ => { }, geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return antworten.Dequeue(); });
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(1, geschrieben);
+        Assert.Null(geschlossen);
+        Assert.Contains("Die Nutzungsart steht nicht im Katalog", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Single(cut.Instance.Zeilen);
+        Assert.Equal(ZapfprofilWeg.Generator, cut.Instance.Rechenweg);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(2, geschrieben);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>Abbrechen fragt den Schreibweg nicht.</summary>
+    [Fact]
+    public void Abbrechen_schreibt_nicht()
+    {
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { },
+                                     geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return ""; });
+
+        Knopf(cut, "Abbrechen").Click();
+
+        Assert.Equal(0, geschrieben);
+        Assert.False(geschlossen);
     }
 }

@@ -32,8 +32,8 @@ namespace WindowsFormsApplication1
     /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
     /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
     /// Öffnen, die Leiste „monatlicher Verlauf" mit dessen Arbeitsstand. Geschrieben wird
-    /// der Behälter vom Aufrufer, im selben Vorgang wie die Zuordnungen
-    /// (<see cref="ZapfprofilHuelle.BrauchwasserSchreiben"/>).</para>
+    /// im OK des Dialogs, bevor er schließt, im selben Vorgang wie die Zuordnungen
+    /// (<see cref="ZapfprofilHuelle.Schreibweg"/>); eine Ablehnung hält ihn offen.</para>
     /// </summary>
     internal static class BedarfsProfileHuelle
     {
@@ -103,8 +103,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die BRAUCHWASSERPROFILE eines Projekts. Der <paramref name="behaelter"/> nimmt den
-        /// Arbeitsstand des Zapfprofils auf (5.2); der Aufrufer schreibt ihn nach OK im selben
-        /// Vorgang wie die Zuordnungen. <c>null</c> = ohne Zapfprofil.
+        /// Arbeitsstand des Zapfprofils auf (5.2); das OK des Dialogs schreibt ihn im selben
+        /// Vorgang wie die Zuordnungen, bevor der Dialog schließt (<c>Speichern</c>) — der
+        /// Aufrufer schreibt nichts mehr. <c>null</c> = ohne Zapfprofil.
         /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
                                      List<Z_ProjektBrauchwasserModel> modelle,
@@ -372,6 +373,13 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluesselBerechnung"] = BerechnungsSchluessel(art),
                 ["HilfeKurztextBerechnung"] = BerechnungsKurztext(art)
             };
+
+            // Brauchwasser (5.2): Das OK schreibt Zuordnungen und Zapfprofil in EINEM Vorgang,
+            // BEVOR der Dialog schliesst - lehnt der Schreibweg ab, bleibt er offen und nennt den
+            // Grund. Ohne Behaelter (Verwaltung) schreibt derselbe Weg nur die Zuordnungen.
+            if (art == BedarfsArt.Brauchwasser && !wizard)
+                gaben["Speichern"] = new Func<string>(
+                    () => ZapfprofilHuelle.Schreibweg(projektId, zeilen, behaelter));
 
             // Zapfprofil (5.2; ZU4, ZU6, ZU10): Knopf nur mit gespeichertem Projekt, sonst
             // benannt gesperrt; die Meldung der Leiste kommt aus dem Rechenstand.

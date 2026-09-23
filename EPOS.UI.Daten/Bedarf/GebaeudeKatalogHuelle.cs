@@ -43,10 +43,9 @@ namespace WindowsFormsApplication1
                 : Laden(bezeichner) ?? new GebaeudeModel();
 
             // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
-            // Oeffnen der Ueberlagerung gelesen und bei OK zurueckgeschrieben - zusammen mit
-            // dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
+            // Oeffnen der Ueberlagerung gelesen; das OK der Profilliste schreibt sie zurueck -
+            // zusammen mit dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
             var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
-            var zapfprofil = new ZapfprofilBehaelter[1];
 
             return new Dictionary<string, object>
             {
@@ -70,9 +69,8 @@ namespace WindowsFormsApplication1
                 // eingehaengt hat (Gebaeudewege).
                 ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
                     ? null
-                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, zapfprofil)),
-                ["BrauchwasserFertig"] = new Action<bool>(
-                    ok => BrauchwasserSchreiben(ok, brauchwasser, zapfprofil[0])),
+                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser)),
+                ["BrauchwasserFertig"] = new Action<bool>(BrauchwasserFertig),
 
                 ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
@@ -251,10 +249,10 @@ namespace WindowsFormsApplication1
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            List<Z_ProjektBrauchwasserModel> ziel, ZapfprofilBehaelter[] zapfprofil)
+            List<Z_ProjektBrauchwasserModel> ziel)
         {
             int projektId = Dienste.Projekt.Id;
-            zapfprofil[0] = new ZapfprofilBehaelter(projektId);
+            var zapfprofil = new ZapfprofilBehaelter(projektId);
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
@@ -278,31 +276,22 @@ namespace WindowsFormsApplication1
                     });
             };
 
-            return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil[0]);
+            return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil);
         }
 
         /// <summary>
-        /// Nach OK wird die Zuordnung geschrieben — Löschen + Neuanlegen samt
-        /// Änderungsdatum (<c>btn_Brauchwasser_Click</c>:246-254), und im SELBEN Vorgang der
-        /// Arbeitsstand des Zapfprofils (5.2). Der Katalog führt keinen Arbeitsstand: geschrieben
-        /// wird sofort. Eine Ablehnung des Zapfprofils rollt alles zurück und nennt ihren Grund.
+        /// Nach OK steht das Änderungsdatum des Projekts (<c>btn_Brauchwasser_Click</c>:246-254).
+        /// Die Zuordnung selbst — Löschen + Neuanlegen und im SELBEN Vorgang der Arbeitsstand des
+        /// Zapfprofils (5.2) — schreibt schon das OK der Profilliste, bevor sie schließt
+        /// (<see cref="ZapfprofilHuelle.Schreibweg"/>); lehnt es ab, bleibt die Liste offen und
+        /// dieser Rückruf kommt nicht. Der Katalog führt keinen Arbeitsstand: geschrieben wird
+        /// sofort.
         /// </summary>
-        private static void BrauchwasserSchreiben(bool ok, List<Z_ProjektBrauchwasserModel> liste,
-                                                  ZapfprofilBehaelter zapfprofil)
+        private static void BrauchwasserFertig(bool ok)
         {
             if (!ok) return;
 
-            int projektId = Dienste.Projekt.Id;
             string projektName = Dienste.Projekt.Name;
-
-            ZapfprofilSpeicherergebnis e = ZapfprofilHuelle.BrauchwasserSchreiben(projektId, liste, zapfprofil);
-            if (!e.Erfolg)
-            {
-                // Die Meldung laeuft HINTER dem Ereignis (Hausregel: kein synchrones
-                // Plattformfenster aus einem Rueckruf der Oberflaeche).
-                if (e.Meldung != null) _ = Dienste.Dialog.WarnungAsync(e.Meldung.Text, Titel());
-                return;
-            }
 
             var projctrl = new ProjektCtrl();
             projctrl.ReadSingle(projektName);
