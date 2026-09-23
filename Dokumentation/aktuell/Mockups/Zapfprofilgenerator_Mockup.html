@@ -17,12 +17,17 @@
 
   ALLE ZAHLEN SIND FIKTIV. Sie stammen aus einem erfundenen Beispieljahr (Zone 1
   Wohnen, 20 Wohneinheiten; Zone 2 Büro, 50 Beschäftigte; Zirkulation 12 000 kWh/a)
-  und gehen untereinander auf. Keine Normtabelle, keine Zahl aus VDI 4655, keine
+  und gehen untereinander auf. Im Quelltext keine Normtabelle, keine Zahl aus VDI 4655, keine
   Normzahl der VDI 6007, kein nachgezeichnetes Normprofil, keine Hersteller- oder
   Produktdaten. Die Tagesgänge sind frei erfundene, glatte Formen.
 
-  BEDIENBAR: der Stufenumschalter Einfach · Erweitert · Experte und die Reiter der
-  Vorschau. Die Eingabefelder selbst sind Bilder.
+  NORMTABELLEN (Abschnitt 3b): nur zur Laufzeit aus der lokalen, gitignorierten Ladedatei
+  Referenzlaeufe/Normzahlen/zapfprofil/normtabellen.js (window.EPOS_NORMTABELLEN). Im Quelltext
+  stehen nur Struktur, Beschriftung und Rechenweg; fehlt die Datei, bleibt ein Platzhalter stehen.
+
+  BEDIENBAR: der Stufenumschalter Einfach · Erweitert · Experte, die Reiter der Vorschau,
+  die Umschalter auto/manuell, der Tagesgang-Editor und die Auswahlen in Abschnitt 3b. Die
+  übrigen Eingabefelder sind Bilder.
 
   BEGRIFFE: Die Oberfläche von EPOS-Plan sagt durchgängig „Brauchwasser“; im Fenster
   heißen Dialog und Katalog deshalb „Brauchwasser-Zapfprofil“ und
@@ -52,6 +57,7 @@
   --band:#C3D4EA;
   --code-grund:#F0F3F8;
   --sicht-orange:#B85C00;
+  --rot:#B3261E;
   --mono:ui-monospace,"Cascadia Mono",Consolas,"SF Mono",Menlo,monospace;
   --schatten:0 1px 2px rgba(15,31,61,.06), 0 8px 24px rgba(15,31,61,.08);
   --schatten-fenster:0 2px 4px rgba(15,31,61,.12), 0 18px 44px rgba(15,31,61,.18);
@@ -104,6 +110,7 @@
     --band:#2A3F5E;
     --code-grund:#121926;
     --sicht-orange:#F0A050;
+    --rot:#F28B82;
     --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
     --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
   }
@@ -130,6 +137,7 @@
   --band:#2A3F5E;
   --code-grund:#121926;
   --sicht-orange:#F0A050;
+  --rot:#F28B82;
   --schatten:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
   --schatten-fenster:0 2px 4px rgba(0,0,0,.5), 0 18px 44px rgba(0,0,0,.5);
 }
@@ -455,6 +463,117 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 .ausl-empf{margin-top:12px;background:#EDF3FB;border:1px solid #C3D4EA;border-left:4px solid #1A3261;border-radius:0 6px 6px 0;padding:10px 12px;font-size:12.5px}
 .ausl-empf b{color:#0F1F3D}
 
+/* ---------- Statusabzeichen Normzahlen (Kopf, vom Skript gesetzt) ---------- */
+.nt-status{margin-top:12px;display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;line-height:1.35;padding:5px 12px;border-radius:14px;border:1px solid var(--warn-kante);background:var(--warn-grund);color:var(--warn);max-width:100%}
+.nt-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 auto}
+.nt-status[data-zustand="geladen"]{border-color:var(--akzent);background:var(--akzent-grund);color:var(--akzent)}
+
+/* Verweise im Fenster bleiben in beiden Farbmodi in der Fensterfarbe */
+:root .fenster a,:root .ueb a{color:var(--epos-marke)}
+.fenster,.ueb{--zg-rot:#B3261E;--zg-ok:#0B6B5B}
+
+/* ---------- auto/manuell-Muster im Fenster (nach Vorlage TWW-Auslegung V4) ---------- */
+.am-block{border-top:1px dashed var(--epos-rahmen-leise);padding:8px 0 4px}
+.am-block + .am-block{margin-top:4px}
+.am-block[data-modus="auto"] .nur-manuell,.am-block[data-modus="manuell"] .nur-auto{display:none !important}
+.am-wahl button{padding:0 12px}
+.zpg-angesetzt{background:#EDF3FB;border-color:#1A3261;font-weight:700;color:#0F1F3D}
+.am-rechenweg{grid-column:2;font-size:12px;color:var(--epos-text-leise);margin:0 0 4px;min-width:0}
+.am-rechenweg summary{cursor:pointer;color:var(--epos-marke);padding:8px 0;font-weight:600}
+.am-rechenweg summary:focus-visible{outline:2px solid var(--epos-marke);outline-offset:1px}
+.am-rechenweg p{margin:0;line-height:1.45;color:var(--epos-text)}
+@media (max-width:560px){.am-rechenweg{grid-column:1}}
+.zpg-katalog{margin:4px 0 6px}
+.zpg-katalog .zpg-untertitel{margin-top:4px}
+
+/* ---------- Überlagerung „Tagesgang bearbeiten“ ---------- */
+.tg-kopf{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin-bottom:8px}
+.tg-kopf .zpg-feld{flex:1 1 26rem;min-width:0}
+.tg-marken{display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center}
+.tg-marken > span:first-child{font-size:11.5px;color:var(--epos-text-leise);margin-right:2px}
+.tg-marke{font-size:11px;font-weight:600;border:1px solid var(--epos-rahmen-leise);color:var(--epos-text-sehr-leise);border-radius:9px;padding:1px 8px}
+.tg-marke.an{border-color:var(--epos-marke);color:var(--epos-marke);background:#EFF6FF}
+.tg-gitter{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;align-items:start;margin-top:10px}
+@media (max-width:760px){.tg-gitter{grid-template-columns:minmax(0,1fr)}}
+.tg-raster{display:grid;grid-template-columns:repeat(auto-fill,minmax(4.6rem,1fr));gap:6px}
+.tg-zelle,.tg-woche label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--epos-text-leise);min-width:0}
+.tg-zelle input,.tg-woche input{width:100%;min-width:0;min-height:var(--epos-touchziel);padding:0 6px;font:inherit;font-size:13px;text-align:right;border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;color:var(--epos-text);font-variant-numeric:tabular-nums}
+.tg-zelle input:focus-visible,.tg-woche input:focus-visible{outline:2px solid var(--epos-marke);outline-offset:1px}
+.tg-woche{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:4px;max-width:40rem}
+@media (max-width:480px){.tg-woche{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tg-grafik{border:1px solid var(--epos-karte-rahmen);border-radius:var(--epos-ecke);background:#fff;padding:8px}
+.tg-grafik svg{width:100%;height:auto;display:block}
+.tg-kontrolle{font-size:12.5px;font-weight:600;padding:6px 10px;border-radius:0 4px 4px 0;margin-top:8px}
+.tg-kontrolle.ok{color:var(--zg-ok);background:#E6F2EF;border-left:4px solid var(--zg-ok)}
+.tg-kontrolle.fehler{color:var(--zg-rot);background:#FCEBEA;border-left:4px solid var(--zg-rot)}
+.zg-balken{fill:var(--zg-profil-flaeche);stroke:var(--zg-profil);stroke-width:1}
+.epos-knopf.tg-aktiv{cursor:pointer}
+.epos-knopf.tg-aktiv:focus-visible{outline:2px solid var(--epos-marke);outline-offset:2px}
+
+/* ---------- Auslegung: Verfahrensvergleich und Warnliste (Anschlussverbraucher) ---------- */
+.vv-karte{margin-top:14px;border:1px solid var(--epos-karte-rahmen);border-top:3px solid var(--epos-karte-titel);border-radius:var(--epos-ecke);background:#fff;padding:10px 12px}
+.vv-karte h4{font-size:13.5px;color:var(--epos-karte-titel);margin:0 0 2px;line-height:1.35}
+.vv-marke{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--epos-karte-titel);border-radius:3px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.zpg-kz tr.vv-massgebend td{background:#EDF3FB}
+.zpg-kz tr.vv-massgebend td:first-child{box-shadow:inset 4px 0 0 #1A3261}
+.zpg-kz tr.vv-grau td,.zpg-kz tr.vv-grau td.r,.zpg-kz tr.vv-grau td.v{color:#8A8A8A;font-weight:400}
+.vv-kacheln{margin-top:10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:8px}
+.vv-kacheln > div{border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:8px 10px;background:#FAFAF7;font-size:11.5px;color:var(--f-weich);line-height:1.4}
+.vv-kacheln span{display:block;font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--f-weich)}
+.vv-kacheln b{display:block;font-size:15px;color:#0F1F3D;margin:2px 0}
+.vv-kacheln .vv-empf{background:#FFF6E0;border-color:#C88A00}
+.vv-satz{font-size:12.5px;margin:8px 0 0;line-height:1.5}
+.vv-woche{overflow-x:auto;margin-top:6px;border:1px solid var(--epos-rahmen-leise);border-radius:var(--epos-ecke);padding:6px}
+.vv-woche svg{width:100%;height:auto;display:block;min-width:640px}
+.zg-defizit{fill:none;stroke:var(--zg-rot);stroke-width:2}
+.zg-fuell{fill:none;stroke:var(--zg-profil);stroke-width:1.8;stroke-dasharray:6 3}
+.warnliste{list-style:none;margin:6px 0 0;padding:0}
+.warnliste li{display:grid;grid-template-columns:5.8rem minmax(0,1fr);gap:4px 10px;padding:7px 0;border-bottom:1px solid var(--epos-rahmen-leise);font-size:12.5px;line-height:1.45}
+.warnliste li:last-child{border-bottom:0}
+.wl-stufe{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;border-radius:3px;padding:2px 6px;align-self:start;text-align:center}
+.wl-ok{color:var(--zg-ok);background:#E6F2EF}
+.wl-hinweis{color:var(--epos-warn-text);background:var(--epos-warn-flaeche);border:1px solid var(--epos-warn-rahmen)}
+.wl-warnung{color:#fff;background:var(--zg-rot)}
+@media (max-width:480px){.warnliste li{grid-template-columns:minmax(0,1fr)}.wl-stufe{justify-self:start}}
+
+/* ---------- 3b Normtabellen als Testdaten (Seitenfarben, beide Modi) ---------- */
+.nt-platzhalter{border:2px dashed var(--linie-stark);border-radius:8px;padding:18px 20px;background:var(--karte);max-width:88ch}
+.nt-platzhalter h3{font-size:16px;margin-bottom:10px}
+.nt-platzhalter p{font-size:14px;color:var(--tinte-weich);margin-bottom:10px}
+.nt-platzhalter p:last-child{margin-bottom:0}
+.nt-quelle{font-size:12.5px;color:var(--tinte-blass);max-width:96ch;margin:0 0 10px;overflow-wrap:anywhere}
+.nt-steuer{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:flex-end;margin:16px 0 6px}
+.nt-steuer label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--tinte-weich);min-width:0;max-width:100%}
+.nt-steuer select,.nt-steuer input{font:inherit;font-size:14px;font-weight:400;min-height:44px;padding:0 10px;background:var(--karte);color:var(--tinte);border:1px solid var(--linie-stark);border-radius:6px;max-width:100%}
+.nt-steuer input{width:9em;text-align:right;font-variant-numeric:tabular-nums}
+.nt-steuer select:focus-visible,.nt-steuer input:focus-visible{outline:2px solid var(--akzent);outline-offset:1px}
+.nt-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(360px,100%),1fr));gap:0 14px}
+.nt-karte{border:1px solid var(--linie);border-radius:7px;background:var(--karte);padding:14px 16px 12px;box-shadow:var(--schatten);overflow-x:auto;margin-top:14px;min-width:0;max-width:100%}
+.nt-karte > svg{width:100%;height:auto;display:block;min-width:420px}
+.nt-achse{stroke:var(--linie-stark);stroke-width:1}
+.nt-gitter{stroke:var(--linie);stroke-width:1}
+.nt-text{fill:var(--tinte-blass);font-size:11px}
+.nt-wert{fill:var(--tinte-weich);font-size:10.5px}
+.nt-l1,.nt-l2,.nt-l3,.nt-l4{fill:none;stroke-width:2;stroke-linejoin:round}
+.nt-l1{stroke:var(--akzent)}
+.nt-l2{stroke:var(--sicht-orange);stroke-dasharray:6 3}
+.nt-l3{stroke:var(--erloes);stroke-dasharray:2 3}
+.nt-l4{stroke:var(--ausweis)}
+.nt-b1{fill:var(--akzent)}
+.nt-b2{fill:var(--sicht-orange)}
+.nt-ref{stroke:var(--tinte-blass);stroke-width:1;stroke-dasharray:3 3}
+.nt-legende{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--tinte-weich);margin-top:8px}
+.nt-legende span{display:inline-flex;align-items:center;gap:6px}
+.nt-legende svg{width:22px;height:10px;flex:0 0 auto}
+.nt-kontrolle{font-size:13px;margin:6px 0 0;font-weight:600}
+.nt-kontrolle.ok{color:var(--erloes)}
+.nt-kontrolle.fehler{color:var(--rot)}
+.tafel th.nt-wahl,.tafel td.nt-wahl{background:var(--akzent-grund)}
+#nt-inhalt .zwei .tafel-huelle{margin:0}
+.nt-karten .nt-karte > svg{max-width:640px;margin:0 auto}
+
+#tg-tagtyp{display:flex;flex-wrap:wrap;width:max-content;max-width:100%}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -475,13 +594,15 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
     <span>Stand <b>22.09.2026</b></span>
     <span>Status <b>Entwurf zur Entscheidung</b></span>
   </div>
+  <div class="nt-status" id="nt-status" data-zustand="fiktiv" role="status">Beispielzahlen (fiktiv) — keine lokale Normtabellen-Datei</div>
   <div class="leseweg">
     <b>Leseweg.</b> Wer entscheidet, liest „Das Wichtigste“ und „Offene Entscheide“. Wer baut, liest „Der Dialog“,
     „Was gerechnet wird“ und „Einbindung in EPOS-Plan“. Wer prüft, beginnt bei „Lizenz und Grenzen“. Das Kernstück
     ist der Dialog in Abschnitt 3: Der Umschalter <b>Einfach · Erweitert · Experte</b> oben rechts im Fenster und die
     Reiter der Vorschau sind bedienbar. <span class="zk fiktiv">fiktiv</span> Alle Zahlen stammen aus einem erfundenen
     Beispieljahr (Zone 1 Wohnen mit 20 Wohneinheiten, Zone 2 Büro mit 50 Beschäftigten, Zirkulation
-    12&#8239;000&nbsp;kWh/a) und gehen untereinander auf; keine davon ist ein Norm- oder Messwert.
+    12&#8239;000&nbsp;kWh/a) und gehen untereinander auf; keine davon ist ein Norm- oder Messwert. Ausnahme ist Abschnitt 3b: Er zeigt Normtabellen nur zur Laufzeit
+    aus einer lokalen, nie ausgelieferten Testdatei; das Abzeichen über diesem Kasten nennt den geladenen Stand.
   </div>
 </header>
 
@@ -497,11 +618,14 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
       <a href="#dialog-fenster">Fenster Brauchwasser-Zapfprofil</a>
       <a href="#dialog-stufen">Die drei Tiefen</a>
       <a href="#dialog-auslegung">Überlagerung Auslegung</a>
+      <a href="#dialog-tagesgang">Tagesgang bearbeiten</a>
       <a href="#dialog-katalog">Katalog Brauchwasser-Nutzungsarten</a>
       <a href="#dialog-legende">Was er tut und was nicht</a>
     </div>
+    <a href="#normtabellen">3b Normtabellen als Testdaten</a>
     <a href="#rechnung">4 Was gerechnet wird</a>
     <a href="#einbindung">5 Einbindung in EPOS-Plan</a>
+    <a href="#bestand">5b Was es schon gibt</a>
     <a href="#stufen">6 Stufen und Aufwand</a>
     <a href="#lizenz">7 Lizenz und Grenzen</a>
     <a href="#entscheide">8 Offene Entscheide</a>
@@ -570,7 +694,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
       <h3>Gerechnet wird in kWh Nutzenergie an der Zapfstelle</h3>
       <p>Liter sind nur Anzeige- und Eingabegröße, weil die Temperaturbezüge der Quellen auseinanderliegen: 45&nbsp;°C/ΔT
       35&nbsp;K, abgeleitet aus DIN V 18599 (dort nicht ausdrücklich genormt, Prüfpunkt des Konzepts), 60&nbsp;°C nach
-      VDI 6002, Normliter nach SIA. Das Zapfprofil enthält weder Speicher- noch
+      VDI 6002, Normliter nach SIA; der Dialog zeigt Liter einheitlich im Anzeigebezug 60/10&nbsp;°C. Das Zapfprofil enthält weder Speicher- noch
       Zirkulationsverluste; die Zirkulation ist ein eigener Kanal, Speicherverluste bleiben beim Speicher.</p>
       <p>Jeder Katalogkennwert führt seine Bilanzgrenze als Herkunftsmerkmal. Ein VDI-4655-Jahreswert enthält Verteil- und
       Zirkulationsverluste, aber keine Speicherverluste — bei dieser Quelle wird der Zirkulationszuschlag entschärft,
@@ -651,7 +775,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
       <text class="sv-marke" x="549" y="38">S1</text>
       <text class="sv-titel" x="549" y="58">Mengengerüst</text>
       <text class="sv-text" x="549" y="77">kWh/a = Bezugsgröße × Bedarf</text>
-      <text class="sv-text" x="549" y="93">Liter nur Anzeige (c_w, Hub)</text>
+      <text class="sv-text" x="549" y="93">Liter nur Anzeige (Bezug 60/10 °C)</text>
 
       <rect class="sv-kasten" x="795" y="20" width="190" height="82" rx="6"/>
       <text class="sv-marke" x="809" y="38">S6</text>
@@ -781,7 +905,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
         <tr><td class="name">S1 Mengengerüst</td>
           <td>Jahres- bzw. Tagesnutzenergie je Zone gleich Bezugsgröße mal spezifischer Bedarf des Niveaus, in kWh. Für
           Wohnen alternativ die Flächenformel je Wohneinheit oder Liter je Person und Tag. Liter gelten nur zur Anzeige,
-          mit c_w = 1,163&nbsp;Wh/(l·K) und dem Temperaturhub der Zone. Ein Jahresmesswert skaliert mit einem einzigen,
+          mit c_w = 1,163&nbsp;Wh/(l·K) und einheitlich dem Anzeigebezug 60/10&nbsp;°C, unabhängig von der Zapftemperatur der Zone. Ein Jahresmesswert skaliert mit einem einzigen,
           ausgewiesenen Faktor.</td>
           <td class="quelle">DIN V 18599-10; E DIN EN 12831-3/A100; VDI 6002 Bl. 2 (Bandbreiten); DHWcalc/SIA-Konsens für
           Wohnen; Anwender-Messwert (S6).</td></tr>
@@ -904,7 +1028,26 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit">Zone 1 Wohnen</span></span></div>
               <div class="zpg-feld"><span class="zpg-lab">Nutzungsart</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl">Wohnen · Mehrfamilienhaus</span></span>
-                <span class="zpg-herkunft">Katalog · Kennwert nach E DIN EN 12831-3/A100:2021-09 (Entwurf) · Bandbreite 4–6 kWh/(WE·d) über die Niveaus</span></div>
+                <span class="zpg-herkunft">Katalog · INEKON-Kompilation, Leitquelle E DIN EN 12831-3/A100:2021-09 (Entwurf) · Bandbreite 4–6 kWh/(WE·d) über die Niveaus</span></div>
+              <div class="zpg-katalog ab-erweitert">
+                <p class="zpg-untertitel">Katalogauswahl (Auswahlliste aufgeklappt)</p>
+                <div class="epos-raster-huelle">
+                  <table class="epos-raster" aria-label="Katalogauswahl Brauchwasser-Nutzungsarten mit Herkunft und Status">
+                    <thead><tr><th>Nutzungsart</th><th>Bezugsgröße</th><th>Herkunft</th><th>Status</th></tr></thead>
+                    <tbody>
+                      <tr><td>Einfamilienhaus</td><td>Personen</td><td class="leise">INEKON-Kompilation · Leitquelle A100 (Entwurf)</td><td>Auslieferung</td></tr>
+                      <tr class="gewaehlt"><td>Mehrfamilienhaus</td><td>Wohneinheiten</td><td class="leise">INEKON-Kompilation · Leitquelle A100 (Entwurf)</td><td>Auslieferung</td></tr>
+                      <tr><td>Wohnen groß</td><td>Personen</td><td class="leise">VDI-Verweis · VDI 6002 Bl. 1</td><td>Lizenzentscheid offen (A9)</td></tr>
+                      <tr><td>Seniorenheim</td><td>Betten</td><td class="leise">VDI-Verweis · VDI 6002 Bl. 2</td><td>Lizenzentscheid offen (A9)</td></tr>
+                      <tr><td>Bürogebäude</td><td>Beschäftigte</td><td class="leise">INEKON-Kompilation · Leitquelle DIN V 18599-10</td><td>Auslieferung</td></tr>
+                      <tr><td>Benutzerdefiniert 1</td><td>Wohneinheiten</td><td class="leise">Anwender · Kopie von Mehrfamilienhaus</td><td>eigen</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p class="zpg-leise">„Benutzerdefiniert“ entsteht immer als Kopie eines Katalogtyps (im Tagesgang-Editor „Als Benutzerdefiniert
+                kopieren“); Auslieferungseinträge bleiben schreibgeschützt. Die Herkunft nennt die Quelle, nie ihre Zahlen; ein
+                VDI-Verweis ist erst nach dem Lizenzentscheid A9 wählbar. Die Stufe Einfach zeigt nur die geschlossene Auswahl.</p>
+              </div>
               <div class="zpg-feld"><span class="zpg-lab">Bezugsgröße</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">20</span><span class="epos-einheit">Wohneinheiten</span></span>
                 <span class="zpg-herkunft">Einheit aus dem Katalog der Nutzungsart</span></div>
@@ -920,7 +1063,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
             <div class="epos-gruppenkopf-koerper">
               <div class="zpg-feld"><span class="zpg-lab">Personen je Wohneinheit</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">2,0</span><span class="epos-einheit">P/WE</span></span>
-                <span class="zpg-herkunft">Vorgabe · aus der Wohnungsgröße, Belegungslogik nach DIN 4708-2:1994-04</span></div>
+                <span class="zpg-herkunft">Vorgabe · aus der Wohnungsgröße, Belegungslogik nach DIN 4708-2</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Wohnfläche je Wohneinheit</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">70</span><span class="epos-einheit">m²</span></span>
                 <span class="zpg-herkunft">Vorgabe · Annahme; Flächenformel nach DIN V 18599-10:2018-09</span></div>
@@ -929,7 +1072,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 <span class="zpg-herkunft">Vorgabe · wirkt nur auf die Auslegung</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Zirkulation vorhanden</span>
                 <span class="zpg-wert zpg-optionen"><span class="zpg-option box an"><i></i>ja</span></span>
-                <span class="zpg-herkunft">Vorgabe · Großanlage erkannt, nach DVGW W 551 (2004)</span></div>
+                <span class="zpg-herkunft">Vorgabe · Großanlage erkannt, nach DVGW W 551</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Kalender</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl zpg-vorgabe">Wohnen · Urlaubszeit Sommer</span></span>
                 <span class="zpg-herkunft">Vorgabe · Ferien je Nutzungsart</span></div>
@@ -946,6 +1089,90 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
             </div>
           </div>
 
+          <div class="epos-gruppenkopf ab-erweitert">
+            <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Tagesbedarf, Ladeleistung, Zirkulation</h3><span class="epos-gruppenkopf-stufe">Erweitert</span></div>
+            <div class="epos-gruppenkopf-koerper">
+              <p class="zpg-leise" style="margin:0 0 4px">Muster auto/manuell: Vorschlag, manueller Wert und der angesetzte Wert, der
+              weiterverwendet wird. Der angesetzte Wert folgt immer aus dem Umschalter; der Rechenweg steht aufklappbar darunter.
+              <b>Bedienbar:</b> die drei Umschalter.</p>
+
+              <div class="am-block" data-modus="auto">
+                <div class="zpg-feld"><span class="zpg-lab">Tagesbedarf Zone 1</span>
+                  <span class="zpg-wert"><span class="zpg-stufen am-wahl" role="radiogroup" aria-label="Tagesbedarf Zone 1: auto oder manuell"><button type="button" role="radio" aria-checked="true" data-am="auto">auto</button><button type="button" role="radio" aria-checked="false" data-am="manuell">manuell</button></span></span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Vorschlag</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">100</span><span class="epos-einheit">kWh/d</span></span>
+                  <span class="zpg-herkunft">Katalog · 20 WE × 5,0 kWh/(WE·d), Niveau mittel</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Manueller Wert</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">90</span><span class="epos-einheit">kWh/d</span></span>
+                  <span class="zpg-herkunft">wirkt nur bei „manuell“</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Angesetzt</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-angesetzt"><span class="nur-auto">100</span><span class="nur-manuell">90</span></span><span class="epos-einheit">kWh/d</span></span>
+                  <details class="am-rechenweg"><summary>Rechenweg</summary>
+                    <p class="nur-auto">20 WE × 5,0 kWh/(WE·d) = 100 kWh/d; im Anzeigebezug 60/10 °C sind das 100&#8239;000 Wh ÷ (1,163 Wh/(l·K) × 50 K)
+                    ≈ 1&#8239;720 l/d (die Zapftemperatur der Zone, 50 °C in der Stufe Experte, wirkt nicht auf kWh); × 365 d = 36,5 MWh/a — angesetzt: 100 kWh/d (auto).</p>
+                    <p class="nur-manuell">Manueller Wert 90 kWh/d ≈ 1&#8239;550 l/d; × 365 d = 32,9 MWh/a; der Katalogvorschlag wäre
+                    100 kWh/d — angesetzt: 90 kWh/d (manuell). Die übrigen Werte des Mockups bleiben beim Zustand „auto“.</p>
+                  </details></div>
+              </div>
+
+              <div class="am-block" data-modus="auto">
+                <div class="zpg-feld"><span class="zpg-lab">Ladeleistung (Gebäude)</span>
+                  <span class="zpg-wert"><span class="zpg-stufen am-wahl" role="radiogroup" aria-label="Ladeleistung: auto oder manuell"><button type="button" role="radio" aria-checked="true" data-am="auto">auto</button><button type="button" role="radio" aria-checked="false" data-am="manuell">manuell</button></span></span>
+                  <span class="zpg-herkunft">wirkt nur auf die Auslegung (Anschlussverbraucher Speicherauslegung), nie auf die Bilanzreihe</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Ladezeitfenster</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">16</span><span class="epos-einheit">h/d</span></span>
+                  <span class="zpg-herkunft">effektive Ladezeit je Tag; Sperr- und Heizzeiten abgezogen</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Vorschlag</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">9,9</span><span class="epos-einheit">kW</span></span>
+                  <span class="zpg-herkunft">Schätzhilfe · größter Tagesbedarf einschließlich Zirkulation ÷ Ladezeitfenster</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Manueller Wert</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">15</span><span class="epos-einheit">kW</span></span>
+                  <span class="zpg-herkunft">wirkt nur bei „manuell“</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Angesetzt</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-angesetzt"><span class="nur-auto">9,9</span><span class="nur-manuell">15</span></span><span class="epos-einheit">kW</span></span>
+                  <details class="am-rechenweg"><summary>Rechenweg</summary>
+                    <p class="nur-auto">Größter Tagesbedarf des Jahres, als Ergebnis gesucht: ein Werktag im Januar (größter Monat)
+                    mit Zapfung 125,7 kWh/d (alle Zonen) + Zirkulation 1,37 kW × 24 h = 32,9 kWh/d, zusammen 158,6 kWh/d;
+                    ÷ Ladezeitfenster 16 h = 9,91 kW ≈ 9,9 kW — angesetzt: 9,9 kW (auto).</p>
+                    <p class="nur-manuell">Manueller Wert 15 kW; der Vorschlag wäre 9,9 kW (158,6 kWh/d ÷ 16 h). 15 kW × 16 h = 240 kWh
+                    deckt den größten Tagesbedarf von 158,6 kWh — angesetzt: 15 kW (manuell). Die übrigen Werte des Mockups bleiben
+                    beim Zustand „auto“.</p>
+                  </details></div>
+              </div>
+
+              <div class="am-block" data-modus="auto">
+                <div class="zpg-feld"><span class="zpg-lab">Zirkulation (Gebäude)</span>
+                  <span class="zpg-wert"><span class="zpg-stufen am-wahl" role="radiogroup" aria-label="Zirkulation: auto oder manuell"><button type="button" role="radio" aria-checked="true" data-am="auto">auto</button><button type="button" role="radio" aria-checked="false" data-am="manuell">manuell</button></span></span>
+                  <span class="zpg-herkunft">eigener Kanal neben dem Zapfprofil, nie in das Profil eingerechnet</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Methode</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl">Leitungslänge × spezifischer Verlust</span></span>
+                  <span class="zpg-herkunft">zur Wahl außerdem: Anteil am Tagesbedarf · Flächenkennwert (Stufe Experte)</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Leitungslänge</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">137</span><span class="epos-einheit">m</span></span>
+                  <span class="zpg-herkunft">Vor- und Rücklauf</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Spezifischer Verlust</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">10</span><span class="epos-einheit">W/m</span></span>
+                  <span class="zpg-herkunft">Vorgabe · gedämmte Leitung bei 60 °C</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Vorschlag</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">1,37</span><span class="epos-einheit">kW</span></span>
+                  <span class="zpg-herkunft">aus der gewählten Methode</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Manueller Wert</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">1,0</span><span class="epos-einheit">kW</span></span>
+                  <span class="zpg-herkunft">wirkt nur bei „manuell“</span></div>
+                <div class="zpg-feld"><span class="zpg-lab">Angesetzt</span>
+                  <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-angesetzt"><span class="nur-auto">1,37</span><span class="nur-manuell">1,0</span></span><span class="epos-einheit">kW</span></span>
+                  <details class="am-rechenweg"><summary>Rechenweg</summary>
+                    <p class="nur-auto">137 m × 10 W/m ÷ 1&#8239;000 = 1,37 kW; × 24 h = 32,9 kWh/d; × 365 d = 12,0 MWh/a — als
+                    eigene Teilreihe neben dem Zapfprofil. Gegenprobe mit dem Flächenkennwert der Stufe Experte: 8 kWh/(m²·a) ×
+                    1&#8239;500 m² = 12,0 MWh/a; mit der Methode „Anteil“ wären es 30 % × 107 kWh/d = 32 kWh/d — angesetzt:
+                    1,37 kW (auto).</p>
+                    <p class="nur-manuell">Manueller Wert 1,0 kW; × 24 h = 24 kWh/d; × 365 d = 8,8 MWh/a; der Vorschlag wäre 1,37 kW —
+                    angesetzt: 1,0 kW (manuell). Die übrigen Werte des Mockups bleiben beim Zustand „auto“.</p>
+                  </details></div>
+              </div>
+            </div>
+          </div>
+
           <div class="epos-gruppenkopf ab-experte">
             <div class="epos-gruppenkopf-balken"><h3 class="epos-gruppenkopf-titel">Fachwerte</h3><span class="epos-gruppenkopf-stufe">Experte</span></div>
             <div class="epos-gruppenkopf-koerper">
@@ -954,7 +1181,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 <span class="zpg-herkunft">Vorgabe · Katalogwert Niveau mittel, Bandbreite 4–6 · Tagesbedarf der Zone 100 kWh/d</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Zapftemperatur</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-ueberschrieben zpg-warnfeld">50</span><span class="epos-einheit">°C</span><button type="button" class="epos-textknopf">Zurücksetzen</button></span>
-                <span class="zpg-herkunft zpg-herkunft--warn"><span class="zpg-marke-ueber">überschrieben</span> Großanlage nach DVGW W 551 (2004): 60 °C erwartet. Hinweis, blockiert nicht.</span></div>
+                <span class="zpg-herkunft zpg-herkunft--warn"><span class="zpg-marke-ueber">überschrieben</span> Großanlage nach DVGW W 551: 60 °C erwartet. Hinweis, blockiert nicht.</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Kaltwasser Jahresmittel</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">10</span><span class="epos-einheit">°C</span></span>
                 <span class="zpg-herkunft">Vorgabe · Konvention; Auslegung fest 10 °C</span></div>
@@ -969,7 +1196,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 <span class="zpg-herkunft">Vorgabe · aus dem Gebäude des Projekts</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Laufzeit Zirkulation</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">24</span><span class="epos-einheit">h/d</span></span>
-                <span class="zpg-herkunft">Vorgabe · DVGW W 551 (2004), höchstens 8 h Abschaltung</span></div>
+                <span class="zpg-herkunft">Vorgabe · DVGW W 551, höchstens 8 h Abschaltung</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Auslastung / Jahresgang</span>
                 <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit zpg-vorgabe">12 Monatsfaktoren · Katalog Wohnen</span></span>
                 <span class="zpg-herkunft">Vorgabe · Katalog der Nutzungsart</span></div>
@@ -979,7 +1206,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                 Import aus der eigenen Lizenz des Anwenders)</span></div>
               <div class="zpg-feld"><span class="zpg-lab">Tagesgang je Tagtyp</span>
                 <span class="zpg-wert"><button type="button" class="epos-knopf epos-knopf--schmal">Tagesgang bearbeiten…</button></span>
-                <span class="zpg-herkunft">24 Anteile je Tagtyp, Summe 100 % · Überlagerung nach dem Muster des Typprofils</span></div>
+                <span class="zpg-herkunft">24 Anteile je Tagtyp, Summe 100 % · Überlagerung nach dem Muster des Typprofils, <a href="#dialog-tagesgang">unten gezeichnet</a></span></div>
 
               <p class="zpg-untertitel">Stochastik</p>
               <div class="zpg-feld"><span class="zpg-lab">Zufallssaat (Seed)</span>
@@ -1035,10 +1262,10 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <line class="zg-gitter" x1="40" y1="22" x2="468" y2="22"/>
 <text class="zg-leise" x="35" y="25.5" text-anchor="end">15</text>
 <text class="zg-leise" x="4" y="14" text-anchor="start">kW</text>
-<path class="zg-flaeche" d="M40 179 L40 179 L57.8 179 L57.8 183.4 L75.7 183.4 L75.7 184.5 L93.5 184.5 L93.5 184.5 L111.3 184.5 L111.3 181.2 L129.2 181.2 L129.2 162.4 L147 162.4 L147 99.4 L164.8 99.4 L164.8 46.2 L182.7 46.2 L182.7 74.9 L200.5 74.9 L200.5 114.8 L218.3 114.8 L218.3 126.9 L236.2 126.9 L236.2 118 L254 118 L254 108 L271.8 108 L271.8 123.6 L289.7 123.6 L289.7 138 L307.5 138 L307.5 139.1 L325.3 139.1 L325.3 132.4 L343.2 132.4 L343.2 118.1 L361 118.1 L361 101.6 L378.8 101.6 L378.8 90.6 L396.7 90.6 L396.7 101.6 L414.5 101.6 L414.5 123.7 L432.3 123.7 L432.3 151.3 L450.2 151.3 L450.2 167.9 L468 167.9 L468 190 L40 190 Z"/>
-<path class="zg-linie" d="M40 179 L40 179 L57.8 179 L57.8 183.4 L75.7 183.4 L75.7 184.5 L93.5 184.5 L93.5 184.5 L111.3 184.5 L111.3 181.2 L129.2 181.2 L129.2 162.4 L147 162.4 L147 99.4 L164.8 99.4 L164.8 46.2 L182.7 46.2 L182.7 74.9 L200.5 74.9 L200.5 114.8 L218.3 114.8 L218.3 126.9 L236.2 126.9 L236.2 118 L254 118 L254 108 L271.8 108 L271.8 123.6 L289.7 123.6 L289.7 138 L307.5 138 L307.5 139.1 L325.3 139.1 L325.3 132.4 L343.2 132.4 L343.2 118.1 L361 118.1 L361 101.6 L378.8 101.6 L378.8 90.6 L396.7 90.6 L396.7 101.6 L414.5 101.6 L414.5 123.7 L432.3 123.7 L432.3 151.3 L450.2 151.3 L450.2 167.9 L468 167.9"/>
-<path class="zg-sa" d="M40 176.8 L40 176.8 L57.8 176.8 L57.8 181.2 L75.7 181.2 L75.7 184.5 L93.5 184.5 L93.5 184.5 L111.3 184.5 L111.3 183.4 L129.2 183.4 L129.2 176.8 L147 176.8 L147 146 L164.8 146 L164.8 102.1 L182.7 102.1 L182.7 80.1 L200.5 80.1 L200.5 91.1 L218.3 91.1 L218.3 107.6 L236.2 107.6 L236.2 118.6 L254 118.6 L254 118.6 L271.8 118.6 L271.8 129.5 L289.7 129.5 L289.7 140.5 L307.5 140.5 L307.5 146 L325.3 146 L325.3 140.5 L343.2 140.5 L343.2 124 L361 124 L361 102.1 L378.8 102.1 L378.8 91.1 L396.7 91.1 L396.7 102.1 L414.5 102.1 L414.5 124 L432.3 124 L432.3 146 L450.2 146 L450.2 165.8 L468 165.8"/>
-<path class="zg-so" d="M40 173.5 L40 173.5 L57.8 173.5 L57.8 179 L75.7 179 L75.7 183.4 L93.5 183.4 L93.5 184.5 L111.3 184.5 L111.3 184.5 L129.2 184.5 L129.2 181.2 L147 181.2 L147 168 L164.8 168 L164.8 146 L182.7 146 L182.7 113 L200.5 113 L200.5 80 L218.3 80 L218.3 74.5 L236.2 74.5 L236.2 91 L254 91 L254 102 L271.8 102 L271.8 124 L289.7 124 L289.7 140.5 L307.5 140.5 L307.5 146 L325.3 146 L325.3 140.5 L343.2 140.5 L343.2 124 L361 124 L361 102 L378.8 102 L378.8 91 L396.7 91 L396.7 102 L414.5 102 L414.5 124 L432.3 124 L432.3 146 L450.2 146 L450.2 162.5 L468 162.5"/>
+<path class="zg-flaeche" d="M40 178.6 L40 178.6 L57.8 178.6 L57.8 183.6 L75.7 183.6 L75.7 184.9 L93.5 184.9 L93.5 184.9 L111.3 184.9 L111.3 181.1 L129.2 181.1 L129.2 162.1 L147 162.1 L147 99.8 L164.8 99.8 L164.8 46.2 L182.7 46.2 L182.7 74.9 L200.5 74.9 L200.5 114.8 L218.3 114.8 L218.3 126.9 L236.2 126.9 L236.2 118 L254 118 L254 108 L271.8 108 L271.8 123.6 L289.7 123.6 L289.7 138 L307.5 138 L307.5 139.1 L325.3 139.1 L325.3 132.4 L343.2 132.4 L343.2 118.1 L361 118.1 L361 101.1 L378.8 101.1 L378.8 90.9 L396.7 90.9 L396.7 101.1 L414.5 101.1 L414.5 124 L432.3 124 L432.3 151.9 L450.2 151.9 L450.2 168.4 L468 168.4 L468 190 L40 190 Z"/>
+<path class="zg-linie" d="M40 178.6 L40 178.6 L57.8 178.6 L57.8 183.6 L75.7 183.6 L75.7 184.9 L93.5 184.9 L93.5 184.9 L111.3 184.9 L111.3 181.1 L129.2 181.1 L129.2 162.1 L147 162.1 L147 99.8 L164.8 99.8 L164.8 46.2 L182.7 46.2 L182.7 74.9 L200.5 74.9 L200.5 114.8 L218.3 114.8 L218.3 126.9 L236.2 126.9 L236.2 118 L254 118 L254 108 L271.8 108 L271.8 123.6 L289.7 123.6 L289.7 138 L307.5 138 L307.5 139.1 L325.3 139.1 L325.3 132.4 L343.2 132.4 L343.2 118.1 L361 118.1 L361 101.1 L378.8 101.1 L378.8 90.9 L396.7 90.9 L396.7 101.1 L414.5 101.1 L414.5 124 L432.3 124 L432.3 151.9 L450.2 151.9 L450.2 168.4 L468 168.4"/>
+<path class="zg-sa" d="M40 177 L40 177 L57.8 177 L57.8 180.9 L75.7 180.9 L75.7 184.8 L93.5 184.8 L93.5 184.8 L111.3 184.8 L111.3 183.5 L129.2 183.5 L129.2 177 L147 177 L147 145.9 L164.8 145.9 L164.8 101.8 L182.7 101.8 L182.7 81.1 L200.5 81.1 L200.5 91.4 L218.3 91.4 L218.3 107 L236.2 107 L236.2 118.7 L254 118.7 L254 118.7 L271.8 118.7 L271.8 129 L289.7 129 L289.7 140.7 L307.5 140.7 L307.5 145.9 L325.3 145.9 L325.3 140.7 L343.2 140.7 L343.2 123.9 L361 123.9 L361 101.8 L378.8 101.8 L378.8 91.4 L396.7 91.4 L396.7 101.8 L414.5 101.8 L414.5 123.9 L432.3 123.9 L432.3 145.9 L450.2 145.9 L450.2 165.4 L468 165.4"/>
+<path class="zg-so" d="M40 173.1 L40 173.1 L57.8 173.1 L57.8 179.6 L75.7 179.6 L75.7 183.5 L93.5 183.5 L93.5 184.8 L111.3 184.8 L111.3 184.8 L129.2 184.8 L129.2 180.9 L147 180.9 L147 168 L164.8 168 L164.8 145.9 L182.7 145.9 L182.7 113.5 L200.5 113.5 L200.5 79.8 L218.3 79.8 L218.3 73.3 L236.2 73.3 L236.2 91.4 L254 91.4 L254 101.8 L271.8 101.8 L271.8 123.9 L289.7 123.9 L289.7 140.7 L307.5 140.7 L307.5 145.9 L325.3 145.9 L325.3 140.7 L343.2 140.7 L343.2 123.9 L361 123.9 L361 101.8 L378.8 101.8 L378.8 91.4 L396.7 91.4 L396.7 101.8 L414.5 101.8 L414.5 123.9 L432.3 123.9 L432.3 145.9 L450.2 145.9 L450.2 162.8 L468 162.8"/>
 <line class="zg-zirk" x1="40" y1="174.7" x2="468" y2="174.7"/>
 <line class="zg-achse" x1="40" y1="190" x2="468" y2="190"/>
 <line class="zg-achse" x1="40" y1="190" x2="40" y2="194"/>
@@ -1079,8 +1306,8 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <line class="zg-gitter" x1="284.6" y1="22" x2="284.6" y2="180"/>
 <line class="zg-gitter" x1="345.7" y1="22" x2="345.7" y2="180"/>
 <line class="zg-gitter" x1="406.9" y1="22" x2="406.9" y2="180"/>
-<path class="zg-flaeche" d="M40 169.6 L40 169.6 L42.5 169.6 L42.5 173.8 L45.1 173.8 L45.1 174.8 L47.6 174.8 L47.6 174.8 L50.2 174.8 L50.2 171.7 L52.7 171.7 L52.7 154 L55.3 154 L55.3 94.8 L57.8 94.8 L57.8 44.8 L60.4 44.8 L60.4 71.7 L62.9 71.7 L62.9 109.2 L65.5 109.2 L65.5 120.7 L68 120.7 L68 112.3 L70.6 112.3 L70.6 102.9 L73.1 102.9 L73.1 117.5 L75.7 117.5 L75.7 131.1 L78.2 131.1 L78.2 132.1 L80.8 132.1 L80.8 125.9 L83.3 125.9 L83.3 112.4 L85.9 112.4 L85.9 96.9 L88.4 96.9 L88.4 86.5 L91 86.5 L91 96.9 L93.5 96.9 L93.5 117.7 L96 117.7 L96 143.6 L98.6 143.6 L98.6 159.2 L101.1 159.2 L101.1 169.6 L103.7 169.6 L103.7 173.8 L106.2 173.8 L106.2 174.8 L108.8 174.8 L108.8 174.8 L111.3 174.8 L111.3 171.7 L113.9 171.7 L113.9 154 L116.4 154 L116.4 94.8 L119 94.8 L119 44.8 L121.5 44.8 L121.5 71.7 L124.1 71.7 L124.1 109.2 L126.6 109.2 L126.6 120.7 L129.2 120.7 L129.2 112.3 L131.7 112.3 L131.7 102.9 L134.3 102.9 L134.3 117.5 L136.8 117.5 L136.8 131.1 L139.4 131.1 L139.4 132.1 L141.9 132.1 L141.9 125.9 L144.5 125.9 L144.5 112.4 L147 112.4 L147 96.9 L149.5 96.9 L149.5 86.5 L152.1 86.5 L152.1 96.9 L154.6 96.9 L154.6 117.7 L157.2 117.7 L157.2 143.6 L159.7 143.6 L159.7 159.2 L162.3 159.2 L162.3 169.6 L164.8 169.6 L164.8 173.8 L167.4 173.8 L167.4 174.8 L169.9 174.8 L169.9 174.8 L172.5 174.8 L172.5 171.7 L175 171.7 L175 154 L177.6 154 L177.6 94.8 L180.1 94.8 L180.1 44.8 L182.7 44.8 L182.7 71.7 L185.2 71.7 L185.2 109.2 L187.8 109.2 L187.8 120.7 L190.3 120.7 L190.3 112.3 L192.9 112.3 L192.9 102.9 L195.4 102.9 L195.4 117.5 L198 117.5 L198 131.1 L200.5 131.1 L200.5 132.1 L203 132.1 L203 125.9 L205.6 125.9 L205.6 112.4 L208.1 112.4 L208.1 96.9 L210.7 96.9 L210.7 86.5 L213.2 86.5 L213.2 96.9 L215.8 96.9 L215.8 117.7 L218.3 117.7 L218.3 143.6 L220.9 143.6 L220.9 159.2 L223.4 159.2 L223.4 169.6 L226 169.6 L226 173.8 L228.5 173.8 L228.5 174.8 L231.1 174.8 L231.1 174.8 L233.6 174.8 L233.6 171.7 L236.2 171.7 L236.2 154 L238.7 154 L238.7 94.8 L241.3 94.8 L241.3 44.8 L243.8 44.8 L243.8 71.7 L246.4 71.7 L246.4 109.2 L248.9 109.2 L248.9 120.7 L251.5 120.7 L251.5 112.3 L254 112.3 L254 102.9 L256.5 102.9 L256.5 117.5 L259.1 117.5 L259.1 131.1 L261.6 131.1 L261.6 132.1 L264.2 132.1 L264.2 125.9 L266.7 125.9 L266.7 112.4 L269.3 112.4 L269.3 96.9 L271.8 96.9 L271.8 86.5 L274.4 86.5 L274.4 96.9 L276.9 96.9 L276.9 117.7 L279.5 117.7 L279.5 143.6 L282 143.6 L282 159.2 L284.6 159.2 L284.6 169.6 L287.1 169.6 L287.1 173.8 L289.7 173.8 L289.7 174.8 L292.2 174.8 L292.2 174.8 L294.8 174.8 L294.8 171.7 L297.3 171.7 L297.3 154 L299.9 154 L299.9 94.8 L302.4 94.8 L302.4 44.8 L305 44.8 L305 71.7 L307.5 71.7 L307.5 109.2 L310 109.2 L310 120.7 L312.6 120.7 L312.6 112.3 L315.1 112.3 L315.1 102.9 L317.7 102.9 L317.7 117.5 L320.2 117.5 L320.2 131.1 L322.8 131.1 L322.8 132.1 L325.3 132.1 L325.3 125.9 L327.9 125.9 L327.9 112.4 L330.4 112.4 L330.4 96.9 L333 96.9 L333 86.5 L335.5 86.5 L335.5 96.9 L338.1 96.9 L338.1 117.7 L340.6 117.7 L340.6 143.6 L343.2 143.6 L343.2 159.2 L345.7 159.2 L345.7 167.6 L348.3 167.6 L348.3 171.7 L350.8 171.7 L350.8 174.8 L353.4 174.8 L353.4 174.8 L355.9 174.8 L355.9 173.8 L358.5 173.8 L358.5 167.6 L361 167.6 L361 138.6 L363.5 138.6 L363.5 97.3 L366.1 97.3 L366.1 76.6 L368.6 76.6 L368.6 87 L371.2 87 L371.2 102.5 L373.7 102.5 L373.7 112.8 L376.3 112.8 L376.3 112.8 L378.8 112.8 L378.8 123.1 L381.4 123.1 L381.4 133.5 L383.9 133.5 L383.9 138.6 L386.5 138.6 L386.5 133.5 L389 133.5 L389 118 L391.6 118 L391.6 97.3 L394.1 97.3 L394.1 87 L396.7 87 L396.7 97.3 L399.2 97.3 L399.2 118 L401.8 118 L401.8 138.6 L404.3 138.6 L404.3 157.3 L406.9 157.3 L406.9 164.5 L409.4 164.5 L409.4 169.7 L412 169.7 L412 173.8 L414.5 173.8 L414.5 174.8 L417 174.8 L417 174.8 L419.6 174.8 L419.6 171.7 L422.1 171.7 L422.1 159.3 L424.7 159.3 L424.7 138.6 L427.2 138.6 L427.2 107.6 L429.8 107.6 L429.8 76.5 L432.3 76.5 L432.3 71.4 L434.9 71.4 L434.9 86.9 L437.4 86.9 L437.4 97.2 L440 97.2 L440 117.9 L442.5 117.9 L442.5 133.4 L445.1 133.4 L445.1 138.6 L447.6 138.6 L447.6 133.4 L450.2 133.4 L450.2 117.9 L452.7 117.9 L452.7 97.2 L455.3 97.2 L455.3 86.9 L457.8 86.9 L457.8 97.2 L460.4 97.2 L460.4 117.9 L462.9 117.9 L462.9 138.6 L465.5 138.6 L465.5 154.1 L468 154.1 L468 180 L40 180 Z"/>
-<path class="zg-linie zg-linie--duenn" d="M40 169.6 L40 169.6 L42.5 169.6 L42.5 173.8 L45.1 173.8 L45.1 174.8 L47.6 174.8 L47.6 174.8 L50.2 174.8 L50.2 171.7 L52.7 171.7 L52.7 154 L55.3 154 L55.3 94.8 L57.8 94.8 L57.8 44.8 L60.4 44.8 L60.4 71.7 L62.9 71.7 L62.9 109.2 L65.5 109.2 L65.5 120.7 L68 120.7 L68 112.3 L70.6 112.3 L70.6 102.9 L73.1 102.9 L73.1 117.5 L75.7 117.5 L75.7 131.1 L78.2 131.1 L78.2 132.1 L80.8 132.1 L80.8 125.9 L83.3 125.9 L83.3 112.4 L85.9 112.4 L85.9 96.9 L88.4 96.9 L88.4 86.5 L91 86.5 L91 96.9 L93.5 96.9 L93.5 117.7 L96 117.7 L96 143.6 L98.6 143.6 L98.6 159.2 L101.1 159.2 L101.1 169.6 L103.7 169.6 L103.7 173.8 L106.2 173.8 L106.2 174.8 L108.8 174.8 L108.8 174.8 L111.3 174.8 L111.3 171.7 L113.9 171.7 L113.9 154 L116.4 154 L116.4 94.8 L119 94.8 L119 44.8 L121.5 44.8 L121.5 71.7 L124.1 71.7 L124.1 109.2 L126.6 109.2 L126.6 120.7 L129.2 120.7 L129.2 112.3 L131.7 112.3 L131.7 102.9 L134.3 102.9 L134.3 117.5 L136.8 117.5 L136.8 131.1 L139.4 131.1 L139.4 132.1 L141.9 132.1 L141.9 125.9 L144.5 125.9 L144.5 112.4 L147 112.4 L147 96.9 L149.5 96.9 L149.5 86.5 L152.1 86.5 L152.1 96.9 L154.6 96.9 L154.6 117.7 L157.2 117.7 L157.2 143.6 L159.7 143.6 L159.7 159.2 L162.3 159.2 L162.3 169.6 L164.8 169.6 L164.8 173.8 L167.4 173.8 L167.4 174.8 L169.9 174.8 L169.9 174.8 L172.5 174.8 L172.5 171.7 L175 171.7 L175 154 L177.6 154 L177.6 94.8 L180.1 94.8 L180.1 44.8 L182.7 44.8 L182.7 71.7 L185.2 71.7 L185.2 109.2 L187.8 109.2 L187.8 120.7 L190.3 120.7 L190.3 112.3 L192.9 112.3 L192.9 102.9 L195.4 102.9 L195.4 117.5 L198 117.5 L198 131.1 L200.5 131.1 L200.5 132.1 L203 132.1 L203 125.9 L205.6 125.9 L205.6 112.4 L208.1 112.4 L208.1 96.9 L210.7 96.9 L210.7 86.5 L213.2 86.5 L213.2 96.9 L215.8 96.9 L215.8 117.7 L218.3 117.7 L218.3 143.6 L220.9 143.6 L220.9 159.2 L223.4 159.2 L223.4 169.6 L226 169.6 L226 173.8 L228.5 173.8 L228.5 174.8 L231.1 174.8 L231.1 174.8 L233.6 174.8 L233.6 171.7 L236.2 171.7 L236.2 154 L238.7 154 L238.7 94.8 L241.3 94.8 L241.3 44.8 L243.8 44.8 L243.8 71.7 L246.4 71.7 L246.4 109.2 L248.9 109.2 L248.9 120.7 L251.5 120.7 L251.5 112.3 L254 112.3 L254 102.9 L256.5 102.9 L256.5 117.5 L259.1 117.5 L259.1 131.1 L261.6 131.1 L261.6 132.1 L264.2 132.1 L264.2 125.9 L266.7 125.9 L266.7 112.4 L269.3 112.4 L269.3 96.9 L271.8 96.9 L271.8 86.5 L274.4 86.5 L274.4 96.9 L276.9 96.9 L276.9 117.7 L279.5 117.7 L279.5 143.6 L282 143.6 L282 159.2 L284.6 159.2 L284.6 169.6 L287.1 169.6 L287.1 173.8 L289.7 173.8 L289.7 174.8 L292.2 174.8 L292.2 174.8 L294.8 174.8 L294.8 171.7 L297.3 171.7 L297.3 154 L299.9 154 L299.9 94.8 L302.4 94.8 L302.4 44.8 L305 44.8 L305 71.7 L307.5 71.7 L307.5 109.2 L310 109.2 L310 120.7 L312.6 120.7 L312.6 112.3 L315.1 112.3 L315.1 102.9 L317.7 102.9 L317.7 117.5 L320.2 117.5 L320.2 131.1 L322.8 131.1 L322.8 132.1 L325.3 132.1 L325.3 125.9 L327.9 125.9 L327.9 112.4 L330.4 112.4 L330.4 96.9 L333 96.9 L333 86.5 L335.5 86.5 L335.5 96.9 L338.1 96.9 L338.1 117.7 L340.6 117.7 L340.6 143.6 L343.2 143.6 L343.2 159.2 L345.7 159.2 L345.7 167.6 L348.3 167.6 L348.3 171.7 L350.8 171.7 L350.8 174.8 L353.4 174.8 L353.4 174.8 L355.9 174.8 L355.9 173.8 L358.5 173.8 L358.5 167.6 L361 167.6 L361 138.6 L363.5 138.6 L363.5 97.3 L366.1 97.3 L366.1 76.6 L368.6 76.6 L368.6 87 L371.2 87 L371.2 102.5 L373.7 102.5 L373.7 112.8 L376.3 112.8 L376.3 112.8 L378.8 112.8 L378.8 123.1 L381.4 123.1 L381.4 133.5 L383.9 133.5 L383.9 138.6 L386.5 138.6 L386.5 133.5 L389 133.5 L389 118 L391.6 118 L391.6 97.3 L394.1 97.3 L394.1 87 L396.7 87 L396.7 97.3 L399.2 97.3 L399.2 118 L401.8 118 L401.8 138.6 L404.3 138.6 L404.3 157.3 L406.9 157.3 L406.9 164.5 L409.4 164.5 L409.4 169.7 L412 169.7 L412 173.8 L414.5 173.8 L414.5 174.8 L417 174.8 L417 174.8 L419.6 174.8 L419.6 171.7 L422.1 171.7 L422.1 159.3 L424.7 159.3 L424.7 138.6 L427.2 138.6 L427.2 107.6 L429.8 107.6 L429.8 76.5 L432.3 76.5 L432.3 71.4 L434.9 71.4 L434.9 86.9 L437.4 86.9 L437.4 97.2 L440 97.2 L440 117.9 L442.5 117.9 L442.5 133.4 L445.1 133.4 L445.1 138.6 L447.6 138.6 L447.6 133.4 L450.2 133.4 L450.2 117.9 L452.7 117.9 L452.7 97.2 L455.3 97.2 L455.3 86.9 L457.8 86.9 L457.8 97.2 L460.4 97.2 L460.4 117.9 L462.9 117.9 L462.9 138.6 L465.5 138.6 L465.5 154.1 L468 154.1"/>
+<path class="zg-flaeche" d="M40 169.2 L40 169.2 L42.5 169.2 L42.5 174 L45.1 174 L45.1 175.2 L47.6 175.2 L47.6 175.2 L50.2 175.2 L50.2 171.6 L52.7 171.6 L52.7 153.7 L55.3 153.7 L55.3 95.2 L57.8 95.2 L57.8 44.8 L60.4 44.8 L60.4 71.7 L62.9 71.7 L62.9 109.3 L65.5 109.3 L65.5 120.7 L68 120.7 L68 112.3 L70.6 112.3 L70.6 102.9 L73.1 102.9 L73.1 117.5 L75.7 117.5 L75.7 131.1 L78.2 131.1 L78.2 132.1 L80.8 132.1 L80.8 125.8 L83.3 125.8 L83.3 112.4 L85.9 112.4 L85.9 96.4 L88.4 96.4 L88.4 86.8 L91 86.8 L91 96.4 L93.5 96.4 L93.5 117.9 L96 117.9 L96 144.2 L98.6 144.2 L98.6 159.7 L101.1 159.7 L101.1 169.2 L103.7 169.2 L103.7 174 L106.2 174 L106.2 175.2 L108.8 175.2 L108.8 175.2 L111.3 175.2 L111.3 171.6 L113.9 171.6 L113.9 153.7 L116.4 153.7 L116.4 95.2 L119 95.2 L119 44.8 L121.5 44.8 L121.5 71.7 L124.1 71.7 L124.1 109.3 L126.6 109.3 L126.6 120.7 L129.2 120.7 L129.2 112.3 L131.7 112.3 L131.7 102.9 L134.3 102.9 L134.3 117.5 L136.8 117.5 L136.8 131.1 L139.4 131.1 L139.4 132.1 L141.9 132.1 L141.9 125.8 L144.5 125.8 L144.5 112.4 L147 112.4 L147 96.4 L149.5 96.4 L149.5 86.8 L152.1 86.8 L152.1 96.4 L154.6 96.4 L154.6 117.9 L157.2 117.9 L157.2 144.2 L159.7 144.2 L159.7 159.7 L162.3 159.7 L162.3 169.2 L164.8 169.2 L164.8 174 L167.4 174 L167.4 175.2 L169.9 175.2 L169.9 175.2 L172.5 175.2 L172.5 171.6 L175 171.6 L175 153.7 L177.6 153.7 L177.6 95.2 L180.1 95.2 L180.1 44.8 L182.7 44.8 L182.7 71.7 L185.2 71.7 L185.2 109.3 L187.8 109.3 L187.8 120.7 L190.3 120.7 L190.3 112.3 L192.9 112.3 L192.9 102.9 L195.4 102.9 L195.4 117.5 L198 117.5 L198 131.1 L200.5 131.1 L200.5 132.1 L203 132.1 L203 125.8 L205.6 125.8 L205.6 112.4 L208.1 112.4 L208.1 96.4 L210.7 96.4 L210.7 86.8 L213.2 86.8 L213.2 96.4 L215.8 96.4 L215.8 117.9 L218.3 117.9 L218.3 144.2 L220.9 144.2 L220.9 159.7 L223.4 159.7 L223.4 169.2 L226 169.2 L226 174 L228.5 174 L228.5 175.2 L231.1 175.2 L231.1 175.2 L233.6 175.2 L233.6 171.6 L236.2 171.6 L236.2 153.7 L238.7 153.7 L238.7 95.2 L241.3 95.2 L241.3 44.8 L243.8 44.8 L243.8 71.7 L246.4 71.7 L246.4 109.3 L248.9 109.3 L248.9 120.7 L251.5 120.7 L251.5 112.3 L254 112.3 L254 102.9 L256.5 102.9 L256.5 117.5 L259.1 117.5 L259.1 131.1 L261.6 131.1 L261.6 132.1 L264.2 132.1 L264.2 125.8 L266.7 125.8 L266.7 112.4 L269.3 112.4 L269.3 96.4 L271.8 96.4 L271.8 86.8 L274.4 86.8 L274.4 96.4 L276.9 96.4 L276.9 117.9 L279.5 117.9 L279.5 144.2 L282 144.2 L282 159.7 L284.6 159.7 L284.6 169.2 L287.1 169.2 L287.1 174 L289.7 174 L289.7 175.2 L292.2 175.2 L292.2 175.2 L294.8 175.2 L294.8 171.6 L297.3 171.6 L297.3 153.7 L299.9 153.7 L299.9 95.2 L302.4 95.2 L302.4 44.8 L305 44.8 L305 71.7 L307.5 71.7 L307.5 109.3 L310 109.3 L310 120.7 L312.6 120.7 L312.6 112.3 L315.1 112.3 L315.1 102.9 L317.7 102.9 L317.7 117.5 L320.2 117.5 L320.2 131.1 L322.8 131.1 L322.8 132.1 L325.3 132.1 L325.3 125.8 L327.9 125.8 L327.9 112.4 L330.4 112.4 L330.4 96.4 L333 96.4 L333 86.8 L335.5 86.8 L335.5 96.4 L338.1 96.4 L338.1 117.9 L340.6 117.9 L340.6 144.2 L343.2 144.2 L343.2 159.7 L345.7 159.7 L345.7 167.8 L348.3 167.8 L348.3 171.5 L350.8 171.5 L350.8 175.1 L353.4 175.1 L353.4 175.1 L355.9 175.1 L355.9 173.9 L358.5 173.9 L358.5 167.8 L361 167.8 L361 138.5 L363.5 138.5 L363.5 97.1 L366.1 97.1 L366.1 77.5 L368.6 77.5 L368.6 87.3 L371.2 87.3 L371.2 101.9 L373.7 101.9 L373.7 112.9 L376.3 112.9 L376.3 112.9 L378.8 112.9 L378.8 122.7 L381.4 122.7 L381.4 133.6 L383.9 133.6 L383.9 138.5 L386.5 138.5 L386.5 133.6 L389 133.6 L389 117.8 L391.6 117.8 L391.6 97.1 L394.1 97.1 L394.1 87.3 L396.7 87.3 L396.7 97.1 L399.2 97.1 L399.2 117.8 L401.8 117.8 L401.8 138.5 L404.3 138.5 L404.3 156.8 L406.9 156.8 L406.9 164.1 L409.4 164.1 L409.4 170.2 L412 170.2 L412 173.9 L414.5 173.9 L414.5 175.1 L417 175.1 L417 175.1 L419.6 175.1 L419.6 171.5 L422.1 171.5 L422.1 159.3 L424.7 159.3 L424.7 138.5 L427.2 138.5 L427.2 108 L429.8 108 L429.8 76.3 L432.3 76.3 L432.3 70.2 L434.9 70.2 L434.9 87.3 L437.4 87.3 L437.4 97.1 L440 97.1 L440 117.8 L442.5 117.8 L442.5 133.6 L445.1 133.6 L445.1 138.5 L447.6 138.5 L447.6 133.6 L450.2 133.6 L450.2 117.8 L452.7 117.8 L452.7 97.1 L455.3 97.1 L455.3 87.3 L457.8 87.3 L457.8 97.1 L460.4 97.1 L460.4 117.8 L462.9 117.8 L462.9 138.5 L465.5 138.5 L465.5 154.4 L468 154.4 L468 180 L40 180 Z"/>
+<path class="zg-linie zg-linie--duenn" d="M40 169.2 L40 169.2 L42.5 169.2 L42.5 174 L45.1 174 L45.1 175.2 L47.6 175.2 L47.6 175.2 L50.2 175.2 L50.2 171.6 L52.7 171.6 L52.7 153.7 L55.3 153.7 L55.3 95.2 L57.8 95.2 L57.8 44.8 L60.4 44.8 L60.4 71.7 L62.9 71.7 L62.9 109.3 L65.5 109.3 L65.5 120.7 L68 120.7 L68 112.3 L70.6 112.3 L70.6 102.9 L73.1 102.9 L73.1 117.5 L75.7 117.5 L75.7 131.1 L78.2 131.1 L78.2 132.1 L80.8 132.1 L80.8 125.8 L83.3 125.8 L83.3 112.4 L85.9 112.4 L85.9 96.4 L88.4 96.4 L88.4 86.8 L91 86.8 L91 96.4 L93.5 96.4 L93.5 117.9 L96 117.9 L96 144.2 L98.6 144.2 L98.6 159.7 L101.1 159.7 L101.1 169.2 L103.7 169.2 L103.7 174 L106.2 174 L106.2 175.2 L108.8 175.2 L108.8 175.2 L111.3 175.2 L111.3 171.6 L113.9 171.6 L113.9 153.7 L116.4 153.7 L116.4 95.2 L119 95.2 L119 44.8 L121.5 44.8 L121.5 71.7 L124.1 71.7 L124.1 109.3 L126.6 109.3 L126.6 120.7 L129.2 120.7 L129.2 112.3 L131.7 112.3 L131.7 102.9 L134.3 102.9 L134.3 117.5 L136.8 117.5 L136.8 131.1 L139.4 131.1 L139.4 132.1 L141.9 132.1 L141.9 125.8 L144.5 125.8 L144.5 112.4 L147 112.4 L147 96.4 L149.5 96.4 L149.5 86.8 L152.1 86.8 L152.1 96.4 L154.6 96.4 L154.6 117.9 L157.2 117.9 L157.2 144.2 L159.7 144.2 L159.7 159.7 L162.3 159.7 L162.3 169.2 L164.8 169.2 L164.8 174 L167.4 174 L167.4 175.2 L169.9 175.2 L169.9 175.2 L172.5 175.2 L172.5 171.6 L175 171.6 L175 153.7 L177.6 153.7 L177.6 95.2 L180.1 95.2 L180.1 44.8 L182.7 44.8 L182.7 71.7 L185.2 71.7 L185.2 109.3 L187.8 109.3 L187.8 120.7 L190.3 120.7 L190.3 112.3 L192.9 112.3 L192.9 102.9 L195.4 102.9 L195.4 117.5 L198 117.5 L198 131.1 L200.5 131.1 L200.5 132.1 L203 132.1 L203 125.8 L205.6 125.8 L205.6 112.4 L208.1 112.4 L208.1 96.4 L210.7 96.4 L210.7 86.8 L213.2 86.8 L213.2 96.4 L215.8 96.4 L215.8 117.9 L218.3 117.9 L218.3 144.2 L220.9 144.2 L220.9 159.7 L223.4 159.7 L223.4 169.2 L226 169.2 L226 174 L228.5 174 L228.5 175.2 L231.1 175.2 L231.1 175.2 L233.6 175.2 L233.6 171.6 L236.2 171.6 L236.2 153.7 L238.7 153.7 L238.7 95.2 L241.3 95.2 L241.3 44.8 L243.8 44.8 L243.8 71.7 L246.4 71.7 L246.4 109.3 L248.9 109.3 L248.9 120.7 L251.5 120.7 L251.5 112.3 L254 112.3 L254 102.9 L256.5 102.9 L256.5 117.5 L259.1 117.5 L259.1 131.1 L261.6 131.1 L261.6 132.1 L264.2 132.1 L264.2 125.8 L266.7 125.8 L266.7 112.4 L269.3 112.4 L269.3 96.4 L271.8 96.4 L271.8 86.8 L274.4 86.8 L274.4 96.4 L276.9 96.4 L276.9 117.9 L279.5 117.9 L279.5 144.2 L282 144.2 L282 159.7 L284.6 159.7 L284.6 169.2 L287.1 169.2 L287.1 174 L289.7 174 L289.7 175.2 L292.2 175.2 L292.2 175.2 L294.8 175.2 L294.8 171.6 L297.3 171.6 L297.3 153.7 L299.9 153.7 L299.9 95.2 L302.4 95.2 L302.4 44.8 L305 44.8 L305 71.7 L307.5 71.7 L307.5 109.3 L310 109.3 L310 120.7 L312.6 120.7 L312.6 112.3 L315.1 112.3 L315.1 102.9 L317.7 102.9 L317.7 117.5 L320.2 117.5 L320.2 131.1 L322.8 131.1 L322.8 132.1 L325.3 132.1 L325.3 125.8 L327.9 125.8 L327.9 112.4 L330.4 112.4 L330.4 96.4 L333 96.4 L333 86.8 L335.5 86.8 L335.5 96.4 L338.1 96.4 L338.1 117.9 L340.6 117.9 L340.6 144.2 L343.2 144.2 L343.2 159.7 L345.7 159.7 L345.7 167.8 L348.3 167.8 L348.3 171.5 L350.8 171.5 L350.8 175.1 L353.4 175.1 L353.4 175.1 L355.9 175.1 L355.9 173.9 L358.5 173.9 L358.5 167.8 L361 167.8 L361 138.5 L363.5 138.5 L363.5 97.1 L366.1 97.1 L366.1 77.5 L368.6 77.5 L368.6 87.3 L371.2 87.3 L371.2 101.9 L373.7 101.9 L373.7 112.9 L376.3 112.9 L376.3 112.9 L378.8 112.9 L378.8 122.7 L381.4 122.7 L381.4 133.6 L383.9 133.6 L383.9 138.5 L386.5 138.5 L386.5 133.6 L389 133.6 L389 117.8 L391.6 117.8 L391.6 97.1 L394.1 97.1 L394.1 87.3 L396.7 87.3 L396.7 97.1 L399.2 97.1 L399.2 117.8 L401.8 117.8 L401.8 138.5 L404.3 138.5 L404.3 156.8 L406.9 156.8 L406.9 164.1 L409.4 164.1 L409.4 170.2 L412 170.2 L412 173.9 L414.5 173.9 L414.5 175.1 L417 175.1 L417 175.1 L419.6 175.1 L419.6 171.5 L422.1 171.5 L422.1 159.3 L424.7 159.3 L424.7 138.5 L427.2 138.5 L427.2 108 L429.8 108 L429.8 76.3 L432.3 76.3 L432.3 70.2 L434.9 70.2 L434.9 87.3 L437.4 87.3 L437.4 97.1 L440 97.1 L440 117.8 L442.5 117.8 L442.5 133.6 L445.1 133.6 L445.1 138.5 L447.6 138.5 L447.6 133.6 L450.2 133.6 L450.2 117.8 L452.7 117.8 L452.7 97.1 L455.3 97.1 L455.3 87.3 L457.8 87.3 L457.8 97.1 L460.4 97.1 L460.4 117.8 L462.9 117.8 L462.9 138.5 L465.5 138.5 L465.5 154.4 L468 154.4"/>
 <line class="zg-zirk" x1="40" y1="165.6" x2="468" y2="165.6"/>
 <line class="zg-achse" x1="40" y1="180" x2="468" y2="180"/>
 <text class="zg-leise" x="70.6" y="196" text-anchor="middle">Mo</text>
@@ -1104,7 +1331,7 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                   <span><i class="sw-profil"></i>Zapfung</span>
                   <span><svg viewBox="0 0 20 10" aria-hidden="true"><line class="zg-zirk" x1="0" y1="5" x2="20" y2="5"/></svg>Zirkulation</span>
                 </div>
-                <p class="zpg-bildzeile">168 Wochenstunden der zweiten Januarwoche — die Form, die heute das 168-Stunden-Wochenprofil
+                <p class="zpg-bildzeile">168 Wochenstunden der zweiten Januarwoche, der Woche mit dem größten Tagesbedarf des Jahres — die Form, die heute das 168-Stunden-Wochenprofil
                 allein trägt, hier aus Tagtypen und Kalender zusammengesetzt.</p>
               </div>
               <div class="zpg-blatt" role="tabpanel" id="b-jahr" aria-labelledby="r-jahr" hidden>
@@ -1127,14 +1354,14 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <rect class="zg-saeule-zapf" x="46.8" y="62.3" width="22.1" height="127.7"/>
 <rect class="zg-saeule-zirk" x="46.8" y="28.1" width="22.1" height="34.2"/>
 <text class="zg-leise" x="57.8" y="206" text-anchor="middle">J</text>
-<rect class="zg-saeule-zapf" x="82.4" y="69" width="22.1" height="121"/>
-<rect class="zg-saeule-zirk" x="82.4" y="38.1" width="22.1" height="30.9"/>
+<rect class="zg-saeule-zapf" x="82.4" y="75.8" width="22.1" height="114.2"/>
+<rect class="zg-saeule-zirk" x="82.4" y="44.9" width="22.1" height="30.9"/>
 <text class="zg-leise" x="93.5" y="206" text-anchor="middle">F</text>
-<rect class="zg-saeule-zapf" x="118.1" y="69" width="22.1" height="121"/>
-<rect class="zg-saeule-zirk" x="118.1" y="34.8" width="22.1" height="34.2"/>
+<rect class="zg-saeule-zapf" x="118.1" y="65.7" width="22.1" height="124.3"/>
+<rect class="zg-saeule-zirk" x="118.1" y="31.5" width="22.1" height="34.2"/>
 <text class="zg-leise" x="129.2" y="206" text-anchor="middle">M</text>
-<rect class="zg-saeule-zapf" x="153.8" y="82.5" width="22.1" height="107.5"/>
-<rect class="zg-saeule-zirk" x="153.8" y="49.3" width="22.1" height="33.1"/>
+<rect class="zg-saeule-zapf" x="153.8" y="79.1" width="22.1" height="110.9"/>
+<rect class="zg-saeule-zirk" x="153.8" y="46" width="22.1" height="33.1"/>
 <text class="zg-leise" x="164.8" y="206" text-anchor="middle">A</text>
 <rect class="zg-saeule-zapf" x="189.4" y="85.8" width="22.1" height="104.2"/>
 <rect class="zg-saeule-zirk" x="189.4" y="51.6" width="22.1" height="34.2"/>
@@ -1154,11 +1381,11 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <rect class="zg-saeule-zapf" x="367.8" y="75.8" width="22.1" height="114.2"/>
 <rect class="zg-saeule-zirk" x="367.8" y="41.5" width="22.1" height="34.2"/>
 <text class="zg-leise" x="378.8" y="206" text-anchor="middle">O</text>
-<rect class="zg-saeule-zapf" x="403.4" y="72.4" width="22.1" height="117.6"/>
-<rect class="zg-saeule-zirk" x="403.4" y="39.3" width="22.1" height="33.1"/>
+<rect class="zg-saeule-zapf" x="403.4" y="69" width="22.1" height="121"/>
+<rect class="zg-saeule-zirk" x="403.4" y="35.9" width="22.1" height="33.1"/>
 <text class="zg-leise" x="414.5" y="206" text-anchor="middle">N</text>
-<rect class="zg-saeule-zapf" x="439.1" y="62.3" width="22.1" height="127.7"/>
-<rect class="zg-saeule-zirk" x="439.1" y="28.1" width="22.1" height="34.2"/>
+<rect class="zg-saeule-zapf" x="439.1" y="65.7" width="22.1" height="124.3"/>
+<rect class="zg-saeule-zirk" x="439.1" y="31.5" width="22.1" height="34.2"/>
 <text class="zg-leise" x="450.2" y="206" text-anchor="middle">D</text>
 <line class="zg-achse" x1="40" y1="190" x2="468" y2="190"/>
 </svg>
@@ -1168,7 +1395,8 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                   <span><i class="sw-ferien"></i>Ferien (Kalender)</span>
                 </div>
                 <p class="zpg-bildzeile">Zwölf Monatssäulen in MWh, gestapelt. Die Zapfung folgt Belegung und Kaltwasser, im August
-                senken Urlaubszeit und Betriebsferien des Büros den Bedarf; die Zirkulation bleibt konstant.</p>
+                senken Urlaubszeit und Betriebsferien des Büros den Bedarf; die Zirkulation bleibt konstant. Der Januar ist der größte
+                Monat; sein Werktag trägt mit 125,7 kWh/d Zapfung den größten Tagesbedarf des Jahres.</p>
               </div>
               <div class="zpg-blatt" role="tabpanel" id="b-dauer" aria-labelledby="r-dauer" hidden>
 <svg viewBox="0 0 480 236" role="img" aria-label="Jahresdauerlinie der Bilanzreihe mit Markern P90, P95, P99" xmlns="http://www.w3.org/2000/svg">
@@ -1181,8 +1409,8 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
 <line class="zg-gitter" x1="40" y1="22" x2="468" y2="22"/>
 <text class="zg-leise" x="35" y="25.5" text-anchor="end">15</text>
 <text class="zg-leise" x="4" y="14" text-anchor="start">kW</text>
-<path class="zg-flaeche" d="M40 24.4 L40.2 24.4 L40.4 24.4 L40.6 24.4 L40.8 24.4 L41 30.9 L41.2 30.9 L41.4 30.9 L41.6 30.9 L41.8 30.9 L42 30.9 L42.1 31.3 L42.3 31.3 L42.5 31.3 L42.7 31.3 L42.9 31.3 L43.1 37.9 L43.3 37.9 L43.5 37.9 L43.7 37.9 L43.9 37.9 L44.1 38.6 L44.3 38.6 L44.5 38.6 L44.7 38.6 L44.9 38.6 L45.1 38.6 L45.3 46 L45.5 46 L45.7 46 L45.9 46 L46.1 46 L46.3 49.7 L46.4 49.7 L46.6 49.7 L46.8 49.7 L47 49.7 L47.2 49.7 L47.4 53.5 L47.6 54.7 L47.8 54.7 L48 54.7 L48.2 54.7 L48.4 54.7 L48.6 56.7 L48.8 56.7 L49 56.7 L49.2 56.7 L49.4 56.7 L49.6 57.4 L49.8 57.4 L52.7 59.8 L55.6 64.8 L58.6 70.4 L61.5 71.1 L64.4 75.2 L67.4 75.7 L70.3 79.3 L73.2 80.5 L76.2 81.4 L79.1 82.2 L82 84 L84.9 86.3 L87.9 86.5 L90.8 86.7 L93.7 88.2 L96.7 89.4 L99.6 90.6 L102.5 91 L105.5 91.4 L108.4 92.7 L111.3 94.6 L114.3 95.1 L117.2 96.2 L120.1 96.6 L123.1 96.8 L126 98.3 L128.9 99.2 L131.9 99.6 L134.8 100.3 L137.7 101.7 L140.6 102.7 L143.6 102.9 L146.5 103.4 L149.4 103.8 L152.4 103.9 L155.3 104.8 L158.2 105.5 L161.2 105.9 L164.1 106.3 L167 106.5 L170 106.8 L172.9 107.8 L175.8 108.4 L178.8 108.7 L181.7 108.9 L184.6 111.1 L187.6 111.4 L190.5 111.6 L193.4 111.8 L196.3 112.2 L199.3 112.3 L202.2 113.4 L205.1 113.8 L208.1 114.5 L211 114.6 L213.9 114.8 L216.9 115.9 L219.8 116.2 L222.7 117.1 L225.7 117.5 L228.6 117.9 L231.5 118.5 L234.5 119 L237.4 119.4 L240.3 120.1 L243.3 121.1 L246.2 121.6 L249.1 121.8 L252 122.6 L255 122.8 L257.9 123.5 L260.8 123.8 L263.8 124.2 L266.7 125.2 L269.6 125.5 L272.6 126.3 L275.5 127 L278.4 128 L281.4 128.6 L284.3 128.9 L287.2 129.3 L290.2 130.7 L293.1 131.2 L296 132.4 L298.9 132.6 L301.9 132.7 L304.8 133 L307.7 134.1 L310.7 135.2 L313.6 136.1 L316.5 136.5 L319.5 138 L322.4 139.2 L325.3 139.6 L328.3 140.7 L331.2 143.2 L334.1 144.4 L337.1 145.8 L340 147 L342.9 148.1 L345.9 149.3 L348.8 151 L351.7 152.4 L354.6 152.6 L357.6 153.4 L360.5 153.9 L363.4 155.7 L366.4 156.9 L369.3 157.2 L372.2 159.3 L375.2 160.7 L378.1 163 L381 163.6 L384 164.2 L386.9 164.9 L389.8 165.4 L392.8 165.8 L395.7 165.9 L398.6 166.3 L401.6 166.8 L404.5 167.1 L407.4 167.6 L410.3 167.7 L413.3 168 L416.2 168.4 L419.1 168.6 L422.1 168.9 L425 169 L427.9 169.1 L430.9 169.1 L433.8 169.3 L436.7 169.4 L439.7 169.5 L442.6 169.5 L445.5 169.8 L448.5 169.9 L451.4 170.1 L454.3 170.2 L457.3 170.3 L460.2 170.4 L463.1 170.9 L466 171.1 L468 171.2 L468 190 L40 190 Z"/>
-<path class="zg-linie" d="M40 24.4 L40.2 24.4 L40.4 24.4 L40.6 24.4 L40.8 24.4 L41 30.9 L41.2 30.9 L41.4 30.9 L41.6 30.9 L41.8 30.9 L42 30.9 L42.1 31.3 L42.3 31.3 L42.5 31.3 L42.7 31.3 L42.9 31.3 L43.1 37.9 L43.3 37.9 L43.5 37.9 L43.7 37.9 L43.9 37.9 L44.1 38.6 L44.3 38.6 L44.5 38.6 L44.7 38.6 L44.9 38.6 L45.1 38.6 L45.3 46 L45.5 46 L45.7 46 L45.9 46 L46.1 46 L46.3 49.7 L46.4 49.7 L46.6 49.7 L46.8 49.7 L47 49.7 L47.2 49.7 L47.4 53.5 L47.6 54.7 L47.8 54.7 L48 54.7 L48.2 54.7 L48.4 54.7 L48.6 56.7 L48.8 56.7 L49 56.7 L49.2 56.7 L49.4 56.7 L49.6 57.4 L49.8 57.4 L52.7 59.8 L55.6 64.8 L58.6 70.4 L61.5 71.1 L64.4 75.2 L67.4 75.7 L70.3 79.3 L73.2 80.5 L76.2 81.4 L79.1 82.2 L82 84 L84.9 86.3 L87.9 86.5 L90.8 86.7 L93.7 88.2 L96.7 89.4 L99.6 90.6 L102.5 91 L105.5 91.4 L108.4 92.7 L111.3 94.6 L114.3 95.1 L117.2 96.2 L120.1 96.6 L123.1 96.8 L126 98.3 L128.9 99.2 L131.9 99.6 L134.8 100.3 L137.7 101.7 L140.6 102.7 L143.6 102.9 L146.5 103.4 L149.4 103.8 L152.4 103.9 L155.3 104.8 L158.2 105.5 L161.2 105.9 L164.1 106.3 L167 106.5 L170 106.8 L172.9 107.8 L175.8 108.4 L178.8 108.7 L181.7 108.9 L184.6 111.1 L187.6 111.4 L190.5 111.6 L193.4 111.8 L196.3 112.2 L199.3 112.3 L202.2 113.4 L205.1 113.8 L208.1 114.5 L211 114.6 L213.9 114.8 L216.9 115.9 L219.8 116.2 L222.7 117.1 L225.7 117.5 L228.6 117.9 L231.5 118.5 L234.5 119 L237.4 119.4 L240.3 120.1 L243.3 121.1 L246.2 121.6 L249.1 121.8 L252 122.6 L255 122.8 L257.9 123.5 L260.8 123.8 L263.8 124.2 L266.7 125.2 L269.6 125.5 L272.6 126.3 L275.5 127 L278.4 128 L281.4 128.6 L284.3 128.9 L287.2 129.3 L290.2 130.7 L293.1 131.2 L296 132.4 L298.9 132.6 L301.9 132.7 L304.8 133 L307.7 134.1 L310.7 135.2 L313.6 136.1 L316.5 136.5 L319.5 138 L322.4 139.2 L325.3 139.6 L328.3 140.7 L331.2 143.2 L334.1 144.4 L337.1 145.8 L340 147 L342.9 148.1 L345.9 149.3 L348.8 151 L351.7 152.4 L354.6 152.6 L357.6 153.4 L360.5 153.9 L363.4 155.7 L366.4 156.9 L369.3 157.2 L372.2 159.3 L375.2 160.7 L378.1 163 L381 163.6 L384 164.2 L386.9 164.9 L389.8 165.4 L392.8 165.8 L395.7 165.9 L398.6 166.3 L401.6 166.8 L404.5 167.1 L407.4 167.6 L410.3 167.7 L413.3 168 L416.2 168.4 L419.1 168.6 L422.1 168.9 L425 169 L427.9 169.1 L430.9 169.1 L433.8 169.3 L436.7 169.4 L439.7 169.5 L442.6 169.5 L445.5 169.8 L448.5 169.9 L451.4 170.1 L454.3 170.2 L457.3 170.3 L460.2 170.4 L463.1 170.9 L466 171.1 L468 171.2"/>
+<path class="zg-flaeche" d="M40 30.9 L40.2 30.9 L40.4 30.9 L40.6 30.9 L40.8 30.9 L41 32.5 L41.2 32.5 L41.4 32.5 L41.6 32.5 L41.8 32.5 L42 32.5 L42.1 34 L42.3 34 L42.5 34 L42.7 34 L42.9 34 L43.1 37.9 L43.3 37.9 L43.5 37.9 L43.7 37.9 L43.9 37.9 L44.1 38.6 L44.3 38.6 L44.5 38.6 L44.7 38.6 L44.9 38.6 L45.1 38.6 L45.3 46 L45.5 46 L45.7 46 L45.9 46 L46.1 46 L46.3 49.7 L46.4 49.7 L46.6 49.7 L46.8 49.7 L47 49.7 L47.2 49.7 L47.4 53.5 L47.6 54.7 L47.8 54.7 L48 54.7 L48.2 54.7 L48.4 54.7 L48.6 56.7 L48.8 56.7 L49 56.7 L49.2 56.7 L49.4 56.7 L49.6 57.4 L49.8 57.4 L52.7 59.8 L55.6 64.8 L58.6 70.4 L61.5 71.1 L64.4 75.2 L67.4 75.7 L70.3 79.3 L73.2 80.5 L76.2 81.4 L79.1 82.2 L82 84 L84.9 86.3 L87.9 86.5 L90.8 86.7 L93.7 88.2 L96.7 89.4 L99.6 90.6 L102.5 91 L105.5 91.4 L108.4 92.7 L111.3 94.6 L114.3 95.1 L117.2 96.2 L120.1 96.6 L123.1 96.8 L126 98.3 L128.9 99.2 L131.9 99.6 L134.8 100.3 L137.7 101.7 L140.6 102.7 L143.6 102.9 L146.5 103.4 L149.4 103.8 L152.4 103.9 L155.3 104.8 L158.2 105.5 L161.2 105.9 L164.1 106.3 L167 106.5 L170 106.8 L172.9 107.8 L175.8 108.4 L178.8 108.7 L181.7 108.9 L184.6 111.1 L187.6 111.4 L190.5 111.6 L193.4 111.8 L196.3 112.2 L199.3 112.3 L202.2 113.4 L205.1 113.8 L208.1 114.5 L211 114.6 L213.9 114.8 L216.9 115.9 L219.8 116.2 L222.7 117.1 L225.7 117.5 L228.6 117.9 L231.5 118.5 L234.5 119 L237.4 119.4 L240.3 120.1 L243.3 121.1 L246.2 121.6 L249.1 121.8 L252 122.6 L255 122.8 L257.9 123.5 L260.8 123.8 L263.8 124.2 L266.7 125.2 L269.6 125.5 L272.6 126.3 L275.5 127 L278.4 128 L281.4 128.6 L284.3 128.9 L287.2 129.3 L290.2 130.7 L293.1 131.2 L296 132.4 L298.9 132.6 L301.9 132.7 L304.8 133 L307.7 134.1 L310.7 135.2 L313.6 136.1 L316.5 136.5 L319.5 138 L322.4 139.2 L325.3 139.6 L328.3 140.7 L331.2 143.2 L334.1 144.4 L337.1 145.8 L340 147 L342.9 148.1 L345.9 149.3 L348.8 151 L351.7 152.4 L354.6 152.6 L357.6 153.4 L360.5 153.9 L363.4 155.7 L366.4 156.9 L369.3 157.2 L372.2 159.3 L375.2 160.7 L378.1 163 L381 163.6 L384 164.2 L386.9 164.9 L389.8 165.4 L392.8 165.8 L395.7 165.9 L398.6 166.3 L401.6 166.8 L404.5 167.1 L407.4 167.6 L410.3 167.7 L413.3 168 L416.2 168.4 L419.1 168.6 L422.1 168.9 L425 169 L427.9 169.1 L430.9 169.1 L433.8 169.3 L436.7 169.4 L439.7 169.5 L442.6 169.5 L445.5 169.8 L448.5 169.9 L451.4 170.1 L454.3 170.2 L457.3 170.3 L460.2 170.4 L463.1 170.9 L466 171.1 L468 171.2 L468 190 L40 190 Z"/>
+<path class="zg-linie" d="M40 30.9 L40.2 30.9 L40.4 30.9 L40.6 30.9 L40.8 30.9 L41 32.5 L41.2 32.5 L41.4 32.5 L41.6 32.5 L41.8 32.5 L42 32.5 L42.1 34 L42.3 34 L42.5 34 L42.7 34 L42.9 34 L43.1 37.9 L43.3 37.9 L43.5 37.9 L43.7 37.9 L43.9 37.9 L44.1 38.6 L44.3 38.6 L44.5 38.6 L44.7 38.6 L44.9 38.6 L45.1 38.6 L45.3 46 L45.5 46 L45.7 46 L45.9 46 L46.1 46 L46.3 49.7 L46.4 49.7 L46.6 49.7 L46.8 49.7 L47 49.7 L47.2 49.7 L47.4 53.5 L47.6 54.7 L47.8 54.7 L48 54.7 L48.2 54.7 L48.4 54.7 L48.6 56.7 L48.8 56.7 L49 56.7 L49.2 56.7 L49.4 56.7 L49.6 57.4 L49.8 57.4 L52.7 59.8 L55.6 64.8 L58.6 70.4 L61.5 71.1 L64.4 75.2 L67.4 75.7 L70.3 79.3 L73.2 80.5 L76.2 81.4 L79.1 82.2 L82 84 L84.9 86.3 L87.9 86.5 L90.8 86.7 L93.7 88.2 L96.7 89.4 L99.6 90.6 L102.5 91 L105.5 91.4 L108.4 92.7 L111.3 94.6 L114.3 95.1 L117.2 96.2 L120.1 96.6 L123.1 96.8 L126 98.3 L128.9 99.2 L131.9 99.6 L134.8 100.3 L137.7 101.7 L140.6 102.7 L143.6 102.9 L146.5 103.4 L149.4 103.8 L152.4 103.9 L155.3 104.8 L158.2 105.5 L161.2 105.9 L164.1 106.3 L167 106.5 L170 106.8 L172.9 107.8 L175.8 108.4 L178.8 108.7 L181.7 108.9 L184.6 111.1 L187.6 111.4 L190.5 111.6 L193.4 111.8 L196.3 112.2 L199.3 112.3 L202.2 113.4 L205.1 113.8 L208.1 114.5 L211 114.6 L213.9 114.8 L216.9 115.9 L219.8 116.2 L222.7 117.1 L225.7 117.5 L228.6 117.9 L231.5 118.5 L234.5 119 L237.4 119.4 L240.3 120.1 L243.3 121.1 L246.2 121.6 L249.1 121.8 L252 122.6 L255 122.8 L257.9 123.5 L260.8 123.8 L263.8 124.2 L266.7 125.2 L269.6 125.5 L272.6 126.3 L275.5 127 L278.4 128 L281.4 128.6 L284.3 128.9 L287.2 129.3 L290.2 130.7 L293.1 131.2 L296 132.4 L298.9 132.6 L301.9 132.7 L304.8 133 L307.7 134.1 L310.7 135.2 L313.6 136.1 L316.5 136.5 L319.5 138 L322.4 139.2 L325.3 139.6 L328.3 140.7 L331.2 143.2 L334.1 144.4 L337.1 145.8 L340 147 L342.9 148.1 L345.9 149.3 L348.8 151 L351.7 152.4 L354.6 152.6 L357.6 153.4 L360.5 153.9 L363.4 155.7 L366.4 156.9 L369.3 157.2 L372.2 159.3 L375.2 160.7 L378.1 163 L381 163.6 L384 164.2 L386.9 164.9 L389.8 165.4 L392.8 165.8 L395.7 165.9 L398.6 166.3 L401.6 166.8 L404.5 167.1 L407.4 167.6 L410.3 167.7 L413.3 168 L416.2 168.4 L419.1 168.6 L422.1 168.9 L425 169 L427.9 169.1 L430.9 169.1 L433.8 169.3 L436.7 169.4 L439.7 169.5 L442.6 169.5 L445.5 169.8 L448.5 169.9 L451.4 170.1 L454.3 170.2 L457.3 170.3 L460.2 170.4 L463.1 170.9 L466 171.1 L468 171.2"/>
 <line class="zg-marke" x1="40" y1="38.6" x2="468" y2="38.6"/>
 <text class="zg-marke-text" x="466" y="35.6" text-anchor="end">P99 · 13,5 kW</text>
 <line class="zg-marke" x1="40" y1="70.9" x2="468" y2="70.9"/>
@@ -1212,8 +1440,8 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
                     <tr><td>Brauchwasser gesamt</td><td class="r">51&#8239;000 kWh/a</td><td class="v">Zirkulationsanteil 24 %</td></tr>
                     <tr><td>Tagesmittel Zapfung</td><td class="r">107 kWh/d</td><td class="v">≈ 1&#8239;840 l/d, Bezug 60 °C</td></tr>
                     <tr><td>Spezifisch Zone 1</td><td class="r">1&#8239;825 kWh/(WE·a)</td><td class="v">5,0 kWh/(WE·d) × 365</td></tr>
-                    <tr><td>Volllaststunden</td><td class="r">≈ 3&#8239;400 h/a</td><td class="v">Brauchwasser gesamt ÷ größter Stundenwert</td></tr>
-                    <tr class="bilanzwert"><td>Größter Stundenwert (Zapfung + Zirkulation)</td><td class="r">15 kW</td><td class="v">Bilanzwert, keine Auslegungsgröße; davon Zapfung ≈ 13,4 kW</td></tr>
+                    <tr><td>Volllaststunden</td><td class="r">≈ 3&#8239;600 h/a</td><td class="v">Brauchwasser gesamt ÷ größter Stundenwert</td></tr>
+                    <tr class="bilanzwert"><td>Größter Stundenwert (Zapfung + Zirkulation)</td><td class="r">14,2 kW</td><td class="v">Bilanzwert, keine Auslegungsgröße; davon Zapfung ≈ 12,8 kW (Werktag im Januar, 7–8 Uhr)</td></tr>
                     <tr><td>Stunden über Schwelle 10 kW</td><td class="r">≈ 600 h/a</td><td class="v">Schwelle wählbar</td></tr>
                     <tr><td>Gleichzeitigkeit</td><td class="r">—</td><td class="v">entsteht erst in der Superposition; kein Eingabefaktor</td></tr>
                     <tr class="kopfzeile"><td colspan="3">Stochastik · noch nicht gerechnet</td></tr>
@@ -1266,9 +1494,11 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
           Jahresgang, Kennzahlen der Bilanz</td><td>Pflicht sind nur Nutzungsart und Bezugsgröße; alles andere steht auf Vorgabe.</td></tr>
         <tr><td class="name">Erweitert</td><td>dazu acht Felder: Personen und Wohnfläche je WE (Wohnen), Anlagentopologie,
           Zirkulation, Kalender, Bundesland (wirkt erst mit der Kalendertabelle, A6), Jahresmesswert, Rechenweg der
-          Jahresreihe</td><td>dazu die Dauerlinie</td><td>Was ein Planer aus dem Projekt ohnehin weiß.</td></tr>
+          Jahresreihe; dazu die aufgeklappte Katalogauswahl mit Herkunft und Status und die Schätzhilfen Tagesbedarf,
+          Ladeleistung und Zirkulation (auto/manuell mit Rechenweg)</td><td>dazu die Dauerlinie</td><td>Was ein Planer aus dem Projekt ohnehin weiß.</td></tr>
         <tr><td class="name">Experte</td><td>dazu Fachwerte (spezifischer Bedarf, Zapftemperatur, Kaltwasser, Zirkulation,
-          Jahresgang, Quelle der Tagesgänge, Tagesgang-Editor) und Stochastik (Seed, Realisierungen, Zapfkategorien,
+          Jahresgang, Quelle der Tagesgänge, Tagesgang-Editor als <a href="#dialog-tagesgang">Überlagerung „Tagesgang
+          bearbeiten“</a>, die auch „Tagesgang…“ im Katalogdialog öffnet) und Stochastik (Seed, Realisierungen, Zapfkategorien,
           Streuung σ, Auslegungsperzentil)</td><td>dazu die Einzelwerte der Stochastik nach dem Lauf</td><td>Jeder
           Vorgabewert wird sichtbar und überschreibbar.</td></tr>
       </tbody>
@@ -1279,7 +1509,9 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
   rechnen“ und „Auslegung…“ stehen in allen drei Stufen in der Fußleiste. <b>Zu den Namen:</b> Das Konzept (2.4) nennt
   die Stufen Schnellauslegung · Standard · Experte. Das Mockup nennt sie Einfach · Erweitert · Experte, weil
   „Schnellauslegung“ an der Oberfläche mit der Auslegung (Dreiergruppe, Schnellpfad nach A100 NA.5.6) verwechselt würde
-  und die Stufe nur Felder ein- und ausblendet.</p>
+  und die Stufe nur Felder ein- und ausblendet; „Standard“ klänge in einem Dialog, der Vorgabewerte grau zeigt, nach
+  Standardwert oder Normstand statt nach „weitere Felder“. Was die Vorlage der Brauchwasserauslegung „ab Stufe Standard“ zeigt,
+  steht hier ab Erweitert.</p>
 
   <div class="zone" id="dialog-auslegung">Überlagerung „Auslegung“</div>
   <div class="ueb-schleier">
@@ -1298,13 +1530,29 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
             <span class="zpg-herkunft">Konstruktor nach A100 NA.5.2.3 als weitere Überlagerung (im Mockup nicht gezeigt)</span></div>
           <div class="zpg-feld"><span class="zpg-lab">Speichertemperatur</span>
             <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">60</span><span class="epos-einheit">°C</span></span>
-            <span class="zpg-herkunft">Vorgabe · Großanlage nach DVGW W 551 (2004)</span></div>
+            <span class="zpg-herkunft">Vorgabe · Großanlage nach DVGW W 551</span></div>
           <div class="zpg-feld"><span class="zpg-lab">Erzeugerleistung</span>
             <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">20</span><span class="epos-einheit">kW</span></span>
             <span class="zpg-herkunft">Annahme des Anwenders; die Wertepaarkurve variiert die Nachweisleistung</span></div>
           <div class="zpg-feld"><span class="zpg-lab">Wärmeübertragerleistung</span>
             <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz">15</span><span class="epos-einheit">kW</span></span>
             <span class="zpg-herkunft">Nachweisleistung Φ_N = min(Erzeuger, Wärmeübertrager) = 15 kW</span></div>
+          <p class="zpg-untertitel">Eingaben des Verfahrensvergleichs (Anschlussverbraucher Speicherauslegung)</p>
+          <div class="zpg-feld"><span class="zpg-lab">Ladeleistung der Stundenbilanz</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">9,9</span><span class="epos-einheit">kW</span></span>
+            <span class="zpg-herkunft">angesetzt im Zapfprofil (auto: 158,6 kWh/d ÷ 16 h) · konstant über 24 h, kein Sperrzeitenmodell; das Ladezeitfenster wirkt nur auf den Vorschlag</span></div>
+          <div class="zpg-feld"><span class="zpg-lab">Personen</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">40</span><span class="epos-einheit">P</span></span>
+            <span class="zpg-herkunft">Vorgabe · 20 WE × 2,0 P/WE — eine Personenzahl für alle Verfahren</span></div>
+          <div class="zpg-feld"><span class="zpg-lab">Bedarfskennzahl N</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">18</span></span>
+            <span class="zpg-herkunft">aus der Wohnungstabelle nach DIN 4708-2 (Belegung und Ausstattung je Wohnungstyp als Katalogwerte, hier nicht abgedruckt)</span></div>
+          <div class="zpg-feld"><span class="zpg-lab">Nutzbarer Speicheranteil</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">0,90</span></span>
+            <span class="zpg-herkunft">Vorgabe · Schichtung und Totvolumen</span></div>
+          <div class="zpg-feld"><span class="zpg-lab">Sicherheitszuschlag</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz zpg-vorgabe">10</span><span class="epos-einheit">%</span></span>
+            <span class="zpg-herkunft">Vorgabe · auf profilbasiert, Faustwerte; DIN 4708 ohne Zuschlag</span></div>
         </div>
         <div class="ausl-karten">
           <div class="ausl-karte">
@@ -1396,6 +1644,153 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
           stammt aus dem Stundenprofil (Spitzen unterschätzt) — mit dem A100-Referenzprofil neu rechnen, sobald es beschafft
           ist (K1). Vermerk: <b>Entwurfsstand</b> — A100/A1 sind Entwürfe, Anwendung besonders zu vereinbaren. Die
           Ladeleistung gilt bei 60 °C Speichertemperatur; mit der Wärmepumpe die erreichbare Ladetemperatur prüfen.</div>
+        <div class="vv-karte" role="group" aria-labelledby="vv-titel">
+          <h4 id="vv-titel"><span class="vv-marke">Vorschlag</span>Speicherauslegung — Verfahrensvergleich (Übergabe an den Anschlussverbraucher, Regel: größtes Volumen)</h4>
+          <div class="ausl-unter">Vorschlag an die Speicherauslegung, die im Zapfprofil selbst nicht enthalten ist; getrennt von den
+          Profilkennzahlen und von der Dreiergruppe darüber. Die Karte liest Mengengerüst,
+          Tagesgang und Wochenfaktoren, nie die Jahresreihe. Speicher 60 °C, Kaltwasser 10 °C (ΔT = 50 K, c_w = 1,163 Wh/(l·K)),
+          nutzbarer Anteil 0,90, Zuschlag 10 %; Volumen auf 10 l gerundet.</div>
+          <div class="zpg-info" style="margin:6px 0 8px"><b>Einheitliches Mengengerüst.</b> Alle Verfahren lesen dasselbe Mengengerüst
+          des Projekts: eine Personenzahl, 40 (20 WE × 2,0 P/WE), für DIN 4708, Gleichzeitigkeit und klassischen Faustwert, und
+          N = 18 aus derselben Wohnungstabelle; die Stundenbilanz rechnet mit der Energie derselben Zonen. Was ein Verfahren davon
+          nicht abbilden kann, meldet die Gültigkeitswarnung, statt ein zweites Mengengerüst zu bilden.</div>
+          <div class="zpg-scroll">
+          <table class="zpg-kz" aria-label="Verfahrensvergleich der Speicherauslegung">
+            <thead><tr><th>Verfahren</th><th class="r">Volumen</th><th>Kennwert</th><th>Methodik in einem Satz</th></tr></thead>
+            <tbody>
+              <tr class="vv-massgebend"><td><b>DIN 4708</b> <span class="zpg-marke-ueber">größter Wert</span></td><td class="r">450 l</td><td>N = 18<br>W_z = 23,4 kWh</td>
+                <td class="v">Spitzenbedarf der Zapfperiode z = 1/6 h: u1 = 0,244 · z · (1 + √N)/√N = 0,050, u2 = 3,599 · z · (1 + √N)/√N = 0,741,
+                K(u) = erf(u); W_z = 5&#8239;820 Wh · [N · K(u1) + √N · K(u2)] = 23&#8239;355 Wh; V = W_z ÷ (c_w · ΔT) ÷ 0,90 = 446 l, ohne
+                Zuschlag. Nur Wohnen.</td></tr>
+              <tr><td><b>profilbasiert</b></td><td class="r">130 l</td><td>D_max = 6,04 kWh</td>
+                <td class="v">Stundenbilanz über zwei Wochen (Woche 1 Einschwingen, Woche 2 maßgebend), Lindley-Rekursion
+                D(t) = max(0; D(t−1) + Zapfung(t) + Zirkulation(t) − 9,91 kW · 1 h); V = 6,04 kWh ÷ (c_w · ΔT) ÷ 0,90 × 1,10 = 127 l.
+                <b>Vermerk: Stundenbilanz — Zapfspitzen unter einer Stunde deckt DIN 4708.</b></td></tr>
+              <tr><td><b>Faustwert mit Gleichzeitigkeit</b></td><td class="r">350 l</td><td>GLF(18) = 0,25<br>31,8 l je Person</td>
+                <td class="v">GLF(N) = W_z(1) ÷ W_z(N) = 5&#8239;830 Wh ÷ 23&#8239;355 Wh; Spitzenbedarf je Person W_z(1) ÷ 3,5 ÷ (c_w · ΔT)
+                ÷ 0,90 = 31,8 l; V = 40 × 31,8 l × 0,25 × 1,10 = 350 l. Setzt die Wannen-Zapfperiode an.</td></tr>
+              <tr class="vv-grau"><td>klassischer Faustwert</td><td class="r">1&#8239;540 l</td><td>35 l je Person und Tag</td>
+                <td class="v">nur nachrichtlich — geht nicht in den Vorschlag ein: 40 × 35 l × (60 − 10) ÷ 50 × 1,10; unterstellt
+                eine Speicherladung je Tag.</td></tr>
+            </tbody>
+          </table>
+          </div>
+          <div class="vv-kacheln">
+            <div><span>Größter Wert</span><b>DIN 4708 · 450 l</b>größtes Volumen aus DIN 4708, profilbasiert und Gleichzeitigkeit</div>
+            <div class="vv-empf"><span>Listengröße (Vorschlag)</span><b>Nenninhalt 500 l</b>zum größten Wert nächstgrößer in der Liste 100 · 150 · 200 · 300 · 400 ·
+            500 · 800 · 1&#8239;000 · 1&#8239;500 · 2&#8239;000 · 3&#8239;000 · 5&#8239;000 · 8&#8239;000 · 10&#8239;000 l; darüber auf volle 1&#8239;000 l
+            (Mehrspeicheranlage prüfen)</div>
+            <div><span>Kriterium</span><b>Speicher mit N_L ≥ 18</b>Leistungskennzahl des Speichers mindestens gleich der Bedarfskennzahl N — ein Kriterium, kein Produktwert</div>
+            <div><span>Füllstand bei 500 l</span><b>min. 20,1 von 26,2 kWh</b>77 % Restreserve; C_sp = 500 l × 0,90 × 1,163 × 50 K</div>
+          </div>
+          <p class="vv-satz"><b>Maßgebender Zeitpunkt der Stundenbilanz:</b> Montag, Tag 8 von 14 (in Woche 2 gezählt), Stunde 8–9 Uhr —
+          ein Werktag. Das Defizit baut sich in der Frühspitze auf und ist um 12 Uhr wieder abgebaut; Samstag und Sonntag bleiben
+          darunter.</p>
+          <p class="vv-satz"><b>Fall D_max = 0:</b> Deckt die Ladeleistung jede Stundenlast — in dieser Woche ab 14,2 kW, etwa mit
+          Φ_N = 15 kW der Summenlinie —, bleibt das Defizit null. Die Zeile „profilbasiert“ zeigt dann „–“ statt 0 l und den Satz
+          „Die Ladeleistung deckt jede Stundenlast; Zapfspitzen unter einer Stunde sieht die Stundenbilanz nicht — den größten Wert liefert
+          dann DIN 4708.“ Die Logik hängt an der Zahl D_max, nie an einem Textvergleich.</p>
+          <p class="vv-satz"><b>Ladung über 24 h:</b> Die Stundenbilanz lädt rund um die Uhr mit 9,9 kW; das Ladezeitfenster von
+          16 h wirkt nur auf den Vorschlag der Ladeleistung. Sperr- oder Heizzeiten, die das Fenster begründen, bildet sie nicht
+          ab — sie erhöhen D_max, das profilbasierte Volumen ist deshalb eine Untergrenze.</p>
+          <p class="vv-satz"><b>Einordnung:</b> Die Listengröße 500 l folgt der Regel „größtes Volumen der drei Verfahren, auf die
+          nächste Listengröße gerundet“ und liegt deshalb über dem Punkt der Summenlinie (370 l). Sie ist ein Vorschlag an die
+          Speicherauslegung, keine zweite Empfehlung des Zapfprofils.</p>
+          <div class="epos-leiste"><button type="button" class="epos-knopf" title="Übergibt Mengengerüst und Verfahrensvergleich an die Speicherauslegung; der Auslegungspunkt des Zapfprofils bleibt">An Speicherauslegung übergeben…</button></div>
+
+          <p class="zpg-untertitel">Maßgebende Woche der Stundenbilanz</p>
+          <div class="zpg-feld"><span class="zpg-lab">Speichergröße der Füllstandslinie</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-auswahl">Listengröße · 500 l</span></span>
+            <span class="zpg-herkunft">zur Wahl: DIN 4708 (450 l) · profilbasiert (130 l) · Gleichzeitigkeit (350 l) · klassisch (1&#8239;540 l)</span></div>
+          <div class="vv-woche">
+<svg viewBox="0 0 960 262" role="img" aria-label="Maßgebende Woche der Stundenbilanz: Zapfung und Zirkulation gestapelt, Ladelinie, kumuliertes Defizit und Speicherfüllstand" xmlns="http://www.w3.org/2000/svg">
+<line class="zg-gitter" x1="48" y1="214" x2="900" y2="214"/>
+<text class="zg-leise" x="43" y="217.5" text-anchor="end">0</text>
+<text class="zg-leise" x="905" y="217.5" text-anchor="start">0</text>
+<line class="zg-gitter" x1="48" y1="166.5" x2="900" y2="166.5"/>
+<text class="zg-leise" x="43" y="170" text-anchor="end">4</text>
+<text class="zg-leise" x="905" y="170" text-anchor="start">8</text>
+<line class="zg-gitter" x1="48" y1="119" x2="900" y2="119"/>
+<text class="zg-leise" x="43" y="122.5" text-anchor="end">8</text>
+<text class="zg-leise" x="905" y="122.5" text-anchor="start">16</text>
+<line class="zg-gitter" x1="48" y1="71.5" x2="900" y2="71.5"/>
+<text class="zg-leise" x="43" y="75" text-anchor="end">12</text>
+<text class="zg-leise" x="905" y="75" text-anchor="start">24</text>
+<line class="zg-gitter" x1="48" y1="24" x2="900" y2="24"/>
+<text class="zg-leise" x="43" y="27.5" text-anchor="end">16</text>
+<text class="zg-leise" x="905" y="27.5" text-anchor="start">32</text>
+<text class="zg-leise" x="4" y="14" text-anchor="start">kWh/h</text>
+<text class="zg-leise" x="956" y="14" text-anchor="end">kWh</text>
+<line class="zg-gitter" x1="169.7" y1="24" x2="169.7" y2="214"/>
+<line class="zg-gitter" x1="291.4" y1="24" x2="291.4" y2="214"/>
+<line class="zg-gitter" x1="413.1" y1="24" x2="413.1" y2="214"/>
+<line class="zg-gitter" x1="534.9" y1="24" x2="534.9" y2="214"/>
+<line class="zg-gitter" x1="656.6" y1="24" x2="656.6" y2="214"/>
+<line class="zg-gitter" x1="778.3" y1="24" x2="778.3" y2="214"/>
+<path class="zg-saeule-zirk" d="M48.4 197.7h4.3V214h-4.3ZM53.5 197.7h4.3V214h-4.3ZM58.5 197.7h4.3V214h-4.3ZM63.6 197.7h4.3V214h-4.3ZM68.7 197.7h4.3V214h-4.3ZM73.8 197.7h4.3V214h-4.3ZM78.8 197.7h4.3V214h-4.3ZM83.9 197.7h4.3V214h-4.3ZM89 197.7h4.3V214h-4.3ZM94 197.7h4.3V214h-4.3ZM99.1 197.7h4.3V214h-4.3ZM104.2 197.7h4.3V214h-4.3ZM109.3 197.7h4.3V214h-4.3ZM114.3 197.7h4.3V214h-4.3ZM119.4 197.7h4.3V214h-4.3ZM124.5 197.7h4.3V214h-4.3ZM129.5 197.7h4.3V214h-4.3ZM134.6 197.7h4.3V214h-4.3ZM139.7 197.7h4.3V214h-4.3ZM144.8 197.7h4.3V214h-4.3ZM149.8 197.7h4.3V214h-4.3ZM154.9 197.7h4.3V214h-4.3ZM160 197.7h4.3V214h-4.3ZM165 197.7h4.3V214h-4.3ZM170.1 197.7h4.3V214h-4.3ZM175.2 197.7h4.3V214h-4.3ZM180.3 197.7h4.3V214h-4.3ZM185.3 197.7h4.3V214h-4.3ZM190.4 197.7h4.3V214h-4.3ZM195.5 197.7h4.3V214h-4.3ZM200.5 197.7h4.3V214h-4.3ZM205.6 197.7h4.3V214h-4.3ZM210.7 197.7h4.3V214h-4.3ZM215.8 197.7h4.3V214h-4.3ZM220.8 197.7h4.3V214h-4.3ZM225.9 197.7h4.3V214h-4.3ZM231 197.7h4.3V214h-4.3ZM236 197.7h4.3V214h-4.3ZM241.1 197.7h4.3V214h-4.3ZM246.2 197.7h4.3V214h-4.3ZM251.3 197.7h4.3V214h-4.3ZM256.3 197.7h4.3V214h-4.3ZM261.4 197.7h4.3V214h-4.3ZM266.5 197.7h4.3V214h-4.3ZM271.5 197.7h4.3V214h-4.3ZM276.6 197.7h4.3V214h-4.3ZM281.7 197.7h4.3V214h-4.3ZM286.8 197.7h4.3V214h-4.3ZM291.8 197.7h4.3V214h-4.3ZM296.9 197.7h4.3V214h-4.3ZM302 197.7h4.3V214h-4.3ZM307 197.7h4.3V214h-4.3ZM312.1 197.7h4.3V214h-4.3ZM317.2 197.7h4.3V214h-4.3ZM322.3 197.7h4.3V214h-4.3ZM327.3 197.7h4.3V214h-4.3ZM332.4 197.7h4.3V214h-4.3ZM337.5 197.7h4.3V214h-4.3ZM342.5 197.7h4.3V214h-4.3ZM347.6 197.7h4.3V214h-4.3ZM352.7 197.7h4.3V214h-4.3ZM357.8 197.7h4.3V214h-4.3ZM362.8 197.7h4.3V214h-4.3ZM367.9 197.7h4.3V214h-4.3ZM373 197.7h4.3V214h-4.3ZM378 197.7h4.3V214h-4.3ZM383.1 197.7h4.3V214h-4.3ZM388.2 197.7h4.3V214h-4.3ZM393.3 197.7h4.3V214h-4.3ZM398.3 197.7h4.3V214h-4.3ZM403.4 197.7h4.3V214h-4.3ZM408.5 197.7h4.3V214h-4.3ZM413.5 197.7h4.3V214h-4.3ZM418.6 197.7h4.3V214h-4.3ZM423.7 197.7h4.3V214h-4.3ZM428.8 197.7h4.3V214h-4.3ZM433.8 197.7h4.3V214h-4.3ZM438.9 197.7h4.3V214h-4.3ZM444 197.7h4.3V214h-4.3ZM449 197.7h4.3V214h-4.3ZM454.1 197.7h4.3V214h-4.3ZM459.2 197.7h4.3V214h-4.3ZM464.3 197.7h4.3V214h-4.3ZM469.3 197.7h4.3V214h-4.3ZM474.4 197.7h4.3V214h-4.3ZM479.5 197.7h4.3V214h-4.3ZM484.5 197.7h4.3V214h-4.3ZM489.6 197.7h4.3V214h-4.3ZM494.7 197.7h4.3V214h-4.3ZM499.8 197.7h4.3V214h-4.3ZM504.8 197.7h4.3V214h-4.3ZM509.9 197.7h4.3V214h-4.3ZM515 197.7h4.3V214h-4.3ZM520 197.7h4.3V214h-4.3ZM525.1 197.7h4.3V214h-4.3ZM530.2 197.7h4.3V214h-4.3ZM535.3 197.7h4.3V214h-4.3ZM540.3 197.7h4.3V214h-4.3ZM545.4 197.7h4.3V214h-4.3ZM550.5 197.7h4.3V214h-4.3ZM555.5 197.7h4.3V214h-4.3ZM560.6 197.7h4.3V214h-4.3ZM565.7 197.7h4.3V214h-4.3ZM570.8 197.7h4.3V214h-4.3ZM575.8 197.7h4.3V214h-4.3ZM580.9 197.7h4.3V214h-4.3ZM586 197.7h4.3V214h-4.3ZM591 197.7h4.3V214h-4.3ZM596.1 197.7h4.3V214h-4.3ZM601.2 197.7h4.3V214h-4.3ZM606.3 197.7h4.3V214h-4.3ZM611.3 197.7h4.3V214h-4.3ZM616.4 197.7h4.3V214h-4.3ZM621.5 197.7h4.3V214h-4.3ZM626.5 197.7h4.3V214h-4.3ZM631.6 197.7h4.3V214h-4.3ZM636.7 197.7h4.3V214h-4.3ZM641.8 197.7h4.3V214h-4.3ZM646.8 197.7h4.3V214h-4.3ZM651.9 197.7h4.3V214h-4.3ZM657 197.7h4.3V214h-4.3ZM662 197.7h4.3V214h-4.3ZM667.1 197.7h4.3V214h-4.3ZM672.2 197.7h4.3V214h-4.3ZM677.3 197.7h4.3V214h-4.3ZM682.3 197.7h4.3V214h-4.3ZM687.4 197.7h4.3V214h-4.3ZM692.5 197.7h4.3V214h-4.3ZM697.5 197.7h4.3V214h-4.3ZM702.6 197.7h4.3V214h-4.3ZM707.7 197.7h4.3V214h-4.3ZM712.8 197.7h4.3V214h-4.3ZM717.8 197.7h4.3V214h-4.3ZM722.9 197.7h4.3V214h-4.3ZM728 197.7h4.3V214h-4.3ZM733 197.7h4.3V214h-4.3ZM738.1 197.7h4.3V214h-4.3ZM743.2 197.7h4.3V214h-4.3ZM748.3 197.7h4.3V214h-4.3ZM753.3 197.7h4.3V214h-4.3ZM758.4 197.7h4.3V214h-4.3ZM763.5 197.7h4.3V214h-4.3ZM768.5 197.7h4.3V214h-4.3ZM773.6 197.7h4.3V214h-4.3ZM778.7 197.7h4.3V214h-4.3ZM783.8 197.7h4.3V214h-4.3ZM788.8 197.7h4.3V214h-4.3ZM793.9 197.7h4.3V214h-4.3ZM799 197.7h4.3V214h-4.3ZM804 197.7h4.3V214h-4.3ZM809.1 197.7h4.3V214h-4.3ZM814.2 197.7h4.3V214h-4.3ZM819.3 197.7h4.3V214h-4.3ZM824.3 197.7h4.3V214h-4.3ZM829.4 197.7h4.3V214h-4.3ZM834.5 197.7h4.3V214h-4.3ZM839.5 197.7h4.3V214h-4.3ZM844.6 197.7h4.3V214h-4.3ZM849.7 197.7h4.3V214h-4.3ZM854.8 197.7h4.3V214h-4.3ZM859.8 197.7h4.3V214h-4.3ZM864.9 197.7h4.3V214h-4.3ZM870 197.7h4.3V214h-4.3ZM875 197.7h4.3V214h-4.3ZM880.1 197.7h4.3V214h-4.3ZM885.2 197.7h4.3V214h-4.3ZM890.3 197.7h4.3V214h-4.3ZM895.3 197.7h4.3V214h-4.3Z"/>
+<path class="zg-saeule-zapf" d="M48.4 185.6h4.3V197.7h-4.3ZM53.5 191h4.3V197.7h-4.3ZM58.5 192.3h4.3V197.7h-4.3ZM63.6 192.3h4.3V197.7h-4.3ZM68.7 188.3h4.3V197.7h-4.3ZM73.8 168.1h4.3V197.7h-4.3ZM78.8 102.1h4.3V197.7h-4.3ZM83.9 45.3h4.3V197.7h-4.3ZM89 75.7h4.3V197.7h-4.3ZM94 118h4.3V197.7h-4.3ZM99.1 130.8h4.3V197.7h-4.3ZM104.2 121.4h4.3V197.7h-4.3ZM109.3 110.8h4.3V197.7h-4.3ZM114.3 127.3h4.3V197.7h-4.3ZM119.4 142.6h4.3V197.7h-4.3ZM124.5 143.8h4.3V197.7h-4.3ZM129.5 136.7h4.3V197.7h-4.3ZM134.6 121.5h4.3V197.7h-4.3ZM139.7 103.5h4.3V197.7h-4.3ZM144.8 92.7h4.3V197.7h-4.3ZM149.8 103.5h4.3V197.7h-4.3ZM154.9 127.7h4.3V197.7h-4.3ZM160 157.3h4.3V197.7h-4.3ZM165 174.8h4.3V197.7h-4.3ZM170.1 185.6h4.3V197.7h-4.3ZM175.2 191h4.3V197.7h-4.3ZM180.3 192.3h4.3V197.7h-4.3ZM185.3 192.3h4.3V197.7h-4.3ZM190.4 188.3h4.3V197.7h-4.3ZM195.5 168.1h4.3V197.7h-4.3ZM200.5 102.1h4.3V197.7h-4.3ZM205.6 45.3h4.3V197.7h-4.3ZM210.7 75.7h4.3V197.7h-4.3ZM215.8 118h4.3V197.7h-4.3ZM220.8 130.8h4.3V197.7h-4.3ZM225.9 121.4h4.3V197.7h-4.3ZM231 110.8h4.3V197.7h-4.3ZM236 127.3h4.3V197.7h-4.3ZM241.1 142.6h4.3V197.7h-4.3ZM246.2 143.8h4.3V197.7h-4.3ZM251.3 136.7h4.3V197.7h-4.3ZM256.3 121.5h4.3V197.7h-4.3ZM261.4 103.5h4.3V197.7h-4.3ZM266.5 92.7h4.3V197.7h-4.3ZM271.5 103.5h4.3V197.7h-4.3ZM276.6 127.7h4.3V197.7h-4.3ZM281.7 157.3h4.3V197.7h-4.3ZM286.8 174.8h4.3V197.7h-4.3ZM291.8 185.6h4.3V197.7h-4.3ZM296.9 191h4.3V197.7h-4.3ZM302 192.3h4.3V197.7h-4.3ZM307 192.3h4.3V197.7h-4.3ZM312.1 188.3h4.3V197.7h-4.3ZM317.2 168.1h4.3V197.7h-4.3ZM322.3 102.1h4.3V197.7h-4.3ZM327.3 45.3h4.3V197.7h-4.3ZM332.4 75.7h4.3V197.7h-4.3ZM337.5 118h4.3V197.7h-4.3ZM342.5 130.8h4.3V197.7h-4.3ZM347.6 121.4h4.3V197.7h-4.3ZM352.7 110.8h4.3V197.7h-4.3ZM357.8 127.3h4.3V197.7h-4.3ZM362.8 142.6h4.3V197.7h-4.3ZM367.9 143.8h4.3V197.7h-4.3ZM373 136.7h4.3V197.7h-4.3ZM378 121.5h4.3V197.7h-4.3ZM383.1 103.5h4.3V197.7h-4.3ZM388.2 92.7h4.3V197.7h-4.3ZM393.3 103.5h4.3V197.7h-4.3ZM398.3 127.7h4.3V197.7h-4.3ZM403.4 157.3h4.3V197.7h-4.3ZM408.5 174.8h4.3V197.7h-4.3ZM413.5 185.6h4.3V197.7h-4.3ZM418.6 191h4.3V197.7h-4.3ZM423.7 192.3h4.3V197.7h-4.3ZM428.8 192.3h4.3V197.7h-4.3ZM433.8 188.3h4.3V197.7h-4.3ZM438.9 168.1h4.3V197.7h-4.3ZM444 102.1h4.3V197.7h-4.3ZM449 45.3h4.3V197.7h-4.3ZM454.1 75.7h4.3V197.7h-4.3ZM459.2 118h4.3V197.7h-4.3ZM464.3 130.8h4.3V197.7h-4.3ZM469.3 121.4h4.3V197.7h-4.3ZM474.4 110.8h4.3V197.7h-4.3ZM479.5 127.3h4.3V197.7h-4.3ZM484.5 142.6h4.3V197.7h-4.3ZM489.6 143.8h4.3V197.7h-4.3ZM494.7 136.7h4.3V197.7h-4.3ZM499.8 121.5h4.3V197.7h-4.3ZM504.8 103.5h4.3V197.7h-4.3ZM509.9 92.7h4.3V197.7h-4.3ZM515 103.5h4.3V197.7h-4.3ZM520 127.7h4.3V197.7h-4.3ZM525.1 157.3h4.3V197.7h-4.3ZM530.2 174.8h4.3V197.7h-4.3ZM535.3 185.6h4.3V197.7h-4.3ZM540.3 191h4.3V197.7h-4.3ZM545.4 192.3h4.3V197.7h-4.3ZM550.5 192.3h4.3V197.7h-4.3ZM555.5 188.3h4.3V197.7h-4.3ZM560.6 168.1h4.3V197.7h-4.3ZM565.7 102.1h4.3V197.7h-4.3ZM570.8 45.3h4.3V197.7h-4.3ZM575.8 75.7h4.3V197.7h-4.3ZM580.9 118h4.3V197.7h-4.3ZM586 130.8h4.3V197.7h-4.3ZM591 121.4h4.3V197.7h-4.3ZM596.1 110.8h4.3V197.7h-4.3ZM601.2 127.3h4.3V197.7h-4.3ZM606.3 142.6h4.3V197.7h-4.3ZM611.3 143.8h4.3V197.7h-4.3ZM616.4 136.7h4.3V197.7h-4.3ZM621.5 121.5h4.3V197.7h-4.3ZM626.5 103.5h4.3V197.7h-4.3ZM631.6 92.7h4.3V197.7h-4.3ZM636.7 103.5h4.3V197.7h-4.3ZM641.8 127.7h4.3V197.7h-4.3ZM646.8 157.3h4.3V197.7h-4.3ZM651.9 174.8h4.3V197.7h-4.3ZM657 184h4.3V197.7h-4.3ZM662 188.1h4.3V197.7h-4.3ZM667.1 192.2h4.3V197.7h-4.3ZM672.2 192.2h4.3V197.7h-4.3ZM677.3 190.9h4.3V197.7h-4.3ZM682.3 184h4.3V197.7h-4.3ZM687.4 151h4.3V197.7h-4.3ZM692.5 104.2h4.3V197.7h-4.3ZM697.5 82.2h4.3V197.7h-4.3ZM702.6 93.2h4.3V197.7h-4.3ZM707.7 109.7h4.3V197.7h-4.3ZM712.8 122.1h4.3V197.7h-4.3ZM717.8 122.1h4.3V197.7h-4.3ZM722.9 133.1h4.3V197.7h-4.3ZM728 145.5h4.3V197.7h-4.3ZM733 151h4.3V197.7h-4.3ZM738.1 145.5h4.3V197.7h-4.3ZM743.2 127.6h4.3V197.7h-4.3ZM748.3 104.2h4.3V197.7h-4.3ZM753.3 93.2h4.3V197.7h-4.3ZM758.4 104.2h4.3V197.7h-4.3ZM763.5 127.6h4.3V197.7h-4.3ZM768.5 151h4.3V197.7h-4.3ZM773.6 171.6h4.3V197.7h-4.3ZM778.7 179.9h4.3V197.7h-4.3ZM783.8 186.7h4.3V197.7h-4.3ZM788.8 190.9h4.3V197.7h-4.3ZM793.9 192.2h4.3V197.7h-4.3ZM799 192.2h4.3V197.7h-4.3ZM804 188.1h4.3V197.7h-4.3ZM809.1 174.4h4.3V197.7h-4.3ZM814.2 151h4.3V197.7h-4.3ZM819.3 116.6h4.3V197.7h-4.3ZM824.3 80.8h4.3V197.7h-4.3ZM829.4 74h4.3V197.7h-4.3ZM834.5 93.2h4.3V197.7h-4.3ZM839.5 104.2h4.3V197.7h-4.3ZM844.6 127.6h4.3V197.7h-4.3ZM849.7 145.5h4.3V197.7h-4.3ZM854.8 151h4.3V197.7h-4.3ZM859.8 145.5h4.3V197.7h-4.3ZM864.9 127.6h4.3V197.7h-4.3ZM870 104.2h4.3V197.7h-4.3ZM875 93.2h4.3V197.7h-4.3ZM880.1 104.2h4.3V197.7h-4.3ZM885.2 127.6h4.3V197.7h-4.3ZM890.3 151h4.3V197.7h-4.3ZM895.3 168.9h4.3V197.7h-4.3Z"/>
+<line class="zg-versorgung" x1="48" y1="96.3" x2="900" y2="96.3"/>
+<text class="zg-marke-text" x="896" y="91.3" text-anchor="end">Ladung 9,9 kW</text>
+<path class="zg-fuell" d="M48 58.6 L53.1 58.6 L53.1 58.6 L58.1 58.6 L58.1 58.6 L63.2 58.6 L63.2 58.6 L68.3 58.6 L68.3 58.6 L73.4 58.6 L73.4 58.6 L78.4 58.6 L78.4 58.6 L83.5 58.6 L83.5 84.2 L88.6 84.2 L88.6 94.5 L93.6 94.5 L93.6 83.6 L98.7 83.6 L98.7 66.4 L103.8 66.4 L103.8 58.6 L108.9 58.6 L108.9 58.6 L113.9 58.6 L113.9 58.6 L119 58.6 L119 58.6 L124.1 58.6 L124.1 58.6 L129.1 58.6 L129.1 58.6 L134.2 58.6 L134.2 58.6 L139.3 58.6 L139.3 58.6 L144.4 58.6 L144.4 60.4 L149.4 60.4 L149.4 58.6 L154.5 58.6 L154.5 58.6 L159.6 58.6 L159.6 58.6 L164.6 58.6 L164.6 58.6 L169.7 58.6 L169.7 58.6 L174.8 58.6 L174.8 58.6 L179.9 58.6 L179.9 58.6 L184.9 58.6 L184.9 58.6 L190 58.6 L190 58.6 L195.1 58.6 L195.1 58.6 L200.1 58.6 L200.1 58.6 L205.2 58.6 L205.2 84.2 L210.3 84.2 L210.3 94.5 L215.4 94.5 L215.4 83.6 L220.4 83.6 L220.4 66.4 L225.5 66.4 L225.5 58.6 L230.6 58.6 L230.6 58.6 L235.6 58.6 L235.6 58.6 L240.7 58.6 L240.7 58.6 L245.8 58.6 L245.8 58.6 L250.9 58.6 L250.9 58.6 L255.9 58.6 L255.9 58.6 L261 58.6 L261 58.6 L266.1 58.6 L266.1 60.4 L271.1 60.4 L271.1 58.6 L276.2 58.6 L276.2 58.6 L281.3 58.6 L281.3 58.6 L286.4 58.6 L286.4 58.6 L291.4 58.6 L291.4 58.6 L296.5 58.6 L296.5 58.6 L301.6 58.6 L301.6 58.6 L306.6 58.6 L306.6 58.6 L311.7 58.6 L311.7 58.6 L316.8 58.6 L316.8 58.6 L321.9 58.6 L321.9 58.6 L326.9 58.6 L326.9 84.2 L332 84.2 L332 94.5 L337.1 94.5 L337.1 83.6 L342.1 83.6 L342.1 66.4 L347.2 66.4 L347.2 58.6 L352.3 58.6 L352.3 58.6 L357.4 58.6 L357.4 58.6 L362.4 58.6 L362.4 58.6 L367.5 58.6 L367.5 58.6 L372.6 58.6 L372.6 58.6 L377.6 58.6 L377.6 58.6 L382.7 58.6 L382.7 58.6 L387.8 58.6 L387.8 60.4 L392.9 60.4 L392.9 58.6 L397.9 58.6 L397.9 58.6 L403 58.6 L403 58.6 L408.1 58.6 L408.1 58.6 L413.1 58.6 L413.1 58.6 L418.2 58.6 L418.2 58.6 L423.3 58.6 L423.3 58.6 L428.4 58.6 L428.4 58.6 L433.4 58.6 L433.4 58.6 L438.5 58.6 L438.5 58.6 L443.6 58.6 L443.6 58.6 L448.6 58.6 L448.6 84.2 L453.7 84.2 L453.7 94.5 L458.8 94.5 L458.8 83.6 L463.9 83.6 L463.9 66.4 L468.9 66.4 L468.9 58.6 L474 58.6 L474 58.6 L479.1 58.6 L479.1 58.6 L484.1 58.6 L484.1 58.6 L489.2 58.6 L489.2 58.6 L494.3 58.6 L494.3 58.6 L499.4 58.6 L499.4 58.6 L504.4 58.6 L504.4 58.6 L509.5 58.6 L509.5 60.4 L514.6 60.4 L514.6 58.6 L519.6 58.6 L519.6 58.6 L524.7 58.6 L524.7 58.6 L529.8 58.6 L529.8 58.6 L534.9 58.6 L534.9 58.6 L539.9 58.6 L539.9 58.6 L545 58.6 L545 58.6 L550.1 58.6 L550.1 58.6 L555.1 58.6 L555.1 58.6 L560.2 58.6 L560.2 58.6 L565.3 58.6 L565.3 58.6 L570.4 58.6 L570.4 84.2 L575.4 84.2 L575.4 94.5 L580.5 94.5 L580.5 83.6 L585.6 83.6 L585.6 66.4 L590.6 66.4 L590.6 58.6 L595.7 58.6 L595.7 58.6 L600.8 58.6 L600.8 58.6 L605.9 58.6 L605.9 58.6 L610.9 58.6 L610.9 58.6 L616 58.6 L616 58.6 L621.1 58.6 L621.1 58.6 L626.1 58.6 L626.1 58.6 L631.2 58.6 L631.2 60.4 L636.3 60.4 L636.3 58.6 L641.4 58.6 L641.4 58.6 L646.4 58.6 L646.4 58.6 L651.5 58.6 L651.5 58.6 L656.6 58.6 L656.6 58.6 L661.6 58.6 L661.6 58.6 L666.7 58.6 L666.7 58.6 L671.8 58.6 L671.8 58.6 L676.9 58.6 L676.9 58.6 L681.9 58.6 L681.9 58.6 L687 58.6 L687 58.6 L692.1 58.6 L692.1 58.6 L697.1 58.6 L697.1 65.7 L702.2 65.7 L702.2 67.2 L707.3 67.2 L707.3 60.5 L712.4 60.5 L712.4 58.6 L717.4 58.6 L717.4 58.6 L722.5 58.6 L722.5 58.6 L727.6 58.6 L727.6 58.6 L732.6 58.6 L732.6 58.6 L737.7 58.6 L737.7 58.6 L742.8 58.6 L742.8 58.6 L747.9 58.6 L747.9 58.6 L752.9 58.6 L752.9 60.2 L758 60.2 L758 58.6 L763.1 58.6 L763.1 58.6 L768.1 58.6 L768.1 58.6 L773.2 58.6 L773.2 58.6 L778.3 58.6 L778.3 58.6 L783.4 58.6 L783.4 58.6 L788.4 58.6 L788.4 58.6 L793.5 58.6 L793.5 58.6 L798.6 58.6 L798.6 58.6 L803.6 58.6 L803.6 58.6 L808.7 58.6 L808.7 58.6 L813.8 58.6 L813.8 58.6 L818.9 58.6 L818.9 58.6 L823.9 58.6 L823.9 66.4 L829 66.4 L829 77.5 L834.1 77.5 L834.1 79.1 L839.1 79.1 L839.1 75.1 L844.2 75.1 L844.2 59.5 L849.3 59.5 L849.3 58.6 L854.4 58.6 L854.4 58.6 L859.4 58.6 L859.4 58.6 L864.5 58.6 L864.5 58.6 L869.6 58.6 L869.6 58.6 L874.6 58.6 L874.6 60.2 L879.7 60.2 L879.7 58.6 L884.8 58.6 L884.8 58.6 L889.9 58.6 L889.9 58.6 L894.9 58.6 L894.9 58.6 L900 58.6"/>
+<path class="zg-defizit" d="M48 214 L53.1 214 L53.1 214 L58.1 214 L58.1 214 L63.2 214 L63.2 214 L68.3 214 L68.3 214 L73.4 214 L73.4 214 L78.4 214 L78.4 214 L83.5 214 L83.5 188.5 L88.6 188.5 L88.6 178.2 L93.6 178.2 L93.6 189 L98.7 189 L98.7 206.3 L103.8 206.3 L103.8 214 L108.9 214 L108.9 214 L113.9 214 L113.9 214 L119 214 L119 214 L124.1 214 L124.1 214 L129.1 214 L129.1 214 L134.2 214 L134.2 214 L139.3 214 L139.3 214 L144.4 214 L144.4 212.2 L149.4 212.2 L149.4 214 L154.5 214 L154.5 214 L159.6 214 L159.6 214 L164.6 214 L164.6 214 L169.7 214 L169.7 214 L174.8 214 L174.8 214 L179.9 214 L179.9 214 L184.9 214 L184.9 214 L190 214 L190 214 L195.1 214 L195.1 214 L200.1 214 L200.1 214 L205.2 214 L205.2 188.5 L210.3 188.5 L210.3 178.2 L215.4 178.2 L215.4 189 L220.4 189 L220.4 206.3 L225.5 206.3 L225.5 214 L230.6 214 L230.6 214 L235.6 214 L235.6 214 L240.7 214 L240.7 214 L245.8 214 L245.8 214 L250.9 214 L250.9 214 L255.9 214 L255.9 214 L261 214 L261 214 L266.1 214 L266.1 212.2 L271.1 212.2 L271.1 214 L276.2 214 L276.2 214 L281.3 214 L281.3 214 L286.4 214 L286.4 214 L291.4 214 L291.4 214 L296.5 214 L296.5 214 L301.6 214 L301.6 214 L306.6 214 L306.6 214 L311.7 214 L311.7 214 L316.8 214 L316.8 214 L321.9 214 L321.9 214 L326.9 214 L326.9 188.5 L332 188.5 L332 178.2 L337.1 178.2 L337.1 189 L342.1 189 L342.1 206.3 L347.2 206.3 L347.2 214 L352.3 214 L352.3 214 L357.4 214 L357.4 214 L362.4 214 L362.4 214 L367.5 214 L367.5 214 L372.6 214 L372.6 214 L377.6 214 L377.6 214 L382.7 214 L382.7 214 L387.8 214 L387.8 212.2 L392.9 212.2 L392.9 214 L397.9 214 L397.9 214 L403 214 L403 214 L408.1 214 L408.1 214 L413.1 214 L413.1 214 L418.2 214 L418.2 214 L423.3 214 L423.3 214 L428.4 214 L428.4 214 L433.4 214 L433.4 214 L438.5 214 L438.5 214 L443.6 214 L443.6 214 L448.6 214 L448.6 188.5 L453.7 188.5 L453.7 178.2 L458.8 178.2 L458.8 189 L463.9 189 L463.9 206.3 L468.9 206.3 L468.9 214 L474 214 L474 214 L479.1 214 L479.1 214 L484.1 214 L484.1 214 L489.2 214 L489.2 214 L494.3 214 L494.3 214 L499.4 214 L499.4 214 L504.4 214 L504.4 214 L509.5 214 L509.5 212.2 L514.6 212.2 L514.6 214 L519.6 214 L519.6 214 L524.7 214 L524.7 214 L529.8 214 L529.8 214 L534.9 214 L534.9 214 L539.9 214 L539.9 214 L545 214 L545 214 L550.1 214 L550.1 214 L555.1 214 L555.1 214 L560.2 214 L560.2 214 L565.3 214 L565.3 214 L570.4 214 L570.4 188.5 L575.4 188.5 L575.4 178.2 L580.5 178.2 L580.5 189 L585.6 189 L585.6 206.3 L590.6 206.3 L590.6 214 L595.7 214 L595.7 214 L600.8 214 L600.8 214 L605.9 214 L605.9 214 L610.9 214 L610.9 214 L616 214 L616 214 L621.1 214 L621.1 214 L626.1 214 L626.1 214 L631.2 214 L631.2 212.2 L636.3 212.2 L636.3 214 L641.4 214 L641.4 214 L646.4 214 L646.4 214 L651.5 214 L651.5 214 L656.6 214 L656.6 214 L661.6 214 L661.6 214 L666.7 214 L666.7 214 L671.8 214 L671.8 214 L676.9 214 L676.9 214 L681.9 214 L681.9 214 L687 214 L687 214 L692.1 214 L692.1 214 L697.1 214 L697.1 206.9 L702.2 206.9 L702.2 205.4 L707.3 205.4 L707.3 212.1 L712.4 212.1 L712.4 214 L717.4 214 L717.4 214 L722.5 214 L722.5 214 L727.6 214 L727.6 214 L732.6 214 L732.6 214 L737.7 214 L737.7 214 L742.8 214 L742.8 214 L747.9 214 L747.9 214 L752.9 214 L752.9 212.5 L758 212.5 L758 214 L763.1 214 L763.1 214 L768.1 214 L768.1 214 L773.2 214 L773.2 214 L778.3 214 L778.3 214 L783.4 214 L783.4 214 L788.4 214 L788.4 214 L793.5 214 L793.5 214 L798.6 214 L798.6 214 L803.6 214 L803.6 214 L808.7 214 L808.7 214 L813.8 214 L813.8 214 L818.9 214 L818.9 214 L823.9 214 L823.9 206.3 L829 206.3 L829 195.1 L834.1 195.1 L834.1 193.5 L839.1 193.5 L839.1 197.5 L844.2 197.5 L844.2 213.1 L849.3 213.1 L849.3 214 L854.4 214 L854.4 214 L859.4 214 L859.4 214 L864.5 214 L864.5 214 L869.6 214 L869.6 214 L874.6 214 L874.6 212.5 L879.7 212.5 L879.7 214 L884.8 214 L884.8 214 L889.9 214 L889.9 214 L894.9 214 L894.9 214 L900 214"/>
+<line class="zg-marke" x1="91.1" y1="24" x2="91.1" y2="214"/>
+<text class="zg-marke-text" x="96.1" y="36">D_max 6,04 kWh · Mo 8–9 Uhr</text>
+<line class="zg-achse" x1="48" y1="214" x2="900" y2="214"/>
+<text class="zg-leise" x="108.9" y="230" text-anchor="middle">Mo · Tag 8</text>
+<text class="zg-leise" x="230.6" y="230" text-anchor="middle">Di · Tag 9</text>
+<text class="zg-leise" x="352.3" y="230" text-anchor="middle">Mi · Tag 10</text>
+<text class="zg-leise" x="474" y="230" text-anchor="middle">Do · Tag 11</text>
+<text class="zg-leise" x="595.7" y="230" text-anchor="middle">Fr · Tag 12</text>
+<text class="zg-leise" x="717.4" y="230" text-anchor="middle">Sa · Tag 13</text>
+<text class="zg-leise" x="839.1" y="230" text-anchor="middle">So · Tag 14</text>
+<text class="zg-leise" x="900" y="252" text-anchor="end">Stunde 169–336 der Zweiwochenbilanz (Woche 2 maßgebend) · links Last und Ladung in kWh/h · rechts Defizit und Füllstand in kWh</text>
+</svg>
+          </div>
+          <div class="zg-legende">
+            <span><i class="sw-zapf"></i>Zapfung (alle Zonen)</span>
+            <span><i class="sw-zirk"></i>Zirkulation (eigener Kanal)</span>
+            <span><svg viewBox="0 0 20 10" aria-hidden="true"><line class="zg-versorgung" x1="0" y1="5" x2="20" y2="5"/></svg>Ladung 9,9 kW</span>
+            <span><svg viewBox="0 0 20 10" aria-hidden="true"><line class="zg-defizit" x1="0" y1="5" x2="20" y2="5"/></svg>Defizit kumuliert (rechte Achse)</span>
+            <span><svg viewBox="0 0 20 10" aria-hidden="true"><line class="zg-fuell" x1="0" y1="5" x2="20" y2="5"/></svg>Füllstand bei 500 l (rechte Achse)</span>
+          </div>
+          <p class="zpg-bildzeile"><b>Maßgebende Woche = Woche mit dem größten Tagesbedarf des Jahres.</b> Der Rechenweg sucht
+          sie aus Jahresgang, Kalender und Wochenfaktoren, statt sie zu setzen; hier die zweite Januarwoche (Werktag 125,7 kWh/d
+          Zapfung, Januar größter Monat). Woche 2 der Zweiwochenbilanz trägt ihre Wochenform, gebildet aus
+          Mengengerüst, Tagesgang und Wochenfaktoren — nicht aus der Jahresreihe abgelesen. Zapfung und Zirkulation sind gestapelt,
+          aber getrennt ausgewiesen: Die Zirkulation bleibt ein eigener Kanal. Alle Werte fiktiv.</p>
+        </div>
+        <div class="zpg-info" style="margin-top:8px"><b>Der Auslegungspunkt des Zapfprofils bleibt 370 l · 15 kW (Summenlinie).</b>
+        DIN 4708 ist hier Vergleich, für Wärmepumpen eingeschränkt (BWP-Leitfaden); OK übernimmt nur den Punkt der Summenlinie.</div>
+
+        <div class="vv-karte" role="group" aria-labelledby="wl-titel">
+          <h4 id="wl-titel">Hinweise und Warnungen der Auslegung</h4>
+          <div class="ausl-unter">Klartext mit eingesetzten Zahlen; nichts davon blockiert OK.</div>
+          <ul class="warnliste">
+            <li><span class="wl-stufe wl-ok">OK</span><span><b>Summenkontrollen:</b> Die Tagesgänge der Zonen und ihre Wochenfaktoren
+            summieren zu 100 %. Die Kopie „Benutzerdefiniert 1“ im Tagesgang-Editor steht bei 98 % und ist noch keiner Zone
+            zugeordnet.</span></li>
+            <li><span class="wl-stufe wl-ok">OK</span><span><b>Ladeleistung × Ladezeit:</b> 9,91 kW × 16 h = 158,6 kWh deckt den
+            größten Tagesbedarf von 158,6 kWh (Werktag im Januar: Zapfung 125,7 + Zirkulation 32,9) — ohne Reserve, weil der Vorschlag genau so gebildet
+            ist. Unterschreitet ein manueller Wert den Tagesbedarf, nennt die Zeile die Mindestleistung: Volumen ersetzt keine
+            Ladeleistung.</span></li>
+            <li><span class="wl-stufe wl-ok">OK</span><span><b>Maßgebender Tag:</b> Montag, ein Werktag. Fiele er auf Samstag oder
+            Sonntag, stünde hier der Wochenfaktor dieses Tagtyps mit dem Hinweis, das Wochenende zu prüfen.</span></li>
+            <li><span class="wl-stufe wl-hinweis">Hinweis</span><span><b>Großanlage:</b> Listengröße 500 l &gt; 400 l — Großanlage nach
+            DVGW W 551: am Speicheraustritt mindestens 60 °C, Zirkulationsrücklauf mindestens 55 °C; mit Wärmepumpe eine
+            Frischwasserstation prüfen.</span></li>
+            <li><span class="wl-stufe wl-ok">OK</span><span><b>Speichertemperatur:</b> 60 °C. Darunter verlangt die Zeile den Nachweis
+            der thermischen Desinfektion oder eine Frischwasserstation.</span></li>
+            <li><span class="wl-stufe wl-hinweis">Hinweis</span><span><b>Klassischer Faustwert:</b> 1&#8239;540 l ist das 3,4-Fache des
+            größten Werts (DIN 4708, 450 l). Er unterstellt eine Ladung je Tag und bleibt nachrichtlich.</span></li>
+            <li><span class="wl-stufe wl-hinweis">Hinweis</span><span><b>Konsistenz:</b> Die stochastische Spitze (Zapfleistung
+            P99, 44 kW) ist das 2,9-Fache der Nachweisleistung Φ_N der Summenlinie (15 kW); der Hinweis kommt ab dem 1,5-Fachen.
+            Bedarfstag prüfen — das Stundenprofil unterschätzt Spitzen — oder das A100-Referenzprofil ansetzen, sobald es
+            beschafft ist (K1).</span></li>
+            <li><span class="wl-stufe wl-warnung">Warnung</span><span><b>Gültigkeit je Verfahren:</b> DIN 4708 und der Faustwert mit Gleichzeitigkeit gelten nur für Wohnen. Zone 2 Büro (50 Beschäftigte,
+            6,8 kWh/d) steckt nicht in N = 18 und nicht in 350 l, wohl aber im profilbasierten Wert. Die Gleichzeitigkeit setzt
+            die Wannen-Zapfperiode an — für Zone 1 mit Wannen zutreffend, für Büro oder Schule ohne Wannen nicht.</span></li>
+          </ul>
+        </div>
       </div>
       <div class="ueb-fuss">
         <span class="f-status" role="status">Punkt gewählt: 370 l · 15 kW</span>
@@ -1415,6 +1810,142 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
   Hinweis aus dem BWP-Leitfaden. Die Fußleiste ist die SpeichernLeiste ohne Aktionen: Status als Füller · Abbrechen · OK;
   OK übernimmt den gewählten Punkt in den Arbeitsstand des Dialogs. Alle Zahlen fiktiv; der Bedarfstag ist eine frei
   erfundene Form, kein Referenzprofil.</p>
+  <p class="bildtext"><b>Darunter der Anschlussverbraucher „Speicherauslegung“ nach der Vorlage TWW-Auslegung V4.</b>
+  Der Verfahrensvergleich stellt DIN 4708, die profilbasierte Stundenbilanz, den Faustwert mit Gleichzeitigkeit und —
+  grau, nur nachrichtlich — den klassischen Faustwert nebeneinander, markiert den größten Wert und rundet ihn als Vorschlag auf
+  einen neutralen Nenninhalt mit dem Kriterium N_L ≥ N; „An Speicherauslegung übergeben…“ reicht ihn weiter, der
+  Auslegungspunkt des Zapfprofils bleibt der Punkt der Summenlinie. Im Fenster stehen weder „TWW“ noch der Name der Vorlage. Er liest dasselbe Mengengerüst wie die Dreiergruppe, aber nie die
+  Jahresreihe, und steht getrennt von den Profilkennzahlen. Die Warnliste darunter blockiert nicht; neu gegenüber der
+  Vorlage sind die Gültigkeit je Verfahren und der Konsistenzhinweis des Konzepts (stochastische Spitze über dem
+  1,5-Fachen der Summenlinienleistung). Alle Werte folgen aus dem fiktiven Beispieljahr und lassen sich mit den
+  angegebenen Formeln nachrechnen.</p>
+
+  <div class="zone" id="dialog-tagesgang">Überlagerung „Tagesgang bearbeiten“</div>
+  <div class="ueb-schleier">
+    <div class="ueb" role="dialog" aria-label="Tagesgang bearbeiten" id="tg-editor">
+      <div class="ueb-kopf"><span class="ueb-titel">Tagesgang bearbeiten</span><button type="button" class="ueb-zu" title="Schließen ohne zu übernehmen, wie Abbrechen und Esc" aria-label="Schließen">✕</button></div>
+      <div class="ueb-leib">
+        <div class="tg-kopf">
+          <div class="zpg-feld"><span class="zpg-lab">Nutzungsart</span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit">Benutzerdefiniert 1 · Kopie von Mehrfamilienhaus</span></span>
+            <span class="zpg-herkunft">Status eigen · Vorlage der Kopie: Mehrfamilienhaus (Auslieferung, INEKON-Kompilation, schreibgeschützt)</span></div>
+          <div class="tg-marken" aria-label="Herkunft der Werte"><span>Herkunft</span><span class="tg-marke" data-marke="vorgabe">Vorgabe</span><span class="tg-marke an" data-marke="ueberschrieben">überschrieben</span><span class="tg-marke" data-marke="kalibriert">kalibriert</span></div>
+        </div>
+        <div class="zpg-feld"><span class="zpg-lab">Tagtyp</span>
+          <span class="zpg-wert"><span class="zpg-stufen" role="radiogroup" aria-label="Tagtyp" id="tg-tagtyp"><button type="button" role="radio" aria-checked="true" data-tagtyp="0">Werktag</button><button type="button" role="radio" aria-checked="false" data-tagtyp="1">Samstag</button><button type="button" role="radio" aria-checked="false" data-tagtyp="2">Sonn-/Feiertag</button><button type="button" role="radio" aria-checked="false" data-tagtyp="3">Ferien-/Ruhetag</button></span></span></div>
+        <div class="tg-gitter">
+          <div>
+            <p class="zpg-untertitel">Stundenanteile in % des Tagesbedarfs · <span id="tg-tagname">Werktag</span></p>
+            <div class="tg-raster" id="tg-raster">
+              <label class="tg-zelle">0–1 Uhr<input id="tg-h0" type="text" inputmode="decimal" value="0,9" aria-label="Anteil 0 bis 1 Uhr in Prozent"></label>
+              <label class="tg-zelle">1–2 Uhr<input id="tg-h1" type="text" inputmode="decimal" value="0,5" aria-label="Anteil 1 bis 2 Uhr in Prozent"></label>
+              <label class="tg-zelle">2–3 Uhr<input id="tg-h2" type="text" inputmode="decimal" value="0,4" aria-label="Anteil 2 bis 3 Uhr in Prozent"></label>
+              <label class="tg-zelle">3–4 Uhr<input id="tg-h3" type="text" inputmode="decimal" value="0,4" aria-label="Anteil 3 bis 4 Uhr in Prozent"></label>
+              <label class="tg-zelle">4–5 Uhr<input id="tg-h4" type="text" inputmode="decimal" value="0,7" aria-label="Anteil 4 bis 5 Uhr in Prozent"></label>
+              <label class="tg-zelle">5–6 Uhr<input id="tg-h5" type="text" inputmode="decimal" value="2,2" aria-label="Anteil 5 bis 6 Uhr in Prozent"></label>
+              <label class="tg-zelle">6–7 Uhr<input id="tg-h6" type="text" inputmode="decimal" value="7,1" aria-label="Anteil 6 bis 7 Uhr in Prozent"></label>
+              <label class="tg-zelle">7–8 Uhr<input id="tg-h7" type="text" inputmode="decimal" value="10,8" aria-label="Anteil 7 bis 8 Uhr in Prozent"></label>
+              <label class="tg-zelle">8–9 Uhr<input id="tg-h8" type="text" inputmode="decimal" value="7,7" aria-label="Anteil 8 bis 9 Uhr in Prozent"></label>
+              <label class="tg-zelle">9–10 Uhr<input id="tg-h9" type="text" inputmode="decimal" value="4,5" aria-label="Anteil 9 bis 10 Uhr in Prozent"></label>
+              <label class="tg-zelle">10–11 Uhr<input id="tg-h10" type="text" inputmode="decimal" value="3,7" aria-label="Anteil 10 bis 11 Uhr in Prozent"></label>
+              <label class="tg-zelle">11–12 Uhr<input id="tg-h11" type="text" inputmode="decimal" value="4,3" aria-label="Anteil 11 bis 12 Uhr in Prozent"></label>
+              <label class="tg-zelle">12–13 Uhr<input id="tg-h12" type="text" inputmode="decimal" value="4,9" aria-label="Anteil 12 bis 13 Uhr in Prozent"></label>
+              <label class="tg-zelle">13–14 Uhr<input id="tg-h13" type="text" inputmode="decimal" value="4" aria-label="Anteil 13 bis 14 Uhr in Prozent"></label>
+              <label class="tg-zelle">14–15 Uhr<input id="tg-h14" type="text" inputmode="decimal" value="3,2" aria-label="Anteil 14 bis 15 Uhr in Prozent"></label>
+              <label class="tg-zelle">15–16 Uhr<input id="tg-h15" type="text" inputmode="decimal" value="3,3" aria-label="Anteil 15 bis 16 Uhr in Prozent"></label>
+              <label class="tg-zelle">16–17 Uhr<input id="tg-h16" type="text" inputmode="decimal" value="4,2" aria-label="Anteil 16 bis 17 Uhr in Prozent"></label>
+              <label class="tg-zelle">17–18 Uhr<input id="tg-h17" type="text" inputmode="decimal" value="5,5" aria-label="Anteil 17 bis 18 Uhr in Prozent"></label>
+              <label class="tg-zelle">18–19 Uhr<input id="tg-h18" type="text" inputmode="decimal" value="7" aria-label="Anteil 18 bis 19 Uhr in Prozent"></label>
+              <label class="tg-zelle">19–20 Uhr<input id="tg-h19" type="text" inputmode="decimal" value="7,8" aria-label="Anteil 19 bis 20 Uhr in Prozent"></label>
+              <label class="tg-zelle">20–21 Uhr<input id="tg-h20" type="text" inputmode="decimal" value="7" aria-label="Anteil 20 bis 21 Uhr in Prozent"></label>
+              <label class="tg-zelle">21–22 Uhr<input id="tg-h21" type="text" inputmode="decimal" value="5,2" aria-label="Anteil 21 bis 22 Uhr in Prozent"></label>
+              <label class="tg-zelle">22–23 Uhr<input id="tg-h22" type="text" inputmode="decimal" value="3" aria-label="Anteil 22 bis 23 Uhr in Prozent"></label>
+              <label class="tg-zelle">23–24 Uhr<input id="tg-h23" type="text" inputmode="decimal" value="1,7" aria-label="Anteil 23 bis 24 Uhr in Prozent"></label>
+            </div>
+            <div class="tg-kontrolle ok" id="tg-summe-tag" role="status">Werktag summiert zu 100 % — OK.</div>
+          </div>
+          <div class="tg-grafik">
+<svg id="tg-svg" viewBox="0 0 300 180" role="img" aria-label="Balkengrafik der Stundenanteile des gewählten Tagtyps" xmlns="http://www.w3.org/2000/svg">
+<g id="tg-svg-inhalt">
+<line class="zg-gitter" x1="30" y1="144" x2="292" y2="144"/>
+<text class="zg-leise" x="26" y="147.5" text-anchor="end">0</text>
+<line class="zg-gitter" x1="30" y1="89.8" x2="292" y2="89.8"/>
+<text class="zg-leise" x="26" y="93.3" text-anchor="end">5</text>
+<line class="zg-gitter" x1="30" y1="35.7" x2="292" y2="35.7"/>
+<text class="zg-leise" x="26" y="39.2" text-anchor="end">10</text>
+<rect class="zg-balken" x="31.0" y="134.2" width="8.9" height="9.8"/>
+<rect class="zg-balken" x="41.9" y="138.6" width="8.9" height="5.4"/>
+<rect class="zg-balken" x="52.8" y="139.7" width="8.9" height="4.3"/>
+<rect class="zg-balken" x="63.8" y="139.7" width="8.9" height="4.3"/>
+<rect class="zg-balken" x="74.7" y="136.4" width="8.9" height="7.6"/>
+<rect class="zg-balken" x="85.6" y="120.2" width="8.9" height="23.8"/>
+<rect class="zg-balken" x="96.5" y="67.1" width="8.9" height="76.9"/>
+<rect class="zg-balken" x="107.4" y="27.0" width="8.9" height="117.0"/>
+<rect class="zg-balken" x="118.3" y="60.6" width="8.9" height="83.4"/>
+<rect class="zg-balken" x="129.2" y="95.2" width="8.9" height="48.8"/>
+<rect class="zg-balken" x="140.2" y="103.9" width="8.9" height="40.1"/>
+<rect class="zg-balken" x="151.1" y="97.4" width="8.9" height="46.6"/>
+<rect class="zg-balken" x="162.0" y="90.9" width="8.9" height="53.1"/>
+<rect class="zg-balken" x="172.9" y="100.7" width="8.9" height="43.3"/>
+<rect class="zg-balken" x="183.8" y="109.3" width="8.9" height="34.7"/>
+<rect class="zg-balken" x="194.8" y="108.2" width="8.9" height="35.8"/>
+<rect class="zg-balken" x="205.7" y="98.5" width="8.9" height="45.5"/>
+<rect class="zg-balken" x="216.6" y="84.4" width="8.9" height="59.6"/>
+<rect class="zg-balken" x="227.5" y="68.2" width="8.9" height="75.8"/>
+<rect class="zg-balken" x="238.4" y="59.5" width="8.9" height="84.5"/>
+<rect class="zg-balken" x="249.3" y="68.2" width="8.9" height="75.8"/>
+<rect class="zg-balken" x="260.2" y="87.7" width="8.9" height="56.3"/>
+<rect class="zg-balken" x="271.2" y="111.5" width="8.9" height="32.5"/>
+<rect class="zg-balken" x="282.1" y="125.6" width="8.9" height="18.4"/>
+<line class="zg-achse" x1="30" y1="144" x2="292" y2="144"/>
+<text class="zg-leise" x="30" y="158" text-anchor="middle">0</text>
+<text class="zg-leise" x="95.5" y="158" text-anchor="middle">6</text>
+<text class="zg-leise" x="161" y="158" text-anchor="middle">12</text>
+<text class="zg-leise" x="226.5" y="158" text-anchor="middle">18</text>
+<text class="zg-leise" x="292" y="158" text-anchor="middle">24</text>
+<text class="zg-leise" x="4" y="10">%</text>
+<text class="zg-leise" x="292" y="174" text-anchor="end">Stunde</text>
+</g>
+</svg>
+            <p class="zpg-bildzeile">Nur Anzeige: Die Balken folgen den Zahlenfeldern und lassen sich nicht ziehen.</p>
+          </div>
+        </div>
+        <p class="zpg-untertitel">Wochenfaktoren Mo–So in % der Wochenmenge</p>
+        <div class="tg-woche" id="tg-woche">
+          <label>Mo<input id="tg-w0" type="text" inputmode="decimal" value="14,2" aria-label="Wochenfaktor Montag in Prozent"></label>
+          <label>Di<input id="tg-w1" type="text" inputmode="decimal" value="14,2" aria-label="Wochenfaktor Dienstag in Prozent"></label>
+          <label>Mi<input id="tg-w2" type="text" inputmode="decimal" value="14,2" aria-label="Wochenfaktor Mittwoch in Prozent"></label>
+          <label>Do<input id="tg-w3" type="text" inputmode="decimal" value="14,2" aria-label="Wochenfaktor Donnerstag in Prozent"></label>
+          <label>Fr<input id="tg-w4" type="text" inputmode="decimal" value="14,2" aria-label="Wochenfaktor Freitag in Prozent"></label>
+          <label>Sa<input id="tg-w5" type="text" inputmode="decimal" value="12,5" aria-label="Wochenfaktor Samstag in Prozent"></label>
+          <label>So<input id="tg-w6" type="text" inputmode="decimal" value="14,5" aria-label="Wochenfaktor Sonntag in Prozent"></label>
+        </div>
+        <div class="tg-kontrolle fehler" id="tg-summe-woche" role="status">Wochenfaktoren: Summe 98 % — korrigieren. Hinweis, blockiert nicht.</div>
+        <div class="zpg-info"><b>Normtypen sind schreibgeschützt.</b> Auslieferungs- und Normtypen werden nie selbst geändert,
+        sondern als Kopie bearbeitet („Als Benutzerdefiniert kopieren“); die Kopie trägt den Status „eigen“ und die
+        Herkunftsmarke „überschrieben“, sobald ein Wert von der Vorlage abweicht. Bearbeitet wird über die Zahlenfelder, nicht
+        durch Ziehen in der Kurve; die Grafik zeigt nur. Die Summenkontrollen sind Hinweise und blockieren OK nicht.</div>
+      </div>
+      <div class="ueb-fuss">
+        <button type="button" class="epos-knopf tg-aktiv" id="tg-kopieren">Tag kopieren</button>
+        <button type="button" class="epos-knopf tg-aktiv" id="tg-einfuegen" aria-disabled="true" title="Erst einen Tag kopieren">Tag einfügen</button>
+        <button type="button" class="epos-knopf tg-aktiv" id="tg-benutzer">Als Benutzerdefiniert kopieren</button>
+        <button type="button" class="epos-knopf tg-aktiv" id="tg-zurueck">Zurücksetzen auf Vorgabe</button>
+        <span class="f-status" role="status" id="tg-status">Kopie „Benutzerdefiniert 1“ · Wochenfaktoren überschrieben</span>
+        <button type="button" class="epos-knopf">Abbrechen</button>
+        <button type="button" class="epos-knopf epos-knopf--primaer">OK</button>
+      </div>
+    </div>
+  </div>
+  <p class="bildtext"><b>Tagesgang-Editor nach dem Muster des Typprofils.</b> Kopfzeile mit Nutzungsart, Herkunftsmarke
+  (Vorgabe · überschrieben · kalibriert) und Tagtyp; darunter 24 Stundenanteile des gewählten Tagtyps als Zahlenfelder und
+  daneben ihre Balkengrafik, dann die Wochenfaktoren Mo–So. Zwei Summenkontrollen als Klartext: grün, wenn der Tagtyp zu
+  100 % summiert, rot mit der Summe und „korrigieren“, wenn nicht — hier bei den Wochenfaktoren. Die Fußleiste folgt dem
+  Typprofil: Tag kopieren und einfügen, Als Benutzerdefiniert kopieren, Zurücksetzen auf Vorgabe, Status als Füller,
+  Abbrechen, OK. OK schreibt eine Transaktion. Die Vorgabe der Kopie ist der Tagesgang der Zone 1, aus dem die
+  Vorschau gezeichnet ist (dort am Werktag zuzüglich Büro); mit den Wochenfaktoren der Vorgabe, 14,2 % je Werktag und
+  14,5 % für Samstag und Sonntag, ergeben sich Samstag und Sonntag der Vorschau. Überschrieben ist hier nur der Samstag. Erreichbar in der Stufe Experte über „Tagesgang bearbeiten…“ und im
+  Katalogdialog über „Tagesgang…“. <b>Bedienbar:</b> Tagtyp, Zahlenfelder und die vier Aktionsknöpfe; alle Anteile fiktiv.</p>
 
   <div class="zone" id="dialog-katalog">Katalogdialog „Brauchwasser-Nutzungsarten“ (Administration)</div>
   <div class="fenster">
@@ -1429,12 +1960,12 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
             <table class="epos-raster" aria-label="Brauchwasser-Nutzungsarten">
               <thead><tr><th>Nutzungsart</th><th>Bezugsgröße</th><th>Kalender</th><th>Herkunft</th><th>Status</th></tr></thead>
               <tbody>
-                <tr><td>Einfamilienhaus</td><td>Personen</td><td>Wochenende, Feiertage</td><td class="leise">nach DIN EN 12831-3</td><td>Auslieferung</td></tr>
-                <tr class="gewaehlt"><td>Mehrfamilienhaus</td><td>Wohneinheiten</td><td>Wochenende, Feiertage</td><td class="leise">nach DIN EN 12831-3</td><td>Auslieferung</td></tr>
-                <tr><td>Hotel, mittel</td><td>Betten</td><td>Auslastungsgang</td><td class="leise">Bandbreite nach VDI 6002</td><td>Auslieferung</td></tr>
-                <tr><td>Bürogebäude</td><td>Beschäftigte</td><td>Arbeitstage</td><td class="leise">nach DIN V 18599-10</td><td>Auslieferung</td></tr>
-                <tr><td>Schule mit Duschen</td><td>Personen</td><td>Schulferien</td><td class="leise">nach DIN V 18599-10</td><td>Auslieferung</td></tr>
-                <tr><td>Sportanlage mit Duschen</td><td>Duschplätze</td><td>Betriebskalender</td><td class="leise">nach DIN V 18599-10</td><td>Auslieferung</td></tr>
+                <tr><td>Einfamilienhaus</td><td>Personen</td><td>Wochenende, Feiertage</td><td class="leise">INEKON-Kompilation · Leitquelle A100 (Entwurf)</td><td>Auslieferung</td></tr>
+                <tr class="gewaehlt"><td>Mehrfamilienhaus</td><td>Wohneinheiten</td><td>Wochenende, Feiertage</td><td class="leise">INEKON-Kompilation · Leitquelle A100 (Entwurf)</td><td>Auslieferung</td></tr>
+                <tr><td>Hotel, mittel</td><td>Betten</td><td>Auslastungsgang</td><td class="leise">VDI-Verweis · VDI 6002 Bl. 2</td><td>Lizenzentscheid offen (A9)</td></tr>
+                <tr><td>Bürogebäude</td><td>Beschäftigte</td><td>Arbeitstage</td><td class="leise">INEKON-Kompilation · Leitquelle DIN V 18599-10</td><td>Auslieferung</td></tr>
+                <tr><td>Schule mit Duschen</td><td>Personen</td><td>Schulferien</td><td class="leise">INEKON-Kompilation · Leitquelle DIN V 18599-10</td><td>Auslieferung</td></tr>
+                <tr><td>Sportanlage mit Duschen</td><td>Duschplätze</td><td>Betriebskalender</td><td class="leise">INEKON-Kompilation · Leitquelle DIN V 18599-10</td><td>Auslieferung</td></tr>
                 <tr><td>Eigene Nutzungsart 1</td><td>Personen</td><td>Wochenende, Feiertage</td><td class="leise">Anwender</td><td>eigen</td></tr>
               </tbody>
             </table>
@@ -1446,17 +1977,17 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
         <div class="epos-gruppenkopf-koerper">
           <div class="zpg-feld"><span class="zpg-lab">Bedarf niedrig / mittel / hoch</span>
             <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">4,0</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">5,0</span><span class="epos-eingabe epos-eingabe--kurz epos-eingabe--nurlesen">6,0</span><span class="epos-einheit">kWh/(WE·d)</span></span>
-            <span class="zpg-herkunft">fiktive Beispielwerte · Temperaturbezug 60 °C</span></div>
+            <span class="zpg-herkunft">fiktive Beispielwerte in kWh Nutzenergie · Temperaturbezug der Leitquelle 45/10 °C; Liter zeigt der Dialog einheitlich im Anzeigebezug 60/10 °C (eigene Umrechnung)</span></div>
           <div class="zpg-feld"><span class="zpg-lab">Bilanzgrenze</span>
             <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">Zapfstelle, ohne Verteil-, Zirkulations- und Speicherverluste</span></span></div>
           <div class="zpg-feld"><span class="zpg-lab">Quelle · Version</span>
-            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">INEKON-Kompilation, Verfahren nach E DIN EN 12831-3/A100:2021-09 · Katalog 1.0</span></span>
+            <span class="zpg-wert"><span class="epos-eingabe epos-eingabe--breit epos-eingabe--nurlesen">INEKON-Kompilation, Leitquelle E DIN EN 12831-3/A100:2021-09 (Entwurf) · Katalog 1.0</span></span>
             <span class="zpg-herkunft">Auslieferung (ReadOnly), nur lesen · Freigabe im Vier-Augen-Prinzip (offener Entscheid K7)</span></div>
         </div>
       </div>
     </div>
     <div class="f-fuss">
-      <button type="button" class="epos-knopf">Tagesgang…</button>
+      <button type="button" class="epos-knopf" title="Öffnet die Überlagerung „Tagesgang bearbeiten“; Auslieferungstypen nur als Kopie">Tagesgang…</button>
       <button type="button" class="epos-knopf">Grafik…</button>
       <span class="f-fueller" aria-hidden="true"></span>
       <button type="button" class="epos-knopf">Neu…</button>
@@ -1470,9 +2001,12 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
   Kennwerten samt Quelle, Version, Bandbreite und Bilanzgrenze, als Nur-Lese-Felder gezeichnet (gestrichelt, nicht im
   Vorgabe-Grau des Projektdialogs, das „überschreibbar“ bedeutet). „Ändern…“ öffnet bei einem Auslieferungseintrag den
   Editor mit „Speichern unter“ (K7); „Löschen“ ist dort gesperrt, der Grund steht im Kurztext und kommt als Meldung beim
-  Versuch. Die Herkunftsspalte nennt Verfahren und Ausgabe; eine Tabelle darf sie nennen, nie abdrucken. Fußleiste nach
+  Versuch. Die Herkunftsspalte nennt je Eintrag genau eine Herkunft (INEKON-Kompilation mit
+  Leitquelle, VDI-Verweis oder Anwender), wortgleich mit der Katalogauswahl des Projektdialogs; ein VDI-Verweis bleibt
+  bis zum Lizenzentscheid A9 gesperrt. Eine Tabelle darf die Herkunft nennen, nie abdrucken. Fußleiste nach
   dem Vorbild der Brauchwasser-Katalogverwaltung: <b>Tagesgang… · Grafik… · Füller · Neu… · Ändern… · Löschen ·
-  Beenden</b>. Auf iOS bleibt dieser Katalogdialog geschlossen wie alle Katalogverwaltungen (KI‑D‑Q10 offen, Empfehlung
+  Beenden</b>. „Tagesgang…“ öffnet die <a href="#dialog-tagesgang">Überlagerung „Tagesgang bearbeiten“</a>; ein
+  Auslieferungseintrag wird dort nur als Kopie bearbeitet. Auf iOS bleibt dieser Katalogdialog geschlossen wie alle Katalogverwaltungen (KI‑D‑Q10 offen, Empfehlung
   dort: erst mit iU11).</p>
 
   <div class="zone" id="dialog-legende">Was der Dialog tut und was nicht</div>
@@ -1487,6 +2021,9 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
         <li>warnt bei Werten außerhalb der Plausibilität am Feld, ohne zu blockieren;</li>
         <li>rechnet die Auslegung als Dreiergruppe in einer eigenen Überlagerung; das Perzentil nach einem ausdrücklichen
         Lauf „Stochastisch rechnen“, der in jeder Stufe frei ist;</li>
+        <li>bearbeitet Tagesgänge über Zahlenfelder im Tagesgang-Editor, Norm- und Auslieferungstypen nur als Kopie;</li>
+        <li>zeigt in der Auslegung zusätzlich den Verfahrensvergleich des Anschlussverbrauchers Speicherauslegung mit
+        Warnliste — getrennt von Dreiergruppe und Profilkennzahlen;</li>
         <li>sammelt alle Änderungen im Arbeitsstand: OK prüft (jede Zone braucht Nutzungsart und Bezugsgröße), übergibt
         an den Arbeitsstand des Bedarfsprofil-Dialogs und schließt; geschrieben wird mit dessen OK — über die Startseite
         durch seine Hülle, im Gebäudekatalog sofort;</li>
@@ -1504,6 +2041,90 @@ ol.entscheide .empfehlung{margin-top:7px;padding-top:7px;border-top:1px dashed v
         <li>eine Minutenreihe in die Bilanz übergeben — Minuten gibt es nur für Auslegung und Diagramm;</li>
         <li>eine Normtabelle zeigen oder VDI-4655-Daten mitbringen — die spielt nur ein lizenzierter Anwender selbst ein.</li>
       </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 3b NORMTABELLEN ALS TESTDATEN ======================= -->
+<!-- Nur Struktur, Beschriftung und Rechenweg. Jede Zahl dieses Abschnitts kommt zur Laufzeit aus
+     window.EPOS_NORMTABELLEN (lokale, gitignorierte Ladedatei); ohne sie bleibt der Platzhalter stehen. -->
+<section class="kat" id="normtabellen">
+  <div class="kat-kopf"><h2>3b · Normtabellen als Testdaten</h2><span class="kat-marke">VDI 6002 · VDI 4655 · nur lokal, zur Laufzeit</span></div>
+  <p class="kat-lead">Zum Prüfen von Tagesgängen und Typtagsystematik zeigt dieser Abschnitt Tabellen aus VDI 6002 und
+  VDI 4655 — aber nur, wenn die lokale Ladedatei im Repository-Arbeitsbaum liegt. Die Seite selbst enthält keine Normzahl:
+  Struktur, Beschriftung und Rechenweg stehen im Quelltext, jede Zahl der Tabellen und Diagramme kommt zur Laufzeit aus der
+  Datei. In der Beispielrechnung ist nur N eine fiktive Vorgabe; den Jahresbedarf belegt
+  die Seite zur Laufzeit mit N × Kennwert der Datei vor, überschreibbar.</p>
+
+  <div class="nt-platzhalter" id="nt-platzhalter">
+    <h3>Keine lokale Normtabellen-Datei geladen</h3>
+    <p><b>Zweck.</b> Testdaten für die Entwicklung: Tagesgänge, Wochenanteile und Monatsfaktoren nach VDI 6002 sowie Typtage
+    und Brauchwasserfaktoren nach VDI 4655 neben den Entwurf legen und die Rechenregel der Typtage nachrechnen.</p>
+    <p><b>Ablageort</b> relativ zur Repowurzel: <code>Referenzlaeufe/Normzahlen/zapfprofil/normtabellen.js</code>. Die Seite
+    bindet sie über einen relativen Verweis ein und läuft ohne sie fehlerfrei weiter.</p>
+    <p><b>Regel U8 (gitignore).</b> Der Ordner <code>Referenzlaeufe/Normzahlen/</code> steht in <code>.gitignore</code>.
+    Repository, Artefakt, Wiki und Auslieferung enthalten nie Normzahlen; ohne die Datei zeigt das Mockup nur seine fiktiven
+    Beispielzahlen.</p>
+  </div>
+
+  <div id="nt-inhalt" hidden>
+    <p class="nt-quelle" id="nt-hinweis"></p>
+
+    <div class="zone" id="normtabellen-6002">VDI 6002 · Bedarfskennwerte, Tagesgänge, Wochen, Monate</div>
+    <p class="nt-quelle" id="nt-quelle-6002"></p>
+    <div class="tafel-huelle"><table class="tafel" id="nt-bedarf" aria-label="VDI 6002: Bedarfskennwerte aus der Ladedatei"></table></div>
+    <div class="nt-steuer"><label>Nutzungsart (Tagesgang, Woche, Monate)<select id="nt-6002-art"></select></label></div>
+    <div class="nt-karte">
+      <div class="chart-titel">Tagesgang je Tagtyp</div>
+      <div class="chart-unter" id="nt-6002-tag-unter">Anteil des Tagesbedarfs je Stunde in %</div>
+      <svg id="nt-6002-tag" viewBox="0 0 640 250" role="img" aria-label="Tagesgang der gewählten Nutzungsart je Tagtyp" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="nt-legende" id="nt-6002-tag-legende"></div>
+      <div id="nt-6002-summen"></div>
+    </div>
+    <div class="nt-karten">
+      <div class="nt-karte">
+        <div class="chart-titel">Wochenanteile</div>
+        <div class="chart-unter" id="nt-6002-woche-unter">Anteil des Wochenbedarfs je Wochentag in %</div>
+        <svg id="nt-6002-woche" viewBox="0 0 420 210" role="img" aria-label="Wochenanteile der gewählten Nutzungsart" xmlns="http://www.w3.org/2000/svg"></svg>
+        <p class="nt-kontrolle" id="nt-6002-woche-summe"></p>
+      </div>
+      <div class="nt-karte">
+        <div class="chart-titel">Monatsfaktoren</div>
+        <div class="chart-unter" id="nt-6002-monat-unter">Faktor je Monat, gestrichelt der Mittelwert 1</div>
+        <svg id="nt-6002-monat" viewBox="0 0 420 210" role="img" aria-label="Monatsfaktoren der gewählten Nutzungsart" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="nt-legende" id="nt-6002-monat-legende"></div>
+      </div>
+    </div>
+
+    <div class="zone" id="normtabellen-4655">VDI 4655 · Typtage und Brauchwasser-Tagesbedarf</div>
+    <p class="nt-quelle" id="nt-quelle-4655"></p>
+    <div class="nt-steuer">
+      <label>Klimazone<select id="nt-4655-zone"></select></label>
+      <label>Gebäude<select id="nt-4655-geb">
+        <option value="efh_bestand">EFH Bestand</option>
+        <option value="mfh_bestand">MFH Bestand</option>
+        <option value="efh_neh">EFH NEH (Niedrigenergiehaus)</option>
+      </select></label>
+      <label>Q_TWE,a in kWh/a (vorbelegt: N × Kennwert)<input id="nt-4655-qa" type="text" inputmode="decimal" value="" placeholder="N × Kennwert"></label>
+      <label><span id="nt-4655-n-text">N (Personen)</span><input id="nt-4655-n" type="text" inputmode="decimal" value="4"></label>
+    </div>
+    <p class="nt-quelle" id="nt-4655-nhinweis"></p>
+    <div class="zwei">
+      <div class="tafel-huelle"><table class="tafel" id="nt-4655-tage" aria-label="VDI 4655: Anzahl der Typtage je Klimazone"></table></div>
+      <div class="tafel-huelle"><table class="tafel" id="nt-4655-f" aria-label="VDI 4655: Brauchwasserfaktoren F_TWE,TT der zehn Typtage"></table></div>
+    </div>
+    <div class="nt-karte">
+      <div class="chart-titel">Brauchwasser-Tagesbedarf je Typtag</div>
+      <div class="chart-unter" id="nt-4655-q-unter">Q_TWE,TT in kWh/d, berechnet aus den Eingaben und den Faktoren der Datei</div>
+      <svg id="nt-4655-q" viewBox="0 0 640 250" role="img" aria-label="Brauchwasser-Tagesbedarf je Typtag" xmlns="http://www.w3.org/2000/svg"></svg>
+      <p class="nt-kontrolle" id="nt-4655-probe"></p>
+    </div>
+    <div class="formel">
+<pre><span class="kom">// Rechenweg der Typtage — nur Struktur, die Faktoren kommen aus der Ladedatei</span>
+Q_TWE,TT = Q_TWE,a × (1/365 + N × F_TWE,TT)        [kWh/d]
+           <span class="kom">N: Personen im EFH, Wohneinheiten im MFH; F_TWE,TT je Klimazone und Gebäude</span>
+Probe:     Σ_TT n_TT × Q_TWE,TT = Q_TWE,a            <span class="kom">n_TT: Tage des Typtags in der Klimazone, Σ n_TT = 365</span>
+Klemmung:  Q_TWE,TT &lt; 0  →  0                       <span class="kom">die Probe weicht dann um den geklemmten Anteil ab</span></pre>
     </div>
   </div>
 </section>
@@ -1562,7 +2183,8 @@ q_zirk,h   = Q_zirk,a / (365 × Laufzeit)    in den Laufzeitstunden, sonst 0
 brauchwasserwerte[h] += Σ_Zonen q_h + q_zirk,h                  <span class="kom">VectorenAddieren, h = 1 … 8 760</span>
 
 <span class="kom">Anzeige</span>
-V_Liter    = Q / (c_w × (ϑ_Zapf − ϑ_KW))     c_w = 1,163 Wh/(l·K)</pre>
+V_Liter    = Q / (c_w × (ϑ_Bezug − ϑ_KW))    c_w = 1,163 Wh/(l·K)
+             <span class="kom">Anzeigebezug einheitlich ϑ_Bezug = 60 °C, ϑ_KW = 10 °C; die Zapftemperatur der Zone wirkt nicht auf kWh</span></pre>
   </div>
   <div class="normzeile">
     <span class="norm">DIN EN 12831-3 · Verfahren</span>
@@ -1759,6 +2381,89 @@ V_Liter    = Q / (c_w × (ϑ_Zapf − ϑ_KW))     c_w = 1,163 Wh/(l·K)</pre>
   </div>
 </section>
 
+<!-- ======================= 5b WAS ES SCHON GIBT ======================= -->
+<section class="kat" id="bestand">
+  <div class="kat-kopf"><h2>5b · Was es schon gibt: Wärmespeicher-Tool und Excel-Vorlage</h2><span class="kat-marke">Ablage des Anwenders · Ordner Wärmespeicher</span></div>
+  <p class="kat-lead">Drei Arbeiten von INEKON liegen außerhalb des Repositoriums in der Ablage des Anwenders (Ordner
+  Wärmespeicher). Sie rechnen die Speicherauslegung, nicht die Jahresreihe; für den Generator sind sie Vorlage der Bedienung
+  und zugleich Anschlussverbraucher seiner Ergebnisse. Die Excel-Vorlage ist die Vorlage der Brauchwasserauslegung. Das
+  Mockup übernimmt Muster und Verfahren, keine Zahlen.</p>
+  <div class="kacheln">
+    <article class="kachel">
+      <div class="k-marke">Python · Streamlit</div>
+      <h3>Wärmespeicher-Tool</h3>
+      <p>Fünf Reiter: Gebäude &amp; Profil, Analyse, TWW-Speicher, Pufferspeicher, Export. Für Trinkwarmwasser drei Verfahren —
+      DIN 4708 vereinfacht, profilbasiert auf dem Jahreslastgang und ein Faustwert mit Warnung ab dem Dreifachen.</p>
+      <p>Pufferspeicher nach vier Kriterien (Abtauung, Taktung und Mindestlaufzeit, EVU-Sperrzeit, Lastgang-Simulation mit
+      Bisektion) und eine Zweipunkt-Betriebssimulation der Ladezyklen. Lastgänge synthetisch (VDI 4655 über demandlib,
+      BDEW-Profile Gewerbe, Testreferenzjahre des DWD) oder gemessen (Import aus CSV und XLSX); Excel-Bericht mit sieben
+      Blättern, automatische Tests, Validierung gegen eine eigene Lastgangauswertung.</p>
+      <p>Fremdcode, hier nur als Quellenhinweis: lpagg (MIT-Lizenz; DIN-4708-Modul, Wetter der Testreferenzjahre) und demandlib
+      (MIT-Lizenz).</p>
+    </article>
+    <article class="kachel">
+      <div class="k-marke">Excel · Version 2.1.2</div>
+      <h3>Vorlage TWW-Auslegung V4</h3>
+      <p>Reine Formelmappe ohne Makros mit sechs Blättern: Eingaben → Zapfprofil → DIN 4708-2 → Berechnung → Ergebnis → Hilfe.
+      Typisierte Wochen-Zapfprofile (Werktag, Samstag, Sonntag × 24 Stunden, Wochenfaktoren Mo–So) für elf Nutzungstypen und
+      „Benutzerdefiniert“, dazu Schätzhilfen für Ladeleistung und Zirkulation.</p>
+      <p>Rechenkern: Stundenbilanz über zwei Wochen mit Lindley-Rekursion (D_max), DIN 4708 (N, W_z), Faustwert mit
+      Gleichzeitigkeit GLF(N) und der klassische Faustwert, nur nachrichtlich; Empfehlung als nächstgrößere Listengröße mit
+      N_L-Kriterium, Hinweise und Warnungen im Klartext, Wochendiagramm mit Füllstand.</p>
+      <p>Qualitätssicherung: Die Formeln sind gegen die Python-Module des Wärmespeicher-Tools gegengerechnet (Abweichung
+      0,00 %); die Mappe ist selbst die prüfbare Unterlage.</p>
+    </article>
+    <article class="kachel">
+      <div class="k-marke">Word · Version 1.1</div>
+      <h3>Dokumentation Wärmespeicher-Tool</h3>
+      <p>Teil A Beschreibung. Teil B Bedienung je Reiter. Teil C Methodik: Verfahren für Trinkwarmwasser, DIN 4708-2,
+      Empfehlung und Hygiene, Verfahrenswahl mit Eignungstabelle, Pufferspeicher, Validierung, Grenzen. Teil D Excel-Werkzeug:
+      Zweck, Blätter, Qualitätssicherung, Zuordnung Verfahren ↔ Werkzeug.</p>
+    </article>
+  </div>
+
+  <div class="zone">Was das Mockup daraus übernimmt</div>
+  <div class="tafel-huelle">
+    <table class="tafel">
+      <thead><tr><th>Muster der Vorlage</th><th>Im Mockup</th></tr></thead>
+      <tbody>
+        <tr><td class="name">auto/manuell mit Schätzhilfe</td><td>Tagesbedarf, Ladeleistung und Zirkulation im <a href="#dialog-fenster">Fenster</a>
+          ab Stufe Erweitert: Vorschlag, manueller Wert, angesetzter Wert, Rechenweg als Satz mit Zahlen</td></tr>
+        <tr><td class="name">Summenkontrollen im Klartext</td><td>grün „summiert zu 100 %“, rot „Summe 98 % — korrigieren“ im
+          <a href="#dialog-tagesgang">Tagesgang-Editor</a></td></tr>
+        <tr><td class="name">Herkunft und Status je Profil</td><td>Katalogauswahl mit Herkunft (VDI-Verweis, INEKON-Kompilation, Anwender),
+          Status und Bezugsgröße; „Benutzerdefiniert“ als Kopie eines Katalogtyps</td></tr>
+        <tr><td class="name">Verfahrensvergleich</td><td>Ergebniskarte in der <a href="#dialog-auslegung">Überlagerung „Auslegung“</a>: DIN 4708,
+          profilbasiert, Gleichzeitigkeit, klassisch grau; größter Wert, Listengröße als Vorschlag an die Speicherauslegung, N_L-Kriterium, Wochendiagramm</td></tr>
+        <tr><td class="name">Warnungen als Sätze</td><td>Warnliste der Auslegung, nicht blockierend, ergänzt um die Gültigkeit je Verfahren</td></tr>
+        <tr><td class="name">nachrechenbarer Referenzfall</td><td>das fiktive Beispieljahr dieses Mockups; jede neue Zahl folgt aus ihm</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="merk nein">
+    <h3>Vier Schwächen der Vorlage, bewusst nicht übernommen</h3>
+    <ul>
+      <li><b>Fest eingetragene „angesetzte“ Werte:</b> Ladeleistung und Zirkulation stehen in der Mappe als feste Zahl, der
+      Umschalter wirkt nicht. Im Dialog folgt der angesetzte Wert immer sichtbar aus dem Umschalter.</li>
+      <li><b>Gemischtes Mengengerüst:</b> Die Verfahren rechnen dort mit zwei verschiedenen Personenzahlen. Im Dialog gibt es
+      eine Personenzahl für alle Verfahren; was ein Verfahren nicht abdeckt, meldet die Gültigkeitswarnung.</li>
+      <li><b>Saisonfaktor als einziger Jahresgang:</b> Ein Skalar ersetzt kein Jahresprofil. Im Generator tragen zwölf
+      Monatsfaktoren, Kaltwasser-Saisonalität und Kalender den Jahresgang (S2).</li>
+      <li><b>336-Stunden-Raster:</b> Zwei gleiche Wochen stehen dort für das Jahr. Die Bilanz des Generators rechnet
+      8&#8239;760 Stunden; die Zweiwochenbilanz bleibt nur als Verfahren der Speicherauslegung, mit der Wochenform aus dem
+      Jahresgang.</li>
+    </ul>
+    <p style="margin-top:8px">Dazu zwei kleine Korrekturen: Der maßgebende Zeitpunkt wird in Woche 2 gezählt (die Mappe nennt
+    die erste Fundstelle in Woche 1), und jedes Verfahren trägt eine Gültigkeitsprüfung. Übernommen, aber als Vereinfachung
+    benannt: Die Stundenbilanz lädt konstant über 24 h ohne Sperrzeitenmodell; das Ladezeitfenster wirkt nur auf den
+    Vorschlag der Ladeleistung, und Sperrzeiten würden D_max erhöhen.</p>
+  </div>
+  <p class="bildtext">Die Vorlage enthält Tabellen aus VDI 6002 und DIN 4708-2 (Richtwerte, Stundenprofile,
+  Nachschlagewerte); davon erscheint im Quelltext des Mockups nichts. Hersteller- und Messdaten aus derselben Ablage bleiben
+  außen vor.</p>
+</section>
+
 <!-- ======================= 6 STUFEN UND AUFWAND ======================= -->
 <section class="kat" id="stufen">
   <div class="kat-kopf"><h2>6 · Stufen und Aufwand</h2><span class="kat-marke">Z0 – Z5 · Personentage</span></div>
@@ -1784,12 +2489,13 @@ V_Liter    = Q / (c_w × (ϑ_Zapf − ϑ_KW))     c_w = 1,163 Wh/(l·K)</pre>
           τ-Korrektur, Φ_N = min, Plausibilitätswächter), Wertepaarkurve, Schnellpfad nach A100 NA.5.6 bis 6 WE,
           DIN-4708-Kennzahl N, DIN 1988-300 nachrichtlich, Ladezeit je Tag (Σ t_power,on). Profil-Import und Konstruktor
           für manuelle Profile (A100 NA.5.2.3). Überlagerung „Auslegung“ mit den Eingaben der Summenlinie und der
-          Dreiergruppe.</td><td class="r">Konzept 12–14 PT</td></tr>
+          Dreiergruppe; dazu der Verfahrensvergleich nach Vorlage TWW-Auslegung V4 mit Warnliste als
+          Anschlussverbraucher.</td><td class="r">Konzept 12–14 PT</td></tr>
         <tr><td class="name">Z3 Stochastik</td><td>Zapfereignisgenerator mit 4 + 2 Kategorien, Superposition von N Einheiten,
           Entkopplung der Urlaube, Perzentil-Auslegung, Ensemble über Kulturweitergabe, portabler Zufallsgenerator mit festem
           Seed. Regressionstests gegen DHWcalc-Referenzdateien, Konsistenzprobe, Kalibrierung der Nichtwohn-Parameter.</td><td class="r">Konzept 15–20 PT</td></tr>
         <tr><td class="name">Z4 Oberfläche vollständig</td><td>Dialog mit allen drei Tiefen, Zonenliste für Mischnutzung,
-          Tagesgang-Editor, nicht blockierende Warnlogik, alle Diagramm-Reiter. Katalogdialog „Brauchwasser-Nutzungsarten“
+          Tagesgang-Editor, Schätzhilfen auto/manuell, nicht blockierende Warnlogik, alle Diagramm-Reiter. Katalogdialog „Brauchwasser-Nutzungsarten“
           mit Untermenü, KiSicht, Hilfeschlüssel, Wiki-Seite, Bericht-Baustein, beide Sprachen; Rasterprobe bei neuer
           Katalogliste. <b>Voraussetzung für das iPad:</b> die Hülle des Bedarfsprofil-Dialogs plattformfrei nach
           <code>EPOS.UI.Daten</code> (heute nur <code>BedarfsProfileHuelle</code> unter Windows), sonst erst mit iU11; der
@@ -1810,10 +2516,11 @@ V_Liter    = Q / (c_w × (ϑ_Zapf − ϑ_KW))     c_w = 1,163 Wh/(l·K)</pre>
   <div class="kat-kopf"><h2>7 · Lizenz und Grenzen</h2><span class="kat-marke">Normwerte gekapselt · Verfahren frei</span></div>
   <ul class="liste">
     <li><b>VDI 4655:</b> Der Vermerk „Vervielfältigung – auch für innerbetriebliche Zwecke – nicht gestattet“ gilt.
-    Formvektoren, Faktortabellen, Typtag-Reihenfolgen und PV-Profile erscheinen weder im Produkt noch im Mockup, im Wiki,
-    in Code-Kommentaren oder Testdaten. Umgesetzt wird nur die Methodik; die Daten spielt der lizenzierte Anwender selbst
+    Formvektoren, Faktortabellen, Typtag-Reihenfolgen und PV-Profile erscheinen weder im Produkt noch im Quelltext des Mockups, im Wiki,
+    in Code-Kommentaren oder Testdaten des Repositoriums. Umgesetzt wird nur die Methodik; die Daten spielt der lizenzierte Anwender selbst
     über eine Import-Schnittstelle ein, lokal und nur in der Rolle eines Formvektors. Vor der Codierung wird das mit
-    VDI/Beuth geklärt. Dieses Mockup zeigt keinen Datenwert aus VDI 4655 — keinen Faktor, keinen Formvektor, keinen Jahreswert.
+    VDI/Beuth geklärt. Im Quelltext dieses Mockups steht kein Datenwert aus VDI 4655 — kein Faktor, kein Formvektor, kein
+    Jahreswert; zur Laufzeit erscheinen solche Werte nur aus der lokalen Testdatei (Abschnitt 3b).
     <br><b>Abweichung vom Konzept V1.2:</b> Dort hat VDI 4655 drei Rollen — (a) Formvektor- und Jahresgangquelle Wohnen,
     (b) Wetter- und Typtag-Kopplung, (c) Validierungsreferenz mit Jahresankern und der Beispielrechnung der Richtlinie als
     Regressionstest. Dieser Entwurf behält (a) nur lokal mit den Daten des Anwenders und (b) nur als Methodik; weil keine
@@ -1839,16 +2546,23 @@ V_Liter    = Q / (c_w × (ϑ_Zapf − ϑ_KW))     c_w = 1,163 Wh/(l·K)</pre>
     <li><b>Repository:</b> Aus den Grundlagenpapieren mit Normzahlen wird nichts in Mockup, Wiki, Code-Kommentare oder
     Testdaten übernommen; ob die Zahlen dort bleiben dürfen, ist offen (A9). Vor der Erstauslieferung wird die
     Lizenzstrategie juristisch geprüft (K8).</li>
+    <li><b>Testdaten (lokal):</b> Für Entwicklung und Prüfung liegen Tabellen aus VDI 4655 und VDI 6002 als lokale
+    Testdaten in <code>Referenzlaeufe/Normzahlen/zapfprofil/normtabellen.js</code>. Die Datei ist gitignoriert (Regel U8),
+    wird nur zur Laufzeit über die Ladedatei gelesen (Abschnitt 3b) und steht nie im Repository, in einem Artefakt, im
+    Wiki oder in der Auslieferung; ohne sie zeigt das Mockup einen Platzhalter und nur fiktive Zahlen. Ob diese lokalen
+    Kopien lizenzrechtlich zulässig sind — VDI 4655 untersagt die Vervielfältigung auch für innerbetriebliche Zwecke —,
+    verantwortet der Anwender; die Klärung gehört zu K8.</li>
   </ul>
 
   <div class="merk nein">
     <h3>Was das Mockup bewusst nicht zeigt</h3>
     <ul>
-      <li>keine Normtabelle, keinen Normwert aus VDI 4655, DIN EN 12831-3 oder VDI 6007, kein nachgezeichnetes
-      Referenzprofil — alle Tagesgänge und der Bedarfstag der Summenlinie sind frei erfundene Formen;</li>
+      <li>im Quelltext keine Normtabelle und keinen Normwert aus VDI 4655, VDI 6002, DIN EN 12831-3 oder VDI 6007 — zur
+      Laufzeit nur aus der lokalen Testdatei (Abschnitt 3b) —, kein nachgezeichnetes Referenzprofil; alle Tagesgänge, der
+      Tagesgang-Editor und der Bedarfstag der Summenlinie zeigen frei erfundene Formen;</li>
+      <li>keine Nachschlagewerte p(r) und w_v der DIN 4708-2 — N = 18 steht als fiktives Ergebnis der Wohnungstabelle;</li>
       <li>keine Hersteller- und Produktdaten; Nutzungsarten und Projekt tragen neutrale Namen;</li>
       <li>keine Daten des Messobjekts aus dem Vorprojekt, nur das Verhältnis „Faktor 2,4“;</li>
-      <li>nicht die Überlagerung „Tagesgang bearbeiten“ im Einzelnen (Muster des Typprofils, Tag kopieren und einfügen);</li>
       <li>nicht den Konstruktor „Bedarfstag konstruieren…“ nach A100 NA.5.2.3 und nicht die Profilwahl der
       Ecodesign-Zapffolgen im Einzelnen — beide sind in der Überlagerung „Auslegung“ nur als Einstieg gezeichnet;</li>
       <li>nicht den Zustand nach „Stochastisch rechnen“ im Hauptfenster — dort ist der Stand vor dem Lauf gezeigt, in
@@ -1990,6 +2704,7 @@ alle Zahlen fiktiv · <a href="#top">nach oben</a></div>
 </div>
 </div>
 
+<script src="../../../Referenzlaeufe/Normzahlen/zapfprofil/normtabellen.js"></script>
 <script>
 (function () {
   var fenster = document.getElementById('zpg-fenster');
@@ -2040,6 +2755,496 @@ alle Zahlen fiktiv · <a href="#top">nach oben</a></div>
       if (j >= 0) { e.preventDefault(); waehleReiter(offen[j], true); }
     });
   });
+})();
+
+/* ---------- auto/manuell-Umschalter im Fenster: der angesetzte Wert folgt dem Umschalter ---------- */
+(function () {
+  var bloecke = document.querySelectorAll('.am-block');
+  Array.prototype.forEach.call(bloecke, function (block) {
+    var knoepfe = Array.prototype.slice.call(block.querySelectorAll('[data-am]'));
+    function setze(modus) {
+      block.setAttribute('data-modus', modus);
+      knoepfe.forEach(function (k) {
+        var an = k.getAttribute('data-am') === modus;
+        k.setAttribute('aria-checked', an ? 'true' : 'false');
+        k.tabIndex = an ? 0 : -1;
+      });
+    }
+    knoepfe.forEach(function (k, i) {
+      k.addEventListener('click', function () { setze(k.getAttribute('data-am')); });
+      k.addEventListener('keydown', function (e) {
+        var n = knoepfe.length, j = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { j = (i + 1) % n; }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { j = (i - 1 + n) % n; }
+        if (j >= 0) { e.preventDefault(); setze(knoepfe[j].getAttribute('data-am')); knoepfe[j].focus(); }
+      });
+    });
+    setze(block.getAttribute('data-modus') || 'auto');
+  });
+})();
+
+/* ---------- Überlagerung „Tagesgang bearbeiten“: Zahlenfelder, Summenkontrollen, Balken ---------- */
+(function () {
+  var ed = document.getElementById('tg-editor');
+  if (!ed) { return; }
+  var NS = 'http://www.w3.org/2000/svg';
+  var NAMEN = ['Werktag', 'Samstag', 'Sonn-/Feiertag', 'Ferien-/Ruhetag'];
+  /* fiktive Anteile in % des Tagesbedarfs (INEKON-Beispiel, keine Normwerte); Werktag, Samstag und Sonntag sind
+     genau die Anteile, aus denen die Vorschau der Zone 1 gezeichnet ist (Werktag dort zuzüglich Büro) */
+  var VORGABE = [
+    [0.9, 0.5, 0.4, 0.4, 0.7, 2.2, 7.1, 10.8, 7.7, 4.5, 3.7, 4.3, 4.9, 4, 3.2, 3.3, 4.2, 5.5, 7, 7.8, 7, 5.2, 3, 1.7],
+    [1, 0.7, 0.4, 0.4, 0.5, 1, 3.4, 6.8, 8.4, 7.6, 6.4, 5.5, 5.5, 4.7, 3.8, 3.4, 3.8, 5.1, 6.8, 7.6, 6.8, 5.1, 3.4, 1.9],
+    [1.3, 0.8, 0.5, 0.4, 0.4, 0.7, 1.7, 3.4, 5.9, 8.5, 9, 7.6, 6.8, 5.1, 3.8, 3.4, 3.8, 5.1, 6.8, 7.6, 6.8, 5.1, 3.4, 2.1],
+    [2, 1.5, 1, 1, 1, 1.5, 3, 5, 6, 7, 7, 6, 6, 5, 4.5, 4.5, 4.5, 5, 5.5, 6.5, 6, 4.5, 3.5, 2.5]
+  ];
+  var WOCHE_VORGABE = [14.2, 14.2, 14.2, 14.2, 14.2, 14.5, 14.5];
+  var tage = VORGABE.map(function (a) { return a.slice(); });
+  var woche = [14.2, 14.2, 14.2, 14.2, 14.2, 12.5, 14.5];
+  var tag = 0, ablage = null, ablageName = '';
+  var felder = [], wFelder = [], h;
+  for (h = 0; h < 24; h++) { felder.push(document.getElementById('tg-h' + h)); }
+  for (h = 0; h < 7; h++) { wFelder.push(document.getElementById('tg-w' + h)); }
+  var tagKnoepfe = Array.prototype.slice.call(ed.querySelectorAll('[data-tagtyp]'));
+  var status = document.getElementById('tg-status');
+  var einfuegen = document.getElementById('tg-einfuegen');
+
+  function fmt(v) { return isFinite(v) ? String(Math.round(v * 100) / 100).replace('.', ',') : '–'; }
+  function lies(t) { var v = parseFloat(String(t).replace(',', '.')); return isFinite(v) ? v : NaN; }
+  function summe(a) { return a.reduce(function (s, v) { return s + (isFinite(v) ? v : 0); }, 0); }
+  function melde(t) { if (status) { status.textContent = t; } }
+
+  function markiere(m) {
+    Array.prototype.forEach.call(ed.querySelectorAll('.tg-marke'), function (e) {
+      e.classList.toggle('an', e.getAttribute('data-marke') === m);
+    });
+  }
+
+  function kontrolle(el, name, s, plural) {
+    if (!el) { return; }
+    var ok = Math.abs(s - 100) <= 0.05;
+    el.className = 'tg-kontrolle ' + (ok ? 'ok' : 'fehler');
+    el.textContent = ok ? name + (plural ? ' summieren' : ' summiert') + ' zu 100 % — OK.'
+                        : name + ': Summe ' + fmt(s) + ' % — korrigieren. Hinweis, blockiert nicht.';
+  }
+
+  function zeichne() {
+    var g = document.getElementById('tg-svg-inhalt');
+    if (!g) { return; }
+    while (g.firstChild) { g.removeChild(g.firstChild); }
+    var x0 = 30, x1 = 292, y0 = 14, y1 = 144, b = (x1 - x0) / 24, MAXA = 12;
+    function el(tag, a, text) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(a).forEach(function (k) { e.setAttribute(k, a[k]); });
+      if (text !== undefined) { e.textContent = text; }
+      g.appendChild(e);
+    }
+    [0, 5, 10].forEach(function (v) {
+      var y = y1 - (y1 - y0) * v / MAXA;
+      el('line', { 'class': 'zg-gitter', x1: x0, y1: y, x2: x1, y2: y });
+      el('text', { 'class': 'zg-leise', x: x0 - 4, y: y + 3.5, 'text-anchor': 'end' }, String(v));
+    });
+    tage[tag].forEach(function (v, i) {
+      var w = isFinite(v) ? Math.max(0, Math.min(v, MAXA)) : 0;
+      var y = y1 - (y1 - y0) * w / MAXA;
+      el('rect', { 'class': 'zg-balken', x: (x0 + i * b + 1).toFixed(1), y: y.toFixed(1), width: (b - 2).toFixed(1), height: (y1 - y).toFixed(1) });
+    });
+    el('line', { 'class': 'zg-achse', x1: x0, y1: y1, x2: x1, y2: y1 });
+    [0, 6, 12, 18, 24].forEach(function (s) {
+      el('text', { 'class': 'zg-leise', x: (x0 + s * b).toFixed(1), y: y1 + 14, 'text-anchor': 'middle' }, String(s));
+    });
+    el('text', { 'class': 'zg-leise', x: 4, y: 10 }, '%');
+    el('text', { 'class': 'zg-leise', x: x1, y: y1 + 30, 'text-anchor': 'end' }, 'Stunde · ' + NAMEN[tag]);
+  }
+
+  function pruefe() {
+    kontrolle(document.getElementById('tg-summe-tag'), NAMEN[tag], summe(tage[tag]), false);
+    kontrolle(document.getElementById('tg-summe-woche'), 'Wochenfaktoren', summe(woche), true);
+  }
+
+  function zeigeTag(t) {
+    tag = t;
+    tagKnoepfe.forEach(function (k) {
+      var an = Number(k.getAttribute('data-tagtyp')) === t;
+      k.setAttribute('aria-checked', an ? 'true' : 'false');
+      k.tabIndex = an ? 0 : -1;
+    });
+    var n = document.getElementById('tg-tagname');
+    if (n) { n.textContent = NAMEN[t]; }
+    felder.forEach(function (f, i) { if (f) { f.value = fmt(tage[t][i]); } });
+    zeichne();
+    pruefe();
+  }
+
+  felder.forEach(function (f, i) {
+    if (!f) { return; }
+    f.addEventListener('input', function () {
+      tage[tag][i] = lies(f.value);
+      markiere('ueberschrieben');
+      zeichne();
+      pruefe();
+      melde(NAMEN[tag] + ', ' + i + '–' + (i + 1) + ' Uhr geändert');
+    });
+  });
+  wFelder.forEach(function (f, i) {
+    if (!f) { return; }
+    f.addEventListener('input', function () {
+      woche[i] = lies(f.value);
+      markiere('ueberschrieben');
+      pruefe();
+      melde('Wochenfaktoren geändert');
+    });
+  });
+  tagKnoepfe.forEach(function (k, i) {
+    k.addEventListener('click', function () { zeigeTag(Number(k.getAttribute('data-tagtyp'))); });
+    k.addEventListener('keydown', function (e) {
+      var n = tagKnoepfe.length, j = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { j = (i + 1) % n; }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { j = (i - 1 + n) % n; }
+      if (j >= 0) { e.preventDefault(); zeigeTag(j); tagKnoepfe[j].focus(); }
+    });
+  });
+
+  function klick(id, f) { var b = document.getElementById(id); if (b) { b.addEventListener('click', f); } }
+  klick('tg-kopieren', function () {
+    ablage = tage[tag].slice();
+    ablageName = NAMEN[tag];
+    if (einfuegen) { einfuegen.removeAttribute('aria-disabled'); einfuegen.removeAttribute('title'); }
+    melde(ablageName + ' kopiert');
+  });
+  klick('tg-einfuegen', function () {
+    if (!ablage) { melde('Erst einen Tag kopieren'); return; }
+    tage[tag] = ablage.slice();
+    markiere('ueberschrieben');
+    zeigeTag(tag);
+    melde(ablageName + ' in ' + NAMEN[tag] + ' eingefügt');
+  });
+  klick('tg-benutzer', function () {
+    melde('Kopie „Benutzerdefiniert 2“ angelegt (im Mockup nur angedeutet)');
+  });
+  klick('tg-zurueck', function () {
+    tage = VORGABE.map(function (a) { return a.slice(); });
+    woche = WOCHE_VORGABE.slice();
+    wFelder.forEach(function (f, i) { if (f) { f.value = fmt(woche[i]); } });
+    markiere('vorgabe');
+    zeigeTag(tag);
+    melde('Auf die Vorgabe der Kopiervorlage zurückgesetzt');
+  });
+  zeigeTag(0);
+})();
+
+/* ---------- Normtabellen als Testdaten: nur zur Laufzeit aus window.EPOS_NORMTABELLEN ---------- */
+(function () {
+  var NS = 'http://www.w3.org/2000/svg';
+  var statusEl = document.getElementById('nt-status');
+  var nt = window.EPOS_NORMTABELLEN;
+  var geladen = !!(nt && typeof nt === 'object' && (nt.vdi4655 || nt.vdi6002));
+  if (statusEl) {
+    statusEl.setAttribute('data-zustand', geladen ? 'geladen' : 'fiktiv');
+    statusEl.textContent = geladen
+      ? 'Normzahlen lokal geladen (VDI 4655, VDI 6002 — Testdaten, nie ausliefern)'
+      : 'Beispielzahlen (fiktiv) — keine lokale Normtabellen-Datei';
+  }
+  if (!geladen) { return; }
+  var inhalt = document.getElementById('nt-inhalt');
+  var platz = document.getElementById('nt-platzhalter');
+  if (!inhalt) { return; }
+  if (platz) { platz.hidden = true; }
+  inhalt.hidden = false;
+
+  function $(id) { return document.getElementById(id); }
+  function leere(e) { while (e && e.firstChild) { e.removeChild(e.firstChild); } }
+  function knoten(ns, tag, attr, eltern, text) {
+    var e = ns ? document.createElementNS(ns, tag) : document.createElement(tag);
+    if (attr) { Object.keys(attr).forEach(function (k) { e.setAttribute(k, attr[k]); }); }
+    if (text !== undefined && text !== null) { e.textContent = text; }
+    if (eltern) { eltern.appendChild(e); }
+    return e;
+  }
+  function h(tag, attr, eltern, text) { return knoten(null, tag, attr, eltern, text); }
+  function s(tag, attr, eltern, text) { return knoten(NS, tag, attr, eltern, text); }
+  function istZahl(v) { return typeof v === 'number' && isFinite(v); }
+  function zahl(v, st) {
+    return istZahl(v) ? v.toLocaleString('de-DE', { minimumFractionDigits: st, maximumFractionDigits: st }).replace(/\./g, ' ') : '–';
+  }
+  var HOCH = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function wert(v) {
+    if (v === null || v === undefined || v === '') { return '–'; }
+    if (!istZahl(v)) { return String(v); }
+    if (v !== 0 && Math.abs(v) < 0.01) {
+      var t = v.toExponential(4).split('e');
+      var exp = String(Number(t[1])).split('').map(function (c) { return HOCH[c] || c; }).join('');
+      return t[0].replace('-', '−').replace('.', ',') + ' · 10' + exp;
+    }
+    return v.toLocaleString('de-DE', { maximumFractionDigits: 3 }).replace(/\./g, ' ');
+  }
+  var HERKUNFT = { diagramm_abgelesen: 'aus Diagramm abgelesen', pdf_tabelle: 'Tabelle im PDF', pdf: 'PDF' };
+  function herkunft(v) { return HERKUNFT[v] || (v === undefined || v === null ? '–' : String(v)); }
+  var TAGTYP = { werktag: 'Werktag', samstag: 'Samstag', sonntag: 'Sonntag', alle: 'alle Tage' };
+  var KOPF = { nutzungsart: 'Nutzungsart', bezug: 'Bezug', mittel: 'Mittel', minimum: 'Minimum', maximum: 'Maximum',
+    winterspitze: 'Winterspitze', sommerschwachlast: 'Sommerschwachlast', einheit: 'Einheit', blatt: 'Blatt',
+    tabelle: 'Fundstelle', herkunft: 'Herkunft' };
+  var WOCHENTAGE = ['mo', 'di', 'mi', 'do', 'fr', 'sa', 'so'];
+  var MONATE = ['jan', 'feb', 'mar', 'apr', 'mai', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dez'];
+  var GEBAEUDE = { efh_bestand: 'EFH Bestand', mfh_bestand: 'MFH Bestand', efh_neh: 'EFH NEH' };
+
+  function raster(max, teile) {
+    if (!(max > 0)) { max = 1; }
+    var roh = max / teile, p = Math.pow(10, Math.floor(Math.log(roh) / Math.LN10)), m = roh / p;
+    var st = (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p;
+    return { max: Math.ceil(max / st - 1e-9) * st, schritt: st, stellen: st >= 1 ? 0 : st >= 0.1 ? 1 : 2 };
+  }
+  function yAchse(svg, k) {
+    for (var i = 0; k.schritt * i <= k.max + 1e-9; i++) {
+      var v = k.schritt * i, y = k.y1 - (k.y1 - k.y0) * v / k.max;
+      s('line', { 'class': 'nt-gitter', x1: k.x0, y1: y.toFixed(1), x2: k.x1, y2: y.toFixed(1) }, svg);
+      s('text', { 'class': 'nt-text', x: k.x0 - 6, y: (y + 4).toFixed(1), 'text-anchor': 'end' }, svg, zahl(v, k.stellen));
+    }
+    s('line', { 'class': 'nt-achse', x1: k.x0, y1: k.y1, x2: k.x1, y2: k.y1 }, svg);
+    if (k.einheit) { s('text', { 'class': 'nt-text', x: 4, y: 12 }, svg, k.einheit); }
+  }
+  function yWert(k, v) { return (k.y1 - (k.y1 - k.y0) * Math.max(0, v) / k.max).toFixed(1); }
+  function legende(ziel, eintraege) {
+    leere(ziel);
+    eintraege.forEach(function (e) {
+      var sp = h('span', null, ziel);
+      var ic = s('svg', { viewBox: '0 0 22 10', 'aria-hidden': 'true' }, sp);
+      s('line', { 'class': e.cls, x1: 0, y1: 5, x2: 22, y2: 5 }, ic);
+      sp.appendChild(document.createTextNode(e.text));
+    });
+  }
+  function fehlerZeile(ziel, teil, e) {
+    h('p', { 'class': 'nt-kontrolle fehler' }, ziel, 'Ladedatei gefunden, ' + teil + ' nicht lesbar: ' + (e && e.message ? e.message : e));
+  }
+
+  if (nt.hinweis || nt.erstellt) {
+    $('nt-hinweis').textContent = 'Ladedatei: ' + (nt.hinweis || '') + (nt.erstellt ? ' Stand ' + nt.erstellt + '.' : '');
+  }
+
+  /* ----- VDI 6002 ----- */
+  function zeichne6002(d, name) {
+    var prof = (d.tagesprofile || {})[name] || {};
+    var reihen = Object.keys(prof).filter(function (k) { return Array.isArray(prof[k]) && prof[k].length === 24; });
+    var svg = $('nt-6002-tag'); leere(svg);
+    var max = 0;
+    reihen.forEach(function (r) { prof[r].forEach(function (v) { if (istZahl(v)) { max = Math.max(max, v * 100); } }); });
+    var k = raster(max, 5); k.x0 = 44; k.x1 = 628; k.y0 = 18; k.y1 = 210; k.einheit = '%';
+    yAchse(svg, k);
+    var bx = (k.x1 - k.x0) / 24;
+    [0, 3, 6, 9, 12, 15, 18, 21, 24].forEach(function (st) {
+      s('text', { 'class': 'nt-text', x: (k.x0 + st * bx).toFixed(1), y: k.y1 + 16, 'text-anchor': 'middle' }, svg, String(st));
+    });
+    s('text', { 'class': 'nt-text', x: k.x1, y: k.y1 + 34, 'text-anchor': 'end' }, svg, 'Stunde');
+    reihen.forEach(function (r, i) {
+      var d0 = '';
+      prof[r].forEach(function (v, st) {
+        var y = yWert(k, istZahl(v) ? v * 100 : 0);
+        d0 += (st ? ' L' : 'M') + (k.x0 + st * bx).toFixed(1) + ' ' + y + ' L' + (k.x0 + (st + 1) * bx).toFixed(1) + ' ' + y;
+      });
+      s('path', { 'class': 'nt-l' + (i % 4 + 1), d: d0 }, svg);
+    });
+    legende($('nt-6002-tag-legende'), reihen.map(function (r, i) { return { cls: 'nt-l' + (i % 4 + 1), text: TAGTYP[r] || r }; }));
+    var summen = $('nt-6002-summen'); leere(summen);
+    reihen.forEach(function (r) {
+      var su = prof[r].reduce(function (a, v) { return a + (istZahl(v) ? v : 0); }, 0) * 100;
+      var ok = Math.abs(su - 100) <= 0.5;
+      h('p', { 'class': 'nt-kontrolle ' + (ok ? 'ok' : 'fehler') }, summen,
+        (TAGTYP[r] || r) + ': Σ = ' + zahl(su, 1) + ' % — ' + (ok ? 'summiert zu 100 %' : 'weicht von 100 % ab'));
+    });
+    $('nt-6002-tag-unter').textContent = 'Anteil des Tagesbedarfs je Stunde in % · ' + name +
+      (prof.herkunft ? ' · Herkunft laut Datei: ' + herkunft(prof.herkunft) : '');
+
+    /* Wochenanteile */
+    var wa = (d.wochenanteile || {})[name];
+    var wsvg = $('nt-6002-woche'); leere(wsvg);
+    var wsum = $('nt-6002-woche-summe');
+    if (wa) {
+      var werte = WOCHENTAGE.map(function (t) { return istZahl(wa[t]) ? wa[t] * 100 : 0; });
+      var kw = raster(Math.max.apply(null, werte), 4); kw.x0 = 40; kw.x1 = 408; kw.y0 = 22; kw.y1 = 176; kw.einheit = '%';
+      yAchse(wsvg, kw);
+      var bw = (kw.x1 - kw.x0) / 7;
+      werte.forEach(function (v, i) {
+        var y = yWert(kw, v);
+        s('rect', { 'class': 'nt-b1', x: (kw.x0 + i * bw + 8).toFixed(1), y: y, width: (bw - 16).toFixed(1), height: (kw.y1 - y).toFixed(1) }, wsvg);
+        s('text', { 'class': 'nt-wert', x: (kw.x0 + (i + 0.5) * bw).toFixed(1), y: (y - 4).toFixed(1), 'text-anchor': 'middle' }, wsvg, zahl(v, 1));
+        s('text', { 'class': 'nt-text', x: (kw.x0 + (i + 0.5) * bw).toFixed(1), y: kw.y1 + 16, 'text-anchor': 'middle' }, wsvg,
+          WOCHENTAGE[i].charAt(0).toUpperCase() + WOCHENTAGE[i].charAt(1));
+      });
+      var ws = werte.reduce(function (a, v) { return a + v; }, 0), wok = Math.abs(ws - 100) <= 0.5;
+      wsum.className = 'nt-kontrolle ' + (wok ? 'ok' : 'fehler');
+      wsum.textContent = 'Σ Mo–So = ' + zahl(ws, 1) + ' % — ' + (wok ? 'summiert zu 100 %' : 'weicht von 100 % ab') +
+        (wa.herkunft ? ' · Herkunft: ' + herkunft(wa.herkunft) : '');
+    } else {
+      wsum.className = 'nt-kontrolle';
+      wsum.textContent = 'Für diese Nutzungsart stehen keine Wochenanteile in der Datei.';
+    }
+
+    /* Monatsfaktoren: Einträge gleichen Namens oder mit dem Namen als Teil */
+    var sf = d.saisonfaktoren || {}, klein = name.toLowerCase();
+    var treffer = Object.keys(sf).filter(function (n) { return n === name || n.toLowerCase().indexOf(klein) >= 0; });
+    var msvg = $('nt-6002-monat'); leere(msvg);
+    if (treffer.length) {
+      var mmax = 1;
+      treffer.forEach(function (n) { MONATE.forEach(function (m) { if (istZahl(sf[n][m])) { mmax = Math.max(mmax, sf[n][m]); } }); });
+      var km = raster(mmax, 4); km.x0 = 40; km.x1 = 408; km.y0 = 22; km.y1 = 176;
+      yAchse(msvg, km);
+      var bm = (km.x1 - km.x0) / 12;
+      s('line', { 'class': 'nt-ref', x1: km.x0, y1: yWert(km, 1), x2: km.x1, y2: yWert(km, 1) }, msvg);
+      'JFMAMJJASOND'.split('').forEach(function (c, i) {
+        s('text', { 'class': 'nt-text', x: (km.x0 + (i + 0.5) * bm).toFixed(1), y: km.y1 + 16, 'text-anchor': 'middle' }, msvg, c);
+      });
+      treffer.forEach(function (n, j) {
+        var d1 = '';
+        MONATE.forEach(function (m, i) {
+          d1 += (i ? ' L' : 'M') + (km.x0 + (i + 0.5) * bm).toFixed(1) + ' ' + yWert(km, istZahl(sf[n][m]) ? sf[n][m] : 0);
+        });
+        s('path', { 'class': 'nt-l' + (j % 4 + 1), d: d1 }, msvg);
+      });
+      legende($('nt-6002-monat-legende'), treffer.map(function (n, j) {
+        var mittel = MONATE.reduce(function (a, m) { return a + (istZahl(sf[n][m]) ? sf[n][m] : 0); }, 0) / 12;
+        return { cls: 'nt-l' + (j % 4 + 1), text: n + ' · Mittel ' + zahl(mittel, 2) };
+      }));
+    } else {
+      legende($('nt-6002-monat-legende'), []);
+      h('span', null, $('nt-6002-monat-legende'), 'Für diese Nutzungsart stehen keine Monatsfaktoren in der Datei.');
+    }
+  }
+
+  function render6002(d) {
+    if (d.quelle) { $('nt-quelle-6002').textContent = 'Quelle laut Datei: ' + d.quelle; }
+    var tab = $('nt-bedarf'); leere(tab);
+    var bed = Array.isArray(d.bedarf) ? d.bedarf : [];
+    var schluessel = [], zahlSpalte = {};
+    bed.forEach(function (e) {
+      Object.keys(e).forEach(function (k) {
+        if (schluessel.indexOf(k) < 0) { schluessel.push(k); }
+        if (istZahl(e[k])) { zahlSpalte[k] = true; }
+      });
+    });
+    var tr = h('tr', null, h('thead', null, tab));
+    schluessel.forEach(function (k) { h('th', zahlSpalte[k] ? { 'class': 'r' } : null, tr, KOPF[k] || k); });
+    var rumpf = h('tbody', null, tab);
+    bed.forEach(function (e) {
+      var z = h('tr', null, rumpf);
+      schluessel.forEach(function (k) {
+        var attr = zahlSpalte[k] ? { 'class': 'r' } : (k === 'nutzungsart' ? { 'class': 'name' } : null);
+        h('td', attr, z, k === 'herkunft' ? herkunft(e[k]) : wert(e[k]));
+      });
+    });
+    var namen = Object.keys(d.tagesprofile || {});
+    var sel = $('nt-6002-art'); leere(sel);
+    namen.forEach(function (n) { h('option', { value: n }, sel, n); });
+    sel.addEventListener('change', function () { zeichne6002(d, sel.value); });
+    if (namen.length) { zeichne6002(d, namen[0]); }
+  }
+
+  /* ----- VDI 4655 ----- */
+  var qaEigen = false;
+  function rechne4655(d) {
+    var zone = $('nt-4655-zone').value, geb = $('nt-4655-geb').value;
+    var art = geb === 'efh_neh' ? 'neh' : 'bestand';
+    var tt = Array.isArray(d.typtage) ? d.typtage : [];
+    var tjz = d.typtage_je_zone || {};
+    var nB = (tjz.bestand || {})[zone] || {}, nN = (tjz.neh || {})[zone] || {};
+    var fz = {};
+    Object.keys(GEBAEUDE).forEach(function (g) { fz[g] = ((d.f_twe_tt || {})[g] || {})[zone] || {}; });
+    var mfh = geb.indexOf('mfh') === 0;
+    $('nt-4655-n-text').textContent = mfh ? 'N (Wohneinheiten)' : 'N (Personen)';
+
+    /* Tabelle 1: Typtage je Zone */
+    var t1 = $('nt-4655-tage'); leere(t1);
+    var k1 = h('tr', null, h('thead', null, t1));
+    h('th', null, k1, 'Typtag'); h('th', null, k1, 'Bezeichnung');
+    h('th', { 'class': 'r' + (art === 'bestand' ? ' nt-wahl' : '') }, k1, 'Bestand');
+    h('th', { 'class': 'r' + (art === 'neh' ? ' nt-wahl' : '') }, k1, 'NEH');
+    var r1 = h('tbody', null, t1), sB = 0, sN = 0;
+    tt.forEach(function (t) {
+      var z = h('tr', null, r1);
+      h('td', { 'class': 'name' }, z, t.code); h('td', null, z, t.bezeichnung || '');
+      h('td', { 'class': 'r' + (art === 'bestand' ? ' nt-wahl' : '') }, z, wert(nB[t.code]));
+      h('td', { 'class': 'r' + (art === 'neh' ? ' nt-wahl' : '') }, z, wert(nN[t.code]));
+      if (istZahl(nB[t.code])) { sB += nB[t.code]; }
+      if (istZahl(nN[t.code])) { sN += nN[t.code]; }
+    });
+    var su = h('tr', { 'class': 'summe' }, r1);
+    h('td', null, su, 'Summe'); h('td', null, su, 'Tage im Jahr');
+    h('td', { 'class': 'r' }, su, zahl(sB, 0)); h('td', { 'class': 'r' }, su, zahl(sN, 0));
+
+    /* Tabelle 2: F_TWE,TT der zehn Typtage */
+    var t2 = $('nt-4655-f'); leere(t2);
+    var k2 = h('tr', null, h('thead', null, t2));
+    h('th', null, k2, 'F_TWE,TT');
+    Object.keys(GEBAEUDE).forEach(function (g) { h('th', { 'class': 'r' + (g === geb ? ' nt-wahl' : '') }, k2, GEBAEUDE[g]); });
+    var r2 = h('tbody', null, t2);
+    tt.forEach(function (t) {
+      var z = h('tr', null, r2);
+      h('td', { 'class': 'name' }, z, t.code);
+      Object.keys(GEBAEUDE).forEach(function (g) { h('td', { 'class': 'r' + (g === geb ? ' nt-wahl' : '') }, z, wert(fz[g][t.code])); });
+    });
+
+    /* Rechnung Q_TWE,TT = Q_TWE,a · (1/365 + N · F_TWE,TT) */
+    var n = parseFloat(String($('nt-4655-n').value).replace(',', '.'));
+    /* Q_TWE,a: ohne eigene Eingabe aus N × Kennwert der Datei vorbelegt (EFH je Person, MFH je Wohneinheit) */
+    var kwJahr = (d.kennwerte || {})[mfh ? 'q_twe_a_mfh_kwh_je_we' : 'q_twe_a_efh_kwh_je_person'];
+    var vorbelegt = !qaEigen && istZahl(kwJahr) && n > 0;
+    if (vorbelegt) { $('nt-4655-qa').value = String(Math.round(n * kwJahr)); }
+    var qa = parseFloat(String($('nt-4655-qa').value).replace(',', '.'));
+    var svg = $('nt-4655-q'); leere(svg);
+    var probe = $('nt-4655-probe');
+    if (!(qa > 0) || !(n > 0)) {
+      probe.className = 'nt-kontrolle fehler';
+      probe.textContent = 'Eingaben prüfen: Q_TWE,a und N müssen positive Zahlen sein.';
+      return;
+    }
+    var nTT = art === 'neh' ? nN : nB, sumQ = 0, sumN = 0, geklemmt = [];
+    var q = tt.map(function (t) {
+      var f = fz[geb][t.code];
+      var roh = istZahl(f) ? qa * (1 / 365 + n * f) : NaN;
+      var v = roh < 0 ? 0 : roh;
+      if (roh < 0) { geklemmt.push(t.code); }
+      if (istZahl(v) && istZahl(nTT[t.code])) { sumQ += nTT[t.code] * v; sumN += nTT[t.code]; }
+      return v;
+    });
+    var gueltig = q.filter(istZahl);
+    var k = raster(gueltig.length ? Math.max.apply(null, gueltig) : 1, 5);
+    k.x0 = 48; k.x1 = 628; k.y0 = 22; k.y1 = 206; k.einheit = 'kWh/d';
+    yAchse(svg, k);
+    var b = (k.x1 - k.x0) / Math.max(1, tt.length);
+    tt.forEach(function (t, i) {
+      var v = q[i], y = yWert(k, istZahl(v) ? v : 0);
+      s('rect', { 'class': geklemmt.indexOf(t.code) >= 0 ? 'nt-b2' : 'nt-b1', x: (k.x0 + i * b + 8).toFixed(1), y: y,
+        width: Math.max(1, b - 16).toFixed(1), height: (k.y1 - y).toFixed(1) }, svg);
+      s('text', { 'class': 'nt-wert', x: (k.x0 + (i + 0.5) * b).toFixed(1), y: (y - 4).toFixed(1), 'text-anchor': 'middle' }, svg, zahl(v, 2));
+      s('text', { 'class': 'nt-text', x: (k.x0 + (i + 0.5) * b).toFixed(1), y: k.y1 + 16, 'text-anchor': 'middle' }, svg, t.code);
+    });
+    $('nt-4655-q-unter').textContent = 'Q_TWE,TT in kWh/d · ' + GEBAEUDE[geb] + ', Zone ' + zone + ', Q_TWE,a = ' + zahl(qa, 0) +
+      ' kWh/a' + (vorbelegt ? ' (N × Kennwert der Datei)' : ' (eigene Eingabe)') + ', N = ' + zahl(n, 1).replace(/,0$/, '') + (geklemmt.length ? ' · orange: auf 0 geklemmt (' + geklemmt.join(', ') + ')' : '');
+    var abw = (sumQ - qa) / qa * 100, ok = Math.abs(abw) <= 0.5 && Math.round(sumN) === 365;
+    probe.className = 'nt-kontrolle ' + (ok ? 'ok' : 'fehler');
+    probe.textContent = 'Probe: Σ n_TT · Q_TWE,TT = ' + zahl(sumQ, 1) + ' kWh/a gegen Q_TWE,a = ' + zahl(qa, 1) +
+      ' kWh/a (Abweichung ' + zahl(abw, 2) + ' %), Σ n_TT = ' + zahl(sumN, 0) + ' Tage' +
+      (ok ? ' — Probe erfüllt.' : ' — Probe verfehlt' + (geklemmt.length ? ', weil geklemmte Typtage fehlen.' : '.'));
+  }
+
+  function render4655(d) {
+    if (d.quelle) { $('nt-quelle-4655').textContent = 'Quelle laut Datei: ' + d.quelle; }
+    var zsel = $('nt-4655-zone'); leere(zsel);
+    (Array.isArray(d.klimazonen) ? d.klimazonen : []).forEach(function (z) {
+      h('option', { value: String(z.zone) }, zsel, 'Zone ' + z.zone + (z.bezeichnung ? ' · ' + z.bezeichnung : '') + (z['try'] ? ' (' + z['try'] + ')' : ''));
+    });
+    var hinweis = [];
+    if (d.gleichungen && d.gleichungen.n_pers_we) { hinweis.push('Laut Datei: ' + d.gleichungen.n_pers_we + '.'); }
+    if (d.kennwerte) {
+      hinweis.push('Kennwerte der Datei: ' + Object.keys(d.kennwerte).map(function (k) { return k + ' = ' + wert(d.kennwerte[k]); }).join(' · ') + '.');
+    }
+    $('nt-4655-nhinweis').textContent = hinweis.join(' ');
+    ['nt-4655-zone', 'nt-4655-geb'].forEach(function (id) { $(id).addEventListener('change', function () { rechne4655(d); }); });
+    $('nt-4655-qa').addEventListener('input', function () { qaEigen = String($('nt-4655-qa').value).trim() !== ''; rechne4655(d); });
+    $('nt-4655-n').addEventListener('input', function () { rechne4655(d); });
+    rechne4655(d);
+  }
+
+  if (nt.vdi6002) { try { render6002(nt.vdi6002); } catch (e) { fehlerZeile(inhalt, 'Teil VDI 6002', e); } }
+  if (nt.vdi4655) { try { render4655(nt.vdi4655); } catch (e) { fehlerZeile(inhalt, 'Teil VDI 4655', e); } }
 })();
 </script>
 </body>
