@@ -421,11 +421,17 @@ namespace WindowsFormsApplication1
         /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
         /// kein Zahlenwert, kein Rechenweg liest den Stammtext; dazu der Brennstoff 24
         /// „Sonstige" auf kWh (Entscheid E7c2‑Q4).
+        /// Mit den ZAPFKATEGORIEN DES ZAPFPROFILGENERATORS (Schritt 114, Papiername T2,
+        /// Umsetzungskonzept Zapfprofilgenerator 3.1/3.2, Stufe Z3) steht das Ziel auf
+        /// <b>114</b>: die Tabelle <c>Tab_TwwZapfkategorie_STAMM</c>
+        /// (<see cref="TwwSchema.AnweisungenT2"/>). <b>Reines DDL, ergebnisneutral:</b> Die
+        /// Tabelle entsteht leer, kein Projekt steht auf dem Generator; der Referenzlauf bleibt
+        /// byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 113;
+        public const int Zielversion = 114;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

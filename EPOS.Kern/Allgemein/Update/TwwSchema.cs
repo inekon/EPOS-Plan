@@ -5,7 +5,8 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// <b>Die DDL des Zapfprofilgenerators</b> — Schemaschritt T1 „Katalog, Zonen, Projekt"
     /// (<c>Dokumentation/aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md</c>,
-    /// Abschnitte 3.1 und 3.2, Stufe Z0).
+    /// Abschnitte 3.1 und 3.2, Stufe Z0) und Schemaschritt T2 „Zapfkategorien" (Stufe Z3,
+    /// Schritt 114, <see cref="AnweisungenT2"/>).
     ///
     /// <para><b>Eine Quelle für Migration und Testdatenbank.</b> Dieselben zehn Tabellen
     /// legen <c>SchemaMigration</c> beim Programmstart und <c>Werkzeuge/Testdatenbankschema</c>
@@ -82,6 +83,12 @@ namespace WindowsFormsApplication1
 
         /// <summary>Weiche und gebäudeweite Größen, höchstens eine Zeile je Projekt.</summary>
         public const string TAB_TWW_PROJEKT = "Tab_TwwProjekt";
+
+        /// <summary>
+        /// Die Zapfkategorien je Nutzungsart (Schemaschritt T2, Konzept 3.1 und 4.4) — Volumenstrom,
+        /// Streuung, Dauer, Anteil und obere Kappung der stochastischen Ziehung.
+        /// </summary>
+        public const string TAB_TWW_ZAPFKATEGORIE_STAMM = "Tab_TwwZapfkategorie_STAMM";
 
         // =================================================================
         //  Die Wertemengen der Textspalten mit CHECK
@@ -427,6 +434,46 @@ namespace WindowsFormsApplication1
             ") STRICT";
 
         /// <summary>
+        /// <c>CREATE TABLE IF NOT EXISTS Tab_TwwZapfkategorie_STAMM</c> — 16 Spalten (Schemaschritt
+        /// T2, Konzept 3.1 und 4.4; Spaltennamen wie die Klasse <c>Zapfkategorie</c> und der
+        /// Skriptblock <c>ZAPFKATEGORIEN</c> des Testkatalogs).
+        ///
+        /// <para><b>Eine Kategorie gehört zu genau einer Nutzungsart</b> (<c>ID_Nutzungsart</c>,
+        /// <c>ON DELETE CASCADE</c>): Sie ist Teil der unveränderlichen Katalogversion ihrer
+        /// Nutzungsart und trägt deshalb keine eigene Katalogversion; der natürliche Schlüssel ist
+        /// (<c>ID_Nutzungsart</c>, <c>Kategorie</c>). Dessen Index trägt zugleich die Suche der
+        /// Kaskade. <c>Reihenfolge</c> ordnet die Kategorien wie im Katalog (4.4).</para>
+        ///
+        /// <para><b>Werte:</b> <c>Volumenstrom_l_min</c> μ und <c>Sigma</c> σ [l/min] nicht
+        /// negativ, <c>Dauer_min</c> 1 … 1440, <c>Anteil</c> an der Tagesmenge nicht negativ,
+        /// <c>Kappung_l_min</c> die obere Kappung des Volumenstroms (<c>Zapfkategorie.KappungLJeMin</c>;
+        /// NULL = keine obere Kappung, nur die bei 0). Die Provenienz steht ohne Präfix (<c>Quelle</c>,
+        /// <c>Ausgabe</c>, <c>Version</c>, <c>Herkunftsart</c>); dazu <c>Status</c>, der interne
+        /// <c>Beleg</c> und <c>ReadOnly</c> wie bei den übrigen Katalogen — eine Kategorie ist
+        /// als Katalogkopie eigens pflegbar (Konzept 4.4, Stufe Z4).</para>
+        /// </summary>
+        public const string SQL_CREATE_ZAPFKATEGORIE =
+            "CREATE TABLE IF NOT EXISTS \"Tab_TwwZapfkategorie_STAMM\" (\n" +
+            "    \"ID\" INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+            "    \"ID_Nutzungsart\" INTEGER NOT NULL REFERENCES \"Tab_TwwNutzungsart_STAMM\" (\"ID\") ON DELETE CASCADE,\n" +
+            "    \"Kategorie\" TEXT NOT NULL,\n" +
+            "    \"Reihenfolge\" INTEGER NOT NULL,\n" +
+            "    \"Volumenstrom_l_min\" REAL NOT NULL CHECK (\"Volumenstrom_l_min\" >= 0),\n" +
+            "    \"Dauer_min\" INTEGER NOT NULL CHECK (\"Dauer_min\" BETWEEN 1 AND 1440),\n" +
+            "    \"Anteil\" REAL NOT NULL CHECK (\"Anteil\" >= 0),\n" +
+            "    \"Sigma\" REAL NOT NULL CHECK (\"Sigma\" >= 0),\n" +
+            "    \"Kappung_l_min\" REAL CHECK (\"Kappung_l_min\" > 0),\n" +
+            "    \"Quelle\" TEXT NOT NULL,\n" +
+            "    \"Ausgabe\" TEXT,\n" +
+            "    \"Version\" TEXT NOT NULL,\n" +
+            "    \"Herkunftsart\" TEXT NOT NULL CHECK (\"Herkunftsart\" IN ('VERFAHREN','EIGENKONSTRUKTION','FREI','IMPORT','FIKTIV')),\n" +
+            "    \"Status\" TEXT NOT NULL CHECK (\"Status\" IN ('AUSLIEFERUNG','EIGEN','IMPORT')),\n" +
+            "    \"Beleg\" TEXT,\n" +
+            "    \"ReadOnly\" INTEGER NOT NULL DEFAULT 0 CHECK (\"ReadOnly\" IN (0,1)),\n" +
+            "    UNIQUE (\"ID_Nutzungsart\", \"Kategorie\")\n" +
+            ") STRICT";
+
+        /// <summary>
         /// Alle zehn Anweisungen in Anlegereihenfolge, je Tabellenname — so, wie Migration
         /// und Werkzeug sie abarbeiten. Die Reihenfolge folgt den Fremdschlüsseln: erst die
         /// Tabelle, auf die verwiesen wird, dann die verweisende (Tagesgangsatz vor
@@ -447,6 +494,30 @@ namespace WindowsFormsApplication1
                 yield return new KeyValuePair<string, string>(TAB_TWW_ZONE, SQL_CREATE_ZONE);
                 yield return new KeyValuePair<string, string>(TAB_TWW_WOHNUNGSTYP, SQL_CREATE_WOHNUNGSTYP);
                 yield return new KeyValuePair<string, string>(TAB_TWW_PROJEKT, SQL_CREATE_PROJEKT);
+            }
+        }
+
+        /// <summary>
+        /// Die Anweisungen des Schemaschritts T2 (Schritt 114, Stufe Z3): die Zapfkategorien.
+        /// Sie verweisen auf <see cref="TAB_TWW_NUTZUNGSART_STAMM"/> und laufen deshalb NACH
+        /// <see cref="Anweisungen"/>; ein eigener Index entfällt, weil der natürliche Schlüssel
+        /// mit <c>ID_Nutzungsart</c> beginnt. Reines DDL, wiederholbar über <c>IF NOT EXISTS</c>.
+        /// </summary>
+        public static IEnumerable<KeyValuePair<string, string>> AnweisungenT2
+        {
+            get
+            {
+                yield return new KeyValuePair<string, string>(TAB_TWW_ZAPFKATEGORIE_STAMM, SQL_CREATE_ZAPFKATEGORIE);
+            }
+        }
+
+        /// <summary>Alle Tww-Tabellen der Schritte T1 und T2 in Anlegereihenfolge.</summary>
+        public static IEnumerable<KeyValuePair<string, string>> AlleAnweisungen
+        {
+            get
+            {
+                foreach (KeyValuePair<string, string> a in Anweisungen) yield return a;
+                foreach (KeyValuePair<string, string> a in AnweisungenT2) yield return a;
             }
         }
 

@@ -308,9 +308,14 @@ def main():
         # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / FIKTIV ist.
         fremd = 0
         for t in ("Tab_TwwTagesgangsatz_STAMM", "Tab_TwwNutzungsart_STAMM", "Tab_TwwBedarfstag_STAMM",
-                  "Tab_TwwParameter_STAMM", "Tab_TwwDin4708Wert_STAMM") + ((TABELLE_KATEGORIEN,) if stochastik else ()):
+                  "Tab_TwwParameter_STAMM", "Tab_TwwDin4708Wert_STAMM"):
             fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "Katalogversion" <> ? OR "Status" <> ? '
                                'OR "ReadOnly" <> 0', VERSION, STATUS)
+        if stochastik:
+            # Die Kategorien tragen keine eigene Katalogversion - sie gehoeren zu ihrer Nutzungsart.
+            fremd += zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "Status" <> ? OR "ReadOnly" <> 0 '
+                               'OR "ID_Nutzungsart" NOT IN (SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" '
+                               'WHERE "Katalogversion" = ?)', STATUS, VERSION)
         for t in ("Tab_TwwZone", "Tab_TwwWohnungstyp", "Tab_TwwProjekt"):
             fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}"')
         if fremd:
@@ -425,18 +430,20 @@ def main():
 
             # --- Stufe Z3: Zapfkategorien (nur mit T2 und eingeschaltetem Block) -----------------
             if stochastik:
+                reihenfolge = {}
                 for (art, kategorie, volumenstrom, dauer, anteil, sigma, kappung) in ZAPFKATEGORIEN:
+                    reihenfolge[art] = reihenfolge.get(art, 0) + 1
                     id_art = zahl(con, 'SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" WHERE "Bezeichner" = ? '
                                        'AND "Katalogversion" = ?', art, VERSION)
                     if zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "ID_Nutzungsart" = ? '
-                                 'AND "Kategorie" = ? AND "Katalogversion" = ?', id_art, kategorie, VERSION) > 0:
+                                 'AND "Kategorie" = ?', id_art, kategorie) > 0:
                         continue
-                    con.execute(f'INSERT INTO "{TABELLE_KATEGORIEN}" ("ID_Nutzungsart", "Kategorie", '
+                    con.execute(f'INSERT INTO "{TABELLE_KATEGORIEN}" ("ID_Nutzungsart", "Kategorie", "Reihenfolge", '
                                 '"Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min", '
-                                '"Katalogversion", "Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", '
+                                '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", '
                                 '"Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
-                                (id_art, kategorie, volumenstrom, dauer, anteil, sigma, kappung,
-                                 VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
+                                (id_art, kategorie, reihenfolge[art], volumenstrom, dauer, anteil, sigma, kappung,
+                                 QUELLE, VERSION, HERKUNFT, STATUS))
                     angelegt += 1
 
         print(f"Schemastand {stand}: {angelegt} Zeile(n) angelegt, {nachgefuehrt} nachgefuehrt"

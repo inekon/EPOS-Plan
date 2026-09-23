@@ -1368,6 +1368,17 @@ namespace Testdatenbankschema
                                   GaseNormkubikmeter.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 114: die Zapfkategorien des Zapfprofilgenerators (Umsetzungskonzept
+            //      Zapfprofilgenerator 3.2, T2, Stufe Z3). REIN DDL aus TwwSchema.AnweisungenT2 -
+            //      DERSELBEN Quelle, aus der sich SchemaMigration.Schritt_114_Zapfkategorien
+            //      bedient. NACH 103, dessen Nutzungsarten die Tabelle verweist.
+            //
+            //      ERGEBNISNEUTRAL: Die Tabelle entsteht leer; den Testkatalog der Kategorien
+            //      spielt danach Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py ein.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                tabellen += TabelleSicherstellen(a.Key, a.Value, 114, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

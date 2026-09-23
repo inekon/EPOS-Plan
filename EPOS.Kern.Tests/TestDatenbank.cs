@@ -560,6 +560,13 @@ namespace EPOS.Kern.Tests
                 // Migration; wiederholbar.
                 GaseNormkubikmeter.Ausfuehren();
 
+                // Schritt 114 (Umsetzungskonzept Zapfprofilgenerator 3.2, T2): die
+                // Zapfkategorien je Nutzungsart. Reines DDL aus DERSELBEN Quelle wie in der
+                // Migration und im Werkzeug (TwwSchema.AnweisungenT2); NACH 103, dessen
+                // Nutzungsarten sie verweist. CREATE … IF NOT EXISTS ist selbst wiederholbar.
+                foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+                    DataRepository.ExecuteNonQuery(a.Value);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

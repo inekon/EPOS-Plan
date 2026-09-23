@@ -3876,6 +3876,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_113_GASE_NM3 = 113;
 
+        /// <summary>
+        /// Schritt 114 — die <b>Zapfkategorien des Zapfprofilgenerators</b> (Umsetzungskonzept
+        /// Zapfprofilgenerator 3.1/3.2, Papiername T2, Stufe Z3): die Tabelle
+        /// <c>Tab_TwwZapfkategorie_STAMM</c> mit Volumenstrom, Streuung, Dauer, Anteil und
+        /// oberer Kappung je Nutzungsart. Er folgt auf <see cref="SCHRITT_113_GASE_NM3"/> ohne
+        /// Reihenfolgebedingung; er braucht <see cref="SCHRITT_103_ZAPFPROFIL_KATALOG"/>, dessen
+        /// Nutzungsarten er über <c>ID_Nutzungsart</c> (<c>ON DELETE CASCADE</c>) verweist.
+        ///
+        /// <para><b>Die DDL kommt aus dem KERN</b> (<see cref="TwwSchema.AnweisungenT2"/>) — EINE
+        /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Kein Katalogwert kommt über den Schritt
+        /// herein — die Auslieferungswerte bringt das Katalogpaket (Konzept Kapitel 6 (b)). Die
+        /// Tabelle ist nach dem Schritt leer; nur der stochastische Rechenweg liest sie, und kein
+        /// Projekt steht auf dem Generator. Der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar</b> über <c>IF NOT EXISTS</c>.</para>
+        /// </summary>
+        public const int SCHRITT_114_ZAPFKATEGORIEN = 114;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5428,6 +5448,18 @@ namespace WindowsFormsApplication1
                         "findet damit ihre Umrechnungsregel. Der Brennstoff Sonstige (24) fuehrt " +
                         "kWh statt m3. ERGEBNISNEUTRAL: Kein Zahlenwert aendert sich.",
                         Schritt_113_GaseNm3),
+
+            // UMSETZUNGSKONZEPT ZAPFPROFILGENERATOR, Stufe Z3 (Papiername T2) - die
+            // Zapfkategorien je Nutzungsart. REIN DDL; die Quelle ist TwwSchema.AnweisungenT2.
+            // Er steht NACH 113 ohne Reihenfolgebedingung und braucht 103 (Fremdschluessel auf
+            // Tab_TwwNutzungsart_STAMM).
+            new Schritt(SCHRITT_114_ZAPFKATEGORIEN,
+                        "Zapfprofilgenerator: Zapfkategorien anlegen (Tab_TwwZapfkategorie_STAMM)",
+                        "Die stochastische Jahresreihe und das Auslegungsensemble des " +
+                        "Zapfprofilgenerators finden dann keine Zapfkategorien und lehnen jede " +
+                        "stochastisch gerechnete Zone benannt ab. Der deterministische Weg und der " +
+                        "Bestandsweg des Brauchwassers rechnen unveraendert.",
+                        Schritt_114_Zapfkategorien),
         };
 
         /// <summary>
@@ -8553,6 +8585,36 @@ namespace WindowsFormsApplication1
             }
 
             l.Notiz("113: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 114 - Zapfkategorien des Zapfprofilgenerators (T2, Stufe Z3)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 114 — Anlass, Inhalt und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_114_ZAPFKATEGORIEN"/>. Dieselbe Schleife wie Schritt 103 über
+        /// <see cref="TwwSchema.AnweisungenT2"/>; <b>nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/></b>.
+        /// </summary>
+        private static bool Schritt_114_Zapfkategorien(Lauf l)
+        {
+            int angelegt = 0;
+            int gesamt = 0;
+            foreach (KeyValuePair<string, string> a in TwwSchema.AnweisungenT2)
+            {
+                gesamt++;
+                bool vorher = SqliteTabelleVorhanden(a.Key);
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+                if (!vorher) angelegt++;
+            }
+
+            l.Notiz("114: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) + " Tabelle(n) der " +
+                    "Zapfkategorien angelegt. KEIN DML: die Tabelle ist nach dem Schritt LEER, " +
+                    "kein Projekt steht auf dem Generator. KEIN Rechenergebnis aendert sich; " +
                     "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
