@@ -24004,10 +24004,10 @@ Möchten Sie das zulassen?</value>
     <value>Das Projekt trägt Netzverluste, und das Zapfprofil rechnet eine Zirkulation. Sind die Verluste der Zirkulation in den Netzverlusten schon enthalten, zählen sie doppelt – dann Netzverluste oder Zirkulation anpassen.</value>
   </data>
   <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
-    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel der gezogenen Jahre, auf die Jahresmenge gebracht.</value>
+    <value>Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz.</value>
   </data>
   <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
-    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; die Reihe ist auf die Jahresmenge gebracht.</value>
+    <value>Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht.</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone „{0}“ gehört zur Zirkulation, trägt aber keine Fläche.</value>

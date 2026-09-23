@@ -10,8 +10,9 @@ namespace EPOS.Kern.Tests
 {
     /// <summary>
     /// <b>Die Stochastik in den Fassaden</b> (Umsetzungskonzept Zapfprofilgenerator 2.3, 4.4, 4.5 b):
-    /// der Rechenweg der Jahresreihe „stochastisch" im <see cref="ZapfprofilRechner"/> (Ensemblemittel
-    /// mit Energieprobe, deterministisch = Vorgabe, kein stiller Rückfall) und das Perzentil der
+    /// der Rechenweg der Jahresreihe „stochastisch" im <see cref="ZapfprofilRechner"/> (Realisierung
+    /// zum Seed mit Energieprobe, Konsistenzprobe aus den R Jahren, deterministisch = Vorgabe, kein
+    /// stiller Rückfall) und das Perzentil der
     /// Auslegung auf „Stochastisch rechnen" je Topologiegruppe. Erfundene Kategorien und Parameter.
     /// </summary>
     public sealed class ZapfprofilStochastikTests : IDisposable
@@ -99,7 +100,29 @@ namespace EPOS.Kern.Tests
             Assert.Equal(d.Zirkulation.StundenKwh, s.Zirkulation.StundenKwh);
             Assert.Equal(d.Laufzeitfenster, s.Laufzeitfenster);
             Assert.InRange(Relativ(s.Kennzahlen.JahresbedarfZapfungKwh, d.Kennzahlen.JahresbedarfZapfungKwh), 0.0, 1e-12);
-            Assert.Contains(s.Hinweise, h => h.Code == ZapfprofilRechner.HINWEIS_STOCHASTISCH && h.Text.Contains("4 gezogenen Jahren zum Seed 1"));
+            Assert.Contains(s.Hinweise, h => h.Code == ZapfprofilRechner.HINWEIS_STOCHASTISCH
+                                             && h.Text.Contains("das gezogene Jahr zum Seed 1") && h.Text.Contains("an 4 gezogenen Jahren"));
+        }
+
+        [Fact]
+        public void Die_Bilanz_ist_das_Jahr_zum_Seed_und_haengt_nicht_von_R_ab()
+        {
+            // 2.3 Satz 3, 4.4 Ausgaben: die Realisierung zum Seed geht in die Bilanz, die R Jahre prüfen nur.
+            ZapfprofilErgebnis eins = ZapfprofilRechner.Rechnen(Eingang(Stochastisch(seed: 3, realisierungen: 1)), Katalog);
+            ZapfprofilErgebnis vier = ZapfprofilRechner.Rechnen(Eingang(Stochastisch(seed: 3, realisierungen: 4)), Katalog);
+            Assert.True(vier.Vollstaendig);
+            Assert.Equal(eins.Zapfung.StundenKwh.Select(BitConverter.DoubleToInt64Bits), vier.Zapfung.StundenKwh.Select(BitConverter.DoubleToInt64Bits));
+            for (int i = 0; i < 2; i++)
+            {
+                Jahreskonsistenz k1 = eins.JeZone[i].Konsistenz, k4 = vier.JeZone[i].Konsistenz;
+                Assert.Equal((1, 4), (k1.Realisierungen, k4.Realisierungen));
+                // Dasselbe Jahr zum Seed, derselbe Faktor — die Konsistenzprobe aber aus 1 bzw. 4 Jahren.
+                Assert.Equal(k1.JahrZumSeedKwh, k4.JahrZumSeedKwh);
+                Assert.Equal(k1.Faktor, k4.Faktor);
+                Assert.Equal(k1.JahrZumSeedKwh, k1.MittelKwh);
+                Assert.NotEqual(k1.MittelKwh, k4.MittelKwh);
+                Assert.InRange(Relativ(k4.Faktor * k4.JahrZumSeedKwh, k4.DeterministischKwh), 0.0, 1e-12);
+            }
         }
 
         [Fact]

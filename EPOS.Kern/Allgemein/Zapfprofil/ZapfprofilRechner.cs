@@ -21,13 +21,14 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Rechenweg der Jahresreihe (4.4, 5.3).</b> Vorgabe ist „deterministisch": die
     /// Zapfreihe ist der Formvektor mal Jahresmenge. Steht <see cref="ProjektStand.JahresreiheStochastisch"/>,
-    /// ist die Zapfreihe jeder Zone das Mittel der <see cref="ProjektStand.Realisierungen"/> gezogenen
-    /// Jahre zum <see cref="ProjektStand.Seed"/> (<see cref="Jahresensemble"/>; eine Realisierung ist
-    /// das Jahr zum Seed), mit dem Faktor der Energieprobe auf die Jahresmenge des Mengengerüsts
-    /// gebracht — die Energie ist in beiden Wegen dieselbe, die Konsistenzprobe steht je Zone im
-    /// Ergebnis. Fehlen Kategorien oder Einheiten, trägt die Zone benannt 0, nie still den
-    /// deterministischen Weg. Das Laufzeitfenster der Zirkulation bleibt das der deterministischen
-    /// Reihe.</para>
+    /// ist die Zapfreihe jeder Zone die eine gezogene Realisierung zum <see cref="ProjektStand.Seed"/>
+    /// (2.3 Satz 3, 4.4 Ausgaben: „Stundenreihe zum Seed"), mit dem Faktor der Energieprobe auf die
+    /// Jahresmenge des Mengengerüsts gebracht — die Energie ist in beiden Wegen dieselbe. Die
+    /// <see cref="ProjektStand.Realisierungen"/> Jahre des <see cref="Jahresensemble"/> dienen nur der
+    /// Konsistenzprobe (Mittel gegen den deterministischen Pfad, Streuband, s_R), die je Zone im
+    /// Ergebnis steht; ihr Mittel geht nie in die Bilanz. Fehlen Kategorien oder Einheiten, trägt
+    /// die Zone benannt 0, nie still den deterministischen Weg. Das Laufzeitfenster der
+    /// Zirkulation bleibt das der deterministischen Reihe.</para>
     /// </summary>
     internal static class ZapfprofilRechner
     {
@@ -187,9 +188,10 @@ namespace WindowsFormsApplication1
             }
             if (e.Projekt.JahresreiheStochastisch && arbeit.Exists(a => !a.Abgelehnt))
                 hinweise.Add(new ZapfHinweis("", "JAHRESREIHE_STOCHASTISCH",
-                    "Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel aus "
-                    + e.Projekt.Realisierungen.ToString(CultureInfo.InvariantCulture) + " gezogenen Jahren zum Seed "
-                    + e.Projekt.Seed.ToString(CultureInfo.InvariantCulture) + ", auf die Jahresmenge des Mengengerüsts gebracht."));
+                    "Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed "
+                    + e.Projekt.Seed.ToString(CultureInfo.InvariantCulture) + ", auf die Jahresmenge des Mengengerüsts gebracht; "
+                    + "die Konsistenzprobe prüft es an " + e.Projekt.Realisierungen.ToString(CultureInfo.InvariantCulture)
+                    + " gezogenen Jahren."));
 
             // --- 4. Laufzeitfenster und Zirkulationsreihen (4.3) --------------------------
             var z1Reihen = new List<IReadOnlyList<double>>();
@@ -327,8 +329,9 @@ namespace WindowsFormsApplication1
         internal const string HINWEIS_ENERGIEPROBE = "STOCHASTIK_ENERGIEPROBE";
 
         /// <summary>
-        /// Ersetzt die Zapfreihe der Zone durch das Mittel des Jahresensembles, mit dem Faktor der
-        /// Energieprobe auf die Jahresmenge gebracht; die deterministische Reihe bleibt für das
+        /// Ersetzt die Zapfreihe der Zone durch die Realisierung zum Seed des Jahresensembles, mit dem
+        /// Faktor der Energieprobe auf die Jahresmenge gebracht (<see cref="Jahresensemble.Bilanz"/>);
+        /// die R Jahre prüfen nur die Konsistenz. Die deterministische Reihe bleibt für das
         /// Laufzeitfenster und die Probe. Die Urlaube werden bei Kalenderart Wohnen je Einheit
         /// versetzt, wenn die Zone Ferien trägt (Parameter <see cref="ZapfStochastikParameter.URLAUBSVERSATZ"/>).
         /// </summary>
@@ -361,18 +364,16 @@ namespace WindowsFormsApplication1
             };
             Jahresensemble ensemble = Jahresensemble.Ziehen(zone, e.Projekt.Seed, e.Projekt.Realisierungen);
             Jahreskonsistenz k = ensemble.Pruefen(a.Zapfreihe);
-            if (double.IsNaN(k.Faktor))
-                throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, a.Name,
-                    "Nicht rechenbar — die gezogenen Jahre der Zone „" + a.Name + "“ tragen keine Zapfung; die Jahresmenge ist nicht darstellbar.");
+            Bilanzreihe bilanz = ensemble.Bilanz(k);
             if (!k.Erfuellt)
                 hinweise.Add(new ZapfHinweis(a.Name, "STOCHASTIK_ENERGIEPROBE",
                     "Zone „" + a.Name + "“: Das Mittel der gezogenen Jahre (" + k.MittelKwh.ToString("0.#", CultureInfo.InvariantCulture)
                     + " kWh) weicht um mehr als die Toleranz " + k.ToleranzKwh.ToString("0.#", CultureInfo.InvariantCulture)
                     + " kWh von der Jahresmenge " + k.DeterministischKwh.ToString("0.#", CultureInfo.InvariantCulture)
-                    + " kWh ab; die Reihe ist auf die Jahresmenge gebracht."));
+                    + " kWh ab; das Jahr zum Seed ist auf die Jahresmenge gebracht."));
             a.Deterministisch = a.Zapfreihe;
             a.Konsistenz = k;
-            a.Zapfreihe = ensemble.Mittel.Mal(k.Faktor);
+            a.Zapfreihe = bilanz;
         }
 
         // =================================================================================

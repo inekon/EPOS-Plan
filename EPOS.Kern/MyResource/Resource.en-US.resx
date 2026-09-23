@@ -23997,10 +23997,10 @@ Do you want to allow this?</value>
     <value>The project has network losses, and the draw-off profile calculates a circulation. If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
   </data>
   <data name="ZPG_HINW_JAHRESREIHE_STOCHASTISCH" xml:space="preserve">
-    <value>The annual draw-off series is stochastic: per zone the mean of the drawn years, scaled to the annual amount.</value>
+    <value>The annual draw-off series is stochastic: per zone the drawn year for the seed, scaled to the annual amount; the drawn years of the ensemble only check consistency.</value>
   </data>
   <data name="ZPG_HINW_STOCHASTIK_ENERGIEPROBE" xml:space="preserve">
-    <value>Zone “{0}”: the mean of the drawn years deviates from the annual amount by more than the tolerance; the series is scaled to the annual amount.</value>
+    <value>Zone “{0}”: the mean of the drawn years deviates from the annual amount by more than the tolerance; the year for the seed is scaled to the annual amount.</value>
   </data>
   <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
     <value>Zone “{0}” belongs to the circulation but carries no floor area.</value>

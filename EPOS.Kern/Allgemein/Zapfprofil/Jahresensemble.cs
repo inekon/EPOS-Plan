@@ -36,19 +36,24 @@ namespace WindowsFormsApplication1
     /// <summary>
     /// Die Konsistenzprobe der stochastischen Jahresreihe einer Zone (2.4, 4.4): Jahresenergie
     /// deterministisch und im Ensemblemittel, Streuung s_R der Jahresenergie über die R
-    /// Realisierungen, Toleranz <c>max(1 %, 3 · s_R / √R)</c>, erfüllt ja/nein, der Faktor, der das
-    /// Ensemblemittel auf die Jahresmenge des Mengengerüsts bringt (Energieprobe), und die größte
-    /// Abweichung der Anteile je Tagesstunde (Formvektor = Erwartungswert).
+    /// Realisierungen, Toleranz <c>max(1 %, 3 · s_R / √R)</c>, erfüllt ja/nein und die größte
+    /// Abweichung der Anteile je Tagesstunde (Formvektor = Erwartungswert) — alles aus den R Jahren.
+    /// Dazu die Jahresenergie der Realisierung zum Seed (r = 0) und der Faktor der Energieprobe
+    /// <c>E_det / E_0</c>, der sie auf die Jahresmenge des Mengengerüsts bringt: Sie allein ist die
+    /// Bilanzreihe (<see cref="Jahresensemble.Bilanz"/>), das Ensemble prüft nur.
     /// </summary>
     internal sealed record Jahreskonsistenz(double DeterministischKwh, double MittelKwh, double StandardabweichungKwh,
-                                            int Realisierungen, double ToleranzKwh, bool Erfuellt, double Faktor,
-                                            double TagesgangAbweichung);
+                                            int Realisierungen, double ToleranzKwh, bool Erfuellt, double JahrZumSeedKwh,
+                                            double Faktor, double TagesgangAbweichung);
 
     /// <summary>
     /// <b>Das Ensemble der Jahresreihe</b> („stochastisch", Bilanz; Umsetzungskonzept
     /// Zapfprofilgenerator 4.4 „Zwei Ensembles", 2.3 Satz 3): R Jahre einer Zone, je Realisierung
-    /// die Superposition der n_E Einheiten in Minutenauflösung, auf Stunden summiert, und das
-    /// Mittel über die Realisierungen.
+    /// die Superposition der n_E Einheiten in Minutenauflösung, auf Stunden summiert. <b>In die
+    /// Bilanz geht die eine Realisierung zum Seed</b> (r = 0, „Stundenreihe zum Seed", 4.4
+    /// Ausgaben), mit dem Faktor der Energieprobe auf die Jahresmenge gebracht; die R Jahre dienen
+    /// allein der Konsistenzprobe (Mittel gegen den deterministischen Pfad, Streuband, s_R) und
+    /// erreichen die Bilanz nie.
     ///
     /// <code>
     /// Einheit i:   Q_d,i = Formvektor.Tagesmengen(Q_a / n_E, Zeitstruktur, Kalender_i, f_KW)   Σ_d Q_d,i = Q_a / n_E
@@ -57,7 +62,8 @@ namespace WindowsFormsApplication1
     /// je Tag d:    Ereignisse nach Zapfereignisgenerator mit Q_d,i, Δθ(m(d)), Dichte des Tagtyps
     /// Minute:      E / Dauer je Minute, über Mitternacht in den nächsten Tag (Jahresende → Jahresanfang)
     /// Stunde:      q_h = Σ_{Minuten der Stunde} q_min
-    /// Mittel:      q̄_h = Σ_r q_h,r / R      (Folge r = 0, 1, …)
+    /// Bilanz:      q_h = q_h,0 · E_det / E_0            (Realisierung zum Seed, Faktor der Energieprobe)
+    /// Probe:       q̄_h = Σ_r q_h,r / R, Ē, s_R            (Folge r = 0, 1, …; nur Konsistenzprobe)
     /// </code>
     ///
     /// <para><b>Nur Bilanz.</b> Das Ensemble ist eine Bilanzreihe und erreicht die Auslegung nie
@@ -75,10 +81,12 @@ namespace WindowsFormsApplication1
 
         private readonly Bilanzreihe[] _realisierungen;
 
-        private Jahresensemble(long seed, Bilanzreihe[] realisierungen, Bilanzreihe mittel)
+        private Jahresensemble(string zone, long seed, Bilanzreihe[] realisierungen, Bilanzreihe mittel)
         {
+            Zone = zone ?? "";
             Seed = seed;
             _realisierungen = realisierungen;
+            JahrZumSeed = realisierungen[0];
             Mittel = mittel;
             double summe = 0.0;
             foreach (Bilanzreihe r in realisierungen) summe += r.JahressummeKwh;
@@ -92,6 +100,9 @@ namespace WindowsFormsApplication1
             StandardabweichungKwh = realisierungen.Length > 1 ? Math.Sqrt(q / (realisierungen.Length - 1)) : 0.0;
         }
 
+        /// <summary>Die Zone des Ensembles (für benannte Ablehnungen).</summary>
+        internal string Zone { get; }
+
         internal long Seed { get; }
 
         /// <summary>Die Zahl der Realisierungen R.</summary>
@@ -100,7 +111,14 @@ namespace WindowsFormsApplication1
         /// <summary>Die Jahresreihe je Realisierung.</summary>
         internal IReadOnlyList<Bilanzreihe> JeRealisierung => Array.AsReadOnly(_realisierungen);
 
-        /// <summary>Das Mittel über die Realisierungen — die Bilanzreihe des Rechenwegs „stochastisch".</summary>
+        /// <summary>
+        /// Die Realisierung zum Seed (r = 0) vor dem Faktor der Energieprobe — die Grundlage der
+        /// Bilanzreihe (<see cref="Bilanz"/>). Sie hängt nicht von R ab: Ein Ensemble aus einem Jahr
+        /// und eines aus zehn Jahren zum selben Seed tragen dieselbe Realisierung zum Seed.
+        /// </summary>
+        internal Bilanzreihe JahrZumSeed { get; }
+
+        /// <summary>Das Mittel über die Realisierungen — allein für die Konsistenzprobe, nie Bilanz.</summary>
         internal Bilanzreihe Mittel { get; }
 
         /// <summary>Das Mittel der Jahresenergien der Realisierungen [kWh].</summary>
@@ -110,10 +128,12 @@ namespace WindowsFormsApplication1
         internal double StandardabweichungKwh { get; }
 
         /// <summary>
-        /// <b>Die Konsistenzprobe</b> gegen die deterministische Reihe derselben Zone (2.4, 4.4):
-        /// <c>|Ē − E_det| ≤ max(1 % · E_det, 3 · s_R / √R)</c>; der Faktor <c>E_det / Ē_Mittelreihe</c>
-        /// bringt das Mittel auf die Jahresmenge (Energieprobe); die Tagesgangabweichung ist die größte
-        /// Differenz der Anteile je Tagesstunde (Summe über das Jahr) — der Formvektor als Erwartungswert.
+        /// <b>Die Konsistenzprobe</b> gegen die deterministische Reihe derselben Zone (2.4, 4.4), aus
+        /// den R Jahren: <c>|Ē − E_det| ≤ max(1 % · E_det, 3 · s_R / √R)</c>; die Tagesgangabweichung
+        /// ist die größte Differenz der Anteile je Tagesstunde (Summe über das Jahr) — der Formvektor
+        /// als Erwartungswert. Dazu der Faktor der Energieprobe <c>E_det / E_0</c>, der die
+        /// Realisierung zum Seed auf die Jahresmenge bringt (NaN, wenn sie keine Zapfung trägt, die
+        /// Jahresmenge aber positiv ist).
         /// </summary>
         internal Jahreskonsistenz Pruefen(Bilanzreihe deterministisch)
         {
@@ -121,9 +141,26 @@ namespace WindowsFormsApplication1
             double det = deterministisch.JahressummeKwh;
             double mittel = Mittel.JahressummeKwh;
             double toleranz = Math.Max(TOLERANZ_RELATIV * Math.Abs(det), TOLERANZ_STREUUNG * StandardabweichungKwh / Math.Sqrt(Realisierungen));
-            double faktor = mittel > 0 ? det / mittel : (det == 0 ? 1.0 : double.NaN);
+            double seedJahr = JahrZumSeed.JahressummeKwh;
+            double faktor = seedJahr > 0 ? det / seedJahr : (det == 0 ? 1.0 : double.NaN);
             return new Jahreskonsistenz(det, MittelJahresenergieKwh, StandardabweichungKwh, Realisierungen, toleranz,
-                Math.Abs(mittel - det) <= toleranz, faktor, Tagesgangabweichung(Mittel, deterministisch));
+                Math.Abs(mittel - det) <= toleranz, seedJahr, faktor, Tagesgangabweichung(Mittel, deterministisch));
+        }
+
+        /// <summary>
+        /// <b>Die Bilanzreihe des Rechenwegs „stochastisch"</b> (2.3 Satz 3, 4.4 Ausgaben): die
+        /// Realisierung zum Seed mal dem Faktor der Energieprobe aus <paramref name="k"/> — nie das
+        /// Mittel des Ensembles. Trägt die Realisierung zum Seed keine Zapfung bei positiver
+        /// Jahresmenge (Faktor nicht endlich), wird benannt abgelehnt
+        /// (<see cref="ZapfEingabefehler.StochastikUngueltig"/>).
+        /// </summary>
+        internal Bilanzreihe Bilanz(Jahreskonsistenz k)
+        {
+            if (k == null) throw new ArgumentNullException(nameof(k));
+            if (double.IsNaN(k.Faktor) || double.IsInfinity(k.Faktor))
+                throw Fehler(Zone, "Nicht rechenbar — das gezogene Jahr zum Seed der Zone „" + Zone
+                                   + "“ trägt keine Zapfung; die Jahresmenge ist nicht darstellbar.");
+            return JahrZumSeed.Mal(k.Faktor);
         }
 
         // =================================================================================
@@ -167,7 +204,7 @@ namespace WindowsFormsApplication1
                 for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] += s[h];
             }
             for (int h = 0; h < Bilanzreihe.STUNDEN; h++) mittel[h] /= realisierungen;
-            return new Jahresensemble(seed, reihen, new Bilanzreihe(mittel));
+            return new Jahresensemble(zone, seed, reihen, new Bilanzreihe(mittel));
         }
 
         /// <summary>Was für alle Realisierungen gleich ist: Monat je Tag, Dichten je Tagtyp, gemeinsame Tagesmengen.</summary>

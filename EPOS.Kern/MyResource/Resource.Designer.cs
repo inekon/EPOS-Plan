@@ -74421,7 +74421,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das Mittel der gezogenen Jahre, auf die Jahresmenge gebracht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Jahresreihe der Zapfung ist stochastisch: je Zone das gezogene Jahr zum Seed, auf die Jahresmenge gebracht; die gezogenen Jahre des Ensembles prüfen nur die Konsistenz. ähnelt.
         /// </summary>
         public static string ZPG_HINW_JAHRESREIHE_STOCHASTISCH {
             get {
@@ -74484,7 +74484,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; die Reihe ist auf die Jahresmenge gebracht. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zone „{0}“: Das Mittel der gezogenen Jahre weicht um mehr als die Toleranz von der Jahresmenge ab; das Jahr zum Seed ist auf die Jahresmenge gebracht. ähnelt.
         /// </summary>
         public static string ZPG_HINW_STOCHASTIK_ENERGIEPROBE {
             get {

@@ -67,8 +67,14 @@ namespace EPOS.Kern.Tests
                 Assert.InRange(Math.Abs(e.Mittel.JahressummeKwh - 14600.0), 0.0, toleranz);
                 Assert.Equal(e.MittelJahresenergieKwh, e.Mittel.JahressummeKwh, 6);
                 Assert.True(e.StandardabweichungKwh > 0);
-                // Energieprobe: der Faktor bringt das Mittel genau auf die Jahresmenge.
-                Assert.Equal(14600.0, e.Mittel.Mal(k.Faktor).JahressummeKwh, 6);
+                // Energieprobe: Die Bilanz ist die Realisierung zum Seed mal dem Faktor — genau die Jahresmenge.
+                Bilanzreihe bilanz = e.Bilanz(k);
+                Assert.Equal(14600.0, bilanz.JahressummeKwh, 6);
+                Assert.Equal(e.JeRealisierung[0].JahressummeKwh, k.JahrZumSeedKwh);
+                Assert.Equal(k.DeterministischKwh / e.JeRealisierung[0].JahressummeKwh, k.Faktor);
+                Assert.Equal(e.JeRealisierung[0].StundenKwh.Select(x => Bits(x * k.Faktor)), bilanz.StundenKwh.Select(Bits));
+                // … und nie das Mittel des Ensembles.
+                Assert.NotEqual(e.Mittel.Mal(k.DeterministischKwh / e.Mittel.JahressummeKwh).StundenKwh, bilanz.StundenKwh);
                 // Formvektor = Erwartungswert: die Anteile je Tagesstunde (Ereignisdauer verschiebt nur wenig).
                 Assert.InRange(k.TagesgangAbweichung, 0.0, 0.03);
             }
@@ -106,6 +112,12 @@ namespace EPOS.Kern.Tests
             Jahresensemble eins = Jahresensemble.Ziehen(z, 11, 1);
             Assert.Equal(eins.JeRealisierung[0].StundenKwh, eins.Mittel.StundenKwh);
             Assert.Equal(0.0, eins.StandardabweichungKwh);
+            // Das Jahr zum Seed hängt nicht von R ab — die Bilanz ist dieselbe bei einem und bei zwei Jahren.
+            Jahresensemble zwei = Jahresensemble.Ziehen(z, 11, 2);
+            Assert.Equal(eins.JahrZumSeed.StundenKwh.Select(Bits), zwei.JahrZumSeed.StundenKwh.Select(Bits));
+            Bilanzreihe det = Deterministisch(z);
+            Assert.Equal(eins.Bilanz(eins.Pruefen(det)).StundenKwh.Select(Bits), zwei.Bilanz(zwei.Pruefen(det)).StundenKwh.Select(Bits));
+            Assert.NotEqual(eins.Pruefen(det).MittelKwh, zwei.Pruefen(det).MittelKwh);
         }
 
         // =================================================================================
@@ -284,6 +296,13 @@ namespace EPOS.Kern.Tests
             Assert.Equal(ZapfEingabefehler.StochastikUngueltig, ex.Fehler);
             Assert.Equal("Zone A", ex.Zone);
             Assert.Throws<ZapfprofilEingabeException>(() => Jahresensemble.Ziehen(Jahreszone(2) with { Einheiten = 0 }, 1, 2));
+            // Ein Jahr zum Seed ohne Zapfung bei positiver Jahresmenge: benannte Ablehnung statt NaN in der Bilanz.
+            Jahreszone winzig = Jahreszone(1, 1e-6);
+            Jahresensemble w = Jahresensemble.Ziehen(winzig, 1, 1);
+            Assert.Equal(0.0, w.JahrZumSeed.JahressummeKwh);
+            var leer = Assert.Throws<ZapfprofilEingabeException>(() => w.Bilanz(w.Pruefen(Deterministisch(winzig))));
+            Assert.Equal(ZapfEingabefehler.StochastikUngueltig, leer.Fehler);
+            Assert.Equal("Zone A", leer.Zone);
             Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 10, 90));
             Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(Gruppe(2, 8.0), 1, 0, 95));
             Assert.Throws<ZapfAuslegungException>(() => Zapfensemble.Ziehen(new Ensemblezone[0], 1, 10, 95));
