@@ -28394,6 +28394,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Alle Daten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Alle Daten“ ist in dieser Maske nur Anzeige — der Katalog hat hier keinen Speicherweg. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_NUR_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_NUR_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Aufklapper „Alle Daten“ ist nichts geändert; einen anderen Speicherweg bietet die Maske „{0}“ nicht — ihre Liste übernimmt „OK“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_UNGEAENDERT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_UNGEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Alle Daten anzeigen“ ist zugeklappt, oder es ist kein Katalogsatz gewählt — die Werte stehen dann nicht vor dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_ZU {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_ZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {

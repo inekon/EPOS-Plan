@@ -800,6 +800,101 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        // „Alle Daten" der sechs Erzeugermasken des Projekts   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Typname der Sichtklasse der vier Erzeugermasken mit Projektzeile
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerProjektKiSicht</c>).
+        /// </summary>
+        public const string ERZEUGER_PROJEKT_SICHT = "ErzeugerProjektKiSicht";
+
+        /// <summary>
+        /// Die Vorsilbe eines Feldes des Aufklappers „Alle Daten" im Eigenschaftspfad
+        /// (<c>ErzeugerProjektKiSicht.Katalog_PTHERM</c>) und — klein — im Feldnamen
+        /// (<c>katalog_ptherm</c>).
+        /// </summary>
+        /// <remarks>
+        /// Ohne sie traefen sich Profil und Anlage: <c>VORLAUF</c> des Katalogsatzes und
+        /// <c>Vorlauf</c> der Projektzeile sind fuer den Katalog DERSELBE Pfad (er
+        /// vergleicht ohne Gross/Klein), fuer den Anwender aber zwei Werte — der eine
+        /// gilt fuer das Geraet im Katalog, der andere fuer diese Anlage.
+        /// </remarks>
+        public const string KATALOGFELD_VORSILBE = "Katalog_";
+
+        /// <summary>
+        /// Die Felder des Aufklappers „Alle Daten" einer Erzeugermaske, deren Katalog der
+        /// KATALOGBROWSER fuehrt (Heizkessel, BHKW, Pufferspeicher, Solarkollektoren) —
+        /// erzeugt aus demselben Profil wie die Verwaltung (<see cref="ErzeugerVerwaltung"/>)
+        /// und mit denselben Erlaeuterungen.
+        /// </summary>
+        private static IEnumerable<KiDialogFeld> AlleDaten(KatalogBrowserArt art, string sicht)
+        {
+            KatalogBrowserProfil profil = KatalogBrowserProfil.Finde(art, KiDialogTexte.Profiltext);
+
+            foreach (BrowserDetailfeld f in profil.Detailfelder)
+                yield return AlleDatenFeld(sicht, f.Schluessel, f.Feldname, f.Einheit, f.Art,
+                                           !f.Editierbar,
+                                           KiDialogTexte.KbrowErlaeuterung(art, f.Schluessel, f.Feldname));
+        }
+
+        /// <summary>
+        /// Die Felder des Aufklappers „Alle Daten" einer Erzeugermaske, deren Katalog der
+        /// MODULKATALOG fuehrt (Photovoltaik, Stromspeicher) — erzeugt aus dem
+        /// <see cref="ModulKatalogProfil"/>. Nicht setzbar ist, was die Bruecke des
+        /// Aufklappers nicht zurueckschreibt: der gesperrte Bezeichner und ein
+        /// Auswahlfeld (<c>ModulFeldwertBruecke.Editierbar</c>).
+        /// </summary>
+        /// <param name="modulkatalog">
+        /// Der Katalogeintrag des Modulkatalogs — seine Erlaeuterungen gelten fuer
+        /// dieselben Felder; zugeordnet wird ueber die Beschriftung, die der
+        /// Profilwaechter des Modulkatalogs festhaelt.
+        /// </param>
+        private static IEnumerable<KiDialogFeld> AlleDaten(ModulKatalogArt art, KiDialog modulkatalog, string sicht)
+        {
+            ModulKatalogProfil profil = ModulKatalogProfil.Finde(art, KiDialogTexte.Profiltext);
+
+            foreach (ModulKatalogFeld f in profil.Felder)
+            {
+                string erlaeuterung = null;
+                foreach (KiDialogFeld k in modulkatalog.Felder)
+                    if (string.Equals(k.Anzeigename.TrimEnd(' ', ':'), f.Feldname, StringComparison.Ordinal))
+                    {
+                        erlaeuterung = k.Erlaeuterung;
+                        break;
+                    }
+
+                yield return AlleDatenFeld(sicht, f.Schluessel, f.Feldname, f.Einheit, f.Art,
+                                           f.Gesperrt || f.Art == BrowserFeldArt.Auswahl,
+                                           erlaeuterung ?? KiDialogTexte.KbrowRueckfall(f.Feldname));
+            }
+        }
+
+        /// <summary>Ein Feld des Aufklappers „Alle Daten" — Name, Pfad und Anzeigename mit Vorsilbe.</summary>
+        private static KiDialogFeld AlleDatenFeld(string sicht, string schluessel, string feldname,
+                                                  string einheit, BrowserFeldArt art, bool nurLesen,
+                                                  string erlaeuterung)
+            => new KiDialogFeld(
+                (KATALOGFELD_VORSILBE + schluessel).ToLowerInvariant(),
+                sicht + "." + KATALOGFELD_VORSILBE + schluessel,
+                KiDialogTexte.AlleDatenName(feldname),
+                Feldtyp(art),
+                erlaeuterung,
+                einheit: einheit,
+                leerErlaubt: art == BrowserFeldArt.Text || art == BrowserFeldArt.Mehrzeilig ||
+                             art == BrowserFeldArt.Auswahl,
+                nurLesen: nurLesen);
+
+        /// <summary>Die benannten Felder einer Maske und dahinter die ihres Aufklappers.</summary>
+        private static List<KiDialogFeld> MitAlleDaten(IEnumerable<KiDialogFeld> benannt,
+                                                       IEnumerable<KiDialogFeld> alleDaten)
+        {
+            var liste = new List<KiDialogFeld>(benannt);
+            liste.AddRange(alleDaten);
+            return liste;
+        }
+
+        // =====================================================================
         // Berichtsuebersicht  ->  Seiten.Berichte.UebersichtSeite   (Welle KI-F6)
         // =====================================================================
 
@@ -4491,29 +4586,29 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeSolarkollektoren,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anzahl_module", "SolarkollektorenEingaben.Anzahl",
+                    new KiDialogFeld("anzahl_module", "SolarkollektorenKiSicht.Anzahl",
                                      KiDialogTexte.SkAnzahlName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAnzahlErl,
                                      leerErlaubt: true),
-                    new KiDialogFeld("neigung", "SolarkollektorenEingaben.Neigung",
+                    new KiDialogFeld("neigung", "SolarkollektorenKiSicht.Neigung",
                                      KiDialogTexte.SkNeigungName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkNeigungErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("azimut", "SolarkollektorenEingaben.Azimut",
+                    new KiDialogFeld("azimut", "SolarkollektorenKiSicht.Azimut",
                                      KiDialogTexte.SkAzimutName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "SolarkollektorenEingaben.Vorlauf",
+                    new KiDialogFeld("vorlauf", "SolarkollektorenKiSicht.Vorlauf",
                                      KiDialogTexte.SkVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("ruecklauf", "SolarkollektorenEingaben.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "SolarkollektorenKiSicht.Ruecklauf",
                                      KiDialogTexte.SkRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.SkRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Solarkollektoren, "SolarkollektorenKiSicht")),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("uebernehmen", "btn_Uebernehmen",
@@ -4529,22 +4624,22 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Pufferspeicher im Projekt — die gewaehlte Zeile der Projektliste
-        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerZeile</c>), mit EINEM Feld.
+        /// (<c>EPOS.UI.Dialoge.Erzeuger.ErzeugerProjektKiSicht</c>) mit EINEM Feld der
+        /// Anlage, dazu der Aufklapper „Alle Daten".
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Ein Feld, und das ist kein Versehen.</b> Diese Maske fuehrt keine
-        /// Einstellwerte der ANLAGE: Sie waehlt den Speicher aus dem Katalog, zeigt
-        /// seine Werte und laesst den KATALOGSATZ im Aufklapper „Alle Daten"
-        /// bearbeiten. Der Name der gewaehlten Zeile ist damit alles, was der Assistent
-        /// hier lesen kann — und genau das soll er koennen: „welcher Pufferspeicher ist
-        /// im Projekt gewaehlt?" beantwortet er dann aus der Maske und nicht aus der
-        /// Dokumentation.
+        /// <b>Ein Feld der Anlage, und das ist kein Versehen.</b> Diese Maske fuehrt
+        /// keine Einstellwerte der ANLAGE: Sie waehlt den Speicher aus dem Katalog und
+        /// zeigt seine Werte. Der Name der gewaehlten Zeile beantwortet „welcher
+        /// Pufferspeicher ist im Projekt gewaehlt?" aus der Maske.
         /// </para>
         /// <para>
-        /// <b>Der Aufklapper bleibt draussen</b> — dieselbe Begruendung wie beim
-        /// Heizkessel: Er zeigt die Spalten des KATALOGsatzes ueber ein Profil und
-        /// nicht ueber benannte Eigenschaften der Zeile.
+        /// <b>Einstellbar ist der KATALOGSATZ im Aufklapper „Alle Daten"</b> (Welle #458,
+        /// Stufe 2): Seine Felder entstehen aus dem Profil des Katalogbrowsers
+        /// (<see cref="AlleDaten(KatalogBrowserArt,string)"/>), gesetzt wird ueber die
+        /// Feldtafel der Sichtklasse, gespeichert ueber den Knopf des Aufklappers; ein
+        /// Auslieferungssatz lehnt mit dem Weg „Duplizieren…" ab.
         /// </para>
         /// </remarks>
         private static KiDialog PufferspeicherProjekt()
@@ -4552,13 +4647,13 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.PUFFERSPEICHER_PROJEKT,
                 anzeigename: KiDialogTexte.MaskePufferSpProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.PspAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.PspAnlageErl,
                                      leerErlaubt: true, nurLesen: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Pufferspeicher, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4595,16 +4690,16 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.STROMSPEICHER_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeStromspeicherProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.StspAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.StspAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.StspTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.StspTraegerErl)
-                },
+                }, AlleDaten(ModulKatalogArt.Stromspeicher, Stromspeicherkatalog(), ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4637,11 +4732,15 @@ namespace WindowsFormsApplication1
         /// Kostenverwaltung.
         /// </para>
         /// <para>
-        /// <b>Der Aufklapper „Alle Daten" bleibt draussen.</b> Er zeigt die Spalten des
-        /// gewaehlten KATALOGsatzes ueber ein Profil
-        /// (<c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>) und nicht ueber
-        /// benannte Eigenschaften der Zeile; was dort steht, gehoert dem Katalog und
-        /// nicht der Anlage.
+        /// <b>Der Aufklapper „Alle Daten"</b> zeigt die Spalten des gewaehlten
+        /// KATALOGsatzes ueber ein Profil
+        /// (<c>EPOS.Kern/Allgemein/Katalog/KatalogBrowserProfil.cs</c>); was dort steht,
+        /// gehoert dem Katalog und nicht der Anlage. Seit Welle #458 (Stufe 2) steht er
+        /// als FELDTAFEL im Katalog — die Felder entstehen aus demselben Profil
+        /// (<see cref="AlleDaten(KatalogBrowserArt,string)"/>, Vorsilbe
+        /// <see cref="KATALOGFELD_VORSILBE"/>), gesetzt wird in die lebende Feldliste des
+        /// Aufklappers, gespeichert ueber seinen Knopf. Dasselbe gilt fuer BHKW,
+        /// Pufferspeicher, Solarkollektoren, Stromspeicher und Photovoltaik.
         /// </para>
         /// </remarks>
         private static KiDialog HeizkesselProjekt()
@@ -4649,24 +4748,24 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.HEIZKESSEL_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeHeizkesselProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.HkpAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.HkpAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                    new KiDialogFeld("vorlauf", "ErzeugerProjektKiSicht.Vorlauf",
                                      KiDialogTexte.HkpVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkpVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.HkpTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.HkpTraegerErl),
-                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "ErzeugerProjektKiSicht.Ruecklauf",
                                      KiDialogTexte.HkpRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.HkpRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Heizkessel, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -4693,28 +4792,28 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.BHKW_PROJEKT,
                 anzeigename: KiDialogTexte.MaskeBhkwProjekt,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
-                    new KiDialogFeld("anlage", "ErzeugerZeile.Bezeichner",
+                    new KiDialogFeld("anlage", "ErzeugerProjektKiSicht.Bezeichner",
                                      KiDialogTexte.BhkwAnlageName, KiParameterTyp.Text,
                                      KiDialogTexte.BhkwAnlageErl,
                                      leerErlaubt: true, nurLesen: true),
-                    new KiDialogFeld("grenzleistung", "ErzeugerZeile.Grenzleistung",
+                    new KiDialogFeld("grenzleistung", "ErzeugerProjektKiSicht.Grenzleistung",
                                      KiDialogTexte.BhkwGrenzleistungName, KiParameterTyp.Zahl,
                                      KiDialogTexte.BhkwGrenzleistungErl,
                                      einheit: KiDialogTexte.EINHEIT_PROZENT, leerErlaubt: true),
-                    new KiDialogFeld("vorlauf", "ErzeugerZeile.Vorlauf",
+                    new KiDialogFeld("vorlauf", "ErzeugerProjektKiSicht.Vorlauf",
                                      KiDialogTexte.BhkwVorlaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkwVorlaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true),
-                    new KiDialogFeld("energietraeger", "ErzeugerZeile.CarrierId",
+                    new KiDialogFeld("energietraeger", "ErzeugerProjektKiSicht.CarrierId",
                                      KiDialogTexte.BhkwTraegerName, KiParameterTyp.Wahl,
                                      KiDialogTexte.BhkwTraegerErl),
-                    new KiDialogFeld("ruecklauf", "ErzeugerZeile.Ruecklauf",
+                    new KiDialogFeld("ruecklauf", "ErzeugerProjektKiSicht.Ruecklauf",
                                      KiDialogTexte.BhkwRuecklaufName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.BhkwRuecklaufErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD_C, leerErlaubt: true)
-                },
+                }, AlleDaten(KatalogBrowserArt.Bhkw, ERZEUGER_PROJEKT_SICHT)),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -5030,7 +5129,7 @@ namespace WindowsFormsApplication1
             return new KiDialog(
                 maskenname: KiMaskennamen.PHOTOVOLTAIK,
                 anzeigename: KiDialogTexte.MaskePv,
-                felder: new[]
+                felder: MitAlleDaten(new[]
                 {
                     // ---- Die Anlage -------------------------------------------------
                     new KiDialogFeld("neigung", "PhotovoltaikKiSicht.Neigung",
@@ -5116,7 +5215,7 @@ namespace WindowsFormsApplication1
                                      KiDialogTexte.PvStrangAzimutErl,
                                      einheit: KiDialogTexte.EINHEIT_GRAD, leerErlaubt: true,
                                      zeilenkennzeichen: STRANGKENNZEICHEN)
-                },
+                }, AlleDaten(ModulKatalogArt.Photovoltaik, PvModulkatalog(), "PhotovoltaikKiSicht")),
                 knoepfe: new[]
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
@@ -5209,8 +5308,9 @@ namespace WindowsFormsApplication1
         /// <b>Die INVESTITIONSKOSTEN kommen nicht mehr in Frage.</b> Sie verlassen die
         /// Maske mit dem Anwenderentscheid vom 15.09.2026 (kein Kosteneintrag im
         /// Bearbeiten-Dialog) und sind seither im Aufklapper „Alle Daten" des
-        /// Projektdialogs zu pflegen — ohne Weg des Assistenten, wie beim Heizkessel.
-        /// Der Katalog hat sie nie gefuehrt; hier steht nur, dass das so bleibt.
+        /// Projektdialogs zu pflegen — dort fuehrt sie seit Welle #458 (Stufe 2) auch
+        /// der Dialogkatalog, als Feld des Aufklappers der Maske Form_PufferSp.
+        /// Dieser Editor hat sie nie gefuehrt; hier steht nur, dass das so bleibt.
         /// </para>
         /// </remarks>
         private static KiDialog Pufferspeicher()

@@ -26058,4 +26058,16 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
     <value>„{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4.</value>
   </data>
+  <data name="KI_DLG_ALLE_DATEN_NAME" xml:space="preserve">
+    <value>{0} (Alle Daten)</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_ZU" xml:space="preserve">
+    <value>„Alle Daten anzeigen“ ist zugeklappt, oder es ist kein Katalogsatz gewählt — die Werte stehen dann nicht vor dem Anwender.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NUR_ANZEIGE" xml:space="preserve">
+    <value>„Alle Daten“ ist in dieser Maske nur Anzeige — der Katalog hat hier keinen Speicherweg.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_UNGEAENDERT" xml:space="preserve">
+    <value>Im Aufklapper „Alle Daten“ ist nichts geändert; einen anderen Speicherweg bietet die Maske „{0}“ nicht — ihre Liste übernimmt „OK“.</value>
+  </data>
 </root>

@@ -26051,4 +26051,16 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
     <value>“{0}” is not a colour — #RRGGBB is expected, for example #1F77B4.</value>
   </data>
+  <data name="KI_DLG_ALLE_DATEN_NAME" xml:space="preserve">
+    <value>{0} (all data)</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_ZU" xml:space="preserve">
+    <value>“Show all data” is collapsed, or no catalogue entry is selected — the values are then not in front of the user.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NUR_ANZEIGE" xml:space="preserve">
+    <value>“All data” is display only in this form — the catalogue has no save path here.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_UNGEAENDERT" xml:space="preserve">
+    <value>Nothing has changed in “All data”; the form “{0}” offers no other save path — its list is taken over with “OK”.</value>
+  </data>
 </root>

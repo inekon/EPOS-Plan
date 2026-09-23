@@ -55,9 +55,9 @@ public class KiDialogkatalogTests : IDisposable
     /// <summary>Die Masken und ihre Daten-Objekte — die EINE Zuordnungstabelle.</summary>
     /// <remarks>
     /// <b>Ein Daten-Objekt darf MEHRERE Masken tragen.</b> Die Erzeugermasken des
-    /// Projekts (Welle KI‑F1) melden alle dieselbe <c>ErzeugerZeile</c> an — die
-    /// gewählte Zeile ihrer Projektliste; welche Felder daran hängen, sagt der
-    /// Katalogeintrag und nicht der Typ.
+    /// Projekts (Welle KI‑F1) melden alle dieselbe Sichtklasse an
+    /// (<c>ErzeugerProjektKiSicht</c> um die gewählte Zeile ihrer Projektliste); welche
+    /// Felder daran hängen, sagt der Katalogeintrag und nicht der Typ.
     /// </remarks>
     public static TheoryData<string, Type> Masken() => new()
     {
@@ -94,16 +94,21 @@ public class KiDialogkatalogTests : IDisposable
           typeof(EPOS.UI.Dialoge.Kosten.KostenKomponenteKiSicht) },
 
         // Welle KI-F1: die Erzeugermasken des PROJEKTS. Sie melden die GEWAEHLTE
-        // Zeile ihrer Projektliste an - denselben Typ wie Form_PV.
-        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerZeile) },
-        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerZeile) },
-        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerZeile) },
-        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerZeile) },
+        // Zeile ihrer Projektliste an - seit Welle #458 (Stufe 2) ueber die
+        // Sichtklasse ErzeugerProjektKiSicht, die die Zeile durchreicht und den
+        // Aufklapper „Alle Daten" als FELDTAFEL traegt. Die benannten Felder behalten
+        // ihre Namen und damit ihre Markup-Probe; die Tafelfelder haelt
+        // Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil.
+        { KiMaskennamen.HEIZKESSEL_PROJEKT,     typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.BHKW_PROJEKT,           typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.PUFFERSPEICHER_PROJEKT, typeof(ErzeugerProjektKiSicht) },
+        { KiMaskennamen.STROMSPEICHER_PROJEKT,  typeof(ErzeugerProjektKiSicht) },
 
         // Die Solarkollektoren melden den ARBEITSSTAND der Kollektorgruppe an und
         // nicht die Zeile: Ihre fuenf Zahlen gehen erst mit „Uebernehmen" dorthin.
+        // Dieselbe Bauart mit Feldtafel.
         { KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT,
-          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenEingaben) },
+          typeof(EPOS.UI.Dialoge.Solarthermie.SolarkollektorenKiSicht) },
 
         // Die Waermepumpen-ANLAGE - ein Feldsatz fuer alle drei Bloecke der Maske.
         // Welle #458: Angemeldet ist seither eine SICHTKLASSE - sie reicht den Feldsatz
@@ -571,8 +576,13 @@ public class KiDialogkatalogTests : IDisposable
         // Die zwei AUSLEGUNGSTEMPERATUREN des Projekts stehen im Strangabschnitt und
         // fehlten dem Katalog, weil sie nicht an der Anlagenzeile haengen
         // (Anwenderentscheid 21.09.2026, KI-D-Q7).
+        //
+        // Welle #458, Stufe 2: Dazu kommen bei der Photovoltaik die Felder des
+        // Aufklappers „Alle Daten" - so viele, wie das Profil des Modulkatalogs fuehrt
+        // (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL)!.Felder.Count);
-        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder.Count);
+        Assert.Equal(17, KiDialoge.Katalog.Finde(KiMaskennamen.PHOTOVOLTAIK)!.Felder
+                             .Count(f => !IstAlleDaten(f)));
         Assert.Equal(5, KiDialoge.Katalog.Finde(KiMaskennamen.PUFFERSPEICHER)!.Felder.Count);
         Assert.Equal(11, KiDialoge.Katalog.Finde(KiMaskennamen.WAERMEPUMPE)!.Felder.Count);
 
@@ -1462,6 +1472,11 @@ public class KiDialogkatalogTests : IDisposable
             string eigenschaft = KiEigenschaftspfad.Eigenschaft(f.Eigenschaftspfad);
             Assert.NotEqual("", eigenschaft);
 
+            // Ein Feld der FELDTAFEL hat keine Bindung mit Namen — es steht als Daten
+            // eines Profils in einer Schleife (Katalogfelder). Seinen Bestand hält der
+            // Profilwächter (Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil).
+            if (IstTafelfeld(maske, f)) continue;
+
             if (!StehtImMarkup(markup, eigenschaft))
                 fehlt.Add(f.Name + " → " + f.Eigenschaftspfad);
         }
@@ -1560,6 +1575,112 @@ public class KiDialogkatalogTests : IDisposable
         // nur, dass die Probe nicht ins Leere greift.
         Assert.True(felder >= 65, "Nur " + felder + " Feldpfade geprüft.");
     }
+
+    // ---------------------------------------------------------------------
+    //  Die FELDTAFEL „Alle Daten" der Projektmasken (Welle #458, Stufe 2)
+    // ---------------------------------------------------------------------
+
+    /// <summary>
+    /// <b>Die sechs Erzeugermasken des Projekts führen „Alle Daten" GENAU nach dem
+    /// Profil</b>, aus dem die Hülle den Aufklapper füllt — Heizkessel, BHKW,
+    /// Pufferspeicher und Solarkollektoren nach dem <c>KatalogBrowserProfil</c>.
+    /// </summary>
+    /// <remarks>
+    /// Er ersetzt für die Tafelfelder die Markup-Probe (eine Schleife hat keine Bindung
+    /// mit Namen) und die Reflection-Probe (eine Tafel hat keine Eigenschaft je Feld):
+    /// Name und Pfad mit Vorsilbe, Anzeigename „… (Alle Daten)", Feldtyp, Einheit und
+    /// die Sperre eines nicht editierbaren Feldes.
+    /// </remarks>
+    [Theory]
+    [InlineData(KiMaskennamen.HEIZKESSEL_PROJEKT, KatalogBrowserArt.Heizkessel)]
+    [InlineData(KiMaskennamen.BHKW_PROJEKT, KatalogBrowserArt.Bhkw)]
+    [InlineData(KiMaskennamen.PUFFERSPEICHER_PROJEKT, KatalogBrowserArt.Pufferspeicher)]
+    [InlineData(KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT, KatalogBrowserArt.Solarkollektoren)]
+    public void Die_Projektmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil(string maske, KatalogBrowserArt art)
+    {
+        KatalogBrowserProfil profil =
+            KatalogBrowserProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+
+        AlleDatenPruefen(maske, profil.Detailfelder
+            .Select(p => (p.Schluessel, p.Feldname, p.Einheit, p.Art, !p.Editierbar)).ToList());
+    }
+
+    /// <summary>
+    /// Dasselbe für Photovoltaik und Stromspeicher nach dem <c>ModulKatalogProfil</c> —
+    /// nicht setzbar ist, was die Brücke des Aufklappers nicht zurückschreibt: der
+    /// gesperrte Bezeichner und ein Auswahlfeld (<c>ModulFeldwertBruecke</c>).
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.PHOTOVOLTAIK, ModulKatalogArt.Photovoltaik)]
+    [InlineData(KiMaskennamen.STROMSPEICHER_PROJEKT, ModulKatalogArt.Stromspeicher)]
+    public void Die_Modulmasken_fuehren_Alle_Daten_genau_nach_ihrem_Profil(string maske, ModulKatalogArt art)
+    {
+        ModulKatalogProfil profil =
+            ModulKatalogProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+
+        AlleDatenPruefen(maske, profil.Felder
+            .Select(p => (p.Schluessel, p.Feldname, p.Einheit, p.Art,
+                          p.Gesperrt || p.Art == BrowserFeldArt.Auswahl)).ToList());
+    }
+
+    private static void AlleDatenPruefen(
+        string maske, List<(string Schluessel, string Feldname, string Einheit, BrowserFeldArt Art, bool NurLesen)> profil)
+    {
+        KiDialog dialog = KiDialoge.Katalog.Finde(maske)!;
+        Assert.NotNull(dialog);
+
+        Type? typ = Datentyp(maske);
+        Assert.NotNull(typ);
+        Assert.True(typeof(IKiFeldtafel).IsAssignableFrom(typ), typ!.Name + " ist keine Feldtafel.");
+
+        Assert.Equal(profil.Count, dialog.Felder.Count(IstAlleDaten));
+
+        foreach (var p in profil)
+        {
+            string name = (KiDialoge.KATALOGFELD_VORSILBE + p.Schluessel).ToLowerInvariant();
+            KiDialogFeld? k = dialog.FindeFeld(name);
+            Assert.True(k is not null, "Das Profilfeld " + p.Schluessel + " fehlt in " + maske + ".");
+
+            Assert.Equal(typ.Name + "." + KiDialoge.KATALOGFELD_VORSILBE + p.Schluessel, k!.Eigenschaftspfad);
+            Assert.Equal(string.Format(CultureInfo.CurrentCulture, Resource.KI_DLG_ALLE_DATEN_NAME, p.Feldname),
+                         k.Anzeigename);
+            Assert.Equal(p.Einheit ?? "", k.Einheit);
+            Assert.Equal(KiDialoge.Feldtyp(p.Art), k.Typ);
+            Assert.Equal(p.NurLesen, k.NurLesen);
+            Assert.True(IstTafelfeld(maske, k), name);
+            Assert.False(string.IsNullOrWhiteSpace(k.Erlaeuterung), name);
+        }
+    }
+
+    /// <summary>Ein Feld des Aufklappers „Alle Daten" — erkannt an der Vorsilbe im Pfad.</summary>
+    private static bool IstAlleDaten(KiDialogFeld f)
+        => f.Eigenschaft.StartsWith(KiDialoge.KATALOGFELD_VORSILBE, StringComparison.Ordinal);
+
+    /// <summary>Das Daten-Objekt einer Maske aus <see cref="Masken"/>; <c>null</c> = keins.</summary>
+    private static Type? Datentyp(string maske)
+    {
+        foreach (object[] zeile in Masken())
+            if ((string)zeile[0] == maske) return (Type)zeile[1];
+        return null;
+    }
+
+    /// <summary>
+    /// Ist dieses Feld ein Feld der FELDTAFEL seiner Maske — das Daten-Objekt ist eine
+    /// <see cref="IKiFeldtafel"/> und führt KEINE Eigenschaft dieses Namens?
+    /// </summary>
+    public static bool IstTafelfeld(string maske, KiDialogFeld feld)
+    {
+        Type? typ = Datentyp(maske);
+        return typ is not null && typeof(IKiFeldtafel).IsAssignableFrom(typ) && !feld.IstSpalte &&
+               typ.GetProperty(feld.Eigenschaft) is null;
+    }
+
+    /// <summary>
+    /// Führt die Maske eine FELDTAFEL — dann ist ihr Baustein <c>Katalogfelder</c> über das
+    /// Profil gedeckt und nicht über eine Bindung mit Namen (Eingabebilanz des Wächters).
+    /// </summary>
+    public static bool FuehrtFeldtafel(string maske)
+        => KiDialoge.Katalog.Finde(maske)?.Felder.Any(f => IstTafelfeld(maske, f)) == true;
 
     // ---------------------------------------------------------------------
     //  Hilfen der Markup-Probe

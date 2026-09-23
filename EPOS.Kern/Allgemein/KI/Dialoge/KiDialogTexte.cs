@@ -2444,6 +2444,13 @@
         internal static string AdmsetKuehlungName => MyResource.Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
         internal static string AdmsetKuehlungErl => MyResource.Resource.KI_DLG_ADMSET_KUEHLUNG_ERL;
 
+        // ---- „Alle Daten" der Erzeugermasken des Projekts
+
+        /// <summary>Der Anzeigename eines Feldes des Aufklappers: „Vorlauf (Alle Daten)".</summary>
+        internal static string AlleDatenName(string feldname)
+            => string.Format(System.Globalization.CultureInfo.CurrentCulture,
+                             MyResource.Resource.KI_DLG_ALLE_DATEN_NAME, feldname ?? "");
+
         /// <summary>Die Erlaeuterung eines Farbfeldes: Rolle und Gruppe, wie die Rubrik sie zeigt.</summary>
         internal static string AdmsetFarbeErl(string rolle, string gruppe)
             => string.Format(System.Globalization.CultureInfo.CurrentCulture,

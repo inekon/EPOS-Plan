@@ -143,7 +143,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("NutzungsdauerDialog", 8),
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
-        new("PhotovoltaikDialog", 5, "„Alle Daten“ (Katalogfelder des Satzes) sind offen (#458 Stufe 2)"),
+        new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
         new("PhotovoltaikVerguetungDialog", 16),
         new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
@@ -224,26 +224,6 @@ public sealed class KiMaskenabdeckungWacheTests
             ["GeraetAuswahl(s)"] =
                 "Wechselrichter je Strang — ein Verweis in den Gerätekatalog je Zeile; Mengen von Verweisen bleiben " +
                 "außen vor (KI‑D‑Q6)"
-        },
-        [KiMaskennamen.HEIZKESSEL_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.BHKW_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.PUFFERSPEICHER_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.STROMSPEICHER_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
         },
         [KiMaskennamen.TYPSTAMM] = new()
         {
@@ -438,6 +418,11 @@ public sealed class KiMaskenabdeckungWacheTests
             {
                 if (Gedeckt(e.Bindung, katalog)) continue;
                 if (draussen is not null && draussen.ContainsKey(e.Bindung)) continue;
+
+                // Der Aufklapper „Alle Daten" führt seine Felder als Daten eines Profils:
+                // Gedeckt ist er, wenn die Maske eine FELDTAFEL führt — den Feldbestand
+                // hält der Profilwächter (Welle #458, Stufe 2).
+                if (e.Baustein == "Katalogfelder" && KiDialogkatalogTests.FuehrtFeldtafel(maske)) continue;
                 fehlt.Add(datei + ": " + e.Baustein + " → „" + e.Bindung + "“");
             }
 
