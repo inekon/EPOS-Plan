@@ -91,7 +91,9 @@ namespace EPOS.Kern.Tests
                 "INSERT INTO energy_carrier (ID_Brennstoff, name, billing_unit, hi_kwh_per_unit, is_active) " +
                 "VALUES (?, ?, ?, ?, ?)",
                 new DbParam("@b", 24), new DbParam("@n", "Probe Sonstige E7c2"), new DbParam("@u", "m³"),
-                new DbParam("@hi", 2.5), new DbParam("@a", 0));
+                // (object)0: Eine KONSTANTE 0 waehlte sonst den Typ-Konstruktor
+                // DbParam(string, DbParamTyp) - der Wert bliebe NULL.
+                new DbParam("@hi", 2.5), new DbParam("@a", (object)0));
             int traeger = Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT MAX(id) FROM energy_carrier WHERE name = ?", new DbParam("@n", "Probe Sonstige E7c2")));
             DataRepository.ExecuteNonQuery(
