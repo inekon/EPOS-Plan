@@ -93,6 +93,45 @@ namespace WindowsFormsApplication1
         /// Laufhinweis OHNE die Zahl (<c>02/§ 4.2</c>).
         /// </summary>
         public double? StrommixRueckfallGJeKwh;
+
+        /// <summary>
+        /// ETAPPE E7c — die Datenlücken der KWKG-Rechnung dieses Laufs (Anlagenart fehlt,
+        /// Stromkennzahl fehlt); <c>null</c> oder leer = keine. Die Rechnung hat sie
+        /// festgehalten, genau dort, wo sie an der Lücke den Zuschlag einer Anlage auf 0
+        /// gesetzt hat — die Prüfung liest sie nur und rechnet nichts nach.
+        /// </summary>
+        public KwkgLuecken Kwkg;
+    }
+
+    /// <summary>
+    /// ETAPPE E7c — die <b>Datenlücken der KWKG-Rechnung</b> eines Laufs, je Art die
+    /// Bezeichner der betroffenen Anlagen (entdoppelt, in der Reihenfolge ihres
+    /// Auftretens).
+    ///
+    /// <para><b>Beide Lücken kosten den Zuschlag einer Anlage</b>, und beide sind
+    /// Datenlücken, keine Rechenfehler: <see cref="OhneAnlagenart"/> — das Kontingent
+    /// war nach § 8 aus der Anlagenart abzuleiten, und die fehlt (Entscheid E7‑Q1,
+    /// Lesart b); <see cref="OhneStromkennzahl"/> — das Kennzeichen „Vorrichtung zur
+    /// Abwärmeabfuhr" steht, aber weder eine gepflegte Stromkennzahl noch P_el ÷ P_th
+    /// der Gerätezeile (Entscheid E7‑Q2 (2) mit Auflage).</para>
+    /// </summary>
+    internal sealed class KwkgLuecken
+    {
+        /// <summary>Anlagen, deren Kontingent aus der Anlagenart abzuleiten war — ohne
+        /// Anlagenart.</summary>
+        public readonly List<string> OhneAnlagenart = new List<string>();
+
+        /// <summary>Anlagen mit Kennzeichen „Vorrichtung zur Abwärmeabfuhr" ohne
+        /// bestimmbare Stromkennzahl.</summary>
+        public readonly List<string> OhneStromkennzahl = new List<string>();
+
+        /// <summary>Nimmt einen Bezeichner in eine der beiden Listen auf — einmal.</summary>
+        public static void Merke(List<string> liste, string bezeichner)
+        {
+            if (liste == null) return;
+            string b = bezeichner ?? "";
+            if (!liste.Contains(b)) liste.Add(b);
+        }
     }
 
     /// <summary>
@@ -188,6 +227,11 @@ namespace WindowsFormsApplication1
             // deshalb VOR der Prüfung auf lauf.Steuer.
             try { Co2DoppelansatzBehg(idProjekt, lauf, kultur, liste); } catch { }
             try { StrommixRueckfall(lauf, kultur, liste); } catch { }
+
+            // ETAPPE E7c: die Datenlücken der KWKG-Rechnung. Sie hängen an keinem
+            // STEUERpfad — ein BHKW-Projekt ohne jede Entlastungswahl kann sie tragen —
+            // und stehen deshalb wie die CO₂-Zeilen VOR der Prüfung auf lauf.Steuer.
+            try { KwkgDatenluecken(lauf, kultur, liste); } catch { }
 
             if (lauf.Steuer == null) return liste;
 
@@ -613,6 +657,54 @@ namespace WindowsFormsApplication1
                         "Netzbezug ist mit dem Strommix-Vorgabewert von {0} g CO₂/kWh gerechnet."),
                     lauf.StrommixRueckfallGJeKwh.Value.ToString("N0", kultur))
             });
+        }
+
+        // =====================================================================
+        // ETAPPE E7c — die Datenlücken der KWKG-Rechnung
+        // =====================================================================
+
+        /// <summary>
+        /// ETAPPE E7c — <b>die Datenlücken der KWKG-Rechnung</b> als Zeilen der
+        /// Kohärenzgruppe, je Art EINE Zeile mit den betroffenen Anlagen.
+        ///
+        /// <para><b>„Stromkennzahl fehlt"</b> (Befund K‑1, Entscheid E7‑Q2 (2) mit Auflage):
+        /// Eine Anlage trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr", aber weder
+        /// eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — dann gibt es
+        /// keinen Ersatzwert, sondern keinen KWK-Strom nach Fall 2, und der Zuschlag der
+        /// Anlage ist 0.</para>
+        ///
+        /// <para><b>Schwere HINWEIS, ohne Betrag</b> — wie die vergleichbaren Zeilen, die
+        /// eine Datenlage und ihre Folge nennen (Fall 3 „keine Entlastung gewählt",
+        /// Strommix-Rückfall, PV-Vergütungsherkunft): Den entgangenen Zuschlag zu beziffern
+        /// hieße, ihn ein zweites Mal zu rechnen — mit einem Wert, den es nicht gibt.</para>
+        /// </summary>
+        private static void KwkgDatenluecken(KohaerenzLauf lauf, CultureInfo kultur,
+                                             List<KohaerenzHinweis> liste)
+        {
+            if (lauf.Kwkg == null) return;
+
+            if (lauf.Kwkg.OhneStromkennzahl.Count > 0)
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.HINWEIS,
+                    Text = string.Format(kultur, T("KOH_KWKG_STROMKENNZAHL_FEHLT",
+                            "Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur " +
+                            "Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und " +
+                            "P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht " +
+                            "bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die " +
+                            "Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“."),
+                        Aufzaehlung(lauf.Kwkg.OhneStromkennzahl))
+                });
+        }
+
+        /// <summary>Anlagenbezeichner als Aufzählung in Anführungszeichen — die Zeichen
+        /// sind typografische Marken ohne Wortbestand und bleiben deshalb im Code
+        /// (Drei-Schichten-Regel).</summary>
+        private static string Aufzaehlung(List<string> bezeichner)
+        {
+            var teile = new List<string>();
+            foreach (string b in bezeichner) teile.Add("„" + b + "“");
+            return string.Join(", ", teile.ToArray());
         }
 
         // =====================================================================

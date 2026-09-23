@@ -23175,4 +23175,37 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
     <value>Der Leistungspreis über der Staffelgrenze in €/(kW·a).</value>
   </data>
+  <data name="WIRT_KWKG_SIGMA_GEPFLEGT" xml:space="preserve">
+    <value>gepflegt</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_BERECHNET" xml:space="preserve">
+    <value>berechnet aus P_el ÷ P_th der Gerätezeile = {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_FEHLT" xml:space="preserve">
+    <value>weder gepflegt noch aus P_el ÷ P_th der Gerätezeile bestimmbar</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ANLAGE" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: Stromkennzahl σ {1} ({2}); Nutzwärme {3} MWh (Wärmeproduktion {4} MWh − Anteil am Wärmeüberschuss {5} MWh); KWK-Strom min({6} ; {3} × {1}) = {7} MWh; Kürzung {8} MWh, davon Einspeisung {9} MWh und Eigenverbrauch {10} MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_OHNE_SIGMA" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: keine Stromkennzahl ({1}) — kein KWK-Strom nach Fall 2, für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ" xml:space="preserve">
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg — Nutzwärme des Projekts {0} MWh (Wärmeproduktion {1} MWh − Wärmeüberschuss {2} MWh) und Nettostromerzeugung {3} MWh {4} auf die Anlagen verteilt: {5}. Kürzung zusammen {6} MWh, zuerst von der Einspeisung.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_ANLAGE" xml:space="preserve">
+    <value>„{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA" xml:space="preserve">
+    <value>„{0}“ ohne Stromkennzahl — KWK-Strom 0 MWh, Kürzung {1} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_PEL" xml:space="preserve">
+    <value>nach P_el</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_GLEICH" xml:space="preserve">
+    <value>zu gleichen Teilen (keine Anlage führt P_el)</value>
+  </data>
+  <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
+    <value>Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“.</value>
+  </data>
 </root>

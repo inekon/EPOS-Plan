@@ -23168,4 +23168,37 @@ Do you want to allow this?</value>
   <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
     <value>The demand charge above the tier limit in €/(kW·a).</value>
   </data>
+  <data name="WIRT_KWKG_SIGMA_GEPFLEGT" xml:space="preserve">
+    <value>maintained</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_BERECHNET" xml:space="preserve">
+    <value>calculated from P_el ÷ P_th of the unit record = {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_FEHLT" xml:space="preserve">
+    <value>neither maintained nor determinable from P_el ÷ P_th of the unit record</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ANLAGE" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 (heat dissipation device) — "{0}": power-to-heat ratio σ {1} ({2}); useful heat {3} MWh (heat production {4} MWh − share of the heat surplus {5} MWh); CHP electricity min({6} ; {3} × {1}) = {7} MWh; reduction {8} MWh, of which feed-in {9} MWh and self-consumption {10} MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_OHNE_SIGMA" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 (heat dissipation device) — "{0}": no power-to-heat ratio ({1}) — no CHP electricity under case 2, no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 on the substitute path — useful heat of the project {0} MWh (heat production {1} MWh − heat surplus {2} MWh) and net electricity generation {3} MWh distributed {4} to the units: {5}. Total reduction {6} MWh, taken from feed-in first.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_ANLAGE" xml:space="preserve">
+    <value>"{0}" σ {1} ({2}), useful heat {3} MWh, CHP electricity {4} MWh, reduction {5} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA" xml:space="preserve">
+    <value>"{0}" without power-to-heat ratio — CHP electricity 0 MWh, reduction {1} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_PEL" xml:space="preserve">
+    <value>by P_el</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_GLEICH" xml:space="preserve">
+    <value>in equal parts (no unit has P_el)</value>
+  </data>
+  <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
+    <value>Power-to-heat ratio missing: {0} carries the flag "heat dissipation device", but neither a maintained power-to-heat ratio nor P_el and P_th in the unit record — CHP electricity under sec. 2 no. 16 CHP Act cannot be determined, no bonus is calculated for this unit. The power-to-heat ratio is entered in the CHP dialog under "Rates and origin".</value>
+  </data>
 </root>
