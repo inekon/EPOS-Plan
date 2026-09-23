@@ -49,6 +49,19 @@ namespace EPOS.Kern.Tests
     /// übernimmt deshalb keine Staffel, und die drei Staffelspalten am Stromträger
     /// bleiben leer; und diese Kette hat keine Stundenreihen, also keine Strommatrix,
     /// deren Summen jetzt in einer statt in vier Teilsummen entstehen.</para>
+    ///
+    /// <para><b>ETAPPE E7c1 (K‑1, A20, Nr. 30) — gemessen, kein Anker bewegt sich</b>
+    /// (alt = neu: 1024 −2.896.359,13 € mit Energiekosten 188.167,18 €/a, 1030
+    /// −21.895.377,28 € mit Energiekosten 1.176.906,60 €/a und KWKG-Zuschlag im
+    /// ersten Jahr 7.315,96 €, 99,00 €/a, Kaskade 13.000,00 €; Messung auf der nach
+    /// Schritt 105 migrierten Kopie, alle Größen der Kette und die KWKG-Reihe
+    /// bitgleich). Die Gründe: Kein Projekt der Testdatenbank trägt das Kennzeichen
+    /// „Abwärmeabfuhr" (Schritt 105 legt es mit 0 an), der zweite Fall des § 2 Nr. 16
+    /// KWKG rechnet also nirgends; die Inbetriebnahme 2027 von 1030 liegt vor dem
+    /// alten Fristende (Stichtag plus vier Jahre) wie vor dem neuen aus dem Katalog
+    /// (31.12.2030), und die Reihe endet in beiden Fällen mit dem Kontingent; das
+    /// Kontingent von 1030 ist gepflegt, die leere Anlagenart löst deshalb keine
+    /// Kohärenzzeile aus (Lesart b); 1024 trägt keinen KWKG-Zuschlag.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitAnkerTests : IDisposable
@@ -199,6 +212,7 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c1: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag im Projekt)
             Assert.Equal(-2896359.13, e.Kapitalwert.Value, 2);   // E7b: alt = neu (kein Tarifsatz, keine Staffel)
 
             // Die beiden Größen, aus denen er im Wesentlichen entsteht — damit eine
@@ -224,6 +238,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c1: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr; Inbetriebnahme
+            // 2027 vor dem Fristende 31.12.2030; Kontingent gepflegt)
             Assert.Equal(-21895377.28, e.Kapitalwert.Value, 2);  // E7b: alt = neu (kein Tarifsatz, keine Staffel)
 
             Assert.Equal(410000.00, e.Investition, 2);

@@ -3702,6 +3702,26 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_104_ZEITZONENTARIF_ABLOESUNG = 104;
 
+        /// <summary>
+        /// Schritt 105 — der <b>zweite Fall des § 2 Nr. 16 KWKG</b> (Befund K‑1, Entscheide
+        /// EZ‑5 und E7‑Q2 vom 23.09.2026): Verfügt eine Anlage über eine Vorrichtung zur
+        /// Abwärmeabfuhr, ist KWK-Strom nicht die Nettostromerzeugung, sondern
+        /// <c>min(Nettostromerzeugung, Nutzwärme × Stromkennzahl)</c>. Er folgt auf
+        /// <see cref="SCHRITT_104_ZEITZONENTARIF_ABLOESUNG"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, zwei Spalten an <c>Tab_Energieanlagen</c>: das Kennzeichen
+        /// <c>KWKG_Abwaermeabfuhr</c> (0/1 mit <c>CHECK</c>, Vorgabe 0) und die nullbare
+        /// Stromkennzahl <c>KWKG_Stromkennzahl</c> — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>, EINE Quelle für
+        /// Migration, <c>Werkzeuge/Testdatenbankschema</c>, die Vorsorge der
+        /// Wirtschaftlichkeit und den Nachweis in <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> 0 heißt Fall 1 — genau der Rechenweg vor dem
+        /// Schritt; der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine
+        /// vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_105_KWKG_ABWAERMEABFUHR = 105;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5133,6 +5153,22 @@ namespace WindowsFormsApplication1
                         "mit den Preisen des Stromtraegers - das Protokoll nennt jeden Satz " +
                         "und jedes Projekt.",
                         Schritt_104_ZeitzonentarifAbloesung),
+
+            // BEFUND K-1 (Entscheide EZ-5 und E7-Q2, 23.09.2026) - der zweite Fall des
+            // Paragraf 2 Nr. 16 KWKG. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr. Er steht NACH 104 ohne
+            // Reihenfolgebedingung - er legt allein zwei neue Spalten in
+            // Tab_Energieanlagen an, die kein anderer Schritt liest oder schreibt.
+            new Schritt(SCHRITT_105_KWKG_ABWAERMEABFUHR,
+                        "Tab_Energieanlagen bekommt Kennzeichen Abwaermeabfuhr und Stromkennzahl",
+                        "Verfuegt eine KWK-Anlage ueber eine Vorrichtung zur Abwaermeabfuhr " +
+                        "(Notkuehler), ist KWK-Strom nach Paragraf 2 Nr. 16 KWKG nicht die " +
+                        "Nettostromerzeugung, sondern das Produkt aus Nutzwaerme und " +
+                        "Stromkennzahl. Dafuer bekommt jede Anlage ein Kennzeichen (0/1, " +
+                        "Vorgabe 0) und eine Stromkennzahl (leer = berechnet aus P_el / P_th " +
+                        "der Geraetezeile). ERGEBNISNEUTRAL: Das Kennzeichen steht ueberall " +
+                        "auf 0, und 0 heisst wie bisher Nettostromerzeugung.",
+                        Schritt_105_KwkgAbwaermeabfuhr),
         };
 
         /// <summary>
@@ -7907,6 +7943,44 @@ namespace WindowsFormsApplication1
                     " Spalte(n) angelegt. " + bericht.Text() + ". Wo ein Zonentarif rechnete, " +
                     "rechnet der naechste Lauf mit den Preisen des Stromtraegers; der " +
                     "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 105 - der zweite Fall des § 2 Nr. 16 KWKG (Befund K-1, 23.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 105 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> und bei
+        /// <see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>.
+        ///
+        /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 95: Spaltenliste aus
+        /// dem Kern, Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c> — das Kennzeichen
+        /// als <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>, die Stromkennzahl als
+        /// nullbares <c>REAL</c>; beides ist an der STRICT-Tabelle per
+        /// <c>ADD COLUMN</c> zulässig. <b>Wiederholbar</b>: Eine vorhandene Spalte wird
+        /// übergangen.</para>
+        /// </summary>
+        private static bool Schritt_105_KwkgAbwaermeabfuhr(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("105: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.TAB_ENERGIEANLAGEN + "." +
+                    SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR + " (0/1, Vorgabe 0) und " +
+                    SchemaKatalog.TAB_ENERGIEANLAGEN + "." + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL +
+                    " (nullbar). KEIN DML: Das Kennzeichen steht ueberall auf 0 - KWK-Strom " +
+                    "bleibt die Nettostromerzeugung; der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

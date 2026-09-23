@@ -435,6 +435,13 @@ namespace EPOS.Kern.Tests
                     SpalteSicherstellen(s);
                 ZeitzonentarifAbloesung.Ausfuehren();
 
+                // Schritt 105 (Befund K-1, Entscheide EZ-5 und E7-Q2, 23.09.2026): das
+                // Kennzeichen "Vorrichtung zur Abwaermeabfuhr" (0/1, Vorgabe 0) und die
+                // nullbare Stromkennzahl an Tab_Energieanlagen. Wie in der Migration ueber
+                // ADD COLUMN, aus DERSELBEN Quelle; kein DML - 0 heisst Fall 1.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

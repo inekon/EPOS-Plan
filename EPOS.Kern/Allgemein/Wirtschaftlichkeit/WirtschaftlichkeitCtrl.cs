@@ -202,9 +202,15 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_PV_FORM"/>
         public const string SPALTE_PV_VERMIEDEN = "PvVermiedenerBezug";
 
-        /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).</summary>
+        /// <summary>Fristen des § 6 KWKG 2025 (Konzept Kap. 8.2, Phase 9).
+        ///
+        /// <para><b>ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b):</b> Die feste
+        /// Realisierungsfrist von vier Jahren ab dem Stichtag ist entfallen. An ihre Stelle
+        /// tritt das Katalogdatum „Ende der Frist zur Inbetriebnahme"
+        /// (<c>DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE</c>, 31.12.2030), gelesen über
+        /// <see cref="FristendeInbetriebnahme"/> — ohne Katalogwert keine stille Vorgabe,
+        /// sondern eine Herleitungszeile.</para></summary>
         public static readonly DateTime KWKG_STICHTAG_ENDE = new DateTime(2026, 12, 31);
-        public const int KWKG_REALISIERUNG_JAHRE = 4;
         /// <summary>
         /// Ausschreibungsgrenze des § 8a KWKG / der KWKAusV [kW el] — <b>je Anlage</b>,
         /// nicht je Projektsumme (Nutzerentscheidung 19.08.2026, Nachtrag zu Etappe E2).
@@ -562,6 +568,14 @@ namespace WindowsFormsApplication1
                     // bleibt allein bei Schritt 89 — sie ist eine einmalige Überführung
                     // und keine Vorsorge.
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt89_KwkAnlagenwahrheit)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E7c (Befund K-1) — Kennzeichen „Vorrichtung zur
+                    // Abwärmeabfuhr" und Stromkennzahl JE ANLAGE. Sie entstehen regulär
+                    // über Migrationsschritt 105; das hier ist die tolerante VORSORGE
+                    // unmittelbar vor dem Zugriff. Kein DML: Das Kennzeichen steht nach
+                    // dem ADD COLUMN auf 0 (Fall 1), die Kennzahl auf NULL.
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // LEITENTSCHEIDUNGEN L12/L13 — die vier Bilanzierungsangaben. Sie
@@ -1952,6 +1966,11 @@ namespace WindowsFormsApplication1
             /// <summary>Nachweis je BHKW-Modul der KWKG-Rechnung (E6 → E7).</summary>
             public List<KwkgModulNachweis> KwkgModule = new List<KwkgModulNachweis>();
 
+            /// <summary>ETAPPE E7c — die Datenlücken der KWKG-Rechnung dieses Laufs, die
+            /// die Kohärenzprüfung als Zeile meldet (Anlagenart fehlt, Stromkennzahl
+            /// fehlt). <b>Reine Ausgabe.</b></summary>
+            public KwkgLuecken KwkgLuecken = new KwkgLuecken();
+
             /// <summary>ETAPPE P4: Ergebnis des PV-Vergütungsdialogs (null =
             /// Dialog inaktiv — dann gilt exakt der Bestandsrechenweg).</summary>
             public PvErloesErgebnis PvVerguetung;
@@ -2173,7 +2192,7 @@ namespace WindowsFormsApplication1
             string kwkgHinweis = null;
             double[] kwkgReihe = pauschalGreift
                 ? null
-                : BaueKwkgReihe(v, p, e.Matrix, e.KwkgModule, out kwkgJahr1, out kwkgHinweis);
+                : BaueKwkgReihe(v, p, e.Matrix, e.KwkgModule, e.KwkgLuecken, out kwkgJahr1, out kwkgHinweis);
             e.KwkgJahr1 = kwkgJahr1;
             if (kwkgReihe != null)
                 e.ErloesReihen.Add(new KapitalwertRechner.ErloesReihe(
@@ -2449,7 +2468,7 @@ namespace WindowsFormsApplication1
         /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_Gesetzesparameter; Override über
         /// den Parameter-Deckel), kumuliert bis zum Vbh-Kontingent (30.000 Vbh).
         /// Vorab die Förderfähigkeits-Prüfkette: Fristenlogik § 6 (Stichtag
-        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungsgrenze <b>je Anlage</b>
+        /// 31.12.2026, Inbetriebnahme bis zum Fristende des Katalogs), Ausschreibungsgrenze <b>je Anlage</b>
         /// (§ 8a KWKG / KWKAusV) und Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒
         /// Bonus = 0 mit Hinweis.
         /// Negativpreis-Abschlag (§ 7 Abs. 5) als %-Näherung auf die vergüteten Vbh;
@@ -2496,8 +2515,12 @@ namespace WindowsFormsApplication1
         /// ergänzt (Satz, Vbh, Deckel, Kontingent, Herleitung nach § 7). Nur der Weg je
         /// Anlage füllt sie — der projektweite Ersatzweg kennt keine Module. <c>null</c>
         /// ist erlaubt.</param>
+        /// <param name="luecken">ETAPPE E7c: nimmt die Anlagen auf, deren Zuschlag an einer
+        /// Datenlücke 0 wurde (Anlagenart fehlt, Stromkennzahl fehlt) — die Grundlage der
+        /// Kohärenzzeilen. <c>null</c> ist erlaubt.</param>
         private double[] BaueKwkgReihe(VariantenDaten v, WirtschaftlichkeitParameter p,
                                        StromMatrix matrix, List<KwkgModulNachweis> nachweise,
+                                       KwkgLuecken luecken,
                                        out double jahr1, out string hinweis)
         {
             jahr1 = 0;
@@ -2554,28 +2577,38 @@ namespace WindowsFormsApplication1
 
             if (!eigeneFristdaten)
             {
-                if (p.KwkgStichtag.HasValue)
+                if (p.KwkgStichtag.HasValue && p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
                 {
-                    if (p.KwkgStichtag.Value.Date > KWKG_STICHTAG_ENDE)
+                    hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
+                              "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
+                    return null;
+                }
+
+                // ETAPPE E7c (A20, Entscheid E7-Q3 Lesart b): Die Frist zur
+                // Inbetriebnahme endet am Katalogdatum (31.12.2030) — nicht mehr vier
+                // Jahre nach dem Stichtag. Geprüft wird die Inbetriebnahme, sobald sie
+                // bekannt ist, auch ohne Stichtag; ohne Katalogwert keine stille Vorgabe,
+                // sondern eine Herleitungszeile („ungeprüft").
+                if (p.KwkgInbetriebnahme.HasValue)
+                {
+                    GesetzParameter quelle;
+                    DateTime? fristende = FristendeInbetriebnahme(p.KwkgInbetriebnahme.Value.Year, out quelle);
+                    if (!fristende.HasValue)
+                        hinweise.Add(FristendeFehltZeile(null, p.KwkgInbetriebnahme.Value.Year));
+                    else if (p.KwkgInbetriebnahme.Value.Date > fristende.Value)
                     {
-                        hinweis = "KWKG: Bestellung/Genehmigung nach dem 31.12.2026 — nach geltendem " +
-                                  "Recht nicht förderfähig (Regulierungsrisiko Novelle); Bonus = 0.";
-                        return null;
-                    }
-                    // Realisierungsfrist: Dauerbetrieb bis zum ABLAUF des 4. Jahres nach
-                    // dem Stichtag (§ 6, Pfad 2 — für den Bestellungs-Pfad 3 großzügig
-                    // um maximal ein Jahr; im Konzept 8.5 als Näherung dokumentiert).
-                    DateTime fristende = new DateTime(
-                        p.KwkgStichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
-                    if (p.KwkgInbetriebnahme.HasValue && p.KwkgInbetriebnahme.Value.Date > fristende)
-                    {
-                        hinweis = "KWKG: Inbetriebnahme nach Ablauf des " + KWKG_REALISIERUNG_JAHRE +
-                                  ". Jahres nach dem Stichtag (§ 6 Realisierungsfrist, bis " +
-                                  fristende.ToString("dd.MM.yyyy") + "); Bonus = 0.";
+                        hinweis = string.Format(BerichtTexte.Kultur,
+                            T("WIRT_KWKG_NACH_FRISTENDE",
+                              "KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur " +
+                              "Inbetriebnahme am {1} ({2}) — kein Zuschlag."),
+                            p.KwkgInbetriebnahme.Value.ToString("dd.MM.yyyy", BerichtTexte.Kultur),
+                            fristende.Value.ToString("dd.MM.yyyy", BerichtTexte.Kultur),
+                            Herkunft(quelle));
                         return null;
                     }
                 }
-                else
+
+                if (!p.KwkgStichtag.HasValue)
                     hinweise.Add("KWKG: kein Bestell-/Genehmigungsdatum hinterlegt — " +
                                  "Förderfähigkeit ungeprüft (§ 6 KWKG 2025, Stichtag 31.12.2026).");
             }
@@ -2599,8 +2632,9 @@ namespace WindowsFormsApplication1
             // dieser Nachtrag nichts, er korrigiert ausschließlich den BEZUG.
             //
             // ETAPPE E6: Dieselbe Kette entscheidet jetzt auch über Stichtag und
-            // Realisierungsfrist je Anlage, und die Ausschreibungsgrenze wird mit dem
-            // Inbetriebnahmejahr DIESER Anlage im Katalog nachgeschlagen.
+            // Frist zur Inbetriebnahme je Anlage (seit E7c das Katalogdatum), und die
+            // Ausschreibungsgrenze wird mit dem Inbetriebnahmejahr DIESER Anlage im
+            // Katalog nachgeschlagen.
             double grenzeKW = AusschreibungsgrenzeKW(foerderbeginn);
             bool oelAusschluss = p.KwkgInbetriebnahme.HasValue
                               && p.KwkgInbetriebnahme.Value.Year >= 2025;
@@ -2673,7 +2707,7 @@ namespace WindowsFormsApplication1
                 double stromNettoMWh = Math.Max(0, stromMWh - hilfsstrom.GesamtMWh);
                 double[] ersatz = ReiheErsatzGewichtet(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
                                                        stromNettoMWh, vbh, foerderbeginn,
-                                                       hinweise, out jahr1);
+                                                       hinweise, luecken, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
             }
@@ -2706,6 +2740,7 @@ namespace WindowsFormsApplication1
                                            auswahl.Klartext(auswahl.NurHeizoel),
                                            auswahl.PelFoerderfaehigKW.ToString("N0")));
             foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
+            foreach (string s in auswahl.Fristhinweise) hinweise.Add(s);   // E7c (A20)
 
             // Öl-Anlagen ohne Inbetriebnahmedatum werden NICHT ausgeschlossen (der
             // Ausschluss gilt nur für Neuanlagen) — der Anwender muss aber wissen, dass
@@ -2716,7 +2751,7 @@ namespace WindowsFormsApplication1
 
             double[] reihe = ReiheJeAnlage(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
                                            hilfsstrom, auswahl, foerderbeginn, hinweise,
-                                           nachweise, out jahr1);
+                                           nachweise, luecken, out jahr1);
             if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
             return reihe;
         }
@@ -2737,6 +2772,7 @@ namespace WindowsFormsApplication1
                 hinweise.Add(string.Format(MyResource.Resource.WIRT_KWKG_ALLE_UEBER_GRENZE,
                                            grenzeKW.ToString("N0"), auswahl.Klartext(auswahl.UeberGrenze)));
             foreach (string s in auswahl.Fristmeldungen) hinweise.Add(s);
+            foreach (string s in auswahl.Fristhinweise) hinweise.Add(s);   // E7c (A20)
         }
 
         /// <summary>
@@ -2782,6 +2818,16 @@ namespace WindowsFormsApplication1
         /// Zeilen. Entdoppelt wird deshalb ordinal innerhalb dieses Weges — nicht gegen
         /// die schon gesammelten Meldungen des Aufrufers, die aus anderen Prüfungen
         /// stammen und zufällig gleich lauten könnten.</para>
+        ///
+        /// <para><b>ETAPPE E7c — Fall 2 auf dem Ersatzweg</b> (Entscheid E7‑Q2 (4)). Trägt
+        /// eine Anlage das Kennzeichen „Vorrichtung zur Abwärmeabfuhr", fehlt hier die
+        /// Zuordnung Modul → Anlage auch für die Wärme. Die Nutzwärme des PROJEKTS
+        /// (Wärmeproduktion − Wärmeüberschuss) und die Nettostromerzeugung werden deshalb
+        /// mit denselben Gewichten verteilt, die die Gesamtanlage mischen (P_el, bei G ≤ 0
+        /// zu gleichen Teilen); je gekennzeichneter Anlage gilt
+        /// <c>min(Netto_i, Nutzwärme_i × σ_i)</c>, und die Summe der Kürzungen geht zuerst
+        /// von der Einspeisung ab (<see cref="KwkStromRechner.Kuerzen"/>). Die
+        /// Herleitungszeile sagt „Ersatzweg".</para>
         /// </summary>
         /// <param name="mitMatrix">true = die Stundenreihen liefern einen Eigen-/
         /// Einspeise-Split; false = Fallback „alles ist Eigenverbrauch" (W2).</param>
@@ -2794,11 +2840,14 @@ namespace WindowsFormsApplication1
         /// Anlage ohne eigenes Inbetriebnahmedatum.</param>
         /// <param name="hinweise">Die Meldungsliste des Aufrufers — dieser Weg hängt
         /// seine entdoppelten Meldungen hinten an.</param>
+        /// <param name="luecken">ETAPPE E7c: Anlagen, deren Zuschlag an einer Datenlücke 0
+        /// wurde; <c>null</c> ist erlaubt.</param>
         private double[] ReiheErsatzGewichtet(VariantenDaten v, WirtschaftlichkeitParameter p,
                                               bool mitMatrix, double eigenNettoMWh,
                                               double einspNettoMWh, double stromNettoMWh,
                                               double vbh, int foerderbeginn,
-                                              List<string> hinweise, out double jahr1)
+                                              List<string> hinweise, KwkgLuecken luecken,
+                                              out double jahr1)
         {
             jahr1 = 0;
             List<BhkwAnlage> anlagen = BhkwAnlagen(v.IdProjekt);
@@ -2834,7 +2883,7 @@ namespace WindowsFormsApplication1
                 satzEinsp += gewicht[i] * (a.SatzEinspCt ?? 0);
                 kontingent += gewicht[i] * (a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
                                           ? a.VbhKontingent.Value
-                                          : KontingentDerAnlage(a, beginnJeAnlage[i], eigene));
+                                          : KontingentDerAnlage(a, beginnJeAnlage[i], eigene, luecken));
             }
             satzEigen /= gewichtSumme;
             satzEinsp /= gewichtSumme;
@@ -2854,6 +2903,14 @@ namespace WindowsFormsApplication1
                     "Gesamtanlage wird deshalb arithmetisch gemittelt statt nach " +
                     "Leistung gewichtet."));
             Entdoppelt(eigene, hinweise);
+
+            // ETAPPE E7c — Fall 2 auf dem Ersatzweg (Begründung im Kopf). Ohne Kennzeichen
+            // an irgendeiner Anlage läuft nichts davon, und die Mengen bleiben Zeile für
+            // Zeile die von vorher.
+            string fall2Zeile = ErsatzwegFall2(v, anlagen, gewicht, gewichtSumme, nachLeistung, mitMatrix,
+                                               ref eigenNettoMWh, ref einspNettoMWh, ref stromNettoMWh,
+                                               luecken);
+            if (fall2Zeile != null) hinweise.Add(fall2Zeile);
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
@@ -2964,13 +3021,23 @@ namespace WindowsFormsApplication1
                                        bool mitMatrix, double eigenNettoMWh, double einspNettoMWh,
                                        HilfsstromSatz hilfsstrom, KwkgAnlagenauswahl auswahl,
                                        int foerderbeginn, List<string> hinweise,
-                                       List<KwkgModulNachweis> nachweise, out double jahr1)
+                                       List<KwkgModulNachweis> nachweise, KwkgLuecken luecken,
+                                       out double jahr1)
         {
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
             List<KeyValuePair<int, double>> staffel = _staffelCache;
             double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
             int T = Math.Max(1, p.Betrachtungszeitraum);
+
+            // ETAPPE E7c (Befund K-1): die zwei Projektgrößen, die Fall 2 braucht — der
+            // Wärmeüberschuss liegt nur als Projektsumme vor (gemessen mit E7a, A2) und
+            // wird allein nach P_el auf die Module verteilt; die Leistungssumme über ALLE
+            // Anlagen, weil der Überschuss physikalisch ist, nicht förderrechtlich.
+            double ueberschussMWh = v.Ergebnis != null && v.Ergebnis.BHKW != null
+                                  ? v.Ergebnis.BHKW.Waermeueberschuss : 0;
+            double pelSummeKW = 0;
+            foreach (BhkwAnlage an in auswahl.Anlagen) pelSummeKW += Math.Max(0, an.PelKW);
 
             // ETAPPE B3 Paket b — die NETTO-Erzeugung je Anlage und ihre Summe, in EINEM
             // Durchlauf über ALLE Anlagen (auch die nicht förderfähigen): Der Nenner der
@@ -3006,6 +3073,35 @@ namespace WindowsFormsApplication1
                 double eigenMWh = mitMatrix ? eigenNettoMWh * anteil : stromAnlageMWh;
                 double einspMWh = mitMatrix ? einspNettoMWh * anteil : 0;
 
+                // ETAPPE E7c — DER ZWEITE FALL DES § 2 Nr. 16 KWKG (Befund K-1, Entscheid
+                // E7-Q2). Trägt die Anlage das Kennzeichen „Vorrichtung zur
+                // Abwärmeabfuhr", ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern
+                // min(Netto, Nutzwärme × σ). Der ANTEIL am Split bleibt der physikalische
+                // (Netto) — träte der KWK-Strom an seine Stelle, bliebe bei einer einzigen
+                // Anlage alles gleich (E7-Q2 (3)). Gekürzt wird die zugeteilte Menge, und
+                // zwar zuerst die Einspeisung. Ohne bestimmbare Kennzahl gibt es keinen
+                // Ersatz: kein KWK-Strom nach Fall 2, der Zuschlag der Anlage ist 0.
+                // OHNE KENNZEICHEN läuft dieser Block nicht — Zeile für Zeile wie vorher.
+                KwkStromFall2 fall2 = null;
+                string fall2Zeile = null;
+                if (a.Abwaermeabfuhr)
+                {
+                    fall2 = Fall2DerAnlage(a, auswahl.Module[i], stromAnlageMWh, ueberschussMWh, pelSummeKW);
+                    double eigenVor = eigenMWh, einspVor = einspMWh;
+                    if (fall2.Stromkennzahl.Bestimmbar)
+                    {
+                        KwkStromRechner.Kuerzen(fall2.KuerzungMWh, ref eigenMWh, ref einspMWh);
+                    }
+                    else
+                    {
+                        eigenMWh = 0;
+                        einspMWh = 0;
+                        if (luecken != null) KwkgLuecken.Merke(luecken.OhneStromkennzahl, a.Bezeichner);
+                    }
+                    fall2Zeile = Fall2Zeile(a, fall2, einspVor - einspMWh, eigenVor - eigenMWh);
+                    hinweise.Add(fall2Zeile);
+                }
+
                 // ETAPPE BK1 — KEIN RÜCKFALL MEHR AUF DAS PROJEKT. Was hier gerechnet
                 // wird, steht an der Anlage; NULL heißt jetzt 0 und nicht „Projektwert".
                 // Möglich wird das durch Schemaschritt 89, der die Projektvorgaben
@@ -3027,7 +3123,7 @@ namespace WindowsFormsApplication1
                 // eine Kaskade nur eines ihrer Module treffen konnte.
                 double kontingent = a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
                                   ? a.VbhKontingent.Value
-                                  : KontingentDerAnlage(a, beginn, hinweise);
+                                  : KontingentDerAnlage(a, beginn, hinweise, luecken);
                 double deckelFest = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
                                   ? a.VbhDeckel.Value : 0;
 
@@ -3075,6 +3171,18 @@ namespace WindowsFormsApplication1
                         EigenMWh = eigenMWh,
                         EinspeisungMWh = einspMWh
                     };
+                    // ETAPPE E7c: der zweite Fall steht nur an einer Anlage mit
+                    // Kennzeichen — sonst bleiben die Felder null (Fall 1).
+                    if (fall2 != null)
+                    {
+                        n.Abwaermeabfuhr = true;
+                        n.Stromkennzahl = fall2.Stromkennzahl.Wert;
+                        n.StromkennzahlHerkunft = fall2.Stromkennzahl.Herkunft;
+                        n.NutzwaermeMWh = fall2.NutzwaermeMWh;
+                        n.KwkStromMWh = fall2.KwkStromMWh;
+                        n.KuerzungMWh = fall2.KuerzungMWh;
+                        n.HerleitungKwkStrom = fall2Zeile;
+                    }
                     try
                     {
                         if (_gesetze == null) _gesetze = new GesetzKatalog();
@@ -3115,6 +3223,132 @@ namespace WindowsFormsApplication1
 
             jahr1 = reihe[1];
             return reihe;
+        }
+
+        // =====================================================================
+        // ETAPPE E7c — der zweite Fall des § 2 Nr. 16 KWKG (Befund K-1)
+        // =====================================================================
+
+        /// <summary>
+        /// Der zweite Fall für EINE zugeordnete Anlage (Regelweg): σ nach Entscheid
+        /// E7‑Q2 (2), die Wärme des Moduls, dessen Anteil am Wärmeüberschuss des Projekts
+        /// nach P_el (E7‑Q2 (1)) — gerechnet von <see cref="KwkStromRechner"/>, derselben
+        /// reinen Funktion, die der Dialog für den Vorschlag ruft.
+        /// </summary>
+        private static KwkStromFall2 Fall2DerAnlage(BhkwAnlage a, ErgebnisBHKWModulModel modul,
+                                                    double nettoMWh, double ueberschussMWh,
+                                                    double pelSummeKW)
+        {
+            KwkStromkennzahl sigma = KwkStromRechner.Stromkennzahl(a.Stromkennzahl, a.PelKW, a.PthKW,
+                                                                  BerichtTexte.Kultur);
+            double waerme = modul == null ? 0 : modul.Waermeproduktion;
+            double anteil = KwkStromRechner.UeberschussAnteil(ueberschussMWh, a.PelKW, pelSummeKW);
+            return KwkStromRechner.Fall2(nettoMWh, waerme, anteil, sigma);
+        }
+
+        /// <summary>
+        /// Die Herleitungszeile des zweiten Falls für EINE Anlage (E7‑Q2 (5)): Fall, σ
+        /// und seine Herkunft, Nutzwärme, KWK-Strom und Kürzung — aufgeteilt auf
+        /// Einspeisung und Eigenverbrauch, wie sie tatsächlich abgezogen wurde. Ohne
+        /// bestimmbare Kennzahl die Zeile „kein KWK-Strom nach Fall 2".
+        /// </summary>
+        private static string Fall2Zeile(BhkwAnlage a, KwkStromFall2 f, double vonEinspMWh,
+                                         double vonEigenMWh)
+        {
+            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
+            if (!f.Stromkennzahl.Bestimmbar)
+                return string.Format(k, T("WIRT_KWKG_FALL2_OHNE_SIGMA",
+                    "KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: keine " +
+                    "Stromkennzahl ({1}) — kein KWK-Strom nach Fall 2, für diese Anlage kein " +
+                    "Zuschlag."),
+                    a.Bezeichner, f.Stromkennzahl.Herleitung);
+
+            return string.Format(k, T("WIRT_KWKG_FALL2_ANLAGE",
+                "KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: Stromkennzahl " +
+                "σ {1} ({2}); Nutzwärme {3} MWh (Wärmeproduktion {4} MWh − Anteil am " +
+                "Wärmeüberschuss {5} MWh); KWK-Strom min({6} ; {3} × {1}) = {7} MWh; Kürzung " +
+                "{8} MWh, davon Einspeisung {9} MWh und Eigenverbrauch {10} MWh."),
+                a.Bezeichner,
+                f.Stromkennzahl.Wert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k),
+                f.Stromkennzahl.Herleitung,
+                f.NutzwaermeMWh.ToString("N3", k),
+                f.WaermeMWh.ToString("N3", k),
+                f.UeberschussAnteilMWh.ToString("N3", k),
+                f.NettoMWh.ToString("N3", k),
+                f.KwkStromMWh.ToString("N3", k),
+                f.KuerzungMWh.ToString("N3", k),
+                Math.Max(0, vonEinspMWh).ToString("N3", k),
+                Math.Max(0, vonEigenMWh).ToString("N3", k));
+        }
+
+        /// <summary>
+        /// Der zweite Fall auf dem ERSATZWEG (Entscheid E7‑Q2 (4)) — Begründung im Kopf
+        /// von <see cref="ReiheErsatzGewichtet"/>. Mindert die Mengen des Aufrufers um die
+        /// Summe der Kürzungen (zuerst die Einspeisung) und liefert die Herleitungszeile;
+        /// <c>null</c>, wenn keine Anlage das Kennzeichen trägt — dann bleibt alles, wie es
+        /// war.
+        /// </summary>
+        private static string ErsatzwegFall2(VariantenDaten v, List<BhkwAnlage> anlagen,
+                                             double[] gewicht, double gewichtSumme, bool nachLeistung,
+                                             bool mitMatrix, ref double eigenNettoMWh,
+                                             ref double einspNettoMWh, ref double stromNettoMWh,
+                                             KwkgLuecken luecken)
+        {
+            bool gesetzt = false;
+            foreach (BhkwAnlage a in anlagen)
+                if (a.Abwaermeabfuhr) { gesetzt = true; break; }
+            if (!gesetzt || gewichtSumme <= 0) return null;
+
+            System.Globalization.CultureInfo k = BerichtTexte.Kultur;
+            double waerme = v.Ergebnis != null && v.Ergebnis.BHKW != null ? v.Ergebnis.BHKW.Waermeproduktion : 0;
+            double ueberschuss = v.Ergebnis != null && v.Ergebnis.BHKW != null ? v.Ergebnis.BHKW.Waermeueberschuss : 0;
+            double netto = Math.Max(0, stromNettoMWh);
+
+            var teile = new List<string>();
+            double kuerzung = 0;
+            for (int i = 0; i < anlagen.Count; i++)
+            {
+                BhkwAnlage a = anlagen[i];
+                if (!a.Abwaermeabfuhr) continue;
+                double anteil = gewicht[i] / gewichtSumme;
+                KwkStromkennzahl sigma = KwkStromRechner.Stromkennzahl(a.Stromkennzahl, a.PelKW, a.PthKW, k);
+                // Nutzwärme des PROJEKTS mit dem Gewicht der Anlage: Wärme und Überschuss
+                // mit demselben Anteil — dieselbe Zahl wie (Wärme − Überschuss) × Anteil.
+                KwkStromFall2 f = KwkStromRechner.Fall2(netto * anteil, waerme * anteil,
+                                                        Math.Max(0, ueberschuss) * anteil, sigma);
+                kuerzung += f.KuerzungMWh;
+
+                if (!sigma.Bestimmbar)
+                {
+                    if (luecken != null) KwkgLuecken.Merke(luecken.OhneStromkennzahl, a.Bezeichner);
+                    teile.Add(string.Format(k, T("WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA",
+                        "„{0}“ ohne Stromkennzahl — KWK-Strom 0 MWh, Kürzung {1} MWh"),
+                        a.Bezeichner, f.KuerzungMWh.ToString("N3", k)));
+                }
+                else
+                    teile.Add(string.Format(k, T("WIRT_KWKG_FALL2_ERSATZ_ANLAGE",
+                        "„{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh"),
+                        a.Bezeichner, sigma.Wert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k),
+                        sigma.Herleitung, f.NutzwaermeMWh.ToString("N3", k),
+                        f.KwkStromMWh.ToString("N3", k), f.KuerzungMWh.ToString("N3", k)));
+            }
+
+            if (mitMatrix)
+                KwkStromRechner.Kuerzen(kuerzung, ref eigenNettoMWh, ref einspNettoMWh);
+            else
+                stromNettoMWh = Math.Max(0, stromNettoMWh - kuerzung);
+
+            string verteilung = nachLeistung
+                ? T("WIRT_KWKG_FALL2_VERTEILUNG_PEL", "nach P_el")
+                : T("WIRT_KWKG_FALL2_VERTEILUNG_GLEICH", "zu gleichen Teilen (keine Anlage führt P_el)");
+            return string.Format(k, T("WIRT_KWKG_FALL2_ERSATZ",
+                "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg — Nutzwärme des Projekts {0} MWh " +
+                "(Wärmeproduktion {1} MWh − Wärmeüberschuss {2} MWh) und Nettostromerzeugung {3} MWh " +
+                "{4} auf die Anlagen verteilt: {5}. Kürzung zusammen {6} MWh, zuerst von der Einspeisung."),
+                KwkStromRechner.Nutzwaerme(waerme, ueberschuss).ToString("N3", k),
+                waerme.ToString("N3", k), Math.Max(0, ueberschuss).ToString("N3", k),
+                netto.ToString("N3", k), verteilung, string.Join("; ", teile.ToArray()),
+                kuerzung.ToString("N3", k));
         }
 
         /// <summary>
@@ -3186,8 +3420,18 @@ namespace WindowsFormsApplication1
         /// <para>Ohne erfasste Anlagenart liefert der Rechner 0 mit Begründung — das ist
         /// dieselbe Antwort wie am Projekt und kein stiller Ausfall: Eine Anlage ohne
         /// Kontingent bekommt keinen Zuschlag, und die Herleitung sagt warum.</para>
+        ///
+        /// <para><b>ETAPPE E7c — die Kern-Regel zu § 6.3 Nr. 30</b> (Entscheid E7‑Q1,
+        /// Lesart b, 23.09.2026): „NULL ⇒ kein Zuschlag" greift genau HIER — nur dort, wo
+        /// das Kontingent aus der Anlagenart abzuleiten ist. Ein gepflegtes Kontingent
+        /// kommt gar nicht bis hierher (es gilt, auch ohne Anlagenart). Fehlt die
+        /// Anlagenart, hält <paramref name="luecken"/> die Anlage fest — die Grundlage
+        /// der Kohärenzzeile „Anlagenart fehlt" —, und die Herleitung sagt es ohne den
+        /// Nachsatz „es gilt der eingetragene Wert", der ohne eingetragenen Wert nicht
+        /// stimmt.</para>
         /// </summary>
-        private double KontingentDerAnlage(BhkwAnlage a, int jahr, List<string> hinweise)
+        private double KontingentDerAnlage(BhkwAnlage a, int jahr, List<string> hinweise,
+                                           KwkgLuecken luecken)
         {
             if (_gesetze == null) _gesetze = new GesetzKatalog();
             System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
@@ -3195,12 +3439,22 @@ namespace WindowsFormsApplication1
                 a.Anlagenart, a.Kostenanteil ?? 0, jahr,
                 (sch, j) => _gesetze.WertMitHerkunft(sch, j), kultur);
 
+            bool ohneArt = string.IsNullOrEmpty(a.Anlagenart);
+            if (ohneArt && luecken != null) KwkgLuecken.Merke(luecken.OhneAnlagenart, a.Bezeichner);
+
             if (hinweise != null)
-                hinweise.Add(string.Format(kultur,
-                    T("WIRT_KWKG_KONTINGENT_ANLAGE",
-                      "KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — " +
-                      "abgeleitet {1} Vbh ({2})."),
-                    a.Bezeichner, v.KontingentH.ToString("N0", kultur), v.Herleitung));
+                hinweise.Add(ohneArt
+                    ? string.Format(kultur,
+                        T("WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART",
+                          "KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine " +
+                          "Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent " +
+                          "ab; für diese Anlage kein Zuschlag."),
+                        a.Bezeichner)
+                    : string.Format(kultur,
+                        T("WIRT_KWKG_KONTINGENT_ANLAGE",
+                          "KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — " +
+                          "abgeleitet {1} Vbh ({2})."),
+                        a.Bezeichner, v.KontingentH.ToString("N0", kultur), v.Herleitung));
             return v.KontingentH;
         }
 
@@ -4267,7 +4521,7 @@ namespace WindowsFormsApplication1
             public DateTime? Stichtag;
 
             /// <summary>Inbetriebnahmedatum DIESER Anlage; <c>null</c> = Projektvorgabe.
-            /// Es entscheidet über Realisierungsfrist, Satzstichtag, Deckelstaffel und
+            /// Es entscheidet über die Frist zur Inbetriebnahme, Satzstichtag, Deckelstaffel und
             /// über Neuanlage/Bestandsanlage (Heizöl-Ausschluss).</summary>
             public DateTime? Inbetriebnahme;
 
@@ -4346,6 +4600,22 @@ namespace WindowsFormsApplication1
             /// <see cref="HilfsstromRechner.MengeMWh"/>.
             /// </summary>
             public double? HilfsenergieAnteil;
+
+            // ---------------- ETAPPE E7c — § 2 Nr. 16 KWKG, zweiter Fall ----------------
+
+            /// <summary>ETAPPE E7c (Befund K‑1): <c>Tab_Energieanlagen.KWKG_Abwaermeabfuhr</c>
+            /// — true = die Anlage verfügt über eine Vorrichtung zur Abwärmeabfuhr (Fall 2);
+            /// false (0, fehlende Spalte) = Fall 1, die Nettostromerzeugung.</summary>
+            public bool Abwaermeabfuhr;
+
+            /// <summary>ETAPPE E7c: <c>Tab_Energieanlagen.KWKG_Stromkennzahl</c>;
+            /// <c>null</c> = nicht gepflegt — dann gilt P_el ÷ P_th der Gerätezeile
+            /// (<see cref="KwkStromRechner.Stromkennzahl"/>).</summary>
+            public double? Stromkennzahl;
+
+            /// <summary>ETAPPE E7c: <c>Tab_BHKW.Ptherm</c> [kW] der Gerätezeile — der Nenner
+            /// des Vorschlags σ = P_el ÷ P_th; <c>null</c> = nicht erfasst.</summary>
+            public double? PthKW;
         }
 
         /// <summary>
@@ -4426,11 +4696,19 @@ namespace WindowsFormsApplication1
             public bool[] Foerderfaehig = new bool[0];
 
             /// <summary>
-            /// Fertige Meldungen zu Anlagen, die an <b>Stichtag oder Realisierungsfrist</b>
+            /// Fertige Meldungen zu Anlagen, die an <b>Stichtag oder Frist zur Inbetriebnahme</b>
             /// des § 6 gescheitert sind (Etappe E6). Sie stehen einzeln statt als
             /// Aufzählung, weil jede ihr eigenes Datum nennt.
             /// </summary>
             public readonly List<string> Fristmeldungen = new List<string>();
+
+            /// <summary>
+            /// ETAPPE E7c (A20) — Zeilen zu Anlagen, deren Frist zur Inbetriebnahme sich
+            /// NICHT prüfen ließ, weil der Katalog für ihr Inbetriebnahmejahr kein
+            /// Fristende führt. Die Anlage bleibt förderfähig; die Zeile sagt, dass die
+            /// Prüfung fehlt, statt still eine Vorgabe anzunehmen.
+            /// </summary>
+            public readonly List<string> Fristhinweise = new List<string>();
 
             /// <summary>
             /// Ölbetriebene Anlagen ohne wirksames Inbetriebnahmedatum — sie werden NICHT
@@ -4450,6 +4728,58 @@ namespace WindowsFormsApplication1
         /// Datenbank, deren Katalog vor diesem Nachtrag eingesät wurde —, gilt
         /// <see cref="KWKG_MAX_LEISTUNG_KW"/> mit demselben Wert.
         /// </summary>
+        /// <summary>
+        /// ETAPPE E7c (A20, Entscheid E7‑Q3 Lesart b) — das <b>Ende der Frist zur
+        /// Inbetriebnahme</b> aus dem Gesetzeskatalog
+        /// (<c>DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE</c>, als Kalenderjahr: bis zum
+        /// 31.12. dieses Jahres), nachgeschlagen mit dem Inbetriebnahmejahr der Anlage.
+        ///
+        /// <para><b>Nullbar gelesen.</b> Fehlt die Zeile oder ihr Wert, ist das
+        /// <c>null</c> — und der Aufrufer schreibt eine Herleitungszeile statt eine
+        /// Vorgabe anzunehmen (keine stille Konstante wie die entfallene
+        /// Realisierungsfrist von vier Jahren).</para>
+        /// </summary>
+        /// <param name="jahr">Stichjahr der Nachschlagung — das Inbetriebnahmejahr.</param>
+        /// <param name="quelle">Die Katalogzeile (Schlüssel, Quelle) für die Herleitung;
+        /// <c>null</c>, wenn es keine gibt.</param>
+        private DateTime? FristendeInbetriebnahme(int jahr, out GesetzParameter quelle)
+        {
+            quelle = null;
+            try
+            {
+                if (_gesetze == null) _gesetze = new GesetzKatalog();
+                quelle = _gesetze.WertMitHerkunft(DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE, jahr);
+                if (quelle == null || !quelle.Wert.HasValue) return null;
+                int bis = (int)Math.Round(quelle.Wert.Value);
+                if (bis < GesetzKatalog.JAHR_MIN || bis > GesetzKatalog.JAHR_MAX) return null;
+                return new DateTime(bis, 12, 31);
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Die Herleitungszeile „Fristende nicht im Katalog — ungeprüft";
+        /// <paramref name="anlage"/> leer = der Projektblock (keine Anlage mit eigenem
+        /// Datum).</summary>
+        private static string FristendeFehltZeile(string anlage, int jahr)
+        {
+            return string.Format(BerichtTexte.Kultur,
+                T("WIRT_KWKG_FRISTENDE_FEHLT",
+                  "KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende " +
+                  "der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird " +
+                  "ohne sie."),
+                string.IsNullOrEmpty(anlage) ? "" : anlage + " — ",
+                jahr.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE);
+        }
+
+        /// <summary>Die Herkunft einer Katalogzeile für eine Herleitung: Schlüssel und
+        /// Fundstelle.</summary>
+        private static string Herkunft(GesetzParameter p)
+        {
+            if (p == null) return DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE;
+            return string.IsNullOrEmpty(p.Quelle) ? p.Schluessel : p.Schluessel + ", " + p.Quelle;
+        }
+
         private double AusschreibungsgrenzeKW(int jahr)
         {
             try
@@ -4530,14 +4860,26 @@ namespace WindowsFormsApplication1
                 // Rückfall) — vorher entschied ein einziges Projektdatum für alle zugleich.
                 bool oelAusschluss = oel && ibn.HasValue && ibn.Value.Year >= 2025;
 
-                // § 6 KWKG je Anlage (Etappe E6): Stichtag und Realisierungsfrist.
+                // § 6 KWKG je Anlage (Etappe E6): Stichtag und Frist zur Inbetriebnahme.
+                // ETAPPE E7c (A20, E7-Q3 Lesart b): Das Fristende ist das Katalogdatum
+                // (31.12.2030), nicht mehr vier Jahre nach dem Stichtag — und es gilt
+                // für jede Anlage mit bekannter Inbetriebnahme, auch ohne Stichtag. Ohne
+                // Katalogwert bleibt die Anlage förderfähig, und eine Zeile sagt, dass
+                // die Frist ungeprüft ist (keine stille Vorgabe).
                 bool nachStichtag = stichtag.HasValue && stichtag.Value.Date > KWKG_STICHTAG_ENDE;
                 bool nachFrist = false;
                 DateTime fristende = DateTime.MinValue;
-                if (!nachStichtag && stichtag.HasValue && ibn.HasValue)
+                GesetzParameter fristquelle = null;
+                if (!nachStichtag && ibn.HasValue)
                 {
-                    fristende = new DateTime(stichtag.Value.Year + KWKG_REALISIERUNG_JAHRE, 12, 31);
-                    nachFrist = ibn.Value.Date > fristende;
+                    DateTime? ende = FristendeInbetriebnahme(ibn.Value.Year, out fristquelle);
+                    if (ende.HasValue)
+                    {
+                        fristende = ende.Value;
+                        nachFrist = ibn.Value.Date > fristende;
+                    }
+                    else
+                        a.Fristhinweise.Add(FristendeFehltZeile(klartext, ibn.Value.Year));
                 }
 
                 if (ueberGrenze) a.UeberGrenze.Add(klartext);
@@ -4549,7 +4891,8 @@ namespace WindowsFormsApplication1
                                                        klartext, KWKG_STICHTAG_ENDE.ToString("dd.MM.yyyy")));
                 else if (nachFrist)
                     a.Fristmeldungen.Add(string.Format(MyResource.Resource.WIRT_KWKG_ANLAGE_FRIST,
-                                                       klartext, fristende.ToString("dd.MM.yyyy")));
+                                                       klartext, fristende.ToString("dd.MM.yyyy"),
+                                                       Herkunft(fristquelle)));
 
                 // EIN Ausschluss je Anlage, gleich wie viele Gründe zutreffen — sonst
                 // fehlte eine mehrfach betroffene Anlage mehrfach in den Bezugsgrößen.
@@ -4786,17 +5129,23 @@ namespace WindowsFormsApplication1
             // ETAPPE BK1: eine vierte Stufe ganz oben — der Kostenanteil je Anlage
             // entsteht erst mit Migrationsschritt 89, eine Datenbank auf 61..88 hat E6
             // und B3a, aber ihn nicht.
-            DataTable dt = AnlagenTabelle(idProjekt, idType, true, true, true);
+            // ETAPPE E7c (Befund K-1): eine fünfte Stufe ganz oben — Kennzeichen und
+            // Stromkennzahl entstehen erst mit Migrationsschritt 105, dazu P_th der
+            // Gerätezeile. Nur beim BHKW gefragt: Ein Kessel ist keine KWK-Anlage.
+            bool k1Gefragt = idType == WizardItemClass.BHKW_TYP;
+            DataTable dt = k1Gefragt ? AnlagenTabelle(idProjekt, idType, true, true, true, true) : null;
+            bool mitK1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR);
+            if (!mitK1) dt = AnlagenTabelle(idProjekt, idType, true, true, true, false);
             bool mitBk1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
-            if (!mitBk1) dt = AnlagenTabelle(idProjekt, idType, true, true, false);
+            if (!mitBk1) dt = AnlagenTabelle(idProjekt, idType, true, true, false, false);
             bool mitB3a = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
             bool mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
             if (!mitB3a)
             {
-                dt = AnlagenTabelle(idProjekt, idType, true, false, false);
+                dt = AnlagenTabelle(idProjekt, idType, true, false, false, false);
                 mitE6 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG);
             }
-            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false, false);
+            if (!mitE6) dt = AnlagenTabelle(idProjekt, idType, false, false, false, false);
 
             var liste = new List<BhkwAnlage>();
             if (dt == null) return liste;
@@ -4843,6 +5192,15 @@ namespace WindowsFormsApplication1
                         // fehlende Spalte — und null heißt hier „keine Hilfsenergie".
                         anl.HilfsenergieAnteil = D(r, SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL);
                     }
+
+                    // ETAPPE E7c (Befund K-1): Ohne die Spalten (Datenbank vor Schritt
+                    // 105) bleibt das Kennzeichen false — Fall 1, wie bisher.
+                    if (mitK1)
+                    {
+                        anl.Abwaermeabfuhr = Ganzzahl(r, SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR) == 1;
+                        anl.Stromkennzahl = D(r, SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL);
+                        anl.PthKW = D(r, "Ptherm");
+                    }
                     liste.Add(anl);
                 }
             }
@@ -4866,7 +5224,7 @@ namespace WindowsFormsApplication1
         /// Zeile ohne Gerät hätte keine.</para>
         /// </summary>
         private static DataTable AnlagenTabelle(int idProjekt, int idType, bool mitE6,
-                                               bool mitB3a, bool mitBk1)
+                                               bool mitB3a, bool mitBk1, bool mitK1)
         {
             string e6 = mitE6
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STICHTAG + "]" +
@@ -4892,6 +5250,15 @@ namespace WindowsFormsApplication1
                 : "";
 
             bool bhkw = idType == WizardItemClass.BHKW_TYP;
+
+            // ETAPPE E7c (Befund K-1): eigene Stufe, weil die zwei Spalten erst mit
+            // Schritt 105 kommen — und nur beim BHKW, das allein P_th in der
+            // Gerätezeile führt (Nenner des Vorschlags σ = P_el ÷ P_th).
+            string k1 = mitK1 && bhkw
+                ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL + "]" +
+                  ", b.Ptherm"
+                : "";
             string geraet = bhkw ? "b.Pel, b.Brennstoff" : "0 AS Pel, b.Brennstoff";
             string join = bhkw
                 ? "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID "
@@ -4901,7 +5268,7 @@ namespace WindowsFormsApplication1
                 using (DataRepository.EngineModus())
                     return DataRepository.GetDataTable(
                         "SELECT a.ID, a.ID_Projekt, a.Bezeichner, a.ID_Carrier, " +
-                        geraet + e6 + b3a + bk1 + " " +
+                        geraet + e6 + b3a + bk1 + k1 + " " +
                         "FROM Tab_Energieanlagen AS a " + join +
                         // KEIN ORDER BY — bewusst. Die Zuordnung Anlage ↔ Ergebnismodul
                         // fällt bei nicht passenden Bezeichnern auf die REIHENFOLGE
@@ -5746,7 +6113,10 @@ namespace WindowsFormsApplication1
                     Co2AbgabeEur = eingabe.Behg,
                     // ETAPPE E2 (R6): der Strommix-Rückfall als Zeile MIT Wert.
                     StrommixRueckfallGJeKwh = v.CO2StrommixRueckfall
-                        ? KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH : (double?)null
+                        ? KostenEmissionRechner.STROMMIX_CO2_G_JE_KWH : (double?)null,
+                    // ETAPPE E7c: die Datenlücken der KWKG-Rechnung (Anlagenart fehlt,
+                    // Stromkennzahl fehlt) — festgehalten, wo sie den Zuschlag kosteten.
+                    Kwkg = eingabe.KwkgLuecken
                 });
             }
             catch { }

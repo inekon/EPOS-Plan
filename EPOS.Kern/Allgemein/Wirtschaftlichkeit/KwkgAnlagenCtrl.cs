@@ -74,6 +74,21 @@ namespace WindowsFormsApplication1
         /// <c>null</c> bzw. 0 = keine Hilfsenergie. Spalte <c>Hilfsenergie_Anteil</c>.</summary>
         public double? HilfsenergieAnteil;
 
+        // ------------- ETAPPE E7c — § 2 Nr. 16 KWKG, zweiter Fall (Schritt 105) -------------
+
+        /// <summary>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (Spalte
+        /// <c>KWKG_Abwaermeabfuhr</c>, 0/1): true = KWK-Strom nach Fall 2,
+        /// min(Nettostromerzeugung, Nutzwärme × σ); false = Fall 1.</summary>
+        public bool Abwaermeabfuhr;
+
+        /// <summary>Stromkennzahl σ dieser Anlage (Spalte <c>KWKG_Stromkennzahl</c>);
+        /// <c>null</c> = nicht gepflegt — dann gilt P_el ÷ P_th der Gerätezeile.</summary>
+        public double? Stromkennzahl;
+
+        /// <summary>Thermische Nennleistung [kW] aus der Gerätezeile <c>Tab_BHKW.Ptherm</c>
+        /// — der Nenner des Vorschlags σ = P_el ÷ P_th. <b>Nur Anzeige.</b></summary>
+        public double? PthKW;
+
         // ------------- ETAPPE B5 — reiner Ausweis, wird NIE geschrieben -------------
 
         /// <summary><c>Tab_Energieanlagen.ID_Carrier</c> (0 = keiner).</summary>
@@ -154,11 +169,15 @@ namespace WindowsFormsApplication1
                 // der Spaltenliste, nicht an einer Ausnahme.
                 // ETAPPE BK1: eine Stufe mehr — der Kostenanteil je Anlage entsteht
                 // erst mit Migrationsschritt 89.
-                DataTable dt = Anlagentabelle(idProjekt, true, true);
+                // ETAPPE E7c (Befund K-1): eine Stufe mehr — Kennzeichen und
+                // Stromkennzahl entstehen erst mit Migrationsschritt 105.
+                DataTable dt = Anlagentabelle(idProjekt, true, true, true);
+                bool mitK1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR);
+                if (!mitK1) dt = Anlagentabelle(idProjekt, true, true, false);
                 bool mitBk1 = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
-                if (!mitBk1) dt = Anlagentabelle(idProjekt, true, false);
+                if (!mitBk1) dt = Anlagentabelle(idProjekt, true, false, false);
                 bool mitB3a = dt != null && dt.Columns.Contains(SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
-                if (!mitB3a) dt = Anlagentabelle(idProjekt, false, false);
+                if (!mitB3a) dt = Anlagentabelle(idProjekt, false, false, false);
                 if (dt == null || !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_KWKG_STICHTAG)) return;
 
                 foreach (DataRow r in dt.Rows)
@@ -181,6 +200,12 @@ namespace WindowsFormsApplication1
                         IdCarrier = Ganzzahl(r, "ID_Carrier")
                     };
                     if (mitBk1) g.Kostenanteil = D(r, SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL);
+                    if (mitK1)
+                    {
+                        g.Abwaermeabfuhr = Ganzzahl(r, SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR) == 1;
+                        g.Stromkennzahl = D(r, SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL);
+                        g.PthKW = D(r, "Ptherm");
+                    }
                     if (mitB3a)
                     {
                         g.EnergiesteuerWahl = Text(r, SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL);
@@ -202,7 +227,7 @@ namespace WindowsFormsApplication1
         /// <summary>Die Anlagenabfrage — mit oder ohne die drei B3a-Spalten.
         /// <c>null</c> = die Abfrage ist gescheitert (bei gesetztem Flag in aller Regel,
         /// weil die Spalten fehlen).</summary>
-        private static DataTable Anlagentabelle(int idProjekt, bool mitB3a, bool mitBk1)
+        private static DataTable Anlagentabelle(int idProjekt, bool mitB3a, bool mitBk1, bool mitK1)
         {
             string b3a = mitB3a
                 ? ", a.[" + SchemaKatalog.SPALTE_EA_ENERGIESTEUER_WAHL + "]" +
@@ -210,12 +235,19 @@ namespace WindowsFormsApplication1
                   ", a.[" + SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "]"
                 : "";
             string bk1 = mitBk1 ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_KOSTENANTEIL + "]" : "";
+            // ETAPPE E7c: die zwei Spalten aus Schritt 105 und P_th der Gerätezeile
+            // (Nenner des Vorschlags σ = P_el ÷ P_th).
+            string k1 = mitK1
+                ? ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR + "]" +
+                  ", a.[" + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL + "]" +
+                  ", b.Ptherm"
+                : "";
             try
             {
                 using (DataRepository.EngineModus())
                     return DataRepository.GetDataTable(
                         "SELECT a.ID, a.Bezeichner, a.ID_Carrier, b.Pel, b.Brennstoff" +
-                        Spaltenliste("a") + b3a + bk1 + " " +
+                        Spaltenliste("a") + b3a + bk1 + k1 + " " +
                         "FROM Tab_Energieanlagen AS a " +
                         "INNER JOIN Tab_BHKW AS b ON a.ID_BHKW = b.ID " +
                         // KEIN ORDER BY — wortgleiche Begründung wie in
@@ -251,7 +283,9 @@ namespace WindowsFormsApplication1
         /// hält die beiden Fälle auseinander, ohne die Spaltennamen zu doppeln.</para>
         /// </summary>
         /// <param name="g">Die zu speichernde Anlagenzeile.</param>
-        /// <param name="mitSteuerangaben">true = elf Spalten (B5-Dialog),
+        /// <param name="mitSteuerangaben">true = alle Spalten des BHKW-Dialogs (die acht
+        /// E6-Spalten, Kostenanteil, die drei B3a-Spalten und — ETAPPE E7c — Kennzeichen
+        /// „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl aus Schritt 105),
         /// false = die acht E6-Spalten wie im Bestand.</param>
         public bool Speichere(KwkgAnlagenAngabe g, bool mitSteuerangaben)
         {
@@ -297,6 +331,22 @@ namespace WindowsFormsApplication1
                     // 0 ist hier ein gültiger Wert („keine Hilfsenergie"), NULL heißt
                     // dasselbe — Zahlwert bildet beides ab, wie es hereinkommt.
                     werte.Add(Zahlwert(g.HilfsenergieAnteil));
+
+                    // ETAPPE E7c (Befund K-1): Kennzeichen und Stromkennzahl gehen
+                    // denselben Weg — nur der Dialog, der sie kennt (Überlagerung „Sätze
+                    // und Herkunft"), schreibt sie. Ohne die Spalten (Datenbank vor
+                    // Schritt 105, deren Vorsorge nicht lief) bleiben sie weg, statt das
+                    // ganze UPDATE scheitern zu lassen. Eine Kennzahl ≤ 0 ist „kein
+                    // eigener Wert" und wird NULL.
+                    if (DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN,
+                                                       SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR))
+                    {
+                        satz += ", [" + SchemaKatalog.SPALTE_EA_KWKG_ABWAERMEABFUHR + "] = ?" +
+                                ", [" + SchemaKatalog.SPALTE_EA_KWKG_STROMKENNZAHL + "] = ?";
+                        werte.Add(new DbParam("@k", DbParamTyp.Integer) { Wert = g.Abwaermeabfuhr ? 1 : 0 });
+                        werte.Add(Zahlwert(g.Stromkennzahl.HasValue && g.Stromkennzahl.Value > 0
+                                           ? g.Stromkennzahl : null));
+                    }
                 }
 
                 satz += " WHERE ID = ?";

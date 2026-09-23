@@ -1660,6 +1660,44 @@ namespace WindowsFormsApplication1
         /// <summary>Vorgeschlagener Einspeisesatz nach § 7 KWKG [ct/kWh];
         /// <c>null</c> = kein Vorschlag bekannt.</summary>
         public double? VorschlagEinspeisungCt;
+
+        // ------------- ETAPPE E7c — § 2 Nr. 16 KWKG, zweiter Fall (Befund K‑1) -------------
+        //
+        // Trägt die Anlage das Kennzeichen „Vorrichtung zur Abwärmeabfuhr", ist ihr
+        // KWK-Strom min(Nettostromerzeugung, Nutzwärme × σ); EigenMWh und EinspeisungMWh
+        // oben sind dann die GEKÜRZTEN Mengen (Kürzung zuerst von der Einspeisung).
+        //
+        // NULLBAR MIT ABSICHT, wie die zwei Vorschlagsfelder darüber: Bei Fall 1 bleiben
+        // alle Felder null, und WhenWritingNull lässt sie aus dem Nachweisumschlag — der
+        // Nachweis einer Anlage ohne Kennzeichen bleibt Zeichen für Zeichen, wie er war,
+        // und ein gebuchter Stand von vorher liest sich als Fall 1.
+
+        /// <summary>true = die Anlage rechnet Fall 2 (Vorrichtung zur Abwärmeabfuhr);
+        /// <c>null</c> = Fall 1, die Nettostromerzeugung.</summary>
+        public bool? Abwaermeabfuhr;
+
+        /// <summary>Die angesetzte Stromkennzahl σ; <c>null</c> bei Fall 1 oder wenn sie
+        /// nicht bestimmbar war.</summary>
+        public double? Stromkennzahl;
+
+        /// <summary>Herkunft von σ, Steuerwert <c>KwkStromRechner.HERKUNFT_*</c>;
+        /// <c>null</c> bei Fall 1.</summary>
+        public string StromkennzahlHerkunft;
+
+        /// <summary>Nutzwärme dieser Anlage [MWh/a] — Wärmeproduktion des Moduls minus
+        /// Anteil am Wärmeüberschuss (nach P_el); <c>null</c> bei Fall 1.</summary>
+        public double? NutzwaermeMWh;
+
+        /// <summary>KWK-Strom nach Fall 2 [MWh/a] = min(Netto, Nutzwärme × σ);
+        /// <c>null</c> bei Fall 1.</summary>
+        public double? KwkStromMWh;
+
+        /// <summary>Kürzung Netto − KWK-Strom [MWh/a]; <c>null</c> bei Fall 1.</summary>
+        public double? KuerzungMWh;
+
+        /// <summary>Die Herleitungszeile des KWK-Stroms (Fall, σ und Herkunft, Nutzwärme,
+        /// KWK-Strom, Kürzung) in der Sprache des Laufs; <c>null</c> bei Fall 1.</summary>
+        public string HerleitungKwkStrom;
     }
 
     /// <summary>

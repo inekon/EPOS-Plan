@@ -3421,6 +3421,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung. ähnelt.
+        /// </summary>
+        public static string BHW_A_KWK_FALL1 {
+            get {
+                return ResourceManager.GetString("BHW_A_KWK_FALL1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ {0} ({1}). ähnelt.
+        /// </summary>
+        public static string BHW_A_KWK_FALL2 {
+            get {
+                return ResourceManager.GetString("BHW_A_KWK_FALL2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2. ähnelt.
+        /// </summary>
+        public static string BHW_A_KWK_FALL2_OHNE {
+            get {
+                return ResourceManager.GetString("BHW_A_KWK_FALL2_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Anlage gewählt. ähnelt.
         /// </summary>
         public static string BHW_A_OHNE_WAHL {
@@ -3516,6 +3543,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_E_WAHL {
             get {
                 return ResourceManager.GetString("BHW_E_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fall 2 — Vorrichtung zur Abwärmeabfuhr ähnelt.
+        /// </summary>
+        public static string BHW_FLD_ABWAERMEABFUHR {
+            get {
+                return ResourceManager.GetString("BHW_FLD_ABWAERMEABFUHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fall 1 — Nettostromerzeugung ähnelt.
+        /// </summary>
+        public static string BHW_FLD_FALL1 {
+            get {
+                return ResourceManager.GetString("BHW_FLD_FALL1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromkennzahl σ ähnelt.
+        /// </summary>
+        public static string BHW_FLD_STROMKENNZAHL {
+            get {
+                return ResourceManager.GetString("BHW_FLD_STROMKENNZAHL", resourceCulture);
             }
         }
         
@@ -3624,6 +3678,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_HERLEITUNG_KONTINGENT {
             get {
                 return ResourceManager.GetString("BHW_HERLEITUNG_KONTINGENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die P_el ÷ P_th der Gerätezeile: {0} kW ÷ {1} kW ähnelt.
+        /// </summary>
+        public static string BHW_HERL_STROMKENNZAHL {
+            get {
+                return ResourceManager.GetString("BHW_HERL_STROMKENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gerätezeile ohne P_el oder P_th — kein Vorschlag ähnelt.
+        /// </summary>
+        public static string BHW_HERL_STROMKENNZAHL_OHNE {
+            get {
+                return ResourceManager.GetString("BHW_HERL_STROMKENNZAHL_OHNE", resourceCulture);
             }
         }
         
@@ -3948,6 +4020,186 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_TITEL {
             get {
                 return ResourceManager.GetString("BHW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} MWh Nettostromerzeugung im zuletzt gebuchten Lauf ähnelt.
+        /// </summary>
+        public static string BHW_UEB_FALL1_MENGE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_FALL1_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → die Nettostromerzeugung der Anlage (Klemme minus Hilfsstrom) ähnelt.
+        /// </summary>
+        public static string BHW_UEB_FALL1_OHNE_LAUF {
+            get {
+                return ResourceManager.GetString("BHW_UEB_FALL1_OHNE_LAUF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → min(Nettostromerzeugung ; Nutzwärme × σ) — Nutzwärme: Wärmeproduktion des Moduls abzüglich seines Anteils am Wärmeüberschuss (nach P_el) ähnelt.
+        /// </summary>
+        public static string BHW_UEB_FALL2_FORMEL {
+            get {
+                return ResourceManager.GetString("BHW_UEB_FALL2_FORMEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eigener Wert — Vorschlag {1} ähnelt.
+        /// </summary>
+        public static string BHW_UEB_GILT_EIGEN {
+            get {
+                return ResourceManager.GetString("BHW_UEB_GILT_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} eigener Wert ähnelt.
+        /// </summary>
+        public static string BHW_UEB_GILT_EIGEN_OHNE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_GILT_EIGEN_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die — (Fall 1 liest keine Stromkennzahl) ähnelt.
+        /// </summary>
+        public static string BHW_UEB_GILT_FALL1 {
+            get {
+                return ResourceManager.GetString("BHW_UEB_GILT_FALL1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine — kein KWK-Strom nach Fall 2, kein Zuschlag ähnelt.
+        /// </summary>
+        public static string BHW_UEB_GILT_KEINE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_GILT_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Vorschlag ähnelt.
+        /// </summary>
+        public static string BHW_UEB_GILT_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("BHW_UEB_GILT_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Zuschlag — diese Anlage ähnelt.
+        /// </summary>
+        public static string BHW_UEB_G_KWKG {
+            get {
+                return ResourceManager.GetString("BHW_UEB_G_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Leer heißt: σ wird beim Rechnen aus P_el ÷ P_th der Gerätezeile gebildet. Ein eigener Wert gilt dauerhaft, auch wenn sich die Gerätezeile ändert; „Vorschlag übernehmen“ leert das Feld — der Weg zurück. Gibt es weder einen eigenen Wert noch P_el und P_th, gibt es keinen KWK-Strom nach Fall 2 und für diese Anlage keinen Zuschlag. Gelesen wird σ nur bei Fall 2. ähnelt.
+        /// </summary>
+        public static string BHW_UEB_INFO_SIGMA {
+            get {
+                return ResourceManager.GetString("BHW_UEB_INFO_SIGMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze und Herkunft… ähnelt.
+        /// </summary>
+        public static string BHW_UEB_KNOPF_ANLAGE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_KNOPF_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Strom (§ 2 Nr. 16 KWKG) ähnelt.
+        /// </summary>
+        public static string BHW_UEB_KWK_STROM {
+            get {
+                return ResourceManager.GetString("BHW_UEB_KWK_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die leer = Vorschlag ähnelt.
+        /// </summary>
+        public static string BHW_UEB_LEER_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("BHW_UEB_LEER_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die eigener Wert ähnelt.
+        /// </summary>
+        public static string BHW_UEB_SP_EIGEN {
+            get {
+                return ResourceManager.GetString("BHW_UEB_SP_EIGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gilt ähnelt.
+        /// </summary>
+        public static string BHW_UEB_SP_GILT {
+            get {
+                return ResourceManager.GetString("BHW_UEB_SP_GILT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größe ähnelt.
+        /// </summary>
+        public static string BHW_UEB_SP_GROESSE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_SP_GROESSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft ähnelt.
+        /// </summary>
+        public static string BHW_UEB_SP_HERKUNFT {
+            get {
+                return ResourceManager.GetString("BHW_UEB_SP_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorschlag ähnelt.
+        /// </summary>
+        public static string BHW_UEB_SP_VORSCHLAG {
+            get {
+                return ResourceManager.GetString("BHW_UEB_SP_VORSCHLAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sätze und Herkunft — {0} ähnelt.
+        /// </summary>
+        public static string BHW_UEB_TITEL {
+            get {
+                return ResourceManager.GetString("BHW_UEB_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Übernehmen ähnelt.
+        /// </summary>
+        public static string BHW_UEB_UEBERNEHMEN {
+            get {
+                return ResourceManager.GetString("BHW_UEB_UEBERNEHMEN", resourceCulture);
             }
         }
         
@@ -39607,6 +39859,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. Anlagenart oder Kontingent im BHKW-Dialog eintragen. ähnelt.
+        /// </summary>
+        public static string KOH_KWKG_ANLAGENART_FEHLT {
+            get {
+                return ResourceManager.GetString("KOH_KWKG_ANLAGENART_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“. ähnelt.
+        /// </summary>
+        public static string KOH_KWKG_STROMKENNZAHL_FEHLT {
+            get {
+                return ResourceManager.GetString("KOH_KWKG_STROMKENNZAHL_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die § 53 ähnelt.
         /// </summary>
         public static string KOH_NORM_53 {
@@ -64402,7 +64672,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Inbetriebnahme nach Ablauf der Realisierungsfrist des § 6 KWKG 2025 (bis {1}); für diese Anlage kein Zuschlag. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0} — Inbetriebnahme nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}); für diese Anlage kein Zuschlag. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_ANLAGE_FRIST {
             get {
@@ -64470,6 +64740,78 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_ERSCHOEPFT_NIE {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_ERSCHOEPFT_NIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: Stromkennzahl σ {1} ({2}); Nutzwärme {3} MWh (Wärmeproduktion {4} MWh − Anteil am Wärmeüberschuss {5} MWh); KWK-Strom min({6} ; {3} × {1}) = {7} MWh; Kürzung {8} MWh, davon Einspeisung {9} MWh und Eigenverbrauch {10} MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_ANLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg — Nutzwärme des Projekts {0} MWh (Wärmeproduktion {1} MWh − Wärmeüberschuss {2} MWh) und Nettostromerzeugung {3} MWh {4} auf die Anlagen verteilt: {5}. Kürzung zusammen {6} MWh, zuerst von der Einspeisung. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_ERSATZ {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_ERSATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_ERSATZ_ANLAGE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_ERSATZ_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ohne Stromkennzahl — KWK-Strom 0 MWh, Kürzung {1} MWh ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 (Vorrichtung zur Abwärmeabfuhr) — „{0}“: keine Stromkennzahl ({1}) — kein KWK-Strom nach Fall 2, für diese Anlage kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_OHNE_SIGMA {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_OHNE_SIGMA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die zu gleichen Teilen (keine Anlage führt P_el) ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_VERTEILUNG_GLEICH {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_VERTEILUNG_GLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die nach P_el ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_VERTEILUNG_PEL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_VERTEILUNG_PEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird ohne sie. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FRISTENDE_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FRISTENDE_FEHLT", resourceCulture);
             }
         }
         
@@ -64600,6 +64942,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent ab; für diese Anlage kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die {0}: ohne Anteil an den Neuherstellungskosten lässt sich die Stufe nicht wählen (Mindestschwelle {1} %); kein abgeleitetes Kontingent. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_KONTINGENT_ANTEIL_FEHLT {
@@ -64672,6 +65023,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Inbetriebnahme am {0} nach dem Ende der Frist zur Inbetriebnahme am {1} ({2}) — kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_NACH_FRISTENDE {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_NACH_FRISTENDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Pauschale nach § 9 gewählt — einmalige Vorauszahlung {0} € im Jahr 0 ({1} ct/kWh × {2} Vbh × {3} kW); der laufende Zuschlag entfällt dafür. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_PAUSCHALE {
@@ -64713,6 +65073,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_SATZ_QUELLE_PROJEKT {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_SATZ_QUELLE_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die berechnet aus P_el ÷ P_th der Gerätezeile = {0} kW ÷ {1} kW ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SIGMA_BERECHNET {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SIGMA_BERECHNET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die weder gepflegt noch aus P_el ÷ P_th der Gerätezeile bestimmbar ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SIGMA_FEHLT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SIGMA_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die gepflegt ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SIGMA_GEPFLEGT {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SIGMA_GEPFLEGT", resourceCulture);
             }
         }
         
