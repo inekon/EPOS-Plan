@@ -4554,7 +4554,13 @@ Einstufung
         <tr><td>Hinweis „Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell …" und Tarifnachweis „Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung" — nur, wo ein Satz den Schemaschritt nicht durchlaufen hat</td><td class="rs">WIRT_HINWEIS_ZEITZONENTARIF · WIRT_TARIF_NACHWEIS_ZONEN</td><td>Hinweisband; Tarifnachweis im Nachweisblock und im Bericht</td></tr>
         <tr><td>Deklarationszeilen, ohne gepflegten Text „nicht monetäre Wirkungen: keine benannt"</td><td class="rs">WIRT_DEKL_NOMINAL · WIRT_DEKL_STEUERN · WIRT_DEKL_RESTWERT · WIRT_DEKL_RISIKO · WIRT_DEKL_RISIKO_OHNE_NM</td><td>Klappblock, Block 5, Wort- und Tabellenbericht</td></tr>
         <tr><td>Knopf „Bericht erzeugen"</td><td class="rs">WIRT_BTN_BERICHT</td><td>Fuß des Bewertungsblocks, Block 5</td></tr>
-        <tr><td>Darstellung „ValERI-Bewertung": Blockköpfe „1 · Gegenstand und Rahmen" bis „5 · Deklarationen", Normbezug „DIN EN 17463 · …", Zeile „Maßnahme", Einordnung unter der Kennzahltafel, Hinweiszeile an der Stelle von Block 2</td><td class="rs">WIRT_VALERI_BLOCK_1 … WIRT_VALERI_BLOCK_5 · WIRT_VALERI_NORM_1 … WIRT_VALERI_NORM_5 · WIRT_VALERI_MASSNAHME · WIRT_VALERI_KZ_HINWEIS · WIRT_VALERI_BLOCK_2_HINWEIS</td><td>Darstellung „ValERI-Bewertung"</td></tr>
+        <tr><td>Darstellung „ValERI-Bewertung": Blockköpfe „1 · Gegenstand und Rahmen" bis „5 · Deklarationen", Normbezug „DIN EN 17463 · …", Zeile „Maßnahme", Einordnung unter der Kennzahltafel, Hinweiszeile in Block 2 bis zum ersten Lauf der Sitzung („Die Zahlungsreihen je Jahr stehen nach dem nächsten Rechenlauf …" — <b>neu gefasst #454</b>)</td><td class="rs">WIRT_VALERI_BLOCK_1 … WIRT_VALERI_BLOCK_5 · WIRT_VALERI_NORM_1 … WIRT_VALERI_NORM_5 · WIRT_VALERI_MASSNAHME · WIRT_VALERI_KZ_HINWEIS · WIRT_VALERI_BLOCK_2_HINWEIS</td><td>Darstellung „ValERI-Bewertung"</td></tr>
+        <tr><td>Block 2 „Zahlungsreihen": Klapplisten „Stand:" · „Szenario:", Zeile „Summe nominal", Hinweis unter der Jahrestafel („Nominal und unabgezinst, Ausgaben negativ … ihre Summe ist der Nettobarwert ({1} €)"), Hinweis zu Ständen ohne passende Jahresreihen <b>neu #454</b></td><td class="rs">WIRT_ZR_STAND · WIRT_ZR_SZENARIO · WIRT_ZR_SUMME · WIRT_ZR_HINWEIS · WIRT_ZR_ABWEICHEND</td><td>Darstellung „ValERI-Bewertung", Block 2</td></tr>
+        <tr><td>Zahlungsstrombild: Titel „Zahlungsstrom je Jahr", Unterzeile „{0} · Szenario {1} · nominal je Jahr, Ausgaben nach unten, ohne Restwert", Schlüssel „Ersatzjahr", Leerhinweis <b>neu #454</b></td><td class="rs">WIRT_ZS_TITEL · WIRT_ZS_UNTER · WIRT_ZS_ERSATZJAHR · WIRT_ZS_LEER</td><td>Block 2 unter der Jahrestafel; Wortbericht über jeder Mehrjahrestafel</td></tr>
+        <tr><td>Gliederung des Kapitalwerts: Titel „Gliederung des Kapitalwerts — Szenario {0}", Unterzeile „Barwert, darunter die Nominalsumme · i = {0} % · T = {1} a", Kopf „Bestandteil", die sechs Bestandteile „Investition I₀" · „Betriebskosten" · „Energiekosten" · „Erlöse" · „Ersatzbeschaffungen" · „Restwert am Ende" mit den Unterzeilen „nach Zuschussabzug" · „einschließlich CO₂-Abgabe" · „zahlungswirksam — Block A", Zeile „Nettobarwert", „nominal {0}", Spalte „Differenz {0} − {1}", Hinweis ohne Jahresreihen <b>neu #454</b></td><td class="rs">WIRT_GL_TITEL · WIRT_GL_UNTER · WIRT_GL_BESTANDTEIL · WIRT_GL_INVESTITION · WIRT_GL_BETRIEB · WIRT_GL_ENERGIE · WIRT_GL_ERLOESE · WIRT_GL_ERSATZ · WIRT_GL_RESTWERT · WIRT_GL_INVESTITION_UNTER · WIRT_GL_ENERGIE_UNTER · WIRT_GL_ERLOESE_UNTER · WIRT_GL_NETTOBARWERT · WIRT_GL_NOMINAL · WIRT_GL_DIFFERENZ · WIRT_GL_NICHT_GERECHNET</td><td>„Woraus entsteht die Zahl?"; die Bestandteile auch in Block 2</td></tr>
+        <tr><td>Brückenbild: Titel „Von der Investition zur Kapitalwertdifferenz", Unterzeile „{0} gegenüber {1} · Barwerte · Szenario {2}", Fuß „Barwerte gegenüber {0}, Szenario {1} — i = {2} %, T = {3} a", Ergebnissäule „ΔKW", Legende „mindert die Differenz" · „mehrt die Differenz" · „Ergebnis", Leerhinweis <b>neu #454</b></td><td class="rs">WIRT_BR_TITEL · WIRT_BR_UNTER · WIRT_BR_FUSS · WIRT_BR_ERGEBNIS · WIRT_BR_LEG_MINDERT · WIRT_BR_LEG_MEHRT · WIRT_BR_LEG_ERGEBNIS · WIRT_BR_LEER</td><td>„Woraus entsteht die Zahl?" unter der Gliederung; Wortbericht</td></tr>
+        <tr><td>Tafel „Was daraus im Lauf wird": Titel, Kopf „Wirkung auf {0}", Zeilen „Ersatzbeschaffungen fällig im Jahr" · „Restwert am Ende, nominal", ohne Ersatz „keine" <b>neu #454</b></td><td class="rs">WIRT_LW_TITEL · WIRT_LW_KOPF · WIRT_LW_ERSATZJAHRE · WIRT_LW_RESTWERT · WIRT_LW_KEINE</td><td>„Was ist angenommen?" unter dem Hinweistext</td></tr>
+        <tr><td>Fußzeile „Drei Szenarien gerechnet" · „{0} von drei Szenarien gerechnet" · „Noch kein Szenario gerechnet" · „Annahmen aus Vorgaben, nichts gepflegt" · „Annahmen gepflegt: {0}" <b>neu #454</b></td><td class="rs">WIRT_FUSS_DREI · WIRT_FUSS_TEIL · WIRT_FUSS_KEINE · WIRT_FUSS_VORGABEN · WIRT_FUSS_GEPFLEGT</td><td>Fuß von „Was ist angenommen?"</td></tr>
         <tr><td>Warnzeile an jeder Ergebniszeile des Projekts, wenn eine Rechenstufe nicht ausführbar ist: „Rechenstufe „{0}" nicht ausführbar: {1}" mit Parameter des Projekts, Stromtarif, Anlagen, elektrische Leistung der BHKW, Energieträger, Heizölprüfung der BHKW, Betriebskosten, Gesetzeskatalog, Kohärenzprüfung, KWKG-Satzherleitung, Speichern und Laden der Ergebnisse <b>neu #452</b></td><td class="rs">WIRT_STUFE_NICHT_AUSFUEHRBAR · WIRT_STUFE_PARAMETER · WIRT_STUFE_TARIF · WIRT_STUFE_ANLAGEN · WIRT_STUFE_LEISTUNG · WIRT_STUFE_TRAEGER · WIRT_STUFE_HEIZOEL · WIRT_STUFE_BETRIEBSKOSTEN · WIRT_STUFE_KATALOG · WIRT_STUFE_KOHAERENZ · WIRT_STUFE_SATZHERLEITUNG · WIRT_STUFE_SPEICHERN · WIRT_STUFE_LADEN</td><td>Kohärenzzeilen der Ergebnisseite, Wort- und Tabellenbericht</td></tr>
       </tbody>
     </table>
@@ -4593,9 +4599,9 @@ Einstufung
   Spannenbild auch in Block 4 der Darstellung „ValERI-Bewertung"). <b>Gebaut sind mit E4 (#432) U6 und
   U7, mit E5 (#434) U2, U4, U5, U10 und U44, mit E6 (#436) U3, U13 und der Rest von U2</b> (der Wegfall
   von „Verlauf…"); von U39 ist die Hinweiszeile erledigt, zu U4 ist mit E6 das Spannenbild gebaut. Die
-  Stücke, die nach dem Entscheid vom 22.09.2026 mit E8 kommen — Brückenbild (U41), Nominalsummen und
+  Stücke, die nach dem Entscheid vom 22.09.2026 mit E8 kamen — Brückenbild (U41), Nominalsummen und
   Differenzspalte der Gliederung (U46), Tafel „Was daraus im Lauf wird" (U47), Fußzeile „Drei Szenarien
-  gerechnet…" (U48) —, tragen den Chip „offen · mit E8". Die
+  gerechnet…" (U48) —, sind mit E8 Teil a (#454) erledigt, ebenso U42 und U49 (unten). Die
   Etappen E1 (Ankertests und Kaskadenrunde 2) und E2 (Kohärenzzeilen, Bandbreite mit Spanne,
   Referenztext, Formel N4, Dialogkorrekturen) haben Stücke berührt, die hier nie als offen standen;
   die Knopfleisten der beiden Kostendialoge sind mit der Welle DL‑2e gebaut. Die Etappe E3 Plattform (#431) hat den
@@ -4638,8 +4644,15 @@ Einstufung
   ausführbarer Prüfungen und Rechenstufen (B‑6). Die Ressourcentafeln der Kategorien 4, 5 und 8 nennen die 43 neuen
   Schlüssel; drei Texte sind neu gefasst (<span class="mono">WIRT_KWKG_FALL2_VBH</span>,
   <span class="mono">WIRT_KWKG_FALL2_VBH_ERSATZ</span>, <span class="mono">KI_DLG_BHW_ABWAERME_ERL</span>). Einen
-  Schemaschritt gibt es nicht, die Schemaschritte stehen weiter bei 113. E7 ist damit abgeschlossen; die nächste
-  Etappe ist <b>E8</b> (U12 Formelmappe, U41, U42, U43, U46 bis U48, U49).</p>
+  Schemaschritt gibt es nicht, die Schemaschritte stehen weiter bei 113. E7 ist damit abgeschlossen. <b>E8 Teil a
+  (#454) erledigt U41, U42 und U46 bis U49</b> — die fünf Blöcke der Darstellung „ValERI-Bewertung" sind vollständig:
+  Block 2 mit der Jahrestafel je Stand und Szenario und dem Zahlungsstrombild darunter (U42; Frage E8a‑Q1, am
+  23.09.2026 nach Empfehlung entschieden), Block 4 mit Spannenbild und Verlauf (U49); dazu in „Woraus entsteht die
+  Zahl?" Nominalsumme und Differenzspalte der Gliederung (U46) und das Brückenbild (U41), in „Was ist angenommen?"
+  die Tafel „Was daraus im Lauf wird" (U47) und die Fußzeile (U48, mit E8 Teil b in der Knopfreihe). Die Jahresreihen
+  stehen nach einem Lauf in der Sitzung. Die Ressourcentafel der Kategorie 8 nennt die 43 neuen Schlüssel; die
+  Hinweiszeile in Block 2 bis zum ersten Lauf ist neu gefasst (<span class="mono">WIRT_VALERI_BLOCK_2_HINWEIS</span>). Einen
+  Schemaschritt gibt es nicht. Die nächste Etappe ist <b>E8 Teil b</b> (U12 Formelmappe, U43).</p>
 
   <div class="tafel-huelle">
     <table class="tafel">
@@ -4723,20 +4736,6 @@ Einstufung
               Konzept § 2.13 (3) · Konzept Nutzungsdauer Stufe S3</td>
             <td>Prüffall je Technik: Kennzeichen „Ersatz führen" aus, Restwert bleibt; die Hinweiszeile erscheint auf
               beiden Plattformen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U41</td><td class="num">8</td>
-            <td>Brückenbild „Von der Investition zur Kapitalwertdifferenz" (Wasserfalldarstellung) auf der
-              Ergebnisseite — im Code nirgends vorhanden</td>
-            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
-              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
-            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8</b>, dann Bildprobe wie bei den
-              anderen Diagrammen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen</span></td><td class="mono">U42</td><td class="num">8</td>
-            <td>Zahlungsstrombild je Jahr auf der Ergebnisseite — im Code nur die Tabelle
-              (<span class="mono">BausteineWirtschaftlichkeit.cs</span>,
-              <span class="mono">ExcelBerichtGenerator.cs</span>), kein Bild</td>
-            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
-              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
-            <td>Konzeptentscheid nötig, dann Bildprobe wie bei den anderen Diagrammen</td></tr>
         <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 22.09.2026, mit E8</span></td><td class="mono">U43</td><td class="num">8</td>
             <td>Knopf „Anhang-E-Checkliste…" im Fuß des Bewertungsblocks — die Checkliste ist eigene
               Arbeit und im Code nicht vorhanden</td>
@@ -4751,37 +4750,6 @@ Einstufung
               Kopf oder Esc</td>
             <td><span class="mono">BrennstoffBestandteile.razor</span> · <span class="mono">Ueberlagerung.razor</span></td>
             <td>zwei neue Ressourcenschlüssel (de/en), dann Fußzeile wie bei den anderen Überlagerungen</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U46</td><td class="num">8</td>
-            <td>Gliederung „Woraus entsteht die Zahl?" mit der <b>Nominalsumme</b> je Bestandteil neben dem Barwert und
-              der Spalte „Differenz ‹Version› − Referenz", die in der Kapitalwertdifferenz aufgeht. Heute führt die
-              Gliederung Betriebs- und Energiekosten als Werte des ersten Jahres [€/a], Ersatz und Restwert als
-              Barwert, keine Nominalsumme und keine Differenzspalte</td>
-            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Gliederung) ·
-              <span class="mono">WirtschaftlichkeitZeilen</span></td>
-            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> bunit: je Bestandteil Barwert und
-              Nominalsumme; die Differenzspalte ergibt in der Summe die Kapitalwertdifferenz</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U47</td><td class="num">8</td>
-            <td>Tafel „Was daraus im Lauf wird" unter dem Hinweistext in „Was ist angenommen?": je Szenario die
-              Wirkung auf eine Variante — Investition I₀, die Jahre der fälligen Ersatzbeschaffungen, der Restwert
-              am Ende</td>
-            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> („Was ist angenommen?") ·
-              <span class="mono">WirtschaftlichkeitBewertung</span></td>
-            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> Prüffall: die drei Spalten gleichen
-              den Szenarioläufen der Bandbreite</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · mit E8</span></td><td class="mono">U48</td><td class="num">8</td>
-            <td>Fußzeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" im Fuß des
-              Bewertungsblocks — sie nennt, wie viele Szenarien gerechnet sind und woher ihre Annahmen kommen</td>
-            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Fuß von „Was ist angenommen?")</td>
-            <td><b>Entschieden 22.09.2026 nach Empfehlung (E5b‑4): Bau mit E8.</b> bunit: „Vorgaben" ohne Pflege,
-              „gepflegt" nach einer Pflege im Parameterdialog</td></tr>
-        <tr><td class="stand-zelle"><span class="stand offen">offen · entschieden 23.09.2026, mit E8</span></td><td class="mono">U49</td><td class="num">8</td>
-            <td>Verlauf mit drei Szenarien und Spannenbild auch in Block 4 „Unsicherheit" der Darstellung
-              „ValERI-Bewertung" — die Tafel der fünf Blöcke nennt dort den Verlauf; gebaut zeigt Block 4
-              Bandbreite, Vorschlag, Hinweistext und Sensitivität</td>
-            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Block 4) ·
-              <span class="mono">KapitalwertVerlaufAbschnitt</span></td>
-            <td><b>Frage E6‑Q1 — entschieden 23.09.2026: ja, Bau mit E8</b> (Statusdatei „Nach #436"; Empfehlung: ja, dieselben Bausteine wie unter „Wie
-              sicher ist das?"). bunit: Block 4 zeigt Spannenbild und Verlauf</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U1</td><td class="num">5</td>
             <td>Kennzeichen „Vorrichtung zur Abwärmeabfuhr" (0/1 mit CHECK) und Stromkennzahl σ
               (nullbar) je Anlage, Fallunterscheidung in der Mengenbildung je Anlage,
@@ -5153,11 +5121,51 @@ Einstufung
             <td class="grund"><b>erledigt:</b> Vorlage „Standard" trägt jetzt die Bemessungsart „% des
               Endenergiebedarfs"; weicht die Positionsbemessung davon ab, nennt die Herleitungszeile das mit
               dem Schalter „übernehmen". <b>Schemaschritt 94</b>, #365/#366</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U41</td><td class="num">8</td>
+            <td>Brückenbild „Von der Investition zur Kapitalwertdifferenz" (Wasserfalldarstellung) auf der
+              Ergebnisseite — im Code nirgends vorhanden</td>
+            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
+              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454):</b> <span class="mono">ChartRenderer.KapitalwertBruecke</span> zeichnet „Von der Investition zur Kapitalwertdifferenz" als Wasserfall — je Bestandteil (Investition, Betriebskosten, Energiekosten, Erlöse, Ersatzbeschaffungen, Restwert) eine Säule vom Stand vor bis nach dem Schritt, rot mindert, grün mehrt die Differenz, zuletzt die Ergebnissäule ΔKW in der Hausfarbe; 1240 × 610, deterministisch, ohne zeichenbaren Schritt ein Leerhinweis. Die Schritte sind die Zahlen der Differenzspalte der Gliederung (U46). Auf der Seite steht das Bild unter der Gliederung in „Woraus entsteht die Zahl?" (Leitversion gegen Referenz, es folgt der Szenario-Klappliste), im Wortbericht nach den Verlaufsbildern und vor der Mehrjahrestafel. Abweichungen: Euro-Achse mit Raster, die Unterzeile im Bild. ChartProben: sieben neue Bilder <span class="mono">kapitalwert_bruecke*</span>, die alten byte-gleich. bunit: Stellung unter der Gliederung</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U42</td><td class="num">8</td>
+            <td>Zahlungsstrombild je Jahr auf der Ergebnisseite — im Code nur die Tabelle
+              (<span class="mono">BausteineWirtschaftlichkeit.cs</span>,
+              <span class="mono">ExcelBerichtGenerator.cs</span>), kein Bild</td>
+            <td>keine Fundstelle — vorgesehen: <span class="mono">ChartRenderer.cs</span>,
+              <span class="mono">WirtschaftlichkeitSeite.razor</span></td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454)</b> — Frage E8a‑Q1, am 23.09.2026 nach Empfehlung entschieden (Lesart a): <span class="mono">ChartRenderer.Zahlungsstrom</span> zeichnet den absoluten Zahlungsstrom einer Version in einem Szenario als gestapelte Jahresbalken — die Reihen sind die Positionsspalten der Mehrjahrestafel, Einnahmen nach oben, Ausgaben nach unten, die Ersatzjahre mit Band und Dreieck; keine Differenz und kein Restwert (die Unterzeile sagt „ohne Restwert"); 1240 × 620. Das Bild steht in Block 2 der Darstellung „ValERI-Bewertung" unter der Jahrestafel und folgt der Wahl von Stand und Szenario — abweichend von dieser Seite, die es unter „Woraus entsteht die Zahl?" zeichnet —, im Wortbericht über jeder Mehrjahrestafel. ChartProben: sieben neue Bilder <span class="mono">zahlungsstrom*</span>, die alten byte-gleich. Nachweis: Kern- und bunit-Tests der Tafeln von Block 2</td></tr>
         <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U44</td><td class="num">8</td>
             <td>Knopf „Bericht erzeugen" im Fuß des Bewertungsblocks — zweiter Einstieg in den Bericht,
               im Code nicht vorhanden</td>
             <td>keine Fundstelle — Bericht bisher nur über <span class="mono">BerichtSeite.razor</span></td>
             <td class="grund"><b>erledigt mit E5 (#434):</b> „Bericht erzeugen" (<span class="mono">WIRT_BTN_BERICHT</span>) steht im Fuß des Bewertungsblocks und in Block 5 der Darstellung „ValERI-Bewertung" und nimmt den bestehenden Berichtsweg (<span class="mono">BerichtSeiteGaben.ErzeugeFuerVergleich</span>) mit der gewählten Vergleichsgruppe und Sicht: Rückfrage, Fortschritt, Abbruch, danach „öffnen?". Der Knopf erscheint nur, wenn die Rahmenhülle den Berichtsweg hineinreicht, und ist kein Primärknopf (Q8). Damit ist der Folgeentscheid vom 22.09.2026 zu Q18 ausgeführt; ob der Baustein Wirtschaftlichkeit dabei dauerhaft in die gemerkte Gruppenkonfiguration wandert, ist Frage (3) in der Statusdatei („Nach #434")</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U46</td><td class="num">8</td>
+            <td>Gliederung „Woraus entsteht die Zahl?" mit der <b>Nominalsumme</b> je Bestandteil neben dem Barwert und
+              der Spalte „Differenz ‹Version› − Referenz", die in der Kapitalwertdifferenz aufgeht. Heute führt die
+              Gliederung Betriebs- und Energiekosten als Werte des ersten Jahres [€/a], Ersatz und Restwert als
+              Barwert, keine Nominalsumme und keine Differenzspalte</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Gliederung) ·
+              <span class="mono">WirtschaftlichkeitZeilen</span></td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454):</b> „Woraus entsteht die Zahl?" beginnt mit der Gliederung des Kapitalwerts im gewählten Szenario: je Bestandteil — Investition I₀ nach Zuschussabzug, Betriebskosten, Energiekosten einschließlich CO₂-Abgabe, Erlöse zahlungswirksam (Block A), Ersatzbeschaffungen, Restwert am Ende — und Stand der Barwert, darunter leise die Nominalsumme, als letzte Spalte „Differenz ‹Leitversion› − ‹Referenz›", als letzte Zeile der Nettobarwert; die Differenzspalte geht in der Kapitalwertdifferenz auf. Die Zahlen ordnet die Kern-Klasse <span class="mono">Zahlungsgliederung</span> aus dem Zahlungsbild des Laufs; sie stehen nach einem Lauf in der Sitzung, vorher steht eine benannte Zeile (Frage E8a‑Q3). Die Zeilentafel darunter bleibt. Leitversion ist die Version mit der größten Kapitalwertdifferenz im Erwartungsfall, in der Sicht „Zwei Stände" der Stand B (Frage E8a‑Q2). Abweichungen: Unterzeilen benannt statt nummeriert, Nullwerte als „0". bunit: je Bestandteil Barwert und Nominalsumme, die Differenzspalte ergibt in der Summe die Kapitalwertdifferenz</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U47</td><td class="num">8</td>
+            <td>Tafel „Was daraus im Lauf wird" unter dem Hinweistext in „Was ist angenommen?": je Szenario die
+              Wirkung auf eine Variante — Investition I₀, die Jahre der fälligen Ersatzbeschaffungen, der Restwert
+              am Ende</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> („Was ist angenommen?") ·
+              <span class="mono">WirtschaftlichkeitBewertung</span></td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454):</b> Unter dem Hinweistext steht die Tafel „Was daraus im Lauf wird": je Szenario in der Reihenfolge der Bandbreite die Wirkung auf die Leitversion — Investition I₀ nach Zuschussabzug, die Jahre der fälligen Ersatzbeschaffungen (ohne Ersatz „keine") und „Restwert am Ende, nominal". Die Tafel liest die Zahlungsbilder derselben drei Szenarioläufe, die die Bandbreite zeigt (<span class="mono">ZahlungsreihenAnsicht.Laufwirkung</span>); Prüffall mit der Prüfgruppe 1040: die drei Spalten gleichen den Szenarioläufen der Bandbreite. Ohne Jahresreihen steht keine Tafel</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U48</td><td class="num">8</td>
+            <td>Fußzeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" im Fuß des
+              Bewertungsblocks — sie nennt, wie viele Szenarien gerechnet sind und woher ihre Annahmen kommen</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Fuß von „Was ist angenommen?")</td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454):</b> Im Fuß von „Was ist angenommen?" steht die Zeile „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" — wie viele Szenarien für die gezeigten Stände ein Ergebnis tragen („{0} von drei Szenarien gerechnet", „Noch kein Szenario gerechnet") und woher die Annahmen kommen; nach einer Pflege im Parameterdialog „Annahmen gepflegt: …" mit den gepflegten Größen (<span class="mono">ValeriAusweis.Szenarienfuss</span>). Gebaut als eigene Zeile über dem Knopffuß; mit E8 Teil b (#455) steht sie in der Knopfreihe (Frage E8a‑Q4, nach Empfehlung). bunit: „Vorgaben" ohne Pflege, „gepflegt" nach einer Pflege</td></tr>
+        <tr class="gestrichen"><td class="stand-zelle"><span class="stand erledigt">erledigt</span></td><td class="mono">U49</td><td class="num">8</td>
+            <td>Verlauf mit drei Szenarien und Spannenbild auch in Block 4 „Unsicherheit" der Darstellung
+              „ValERI-Bewertung" — die Tafel der fünf Blöcke nennt dort den Verlauf; gebaut zeigt Block 4
+              Bandbreite, Vorschlag, Hinweistext und Sensitivität</td>
+            <td><span class="mono">WirtschaftlichkeitSeite.razor</span> (Block 4) ·
+              <span class="mono">KapitalwertVerlaufAbschnitt</span></td>
+            <td class="grund"><b>erledigt mit E8 Teil a (#454)</b> — Frage E6‑Q1, am 23.09.2026 entschieden (ja): Block 4 „Unsicherheit" zeigt Spannenbild und Verlauf mit denselben Bausteinen wie „Wie sicher ist das?" — dem Fragment des Spannenbilds und <span class="mono">KapitalwertVerlaufAbschnitt</span> mit derselben Datenseite und Fassung — in der Folge Bandbreite, Spannenbild, Vorschlag, Hinweistext, Verlauf, Sensitivität; je Darstellung steht genau ein Verlauf. bunit: Stellung in Block 4, das Spannenbild gleicht dem der Darstellung „Kennzahlen", der Verlauf ruft dieselbe Datenseite</td></tr>
       </tbody>
     </table>
   </div>

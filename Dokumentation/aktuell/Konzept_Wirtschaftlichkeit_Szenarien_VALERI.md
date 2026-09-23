@@ -3,7 +3,7 @@
 **Anwenderentscheid 09.09.2026** · Etappen **W5‑B‑9** (Szenarioparameter) und
 **W5‑B‑10** (VALERI-Abgleich nach DIN EN 17463).
 
-**Stand 23.09.2026** · Codestand `41764ab0` · `SchemaStand.Zielversion` = **113**, Schemaschritte
+**Stand 23.09.2026** · Codestand `485052c6` · `SchemaStand.Zielversion` = **113**, Schemaschritte
 90–113 vergeben, neue ab **114**. Die Etappen W5‑B‑9 bis W5‑B‑12 sind gebaut; ihre Fortsetzung läuft
 unter der Reihe **V-A…V-E** des konsolidierten Konzepts (§ 2.11.4) im Etappenplan **E0–E12** des
 Analysepapiers. **Entscheid A5 vom 20.09.2026 (nach Empfehlung): V-E rechnet die Degradation nicht
@@ -563,15 +563,16 @@ Drei Entscheide zur Ergebnisansicht (konsolidiertes Konzept § 2.11.4, § 2.11.6
 W5‑B‑9 bis W5‑B‑12, den Stand der drei Entscheide nennt die Tafel.
 
 **Stand 23.09.2026: V-4 (Hinweistext) und K8/V-1 sind gebaut — der Umschalter mit E5 (#434), der
-Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit E6 (#436); V-G10 steht mit
-E8 aus** — eingeordnet im Etappenplan **E0–E12** des
+Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" mit E6 (#436), der Verlauf auch in
+Block 4 der Darstellung „ValERI-Bewertung" mit E8 Teil a (#454); V-G10 steht mit E8 Teil b aus** —
+eingeordnet im Etappenplan **E0–E12** des
 Analysepapiers ([`Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md`](Wirtschaftlichkeit_Kosten/2026-09-19_Analyse_Konzept_Umsetzung_Wirtschaftlichkeit.md) § 5):
 
 | Entscheid | Etappe | Bemerkung |
 |---|---|---|
 | **V-4** Hinweistext bis zur vollständigen Szenarioabdeckung | Hinweistext **gebaut #434** (E5, U10); die Abdeckung selbst **E9** | `WIRT_SZEN_HINWEIS` in beiden Sprachen, Wortlaut nach **A14** (Konzeptfassung ohne Roadmap-Satz); die Zahlen im Text sind die wirksamen — ohne Pflege die Vorgaben aus § 2.1, sonst die gepflegten Werte; unter der Annahmentafel und in Wort- und Tabellenbericht |
-| **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | Umschalter **gebaut #434** (E5); der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" **gebaut #436** (E6) | Der Verlauf steht als Abschnitt in „Wie sicher ist das?" und rechnet je Version alle drei Szenarien über einen frei wählbaren Zeitraum (§ 7.1); die Fußleiste trägt höchstens vier Knöpfe |
-| **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **E8** (V-C und V-D) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6 |
+| **K8 / V-1** Umschalter „Kennzahlen / ValERI-Bewertung" | Umschalter **gebaut #434** (E5); der Verlauf mit drei Szenarien und der Wegfall des Knopfes „Verlauf…" **gebaut #436** (E6); derselbe Verlauf in Block 4 **gebaut #454** (E8 Teil a, E6‑Q1) | Der Verlauf steht als Abschnitt in „Wie sicher ist das?" und rechnet je Version alle drei Szenarien über einen frei wählbaren Zeitraum (§ 7.1); die Fußleiste trägt höchstens vier Knöpfe |
+| **V-G10** Der ganze Bericht formelbasiert, soweit ableitbar | **E8** Teil b (V-D; V-C gebaut #454) | Stufenplan 0–3 im konsolidierten Konzept § 2.11.6 |
 
 **Mit #405 (E2) ist aus diesem Umkreis erledigt:** die Bandbreite im Bericht mit Spalte „Spanne" und
 Referenzzeile (G8, § 9.2) in Word **und** Excel, der Zeitraumhinweis im Excel-Blatt (G7, § 9.3) und
@@ -614,7 +615,7 @@ niemand zweimal baut:
 | **W5‑B‑11** Umsetzung der Entscheidungen (§ 9) | **V-B** ≡ Etappe „VG" der Statuszeile **#358** (wählbare Referenz, Schemaschritt 92) | gebaut |
 | **W5‑B‑12** Preisindizierung p_I und Freitext (§ 10, Migrationsschritt 72) | Teil von **V-E** (p_I) und **V-G11** (Freitext) | gebaut — von V-G11 fehlen Kategorie und Beurteilung |
 | — | **V-A** Ausweis („nachrichtlich", Zinsfuß-Warnung, Deklarationen, Steigung) | gebaut — E5, **#434** |
-| — | **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | offen (E8) — von V-C sind die Blöcke 1, 3, 4 und 5 mit #434 vorgezogen, das Cashflow-Bild mit #436 als Verlauf mit drei Szenarien unter „Wie sicher ist das?" |
+| — | **V-C** ValERI-Ansicht, **V-D** XLSX-Formelbericht | V-C gebaut — E8 Teil a, **#454**: die fünf Blöcke vollständig (die Blöcke 1, 3, 4 und 5 mit #434 vorgezogen, das Cashflow-Bild mit #436 als Verlauf unter „Wie sicher ist das?", mit #454 Block 2 samt Zahlungsstrombild und Block 4 mit Spannenbild und Verlauf); V-D offen (E8 Teil b) |
 
 **Nummernvorsicht:** Die Lückennummern `G1…G11` dieses Papiers und `V-G1…V-G12` des
 konsolidierten Konzepts meinen bei gleicher Ziffer Verschiedenes (G2 Preisänderung je Kostenart
