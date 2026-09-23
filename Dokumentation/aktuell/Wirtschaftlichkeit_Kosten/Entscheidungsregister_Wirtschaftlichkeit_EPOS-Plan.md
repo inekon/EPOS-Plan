@@ -44,7 +44,7 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑NR | Entscheide zu offenen Punkten des Konzepts § 6.3: Nr. 20, 29, 30, 31, 32 | Konzept § 6.3 vor dem Schnitt; Statusdatei Nach #429 (d), Nach #432 (a) | 5 |
 | R‑E4 | U6‑Q1…Q3, U7‑Q1/Q2 — Fragen aus E4 | Statusdatei Nach #432 (a) | 5 |
 | R‑E5 | E5‑Q1…Q7 und die vier Fragen aus Teil b (E5b‑1…4) | Protokoll E5; Statusdatei Nach #434 (a); Anwender 22.09.2026 | 11 |
-| R‑E6 | E6‑Q1, E6‑Q2 — die Fragen aus E6 (offen) | Protokoll E6; Statusdatei Nach #436 (a) | 2 |
+| R‑E6 | E6‑Q1, E6‑Q2 — die Fragen aus E6 (entschieden 23.09.2026) | Protokoll E6; Statusdatei Nach #436 (a) | 2 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -326,8 +326,8 @@ kein Entscheid: die erste folgt E5‑Q2 (R‑E5), die zweite war ein Fehler; bei
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E6‑Q1** | Block 4 „Unsicherheit" der Darstellung „ValERI-Bewertung" zeigt Bandbreite, Vorschlag, Hinweistext und Sensitivität, aber weder den Verlauf noch das Spannenbild — die Tafel der fünf Blöcke im Mockup nennt dort den Verlauf. Verlauf und Spannenbild auch in Block 4? | offen — Empfehlung: ja, dieselben Bausteine wie unter „Wie sicher ist das?" | 23.09.2026 gestellt; Entscheid ausstehend | § 2.13 (5); § 2.11.4 (V‑C); Mockup, Kategorie 8 und Anhang U49 | offen |
-| **E6‑Q2** | Das Spannenbild färbt Punkt, Betrag und Balkenenden nach dem Vorzeichen (grün über, rot unter der Referenz) und teilt die Achse in vollen Euro; das Mockup zeichnet eine Farbe und die Achse in Millionen. So lassen? | offen — Empfehlung: so lassen | 23.09.2026 gestellt; Entscheid ausstehend | § 2.13 (5); Mockup, Kategorie 8 (Spannenbild) | gebaut #436 wie in der Frage beschrieben; bei „so lassen" folgt das Mockup |
+| **E6‑Q1** | Block 4 „Unsicherheit" der Darstellung „ValERI-Bewertung" zeigt Bandbreite, Vorschlag, Hinweistext und Sensitivität, aber weder den Verlauf noch das Spannenbild — die Tafel der fünf Blöcke im Mockup nennt dort den Verlauf. Verlauf und Spannenbild auch in Block 4? | **ja** — dieselben Bausteine wie unter „Wie sicher ist das?" | 23.09.2026 gestellt; **entschieden 23.09.2026 (Anwender: ja)** | § 2.13 (5); § 2.11.4 (V‑C); Mockup, Kategorie 8 und Anhang U49 | Umsetzung mit E8 (Block 4 vollständig) |
+| **E6‑Q2** | Das Spannenbild färbt Punkt, Betrag und Balkenenden nach dem Vorzeichen (grün über, rot unter der Referenz) und teilt die Achse in vollen Euro; das Mockup zeichnet eine Farbe und die Achse in Millionen. So lassen? | **so lassen** (Vorzeichenfarben und Achse in vollen Euro sind der Hausstil der Bilder) | 23.09.2026 gestellt; **entschieden 23.09.2026 (Anwender: so lassen)** | § 2.13 (5); Mockup, Kategorie 8 (Spannenbild) | gebaut #436; das Mockup folgt beim nächsten Nachzug |
 
 ---
 
