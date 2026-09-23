@@ -342,8 +342,8 @@ namespace WindowsFormsApplication1
         /// <c>Abfrage_Projektgebaeude</c> wird neu gebaut — der erste Sichtneubau des
         /// SQLite-Zweigs. Alles steht bei <see cref="GebaeudeSchema"/>. Die neuen
         /// Spalten bleiben NULL (die zwei Schalter 0), kein Rechenweg liest sie —
-        /// <b>der Referenzlauf bleibt byte-gleich</b>, die Basis
-        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.
+        /// <b>der Referenzlauf bleibt byte-gleich</b>, gemessen gegen die damalige Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c>.
         /// Mit der LEEREN ANLAGENART (Schritt 102, Konzept Wirtschaftlichkeit § 6.3
         /// Nr. 30, Anwenderentscheid 22.09.2026) steht das Ziel auf <b>102</b>: Die
         /// leere Zeichenkette in <c>Tab_Energieanlagen.KWKG_Anlagenart</c> wird NULL,
