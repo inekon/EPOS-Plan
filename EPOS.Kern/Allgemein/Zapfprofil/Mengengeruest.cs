@@ -519,7 +519,12 @@ namespace WindowsFormsApplication1
         // Hilfen
         // =================================================================================
 
-        private static double Belegung(WohnungstypStand w, ZonenStand z,
+        /// <summary>
+        /// Die Belegung (Personen) eines Wohnungstyps: eigene Personenzahl, sonst Belegung nach
+        /// Raumzahl aus dem Katalog, sonst Personen je WE der Zone — sonst benannte Ablehnung.
+        /// Mengengerüst und DIN-4708-Kennzahl lesen dieselbe Zahl (Konzept 3.1).
+        /// </summary>
+        internal static double Belegung(WohnungstypStand w, ZonenStand z,
                                        IReadOnlyDictionary<string, double> belegungJeRaumzahl, string zone)
         {
             if (w.Personen.HasValue && w.Personen.Value > 0) return w.Personen.Value;
