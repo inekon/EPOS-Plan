@@ -428,6 +428,49 @@ namespace WindowsFormsApplication1
             return profil;
         }
 
+        /// <summary>
+        /// Jahresprofil (8760 Stundenwerte) der Erdreichtemperatur in der Tiefe
+        /// <paramref name="tiefeM"/> mit <b>ausdrücklich übergebener</b>
+        /// Temperaturleitfähigkeit — die Überladung des Gebäudemodells (Stufe G1,
+        /// Rechenschritte E6, Entscheid E6): Die Bodenplatte rechnet mit z = 1,0 m und
+        /// α = 0,06 m²/d aus den Festwerten des Modells, nicht mit einem Bodentyp des
+        /// Katalogs, dessen Wert zufällig passt.
+        ///
+        /// <para>Dieselbe Kusuda-Form wie <see cref="JahresprofilKollektor(double[], double, string)"/>
+        /// und derselbe Jahresgang (<see cref="AnalysiereJahresgang"/>, Ausgleich über zwölf
+        /// Monatsmittel); allein Dämpfungstiefe und Phasenverzug folgen aus
+        /// <paramref name="temperaturleitfaehigkeitM2d"/>. Benannte Abweichung von
+        /// Rechenschritte E6: dort ist der Ausgleich über die 365 Tagesmittel beschrieben.</para>
+        /// </summary>
+        /// <param name="aussentemp8760">Außentemperatur [°C], 8 760 Werte.</param>
+        /// <param name="tiefeM">Tiefe z [m], größer null.</param>
+        /// <param name="temperaturleitfaehigkeitM2d">Temperaturleitfähigkeit α [m²/d], größer null.</param>
+        /// <param name="ausKlimadaten"><c>false</c>, wenn der Jahresgang auf die Ersatzwerte
+        /// zurückfiel (<see cref="Jahresgang.AusKlimadaten"/>) — der Aufrufer hat das zu melden.</param>
+        public static double[] Jahresprofil(double[] aussentemp8760, double tiefeM, double temperaturleitfaehigkeitM2d,
+                                            out bool ausKlimadaten)
+        {
+            if (!(tiefeM > 0.0)) throw new ArgumentOutOfRangeException(nameof(tiefeM));
+            if (!(temperaturleitfaehigkeitM2d > 0.0)) throw new ArgumentOutOfRangeException(nameof(temperaturleitfaehigkeitM2d));
+
+            Jahresgang jg = AnalysiereJahresgang(aussentemp8760);
+            ausKlimadaten = jg.AusKlimadaten;
+
+            // Dämpfungstiefe d = sqrt(2·a/ω) mit a in m²/h und ω in 1/h.
+            double aProStunde = temperaturleitfaehigkeitM2d / 24.0;
+            double d = Math.Sqrt(2.0 * aProStunde / OMEGA);
+            double daempfung = Math.Exp(-tiefeM / d);
+            double phasenversatz = tiefeM / d;            // [rad]
+
+            double[] profil = new double[STUNDEN_JAHR];
+            for (int t = 0; t < STUNDEN_JAHR; t++)
+            {
+                double arg = OMEGA * (t - jg.StundeMin) - phasenversatz;
+                profil[t] = jg.Mittel - jg.Amplitude * daempfung * Math.Cos(arg);
+            }
+            return profil;
+        }
+
         // ------------------------------------------------------------------
         // Erdsonde - konstante Quelltemperatur
         // ------------------------------------------------------------------

@@ -89,7 +89,7 @@ namespace WindowsFormsApplication1
             { "ID_Brennstoff",    "Tab_Brennstoff_Stamm" },
             { "ID_Type",          "Tab_Typ_Energieanlagen" },
             { "KomponentenID",    "Tab_KostenKomponente" },
-            // Zapfprofilgenerator (Schemaschritt 102, Konzept 3.2): Zone, Wohnungstyp und
+            // Zapfprofilgenerator (Schemaschritt 103, Konzept 3.2): Zone, Wohnungstyp und
             // Projektzeile zeigen auf unveränderliche Katalogversionen. Gefunden wird über
             // den natürlichen Schlüssel; fehlt die Zeile am Ziel, reist sie mit
             // (Status IMPORT, ProjektExportImportCtrl.Tww.cs).

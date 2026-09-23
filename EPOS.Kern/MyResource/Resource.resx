@@ -6101,9 +6101,6 @@ Mehrere Felder desselben Modultyps sind zulässig — bitte prüfen, ob das so g
   <data name="ANL_SP_NAME_ANGEPASST" xml:space="preserve">
     <value>Der Name „{0}" ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}" umbenannt.</value>
   </data>
-  <data name="GEB2_TITEL" xml:space="preserve">
-    <value>Gebäudedaten – Raumtemperaturen, Wärmebrücken und Ferienzeiten</value>
-  </data>
   <data name="GESETZ_MENUE" xml:space="preserve">
     <value>Gesetzliche Parameter…</value>
   </data>
@@ -12750,17 +12747,11 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_BTN_BRAUCHWASSER" xml:space="preserve">
     <value>Brauchwasser...</value>
   </data>
-  <data name="GEBK_BTN_SPEICHERN" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
   <data name="GEBK_BTN_SPEICHERN_UNTER" xml:space="preserve">
     <value>Speichern unter</value>
   </data>
   <data name="GEBK_BTN_UEBERNEHMEN" xml:space="preserve">
     <value>Werte übernehmen</value>
-  </data>
-  <data name="GEBK_BTN_UEBERSCHREIBEN" xml:space="preserve">
-    <value>Überschreiben</value>
   </data>
   <data name="GEBK_FELD_ANSCHLUSS_DACH" xml:space="preserve">
     <value>Anschluß Wand-Dach</value>
@@ -12780,11 +12771,14 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_FELD_FF_NORD" xml:space="preserve">
     <value>Fensterfläche Nord</value>
   </data>
-  <data name="GEBK_FELD_FF_OSTWEST" xml:space="preserve">
-    <value>Fensterfläche Ost + West</value>
+  <data name="GEBK_FELD_FF_OST" xml:space="preserve">
+    <value>Fensterfläche Ost</value>
   </data>
   <data name="GEBK_FELD_FF_SUED" xml:space="preserve">
     <value>Fensterfläche Süd</value>
+  </data>
+  <data name="GEBK_FELD_FF_WEST" xml:space="preserve">
+    <value>Fensterfläche West</value>
   </data>
   <data name="GEBK_FELD_FLAECHE_NUTZER" xml:space="preserve">
     <value>Fläche / Nutzer</value>
@@ -12820,7 +12814,7 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Interne Wärmegewinne</value>
   </data>
   <data name="GEBK_FELD_WOHNFLAECHE" xml:space="preserve">
-    <value>Wohn-/Nutzfläche</value>
+    <value>Nutzfläche</value>
   </data>
   <data name="GEBK_FERIEN_HERBST" xml:space="preserve">
     <value>Herbst :</value>
@@ -12834,8 +12828,8 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_FERIEN_WINTER" xml:space="preserve">
     <value>Winter :</value>
   </data>
-  <data name="GEBK_GRP_ANSCHLUSS" xml:space="preserve">
-    <value>Abmessung Anschluß [m]</value>
+  <data name="GEBK_GRP_FENSTER_ORIENTIERUNG" xml:space="preserve">
+    <value>Fenster nach Orientierung</value>
   </data>
   <data name="GEBK_GRP_FERIEN_ANFANG" xml:space="preserve">
     <value>Ferien Anfang</value>
@@ -12843,11 +12837,17 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_GRP_FERIEN_ENDE" xml:space="preserve">
     <value>Ferien Ende</value>
   </data>
-  <data name="GEBK_GRP_FLAECHEN" xml:space="preserve">
-    <value>Flächen [m²]</value>
+  <data name="GEBK_GRP_HUELLE" xml:space="preserve">
+    <value>Hülle: Transmission je Bauteil</value>
   </data>
   <data name="GEBK_GRP_KENNGROESSEN" xml:space="preserve">
     <value>Kenngrößen</value>
+  </data>
+  <data name="GEBK_GRP_LEITWERTE" xml:space="preserve">
+    <value>Wärmeleitwerte</value>
+  </data>
+  <data name="GEBK_GRP_MODELLPARAMETER" xml:space="preserve">
+    <value>Modellparameter (VDI 6007)</value>
   </data>
   <data name="GEBK_GRP_RAUMTEMPERATUREN" xml:space="preserve">
     <value>Raumtemperaturen</value>
@@ -12855,17 +12855,32 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_GRP_SONSTIGES" xml:space="preserve">
     <value>Sonstiges</value>
   </data>
-  <data name="GEBK_GRP_UWERTE" xml:space="preserve">
-    <value>U-Werte [W/m²K]</value>
-  </data>
-  <data name="GEBK_GRP_WAERMEBRUECKEN" xml:space="preserve">
-    <value>Wärmebrückenverlustkoeffizienten [W/(mK)]</value>
+  <data name="GEBK_GRP_TAGESBILANZ" xml:space="preserve">
+    <value>Tagesbilanz (Bestandsweg)</value>
   </data>
   <data name="GEBK_HINWEIS_FENSTERDURCHLASS" xml:space="preserve">
     <value>(z.B. 0,4)</value>
   </data>
+  <data name="GEBK_HINWEIS_FENSTER_SUMME" xml:space="preserve">
+    <value>Die Fensterfläche ist die Summe der vier Orientierungen.</value>
+  </data>
+  <data name="GEBK_HINWEIS_GEWICHTE" xml:space="preserve">
+    <value>Der Tagesbilanz-Weg wichtet Außenwand und Wärmebrücken mit 0,83, das Dach mit 0,95 und die Bodenplatte mit 0,45. Das Stundenmodell rechnet ungewichtet.</value>
+  </data>
+  <data name="GEBK_HINWEIS_LUEFTUNG" xml:space="preserve">
+    <value>H_ve = Luftwechselrate · Nutzfläche · Raumhöhe · 0,34 Wh/(m³K).</value>
+  </data>
+  <data name="GEBK_HINWEIS_MODELLPARAMETER" xml:space="preserve">
+    <value>Leere Felder rechnen mit der Vorgabe. Die Werte gelten für den Rechenweg VDI 6007.</value>
+  </data>
+  <data name="GEBK_HINWEIS_SPEICHERN_UNTER" xml:space="preserve">
+    <value>„Speichern unter“ legt einen neuen Katalogsatz unter dem eingegebenen Namen an und schließt wie OK.</value>
+  </data>
   <data name="GEBK_LBL_AUSSENWAND_KELLER" xml:space="preserve">
     <value>Außenwand-Keller :</value>
+  </data>
+  <data name="GEBK_LBL_AUSSEN_STRAHLUNG" xml:space="preserve">
+    <value>Außenbauteile mit Strahlung</value>
   </data>
   <data name="GEBK_LBL_BAUART" xml:space="preserve">
     <value>Bauart :</value>
@@ -12888,14 +12903,26 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_FENSTER_WAND" xml:space="preserve">
     <value>Fenster-Wand :</value>
   </data>
+  <data name="GEBK_LBL_FF_GESAMT" xml:space="preserve">
+    <value>gesamte Fensterfläche :</value>
+  </data>
   <data name="GEBK_LBL_FF_NORD" xml:space="preserve">
     <value>Fensterfläche Nord :</value>
+  </data>
+  <data name="GEBK_LBL_FF_OST" xml:space="preserve">
+    <value>Fensterfläche Ost :</value>
   </data>
   <data name="GEBK_LBL_FF_OSTWEST" xml:space="preserve">
     <value>Fensterfläche Ost + West :</value>
   </data>
   <data name="GEBK_LBL_FF_SUED" xml:space="preserve">
     <value>Fensterfläche Süd :</value>
+  </data>
+  <data name="GEBK_LBL_FF_SUMME_OW" xml:space="preserve">
+    <value>Summe Ost + West :</value>
+  </data>
+  <data name="GEBK_LBL_FF_WEST" xml:space="preserve">
+    <value>Fensterfläche West :</value>
   </data>
   <data name="GEBK_LBL_FLAECHE_NUTZER" xml:space="preserve">
     <value>Fläche / Nutzer :</value>
@@ -12912,8 +12939,35 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_GRUNDFLAECHE" xml:space="preserve">
     <value>Gebäude Grundfläche :</value>
   </data>
+  <data name="GEBK_LBL_HEIZLEISTUNG_MAX" xml:space="preserve">
+    <value>Heizleistungsgrenze :</value>
+  </data>
+  <data name="GEBK_LBL_HEIZUNG_STRAHLUNG" xml:space="preserve">
+    <value>Strahlungsanteil Heizung :</value>
+  </data>
+  <data name="GEBK_LBL_HGES" xml:space="preserve">
+    <value>H_ges gesamt :</value>
+  </data>
+  <data name="GEBK_LBL_HT" xml:space="preserve">
+    <value>H_T Transmission :</value>
+  </data>
+  <data name="GEBK_LBL_HT_GEWICHTET" xml:space="preserve">
+    <value>H_T gewichtet (Tagesbilanz) :</value>
+  </data>
+  <data name="GEBK_LBL_HVE" xml:space="preserve">
+    <value>H_ve Lüftung :</value>
+  </data>
+  <data name="GEBK_LBL_INNENFLAECHENFAKTOR" xml:space="preserve">
+    <value>Innenflächenfaktor :</value>
+  </data>
+  <data name="GEBK_LBL_KELLERTEMPERATUR" xml:space="preserve">
+    <value>Kellertemperatur :</value>
+  </data>
   <data name="GEBK_LBL_LUFTWECHSEL" xml:space="preserve">
     <value>Luftwechselrate :</value>
+  </data>
+  <data name="GEBK_LBL_MASSEANTEIL" xml:space="preserve">
+    <value>Masseanteil außen :</value>
   </data>
   <data name="GEBK_LBL_MAXTEMPERATUR" xml:space="preserve">
     <value>Maximalraumtemperatur :</value>
@@ -12927,8 +12981,14 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_NAME" xml:space="preserve">
     <value>Name :</value>
   </data>
+  <data name="GEBK_LBL_RAHMENANTEIL" xml:space="preserve">
+    <value>Rahmenanteil :</value>
+  </data>
   <data name="GEBK_LBL_RAUMHOEHE" xml:space="preserve">
     <value>Raumhöhe :</value>
+  </data>
+  <data name="GEBK_LBL_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg :</value>
   </data>
   <data name="GEBK_LBL_SOLL_FERIEN" xml:space="preserve">
     <value>Soll in Ferien :</value>
@@ -12957,6 +13017,9 @@ Soll er trotzdem überschrieben werden?</value>
   <data name="GEBK_LBL_U_SONSTIGES" xml:space="preserve">
     <value>Sonstiges :</value>
   </data>
+  <data name="GEBK_LBL_VERSCHATTUNG" xml:space="preserve">
+    <value>Verschattungsfaktor :</value>
+  </data>
   <data name="GEBK_LBL_VERWENDUNG" xml:space="preserve">
     <value>Verwendung :</value>
   </data>
@@ -12970,7 +13033,10 @@ Soll er trotzdem überschrieben werden?</value>
     <value>Wochenendabsenkung :</value>
   </data>
   <data name="GEBK_LBL_WOHNFLAECHE" xml:space="preserve">
-    <value>Wohn-/Nutzfläche :</value>
+    <value>Nutzfläche :</value>
+  </data>
+  <data name="GEBK_MSG_BAUWEISE" xml:space="preserve">
+    <value>Die Bauweise muss zwischen 5 und 200 Wh/(m²K) je m² Nutzfläche liegen. Bitte die Bauart wählen.</value>
   </data>
   <data name="GEBK_MSG_FEHLER" xml:space="preserve">
     <value>Fehler beim Speichern!
@@ -12988,26 +13054,80 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBK_MSG_FERIEN_WINTER" xml:space="preserve">
     <value>Die Ferien müssen über die Jahresgrenze gehen!</value>
   </data>
-  <data name="GEBK_MSG_GESPEICHERT" xml:space="preserve">
-    <value>Gebäude ist gespeichert!</value>
+  <data name="GEBK_MSG_FLAECHE_NUTZER" xml:space="preserve">
+    <value>Die Fläche je Nutzer muss größer als 0 sein.</value>
+  </data>
+  <data name="GEBK_MSG_G_WERT" xml:space="preserve">
+    <value>Der Fensterdurchlaßgrad muss größer als 0 und höchstens 1 sein.</value>
+  </data>
+  <data name="GEBK_MSG_LUFTWECHSEL" xml:space="preserve">
+    <value>Die Luftwechselrate muss größer als 0 sein.</value>
   </data>
   <data name="GEBK_MSG_NAME_LEER" xml:space="preserve">
     <value>Gebäudenamen eingeben!</value>
   </data>
+  <data name="GEBK_MSG_NAME_VERGEBEN" xml:space="preserve">
+    <value>Ein Gebäude mit diesem Namen steht schon im Katalog.</value>
+  </data>
+  <data name="GEBK_MSG_NUTZFLAECHE" xml:space="preserve">
+    <value>Die Nutzfläche muss größer als 0 sein.</value>
+  </data>
+  <data name="GEBK_MSG_OST_WEST" xml:space="preserve">
+    <value>Fensterfläche Ost und West bitte beide eingeben oder beide leer lassen.</value>
+  </data>
+  <data name="GEBK_MSG_RAUMHOEHE" xml:space="preserve">
+    <value>Die Raumhöhe muss größer als 0 sein.</value>
+  </data>
   <data name="GEBK_MSG_READONLY" xml:space="preserve">
     <value>Dieser Stammdatensatz ist schreibgeschützt (ReadOnly) und kann nicht überschrieben werden.</value>
   </data>
-  <data name="GEBK_MSG_UEBERNOMMEN" xml:space="preserve">
-    <value>Werte übernommen.</value>
+  <data name="GEBK_MSG_RREST" xml:space="preserve">
+    <value>Die Bauteile ergeben keinen positiven Restwiderstand; das mittlere U der opaken Bauteile liegt über 4,17 W/(m²K).</value>
   </data>
-  <data name="GEBK_MSG_UEBERSCHRIEBEN" xml:space="preserve">
-    <value>Gebäude Datensatz ist überschrieben!</value>
+  <data name="GEBK_MSG_UNGUELTIG" xml:space="preserve">
+    <value>Der Wert im Feld „{0}“ ist ungültig.</value>
+  </data>
+  <data name="GEBK_MSG_U_BEREICH" xml:space="preserve">
+    <value>Der U-Wert {0} muss zwischen 0,1 und 6 W/(m²K) liegen.</value>
   </data>
   <data name="GEBK_MSG_ZAHL" xml:space="preserve">
     <value>Bitte {0} als Zahl eingeben.</value>
   </data>
-  <data name="GEBK_REITER_FLAECHEN" xml:space="preserve">
-    <value>Flächen und U-Werte</value>
+  <data name="GEBK_RAND_AUSSENLUFT" xml:space="preserve">
+    <value>Außenluft</value>
+  </data>
+  <data name="GEBK_RAND_ERDREICH" xml:space="preserve">
+    <value>Erdreich</value>
+  </data>
+  <data name="GEBK_RAND_KELLER" xml:space="preserve">
+    <value>Keller (unbeheizt)</value>
+  </data>
+  <data name="GEBK_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Tagesbilanz</value>
+  </data>
+  <data name="GEBK_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007</value>
+  </data>
+  <data name="GEBK_REITER_HUELLE" xml:space="preserve">
+    <value>Gebäude und Hülle</value>
+  </data>
+  <data name="GEBK_REITER_TEMPERATUREN" xml:space="preserve">
+    <value>Temperaturen und Ferien</value>
+  </data>
+  <data name="GEBK_SP_A_L" xml:space="preserve">
+    <value>A bzw. L</value>
+  </data>
+  <data name="GEBK_SP_BAUTEIL" xml:space="preserve">
+    <value>Bauteil</value>
+  </data>
+  <data name="GEBK_SP_RANDBEDINGUNG" xml:space="preserve">
+    <value>Randbedingung</value>
+  </data>
+  <data name="GEBK_SP_UA" xml:space="preserve">
+    <value>U·A [W/K]</value>
+  </data>
+  <data name="GEBK_SP_U_PSI" xml:space="preserve">
+    <value>U bzw. ψ</value>
   </data>
   <data name="GEBK_TITEL" xml:space="preserve">
     <value>Gebäudedaten: Flächen, U-Werte</value>
@@ -13018,6 +13138,45 @@ Alle Eingaben überprüfen!</value>
   <data name="GEBK_VERWENDUNG_WOHN" xml:space="preserve">
     <value>Wohngebäude</value>
   </data>
+  <data name="GEBK_VORGABE" xml:space="preserve">
+    <value>Vorgabe {0}</value>
+  </data>
+  <data name="GEBK_VORGABE_UNBEGRENZT" xml:space="preserve">
+    <value>Vorgabe: unbegrenzt</value>
+  </data>
+  <data name="GEBK_ZEILE_AUSSENWAND" xml:space="preserve">
+    <value>Außenwand</value>
+  </data>
+  <data name="GEBK_ZEILE_BODENPLATTE" xml:space="preserve">
+    <value>Bodenplatte</value>
+  </data>
+  <data name="GEBK_ZEILE_DACH" xml:space="preserve">
+    <value>Dach</value>
+  </data>
+  <data name="GEBK_ZEILE_FENSTER" xml:space="preserve">
+    <value>Fenster</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Tagesbilanz: der eingefrorene Bestandsweg mit gewichteten Bauteilen; er kennt weder Raumtemperatur noch Kühllast noch Anlagenkopplung.</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007: Raumtemperatur, Kühlbedarf und Spitzenlast je Stunde.</value>
+  </data>
+  <data name="GEBK_ZEILE_RECHENWEG_VORGABE" xml:space="preserve">
+    <value>Am Gebäude ist kein Rechenweg eingetragen; es gilt die Vorgabe des Programms: {0}.</value>
+  </data>
+  <data name="GEBK_ZEILE_SONSTIGES" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_DACH" xml:space="preserve">
+    <value>Wärmebrücke Wand–Dach</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_FENSTER" xml:space="preserve">
+    <value>Wärmebrücke Fenster–Wand</value>
+  </data>
+  <data name="GEBK_ZEILE_WB_KELLER" xml:space="preserve">
+    <value>Wärmebrücke Außenwand–Keller</value>
+  </data>
   <data name="GEBW_GRP_EINGABE" xml:space="preserve">
     <value>Eingabe für das ausgewählte Gebäude</value>
   </data>
@@ -13026,6 +13185,9 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEBW_HINWEIS_NUTZUNGSGRAD" xml:space="preserve">
     <value>Bei Brennstoffangaben bitte Heizkessel Jahresnutzungsgrad eingeben: z.B. 0.85 für 85%</value>
+  </data>
+  <data name="GEBW_HINWEIS_SKALIERUNG" xml:space="preserve">
+    <value>Aus Nutzfläche bzw. Verbrauch entsteht der Skalierungsfaktor der Gebäuderechnung; jeder Rechenweg liest diese Angaben.</value>
   </data>
   <data name="GEBW_LBL_ART_ANGABE" xml:space="preserve">
     <value>Art der Angabe:</value>
@@ -13052,13 +13214,13 @@ Alle Eingaben überprüfen!</value>
     <value>Jahresnutzungsgrad:</value>
   </data>
   <data name="GEBW_LBL_VERBRAUCH" xml:space="preserve">
-    <value>Wärmebedarf/Wohnfläche:</value>
+    <value>Wärmebedarf/Nutzfläche:</value>
   </data>
   <data name="GEBW_MSG_ZAHL" xml:space="preserve">
     <value>Bitte {0} als Zahl eingeben.</value>
   </data>
   <data name="GEBW_TITEL" xml:space="preserve">
-    <value>Eingabe der gesamten Wohn-/Nutzfläche des ausgewählten Gebäudes</value>
+    <value>Eingabe der Nutzfläche bzw. des Verbrauchs des ausgewählten Gebäudes</value>
   </data>
   <data name="GEB_BAK_A" xml:space="preserve">
     <value>vor 1919</value>
@@ -13195,17 +13357,23 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_LBL_GEBAEUDENAME" xml:space="preserve">
     <value>Gebäudename:</value>
   </data>
+  <data name="GEB_LBL_HGES" xml:space="preserve">
+    <value>Wärmeleitwert H_ges:</value>
+  </data>
   <data name="GEB_LBL_KATALOG" xml:space="preserve">
     <value>Gebäude in DB:</value>
   </data>
   <data name="GEB_LBL_PROJEKTLISTE" xml:space="preserve">
     <value>ausgewählte Gebäude im Projekt:</value>
   </data>
+  <data name="GEB_LBL_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg:</value>
+  </data>
   <data name="GEB_LBL_SUCHE" xml:space="preserve">
     <value>Filter:</value>
   </data>
   <data name="GEB_LBL_WOHNFLAECHE" xml:space="preserve">
-    <value>Wohn-/Nutzfläche:</value>
+    <value>Nutzfläche:</value>
   </data>
   <data name="GEB_MSG_GELOESCHT" xml:space="preserve">
     <value>Gebäude gelöscht!</value>
@@ -13218,6 +13386,18 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Suche, z. B. Haus*_1990*</value>
+  </data>
+  <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
+    <value>Tagesbilanz (Bestandsweg)</value>
+  </data>
+  <data name="GEB_RECHENWEG_VDI6007" xml:space="preserve">
+    <value>VDI 6007</value>
+  </data>
+  <data name="GEB_RECHENWEG_VORGABE" xml:space="preserve">
+    <value>{0} (Vorgabe)</value>
+  </data>
+  <data name="GEB_SP_RECHENWEG" xml:space="preserve">
+    <value>Rechenweg</value>
   </data>
   <data name="GEB_SP_TYP_FLAECHE" xml:space="preserve">
     <value>Typ/Wohnfläche</value>

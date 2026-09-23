@@ -88,6 +88,12 @@
                       WertChanged="w => _dezentral = w" />
                 </KindInhalt>
             </Formularraster>
+            @* Stufe G1 (E19, E20; Umsetzungskonzept Gebaeudesimulation 2.7): der Ort der
+               Skalierung nach E8 - jeder Rechenweg liest diese vier Groessen. *@
+            @if (HinweisSkalierung.Length > 0)
+            {
+                <Herleitungszeile Text="@HinweisSkalierung" />
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -165,6 +171,13 @@
     [Parameter] public string LabelJahresnutzungsgrad { get; set; } = "Jahresnutzungsgrad:";
     [Parameter] public string LabelDezentralWarmwasser { get; set; }
         = "Dezentrale Warmwasserbereitung";
+    /// <summary>
+    /// Die Herleitungszeile der Skalierung (Stufe G1, <c>GEBW_HINWEIS_SKALIERUNG</c>): Aus
+    /// Nutzfläche bzw. Verbrauch entsteht der Skalierungsfaktor der Gebäuderechnung. Leer =
+    /// keine Zeile.
+    /// </summary>
+    [Parameter] public string HinweisSkalierung { get; set; } = "";
+
     [Parameter] public string HinweisJahresnutzungsgrad { get; set; }
         = "Bei Brennstoffangaben bitte Heizkessel Jahresnutzungsgrad eingeben: z.B. 0.85 für 85%";
     [Parameter] public string OkText { get; set; } = "OK";

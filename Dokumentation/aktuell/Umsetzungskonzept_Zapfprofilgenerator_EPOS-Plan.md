@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N3 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N4 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -533,7 +533,7 @@ Drei Schritte, jeweils der **nächste freie Schritt nach `SchemaStand.Zielversio
 | **T2 — Zapfkategorien** | Z3 | `Tab_TwwZapfkategorie_STAMM` |
 | **T3 — Typtage** | Z4b, nach K3a/K8 | `Tab_TwwTyptag_IMPORT` |
 
-T1 ist im Bestand Schritt 102 (N2 (a)); T2 und T3 bekommen den dann nächsten freien Schritt.
+T1 ist im Bestand Schritt 103 (N2 (a), N4); T2 und T3 bekommen den dann nächsten freien Schritt.
 
 Bauweise nach [`ADR-001`](ADR-001_Schema-Ausrollung.md) und den Regeln in
 `WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Kommentar über `SCHRITTE_SQLITE`): erst
@@ -1303,7 +1303,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** | T3, `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Importdialog | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
-**Umsetzungsstand und Abweichungen:** N2 und N3 (Kapitel 11).
+**Umsetzungsstand und Abweichungen:** N2 bis N4 (Kapitel 11); T1 ist Schritt 103 (N4).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:
@@ -1606,6 +1606,21 @@ dieser Nachtrag berichtigt ihn, der Hauptteil ist mit Verweis „(N3)" nachgezog
 | (c) | `WikiProduktdatenWacheTests` auf die Katalogtexte der `Tab_Tww*_STAMM` (ohne `Beleg`) erweitern | Agent der Stufe Z4 | Z4 |
 | (d) | bei Entscheid nach Empfehlung zu ZU18: jede gefundene Testklasse umstellen | Agent eines Folgepostens | unabhängig von den Stufen |
 
+### N4 (23.09.2026) — Schrittnummer von T1: 103
+
+**Anlass.** Beim Zusammenführen des Zweigs `z0` mit `origin/ios_migration_september` stand dort
+Schritt 101 schon veröffentlicht. N2 (a) bleibt unverändert; dieser Nachtrag berichtigt ihn, der
+Hauptteil ist mit Verweis „(N4)" nachgezogen. Er enthält **keinen Entscheid** des Anwenders; die
+Vergabe ist mit der Sitzung der Wirtschaftlichkeit abgestimmt.
+
+**Befund.** T1 ist Schritt 103: Schritt 101 gehört der Gebäudesimulation (Gebäudespalten, auf
+`origin` seit `a6dd0fa4`), Schritt 102 dem KWKG-Schritt der Wirtschaftlichkeit (leere
+`KWKG_Anlagenart` wird NULL); `SchemaStand.Zielversion` = 103, Konstante
+`SCHRITT_103_ZAPFPROFIL_KATALOG`. Die Testdatenbank ist aus der origin-Fassung (Stand 101) mit den
+Schritten 102 und 103 migriert und trägt den fiktiven Testkatalog wie zuvor (19 Zeilen); der
+Zellvergleich gegen die frühere Fassung auf 102 zeigt nur den Schemastand und die Gebäudespalten
+aus Schritt 101. Merge `23437ea1`, Testdatenbank `3d5e5b84`.
+
 ---
 
 ## Anhang A — Auftragsblatt Stufe Z0 (Grundlagen und Schema)
@@ -1689,4 +1704,4 @@ des `SqlDialektPruefer`, Build der Windows-Schale, den Befund zur Mitnahme fehle
 Projektimport (3.2), die an K8 hängenden offenen Posten und jede Abweichung von diesem Blatt mit Grund.
 Die Orchestrierung nimmt ab, führt zusammen und löscht `AGENT_LAEUFT`.
 
-**Umsetzungsstand und Abweichungen:** N2 und N3 (Kapitel 11).
+**Umsetzungsstand und Abweichungen:** N2 bis N4 (Kapitel 11); T1 ist Schritt 103 (N4).

@@ -21,7 +21,7 @@ Katalogversion "TEST-1", kein Beleg. KEINE Zeile mit Status 'AUSLIEFERUNG' oder 
 Zone und keine Zeile in Tab_TwwProjekt - kein Projekt steht auf dem Generator, der
 Referenzlauf bleibt unberuehrt.
 
-VORAUSSETZUNG. Schemastand 102 (die zehn Tww-Tabellen), nachgezogen mit
+VORAUSSETZUNG. Schemastand 103 (die zehn Tww-Tabellen), nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
 WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die

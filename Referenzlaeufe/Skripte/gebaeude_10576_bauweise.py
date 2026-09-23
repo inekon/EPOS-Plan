@@ -45,8 +45,12 @@ def main():
 
     con = sqlite3.connect(sys.argv[1])
     try:
+        # Ab Schemaschritt 101 heisst die Bezugsflaeche Nutzflaeche (E19).
+        spalten = [r[1] for r in con.execute("PRAGMA table_info(Tab_Gebaeude)")]
+        flaechenspalte = "Nutzflaeche" if "Nutzflaeche" in spalten else "Wohnflaeche"
         zeile = con.execute(
-            "SELECT Gebaeudename, ID_Projekt, Wohnflaeche, Bauweise FROM Tab_Gebaeude WHERE ID = ?",
+            "SELECT Gebaeudename, ID_Projekt, " + flaechenspalte +
+            ", Bauweise FROM Tab_Gebaeude WHERE ID = ?",
             (GEBAEUDE,)).fetchone()
         if zeile is None:
             print(f"Gebaeude {GEBAEUDE} fehlt - Abbruch ohne Schreiben.")
