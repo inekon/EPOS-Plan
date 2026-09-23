@@ -25612,7 +25612,7 @@ Möchten Sie das zulassen?</value>
     <value>{0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind.</value>
   </data>
   <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
-    <value>{0} standen schon so und blieben unverändert.</value>
+    <value>Schon so und unverändert: {0}.</value>
   </data>
   <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
     <value>Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her.</value>

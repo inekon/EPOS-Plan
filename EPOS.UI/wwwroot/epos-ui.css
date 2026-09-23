@@ -7971,6 +7971,25 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     color: var(--epos-text-leise);
 }
 
+/* AD-Q15: ein Knopf mit zwei Beschriftungen ("Schloss aufheben..." /
+   "Schloss setzen...") - beide liegen in derselben Rasterzelle, die des
+   anderen Zustands unsichtbar. So ist er immer so breit wie die laengere,
+   und die Leiste bricht in beiden Zustaenden gleich um (Katalogprobe u4). */
+.epos-auswahlleiste-knopf--zweitext {
+    display: inline-grid;
+    justify-items: center;
+    align-items: center;
+}
+
+.epos-auswahlleiste-knopf--zweitext > .epos-auswahlleiste-text,
+.epos-auswahlleiste-knopf--zweitext > .epos-auswahlleiste-vorlage {
+    grid-area: 1 / 1;
+}
+
+.epos-auswahlleiste-vorlage {
+    visibility: hidden;
+}
+
 /* SCHMAL steht die Auswahlleiste UEBER der Liste - und die Liste darf nicht
    springen, wenn Kaestchen gesetzt werden (Konzept 3.3; Katalogprobe, Faelle
    N10b bis N12b: "3 gewaehlt" ist kuerzer als der Name der Fokuszeile, die
@@ -8131,6 +8150,21 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-left: 3px solid var(--epos-rahmen);
     background: var(--epos-flaeche);
     color: var(--epos-text);
+}
+
+/* AD-Q15: ein Satz, dessen Schloss in dieser Sitzung aufgehoben wurde - am
+   selben Platz, sichtbar verschieden vom Auslieferungshinweis: Balken und
+   Flaeche der Warnfarbe, die Schrift bleibt die des Textes (Kontrast). Im
+   Hochkontrastbetrieb traegt der Balken die Hervorhebungsfarbe. */
+.epos-stammblatt-schutz--entsperrt {
+    border-left-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+}
+
+@media (forced-colors: active) {
+    .epos-stammblatt-schutz--entsperrt {
+        border-left-color: Highlight;
+    }
 }
 
 .epos-stammblatt-kennzahlen {

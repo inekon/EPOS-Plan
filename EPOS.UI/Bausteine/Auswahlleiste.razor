@@ -2,9 +2,15 @@
    Schema Zone 4).
 
    EINE STELLE FUER ALLE HANDLUNGEN AN ZEILEN - gleich benannt in allen
-   Verwaltungen: Vergleichen, Duplizieren..., Loeschen. Was ein Wirt anbietet,
-   reicht er als DATEN herein (Auswahlhandlung); die Leiste zeichnet sie,
-   zaehlt und sperrt. Kein Rueckruf, kein Knopf.
+   Verwaltungen: Vergleichen, Duplizieren..., Schloss aufheben... bzw. Schloss
+   setzen... (AD-Q15, Baustein Schlossumschaltung), Loeschen. Was ein Wirt
+   anbietet, reicht er als DATEN herein (Auswahlhandlung); die Leiste zeichnet
+   sie, zaehlt und sperrt. Kein Rueckruf, kein Knopf.
+
+   EINE BESCHRIFTUNG, DIE MIT DER AUSWAHL WECHSELT ("Schloss aufheben..." /
+   "Schloss setzen..."), haelt ueber die Breitenvorlage die Breite der
+   laengeren - sonst braeche die Leiste je nach Auswahl anders um, und im
+   schmalen Fenster spraenge die Liste darunter.
 
    DAS ERSTE WORT SAGT, WORAUF SIE WIRKT (Konzept 3.3): der Name der Fokuszeile
    oder "3 gewaehlt". Sind Kaestchen gesetzt, wirkt jede Handlung auf die
@@ -45,21 +51,23 @@
 
             @if (h.Aus)
             {
-                <button type="button" class="epos-knopf epos-auswahlleiste-knopf" disabled>@h.Text</button>
+                <button type="button" class="@Knopfklasse(h)" disabled>@Knopftext(h)</button>
             }
             else if (grund.Length > 0)
             {
-                <button type="button" class="epos-knopf epos-auswahlleiste-knopf" aria-disabled="true"
-                        title="@grund" @onclick="@(() => Gesperrt.InvokeAsync(grund))">@h.Text</button>
+                <button type="button" class="@Knopfklasse(h)" aria-disabled="true"
+                        title="@grund" @onclick="@(() => Gesperrt.InvokeAsync(grund))">@Knopftext(h)</button>
             }
             else
             {
                 @* Ein eingerasteter Umschalter ("Vergleichen" waehrend des Vergleichs)
                    traegt das Bild des Hauses dafuer (epos-knopf--gewaehlt) und
-                   aria-pressed - Farbe allein traegt keine Aussage. *@
+                   aria-pressed - Farbe allein traegt keine Aussage. Der Kurztext sagt,
+                   was die Handlung tut, wo die Beschriftung es nicht ganz sagt. *@
                 <button type="button"
-                        class="epos-knopf epos-auswahlleiste-knopf@(h.Gedrueckt == true ? " epos-knopf--gewaehlt" : "")"
-                        aria-pressed="@Gedrueckt(h)" @onclick="h.Ausfuehren">@h.Text</button>
+                        class="@(Knopfklasse(h) + (h.Gedrueckt == true ? " epos-knopf--gewaehlt" : ""))"
+                        title="@(h.Kurztext.Length > 0 ? h.Kurztext : null)"
+                        aria-pressed="@Gedrueckt(h)" @onclick="h.Ausfuehren">@Knopftext(h)</button>
             }
         }
 
@@ -144,4 +152,33 @@
 
     private static string? Gedrueckt(Auswahlhandlung h)
         => h.Gedrueckt is bool b ? (b ? "true" : "false") : null;
+
+    /// <summary>Die Klassen des Knopfs — mit Breitenvorlage hält er die breitere zweier Beschriftungen.</summary>
+    private static string Knopfklasse(Auswahlhandlung h)
+        => "epos-knopf epos-auswahlleiste-knopf"
+         + (string.IsNullOrEmpty(h.Breitenvorlage) ? "" : " epos-auswahlleiste-knopf--zweitext");
+
+    /// <summary>
+    /// <b>Die Beschriftung des Knopfs.</b> Mit <see cref="Auswahlhandlung.Breitenvorlage"/>
+    /// liegen zwei Texte übereinander in derselben Rasterzelle: der gültige und — unsichtbar,
+    /// für die Sprachausgabe verborgen — der des anderen Zustands. So ist der Knopf immer so
+    /// breit wie der längere, und die Leiste bricht in beiden Zuständen gleich um.
+    /// </summary>
+    private static RenderFragment Knopftext(Auswahlhandlung h) => b =>
+    {
+        if (string.IsNullOrEmpty(h.Breitenvorlage))
+        {
+            b.AddContent(0, h.Text);
+            return;
+        }
+        b.OpenElement(1, "span");
+        b.AddAttribute(2, "class", "epos-auswahlleiste-text");
+        b.AddContent(3, h.Text);
+        b.CloseElement();
+        b.OpenElement(4, "span");
+        b.AddAttribute(5, "class", "epos-auswahlleiste-vorlage");
+        b.AddAttribute(6, "aria-hidden", "true");
+        b.AddContent(7, h.Breitenvorlage);
+        b.CloseElement();
+    };
 }

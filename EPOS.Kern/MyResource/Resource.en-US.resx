@@ -25605,7 +25605,7 @@ Do you want to allow this?</value>
     <value>Lock {0} records as delivery records ({1})? They are then read only and cannot be deleted; you can change them again only after “Unlock...”. Their values stay as they are.</value>
   </data>
   <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
-    <value>{0} were already in that state and stayed unchanged.</value>
+    <value>Already in that state, unchanged: {0}.</value>
   </data>
   <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
     <value>Delivered record, unlocked – your changes count as your own values; an update does not restore the delivered values.</value>

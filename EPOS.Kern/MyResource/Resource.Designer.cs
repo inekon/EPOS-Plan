@@ -1287,7 +1287,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0} standen schon so und blieben unverändert. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schon so und unverändert: {0}. ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_UNVERAENDERT {
             get {
