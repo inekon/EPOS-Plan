@@ -442,7 +442,7 @@ sie stehen hier weiterhin, weil sie erklären, **was** geschieht:
 
 ```bash
 dotnet run --project Werkzeuge/Auslieferungsvorlage -c Release -- \
-    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--trocken]
+    <quelle.sqlite> <ziel.sqlite> [--beispiele <ordner-oder-liste>] [--katalogpaket <ordner>] [--trocken]
 ```
 
 Rückgabe `0` = erzeugt und abgenommen. Jeder andere Wert ist ein Abbruch mit
@@ -454,6 +454,40 @@ ersetzt: je Tabelle die Zeilen vorher und nachher, Katalogzahlen, geleerte Felde
 Projektliste, Größe vorher/nachher und jede Prüfzeile. Er ist vor jeder
 Auslieferung zu lesen; `Setup\Vorlage\LIESMICH.md` nennt die drei Zeilen, auf die
 es ankommt.
+
+**Die Kataloge des Zapfprofilgenerators (Schritt 3c).** Die sieben `Tab_Tww*_STAMM`
+folgen einer eigenen Regel, unabhängig von `--kataloge`; ihre Auslieferungsmarke ist die
+Spalte `Status`, nicht `ReadOnly` (Umsetzungskonzept Zapfprofilgenerator, 3.2 und
+Kapitel 6; Quellen und Herkunftsarten im Quellendossier
+`aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md`). Bei eingeschaltetem
+Fremdschlüssel bleibt nur, was `Status = 'AUSLIEFERUNG'` trägt und in keiner
+Provenienzgruppe die Herkunftsart `FIKTIV` oder `IMPORT`; Zeilen mit `EIGEN` (Anwenderkopien,
+der fiktive Testkatalog) und `IMPORT` (mit einem Projektpaket mitgenommen) fallen samt
+Tagesgängen und Ereignissen, `Tab_TwwTyptag_IMPORT` wird geleert, und jede verbleibende
+Auslieferungszeile bekommt `ReadOnly = 1`. Zonen, Wohnungstypen und die Projektzeile des
+Zapfprofils sind Projektdaten und fallen in Schritt 2.
+
+Die Auslieferungswerte bringt das **Katalogpaket** (`--katalogpaket <ordner>`): ein Ordner
+**außerhalb des Repositoriums** mit je Tww-Katalogtabelle einer Datei `<Tabelle>.csv`,
+etwa `Tab_TwwNutzungsart_STAMM.csv` — UTF-8, erste Zeile die Spaltennamen der Tabelle,
+Trenner `;` (wenn die Kopfzeile einen enthält) oder `,`, Felder nach RFC 4180 (in doppelten
+Anführungszeichen dürfen Trenner, Zeilenumbrüche und verdoppelte Anführungszeichen stehen),
+Zahlen mit Punkt. Jede Zeile trägt `Status = 'AUSLIEFERUNG'`; `ReadOnly` ist 1 oder fehlt
+(dann 1). Das Paket ersetzt den Tww-Katalog der Quelle ganz, eingespielt in einer
+Transaktion in der Reihenfolge der Verweise (Tagesgangsätze, Tagesgänge, Nutzungsarten,
+Bedarfstage, Ereignisse, Parameter, DIN-4708-Werte); eine fehlende Datei lässt ihre Tabelle
+leer. Ein Paketordner, der fehlt, im Repository liegt, keine CSV-Datei oder eine Datei
+ohne passende Tww-Tabelle enthält, ist ein Aufrufsfehler (Rückgabe `2`); ein Fehler beim
+Einspielen nennt Datei, Zeile und Grund, rollt zurück und bricht fachlich ab (Rückgabe `5`).
+Ohne Paket führt die Vorlage nur, was die Quelle mit Status `AUSLIEFERUNG` trägt.
+
+Der Prüfbericht führt für die Tww-Kataloge eigene Posten: Fremdschlüssel eingeschaltet;
+keine Zeile mit Status `IMPORT` (mit dem Namen des Beispielpakets, das sie mitgebracht hat);
+nur Status `AUSLIEFERUNG`, also keine Zeile `EIGEN`; jede Auslieferungszeile `ReadOnly = 1`;
+keine verwaiste Zeile in `Tab_TwwTagesgang_STAMM` und `Tab_TwwBedarfstagEreignis_STAMM`;
+keine Herkunftsart `FIKTIV`; keine Zeile aus einem Normimport (Herkunftsart `IMPORT`,
+`Tab_TwwTyptag_IMPORT` leer); keine Eingabe des Laufs — Quelle, Katalogpaket, Beispiele —
+unter `Referenzlaeufe/Normzahlen/`. Jeder verletzte Posten bricht mit Rückgabe `5` ab.
 
 > **Befund #160‑F‑1 — die Marke `ReadOnly` trägt die Regel heute nicht.**
 > Schritt 3 in seiner ursprünglichen Fassung („in `*_STAMM` bleibt nur
