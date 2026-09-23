@@ -17,7 +17,7 @@
       "zirkulation_laufzeit_h": 16.5,
       "erzeuger_kw": 18.0,
       "uebertrager": { "leistung_kw": null, "ua_w_k": null, "flaeche_m2": null, "u": 500.0, "uebertemperatur_k": 20.0, "steigung": 0.01, "achsabschnitt": -0.5 },
-      "zeitkonstante_koeffizient": 60.0,
+      "zeitkonstante_koeffizient": 25.0,
       "wertepaare": 4
     },
     {
@@ -36,7 +36,7 @@
       "zirkulation_laufzeit_h": 12.0,
       "erzeuger_kw": 12.0,
       "uebertrager": { "leistung_kw": null, "ua_w_k": 900.0, "flaeche_m2": null, "u": null, "uebertemperatur_k": 25.0, "steigung": null, "achsabschnitt": null },
-      "zeitkonstante_koeffizient": 60.0,
+      "zeitkonstante_koeffizient": 20.0,
       "wertepaare": 3
     },
     {

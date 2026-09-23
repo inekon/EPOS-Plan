@@ -115,7 +115,10 @@ namespace WindowsFormsApplication1
         /// <summary>Der Übertrager; <c>null</c> = keiner bekannt, Φ_N allein aus dem Erzeuger.</summary>
         public Uebertrager Uebertrager { get; init; }
 
-        /// <summary>Koeffizient k_τ der Zeitkonstante [min/h]; <c>null</c> = keine Anzeige.</summary>
+        /// <summary>
+        /// Koeffizient k_τ der Zeitkonstante nach A1 [min·W/kJ] (für c_w in kJ/(kg·K));
+        /// <c>null</c> = keine Anzeige.
+        /// </summary>
         public double? ZeitkonstanteKoeffizient { get; init; }
 
         /// <summary>Gilt der Schnellpfad des Vereinfachungsverfahrens?</summary>
@@ -195,7 +198,8 @@ namespace WindowsFormsApplication1
     ///   Φ_eff  = Φ_N − Φ_V(i), wenn ein und i − t_on ≥ t_lag; sonst −Φ_V(i)   (darf negativ sein)
     ///   Q(i+1) = min(Q_max, Q(i) − q(i) + Φ_eff / 60)                                     (NA.3)
     /// Nachweis: Q(i) − q(i) ≥ Q_min für alle i;  Ladezeit = Minuten „ein" / 60            [h/d]
-    /// τ        = V · c_w / (U·A) · k_τ                                        [min], nur informativ
+    /// τ        = m · c_w / (U·A) · k_τ = V · c_w · 3,6 / (U·A) · k_τ           [min], nur informativ
+    ///            (A1: c_w in kJ/(kg·K), m = V bei 1 kg/l; hier c_w in Wh/(l·K), 1 Wh = 3,6 kJ)
     /// </code>
     ///
     /// <para><b>Kleinstes Volumen.</b> Startwert: das Volumen, das Tagesbedarf und Tagesverlust
@@ -206,8 +210,11 @@ namespace WindowsFormsApplication1
     /// Setzungen des Verfahrens, keine Normzahlen.</para>
     ///
     /// <para><b>Wertepaarkurve</b> — eine eigene Erweiterung des Nachweisverfahrens, als solche
-    /// beschriftet: für Φ_N auf einem gleichmäßigen Raster bis zur Leistung des Auslegungspunkts
-    /// das kleinste Volumen. Das Ergebnis trägt den Vermerk des Entwurfsstands.</para>
+    /// beschriftet: für die Erzeugerleistung auf einem gleichmäßigen Raster bis zur
+    /// Erzeugerleistung des Projekts (ohne Erzeuger: bis zur Leistung des Auslegungspunkts) das
+    /// kleinste Volumen, jeweils mit <c>Φ_N(V) = min(Φ_Erzeuger, Φ_Ü(V))</c> — jedes Paar ist
+    /// mit dem Übertrager baubar, der letzte ist der Auslegungspunkt. Das Ergebnis trägt den
+    /// Vermerk des Entwurfsstands.</para>
     /// </summary>
     internal static class Summenlinie
     {
@@ -228,6 +235,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>Höchstzahl der Verdopplungen des Startvolumens.</summary>
         internal const int VERDOPPLUNGEN = 60;
+
+        /// <summary>Kilojoule je Wattstunde (Einheitenumrechnung, keine Normzahl): c_w [Wh/(l·K)] · 3,6 = c_w [kJ/(l·K)].</summary>
+        internal const double KJ_JE_WH = 3.6;
 
         // =================================================================================
         // Parameter
@@ -423,16 +433,15 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         /// <summary>
-        /// <b>Das kleinste Volumen mit Nachweis</b>; <paramref name="leistungFestKw"/> hält Φ_N
-        /// fest (Wertepaarkurve), sonst gilt Φ_N(V) aus Erzeuger und Übertrager.
+        /// <b>Das kleinste Volumen mit Nachweis</b>; Φ_N(V) gilt immer aus Erzeuger und
+        /// Übertrager (<see cref="LeistungKw"/>) — auch in der Wertepaarkurve.
         /// </summary>
         internal static Summenlinienpunkt KleinstesVolumen(Bedarfstag tag, Summenlinienparameter p,
-                                                           double? leistungFestKw, ICollection<Auslegungshinweis> hinweise)
+                                                           ICollection<Auslegungshinweis> hinweise)
         {
             bool Gelingt(double v, out double phi, out double ladezeit, out bool unplausibel)
             {
-                unplausibel = false;
-                phi = leistungFestKw ?? LeistungKw(v, p, out unplausibel);
+                phi = LeistungKw(v, p, out unplausibel);
                 Summenliniennachweis n = Nachweis(tag, v, phi, p);
                 ladezeit = n.LadezeitH;
                 return n.Erfuellt;
@@ -513,8 +522,12 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Wertepaarkurve: für Φ_N = Φ_max · k / n (k = 1 … n) das kleinste Volumen, jeweils mit
-        /// festem Φ_N (eigene Erweiterung des Nachweisverfahrens).
+        /// Die Wertepaarkurve (eigene Erweiterung des Nachweisverfahrens): für die
+        /// Erzeugerleistung Φ_E,k = Φ_max · k / n (k = 1 … n) das kleinste Volumen V_k mit
+        /// <c>Φ_N(V) = min(Φ_E,k, Φ_Ü(V))</c>; der Punkt trägt Φ_N(V_k). So ist jedes Paar mit
+        /// dem Übertrager baubar — ein festes Φ_N über Φ_Ü(V) wäre es nicht. Ohne Übertrager ist
+        /// Φ_N = Φ_E,k. Φ_max ist die Erzeugerleistung des Projekts, ohne Erzeuger die Leistung
+        /// des Auslegungspunkts (<see cref="Rechnen"/>).
         /// </summary>
         internal static IReadOnlyList<Summenlinienpunkt> Wertepaarkurve(Bedarfstag tag, Summenlinienparameter p,
                                                                         double leistungMaxKw, int punkte,
@@ -526,7 +539,7 @@ namespace WindowsFormsApplication1
             {
                 try
                 {
-                    kurve.Add(KleinstesVolumen(tag, p, leistungMaxKw * k / punkte, hinweise));
+                    kurve.Add(KleinstesVolumen(tag, p with { ErzeugerKw = leistungMaxKw * k / punkte }, hinweise));
                 }
                 catch (ZapfAuslegungException)
                 {
@@ -536,11 +549,15 @@ namespace WindowsFormsApplication1
             return kurve.AsReadOnly();
         }
 
-        /// <summary>Die Zeitkonstante τ [min] = V · c_w / (U·A) · k_τ — nur informativ (A1).</summary>
+        /// <summary>
+        /// Die Zeitkonstante τ [min] = m · c_w / (U·A) · k_τ nach A1 — nur informativ. A1 setzt
+        /// c_w in kJ/(kg·K) an; mit m = V (1 kg/l) und c_w in Wh/(l·K) steht
+        /// <c>V · c_w · 3,6 / (U·A)</c> [kJ/W], k_τ macht daraus Minuten.
+        /// </summary>
         internal static double ZeitkonstanteMin(double volumenL, double uaWJeK, double koeffizient)
         {
             Auslegungspruefung.Positiv(uaWJeK, "U·A des Übertragers");
-            return volumenL * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K / uaWJeK * koeffizient;
+            return volumenL * Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K * KJ_JE_WH / uaWJeK * koeffizient;
         }
 
         /// <summary>
@@ -555,9 +572,9 @@ namespace WindowsFormsApplication1
             if (tag != null && tag.SpitzenUnterschaetzt)
                 hinweise.Add(new Auslegungshinweis(Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT,
                     "Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.", true));
-            Summenlinienpunkt punkt = KleinstesVolumen(tag, p, null, hinweise);
+            Summenlinienpunkt punkt = KleinstesVolumen(tag, p, hinweise);
             Summenliniennachweis nachweis = Nachweis(tag, punkt.VolumenL, punkt.LeistungKw, p, true);
-            IReadOnlyList<Summenlinienpunkt> kurve = Wertepaarkurve(tag, p, punkt.LeistungKw, wertepaare, hinweise);
+            IReadOnlyList<Summenlinienpunkt> kurve = Wertepaarkurve(tag, p, p.ErzeugerKw ?? punkt.LeistungKw, wertepaare, hinweise);
             if (kurve.Count > 0)
                 hinweise.Add(new Auslegungshinweis("WERTEPAARKURVE", VERMERK_WERTEPAARKURVE + "."));
 

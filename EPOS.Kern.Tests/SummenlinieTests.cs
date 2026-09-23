@@ -137,7 +137,7 @@ namespace EPOS.Kern.Tests
             // Eine Zapfung von 3 kWh bei großer Leistung: das kleinste Volumen fasst genau 3 kWh.
             Bedarfstag tag = Tag(new Zapfereignis(10, 1, 3.0));
             var hinweise = new List<Auslegungshinweis>();
-            Summenlinienpunkt p = Summenlinie.KleinstesVolumen(tag, Linie(300.0), null, hinweise);
+            Summenlinienpunkt p = Summenlinie.KleinstesVolumen(tag, Linie(300.0), hinweise);
             Assert.Equal(Summenliniensuche.Bisektion, p.Suche);
             Assert.True(Relativ(p.VolumenL, 3.0 / KAPPA) < 1e-9, p.VolumenL + " l");
             Assert.True(Summenlinie.Nachweis(tag, p.VolumenL, 300.0, Linie(300.0)).Erfuellt);
@@ -146,8 +146,8 @@ namespace EPOS.Kern.Tests
 
             // Zwei Zapfungen: Mit kleiner Leistung braucht es mehr Volumen als mit großer.
             Bedarfstag zwei = Tag(new Zapfereignis(60, 10, 3.0), new Zapfereignis(90, 10, 3.0));
-            Summenlinienpunkt gross = Summenlinie.KleinstesVolumen(zwei, Linie(300.0), null, null);
-            Summenlinienpunkt klein = Summenlinie.KleinstesVolumen(zwei, Linie(6.0), null, null);
+            Summenlinienpunkt gross = Summenlinie.KleinstesVolumen(zwei, Linie(300.0), null);
+            Summenlinienpunkt klein = Summenlinie.KleinstesVolumen(zwei, Linie(6.0), null);
             Assert.True(klein.VolumenL > gross.VolumenL);
             Assert.True(Summenlinie.Nachweis(zwei, klein.VolumenL, 6.0, Linie(6.0)).Erfuellt);
             Assert.False(Summenlinie.Nachweis(zwei, klein.VolumenL * (1 - 1e-6), 6.0, Linie(6.0)).Erfuellt);
@@ -166,7 +166,7 @@ namespace EPOS.Kern.Tests
             Assert.True(Summenlinie.Nachweis(tag, 2.6 / KAPPA, 600.0, p).Erfuellt);
 
             var hinweise = new List<Auslegungshinweis>();
-            Summenlinienpunkt punkt = Summenlinie.KleinstesVolumen(tag, p, null, hinweise);
+            Summenlinienpunkt punkt = Summenlinie.KleinstesVolumen(tag, p, hinweise);
             Assert.Equal(Summenliniensuche.Rasterlauf, punkt.Suche);
             Assert.Contains(hinweise, h => h.Code == "SUMMENLINIE_NICHT_MONOTON");
             Assert.InRange(punkt.VolumenL * KAPPA, 1.5 - 1e-9, 1.5 + 5.0 / Summenlinie.RASTER_FEIN + 1e-9);
@@ -176,20 +176,24 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Die_Zeitkonstante_hat_die_Dimension_Minuten()
         {
-            // τ = V · c_w / (U·A) · k_τ: 1000 l · 1,163 Wh/(l·K) / 1163 W/K = 1 h, mit k_τ 60 min/h → 60 min.
-            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(1000.0, 1163.0, 60.0), 60.0) < 1e-12);
-            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(2000.0, 1163.0, 60.0), 120.0) < 1e-12);
-            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(1000.0, 2326.0, 60.0), 30.0) < 1e-12);
-            Assert.Throws<ZapfAuslegungException>(() => Summenlinie.ZeitkonstanteMin(1000.0, 0.0, 60.0));
+            // τ = m · c_w / (U·A) · k_τ nach A1, c_w in kJ/(kg·K): 1000 l · 1,163 Wh/(l·K) · 3,6 kJ/Wh
+            // = 4186,8 kJ/K; / 1163 W/K = 3,6 kJ/W; mit dem erfundenen k_τ 25 min·W/kJ → 90 min.
+            // Ein k_τ von 60 hätte eine Umrechnung Wh → min verdeckt; 25 ist keine.
+            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(1000.0, 1163.0, 25.0), 90.0) < 1e-12);
+            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(2000.0, 1163.0, 25.0), 180.0) < 1e-12);
+            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(1000.0, 2326.0, 25.0), 45.0) < 1e-12);
+            // Doppeltes k_τ, doppeltes τ: der Koeffizient ist ein Faktor der A1, keine Einheit.
+            Assert.True(Relativ(Summenlinie.ZeitkonstanteMin(1000.0, 1163.0, 50.0), 180.0) < 1e-12);
+            Assert.Throws<ZapfAuslegungException>(() => Summenlinie.ZeitkonstanteMin(1000.0, 0.0, 25.0));
 
             // Im Ergebnis nur mit U·A und Koeffizient.
             Bedarfstag tag = Tag(new Zapfereignis(10, 1, 3.0));
             Summenlinienparameter p = Linie(30.0) with
             {
-                Uebertrager = new Uebertrager(null, 1163.0, null, null, 20.0, null, null), ZeitkonstanteKoeffizient = 60.0
+                Uebertrager = new Uebertrager(null, 1163.0, null, null, 20.0, null, null), ZeitkonstanteKoeffizient = 25.0
             };
             Summenlinienergebnis e = Summenlinie.Rechnen(tag, p, 0);
-            Assert.True(Relativ(e.ZeitkonstanteMin.Value, e.Punkt.VolumenL / 1000.0 * 60.0) < 1e-12);
+            Assert.True(Relativ(e.ZeitkonstanteMin.Value, e.Punkt.VolumenL / 1000.0 * 3.6 * 25.0) < 1e-12);
             Assert.Null(Summenlinie.Rechnen(tag, Linie(30.0), 0).ZeitkonstanteMin);
         }
 
@@ -229,6 +233,39 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Die_Wertepaarkurve_achtet_den_Uebertrager()
+        {
+            // Erfundener Übertrager nach der Schätzformel: Φ_Ü(V) = 500 · (0,01 · V − 0,5) · 20 / 1000
+            // = 0,1 · V − 5 kW. Die Kurve rastert die Erzeugerleistung 40 kW in vier Schritten;
+            // Φ_N(V) = min(Φ_E, Φ_Ü(V)).
+            Bedarfstag tag = Tag(new Zapfereignis(420, 20, 8.0), new Zapfereignis(1080, 30, 10.0));
+            Summenlinienparameter p = Linie(40.0) with
+            {
+                Uebertrager = new Uebertrager(null, null, null, 500.0, 20.0, 0.01, -0.5)
+            };
+            Summenlinienergebnis e = Summenlinie.Rechnen(tag, p, 4);
+            Assert.Equal(4, e.Wertepaare.Count);
+            bool begrenzt = false;
+            for (int k = 1; k <= 4; k++)
+            {
+                Summenlinienpunkt w = e.Wertepaare[k - 1];
+                double erzeuger = 40.0 * k / 4;
+                double ue = Math.Max(0.0, 0.1 * w.VolumenL - 5.0);
+                // Jedes Paar ist baubar: Φ_N ist das Minimum aus Erzeugerraster und Übertrager beim Volumen.
+                Assert.True(Relativ(w.LeistungKw, Math.Min(erzeuger, ue)) < 1e-9,
+                    "Paar " + k + ": Φ_N " + w.LeistungKw + " kW, Erzeuger " + erzeuger + " kW, Übertrager " + ue + " kW");
+                Assert.True(w.LeistungKw <= ue + 1e-9);
+                Assert.True(Summenlinie.Nachweis(tag, w.VolumenL, w.LeistungKw, p).Erfuellt);
+                begrenzt |= w.LeistungKw < erzeuger - 1e-9;
+            }
+            // Mindestens ein Paar begrenzt der Übertrager — ein festes Φ_N gleich dem Raster wäre dort nicht baubar.
+            Assert.True(begrenzt, "Kein Paar vom Übertrager begrenzt — der Fall prüft die Begrenzung nicht.");
+            // Der letzte Punkt ist der Auslegungspunkt.
+            Assert.Equal(e.Punkt.VolumenL, e.Wertepaare[3].VolumenL);
+            Assert.Equal(e.Punkt.LeistungKw, e.Wertepaare[3].LeistungKw);
+        }
+
+        [Fact]
         public void Der_gemischte_Speicher_haelt_einen_Mindestinhalt()
         {
             Bedarfstag tag = Tag(new Zapfereignis(10, 1, 3.0));
@@ -237,8 +274,8 @@ namespace EPOS.Kern.Tests
             Summenliniennachweis n = Summenlinie.Nachweis(tag, 100.0, 300.0, gemischt);
             // Q_min = V · c_w · (1 − 0,5/2) · (44 − 12) · 0,8 / 1000
             Assert.True(Relativ(n.MindestinhaltKwh, 100.0 * 1.163 * 0.75 * 32.0 * 0.8 / 1000.0) < 1e-12);
-            double vLade = Summenlinie.KleinstesVolumen(tag, lade, null, null).VolumenL;
-            double vGemischt = Summenlinie.KleinstesVolumen(tag, gemischt, null, null).VolumenL;
+            double vLade = Summenlinie.KleinstesVolumen(tag, lade, null).VolumenL;
+            double vGemischt = Summenlinie.KleinstesVolumen(tag, gemischt, null).VolumenL;
             // Q_max − Q_min = 3 kWh: V · κ · (1 − 0,75 · 32/50) = 3.
             Assert.True(Relativ(vGemischt, 3.0 / (KAPPA * (1 - 0.75 * 32.0 / 50.0))) < 1e-9);
             Assert.True(vGemischt > vLade);

@@ -49,7 +49,11 @@ namespace WindowsFormsApplication1
         /// <summary>Schätzformel der Übertragerfläche: Achsabschnitt [m²].</summary>
         internal const string UEBERTRAGERFLAECHE_ACHSABSCHNITT = "A100.Uebertragerflaeche.Achsabschnitt";
 
-        /// <summary>Koeffizient k_τ der Zeitkonstante [min/h] — nur informativ (A1).</summary>
+        /// <summary>
+        /// Koeffizient k_τ der Zeitkonstante nach A1 [min·W/kJ]: <c>τ = m · c_w / (U·A) · k_τ</c> mit
+        /// m [kg], c_w [kJ/(kg·K)], U·A [W/K] — der Koeffizient der A1, keine Einheitenumrechnung
+        /// von Wh; nur informativ.
+        /// </summary>
         internal const string ZEITKONSTANTE_KOEFFIZIENT = "A100.Zeitkonstante.Koeffizient";
 
         /// <summary>Anwendungsgrenze des Vereinfachungsverfahrens der A100 [WE].</summary>

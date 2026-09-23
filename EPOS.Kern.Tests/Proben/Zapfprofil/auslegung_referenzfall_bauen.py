@@ -41,6 +41,7 @@ EINGABE = os.path.join(ORDNER, "auslegung_referenzfall_eingabe.json")
 ERGEBNIS = os.path.join(ORDNER, "auslegung_referenzfall_ergebnis.csv")
 
 C_W = 1.163          # Wh/(l*K), physikalische Konstante (Konzept 4.0)
+KJ_JE_WH = 3.6       # Einheitenumrechnung 1 Wh = 3,6 kJ (Zeitkonstante nach A1, c_w in kJ/(kg*K))
 MINUTEN = 1440
 RASTER_GROB = 20
 RASTER_FEIN = 400
@@ -159,9 +160,11 @@ def nachweis(q, v, phi, p, verlauf=False):
     return {"erfuellt": erste < 0, "kleinster": kleinster, "ladezeit": lauf / 60, "verlauf": werte}
 
 
-def kleinstes_volumen(q, p, phi_fest):
+def kleinstes_volumen(q, p):
+    """Kleinstes Volumen mit Nachweis; Phi_N(V) = min(Erzeuger, Uebertrager(V)) - auch fuer die
+    Wertepaarkurve (dort mit der Erzeugerleistung auf dem Raster)."""
     def gelingt(v):
-        phi = phi_fest if phi_fest is not None else leistung(p, v)
+        phi = leistung(p, v)
         n = nachweis(q, v, phi, p)
         return n["erfuellt"], phi, n["ladezeit"]
 
@@ -230,7 +233,7 @@ def sum_seq(werte):
 
 def summenlinie(fall, name, zeilen):
     q = minutenwerte(fall["ereignisse"])
-    v, phi, lz, suche = kleinstes_volumen(q, fall, None)
+    v, phi, lz, suche = kleinstes_volumen(q, fall)
     n = nachweis(q, v, phi, fall, True)
     zeilen.append((name + "_volumen_l", v))
     zeilen.append((name + "_leistung_kw", phi))
@@ -241,10 +244,14 @@ def summenlinie(fall, name, zeilen):
     if fall["zeitkonstante_koeffizient"] is not None and u is not None:
         ua, _ = ue_ua(u, v)
         if ua is not None and ua > 0:
-            zeilen.append((name + "_zeitkonstante_min", v * C_W / ua * fall["zeitkonstante_koeffizient"]))
+            # A1: tau = m * c_w / (U*A) * k_tau mit c_w in kJ/(kg*K), m = V (1 kg/l); 1 Wh = 3,6 kJ.
+            zeilen.append((name + "_zeitkonstante_min", v * C_W * KJ_JE_WH / ua * fall["zeitkonstante_koeffizient"]))
+    # Wertepaarkurve: Erzeugerleistung auf dem Raster bis zur Erzeugerleistung des Falls (ohne
+    # Erzeuger bis Phi des Auslegungspunkts); Phi_N(V) = min(Phi_E,k, Phi_Ue(V)) - jedes Paar baubar.
     punkte = fall["wertepaare"]
+    phi_max = fall["erzeuger_kw"] if fall["erzeuger_kw"] is not None else phi
     for k in range(1, punkte + 1):
-        vk, phik, lzk, _ = kleinstes_volumen(q, fall, phi * k / punkte)
+        vk, phik, lzk, _ = kleinstes_volumen(q, dict(fall, erzeuger_kw=phi_max * k / punkte))
         zeilen.append((name + "_wertepaar_%d_leistung_kw" % k, phik))
         zeilen.append((name + "_wertepaar_%d_volumen_l" % k, vk))
         zeilen.append((name + "_wertepaar_%d_ladezeit_h" % k, lzk))

@@ -26,7 +26,7 @@ namespace EPOS.Kern.Tests
             [ZapfAuslegungParameter.UEBERTRAGER_UEBERTEMPERATUR] = 20.0,
             [ZapfAuslegungParameter.UEBERTRAGERFLAECHE_STEIGUNG] = 0.01,
             [ZapfAuslegungParameter.UEBERTRAGERFLAECHE_ACHSABSCHNITT] = -0.5,
-            [ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT] = 60.0,
+            [ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT] = 25.0,
             [ZapfAuslegungParameter.VEREINFACHUNG_GRENZE] = 5.0,
             [ZapfAuslegungParameter.VEREINFACHUNG_SENSORHOEHE] = 0.7,
             [ZapfAuslegungParameter.VEREINFACHUNG_SPEICHERTEMPERATUR] = 58.0,

@@ -128,7 +128,7 @@ PARAMETER += [
     ("A100.Uebertrager.Uebertemperatur", 20.0, "K"),
     ("A100.Uebertragerflaeche.Steigung", 0.01, "m²/l"),
     ("A100.Uebertragerflaeche.Achsabschnitt", -0.5, "m²"),
-    ("A100.Zeitkonstante.Koeffizient", 60.0, "min/h"),
+    ("A100.Zeitkonstante.Koeffizient", 25.0, "min·W/kJ"),
     ("A100.Vereinfachung.Anwendungsgrenze", 5.0, "WE"),
     ("A100.Vereinfachung.Sensorhoehe", 0.7, "-"),
     ("A100.Vereinfachung.Speichertemperatur", 58.0, "°C"),
