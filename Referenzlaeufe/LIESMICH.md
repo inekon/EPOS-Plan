@@ -334,6 +334,20 @@ und in allen 357 Dateien byte-gleich** (3 882 737 Werte).
 > Schemastand und Gebäudespalten; `integrity_check` ok, `foreign_key_check` leer, 129 Tabellen
 > `STRICT`, 67 727 360 Byte.
 
+> **Nachtrag: Schemastand 104 (Auftrag #439, Etappe E7b), die Basis bleibt.** Migrationsschritt
+> **104** (`SCHRITT_104_ZEITZONENTARIF_ABLOESUNG`, Quellen `SchemaKatalog.Schritt104_LeistungspreisStaffel`
+> und `EPOS.Kern/Allgemein/Update/ZeitzonentarifAbloesung.cs`; Konzept Wirtschaftlichkeit § 3.5,
+> Register Q11) legt drei REAL-Spalten `Leistungspreis_Staffelgrenze`, `Leistungspreis_Staffel1` und
+> `Leistungspreis_Staffel2` an `energy_project_settings` an (DDL) und führt den Datenteil in einer
+> Transaktion: Er übernimmt die Staffel aktiver Zonensätze an den Stromträger (in der Testdatenbank
+> keiner), löscht die Zonensätze (keiner) und verwirft ihre gespeicherten Läufe (0 Zeilen); die acht
+> Zonenzeilen der Strommatrix in den Projekten 1018 und 1031 werden zu je einer Jahreszeile
+> zusammengefasst (Spalte `Zone` = „Jahr", gleiche Summe). `Tab_Applikation` trägt 104; die Größe
+> bleibt 67 727 360 Byte. **Keine Einfrierregel ist berührt**, und der Referenzlauf ist **13/13
+> byte-gleich** gegen diese Basis (357/357 CSV, auf 103 wie 104 gerechnet). Nachgezogen mit
+> `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite`
+> (Commit E7b/11 `bfbfbbb9`, LFS-SHA-256 `044e44db…`).
+
 > **Die Vorgängerbasis `2026-09-19_R10_BhkwWirkungsgrad`** ist mit dieser Einfrierung aus dem
 > Arbeitsbaum gefallen; ihr Protokoll samt der Begründung zu BH1‑O1 und den Nachträgen zu den
 > Schemaständen 99 und 100 steht in
