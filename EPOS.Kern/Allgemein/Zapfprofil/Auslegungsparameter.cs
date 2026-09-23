@@ -143,10 +143,10 @@ namespace WindowsFormsApplication1
         /// Hinweis den Schlüssel einmal, und der Aufrufer lässt die Prüfung weg (N7).
         /// </summary>
         internal static double? Wahlweise(Parametersatz ps, string schluessel, string folge,
-                                          ICollection<ZapfHinweis> hinweise)
+                                          ICollection<Auslegungshinweis> hinweise)
         {
             if (ps != null && ps.Enthaelt(schluessel)) return ps.Wert(schluessel);
-            ZapfHinweis.Einmal(hinweise, ZapfHinweis.ParameterFehlt(schluessel, folge));
+            Auslegungshinweis.Einmal(hinweise, Auslegungshinweis.ParameterFehlt(schluessel, folge));
             return null;
         }
 
@@ -216,7 +216,19 @@ namespace WindowsFormsApplication1
     /// Ein Eintrag der Warnliste der Auslegung (4.7): Kennung, Klartext mit eingesetzten Zahlen,
     /// <see cref="Warnung"/> für die hervorgehobenen Einträge. Nie blockierend.
     /// </summary>
-    internal sealed record Auslegungshinweis(string Code, string Text, bool Warnung = false);
+    internal sealed record Auslegungshinweis(string Code, string Text, bool Warnung = false)
+    {
+        /// <summary>Der Hinweis, dass ein nicht rechnungsentscheidender Parameter fehlt (N7).</summary>
+        internal static Auslegungshinweis ParameterFehlt(string schluessel, string folge)
+            => new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
+                                     "Parameter fehlt: „" + (schluessel ?? "") + "“. " + (folge ?? ""));
+
+        /// <summary>Nimmt einen Hinweis nur auf, wenn derselbe noch nicht in der Liste steht.</summary>
+        internal static void Einmal(ICollection<Auslegungshinweis> liste, Auslegungshinweis h)
+        {
+            if (liste != null && h != null && !liste.Contains(h)) liste.Add(h);
+        }
+    }
 
     /// <summary>
     /// Eine auto/manuell-Größe (4.7, Muster der Vorlage V4): der Vorschlag des Verfahrens und der
