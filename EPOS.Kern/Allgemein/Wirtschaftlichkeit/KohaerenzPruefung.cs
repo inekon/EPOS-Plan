@@ -519,24 +519,21 @@ namespace WindowsFormsApplication1
         /// <summary>Anlagenzeilen des Projekts mit einem Hilfsenergieanteil &gt; 0 —
         /// über <b>alle</b> Anlagenarten, weil jede Komponente Hilfsenergie haben
         /// kann (Konzept § 5.2).</summary>
-        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — ein Lesefehler trifft die
-        /// Teilprüfung, die ihn als „nicht ausführbar" nennt; bis E7c3 leerte ein
-        /// <c>catch</c> die Liste, und die Prüfung fand still nichts. Eine fehlende Spalte
-        /// (Datenbank vor Schritt 61) bleibt der benannte Weg „kein Anteil".</remarks>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> und über den strengen
+        /// Leseweg (<see cref="StilleDb.TabelleStreng"/>) — ein Lesefehler trifft die
+        /// Teilprüfung, die ihn als „nicht ausführbar" nennt. Bis E7c3 lieferte der
+        /// Engine-Modus bei einem Abfragefehler eine leere Tabelle, und die Prüfung fand
+        /// still nichts. Das gilt auch für die fehlende Spalte: Eine Datenbank vor
+        /// Schritt 61 erreicht den Kern nicht mehr (Schemapflege beim Start), eine
+        /// fehlende Spalte ist deshalb ein Lesefehler wie jeder andere.</remarks>
         private static List<HilfsstromRechner.AnlagenAnteil> AnlagenMitAnteil(int idProjekt)
         {
             var treffer = new List<HilfsstromRechner.AnlagenAnteil>();
-            DataTable dt;
-            using (DataRepository.EngineModus())
-                dt = DataRepository.GetDataTable(
-                    "SELECT ID, Bezeichner, [" +
-                    SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
-                    "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
-                    new DbParam("@p", idProjekt));
-
-            if (dt == null ||
-                !dt.Columns.Contains(SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL))
-                return treffer;
+            DataTable dt = StilleDb.TabelleStreng(
+                "SELECT ID, Bezeichner, [" +
+                SchemaKatalog.SPALTE_EA_HILFSENERGIE_ANTEIL + "] " +
+                "FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                new DbParam("@p", idProjekt));
 
             foreach (DataRow r in dt.Rows)
             {
@@ -565,22 +562,19 @@ namespace WindowsFormsApplication1
         /// müssen mitwarnen. Ein <c>LIKE</c> dafür wäre in Access mit <c>*</c> und über
         /// OLE DB mit <c>%</c> zu schreiben; diese Falle wird hier nicht aufgestellt.</para>
         /// </summary>
-        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — wie
-        /// <see cref="AnlagenMitAnteil"/>; ein Lesefehler wird zur Zeile „nicht
-        /// ausführbar" der Teilprüfung.</remarks>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> und über den strengen
+        /// Leseweg — wie <see cref="AnlagenMitAnteil"/>; ein Lesefehler wird zur Zeile
+        /// „nicht ausführbar" der Teilprüfung.</remarks>
         private static List<int> AnlagenMitHilfsenergiePosition(int idProjekt)
         {
             var treffer = new List<int>();
-            DataTable dt;
-            using (DataRepository.EngineModus())
-                dt = DataRepository.GetDataTable(
-                    "SELECT f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "], " +
-                    "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.EingegebenerWert " +
-                    "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
-                    "ON w.StammID = f.StammID " +
-                    "WHERE w.ProjektID = ? AND w.KategorieID = 2",
-                    new DbParam("@p", idProjekt));
-            if (dt == null) return treffer;
+            DataTable dt = StilleDb.TabelleStreng(
+                "SELECT f.Bezeichnung, w.[" + SchemaKatalog.SPALTE_PW_ID_ANLAGE + "], " +
+                "w.[" + SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], w.EingegebenerWert " +
+                "FROM Tab_ProjektWerte AS w LEFT JOIN Tab_Kostenfaktor AS f " +
+                "ON w.StammID = f.StammID " +
+                "WHERE w.ProjektID = ? AND w.KategorieID = 2",
+                new DbParam("@p", idProjekt));
 
             foreach (DataRow r in dt.Rows)
             {
@@ -670,12 +664,13 @@ namespace WindowsFormsApplication1
         /// <see cref="BrennstoffBestandteilCtrl.Read"/> (NULL heißt „kein Anteil
         /// erfasst", der Aktiv-Schalter entscheidet über die Verwendung).
         /// </summary>
-        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — ein Lesefehler wird zur
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> und über den strengen
+        /// Leseweg (<see cref="StilleDb.TabelleStreng"/>) — ein Lesefehler wird zur
         /// Zeile „nicht ausführbar" der Teilprüfung CO₂-Doppelansatz.</remarks>
         private static List<string> TraegerMitCo2Anteil(int idProjekt)
         {
             var namen = new List<string>();
-            DataTable dt = DataRepository.GetDataTable(
+            DataTable dt = StilleDb.TabelleStreng(
                 "SELECT * FROM [" + BrennstoffBestandteilCtrl.TABLE + "] WHERE ID_Projekt = ?",
                 new DbParam("@proj", idProjekt));
 
@@ -1351,9 +1346,10 @@ namespace WindowsFormsApplication1
         /// </remarks>
         private static double? StromsteuerRoh(int idProjekt, int carrierId)
         {
-            // ETAPPE E7c3 (B‑6): ohne eigenes try — ein Lesefehler wird zur Zeile „nicht
-            // ausführbar" der Teilprüfung Stromseite; bis E7c3 hieß er still „nie gepflegt".
-            DataTable dt = DataRepository.GetDataTable(
+            // ETAPPE E7c3 (B‑6): ohne eigenes try und über den strengen Leseweg — ein
+            // Lesefehler wird zur Zeile „nicht ausführbar" der Teilprüfung Stromseite;
+            // bis E7c3 hieß er still „nie gepflegt".
+            DataTable dt = StilleDb.TabelleStreng(
                 "SELECT * FROM [" + StrompreisZerlegungCtrl.TABLE + "] " +
                 "WHERE ID_Projekt = ? AND [ID_Energieträger] = ?",
                 new DbParam("@proj", idProjekt),
@@ -1373,7 +1369,7 @@ namespace WindowsFormsApplication1
         {
             try
             {
-                object v = DataRepository.ExecuteScalar(
+                object v = StilleDb.ScalarStreng(
                     "SELECT [name] FROM energy_carrier WHERE id = ?",
                     new DbParam("@id", carrierId));
                 string s = (v == null || v == DBNull.Value) ? "" : Convert.ToString(v).Trim();

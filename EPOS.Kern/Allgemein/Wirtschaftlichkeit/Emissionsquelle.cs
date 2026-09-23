@@ -263,10 +263,7 @@ namespace WindowsFormsApplication1
             // ETAPPE E7c3 (B‑6): Ließ sich der Stromträger nicht lesen, sagt die Herkunft
             // es — sonst hieße der Rückfall „kein Stromträger zugeordnet".
             int traeger = StromTraeger(idProjekt, out string lesefehler);
-            Emissionsfaktoren f = Netzstrom(idProjekt, traeger, modus);
-            if (lesefehler != null)
-                Lesefehler(f, T("EMQ_WAS_STROMTRAEGER", "Stromträger des Projekts"), lesefehler);
-            return f;
+            return NetzstromStufen(idProjekt, traeger, modus, lesefehler);
         }
 
         /// <summary>
@@ -301,8 +298,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static Emissionsfaktoren Netzstrom(int idProjekt, int stromTraeger, string modus)
         {
+            return NetzstromStufen(idProjekt, stromTraeger, modus, null);
+        }
+
+        /// <summary>Die Stufen aus <see cref="Netzstrom(int,int,string)"/>. ETAPPE E7c3
+        /// (B‑6): <paramref name="traegerLesefehler"/> = der Grund, aus dem sich der
+        /// Stromträger des Projekts nicht lesen ließ (<c>null</c> = gelesen). Der Wert
+        /// folgt denselben Stufen wie ohne Fehler; nur die Herkunft sagt dann „nicht
+        /// lesbar" statt „dem Projekt ist kein Stromträger zugeordnet".</summary>
+        private static Emissionsfaktoren NetzstromStufen(int idProjekt, int stromTraeger, string modus,
+                                                         string traegerLesefehler)
+        {
             Emissionsfaktoren f = Fuer(idProjekt, stromTraeger, 0, modus);
-            if (f.Co2GKwh > 0) return f;
+            if (f.Co2GKwh > 0)
+            {
+                if (traegerLesefehler != null)
+                    Lesefehler(f, T("EMQ_WAS_STROMTRAEGER", "Stromträger des Projekts"), traegerLesefehler);
+                return f;
+            }
 
             string katalogFehler = null;
             if (stromTraeger <= 0)
@@ -315,7 +328,10 @@ namespace WindowsFormsApplication1
                     {
                         r.RueckfallTraegerId = rueckfall;
                         r.Herkunft = HerkunftstextTraeger(rueckfall, r.Ebene) +
-                                     " — dem Projekt ist kein Stromträger zugeordnet";
+                                     (traegerLesefehler == null
+                                         ? " — dem Projekt ist kein Stromträger zugeordnet" : "");
+                        if (traegerLesefehler != null)
+                            Lesefehler(r, T("EMQ_WAS_STROMTRAEGER", "Stromträger des Projekts"), traegerLesefehler);
                         return r;
                     }
                 }
@@ -328,6 +344,8 @@ namespace WindowsFormsApplication1
             f.Herkunft = "Vorgabewert Strommix (BAFA EEW, El. Strom Effizienzmaßnahme)";
             // ETAPPE E7c3 (B‑6): ein gescheiterter Lesezugriff bleibt am Rückfall sichtbar.
             f.Lesefehler = null;
+            if (traegerLesefehler != null)
+                Lesefehler(f, T("EMQ_WAS_STROMTRAEGER", "Stromträger des Projekts"), traegerLesefehler);
             if (frueher != null) Lesefehler(f, T("EMQ_WAS_FAKTOR", "Faktor des Stromträgers"), frueher);
             if (katalogFehler != null)
                 Lesefehler(f, T("EMQ_WAS_KATALOGTRAEGER", "Auslieferungsträger Strom"), katalogFehler);
@@ -397,7 +415,9 @@ namespace WindowsFormsApplication1
 
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg (StilleDb.ScalarStreng) — sonst
+                // hieße ein Abfragefehler still „kein Stromträger".
+                object o = StilleDb.ScalarStreng(
                     "SELECT ec.id FROM energy_project_settings AS s " +
                     "INNER JOIN energy_carrier AS ec ON s.[ID_Energieträger] = ec.id " +
                     "WHERE s.ID_Projekt = ? AND ec.pricing_model = 'ELECTRICITY' LIMIT 1",
@@ -471,7 +491,8 @@ namespace WindowsFormsApplication1
             if (idProjekt <= 0) return 0;
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                object o = StilleDb.ScalarStreng(
                     "SELECT ID_Carrier FROM Tab_Energieanlagen " +
                     "WHERE ID_Projekt = ? AND ID_Type IN (?, ?) AND ID_Carrier > 0 " +
                     "ORDER BY ID_Type, ID LIMIT 1",
@@ -515,7 +536,7 @@ namespace WindowsFormsApplication1
             if (carrierId <= 0) return "—";
             try
             {
-                object o = DataRepository.ExecuteScalar(
+                object o = StilleDb.ScalarStreng(
                     "SELECT [name] FROM energy_carrier WHERE id = ?",
                     new DbParam("@c", carrierId));
                 if (o != null && o != DBNull.Value) return Convert.ToString(o);
@@ -551,7 +572,8 @@ namespace WindowsFormsApplication1
             if (idBrennstoff <= 0) return b;
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT Bezeichner, CO2, SO2, NOx, Staub FROM Tab_Brennstoff_Stamm WHERE ID = ?",
                     new DbParam("@id", idBrennstoff));
                 if (dt == null || dt.Rows.Count == 0) return b;

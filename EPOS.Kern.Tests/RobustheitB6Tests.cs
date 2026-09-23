@@ -28,6 +28,14 @@ namespace EPOS.Kern.Tests
     /// Herkunft. <b>Gruppe 4 — Gesetzeskatalog:</b> Rückfallebene mit Grund
     /// (<see cref="GesetzKatalog.Lesefehler"/>), die Pflegewege mit
     /// <see cref="GesetzKatalog.LetzterFehler"/>, die Saat mit benannter Tabellenanlage.</para>
+    ///
+    /// <para><b>Der strenge Leseweg.</b> <c>DataRepository</c> meldet einen Abfragefehler
+    /// selbst (Dialog, im Engine-Modus still) und liefert eine leere Tabelle bzw.
+    /// <c>null</c> — ein <c>catch</c> um den Aufruf griff deshalb nie. Die Lesestellen der
+    /// Gruppen lesen über <c>StilleDb.TabelleStreng</c>/<c>ScalarStreng</c>, die den
+    /// Fehler weiterreichen; erst damit erreicht ein Abfragefehler die benannte
+    /// Behandlung. Die Fälle unten benennen auf ihrer eigenen Kopie eine Tabelle oder
+    /// Spalte um.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class RobustheitB6Tests : IDisposable
@@ -58,6 +66,32 @@ namespace EPOS.Kern.Tests
             string lang = Fehlergrund.Text(new Exception(new string('x', 500)));
             Assert.Equal(Fehlergrund.HOECHSTLAENGE, lang.Length);
             Assert.EndsWith("…", lang);
+        }
+
+        /// <summary>Der strenge Leseweg reicht den Abfragefehler weiter; die stillen
+        /// Fassungen bleiben, wie sie sind (<c>null</c>), und beide lesen dasselbe.</summary>
+        [Fact]
+        public void Der_strenge_Leseweg_reicht_den_Fehler_weiter()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.Null(StilleDb.Tabelle("SELECT * FROM Tab_Gibt_Es_Nicht_B6"));
+            Assert.Null(StilleDb.Scalar("SELECT COUNT(*) FROM Tab_Gibt_Es_Nicht_B6"));
+
+            Exception t = Assert.ThrowsAny<Exception>(
+                () => StilleDb.TabelleStreng("SELECT * FROM Tab_Gibt_Es_Nicht_B6"));
+            Assert.Contains("Tab_Gibt_Es_Nicht_B6", Fehlergrund.Text(t));
+            Exception s = Assert.ThrowsAny<Exception>(
+                () => StilleDb.ScalarStreng("SELECT COUNT(*) FROM Tab_Gibt_Es_Nicht_B6"));
+            Assert.Contains("Tab_Gibt_Es_Nicht_B6", Fehlergrund.Text(s));
+
+            const string SQL = "SELECT COUNT(*) FROM Tab_Projekt WHERE ID = ?";
+            Assert.Equal(Convert.ToInt64(StilleDb.Scalar(SQL, new DbParam("@p", 1030))),
+                         Convert.ToInt64(StilleDb.ScalarStreng(SQL, new DbParam("@p", 1030))));
+            Assert.Null(StilleDb.ScalarStreng("SELECT NULL"));
+            Assert.Equal(StilleDb.Tabelle("SELECT ID FROM Tab_Projekt ORDER BY ID").Rows.Count,
+                         StilleDb.TabelleStreng("SELECT ID FROM Tab_Projekt ORDER BY ID").Rows.Count);
         }
 
         // =================================================================

@@ -534,7 +534,8 @@ namespace WindowsFormsApplication1
             LetzterFehler = null;
             try
             {
-                object v = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                object v = StilleDb.ScalarStreng(
                     "SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER +
                     " WHERE Klasse = ? AND Schluessel = ? AND JahrVon = ? AND ID <> ?",
                     new DbParam("@kla", DbParamTyp.VarWChar, 40) { Wert = klasse ?? "" },
@@ -559,7 +560,9 @@ namespace WindowsFormsApplication1
         /// Prüfzugriff der Pflegemaske (<see cref="Existiert"/>, <see cref="Anlegen"/>,
         /// <see cref="Aendern"/>, <see cref="Loeschen"/>) scheiterte; <c>null</c> = der
         /// letzte gelang. Die Methoden melden ihr Scheitern weiter über ihren Rückgabewert
-        /// (0 / false) — die Pflegemaske kann den Grund daneben nennen.
+        /// (0 / false) — die Pflegemaske kann den Grund daneben nennen. Einen
+        /// Datenbankfehler der drei Schreibwege meldet <c>DataRepository</c> wie jeden
+        /// Schreibfehler der Bedienung selbst (Dialog); hier steht dann kein zweiter Grund.
         /// </summary>
         public static string LetzterFehler { get; private set; }
 
@@ -596,13 +599,17 @@ namespace WindowsFormsApplication1
             {
                 // Dialogfrei lesen: Fehlt die Tabelle, ist das kein Bedienfehler, sondern
                 // genau der Fall, für den die Rückfallebene unten da ist — eine
-                // MessageBox „Fehler beim Laden der Daten" wäre hier nur im Weg
-                // (DataRepository.FehlerMelden, Engine-Modus).
-                DataTable dt;
-                using (DataRepository.EngineModus())
-                    dt = DataRepository.GetDataTable(
+                // MessageBox „Fehler beim Laden der Daten" wäre hier nur im Weg.
+                // ETAPPE E7c3 (B‑6): Die fehlende Tabelle bleibt dieser benannte Rückfall
+                // ohne Fehler; jeder andere Abfragefehler erreicht über den strengen
+                // Leseweg (StilleDb.TabelleStreng) den Fang unten und steht in Lesefehler —
+                // bis E7c3 lieferte der Engine-Modus eine leere Tabelle, und die
+                // Rückfallebene sah aus wie ein leerer Katalog.
+                DataTable dt = StilleDb.TabelleVorhanden(TAB_GESETZESPARAMETER)
+                    ? StilleDb.TabelleStreng(
                         "SELECT ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle " +
-                        "FROM " + TAB_GESETZESPARAMETER + " ORDER BY Schluessel, JahrVon");
+                        "FROM " + TAB_GESETZESPARAMETER + " ORDER BY Schluessel, JahrVon")
+                    : null;
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
                         roh.Add(new GesetzParameter(

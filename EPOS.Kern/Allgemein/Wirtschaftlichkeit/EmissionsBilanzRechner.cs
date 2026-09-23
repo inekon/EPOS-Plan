@@ -127,7 +127,9 @@ namespace WindowsFormsApplication1
             var liste = new List<Kraftwerkspark>();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg — ein Abfragefehler erreicht den
+                // benannten Fang unten, statt als leere Tabelle „kein Park" zu heißen.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT * FROM " + TAB_PARK + " ORDER BY ID");
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
@@ -240,7 +242,8 @@ namespace WindowsFormsApplication1
                 catch (Exception ex)
                 {
                     biogen = false;
-                    stufenfehler.Add(Stufe(STUFE_BIOGEN, Fehlergrund.Text(ex)));
+                    string zeile = Stufe(STUFE_BIOGEN, Fehlergrund.Text(ex));
+                    if (!stufenfehler.Contains(zeile)) stufenfehler.Add(zeile);   // je Grund einmal, nicht je Modul
                 }
                 if (biogen) biogenMWh += verbrauchMWh;   // L13
                 EmissionsFaktorSatz f = EmissionsFaktorLader.Lade(idProjekt, carrierId);
@@ -343,7 +346,9 @@ namespace WindowsFormsApplication1
 
             if (!refNoetig || rk.CO2.HasValue)
                 b.CO2GetrenntT = (refNoetig ? brennstoffRef * rk.CO2.Value / 1000.0 : 0) + parkCO2;
-            else if (b.Hinweis == null)
+            else if (b.Hinweis == null && rk.Lesefehler == null)
+                // ETAPPE E7c3 (B‑6): nur die echte Datenlücke — ein Lesefehler ist keine
+                // fehlende Pflege, ihn nennt die Stufenzeile „Faktoren des Referenzkessels".
                 b.Hinweis = "Referenzkessel-Träger ohne CO₂-Faktor (Katalog Tab_Brennstoff_Stamm prüfen).";
             if (!refNoetig || rk.SO2.HasValue)
                 b.SO2GetrenntKg = (refNoetig ? brennstoffRef * rk.SO2.Value / 1000.0 : 0) + parkSO2;
@@ -429,14 +434,15 @@ namespace WindowsFormsApplication1
         /// nach der ersten Katalogänderung falsch. <c>LadeFaktoren</c> fragt aus
         /// demselben Grund ebenfalls je Träger neu.</para>
         /// </summary>
-        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> — ein Lesefehler erreicht den
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> und über den strengen Leseweg
+        /// (<see cref="StilleDb.TabelleStreng"/>) — ein Lesefehler erreicht den
         /// Aufrufer in <see cref="Berechne(int,WirtschaftlichkeitParameter,BilanzKonvention)"/>,
         /// der den Träger wie bisher als nicht biogen zählt und den Grund im Hinweis nennt.</remarks>
         private static bool IstBiogenerTraeger(int carrierId)
         {
             if (carrierId <= 0) return false;
             bool treffer = false;
-            DataTable dt = DataRepository.GetDataTable(
+            DataTable dt = StilleDb.TabelleStreng(
                 "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
                 "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
                 "WHERE ec.id = ?",
@@ -476,7 +482,8 @@ namespace WindowsFormsApplication1
             var f = new Faktoren();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT CO2, SO2, NOx FROM Tab_Brennstoff_Stamm WHERE ID = ?",
                     new DbParam("@id", idBrennstoff));
                 if (dt != null && dt.Rows.Count > 0)
