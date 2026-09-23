@@ -108,6 +108,29 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Längen- und Breitengrad einer Klimaregion [°] — der Sonnenstand des
+        /// Gebäudemodells (Stufe G1, Rechenschritte E1). <c>false</c>, wenn die Region
+        /// nicht gefunden ist oder eine Koordinate fehlt; dann stehen beide auf NaN.
+        /// </summary>
+        internal static bool Koordinaten(int idKlimaregion, out double laengengrad, out double breitengrad)
+        {
+            laengengrad = double.NaN;
+            breitengrad = double.NaN;
+            if (idKlimaregion <= 0) return false;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT Longitude, Latitude FROM Tab_Klimaregion WHERE ID = ?",
+                new DbParam("?", idKlimaregion));
+            if (dt == null || dt.Rows.Count == 0) return false;
+
+            DataRow row = dt.Rows[0];
+            if (row["Longitude"] == DBNull.Value || row["Latitude"] == DBNull.Value) return false;
+            laengengrad = Convert.ToDouble(row["Longitude"]);
+            breitengrad = Convert.ToDouble(row["Latitude"]);
+            return true;
+        }
+
+        /// <summary>
         /// Liefert die DIN-4710-Klimazone der Projekt-Klimaregion (0 = nicht
         /// zugeordnet). Wird vom Erdreichdialog zur Vorbelegung genutzt.
         /// </summary>

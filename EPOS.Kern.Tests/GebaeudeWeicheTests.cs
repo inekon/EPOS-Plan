@@ -12,18 +12,16 @@ namespace EPOS.Kern.Tests
     /// (Entscheid E20, ADR-006; Umsetzungskonzept 1.1, 1.5). Ohne Datenbank: die Regel der
     /// Weiche, der modellfreie Vorbereitungsschritt und der Zuschnitt des Klimakalenders.
     ///
-    /// <para><b>Regel der Weiche in G1.0:</b> <c>TAGESBILANZ</c> führt auf den
-    /// Tagesbilanz-Weg; <c>NULL</c> und <c>VDI6007</c> gehören nach E1 dem VDI-Weg, der erst
-    /// mit der Anbindung in G1 entsteht — bis dahin rechnet <b>jedes</b> Gebäude auf dem
-    /// Tagesbilanz-Weg. Die Anbindung ändert die beiden letzten Fälle bewusst.</para>
+    /// <para><b>Regel der Weiche nach der Anbindung (Stufe G1):</b> <c>VDI6007</c> führt auf
+    /// den VDI-Weg (<c>GebaeudeVdi6007Tests</c>); <c>TAGESBILANZ</c> und — bis zur
+    /// Schlusswelle G1+G2 — <c>NULL</c> führen auf den Tagesbilanz-Weg.</para>
     /// </summary>
     public class GebaeudeWeicheTests
     {
         [Theory]
         [InlineData(DbWerte.GEBAEUDE_MODELL_TAGESBILANZ)]
         [InlineData(null)]
-        [InlineData(DbWerte.GEBAEUDE_MODELL_VDI6007)]
-        public void In_G1_0_fuehrt_die_Weiche_jedes_Gebaeude_auf_den_Tagesbilanz_Weg(string modell)
+        public void Tagesbilanz_und_ohne_Angabe_fuehren_auf_den_Tagesbilanz_Weg(string modell)
         {
             var sim = new SimulationWaermebedarf();
             var item = new ProjektGebaeudeModel { Gebaeude_Modell = modell };

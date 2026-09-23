@@ -109,14 +109,38 @@ namespace WindowsFormsApplication1
         private Altweg.TagesbilanzRechenweg _altweg;
 
         /// <summary>
-        /// Der VDI-6007-Weg (Modul <c>Gebaeude/</c>). <b>In Stufe G1.0 nicht angebunden</b>
-        /// (<c>null</c>): Die Anbindung ist der nächste Schritt von G1 und ändert jedes
-        /// Referenzprojekt — sie gehört deshalb nicht in die ergebnisneutrale Trennung.
+        /// Der VDI-6007-Weg (Modul <c>Gebaeude/</c>), angebunden in Stufe G1. Er hält keinen
+        /// Zustand über ein Gebäude hinaus; sein Ergebnisträger wird je Lauf in
+        /// <see cref="KlimakalenderLesen"/> geleert.
         /// </summary>
-        private readonly IGebaeudeRechenweg _vdi6007 = null;
+        private readonly Vdi6007Rechenweg _vdi6007;
+
+        /// <summary>
+        /// <b>Die NULL-Regel der Weiche — die eine, benannte Stelle.</b> Ein Gebäude ohne
+        /// Angabe (<c>Gebaeude_Modell</c> NULL) rechnet <b>in dieser Welle</b> auf dem
+        /// Tagesbilanz-Weg; so bleibt der Referenzlauf gegen die Basis byte-gleich, und allein
+        /// ausdrücklich auf <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> gestellte Gebäude
+        /// rechnen stündlich.
+        /// <para><b>Schlusswelle G1+G2 schaltet NULL auf VDI6007</b> (E1): dann steht hier
+        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/>, und die Basis wird neu eingefroren.</para>
+        /// </summary>
+        internal const string MODELL_OHNE_ANGABE = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
+
+        /// <summary>
+        /// Die Ergebnisse der Gebäude des VDI-Wegs in diesem Lauf, je Merkplatz (Reihen und
+        /// Kennzahlen, skaliert nach E8). Ein Gebäude auf dem Tagesbilanz-Weg hat keinen
+        /// Eintrag. Geleert in <see cref="KlimakalenderLesen"/>.
+        /// </summary>
+        internal GebaeudeErgebnistraeger GebaeudeErgebnisse { get; } = new GebaeudeErgebnistraeger();
 
         /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
         internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
+
+        /// <summary>Der VDI-6007-Weg dieses Laufs — Zugang für Tests und die Messung zu U6.</summary>
+        internal Vdi6007Rechenweg Vdi6007weg => _vdi6007;
+
+        /// <summary>Der Klimakalender dieses Laufs — Zugang für die Tests.</summary>
+        internal Klimakalender Kalender => _kalender;
 
         public SimulationWaermebedarf()
         {
@@ -127,6 +151,7 @@ namespace WindowsFormsApplication1
                 new KlimakalenderGemeinsam(WE, Stundentemperatur, mo_anfang, mo_ende),
                 new KlimakalenderAltweg());
             _altweg = new Altweg.TagesbilanzRechenweg(_kalender.Altweg);
+            _vdi6007 = new Vdi6007Rechenweg(GebaeudeErgebnisse);
         }
 
         public class Ergebnis
@@ -553,6 +578,20 @@ namespace WindowsFormsApplication1
             // Aufbau des Tagesbilanz-Wegs je Lauf (1.5): Er bekommt den Altweg-Teil des
             // Kalenders; der VDI-Weg bekäme allein den gemeinsamen Teil.
             _altweg = new Altweg.TagesbilanzRechenweg(altweg);
+
+            // Stufe G1 — was der VDI-Weg zusätzlich aus dem gemeinsamen Teil liest
+            // (Umsetzungskonzept 1.2): Koordinaten der Klimaregion und die Wochenendmaske
+            // des Ortszeit-Kalenders mit ihrer Probe gegen Tab_Klimadaten.WE (U7, F-Ü8).
+            // Die Solarreihe in Ortszeit hat Stundentemperatur_aus_DB bereits abgelegt.
+            // Nichts davon erreicht den Tagesbilanz-Weg.
+            KlimakalenderGemeinsam gemeinsam = _kalender.Gemeinsam;
+            KlimaregionCtrl.Koordinaten(ID_Klimaregion, out double laengengrad, out double breitengrad);
+            gemeinsam.Laengengrad = laengengrad;
+            gemeinsam.Breitengrad = breitengrad;
+            gemeinsam.Referenzjahr = SolardatenCtrl.Referenzjahr(m_ID_Projekt);
+            gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Referenzjahr);
+            gemeinsam.WochenendProbeAbweichungen = KlimakalenderGemeinsam.Abweichungen(gemeinsam.WochenendeOrtszeit, WE);
+            GebaeudeErgebnisse.Leeren();
         }
 
         /// <summary>
@@ -599,6 +638,12 @@ namespace WindowsFormsApplication1
             KlimakalenderGemeinsam gemeinsam = vorbereitung.Klimakalender.Gemeinsam;
             double verbrauchAltKwh;
 
+            // Der VDI-Weg läuft EINMAL; Rückrechnung und Skalierung sind eine
+            // Nachmultiplikation hinter der Weiche (F-Ü2, Rechenschritte 8.3). Der
+            // Tagesbilanz-Weg geht unverändert den Bestandsweg darunter (zwei Aufrufe).
+            if (!ReferenceEquals(weg, _altweg))
+                return EinLaufMitNachmultiplikation(weg, vorbereitung, item, index, ziel, gemeinsam);
+
             // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
             if (vorbereitung.IstFlaeche)
             {
@@ -623,22 +668,90 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>Der Zweig des VDI-Wegs in der Fassade</b> (Rechenschritte 8.3, Umsetzungskonzept
+        /// 1.5): ein Lauf auf dem Katalogbau, danach die Verhältnisrechnung nach E8 und die
+        /// Nachmultiplikation der Reihe — in der Reihenfolge des Bestands, nachgebaut, nicht
+        /// aus dem Tagesbilanz-Weg gerufen.
+        /// <list type="number">
+        /// <item>Flächenangabe: Faktor = <c>Z_AuswahlWohnflaeche / Nutzflaeche</c>,
+        /// Bewohner = Fläche / Fläche je Nutzer.</item>
+        /// <item>Verbrauchsangabe: <c>FlaecheNeu = VerbrauchNeu / VerbrauchAltKwh ·
+        /// FlaecheAlt</c>, Faktor = <c>FlaecheNeu / FlaecheAlt</c>; <c>VerbrauchAltKwh = 0</c>
+        /// wird benannt abgelehnt (<see cref="GebaeudeModellFehler.VerbrauchAltNull"/>) statt
+        /// wie im Bestand durch null zu teilen.</item>
+        /// </list>
+        /// </summary>
+        private bool EinLaufMitNachmultiplikation(IGebaeudeRechenweg weg, GebaeudeVorbereitung vorbereitung,
+                                                  ProjektGebaeudeModel item, int index, double[] ziel,
+                                                  KlimakalenderGemeinsam gemeinsam)
+        {
+            double verbrauchAltKwh;
+            if (!weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh)) return false;
+
+            double faktor;
+            if (vorbereitung.IstFlaeche)
+            {
+                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
+                faktor = item.Z_AuswahlWohnflaeche / item.Nutzflaeche;
+            }
+            else
+            {
+                if (!(verbrauchAltKwh > 0.0) || double.IsInfinity(verbrauchAltKwh))
+                {
+                    SimulationProtokoll.Aktuell.Fehlermeldung(
+                        "Gebäudemodell VDI 6007 [" + GebaeudeModellFehler.VerbrauchAltNull + "]: " +
+                        (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ") — der Kataloglauf liefert keinen " +
+                        "Heizbedarf; der angegebene Verbrauch lässt sich darauf nicht zurückrechnen.");
+                    return false;
+                }
+                double FlaecheAlt = vorbereitung.FlaecheAlt;
+                double FlaecheNeu = vorbereitung.VerbrauchNeu / verbrauchAltKwh * FlaecheAlt;
+                item.Z_AuswahlWohnflaeche = FlaecheNeu;
+                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
+                faktor = FlaecheNeu / FlaecheAlt;
+            }
+
+            if (double.IsNaN(faktor) || double.IsInfinity(faktor) || faktor < 0.0)
+            {
+                SimulationProtokoll.Aktuell.Fehlermeldung(
+                    "Gebäudemodell VDI 6007 [" + GebaeudeModellFehler.PflichtgroesseFehlt + "]: " +
+                    (item.Gebaeudename ?? "") + " (" + item.ID_Gebaeude + ") — der Skalierungsfaktor nach E8 ist " +
+                    "nicht bestimmbar (Fläche oder Verbrauch fehlt).");
+                return false;
+            }
+
+            for (int h = 0; h < 8760; h++) ziel[h] *= faktor;
+            GebaeudeModellErgebnis ergebnis = GebaeudeErgebnisse.Ergebnis(index);
+            if (ergebnis != null) GebaeudeErgebnisse.Setzen(index, ergebnis.Skaliert(faktor));
+
+            Anzahl_Bewohner = (int)item.Bewohner;
+            Wohnflaeche = item.Z_AuswahlWohnflaeche;
+            return true;
+        }
+
+        /// <summary>
         /// <b>Die Weiche</b> (E20): liest den Rechenweg des Gebäudes
         /// (<c>Tab_Gebaeude.Gebaeude_Modell</c>) und wählt genau ein Modul.
         ///
-        /// <para><b>Regel in Stufe G1.0:</b> <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/>
-        /// führt auf den Tagesbilanz-Weg. <c>NULL</c> und
-        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> gehören nach E1 dem VDI-Weg — der ist
-        /// in G1.0 noch nicht angebunden, deshalb rechnet bis zur Anbindung <b>jedes</b>
-        /// Gebäude auf dem Tagesbilanz-Weg. Die Anbindung belegt allein
-        /// <c>_vdi6007</c>; die Weiche selbst ändert sich dann nicht.</para>
+        /// <para><b>Regel in dieser Welle (Stufe G1, Anbindung):</b>
+        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> führt auf den VDI-Weg,
+        /// <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/> auf den Tagesbilanz-Weg, und
+        /// <c>NULL</c> folgt <see cref="MODELL_OHNE_ANGABE"/> — bis zur Schlusswelle G1+G2 der
+        /// Tagesbilanz-Weg. Ein unbekannter Wert rechnet auf dem Tagesbilanz-Weg und wird als
+        /// Warnung benannt.</para>
         /// </summary>
         internal IGebaeudeRechenweg RechenwegWaehlen(ProjektGebaeudeModel item)
         {
-            if (string.Equals(item.Gebaeude_Modell, DbWerte.GEBAEUDE_MODELL_TAGESBILANZ, StringComparison.Ordinal))
-                return _altweg;
+            string modell = item.Gebaeude_Modell ?? MODELL_OHNE_ANGABE;
 
-            return _vdi6007 ?? _altweg;
+            if (string.Equals(modell, DbWerte.GEBAEUDE_MODELL_VDI6007, StringComparison.Ordinal))
+                return _vdi6007;
+
+            if (!string.Equals(modell, DbWerte.GEBAEUDE_MODELL_TAGESBILANZ, StringComparison.Ordinal))
+                SimulationProtokoll.Aktuell.WarnungEinmal("gebaeude-modell-unbekannt-" + modell,
+                    "Gebäude " + (item.Gebaeudename ?? "") + ": Der Rechenweg '" + modell + "' ist unbekannt; " +
+                    "gerechnet wird auf dem Tagesbilanz-Weg.");
+            return _altweg;
         }
 
         private double Maximaler_Waermebedarf(double[] Waermebedarf)
@@ -671,6 +784,10 @@ namespace WindowsFormsApplication1
             int stunden = Math.Min(ctrldat.rows, Stundentemperatur.Length);
             for (int i = 0; i < stunden; i++)
                 Stundentemperatur[i] = (double)ctrldat.items[i].Außen_Temp;
+
+            // Stufe G1 (Umsetzungskonzept 1.2 Zeile 2): die ganze Zeilenliste bleibt für den
+            // VDI-Weg stehen — Strahlung, Gegenstrahlung und die UTC-Herkunft je Zeile.
+            _kalender.Gemeinsam.SolarOrtszeit = ctrldat.items.ToArray();
         }
 
         /// <summary>
