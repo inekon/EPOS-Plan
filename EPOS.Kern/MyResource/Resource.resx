@@ -6463,7 +6463,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über der elektrischen Nennleistung von {0} kW je Anlage und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>
   <data name="STEUER_STROMST_CO2" xml:space="preserve">
-    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: über dem CO₂-Grenzwert von {0} g je kWh Energieertrag (brennwertbezogen) und deshalb ohne Befreiung: {1}. Die übrigen Anlagen mit zusammen {2} kW rechnen weiter.</value>
   </data>
   <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
     <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: die direkten CO₂-Emissionen je kWh Energieertrag sind nicht bestimmbar ({0}) — Emissionsfaktor des Trägers im Katalog prüfen; für diese Anlagen keine Befreiung.</value>
@@ -23210,5 +23210,20 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="WIRT_SPANNE_LEER" xml:space="preserve">
     <value>Keine Version mit Szenarienwerten.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HO" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, brennwertbezogen)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_UMGERECHNET" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh heizwertbezogen × H_i/H_s {3})</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HI" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, heizwertbezogen — kein Brennwert gepflegt)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HERLEITUNG" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: CO₂ je kWh Energieertrag, brennwertbezogen geprüft — {0}; Grenzwert {1} g/kWh.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
+    <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen geprüft; der CO₂-Wert je kWh Energieertrag fällt dadurch zu hoch aus (konservativ).</value>
   </data>
 </root>

@@ -6447,7 +6447,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Electricity tax § 9 (1) no. 3 StromStG: above the rated electrical output of {0} kW per plant and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
   </data>
   <data name="STEUER_STROMST_CO2" xml:space="preserve">
-    <value>Electricity tax § 9 (1) no. 3 StromStG: above the CO₂ limit of {0} g per kWh of energy output and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
+    <value>Electricity tax § 9 (1) no. 3 StromStG: above the CO₂ limit of {0} g per kWh of energy output (gross calorific value basis) and therefore without exemption: {1}. The remaining plants totalling {2} kW continue to be counted.</value>
   </data>
   <data name="STEUER_STROMST_CO2_UNKLAR" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: direct CO₂ emissions per kWh of energy output cannot be determined ({0}) — check the carrier's emission factor in the catalogue; no exemption for these plants.</value>
@@ -23203,5 +23203,20 @@ Do you want to allow this?</value>
   </data>
   <data name="WIRT_SPANNE_LEER" xml:space="preserve">
     <value>No version with scenario values.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HO" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, gross calorific value basis)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_UMGERECHNET" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh net calorific value basis × H_i/H_s {3})</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_FAKTOR_HI" xml:space="preserve">
+    <value>{0}: {1} g/kWh (EBeV {2} g/kWh, net calorific value basis — no gross calorific value maintained)</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HERLEITUNG" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: CO₂ per kWh of energy output, checked on a gross calorific value basis — {0}; limit {1} g/kWh.</value>
+  </data>
+  <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
+    <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
   </data>
 </root>

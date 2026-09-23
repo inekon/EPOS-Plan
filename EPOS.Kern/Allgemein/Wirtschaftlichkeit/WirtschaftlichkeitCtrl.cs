@@ -4097,6 +4097,11 @@ namespace WindowsFormsApplication1
         /// tatsächlichen direkten Emissionen; die Nachweisfaktoren des Gebäuderechts
         /// gehören in den Energieausweis. Leitentscheidung L11 hält die beiden Sätze
         /// getrennt, und diese Zuordnung ist die Anwendung dieser Regel.</para>
+        ///
+        /// <para><b>Heizwertbezogen ist hier nur der SCHLÜSSEL.</b> Den Grenzwert prüft
+        /// <see cref="SteuerGutschriftRechner.Co2JeEnergieertrag"/> brennwertbezogen
+        /// (Konzept § 6.3 Nr. 29): Zu Erdgas liest er den Ho-Schlüssel, sonst rechnet er
+        /// über die Heizwerte des Trägers um.</para>
         /// </summary>
         private static string Co2Schluessel(int idBrennstoff)
         {
