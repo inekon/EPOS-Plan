@@ -23,6 +23,10 @@ Nachgezogen am 23.09.2026 mit **E29** (N1.34): Die Endwahl zu U6 ist gefallen �
 rechnet die Sonnengeometrie auf den **Stundenanfang**, wie Photovoltaik und Solarthermie; eine
 Umstellung auf die Stundenmitte gibt es nur für alle drei gemeinsam. Die Folgeaufgabe aus E27 zu
 U6 ist damit erledigt.
+Nachgezogen am 23.09.2026 mit **E30** (N1.35): Die Gebäudekennzahlen aus Kapitel 9 schreibt der
+Lauf in die neue Ergebnistabelle `Tab_ErgebnisGebaeude` (Schemaschritt 104), der Bericht liest sie
+— Abschnitt „Gebäude" in der Projektbeschreibung und der Produktausweis nach E10 im Berichtskopf
+(A12); Kapitel 9 folgt.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -1448,11 +1452,19 @@ Alle neuen Schlüssel in `Resource.resx` und `Resource.en-US.resx` (Glossar:
 
 ## 9. Bericht, Diagramme, Wiki
 
-- `KennzahlenKatalog.cs`: der Rechenweg des Gebäudes als Text — bei VDI 6007 der
-  Produktausweis nach E10, bei einem Gebäude des Bestandswegs die Zeile **„Tagesbilanz
-  (Bestandsweg)"**, solange der Altweg besteht (E20, E23, E26) —, dazu die drei Spitzenwerte,
-  Kühlenergie und Stunden mit Kühlbedarf als Kennzahlen; `AbweichungsErmittler.cs` führt den Rechenweg im
-  Variantenvergleich.
+- **Quelle der Gebäudezahlen im Bericht ist die Ergebnistabelle `Tab_ErgebnisGebaeude`**
+  (E30, N1.35): Der Lauf schreibt je Gebäude Rechenweg, Wärmebedarf, die drei Spitzenwerte und
+  auf dem VDI-Weg Kühlenergie, Stunden mit Kühlbedarf, mittlere Raumtemperatur, Überhitzungs-
+  und Sommerlüftungsstunden; der Bericht liest sie und rechnet nichts nach.
+- Projektbeschreibung: der Abschnitt **„Gebäude (Simulationsergebnis Stamm)"** je Gebäude mit
+  dem Rechenweg als Text — „VDI 6007" bzw. bei einem Gebäude des Bestandswegs **„Tagesbilanz
+  (Bestandsweg)"**, solange der Altweg besteht (E20, E23, E26) —, den drei Spitzenwerten und den
+  Kühlkennzahlen; ohne Gebäudezeile entfällt der Abschnitt. Der Berichtskopf trägt den
+  **Produktausweis nach E10** (A12), sobald ein Gebäude auf dem VDI-Weg gerechnet hat. Der
+  Excel-Bericht hat kein Gegenstück zur Projektbeschreibung und bleibt ohne Gebäudeabschnitt.
+- `KennzahlenKatalog.cs`: die drei Spitzenwerte, Kühlenergie und Stunden mit Kühlbedarf als
+  Kennzahlen der Gruppe `GR_GEBAEUDE`, gelesen aus derselben Tabelle; `AbweichungsErmittler.cs`
+  führt den Rechenweg im Variantenvergleich.
 - `ChartRenderer.cs`: ein neues Bild „Raumtemperatur" (Jahresverlauf, Sollwertband) —
   `Proben/ChartProben` bekommt die Gegenprobe (Maße, Farben, Determinismus).
 - Wiki: neue Seite „Gebäudemodell VDI 6007" (Funktion, Parameter, Vorgaben, Grenzen; ohne
@@ -1528,8 +1540,12 @@ konsistent; Mischfall Gebäude plus Ganglinie (Projekt 1041) summiert richtig.
   `GebaeudeVdi6007DatenbankTests` (Protokoll unter
   `Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/`).
 - Die Korrektur von `Bauweise` in Gebäude 10576 (Q22), die Warnungen im Tagesmodell (Q18)
-  und der Instanzzustand statt `_prevRoomTemp` (Q23) ändern die Referenzergebnisse von 1008
-  und 1039; sie bilden den eigenen Einfrierschritt GB (Kapitel 11), der **vor** G1 läuft.
+  und der Instanzzustand statt `_prevRoomTemp` (Q23) bilden den eigenen Einfrierschritt GB
+  (Kapitel 11), der **vor** G1 läuft. Gemessen ändert GB allein die Referenzergebnisse von
+  **1008**; **1039 bleibt byte-gleich** — der statische Zustand erreichte dort nie ein Ergebnis,
+  weil Tag 1 die Vortemperatur auf den Nachtsollwert setzt und der Jahreslauf den Vorlauf
+  überschreibt (Basis `2026-09-22_R11_Bestandsbefunde`,
+  [Statusdatei](Status_Gebaeudesimulation_VDI6007.md) Zeile GB).
 
 ### 10.5 Wächter
 
@@ -1544,7 +1560,7 @@ dazu die Hüllenwegwache, sobald die Gebäudehülle wandert (8.3).
 | Stufe | Inhalt | Abnahme | Aufwand |
 |---|---|---|---|
 | **G0 — Löser und Normtests im Kern** | `Zonenmodell7R2C`, `ErsatzparameterRC`, Diskretisierung, Regelung nach Hausregeln neu benannt (der Prototyp ist die Vorlage); `GebaeudeModellNormfallTests` und Rechenproben (10.1, 10.2); Klärung des Drifts in Testfall 9/10; keine Datenbank, keine Oberfläche | zwölf Normtestfälle bestanden; Kern-Filter grün | klein, 2–4 PT |
-| **GB — Bestandsbefunde** | Warnungen statt stiller NaN im Tagesmodell (Q18), `_prevRoomTemp` als Instanzzustand mit `ResetState` je Gebäude (Q23), Korrektur 10576 in der Testdatenbank (Q22), vierte Einfrierregel „gesäte Gebäudedaten" | Referenzergebnisse von 1008 und 1039 ändern sich — eigener, begründeter Einfrierschritt; läuft **vor** der Verschiebung des Altwegs, damit das verschobene Modul der geprüfte Stand ist | klein, 1–2 PT |
+| **GB — Bestandsbefunde** | Warnungen statt stiller NaN im Tagesmodell (Q18), `_prevRoomTemp` als Instanzzustand mit `ResetState` je Gebäude (Q23), Korrektur 10576 in der Testdatenbank (Q22), vierte Einfrierregel „gesäte Gebäudedaten" | Referenzergebnisse von 1008 ändern sich (1039 bleibt byte-gleich, 10.4) — eigener, begründeter Einfrierschritt; läuft **vor** der Verschiebung des Altwegs, damit das verschobene Modul der geprüfte Stand ist | klein, 1–2 PT |
 | **G1 — Trennung der Wege und Anbindung des VDI-Modells** | **zuerst:** Tagesbilanz-Weg Zeichen für Zeichen nach `EPOS.Kern/Allgemein/Simulation/Altweg/`, Fassade `SimulationWaermebedarf` mit modellfreiem Vorbereitungsschritt und **einer** Weiche am Eingang; **dann:** der Gebäudespalten-Schritt M3, Namensleser, `DbWerte`, `GebaeudeModellEingang` (Klassenweg 4.3, Randbedingungen 4.4, Hay-Davies je Orientierung), Plausibilitätsprüfungen, Vorlauf, Anbindung des Moduls `Gebaeude/`, Dialoge in VDI-Struktur mit Schalter „Rechenweg" und eingeklapptem Abschnitt „Tagesbilanz (Bestandsweg)" (8.1), Hülle nach `EPOS.UI.Daten`, Texte | Verschiebung **byte-gleich** gegen die Basis, als eigener Schritt vor der Anbindung; danach Referenzlauf der Bestandsprojekte unverändert; Referenzprojekte beider Wege, Basis neu eingefroren; Kriterien 10.4 | mittel, 10–16 PT |
 | **G2 — Ergebnisdarstellung** | Raumtemperatur, Kühlbedarf informativ, drei Spitzenwerte, Bild, Bericht, Vergleich Tagesbilanz/VDI 6007 im Bedarfsdialog (bleibt bis GA), Ausweis „Tagesbilanz (Bestandsweg)", Sommerlüftungsregel und Infiltration/Nutzerlüftung, Wiki-Seite; der Klimaspalten-Schritt M4 ist durch Schemaschritt 95 (19.09.2026) vorweggenommen und umgesetzt (2.3) | ChartProben grün; Sichtabnahme Windows | klein–mittel, 3–5 PT |
 | **G3 — Bauteilkatalog** | `Tab_Baustoff_STAMM`, `Tab_Bauteil`, `Tab_Bauteilschicht`, Baustoffdialog, Bauteilweg mit Kettenmatrix-Reduktion und Normnachweis, geneigte Fenster, echte Hülle statt Nachmultiplikation | Reduktion trifft die Normwerte der Testräume; Bauteilweg = Klassenweg im Grenzfall gleicher U und C | mittel–groß, 8–12 PT |
@@ -1618,7 +1634,7 @@ Tabelle. Bei Abweichung gilt das Umsetzungskonzept.
 | **Q20** | Fassadenstrahlung im Gebäudemodell mit Hay-Davies aus GHI/DNI/DHI statt der isotropen `Sol_*`-Spalten? | **Ja** — Nord ist isotrop rund 25 % zu hoch; die Spalten bleiben dem Altweg — **siehe Nachtrag 1 (entschieden 16.09.2026, N1.17)** — (E20/E23: Altweg als eingefrorener Bestandsweg in eigenem Modul) |
 | **Q21** | Eine Zeitbasis (Ortszeit) für das Gebäudemodell, wie PV und Solarthermie? | **Ja** — das Modell braucht `Tab_Klimadaten` nicht — **siehe Nachtrag 1 (entschieden 16.09.2026)** |
 | **Q22** | `Bauweise` von Gebäude 10576 in der Testdatenbank auf 15 200 Wh/K korrigieren (Projekt 1008 ändert sich, Basis neu einfrieren) und dafür eine vierte Einfrierregel „gesäte Gebäudedaten" anlegen? | **Ja, im Einfrierschritt GB** (Kapitel 11) |
-| **Q23** | Statischen Zustand `_prevRoomTemp` im Bestand beheben (Instanzzustand, `ResetState` je Gebäude)? Das ändert Projekte mit mehreren Gebäuden (1008, 1039) und damit die Basis | **Ja, aber als eigener, begründeter Einfrierschritt** — nicht still mit G1 |
+| **Q23** | Statischen Zustand `_prevRoomTemp` im Bestand beheben (Instanzzustand, `ResetState` je Gebäude)? Das ändert Projekte mit mehreren Gebäuden und damit die Basis — gemessen in GB allein 1008, 1039 bleibt byte-gleich (10.4) | **Ja, aber als eigener, begründeter Einfrierschritt** — nicht still mit G1 |
 | **Q24** | Wann ist der VDI-Weg bewährt genug, dass die Stufe **GA — Altweg ablösen** beauftragt wird (Modul, Weiche, Schalter „Rechenweg", Altweg-Spalten, Übergangs-Referenzprojekt, Neu-Einfrieren)? | **entschieden (E27, 22.09.2026, N1.32): Option (a), das Ablösekriterium** — GA wird beauftragbar und fällig, sobald alle vier Bedingungen erfüllt sind: (1) alle Referenz- und Bestandsprojekte des Anwenders sind einmal auf VDI 6007 gerechnet und die Abweichung zum Altweg ist je Projekt erklärt; (2) eine Feldphase von mindestens einer Heizperiode ohne offenen Fehler am VDI-Weg; (3) KU1 und, falls beauftragt, AK1 sind abgenommen; (4) die Ausbauprobe ist grün (4.1); geprüft wird mit jeder Abnahme, der Stand steht in der Statusdatei |
 | **Q25** | Umfang der Stufe GA (Befund X): Bleibt `Typ` (Gebäudetyp mit Tagesverteilung) als Katalogmerkmal in der Hauptstruktur, und was wird aus `Tab_DBTagV` und dem `GebaeudetypDialog`, wenn der Altweg als einziger Rechenleser entfällt? Fallen die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` mit dem GA-Schemaschritt? | **entschieden (E27, 22.09.2026, N1.32): Option (a), vollständige Ablösung nach der Löschliste** (Umsetzungskonzept Kapitel 6), im Sinne von N1.25 Punkt 4 und der Stufenzeile GA in Kapitel 11: `Typ` und die Tagesverteilungstabellen fallen mit dem Altweg, die Altweg-Spalten mit einem Schemaschritt (`DROP COLUMN` je Tabelle, Sichtneubau), und die leserlosen Spalten `WW_Bedarf` und `Waermebedarf` gehen im selben Schritt mit |
 | **Q26** | Stufenplan der Anlagenkopplung (E22): Welche Stufen werden beauftragt und wann — **AK1** (Heizkreis als Randbedingung) nach G2, **AK2** (Erzeugerfahrplan als Verfügbarkeit) und **AK3** (geschlossener Kreis) danach? | **AK1 nach G2 einplanen; AK2 nach abgenommenem AK1 und einer Feldphase des VDI-Wegs, AK3 danach**; Aufwand nach dem Papier (Rev. 2): AK0 1–2 PT, AK1 **10–15 PT**, AK2 11–15 PT, AK3 23–38 PT, AK0–AK3 zusammen **45–70 PT** zuzüglich rund 0,5 PT je Einfrierschritt, in keiner Summe von Kapitel 11; jede Stufe je Gebäude oder Projekt wählbar mit Vorgabe aus und eigenem Einfrierschritt — **entschieden (E27, 22.09.2026, N1.32) nach Empfehlung (a)**; AK3 bleibt nach H6 (E24) erst nach der Feldphase von AK1 und AK2 zugesagt (E22, E23, N1.27; eigenes Papier [`Anlagenkopplung`](Konzept_Anlagenkopplung_Gebaeudesimulation_EPOS-Plan.md)) |
@@ -1931,6 +1947,12 @@ Anwender, 15.09.2026: „Q14, Q22, Q23: Empfehlung." **Entscheid E4:**
 - **Q14** ist mit E1 erledigt: alle dreizehn Referenzprojekte werden mit G1 auf das
   Stundenmodell umgestellt und die Basis erneut eingefroren; ein zusätzliches
   Referenzprojekt entfällt.
+
+**Vermerk 23.09.2026:** Die Prognose aus N1.4, Q23 ändere die Projekte mit mehreren Gebäuden
+(1008, 1039), hat sich im Einfrierschritt GB nur für 1008 bestätigt; 1039 blieb byte-gleich, weil
+der statische Zustand dort nie ein Ergebnis erreichte (Tag 1 setzt die Vortemperatur auf den
+Nachtsollwert, der Jahreslauf überschreibt den Vorlauf). Berichtigt im Hauptteil 10.4, 11 und 13
+(Q23); belegt in der [Statusdatei](Status_Gebaeudesimulation_VDI6007.md), Zeile GB.
 
 ### N1.9 VDI 6020:2022 und VDI 2078:2015 liegen vor (Befund K)
 
@@ -3148,3 +3170,60 @@ Abschnitte 1 und 2; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md
 Kapitel 0 und 9); [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 Vorspann, 1.2 und 5 (U6); [Rechenschritte](Rechenschritte_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 Schritt E1 und Kapitel 11 (Zeile 5); im Code die Vorgabe in `GebaeudeKlimaweg`.
+
+### N1.35 Entscheid E30 — Die Gebäudekennzahlen gehen über eine Ergebnistabelle in den Bericht
+
+**Entscheid E30 (Anwender, 23.09.2026).** Die Kennzahlen je Gebäude aus Kapitel 9 — Rechenweg,
+Wärmebedarf, die drei Spitzenwerte, Kühlkennzahlen, Raumtemperatur und Überhitzungsstunden —
+schreibt der **Simulationslauf in eine neue Ergebnistabelle**, und der Bericht **liest** sie. Der
+Berichtsweg rechnet sie nicht neu.
+
+**Anlass.** Mit G2 war der Berichtsteil aus Kapitel 9 offen geblieben: Der Bericht liest allein
+die gespeicherten Ergebnistabellen, und die Gebäudekennzahlen lagen nur im Speicher des Laufs
+(`GebaeudeErgebnistraeger`) und in den Skalaren `Geb[n].*` des Referenzlauf-Exports. Die zwei
+Wege waren: die Kennzahlen im Berichtsweg ein zweites Mal rechnen oder sie beim Lauf ablegen. Ein
+zweites Rechnen widerspräche der Hausregel „eine Auskunft ruft den Rechenweg des Laufs, sie
+schreibt ihn nicht ab" und verlängerte jeden Bericht um einen Gebäudelauf je Stand.
+
+**Was damit gilt.**
+
+- **Schemaschritt 104** legt die STRICT-Tabelle `Tab_ErgebnisGebaeude` an (DDL an einer Stelle:
+  `ErgebnisGebaeudeSchema`; zwei Indizes auf den Verweisen). Je Lauf und Gebäude eine Zeile:
+  `ID_Ergebnis` (Kopf, Löschweitergabe), `ID_Gebaeude` (`Tab_Gebaeude.ID`, Löschweitergabe),
+  `Merkplatz` (der Index `n` von `Geb[n]`), `Gebaeudename`, `Rechenweg` (`VDI6007` oder
+  `TAGESBILANZ`, der wirksame Weg), `Heizwaerme_Mwh`, `Spitze_Kw`, `SpitzeTagesmittel_Kw`,
+  `Spitze95_Kw` — diese Größen haben beide Wege — sowie `Kuehlenergie_Mwh`, `Kuehlstunden_H`,
+  `MittlereRaumtemperatur_C`, `Ueberhitzungsstunden_H`, `Sommerlueftungsstunden_H`,
+  `ObereRaumtemperatur_C`, die es nur auf dem VDI-Weg gibt: Auf dem Tagesbilanz-Weg stehen dort
+  **NULL** („nicht gerechnet", nie 0). Die Einheit steht im Spaltennamen.
+- **Der Lauf schreibt** die Zeilen dort, wo er alle Ergebnistabellen schreibt (`ErgebnisCtrl.Save`),
+  und ein neuer Lauf **ersetzt** sie wie die übrigen. Gebildet werden die Zahlen in der
+  Gebäudeschleife aus einer Kopie der Einzelreihe über `GebaeudeKennzahlen` — dieselbe Stelle, aus
+  der die Auskunft des Gebäudedialogs (`GebaeudeBedarfCtrl`) ihre Spitzenwerte bildet; Dialog und
+  Bericht nennen dieselbe Zahl. Die Werte gehen ungerundet in die Tabelle.
+- **Der Bericht** trägt in der Projektbeschreibung den Abschnitt **„Gebäude (Simulationsergebnis
+  Stamm)"**: je Gebäude Rechenweg, Wärmebedarf Heizung, die drei Spitzenwerte und auf dem VDI-Weg
+  Kühlenergie (informativ), Stunden mit Kühlbedarf, mittlere Raumtemperatur der Nutzungszeit und
+  Überhitzungsstunden. Ein Gebäude des Tagesbilanz-Wegs trägt „Tagesbilanz (Bestandsweg)" und
+  keine Kühlzeilen (E20, E21, E23). **Ohne Gebäudezeile entfällt der Abschnitt** — kein Gebäude,
+  kein Ergebnis oder eine Datenbank vor Schritt 104.
+- **Der Produktausweis nach E10 steht im Berichtskopf** (A12, E27), sobald ein Stand des Berichts
+  ein Gebäude auf dem VDI-Weg gerechnet hat — als Zeile „Gebäudemodell" des Deckblatts, im
+  Wortlaut aus **einem** Ressourcenschlüssel (`GEB_PRODUKTAUSWEIS_VDI6007`, beide Sprachen).
+- **Der Excel-Bericht** bleibt ohne Gebäudeabschnitt: Er hat kein Gegenstück zur
+  Projektbeschreibung, in das die Zeilen gehörten.
+- **Der Referenzlauf** exportiert die Tabelle nicht; die Kennzahlen stehen dort schon als Skalare
+  `Geb[n].*` (Umsetzungskonzept 1.8). Die Basis `2026-09-23_R12_Gebaeudemodell` bleibt
+  **byte-gleich** (alle dreizehn Projekte, außer `protokoll.txt`).
+
+**Was offen bleibt.** Die fünf Gebäudekennzahlen des `KennzahlenKatalog` mit der Gruppe
+`GR_GEBAEUDE` (Softwarearchitektur 4.3) und der Rechenweg im Variantenvergleich
+(`AbweichungsErmittler`) folgen als eigener Auftrag; sie können jetzt aus der Tabelle lesen.
+
+**Betroffene Stufen:** G2 (Bericht).
+
+**Nachgezogen:** Kopf dieses Papiers; Kapitel 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitt 1 (E30) und Abschnitt 2 (G2); im Code Schemaschritt 104 (`SchemaMigration`,
+`Werkzeuge/Testdatenbankschema`, Testdatenbank auf Stand 104), `ErgebnisCtrl`,
+`SimulationWaermebedarf`, `ProjektbeschreibungBaustein`, `DeckblattBaustein`; Tests
+`ErgebnisGebaeudeTests`.

@@ -3675,6 +3675,25 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_103_ZAPFPROFIL_KATALOG = 103;
 
+        /// <summary>
+        /// Schritt 104 — <b>die Ergebnistabelle je Gebäude</b> (Entscheid E30 vom
+        /// 23.09.2026, Konzept Gebäudesimulation N1.35).
+        ///
+        /// <para><b>Was der Schritt herstellt.</b> Die leere STRICT-Tabelle
+        /// <c>Tab_ErgebnisGebaeude</c> — je Lauf und Gebäude eine Zeile mit Rechenweg,
+        /// Wärmebedarf, drei Spitzenwerten und den Kennzahlen des VDI-Wegs — samt zwei
+        /// Indizes auf den Verweisen. Die DDL steht bei
+        /// <see cref="ErgebnisGebaeudeSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Geschrieben wird die Tabelle erst vom
+        /// nächsten Lauf (<c>ErgebnisCtrl.Save</c>); kein Rechenweg liest sie, und der
+        /// Referenzlauf exportiert sie nicht. <b>Wiederholbar</b> über
+        /// <c>IF NOT EXISTS</c>. <b>Nach Schritt 103</b>, ohne Reihenfolgebedingung außer
+        /// der, dass <c>Tab_Ergebnis</c> und <c>Tab_Gebaeude</c> bestehen.</para>
+        /// </summary>
+        public const int SCHRITT_104_ERGEBNIS_GEBAEUDE = 104;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5083,6 +5102,16 @@ namespace WindowsFormsApplication1
                         "Zonen und Weiche haetten keine Tabelle. Gerechnet wird " +
                         "unveraendert auf dem Bestandsweg des Brauchwassers.",
                         Schritt_103_ZapfprofilKatalog),
+
+            // ENTSCHEID E30 (23.09.2026, Konzept Gebaeudesimulation N1.35) - die
+            // Ergebnistabelle je Gebaeude. REIN DDL; die Quelle ist
+            // ErgebnisGebaeudeSchema. Er steht NACH 103 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_104_ERGEBNIS_GEBAEUDE,
+                        "Tab_ErgebnisGebaeude anlegen (Kennzahlen je Gebaeude und Lauf)",
+                        "Der Lauf schreibt die Kennzahlen je Gebaeude nicht, und der " +
+                        "Bericht laesst den Abschnitt 'Gebaeude (Simulationsergebnis)' " +
+                        "weg. Gerechnet wird unveraendert.",
+                        Schritt_104_ErgebnisGebaeude),
         };
 
         /// <summary>
@@ -7795,6 +7824,37 @@ namespace WindowsFormsApplication1
                     "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
                     "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
                     "sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 104 - die Ergebnistabelle je Gebaeude (Entscheid E30, 23.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 104 — Anlass und Inhalt stehen bei
+        /// <see cref="SCHRITT_104_ERGEBNIS_GEBAEUDE"/>, die DDL bei
+        /// <see cref="ErgebnisGebaeudeSchema"/>. Dieselbe Schleife wie Schritt 103: erst die
+        /// Tabelle, dann die Indizes; nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/>.
+        /// </summary>
+        private static bool Schritt_104_ErgebnisGebaeude(Lauf l)
+        {
+            bool vorher = SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB);
+            foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
+            {
+                l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " steht nach dem Schritt nicht.";
+                l.Notiz("104: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("104: " + ErgebnisGebaeudeSchema.TAB + (vorher ? " stand bereits" : " angelegt") +
+                    ", zwei Indizes sichergestellt. KEIN DML: die Tabelle fuellt erst der naechste " +
+                    "Lauf, kein Rechenweg liest sie. KEIN Rechenergebnis aendert sich; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

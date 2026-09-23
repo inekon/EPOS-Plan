@@ -30,6 +30,7 @@ namespace WindowsFormsApplication1
         public const string TAB_PV_MODUL = "Tab_ErgebnisPhotovoltaikModul";
         public const string TAB_PUFFER = "Tab_ErgebnisPufferspeicher";
         public const string TAB_SP = "Tab_ErgebnisStromspeicher";
+        public const string TAB_GEB = ErgebnisGebaeudeSchema.TAB;   // E30, Schritt 104
 
         // Alte, funktionslose Signatur — nur für Übergangskompatibilität erhalten.
         [Obsolete("Delete(int idProjekt) verwenden — diese Überladung löscht nichts.")]
@@ -50,6 +51,7 @@ namespace WindowsFormsApplication1
                     // MAX(ID)+1-Vergabe spaeter auf fremde Laeufe (Konzept 6.6).
                     PufferzeilenLoeschen(v, idProjekt);
                     DetailzeilenLoeschen(v, TAB_SP, idProjekt);
+                    DetailzeilenLoeschen(v, TAB_GEB, idProjekt);
 
                     //    Loeschweitergabe raeumt alle Detailtabellen automatisch mit ab.
                     {
@@ -91,6 +93,7 @@ namespace WindowsFormsApplication1
             StellePufferTabelleSicher();    // Tab_ErgebnisPufferspeicher (Konzept 6.6) - Rückfallebene
             StelleStromspeicherTabelleSicher(); // Tab_ErgebnisStromspeicher (AP3, Fachkonzept 7.1)
             StelleKanalSpaltenSicher();     // Ergebnisspalten je Kanal (Schritt 52, Paket E1)
+            bool gebaeudeTabelle = ErgebnisGebaeudeSchema.Vorhanden();   // E30 - vor der Transaktion gefragt
 
             // Energieträger: Die carrier_id steht JE MODUL im Ergebnis — der Lauf setzt sie
             // aus Tab_Energieanlagen.ID_Carrier (Befund B1, SimulationRunner), und genau so
@@ -121,6 +124,10 @@ namespace WindowsFormsApplication1
                     //    MAX(ID)+1-Vergabe spaeter auf fremde Laeufe zeigen wuerden (6.6).
                     PufferzeilenLoeschen(v, m.ID_Projekt);
                     DetailzeilenLoeschen(v, TAB_SP, m.ID_Projekt);
+                    // E30: dieselbe Vorab-Loeschung fuer die Gebaeudezeilen - die Tabelle
+                    // haengt per Loeschweitergabe am Kopf, das DELETE ist Guertel und
+                    // Hosentraeger wie bei Puffer und Stromspeicher.
+                    DetailzeilenLoeschen(v, TAB_GEB, m.ID_Projekt);
 
                     //    Zusaetzlich alle Waisen abraeumen, deren Kopf nicht mehr existiert.
                     //    Notwendig, weil ein frueherer Kopf-Delete OHNE Loeschweitergabe
@@ -723,6 +730,44 @@ namespace WindowsFormsApplication1
                         }
                     }
 
+                    // 11. Detail: Gebaeude (Tab_ErgebnisGebaeude, Entscheid E30) - eine Zeile
+                    //     je Gebaeude des Laufs. Auf einer Datenbank vor Schritt 104 fehlt die
+                    //     Tabelle; dann wird nichts geschrieben (der Bericht laesst den
+                    //     Abschnitt weg), und der Lauf gilt trotzdem als gespeichert.
+                    //     Die Werte gehen UNGERUNDET hinein: Es sind Kennzahlen, keine
+                    //     Anzeigewerte, und der Bericht zeigt genau die Zahl des Laufs.
+                    if (m.Gebaeude != null && m.Gebaeude.Count > 0 && gebaeudeTabelle)
+                    {
+                        int gId = NextId(v, TAB_GEB);
+                        string sqlG = "INSERT INTO " + TAB_GEB + " (" +
+                            "ID, ID_Ergebnis, ID_Gebaeude, Merkplatz, Gebaeudename, Rechenweg, " +
+                            "Heizwaerme_Mwh, Spitze_Kw, SpitzeTagesmittel_Kw, Spitze95_Kw, " +
+                            "Kuehlenergie_Mwh, Kuehlstunden_H, MittlereRaumtemperatur_C, " +
+                            "Ueberhitzungsstunden_H, Sommerlueftungsstunden_H, ObereRaumtemperatur_C) " +
+                            "VALUES (?,?,?,?,?,?, ?,?,?,?, ?,?,?, ?,?,?)";
+                        foreach (ErgebnisGebaeudeModel g in m.Gebaeude)
+                        {
+                            List<DbParam> p = new List<DbParam>();
+                            p.Add(new DbParam("@id", DbParamTyp.Integer) { Wert = gId++ });
+                            p.Add(new DbParam("@erg", DbParamTyp.Integer) { Wert = kopfId });
+                            p.Add(new DbParam("@geb", DbParamTyp.Integer) { Wert = g.ID_Gebaeude });
+                            p.Add(new DbParam("@platz", DbParamTyp.Integer) { Wert = g.Merkplatz });
+                            p.Add(new DbParam("@name", DbParamTyp.VarWChar) { Wert = (object)(g.Gebaeudename ?? "") });
+                            p.Add(new DbParam("@weg", DbParamTyp.VarWChar) { Wert = (object)(g.Rechenweg ?? "") });
+                            p.Add(new DbParam("@g1", DbParamTyp.Double) { Wert = g.HeizwaermeMwh });
+                            p.Add(new DbParam("@g2", DbParamTyp.Double) { Wert = g.SpitzeKw });
+                            p.Add(new DbParam("@g3", DbParamTyp.Double) { Wert = g.SpitzeTagesmittelKw });
+                            p.Add(new DbParam("@g4", DbParamTyp.Double) { Wert = g.Spitze95Kw });
+                            p.Add(new DbParam("@g5", DbParamTyp.Double) { Wert = Oder(g.KuehlenergieMwh) });
+                            p.Add(new DbParam("@g6", DbParamTyp.Integer) { Wert = Oder(g.KuehlstundenH) });
+                            p.Add(new DbParam("@g7", DbParamTyp.Double) { Wert = Oder(g.MittlereRaumtemperaturC) });
+                            p.Add(new DbParam("@g8", DbParamTyp.Integer) { Wert = Oder(g.UeberhitzungsstundenH) });
+                            p.Add(new DbParam("@g9", DbParamTyp.Integer) { Wert = Oder(g.SommerlueftungsstundenH) });
+                            p.Add(new DbParam("@g10", DbParamTyp.Double) { Wert = Oder(g.ObereRaumtemperaturC) });
+                            v.Ausfuehren(sqlG, p.ToArray());
+                        }
+                    }
+
                     v.Commit();
                     m.ID = kopfId;
                     return kopfId;
@@ -1097,6 +1142,30 @@ namespace WindowsFormsApplication1
                     es.Preisversion = S(res, "Preisversion");
 
                     m.Stromspeicher.Add(es);
+                }
+
+            // Detail: Gebaeude (Tab_ErgebnisGebaeude, Entscheid E30). Dieselbe stille
+            // Ruecklaufebene: vor Schritt 104 fehlt die Tabelle, die Liste bleibt leer.
+            DataTable dg = GebaeudeZeilenLesenStill(m.ID);
+            if (dg != null)
+                foreach (DataRow rg in dg.Rows)
+                {
+                    ErgebnisGebaeudeModel g = new ErgebnisGebaeudeModel();
+                    g.ID_Gebaeude = I(rg, "ID_Gebaeude");
+                    g.Merkplatz = I(rg, "Merkplatz");
+                    g.Gebaeudename = S(rg, "Gebaeudename");
+                    g.Rechenweg = S(rg, "Rechenweg");
+                    g.HeizwaermeMwh = D(rg, "Heizwaerme_Mwh");
+                    g.SpitzeKw = D(rg, "Spitze_Kw");
+                    g.SpitzeTagesmittelKw = D(rg, "SpitzeTagesmittel_Kw");
+                    g.Spitze95Kw = D(rg, "Spitze95_Kw");
+                    g.KuehlenergieMwh = DN(rg, "Kuehlenergie_Mwh");
+                    g.KuehlstundenH = GanzOderNull(rg, "Kuehlstunden_H");
+                    g.MittlereRaumtemperaturC = DN(rg, "MittlereRaumtemperatur_C");
+                    g.UeberhitzungsstundenH = GanzOderNull(rg, "Ueberhitzungsstunden_H");
+                    g.SommerlueftungsstundenH = GanzOderNull(rg, "Sommerlueftungsstunden_H");
+                    g.ObereRaumtemperaturC = DN(rg, "ObereRaumtemperatur_C");
+                    m.Gebaeude.Add(g);
                 }
 
             return m;
@@ -1498,6 +1567,37 @@ namespace WindowsFormsApplication1
                     StilleDb.Par("@e", DbParamTyp.Integer, idErgebnis));
             }
             catch { return null; }
+        }
+
+        /// <summary>
+        /// Liest die Gebaeudezeilen eines Ergebniskopfes (E30) still, nach Merkplatz -
+        /// dieselbe Bauform wie <see cref="StromspeicherZeilenLesenStill"/>. Rueckgabe null,
+        /// wenn die Tabelle fehlt oder der Zugriff scheitert.
+        /// </summary>
+        private static DataTable GebaeudeZeilenLesenStill(int idErgebnis)
+        {
+            try
+            {
+                if (!TabelleVorhanden(TAB_GEB)) return null;
+
+                return StilleDb.Tabelle(
+                    "SELECT * FROM " + TAB_GEB + " WHERE ID_Ergebnis = ? ORDER BY Merkplatz, ID",
+                    StilleDb.Par("@e", DbParamTyp.Integer, idErgebnis));
+            }
+            catch { return null; }
+        }
+
+        /// <summary>Ein nullbarer Wert als Parameter: <c>null</c> wird <c>DBNull</c> (E30: „nicht gerechnet").</summary>
+        private static object Oder(double? w) { return w.HasValue ? (object)w.Value : DBNull.Value; }
+
+        /// <summary>Ein nullbarer Wert als Parameter: <c>null</c> wird <c>DBNull</c>.</summary>
+        private static object Oder(int? w) { return w.HasValue ? (object)w.Value : DBNull.Value; }
+
+        /// <summary>Eine nullbare Ganzzahlspalte; <c>null</c> bei fehlender Spalte oder NULL (E30).</summary>
+        private static int? GanzOderNull(DataRow r, string col)
+        {
+            if (!r.Table.Columns.Contains(col) || r[col] == DBNull.Value) return null;
+            return Convert.ToInt32(r[col]);
         }
 
         /// <summary>

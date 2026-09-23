@@ -13461,6 +13461,9 @@ Please check all entries!</value>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Search, e.g. house*_1990*</value>
   </data>
+  <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
+    <value>Calculation core according to VDI 6007 Part 1; eleven of the twelve test cases within the standard band including print rounding, test case 11 off by 3.4 W in two switching hours (3.9 W against the band without print rounding)</value>
+  </data>
   <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
     <value>Daily balance (legacy method)</value>
   </data>

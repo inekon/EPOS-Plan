@@ -358,11 +358,17 @@ namespace WindowsFormsApplication1
         /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
         /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
         /// byte-gleich</b>.
+        /// Mit der ERGEBNISTABELLE JE GEBÄUDE (Schritt 104, Entscheid E30 vom 23.09.2026,
+        /// Konzept Gebäudesimulation N1.35) steht das Ziel auf <b>104</b>: eine leere
+        /// STRICT-Tabelle <c>Tab_ErgebnisGebaeude</c> samt zwei Indizes, deren DDL bei
+        /// <see cref="ErgebnisGebaeudeSchema"/> steht. <b>Reines DDL</b> — der Lauf schreibt
+        /// sie, kein Rechenweg liest sie, und der Referenzlauf exportiert sie nicht;
+        /// <b>der Referenzlauf bleibt byte-gleich</b>.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 103;
+        public const int Zielversion = 104;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

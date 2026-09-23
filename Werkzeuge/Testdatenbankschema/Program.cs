@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 95), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis " + SchemaStand.Zielversion + "), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -1173,6 +1173,23 @@ namespace Testdatenbankschema
             {
                 Console.WriteLine("Schritt 103 - Index " + i.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
                 if (!trocken) DataRepository.ExecuteNonQuery(i.Value);
+            }
+
+            // ---- Schritt 104: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
+            //      Gebaeudesimulation N1.35). REIN DDL aus ErgebnisGebaeudeSchema - DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_104_ErgebnisGebaeude bedient;
+            //      erst die Tabelle, dann die zwei Indizes. ERGEBNISNEUTRAL: Die Tabelle
+            //      entsteht leer, kein Rechenweg liest sie, der Referenzlauf exportiert sie nicht.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
+            {
+                if (a.Key == ErgebnisGebaeudeSchema.TAB)
+                {
+                    tabellen += TabelleSicherstellen(a.Key, a.Value, 104, trocken);
+                    continue;
+                }
+                Console.WriteLine("Schritt 104 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 
             Console.WriteLine();

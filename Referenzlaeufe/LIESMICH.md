@@ -201,6 +201,12 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 `EPOS.Kern.Tests/GebaeudeRueckwegTests` den Tagesbilanz-Weg an Projekt 1040. Sie ist die
 **einzige** Basis im Arbeitsbaum.
 
+> **Schemastand 104 (23.09.2026, Entscheid E30) — Basis unverändert.** Schritt 104 legt die
+> leere Ergebnistabelle `Tab_ErgebnisGebaeude` an; der Lauf schreibt sie, der Referenzlauf
+> exportiert sie nicht (die Kennzahlen stehen schon als Skalare `Geb[n].*`). Reines DDL, kein
+> gesäter Wert ändert sich; der Referenzlauf aller dreizehn Projekte gegen diese Basis ist
+> **PASS und byte-gleich** (außer `protokoll.txt`).
+
 > **Anlass: die Schlusswelle G1 + G2 der Gebäudesimulation** (Entscheide E1/Q14, A15 mit E27;
 > vom Anwender am 23.09.2026 beauftragt). **VDI 6007 ist das Vorgabemodell aller Gebäude:** Ein
 > Gebäude ohne Angabe (`Gebaeude_Modell` NULL) rechnet stündlich nach dem 2-K-Modell

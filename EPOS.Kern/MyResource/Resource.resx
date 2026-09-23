@@ -13468,6 +13468,9 @@ Alle Eingaben überprüfen!</value>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Suche, z. B. Haus*_1990*</value>
   </data>
+  <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
+    <value>Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)</value>
+  </data>
   <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
     <value>Tagesbilanz (Bestandsweg)</value>
   </data>

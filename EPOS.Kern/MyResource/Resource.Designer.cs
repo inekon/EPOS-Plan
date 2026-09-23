@@ -17772,6 +17772,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) ähnelt.
+        /// </summary>
+        public static string GEB_PRODUKTAUSWEIS_VDI6007 {
+            get {
+                return ResourceManager.GetString("GEB_PRODUKTAUSWEIS_VDI6007", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbilanz (Bestandsweg) ähnelt.
         /// </summary>
         public static string GEB_RECHENWEG_TAGESBILANZ {
