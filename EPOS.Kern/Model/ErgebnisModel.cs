@@ -90,7 +90,10 @@ namespace WindowsFormsApplication1
         /// <summary>95-%-Quantil der Stundenlast nach nächstgelegenem Rang [kW].</summary>
         public double Spitze95Kw;
 
-        /// <summary>Kühlbedarf (informativ) [MWh]; nur VDI-Weg.</summary>
+        /// <summary>
+        /// Kühlbedarf [MWh]; nur VDI-Weg. Mit wirksamer Kühlung der Kältebedarf des Gebäudes am
+        /// Kühlsollwert, sonst die Wärme, die bis zur oberen Raumtemperatur abzuführen wäre.
+        /// </summary>
         public double? KuehlenergieMwh;
 
         /// <summary>Stunden mit Kühlbedarf [h]; nur VDI-Weg.</summary>

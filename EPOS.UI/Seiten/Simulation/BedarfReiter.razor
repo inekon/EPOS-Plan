@@ -162,6 +162,58 @@
             }
         </section>
 
+        @* ---- Kaelte (Stufe KU1; Kuehlkonzept 8.4; E21, K5, K6) ----
+
+           NUR WENN ERHOBEN: Ein Projekt ohne Kuehlung (Projektschalter aus) zeigt keine
+           Kaeltegruppe und keine Kuehlnullen (K18). DIESELBE GLIEDERUNG WIE DIE WAERME:
+           Kopf, Wertzeilen mit betonter Summe, die Kanalzeile - die VIERTE, „Kuehlung" -,
+           darunter das EIGENE Bild der Kaeltelast (nicht im Waermebild, sonst normierte
+           der Kaeltewert die Waermelinie mit; 4.2). Der Schalter „sortiert" oben gilt auch
+           hier. Die Saetze darunter sagen, dass kein Kaelteerzeuger deckt, zaehlen die
+           Stunden mit Heizen und Kuehlen (K6) und nennen die Grenze der Zahl (K5). *@
+        @if (Daten.Kaelte is KaelteDaten kaelte)
+        {
+            <section class="epos-simerg-block epos-simerg-diagrammzeile epos-simerg-kaelte">
+                <Gruppenkopf Titel="@Resource.SIMERG_GRP_KAELTE" />
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(Resource.SIMERG_LBL_KAELTEBEDARF, kaelte.KaeltebedarfMwh, MWH)
+                    @Wertzeile(Resource.SIMERG_LBL_MAX_KAELTELAST, kaelte.KaeltelastMaxKw, "kW")
+                    @Wertzeile(Resource.SIMERG_LBL_STUNDEN_KUEHLBEDARF, kaelte.StundenMitKuehlbedarf, "h/a", "N0")
+                    @if (kaelte.VollbenutzungsstundenH is double vbh)
+                    {
+                        @Wertzeile(Resource.SIMERG_LBL_VOLLBENUTZUNG_KAELTE, vbh, "h/a", "N0")
+                    }
+                    @Wertzeile(Resource.SIMERG_LBL_GESAMT_KAELTEBEDARF, kaelte.KaeltebedarfMwh, MWH,
+                               betont: true)
+                </dl>
+
+                <h3 class="epos-untergruppe">@Resource.SIMERG_LBL_KAELTE_JE_KANAL</h3>
+                <dl class="epos-simerg-werte">
+                    @Wertzeile(kaelte.Kanalname, kaelte.KaeltebedarfMwh, MWH)
+                </dl>
+
+                @foreach (string hinweis in kaelte.Hinweise)
+                {
+                    <p class="epos-simerg-hinweis">@hinweis</p>
+                }
+                <p class="epos-simerg-hinweis epos-simerg-grenze">@kaelte.GrenzeFeuchte</p>
+
+                <DiagrammSvg Modell="@ModellKaelte" Kennung="simerg-bedarf-kaelte"
+                             Bezeichnung="@Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE"
+                             Einheit="kW"
+                             Palette="@Farbpalette.Aktuell"
+                             FarbwahlErlaubt="@Farbwahl"
+                             FarbeGewaehlt="FarbeUebernehmen"
+                             FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+                @if (CsvKaelte.HasDelegate)
+                {
+                    <button type="button" class="epos-simerg-knopf" @onclick="CsvKaelte"
+                            title="@Resource.SIM_TOOLTIP_CSV_KAELTE">@Resource.SIM_BTN_CSV_EXPORT</button>
+                }
+            </section>
+        }
+
     </div>
 
     @if (Csv.HasDelegate)
@@ -193,6 +245,9 @@
 
     /// <summary>Der CSV-Export; ohne Delegat kein Knopf.</summary>
     [Parameter] public EventCallback Csv { get; set; }
+
+    /// <summary>Der CSV-Export der Kälteseite (Stufe KU1); ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback CsvKaelte { get; set; }
 
     /// <summary>Die gewaehlten Kanalschluessel (Pruefhilfe).</summary>
     public IReadOnlyList<string> GewaehlteReihen => Reihen();
@@ -247,6 +302,10 @@
     private Zeichenmodell? ModellStrom =>
         Modell?.Invoke(new Bildauftrag(Bilder.BedarfStrom, _sortiert));
 
+    /// <summary>Das eigene Bild der Kältelast — derselbe Schalter „sortiert" wie oben (Stufe KU1).</summary>
+    private Zeichenmodell? ModellKaelte =>
+        Modell?.Invoke(new Bildauftrag(Bilder.BedarfKaelte, _sortiert));
+
     /// <summary>
     /// Eine Wertzeile der Kennzahlenliste. <paramref name="betont"/> kennzeichnet
     /// die ABSCHLUSSZEILE einer Gruppe - hier die Summenzeile (W11b‑B‑23, sonst
@@ -254,9 +313,13 @@
     /// unveraendert.
     /// </summary>
     private RenderFragment Wertzeile(string text, double wert, string einheit,
+                                     bool betont = false) => Wertzeile(text, wert, einheit, "N2", betont);
+
+    /// <summary>Dieselbe Wertzeile mit eigenem Zahlenformat — Stundenzahlen ohne Nachkommastellen.</summary>
+    private RenderFragment Wertzeile(string text, double wert, string einheit, string format,
                                      bool betont = false) => @<text>
         <dt class="@Zeilenklasse(betont)">@text</dt>
-        <dd class="@Zeilenklasse(betont)">@wert.ToString("N2", System.Globalization.CultureInfo.CurrentCulture)</dd>
+        <dd class="@Zeilenklasse(betont)">@wert.ToString(format, System.Globalization.CultureInfo.CurrentCulture)</dd>
         <dd class="@Einheitsklasse(betont)">@einheit</dd>
     </text>;
 

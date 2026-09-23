@@ -24660,4 +24660,58 @@ Möchten Sie das zulassen?</value>
   <data name="CHART_ACHSE_KAELTELAST" xml:space="preserve">
     <value>Kältelast</value>
   </data>
+  <data name="SIMERG_GRP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. Kältelast:</value>
+  </data>
+  <data name="SIMERG_LBL_STUNDEN_KUEHLBEDARF" xml:space="preserve">
+    <value>Stunden mit Kühlbedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNG_KAELTE" xml:space="preserve">
+    <value>Vollbenutzungsstunden Kälte:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_KAELTEBEDARF" xml:space="preserve">
+    <value>Gesamter Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_JE_KANAL" xml:space="preserve">
+    <value>Kältebedarf je Bedarfsart</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kein Kälteerzeuger im Projekt: Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_LEER" xml:space="preserve">
+    <value>Kein Gebäude wird gekühlt und kein Lastgang trägt den Kanal Kühlung — der Kältebedarf ist 0.</value>
+  </data>
+  <data name="SIMUEB_GRP_KAELTE" xml:space="preserve">
+    <value>Kältedeckung</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTELAST" xml:space="preserve">
+    <value>Kältelast max.</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kältebedarf ungedeckt</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_KAELTE" xml:space="preserve">
+    <value>Kältelast des Projekts als CSV exportieren (sensible Kälte ohne Entfeuchtung)</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_KAELTE" xml:space="preserve">
+    <value>Keine Kältedaten vorhanden — das Projekt rechnet keine Kälte.</value>
+  </data>
+  <data name="CHART_DATEI_KAELTEBEDARF" xml:space="preserve">
+    <value>Kaeltebedarf_Projekt_{0}.csv</value>
+  </data>
+  <data name="CHART_CSV_KAELTELAST" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
+    <value>Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt.</value>
+  </data>
 </root>

@@ -256,6 +256,52 @@ public sealed class BedarfDaten
 
     /// <summary>Führt der Lauf diesen Kanal? Nur dann steht sein Schalter da.</summary>
     public IReadOnlyList<bool> KanalDa = Array.Empty<bool>();
+
+    /// <summary>
+    /// Die Kälteseite (Stufe KU1, Kühlkonzept 8.4); <c>null</c> = nicht erhoben (Projekt
+    /// ohne Kühlung) — dann steht weder im Bedarfsreiter noch in der Übersicht eine
+    /// Kältegruppe, auch keine Nullen (K18).
+    /// </summary>
+    public KaelteDaten? Kaelte;
+}
+
+/// <summary>
+/// Die KÄLTESEITE eines Laufs für Bedarfsreiter und Übersicht (Stufe KU1; Kühlkonzept 8.4;
+/// E21, K5, K6). Die Zahlen kommen aus <c>SimulationErgebnisCtrl.Kaelte</c>; die Sätze baut
+/// die Hülle fertig, die Komponente kennt keinen Ressourcenschlüssel der Kälteseite.
+/// </summary>
+public sealed class KaelteDaten
+{
+    /// <summary>Jahreskälte = Summe des Kühlkanals [MWh/a].</summary>
+    public double KaeltebedarfMwh;
+
+    /// <summary>Kältespitze [kW].</summary>
+    public double KaeltelastMaxKw;
+
+    /// <summary>Stunden mit Kühlbedarf [h/a], gezählt am Kanalvektor.</summary>
+    public int StundenMitKuehlbedarf;
+
+    /// <summary>Vollbenutzungsstunden der Kälte [h/a]; <c>null</c> ohne Spitze.</summary>
+    public double? VollbenutzungsstundenH;
+
+    /// <summary>Ungedeckte Kälte [MWh/a] — ohne Kälteerzeuger der ganze Bedarf.</summary>
+    public double KaelterestbedarfMwh;
+
+    /// <summary>Die Beschriftung der Kanalzeile „Kühlung" (vierter Kanal).</summary>
+    public string Kanalname = "";
+
+    /// <summary>
+    /// Die Sätze unter den Zahlen, fertig formuliert: ungedeckt ohne Kälteerzeuger bzw. „kein
+    /// Kältebedarf", die Stunden mit Heizen und Kühlen (K6) — ohne die Grenze der Zahl, die
+    /// steht in <see cref="GrenzeFeuchte"/>.
+    /// </summary>
+    public IReadOnlyList<string> Hinweise = Array.Empty<string>();
+
+    /// <summary>Der Satz zur Grenze der Kältezahl (K5) — er steht an JEDER Kältezahl.</summary>
+    public string GrenzeFeuchte = "";
+
+    /// <summary>Der Satz der Übersicht zur Deckung (ohne Kälteerzeuger: ungedeckt).</summary>
+    public string Deckungshinweis = "";
 }
 
 /// <summary>
@@ -802,6 +848,9 @@ public static class Bilder
 {
     public const string BedarfWaerme = "BEDARF_WAERME";
     public const string BedarfStrom = "BEDARF_STROM";
+
+    /// <summary>Die Kältelast des Projekts — ein EIGENES Bild, nicht im Wärmebild (Stufe KU1).</summary>
+    public const string BedarfKaelte = "BEDARF_KAELTE";
     public const string RingWaerme = "RING_WAERME";
     public const string RingStrom = "RING_STROM";
     public const string WpProduktion = "WP_PRODUKTION";
@@ -963,6 +1012,12 @@ public sealed class SimulationErgebnisDienste
     // ---- Die vier CSV-Exporte ----
 
     public Action? CsvBedarf;
+
+    /// <summary>
+    /// Der CSV-Export der Kälteseite (Stufe KU1, Kühlkonzept 9.2) — die Kältelast je Stunde mit
+    /// der Grenze der Zahl in der Kopfzeile; ohne Delegat kein Knopf.
+    /// </summary>
+    public Action? CsvKaelte;
     public Action? CsvWaermepumpe;
     public Action? CsvHeizkessel;
     public Action? CsvSpeicher;

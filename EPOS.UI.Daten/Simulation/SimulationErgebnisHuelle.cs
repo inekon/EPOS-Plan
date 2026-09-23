@@ -375,6 +375,7 @@ namespace WindowsFormsApplication1
                 KonfigurationOeffnen = KonfigurationOeffnen,
 
                 CsvBedarf = CsvBedarf,
+                CsvKaelte = CsvKaelte,
                 CsvWaermepumpe = CsvWaermepumpe,
                 CsvHeizkessel = CsvHeizkessel,
                 CsvSpeicher = CsvSpeicher,
@@ -459,6 +460,10 @@ namespace WindowsFormsApplication1
             BedarfSicherstellen(idProjekt);
             var bedarf = SimulationErgebnisCtrl.Bedarf(_waermebedarf, _strombedarf);
             d.Bedarf = BedarfDaten(bedarf);
+
+            // Die Kaelteseite (Stufe KU1) haengt wie der Bedarf am Projekt, nicht am Lauf; null
+            // = nicht erhoben (Projektschalter aus) - dann zeigt keine Ansicht eine Kaeltegruppe.
+            d.Bedarf.Kaelte = KaelteDaten(SimulationErgebnisCtrl.Kaelte(_waermebedarf));
 
             // OHNE gueltiges Ergebnis wird KEINE Uebersicht gebaut - das Feld bleibt
             // null, und die Anzeige zeigt ihren Leerzustand samt Grund (#236).

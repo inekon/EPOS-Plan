@@ -24653,4 +24653,58 @@ Do you want to allow this?</value>
   <data name="CHART_ACHSE_KAELTELAST" xml:space="preserve">
     <value>Cooling load</value>
   </data>
+  <data name="SIMERG_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. cooling load:</value>
+  </data>
+  <data name="SIMERG_LBL_STUNDEN_KUEHLBEDARF" xml:space="preserve">
+    <value>Hours with cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNG_KAELTE" xml:space="preserve">
+    <value>Full-load hours cooling:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_KAELTEBEDARF" xml:space="preserve">
+    <value>Total cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_JE_KANAL" xml:space="preserve">
+    <value>Cooling demand by demand type</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>No cooling generator in the project: heat generators do not cover cooling — the cooling demand remains uncovered.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_LEER" xml:space="preserve">
+    <value>No building is cooled and no load profile uses the cooling channel — the cooling demand is 0.</value>
+  </data>
+  <data name="SIMUEB_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling coverage</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTELAST" xml:space="preserve">
+    <value>Peak cooling load</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Uncovered cooling demand</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_KAELTE" xml:space="preserve">
+    <value>Export the project's cooling load as CSV (sensible cooling without dehumidification)</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_KAELTE" xml:space="preserve">
+    <value>No cooling data available — the project does not calculate cooling.</value>
+  </data>
+  <data name="CHART_DATEI_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling_demand_project_{0}.csv</value>
+  </data>
+  <data name="CHART_CSV_KAELTELAST" xml:space="preserve">
+    <value>Cooling load [kW]</value>
+  </data>
+  <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
+    <value>A load profile in the cooling channel is cooling demand: it only takes effect with the project setting “Calculate cooling”, goes into no heat channel and remains uncovered without a cooling generator.</value>
+  </data>
 </root>

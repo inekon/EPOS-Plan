@@ -8960,6 +8960,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast [kW] ähnelt.
+        /// </summary>
+        public static string CHART_CSV_KAELTELAST {
+            get {
+                return ResourceManager.GetString("CHART_CSV_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Profil/Lastgang [kW] ähnelt.
         /// </summary>
         public static string CHART_CSV_PROFIL_LASTGANG {
@@ -9118,6 +9127,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string CHART_DATEI_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("CHART_DATEI_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kaeltebedarf_Projekt_{0}.csv ähnelt.
+        /// </summary>
+        public static string CHART_DATEI_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("CHART_DATEI_KAELTEBEDARF", resourceCulture);
             }
         }
         
@@ -53558,6 +53576,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälte ähnelt.
+        /// </summary>
+        public static string SIMERG_GRP_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMERG_GRP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der einzelnen Spitzenkessel ähnelt.
         /// </summary>
         public static string SIMERG_GRP_MODULE_SPK {
@@ -53581,6 +53608,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_GRP_WAERME {
             get {
                 return ResourceManager.GetString("SIMERG_GRP_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Gebäude wird gekühlt und kein Lastgang trägt den Kanal Kühlung — der Kältebedarf ist 0. ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_LEER {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_LEER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Kälteerzeuger im Projekt: Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt. ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_UNGEDECKT", resourceCulture);
             }
         }
         
@@ -53736,6 +53781,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Kältebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_GESAMT_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_GESAMT_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Gesamter Strombedarf: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMT_STROMBEDARF {
@@ -53754,6 +53808,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf je Bedarfsart ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_KAELTE_JE_KANAL {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_KAELTE_JE_KANAL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Diese Kapazität ist eine Was-wäre-wenn-Größe und wird nicht gespeichert. ähnelt.
         /// </summary>
         public static string SIMERG_LBL_KAPAZITAET_HINWEIS {
@@ -53768,6 +53840,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_MAX_GASBEZUG {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_MAX_GASBEZUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die max. Kältelast: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_MAX_KAELTELAST {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_MAX_KAELTELAST", resourceCulture);
             }
         }
         
@@ -54006,6 +54087,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Kühlbedarf: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_STUNDEN_KUEHLBEDARF {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_STUNDEN_KUEHLBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Überschuß: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_UEBERSCHUSS {
@@ -54029,6 +54119,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN {
             get {
                 return ResourceManager.GetString("SIMERG_LBL_VOLLBENUTZUNGSSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden Kälte: ähnelt.
+        /// </summary>
+        public static string SIMERG_LBL_VOLLBENUTZUNG_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMERG_LBL_VOLLBENUTZUNG_KAELTE", resourceCulture);
             }
         }
         
@@ -56352,6 +56451,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältedeckung ähnelt.
+        /// </summary>
+        public static string SIMUEB_GRP_KAELTE {
+            get {
+                return ResourceManager.GetString("SIMUEB_GRP_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kein Stromerzeuger in der Kaskade. Photovoltaik, BHKW oder Speicher unter {0} aufnehmen, dann zeigt der Ring die Deckung je Erzeuger. ähnelt.
         /// </summary>
         public static string SIMUEB_HINWEIS_OHNE_STROMERZEUGER {
@@ -56366,6 +56474,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMUEB_LBL_DECKUNG {
             get {
                 return ResourceManager.GetString("SIMUEB_LBL_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KAELTEBEDARF {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KAELTEBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast max. ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KAELTELAST {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KAELTELAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf ungedeckt ähnelt.
+        /// </summary>
+        public static string SIMUEB_LBL_KAELTE_UNGEDECKT {
+            get {
+                return ResourceManager.GetString("SIMUEB_LBL_KAELTE_UNGEDECKT", resourceCulture);
             }
         }
         
@@ -58391,6 +58526,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Keine Kältedaten vorhanden — das Projekt rechnet keine Kälte. ähnelt.
+        /// </summary>
+        public static string SIM_MSG_KEINE_DATEN_KAELTE {
+            get {
+                return ResourceManager.GetString("SIM_MSG_KEINE_DATEN_KAELTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Keine Simulationsdaten vorhanden!
         ///Bitte zuerst die Simulation mit Photovoltaik durchführen. ähnelt.
         /// </summary>
@@ -59721,6 +59865,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_TOOLTIP_CSV_HEIZKESSEL {
             get {
                 return ResourceManager.GetString("SIM_TOOLTIP_CSV_HEIZKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältelast des Projekts als CSV exportieren (sensible Kälte ohne Entfeuchtung) ähnelt.
+        /// </summary>
+        public static string SIM_TOOLTIP_CSV_KAELTE {
+            get {
+                return ResourceManager.GetString("SIM_TOOLTIP_CSV_KAELTE", resourceCulture);
             }
         }
         
@@ -64776,6 +64929,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WBX_HINWEIS_FORMAT_KURZ {
             get {
                 return ResourceManager.GetString("WBX_HINWEIS_FORMAT_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt. ähnelt.
+        /// </summary>
+        public static string WBX_HRL_KANAL_KUEHLUNG {
+            get {
+                return ResourceManager.GetString("WBX_HRL_KANAL_KUEHLUNG", resourceCulture);
             }
         }
         
