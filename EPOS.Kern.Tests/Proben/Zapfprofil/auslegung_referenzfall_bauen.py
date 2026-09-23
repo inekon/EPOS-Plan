@@ -18,6 +18,10 @@ ZWECK. Unabhaengige Nachrechnung nach den Formeln des Umsetzungskonzepts - OHNE 
   4.7    Speicherauslegung nach Vorlage V4: Lindley-Bilanz ueber zwei Wochen mit Ladefenster
          und Zirkulation, D_max in Woche 2, V_profil, Gleichzeitigkeitsfaktor, V_GLF, klassischer
          Faustwert, Band, Nenninhalt, Fuellstand und Reserve, Ladeleistung als Schaetzwert.
+  N10    Fassadenfall: zwei Zonen am Durchfluss - Mengengeruest, Kalender mit Feiertagen und
+         Ferien, Formvektor, f_KW,A und Wochenreihe der Auslegung, Zirkulation (Anteil) mit
+         Laufzeitfenster um die Tagesmitte der Bilanz, Vorgaberegel mit gewaehltem Katalogtag,
+         Skalierung auf die Bezugsmenge und Umrechnung auf theta_KW,A; Minutenspitze.
 Rasterzahlen (20, 400), Bisektionsschritte (60) und die Verdopplung des Startvolumens sind
 numerische Setzungen des Verfahrens; sie stehen hier wie im Papier (4.5 a) beschrieben.
 
@@ -383,6 +387,247 @@ def speicherauslegung(sa, zeilen):
         zeilen.append(("sa_defizit_%03d" % t, x))
 
 
+# ----------------------------------------------------------------------------------------
+# Fassadenfall (N10): Wochenreihe, f_KW,A, Wahl des Bedarfstags, Laufzeitfenster
+# ----------------------------------------------------------------------------------------
+
+TAGE = 365
+MONATSLAENGEN = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+WERKTAG, SAMSTAG, SONNFEIERTAG, RUHETAG = 1, 2, 3, 4
+
+
+def monat_von(tag):
+    """Monat 1..12 des Jahrestags 1..365 (Jahr ohne Schaltjahr)."""
+    grenze = 0
+    for m, laenge in enumerate(MONATSLAENGEN, start=1):
+        grenze += laenge
+        if tag <= grenze:
+            return m
+    raise ValueError(tag)
+
+
+def ferientage(paare):
+    """Konzept 4.2: 0 und 366 = keine Angabe; >365 -> 365; Beginn leer -> 1..Ende;
+    Beginn > Ende -> Beginn..365 und 1..Ende; Ende leer -> kein Fenster."""
+    tage = set()
+
+    def angabe(x):
+        if x is None or x <= 0 or x == 366:
+            return None
+        return min(x, 365)
+
+    for beginn, ende in paare:
+        b, e = angabe(beginn), angabe(ende)
+        if e is None:
+            continue
+        if b is None:
+            tage.update(range(1, e + 1))
+        elif b <= e:
+            tage.update(range(b, e + 1))
+        else:
+            tage.update(range(b, 366))
+            tage.update(range(1, e + 1))
+    return tage
+
+
+def gang(stunden):
+    return [float(stunden.get(str(h), 0.0)) for h in range(24)]
+
+
+def fassade(fa, zeilen):
+    """Die Fassade der Auslegung fuer eine Gruppe am Durchfluss - nach den Formeln des Papiers
+    (4.1 Mengengeruest, 4.2 Kalender und Formvektor, 4.3 Zirkulation und Laufzeitfenster (N7 (g)),
+    4.2/4.5 Wochenreihe bei theta_KW,A, 4.5 Vorgaberegel des Bedarfstags, Katalogtag mit
+    Bezugsmenge und Umrechnung auf theta_KW,A (N10))."""
+    par = fa["parameter"]
+    jan1 = fa["wochentag_jan1"]
+    feiertage = set(fa["feiertage"])
+    bezug_zapf, bezug_kalt = fa["bezug_zapftemperatur_c"], fa["bezug_kaltwasser_c"]
+    projekt = fa["projekt"]
+    kw_a = projekt["kaltwasser_auslegung_c"] if projekt["kaltwasser_auslegung_c"] is not None \
+        else par["A100.Kaltwasser.Auslegung"]
+    kw_katalog = par["A100.Kaltwasser.Auslegung"]
+    mittel = par["Kaltwasser.Bilanz.Mittel"]
+    amp = par["Kaltwasser.Bilanz.Amplitude"]
+    m_max = par["Kaltwasser.Bilanz.MonatMaximum"]
+
+    we = []
+    for d in range(1, TAGE + 1):
+        wt = (jan1 + d - 1) % 7
+        we.append(wt in (5, 6) or d in feiertage)
+
+    satz = fa["tagesgangsatz"]
+    phi = {}
+    for typ, schluessel in ((WERKTAG, "werktag"), (SAMSTAG, "samstag"), (SONNFEIERTAG, "sonntag"), (RUHETAG, "ruhetag")):
+        g = gang(satz[schluessel])
+        s = sum_seq(g)
+        phi[typ] = [x / s for x in g] if s > 0 else None
+    arten = {n["id"]: n for n in fa["nutzungsarten"]}
+
+    def kalender(ferien):
+        typen = []
+        for d in range(1, TAGE + 1):
+            wt = (jan1 + d - 1) % 7
+            if d in ferien:
+                typ = RUHETAG
+            elif we[d - 1] and wt == 5:
+                typ = SAMSTAG
+            elif we[d - 1]:
+                typ = SONNFEIERTAG
+            else:
+                typ = WERKTAG
+            typen.append(typ)
+        return typen
+
+    def tagesmengen(q_jahr, n, typen, f_kw):
+        w_roh = n["woche"]
+        s_w = sum_seq(w_roh)
+        w = [x / s_w for x in w_roh]
+        g = []
+        for d in range(1, TAGE + 1):
+            typ = typen[d - 1]
+            gewicht = 0.0
+            if phi[typ] is not None:
+                m = monat_von(d) - 1
+                wt = (jan1 + d - 1) % 7
+                if typ == WERKTAG:
+                    w_t = w[wt]
+                elif typ == SAMSTAG:
+                    w_t = w[5]
+                elif typ == SONNFEIERTAG:
+                    w_t = w[6]
+                else:
+                    w_t = w[6] if n["ferienfaktor"] is None else n["ferienfaktor"] * (sum_seq(w) / 7)
+                gewicht = n["monate"][m] * f_kw[m] * 7 * w_t
+            g.append(gewicht)
+        summe = sum_seq(g)
+        return [q_jahr * x / summe for x in g]
+
+    zonen = []
+    for z in fa["zonen"]:
+        n = arten[z["nutzungsart"]]
+        zapf = bezug_zapf
+        f_theta = (zapf - mittel) / (bezug_zapf - bezug_kalt)                         # 4.1
+        q_a = z["bezugsmenge"] * n["bedarf"][z["niveau"] - 1] * TAGE * f_theta
+        theta_m = [round(mittel + amp * math.cos(2.0 * math.pi * (m - m_max) / 12), 9) for m in range(1, 13)]
+        f_kw = [(zapf - theta_m[m]) / (zapf - mittel) for m in range(12)]           # Bilanz (4.2)
+        f_kwa = (zapf - kw_a) / (zapf - mittel)                                      # Auslegung (4.2)
+        typen = kalender(ferientage(z["ferien"]))
+        zonen.append({
+            "z": z, "n": n, "q_a": q_a, "f_kwa": f_kwa, "typen": typen, "zapf": zapf,
+            "z1": n["grenze"] == 1 and z["zirkulation"],
+            "bilanz": tagesmengen(q_a, n, typen, f_kw),
+            "auslegung": tagesmengen(q_a * f_kwa, n, typen, [1.0] * 12),
+        })
+
+    # 4.3: Zirkulation nach der Methode Anteil, Laufzeit aus dem Parameter; Laufzeitfenster um die
+    # Tagesmitte der Zapfung der Zonen in Z1 (Tagesmengen der Bilanz mal Tagesgang, N7 (g)).
+    assert projekt["zirk_methode"] == 2
+    t_lauf = par["Zirkulation.Laufzeit"]
+    summe_z1 = 0.0
+    for z in zonen:
+        if z["z1"]:
+            summe_z1 += z["q_a"]
+    p_zirk = par["Zirkulation.Anteil"] * (summe_z1 / TAGE) / t_lauf
+    e_h = [0.0] * 24
+    for z in zonen:
+        if not z["z1"]:
+            continue
+        for h in range(24):
+            for d in range(TAGE):
+                e_h[h] += z["bilanz"][d] * phi[z["typen"][d]][h]
+    zaehler, nenner = 0.0, 0.0
+    for h in range(24):
+        zaehler += (h + 0.5) * e_h[h]
+        nenner += e_h[h]
+    mitte = zaehler / nenner
+    beginn = math.floor(mitte - t_lauf / 2.0 + 0.5)
+    if beginn < 0:
+        beginn = 0
+    if beginn + t_lauf > 24:
+        beginn = math.floor(24 - t_lauf)
+
+    # 4.2/4.5: Wochenreihe - die sieben Tage mit der groessten Summe der Auslegungsmengen.
+    s = [0.0] * TAGE
+    for z in zonen:
+        for d in range(TAGE):
+            s[d] += z["auslegung"][d]
+    beste, beste_summe = 1, -math.inf
+    for d0 in range(1, TAGE - 7 + 2):
+        w = 0.0
+        for k in range(7):
+            w += s[d0 - 1 + k]
+        if w > beste_summe:
+            beste, beste_summe = d0, w
+    woche = []
+    region = kalender(set())
+    for k in range(7):
+        stunden = [0.0] * 24
+        for z in zonen:
+            q = z["auslegung"][beste - 1 + k]
+            f = phi[z["typen"][beste - 1 + k]]
+            for h in range(24):
+                stunden[h] += q * f[h]
+        woche.extend(stunden)
+    wochensumme = 0.0
+    for k in range(7):
+        t = 0.0
+        for h in range(24):
+            t += woche[k * 24 + h]
+        wochensumme += t
+
+    # 4.5: Vorgaberegel - ohne ausdrueckliche Quelle gilt der gewaehlte Katalogtag; skaliert auf die
+    # Bezugsmenge der Gruppe (eine Bezugsart) und umgerechnet auf theta_KW,A des Projekts (N10).
+    tag = fa["bedarfstag"]
+    assert tag["id"] == projekt["id_bedarfstag"]
+    arten_der_gruppe = set(z["n"]["bezugsart"] for z in zonen)
+    assert len(arten_der_gruppe) == 1
+    ziel = 0.0
+    for z in zonen:
+        ziel += z["z"]["bezugsmenge"]
+    faktor = ziel / tag["bezugsmenge"]
+    zapf_gruppe = set(z["zapf"] for z in zonen)
+    assert len(zapf_gruppe) == 1
+    zapf = zapf_gruppe.pop()
+    f_tag = (zapf - kw_a) / (zapf - kw_katalog)
+    faktor *= f_tag
+    minuten = minutenwerte([(b, dauer, e * faktor) for b, dauer, e in tag["ereignisse"]])
+    tagessumme = sum_seq(minuten)
+    spitze = 0.0
+    for x in minuten:
+        if x > spitze:
+            spitze = x
+    stunde_max = 0.0
+    for h in range(24):
+        t = 0.0
+        for m in range(60):
+            t += minuten[h * 60 + m]
+        if t > stunde_max:
+            stunde_max = t
+
+    for i, z in enumerate(zonen, start=1):
+        zeilen.append(("fa_zone_%d_jahresenergie_kwh" % i, z["q_a"]))
+        zeilen.append(("fa_zone_%d_fkwa" % i, z["f_kwa"]))
+    zeilen.append(("fa_zirkulation_leistung_kw", p_zirk))
+    zeilen.append(("fa_laufzeit_beginn_h", float(beginn)))
+    zeilen.append(("fa_laufzeit_h", t_lauf))
+    zeilen.append(("fa_woche_erster_tag", float(beste)))
+    zeilen.append(("fa_woche_wochentag_erster_tag", float((jan1 + beste - 1) % 7)))
+    for k in range(7):
+        zeilen.append(("fa_woche_tagtyp_%d" % (k + 1), float(region[beste - 1 + k])))
+    zeilen.append(("fa_woche_summe_kwh", wochensumme))
+    zeilen.append(("fa_woche_fenstersumme_kwh", beste_summe))
+    for t, x in enumerate(woche, start=1):
+        zeilen.append(("fa_woche_%03d" % t, x))
+    zeilen.append(("fa_bedarfstag_quelle", float(tag["quelle_art"])))
+    zeilen.append(("fa_bedarfstag_faktor", f_tag))
+    zeilen.append(("fa_bedarfstag_summe_kwh", tagessumme))
+    zeilen.append(("fa_minutenspitze_kw", spitze * 60))
+    zeilen.append(("fa_stundenspitze_kw", stunde_max))
+    for i, x in enumerate(minuten):
+        zeilen.append(("fa_tag_%04d" % i, x))
+
+
 def main():
     with open(EINGABE, encoding="utf-8") as f:
         ein = json.load(f)
@@ -390,6 +635,7 @@ def main():
     for i, fall in enumerate(ein["summenlinie"], start=1):
         summenlinie(fall, "sl%d" % i, zeilen)
     speicherauslegung(ein["speicherauslegung"], zeilen)
+    fassade(ein["fassade"], zeilen)
     with open(ERGEBNIS, "w", encoding="utf-8", newline="\r\n") as f:
         f.write("# FIKTIVER REFERENZFALL der Auslegung (Stufe Z2) - alle Werte erfunden; erzeugt von auslegung_referenzfall_bauen.py\n")
         f.write("groesse,wert\n")

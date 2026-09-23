@@ -23,6 +23,9 @@ namespace EPOS.Kern.Tests
     /// Eingabe mit <see cref="Summenlinie"/> und <see cref="TwwSpeicherauslegung"/> und verlangt
     /// <b>Abweichung 0 auf 1e-9</b>: |C# − Referenz| ≤ ½ · 1e-9 + 1e-12 · |Referenz|. Alle Werte
     /// sind erfunden; keine Normzahl.</para>
+    ///
+    /// <para><b>Fassadenfall (N10):</b> dazu eine Gruppe aus zwei Zonen durch die ganze Fassade
+    /// — Wochenreihe, f_KW,A, Wahl und Umrechnung des Bedarfstags, Laufzeitfenster.</para>
     /// </summary>
     public sealed class AuslegungReferenzfallTests : IDisposable
     {
@@ -162,6 +165,120 @@ namespace EPOS.Kern.Tests
                 v += Gleich(r, "sa_defizit_" + t.ToString("000", CultureInfo.InvariantCulture), a.DefizitKwh[t - 1]);
             Assert.Equal(18 + 336, v);
         }
+
+        /// <summary>
+        /// <b>Der Fassadenfall (N10)</b>: zwei Zonen am Durchfluss durch die ganze Fassade
+        /// <see cref="ZapfprofilAuslegung.Rechnen"/> — Jahresenergie und f_KW,A je Zone, Zirkulation
+        /// und Laufzeitfenster, die Wochenreihe der Auslegung (Fenster, Tagtypen, 168 Stunden,
+        /// Summenkontrolle), die Wahl des Bedarfstags (gewählter Katalogtag), seine Skalierung und
+        /// Umrechnung auf θ_KW,A und die Minutenwerte samt Spitze — gegen das Skript.
+        /// </summary>
+        [Fact]
+        public void Die_Fassade_stimmt_auf_neun_Stellen()
+        {
+            Dictionary<string, double?> r = Referenz();
+            using JsonDocument doc = Eingabe();
+            JsonElement fa = doc.RootElement.GetProperty("fassade");
+
+            Parametersatz ps = Parametersatz.Aus("REF-Z2", fa.GetProperty("parameter").EnumerateObject()
+                .Select(p => new ZapfParameterwert(p.Name, p.Value.GetDouble(), "", Fiktiv)).ToArray());
+            Assert.Equal(ZapfprofilTestbau.Bezug.ZapftemperaturC, fa.GetProperty("bezug_zapftemperatur_c").GetDouble());
+            Assert.Equal(ZapfprofilTestbau.Bezug.KaltwasserC, fa.GetProperty("bezug_kaltwasser_c").GetDouble());
+
+            JsonElement ts = fa.GetProperty("tagesgangsatz");
+            Tagesgangsatz satz = ZapfprofilTestbau.Satz(1, Gang(ts.GetProperty("werktag")), Gang(ts.GetProperty("samstag")),
+                                                        Gang(ts.GetProperty("sonntag")), Gang(ts.GetProperty("ruhetag")));
+            var arten = new List<Nutzungsart>();
+            foreach (JsonElement n in fa.GetProperty("nutzungsarten").EnumerateArray())
+                arten.Add(ZapfprofilTestbau.Art(n.GetProperty("id").GetInt32(), (ZapfBezugsart)n.GetProperty("bezugsart").GetInt32(),
+                    Zahlen(n.GetProperty("bedarf")), (ZapfBilanzgrenze)n.GetProperty("grenze").GetInt32(),
+                    (ZapfKalenderart)n.GetProperty("kalenderart").GetInt32(), Zahl(n, "ferienfaktor"),
+                    Zahlen(n.GetProperty("monate")), Zahlen(n.GetProperty("woche")), satz));
+
+            var zonen = new List<ZonenStand>();
+            foreach (JsonElement z in fa.GetProperty("zonen").EnumerateArray())
+            {
+                var beginn = new int?[4];
+                var ende = new int?[4];
+                int i = 0;
+                foreach (JsonElement f in z.GetProperty("ferien").EnumerateArray())
+                {
+                    beginn[i] = f[0].GetInt32();
+                    ende[i++] = f[1].GetInt32();
+                }
+                zonen.Add(new ZonenStand
+                {
+                    Id = zonen.Count + 1, Reihenfolge = zonen.Count + 1, Name = z.GetProperty("name").GetString(),
+                    IdNutzungsart = z.GetProperty("nutzungsart").GetInt32(), Bezugsmenge = z.GetProperty("bezugsmenge").GetDouble(),
+                    Niveau = (ZapfNiveau)z.GetProperty("niveau").GetInt32(), Zirkulation = z.GetProperty("zirkulation").GetBoolean(),
+                    Topologie = ZapfTopologie.Durchfluss, Ferienbeginn = beginn, Ferienende = ende
+                });
+            }
+
+            JsonElement pj = fa.GetProperty("projekt");
+            ProjektStand projekt = ZapfprofilTestbau.Projekt() with
+            {
+                ZirkMethode = (ZapfZirkulationsmethode)pj.GetProperty("zirk_methode").GetInt32(),
+                KaltwasserAuslegungC = Zahl(pj, "kaltwasser_auslegung_c"),
+                IdBedarfstag = pj.GetProperty("id_bedarfstag").GetInt32()
+            };
+            int jan1 = fa.GetProperty("wochentag_jan1").GetInt32();
+            var eingang = new Zapfprofileingang
+            {
+                Zonen = zonen, Projekt = projekt, WochentagJan1 = jan1, Parameter = ps,
+                We = ZapfprofilTestbau.We(jan1, fa.GetProperty("feiertage").EnumerateArray().Select(x => x.GetInt32()).ToArray())
+            };
+            JsonElement t = fa.GetProperty("bedarfstag");
+            var katalogtag = new BedarfstagKatalogzeile(t.GetProperty("id").GetInt32(), t.GetProperty("bezeichner").GetString(), "REF-Z2",
+                (ZapfBedarfstagquelle)t.GetProperty("quelle_art").GetInt32(), t.GetProperty("bezugsmenge").GetDouble(), Fiktiv,
+                t.GetProperty("ereignisse").EnumerateArray().Select(e => new Zapfereignis(e[0].GetInt32(), e[1].GetInt32(), e[2].GetDouble())).ToArray());
+
+            Auslegungsergebnis a = ZapfprofilAuslegung.Rechnen(eingang, arten, new Auslegungseingang { Bedarfstage = new[] { katalogtag } });
+            Assert.Empty(a.Ablehnungen);
+            Auslegungsgruppe g = Assert.Single(a.Gruppen);
+            Assert.Equal(ZapfTopologie.Durchfluss, g.Topologie);
+            double Herkunft(string zone, string feld) => a.Herkunft.Last(x => x.Zone == zone && x.Feld == feld).Wert.Value;
+
+            int v = 0;
+            for (int i = 1; i <= zonen.Count; i++)
+            {
+                v += Gleich(r, "fa_zone_" + i + "_jahresenergie_kwh", Herkunft(zonen[i - 1].Name, ZapfFeld.JAHRESENERGIE));
+                v += Gleich(r, "fa_zone_" + i + "_fkwa", Herkunft(zonen[i - 1].Name, "Auslegung.Kaltwasserfaktor"));
+            }
+            v += Gleich(r, "fa_zirkulation_leistung_kw", Herkunft("", ZapfFeld.ZIRKULATION_LEISTUNG));
+            v += Gleich(r, "fa_laufzeit_beginn_h", g.ZirkulationLaufzeit.BeginnH);
+            v += Gleich(r, "fa_laufzeit_h", g.ZirkulationLaufzeit.LaengeH);
+            v += Gleich(r, "fa_woche_erster_tag", g.Woche.ErsterTag);
+            v += Gleich(r, "fa_woche_wochentag_erster_tag", g.Woche.WochentagErsterTag);
+            for (int k = 1; k <= 7; k++) v += Gleich(r, "fa_woche_tagtyp_" + k, (int)g.Woche.Tagtypen[k - 1]);
+            v += Gleich(r, "fa_woche_summe_kwh", g.Woche.WochensummeKwh);
+            v += Gleich(r, "fa_woche_fenstersumme_kwh", g.Woche.FenstersummeKwh.Value);
+            Assert.True(g.Woche.SummenkontrolleErfuellt);
+            for (int h = 1; h <= 168; h++)
+                v += Gleich(r, "fa_woche_" + h.ToString("000", CultureInfo.InvariantCulture), g.Woche.StundenKwh[h - 1]);
+
+            // Wahl des Bedarfstags: ohne ausdrückliche Quelle der gewählte Katalogtag (Vorgaberegel 4.5).
+            Assert.Equal(katalogtag.QuelleArt, g.Bedarfstagwahl.Quelle);
+            v += Gleich(r, "fa_bedarfstag_quelle", (int)g.Bedarfstag.Quelle);
+            v += Gleich(r, "fa_bedarfstag_faktor", Herkunft("", "Auslegung.Bedarfstagfaktor"));
+            v += Gleich(r, "fa_bedarfstag_summe_kwh", g.Bedarfstag.TagessummeKwh);
+            v += Gleich(r, "fa_minutenspitze_kw", g.Bedarfstag.GroessteMinutenleistungKw);
+            v += Gleich(r, "fa_stundenspitze_kw", g.Bedarfstag.GroessteStundenleistungKw);
+            for (int i = 0; i < 1440; i++)
+                v += Gleich(r, "fa_tag_" + i.ToString("0000", CultureInfo.InvariantCulture), g.Bedarfstag.MinutenKwh[i]);
+            // Die eine Empfehlung am Durchfluss ist die Minutenspitze.
+            Assert.Equal(g.Bedarfstag.GroessteMinutenleistungKw, g.Empfehlung.LeistungKw);
+            Assert.Equal(r.Keys.Count(k => k.StartsWith("fa_", StringComparison.Ordinal)), v);
+        }
+
+        private static double[] Gang(JsonElement e)
+        {
+            var a = new double[24];
+            foreach (JsonProperty p in e.EnumerateObject()) a[int.Parse(p.Name, CultureInfo.InvariantCulture)] = p.Value.GetDouble();
+            return a;
+        }
+
+        private static double[] Zahlen(JsonElement e) => e.EnumerateArray().Select(x => x.GetDouble()).ToArray();
 
         // =================================================================================
         // Eingabe und Erwartung
