@@ -16,7 +16,8 @@ namespace EPOS.Kern.Tests
     /// Kältebedarf entsteht, samt der Grenze der Zahl (K5).
     ///
     /// <para>Die Fälle mit Datenbank schalten die Kühlung an einer Arbeitskopie ein — die
-    /// Referenzprojekte bleiben in der Testdatenbank aus.</para>
+    /// Referenzprojekte, die sie benutzen, sind in der Testdatenbank aus; eingeschaltet ist allein
+    /// 1017, das Referenzprojekt mit Kühlung.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class KuehlungOberflaecheTests : IDisposable

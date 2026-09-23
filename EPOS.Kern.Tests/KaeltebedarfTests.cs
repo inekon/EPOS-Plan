@@ -21,8 +21,9 @@ namespace EPOS.Kern.Tests
     /// Vorzeichen und Abschnittsregel, die Prüfregel des Kühlsollwerts, die Bedarfsprobe Kälte
     /// und „Projekt aus → nichts gerechnet". Die Fälle
     /// ohne Datenbank rechnen das Probegebäude der Rechenschritte; die Fälle mit Datenbank
-    /// schalten die Kühlung an einer Arbeitskopie ein (Referenzprojekte bleiben in der
-    /// Testdatenbank aus).</para>
+    /// schalten die Kühlung an einer Arbeitskopie ein (die Referenzprojekte, die sie benutzen,
+    /// sind in der Testdatenbank aus; eingeschaltet ist allein 1017, das Referenzprojekt mit
+    /// Kühlung).</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public sealed class KaeltebedarfTests : IDisposable
