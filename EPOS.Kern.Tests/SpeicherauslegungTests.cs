@@ -232,6 +232,38 @@ namespace EPOS.Kern.Tests
         }
 
         [Fact]
+        public void Die_Summenkontrolle_haelt_die_Woche_gegen_die_Tagesmengen_ihres_Fensters()
+        {
+            Parametersatz ps = Auslegungssatz();
+            Nutzungsart art = Art();
+            ZonenStand z = Zone(art.Name, art.Id);
+            ZapfTagtyp[] k = Zapfkalender.Bilden(0, We(0), null);
+            Zeitstruktur s = Formvektor.Bilden(z, art, art.Tagesgaenge, ps, null, null);
+            Wochenbaustein gut = new Wochenbaustein(z.Name, Wochenreihe.TagesmengenAuslegung(3650.0, 1.0, s, k, 0, z.Name), s, k);
+
+            // Normierte Tagesgänge: Die Stundenwerte tragen genau die Tagesmengen des Fensters.
+            Wochenreihe w = Wochenreihe.Bilden(new[] { gut }, 0, k);
+            Assert.True(w.SummenkontrolleErfuellt);
+            double fenster = Enumerable.Range(w.ErsterTag - 1, 7).Sum(d => gut.TagesmengenKwh[d]);
+            Assert.True(Relativ(w.FenstersummeKwh.Value, fenster) < 1e-12);
+            Assert.DoesNotContain(TwwSpeicherauslegung.Rechnen(Eingang(ps, 2.0, w), ps).Hinweise, h => h.Code == "SUMMENKONTROLLE");
+
+            // Ein Tagesgang, der nur zur Hälfte summiert: Die Woche verliert Energie — die Kontrolle schlägt an.
+            var halb = (double[,])s.Tagesgaenge.Clone();
+            for (int h = 0; h < 24; h++) halb[0, h] *= 0.5;
+            Wochenbaustein schlecht = gut with { Struktur = s with { Tagesgaenge = halb } };
+            Wochenreihe f = Wochenreihe.Bilden(new[] { schlecht }, 0, k);
+            Assert.False(f.SummenkontrolleErfuellt);
+            Assert.True(f.WochensummeKwh < f.FenstersummeKwh.Value);
+            Assert.Contains(TwwSpeicherauslegung.Rechnen(Eingang(ps, 2.0, f), ps).Hinweise,
+                h => h.Code == "SUMMENKONTROLLE" && h.Warnung);
+
+            // Eine Reihe aus Stundenwerten hat kein Fenster: nichts zu prüfen.
+            Assert.Null(Woche().FenstersummeKwh);
+            Assert.True(Woche().SummenkontrolleErfuellt);
+        }
+
+        [Fact]
         public void Band_Nenninhalt_und_Warnliste()
         {
             Parametersatz ps = Auslegungssatz();

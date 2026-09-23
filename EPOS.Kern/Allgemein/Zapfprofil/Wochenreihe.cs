@@ -24,7 +24,13 @@ namespace WindowsFormsApplication1
     /// maßgebend   = die sieben aufeinanderfolgenden Tage d0 … d0+6 (1 ≤ d0 ≤ 359) mit der
     ///               größten Σ S(d); bei Gleichstand die frühere Woche
     /// q(k·24 + h) = Σ_Zonen Q_{d0+k},A · φ_Tagtyp(d0+k)(h)             k = 0 … 6, h = 0 … 23
+    /// Summenkontrolle: Σ_t q(t) = Σ_{k=0..6} S(d0+k)   (relativ 1e-9, 4.7)
     /// </code>
+    ///
+    /// <para><b>Summenkontrolle.</b> <see cref="Bilden"/> hält die Summe der 168 Stundenwerte
+    /// gegen die Summe der Tagesmengen des Fensters (<see cref="FenstersummeKwh"/>); eine
+    /// Abweichung (ein Tagesgang, der nicht zu 1 summiert) steht in
+    /// <see cref="SummenkontrolleErfuellt"/> und als Warnung in der Speicherauslegung.</para>
     ///
     /// <para><b>Unveränderlich.</b> Die Stundenwerte gibt die Reihe nur lesend heraus.</para>
     /// </summary>
@@ -36,16 +42,21 @@ namespace WindowsFormsApplication1
         /// <summary>168 Stunden.</summary>
         internal const int STUNDEN = TAGE * 24;
 
+        /// <summary>Relative Toleranz der Summenkontrolle (numerische Setzung, Rundung der Summation).</summary>
+        internal const double SUMMENTOLERANZ = 1e-9;
+
         private readonly double[] _stundenKwh;
         private readonly double[] _tageKwh;
         private readonly ZapfTagtyp[] _tagtypen;
 
-        private Wochenreihe(double[] stundenKwh, int ersterTag, int wochentagErsterTag, ZapfTagtyp[] tagtypen)
+        private Wochenreihe(double[] stundenKwh, int ersterTag, int wochentagErsterTag, ZapfTagtyp[] tagtypen,
+                            double? fenstersummeKwh)
         {
             _stundenKwh = stundenKwh;
             _tagtypen = tagtypen;
             ErsterTag = ersterTag;
             WochentagErsterTag = wochentagErsterTag;
+            FenstersummeKwh = fenstersummeKwh;
             _tageKwh = new double[TAGE];
             double woche = 0.0, groesster = 0.0, spitze = 0.0;
             int tagMax = 0;
@@ -70,6 +81,8 @@ namespace WindowsFormsApplication1
             GroessterTagKwh = groesster;
             GroessterTagIndex = tagMax;
             GroessterStundenwertKw = spitze;
+            SummenkontrolleErfuellt = !fenstersummeKwh.HasValue
+                || Math.Abs(woche - fenstersummeKwh.Value) <= SUMMENTOLERANZ * Math.Max(1.0, Math.Abs(fenstersummeKwh.Value));
         }
 
         /// <summary>Die 168 Stundenwerte [kWh je Stunde] — nur lesbar.</summary>
@@ -99,6 +112,15 @@ namespace WindowsFormsApplication1
         /// <summary>Der größte Stundenwert [kW].</summary>
         internal double GroessterStundenwertKw { get; }
 
+        /// <summary>
+        /// Die Summe der Tagesmengen des Fensters [kWh] (<see cref="Bilden"/>); <c>null</c> bei
+        /// einer Reihe aus Stundenwerten (<see cref="Aus"/>).
+        /// </summary>
+        internal double? FenstersummeKwh { get; }
+
+        /// <summary>Stimmt die Wochensumme mit <see cref="FenstersummeKwh"/> (relativ 1e-9)? Ohne Fenstersumme ja.</summary>
+        internal bool SummenkontrolleErfuellt { get; }
+
         /// <summary>Wochentag (Montag = 0) des Tages <paramref name="index"/> (0 … 6) der Woche.</summary>
         internal int Wochentag(int index) => (WochentagErsterTag + index) % TAGE;
 
@@ -125,7 +147,8 @@ namespace WindowsFormsApplication1
             if (tagtypen == null || tagtypen.Length != TAGE)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.WochenreiheUngueltig,
                     "Nicht rechenbar — die Wochenreihe trägt nicht sieben Tagtypen.");
-            return new Wochenreihe((double[])stundenKwh.Clone(), ersterTag, wochentagErsterTag, (ZapfTagtyp[])tagtypen.Clone());
+            return new Wochenreihe((double[])stundenKwh.Clone(), ersterTag, wochentagErsterTag, (ZapfTagtyp[])tagtypen.Clone(),
+                                   null);
         }
 
         /// <summary>
@@ -163,7 +186,8 @@ namespace WindowsFormsApplication1
                 Array.Copy(tag, 0, stunden, k * Zapfkalender.STUNDEN_TAG, Zapfkalender.STUNDEN_TAG);
                 typen[k] = regionskalender[beste - 1 + k];
             }
-            return new Wochenreihe(stunden, beste, Zapfkalender.Wochentag(wochentagJan1, beste), typen);
+            // Summenkontrolle: die 168 Stundenwerte gegen die Tagesmengen des Fensters (besteSumme).
+            return new Wochenreihe(stunden, beste, Zapfkalender.Wochentag(wochentagJan1, beste), typen, besteSumme);
         }
 
         /// <summary>Der Jahrestag (1 … 365) mit der größten Tagessumme der Gruppe; bei Gleichstand der frühere.</summary>

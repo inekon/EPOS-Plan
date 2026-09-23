@@ -328,12 +328,12 @@ namespace WindowsFormsApplication1
                     dMax = d[t - 1];
                     tMax = t;
                 }
-            // Summenkontrolle: die Zapfung der Woche 2 ist die Wochensumme.
-            double woche2 = 0.0;
-            foreach (double q in e.Woche.StundenKwh) woche2 += q;
-            if (Math.Abs(woche2 - e.Woche.WochensummeKwh) > 1e-9 * Math.Max(1.0, e.Woche.WochensummeKwh))
+            // Summenkontrolle (Wochenreihe.Bilden): die Stundenwerte der Woche gegen die Tagesmengen ihres Fensters.
+            if (!e.Woche.SummenkontrolleErfuellt)
                 hinweise.Add(new Auslegungshinweis("SUMMENKONTROLLE",
-                    "Die Zapfung der Woche 2 weicht von der Wochensumme ab.", true));
+                    "Die Stundenwerte der maßgebenden Woche (" + Auslegungstext.Z(e.Woche.WochensummeKwh)
+                    + " kWh) weichen von der Summe der Tagesmengen ihres Fensters (" + Auslegungstext.Z(e.Woche.FenstersummeKwh.Value)
+                    + " kWh) ab — ein Tagesgang summiert nicht zu 1.", true));
 
             double? vProfil = null;
             int? tag = null, stunde = null, wochentag = null;
