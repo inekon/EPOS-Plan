@@ -6760,7 +6760,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Bedarf ohne Anlage [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>„Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
+    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>

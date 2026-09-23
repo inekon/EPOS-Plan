@@ -64132,7 +64132,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf abzüglich PV-Eigennutzung — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf. ähnelt.
         /// </summary>
         public static string WIRT_MATRIX_BEDARF_HINWEIS {
             get {
