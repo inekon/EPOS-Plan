@@ -63,8 +63,9 @@ gültig ab 2024 (GESICHERT) — EnergieStG § 53a Abs. 5 …`). Einen Steuersatz
 
 **Gruppe Stromsteuer (Projektvorgabe)** (`BHW_G4`) — Unternehmensart: produzierendes Gewerbe (Anzeige) · Schalter
 Räumlicher Zusammenhang (4,5 km) gegeben ✓ · Schalter Hocheffizienz nachgewiesen ✓ · Modus § 9 Abs. 1 Nr. 3: Ausweis
-(nicht im Kapitalwert) (Anzeige; Spalte `Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) · Modushinweis · Knöpfe
-„Strombezug…" und „BHKW-Tarif…", die nur schreiben, wenn der Arbeitsstand vom geladenen Stand abweicht.
+(nicht im Kapitalwert) (Anzeige; Spalte `Stromst_Befreiung_Modus`, Vorgabe AUSWEIS) · Modushinweis · Knopf
+„BHKW-Tarif…" (Tarifstruktur im Rollenmodell), der nur schreibt, wenn der Arbeitsstand vom geladenen Stand
+abweicht; einen Sprung „Strombezug…" gibt es nicht (Q11, `04`).
 
 **Gruppe Kohärenzprüfung (Energie- und Stromsteuer)** — die Zeilen des zuletzt gebuchten Laufs, ohne
 Rechenwirkung: im Beispiel „✓ Energiesteuer: Wahl und Preisanteil stimmen überein (BHKW 1)."; ohne Auffälligkeit
@@ -234,8 +235,8 @@ Stromsteuer
                      Gewerbe ; hängt an keiner KWK-Anlage
   Die Mengen beider Vorschriften sind disjunkt (Eigenverbrauch gegen Netzbezug).
 
-Einspeiseerlös   KWK_Einspeisung × 10 × EV_KWK (nur bei gepflegtem Satz) → Zonentarif → Rollentarif ;
-                 nominal konstant
+Einspeiseerlös   KWK_Einspeisung × 10 × EV_KWK (nur bei gepflegtem Satz) → Rollentarif (ein
+                 Einspeisepreis für PV und KWK) ; nominal konstant ; einen Zeitzonentarif gibt es nicht
 
 Kohärenzprüfung (§ 3.9) — Warnzeilen ohne Rechenwirkung
   2 Entlastung ohne Belastung: Gutschrift gebucht, Preis weist die Steuer nicht aus → Warnung mit Betrag
@@ -306,7 +307,7 @@ Mockup zeigt die Reihe als Balkendiagramm.
 
 | Nr. | Befund | Behandlung |
 |---|---|---|
-| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt **A** des Analysepapiers § 6 — die Nummer fällt bei der Umsetzung, heute **104**: 101 trägt Konzept § 6.3 Nr. 30 (#437), 102 den Zapfprofilgenerator, 103 die Leistungspreis-Staffel (E7b); Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6. Die Messung nach A2 ist mit E7a (#437) erfolgt: Wärmeüberschuss nur als Projektsumme, es greift die Aufteilung nach P_el; **entschieden 23.09.2026** (E7‑Q2): (1), (3)–(5) nach Empfehlung, (2) mit Auflage — keine willkürliche Vorgabe für σ, Schritt 104, Bau E7c |
+| ⚠ **K-1** | **Der zweite Fall des § 2 Nr. 16 fehlt:** bei Anlagen mit Vorrichtung zur Abwärmeabfuhr (Notkühler) ist KWK-Strom = Nutzwärme × Stromkennzahl, nicht die Nettostromerzeugung; EPOS-Plan führt weder Kennzeichen noch Stromkennzahl und rechnet immer Fall 1 — Zuschlag für Notkühler-Anlagen **zu hoch** | **entschieden 18.09.2026 nach Empfehlung**: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt **A** des Analysepapiers § 6 — die Nummer fällt bei der Umsetzung, heute **105**: 101 trägt die Gebäudespalten der Gebäudesimulation, 102 Konzept § 6.3 Nr. 30 (#437), 103 den Zapfprofilgenerator, 104 die Leistungspreis-Staffel (E7b, #439); Vorschlag der Stromkennzahl aus P_el/P_th am Feld), Fall 2 in der Mengenbildung je Anlage; kein Referenzprojekt betroffen — Konzept § 3.6. Die Messung nach A2 ist mit E7a (#437) erfolgt: Wärmeüberschuss nur als Projektsumme, es greift die Aufteilung nach P_el; **entschieden 23.09.2026** (E7‑Q2): (1), (3)–(5) nach Empfehlung, (2) mit Auflage — keine willkürliche Vorgabe für σ, Schritt 105, Bau E7c |
 | ✔ Nr. 29 | CO₂-Grenzwert heizwertbezogen geprüft (Befund R11, `04`): Zähler mit 200,9 g/kWh, im Beispiel 242,1 g/kWh | **umgesetzt #437**: brennwertbezogen — im Beispiel 218,6 g/kWh, die Befreiung bleibt 23.677,5 €/a; ein Grenzfall mit 72 % Energieertrag bekommt 8.200,00 statt 0,00 €/a (Konzept § 3.8) |
 | A20 | Förderende 2030 (R‑U5) nicht gebaut: Die Prüfkette führt die Realisierungsfrist als Konstante (4 Jahre), die Jahresreihe oben zahlt bis 2037 | **entschieden 23.09.2026** (E7‑Q3, Lesart b): 2030 = Ende der Inbetriebnahmefrist statt fester vier Jahre, Bau E7c |
 | ✔ B-1 | § 9 Abs. 1 Nr. 3 als Erlösreihe gebucht — es entsteht aber gar keine Stromsteuer; gemessen 1.510,84 €/a auf beiden Pfaden (Projekt 1024) | umgesetzt mit B6: Ausweis (`Stromst_Befreiung_Modus`, Vorgabe AUSWEIS, Schemaschritt 88); der Messwert zu 1024 ist am heutigen Stand der Testdatenbank nicht nachstellbar (Hocheffizienznachweis 0) |
