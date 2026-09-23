@@ -1325,9 +1325,13 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 r++;
 
-                for (int i = 0; i < kopf.Length; i++) ws.Cell(r, 1 + i).Value = kopf[i];
-                ws.Range(r, 1, r, kopf.Length).Style.Font.Bold = true;
-                ws.Range(r, 1, r, kopf.Length).Style.Fill.BackgroundColor = KOPF;
+                // ETAPPE E7c (E7c1-Q7): dieselben fünf Fall-2-Spalten wie die Word-Tafel,
+                // und wie dort nur, wenn ein Modul dieser Variante Fall 2 rechnet.
+                bool mitFall2 = KwkgFall2Spalten.Noetig(e.KwkgModule);
+                string[] kopfV = mitFall2 ? kopf.Concat(KwkgFall2Spalten.Kopf()).ToArray() : kopf;
+                for (int i = 0; i < kopfV.Length; i++) ws.Cell(r, 1 + i).Value = kopfV[i];
+                ws.Range(r, 1, r, kopfV.Length).Style.Font.Bold = true;
+                ws.Range(r, 1, r, kopfV.Length).Style.Fill.BackgroundColor = KOPF;
                 r++;
 
                 foreach (KwkgModulNachweis m in e.KwkgModule)
@@ -1349,6 +1353,19 @@ namespace WindowsFormsApplication1
                     Zahl(ws, r, 10, m.Jahr1Eur, "#,##0");
                     if (m.ErschoepftAbJahr > 0) ws.Cell(r, 11).Value = m.ErschoepftAbJahr;
                     else ws.Cell(r, 11).Value = MyResource.Resource.WIRT_KWKG_ERSCHOEPFT_NIE;
+                    if (mitFall2)
+                    {
+                        // Die Wertspalten bleiben numerisch; eine fehlende Größe bleibt leer.
+                        ws.Cell(r, 12).Value = KwkgFall2Spalten.Fall(m);
+                        ZahlOderLeer(ws, r, 13, KwkgFall2Spalten.Stromkennzahl(m),
+                                     KwkgFall2Spalten.EXCELFORMAT_SIGMA);
+                        ZahlOderLeer(ws, r, 14, KwkgFall2Spalten.NutzwaermeMWh(m),
+                                     KwkgFall2Spalten.EXCELFORMAT_MWH);
+                        ZahlOderLeer(ws, r, 15, KwkgFall2Spalten.KwkStromMWh(m),
+                                     KwkgFall2Spalten.EXCELFORMAT_MWH);
+                        ZahlOderLeer(ws, r, 16, KwkgFall2Spalten.KuerzungMWh(m),
+                                     KwkgFall2Spalten.EXCELFORMAT_MWH);
+                    }
                     r++;
                 }
 
@@ -1461,6 +1478,13 @@ namespace WindowsFormsApplication1
         {
             ws.Cell(zeile, spalte).Value = wert;
             ws.Cell(zeile, spalte).Style.NumberFormat.Format = format;
+        }
+
+        /// <summary>Wie <see cref="Zahl"/>; ohne Wert bleibt die Zelle leer (E7c-Hilfe).</summary>
+        private static void ZahlOderLeer(IXLWorksheet ws, int zeile, int spalte, double? wert,
+                                         string format)
+        {
+            if (wert.HasValue) Zahl(ws, zeile, spalte, wert.Value, format);
         }
 
         // ------------------------------------------------------------- Detailblatt

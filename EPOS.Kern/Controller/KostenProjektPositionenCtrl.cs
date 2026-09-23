@@ -354,6 +354,21 @@ namespace WindowsFormsApplication1
 
                 liste.Add(z);
             }
+
+            // ETAPPE E7c (Schritt E, Schritt 111): die zwei Kennzeichen je Position —
+            // eine Abfrage je Leseschleife; leer, wo es die Spalten nicht gibt.
+            if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION && liste.Count > 0)
+            {
+                Dictionary<int, ErsatzRestwertKennzeichen.Paar> kennzeichen =
+                    ErsatzRestwertKennzeichen.LiesProjekt(projektId);
+                foreach (Zeile z in liste)
+                {
+                    ErsatzRestwertKennzeichen.Paar k;
+                    if (!kennzeichen.TryGetValue(z.Raster.Id, out k)) continue;
+                    z.Raster.ErsatzFuehren = k.ErsatzFuehren;
+                    z.Raster.RestwertAnsetzen = k.RestwertAnsetzen;
+                }
+            }
             return liste;
         }
 

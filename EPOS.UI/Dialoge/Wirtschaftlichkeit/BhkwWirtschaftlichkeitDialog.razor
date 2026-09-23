@@ -326,6 +326,16 @@
             </Formularraster>
 
             <Herleitungszeile Text="@Steuerherkunft()" />
+
+            @* ETAPPE E7c2 (U22): der zweite Weg in die Ueberlagerung „Saetze und
+               Herkunft" — „Wahl und Herkunft…" bei der Energiesteuer. Er oeffnet dieselbe
+               Ueberlagerung fuer die gewaehlte Anlage; ohne Anlage gibt es keinen
+               Zwischenstand und deshalb keinen Knopf. *@
+            @if (AktuellerStand is not null)
+            {
+                <button type="button" class="epos-knopf epos-ueb-oeffnen-steuern"
+                        @onclick="UebOeffnen">@_t.UebKnopfSteuern</button>
+            }
         </KindInhalt>
     </Gruppenkopf>
 
@@ -444,26 +454,52 @@
                      OkText="@_t.Speichern" AbbrechenText="@_t.Abbrechen"
                      Ergebnis="BeiErgebnis" />
 
-    @* ETAPPE E7c (Befund K-1, Entscheid E7-Q2 (5)) — die Ueberlagerung „Saetze und
-       Herkunft" (Mockup U22), gebaut so weit, wie die zwei Felder des zweiten Falls
-       des § 2 Nr. 16 KWKG es brauchen: die Wahl Fall 1 / Fall 2 (Kennzeichen
-       „Vorrichtung zur Abwaermeabfuhr") und die Stromkennzahl mit Vorschlag
-       (P_el ÷ P_th der Geraetezeile, gerechnet von KwkStromRechner im Kern), Herkunft,
-       eigenem Wert und „gilt". Sie fuehrt einen EIGENEN Zwischenstand: „Uebernehmen"
-       legt ihn auf den Arbeitsstand der gewaehlten Anlage (geschrieben wird erst im
-       OK-Weg des Dialogs), Abbrechen, das Kreuz und Esc aendern nichts. Die uebrigen
-       Groessen des Mockups (Anlagenart, Tatbestand, Saetze, Kontingent, Deckel,
-       Energie- und Stromsteuer, Wirkung Jahr 1) stehen weiter im Formular. *@
+    @* ETAPPE E7c (Befund K-1, Entscheid E7-Q2 (5)) und E7c2 (E7c1-Q7) — die
+       Ueberlagerung „Saetze und Herkunft" (Mockup U22). Sie trifft jede Wahl, die einen
+       Satz bestimmt, nennt zu jedem Satz Vorschlag und Herkunft, fuehrt je Groesse einen
+       eigenen Wert (leer = der Vorschlag gilt) und zeigt unten die Wirkung im ersten
+       Jahr. Drei Gruppen: KWK-Zuschlag dieser Anlage (Anlagenart, Tatbestand, Fall des
+       § 2 Nr. 16 mit Stromkennzahl, Satztafel, Wirkung Jahr 1), Energiesteuer (Geltung
+       Projekt oder Anlage, Entlastung, Aufteilung) und Stromsteuer des Projekts
+       (Unternehmensart, Befreiung § 9 Abs. 1 Nr. 3, Modus).
+
+       Gerechnet wird NICHTS: Vorschlaege aus KwkgSatzRechner/KwkgKontingentRechner/
+       KwkStromRechner, die Wirkung aus KwkgJahresbetrag — denselben Funktionen, die der
+       Lauf ruft — mit den Mengen des zuletzt gebuchten Laufs. Die Ueberlagerung fuehrt
+       einen EIGENEN Zwischenstand (Kopien von Anlagen- und Projektstand); „Uebernehmen"
+       legt ihn auf den Arbeitsstand, geschrieben wird erst im OK-Weg des Dialogs.
+       Abbrechen, das Kreuz und Esc aendern nichts. *@
     <Ueberlagerung Offen="@_uebOffen" Titel="@UebTitel" Geschlossen="UebAbbrechen">
         <KindInhalt>
+            @if (_uebA is not null && _uebP is not null)
+            {
             <div class="epos-ueb-saetze">
                 <Gruppenkopf Titel="@_t.UebGKwkg">
                     <KindInhalt>
-                        <Optionsgruppe Bezeichnung="@_t.UebKwkStrom"
-                                       Eintraege="@FallEintraege()"
-                                       Auswahl="@(_uebAbwaerme ? 1 : 0)"
-                                       AuswahlChanged="UebFall"
-                                       Beschreibungen="@FallBeschreibungen()" />
+                        <div class="epos-ueb-art">
+                            <Optionsgruppe Bezeichnung="@_t.UebArt"
+                                           Eintraege="@ArtEintraege()"
+                                           Auswahl="@ArtAuswahl()"
+                                           AuswahlChanged="UebArt"
+                                           Beschreibungen="@ArtBeschreibungen()" />
+                            <Herleitungszeile Text="@_t.UebArtHinweis" />
+                        </div>
+
+                        <div class="epos-ueb-eigenfall">
+                            <Optionsgruppe Bezeichnung="@_t.UebEigenfall"
+                                           Eintraege="@BhkwWahlen.Eintraege(_fallA)"
+                                           Auswahl="@EigenfallAuswahl()"
+                                           AuswahlChanged="UebEigenfall"
+                                           Beschreibungen="@EigenfallBeschreibungen()" />
+                        </div>
+
+                        <div class="epos-ueb-fall">
+                            <Optionsgruppe Bezeichnung="@_t.UebKwkStrom"
+                                           Eintraege="@FallEintraege()"
+                                           Auswahl="@(_uebA.Abwaermeabfuhr ? 1 : 0)"
+                                           AuswahlChanged="UebFall"
+                                           Beschreibungen="@FallBeschreibungen()" />
+                        </div>
 
                         <div class="epos-raster-huelle">
                             <table class="epos-raster epos-ueb-herkunft">
@@ -483,7 +519,7 @@
                                         <td>@SigmaHerkunft()</td>
                                         <td>
                                             <Zahlenfeld Min="0" Max="5" Nachkommastellen="3"
-                                                        Wert="@_uebSigma" WertChanged="UebSigma" />
+                                                        Wert="@_uebA.Stromkennzahl" WertChanged="UebSigma" />
                                             <button type="button" class="epos-knopf epos-ueb-vorschlag"
                                                     title="@(SigmaVorschlagErlaubt ? null : _t.UebHerkunftSigmaOhne)"
                                                     aria-disabled="@(SigmaVorschlagErlaubt ? "false" : "true")"
@@ -491,13 +527,149 @@
                                         </td>
                                         <td>@SigmaGilt()</td>
                                     </tr>
+                                    <tr class="epos-ueb-einsp">
+                                        <td>@_t.UebZEinsp</td>
+                                        <td class="epos-zahl">@SatzVorschlagText(UebSatzvorschlag().SatzEinspeisungCt)</td>
+                                        <td>@UebSatzvorschlag().HerleitungEinspeisung</td>
+                                        <td>
+                                            <Zahlenfeld Min="0" Max="30" Nachkommastellen="4"
+                                                        Wert="@_uebEinsp" WertChanged="UebEinsp" />
+                                            <button type="button" class="epos-knopf epos-ueb-vorschlag"
+                                                    title="@(SatzVorschlagErlaubt ? null : _t.SperrOhnePel)"
+                                                    aria-disabled="@(SatzVorschlagErlaubt ? "false" : "true")"
+                                                    @onclick="UebEinspVorschlag">@_t.BtnVorschlagFeld</button>
+                                        </td>
+                                        <td>@SatzGilt(_uebEinsp, UebSatzvorschlag().SatzEinspeisungCt)</td>
+                                    </tr>
+                                    <tr class="epos-ueb-eigen">
+                                        <td>@_t.UebZEigen</td>
+                                        <td class="epos-zahl">@SatzVorschlagText(UebSatzvorschlag().SatzEigenCt)</td>
+                                        <td>@UebSatzvorschlag().HerleitungEigen</td>
+                                        <td>
+                                            <Zahlenfeld Min="0" Max="30" Nachkommastellen="4"
+                                                        Wert="@_uebEigen" WertChanged="UebEigen" />
+                                            <button type="button" class="epos-knopf epos-ueb-vorschlag"
+                                                    title="@(SatzVorschlagErlaubt ? null : _t.SperrOhnePel)"
+                                                    aria-disabled="@(SatzVorschlagErlaubt ? "false" : "true")"
+                                                    @onclick="UebEigenVorschlag">@_t.BtnVorschlagFeld</button>
+                                        </td>
+                                        <td>@SatzGilt(_uebEigen, UebSatzvorschlag().SatzEigenCt)</td>
+                                    </tr>
+                                    <tr class="epos-ueb-kontingent">
+                                        <td>@_t.UebZKontingent</td>
+                                        <td class="epos-zahl">@KontingentVorschlagText()</td>
+                                        <td>@UebKontingentvorschlag().Herleitung</td>
+                                        <td>
+                                            <Zahlenfeld Min="0" Max="200000" Nachkommastellen="0"
+                                                        Wert="@_uebKontingent" WertChanged="UebKontingent" />
+                                            <button type="button" class="epos-knopf epos-ueb-vorschlag"
+                                                    title="@(KontingentVorschlagErlaubt ? null : _t.SperrOhneAnlagenart)"
+                                                    aria-disabled="@(KontingentVorschlagErlaubt ? "false" : "true")"
+                                                    @onclick="UebKontingentVorschlag">@_t.BtnVorschlagFeld</button>
+                                        </td>
+                                        <td>@KontingentGilt()</td>
+                                    </tr>
+                                    <tr class="epos-ueb-deckel">
+                                        <td>@_t.UebZDeckel</td>
+                                        <td class="epos-zahl">@_t.UebStaffel</td>
+                                        <td>@DeckelHerkunft()</td>
+                                        <td>
+                                            <Zahlenfeld Min="0" Max="8760" Nachkommastellen="0"
+                                                        Wert="@_uebDeckel" WertChanged="UebDeckel" />
+                                            <button type="button" class="epos-knopf epos-ueb-vorschlag"
+                                                    @onclick="UebDeckelVorschlag">@_t.BtnVorschlagFeld</button>
+                                        </td>
+                                        <td>@DeckelGilt()</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <Herleitungszeile Text="@_t.UebInfo" />
+                        <Herleitungszeile Text="@_t.UebInfoSaetze" />
+
+                        <div class="epos-ueb-wirkung epos-ueb-wirkung-kwkg">
+                            @foreach (string zeile in WirkungKwkg())
+                            {
+                                <Herleitungszeile Text="@zeile" />
+                            }
+                        </div>
                     </KindInhalt>
                 </Gruppenkopf>
+
+                <Gruppenkopf Titel="@_t.UebGEnergiest">
+                    <KindInhalt>
+                        <div class="epos-ueb-es-scope">
+                            <Optionsgruppe Bezeichnung="@_t.UebScope"
+                                           Eintraege="@ScopeEintraege()"
+                                           Auswahl="@(_uebNurAnlage ? 1 : 0)"
+                                           AuswahlChanged="UebScope" />
+                        </div>
+
+                        <div class="epos-ueb-es-wahl">
+                            <Optionsgruppe Bezeichnung="@_t.UebEsWahl"
+                                           Eintraege="@BhkwWahlen.Eintraege(_esP)"
+                                           Auswahl="@BhkwWahlen.NummerZu(_esP, UebEsWahlWert())"
+                                           AuswahlChanged="UebEsWahl"
+                                           Beschreibungen="@EsBeschreibungen()" />
+                        </div>
+
+                        <div class="epos-ueb-es-aufteilung">
+                            <Optionsgruppe Bezeichnung="@_t.UebEsAufteilung"
+                                           Eintraege="@BhkwWahlen.Eintraege(_aufP)"
+                                           Auswahl="@BhkwWahlen.NummerZu(_aufP, UebAufteilungWert())"
+                                           AuswahlChanged="UebAufteilung"
+                                           Beschreibungen="@AufteilungBeschreibungen()" />
+                        </div>
+
+                        <Herleitungszeile Text="@Steuerherkunft()" />
+
+                        <div class="epos-ueb-wirkung epos-ueb-wirkung-es">
+                            @foreach (string zeile in WirkungEnergiesteuer())
+                            {
+                                <Herleitungszeile Text="@zeile" />
+                            }
+                        </div>
+                    </KindInhalt>
+                </Gruppenkopf>
+
+                <Gruppenkopf Titel="@_t.UebGStromst">
+                    <KindInhalt>
+                        <div class="epos-ueb-ua">
+                            <Optionsgruppe Bezeichnung="@_t.UebUa"
+                                           Eintraege="@BhkwWahlen.Eintraege(_uaP)"
+                                           Auswahl="@BhkwWahlen.NummerZu(_uaP, _uebP.Unternehmensart)"
+                                           AuswahlChanged="UebUnternehmensart"
+                                           Beschreibungen="@UnternehmensartBeschreibungen()" />
+                        </div>
+
+                        <Formularraster>
+                            <KindInhalt>
+                            <Schalter Bezeichnung="@_t.SHocheffizienz"
+                                      Wert="@_uebP.HocheffizienzNachweis" WertChanged="UebHocheffizienz" />
+                            <Schalter Bezeichnung="@_t.SRaeumlich"
+                                      Wert="@_uebP.RaeumlicherZusammenhang" WertChanged="UebRaeumlich" />
+                            </KindInhalt>
+                        </Formularraster>
+
+                        <div class="epos-ueb-modus">
+                            <Optionsgruppe Bezeichnung="@(_t.UebBefreiung + " — " + _t.UebModus)"
+                                           Eintraege="@BhkwWahlen.Eintraege(_modus)"
+                                           Auswahl="@BhkwWahlen.NummerZu(_modus, _uebP.StromsteuerBefreiungModus)"
+                                           AuswahlChanged="UebModus"
+                                           Beschreibungen="@ModusBeschreibungen()" />
+                        </div>
+
+                        <div class="epos-ueb-wirkung epos-ueb-wirkung-st">
+                            @foreach (string zeile in WirkungStromsteuer())
+                            {
+                                <Herleitungszeile Text="@zeile" />
+                            }
+                        </div>
+                    </KindInhalt>
+                </Gruppenkopf>
+
+                <Herleitungszeile Text="@_t.UebFuss" />
 
                 <div class="epos-leiste">
                     <button type="button" class="epos-knopf" @onclick="UebAbbrechen">@_t.Abbrechen</button>
@@ -505,6 +677,7 @@
                             @onclick="UebUebernehmen">@_t.UebUebernehmen</button>
                 </div>
             </div>
+            }
         </KindInhalt>
     </Ueberlagerung>
 </div>
@@ -983,19 +1156,25 @@
         BhkwAnlagenstand? st = AktuellerStand;
         if (st is null)
             return new KwkgKontingentVorschlag { Unvollstaendig = true };
-        return KwkgKontingentRechner.Ableiten(st.Anlagenart, st.Kostenanteil ?? 0,
-                                              Vorschlagsjahr(), Katalog, BhwTexte.Kultur);
+        return Kontingentvorschlag(st);
     }
+
+    /// <summary>ETAPPE E7c2: derselbe Vorschlag zu einem beliebigen Stand — die
+    /// Überlagerung fragt ihn für ihren Zwischenstand.</summary>
+    private KwkgKontingentVorschlag Kontingentvorschlag(BhkwAnlagenstand st)
+        => KwkgKontingentRechner.Ableiten(st.Anlagenart, st.Kostenanteil ?? 0,
+                                          Vorschlagsjahr(), Katalog, BhwTexte.Kultur);
 
     /// <summary>Der Vorschlag fuer eine Anlage - mit dem Inbetriebnahmejahr DIESER
     /// Anlage, ersatzweise dem der Projektvorgabe (Muster der abgeloesten
     /// Modulmaske aus E6).</summary>
-    private KwkgSatzVorschlag Vorschlag(KwkgAnlagenAngabe a)
-    {
-        BhkwAnlagenstand s = Stand(a);
-        return KwkgSatzRechner.Vorschlag(a.PelKW, Vorschlagsjahr(), s.Anlagenart, s.Eigenfall,
-                                         Katalog, BhwTexte.Kultur);
-    }
+    private KwkgSatzVorschlag Vorschlag(KwkgAnlagenAngabe a) => Vorschlag(a, Stand(a));
+
+    /// <summary>ETAPPE E7c2: derselbe Vorschlag mit Anlagenart und Tatbestand eines
+    /// beliebigen Stands — die Überlagerung fragt ihn für ihren Zwischenstand.</summary>
+    private KwkgSatzVorschlag Vorschlag(KwkgAnlagenAngabe a, BhkwAnlagenstand s)
+        => KwkgSatzRechner.Vorschlag(a.PelKW, Vorschlagsjahr(), s.Anlagenart, s.Eigenfall,
+                                     Katalog, BhwTexte.Kultur);
 
     /// <summary>Das Stichtagsjahr aller Katalogvorschlaege der gewaehlten Anlage: ihr
     /// Inbetriebnahmejahr, ersatzweise der Foerderbeginn des Projekts, sonst das
@@ -1061,56 +1240,212 @@
     // =====================================================================
 
     private bool _uebOffen;
-    private bool _uebAbwaerme;
-    private double? _uebSigma;
+
+    /// <summary>
+    /// ETAPPE E7c2 — der Zwischenstand der Überlagerung: je eine KOPIE des Arbeitsstands
+    /// der gewählten Anlage und der Projektvorgaben. Die Wahlfelder (Anlagenart,
+    /// Tatbestand, Fall, σ, Energie- und Stromsteuer) arbeiten unmittelbar auf ihnen;
+    /// „Übernehmen" legt sie auf den Arbeitsstand, Abbrechen verwirft sie.
+    /// </summary>
+    private BhkwAnlagenstand? _uebA;
+    private BhkwVorgabenstand? _uebP;
+
+    /// <summary>
+    /// Die eigenen Werte der Satztafel — <c>null</c> heißt „der Vorschlag gilt" (U22).
+    /// Beim Öffnen erscheint ein Satz, der dem Vorschlag entspricht, als leeres Feld; ein
+    /// Satzfeld ohne Wert ist im Formular die 0 „kein Zuschlag" und erscheint als eigener
+    /// Wert 0 — sonst schriebe ein unberührtes „Übernehmen" still den Vorschlag hinein.
+    /// Kontingent und Deckel übernehmen das Formularfeld unverändert: Dort heißt leer
+    /// schon „nach § 8 abgeleitet" bzw. „Staffel".
+    /// </summary>
+    private double? _uebEinsp, _uebEigen, _uebKontingent, _uebDeckel;
+
+    /// <summary>Energiesteuer: true = „nur diese Anlage", false = Projektvorgabe für alle.</summary>
+    private bool _uebNurAnlage;
 
     /// <summary>Steht die Überlagerung „Sätze und Herkunft"? (Prüfhilfe für Tests)</summary>
     public bool UeberlagerungOffen => _uebOffen;
 
     private string UebTitel => string.Format(_t.UebTitel, Aktuelle?.Bezeichner ?? "");
 
-    /// <summary>Öffnet die Überlagerung mit dem Arbeitsstand der gewählten Anlage.</summary>
+    /// <summary>Öffnet die Überlagerung mit dem Arbeitsstand der gewählten Anlage —
+    /// aus beiden Knöpfen („Sätze und Herkunft…", „Wahl und Herkunft…").</summary>
     private void UebOeffnen()
     {
         BhkwAnlagenstand? st = AktuellerStand;
-        if (st is null) return;
-        _uebAbwaerme = st.Abwaermeabfuhr;
-        _uebSigma = st.Stromkennzahl;
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (st is null || a is null) return;
+        _uebA = st.Kopie();
+        _uebP = _vorgaben.Kopie();
+        KwkgSatzVorschlag v = Vorschlag(a, _uebA);
+        _uebEinsp = SatzBeimOeffnen(st.SatzEinspCt, v.SatzEinspeisungCt);
+        _uebEigen = SatzBeimOeffnen(st.SatzEigenCt, v.SatzEigenCt);
+        _uebKontingent = Positiv(st.VbhKontingent);
+        _uebDeckel = Positiv(st.VbhDeckel);
+        _uebNurAnlage = !string.IsNullOrEmpty(st.EnergiesteuerWahl) ||
+                        !string.IsNullOrEmpty(st.AufteilungMethode);
         _uebOffen = true;
         _meldung = "";
     }
 
+    /// <summary>Leer (= Vorschlag), wenn das Formularfeld dem Vorschlag auf vier Stellen
+    /// entspricht; sonst der Formularwert, ein leeres Feld als 0 („kein Zuschlag").</summary>
+    private double? SatzBeimOeffnen(double? formular, double vorschlag)
+    {
+        double wert = formular ?? 0;
+        if (SatzVorschlagErlaubt && !KwkgSatzHerkunft.Abweichend(wert, vorschlag)) return null;
+        return wert;
+    }
+
+    /// <summary>Was „Übernehmen" in ein Satzfeld des Formulars schreibt: leer → der
+    /// Vorschlag, ein eigener Wert → er selbst; 0 bleibt „kein Zuschlag".</summary>
+    private double? SatzZumFormular(double? eigen, double vorschlag)
+    {
+        if (eigen.HasValue) return Positiv(eigen);
+        return SatzVorschlagErlaubt ? Positiv(vorschlag) : null;
+    }
+
     /// <summary>Abbrechen, Kreuz und Esc: nichts übernehmen.</summary>
-    private void UebAbbrechen() => _uebOffen = false;
+    private void UebAbbrechen()
+    {
+        _uebOffen = false;
+        _uebA = null;
+        _uebP = null;
+    }
 
     /// <summary>
-    /// „Übernehmen": Kennzeichen und eigene Kennzahl gehen in den Arbeitsstand — und
-    /// nur, wenn sich etwas geändert hat, zählt es als Änderung (derselbe Grund wie bei
-    /// <see cref="BhkwAnlagenstand.Gleicht"/>). Eine Kennzahl ≤ 0 ist „kein eigener
-    /// Wert".
+    /// „Übernehmen": Sätze, Kontingent, Deckel, Kennzeichen, Kennzahl und die Wahlen gehen
+    /// in den Arbeitsstand der Anlage, Energie- und Stromsteuer des Projekts in die
+    /// Projektvorgaben — und nur, wenn sich etwas geändert hat, zählt es als Änderung
+    /// (derselbe Grund wie bei <see cref="BhkwAnlagenstand.Gleicht"/>). Bei der
+    /// Projektvorgabe der Energiesteuer folgt die Anlage dem Projekt (ihre zwei Felder
+    /// werden leer).
     /// </summary>
     private void UebUebernehmen()
     {
         BhkwAnlagenstand? st = AktuellerStand;
-        if (st is not null)
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (st is not null && a is not null && _uebA is not null && _uebP is not null)
         {
-            bool kennzeichen = _uebAbwaerme;
-            double? sigma = Positiv(_uebSigma);
-            if (st.Abwaermeabfuhr != kennzeichen || st.Stromkennzahl != sigma)
-                Setze(() => { st.Abwaermeabfuhr = kennzeichen; st.Stromkennzahl = sigma; });
+            BhkwAnlagenstand neuA = _uebA.Kopie();
+            KwkgSatzVorschlag v = Vorschlag(a, neuA);
+            neuA.SatzEinspCt = SatzZumFormular(_uebEinsp, v.SatzEinspeisungCt);
+            neuA.SatzEigenCt = SatzZumFormular(_uebEigen, v.SatzEigenCt);
+            neuA.VbhKontingent = Positiv(_uebKontingent);
+            neuA.VbhDeckel = Positiv(_uebDeckel);
+            neuA.Stromkennzahl = Positiv(neuA.Stromkennzahl);
+            if (!_uebNurAnlage)
+            {
+                neuA.EnergiesteuerWahl = "";
+                neuA.AufteilungMethode = "";
+            }
+            BhkwVorgabenstand neuP = _uebP.Kopie();
+            bool anlageAnders = UebAnders(st, neuA);
+            bool projektAnders = UebAnders(_vorgaben, neuP);
+            int index = _aktuell;
+            if (anlageAnders || projektAnders)
+                Setze(() =>
+                {
+                    if (anlageAnders) _staende[index] = neuA;
+                    if (projektAnders) _vorgaben = neuP;
+                });
         }
-        _uebOffen = false;
+        UebAbbrechen();
     }
 
-    private void UebFall(int? n) => _uebAbwaerme = n == 1;
+    /// <summary>Die Felder, die die Überlagerung an der Anlage führt.</summary>
+    private static bool UebAnders(BhkwAnlagenstand x, BhkwAnlagenstand y)
+        => x.Anlagenart != y.Anlagenart || x.Eigenfall != y.Eigenfall
+        || x.Abwaermeabfuhr != y.Abwaermeabfuhr || x.Stromkennzahl != y.Stromkennzahl
+        || x.SatzEinspCt != y.SatzEinspCt || x.SatzEigenCt != y.SatzEigenCt
+        || x.VbhKontingent != y.VbhKontingent || x.VbhDeckel != y.VbhDeckel
+        || x.EnergiesteuerWahl != y.EnergiesteuerWahl || x.AufteilungMethode != y.AufteilungMethode;
 
-    private void UebSigma(double? w) => _uebSigma = w;
+    /// <summary>Die Felder, die die Überlagerung an den Projektvorgaben führt.</summary>
+    private static bool UebAnders(BhkwVorgabenstand x, BhkwVorgabenstand y)
+        => x.EnergiesteuerWahl != y.EnergiesteuerWahl || x.AufteilungMethode != y.AufteilungMethode
+        || x.Unternehmensart != y.Unternehmensart || x.HocheffizienzNachweis != y.HocheffizienzNachweis
+        || x.RaeumlicherZusammenhang != y.RaeumlicherZusammenhang
+        || x.StromsteuerBefreiungModus != y.StromsteuerBefreiungModus;
+
+    // ------------------------------------------------ Wahlen der KWK-Gruppe
+
+    /// <summary>Die Anlagenart ohne „(bitte wählen)" — der leere Stand ist KEINE Wahl,
+    /// dann ist in der Gruppe nichts markiert.</summary>
+    private IReadOnlyList<(int Id, string Text)> ArtEintraege()
+        => BhkwWahlen.Eintraege(_artA.Where(w => w.Wert.Length > 0).ToList());
+
+    private int? ArtAuswahl()
+        => _uebA is null || string.IsNullOrEmpty(_uebA.Anlagenart)
+            ? null : BhkwWahlen.NummerZu(_artA, _uebA.Anlagenart);
+
+    private void UebArt(int? n)
+    {
+        if (_uebA is not null) _uebA.Anlagenart = BhkwWahlen.WertZu(_artA, n);
+    }
+
+    /// <summary>Die Wirkung je Anlagenart: das Kontingent nach § 8 mit dem Kostenanteil
+    /// dieser Anlage — aus KwkgKontingentRechner, wie der Lauf es ableitet.</summary>
+    private IReadOnlyDictionary<int, string> ArtBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        if (_uebA is null) return d;
+        foreach (Steuerwahl w in _artA)
+        {
+            if (w.Wert.Length == 0) continue;
+            KwkgKontingentVorschlag v = KwkgKontingentRechner.Ableiten(
+                w.Wert, _uebA.Kostenanteil ?? 0, Vorschlagsjahr(), Katalog, BhwTexte.Kultur);
+            d[w.Nummer] = string.Format(_t.UebWirkung, v.Unvollstaendig
+                ? v.Herleitung
+                : string.Format(_t.UebVbh, v.KontingentH.ToString("N0", BhwTexte.Kultur)));
+        }
+        return d;
+    }
+
+    private int? EigenfallAuswahl()
+        => _uebA is null || string.IsNullOrEmpty(_uebA.Eigenfall)
+            ? null : BhkwWahlen.NummerZu(_fallA, _uebA.Eigenfall);
+
+    private void UebEigenfall(int? n)
+    {
+        if (_uebA is not null) _uebA.Eigenfall = BhkwWahlen.WertZu(_fallA, n);
+    }
+
+    /// <summary>Die Wirkung je Tatbestand: der Eigenstromsatz nach § 7 Abs. 2 aus
+    /// KwkgSatzRechner — ohne Satz (Nr. 1 über 100 kW, kein Katalog) der Grund.</summary>
+    private IReadOnlyDictionary<int, string> EigenfallBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (_uebA is null || a is null) return d;
+        foreach (Steuerwahl w in _fallA)
+        {
+            KwkgSatzVorschlag v = KwkgSatzRechner.Vorschlag(a.PelKW, Vorschlagsjahr(), _uebA.Anlagenart,
+                                                           w.Wert, Katalog, BhwTexte.Kultur);
+            bool keiner = string.Equals(w.Wert, DbWerte.KWKG_EIGENFALL_KEINER, StringComparison.Ordinal);
+            string wirkung = v.SatzEigenCt > 0 || keiner || string.IsNullOrEmpty(v.HerleitungEigen)
+                ? string.Format(_t.UebCtKwh, KwkgSatzHerkunft.Satz(v.SatzEigenCt, BhwTexte.Kultur))
+                : v.HerleitungEigen;
+            d[w.Nummer] = string.Format(_t.UebWirkung, wirkung);
+        }
+        return d;
+    }
+
+    private void UebFall(int? n)
+    {
+        if (_uebA is not null) _uebA.Abwaermeabfuhr = n == 1;
+    }
+
+    private void UebSigma(double? w)
+    {
+        if (_uebA is not null) _uebA.Stromkennzahl = w;
+    }
 
     /// <summary>„Vorschlag übernehmen" leert das Feld — der Weg zurück zum Vorschlag.
     /// Ohne Vorschlag (Gerätezeile ohne P_el oder P_th) ist der Knopf weich gesperrt.</summary>
     private void UebSigmaVorschlag()
     {
-        if (SigmaVorschlagErlaubt) _uebSigma = null;
+        if (SigmaVorschlagErlaubt && _uebA is not null) _uebA.Stromkennzahl = null;
     }
 
     private IReadOnlyList<(int Id, string Text)> FallEintraege()
@@ -1150,9 +1485,9 @@
     /// eigener Wert samt Vorschlag, oder keine (kein Ersatz, keine Vorgabe).</summary>
     private string SigmaGilt()
     {
-        if (!_uebAbwaerme) return _t.UebGiltFall1;
+        if (_uebA is null || !_uebA.Abwaermeabfuhr) return _t.UebGiltFall1;
         KwkgAnlagenAngabe? a = Aktuelle;
-        KwkStromkennzahl s = KwkStromRechner.Stromkennzahl(_uebSigma, a?.PelKW, a?.PthKW, BhwTexte.Kultur);
+        KwkStromkennzahl s = KwkStromRechner.Stromkennzahl(_uebA.Stromkennzahl, a?.PelKW, a?.PthKW, BhwTexte.Kultur);
         if (!s.Bestimmbar) return _t.UebGiltKeine;
         var k = BhwTexte.Kultur;
         string wert = s.Wert!.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k);
@@ -1160,6 +1495,330 @@
         return s.VorschlagWert.HasValue
             ? string.Format(_t.UebGiltEigen, wert, s.VorschlagWert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k))
             : string.Format(_t.UebGiltEigenOhne, wert);
+    }
+
+    // ------------------------------------------------ Satztafel
+
+    /// <summary>Der Satzvorschlag mit Anlagenart und Tatbestand des ZWISCHENSTANDS — die
+    /// Tafel folgt der Wahl darüber sofort.</summary>
+    private KwkgSatzVorschlag UebSatzvorschlag()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        return a is null || _uebA is null ? new KwkgSatzVorschlag() : Vorschlag(a, _uebA);
+    }
+
+    /// <summary>Ohne elektrische Nennleistung keine Leistungsstaffel — kein Satz.</summary>
+    private bool SatzVorschlagErlaubt => VorschlagEinspErlaubt;
+
+    private string SatzVorschlagText(double satzCt)
+        => SatzVorschlagErlaubt
+            ? string.Format(_t.UebCtKwh, KwkgSatzHerkunft.Satz(satzCt, BhwTexte.Kultur))
+            : "—";
+
+    /// <summary>Spalte „gilt" eines Satzes: Vorschlag, eigener Wert samt Vorschlag, oder
+    /// ohne Vorschlag der eigene Wert bzw. keiner.</summary>
+    private string SatzGilt(double? eigen, double vorschlag)
+    {
+        var k = BhwTexte.Kultur;
+        if (!eigen.HasValue)
+            return SatzVorschlagErlaubt
+                ? string.Format(_t.UebGiltVorschlag, KwkgSatzHerkunft.Satz(vorschlag, k))
+                : _t.UebGiltOhne;
+        string w = KwkgSatzHerkunft.Satz(eigen.Value, k);
+        return SatzVorschlagErlaubt
+            ? string.Format(_t.UebGiltEigen, w, KwkgSatzHerkunft.Satz(vorschlag, k))
+            : string.Format(_t.UebGiltEigenOhne, w);
+    }
+
+    private void UebEinsp(double? w) => _uebEinsp = w;
+    private void UebEigen(double? w) => _uebEigen = w;
+    private void UebKontingent(double? w) => _uebKontingent = w;
+    private void UebDeckel(double? w) => _uebDeckel = w;
+
+    private void UebEinspVorschlag()
+    {
+        if (SatzVorschlagErlaubt) _uebEinsp = null;
+    }
+
+    private void UebEigenVorschlag()
+    {
+        if (SatzVorschlagErlaubt) _uebEigen = null;
+    }
+
+    private void UebKontingentVorschlag()
+    {
+        if (KontingentVorschlagErlaubt) _uebKontingent = null;
+    }
+
+    /// <summary>Beim Deckel gibt es immer einen Vorschlag: die Staffel des § 8 Abs. 4.</summary>
+    private void UebDeckelVorschlag() => _uebDeckel = null;
+
+    /// <summary>Der Kontingentvorschlag aus Anlagenart und Kostenanteil des Zwischenstands.</summary>
+    private KwkgKontingentVorschlag UebKontingentvorschlag()
+        => _uebA is null ? new KwkgKontingentVorschlag { Unvollstaendig = true } : Kontingentvorschlag(_uebA);
+
+    private bool KontingentVorschlagErlaubt => !UebKontingentvorschlag().Unvollstaendig;
+
+    private string KontingentVorschlagText()
+    {
+        KwkgKontingentVorschlag v = UebKontingentvorschlag();
+        return v.Unvollstaendig ? "—" : string.Format(_t.UebVbh, v.KontingentH.ToString("N0", BhwTexte.Kultur));
+    }
+
+    private string KontingentGilt()
+    {
+        var k = BhwTexte.Kultur;
+        KwkgKontingentVorschlag v = UebKontingentvorschlag();
+        string vorschlag = v.KontingentH.ToString("N0", k);
+        if (!_uebKontingent.HasValue)
+            return v.Unvollstaendig ? _t.UebGiltOhne : string.Format(_t.UebGiltVorschlag, vorschlag);
+        string w = _uebKontingent.Value.ToString("N0", k);
+        return v.Unvollstaendig ? string.Format(_t.UebGiltEigenOhne, w)
+                                : string.Format(_t.UebGiltEigen, w, vorschlag);
+    }
+
+    private string DeckelHerkunft()
+    {
+        GesetzParameter? p = null;
+        try { p = Katalog?.Invoke(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL, Vorschlagsjahr()); }
+        catch { /* ohne Katalog bleibt die Staffel ohne Fundstelle */ }
+        return p is null ? _t.UebStaffel : SteuerGutschriftRechner.Herkunft(p, BhwTexte.Kultur);
+    }
+
+    private string DeckelGilt()
+    {
+        var k = BhwTexte.Kultur;
+        int jahr = Vorschlagsjahr();
+        if (_uebDeckel.HasValue)
+            return string.Format(_t.UebGiltEigen, _uebDeckel.Value.ToString("N0", k), _t.UebStaffel);
+        return string.Format(_t.UebGiltStaffel,
+                             KwkgJahresbetrag.StaffelDeckel(Katalog, jahr).ToString("N0", k),
+                             jahr.ToString(System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    /// <summary>
+    /// „Wirkung Jahr 1" des KWK-Zuschlags — die Sätze, das Kontingent und der Deckel des
+    /// ZWISCHENSTANDS auf die Mengen und Vollbenutzungsstunden des zuletzt gebuchten
+    /// Laufs, gerechnet von <see cref="KwkgJahresbetrag"/> (derselbe Ausdruck wie im
+    /// Lauf). Ohne gebuchten Lauf steht der Grund statt einer Zahl.
+    /// </summary>
+    private IReadOnlyList<string> WirkungKwkg()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null || _uebA is null) return Array.Empty<string>();
+        var k = BhwTexte.Kultur;
+        int jahr = Vorschlagsjahr();
+        string kopf = string.Format(_t.UebWirkungJahr1, jahr.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        KwkgModulNachweis? n = ModulNachweis(a);
+        if (n is null || n.VbhElektrisch <= 0) return new[] { kopf + ": " + _t.UebWirkungOhneLauf };
+
+        KwkgSatzVorschlag v = UebSatzvorschlag();
+        double satzEinsp = SatzZumFormular(_uebEinsp, v.SatzEinspeisungCt) ?? 0;
+        double satzEigen = KwkgJahresbetrag.SatzEigenWirksam(SatzZumFormular(_uebEigen, v.SatzEigenCt),
+                                                             _uebA.Eigenfall);
+        KwkgKontingentVorschlag kv = UebKontingentvorschlag();
+        double kontingent = _uebKontingent.HasValue && _uebKontingent.Value > 0
+            ? _uebKontingent.Value : (kv.Unvollstaendig ? 0 : kv.KontingentH);
+        double deckel = _uebDeckel.HasValue && _uebDeckel.Value > 0
+            ? _uebDeckel.Value : KwkgJahresbetrag.StaffelDeckel(Katalog, jahr);
+        double abschlag = KwkgJahresbetrag.Abschlag(_vorgaben.KwkgAbschlagNegativ);
+
+        double verguetet = KwkgJahresbetrag.VerguetetH(n.VbhElektrisch, deckel, kontingent, abschlag);
+        double anteil = verguetet / n.VbhElektrisch;
+        double summe = KwkgJahresbetrag.Voll(n.EigenMWh, satzEigen, n.EinspeisungMWh, satzEinsp) * anteil;
+        double einspEur = KwkgJahresbetrag.Voll(0, 0, n.EinspeisungMWh, satzEinsp) * anteil;
+        double eigenEur = KwkgJahresbetrag.Voll(n.EigenMWh, satzEigen, 0, 0) * anteil;
+
+        return new[]
+        {
+            kopf + ": " + string.Format(_t.UebWirkungKwkg, verguetet.ToString("N0", k),
+                                        n.VbhElektrisch.ToString("N0", k), deckel.ToString("N0", k),
+                                        anteil.ToString("N3", k), summe.ToString("N1", k)),
+            string.Format(_t.UebWirkungKwkgFormel, n.EinspeisungMWh.ToString("N1", k),
+                          KwkgSatzHerkunft.Satz(satzEinsp, k), anteil.ToString("N3", k),
+                          n.EigenMWh.ToString("N1", k), KwkgSatzHerkunft.Satz(satzEigen, k),
+                          einspEur.ToString("N1", k), eigenEur.ToString("N1", k))
+        };
+    }
+
+    // ------------------------------------------------ Energiesteuer
+
+    private IReadOnlyList<(int Id, string Text)> ScopeEintraege()
+        => new List<(int, string)> { (0, _t.UebScopeProjekt), (1, _t.UebScopeAnlage) };
+
+    /// <summary>Wechsel der Geltung: Zur Anlage hin nimmt sie die gerade geltende Wahl
+    /// mit, zum Projekt hin folgt sie wieder der Projektvorgabe.</summary>
+    private void UebScope(int? n)
+    {
+        if (_uebA is null) return;
+        bool nurAnlage = n == 1;
+        if (nurAnlage == _uebNurAnlage) return;
+        if (nurAnlage)
+        {
+            _uebA.EnergiesteuerWahl = UebEsWahlWert();
+            _uebA.AufteilungMethode = UebAufteilungWert();
+        }
+        else
+        {
+            _uebA.EnergiesteuerWahl = "";
+            _uebA.AufteilungMethode = "";
+        }
+        _uebNurAnlage = nurAnlage;
+    }
+
+    /// <summary>Die geltende Entlastungswahl: an der Anlage, sonst die des Projekts
+    /// (leer = keine).</summary>
+    private string UebEsWahlWert()
+    {
+        if (_uebA is null || _uebP is null) return DbWerte.ENERGIESTEUER_WAHL_KEINE;
+        if (_uebNurAnlage && !string.IsNullOrEmpty(_uebA.EnergiesteuerWahl)) return _uebA.EnergiesteuerWahl;
+        return string.IsNullOrEmpty(_uebP.EnergiesteuerWahl) ? DbWerte.ENERGIESTEUER_WAHL_KEINE
+                                                             : _uebP.EnergiesteuerWahl;
+    }
+
+    private string UebAufteilungWert()
+    {
+        if (_uebA is null || _uebP is null) return DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF;
+        if (_uebNurAnlage && !string.IsNullOrEmpty(_uebA.AufteilungMethode)) return _uebA.AufteilungMethode;
+        return string.IsNullOrEmpty(_uebP.AufteilungMethode) ? DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF
+                                                             : _uebP.AufteilungMethode;
+    }
+
+    private void UebEsWahl(int? n)
+    {
+        if (_uebA is null || _uebP is null) return;
+        string w = WertMitVorgabe(_esP, n, DbWerte.ENERGIESTEUER_WAHL_KEINE);
+        if (_uebNurAnlage) _uebA.EnergiesteuerWahl = w; else _uebP.EnergiesteuerWahl = w;
+    }
+
+    private void UebAufteilung(int? n)
+    {
+        if (_uebA is null || _uebP is null) return;
+        string w = WertMitVorgabe(_aufP, n, DbWerte.AUFTEILUNG_VOLLER_BRENNSTOFF);
+        if (_uebNurAnlage) _uebA.AufteilungMethode = w; else _uebP.AufteilungMethode = w;
+    }
+
+    private IReadOnlyDictionary<int, string> EsBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        foreach (Steuerwahl w in _esP)
+            d[w.Nummer] = w.Wert switch
+            {
+                DbWerte.ENERGIESTEUER_WAHL_53 => _t.UebEs53,
+                DbWerte.ENERGIESTEUER_WAHL_53A => _t.UebEs53a,
+                DbWerte.ENERGIESTEUER_WAHL_54 => _t.UebEs54,
+                _ => _t.UebEsKeine
+            };
+        return d;
+    }
+
+    private IReadOnlyDictionary<int, string> AufteilungBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        foreach (Steuerwahl w in _aufP)
+            d[w.Nummer] = string.Equals(w.Wert, DbWerte.AUFTEILUNG_ENERGETISCH, StringComparison.Ordinal)
+                ? _t.UebAufEnergetisch : _t.UebAufVoll;
+        return d;
+    }
+
+    /// <summary>
+    /// „Wirkung Jahr 1" der Energiesteuer — die Positionen DIESER Anlage aus dem zuletzt
+    /// gebuchten Lauf (Vorschrift, Menge × Satz = Betrag), wie der Lauf sie ausweist.
+    /// Eine andere Wahl wirkt erst mit dem nächsten Lauf; gerechnet wird hier nichts.
+    /// </summary>
+    private IReadOnlyList<string> WirkungEnergiesteuer()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null) return Array.Empty<string>();
+        var k = BhwTexte.Kultur;
+        int jahr = Vorschlagsjahr();
+        string kopf = string.Format(_t.UebWirkungJahr1, jahr.ToString(System.Globalization.CultureInfo.InvariantCulture));
+
+        WirtschaftlichkeitErgebnis? e = Ergebnisse().FirstOrDefault(x => x.IdProjekt == a.IdProjekt);
+        if (e is null) return new[] { kopf + ": " + _t.UebWirkungOhneLauf };
+
+        var zeilen = new List<string>();
+        foreach (EnergiesteuerNachweis z in e.EnergiesteuerNachweise ?? new List<EnergiesteuerNachweis>())
+        {
+            if (!string.Equals(z.Anlage, a.Bezeichner, StringComparison.OrdinalIgnoreCase)) continue;
+            string wahl = z.Paragraf switch
+            {
+                EnergiesteuerNachweis.PARAGRAF_53 => DbWerte.ENERGIESTEUER_WAHL_53,
+                EnergiesteuerNachweis.PARAGRAF_53A => DbWerte.ENERGIESTEUER_WAHL_53A,
+                EnergiesteuerNachweis.PARAGRAF_54 => DbWerte.ENERGIESTEUER_WAHL_54,
+                _ => ""
+            };
+            string vorschrift = wahl.Length > 0 ? BhkwWahlen.TextZu(_esP, wahl) : z.Paragraf;
+            zeilen.Add(kopf + ": " + string.Format(_t.UebEsGebucht, vorschrift, z.Menge.ToString("N1", k),
+                                                   z.SatzEur.ToString("N2", k), z.Einheit,
+                                                   z.BetragEur.ToString("N1", k)));
+        }
+        if (zeilen.Count == 0) zeilen.Add(kopf + ": " + _t.UebEsOhne);
+        return zeilen;
+    }
+
+    // ------------------------------------------------ Stromsteuer (Projekt)
+
+    private void UebUnternehmensart(int? n)
+    {
+        if (_uebP is not null)
+            _uebP.Unternehmensart = WertMitVorgabe(_uaP, n, DbWerte.UNTERNEHMENSART_KEIN_PROD_GEWERBE);
+    }
+
+    private void UebHocheffizienz(bool b)
+    {
+        if (_uebP is not null) _uebP.HocheffizienzNachweis = b;
+    }
+
+    private void UebRaeumlich(bool b)
+    {
+        if (_uebP is not null) _uebP.RaeumlicherZusammenhang = b;
+    }
+
+    private void UebModus(int? n)
+    {
+        if (_uebP is not null)
+            _uebP.StromsteuerBefreiungModus = WertMitVorgabe(_modus, n, DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS);
+    }
+
+    private IReadOnlyDictionary<int, string> UnternehmensartBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        foreach (Steuerwahl w in _uaP)
+            d[w.Nummer] = w.Wert switch
+            {
+                DbWerte.UNTERNEHMENSART_PROD_GEWERBE => _t.UebUaProd,
+                DbWerte.UNTERNEHMENSART_LAND_FORST => _t.UebUaLand,
+                _ => _t.UebUaKein
+            };
+        return d;
+    }
+
+    private IReadOnlyDictionary<int, string> ModusBeschreibungen()
+    {
+        var d = new Dictionary<int, string>();
+        foreach (Steuerwahl w in _modus)
+            d[w.Nummer] = string.Equals(w.Wert, DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES, StringComparison.Ordinal)
+                ? _t.UebModusErloes : _t.UebModusAusweis;
+        return d;
+    }
+
+    /// <summary>„Wirkung Jahr 1" der Stromsteuer — Entlastung und Befreiung des Projekts
+    /// aus dem zuletzt gebuchten Lauf, mit dem Modus, in dem er gerechnet hat.</summary>
+    private IReadOnlyList<string> WirkungStromsteuer()
+    {
+        var k = BhwTexte.Kultur;
+        int jahr = Vorschlagsjahr();
+        string kopf = string.Format(_t.UebWirkungJahr1, jahr.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        WirtschaftlichkeitErgebnis? e = Ergebnisse().FirstOrDefault(x => x.IdProjekt == IdStamm);
+        if (e is null) return new[] { kopf + ": " + _t.UebWirkungOhneLauf };
+        string modus = BhkwWahlen.TextZu(_modus, e.StromsteuerBefreiungAlsErloes
+            ? DbWerte.STROMST_BEFREIUNG_MODUS_ERLOES : DbWerte.STROMST_BEFREIUNG_MODUS_AUSWEIS);
+        return new[]
+        {
+            kopf + ": " + string.Format(_t.UebStGebucht, e.StromsteuerEntlastungJahr1.ToString("N1", k),
+                                        e.StromsteuerBefreiungJahr1.ToString("N1", k), modus)
+        };
     }
 
     /// <summary>Die Zeile bei den Angaben der gewählten Anlage — aus dem

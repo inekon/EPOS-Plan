@@ -62,6 +62,20 @@ namespace EPOS.Kern.Tests
     /// (31.12.2030), und die Reihe endet in beiden Fällen mit dem Kontingent; das
     /// Kontingent von 1030 ist gepflegt, die leere Anlagenart löst deshalb keine
     /// Kohärenzzeile aus (Lesart b); 1024 trägt keinen KWKG-Zuschlag.</para>
+    ///
+    /// <para><b>ETAPPE E7c2 (Schritte E/F/G, S‑2, B‑4 Rest, V‑1/V‑2, E7c1‑Q1/Q2 b/Q7) —
+    /// gemessen, kein Anker bewegt sich</b> (alt = neu: 1024 −2.896.359,13 € mit
+    /// Energiekosten 188.167,18 €/a, 1030 −21.895.377,28 € mit Energiekosten
+    /// 1.176.906,60 €/a; Messung auf der nach Schritt 113 migrierten Kopie, alle
+    /// dreizehn Basisprojekte 9.195 von 9.195 Werten gleich, nach jedem der neun
+    /// Punkte). Die Gründe: Schritt 111 legt die Kennzeichen Ersatz/Restwert leer an
+    /// (leer = wie bisher), Schritt 112 füllt die Preisbasis aus der Umrechnungsregel,
+    /// Schritt 113 ändert nur Stammtexte; keine Mischlage § 53/53a neben § 54, keine
+    /// Prozent-Position auf Brennstoff- oder Stromkosten, kein Basisprojekt mit
+    /// Kennzeichen Abwärmeabfuhr; V‑1/V‑2 wirken nur mit einer Eigenverbrauchsvergütung,
+    /// die kein Basisprojekt trägt (Proben an 1040, 1045, 1046 mit eingesetzter
+    /// Vergütung); der KWKG-Jahresbetrag ist nur ausgelagert
+    /// (<see cref="KwkgJahresbetrag"/>), nicht geändert.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class WirtschaftlichkeitAnkerTests : IDisposable
@@ -212,6 +226,7 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c2: alt = neu −2.896.359,13 € (Kennzeichen Ersatz/Restwert leer = wie bisher)
             // E7c1: alt = neu −2.896.359,13 € (kein KWKG-Zuschlag im Projekt)
             Assert.Equal(-2896359.13, e.Kapitalwert.Value, 2);   // E7b: alt = neu (kein Tarifsatz, keine Staffel)
 
@@ -238,6 +253,8 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(e);
             Assert.True(e.Kapitalwert.HasValue, "Kapitalwert fehlt.");
+            // E7c2: alt = neu −21.895.377,28 € (kein Kennzeichen, keine Mischlage § 53/§ 54,
+            // KWKG-Jahresbetrag nur ausgelagert)
             // E7c1: alt = neu −21.895.377,28 € (kein Kennzeichen Abwärmeabfuhr; Inbetriebnahme
             // 2027 vor dem Fristende 31.12.2030; Kontingent gepflegt)
             Assert.Equal(-21895377.28, e.Kapitalwert.Value, 2);  // E7b: alt = neu (kein Tarifsatz, keine Staffel)
