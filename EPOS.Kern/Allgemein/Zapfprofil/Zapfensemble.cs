@@ -69,24 +69,22 @@ namespace WindowsFormsApplication1
     /// Die Statistik einer Zone im Auslegungsensemble: Einheiten, Tagesmenge, die Minutenspitze
     /// JE EINHEIT über alle Einheiten und Realisierungen (Wohnungsstation je Einheit, N10 (d);
     /// Nenner von GLF_P), der gezogene Tag der ersten Einheit je Realisierung (Nenner von GLF_V)
-    /// und — privat — Mittel und mittleres Quadrat der Minutenlast einer Einheit (Einzelstatistik
-    /// für <c>μ + z · σ / √N</c>).
+    /// und — privat — die Minutenstatistik der Einheiten (<see cref="Minutenstatistik"/>, der
+    /// Minutentyp neben dem Bedarfstag; Einzelstatistik für <c>μ + z · σ / √N</c>).
     /// </summary>
     internal sealed class Ensemblezonenstatistik
     {
-        private readonly double[] _mittelKwh;
-        private readonly double[] _quadratKwh2;
+        private readonly Minutenstatistik _einzel;
 
         internal Ensemblezonenstatistik(string zone, int einheiten, double tagesmengeKwh, Perzentilwerte spitzeJeEinheitKw,
-                                        IReadOnlyList<Bedarfstag> vertreter, double[] mittelKwh, double[] quadratKwh2)
+                                        IReadOnlyList<Bedarfstag> vertreter, Minutenstatistik einzel)
         {
             Zone = zone ?? "";
             Einheiten = einheiten;
             TagesmengeKwh = tagesmengeKwh;
             SpitzeJeEinheitKw = spitzeJeEinheitKw;
             Vertreter = vertreter;
-            _mittelKwh = mittelKwh;
-            _quadratKwh2 = quadratKwh2;
+            _einzel = einzel ?? throw new ArgumentNullException(nameof(einzel));
         }
 
         internal string Zone { get; }
@@ -104,14 +102,10 @@ namespace WindowsFormsApplication1
         internal IReadOnlyList<Bedarfstag> Vertreter { get; }
 
         /// <summary>Mittel der Minutenlast einer Einheit in Minute <paramref name="minute"/> [kWh je Minute].</summary>
-        internal double MittelKwh(int minute) => _mittelKwh[minute];
+        internal double MittelKwh(int minute) => _einzel.MittelKwh(minute);
 
         /// <summary>Varianz der Minutenlast einer Einheit in Minute <paramref name="minute"/> [kWh² je Minute²], ≥ 0.</summary>
-        internal double Varianz(int minute)
-        {
-            double v = _quadratKwh2[minute] - _mittelKwh[minute] * _mittelKwh[minute];
-            return v > 0 ? v : 0.0;
-        }
+        internal double Varianz(int minute) => _einzel.Varianz(minute);
     }
 
     /// <summary>
@@ -289,14 +283,12 @@ namespace WindowsFormsApplication1
             var tage = new Bedarfstag[realisierungen];
             var spitzen = new double[zahl][];
             var vertreter = new Bedarfstag[zahl][];
-            var summe = new double[zahl][];
-            var quadrat = new double[zahl][];
+            var einzel = new Minutenstatistik[zahl];
             for (int zi = 0; zi < zahl; zi++)
             {
                 spitzen[zi] = new double[realisierungen * zonen[zi].Einheiten];
                 vertreter[zi] = new Bedarfstag[realisierungen];
-                summe[zi] = new double[Bedarfstag.MINUTEN];
-                quadrat[zi] = new double[Bedarfstag.MINUTEN];
+                einzel[zi] = new Minutenstatistik();
             }
 
             for (int start = 0; start < realisierungen; start += BLOCK)
@@ -313,29 +305,15 @@ namespace WindowsFormsApplication1
                     {
                         Array.Copy(teil[i].Spitzen[zi], 0, spitzen[zi], r * zonen[zi].Einheiten, zonen[zi].Einheiten);
                         vertreter[zi][r] = teil[i].Vertreter[zi];
-                        for (int t = 0; t < Bedarfstag.MINUTEN; t++)
-                        {
-                            summe[zi][t] += teil[i].Summe[zi][t];
-                            quadrat[zi][t] += teil[i].Quadrat[zi][t];
-                        }
+                        einzel[zi].Hinzufuegen(teil[i].Einzel[zi]);
                     }
                 }
             }
 
             var statistik = new Ensemblezonenstatistik[zahl];
             for (int zi = 0; zi < zahl; zi++)
-            {
-                double stichproben = (double)realisierungen * zonen[zi].Einheiten;
-                var mittel = new double[Bedarfstag.MINUTEN];
-                var q = new double[Bedarfstag.MINUTEN];
-                for (int t = 0; t < Bedarfstag.MINUTEN; t++)
-                {
-                    mittel[t] = summe[zi][t] / stichproben;
-                    q[t] = quadrat[zi][t] / stichproben;
-                }
                 statistik[zi] = new Ensemblezonenstatistik(zonen[zi].Zone, zonen[zi].Einheiten, zonen[zi].TagesmengeKwh,
-                    Perzentilwerte.Aus(spitzen[zi]), Array.AsReadOnly(vertreter[zi]), mittel, q);
-            }
+                    Perzentilwerte.Aus(spitzen[zi]), Array.AsReadOnly(vertreter[zi]), einzel[zi]);
             return new Bedarfstagensemble(seed, perzentil, Array.AsReadOnly(tage), Array.AsReadOnly(statistik));
         }
 
@@ -394,14 +372,13 @@ namespace WindowsFormsApplication1
         // Eine Realisierung
         // =================================================================================
 
-        /// <summary>Was eine Realisierung beiträgt — je Zone Spitzen je Einheit, Vertreter, Summen je Minute.</summary>
+        /// <summary>Was eine Realisierung beiträgt — je Zone Spitzen je Einheit, Vertreter, Minutenstatistik.</summary>
         private sealed class Realisierungsteil
         {
             internal Bedarfstag Tag;
             internal double[][] Spitzen;
             internal Bedarfstag[] Vertreter;
-            internal double[][] Summe;
-            internal double[][] Quadrat;
+            internal Minutenstatistik[] Einzel;
         }
 
         private static Realisierungsteil Realisierung(IReadOnlyList<Ensemblezone> zonen, long seed, int r)
@@ -409,8 +386,7 @@ namespace WindowsFormsApplication1
             int zahl = zonen.Count;
             var teil = new Realisierungsteil
             {
-                Spitzen = new double[zahl][], Vertreter = new Bedarfstag[zahl],
-                Summe = new double[zahl][], Quadrat = new double[zahl][]
+                Spitzen = new double[zahl][], Vertreter = new Bedarfstag[zahl], Einzel = new Minutenstatistik[zahl]
             };
             var gruppe = new List<Zapfereignis>();
             var einheit = new List<Zapfereignis>();
@@ -423,8 +399,7 @@ namespace WindowsFormsApplication1
                 ulong zs = ZapfZufall.Kindseed(rs, z.Index);
                 double jeEinheitKwh = z.TagesmengeKwh / z.Einheiten;
                 var spitzen = new double[z.Einheiten];
-                var summe = new double[Bedarfstag.MINUTEN];
-                var quadrat = new double[Bedarfstag.MINUTEN];
+                var einzel = new Minutenstatistik();
                 for (int u = 0; u < z.Einheiten; u++)
                 {
                     var zufall = new ZapfZufall(ZapfZufall.Kindseed(zs, u));
@@ -438,19 +413,14 @@ namespace WindowsFormsApplication1
                     }
                     double groesste = 0.0;
                     for (int t = 0; t < Bedarfstag.MINUTEN; t++)
-                    {
-                        double x = minuten[t];
-                        if (x > groesste) groesste = x;
-                        summe[t] += x;
-                        quadrat[t] += x * x;
-                    }
+                        if (minuten[t] > groesste) groesste = minuten[t];
+                    einzel.Hinzufuegen(minuten);
                     spitzen[u] = groesste * Bedarfstag.MINUTEN_JE_STUNDE;
                     if (u == 0) teil.Vertreter[zi] = Bedarfstag.AusZiehung(name + ", " + z.Zone + ", Einheit 1", einheit);
                     gruppe.AddRange(einheit);
                 }
                 teil.Spitzen[zi] = spitzen;
-                teil.Summe[zi] = summe;
-                teil.Quadrat[zi] = quadrat;
+                teil.Einzel[zi] = einzel;
             }
             teil.Tag = Bedarfstag.AusZiehung(name, gruppe);
             return teil;

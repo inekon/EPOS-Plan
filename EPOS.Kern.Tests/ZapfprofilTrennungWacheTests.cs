@@ -19,12 +19,13 @@ namespace EPOS.Kern.Tests
     /// <c>ZapfprofilRechner</c>, <c>ZonenErgebnis</c> oder <c>Formvektor.Stundenreihe</c>.
     /// (2) <b>Signaturen (Reflection):</b> Kein nicht privates Glied eines Auslegungstyps trägt
     /// <c>Bilanzreihe</c>, <c>ZapfprofilErgebnis</c> oder <c>ZonenErgebnis</c> — weder als
-    /// Parameter noch als Rückgabe, Eigenschaft oder Feld, auch nicht als Typargument; keine
-    /// Methode nimmt ein Zahlenfeld an (<c>double[]</c>, <c>double[,]</c>,
+    /// Parameter noch als Rückgabe, Eigenschaft oder Feld, auch nicht als Typargument; weder eine
+    /// Methode noch ein nicht privater Konstruktor nimmt ein Zahlenfeld an (<c>double[]</c>, <c>double[,]</c>,
     /// <c>IReadOnlyList&lt;double&gt;</c>, <c>IList</c>, <c>List</c>, <c>ICollection</c>,
     /// <c>IEnumerable</c> von <c>double</c>), und kein Glied gibt eines heraus — weder als
     /// Rückgabe noch als Eigenschaft oder Feld, außer den benannten Gliedern in
-    /// <see cref="Ausnahmen"/>. Minutenwerte kommen nur über <see cref="Bedarfstag"/>,
+    /// <see cref="Ausnahmen"/>. Minutenwerte kommen nur über <see cref="Bedarfstag"/> (und die
+    /// <see cref="Minutenstatistik"/> der Einheiten in derselben Datei),
     /// Stundenwerte nur über <see cref="Wochenreihe"/> (168 h) — deren Dateien sind vom
     /// Zahlenfeldsatz ausgenommen, nicht vom Bilanzsatz. Als Kommentar zählt eine Zeile, die
     /// mit <c>//</c> oder <c>/*</c> beginnt, und eine Zeile innerhalb eines Blocks
@@ -86,9 +87,10 @@ namespace EPOS.Kern.Tests
              "Perzentile einer Stichprobe je Realisierung des Auslegungsensembles (R Werte), keine Zeitreihe."),
         };
 
-        /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Rückgabe, Eigenschaft und Feld.</summary>
+        /// <summary>Gegenprobe des Zahlenfeldsatzes: eine Zahlenliste als Konstruktorparameter, Rückgabe, Eigenschaft und Feld.</summary>
         private sealed class Zahlenlistenprobe
         {
+            internal Zahlenlistenprobe(double[] werteKwh) { }
             internal IReadOnlyList<double> Reihe() => null;
             internal IReadOnlyList<double> ReiheKwh { get; } = null;
             internal List<double> FeldKwh = null;
@@ -179,6 +181,7 @@ namespace EPOS.Kern.Tests
             Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.Reihe gibt IReadOnlyList", StringComparison.Ordinal));
             Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.ReiheKwh ist IReadOnlyList", StringComparison.Ordinal));
             Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.FeldKwh ist List", StringComparison.Ordinal));
+            Assert.Contains(probe, f => f.StartsWith("Zahlenlistenprobe.ctor nimmt Double[] (werteKwh)", StringComparison.Ordinal));
             // … und jede benannte Ausnahme wäre ohne ihren Eintrag ein Verstoß (keine Ausnahme auf Vorrat).
             foreach (var (typ, glied, grund) in Ausnahmen)
             {
@@ -205,6 +208,12 @@ namespace EPOS.Kern.Tests
                 Assert.Empty(Verstoesse(Typ(typ), true, Ausnahmen));
             }
             Assert.Empty(Verstoesse(typeof(Perzentilergebnis), true, Ausnahmen));
+            // Die Minutenstatistik der Einheiten ist ein Minutentyp neben dem Bedarfstag (Zahlenfelddatei);
+            // die Zonenstatistik des Ensembles nimmt sie als Typ, nie als Zahlenfeld.
+            Assert.Contains("Minutenstatistik", Deklarationen("Bedarfstag.cs"));
+            Assert.Contains(typeof(Ensemblezonenstatistik).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                                .SelectMany(c => c.GetParameters()), p => p.ParameterType == typeof(Minutenstatistik));
+            Assert.NotEmpty(Verstoesse(typeof(Minutenstatistik), true));
 
             // Die Fassade der Auslegung ruft das Auslegungsensemble — und nennt das der Jahresreihe nicht.
             string[] auslegung = Lesen("ZapfprofilAuslegung.cs");
@@ -251,7 +260,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Die Verstöße eines Typs: Bilanztypen in jedem nicht privaten Glied; mit
         /// <paramref name="zahlenfeldsatz"/> zusätzlich Zahlenfelder (<see cref="IstZahlenfeld"/>)
-        /// als Methodenparameter, Rückgabe, Eigenschaft oder Feld — außer den Gliedern in
+        /// als Methoden- oder Konstruktorparameter, Rückgabe, Eigenschaft oder Feld — außer den Gliedern in
         /// <paramref name="ausnahmen"/>.
         /// </summary>
         private static IEnumerable<string> Verstoesse(Type t, bool zahlenfeldsatz,
@@ -278,9 +287,15 @@ namespace EPOS.Kern.Tests
                         yield return n + m.Name + " nimmt " + Anzeige(pt) + " (" + p.Name + ")";
                 }
             }
+            // Konstruktoren: Bilanztypen immer; Zahlenfelder unter dem Zahlenfeldsatz — ausgenommen der
+            // Parameter eines positionalen Datensatzes, dessen gleichnamiges Glied benannt ausgenommen ist.
             foreach (ConstructorInfo c in t.GetConstructors(alle).Where(c => !c.IsPrivate))
                 foreach (ParameterInfo p in c.GetParameters())
+                {
                     if (TraegtBilanz(p.ParameterType)) yield return n + "ctor nimmt " + p.ParameterType.Name;
+                    if (zahlenfeldsatz && !frei.Contains(p.Name ?? "") && IstZahlenfeld(p.ParameterType))
+                        yield return n + "ctor nimmt " + Anzeige(p.ParameterType) + " (" + p.Name + ")";
+                }
             foreach (PropertyInfo p in t.GetProperties(alle))
             {
                 MethodInfo g = p.GetGetMethod(true);

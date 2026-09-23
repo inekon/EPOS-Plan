@@ -365,6 +365,68 @@ namespace WindowsFormsApplication1
         }
     }
 
+    /// <summary>
+    /// <b>Die Minutenstatistik der Einheiten einer Zone</b> im Auslegungsensemble (4.5 b, Konzept
+    /// S4c): je Minute des Bedarfstags Summe und Quadratsumme der Minutenlast einer Einheit
+    /// [kWh je Minute] über die Stichproben (Einheiten × Realisierungen), daraus Mittel und Varianz
+    /// für den Vergleich <c>μ + z · σ / √N</c>.
+    ///
+    /// <para><b>Ein Minutentyp wie der <see cref="Bedarfstag"/></b> (Invariante 2.4): Minutenwerte
+    /// der Auslegung stehen nur in diesen Typen; die Klassen des Ensembles reichen sie nie als
+    /// Zahlenfeld weiter (Wache <c>ZapfprofilTrennungWacheTests</c>). Summiert wird in der Folge der
+    /// Aufrufe — der Aufrufer legt sie fest (Einheit für Einheit, dann Realisierung für
+    /// Realisierung), damit parallel und seriell dieselben Bits entstehen.</para>
+    /// </summary>
+    internal sealed class Minutenstatistik
+    {
+        private readonly double[] _summeKwh = new double[Bedarfstag.MINUTEN];
+        private readonly double[] _quadratKwh2 = new double[Bedarfstag.MINUTEN];
+
+        /// <summary>Die Zahl der aufgenommenen Stichproben (Einheitentage).</summary>
+        internal long Stichproben { get; private set; }
+
+        /// <summary>
+        /// Nimmt den Minutengang einer Einheit auf — 1440 Werte [kWh je Minute], Minute für Minute
+        /// in Summe und Quadratsumme.
+        /// </summary>
+        internal void Hinzufuegen(double[] minutenKwh)
+        {
+            if (minutenKwh == null || minutenKwh.Length != Bedarfstag.MINUTEN)
+                throw new ArgumentException("Ein Minutengang trägt 1440 Werte.", nameof(minutenKwh));
+            for (int t = 0; t < Bedarfstag.MINUTEN; t++)
+            {
+                double x = minutenKwh[t];
+                _summeKwh[t] += x;
+                _quadratKwh2[t] += x * x;
+            }
+            Stichproben++;
+        }
+
+        /// <summary>Nimmt eine Teilstatistik auf: ihre Summen je Minute werden in dieser Folge addiert.</summary>
+        internal void Hinzufuegen(Minutenstatistik teil)
+        {
+            if (teil == null) throw new ArgumentNullException(nameof(teil));
+            for (int t = 0; t < Bedarfstag.MINUTEN; t++)
+            {
+                _summeKwh[t] += teil._summeKwh[t];
+                _quadratKwh2[t] += teil._quadratKwh2[t];
+            }
+            Stichproben += teil.Stichproben;
+        }
+
+        /// <summary>Mittel der Minutenlast einer Einheit in Minute <paramref name="minute"/> [kWh je Minute]; 0 ohne Stichprobe.</summary>
+        internal double MittelKwh(int minute) => Stichproben > 0 ? _summeKwh[minute] / Stichproben : 0.0;
+
+        /// <summary>Varianz der Minutenlast einer Einheit in Minute <paramref name="minute"/> [kWh² je Minute²], ≥ 0.</summary>
+        internal double Varianz(int minute)
+        {
+            if (Stichproben == 0) return 0.0;
+            double m = _summeKwh[minute] / Stichproben;
+            double v = _quadratKwh2[minute] / Stichproben - m * m;
+            return v > 0 ? v : 0.0;
+        }
+    }
+
     /// <summary>Die Wahl des Bedarfstags einer Topologiegruppe (Vorgaberegel 4.5).</summary>
     internal sealed record Bedarfstagwahl(ZapfBedarfstagquelle? Quelle, bool KonstruktorOeffnen, string Grund);
 
