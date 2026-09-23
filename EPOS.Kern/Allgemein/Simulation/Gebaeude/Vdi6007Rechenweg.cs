@@ -24,8 +24,14 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Plausibilität nach dem Lauf:</b> Heizlast und Kühlbedarf endlich und nicht
     /// negativ (sonst Fehler); Warnungen für eine Jahresheizwärme von null, für Ersatzwerte der
-    /// Erdreichrechnung und für Schalter, die in G1 noch ohne Wirkung sind; Hinweise für die
-    /// Wochenendprobe (U7) und für vorhandene, in G1 nicht rechenwirksame Gegenstrahlung.</para>
+    /// Erdreichrechnung und für einen Luftwechsel aus der Vorgabe; Hinweise für die
+    /// Wochenendprobe (U7) und für Stunden ohne Gegenstrahlung bei eingeschalteter Strahlung
+    /// auf die Außenbauteile.</para>
+    ///
+    /// <para><b>Sommerlüftung (Stufe G2):</b> Mit dem Schalter bestimmt die
+    /// <see cref="Sommerlueftungsregel"/> zu Beginn jeder Stunde aus der Vorstunde, ob der
+    /// Zusatzleitwert der Sommerlüftung die Stunde über gilt; der Zustand läuft vom Vorlauf
+    /// ins Jahr weiter.</para>
     ///
     /// <para>Der Weg kennt den Tagesbilanz-Weg nicht und ruft nichts aus ihm
     /// (<c>ModultrennungswacheTests</c>).</para>
@@ -98,26 +104,39 @@ namespace WindowsFormsApplication1
 
             var modell = new Zonenmodell2K(eingang.Parameter, eingang.Bezeichnung);
 
+            // Sommerlüftung (G2, Rechenschritte 7.2): einmal je Stunde am Stundenbeginn aus
+            // Raumluft und Außenluft der Vorstunde; ohne Schalter bleibt sie aus.
+            Sommerlueftungsregel regel = eingang.Sommerlueftung ? new Sommerlueftungsregel() : null;
+            double luftVor = double.NaN, aussenVor = double.NaN;
+
             // Vorlauf: die letzten 30 Tage des Jahres, Startwert der Sollwert der ersten
-            // Vorlaufstunde (Rechenschritte 7.1); die Ergebnisse werden verworfen.
+            // Vorlaufstunde (Rechenschritte 7.1); die Ergebnisse werden verworfen. Der
+            // Lüftungszustand läuft über die Jahresgrenze weiter wie der Zustand der Massen.
             int start = 8760 - VORLAUF_H;
             modell.Zuruecksetzen(eingang.ThetaSoll[start]);
             for (int h = start; h < 8760; h++)
             {
-                Stundenrand r = eingang.Rand(h);
-                modell.Schritt(in r);
+                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
+                Stundenrand r = eingang.Rand(h, sommer);
+                Stundenergebnis v = modell.Schritt(in r);
+                luftVor = v.ThetaAirMittel;
+                aussenVor = eingang.ThetaOut[h];
             }
 
             var heiz = new double[8760];
             var kuehl = new double[8760];
             var luft = new double[8760];
             var op = new double[8760];
-            int umschaltung = 0, beides = 0;
+            int umschaltung = 0, beides = 0, sommerStunden = 0;
             double summeW = 0.0;
             for (int h = 0; h < 8760; h++)
             {
-                Stundenrand r = eingang.Rand(h);
+                bool sommer = regel != null && regel.Stunde(luftVor, aussenVor);
+                if (sommer) sommerStunden++;
+                Stundenrand r = eingang.Rand(h, sommer);
                 Stundenergebnis s = modell.Schritt(in r);
+                luftVor = s.ThetaAirMittel;
+                aussenVor = eingang.ThetaOut[h];
                 heiz[h] = s.HeizleistungW;
                 kuehl[h] = s.KuehlleistungW / 1000.0;      // W über eine Stunde → kWh
                 luft[h] = s.ThetaAirMittel;
@@ -136,7 +155,8 @@ namespace WindowsFormsApplication1
             double verbrauchAltKwh = summeW / 1000.0;
             return new GebaeudeModellErgebnis(index, idGebaeude, DbWerte.GEBAEUDE_MODELL_VDI6007,
                                               heiz, luft, op, kuehl, eingang.ThetaMaxWert,
-                                              verbrauchAltKwh, 1.0, umschaltung, beides);
+                                              verbrauchAltKwh, 1.0, umschaltung, beides,
+                                              (double[])eingang.ThetaSoll.Clone(), sommerStunden);
         }
 
         private static void Melden(GebaeudeModellEingang e, GebaeudeModellErgebnis r,
@@ -149,18 +169,15 @@ namespace WindowsFormsApplication1
             if (e.ErdreichErsatzwerte)
                 p.Warnung("Gebäudemodell VDI 6007: " + wer + " — der Jahresgang der Außentemperatur ist " +
                           "unplausibel; die Erdreichtemperatur steht auf den Ersatzwerten des Erdreichmodells.");
-            if (e.AussenbauteileStrahlung)
-                p.WarnungEinmal("vdi6007-aussenbauteile-strahlung",
-                    "Gebäudemodell VDI 6007: Der Schalter „Strahlung auf Außenbauteile\" ist gesetzt, in dieser " +
-                    "Stufe aber ohne Wirkung — die äquivalente Außentemperatur der opaken Flächen ist die Außenluft.");
-            if (e.G2SpaltenGesetzt)
-                p.WarnungEinmal("vdi6007-g2-spalten",
-                    "Gebäudemodell VDI 6007: Infiltration, Nutzerlüftung oder Sommerlüftung sind gesetzt, in dieser " +
-                    "Stufe aber ohne Wirkung — gerechnet wird mit der Luftwechselrate.");
-            if (e.StundenMitGegenstrahlung > 0)
-                p.HinweisEinmal("vdi6007-gegenstrahlung",
-                    "Gebäudemodell VDI 6007: Die Klimareihe führt in " + e.StundenMitGegenstrahlung.ToString(CultureInfo.InvariantCulture) +
-                    " Stunden eine Gegenstrahlung; der langwellige Term ist in dieser Stufe nicht rechenwirksam (Δθ_lw = 0).");
+            if (e.LuftwechselHerkunft == Luftwechselherkunft.Vorgabe)
+                p.Warnung("Gebäudemodell VDI 6007: " + wer + " führt weder Infiltration noch Nutzerlüftung noch eine " +
+                          "Luftwechselrate; gerechnet wird mit der Vorgabe " +
+                          e.Luftwechselrate_h.ToString("0.0#", CultureInfo.InvariantCulture) + " 1/h.");
+            if (e.AussenbauteileStrahlung && e.StundenMitGegenstrahlung < 8760)
+                p.HinweisEinmal("vdi6007-aussenbauteile-ohne-gegenstrahlung",
+                    "Gebäudemodell VDI 6007: Strahlung auf Außenbauteile ist eingeschaltet; die Klimareihe führt in " +
+                    (8760 - e.StundenMitGegenstrahlung).ToString(CultureInfo.InvariantCulture) +
+                    " Stunden keine Gegenstrahlung — dort rechnet nur der kurzwellige Term (Δθ_lw = 0).");
             p.HinweisEinmal("vdi6007-wochenende",
                 "Gebäudemodell VDI 6007: Wochenendmaske aus dem Ortszeit-Kalender des Referenzjahres " +
                 gemeinsam.Referenzjahr.ToString(CultureInfo.InvariantCulture) + "; Probe gegen Tab_Klimadaten.WE: " +

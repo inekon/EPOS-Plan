@@ -201,6 +201,15 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Außenbauteile mit Strahlung (0/1-Spalte, <c>NOT NULL DEFAULT 0</c>).</summary>
     public bool AussenbauteileStrahlung { get; set; }
 
+    /// <summary>Infiltration [1/h] (Stufe G2); <c>null</c> = Vorgabe bzw. Luftwechselrate.</summary>
+    public double? LuftwechselInfiltration { get; set; }
+
+    /// <summary>Nutzerlüftung [1/h] (Stufe G2); <c>null</c> = Vorgabe bzw. Luftwechselrate.</summary>
+    public double? LuftwechselNutzer { get; set; }
+
+    /// <summary>Sommerlüftungsregel (0/1-Spalte, <c>NOT NULL DEFAULT 0</c>, Stufe G2).</summary>
+    public bool Sommerlueftung { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
     /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").

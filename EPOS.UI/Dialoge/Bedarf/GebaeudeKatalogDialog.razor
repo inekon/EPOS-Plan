@@ -294,8 +294,28 @@
                             <Schalter Bezeichnung="@Texte.LabelAussenStrahlung"
                                       Wert="@_stand.AussenbauteileStrahlung"
                                       WertChanged="w => _stand.AussenbauteileStrahlung = w" />
+                            @* Stufe G2: Lueftung des Stundenmodells - leer rechnet die Luftwechselrate
+                               des Gebaeudes, ist eines gesetzt, das andere mit seiner Vorgabe. *@
+                            <Zahlenfeld Bezeichnung="@Texte.LabelInfiltration" Einheit="1/h" Min="0.01" Max="10"
+                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselInfiltration)"
+                                        Feldname="@Feld(Texte.LabelInfiltration)" FehlerZustand="FehlerMelden"
+                                        Wert="@_stand.LuftwechselInfiltration"
+                                        WertChanged="w => _stand.LuftwechselInfiltration = w" />
+                            <Zahlenfeld Bezeichnung="@Texte.LabelNutzerlueftung" Einheit="1/h" Min="0" Max="10"
+                                        Platzhalter="@LuftwechselPlatzhalter(Gebaeudemodellvorgaben.LuftwechselNutzer)"
+                                        Feldname="@Feld(Texte.LabelNutzerlueftung)" FehlerZustand="FehlerMelden"
+                                        Wert="@_stand.LuftwechselNutzer"
+                                        WertChanged="w => _stand.LuftwechselNutzer = w" />
+                            <Schalter Bezeichnung="@Texte.LabelSommerlueftung"
+                                      Wert="@_stand.Sommerlueftung"
+                                      WertChanged="w => _stand.Sommerlueftung = w" />
                                 </KindInhalt>
                             </Formularraster>
+                            <Herleitungszeile Text="@Luftwechselzeile" />
+                            @if (_stand.Sommerlueftung)
+                            {
+                                <Herleitungszeile Text="@Sommerlueftungszeile" />
+                            }
                             <Herleitungszeile Text="@Texte.HinweisModellparameter" />
                         </KindInhalt>
                     </Gruppenkopf>
@@ -1041,8 +1061,50 @@
 
     private double HT => Gebaeudehuellbilanz.TransmissionWK(Huellzeilen);
 
+    /// <summary>
+    /// H_ve mit dem Luftwechsel des gewählten Rechenwegs: auf dem VDI-Weg der wirksame
+    /// (Infiltration + Nutzerlüftung, sonst Luftwechselrate), auf dem Tagesbilanz-Weg die
+    /// Luftwechselrate, mit der er rechnet.
+    /// </summary>
     private double HVe => Gebaeudehuellbilanz.LueftungWK(
-        _stand.Luftwechselrate, _stand.WohnflaecheGesamt, _stand.Raumhoehe);
+        IstVdi6007 ? WirksamerLuftwechsel : _stand.Luftwechselrate, _stand.WohnflaecheGesamt, _stand.Raumhoehe);
+
+    /// <summary>Der Luftwechsel des VDI-Wegs [1/h] — dieselbe Regel wie im Eingangsbauer des Kerns.</summary>
+    private double WirksamerLuftwechsel => Gebaeudemodellvorgaben.WirksamerLuftwechsel(
+        _stand.Luftwechselrate, _stand.LuftwechselInfiltration, _stand.LuftwechselNutzer);
+
+    /// <summary>
+    /// Platzhalter der beiden Lüftungsfelder: Sind beide leer, rechnet der VDI-Weg mit der
+    /// Luftwechselrate — dann steht sie da; sonst die Vorgabe des leeren Glieds.
+    /// </summary>
+    private string LuftwechselPlatzhalter(double vorgabe)
+        => !_stand.LuftwechselInfiltration.HasValue && !_stand.LuftwechselNutzer.HasValue
+           && _stand.Luftwechselrate is double n && n > 0
+            ? ""
+            : Vorgabe(vorgabe);
+
+    /// <summary>Die Herleitungszeile des Luftwechsels: Wert und Herkunft.</summary>
+    private string Luftwechselzeile
+    {
+        get
+        {
+            double n = Gebaeudemodellvorgaben.WirksamerLuftwechsel(_stand.Luftwechselrate,
+                _stand.LuftwechselInfiltration, _stand.LuftwechselNutzer, out Luftwechselherkunft herkunft);
+            string quelle = herkunft switch
+            {
+                Luftwechselherkunft.InfiltrationUndNutzer => Texte.HerkunftInfiltrationNutzer,
+                Luftwechselherkunft.Luftwechselrate => Texte.HerkunftLuftwechselrate,
+                _ => Texte.HerkunftVorgabe
+            };
+            return string.Format(Texte.HinweisLuftwechsel, Zahl(n, 2), quelle);
+        }
+    }
+
+    /// <summary>Die Herleitungszeile der Sommerlüftungsregel.</summary>
+    private string Sommerlueftungszeile
+        => string.Format(Texte.HinweisSommerlueftung,
+                         Zahl(Gebaeudemodellvorgaben.SommerlueftungSchwelle, 0),
+                         Zahl(Gebaeudemodellvorgaben.LuftwechselSommer, 1));
 
     private string OstWestPlatzhalter
         => _stand.FensterflaecheOstWest is double ow && !_stand.FensterflaecheOst.HasValue

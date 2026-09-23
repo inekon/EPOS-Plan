@@ -30,8 +30,10 @@ namespace WindowsFormsApplication1
             double[] heizlastW, double[] raumtemperatur, double[] operativeTemperatur,
             double[] kuehlbedarfKwh, double thetaMax,
             double verbrauchAltKwh, double skalierungsfaktor,
-            int stundenMitUmschaltung, int stundenHeizenUndKuehlen)
+            int stundenMitUmschaltung, int stundenHeizenUndKuehlen,
+            double[] heizsollwert = null, int stundenMitSommerlueftung = 0)
         {
+            if (heizsollwert != null && heizsollwert.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizsollwert));
             if (heizlastW == null || heizlastW.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(heizlastW));
             if (raumtemperatur == null || raumtemperatur.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(raumtemperatur));
             if (operativeTemperatur == null || operativeTemperatur.Length != 8760) throw new ArgumentException("8760 Werte erwartet.", nameof(operativeTemperatur));
@@ -49,6 +51,8 @@ namespace WindowsFormsApplication1
             Skalierungsfaktor = skalierungsfaktor;
             StundenMitUmschaltung = stundenMitUmschaltung;
             StundenHeizenUndKuehlen = stundenHeizenUndKuehlen;
+            Heizsollwert = heizsollwert;
+            StundenMitSommerlueftung = stundenMitSommerlueftung;
 
             // Kennzahlen (8.2)
             double summeW = 0.0, spitzeW = 0.0;
@@ -165,6 +169,15 @@ namespace WindowsFormsApplication1
         internal int StundenHeizenUndKuehlen { get; }
 
         /// <summary>
+        /// Der Heizsollwert je Stunde [°C] (Sollwertfahrplan E8) — die untere Kante des
+        /// Sollwertbands im Bild „Raumtemperatur" (Stufe G2); <c>null</c> = nicht mitgeführt.
+        /// </summary>
+        internal double[] Heizsollwert { get; }
+
+        /// <summary>Stunden des Jahres mit eingeschalteter Sommerlüftung [h] (Stufe G2).</summary>
+        internal int StundenMitSommerlueftung { get; }
+
+        /// <summary>
         /// Dasselbe Ergebnis mit der Heizlast- und Kühlreihe mal <paramref name="faktor"/>
         /// (E8, Nachmultiplikation der Fassade); die Kennzahlen entstehen neu aus den
         /// skalierten Reihen.
@@ -180,7 +193,8 @@ namespace WindowsFormsApplication1
             }
             return new GebaeudeModellErgebnis(Index, ID_Gebaeude, Modell, heiz, Raumtemperatur, OperativeTemperatur,
                                               kuehl, ThetaMax, VerbrauchAltKwh, Skalierungsfaktor * faktor,
-                                              StundenMitUmschaltung, StundenHeizenUndKuehlen);
+                                              StundenMitUmschaltung, StundenHeizenUndKuehlen,
+                                              Heizsollwert, StundenMitSommerlueftung);
         }
     }
 

@@ -89,11 +89,94 @@
                                 <td colspan="2">@Daten.Modelltext</td>
                             </tr>
                         }
+                        @* Stufe G2 (Konzept 4.6, 8.2): die Kennzahlen, die es nur auf dem
+                           VDI-Weg gibt - auf dem Altweg stehen sie nicht da, statt "—" zu zeigen. *@
+                        @if (Daten.IstVdi6007)
+                        {
+                            <tr class="gebb-vdi">
+                                <td>@LabelKuehlbedarf</td>
+                                <td class="epos-zahl">@Energie(Daten.KuehlenergieMwh)</td>
+                                <td>@_einheit.Text</td>
+                            </tr>
+                            <tr class="gebb-vdi">
+                                <td>@LabelKuehlstunden</td>
+                                <td class="epos-zahl">@Ganzzahl(Daten.KuehlstundenH)</td>
+                                <td>@EinheitStundenZahl</td>
+                            </tr>
+                            <tr class="gebb-vdi">
+                                <td>@LabelMittlereRaumtemperatur</td>
+                                <td class="epos-zahl">@Zahl(Daten.MittlereRaumtemperaturC)</td>
+                                <td>°C</td>
+                            </tr>
+                            <tr class="gebb-vdi">
+                                <td>@LabelUeberhitzung</td>
+                                <td class="epos-zahl">@Ganzzahl(Daten.UeberhitzungsstundenH)</td>
+                                <td>@EinheitStundenZahl</td>
+                            </tr>
+                            <tr class="gebb-vdi">
+                                <td>@LabelSommerlueftung</td>
+                                <td class="epos-zahl">@Ganzzahl(Daten.SommerlueftungsstundenH)</td>
+                                <td>@EinheitStundenZahl</td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
         </KindInhalt>
     </Gruppenkopf>
+
+    @* ---- Vergleich alt/neu (Konzept 8.2, Umsetzungskonzept 2.7; bis Stufe GA) ---- *@
+    @if (Daten.Vergleich is not null)
+    {
+        <Gruppenkopf Titel="@GruppeVergleich">
+            <KindInhalt>
+                <div class="epos-raster-huelle">
+                    <table class="epos-raster gebb-vergleich">
+                        <thead>
+                            <tr>
+                                <th>@SpalteKennzahl</th>
+                                <th>@SpalteTagesbilanz</th>
+                                <th>@SpalteVdi6007</th>
+                                <th>@SpalteAbweichung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>@Kennzahltext(LabelHeizwaerme, _einheit.Text)</td>
+                                <td class="epos-zahl">@Energie(Tagesbilanzsatz.HeizwaermeMwh)</td>
+                                <td class="epos-zahl">@Energie(Vdisatz.HeizwaermeMwh)</td>
+                                <td class="epos-zahl">@Abweichung(Tagesbilanzsatz.HeizwaermeMwh, Vdisatz.HeizwaermeMwh)</td>
+                            </tr>
+                            <tr>
+                                <td>@Kennzahltext(LabelSpitzeStunde, EinheitKw)</td>
+                                <td class="epos-zahl">@Zahl(Tagesbilanzsatz.MaxLastKw)</td>
+                                <td class="epos-zahl">@Zahl(Vdisatz.MaxLastKw)</td>
+                                <td class="epos-zahl">@Abweichung(Tagesbilanzsatz.MaxLastKw, Vdisatz.MaxLastKw)</td>
+                            </tr>
+                            <tr>
+                                <td>@Kennzahltext(LabelSpitzeTagesmittel, EinheitKw)</td>
+                                <td class="epos-zahl">@Zahl(Tagesbilanzsatz.SpitzeTagesmittelKw)</td>
+                                <td class="epos-zahl">@Zahl(Vdisatz.SpitzeTagesmittelKw)</td>
+                                <td class="epos-zahl">@Abweichung(Tagesbilanzsatz.SpitzeTagesmittelKw, Vdisatz.SpitzeTagesmittelKw)</td>
+                            </tr>
+                            <tr>
+                                <td>@Kennzahltext(LabelSpitzeQuantil95, EinheitKw)</td>
+                                <td class="epos-zahl">@Zahl(Tagesbilanzsatz.SpitzeQuantil95Kw)</td>
+                                <td class="epos-zahl">@Zahl(Vdisatz.SpitzeQuantil95Kw)</td>
+                                <td class="epos-zahl">@Abweichung(Tagesbilanzsatz.SpitzeQuantil95Kw, Vdisatz.SpitzeQuantil95Kw)</td>
+                            </tr>
+                            <tr>
+                                <td>@Kennzahltext(LabelVollbenutzung, EinheitStunden)</td>
+                                <td class="epos-zahl">@Zahl(Tagesbilanzsatz.VollbenutzungsstundenH)</td>
+                                <td class="epos-zahl">@Zahl(Vdisatz.VollbenutzungsstundenH)</td>
+                                <td class="epos-zahl">@Abweichung(Tagesbilanzsatz.VollbenutzungsstundenH, Vdisatz.VollbenutzungsstundenH)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </KindInhalt>
+        </Gruppenkopf>
+    }
 
     @* ---- Die Jahresganglinie -------------------------------------------- *@
     <div class="epos-leiste">
@@ -108,6 +191,18 @@
                  FarbwahlErlaubt="@Farbwahl"
                  FarbeGewaehlt="FarbeUebernehmen"
                  FarbeZurueckgesetzt="FarbeVerwerfen" />
+
+    @* ---- Raumtemperatur (Stufe G2, Konzept 8.2): nur auf dem VDI-Weg. Ein eigenes Bild
+       mit eigenem Zoom - jede Jahresganglinie fuehrt ihren Ausschnitt selbst. *@
+    @if (BildauftragRaumtemperatur is not null)
+    {
+        <DiagrammSvg Modell="@Raummodell" Kennung="gebaeude-raumtemperatur" Bezeichnung="@BildtextRaumtemperatur"
+                     PlatzhalterText="@PlatzhalterBild" Einheit="°C"
+                     Palette="@Farbpalette.Aktuell"
+                     FarbwahlErlaubt="@Farbwahl"
+                     FarbeGewaehlt="FarbeUebernehmen"
+                     FarbeZurueckgesetzt="FarbeVerwerfen" />
+    }
 
     @* ---- Die Monatsuebersicht ------------------------------------------- *@
     @if (Daten.MonatswerteMwh.Count >= 12)
@@ -152,6 +247,12 @@
     [Parameter] public Func<bool, Zeichenmodell?>? Bildauftrag { get; set; }
 
     /// <summary>
+    /// Liefert das Bild „Raumtemperatur" (Stufe G2) — Raumluft und operativ mit dem
+    /// Sollwertband, gezeichnet im Kern. <c>null</c> = kein Bild (Tagesbilanz-Weg).
+    /// </summary>
+    [Parameter] public Func<Zeichenmodell?>? BildauftragRaumtemperatur { get; set; }
+
+    /// <summary>
     /// Die ANZEIGEEINHEIT beim Öffnen — MWh (Vorgabe) oder kWh (Anwenderentscheid
     /// W8‑O‑5 vom 04.09.2026).
     /// </summary>
@@ -179,6 +280,24 @@
     [Parameter] public string EinheitKw { get; set; } = "kW";
     [Parameter] public string EinheitStunden { get; set; } = "h/a";
     [Parameter] public string Bildtext { get; set; } = "Wärmelast Jahresganglinie";
+    [Parameter] public string BildtextRaumtemperatur { get; set; } = "Raumtemperatur";
+
+    // --- Texte der Stufe G2 (Kennzahlen des VDI-Wegs, Vergleich alt/neu) ----------
+
+    [Parameter] public string GruppeVergleich { get; set; } = "Vergleich der Rechenwege";
+    [Parameter] public string SpalteKennzahl { get; set; } = "Kennzahl";
+    [Parameter] public string SpalteTagesbilanz { get; set; } = "Tagesbilanz";
+    [Parameter] public string SpalteVdi6007 { get; set; } = "VDI 6007";
+    [Parameter] public string SpalteAbweichung { get; set; } = "Abweichung";
+    [Parameter] public string LabelSpitzeStunde { get; set; } = "Spitzenlast (Stunde):";
+    [Parameter] public string LabelSpitzeTagesmittel { get; set; } = "Spitzenlast (Tagesmittel):";
+    [Parameter] public string LabelSpitzeQuantil95 { get; set; } = "95-%-Wert der Stundenlast:";
+    [Parameter] public string LabelKuehlbedarf { get; set; } = "Kühlbedarf (informativ):";
+    [Parameter] public string LabelKuehlstunden { get; set; } = "Stunden mit Kühlbedarf:";
+    [Parameter] public string LabelMittlereRaumtemperatur { get; set; } = "mittlere Raumtemperatur (Nutzungszeit):";
+    [Parameter] public string LabelUeberhitzung { get; set; } = "Überhitzungsstunden:";
+    [Parameter] public string LabelSommerlueftung { get; set; } = "Stunden mit Sommerlüftung:";
+    [Parameter] public string EinheitStundenZahl { get; set; } = "h";
     [Parameter] public string PlatzhalterBild { get; set; } = "Kein Diagramm vorhanden";
     [Parameter] public string OkText { get; set; } = "OK";
 
@@ -326,6 +445,38 @@
         => Daten.VollbenutzungsstundenH is null ? LeerText
                                                 : Zahl(Daten.VollbenutzungsstundenH.Value);
 
+    /// <summary>Eine nullbare Leistung, Temperatur oder Stundenzahl mit zwei Nachkommastellen; „—" ohne Wert.</summary>
+    private string Zahl(double? wert) => wert is double w ? Zahl(w) : LeerText;
+
+    /// <summary>Eine Stundenzahl ohne Nachkommastellen; „—" ohne Wert.</summary>
+    private string Ganzzahl(int? wert)
+        => wert is int w ? w.ToString("N0", System.Globalization.CultureInfo.CurrentCulture) : LeerText;
+
+    /// <summary>Eine Energiemenge in MWh, angezeigt in der gewählten Einheit; „—" ohne Wert.</summary>
+    private string Energie(double? mwh)
+        => mwh is double w ? _einheit.Formatiere(_einheit.AusMWh(w)) : LeerText;
+
+    /// <summary>Zeilenkopf des Vergleichs: die Beschriftung ohne Doppelpunkt, dahinter die Einheit.</summary>
+    private static string Kennzahltext(string beschriftung, string einheit)
+        => (beschriftung ?? "").TrimEnd(' ', ':') + " [" + einheit + "]";
+
+    /// <summary>Der Satz des Tagesbilanz-Wegs im Vergleich alt/neu.</summary>
+    private GebaeudeBedarfDaten Tagesbilanzsatz => Daten.IstVdi6007 ? Daten.Vergleich ?? Daten : Daten;
+
+    /// <summary>Der Satz des VDI-Wegs im Vergleich alt/neu.</summary>
+    private GebaeudeBedarfDaten Vdisatz => Daten.IstVdi6007 ? Daten : Daten.Vergleich ?? Daten;
+
+    /// <summary>
+    /// Die Abweichung VDI 6007 gegen Tagesbilanz in Prozent, mit Vorzeichen; „—" ohne Wert
+    /// oder wenn die Tagesbilanz null ist (kein Teilen durch null).
+    /// </summary>
+    private string Abweichung(double? tagesbilanz, double? vdi)
+    {
+        if (tagesbilanz is not double a || vdi is not double b || a == 0.0) return LeerText;
+        double prozent = (b - a) / a * 100.0;
+        return prozent.ToString("+0.0;-0.0;0.0", System.Globalization.CultureInfo.CurrentCulture) + " %";
+    }
+
     private string Monatsname(int m)
         => (Monatsnamen is not null && Monatsnamen.Count > m) ? Monatsnamen[m] : "";
 
@@ -354,6 +505,24 @@
             Zeichenmodell? neu = Bildauftrag(_sortiert);
             _modelle[_sortiert] = neu;
             return neu;
+        }
+    }
+
+    /// <summary>Das Bild „Raumtemperatur" — einmal gerechnet, damit der Zoom stehen bleibt.</summary>
+    private Zeichenmodell? _raummodell;
+    private bool _raummodellGerechnet;
+
+    private Zeichenmodell? Raummodell
+    {
+        get
+        {
+            if (BildauftragRaumtemperatur is null) return null;
+            if (!_raummodellGerechnet)
+            {
+                _raummodell = BildauftragRaumtemperatur();
+                _raummodellGerechnet = true;
+            }
+            return _raummodell;
         }
     }
 

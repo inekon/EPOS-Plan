@@ -1,0 +1,99 @@
+<!-- EPOS-Plan Bedienungsseite | Wikititel: Programm Dokumentation/Gebäudemodell VDI 6007
+     Repo-Quelle dieser Seite: Projekte/Wiki/Programm Dokumentation - Gebäudemodell VDI 6007.wiki
+     Pflegeregel: zuerst hier aendern, dann hochladen - nie umgekehrt. -->
+Das '''Gebäudemodell nach VDI 6007''' rechnet den Heizwärmebedarf eines Gebäudes Stunde für Stunde über das ganze Jahr – 8.760 Stunden, mit Speichermasse, Sonneneinstrahlung je Himmelsrichtung, inneren Gewinnen und dem Sollwertfahrplan. Es ist ein thermisches Raummodell mit zwei Speicherkapazitäten nach VDI 6007 Blatt 1: eine für die Außenbauteile, eine für die Innenbauteile. Neben dem Heizbedarf liefert es die Raumlufttemperatur, die operative Temperatur und den Kühlbedarf jeder Stunde.
+
+'''Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung).'''
+
+== Rechenweg ==
+{{Anker|rechenweg}}
+
+Im Gebäudedialog wählen Sie unter ''Rechenweg'', wie das Gebäude gerechnet wird:
+
+* '''VDI 6007''' – das Stundenmodell dieser Seite.
+* '''Tagesbilanz''' – der Bestandsweg, der den Wärmebedarf aus Tageswerten und einer Tagesverteilung bildet. Seine eigenen Eingaben stehen im eingeklappten Abschnitt ''Tagesbilanz (Bestandsweg)''.
+
+Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Programms; die Zeile unter dem Schalter nennt sie. Die Modellparameter bleiben in beiden Stellungen stehen und werden mitgespeichert.
+
+== Eingaben ==
+{{Anker|eingaben}}
+
+Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien.
+
+Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert, sondern „leer".
+
+{| class="wikitable"
+! Parameter !! Vorgabe !! Bedeutung
+|-
+| Rahmenanteil || 0,3 || Anteil des Rahmens an der Fensterfläche; nur der Glasanteil lässt Sonne durch
+|-
+| Verschattungsfaktor || 0,9 || pauschale Minderung der Sonneneinstrahlung durch die Umgebung (etwa 0,9 frei stehend, 0,8 Reihenbebauung, 0,7 Innenstadt)
+|-
+| Masseanteil außen || 0,3 || Anteil der Speichermasse in den Außenbauteilen
+|-
+| Innenflächenfaktor || 2,5 || Fläche der Innenbauteile je m² Nutzfläche
+|-
+| Strahlungsanteil Heizung || 0,3 || Anteil der Heizleistung, der als Strahlung an die Raumflächen geht (Heizkörper); 0 heißt rein konvektiv
+|-
+| Heizleistungsgrenze || unbegrenzt || größte Heizleistung in kW; darüber sinkt die Raumtemperatur unter den Sollwert
+|-
+| Randbedingung der Bodenplatte || Erdreich || ''Erdreich'' (Temperatur in 1 m Tiefe aus dem Jahresgang der Außenluft), ''Keller'' (unbeheizter Keller mit der Kellertemperatur, Vorgabe 10 °C) oder ''Außenluft''
+|-
+| Außenbauteile mit Strahlung || aus || siehe [[#strahlung|Strahlung auf die Außenbauteile]]
+|-
+| Infiltration || 0,3 1/h || Luftwechsel durch Undichtheiten
+|-
+| Nutzerlüftung || 0,4 1/h || Luftwechsel durch das Lüften der Nutzer
+|-
+| Sommerlüftung || aus || siehe [[#sommerlueftung|Sommerlüftung]]
+|}
+
+== Lüftung ==
+{{Anker|lueftung}}
+
+Der Luftwechsel des Modells ist die Summe aus '''Infiltration''' und '''Nutzerlüftung'''. Ist nur eines der beiden Felder gefüllt, gilt für das andere seine Vorgabe. Sind beide leer, rechnet das Modell mit der '''Luftwechselrate''' des Gebäudes; fehlt auch sie, mit der Summe der beiden Vorgaben, 0,7 1/h. Unter den Feldern steht, mit welchem Luftwechsel gerechnet wird und woher er kommt. Der Lüftungswärmeverlust H_ve der Hülltabelle folgt diesem Wert.
+
+== Sommerlüftung ==
+{{Anker|sommerlueftung}}
+
+Mit eingeschalteter '''Sommerlüftung''' öffnen die Nutzer an warmen Tagen die Fenster: Ist die Raumluft wärmer als 23 °C und die Außenluft mindestens 2 K kühler als die Raumluft, steigt der Luftwechsel auf 2,0 1/h. Geschlossen wird erst, wenn die Raumluft unter 22 °C fällt oder die Außenluft bis auf 1 K an die Raumluft herankommt – so schaltet die Lüftung nicht Stunde für Stunde hin und her. Entschieden wird zu Beginn jeder Stunde nach den Temperaturen der Stunde davor; der Zustand gilt die ganze Stunde.
+
+Die Sommerlüftung senkt Kühlbedarf und Überhitzungsstunden. Auf den Heizbedarf wirkt sie kaum.
+
+== Strahlung auf die Außenbauteile ==
+{{Anker|strahlung}}
+
+Ohne diesen Schalter sehen Wände, Dach und sonstige Außenflächen die Außenlufttemperatur. Mit dem Schalter rechnet das Modell für sie eine '''äquivalente Außentemperatur''' nach VDI 6007 Blatt 1: Die Sonne erwärmt die Außenflächen (Absorptionsgrad 0,6), die langwellige Abstrahlung gegen den Himmel kühlt sie. Die Außenwand bekommt dabei das Mittel der Einstrahlung auf die vier Fassaden, das Dach wird als waagerechte Fläche gerechnet.
+
+Für die Abstrahlung braucht das Modell die '''atmosphärische Gegenstrahlung''' der Klimadaten. PVGIS-Abrufe und Testreferenzjahre liefern sie; eine Klimaregion ohne diesen Wert rechnet ohne den langwelligen Anteil. Die Abstrahlung der Fenster geht immer ein, wenn die Klimadaten die Gegenstrahlung führen.
+
+== Klimadaten ==
+{{Anker|klimadaten}}
+
+Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur, Global-, Direkt- und Diffusstrahlung und, wenn vorhanden, die Gegenstrahlung. Die Einstrahlung auf die vier Fassaden rechnet es selbst, mit einem Himmelsmodell, das die Richtung der Sonne berücksichtigt. Der Sonnenstand gilt zum Anfang jeder Stunde – derselbe Sonnenstand wie bei Photovoltaik und Solarthermie. Wochenenden und Ferien folgen dem Kalender des Projekts. Vor dem 1. Januar rechnet das Modell die letzten 30 Tage des Jahres als Vorlauf, damit die Speichermasse zu Jahresbeginn eingeschwungen ist.
+
+== Ergebnisse ==
+{{Anker|ergebnisse}}
+
+Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäude'''. Auf dem Rechenweg VDI 6007 zeigt er neben Wärmebedarf, höchster Wärmelast und Vollbenutzungsstunden:
+
+* '''Kühlbedarf (informativ)''' – die Wärme, die abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet;
+* '''Stunden mit Kühlbedarf''';
+* '''mittlere Raumtemperatur''' in der Nutzungszeit (7 bis 22 Uhr);
+* '''Überhitzungsstunden''' – Stunden der Nutzungszeit mit einer operativen Temperatur über der oberen Raumtemperatur;
+* '''Stunden mit Sommerlüftung'''.
+
+Die Tabelle '''Vergleich der Rechenwege''' stellt dasselbe Gebäude auf beiden Rechenwegen nebeneinander: Wärmebedarf, Spitzenlast der Stunde, Spitzenlast als höchstes Mittel über 24 Stunden, der Wert, den die Stundenlast in 95 % der Stunden nicht überschreitet, und die Vollbenutzungsstunden, jeweils mit der Abweichung des Stundenmodells in Prozent. Beide Spalten rechnet das Programm beim Öffnen; gespeichert wird dabei nichts.
+
+Das Bild '''Raumtemperatur''' zeigt den Jahresverlauf der Raumluft und der operativen Temperatur, dazu gestrichelt den Heizsollwert und die obere Raumtemperatur. Zoom, Ausschnitt, Legende und Farbwahl bedienen Sie wie in den übrigen Diagrammen; das Bild führt seinen Ausschnitt getrennt von der Ganglinie der Wärmelast.
+
+Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistungen stehen in kW, Temperaturen in °C.
+
+== Grenzen ==
+{{Anker|grenzen}}
+
+* Das Gebäude ist '''eine Zone'''. Räume unterschiedlicher Temperatur werden nicht getrennt gerechnet.
+* Die Hülle steht als U-Wert und Fläche je Bauteil, nicht als Schichtaufbau; die Kennwerte des Modells leitet das Programm daraus nach einem festen Schema ab.
+* Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
+* Der Kühlbedarf ist eine Auskunft über das Gebäude. Er geht in keine Anlagenrechnung ein.
+* Wie beim Bestandsweg rechnet das Modell das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch.

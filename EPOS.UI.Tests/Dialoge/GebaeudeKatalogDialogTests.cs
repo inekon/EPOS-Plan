@@ -425,6 +425,72 @@ public class GebaeudeKatalogDialogTests : EposBunitContext
         Assert.False(geschrieben.AussenbauteileStrahlung);
     }
 
+    // =================================================================================
+    // Stufe G2: Infiltration, Nutzerlüftung, Sommerlüftung (Rechenschritte A7, 7.2)
+    // =================================================================================
+
+    private static IElement Kaestchen(IRenderedComponent<GebaeudeKatalogDialog> cut, string beschriftung)
+        => cut.FindAll("label.epos-schalter")
+              .First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == beschriftung)
+              .QuerySelector("input")!;
+
+    [Fact]
+    public void Die_Lueftungsfelder_stehen_bei_den_Modellparametern()
+    {
+        var cut = Aufbauen();
+
+        Assert.NotNull(Eingabe(cut, "Infiltration :"));
+        Assert.NotNull(Eingabe(cut, "Nutzerlüftung :"));
+        Assert.NotNull(Kaestchen(cut, "Sommerlüftung"));
+        // Beide leer: der VDI-Weg rechnet mit der Luftwechselrate - sie steht in der Herleitung.
+        Assert.Contains("VDI 6007 rechnet mit 0,50 1/h (Luftwechselrate des Gebäudes).", cut.Markup);
+        Assert.Equal("", Eingabe(cut, "Infiltration :").GetAttribute("placeholder") ?? "");
+    }
+
+    [Fact]
+    public void Ein_gesetztes_Lueftungsfeld_zeigt_die_Vorgabe_des_anderen_und_die_Summe()
+    {
+        GebaeudeKatalogDaten daten = Satz();
+        daten.Modell = DbWerte.GEBAEUDE_MODELL_VDI6007;
+        var cut = Aufbauen(daten);
+
+        Eingabe(cut, "Infiltration :").Input("0,2");
+
+        Assert.Equal("Vorgabe 0,4", Eingabe(cut, "Nutzerlüftung :").GetAttribute("placeholder"));
+        Assert.Contains("VDI 6007 rechnet mit 0,60 1/h (Infiltration + Nutzerlüftung).", cut.Markup);
+        // H_ve folgt auf dem VDI-Weg dem wirksamen Luftwechsel.
+        Assert.Equal(Wk(0.6 * 150 * 2.5 * 0.34), Eingabe(cut, "H_ve Lüftung :").GetAttribute("value"));
+    }
+
+    [Fact]
+    public void Die_Lueftungsfelder_speichern_leer_als_NULL_und_gesetzt_mit_Wert()
+    {
+        GebaeudeKatalogDaten geschrieben = null!;
+        var cut = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Ok(cut);
+        Assert.Null(geschrieben.LuftwechselInfiltration);
+        Assert.Null(geschrieben.LuftwechselNutzer);
+        Assert.False(geschrieben.Sommerlueftung);
+
+        var cut2 = Aufbauen(speichern: (d, _, _) => { geschrieben = d; return new(true, ""); });
+        Eingabe(cut2, "Nutzerlüftung :").Input("0,8");
+        Kaestchen(cut2, "Sommerlüftung").Change(true);
+        Assert.Contains("steigt der Luftwechsel auf 2,0 1/h", cut2.Markup);
+        Ok(cut2);
+        Assert.Null(geschrieben.LuftwechselInfiltration);
+        Assert.Equal(0.8, geschrieben.LuftwechselNutzer);
+        Assert.True(geschrieben.Sommerlueftung);
+    }
+
+    [Fact]
+    public void Eine_Infiltration_von_0_faerbt_das_Feld()
+    {
+        var cut = Aufbauen();
+        Eingabe(cut, "Infiltration :").Input("0");
+
+        Assert.Contains("epos-fehleingabe", Eingabe(cut, "Infiltration :").ClassName ?? "");
+    }
+
     [Fact]
     public void Die_Rechenwegliste_fuehrt_zwei_Eintraege()
     {

@@ -205,6 +205,16 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Der Luftwechsel, mit dem der Rechenweg des Gebäudes rechnet [1/h]: auf dem VDI-Weg
+        /// Infiltration + Nutzerlüftung (sonst Luftwechselrate, sonst Vorgabe — Stufe G2), auf
+        /// dem Tagesbilanz-Weg die Luftwechselrate.
+        /// </summary>
+        private static double Luftwechsel(string modell, double luftwechselrate, double? infiltration, double? nutzer)
+            => Gebaeuderechenweg.IstVdi6007(modell)
+                ? Gebaeudemodellvorgaben.WirksamerLuftwechsel(luftwechselrate, infiltration, nutzer)
+                : luftwechselrate;
+
+        /// <summary>
         /// H_ges eines Katalog- bzw. Projektsatzes aus dem Kern-Modell [W/K] — die leise
         /// Kennzahl des Gebäudedialogs. Bezugsfläche ist die Nutzfläche.
         /// </summary>
@@ -218,7 +228,8 @@ namespace WindowsFormsApplication1
                 m.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand, m.Abmessung_Anschluß_Fenster_Wand,
                 m.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, m.Abmessung_Anschluß_Außenwand_Kellerdecke,
                 m.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, m.Abmessung_Anschluß_Wand_Dach);
-            return TransmissionWK(zeilen) + LueftungWK(m.Luftwechselrate, m.Nutzflaeche, m.Raumhoehe);
+            return TransmissionWK(zeilen) + LueftungWK(Luftwechsel(m.Gebaeude_Modell, m.Luftwechselrate,
+                m.Luftwechsel_Infiltration, m.Luftwechsel_Nutzer), m.Nutzflaeche, m.Raumhoehe);
         }
 
         /// <summary>Dasselbe für ein Projektgebäude, wie der Lauf es liest.</summary>
@@ -232,7 +243,8 @@ namespace WindowsFormsApplication1
                 m.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand, m.Abmessung_Anschluß_Fenster_Wand,
                 m.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, m.Abmessung_Anschluß_Außenwand_Kellerdecke,
                 m.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, m.Abmessung_Anschluß_Wand_Dach);
-            return TransmissionWK(zeilen) + LueftungWK(m.Luftwechselrate, m.Nutzflaeche, m.Raumhoehe);
+            return TransmissionWK(zeilen) + LueftungWK(Luftwechsel(m.Gebaeude_Modell, m.Luftwechselrate,
+                m.Luftwechsel_Infiltration, m.Luftwechsel_Nutzer), m.Nutzflaeche, m.Raumhoehe);
         }
     }
 }

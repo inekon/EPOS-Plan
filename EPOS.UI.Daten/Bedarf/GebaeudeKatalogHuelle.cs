@@ -206,6 +206,14 @@ namespace WindowsFormsApplication1
             t.LabelHeizungStrahlung = Text_("GEBK_LBL_HEIZUNG_STRAHLUNG", t.LabelHeizungStrahlung);
             t.LabelHeizleistungMax = Text_("GEBK_LBL_HEIZLEISTUNG_MAX", t.LabelHeizleistungMax);
             t.LabelAussenStrahlung = Text_("GEBK_LBL_AUSSEN_STRAHLUNG", t.LabelAussenStrahlung);
+            t.LabelInfiltration = Text_("GEBK_LBL_INFILTRATION", t.LabelInfiltration);
+            t.LabelNutzerlueftung = Text_("GEBK_LBL_NUTZERLUEFTUNG", t.LabelNutzerlueftung);
+            t.LabelSommerlueftung = Text_("GEBK_LBL_SOMMERLUEFTUNG", t.LabelSommerlueftung);
+            t.HinweisLuftwechsel = Text_("GEBK_HINWEIS_LUFTWECHSEL", t.HinweisLuftwechsel);
+            t.HerkunftInfiltrationNutzer = Text_("GEBK_HERKUNFT_INFILTRATION_NUTZER", t.HerkunftInfiltrationNutzer);
+            t.HerkunftLuftwechselrate = Text_("GEBK_HERKUNFT_LUFTWECHSELRATE", t.HerkunftLuftwechselrate);
+            t.HerkunftVorgabe = Text_("GEBK_HERKUNFT_VORGABE", t.HerkunftVorgabe);
+            t.HinweisSommerlueftung = Text_("GEBK_HINWEIS_SOMMERLUEFTUNG", t.HinweisSommerlueftung);
             t.VorgabeFormat = Text_("GEBK_VORGABE", t.VorgabeFormat);
             t.VorgabeUnbegrenzt = Text_("GEBK_VORGABE_UNBEGRENZT", t.VorgabeUnbegrenzt);
             t.HinweisModellparameter = Text_("GEBK_HINWEIS_MODELLPARAMETER", t.HinweisModellparameter);
@@ -393,7 +401,10 @@ namespace WindowsFormsApplication1
                 Innenflaechenfaktor = m.Innenflaechenfaktor,
                 HeizungStrahlungsanteil = m.Heizung_Strahlungsanteil,
                 HeizleistungMax = m.Heizleistung_Max,
-                AussenbauteileStrahlung = m.Aussenbauteile_Strahlung
+                AussenbauteileStrahlung = m.Aussenbauteile_Strahlung,
+                LuftwechselInfiltration = m.Luftwechsel_Infiltration,
+                LuftwechselNutzer = m.Luftwechsel_Nutzer,
+                Sommerlueftung = m.Sommerlueftung
             };
 
             d.Ferienbeginn = new[]
@@ -506,6 +517,9 @@ namespace WindowsFormsApplication1
             m.Heizung_Strahlungsanteil = d.HeizungStrahlungsanteil;
             m.Heizleistung_Max = d.HeizleistungMax;
             m.Aussenbauteile_Strahlung = d.AussenbauteileStrahlung;
+            m.Luftwechsel_Infiltration = d.LuftwechselInfiltration;
+            m.Luftwechsel_Nutzer = d.LuftwechselNutzer;
+            m.Sommerlueftung = d.Sommerlueftung;
 
             return m;
         }

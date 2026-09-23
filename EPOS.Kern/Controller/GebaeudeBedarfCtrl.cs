@@ -70,6 +70,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
         internal double? MittlereRaumtemperaturC;
+
+        // ---- Stufe G2: die Reihen des Bildes „Raumtemperatur" und zwei Stundenzahlen ----
+
+        /// <summary>Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur [h] — nur VDI-Weg.</summary>
+        internal int? UeberhitzungsstundenH;
+
+        /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
+        internal int? SommerlueftungsstundenH;
+
+        /// <summary>Raumlufttemperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
+        internal double[] RaumtemperaturC;
+
+        /// <summary>Operative Temperatur je Stunde [°C]; <c>null</c> auf dem Tagesbilanz-Weg.</summary>
+        internal double[] OperativeTemperaturC;
+
+        /// <summary>Heizsollwert je Stunde [°C] — untere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double[] HeizsollwertC;
+
+        /// <summary>Die obere Raumtemperatur [°C] — obere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double? ObereRaumtemperaturC;
     }
 
     /// <summary>
@@ -173,6 +193,12 @@ namespace WindowsFormsApplication1
                 ergebnis.KuehlenergieMwh = vdi.KuehlenergieMwh;
                 ergebnis.KuehlstundenH = vdi.StundenMitKuehlbedarf;
                 ergebnis.MittlereRaumtemperaturC = vdi.MittlereRaumtemperaturHeizzeit;
+                ergebnis.UeberhitzungsstundenH = vdi.Ueberhitzungsstunden;
+                ergebnis.SommerlueftungsstundenH = vdi.StundenMitSommerlueftung;
+                ergebnis.RaumtemperaturC = vdi.Raumtemperatur;
+                ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
+                ergebnis.HeizsollwertC = vdi.Heizsollwert;
+                ergebnis.ObereRaumtemperaturC = vdi.ThetaMax;
             }
             ergebnis.Erfolgreich = true;
             return ergebnis;

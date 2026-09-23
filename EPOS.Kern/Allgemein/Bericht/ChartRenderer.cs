@@ -4120,6 +4120,66 @@ namespace WindowsFormsApplication1
             => VerlaufsbildModell(titel, reihen, minAuto, TEMPERATUR_MINDESTSPANNE, fenster);
 
         /// <summary>
+        /// <b>RAUMTEMPERATUR EINES GEBÄUDES</b> (Gebäudesimulation VDI 6007, Stufe G2;
+        /// Konzept 8.2 und 9, Umsetzungskonzept 2.7): der Jahresverlauf der Raumluft- und der
+        /// operativen Temperatur mit dem <b>Sollwertband</b> — unten der Heizsollwert nach dem
+        /// Fahrplan, oben die obere Raumtemperatur, beide gestrichelt. Gezeichnet wie der
+        /// <see cref="Temperaturverlauf"/>: vorzeichenfähige Achse über Min und Max des
+        /// angezeigten Ausschnitts, Mindestspanne 5 K, Datenzoom über
+        /// <paramref name="fenster"/>.
+        ///
+        /// <para>Eine fehlende Reihe (<c>null</c>) entfällt still; ohne jede Reihe steht der
+        /// Leerhinweis. Die obere Raumtemperatur ist ein Festwert je Gebäude und wird als
+        /// konstante Reihe von der Länge der Luftreihe gezeichnet.</para>
+        /// </summary>
+        public static byte[] Raumtemperatur(string titel, double[] raumluft, double[] operativ,
+                                            double[] heizsollwert, double? obereGrenze,
+                                            Raumtemperaturnamen namen, Achsenfenster fenster = null)
+            => SkiaMaler.Png(RaumtemperaturModell(titel, raumluft, operativ, heizsollwert, obereGrenze,
+                                                  namen, fenster));
+
+        /// <summary>Dasselbe Bild als Zeichenmodell — der Weg der Oberfläche (<c>DiagrammSvg</c>).</summary>
+        public static Zeichenmodell RaumtemperaturModell(string titel, double[] raumluft, double[] operativ,
+                                                         double[] heizsollwert, double? obereGrenze,
+                                                         Raumtemperaturnamen namen, Achsenfenster fenster = null)
+        {
+            namen ??= new Raumtemperaturnamen();
+            var reihen = new List<Reihe>();
+            if (raumluft != null)
+                reihen.Add(new Reihe(namen.Raumluft, raumluft, Farbrolle.SERIE_1));
+            if (operativ != null)
+                reihen.Add(new Reihe(namen.Operativ, operativ, Farbrolle.SERIE_2));
+            if (heizsollwert != null)
+                reihen.Add(new Reihe(namen.Heizsollwert, heizsollwert, Farbrolle.SERIE_3,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            int laenge = raumluft?.Length ?? operativ?.Length ?? heizsollwert?.Length ?? 0;
+            if (obereGrenze is double oben && !double.IsNaN(oben) && !double.IsInfinity(oben) && laenge > 0)
+            {
+                var konstant = new double[laenge];
+                for (int i = 0; i < laenge; i++) konstant[i] = oben;
+                reihen.Add(new Reihe(namen.ObereGrenze, konstant, Farbrolle.SERIE_4,
+                                     Stapelart.Keine, Strichart.Gestrichelt));
+            }
+            return VerlaufsbildModell(titel, reihen, true, TEMPERATUR_MINDESTSPANNE, fenster,
+                                      yTitel: namen.Achse);
+        }
+
+        /// <summary>Die Legendennamen und der Achsentitel des Bildes „Raumtemperatur" — die Texte reicht der Aufrufer.</summary>
+        public sealed class Raumtemperaturnamen
+        {
+            /// <summary>Legende der Raumlufttemperatur.</summary>
+            public string Raumluft { get; init; } = "Raumluft";
+            /// <summary>Legende der operativen Temperatur.</summary>
+            public string Operativ { get; init; } = "operative Temperatur";
+            /// <summary>Legende des Heizsollwerts.</summary>
+            public string Heizsollwert { get; init; } = "Heizsollwert";
+            /// <summary>Legende der oberen Raumtemperatur.</summary>
+            public string ObereGrenze { get; init; } = "obere Raumtemperatur";
+            /// <summary>Titel der y-Achse; <c>null</c> = keiner.</summary>
+            public string Achse { get; init; } = "°C";
+        }
+
+        /// <summary>
         /// <b>B10 — LASTGANG UND SPEICHERBETRIEB</b> (Befund W11b‑B‑25, Windows-Abnahme
         /// 09.09.2026: „Lastgang und Speicherung in einer Grafik").
         ///

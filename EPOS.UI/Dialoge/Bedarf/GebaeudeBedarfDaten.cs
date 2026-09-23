@@ -36,10 +36,9 @@ public sealed class GebaeudeBedarfDaten
     /// <summary>Die zwölf Monatssummen in <b>MWh</b>; leer = keine Monatsübersicht.</summary>
     public IReadOnlyList<double> MonatswerteMwh { get; init; } = new List<double>();
 
-    // ---- Stufe G1 (Umsetzungskonzept Gebaeudesimulation 1.4, 2.7) ----------------
+    // ---- Stufen G1 und G2 (Umsetzungskonzept Gebaeudesimulation 1.4, 2.7) --------
     //
-    // Alle nullbar: ohne Wert steht "—", nie eine erfundene Zahl. Die Darstellung der
-    // Kennzahlen und der Vergleich alt/neu folgen mit G2.
+    // Alle nullbar: ohne Wert steht "—", nie eine erfundene Zahl.
 
     /// <summary>
     /// Der Rechenweg als Anzeigetext — auf dem Altweg „Tagesbilanz (Bestandsweg)".
@@ -61,4 +60,21 @@ public sealed class GebaeudeBedarfDaten
 
     /// <summary>Mittlere Raumlufttemperatur in der Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
     public double? MittlereRaumtemperaturC { get; init; }
+
+    /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur [h] — nur auf dem VDI-Weg.</summary>
+    public int? UeberhitzungsstundenH { get; init; }
+
+    /// <summary>Stunden mit Sommerlüftung [h] — nur auf dem VDI-Weg mit eingeschalteter Regel.</summary>
+    public int? SommerlueftungsstundenH { get; init; }
+
+    /// <summary>
+    /// Der jeweils ANDERE Rechenweg desselben Gebäudes — die zweite Spalte des Vergleichs
+    /// alt/neu (Konzept 8.2, Umsetzungskonzept 2.7). <c>null</c> = kein Vergleich (der andere
+    /// Weg lieferte nichts). Er lebt, solange es zwei Rechenwege gibt (bis Stufe GA,
+    /// Löschliste Kapitel 6).
+    /// </summary>
+    public GebaeudeBedarfDaten? Vergleich { get; init; }
+
+    /// <summary>Rechnet dieser Satz auf dem VDI-Weg? Nur dann gibt es das Bild „Raumtemperatur".</summary>
+    public bool IstVdi6007 { get; init; }
 }

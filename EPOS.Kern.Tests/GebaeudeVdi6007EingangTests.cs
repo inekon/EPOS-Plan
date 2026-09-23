@@ -174,7 +174,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(GebaeudeModellFehler.UWertUnplausibel, Grund(() => Klassenweg(g => g.k_Wert_Außenwand = 8.0)));
             Assert.Equal(GebaeudeModellFehler.GWertUnplausibel, Grund(() => Klassenweg(g => g.Fensterdurchlassgrad = 0.0)));
             Assert.Equal(GebaeudeModellFehler.PflichtgroesseFehlt, Grund(() => Klassenweg(g => g.Nutzflaeche = 0.0)));
-            Assert.Equal(GebaeudeModellFehler.PflichtgroesseFehlt, Grund(() => Klassenweg(g => g.Luftwechselrate = 0.0)));
+            // Stufe G2: ohne Luftwechselrate und ohne Infiltration/Nutzerluftung gilt die Vorgabe
+            // (0,3 + 0,4 1/h) - kein Fehler mehr; eine gesetzte Infiltration <= 0 ist benannt.
+            Klassenweg(g => g.Luftwechselrate = 0.0);
+            Assert.Equal(GebaeudeModellFehler.ParameterUngueltig, Grund(() => Klassenweg(g => g.Luftwechsel_Infiltration = 0.0)));
+            Assert.Equal(GebaeudeModellFehler.ParameterUngueltig, Grund(() => Klassenweg(g => g.Luftwechsel_Nutzer = -0.1)));
             Assert.Equal(GebaeudeModellFehler.PflichtgroesseFehlt, Grund(() => Klassenweg(g => g.Raumhoehe = 0.0)));
             Assert.Equal(GebaeudeModellFehler.FensterzweigUngueltig, Grund(() => Klassenweg(g => g.k_Wert_Fenster = 6.0)));
 

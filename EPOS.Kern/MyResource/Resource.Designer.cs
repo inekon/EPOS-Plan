@@ -15557,6 +15557,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GEBB_BILD_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GEBB_BILD_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die h ähnelt.
+        /// </summary>
+        public static string GEBB_EINHEIT_H {
+            get {
+                return ResourceManager.GetString("GEBB_EINHEIT_H", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die h/a ähnelt.
         /// </summary>
         public static string GEBB_EINHEIT_STUNDEN {
@@ -15575,6 +15593,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vergleich der Rechenwege ähnelt.
+        /// </summary>
+        public static string GEBB_GRP_VERGLEICH {
+            get {
+                return ResourceManager.GetString("GEBB_GRP_VERGLEICH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärmebedarf Heizung: ähnelt.
         /// </summary>
         public static string GEBB_LBL_HEIZWAERME {
@@ -15584,11 +15611,155 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbedarf (informativ): ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_KUEHLBEDARF {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_KUEHLBEDARF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Kühlbedarf: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_KUEHLSTUNDEN {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_KUEHLSTUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die mittlere Raumtemperatur (Nutzungszeit): ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_MITTLERE_RAUMTEMPERATUR {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_MITTLERE_RAUMTEMPERATUR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit Sommerlüftung: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_SOMMERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_SOMMERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die 95-%-Wert der Stundenlast: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_SPITZE_QUANTIL95 {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_SPITZE_QUANTIL95", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenlast (Stunde): ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_SPITZE_STUNDE {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_SPITZE_STUNDE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Spitzenlast (Tagesmittel): ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_SPITZE_TAGESMITTEL {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_SPITZE_TAGESMITTEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Überhitzungsstunden: ähnelt.
+        /// </summary>
+        public static string GEBB_LBL_UEBERHITZUNG {
+            get {
+                return ResourceManager.GetString("GEBB_LBL_UEBERHITZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Vollbenutzungsstunden: ähnelt.
         /// </summary>
         public static string GEBB_LBL_VOLLBENUTZUNG {
             get {
                 return ResourceManager.GetString("GEBB_LBL_VOLLBENUTZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizsollwert ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_HEIZSOLLWERT {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_HEIZSOLLWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die obere Raumtemperatur ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_OBERE_GRENZE {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_OBERE_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die operative Temperatur ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_OPERATIV {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_OPERATIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Raumluft ähnelt.
+        /// </summary>
+        public static string GEBB_REIHE_RAUMLUFT {
+            get {
+                return ResourceManager.GetString("GEBB_REIHE_RAUMLUFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Abweichung ähnelt.
+        /// </summary>
+        public static string GEBB_SP_ABWEICHUNG {
+            get {
+                return ResourceManager.GetString("GEBB_SP_ABWEICHUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kennzahl ähnelt.
+        /// </summary>
+        public static string GEBB_SP_KENNZAHL {
+            get {
+                return ResourceManager.GetString("GEBB_SP_KENNZAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbilanz ähnelt.
+        /// </summary>
+        public static string GEBB_SP_TAGESBILANZ {
+            get {
+                return ResourceManager.GetString("GEBB_SP_TAGESBILANZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 6007 ähnelt.
+        /// </summary>
+        public static string GEBB_SP_VDI6007 {
+            get {
+                return ResourceManager.GetString("GEBB_SP_VDI6007", resourceCulture);
             }
         }
         
@@ -15980,6 +16151,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration + Nutzerlüftung ähnelt.
+        /// </summary>
+        public static string GEBK_HERKUNFT_INFILTRATION_NUTZER {
+            get {
+                return ResourceManager.GetString("GEBK_HERKUNFT_INFILTRATION_NUTZER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechselrate des Gebäudes ähnelt.
+        /// </summary>
+        public static string GEBK_HERKUNFT_LUFTWECHSELRATE {
+            get {
+                return ResourceManager.GetString("GEBK_HERKUNFT_LUFTWECHSELRATE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorgabe ähnelt.
+        /// </summary>
+        public static string GEBK_HERKUNFT_VORGABE {
+            get {
+                return ResourceManager.GetString("GEBK_HERKUNFT_VORGABE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die (z.B. 0,4) ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_FENSTERDURCHLASS {
@@ -16016,11 +16214,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die VDI 6007 rechnet mit {0} 1/h ({1}). ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_LUFTWECHSEL {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_LUFTWECHSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Leere Felder rechnen mit der Vorgabe. Die Werte gelten für den Rechenweg VDI 6007. ähnelt.
         /// </summary>
         public static string GEBK_HINWEIS_MODELLPARAMETER {
             get {
                 return ResourceManager.GetString("GEBK_HINWEIS_MODELLPARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommerlüftung: Ist die Raumluft über {0} °C und die Außenluft mindestens 2 K kühler, steigt der Luftwechsel auf {1} 1/h. ähnelt.
+        /// </summary>
+        public static string GEBK_HINWEIS_SOMMERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_HINWEIS_SOMMERLUEFTUNG", resourceCulture);
             }
         }
         
@@ -16277,6 +16493,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Infiltration : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_INFILTRATION {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_INFILTRATION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Innenflächenfaktor : ähnelt.
         /// </summary>
         public static string GEBK_LBL_INNENFLAECHENFAKTOR {
@@ -16349,6 +16574,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzerlüftung : ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_NUTZERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_NUTZERLUEFTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Rahmenanteil : ähnelt.
         /// </summary>
         public static string GEBK_LBL_RAHMENANTEIL {
@@ -16390,6 +16624,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEBK_LBL_SOLL_TAG {
             get {
                 return ResourceManager.GetString("GEBK_LBL_SOLL_TAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sommerlüftung ähnelt.
+        /// </summary>
+        public static string GEBK_LBL_SOMMERLUEFTUNG {
+            get {
+                return ResourceManager.GetString("GEBK_LBL_SOMMERLUEFTUNG", resourceCulture);
             }
         }
         
@@ -27431,6 +27674,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechnet Sonneneinstrahlung und langwellige Abstrahlung auf die opaken Außenbauteile ein (VDI 6007). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_AUSSENBAUTEILE_STRAHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_AUSSENBAUTEILE_STRAHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Außenwandfläche ohne die Fenster. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_AUSSENWAND_ERL {
@@ -27503,6 +27755,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche nach Osten in m²; leer = die Hälfte von Ost + West. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fensterfläche nach Westen in m²; leer = die Hälfte von Ost + West. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_FENSTERFLAECHE_WEST_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_FENSTERFLAECHE_WEST_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Wärmebrückenverlustkoeffizient des Anschlusses Fenster an Wand. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_FENSTER_WAND_ERL {
@@ -27557,11 +27827,74 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Größte Heizleistung des Stundenmodells in kW; leer = unbegrenzt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_HEIZLEISTUNG_MAX_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_HEIZLEISTUNG_MAX_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strahlungsanteil der Wärmeübergabe (VDI 6007); leer = Vorgabe 0,3. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_HEIZUNG_STRAHLUNGSANTEIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_HEIZUNG_STRAHLUNGSANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Innenbauteilfläche je m² Nutzfläche (VDI 6007); leer = Vorgabe 2,5. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_INNENFLAECHENFAKTOR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_INNENFLAECHENFAKTOR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Temperatur des unbeheizten Kellers unter der Bodenplatte in °C; leer = Vorgabe 10 °C. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_KELLERTEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_KELLERTEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Luftwechselrate des Gebäudes; sie bestimmt die Lüftungsverluste. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_LUFTWECHSEL_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_LUFTWECHSEL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechsel durch Undichtheiten (VDI 6007); sind Infiltration und Nutzerlüftung leer, gilt die Luftwechselrate. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_LUFTWECHSEL_INFILTRATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_LUFTWECHSEL_INFILTRATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Luftwechsel durch Fensterlüftung der Nutzer (VDI 6007); zusammen mit der Infiltration der Luftwechsel des Stundenmodells. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_LUFTWECHSEL_NUTZER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_LUFTWECHSEL_NUTZER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil der Speichermasse in den Außenbauteilen (VDI 6007); leer = Vorgabe 0,3. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_MASSEANTEIL_AUSSEN_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_MASSEANTEIL_AUSSEN_ERL", resourceCulture);
             }
         }
         
@@ -27593,11 +27926,29 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anteil des Fensterrahmens an der Fensterfläche (VDI 6007); leer = Vorgabe 0,3. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RAHMENANTEIL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RAHMENANTEIL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die mittlere lichte Raumhöhe; sie geht in das beheizte Luftvolumen ein. ähnelt.
         /// </summary>
         public static string KI_DLG_GEBK_RAUMHOEHE_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_RAUMHOEHE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Rechenweg des Gebäudes: VDI 6007 (Stundenmodell) oder Tagesbilanz (Bestandsweg); nur lesend. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_RECHENWEG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_RECHENWEG_ERL", resourceCulture);
             }
         }
         
@@ -27616,6 +27967,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_SOLL_TAG_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_SOLL_TAG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erhöhter Luftwechsel an warmen Tagen, wenn die Außenluft kühler ist (VDI 6007). ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_SOMMERLUEFTUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_SOMMERLUEFTUNG_ERL", resourceCulture);
             }
         }
         
@@ -27679,6 +28039,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_GEBK_U_SONSTIGES_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_GEBK_U_SONSTIGES_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Pauschaler Verschattungsfaktor der Fenster (VDI 6007); leer = Vorgabe 0,9. ähnelt.
+        /// </summary>
+        public static string KI_DLG_GEBK_VERSCHATTUNGSFAKTOR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_GEBK_VERSCHATTUNGSFAKTOR_ERL", resourceCulture);
             }
         }
         
