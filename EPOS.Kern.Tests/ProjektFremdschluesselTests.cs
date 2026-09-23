@@ -26,9 +26,11 @@ namespace EPOS.Kern.Tests
     /// aus dem Elternsatz HEILEN lässt, muss bleiben.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class ProjektFremdschluesselTests
+    public class ProjektFremdschluesselTests : IDisposable
     {
         private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         // =============================================================================
         //  Teil 1 - Katalog und Texte

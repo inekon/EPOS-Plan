@@ -228,9 +228,13 @@ eine Größe ohne Referenz-CSV kommt eine Probe in `EPOS.Kern.Tests` dazu.
 sowie `System.Windows.Forms`, `System.Drawing`, `MessageBox.`, `\bRegistry\.` (Wortgrenze, sonst
 trifft `speicherRegistry.`), `ProtectedData`, `OleDb` in `EPOS.Kern/*.cs`.
 
-- **Tests mit Datenbank:** `TestDatenbank.cs` legt je Testklasse eine Arbeitskopie von
-  `Kenndaten_Test.sqlite` an und biegt `PfadUeberschreibung` darauf um; fehlt die Datei,
-  schweigen die Fälle.
+- **Tests mit Datenbank:** `TestDatenbank.cs` legt je Testfall oder Testklasse eine Arbeitskopie
+  von `Kenndaten_Test.sqlite` unter `%TEMP%\epos-kerntest-*` an und biegt `PfadUeberschreibung`
+  darauf um; fehlt die Datei, schweigen die Fälle. **Jede Instanz wird entsorgt:** `using`,
+  Klassenvorrichtung oder Feld einer Testklasse, die `IDisposable` trägt und das Feld in `Dispose`
+  entsorgt — sonst bleibt je Testfall eine Kopie von rund 65 MB liegen. Wächter:
+  `TestDatenbankEntsorgungWacheTests`; was trotzdem liegen bleibt, räumt der nächste Lauf über die
+  freie Besitzmarke weg.
 - **`[Collection("Testdatenbank")]` ist die EINE serielle Sammlung.** Wer die Testdatenbank
   benutzt **oder** ein `Dienste.*` tauscht, gehört hinein — beides ist prozessweiter Zustand,
   und xunit trennt nur INNERHALB einer Sammlung. Wächter: `DiensteSammlungTests`.
