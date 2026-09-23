@@ -24515,4 +24515,43 @@ Do you want to allow this?</value>
   <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
     <value>energy carrier of the heat generator</value>
   </data>
+  <data name="WIRT_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Calculation step “{0}” could not be run: {1}</value>
+  </data>
+  <data name="WIRT_STUFE_PARAMETER" xml:space="preserve">
+    <value>project parameters</value>
+  </data>
+  <data name="WIRT_STUFE_TARIF" xml:space="preserve">
+    <value>electricity tariff of the project</value>
+  </data>
+  <data name="WIRT_STUFE_ANLAGEN" xml:space="preserve">
+    <value>plants of the project</value>
+  </data>
+  <data name="WIRT_STUFE_LEISTUNG" xml:space="preserve">
+    <value>electrical capacity of the CHP units</value>
+  </data>
+  <data name="WIRT_STUFE_TRAEGER" xml:space="preserve">
+    <value>energy carrier</value>
+  </data>
+  <data name="WIRT_STUFE_HEIZOEL" xml:space="preserve">
+    <value>heating oil check of the CHP units</value>
+  </data>
+  <data name="WIRT_STUFE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>operating costs</value>
+  </data>
+  <data name="WIRT_STUFE_KATALOG" xml:space="preserve">
+    <value>legal parameter catalogue</value>
+  </data>
+  <data name="WIRT_STUFE_KOHAERENZ" xml:space="preserve">
+    <value>coherence check</value>
+  </data>
+  <data name="WIRT_STUFE_SATZHERLEITUNG" xml:space="preserve">
+    <value>CHP Act rate derivation</value>
+  </data>
+  <data name="WIRT_STUFE_SPEICHERN" xml:space="preserve">
+    <value>saving the results</value>
+  </data>
+  <data name="WIRT_STUFE_LADEN" xml:space="preserve">
+    <value>loading the results</value>
+  </data>
 </root>

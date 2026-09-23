@@ -27,7 +27,12 @@ namespace EPOS.Kern.Tests
     /// ein Lesefehler steht in <see cref="Emissionsfaktoren.Lesefehler"/> und an der
     /// Herkunft. <b>Gruppe 4 — Gesetzeskatalog:</b> Rückfallebene mit Grund
     /// (<see cref="GesetzKatalog.Lesefehler"/>), die Pflegewege mit
-    /// <see cref="GesetzKatalog.LetzterFehler"/>, die Saat mit benannter Tabellenanlage.</para>
+    /// <see cref="GesetzKatalog.LetzterFehler"/>, die Saat mit benannter Tabellenanlage.
+    /// <b>Gruppe 5 — Wirtschaftlichkeit:</b> Jede Rechenstufe, deren Scheitern bisher still
+    /// in einen Rückfall führte (Parameter, Tarif, Anlagen, Leistung, Träger, Heizöl,
+    /// Betriebskosten, Katalog, Kohärenz, Satzherleitung), schreibt an jede Ergebniszeile
+    /// „Rechenstufe „X“ nicht ausführbar: &lt;Grund&gt;“; Speichern und Laden nennen ihr
+    /// Scheitern an den Zeilen bzw. in <see cref="WirtschaftlichkeitCtrl.Ladefehler"/>.</para>
     ///
     /// <para><b>Der strenge Leseweg.</b> <c>DataRepository</c> meldet einen Abfragefehler
     /// selbst (Dialog, im Engine-Modus still) und liefert eine leere Tabelle bzw.
@@ -314,6 +319,148 @@ namespace EPOS.Kern.Tests
             Assert.False(GesetzKatalog.Existiert(DbWerte.GESETZ_KLASSE_KWKG, "GIBT_ES_NICHT", 2026, 0));
             Assert.NotNull(GesetzKatalog.LetzterFehler);
             Assert.Contains("JahrVon", GesetzKatalog.LetzterFehler);
+        }
+
+        // =================================================================
+        //  Gruppe 5 — Wirtschaftlichkeit: die Rechenstufen
+        // =================================================================
+
+        private const int PROJEKT = 1030;
+
+        /// <summary>Die Kette der Ankertests, ohne Stundenreihen.</summary>
+        private static List<WirtschaftlichkeitErgebnis> Rechne(WirtschaftlichkeitParameter p)
+        {
+            var v = new VariantenDaten
+            {
+                IdProjekt = PROJEKT,
+                IstStamm = true,
+                Projektname = "Prüffall B-6",
+                Ergebnis = new ErgebnisCtrl().Load(PROJEKT)
+            };
+            KostenEmissionRechner.Berechne(v);
+            var daten = new BerichtsDaten { IdStamm = PROJEKT, Stammprojektname = v.Projektname };
+            daten.Varianten.Add(v);
+            return new WirtschaftlichkeitCtrl().Berechne(daten, p);
+        }
+
+        /// <summary>Jede der drei Szenariozeilen trägt GENAU EINE Warnzeile, die mit
+        /// <paramref name="anfang"/> beginnt und <paramref name="enthaelt"/> nennt.</summary>
+        private static void JedeZeileNennt(List<WirtschaftlichkeitErgebnis> alle, string anfang,
+                                           string enthaelt)
+        {
+            Assert.Equal(3, alle.Count(e => e.IdProjekt == PROJEKT));
+            foreach (WirtschaftlichkeitErgebnis e in alle.Where(x => x.IdProjekt == PROJEKT))
+            {
+                KohaerenzHinweis h = Assert.Single(e.KohaerenzHinweise,
+                    x => x.Text.StartsWith(anfang, StringComparison.Ordinal));
+                Assert.Equal(KohaerenzSchwere.WARNUNG, h.Schwere);
+                Assert.Contains(enthaelt, h.Text);
+            }
+        }
+
+        private static WirtschaftlichkeitErgebnis Erwartet(List<WirtschaftlichkeitErgebnis> alle)
+            => alle.Single(x => x.IdProjekt == PROJEKT && x.Szenario == WirtschaftlichkeitSzenario.ERWARTET);
+
+        /// <summary>Gruppe 5: Ohne Fehler steht an keiner Ergebniszeile eine Stufenzeile.</summary>
+        [Fact]
+        public void Ohne_Fehler_steht_keine_Stufenzeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
+            Assert.Null(p.Lesefehler);
+            foreach (WirtschaftlichkeitErgebnis e in Rechne(p))
+                Assert.DoesNotContain(e.KohaerenzHinweise ?? new List<KohaerenzHinweis>(),
+                                      h => h.Text.Contains("nicht ausführbar"));
+        }
+
+        /// <summary>
+        /// Gruppe 5: Lässt sich der Parametersatz nicht lesen (hier ein Datum, das keines
+        /// ist), rechnet der Lauf wie bisher mit den Vorgaben — aber jede Ergebniszeile
+        /// nennt die Rechenstufe und den Grund, statt wie ein vollständiger Kapitalwert
+        /// auszusehen.
+        /// </summary>
+        [Fact]
+        public void Ein_unlesbarer_Parametersatz_steht_an_jeder_Ergebniszeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ProjektWirtschaftlichkeit SET GeaendertAm = 'kaputt' WHERE ID_Projekt = " + PROJEKT);
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
+            Assert.NotNull(p.Lesefehler);
+            Assert.StartsWith("FormatException: ", p.Lesefehler);
+
+            JedeZeileNennt(Rechne(p),
+                "Rechenstufe „Parameter des Projekts“ nicht ausführbar: FormatException: ", "kaputt");
+        }
+
+        /// <summary>Gruppe 5: Ist die Anlagentabelle nicht lesbar, fehlt die KWKG-Reihe
+        /// wie bisher — und die Ergebniszeile nennt die Rechenstufe „Anlagen des
+        /// Projekts" samt Grund (bis E7c3 las sich das wie „keine Anlage").</summary>
+        [Fact]
+        public void Eine_unlesbare_Anlagenliste_steht_an_der_Ergebniszeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitParameter p = new WirtschaftlichkeitCtrl().LadeParameter(PROJEKT);
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Energieanlagen RENAME TO Tab_Energieanlagen_B6");
+
+            JedeZeileNennt(Rechne(p),
+                "Rechenstufe „Anlagen des Projekts“ nicht ausführbar: ", "Tab_Energieanlagen");
+        }
+
+        /// <summary>Gruppe 5: Scheitert das Speichern, gelten die Zahlen des Laufs weiter —
+        /// derselbe Kapitalwert —, aber jede Zeile sagt, dass sie NICHT gespeichert ist;
+        /// beim nächsten Laden erschiene sonst still der alte Stand.</summary>
+        [Fact]
+        public void Ein_gescheitertes_Speichern_steht_an_jeder_Ergebniszeile()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(PROJEKT);
+            double kapitalwert = Erwartet(Rechne(p)).Kapitalwert.Value;
+
+            DataRepository.ExecuteNonQuery(
+                "CREATE TRIGGER b6_stop BEFORE INSERT ON " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS +
+                " BEGIN SELECT RAISE(ABORT, 'B6-Probe'); END");
+            List<WirtschaftlichkeitErgebnis> alle = Rechne(p);
+
+            JedeZeileNennt(alle, "Rechenstufe „Speichern der Ergebnisse“ nicht ausführbar: ", "B6-Probe");
+            Assert.Equal(kapitalwert, Erwartet(alle).Kapitalwert.Value);
+        }
+
+        /// <summary>Gruppe 5: Lässt sich der gespeicherte Stand nicht laden, nennt
+        /// <see cref="WirtschaftlichkeitCtrl.Ladefehler"/> den Grund, statt dass das Projekt
+        /// wie „nie gerechnet" aussieht.</summary>
+        [Fact]
+        public void Ein_unlesbarer_Ergebnisstand_nennt_den_Ladefehler()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new WirtschaftlichkeitCtrl();
+            Rechne(ctrl.LadeParameter(PROJEKT));
+            Assert.Equal(3, ctrl.LadeErgebnisse(new List<int> { PROJEKT }).Count);
+            Assert.Null(ctrl.Ladefehler);
+
+            DataRepository.ExecuteNonQuery(
+                "UPDATE " + WirtschaftlichkeitCtrl.TAB_ERGEBNIS + " SET Zeitstempel = 'kaputt' " +
+                "WHERE ID_Projekt = " + PROJEKT);
+            List<WirtschaftlichkeitErgebnis> geladen = ctrl.LadeErgebnisse(new List<int> { PROJEKT });
+
+            Assert.NotNull(ctrl.Ladefehler);
+            Assert.StartsWith("FormatException: ", ctrl.Ladefehler);
+            // Was vor dem Fehler gelesen war, trüge die Zeile „Laden der Ergebnisse";
+            // hier scheitert schon das Einlesen der Tabelle.
+            foreach (WirtschaftlichkeitErgebnis e in geladen)
+                Assert.Contains(e.KohaerenzHinweise, h => h.Text.StartsWith(
+                    "Rechenstufe „Laden der Ergebnisse“ nicht ausführbar: ", StringComparison.Ordinal));
         }
     }
 }

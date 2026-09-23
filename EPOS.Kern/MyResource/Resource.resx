@@ -24522,4 +24522,43 @@ Möchten Sie das zulassen?</value>
   <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
     <value>Energieträger des Wärmeerzeugers</value>
   </data>
+  <data name="WIRT_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Rechenstufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="WIRT_STUFE_PARAMETER" xml:space="preserve">
+    <value>Parameter des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_TARIF" xml:space="preserve">
+    <value>Stromtarif des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_ANLAGEN" xml:space="preserve">
+    <value>Anlagen des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_LEISTUNG" xml:space="preserve">
+    <value>elektrische Leistung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_TRAEGER" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="WIRT_STUFE_HEIZOEL" xml:space="preserve">
+    <value>Heizölprüfung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_STUFE_KATALOG" xml:space="preserve">
+    <value>Gesetzeskatalog</value>
+  </data>
+  <data name="WIRT_STUFE_KOHAERENZ" xml:space="preserve">
+    <value>Kohärenzprüfung</value>
+  </data>
+  <data name="WIRT_STUFE_SATZHERLEITUNG" xml:space="preserve">
+    <value>KWKG-Satzherleitung</value>
+  </data>
+  <data name="WIRT_STUFE_SPEICHERN" xml:space="preserve">
+    <value>Speichern der Ergebnisse</value>
+  </data>
+  <data name="WIRT_STUFE_LADEN" xml:space="preserve">
+    <value>Laden der Ergebnisse</value>
+  </data>
 </root>

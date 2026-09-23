@@ -244,6 +244,14 @@ namespace WindowsFormsApplication1
         public int IdStamm;
 
         /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6): der Grund, aus dem der Parametersatz nicht gelesen
+        /// werden konnte — dann rechnet der Lauf mit den Vorgaben dieser Klasse, und jede
+        /// Ergebniszeile trägt die Kohärenzzeile „Rechenstufe „Wirtschaftlichkeits-
+        /// parameter“ nicht ausführbar". <c>null</c> = gelesen oder keine Zeile gespeichert.
+        /// </summary>
+        public string Lesefehler;
+
+        /// <summary>
         /// KONZEPT § 2.9 — das <b>wählbare Vergleichsprojekt</b> der Gruppe:
         /// <c>Tab_Projekt.ID</c> des Standes, gegen den alle Differenzkennzahlen
         /// rechnen (Kapitalwertdifferenz, Annuität, dynamische Amortisation, interner
@@ -674,6 +682,11 @@ namespace WindowsFormsApplication1
     {
         public int IdStamm;
         public bool Aktiv;
+
+        /// <summary>ETAPPE E7c3 (Befund B‑6): der Grund, aus dem der Tarif nicht gelesen
+        /// werden konnte (dann gilt er als nicht aktiv, wie ohne Zeile); <c>null</c> =
+        /// gelesen oder keine Zeile.</summary>
+        public string Lesefehler;
 
         /// <summary>
         /// Die Winterspanne als Monatsspanne (über den Jahreswechsel möglich). Sie

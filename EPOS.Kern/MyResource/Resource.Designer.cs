@@ -67192,6 +67192,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_ANLAGEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_BETRIEBSKOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_BETRIEBSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizölprüfung der BHKW ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzeskatalog ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kohärenzprüfung ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_KOHAERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_KOHAERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden der Ergebnisse ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_LADEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Leistung der BHKW ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenstufe „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_PARAMETER {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Satzherleitung ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_SATZHERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_SATZHERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern der Ergebnisse ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_SPEICHERN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromtarif des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_TARIF {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_TRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_TRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Günstig ähnelt.
         /// </summary>
         public static string WIRT_SZEN_BEST {
