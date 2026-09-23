@@ -18,6 +18,7 @@ namespace EPOS.Kern.Tests
         {
             [ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG] = 12.0,
             [ZapfAuslegungParameter.W551_MINDESTTEMPERATUR] = 62.0,
+            [ZapfAuslegungParameter.SPEICHERTEMPERATUR_VORGABE] = 56.0,
             [ZapfAuslegungParameter.LADUNGSFAKTOR] = 0.8,
             [ZapfAuslegungParameter.SENSORHOEHE] = 0.5,
             [ZapfAuslegungParameter.MISCHWASSERTEMPERATUR] = 44.0,
@@ -49,7 +50,7 @@ namespace EPOS.Kern.Tests
             [ZapfAuslegungParameter.ZUSCHLAG] = 0.1,
             [ZapfAuslegungParameter.LADEFENSTER_LAENGE] = 10.0,
             [ZapfAuslegungParameter.LADEFENSTER_BEGINN] = 22.0,
-            [ZapfAuslegungParameter.GLF_OBERGRENZE] = 40.0,
+            [ZapfAuslegungParameter.GLF_GUELTIGKEITSGRENZE] = 30.0,
             [ZapfAuslegungParameter.KLASSISCH_LITER] = 40.0,
             [ZapfAuslegungParameter.KLASSISCH_SPREIZUNG] = 45.0,
             [ZapfAuslegungParameter.KLASSISCH_WARNFAKTOR] = 2.5,

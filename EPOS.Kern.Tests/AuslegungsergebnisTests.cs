@@ -138,11 +138,138 @@ namespace EPOS.Kern.Tests
             Assert.Equal(40.0, r.Herkunft.Last(x => x.Zone == "Wohnhaus" && x.Feld == ZapfFeld.BEZUGSMENGE).Wert);
             Assert.Equal(40.0, g.Normvergleich.Personen);
             Assert.True(Relativ(g.Normvergleich.KennzahlN.Value, 10.0) < 1e-12);
-            // Klassisch: 40 P · 40 l · 45 K / 50 K · 1,1 (Speicher 62 °C, Kaltwasser 12 °C aus dem Parametersatz).
+            // Klassisch: 40 P · 40 l · 45 K / 50 K · 1,1 — das empfohlene Volumen macht die 20 WE zur
+            // Großanlage (erfundene Schwelle 450 l), die Gruppe rechnet mit W 551 (62 °C), Kaltwasser 12 °C.
+            Assert.Equal(new Speichertemperaturwahl(62.0, Speichertemperaturquelle.Grossanlage, false), g.Speichertemperatur);
+            Assert.True(g.Grossanlage.Gross);
             Assert.True(Relativ(g.Speicherauslegung.VolumenKlassischL.Value, 40.0 * 40.0 * 45.0 / 50.0 * 1.1) < 1e-12);
             // Q_a = 40 P · 2 kWh · 365 · f_θ; mit f_KW,A = (50 − 12)/(50 − 11) wird die Auslegung 29 200 kWh/a;
             // jede Woche des flachen Jahrs (52 Wochen und ein Montag, Σ 7 · w_T = 365,05) trägt 7/365,05 davon.
             Assert.True(Relativ(g.Woche.WochensummeKwh, 29200.0 * 7.0 / 365.05) < 1e-9);
+        }
+
+        /// <summary>Nur das Wohnhaus am Speicher: <paramref name="we"/> WE × 2 Personen.</summary>
+        private static Auslegungsgruppe Wohnhaus(int we, ProjektStand projekt = null, IDictionary<string, double> ersetzen = null)
+        {
+            ZonenStand wohnhaus = Zone("Wohnhaus", 1, 2.0 * we, 1) with
+            {
+                Wohnungen = new[] { new WohnungstypStand { Anzahl = we, Personen = 2 } }
+            };
+            Zapfprofileingang e = ZapfprofilTestbau.Eingang(projekt ?? Projekt(), Auslegungssatz(ersetzen), wohnhaus);
+            Auslegungsergebnis r = ZapfprofilAuslegung.Rechnen(e, new[] { Wohnen }, Zusatz());
+            Assert.Empty(r.Ablehnungen);
+            return Assert.Single(r.Gruppen);
+        }
+
+        /// <summary>Keine Großanlage: Schwelle des Speichervolumens weit über jedem Fall.</summary>
+        private static readonly Dictionary<string, double> Kleinanlage = new Dictionary<string, double>
+        {
+            [ZapfAuslegungParameter.W551_GROSS_VOLUMEN] = 1e6
+        };
+
+        [Fact]
+        public void Die_Speichertemperatur_folgt_Projekt_Grossanlage_Schnellpfad_Vorgabe()
+        {
+            Parametersatz ps = Auslegungssatz();
+            var prot = new Herkunftsprotokoll();
+            Speichertemperaturwahl w = Speichertemperaturwahl.Waehlen(Projekt(), ps, false, false, prot);
+            Assert.Equal(new Speichertemperaturwahl(56.0, Speichertemperaturquelle.Vorgabe, false), w);
+            Assert.Equal(Wertstatus.Vorgabe, prot.Letzter("", "Auslegung.SpeicherC").Status);
+            Assert.Equal(new Speichertemperaturwahl(58.0, Speichertemperaturquelle.Schnellpfad, true),
+                         Speichertemperaturwahl.Waehlen(Projekt(), ps, false, true, null));
+            Assert.Equal(new Speichertemperaturwahl(62.0, Speichertemperaturquelle.Grossanlage, false),
+                         Speichertemperaturwahl.Waehlen(Projekt(), ps, true, false, null));
+            // Die Großanlage geht dem Schnellpfad vor.
+            Assert.Equal(Speichertemperaturquelle.Grossanlage, Speichertemperaturwahl.Waehlen(Projekt(), ps, true, true, null).Quelle);
+            // Der Projektwert geht allem vor.
+            w = Speichertemperaturwahl.Waehlen(Projekt() with { SpeicherC = 55.0 }, ps, true, true, prot);
+            Assert.Equal(new Speichertemperaturwahl(55.0, Speichertemperaturquelle.Projekt, false), w);
+            Assert.Equal(Wertstatus.Ueberschrieben, prot.Letzter("", "Auslegung.SpeicherC").Status);
+            // Fehlt die Vorgabe, lehnt die Wahl benannt ab — kein Rückfall auf die Mindesttemperatur.
+            Assert.Throws<ParametersatzException>(() => Speichertemperaturwahl.Waehlen(Projekt(),
+                Auslegungssatz(null, ZapfAuslegungParameter.SPEICHERTEMPERATUR_VORGABE), false, false, null));
+        }
+
+        [Fact]
+        public void Eine_Speichertemperatur_gilt_fuer_alle_Verfahren_bis_und_ueber_der_Schnellpfadgrenze()
+        {
+            // Anwendungsgrenze des Vereinfachungsverfahrens (erfunden): 5 WE. Bis zu ihr der Schnellpfad
+            // mit seiner Speichertemperatur, darüber die Vorgabe — jeweils für ALLE Verfahren der Gruppe.
+            foreach (var (we, soll, quelle) in new[] { (5, 58.0, Speichertemperaturquelle.Schnellpfad),
+                                                      (6, 56.0, Speichertemperaturquelle.Vorgabe) })
+            {
+                Auslegungsgruppe g = Wohnhaus(we, null, Kleinanlage);
+                Assert.Equal(soll, g.Speichertemperatur.SpeicherC);
+                Assert.Equal(quelle, g.Speichertemperatur.Quelle);
+                bool schnell = quelle == Speichertemperaturquelle.Schnellpfad;
+                Assert.Equal(schnell, g.Empfehlung.Schnellauslegung);
+                Assert.Equal(schnell, g.Empfehlung.Vermerk.Contains("Schnellauslegung"));
+                Assert.Equal(schnell, g.Summenlinie.Schnellpfad);
+
+                double dT = soll - 12.0;
+                // Summenlinie: Q_max = V · c_w · Δθ · f_l / 1000 mit derselben Temperatur.
+                Assert.True(Relativ(g.Summenlinie.Nachweis.SpeicherMaxKwh, g.Summenlinie.Punkt.VolumenL * 1.163 * dT * 0.8 / 1000.0) < 1e-12);
+                // DIN 4708: V_DIN = W_z · 1000 / (c_w · Δθ) / f_nutz mit derselben Temperatur.
+                Assert.True(Relativ(g.Normvergleich.VolumenL.Value, g.Normvergleich.WzKwh.Value * 1000.0 / (1.163 * dT) / 0.75) < 1e-12);
+                Assert.Equal(g.Normvergleich.VolumenL, g.Speicherauslegung.VolumenDinL);
+                // Verfahrensvergleich: klassisch P · 40 l · 45 K / Δθ · 1,1 mit derselben Temperatur.
+                Assert.True(Relativ(g.Speicherauslegung.VolumenKlassischL.Value, 2.0 * we * 40.0 * 45.0 / dT * 1.1) < 1e-12);
+                // Die Reihenfolge hält Liter derselben Temperatur gegeneinander.
+                Assert.Equal(g.Summenlinie.Punkt.VolumenL >= g.Normvergleich.VolumenL.Value,
+                             g.Hinweise.Any(h => h.Code == Dreiergruppe.HINWEIS_REIHENFOLGE));
+            }
+        }
+
+        [Fact]
+        public void Die_Mindesttemperatur_gilt_nur_bei_Grossanlage()
+        {
+            // Kleinanlage: die Vorgabe, keine Warnung „unter der Mindesttemperatur".
+            Auslegungsgruppe klein = Wohnhaus(6, null, Kleinanlage);
+            Assert.Equal(Speichertemperaturquelle.Vorgabe, klein.Speichertemperatur.Quelle);
+            Assert.False(klein.Grossanlage.Gross);
+            Assert.DoesNotContain(klein.Hinweise, h => h.Code == "SPEICHERTEMPERATUR_UNTER_MINDEST");
+            Assert.DoesNotContain(klein.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_TEMPERATUR_GROSSANLAGE);
+
+            // Großanlage schon vorab (Leitungsinhalt 10 l über der erfundenen Schwelle 4 l): gleich W 551.
+            Auslegungsgruppe leitung = Wohnhaus(6, Projekt() with { LeitungsinhaltL = 10.0 }, Kleinanlage);
+            Assert.Equal(new Speichertemperaturwahl(62.0, Speichertemperaturquelle.Grossanlage, false), leitung.Speichertemperatur);
+            Assert.True(leitung.Grossanlage.DurchLeitung);
+            Assert.DoesNotContain(leitung.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_TEMPERATUR_GROSSANLAGE);
+
+            // Erst das empfohlene Volumen erkennt die Großanlage (Schwelle 10 l): einmal neu mit W 551, mit Hinweis.
+            var kleineSchwelle = new Dictionary<string, double> { [ZapfAuslegungParameter.W551_GROSS_VOLUMEN] = 10.0 };
+            Auslegungsgruppe gross = Wohnhaus(6, null, kleineSchwelle);
+            Assert.Equal(Speichertemperaturquelle.Grossanlage, gross.Speichertemperatur.Quelle);
+            Assert.Equal(62.0, gross.Speichertemperatur.SpeicherC);
+            Assert.True(gross.Grossanlage.Gross && gross.Grossanlage.DurchSpeicher);
+            Assert.Contains(gross.Hinweise, h => h.Code == ZapfprofilAuslegung.HINWEIS_TEMPERATUR_GROSSANLAGE);
+            Assert.True(Relativ(gross.Speicherauslegung.VolumenKlassischL.Value, 12.0 * 40.0 * 45.0 / 50.0 * 1.1) < 1e-12);
+            // Auch im Schnellpfad: die Großanlage beendet ihn.
+            Auslegungsgruppe grossSchnell = Wohnhaus(5, null, kleineSchwelle);
+            Assert.Equal(Speichertemperaturquelle.Grossanlage, grossSchnell.Speichertemperatur.Quelle);
+            Assert.False(grossSchnell.Empfehlung.Schnellauslegung);
+
+            // Der Projektwert bleibt auch bei Großanlage — dann warnt die Speicherauslegung.
+            Auslegungsgruppe projekt = Wohnhaus(6, Projekt() with { LeitungsinhaltL = 10.0, SpeicherC = 55.0 }, Kleinanlage);
+            Assert.Equal(new Speichertemperaturwahl(55.0, Speichertemperaturquelle.Projekt, false), projekt.Speichertemperatur);
+            Assert.Contains(projekt.Hinweise, h => h.Code == "SPEICHERTEMPERATUR_UNTER_MINDEST" && h.Warnung);
+        }
+
+        [Fact]
+        public void Die_Grossanlage_wird_am_Nenninhalt_erkannt()
+        {
+            // Temperatur im Projekt fest (kein zweiter Durchgang): Volumen V und Nenninhalt N > V.
+            ProjektStand p = Projekt() with { SpeicherC = 62.0 };
+            Auslegungsgruppe frei = Wohnhaus(6, p, Kleinanlage);
+            double v = frei.Empfehlung.VolumenL.Value, n = frei.Empfehlung.NenninhaltL.Value;
+            Assert.True(n > v, "Der Fall braucht einen Nenninhalt über dem Punkt: V " + v + " l, N " + n + " l.");
+            // Schwelle zwischen V und N: die Anlage ist am Nenninhalt groß, am Punkt wäre sie es nicht.
+            var zwischen = new Dictionary<string, double> { [ZapfAuslegungParameter.W551_GROSS_VOLUMEN] = 0.5 * (v + n) };
+            Auslegungsgruppe g = Wohnhaus(6, p, zwischen);
+            Assert.True(g.Grossanlage.Gross);
+            Assert.True(g.Grossanlage.DurchSpeicher);
+            Assert.Equal(n, g.Grossanlage.VolumenL);
+            Assert.False(Grossanlage.Erkennen(v, null, Auslegungssatz(zwischen)).Gross);
         }
 
         [Fact]

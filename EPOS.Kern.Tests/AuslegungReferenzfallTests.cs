@@ -91,7 +91,7 @@ namespace EPOS.Kern.Tests
                 [ZapfAuslegungParameter.KLASSISCH_LITER] = s.GetProperty("klassisch_liter").GetDouble(),
                 [ZapfAuslegungParameter.KLASSISCH_SPREIZUNG] = s.GetProperty("klassisch_spreizung").GetDouble(),
                 [ZapfAuslegungParameter.KLASSISCH_WARNFAKTOR] = s.GetProperty("klassisch_warnfaktor").GetDouble(),
-                [ZapfAuslegungParameter.GLF_OBERGRENZE] = s.GetProperty("glf_obergrenze").GetDouble(),
+                [ZapfAuslegungParameter.GLF_GUELTIGKEITSGRENZE] = s.GetProperty("glf_gueltigkeitsgrenze").GetDouble(),
                 [ZapfAuslegungParameter.NENNINHALT_RASTER] = s.GetProperty("nenninhalt_raster").GetDouble(),
             };
             Parametersatz ps = Parametersatz.Aus("REF-Z2", werte.Select(kv => new ZapfParameterwert(kv.Key, kv.Value, "", Fiktiv)).ToArray());

@@ -288,9 +288,10 @@ namespace EPOS.Kern.Tests
             Parametersatz ps = Auslegungssatz();
             var hinweise = new List<Auslegungshinweis>();
             var prot = new Herkunftsprotokoll();
-            Summenlinienparameter p = Summenlinie.Parameter(Projekt(), ps, 7.0, null, prot, hinweise);
+            // Die Speichertemperatur wählt die Fassade EINMAL je Gruppe (Speichertemperaturwahl); die Summenlinie übernimmt sie.
+            Summenlinienparameter p = Summenlinie.Parameter(Projekt(), ps, 57.0, 7.0, null, prot, hinweise);
             Assert.Equal(12.0, p.KaltwasserAuslegungC);
-            Assert.Equal(62.0, p.SpeicherC);
+            Assert.Equal(57.0, p.SpeicherC);
             Assert.Equal(0.8, p.Ladungsfaktor);
             Assert.Equal(0.5, p.SensorhoeheAnteil);
             Assert.Equal(2.0, p.VerzoegerungMin);
@@ -298,29 +299,29 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, p.SpeicherverlustKw);
             Assert.Contains(hinweise, h => h.Code == "SPEICHERVERLUST_NULL");
             Assert.Equal(0.01, p.Uebertrager.FlaecheSteigungM2JeL);
-            Assert.Equal(Wertstatus.Vorgabe, prot.Letzter("", "Auslegung.SpeicherC").Status);
+            Assert.Equal(Wertstatus.Vorgabe, prot.Letzter("", "Auslegung.KaltwasserC").Status);
 
             ProjektStand eigen = Projekt() with
             {
                 SpeicherC = 65.0, KaltwasserAuslegungC = 8.0, ErzeugerKw = 20.0, SpeicherverlustW = 150.0,
                 UebertragerUaWJeK = 800.0, SensorhoeheAnteil = 0.3
             };
-            p = Summenlinie.Parameter(eigen, ps, 7.0, null, prot, null);
+            p = Summenlinie.Parameter(eigen, ps, 65.0, 7.0, null, prot, null);
             Assert.Equal(65.0, p.SpeicherC);
             Assert.Equal(8.0, p.KaltwasserAuslegungC);
             Assert.Equal(20.0, p.ErzeugerKw);
             Assert.Equal(0.15, p.SpeicherverlustKw);
             Assert.Equal(800.0, p.Uebertrager.UaWJeK);
             Assert.Equal(0.3, p.SensorhoeheAnteil);
-            Assert.Equal(Wertstatus.Ueberschrieben, prot.Letzter("", "Auslegung.SpeicherC").Status);
+            Assert.Equal(Wertstatus.Ueberschrieben, prot.Letzter("", "Auslegung.KaltwasserC").Status);
 
             // Ein fehlender Pflichtparameter ist eine benannte Ablehnung, kein Rückfall.
             Assert.Throws<ParametersatzException>(() => Summenlinie.Parameter(Projekt(),
-                Auslegungssatz(null, ZapfAuslegungParameter.LADUNGSFAKTOR), 7.0, null, null, null));
+                Auslegungssatz(null, ZapfAuslegungParameter.LADUNGSFAKTOR), 57.0, 7.0, null, null, null));
             // Die Zeitkonstante entscheidet nichts: fehlt k_τ, nur ein Hinweis.
             var h2 = new List<Auslegungshinweis>();
             p = Summenlinie.Parameter(Projekt(), Auslegungssatz(null, ZapfAuslegungParameter.ZEITKONSTANTE_KOEFFIZIENT),
-                                      7.0, null, null, h2);
+                                      57.0, 7.0, null, null, h2);
             Assert.Null(p.ZeitkonstanteKoeffizient);
             Assert.Contains(h2, h => h.Code == ZapfHinweis.PARAMETER_FEHLT);
         }

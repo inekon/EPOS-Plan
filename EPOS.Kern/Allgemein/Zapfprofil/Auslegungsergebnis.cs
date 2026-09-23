@@ -85,6 +85,16 @@ namespace WindowsFormsApplication1
 
         public Grossanlagenbefund Grossanlage { get; init; }
 
+        /// <summary>
+        /// Die EINE Speichertemperatur der Gruppe (nur Speicher) — Summenlinie, V_DIN,
+        /// Verfahrensvergleich und Band rechnen mit ihr (4.0, N10); <c>null</c>, wenn sie nicht
+        /// bestimmbar ist oder die Gruppe keinen Speicher hat.
+        /// </summary>
+        public Speichertemperaturwahl Speichertemperatur { get; init; }
+
+        /// <summary>Das Laufzeitfenster der Zirkulation — dieselben Stunden wie die Bilanz (4.3, N7 (g)).</summary>
+        public Tagesfenster ZirkulationLaufzeit { get; init; }
+
         /// <summary>Die Warnliste der Gruppe (nie blockierend).</summary>
         public IReadOnlyList<Auslegungshinweis> Hinweise { get; init; } = new Auslegungshinweis[0];
     }

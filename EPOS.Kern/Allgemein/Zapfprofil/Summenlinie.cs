@@ -245,22 +245,23 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Löst die Größen der Summenlinie aus Projekt und Parametersatz auf (4.0, 4.5 a). Pflicht
-        /// sind θ_KW,Auslegung, θ_Speicher (Vorgabe W 551), f_l, Sensorhöhe, t_lag und beim
-        /// gemischten Speicher θ_draw; der Übertrager braucht aus dem Katalog nur, was das
-        /// Projekt nicht nennt. <paramref name="erzeugerRueckfallKw"/> gilt, wenn das Projekt
-        /// keine Erzeugerleistung trägt (die Fassade reicht die angesetzte Ladeleistung, 4.7).
+        /// sind θ_KW,Auslegung, f_l, Sensorhöhe, t_lag und beim gemischten Speicher θ_draw; der
+        /// Übertrager braucht aus dem Katalog nur, was das Projekt nicht nennt.
+        /// <paramref name="speicherC"/> ist die EINE Speichertemperatur der Gruppe
+        /// (<see cref="Speichertemperaturwahl"/>), dieselbe für V_DIN und den Verfahrensvergleich.
+        /// <paramref name="erzeugerRueckfallKw"/> gilt, wenn das Projekt keine Erzeugerleistung
+        /// trägt (die Fassade reicht die angesetzte Ladeleistung, 4.7).
         /// </summary>
-        internal static Summenlinienparameter Parameter(ProjektStand p, Parametersatz ps, double? erzeugerRueckfallKw,
-                                                        Zirkulationslast zirkulation, Herkunftsprotokoll prot,
-                                                        ICollection<Auslegungshinweis> hinweise)
+        internal static Summenlinienparameter Parameter(ProjektStand p, Parametersatz ps, double speicherC,
+                                                        double? erzeugerRueckfallKw, Zirkulationslast zirkulation,
+                                                        Herkunftsprotokoll prot, ICollection<Auslegungshinweis> hinweise)
         {
             if (p == null)
                 throw new ZapfAuslegungException(ZapfAuslegungsfehler.GroesseUngueltig,
                     "Nicht rechenbar — die Projektgrößen der Auslegung fehlen.");
             double kw = ZapfAuslegungParameter.ProjektOderParameter(p.KaltwasserAuslegungC,
                 ZapfAuslegungParameter.KALTWASSER_AUSLEGUNG, ps, prot, "Auslegung.KaltwasserC", "°C");
-            double speicher = ZapfAuslegungParameter.ProjektOderParameter(p.SpeicherC,
-                ZapfAuslegungParameter.W551_MINDESTTEMPERATUR, ps, prot, "Auslegung.SpeicherC", "°C");
+            double speicher = Auslegungspruefung.Endlich(speicherC, "die Speichertemperatur");
             double sensor = ZapfAuslegungParameter.ProjektOderParameter(p.SensorhoeheAnteil,
                 ZapfAuslegungParameter.SENSORHOEHE, ps, prot, "Auslegung.Sensorhoehe", "-");
             double? misch = p.Speicherart == ZapfSpeicherart.GemischterSpeicher
@@ -348,7 +349,9 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Die Setzungen des Vereinfachungsverfahrens der A100 (Sensorhöhe, Speichertemperatur)
         /// über die Größen legen; gilt nur für Wohnen bis zur Anwendungsgrenze
-        /// (<see cref="SchnellpfadGilt"/>).
+        /// (<see cref="SchnellpfadGilt"/>). Die Fassade wählt dieselbe Speichertemperatur schon
+        /// für die ganze Gruppe (<see cref="Speichertemperaturwahl"/>), damit V_DIN und der
+        /// Verfahrensvergleich mit ihr rechnen.
         /// </summary>
         internal static Summenlinienparameter Schnellpfad(Summenlinienparameter p, Parametersatz ps)
             => Pruefen(p with

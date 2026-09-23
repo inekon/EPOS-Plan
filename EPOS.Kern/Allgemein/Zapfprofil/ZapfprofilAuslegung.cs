@@ -218,6 +218,24 @@ namespace WindowsFormsApplication1
         // Eine Topologiegruppe
         // =================================================================================
 
+        /// <summary>Kennung: Erst das empfohlene Volumen erkennt die Großanlage — die Gruppe rechnet neu mit W 551.</summary>
+        internal const string HINWEIS_TEMPERATUR_GROSSANLAGE = "SPEICHERTEMPERATUR_GROSSANLAGE";
+
+        /// <summary>Ein Durchgang der Speichergruppe bei einer Speichertemperatur.</summary>
+        private sealed class Speicherlauf
+        {
+            internal Speichertemperaturwahl Temperatur;
+            internal Din4708Ergebnis Din;
+            internal Speicherauslegungseingang Eingang;
+            internal Summenlinienergebnis Summenlinie;
+            internal string Grund;
+            internal double? NenninhaltL;
+            internal readonly List<Auslegungshinweis> Hinweise = new List<Auslegungshinweis>();
+
+            /// <summary>Das empfohlene Volumen der Großanlagenerkennung: Nenninhalt, sonst Punkt der Summenlinie (N10).</summary>
+            internal double? EmpfohlenL => NenninhaltL ?? Summenlinie?.Punkt.VolumenL;
+        }
+
         private static Auslegungsgruppe Gruppe(ZapfTopologie topo, List<Zonenarbeit> zonen, ProjektStand p, Parametersatz ps,
                                                Auslegungseingang a, int wochentagJan1, ZapfTagtyp[] region, Schaetzwert zirk,
                                                Tagesfenster laufzeit, double kwAuslegung, Herkunftsprotokoll prot)
@@ -239,35 +257,66 @@ namespace WindowsFormsApplication1
                 if (w.Art.Bezug == ZapfBezugsart.Personen) personenBezug += w.Menge.Bezugsmenge;
             }
             Wochenreihe woche = Wochenreihe.Bilden(bausteine, wochentagJan1, region);
+            bool speicher = topo == ZapfTopologie.Speicher;
 
-            // --- Speichergrößen (nur Speicher; sonst nicht gebraucht) ---------------------------
-            double speicherC = 0.0, nutzanteil = 0.0, zuschlag = 0.0;
+            // --- Speichergrößen, Großanlage vorab, die EINE Speichertemperatur (nur Speicher) -----
+            double nutzanteil = 0.0, zuschlag = 0.0;
             string speicherGrund = null;
-            if (topo == ZapfTopologie.Speicher)
+            double? leitung = null;
+            Grossanlagenbefund vorab = null;
+            bool grossPruefbar = false;
+            Speichertemperaturwahl temperatur = null;
+            if (speicher)
             {
                 try
                 {
-                    speicherC = ZapfAuslegungParameter.ProjektOderParameter(p.SpeicherC, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR,
-                        ps, prot, "Auslegung.SpeicherC", "°C");
                     nutzanteil = ZapfAuslegungParameter.ProjektOderParameter(p.Nutzanteil, ZapfAuslegungParameter.NUTZANTEIL,
                         ps, prot, "Auslegung.Nutzanteil", "-");
                     zuschlag = ZapfAuslegungParameter.ProjektOderParameter(p.Zuschlag, ZapfAuslegungParameter.ZUSCHLAG,
                         ps, prot, "Auslegung.Zuschlag", "-");
-                    Auslegungspruefung.Spreizung(speicherC, kwAuslegung, "Speicher − Kaltwasser der Auslegung");
                 }
                 catch (ParametersatzException ex) { speicherGrund = ex.Message; }
                 catch (ZapfAuslegungException ex) { speicherGrund = ex.Message; }
+
+                // Großanlage vorab: Projektvolumen und Leitungsinhalt, noch ohne Summenlinie.
+                try
+                {
+                    leitung = Grossanlage.Leitungsinhalt(p, ps);
+                    vorab = Grossanlage.Erkennen(Grossanlage.Speichervolumen(p, null), leitung, ps);
+                    grossPruefbar = true;
+                }
+                catch (ParametersatzException ex)
+                {
+                    Auslegungshinweis.Einmal(h, new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
+                        ex.Message + " Die Großanlage wird nicht erkannt."));
+                }
+                catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("GROSSANLAGE_NICHT_RECHENBAR", ex.Message, true)); }
+
+                // Schnellpfad: Wohnen bis zur Anwendungsgrenze, das Projekt nennt weder Sensorhöhe noch Temperatur.
+                bool schnellpfad = false;
+                if (wohnen && !p.SensorhoeheAnteil.HasValue && !p.SpeicherC.HasValue)
+                {
+                    try { schnellpfad = Summenlinie.SchnellpfadGilt(true, Wohneinheiten(zonen), ps); }
+                    catch (ParametersatzException ex)
+                    {
+                        Auslegungshinweis.Einmal(h, new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
+                            ex.Message + " Der Schnellpfad entfällt."));
+                    }
+                }
+                if (speicherGrund == null)
+                {
+                    try
+                    {
+                        temperatur = Speichertemperaturwahl.Waehlen(p, ps, vorab?.Gross == true, schnellpfad, prot);
+                        Auslegungspruefung.Spreizung(temperatur.SpeicherC, kwAuslegung, "Speicher − Kaltwasser der Auslegung");
+                    }
+                    catch (ParametersatzException ex) { speicherGrund = ex.Message; temperatur = null; }
+                    catch (ZapfAuslegungException ex) { speicherGrund = ex.Message; temperatur = null; }
+                }
             }
 
-            // --- Normvergleich ------------------------------------------------------------------
-            // Außerhalb der Topologie Speicher ist jede Zone außerhalb des Gültigkeitsbereichs;
-            // Spreizung und Nutzanteil werden dann nicht gelesen.
-            Din4708Ergebnis din = speicherGrund == null && topo == ZapfTopologie.Speicher
-                ? Din4708Kennzahl.Rechnen(paare, a.Din4708, ps, speicherC - kwAuslegung, nutzanteil)
-                : Din4708Kennzahl.Rechnen(topo == ZapfTopologie.Speicher ? new (ZonenStand, Nutzungsart)[0] : paare,
-                                          a.Din4708, ps, 1.0, 1.0);
-            if (speicherGrund != null)
-                din = din with { Grund = "DIN 4708: nicht rechenbar — " + speicherGrund, Fehler = ZapfAuslegungsfehler.ParameterFehlt };
+            // --- Normvergleich: Gültigkeit, N und W_z hängen nicht an der Temperatur ----------------
+            Din4708Ergebnis din = Normvergleich(topo, paare, a, ps, temperatur, kwAuslegung, nutzanteil, speicherGrund);
 
             // --- Bedarfstag nach der Vorgaberegel (4.5) ------------------------------------------
             bool bloecke = false;
@@ -304,7 +353,7 @@ namespace WindowsFormsApplication1
             catch (ParametersatzException ex) { tagGrund = ex.Message; }
             if (tag == null)
                 h.Add(new Auslegungshinweis(wahl.KonstruktorOeffnen ? "KONSTRUKTOR_OEFFNEN" : "BEDARFSTAG_NICHT_RECHENBAR", tagGrund, true));
-            else if (tag.SpitzenUnterschaetzt && topo != ZapfTopologie.Speicher)
+            else if (tag.SpitzenUnterschaetzt && !speicher)
                 h.Add(new Auslegungshinweis(Bedarfstag.VERMERK_SPITZEN_UNTERSCHAETZT,
                     "Der Bedarfstag stammt aus einem Stundenprofil — Spitzen unter einer Stunde sind unterschätzt.", true));
 
@@ -313,73 +362,76 @@ namespace WindowsFormsApplication1
             Summenlinienergebnis sl = null;
             Speicherauslegungsergebnis sa = null;
             Grossanlagenbefund gross = null;
-            if (topo == ZapfTopologie.Speicher)
+            if (speicher)
             {
-                // --- Speicherauslegung nach V4 (nachrichtlich) ------------------------------------
-                Speicherauslegungseingang se = null;
-                if (speicherGrund == null)
+                Speicherlauf lauf = null;
+                if (temperatur != null)
                 {
-                    try
+                    lauf = SpeicherRechnen(p, ps, a, temperatur, din, vorab?.Gross, tag, tagGrund, woche, kwAuslegung, nutzanteil,
+                                           zuschlag, zirk, laufzeit, wohnen, allePersonen, personenBezug, prot);
+                    // Großanlage am empfohlenen Volumen: Nenninhalt, sonst Punkt (N10).
+                    if (grossPruefbar) gross = Grossanlage.Erkennen(Grossanlage.Speichervolumen(p, lauf.EmpfohlenL), leitung, ps);
+
+                    // Die Mindesttemperatur nach DVGW W 551 ist die Vorgabe nur bei Großanlage (4.0, N10).
+                    // Erkennt erst das empfohlene Volumen die Großanlage, rechnet die Gruppe einmal neu mit ihr.
+                    if (gross != null && gross.Gross && (temperatur.Quelle == Speichertemperaturquelle.Vorgabe
+                                                         || temperatur.Quelle == Speichertemperaturquelle.Schnellpfad))
                     {
-                        se = new Speicherauslegungseingang
+                        try
                         {
-                            Woche = woche, SpeicherC = speicherC, KaltwasserAuslegungC = kwAuslegung,
-                            Nutzanteil = nutzanteil, Zuschlag = zuschlag,
-                            Ladefenster = new Tagesfenster(
-                                ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterBeginnH, ZapfAuslegungParameter.LADEFENSTER_BEGINN,
-                                    ps, prot, "Auslegung.LadefensterBeginn", "h"),
-                                ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
-                                    ps, prot, "Auslegung.Ladefenster", "h")),
-                            LadeAuto = p.LadeAuto, LadeManuellKw = p.LadeManuellKw,
-                            Zirkulation = zirk, ZirkulationLaufzeit = laufzeit,
-                            Din = din,
-                            Personen = din.Gueltig ? din.Personen : allePersonen ? personenBezug : (double?)null,
-                            Wohnen = wohnen, Topologie = topo, Nenninhalte = a.Nenninhalte
-                        };
-                        sa = TwwSpeicherauslegung.Rechnen(se, ps);
+                            Speichertemperaturwahl mindest = Speichertemperaturwahl.Waehlen(p, ps, true, false, prot);
+                            Auslegungspruefung.Spreizung(mindest.SpeicherC, kwAuslegung, "Speicher − Kaltwasser der Auslegung");
+                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE,
+                                "Mit " + Auslegungstext.Z(temperatur.SpeicherC) + " °C ergibt die Auslegung "
+                                + Auslegungstext.G(lauf.EmpfohlenL.Value) + " l — eine Großanlage nach DVGW W 551; die Gruppe rechnet "
+                                + "deshalb mit der Mindesttemperatur " + Auslegungstext.Z(mindest.SpeicherC) + " °C."));
+                            temperatur = mindest;
+                            din = Normvergleich(topo, paare, a, ps, temperatur, kwAuslegung, nutzanteil, null);
+                            lauf = SpeicherRechnen(p, ps, a, temperatur, din, true, tag, tagGrund, woche, kwAuslegung, nutzanteil,
+                                                   zuschlag, zirk, laufzeit, wohnen, allePersonen, personenBezug, prot);
+                            gross = Grossanlage.Erkennen(Grossanlage.Speichervolumen(p, lauf.EmpfohlenL), leitung, ps);
+                        }
+                        catch (ParametersatzException ex)
+                        {
+                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE, ex.Message
+                                + " Die Gruppe bleibt bei " + Auslegungstext.Z(temperatur.SpeicherC) + " °C.", true));
+                        }
+                        catch (ZapfAuslegungException ex)
+                        {
+                            h.Add(new Auslegungshinweis(HINWEIS_TEMPERATUR_GROSSANLAGE, ex.Message
+                                + " Die Gruppe bleibt bei " + Auslegungstext.Z(temperatur.SpeicherC) + " °C.", true));
+                        }
                     }
-                    catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
-                    catch (ParametersatzException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
+                    h.AddRange(lauf.Hinweise);
+                    sl = lauf.Summenlinie;
+
+                    // --- Speicherauslegung nach V4 (nachrichtlich), mit Summenlinienpunkt und Großanlage ---
+                    if (lauf.Eingang != null)
+                    {
+                        try
+                        {
+                            sa = TwwSpeicherauslegung.Rechnen(lauf.Eingang with
+                            {
+                                SummenlinienpunktL = sl?.Punkt.VolumenL,
+                                Grossanlage = gross?.Gross
+                            }, ps);
+                        }
+                        catch (ZapfAuslegungException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
+                        catch (ParametersatzException ex) { h.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true)); }
+                    }
                 }
 
                 // --- Summenlinie: die Empfehlung ---------------------------------------------------
-                string slGrund = speicherGrund ?? tagGrund;
-                if (tag != null && speicherGrund == null)
-                {
-                    try
-                    {
-                        Summenlinienparameter slp = Summenlinie.Parameter(p, ps, sa?.Ladeleistung.Angesetzt,
-                            new Zirkulationslast(zirk.Angesetzt, laufzeit), prot, h);
-                        double we = din.Gueltig ? din.Wohnungen : Wohneinheiten(zonen);
-                        if (!p.SensorhoeheAnteil.HasValue && !p.SpeicherC.HasValue && Summenlinie.SchnellpfadGilt(wohnen, we, ps))
-                            slp = Summenlinie.Schnellpfad(slp, ps);
-                        double? n = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.WERTEPAARE,
-                            "Die Wertepaarkurve der Summenlinie entfällt.", h);
-                        sl = Summenlinie.Rechnen(tag, slp, n.HasValue && n.Value >= 1 ? (int)n.Value : 0);
-                        h.AddRange(sl.Hinweise);
-                    }
-                    catch (ZapfAuslegungException ex) { slGrund = ex.Message; }
-                    catch (ParametersatzException ex) { slGrund = ex.Message; }
-                }
+                string slGrund = speicherGrund ?? lauf?.Grund ?? tagGrund;
                 if (sl != null)
                 {
-                    if (se != null) sa = TwwSpeicherauslegung.Rechnen(se with { SummenlinienpunktL = sl.Punkt.VolumenL }, ps);
-                    double? nenn = null;
-                    if (a.Nenninhalte != null)
-                    {
-                        double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
-                            "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", h);
-                        IReadOnlyList<double> liste = a.Nenninhalte.WerteL;
-                        if (sl.Punkt.VolumenL <= liste[liste.Count - 1] || raster.HasValue)
-                            nenn = a.Nenninhalte.Naechster(sl.Punkt.VolumenL, raster ?? 1.0, out _);
-                    }
                     string vermerk = Summenlinie.VERMERK_ENTWURF + (sl.Schnellpfad ? "; Schnellauslegung" : "")
                                      + (tag.SpitzenUnterschaetzt ? "; Spitzen unterschätzt" : "");
                     haupt = new Auslegungswert(ZapfAuslegungsverfahren.Summenlinie, Auslegungsstatus.Gerechnet, sl.Punkt.VolumenL,
                         sl.Punkt.LeistungKw, true, "Summenlinie: " + Auslegungstext.G(sl.Punkt.VolumenL) + " l bei "
                         + Auslegungstext.Z(sl.Punkt.LeistungKw) + " kW, Ladezeit " + Auslegungstext.Z(sl.Punkt.LadezeitH) + " h/d");
                     empfehlung = new Auslegungsempfehlung(ZapfAuslegungsverfahren.Summenlinie, true, sl.Punkt.VolumenL,
-                        sl.Punkt.LeistungKw, nenn, sl.Schnellpfad, vermerk, "");
+                        sl.Punkt.LeistungKw, lauf.NenninhaltL, sl.Schnellpfad, vermerk, "");
                 }
                 else
                 {
@@ -390,17 +442,12 @@ namespace WindowsFormsApplication1
                 }
 
                 // --- Großanlage ------------------------------------------------------------------
-                try
+                if (grossPruefbar && gross == null) gross = vorab;
+                if (gross != null)
                 {
-                    gross = Grossanlage.Erkennen(Grossanlage.Speichervolumen(p, sl?.Punkt.VolumenL), Grossanlage.Leitungsinhalt(p, ps), ps);
                     bool zirkulationJa = false;
                     foreach (Zonenarbeit w in zonen) zirkulationJa |= w.Stand.Zirkulation;
                     h.AddRange(Grossanlage.Hinweise(gross, zirkulationJa));
-                }
-                catch (ParametersatzException ex)
-                {
-                    Auslegungshinweis.Einmal(h, new Auslegungshinweis(ZapfHinweis.PARAMETER_FEHLT,
-                        ex.Message + " Die Großanlage wird nicht erkannt."));
                 }
             }
             else
@@ -444,8 +491,103 @@ namespace WindowsFormsApplication1
                 Normvergleich = din,
                 Speicherauslegung = sa,
                 Grossanlage = gross,
+                Speichertemperatur = temperatur,
+                ZirkulationLaufzeit = laufzeit,
                 Hinweise = h.AsReadOnly()
             };
+        }
+
+        /// <summary>
+        /// Der Normvergleich der Gruppe: bei Speicher mit der EINEN Speichertemperatur; ohne sie
+        /// (ein Pflichtwert fehlt) nicht rechenbar mit Grund; außerhalb der Topologie Speicher ist
+        /// jede Zone außerhalb des Gültigkeitsbereichs, Spreizung und Nutzanteil werden nicht gelesen.
+        /// </summary>
+        private static Din4708Ergebnis Normvergleich(ZapfTopologie topo, List<(ZonenStand, Nutzungsart)> paare, Auslegungseingang a,
+                                                     Parametersatz ps, Speichertemperaturwahl temperatur, double kwAuslegung,
+                                                     double nutzanteil, string speicherGrund)
+        {
+            bool speicher = topo == ZapfTopologie.Speicher;
+            if (speicher && temperatur != null)
+                return Din4708Kennzahl.Rechnen(paare, a.Din4708, ps, temperatur.SpeicherC - kwAuslegung, nutzanteil);
+            Din4708Ergebnis din = Din4708Kennzahl.Rechnen(speicher ? new (ZonenStand, Nutzungsart)[0] : paare, a.Din4708, ps, 1.0, 1.0);
+            if (speicher)
+                din = din with { Grund = "DIN 4708: nicht rechenbar — " + speicherGrund, Fehler = ZapfAuslegungsfehler.ParameterFehlt };
+            return din;
+        }
+
+        /// <summary>
+        /// Ein Durchgang der Speichergruppe bei der Speichertemperatur <paramref name="temperatur"/>:
+        /// Speicherauslegung nach V4 (für die angesetzte Ladeleistung), Summenlinie mit derselben
+        /// Temperatur (im Schnellpfad mit den Setzungen des Vereinfachungsverfahrens) und der
+        /// Nenninhalt des Punkts. Hinweise sammelt der Durchgang für sich.
+        /// </summary>
+        private static Speicherlauf SpeicherRechnen(ProjektStand p, Parametersatz ps, Auslegungseingang a,
+                                                    Speichertemperaturwahl temperatur, Din4708Ergebnis din, bool? grossanlage,
+                                                    Bedarfstag tag, string tagGrund, Wochenreihe woche, double kwAuslegung,
+                                                    double nutzanteil, double zuschlag, Schaetzwert zirk, Tagesfenster laufzeit,
+                                                    bool wohnen, bool allePersonen, double personenBezug, Herkunftsprotokoll prot)
+        {
+            var lauf = new Speicherlauf { Temperatur = temperatur, Din = din };
+            Speicherauslegungsergebnis vorlage = null;
+            try
+            {
+                lauf.Eingang = new Speicherauslegungseingang
+                {
+                    Woche = woche, SpeicherC = temperatur.SpeicherC, KaltwasserAuslegungC = kwAuslegung,
+                    Nutzanteil = nutzanteil, Zuschlag = zuschlag,
+                    Ladefenster = new Tagesfenster(
+                        ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterBeginnH, ZapfAuslegungParameter.LADEFENSTER_BEGINN,
+                            ps, prot, "Auslegung.LadefensterBeginn", "h"),
+                        ZapfAuslegungParameter.ProjektOderParameter(p.LadefensterH, ZapfAuslegungParameter.LADEFENSTER_LAENGE,
+                            ps, prot, "Auslegung.Ladefenster", "h")),
+                    LadeAuto = p.LadeAuto, LadeManuellKw = p.LadeManuellKw,
+                    Zirkulation = zirk, ZirkulationLaufzeit = laufzeit,
+                    Din = din,
+                    Personen = din.Gueltig ? din.Personen : allePersonen ? personenBezug : (double?)null,
+                    Wohnen = wohnen, Topologie = ZapfTopologie.Speicher, Nenninhalte = a.Nenninhalte,
+                    Grossanlage = grossanlage
+                };
+                vorlage = TwwSpeicherauslegung.Rechnen(lauf.Eingang, ps);
+            }
+            catch (ZapfAuslegungException ex)
+            {
+                lauf.Eingang = null;
+                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true));
+            }
+            catch (ParametersatzException ex)
+            {
+                lauf.Eingang = null;
+                lauf.Hinweise.Add(new Auslegungshinweis("SPEICHERAUSLEGUNG_NICHT_RECHENBAR", ex.Message, true));
+            }
+
+            if (tag == null)
+            {
+                lauf.Grund = tagGrund;
+                return lauf;
+            }
+            try
+            {
+                Summenlinienparameter slp = Summenlinie.Parameter(p, ps, temperatur.SpeicherC, vorlage?.Ladeleistung.Angesetzt,
+                    new Zirkulationslast(zirk.Angesetzt, laufzeit), prot, lauf.Hinweise);
+                if (temperatur.Schnellpfad) slp = Summenlinie.Schnellpfad(slp, ps);
+                double? n = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.WERTEPAARE,
+                    "Die Wertepaarkurve der Summenlinie entfällt.", lauf.Hinweise);
+                lauf.Summenlinie = Summenlinie.Rechnen(tag, slp, n.HasValue && n.Value >= 1 ? (int)n.Value : 0);
+                lauf.Hinweise.AddRange(lauf.Summenlinie.Hinweise);
+            }
+            catch (ZapfAuslegungException ex) { lauf.Grund = ex.Message; }
+            catch (ParametersatzException ex) { lauf.Grund = ex.Message; }
+
+            if (lauf.Summenlinie != null && a.Nenninhalte != null)
+            {
+                double v = lauf.Summenlinie.Punkt.VolumenL;
+                double? raster = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.NENNINHALT_RASTER,
+                    "Über dem Ende der Nenninhaltsliste wird nicht gerundet.", lauf.Hinweise);
+                IReadOnlyList<double> liste = a.Nenninhalte.WerteL;
+                if (v <= liste[liste.Count - 1] || raster.HasValue)
+                    lauf.NenninhaltL = a.Nenninhalte.Naechster(v, raster ?? 1.0, out _);
+            }
+            return lauf;
         }
 
         // =================================================================================

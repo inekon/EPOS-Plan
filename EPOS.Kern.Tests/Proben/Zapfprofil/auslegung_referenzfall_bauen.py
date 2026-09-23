@@ -341,7 +341,7 @@ def speicherauslegung(sa, zeilen):
     if vprofil is not None:
         band.append(vprofil)
     band.append(vdin)
-    if n <= sa["glf_obergrenze"]:
+    if n <= sa["glf_gueltigkeitsgrenze"]:
         band.append(vglf)
     bmin = min(band)
     bmax = max(band)

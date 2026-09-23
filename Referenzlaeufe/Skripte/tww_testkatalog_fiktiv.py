@@ -120,6 +120,7 @@ PARAMETER += [
 PARAMETER += [
     ("A100.Kaltwasser.Auslegung", 12.0, "°C"),
     ("W551.Mindesttemperatur", 62.0, "°C"),
+    ("Speicherauslegung.Speichertemperatur_Vorgabe", 56.0, "°C"),
     ("A100.Ladungsfaktor", 0.8, "-"),
     ("A100.Sensorhoehe", 0.5, "-"),
     ("A100.Mischwassertemperatur", 44.0, "°C"),
@@ -151,7 +152,7 @@ PARAMETER += [
     ("Speicherauslegung.Zuschlag", 0.1, "-"),
     ("Speicherauslegung.Ladefenster.Laenge", 10.0, "h"),
     ("Speicherauslegung.Ladefenster.Beginn", 22.0, "h"),
-    ("Speicherauslegung.GLF.Obergrenze", 40.0, "-"),
+    ("Speicherauslegung.GLF_Gueltigkeitsgrenze", 30.0, "-"),
     ("Speicherauslegung.Klassisch.LiterJePersonTag", 40.0, "l/(P·d)"),
     ("Speicherauslegung.Klassisch.Spreizung", 45.0, "K"),
     ("Speicherauslegung.Klassisch.Warnfaktor", 2.5, "-"),

@@ -20,8 +20,14 @@ namespace WindowsFormsApplication1
         /// <summary>Feste Kaltwassertemperatur der Auslegung θ_KW,Auslegung [°C] (K4).</summary>
         internal const string KALTWASSER_AUSLEGUNG = "A100.Kaltwasser.Auslegung";
 
-        /// <summary>Mindesttemperatur des Speichers nach DVGW W 551 [°C]; Vorgabe von θ_Speicher.</summary>
+        /// <summary>Mindesttemperatur des Speichers nach DVGW W 551 [°C]; Vorgabe von θ_Speicher bei Großanlage (4.0).</summary>
         internal const string W551_MINDESTTEMPERATUR = "W551.Mindesttemperatur";
+
+        /// <summary>
+        /// Vorgabe von θ_Speicher [°C] außerhalb der Großanlage und des Schnellpfads (INEKON-Setzung;
+        /// N10) — die Mindesttemperatur nach DVGW W 551 gilt nur bei Großanlage.
+        /// </summary>
+        internal const string SPEICHERTEMPERATUR_VORGABE = "Speicherauslegung.Speichertemperatur_Vorgabe";
 
         // --- Summenlinie nach DIN EN 12831-3 mit A100/A1 (4.5 a) --------------------------
 
@@ -111,8 +117,12 @@ namespace WindowsFormsApplication1
         /// <summary>Vorgabe des Beginns des Ladefensters t_B [h].</summary>
         internal const string LADEFENSTER_BEGINN = "Speicherauslegung.Ladefenster.Beginn";
 
-        /// <summary>Obergrenze N_GLF des Gleichzeitigkeitsverfahrens [-] (INEKON-Setzung).</summary>
-        internal const string GLF_OBERGRENZE = "Speicherauslegung.GLF.Obergrenze";
+        /// <summary>
+        /// Gültigkeitsgrenze N_GLF des Gleichzeitigkeitsverfahrens [-] (INEKON-Setzung, N10): über
+        /// ihr steht das Verfahren außerhalb des Bands; der Wert ist an Vorlage und Summenlinie
+        /// festzulegen — kein fester Wert im Code.
+        /// </summary>
+        internal const string GLF_GUELTIGKEITSGRENZE = "Speicherauslegung.GLF_Gueltigkeitsgrenze";
 
         /// <summary>Klassischer Faustwert v_klass [l/(P·d)] (nur nachrichtlich).</summary>
         internal const string KLASSISCH_LITER = "Speicherauslegung.Klassisch.LiterJePersonTag";
@@ -246,6 +256,80 @@ namespace WindowsFormsApplication1
 
         /// <summary>Gilt der manuelle Wert?</summary>
         internal bool IstManuell => !Auto && Manuell is not null;
+    }
+
+    /// <summary>Woher die Speichertemperatur einer Topologiegruppe kommt (4.0, N10).</summary>
+    internal enum Speichertemperaturquelle
+    {
+        /// <summary>Projektwert <c>Speicher_C</c>.</summary>
+        Projekt = 1,
+
+        /// <summary>Großanlage nach DVGW W 551: Mindesttemperatur (Parameter).</summary>
+        Grossanlage = 2,
+
+        /// <summary>Schnellpfad: Setzung des Vereinfachungsverfahrens der A100 (Parameter).</summary>
+        Schnellpfad = 3,
+
+        /// <summary>Sonst: Vorgabe der Speicherauslegung (Parameter, INEKON-Setzung).</summary>
+        Vorgabe = 4
+    }
+
+    /// <summary>
+    /// <b>Die eine Speichertemperatur einer Topologiegruppe</b> (4.0, N10): Summenlinie, V_DIN,
+    /// Verfahrensvergleich, Band und Reihenfolge rechnen mit demselben θ_Speicher.
+    ///
+    /// <code>
+    /// θ_Speicher = Speicher_C des Projekts                       wenn gesetzt
+    ///            = W551.Mindesttemperatur                        bei Großanlage
+    ///            = A100.Vereinfachung.Speichertemperatur         im Schnellpfad (Wohnen bis zur Anwendungsgrenze)
+    ///            = Speicherauslegung.Speichertemperatur_Vorgabe  sonst
+    /// </code>
+    ///
+    /// <para>Die Großanlage geht dem Schnellpfad vor: Die Setzung des Vereinfachungsverfahrens
+    /// hält die Mindesttemperatur nicht zugesichert ein, eine Großanlage rechnet deshalb das
+    /// Vollverfahren. Jede Wahl steht mit Herkunft im Protokoll (<c>Auslegung.SpeicherC</c>).</para>
+    /// </summary>
+    internal sealed record Speichertemperaturwahl(double SpeicherC, Speichertemperaturquelle Quelle, bool Schnellpfad)
+    {
+        /// <summary>
+        /// Wählt die Temperatur. <paramref name="grossanlage"/>: die Gruppe ist als Großanlage
+        /// erkannt; <paramref name="schnellpfadGilt"/>: der Schnellpfad ist zulässig (Wohnen bis
+        /// zur Anwendungsgrenze, keine Sensorhöhe im Projekt). Ein fehlender Parameter der
+        /// gewählten Quelle lehnt benannt ab.
+        /// </summary>
+        internal static Speichertemperaturwahl Waehlen(ProjektStand p, Parametersatz ps, bool grossanlage, bool schnellpfadGilt,
+                                                     Herkunftsprotokoll prot)
+        {
+            const string feld = "Auslegung.SpeicherC";
+            if (p?.SpeicherC != null)
+                return new Speichertemperaturwahl(
+                    ZapfAuslegungParameter.ProjektOderParameter(p.SpeicherC, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR, ps,
+                                                                prot, feld, "°C"),
+                    Speichertemperaturquelle.Projekt, false);
+            string schluessel;
+            Speichertemperaturquelle quelle;
+            if (grossanlage)
+            {
+                schluessel = ZapfAuslegungParameter.W551_MINDESTTEMPERATUR;
+                quelle = Speichertemperaturquelle.Grossanlage;
+            }
+            else if (schnellpfadGilt)
+            {
+                schluessel = ZapfAuslegungParameter.VEREINFACHUNG_SPEICHERTEMPERATUR;
+                quelle = Speichertemperaturquelle.Schnellpfad;
+            }
+            else
+            {
+                schluessel = ZapfAuslegungParameter.SPEICHERTEMPERATUR_VORGABE;
+                quelle = Speichertemperaturquelle.Vorgabe;
+            }
+            ZapfParameterwert pw = ps.Lies(schluessel);
+            Auslegungspruefung.Endlich(pw.Wert, "die Speichertemperatur (Parameter " + schluessel + ")");
+            prot?.Vermerken("", feld, pw.Wert, "°C", Wertstatus.Vorgabe, pw.Herkunft,
+                            "Parameter " + schluessel + (quelle == Speichertemperaturquelle.Grossanlage ? " (Großanlage)"
+                                                         : quelle == Speichertemperaturquelle.Schnellpfad ? " (Schnellauslegung)" : ""));
+            return new Speichertemperaturwahl(pw.Wert, quelle, quelle == Speichertemperaturquelle.Schnellpfad);
+        }
     }
 
     /// <summary>Die Wertprüfungen der Auslegung: jede Verletzung ist eine benannte Ablehnung.</summary>

@@ -109,6 +109,13 @@ namespace WindowsFormsApplication1
         /// <summary>Der empfohlene Punkt der Summenlinie [l]; <c>null</c> = keiner.</summary>
         public double? SummenlinienpunktL { get; init; }
 
+        /// <summary>
+        /// Ist die Anlage eine Großanlage nach DVGW W 551? <c>null</c> = unbekannt. Die
+        /// Mindesttemperatur gilt nur bei Großanlage (4.0, N10); bei <c>false</c> entfällt die
+        /// Warnung „Speichertemperatur unter der Mindesttemperatur".
+        /// </summary>
+        public bool? Grossanlage { get; init; }
+
         /// <summary>Δθ_Speicher = θ_Speicher − θ_KW,Auslegung [K].</summary>
         internal double SpreizungK => SpeicherC - KaltwasserAuslegungC;
     }
@@ -385,11 +392,11 @@ namespace WindowsFormsApplication1
                 double n = e.Din.KennzahlN.Value;
                 glf = Gleichzeitigkeitsfaktor(n, ps);
                 vGlf = VolumenGlfL(e.Personen.Value, n, dT, fNutz, zS, ps);
-                double? grenze = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.GLF_OBERGRENZE,
-                    "Die Obergrenze des Gleichzeitigkeitsverfahrens wird nicht geprüft.", hinweise);
+                double? grenze = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.GLF_GUELTIGKEITSGRENZE,
+                    "Die Gültigkeitsgrenze des Gleichzeitigkeitsverfahrens wird nicht geprüft.", hinweise);
                 glfImBand = e.Din.Vollstaendig && (!grenze.HasValue || n <= grenze.Value);
                 if (grenze.HasValue && n > grenze.Value)
-                    hinweise.Add(new Auslegungshinweis("GLF_OBERGRENZE",
+                    hinweise.Add(new Auslegungshinweis("GLF_GUELTIGKEITSGRENZE",
                         "Das Gleichzeitigkeitsverfahren gilt bis N = " + Auslegungstext.Z(grenze.Value) + "; bei N = "
                         + Auslegungstext.Z(n) + " steht es außerhalb des Bands."));
                 glfWeg = "GLF(" + Auslegungstext.Z(n) + ") = " + Auslegungstext.Z(glf.Value) + ", " + Auslegungstext.Z(e.Personen.Value)
@@ -458,12 +465,17 @@ namespace WindowsFormsApplication1
                         "Der klassische Faustwert " + Auslegungstext.G(vKlass.Value) + " l liegt weit über dem Band (bis "
                         + Auslegungstext.G(bandMax.Value) + " l) — er unterstellt eine Ladung je Tag."));
             }
-            double? mindest = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR,
-                "Die Speichertemperatur wird nicht gegen die Mindesttemperatur geprüft.", hinweise);
-            if (mindest.HasValue && e.SpeicherC < mindest.Value)
-                hinweise.Add(new Auslegungshinweis("SPEICHERTEMPERATUR_UNTER_MINDEST",
-                    "Die Speichertemperatur " + Auslegungstext.Z(e.SpeicherC) + " °C liegt unter der Mindesttemperatur nach DVGW W 551 ("
-                    + Auslegungstext.Z(mindest.Value) + " °C) — thermische Desinfektion oder Frischwasserstation nachweisen.", true));
+            // Die Mindesttemperatur nach DVGW W 551 gilt bei Großanlage (4.0); eine erkannte Kleinanlage prüft sie nicht.
+            if (e.Grossanlage != false)
+            {
+                double? mindest = ZapfAuslegungParameter.Wahlweise(ps, ZapfAuslegungParameter.W551_MINDESTTEMPERATUR,
+                    "Die Speichertemperatur wird nicht gegen die Mindesttemperatur geprüft.", hinweise);
+                if (mindest.HasValue && e.SpeicherC < mindest.Value)
+                    hinweise.Add(new Auslegungshinweis("SPEICHERTEMPERATUR_UNTER_MINDEST",
+                        "Die Speichertemperatur " + Auslegungstext.Z(e.SpeicherC) + " °C liegt unter der Mindesttemperatur nach DVGW W 551 ("
+                        + Auslegungstext.Z(mindest.Value) + " °C)" + (e.Grossanlage == true ? " der Großanlage" : "")
+                        + " — thermische Desinfektion oder Frischwasserstation nachweisen.", true));
+            }
 
             var verfahren = new[]
             {

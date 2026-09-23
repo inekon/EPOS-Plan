@@ -81,7 +81,7 @@
     "klassisch_liter": 40.0,
     "klassisch_spreizung": 45.0,
     "klassisch_warnfaktor": 2.5,
-    "glf_obergrenze": 40.0,
+    "glf_gueltigkeitsgrenze": 30.0,
     "nenninhalte": [100.0, 200.0, 300.0, 500.0, 800.0, 1000.0],
     "nenninhalt_raster": 500.0
   }
