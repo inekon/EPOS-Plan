@@ -101,11 +101,13 @@ public class GebaeudeAdminDialogTests : EposBunitContext
         Katalogfilterstand? filterstand = null,
         IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null,
         bool mitEditor = true,
-        bool mitTypen = true)
+        bool mitTypen = true,
+        EPOS.UI.Bausteine.Schlossweg? schloss = null)
     {
         Protokoll pr = p ?? new Protokoll();
         return Render<GebaeudeAdminDialog>(b => b
             .Add(x => x.Katalogzeilen, () => Zeilen(pr.Katalog))
+            .Add(x => x.Schloss, schloss)
             .Add(x => x.Katalogprofil, Katalogfilterprofil.FuerGebaeude(s => WindowsFormsApplication1.MyResource.Resource.ResourceManager.GetString(s) ?? s))
             .Add(x => x.Filterstandvorgabe, filterstand ?? new Katalogfilterstand())
             .Add(x => x.Satz, name =>
@@ -554,5 +556,40 @@ public class GebaeudeAdminDialogTests : EposBunitContext
 
         Assert.Equal("1958 bis 1968", stand.Ausdruck(Katalogfilterprofil.SpBaujahr));
         Assert.Single(cut.FindAll(".epos-katalogliste tbody tr"));
+    }
+    // =================================================================================
+    // „Schloss setzen…" / „Schloss aufheben…" (Entscheid AD-Q15)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Das Schloss eines Gebäudes aufheben</b> (AD-Q15): Die Handlung steht zwischen
+    /// „Duplizieren…" und „Löschen"; nach dem „Ja" ist „Schule D" ein eigener Satz, die
+    /// Kenndaten sind bedienbar, „Speichern" ist frei und das Stammblatt trägt das Band.
+    /// </summary>
+    [Fact]
+    public void Schloss_aufheben_nach_Rueckfrage_gibt_Speichern_frei()
+    {
+        var pr = new Protokoll();
+        var aufrufe = new List<(IReadOnlyList<int> Ids, bool Gesperrt)>();
+        var weg = new EPOS.UI.Bausteine.Schlossweg((ids, gesperrt) =>
+        {
+            aufrufe.Add((ids, gesperrt));
+            foreach (int id in ids) pr.Katalog[id - 1] = pr.Katalog[id - 1] with { Geschuetzt = gesperrt };
+            return new EPOS.UI.Bausteine.SchlossErgebnis(true, "") { Geaendert = ids };
+        });
+        var cut = Aufbauen(pr, schloss: weg);
+
+        Zeilenklick.Zeile(cut, 3);       // "Schule D"
+        Assert.Equal("Schule D", cut.Instance.Gewaehlt);
+        Assert.Equal(new[] { "Vergleichen", "Duplizieren...", "Schloss aufheben...", "Löschen" },
+                     Schlosspruefung.Handlungen(cut));
+
+        Schlosspruefung.Knopf(cut).Click();
+        Schlosspruefung.Ja(cut);
+
+        Assert.Equal(new[] { 4 }, aufrufe.Single().Ids);
+        Assert.True(Schlosspruefung.Band(cut));
+        Assert.Equal("Schloss von „Schule D“ aufgehoben.", cut.Instance.Status);
+        Assert.Empty(cut.FindAll(".epos-stammblatt-name .epos-schloss"));
     }
 }

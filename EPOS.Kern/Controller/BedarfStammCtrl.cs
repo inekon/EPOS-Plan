@@ -385,6 +385,15 @@ namespace WindowsFormsApplication1
             return Katalogkopie.Duplizieren(KopfTabelle(art), id, neuerName);
         }
 
+        /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…" eines Bedarfsprofils</b> (Entscheid
+        /// AD-Q15) — nur der Kopfsatz des Profils. Das Wochenprofil gehört zum TYP und behält
+        /// dessen eigenes Schloss (<c>TypProfilCtrl.IstReadOnly</c>). Die Regel steht einmal in
+        /// <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>; hier steht nur die Tabelle.
+        /// </summary>
+        internal static Auslieferungskennzeichen.Ergebnis SchlossSetzen(BedarfsArt art, IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(KopfTabelle(art), ids, gesperrt);
+
         /// <summary>Gibt es den Bezeichner schon? („Name existiert bereits!")</summary>
         internal static bool Exists(BedarfsArt art, string bezeichner)
         {

@@ -784,6 +784,15 @@ namespace WindowsFormsApplication1
             => Katalogkopie.Duplizieren(TABLE, id, neuerName);
 
         /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): schaltet das
+        /// Auslieferungskennzeichen der Sätze <paramref name="ids"/> — nur den Kopfsatz, kein
+        /// Wert ändert sich. Die Regel steht einmal in
+        /// <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>; hier steht nur die Tabelle.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
+
+        /// <summary>
         /// <b>Welche Projekte ein Gebaeude fuehren</b> (Stufe 5, V8: die weiche Loeschsperre
         /// nennt das Projekt) — je Bezeichner die Projektnamen, EINE Abfrage fuer die ganze
         /// Liste. Ein Projekt fuehrt eine KOPIE des Katalogsatzes (<c>Tab_Gebaeude</c>),

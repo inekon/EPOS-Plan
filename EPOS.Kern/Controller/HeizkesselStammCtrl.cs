@@ -804,6 +804,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): schaltet das
+        /// Auslieferungskennzeichen der Sätze <paramref name="ids"/> — nur den Kopfsatz, kein
+        /// Wert ändert sich. Die Regel steht einmal in
+        /// <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>; hier steht nur die Tabelle.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
+
+        /// <summary>
         /// <b>Die Zeilen der Katalogverwaltung</b> (Anwenderentscheid W14a-E-10,
         /// Konzept_Katalogfilter 4.1 und S1.5) — sechs Spalten statt <c>ID, Bezeichner</c>:
         /// Bezeichner, Hersteller, Brennstoff, P_th, η und das Kennzeichen Brennwert.

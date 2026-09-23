@@ -7977,10 +7977,17 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     min-width: 0;
 }
 
+/* BREIT haelt die Leiste mit vier Handlungen (AD-Q15) zwei Zeilen - in beiden
+   Zustaenden (Fokuszeile und "3 gewaehlt"): Das erste Wort ist so schmal, dass
+   zwei Handlungen neben ihm stehen (380 px Stammblattbreite), der leise
+   Hinweis kuerzt sich in seiner Zeile (voll im Kurztext), statt eine dritte
+   zu oeffnen. Sonst
+   rueckte das Stammblatt beim ersten Kaestchen um eine Zeile. Der volle Name
+   steht im Kurztext und gleich darunter im Kopf des Stammblatts. */
 .epos-auswahlleiste-was {
     flex: 0 1 auto;
     min-width: 3em;
-    max-width: 16rem;
+    max-width: 10rem;
     font-weight: 700;
     color: var(--epos-karte-titel);
     overflow: hidden;
@@ -7994,6 +8001,34 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 
 .epos-auswahlleiste-leise {
     color: var(--epos-text-leise);
+}
+
+.epos-auswahlleiste-fueller + .epos-auswahlleiste-leise {
+    flex: 100 1 4rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* AD-Q15: ein Knopf mit zwei Beschriftungen ("Schloss aufheben..." /
+   "Schloss setzen...") - beide liegen in derselben Rasterzelle, die des
+   anderen Zustands unsichtbar. So ist er immer so breit wie die laengere,
+   und die Leiste bricht in beiden Zustaenden gleich um (Katalogprobe u4). */
+.epos-auswahlleiste-knopf--zweitext {
+    display: inline-grid;
+    justify-items: center;
+    align-items: center;
+}
+
+.epos-auswahlleiste-knopf--zweitext > .epos-auswahlleiste-text,
+.epos-auswahlleiste-knopf--zweitext > .epos-auswahlleiste-vorlage {
+    grid-area: 1 / 1;
+}
+
+.epos-auswahlleiste-vorlage {
+    visibility: hidden;
 }
 
 /* SCHMAL steht die Auswahlleiste UEBER der Liste - und die Liste darf nicht
@@ -8156,6 +8191,21 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-left: 3px solid var(--epos-rahmen);
     background: var(--epos-flaeche);
     color: var(--epos-text);
+}
+
+/* AD-Q15: ein Satz, dessen Schloss in dieser Sitzung aufgehoben wurde - am
+   selben Platz, sichtbar verschieden vom Auslieferungshinweis: Balken und
+   Flaeche der Warnfarbe, die Schrift bleibt die des Textes (Kontrast). Im
+   Hochkontrastbetrieb traegt der Balken die Hervorhebungsfarbe. */
+.epos-stammblatt-schutz--entsperrt {
+    border-left-color: var(--epos-warn-rahmen);
+    background: var(--epos-warn-flaeche);
+}
+
+@media (forced-colors: active) {
+    .epos-stammblatt-schutz--entsperrt {
+        border-left-color: Highlight;
+    }
 }
 
 .epos-stammblatt-kennzahlen {

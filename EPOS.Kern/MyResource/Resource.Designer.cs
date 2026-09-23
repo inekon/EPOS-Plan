@@ -124,7 +124,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“ oder „Schloss aufheben...“. ähnelt.
         /// </summary>
         public static string ADM_AW_LOESCHEN_GESPERRT {
             get {
@@ -133,7 +133,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“. ähnelt.
         /// </summary>
         public static string ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE {
             get {
@@ -147,6 +147,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_AW_LOESCHEN_VERWENDET {
             get {
                 return ResourceManager.GetString("ADM_AW_LOESCHEN_VERWENDET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss aufheben... ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_AUFHEBEN {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_AUFHEBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Auslieferungssätze werden eigene Sätze – nach Rückfrage. ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_AUFHEBEN_KURZ {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_AUFHEBEN_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss setzen... ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_SETZEN {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_SETZEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählten Sätze werden Auslieferungssätze: nur lesbar, nicht löschbar – nach Rückfrage. ähnelt.
+        /// </summary>
+        public static string ADM_AW_SCHLOSS_SETZEN_KURZ {
+            get {
+                return ResourceManager.GetString("ADM_AW_SCHLOSS_SETZEN_KURZ", resourceCulture);
             }
         }
         
@@ -837,6 +873,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ aufgehoben. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_AUFGEHOBEN {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_AUFGEHOBEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen aufgehoben. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ gesetzt. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_GESETZT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_GESETZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen gesetzt. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_SCHLOSS_GESETZT_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_MSG_SCHLOSS_GESETZT_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“. ähnelt.
         /// </summary>
         public static string ADM_MSG_UNGESPEICHERT {
@@ -878,6 +950,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SB_EIGENER_SATZ {
             get {
                 return ResourceManager.GetString("ADM_SB_EIGENER_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her. ähnelt.
+        /// </summary>
+        public static string ADM_SB_ENTSPERRT {
+            get {
+                return ResourceManager.GetString("ADM_SB_ENTSPERRT", resourceCulture);
             }
         }
         
@@ -999,7 +1080,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben. ähnelt.
         /// </summary>
         public static string ADM_SB_NUR_LESEN {
             get {
@@ -1008,7 +1089,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, nicht löschbar. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben. ähnelt.
         /// </summary>
         public static string ADM_SB_NUR_LESEN_OHNE_KOPIE {
             get {
@@ -1080,11 +1161,137 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, Duplizieren erlaubt ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von „{0}“ aufheben? Der Satz wird ein eigener Satz: Sie können ihn ändern und löschen. Ein Programm-Update ändert ihn nicht und stellt ihn nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss von {0} Sätzen aufheben ({1})? Die Sätze werden eigene Sätze: Sie können sie ändern und löschen. Ein Programm-Update ändert sie nicht und stellt sie nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss aufheben ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_AUFHEBEN_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_AUFHEBEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt ähnelt.
         /// </summary>
         public static string ADM_SCHLOSS_DUPLIZIEREN {
             get {
                 return ResourceManager.GetString("ADM_SCHLOSS_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss ließ sich nicht umschalten; nichts wurde geändert. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog „{0}“ ist nicht bekannt – das Schloss bleibt, wie es ist. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_KATALOG_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_KATALOG_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog „{0}“ führt kein Auslieferungskennzeichen – es gibt kein Schloss zum Umschalten. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_OHNE_KENNZEICHEN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_OHNE_KENNZEICHEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz {0} steht nicht mehr im Katalog – kein Schloss wurde umgeschaltet. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SATZ_FEHLT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SATZ_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ als Auslieferungssatz sperren? Er ist danach nur lesbar und nicht löschbar; ändern lässt er sich erst nach „Schloss aufheben...“ wieder. Seine Werte bleiben, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_FRAGE {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_FRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_FRAGE_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_FRAGE_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schloss setzen ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_SETZEN_TITEL {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_SETZEN_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Schloss dieses Katalogs folgt seinem Freigabestatus und lässt sich hier nicht umschalten. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_STATUS {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_STATUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Wochenprofil gehört zum Typ „{0}“ und bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_TYP_BLEIBT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_TYP_BLEIBT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wochenprofile gehören zu ihren Typen ({0}) und bleiben gesperrt. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_TYP_BLEIBT_MEHR {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_TYP_BLEIBT_MEHR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Schon so und unverändert: {0}. ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_UNVERAENDERT {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_UNVERAENDERT", resourceCulture);
             }
         }
         
@@ -23133,7 +23340,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her. ähnelt.
         /// </summary>
         public static string IMP_KONFLIKT_HINWEIS_READONLY {
             get {
@@ -73989,7 +74196,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze werden nicht überschrieben. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben. ähnelt.
         /// </summary>
         public static string WP_STAMM_UEBERNAHME_MSG_READONLY {
             get {

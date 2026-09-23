@@ -4489,7 +4489,7 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
     <value>Name kommt in der Auswahl mehrfach vor</value>
   </data>
   <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
-    <value>Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.</value>
+    <value>Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her.</value>
   </data>
   <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
     <value>Importieren</value>
@@ -20288,7 +20288,7 @@ Möchten Sie das zulassen?</value>
     <value>Katalogsatz „{0}“ neu angelegt.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
-    <value>Auslieferungssätze werden nicht überschrieben.</value>
+    <value>Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
     <value>Die Übernahme in den Katalog ist fehlgeschlagen.</value>
@@ -24911,7 +24911,7 @@ Möchten Sie das zulassen?</value>
     <value>Auslieferungssatz – nur lesen</value>
   </data>
   <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+    <value>Auslieferungssatz – nur lesen, Duplizieren oder Schloss aufheben erlaubt</value>
   </data>
   <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
     <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
@@ -25778,7 +25778,7 @@ Möchten Sie das zulassen?</value>
     <value>Duplizieren gilt für genau eine Zeile.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Ein eigener Satz entsteht über „Duplizieren...“ oder „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
     <value>Sollen diese {0} Sätze gelöscht werden? {1}</value>
@@ -25814,7 +25814,7 @@ Möchten Sie das zulassen?</value>
     <value>Alle Daten</value>
   </data>
   <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren.</value>
+    <value>Auslieferungssatz – nur lesen. Zum Ändern in der Auswahlleiste duplizieren oder das Schloss aufheben.</value>
   </data>
   <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
     <value>Auslieferungssatz</value>
@@ -26012,13 +26012,82 @@ Möchten Sie das zulassen?</value>
     <value>groß…</value>
   </data>
   <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – nur lesen, nicht löschbar.</value>
+    <value>Auslieferungssatz – nur lesen, nicht löschbar. Zum Ändern in der Auswahlleiste das Schloss aufheben.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
-    <value>Auslieferungssatz – Löschen gesperrt.</value>
+    <value>Auslieferungssatz – Löschen gesperrt. Zuerst „Schloss aufheben...“.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
     <value>In Projekten verwendet ({0}) – Löschen gesperrt; dort zuerst entfernen.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN" xml:space="preserve">
+    <value>Schloss aufheben...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN" xml:space="preserve">
+    <value>Schloss setzen...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Auslieferungssätze werden eigene Sätze – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN_KURZ" xml:space="preserve">
+    <value>Die gewählten Sätze werden Auslieferungssätze: nur lesbar, nicht löschbar – nach Rückfrage.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Schloss aufheben</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Schloss von „{0}“ aufheben? Der Satz wird ein eigener Satz: Sie können ihn ändern und löschen. Ein Programm-Update ändert ihn nicht und stellt ihn nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufheben ({1})? Die Sätze werden eigene Sätze: Sie können sie ändern und löschen. Ein Programm-Update ändert sie nicht und stellt sie nicht wieder her; die ausgelieferten Werte gibt es danach nur noch in einer Datenbanksicherung. Das Schloss lässt sich wieder setzen, die Werte bleiben dann, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT" xml:space="preserve">
+    <value>Das Wochenprofil gehört zum Typ „{0}“ und bleibt gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT_MEHR" xml:space="preserve">
+    <value>Die Wochenprofile gehören zu ihren Typen ({0}) und bleiben gesperrt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_TITEL" xml:space="preserve">
+    <value>Schloss setzen</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE" xml:space="preserve">
+    <value>„{0}“ als Auslieferungssatz sperren? Er ist danach nur lesbar und nicht löschbar; ändern lässt er sich erst nach „Schloss aufheben...“ wieder. Seine Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE_MEHR" xml:space="preserve">
+    <value>{0} Sätze als Auslieferungssätze sperren ({1})? Sie sind danach nur lesbar und nicht löschbar; ändern lassen sie sich erst nach „Schloss aufheben...“ wieder. Ihre Werte bleiben, wie sie sind.</value>
+  </data>
+  <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
+    <value>Schon so und unverändert: {0}.</value>
+  </data>
+  <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
+    <value>Ausgelieferter Satz, Schloss aufgehoben – Ihre Änderungen gelten als eigene Werte; ein Update stellt die ausgelieferten Werte nicht wieder her.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN" xml:space="preserve">
+    <value>Schloss von „{0}“ aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen aufgehoben.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT" xml:space="preserve">
+    <value>Schloss von „{0}“ gesetzt.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT_MEHR" xml:space="preserve">
+    <value>Schloss von {0} Sätzen gesetzt.</value>
+  </data>
+  <data name="ADM_SCHLOSS_KATALOG_UNBEKANNT" xml:space="preserve">
+    <value>Der Katalog „{0}“ ist nicht bekannt – das Schloss bleibt, wie es ist.</value>
+  </data>
+  <data name="ADM_SCHLOSS_STATUS" xml:space="preserve">
+    <value>Das Schloss dieses Katalogs folgt seinem Freigabestatus und lässt sich hier nicht umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_OHNE_KENNZEICHEN" xml:space="preserve">
+    <value>Der Katalog „{0}“ führt kein Auslieferungskennzeichen – es gibt kein Schloss zum Umschalten.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SATZ_FEHLT" xml:space="preserve">
+    <value>Der Satz {0} steht nicht mehr im Katalog – kein Schloss wurde umgeschaltet.</value>
+  </data>
+  <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
+    <value>Das Schloss ließ sich nicht umschalten; nichts wurde geändert.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Stehen bleiben (in Projekten verwendet): {0}</value>
