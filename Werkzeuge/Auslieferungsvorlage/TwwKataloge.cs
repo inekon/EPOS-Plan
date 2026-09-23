@@ -40,6 +40,11 @@ namespace Auslieferungsvorlage
     /// <c>ReadOnly</c> ist 1 oder fehlt (dann 1). Das Paket ERSETZT den Tww-Katalog der
     /// Quelle; ohne Paket bleibt, was die Quelle mit Status <c>AUSLIEFERUNG</c> führt — in
     /// der Testdatenbank nichts.</para>
+    ///
+    /// <para><b>Der freie Paketteil</b> (<c>Referenzlaeufe/Katalogpaket_frei/</c>, Stufe Z3) bringt
+    /// die freien Daten aus dem Repositorium — Parameter der Stochastik, Ecodesign-Zapfprofil,
+    /// Zapfkategorien nach Jordan/Vajen — in JEDE Vorlage (<see cref="PaketteilEinspielen"/>),
+    /// nach dem Katalogpaket, das ihn nur ersetzt, wo es dieselbe Zeile führt.</para>
     /// </summary>
     internal sealed class TwwKataloge
     {
@@ -261,6 +266,299 @@ namespace Auslieferungsvorlage
                     return false;
                 }
             }
+        }
+
+        // =================================================================================
+        //  Der freie Paketteil (Referenzlaeufe/Katalogpaket_frei)
+        // =================================================================================
+
+        /// <summary>Der freie Paketteil, relativ zur Repowurzel.</summary>
+        internal const string PAKETTEIL_FREI = "Referenzlaeufe/Katalogpaket_frei";
+
+        /// <summary>
+        /// Die Katalogversion der Paketteil-Zeilen, wenn der Katalog selbst keine führt (kein
+        /// Parameter nach Katalogpaket und Tww-Regel).
+        /// </summary>
+        internal const string KATALOGVERSION_FREI = "FREI-1";
+
+        /// <summary>Die Tabellen des Paketteils in Einspielreihenfolge (Verwiesene zuerst).</summary>
+        internal static readonly string[] PAKETTEIL_TABELLEN =
+        {
+            TwwSchema.TAB_TWW_PARAMETER_STAMM,
+            TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+            TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
+            TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM
+        };
+
+        /// <summary>
+        /// Der Ordner des freien Paketteils: unter der Repowurzel (erkennbar an <c>WP-Plan.sln</c>)
+        /// oberhalb des Werkzeugs, sonst oberhalb des Laufordners; <c>null</c>, wenn keine Wurzel
+        /// zu finden ist.
+        /// </summary>
+        internal static string PaketteilOrdner()
+        {
+            string wurzel = Schreibort.Wurzel(AppContext.BaseDirectory) ?? Schreibort.Wurzel(Directory.GetCurrentDirectory());
+            return wurzel == null ? null : Path.Combine(wurzel, PAKETTEIL_FREI.Replace('/', Path.DirectorySeparatorChar));
+        }
+
+        /// <summary>
+        /// <b>Spielt den freien Paketteil ein</b> (Stufe Z3): die freien Daten des Zapfprofilgenerators —
+        /// Parameter der Stochastik, Ecodesign-Zapfprofil samt Ereignissen, Zapfkategorien nach
+        /// Jordan/Vajen —, die im Repositorium stehen dürfen und ohne die die Auslieferung weder
+        /// stochastisch rechnet noch die Bedarfstag-Quelle (5) anbietet. Immer, nach dem externen
+        /// Katalogpaket; das Ergebnis ist dasselbe wie „Paketteil zuerst, das Katalogpaket ersetzt
+        /// ihn nur, wo es dieselbe Zeile führt".
+        ///
+        /// <para><b>Format</b> wie das Katalogpaket (N2), mit drei Regeln des Paketteils: Jede Zeile
+        /// trägt Herkunftsart <c>FREI</c>, Status <c>AUSLIEFERUNG</c> und <c>ReadOnly</c> 1 (oder
+        /// keine Spalte). Der Paketteil führt <b>keine Katalogversion</b>: Seine Zeilen treten der
+        /// Katalogversion des Katalogs bei (die des zuletzt angelegten Parameters, sonst
+        /// <see cref="KATALOGVERSION_FREI"/>) — sonst sähe der Parametersatz der Auslieferung die
+        /// Parameter der Stochastik nicht. Die <c>ID</c> eines Bedarfstags ist nur Schlüssel des
+        /// Pakets (die Ereignisse verweisen über <c>ID_Bedarfstag</c> darauf); die Datenbank vergibt
+        /// die echte. Die <b>Zapfkategorien</b> führen keine <c>ID_Nutzungsart</c>: Sie sind ein
+        /// Vorgabesatz, den jede Nutzungsart mit Status <c>AUSLIEFERUNG</c> ohne eigene Kategorien
+        /// bekommt.</para>
+        ///
+        /// <para><b>Schlüsselgleichheit.</b> Führt das Katalogpaket dieselbe Zeile (Parameter:
+        /// Schlüssel und Katalogversion; Bedarfstag: Bezeichner und Katalogversion), gilt seine, und
+        /// der Bericht meldet es. Ohne Katalogpaket ersetzt der Paketteil eine gleiche Zeile der
+        /// Quelle. Ein Fehler nennt Datei, Zeile und Grund und rollt den ganzen Paketteil zurück.</para>
+        /// </summary>
+        internal bool PaketteilEinspielen(string ordner, bool mitKatalogpaket, out string fehler)
+        {
+            fehler = null;
+            _bericht.Leer();
+            _bericht.Zeile("Freier Paketteil: " + (ordner ?? "(Repowurzel nicht gefunden)"));
+            if (ordner == null || !Directory.Exists(ordner))
+            {
+                fehler = "Der freie Paketteil fehlt (" + (ordner ?? PAKETTEIL_FREI) + ") — ohne ihn rechnet die Auslieferung " +
+                         "nicht stochastisch. Das Werkzeug laeuft aus dem Repository.";
+                _bericht.Zeile("FEHLER  " + fehler);
+                return false;
+            }
+            // Schemaauskunft VOR der Transaktion (eigene Verbindung, siehe Bereinigen).
+            var vorhanden = new HashSet<string>(Vorhandene(PAKETTEIL_TABELLEN), StringComparer.Ordinal);
+            if (vorhanden.Count == 0)
+            {
+                _bericht.Zeile("keine Tww-Tabelle im Schema — nichts einzuspielen");
+                return true;
+            }
+            bool mitNutzungsarten = DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM);
+
+            var zeilen = new Dictionary<string, List<Dictionary<string, object>>>(StringComparer.Ordinal);
+            var orte = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            try
+            {
+                var bekannt = new HashSet<string>(PAKETTEIL_TABELLEN.Select(t => t + ".csv"), StringComparer.OrdinalIgnoreCase);
+                foreach (string d in Directory.GetFiles(ordner, "*.csv").OrderBy(x => x, StringComparer.Ordinal))
+                    if (!bekannt.Contains(Path.GetFileName(d)))
+                        throw new InvalidDataException(Path.GetFileName(d) + " gehoert nicht zum Paketteil (erlaubt: " +
+                                                       string.Join(", ", PAKETTEIL_TABELLEN) + ").");
+                foreach (string t in PAKETTEIL_TABELLEN)
+                {
+                    string d = Path.Combine(ordner, t + ".csv");
+                    if (!File.Exists(d)) throw new InvalidDataException(t + ".csv fehlt im Paketteil.");
+                    if (!vorhanden.Contains(t))
+                    {
+                        // Etwa die Zapfkategorien in einer Quelle vor Schritt 114: benannt uebergangen.
+                        _bericht.Zeile("uebergangen: " + t + ".csv — die Tabelle fehlt im Schema der Quelle");
+                        zeilen[t] = new List<Dictionary<string, object>>();
+                        orte[t] = new List<string>();
+                        continue;
+                    }
+                    (zeilen[t], orte[t]) = PaketteilLesen(t, d, Spaltentypen(t));
+                }
+            }
+            catch (InvalidDataException ex)
+            {
+                fehler = "Freier Paketteil " + ordner + ": " + ex.Message;
+                _bericht.Zeile("FEHLER  " + fehler);
+                return false;
+            }
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    object kv = v.Skalar("SELECT Katalogversion FROM " + TwwSchema.TAB_TWW_PARAMETER_STAMM + " ORDER BY ID DESC LIMIT 1");
+                    string version = kv == null || kv == DBNull.Value ? KATALOGVERSION_FREI : Convert.ToString(kv, CultureInfo.InvariantCulture);
+                    _bericht.Zeile("Katalogversion der Paketteil-Zeilen: " + version +
+                                   (kv == null || kv == DBNull.Value ? " (der Katalog fuehrt keine eigene)" : " (die des Katalogs)"));
+                    var meldungen = new List<string>();
+
+                    // --- Parameter ------------------------------------------------------------
+                    int parameter = 0;
+                    List<Dictionary<string, object>> p = zeilen[TwwSchema.TAB_TWW_PARAMETER_STAMM];
+                    for (int i = 0; i < p.Count; i++)
+                    {
+                        string schluessel = Convert.ToString(p[i]["Schluessel"], CultureInfo.InvariantCulture);
+                        if (Gleich(v, TwwSchema.TAB_TWW_PARAMETER_STAMM, "Schluessel", schluessel, version, mitKatalogpaket, meldungen))
+                            continue;
+                        Einfuegen(v, TwwSchema.TAB_TWW_PARAMETER_STAMM, p[i], version);
+                        parameter++;
+                    }
+
+                    // --- Bedarfstage samt Ereignissen -------------------------------------------
+                    var ids = new Dictionary<long, long?>();
+                    int tage = 0, ereignisse = 0;
+                    List<Dictionary<string, object>> b = zeilen[TwwSchema.TAB_TWW_BEDARFSTAG_STAMM];
+                    for (int i = 0; i < b.Count; i++)
+                    {
+                        if (!(b[i].TryGetValue("ID", out object roh) && roh is long schluesselId))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_BEDARFSTAG_STAMM][i] + ": die Spalte ID " +
+                                                           "(Schluessel des Pakets fuer die Ereignisse) fehlt.");
+                        if (ids.ContainsKey(schluesselId))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_BEDARFSTAG_STAMM][i] + ": ID " + schluesselId + " doppelt.");
+                        string bezeichner = Convert.ToString(b[i]["Bezeichner"], CultureInfo.InvariantCulture);
+                        if (Gleich(v, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, "Bezeichner", bezeichner, version, mitKatalogpaket, meldungen))
+                        {
+                            ids[schluesselId] = null;
+                            continue;
+                        }
+                        ids[schluesselId] = Einfuegen(v, TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, b[i], version);
+                        tage++;
+                    }
+                    List<Dictionary<string, object>> e = zeilen[TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM];
+                    for (int i = 0; i < e.Count; i++)
+                    {
+                        if (!(e[i].TryGetValue("ID_Bedarfstag", out object roh) && roh is long kopf) || !ids.TryGetValue(kopf, out long? neu))
+                            throw new InvalidDataException(orte[TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM][i] +
+                                                           ": ID_Bedarfstag verweist auf keinen Bedarfstag des Paketteils (Waise).");
+                        if (neu == null) continue;                        // der Kopf tritt zurueck, seine Ereignisse mit ihm
+                        var z = new Dictionary<string, object>(e[i], StringComparer.Ordinal) { ["ID_Bedarfstag"] = neu.Value };
+                        Einfuegen(v, TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, z, null);
+                        ereignisse++;
+                    }
+
+                    // --- Zapfkategorien: der Vorgabesatz an jeder Nutzungsart ohne eigene --------
+                    List<Dictionary<string, object>> k = zeilen[TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM];
+                    var arten = new List<long>();
+                    long eigene = 0;
+                    if (mitNutzungsarten && k.Count > 0)
+                    {
+                        DataTable dt = v.Lese("SELECT ID FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE Status = ? AND ID NOT IN " +
+                                              "(SELECT ID_Nutzungsart FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM + ") ORDER BY ID",
+                                              new DbParam("?", TwwSchema.STATUS_AUSLIEFERUNG));
+                        foreach (DataRow r in dt.Rows) arten.Add(Convert.ToInt64(r["ID"], CultureInfo.InvariantCulture));
+                        eigene = Convert.ToInt64(v.Skalar("SELECT COUNT(DISTINCT ID_Nutzungsart) FROM " + TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM),
+                                                 CultureInfo.InvariantCulture);
+                    }
+                    foreach (long art in arten)
+                        foreach (Dictionary<string, object> z in k)
+                            Einfuegen(v, TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM,
+                                      new Dictionary<string, object>(z, StringComparer.Ordinal) { ["ID_Nutzungsart"] = art }, null);
+
+                    v.Commit();
+
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_PARAMETER_STAMM + ".csv  ->  " + parameter + " von " + p.Count + " Zeile(n)");
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + ".csv  ->  " + tage + " von " + b.Count + " Zeile(n)");
+                    _bericht.Zeile("eingespielt: " + TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM + ".csv  ->  " + ereignisse + " von " + e.Count + " Zeile(n)");
+                    _bericht.Zeile("Zapfkategorien (Vorgabesatz, " + k.Count + " Zeile(n)): an " + arten.Count +
+                                   " Nutzungsart(en) mit Status AUSLIEFERUNG ohne eigene Kategorien gebunden" +
+                                   (eigene > 0 ? "; " + eigene + " Nutzungsart(en) fuehren eigene Kategorien des Katalogs" : "") +
+                                   (arten.Count == 0 ? " — der Katalog fuehrt keine solche Nutzungsart" : ""));
+                    foreach (string m in meldungen) _bericht.Zeile("MELDUNG " + m);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    try { v.Rollback(); } catch { }
+                    fehler = "Freier Paketteil " + ordner + ": " + ex.Message;
+                    _bericht.Zeile("FEHLER  " + fehler);
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Liest eine Datei des Paketteils: Spalten der Tabelle, getypt; die Regeln des Paketteils
+        /// (keine Katalogversion, Kategorien ohne Nutzungsart, FREI/AUSLIEFERUNG/ReadOnly 1) geprüft.
+        /// Rückgabe: die Zeilen und je Zeile ihr Ort (Datei, Zeile) für Fehlermeldungen.
+        /// </summary>
+        private static (List<Dictionary<string, object>>, List<string>) PaketteilLesen(string tabelle, string datei,
+                                                                                      Dictionary<string, string> typen)
+        {
+            string name = Path.GetFileName(datei);
+            List<List<string>> roh = CsvLesen(File.ReadAllText(datei, Encoding.UTF8));
+            if (roh.Count < 2) throw new InvalidDataException(name + ": keine Datenzeile.");
+            List<string> kopf = roh[0].Select(s => s.Trim()).ToList();
+            foreach (string s in kopf)
+                if (!typen.ContainsKey(s))
+                    throw new InvalidDataException(name + ": die Spalte \"" + s + "\" gibt es in " + tabelle + " nicht.");
+            if (kopf.Contains("Katalogversion"))
+                throw new InvalidDataException(name + ": der Paketteil fuehrt keine Katalogversion — seine Zeilen treten der " +
+                                               "Katalogversion des Katalogs bei.");
+            if (tabelle == TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM && kopf.Contains("ID_Nutzungsart"))
+                throw new InvalidDataException(name + ": die Kategorien des Paketteils sind ein Vorgabesatz ohne ID_Nutzungsart.");
+            bool kopfzeile = typen.ContainsKey("Status");
+            if (kopfzeile && (!kopf.Contains("Status") || !kopf.Contains("Herkunftsart")))
+                throw new InvalidDataException(name + ": Status und Herkunftsart gehoeren in jede Zeile des Paketteils.");
+
+            var zeilen = new List<Dictionary<string, object>>();
+            var orte = new List<string>();
+            for (int i = 1; i < roh.Count; i++)
+            {
+                List<string> z = roh[i];
+                if (z.Count == 1 && string.IsNullOrWhiteSpace(z[0])) continue;
+                string ort = name + " Zeile " + (i + 1).ToString(CultureInfo.InvariantCulture);
+                if (z.Count != kopf.Count)
+                    throw new InvalidDataException(ort + ": " + z.Count + " Felder, die Kopfzeile nennt " + kopf.Count + ".");
+                var w = new Dictionary<string, object>(StringComparer.Ordinal);
+                for (int c = 0; c < kopf.Count; c++) w[kopf[c]] = Wert(z[c], typen[kopf[c]], ort + ", Spalte " + kopf[c]);
+                if (kopfzeile)
+                {
+                    if (!string.Equals(Convert.ToString(w["Status"]), TwwSchema.STATUS_AUSLIEFERUNG, StringComparison.Ordinal))
+                        throw new InvalidDataException(ort + ": Status \"" + Convert.ToString(w["Status"]) + "\" — der Paketteil fuehrt nur AUSLIEFERUNG.");
+                    if (!string.Equals(Convert.ToString(w["Herkunftsart"]), TwwSchema.HERKUNFT_FREI, StringComparison.Ordinal))
+                        throw new InvalidDataException(ort + ": Herkunftsart \"" + Convert.ToString(w["Herkunftsart"]) + "\" — der Paketteil fuehrt nur FREI.");
+                    if (w.TryGetValue("ReadOnly", out object ro) && !(ro is long l && l == 1))
+                        throw new InvalidDataException(ort + ": ReadOnly muss 1 sein (Auslieferung).");
+                    if (typen.ContainsKey("ReadOnly")) w["ReadOnly"] = 1L;
+                }
+                zeilen.Add(w);
+                orte.Add(ort);
+            }
+            return (zeilen, orte);
+        }
+
+        /// <summary>
+        /// Führt der Katalog die Zeile mit diesem natürlichen Schlüssel schon (<paramref name="spalte"/>
+        /// und Katalogversion)? Mit Katalogpaket gilt dessen Zeile (<c>true</c>, gemeldet); ohne ersetzt
+        /// der Paketteil die Zeile der Quelle (sie fällt, <c>false</c>, gemeldet).
+        /// </summary>
+        private static bool Gleich(DbVorgang v, string tabelle, string spalte, string wert, string version, bool mitKatalogpaket,
+                                   List<string> meldungen)
+        {
+            object id = v.Skalar("SELECT ID FROM \"" + tabelle + "\" WHERE \"" + spalte + "\" = ? AND Katalogversion = ?",
+                                 new DbParam("?", wert), new DbParam("?", version));
+            if (id == null || id == DBNull.Value) return false;
+            if (mitKatalogpaket)
+            {
+                meldungen.Add(tabelle + " \"" + wert + "\" (" + version + "): das Katalogpaket fuehrt dieselbe Zeile — " +
+                              "die Zeile des Paketteils tritt zurueck");
+                return true;
+            }
+            v.Ausfuehren("DELETE FROM \"" + tabelle + "\" WHERE ID = ?", new DbParam("?", id));
+            meldungen.Add(tabelle + " \"" + wert + "\" (" + version + "): die Zeile der Quelle ist durch die des Paketteils ersetzt");
+            return false;
+        }
+
+        /// <summary>
+        /// Fügt eine Zeile des Paketteils ein — ohne die Paket-<c>ID</c>, mit der Katalogversion
+        /// <paramref name="version"/> (wo die Tabelle eine führt); liefert die neue ID.
+        /// </summary>
+        private static long Einfuegen(DbVorgang v, string tabelle, Dictionary<string, object> zeile, string version)
+        {
+            var spalten = zeile.Keys.Where(s => s != "ID").ToList();
+            var werte = spalten.Select(s => new DbParam("?", zeile[s])).ToList();
+            if (version != null)
+            {
+                spalten.Add("Katalogversion");
+                werte.Add(new DbParam("?", version));
+            }
+            return v.EinfuegenUndId("INSERT INTO \"" + tabelle + "\" (" + string.Join(", ", spalten.Select(s => "\"" + s + "\"")) +
+                                    ") VALUES (" + string.Join(", ", spalten.Select(_ => "?")) + ")", werte.ToArray());
         }
 
         private static int DateiEinspielen(DbVorgang v, string tabelle, string datei, Dictionary<string, string> typen)
@@ -486,6 +784,19 @@ namespace Auslieferungsvorlage
 
             _bericht.Zeile("        Tww-Auslieferungszeilen (Status AUSLIEFERUNG): " +
                            auslieferung.ToString(CultureInfo.InvariantCulture));
+
+            // Die Zeilen des freien Paketteils (Herkunftsart FREI) — nachrichtlich je Tabelle; die
+            // Ereignisse zaehlen an ihrem freien Bedarfstag.
+            var frei = new List<string>();
+            foreach (string t in Vorhandene(PAKETTEIL_TABELLEN))
+            {
+                long n = t == TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM
+                    ? Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"ID_Bedarfstag\" IN (SELECT \"ID\" FROM \"" +
+                           TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Herkunftsart\" = ?)", TwwSchema.HERKUNFT_FREI)
+                    : Zahl("SELECT COUNT(*) FROM \"" + t + "\" WHERE \"Herkunftsart\" = ?", TwwSchema.HERKUNFT_FREI);
+                frei.Add(t + " " + n.ToString(CultureInfo.InvariantCulture));
+            }
+            _bericht.Zeile("        Tww-Zeilen mit Herkunftsart FREI (freier Paketteil): " + string.Join(", ", frei));
             return ok;
         }
 

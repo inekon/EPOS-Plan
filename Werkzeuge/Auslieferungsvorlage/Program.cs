@@ -127,6 +127,8 @@ namespace Auslieferungsvorlage
             bericht.Zeile("Ziel        " + (arg.Trocken ? "(--trocken: keine Datei)" : arg.Ziel));
             bericht.Zeile("Beispiele   " + (arg.Beispiele.Count == 0 ? "keine" : arg.Beispiele.Count + " Paket(e)"));
             bericht.Zeile("Tww-Paket   " + (arg.Katalogpaket ?? "keines"));
+            string paketteil = TwwKataloge.PaketteilOrdner();
+            bericht.Zeile("Paketteil   " + (paketteil ?? "(Repowurzel nicht gefunden)") + "   (frei, immer)");
             foreach (string b in arg.Beispiele) bericht.Zeile("            " + b);
 
             // ---- Schritt 1: Arbeitskopie ------------------------------------------
@@ -186,6 +188,12 @@ namespace Auslieferungsvorlage
                 Console.Error.WriteLine("Abbruch: " + paketfehler);
                 return FACHLICH;
             }
+            // Der freie Paketteil aus dem Repositorium — immer, nach dem Katalogpaket.
+            if (!tww.PaketteilEinspielen(paketteil, arg.Katalogpaket != null, out string teilfehler))
+            {
+                Console.Error.WriteLine("Abbruch: " + teilfehler);
+                return FACHLICH;
+            }
 
             if (!bau.BeispieleEinspielen(arg.Beispiele, out string fehler))
             {
@@ -198,7 +206,7 @@ namespace Auslieferungsvorlage
 
             var pruefung = new Prueflauf(bericht, sicht)
             {
-                Eingaben = new[] { arg.Quelle, arg.Katalogpaket }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
+                Eingaben = new[] { arg.Quelle, arg.Katalogpaket, paketteil }.Concat(arg.Beispiele).Where(p => p != null).ToList(),
                 TwwMitnahmen = bau.TwwMitnahmen
             };
             bool abgenommen = pruefung.Ausfuehren(strictVorher);

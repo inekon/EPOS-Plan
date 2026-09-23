@@ -77,6 +77,9 @@ namespace Auslieferungsvorlage
             Console.WriteLine("                    Muss AUSSERHALB des Repositorys liegen; ersetzt den Tww-Katalog der");
             Console.WriteLine("                    Quelle. Die Tww-Kataloge folgen unabhaengig von --kataloge ihrer");
             Console.WriteLine("                    eigenen Regel: nur Status AUSLIEFERUNG, nie FIKTIV, IMPORT oder EIGEN.");
+            Console.WriteLine("                    Der freie Paketteil " + TwwKataloge.PAKETTEIL_FREI + " (Stochastik,");
+            Console.WriteLine("                    Ecodesign-Zapfprofil, Zapfkategorien) kommt IMMER dazu, nach dem");
+            Console.WriteLine("                    Katalogpaket; eine gleiche Zeile des Katalogpakets geht vor (Bericht).");
             Console.WriteLine();
             Console.WriteLine("Rueckgabe:");
             Console.WriteLine("  0  Vorlage erzeugt und abgenommen.");

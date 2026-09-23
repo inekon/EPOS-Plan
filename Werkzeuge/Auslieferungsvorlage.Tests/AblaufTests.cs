@@ -208,10 +208,13 @@ namespace Auslieferungsvorlage.Tests
             {
                 // Die Tww-Kataloge des Zapfprofilgenerators folgen ihrer EIGENEN Regel,
                 // unabhaengig von --kataloge (Umsetzungskonzept Zapfprofilgenerator 3.2,
-                // 6 (b)): Der fiktive Testkatalog (EIGEN, FIKTIV) faellt. Siehe TwwVorlageTests.
+                // 6 (b)): Der fiktive Testkatalog (EIGEN, FIKTIV) faellt; es bleibt allein der freie
+                // Paketteil (Herkunftsart FREI). Siehe TwwVorlageTests.
                 if (t.StartsWith("Tab_Tww", StringComparison.Ordinal))
                 {
-                    Assert.True(nachher[t] == 0, t + ": " + nachher[t] + " Zeile(n) — der fiktive Testkatalog gehoert nicht in die Vorlage.");
+                    long frei = FreieZeilen(ziel, t);
+                    Assert.True(nachher[t] == frei, t + ": " + nachher[t] + " Zeile(n), davon " + frei +
+                                                    " aus dem freien Paketteil — der fiktive Testkatalog gehoert nicht in die Vorlage.");
                     continue;
                 }
                 Assert.True(vorher[t] == nachher[t],
@@ -221,6 +224,32 @@ namespace Auslieferungsvorlage.Tests
         }
 
         // -----------------------------------------------------------------------------
+
+        /// <summary>
+        /// Die Zeilen einer Tww-Tabelle, die aus dem freien Paketteil stammen: Herkunftsart FREI,
+        /// bei den Ereignissen die eines freien Bedarfstags; eine Tabelle ohne Herkunft sonst 0.
+        /// </summary>
+        private static long FreieZeilen(string datei, string tabelle)
+        {
+            string vorher = DataRepository.PfadUeberschreibung;
+            try
+            {
+                DataRepository.PfadUeberschreibung = datei;
+                if (tabelle == "Tab_TwwBedarfstagEreignis_STAMM")
+                    return Convert.ToInt64(DataRepository.ExecuteScalar(
+                        "SELECT COUNT(*) FROM Tab_TwwBedarfstagEreignis_STAMM WHERE ID_Bedarfstag IN " +
+                        "(SELECT ID FROM Tab_TwwBedarfstag_STAMM WHERE Herkunftsart = 'FREI')"));
+                if (!DataRepository.SpalteVorhanden(tabelle, "Herkunftsart")) return 0;
+                return Convert.ToInt64(DataRepository.ExecuteScalar(
+                    "SELECT COUNT(*) FROM \"" + tabelle + "\" WHERE Herkunftsart = 'FREI'"));
+            }
+            finally
+            {
+                DataRepository.PfadUeberschreibung = vorher;
+                try { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools(); } catch { }
+            }
+        }
+
         private static Dictionary<string, long> Zeilenzahlen(string datei)
         {
             string vorher = DataRepository.PfadUeberschreibung;
