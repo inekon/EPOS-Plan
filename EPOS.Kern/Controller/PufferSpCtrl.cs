@@ -398,6 +398,10 @@ namespace WindowsFormsApplication1
                 StilleDb.NonQuery(ProjektPuffer.SQL_ANLAGENZEILE_INSERT,
                                   ProjektPuffer.AnlagenzeileParameter(idProjekt, name, neueId));
 
+            // AENDERUNGSDATUM: Ein neuer Speicher ist eine Eingangsgröße der Simulation -
+            // ein Lauf von vorher ist danach überholt (Muster WErzeugerCtrl).
+            MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
+
             return neueId;
         }
 
@@ -491,6 +495,11 @@ namespace WindowsFormsApplication1
                     StilleDb.Par("@neu", DbParamTyp.VarWChar, name),
                     StilleDb.Par("@id", DbParamTyp.Integer, idPuffer));
             }
+
+            // AENDERUNGSDATUM: Volumen, Temperaturen und Klassen-Set sind Eingangsgrößen
+            // der Simulation - das Klassen-Set entscheidet sogar, welchen Kanal der
+            // Speicher überhaupt bedient.
+            if (idProjekt > 0) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
 
             return true;
         }
@@ -653,6 +662,10 @@ namespace WindowsFormsApplication1
 
             // Waisen aufräumen (B0-6a) - Projektkopien ohne Anlagenzeile
             new PufferSpCtrl().ProjektWaisenEntfernen(idProjekt);
+
+            // AENDERUNGSDATUM: Mit dem Speicher fallen auch seine Senkenzeilen
+            // (ReferenzenLoesen) - Senken und Speicher sind Eingangsgrößen der Simulation.
+            if (ok) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(idProjekt);
             return ok;
         }
 

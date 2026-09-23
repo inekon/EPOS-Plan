@@ -145,6 +145,62 @@ namespace WindowsFormsApplication1
         /// <summary>Liegt ein vollstaendiges Ergebnis vor? (die alte Marke als Ableitung)</summary>
         private bool ErgebnisIstGueltig => _ergebniszustand == ErgebnisZustand.Gueltig;
 
+        /// <summary>
+        /// <c>Tab_Projekt.Aenderungsdatum</c>, wie es UNMITTELBAR NACH dem Lauf stand;
+        /// <c>null</c> = damals keines. Gegen diesen Stand haelt
+        /// <see cref="VeraltungPruefen"/> das heutige Datum.
+        /// </summary>
+        /// <remarks>
+        /// <b>Warum der Stand NACH dem Lauf und nicht die Uhrzeit.</b> Der Lauf darf
+        /// selbst schreiben (Vorbelegungen nachziehen, Flotte uebernehmen); was er dabei
+        /// am Aenderungsdatum setzt, gehoert zu SEINEM Stand. Verglichen wird deshalb der
+        /// gelesene Wert mit dem gelesenen Wert - keine Uhr, keine Rundung auf Sekunden.
+        /// </remarks>
+        private DateTime? _aenderungsdatumBeimLauf;
+
+        /// <summary>
+        /// ERGEBNIS VERALTET BEI GEAENDERTEM PROJEKT. Die Huelle lebt je Projekt so lange,
+        /// wie das Projekt offen ist, und mit ihr der gerechnete Lauf. Wer danach Bedarf,
+        /// Senken oder Anlagen aendert und zur Ergebnisansicht zurueckkehrt, sah bis
+        /// hierher den alten Lauf, als waere nichts gewesen - „veraltet" setzte nur die
+        /// Speicherflotte.
+        /// </summary>
+        /// <remarks>
+        /// <para>Jeder Schreibweg dieser Eingaben setzt das Aenderungsdatum des Projekts
+        /// (<c>MerkmalUebernahmeCtrl.MarkiereProjektGeaendert</c> in den Controllern);
+        /// ist es juenger als der Stand beim Lauf, faellt das Ergebnis auf
+        /// <see cref="ErgebnisZustand.Veraltet"/> mit eigenem Anlass - derselbe
+        /// Mechanismus wie nach der Stromspeicher-Auslegung.</para>
+        /// <para>Der BEDARF wird dann beim naechsten Laden neu gerechnet
+        /// (<see cref="BedarfSicherstellen"/>): Die Zahlen, die der Leerzustand zeigt,
+        /// gehoeren sonst zum alten Stand.</para>
+        /// </remarks>
+        internal void VeraltungPruefen()
+        {
+            if (_ergebniszustand != ErgebnisZustand.Gueltig || m_ID_Projekt <= 0) return;
+
+            if (!MerkmalUebernahmeCtrl.NachStandGeaendert(
+                    _aenderungsdatumBeimLauf, MerkmalUebernahmeCtrl.Aenderungsdatum(m_ID_Projekt)))
+                return;
+
+            ZustandSetzen(ErgebnisZustand.Veraltet, MyResource.Resource.SIMERG_ZUSTAND_ANLASS_PROJEKT);
+            _bedarfGerechnet = false;
+        }
+
+        /// <summary>
+        /// Der Kanalbedarf des GERECHNETEN, NOCH GUELTIGEN Laufs [MWh/a] — fuer die
+        /// Hydraulikuebersicht (Abnehmer ohne Versorger); <c>null</c>, solange kein
+        /// gueltiger Lauf steht. Ein veralteter Lauf liefert nichts: Seine Mengen
+        /// gehoeren zu einem Stand, den es nicht mehr gibt.
+        /// </summary>
+        internal double[] AktuellerKanalbedarf()
+        {
+            VeraltungPruefen();
+            return _ergebniszustand == ErgebnisZustand.Gueltig
+                ? SimulationRunner.BedarfJeKanal(_waermebedarf)
+                : null;
+        }
+
         /// <summary>Merkt den Zustand samt Anlass (#236).</summary>
         private void ZustandSetzen(ErgebnisZustand zustand, string grund)
         {
@@ -372,6 +428,10 @@ namespace WindowsFormsApplication1
             string[] tool = Tools();
 
             d.Parameter = Parametersatz();
+
+            // Ist das Projekt nach dem Lauf geaendert worden, ist das Ergebnis
+            // VERALTET - bevor der Zustand in den Stand geht.
+            VeraltungPruefen();
 
             // DER ZUSTAND, NICHT NUR DIE MARKE (#236). Eine offene Schema-Migration
             // sperrt alles; sie hat ihr eigenes Banner, und ihr Grund ist zugleich der
@@ -1252,6 +1312,10 @@ namespace WindowsFormsApplication1
 
             // Erst JETZT ist ein Ergebnis da, das gespeichert werden darf (Befund N1).
             ZustandSetzen(ErgebnisZustand.Gueltig, "");
+
+            // Der Stand, gegen den VeraltungPruefen spaeter haelt - NACH dem Lauf gelesen,
+            // damit alles, was der Lauf selbst geschrieben hat, dazugehoert.
+            _aenderungsdatumBeimLauf = MerkmalUebernahmeCtrl.Aenderungsdatum(m_ID_Projekt);
             _laufGerechnet = true;
             _flotteProjektGeaendert = false;
             _autarkieGesetzt = false;

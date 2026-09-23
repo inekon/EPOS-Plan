@@ -452,6 +452,15 @@ namespace WindowsFormsApplication1
         // Aufräumpaket hat sie ausdrücklich nicht angetastet. Die Begründung im Detail
         // steht an der Mitlesestelle SimulationControl.SenkenPufferDerAnlagen (A1-O4).
 
+        /// <summary>Das Projekt einer Anlage (<c>Tab_Energieanlagen.ID_Projekt</c>); 0 = unbekannt.</summary>
+        internal static int ProjektDerAnlage(int idAnlage)
+        {
+            if (idAnlage <= 0) return 0;
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT ID_Projekt FROM Tab_Energieanlagen WHERE ID = ?",
+                StilleDb.Par("@id", DbParamTyp.Integer, idAnlage)));
+        }
+
         /// <summary>
         /// DER SPEICHERWEG DER WÄRMESENKE — Senkenliste UND Verbundmitglieder in EINER
         /// Transaktion.
@@ -520,8 +529,13 @@ namespace WindowsFormsApplication1
                     }
 
                     vorgang.Commit();
-                    return true;
                 }
+
+                // AENDERUNGSDATUM - NACH dem Vorgang, nicht in ihm: Senken sind
+                // Eingangsgrößen der Simulation, ein Lauf von vorher ist danach überholt.
+                // Die Marke gehört dem Projekt der Anlage; dieser Weg kennt nur die Anlage.
+                MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(ProjektDerAnlage(idAnlage));
+                return true;
             }
             catch (Exception ex)
             {
@@ -853,8 +867,11 @@ namespace WindowsFormsApplication1
             // dieselbe Sortierung wie in SenkenLaden, damit die Reihenfolge der Listen
             // zwischen beiden Wegen identisch bleibt. Die WS_*-Spalten stehen seit A1
             // nicht mehr darin: gelesen wird ausschließlich Z_AnlageSenke.
+            //
+            // Der BEZEICHNER steht mit in der Auswahl: Die Protokollzeile „keine Senke
+            // zugeordnet" nennt die Anlage beim Namen, nicht bei ihrer ID.
             DataTable dt = StilleDb.Tabelle(
-                "SELECT ID FROM Tab_Energieanlagen " +
+                "SELECT ID, Bezeichner FROM Tab_Energieanlagen " +
                 "WHERE ID_Projekt = ? AND ID_Type IN (" + ProjektPuffer.WAERMEERZEUGER_TYPEN + ") " +
                 "ORDER BY Prioritaet, ID",
                 StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt));
@@ -865,8 +882,14 @@ namespace WindowsFormsApplication1
             List<Z_AnlageSenkeModel> zeilen = new Z_AnlageSenkeCtrl().LesenJeProjekt(idProjekt);
 
             foreach (DataRow r in dt.Rows)
-                listen.Add(AusZuordnungstabelle(StilleDb.Zahl(StilleDb.Feld(r, "ID")),
+            {
+                int id = StilleDb.Zahl(StilleDb.Feld(r, "ID"));
+                string name = StilleDb.Text(StilleDb.Feld(r, "Bezeichner")).Trim();
+                listen.Add(AusZuordnungstabelle(id, name.Length > 0
+                                                        ? name
+                                                        : id.ToString(System.Globalization.CultureInfo.CurrentCulture),
                                                 zeilen, still));
+            }
 
             return listen;
         }
@@ -877,7 +900,7 @@ namespace WindowsFormsApplication1
         /// <see cref="SenkenlistenLaden(int)"/>). <paramref name="still"/> unterdrückt
         /// jede Protokollzeile (Paket A1, Anzeigepfad).
         /// </summary>
-        private static Senkenliste AusZuordnungstabelle(int idAnlage,
+        private static Senkenliste AusZuordnungstabelle(int idAnlage, string anlagenname,
                                                         List<Z_AnlageSenkeModel> zeilen,
                                                         bool still)
         {
@@ -924,12 +947,15 @@ namespace WindowsFormsApplication1
             {
                 // RANG-1-INVARIANTE (Konzept 5.1): Die Engine rechnet Heizkreis/Beides und
                 // sagt es. Ohne diese Zeile hätte die Anlage überhaupt kein Ziel.
+                //
+                // In ANWENDERSPRACHE: die Anlage beim Namen, die Vorbelegung so, wie
+                // Karte und Hydraulikübersicht sie nennen („Heizkreis (Heizung +
+                // Warmwasser)"), statt Tabellenname und Persistenzwerten.
                 if (!still)
                     SimulationProtokoll.Aktuell.WarnungEinmal(
                         "senkenliste-leer-" + idAnlage,
                         string.Format(MyResource.Resource.SIMENG_SENKENLISTE_LEER,
-                                      idAnlage, ZIEL_HEIZKREIS,
-                                      WaermequelleClass.SENKE_BEIDES));
+                                      anlagenname, MyResource.Resource.SIM_HEIZKREIS_BEIDES));
 
                 return Senkenliste.Vorbelegung(idAnlage);
             }
