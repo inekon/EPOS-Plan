@@ -60,6 +60,12 @@
 > Kälteverhältnis (EER), nie das Wärmeverhältnis; am Importweg liegen aber Kühlblöcke in Heizlage
 > vor, die der Import in KU2 benannt ablehnt (5.1, Festlegung 4; 11.1; 12;
 > [Glossar](Glossar_Lokalisierung.md) Abschnitt 6).
+>
+> **Nachzug 23.09.2026 — KU2 Welle 1:** `KU-S3` ist **Schemaschritt 114** — `Kuehlbetrieb`,
+> `Kuehl_Vorlauf` und `Kuehl_Hilfsstromanteil` an `Tab_WP` und `Tab_WP_STAMM`, dazu die
+> Stromträgerwahl `Tab_Energieanlagen.Kuehl_ID_Carrier` (K9, E33); `Last` steht in Modell, Leser
+> und Schreiber der Kühlkennlinie. Ergebnisneutral: Kein Rechenweg liest die Spalten (5.1, 7,
+> 7.3, 11.1).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -94,7 +100,7 @@ Bedarf wird durch Kälteerzeuger gedeckt
   anlegt, in die Löschliste der Stufe GA einzutragen (10.5, 11.2;
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31).
 
-**Stand:** 23.09.2026 (Nachzug E33; Stufe KU1 abgeschlossen, Basis `2026-09-23_R13_Kuehlung`). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
+**Stand:** 23.09.2026 (Nachzug E33 und KU2 Welle 1 — Schemaschritt 114; Stufe KU1 abgeschlossen, Basis `2026-09-23_R13_Kuehlung`). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
 Rev. 3 trug E20, E21 und E23, Rev. 2 war aus drei Blickwinkeln gegengelesen (Bestand, Konsistenz,
 Entscheid E15).
 
@@ -1189,7 +1195,8 @@ Heizseite ein Teillastmodell bekommt — **eine** Logik für beide Seiten, nicht
 heute in `ReadSingle` (`:35-54`) und `ExecuteRead` (`:70-86`) nur `row[0..5]` ab
 (`ID`, `ID_WP`, `Vorlauf`, `Temperatur`, `COP`, `Pkuehl`); **`Last` fehlt in beiden**, und
 `Update()` (`:173-186`) schreibt es ebenfalls nicht. Wer `MAX(Last)` rechnen will, braucht die
-Spalte im Modell. **KU2-Umfang (11.1):** (a) `Last` in Modell, Leser und Schreiber ergänzen;
+Spalte im Modell. **KU2-Umfang (11.1):** (a) `Last` in Modell, Leser und Schreiber ergänzen —
+mit der ersten Welle umgesetzt, NULL-treu (7.3);
 (b) ein **projektseitiger** Kennlinienleser nach dem Muster von
 `SimulationWaermepumpe.ModuleAufbauen` — `WHERE ID_WP = … AND Vorlauf = …` auf
 `Tab_Kenndaten_Kuehlung`, nicht auf die Stammtabelle; (c) die Extrapolationsmeldung je Gerät und
@@ -1587,7 +1594,9 @@ den Gebäude- und Zonenschritten, die parallel entstehen.
 **109**, `KU-S4` **110** — drei Schritte, nicht verschmolzen: Jeder trägt seinen Papiernamen und
 seine Nummer, und die drei treffen verschiedene Tabellenfamilien mit verschiedenem Risiko (Gebäude
 samt Sichtneubau, Projekteinstellung, Ergebnistabellen). Die Definitionen stehen bei
-`GebaeudeSchema` (`KU-S1`) und `KuehlungSchema` (`KU-S2`, `KU-S4`). `KU-S3` bekommt seine Nummer mit KU2.
+`GebaeudeSchema` (`KU-S1`) und `KuehlungSchema` (`KU-S2`, `KU-S4`). **`KU-S3` ist Schemaschritt
+114**, vergeben mit der ersten Welle von KU2 (23.09.2026); seine Definitionen stehen ebenfalls bei
+`KuehlungSchema`.
 
 Für alle neuen Tabellen gilt ohne Ausnahme: **`STRICT`**, Schlüssel
 `INTEGER PRIMARY KEY AUTOINCREMENT`, `CREATE TABLE`/`CREATE INDEX` mit **`IF NOT EXISTS`**
@@ -1749,9 +1758,9 @@ Anlagenzeile (`WErzeugerModel`, Einfügeanweisung `AnlagenSql`); eine Stammspalt
 **Kein neues Kennlinienschema — aber ein erweiterter Zugriff.** `Tab_Kenndaten_Kuehlung(_STAMM)`
 steht bereits, wird bereits importiert, gefiltert, kopiert und in der Eindeutigkeitsprüfung
 mitgeführt (Befund W 2.1; Eindeutigkeit `AnlagenEindeutigkeit.cs:103`, Kopierwege 5.0.4). Das
-**Schema** bleibt unverändert; der **Zugriff** nicht: `KenndatenKuehlungCtrl` bildet `Last` heute
-weder in `ReadSingle` noch in `ExecuteRead` noch in `Update` ab (`:35`, `:70`, `:173`), und einen
-projektseitigen Leser auf `Tab_Kenndaten_Kuehlung` gibt es nicht — beides ist KU2-Umfang
+**Schema** bleibt unverändert; der **Zugriff** nicht: `KenndatenKuehlungCtrl` führt `Last` seit der
+ersten Welle von KU2 in Modell, Leser und Schreiber, NULL-treu; einen projektseitigen Leser auf
+`Tab_Kenndaten_Kuehlung` gibt es noch nicht — er ist KU2-Umfang der Welle, die rechnet
 (5.1, Festlegung 1; 11.1).
 
 ### 7.4 `KU-S4` — die Ergebnisspalten
@@ -2495,9 +2504,13 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 **Stand 23.09.2026: KU1 ist abgeschlossen** — in vier Wellen (Schema und Programmeinstellung; Kanal,
 Fassade und Löser; Oberfläche, Bericht und Export; E32, Referenzprojekt 1017 und neue Basis
 `2026-09-23_R13_Kuehlung`, 10.4 und 10.5). Die Kühldecke als eigener Knoten ist geprüft und verworfen
-(3.6). Offen für KU2: der Kälteerzeuger mit `KU-S3` und die Kühlfunktion der Wärmepumpe von 1017,
-die Importregel für Kühlblöcke in Heizlage (K22, am 23.09.2026 geprüft); die Fragen K8, K9, K21
-und K23 sind mit E33 entschieden; aus 11.3 die übrigen Wiki-Seiten und der Upload.
+(3.6). **KU2 Welle 1 ist umgesetzt (23.09.2026), ergebnisneutral:** E33 eingetragen, K22 geprüft,
+Schemaschritt **114** (`KU-S3`, sieben Spalten samt Stromträgerwahl der Kühlung), `Last` in Modell,
+Leser und Schreiber der Kühlkennlinie. Offen für KU2: der Rechenweg des Kälteerzeugers (reversible
+Wärmepumpe, Tagesumschaltung, `Kaeltekaskade`, Kältestrom samt Bepreisung eines abweichenden
+Kühlträgers, N1.38), die Kühlfunktion der Wärmepumpe von 1017, die Importregel für Kühlblöcke in
+Heizlage (K22) und der Erzeugerdialog; die Fragen K8, K9, K21 und K23 sind mit E33 entschieden; aus
+11.3 die übrigen Wiki-Seiten und der Upload.
 
 **Warum KU2 gegenüber Rev. 1 wächst (14–22 → 16–26 in Rev. 2).** Drei Posten kamen aus dem
 Gegenlesen hinzu: der **Kühl-Vorlauf** als Kennlinienwahl samt Auswahlfeld und
