@@ -25,7 +25,9 @@ namespace EPOS.Kern.Tests
     /// Scheitern im Hinweis der Bilanz („Emissionsbilanz — Stufe „X“ nicht ausführbar").
     /// <b>Gruppe 3 — Emissionsquelle:</b> Die benannten Rückfälle der Lesekette bleiben,
     /// ein Lesefehler steht in <see cref="Emissionsfaktoren.Lesefehler"/> und an der
-    /// Herkunft.</para>
+    /// Herkunft. <b>Gruppe 4 — Gesetzeskatalog:</b> Rückfallebene mit Grund
+    /// (<see cref="GesetzKatalog.Lesefehler"/>), die Pflegewege mit
+    /// <see cref="GesetzKatalog.LetzterFehler"/>, die Saat mit benannter Tabellenanlage.</para>
     /// </summary>
     [Collection("Testdatenbank")]
     public class RobustheitB6Tests : IDisposable
@@ -230,6 +232,54 @@ namespace EPOS.Kern.Tests
             Emissionsfaktoren f = Emissionsquelle.Netzstrom(1030, DbWerte.EMISSION_MODUS_CO2);
             Assert.NotNull(f.Lesefehler);
             Assert.Contains("Stromträger des Projekts nicht lesbar: ", f.Herkunft);
+        }
+
+        // =================================================================
+        //  Gruppe 4 — Gesetzeskatalog
+        // =================================================================
+
+        /// <summary>
+        /// Gruppe 4: Lässt sich die Katalogtabelle nicht lesen, rechnet die Fassade wie
+        /// bisher aus der Rückfallebene (<see cref="GesetzKatalog.Vorbelegung"/>) — aber
+        /// <see cref="GesetzKatalog.Lesefehler"/> nennt den Grund, statt dass die Rückfall-
+        /// ebene aussieht wie eine leere Tabelle.
+        /// </summary>
+        [Fact]
+        public void Der_Katalog_nennt_den_Grund_seiner_Rueckfallebene()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var gelesen = new GesetzKatalog();
+            Assert.NotNull(gelesen.Wert(DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE, 2027));
+            Assert.False(gelesen.AusRueckfallebene);
+            Assert.Null(gelesen.Lesefehler);
+
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Gesetzesparameter RENAME COLUMN Quelle TO Quelle_B6");
+            var kaputt = new GesetzKatalog();
+            Assert.Equal(2030.0, kaputt.Wert(DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE, 2027));   // aus der Vorbelegung
+            Assert.True(kaputt.AusRueckfallebene);
+            Assert.NotNull(kaputt.Lesefehler);
+            Assert.Contains("Quelle", kaputt.Lesefehler);
+        }
+
+        /// <summary>Gruppe 4: Die Schreibwege der Pflegemaske melden ihr Scheitern weiter
+        /// über den Rückgabewert — und nennen den Grund in
+        /// <see cref="GesetzKatalog.LetzterFehler"/>.</summary>
+        [Fact]
+        public void Die_Katalogpflege_nennt_den_Grund_eines_Fehlschlags()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.False(GesetzKatalog.Existiert(DbWerte.GESETZ_KLASSE_KWKG, "GIBT_ES_NICHT", 2026, 0));
+            Assert.Null(GesetzKatalog.LetzterFehler);
+
+            DataRepository.ExecuteNonQuery("ALTER TABLE Tab_Gesetzesparameter RENAME COLUMN JahrVon TO JahrVon_B6");
+
+            Assert.False(GesetzKatalog.Existiert(DbWerte.GESETZ_KLASSE_KWKG, "GIBT_ES_NICHT", 2026, 0));
+            Assert.NotNull(GesetzKatalog.LetzterFehler);
+            Assert.Contains("JahrVon", GesetzKatalog.LetzterFehler);
         }
     }
 }

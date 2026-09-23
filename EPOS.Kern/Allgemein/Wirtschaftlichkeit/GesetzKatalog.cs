@@ -531,6 +531,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool Existiert(string klasse, string schluessel, int jahr, int ausserId)
         {
+            LetzterFehler = null;
             try
             {
                 object v = DataRepository.ExecuteScalar(
@@ -543,14 +544,39 @@ namespace WindowsFormsApplication1
                 return v != null && v != DBNull.Value &&
                        Convert.ToInt32(v, CultureInfo.InvariantCulture) > 0;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — „keine Dublette" wie bisher (der eindeutige
+                // Index aus Schritt 87 hält die Tabelle trotzdem), der Grund steht in
+                // LetzterFehler für die Pflegemaske.
+                LetzterFehler = Fehlergrund.Text(ex);
+                return false;
+            }
         }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der Grund, aus dem der letzte Schreib- oder
+        /// Prüfzugriff der Pflegemaske (<see cref="Existiert"/>, <see cref="Anlegen"/>,
+        /// <see cref="Aendern"/>, <see cref="Loeschen"/>) scheiterte; <c>null</c> = der
+        /// letzte gelang. Die Methoden melden ihr Scheitern weiter über ihren Rückgabewert
+        /// (0 / false) — die Pflegemaske kann den Grund daneben nennen.
+        /// </summary>
+        public static string LetzterFehler { get; private set; }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der Grund, aus dem diese Instanz die Tabelle nicht
+        /// lesen konnte und deshalb aus der Rückfallebene rechnet
+        /// (<see cref="AusRueckfallebene"/>); <c>null</c> = gelesen, oder die Tabelle ist
+        /// leer bzw. fehlt (der bisherige, benannte Rückfall ohne Fehler).
+        /// </summary>
+        public string Lesefehler { get; private set; }
 
         /// <summary>Verwirft den Cache; der nächste Zugriff liest die Datenbank neu.</summary>
         public void Neuladen()
         {
             _reihen = null;
             AusRueckfallebene = false;
+            Lesefehler = null;
         }
 
         private List<GesetzParameter> ReiheRoh(string schluessel)
@@ -589,7 +615,13 @@ namespace WindowsFormsApplication1
                             Text(r["Status"]),
                             Text(r["Quelle"])));
             }
-            catch { roh.Clear(); }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — die Rückfallebene bleibt der Weg, der Grund
+                // steht in Lesefehler (die Wirtschaftlichkeit nennt ihn im Hinweis).
+                roh.Clear();
+                Lesefehler = Fehlergrund.Text(ex);
+            }
 
             // Rückfallebene wie bei Tab_KWKG_Staffel: lieber die Gesetzeswerte aus dem
             // Code als gar keine — eine fehlende Tabelle darf die Rechnung nicht kippen.
@@ -617,17 +649,26 @@ namespace WindowsFormsApplication1
             return o == null || o == DBNull.Value ? "" : o.ToString();
         }
 
+        /// <summary>Ganzzahl oder 0 (ETAPPE E7c3: benannt — nur die Fehler der Zahlumwandlung).</summary>
         private static int Ganzzahl(object o)
         {
             if (o == null || o == DBNull.Value) return 0;
-            try { return Convert.ToInt32(o); } catch { return 0; }
+            try { return Convert.ToInt32(o); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return 0; }
         }
 
+        /// <summary>Kommazahl oder <c>null</c> (ETAPPE E7c3: benannt — nur die Fehler der
+        /// Zahlumwandlung; <c>null</c> heißt „Satz entfallen", nie 0).</summary>
         private static double? Kommazahl(object o)
         {
             if (o == null || o == DBNull.Value) return null;
-            try { return Convert.ToDouble(o); } catch { return null; }
+            try { return Convert.ToDouble(o); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }
         }
+
+        /// <summary>Die drei Fehler einer Zahlumwandlung (ETAPPE E7c3, B‑6).</summary>
+        private static bool IstZahlfehler(Exception ex)
+            => ex is FormatException || ex is InvalidCastException || ex is OverflowException;
 
         // =====================================================================
         // Schreiben (Pflegemaske) — der einzige Schreibweg auf diese Tabelle
@@ -638,6 +679,7 @@ namespace WindowsFormsApplication1
                                   string einheit, string status, string quelle)
         {
             StelleKatalogSicher();
+            LetzterFehler = null;
             try
             {
                 int id = DataRepository.GetMaxID(TAB_GESETZESPARAMETER) + 1;
@@ -656,7 +698,11 @@ namespace WindowsFormsApplication1
                     new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) });
                 return ok ? id : 0;
             }
-            catch { return 0; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return 0;
+            }
         }
 
         /// <summary>Ändert eine vorhandene Zeile (Schlüssel und Klasse bleiben unangetastet).</summary>
@@ -664,6 +710,7 @@ namespace WindowsFormsApplication1
                                    string status, string quelle)
         {
             if (id <= 0) return false;
+            LetzterFehler = null;
             try
             {
                 return DataRepository.ExecuteSQL(
@@ -677,20 +724,29 @@ namespace WindowsFormsApplication1
                     new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) },
                     new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
 
         /// <summary>Löscht eine Zeile.</summary>
         public static bool Loeschen(int id)
         {
             if (id <= 0) return false;
+            LetzterFehler = null;
             try
             {
                 return DataRepository.ExecuteSQL(
                     "DELETE FROM " + TAB_GESETZESPARAMETER + " WHERE ID = ?",
                     new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
 
         private static object Gekuerzt(string s, int laenge)
@@ -855,7 +911,13 @@ namespace WindowsFormsApplication1
                             "\"Status\" TEXT CHECK (length(\"Status\") <= 12), " +
                             "\"Quelle\" TEXT CHECK (length(\"Quelle\") <= 120))");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // ETAPPE E7c3 (B‑6): benannt — die Anlage der Tabelle ist Vorsorge; ihr
+                    // Scheitern steht jetzt in den SaatWarnungen, die Saat darunter
+                    // versucht es trotzdem (und scheitert dann benannt).
+                    Warnen(ex);
+                }
 
                 try
                 {
@@ -1078,7 +1140,10 @@ namespace WindowsFormsApplication1
 
             if (marker != null && marker != DBNull.Value)
             {
-                try { return (int)Math.Round(Convert.ToDouble(marker)); } catch { }
+                // ETAPPE E7c3 (B‑6): benannt — nur die Fehler der Zahlumwandlung; ein
+                // unlesbarer Marker zählt wie „kein Marker" (Zeilenzahl entscheidet).
+                try { return (int)Math.Round(Convert.ToDouble(marker)); }
+                catch (Exception ex) when (IstZahlfehler(ex)) { }
             }
 
             object anz = StilleDb.Scalar("SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER);
@@ -1103,7 +1168,11 @@ namespace WindowsFormsApplication1
                 object o = StilleDb.Scalar("SELECT MAX(ID) FROM " + TAB_GESETZESPARAMETER);
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
-            catch { }
+            catch (Exception ex) when (IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — StilleDb wirft nicht; es bleibt die
+                // Zahlumwandlung. Eine falsche 0 fängt der eindeutige Index beim INSERT.
+            }
             return 0;
         }
 
@@ -1156,7 +1225,7 @@ namespace WindowsFormsApplication1
 
             if (anz == null || anz == DBNull.Value) return false;
             try { return Convert.ToInt32(anz, CultureInfo.InvariantCulture) > 0; }
-            catch { return false; }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return false; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>
