@@ -8217,6 +8217,76 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     flex: 1 1 auto;
 }
 
+/* --- Stufe 4 (V13, V9): die WERTE einer Gruppe als Text --------------- */
+/* Der Lesemodus (Auslieferungssatz) und die Gruppe "Herkunft" zeigen Name
+   und Wert als Liste statt als gesperrte Felder: zwei Spalten wie das
+   Formularraster im Blatt (Beschriftung 9 rem), der Wert bricht um statt
+   quer zu rollen. Kein Rahmen, kein Feldhintergrund - es ist Text. */
+.epos-stammblattwerte {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    margin: 0;
+}
+
+.epos-stammblattwert {
+    display: grid;
+    grid-template-columns: minmax(0, var(--epos-beschriftung-breite)) minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: baseline;
+    min-width: 0;
+}
+
+.epos-stammblattwert dt {
+    margin: 0;
+    color: var(--epos-text-leise);
+    overflow-wrap: break-word;
+}
+
+.epos-stammblattwert dd {
+    margin: 0;
+    min-width: 0;
+    color: var(--epos-text);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.epos-stammblattwerte-abschnitt {
+    margin-top: 4px;
+    color: var(--epos-text-leise);
+    font-weight: 700;
+}
+
+/* EIN DIAGRAMM IN EINER GRUPPE (Jahresverlauf, Ganglinie) fuellt ihre Breite
+   und nicht mehr: Das SVG behaelt sein Seitenverhaeltnis (Regel von
+   .epos-diagramm-svg-flaeche svg), die Gruppe rollt nie quer. */
+.epos-stammblattgruppe .epos-diagramm-svg {
+    max-width: 100%;
+}
+
+/* --- Stufe 4 (V14): das Einlesen als Ueberlagerung -------------------- */
+/* Der Inhalt der Ueberlagerung "Daten einlesen" steht untereinander: die
+   Felder im Formularraster, darunter Fortschritt und die Knopfleiste der
+   Ueberlagerung (Abbrechen - Einlesen). */
+.epos-einlesen {
+    display: flex;
+    flex-direction: column;
+    gap: var(--epos-rand);
+    min-width: 0;
+}
+
+/* Die WERKZEUGLEISTE der Katalogliste traegt einen Schalter des Wirts (die
+   Waermepumpe: "nur mit Kuehlfunktion", Stufe 4). Er steht neben dem
+   Suchfeld und weicht nicht - die Leiste bricht um, wo es eng wird. */
+.epos-katalog-werkzeug {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
 /* EIN MEHRZEILIGES FELD IM BLATT WAECHST MIT SEINEM TEXT, statt in sich zu
    rollen - sonst laege ein Rollbereich im Rollbereich des Blatts (Katalogprobe
    N10a: die Beschreibung eines Bedarfsprofils in 360 px Breite). Wo der Browser

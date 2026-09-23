@@ -13330,7 +13330,7 @@ Please check all entries!</value>
     <value>95 % value of hourly load:</value>
   </data>
   <data name="GEBB_LBL_KUEHLBEDARF" xml:space="preserve">
-    <value>Cooling demand (informative):</value>
+    <value>Cooling demand:</value>
   </data>
   <data name="GEBB_LBL_KUEHLSTUNDEN" xml:space="preserve">
     <value>Hours with cooling demand:</value>
@@ -24697,5 +24697,203 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
     <value>The weekly profile belongs to the type “{0}” and applies to every profile of this type.</value>
+  </data>
+  <data name="SIMKONF_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMKONF_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Calculate cooling</value>
+  </data>
+  <data name="SIMKONF_HRL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Applies to the whole project. Off: the run calculates no cooling demand; the cooling inputs of the buildings and the load profiles in the cooling channel remain but have no effect. On: every building marked “Building is cooled” that has a cooling set point is cooled.</value>
+  </data>
+  <data name="SIMKONF_MSG_KUEHLBETRIEB_FEHLER" xml:space="preserve">
+    <value>The project setting “Calculate cooling” could not be saved.</value>
+  </data>
+  <data name="GEBK_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Building is cooled</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_SOLLWERT" xml:space="preserve">
+    <value>Cooling set point:</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Cooling power limit:</value>
+  </data>
+  <data name="GEBK_VORGABE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Default value: cooling off</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AN" xml:space="preserve">
+    <value>The cooling set point must be at least {0} K above the highest heating set point ({1} °C). Without a cooling set point cooling stays off, and overheating is counted against the maximum room temperature ({2} °C).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Without the tick, overheating remains informative: maximum room temperature {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
+    <value>Cooling is only calculated in projects with the project setting “Calculate cooling” (simulation configuration).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_BESTANDSWEG" xml:space="preserve">
+    <value>Daily balance (legacy method) provides no cooling load — these inputs apply as soon as the building is calculated with VDI 6007.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_BEREICH" xml:space="preserve">
+    <value>The cooling set point must be between {0} and {1} °C.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_HEIZUNG" xml:space="preserve">
+    <value>The cooling set point {0} °C is not at least {2} K above the highest heating set point {1} °C — heating and cooling would work against each other.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLLEISTUNG" xml:space="preserve">
+    <value>The cooling power limit must be greater than 0.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Is the building cooled? Only effective with a cooling set point and in a project with the project setting “Calculate cooling”; without it, overheating remains informative.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
+    <value>Cooling set point of the hourly model in °C; empty = cooling off. At least 1 K above the highest heating set point, between 15 and 35 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL" xml:space="preserve">
+    <value>Maximum cooling power of the hourly model in kW; empty = unlimited.</value>
+  </data>
+  <data name="GEBB_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="GEBB_LBL_KAELTELAST_MAX" xml:space="preserve">
+    <value>max. cooling load</value>
+  </data>
+  <data name="GEBB_LBL_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Hours with heating and cooling:</value>
+  </data>
+  <data name="GEBB_UNBEGRENZT" xml:space="preserve">
+    <value>unlimited</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_WIRKSAM" xml:space="preserve">
+    <value>Cooled to {0} °C, cooling power limit {1}. The cooling demand goes into the cooling channel; heat generators do not cover cooling.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>The project calculates no cooling (project setting “Calculate cooling” off): the cooling demand is informative — the heat that would have to be removed to keep the room air from exceeding {0} °C; it goes into no channel.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
+    <value>The building is not cooled: the cooling demand is informative — the heat that would have to be removed to keep the room air from exceeding {0} °C; it goes into no channel.</value>
+  </data>
+  <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Cooling load, annual load profile</value>
+  </data>
+  <data name="CHART_ACHSE_KAELTELAST" xml:space="preserve">
+    <value>Cooling load</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. cooling load:</value>
+  </data>
+  <data name="SIMERG_LBL_STUNDEN_KUEHLBEDARF" xml:space="preserve">
+    <value>Hours with cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNG_KAELTE" xml:space="preserve">
+    <value>Full-load hours cooling:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_KAELTEBEDARF" xml:space="preserve">
+    <value>Total cooling demand:</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_JE_KANAL" xml:space="preserve">
+    <value>Cooling demand by demand type</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>No cooling generator in the project: heat generators do not cover cooling — the cooling demand remains uncovered.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_LEER" xml:space="preserve">
+    <value>No building is cooled and no load profile uses the cooling channel — the cooling demand is 0.</value>
+  </data>
+  <data name="SIMUEB_GRP_KAELTE" xml:space="preserve">
+    <value>Cooling coverage</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling demand</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTELAST" xml:space="preserve">
+    <value>Peak cooling load</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Uncovered cooling demand</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_KAELTE" xml:space="preserve">
+    <value>Export the project's cooling load as CSV (sensible cooling without dehumidification)</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_KAELTE" xml:space="preserve">
+    <value>No cooling data available — the project does not calculate cooling.</value>
+  </data>
+  <data name="CHART_DATEI_KAELTEBEDARF" xml:space="preserve">
+    <value>Cooling_demand_project_{0}.csv</value>
+  </data>
+  <data name="CHART_CSV_KAELTELAST" xml:space="preserve">
+    <value>Cooling load [kW]</value>
+  </data>
+  <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
+    <value>A load profile in the cooling channel is cooling demand: it only takes effect with the project setting “Calculate cooling”, goes into no heat channel and remains uncovered without a cooling generator.</value>
+  </data>
+  <data name="ADM_BTN_IMPORT" xml:space="preserve">
+    <value>Import…</value>
+  </data>
+  <data name="ADM_SB_JAHRESVERLAUF" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="ADM_SB_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ADM_SB_GANGLINIE" xml:space="preserve">
+    <value>Load profile</value>
+  </data>
+  <data name="ADM_SB_GROSS" xml:space="preserve">
+    <value>enlarge…</value>
+  </data>
+  <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
+    <value>Delivered record – read only, cannot be deleted.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
+    <value>Delivered record – deletion is locked.</value>
+  </data>
+  <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
+    <value>Used in projects ({0}) – deletion is locked; remove it there first.</value>
+  </data>
+  <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
+    <value>Kept (used in projects): {0}</value>
+  </data>
+  <data name="ADM_MSG_EINGELESEN" xml:space="preserve">
+    <value>“{0}” imported.</value>
+  </data>
+  <data name="ADM_SB_SATZ" xml:space="preserve">
+    <value>Record</value>
+  </data>
+  <data name="ADM_SB_ABLAGE" xml:space="preserve">
+    <value>Storage folder</value>
+  </data>
+  <data name="ADM_SB_VOLLLAST" xml:space="preserve">
+    <value>Full load hours</value>
+  </data>
+  <data name="ADM_SB_VERWENDET" xml:space="preserve">
+    <value>Used in</value>
+  </data>
+  <data name="KLIMA_IMPORT_TITEL" xml:space="preserve">
+    <value>Import climate data</value>
+  </data>
+  <data name="KLIMA_KZ_MITTEL" xml:space="preserve">
+    <value>Annual mean</value>
+  </data>
+  <data name="KLIMA_KZ_TIEFST" xml:space="preserve">
+    <value>Minimum</value>
+  </data>
+  <data name="KLIMA_KZ_HOECHST" xml:space="preserve">
+    <value>Maximum</value>
+  </data>
+  <data name="KLIMA_SB_VERMERK" xml:space="preserve">
+    <value>Source note</value>
+  </data>
+  <data name="ADM_SB_KEINE_GANGLINIE" xml:space="preserve">
+    <value>No usable series is available for this record (neither 8,760 nor 35,040 values).</value>
   </data>
 </root>

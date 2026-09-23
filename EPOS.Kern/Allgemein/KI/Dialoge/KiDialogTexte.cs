@@ -1008,6 +1008,12 @@
         internal static string GebkLuftwechselNutzerErl => MyResource.Resource.KI_DLG_GEBK_LUFTWECHSEL_NUTZER_ERL;
         internal static string GebkSommerlueftungName => MyResource.Resource.GEBK_LBL_SOMMERLUEFTUNG;
         internal static string GebkSommerlueftungErl => MyResource.Resource.KI_DLG_GEBK_SOMMERLUEFTUNG_ERL;
+        internal static string GebkKuehlungAktivName => MyResource.Resource.GEBK_LBL_KUEHLUNG_AKTIV;
+        internal static string GebkKuehlungAktivErl => MyResource.Resource.KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL;
+        internal static string GebkKuehlSollwertName => MyResource.Resource.GEBK_LBL_KUEHL_SOLLWERT;
+        internal static string GebkKuehlSollwertErl => MyResource.Resource.KI_DLG_GEBK_KUEHL_SOLLWERT_ERL;
+        internal static string GebkKuehlleistungMaxName => MyResource.Resource.GEBK_LBL_KUEHLLEISTUNG_MAX;
+        internal static string GebkKuehlleistungMaxErl => MyResource.Resource.KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL;
         internal static string GebkFensterflaecheOstName => MyResource.Resource.GEBK_LBL_FF_OST;
         internal static string GebkFensterflaecheOstErl => MyResource.Resource.KI_DLG_GEBK_FENSTERFLAECHE_OST_ERL;
         internal static string GebkFensterflaecheWestName => MyResource.Resource.GEBK_LBL_FF_WEST;

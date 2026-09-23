@@ -113,6 +113,43 @@ namespace WindowsFormsApplication1
         /// <summary>Dasselbe ohne Herkunft.</summary>
         public static double WirksamerLuftwechsel(double? luftwechselrate, double? infiltration, double? nutzer)
             => WirksamerLuftwechsel(luftwechselrate, infiltration, nutzer, out _);
+
+        // ---- Kühlung (Stufe KU1; Kühlkonzept 3.2, 8.1) -----------------------------------
+
+        /// <summary>
+        /// Mindestabstand des Kühlsollwerts über dem höchsten Heizsollwert [K] — die harte
+        /// Prüfregel des Lösers (Q18-Regel des Stundenwegs), die der Gebäudedialog vor dem
+        /// Speichern mit derselben Zahl prüft.
+        /// </summary>
+        public static double KuehlsollwertAbstand => GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K;
+
+        /// <summary>
+        /// Kleinster Kühlsollwert, den der Gebäudedialog annimmt [°C] — eine Plausibilitätsgrenze
+        /// der Eingabe (Kühlkonzept 8.1), keine Rechenregel.
+        /// </summary>
+        public const double KUEHLSOLLWERT_MIN = 15.0;
+
+        /// <summary>Größter Kühlsollwert, den der Gebäudedialog annimmt [°C] (siehe <see cref="KUEHLSOLLWERT_MIN"/>).</summary>
+        public const double KUEHLSOLLWERT_MAX = 35.0;
+
+        /// <summary>
+        /// <b>Der höchste Heizsollwert eines Gebäudes</b> [°C], den der Sollwertfahrplan des
+        /// Stundenmodells erreichen kann (<c>GebaeudeModellEingang.Sollwertfahrplan</c>): Tag und
+        /// Nacht immer, das Wochenende nur über der Wirksamkeitsschwelle des Fahrplans, die Ferien
+        /// nur bei aktivem Ferienfahrplan. Gegen ihn prüft der Gebäudedialog den Kühlsollwert; der
+        /// Löser prüft denselben Abstand (<see cref="KuehlsollwertAbstand"/>) am gerechneten
+        /// Fahrplan und bricht bei einer Verletzung für dieses Gebäude ab.
+        /// </summary>
+        public static double HoechsterHeizsollwert(double sollTag, double sollNacht, double sollWochenende,
+                                                   double sollFerien, bool ferienAktiv)
+        {
+            double max = Math.Max(sollTag, sollNacht);
+            if (sollWochenende > GebaeudeFestwerte.WOCHENENDE_SOLLWERT_SCHWELLE)
+                max = Math.Max(max, sollWochenende);
+            if (ferienAktiv && sollFerien >= GebaeudeFestwerte.FERIEN_SOLLWERT_MIN)
+                max = Math.Max(max, sollFerien);
+            return max;
+        }
     }
 
     /// <summary>Woher der Luftwechsel des VDI-Wegs kommt (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?, out Luftwechselherkunft)"/>).</summary>

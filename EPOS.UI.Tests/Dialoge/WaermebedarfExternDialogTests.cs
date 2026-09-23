@@ -49,7 +49,8 @@ public class WaermebedarfExternDialogTests : EposBunitContext
     {
         ("HEIZUNG", "Heizung"),
         ("BRAUCHWASSER", "Brauchwasser"),
-        ("PROZESS", "Prozesswärme")
+        ("PROZESS", "Prozesswärme"),
+        ("KUEHLUNG", "Kühlung")
     };
 
     public WaermebedarfExternDialogTests()
@@ -232,16 +233,45 @@ public class WaermebedarfExternDialogTests : EposBunitContext
         Assert.Contains("Aus dem Projekt entfernen", Entfernen(cut).TextContent);
     }
 
+    /// <summary>
+    /// Die drei Wärmekanäle und — Stufe KU1 (Kühlkonzept 4.3 #6, K3) — der Kanal „Kühlung":
+    /// Ein Lastgang darf Kältebedarf ohne Gebäudemodell tragen.
+    /// </summary>
     [Fact]
-    public void Die_Kanalliste_fuehrt_die_drei_Kanaele()
+    public void Die_Kanalliste_fuehrt_die_vier_Kanaele()
     {
         var cut = Aufbauen();
 
         IElement kanal = cut.Find("select");
-        Assert.Equal(3, kanal.QuerySelectorAll("option").Length);
+        Assert.Equal(4, kanal.QuerySelectorAll("option").Length);
         Assert.Contains("Heizung", cut.Markup);
         Assert.Contains("Brauchwasser", cut.Markup);
         Assert.Contains("Prozesswärme", cut.Markup);
+        Assert.Contains("Kühlung", kanal.TextContent);
+    }
+
+    /// <summary>
+    /// Stufe KU1: Auf dem Kanal „Kühlung" steht unter der Wahl, was der Lastgang ist —
+    /// Kältebedarf, der nur mit der Projekteinstellung „Kühlung rechnen" wirkt und ohne
+    /// Kälteerzeuger ungedeckt bleibt. Auf einem Wärmekanal steht die Zeile nicht.
+    /// </summary>
+    [Fact]
+    public void Der_Kanal_Kuehlung_sagt_was_der_Lastgang_ist()
+    {
+        var zeilen = new List<WaermebedarfExternZeile> { Zeile(1) };
+        var cut = Aufbauen(zeilen: zeilen);
+        string hinweis = WindowsFormsApplication1.MyResource.Resource.WBX_HRL_KANAL_KUEHLUNG;
+
+        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Assert.DoesNotContain(hinweis, cut.Markup);
+
+        cut.Find("select").Change("3");                      // Kühlung
+        Assert.Equal("KUEHLUNG", zeilen[0].Kanal);
+        Assert.True(cut.Instance.IstKuehlkanal);
+        Assert.Contains(hinweis, cut.Markup);
+
+        cut.Find("select").Change("0");                      // zurück auf Heizung
+        Assert.DoesNotContain(hinweis, cut.Markup);
     }
 
     /// <summary>

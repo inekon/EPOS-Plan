@@ -319,7 +319,9 @@ public sealed class KnopfleistenWacheTests
         Assert.Contains("EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor", dateien.Keys);
         List<Leistenblock> ls = Leisten(OhneUnterbereiche(
             dateien["EPOS.UI/Dialoge/Klimadaten/KlimadatenDialog.razor"]));
-        Assert.Equal(3, Knoepfe(ls[^1].Text).Count);
+        // Seit Stufe 4 der Neuordnung: "Import…" und "Beenden" (Loeschen steht in der
+        // Auswahlleiste, das Einlesen in der Ueberlagerung).
+        Assert.Equal(2, Knoepfe(ls[^1].Text).Count);
         Assert.True(Knoepfe(ls[^1].Text)[^1].Primaer);
     }
 

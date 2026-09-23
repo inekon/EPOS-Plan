@@ -78,6 +78,9 @@ namespace WindowsFormsApplication1
                     "Deckungsgrad Heizung", DeckungWert(k, stamm, "energie.deckung_heizung"),
                     "Deckungsgrad Brauchwasser", DeckungWert(k, stamm, "energie.deckung_brauchwasser"),
                     "Deckungsgrad Prozesswärme", DeckungWert(k, stamm, "energie.deckung_prozess"));
+
+                // STUFE KU1 (Kuehlkonzept 8.4; E21, K5, K18): der Kaeltebedarf des Stamms.
+                KaelteSchreiben(k, stamm);
             }
 
             // ENTSCHEID E30: die Kennzahlen je Gebaeude aus Tab_ErgebnisGebaeude.
@@ -89,6 +92,62 @@ namespace WindowsFormsApplication1
 
         /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
         internal const string UEBERSCHRIFT_GEBAEUDE_ERGEBNIS = "Gebäude (Simulationsergebnis Stamm)";
+
+        /// <summary>Überschrift des Kälteabschnitts (Stufe KU1) — zugleich Schlüssel der Übersetzung.</summary>
+        internal const string UEBERSCHRIFT_KAELTE = "Kältebedarf (Simulationsergebnis Stamm)";
+
+        /// <summary>
+        /// <b>STUFE KU1 — der Kältebedarf des Stamms</b> (Kühlkonzept 8.4; E21, K5, K18): nach dem
+        /// Muster des Wärmebedarfs darüber — die Summe, die Kanalzeile „davon Kühlung", die
+        /// Kältespitze, die Stunden mit Kühlbedarf (wenn der Bericht sie am Kanalvektor zählen
+        /// konnte), die ungedeckte Kälte; darunter, wer sie deckt, und die Grenze der Zahl als
+        /// Satz neben den Zahlen, nicht als Fußnote (3.6).
+        ///
+        /// <para><b>Der Abschnitt entfällt vollständig</b>, wenn der Lauf keine Kälte ERHOBEN hat
+        /// (Projektschalter aus, jedes Bestands- und Referenzprojekt): „Eine Tabelle voller ‚—'
+        /// wäre keine Aussage, sondern eine Frage." Gerechnet wird hier nichts — die Zahlen sind
+        /// die Ergebnisspalten des Laufs (KU-S4) und die Kennzahlen des Katalogs.</para>
+        /// </summary>
+        private static void KaelteSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            ErgebnisEnergiebedarfModel e = stamm?.Ergebnis?.Energiebedarf;
+            if (e == null || !e.KaelteErhoben) return;
+
+            double jahr = e.Kaeltebedarf_Gesamt ?? 0.0;
+            double spitze = e.Kaeltelast_Max ?? 0.0;
+            var paare = new List<string>
+            {
+                "Kältebedarf gesamt", k.F(jahr, 1) + " MWh/a",
+                "davon Kühlung", KanalWertKaelte(k, e),
+                "Kältelast max.", k.F(spitze, 1) + " kW",
+            };
+            double? stunden = stamm.Kennzahlen.TryGetValue(KennzahlenKatalog.SCHLUESSEL_KAELTE_STUNDEN, out double? s) ? s : null;
+            if (stunden.HasValue)
+            {
+                paare.Add("Stunden mit Kühlbedarf");
+                paare.Add(k.F(stunden.Value, 0) + " h/a");
+            }
+            if (spitze > 0)
+            {
+                paare.Add("Vollbenutzungsstunden Kälte");
+                paare.Add(k.F(jahr * 1000.0 / spitze, 0) + " h/a");
+            }
+            paare.Add("Kältebedarf ungedeckt");
+            paare.Add(k.F(e.Kaelterestbedarf ?? 0.0, 1) + " MWh/a");
+
+            k.Ueberschrift2(UEBERSCHRIFT_KAELTE);
+            k.Eigenschaften(paare.ToArray());
+            k.HinweisRoh(jahr > 0 ? MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT
+                                  : MyResource.Resource.SIMERG_HRL_KAELTE_LEER);
+            k.HinweisRoh(SimulationKaeltebedarf.GrenzeFeuchte);
+        }
+
+        /// <summary>Die Kanalzeile „davon Kühlung" — der vierte Eintrag des Kanalfelds (KU-S4, Spalte <c>Waermebedarf_Kuehlung</c>).</summary>
+        private static string KanalWertKaelte(WordKontext k, ErgebnisEnergiebedarfModel e)
+        {
+            if (e.Waermebedarf_Kanal == null || Kanal.KUEHLUNG >= e.Waermebedarf_Kanal.Length) return "—";
+            return k.F(e.Waermebedarf_Kanal[Kanal.KUEHLUNG], 1) + " MWh/a";
+        }
 
         /// <summary>
         /// <b>Die Gebäudezeilen, die der Abschnitt zeigt</b> (E30) — die des letzten Laufs des
@@ -133,7 +192,9 @@ namespace WindowsFormsApplication1
                 };
                 if (g.IstVdi6007)
                 {
-                    paare.Add("Kühlenergie (informativ)"); paare.Add(Wert(k, g.KuehlenergieMwh, 1, "MWh/a"));
+                    // Stufe KU1 (Kuehlkonzept 6.4): Der Zusatz „(informativ)" ist entfallen - mit
+                    // eingeschalteter Kuehlung ist die Kuehlenergie der Kaeltebedarf des Gebaeudes.
+                    paare.Add("Kühlenergie"); paare.Add(Wert(k, g.KuehlenergieMwh, 1, "MWh/a"));
                     paare.Add("Stunden mit Kühlbedarf"); paare.Add(Wert(k, g.KuehlstundenH, "h/a"));
                     paare.Add("Mittlere Raumtemperatur (Nutzungszeit)"); paare.Add(Wert(k, g.MittlereRaumtemperaturC, 1, "°C"));
                     paare.Add("Überhitzungsstunden"); paare.Add(Wert(k, g.UeberhitzungsstundenH, "h/a"));
@@ -143,6 +204,10 @@ namespace WindowsFormsApplication1
 
             if (zeilen.Any(g => !g.IstVdi6007))
                 k.Hinweis("Der Tagesbilanz-Weg (Bestandsweg) liefert weder Raumtemperatur noch Kühllast.");
+
+            // K5 (E31): Die Grenze steht an JEDER Kaeltezahl - auch an der Kuehlenergie je Gebaeude.
+            if (zeilen.Any(g => g.IstVdi6007 && g.KuehlenergieMwh.HasValue))
+                k.HinweisRoh(SimulationKaeltebedarf.GrenzeFeuchte);
         }
 
         private static string Wert(WordKontext k, double? w, int dez, string einheit)

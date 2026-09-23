@@ -47,7 +47,7 @@ namespace WindowsFormsApplication1
             { "Spitzenlast (Stundenwert)", "Peak load (hourly value)" },
             { "Spitzenlast (Tagesmittel)", "Peak load (daily mean)" },
             { "Spitzenlast (95-%-Quantil)", "Peak load (95th percentile)" },
-            { "Kühlenergie (informativ)", "Cooling energy (informative)" },
+            { "Kühlenergie", "Cooling energy" },
             { "Stunden mit Kühlbedarf", "Hours with cooling demand" },
             { "Mittlere Raumtemperatur (Nutzungszeit)", "Mean room temperature (occupancy period)" },
             { "Überhitzungsstunden", "Overheating hours" },
@@ -181,6 +181,15 @@ namespace WindowsFormsApplication1
             { "Deckungsgrad Heizung", "Coverage space heating" },
             { "Deckungsgrad Brauchwasser", "Coverage domestic hot water" },
             { "Deckungsgrad Prozesswärme", "Coverage process heat" },
+
+            // STUFE KU1 (Kühlkonzept 8.4) — der Kälteabschnitt der Projektbeschreibung. Die
+            // Kältezahlen tragen ihre Grenze (K5) als Satz aus MyResource, schon übersetzt.
+            { "Kältebedarf (Simulationsergebnis Stamm)", "Cooling demand (base simulation result)" },
+            { "Kältebedarf gesamt", "Total cooling demand" },
+            { "davon Kühlung", "of which cooling" },
+            { "Kältelast max.", "Peak cooling load" },
+            { "Vollbenutzungsstunden Kälte", "Full-load hours cooling" },
+            { "Kältebedarf ungedeckt", "Uncovered cooling demand" },
 
             // PAKET P2 (Konzept 7.4) — die Speichertemperaturen des Schichtmodells.
             // „Speicher" allein ist als Wörterbuchschlüssel grob genug, dass es nur als

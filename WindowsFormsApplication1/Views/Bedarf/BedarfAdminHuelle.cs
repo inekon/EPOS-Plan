@@ -111,6 +111,19 @@ namespace WindowsFormsApplication1
                 ["Vorschau"] = new Func<string, IReadOnlyDictionary<string, object>>(
                     name => VorschauGaben(art, name)),
 
+                // Stufe 4 der Neuordnung (Konzept Administrationsdialoge, A5): die
+                // Kenndaten direkt im Stammblatt statt ueber "Aendern..." - Typliste,
+                // Monatswerte und der Schreibweg des Stammkopfes samt ReadOnly-Sperre
+                // (TypStammHuelle.Schreiben, derselbe Weg wie "Ueberschreiben").
+                ["Typen"] = new Func<IReadOnlyList<string>>(() => BedarfStammCtrl.Typen(art)),
+                ["Monatswerte"] = new Func<string, double[]>(name => BedarfStammCtrl.Monatswerte(art, name)),
+                ["Speichern"] = new Func<string, string, string, double[],
+                                         EPOS.UI.Dialoge.Erzeuger.KatalogSpeicherErgebnis>(
+                    (name, typ, beschr, monate) => KopfSchreiben(art, name, typ, beschr, monate)),
+                ["Monatsnamen"] = TypStammHuelle.Monatsbeschriftungen(),
+                ["Feldnamen"] = TypStammHuelle.Feldnamen(art),
+                ["MeldungTypFehlt"] = TypStammHuelle.TypFehltMeldung(art),
+
                 ["TitelText"] = Titel(art),
                 ["LabelKatalog"] = LabelKatalog(art),
                 ["LabelJahressumme"] = LabelJahressumme(art),
@@ -173,6 +186,24 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>Der Löschweg samt Übersetzung des Kernergebnisses.</summary>
+        /// <summary>
+        /// Der Kopf eines VORHANDENEN Satzes aus dem Stammblatt (Stufe 4, A5) — derselbe
+        /// Schreibweg wie „Überschreiben" im Stammkopf, samt ReadOnly-Sperre.
+        /// </summary>
+        private static EPOS.UI.Dialoge.Erzeuger.KatalogSpeicherErgebnis KopfSchreiben(
+            BedarfsArt art, string name, string typ, string beschreibung, double[] monate)
+        {
+            var daten = new TypStammDaten
+            {
+                Art = art,
+                Name = name ?? "",
+                Typ = typ ?? "",
+                Beschreibung = beschreibung ?? ""
+            };
+            for (int m = 0; m < 12 && monate != null && m < monate.Length; m++) daten.Monat[m] = monate[m];
+            return TypStammHuelle.Schreiben(art, daten, false, name ?? "");
+        }
+
         private static BedarfLoeschAusgang Loeschen(BedarfsArt art, string name)
         {
             switch (BedarfStammCtrl.Loeschen(art, name))

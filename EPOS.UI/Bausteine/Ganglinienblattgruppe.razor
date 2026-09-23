@@ -1,0 +1,79 @@
+﻿@* DIE GRUPPE "GANGLINIE" IM STAMMBLATT DER ZEITREIHENVERWALTUNGEN (Konzept
+   Administrationsdialoge, Stufe 4: V9; Mockup-Reiter Waermebedarf Lastgang,
+   Solarthermieganglinie, Stromganglinie).
+
+   DREI VERWALTUNGEN, EINE GRUPPE. Waermebedarf Lastgang, Solarthermie- und
+   Stromganglinie zeigen im Stammblatt denselben Jahresverlauf: das Modell des
+   Kerns (ChartRenderer.JahresverlaufModell ueber GanglinienAuswertungCtrl) im
+   Baustein DiagrammSvg, und "gross..." im Kopf der Gruppe oeffnet dasselbe
+   Modell breit als Ueberlagerung. Drei Fassungen davon liefen auseinander -
+   deshalb dieser Baustein (Hausregel "ein Dialog baut kein Hausmuster selbst
+   nach").
+
+   ZWEI KENNUNGEN: Dasselbe Modell steht im Blatt und in der Ueberlagerung; die
+   Kennung bildet die clipPath-Namen und muss je Bild auf dem Blatt eindeutig
+   sein (EPOS.UI/CLAUDE.md). Die Kennung traegt ausserdem den Schluessel der
+   Ganglinie - ein Wechsel der Zeile ist ein anderes Bild. *@
+
+@namespace EPOS.UI.Bausteine
+@using WindowsFormsApplication1.Zeichnung
+
+<Stammblattgruppe Titel="@Titel">
+    <Kopf>
+        @if (Modell is not null)
+        {
+            <button type="button" class="epos-textknopf epos-ganglinie-gross"
+                    @onclick="() => _offen = true">@GrossText</button>
+        }
+    </Kopf>
+    <KindInhalt>
+        <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-" + Schluessel)"
+                     Bezeichnung="@Titel" PlatzhalterText="@PlatzhalterText"
+                     Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+    </KindInhalt>
+</Stammblattgruppe>
+
+<Ueberlagerung Offen="@(_offen && Modell is not null)" Titel="@GrossTitel"
+               Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _offen = false">
+    <KindInhalt>
+        @if (_offen && Modell is not null)
+        {
+            <DiagrammSvg Modell="@Modell" Kennung="@(Kennung + "-gross-" + Schluessel)"
+                         Bezeichnung="@GrossTitel" PlatzhalterText="@PlatzhalterText"
+                         Einheit="@Einheit" Palette="@Farbpalette.Aktuell" />
+        }
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Der Titel der Gruppe — „Ganglinie" (<c>ADM_SB_GANGLINIE</c>).</summary>
+    [Parameter] public string Titel { get; set; } = Resource.ADM_SB_GANGLINIE;
+
+    /// <summary>Das Bild des Jahresverlaufs; <c>null</c> = der Platzhalter, kein „groß…".</summary>
+    [Parameter] public Zeichenmodell? Modell { get; set; }
+
+    /// <summary>Der Name der gezeigten Ganglinie — er steht im Titel der breiten Ansicht.</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>Der Schlüssel der Ganglinie (ihre Id) — Teil der Kennung.</summary>
+    [Parameter] public string Schluessel { get; set; } = "0";
+
+    /// <summary>Der Anfang der Kennung je Verwaltung („wbad-ganglinie").</summary>
+    [Parameter] public string Kennung { get; set; } = "ganglinie";
+
+    /// <summary>Was ohne Bild dasteht.</summary>
+    [Parameter] public string PlatzhalterText { get; set; } = Resource.ADM_SB_KEINE_GANGLINIE;
+
+    /// <summary>Die Einheit der Zeigerzeile — eine Leistung.</summary>
+    [Parameter] public string Einheit { get; set; } = "kW";
+
+    /// <summary>„groß…" — <c>ADM_SB_GROSS</c>.</summary>
+    [Parameter] public string GrossText { get; set; } = Resource.ADM_SB_GROSS;
+
+    private bool _offen;
+
+    /// <summary>Steht die breite Ansicht? Der Wirt fragt es, bevor er Esc für sich auswertet.</summary>
+    public bool Offen => _offen && Modell is not null;
+
+    private string GrossTitel => Name.Length == 0 ? Titel : Titel + " – " + Name;
+}

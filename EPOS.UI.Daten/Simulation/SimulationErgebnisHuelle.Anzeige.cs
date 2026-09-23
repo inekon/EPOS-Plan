@@ -48,6 +48,49 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// Die Kälteseite für Bedarfsreiter und Übersicht (Stufe KU1; Kühlkonzept 8.4; K5, K6) —
+        /// <c>null</c>, wenn der Lauf keine Kälte erhoben hat: Ein Projekt ohne Kühlung zeigt
+        /// keine Kältegruppe (K18). Die Sätze stehen hier fertig; die Sätze des Laufs werden
+        /// wiederverwendet, wo es sie gibt (ein Text, eine Stelle).
+        /// </summary>
+        internal static KaelteDaten KaelteDaten(SimulationErgebnisCtrl.KaelteErgebnis k)
+        {
+            if (k == null) return null;
+
+            CultureInfo kultur = CultureInfo.CurrentCulture;
+            var hinweise = new List<string>();
+            string deckung = "";
+
+            if (k.KaeltebedarfMwh > 0)
+            {
+                // KU1: Kaelteerzeuger gibt es nicht - der ganze Bedarf bleibt ungedeckt, benannt.
+                deckung = MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT;
+                hinweise.Add(deckung);
+            }
+            else
+            {
+                hinweise.Add(MyResource.Resource.SIMERG_HRL_KAELTE_LEER);
+            }
+
+            if (k.StundenHeizenUndKuehlen > 0)
+                hinweise.Add(string.Format(kultur, MyResource.Resource.SIMENG_KAELTE_HEIZEN_UND_KUEHLEN,
+                                           k.StundenHeizenUndKuehlen, k.StundenHeizenUndKuehlenGebaeude));
+
+            return new KaelteDaten
+            {
+                KaeltebedarfMwh = k.KaeltebedarfMwh,
+                KaeltelastMaxKw = k.KaeltelastMaxKw,
+                StundenMitKuehlbedarf = k.StundenMitKuehlbedarf,
+                VollbenutzungsstundenH = k.VollbenutzungsstundenH,
+                KaelterestbedarfMwh = k.KaelterestbedarfMwh,
+                Kanalname = Warnkriterien.KanalAnzeige(Kanal.KUEHLUNG),
+                Hinweise = hinweise,
+                GrenzeFeuchte = SimulationKaeltebedarf.GrenzeFeuchte,
+                Deckungshinweis = deckung
+            };
+        }
+
+        /// <summary>
         /// Die Anzeigenamen JE KANALINDEX — ein Feld über alle <see cref="Kanal.ANZAHL"/>
         /// Kanäle, über <see cref="Warnkriterien.KanalAnzeige"/> gebildet (Kühlkonzept 4.3
         /// #32: bis dahin fest dreielementig, und der vierte Index lief ins Leere).

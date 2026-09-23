@@ -89,12 +89,12 @@ Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''
 == Wärmepumpen ==
 {{Anker|waermepumpen}}
 
-Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- und, soweit vorhanden, die Kühlkennlinie. Der Kenndatenblock zeigt:
+Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- und, soweit vorhanden, die Kühlkennlinie. Über der Liste engt der Schalter ''nur mit Kühlfunktion'' sie auf Pumpen mit hinterlegter Kühlkennlinie ein. Der Kenndatenblock zeigt:
 
 * '''Name''', '''Hersteller''', '''Beschreibung'''.
 * '''Wärmepumpentyp''', '''Leistungsstufen''', '''Aufstellung''', '''Baujahr'''.
 * '''Nennleistung''', '''Heizstab''', '''Kühlleistung'''.
-* '''Modulkosten''' – nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
+* '''Modulkosten''' – in einer eigenen Gruppe ''Kosten'', nur lesend, mit einer Herleitungszeile darunter: Gerätekosten laufen über die Kostenverwaltung und nicht über ein Eingabefeld dieser Maske.
 
 ''Kennliniendaten Ansicht/Bearbeiten…'' zeigt die Heizkennlinie und, wenn zur gewählten Pumpe Kühlkenndaten vorliegen, über einen Umschalter auch die Kühlkennlinie, als Diagramm. ''Modul-Katalog…'' öffnet eine durchsuchbare Auswahl aus dem Stammkatalog: eine Suchzeile über alle Spalten, dazu die Spalten Hersteller, Quelle, Nennleistung, Vorlauf minimal und maximal sowie Zuheizung; Bauart, Auslegung, Aufstellung und Regelung stehen im Kenndatenblock der gewählten Pumpe statt als eigene Spalte.
 

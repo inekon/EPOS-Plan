@@ -108,6 +108,15 @@
                    @oninput="BeiSuche" />
         </label>
 
+        @* EIN SCHALTER DES WIRTS (Konzept Administrationsdialoge 3.1, Zone 2; Stufe 4):
+           "nur mit Kuehlfunktion" der Waermepumpenverwaltung. Er setzt einen Trichter
+           im Filterstand, nie einen zweiten Filterweg - deshalb steht er hier in der
+           Werkzeugleiste und nicht ueber der Liste. *@
+        @if (Werkzeug is not null)
+        {
+            <span class="epos-katalog-werkzeug">@Werkzeug</span>
+        }
+
         @* DER ALLE-SCHALTER DER MEHRFACHWAHL (W13-B-5, Windows-Abnahme 08.09.2026):
            ein Kontrollkaestchen in der Suchzeile, das alle SICHTBAREN Zeilen waehlt
            oder abwaehlt. Es steht nur da, wenn der Wirt es bedient (Allewahl) - die
@@ -802,6 +811,14 @@
 
     /// <summary>Die Beschriftungen — EIN Bündel (Hausregel).</summary>
     [Parameter] public Katalogfiltertexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// <b>Ein Schalter des Wirts in der Werkzeugleiste</b> (Konzept Administrationsdialoge
+    /// 3.1, Zone 2) — neben dem Suchfeld. Er setzt einen Trichter im
+    /// <see cref="Filterstand"/>, nie einen zweiten Filterweg (Wärmepumpe: „nur mit
+    /// Kühlfunktion"). Ohne ihn steht nichts da.
+    /// </summary>
+    [Parameter] public RenderFragment? Werkzeug { get; set; }
 
     /// <summary>
     /// Ab wie vielen GEFILTERTEN Zeilen virtualisiert wird (Hausregel W6-B-2:

@@ -176,8 +176,10 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
         Assert.Single(cut.FindAll(".epos-katalogliste"));
-        // Bezeichner + Zeitintervall + Jahresarbeit + Spitze - ohne Wahlspalte (V4).
-        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Kaestchen + Bezeichner + Zeitintervall + Jahresarbeit + Spitze - ohne
+        // Wahlspalte (V4), mit der Kaestchenspalte der Mehrfachwahl (Stufe 4, V6).
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
+        Assert.Single(cut.FindAll(".epos-katalogliste thead th.epos-spalte-kaestchen"));
 
         // Die Stundenspitze der Viertelstundenreihe steht als Zahl in der Zelle.
         Assert.Contains("1.513,5", cut.Markup);
@@ -201,8 +203,9 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Waermebedarf))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        // Bezeichner + Jahresarbeit + Spitze - die Zeile ist die Wahl (V4).
-        Assert.Equal(3, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Kaestchen + Bezeichner + Jahresarbeit + Spitze - die Zeile ist die Wahl (V4),
+        // das Kaestchen waehlt mehrere (Stufe 4, V6).
+        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
     }
 
     /// <summary>
@@ -222,8 +225,9 @@ public class KatalogfilterS3Tests : EposBunitContext
             .Add(x => x.Katalogprofil, Zeitreihenproben.Profil(Zeitreihenart.Solarganglinie))
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand()));
 
-        // Bezeichner + Beschreibung + Jahresarbeit + Spitze - die Zeile ist die Wahl (V4).
-        Assert.Equal(4, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Kaestchen + Bezeichner + Beschreibung + Jahresarbeit + Spitze - die Zeile ist
+        // die Wahl (V4), das Kaestchen waehlt mehrere (Stufe 4, V6).
+        Assert.Equal(5, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("Leistung Solarsystem [W]", cut.Markup);
     }
 

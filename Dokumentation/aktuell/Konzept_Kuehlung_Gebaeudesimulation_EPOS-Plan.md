@@ -2006,6 +2006,42 @@ schlechter (**K12**, entschieden mit E31).
   nicht über `Properties.Settings` (7.2); der Fall setzt die Ablage über
   `FluechtigeEinstellungen` und liest zurück (F-K20).
 
+**So umgesetzt — KU1, dritte Welle (23.09.2026).** Die Masken 1 bis 3 und 6 stehen; 4 und 5 (Katalog
+und Erzeugerdialog der Wärmepumpe) gehören zu KU2.
+
+- **Projekteinstellung (8.3):** Abschnitt „Kühlung" der Simulationskonfiguration neben dem
+  Abschnitt „Wärmebedarf" — der Schalter parametriert wie die Netzverluste den Bedarf des Laufs und
+  schreibt wie diese sofort (`KonfigurationCtrl.KuehlbetriebSetzen`: mit Einstellungssatz nur der
+  Schalter; ohne Satz schreibt „aus" nichts, „ein" legt den Vormerksatz aus 7.2 an; die
+  Programmeinstellung wird nicht gelesen).
+- **Gebäudedialog (8.1):** Gruppe „Kühlung" im Reiter „Gebäude und Hülle" unter dem Rechenweg,
+  immer sichtbar und bearbeitbar; Kühlsollwert und Kühlleistungsgrenze mit dem Haken, Platzhalter
+  „Vorgabe: Kühlung aus" bzw. „Vorgabe: unbegrenzt", NULL bleibt NULL, der Nachtwert reist
+  unsichtbar mit. Die Prüfregel „≥ höchster Heizsollwert + 1 K" rechnet der Dialog über
+  `Gebaeudemodellvorgaben.HoechsterHeizsollwert` — dieselbe Zahl wie der Löser, belegt durch eine
+  Probe gegen den gerechneten Sollwertfahrplan. Hilfe über den Hilfeknopf des Dialogs; die drei
+  Felder sind beim Hilfe-Assistenten angemeldet.
+- **Bedarfsdialog Gebäude (8.4):** Abschnitt „Kältebedarf" mit denselben Bausteinen wie die
+  Wärmeseite — Kennzahltabelle statt Kachel, weil auch die Wärmeseite dieses Dialogs eine Tabelle
+  führt; eigenes Bild der Kältelast; die Monatswerte als Spalte „Kühlung" neben „Heizung" statt
+  eines Stapelbilds in zwei Richtungen (dafür bräuchte der Renderer ein neues Bild — offen).
+- **Bedarfsdialog Projekt und Ergebnisdialog (8.4):** Im Reiter „Wärme-/Strombedarf" der Block
+  „Kälte" mit der vierten Kanalzeile, eigenem Bild und CSV-Export; in der Übersicht der Block
+  „Kältedeckung" unter den zwei Spalten, nur bei Kältebedarf > 0 — ohne Deckungsring und ohne
+  Kälteerzeugertabelle, weil es in KU1 keinen Kälteerzeuger gibt (beide kommen mit KU2). Die
+  Wärmeerzeugertabelle bleibt bei drei Kanälen.
+- **Kanalwahl (K3):** Der Dialog „Wärmebedarf Extern" führt den Kanal „Kühlung" mit einer Zeile,
+  was ein solcher Lastgang ist.
+- **Grenze der Zahl (K5):** Die Herleitungszeilen der Dialoge, der Bericht, die Kennzahlen des
+  Katalogs (Beschriftung „(sensibel)") und der CSV-Export tragen sie; Wächter
+  `KuehlungOberflaecheTests.Waechter_jede_Kaeltekennzahl_traegt_die_Grenze`.
+- **Tests je Maske (8.6):** `SimulationKonfigSeiteTests`, `GebaeudeKatalogDialogTests`,
+  `GebaeudeBedarfDialogTests`, `BedarfReiterTests`, `UebersichtReiterTests`,
+  `WaermebedarfExternDialogTests`, dazu `KuehlungOberflaecheTests` im Kern; die beiden
+  Bestandsweg-Fälle aus 8.6 stehen in der Löschliste der Stufe GA
+  ([Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) 6.1). Die
+  iOS-Erreichbarkeit ist die der Gebäude-, Bedarfs- und Ergebnismasken (K12).
+
 ---
 
 ## 9. Import und Export
@@ -2069,6 +2105,14 @@ nicht doppelt zu leisten.
 **Und die Grenze reist mit.** Ein exportierter Kältebedarf ohne den Hinweis „sensibel, ohne
 Entfeuchtung" ist in fremder Hand eine falsche Zahl. Der Hinweis gehört in die Beschreibung der
 Eigenschaft, nicht nur in den Bericht (K5).
+
+**So umgesetzt — KU1, dritte Welle (23.09.2026).** Der CSV-Export der Ergebnisseite schreibt die
+Kältelast des Projekts mit der Grenze als erster Zeile vor den Spaltenköpfen
+(`CsvExportClass`, Parameter `kopfzeilen`); jeder andere Export beginnt unverändert mit der
+Spaltenzeile. Die Kanalreihe des Referenzlaufs (4.7) legt der Kern fest
+(`KaelteErgebnisexport`): `waermebedarf_kuehlung.csv` nur, wenn der Lauf Kälte erhoben hat und
+einen Kältebedarf > 0 führt; die Vektordatei bleibt „Index;Wert", die Grenze steht im
+Laufprotokoll. IFC und gbXML bleiben bei KU3.
 
 ---
 
@@ -2261,6 +2305,12 @@ gegen `2026-09-23_R12_Gebaeudemodell` **byte-gleich in allen Dateien** (außer `
 Schemaschritt und ohne Änderung der Testdatenbank. Die Schlüssel erscheinen mit dem Referenzprojekt
 mit Kühlung (10.4) und dessen Einfrierschritt.
 
+**Nach der dritten Welle (23.09.2026):** Oberfläche, Bericht und Export ändern keinen Rechenweg; die
+Kanaldatei `waermebedarf_kuehlung.csv` entsteht nur für ein Projekt, das Kälte erhebt und einen
+Kältebedarf > 0 führt. Dreizehn Projekte gegen `2026-09-23_R12_Gebaeudemodell` wieder
+**byte-gleich in allen Dateien** (außer `protokoll.txt`). Datei und Schlüssel erscheinen mit dem
+Referenzprojekt mit Kühlung (10.4) — Welle 4.
+
 **Was das Einfrieren erzwingt, ist allein die Datei.** Und weil KU1 sie erzeugt, während G1 + G2
 ohnehin alle dreizehn Projekte bewegen: **Getrennt gefahren kostet dasselbe Ergebnis zwei
 Neu-Einfrierungen, zwei Begründungen und zwei Runden CI.** Deshalb:
@@ -2417,6 +2467,14 @@ ist eine der vier Bedingungen, unter denen GA fällig wird (Q24, E27).
   bleibt bis zu seiner Ablösung wählbar (E23, E26); mit der Stufe GA wird auch dieser Satz von der
   Seite genommen. Die Einführung des zweiten Rechenwegs selbst gehört in die Seite
   „Update-Logbuch", mit Datum und Version (E20).
+
+**Stand nach der dritten Welle von KU1 (23.09.2026):** Die Repo-Quelle der Seite „Kühlung" ist neu
+(`Projekte/Wiki/Programm Dokumentation - Kühlung.wiki`: Einschalten, Eingaben, Rechenweg, Deckung,
+Ergebnisse, Export, Grenzen), die Seite „Gebäudemodell VDI 6007" ist um den Abschnitt „Kältebedarf",
+die Sommerlüftung gekühlter Gebäude und die Grenzen ergänzt; beide sind gegen das Verbotsmuster
+gegengelesen und nicht hochgeladen. Die Ergänzungen der Seiten „Gebäude", „Simulation" und
+„Simulationsergebnisse" stehen aus; der Logbuch-Satz ist entworfen, die Versionsnummer beim
+Anwender zu erfragen.
 
 ---
 

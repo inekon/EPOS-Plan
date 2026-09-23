@@ -1,0 +1,38 @@
+﻿@* DIE WERTE EINER STAMMBLATTGRUPPE ALS TEXT (Konzept Administrationsdialoge,
+   Stufe 4: V13 "Auslieferungssaetze als Text statt gesperrter Eingabefelder",
+   V9 Gruppe "Herkunft").
+
+   EINE LISTE AUS NAME UND WERT (dl), zwei Spalten wie das Formularraster:
+   Beschriftung links, Wert rechts, der Wert bricht um statt quer zu rollen.
+   Ein Abschnitt (Stammblattwert.Abschnitt) steht als leise Zwischenueberschrift
+   ueber die ganze Breite.
+
+   KEIN EINGABEFELD, KEIN readonly: Was hier steht, IST Text. Die Sprachausgabe
+   liest "Name, Wert" statt "Eingabefeld, schreibgeschuetzt". *@
+
+@namespace EPOS.UI.Bausteine
+
+@if (Werte.Count > 0)
+{
+    <dl class="epos-stammblattwerte">
+        @foreach (Stammblattwert w in Werte)
+        {
+            @if (w.IstAbschnitt)
+            {
+                <div class="epos-stammblattwerte-abschnitt">@w.Name</div>
+            }
+            else
+            {
+                <div class="epos-stammblattwert">
+                    <dt>@Stammblattwert.OhneDoppelpunkt(w.Name)</dt>
+                    <dd>@w.Anzeige</dd>
+                </div>
+            }
+        }
+    </dl>
+}
+
+@code {
+    /// <summary>Die Werte in Anzeigereihenfolge; leer = nichts.</summary>
+    [Parameter] public IReadOnlyList<Stammblattwert> Werte { get; set; } = Stammblattwert.Keine;
+}

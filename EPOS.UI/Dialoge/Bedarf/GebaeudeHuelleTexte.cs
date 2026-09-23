@@ -221,6 +221,61 @@ public sealed class GebaeudeHuelleTexte
     public string ZeileRechenwegVorgabe { get; set; }
         = "Am Gebäude ist kein Rechenweg eingetragen; es gilt die Vorgabe des Programms: {0}.";
 
+    // ------------------------------------------------------------ Kühlung (Stufe KU1, Kühlkonzept 8.1)
+
+    /// <summary><c>GEBK_GRP_KUEHLUNG</c></summary>
+    public string GruppeKuehlung { get; set; } = "Kühlung";
+
+    /// <summary><c>GEBK_LBL_KUEHLUNG_AKTIV</c></summary>
+    public string LabelKuehlungAktiv { get; set; } = "Gebäude wird gekühlt";
+
+    /// <summary><c>GEBK_LBL_KUEHL_SOLLWERT</c></summary>
+    public string LabelKuehlSollwert { get; set; } = "Kühlsollwert :";
+
+    /// <summary><c>GEBK_LBL_KUEHLLEISTUNG_MAX</c></summary>
+    public string LabelKuehlleistungMax { get; set; } = "Kühlleistungsgrenze :";
+
+    /// <summary><c>GEBK_VORGABE_KUEHLUNG_AUS</c> — Platzhalter des leeren Kühlsollwerts.</summary>
+    public string VorgabeKuehlungAus { get; set; } = "Vorgabe: Kühlung aus";
+
+    /// <summary>
+    /// <c>GEBK_ZEILE_KUEHLUNG_AN</c> — „{0}" Mindestabstand [K], „{1}" höchster Heizsollwert
+    /// [°C], „{2}" Maximalraumtemperatur [°C].
+    /// </summary>
+    public string ZeileKuehlungAn { get; set; }
+        = "Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). "
+        + "Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der "
+        + "Maximalraumtemperatur ({2} °C) gezählt.";
+
+    /// <summary><c>GEBK_ZEILE_KUEHLUNG_AUS</c> — „{0}" Maximalraumtemperatur [°C].</summary>
+    public string ZeileKuehlungAus { get; set; }
+        = "Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.";
+
+    /// <summary><c>GEBK_ZEILE_KUEHLUNG_PROJEKT</c></summary>
+    public string ZeileKuehlungProjekt { get; set; }
+        = "Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung "
+        + "„Kühlung rechnen“ (Simulationskonfiguration).";
+
+    /// <summary><c>GEBK_ZEILE_KUEHLUNG_BESTANDSWEG</c> — bis zur Stufe GA (Löschliste).</summary>
+    public string ZeileKuehlungBestandsweg { get; set; }
+        = "Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten, sobald das "
+        + "Gebäude auf VDI 6007 rechnet.";
+
+    /// <summary><c>GEBK_MSG_KUEHLSOLLWERT_BEREICH</c> — „{0}" kleinster, „{1}" größter Wert [°C].</summary>
+    public string MeldungKuehlsollwertBereich { get; set; }
+        = "Der Kühlsollwert muss zwischen {0} und {1} °C liegen.";
+
+    /// <summary>
+    /// <c>GEBK_MSG_KUEHLSOLLWERT_HEIZUNG</c> — „{0}" Kühlsollwert, „{1}" höchster Heizsollwert
+    /// [°C], „{2}" Mindestabstand [K].
+    /// </summary>
+    public string MeldungKuehlsollwertHeizung { get; set; }
+        = "Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert "
+        + "{1} °C — Heizung und Kühlung arbeiteten gegeneinander.";
+
+    /// <summary><c>GEBK_MSG_KUEHLLEISTUNG</c></summary>
+    public string MeldungKuehlleistung { get; set; } = "Die Kühlleistungsgrenze muss größer als 0 sein.";
+
     // ------------------------------------------------------------ Schreibweg
 
     /// <summary><c>GEBK_HINWEIS_SPEICHERN_UNTER</c></summary>

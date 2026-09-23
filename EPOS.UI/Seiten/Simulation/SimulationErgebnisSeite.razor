@@ -129,7 +129,8 @@
                                       FarbeZuruecksetzen="@Dienste?.FarbeZuruecksetzen"
                                       WaermeDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(true)) : default)"
                                       StromDetails="@(BedarfGabenDa ? EventCallback.Factory.Create(this, () => BedarfOeffnen(false)) : default)"
-                                      Csv="@Rueckruf(Dienste?.CsvBedarf)" />
+                                      Csv="@Rueckruf(Dienste?.CsvBedarf)"
+                                      CsvKaelte="@Rueckruf(Dienste?.CsvKaelte)" />
                     </KindInhalt>
                 </Reiterblatt>
 

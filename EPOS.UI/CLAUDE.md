@@ -194,6 +194,22 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   die Schalterbeschriftung ist wörtlich der Legendentext. Wo eine Summenlinie das Diagramm
   TRÄGT und nicht abschaltbar sein darf, wird das begründet, statt sie stillschweigend
   festzunageln.
+- **Ein Auslieferungssatz im Stammblatt ist TEXT, nicht ein gesperrtes Feld:** Die
+  `Stammblattgruppe` hat einen Lesemodus, der ihre Felder gegen den Baustein `Stammblattwerte`
+  tauscht — Bezeichnung und Wert nur als Text, statt eines Eingabefelds, das seine eigene Sperre
+  erklären müsste.
+- **Ein Filter über der Liste ist der Schlitz WERKZEUG:** Die `Katalogliste` nimmt eine
+  zusätzliche Werkzeugleiste über den Schlitz `Werkzeug` entgegen — etwa den Schalter „nur mit
+  Kühlfunktion“ der Wärmepumpenverwaltung —, statt dass der Wirt sie an der Liste vorbei ins
+  Layout schiebt.
+- **Ein Import steht hinter EINEM Knopf, nicht im Block:** `button.epos-importknopf` in der
+  Fußleiste öffnet eine `Ueberlagerung` mit Titel und Schließkreuz; ihr Inhalt (`.epos-einlesen`)
+  bettet die vorhandene Einlesekette ein, nach dem Einlesen ist der neue Satz in der Liste
+  gewählt.
+- **Eine Zeitreihe zeigt ihren Verlauf über GANGLINIENBLATTGRUPPE, nicht als Diagramm im
+  Detailblock:** `Ganglinienblattgruppe` und `Ganglinienblatt` bringen Jahresverlauf und Herkunft
+  (mit „Verwendet in“) ins Stammblatt; eine im Projekt verwendete Zeitreihe ist weich gegen
+  Löschen gesperrt, der Grund nennt das Projekt.
 
 ### Zeichenläufe, Fokus, JS-Interop
 

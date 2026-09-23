@@ -212,8 +212,10 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die drei Kanäle: Steuerwert und Anzeigetext getrennt — der Anzeigetext ist NIE
-        /// Steuerwert (Drei-Schichten-Regel, <c>KanalItem</c> des Vorläufers).
+        /// Die vier Kanäle: Steuerwert und Anzeigetext getrennt — der Anzeigetext ist NIE
+        /// Steuerwert (Drei-Schichten-Regel, <c>KanalItem</c> des Vorläufers). Der vierte,
+        /// „Kühlung" (Stufe KU1, Kühlkonzept 4.3 #6, K3), trägt Kältebedarf ohne Gebäudemodell;
+        /// der Lauf bucht ihn auf die Kälteseite und nie in einen Wärmekanal.
         /// </summary>
         internal static (string Wert, string Text)[] Kanaele()
         {
@@ -221,7 +223,8 @@ namespace WindowsFormsApplication1
             {
                 (DbWerte.KANAL_HEIZUNG, MyResource.Resource.KANAL_HEIZUNG_ANZEIGE),
                 (DbWerte.KANAL_BRAUCHWASSER, MyResource.Resource.KANAL_BRAUCHWASSER_ANZEIGE),
-                (DbWerte.KANAL_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE)
+                (DbWerte.KANAL_PROZESS, MyResource.Resource.KANAL_PROZESS_ANZEIGE),
+                (DbWerte.KANAL_KUEHLUNG, MyResource.Resource.KANAL_KUEHLUNG_ANZEIGE)
             };
         }
 

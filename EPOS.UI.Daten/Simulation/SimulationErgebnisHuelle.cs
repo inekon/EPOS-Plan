@@ -375,6 +375,7 @@ namespace WindowsFormsApplication1
                 KonfigurationOeffnen = KonfigurationOeffnen,
 
                 CsvBedarf = CsvBedarf,
+                CsvKaelte = CsvKaelte,
                 CsvWaermepumpe = CsvWaermepumpe,
                 CsvHeizkessel = CsvHeizkessel,
                 CsvSpeicher = CsvSpeicher,
@@ -459,6 +460,10 @@ namespace WindowsFormsApplication1
             BedarfSicherstellen(idProjekt);
             var bedarf = SimulationErgebnisCtrl.Bedarf(_waermebedarf, _strombedarf);
             d.Bedarf = BedarfDaten(bedarf);
+
+            // Die Kaelteseite (Stufe KU1) haengt wie der Bedarf am Projekt, nicht am Lauf; null
+            // = nicht erhoben (Projektschalter aus) - dann zeigt keine Ansicht eine Kaeltegruppe.
+            d.Bedarf.Kaelte = KaelteDaten(SimulationErgebnisCtrl.Kaelte(_waermebedarf));
 
             // OHNE gueltiges Ergebnis wird KEINE Uebersicht gebaut - das Feld bleibt
             // null, und die Anzeige zeigt ihren Leerzustand samt Grund (#236).
@@ -635,6 +640,7 @@ namespace WindowsFormsApplication1
                 Betriebsart = _bhkwBetriebsart,
                 UntersteLeistungsgrenze = _grenzleistungBhkw,
                 Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt),
                 Speicher = SpeicherParameter()
             };
         }
@@ -669,9 +675,14 @@ namespace WindowsFormsApplication1
                             ? "%" : m.m_szNetzverlusteEinheit,
                         Betriebsart = _bhkwBetriebsart,
                         UntersteLeistungsgrenze = _grenzleistungBhkw,
-                        Bereitschaft = m.m_Kessel_Betriebsbereitschaft
+                        Bereitschaft = m.m_Kessel_Betriebsbereitschaft,
+                        Kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt)
                     };
                 },
+                // KUEHLUNG RECHNEN (Stufe KU1, Kuehlkonzept 8.3): der eine Schreibweg der
+                // Projekteinstellung. Er liest die Programmeinstellung nicht; ohne
+                // Einstellungssatz legt „ein" den Vormerksatz an (KonfigurationCtrl).
+                KuehlbetriebSchreiben = an => KonfigurationCtrl.KuehlbetriebSetzen(m_ID_Projekt, an),
                 NetzverlusteSchreiben = (wert, einheit) => KonfigSchreiben(m =>
                 {
                     m.m_Netzverluste = wert;

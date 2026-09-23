@@ -779,4 +779,56 @@ public class UebersichtReiterTests : EposBunitContext
         Assert.Contains(Resource.SIMUEB_BADGE_OHNE_STROMERZEUGER, seite.Markup,
                         StringComparison.Ordinal);
     }
+
+    // =====================================================================
+    //  Stufe KU1 — der Block „Kältedeckung" unter den zwei Spalten (Kühlkonzept 8.4)
+    // =====================================================================
+
+    private IRenderedComponent<UebersichtReiter> ZeichnenMitKaelte(KaelteDaten? kaelte)
+        => Render<UebersichtReiter>(p =>
+        {
+            p.Add(x => x.Kennzahlen, Zahlen());
+            p.Add(x => x.Daten, Daten());
+            p.Add(x => x.RingWaerme, _ring);
+            p.Add(x => x.RingStrom, _ring);
+            p.Add(x => x.Bedarf, new BedarfDaten { Kaelte = kaelte });
+        });
+
+    private static KaelteDaten Kaelte(double mwh) => new KaelteDaten
+    {
+        KaeltebedarfMwh = mwh,
+        KaeltelastMaxKw = 8.25,
+        KaelterestbedarfMwh = mwh,
+        GrenzeFeuchte = WindowsFormsApplication1.SimulationKaeltebedarf.GrenzeFeuchte,
+        Deckungshinweis = "Kein Kälteerzeuger im Projekt."
+    };
+
+    /// <summary>
+    /// Die Kälte ist kein drittes Spaltenpaar, sondern ein Block UNTER den beiden Spalten:
+    /// Kältebedarf, Kältespitze und die ungedeckte Kälte als betonte Restzahl, darunter der
+    /// Satz zur Deckung und die Grenze der Zahl (K5). Die zwei Spalten bleiben, wie sie sind.
+    /// </summary>
+    [Fact]
+    public void Mit_Kaeltebedarf_steht_der_Block_Kaeltedeckung_unter_den_Spalten()
+    {
+        var seite = ZeichnenMitKaelte(Kaelte(12.5));
+
+        var block = seite.Find("section.epos-simueb-kaelte");
+        Assert.Contains(Resource.SIMUEB_GRP_KAELTE, block.TextContent, StringComparison.Ordinal);
+        Assert.Equal(3, block.QuerySelectorAll(".epos-simueb-kennzahl").Length);
+        Assert.Contains("12,50", block.QuerySelector(".epos-simueb-kennzahl--betont")!.TextContent);
+        Assert.Contains("Kein Kälteerzeuger im Projekt.", block.TextContent);
+        Assert.Contains(WindowsFormsApplication1.SimulationKaeltebedarf.GrenzeFeuchte, block.TextContent);
+
+        Assert.Equal(2, seite.FindAll(".epos-simueb-spalten > section").Count);
+        Assert.Null(seite.Find(".epos-simueb-spalten").QuerySelector("section.epos-simueb-kaelte"));
+    }
+
+    /// <summary>Ohne erhobene Kälte, und bei Kältebedarf 0, bleibt das Dashboard unverändert.</summary>
+    [Fact]
+    public void Ohne_Kaeltebedarf_bleibt_das_Dashboard_unveraendert()
+    {
+        Assert.Empty(ZeichnenMitKaelte(null).FindAll("section.epos-simueb-kaelte"));
+        Assert.Empty(ZeichnenMitKaelte(Kaelte(0.0)).FindAll("section.epos-simueb-kaelte"));
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AngleSharp.Dom;
 using Bunit;
 using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Bedarf;
@@ -394,6 +395,13 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     // Stufe G2 (Konzept 8.2, Umsetzungskonzept 2.7): Kennzahlen, Vergleich, Raumtemperatur
     // =================================================================================
 
+    /// <summary>Die Grenze der Kältezahl (K5) — der eine Text der Kälteseite.</summary>
+    private static readonly string FEUCHTE = SimulationKaeltebedarf.GrenzeFeuchte;
+
+    /// <summary>Zwölf Monatswerte der Kühlreihe [MWh] — Sommer mit Kälte.</summary>
+    private static readonly double[] KUEHLMONATE =
+        { 0, 0, 0, 0, 0.05, 0.2, 0.4, 0.4, 0.2, 0, 0, 0 };
+
     /// <summary>Ein Satz auf dem VDI-Weg mit dem Tagesbilanz-Weg als Vergleich.</summary>
     private static GebaeudeBedarfDaten VdiSatz(bool mitVergleich = true) => new()
     {
@@ -402,6 +410,9 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         SpitzeTagesmittelKw = 25.0, SpitzeQuantil95Kw = 20.0,
         KuehlenergieMwh = 1.25, KuehlstundenH = 312, MittlereRaumtemperaturC = 21.4,
         UeberhitzungsstundenH = 150, SommerlueftungsstundenH = 420,
+        KaelteAbschnitt = true, KaeltelastMaxKw = 2.5, VollbenutzungsstundenKaelteH = 500.0,
+        StundenHeizenUndKuehlenH = 7, KuehlMonatswerteMwh = KUEHLMONATE,
+        KaelteHerleitung = new[] { "Gekühlt auf 26,0 °C, Kühlleistungsgrenze unbegrenzt.", FEUCHTE },
         Vergleich = mitVergleich
             ? new GebaeudeBedarfDaten
             {
@@ -417,7 +428,8 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
     {
         var cut = Aufbauen(VdiSatz());
 
-        Assert.Contains("Kühlbedarf (informativ):", cut.Markup);
+        Assert.Contains("Kühlbedarf:", cut.Markup);
+        Assert.DoesNotContain("(informativ)", cut.Markup);
         Assert.Contains("1,25", cut.Markup);                    // MWh
         Assert.Contains("Stunden mit Kühlbedarf:", cut.Markup);
         Assert.Contains("312", cut.Markup);
@@ -425,7 +437,8 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
         Assert.Contains("21,40", cut.Markup);
         Assert.Contains("Überhitzungsstunden:", cut.Markup);
         Assert.Contains("Stunden mit Sommerlüftung:", cut.Markup);
-        Assert.Equal(5, cut.FindAll("tr.gebb-vdi").Count);
+        Assert.Equal(2, cut.FindAll("tr.gebb-vdi").Count);
+        Assert.Equal(6, cut.FindAll("tr.gebb-kaelte").Count);
     }
 
     [Fact]
@@ -509,5 +522,142 @@ public class GebaeudeBedarfDialogTests : EposBunitContext
 
         var ohne = Aufbauen(VdiSatz());
         Assert.Single(ohne.FindAll("svg.epos-flaeche"));
+    }
+
+    // =================================================================================
+    // Stufe KU1 — der Abschnitt „Kältebedarf" (Kühlkonzept 8.4, 8.6 Maske 3; E21, F-K18, K5)
+    // =================================================================================
+
+    /// <summary>Das Bild der Kältelast (eine Woche, Sommerform).</summary>
+    private static Zeichenmodell Kaeltebild(bool sortiert)
+    {
+        var werte = new double[168];
+        for (int i = 0; i < werte.Length; i++) werte[i] = Math.Max(0.0, 3.0 * Math.Sin(2 * Math.PI * i / 24.0));
+        return ChartRenderer.GanglinieNormiertModell(
+            "Kältelast Jahresganglinie",
+            new[] { new ChartRenderer.Reihe("Kältelast", werte, ChartRenderer.C_BEDARF) },
+            "kW", ChartRenderer.Achse.Jahresstunden, sortiert);
+    }
+
+    private static readonly Zeichenmodell KAELTE_GANG = Kaeltebild(false);
+    private static readonly Zeichenmodell KAELTE_DAUER = Kaeltebild(true);
+
+    private IRenderedComponent<GebaeudeBedarfDialog> MitKaeltebild(GebaeudeBedarfDaten daten, List<bool> auftraege)
+        => Render<GebaeudeBedarfDialog>(p => p
+            .Add(x => x.Daten, daten)
+            .Add(x => x.Bildauftrag, s => s ? DAUER : GANG)
+            .Add(x => x.BildauftragKaelte, s => { auftraege.Add(s); return s ? KAELTE_DAUER : KAELTE_GANG; }));
+
+    /// <summary>Die Zeilentexte (erste Zelle) einer Kennzahltabelle.</summary>
+    private static List<string> Zeilentexte(IRenderedComponent<GebaeudeBedarfDialog> cut, string seite)
+        => cut.FindAll($"section[data-seite={seite}] table.gebb-kennzahlen tr")
+              .Select(z => z.QuerySelector("td")!.TextContent.Trim()).ToList();
+
+    /// <summary>
+    /// <b>Symmetrie (E21; 8.6, dritter Zusatzfall)</b>: Der Abschnitt „Kältebedarf" führt
+    /// dieselben Bausteine in derselben Folge wie die Wärmeseite — Kennzahltabelle mit Energie,
+    /// Leistung und Vollbenutzungsstunden an denselben Plätzen, ein EIGENES Bild, die
+    /// Monatswerte als zweite Spalte. Verglichen wird die BAUSTEINFOLGE, nicht die Zahlen; was
+    /// eine Seite zusätzlich hat, steht hier benannt (sonst fällt der Fall).
+    /// </summary>
+    [Fact]
+    public void Der_Abschnitt_Kaeltebedarf_fuehrt_dieselben_Bausteine_wie_die_Waermeseite()
+    {
+        var cut = MitKaeltebild(VdiSatz(), new List<bool>());
+
+        List<string> waerme = Zeilentexte(cut, "waerme");
+        List<string> kaelte = Zeilentexte(cut, "kaelte");
+
+        // Energie, Leistung, Vollbenutzungsstunden - dieselben Plätze.
+        Assert.Equal(new[] { "Wärmebedarf Heizung:", "max. Wärmelast", "Vollbenutzungsstunden:" }, waerme.Take(3));
+        Assert.Equal(new[] { "Kühlbedarf:", "max. Kältelast", "Vollbenutzungsstunden:" }, kaelte.Take(3));
+
+        // Die benannten Abweichungen: Rechenweg und Raumkennzahlen gehören dem Gebäude, die
+        // drei Stundenzahlen der Kälteseite sind Zugewinne (Kühlkonzept 6.4).
+        Assert.Equal(new[] { "Rechenweg:", "mittlere Raumtemperatur (Nutzungszeit):", "Stunden mit Sommerlüftung:" },
+                     waerme.Skip(3));
+        Assert.Equal(new[] { "Stunden mit Kühlbedarf:", "Überhitzungsstunden:", "Stunden mit Heizen und Kühlen:" },
+                     kaelte.Skip(3));
+
+        // Je Seite ein eigenes Bild - die Kälte nicht im Wärmebild.
+        List<string> bilder = cut.FindComponents<DiagrammSvg>().Select(d => d.Instance.Kennung).ToList();
+        Assert.Contains("gebaeude-bedarf", bilder);
+        Assert.Contains("gebaeude-kaelte", bilder);
+        Assert.NotNull(cut.Find("section[data-seite=kaelte] svg.epos-flaeche"));
+
+        // Monatswerte: zwei Spalten, Heizung und Kühlung, nebeneinander (nicht verrechnet).
+        Assert.Equal(new[] { "", "Heizung", "Kühlung", "" },
+                     cut.FindAll("table.gebb-monate thead th").Select(th => th.TextContent.Trim()));
+        Assert.Equal(12, cut.FindAll("td.gebb-kaelte-monat").Count);
+        Assert.Equal("0,40", cut.FindAll("td.gebb-kaelte-monat")[6].TextContent.Trim());
+    }
+
+    /// <summary>
+    /// K5: Die Grenze der Zahl steht als Satz NEBEN den Kältezahlen, im Abschnitt selbst — nicht
+    /// als Fußnote; darüber die Zeile, wie der Kältebedarf entsteht.
+    /// </summary>
+    [Fact]
+    public void Die_Feuchtegrenze_steht_im_Abschnitt_Kaeltebedarf()
+    {
+        var cut = Aufbauen(VdiSatz());
+
+        string abschnitt = cut.Find("section[data-seite=kaelte]").TextContent;
+        Assert.Contains(FEUCHTE, abschnitt);
+        Assert.Contains("Gekühlt auf 26,0 °C", abschnitt);
+        Assert.DoesNotContain(FEUCHTE, cut.Find("section[data-seite=waerme]").TextContent);
+    }
+
+    /// <summary>Der eine Schalter „sortiert" gilt auch für das Kältebild — es wird je Stellung einmal gerechnet.</summary>
+    [Fact]
+    public void Der_Schalter_sortiert_gilt_auch_fuer_das_Kaeltebild()
+    {
+        var auftraege = new List<bool>();
+        var cut = MitKaeltebild(VdiSatz(), auftraege);
+        Assert.Equal(new[] { false }, auftraege);
+
+        cut.Find("input[type=checkbox]").Change(true);
+        Assert.Equal(new[] { false, true }, auftraege);
+
+        cut.Find("input[type=checkbox]").Change(false);
+        Assert.Equal(new[] { false, true }, auftraege);   // zwischengespeichert, nicht neu gerechnet
+    }
+
+    /// <summary>
+    /// <b>Bestandsweg-Gebäude (E20; 8.6, zweiter Zusatzfall)</b>: Der Abschnitt „Kältebedarf"
+    /// zeigt 0 MIT Hinweis — nicht „—" und keine leere Gruppe. Hier ist die 0 eine Aussage, und
+    /// der Hinweis sagt, wessen. Der Fall steht in der Löschliste der Stufe GA.
+    /// </summary>
+    [Fact]
+    public void Ein_Bestandsweg_Gebaeude_zeigt_Kaeltebedarf_0_mit_Hinweis()
+    {
+        const string HINWEIS = "Gebäude „EFH“: Tagesbilanz (Bestandsweg) liefert keine Kühllast — Kältebedarf 0.";
+        var daten = new GebaeudeBedarfDaten
+        {
+            Name = "EFH", HeizwaermeMwh = 50.0, MaxLastKw = 32.0, VollbenutzungsstundenH = 1562.5,
+            MonatswerteMwh = new double[12], Modelltext = "Tagesbilanz (Bestandsweg)",
+            KaelteAbschnitt = true, KuehlenergieMwh = 0.0, KaeltelastMaxKw = 0.0, KuehlstundenH = 0,
+            KuehlMonatswerteMwh = new double[12],
+            KaelteHerleitung = new[] { HINWEIS, FEUCHTE }
+        };
+        var cut = Aufbauen(daten);
+
+        IElement abschnitt = cut.Find("section[data-seite=kaelte]");
+        Assert.Contains(HINWEIS, abschnitt.TextContent);
+        Assert.Equal(3, cut.FindAll("tr.gebb-kaelte").Count);
+        foreach (IElement zelle in abschnitt.QuerySelectorAll("td.epos-zahl"))
+            Assert.NotEqual("—", zelle.TextContent.Trim());
+        Assert.Contains("0,00", abschnitt.TextContent);
+        Assert.Empty(abschnitt.QuerySelectorAll("svg.epos-flaeche"));
+    }
+
+    /// <summary>Ohne Abschnitt (kein Satz, keine Gaben) steht weder die Gruppe noch die Kühlspalte da.</summary>
+    [Fact]
+    public void Ohne_Kaelteabschnitt_steht_keine_Kaeltegruppe_und_keine_Kuehlspalte()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll("section[data-seite=kaelte]"));
+        Assert.Empty(cut.FindAll("td.gebb-kaelte-monat"));
+        Assert.Empty(cut.FindAll("table.gebb-monate thead"));
     }
 }

@@ -18,7 +18,7 @@
 
     Gaben ueber die Adresse:
       ?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe|
-             stromganglinie
+             stromganglinie|rahmen
       ?zeilen=35   Wie viele Katalogzeilen die Liste traegt.
       ?bilder=1|0  Nur fuer klima: Diagramme befuellt (nach dem Import) oder
                    Platzhalter (davor). Vor dem Import war das Bild in Ordnung.
@@ -80,6 +80,9 @@
                                      Filterstandvorgabe="@_filterstand"
                                      HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                      Loeschen="@(_ => Task.FromResult(true))"
+                                     Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
+                                     Einlesen="@((_, _, _) => Task.FromResult(new GanglinienImportErgebnis()))"
+                                     DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                                      Ordner="C:\Users\probe\AppData\Local\WP-Plan\Waermebedarf"
                                      Geschlossen="@(b => { })" />
             break;
@@ -90,6 +93,9 @@
                                        Filterstandvorgabe="@_filterstand"
                                        HatProjektzuordnung="@(_ => Task.FromResult(false))"
                                        Loeschen="@(_ => Task.FromResult(true))"
+                                       Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
+                                       Einlesen="@((_, _) => Task.FromResult(new EPOS.UI.Dialoge.Solarthermie.SolarganglinieImportErgebnis()))"
+                                       DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                                        Ordner="D:\VDI-3805-Daten\Solarthermie"
                                        Geschlossen="@(b => { })" />
             break;
@@ -114,6 +120,8 @@
                                        Katalogprofil="@Katalogfilterprofil.FuerZeitreihe(Zeitreihenart.Stromganglinie, Uebersetzt)"
                                        Filterstandvorgabe="@_filterstand"
                                        Loeschen="@(_ => Task.FromResult(true))"
+                                       Ansicht="@GanglinieAnsicht" Verwendung="@Verwendung"
+                                       Einlesen="@((_, _, _) => Task.FromResult(new GanglinienImportErgebnis()))"
                                        DateiWaehlen="@(_ => Task.FromResult<string?>(null))"
                                        Geschlossen="@(b => { })" />
             break;
@@ -140,6 +148,56 @@
                                     Loeschen="@(_ => true)"
                                     Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
                                     Geschlossen="@(b => { })" />
+            break;
+
+        case "rahmen":
+            @* DER KATALOGRAHMEN MIT EINGABEBLOCK (seit Stufe 4 der Neuordnung): Keine
+               Verwaltung steht mehr in der Anordnung "Liste oben, Eingabeblock darunter" -
+               die letzten, Klimadaten und die Zeitreihen, tragen seit Stufe 4 das
+               Stammblatt. Der Baustein fuehrt die Anordnung weiter (Schlitz Eingabe),
+               und die Gegenprobe zu KL-5 (G1) braucht einen Gegenstand: Diese Seite
+               stellt den Klimadialog von vor Stufe 4 im Bau nach - Liste, darunter die
+               zwei Bilder in Reitern und ein Feldblock, darunter die Fussleiste. *@
+            <div class="epos-dialog epos-katalog-dialog">
+                <div class="epos-dialog-kopf"><h1 class="epos-dialog-titel">Katalograhmen mit Eingabeblock</h1></div>
+                <Katalograhmen>
+                    <Liste>
+                        <Katalogliste Profil="@RahmenProfil" Zeilen="@_rahmenZeilen" Filterstand="@_filterstand"
+                                      Gewaehlt="@_rahmenWahl" GewaehltChanged="@(w => _rahmenWahl = w)"
+                                      ZeileIstWahl="true" />
+                    </Liste>
+                    <Eingabe>
+                        <Reiter Bezeichnung="Jahresverlauf" Aktiv="@_rahmenReiter" AktivChanged="@(s => _rahmenReiter = s)">
+                            <KindInhalt>
+                                <Reiterblatt Schluessel="EINS" Titel="Temperatur">
+                                    <KindInhalt>
+                                        <DiagrammSvg Modell="@_modell" Kennung="rahmen-eins" Bezeichnung="Temperatur" />
+                                    </KindInhalt>
+                                </Reiterblatt>
+                                <Reiterblatt Schluessel="ZWEI" Titel="Sonnenwinkel">
+                                    <KindInhalt>
+                                        <DiagrammSvg Modell="@_modell" Kennung="rahmen-zwei" Bezeichnung="Sonnenwinkel" />
+                                    </KindInhalt>
+                                </Reiterblatt>
+                            </KindInhalt>
+                        </Reiter>
+                        <Formularraster Einspaltig="true">
+                            <KindInhalt>
+                                @for (int i = 1; i <= 8; i++)
+                                {
+                                    <Textfeld Bezeichnung="@("Feld " + i)" Wert="@("Wert " + i)" />
+                                }
+                            </KindInhalt>
+                        </Formularraster>
+                    </Eingabe>
+                </Katalograhmen>
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf">Daten einlesen</button>
+                    <span class="epos-leiste-fueller"></span>
+                    <button type="button" class="epos-knopf">Löschen</button>
+                    <button type="button" class="epos-knopf epos-knopf--primaer">Beenden</button>
+                </div>
+            </div>
             break;
 
         default:
@@ -262,7 +320,52 @@
             9.18, 48.77,
             _mitBildern ? _modell : null,
             _mitBildern ? _modell : null,
-            _mitBildern ? "" : "Keine Daten vorhanden."));
+            _mitBildern ? "" : "Keine Daten vorhanden.")
+        {
+            // Stufe 4: die drei Kennzahlen im Kopf des Stammblatts.
+            Jahresmittel = _mitBildern ? 9.4 : null,
+            Tiefstwert = _mitBildern ? -12.3 : null,
+            Hoechstwert = _mitBildern ? 31.1 : null
+        });
+
+    // ---------------------------------------- Rahmen mit Eingabeblock (G1)
+    private string _rahmenWahl = "";
+    private string _rahmenReiter = "EINS";
+    private IReadOnlyList<Katalogfilterzeile>? _rahmenZeilenVorrat;
+
+    private Katalogfilterprofil? _rahmenProfil;
+
+    private Katalogfilterprofil RahmenProfil => _rahmenProfil ??= Katalogfilterprofil.AusSpalten("RAHMENPROBE", new[]
+    {
+        new Katalogspalte(Katalogfilterprofil.SpBezeichner, "Bezeichner"),
+        new Katalogspalte(Katalogfilterprofil.SpQuelle, "Quelle", rang: Katalogspaltenrang.BeiPlatz),
+        new Katalogspalte(Katalogfilterprofil.SpImportdatum, "Importdatum")
+    });
+
+    private IReadOnlyList<Katalogfilterzeile> _rahmenZeilen => _rahmenZeilenVorrat ??=
+        Enumerable.Range(0, _anzahl).Select(i => new Katalogfilterzeile(i + 1, Regionsname(i))
+            .MitText(Katalogfilterprofil.SpBezeichner, Regionsname(i))
+            .MitText(Katalogfilterprofil.SpQuelle, "DWD-Testreferenzjahr (Regionaldaten)")
+            .MitText(Katalogfilterprofil.SpImportdatum, "2026-09-18")).ToList();
+
+    // --------------------------------------------- Zeitreihen (Stufe 4)
+    // DASSELBE Bild wie die Huellen (ZeitreihenAdminWege): ChartRenderer.JahresverlaufModell
+    // mit 8 760 Stundenwerten, 978 x 542 px - im Stammblatt auf seine Breite gezogen.
+    private Zeichenmodell? _ganglinie;
+
+    private Task<Ganglinienansicht> GanglinieAnsicht(string name)
+    {
+        _ganglinie ??= ChartRenderer.JahresverlaufModell("",
+            Enumerable.Range(0, 8760).Select(i => 120.0 + 80.0 * Math.Cos(2 * Math.PI * i / 8760.0)
+                                                 + 20.0 * Math.Sin(2 * Math.PI * i / 24.0)).ToArray(),
+            "Leistung [kW]", Farbrolle.HEIZWAERME);
+        return Task.FromResult(new Ganglinienansicht(_ganglinie, new GanglinienKennzahlen(1051.2, 220.0, 4778.2)));
+    }
+
+    /// <summary>Die zweite Ganglinie fuehrt ein Projekt - die weiche Loeschsperre nennt es.</summary>
+    private Task<IReadOnlyDictionary<string, IReadOnlyList<string>>> Verwendung()
+        => Task.FromResult<IReadOnlyDictionary<string, IReadOnlyList<string>>>(
+            new Dictionary<string, IReadOnlyList<string>> { ["Ganglinie 02"] = new[] { "Projekt 1" } });
 
     private Task<KlimaImportErgebnis> KlimaImport(KlimaImportAuftrag auftrag,
                                                   IProgress<ImportFortschritt> fortschritt)

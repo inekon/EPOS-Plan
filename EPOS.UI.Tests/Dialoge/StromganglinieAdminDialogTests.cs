@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Dom;
 using System.Globalization;
 using Bunit;
+using EPOS.UI.Bausteine;
 using EPOS.UI.Dialoge.Strom;
 using EPOS.UI.Dienste;
 using KiKern;
@@ -17,9 +18,12 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <c>Views/Stromverbraucher/Form_Stromganglinie_Admin</c>.
 ///
 /// <para>Soll ist die Feldkarte: Katalogliste mit Zeilenwahl, Rasterliste mit
-/// ZWEI Einträgen, Dateiwahl mit „Datei Einlesen...", „Ganglinie Löschen" und
-/// „OK". Geprüft werden die ReadOnly-Sperre, die neue Rückfrage vor dem Löschen
-/// (A-Zeile zu W12-B12) und die drei Überlagerungen der Importkette.</para>
+/// ZWEI Einträgen, Dateiwahl, „Datei Einlesen...", „Ganglinie Löschen" und
+/// „Beenden". Geprüft werden die ReadOnly-Sperre, die Rückfrage vor dem Löschen
+/// (A-Zeile zu W12-B12) und die drei Überlagerungen der Importkette — seit Stufe 4
+/// der Neuordnung im Gerüst der Gerätekataloge: Auswahlleiste, Stammblatt, das
+/// Einlesen als Überlagerung hinter „Import…" und die Löschsperre, die das Projekt
+/// nennt.</para>
 /// </summary>
 public class StromganglinieAdminDialogTests : EposBunitContext
 {
@@ -37,7 +41,8 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         Func<string, Task<string?>>? waehlen = null,
         Func<string, GanglinienRaster, GanglinienImportRueckrufe,
              Task<GanglinienImportErgebnis>>? einlesen = null,
-        Action<bool>? geschlossen = null)
+        Action<bool>? geschlossen = null,
+        IReadOnlyDictionary<string, IReadOnlyList<string>>? verwendung = null)
     {
         return Render<StromganglinieAdminDialog>(p => p
             .Add(x => x.Katalogzeilen, katalog ?? (() => Task.FromResult(Katalog())))
@@ -45,19 +50,34 @@ public class StromganglinieAdminDialogTests : EposBunitContext
             .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
             .Add(x => x.Loeschen, loeschen ?? (n => Task.FromResult(true)))
             .Add(x => x.DateiWaehlen, waehlen)
-            .Add(x => x.Einlesen, einlesen)
+            .Add(x => x.Einlesen, einlesen ?? ((_, _, _) => Task.FromResult(new GanglinienImportErgebnis())))
+            .Add(x => x.Verwendung, verwendung is null ? null : () => Task.FromResult(verwendung))
+            .Add(x => x.Ansicht, n => Task.FromResult(Ganglinienansicht.Ohne("Keine Reihe fuer " + n)))
             .Add(x => x.Geschlossen, (bool ok) => geschlossen?.Invoke(ok)));
     }
 
+    /// <summary>„Ganglinie Löschen" steht seit Stufe 4 in der Auswahlleiste (V8).</summary>
     private static IElement LoeschKnopf(IRenderedComponent<StromganglinieAdminDialog> cut)
-        => cut.FindAll(".epos-dialog > .epos-leiste button")[0];
+        => cut.FindAll(".epos-auswahlleiste button").First(b => b.TextContent.Trim() == "Ganglinie Löschen");
 
+    /// <summary>Der Schlussknopf — zuletzt in der Fußleiste.</summary>
     private static IElement OkKnopf(IRenderedComponent<StromganglinieAdminDialog> cut)
-        => cut.FindAll(".epos-dialog > .epos-leiste button")[1];
+        => cut.FindAll(".epos-dialog > .epos-leiste button").Last();
+
+    /// <summary>„Datei Einlesen..." — der primäre Knopf der Überlagerung.</summary>
+    private static IElement EinleseKnopf(IRenderedComponent<StromganglinieAdminDialog> cut)
+        => cut.FindAll(".epos-einlesen button").First(b => b.TextContent.Trim() == "Datei Einlesen...");
 
     /// <summary>Die Zeile ist die Wahl (Konzept Administrationsdialoge, V4).</summary>
     private static void Waehle(IRenderedComponent<StromganglinieAdminDialog> cut, int zeile)
         => Zeilenklick.Zeile(cut, zeile);
+
+    /// <summary>„Import…" in der Fußleiste öffnet die Überlagerung des Einlesens (V14).</summary>
+    private static void ImportOeffnen(IRenderedComponent<StromganglinieAdminDialog> cut)
+    {
+        cut.Find("button.epos-importknopf").Click();
+        Assert.Single(cut.FindAll(".epos-einlesen"));
+    }
 
     // =====================================================================
     // Feldbestand
@@ -69,10 +89,15 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         var cut = Zeige();
 
         Assert.Contains("Stromganglinien", cut.Find(".epos-dialog-titel").TextContent);
-        Assert.Equal(2, cut.FindAll(".epos-raster tbody tr").Count);
-        Assert.Single(cut.FindAll("select"));
-        Assert.Single(cut.FindAll(".epos-dateiwahl"));
-        Assert.Equal(2, cut.FindAll(".epos-dialog > .epos-leiste button").Count);
+        Assert.Equal(2, cut.FindAll(".epos-katalogliste .epos-raster tbody tr").Count);
+        Assert.Equal(new[] { "Import…", "Beenden" },
+                     cut.FindAll(".epos-dialog > .epos-leiste button").Select(b => b.TextContent.Trim()).ToArray());
+
+        // Zeitintervall und Dateiwahl stehen in der Ueberlagerung, nicht im Dialog.
+        Assert.Empty(cut.FindAll("select"));
+        ImportOeffnen(cut);
+        Assert.Single(cut.FindAll(".epos-einlesen select"));
+        Assert.Single(cut.FindAll(".epos-einlesen .epos-dateiwahl"));
     }
 
     /// <summary>
@@ -83,6 +108,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     public void Die_Rasterliste_hat_genau_zwei_Eintraege()
     {
         var cut = Zeige();
+        ImportOeffnen(cut);
 
         Assert.Equal(2, cut.Find("select").QuerySelectorAll("option").Length);
     }
@@ -91,19 +117,29 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     [Fact]
     public void Ohne_Dateiwaehler_bleibt_der_Einleseknopf_weg()
     {
-        Assert.Empty(Zeige().FindAll(".epos-dateiwahl button"));
-        Assert.Single(Zeige(waehlen: f => Task.FromResult<string?>(null)).FindAll(".epos-dateiwahl button"));
+        var ohne = Zeige();
+        ImportOeffnen(ohne);
+        Assert.Empty(ohne.FindAll(".epos-dateiwahl button"));
+
+        var mit = Zeige(waehlen: f => Task.FromResult<string?>(null));
+        ImportOeffnen(mit);
+        Assert.Single(mit.FindAll(".epos-dateiwahl button"));
     }
 
+    /// <summary>
+    /// Beim Öffnen steht die erste Zeile im Stammblatt (Konzept 3.3), Löschen ist frei;
+    /// die Auslieferungszeile sperrt es weich mit dem Grund.
+    /// </summary>
     [Fact]
     public void Loeschen_ist_ohne_Auswahl_gesperrt()
     {
         var cut = Zeige();
-        Assert.True(LoeschKnopf(cut).HasAttribute("disabled"));
-
-        Waehle(cut, 0);
-        Assert.False(LoeschKnopf(cut).HasAttribute("disabled"));
         Assert.Equal("Werk Nord", cut.Instance.Gewaehlt);
+        Assert.False(LoeschKnopf(cut).HasAttribute("aria-disabled"));
+
+        Waehle(cut, 1);
+        Assert.Equal("true", LoeschKnopf(cut).GetAttribute("aria-disabled"));
+        Assert.Equal("Auslieferungssatz – Löschen gesperrt.", LoeschKnopf(cut).GetAttribute("title"));
     }
 
     // =====================================================================
@@ -111,8 +147,8 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     // =====================================================================
 
     /// <summary>
-    /// Prüfregel 1, wörtlich: Ein Auslieferungssatz bleibt stehen — und die Meldung
-    /// steht jetzt im Katalog statt hartkodiert im Quelltext (Befund W12-B12).
+    /// Prüfregel 1, wörtlich: Ein Auslieferungssatz bleibt stehen — seit Stufe 4 ist
+    /// „Löschen" weich gesperrt, und der Klick nennt den Grund.
     /// </summary>
     [Fact]
     public void Ein_Auslieferungssatz_wird_nicht_geloescht()
@@ -124,8 +160,33 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         LoeschKnopf(cut).Click();
 
         Assert.False(gerufen);
-        Assert.Empty(cut.FindAll(".epos-ueberlagerung"));    // keine Rueckfrage
-        Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));    // keine Rueckfrage
+        Assert.Contains("Löschen gesperrt", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// <b>Neu mit Stufe 4:</b> Führt ein Projekt die Ganglinie, ist „Löschen" WEICH
+    /// gesperrt, und der Kurztext NENNT das Projekt (Konzept 3.4). Bis hierher sperrte
+    /// die Stromganglinie nur die Auslieferung.
+    /// </summary>
+    [Fact]
+    public void Eine_verwendete_Ganglinie_sperrt_Loeschen_mit_dem_Projektnamen()
+    {
+        bool gerufen = false;
+        var cut = Zeige(loeschen: n => { gerufen = true; return Task.FromResult(true); },
+                        verwendung: new Dictionary<string, IReadOnlyList<string>>
+                        {
+                            ["Werk Nord"] = new[] { "Heinestr 15" }
+                        });
+
+        IElement knopf = LoeschKnopf(cut);
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.Equal("In Projekten verwendet („Heinestr 15“) – Löschen gesperrt; dort zuerst entfernen.",
+                     knopf.GetAttribute("title"));
+
+        knopf.Click();
+        Assert.False(gerufen);
+        Assert.Contains("Heinestr 15", cut.Instance.Meldung);
     }
 
     /// <summary>
@@ -146,6 +207,7 @@ public class StromganglinieAdminDialogTests : EposBunitContext
 
         cut.Find(".epos-rueckfrage .epos-leiste button").Click();   // "Ja"
         Assert.Equal("Werk Nord", geloescht);
+        Assert.Contains("Werk Nord", cut.Instance.Status);
     }
 
     [Fact]
@@ -163,12 +225,68 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     }
 
     // =====================================================================
-    // Die Importkette und ihre drei Ueberlagerungen
+    // Das Stammblatt (Stufe 4, V9)
     // =====================================================================
 
     /// <summary>
-    /// Die Kette bekommt den gewählten Pfad UND das Raster aus der Auswahlliste —
-    /// sie übersteuert die Erkennung (Vorläufer :149).
+    /// <b>Das Stammblatt</b>: die Gruppen Ganglinie und Herkunft; die Herkunft als Text
+    /// mit dem Zeitintervall der Liste.
+    /// </summary>
+    [Fact]
+    public void Das_Stammblatt_traegt_Ganglinie_und_Herkunft_mit_Zeitintervall()
+    {
+        var cut = Zeige();
+
+        Assert.Equal(new[] { "Ganglinie", "Herkunft" },
+                     cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToArray());
+        Assert.Contains("Keine Reihe fuer Werk Nord", cut.Markup);
+
+        var herkunft = cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Herkunft");
+        Assert.Equal(new[] { "Satz", "Zeitintervall", "Verwendet in" },
+                     herkunft.QuerySelectorAll("dt").Select(e => e.TextContent).ToArray());
+        Assert.Equal(new[] { "eigener Satz", "4", "–" },
+                     herkunft.QuerySelectorAll("dd").Select(e => e.TextContent).ToArray());
+    }
+
+    // =====================================================================
+    // Das Einlesen als Ueberlagerung und die drei Ueberlagerungen der Kette
+    // =====================================================================
+
+    /// <summary>
+    /// <b>„Import…"</b> öffnet die Überlagerung „Ganglinie aus Datei in Datenbank
+    /// Einlesen" mit Titel und EINEM Kreuz; Kreuz, Esc und „Abbrechen" schließen sie,
+    /// ohne den Dialog zu schließen.
+    /// </summary>
+    [Fact]
+    public void Import_oeffnet_die_Ueberlagerung_und_Kreuz_Esc_Abbrechen_schliessen_sie()
+    {
+        bool? ergebnis = null;
+        var cut = Zeige(geschlossen: b => ergebnis = b);
+
+        ImportOeffnen(cut);
+        IElement ueberlagerung = cut.Find(".epos-ueberlagerung");
+        Assert.Equal("Ganglinie aus Datei in Datenbank Einlesen",
+                     ueberlagerung.QuerySelector(".epos-ueberlagerung-titel")!.TextContent);
+        Assert.Single(ueberlagerung.QuerySelectorAll(".epos-ueberlagerung-zu"));
+
+        cut.Find(".epos-ueberlagerung-zu").Click();
+        Assert.False(cut.Instance.ImportOffen);
+
+        ImportOeffnen(cut);
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.ImportOffen);
+
+        ImportOeffnen(cut);
+        cut.FindAll(".epos-einlesen button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+        Assert.False(cut.Instance.ImportOffen);
+        Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Die Kette bekommt den gewählten Pfad UND das Raster aus der Auswahlliste — sie
+    /// übersteuert die Erkennung (Vorläufer :149). Seit Stufe 4 startet sie über
+    /// „Datei Einlesen..." und nicht mehr schon mit der Wahl der Datei; nach dem Erfolg
+    /// ist die Überlagerung zu, und die Statuszeile meldet ihn.
     /// </summary>
     [Fact]
     public void Die_Dateiwahl_startet_die_Kette_mit_dem_gewaehlten_Raster()
@@ -189,13 +307,18 @@ public class StromganglinieAdminDialogTests : EposBunitContext
                     MeldungStufe = PruefStufe.Info
                 });
             });
+        ImportOeffnen(cut);
 
         cut.Find("select").Change("1");                   // Viertelstundenwerte
         cut.Find(".epos-dateiwahl button").Click();
+        Assert.Null(gesehenPfad);                         // die Wahl allein liest nicht ein
+
+        EinleseKnopf(cut).Click();
 
         Assert.Equal(@"C:\Daten\lastgang.csv", gesehenPfad);
         Assert.Equal(GanglinienRaster.Viertelstunde, gesehenRaster);
-        Assert.Equal("fertig", cut.Instance.Meldung);
+        Assert.Equal("fertig", cut.Instance.Status);
+        Assert.False(cut.Instance.ImportOffen);
     }
 
     /// <summary>
@@ -216,8 +339,10 @@ public class StromganglinieAdminDialogTests : EposBunitContext
                 fertig.SetResult();
                 return new GanglinienImportErgebnis { Ausgang = ImportAusgang.Abgebrochen };
             });
+        ImportOeffnen(cut);
 
         cut.Find(".epos-dateiwahl button").Click();
+        EinleseKnopf(cut).Click();
 
         // Die Ueberlagerung steht - mit dem Optionendialog darin.
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-importoptionen")));
@@ -249,8 +374,10 @@ public class StromganglinieAdminDialogTests : EposBunitContext
                 fertig.SetResult();
                 return new GanglinienImportErgebnis { Ausgang = ImportAusgang.Abgebrochen };
             });
+        ImportOeffnen(cut);
 
         cut.Find(".epos-dateiwahl button").Click();
+        EinleseKnopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-ganglinie-protokoll")));
 
         cut.FindAll(".epos-ganglinie-protokoll .epos-leiste button")[1].Click();   // "OK"
@@ -282,8 +409,10 @@ public class StromganglinieAdminDialogTests : EposBunitContext
                 fertig.SetResult();
                 return new GanglinienImportErgebnis { Ausgang = ImportAusgang.Abgebrochen };
             });
+        ImportOeffnen(cut);
 
         cut.Find(".epos-dateiwahl button").Click();
+        EinleseKnopf(cut).Click();
         cut.WaitForAssertion(() => Assert.Single(cut.FindAll(".epos-importkonflikte")));
 
         cut.FindAll(".epos-importkonflikte .epos-leiste button")[2].Click();   // "Uebernehmen"

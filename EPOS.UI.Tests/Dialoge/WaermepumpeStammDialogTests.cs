@@ -378,7 +378,9 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);
 
         Assert.Equal(2, cut.Instance.GewaehlteId);
-        Assert.Equal("WP Ausliefer", Kenndaten(cut).QuerySelector("input")!.GetAttribute("value"));
+        // WP Ausliefer ist ein Auslieferungssatz: Seit Stufe 4 stehen seine Kenndaten
+        // als TEXT da (V13), nicht als gesperrte Felder.
+        Assert.Equal("WP Ausliefer", Kenndaten(cut).QuerySelector(".epos-stammblattwert dd")!.TextContent);
     }
 
     // =================================================================================
@@ -460,7 +462,9 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var speichern = Knopf(cut, "Speichern");
         Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
         Assert.Contains("Duplizieren", speichern.GetAttribute("title") ?? "");
-        Assert.True(Kenndaten(cut).QuerySelector("input")!.HasAttribute("readonly"));
+        // Stufe 4 (V13): Die Felder eines Auslieferungssatzes stehen als TEXT da.
+        Assert.Contains("epos-stammblattgruppe--lesen", Kenndaten(cut).ClassName ?? "");
+        Assert.Empty(Kenndaten(cut).QuerySelectorAll("input, select, textarea"));
 
         speichern.Click();
 
@@ -808,10 +812,20 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     //  LESEND, mit Herleitungszeile. Die Fälle halten beides fest: dass er
     //  DASTEHT und dass er kein Eingabefeld ist.
 
-    /// <summary>Das Feld der Modulkosten — die Zelle mit dem Lesewert.</summary>
+    /// <summary>
+    /// Die Zeile der Modulkosten — seit Stufe 4 der Neuordnung in der eigenen Gruppe
+    /// „Kosten" des Stammblatts (nicht mehr zwischen den Kenndaten), als Lesewert.
+    /// </summary>
     private static IElement Modulkostenfeld(IRenderedComponent<WaermepumpeStammDialog> cut)
-        => cut.FindAll(".epos-formularraster .epos-feld")
-              .First(f => f.QuerySelector(".epos-lesewert") is not null);
+        => Kostengruppe(cut).QuerySelector(".epos-stammblattwert")!;
+
+    /// <summary>Die Gruppe „Kosten" des Stammblatts.</summary>
+    private static IElement Kostengruppe(IRenderedComponent<WaermepumpeStammDialog> cut)
+        => cut.FindAll(".epos-stammblattgruppe").Single(g => g.GetAttribute("aria-label") == "Kosten");
+
+    /// <summary>Die Herleitungszeilen unter den Modulkosten.</summary>
+    private static IEnumerable<string> Herleitungen(IRenderedComponent<WaermepumpeStammDialog> cut)
+        => Kostengruppe(cut).QuerySelectorAll(".epos-herleitung").Select(e => e.TextContent.Trim()).ToList();
 
     [Fact]
     public void Die_Modulkosten_stehen_als_Lesewert_mit_Einheit_im_Raster()
@@ -819,9 +833,8 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();                                   // WP Alpha: 4000 €
         var feld = Modulkostenfeld(cut);
 
-        Assert.Equal("Modulkosten", feld.QuerySelector(".epos-feld-text")!.TextContent.Trim());
-        Assert.Equal("4000", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
-        Assert.Equal("€", feld.QuerySelector(".epos-einheit")!.TextContent.Trim());
+        Assert.Equal("Modulkosten", feld.QuerySelector("dt")!.TextContent.Trim());
+        Assert.Equal("4000 €", feld.QuerySelector("dd")!.TextContent.Trim());
     }
 
     /// <summary>
@@ -837,7 +850,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         Assert.Equal(5, Kenndaten(cut).QuerySelectorAll("input").Length);
 
-        var feld = Modulkostenfeld(cut);
+        var feld = Kostengruppe(cut);
         Assert.Empty(feld.QuerySelectorAll("input"));
         Assert.Empty(feld.QuerySelectorAll("textarea"));
         Assert.Empty(feld.QuerySelectorAll("select"));
@@ -848,8 +861,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     public void Die_Herleitungszeile_steht_unter_dem_Wert()
     {
         var cut = Aufbauen();
-        var zeilen = cut.FindAll(".epos-formularraster .epos-herleitung")
-                        .Select(e => e.TextContent.Trim()).ToList();
+        var zeilen = Herleitungen(cut);
 
         // Ein Wert ist da: nur die Herkunft, kein zweiter Hinweis.
         Assert.Equal(new[]
@@ -872,11 +884,9 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
 
         var feld = Modulkostenfeld(cut);
-        Assert.Equal("–", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
-        Assert.Null(feld.QuerySelector(".epos-einheit"));
+        Assert.Equal("–", feld.QuerySelector("dd")!.TextContent.Trim());   // ohne Einheit
 
-        var zeilen = cut.FindAll(".epos-formularraster .epos-herleitung")
-                        .Select(e => e.TextContent.Trim()).ToList();
+        var zeilen = Herleitungen(cut);
         Assert.Equal(new[]
         {
             "aus dem Datenbestand; Gerätekosten werden in der Kostenverwaltung gepflegt",
@@ -898,20 +908,20 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             .Add(x => x.HinweisModulkostenLeer, "no planned value in the stored catalogue"));
 
         var feld = Modulkostenfeld(cut);
-        Assert.Equal("Module costs", feld.QuerySelector(".epos-feld-text")!.TextContent.Trim());
-        Assert.Equal("4000", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal("Module costs", feld.QuerySelector("dt")!.TextContent.Trim());
+        Assert.Equal("4000 €", feld.QuerySelector("dd")!.TextContent.Trim());
         Assert.Equal(new[]
         {
             "from the stored catalogue; equipment costs are maintained in cost management"
-        }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
+        }, Herleitungen(cut));
 
         Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
-        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
         Assert.Equal(new[]
         {
             "from the stored catalogue; equipment costs are maintained in cost management",
             "no planned value in the stored catalogue"
-        }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
+        }, Herleitungen(cut));
     }
 
     /// <summary>
@@ -925,10 +935,8 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
         Knopf(cut, "Neu").Click();
 
-        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
-        Assert.Contains("kein Planwert im Datenbestand",
-                        cut.FindAll(".epos-formularraster .epos-herleitung")
-                           .Select(e => e.TextContent.Trim()));
+        Assert.Equal("–", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
+        Assert.Contains("kein Planwert im Datenbestand", Herleitungen(cut));
     }
 
     /// <summary>
@@ -949,7 +957,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             .Add(x => x.Satz, Satz)
             .Add(x => x.Uebersicht, _ => new[] { new Parameterwert(eintrag, "4000") }));
 
-        Assert.Equal("4000", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
+        Assert.Equal("4000 €", Modulkostenfeld(cut).QuerySelector("dd")!.TextContent.Trim());
 
         cut.Find(".epos-modulparameter-knopf").Click();
         Assert.Contains("4000",
@@ -986,6 +994,36 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    //  Stufe 4 (Konzept Administrationsdialoge): "nur mit Kuehlfunktion" in der
+    //  Werkzeugleiste
+    // =================================================================================
+
+    /// <summary>
+    /// <b>„nur mit Kühlfunktion"</b> steht in der Werkzeugleiste der Liste, neben dem
+    /// Suchfeld — derselbe Schalter wie im Anlagendialog. Er setzt den Trichter
+    /// „&gt;0" auf die Spalte Kühlleistung (kein zweiter Filterweg), und „Filter
+    /// zurücksetzen" nimmt ihn mit.
+    /// </summary>
+    [Fact]
+    public void Der_Kuehlschalter_setzt_den_Trichter_der_Kuehlleistung()
+    {
+        var cut = Aufbauen();
+        Assert.Equal(2, cut.FindAll(".epos-raster tbody tr").Count);
+
+        var schalter = cut.Find(".epos-katalog-suchzeile .epos-katalog-werkzeug input[type=checkbox]");
+        Assert.Contains("nur mit Kühlfunktion", cut.Find(".epos-katalog-werkzeug").TextContent);
+        Assert.False(cut.Instance.NurMitKuehlung);
+
+        schalter.Change(true);
+
+        Assert.True(cut.Instance.NurMitKuehlung);
+        Assert.Equal(">0", _filterstand.Ausdruck(Katalogfilterprofil.SpKuehlleistung));
+
+        cut.Find(".epos-katalog-ruecksetzer").Click();
+        Assert.False(cut.Instance.NurMitKuehlung);
+    }
+
+    // =================================================================================
     //  Stufe 3 (Konzept Administrationsdialoge): Stammblatt mit der Gruppe Kennlinie,
     //  Aenderungserkennung, Auswahlleiste, Vergleich (V3 V6 V8 V9 V12 V13)
     // =================================================================================
@@ -1001,7 +1039,8 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
 
         var titel = cut.FindAll(".epos-stammblattgruppe-titel").Select(e => e.TextContent).ToList();
-        Assert.Equal(new[] { "Kennlinie", "Kenndaten" }, titel);
+        // Stufe 4: die eigene Gruppe Kosten (die Modulkosten, aus den Kenndaten heraus).
+        Assert.Equal(new[] { "Kennlinie", "Kenndaten", "Kosten" }, titel);
         var kennlinie = cut.FindAll(".epos-stammblattgruppe")[0];
         Assert.NotNull(kennlinie.QuerySelector(".epos-reiter"));
         Assert.Contains("Kennliniendaten...", kennlinie.QuerySelector(".epos-stammblattgruppe-kopf")!.TextContent);
