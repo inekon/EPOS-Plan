@@ -60,9 +60,10 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 === Eingaben der Auslegung ===
 
 * {{Anker|bedarfstag}}'''Bedarfstag''' – der Tag, auf den ausgelegt wird:
-** ''Vorgaberegel'' – für Wohnen das Profil nach DIN 4708 aus der Bedarfskennzahl der Wohnungen, sonst ein konstruierter Tag.
-** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; ''OK'' fragt deshalb nach, bevor der Punkt übernommen wird.
+** ''Vorgaberegel'' – für Wohnen das Profil nach DIN 4708 aus der Bedarfskennzahl der Wohnungen, sonst ein konstruierter Tag. Gibt es noch keinen konstruierten Tag, öffnet sich der [[#konstruktor|Konstruktor]] von selbst.
+** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; die Gruppe trägt deshalb den Hinweis ''Spitzen unterschätzt'', und ''OK'' fragt nach, bevor der Punkt übernommen wird.
 ** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
+** ''A100-Referenzprofil'' und ''Ecodesign-Zapfprofil'' – in der Auswahl gesperrt, solange der Katalog keinen Tag dieser Art führt; ihr Hinweis nennt den Grund.
 ** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
 : Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
 * '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
@@ -80,7 +81,7 @@ Jede Gruppe zeigt drei Karten nebeneinander:
 
 * {{Anker|summenlinie}}'''(a) Summenlinie''' – für Speicher das Verfahren der Summenlinie nach DIN EN 12831-3 im Minutentakt: Bedarfs- und Versorgungslinie des Bedarfstags, dazu die Kurve der Wertepaare aus Speichervolumen und Leistung mit dem gewählten Punkt, die Ladezeit und die Zeitkonstante. Für Gruppen ohne Speicher steht hier die größte Minutenleistung des Bedarfstags.
 * '''(b) Perzentil''' – die stochastisch überlagerte Minutenlast. Die Karte bleibt leer; ihr Hinweis nennt den Grund, die Empfehlung stützt sich auf (a) und (c).
-* '''(c) Normvergleich''' – das Verfahren nach DIN 4708, nur für Wohnen mit Speicher: die Bedarfskennzahl und der Vergleichspunkt. Zonen außerhalb des Gültigkeitsbereichs nennt die Karte.
+* '''(c) Normvergleich''' – das Verfahren nach DIN 4708, nur für Wohnen mit Speicher: die Bedarfskennzahl und der Vergleichspunkt. Zonen außerhalb des Gültigkeitsbereichs nennt die Karte. Die Zeile ''Rohrnetz-Spitzendurchfluss'' nach DIN 1988-300 ist nachrichtlich; sie bleibt leer und nennt den Grund.
 
 Darunter steht der eine '''empfohlene Auslegungspunkt''' der Gruppe – Speichervolumen und Leistung, bei Speichern zusätzlich der nächstgrößere Nenninhalt. Die Marke ''Schnellauslegung'' zeigt, dass der Punkt mit den Vorgaben der Stufe ''Einfach'' gerechnet ist. Die zugrunde liegenden Rechenregeln liegen als Entwurf vor; ihre Anwendung ist besonders zu vereinbaren, die Überlagerung vermerkt das am Punkt. Kann kein Punkt gerechnet werden, nennt die Zeile den Grund.
 
@@ -90,17 +91,19 @@ Darunter steht der eine '''empfohlene Auslegungspunkt''' der Gruppe – Speicher
 
 === Hinweise der Auslegung ===
 
-{{Anker|warnliste}}Die '''Hinweise''' jeder Gruppe stehen als Liste mit Stufe (''Warnung'' oder ''Hinweis''), Titel und einem Satz mit den eingesetzten Zahlen – etwa wenn der Bedarfstag fehlt oder eine Angabe außerhalb der Gültigkeit eines Verfahrens liegt. Keiner dieser Hinweise blockiert ''OK''.
+{{Anker|warnliste}}Die '''Hinweise''' jeder Gruppe stehen als Liste mit Stufe (''Warnung'' oder ''Hinweis''), Titel und einem Satz mit den eingesetzten Zahlen – etwa wenn der Bedarfstag fehlt oder eine Angabe außerhalb der Gültigkeit eines Verfahrens liegt. Keiner dieser Hinweise blockiert ''OK''. Bei Speichergruppen steht darunter die Zeile ''Konsistenzhinweis''; sie vergleicht die stochastische Spitze mit der Leistung des Punkts, bleibt ohne Perzentil leer und nennt den Grund.
 
 === Bedarfstag konstruieren ===
 
-{{Anker|konstruktor}}'''Bedarfstag konstruieren…''' öffnet den Konstruktor über der Auslegung. Jede Zeile beschreibt ein Zeitfenster in Stunden mit ''Beginn'' und ''Ende'' und entweder eine ''Zapfregel'' des Katalogs mit der ''Anzahl'' ihrer Vorgänge oder ein ''Volumen'' direkt mit seiner ''Zapftemperatur''; dazu ein frei benannter ''Verbraucher''. Unter der Tabelle stehen die Zapfregeln des Katalogs mit ihrem Volumen je Vorgang. ''Zeile hinzufügen'' und ''Entfernen'' bearbeiten die Liste; eine Zeile bleibt immer stehen. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs.
+{{Anker|konstruktor}}'''Bedarfstag konstruieren…''' öffnet den Konstruktor über der Auslegung. Jede Zeile beschreibt ein Zeitfenster in Stunden mit ''Beginn'' und ''Ende'' und entweder eine ''Zapfregel'' des Katalogs mit der ''Anzahl'' ihrer Vorgänge oder ein ''Volumen'' direkt mit seiner ''Zapftemperatur''; dazu ein frei benannter ''Verbraucher''. Unter der Tabelle stehen die Zapfregeln des Katalogs mit ihrem Volumen je Vorgang. ''Zeile hinzufügen'' und ''Entfernen'' bearbeiten die Liste; die letzte Zeile bleibt stehen, ''Entfernen'' nennt dann den Grund. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs. Solange das Zapfprofil geöffnet ist, bringt ein erneutes ''Bedarfstag konstruieren…'' die Zeilen des konstruierten Tages wieder mit.
 
-''OK'' prüft die Zeilen und den Namen; eine Beanstandung steht über der Tabelle, und der Konstruktor bleibt offen. Sonst wird der Tag unter seinem Namen zum Bedarfstag der Auslegung. Gespeichert wird er mit dem Projekt, als eigener Eintrag des Katalogs; ein Name, den der Katalog schon führt, wird beim Speichern abgelehnt. ''Abbrechen'', ✕ und ''Esc'' schließen den Konstruktor ohne Übernahme.
+''OK'' prüft die Zeilen und den Namen; eine Beanstandung steht über der Tabelle, und der Konstruktor bleibt offen. Eine ungültige Zahl nennt ihr Feld mit Spalte und Zeile; einen Namen, den der Katalog schon führt, beanstandet ''OK'' mit einem freien Namen als Vorschlag. Sonst wird der Tag unter seinem Namen zum Bedarfstag der Auslegung. Gespeichert wird er mit dem Projekt, als eigener Eintrag des Katalogs; ist sein Name bis dahin vergeben, wird das Speichern abgelehnt. ''Abbrechen'', ✕ und ''Esc'' schließen den Konstruktor ohne Übernahme.
 
 === Übernehmen ===
 
 {{Anker|auslegung-ok}}''OK'' übernimmt die Eingaben der Auslegung und den empfohlenen Punkt in den Arbeitsstand des Zapfprofils; eine Zeile unter der Kopfzeile des Zapfprofils nennt den übernommenen Punkt. Gespeichert wird beides mit ''OK'' des Bedarfsprofil-Dialogs, zusammen mit den Zonen. ''Abbrechen'', ✕ und ''Esc'' schließen die Auslegung ohne Übernahme; ein zuvor übernommener Punkt bleibt erhalten.
+
+Der Punkt gilt für die Zonen, mit denen er gerechnet wurde. Wird danach eine Zone hinzugefügt, dupliziert oder entfernt oder ändert sich ihre Nutzungsart, Bezugsgröße oder ihr Niveau, ist der Punkt überholt: Eine Zeile unter der Kopfzeile des Zapfprofils sagt es, und beim Speichern wird der Punkt verworfen – auch ein Punkt, der schon gespeichert war. Ein erneutes ''OK'' der Auslegung übernimmt den Punkt zum aktuellen Stand der Zonen. Der Name einer Zone ändert die Auslegung nicht.
 
 == Simulation und monatlicher Verlauf ==
 
