@@ -12,6 +12,10 @@
 > und D1 (gbXML-Import vor IFC-Import) entschieden (1.2, 1.5–1.9, 1.10, 2.7, 2.9, 3.6, 3.8,
 > Kapitel 4 bis 6).
 
+> **Nachgezogen 23.09.2026:** **Entscheid E29** ([Konzept N1.34](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md))
+> trifft die Endwahl zu U6 — der Zeitbezug der Sonnengeometrie ist der **Stundenanfang**, wie
+> Photovoltaik und Solarthermie (1.2, Kapitel 5).
+
 > **Rev. 4 — Prüfung 17.09.2026, E26 eingearbeitet.** Diese Fassung nimmt die Stufe **GA — Altweg
 > ablösen** als letzte Stufe ohne Termin wieder auf (Kapitel 4) und führt ihre **Löschliste** in
 > Kapitel 6; sie stellt den Vertrag des Vorbereitungsschritts, den zweiteiligen Klimakalender, den
@@ -310,9 +314,11 @@ entschieden — die erste im Verfahren, die zweite in der Sache:**
   der Unterschied ist eine halbe Stunde Stundenwinkel = 7,5° und verschiebt genau die Ost- und
   Westflächen, deren Trennung G1 neu einführt. **Das Verfahren ist entschieden (U6, E27):** In G1
   werden an **einer** Stelle, im Eingangsbauer, beide Zeitbezüge gemessen und ihre Wirkung auf Ost
-  und West beziffert; die **Endwahl ist noch offen** und fällt mit der Messung, vor dem Einfrieren
-  von G1 + G2, weil sie in die Basis eingeht. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt
-  (Referenzbasis).
+  und West beziffert. **Die Endwahl ist mit E29 (23.09.2026, Konzept N1.34) gefallen: der
+  Stundenanfang** — die Messung ergab bei Stundenmitte Ost −10,1 %, West +10,5 % und für die
+  Jahresheizwärme höchstens +0,10 %; Gebäude, PV und Solarthermie rechnen denselben Sonnenstand,
+  eine Umstellung gibt es nur für alle drei gemeinsam. `Tab_Solar.Sol_*` bleibt in jedem Fall
+  unberührt (Referenzbasis).
 - **Wochenendkalender.** Konzept 4.4 leitet den Wochentag des 1. Januar aus
   `SolardatenCtrl.Referenzjahr(idProjekt)` (`SolardatenCtrl.cs:222`) ab. Das Referenzjahr kommt aus
   der aktiven Spotpreisreihe (`:228-232`, sonst `DbWerte.SOLAR_REFERENZJAHR_STANDARD`, `:242`) und
@@ -1959,7 +1965,7 @@ Ablösung nach der Löschliste** in Kapitel 6. Beide Fragen führt das Konzept, 
 
 **Stand der Fragen dieses Papiers:** Mit **E27** nach Empfehlung entschieden sind **U1, U3, U5,
 U7, U8, U10, U12 und U17**; bei **U6** ist das **Verfahren** entschieden (in G1 beide Zeitbezüge
-messen), die Endwahl fällt mit der Messung vor dem Einfrieren von G1 + G2. **U11** und **U16**
+messen), die Endwahl mit **E29** (23.09.2026): der Stundenanfang. **U11** und **U16**
 sind mit E18 entschieden, **U2** ist durch E20 überholt. Mit **E28** (22.09.2026, [Konzept N1.33](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)) sind
 **U4** (vor G1) und **U9** (in GB) nach Empfehlung entschieden; vor G0, GB und G1 ist damit keine
 Frage dieses Papiers mehr offen. **Offen mit Empfehlung** bleiben **U13, U14 und U15** — sie sind
@@ -1973,7 +1979,7 @@ Entscheidvermerk.
 | **U3** | `Platzhalter` am `Zahlenfeld` ergänzen (für „Vorgabe 0,3" im leeren Feld) — ein Eingriff in einen Standardbaustein, den alle Dialoge benutzen | **Ja**, rein additiv (ein `[Parameter] string`, ein `placeholder`-Attribut); zieht `StilblattTests` nach sich. Sonst je Feld eine `Herleitungszeile` — zehn Zeilen statt zehn Platzhalter — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U4** | Ein Abschnitt „13. Gebäudehülle und Gebäudemodell" im [`Glossar_Lokalisierung.md`](Glossar_Lokalisierung.md), **bevor** die 63 en-US-Werte geschrieben werden | **Ja** — das Glossar kennt heute weder Wärmebrücke noch Verschattung, Rahmenanteil, Bodenplatte, Randbedingung oder operative Temperatur. Ohne den Abschnitt entstehen zwei Übersetzungen desselben Begriffs — **mit E28 (22.09.2026) nach Empfehlung entschieden**, fällig vor G1 (Ressourcen des Gebäudedialogs) |
 | **U5** | Den Gebäudespalten-Schritt M3 und die drei G2-Spalten zu **einem** Schritt verschmelzen (15 Spalten je Tabelle, ein Sichtneubau)? | **Ja** — E1 liefert G1 und G2 gemeinsam aus; zwei Sichtneubauten hintereinander sind zwei Gelegenheiten, die Definitionen auseinanderlaufen zu lassen. Der Tab_Solar-Schritt bleibt **getrennt** (andere Wirkung, anderer Mitläufercode, anderes Risiko) — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
-| **U6** | Zeitbezug der Sonnengeometrie im Gebäudemodell: **Stundenanfang** wie im Bestand (`KlimaImportAblauf.cs:318-322`) oder **Stundenmitte** wie Blatt 3 (Konzept N1.10)? | **In G1 beide Zeitbezüge messen und dann entscheiden** — an der einen Stelle im Eingangsbauer. **Das Verfahren ist mit E27 (22.09.2026) nach Empfehlung entschieden; die Endwahl ist offen** und fällt mit der Messung vor dem Einfrieren von G1+G2. Der Unterschied sind 7,5° Stundenwinkel und trifft genau Ost und West. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt (Referenzbasis) |
+| **U6** | Zeitbezug der Sonnengeometrie im Gebäudemodell: **Stundenanfang** wie im Bestand (`KlimaImportAblauf.cs:318-322`) oder **Stundenmitte** wie Blatt 3 (Konzept N1.10)? | **In G1 beide Zeitbezüge messen und dann entscheiden** — an der einen Stelle im Eingangsbauer. **Das Verfahren ist mit E27 (22.09.2026) nach Empfehlung entschieden, die Endwahl mit E29 (23.09.2026): Stundenanfang**, wie PV und Solarthermie. Der Unterschied sind 7,5° Stundenwinkel und trifft genau Ost und West. `Tab_Solar.Sol_*` bleibt in jedem Fall unberührt (Referenzbasis) |
 | **U7** | Wochenendmaske des Stundenmodells: Ortszeit-Kalender aus dem Wochentag des 1. Januar des Referenzjahres (Konzept 4.4) oder `Tab_Klimadaten.WE` (wie der Bestand)? | **Ortszeit-Kalender** (F-Ü8): Der Vorbereitungsschritt bildet `WE[365]` aus dem Wochentag des 1. Januar des Referenzjahres; eine Probe hält die Maske gegen `Tab_Klimadaten.WE` derselben Klimaregion (`KlimaImportAblauf.cs:354`), eine Abweichung ist ein Befund der Probe — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U8** | Normzahlen als **gitignorierte, lokal beizustellende** Datei (`Referenzlaeufe/Normzahlen/`) mit schweigenden Testfällen — Folge: der Normfallnachweis ist **lokal**, nicht CI | **Ja** — das Ausliefern der Normzahlen wäre eine Vervielfältigung (Konzept N1.2), und LFS ist keine Zugriffsbeschränkung. Die Lücke im Gate gehört ins Protokoll, der Laufauszug (Abweichung je Fall, ohne Absolutwerte) in die Dokumentation — **mit E27 (22.09.2026) nach Empfehlung entschieden** |
 | **U9** | Die Grenze von 100 Gebäuden beheben (`HeizwaermebedarfGeb[100]`, `:31`; `MaxP[100]`, `:56`; `IndexOutOfRangeException` an `:816`)? | **Ja, in GB**, wo die Schleife ohnehin angefasst wird: `MaxP` **löschen** (wird nirgends gelesen — wie `Anzahl_Bewohner` `:11` und `Wohnflaeche` `:12`, Befund X 2.3), `HeizwaermebedarfGeb` auf `ctrl.rows` dimensionieren. Ergebnisneutral — und **vor** der Verschiebung nach `Altweg/`, damit das verschobene Modul der geprüfte Stand ist (E20) — **mit E28 (22.09.2026) nach Empfehlung entschieden** |

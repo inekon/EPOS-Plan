@@ -5,8 +5,9 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// Der Zeitbezug der Sonnengeometrie je Klimastunde (Frage U6; Rechenschritte E1,
-    /// Umsetzungskonzept 1.2).
+    /// Der Zeitbezug der Sonnengeometrie je Klimastunde (Frage U6, entschieden mit E29:
+    /// Stundenanfang; Rechenschritte E1, Umsetzungskonzept 1.2). Die Stundenmitte bleibt als
+    /// Messschalter.
     /// </summary>
     internal enum Zeitbezug
     {
@@ -44,8 +45,9 @@ namespace WindowsFormsApplication1
     /// <b>Der Klimaweg des Gebäudemodells</b> (Stufe G1; Entscheid A18: eigene Klasse,
     /// <b>ausschließlich</b> vom Eingangsbauer <see cref="GebaeudeModellEingang.Bauen"/>
     /// gerufen). Hier — und nur hier — stehen die vier Entscheidungen des Klimawegs
-    /// (Umsetzungskonzept 1.4): der <b>Zeitbezug</b> der Sonnengeometrie (U6, als Schalter
-    /// <see cref="Zeitbezug"/> mit der Vorgabe <see cref="ZEITBEZUG_VORGABE"/>), die
+    /// (Umsetzungskonzept 1.4): der <b>Zeitbezug</b> der Sonnengeometrie (U6, entschieden mit
+    /// E29: <see cref="ZEITBEZUG_VORGABE"/> = Stundenanfang; <see cref="Zeitbezug"/> bleibt als
+    /// Messschalter), die
     /// <b>Azimutzuordnung</b> der vier Fensterrichtungen, die <b>Erdreichtemperatur</b> und
     /// die Regel für die <b>Gegenstrahlung</b>.
     ///
@@ -67,9 +69,12 @@ namespace WindowsFormsApplication1
     internal static class GebaeudeKlimaweg
     {
         /// <summary>
-        /// Der Zeitbezug des Auslieferungswegs bis zur Endwahl (U6, E27): Stundenanfang, die
-        /// Konvention des Bestands. Die Endwahl fällt nach der Messung in G1 und vor dem
-        /// Einfrieren von G1 + G2 — dann an genau dieser Stelle.
+        /// Der Zeitbezug des Auslieferungswegs — <b>entschieden: Stundenanfang</b> (U6, Entscheid
+        /// E29 vom 23.09.2026, Konzept N1.34), dieselbe Konvention wie Photovoltaik und
+        /// Solarthermie. Gemessen in G1 verschiebt die Stundenmitte die Fassadenstrahlung Ost um
+        /// −10,1 %, West um +10,5 % und die Jahresheizwärme um höchstens +0,10 %. Umgestellt wird
+        /// nur für Gebäude, PV und Solarthermie gemeinsam; der Parameter <c>zeitbezug</c> des
+        /// Eingangsbauers bleibt für Messungen und Tests.
         /// </summary>
         internal const Zeitbezug ZEITBEZUG_VORGABE = Zeitbezug.Stundenanfang;
 
