@@ -248,17 +248,17 @@ Speicherauslegung heißt `TwwSpeicherauslegung`, getrennt vom Stromspeicher-Best
 | S0 Katalog | `Nutzungsart.cs` | `sealed record Nutzungsart(int Id, string Name, ZapfBezugsart Bezug, double[] BedarfJeNiveauKwhJeEinheitTag /*3*/, Temperaturbezug Bezugstemperaturen, ZapfBilanzgrenze Grenze, ZapfKalenderart Kalender, double? Ferienfaktor, double[] Monatsfaktoren /*12*/, double[] Wochenfaktoren /*7*/, Tagesgangsatz Tagesgaenge, Katalogherkunft Herkunft)`; `sealed record Tagesgangsatz(int Id, double[,] Anteile /*4×24*/, Provenienz[] JeTagtyp /*4*/)`; Aufzählungen `ZapfBezugsart`, `ZapfBilanzgrenze`, `ZapfKalenderart`, `ZapfNiveau`, `ZapfTopologie` |
 | Provenienz | `Provenienz.cs` | `sealed record Provenienz(string Quelle, string? Ausgabe, string Version, Herkunftsart Art)` je Wertgruppe; `Katalogherkunft` bündelt die Gruppen Bedarf (mit Bandbreite Min/Max je Niveau), Jahresgang, Wochengang, Tagesgang je Tagtyp; `enum Wertstatus { Vorgabe, Ueberschrieben, Kalibriert, Umgerechnet }`; `Herkunftsprotokoll` (Liste je Feld und Zone) |
 | Parameter | `Parametersatz.cs` | Normkonstanten und Regelwerksgrenzen als `IReadOnlyDictionary<string, Parameterwert>` aus `Tab_TwwParameter_STAMM`; die Schlüssel stehen im Code, die Werte nie. Fehlt ein Parameter, meldet das Verfahren „nicht rechenbar — Parameter fehlt" statt eines Rückfallwerts |
-| Eingang | `Zoneneingang.cs`, `Zapfprofileingang.cs` | Zone: Nutzungsart-ID, Bezugsmenge, Niveau, Topologie, Wohnungstabelle und **nullbare** Überschreibungen (`null` = Vorgabe); Eingang: Zonen, Kalender (`WochentagJan1`, `bool[365] We`), Gebäudegrößen (Zirkulation, Ladeleistung), `RechenwegJahresreihe`, `Seed`, `Realisierungen`, `Parametersatz` |
+| Eingang | `Zapfprofileingang.cs`; die Zone ist `ZonenStand` aus `ZapfprofilStand.cs`, ein `Zoneneingang.cs` entfällt (N7) | Zone: Nutzungsart-ID, Bezugsmenge, Niveau, Topologie, Wohnungstabelle und **nullbare** Überschreibungen (`null` = Vorgabe); Eingang: Zonen, Kalender (`WochentagJan1`, `bool[365] We`), Gebäudegrößen (Zirkulation, Ladeleistung), `RechenwegJahresreihe`, `Seed`, `Realisierungen`, `Parametersatz` |
 | Arbeitsstand | `ZapfprofilStand.cs` | `internal sealed record ZapfprofilStand(BrauchwasserWeg Weg, IReadOnlyList<ZonenStand> Zonen, ProjektStand Projekt)` — die Übergabeform zwischen `ZapfprofilCtrl` und Hülle, ohne Oberflächenbezug |
-| S1 | `Mengengeruest.cs` | `static double JahresenergieKwh(Zoneneingang z, Nutzungsart n, Parametersatz ps, Herkunftsprotokoll p)`; `static double Temperaturfaktor(...)`; `static Kalibrierergebnis Kalibrieren(Messwert m, double zapfungKwh, double zirkulationKwh)` |
-| S2 Kalender | `Zapfkalender.cs` | `enum ZapfTagtyp { Werktag = 1, Samstag = 2, SonnFeiertag = 3, Ruhetag = 4 }`; `static ZapfTagtyp[] Bilden(int wochentagJan1, bool[] we, Ferienfenster[] ferien)` — 365 Einträge; `static Ferienfenster? AusJahrestagen(int beginn, int ende)` |
-| S2 Formvektor | `Formvektor.cs` | `static double[] Tagesmengen(double jahresKwh, Nutzungsart n, ZapfTagtyp[] kalender, int wochentagJan1, double[] kaltwasserfaktor)`; `static double[] Stundenreihe(double[] tagesmengen, Nutzungsart n, ZapfTagtyp[] kalender)` — 8760, nur für die Bilanz; `static Wochenreihe Wochenreihe(double[] tagesmengen, Nutzungsart n, ZapfTagtyp[] kalender, int ersterTag)` — 168 h, nur für die Auslegung |
-| S2 Kaltwasser | `Kaltwassergang.cs` | `static double[] Monatswerte(double mittelC, double amplitudeK, int monatMaximum)` — zwölf Werte, einmal gerechnet und auf neun Stellen gerundet (4.2); `static double[] Monatsfaktoren(double zapfC, double[] monatswerteC, double mittelC)` |
+| S1 | `Mengengeruest.cs` | `static Mengenergebnis JahresenergieKwh(ZonenStand z, Nutzungsart n, Zonentemperaturen t, Parametersatz ps, IReadOnlyDictionary<string, double> belegungJeRaumzahl, Herkunftsprotokoll p, ICollection<ZapfHinweis> hinweise)` — Jahresenergie, Bezugsmenge, f_θ und Zonenfläche (N7); `static double Temperaturfaktor(...)`; `static Messwert MesswertAus(ZonenStand z, Zonentemperaturen t, Herkunftsprotokoll p)`; `static Kalibrierergebnis Kalibrieren(Messwert m, double zapfungKwh, double zirkulationKwh, string zone)` |
+| S2 Kalender | `Zapfkalender.cs` | `enum ZapfTagtyp { Werktag = 1, Samstag = 2, SonnFeiertag = 3, Ruhetag = 4 }`; `static ZapfTagtyp[] Bilden(int wochentagJan1, bool[] we, IReadOnlyList<Ferienfenster> ferien)` — 365 Einträge; `static IReadOnlyList<Ferienfenster> AusJahrestagen(int? beginn, int? ende)` — null, ein oder zwei Fenster (N7) |
+| S2 Formvektor | `Formvektor.cs` | `static Zeitstruktur Bilden(ZonenStand z, Nutzungsart n, Tagesgangsatz satz, Parametersatz ps, Herkunftsprotokoll p, ICollection<ZapfHinweis> hinweise)` — normierte Monate, Woche, Tagesgänge (N7); `static double[] Tagesmengen(double jahresKwh, Zeitstruktur s, ZapfTagtyp[] kalender, int wochentagJan1, double[] kaltwasserfaktor, string zone)`; `static double[] Stundenreihe(double[] tagesmengen, Zeitstruktur s, ZapfTagtyp[] kalender)` — 8760, nur für die Bilanz; `static Wochenreihe Wochenreihe(double[] tagesmengen, Nutzungsart n, ZapfTagtyp[] kalender, int ersterTag)` — 168 h, nur für die Auslegung |
+| S2 Kaltwasser | `Kaltwassergang.cs` | `static double[] Monatswerte(double mittelC, double amplitudeK, int monatMaximum)` — zwölf Werte, einmal gerechnet und auf neun Stellen gerundet (4.2); `static double[] Monatsfaktoren(double zapfC, double[] monatswerteC, double mittelC, string zone)`, dazu `Monatsfaktoren(Zonentemperaturen t, string zone)` (N7) |
 | S3 | `ZapfZufall.cs`, `Zapfkategorie.cs`, `Zapfereignisgenerator.cs`, `Zapfensemble.cs` | portabler Zufall; Kategorien; Minutenreihe je Zone aus `n_E` Einheiten; Ensemble mit Perzentilen je Topologie (4.4) |
 | S4 | `Bedarfstag.cs`, `Wochenreihe.cs`, `Summenlinie.cs`, `Din4708Kennzahl.cs`, `TwwSpeicherauslegung.cs`, `Grossanlage.cs`, `Auslegungsergebnis.cs` | Dreiergruppe, Verfahrensvergleich, Großanlagenerkennung (4.5–4.7) |
-| S5 | `Zirkulationskanal.cs` | `static Bilanzreihe Reihe(ZirkulationEingang e, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps, Herkunftsprotokoll p)` — 8760, eigene Teilreihe |
+| S5 | `Zirkulationskanal.cs` | zweigeteilt (N7): `static Zirkulationsansatz Ansetzen(ProjektStand p, IReadOnlyList<Zonenanteil> zonen, Parametersatz ps, Herkunftsprotokoll prot, ICollection<ZapfHinweis> hinweise)` — Methode, Leistung, α, Jahresverlust und Zonenanteile vor der Kalibrierung; `static Bilanzreihe Reihe(double jahresverlustKwh, double laufzeitH, double[] fenster)` — 8760, eigene Teilreihe, Fenster aus `Laufzeitfenster(laufzeitH, tagesmitteH)` |
 | S6 | `Kalibrierung.cs` | Faktor, Dauerlinienvergleich, Bericht synthetisch gegen gemessen |
-| Fassade | `ZapfprofilRechner.cs`, `ZapfprofilErgebnis.cs`, `Bilanzreihe.cs` | `static ZapfprofilErgebnis Rechnen(Zapfprofileingang e, IReadOnlyList<Nutzungsart> katalog)`; `sealed record Bilanzreihe(double[] StundenKwh)`; Ergebnis: `Bilanzreihe Zapfung`, `Bilanzreihe Zirkulation`, `JeZone`, Kennzahlen mit Einheit im Namen (`JahresbedarfZapfungKwh`, `JahresverlustZirkulationKwh`, `GroessterStundenwertKw`), `Herkunftsprotokoll`, `Hinweise` |
+| Fassade | `ZapfprofilRechner.cs`, `ZapfprofilErgebnis.cs`, `Bilanzreihe.cs` | `static ZapfprofilErgebnis Rechnen(Zapfprofileingang e, IReadOnlyList<Nutzungsart> katalog)`; `sealed class Bilanzreihe` mit `IReadOnlyList<double> StundenKwh`, `KopieStundenKwh()`, Monats- und Jahressumme (unveränderlich, N7); Ergebnis: `Bilanzreihe Zapfung`, `Bilanzreihe Zirkulation`, `JeZone`, Kennzahlen mit Einheit im Namen (`JahresbedarfZapfungKwh`, `JahresverlustZirkulationKwh`, `GroessterStundenwertKw`), `Herkunftsprotokoll`, `Hinweise` |
 | Import | `Normformvektorleser.cs`, `Typtagzuordnung.cs` (Z4b) | liest anwendereigene VDI-4655-Typtage aus einem `Stream` (Muster `TryPaketLeser.AusStrom`, `EPOS.Kern/Allgemein/Import/TryPaketLeser.cs:362`); ordnet sie dem Kalender zu (4.2) |
 
 Die Auslegung hat eine eigene Fassade, damit sie strukturell keinen Weg zur Bilanzreihe hat:
@@ -284,15 +284,19 @@ if (modus == ProfilQuellmodus.Projektrechnung
 {
     ZapfprofilErgebnis e = ZapfprofilRechner.Rechnen(
         ZapfprofilCtrl.Eingang(m_ID_Projekt, WochentagJan1, WE), ZapfprofilCtrl.Katalog());
-    BhkwPlan.VectorenAddieren(e.Zapfung.StundenKwh, brauchwasserwerte);
-    BhkwPlan.VectorenAddieren(e.Zirkulation.StundenKwh, brauchwasserwerte);
-    Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(e.Zirkulation.StundenKwh.Sum());
+    double[] zirkulation = e.Zirkulation.KopieStundenKwh();
+    BhkwPlan.VectorenAddieren(e.Zapfung.KopieStundenKwh(), brauchwasserwerte);
+    BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
+    Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(e.Zirkulation.JahressummeKwh);
     BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
-    BhkwPlan.MonatsSumme(e.Zirkulation.StundenKwh, Waermebedarf_Brauchwasser_Zirkulation_Monat,
+    BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat,
                          mo_anfang, mo_ende);
     return;
 }
 ```
+
+Die Bilanzreihe gibt ihre Stunden nur lesend heraus; die Weiche übergibt deshalb Kopien
+(`KopieStundenKwh`, N7).
 
 **Regeln der Weiche:**
 
@@ -343,7 +347,7 @@ Fabriken seien die vollständige Liste der Bedarfsarten (`ProfilBedarf.cs:67-71`
 | Invariante | Prüfung | Test |
 |---|---|---|
 | Energieerhaltung S1→S2: Σ Tagesmengen = Jahresmenge, Σ Stundenwerte = Jahresmenge | relativ 1e-12 | `FormvektorTests.Die_Stundenreihe_erhaelt_die_Jahresmenge` |
-| Formvektor-Summe: jeder Tagesgang Σ = 1, Wochenfaktoren Σ = 1 (Katalog), Warnung ab einer Abweichung über der Warnschwelle (INEKON-Setzung, Parameter), Normierung vor dem Rechnen | exakt nach Normierung | `NutzungsartTests.Tagesgang_und_Woche_summieren_zu_eins` |
+| Formvektor-Summe: jeder Tagesgang Σ = 1, Wochenfaktoren Σ = 1 (Katalog), Warnung ab einer Abweichung über der Warnschwelle (INEKON-Setzung, Parameter), Normierung vor dem Rechnen | exakt nach Normierung | `FormvektorTests.Tagesgang_und_Woche_summieren_zu_eins` (N7) |
 | Kalender: genau 365 Tage, kein Schaltjahr, Wochentag aus `WochentagJan1`, Gewicht je Tagtyp (4.2) | exakt | `ZapfkalenderTests.Das_Jahr_hat_365_Tage_und_beginnt_am_Wochentag_des_Januars`, `…Ein_Feiertag_am_Montag_erhaelt_die_Sonntagsmenge` |
 | Zirkulation: Σ_h q_zirk,h = Jahresverlust der gewählten Methode | relativ 1e-12 | `ZirkulationskanalTests.Die_Reihe_erhaelt_den_Jahresverlust_jeder_Methode` |
 | Konsistenz der Pfade: E[Jahresenergie stochastisch] = deterministisch | Toleranz max(1 %, 3·s_R/√R) (4.4) | `ZapfensembleTests.Der_Erwartungswert_trifft_den_deterministischen_Pfad` |
@@ -468,8 +472,8 @@ neutraler Name der Ausstattungsklasse), `Wert` REAL NOT NULL (Belegung p bzw. Σ
 | `Zirkulation` | INTEGER NOT NULL DEFAULT 1 CHECK (`Zirkulation` IN (0,1)) | 0 nimmt die Zone aus dem Zirkulationsanteil (4.3) |
 | `Ferienbeginn_1`, `Ferienende_1` … `_4` | INTEGER | Jahrestag 1–365 wie `Tab_Gebaeude`; NULL, 0 und 366 = keine Angabe (4.2) |
 | `Jahresmesswert` | REAL | S6 |
-| `Jahresmesswert_Einheit` | INTEGER CHECK (`Jahresmesswert_Einheit` IN (1,2)) | 1 kWh/a, 2 m³/a (Umrechnung 4.1) |
-| `Jahresmesswert_Bilanzgrenze` | INTEGER CHECK (`Jahresmesswert_Bilanzgrenze` IN (1,2,3)) | wie im Katalog; ein Volumenmesswert ist immer 1 |
+| `Jahresmesswert_Einheit` | INTEGER CHECK (`Jahresmesswert_Einheit` IN (1,2)) | 1 kWh/a, 2 m³/a (Umrechnung 4.1); ein Messwert ohne Einheit wird benannt abgelehnt (N7) |
+| `Jahresmesswert_Bilanzgrenze` | INTEGER CHECK (`Jahresmesswert_Bilanzgrenze` IN (1,2,3)) | Kodierung wie im Katalog; ein Volumenmesswert ist immer 1; ein Messwert in kWh/a ohne Grenze wird benannt abgelehnt (N7) |
 | `Jahresmesswert_Quelle`, `Jahresmesswert_Zeitraum` | TEXT | Herkunft des Messwerts („überschrieben durch Messdaten vom …", Konzept S6) |
 | `Speicherverlust_Kwh_a` | REAL | nur bei Messwert-Grenze 3: abzuziehender Speicherverlust |
 | `Tagesbedarf_Auto` | INTEGER NOT NULL DEFAULT 1 CHECK (`Tagesbedarf_Auto` IN (0,1)) | Umschalter auto/manuell |
@@ -651,8 +655,8 @@ Q_a,Zone [kWh/a] = n_Bezug · q_spez(Niveau) · 365 · f_θ
   f_θ = (θ_Zapf − θ̄_KW) / (θ_Bezug − θ_KW,Bezug)      Umrechnung auf die Projekttemperaturen,
                                                      nach A1 verpflichtend; f_θ ≠ 1 -> Status Umgerechnet,
                                                      Faktor im Herkunftsprotokoll
-  Wohnen, Bezug Fläche: Q = max(a − b · A_WE ; c) · A_WE · n_WE   (Verfahren der DIN V 18599-10,
-                        a, b, c Parameter)
+  Wohnen, Bezug Fläche: Q = max(a − b · A_WE ; c) · A_WE · n_WE · f_θ   (Verfahren der DIN V 18599-10,
+                        a, b, c Parameter; f_θ mit den Bezugstemperaturen der Nutzungsart, N7)
   Tagesbedarf manuell: Q_a = Q_d,manuell · 365
 Messwert (S6), Reihenfolge: erst Mengengerüst und Zirkulationsanteil (4.3), dann Kalibrieren
   Einheit m³:        Q_Mess [kWh] = V_Mess [m³] · c_w [Wh/(l·K)] · (θ_Zapf − θ̄_KW)   (immer Grenze 1)
@@ -674,7 +678,7 @@ ab als die Rückfrageschwelle (Konzept 2.2, Parameter). Tests:
 `…Die_Flaechenformel_folgt_dem_Verfahren` (erfundene a, b, c; Knick und Untergrenze),
 `…Messwert_mit_Zirkulation_zaehlt_nicht_doppelt` (Grenze 2: Zapfung + Zirkulation = Messwert),
 `…Der_Volumenmesswert_wird_ueber_die_Temperaturen_umgerechnet`,
-`TemperaturTests.Umrechnung_auf_Bezugstemperatur` (Relation `V_neu = V_Tab · Δθ_Tab / Δθ_neu`, erfundene
+`MengengeruestTests.Umrechnung_auf_Bezugstemperatur` (N7; Relation `V_neu = V_Tab · Δθ_Tab / Δθ_neu`, erfundene
 Temperaturen). Toleranz exakt bzw. relativ 1e-12.
 
 ### 4.2 S2 — Kalender, Jahresgang, Tagesgang
@@ -716,7 +720,8 @@ Kaltwasser θ̄ und Amplitude als Konvention im Katalog, fester Jahresgang (K4).
 
 Tests: `ZapfkalenderTests` (Wochentag, `…Ein_Feiertag_am_Montag_erhaelt_die_Sonntagsmenge`,
 `…Jahrestag_366_ist_keine_Angabe`, Ferienfenster über den Jahreswechsel, Ruhetag mit und ohne
-Ferienfaktor), `KaltwassergangTests.Das_Jahresmittel_des_Faktors_ist_eins`,
+Ferienfaktor, `…Ein_Wochenende_ohne_Kennzeichen_ist_ein_Werktag`), Kaltwassergang in `ZapfkalenderTests` (N7):
+`…Das_Jahresmittel_des_Faktors_ist_eins`,
 `…Die_Monatswerte_sind_gerundet`, `FormvektorTests` (Summen, Wochenfaktor Null, Tagesgang Null ergibt 0
 mit Hinweis, `…Die_Wochenreihe_entsteht_ohne_Stundenreihe`). Toleranz relativ 1e-12.
 
@@ -750,9 +755,12 @@ Jahresverlust:           Q_zirk = P_zirk · t_Lauf · 365 = Σ_h q_zirk,h
 Anteil der Zone z ∈ Z1:  Q_zirk,z = Q_zirk · Q_a,z / Σ_{Z1} Q_a      (für die Kalibrierung, 4.1)
 ```
 
-Die Laufzeitstunden liegen zusammenhängend um die Tagesmitte der Zapfung; `t_Lauf` folgt dem Rahmen
-nach DVGW W 551 (Parameter). **Vorgabe** ist die Methode Flächenkennwert: `A_N` aus `Zirk_Flaeche_m2`,
-sonst aus Wohnfläche je WE × WE der Wohnzonen oder aus dem gebundenen Gebäude (A8); Kennwert `k_A` und
+Die Laufzeitstunden liegen zusammenhängend um die Tagesmitte der Zapfung (Festlegung in N7: Schwerpunkt
+der Stundensummen der Zapfung in Z1, Beginn `⌊m − t_Lauf/2 + ½⌋`, an den Tagesrand geschoben, eine
+gebrochene Laufzeit belegt die letzte Stunde anteilig); `t_Lauf` folgt dem Rahmen
+nach DVGW W 551 (Parameter). **Vorgabe** ist die Methode Flächenkennwert: `A_N` aus `Zirk_Flaeche_m2`
+(gebäudeweit, mit α), sonst aus Wohnfläche je WE × WE der Wohnzonen oder aus dem gebundenen Gebäude (A8);
+stammt `A_N` aus den Zonen, zählen nur die Zonen in Z1 und α entfällt (N7). Kennwert `k_A` und
 Lage sind Parameter. Fehlt jede Fläche, fällt die Vorgabe auf die Methode Anteil mit dem Parameter
 `a` zurück, mit Hinweis. So liefert schon die Stufe Einfach eine Zirkulation (Lehre 3).
 
@@ -1296,14 +1304,14 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | Stufe | Inhalt | Vorbedingung | Abnahme | Aufwand (Annahme) |
 |---|---|---|---|---|
 | **Z0 — Grundlagen und Schema** | K1 und K8 anstoßen; Schemaschritt T1 (3.1, 3.2) mit `TwwSchema.cs`, `ZapfprofilCtrl` (lesend), `TwwNutzungsartCtrl`, `KatalogRegistry`, fiktiver Testkatalog, `Parametersatz`; Auslieferungsregel und Katalogpaket-Option der Auslieferungsvorlage; Einträge in `ProjektExportImportCtrl`; Wachen `TwwKatalogWacheTests` und `Normzahlen_stehen_im_gitignore`; Quellendossier; **Konzept V2 (A10)** mit Verschiebung von V1.2 nach `ueberholt/`; **Bereinigung der Zahlenteile der Grundlagenpapiere nach K8 (A9)**; bei K8 „ersetzen": Ersatz der vier Digitalisate als eigener Schritt mit Einfrierprüfung 1007/1045/1046 | Entscheide K2, K7, A1, A2, ZU12; Schemanummer nachgemessen | Kern-Filter grün; `TestdatenbankSchemastandWacheTests`, `TwwKatalogWacheTests` grün; `SqlDialektPruefer` grün; Testdatenbank über LFS; je ein Test für `ProjektDuplizierenCtrl` und `ProjektExportImportCtrl`; Referenzlauf der fünf CI-Projekte grün innerhalb der Toleranz; Windows-Schale auf Linux gebaut | 7–10 PT |
-| **Z1 — Bilanz deterministisch** | S1 samt Temperaturumrechnung und Messwertgrenzen, S2 mit Tagtypgewicht und Ferienregel, S5 mit Zonenanteil und Vorgabe Flächenkennwert, Fassade mit `Bilanzreihe`, Weiche (2.2) samt getrennter Monatssummen, `ZapfprofilCtrl.Speichern/Eingang`, `Tab_TwwProjekt`; Dialog Stufe Einfach mit Vorschau (Tagesgang, Wochenprofil, Jahresgang, Kennzahlen) als Überlagerung unter Windows; Knopf, Optionsgruppe, Leiste „monatlicher Verlauf" und gemeinsamer `DbVorgang` im Bedarfsprofil-Dialog; Wiki-Entwurf | Z0; A3, A4/ZU5, A6, K4; fiktiver Testkatalog genügt | Tests aus 2.4, 4.1–4.3; **ein unabhängig per Tabellenkalkulation gerechneter fiktiver Referenzfall über 8760 h mit Abweichung 0** (Testdaten erfunden, Konzept 3.6 P1); `ZapfprofilWeicheTests` auf einer Projektkopie der Testdatenbank; Referenzlauf grün innerhalb der Toleranz (kein Referenzprojekt setzt die Weiche); `EinheitenWacheTests` mit den neuen Dateien; bunit; Sichtabnahme Windows | 14–18 PT |
+| **Z1 — Bilanz deterministisch** | S1 samt Temperaturumrechnung und Messwertgrenzen, S2 mit Tagtypgewicht und Ferienregel, S5 mit Zonenanteil und Vorgabe Flächenkennwert, Fassade mit `Bilanzreihe`, Weiche (2.2) samt getrennter Monatssummen, `ZapfprofilCtrl.Speichern/Eingang`, `Tab_TwwProjekt`; Dialog Stufe Einfach mit Vorschau (Tagesgang, Wochenprofil, Jahresgang, Kennzahlen) als Überlagerung unter Windows; Knopf, Optionsgruppe, Leiste „monatlicher Verlauf" und gemeinsamer `DbVorgang` im Bedarfsprofil-Dialog; Wiki-Entwurf | Z0; A3, A4/ZU5, A6, K4; fiktiver Testkatalog genügt | Tests aus 2.4, 4.1–4.3; **ein unabhängig per Tabellenkalkulation (umgesetzt als Python-Skript, N7) gerechneter fiktiver Referenzfall über 8760 h mit Abweichung 0** (Testdaten erfunden, Konzept 3.6 P1); `ZapfprofilWeicheTests` auf einer Projektkopie der Testdatenbank; Referenzlauf grün innerhalb der Toleranz (kein Referenzprojekt setzt die Weiche); `EinheitenWacheTests` mit den neuen Dateien; bunit; Sichtabnahme Windows | 14–18 PT |
 | **Z2 — Auslegung deterministisch** | Bedarfstag mit Vorgaberegel und Konstruktor, Wochenreihe, Summenlinie mit Speicherart, Übertrager, Einschaltpunkt, Wertepaarkurve, Monotonieprüfung und Ladezeit, Schnellpfad, Wohnungstabelle und DIN-4708-Kennzahl, DIN 1988-300 nachrichtlich, Speicherauslegung nach V4 mit Ladefenster, GLF, Plausibilitätsband und Warnliste, Großanlagenerkennung, Topologiegruppen; Überlagerung „Auslegung"; `SummenlinieModell` | Z1; K1/K8 für A100- und DIN-4708-Profil (ohne: Konstruktor) | `SummenlinieTests`, `Din4708KennzahlTests`, `SpeicherauslegungTests`, `AuslegungsergebnisTests`, `GrossanlageTests`, `ZapfprofilTrennungWacheTests`; `ChartProben` mit neuem Fall; Referenzlauf unberührt | 16–20 PT |
 | **Z3 — Stochastik** | T2, `ZapfZufall` samt Plattformtest, Generator mit gestutztem Mittel, Ensembles der Jahresreihe und des Bedarfstags über `Kulturweitergabe`, Perzentil je Topologie, Gleichzeitigkeit als Ergebnis, Entkopplung der Urlaube, Rechenweg der Jahresreihe „stochastisch" | Z2; ZU8 | `ZapfZufallTests`, `ZapfereignisgeneratorTests`, `ZapfensembleTests` (Toleranz nach 4.4, √N, Topologie); lokal gegen DHWcalc-Referenzdateien; Referenzlauf unberührt | 16–22 PT |
 | **Z4 — Oberfläche vollständig** | Stufen Erweitert und Experte, Zonenliste für Mischnutzung, Wohnungstabelle, Tagesgang-Editor, Auslastungsgang, Kategorien als Katalogkopie, Schätzhilfen, Warnlogik, Dauerlinie, Katalogdialog mit Untermenü und Katalogimport, KiSicht, Hilfeschlüssel, Wiki, beide Sprachen | Z3; ZU3 (iU11) | alle Oberflächenwachen; Rasterprobe; `MenuebandTests`; erweiterte `WikiProduktdatenWacheTests`; Wiki gegengelesen; iOS-Lauf nur nach Rückfrage und nur, wenn die Bedarfsprofil-Hülle umgezogen ist | 11–14 PT (+2–3 PT iPad-Voraussetzung) |
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** | T3, `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Importdialog | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
-**Umsetzungsstand und Abweichungen:** N2 bis N4 (Kapitel 11); T1 ist Schritt 103 (N4).
+**Umsetzungsstand und Abweichungen:** N2 bis N4 und N7 (Kapitel 11); T1 ist Schritt 103 (N4).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:
@@ -1669,6 +1677,78 @@ Z-Stufen.
 **Folgen:** Kapitel 9, Zeilen K1 und ZU16–ZU18, tragen den Entscheid mit Verweis „(N6)". Offen
 beim Anwender bleiben K8 (juristische Prüfung) und ZU15 (Lizenz der VDI-6002-Kopien), beide mit
 der Zwischenfreigabe aus N5.
+
+### N7 (23.09.2026) — Umsetzungsbefunde Z1, Gruppe 1 (Rechenweg)
+
+**Anlass.** Der Rechenweg der Stufe Z1 — Mengengerüst, Kalender, Formvektor, Zirkulation, Fassade und
+der unabhängige Referenzfall — ist auf dem Zweig `z1` umgesetzt und gegengeprüft. Dieser Nachtrag hält
+fest, wo die Umsetzung vom Papier abweicht oder es genauer fasst; der Hauptteil ist an den betroffenen
+Stellen mit Verweis „(N7)" berichtigt. Er enthält **keinen Entscheid** des Anwenders.
+
+**Befunde und Festlegungen:**
+
+- **(a) Signaturen (2.1, 2.2).** Die Zone ist `ZonenStand` (`ZapfprofilStand.cs`); ein
+  `Zoneneingang.cs` gibt es nicht. `Mengengeruest.JahresenergieKwh` liefert ein `Mengenergebnis`
+  (Jahresenergie, Bezugsmenge, f_θ, Zonenfläche) statt `double`; die Temperaturen der Zone kommen als
+  `Zonentemperaturen` herein, der Messwert über `MesswertAus`. Der Formvektor arbeitet auf einer
+  normierten `Zeitstruktur` statt auf der `Nutzungsart`. `AusJahrestagen` liefert null, ein oder zwei
+  Fenster. Die Zirkulation ist zweigeteilt: `Ansetzen` (Methode, Leistung, α, Jahresverlust,
+  Zonenanteile) und `Reihe(Jahresverlust, Laufzeit, Fenster)`; eine Klasse `ZirkulationEingang` gibt es
+  nicht, die Projektgrößen kommen als `ProjektStand`. `Bilanzreihe` ist eine unveränderliche Klasse mit
+  `IReadOnlyList<double> StundenKwh`; die Weiche (2.2) übergibt deshalb `KopieStundenKwh()`.
+- **(b) Flächenformel und f_θ (4.1).** Auch der Kennwert der Flächenformel Wohnen wird über f_θ
+  umgerechnet (A1: jeder Kennwert mit anderem Temperaturbezug zwingend). Bezug sind die
+  Bezugstemperaturen der Nutzungsart, die die Formel wählt; a, b, c tragen keinen eigenen
+  Temperaturbezug. Der Katalog setzt die Bezugstemperaturen einer solchen Nutzungsart deshalb auf den
+  Temperaturbezug des Verfahrens.
+- **(c) Messwert ohne Einheit oder Grenze (3.1, 4.1, 2.2).** Ein Jahresmesswert ohne Einheit und ein
+  Messwert in kWh/a ohne Bilanzgrenze werden benannt abgelehnt (`MesswertUngueltig`), statt still als
+  kWh/a bzw. Grenze 1 gelesen zu werden; ein Volumenmesswert ist ohne Angabe Grenze 1. Einheit, Grenze
+  und Umrechnung stehen im Herkunftsprotokoll.
+- **(d) Parameter, die die Rechnung nicht entscheiden (2.1).** Fehlen die Warnschwelle des Formvektors,
+  die Rückfrageschwelle des Messwerts (nur bei einer Zone mit Messwert) oder die Vorgabe der Wohnfläche
+  je WE für die Zonenfläche, nennt der Hinweis `PARAMETER_FEHLT` den Schlüssel einmal; die Prüfung bzw.
+  die Fläche entfällt, einen Rückfallwert gibt es nicht. Parameter, die die Rechnung entscheiden, lehnen
+  weiter benannt ab.
+- **(e) Kalender (4.2).** Es gilt die Regel des Papiers: Samstag und Sonn-/Feiertag nur mit
+  Kennzeichen `We[d]`. Ein Klimakalender ohne Kennzeichen (Altkonvention) kennt damit kein Wochenende.
+- **(f) Fläche A_N der Zirkulation (4.3).** α ist für ein gebäudeweites A_N gedacht: Mit
+  `Zirk_Flaeche_m2` gilt `P = α · k_A · A_N / (365 · t_Lauf)`. Stammt A_N aus den Zonenflächen, ist
+  A_N die Summe der Flächen der Zonen in Z1 und α entfällt — sonst kürzte eine Zone außerhalb Z1 ohne
+  Fläche den Verlust der Zonen in Z1 ein zweites Mal. Trägt eine Zone in Z1 keine Fläche, nennt ein
+  Hinweis sie; ist die Fläche von Z1 null, gilt der Rückfall auf die Methode Anteil. Die Zonenfläche
+  ist bei Bezugsart Fläche die Bezugsmenge, sonst WE · Wohnfläche je WE, mit der WE-Zahl als
+  Bezugsmenge (Wohneinheiten) oder Σ Anzahl der Wohnungstabelle (Personen) und der Wohnfläche je WE
+  aus der Zone, sonst aus dem Parameter. Das gebundene Gebäude (A8) speist `ZapfprofilCtrl` in
+  Gruppe 2 ein.
+- **(g) Laufzeitfenster (4.3), Festlegung der Umsetzung.** Tagesmitte ist der Schwerpunkt
+  `m = Σ_h (h + ½) · E_h / Σ_h E_h` der Stundensummen der Zapfung der Zonen in Z1 (ohne Z1 aller
+  Zonen, ohne Zapfung 12 Uhr); Beginn `⌊m − t_Lauf/2 + ½⌋`, an den Tagesrand geschoben; eine
+  gebrochene Laufzeit belegt die letzte Stunde anteilig.
+- **(h) Zirkulation vor und nach der Kalibrierung (4.1).** `Zirkulationsansatz` trägt Jahresverlust und
+  Zonenanteile vor der Kalibrierung (`JahresverlustVorKalibrierungKwh`); nach einer Kalibrierung mit
+  Grenze 2 oder 3 ist der verbuchte Jahresverlust nur `Kennzahlen.JahresverlustZirkulationKwh`.
+- **(i) Referenzfall (Kapitel 7, Zeile Z1).** An Stelle der Tabellenkalkulation steht das
+  Python-Skript `EPOS.Kern.Tests/Proben/Zapfprofil/referenzfall_bauen.py`: Es liest nur die fiktive
+  Eingabe, rechnet ohne C#-Code nach den Formeln des Papiers und schreibt Stundenwerte und Kennzahlen
+  wiederholbar byte-gleich. Abgedeckt sind vier Zonen mit Feiertagen, Ferienfenstern, Temperaturumrechnung,
+  Messwert in m³ (Grenze 1) und in kWh (Grenze 2), einer Zone mit Katalog-Grenze 2 und dem
+  Flächenkennwert mit gebäudeweiter Fläche. Das Laufzeitfenster (g) spiegelt das Skript nur.
+- **(j) Testklassen (2.4, 4.1, 4.2).** `NutzungsartTests.Tagesgang_und_Woche_summieren_zu_eins` steht in
+  `FormvektorTests`, `TemperaturTests.Umrechnung_auf_Bezugstemperatur` in `MengengeruestTests`, die
+  Fälle von `KaltwassergangTests` in `ZapfkalenderTests`.
+- **(k) Unveränderlichkeit.** Bilanzreihe und Zonenanteile des Ansatzes sind nur lesbar; die
+  `Zeitstruktur` bleibt intern und verlässt den Rechenweg nicht. Der Umgebungswächter über
+  `EPOS.Kern/Allgemein/Zapfprofil/` prüft auch `System.Data`, SQLite, `System.IO`, `SpecialFolder`,
+  `Program.*` und `Environment.*`.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (f) | gebundenes Gebäude (A8) als Fläche über `ZapfprofilCtrl.Eingang` | Agent der Stufe Z1 | Z1, Gruppe 2 |
+| (a) | die Weiche übergibt Kopien der Bilanzreihen | Agent der Stufe Z1 | Z1, Gruppe 2 |
+| (b) | Bezugstemperaturen einer Nutzungsart mit Flächenformel im Katalog auf den Bezug des Verfahrens setzen | Katalogpflege | mit dem Auslieferungskatalog |
 
 ---
 
