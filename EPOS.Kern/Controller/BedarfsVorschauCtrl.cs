@@ -25,6 +25,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Der Strombedarf — nur bei <see cref="BedarfsArt.Stromverbraucher"/>.</summary>
         internal SimulationStrombedarf Strom;
+
+        /// <summary>
+        /// Rechnet die Vorschau den Zapfprofilweg (Umsetzungskonzept Zapfprofilgenerator 2.2,
+        /// 5.2)? Dann trägt <see cref="Waerme"/> die Monatssummen von Zapfung und Zirkulation
+        /// und <c>Waerme.Zapfprofil</c> das Ergebnis des Generators.
+        /// </summary>
+        internal bool Zapfprofilweg;
+
+        /// <summary>Der benannte Grund, wenn der Zapfprofilweg nicht rechnen konnte; sonst leer.</summary>
+        internal string Meldung = "";
     }
 
     /// <summary>
@@ -99,10 +109,27 @@ namespace WindowsFormsApplication1
         /// <param name="art">Die Ausprägung.</param>
         /// <param name="idProjekt">Das Projekt des Dialogs.</param>
         /// <param name="namen">Die angezeigten Profilnamen; leer ergibt keine Rechnung.</param>
+        /// <param name="zapfprofil">
+        /// Der Arbeitsstand des Zapfprofils im Dialog (Umsetzungskonzept Zapfprofilgenerator 2.2,
+        /// 5.2); <c>null</c> = der gespeicherte Stand des Projekts. Steht er beim Brauchwasser
+        /// auf <see cref="BrauchwasserWeg.Generator"/>, zeigt die Vorschau die Monatssummen aus
+        /// dem Generator über diesen Stand — derselbe Aufruf wie im Lauf
+        /// (<see cref="SimulationWaermebedarf.BrauchwasserAusGenerator"/>), mit dem Kalender
+        /// der Klimaregion des Projekts; die Profilnamen rechnen dann nicht mit. Bei
+        /// <see cref="BrauchwasserWeg.Bestand"/> bleibt der Weg dieser Methode unverändert.
+        /// </param>
         internal static BedarfsVorschau ProjektVorschau(BedarfsArt art, int idProjekt,
-                                                       IReadOnlyList<string> namen)
+                                                       IReadOnlyList<string> namen,
+                                                       ZapfprofilStand zapfprofil = null)
         {
             var ergebnis = new BedarfsVorschau { Art = art };
+
+            if (art == BedarfsArt.Brauchwasser && idProjekt != 0)
+            {
+                ZapfprofilStand stand = zapfprofil ?? ZapfprofilCtrl.Lies(idProjekt);
+                if (stand.Weg == BrauchwasserWeg.Generator) return ZapfprofilVorschau(ergebnis, idProjekt, stand);
+            }
+
             if (namen == null) return ergebnis;
 
             var liste = new List<string>(namen);
@@ -136,6 +163,35 @@ namespace WindowsFormsApplication1
 
             ergebnis.Waerme = sim;
             ergebnis.Erfolgreich = true;
+            return ergebnis;
+        }
+
+        /// <summary>
+        /// Die Vorschau des Zapfprofilwegs (2.2): Kalender der Klimaregion des Projekts, dann
+        /// derselbe Generatoraufruf wie im Lauf. Eine benannte Ablehnung lässt die Vorschau
+        /// ohne Ergebnis (<see cref="BedarfsVorschau.Erfolgreich"/> <c>false</c>) und nennt den
+        /// Grund in <see cref="BedarfsVorschau.Meldung"/> — wie der Lauf, der dann abbricht.
+        /// </summary>
+        private static BedarfsVorschau ZapfprofilVorschau(BedarfsVorschau ergebnis, int idProjekt, ZapfprofilStand stand)
+        {
+            ergebnis.Zapfprofilweg = true;
+            var projekt = new ProjektCtrl();
+            projekt.ReadSingle(idProjekt);
+            if (projekt.m_ID_Klimaregion <= 0)
+            {
+                ergebnis.Meldung = SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX
+                                   + "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.";
+                return ergebnis;
+            }
+
+            var sim = new SimulationWaermebedarf { m_ID_Projekt = idProjekt };
+            sim.ZapfprofilKalenderLesen(projekt.m_ID_Klimaregion);
+            bool ok = sim.BrauchwasserAusGenerator(stand);
+            sim.BrauchwassersummeUebernehmen();
+
+            ergebnis.Waerme = sim;
+            ergebnis.Erfolgreich = ok;
+            ergebnis.Meldung = ok ? "" : sim.Fehlertext;
             return ergebnis;
         }
 
