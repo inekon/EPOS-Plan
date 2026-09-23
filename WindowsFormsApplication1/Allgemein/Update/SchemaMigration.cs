@@ -3930,6 +3930,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_117_TRAEGERPREIS_SZENARIO = 117;
 
+        /// <summary>
+        /// Schritt 118 — <b>die Erlössätze best/worst</b> (Schritt D des Analysepapiers § 6,
+        /// Etappe E9a). Er folgt auf <see cref="SCHRITT_117_TRAEGERPREIS_SZENARIO"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, acht nullbare Spalten: <c>Einspeiseverguetung_Best</c>/
+        /// <c>_Worst</c> und <c>Einspeiseverguetung_KWK_Best</c>/<c>_Worst</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, <c>DvEntgelt_Best</c>/<c>_Worst</c> und
+        /// <c>PpaPreis_Best</c>/<c>_Worst</c> an <c>Tab_ProjektPhotovoltaik</c> — die Listen
+        /// stehen bei <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_118_ERLOESSATZ_SZENARIO = 118;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5519,6 +5535,18 @@ namespace WindowsFormsApplication1
                         "Guenstig und Unguenstig rechnen. KEIN Rechenergebnis aendert sich - die " +
                         "Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
                         Schritt_117_TraegerpreisSzenario),
+
+            // ETAPPE E9a (Schritt D) - die Erloessaetze best/worst: Einspeiseverguetung
+            // (PV und KWK) an der Parametertabelle, DV-Entgelt und PPA-Preis an der
+            // PV-Verguetung. REIN DDL; die Quelle ist SchemaKatalog.Schritt118_ErloessatzSzenario.
+            // Er steht NACH 117 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_118_ERLOESSATZ_SZENARIO,
+                        "Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik: Erloessaetze " +
+                        "je Szenario (Best/Worst)",
+                        "Einspeiseverguetung, DV-Entgelt und PPA-Preis liessen sich nicht je Szenario " +
+                        "pflegen. KEIN Rechenergebnis aendert sich - die Spalten bleiben leer, und " +
+                        "leer heisst 'wie Erwartet'.",
+                        Schritt_118_ErloessatzSzenario),
         };
 
         /// <summary>
@@ -8770,6 +8798,38 @@ namespace WindowsFormsApplication1
                     SchemaKatalog.Schritt117_TraegerpreisSzenario.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalte(n) angelegt - Arbeits-, Grund- und Leistungspreis je Best und Worst an " +
                     SchemaKatalog.ENERGY_PROJECT_SETTINGS + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
+                    "der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 118 - die Erloessaetze best/worst (Schritt D, Etappe E9a)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 118 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_118_ERLOESSATZ_SZENARIO"/> und bei
+        /// <see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>. <b>Reines DDL</b> an zwei
+        /// Tabellen, dieselbe Schleife wie bei Schritt 116. <b>Wiederholbar.</b>
+        /// </summary>
+        private static bool Schritt_118_ErloessatzSzenario(Lauf l)
+        {
+            int angelegt = 0, gesamt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+            {
+                gesamt++;
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("118: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    gesamt.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - Einspeiseverguetung (PV, KWK) je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ", DV-Entgelt und PPA-Preis je Best und Worst an " +
+                    SchemaKatalog.TAB_PROJEKTPHOTOVOLTAIK + ". KEIN DML: Leer heisst 'wie Erwartet' - " +
                     "der Referenzlauf bleibt byte-gleich.");
             return true;
         }

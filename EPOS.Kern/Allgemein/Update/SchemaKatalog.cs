@@ -4818,6 +4818,96 @@ namespace WindowsFormsApplication1
         /// <inheritdoc cref="SPALTE_EPS_PREIS_LEISTUNG_BEST"/>
         public const string SPALTE_EPS_PREIS_LEISTUNG_WORST = "custom_price_power_worst";
 
+        // -------------------------------------------------------------------------
+        // Schritt 118 - die Erloessaetze best/worst (Schritt D des Analysepapiers,
+        //               Etappe E9a, Konzept § 2.11.5 Zeile „Erloessaetze")
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): die <b>Einspeisevergütungen je
+        /// Szenario</b> an <c>Tab_ProjektWirtschaftlichkeit</c> — je ein Best/Worst-Paar zu
+        /// <c>Einspeiseverguetung</c> (PV-Überschuss) und <c>Einspeiseverguetung_KWK</c>
+        /// [€/kWh], „an derselben Tabelle" wie der Erwartungswert (Konzept § 2.11.5).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet"</b> (E9a‑Q5, Lesart a).
+        /// <b>Doppelpflicht:</b> dieselben Spalten im CREATE-Text und als
+        /// <c>SpalteSicher</c>-Nachzug in <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>.
+        /// KEIN DML; nicht in <see cref="Alle"/> (Begründung bei
+        /// <see cref="Schritt71_SzenarioBest"/>).</para>
+        ///
+        /// <para><b>Nicht in diesem Schritt</b> (E9a‑Q1, Lesart a): <c>PpaSpotAufschlag</c>,
+        /// <c>MarktwertJahresmittel</c> und <c>MarktwertEntwicklung</c> der PV-Vergütung.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt118_ErloessatzWirtschaftlichkeit =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_BEST,      "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_WORST,     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK_BEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_VERGUETUNG_KWK_WORST, "DOUBLE"),
+        };
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt D, Schemaschritt 118): <b>DV-Entgelt und PPA-Preis je
+        /// Szenario</b> an <c>Tab_ProjektPhotovoltaik</c> [ct/kWh], neben ihren
+        /// Erwartungswerten <c>DvEntgelt</c> und <c>PpaPreis</c> — dieselbe Zeile, dieselbe
+        /// Auflösung „eigene Werte / übernommen vom Stamm" (Konzept § 2.16).
+        ///
+        /// <para><b>NULL (und 0) heißt „wie Erwartet".</b> <b>Doppelpflicht (PPV):</b> Die
+        /// Tabelle gehört <c>ProjektPhotovoltaikCtrl</c>, gelesen werden die Spalten vom
+        /// Rechenweg der Wirtschaftlichkeit — die tolerante Vorsorge steht deshalb wie beim
+        /// Schritt 93 beim Leser (<c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c>), der
+        /// Schreibweg der PV-Karte prüft die Spalten vorher. Der CREATE-Text des Schritts 41
+        /// (<see cref="SQL_CREATE_PROJEKTPHOTOVOLTAIK"/>) bleibt, wie er ist: Ein
+        /// Migrationsschritt wird nie rückwirkend geändert, und er trägt auch die Spalten der
+        /// Schritte 64 und 93 nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt118_ErloessatzPhotovoltaik =
+        {
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DV_ENTGELT_BEST,  "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_DV_ENTGELT_WORST, "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_PPA_PREIS_BEST,   "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTPHOTOVOLTAIK, SPALTE_PPV_PPA_PREIS_WORST,  "DOUBLE"),
+        };
+
+        /// <summary>Beide Blöcke des Schritts 118 in Anlegereihenfolge — EINE Quelle für
+        /// Migration, Testdatenbankschema, Testdatenbank und Nachweis.</summary>
+        public static IEnumerable<SchemaSpalte> Schritt118_ErloessatzSzenario
+        {
+            get
+            {
+                foreach (SchemaSpalte s in Schritt118_ErloessatzWirtschaftlichkeit) yield return s;
+                foreach (SchemaSpalte s in Schritt118_ErloessatzPhotovoltaik) yield return s;
+            }
+        }
+
+        /// <summary>Einspeisevergütung PV-Überschuss des BEST-Szenarios [€/kWh]; NULL = wie
+        /// Erwartet (<c>Einspeiseverguetung</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PW_VERGUETUNG_BEST = "Einspeiseverguetung_Best";
+
+        /// <inheritdoc cref="SPALTE_PW_VERGUETUNG_BEST"/>
+        public const string SPALTE_PW_VERGUETUNG_WORST = "Einspeiseverguetung_Worst";
+
+        /// <summary>Einspeisevergütung KWK des BEST-Szenarios [€/kWh]; NULL = wie Erwartet
+        /// (<see cref="SPALTE_PW_VERGUETUNG_KWK"/>). Schemaschritt 118.</summary>
+        public const string SPALTE_PW_VERGUETUNG_KWK_BEST = "Einspeiseverguetung_KWK_Best";
+
+        /// <inheritdoc cref="SPALTE_PW_VERGUETUNG_KWK_BEST"/>
+        public const string SPALTE_PW_VERGUETUNG_KWK_WORST = "Einspeiseverguetung_KWK_Worst";
+
+        /// <summary>DV-Entgelt des BEST-Szenarios [ct/kWh]; NULL = wie Erwartet
+        /// (<c>DvEntgelt</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PPV_DV_ENTGELT_BEST = "DvEntgelt_Best";
+
+        /// <inheritdoc cref="SPALTE_PPV_DV_ENTGELT_BEST"/>
+        public const string SPALTE_PPV_DV_ENTGELT_WORST = "DvEntgelt_Worst";
+
+        /// <summary>PPA-Festpreis des BEST-Szenarios [ct/kWh]; NULL = wie Erwartet
+        /// (<c>PpaPreis</c>). Schemaschritt 118.</summary>
+        public const string SPALTE_PPV_PPA_PREIS_BEST = "PpaPreis_Best";
+
+        /// <inheritdoc cref="SPALTE_PPV_PPA_PREIS_BEST"/>
+        public const string SPALTE_PPV_PPA_PREIS_WORST = "PpaPreis_Worst";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -5044,6 +5134,9 @@ namespace WindowsFormsApplication1
         /// <see cref="Schritt117_TraegerpreisSzenario"/> (Schritt C) aus dem Grund von
         /// <see cref="Schritt12_Preismodell"/>: <c>energy_project_settings</c> gehört dem
         /// Kostenmodul, die Simulation liest die Tabelle nirgends.
+        /// <see cref="Schritt118_ErloessatzSzenario"/> (Schritt D) ebenso: Die Erlössätze je
+        /// Szenario hängen an <c>Tab_ProjektWirtschaftlichkeit</c> und
+        /// <c>Tab_ProjektPhotovoltaik</c>, gelesen allein von der Wirtschaftlichkeit.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

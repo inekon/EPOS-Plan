@@ -442,11 +442,17 @@ namespace WindowsFormsApplication1
         /// <c>energy_project_settings</c>
         /// (<see cref="SchemaKatalog.Schritt117_TraegerpreisSzenario"/>). <b>Reines DDL,
         /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
+        /// Mit den ERLÖSSÄTZEN BEST/WORST (Schritt 118, Schritt D) steht das Ziel auf
+        /// <b>118</b>: <c>Einspeiseverguetung(_KWK)_Best/_Worst</c> an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c>, <c>DvEntgelt_Best/_Worst</c> und
+        /// <c>PpaPreis_Best/_Worst</c> an <c>Tab_ProjektPhotovoltaik</c>
+        /// (<see cref="SchemaKatalog.Schritt118_ErloessatzSzenario"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege</b>; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 117;
+        public const int Zielversion = 118;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

@@ -579,6 +579,12 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt117_TraegerpreisSzenario)
                     SpalteSicherstellen(s);
 
+                // Schritt 118 (Schritt D, Etappe E9a): die Erloessaetze best/worst an
+                // Tab_ProjektWirtschaftlichkeit und Tab_ProjektPhotovoltaik. Aus DERSELBEN
+                // Quelle; kein DML.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

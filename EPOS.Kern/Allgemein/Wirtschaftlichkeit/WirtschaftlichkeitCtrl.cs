@@ -383,6 +383,12 @@ namespace WindowsFormsApplication1
                                   "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + "\" INTEGER, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE + "\" REAL, " +
+                                  // ETAPPE E9a (Schritt D, Schemaschritt 118): die
+                                  // Einspeiseverguetungen je Szenario - dieselbe Begruendung.
+                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_BEST + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_WORST + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_BEST + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_VERGUETUNG_KWK_WORST + "\" REAL, " +
                                   "\"GeaendertAm\" TEXT)");
                         Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
@@ -594,6 +600,17 @@ namespace WindowsFormsApplication1
                     // dem Zugriff (doppelte Schema-Wahrheit dieses Moduls, Konzept § 9
                     // Punkt 2). KEINE Werte-Vorbelegung: leer heisst "wie Erwartet".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E9a (Schritt D) - die Erloessaetze je Szenario: Einspeise-
+                    // verguetung (PV, KWK) an der Parametertabelle UND DV-Entgelt und
+                    // PPA-Preis an Tab_ProjektPhotovoltaik. Regulaer entstehen sie ueber
+                    // Schemaschritt 118; das hier ist DER ZWEITE DDL-ORT - fuer die
+                    // PV-Tabelle mit der Begruendung von Schritt 93: Die Tabelle gehoert
+                    // ProjektPhotovoltaikCtrl, gelesen werden die Spalten von DIESEM
+                    // Rechenweg, und die Vorsorge gehoert zum Leser. KEINE
+                    // Werte-Vorbelegung: leer heisst "wie Erwartet".
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die

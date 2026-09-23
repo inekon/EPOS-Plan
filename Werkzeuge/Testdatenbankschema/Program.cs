@@ -1416,6 +1416,18 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 117, trocken);
 
+            // ---- Schritt 118: die Erloessaetze best/worst (Schritt D, Etappe E9a). REIN DDL aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_118_ErloessatzSzenario
+            //      (SchemaKatalog.Schritt118_ErloessatzSzenario): Einspeiseverguetung(_KWK)_Best/
+            //      _Worst an Tab_ProjektWirtschaftlichkeit, DvEntgelt_Best/_Worst und
+            //      PpaPreis_Best/_Worst an Tab_ProjektPhotovoltaik, nullbar, ohne Vorgabe.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt118_ErloessatzSzenario)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 118, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 
