@@ -75114,6 +75114,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Für die Nutzungsart {0} stehen keine Zapfkategorien im Katalog — die Zone rechnet nicht stochastisch. ähnelt.
+        /// </summary>
+        public static string ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN {
+            get {
+                return ResourceManager.GetString("ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Angaben der stochastischen Jahresreihe sind unvollständig oder ungültig (Zapfkategorien, Einheiten, Realisierungen). ähnelt.
         /// </summary>
         public static string ZPG_EINGABE_STOCHASTIK_UNGUELTIG {

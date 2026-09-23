@@ -347,15 +347,20 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Rechenweg der Jahresreihe „stochastisch" (4.4) ohne Zapfkategorien im Katalog (T2 folgt):
-        /// kein stiller Rückfall auf den deterministischen Weg — die Zone trägt 0 und steht benannt
-        /// als Warnung im Protokoll, die Zirkulation rechnet, die Energieprobe bleibt ohne Verletzung.
+        /// Rechenweg der Jahresreihe „stochastisch" (4.4) ohne Zapfkategorien der Nutzungsart (die
+        /// Probe nimmt sie der Arbeitskopie): kein stiller Rückfall auf den deterministischen Weg —
+        /// die Zone trägt 0 und steht benannt als Warnung im Protokoll, mit der Nutzungsart im Text;
+        /// die Zirkulation rechnet, die Energieprobe bleibt ohne Verletzung.
         /// </summary>
         [Fact]
         public void Stochastisch_ohne_Zapfkategorien_traegt_die_Zone_benannt_null()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+            if (DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM))
+                DataRepository.ExecuteNonQuery(
+                    "DELETE FROM Tab_TwwZapfkategorie_STAMM WHERE ID_Nutzungsart IN (SELECT ID FROM Tab_TwwNutzungsart_STAMM " +
+                    "WHERE Bezeichner = ? AND Katalogversion = ?)", new DbParam("@b", NUTZUNG), new DbParam("@k", VERSION));
             ProjektStand stochastisch = ZapfprofilCtrl.ProjektVorgabe() with { Weg = BrauchwasserWeg.Generator, JahresreiheStochastisch = true };
             ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, stochastisch));
 
@@ -370,6 +375,7 @@ namespace EPOS.Kern.Tests
                                            w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
             Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
             Assert.Contains("keine Zapfkategorien", warnung);
+            Assert.Contains("„" + NUTZUNG + "“", warnung);
             ZapfprofilErgebnis e = waerme.Zapfprofil;
             Assert.True(e.Stochastisch);
             Assert.Equal(ZapfEingabefehler.StochastikUngueltig, Assert.Single(e.Ablehnungen).Grund);

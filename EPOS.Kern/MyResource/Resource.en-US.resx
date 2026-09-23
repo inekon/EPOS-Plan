@@ -23927,6 +23927,9 @@ Do you want to allow this?</value>
   <data name="ZPG_EINGABE_STOCHASTIK_UNGUELTIG" xml:space="preserve">
     <value>The data of the stochastic annual series are incomplete or invalid (draw-off categories, units, realisations).</value>
   </data>
+  <data name="ZPG_EINGABE_STOCHASTIK_KATEGORIEN_FEHLEN" xml:space="preserve">
+    <value>The catalogue holds no draw-off categories for the usage type {0} — the zone is not computed stochastically.</value>
+  </data>
   <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
     <value>the draw-off profile tables are missing in this database.</value>
   </data>

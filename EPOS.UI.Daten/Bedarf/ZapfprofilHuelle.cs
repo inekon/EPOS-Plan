@@ -812,11 +812,26 @@ namespace WindowsFormsApplication1
             return new ZapfprofilMeldung(schluessel, ex.Zone ?? "", text, ZapfprofilMeldungsart.Fehler, ex.Message ?? "");
         }
 
-        /// <summary>Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund.</summary>
+        /// <summary>
+        /// Eine Ablehnung des Rechenwegs: die Zone (bzw. die Zirkulation) trägt 0, mit Grund. Trägt
+        /// die Ablehnung eine genauere Kennung (etwa fehlende Zapfkategorien einer Nutzungsart), ist
+        /// der Grund deren Text <c>ZPG_EINGABE_</c> + Kennung mit dem Wert der Ablehnung; fehlt die
+        /// Ressource, bleibt der Wortlaut des Kerns.
+        /// </summary>
         internal static ZapfprofilMeldung Meldung(ZapfAblehnung a)
         {
             string schluessel = Schluessel(a.Grund);
             string grund = Text_(schluessel, a.Klartext);
+            if (!string.IsNullOrEmpty(a.Kennung))
+            {
+                string genauer = "ZPG_EINGABE_" + a.Kennung;
+                string muster = Text_(genauer, null);
+                if (muster != null)
+                {
+                    schluessel = genauer;
+                    grund = Format(muster, a.Argument ?? "");
+                }
+            }
             string text = string.IsNullOrEmpty(a.Zone)
                 ? Format(Text_("ZPG_MSG_ANTEIL_TRAEGT_NULL", "Die Zirkulation trägt 0: {0}"), grund)
                 : Format(Text_("ZPG_MSG_ZONE_TRAEGT_NULL", "Zone „{0}“ trägt 0: {1}"), a.Zone, grund);

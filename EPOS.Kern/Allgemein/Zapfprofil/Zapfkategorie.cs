@@ -80,6 +80,12 @@ namespace WindowsFormsApplication1
     /// </summary>
     internal sealed class Zapfkategoriensatz
     {
+        /// <summary>
+        /// Kennung der Ablehnung „keine Kategorien für die Nutzungsart" (Grund
+        /// <see cref="ZapfEingabefehler.StochastikUngueltig"/>); der Wert ist die Nutzungsart.
+        /// </summary>
+        internal const string KENNUNG_KATEGORIEN_FEHLEN = "STOCHASTIK_KATEGORIEN_FEHLEN";
+
         private readonly Zapfkategoriewert[] _werte;
 
         private Zapfkategoriensatz(int idNutzungsart, string zone, Zapfkategoriewert[] werte)
@@ -104,14 +110,39 @@ namespace WindowsFormsApplication1
         /// nicht negativ mit Σ &gt; 0, Kappung positiv, gestutztes Mittel positiv.
         /// </summary>
         internal static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, int idNutzungsart, string zone)
+            => Aus(katalog, idNutzungsart, zone, null);
+
+        /// <summary>
+        /// Wie <see cref="Aus(IReadOnlyList{Zapfkategorie}, int, string)"/> für die Nutzungsart
+        /// <paramref name="art"/> — die Ablehnung ohne Kategorien nennt sie mit Bezeichner und
+        /// Katalogversion statt mit ihrer Id.
+        /// </summary>
+        internal static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, Nutzungsart art, string zone)
+        {
+            if (art == null) throw new ArgumentNullException(nameof(art));
+            string name = "„" + (art.Name ?? "") + "“"
+                          + (string.IsNullOrEmpty(art.Katalogversion) ? "" : " (Katalogversion " + art.Katalogversion + ")");
+            return Aus(katalog, art.Id, zone, name);
+        }
+
+        private static Zapfkategoriensatz Aus(IReadOnlyList<Zapfkategorie> katalog, int idNutzungsart, string zone,
+                                              string nutzungsart)
         {
             var eigene = new List<Zapfkategorie>();
             if (katalog != null)
                 foreach (Zapfkategorie k in katalog)
                     if (k != null && k.IdNutzungsart == idNutzungsart) eigene.Add(k);
             if (eigene.Count == 0)
-                throw Fehler(zone, "Nicht rechenbar — für die Nutzungsart " + idNutzungsart.ToString(CultureInfo.InvariantCulture)
-                                   + " der Zone „" + zone + "“ stehen keine Zapfkategorien im Katalog.");
+            {
+                string art = nutzungsart ?? idNutzungsart.ToString(CultureInfo.InvariantCulture);
+                throw new ZapfprofilEingabeException(ZapfEingabefehler.StochastikUngueltig, zone,
+                    "Nicht rechenbar — für die Nutzungsart " + art + " der Zone „" + zone
+                    + "“ stehen keine Zapfkategorien im Katalog.")
+                {
+                    Kennung = KENNUNG_KATEGORIEN_FEHLEN,
+                    Argument = art
+                };
+            }
 
             double summe = 0.0;
             foreach (Zapfkategorie k in eigene)

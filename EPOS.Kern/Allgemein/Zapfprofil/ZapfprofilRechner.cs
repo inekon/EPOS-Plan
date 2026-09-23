@@ -107,7 +107,7 @@ namespace WindowsFormsApplication1
                 }
                 catch (ZapfprofilEingabeException ex)
                 {
-                    Ablehnen(a, ex.Fehler, ex.Message, ablehnungen);
+                    Ablehnen(a, ex, ablehnungen);
                 }
                 catch (ParametersatzException ex)
                 {
@@ -179,7 +179,7 @@ namespace WindowsFormsApplication1
                 }
                 catch (ZapfprofilEingabeException ex)
                 {
-                    Ablehnen(a, ex.Fehler, ex.Message, ablehnungen);
+                    Ablehnen(a, ex, ablehnungen);
                 }
                 catch (ParametersatzException ex)
                 {
@@ -357,7 +357,7 @@ namespace WindowsFormsApplication1
             {
                 Index = a.Index, Zone = a.Name,
                 Einheiten = Zapfeinheiten.Anzahl(a.Stand, a.Art, a.Menge.Bezugsmenge, e.Parameter),
-                Kategorien = Zapfkategoriensatz.Aus(e.Zapfkategorien, a.Art.Id, a.Name),
+                Kategorien = Zapfkategoriensatz.Aus(e.Zapfkategorien, a.Art, a.Name),
                 JahresmengeKwh = a.ZapfungKwh, Struktur = a.Struktur, Kalender = a.Kalender, Ferien = ferien,
                 Kaltwasserfaktor = a.Kaltwasserfaktor, SpreizungJeMonatK = spreizung,
                 WochentagJan1 = e.WochentagJan1, We = e.We, Urlaubsentkopplung = entkoppeln, UrlaubsversatzTage = versatz
@@ -389,11 +389,18 @@ namespace WindowsFormsApplication1
         }
 
         private static void Ablehnen(Zonenarbeit a, ZapfEingabefehler grund, string text, List<ZapfAblehnung> liste)
+            => Ablehnen(a, new ZapfAblehnung(a.Name, grund, text), liste);
+
+        /// <summary>Die Ablehnung aus der benannten Ausnahme — samt Kennung und Wert (etwa der Nutzungsart).</summary>
+        private static void Ablehnen(Zonenarbeit a, ZapfprofilEingabeException ex, List<ZapfAblehnung> liste)
+            => Ablehnen(a, ZapfAblehnung.Aus(a.Name, ex), liste);
+
+        private static void Ablehnen(Zonenarbeit a, ZapfAblehnung ablehnung, List<ZapfAblehnung> liste)
         {
             a.Abgelehnt = true;
             a.ZapfungKwh = 0.0;
             a.ZirkulationKwh = 0.0;
-            liste.Add(new ZapfAblehnung(a.Name, grund, text));
+            liste.Add(ablehnung);
         }
 
         private static Nutzungsart Suchen(IReadOnlyList<Nutzungsart> katalog, int id)

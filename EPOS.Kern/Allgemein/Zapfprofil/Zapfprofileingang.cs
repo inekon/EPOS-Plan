@@ -78,6 +78,16 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Zone; leer, wenn das Projekt betroffen ist.</summary>
         internal string Zone { get; }
+
+        /// <summary>
+        /// Die genauere Kennung innerhalb des Grundes (etwa
+        /// <see cref="Zapfkategoriensatz.KENNUNG_KATEGORIEN_FEHLEN"/>); <c>null</c> = nur der Grund.
+        /// Die Hülle nimmt sie als Ressourcenschlüssel <c>ZPG_EINGABE_</c> + Kennung.
+        /// </summary>
+        internal string Kennung { get; init; }
+
+        /// <summary>Der Wert, den der Text der <see cref="Kennung"/> einsetzt (etwa die Nutzungsart); sonst <c>null</c>.</summary>
+        internal string Argument { get; init; }
     }
 
     /// <summary>Ein nicht blockierender Hinweis des Rechenwegs: Zone (leer = Projekt), Kennung, Klartext.</summary>
@@ -210,8 +220,10 @@ namespace WindowsFormsApplication1
         public double NetzverlusteProjekt { get; init; }
 
         /// <summary>
-        /// Die Zapfkategorien des Katalogs (T2, 4.4), alle Nutzungsarten; leer, solange der Katalog
-        /// keine trägt. Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
+        /// Die Zapfkategorien des Katalogs (T2, 4.4) für die Nutzungsarten der Zonen — gelesen von
+        /// <c>ZapfprofilCtrl.Eingang</c> aus <c>Tab_TwwZapfkategorie_STAMM</c> je Nutzungsart in der
+        /// Reihenfolge des Katalogs; leer, solange der Katalog keine trägt oder die Datenbank die
+        /// Tabelle nicht führt (Stand vor 114). Gebraucht nur auf dem stochastischen Weg — der Jahresreihe
         /// (<see cref="ProjektStand.JahresreiheStochastisch"/>) und des Auslegungsensembles; fehlen die
         /// Kategorien einer Nutzungsart dort, lehnt die Zone benannt ab.
         /// </summary>

@@ -99,7 +99,11 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, n.Tabelle);
             VerwendungsPruefung zone = Assert.Single(n.VerwendungsPruefungen);
             Assert.Equal((TwwSchema.TAB_TWW_ZONE, "ID_Nutzungsart", false), (zone.Tabelle, zone.Spalte, zone.UeberName));
-            Assert.Empty(n.Datenbloecke);
+            // Die Zapfkategorien (Schemaschritt T2) sind der Datenblock der Nutzungsart.
+            KatalogDatenblock kategorien = Assert.Single(n.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_ZAPFKATEGORIE_STAMM, "ID_Nutzungsart"), (kategorien.Tabelle, kategorien.FkSpalte));
+            Assert.Equal(new[] { "Kategorie", "Reihenfolge", "Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min" },
+                         kategorien.WertSpalten);
             Assert.DoesNotContain("Katalogversion", n.AusschlussSpalten);
             Assert.Contains("ID_Vorlage", n.AusschlussSpalten);
 

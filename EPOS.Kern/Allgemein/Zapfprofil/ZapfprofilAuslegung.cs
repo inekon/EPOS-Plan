@@ -567,7 +567,7 @@ namespace WindowsFormsApplication1
                 foreach (Zonenarbeit w in zonen)
                     ensemblezonen.Add(new Ensemblezone(w.Index, w.Name,
                         Zapfeinheiten.Anzahl(w.Stand, w.Art, w.Menge.Bezugsmenge, ps),
-                        Zapfkategoriensatz.Aus(kategorien, w.Art.Id, w.Name),
+                        Zapfkategoriensatz.Aus(kategorien, w.Art, w.Name),
                         w.Baustein.TagesmengenKwh[tag - 1],
                         Auslegungspruefung.Spreizung(w.Temperaturen.ZapfC, kwAuslegung, "Zapftemperatur − Kaltwasser der Auslegung"),
                         Tageszeitdichte.Aus(w.Struktur, w.Kalender[tag - 1])));

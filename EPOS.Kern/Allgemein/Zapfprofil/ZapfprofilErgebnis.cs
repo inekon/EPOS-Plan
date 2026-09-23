@@ -6,7 +6,18 @@ namespace WindowsFormsApplication1
     /// Eine benannte Ablehnung im Ergebnis: Zone (leer = Projekt), Grund, Klartext. Die
     /// betroffene Zone — bzw. bei leerer Zone die Zirkulation — trägt 0 (Konzept 2.2).
     /// </summary>
-    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, string Klartext);
+    internal sealed record ZapfAblehnung(string Zone, ZapfEingabefehler Grund, string Klartext)
+    {
+        /// <summary>Die genauere Kennung der Ablehnung (<see cref="ZapfprofilEingabeException.Kennung"/>); sonst <c>null</c>.</summary>
+        public string Kennung { get; init; }
+
+        /// <summary>Der Wert zur <see cref="Kennung"/> (etwa die Nutzungsart); sonst <c>null</c>.</summary>
+        public string Argument { get; init; }
+
+        /// <summary>Die Ablehnung einer Zone aus der benannten Ausnahme des Rechenwegs — samt Kennung und Wert.</summary>
+        internal static ZapfAblehnung Aus(string zone, ZapfprofilEingabeException ex)
+            => new ZapfAblehnung(zone, ex.Fehler, ex.Message) { Kennung = ex.Kennung, Argument = ex.Argument };
+    }
 
     /// <summary>
     /// Das Ergebnis einer Zone: ihre Bilanzreihen Zapfung und Zirkulation und die Kennzahlen
