@@ -86,10 +86,10 @@ Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäu
 
 Darunter steht der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite:
 
-* '''Kühlbedarf''' – mit eingeschalteter [[Programm Dokumentation/Kühlung|Kühlung]] der Kältebedarf am Kühlsollwert; ohne sie die Wärme, die abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet;
+* '''Kühlbedarf''' – mit eingeschalteter [[Programm Dokumentation/Kühlung|Kühlung]] der Kältebedarf am Kühlsollwert; ohne sie läuft das Gebäude frei und hat keinen Kühlbedarf – statt der Kältezahlen steht ein Strich;
 * '''max. Kältelast''' und '''Vollbenutzungsstunden''' der Kälte;
 * '''Stunden mit Kühlbedarf''';
-* '''Überhitzungsstunden''' – Stunden der Nutzungszeit mit einer operativen Temperatur über der oberen Raumtemperatur;
+* '''Überhitzungsstunden''' – Stunden der Nutzungszeit mit einer operativen Temperatur über der oberen Raumtemperatur; ohne Kühlung darf die Raumtemperatur über die obere Raumtemperatur steigen, und die Zahl zeigt, was ohne Kühlanlage geschieht;
 * '''Stunden mit Heizen und Kühlen''' – Stunden, in denen das Modell von Heizen auf Kühlen umschaltet; sie werden gezählt, nicht verrechnet;
 * ein eigenes Bild der '''Kältelast''' und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''.
 

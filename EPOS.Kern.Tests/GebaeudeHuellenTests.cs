@@ -300,8 +300,12 @@ namespace EPOS.Kern.Tests
             Assert.True(tagesbilanz.SpitzeQuantil95Kw <= tagesbilanz.MaxLastKw + 1e-9);
             Assert.Null(tagesbilanz.KuehlenergieMwh);
             Assert.Null(tagesbilanz.MittlereRaumtemperaturC);
-            Assert.NotNull(vdi.KuehlenergieMwh);
-            Assert.NotNull(vdi.KuehlstundenH);
+            // E32: 1045 wird nicht gekühlt - das Gebäude läuft frei, ohne Kühlbedarf, mit
+            // Überhitzungsstunden.
+            Assert.Null(vdi.KuehlenergieMwh);
+            Assert.Null(vdi.KuehlstundenH);
+            Assert.Null(vdi.KuehlbedarfKwh);
+            Assert.NotNull(vdi.UeberhitzungsstundenH);
             Assert.InRange(vdi.MittlereRaumtemperaturC!.Value, 10.0, 35.0);
 
             // Der Zwang schreibt nichts.

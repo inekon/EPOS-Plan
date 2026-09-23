@@ -30,7 +30,7 @@ Die Gruppe ''Kühlung'' steht unter dem Rechenweg und ist immer sichtbar und bea
 | Kühlleistungsgrenze || unbegrenzt || größte Kühlleistung in kW; reicht sie nicht, steigt die Raumtemperatur über den Kühlsollwert
 |}
 
-Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne Haken die Maximalraumtemperatur, an der die Überhitzung gezählt wird. Einen Kühlsollwert, der nicht mindestens 1 K über dem höchsten Heizsollwert liegt, nimmt der Dialog nicht an – Heizung und Kühlung arbeiteten sonst gegeneinander.
+Die Zeile unter den Feldern nennt, was gilt: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne Haken, dass das Gebäude frei läuft und die Überhitzung an der Maximalraumtemperatur gezählt wird. Einen Kühlsollwert, der nicht mindestens 1 K über dem höchsten Heizsollwert liegt, nimmt der Dialog nicht an – Heizung und Kühlung arbeiteten sonst gegeneinander.
 
 Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile, dass dieser Weg keine Kühllast liefert: Die Eingaben bleiben gespeichert und gelten, sobald das Gebäude nach VDI 6007 rechnet.
 
@@ -39,7 +39,7 @@ Rechnet ein Gebäude auf dem Rechenweg ''Tagesbilanz'', sagt eine weitere Zeile,
 
 * '''Totband''' – Zwischen Heiz- und Kühlsollwert schwingt die Raumtemperatur frei; geheizt wird unterhalb des Heizsollwerts, gekühlt oberhalb des Kühlsollwerts. Eine Stunde, in der das Modell von Heizen auf Kühlen umschaltet, trägt beides; solche Stunden zählt EPOS-Plan als '''Stunden mit Heizen und Kühlen''' und verrechnet sie nicht.
 * '''Sommerlüftung''' – Ist bei einem gekühlten Gebäude die [[Programm Dokumentation/Gebäudemodell VDI 6007#sommerlueftung|Sommerlüftung]] eingeschaltet, öffnen die Nutzer die Fenster ab 3 K unter dem Kühlsollwert; die Lüftung senkt die Kühllast, bevor gekühlt wird.
-* '''Ohne Kühlung''' – Ein Gebäude ohne Haken oder ohne Kühlsollwert wird nicht gekühlt. Der Kühlbedarf, den der Bedarfsdialog dann zeigt, ist eine Auskunft: die Wärme, die abgeführt werden müsste, damit die Raumluft die Maximalraumtemperatur nicht überschreitet. Er geht in keinen Kanal.
+* '''Ohne Kühlung''' – Ein Gebäude ohne Haken, ohne Kühlsollwert oder in einem Projekt ohne den Schalter ''Kühlung rechnen'' wird nicht gekühlt. Es läuft frei: Seine Raumtemperatur darf über die Maximalraumtemperatur steigen, und es hat keinen Kühlbedarf. Die '''Überhitzungsstunden''' zählen die Stunden der Nutzungszeit, in denen die operative Temperatur über der Maximalraumtemperatur liegt – sie zeigen, was ohne Kühlanlage geschieht.
 * '''Lastgänge''' – Im Dialog ''Wärmebedarf Extern'' können Sie einer eingelesenen Ganglinie den Kanal ''Kühlung'' geben. Sie ist dann Kältebedarf ohne Gebäudemodell, geht in keinen Wärmekanal und wirkt nur mit dem Projektschalter.
 * '''Rechenweg Tagesbilanz''' – Ein Gebäude auf diesem Rechenweg hat keinen Kältebedarf; der Lauf trägt 0 ein und nennt den Grund im Protokoll.
 
@@ -51,12 +51,12 @@ Wärmeerzeuger decken keine Kälte. Einen Kälteerzeuger rechnet EPOS-Plan nicht
 == Ergebnisse ==
 {{Anker|ergebnisse}}
 
-* '''Wärmebedarf Gebäude''' (Knopf ''Simulation…'' im Gebäudedialog) – der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite: Kühlbedarf, höchste Kältelast, Vollbenutzungsstunden, dazu Stunden mit Kühlbedarf, Überhitzungsstunden und Stunden mit Heizen und Kühlen; ein eigenes Bild der Kältelast (mit ''sortiert'' als Dauerlinie) und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''. Die Zeilen darunter sagen, wie der Kältebedarf entsteht, und nennen die Grenze der Zahl. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund.
+* '''Wärmebedarf Gebäude''' (Knopf ''Simulation…'' im Gebäudedialog) – der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite: Kühlbedarf, höchste Kältelast, Vollbenutzungsstunden, dazu Stunden mit Kühlbedarf, Überhitzungsstunden und Stunden mit Heizen und Kühlen; ein eigenes Bild der Kältelast (mit ''sortiert'' als Dauerlinie) und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''. Die Zeilen darunter sagen, wie der Kältebedarf entsteht, und nennen die Grenze der Zahl. Bei einem Gebäude ohne Kühlung stehen statt der Kältezahlen Striche, dazu die Überhitzungsstunden; es gibt dann kein Bild der Kältelast und keine Spalte ''Kühlung''. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund.
 * '''Simulationsergebnis, Reiter Wärme-/Strombedarf''' – der Block '''Kälte''': Kältebedarf, höchste Kältelast, Stunden mit Kühlbedarf, Vollbenutzungsstunden, die Kanalzeile ''Kühlung'', ein eigenes Bild der Kältelast und der Knopf ''CSV Export''.
 * '''Simulationsergebnis, Übersicht''' – unter den Spalten ''Wärme'' und ''Strom'' der Block '''Kältedeckung''' mit Kältebedarf, höchster Kältelast und dem ungedeckten Kältebedarf. Er steht nur, wenn ein Kältebedarf besteht.
 * '''Bericht''' – in der Projektbeschreibung der Abschnitt ''Kältebedarf'' mit Summe, Kanalzeile, Spitze, Stunden und ungedecktem Rest; im Variantenvergleich die Kennzahlen ''Kältebedarf gesamt (sensibel)'', ''Kältelast max. (sensibel)'' und ''Stunden mit Kühlbedarf (sensibel)''; je Gebäude die Kühlenergie.
 
-Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Kältegruppe und keine Nullen. Der Wärmebedarf eines Gebäudes zeigt den Abschnitt ''Kältebedarf'' dagegen immer – dort sagt die Zeile darunter, dass der Kühlbedarf ohne Projektschalter eine Auskunft ist.
+Ein Projekt ohne Kühlung zeigt im Simulationsergebnis und im Bericht keine Kältegruppe und keine Nullen. Der Wärmebedarf eines Gebäudes zeigt den Abschnitt ''Kältebedarf'' dagegen immer – ohne Kühlung mit Strichen statt Kältezahlen, mit den Überhitzungsstunden und mit der Zeile, dass das Gebäude frei läuft.
 
 == Export ==
 {{Anker|export}}

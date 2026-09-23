@@ -3,6 +3,9 @@
 **Stand:** 22.09.2026 — Klimaspalten (M4) als umgesetzt nachgezogen (1.2, E5, Kapitel 11), die
 Zusicherung Heizen/Kühlen je Abschnitt ausdrücklich gefasst (7.1, 10.4), die Zusammenfassung der
 Außenbauteilgruppe nach (27)–(28c) ausgeschrieben (A4, A7a, B6, 10.4, 10.5)
+**Nachgezogen 23.09.2026 mit E32** ([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.37): Ohne
+wirksame Kühlung hat der Löser keine obere Grenze — das Gebäude läuft frei, es gibt keine
+Kühlreihe, und die Überhitzungsstunden zählen gegen `Maximaleraumtemperatur` (7.1, 8.1, 8.2, 9).
 **Rev. 2 — Prüfung 17.09.2026, E26 eingearbeitet; Rev. 1 vom 16.09.2026**
 Rev. 2 zieht den Fensterzweig nach E14 durch alle Schritte (A7a, Schritt C, E7, θ_op, stationäre
 Probe), macht die Kühlung zum vierten Kanal mit den fünf Betriebsfällen und getrennten Heiz- und
@@ -894,7 +897,8 @@ Zustand:  x = (theta_m,AW, theta_m,IW), Startwert theta_soll der ersten Stunde
 Einheiten: Q, Phi_h und Phi_c in W, Temperaturen in K bzw. Grad C
            Phi_h_max   = 1000 * Heizleistung_Max  [kW] -> W  (NULL = PositiveInfinity)
            Phi_c_max   = 1000 * Kuehlleistung_Max [kW] -> W  (ab KU1; davor unbegrenzt)
-           theta_kuehl = Kuehl_Sollwert                      (NULL = Maximaleraumtemperatur)
+           theta_kuehl = Kuehl_Sollwert bei wirksamer Kuehlung
+                         (Projektschalter, Kuehlung_Aktiv, Sollwert), sonst +Unendlich (E32)
 
 Loeser aufbauen:
     A_frei, b-Struktur   aus p und dem Lueftungsleitwert          (Schritt C, Fall 1)
@@ -928,6 +932,8 @@ Stundenschritt(h):
             Q0 = Phi_h(x)   im geregelten System auf theta_soll
             wenn Q0 > Phi_h_max:   Fall = Heizgrenze,       Q_fest = +Phi_h_max
             sonst wenn Q0 > 0:     Fall = Heizen geregelt
+            sonst wenn keine wirksame Kuehlung:
+                                   Fall = Totband,          Q_fest = 0   (nach oben offen, E32)
             sonst:
                 Qc0 = -Phi_h(x)  im geregelten System auf theta_kuehl
                 wenn Qc0 <= 0:              Fall = Totband,         Q_fest = 0
@@ -1000,10 +1006,12 @@ unsichtbar.
 Verletzungsmaß und erzeugt keinen weiteren Umschaltgrund; die Bisektion sucht allein die Grenzen
 der fünf Betriebsfälle.
 
-**Vor KU1** ist θ_kuehl = `Maximaleraumtemperatur` und Φ_c,max unbegrenzt. Dann ist „Kühlen
-geregelt" genau die Kappung an θ_max, „Kühlgrenze" tritt nie ein, und das Totband ist der frühere
-freie Lauf. Die Struktur des Lösers ist damit schon in G1 die der Stufe KU1 — KU1 füllt nur die
-beiden Spalten.
+**Ohne wirksame Kühlung** (Projektschalter aus, `Kuehlung_Aktiv` = 0 oder kein Kühlsollwert) ist
+θ_kuehl = +∞ (Entscheid E32, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.37):
+„Kühlen geregelt" und „Kühlgrenze" treten nie ein, das Totband ist nach oben offen, und das Gebäude
+läuft frei — die Raumluft darf über `Maximaleraumtemperatur` steigen, es wird keine Wärme
+abgeführt, und eine Kühlleistung wäre ein benannter Fehler. Vor E32 stand hier θ_kuehl =
+`Maximaleraumtemperatur` ohne Leistungsgrenze, also eine Kappung an θ_max; sie ist entfallen.
 
 **Zeitbezug aller drei Prüfgrößen.** Heiz-/Kühllast, Raumluft- **und** operative Temperatur sind
 Blockmittel; Momentanwerte am Schrittende bilden die Verhältnisse nicht korrekt ab (Blatt 1,
@@ -1070,7 +1078,8 @@ flowchart TD
     Q --> P{"Betriebsfall"}
     P -->|"0 &lt; Q0 &lt;= Phi_h,max"| R["Heizen geregelt: theta_air = theta_soll"]
     P -->|"Q0 &gt; Phi_h,max"| L["Heizgrenze: Q fest auf Phi_h,max"]
-    P -->|"Q0 &lt;= 0"| K{"Qc0 = -Phi_h(x) auf theta_kuehl"}
+    P -->|"Q0 &lt;= 0, ohne wirksame Kuehlung"| A
+    P -->|"Q0 &lt;= 0, mit wirksamer Kuehlung"| K{"Qc0 = -Phi_h(x) auf theta_kuehl"}
     K -->|"Qc0 &lt;= 0"| A["Totband: Q = 0, freier Lauf"]
     K -->|"0 &lt; Qc0 &lt;= Phi_c,max"| C["Kuehlen geregelt: theta_air = theta_kuehl"]
     K -->|"Qc0 &gt; Phi_c,max"| CG["Kuehlgrenze: Q fest auf -Phi_c,max"]
@@ -1167,9 +1176,11 @@ Mit Xp = 0 fällt beides zusammen, und der Fall verhält sich wie „Heizgrenze"
 | Heizlast | Φ_h | W | kWh | in den vorhandenen Puffer `ziel[]` in **Watt**, von dort über `BhkwPlan.WattToKw` in `Kanal.HEIZUNG` (kW) |
 | Raumlufttemperatur | θ_air | °C | °C | neue Datei `raumtemperatur_<n>.csv` |
 | operative Temperatur | θ_op | °C | °C | neue Datei `operative_temperatur_<n>.csv` |
-| Kühlbedarf | Φ_c | **kWh** (`KuehlbedarfKwh`) | kWh | neue Datei `kuehlbedarf_<n>.csv` |
+| Kühlbedarf | Φ_c | **kWh** (`KuehlbedarfKwh`) | kWh | neue Datei `kuehlbedarf_<n>.csv` — **nur bei wirksamer Kühlung** (E32) |
 
-Die drei neuen Dateien entstehen **nur** für Gebäude, die das Modul `Gebaeude/` rechnet. Für
+Die neuen Dateien entstehen **nur** für Gebäude, die das Modul `Gebaeude/` rechnet, die Kühlreihe
+nur für ein Gebäude mit wirksamer Kühlung — ein ungekühltes Gebäude läuft frei und hat keine
+Kühlreihe (E32). Für
 Gebäude auf dem Bestandsweg dürfen sie gar nicht erst angelegt werden — nicht „mit Nullen gefüllt" —,
 sonst schlägt der Vergleich des Referenzlaufs fehl (eine Datei, die nur im neuen Lauf liegt,
 bekommt die Schwere `double.MaxValue`).
@@ -1203,10 +1214,10 @@ mit den Flächen A_AW,ges und A_IW, Σ A_k = A_Raum (mit der Fensterfläche, E3 
 | `SpitzeKw` | kW | Maximum der Stundenreihe |
 | `SpitzeTagesmittelKw` | kW | größtes **gleitendes** Mittel über 24 aufeinanderfolgende Blockstunden (8 737 Fenster) |
 | `Spitze95Kw` | kW | 95-%-Quantil der Stundenlast **nach nächstgelegenem Rang** über die 8 760 sortierten Stundenwerte |
-| `KuehlenergieMwh` | MWh | Summe der Kühlbedarfsreihe |
-| `StundenMitKuehlbedarf` | h | Anzahl Stunden mit Φ_c > 0 |
+| `KuehlenergieMwh` | MWh | Summe der Kühlbedarfsreihe; ohne wirksame Kühlung keine (`null`, E32) |
+| `StundenMitKuehlbedarf` | h | Anzahl Stunden mit Φ_c > 0; ohne wirksame Kühlung keine (`null`, E32) |
 | `MittlereRaumtemperaturHeizzeit` | °C | Mittel von θ_air über die **Nutzungszeit** aller Stunden — auch der Stunden ohne Heizbedarf, in denen θ_air frei läuft. Ein Mittel allein über die Stunden mit Φ_h > 0 wäre in G1 und G2 gleich dem Sollwertmittel, weil die ideale Regelung θ_air = θ_soll hält (7.2) |
-| `Ueberhitzungsstunden` | h | Anzahl Stunden der **Nutzungszeit** mit θ_op > `Maximaleraumtemperatur`; ab KU1 mit θ_op > `Kuehl_Sollwert`. Dieselbe Größe mit demselben Namen führen Umsetzungskonzept 1.4, Systementwurf F7 und Mehrzonenkonzept M5 |
+| `Ueberhitzungsstunden` | h | Anzahl Stunden der **Nutzungszeit** mit θ_op > `Maximaleraumtemperatur` — ohne wirksame Kühlung im freien Lauf (E32), mit wirksamer Kühlung gegen dieselbe Grenze, nicht gegen den Kühlsollwert (Kühlkonzept 7.1). Dieselbe Größe mit demselben Namen führen Umsetzungskonzept 1.4, Systementwurf F7 und Mehrzonenkonzept M5 |
 
 **Nutzungszeit** ist die Zeit des Tagsollwerts nach E8 — die Stunden des Tages 7…22 (1-basiert) —
 an allen 365 Tagen; Wochenend- und Ferientage zählen mit, weil der Fahrplan dort nur den Sollwert
@@ -1339,7 +1350,7 @@ Prototyp gehalten werden kann, erweitert um zwei Konventionen des Prototyp-Adapt
 | θ_eq **ohne** Absorptionsterm (`Aussenbauteile_Strahlung` = 0) | in G1 gleich, mit G2 Normformel (E5) |
 | **UTC-Reihenfolge** der Stundenreihe | Ortszeit über `ReadOrtszeit` (E1/6) |
 | **a_kon = 0** (kein konvektiver Anteil des Fenstersolars) | a_kon = 0,09 (E3) |
-| Regelung **ohne** Kühlung und ohne Φ_h,max (Q ≥ 0, Q_max = ∞) | Kappung an θ_max, Grenze nach 1.1 (7.1) |
+| Regelung **ohne** Kühlung und ohne Φ_h,max (Q ≥ 0, Q_max = ∞) | ohne wirksame Kühlung ebenso freier Lauf nach oben (E32), mit wirksamer Kühlung Regelung auf den Kühlsollwert; Grenze nach 1.1 (7.1) |
 | **Fenster am Luftknoten** in R_ext (Weg A des Prototyps), dazu A_AW,opak statt A_AW,ges in R_conv,AW, A_rad, A_Raum und θ_op | Normweg (25)–(28) im Außenwandzweig, R_1,AF = R_AF/6, Fensterfläche in der Oberflächengruppe (**E14**, A7a, A2). Die Zwischenwerte in 9.1 bis 9.6 sind in der Prototypkonvention gerechnet und werden hier **nicht** neu gerechnet |
 
 Folgen für den Leser: die Tages- und Stundenangaben in 9.4 und 9.5 stehen in der

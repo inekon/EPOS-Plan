@@ -63,13 +63,13 @@ namespace WindowsFormsApplication1
         internal double? SpitzeQuantil95Kw;
 
         /// <summary>
-        /// Kühlbedarf [MWh] — nur auf dem VDI-Weg, sonst <c>null</c>. Mit wirksamer Kühlung
-        /// (<see cref="KuehlSollwertC"/>) der Kältebedarf am Kühlsollwert, sonst die Wärme, die
-        /// abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet.
+        /// Kühlbedarf [MWh] — der Kältebedarf am Kühlsollwert, nur auf dem VDI-Weg mit wirksamer
+        /// Kühlung (<see cref="KuehlSollwertC"/>); sonst <c>null</c>: Ein Gebäude ohne wirksame
+        /// Kühlung läuft frei und hat keinen Kühlbedarf (Entscheid E32).
         /// </summary>
         internal double? KuehlenergieMwh;
 
-        /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
+        /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg mit wirksamer Kühlung (E32).</summary>
         internal int? KuehlstundenH;
 
         /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C] — nur auf dem VDI-Weg.</summary>
@@ -77,7 +77,10 @@ namespace WindowsFormsApplication1
 
         // ---- Stufe G2: die Reihen des Bildes „Raumtemperatur" und zwei Stundenzahlen ----
 
-        /// <summary>Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur [h] — nur VDI-Weg.</summary>
+        /// <summary>
+        /// Stunden der Nutzungszeit mit operativer Temperatur über der oberen Raumtemperatur [h] —
+        /// nur VDI-Weg; ohne wirksame Kühlung im freien Lauf gezählt (E32).
+        /// </summary>
         internal int? UeberhitzungsstundenH;
 
         /// <summary>Stunden mit eingeschalteter Sommerlüftung [h] — nur VDI-Weg.</summary>
@@ -99,14 +102,15 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Kühlreihe des Gebäudes je Stunde [kWh] — dieselbe, die der Lauf bei wirksamer
-        /// Kühlung in den Kühlkanal bucht (ein Lauf, zwei Reihen); <c>null</c> ohne VDI-Lauf.
+        /// Kühlung in den Kühlkanal bucht (ein Lauf, zwei Reihen); <c>null</c> ohne VDI-Lauf und
+        /// ohne wirksame Kühlung (E32).
         /// </summary>
         internal double[] KuehlbedarfKwh;
 
-        /// <summary>Die zwölf Monatssummen der Kühlreihe [MWh]; <c>null</c> ohne VDI-Lauf.</summary>
+        /// <summary>Die zwölf Monatssummen der Kühlreihe [MWh]; <c>null</c> ohne Kühlreihe.</summary>
         internal double[] KuehlMonatswerteMwh;
 
-        /// <summary>Die höchste Stundenkühllast [kW]; <c>null</c> ohne VDI-Lauf.</summary>
+        /// <summary>Die höchste Stundenkühllast [kW]; <c>null</c> ohne Kühlreihe.</summary>
         internal double? KaeltelastMaxKw;
 
         /// <summary>
@@ -117,7 +121,10 @@ namespace WindowsFormsApplication1
             => KaeltelastMaxKw is double kw && kw > 0 && KuehlenergieMwh.HasValue
                 ? KuehlenergieMwh.Value * 1000.0 / kw : (double?)null;
 
-        /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen (K6) — nicht saldiert; <c>null</c> ohne VDI-Lauf.</summary>
+        /// <summary>
+        /// Stunden mit gleichzeitigem Heizen und Kühlen (K6) — nicht saldiert; <c>null</c> ohne
+        /// VDI-Lauf und ohne wirksame Kühlung (E32).
+        /// </summary>
         internal int? StundenHeizenUndKuehlen;
 
         /// <summary>Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?</summary>
@@ -128,7 +135,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der wirksame Kühlsollwert [°C] — gesetzt genau dann, wenn der Lauf das Gebäude kühlt
-        /// (Projektschalter, Haken und Sollwert); <c>null</c> = der Kühlbedarf ist informativ.
+        /// (Projektschalter, Haken und Sollwert); <c>null</c> = das Gebäude läuft frei (E32).
         /// </summary>
         internal double? KuehlSollwertC;
 
@@ -255,14 +262,19 @@ namespace WindowsFormsApplication1
 
                 // Stufe KU1 (Kuehlkonzept 8.4, E21): der Abschnitt „Kaeltebedarf" aus DEMSELBEN
                 // Ergebnis - die Kuehlreihe, die der Lauf bei wirksamer Kuehlung in den
-                // Kuehlkanal bucht, samt Spitze, Monatswerten und K6.
-                double[] kuehl = (double[])vdi.KuehlbedarfKwh.Clone();
-                ergebnis.KuehlbedarfKwh = kuehl;
-                ergebnis.KaeltelastMaxKw = GebaeudeKennzahlen.Hoechstwert(kuehl);
-                ergebnis.KuehlMonatswerteMwh = new double[12];
-                WPPlan.Core.BhkwPlan.MonatsSumme(kuehl, ergebnis.KuehlMonatswerteMwh,
-                                                 sim.mo_anfang, sim.mo_ende);
-                ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
+                // Kuehlkanal bucht, samt Spitze, Monatswerten und K6. Ohne wirksame Kuehlung
+                // laeuft das Gebaeude frei und hat keine Kuehlreihe (E32): Die Kaeltezahlen
+                // bleiben null und erscheinen als „—", die Ueberhitzungsstunden stehen.
+                if (vdi.KuehlbedarfKwh != null)
+                {
+                    double[] kuehl = (double[])vdi.KuehlbedarfKwh.Clone();
+                    ergebnis.KuehlbedarfKwh = kuehl;
+                    ergebnis.KaeltelastMaxKw = GebaeudeKennzahlen.Hoechstwert(kuehl);
+                    ergebnis.KuehlMonatswerteMwh = new double[12];
+                    WPPlan.Core.BhkwPlan.MonatsSumme(kuehl, ergebnis.KuehlMonatswerteMwh,
+                                                     sim.mo_anfang, sim.mo_ende);
+                    ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
+                }
                 ergebnis.KuehlSollwertC = vdi.KuehlSollwert;
             }
             ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;

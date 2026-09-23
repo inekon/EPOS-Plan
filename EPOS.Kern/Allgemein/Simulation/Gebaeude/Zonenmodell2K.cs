@@ -19,7 +19,7 @@ namespace WindowsFormsApplication1
         /// <summary>Weder Heizen noch Kühlen; die Raumluft liegt zwischen Sollwert und oberer Grenze.</summary>
         Totband,
 
-        /// <summary>Die Kühlung hält die Raumluft auf der oberen Grenze (Kappung).</summary>
+        /// <summary>Die Kühlung hält die Raumluft auf der oberen Grenze, dem Kühlsollwert.</summary>
         KuehlenGeregelt,
 
         /// <summary>Die Kühlung liefert ihre Grenzleistung; die Raumluft liegt über der oberen Grenze.</summary>
@@ -320,7 +320,7 @@ namespace WindowsFormsApplication1
                     return Betriebsfall.HeizenGeregelt;
                 }
             }
-            if (r.MitKappung)
+            if (r.MitKuehlung)
             {
                 Abschnitt k = Aufbauen(Betriebsfall.KuehlenGeregelt, in r);
                 double qc0 = -k.Ausgang(2, x);
@@ -360,7 +360,7 @@ namespace WindowsFormsApplication1
                     return r.ThetaMax - z2 > Rechenrand.Zu(r.ThetaMax);
                 default:
                     if (r.MitHeizung && r.ThetaSoll - z2 > Rechenrand.Zu(r.ThetaSoll)) return true;
-                    return r.MitKappung && z2 - r.ThetaMax > Rechenrand.Zu(r.ThetaMax);
+                    return r.MitKuehlung && z2 - r.ThetaMax > Rechenrand.Zu(r.ThetaMax);
             }
         }
 
@@ -468,7 +468,7 @@ namespace WindowsFormsApplication1
             else if (!Endlich(r.PhiConv)) fehler = "PhiConv";
             else if (double.IsInfinity(r.ThetaSoll)) fehler = "ThetaSoll";
             else if (double.IsNegativeInfinity(r.ThetaMax)) fehler = "ThetaMax";
-            else if (r.MitHeizung && r.MitKappung && r.ThetaMax < r.ThetaSoll) fehler = "ThetaMax < ThetaSoll";
+            else if (r.MitHeizung && r.MitKuehlung && r.ThetaMax < r.ThetaSoll) fehler = "ThetaMax < ThetaSoll";
             else if (!GrenzeGueltig(r.HeizleistungMaxW)) fehler = "HeizleistungMaxW";
             else if (!GrenzeGueltig(r.KuehlleistungMaxW)) fehler = "KuehlleistungMaxW";
             else if (!AnteilGueltig(r.HeizungStrahlungsanteil)) fehler = "HeizungStrahlungsanteil";

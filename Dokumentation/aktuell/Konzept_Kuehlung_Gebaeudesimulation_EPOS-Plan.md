@@ -38,6 +38,13 @@
 > (Kältespeicher nach KU3 vertagt, bis dahin kein Persistenzwert ohne Rechenweg) und **K12** (Kühlung
 > auch auf iOS, ohne eigenen iOS-Lauf für KU1 und KU2). Vor KU1 ist damit keine Frage mehr offen
 > (3.5, 4.5, 4.6, 8.6, 10.6, 11.1, 12).
+>
+> **Nachzug 23.09.2026 — E32 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.37):** Ein Gebäude
+> **ohne wirksame Kühlung** (Projektschalter aus, `Kuehlung_Aktiv` = 0 oder kein Kühlsollwert) wird
+> nicht mehr an `Maximaleraumtemperatur` gekappt — es **läuft frei**, die Raumtemperatur darf
+> darüber steigen, und die Überhitzungsstunden zählen die Stunden darüber im freien Lauf. Eine
+> Kühlreihe und Kühlkennzahlen gibt es nur bei wirksamer Kühlung; ohne sie steht „—" (K18). Der
+> „informative" Kühlbedarf ist entfallen (3.1, 3.2, 3.4, 3.7, 4.7, 6.4, 7.1, 8.1, 8.4).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -359,6 +366,13 @@ deshalb **Kältebedarf 0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert 
 (8.1). Nach **E26** ist das der Zustand des Übergangs: Mit der Stufe GA fällt der Bestandsweg weg, und
 mit ihm dieser Sonderfall (10.5).
 
+**Die Kappung an `Maximaleraumtemperatur` ist entfallen (E32).** Die Tabelle oben zeigt den Entwurf
+vor KU1, in dem der Kühlfall jedes Gebäude an θ_max hielt und die dafür nötige Leistung als
+informative Reihe führte. Gebaut ist mit KU1: Den Kühlfall gibt es nur bei **wirksamer** Kühlung
+(Projektschalter, `Kuehlung_Aktiv`, Kühlsollwert), er regelt auf θ_kuehl (3.2). Ohne wirksame
+Kühlung hat der Löser keine obere Grenze — das Gebäude läuft frei, und θ_max ist allein die Grenze
+der Überhitzungskennzahl (6.4, 7.1).
+
 ### 3.2 Zwei Sollwerte, zwei Grenzen — das Zielbild
 
 Die Regelung bekommt ein **zweites Sollwertpaar**. Sie bleibt ideal und kontinuierlich, und sie
@@ -366,7 +380,8 @@ bleibt die Regelung der Richtlinie — nur ihre Grenzen werden eingebbar:
 
 ```
 Heizen:  theta_soll aus Tag / Nacht / Wochenende / Ferien     Phi_h in [0 , Phi_h_max]
-Kuehlen: theta_kuehl (NULL = Maximaleraumtemperatur)          Phi_c in [0 , Phi_c_max]
+Kuehlen: theta_kuehl (nur bei wirksamer Kuehlung)             Phi_c in [0 , Phi_c_max]
+         ohne wirksame Kuehlung: keine obere Grenze (E32)
 Totband: theta_soll < theta_air < theta_kuehl  ->  freier Lauf, Q = 0
 ```
 
@@ -379,10 +394,11 @@ Heizgrenze:
 | Kühlung geregelt | θ_air = θ_kuehl | max( Φ_c(x) − Φ_c,max , 0 − Φ_c(x) ) |
 | Kühlgrenze oben | Φ_c fest auf Φ_c,max | θ_kuehl − θ_air(x) |
 
-**Das Totband ist neu und wichtig.** Heute fallen Heizgrenze und Kühlgrenze in einer Größe
-zusammen, weil `Maximaleraumtemperatur` nur kappt. Mit zwei Sollwerten entsteht ein Bereich, in
+**Das Totband ist neu und wichtig.** Vor KU1 fielen Heizgrenze und Kühlgrenze in einer Größe
+zusammen, weil `Maximaleraumtemperatur` nur kappte. Mit zwei Sollwerten entsteht ein Bereich, in
 dem weder geheizt noch gekühlt wird — physikalisch richtig und der Normalfall in der
-Übergangszeit. **Dieses Totband ist kein Reglertotband** (das bleibt ausgeschlossen, Konzept 4.5):
+Übergangszeit. Ohne wirksame Kühlung ist das Totband nach oben offen: Das Gebäude läuft frei
+(E32). **Dieses Totband ist kein Reglertotband** (das bleibt ausgeschlossen, Konzept 4.5):
 es ist der Abstand zweier Sollwerte, nicht die Hysterese eines Reglers.
 
 **Prüfregel.** `theta_kuehl ≥ theta_soll,max + 1 K` ist eine **harte** Plausibilitätsprüfung mit
@@ -491,7 +507,8 @@ Damit daraus keine Rückkopplung innerhalb der Stunde wird, gilt:
   Luftwechsel bleibt mindestens eine Stunde stehen und wird erst 1 K unterhalb der
   Einschaltschwelle wieder abgeschaltet. Ohne beides flattert der Zustand im Stundentakt, und das
   Ergebnis hinge an der Rundung der Vorstunde.
-- **Die Schwelle** ist bis KU1 der Festwert des Rechenwegs (23 °C); **ab KU1 ist sie
+- **Die Schwelle** ist der Festwert des Rechenwegs (23 °C), solange die Kühlung des Gebäudes
+  nicht wirksam ist — auch im freien Lauf nach E32; **mit wirksamer Kühlung ist sie
   `θ_kuehl − 3 K`** und folgt damit dem Gebäude, das gekühlt wird. Das ist die einzige
   Verzahnung von Lüftungsregel und Kühlsollwert, und sie ist notwendig: Eine feste Schwelle über
   dem Kühlsollwert ließe die Lüftung nie greifen, eine weit darunter liegende lüftete gegen die
@@ -562,9 +579,9 @@ wären. Was danach geschieht, ist **Verteilung, nicht Rechnung**:
 |---|---|---|
 | **Vorbereitung** | modellfreier Vorbereitungsschritt vor der Weiche (E20) | Bewohnerzahl aus der Nutzfläche, Skalierungsfaktor nach E8, Klimareihen — **einmal**, für beide Wege und beide Fassaden |
 | **Weiche** | Fassade `SimulationWaermebedarf` (E20) | liest den Rechenweg des Gebäudes und ruft **genau ein** Modul: `Gebaeude/` (VDI 6007) oder `Altweg/` (Tagesbilanz) |
-| **Gebäuderechnung** | Modul `Gebaeude/`, Schritt F | Stundenschleife mit fünf Betriebsfällen (3.2); Ergebnis sind **beide** Reihen, beide nicht negativ (3.3) |
+| **Gebäuderechnung** | Modul `Gebaeude/`, Schritt F | Stundenschleife mit fünf Betriebsfällen (3.2); Ergebnis sind **beide** Reihen, beide nicht negativ (3.3) — ohne wirksame Kühlung nur Heizen und Totband, das Gebäude läuft frei und hat **keine** Kühlreihe (E32) |
 | **Verteilung Wärme** | `SimulationWaermebedarf` | `HeizlastW` → Kanal `HEIZUNG`; `Kanalsatz.Summe()`, Dauerlinie, `Waermebedarf_Max` (4.2) |
-| **Verteilung Kälte** | **`SimulationKaeltebedarf`** (E21) | `KuehlbedarfKwh` → Kanal `KUEHLUNG`; `SummeKaelte()`, eigene Dauerlinie, `Kaeltebedarf_Max` (4.2, 6.4) |
+| **Verteilung Kälte** | **`SimulationKaeltebedarf`** (E21) | `KuehlbedarfKwh` der gekühlten Gebäude → Kanal `KUEHLUNG`; `SummeKaelte()`, eigene Dauerlinie, `Kaeltebedarf_Max` (4.2, 6.4) |
 | **Bestandsweg** | Modul `Altweg/` | liefert **nur Wärme**; die Kältefassade erhält für dieses Gebäude keinen Beitrag und trägt 0 **mit Hinweis** (F-K18) |
 
 ```mermaid
@@ -949,7 +966,7 @@ nicht. Bis dahin sagt der Dialog es: „Ein Kältespeicher wird nicht gerechnet.
 | **Bedingung** | Die Datei entsteht **nur**, wenn das Projekt einen Kühlbedarf > 0 führt — nicht „mit Nullen gefüllt". Muster ist der Erdreichblock, der ohne Erdreich keinen einzigen Eintrag erzeugt. **Das ist eine Abweichung vom Bestandsmuster, und sie ist gewollt:** Die beiden Kanaldateien `waermebedarf_brauchwasser.csv` und `waermebedarf_prozess.csv` stehen im unbedingten Block „Bedarf und Restgrößen (immer vorhanden)" (`Ergebnisexport.cs:57-63`) und entstehen auch für Projekte ohne Brauchwasser oder Prozesswärme. Eine unbedingte Kühldatei wäre folgenlos, **sobald** sie in der Basis steht — bis dahin ist sie für jedes eingefrorene Projekt eine neue Datei und damit FAIL ohne Schalter. Wer sie unbedingt schreiben will, muss sie **mit** dem Einfrierschritt aus 10.5 einführen; dieses Papier empfiehlt die bedingte Fassung, weil sie eine Kühlreihe voller Nullen in zwölf Projekten erspart |
 | **Skalare** | die neun neuen Ergebnisspalten als Schlüssel in `aggregate.csv` (7.4) — darunter `Kaeltebedarf_Gesamt`, `Kaeltelast_Max` und `Kaelterestbedarf` als wörtliche Gegenstücke zu `Waermebedarf_Gesamt`, `Waermelast_Max` und `Waermerestbedarf` (E21) —, dazu Jahreskälte, Deckungsgrad, Kältestrom und die Jahresarbeitszahl Kälte; Einheit im Namen, Jahressummen in MWh |
 | **Folge** | Die neue **Datei** erzwingt ein Neu-Einfrieren, **ohne Schalter dagegen** (`Vergleich.cs:183-190`: „Datei nur im Vergleichslauf vorhanden", `Schwere = double.MaxValue`). Die neuen **Schlüssel** sind dagegen mit `--ohne` ausnehmbar (`:47-59`, `:74-79`) — der Vergleich kennt einen Schlüssel-, aber keinen Dateiausschluss (**K17**, 10.5) |
-| **Verhältnis zur Gebäudereihe** | Die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 4.4 (`:2021-2023`) legt mit G1 die Reihe `gebaeude_<n>_kuehlbedarf.csv` **je Gebäude** fest (kWh, `<n>` = `ID_ProjektGebaeude`) und dazu die Skalare „Kühlenergie" und „Stunden mit Kühlbedarf" je Gebäude. **Das bleibt unverändert.** Die Kanalreihe dieses Papiers ist eine **andere** Größe: Gebäudereihe = **Rohbedarf eines Gebäudes** aus dem Stundenmodell; Kanalreihe = **Summe über alle Gebäude des Projekts, zuzüglich externer Ganglinien** mit dem Kanal „Kühlung" (K3). Beide stehen nebeneinander, keine ersetzt die andere |
+| **Verhältnis zur Gebäudereihe** | Die [Softwarearchitektur](Softwarearchitektur_Gebaeudesimulation_EPOS-Plan.md) 4.4 (`:2021-2023`) legt mit G1 die Reihe `gebaeude_<n>_kuehlbedarf.csv` **je Gebäude** fest (kWh, `<n>` = `ID_ProjektGebaeude`) und dazu die Skalare „Kühlenergie" und „Stunden mit Kühlbedarf" je Gebäude. **Das bleibt**, mit einer Einschränkung aus E32: Die Gebäudereihe (gebaut als `kuehlbedarf_<n>.csv`) und die beiden Skalare entstehen nur für ein Gebäude **mit wirksamer Kühlung** — ein ungekühltes Gebäude läuft frei und hat keine Kühlreihe, nicht einmal eine aus Nullen. Die Kanalreihe dieses Papiers ist eine **andere** Größe: Gebäudereihe = **Rohbedarf eines Gebäudes** aus dem Stundenmodell; Kanalreihe = **Summe über alle Gebäude des Projekts, zuzüglich externer Ganglinien** mit dem Kanal „Kühlung" (K3). Beide stehen nebeneinander, keine ersetzt die andere |
 | **Wer „Jahreskälte" führt** | **der Kanal**, nicht das Gebäude. Die Jahreskälte ist die Projektgröße (6.4); die Gebäudeskalare heißen weiter „Kühlenergie" und „Stunden mit Kühlbedarf" und bleiben je Gebäude. Ein Projekt mit einem Gebäude und ohne externe Kältegangline zeigt beide Wege gleich — das ist die Probe, nicht die Definition |
 | **Eine Fassung, zwei Werkzeuge** | `EPOS.Referenzlauf` und das Windows-Werkzeug teilen sich eine Fassung von `Ergebnisexport.cs` und `Vergleich.cs`; eine Änderung wirkt auf beiden Wegen |
 
@@ -1425,7 +1442,7 @@ Kältemittelverlusts ist ein eigenes Thema mit eigener Datenlage; EPOS-Plan rech
 | **Stunden mit Kühlbedarf** | `kaelte.stunden` | h/a | Zählung der Stunden mit Kühlkanal > 0 | Zählung über den Kanalvektor, nicht Summe der Gebäudewerte |
 | **Deckungsgrad Kühlkanal** | `kaelte.deckungsgrad` | % | **eigener Zweig** `DeckungKanalKaelte` neben `DeckungKanal`, mit `Kaeltebedarf_Gesamt` als Bezug (siehe unten) | wie die drei Bestandskanäle |
 | **Vollbenutzungsstunden Kälte** | (aus beiden gebildet) | h/a | Jahreskälte / Kältespitze | aus den beiden Größen, nicht gemittelt |
-| **Überhitzungsstunden** | (Gebäudeskalar) | h/a | Zählung der Stunden über `Maximaleraumtemperatur` im freien Lauf (7.1) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
+| **Überhitzungsstunden** | (Gebäudeskalar) | h/a | Zählung der Stunden der Nutzungszeit mit θ_op über `Maximaleraumtemperatur` (7.1) — ohne wirksame Kühlung im freien Lauf (E32), mit wirksamer Kühlung gegen dieselbe Grenze | Maximum, mit dem führenden Gebäude als Herkunftszeile |
 | **Jahresarbeitszahl Kälte** (EER-Jahreswert) | Gruppe `GR_KAELTE` (K15) | — | Kälteerzeugung / Kältestrom | aus den beiden Summen |
 | **Ungedeckte Kälte** (`Kaelterestbedarf`) | Gruppe `GR_KAELTE` (K15) | MWh/a | Kanal minus Deckung | Summe |
 | **Stunden mit gleichzeitigem Heizen und Kühlen** | (Projektskalar) | h/a | Zählung der Stunden mit Heiz- und Kühlanteil > 0 je Gebäude (3.3, 3.5) | Maximum, mit dem führenden Gebäude als Herkunftszeile |
@@ -1503,7 +1520,8 @@ die Symmetrie prüfbar (Probe „Symmetrie der Kennzahlen", 10.2; F-K19):
 
 **Zwei Kennzahlen hat die Kälteseite, die die Wärmeseite nicht kennt** — und das ist keine
 Unsymmetrie, sondern Gegenstand: Die **Überhitzungsstunden** messen, was **ohne** Anlage geschieht
-(Stunden über `Maximaleraumtemperatur`, 7.1), die **Stunden mit gleichzeitigem Heizen und Kühlen**
+(Stunden über `Maximaleraumtemperatur`, 7.1) — mit E32 wörtlich, denn ein Gebäude ohne wirksame
+Kühlung läuft frei und wird nicht mehr an θ_max gekappt —, die **Stunden mit gleichzeitigem Heizen und Kühlen**
 messen Zonierung und Umschaltstunden (3.3, 3.5). Beide hängen an der Kühlung, nicht an der Wärme, und beide stehen
 deshalb in der Abweichungsliste als **Zugewinn**, nicht als Lücke.
 
@@ -1564,7 +1582,9 @@ wenn ein Fall sie verlangt.
 Stammfassung `:1208`). Sie ist der Wert des Tagesbilanz-Wegs und die Überhitzungsgrenze des
 Stundenmodells; der neue Kühlsollwert ist die **Regelgröße einer Anlage**, nicht dieselbe Sache.
 Wo beide gesetzt sind, gilt: `Maximaleraumtemperatur` begrenzt die Überhitzungskennzahl,
-`Kuehl_Sollwert` regelt die Kühlung — und der Dialog sagt es in einer Herleitungszeile.
+`Kuehl_Sollwert` regelt die Kühlung — und der Dialog sagt es in einer Herleitungszeile. **Der Löser
+regelt nie auf `Maximaleraumtemperatur` (E32):** Ohne wirksame Kühlung läuft das Gebäude frei, die
+Raumtemperatur darf über θ_max steigen, und die Überhitzungsstunden zählen genau diese Stunden.
 
 ### 7.2 `KU-S2` — die Projekteinstellung (K10)
 
@@ -1828,7 +1848,7 @@ kein verstecktes Eingabefeld** — die drei Auswege, die E20 ausdrücklich versc
 |    [x] Gebäude wird gekühlt                                                                |
 |    Kühlsollwert        [ 26,0 ] °C      Kühlleistungsgrenze  [ unbegrenzt ] kW             |
 |    Kühlsollwert muss mindestens 1 K über dem höchsten Heizsollwert liegen (21,0 °C).       |
-|    Ohne Haken bleibt die Überhitzung informativ: Maximaleraumtemperatur 27,0 °C.           |
+|    Ohne Haken läuft das Gebäude frei: Überhitzung über Maximaleraumtemperatur 27,0 °C.     |
 +-------------------------------------------------------------------------------------------+
 ```
 
@@ -1935,7 +1955,7 @@ mit der Kältereihe gefüllt. Wer den Wärmebedarf lesen kann, kann den Kältebe
 
 | Ort | Was dazukommt |
 |---|---|
-| **Bedarfsdialog Gebäude** | ein Abschnitt **„Kältebedarf"** neben „Wärmebedarf" (`Kennzahlkachel`): Jahreskälte, Kältespitze, Stunden mit Kühlbedarf, Überhitzungsstunden; ein Monatsstapel mit Heiz- und Kühlanteil. Bei einem **Bestandsweg-Gebäude** zeigt er **0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (F-K18, E20) |
+| **Bedarfsdialog Gebäude** | ein Abschnitt **„Kältebedarf"** neben „Wärmebedarf" (`Kennzahlkachel`): Jahreskälte, Kältespitze, Stunden mit Kühlbedarf, Überhitzungsstunden; ein Monatsstapel mit Heiz- und Kühlanteil. Bei einem **Bestandsweg-Gebäude** zeigt er **0 mit dem Hinweis** „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (F-K18, E20). Bei einem Gebäude **ohne wirksame Kühlung** stehen die Kältezahlen als „—" (K18), ohne Kältebild und ohne Kühlspalte, dazu die Überhitzungsstunden des freien Laufs und der Satz, dass das Gebäude frei läuft (E32) |
 | **Bedarfsdialog Projekt** | ein Abschnitt **„Kältebedarf"** mit derselben Gliederung wie „Wärmebedarf": vierte Kanalzeile „Kühlung" in der Kanalübersicht, Monatsstapel und die Dauerlinie der Kälteseite als **eigenes** Bild, nicht im Wärmebild (4.2) |
 | **Ergebnisdialog** | Das Dashboard des [Simulationsablaufs](Konzept_Simulationsablauf_EPOS-Plan.md) 8.2 hat **zwei Spalten „Wärme \| Strom"**, jede mit fünf Bändern (Kopf, Ring, Erzeugertabelle, Hinweisband, Ganglinie). Die Kälte wird **kein drittes Spaltenpaar**, sondern ein **dritter Block unter den beiden Spalten** mit denselben Bändern: Kopf „Kältedeckung", Deckungsring, **eigene** Erzeugertabelle der Kälteerzeuger (4.3 #32 — die Wärmeerzeugertabelle bleibt bei drei Kanälen), ungedeckte Kälte (`Kaelterestbedarf`), Jahresarbeitszahl Kälte. Der Block ist **nur sichtbar bei Kältebedarf > 0**; ein Projekt ohne Kühlung sieht das Dashboard unverändert |
 | **Bericht** | ein Abschnitt **„Kältebedarf und -deckung"** nach dem Muster der Wärmeseite: Kanalzeile, Kühlbild, Kälteerzeuger, Kältestrom in der Strombilanz, Ausweis je Kanal; der Abschnitt **entfällt vollständig**, wenn kein Objekt einen Wert trägt — „Eine Tabelle voller ‚—' wäre keine Aussage, sondern eine Frage" |

@@ -102,9 +102,10 @@ namespace WindowsFormsApplication1.Referenzlauf
             }
 
             // --- Gebaeudesimulation VDI 6007 (Stufe G1 + G2, Umsetzungskonzept 1.8) --------
-            // Je Gebaeude des VDI-Wegs drei Reihen: raumtemperatur_<n>.csv und
-            // operative_temperatur_<n>.csv in Grad Celsius, kuehlbedarf_<n>.csv in kWh
-            // (n = Merkplatz des Gebaeudes im Lauf). Dateinamen, Schluessel und Reihenfolge
+            // Je Gebaeude des VDI-Wegs die Reihen raumtemperatur_<n>.csv und
+            // operative_temperatur_<n>.csv in Grad Celsius, bei wirksamer Kuehlung dazu
+            // kuehlbedarf_<n>.csv in kWh - ein ungekuehltes Gebaeude laeuft frei und hat keine
+            // Kuehlreihe (E32) (n = Merkplatz des Gebaeudes im Lauf). Dateinamen, Schluessel und Reihenfolge
             // legt der Kern fest (GebaeudeErgebnisexport). Ein Gebaeude auf dem
             // Tagesbilanz-Weg erzeugt KEINE Datei und KEINEN Skalar - nicht einmal Nullen:
             // Der Vergleich kennt keinen Dateiausschluss, und der Rueckweg-Test des

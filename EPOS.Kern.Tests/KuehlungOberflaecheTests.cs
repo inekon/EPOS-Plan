@@ -133,6 +133,48 @@ namespace EPOS.Kern.Tests
 
             Assert.Contains("27,0 °C", GebaeudeBedarfHuelle.Kaelteherleitung(Ergebnis(vdi, aktiv: false))[0]);
             Assert.Empty(GebaeudeBedarfHuelle.Kaelteherleitung(new GebaeudeBedarfErgebnis()));
+
+            // E32: Ohne wirksame Kühlung läuft das Gebäude frei - kein „informativer" Kühlbedarf mehr.
+            foreach (GebaeudeBedarfErgebnis frei in new[] { Ergebnis(vdi, projekt: false), Ergebnis(vdi, aktiv: false) })
+            {
+                string zeile = GebaeudeBedarfHuelle.Kaelteherleitung(frei)[0];
+                Assert.Contains("läuft frei", zeile);
+                Assert.Contains("Überhitzungsstunden", zeile);
+                Assert.DoesNotContain("informativ", zeile);
+            }
+        }
+
+        /// <summary>
+        /// <b>Entscheid E32 im Bedarfsdialog.</b> Ein Gebäude ohne wirksame Kühlung läuft frei:
+        /// Der Abschnitt „Kältebedarf" steht (VDI-Weg), aber ohne Kühlreihe — Kühlbedarf,
+        /// Kältelast, Kühlstunden und Stunden mit Heizen und Kühlen sind <c>null</c> und erscheinen
+        /// als „—" (K18), es gibt kein Kältebild und keine Kühlspalte; die Überhitzungsstunden des
+        /// freien Laufs stehen, und die Herleitung sagt, warum.
+        /// </summary>
+        [Fact]
+        public void Ein_ungekuehltes_Gebaeude_zeigt_den_Kaelteabschnitt_ohne_Kuehlnullen()
+        {
+            if (!_db.Vorhanden) return;
+            const int PROJEKT = 1045;                                // Referenzprojekt ohne Kühlung
+            List<Z_ProjGebModel> modelle = Z_ProjGebCtrl.LiesProjekt(PROJEKT);
+            IReadOnlyDictionary<string, object> liste =
+                GebaeudeHuelle.Gaben(PROJEKT, "", modelle, wizard: false, admin: false);
+            GebaeudeProjektZeile zeile = ((List<GebaeudeProjektZeile>)liste["Zeilen"])[0];
+
+            IReadOnlyDictionary<string, object> gaben = GebaeudeBedarfHuelle.Gaben(zeile, PROJEKT);
+            var d = (GebaeudeBedarfDaten)gaben["Daten"];
+            Assert.True(d.IstVdi6007);
+            Assert.True(d.KaelteAbschnitt);
+            Assert.Null(d.KuehlenergieMwh);
+            Assert.Null(d.KaeltelastMaxKw);
+            Assert.Null(d.KuehlstundenH);
+            Assert.Null(d.VollbenutzungsstundenKaelteH);
+            Assert.Null(d.StundenHeizenUndKuehlenH);
+            Assert.Empty(d.KuehlMonatswerteMwh);
+            Assert.NotNull(d.UeberhitzungsstundenH);
+            Assert.Null(gaben["BildauftragKaelte"]);
+            Assert.Contains("läuft frei", d.KaelteHerleitung[0]);
+            Assert.Equal(SimulationKaeltebedarf.GrenzeFeuchte, d.KaelteHerleitung[1]);
         }
 
         /// <summary>
