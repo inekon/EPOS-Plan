@@ -8308,7 +8308,7 @@ Der Platz wird für ein anderes Gerät frei; zum Weiterarbeiten ist eine Neuakti
     <value>Es ist keine steuerbare Maske geöffnet. Steuerbar sind: {0}.</value>
   </data>
   <data name="KI_DLG_MASKE_NICHT_OFFEN" xml:space="preserve">
-    <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — öffnen lässt sie sich mit der Aktion dialog_oeffnen ({1}); danach die Zeile auswählen, und die Werte lassen sich setzen.</value>
+    <value>Die genannten Felder gehören zur Maske „{0}“. Sie ist gerade nicht geöffnet — die Aktion dialog_oeffnen ({1}) führt dorthin. In einer Verwaltung wählt das Feld „satz“ den Katalogsatz; danach lassen sich die Werte setzen und mit dialog_speichern speichern.</value>
   </data>
   <data name="KI_DLG_MEHRERE_OFFEN" xml:space="preserve">
     <value>Es sind mehrere steuerbare Masken geöffnet ({0}). Bitte nennen Sie die Maske ausdrücklich.</value>
@@ -21880,13 +21880,13 @@ Möchten Sie das zulassen?</value>
     <value>Die Summe über alle Profile, die diesem Projekt zugeordnet sind.</value>
   </data>
   <data name="KI_DLG_BADM_SATZ_ERL" xml:space="preserve">
-    <value>Der markierte Katalogsatz. Ihn zu setzen markiert ihn in der Liste; der Infoblock zieht nach.</value>
+    <value>Der markierte Katalogsatz. Ihn zu setzen wählt ihn in der Liste, und das Stammblatt zieht nach; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
   </data>
   <data name="KI_DLG_BADM_TYP_ERL" xml:space="preserve">
-    <value>Der Typ des markierten Satzes aus seinem Kopfsatz.</value>
+    <value>Der Typ des markierten Satzes, gewählt aus der Typliste; er bestimmt das Wochenprofil.</value>
   </data>
   <data name="KI_DLG_BADM_BESCHREIBUNG_ERL" xml:space="preserve">
-    <value>Die Beschreibung des markierten Satzes.</value>
+    <value>Die Beschreibung des markierten Satzes als freier Text.</value>
   </data>
   <data name="KI_DLG_BADM_JAHRESSUMME_NAME" xml:space="preserve">
     <value>Jahressumme</value>
@@ -25916,5 +25916,59 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_MSG_IMPORTIERT" xml:space="preserve">
     <value>{0} Sätze eingelesen.</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_NAME" xml:space="preserve">
+    <value>Gewählter Satz</value>
+  </data>
+  <data name="KI_DLG_KBROW_SATZ_ERL" xml:space="preserve">
+    <value>Der Katalogsatz, dessen Werte das Stammblatt zeigt. Ihn zu setzen wählt die Zeile in der Liste – wie ein Klick; bei ungespeicherten Änderungen erst speichern oder verwerfen.</value>
+  </data>
+  <data name="KI_DLG_KBROW_BEZEICHNER_ERL" xml:space="preserve">
+    <value>Der Name des gewählten Katalogsatzes; er ist der Schlüssel des Satzes und hier nur lesbar – einen anderen Namen bekommt ein Satz über „Duplizieren…“.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_ERL" xml:space="preserve">
+    <value>Die Investitionskosten des Geräts laut Katalog in Euro.</value>
+  </data>
+  <data name="KI_DLG_KBROW_RAUMBEDARF_ERL" xml:space="preserve">
+    <value>Der Platzbedarf des Geräts im Aufstellraum in Kubikmetern.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_ERL" xml:space="preserve">
+    <value>Die Wartungskosten des Kessels; worauf sie sich beziehen, sagt das Feld „Einheit“.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_EINHEIT_ERL" xml:space="preserve">
+    <value>Die Bezugsgröße der Wartungskosten, wie sie im Katalog steht (freier Text).</value>
+  </data>
+  <data name="KI_DLG_KBROW_NUTZUNGSDAUER_ERL" xml:space="preserve">
+    <value>Die erwartete Nutzungsdauer des Geräts in Jahren.</value>
+  </data>
+  <data name="KI_DLG_KBROW_EMISSION_ERL" xml:space="preserve">
+    <value>Die Herstellerangabe zum Ausstoß von {0} je MWh; gepflegt wird sie hier, gerechnet wird mit dem Emissionskatalog des Energieträgers.</value>
+  </data>
+  <data name="KI_DLG_KBROW_KOSTENPOSTEN_ERL" xml:space="preserve">
+    <value>Der Kostenposten „{0}“ des Moduls in Euro; die fünf Posten zusammen ergeben die Investition, aus der die Investition je kWel gerechnet wird.</value>
+  </data>
+  <data name="KI_DLG_KBROW_INVEST_KWEL_ERL" xml:space="preserve">
+    <value>Die Investition je Kilowatt elektrischer Leistung; sie wird aus den fünf Kostenposten gerechnet und ist deshalb nur lesbar.</value>
+  </data>
+  <data name="KI_DLG_KBROW_WARTUNG_KWHEL_ERL" xml:space="preserve">
+    <value>Die Wartungskosten je erzeugter Kilowattstunde Strom in Euro.</value>
+  </data>
+  <data name="KI_DLG_KBROW_FELD_ERL" xml:space="preserve">
+    <value>Der Katalogwert „{0}“ des gewählten Satzes.</value>
+  </data>
+  <data name="KI_DLG_KBROW_NURLESEN" xml:space="preserve">
+    <value>Diese Verwaltung ist nur zum Ansehen geöffnet; Werte lassen sich hier nicht ändern.</value>
+  </data>
+  <data name="KI_FELD_SATZ_GESCHUETZT_WEG" xml:space="preserve">
+    <value>In „{0}“ lässt sich gerade nichts setzen: {1}</value>
+  </data>
+  <data name="KI_DLG_BADM_MONAT_ERL" xml:space="preserve">
+    <value>Der Bedarf des gewählten Satzes im {0}; alle zwölf Monatswerte sind Pflicht, die Jahressumme ergibt sich aus ihnen.</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_SATZ" xml:space="preserve">
+    <value>In „{0}“ ist kein Satz gewählt; erst den Satz wählen (Feld „satz“).</value>
+  </data>
+  <data name="KI_DLG_ADMIN_OHNE_AENDERUNG" xml:space="preserve">
+    <value>In „{0}“ gibt es nichts zu speichern – kein Feld ist geändert.</value>
   </data>
 </root>

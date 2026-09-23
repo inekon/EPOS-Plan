@@ -67,6 +67,10 @@ namespace EPOS.Kern.Tests
         /// thermische Leistung steht seither am Heizkessel UND am BHKW. Was bei einem
         /// mehrdeutigen Feld geschieht, hält
         /// <see cref="Ein_mehrdeutiges_Feld_wird_nicht_geraten"/> fest.</para>
+        /// <para><b>Genannt wird die VERWALTUNG</b> (Welle #456): <c>wirkungsgrad_gas</c>
+        /// steht am Katalogeditor UND an der „Administration Heizkessel" — beide führen
+        /// an dieselbe Stelle, und dort, in der Verwaltung, lassen sich die Werte setzen.
+        /// Der Editor ist nur noch die Überlagerung von „Neu…".</para>
         /// </remarks>
         [Fact]
         public void Die_Absage_nennt_die_Maske_zu_den_Feldern()
@@ -77,9 +81,10 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(text);
 
-            // Der ANZEIGENAME der Heizkesselmaske steht im Satz ...
-            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,
+            // Der ANZEIGENAME der Heizkesselverwaltung steht im Satz ...
+            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN).Anzeigename,
                             text, StringComparison.Ordinal);
+            Assert.Contains(KiMaskennamen.HEIZKESSEL_ADMIN, text, StringComparison.Ordinal);
 
             // ... und der Weg dorthin wird benannt.
             Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
@@ -93,9 +98,144 @@ namespace EPOS.Kern.Tests
                 { ["feld"] = "bereitschaftsverlust", ["wert"] = "1,5" });
 
             Assert.NotNull(text);
-            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL).Anzeigename,
+            Assert.Contains(KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN).Anzeigename,
                             text, StringComparison.Ordinal);
             Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Editor und Verwaltung sind EIN Weg</b> (Welle #456): Ein Feld, das der
+        /// Katalogeditor und seine Verwaltung beide führen, ist nicht mehrdeutig — sie
+        /// öffnen an derselben Stelle. Die Absage nennt die Verwaltung.
+        /// </summary>
+        [Fact]
+        public void Editor_und_Verwaltung_sind_ein_Weg_die_Absage_nennt_die_Verwaltung()
+        {
+            // Vorbedingung: Das Feld steht wirklich an beiden, und beide haben dasselbe Ziel.
+            KiDialog editor = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL);
+            KiDialog verwaltung = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN);
+            Assert.True(editor.KenntFeld("wirkungsgrad_gas"));
+            Assert.True(verwaltung.KenntFeld("wirkungsgrad_gas"));
+            Assert.Equal(KiMaskenziele.Ziel(editor.Maskenname), KiMaskenziele.Ziel(verwaltung.Maskenname));
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = "wirkungsgrad_gas", ["wert"] = "0,95" });
+
+            Assert.NotNull(text);
+            Assert.Contains(verwaltung.Anzeigename, text, StringComparison.Ordinal);
+            Assert.Contains("dialog_oeffnen", text, StringComparison.Ordinal);
+            Assert.DoesNotContain(editor.Maskenname, text, StringComparison.Ordinal);
+        }
+
+        /// <summary>
+        /// <b>Dasselbe Ziel allein macht nichts eindeutig</b>: Mehrere Masken, die an
+        /// dieselbe Stelle führen (etwa die Masken der Startseite), sind trotzdem
+        /// verschiedene Masken. Steht die Maske des Ziels selbst nicht unter den Treffern,
+        /// bleibt ein Feld, das sie alle führen, mehrdeutig — geraten wird nicht.
+        /// </summary>
+        /// <remarks>
+        /// Das Feld wird im Katalog GESUCHT und nicht festgeschrieben: Welche Felder
+        /// genau diese Lage haben, ändert sich mit jeder Welle; dass es eines gibt, prüft
+        /// die Vorbedingung.
+        /// </remarks>
+        [Fact]
+        public void Masken_desselben_Ziels_ohne_die_Zielmaske_bleiben_mehrdeutig()
+        {
+            string gesucht = null;
+            var namen = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                foreach (string n in d.Feldnamen()) namen.Add(n);
+
+            foreach (string name in namen)
+            {
+                var treffer = new List<KiDialog>();
+                foreach (KiDialog d in KiDialoge.Katalog.Alle)
+                    if (d.KenntFeld(name)) treffer.Add(d);
+                if (treffer.Count < 2) continue;
+
+                string ziel = KiMaskenziele.Ziel(treffer[0].Maskenname);
+                if (ziel.Length == 0) continue;
+
+                bool einZiel = true, zielmaskeDabei = false;
+                foreach (KiDialog d in treffer)
+                {
+                    if (KiMaskenziele.Ziel(d.Maskenname) != ziel) einZiel = false;
+                    if (string.Equals(d.Maskenname, ziel, StringComparison.OrdinalIgnoreCase)) zielmaskeDabei = true;
+                }
+
+                if (einZiel && !zielmaskeDabei) { gesucht = name; break; }
+            }
+
+            Assert.True(gesucht != null, "Der Fall braucht ein Feld mehrerer Masken desselben Ziels.");
+
+            string text = Grund("feld_setzen",
+                new Dictionary<string, object> { ["feld"] = gesucht, ["wert"] = "1" });
+
+            Assert.NotNull(text);
+            Assert.DoesNotContain("dialog_oeffnen", text, StringComparison.Ordinal);
+        }
+
+        // ============================ Der Schutz des Satzes (Welle #456)
+
+        /// <summary>
+        /// <b>Ein Auslieferungssatz lehnt das Setzen ab und nennt den Weg</b> — mit dem
+        /// Schutzgrund, den der Dialog anmeldet. Die WAHL DES SATZES bleibt frei: Aus
+        /// einem geschützten Satz heraus lässt sich der eigene wählen.
+        /// </summary>
+        [Fact]
+        public void Der_Schutzgrund_nennt_den_Weg_und_die_Satzwahl_bleibt_frei()
+        {
+            KiDialog eintrag = KiDialoge.Katalog.Finde(KiMaskennamen.HEIZKESSEL_ADMIN);
+            KiDialogFeld satzfeld = eintrag.FindeFeld("satz");
+            KiDialogFeld vorlauffeld = eintrag.FindeFeld("vorlauf");
+            Assert.True(satzfeld.Satzwahl);
+
+            string satz = "Kessel A";
+            int? vorlauf = 70;
+            var haken = new KiMaskenhaken
+            {
+                Schreibgeschuetzt = () => satz == "Kessel A",
+                Schreibschutzgrund = () => "Mit „Duplizieren…“ einen eigenen Satz anlegen."
+            };
+
+            Func<bool> schreibrechtVorher = Schreibnaht.Schreibrecht;
+            Schreibnaht.Schreibrecht = Schreibnaht.ImmerErlaubt;
+            KiMaskenbruecke.Leeren();
+            try
+            {
+                KiMaskenbruecke.Anmelden(
+                    eintrag.Maskenname, eintrag,
+                    new[]
+                    {
+                        new KiFeldzugang(satzfeld, () => satz, w => satz = (string)w, typeof(string),
+                                         () => new[] { new KiWahleintrag("Kessel A", "Kessel A"),
+                                                       new KiWahleintrag("Kessel B", "Kessel B") }),
+                        new KiFeldzugang(vorlauffeld, () => vorlauf, w => vorlauf = (int?)w, typeof(int?))
+                    },
+                    haken);
+
+                string gesperrt = Grund("feld_setzen",
+                    new Dictionary<string, object> { ["feld"] = "vorlauf", ["wert"] = "55" });
+
+                Assert.NotNull(gesperrt);
+                Assert.Contains(eintrag.Anzeigename, gesperrt, StringComparison.Ordinal);
+                Assert.Contains("Duplizieren", gesperrt, StringComparison.Ordinal);
+                Assert.Equal(70, vorlauf);
+
+                // Die Satzwahl geht durch - trotz Schutz des aktuellen Satzes.
+                Assert.Null(Grund("feld_setzen",
+                    new Dictionary<string, object> { ["feld"] = "satz", ["wert"] = "Kessel B" }));
+
+                // Und auch dialog_speichern lehnt VOR der Bestätigung ab.
+                string speichern = Grund("dialog_speichern", new Dictionary<string, object>());
+                Assert.NotNull(speichern);
+                Assert.Contains("Duplizieren", speichern, StringComparison.Ordinal);
+            }
+            finally
+            {
+                KiMaskenbruecke.Leeren();
+                Schreibnaht.Schreibrecht = schreibrechtVorher;
+            }
         }
 
         // ===================================================== Die Grenzen

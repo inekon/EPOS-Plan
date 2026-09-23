@@ -133,7 +133,10 @@ public class KiFeldwerteTests : EposBunitContext
     [InlineData(typeof(PhotovoltaikDialog))]
     [InlineData(typeof(EPOS.UI.Dialoge.Waermepumpe.WaermepumpeStammDialog))]
     [InlineData(typeof(EPOS.UI.Seiten.Strom.StromspeicherAuslegungSeite))]
-    public void Jede_der_fuenf_Komponenten_kann_sich_abmelden(Type komponente)
+    // Welle #456: die Verwaltung der Erzeugerkataloge - vier Masken, eine Komponente.
+    [InlineData(typeof(KatalogBrowserDialog))]
+    [InlineData(typeof(EPOS.UI.Dialoge.Bedarf.BedarfAdminDialog))]
+    public void Jede_angemeldete_Komponente_kann_sich_abmelden(Type komponente)
     {
         // Ohne IDisposable käme das Abmelden nie — die Anmeldung überlebte den Dialog,
         // und der Assistent läse die Maske von vorhin.

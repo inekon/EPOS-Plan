@@ -105,7 +105,16 @@ public sealed class KiMaskenanmeldung : IDisposable
             }
 
             PropertyInfo? eigenschaft = Eigenschaft(typeof(T), feld);
-            if (eigenschaft is null) continue;
+            if (eigenschaft is null)
+            {
+                // DIE FELDTAFEL (Welle #456): Das Daten-Objekt fuehrt seine Felder als
+                // Daten, und der Teil nach dem Punkt ist ihr Schluessel. Benannte
+                // Eigenschaften gehen vor - erst was per Reflection nicht aufloest,
+                // fragt die Tafel.
+                KiFeldzugang? tafel = Tafelzugang(feld, quelle, wahlquellen);
+                if (tafel is not null) zugaenge.Add(tafel);
+                continue;
+            }
 
             // Die PropertyInfo steckt im Abschluss - gesucht wird einmal, gelesen oft.
             Func<object?> lesen = () =>
@@ -126,7 +135,7 @@ public sealed class KiMaskenanmeldung : IDisposable
                 ? wert =>
                   {
                       T? stand = quelle();
-                      if (stand is not null) eigenschaft.SetValue(stand, wert);
+                      if (stand is not null) Setze(eigenschaft, stand, wert);
                   }
                 : null;
 
@@ -141,6 +150,79 @@ public sealed class KiMaskenanmeldung : IDisposable
         object? marke = KiMaskenbruecke.Anmelden(eintrag.Maskenname, eintrag, zugaenge, haken, spalten);
         return new KiMaskenanmeldung(eintrag.Maskenname, marke);
     }
+
+    /// <summary>
+    /// Der Zugang zu einem Feld einer <see cref="IKiFeldtafel"/>; <c>null</c>, wenn das
+    /// Daten-Objekt keine Tafel ist oder der Typname vor dem Punkt nicht passt.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Der Zieltyp kommt aus dem KATALOG</b> (<see cref="Tafeltyp"/>): Eine Tafel
+    /// hat keine Eigenschaft, deren <c>PropertyType</c> ihn verriete. Die Deklaration
+    /// sagt ohnehin, was das Feld ist — Zahl, Ganzzahl, Wahrheitswert oder Text.</para>
+    /// <para><b>Nur lesbar bleibt nur lesbar</b>: Ein Feld, das der Katalog
+    /// <c>nurLesen</c> deklariert, bekommt keinen Setzer — dieselbe Regel wie beim
+    /// Reflection-Weg. Die Tafel sichert es ein zweites Mal ab.</para>
+    /// </remarks>
+    private static KiFeldzugang? Tafelzugang<T>(
+        KiDialogFeld feld, Func<T?> quelle,
+        (string Feld, Func<IReadOnlyList<KiWahleintrag>> Eintraege)[] wahlquellen) where T : class
+    {
+        if (!IstTafel(typeof(T), feld)) return null;
+
+        string schluessel = feld.Eigenschaft;
+
+        Func<object?> lesen = () => quelle() is IKiFeldtafel tafel ? tafel.Lesen(schluessel) : null;
+
+        Action<object?>? setzen = feld.NurLesen
+            ? null
+            : wert =>
+              {
+                  if (quelle() is IKiFeldtafel tafel) tafel.Setzen(schluessel, wert);
+              };
+
+        return new KiFeldzugang(feld, lesen, setzen, Tafeltyp(feld.Typ),
+                                Wahlquelle(feld, quelle, wahlquellen));
+    }
+
+    /// <summary>
+    /// Setzt eine Eigenschaft per Reflection — und reicht eine ABLEHNUNG des Setzers
+    /// ungewickelt weiter.
+    /// </summary>
+    /// <remarks>
+    /// <b>Warum nicht <c>SetValue</c> allein</b> (Welle #456): Die Reflection wickelt jede
+    /// Ausnahme des Setzers in eine <see cref="TargetInvocationException"/>, und deren
+    /// Meldung lautet „Exception has been thrown by the target of an invocation". Genau
+    /// die stünde dann in der Absage des Assistenten — statt des Grundes, den der Dialog
+    /// nennt („erst speichern oder verwerfen").
+    /// </remarks>
+    private static void Setze(PropertyInfo eigenschaft, object ziel, object? wert)
+    {
+        try
+        {
+            eigenschaft.SetValue(ziel, wert);
+        }
+        catch (TargetInvocationException huelle) when (huelle.InnerException is not null)
+        {
+            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(huelle.InnerException).Throw();
+        }
+    }
+
+    /// <summary>Löst dieses Feld über die Feldtafel des Daten-Objekts auf?</summary>
+    private static bool IstTafel(Type datentyp, KiDialogFeld feld)
+        => typeof(IKiFeldtafel).IsAssignableFrom(datentyp)
+           && string.Equals(feld.Datentyp, datentyp.Name, StringComparison.Ordinal)
+           && feld.Eigenschaft.Length > 0;
+
+    /// <summary>
+    /// Der CLR-Typ, den ein Tafelfeld beim Setzen annimmt — aus dem Feldtyp des Katalogs.
+    /// </summary>
+    public static Type Tafeltyp(KiParameterTyp typ) => typ switch
+    {
+        KiParameterTyp.Zahl => typeof(double?),
+        KiParameterTyp.Ganzzahl => typeof(int?),
+        KiParameterTyp.Wahrheitswert => typeof(bool),
+        _ => typeof(string)
+    };
 
     /// <summary>
     /// Die Sammlung hinter einer Spaltendeklaration
@@ -202,7 +284,7 @@ public sealed class KiMaskenanmeldung : IDisposable
             },
             zeile => spalte.GetValue(zeile),
             spalte.CanWrite && !feld.NurLesen
-                ? (zeile, wert) => spalte.SetValue(zeile, wert)
+                ? (zeile, wert) => Setze(spalte, zeile, wert)
                 : null,
             kennzeichen is null
                 ? null
@@ -373,7 +455,15 @@ public sealed class KiMaskenanmeldung : IDisposable
 
         foreach (KiDialogFeld feld in eintrag.Felder)
         {
-            if (feld.IstSpalte ? !SpalteLoest(datentyp, feld) : Eigenschaft(datentyp, feld) is null)
+            // Ein Feld einer FELDTAFEL loest zur Laufzeit ueber ihren Schluessel auf; hier
+            // steht nur die Typprobe vor dem Punkt. Den Feldbestand haelt der Waechter
+            // der Tafel (Welle #456: „die Verwaltung deklariert genau die Felder ihres
+            // Profils"), nicht die Reflection.
+            bool loest = feld.IstSpalte
+                ? SpalteLoest(datentyp, feld)
+                : Eigenschaft(datentyp, feld) is not null || IstTafel(datentyp, feld);
+
+            if (!loest)
             {
                 fehlt.Add(feld.Eigenschaftspfad);
                 continue;

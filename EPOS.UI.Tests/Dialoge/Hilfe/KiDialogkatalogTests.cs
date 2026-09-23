@@ -220,6 +220,15 @@ public class KiDialogkatalogTests : IDisposable
         { KiMaskennamen.STROMSPEICHER_KATALOG,  typeof(ModulKatalogKiSicht) },
         { KiMaskennamen.WECHSELRICHTER_KATALOG, typeof(ModulKatalogKiSicht) },
 
+        // Welle #456: VIER Masken auf EINER Sichtklasse - die Verwaltungen der
+        // Erzeugerkataloge. Ihre Profilfelder loest die Sichtklasse als FELDTAFEL
+        // auf; hier greift nur die Typprobe vor dem Punkt, den Feldbestand haelt
+        // Die_Erzeugerverwaltung_deklariert_genau_die_Felder_ihres_Profils.
+        { KiMaskennamen.HEIZKESSEL_ADMIN,       typeof(KatalogBrowserKiSicht) },
+        { KiMaskennamen.BHKW_ADMIN,             typeof(KatalogBrowserKiSicht) },
+        { KiMaskennamen.SOLARKOLLEKTOREN_ADMIN, typeof(KatalogBrowserKiSicht) },
+        { KiMaskennamen.PUFFERSPEICHER_ADMIN,   typeof(KatalogBrowserKiSicht) },
+
         // Welle KI-F6, Schritt 1 (STROM): drei Masken, drei Sichtklassen. Alle
         // drei fuehren ihren Stand in privaten Feldern der Komponente - siehe
         // OhneMarkupprobe.
@@ -341,14 +350,15 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_vierundsechzig_Masken()
+    public void Der_Katalog_fuehrt_achtundsechzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
         // VIERUNDSECHZIG seit der Welle KI-F7: Die Ueberlagerung „Anlagenwerte" der
         // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
-        // 21.09.2026, KI-D-Q7).
-        Assert.Equal(64, katalog.Anzahl);
+        // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
+        // Verwaltungen der Erzeugerkataloge (KI-D-Q11).
+        Assert.Equal(68, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -840,6 +850,122 @@ public class KiDialogkatalogTests : IDisposable
     }
 
     /// <summary>
+    /// <b>Die Verwaltung eines Erzeugerkatalogs deklariert GENAU die Felder ihres
+    /// Profils</b> — und dazu das Wahlfeld <c>satz</c> (Welle #456, KI‑D‑Q11).
+    /// </summary>
+    /// <remarks>
+    /// <para>Die Feldkarte ENTSTEHT aus dem <c>KatalogBrowserProfil</c>; dieser Fall hält
+    /// fest, dass die Erzeugung jede Eigenschaft eines Profilfeldes trägt: Schlüssel
+    /// (klein), Pfad der Feldtafel, Beschriftung ohne Doppelpunkt, Feldtyp, Einheit und
+    /// die Sperre eines nicht editierbaren Feldes. Er ersetzt für die vier Masken die
+    /// Reflection-Probe, die eine Feldtafel nicht leisten kann.</para>
+    /// <para>Dazu die ERLÄUTERUNG: Kein Feld darf den Rückfalltext tragen — sonst wüchse
+    /// dem Profil ein Feld zu, für das niemand einen Satz geschrieben hat, und
+    /// <c>dialog_parameter_erklaeren</c> wiederholte nur den Namen.</para>
+    /// </remarks>
+    [Theory]
+    [InlineData(KatalogBrowserArt.Heizkessel, KiMaskennamen.HEIZKESSEL_ADMIN)]
+    [InlineData(KatalogBrowserArt.Bhkw, KiMaskennamen.BHKW_ADMIN)]
+    [InlineData(KatalogBrowserArt.Solarkollektoren, KiMaskennamen.SOLARKOLLEKTOREN_ADMIN)]
+    [InlineData(KatalogBrowserArt.Pufferspeicher, KiMaskennamen.PUFFERSPEICHER_ADMIN)]
+    public void Die_Erzeugerverwaltung_deklariert_genau_die_Felder_ihres_Profils(
+        KatalogBrowserArt art, string maske)
+    {
+        KatalogBrowserProfil profil =
+            KatalogBrowserProfil.Finde(art, s => Resource.ResourceManager.GetString(s) ?? s);
+        KiDialog dialog = KiDialoge.Katalog.Finde(maske)!;
+
+        Assert.NotNull(dialog);
+        Assert.Equal(maske, KiMaskennamen.KatalogBrowser(art));
+        Assert.Equal(profil.Titel, dialog.Anzeigename);
+        Assert.Equal(nameof(KatalogBrowserKiSicht), KiDialoge.KATALOGBROWSER_SICHT);
+
+        // Ein Feld je Profilzeile - und der Satz.
+        Assert.Equal(profil.Detailfelder.Count + 1, dialog.Felder.Count);
+
+        KiDialogFeld satz = dialog.FindeFeld("satz")!;
+        Assert.NotNull(satz);
+        Assert.True(satz.IstWahl);
+        Assert.True(satz.Satzwahl);
+        Assert.False(satz.NurLesen);
+
+        foreach (BrowserDetailfeld p in profil.Detailfelder)
+        {
+            KiDialogFeld? k = dialog.FindeFeld(p.Schluessel.ToLowerInvariant());
+            Assert.True(k is not null, "Das Profilfeld " + p.Schluessel + " fehlt im Katalog.");
+
+            Assert.Equal(nameof(KatalogBrowserKiSicht) + "." + p.Schluessel, k!.Eigenschaftspfad);
+            Assert.Equal(p.Feldname, k.Anzeigename);
+            Assert.Equal(p.Einheit, k.Einheit);
+            Assert.Equal(KiDialoge.Feldtyp(p.Art), k.Typ);
+            Assert.Equal(!p.Editierbar, k.NurLesen);
+            Assert.False(k.Satzwahl, p.Schluessel);
+
+            string rueckfall = string.Format(CultureInfo.CurrentCulture,
+                                             Resource.KI_DLG_KBROW_FELD_ERL, p.Feldname);
+            Assert.NotEqual(rueckfall, k.Erlaeuterung);
+        }
+    }
+
+    /// <summary>
+    /// <b>Die Verwaltungen führen dorthin, wo sie aufgehen</b> — ihr Katalogschlüssel ist
+    /// ihr Navigationsschlüssel, und die Katalogeditoren darüber führen an dieselbe
+    /// Stelle (Welle #456).
+    /// </summary>
+    [Fact]
+    public void Das_Ziel_der_Erzeugerverwaltungen_ist_ihr_eigener_Weg()
+    {
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.HeizkesselAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL_ADMIN));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.BhkwAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.BHKW_ADMIN));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.SolarkollektorenAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.SOLARKOLLEKTOREN_ADMIN));
+        Assert.Equal(EPOS.UI.Seiten.Seitenschluessel.PufferSpAdmin,
+                     KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_ADMIN));
+
+        // Editor und Verwaltung: EIN Ziel.
+        Assert.Equal(KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL),
+                     KiMaskenziele.Ziel(KiMaskennamen.HEIZKESSEL_ADMIN));
+        Assert.Equal(KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER),
+                     KiMaskenziele.Ziel(KiMaskennamen.PUFFERSPEICHER_ADMIN));
+    }
+
+    /// <summary>
+    /// <b>Die Bedarfsverwaltung führt ihre Kenndaten als EINGABEN</b> (Welle #456): Typ
+    /// (Wahl aus der Typliste), Beschreibung und die zwölf Monatswerte sind setzbar;
+    /// Jahressumme und Bedarfsart bleiben Anzeigen, und der Satz ist Satzwahl.
+    /// </summary>
+    [Theory]
+    [InlineData(KiMaskennamen.PROZESSWAERME_ADMIN)]
+    [InlineData(KiMaskennamen.STROMVERBRAUCHER_ADMIN)]
+    [InlineData(KiMaskennamen.BRAUCHWASSER_ADMIN)]
+    public void Die_Bedarfsverwaltung_fuehrt_ihre_Kenndaten_als_Eingaben(string maske)
+    {
+        KiDialog d = KiDialoge.Katalog.Finde(maske)!;
+
+        Assert.Equal(17, d.Felder.Count);
+        Assert.True(d.FindeFeld("satz")!.Satzwahl);
+        Assert.True(d.FindeFeld("typ")!.IstWahl);
+        Assert.False(d.FindeFeld("typ")!.NurLesen);
+        Assert.False(d.FindeFeld("beschreibung")!.NurLesen);
+        Assert.True(d.FindeFeld("jahressumme")!.NurLesen);
+        Assert.True(d.FindeFeld("bedarfsart")!.NurLesen);
+
+        Assert.Equal(12, KiDialoge.MONATSFELDER.Count);
+        for (int m = 0; m < 12; m++)
+        {
+            KiDialogFeld monat = d.FindeFeld(KiDialoge.MONATSFELDER[m])!;
+            Assert.NotNull(monat);
+            Assert.Equal(KiParameterTyp.Zahl, monat.Typ);
+            Assert.False(monat.NurLesen);
+            Assert.Equal(Resource.ResourceManager.GetString("ALLG_MONAT_" + (m + 1)), monat.Anzeigename);
+        }
+
+        Assert.NotNull(d.FindeKnopf("speichern"));
+    }
+
+    /// <summary>
     /// <b>Die Photovoltaik führt ELF Felder mehr als die drei der Startmaske</b> (Welle
     /// KI‑F1): die drei Modellfelder samt der Wechselrichterwahl und die SIEBEN Spalten
     /// der Strangliste.
@@ -1073,14 +1199,14 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse BedarfsProfileKiSicht auf Infoblock und " +
             "Verbrauchseingabe; Zeuge ist BedarfsProfileDialogTests",
         [KiMaskennamen.PROZESSWAERME_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.STROMVERBRAUCHER_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BRAUCHWASSER_ADMIN] =
-            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und " +
-            "Infoblock; Zeuge ist BedarfAdminDialogTests",
+            "bindet über die Sichtklasse BedarfAdminKiSicht auf Listenwahl und den " +
+            "Arbeitsstand des Stammblatts; Zeuge ist BedarfAdminDialogTests",
         [KiMaskennamen.BEDARF_ERGEBNIS] =
             "bindet über die Sichtklasse BedarfErgebnisKiSicht auf die vier Schalter " +
             "der Anzeige; Zeuge ist BedarfErgebnisDialogTests",
@@ -1161,6 +1287,26 @@ public class KiDialogkatalogTests : IDisposable
             "bindet über die Sichtklasse ModulKatalogKiSicht auf den Feldsatz des " +
             "Profils; das Markup zeichnet eine Schleife, keine benannten Bindungen. " +
             "Zeuge ist ModulKatalogDialogTests",
+
+        // Welle #456: die vier Verwaltungen der Erzeugerkataloge. Ihr Stammblatt
+        // zeichnet der Baustein Katalogfelder in einer Schleife über den Feldsatz
+        // des KatalogBrowserProfil - benannte Bindungen gibt es nicht.
+        [KiMaskennamen.HEIZKESSEL_ADMIN] =
+            "bindet über die Sichtklasse KatalogBrowserKiSicht als Feldtafel auf den " +
+            "Feldsatz des Profils; Zeugen sind KatalogBrowserDialogTests und der " +
+            "Profilwächter",
+        [KiMaskennamen.BHKW_ADMIN] =
+            "bindet über die Sichtklasse KatalogBrowserKiSicht als Feldtafel auf den " +
+            "Feldsatz des Profils; Zeugen sind KatalogBrowserDialogTests und der " +
+            "Profilwächter",
+        [KiMaskennamen.SOLARKOLLEKTOREN_ADMIN] =
+            "bindet über die Sichtklasse KatalogBrowserKiSicht als Feldtafel auf den " +
+            "Feldsatz des Profils; Zeugen sind KatalogBrowserDialogTests und der " +
+            "Profilwächter",
+        [KiMaskennamen.PUFFERSPEICHER_ADMIN] =
+            "bindet über die Sichtklasse KatalogBrowserKiSicht als Feldtafel auf den " +
+            "Feldsatz des Profils; Zeugen sind KatalogBrowserDialogTests und der " +
+            "Profilwächter",
 
         // Welle KI-F6, Schritt 1: die drei Strommasken
         [KiMaskennamen.PEAK_SHAVING] =

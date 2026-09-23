@@ -326,7 +326,11 @@ im Kern (`KiDialoge`), der Dialog meldet in `OnInitialized` nur, wo sie liegen
 (`KiMaskenanmeldung.Fuer(name, () => Daten, KiHaken())`): als **Delegat**, nicht als Instanz, und
 **der WIRT meldet an, nicht das Blatt darin**. `KiMaskenhaken` lassen den Assistenten MITARBEITEN
 — `Pruefen` ist **dieselbe** Prüfung wie am Speicherknopf, ein `Rechenweg` ruft unter dem
-AKTIONSNAMEN denselben Weg wie der Knopf.
+AKTIONSNAMEN denselben Weg wie der Knopf. **Führt ein Dialog seine Felder als DATEN eines Profils**
+(Katalogbrowser), erzeugt der Kern die Feldkarte aus demselben Profil und die Sichtklasse beantwortet
+sie als `IKiFeldtafel` über den Schlüssel — keine zweite Feldliste von Hand. Die Wahl des Satzes einer
+Verwaltung ist `satzwahl` und bleibt frei, wenn `Schreibgeschuetzt` einen Auslieferungssatz meldet;
+`Schreibschutzgrund` nennt den Weg („Duplizieren…").
 
 ## Tests (`EPOS.UI.Tests`)
 
