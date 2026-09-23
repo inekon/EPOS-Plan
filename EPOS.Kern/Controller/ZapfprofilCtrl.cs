@@ -84,6 +84,387 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
+        // Weiche und Verfügbarkeit (Posten P6)
+        // =================================================================================
+
+        /// <summary>
+        /// Die Weiche eines Projekts (Konzept 2.2): <see cref="BrauchwasserWeg.Generator"/> nur,
+        /// wenn <c>Tab_TwwProjekt</c> für das Projekt eine Zeile mit <c>Weg = 'GENERATOR'</c>
+        /// trägt; ohne Tabelle, ohne Zeile oder mit <c>BESTAND</c> der Bestandsweg.
+        /// </summary>
+        internal static BrauchwasserWeg Weg(int idProjekt)
+        {
+            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PROJEKT)) return BrauchwasserWeg.Bestand;
+
+            object v = DataRepository.ExecuteScalar(
+                "SELECT Weg FROM " + TwwSchema.TAB_TWW_PROJEKT + " WHERE ID_Projekt = ?",
+                new DbParam("@projekt", idProjekt));
+            return WegAus(v == null || v == DBNull.Value ? null : Convert.ToString(v, CultureInfo.InvariantCulture));
+        }
+
+        /// <summary>
+        /// Kann der Generator in dieser Datenbank laufen? Benannt: alle zehn Tabellen aus
+        /// <see cref="TwwSchema"/> vorhanden (ein älterer iOS-Seed trägt sie nicht, 3.2) und
+        /// eine Katalogversion der Parameter vorhanden (<see cref="AktuelleKatalogversion"/>).
+        /// </summary>
+        internal static ZapfVerfuegbarkeit Verfuegbar()
+        {
+            var fehlend = new List<string>();
+            foreach (KeyValuePair<string, string> a in TwwSchema.Anweisungen)
+                if (!DataRepository.TabelleVorhanden(a.Key)) fehlend.Add(a.Key);
+            if (fehlend.Count > 0)
+                return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.TabellenFehlen,
+                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — es fehlen die Tabellen "
+                    + string.Join(", ", fehlend) + ".");
+
+            string version = AktuelleKatalogversion();
+            if (version == null)
+                return new ZapfVerfuegbarkeit(false, ZapfVerfuegbarkeitsgrund.KeineKatalogversion,
+                    "Der Zapfprofilgenerator ist in dieser Datenbank nicht verfügbar — "
+                    + TwwSchema.TAB_TWW_PARAMETER_STAMM + " trägt keine Katalogversion.");
+
+            return new ZapfVerfuegbarkeit(true, ZapfVerfuegbarkeitsgrund.Verfuegbar,
+                "Der Zapfprofilgenerator ist verfügbar (Katalogversion „" + version + "“).");
+        }
+
+        // =================================================================================
+        // Katalog (Posten P6) — eine Abfrage je Tabelle
+        // =================================================================================
+
+        /// <summary>
+        /// Alle Nutzungsarten des Katalogs samt Tagesgangsatz, Provenienz und Status, geordnet
+        /// nach Bezeichner und Katalogversion. Ohne Tabellen eine leere Liste.
+        /// </summary>
+        internal static IReadOnlyList<Nutzungsart> Katalog()
+        {
+            if (!KatalogtabellenVorhanden()) return new Nutzungsart[0];
+
+            Dictionary<int, Tagesgangsatz> saetze = SaetzeNachId(null);
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " ORDER BY Bezeichner, Katalogversion, ID");
+            return NutzungsartenAus(dt, saetze);
+        }
+
+        /// <summary>Eine Nutzungsart samt Tagesgangsatz; <c>null</c>, wenn es sie (oder die Tabellen) nicht gibt.</summary>
+        internal static Nutzungsart LiesNutzungsart(int id)
+        {
+            if (!KatalogtabellenVorhanden()) return null;
+
+            DataTable dt = DataRepository.GetDataTable(
+                "SELECT * FROM " + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + " WHERE ID = ?",
+                new DbParam("@id", id));
+            if (dt == null || dt.Rows.Count == 0) return null;
+
+            Dictionary<int, Tagesgangsatz> saetze = SaetzeNachId(Ganz(dt.Rows[0], "ID_Tagesgangsatz"));
+            IReadOnlyList<Nutzungsart> eine = NutzungsartenAus(dt, saetze);
+            return eine.Count == 1 ? eine[0] : null;
+        }
+
+        /// <summary>Alle Tagesgangsätze des Katalogs, geordnet nach Bezeichner und Katalogversion.</summary>
+        internal static IReadOnlyList<Tagesgangsatz> Tagesgangsaetze()
+        {
+            if (!KatalogtabellenVorhanden()) return new Tagesgangsatz[0];
+
+            var liste = new List<Tagesgangsatz>(SaetzeNachId(null).Values);
+            liste.Sort((a, b) =>
+            {
+                int c = string.CompareOrdinal(a.Bezeichner, b.Bezeichner);
+                if (c != 0) return c;
+                c = string.CompareOrdinal(a.Katalogversion, b.Katalogversion);
+                return c != 0 ? c : a.Id.CompareTo(b.Id);
+            });
+            return liste;
+        }
+
+        // =================================================================================
+        // Projektdaten (Posten P6)
+        // =================================================================================
+
+        /// <summary>
+        /// Der Arbeitsstand eines Projekts: Weg, Zonen in ihrer Reihenfolge samt
+        /// Wohnungstabelle, und die Projektzeile (<c>null</c>, wenn es keine gibt). Ohne
+        /// Tabellen der Bestandsweg ohne Zonen.
+        /// </summary>
+        internal static ZapfprofilStand Lies(int idProjekt)
+        {
+            BrauchwasserWeg weg = Weg(idProjekt);
+            if (!DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_ZONE)
+                || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_WOHNUNGSTYP)
+                || !DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_PROJEKT))
+                return new ZapfprofilStand(weg, new ZonenStand[0], null);
+
+            // Die Wohnungstabellen aller Zonen des Projekts in EINER Abfrage.
+            var wohnungen = new Dictionary<int, List<WohnungstypStand>>();
+            DataTable dw = DataRepository.GetDataTable(
+                "SELECT w.* FROM " + TwwSchema.TAB_TWW_WOHNUNGSTYP + " AS w INNER JOIN " + TwwSchema.TAB_TWW_ZONE +
+                " AS z ON z.ID = w.ID_Zone WHERE z.ID_Projekt = ? ORDER BY w.ID_Zone, w.Reihenfolge, w.ID",
+                new DbParam("@projekt", idProjekt));
+            if (dw != null)
+                foreach (DataRow r in dw.Rows)
+                {
+                    int zone = Ganz(r, "ID_Zone");
+                    if (!wohnungen.TryGetValue(zone, out List<WohnungstypStand> l))
+                        wohnungen[zone] = l = new List<WohnungstypStand>();
+                    l.Add(new WohnungstypStand
+                    {
+                        Id = Ganz(r, "ID"),
+                        Anzahl = Ganz(r, "Anzahl"),
+                        Raumzahl = ZahlOderNull(r, "Raumzahl"),
+                        Personen = ZahlOderNull(r, "Personen"),
+                        IdAusstattung = GanzOderNull(r, "ID_Ausstattung"),
+                        Reihenfolge = Ganz(r, "Reihenfolge")
+                    });
+                }
+
+            var zonen = new List<ZonenStand>();
+            DataTable dz = DataRepository.GetDataTable(
+                "SELECT * FROM " + TwwSchema.TAB_TWW_ZONE + " WHERE ID_Projekt = ? ORDER BY Reihenfolge, ID",
+                new DbParam("@projekt", idProjekt));
+            if (dz != null)
+                foreach (DataRow r in dz.Rows)
+                    zonen.Add(ZoneAus(r, wohnungen));
+
+            ProjektStand projekt = null;
+            DataTable dp = DataRepository.GetDataTable(
+                "SELECT * FROM " + TwwSchema.TAB_TWW_PROJEKT + " WHERE ID_Projekt = ?",
+                new DbParam("@projekt", idProjekt));
+            if (dp != null && dp.Rows.Count > 0) projekt = ProjektAus(dp.Rows[0]);
+
+            return new ZapfprofilStand(weg, zonen, projekt);
+        }
+
+        // =================================================================================
+        // Abbildung Zeile -> Kerntyp
+        // =================================================================================
+
+        private static bool KatalogtabellenVorhanden()
+            => DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)
+               && DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM)
+               && DataRepository.TabelleVorhanden(TwwSchema.TAB_TWW_TAGESGANG_STAMM);
+
+        private static BrauchwasserWeg WegAus(string text)
+            => string.Equals(text, TwwSchema.WEG_GENERATOR, StringComparison.Ordinal)
+                ? BrauchwasserWeg.Generator : BrauchwasserWeg.Bestand;
+
+        /// <summary>Tagesgangsätze je ID — alle, oder nur der eine mit <paramref name="nurId"/>.</summary>
+        private static Dictionary<int, Tagesgangsatz> SaetzeNachId(int? nurId)
+        {
+            DataTable koepfe = nurId.HasValue
+                ? DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner, Katalogversion, Status, ReadOnly FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM +
+                    " WHERE ID = ?", new DbParam("@id", nurId.Value))
+                : DataRepository.GetDataTable(
+                    "SELECT ID, Bezeichner, Katalogversion, Status, ReadOnly FROM " + TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM);
+            DataTable gaenge = nurId.HasValue
+                ? DataRepository.GetDataTable(
+                    "SELECT * FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " WHERE ID_Tagesgangsatz = ? ORDER BY Tagtyp",
+                    new DbParam("@id", nurId.Value))
+                : DataRepository.GetDataTable(
+                    "SELECT * FROM " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " ORDER BY ID_Tagesgangsatz, Tagtyp");
+
+            var anteile = new Dictionary<int, double[,]>();
+            var herkunft = new Dictionary<int, Provenienz[]>();
+            if (gaenge != null)
+                foreach (DataRow r in gaenge.Rows)
+                {
+                    int satz = Ganz(r, "ID_Tagesgangsatz");
+                    int t = Ganz(r, "Tagtyp") - 1;
+                    if (t < 0 || t >= Tagesgangsatz.TAGTYPEN) continue;   // CHECK der DDL haelt 1..4
+                    if (!anteile.TryGetValue(satz, out double[,] a))
+                    {
+                        anteile[satz] = a = new double[Tagesgangsatz.TAGTYPEN, Tagesgangsatz.STUNDEN];
+                        herkunft[satz] = new Provenienz[Tagesgangsatz.TAGTYPEN];
+                    }
+                    for (int h = 0; h < Tagesgangsatz.STUNDEN; h++)
+                        a[t, h] = Zahl(r, AnteilSpalte(h + 1));
+                    herkunft[satz][t] = Herkunft(r, "");
+                }
+
+            var saetze = new Dictionary<int, Tagesgangsatz>();
+            if (koepfe != null)
+                foreach (DataRow r in koepfe.Rows)
+                {
+                    int id = Ganz(r, "ID");
+                    saetze[id] = new Tagesgangsatz(
+                        id,
+                        anteile.TryGetValue(id, out double[,] a) ? a : new double[Tagesgangsatz.TAGTYPEN, Tagesgangsatz.STUNDEN],
+                        herkunft.TryGetValue(id, out Provenienz[] p) ? p : new Provenienz[Tagesgangsatz.TAGTYPEN])
+                    {
+                        Bezeichner = Text(r, "Bezeichner"),
+                        Katalogversion = Text(r, "Katalogversion"),
+                        Status = TwwWertemengen.Status(Text(r, "Status")),
+                        ReadOnly = Wahr(r, "ReadOnly")
+                    };
+                }
+            return saetze;
+        }
+
+        /// <summary>Der Spaltenname der Stunde <paramref name="stunde"/> (1 … 24) — aus einer Schleife, nie aus einer Eingabe.</summary>
+        internal static string AnteilSpalte(int stunde)
+            => "Anteil_" + stunde.ToString("00", CultureInfo.InvariantCulture);
+
+        private static IReadOnlyList<Nutzungsart> NutzungsartenAus(DataTable dt, Dictionary<int, Tagesgangsatz> saetze)
+        {
+            var liste = new List<Nutzungsart>();
+            if (dt == null) return liste;
+
+            foreach (DataRow r in dt.Rows)
+            {
+                var bedarf = new double[NutzungsartRaster.NIVEAUS];
+                var min = new double?[NutzungsartRaster.NIVEAUS];
+                var max = new double?[NutzungsartRaster.NIVEAUS];
+                for (int n = 0; n < NutzungsartRaster.NIVEAUS; n++)
+                {
+                    string spalte = NutzungsartRaster.Niveauspalten[n];
+                    bedarf[n] = Zahl(r, spalte);
+                    min[n] = ZahlOderNull(r, spalte + "_Min");
+                    max[n] = ZahlOderNull(r, spalte + "_Max");
+                }
+
+                var monate = new double[NutzungsartRaster.MONATE];
+                for (int m = 0; m < NutzungsartRaster.MONATE; m++)
+                    monate[m] = Zahl(r, "Monat_" + (m + 1).ToString(CultureInfo.InvariantCulture));
+
+                var woche = new double[NutzungsartRaster.WOCHENTAGE];
+                for (int w = 0; w < NutzungsartRaster.WOCHENTAGE; w++)
+                    woche[w] = Zahl(r, "Woche_" + (w + 1).ToString(CultureInfo.InvariantCulture));
+
+                saetze.TryGetValue(Ganz(r, "ID_Tagesgangsatz"), out Tagesgangsatz satz);
+
+                var herkunft = new Katalogherkunft(
+                    Herkunft(r, "Bedarf_"),
+                    new Bedarfsbandbreite(min, max),
+                    Herkunft(r, "Jahresgang_"),
+                    Herkunft(r, "Wochengang_"),
+                    satz?.JeTagtyp ?? new Provenienz[Tagesgangsatz.TAGTYPEN]);
+
+                liste.Add(new Nutzungsart(
+                    Ganz(r, "ID"),
+                    Text(r, "Bezeichner"),
+                    (ZapfBezugsart)Ganz(r, "Bezugsart"),
+                    bedarf,
+                    new Temperaturbezug(Zahl(r, "Bezug_Zapftemperatur"), Zahl(r, "Bezug_Kaltwasser")),
+                    (ZapfBilanzgrenze)Ganz(r, "Bilanzgrenze"),
+                    (ZapfKalenderart)Ganz(r, "Kalenderart"),
+                    ZahlOderNull(r, "Ferienfaktor"),
+                    monate,
+                    woche,
+                    satz,
+                    herkunft)
+                {
+                    Katalogversion = Text(r, "Katalogversion"),
+                    Status = TwwWertemengen.Status(Text(r, "Status")),
+                    ReadOnly = Wahr(r, "ReadOnly"),
+                    IdVorlage = GanzOderNull(r, "ID_Vorlage"),
+                    Freigabe = TextOderNull(r, "Freigabe")
+                });
+            }
+            return liste;
+        }
+
+        private static ZonenStand ZoneAus(DataRow r, Dictionary<int, List<WohnungstypStand>> wohnungen)
+        {
+            var beginn = new int?[4];
+            var ende = new int?[4];
+            for (int i = 0; i < 4; i++)
+            {
+                string n = (i + 1).ToString(CultureInfo.InvariantCulture);
+                beginn[i] = GanzOderNull(r, "Ferienbeginn_" + n);
+                ende[i] = GanzOderNull(r, "Ferienende_" + n);
+            }
+
+            var auslastung = new double?[NutzungsartRaster.MONATE];
+            for (int m = 0; m < NutzungsartRaster.MONATE; m++)
+                auslastung[m] = ZahlOderNull(r, "Auslastung_" + (m + 1).ToString("00", CultureInfo.InvariantCulture));
+
+            int id = Ganz(r, "ID");
+            int? einheit = GanzOderNull(r, "Jahresmesswert_Einheit");
+            int? grenze = GanzOderNull(r, "Jahresmesswert_Bilanzgrenze");
+
+            return new ZonenStand
+            {
+                Id = id,
+                IdNutzungsart = Ganz(r, "ID_Nutzungsart"),
+                IdTagesgangsatz = GanzOderNull(r, "ID_Tagesgangsatz"),
+                IdGebaeude = GanzOderNull(r, "ID_Gebaeude"),
+                Reihenfolge = Ganz(r, "Reihenfolge"),
+                Name = Text(r, "Name"),
+                Bezugsmenge = Zahl(r, "Bezugsmenge"),
+                Niveau = (ZapfNiveau)Ganz(r, "Niveau"),
+                PersonenJeWe = ZahlOderNull(r, "Personen_je_WE"),
+                WohnflaecheJeWeM2 = ZahlOderNull(r, "Wohnflaeche_je_WE"),
+                Topologie = (ZapfTopologie)Ganz(r, "Topologie"),
+                Zirkulation = Wahr(r, "Zirkulation"),
+                Ferienbeginn = beginn,
+                Ferienende = ende,
+                Jahresmesswert = ZahlOderNull(r, "Jahresmesswert"),
+                JahresmesswertEinheit = einheit.HasValue ? (ZapfMesswerteinheit)einheit.Value : (ZapfMesswerteinheit?)null,
+                JahresmesswertBilanzgrenze = grenze.HasValue ? (ZapfBilanzgrenze)grenze.Value : (ZapfBilanzgrenze?)null,
+                JahresmesswertQuelle = TextOderNull(r, "Jahresmesswert_Quelle"),
+                JahresmesswertZeitraum = TextOderNull(r, "Jahresmesswert_Zeitraum"),
+                SpeicherverlustKwhJeJahr = ZahlOderNull(r, "Speicherverlust_Kwh_a"),
+                TagesbedarfAuto = Wahr(r, "Tagesbedarf_Auto"),
+                TagesbedarfManuellKwh = ZahlOderNull(r, "Tagesbedarf_Manuell_Kwh"),
+                BedarfSpezKwhJeEinheitTag = ZahlOderNull(r, "Bedarf_Spez"),
+                ZapftemperaturC = ZahlOderNull(r, "Zapftemperatur"),
+                KaltwasserMittelC = ZahlOderNull(r, "Kaltwasser_Mittel"),
+                KaltwasserAmplitudeK = ZahlOderNull(r, "Kaltwasser_Amplitude"),
+                Auslastung = auslastung,
+                Wohnungen = wohnungen.TryGetValue(id, out List<WohnungstypStand> w)
+                    ? w : (IReadOnlyList<WohnungstypStand>)new WohnungstypStand[0]
+            };
+        }
+
+        private static ProjektStand ProjektAus(DataRow r)
+        {
+            int? lage = GanzOderNull(r, "Zirk_Lage");
+            int? quelle = GanzOderNull(r, "Bedarfstag_Quelle");
+
+            return new ProjektStand
+            {
+                Id = Ganz(r, "ID"),
+                Weg = WegAus(Text(r, "Weg")),
+                JahresreiheStochastisch = Wahr(r, "Jahresreihe_Stochastisch"),
+                Seed = Ganz(r, "Seed"),
+                Realisierungen = Ganz(r, "Realisierungen"),
+                RealisierungenAuslegung = GanzOderNull(r, "Realisierungen_Auslegung"),
+                Perzentil = Ganz(r, "Perzentil"),
+                ZirkAuto = Wahr(r, "Zirk_Auto"),
+                ZirkMethode = (ZapfZirkulationsmethode)Ganz(r, "Zirk_Methode"),
+                ZirkLage = lage.HasValue ? (ZapfLeitungslage)lage.Value : (ZapfLeitungslage?)null,
+                ZirkLaengeM = ZahlOderNull(r, "Zirk_Laenge_m"),
+                ZirkVerlustWJeM = ZahlOderNull(r, "Zirk_Verlust_W_m"),
+                ZirkAnteil = ZahlOderNull(r, "Zirk_Anteil"),
+                ZirkKennwert = ZahlOderNull(r, "Zirk_Kennwert"),
+                ZirkFlaecheM2 = ZahlOderNull(r, "Zirk_Flaeche_m2"),
+                ZirkLaufzeitH = ZahlOderNull(r, "Zirk_Laufzeit_h"),
+                ZirkManuellKw = ZahlOderNull(r, "Zirk_Manuell_Kw"),
+                LeitungsinhaltL = ZahlOderNull(r, "Leitungsinhalt_l"),
+                LadeAuto = Wahr(r, "Lade_Auto"),
+                LadefensterH = ZahlOderNull(r, "Ladefenster_h"),
+                LadefensterBeginnH = ZahlOderNull(r, "Ladefenster_Beginn_h"),
+                LadeManuellKw = ZahlOderNull(r, "Lade_Manuell_Kw"),
+                SpeicherC = ZahlOderNull(r, "Speicher_C"),
+                KaltwasserAuslegungC = ZahlOderNull(r, "Kaltwasser_Auslegung_C"),
+                ErzeugerKw = ZahlOderNull(r, "Erzeuger_Kw"),
+                UebertragerKw = ZahlOderNull(r, "Uebertrager_Kw"),
+                UebertragerUaWJeK = ZahlOderNull(r, "Uebertrager_UA_W_K"),
+                UebertragerFlaecheM2 = ZahlOderNull(r, "Uebertrager_Flaeche_m2"),
+                Speicherart = (ZapfSpeicherart)Ganz(r, "Speicherart"),
+                SensorhoeheAnteil = ZahlOderNull(r, "Sensorhoehe_Anteil"),
+                NachweisVolumenL = ZahlOderNull(r, "Nachweis_Volumen_l"),
+                SpeicherverlustW = ZahlOderNull(r, "Speicherverlust_W"),
+                Nutzanteil = ZahlOderNull(r, "Nutzanteil"),
+                Zuschlag = ZahlOderNull(r, "Zuschlag"),
+                BedarfstagQuelle = quelle.HasValue ? (ZapfBedarfstagquelle)quelle.Value : (ZapfBedarfstagquelle?)null,
+                IdBedarfstag = GanzOderNull(r, "ID_Bedarfstag"),
+                AuslegungVolumenL = ZahlOderNull(r, "Auslegung_Volumen_l"),
+                AuslegungLeistungKw = ZahlOderNull(r, "Auslegung_Leistung_Kw"),
+                Aenderungsdatum = TextOderNull(r, "Aenderungsdatum")
+            };
+        }
+
+        // =================================================================================
         // Lesehilfen — die DataTable liefert je nach Spalte long, int, bool oder double
         // (SqliteDatenzugriff.LadeTabelle, Regeln D9); hier wird einmal umgesetzt.
         // =================================================================================
