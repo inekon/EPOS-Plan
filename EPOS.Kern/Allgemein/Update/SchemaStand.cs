@@ -393,11 +393,17 @@ namespace WindowsFormsApplication1
         /// <c>ID_Umrechnung</c> — Regel nach kWh → „kWh", sonst die Abrechnungseinheit,
         /// also genau die Basis, die die Karte bis dahin beim Öffnen zeigte.
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte.
+        /// Mit dem STAMMTEXT DER FÜNF GASE AUF Nm³ (Schritt 109, Schritt G, Entscheid
+        /// U‑1 Weg (a), Freigabe A9) steht das Ziel auf <b>109</b>: <c>Einheit</c> und
+        /// <c>PreisEinheit</c> der Brennstoffe 1, 2, 3, 14 und 25 in
+        /// <c>Tab_Brennstoff_Stamm</c> und jede Preiszeile ihrer Träger, die noch „m³"
+        /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
+        /// kein Zahlenwert, kein Rechenweg liest den Stammtext.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 108;
+        public const int Zielversion = 109;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

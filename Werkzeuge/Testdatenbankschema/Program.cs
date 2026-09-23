@@ -1264,6 +1264,24 @@ namespace Testdatenbankschema
                                   PreisbasisUebernahme.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 109: der Stammtext der fuenf Gase auf Nm3 (Schritt G,
+            //      Entscheid U-1 Weg (a), Freigabe A9 - vor dem naechsten Vorlagenbau).
+            //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_109_GaseNm3
+            //      (GaseNormkubikmeter): Einheit m3 -> Nm3 und PreisEinheit -> EUR/Nm3 an
+            //      den Brennstoffen 1, 2, 3, 14, 25, dazu jede Preiszeile ihrer Traeger,
+            //      die noch m3 fuehrt.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: kein Zahlenwert; kein Rechenweg liest den
+            //      Stammtext, die Einfrierliste nennt am Brennstoffstamm nur CO2/SO2/NOx/Staub.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 109 - offen vorher: " + GaseNormkubikmeter.Offen() + ".");
+            if (!trocken)
+            {
+                GaseNormkubikmeter.Bericht bericht109 = GaseNormkubikmeter.Ausfuehren();
+                Console.WriteLine("Schritt 109 - " + bericht109.Text() + "; offen: " +
+                                  GaseNormkubikmeter.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

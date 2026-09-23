@@ -3761,6 +3761,23 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_108_PREISBASIS = 108;
 
+        /// <summary>
+        /// Schritt 109 — <b>der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
+        /// Analysepapiers § 6, Entscheid U‑1 Weg (a) vom 30.08.2026, Freigabe A9 vom
+        /// 20.09.2026 „vor dem nächsten Vorlagenbau"). Er folgt auf
+        /// <see cref="SCHRITT_108_PREISBASIS"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML</b> nach dem Muster von Schritt 26a: <c>Einheit</c> „m³" →
+        /// „Nm³" und <c>PreisEinheit</c> → „€/Nm³" an den Brennstoffen 1, 2, 3, 14 und 25
+        /// in <c>Tab_Brennstoff_Stamm</c>, dazu jede Preiszeile ihrer Träger, die noch
+        /// „m³" führt — die Quelle ist <see cref="GaseNormkubikmeter"/>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> kein Zahlenwert; kein Rechenweg liest den
+        /// Stammtext. Die nächste Zuordnung eines Gasträgers findet danach ihre
+        /// Identitätsregel. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_109_GASE_NM3 = 109;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5240,6 +5257,18 @@ namespace WindowsFormsApplication1
                         "ERGEBNISNEUTRAL: Die Preisbasis ist eine Eingabehilfe, gerechnet wird " +
                         "unveraendert mit dem Basiswert je Abrechnungseinheit.",
                         Schritt_108_Preisbasis),
+
+            // ENTSCHEID U-1 Weg (a), Freigabe A9 (Schritt G) - der Stammtext der fuenf
+            // Gase auf Nm3. REIN DML; die Quelle ist GaseNormkubikmeter. Er steht NACH
+            // 108 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_109_GASE_NM3,
+                        "Tab_Brennstoff_Stamm: Einheit der fuenf Gase auf Nm3",
+                        "Der Brennstoffstamm der fuenf Gase (Stadtgas, Erdgas LL, Erdgas E, " +
+                        "Biogas, Wasserstoff) nennt seine Einheit Nm3 statt m3 - wie seine " +
+                        "Energietraeger seit jeher. Die naechste Zuordnung eines Gastraegers " +
+                        "findet damit ihre Umrechnungsregel. ERGEBNISNEUTRAL: Kein Zahlenwert " +
+                        "aendert sich.",
+                        Schritt_109_GaseNm3),
         };
 
         /// <summary>
@@ -8144,6 +8173,42 @@ namespace WindowsFormsApplication1
                     " Spalte(n) angelegt; " + bericht.Text() + ". Die Karte oeffnet mit derselben " +
                     "Basis wie bisher; kein Rechenweg liest die Spalte - der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 109 - der Stammtext der fuenf Gase auf Nm3 (Schritt G, U-1, A9)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 109 — Anlass und Anweisungen stehen bei
+        /// <see cref="SCHRITT_109_GASE_NM3"/> und bei <see cref="GaseNormkubikmeter"/>.
+        /// <b>Die Nachprobe</b> fragt dasselbe wie die Anweisungen: Führt danach noch eine
+        /// der fünf Stammzeilen oder eine Preiszeile ihrer Träger den alten Text, ist der
+        /// Schritt nicht gelaufen.
+        /// </summary>
+        private static bool Schritt_109_GaseNm3(Lauf l)
+        {
+            GaseNormkubikmeter.Bericht bericht;
+            try { bericht = GaseNormkubikmeter.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("109: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = GaseNormkubikmeter.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) fuehren nach dem Schritt weiter m3.";
+                l.Notiz("109: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("109: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

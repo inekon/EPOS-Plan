@@ -459,6 +459,11 @@ namespace EPOS.Kern.Tests
                     SpalteSicherstellen(s);
                 PreisbasisUebernahme.Ausfuehren();
 
+                // Schritt 109 (Schritt G, U-1 Weg (a), A9): der Stammtext der fuenf
+                // Gase auf Nm3 samt der Preiszeilen ihrer Traeger. Reines DML aus
+                // DERSELBEN Quelle wie in der Migration; wiederholbar.
+                GaseNormkubikmeter.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)
