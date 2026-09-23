@@ -25,7 +25,12 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - drei Bedarfstage mit erfundenen Ereignissen: Konstruktor, Referenztag, Normtag
     (Quelle_Art 4, 2, 3) - keiner ist ein Normprofil;
   - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
-    erfundenen Zahlen.
+    erfundenen Zahlen;
+  - VORBEREITET, INAKTIV (Stufe Z3): Zapfkategorien je Nutzungsart und die Parameter der
+    Stochastik (Schluessel wie ZapfStochastikParameter in
+    EPOS.Kern/Allgemein/Zapfprofil/Zapfkategorie.cs). Der Block schreibt erst mit dem
+    Schemaschritt T2 (Tab_TwwZapfkategorie_STAMM) - Schalter STOCHASTIK_AKTIV oder einmalig
+    --stochastik; ohne die Tabelle bricht er ohne Schreiben ab.
 
 Jede Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog (fiktiv)",
 Katalogversion "TEST-1", kein Beleg. KEINE Zeile mit Status 'AUSLIEFERUNG' oder 'IMPORT', keine
@@ -45,6 +50,7 @@ diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite
+    py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py <Kopie.sqlite> --stochastik   (erst nach T2)
 """
 
 import sqlite3
@@ -205,6 +211,38 @@ DIN4708_WERTE = [
     ("AUSSTATTUNG", "Testklasse B", 9000.0),
 ]
 
+# --- Stufe Z3: Stochastik (Zapfkategorien T2 und Parameter) - VORBEREITET, INAKTIV -----------
+# Eingeschaltet wird der Block erst mit dem Schemaschritt T2 (Tab_TwwZapfkategorie_STAMM, Stufe Z3,
+# Gruppe 2, Schrittnummer nach erneuter Messung): dann STOCHASTIK_AKTIV = True setzen (oder einmalig
+# mit --stochastik rufen), die Spaltennamen gegen die DDL von T2 halten und die Testdatenbank mit
+# aktivem LFS-Filter nachziehen. Bis dahin aendert er nichts - die Repo-Testdatenbank bleibt, wie sie
+# ist, und TwwKatalogWacheTests erwartet weiter 0/0. Die Werte sind ERFUNDEN: keine
+# Jordan/Vajen-Zahl, kein Normquantil, keine Setzung eines fremden Generators (Kapitel 6).
+STOCHASTIK_AKTIV = False
+
+# (Schluessel, Wert, Einheit) - Schluessel wie ZapfStochastikParameter, runde erfundene Werte.
+STOCHASTIK_PARAMETER = [
+    ("Zapfprofil.Stochastik.Urlaubsversatz", 20.0, "d"),
+    ("Zapfprofil.Stochastik.Auslegung.Vielfaches", 1.5, "-"),
+    ("Zapfprofil.Stochastik.Konsistenzschwelle", 1.8, "-"),
+    ("Zapfprofil.Stochastik.Quantil.P95", 1.7, "-"),
+    ("Zapfprofil.Stochastik.Quantil.P99", 2.4, "-"),
+]
+
+# (Nutzungsart, Kategorie, Volumenstrom_l_min, Dauer_min, Anteil, Sigma_l_min, Kappung_l_min oder None)
+# - je Nutzungsart Anteile mit Summe 1, jede Kategorie erfunden.
+ZAPFKATEGORIEN = [
+    ("Testnutzung A (fiktiv)", "Testkategorie A (fiktiv)", 2.0, 1, 0.20, 1.0, None),
+    ("Testnutzung A (fiktiv)", "Testkategorie B (fiktiv)", 5.0, 2, 0.30, 2.0, None),
+    ("Testnutzung A (fiktiv)", "Testkategorie C (fiktiv)", 12.0, 8, 0.15, 3.0, 15.0),
+    ("Testnutzung A (fiktiv)", "Testkategorie D (fiktiv)", 7.0, 4, 0.35, 2.0, None),
+    ("Testnutzung B (fiktiv)", "Testkategorie E (fiktiv)", 1.5, 3, 0.40, 2.0, None),
+    ("Testnutzung B (fiktiv)", "Testkategorie F (fiktiv)", 6.0, 5, 0.60, 2.5, 10.0),
+    ("Testnutzung C (fiktiv)", "Testkategorie G (fiktiv)", 4.0, 2, 0.50, 1.5, None),
+    ("Testnutzung C (fiktiv)", "Testkategorie H (fiktiv)", 9.0, 6, 0.50, 3.0, 12.0),
+]
+TABELLE_KATEGORIEN = "Tab_TwwZapfkategorie_STAMM"
+
 KATALOGTABELLEN = [
     "Tab_TwwTagesgangsatz_STAMM", "Tab_TwwTagesgang_STAMM", "Tab_TwwNutzungsart_STAMM",
     "Tab_TwwBedarfstag_STAMM", "Tab_TwwBedarfstagEreignis_STAMM", "Tab_TwwParameter_STAMM",
@@ -228,6 +266,10 @@ ERWARTET = {
 
 def pruefe_summen():
     """Die erfundenen Formen sind in sich stimmig - vor jedem Schreiben."""
+    for name in {k[0] for k in ZAPFKATEGORIEN}:
+        summe = sum(k[4] for k in ZAPFKATEGORIEN if k[0] == name)
+        assert abs(summe - 1.0) < 1e-12, f"{name}: Anteile der Zapfkategorien {summe}"
+        assert name in [n[0] for n in NUTZUNGSARTEN], f"{name}: keine Nutzungsart des Katalogs"
     for t, a in TAGESGAENGE.items():
         assert abs(sum(a) - 1.0) < 1e-12, f"Tagtyp {t}: Summe {sum(a)}"
     for n in NUTZUNGSARTEN:
@@ -241,25 +283,32 @@ def zahl(con, sql, *p):
 
 def main():
     if len(sys.argv) < 2:
-        print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite>")
+        print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik]")
         return 2
     pruefe_summen()
+    stochastik = STOCHASTIK_AKTIV or "--stochastik" in sys.argv[2:]
+    parameter = PARAMETER + (STOCHASTIK_PARAMETER if stochastik else [])
+    erwartet = dict(ERWARTET)
+    if stochastik:
+        erwartet["Tab_TwwParameter_STAMM"] = len(parameter)
+        erwartet[TABELLE_KATEGORIEN] = len(ZAPFKATEGORIEN)
 
     con = sqlite3.connect(sys.argv[1])
     try:
         con.execute("PRAGMA foreign_keys = ON")
         stand = zahl(con, "SELECT SchemaVersion FROM Tab_Applikation")
-        fehlend = [t for t in ERWARTET
+        fehlend = [t for t in erwartet
                    if zahl(con, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = ?", t) == 0]
         if fehlend:
-            print(f"Schemastand {stand}: es fehlen {', '.join(fehlend)} - erst Werkzeuge/Testdatenbankschema. "
-                  "Abbruch ohne Schreiben.")
+            print(f"Schemastand {stand}: es fehlen {', '.join(fehlend)} - erst Werkzeuge/Testdatenbankschema"
+                  + (" (die Zapfkategorien brauchen den Schemaschritt T2)" if TABELLE_KATEGORIEN in fehlend else "")
+                  + ". Abbruch ohne Schreiben.")
             return 2
 
         # Fremde Zeilen? Alles, was nicht Katalogversion TEST-1 / Status EIGEN / FIKTIV ist.
         fremd = 0
         for t in ("Tab_TwwTagesgangsatz_STAMM", "Tab_TwwNutzungsart_STAMM", "Tab_TwwBedarfstag_STAMM",
-                  "Tab_TwwParameter_STAMM", "Tab_TwwDin4708Wert_STAMM"):
+                  "Tab_TwwParameter_STAMM", "Tab_TwwDin4708Wert_STAMM") + ((TABELLE_KATEGORIEN,) if stochastik else ()):
             fremd += zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "Katalogversion" <> ? OR "Status" <> ? '
                                'OR "ReadOnly" <> 0', VERSION, STATUS)
         for t in ("Tab_TwwZone", "Tab_TwwWohnungstyp", "Tab_TwwProjekt"):
@@ -324,7 +373,7 @@ def main():
                 nachgefuehrt += cur.rowcount
 
             # --- Parameter --------------------------------------------------------------
-            for (schluessel, wert, einheit) in PARAMETER:
+            for (schluessel, wert, einheit) in parameter:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwParameter_STAMM" WHERE "Schluessel" = ? '
                              'AND "Katalogversion" = ?', schluessel, VERSION) > 0:
                     # Vorhanden: Wert und Einheit nachfuehren, wenn sie abweichen.
@@ -374,11 +423,27 @@ def main():
                             (art, schluessel, wert, VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
                 angelegt += 1
 
+            # --- Stufe Z3: Zapfkategorien (nur mit T2 und eingeschaltetem Block) -----------------
+            if stochastik:
+                for (art, kategorie, volumenstrom, dauer, anteil, sigma, kappung) in ZAPFKATEGORIEN:
+                    id_art = zahl(con, 'SELECT "ID" FROM "Tab_TwwNutzungsart_STAMM" WHERE "Bezeichner" = ? '
+                                       'AND "Katalogversion" = ?', art, VERSION)
+                    if zahl(con, f'SELECT COUNT(*) FROM "{TABELLE_KATEGORIEN}" WHERE "ID_Nutzungsart" = ? '
+                                 'AND "Kategorie" = ? AND "Katalogversion" = ?', id_art, kategorie, VERSION) > 0:
+                        continue
+                    con.execute(f'INSERT INTO "{TABELLE_KATEGORIEN}" ("ID_Nutzungsart", "Kategorie", '
+                                '"Volumenstrom_l_min", "Dauer_min", "Anteil", "Sigma", "Kappung_l_min", '
+                                '"Katalogversion", "Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", '
+                                '"Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
+                                (id_art, kategorie, volumenstrom, dauer, anteil, sigma, kappung,
+                                 VERSION, QUELLE, VERSION, HERKUNFT, STATUS))
+                    angelegt += 1
+
         print(f"Schemastand {stand}: {angelegt} Zeile(n) angelegt, {nachgefuehrt} nachgefuehrt"
               + (" - der Testkatalog stand schon vollstaendig da." if angelegt == 0 and nachgefuehrt == 0 else "."))
 
         ok = True
-        for t, soll in ERWARTET.items():
+        for t, soll in erwartet.items():
             ist = zahl(con, f'SELECT COUNT(*) FROM "{t}"')
             print(f"  {t}: {ist} Zeile(n)" + ("" if ist == soll else f"  (erwartet {soll})"))
             ok = ok and ist == soll

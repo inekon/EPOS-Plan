@@ -35,6 +35,12 @@ namespace EPOS.Kern.Tests
     ///
     /// <para><b>Gegenproben:</b> Die Bilanzfassade <see cref="ZapfprofilRechner"/> und
     /// <see cref="Formvektor"/> verletzen die Regel und müssen erkannt werden.</para>
+    ///
+    /// <para><b>Stufe Z3 — zwei Ensembles:</b> Das Ensemble der Jahresreihe
+    /// (<see cref="Jahresensemble"/>, <see cref="Jahreszone"/>, <see cref="Jahreskonsistenz"/>) ist
+    /// Bilanz und zählt zu den Bilanzbezeichnern und -typen; das Auslegungsensemble
+    /// (<see cref="Zapfensemble"/>) steht mit Zufall, Kategorien und Ereignisgenerator unter der
+    /// strengen Regel. So reicht kein Ensemble eine Bilanzreihe in die Auslegung (2.4).</para>
     /// </summary>
     public sealed class ZapfprofilTrennungWacheTests
     {
@@ -90,7 +96,8 @@ namespace EPOS.Kern.Tests
 
         /// <summary>Die Bezeichner der Bilanz, die keine Auslegungsdatei nennt.</summary>
         private static readonly Regex Bilanzbezug = new Regex(
-            @"\bBilanzreihe\b|\bZapfprofilErgebnis\b|\bZapfprofilRechner\b|\bZonenErgebnis\b|\bStundenreihe\s*\(",
+            @"\bBilanzreihe\b|\bZapfprofilErgebnis\b|\bZapfprofilRechner\b|\bZonenErgebnis\b|\bStundenreihe\s*\("
+            + @"|\bJahresensemble\b|\bJahreszone\b|\bJahreskonsistenz\b",
             RegexOptions.Compiled);
 
         /// <summary>Eine Typdeklaration auf Namensraumebene (vier Leerzeichen Einzug).</summary>
@@ -98,7 +105,11 @@ namespace EPOS.Kern.Tests
             @"^    internal\s+(?:(?:sealed|static|readonly|abstract)\s+)*(?:record\s+struct|record|class|struct|enum)\s+([A-Za-z_][A-Za-z0-9_]*)",
             RegexOptions.Compiled);
 
-        private static readonly Type[] Bilanztypen = { typeof(Bilanzreihe), typeof(ZapfprofilErgebnis), typeof(ZonenErgebnis) };
+        private static readonly Type[] Bilanztypen =
+        {
+            typeof(Bilanzreihe), typeof(ZapfprofilErgebnis), typeof(ZonenErgebnis),
+            typeof(Jahresensemble), typeof(Jahreszone), typeof(Jahreskonsistenz)
+        };
 
         // =====================================================================
         //  Satz 1 — Quelltext
@@ -116,6 +127,8 @@ namespace EPOS.Kern.Tests
             Assert.Matches(Bilanzbezug, "Bilanzreihe b = e.Zapfung;");
             Assert.Matches(Bilanzbezug, "double[] s = Formvektor.Stundenreihe(t, s, k);");
             Assert.Matches(Bilanzbezug, "var e = ZapfprofilRechner.Rechnen(x, k);");
+            Assert.Matches(Bilanzbezug, "Jahresensemble j = Jahresensemble.Ziehen(z, 1, 10);");
+            Assert.DoesNotMatch(Bilanzbezug, "Bedarfstagensemble b = Zapfensemble.Ziehen(z, 1, 100, 99);");
             Assert.DoesNotMatch(Bilanzbezug, "Wochenreihe w = Wochenreihe.Bilden(z, 0, r); // ohne Stundenreihe");
             Assert.True(Kommentarzeilen(new[] { "        /// ohne Stundenreihe(…) der Bilanz" })[0]);
             Assert.NotEmpty(Bilanzfunde("ZapfprofilRechner.cs", Lesen("ZapfprofilRechner.cs")));
@@ -154,6 +167,8 @@ namespace EPOS.Kern.Tests
             Assert.Contains(Verstoesse(typeof(ZapfprofilRechner), true), f => f.Contains("Bilanzreihe"));
             Assert.Contains(Verstoesse(typeof(Formvektor), true), f => f.Contains("Stundenreihe") && f.Contains("Double[]"));
             Assert.Contains(Verstoesse(typeof(ZapfprofilErgebnis), false), f => f.Contains("Bilanzreihe"));
+            Assert.Contains(Verstoesse(typeof(Jahresensemble), false), f => f.Contains("Bilanzreihe"));
+            Assert.Contains(Verstoesse(typeof(ZonenErgebnis), false), f => f.Contains("Jahreskonsistenz"));
             // Die Minuten- und Stundentypen tragen ihre Werte, aber keine Bilanz.
             Assert.Empty(Verstoesse(typeof(Bedarfstag), false));
             Assert.Empty(Verstoesse(typeof(Wochenreihe), false));
@@ -171,6 +186,36 @@ namespace EPOS.Kern.Tests
                 Assert.Contains(Verstoesse(Typ(typ), true), f => f.StartsWith(typ + "." + glied + " ", StringComparison.Ordinal));
                 Assert.DoesNotContain(Verstoesse(Typ(typ), true, Ausnahmen), f => f.StartsWith(typ + "." + glied + " ", StringComparison.Ordinal));
             }
+        }
+
+        // =====================================================================
+        //  Stufe Z3 — das Ensemble reicht keine Bilanzreihe in die Auslegung
+        // =====================================================================
+
+        [Fact]
+        public void Das_Ensemble_reicht_keine_Bilanzreihe_in_die_Auslegung()
+        {
+            // Das Auslegungsensemble steht unter der strengen Regel, das der Jahresreihe ist Bilanz.
+            Assert.Contains("Zapfensemble.cs", Dateien);
+            Assert.Contains("Jahresensemble.cs", Bilanzdateien);
+            foreach (string typ in new[] { "Zapfensemble", "Bedarfstagensemble", "Ensemblezone", "Ensemblezonenstatistik",
+                                           "Perzentilwerte", "Speicherensemble" })
+            {
+                Assert.Contains(typ, Deklarationen("Zapfensemble.cs"));
+                Assert.Empty(Verstoesse(Typ(typ), true, Ausnahmen));
+            }
+            Assert.Empty(Verstoesse(typeof(Perzentilergebnis), true, Ausnahmen));
+
+            // Die Fassade der Auslegung ruft das Auslegungsensemble — und nennt das der Jahresreihe nicht.
+            string[] auslegung = Lesen("ZapfprofilAuslegung.cs");
+            bool[] kommentar = Kommentarzeilen(auslegung);
+            Assert.Contains(auslegung.Where((z, i) => !kommentar[i]), z => z.Contains("Zapfensemble.Ziehen("));
+            Assert.Empty(Bilanzfunde("ZapfprofilAuslegung.cs", auslegung));
+            // Gegenprobe: der Bilanzrechenweg ruft das Jahresensemble und wird erkannt.
+            Assert.Contains(Bilanzfunde("ZapfprofilRechner.cs", Lesen("ZapfprofilRechner.cs")), f => f.Contains("Jahresensemble"));
+            // Minutenwerte des Ensembles nur als Bedarfstag: die gezogenen Tage sind Bedarfstage.
+            Assert.Equal(typeof(IReadOnlyList<Bedarfstag>), typeof(Bedarfstagensemble).GetProperty("Tage",
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public).PropertyType);
         }
 
         // =====================================================================
