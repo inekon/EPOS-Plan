@@ -429,11 +429,19 @@ namespace WindowsFormsApplication1
         /// auf <c>energy_carrier.id</c>, NULL = wie Heizbetrieb) — alle bei
         /// <see cref="KuehlungSchema"/>. <b>Reines DDL, ergebnisneutral:</b> kein Rechenweg
         /// liest die Spalten; der Referenzlauf bleibt byte-gleich.
+        /// Mit dem SZENARIORAHMEN (Schritt 116, Schritt B des Analysepapiers, Etappe E9a der
+        /// vollständigen Szenarioabdeckung V‑E) steht das Ziel auf <b>116</b>:
+        /// <c>Szen_Best/Worst_Zeitraum</c> (ganze Jahre) und <c>Szen_Best/Worst_Menge</c> [%]
+        /// an <c>Tab_ProjektWirtschaftlichkeit</c>
+        /// (<see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>). <b>Reines DDL,
+        /// ergebnisneutral bis zur ersten Pflege:</b> NULL heißt „wie Erwartet"; der
+        /// Referenzlauf bleibt byte-gleich. Die Nummer 115 ist dem Zapfprofil (Stufe T2)
+        /// zugesagt und bleibt in diesem Stand frei.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 114;
+        public const int Zielversion = 116;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

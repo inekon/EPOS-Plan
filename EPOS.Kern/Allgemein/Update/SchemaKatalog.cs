@@ -4709,6 +4709,59 @@ namespace WindowsFormsApplication1
         /// Begründung und Typwahl bei <see cref="Schritt72_NichtMonetaer"/>.</summary>
         public const string SPALTE_PW_NICHT_MONETAER = "Nicht_Monetaer";
 
+        // -------------------------------------------------------------------------
+        // Schritt 116 - der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a,
+        //               vollstaendige Szenarioabdeckung V-E, Konzept § 2.11.5)
+        // -------------------------------------------------------------------------
+
+        /// <summary>
+        /// ETAPPE E9a (Schritt B, Schemaschritt 116): der <b>Betrachtungszeitraum</b> und der
+        /// <b>Mengenfaktor</b> je Szenario an <c>Tab_ProjektWirtschaftlichkeit</c> — die zwei
+        /// Rahmengrößen, die der Parametersatz des Schritts 71 noch nicht führte (Konzept
+        /// § 2.11.5, Zeilen „Rahmen" und „Mengen").
+        ///
+        /// <para><b>NULL heißt „wie Erwartet"</b> — nicht „Vorgabe" wie bei den Spalten des
+        /// Schritts 71 (Entscheid E9a‑Q5, Lesart a): Es gibt für den Zeitraum und die Menge
+        /// keine Richtungsvorgabe; ein leeres Feld rechnet den Erwartungswert, und erst eine
+        /// gepflegte Zahl (<c>|Wert − Erwartet| &gt; 1e−9</c>, 0 zählt wie leer) verändert das
+        /// Szenario. Damit ist der Schritt <b>ergebnisneutral bis zur ersten Pflege</b>.</para>
+        ///
+        /// <para><b>Namensvorsicht:</b> <c>Szen_*_Dauer</c> (Schritt 71) ist die
+        /// NUTZUNGSDAUERänderung der Positionen, nicht der Betrachtungszeitraum — deshalb die
+        /// eigenen Namen <c>Szen_*_Zeitraum</c>.</para>
+        ///
+        /// <para><b>KEIN DML, kein DDL-DEFAULT, kein <c>_STAMM</c>-Gegenstück</b> — wortgleiche
+        /// Begründung wie bei <see cref="Schritt71_SzenarioBest"/>. Die Spalten stehen BEWUSST
+        /// NICHT in <see cref="Alle"/>: Kein Rechenweg der Simulation liest sie; die tolerante
+        /// Vorsorge steht unmittelbar vor dem Zugriff in
+        /// <c>WirtschaftlichkeitCtrl.StelleTabellenSicher</c> (dort auch im CREATE — die
+        /// doppelte Schema-Wahrheit dieses Moduls).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt116_Szenariorahmen =
+        {
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_ZEITRAUM,  "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_ZEITRAUM, "LONG"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_BEST_MENGE,     "DOUBLE"),
+            new SchemaSpalte(TAB_PROJEKTWIRTSCHAFT, SPALTE_PW_SZEN_WORST_MENGE,    "DOUBLE"),
+        };
+
+        /// <summary>Betrachtungszeitraum des BEST-Szenarios [ganze Jahre]; NULL = wie Erwartet
+        /// (Schemaschritt 116). Er wirkt auf Horizont, Restwert am Ende und die
+        /// Ersatzbeschaffungen innerhalb des Zeitraums — genau wie ein Erwartet-Lauf mit
+        /// diesem Zeitraum (E9a‑Q4, Lesart a).</summary>
+        public const string SPALTE_PW_SZEN_BEST_ZEITRAUM = "Szen_Best_Zeitraum";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_ZEITRAUM"/>
+        public const string SPALTE_PW_SZEN_WORST_ZEITRAUM = "Szen_Worst_Zeitraum";
+
+        /// <summary>Mengenänderung des BEST-Szenarios [%], + = mehr; NULL = wie Erwartet
+        /// (Schemaschritt 116). Ein einheitlicher Faktor (1 + Menge/100) auf das
+        /// Mengengerüst des Simulationsergebnisses der Variante (E9a‑Q2, Lesart a).</summary>
+        public const string SPALTE_PW_SZEN_BEST_MENGE = "Szen_Best_Menge";
+
+        /// <inheritdoc cref="SPALTE_PW_SZEN_BEST_MENGE"/>
+        public const string SPALTE_PW_SZEN_WORST_MENGE = "Szen_Worst_Menge";
+
         /// <summary>
         /// Der Versionsmarker selbst (ADR-001, Aufgabe 2). Wird von der
         /// <see cref="SchemaMigration"/> als Bootstrap VOR dem ersten Schritt angelegt
@@ -4928,6 +4981,10 @@ namespace WindowsFormsApplication1
         /// <c>Tab_ProjektWirtschaftlichkeit</c>, und der Preisänderungssatz erreicht den
         /// <c>KapitalwertRechner</c> als PARAMETER, nicht über einen Lesezugriff aus einem
         /// Simulationsrechenweg.
+        ///
+        /// <see cref="Schritt116_Szenariorahmen"/> (Etappe E9a, Schritt B) ist aus demselben
+        /// Grund BEWUSST NICHT aufgeführt: Zeitraum und Mengenfaktor je Szenario hängen an
+        /// <c>Tab_ProjektWirtschaftlichkeit</c> und erreichen den Rechenweg als Parameter.
         ///
         /// <see cref="Schritt70_WrKurzschlussstrom"/> und
         /// <see cref="Schritt70_Auslegungstemperaturen"/> sind BEWUSST NICHT aufgeführt.

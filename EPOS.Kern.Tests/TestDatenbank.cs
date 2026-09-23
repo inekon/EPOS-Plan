@@ -567,6 +567,13 @@ namespace EPOS.Kern.Tests
                 // Migration; wiederholbar.
                 GaseNormkubikmeter.Ausfuehren();
 
+                // Schritt 116 (Schritt B, Etappe E9a): der Szenariorahmen - Zeitraum und
+                // Mengenfaktor je Szenario an Tab_ProjektWirtschaftlichkeit. Wie in der
+                // Migration ueber ADD COLUMN, aus DERSELBEN Quelle; kein DML - leer heisst
+                // "wie Erwartet".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

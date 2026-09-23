@@ -375,6 +375,14 @@ namespace WindowsFormsApplication1
                                   "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_PREIS_I + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_PREIS_I + "\" REAL, " +
                                   "\"" + SchemaKatalog.SPALTE_PW_NICHT_MONETAER + "\" TEXT, " +
+                                  // ETAPPE E9a (Schritt B, Schemaschritt 116): der
+                                  // Szenariorahmen auch im CREATE - dieselbe Begruendung
+                                  // wie bei K6 und W5-B-12 darueber. Nullbar, ohne Vorgabe:
+                                  // leer heisst "wie Erwartet".
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + "\" INTEGER, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + "\" INTEGER, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + "\" REAL, " +
+                                  "\"" + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE + "\" REAL, " +
                                   "\"GeaendertAm\" TEXT)");
                         Ddl("CREATE UNIQUE INDEX IF NOT EXISTS \"UQ_ProjWirtProj\" " +
                             "ON [" + TAB_PARAMETER + "] (\"ID_Projekt\")");
@@ -578,6 +586,14 @@ namespace WindowsFormsApplication1
                     // KEINE Werte-Vorbelegung: NULL heisst bei p_I "wie p_B", bei den
                     // zwei Szenariospalten "Vorgabe" und beim Freitext "nichts erfasst".
                     foreach (SchemaSpalte s in SchemaKatalog.Schritt72_ValeriErgaenzung)
+                        SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
+
+                    // ETAPPE E9a (Schritt B) - der Szenariorahmen: Betrachtungszeitraum und
+                    // Mengenfaktor je Szenario. Regulaer entstehen die vier Spalten ueber
+                    // Schemaschritt 116; das hier ist die tolerante VORSORGE unmittelbar vor
+                    // dem Zugriff (doppelte Schema-Wahrheit dieses Moduls, Konzept § 9
+                    // Punkt 2). KEINE Werte-Vorbelegung: leer heisst "wie Erwartet".
+                    foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
                         SpalteSicher(s.Tabelle, s.Name, s.TypDefinition);
 
                     // ETAPPE E7 — Zerlegung des Einspeiseerlöses. Additiv wie oben; die

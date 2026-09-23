@@ -1390,6 +1390,21 @@ namespace Testdatenbankschema
                                   " (erwartet True).");
             }
 
+            // ---- Schritt 116: der Szenariorahmen (Schritt B des Analysepapiers, Etappe E9a der
+            //      vollstaendigen Szenarioabdeckung V-E). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_116_SzenarioRahmen bedient
+            //      (SchemaKatalog.Schritt116_Szenariorahmen): Szen_Best/Worst_Zeitraum (ganze
+            //      Jahre) und Szen_Best/Worst_Menge (Prozent) an Tab_ProjektWirtschaftlichkeit,
+            //      nullbar, ohne Vorgabe. Die 115 ist dem Zapfprofil (Stufe T2) zugesagt - das
+            //      Werkzeug fragt jede Spalte vor dem Anlegen und setzt den Marker erst am Ende;
+            //      eine Luecke im Nummernraum stoert es nicht.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - leer heisst "wie Erwartet".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 116, trocken);
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

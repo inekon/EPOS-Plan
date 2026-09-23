@@ -3897,6 +3897,24 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_114_KUEHLUNG_ERZEUGER = 114;
 
+        /// <summary>
+        /// Schritt 116 — <b>der Szenariorahmen</b> (Schritt B des Analysepapiers § 6, Etappe
+        /// E9a der vollständigen Szenarioabdeckung V‑E, Konzept Wirtschaftlichkeit § 2.11.5).
+        /// Er folgt auf <see cref="SCHRITT_114_KUEHLUNG_ERZEUGER"/> ohne Reihenfolgebedingung;
+        /// die Nummer 115 ist dem Zapfprofil (Stufe T2) zugesagt.
+        ///
+        /// <para><b>REIN DDL</b>, vier nullbare Spalten an <c>Tab_ProjektWirtschaftlichkeit</c>:
+        /// <c>Szen_Best_Zeitraum</c>, <c>Szen_Worst_Zeitraum</c> (ganze Jahre) und
+        /// <c>Szen_Best_Menge</c>, <c>Szen_Worst_Menge</c> (Prozent) — die Liste steht bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>, EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie Erwartet"; jede Zeile steht danach
+        /// leer, und der Referenzlauf bleibt byte-gleich. <b>Wiederholbar:</b> Eine vorhandene
+        /// Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_116_SZENARIO_RAHMEN = 116;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5462,6 +5480,18 @@ namespace WindowsFormsApplication1
                         "sich - jede Waermepumpe steht auf 'kein Kuehlbetrieb', die uebrigen Spalten " +
                         "bleiben leer, und kein Rechenweg liest sie.",
                         Schritt_114_KuehlungErzeuger),
+
+            // ETAPPE E9a (Schritt B, vollstaendige Szenarioabdeckung V-E) - der
+            // Szenariorahmen: Betrachtungszeitraum und Mengenfaktor je Szenario. REIN DDL;
+            // die Quelle ist SchemaKatalog.Schritt116_Szenariorahmen. Er steht NACH 114 ohne
+            // Reihenfolgebedingung; die 115 ist dem Zapfprofil (Stufe T2) zugesagt.
+            new Schritt(SCHRITT_116_SZENARIO_RAHMEN,
+                        "Tab_ProjektWirtschaftlichkeit: Betrachtungszeitraum und Mengenfaktor " +
+                        "je Szenario (Best/Worst)",
+                        "Die Szenarien Guenstig und Unguenstig liessen sich nicht mit eigenem " +
+                        "Betrachtungszeitraum und eigenem Mengenfaktor rechnen. KEIN Rechenergebnis " +
+                        "aendert sich - die Spalten bleiben leer, und leer heisst 'wie Erwartet'.",
+                        Schritt_116_SzenarioRahmen),
         };
 
         /// <summary>
@@ -8648,6 +8678,41 @@ namespace WindowsFormsApplication1
                     " (Verweis auf energy_carrier.id, NULL = wie Heizbetrieb). KEIN DML: Jede " +
                     "Waermepumpe steht auf 0, die uebrigen Spalten bleiben leer, und kein Rechenweg " +
                     "liest sie; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 116 - der Szenariorahmen (Schritt B, Etappe E9a, V-E)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 116 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_116_SZENARIO_RAHMEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt116_Szenariorahmen"/>. <b>Reines DDL</b>, dieselbe
+        /// Schleife wie bei Schritt 111: Spaltenliste aus dem Kern, Typdefinition aus
+        /// <c>StilleDb.SqliteSpaltenTyp</c> („LONG" → <c>INTEGER</c>, „DOUBLE" → <c>REAL</c>),
+        /// nullbar und ohne Vorgabe. <b>Wiederholbar</b>: Eine vorhandene Spalte wird
+        /// übergangen.
+        /// </summary>
+        private static bool Schritt_116_SzenarioRahmen(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt116_Szenariorahmen)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            l.Notiz("116: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt116_Szenariorahmen.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_SZEN_BEST_ZEITRAUM + ", " +
+                    SchemaKatalog.SPALTE_PW_SZEN_WORST_ZEITRAUM + " (ganze Jahre), " +
+                    SchemaKatalog.SPALTE_PW_SZEN_BEST_MENGE + ", " + SchemaKatalog.SPALTE_PW_SZEN_WORST_MENGE +
+                    " (Prozent) an " + SchemaKatalog.TAB_PROJEKTWIRTSCHAFT + ". KEIN DML: Leer heisst " +
+                    "'wie Erwartet' - der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 
