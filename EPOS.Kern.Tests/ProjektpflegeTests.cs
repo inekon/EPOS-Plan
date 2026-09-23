@@ -52,9 +52,15 @@ namespace EPOS.Kern.Tests
             Assert.True(neu > 0, "Duplizieren fehlgeschlagen.");
             Assert.NotEqual(quelle, neu);
 
+            // Ergebnistabellen kommen nicht mit (Anwenderentscheid 23.09.2026): Die Kopie
+            // hat keinen Lauf. Alle Eingabetabellen tragen die Zeilen der Quelle.
             foreach (var s in plan)
-                Assert.True(vorher[s.Tabelle] == Zaehle(s, neu),
-                            s.Tabelle + ": Quelle " + vorher[s.Tabelle] + ", Kopie " + Zaehle(s, neu) + ".");
+            {
+                int erwartet = s.Ergebnis ? 0 : vorher[s.Tabelle];
+                Assert.True(erwartet == Zaehle(s, neu),
+                            s.Tabelle + ": erwartet " + erwartet + ", Kopie " + Zaehle(s, neu) + ".");
+            }
+            Assert.Contains(plan, s => s.Ergebnis && vorher[s.Tabelle] > 0);
 
             // FreieProjektId (Befund 27.08.2026): Die neue Id war VORHER in JEDER
             // Projekttabelle frei - sonst erbte die Kopie den Rueckstand eines

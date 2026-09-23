@@ -3732,8 +3732,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Der Befund.</b> Das Duplizieren eines Projekts — und damit jede
         /// Variante — kopierte <c>Tab_ErgebnisWirtschaftlichkeit</c> samt UNVERSETZTEM
         /// <c>ID_Ergebnis</c>: Die Kopie zeigte auf den Simulationslauf des Quellprojekts.
-        /// Der Kopierlauf lässt den Verweis ab jetzt leer
-        /// (<c>ProjektDuplizierenCtrl.ERGEBNISVERWEISE_LEEREN</c>); dieser Schritt bereinigt
+        /// Der Kopierlauf nimmt keine Ergebnistabelle mehr mit
+        /// (<c>ProjektDuplizierenCtrl.IstErgebnisTabelle</c>); dieser Schritt bereinigt
         /// den Bestand.</para>
         ///
         /// <para><b>REIN DML</b>, eine Anweisung, die Quelle ist
