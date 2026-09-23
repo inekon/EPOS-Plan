@@ -334,3 +334,5 @@ der Wertfassung vergleichen — dieselben Zahlen wie auf der Seite. (9) Englisch
   `05/§ 3.3` (Nachtrag mit Verweis auf dieses Protokoll), Mockup (Anhang U12 und U43 erledigt, Zone „Bericht und
   Ausgabe", Ressourcentafel der Kategorie 8, Stand-Absatz), Logbuch-Sätze und die Wiki-Quelle der Seite
   Wirtschaftlichkeit, Index Reporting.
+
+**Entscheide 23.09.2026:** alle nach Empfehlung, siehe Register R‑E8b
