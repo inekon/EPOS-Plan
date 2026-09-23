@@ -20,6 +20,12 @@ namespace WindowsFormsApplication1
     /// Text <c>ROLLE=#RRGGBB;…</c>. Leer heißt Hausfarben. Format, Rollenliste und das
     /// Übernehmen in <c>Farbpalette.Aktuell</c> stehen in
     /// <see cref="Zeichnung.Diagrammfarben"/>.</para>
+    ///
+    /// <para><b>Dazu ein Wert, der NICHT in <c>Properties.Settings</c> liegt:</b> die
+    /// Programmeinstellung „Neue Projekte mit Kühlung anlegen"
+    /// (<see cref="NeueProjekteMitKuehlung"/>, E27/K10). Sie liegt in
+    /// <c>Dienste.Einstellungen</c>, damit der Kern sie auf jeder Plattform und ohne
+    /// Windows-Ablage lesen kann (Kühlkonzept 7.2).</para>
     /// </summary>
     public sealed class Einstellungensatz
     {
@@ -40,6 +46,16 @@ namespace WindowsFormsApplication1
         /// (<c>Zeichnung.Diagrammfarben.SCHLUESSEL</c>).
         /// </summary>
         public string DiagrammFarben = "";
+
+        /// <summary>
+        /// „Neue Projekte mit Kühlung anlegen" (E27, K10; Kühlkonzept 7.2, 8.3) —
+        /// <b>Vorgabe aus</b>. Bestimmt allein den Anfangswert der Projekteinstellung
+        /// <c>Tab_Einstellungen.Kuehlbetrieb</c> eines NEU angelegten Projekts und schaltet
+        /// sonst nichts: kein vorhandenes Projekt, keinen Lauf. Gelesen und geschrieben über
+        /// <c>Dienste.Einstellungen</c> (<see cref="EinstellungenCtrl.SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG"/>),
+        /// nicht über <c>Properties.Settings</c>.
+        /// </summary>
+        public bool NeueProjekteMitKuehlung;
     }
 
     /// <summary>Das Ergebnis des Speicherns: gelungen oder mit Grund gescheitert.</summary>
@@ -97,6 +113,52 @@ namespace WindowsFormsApplication1
         private const string UNTERORDNER_IMPORT = "Import";
 
         // =====================================================================
+        // Die Programmeinstellung „Neue Projekte mit Kühlung anlegen" (E27, K10)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Schlüssel in <c>Dienste.Einstellungen</c> — ASCII und <b>eingefroren</b> wie
+        /// jeder Persistenzwert (Kühlkonzept 7.2, B-K11): unter Windows ein DWord unter
+        /// <c>HKCU\Software\wp-plan</c>, auf iOS <c>wp-plan.NeueProjekteMitKuehlung</c> in den
+        /// Preferences, ohne Oberfläche die flüchtige Ablage (dort „aus"). Er ist
+        /// <b>kein</b> <c>Properties.Settings</c>-Schlüssel.
+        /// </summary>
+        public const string SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG = "NeueProjekteMitKuehlung";
+
+        /// <summary>Die Werksvorgabe: aus (E27).</summary>
+        public const bool NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE = false;
+
+        /// <summary>
+        /// Liest die Programmeinstellung; nichts hinterlegt, unlesbar oder eine Ausnahme
+        /// der Ablage heißen „aus".
+        ///
+        /// <para><b>Zwei Leser, und nur diese zwei</b> (Wächter
+        /// <c>KuehlbetriebProgrammeinstellungTests</c>): <see cref="Lesen"/> für den
+        /// Einstellungsdialog und <see cref="KonfigurationCtrl.KuehlbetriebAnfangswertSetzen"/>
+        /// beim Anlegen eines Projekts. Kein Lauf, kein Lesen der Projektkonfiguration und kein
+        /// Schemaschritt fragt sie — ein Projekt ohne Einstellungssatz ist „aus", nicht „wie
+        /// die Programmeinstellung" (Kühlkonzept 7.2).</para>
+        /// </summary>
+        public static bool NeueProjekteMitKuehlungLesen()
+        {
+            try
+            {
+                return Dienste.Einstellungen.LiesZahl(SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG,
+                                                      NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE ? 1 : 0) != 0;
+            }
+            catch
+            {
+                return NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE;
+            }
+        }
+
+        /// <summary>Schreibt die Programmeinstellung als 0/1 (<c>SchreibZahl</c>).</summary>
+        public static void NeueProjekteMitKuehlungSchreiben(bool an)
+        {
+            Dienste.Einstellungen.SchreibZahl(SCHLUESSEL_NEUE_PROJEKTE_MIT_KUEHLUNG, an ? 1 : 0);
+        }
+
+        // =====================================================================
         // Lesen (Form_AdminSettings_Load)
         // =====================================================================
 
@@ -123,6 +185,7 @@ namespace WindowsFormsApplication1
             s.TryPortalUrl = Properties.Settings.Default.TRYPortalUrl ?? "";
             s.TryRegionalUrl = Properties.Settings.Default.TRYRegionalUrl ?? "";
             s.DiagrammFarben = Properties.Settings.Default.DiagrammFarben ?? "";
+            s.NeueProjekteMitKuehlung = NeueProjekteMitKuehlungLesen();
             return s;
         }
 
@@ -136,7 +199,12 @@ namespace WindowsFormsApplication1
         public static Einstellungensatz Zuruecksetzen()
         {
             Properties.Settings.Default.Reset();
-            return Lesen();
+            Einstellungensatz s = Lesen();
+
+            // Der Wert aus Dienste.Einstellungen kennt kein Reset() - die Werksvorgabe wird
+            // hier gesetzt und wie alles andere erst mit „OK" gespeichert.
+            s.NeueProjekteMitKuehlung = NEUE_PROJEKTE_MIT_KUEHLUNG_VORGABE;
+            return s;
         }
 
         // =====================================================================
@@ -185,6 +253,19 @@ namespace WindowsFormsApplication1
             {
                 return new SpeicherBefund(false,
                     string.Format(MyResource.Resource.ADM_SET_MSG_ORDNER_FEHLER, ex.Message));
+            }
+
+            // Die Programmeinstellung „Neue Projekte mit Kühlung anlegen" (E27, K10) geht
+            // über Dienste.Einstellungen - VOR dem Save(), damit ein Fehler hier den
+            // gespeicherten Stand der Settings so lässt, wie er war.
+            try
+            {
+                NeueProjekteMitKuehlungSchreiben(s.NeueProjekteMitKuehlung);
+            }
+            catch (Exception ex)
+            {
+                return new SpeicherBefund(false,
+                    string.Format(MyResource.Resource.ADM_SET_MSG_KUEHLUNG_FEHLER, ex.Message));
             }
 
             Properties.Settings.Default.Save();

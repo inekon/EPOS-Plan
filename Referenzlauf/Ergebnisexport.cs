@@ -28,6 +28,29 @@ namespace WindowsFormsApplication1.Referenzlauf
         };
 
         /// <summary>
+        /// Die neun Ergebnisspalten des Kuehlkanals (Schemaschritt 110, KU-S4; Kuehlkonzept
+        /// 7.4) - sie gehen erst in <c>aggregate.csv</c>, wenn ein Lauf sie ERHEBT.
+        ///
+        /// <para><b>Warum.</b> Der Export liest die Ergebniszeilen mit <c>SELECT *</c>; eine
+        /// neue Spalte verlaengerte die Schluesselliste jedes Projekts, und der Vergleich gegen
+        /// die eingefrorene Basis meldete sie als „Eintrag nur im Vergleichslauf" - die CI
+        /// vergleicht ohne <c>--ohne</c>. Solange kein Kuehlkanal rechnet, sind die Spalten
+        /// NULL, und NULL heisst hier „nicht erhoben", nicht „0": Eine solche Zelle traegt
+        /// keine Aussage, die der Vergleich pruefen koennte. Sobald der Kanal sie schreibt
+        /// (zweite Welle von KU1), erscheinen sie von selbst - dann mit dem Einfrierschritt,
+        /// der ohnehin faellig ist (Kuehlkonzept 10.5). Alle uebrigen Spalten gehen unveraendert
+        /// mit, auch leer.</para>
+        /// </summary>
+        private static readonly HashSet<string> SpaltenNurMitWert = KuehlspaltenDesExports();
+
+        private static HashSet<string> KuehlspaltenDesExports()
+        {
+            var namen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (SchemaSpalte s in KuehlungSchema.Ergebnisspalten) namen.Add(s.Name);
+            return namen;
+        }
+
+        /// <summary>
         /// Rechnet das Projekt und schreibt alle CSVs nach <paramref name="zielOrdner"/>.
         /// Rueckgabe: Anzahl geschriebener Dateien, 0 bei Fehler.
         /// </summary>
@@ -551,6 +574,7 @@ namespace WindowsFormsApplication1.Referenzlauf
             foreach (DataColumn c in dt.Columns)
             {
                 if (FluechtigeSpalten.Contains(c.ColumnName)) continue;
+                if (zeile[c] == DBNull.Value && SpaltenNurMitWert.Contains(c.ColumnName)) continue;
                 werte.Add(Neu(praefix + "." + c.ColumnName, DbWert(zeile[c])));
             }
         }

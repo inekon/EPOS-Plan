@@ -155,6 +155,25 @@
         /// </summary>
         public bool Kaskade_Gepflegt;
 
+        /// <summary>
+        /// <b>In diesem Projekt wird Kälte gerechnet</b> — Spalte
+        /// <c>Tab_Einstellungen.Kuehlbetrieb</c> (Schemaschritt 109, KU-S2; Kühlkonzept 7.2,
+        /// K10/E27). <b>Vorbelegung <c>false</c></b>: Bestands- und Referenzprojekte bleiben
+        /// aus, bis ihre Projekteinstellung ausdrücklich eingeschaltet wird.
+        ///
+        /// <para><b>Der Anfangswert eines NEUEN Projekts</b> kommt aus der Programmeinstellung
+        /// „Neue Projekte mit Kühlung anlegen" — geschrieben EINMAL beim Anlegen
+        /// (<see cref="KonfigurationCtrl.KuehlbetriebAnfangswertSetzen"/>). Gelesen wird hier
+        /// allein die Spalte: Ein Projekt ohne Einstellungssatz, eine fehlende Spalte und NULL
+        /// heißen „aus" — nie „wie die Programmeinstellung".</para>
+        ///
+        /// <para>Gelesen namensbasiert, nicht über die Ordinalkette; geschrieben
+        /// ausschließlich über <see cref="KonfigurationCtrl.KuehlbetriebSchreiben"/> — dieselbe
+        /// Begründung wie bei <see cref="Kaskade_Gepflegt"/>. Kein Rechenweg liest den Wert,
+        /// bis der Kühlkanal steht (zweite Welle von KU1).</para>
+        /// </summary>
+        public bool Kuehlbetrieb;
+
         public KonfigurationModel()
         {
             m_ID = 0;

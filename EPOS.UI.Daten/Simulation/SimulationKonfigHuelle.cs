@@ -1863,6 +1863,13 @@ namespace WindowsFormsApplication1
         /// von <c>Insert</c>; dort zieht ein stilles UPDATE die Vorbelegung WAHR nach.
         /// Der Lesezugriff VOR dem Delete unterscheidet „neues Projekt" von „bewusste
         /// Abwahl"; zurückgeschrieben wird deshalb nur die ABWAHL.</para>
+        ///
+        /// <para><b>Die Projekteinstellung „Kühlbetrieb" reist mit</b> (Schemaschritt 109,
+        /// Kühlkonzept 7.2): Auch sie steht nicht in der Spaltenliste von <c>Insert</c>, die
+        /// neue Zeile trägt die Spaltenvorgabe 0. Gelesen wird VOR dem Delete, aus der
+        /// Datenbank und nicht aus dem Arbeitsstand der Seite - zurückgeschrieben wird nur das
+        /// EIN. Ohne diese Nachreichung schaltete das Speichern der Kaskade die Kühlung eines
+        /// Projekts still ab.</para>
         /// </summary>
         private bool Speichern()
         {
@@ -1881,6 +1888,7 @@ namespace WindowsFormsApplication1
 
             KonfigurationCtrl ctrl = new KonfigurationCtrl();
             bool extrapolationErlaubt = KonfigurationCtrl.ExtrapolationErlaubtLesen(m_ID_Projekt);
+            bool kuehlbetrieb = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
 
             ctrl.model = _konfiguration;
             if (!ctrl.Delete(m_ID_Projekt)) return false;
@@ -1888,6 +1896,12 @@ namespace WindowsFormsApplication1
 
             if (!extrapolationErlaubt)
                 KonfigurationCtrl.ExtrapolationErlaubtSchreiben(m_ID_Projekt, false);
+
+            // DIE PROJEKTEINSTELLUNG „Kuehlbetrieb" REIST MIT (Schemaschritt 109, K10):
+            // die neue Zeile traegt die Spaltenvorgabe 0 - nachgereicht wird das EIN, wie es
+            // VOR dem Delete in der Datenbank stand.
+            if (kuehlbetrieb)
+                KonfigurationCtrl.KuehlbetriebSchreiben(m_ID_Projekt, true);
 
             // DIE MERKSPALTE REIST MIT (Schemaschritt 82). Delete + Insert legt eine
             // NEUE Zeile an, und eine neue Zeile traegt die Vorbelegung 0 - ohne diese

@@ -375,6 +375,21 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Projekte ist **13/13 PASS** gegen diese Basis (4 250 839 Werte, 399/399 CSV byte-gleich, außer
 > `protokoll.txt`) (LFS-SHA-256 `36e693ad…`).
 
+> **Nachtrag: Schemastände 108 bis 110 (Kühlung, Stufe KU1, Welle 1), die Basis bleibt.** Migrationsschritte
+> **108** (`SCHRITT_108_KUEHLUNG_GEBAEUDE`, KU-S1: vier Kühleingaben an `Tab_Gebaeude(_STAMM)` und der zweite
+> Neubau der Sicht `Abfrage_Projektgebaeude`, Quelle `GebaeudeSchema`), **109** (`SCHRITT_109_KUEHLUNG_PROJEKTEINSTELLUNG`,
+> KU-S2: `Tab_Einstellungen.Kuehlbetrieb`, 0/1, Vorgabe 0) und **110** (`SCHRITT_110_KUEHLUNG_ERGEBNIS`, KU-S4: neun
+> nullbare Ergebnisspalten des Kühlkanals; beide Quelle `KuehlungSchema`), **reines DDL** (Kühlkonzept Kapitel 7).
+> Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf
+> der Fassung 107; ein zweiter Lauf legt nichts an. Zellvergleich aller 130 Tabellen gegen die Fassung 107
+> (10 493 796 Zellen): `SchemaVersion` 107 → 110 und die 18 neuen Spalten — Kühleingaben und Ergebnisspalten
+> NULL, `Kuehlung_Aktiv` und `Kuehlbetrieb` 0 —, sonst nichts; die Sicht behält ihre 73 Spalten an ihren Stellen
+> und bekommt vier dahinter. `integrity_check` ok, `foreign_key_check` leer, 130 von 130 Tabellen STRICT, Größe
+> 67 743 744 Byte. **Keine Einfrierregel ist berührt.** Der Referenzlauf-Export nimmt die neun Ergebnisspalten
+> erst auf, wenn ein Lauf sie erhebt — NULL heißt „nicht erhoben" (`Referenzlauf/Ergebnisexport.cs`); damit bleibt
+> `aggregate.csv` ohne `--ohne` gleich. Referenzlauf aller dreizehn Projekte **13/13 PASS** gegen diese Basis
+> (4 250 839 Werte, 399/399 CSV byte-gleich, außer `protokoll.txt`) (LFS-SHA-256 `a3355a80…`).
+
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
 > der Begründung zur Stufe GB und den Nachträgen zu den Schemaständen 101 bis 103 steht in

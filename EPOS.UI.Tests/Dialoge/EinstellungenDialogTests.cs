@@ -139,11 +139,16 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Equal(rollen, cut.FindAll(".epos-farbfeld-vorgabe").Count);
         Assert.Empty(cut.FindAll(".epos-dateiwahl button"));
 
-        // Rubrik 6: der Allgemein-Pfad UND der KI-Schalter.
+        // Rubrik 6: der Allgemein-Pfad, der KI-Schalter UND die Programmeinstellung
+        // "Neue Projekte mit Kuehlung anlegen" (E27, K10) - zwei Schalter, der KI-Schalter
+        // zuerst.
         Reiter(cut, 5);
         Assert.Single(cut.FindAll("input[type=text]"));
         Assert.Single(cut.FindAll(".epos-dateiwahl button"));
-        Assert.Single(cut.FindAll("input[type=checkbox]"));
+        Assert.Equal(2, cut.FindAll("input[type=checkbox]").Count);
+        Assert.Contains("KI", cut.FindAll("label.epos-schalter")[0].TextContent);
+        Assert.Equal("Neue Projekte mit Kühlung anlegen",
+                     cut.FindAll("label.epos-schalter")[1].TextContent.Trim());
     }
 
     [Fact]
@@ -400,6 +405,83 @@ public class EinstellungenDialogTests : EposBunitContext
         cut.FindAll("button.epos-knopf--primaer").Last().Click();
 
         Assert.Equal(false, geschrieben);          // der GELESENE Stand, nicht der Feldstand
+    }
+
+    // =====================================================================
+    //  Die Programmeinstellung „Neue Projekte mit Kühlung anlegen" (E27, K10)
+    // =====================================================================
+
+    /// <summary>Das Kästchen der Programmeinstellung in der Rubrik „Anwendung".</summary>
+    private static AngleSharp.Dom.IElement Kuehlschalter(IRenderedComponent<EinstellungenDialog> cut)
+        => cut.FindAll("label.epos-schalter")
+              .Single(l => l.TextContent.Contains("Neue Projekte mit Kühlung anlegen"))
+              .QuerySelector("input[type=checkbox]")!;
+
+    /// <summary>
+    /// Kühlkonzept 8.6, Fall zu E27: Der Schalter steht auf aus, wenn nichts hinterlegt ist
+    /// (der Wertesatz des Kerns trägt dann <c>false</c>), sagt, wofür er gilt, und reist beim
+    /// „OK" im Wertesatz — geschrieben wird er über <c>Dienste.Einstellungen</c>
+    /// (<c>EinstellungenCtrl.Speichern</c>; Probe in <c>KuehlbetriebProgrammeinstellungTests</c>).
+    /// </summary>
+    [Fact]
+    public void Der_Kuehlschalter_steht_ohne_Eintrag_auf_aus_und_reist_im_Wertesatz()
+    {
+        Einstellungensatz? uebergeben = null;
+        var cut = Zeige(speichern: (s, _) =>
+        {
+            uebergeben = s;
+            return Task.FromResult(new SpeicherBefund(true, ""));
+        });
+        Reiter(cut, 5);
+
+        Assert.False(Kuehlschalter(cut).HasAttribute("checked"));
+        Assert.False(cut.Instance.Werte.NeueProjekteMitKuehlung);
+        Assert.Contains("Gilt nur für neu angelegte Projekte", cut.Markup);
+        Assert.Contains(cut.FindComponents<EPOS.UI.Bausteine.Gruppenkopf>(), g => g.Instance.Titel == "Neue Projekte");
+
+        Kuehlschalter(cut).Change(true);
+        Assert.True(cut.Instance.Werte.NeueProjekteMitKuehlung);
+
+        cut.FindAll("button.epos-knopf--primaer").Last().Click();
+
+        Assert.NotNull(uebergeben);
+        Assert.True(uebergeben!.NeueProjekteMitKuehlung);
+    }
+
+    [Fact]
+    public void Der_Kuehlschalter_zeigt_den_gespeicherten_Stand()
+    {
+        Einstellungensatz satz = Satz();
+        satz.NeueProjekteMitKuehlung = true;
+        var cut = Zeige(satz: satz);
+        Reiter(cut, 5);
+
+        Assert.True(Kuehlschalter(cut).HasAttribute("checked"));
+        Assert.True(cut.Instance.Werte.NeueProjekteMitKuehlung);
+    }
+
+    /// <summary>
+    /// „Standardwerte" setzt auch diesen Schalter auf die Werksvorgabe — aus — und speichert
+    /// nicht; übernommen wird mit „OK".
+    /// </summary>
+    [Fact]
+    public void Standardwerte_setzen_den_Kuehlschalter_auf_aus()
+    {
+        Einstellungensatz satz = Satz();
+        satz.NeueProjekteMitKuehlung = true;
+        int gespeichert = 0;
+        var cut = Zeige(satz: satz,
+                        speichern: (_, _) => { gespeichert++; return Task.FromResult(new SpeicherBefund(true, "")); },
+                        zuruecksetzen: () => Task.FromResult(new Einstellungensatz { NeueProjekteMitKuehlung = false }));
+
+        cut.FindAll(".epos-leiste button").First(b => b.TextContent.Trim() == "Standardwerte").Click();
+        cut.FindComponent<EPOS.UI.Bausteine.Rueckfrage>()
+           .FindAll("button").First(b => b.TextContent.Trim() == "Ja").Click();
+
+        Reiter(cut, 5);
+        Assert.False(cut.Instance.Werte.NeueProjekteMitKuehlung);
+        Assert.False(Kuehlschalter(cut).HasAttribute("checked"));
+        Assert.Equal(0, gespeichert);
     }
 
     // =====================================================================

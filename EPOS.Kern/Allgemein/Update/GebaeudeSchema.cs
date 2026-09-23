@@ -36,13 +36,23 @@ namespace WindowsFormsApplication1
     // WBVK_Anschluß_*, Abmessung_Anschluß_*) stehen BUCHSTABENGETREU, wie im Schema
     // (BETRIEB_SQLITE.md 6.1): SQLite vergleicht Bezeichner nur bei ASCII-Buchstaben ohne
     // Ruecksicht auf Gross- und Kleinschreibung.
+    //
+    // DER ZWEITE DURCHGANG: KU-S1 (Schemaschritt 108, Kuehlkonzept 7.1). Die Klasse wird
+    // mehrfach angefasst (Softwarearchitektur Gebaeudesimulation 2.4): Jeder Durchgang, der
+    // Gebaeudespalten anlegt, ist ein eigener Sichtneubau. KU-S1 legt die vier
+    // Kuehleingaben an beide Gebaeudetabellen und baut die Sicht mit ihnen HINTER den
+    // fuenfzehn Spalten von M3 neu. Die Bauvorschrift der Sicht steht EINMAL (SichtSql);
+    // jeder Durchgang nennt nur seine Zusatzspalten. Tab_Zone gibt es noch nicht - den
+    // Block „Spalten aus KU-S1" legt der Zonenschritt S-C mit an (Mehrzonenkonzept 4.2).
     // ====================================================================================
 
     /// <summary>
     /// Der Gebaeudespalten-Schritt M3 (Schemaschritt 101): Umbenennung
     /// <c>Wohnflaeche</c> → <c>Nutzflaeche</c>, fuenfzehn neue Spalten je Gebaeudetabelle
     /// und der Neubau der Sicht <c>Abfrage_Projektgebaeude</c> - EINE Quelle fuer
-    /// Migration, Werkzeug und Nachweis.
+    /// Migration, Werkzeug und Nachweis. Dazu der zweite Durchgang KU-S1 (Schemaschritt
+    /// 108, Kuehlkonzept 7.1): vier Kuehleingaben je Gebaeudetabelle und der zweite
+    /// Sichtneubau.
     /// </summary>
     public static class GebaeudeSchema
     {
@@ -144,6 +154,57 @@ namespace WindowsFormsApplication1
             TABELLEN.SelectMany(t => NEUE_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
                     .ToArray();
 
+        // ---- KU-S1: die vier Kuehleingaben (Schemaschritt 108, Kuehlkonzept 7.1) -------
+
+        /// <summary>
+        /// Kuehlsollwert der Anlage [°C] — die Regelgroesse der Kuehlung; <b>NULL = Kuehlung
+        /// aus</b>. Der Rueckfall auf <c>Maximaleraumtemperatur</c> ist eine ausdrueckliche
+        /// Einstellung, kein stiller Wert (F-K1): <c>Maximaleraumtemperatur</c> bleibt die
+        /// Ueberhitzungsgrenze des Stundenmodells, dieser Wert regelt die Anlage.
+        /// </summary>
+        public const string SPALTE_KUEHL_SOLLWERT = "Kuehl_Sollwert";
+        /// <summary>Leistungsgrenze der idealen Kuehlung [kW]; NULL = unbegrenzt — das Gegenstueck zu <see cref="SPALTE_HEIZLEISTUNG_MAX"/>.</summary>
+        public const string SPALTE_KUEHLLEISTUNG_MAX = "Kuehlleistung_Max";
+        /// <summary>
+        /// Schalter (0/1, NOT NULL DEFAULT 0): „dieses Gebaeude wird gekuehlt". Er traegt die
+        /// ABSICHT, der Sollwert den WERT — wer die Kuehlung abschaltet, verliert den Sollwert
+        /// nicht (Kuehlkonzept 7.1).
+        /// </summary>
+        public const string SPALTE_KUEHLUNG_AKTIV = "Kuehlung_Aktiv";
+        /// <summary>
+        /// Kuehlsollwert der Nacht [°C]; NULL = wie <see cref="SPALTE_KUEHL_SOLLWERT"/> (keine
+        /// Nachtanhebung). Die Spalte gehoert zu KU-S1, gelesen und im Dialog angeboten wird
+        /// sie erst mit der Stufe KU3 (K11, E27).
+        /// </summary>
+        public const string SPALTE_KUEHL_SOLLWERT_NACHT = "Kuehl_Sollwert_Nacht";
+
+        /// <summary>
+        /// Die vier Kuehlspalten JE Tabelle in der Reihenfolge von Kuehlkonzept 7.1, mit der
+        /// Typangabe in <b>Access</b>-Schreibweise — uebersetzt beim Anlegen wie bei M3:
+        /// <c>DOUBLE</c> → nullbares <c>REAL</c>, <c>YESNO</c> →
+        /// <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>. Kein DDL-DEFAULT auf einem
+        /// Fachwert: NULL ist die Vorgabe.
+        /// </summary>
+        public static readonly KeyValuePair<string, string>[] KUEHL_SPALTEN =
+        {
+            new KeyValuePair<string, string>(SPALTE_KUEHL_SOLLWERT,       "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHLLEISTUNG_MAX,    "DOUBLE"),
+            new KeyValuePair<string, string>(SPALTE_KUEHLUNG_AKTIV,       "YESNO"),
+            new KeyValuePair<string, string>(SPALTE_KUEHL_SOLLWERT_NACHT, "DOUBLE"),
+        };
+
+        /// <summary>Der eine Schalter unter den Kuehlspalten - NOT NULL DEFAULT 0, ohne NULL-Fall.</summary>
+        public static readonly string[] KUEHL_SCHALTER = { SPALTE_KUEHLUNG_AKTIV };
+
+        /// <summary>
+        /// Die acht <see cref="SchemaSpalte"/>-Eintraege von KU-S1 (Kuehlkonzept 7.1) - die
+        /// vier aus <see cref="KUEHL_SPALTEN"/> fuer <c>Tab_Gebaeude</c>, dann fuer
+        /// <c>Tab_Gebaeude_STAMM</c>. Der Name traegt keine Schrittnummer (F-S1).
+        /// </summary>
+        public static readonly SchemaSpalte[] Kuehlspalten =
+            TABELLEN.SelectMany(t => KUEHL_SPALTEN.Select(s => new SchemaSpalte(t, s.Key, s.Value)))
+                    .ToArray();
+
         // ---- die Sicht ----------------------------------------------------------------
 
         /// <summary>Verwirft die Sicht - wiederholbar (<c>IF EXISTS</c>).</summary>
@@ -200,19 +261,49 @@ namespace WindowsFormsApplication1
             SICHT_BESTAND.Concat(NEUE_SPALTEN.Select(s => s.Key)).ToArray();
 
         /// <summary>
-        /// Die Sichtdefinition ab Schritt 101 - die einzige Quelle; <c>sql/schema/002_views.sql</c>
-        /// bleibt der eingefrorene Stand 61. Wortgleich mit der Definition von dort, bis auf
-        /// <c>Nutzflaeche</c> statt <c>Wohnflaeche</c> und die fuenfzehn neuen Spalten hinter
-        /// <c>Tab_Gebaeude.ID</c>.
+        /// DIE BAUVORSCHRIFT DER SICHT — fuer jeden Sichtneubau dieselbe: die 58
+        /// Bestandsspalten an ihren Stellen, dahinter die Zusatzspalten der Durchgaenge in
+        /// ihrer Reihenfolge (M3, dann KU-S1). Ein Durchgang nennt nur, was er anhaengt.
         /// </summary>
-        public static readonly string SQL_VIEW_NEU =
-            "CREATE VIEW [" + VIEW + "] AS\n" +
-            "SELECT " +
-            string.Join(", ",
-                SICHT_ZUORDNUNG.Select(s => "Z_ProjektGebaeude." + s)
-                    .Concat(SICHT_GEBAEUDE.Select(s => "Tab_Gebaeude." + s))
-                    .Concat(NEUE_SPALTEN.Select(s => "Tab_Gebaeude." + s.Key))) +
-            "\nFROM Z_ProjektGebaeude INNER JOIN Tab_Gebaeude ON Z_ProjektGebaeude.ID = Tab_Gebaeude.ID_ProjektGebaeude";
+        /// <param name="zusatzspalten">Die Spalten aus <c>Tab_Gebaeude</c> hinter <c>Tab_Gebaeude.ID</c>.</param>
+        public static string SichtSql(IEnumerable<string> zusatzspalten)
+        {
+            return "CREATE VIEW [" + VIEW + "] AS\n" +
+                   "SELECT " +
+                   string.Join(", ",
+                       SICHT_ZUORDNUNG.Select(s => "Z_ProjektGebaeude." + s)
+                           .Concat(SICHT_GEBAEUDE.Select(s => "Tab_Gebaeude." + s))
+                           .Concat(zusatzspalten.Select(s => "Tab_Gebaeude." + s))) +
+                   "\nFROM Z_ProjektGebaeude INNER JOIN Tab_Gebaeude ON Z_ProjektGebaeude.ID = Tab_Gebaeude.ID_ProjektGebaeude";
+        }
+
+        /// <summary>
+        /// Die Sichtdefinition des Schritts 101 (M3); <c>sql/schema/002_views.sql</c> bleibt
+        /// der eingefrorene Stand 61. Wortgleich mit der Definition von dort, bis auf
+        /// <c>Nutzflaeche</c> statt <c>Wohnflaeche</c> und die fuenfzehn neuen Spalten hinter
+        /// <c>Tab_Gebaeude.ID</c>. Den GELTENDEN Stand nennt <see cref="SQL_VIEW_AKTUELL"/>.
+        /// </summary>
+        public static readonly string SQL_VIEW_NEU = SichtSql(NEUE_SPALTEN.Select(s => s.Key));
+
+        /// <summary>
+        /// Alle Spalten der Sicht ab Schritt 108 (KU-S1): die 73 aus <see cref="SICHT_ALLE"/>,
+        /// dahinter die vier Kuehlspalten - an den Stellen 73..76.
+        /// </summary>
+        public static readonly string[] SICHT_KUEHLUNG =
+            SICHT_ALLE.Concat(KUEHL_SPALTEN.Select(s => s.Key)).ToArray();
+
+        /// <summary>Die Sichtdefinition des Schritts 108 (KU-S1): M3 und dahinter die vier Kuehlspalten.</summary>
+        public static readonly string SQL_VIEW_KUEHLUNG =
+            SichtSql(NEUE_SPALTEN.Select(s => s.Key).Concat(KUEHL_SPALTEN.Select(s => s.Key)));
+
+        /// <summary>
+        /// Die Spalten der GELTENDEN Sicht - des letzten Sichtneubaus (derzeit KU-S1). Wer die
+        /// Sicht einer Datei gegen die Quelle haelt, nimmt diese Liste.
+        /// </summary>
+        public static string[] SICHT_AKTUELL => SICHT_KUEHLUNG;
+
+        /// <summary>Die GELTENDE Sichtdefinition - die des letzten Sichtneubaus (derzeit KU-S1).</summary>
+        public static string SQL_VIEW_AKTUELL => SQL_VIEW_KUEHLUNG;
 
         /// <summary>Die Umbenennung einer Tabelle (E19).</summary>
         public static string UmbenennungSql(string tabelle)
@@ -222,9 +313,10 @@ namespace WindowsFormsApplication1
         // ---- Auskunft und Ausfuehrung (Werkzeug und Nachweis) ---------------------------
 
         /// <summary>
-        /// Steht der Schritt vollstaendig? Beide Tabellen fuehren <c>Nutzflaeche</c> und
+        /// Steht der Schritt 101 vollstaendig? Beide Tabellen fuehren <c>Nutzflaeche</c> und
         /// keine <c>Wohnflaeche</c> mehr, alle 30 Spalten stehen, und die Sicht liefert
-        /// genau <see cref="SICHT_ALLE"/> in dieser Reihenfolge.
+        /// <see cref="SICHT_ALLE"/> in dieser Reihenfolge an ihren Stellen 0..72. Was ein
+        /// spaeterer Sichtneubau dahinter anhaengt (KU-S1), aendert daran nichts.
         /// </summary>
         public static bool Vollstaendig()
         {
@@ -235,7 +327,27 @@ namespace WindowsFormsApplication1
             }
             foreach (SchemaSpalte s in Gebaeudespalten)
                 if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
-            return SichtSpalten().SequenceEqual(SICHT_ALLE, StringComparer.Ordinal);
+            return SichtBeginntMit(SICHT_ALLE);
+        }
+
+        /// <summary>
+        /// Steht KU-S1 (Schritt 108) vollstaendig? Alle acht Kuehlspalten stehen, und die
+        /// Sicht liefert <see cref="SICHT_KUEHLUNG"/> in dieser Reihenfolge an ihren Stellen
+        /// 0..76.
+        /// </summary>
+        public static bool KuehlspaltenVollstaendig()
+        {
+            foreach (SchemaSpalte s in Kuehlspalten)
+                if (!DataRepository.SpalteVorhanden(s.Tabelle, s.Name)) return false;
+            return SichtBeginntMit(SICHT_KUEHLUNG);
+        }
+
+        /// <summary>Beginnt die Spaltenfolge der Sicht mit <paramref name="soll"/>?</summary>
+        private static bool SichtBeginntMit(string[] soll)
+        {
+            List<string> ist = SichtSpalten();
+            return ist.Count >= soll.Length &&
+                   ist.Take(soll.Length).SequenceEqual(soll, StringComparer.Ordinal);
         }
 
         /// <summary>Die Spaltennamen der Sicht, wie SQLite sie meldet (leer, wenn es sie nicht gibt).</summary>
@@ -290,6 +402,52 @@ namespace WindowsFormsApplication1
                     v.Ausfuehren(SQL_VIEW_NEU);
                     bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
                                  SICHT_ALLE.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
+        }
+
+        /// <summary>
+        /// Fuehrt KU-S1 (Schritt 108) in EINEM Vorgang aus - fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c>; die Migration
+        /// der Schale geht denselben Weg ueber ihre eigenen Helfer. Sicht verwerfen, die
+        /// fehlenden Kuehlspalten anlegen, Sicht aus <see cref="SQL_VIEW_KUEHLUNG"/> neu
+        /// bauen. Setzt M3 voraus (<see cref="Alle"/> davor). Wiederholbar: Eine vorhandene
+        /// Spalte wird uebergangen, die Sicht wird immer neu gebaut.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten.</returns>
+        public static int KuehlspaltenAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = Kuehlspalten.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    v.Ausfuehren(SQL_VIEW_DROP);
+                    bericht?.Add("Sicht " + VIEW + " verworfen");
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 Kuehlspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Kuehlspalte(n) angelegt");
+                    v.Ausfuehren(SQL_VIEW_KUEHLUNG);
+                    bericht?.Add("Sicht " + VIEW + " neu gebaut (" +
+                                 SICHT_KUEHLUNG.Length.ToString(CultureInfo.InvariantCulture) + " Spalten)");
                     v.Commit();
                 }
                 catch

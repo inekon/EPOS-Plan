@@ -3,8 +3,9 @@
    VORBILD: Views/Admin/Form_AdminSettings.cs (320 Z.) und .Designer.cs
    (491 Z.) - 35 Steuerelemente plus ZWEI, die zur Laufzeit entstehen.
 
-   WOZU. Zwoelf Properties.Settings-Werte und EIN Registry-Schalter (der
-   KI-Abschalter), sortiert in sechs Rubriken.
+   WOZU. Zwoelf Properties.Settings-Werte, EIN Registry-Schalter (der
+   KI-Abschalter) und die Programmeinstellung "Neue Projekte mit Kuehlung anlegen"
+   (Dienste.Einstellungen, E27/K10), sortiert in sechs Rubriken.
 
    DIE RUBRIKENLISTE IST EINE REITERLEISTE (A-16/A-17). Gestapelte
    Dock.Fill-Panels, von denen genau eines sichtbar ist, plus eine Auswahlliste
@@ -217,6 +218,19 @@
                         <Schalter Bezeichnung="@KiSchalterText" Wert="@_kiAus"
                                   WertChanged="@(w => _kiAus = w)" Aktiv="@(!MaschinenRiegel)" />
                         <Herleitungszeile Text="@KiHinweisText" />
+
+                        @* Die Programmeinstellung "Neue Projekte mit Kuehlung anlegen"
+                           (Entscheid E27, K10; Kuehlkonzept 7.2 und 8.3), Vorgabe aus. Sie
+                           schaltet KEIN vorhandenes Projekt und keinen Lauf - sie setzt allein
+                           den Anfangswert der Projekteinstellung eines NEU angelegten
+                           Projekts. Der Wert reist im Wertesatz; geschrieben wird er ueber
+                           Dienste.Einstellungen, nicht ueber Properties.Settings. Er steht in
+                           der Sammelrubrik, weil er wie der KI-Schalter die ganze Anwendung
+                           betrifft. *@
+                        <Gruppenkopf Titel="@NeueProjekteTitelText" />
+                        <Schalter Bezeichnung="@KuehlungSchalterText" Wert="@_satz.NeueProjekteMitKuehlung"
+                                  WertChanged="@(w => _satz.NeueProjekteMitKuehlung = w)" />
+                        <Herleitungszeile Text="@KuehlungHinweisText" />
                     </KindInhalt>
                 </Reiterblatt>
 
@@ -347,6 +361,9 @@
     [Parameter] public string KiHinweisText { get; set; } = Resource.KI_ABSCHALTER_ADMIN_HINWEIS;
     [Parameter] public string KiMaschineText { get; set; } = Resource.KI_ABSCHALTER_MASCHINE;
     [Parameter] public string KiFehlerText { get; set; } = Resource.ADM_SET_MSG_KI_FEHLER;
+    [Parameter] public string NeueProjekteTitelText { get; set; } = Resource.ADM_SET_GRUPPE_NEUE_PROJEKTE;
+    [Parameter] public string KuehlungSchalterText { get; set; } = Resource.ADM_SET_LBL_NEUE_PROJEKTE_KUEHLUNG;
+    [Parameter] public string KuehlungHinweisText { get; set; } = Resource.ADM_SET_HINT_NEUE_PROJEKTE_KUEHLUNG;
     [Parameter] public string JaText { get; set; } = Resource.ALLG_BTN_JA;
     [Parameter] public string NeinText { get; set; } = Resource.ALLG_BTN_NEIN;
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_AdminSettings.btn_Help";
@@ -465,7 +482,9 @@
             TryPortalUrl = s?.TryPortalUrl ?? "",
             TryRegionalUrl = s?.TryRegionalUrl ?? "",
             AllgemeinPfad = pfade?.AllgemeinPfad ?? "",
-            DiagrammFarben = s?.DiagrammFarben ?? ""
+            DiagrammFarben = s?.DiagrammFarben ?? "",
+            // Kein Pfad: kommt immer aus s - auch "Standardwerte" setzt ihn (auf aus).
+            NeueProjekteMitKuehlung = s?.NeueProjekteMitKuehlung ?? false
         };
 
         FarbenUebernehmen(_satz.DiagrammFarben);
