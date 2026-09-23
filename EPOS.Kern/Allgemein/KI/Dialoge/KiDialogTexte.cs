@@ -1510,6 +1510,11 @@
         internal static string BhwAufAErl => MyResource.Resource.KI_DLG_BHW_AUF_A_ERL;
         internal static string BhwHilfsName => MyResource.Resource.BHW_A_HILFSANTEIL;
         internal static string BhwHilfsErl => MyResource.Resource.KI_DLG_BHW_HILFS_ERL;
+        // ETAPPE E7c (E7c1-Q7): Kennzeichen und Stromkennzahl des zweiten Falls.
+        internal static string BhwAbwaermeName => MyResource.Resource.BHW_FLD_ABWAERMEABFUHR;
+        internal static string BhwAbwaermeErl => MyResource.Resource.KI_DLG_BHW_ABWAERME_ERL;
+        internal static string BhwSigmaName => MyResource.Resource.BHW_FLD_STROMKENNZAHL;
+        internal static string BhwSigmaErl => MyResource.Resource.KI_DLG_BHW_SIGMA_ERL;
         internal static string BhwEinspKwkName => MyResource.Resource.WPAR_EINSP_KWK;
         internal static string BhwEinspKwkErl => MyResource.Resource.KI_DLG_BHW_EINSP_KWK_ERL;
         internal static string BhwAbschlagName => MyResource.Resource.BHW_P_ABSCHLAG;

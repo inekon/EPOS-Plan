@@ -2089,4 +2089,41 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.NotEmpty(art.Wahleintraege());
         Assert.DoesNotContain(art.Wahleintraege(), e => e.Schluessel == "0");
     }
+
+    /// <summary>
+    /// ETAPPE E7c2 (E7c1‑Q7): Der Assistent kennt die zwei Felder des zweiten Falls
+    /// des § 2 Nr. 16 KWKG (<c>KWKG_Abwaermeabfuhr</c>, <c>KWKG_Stromkennzahl</c>) und
+    /// setzt sie auf den Arbeitsstand der gewählten Anlage — eine Kennzahl ≤ 0 heißt
+    /// „kein eigener Wert", wie im Feld der Überlagerung.
+    /// </summary>
+    [Fact]
+    public void Der_Assistent_setzt_Kennzeichen_und_Stromkennzahl_der_Anlage()
+    {
+        var cut = Aufbauen();
+
+        KiFeldzugang kennzeichen = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, "anlage_abwaermeabfuhr");
+        Assert.NotNull(kennzeichen);
+        Assert.True(kennzeichen.Setzbar);
+        KiFeldumsetzung ja = KiFeldwandler.Wandle(kennzeichen, "ja");
+        Assert.True(ja.Ok, ja.Grund);
+        kennzeichen.Setzen(ja.Wert);
+
+        KiFeldzugang sigma = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.BHKW_WIRTSCHAFTLICHKEIT, "anlage_stromkennzahl");
+        Assert.NotNull(sigma);
+        KiFeldumsetzung halb = KiFeldwandler.Wandle(sigma, "0,5");
+        Assert.True(halb.Ok, halb.Grund);
+        sigma.Setzen(halb.Wert);
+        cut.Render();
+
+        Assert.True(cut.Instance.AktuellerStand!.Abwaermeabfuhr);
+        Assert.Equal(0.5, cut.Instance.AktuellerStand!.Stromkennzahl);
+
+        KiFeldumsetzung nullwert = KiFeldwandler.Wandle(sigma, "0");
+        Assert.True(nullwert.Ok, nullwert.Grund);
+        sigma.Setzen(nullwert.Wert);
+        cut.Render();
+        Assert.Null(cut.Instance.AktuellerStand!.Stromkennzahl);
+    }
 }

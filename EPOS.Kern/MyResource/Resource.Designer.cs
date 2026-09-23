@@ -26666,6 +26666,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_ABWAERME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_ABWAERME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlagenart nach KWKG. Sie entscheidet über die Zuschlagsstaffel und die Ausschreibungspflicht. ähnelt.
         /// </summary>
         public static string KI_DLG_BHW_ART_ERL {
@@ -26851,6 +26860,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BHW_SATZ_EINSP_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_BHW_SATZ_EINSP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat. ähnelt.
+        /// </summary>
+        public static string KI_DLG_BHW_SIGMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_BHW_SIGMA_ERL", resourceCulture);
             }
         }
         
@@ -65410,6 +65428,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Fall § 2 Nr. 16 ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_FALL {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_FALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Zuschlag Jahr 1 [€/a] ähnelt.
         /// </summary>
         public static string WIRT_KWKG_SP_JAHR1 {
@@ -65428,11 +65455,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kürzung [MWh/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_KUERZUNG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_KUERZUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWK-Strom [MWh/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_KWK_STROM {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_KWK_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Modul ähnelt.
         /// </summary>
         public static string WIRT_KWKG_SP_MODUL {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_SP_MODUL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzwärme [MWh/a] ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_NUTZWAERME {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_NUTZWAERME", resourceCulture);
             }
         }
         
@@ -65469,6 +65523,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_SP_SATZ_EINSP {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_SP_SATZ_EINSP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromkennzahl σ ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_SP_SIGMA {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_SP_SIGMA", resourceCulture);
             }
         }
         

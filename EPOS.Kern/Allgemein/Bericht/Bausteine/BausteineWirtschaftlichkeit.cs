@@ -487,12 +487,18 @@ namespace WindowsFormsApplication1
 
                 // Elf Spalten, gleich denen des Excel-Blattes — Word und Excel sollen
                 // dieselbe Tabelle zeigen, nicht zwei verschieden beschnittene.
-                int wName = 1655;
-                int wCol = (WordBerichtGenerator.INHALT_B - wName) / 10;
+                // ETAPPE E7c (E7c1-Q7): Rechnet ein Modul den zweiten Fall des § 2 Nr. 16
+                // KWKG, kommen fünf Spalten dazu (Fall, σ, Nutzwärme, KWK-Strom, Kürzung) —
+                // sonst bleibt die Tafel, wie sie war (Fall 1 überall, nichts zu zeigen).
+                // Die Namensspalte gibt dann Breite ab; die übrigen bleiben gleich breit.
+                bool mitFall2 = KwkgFall2Spalten.Noetig(e.KwkgModule);
+                int spalten = mitFall2 ? 16 : 11;
+                int wName = mitFall2 ? 1255 : 1655;
+                int wCol = (WordBerichtGenerator.INHALT_B - wName) / (spalten - 1);
                 var w = new List<int> { wName };
-                for (int i = 0; i < 10; i++) w.Add(wCol);
+                for (int i = 0; i < spalten - 1; i++) w.Add(wCol);
 
-                string[] kopfTexte =
+                var kopfTexte = new List<string>
                 {
                     MyResource.Resource.WIRT_KWKG_SP_MODUL,
                     MyResource.Resource.WIRT_KWKG_SP_PEL,
@@ -506,10 +512,11 @@ namespace WindowsFormsApplication1
                     MyResource.Resource.WIRT_KWKG_SP_JAHR1,
                     MyResource.Resource.WIRT_KWKG_SP_ERSCHOEPFT
                 };
+                if (mitFall2) kopfTexte.AddRange(KwkgFall2Spalten.Kopf());
 
                 Table t = k.NeueTabelle(w.ToArray());
                 var kopf = new TableRow();
-                for (int i = 0; i < kopfTexte.Length; i++)
+                for (int i = 0; i < kopfTexte.Count; i++)
                     kopf.Append(k.Zelle(kopfTexte[i], w[i], true, WordBerichtGenerator.HEAD_FILL,
                                         i == 0 ? JustificationValues.Left : JustificationValues.Center,
                                         false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));
@@ -517,7 +524,7 @@ namespace WindowsFormsApplication1
 
                 foreach (KwkgModulNachweis m in e.KwkgModule)
                 {
-                    string[] werte =
+                    var werte = new List<string>
                     {
                         m.Bezeichner,
                         k.F(m.PelKW, 0),
@@ -537,8 +544,9 @@ namespace WindowsFormsApplication1
                             ? m.ErschoepftAbJahr.ToString(System.Globalization.CultureInfo.InvariantCulture)
                             : MyResource.Resource.WIRT_KWKG_ERSCHOEPFT_NIE
                     };
+                    if (mitFall2) werte.AddRange(KwkgFall2Spalten.Werte(m, k.Kultur));
                     var tr = new TableRow();
-                    for (int i = 0; i < werte.Length; i++)
+                    for (int i = 0; i < werte.Count; i++)
                         tr.Append(k.Zelle(werte[i], w[i], false, null,
                                           i == 0 ? JustificationValues.Left : JustificationValues.Right,
                                           false, WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL));

@@ -6720,6 +6720,21 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
     <value>Kontingent erschöpft ab Jahr</value>
   </data>
+  <data name="WIRT_KWKG_SP_FALL" xml:space="preserve">
+    <value>Fall § 2 Nr. 16</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SIGMA" xml:space="preserve">
+    <value>Stromkennzahl σ</value>
+  </data>
+  <data name="WIRT_KWKG_SP_NUTZWAERME" xml:space="preserve">
+    <value>Nutzwärme [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KWK_STROM" xml:space="preserve">
+    <value>KWK-Strom [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KUERZUNG" xml:space="preserve">
+    <value>Kürzung [MWh/a]</value>
+  </data>
   <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
     <value>Anlage</value>
   </data>
@@ -22301,6 +22316,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
     <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
+  </data>
+  <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
+    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom.</value>
+  </data>
+  <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
+    <value>Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat.</value>
   </data>
   <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
     <value>Tarifstruktur</value>
