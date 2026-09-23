@@ -229,6 +229,47 @@ namespace WindowsFormsApplication1
             {"Tab_TwwWohnungstyp",     "ID_Zone IN (SELECT ID FROM Tab_TwwZone WHERE ID_Projekt = {0})"},
         };
 
+        /// <summary>
+        /// ERGEBNISVERWEISE, DIE NICHT MITKOPIERT WERDEN (Anwenderentscheid 23.09.2026):
+        /// Tabelle → Spalten, die in der Kopie NULL werden, statt den Wert der Quelle zu
+        /// tragen.
+        ///
+        /// <para><b>Der Befund.</b> <c>Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis</c> nennt
+        /// den Simulationslauf (<c>Tab_Ergebnis.ID</c>), auf dem die gespeicherte
+        /// Wirtschaftlichkeit beruht. Die Spalte hat keine deklarierte Beziehung und steht in
+        /// keiner der Zuordnungen oben — der Kopierlauf übernahm sie deshalb UNVERSETZT: Jede
+        /// Kopie und jede Variante zeigte auf den Lauf des QUELLprojekts (Anwenderdatenbank:
+        /// 1066/1067 auf den Lauf 234 von 1065; Testdatenbank: 21 Zeilen in sechs Projekten).
+        /// </para>
+        ///
+        /// <para><b>Die Regel.</b> Die Kopie hat noch kein eigenes Wirtschaftlichkeitsergebnis:
+        /// Die kopierten Zeilen bleiben stehen, ihr Verweis wird leer — damit gelten sie als
+        /// „passt nicht zum Simulationsstand" (<c>WirtschaftlichkeitCtrl.ErgebnisAktuell</c>),
+        /// und die Wirtschaftlichkeit rechnet nach dem ersten Lauf der Kopie neu. Die Verweise
+        /// der Ergebnis-Detailtabellen (<c>Tab_ErgebnisBHKW.ID_Ergebnis</c> &amp; Co.) sind
+        /// deklarierte Beziehungen, werden versetzt und zeigen auf die Kopie — sie stehen
+        /// hier nicht.</para>
+        ///
+        /// <para>Dieselbe Liste bereinigt der Schemaschritt 106 den Bestand
+        /// (<see cref="WirtschaftlichkeitFremdverweis"/>).</para>
+        /// </summary>
+        internal static readonly Dictionary<string, string[]> ERGEBNISVERWEISE_LEEREN =
+            new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+            {
+                { WirtschaftlichkeitFremdverweis.TABELLE, new[] { WirtschaftlichkeitFremdverweis.SPALTE } }
+            };
+
+        /// <summary>Steht (<paramref name="tabelle"/>, <paramref name="spalte"/>) in <see cref="ERGEBNISVERWEISE_LEEREN"/>?</summary>
+        internal static bool ErgebnisverweisLeeren(string tabelle, string spalte)
+        {
+            string[] spalten;
+            if (tabelle == null || spalte == null ||
+                !ERGEBNISVERWEISE_LEEREN.TryGetValue(tabelle, out spalten)) return false;
+            foreach (string s in spalten)
+                if (string.Equals(s, spalte, StringComparison.OrdinalIgnoreCase)) return true;
+            return false;
+        }
+
         // Echte, in Access deklarierte Fremdschluessel: Key "Tabelle||Spalte" -> referenzierte Tabelle.
         // Wird zur Laufzeit aus dem Schema gelesen und deckt exakt die erzwungene referentielle
         // Integritaet ab. Hat Vorrang vor FK_MAP/FK_OVERRIDE (die nur Fallback fuer nicht deklarierte
@@ -929,6 +970,14 @@ namespace WindowsFormsApplication1
                 if (s.NameSpalte != null && string.Equals(col, s.NameSpalte, StringComparison.OrdinalIgnoreCase))
                 {
                     exprs.Add("?"); // neuer Projektname
+                    continue;
+                }
+
+                // Ergebnisverweise der Quelle kommen nicht mit (ERGEBNISVERWEISE_LEEREN):
+                // Die Kopie hat noch kein eigenes Ergebnis.
+                if (ErgebnisverweisLeeren(s.Tabelle, col))
+                {
+                    exprs.Add("NULL");
                     continue;
                 }
 

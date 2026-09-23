@@ -1225,6 +1225,30 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
 
+            // ---- Schritt 106: fremde Ergebnisverweise der gespeicherten Wirtschaftlichkeit
+            //      werden NULL (Anwenderentscheid 23.09.2026, Erbe des Duplizierens). REIN
+            //      DML, eine Anweisung aus WirtschaftlichkeitFremdverweis - DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_106_WirtschaftlichkeitFremdverweis
+            //      bedient.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest den Verweis, und die
+            //      Wirtschaftlichkeit steht nicht im Export.
+            //
+            //      ER STEHT NACH 105 ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            List<string> betroffene106 = WirtschaftlichkeitFremdverweis.Betroffene();
+            Console.WriteLine("Schritt 106 - " + WirtschaftlichkeitFremdverweis.TABELLE + "." +
+                              WirtschaftlichkeitFremdverweis.SPALTE + ": " + betroffene106.Count +
+                              " Zeile(n) mit fremdem Ergebnisverweis.");
+            foreach (string zeile in betroffene106)
+                Console.WriteLine("Schritt 106 - " + zeile);
+            if (!trocken)
+            {
+                int gesetzt106 = WirtschaftlichkeitFremdverweis.Ausfuehren();
+                Console.WriteLine("Schritt 106 - " + gesetzt106 + " Verweis(e) auf NULL gesetzt, offen " +
+                                  WirtschaftlichkeitFremdverweis.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

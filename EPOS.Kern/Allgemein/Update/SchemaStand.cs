@@ -375,11 +375,18 @@ namespace WindowsFormsApplication1
         /// (<see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>). <b>Reines DDL,
         /// ergebnisneutral:</b> 0 heißt Fall 1, die Nettostromerzeugung — der Rechenweg
         /// vor dem Schritt; der Referenzlauf bleibt byte-gleich.
+        /// Mit den FREMDEN ERGEBNISVERWEISEN DER WIRTSCHAFTLICHKEIT (Schritt 106,
+        /// Anwenderentscheid 23.09.2026) steht das Ziel auf <b>106</b>: Ein Verweis
+        /// <c>Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis</c> auf einen Simulationslauf, der
+        /// nicht demselben Projekt gehört — das Erbe des Duplizierens —, wird NULL
+        /// (<see cref="WirtschaftlichkeitFremdverweis"/>). <b>Reines DML,
+        /// ergebnisneutral:</b> Kein Rechenweg liest den Verweis, und die Wirtschaftlichkeit
+        /// steht nicht im Export; der Referenzlauf bleibt byte-gleich.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 105;
+        public const int Zielversion = 106;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,
