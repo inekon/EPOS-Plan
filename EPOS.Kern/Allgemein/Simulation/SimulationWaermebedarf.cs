@@ -178,6 +178,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal List<ErgebnisGebaeudeModel> GebaeudeKennzahlenListe { get; } = new List<ErgebnisGebaeudeModel>();
 
+        /// <summary>
+        /// <b>Die Fassade der Kälteseite</b> (Entscheid E21, Kühlkonzept 3.7, 4.2) — sie hängt an
+        /// diesem Lauf, weil das EINE Kanalfeld hier lebt: Die Gebäudeschleife und die
+        /// Lastgangschleife reichen ihre Kältebeiträge an sie durch, und am Ende des Bedarfslaufs
+        /// bildet sie Summe, Spitze, Dauerlinie und die Bedarfsprobe Kälte. Sie rechnet kein
+        /// Gebäude — Heiz- und Kühlreihe stammen aus demselben Lauf des Moduls <c>Gebaeude/</c>.
+        /// </summary>
+        public SimulationKaeltebedarf Kaelteseite { get; } = new SimulationKaeltebedarf();
+
+        /// <summary>
+        /// Rechnet dieses Projekt Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>, Schemaschritt 109,
+        /// K10)? Gelesen EINMAL je Lauf und Auskunft (zurückgesetzt in
+        /// <see cref="KlimakalenderLesen"/>, dem Vorbereitungsschritt beider), dialogfrei und ohne
+        /// Rückfall auf die Programmeinstellung: Fehlende Zeile, fehlende Spalte und NULL heißen
+        /// „aus" (<see cref="KonfigurationCtrl.KuehlbetriebLesen"/>).
+        ///
+        /// <para>Er wirkt an ZWEI Stellen und nur dort: im Löser (Kühlsollwert und
+        /// Kühlleistungsgrenze gelten nur mit ihm, <see cref="GebaeudeModellEingang"/>) und in der
+        /// Kältefassade (ohne ihn bleibt der Kühlkanal leer). Aus heißt: Kein Gebäude rechnet
+        /// anders als vor der Kühlung, und keine Kältezahl wird erhoben.</para>
+        /// </summary>
+        internal bool KuehlbetriebProjekt
+        {
+            get
+            {
+                if (!_kuehlbetriebProjekt.HasValue)
+                    _kuehlbetriebProjekt = KonfigurationCtrl.KuehlbetriebLesen(m_ID_Projekt);
+                return _kuehlbetriebProjekt.Value;
+            }
+            set { _kuehlbetriebProjekt = value; }
+        }
+
+        private bool? _kuehlbetriebProjekt;
+
         /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
         internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
 
@@ -255,11 +289,17 @@ namespace WindowsFormsApplication1
             // ENERGIEPROBE (Konzept 11.3): eine UNABHÄNGIGE Summe aller Bedarfsanteile,
             // in double und ohne Kanalzuordnung mitgeführt. Sie ist der Gegenwert, an dem
             // am Ende die Kanalsumme gemessen wird - eine Kanalzuordnung, die einen
-            // Anteil verschluckt oder doppelt bucht, fällt genau hier auf.
+            // Anteil verschluckt oder doppelt bucht, fällt genau hier auf. Sie ist eine
+            // WÄRMEprobe: Kältebeiträge gehen nicht hinein, sondern in die Bedarfsprobe
+            // Kälte der Kältefassade (Kühlkonzept 4.2).
             double[] probe = new double[8760];
 
             //  if (!DBGelesen)
             KlimakalenderLesen(ID_Klimaregion);
+
+            // KÜHLUNG (Stufe KU1, E21): die Kältefassade dockt an DASSELBE Kanalfeld an. Sie
+            // bucht in der Gebäude- und der Lastgangschleife mit und schließt am Ende ab.
+            Kaelteseite.Beginnen(_kanaele, KuehlbetriebProjekt);
 
             ProjektGebaeudeCtrl ctrl = new ProjektGebaeudeCtrl();
             ctrl.ReadAll(ID_Projekt);
@@ -288,6 +328,12 @@ namespace WindowsFormsApplication1
                 // KOPIE der Einzelreihe, nach derselben Umrechnung W -> kW wie der Heizkanal
                 // unten. Der Rechenweg bleibt unberuehrt.
                 GebaeudeKennzahlenListe.Add(KennzahlenEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude));
+
+                // KUEHLUNG (E21): Die Kuehlreihe DESSELBEN Ergebnisses geht an die
+                // Kaeltefassade - kein zweiter Lauf des Gebaeudemodells. Ein Gebaeude auf dem
+                // Bestandsweg hat kein Ergebnis (null) und bekommt dort Kaeltebedarf 0 mit
+                // Hinweis (F-K18).
+                Kaelteseite.GebaeudeBuchen(i, ctrl.items[i], GebaeudeErgebnisse.Ergebnis(i));
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
                 // K1: Gebäudewärme geht in den HEIZKANAL statt in den Summenvektor.
@@ -387,6 +433,16 @@ namespace WindowsFormsApplication1
                 // ergeben den Heizkanal - die altverhaltenserhaltende Vorbelegung, mit der
                 // jede Bestandsganglinie unverändert im Heizbedarf mitläuft.
                 int kanal = Kanal.AusText(waectrl.items[n].Kanal);
+
+                // KUEHLUNG (K3, F-K5): Ein Lastgang mit dem Kanal "Kuehlung" traegt KAELTE. Er
+                // geht an die Kaeltefassade - nicht in einen Waermekanal, nicht in die
+                // Energieprobe der Waermeseite und nicht in Waermebedarf_Extern (4.2).
+                if (Kanal.IstKaelte(kanal))
+                {
+                    Kaelteseite.GanglinieBuchen(ganglinie);
+                    continue;
+                }
+
                 WPPlan.Core.BhkwPlan.VectorenAddieren(ganglinie, _kanaele.Bedarf[kanal]);
 
                 // Energieprobe: kanalneutral - die Ganglinie zählt einmal, egal wohin.
@@ -510,6 +566,13 @@ namespace WindowsFormsApplication1
             WPPlan.Core.BhkwPlan.Heapsort(Waermebedarf_sortiert, Dauerlinie);
 
             Array.Reverse(Dauerlinie);
+
+            // KUEHLUNG (Stufe KU1, E21): die Kaelteseite abschliessen - NACH der Waermeseite,
+            // damit die Bedarfsprobe Kaelte auch sieht, was danach mit dem Kanalsatz geschah.
+            // Eine verletzte Probe ist ein benannter Abbruch wie der des Zapfprofilgenerators:
+            // Der Lauf speichert kein Ergebnis (Kuehlkonzept 4.4, Stufe Fehler).
+            if (!Kaelteseite.Abschliessen(mo_anfang, mo_ende))
+                Fehlertext = Kaelteseite.Fehlertext;
         }
 
         // ===================================================================
@@ -655,6 +718,10 @@ namespace WindowsFormsApplication1
             gemeinsam.WochenendeOrtszeit = KlimakalenderGemeinsam.WochenendmaskeBilden(gemeinsam.Referenzjahr);
             gemeinsam.WochenendProbeAbweichungen = KlimakalenderGemeinsam.Abweichungen(gemeinsam.WochenendeOrtszeit, WE);
             GebaeudeErgebnisse.Leeren();
+
+            // KÜHLUNG (K10): Der Projektschalter wird je Lauf bzw. Auskunft neu gelesen - hier,
+            // im Vorbereitungsschritt, den beide rufen (siehe KuehlbetriebProjekt).
+            _kuehlbetriebProjekt = null;
         }
 
         /// <summary>
@@ -700,6 +767,11 @@ namespace WindowsFormsApplication1
             IGebaeudeRechenweg weg = RechenwegWaehlen(item);
             KlimakalenderGemeinsam gemeinsam = vorbereitung.Klimakalender.Gemeinsam;
             double verbrauchAltKwh;
+
+            // KÜHLUNG (KU1, K11): Der VDI-Weg regelt auf Kühlsollwert und Kühlleistungsgrenze
+            // nur, wenn das PROJEKT Kälte rechnet - Lauf und Auskunft bekommen denselben
+            // Schalter. Der Tagesbilanz-Weg kennt keine Kühlung (E20) und liest ihn nicht.
+            _vdi6007.Kuehlbetrieb = KuehlbetriebProjekt;
 
             // Der VDI-Weg läuft EINMAL; Rückrechnung und Skalierung sind eine
             // Nachmultiplikation hinter der Weiche (F-Ü2, Rechenschritte 8.3). Der
@@ -1059,6 +1131,7 @@ namespace WindowsFormsApplication1
         private void BedarfNachAbbruchLeeren()
         {
             _kanaele = new Kanalsatz();
+            Kaelteseite.Beginnen(_kanaele, false);
             WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf);
             WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_sortiert);
             WPPlan.Core.BhkwPlan.VectorInit(Dauerlinie);

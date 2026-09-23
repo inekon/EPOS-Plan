@@ -109,8 +109,38 @@ namespace WindowsFormsApplication1
         internal double SollWochenende { get; private set; }
         /// <summary>Feriensollwert [°C].</summary>
         internal double SollFerien { get; private set; }
-        /// <summary>Obere Raumtemperatur θ_max [°C] (vor KU1 zugleich der Kühlsollwert).</summary>
+        /// <summary>
+        /// Obere Raumtemperatur θ_max [°C] (<c>Maximaleraumtemperatur</c>) — die Grenze der
+        /// Überhitzungskennzahl. Ohne wirksame Kühlung zugleich die Kappung des Lösers (ideale
+        /// Kühlung ohne Grenze, informativ, wie vor KU1); mit wirksamer Kühlung regelt der
+        /// Kühlsollwert (<see cref="KuehlSollwert"/>), und θ_max bleibt allein die
+        /// Überhitzungsgrenze (Kühlkonzept 7.1).
+        /// </summary>
         internal double ThetaMaxWert { get; private set; }
+
+        /// <summary>
+        /// <b>Ist die Kühlung dieses Gebäudes wirksam?</b> (Stufe KU1; Kühlkonzept 3.2, 7.1, 7.2)
+        /// Genau dann, wenn das PROJEKT Kälte rechnet (<c>Tab_Einstellungen.Kuehlbetrieb</c>),
+        /// das Gebäude gekühlt wird (<c>Kuehlung_Aktiv</c>) und einen Kühlsollwert trägt
+        /// (<c>Kuehl_Sollwert</c>; NULL heißt „Kühlung aus", F-K1 — der Rückfall auf θ_max ist
+        /// eine ausdrückliche Eingabe, kein stiller Wert). Nur dann geht die Kühlreihe in den
+        /// Kühlkanal.
+        /// </summary>
+        internal bool KuehlungWirksam { get; private set; }
+
+        /// <summary>
+        /// Die obere Regelgrenze des Lösers [°C]: mit wirksamer Kühlung der Kühlsollwert θ_kuehl
+        /// (Kühlkonzept 3.2, Totband zwischen Heiz- und Kühlsollwert), sonst θ_max — die
+        /// Kappung wie vor KU1.
+        /// </summary>
+        internal double KuehlSollwert { get; private set; }
+
+        /// <summary>
+        /// Kühlleistungsgrenze [W] (<c>Kuehlleistung_Max</c> in kW, K11): Gegenstück zu
+        /// <see cref="HeizleistungMaxW"/>; NaN = unbegrenzt. Nur mit wirksamer Kühlung gesetzt —
+        /// ohne sie kappt der Löser unbegrenzt, wie vor KU1.
+        /// </summary>
+        internal double KuehlleistungMaxW { get; private set; } = double.NaN;
         /// <summary>Ferientage (Index 0 … 364), nur bei aktivem Fahrplan belegt.</summary>
         internal bool[] Ferientage { get; private set; }
 
@@ -172,9 +202,12 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal Stundenrand Rand(int h, bool sommerlueftung = false)
         {
+            // Die Kühlleistung wirkt in KU1 rein konvektiv am Luftknoten (Kühlkonzept 3.2):
+            // kein Anteil an der Innenfläche, keine eigene Übergabeart vor der Anlagenkopplung.
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                    heizleistungMaxW: HeizleistungMaxW,
+                                   kuehlleistungMaxW: KuehlleistungMaxW,
                                    heizungStrahlungsanteil: HeizungStrahlungsanteil,
                                    zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
         }
@@ -201,13 +234,16 @@ namespace WindowsFormsApplication1
         /// <param name="laengengrad">Längengrad der Klimaregion [°].</param>
         /// <param name="breitengrad">Breitengrad der Klimaregion [°].</param>
         /// <param name="zeitbezug">Zeitbezug der Sonnengeometrie (U6).</param>
+        /// <param name="kuehlbetrieb">Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?
+        /// Ohne ihn rechnet das Gebäude wie vor KU1 (<see cref="KuehlungWirksam"/>).</param>
         /// <exception cref="GebaeudeModellException">bei jeder verletzten Prüfung.</exception>
         internal static GebaeudeModellEingang Bauen(
             ProjektGebaeudeModel gebaeude,
             IReadOnlyList<SolardatenModel> solarOrtszeit,
             bool[] wochenende,
             double laengengrad, double breitengrad,
-            Zeitbezug zeitbezug = GebaeudeKlimaweg.ZEITBEZUG_VORGABE)
+            Zeitbezug zeitbezug = GebaeudeKlimaweg.ZEITBEZUG_VORGABE,
+            bool kuehlbetrieb = false)
         {
             GebaeudeModellEingang e = Daten(gebaeude);
             e.Parameter = ErsatzparameterRC.AusKlassenweg(e);
@@ -308,9 +344,52 @@ namespace WindowsFormsApplication1
             e.PhiConv = phiConv;
             e.PhiSolar = phiSolar;
             e.ThetaSoll = Sollwertfahrplan(e, wochenende);
+
+            // KU1 (Kühlkonzept 3.2, K11): Kühlsollwert und Kühlleistungsgrenze - nur mit
+            // wirksamer Kühlung. Ohne sie ist die obere Grenze θ_max, unbegrenzt, wie vor KU1.
+            e.KuehlungAufloesen(gebaeude, kuehlbetrieb);
             e.ThetaMax = new double[8760];
-            for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.ThetaMaxWert;
+            for (int h = 0; h < 8760; h++) e.ThetaMax[h] = e.KuehlSollwert;
             return e;
+        }
+
+        /// <summary>
+        /// Löst die Kühleingaben des Gebäudes auf (Stufe KU1, Kühlkonzept 3.2, 7.1): wirksam nur
+        /// mit Projektschalter, <c>Kuehlung_Aktiv</c> und gesetztem Kühlsollwert. Dann gilt die
+        /// harte Prüfregel θ_kuehl ≥ θ_soll,max + 1 K (Q18-Regel des Stundenwegs) — θ_soll,max ist
+        /// der höchste Wert des Sollwertfahrplans, also auch Nacht, Wochenende und Ferien, soweit
+        /// sie gelten —, und eine gesetzte Kühlleistungsgrenze muss größer null sein.
+        /// </summary>
+        private void KuehlungAufloesen(ProjektGebaeudeModel g, bool kuehlbetrieb)
+        {
+            KuehlungWirksam = kuehlbetrieb && g.Kuehlung_Aktiv && g.Kuehl_Sollwert.HasValue;
+            if (!KuehlungWirksam)
+            {
+                KuehlSollwert = ThetaMaxWert;
+                KuehlleistungMaxW = double.NaN;
+                return;
+            }
+
+            double soll = g.Kuehl_Sollwert.Value;
+            double heizMax = double.NegativeInfinity;
+            for (int h = 0; h < ThetaSoll.Length; h++)
+                if (Endlich(ThetaSoll[h]) && ThetaSoll[h] > heizMax) heizMax = ThetaSoll[h];
+
+            if (!Endlich(soll) || (Endlich(heizMax) && !(soll >= heizMax + GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)))
+                Fehler(GebaeudeModellFehler.KuehlsollwertUnterHeizsollwert,
+                    string.Format(CultureInfo.CurrentCulture, MyResource.Resource.SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT,
+                                  Text(soll), Text(heizMax), Text(GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K)));
+            KuehlSollwert = soll;
+
+            KuehlleistungMaxW = double.NaN;
+            if (g.Kuehlleistung_Max.HasValue)
+            {
+                double grenzeW = 1000.0 * g.Kuehlleistung_Max.Value;
+                if (!Endlich(grenzeW) || grenzeW <= 0.0)
+                    Fehler(GebaeudeModellFehler.ParameterUngueltig,
+                        "Die Kühlleistungsgrenze " + Text(grenzeW) + " W ist gesetzt, aber nicht größer null.");
+                KuehlleistungMaxW = grenzeW;
+            }
         }
 
         /// <summary>

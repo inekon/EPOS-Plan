@@ -24,6 +24,12 @@ namespace WindowsFormsApplication1
         public SimulationControl sim = new SimulationControl();
 
         /// <summary>
+        /// Die Kälteseite dieses Laufs (Fassade <see cref="SimulationKaeltebedarf"/>, E21) — sie
+        /// hängt an der Bedarfsrechnung, weil das eine Kanalfeld dort lebt.
+        /// </summary>
+        public SimulationKaeltebedarf simulation_Kaeltebedarf => simulation_Waermebedarf.Kaelteseite;
+
+        /// <summary>
         /// DER HAKEN für die Ergebniszeile des Stromspeichers (Umsetzungskonzept iU3,
         /// Kante K8) — dieselbe Begründung wie bei
         /// <see cref="SimulationControl.Speicherlauf"/>: Die Abbildung liegt in
@@ -377,6 +383,19 @@ namespace WindowsFormsApplication1
             // drei Spalten ist deshalb Waermebedarf_Gesamt bis auf die double-Rundung, mit
             // der Kanalsatz.Summe() den Summenvektor stundenweise bildet.
             m.Energiebedarf.Waermebedarf_Kanal = BedarfJeKanal(simulation_Waermebedarf);
+
+            // KUEHLUNG (Stufe KU1, E21; Kuehlkonzept 7.4): Die Kaelteseite geht nur in die
+            // Ergebniszeile, wenn der Lauf sie ERHOBEN hat - sonst bleiben die neun Spalten
+            // NULL ("nicht erhoben", nie 0), und ein Projekt ohne Kuehlung schreibt dieselben
+            // Zeilen wie vor dem vierten Kanal. Kaeltebedarf_Max -> Kaeltelast_Max wie
+            // Waermebedarf_Max -> Waermelast_Max (4.4, Namenskette).
+            SimulationKaeltebedarf kaelte = simulation_Waermebedarf.Kaelteseite;
+            if (kaelte != null && kaelte.Gerechnet)
+            {
+                m.Energiebedarf.Kaeltebedarf_Gesamt = kaelte.Kaeltebedarf_Gesamt;
+                m.Energiebedarf.Kaeltelast_Max = kaelte.Kaeltebedarf_Max;
+                m.Energiebedarf.Kaelterestbedarf = kaelte.Kaelterestbedarf;
+            }
 
             // ENTSCHEID E30: die Kennzahlen je Gebaeude, wie die Gebaeudeschleife des Laufs
             // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.

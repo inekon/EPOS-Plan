@@ -9329,6 +9329,9 @@ They typically stem from a variant copy without this trade and keep entering the
   <data name="KANAL_KUEHLUNG_ANZEIGE" xml:space="preserve">
     <value>Cooling</value>
   </data>
+  <data name="KAELTE_GRENZE_FEUCHTE" xml:space="preserve">
+    <value>Sensible cooling without dehumidification: humidity and latent load are not included — the cooling demand of a system with dehumidification is higher.</value>
+  </data>
   <data name="SIMWARN_W1_ZIEL_AUSSERHALB_SET" xml:space="preserve">
     <value>Unit "{0}" (rank {1}): storage "{2}" is charged as {3}, but its class set is {4}. Channel {5} is missing — heat charged for this purpose is never discharged by this storage.</value>
   </data>
@@ -9562,6 +9565,27 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
   </data>
   <data name="SIMENG_KNAPPHEIT_UNGUELTIG" xml:space="preserve">
     <value>Scarcity order: The project setting "{0}" is unusable - the three keys {1};{2};{3} are expected in any order, each exactly once; {7} may be omitted and always comes last. The calculation uses the default {4} -&gt; {5} -&gt; {6} -&gt; {8}.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_ERZEUGER" xml:space="preserve">
+    <value>Cooling demand without a cooling generator: {0} MWh/a, peak {1} kW. Heat generators do not cover cooling — the cooling demand remains uncovered.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BESTANDSWEG" xml:space="preserve">
+    <value>Building "{0}": Daily balance (legacy method) provides no cooling load — cooling demand 0. The cooling inputs apply as soon as the building is calculated with VDI 6007.</value>
+  </data>
+  <data name="SIMENG_KAELTE_OHNE_SOLLWERT" xml:space="preserve">
+    <value>Building "{0}": Cooling is switched on but has no cooling set point — an empty cooling set point means "cooling off"; the building has no cooling demand.</value>
+  </data>
+  <data name="SIMENG_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Cooling: The project does not calculate cooling (project setting "Calculate cooling" off). {0} buildings with cooling switched on and {1} load profiles with the cooling channel have no effect.</value>
+  </data>
+  <data name="SIMENG_KAELTE_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Hours with simultaneous heating and cooling: {0} h (building "{1}") — switch-over hours in the transition season or zoning that requires both. Heating and cooling demand are not offset against each other.</value>
+  </data>
+  <data name="SIMENG_KAELTE_BEDARFSPROBE" xml:space="preserve">
+    <value>Cooling demand check: The cooling channel deviates from the booked cooling contributions in {0} hours (largest deviation {1} kWh). The separation of heat and cooling does not hold; the run is not saved.</value>
+  </data>
+  <data name="SIMENG_KUEHLSOLLWERT_UNTER_HEIZSOLLWERT" xml:space="preserve">
+    <value>The cooling set point {0} °C is not at least {2} K above the highest heating set point {1} °C — heating and cooling would work against each other. This is an input error; the run stops.</value>
   </data>
   <data name="SIMENG_QUELLPROFIL_UNLESBAR" xml:space="preserve">
     <value>Source profile {0} of plant {1} is unreadable or incomplete (the number of values does not match the operating mode) - the legacy path or the outdoor temperature applies.</value>

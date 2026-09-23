@@ -17,8 +17,8 @@ namespace EPOS.Kern.Tests
     /// der Testdatenbank (alle Strukturen stehen, alles leer bzw. 0, die Sicht ist die
     /// geltende, STRICT bleibt); KU-S1 aus dem Stand davor, wiederholbar; die Leser und
     /// Schreiber der Gebäudespalten NULL-erhaltend (Namensleser der Sicht, Katalogkopie,
-    /// Insert/Overwrite); und dass ein Lauf die neun Ergebnisspalten leer lässt — kein
-    /// Rechenweg liest oder schreibt sie in dieser Welle.</para>
+    /// Insert/Overwrite); und dass ein Lauf die neun Ergebnisspalten leer lässt, solange das
+    /// Projekt keine Kälte rechnet.</para>
     ///
     /// <para><b>Eigene Arbeitskopie je Fall</b> — mehrere Fälle schreiben.</para>
     /// </summary>
@@ -324,13 +324,14 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
-        //  Teil 4 - kein Rechenweg schreibt die Ergebnisspalten
+        //  Teil 4 - ohne Kuehlbetrieb bleiben die Ergebnisspalten leer
         // =============================================================================
 
         /// <summary>
         /// Ein Lauf auf der Testdatenbank schreibt seine Ergebniszeilen wie bisher — und lässt
-        /// die neun Spalten von KU-S4 leer: NULL heißt „nicht erhoben", und erhoben wird Kälte
-        /// erst mit dem Kanal der zweiten Welle.
+        /// die neun Spalten von KU-S4 leer: NULL heißt „nicht erhoben". Seit der zweiten Welle
+        /// erhebt der Kanal Kälte, aber nur mit dem Projektschalter <c>Kuehlbetrieb</c>; jedes
+        /// Referenzprojekt steht auf aus (Gegenfall mit Kühlung: <c>KaeltebedarfTests</c>).
         /// </summary>
         [Fact]
         public void Ein_Lauf_laesst_die_neun_Ergebnisspalten_leer()

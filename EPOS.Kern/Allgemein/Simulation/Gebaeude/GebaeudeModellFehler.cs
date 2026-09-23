@@ -126,6 +126,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>Eine Ergebnisreihe des Laufs ist nicht endlich oder negativ (Plausibilität nach dem Lauf).</summary>
         ErgebnisUnplausibel,
+
+        // ---- Stufe KU1 der Kühlung (Kühlkonzept 3.2, 3.3) ----------------------------
+
+        /// <summary>
+        /// Der Kühlsollwert liegt nicht mindestens
+        /// <see cref="GebaeudeFestwerte.KUEHLSOLLWERT_ABSTAND_K"/> über dem höchsten
+        /// Heizsollwert des Fahrplans, oder er ist nicht endlich — harte Prüfregel, benannt mit
+        /// beiden Werten (Kühlkonzept 3.2, 8.5).
+        /// </summary>
+        KuehlsollwertUnterHeizsollwert,
+
+        /// <summary>
+        /// Die Abschnittsregel ist verletzt (Festlegung F-K3, Kühlkonzept 3.3): Ein Abschnitt
+        /// der Stundenschleife hat eine Leistung mit falschem Vorzeichen für seinen Betriebsfall
+        /// gebucht — ein Heizfall Kälte oder ein Kühlfall Wärme. Die scharfe Zusicherung „je
+        /// Abschnitt nie beides" fällt laut.
+        /// </summary>
+        AbschnittsregelVerletzt,
     }
 
     /// <summary>

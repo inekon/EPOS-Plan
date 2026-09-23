@@ -34,11 +34,12 @@ namespace WindowsFormsApplication1.Referenzlauf
         /// <para><b>Warum.</b> Der Export liest die Ergebniszeilen mit <c>SELECT *</c>; eine
         /// neue Spalte verlaengerte die Schluesselliste jedes Projekts, und der Vergleich gegen
         /// die eingefrorene Basis meldete sie als „Eintrag nur im Vergleichslauf" - die CI
-        /// vergleicht ohne <c>--ohne</c>. Solange kein Kuehlkanal rechnet, sind die Spalten
-        /// NULL, und NULL heisst hier „nicht erhoben", nicht „0": Eine solche Zelle traegt
-        /// keine Aussage, die der Vergleich pruefen koennte. Sobald der Kanal sie schreibt
-        /// (zweite Welle von KU1), erscheinen sie von selbst - dann mit dem Einfrierschritt,
-        /// der ohnehin faellig ist (Kuehlkonzept 10.5). Alle uebrigen Spalten gehen unveraendert
+        /// vergleicht ohne <c>--ohne</c>. Rechnet ein Projekt keine Kaelte (Projektschalter
+        /// <c>Kuehlbetrieb</c> aus - jedes Referenzprojekt), sind die Spalten NULL, und NULL
+        /// heisst hier „nicht erhoben", nicht „0": Eine solche Zelle traegt keine Aussage, die
+        /// der Vergleich pruefen koennte. Rechnet es Kaelte, schreibt der Kanal sie, und sie
+        /// erscheinen von selbst - fuer ein Referenzprojekt mit dem Einfrierschritt, der dann
+        /// faellig ist (Kuehlkonzept 10.4, 10.5). Alle uebrigen Spalten gehen unveraendert
         /// mit, auch leer.</para>
         /// </summary>
         private static readonly HashSet<string> SpaltenNurMitWert = KuehlspaltenDesExports();
