@@ -467,6 +467,28 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string SpSchreibschutz = "SCHREIBSCHUTZ";
 
+        // ------------------------------------------------------------------
+        // Brauchwasser-Nutzungsarten (Umsetzungskonzept Zapfprofilgenerator
+        // 3.2 und 5.4, Stufe Z0, Posten P8). Die Herkunft der Bedarfswerte
+        // benutzt den bestehenden SpHerkunft - dieselbe Frage wie beim
+        // Wechselrichter ("woher stammt der Satz").
+        // ------------------------------------------------------------------
+
+        /// <summary>Die Bezugsart einer Nutzungsart (Personen, Wohneinheiten, Betten …).</summary>
+        public const string SpBezugsart = "BEZUGSART";
+
+        /// <summary>Die Kalenderart einer Nutzungsart (Wohnen, Arbeitstage, Schulferien …).</summary>
+        public const string SpKalender = "KALENDER";
+
+        /// <summary>
+        /// Die <b>Katalogversion</b> — zusammen mit dem Bezeichner der natürliche Schlüssel
+        /// einer Nutzungsart (Konzept 3.1): Zwei Versionen tragen denselben Namen.
+        /// </summary>
+        public const string SpKatalogversion = "KATALOGVERSION";
+
+        /// <summary>Der Status einer Katalogzeile: Auslieferung, eigen oder Import.</summary>
+        public const string SpStatus = "STATUS";
+
         /// <summary>
         /// Welche der acht Anlagenarten. <b>Nur bei den acht Anlagenkatalogen belegt</b>;
         /// die sechs Kataloge der Stufe S3 (Bedarf, Zeitreihen) sind keine Anlagen und
@@ -777,6 +799,46 @@ namespace WindowsFormsApplication1
                                           Katalogspaltenart.Zahl));
 
             return new Katalogfilterprofil { Schluessel = "ZEITREIHE_" + art, Spalten = spalten };
+        }
+
+        // ==================================================================
+        // Zapfprofilgenerator - der Katalog der Brauchwasser-Nutzungsarten
+        // ==================================================================
+
+        /// <summary>Der Schluessel des Filterstands der Nutzungsarten.</summary>
+        public const string SCHLUESSEL_TWW_NUTZUNGSART = "TWW_NUTZUNGSART";
+
+        /// <summary>
+        /// <b>Die Auspraegung des Katalogs der Brauchwasser-Nutzungsarten</b>
+        /// (Umsetzungskonzept Zapfprofilgenerator 5.4, Stufe Z0, Posten P8) — die
+        /// Datenseite der Katalogliste des spaeteren <c>TwwNutzungsartAdminDialog</c>.
+        ///
+        /// <para><b>Sechs Spalten</b> nach 5.4: Nutzungsart (der Bezeichner) · Bezugsart ·
+        /// Kalender · Herkunft der Bedarfswerte · Katalogversion · Status. Kennwerte je
+        /// Niveau stehen bewusst NICHT in der Liste, sondern im lesenden Formularraster
+        /// darunter — die Liste waehlt, sie vergleicht keine Zahlen.</para>
+        ///
+        /// <para>Die Zeilen liefert <c>TwwNutzungsartCtrl.Katalogfilterzeilen</c>; ihr
+        /// <see cref="Katalogfilterzeile.Schluessel"/> ist die ID, weil der Bezeichner
+        /// allein ueber zwei Katalogversionen nicht eindeutig ist.</para>
+        /// </summary>
+        public static Katalogfilterprofil FuerTwwNutzungsart(Func<string, string> text = null)
+        {
+            Func<string, string> t = text ?? (s => s);
+
+            return new Katalogfilterprofil
+            {
+                Schluessel = SCHLUESSEL_TWW_NUTZUNGSART,
+                Spalten = new[]
+                {
+                    new Katalogspalte(SpBezeichner,     t("KFLT_SP_NUTZUNGSART")),
+                    new Katalogspalte(SpBezugsart,      t("KFLT_SP_BEZUGSART")),
+                    new Katalogspalte(SpKalender,       t("KFLT_SP_KALENDER")),
+                    new Katalogspalte(SpHerkunft,       t("KFLT_SP_HERKUNFT")),
+                    new Katalogspalte(SpKatalogversion, t("KFLT_SP_KATALOGVERSION")),
+                    new Katalogspalte(SpStatus,         t("KFLT_SP_STATUS"))
+                }
+            };
         }
 
         /// <summary>

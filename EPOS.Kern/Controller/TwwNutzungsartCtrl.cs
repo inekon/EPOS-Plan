@@ -189,6 +189,45 @@ namespace WindowsFormsApplication1
             return liste;
         }
 
+        /// <summary>
+        /// Die Zeilen der Katalogliste nach <see cref="Katalogfilterprofil.FuerTwwNutzungsart"/>
+        /// (Konzept 5.4), aus <see cref="Liste"/> — EINE Abfrage. Der
+        /// <see cref="Katalogfilterzeile.Schluessel"/> ist die ID: Der Bezeichner allein ist
+        /// über zwei Katalogversionen nicht eindeutig. Geschützt ist eine ausgelieferte
+        /// Zeile.
+        ///
+        /// <para><paramref name="text"/> übersetzt die Wertwörter der Aufzählungen; sein
+        /// Schlüssel ist <c>ZPG_BEZUGSART_</c>, <c>ZPG_KALENDER_</c>, <c>ZPG_HERKUNFT_</c>
+        /// bzw. <c>ZPG_STATUS_</c> plus der Name des Werts. Ohne Übersetzer (Tests, Kern
+        /// ohne Oberfläche) steht der Name selbst da.</para>
+        /// </summary>
+        internal static IReadOnlyList<Katalogfilterzeile> Katalogfilterzeilen(Func<string, string> text = null)
+        {
+            Func<string, string, string> t = (praefix, name) =>
+            {
+                string s = text?.Invoke(praefix + name);
+                return string.IsNullOrEmpty(s) ? name : s;
+            };
+
+            var zeilen = new List<Katalogfilterzeile>();
+            foreach (TwwNutzungsartZeile z in Liste())
+            {
+                var zeile = new Katalogfilterzeile(z.Id, z.Bezeichner)
+                {
+                    Schluessel = z.Id.ToString(CultureInfo.InvariantCulture),
+                    Geschuetzt = z.ReadOnly
+                };
+                zeilen.Add(zeile
+                    .MitText(Katalogfilterprofil.SpBezeichner, z.Bezeichner)
+                    .MitText(Katalogfilterprofil.SpBezugsart, t("ZPG_BEZUGSART_", z.Bezug.ToString()))
+                    .MitText(Katalogfilterprofil.SpKalender, t("ZPG_KALENDER_", z.Kalender.ToString()))
+                    .MitText(Katalogfilterprofil.SpHerkunft, t("ZPG_HERKUNFT_", z.BedarfHerkunft.ToString()))
+                    .MitText(Katalogfilterprofil.SpKatalogversion, z.Katalogversion)
+                    .MitText(Katalogfilterprofil.SpStatus, t("ZPG_STATUS_", z.Status.ToString())));
+            }
+            return zeilen;
+        }
+
         /// <summary>Eine Nutzungsart samt Tagesgangsatz; <c>null</c>, wenn es sie nicht gibt.</summary>
         internal static Nutzungsart Lies(int id) => ZapfprofilCtrl.LiesNutzungsart(id);
 

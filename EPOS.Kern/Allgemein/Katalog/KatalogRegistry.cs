@@ -263,6 +263,77 @@ namespace WindowsFormsApplication1
                     new VerwendungsPruefung { Tabelle = "Tab_Brauchwasser_STAMM", Spalte = "Typ", UeberName = true }
                 }
             },
+            // ------------------------------------------------------------------------
+            // Die drei Kataloge des Zapfprofilgenerators (Umsetzungskonzept
+            // Zapfprofilgenerator 3.2, Stufe Z0, Posten P8). Anders als die Kataloge
+            // oben gilt hier KEINE Kopiersemantik: Zone, Nutzungsart und Projekt
+            // verweisen ueber die ID unmittelbar auf die Katalogzeile, eine benutzte
+            // Zeile ist unveraenderlich (TwwNutzungsartCtrl). Die Verwendungspruefungen
+            // laufen deshalb ueber die ID (UeberName = false).
+            //
+            // Der natuerliche Schluessel ist (Bezeichner, Katalogversion), nicht der
+            // Bezeichner allein: Zwei Versionen einer Nutzungsart tragen denselben
+            // Namen. "Katalogversion" bleibt darum eine Vergleichsspalte - zwei
+            // Versionen unterscheiden sich stets in ihr, und die Leerkopien-Regel der
+            // KatalogBereinigung haelt beide als "eigener Wert" fest. Ausgeschlossen
+            // sind nur die Verwaltungsfelder: Vorlage, Status, interner Beleg und
+            // Vier-Augen-Vermerk.
+            // ------------------------------------------------------------------------
+            new KatalogDefinition
+            {
+                Schluessel = "TWW_NUTZUNGSART",
+                Tabelle = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM,
+                AusschlussSpalten = new[] { "ID_Vorlage", "Status", "Beleg", "Freigabe" },
+                VerwendungsPruefungen = new[]
+                {
+                    // Tab_TwwZone.ID_Nutzungsart - Fremdschluessel ohne ON DELETE (Konzept 3.1).
+                    new VerwendungsPruefung { Tabelle = TwwSchema.TAB_TWW_ZONE, Spalte = "ID_Nutzungsart", UeberName = false }
+                }
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "TWW_TAGESGANGSATZ",
+                Tabelle = TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM,
+                AusschlussSpalten = new[] { "Status", "Beleg" },
+                VerwendungsPruefungen = new[]
+                {
+                    // Vorgabesatz einer Nutzungsart und Expertenwahl einer Zone (Konzept 3.1).
+                    new VerwendungsPruefung { Tabelle = TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, Spalte = "ID_Tagesgangsatz", UeberName = false },
+                    new VerwendungsPruefung { Tabelle = TwwSchema.TAB_TWW_ZONE, Spalte = "ID_Tagesgangsatz", UeberName = false }
+                },
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = TwwSchema.TAB_TWW_TAGESGANG_STAMM,
+                        FkSpalte = "ID_Tagesgangsatz",
+                        Sortierung = "Tagtyp",
+                        WertSpalten = TagesgangWertspalten()
+                    }
+                }
+            },
+            new KatalogDefinition
+            {
+                Schluessel = "TWW_BEDARFSTAG",
+                Tabelle = TwwSchema.TAB_TWW_BEDARFSTAG_STAMM,
+                AusschlussSpalten = new[] { "Status", "Beleg" },
+                VerwendungsPruefungen = new[]
+                {
+                    // Gewaehlter Bedarfstag der Auslegung (Konzept 3.1, ON DELETE SET NULL) -
+                    // eine benutzte Zeile ist trotzdem unveraenderlich (Konzept 3.2).
+                    new VerwendungsPruefung { Tabelle = TwwSchema.TAB_TWW_PROJEKT, Spalte = "ID_Bedarfstag", UeberName = false }
+                },
+                Datenbloecke = new[]
+                {
+                    new KatalogDatenblock
+                    {
+                        Tabelle = TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM,
+                        FkSpalte = "ID_Bedarfstag",
+                        Sortierung = "Reihenfolge, ID",
+                        WertSpalten = new[] { "Minute_Beginn", "Dauer_min", "Energie_Kwh", "Reihenfolge" }
+                    }
+                }
+            },
             new KatalogDefinition
             {
                 Schluessel = "STROMVERBRAUCHER",
@@ -377,6 +448,20 @@ namespace WindowsFormsApplication1
 
         /// <summary>Alle Kataloge des Admin-Menues (Entscheidung 9.5 des Konzepts).</summary>
         public static IReadOnlyList<KatalogDefinition> Alle => _alle;
+
+        /// <summary>
+        /// Die Wertspalten eines Tagesgangs: der Tagtyp und die 24 Stundenanteile
+        /// <c>Anteil_01</c> … <c>Anteil_24</c> — aus einer Schleife, wie
+        /// <c>ZapfprofilCtrl.AnteilSpalte</c> sie bildet, nie aus einer Eingabe.
+        /// </summary>
+        private static string[] TagesgangWertspalten()
+        {
+            var spalten = new string[25];
+            spalten[0] = "Tagtyp";
+            for (int h = 1; h <= 24; h++)
+                spalten[h] = "Anteil_" + h.ToString("00", System.Globalization.CultureInfo.InvariantCulture);
+            return spalten;
+        }
 
         /// <summary>
         /// Der lokalisierte Anzeigename eines Katalogs; ein unbekannter Schluessel

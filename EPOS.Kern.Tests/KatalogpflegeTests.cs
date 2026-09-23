@@ -61,10 +61,11 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void DieRegistryFuehrtNeunzehnKataloge()
         {
-            Assert.Equal(20, KatalogRegistry.Alle.Count);
+            // Zapfprofilgenerator, Stufe Z0 (P8): drei Tww-Kataloge dazu - 23.
+            Assert.Equal(23, KatalogRegistry.Alle.Count);
         }
 
-        /// <summary>Die 20 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
+        /// <summary>Die 23 Schluessel in ihrer Reihenfolge — der Baum des Dublettendialogs
         /// zeichnet die Kataloge in genau dieser Folge (<c>BaumFuellen</c>).</summary>
         [Fact]
         public void DieNeunzehnSchluesselStehenInDerRegistryreihenfolge()
@@ -76,10 +77,53 @@ namespace EPOS.Kern.Tests
                 "WP", "HEIZKESSEL", "PUFFERSPEICHER", "SOLARKOLLEKTOREN", "PV",
                 "WECHSELRICHTER", "BHKW",
                 "STROMSPEICHER", "GEBAEUDE", "KLIMAREGION", "BRAUCHWASSER", "BRAUCHWASSERTYP",
+                // Zapfprofilgenerator (P8): die drei Tww-Kataloge beim Brauchwasser.
+                "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
                 "STROMVERBRAUCHER", "STROMVERBRAUCHERTYP", "PROZESSWAERME", "PROZESSTYP",
                 "STROMGANGLINIE", "SOLARGANGLINIE", "WAERMEBEDARF", "GEBAEUDETYP"
             };
             Assert.Equal(erwartet, KatalogRegistry.Alle.Select(k => k.Schluessel).ToArray());
+        }
+
+        /// <summary>
+        /// <b>Die drei Tww-Kataloge</b> (Umsetzungskonzept Zapfprofilgenerator 3.2, P8):
+        /// Verwendung ueber die ID statt ueber den Namen (keine Kopiersemantik), die
+        /// Datenbloecke der Tagesgaenge und Ereignisse, und die Katalogversion bleibt eine
+        /// Vergleichsspalte — zwei Versionen desselben Namens sind nie „leere Kopien".
+        /// </summary>
+        [Fact]
+        public void DieTwwKatalogeVerweisenUeberDieId()
+        {
+            KatalogDefinition n = KatalogRegistry.Finde("TWW_NUTZUNGSART");
+            Assert.Equal(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, n.Tabelle);
+            VerwendungsPruefung zone = Assert.Single(n.VerwendungsPruefungen);
+            Assert.Equal((TwwSchema.TAB_TWW_ZONE, "ID_Nutzungsart", false), (zone.Tabelle, zone.Spalte, zone.UeberName));
+            Assert.Empty(n.Datenbloecke);
+            Assert.DoesNotContain("Katalogversion", n.AusschlussSpalten);
+            Assert.Contains("ID_Vorlage", n.AusschlussSpalten);
+
+            KatalogDefinition s = KatalogRegistry.Finde("TWW_TAGESGANGSATZ");
+            Assert.Equal(TwwSchema.TAB_TWW_TAGESGANGSATZ_STAMM, s.Tabelle);
+            Assert.All(s.VerwendungsPruefungen, v => Assert.False(v.UeberName));
+            Assert.Equal(new[] { TwwSchema.TAB_TWW_NUTZUNGSART_STAMM, TwwSchema.TAB_TWW_ZONE },
+                         s.VerwendungsPruefungen.Select(v => v.Tabelle).ToArray());
+            KatalogDatenblock gang = Assert.Single(s.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_TAGESGANG_STAMM, "ID_Tagesgangsatz"), (gang.Tabelle, gang.FkSpalte));
+            Assert.Equal(25, gang.WertSpalten.Length);
+            Assert.Equal("Tagtyp", gang.WertSpalten[0]);
+            Assert.Equal("Anteil_01", gang.WertSpalten[1]);
+            Assert.Equal("Anteil_24", gang.WertSpalten[24]);
+
+            KatalogDefinition t = KatalogRegistry.Finde("TWW_BEDARFSTAG");
+            Assert.Equal(TwwSchema.TAB_TWW_BEDARFSTAG_STAMM, t.Tabelle);
+            VerwendungsPruefung projekt = Assert.Single(t.VerwendungsPruefungen);
+            Assert.Equal((TwwSchema.TAB_TWW_PROJEKT, "ID_Bedarfstag", false), (projekt.Tabelle, projekt.Spalte, projekt.UeberName));
+            KatalogDatenblock ereignis = Assert.Single(t.Datenbloecke);
+            Assert.Equal((TwwSchema.TAB_TWW_BEDARFSTAG_EREIGNIS_STAMM, "ID_Bedarfstag"), (ereignis.Tabelle, ereignis.FkSpalte));
+
+            // Die Tabellen der Registry sind genau die drei Koepfe aus TwwSchema.
+            Assert.Same(n, KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_NUTZUNGSART_STAMM));
+            Assert.Null(KatalogRegistry.FindeTabelle(TwwSchema.TAB_TWW_PARAMETER_STAMM));
         }
 
         /// <summary>
@@ -100,15 +144,17 @@ namespace EPOS.Kern.Tests
             Assert.Contains(k.Datenbloecke, b => b.Tabelle == "Tab_Solar_STAMM" && b.FkSpalte == "ID_Klimaregion");
         }
 
-        /// <summary>Vier Kataloge fuehren eine Verwendungspruefung; die uebrigen sechzehn
-        /// nicht — der Dublettendialog sagt das dem Anwender ausdruecklich.</summary>
+        /// <summary>Sieben Kataloge fuehren eine Verwendungspruefung — die vier Typprofile und
+        /// die drei Tww-Kataloge (P8); die uebrigen sechzehn nicht — der Dublettendialog sagt
+        /// das dem Anwender ausdruecklich.</summary>
         [Fact]
         public void VierKatalogeFuehrenEineVerwendungspruefung()
         {
             string[] mitPruefung = KatalogRegistry.Alle
                 .Where(k => k.VerwendungsPruefungen.Length > 0)
                 .Select(k => k.Schluessel).ToArray();
-            Assert.Equal(new[] { "BRAUCHWASSERTYP", "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
+            Assert.Equal(new[] { "BRAUCHWASSERTYP", "TWW_NUTZUNGSART", "TWW_TAGESGANGSATZ", "TWW_BEDARFSTAG",
+                                 "STROMVERBRAUCHERTYP", "PROZESSTYP", "GEBAEUDETYP" },
                          mitPruefung);
         }
 

@@ -268,6 +268,78 @@ namespace EPOS.Kern.Tests
             Assert.Equal(TwwKatalogAusgang.TabellenFehlen, TwwNutzungsartCtrl.Aendern(1, Entwurf("A", 1)).Ausgang);
             Assert.Equal(TwwKatalogAusgang.TabellenFehlen, TwwNutzungsartCtrl.SpeichernUnter(1, Entwurf("A", 1)).Ausgang);
             Assert.Equal(TwwKatalogAusgang.TabellenFehlen, TwwNutzungsartCtrl.Loeschen(1).Ausgang);
+            Assert.Empty(TwwNutzungsartCtrl.Katalogfilterzeilen());
+        }
+
+        // =================================================================================
+        // 4 — Katalogliste und Registry (P8)
+        // =================================================================================
+
+        [Fact]
+        public void Die_Katalogliste_fuellt_die_sechs_Spalten_des_Profils_und_schluesselt_ueber_die_ID()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int eigen = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            int aus = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T2", satz, TwwSchema.STATUS_AUSLIEFERUNG, readOnly: true);
+
+            Katalogfilterprofil profil = Katalogfilterprofil.FuerTwwNutzungsart();
+            Assert.Equal(Katalogfilterprofil.SCHLUESSEL_TWW_NUTZUNGSART, profil.Schluessel);
+            Assert.Equal(new[] { Katalogfilterprofil.SpBezeichner, Katalogfilterprofil.SpBezugsart, Katalogfilterprofil.SpKalender,
+                                 Katalogfilterprofil.SpHerkunft, Katalogfilterprofil.SpKatalogversion, Katalogfilterprofil.SpStatus },
+                         profil.Spalten.Select(s => s.Schluessel).ToArray());
+            Assert.Equal("KFLT_SP_NUTZUNGSART", profil.Spalten[0].Titel);
+
+            var zeilen = TwwNutzungsartCtrl.Katalogfilterzeilen();
+            Assert.Equal(new[] { eigen.ToString(), aus.ToString() }, zeilen.Select(z => z.Schluessel).ToArray());
+            Assert.Equal("Nutzung A", zeilen[0].Text(Katalogfilterprofil.SpBezeichner));
+            Assert.Equal("T2", zeilen[1].Text(Katalogfilterprofil.SpKatalogversion));
+            Assert.Equal("Personen", zeilen[0].Text(Katalogfilterprofil.SpBezugsart));
+            Assert.Equal("Wohnen", zeilen[0].Text(Katalogfilterprofil.SpKalender));
+            Assert.Equal("Fiktiv", zeilen[0].Text(Katalogfilterprofil.SpHerkunft));
+            Assert.Equal("Eigen", zeilen[0].Text(Katalogfilterprofil.SpStatus));
+            Assert.False(zeilen[0].Geschuetzt);
+            Assert.True(zeilen[1].Geschuetzt);
+
+            // Mit Uebersetzer: Schluessel ZPG_<GRUPPE>_<Name>; ein fehlender Text faellt auf den Namen zurueck.
+            var uebersetzt = TwwNutzungsartCtrl.Katalogfilterzeilen(k => k == "ZPG_STATUS_Auslieferung" ? "<ausgeliefert>" : null);
+            Assert.Equal("<ausgeliefert>", uebersetzt[1].Text(Katalogfilterprofil.SpStatus));
+            Assert.Equal("Eigen", uebersetzt[0].Text(Katalogfilterprofil.SpStatus));
+        }
+
+        [Fact]
+        public void Die_Dublettenpruefung_haelt_zwei_Versionen_und_zaehlt_die_Verwendung_ueber_die_ID()
+        {
+            using var db = new TwwTestdatenbank();
+            int satz = TwwTestdatenbank.TagesgangsatzAnlegen("Satz A", "T1");
+            int v1 = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T1", satz);
+            int v2 = TwwTestdatenbank.NutzungsartAnlegen("Nutzung A", "T2", satz);
+            TwwTestdatenbank.ZoneAnlegen(1, v2, "Zone", 10.0);
+
+            KatalogDefinition k = KatalogRegistry.Finde("TWW_NUTZUNGSART");
+            ScanErgebnis scan = DublettenPruefung.ScanKatalog(k);
+            Assert.Null(scan.Fehler);
+            Assert.Equal(2, scan.Saetze.Count);
+            Assert.Single(scan.Namensgruppen);            // gleicher Bezeichner, zwei Versionen
+            Assert.Empty(scan.Inhaltsgruppen);            // die Katalogversion unterscheidet sie
+
+            // Die Leerkopien-Regel loescht keine der beiden Versionen.
+            BereinigungsErgebnis b = KatalogBereinigung.LeereKopienBereinigen(k);
+            Assert.Equal(0, b.Geloescht);
+            Assert.Equal(2, TwwNutzungsartCtrl.Liste().Count);
+
+            // Die Verwendung zaehlt ueber die ID, nicht ueber den Namen.
+            VerwendungsPruefung vp = k.VerwendungsPruefungen[0];
+            Assert.Equal(0, KatalogBereinigung.VerwendungZaehlen(vp, scan.Saetze.Single(s => s.Id == v1), out string f1));
+            Assert.Equal(1, KatalogBereinigung.VerwendungZaehlen(vp, scan.Saetze.Single(s => s.Id == v2), out string f2));
+            Assert.Null(f1);
+            Assert.Null(f2);
+
+            // Tagesgangsatz: Datenblock gelesen, die Nutzungsarten zaehlen als Verwendung.
+            KatalogDefinition ks = KatalogRegistry.Finde("TWW_TAGESGANGSATZ");
+            ScanErgebnis scanSatz = DublettenPruefung.ScanKatalog(ks);
+            Assert.Null(scanSatz.Fehler);
+            Assert.Equal(2, KatalogBereinigung.VerwendungZaehlen(ks.VerwendungsPruefungen[0], scanSatz.Saetze.Single(), out _));
         }
     }
 }
