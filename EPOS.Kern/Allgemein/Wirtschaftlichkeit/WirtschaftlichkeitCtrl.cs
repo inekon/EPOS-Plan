@@ -3326,7 +3326,23 @@ namespace WindowsFormsApplication1
                 f.KwkStromMWh.ToString("N3", k),
                 f.KuerzungMWh.ToString("N3", k),
                 Math.Max(0, vonEinspMWh).ToString("N3", k),
-                Math.Max(0, vonEigenMWh).ToString("N3", k));
+                Math.Max(0, vonEigenMWh).ToString("N3", k))
+                + Rundungsgrund(f.KuerzungMWh);
+        }
+
+        /// <summary>
+        /// ETAPPE E7c — Entscheid E7c1‑Q1 a mit Hinweis (23.09.2026): Die Formel des
+        /// zweiten Falls rechnet OHNE Toleranz; eine Kürzung unter 0,01 MWh bleibt stehen.
+        /// Sie entsteht aus der Rundung — σ = P_el ÷ P_th ist unrund, die Mengen des Laufs
+        /// stehen auf 0,01 MWh gerundet in der Datenbank —, und die Herleitung nennt das,
+        /// damit eine Kürzung von 0,002 MWh nicht wie ein Befund aussieht. Leer, wenn es
+        /// keine Kürzung gibt oder sie 0,01 MWh erreicht.
+        /// </summary>
+        internal static string Rundungsgrund(double kuerzungMWh)
+        {
+            if (!(kuerzungMWh > 0) || kuerzungMWh >= 0.01) return "";
+            return " " + T("WIRT_KWKG_FALL2_RUNDUNG",
+                "Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.");
         }
 
         /// <summary>
@@ -3378,7 +3394,12 @@ namespace WindowsFormsApplication1
                         "„{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh"),
                         a.Bezeichner, sigma.Wert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k),
                         sigma.Herleitung, f.NutzwaermeMWh.ToString("N3", k),
-                        f.KwkStromMWh.ToString("N3", k), f.KuerzungMWh.ToString("N3", k)));
+                        f.KwkStromMWh.ToString("N3", k), f.KuerzungMWh.ToString("N3", k))
+                        // E7c1-Q1: der Rundungsgrund einer Kürzung unter 0,01 MWh.
+                        + (Rundungsgrund(f.KuerzungMWh).Length > 0
+                            ? " " + T("WIRT_KWKG_FALL2_RUNDUNG_KURZ",
+                                      "(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)")
+                            : ""));
             }
 
             if (mitMatrix)

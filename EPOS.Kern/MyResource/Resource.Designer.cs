@@ -65032,6 +65032,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_RUNDUNG {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_RUNDUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die (aus der Rundung von σ bzw. der Mengen auf 0,01 MWh) ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_FALL2_RUNDUNG_KURZ {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_FALL2_RUNDUNG_KURZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_FALL2_VBH {

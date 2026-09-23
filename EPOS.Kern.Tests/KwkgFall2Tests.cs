@@ -169,6 +169,37 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  E7c1-Q1 a mit Hinweis: der Rundungsgrund winziger Kürzungen
+        // =================================================================
+
+        /// <summary>
+        /// ETAPPE E7c2 — Entscheid E7c1‑Q1 (a mit Hinweis): Die Formel rechnet ohne
+        /// Toleranz; mit σ = 50 ÷ 81 (berechnet) ist Nutzwärme × σ = 605,52 × 0,6173 =
+        /// 373,778 MWh, der Nettostrom 373,78 MWh — die Kürzung 0,002 MWh bleibt stehen,
+        /// und die Herleitung nennt ihren Grund, die Rundung.
+        /// </summary>
+        [Fact]
+        public void Eine_Kuerzung_unter_einem_Hundertstel_nennt_den_Rundungsgrund()
+        {
+            Assert.Equal("", WirtschaftlichkeitCtrl.Rundungsgrund(0.0));
+            Assert.Equal("", WirtschaftlichkeitCtrl.Rundungsgrund(0.01));
+            Assert.Equal("", WirtschaftlichkeitCtrl.Rundungsgrund(71.02));
+            Assert.Equal(" " + Resource.WIRT_KWKG_FALL2_RUNDUNG, WirtschaftlichkeitCtrl.Rundungsgrund(0.002));
+
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Kennzeichen(ANLAGE_GROSS, null);
+            WirtschaftlichkeitErgebnis e = Rechne(null);
+            KwkgModulNachweis gross = Modul(e, NAME_GROSS);
+
+            Assert.True(gross.KuerzungMWh.Value > 0 && gross.KuerzungMWh.Value < 0.01,
+                        "Der Prüffall braucht eine Kürzung unter 0,01 MWh.");
+            Assert.EndsWith(Resource.WIRT_KWKG_FALL2_RUNDUNG, gross.HerleitungKwkStrom);
+            Assert.Contains("Kürzung 0,002 MWh", gross.HerleitungKwkStrom);
+        }
+
+        // =================================================================
         //  Ohne bestimmbare Stromkennzahl: kein Zuschlag, Kohärenzzeile
         // =================================================================
 

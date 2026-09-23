@@ -24224,6 +24224,12 @@ Do you want to allow this?</value>
   <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
     <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours from the CHP electricity of the combined plant {0} MWh ÷ {1} kW = {2} h/a (instead of {3} h/a); quota and annual cap count these hours.</value>
   </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
+    <value>The reduction below 0.01 MWh results from rounding σ or the quantities to 0.01 MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG_KURZ" xml:space="preserve">
+    <value>(from rounding σ or the quantities to 0.01 MWh)</value>
+  </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>This database cannot store the selected price basis yet (schema version before 108) — the card shows the billing unit.</value>
   </data>
