@@ -45,6 +45,16 @@
 > darüber steigen, und die Überhitzungsstunden zählen die Stunden darüber im freien Lauf. Eine
 > Kühlreihe und Kühlkennzahlen gibt es nur bei wirksamer Kühlung; ohne sie steht „—" (K18). Der
 > „informative" Kühlbedarf ist entfallen (3.1, 3.2, 3.4, 3.7, 4.7, 6.4, 7.1, 8.1, 8.4).
+>
+> **Nachzug 23.09.2026 — E33 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38):** Der Anwender hat die vier
+> vor KU2 fälligen Kühlfragen entschieden: **K8** (freie Kühlung und Rückkühlung bauen, keine als
+> eigener Erzeuger), **K21** (Kühl-Vorlauf als Auswahl aus den Stützstellen) und **K23**
+> (Hilfsstromanteil je Anlage) nach Empfehlung; **K9 abweichend von der Empfehlung:** Der
+> Kältestrom läuft per Vorgabe über denselben Stromträger und Tarif wie die Wärmepumpe im
+> Heizbetrieb, wahlweise je Anlage über einen anderen Stromträger des Projekts — gewählt an der
+> Anlagenzeile neben dem Stromträger des Heizbetriebs (`Tab_Energieanlagen.Kuehl_ID_Carrier`,
+> NULL = wie Heizbetrieb). Vor KU2 ist damit keine Frage mehr offen (5.0.5, 5.1, 5.4, 6.1–6.3,
+> 7.3, 8.2, 11.1, 12).
 
 **Auftrag (Anwender, 16.09.2026):** „Q8: Kühlung aufnehmen, konzept dazu erweitern."
 Daraus ist **Entscheid E12** geworden: Kühlung wird als vierter Kanal aufgenommen, und ihr
@@ -79,7 +89,7 @@ Bedarf wird durch Kälteerzeuger gedeckt
   anlegt, in die Löschliste der Stufe GA einzutragen (10.5, 11.2;
   [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.31).
 
-**Stand:** 23.09.2026 (Nachzug E32; Stufe KU1 abgeschlossen, Basis `2026-09-23_R13_Kuehlung`). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
+**Stand:** 23.09.2026 (Nachzug E33; Stufe KU1 abgeschlossen, Basis `2026-09-23_R13_Kuehlung`). **Fassung:** Rev. 4 — die Prüfung vom 17.09.2026 und E26 eingearbeitet;
 Rev. 3 trug E20, E21 und E23, Rev. 2 war aus drei Blickwinkeln gegengelesen (Bestand, Konsistenz,
 Entscheid E15).
 
@@ -88,7 +98,7 @@ Kühlkanal vom Gebäudemodell bis zum Wiki bedeutet: Rechenweg, Kanalarchitektur
 Strom und Wirtschaftlichkeit, Datenmodell, Dialogführung, Import und Export, Nachweis und
 Regressionsnetz, eine Stufung KU0–KU3 und die Fragen K1–K23 mit Empfehlung. **Es entscheidet
 nichts, was der Anwender zu entscheiden hat** — Kapitel 12 trennt „jetzt zu entscheiden" von
-„technische Festlegung zur Kenntnis"; was E20, E21, E23, E26, E27 und E31 bereits entschieden haben,
+„technische Festlegung zur Kenntnis"; was E20, E21, E23, E26, E27, E31 und E33 bereits entschieden haben,
 trägt dort den Vermerk und wird nicht erneut vorgelegt.
 
 **Es steht neben, nicht über den Schwesterpapieren:**
@@ -1110,8 +1120,8 @@ Angaben. Sie stehen als `KU-S3` im Schema (7.3) und im Erzeugerdialog (8.2):
 | Feld | Was es beantwortet | Vorgabe |
 |---|---|---|
 | `Kuehlbetrieb` | Wird **diese** Maschine im Projekt auch zum Kühlen benutzt? | 0 — aus; einschaltbar nur mit Kühlkennlinie im Projekt (`HatKenndatenProjekt`) |
-| `Kuehl_Vorlauf` | Mit welcher **Kaltwasser-Vorlauftemperatur** arbeitet der Kältekreis? Sie wählt die Kennlinie, wie der Heizvorlauf es auf der Wärmeseite tut (5.1) | NULL = kleinster Stützwert der Kennlinie |
-| `Kuehl_Hilfsstromanteil` | Welcher Anteil Hilfsstrom (Pumpen, Ventilatoren des Kältekreises) kommt zur Verdichterarbeit? | NULL = kein Hilfsstromzuschlag (**K23**) |
+| `Kuehl_Vorlauf` | Mit welcher **Kaltwasser-Vorlauftemperatur** arbeitet der Kältekreis? Sie wählt die Kennlinie, wie der Heizvorlauf es auf der Wärmeseite tut (5.1) | NULL = kleinster Stützwert der Kennlinie; gewählt wird aus den Stützstellen (**K21**, E33) |
+| `Kuehl_Hilfsstromanteil` | Welcher Anteil Hilfsstrom (Pumpen, Ventilatoren des Kältekreises) kommt zur Verdichterarbeit? | NULL = kein Hilfsstromzuschlag (**K23**, E33: je Anlage) |
 
 **Eine vierte Angabe gibt es nicht.** Rev. 2 sah eine Spalte `Kuehl_Umschaltung` vor. Sie
 entfällt: 5.2 baut **eine** Umschaltregel („je Tag"), die beiden anderen werden weder gerechnet
@@ -1119,6 +1129,10 @@ noch zugesagt, und ein Persistenzwert ohne Rechenweg ist eine Zusage ohne Deckun
 Regel, mit der 7.6 `VERWENDUNG_KAELTE` ablehnt. „Je Tag" ist damit eine **Konstante des
 Rechenwegs**; der Dialog nennt sie als feste Auskunft, nicht als Auswahl. Kommt eine zweite
 Regel, kommt die Spalte mit ihr.
+
+**Die Wahl des Stromträgers (K9, E33) ist keine Angabe des Geräts.** Sie steht an der Anlagenzeile
+neben dem Stromträger des Heizbetriebs — `Tab_Energieanlagen.Kuehl_ID_Carrier`, NULL = wie
+Heizbetrieb (6.3, 7.3) — und reist deshalb nicht mit dem Katalogsatz.
 
 **Die Projekteinstellung steht darüber** (8.3): Solange `Tab_Einstellungen.Kuehlbetrieb = 0` ist,
 rechnet keine dieser Angaben. Das ist gewollt — es schützt die zwölf Referenzprojekte (7.2,
@@ -1196,8 +1210,9 @@ angebotene Kaltwassertemperatur ist die sichere Vorbelegung, weil sie den ungün
 die kleinste `Pkuehl` liefert und damit nie eine Leistung verspricht, die die Maschine nicht hat.
 Der Dialog bietet die Stützstellen **zur Auswahl** an (8.2), die Warnung bei Extrapolation folgt
 dem Muster der Heizseite. In der Testdatenbank stehen heute **zwei** Stützstellen (7 °C und
-18 °C) — also genau die zwei Betriebslagen Kaltwasser und Flächenkühlung; ob eine **freie
-Eingabe mit Interpolation** gebraucht wird, ist **K21**.
+18 °C) — also genau die zwei Betriebslagen Kaltwasser und Flächenkühlung. Eine **freie Eingabe
+mit Interpolation** gibt es nicht: **K21** ist mit E33 nach Empfehlung entschieden — Auswahl aus
+den Stützstellen, keine Interpolation über den Vorlauf, eine Stützstellenprobe je Vorlauf (10.2).
 
 **Rücklauf und Spreizung werden nicht eingeführt.** Die Kennlinie ist über dem Vorlauf
 aufgetragen; eine Spreizung wäre eine zweite, nicht gestützte Eingabe. Braucht ein späterer
@@ -1226,7 +1241,9 @@ Sole-Wasser-Maschine gibt die Abwärme ins Erdreich, eine Luft-Wasser-Maschine a
 **In KU2 gilt:** die Kennlinie enthält die Rückkühlung bereits (sie ist über der
 Außen- bzw. Quellentemperatur aufgetragen), und ein eigenes Rückkühlmodell entsteht **nicht**. Die
 Rückwirkung auf das Erdreich (sommerliche Regeneration der Sonde) ist ein realer, oft günstiger
-Effekt — und ein eigener Rechenweg. Er ist **benannt vertagt** nach KU3 (**K8c**).
+Effekt — und ein eigener Rechenweg. Er ist **benannt vertagt** nach KU3 (**K8c**). Dass die
+Rückkühlung der reversiblen Maschine in Maschine und Kennlinie steckt und kein eigener Erzeuger
+wird, ist mit **E33** entschieden (K8, 5.4).
 
 **Zwei Sätze sichern das ab.** Erstens: Kälteerzeugung und Kältestrom werden in **eigenen**
 Reihen geführt — `Kaelteproduktion_stuendlich` und `Stromverbrauch_Kuehlung_stuendlich` [kWh] —
@@ -1313,8 +1330,8 @@ Stellen:
 | **Freie Kühlung über die Wärmequelle** (Sole direkt in den Kältekreis, ohne Verdichter) | ein **Betriebsfall des Erzeugers** mit sehr hohem EER, begrenzt durch die Quellentemperatur | KU3 |
 | **Rückkühlung** (Abfuhr der Kondensatorwärme) | **Bestandteil** der Kältemaschine, nicht eigenständig | KU3 |
 
-**Empfehlung zu K8:** Alle drei werden gebaut, aber keine als eigener „Erzeuger" im Sinne der
-Anlagenliste. Ein Eintrag „freie Kühlung" in der Erzeugerauswahl würde eine Anlage suggerieren,
+**K8 ist mit E33 (23.09.2026) nach Empfehlung entschieden:** Alle drei werden gebaut, aber keine
+als eigener „Erzeuger" im Sinne der Anlagenliste. Ein Eintrag „freie Kühlung" in der Erzeugerauswahl würde eine Anlage suggerieren,
 die es nicht gibt.
 
 ### 5.5 Deckungsreihenfolge und Unterdeckung
@@ -1379,8 +1396,9 @@ Stromverbrauch_Kuehlung [kWh je Stunde] = Kaelteerzeugung[h] / EER(h)  +  Hilfss
 
 **Der Hilfsstrom ist eine Eingabe, keine Rechnung** (Kapitel 14: keine Ventilatorphysik). Er
 kommt als Anteil der Verdichterarbeit über `Kuehl_Hilfsstromanteil` je Anlage (`KU-S3`, 7.3);
-NULL bedeutet **kein Zuschlag**, damit niemand eine geratene Zahl für eine gemessene hält. Ob der
-Anteil je Anlage oder pauschal je Projekt geführt wird, ist **K23**.
+NULL bedeutet **kein Zuschlag**, damit niemand eine geratene Zahl für eine gemessene hält. Der
+Anteil steht je Anlage, nicht pauschal je Projekt — **K23** ist mit E33 nach Empfehlung
+entschieden. Welchen Stromträger der Kältestrom trägt, sagt 6.3 (K9).
 
 **Warum eine eigene Position und nicht ein Aufschlag auf `Stromverbrauch_WP`** (F-K9): Ohne
 Trennung ist keine Jahresarbeitszahl bildbar — weder für die Wärme (weil Kältestrom drin steckt)
@@ -1418,7 +1436,9 @@ Photovoltaik = 3, Solarthermie = 4, Stromspeicher = 5). Daraus folgen zwei versc
 | **Kältemaschine** | **neue Komponente** mit eigener Kennung in `Tab_KostenKomponente`, eigener Endenergiezeile, eigener Investition und Nutzungsdauer — nach dem Muster der bestehenden sieben | KU3 |
 
 **Der Arbeitspreis kommt aus der einen Wahrheit.** `KostenEmissionRechner` liefert
-`ArbeitspreisJeKwh` und `StromTraegerId`; eine zweite Preisverrechnung entsteht nicht (N-K8).
+`ArbeitspreisJeKwh` und `StromTraegerId`; eine zweite Preisverrechnung entsteht nicht (N-K8). Das
+gilt auch für einen abweichenden Kühlträger (K9, E33): Sein Arbeitspreis kommt über
+`ArbeitspreisJeKwh` desselben Rechners, nur mit seiner Kennung (6.3).
 
 ### 6.3 Emissionen (K9)
 
@@ -1426,10 +1446,24 @@ Das ist der kurze Abschnitt. Emissionen laufen über `Emissionsquelle.Fuer(idPro
 mit dem Stromträger des Projekts; **ein Kälteemissionsfaktor wird nicht gebraucht**, nur eine neue
 Verbrauchsposition. Die Rückfallgröße für Netzstrom bleibt unverändert.
 
-**Empfehlung zu K9: derselbe Stromträger und derselbe Tarif wie der Wärmepumpenstrom.** Ein
-eigener Kältetarif wäre eine zweite Wahrheit für dieselbe Steckdose. Wo ein Anwender wirklich
-zwei Tarife hat (Wärmepumpentarif und Haushaltstarif), ist das bereits über die Trägerzuordnung
-des Projekts abbildbar — und das ist die Stelle, an der es hingehört.
+**Die Empfehlung zu K9 lautete: derselbe Stromträger und derselbe Tarif wie der
+Wärmepumpenstrom** — ein eigener Kältetarif wäre eine zweite Wahrheit für dieselbe Steckdose; wo
+ein Anwender wirklich zwei Tarife hat (Wärmepumpentarif und Haushaltstarif), sei das über die
+Trägerzuordnung des Projekts abbildbar.
+
+**Entschieden mit E33 (23.09.2026), abweichend von der Empfehlung:** Der Kältestrom läuft **per
+Vorgabe** über denselben Stromträger und Tarif wie die Wärmepumpe im Heizbetrieb; **wahlweise**
+kann **je Anlage** ein anderer Stromträger des Projekts gewählt werden; NULL heißt „wie
+Heizbetrieb". Geprüft am Code, sitzt die Wahl an der Anlagenzeile neben dem Stromträger des
+Heizbetriebs — **`Tab_Energieanlagen.Kuehl_ID_Carrier`**, ein Verweis auf `energy_carrier.id`
+(7.3): Dort wählt die Wärmepumpe ihren Stromträger im Bestand (`ID_Carrier`, ET-5), und von dort
+liest ihn die anlagenscharfe Bewertung (`ProjektEnergietraegerCtrl.EigeneStromTraeger`,
+`EndenergieAufloeser`). Den **Netzbezug** bepreist `KostenEmissionRechner` heute **einmal**, mit
+dem Stromträger des Projekts, und `Emissionsquelle.Netzstrom` bewertet ihn mit dessen Faktor. Für
+den Vorgabefall ändert das nichts; trägt eine Anlage einen anderen Kühlträger, braucht ihr
+Kältestrom eine eigene Bepreisung und Emissionszuordnung für seinen Anteil am Netzbezug. Die Regel
+dafür legt die Welle fest, die den Kältestrom in Kosten und Emissionen bringt
+([Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38).
 
 **Kältemittel-Emissionen (F-Gase) sind ausgeschlossen.** Die direkte Treibhauswirkung eines
 Kältemittelverlusts ist ein eigenes Thema mit eigener Datenlage; EPOS-Plan rechnet die
@@ -1681,8 +1715,9 @@ dieselbe Meldung, dieselbe Vorwahl und nach dem Speichern denselben Satz bis auf
 | Tabelle | Spalte | Typangabe | Bedeutung |
 |---|---|---|---|
 | `Tab_WP`, `Tab_WP_STAMM` | `Kuehlbetrieb` | `YESNO` | „diese Maschine wird im Projekt auch zum Kühlen benutzt" — Vorgabe 0, einschaltbar nur, wenn Kühlkenndaten vorliegen |
-| `Tab_WP`, `Tab_WP_STAMM` | `Kuehl_Vorlauf` | `INTEGER` | **Kaltwasser-Vorlauf des Kältekreises [°C]** — er wählt die Kennlinie, wie der Heizvorlauf es auf der Wärmeseite tut (5.1, Festlegung 2); derselbe Typ wie `Tab_Kenndaten_Kuehlung.Vorlauf`, gegen dessen Stützstellen er gehalten wird. NULL = **kleinster Stützwert** der Kühlkennlinie dieses Geräts |
-| `Tab_WP`, `Tab_WP_STAMM` | `Kuehl_Hilfsstromanteil` | `DOUBLE` | Anteil Hilfsstrom an der Verdichterarbeit des Kühlbetriebs [—] (6.1). NULL = **kein Zuschlag** (**K23**) |
+| `Tab_WP`, `Tab_WP_STAMM` | `Kuehl_Vorlauf` | `INTEGER` | **Kaltwasser-Vorlauf des Kältekreises [°C]** — er wählt die Kennlinie, wie der Heizvorlauf es auf der Wärmeseite tut (5.1, Festlegung 2); derselbe Typ wie `Tab_Kenndaten_Kuehlung.Vorlauf`, gegen dessen Stützstellen er gehalten wird. NULL = **kleinster Stützwert** der Kühlkennlinie dieses Geräts; gewählt wird aus den Stützstellen (**K21**, E33) |
+| `Tab_WP`, `Tab_WP_STAMM` | `Kuehl_Hilfsstromanteil` | `DOUBLE` | Anteil Hilfsstrom an der Verdichterarbeit des Kühlbetriebs [—] (6.1). NULL = **kein Zuschlag** (**K23**, E33) |
+| `Tab_Energieanlagen` | `Kuehl_ID_Carrier` | `INTEGER`, Verweis auf `energy_carrier.id` (`ON DELETE SET NULL`) | **Stromträger des Kältestroms** (**K9**, E33) — wahlweise ein anderer Stromträger des Projekts; NULL = **wie Heizbetrieb** (der Träger der Anlage, sonst der des Projekts). An der Anlagenzeile neben `ID_Carrier` — nicht am Gerät und nicht im Katalog (6.3) |
 
 **Warum sechs `SchemaSpalte`-Einträge und nicht drei.** Jede der drei Spalten entsteht in
 `Tab_WP` **und** in `Tab_WP_STAMM` — sonst verliert die Katalogübernahme (5.0.4) die Einstellung
@@ -1690,6 +1725,13 @@ oder die Katalogpflege kann sie nicht setzen. Dieselbe Regel gilt in `KU-S1` fü
 Gebäudestamm (7.1). Eine vierte Spalte `Kuehl_Umschaltung` gibt es nicht: 5.2 baut **eine**
 Regel, und ein Persistenzwert ohne Rechenweg ist eine Zusage ohne Deckung (5.0.5, 7.6) — kommt
 eine zweite Regel, kommt die Spalte mit ihr.
+
+**Warum die siebte Spalte an der Anlagenzeile steht (K9, E33).** Der Stromträger des Heizbetriebs
+ist eine Wahl der Anlage (`Tab_Energieanlagen.ID_Carrier`, ET-5), keine Eigenschaft des Geräts, und
+ein Katalogsatz kennt keine Träger eines Projekts. Die Kühlwahl steht deshalb daneben, als
+ganzzahliger Verweis mit Fremdschlüssel auf `energy_carrier.id` — `ON DELETE SET NULL`: Ein
+gelöschter Träger fällt auf „wie Heizbetrieb" zurück. Sie gehört wie `ID_Carrier` zum Modell der
+Anlagenzeile (`WErzeugerModel`, Einfügeanweisung `AnlagenSql`); eine Stammspalte gibt es nicht.
 
 **Kein neues Kennlinienschema — aber ein erweiterter Zugriff.** `Tab_Kenndaten_Kuehlung(_STAMM)`
 steht bereits, wird bereits importiert, gefiltert, kopiert und in der Eindeutigkeitsprüfung
@@ -1905,9 +1947,10 @@ Projektentscheidung):
 | Feld | Bindung | Sichtbar | Sperrgrund bzw. Warnung |
 |---|---|---|---|
 | „Maschine auch zum Kühlen benutzen" | `Kuehlbetrieb` (0/1) | immer | **gesperrt**, wenn `KenndatenKuehlungCtrl.HatKenndatenProjekt(ID_WP)` falsch ist — die Prüfung auf `Tab_Kenndaten_Kuehlung`, nicht die heutige `HatKenndaten` auf der Stammtabelle (`:132-138`; 5.0.1): „Zu diesem Gerät liegen keine Kühlkenndaten vor."; **gesperrt** ebenso bei `WQ_Typ = Pufferspeicher`: „Kühlbetrieb mit Quellspeicher wird nicht gerechnet" (5.1, Festlegung 6) |
-| Kühl-Vorlauf | `KuehlVorlauf` (`int?`) | bei gesetztem Haken | **Auswahlfeld aus den Stützstellen** der Kennlinie dieses Geräts; Vorgabe-Anzeige „kleinster Stützwert". Ein Wert außerhalb der Stützstellen erzeugt dieselbe Extrapolationswarnung wie auf der Heizseite (`SimulationWaermepumpe.cs:1900`). Freie Eingabe mit Interpolation ist **K21** |
+| Kühl-Vorlauf | `KuehlVorlauf` (`int?`) | bei gesetztem Haken | **Auswahlfeld aus den Stützstellen** der Kennlinie dieses Geräts; Vorgabe-Anzeige „kleinster Stützwert". Ein Wert außerhalb der Stützstellen erzeugt dieselbe Extrapolationswarnung wie auf der Heizseite (`SimulationWaermepumpe.cs:1900`). Eine freie Eingabe mit Interpolation gibt es nicht (**K21**, E33) |
 | Umschaltregel | — (keine Bindung, keine Spalte) | bei gesetztem Haken | feste Auskunft „je Tag; Brauchwasser bleibt am Kühltag bedienbar" (5.2) — eine Konstante des Rechenwegs, keine Auswahl (5.0.5) |
-| Hilfsstromanteil | `KuehlHilfsstromanteil` (`double?`) | bei gesetztem Haken | Vorgabe-Anzeige „kein Zuschlag"; 0 ≤ x < 1 (**K23**) |
+| Hilfsstromanteil | `KuehlHilfsstromanteil` (`double?`) | bei gesetztem Haken | Vorgabe-Anzeige „kein Zuschlag"; 0 ≤ x < 1 (**K23**, E33) |
+| Stromträger des Kältestroms | `Kuehl_ID_Carrier` (`int?`) an der Anlagenzeile | bei gesetztem Haken | Auswahl aus den Stromträgern des Projekts; Vorgabe-Anzeige „wie Heizbetrieb" (NULL) (**K9**, E33; 6.3) |
 
 **Zwei Regeln, die dabei greifen:**
 
@@ -2431,16 +2474,17 @@ dahin sind sie der Nachweis einer Eigenschaft des Bestandswegs, nicht ein Zwisch
 
 | Stufe | Inhalt | Vorbedingung | Abnahme | Basis | PT |
 |---|---|---|---|---|---|
-| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K22 bleibt Prüfaufgabe vor KU2) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
+| **KU0** | **Papiere, nichts bauen.** Dieses Konzept; die Fortschreibung von Konzept 13/15, Systementwurf B9 und Abwägung 10, Softwarearchitektur 3.5, Mehrzonen 12, Umsetzungskonzept 6 auf E12 und E15; Entscheid über K1–K23 (K1 mit E21; K2, K10, K11, K19 und K18a mit E27; K4–K7 und K12 mit E31; K8, K9, K21 und K23 mit E33; K22 bleibt Prüfaufgabe vor KU2) | — | Papiere widerspruchsfrei, `DokumentationLinkWacheTests` grün, Indexzeile gesetzt | nein | **1–2** |
 | **KU1** | **Der Kanal — und die Fassade, die ihn füllt.** Schemaschritte `KU-S1`/`KU-S2`/`KU-S4` (neun Ergebnisspalten, 7.4), dazu die Programmeinstellung „Neue Projekte mit Kühlung anlegen" über `Dienste.Einstellungen` samt Feld im Einstellungsdialog, Anfangswert in beiden Anlagewegen und Mitführen beim Speichern der Kaskade (E27, K10; 7.2), Persistenz und Ergebnisspalten **vor** `ANZAHL = 4`; die zwei Kanallisten und die zwei Ausnahmen, dazu die fünf Restbedarfsfelder und der Bivalenzpunkt über `KANAELE_WAERME` (4.2); **Fassade `SimulationKaeltebedarf`** mit `SummeKaelte()`, `Kaeltebedarf_Max` → `Kaeltelast_Max`, eigener Dauerlinie und `Kaeltebedarf_Gesamt` (E21); Text↔Index; toleranter Knappheitsparser; `Warnkriterien.KanalAnzeige` (4.3 #24); `BerichtsDaten.KANAL_SCHLUESSEL` um `"KUEHLUNG"` und die Erzeugertabelle der Ergebnisansicht bei drei Kanälen (4.3 #32, #34); **Bedarfsprobe Kälte** mit `probeKaelte` (4.3 #30); Ressourcen, darunter der entfallende Zusatz „(informativ)" an `gebaeude.kuehlbedarf` (6.4) und der Hinweis „Tagesbilanz (Bestandsweg) liefert keine Kühllast" (E20, F-K18); Kühlsollwert und Kühlleistungsgrenze im Löser und im Gebäudedialog; Abschnitt „Kältebedarf" im Bedarfsdialog (8.4); Export der Kühlreihe; Wächter. **Gefüllt vom Gebäudemodell, gedeckt von niemandem** | **G1 steht**, und zwar in der Form aus E20: Bestandsweg verschoben, Weiche und Vorbereitungsschritt byte-gleich abgenommen (ohne Stundenmodell keine Kühllast je Stunde); `KU-S4` vor `ANZAHL` | Kern-Gate grün; Referenzlauf gegen die **neue** Basis; zwölf Projekte ohne Kühlung byte-gleich; die drei neuen Proben aus 10.2 („Bestandsweg-Gebäude liefert 0 mit Hinweis", „Symmetrie der Kennzahlen", „Ein Lauf, zwei Reihen") | **ja — mit G1 + G2** | **11–16** |
-| **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
+| **KU2** | **Der Erzeuger, samt Auswahl und Konfiguration (E15).** `KU-S3` mit drei Spalten je WP-Tabelle (`Kuehl_Vorlauf` als `INTEGER`) und der Stromträgerwahl an der Anlagenzeile (`Kuehl_ID_Carrier`, K9, E33); reversible Wärmepumpe über die vorhandene Kühlkennlinie (Laststufe `MAX(Last)`, linear, EER konstant), Kennlinienwahl über `Kuehl_Vorlauf`, dazu `Last` in Modell, Leser und Schreiber, ein projektseitiger Kennlinienleser und die Extrapolationsmeldung (5.1); Umschaltregel je Tag für den Heizkanal, Brauchwasser bleibt bedienbar (5.2); `Kaeltekaskade` nach der Wärmekaskade (5.5); Quellspeicher benannt abgelehnt; Senke „Kältekreis"; eigener Deckungsgrad-Zweig `DeckungKanalKaelte` mit `Kaeltebedarf_Gesamt` und `Kaelterestbedarf`; **Deckungsprobe Kälte** (4.3 #31); Kältestrom in eigener Reihe samt Hilfsstromanteil (6.1), als Projektskalar in der Kennzahlendatei (7.4, 7.6; K18a, E27), Wirtschaftlichkeit, Emissionen; Kennzahlen, Bericht, Abschnitt „Kältebedarf und -deckung"; Erzeugerdialog, Bedarfs- und Ergebnisdialog (der Katalogfilter „nur mit Kühlfunktion" ist gebaut — K20 erledigt, 5.0.3); Import der Kühlsollwerte | **G2 steht** (Sommerlüftung — sonst wird auf eine überzeichnete Last ausgelegt, 3.4); KU1 abgenommen; **K22 geprüft** und im Glossar festgehalten (E27) | Referenzprojekt mit Kälteerzeuger; Rechenprobe gegen Handrechnung **je Vorlauf**; Katalog- und Übernahmefälle (10.3); ChartProben grün; Sichtabnahme Windows | **ja — ein Projekt** | **15–25** |
 | **KU3** | **Das Umfeld.** Kältemaschine als eigener Erzeugertyp samt Rückkühlung (5.3); freie Kühlung über die Quelle; Kältespeicher (nur bei Ja zu K7); Kühlung je Zone (nach G6); Kühlsollwert Nacht; Export nach IFC und gbXML | KU2 im Feld; G6 für die Zonen; G7 für den Export | wie KU2, dazu Rundlaufprobe des Exports | ja | **17–26**, mit Kältespeicher (K7) **20–31** |
 
 **Stand 23.09.2026: KU1 ist abgeschlossen** — in vier Wellen (Schema und Programmeinstellung; Kanal,
 Fassade und Löser; Oberfläche, Bericht und Export; E32, Referenzprojekt 1017 und neue Basis
 `2026-09-23_R13_Kuehlung`, 10.4 und 10.5). Die Kühldecke als eigener Knoten ist geprüft und verworfen
 (3.6). Offen für KU2: der Kälteerzeuger mit `KU-S3` und die Kühlfunktion der Wärmepumpe von 1017,
-Prüfaufgabe K22 und die Fragen K8, K9, K21 und K23; aus 11.3 die übrigen Wiki-Seiten und der Upload.
+Prüfaufgabe K22; die Fragen K8, K9, K21 und K23 sind mit E33 entschieden; aus 11.3 die übrigen
+Wiki-Seiten und der Upload.
 
 **Warum KU2 gegenüber Rev. 1 wächst (14–22 → 16–26 in Rev. 2).** Drei Posten kamen aus dem
 Gegenlesen hinzu: der **Kühl-Vorlauf** als Kennlinienwahl samt Auswahlfeld und
@@ -2562,8 +2606,10 @@ ihren Sonderfall in die Löschliste ein (10.5, 11.2). Eine neue Frage entsteht n
 **K24**, nach Empfehlung; 12.2, 7.4, 7.6); **K22** bleibt als Prüfaufgabe vor KU2 stehen. Die entschiedenen Zeilen tragen den Vermerk in
 der Spalte „Empfehlung"; die Fragen stehen als Begründung weiter da. K4–K9, K12, K21 und K23 waren
 nicht Gegenstand von E27. **E31 (23.09.2026, [Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.36)** entscheidet **K4, K5,
-K6, K7 und K12** nach Empfehlung — die Zeilen tragen den Vermerk —; **K8, K9, K21 und K23** bleiben
-mit ihrer Stufe zu entscheiden.
+K6, K7 und K12** nach Empfehlung — die Zeilen tragen den Vermerk. **E33 (23.09.2026,
+[Konzept](Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md) N1.38)** entscheidet **K8, K21 und K23**
+nach Empfehlung und **K9 abweichend von der Empfehlung** (6.3); auch diese Zeilen tragen den
+Vermerk. Vor KU2 ist keine Frage mehr offen.
 
 ### 12.1 Jetzt zu entscheiden
 
@@ -2574,16 +2620,16 @@ mit ihrer Stufe zu entscheiden.
 | **K5** | Bleibt Feuchte ausgeschlossen — sensible Kälte ohne Entfeuchtung? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Ja**, und die Grenze steht an jeder Zahl: Bericht, Dialog, Wiki, Export (1.3, 9.2) | welche Aussage das Ergebnis trägt |
 | **K6** | Wie werden mehrere Zonen auf einen Kanalwert geführt, wenn Zonen gleichzeitig heizen und kühlen? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Nicht saldieren**: beide Kanäle tragen ihren Betrag, eine Kennzahl weist den Fall aus (3.5) | eine Saldierung erfindet eine Wärmerückgewinnung |
 | **K7** | Kältespeicher ja oder nein? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Vertagen nach KU3**, gemeinsam mit der Kältemaschine — und bis dahin kein Persistenzwert ohne Rechenweg (4.6) | 3–5 PT, ein Pufferverwendungswert, ein Klassen-Set-Eintrag |
-| **K8** | Freie Kühlung und Rückkühlung — bauen oder benannt ablehnen? | **Bauen, aber keine als eigener Erzeuger**: Nachtlüftung in G2, freie Kühlung als Betriebsfall, Rückkühlung als Bestandteil der Kältemaschine (5.4) | ohne Rückkühlung ist die Kältemaschine energetisch unvollständig |
-| **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose (6.3) | eine zweite Tarifzeile oder keine |
+| **K8** | Freie Kühlung und Rückkühlung — bauen oder benannt ablehnen? | **Entschieden mit E33 (23.09.2026) nach Empfehlung: bauen, aber keine als eigener Erzeuger**: Nachtlüftung in G2, freie Kühlung als Betriebsfall (KU3), Rückkühlung als Bestandteil der Kältemaschine — bei der reversiblen Wärmepumpe in Maschine und Kennlinie (5.1, 5.4) | ohne Rückkühlung ist die Kältemaschine energetisch unvollständig |
+| **K9** | Trägt Kältestrom denselben Tarif und Stromträger wie der Wärmepumpenstrom? | **Entschieden mit E33 (23.09.2026), abweichend von der Empfehlung:** per Vorgabe derselbe Stromträger und Tarif wie im Heizbetrieb, wahlweise je Anlage ein anderer Stromträger des Projekts (`Tab_Energieanlagen.Kuehl_ID_Carrier`, NULL = wie Heizbetrieb; 6.3, 7.3). Die Empfehlung lautete: **Ja** — ein eigener Tarif wäre eine zweite Wahrheit für dieselbe Steckdose | eine zweite Tarifzeile oder keine |
 | **K10** | Bleibt der Kühlbetrieb bis zu einer ausdrücklichen Projekteinstellung aus? | **Entschieden mit E27 (22.09.2026), abweichend von der Empfehlung:** Eine **Programmeinstellung** (über `Dienste.Einstellungen`) legt fest, ob **neue** Projekte mit Kühlung angelegt werden, Vorgabe aus; Bestands- und Referenzprojekte bleiben aus, bis ihre Projekteinstellung `Tab_Einstellungen.Kuehlbetrieb` ausdrücklich eingeschaltet wird; die Projekteinstellung bleibt je Projekt schaltbar; fällig mit KU1 (7.2, 8.3, 10.3, 10.5). Die Empfehlung lautete: Ja, Vorgabe 0 — nicht, um das Einfrieren zu vermeiden, sondern um die zwölf übrigen Projekte zu schützen | Rückwärtsverträglichkeit aller Bestandsprojekte |
 | **K11** | Eigener Kühlsollwert mit Zeitprofil und `Kuehlleistung_Max` — oder bleibt `Maximaleraumtemperatur` die einzige Kühleingabe? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Sollwert und eigene Grenze in KU1; Zeitprofil erst in KU3** (Nachtwert), die übrigen drei erst bei Bedarf (7.1) | Schemaumfang und Dialogumfang |
 | **K12** | Gilt Kühlung auf iOS? | **Entschieden mit E31 (23.09.2026) nach Empfehlung:** **Ja** — der Kern ist plattformfrei, es entsteht kein neuer Maskenschlüssel, und ein iOS-Lauf ist für KU1/KU2 nicht begründet (8.6, 10.6) | Rückfragepflicht und Laufzeitkontingent |
 | **K19** | Wird KU2 mit einem eigenen, kleinen Einfrierschritt abgenommen (ein Projekt bewegt sich) — oder bleibt die Kältedeckung im Regressionsnetz unsichtbar? | **Entschieden mit E27 (22.09.2026) nach Empfehlung: eigener Einfrierschritt** (10.5) | ob die Kältedeckung je regressionsgeprüft wird |
 | **K20** | **Katalogfilter „nur mit Kühlfunktion" (E15):** benannte Ausnahme von der Regel „Kennzeichenspalten sind nicht filterbar" (`Katalogfilterprofil.cs:79`, [Katalogfilter](Konzept_Katalogfilter_EPOS-Plan.md) 5.6.2) — oder eine eigene Filterart? | **Durch die Umsetzung erledigt, auf einem dritten Weg:** Die Ja/Nein-Spalte „Kühlen" ist durch die Zahlenspalte „Kühlleistung [kW]" mit Trichter ersetzt (`SpKuehlleistung`, `:353`), der Schalter „nur mit Kühlfunktion" schreibt `AUSDRUCK_MIT_KUEHLUNG` (`:360`) in den Trichter; die Regel in `:79` steht unverändert (5.0.3, 8.2). Kein Entscheid mehr offen, kein Personentag in KU2 | die Bedienbarkeit von E15 — 15 von 51 Katalogsätzen sind kühlfähig, und der Filter findet sie |
-| **K21** | **Kühl-Vorlauf:** **Auswahl** aus den Stützstellen der Kennlinie — oder **freie Eingabe** mit Interpolation zwischen zwei Vorläufen? | **Auswahl** (5.1, Festlegung 2; 8.2). In der Testdatenbank stehen zwei Stützstellen; eine Interpolation über den Vorlauf hat die Heizseite ebenfalls nicht, und **eine** Regel für beide Seiten ist mehr wert als ein Sonderweg | Dialogumfang, Extrapolationsregel, und ob Kühl- und Heizseite denselben Kennlinienleser teilen |
+| **K21** | **Kühl-Vorlauf:** **Auswahl** aus den Stützstellen der Kennlinie — oder **freie Eingabe** mit Interpolation zwischen zwei Vorläufen? | **Entschieden mit E33 (23.09.2026) nach Empfehlung: Auswahl** (5.1, Festlegung 2; 8.2). In der Testdatenbank stehen zwei Stützstellen; eine Interpolation über den Vorlauf hat die Heizseite ebenfalls nicht, und **eine** Regel für beide Seiten ist mehr wert als ein Sonderweg | Dialogumfang, Extrapolationsregel, und ob Kühl- und Heizseite denselben Kennlinienleser teilen |
 | **K22** | **Führt die Spalte `COP` der Kühltabelle wirklich den EER** — oder in manchen Datensätzen den COP eines Heizbetriebs bei Kühlvorlauf? Der VDI-3805-Import trennt Heiz- und Kühlblock, die Herstellerangaben dahinter sind nicht gegengelesen | **Mit E27 (22.09.2026) nach Empfehlung festgelegt, bleibt Prüfaufgabe: vor KU2 an den vorhandenen Kühlkennlinien prüfen** (sieben Katalogsätze, 174 Zeilen) und das Ergebnis im Glossar festhalten. Ist die Lage uneinheitlich, wird die Größe beim Import **benannt** umgerechnet oder der Satz abgelehnt — nie stillschweigend als EER gelesen | jede Kältekennzahl und jede Wirtschaftlichkeitszahl der Kühlseite; eine verwechselte Kennzahl ist hier ein Faktor, kein Rundungsfehler |
-| **K23** | **Hilfsstrom des Kältekreises:** Anteil **je Anlage** (`Kuehl_Hilfsstromanteil` in `Tab_WP`) — oder **pauschal je Projekt** in den Einstellungen? | **Je Anlage** (6.1, 7.3) — er hängt an der Hydraulik der Maschine, nicht am Projekt; NULL = kein Zuschlag, damit keine geratene Zahl entsteht | eine Spalte je WP-Tabelle gegen eine Spalte in `Tab_Einstellungen`; und die Frage, ob eine Kältemaschine (KU3) später dieselbe Eingabe erbt |
+| **K23** | **Hilfsstrom des Kältekreises:** Anteil **je Anlage** (`Kuehl_Hilfsstromanteil` in `Tab_WP`) — oder **pauschal je Projekt** in den Einstellungen? | **Entschieden mit E33 (23.09.2026) nach Empfehlung: je Anlage** (6.1, 7.3) — er hängt an der Hydraulik der Maschine, nicht am Projekt; NULL = kein Zuschlag, damit keine geratene Zahl entsteht | eine Spalte je WP-Tabelle gegen eine Spalte in `Tab_Einstellungen`; und die Frage, ob eine Kältemaschine (KU3) später dieselbe Eingabe erbt |
 
 ### 12.2 Technische Festlegung — zur Kenntnis, Widerspruch möglich
 

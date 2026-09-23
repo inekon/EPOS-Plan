@@ -38,6 +38,10 @@ Löser kappt nicht mehr an `Maximaleraumtemperatur`, die Raumtemperatur darf dar
 die Überhitzungsstunden zählen die Stunden darüber im freien Lauf; einen „informativen"
 Kühlbedarf gibt es nicht mehr, Kühlreihe und Kühlkennzahlen nur bei wirksamer Kühlung. Kapitel 4.5
 und 4.6 folgen.
+Nachgezogen am 23.09.2026 mit **E33** (N1.38): K8, K21 und K23 der Kühlung sind nach Empfehlung
+entschieden, **K9 abweichend** — der Kältestrom läuft per Vorgabe über den Stromträger und Tarif
+des Heizbetriebs, wahlweise je Anlage über einen anderen Stromträger des Projekts, gewählt an der
+Anlagenzeile; vor KU2 ist kein Anwenderentscheid mehr offen, das Register zählt 11 offene Punkte.
 
 Auftrag (Anwender, 15.09.2026, im Wortlaut):
 
@@ -3349,3 +3353,70 @@ Abschnitt 1 (E32); [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.
 Kopf, 7.1, 8.1, 8.2 und 9; [Umsetzungskonzept](Umsetzungskonzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md)
 1.4; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) F-S4; die Wiki-Quellen „Kühlung"
 und „Gebäudemodell VDI 6007"; die Dialogsätze in beiden Sprachen.
+
+### N1.38 Entscheid E33 — K8, K9, K21 und K23 der Kühlung; K9 abweichend von der Empfehlung
+
+**Entscheid E33 (Anwender, 23.09.2026).** Der Anwender entscheidet die vier vor **KU2** fälligen
+Punkte **K8**, **K9**, **K21** und **K23** des
+[Registers der offenen Entscheide](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md): **K8, K21
+und K23 nach Empfehlung, K9 abweichend davon.** Mit ihnen ist Stufe KU2 des
+[Kühlkonzepts](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) ohne offenen Anwenderentscheid
+beauftragbar; beauftragt ist ihre erste Welle (Schemaschritt `KU-S3`, ergebnisneutral). Wo
+„nach Empfehlung" steht, gilt die Empfehlung im Wortlaut des jeweiligen Registerabschnitts.
+
+**Was damit gilt.**
+
+| Nr. | Entscheid | Wirkt vor |
+|---|---|---|
+| **K8** | Nach Empfehlung: **bauen, aber keine als eigener Erzeuger.** Die **Rückkühlung** ist Bestandteil der Kältemaschine — bei der reversiblen Wärmepumpe steckt sie in der Maschine und ihrer Kennlinie, die über der Außen- bzw. Quellentemperatur aufgetragen ist (Kühlkonzept 5.1, Festlegung 5), bei der Kältemaschine kommt sie mit dieser in KU3; die **freie Kühlung** ist ein Betriebsfall der vorhandenen Maschine (KU3); die **Nachtlüftung** ist eine Gebäudemaßnahme und steht mit der Sommerlüftung im freien Lauf (G2). Die Erzeugerauswahl bekommt keinen Eintrag „freie Kühlung" oder „Rückkühlung" (Kühlkonzept 5.4) | KU2 (reversible Wärmepumpe ohne eigenes Rückkühlmodell), KU3 |
+| **K9** | **Abweichend von der Empfehlung:** Der Kältestrom läuft **per Vorgabe** über denselben Stromträger und denselben Tarif wie die Wärmepumpe im Heizbetrieb; **wahlweise** kann **je Anlage** ein anderer Stromträger des Projekts gewählt werden; ein leeres Feld (NULL) heißt „wie Heizbetrieb". Die Beziehung läuft über die Kennung des Trägers (Hausregel: neue Beziehungen über IDs). Die Empfehlung lautete: immer derselbe Stromträger und Tarif — ein eigener Kältetarif sei eine zweite Wahrheit für dieselbe Steckdose (Kühlkonzept 6.3) | KU2 (Schema, Dialog, Kältestrom, Kosten, Emissionen) |
+| **K21** | Nach Empfehlung: Der **Kühl-Vorlauf** wird aus den **Stützstellen** der Kühlkennlinie **ausgewählt**; keine Interpolation über den Vorlauf; ein leeres Feld heißt **kleinster Stützwert**; eine Extrapolation wird gewarnt wie auf der Heizseite; eine Stützstellenprobe je Vorlauf sichert es ab (Kühlkonzept 5.1, Festlegung 2; 8.2; 10.2) | KU2 (Kennlinienleser, Erzeugerdialog) |
+| **K23** | Nach Empfehlung: Der **Hilfsstromanteil** des Kältekreises steht **je Anlage** (`Kuehl_Hilfsstromanteil` an der Wärmepumpe); NULL heißt **kein Zuschlag** (Kühlkonzept 6.1, 7.3) | KU2 (Schema, Kältestrom) |
+
+**K9 — wo die Auswahl sitzt, geprüft am Code.** Die Wärmepumpe bekommt ihren Stromträger heute
+an drei Stellen:
+
+1. **An der Anlagenzeile** (`Tab_Energieanlagen.ID_Carrier`, ET-5 vom 08.09.2026): Der
+   Wärmepumpendialog bietet in der Gruppe „Energieträger" die Träger des Katalogs an, Vorgabe ist
+   der Stromträger des Projekts; die Wahl wird je Anlage gespeichert und dem Projekt zugeordnet
+   (`energy_project_settings`). Der Gerätekatalog (`Tab_WP_STAMM`) kennt keine Träger — sie
+   gehören zum Projekt.
+2. **Der Stromträger des Projekts** (`Emissionsquelle.StromTraeger`,
+   `ProjektEnergietraegerCtrl.StromTraegerDerAnlagen`): der an einer Anlage gewählte, dem Projekt
+   zugeordnete Stromträger, die Wärmepumpe zuerst; sonst die Zuordnung des Projekts, sonst der
+   Auslieferungsträger. Mit ihm bepreist `KostenEmissionRechner` den **Netzbezug einmal**
+   (Arbeitspreis, Staffel, Aufschläge) und bewertet die Emissionen des Netzstroms.
+3. **Anlagenscharf** bewertet allein der `EndenergieAufloeser` (Anwenderentscheid 19.09.2026):
+   Eine Anlage mit eigenem Stromträger bemisst ihre Betriebskosten (Wege A und B) mit dessen
+   Arbeitspreis (`ProjektEnergietraegerCtrl.EigeneStromTraeger`).
+
+**Die Auswahl gehört damit an die Anlagenzeile, neben den Stromträger des Heizbetriebs:**
+`Tab_Energieanlagen.Kuehl_ID_Carrier`, ein ganzzahliger Verweis auf `energy_carrier.id`, NULL = wie
+Heizbetrieb. „Wie Heizbetrieb" heißt: der Stromträger, mit dem die Anlage im Heizbetrieb rechnet —
+ihr `ID_Carrier`, sonst der des Projekts. Am Gerät (`Tab_WP`) steht die Wahl nicht, weil dort auch
+der Heizträger nicht steht, und eine Katalogspalte gibt es nicht, weil ein Katalogsatz keine Träger
+eines Projekts kennt. Das weicht nicht von „je Anlage" ab: Stromträger werden im Bestand bereits
+je Anlage gewählt.
+
+**Was daraus für den Rechenweg folgt (KU2, ab Welle 2).** Bepreist wird der Netzbezug heute
+**einmal**, mit dem Stromträger des Projekts; einen Tarif je Verbraucher gibt es nicht (ET-5).
+Solange die Kühlwahl leer ist, bleibt es dabei — der Kältestrom geht in dieselbe Stufenrechnung und
+denselben Netzbezug (Kühlkonzept 6.1). Trägt eine Anlage einen **anderen** Kühlträger, braucht der
+Kältestrom eine eigene Bepreisung und eine eigene Emissionszuordnung für seinen Anteil am
+Netzbezug. Wie dieser Anteil gebildet wird — Eigenverbrauch aus Photovoltaik und Stromspeicher
+stehen in der Stufenrechnung vor dem Netzbezug —, legt die Welle fest, die den Kältestrom in Kosten
+und Emissionen bringt; die Regel wird mit ihr vorgelegt.
+
+**Was offen bleibt.** Das Register zählt **11 offene Punkte** — U13–U15 (G4), M3, M5–M8 und
+M11–M13 (G6b bis G6d); im Kühlkonzept ist kein Punkt mehr offen. Von den Folgeaufgaben aus E27
+bleiben **K22** (die Prüfung der COP-Spalte, vor KU2) und **D6** (vor der Stufe über die
+semantische hinaus).
+
+**Betroffene Stufen:** KU2 (K8 für die reversible Wärmepumpe, K9, K21, K23), KU3 (K8: Kältemaschine
+mit Rückkühlung, freie Kühlung); die Nachtlüftung aus K8 steht mit G2.
+
+**Nachgezogen:** Kopf dieses Papiers; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
+Abschnitte 1 und 3; [Register](Offene_Entscheide_Gebaeudesimulation_EPOS-Plan.md) (Vermerk unter
+K8, K9, K21 und K23, Kopf, Kapitel 0, 6 und 9, Zählung 11);
+[Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) Kopf, 5.0.5, 5.1, 5.4, 6.1, 6.2,
+6.3, 7.3, 8.2, 11.1 und 12; die Indexzeilen in [`Dokumentation/LIESMICH.md`](../LIESMICH.md).
