@@ -477,6 +477,11 @@ namespace EPOS.Kern.Tests
             var io = new ProjektExportImportCtrl();
             Assert.True(io.Exportieren(PROJEKT, paket));
 
+            // Der Wert der Klasse A, wie ihn das Paket trägt (Stand des Testkatalogs).
+            double wertA = Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Wert FROM Tab_TwwDin4708Wert_STAMM WHERE ID = ?", new DbParam("@id", q.KlasseA)));
+            Assert.NotEqual(15.0, wertA);
+
             // Das Ziel ändert seine EIGEN-Zeilen unter demselben Namen (erfundene Werte).
             Assert.True(DataRepository.ExecuteSQL(
                 "UPDATE Tab_TwwNutzungsart_STAMM SET Bedarf_Mittel = 2.5 WHERE ID = ?", new DbParam("@id", q.Nutzungsart)));
@@ -513,7 +518,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(q.KlasseB, klassen[1]);
             Assert.Equal(KLASSE_A + " (Import 1)", Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT Schluessel FROM Tab_TwwDin4708Wert_STAMM WHERE ID = ?", new DbParam("@id", klassen[0]))));
-            Assert.Equal(10.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+            Assert.Equal(wertA, Convert.ToDouble(DataRepository.ExecuteScalar(
                 "SELECT Wert FROM Tab_TwwDin4708Wert_STAMM WHERE ID = ?", new DbParam("@id", klassen[0]))));
 
             Assert.Equal(vorher + 2, Katalogzeilen());
