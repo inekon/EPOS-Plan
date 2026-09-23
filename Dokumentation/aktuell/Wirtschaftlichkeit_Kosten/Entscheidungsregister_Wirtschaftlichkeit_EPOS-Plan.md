@@ -1,6 +1,6 @@
 # Entscheidungsregister: Wirtschaftlichkeit EPOS-Plan
 
-**Stand 23.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452) und ET‑D‑4 (#457) · Schwesterpapiere: das Konzept
+**Stand 23.09.2026** — angelegt mit dem Schnitt A13 (Statuszeile #435), fortgeschrieben mit E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452), ET‑D‑4 (#457) und E8a (#454) · Schwesterpapiere: das Konzept
 [`Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md`](Konzept_Wirtschaftlichkeit_EPOS-Plan_konsolidiert.md)
 (der gültige Stand) und das
 [Protokoll der Entscheidwege](../../ueberholt/Protokolle/Reporting/Konzept_Wirtschaftlichkeit_Entscheidwege_Protokoll.md)
@@ -44,12 +44,13 @@ Unsicherheiten R‑U1…R‑U9 (Konzept § 5): Sie sind Rechtsfragen, keine Ents
 | R‑NR | Entscheide zu offenen Punkten des Konzepts § 6.3: Nr. 20, 29, 30, 31, 32 | Konzept § 6.3 vor dem Schnitt; Statusdatei Nach #429 (d), Nach #432 (a) | 5 |
 | R‑E4 | U6‑Q1…Q3, U7‑Q1/Q2 — Fragen aus E4 | Statusdatei Nach #432 (a) | 5 |
 | R‑E5 | E5‑Q1…Q7 und die vier Fragen aus Teil b (E5b‑1…4) | Protokoll E5; Statusdatei Nach #434 (a); Anwender 22.09.2026 | 11 |
-| R‑E6 | E6‑Q1, E6‑Q2 — die Fragen aus E6 (entschieden 23.09.2026) | Protokoll E6; Statusdatei Nach #436 (a) | 2 |
+| R‑E6 | E6‑Q1, E6‑Q2 — die Fragen aus E6 (entschieden 23.09.2026; E6‑Q1 umgesetzt #454) | Protokoll E6; Statusdatei Nach #436 (a) | 2 |
 | R‑E7 | E7‑Q1…Q3 — die Fragen aus E7a (entschieden 23.09.2026, umgesetzt #440) | Protokoll E7a; Statusdatei Nach #437 (a) | 3 |
 | R‑E7b | E7b‑Q1…Q4 — die Fragen aus E7b (entschieden 23.09.2026) | Protokoll E7b; Statusdatei Nach #439 (a) | 4 |
 | R‑E7c1 | E7c1‑Q1…Q8 — die Fragen aus E7c1 (entschieden 23.09.2026, umgesetzt #440, #446 und #452; Q2 b präzisiert #452) | Protokoll E7c1; Statusdatei Nach #440 (a) | 8 |
 | R‑E7c2 | E7c2‑Q1…Q8 — die Fragen aus E7c2 (entschieden 23.09.2026, umgesetzt #446 und #452) | Protokoll E7c2; Statusdatei Nach #446 (a) | 8 |
 | R‑E7c3 | E7c3‑Q1…Q8 — die Fragen aus E7c3 (offen, gestellt 23.09.2026) | Protokoll E7c3; Statusdatei Nach #452 (a) | 8 |
+| R‑E8a | E8a‑Q1…Q4 — die Fragen aus E8a (entschieden 23.09.2026, nach Empfehlung; Q1 umgesetzt #454, Q4 mit #455) | Protokoll E8a; Statusdatei Nach #454 (a) | 4 |
 | R‑EZ | Einzelentscheide ohne eigene Familie (EZ‑1…EZ‑12) | Konzept vor dem Schnitt; Statusdatei #331, #332, #333 | 12 |
 
 ---
@@ -138,7 +139,7 @@ Etappen V‑A bis V‑E.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **V-1** | Fünf Blöcke als Aufklappabschnitte unter der Vergleichstabelle oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K8, § 2.7): Umschalter im Kopf der Seite — **gebaut #434** (Sitzungswahl; die Blöcke 1, 3, 4, 5 in der Darstellung „ValERI-Bewertung") | 18.09.2026, nach Empfehlung (zusammen mit K8) | § 2.7, § 2.13 | gebaut #434 |
+| **V-1** | Fünf Blöcke als Aufklappabschnitte unter der Vergleichstabelle oder als zweite Ansicht mit Umschalter „Kennzahlen / ValERI-Bewertung"? | Umschalter — die Seite ist schon voll. **Entschieden 18.09.2026 nach Empfehlung** (zusammen mit K8, § 2.7): Umschalter im Kopf der Seite — **gebaut #434** (Sitzungswahl; die Blöcke 1, 3, 4, 5 in der Darstellung „ValERI-Bewertung") | 18.09.2026, nach Empfehlung (zusammen mit K8) | § 2.7, § 2.13 | gebaut #434; die fünf Blöcke vollständig #454 (Block 2 mit Zahlungsstrombild, Block 4 mit Spannenbild und Verlauf — E8a) |
 | **V-2** | XLSX-Formelexport: nur das ValERI-Blatt oder den ganzen Bericht formelbasiert? | Empfehlung war: nur das ValERI-Blatt (drei Szenariotabellen + Parameterblock), der übrige Bericht bleibt Werte. **Gekippt 18.09.2026 durch den Entscheid zu V-G10: der ganze Bericht, soweit ableitbar** — was ableitbar ist und was Wert bleibt, steht in § 2.11.6 | Empfehlung 18.09.2026 gekippt durch den Entscheid zu V‑G10 | § 2.11.6 | überholt durch V‑G10 |
 | **V-3** | IZF/Amortisation von den Kacheln nehmen oder mit „nachrichtlich"-Label behalten? | behalten mit Label — Anwender kennen die Größen, die Norm verlangt nur die richtige Einordnung. **Gebaut #434:** Kacheln mit Label über den Empfehlungskarten | Datum in den Quellen nicht genannt; das E5-Protokoll führt V‑3 unter den Entscheiden | § 2.11.2 (V‑G8), § 2.13 | gebaut #434 |
 | **V-4** | Szenario-Parametersätze (V-G5) sofort oder nach V-A–V-D? | **Umfang entschieden** (§ 2.11.5). **Zeitpunkt entschieden 18.09.2026 nach Empfehlung: danach**, einzige Etappe mit Rechenwirkung, eigener A/B-Nachweis — **mit Hinweistext** bis dahin (§ 2.11.7); der Hinweistext ist **gebaut #434** | Umfang 31.08.2026 (V‑G5); Zeitpunkt 18.09.2026, nach Empfehlung | § 2.11.5, § 2.11.7 | Hinweistext gebaut #434; die Szenarioabdeckung selbst offen (V‑E, E9) |
@@ -318,7 +319,7 @@ der Statuszeile #435 nach).
 | **E5b‑1** | E5‑Q3 endgültig — Label nur an Amortisation und Zinsfuß? (Empfehlung: ja.) | Label „nachrichtlich" nur an Amortisation und Zinsfuß: **„belassen"** wie gebaut — die Annuität bleibt ohne Label | 22.09.2026, Anwender („belassen") | § 2.11.2 (V‑G8) | gebaut #434 |
 | **E5b‑2** | Ein eigener Vorschlagssatz für den Stamm, wenn eine Variante die Referenz ist? (Empfehlung: ja, mit neuem Schlüssel.) | ja — ein eigener Vorschlagssatz für das Stammprojekt mit neuem Schlüssel | 22.09.2026, nach Empfehlung | § 2.13; Mockup, Kategorie 8 | gebaut #436 — `WIRT_EMPF_SATZ_STAMM` „Stammprojekt beibehalten" (`VariantenEmpfehlung.IstStamm`), auf der Seite, in Block 4 und in beiden Berichten |
 | **E5b‑3** | „Bericht erzeugen" fügt den Baustein Wirtschaftlichkeit der gemerkten Gruppenkonfiguration hinzu — dauerhaft oder nur für diesen Lauf? (Empfehlung: nur für diesen Lauf.) | nur für diesen Lauf — die gemerkte Berichtskonfiguration bleibt unverändert | 22.09.2026, nach Empfehlung | Mockup-Anhang U44 | gebaut #436 — `BerichtSeiteGaben.Erstellen(…, auswahlMerken)`: gemerkt wird nur beim Lauf der Berichtsseite, „Bericht erzeugen" speichert nichts |
-| **E5b‑4** | Etappe der nicht gebauten Mockup-Teile: Spannen-Balkenbild mit E6; Nominalsummen, Brückenbild, Tafel „Was daraus im Lauf wird" und Fußzeile „Drei Szenarien gerechnet…" mit E8? (Empfehlung: so.) | so — das Spannen-Balkenbild mit E6; Nominalsummen, Brückenbild, Tafel „Was daraus im Lauf wird" und Fußzeile mit E8 | 22.09.2026, nach Empfehlung | Mockup, Kategorie 8; Analysepapier § 5 (E6, E8) | Spannen-Balkenbild gebaut #436 (`ChartRenderer.KapitalwertSpanne`, auf der Seite unter der Bandbreitentafel und im Wortbericht); Nominalsummen und Differenzspalte, Brückenbild, Tafel und Fußzeile offen — E8 (Mockup-Anhang U41, U46–U48) |
+| **E5b‑4** | Etappe der nicht gebauten Mockup-Teile: Spannen-Balkenbild mit E6; Nominalsummen, Brückenbild, Tafel „Was daraus im Lauf wird" und Fußzeile „Drei Szenarien gerechnet…" mit E8? (Empfehlung: so.) | so — das Spannen-Balkenbild mit E6; Nominalsummen, Brückenbild, Tafel „Was daraus im Lauf wird" und Fußzeile mit E8 | 22.09.2026, nach Empfehlung | Mockup, Kategorie 8; Analysepapier § 5 (E6, E8) | Spannen-Balkenbild gebaut #436 (`ChartRenderer.KapitalwertSpanne`, auf der Seite unter der Bandbreitentafel und im Wortbericht); **der E8-Teil gebaut #454** (E8a): Nominalsumme und Differenzspalte der Gliederung (U46, E8a/3), Brückenbild auf der Seite und im Wortbericht (U41, E8a/6, `ChartRenderer.KapitalwertBruecke`), Tafel „Was daraus im Lauf wird" (U47, E8a/4) und Fußzeile (U48, E8a/5; in der Knopfreihe mit #455, E8a‑Q4) — E5b‑4 vollständig umgesetzt |
 
 ---
 
@@ -327,13 +328,13 @@ der Statuszeile #435 nach).
 Quelle: Protokoll
 [`E6_Verlauf_Szenarien_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E6_Verlauf_Szenarien_Protokoll.md),
 „Fragen aus der Etappe", und die Statusdatei, Nach #436 (a). Beide Fragen hat der Anwender am
-23.09.2026 entschieden, E6‑Q1 mit „ja", E6‑Q2 mit „so lassen". Die zwei übrigen Fragen der Etappe
+23.09.2026 entschieden, E6‑Q1 mit „ja", E6‑Q2 mit „so lassen"; E6‑Q1 ist mit E8a (#454) gebaut. Die zwei übrigen Fragen der Etappe
 (Szenarionamen in der Szenarientafel des Wortberichts, Δ-Kopf des Verlaufs im Tabellenbericht) waren
 kein Entscheid: die erste folgt E5‑Q2 (R‑E5), die zweite war ein Fehler; beide sind gebaut #436.
 
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
-| **E6‑Q1** | Block 4 „Unsicherheit" der Darstellung „ValERI-Bewertung" zeigt Bandbreite, Vorschlag, Hinweistext und Sensitivität, aber weder den Verlauf noch das Spannenbild — die Tafel der fünf Blöcke im Mockup nennt dort den Verlauf. Verlauf und Spannenbild auch in Block 4? | **ja** — dieselben Bausteine wie unter „Wie sicher ist das?" | 23.09.2026 gestellt; **entschieden 23.09.2026 (Anwender: ja)** | § 2.13 (5); § 2.11.4 (V‑C); Mockup, Kategorie 8 und Anhang U49 | Umsetzung mit E8 (Block 4 vollständig) |
+| **E6‑Q1** | Block 4 „Unsicherheit" der Darstellung „ValERI-Bewertung" zeigt Bandbreite, Vorschlag, Hinweistext und Sensitivität, aber weder den Verlauf noch das Spannenbild — die Tafel der fünf Blöcke im Mockup nennt dort den Verlauf. Verlauf und Spannenbild auch in Block 4? | **ja** — dieselben Bausteine wie unter „Wie sicher ist das?" | 23.09.2026 gestellt; **entschieden 23.09.2026 (Anwender: ja)** | § 2.13 (5); § 2.11.4 (V‑C); Mockup, Kategorie 8 und Anhang U49 | **gebaut #454** (E8a/1): Block 4 zeigt Spannenbild und Verlauf mit denselben Bausteinen und derselben Datenseite wie „Wie sicher ist das?" — Bandbreite, Spannenbild, Vorschlag, Hinweistext, Verlauf, Sensitivität; je Darstellung ein Verlauf; Mockup U49 erledigt · E8a, erledigt |
 | **E6‑Q2** | Das Spannenbild färbt Punkt, Betrag und Balkenenden nach dem Vorzeichen (grün über, rot unter der Referenz) und teilt die Achse in vollen Euro; das Mockup zeichnet eine Farbe und die Achse in Millionen. So lassen? | **so lassen** (Vorzeichenfarben und Achse in vollen Euro sind der Hausstil der Bilder) | 23.09.2026 gestellt; **entschieden 23.09.2026 (Anwender: so lassen)** | § 2.13 (5); Mockup, Kategorie 8 (Spannenbild) | gebaut #436; das Mockup folgt beim nächsten Nachzug |
 
 ---
@@ -450,6 +451,23 @@ Familie; sie steht als Präzisierung bei E7c1‑Q2 (R‑E7c1) und ist mit #452 u
 
 ---
 
+## R‑E8a — E8a‑Q1…Q4: die Fragen aus E8a
+
+Quelle: Protokoll
+[`E8a_ValERI_Bloecke_Protokoll.md`](../../ueberholt/Protokolle/Reporting/E8a_ValERI_Bloecke_Protokoll.md),
+„Fragen aus der Etappe", und die Statusdatei, Nach #454 (a). Alle vier Fragen hat der Anwender am 23.09.2026
+entschieden, im Wortlaut: „Vier Fragen aus E8a: 1-4 Empfehlung". Q1 ist als E8a/8 in derselben Welle gebaut (#454),
+Q2 und Q3 gelten wie gebaut, Q4 ist mit dem Nachzug von E8b umgesetzt (#455).
+
+| Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
+|---|---|---|---|---|---|
+| **E8a‑Q1** | Zahlungsstrombild U42: (a) gestapelte Jahresbalken des absoluten Zahlungsstroms einer Version, Stand- und Szenariowahl wie Block 2, Reihen wie die Spalten der Mehrjahrestafel, Ausgaben nach unten, Ersatzjahre markiert, keine Differenzdarstellung; (b) nur Netto je Jahr mit kumulierter Linie; (c) weglassen — die Tafel in Block 2 genügt | **a** — gestapelte Jahresbalken je Version, ein eigener kleiner Schritt mit Bildprobe | 23.09.2026 gestellt; **entschieden 23.09.2026, nach Empfehlung** | § 2.11.4 (V‑C); Mockup, Kategorie 8 und Anhang U42 | **gebaut #454** (E8a/8): `ChartRenderer.Zahlungsstrom` (1240 × 620) in Block 2 unter der Jahrestafel und im Wortbericht über jeder Mehrjahrestafel; die Reihen sind die Positionsspalten der Mehrjahrestafel, ohne Restwert; sieben ChartProben-Bilder `zahlungsstrom*`; Mockup U42 erledigt · E8a, erledigt |
+| **E8a‑Q2** | Leitversion der Gliederung, der Brücke, der Tafel „Was daraus im Lauf wird" und der Vorgabe in Block 2: gebaut ist die größte Kapitalwertdifferenz im Erwartungsfall, in Sicht 2 der Stand B; Alternativen: die vorgeschlagene Version oder eine Auswahlliste | **so lassen** | 23.09.2026 gestellt; **entschieden 23.09.2026, nach Empfehlung** | § 2.11.4 (V‑C); § 2.13 | gebaut #454 (`Zahlungsgliederungen.Leitversion`) |
+| **E8a‑Q3** | Jahresreihen gleich beim Öffnen einer Vergleichsgruppe — das ginge nur mit mitgespeicherten Jahresreihen, also mit einer neuen Fassung des Nachweisumschlags | **nicht in E8** — E8 sieht keine Speicheränderung vor | 23.09.2026 gestellt; **entschieden 23.09.2026, nach Empfehlung** | § 2.11.4 (V‑C) | so gebaut #454: bis zum ersten Lauf der Sitzung stehen benannte Hinweiszeilen (`WIRT_VALERI_BLOCK_2_HINWEIS`, `WIRT_GL_NICHT_GERECHNET`); eine spätere Nachweisfassung bleibt möglich |
+| **E8a‑Q4** | Fußzeile U48 „Drei Szenarien gerechnet · Annahmen aus Vorgaben, nichts gepflegt" — gebaut als eigene Zeile über dem Knopffuß von „Was ist angenommen?"; nach dem Merge mit e8b in dieselbe Reihe wie die Knöpfe? | **ja** — in die Knopfreihe | 23.09.2026 gestellt; **entschieden 23.09.2026, nach Empfehlung** | Mockup, Kategorie 8 (Fuß von „Was ist angenommen?") und Anhang U48 | **umgesetzt mit #455** (Nachzug von E8b) |
+
+---
+
 ## R‑EZ — Einzelentscheide ohne eigene Familie
 
 Quelle: Konzept vor dem Schnitt (die Stelle steht in der Spalte *Ort der Regel*); Statusdatei #331
@@ -459,14 +477,14 @@ Register vergeben.
 | Kennung | Frage | Entscheid (Wortlaut) | Datum und Weg | Ort der Regel | Umsetzungsstand |
 |---|---|---|---|---|---|
 | **EZ‑1** (I‑2) | Befund I‑2: Abgeleitete Bemessung ohne Satz ⇒ 0 €, nicht der erfasste Betrag. | „Ist die Ableitung nicht rechenbar, gilt der erfasste Betrag; eine ermittelte Menge 0 rechnet zu 0." | 30.08.2026, Anwender | § 3.4; § 4 (I‑2) | umgesetzt |
-| **EZ‑2** | *Wo sitzt die ValERI-Darstellung?* | „Die ValERI-Blöcke werden Bestandteil der Seite „Berichte && Kosten → Wirtschaftlichkeit" (`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`, Hilfekennung `UcWirtschaftlichkeit`) — kein separater Dialog." | 31.08.2026, Anwendervorgabe | § 2.10 | gebaut #434 (Darstellung „ValERI-Bewertung", Blöcke 1, 3, 4, 5); Block 2 offen (E8) |
+| **EZ‑2** | *Wo sitzt die ValERI-Darstellung?* | „Die ValERI-Blöcke werden Bestandteil der Seite „Berichte && Kosten → Wirtschaftlichkeit" (`EPOS.UI/Seiten/Berichte/WirtschaftlichkeitSeite.razor`, Hilfekennung `UcWirtschaftlichkeit`) — kein separater Dialog." | 31.08.2026, Anwendervorgabe | § 2.10 | gebaut #434 (Darstellung „ValERI-Bewertung", Blöcke 1, 3, 4, 5); Block 2 gebaut #454 — die fünf Blöcke vollständig |
 | **EZ‑3** | *Welcher Entwurf des Artifacts „Pflichtpositionen je Komponente" wird das Betriebskosten-Raster?* | „Entwurf B, auf Anwenderentscheid in dieses Konzept übernommen" | 31.08.2026, Anwender | § 2.8 | umgesetzt (H21; U31 #347 und #364, § 6.3 Nr. 2) |
 | **EZ‑4** | *Form der Kostendialoge der Komponenten* | „**Die Dialogform der Komponentenkosten ist abgenommen**" | 02.09.2026, Anwender | § 2.12, § 2.8; Wegweiser des Ordners | gebaut (KD, B5, DL‑2e #390) |
 | **EZ‑5** (K‑1) | Befund K‑1: „Der zweite Fall des § 2 Nr. 16 fehlt" — Anlagen mit Vorrichtung zur Abwärmeabfuhr | „Kennzeichen und Stromkennzahl je Anlage aufnehmen, Fall 2 rechnen." | 18.09.2026, nach Empfehlung (Statusdatei #332) | § 3.6 (Der zweite Fall des § 2 Nr. 16); § 4 (K‑1); A2 | **gebaut #440** — die Messung nach A2 ist mit E7a (#437) erfolgt (Wärmeüberschuss nur als Projektsumme, Aufteilung nach P_el), die Teilfragen sind mit E7‑Q2 entschieden (R‑E7); gebaut mit E7c1: Kennzeichen und Stromkennzahl je Anlage (Schemaschritt 105), Fall 2 auf Regel- und Ersatzweg, gepflegt in der Überlagerung „Sätze und Herkunft"; kein Basisprojekt betroffen · E7c1, erledigt |
 | **EZ‑6** | *Mit welchem Strompreis bewertet eine Anlage, die selbst Strom bezieht, ihre Endenergie?* | „**Der Strompreis einer Anlage ist der ihres eigenen Trägers**" | 19.09.2026, Anwender | § 3.4 | umgesetzt #366 |
 | **EZ‑7** (B‑1) | Befund B‑1: Die Kessel-Modulspalte `Verbrauch` blieb leer | „Verbrauch aus dem Lauf nachziehen. Es gibt eine Größe Verbrauch aus dem Simulationslauf, aus der die Kosten ermittelt werden." — der frühere Entscheid „falsche Projektkonfiguration, Hinweistext bei 0" ist damit zurückgenommen | 18.09.2026, Anwender | § 4 (B‑1); § 3.4 | umgesetzt #331 (dieser Rechner) |
 | **EZ‑8** | *Referenzbasis nach Befund B‑1 neu einfrieren?* | „Ja, neue Basis einfrieren" | 18.09.2026, Anwender | § 6.2 (Referenzbasis) | umgesetzt #333 (`2026-09-18_R9_Kesselbrennstoff`); heute `2026-09-19_R10_BhkwWirkungsgrad` |
-| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446) und E7c3 (#452) gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
-| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446) und E7c3 (#452) gebaut — E7 abgeschlossen |
+| **EZ‑9** | *Abnahme des Mockups `../Mockups/Dialog_Formel_Zahlenprobe.html`* | abgenommen — „es ist die verbindliche Zielvorgabe der Etappen E4 ff. des Analysepapiers" | 22.09.2026, Anwender | § 2.12; Wegweiser des Ordners | E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452) und E8a (#454) gebaut; das Offene im Mockup-Anhang „Umsetzungsstand" |
+| **EZ‑10** | *Wiederaufnahme der am 20.09.2026 zurückgestellten Umsetzung* | wieder aufgenommen mit dem Auftrag, „das Mockup `../Mockups/Dialog_Formel_Zahlenprobe.html` umzusetzen" (für E5: „setze das Konzept für die App epos-plan um") | 22.09.2026, Anwender | § 7; Analysepapier § 5 | E3 (#431), E4 (#432), E5 (#434), E6 (#436), E7a (#437), E7b (#439), E7c1 (#440), E7c2 (#446), E7c3 (#452) und E8a (#454) gebaut — E7 abgeschlossen, von E8 der Teil a (V‑C) |
 | **EZ‑11** | *Arbeitsregel beim Beginn des Papiers* | „erst das Konzept, keine Umsetzung" | 30.08.2026, Anwender | — (Entstehung, Protokoll § 2.1) | überholt — „die Regel beschreibt die Entstehung des Papiers, nicht seinen heutigen Geltungsumfang" |
 | **EZ‑12** (N‑3) | Befund N3: Ungepflegte Anteilsspalten wirkten als 11,746 ct/kWh, nicht als 0 | nach Empfehlung — „als 0 lesen"; ein ungepflegter Anteil ist inaktiv und trägt 0 bei | 18.09.2026, nach Empfehlung (Statusdatei #332) | § 4 (N3); § 3.5 | umgesetzt; der Sammelknopf „Vorschlagswerte übernehmen" ohne Vermerk |
