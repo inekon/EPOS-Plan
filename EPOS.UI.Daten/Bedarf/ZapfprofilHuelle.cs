@@ -31,9 +31,10 @@ namespace WindowsFormsApplication1
     /// des Kerns steht daneben (<c>Klartext</c>).</para>
     ///
     /// <para><b>Der Parametersatz</b> (<see cref="Gaben"/>) trägt die Schlüssel
-    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>HilfeSchluessel</c> und
-    /// <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
-    /// <c>ZapfprofilDialog.razor</c>.</para>
+    /// <c>Daten</c>, <c>Texte</c>, <c>Vorschau</c>, <c>Pruefen</c>, <c>AuslegungGaben</c>,
+    /// <c>HilfeSchluessel</c> und <c>HilfeRechenweg</c> — die <c>[Parameter]</c> der Komponente
+    /// <c>ZapfprofilDialog.razor</c>. <c>AuslegungGaben</c> baut je Öffnen den Parametersatz der
+    /// Überlagerung „Auslegung" zum Arbeitsstand des Dialogs (<see cref="AuslegungGaben"/>).</para>
     /// </summary>
     internal static partial class ZapfprofilHuelle
     {
@@ -89,6 +90,8 @@ namespace WindowsFormsApplication1
                 ["Texte"] = Texte(),
                 ["Vorschau"] = new Func<ZapfprofilEingabeDaten, ZapfprofilVorschauDaten>(e => Vorschau(idProjekt, e, basis)),
                 ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(Pruefen),
+                ["AuslegungGaben"] = new Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>(
+                    e => AuslegungGaben(idProjekt, e, basis, ZapfprofilStufe.Einfach)),
                 ["HilfeSchluessel"] = HILFE_DIALOG,
                 ["HilfeRechenweg"] = HILFE_RECHENWEG
             };

@@ -1,0 +1,789 @@
+﻿@* Die Ueberlagerung "AUSLEGUNG" des Zapfprofils (Umsetzungskonzept Zapfprofilgenerator
+   4.5, 4.7, 5.1; Stufe Z2, Gruppe 2).
+
+   WO SIE STEHT. Im Dialog "Brauchwasser-Zapfprofil" ueber den Knopf "Auslegung..." der
+   Fussleiste, als Ueberlagerung (die vierte im Assistenten); eingebettet traegt die
+   Ueberlagerung Titel und Kreuz, der Wirt setzt TitelAnzeigen="false".
+
+   WAS SIE TUT. Oben die Eingaben der Summenlinie (Bedarfstag mit Quelle, "Bedarfstag
+   konstruieren..." als weitere Ueberlagerung, Speichertemperatur, Erzeuger- und
+   Uebertragerleistung, Speicherart, Sensorhoehe, die Laufangaben Erzeugerart und Werkstoff),
+   darunter je Topologiegruppe die drei Karten der Dreiergruppe NEBENEINANDER (schmal
+   untereinander), der EINE empfohlene Punkt, getrennt davon der Verfahrensvergleich der
+   Speicherauslegung als nachrichtlicher Vorschlag mit Wochenbild und die Warnliste. Sie
+   RECHNET NICHTS: Ergebnis, Bilder und Saetze kommen aus der Huelle (Delegat "Rechnen").
+
+   WAS SIE NICHT TUT. Sie schreibt nicht. OK uebernimmt die Eingaben samt Punkt in den
+   Arbeitsstand des Zapfprofils (geschrieben wird mit dem OK des Bedarfsprofil-Dialogs);
+   stammt der Bedarfstag aus dem Stundenprofil, fragt eine Rueckfrage vorher. Abbrechen,
+   Esc und das Kreuz verwerfen (null).
+
+   BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet") und "An Speicherauslegung
+   uebergeben..." kommen mit spaeteren Stufen: Sie stehen da, weich gesperrt mit Grund.
+
+   ENTPRELLT. Jede Eingabe rechnet neu, erst EntprellungMs nach der letzten (0 = sofort,
+   bunit). *@
+
+@namespace EPOS.UI.Dialoge.Bedarf
+@using System.Globalization
+@using WindowsFormsApplication1
+@implements IDisposable
+
+<div class="epos-dialog epos-zapfausl" tabindex="-1" @ref="_wurzel" @onkeydown="BeiTaste">
+
+    <div class="epos-dialog-kopf @(TitelAnzeigen ? "" : "epos-dialog-kopf--ohnetitel")">
+        @if (TitelAnzeigen)
+        {
+            <h1 class="epos-dialog-titel">@Texte.Titel</h1>
+        }
+        <InfoKnopf Schluessel="@HilfeSchluessel" StandardKurztext="@Texte.InfoBedienung" Dialogname="@Texte.Titel" />
+        <InfoKnopf Schluessel="@HilfeRechenweg" StandardKurztext="@Texte.InfoRechenweg" Dialogname="@Texte.Titel" />
+        @if (TitelAnzeigen)
+        {
+            <Schliesskreuz Geschlossen="Abbrechen" />
+        }
+    </div>
+
+    <p class="epos-kontextzeile">@Daten.Kontext</p>
+
+    @if (!Daten.Verfuegbar && Daten.Sperrgrund.Length > 0)
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@Daten.Sperrgrund" />
+    }
+
+    @if (_hinweis.Length > 0)
+    {
+        <p class="epos-leisezeile epos-zapfausl-hinweis" role="status">@_hinweis</p>
+    }
+
+    @* ------------------------------------------------ Eingaben der Summenlinie --- *@
+    <Gruppenkopf Titel="@Texte.GruppeEingaben">
+        <KindInhalt>
+            <Formularraster>
+                <KindInhalt>
+                    <Auswahlfeld Bezeichnung="@Texte.LabelBedarfstag" Eintraege="@Bedarfstagwahl"
+                                 Auswahl="@BedarfstagAuswahl" AuswahlChanged="BedarfstagWaehlen"
+                                 GesperrteEintraege="@GesperrteTage" GesperrtHinweis="@SperrhinweisTage" />
+                    <Herleitungszeile Text="@BedarfstagHerleitung" />
+                    @if (Konstruieren is not null)
+                    {
+                        <div class="epos-zapfausl-konstruktorknopf">
+                            <button type="button" class="epos-knopf" @onclick="KonstruktorOeffnen">@Texte.KnopfKonstruieren</button>
+                        </div>
+                        <Herleitungszeile Text="@Texte.HinweisKonstruktor" />
+                    }
+                    <Zahlenfeld Bezeichnung="@Texte.LabelSpeichertemperatur" Feldname="@Texte.LabelSpeichertemperatur"
+                                Einheit="°C" Wert="@_eingabe.SpeicherC" WertChanged="SpeicherCSetzen" />
+                    <Herleitungszeile Text="@SpeicherCHerleitung" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelErzeugerleistung" Feldname="@Texte.LabelErzeugerleistung"
+                                Einheit="kW" Min="0" Wert="@_eingabe.ErzeugerKw" WertChanged="ErzeugerSetzen" />
+                    <Herleitungszeile Text="@Texte.HerleitungErzeuger" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelUebertragerleistung" Feldname="@Texte.LabelUebertragerleistung"
+                                Einheit="kW" Min="0" Wert="@_eingabe.UebertragerKw" WertChanged="UebertragerSetzen" />
+                    <Herleitungszeile Text="@Texte.HerleitungUebertrager" />
+                    <Optionsgruppe Bezeichnung="@Texte.LabelSpeicherart" Eintraege="@Speicherarten"
+                                   Auswahl="@((int)_eingabe.Speicherart)" AuswahlChanged="SpeicherartSetzen" />
+                    <Zahlenfeld Bezeichnung="@Texte.LabelSensorhoehe" Feldname="@Texte.LabelSensorhoehe"
+                                Min="0" Max="1" Wert="@_eingabe.SensorhoeheAnteil" WertChanged="SensorSetzen" />
+                    <Herleitungszeile Text="@Texte.HerleitungSensorhoehe" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelErzeugerart" Eintraege="@Erzeugerarten"
+                                 Auswahl="@((int)_eingabe.Erzeugerart)" AuswahlChanged="ErzeugerartSetzen" />
+                    <Herleitungszeile Text="@Laufangabe(_ergebnis?.ErzeugerartHerkunft ?? "")" />
+                    <Auswahlfeld Bezeichnung="@Texte.LabelWerkstoff" Eintraege="@Werkstoffe"
+                                 Auswahl="@((int)_eingabe.Werkstoff)" AuswahlChanged="WerkstoffSetzen" />
+                    <Herleitungszeile Text="@Laufangabe("")" />
+                </KindInhalt>
+            </Formularraster>
+        </KindInhalt>
+    </Gruppenkopf>
+
+    @* ------------------------------------------------ je Topologiegruppe ---------- *@
+    @if (_ergebnis is null || _ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet)
+    {
+        <p class="epos-leisezeile epos-zapfausl-ohne" role="status">@OhneGrund</p>
+    }
+    else
+    {
+        for (int gi = 0; gi < _ergebnis.Gruppen.Count; gi++)
+        {
+            int gruppe = gi;
+            ZapfprofilAuslegungsgruppeDaten g = _ergebnis.Gruppen[gi];
+            <Gruppenkopf Titel="@Format(Texte.GruppeTopologie, g.Topologie, string.Join(", ", g.Zonen))"
+                         Summe="@(g.Bedarfstag.Length > 0 ? Format(Texte.BedarfstagGruppe, g.Bedarfstag) : "")">
+                <KindInhalt>
+                    @if (g.BedarfstagWahl.Length > 0)
+                    {
+                        <p class="epos-leisezeile epos-zapfausl-wahl">@g.BedarfstagWahl</p>
+                    }
+                    <div class="epos-zapfausl-karten">
+
+                        @* (a) Summenlinie bzw. Minutenspitze *@
+                        <section class="epos-zapfausl-karte epos-zapfausl-karte--haupt"
+                                 aria-label="@(g.Speicher ? Texte.KarteSummenlinie : Texte.KarteMinutenspitze)">
+                            <h4>@(g.Speicher ? Texte.KarteSummenlinie : Texte.KarteMinutenspitze)</h4>
+                            <p class="epos-leisezeile">@(g.Speicher ? Texte.KarteSummenlinieUnter : Texte.KarteMinutenspitzeUnter)</p>
+                            @if (g.Hauptwert.Stand == ZapfprofilKartenstand.Gerechnet)
+                            {
+                                if (g.SummenlinieModell is not null)
+                                {
+                                    <DiagrammSvg Modell="@g.SummenlinieModell" Kennung="@("zapfausl-summenlinie-" + gruppe)"
+                                                 Bezeichnung="@Texte.KarteSummenlinie" />
+                                }
+                                if (g.WertepaarModell is not null)
+                                {
+                                    <DiagrammSvg Modell="@g.WertepaarModell" Kennung="@("zapfausl-wertepaare-" + gruppe)"
+                                                 Bezeichnung="@Texte.KarteSummenlinie" />
+                                }
+                                else if (g.Speicher)
+                                {
+                                    <p class="epos-leisezeile">@Texte.WertepaareOhne</p>
+                                }
+                                <div class="epos-zapfausl-wert"><span>@Texte.GewaehlterPunkt</span><b>@Punkttext(g)</b></div>
+                                if (g.LadezeitH is double ladezeit)
+                                {
+                                    <div class="epos-zapfausl-wert"><span>@Texte.Ladezeit</span><b>@(Zahl(ladezeit, "N1") + " h/d")</b></div>
+                                }
+                                if (g.ZeitkonstanteMin is double tau)
+                                {
+                                    <div class="epos-zapfausl-wert"><span>@Texte.Zeitkonstante</span><b>@(Zahl(tau, "N0") + " min")</b></div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-grund">@Standtext(g.Hauptwert)</p>
+                            }
+                        </section>
+
+                        @* (b) Perzentil - benannt gesperrt *@
+                        <section class="epos-zapfausl-karte epos-zapfausl-karte--perzentil" aria-label="@Texte.KartePerzentil">
+                            <h4>@Texte.KartePerzentil</h4>
+                            <p class="epos-leisezeile">@Texte.KartePerzentilUnter</p>
+                            <p class="epos-leisezeile epos-zapfausl-perzentil" aria-disabled="true" title="@Texte.GrundNochNicht">@Texte.PerzentilOffen</p>
+                        </section>
+
+                        @* (c) Normvergleich *@
+                        <section class="epos-zapfausl-karte epos-zapfausl-karte--norm" aria-label="@Texte.KarteNorm">
+                            <h4>@Texte.KarteNorm</h4>
+                            <p class="epos-leisezeile">@Texte.KarteNormUnter</p>
+                            @if (g.Normvergleich.Stand == ZapfprofilKartenstand.Gerechnet)
+                            {
+                                <div class="epos-zapfausl-wert"><span>@Texte.Bedarfskennzahl</span><b>@Zahl(g.KennzahlN, "N1")</b></div>
+                                <div class="epos-zapfausl-wert"><span>@Texte.Vergleichspunkt</span><b>@Liter(g.Normvergleich.VolumenL)</b></div>
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-grund">@Standtext(g.Normvergleich)</p>
+                            }
+                            @if (g.HinweisWaermepumpe)
+                            {
+                                <p class="epos-leisezeile">@Texte.HinweisWaermepumpe</p>
+                            }
+                            @if (g.ZonenAusserhalb.Count > 0)
+                            {
+                                <p class="epos-leisezeile">@Format(Texte.ZonenAusserhalb, string.Join(", ", g.ZonenAusserhalb))</p>
+                            }
+                        </section>
+                    </div>
+
+                    @* Der EINE empfohlene Punkt der Gruppe *@
+                    <div class="epos-zapfausl-empfehlung" role="status">
+                        @if (g.Empfehlung.Rechenbar)
+                        {
+                            <b>@Format(Texte.Empfehlung, Punkttext(g))</b>
+                            if (g.Empfehlung.NenninhaltL is double nenn)
+                            {
+                                <span> · @Format(Texte.PunktNenninhalt, Zahl(nenn, "N0"))</span>
+                            }
+                            if (g.Empfehlung.Schnellauslegung)
+                            {
+                                <span class="epos-zapfausl-marke epos-zapfausl-marke--schnell">@Texte.Schnellauslegung</span>
+                            }
+                            if (g.Speicher)
+                            {
+                                <span class="epos-leisezeile epos-zapfausl-entwurf"> @Texte.Entwurfsstand</span>
+                            }
+                        }
+                        else
+                        {
+                            <span>@Format(Texte.EmpfehlungKeine, g.Empfehlung.Grund)</span>
+                        }
+                    </div>
+
+                    @* Der Verfahrensvergleich der Speicherauslegung - nachrichtlich *@
+                    @if (g.Vergleich is { } v)
+                    {
+                        <section class="epos-zapfausl-vergleich" aria-label="@Texte.Vergleich">
+                            <h4><span class="epos-zapfausl-marke">@Texte.VergleichMarke</span>@Texte.Vergleich · @Texte.Nachrichtlich</h4>
+                            <p class="epos-leisezeile">@Texte.VergleichUnter</p>
+                            <p class="epos-leisezeile epos-zapfausl-vergleichseingaben">@Vergleichseingaben(v)</p>
+                            <div class="epos-raster-huelle">
+                                <table class="epos-raster epos-zapfausl-verfahren">
+                                    <thead>
+                                        <tr>
+                                            <th>@Texte.SpalteVerfahren</th>
+                                            <th>@Texte.SpalteVolumen</th>
+                                            <th>@Texte.SpalteKennwert</th>
+                                            <th>@Texte.SpalteRechenweg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (ZapfprofilVerfahrenDaten z in v.Verfahren)
+                                        {
+                                            <tr class="@(z.Nachrichtlich ? "epos-zapfausl-nachrichtlich" : z.Groesster ? "epos-zeile--markiert" : null)">
+                                                <th scope="row">
+                                                    @z.Verfahren
+                                                    @if (z.Groesster)
+                                                    {
+                                                        <span class="epos-zapfausl-marke">@Texte.GroessterWert</span>
+                                                    }
+                                                    @if (z.Nachrichtlich)
+                                                    {
+                                                        <span class="epos-zapfausl-marke">@Texte.NurNachrichtlich</span>
+                                                    }
+                                                </th>
+                                                <td class="epos-zahl">@(z.VolumenL is double vol ? Zahl(vol, "N0") + " l" : "–")</td>
+                                                <td>@z.Kennwert</td>
+                                                <td>@z.Rechenweg</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="epos-zapfausl-kacheln">
+                                <div><span>@Texte.KachelGroesster</span> <b>@Groesstertext(v)</b></div>
+                                <div><span>@Texte.KachelListe</span> <b>@Listentext(v)</b></div>
+                                <div><span>@Texte.KachelKriterium</span> <b>@(v.KennzahlN is double n ? Format(Texte.KriteriumNl, Zahl(n, "N1")) : Texte.KriteriumOhne)</b></div>
+                                <div><span>@Texte.KachelFuellstand</span> <b>@Fuellstandtext(v)</b></div>
+                            </div>
+                            @if (v.Zeitpunkt.Length > 0)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-zeitpunkt">@v.Zeitpunkt</p>
+                            }
+                            @if (!v.ProfilbasiertVorhanden)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-dmax">@Texte.DmaxNull</p>
+                            }
+                            @if (v.WochenModell is not null)
+                            {
+                                <DiagrammSvg Modell="@v.WochenModell" Kennung="@("zapfausl-woche-" + gruppe)" Bezeichnung="@Texte.Wochenbild" />
+                                <p class="epos-leisezeile">@Texte.Wochenbild</p>
+                            }
+                            <p class="epos-leisezeile">@Texte.PunktBleibt</p>
+                            <div class="epos-zapfausl-uebergabe">
+                                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundUebergeben"
+                                        @onclick="UebergabeGesperrt">@Texte.KnopfUebergeben</button>
+                            </div>
+                        </section>
+                    }
+
+                    @* Die Warnliste der Gruppe - nie blockierend *@
+                    <section class="epos-zapfausl-warnungen" aria-label="@Texte.Warnliste">
+                        <h4>@Texte.Warnliste</h4>
+                        <p class="epos-leisezeile">@Texte.WarnlisteUnter</p>
+                        @if (g.Warnliste.Count == 0)
+                        {
+                            <p class="epos-leisezeile">@Texte.WarnlisteLeer</p>
+                        }
+                        else
+                        {
+                            <ul class="epos-zapfausl-warnliste">
+                                @foreach (ZapfprofilWarnDaten w in g.Warnliste)
+                                {
+                                    <li data-kennung="@w.Kennung">
+                                        <span class="epos-zapfausl-stufe @(w.Stufe == ZapfprofilWarnstufe.Warnung ? "epos-zapfausl-stufe--warnung" : "")">@(w.Stufe == ZapfprofilWarnstufe.Warnung ? Texte.StufeWarnung : Texte.StufeHinweis)</span>
+                                        <span><b>@w.Titel:</b> @w.Text</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </section>
+                </KindInhalt>
+            </Gruppenkopf>
+        }
+    }
+
+    @foreach (ZapfprofilMeldung m in _ergebnis?.Meldungen ?? new List<ZapfprofilMeldung>())
+    {
+        if (m.Art == ZapfprofilMeldungsart.Hinweis)
+        {
+            <p class="epos-leisezeile epos-zapfausl-meldung" data-kennung="@m.Kennung">@m.Text</p>
+        }
+        else
+        {
+            <Warnbanner Stufe="WarnStufe.Warnung" Text="@m.Text" Kennung="@m.Kennung" />
+        }
+    }
+
+    <SpeichernLeiste @ref="_leiste" OkText="@OkText" AbbrechenText="@AbbrechenText" Ergebnis="BeiErgebnis" />
+
+    @* ---------------- Unterueberlagerung: der Konstruktor (A100, NA.5.2.3) ---------- *@
+    <Ueberlagerung Offen="@_konstruktorOffen" Titel="@Texte.KonstruktorTitel" Zusatzklasse="epos-ueberlagerung--breit"
+                   Geschlossen="() => _konstruktorOffen = false">
+        <KindInhalt>
+            @if (_konstruktorOffen)
+            {
+                <BedarfstagKonstruktor Texte="@Texte" Regeln="@Daten.Regeln" RegelnGrund="@Daten.RegelnGrund"
+                                       Name="@KonstruktorName" Konstruieren="@Konstruieren" HilfeSchluessel="@HilfeRechenweg"
+                                       OkText="@OkText" AbbrechenText="@AbbrechenText"
+                                       TitelAnzeigen="false" Geschlossen="KonstruktorFertig" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+
+    <Rueckfrage Offen="@_rueckfrage" TitelText="@Texte.RueckfrageTitel" Frage="@Texte.RueckfrageStundenprofil"
+                Beantwortet="RueckfrageBeantwortet" JaText="@Texte.Ja" NeinText="@Texte.Nein" />
+</div>
+
+@code {
+    /// <summary>Die Auswahl „Vorgaberegel".</summary>
+    private const int WAHL_VORGABE = 0;
+
+    /// <summary>Die Auswahl „Stundenprofil".</summary>
+    private const int WAHL_STUNDENPROFIL = -1;
+
+    /// <summary>Die Auswahl „DIN-4708-Profil".</summary>
+    private const int WAHL_DIN4708 = -3;
+
+    /// <summary>Die Auswahl „konstruierter Entwurf".</summary>
+    private const int WAHL_ENTWURF = -4;
+
+    // --- Parameter (Schluessel wie ZapfprofilHuelle.AuslegungGaben) --------------------
+
+    /// <summary>Der Stand beim Öffnen: Eingaben, Bedarfstage, Regeln, erstes Ergebnis.</summary>
+    [Parameter] public ZapfprofilAuslegungStartDaten Daten { get; set; } = new();
+
+    /// <summary>Die Beschriftungen (Textbündel).</summary>
+    [Parameter] public ZapfprofilAuslegungTexte Texte { get; set; } = new();
+
+    /// <summary>Die Auslegung zu den Eingaben — der Delegat der Hülle. Kein Delegat = das Ergebnis bleibt beim Öffnen.</summary>
+    [Parameter] public Func<ZapfprofilAuslegungEingabeDaten, ZapfprofilAuslegungDaten>? Rechnen { get; set; }
+
+    /// <summary>Der Konstruktor der Hülle; kein Delegat = kein Knopf „Bedarfstag konstruieren…".</summary>
+    [Parameter] public Func<IReadOnlyList<ZapfprofilKonstruktorZeileDaten>, string, ZapfprofilKonstruktorErgebnis>? Konstruieren { get; set; }
+
+    /// <summary>Hilfeschlüssel der Bedienung.</summary>
+    [Parameter] public string HilfeSchluessel { get; set; } = "Form_Zapfprofil.btn_Help";
+
+    /// <summary>Hilfeschlüssel des Rechenwegs.</summary>
+    [Parameter] public string HilfeRechenweg { get; set; } = "Form_Zapfprofil_Berechnung";
+
+    /// <summary>Eigener Titel samt Kreuz; eingebettet setzt der Wirt <c>false</c>.</summary>
+    [Parameter] public bool TitelAnzeigen { get; set; } = true;
+
+    /// <summary>Wartezeit der Neuberechnung nach der letzten Eingabe [ms]; 0 = sofort (bunit).</summary>
+    [Parameter] public int EntprellungMs { get; set; } = 400;
+
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
+
+    /// <summary>Das Ergebnis: die Eingaben samt Punkt bei OK, <c>null</c> bei Abbruch.</summary>
+    [Parameter] public EventCallback<ZapfprofilAuslegungEingabeDaten?> Geschlossen { get; set; }
+
+    // --- Stand -----------------------------------------------------------------------
+
+    private ElementReference _wurzel;
+    private bool _ersterAufbau = true;
+    private SpeichernLeiste? _leiste;
+    private string _statusGezeigt = "\u0001";
+
+    private ZapfprofilAuslegungEingabeDaten _eingabe = new();
+    private ZapfprofilAuslegungDaten? _ergebnis;
+    private bool _aktuell;
+    private bool _konstruktorOffen;
+    private bool _rueckfrage;
+    private string _hinweis = "";
+    private CancellationTokenSource? _entprellung;
+
+    /// <summary>Die Eingaben — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilAuslegungEingabeDaten Eingabe => _eingabe;
+
+    /// <summary>Das angezeigte Ergebnis — Prüfhilfe für die Tests.</summary>
+    public ZapfprofilAuslegungDaten? AktuellesErgebnis => _ergebnis;
+
+    /// <summary>Die leise Zeile nach einem gesperrten Versuch — Prüfhilfe für die Tests.</summary>
+    public string Hinweis => _hinweis;
+
+    /// <summary>Steht der Konstruktor? Prüfhilfe für die Tests.</summary>
+    public bool KonstruktorOffen => _konstruktorOffen;
+
+    /// <summary>Steht die Rückfrage? Prüfhilfe für die Tests.</summary>
+    public bool RueckfrageOffen => _rueckfrage;
+
+    protected override void OnInitialized()
+    {
+        _eingabe = (Daten.Eingabe ?? new ZapfprofilAuslegungEingabeDaten()).Kopie();
+        _ergebnis = Daten.Ergebnis;
+        _aktuell = _ergebnis is not null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        StatusNachziehen();
+        if (!firstRender || !_ersterAufbau) return;
+        _ersterAufbau = false;
+        await _wurzel.FocusAsync();
+    }
+
+    /// <inheritdoc/>
+    public void Dispose() => EntprellungAbbrechen();
+
+    // =================================================================================
+    // Anzeige
+    // =================================================================================
+
+    private IReadOnlyList<(int Id, string Text)> Bedarfstagwahl
+    {
+        get
+        {
+            var liste = new List<(int Id, string Text)>
+            {
+                (WAHL_VORGABE, Texte.OptionVorgaberegel),
+                (WAHL_STUNDENPROFIL, Texte.OptionStundenprofil),
+                (WAHL_DIN4708, Texte.OptionDin4708)
+            };
+            if (_eingabe.Entwurf is { } entwurf)
+                liste.Add((WAHL_ENTWURF, Format(Texte.OptionEntwurf, entwurf.Bezeichner)));
+            foreach (ZapfprofilBedarfstagDaten t in Daten.Bedarfstage)
+                liste.Add((t.Id, Format(Texte.OptionKatalogtag, t.Bezeichner, t.Herkunft)));
+            // Ein gespeicherter Tag, den der Katalog nicht (mehr) führt, bleibt als Eintrag stehen.
+            if (_eingabe.IdBedarfstag is int id && id > 0 && liste.All(e => e.Id != id))
+                liste.Add((id, "#" + id.ToString(CultureInfo.InvariantCulture)));
+            return liste;
+        }
+    }
+
+    private IReadOnlyCollection<int> GesperrteTage
+        => Daten.Bedarfstage.Where(t => !t.Waehlbar).Select(t => t.Id).ToList();
+
+    private string SperrhinweisTage
+        => Daten.Bedarfstage.FirstOrDefault(t => !t.Waehlbar && t.Sperrgrund.Length > 0)?.Sperrgrund ?? "";
+
+    private int BedarfstagAuswahl
+    {
+        get
+        {
+            switch (_eingabe.Quelle)
+            {
+                case ZapfprofilBedarfstagquelle.Vorgaberegel: return WAHL_VORGABE;
+                case ZapfprofilBedarfstagquelle.Stundenprofil: return WAHL_STUNDENPROFIL;
+                case ZapfprofilBedarfstagquelle.Din4708Profil when _eingabe.IdBedarfstag is null: return WAHL_DIN4708;
+                case ZapfprofilBedarfstagquelle.Konstruktor when _eingabe.Entwurf is not null: return WAHL_ENTWURF;
+                default: return _eingabe.IdBedarfstag ?? WAHL_VORGABE;
+            }
+        }
+    }
+
+    /// <summary>Die Herleitung des Bedarfstags: die Wahl der Gruppe (erste Gruppe) samt Vermerk.</summary>
+    private string BedarfstagHerleitung
+    {
+        get
+        {
+            ZapfprofilAuslegungsgruppeDaten? g = _ergebnis?.Gruppen.FirstOrDefault();
+            return g is null ? "" : g.BedarfstagWahl;
+        }
+    }
+
+    private string SpeicherCHerleitung
+    {
+        get
+        {
+            ZapfprofilAuslegungsgruppeDaten? g = _ergebnis?.Gruppen.FirstOrDefault(x => x.SpeicherC.HasValue);
+            return g?.SpeicherC is double c ? Format(Texte.HerleitungSpeichertemperatur, Zahl(c, "0.#"), g.SpeicherCHerkunft) : "";
+        }
+    }
+
+    private IReadOnlyList<(int Id, string Text)> Speicherarten => new[]
+    {
+        ((int)ZapfprofilSpeicherart.Ladespeicher, Texte.SpeicherartLadespeicher),
+        ((int)ZapfprofilSpeicherart.GemischterSpeicher, Texte.SpeicherartGemischt)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Erzeugerarten => new[]
+    {
+        ((int)ZapfprofilErzeugerart.KeineAngabe, Texte.KeineAngabe),
+        ((int)ZapfprofilErzeugerart.Kessel, Texte.ErzeugerKessel),
+        ((int)ZapfprofilErzeugerart.Waermepumpe, Texte.ErzeugerWaermepumpe)
+    };
+
+    private IReadOnlyList<(int Id, string Text)> Werkstoffe => new[]
+    {
+        ((int)ZapfprofilWerkstoff.KeineAngabe, Texte.KeineAngabe),
+        ((int)ZapfprofilWerkstoff.Stahl, Texte.WerkstoffStahl),
+        ((int)ZapfprofilWerkstoff.Edelstahl, Texte.WerkstoffEdelstahl)
+    };
+
+    /// <summary>„Laufangabe — wird nicht gespeichert; …" ohne leeren Zusatz.</summary>
+    private string Laufangabe(string zusatz)
+    {
+        string t = Format(Texte.HerleitungLaufangabe, zusatz ?? "").TrimEnd();
+        return string.IsNullOrWhiteSpace(zusatz) ? t.TrimEnd(';', ' ') : t;
+    }
+
+    private string KonstruktorName
+        => _eingabe.Entwurf?.Bezeichner is { Length: > 0 } name ? name : Daten.NameVorschlag;
+
+    private string OhneGrund
+    {
+        get
+        {
+            if (_ergebnis is not null && _ergebnis.Grund.Length > 0) return Format(Texte.StatusOhne, _ergebnis.Grund);
+            return Format(Texte.StatusOhne, Daten.Sperrgrund);
+        }
+    }
+
+    /// <summary>Der Punkt einer Gruppe: Speicher „V l · Φ kW", sonst die Minutenspitze.</summary>
+    private string Punkttext(ZapfprofilAuslegungsgruppeDaten g)
+    {
+        ZapfprofilEmpfehlungDaten e = g.Empfehlung;
+        if (!e.Rechenbar) return "–";
+        return e.Speicher
+            ? Format(Texte.PunktSpeicher, Zahl(e.VolumenL ?? 0, "N0"), Zahl(e.LeistungKw ?? 0, "N1"))
+            : Format(Texte.PunktMinutenspitze, Zahl(e.LeistungKw ?? 0, "N1"));
+    }
+
+    private string Standtext(ZapfprofilKarteDaten k)
+    {
+        string stand = k.Stand == ZapfprofilKartenstand.AusserhalbGueltigkeit ? Texte.StandAusserhalb : Texte.StandNichtRechenbar;
+        return k.Text.Length > 0 ? stand + " — " + k.Text : stand;
+    }
+
+    private string Vergleichseingaben(ZapfprofilVergleichDaten v)
+        => Format(Texte.VergleichEingaben, Zahl(v.LadeleistungKw, "N1"), v.LadeManuell ? Texte.Manuell : Texte.Auto,
+                  v.Personen is double p ? Zahl(p, "N0") : "–", v.KennzahlN is double n ? Zahl(n, "N1") : "–",
+                  Zahl(v.Nutzanteil, "N2"), Prozent(v.Zuschlag));
+
+    private string Groesstertext(ZapfprofilVergleichDaten v)
+    {
+        ZapfprofilVerfahrenDaten? g = v.Verfahren.FirstOrDefault(z => z.Groesster);
+        return g is null || g.VolumenL is not double vol ? "–" : g.Verfahren + " · " + Zahl(vol, "N0") + " l";
+    }
+
+    private string Listentext(ZapfprofilVergleichDaten v)
+    {
+        if (v.NenninhaltL is double n) return Format(Texte.Nenninhalt, Zahl(n, "N0")) + (v.Mehrspeicher ? " · " + Texte.Mehrspeicher : "");
+        if (v.Mehrspeicher) return Texte.Mehrspeicher;
+        return v.BandMaxL.HasValue ? Texte.OhneListe : "–";
+    }
+
+    private string Fuellstandtext(ZapfprofilVergleichDaten v)
+        => v.MinFuellstandKwh is double min && v.KapazitaetKwh is double kap && v.ReserveAnteil is double r
+            ? Format(Texte.Fuellstand, Zahl(min, "N1"), Zahl(kap, "N1"), Prozent(r), v.FuellstandBezug
+                     + (v.FuellstandBezugL is double l ? " " + Zahl(l, "N0") + " l" : ""))
+            : "–";
+
+    private string Status
+    {
+        get
+        {
+            if (_ergebnis is null) return "";
+            if (_ergebnis.Zustand != ZapfprofilAuslegungZustand.Gerechnet) return _ergebnis.Status;
+            ZapfprofilAuslegungsgruppeDaten? g = _ergebnis.Punktgruppe;
+            return g is null ? Texte.StatusOhnePunkt : Format(Texte.StatusPunkt, Punkttext(g));
+        }
+    }
+
+    private void StatusNachziehen()
+    {
+        if (_leiste is null || Status == _statusGezeigt) return;
+        _statusGezeigt = Status;
+        bool fehler = _ergebnis is not null && _ergebnis.Zustand == ZapfprofilAuslegungZustand.Abgebrochen;
+        _leiste.Zeigen(Status, fehler);
+    }
+
+    private static string Zahl(double? wert, string format)
+        => wert is double w ? w.ToString(format, CultureInfo.CurrentCulture) : "–";
+
+    private static string Liter(double? wert) => wert is double w ? Zahl(w, "N0") + " l" : "–";
+
+    private static string Prozent(double anteil) => (anteil * 100.0).ToString("N0", CultureInfo.CurrentCulture) + " %";
+
+    private static string Format(string muster, params object[] werte)
+    {
+        try { return string.Format(CultureInfo.CurrentCulture, muster ?? "", werte); }
+        catch (FormatException) { return muster ?? ""; }
+    }
+
+    // =================================================================================
+    // Bedienung
+    // =================================================================================
+
+    private void BedarfstagWaehlen(int? id)
+    {
+        switch (id ?? WAHL_VORGABE)
+        {
+            case WAHL_VORGABE:
+                _eingabe.Quelle = ZapfprofilBedarfstagquelle.Vorgaberegel;
+                _eingabe.IdBedarfstag = null;
+                break;
+            case WAHL_STUNDENPROFIL:
+                _eingabe.Quelle = ZapfprofilBedarfstagquelle.Stundenprofil;
+                _eingabe.IdBedarfstag = null;
+                break;
+            case WAHL_DIN4708:
+                _eingabe.Quelle = ZapfprofilBedarfstagquelle.Din4708Profil;
+                _eingabe.IdBedarfstag = null;
+                break;
+            case WAHL_ENTWURF:
+                _eingabe.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
+                _eingabe.IdBedarfstag = null;
+                break;
+            default:
+                ZapfprofilBedarfstagDaten? t = Daten.Bedarfstage.FirstOrDefault(x => x.Id == id);
+                if (t is not null && !t.Waehlbar) return;
+                _eingabe.Quelle = t?.Quelle ?? ZapfprofilBedarfstagquelle.Konstruktor;
+                _eingabe.IdBedarfstag = id;
+                break;
+        }
+        Geaendert();
+    }
+
+    private void SpeicherCSetzen(double? w) { _eingabe.SpeicherC = w; Geaendert(); }
+    private void ErzeugerSetzen(double? w) { _eingabe.ErzeugerKw = w; Geaendert(); }
+    private void UebertragerSetzen(double? w) { _eingabe.UebertragerKw = w; Geaendert(); }
+    private void SensorSetzen(double? w) { _eingabe.SensorhoeheAnteil = w; Geaendert(); }
+
+    private void SpeicherartSetzen(int? id)
+    {
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilSpeicherart), n)) return;
+        _eingabe.Speicherart = (ZapfprofilSpeicherart)n;
+        Geaendert();
+    }
+
+    private void ErzeugerartSetzen(int? id)
+    {
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilErzeugerart), n)) return;
+        _eingabe.Erzeugerart = (ZapfprofilErzeugerart)n;
+        Geaendert();
+    }
+
+    private void WerkstoffSetzen(int? id)
+    {
+        if (id is not int n || !Enum.IsDefined(typeof(ZapfprofilWerkstoff), n)) return;
+        _eingabe.Werkstoff = (ZapfprofilWerkstoff)n;
+        Geaendert();
+    }
+
+    /// <summary>Ein gesperrter Versuch (Übergabe): der Grund als leise Zeile.</summary>
+    private void UebergabeGesperrt() => _hinweis = Texte.GrundUebergeben;
+
+    private void KonstruktorOeffnen()
+    {
+        _hinweis = "";
+        _konstruktorOffen = true;
+    }
+
+    /// <summary>Der Konstruktor ist zu: mit Tag wird er der Bedarfstag der Auslegung (Quelle Konstruktor).</summary>
+    private void KonstruktorFertig(ZapfprofilBedarfstagDaten? tag)
+    {
+        _konstruktorOffen = false;
+        if (tag is null) return;
+        _eingabe.Entwurf = tag.Kopie();
+        _eingabe.Quelle = ZapfprofilBedarfstagquelle.Konstruktor;
+        _eingabe.IdBedarfstag = null;
+        Geaendert();
+    }
+
+    /// <summary>Eine Eingabe hat die Auslegung geändert: das Ergebnis ist überholt und wird entprellt neu gerechnet.</summary>
+    private void Geaendert()
+    {
+        _hinweis = "";
+        _aktuell = false;
+        EntprellungAbbrechen();
+        if (Rechnen is null) return;
+        if (EntprellungMs <= 0)
+        {
+            Neurechnen();
+            return;
+        }
+        var quelle = new CancellationTokenSource();
+        _entprellung = quelle;
+        _ = EntprellungAbwarten(quelle);
+    }
+
+    private async Task EntprellungAbwarten(CancellationTokenSource quelle)
+    {
+        try
+        {
+            await Task.Delay(EntprellungMs, quelle.Token);
+            if (quelle.IsCancellationRequested) return;
+            await InvokeAsync(() =>
+            {
+                if (quelle.IsCancellationRequested) return;
+                Neurechnen();
+                StateHasChanged();
+            });
+        }
+        catch (OperationCanceledException) { /* eine neue Eingabe war schneller */ }
+        catch (ObjectDisposedException) { /* die Überlagerung ist gegangen */ }
+    }
+
+    private void EntprellungAbbrechen()
+    {
+        CancellationTokenSource? offen = _entprellung;
+        _entprellung = null;
+        if (offen is null) return;
+        try { offen.Cancel(); } catch (ObjectDisposedException) { }
+        offen.Dispose();
+    }
+
+    private void Neurechnen()
+    {
+        if (Rechnen is null) return;
+        _ergebnis = Rechnen(_eingabe.Kopie());
+        _aktuell = _ergebnis is not null;
+    }
+
+    // =================================================================================
+    // Ergebnis
+    // =================================================================================
+
+    /// <summary>
+    /// OK rechnet ein überholtes Ergebnis sofort nach, übernimmt den EINEN Punkt (erste
+    /// rechenbare Speichergruppe, sonst die erste rechenbare) in die Eingaben und gibt sie
+    /// zurück. Stammt der Bedarfstag aus dem Stundenprofil, fragt vorher die Rückfrage.
+    /// </summary>
+    private async Task BeiErgebnis(bool ok)
+    {
+        if (!ok)
+        {
+            await Abbrechen();
+            return;
+        }
+        EntprellungAbbrechen();
+        if (!_aktuell) Neurechnen();
+        if (_eingabe.Quelle == ZapfprofilBedarfstagquelle.Stundenprofil && _ergebnis?.Punktgruppe is not null)
+        {
+            _rueckfrage = true;
+            return;
+        }
+        await Uebernehmen();
+    }
+
+    private async Task RueckfrageBeantwortet(bool? ja)
+    {
+        _rueckfrage = false;
+        if (ja == true) await Uebernehmen();
+    }
+
+    private Task Uebernehmen()
+    {
+        ZapfprofilAuslegungEingabeDaten e = _eingabe.Kopie();
+        ZapfprofilAuslegungsgruppeDaten? g = _ergebnis?.Punktgruppe;
+        e.PunktVolumenL = g?.Empfehlung.Speicher == true ? g.Empfehlung.VolumenL : null;
+        e.PunktLeistungKw = g?.Empfehlung.LeistungKw;
+        return Geschlossen.InvokeAsync(e);
+    }
+
+    /// <summary>Abbrechen — von Esc, vom Schliesskreuz und vom Knopf gleichermaßen gerufen; verwirft.</summary>
+    private Task Abbrechen()
+    {
+        EntprellungAbbrechen();
+        return Geschlossen.InvokeAsync(null);
+    }
+
+    private Task BeiTaste(KeyboardEventArgs e)
+    {
+        if (e.Key != "Escape" || _konstruktorOffen || _rueckfrage) return Task.CompletedTask;
+        return Abbrechen();
+    }
+}

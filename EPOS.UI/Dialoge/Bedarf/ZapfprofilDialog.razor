@@ -18,17 +18,24 @@
    Wirt zurueck; geschrieben wird mit dem OK des Bedarfsprofil-Dialogs. Abbrechen, Esc
    und das Kreuz verwerfen ohne Pruefung (null).
 
-   BENANNT GESPERRT. Die Stufen Erweitert und Experte, der Reiter Dauerlinie und die
-   Knoepfe "Stochastisch rechnen" und "Auslegung..." kommen mit spaeteren Stufen: Sie
-   stehen da, sind WEICH gesperrt (aria-disabled + Grund als title), und der Versuch
-   meldet den Grund als leise Zeile.
+   AUSLEGUNG (Stufe Z2). Der Knopf "Auslegung..." oeffnet die Ueberlagerung
+   ZapfprofilAuslegungDialog zum aktuellen Arbeitsstand (Parametersatz ueber den Delegaten
+   AuslegungGaben der Huelle). Ihr OK legt die Eingaben samt Punkt in den Arbeitsstand
+   (ZapfprofilEingabeDaten.Auslegung), geschrieben wird erst mit dem OK des
+   Bedarfsprofil-Dialogs; Abbrechen verwirft. Ohne Delegat steht der Knopf weich gesperrt.
+
+   BENANNT GESPERRT. Die Stufen Erweitert und Experte, der Reiter Dauerlinie und der
+   Knopf "Stochastisch rechnen" kommen mit spaeteren Stufen: Sie stehen da, sind WEICH
+   gesperrt (aria-disabled + Grund als title), und der Versuch meldet den Grund als leise
+   Zeile.
 
    ENTPRELLT. Die Vorschau liest Katalog und Kalender aus der Datenbank; sie laeuft deshalb
    erst EntprellungMs nach der letzten Eingabe (Hausregel "Eine Pruefung je Tastendruck
    fragt keine Datenbank"), sofort beim Oeffnen (die Huelle bringt sie mit) und bei 0
    ohne Wartezeit (bunit).
 
-   TASTATUR. Esc schliesst wie Abbrechen; Enter bleibt unbelegt. *@
+   TASTATUR. Esc schliesst wie Abbrechen - solange die Auslegung offen ist, schliesst Esc
+   nur sie; Enter bleibt unbelegt. *@
 
 @namespace EPOS.UI.Dialoge.Bedarf
 @using System.Globalization
@@ -77,6 +84,11 @@
     @if (_hinweis.Length > 0)
     {
         <p class="epos-leisezeile epos-zapfprofil-hinweis" role="status">@_hinweis</p>
+    }
+
+    @if (_eingabe.Auslegung is not null)
+    {
+        <p class="epos-leisezeile epos-zapfprofil-auslegungsstand" role="status">@Format(Texte.StatusAuslegung, Auslegungspunkt)</p>
     }
 
     <div class="epos-blockspalten">
@@ -282,10 +294,30 @@
         <Aktionen>
             <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
                     @onclick="NochNicht">@Texte.KnopfStochastik</button>
-            <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
-                    @onclick="NochNicht">@Texte.KnopfAuslegung</button>
+            @if (AuslegungGaben is not null)
+            {
+                <button type="button" class="epos-knopf epos-zapfprofil-auslegung"
+                        @onclick="AuslegungOeffnen">@Texte.KnopfAuslegung</button>
+            }
+            else
+            {
+                <button type="button" class="epos-knopf" aria-disabled="true" title="@Texte.GrundNochNicht"
+                        @onclick="NochNicht">@Texte.KnopfAuslegung</button>
+            }
         </Aktionen>
     </SpeichernLeiste>
+
+    @* --- Ueberlagerung: die Auslegung (Stufe Z2) ------------------------------ *@
+    <Ueberlagerung Offen="@(_auslegungGaben is not null)" Titel="@AuslegungTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="() => _auslegungGaben = null">
+        <KindInhalt>
+            @if (_auslegungGaben is not null)
+            {
+                <ZapfprofilAuslegungDialog @attributes="_auslegungGaben" TitelAnzeigen="false"
+                                           Geschlossen="AuslegungGeschlossen" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -324,6 +356,12 @@
     /// <summary>Wartezeit der Vorschau nach der letzten Eingabe [ms]; 0 = sofort (bunit).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
+    /// <summary>
+    /// Der Parametersatz der Überlagerung „Auslegung" zum Arbeitsstand (Stufe Z2) — der
+    /// Delegat der Hülle. Kein Delegat = der Knopf „Auslegung…" steht weich gesperrt mit Grund.
+    /// </summary>
+    [Parameter] public Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>? AuslegungGaben { get; set; }
+
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
@@ -348,6 +386,10 @@
     private string? _okKennung;
     private string _hinweis = "";
     private CancellationTokenSource? _entprellung;
+    private IReadOnlyDictionary<string, object>? _auslegungGaben;
+
+    /// <summary>Steht die Überlagerung „Auslegung"? Prüfhilfe für die Tests.</summary>
+    public bool AuslegungOffen => _auslegungGaben is not null;
 
     /// <summary>Der Arbeitsstand — Prüfhilfe für die Tests.</summary>
     public ZapfprofilEingabeDaten Eingabe => _eingabe;
@@ -807,6 +849,47 @@
         return Geschlossen.InvokeAsync(null);
     }
 
+    /// <summary>Esc schließt nur, wenn keine Überlagerung offen ist — sonst schließt sie sich selbst.</summary>
     private Task BeiTaste(KeyboardEventArgs e)
-        => e.Key == "Escape" ? Abbrechen() : Task.CompletedTask;
+        => e.Key == "Escape" && _auslegungGaben is null ? Abbrechen() : Task.CompletedTask;
+
+    // =================================================================================
+    // Auslegung (Stufe Z2)
+    // =================================================================================
+
+    /// <summary>Der Titel der Überlagerung — aus dem Textbündel der Auslegung, sonst der Knopftext.</summary>
+    private string AuslegungTitel
+        => _auslegungGaben is not null && _auslegungGaben.TryGetValue("Texte", out object? t) && t is ZapfprofilAuslegungTexte texte
+            ? texte.Titel : Texte.KnopfAuslegung.TrimEnd('…');
+
+    /// <summary>Der übernommene Punkt als Kurztext: „V l · Φ kW", nur Leistung, oder „Eingaben ohne Punkt".</summary>
+    private string Auslegungspunkt
+    {
+        get
+        {
+            ZapfprofilAuslegungEingabeDaten? a = _eingabe.Auslegung;
+            if (a?.PunktVolumenL is double v)
+                return Zahl(v, "N0") + " l" + (a.PunktLeistungKw is double p ? " · " + Zahl(p, "N1") + " kW" : "");
+            if (a?.PunktLeistungKw is double l) return Zahl(l, "N1") + " kW";
+            return Texte.AuslegungOhnePunkt;
+        }
+    }
+
+    /// <summary>Öffnet die Überlagerung zum aktuellen Arbeitsstand (Zonen und bisherige Auslegung).</summary>
+    private void AuslegungOeffnen()
+    {
+        if (AuslegungGaben is null) return;
+        _hinweis = "";
+        _auslegungGaben = AuslegungGaben(_eingabe.Kopie());
+    }
+
+    /// <summary>OK der Überlagerung: Eingaben samt Punkt in den Arbeitsstand; Abbrechen verwirft.</summary>
+    private void AuslegungGeschlossen(ZapfprofilAuslegungEingabeDaten? auslegung)
+    {
+        _auslegungGaben = null;
+        if (auslegung is null) return;
+        _eingabe.Auslegung = auslegung.Kopie();
+        _okMeldung = "";
+        _okKennung = null;
+    }
 }

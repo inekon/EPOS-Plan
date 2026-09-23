@@ -135,7 +135,7 @@ public class ZapfprofilDialogTests : EposBunitContext
             .Add(x => x.TitelAnzeigen, titel)
             .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
 
-    private static IElement Knopf(IRenderedComponent<ZapfprofilDialog> cut, string text)
+    private static IElement Knopf<T>(IRenderedComponent<T> cut, string text) where T : Microsoft.AspNetCore.Components.IComponent
         => cut.FindAll("button").First(b => b.TextContent.Trim() == text);
 
     private static IElement Option(IRenderedComponent<ZapfprofilDialog> cut, string text)
@@ -299,6 +299,124 @@ public class ZapfprofilDialogTests : EposBunitContext
         stochastik.Click();
 
         Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
+    }
+
+    // =================================================================================
+    // Die Überlagerung „Auslegung" (Stufe Z2)
+    // =================================================================================
+
+    private static ZapfprofilAuslegungStartDaten AuslegungStart(ZapfprofilAuslegungEingabeDaten? eingabe) => new()
+    {
+        Kontext = "Summe aller Zonen",
+        Eingabe = eingabe ?? new ZapfprofilAuslegungEingabeDaten { SpeicherC = 60 },
+        Verfuegbar = true,
+        Ergebnis = new ZapfprofilAuslegungDaten
+        {
+            Zustand = ZapfprofilAuslegungZustand.Gerechnet,
+            Gruppen =
+            {
+                new ZapfprofilAuslegungsgruppeDaten
+                {
+                    Topologie = "Speicher",
+                    Speicher = true,
+                    Zonen = { "Zone 1" },
+                    Hauptwert = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet },
+                    Empfehlung = new ZapfprofilEmpfehlungDaten { Rechenbar = true, Speicher = true, VolumenL = 300, LeistungKw = 25 }
+                }
+            }
+        }
+    };
+
+    private IRenderedComponent<ZapfprofilDialog> MitAuslegung(List<ZapfprofilEingabeDaten> geoeffnet,
+                                                              Action<ZapfprofilErgebnisDaten?>? geschlossen = null)
+        => Render<ZapfprofilDialog>(p => p
+            .Add(x => x.Daten, Daten())
+            .Add(x => x.Texte, new ZapfprofilTexte())
+            .Add(x => x.Vorschau, e => Vorschau(e))
+            .Add(x => x.Pruefen, _ => Array.Empty<ZapfprofilMeldung>())
+            .Add(x => x.EntprellungMs, 0)
+            .Add(x => x.AuslegungGaben, e =>
+            {
+                geoeffnet.Add(e);
+                return new Dictionary<string, object>
+                {
+                    ["Daten"] = AuslegungStart(e.Auslegung),
+                    ["Texte"] = new ZapfprofilAuslegungTexte(),
+                    ["EntprellungMs"] = 0
+                };
+            })
+            .Add(x => x.Geschlossen, e => geschlossen?.Invoke(e)));
+
+    [Fact]
+    public void Ohne_Delegat_steht_Auslegung_weich_gesperrt()
+    {
+        var cut = Aufbauen();
+
+        IElement auslegung = Knopf(cut, "Auslegung…");
+        Assert.Equal("true", auslegung.GetAttribute("aria-disabled"));
+        auslegung.Click();
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Equal("In dieser Fassung noch nicht verfügbar.", cut.Instance.Hinweis);
+    }
+
+    [Fact]
+    public void Auslegung_oeffnet_zum_Arbeitsstand_und_OK_legt_Eingaben_samt_Punkt_hinein()
+    {
+        var geoeffnet = new List<ZapfprofilEingabeDaten>();
+        ZapfprofilErgebnisDaten? ergebnis = null;
+        var cut = MitAuslegung(geoeffnet, e => ergebnis = e);
+
+        IElement knopf = Knopf(cut, "Auslegung…");
+        Assert.False(knopf.HasAttribute("aria-disabled"));
+        knopf.Click();
+
+        Assert.True(cut.Instance.AuslegungOffen);
+        Assert.Equal(2, Assert.Single(geoeffnet).Zonen.Count);
+        Assert.Contains("aria-label=\"Auslegung Brauchwasser\"", cut.Markup);   // der Titel steht an der Überlagerung
+
+        IRenderedComponent<ZapfprofilAuslegungDialog> a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        Assert.Empty(a.FindAll(".epos-dialog-titel"));
+        Assert.Empty(a.FindAll(".epos-dialog-zu"));
+        Knopf(a, "OK").Click();
+
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Equal(300, cut.Instance.Eingabe.Auslegung!.PunktVolumenL);
+        Assert.Equal(25, cut.Instance.Eingabe.Auslegung.PunktLeistungKw);
+        Assert.Contains("Auslegung übernommen: 300 l · 25,0 kW", cut.Find(".epos-zapfprofil-auslegungsstand").TextContent);
+
+        // Ein zweites Öffnen bringt die übernommene Auslegung mit; Abbrechen verwirft nur die neue Runde.
+        Knopf(cut, "Auslegung…").Click();
+        Assert.Equal(300, geoeffnet[1].Auslegung!.PunktVolumenL);
+        a = cut.FindComponent<ZapfprofilAuslegungDialog>();
+        a.FindAll("label").First(l => l.QuerySelector(".epos-feld-text")?.TextContent.Trim() == "Speichertemperatur")
+         .QuerySelector("input")!.Input("50");
+        Knopf(a, "Abbrechen").Click();
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Equal(60, cut.Instance.Eingabe.Auslegung!.SpeicherC);
+
+        // Das OK des Zapfprofils trägt die Auslegung zum Wirt.
+        Knopf(cut, "OK").Click();
+        Assert.Equal(300, ergebnis!.Eingabe.Auslegung!.PunktVolumenL);
+    }
+
+    [Fact]
+    public void Esc_schliesst_bei_offener_Auslegung_nur_sie()
+    {
+        int gerufen = 0;
+        var cut = MitAuslegung(new List<ZapfprofilEingabeDaten>(), _ => gerufen++);
+
+        Knopf(cut, "Auslegung…").Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });   // der Wirt: offen, also nichts
+        Assert.True(cut.Instance.AuslegungOffen);
+        Assert.Equal(0, gerufen);
+
+        cut.FindComponent<ZapfprofilAuslegungDialog>().Find(".epos-zapfausl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.AuslegungOffen);
+        Assert.Null(cut.Instance.Eingabe.Auslegung);
+        Assert.Equal(0, gerufen);
+
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });   // jetzt schließt der Wirt
+        Assert.Equal(1, gerufen);
     }
 
     // =================================================================================

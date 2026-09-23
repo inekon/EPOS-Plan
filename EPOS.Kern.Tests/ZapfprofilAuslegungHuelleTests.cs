@@ -291,6 +291,41 @@ namespace EPOS.Kern.Tests
             Assert.Null(e.Punktgruppe);
         }
 
+        /// <summary>
+        /// Hausregel „Ein Parametersatz aus einer Hülle trifft nur [Parameter]": Die Schlüssel von
+        /// <c>Gaben</c> sind Parameter des Zapfprofil-Dialogs, die des Delegaten
+        /// <c>AuslegungGaben</c> Parameter der Überlagerung — je mit passendem Typ.
+        /// </summary>
+        [Fact]
+        public void Die_Parametersaetze_treffen_nur_Parameter_der_Komponenten()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            AuslegungTestbau.ParameterEinspielen(VERSION);
+
+            IReadOnlyDictionary<string, object> gaben = ZapfprofilHuelle.Gaben(PROJEKT, null);
+            ParameterPruefen(typeof(ZapfprofilDialog), gaben);
+
+            var auslegungGaben = (Func<ZapfprofilEingabeDaten, IReadOnlyDictionary<string, object>>)gaben["AuslegungGaben"];
+            IReadOnlyDictionary<string, object> ausl = auslegungGaben(Zonen());
+            ParameterPruefen(typeof(ZapfprofilAuslegungDialog), ausl);
+            Assert.True(((ZapfprofilAuslegungStartDaten)ausl["Daten"]).Verfuegbar);
+            Assert.IsType<ZapfprofilAuslegungTexte>(ausl["Texte"]);
+        }
+
+        private static void ParameterPruefen(Type komponente, IReadOnlyDictionary<string, object> gaben)
+        {
+            foreach (KeyValuePair<string, object> g in gaben)
+            {
+                System.Reflection.PropertyInfo p = komponente.GetProperty(g.Key);
+                Assert.True(p != null, komponente.Name + " kennt keinen Parameter „" + g.Key + "“.");
+                Assert.True(p.GetCustomAttributes(typeof(Microsoft.AspNetCore.Components.ParameterAttribute), true).Length == 1,
+                            komponente.Name + "." + g.Key + " ist kein [Parameter].");
+                Assert.True(g.Value == null || p.PropertyType.IsInstanceOfType(g.Value),
+                            komponente.Name + "." + g.Key + ": " + g.Value?.GetType().Name + " passt nicht zu " + p.PropertyType.Name);
+            }
+        }
+
         [Fact]
         public void Der_Konstruktor_der_Huelle_prueft_benannt_und_liefert_den_Entwurf()
         {
