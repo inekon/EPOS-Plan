@@ -18,7 +18,7 @@ Analysepapiers
 > sind allein relative Verweise, die vom Ort dieses Protokolls aus auflösen müssen (§ 0.6). Die
 > Etappen stehen in der Reihenfolge ihrer Statusnummern, je mit ihrem Wellenprotokoll. **§ 8** schreibt
 > das Protokoll nach dem Schnitt fort: Was ab der Statuszeile #436 aus dem gültigen Stand weicht, steht
-> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454), jede
+> dort mit dem Wortlaut des Konzepts **vor der jeweiligen Statuszeile** (#436, #437, #439, #440, #446, #452, #454, #455), jede
 > Berichtigung mit einer Zeile.
 
 ---
@@ -1277,7 +1277,8 @@ Sätze dort berichtigt wurden. Die abgesetzten Blöcke dieses Abschnitts sind Wo
 jeweiligen Statuszeile — in § 8.1 und § 8.2 **vor #436** (Stand `fa80786a`), in § 8.3 und § 8.4 **vor
 #437** (Stand `befec9dc`), in § 8.5 und § 8.6 **vor #439** (Stand `954d4dcc`), in § 8.7 und § 8.8 **vor
 #440** (Stand `ea8e2a12`), in § 8.9 und § 8.10 **vor #446** (Stand `41764ab0`), in § 8.11 und § 8.12 **vor #452**
-(Stand `9c7a0023`), in § 8.13 und § 8.14 **vor #454** (Stand `485052c6`) —, nicht vor dem Schnitt.*
+(Stand `9c7a0023`), in § 8.13 und § 8.14 **vor #454** (Stand `485052c6`), in § 8.15 und § 8.16 **vor #455** (Stand
+`09037a32`, der Merge `704356a4` samt den Papieren zu #454) —, nicht vor dem Schnitt.*
 
 ### 8.1 E6 — Verlauf mit drei Szenarien (#436)
 
@@ -1882,3 +1883,76 @@ Zeile:
 | § 2.13 (5) | Wortlaut in § 8.13 | Absatz „Block 4 der Darstellung „ValERI-Bewertung" zeigt Spannenbild und Verlauf …" |
 | § 6.1 | Kurztafel bis E7c3 (#452) | Zeile E8a (#454) |
 | § 7 und Anhang | „… und E7 Teil c3 (#452) — E7 ist damit abgeschlossen … Als Nächstes kommt **E8**: die fünf ValERI-Blöcke vollständig (…), der Formelbericht …, die Anhang-E-Checkliste (U43), die Anhang-D-Gegenprobe, Nominalsummen, Differenzspalte und Brückenbild …, „Was daraus im Lauf wird" und die Fußzeile (U41, U46 bis U48) und E6‑Q1 …"; Kürzeltafel V‑A…V‑E „V-A = **#434**, sonst keine …", „V-C/V-D = **E8** (die Blöcke 1, 3, 4, 5 … mit #434 vorgezogen)", § 2.13 bis „**#436**", Mockup-Anhang bis „U39 teilweise (…)"; Etappenzeile „E8 … E12 — nächste Etappe: E8" | bis E8 Teil a (#454) mit seinem Inhalt, als Nächstes E8 Teil b (V‑D) mit der Fußzeile in der Knopfreihe (E8a‑Q4), danach E9; Kürzeltafel „V-C = **#454**", „V-C = **E8** Teil a (gebaut #454 …), V-D = **E8** Teil b", § 2.13 mit „**#454** … beide auch in Block 4 (E6‑Q1)", neue Zeile = #454, „U41, U42 und U46 bis U49 erledigt #454"; Etappenzeilen „E8 Teil a — V‑C" = #454 und „E8 Teil b … E12 — nächste Etappe: E8 Teil b" |
+
+### 8.15 E8b — Formelmappe, Anhang-E-Checkliste und Anhang-D-Gegenprobe (#455)
+
+Protokoll [`E8b_Formelmappe_AnhangE_D_Protokoll.md`](E8b_Formelmappe_AnhangE_D_Protokoll.md); der Stand von V‑G10 und
+V‑2 (R‑V) und von Q18 (R‑Q) im Register, die sechs Fragen der Etappe — offen, gebaut jeweils Lesart a, Q5 und Q6
+erledigt — unter R‑E8b. Mit #455 ist E8 abgeschlossen.
+
+| Etappe | Inhalt | Ergebniswirkung |
+|---|---|---|
+| **E8 Teil b** (#455, Merge `704356a4` auf dem Hilfszweig `pm5`) | V‑D: die Blattstruktur-Wache über Excel- und Wortbericht und der ClosedXML-Befund als Wache; die Formelmappe in den Stufen 0 bis 3 (Parameterblock aus echten Zellen mit Namen, Mehrjahrestabellen und Kennzahlen des Erwartungsfalls in Formeln, bemessene Betriebskosten als Menge × Satz, der Δ%-Block als Zellbezug) — EPOS trägt die Werte ein, Excel rechnet beim Öffnen neu; die Anhang-E-Checkliste (U43) als Abschlussseite beider Berichte und hinter einem Knopf der Ergebnisseite; die Anhang-D-Gegenprobe gegen `KapitalwertRechner.Rechne`; die Fußzeile in der Knopfreihe (E8a‑Q4); 103 Ressourcenschlüssel neu | **keine** — die Formeln geben die Werte der Wertfassung wieder (13 Prüfgruppen), die Ankertests unverändert, Referenzlauf gegen R13 13/13, 4 145 687 Werte, 387/387 byte-gleich; Gate auf `704356a4` grün |
+
+*§ 2.11.2, die Zeilen V-G10 und V-G12 der Gap-Tafel (Z. 775 und 777):*
+
+> | V-G10 | **Bericht** mit Pflichtinhalten a)–d) + **editierbarer XLSX mit Formeln** nach Anhang-A-Raster (9) | Excel-Export
+> existiert (ClosedXML), aber als **Werte** — der Generator schreibt keine einzige Formel, und keine Zahl des
+> Parametersatzes erreicht eine Zelle (gemessen 18.09.2026) | **größte Einzellücke mit hartem Muss**. **Entschieden
+> 18.09.2026, abweichend von der Empfehlung: der ganze Bericht formelbasiert**, soweit ableitbar — Stufenplan und die
+> Liste dessen, was dauerhaft Wert bleibt, in § 2.11.6; das ValERI-Blatt (Parameterblock mit absoluten Bezügen,
+> Periodenspalten, Gesamt-/Barwert-/NPV-Zeile je Szenario) ist darin Stufe 0 und 1 |
+> | V-G12 | **Anhang-E-Checkliste** (15 Punkte, Note 1–5) | fehlt | als Abschlussseite des Berichts; zugleich interne
+> Abnahmecheckliste der Etappe |
+
+**Umgesetzt mit E8b (#455):** Beide Zeilen tragen die Marke „**Stand: gebaut #455**" mit dem gebauten Inhalt; die
+Spalte „EPOS heute" bleibt als Messung vom 18.09.2026 stehen, wie bei V‑G6, V‑G8 und V‑G9.
+
+*§ 2.11.2, der Absatz zu Anhang D (Z. 779–782):*
+
+> **Anhang D der Norm ist eine BHKW-Fallstudie** (90 kW_th, 18 Jahre, NPV 64.480 €, Worst −202.802 €,
+> Best +598.320 €) — sie dient der Etappe als **externe Gegenprobe**: EPOS muss mit denselben
+> Eingaben dieselben Zahlen treffen. *(Vorsicht: Zwei Zeilen der Sensitivitätstabelle D.6 tragen im
+> Normtext versehentlich Werte des Pumpenbeispiels — als Prüfreferenz ungeeignet, dokumentiert.)*
+
+**Umgesetzt mit E8b (#455):** Der Absatz bleibt und führt dahinter die Gegenprobe als Kern-Fall — die Zahlen des
+Rechenkerns (64.479,51 €, −202.801,57 €, 598.319,65 €), die Tafeln D.5 und D.6, die Umrechnung Basis × (1 + p) und
+die Ausnahmen („Gasverbrauch BHKW", der Tippfehler in D.7).
+
+*§ 2.11.4, die Zeile V-D (Z. 818):*
+
+> | **V-D** | XLSX-Formelbericht nach Anhang-A-Raster + Berichtsinhalte a)–d) + Anhang-E-Checkliste; **Gegenprobe an der
+> Anhang-D-Fallstudie** | deckt sich mit **V-G10** (Entscheid 18.09.2026, § 2.11.6) | Ausgabe | **E8** Teil b |
+
+**Umgesetzt mit E8b (#455):** Im Konzept steht die Zeile mit dem gebauten Inhalt — Formelmappe samt beiden Wachen,
+Anhang-E-Checkliste, Anhang-D-Gegenprobe, die Regel „alles ist Ausgabe" und die Werte von Günstig und Ungünstig
+(E8b‑Q1); Stand „**E8** Teil b — gebaut".
+
+*§ 2.11.6, der letzte Absatz (Z. 910–913):*
+
+> Vor Stufe 0 zu klären: ob die eingesetzte ClosedXML-Fassung Formeln mit zwischengespeichertem
+> Ergebnis ablegt oder Excel beim Öffnen rechnen muss, und ob eine Formelmappe in anderen
+> Tabellenkalkulationen dieselben Werte zeigt. Im Bestand deckt kein Test den Excel- und den Word-Generator ab —
+> die Stufen brauchen zuerst eine Wache über beide Blattstrukturen.
+
+**Beantwortet mit E8b (#455):** Die Fragen sind gemessen (Protokoll E8b, „Der ClosedXML-Befund und der Entscheid");
+im Konzept steht an dieser Stelle die Regel „EPOS trägt die Werte ein, Excel rechnet neu" mit den zwei Wachen, dazu
+über dem Absatz „Dauerhaft Werte bleiben" der Abschnitt „Was die Mappe trägt". Der Satz „Im Bestand deckt kein Test
+…" traf seit E1 (#380) nur noch zur Hälfte: Die Blattstruktur-Wache rief beide Generatoren, hielt aber die Stellen
+der Stufen nicht fest.
+
+### 8.16 Berichtigungen im gültigen Stand (#455)
+
+Die Stellen, die mit E8b veraltet sind; „vorher" ist der Wortlaut vor #455 (Stand `09037a32`). Je Stelle eine
+Zeile:
+
+| Stelle im Konzept | vorher | nachher |
+|---|---|---|
+| Kopf | Codestand `485052c6` | Codestand `704356a4` |
+| § 2.10 | Zeile „ValERI-Bewertungsbericht (Anhang E der Norm)" nur als Baustein der Bericht-Seite | dazu die Anhang-E-Checkliste als Abschlussseite, letztes Blatt der Mappe und hinter dem Knopf „Anhang-E-Checkliste…" (V‑G12, U43; umgesetzt #455) |
+| § 2.11.2 | V‑G10 und V‑G12 ohne Stand; Absatz zu Anhang D: Wortlaut in § 8.15 | beide Zeilen mit „Stand: gebaut #455"; der Absatz mit der Gegenprobe, ihren Zahlen und Ausnahmen |
+| § 2.11.4 | V‑C „… die **Fußzeile** … (U48)"; V‑D: Wortlaut in § 8.15; Fußnote „… und E8 Teil a (#454)" | V‑C „(U48; mit #455 links in der Reihe der Knöpfe „Anhang-E-Checkliste…" und „Bericht erzeugen", E8a‑Q4)"; V‑D mit dem gebauten Inhalt, „**E8** Teil b — gebaut"; Fußnote „… und E8 (#454, #455)" |
+| § 2.11.6 | Einleitung ohne Stand; letzter Absatz: Wortlaut in § 8.15 | „Gebaut sind alle vier Stufen mit #455"; der neue Abschnitt „Was die Mappe trägt" (Stufen 0 bis 3, keine Formel ohne Gegenrechnung); der Absatz „EPOS trägt die Werte ein, Excel rechnet neu"; „Dauerhaft Werte bleiben" und die drei Sätze unverändert |
+| § 6.1 | Kurztafel bis E8a (#454) | Zeile E8b (#455) |
+| § 6.2 | „… die Blattwache `BerichtBlattstrukturWacheTests` (5) und die Formatwache `WirtZeileFormatWacheTests` (4)." | die Blattwache (13), die Formatwache (4), die Befundwache `FormelmappeClosedXmlBefundTests` (2) und die Gegenprobe `AnhangDFallstudieTests` (10); dazu die Ankerzeile „Fallstudie DIN EN 17463, Anhang D" |
+| § 7 und Anhang | „… und E8 Teil a (#454) — E7 ist damit abgeschlossen, von E8 die ValERI-Ansicht (V‑C) … Als Nächstes kommt **E8 Teil b** (V‑D): … Danach **E9**. Die acht Fragen aus E7c3 sind offen …"; Kürzeltafel „V-A = **#434**, V-C = **#454**" und „V-D = **E8** Teil b", Mockup-Anhang bis „U41, U42 und U46 bis U49 erledigt #454"; Etappenzeile „E8 Teil b … E12 — nächste Etappe: E8 Teil b" | bis E8 Teil b (#455), E7 und E8 abgeschlossen, als Nächstes E9 mit den Schritten B bis D; offen die Fragen aus E7c3 und E8b, dazu die zwei kleinen Aufträge zu E8b‑Q2 und E8b‑Q3; Kürzeltafel „V-D = **#455**" und „V-D = **E8** Teil b (gebaut #455)", neue Zeile = #455, „U12 und U43 erledigt #455"; Etappenzeilen „E8 Teil b — V‑D" = #455 und „E9 … E12 — nächste Etappe: E9" |
