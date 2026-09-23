@@ -16,7 +16,7 @@ Hilfesystem 13.3).
 | Programm Dokumentation/Simulationsergebnisse | `Projekte/Wiki/Programm Dokumentation - Simulationsergebnisse.wiki` | Farbwahl der Diagramme in den Einstellungen und die neue Diagrammbedienung (Zoom, Werteleiste, schaltbare Legende); jede Kurve und Fläche trägt ein Farbfeld, die Reiter zeigen die Farben des Berichts | Statuszeilen #403, #411, #413, #418 |
 | Programm Dokumentation/Stromspeicher | `Projekte/Wiki/Programm Dokumentation - Stromspeicher.wiki` | Beschreibung der Auslegungsbilder auf die neue Diagrammbedienung nachgezogen; neuer Abschnitt „Mögliche Optimierungen" (Betriebsziele, adaptive Lastspitzenkappung, Auslegung, Verteilung, Grenzen) | Statuszeilen #411, #413, #417 |
 | Programm Dokumentation/Hilfe-Assistent | `Projekte/Wiki/Programm Dokumentation - Hilfe-Assistent.wiki` | Liste der Masken, in denen der Assistent mitarbeitet (Erzeugermasken des Projekts, Katalogmasken, Kostenverwaltung, Simulationskonfiguration, Ansichten); wächst mit den Wellen KI‑F1b bis F6 | Statuszeilen #416, #419 |
-| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten | Statuszeilen #372, #405, #413, #434, #436, #437, #439 |
+| Programm Dokumentation/Wirtschaftlichkeit | `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` | Menüweg und Durchsuchbarkeit der gesetzlichen Parameter, Kohärenzzeile ergänzt; die Ergebnisseite neu beschrieben — Umschalter „Kennzahlen / ValERI-Bewertung", vier Abschnitte, Empfehlungskarten, Bandbreite mit Spannenbild, Verlauf mit drei Szenarien (Anker `verlauf`), Sensitivität mit Steigung, Hinweistext und Deklarationen, „Bericht erzeugen", „Verlauf nach Excel…", Szenarien Ungünstig/Erwartet/Günstig; die CO₂-Prüfung der Stromsteuerbefreiung brennwertbezogen und die vermiedenen Stromkosten ohne jede Eigenerzeugung mit dem Anteil je Anlage; die Fußleiste ohne „Strombezug…", die Tarifstruktur im Rollenmodell (Anker `strombezug`), die Leistungspreis-Staffel in den Energiekosten; der KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`), die Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt" | Statuszeilen #372, #405, #413, #434, #436, #437, #439, #440 |
 | Programm Dokumentation/Kosten | `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` | neuer Punkt „Leistungspreis-Staffel" (Anker `staffel`) beim Stromträger; die Preiswirkung ohne Zonenpreise | Statuszeile #439 |
 | Programm Dokumentation/Pufferspeicher | `Projekte/Wiki/Programm Dokumentation - Pufferspeicher.wiki` | Aufzählung der Erzeugerseite: der Aufklapper „Alle Daten anzeigen" mit den Investitionskosten statt des entfallenen Detailfelds | Statuszeile #422 |
 
@@ -133,6 +133,10 @@ Bedienung an einzelnen Diagrammfamilien beschrieben und mit den programmweiten S
   Projekts gepflegt und an der Viertelstundenspitze des Netzbezugs bemessen. (#439)
 - Seit 26.09.2026: Der Knopf „Strombezug…" auf der Wirtschaftlichkeitsseite und im Dialog
   BHKW-Wirtschaftlichkeit ist nicht mehr vorhanden. (#439)
+- Seit 26.09.2026: Im BHKW-Dialog lassen sich unter „Sätze und Herkunft…" je Anlage die Vorrichtung zur
+  Abwärmeabfuhr und die Stromkennzahl pflegen; der KWKG-Zuschlag rechnet dann mit Nutzwärme × Stromkennzahl. (#440)
+- Seit 26.09.2026: Der KWKG-Zuschlag gilt für Anlagen mit Inbetriebnahme bis zum 31.12.2030 und läuft bis zum
+  Ende des Vollbenutzungsstunden-Kontingents. (#440)
 
 Keinen Eintrag bekommen die Fehlerbehebungen aus #414 und
 #415 (Farbwähler-Wechsel, Klimaregionenliste, Auswahlfeld) — Kleinigkeiten nach Regel 13.4.
@@ -216,7 +220,8 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
 - Die drei Gerätemeldungen (Statuszeile #415: Klimaregionenliste, Auswahlfeld, sortiert)
   berühren keine Bedienungsseite; der Schalter „sortiert" steht als Logbuch-Satz oben.
 - Die Wirtschaftlichkeits-Umsetzung war mit Statuszeile #405 zurückgestellt und ist am
-  22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436, E7 Teil a #437, E7 Teil b #439). Die Repo-Quelle
+  22.09.2026 wieder aufgenommen (E4 #432, E5 #434, E6 #436, E7 Teil a #437, E7 Teil b #439, E7 Teil c1
+  #440). Die Repo-Quelle
   `Projekte/Wiki/Programm Dokumentation - Wirtschaftlichkeit.wiki` ist mit den Papieren zu #436 auf
   die Ergebnisseite nach E5 und E6 nachgezogen (Umschalter, vier Abschnitte, Empfehlungskarten,
   Bandbreite mit Spannenbild, Verlauf mit drei Szenarien, „Bericht erzeugen", „Verlauf nach Excel…",
@@ -224,11 +229,14 @@ Zeilenschrift nicht mehr abgeschnitten) liegt in der Statusdatei kein ausformuli
   brennwertbezogene CO₂-Prüfung der Stromsteuerbefreiung und die vermiedenen Stromkosten ohne jede
   Eigenerzeugung (Tabuwort-Regex 0 Treffer), mit den Papieren zu #439 um den Wegfall von „Strombezug…",
   die Tarifstruktur im Rollenmodell (der Anker `strombezug` bleibt, weil die Hilfe-Zuordnung des Dialogs
-  dorthin zeigt) und die Leistungspreis-Staffel in den Energiekosten; die Repo-Quelle
+  dorthin zeigt) und die Leistungspreis-Staffel in den Energiekosten, mit den Papieren zu #440 um den
+  KWK-Strom nach § 2 Nr. 16 mit Fall 2 und Stromkennzahl in der Überlagerung „Sätze und Herkunft…" (Anker
+  `kwk-abwaermeabfuhr`), die Frist zur Inbetriebnahme bis 31.12.2030 (Anker `kwk-frist`) und die
+  Kohärenzzeilen „Anlagenart fehlt" und „Stromkennzahl fehlt" (Tabuwort-Regex 0 Treffer); die Repo-Quelle
   `Projekte/Wiki/Programm Dokumentation - Kosten.wiki` ist mit #439 um den Punkt „Leistungspreis-Staffel"
   (Anker `staffel`) ergänzt (Tabuwort-Regex 0 Treffer in beiden Quellen); die Logbuch-Sätze zu #432, #434,
-  #436, #437 und #439 stehen oben. Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog
-  (#437) ist eine Kleinigkeit ohne eigenen Satz.
+  #436, #437, #439 und #440 stehen oben. Der neue Leereintrag „(bitte wählen)" der Anlagenart im BHKW-Dialog
+  (#437) und die Kohärenzzeile „Anlagenart fehlt" (#440) sind Kleinigkeiten ohne eigenen Satz.
 - Der KI-Assistent bekommt die Masken mit Einstellwerten in sechs Wellen (Statuszeile #416,
   KI‑D‑Q5); je Welle wächst die Maskenliste der Seite Hilfe-Assistent, und ein Logbuch-Satz
   kommt dazu.
