@@ -51,7 +51,56 @@ Alle weiteren Angaben einer Zone stehen auf den Vorgaben des Katalogs.
 * Fehlen dem Projekt die Voraussetzungen für die Rechnung, etwa eine Klimaregion, zeigt die Vorschau statt der Zahlen den Grund.
 * Trägt das Projekt Netzverluste und rechnet das Zapfprofil eine Zirkulation, weist ein Hinweis darauf hin, dass derselbe Verlust doppelt zählen kann, wenn die Netzverluste die Zirkulation schon enthalten. Er blockiert nicht.
 * {{Anker|ok}}''OK'' prüft, dass jede Zone einen eigenen Namen, eine Nutzungsart und eine Bezugsgröße größer 0 trägt; zwei Zonen dürfen nicht gleich heißen. Fehlt etwas, bleibt der Dialog offen, und ein Hinweis nennt die Zone. Sonst übernimmt ''OK'' die Zonen in den Bedarfsprofil-Dialog und stellt den Rechenweg auf ''Zapfprofil''. ''Abbrechen'', ✕ und ''Esc'' schließen ohne Übernahme.
-* ''Stochastisch rechnen'' und ''Auslegung…'' in der Fußleiste sind gesperrt; ihr Hinweis nennt den Grund.
+* ''Stochastisch rechnen'' in der Fußleiste ist gesperrt; sein Hinweis nennt den Grund. ''Auslegung…'' öffnet die [[#auslegung|Auslegung]].
+
+== Auslegung ==
+
+{{Anker|auslegung}}''Auslegung…'' in der Fußleiste öffnet die Überlagerung '''Auslegung Brauchwasser'''. Sie rechnet aus den Zonen des Arbeitsstands den Auslegungspunkt für Speicher und Wärmeerzeuger. Die Zonen werden nach der Art ihrer Versorgung zu Gruppen zusammengefasst – ''Speicher'', ''Frischwasserstation'', ''Durchfluss'' oder ''Wohnungsstation'' –, und jede Gruppe erhält ihre eigene Auslegung. Die Kopfzeile nennt die Zahl der Zonen und die Stufe des Dialogs.
+
+=== Eingaben der Auslegung ===
+
+* {{Anker|bedarfstag}}'''Bedarfstag''' – der Tag, auf den ausgelegt wird:
+** ''Vorgaberegel'' – für Wohnen das Profil nach DIN 4708 aus der Bedarfskennzahl der Wohnungen, sonst ein konstruierter Tag.
+** ''Stundenprofil der Zonen'' – der Tagesgang aus der Vorschau. Spitzen unter einer Stunde sind darin unterschätzt; ''OK'' fragt deshalb nach, bevor der Punkt übernommen wird.
+** ''DIN-4708-Profil'' – das Profil aus der Wohnungstabelle.
+** ein Bedarfstag aus dem Katalog oder ein selbst konstruierter Tag. Katalogeinträge, die das Programm aus der Kennzahl selbst bildet, sind in der Auswahl gesperrt; ihr Hinweis nennt den Grund.
+: Die Zeile unter dem Feld nennt, welcher Tag gerechnet wurde.
+* '''Speichertemperatur''' in °C – leer gilt die Vorgabe; die Zeile darunter nennt den angesetzten Wert und seine Herkunft.
+* '''Erzeugerleistung''' in kW – leer gilt die angesetzte Ladeleistung. Nachgewiesen wird mit der kleineren der beiden Leistungen von Erzeuger und Wärmeübertrager.
+* '''Wärmeübertragerleistung''' in kW – leer wird sie aus den Angaben des Wärmeübertragers oder über eine Schätzung nach der Erzeugerart bestimmt.
+* '''Speicherart''' – ''Ladespeicher'' oder ''gemischter Speicher''.
+* '''Sensorhöhe''' – die Höhe des Temperaturfühlers als Anteil der Speicherhöhe, zwischen 0 und 1; leer gilt die Vorgabe des Katalogs.
+* '''Erzeugerart am Speicher''' und '''Werkstoff des Übertragers''' – Angaben für die Rechnung im Dialog; sie werden nicht gespeichert. Ohne Angabe setzt das Programm die Erzeugerart aus den Anlagen des Projekts an, wenn diese eindeutig sind; die Zeile unter dem Feld nennt die Herkunft.
+
+Jede Eingabe rechnet die Auslegung neu.
+
+=== Ergebnis je Gruppe ===
+
+Jede Gruppe zeigt drei Karten nebeneinander:
+
+* {{Anker|summenlinie}}'''(a) Summenlinie''' – für Speicher das Verfahren der Summenlinie nach DIN EN 12831-3 im Minutentakt: Bedarfs- und Versorgungslinie des Bedarfstags, dazu die Kurve der Wertepaare aus Speichervolumen und Leistung mit dem gewählten Punkt, die Ladezeit und die Zeitkonstante. Für Gruppen ohne Speicher steht hier die größte Minutenleistung des Bedarfstags.
+* '''(b) Perzentil''' – die stochastisch überlagerte Minutenlast. Die Karte bleibt leer; ihr Hinweis nennt den Grund, die Empfehlung stützt sich auf (a) und (c).
+* '''(c) Normvergleich''' – das Verfahren nach DIN 4708, nur für Wohnen mit Speicher: die Bedarfskennzahl und der Vergleichspunkt. Zonen außerhalb des Gültigkeitsbereichs nennt die Karte.
+
+Darunter steht der eine '''empfohlene Auslegungspunkt''' der Gruppe – Speichervolumen und Leistung, bei Speichern zusätzlich der nächstgrößere Nenninhalt. Die Marke ''Schnellauslegung'' zeigt, dass der Punkt mit den Vorgaben der Stufe ''Einfach'' gerechnet ist. Die zugrunde liegenden Rechenregeln liegen als Entwurf vor; ihre Anwendung ist besonders zu vereinbaren, die Überlagerung vermerkt das am Punkt. Kann kein Punkt gerechnet werden, nennt die Zeile den Grund.
+
+=== Verfahrensvergleich ===
+
+{{Anker|verfahrensvergleich}}Für Speichergruppen folgt der '''Verfahrensvergleich''' der Speicherauslegung. Er ist nachrichtlich und ändert den empfohlenen Punkt nicht. Die Tabelle stellt die Speichervolumen nach mehreren Verfahren nebeneinander – profilbasiert, nach DIN 4708, als Faustwert mit Gleichzeitigkeit und als klassischer Faustwert –, markiert den größten Wert und kennzeichnet Verfahren, die nur nachrichtlich mitlaufen. Deckt die Ladeleistung jede Stundenlast, zeigt das profilbasierte Verfahren „–“ statt 0 l. Kacheln nennen den größten Wert, die nächste Größe der Nenninhaltsliste, das Kriterium und den kleinsten Füllstand; das Wochenbild zeigt Zapfung, Zirkulation, Ladung und Füllstand der maßgebenden Woche. ''An Speicherauslegung übergeben…'' ist gesperrt; sein Hinweis nennt den Grund.
+
+=== Hinweise der Auslegung ===
+
+{{Anker|warnliste}}Die '''Hinweise''' jeder Gruppe stehen als Liste mit Stufe (''Warnung'' oder ''Hinweis''), Titel und einem Satz mit den eingesetzten Zahlen – etwa wenn der Bedarfstag fehlt oder eine Angabe außerhalb der Gültigkeit eines Verfahrens liegt. Keiner dieser Hinweise blockiert ''OK''.
+
+=== Bedarfstag konstruieren ===
+
+{{Anker|konstruktor}}'''Bedarfstag konstruieren…''' öffnet den Konstruktor über der Auslegung. Jede Zeile beschreibt ein Zeitfenster in Stunden mit ''Beginn'' und ''Ende'' und entweder eine ''Zapfregel'' des Katalogs mit der ''Anzahl'' ihrer Vorgänge oder ein ''Volumen'' direkt mit seiner ''Zapftemperatur''; dazu ein frei benannter ''Verbraucher''. Unter der Tabelle stehen die Zapfregeln des Katalogs mit ihrem Volumen je Vorgang. ''Zeile hinzufügen'' und ''Entfernen'' bearbeiten die Liste; eine Zeile bleibt immer stehen. Die Energie gilt beim Kaltwasser der Auslegung des Katalogs.
+
+''OK'' prüft die Zeilen und den Namen; eine Beanstandung steht über der Tabelle, und der Konstruktor bleibt offen. Sonst wird der Tag unter seinem Namen zum Bedarfstag der Auslegung. Gespeichert wird er mit dem Projekt, als eigener Eintrag des Katalogs; ein Name, den der Katalog schon führt, wird beim Speichern abgelehnt. ''Abbrechen'', ✕ und ''Esc'' schließen den Konstruktor ohne Übernahme.
+
+=== Übernehmen ===
+
+{{Anker|auslegung-ok}}''OK'' übernimmt die Eingaben der Auslegung und den empfohlenen Punkt in den Arbeitsstand des Zapfprofils; eine Zeile unter der Kopfzeile des Zapfprofils nennt den übernommenen Punkt. Gespeichert wird beides mit ''OK'' des Bedarfsprofil-Dialogs, zusammen mit den Zonen. ''Abbrechen'', ✕ und ''Esc'' schließen die Auslegung ohne Übernahme; ein zuvor übernommener Punkt bleibt erhalten.
 
 == Simulation und monatlicher Verlauf ==
 
@@ -59,7 +108,7 @@ Steht der Rechenweg auf ''Zapfprofil'', rechnet ''Simulation'' im Bedarfsprofil-
 
 == Beispiel ==
 
-Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen'' mit der Nutzungsart Wohnen, 20 Wohneinheiten, Niveau ''mittel'', und ''Zone 2 Büro'' mit der Nutzungsart Büro, 50 Beschäftigte, Niveau ''mittel''. ''Anzeigen für'' zeigt die Summe beider Zonen oder jede Zone für sich; die Liste nennt den Jahresbedarf je Zone.
+Ein Gebäude mit Wohnungen und einem Büro erhält zwei Zonen: ''Zone 1 Wohnen'' mit der Nutzungsart Wohnen, 20 Wohneinheiten, Niveau ''mittel'', und ''Zone 2 Büro'' mit der Nutzungsart Büro, 50 Beschäftigte, Niveau ''mittel''. ''Anzeigen für'' zeigt die Summe beider Zonen oder jede Zone für sich; die Liste nennt den Jahresbedarf je Zone. ''Auslegung…'' fasst beide Zonen zu einer Speichergruppe zusammen und empfiehlt etwa einen Speicher von 300 l bei 25 kW; ''OK'' übernimmt diesen Punkt in das Zapfprofil.
 
 == Siehe auch ==
 
