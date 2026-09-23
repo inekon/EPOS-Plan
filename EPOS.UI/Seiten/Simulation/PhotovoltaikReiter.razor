@@ -58,7 +58,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 
 <div class="epos-simerg-block">
 
@@ -299,4 +299,21 @@
 
     private static string Einheitsklasse(bool betont) =>
         betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>Die fünf Schalter über dem Bild — nur, solange das Blatt ein Ergebnis zeigt.</summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+        => Daten is null
+            ? Array.Empty<Anzeigeschalter>()
+            : new[]
+            {
+                Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => _sortiert = w),
+                Umschalter(Resource.CHART_ACHSE_STROMBEDARF, () => _strombedarf, w => _strombedarf = w),
+                Umschalter(Resource.SIM_PHOTOVOLTAIK, () => _photovoltaik, w => _photovoltaik = w),
+                Umschalter(Resource.CHART_LEGENDE_UEBERSCHUSS, () => _ueberschuss, w => _ueberschuss = w),
+                Umschalter(Resource.PSP_CHECKBOX_SPEICHERFUELLSTAND, () => _speicher, w => _speicher = w)
+            };
 }

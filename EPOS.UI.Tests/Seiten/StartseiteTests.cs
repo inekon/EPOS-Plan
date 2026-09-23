@@ -1120,8 +1120,12 @@ public class StartseiteTests : EposBunitContext
 
         // Die Weiche gehoert zur Solarthermiekachel - und zu keiner anderen.
         Assert.Contains("Solarthermie", karten[0].QuerySelector(".epos-kachel")!.TextContent);
-        Assert.Equal("Solarthermie",
-                     karten[0].QuerySelector(".epos-startkachel-wahl")!.GetAttribute("aria-label"));
+        // Die Weiche ist die Optionsgruppe des Hauses (Welle #458, Stufe 2): Sie traegt
+        // die Rolle und den Namen der Kachel, keine nackten Radioknoepfe mehr.
+        var gruppe = karten[0].QuerySelector(".epos-startkachel-wahl .epos-optionsgruppe");
+        Assert.NotNull(gruppe);
+        Assert.Equal("radiogroup", gruppe!.GetAttribute("role"));
+        Assert.Equal("Solarthermie", gruppe.GetAttribute("aria-label"));
 
         // Tastaturweg: erst die Kachel, dann die zwei Optionen - DOM-Reihenfolge.
         Assert.Equal("BUTTON", karten[0].Children[0].TagName);
@@ -1394,5 +1398,74 @@ public class StartseiteTests : EposBunitContext
 
         var ohne = Render<Startseite>();
         Assert.Empty(ohne.FindAll(".epos-startseite-klimaherkunft"));
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Maske „Startseite" an der Maskenbrücke.</b> Sie meldet über
+    /// <c>StartseiteKiSicht</c> die Klimaregion (Wahlfeld der Stammregionen) und die
+    /// Weiche der Solarthermiekachel an. Speichern ist der Knopf neben der Klimaregion —
+    /// derselbe Delegat mit derselben Id.
+    /// </summary>
+    [Fact]
+    public async Task Die_Startseite_meldet_Klimaregion_und_Solarart_beim_Assistenten_an()
+    {
+        int gespeichert = 0;
+        var cut = Zeige(klimaSpeichern: id => { gespeichert = id; return (false, "gespeichert"); });
+
+        Assert.True(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(
+            WindowsFormsApplication1.KiMaskennamen.STARTSEITE));
+
+        WindowsFormsApplication1.KiFeldzugang klima = WindowsFormsApplication1.KiMaskenbruecke
+            .Feldzugang(WindowsFormsApplication1.KiMaskennamen.STARTSEITE, "klimaregion");
+        Assert.NotNull(klima);
+        Assert.Equal(47, klima.Lesen());
+
+        WindowsFormsApplication1.KiFeldumsetzung u =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(klima, "Berlin");
+        Assert.True(u.Ok, u.Grund);
+        klima.Setzen(u.Wert);
+
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.STARTSEITE);
+        Assert.False(haken.IstSchreibgeschuetzt());
+        KiKern.KiErgebnis ergebnis = await haken.Speichern!();
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.Equal(17, gespeichert);
+
+        WindowsFormsApplication1.KiFeldzugang art = WindowsFormsApplication1.KiMaskenbruecke
+            .Feldzugang(WindowsFormsApplication1.KiMaskennamen.STARTSEITE, "solarart");
+        Assert.NotNull(art);
+        Assert.Equal(0, art.Lesen());
+        WindowsFormsApplication1.KiFeldumsetzung g =
+            WindowsFormsApplication1.KiFeldwandler.Wandle(art, "Ganglinie");
+        Assert.True(g.Ok, g.Grund);
+        art.Setzen(g.Wert);
+        Assert.Equal(1, art.Lesen());
+
+        cut.Instance.Dispose();
+        Assert.False(WindowsFormsApplication1.KiMaskenbruecke.IstAngemeldet(
+            WindowsFormsApplication1.KiMaskennamen.STARTSEITE));
+    }
+
+    /// <summary>
+    /// Ohne offenes Projekt gehören Klimaregion und Solarart niemandem — die Maske ist
+    /// für den Assistenten schreibgeschützt und nennt den Grund.
+    /// </summary>
+    [Fact]
+    public void Ohne_offenes_Projekt_ist_die_Startseite_schreibgeschuetzt()
+    {
+        var cut = Zeige(idProjekt: 0);
+
+        WindowsFormsApplication1.KiMaskenhaken haken = WindowsFormsApplication1.KiMaskenbruecke
+            .Haken(WindowsFormsApplication1.KiMaskennamen.STARTSEITE);
+        Assert.True(haken.IstSchreibgeschuetzt());
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_START_KEIN_PROJEKT,
+                     haken.Schutzgrund());
+
+        cut.Instance.Dispose();
     }
 }

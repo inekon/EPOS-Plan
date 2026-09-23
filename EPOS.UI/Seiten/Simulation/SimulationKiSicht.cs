@@ -117,9 +117,44 @@ public sealed class SimulationKiSicht
 
     /// <summary>
     /// Das offene Reiterblatt von Schritt ③ („Übersicht", „Stromspeicher", …); leer,
-    /// solange ① vorn steht.
+    /// solange ① vorn steht. <b>Seit Welle #458 (Stufe 2) ein Wahlfeld:</b> Es zu setzen
+    /// schlägt das Blatt auf wie ein Klick auf den Reiter — nur, solange ③ vorn steht;
+    /// sonst lehnt die Ansicht benannt ab.
     /// </summary>
-    public string Reiter => _reiter() ?? "";
+    public string Reiter
+    {
+        get => _reiter() ?? "";
+        set
+        {
+            if (ReiterWaehlen is null)
+                throw new InvalidOperationException(Resource.KI_DLG_SIM_REITER_NICHT_VORN);
+            ReiterWaehlen(value ?? "");
+        }
+    }
+
+    /// <summary>Die Blätter, zwischen denen der Anwender in ③ wechselt — Schlüssel ist der Titel (KI‑D‑Q6).</summary>
+    public IReadOnlyList<KiWahleintrag> ReiterWahl
+        => KiMaskenanmeldung.Eintraege(ReiterEintraege?.Invoke() ?? Array.Empty<string>(), t => t);
+
+    /// <summary>Die Titel der Blätter, die der Reiter in ③ gerade führt; leer in ①.</summary>
+    public Func<IReadOnlyList<string>>? ReiterEintraege { get; init; }
+
+    /// <summary>Schlägt ein Blatt über seinen Titel auf; wirft mit Grund, wenn ③ nicht vorn steht.</summary>
+    public Action<string>? ReiterWaehlen { get; init; }
+
+    // =====================================================================
+    //  Die Anzeigeschalter des offenen Ergebnisblattes (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>Liefert die Schalter der gezeichneten Blätter; leer in ①.</summary>
+    public Func<IReadOnlyList<Anzeigeschalter>>? ErgebnisschalterLesen { get; init; }
+
+    /// <summary>
+    /// Die Schalter der Anzeige auf dem offenen Ergebnisblatt — eine SPALTE, je Schalter
+    /// eine Zeile mit seiner Beschriftung als Kennzeichen. Sie stellen nur das Bild ein.
+    /// </summary>
+    public IReadOnlyList<Anzeigeschalter> Ergebnisschalter
+        => ErgebnisschalterLesen?.Invoke() ?? Array.Empty<Anzeigeschalter>();
 
     // =====================================================================
     //  Schritt ① — Kaskade und Reihenfolge (nur lesend)

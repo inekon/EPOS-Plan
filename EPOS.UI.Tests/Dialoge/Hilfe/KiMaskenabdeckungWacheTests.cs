@@ -65,7 +65,7 @@ public sealed class KiMaskenabdeckungWacheTests
     /// </summary>
     private readonly record struct Wirt(string Kind, string Wirtkomponente, string Maske);
 
-    /// <summary>Die achtzehn Bausteine und ihre Wirte.</summary>
+    /// <summary>Die Bausteine und ihre Wirte.</summary>
     private static readonly Wirt[] WIRTE =
     {
         new("PvModellFelder",                 "PhotovoltaikDialog",          KiMaskennamen.PHOTOVOLTAIK),
@@ -85,7 +85,24 @@ public sealed class KiMaskenabdeckungWacheTests
         new("OptimierungBlock",               "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
-        new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION)
+        new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("ErzeugerReiter",                 "Startseite",                  KiMaskennamen.STARTSEITE),
+
+        // Welle #458, Stufe 2: die Ergebnisblaetter der Simulation melden ihre
+        // Anzeigeschalter beim Register ihrer Seite an (Ergebnisblattwirt); die Maske
+        // Simulation fuehrt sie als Spalte „anzeige", das Blatt als Wahlfeld „reiter".
+        new("BedarfReiter",                   "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("BhkwReiter",                     "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("HeizkesselReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("PhotovoltaikReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("SolarthermieReiter",             "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("StromgangReiter",                "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("StromspeicherReiter",            "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("WaermegangReiter",               "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("WaermepumpeReiter",              "SimulationSeite",             KiMaskennamen.SIMULATION),
+
+        // Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite: Zeitraum und Haken.
+        new("KapitalwertVerlaufAbschnitt",    "WirtschaftlichkeitSeite",     KiMaskennamen.WIRTSCHAFTLICHKEITSSEITE)
     };
 
     // =====================================================================
@@ -107,50 +124,60 @@ public sealed class KiMaskenabdeckungWacheTests
     {
         new("BedarfAdminDialog", 3),
         new("BedarfErgebnisDialog", 4),
+        new("BedarfReiter", 3),
         new("BedarfsProfileDialog", 3, "die Optionsgruppe „Rechenweg“ ist offen (#458 Stufe 3 nach Z3)"),
         new("BerichtSeite", 2),
         new("BhkwWirtschaftlichkeitDialog", 39),
+        new("BhkwReiter", 5),
         new("BrennstoffBestandteile", 2),
         new("CaseEingabeDialog", 7),
+        new("EinstellungenDialog", 9, "Datenbankname und KI-Abschalter bleiben draußen (Datenbankwechsel beim nächsten Start; der Assistent schaltet sich nicht selbst ab); die fünf Ordner sind Dateiwahlen"),
         new("EmissionskatalogDialog", 11),
         new("EnergietraegerDialog", 4),
         new("EnergietraegerEinstellungen", 21),
         new("EnergietraegerVarianteDialog", 2),
         new("ErgebnisReiter", 1),
+        new("ErzeugerReiter", 1),
         new("ErtragBonus", 2),
         new("GebaeudeAdminDialog", 5),
         new("GebaeudeBedarfDialog", 2),
         new("GebaeudeDialog", 4),
         new("GebaeudeKatalogDialog", 45),
         new("GebaeudeWohnflaecheDialog", 4),
-        new("GebaeudetypDialog", 6, "die Kurven des Gebäudetyps sind Zahlenfolgen (Rahmenerweiterung, #458 Stufe 2)"),
+        new("GebaeudetypDialog", 6, "die Kurven des Gebäudetyps sind Zahlenfolgen (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
         new("GesetzeskatalogDialog", 1),
         new("GesetzeskatalogZeileDialog", 7),
+        new("HeizkesselReiter", 4),
         new("KatalogBrowserDialog", 2, "Stammblatt über die Feldtafel des Profils"),
+        new("KapitalwertVerlaufAbschnitt", 3),
+        new("KennlinienEditorDialog", 7),
         new("KlimadatenDialog", 7),
         new("KomponentenKonfigurationDialog", 3),
         new("KostenKomponenteDialog", 3),
         new("KostenSeite", 0),
         new("KostenfaktorKatalogDialog", 1),
-        new("KostenprofilDialog", 4, "die Stundenwerte des Profils sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 2)"),
+        new("KostenprofilDialog", 4, "die Stundenwerte des Profils sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
         new("LeistungspreisBlock", 2),
-        new("LeistungspreisReiheDialog", 2, "die Reihe selbst ist eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 2)"),
+        new("LeistungspreisReiheDialog", 2, "die Reihe selbst ist eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
         new("ModulKatalogDialog", 4, "der Feldsatz des Profils, gebaut über den RenderTreeBuilder"),
         new("NutzungsdauerDialog", 8),
         new("OptimierungBlock", 9),
         new("PeakShavingDialog", 17),
-        new("PhotovoltaikDialog", 5, "„Alle Daten“ (Katalogfelder des Satzes) sind offen (#458 Stufe 2)"),
+        new("PhotovoltaikDialog", 5, "„Alle Daten“ über die Feldtafel des Modulprofils"),
+        new("PhotovoltaikReiter", 5),
         new("PhotovoltaikVerguetungDialog", 16),
+        new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         new("PufferSpProjektDialog", 20),
         new("PvModellFelder", 3),
         new("QuelleErdreichDialog", 9),
         new("QuellePufferspeicherDialog", 8),
-        new("QuellprofilDialog", 6, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 2)"),
+        new("QuellprofilDialog", 6, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
         new("SimulationKonfigSeite", 3),
         new("SimulationSeite", 0),
         new("SolarganglinieDialog", 0),
+        new("SolarthermieReiter", 3),
         new("SpeicherAuslegungEditor", 16),
         new("SpeicherFlottenBetriebEditor", 7),
         new("SpeicherFlottenEditor", 28),
@@ -158,16 +185,21 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", 6),
         new("SpeicherParameterBlock", 20),
         new("SpeicherZeitreihenDialog", 16),
+        new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),
+        new("StromgangReiter", 1, "die Serienauswahl (Mehrfachauswahl) steht als Anzeigeschalter mit im Katalog"),
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),
+        new("StromspeicherReiter", 2),
         new("TarifstrukturDialog", 13),
-        new("TypProfilDialog", 2, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 2)"),
+        new("TypProfilDialog", 2, "die Profilwerte sind eine Zahlenfolge (Rahmenerweiterung, #458 Stufe 3 (Zahlenfolgen))"),
         new("UebersichtSeite", 4),
         new("VorlagenPositionDialog", 8),
         new("VorlagenZeile", 4),
+        new("WaermegangReiter", 3, "die Erzeuger- und die Speicherauswahl (Mehrfachauswahl) stehen als Anzeigeschalter mit im Katalog"),
         new("WaermepumpeAnlageDialog", 5, "der Schalter „mit Kennlinien übernehmen“ gehört zur Aktion Übernehmen"),
         new("WaermepumpeKonfiguration", 8),
+        new("WaermepumpeReiter", 8),
         new("WaermesenkeDialog", 9),
         new("WirtschaftlichkeitParameterDialog", 26),
         new("WirtschaftlichkeitSeite", 9, "der Schalter der Vergleichsgruppe ist eine Menge von Verweisen, kein Feldwert; " +
@@ -220,31 +252,11 @@ public sealed class KiMaskenabdeckungWacheTests
                 "Wechselrichter je Strang — ein Verweis in den Gerätekatalog je Zeile; Mengen von Verweisen bleiben " +
                 "außen vor (KI‑D‑Q6)"
         },
-        [KiMaskennamen.HEIZKESSEL_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.BHKW_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.PUFFERSPEICHER_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.STROMSPEICHER_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
-        [KiMaskennamen.SOLARKOLLEKTOREN_PROJEKT] = new()
-        {
-            ["_felder"] = "„Alle Daten“ — die Katalogfelder des Satzes; offen (#458 Stufe 2)"
-        },
         [KiMaskennamen.TYPSTAMM] = new()
         {
             ["Daten.Monat[monat]"] =
                 "die zwölf Monatswerte sind eine Zahlenfolge — sie braucht die Rahmenerweiterung für Zahlenfolgen " +
-                "(#458 Stufe 2)"
+                "(#458 Stufe 3 (Zahlenfolgen))"
         }
     };
 
@@ -358,7 +370,7 @@ public sealed class KiMaskenabdeckungWacheTests
                     "Nur " + geltung.Count(k => k.Angemeldet) + " Anmeldungen gefunden.");
         Assert.True(geltung.Count(k => k.Eingaben.Count > 0) > 100,
                     "Nur " + geltung.Count(k => k.Eingaben.Count > 0) + " Dateien mit Eingabefeldern.");
-        Assert.True(KiDialogAusnahmen.Alle.Count > 30, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
+        Assert.True(KiDialogAusnahmen.Alle.Count > 20, "Nur " + KiDialogAusnahmen.Alle.Count + " Ausnahmen.");
     }
 
     /// <summary>
@@ -433,6 +445,11 @@ public sealed class KiMaskenabdeckungWacheTests
             {
                 if (Gedeckt(e.Bindung, katalog)) continue;
                 if (draussen is not null && draussen.ContainsKey(e.Bindung)) continue;
+
+                // Der Aufklapper „Alle Daten" führt seine Felder als Daten eines Profils:
+                // Gedeckt ist er, wenn die Maske eine FELDTAFEL führt — den Feldbestand
+                // hält der Profilwächter (Welle #458, Stufe 2).
+                if (e.Baustein == "Katalogfelder" && KiDialogkatalogTests.FuehrtFeldtafel(maske)) continue;
                 fehlt.Add(datei + ": " + e.Baustein + " → „" + e.Bindung + "“");
             }
 

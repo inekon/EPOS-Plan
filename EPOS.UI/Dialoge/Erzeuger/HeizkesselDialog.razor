@@ -707,10 +707,30 @@
         // KI-F1b: Die Brennstoffvariante ist ein WAHLFELD; ihre Einträge kennt nur
         // dieser Dialog (sie hängen am Träger der gewählten Zeile), deshalb geht der
         // Lieferant als Quelle mit — er wird bei jedem Zugriff gerufen.
+        // Welle #458, Stufe 2: angemeldet ist seither die SICHTKLASSE - sie reicht die
+        // gewaehlte Zeile durch und traegt den Aufklapper „Alle Daten" als Feldtafel.
         _kiMaske = KiMaskenanmeldung.Fuer(KiMaskennamen.HEIZKESSEL_PROJEKT,
-                                          () => _projektZeile, KiHaken(),
+                                          () => KiSicht(), KiHaken(),
                                           ("energietraeger", Traegereintraege));
     }
+
+    private ErzeugerProjektKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die gewählte Projektzeile und der Aufklapper „Alle
+    /// Daten" des gewählten Katalogsatzes (Welle #458, Stufe 2).
+    /// </summary>
+    private ErzeugerProjektKiSicht KiSicht() => _kiSicht ??= new ErzeugerProjektKiSicht
+    {
+        Zeilenquelle = () => _projektZeile,
+        AlleDaten = new AlleDatenTafel
+        {
+            Felder = () => _parameterOffen ? _felder : null,
+            Sperrgrund = () => AlleDatenTafel.Grund(_parameterOffen ? _felder : null, KatalogfelderSpeichern is not null,
+                                                    _katalogZeile?.Geschuetzt == true),
+            Gesetzt = () => _felderGeaendert = true
+        }
+    };
 
     /// <summary>Die Brennstoffvarianten der gewählten Zeile für den Assistenten (KI-F1b).</summary>
     private IReadOnlyList<KiWahleintrag> Traegereintraege()
@@ -751,8 +771,24 @@
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
         Schreibgeschuetzt = () => _projektZeile?.NurLesen ?? false,
-        Speichern = () => Task.FromResult(KiUebernehmen())
+        Speichern = () => Task.FromResult(KiSpeichern())
     };
+
+    /// <summary>
+    /// „Speichern" des Assistenten: Trägt der Aufklapper „Alle Daten" Änderungen, geht
+    /// er den Weg SEINES Knopfes (<see cref="FelderSpeichern"/>) — sonst wird die
+    /// gewählte Projektzeile übernommen wie bisher (Welle #458, Stufe 2).
+    /// </summary>
+    private KiKern.KiErgebnis KiSpeichern()
+    {
+        if (!_felderGeaendert) return KiUebernehmen();
+
+        FelderSpeichern();
+        return _felderGeaendert
+            ? KiKern.KiErgebnis.Abgelehnt(_meldung.Length > 0 ? _meldung
+                  : Resource.KI_AKTION_SPEICHERN_KEIN_WEG.Replace("{0}", TitelText))
+            : KiKern.KiErgebnis.Ok(_meldung, anzahl: 1);
+    }
 
     private KiKern.KiErgebnis KiUebernehmen()
     {

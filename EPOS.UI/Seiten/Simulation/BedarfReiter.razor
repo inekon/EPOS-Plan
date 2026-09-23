@@ -33,7 +33,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 
 <div class="epos-simerg-block">
 
@@ -328,4 +328,28 @@
 
     private static string Einheitsklasse(bool betont) =>
         betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// „sortiert", die Summenlinie und je vorhandenem Kanal ein Schalter — dieselben
+    /// Wege wie die Schalter auf dem Blatt.
+    /// </summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+    {
+        var liste = new List<Anzeigeschalter>
+        {
+            Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, SortiertGesetzt),
+            Umschalter(Resource.CHART_LEGENDE_SUMME_WAERMEBEDARF, () => _gesamtAn, GesamtGesetzt)
+        };
+        for (int k = 0; k < Daten.KanalMwh.Count; k++)
+        {
+            if (!Da(k)) continue;
+            int index = k;
+            liste.Add(Umschalter(Kanalname(index), () => KanalAn(index), w => KanalGesetzt(index, w)));
+        }
+        return liste;
+    }
 }

@@ -96,12 +96,13 @@ public class HeizkesselDialogTests : EposBunitContext
         Func<ErzeugerZeile?, Task>? energiekosten = null,
         Func<string, IReadOnlyList<BrowserFeldwert>?>? katalogfelder = null,
         Func<string, IReadOnlyList<BrowserFeldwert>, KatalogSpeicherErgebnis>?
-            katalogfelderSpeichern = null)
+            katalogfelderSpeichern = null,
+        Func<IReadOnlyList<Katalogfilterzeile>>? katalogzeilen = null)
     {
         return Render<HeizkesselDialog>(p => p
             .Add(x => x.Zeilen, zeilen ?? new List<ErzeugerZeile> { Zeile(1, "Kessel A", 100) })
             .Add(x => x.Katalogprofil, Profil)
-            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Katalogzeilen, katalogzeilen ?? Katalogzeilen)
             .Add(x => x.Filterstandvorgabe, _filterstand)
             .Add(x => x.KatalogDetail, n => Detail(n))
             .Add(x => x.ProjektDetail, _ => Detail("Kessel A"))
@@ -1211,6 +1212,100 @@ public class HeizkesselDialogTests : EposBunitContext
 
         Assert.Equal("Kessel A", zugang.Lesen());
         Assert.False(zugang.Setzbar);
+    }
+
+    // =================================================================================
+    // „Alle Daten" für den Assistenten (Welle #458, Stufe 2)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE der Feldtafel „Alle Daten".</b> Der Assistent liest und setzt die
+    /// Felder des gewählten KATALOGsatzes in der lebenden Liste des Aufklappers — der
+    /// Aufklapper zeigt den neuen Wert —, und <c>dialog_speichern</c> geht den Weg des
+    /// Knopfes „Speichern" im Aufklapper, mit genau diesen Feldern.
+    /// </summary>
+    [Fact]
+    public async Task Der_Assistent_setzt_Alle_Daten_und_speichert_ueber_den_Aufklapper()
+    {
+        string? name = null;
+        IReadOnlyList<BrowserFeldwert>? geschrieben = null;
+
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, f) =>
+            {
+                name = n; geschrieben = f;
+                return new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n);
+            });
+
+        KatalogsatzWaehlen(cut);
+
+        KiFeldzugang invest = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT,
+                                                         "katalog_investitionskosten");
+        Assert.NotNull(invest);
+        Assert.Equal(12000.0, invest.Lesen());
+        Assert.True(invest.Setzbar);
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(invest, "15000");
+        Assert.True(u.Ok, u.Grund);
+        invest.Setzen(u.Wert);
+        cut.Render();
+
+        Assert.Equal("15000", cut.Find(".epos-modulparameter input[inputmode=decimal]")
+                                 .GetAttribute("value"));
+
+        KiKern.KiErgebnis ergebnis =
+            await KiMaskenbruecke.Haken(KiMaskennamen.HEIZKESSEL_PROJEKT).Speichern!();
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.Equal("Kessel A", name);
+        Assert.Equal("15000",
+            geschrieben!.First(f => f.Schluessel == KatalogBrowserProfil.FeldInvestitionskosten).Wert);
+    }
+
+    /// <summary>
+    /// Ein AUSLIEFERUNGSSATZ im Aufklapper lehnt das Setzen benannt ab — mit dem Weg
+    /// „Duplizieren…", demselben Grund wie in der Verwaltung.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_lehnt_Alle_Daten_mit_dem_Weg_Duplizieren_ab()
+    {
+        var cut = Aufbauen(
+            katalogfelder: _ => Felder(),
+            katalogfelderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n),
+            katalogzeilen: () =>
+            {
+                IReadOnlyList<Katalogfilterzeile> zeilen = Katalogzeilen();
+                foreach (Katalogfilterzeile z in zeilen) z.Geschuetzt = true;
+                return zeilen;
+            });
+
+        KatalogsatzWaehlen(cut);
+
+        KiFeldzugang firma = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "katalog_firma");
+        Assert.NotNull(firma);
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => firma.Setzen("Anderes Werk"));
+        Assert.Equal(Resource.ADM_SPEICHERN_GESPERRT, fehler.Message);
+    }
+
+    /// <summary>
+    /// Zugeklappt steht „Alle Daten" nicht vor dem Anwender — der Assistent liest dann
+    /// nichts und lehnt das Setzen benannt ab, statt still zu schreiben.
+    /// </summary>
+    [Fact]
+    public void Zugeklappt_liest_der_Assistent_nichts_und_setzt_nichts()
+    {
+        var cut = Aufbauen(katalogfelder: _ => Felder(),
+                           katalogfelderSpeichern: (n, _) => new KatalogSpeicherErgebnis(true, "", n));
+
+        KatalogsatzWaehlen(cut);
+        cut.Find(".epos-modulparameter-knopf").Click();
+
+        KiFeldzugang firma = KiMaskenbruecke.Feldzugang(KiMaskennamen.HEIZKESSEL_PROJEKT, "katalog_firma");
+        Assert.Null(firma.Lesen());
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => firma.Setzen("Anderes Werk"));
+        Assert.Equal(Resource.KI_DLG_ALLE_DATEN_ZU, fehler.Message);
     }
 
     // =================================================================================

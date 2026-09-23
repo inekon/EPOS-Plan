@@ -60,19 +60,14 @@
                                 Bildklasse="@Kachelbilder.Klasse(k.Schluessel)"
                                 Geklickt="@(() => Geklickt.InvokeAsync(k.Schluessel))" />
 
-                        <div class="epos-startkachel-wahl" role="radiogroup" aria-label="@k.Titel">
-                            <label>
-                                <input type="radio" name="epos-solarart"
-                                       checked="@(!Ganglinie)"
-                                       @onchange="@(() => ArtWaehlen(false))" />
-                                @ProfilText
-                            </label>
-                            <label>
-                                <input type="radio" name="epos-solarart"
-                                       checked="@Ganglinie"
-                                       @onchange="@(() => ArtWaehlen(true))" />
-                                @GanglinieText
-                            </label>
+                        @* Die Weiche ist der Baustein Optionsgruppe (Welle #458, Stufe 2) -
+                           kein nacktes <input type="radio"> mehr. Sie traegt den Namen der
+                           Kachel als aria-label; ihren Titel zeigt sie nicht, er steht schon
+                           auf der Kachel darueber (Stilblatt). *@
+                        <div class="epos-startkachel-wahl">
+                            <Optionsgruppe Bezeichnung="@k.Titel" Eintraege="@Solararten"
+                                           Auswahl="@(Ganglinie ? GANGLINIE : PROFIL)"
+                                           AuswahlChanged="@(id => ArtWaehlen(id == GANGLINIE))" />
                         </div>
                     </div>
                 }
@@ -130,6 +125,16 @@
 
     /// <summary>Hilfeschlüssel des Infoknopfes — der des Vorläufers.</summary>
     [Parameter] public string HilfeSchluessel { get; set; } = "Form_Start.btn_Help_Energieerzeuger";
+
+    /// <summary>Die Stellung „Profil" der Weiche.</summary>
+    private const int PROFIL = 0;
+
+    /// <summary>Die Stellung „Ganglinie" der Weiche.</summary>
+    private const int GANGLINIE = 1;
+
+    /// <summary>Die zwei Stellungen der Weiche in Anzeigereihenfolge.</summary>
+    private IReadOnlyList<(int Id, string Text)> Solararten
+        => new[] { (PROFIL, ProfilText), (GANGLINIE, GanglinieText) };
 
     private Task ArtWaehlen(bool ganglinie)
     {

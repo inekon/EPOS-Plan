@@ -238,4 +238,68 @@ public class ProjektKopfSeiteTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-formularraster .epos-feld--breit"));
         Assert.Single(cut.FindAll(".epos-feld--breit"));
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Die Seite meldet ihre fünf
+    /// Felder über <c>ProjektKopfKiSicht</c> an: Die Klimaregion ist ein Wahlfeld und
+    /// setzt Id UND Name, wie die Klappliste; Kunde schreibt an Ort und Stelle in den
+    /// Kopf. Die Prüfung ist die Kopfregel der Seite; einen Speicherweg gibt es nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Seite_meldet_ihre_fuenf_Felder_beim_Assistenten_an()
+    {
+        ProjektKopfDaten daten = Satz();
+        daten.NameAenderbar = true;
+        var cut = Aufbauen(daten);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PROJEKTKOPF));
+
+        KiFeldzugang klima = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKTKOPF, "klimaregion");
+        Assert.NotNull(klima);
+        Assert.Equal(12, klima.Lesen());
+
+        KiFeldumsetzung u = KiFeldwandler.Wandle(klima, "Region 05 Hamburg");
+        Assert.True(u.Ok, u.Grund);
+        klima.Setzen(u.Wert);
+        Assert.Equal(5, daten.IdKlimaregion);
+        Assert.Equal("Region 05 Hamburg", daten.Klimaname);
+
+        KiFeldzugang kunde = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKTKOPF, "kunde");
+        kunde.Setzen("Stadtwerke");
+        Assert.Equal("Stadtwerke", daten.Kunde);
+
+        // Die Pruefung ist die Kopfregel: ein leerer Name wird benannt.
+        KiFeldzugang name = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKTKOPF, "name");
+        name.Setzen("");
+        KiMaskenhaken haken = KiMaskenbruecke.Haken(KiMaskennamen.PROJEKTKOPF);
+        Assert.Equal(cut.Instance.TextNameLeer, haken.Befund());
+        Assert.Null(haken.Speichern);
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.PROJEKTKOPF));
+    }
+
+    /// <summary>
+    /// Im BEARBEITEN-Modus steht der Projektname fest — die Seite zeigt ihn nur lesbar,
+    /// und der Assistent bekommt eine benannte Absage statt einer stillen Umbenennung.
+    /// </summary>
+    [Fact]
+    public void Im_Bearbeiten_Modus_lehnt_der_Assistent_den_neuen_Namen_ab()
+    {
+        ProjektKopfDaten daten = Satz();               // NameAenderbar = false
+        var cut = Aufbauen(daten);
+
+        KiFeldzugang name = KiMaskenbruecke.Feldzugang(KiMaskennamen.PROJEKTKOPF, "name");
+        Assert.NotNull(name);
+
+        var fehler = Assert.Throws<InvalidOperationException>(() => name.Setzen("Anderer Name"));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_DLG_PKOPF_NAME_FEST, fehler.Message);
+        Assert.Equal("Laurentiuskirche", daten.Name);
+
+        cut.Instance.Dispose();
+    }
 }

@@ -36,7 +36,7 @@
 
 @namespace EPOS.UI.Seiten.Simulation
 @using WindowsFormsApplication1.Zeichnung
-@inherits Farbwahlwirt
+@inherits Ergebnisblattwirt
 
 <div class="epos-simerg-block">
 
@@ -423,4 +423,37 @@
 
     private static string Einheitsklasse(bool betont) =>
         betont ? "epos-simerg-einheit epos-simerg-abschluss" : "epos-simerg-einheit";
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2): die Schalter der Anzeige
+    // =====================================================================
+
+    /// <summary>
+    /// Die drei Reihen der Streuwolke und — solange das Unterblatt „Produktion" vorn
+    /// steht — „sortiert" und die vier Reihen des Stapels.
+    /// </summary>
+    protected override IReadOnlyList<Anzeigeschalter> Blattschalter()
+    {
+        if (Daten is null) return Array.Empty<Anzeigeschalter>();
+
+        var liste = new List<Anzeigeschalter>
+        {
+            Umschalter(Resource.CHART_LEGENDE_WAERMEBEDARF, () => _swBedarf, w => _swBedarf = w),
+            Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _swHeizstab, w => _swHeizstab = w),
+            Umschalter(Resource.CHART_LEGENDE_WAERMEPRODUKTION, () => _swProduktion, w => _swProduktion = w)
+        };
+
+        if (AktivesBlatt == "PRODUKTION")
+        {
+            liste.Add(Umschalter(Resource.SIM_CHK_SORTIERT, () => _sortiert, w => _sortiert = w));
+            liste.Add(Umschalter(Resource.CHART_LEGENDE_HEIZWAERMEBEDARF, () => _pgHeizwaerme,
+                                 w => _pgHeizwaerme = w));
+            liste.Add(Umschalter(Resource.CHART_LEGENDE_WARMWASSERBEDARF, () => _pgWarmwasser,
+                                 w => _pgWarmwasser = w));
+            liste.Add(Umschalter(Resource.CHART_LEGENDE_WAERMEPRODUKTION, () => _pgProduktion,
+                                 w => _pgProduktion = w));
+            liste.Add(Umschalter(Resource.CHART_SEGMENT_HEIZSTAB, () => _pgHeizstab, w => _pgHeizstab = w));
+        }
+        return liste;
+    }
 }

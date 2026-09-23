@@ -19322,7 +19322,7 @@ Möchten Sie das zulassen?</value>
     <value>Offenes Reiterblatt</value>
   </data>
   <data name="KI_DLG_SIM_REITER_ERL" xml:space="preserve">
-    <value>Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration.</value>
+    <value>Das Blatt des Ergebnisses, das vorn steht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis). Es zu wählen ist derselbe Klick wie auf den Reiter — nur, solange das Ergebnis vorn steht; leer in der Konfiguration.</value>
   </data>
   <data name="KI_DLG_SIM_KASKADE_NAME" xml:space="preserve">
     <value>Kaskade und Reihenfolge</value>
@@ -26565,5 +26565,137 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMERG_HRL_KAELTE_GEDECKT" xml:space="preserve">
     <value>Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %).</value>
+  </data>
+  <data name="KI_DLG_MASKE_WPKL" xml:space="preserve">
+    <value>Kenndaten der Wärmepumpe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_NAME" xml:space="preserve">
+    <value>Vorlaufstufe</value>
+  </data>
+  <data name="KI_DLG_WPKL_VORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlaufstufe, deren Stützstellen das Raster zeigt, in °C. Sie zu wählen ist derselbe Klick wie in der Vorlaufliste; eine neue Stufe entsteht erst mit „Neue Vorlauftemperatur“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEUVORLAUF_ERL" xml:space="preserve">
+    <value>Die Vorlauftemperatur einer neuen Stufe in °C. Angelegt wird die Stufe erst mit dem Knopf „Neue Vorlauftemperatur“, den der Anwender drückt.</value>
+  </data>
+  <data name="KI_DLG_WPKL_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Außen- bzw. Quelltemperatur dieser Stützstelle in °C; sie ordnet die Stützstelle auf der Kennlinie der gewählten Vorlaufstufe ein.</value>
+  </data>
+  <data name="KI_DLG_WPKL_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der Wärmepumpe an dieser Stützstelle — Wärmeleistung geteilt durch elektrische Leistung, ohne Einheit.</value>
+  </data>
+  <data name="KI_DLG_WPKL_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der Wärmepumpe an dieser Stützstelle in kW.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_TEMPERATUR_ERL" xml:space="preserve">
+    <value>Die Temperatur der nächsten Stützstelle in °C. Die Zeile entsteht erst mit „Daten übernehmen“, und nur, wenn Temperatur, COP und Ptherm gesetzt sind.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_COP_ERL" xml:space="preserve">
+    <value>Die Leistungszahl (COP) der nächsten Stützstelle, ohne Einheit. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_NEU_PTHERM_ERL" xml:space="preserve">
+    <value>Die Wärmeleistung der nächsten Stützstelle in kW. Die Zeile entsteht erst mit „Daten übernehmen“.</value>
+  </data>
+  <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
+    <value>Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an.</value>
+  </data>
+  <data name="KI_DLG_MASKE_PKOPF" xml:space="preserve">
+    <value>Projektkopf (Assistent „Neues Projekt“)</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_ERL" xml:space="preserve">
+    <value>Der Name des Projekts — Pflicht und bei einem neuen Projekt eindeutig. Im Bearbeiten-Modus steht er fest.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KUNDE_ERL" xml:space="preserve">
+    <value>Der Kunde, für den das Projekt geplant wird — Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BEARBEITER_ERL" xml:space="preserve">
+    <value>Wer das Projekt bearbeitet — Freitext; ein neues Projekt trägt den angemeldeten Benutzer vor.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine Kurzbeschreibung des Vorhabens — Standort, Besonderheiten; Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_FEST" xml:space="preserve">
+    <value>Im Bearbeiten-Modus steht der Projektname fest.</value>
+  </data>
+  <data name="KI_DLG_MASKE_START" xml:space="preserve">
+    <value>Startseite</value>
+  </data>
+  <data name="KI_DLG_START_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des offenen Projekts aus den Stammregionen; geschrieben wird sie erst mit dem Knopf „Speichern“ daneben.</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_NAME" xml:space="preserve">
+    <value>Solarthermie: Profil oder Ganglinie</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_ERL" xml:space="preserve">
+    <value>Die Weiche der Kachel „Solarthermie“: „Profil“ öffnet die Eingabe der Kollektoren, „Ganglinie“ die Solarganglinien. Sie wirkt sofort.</value>
+  </data>
+  <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
+    <value>Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt.</value>
+  </data>
+  <data name="KI_DLG_MASKE_ADMSET" xml:space="preserve">
+    <value>Programmeinstellungen</value>
+  </data>
+  <data name="KI_DLG_ADMSET_WIKI_ERL" xml:space="preserve">
+    <value>Die Adresse des Hilfe-Wikis, das „Hilfe“ und die Info-Knöpfe öffnen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_GEOKODIERUNG_ERL" xml:space="preserve">
+    <value>Die Adresse des Geokodierungsdienstes (Nominatim), der aus einer Anschrift Breite und Länge eines Standorts sucht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_PVGIS_ERL" xml:space="preserve">
+    <value>Die Adresse der PVGIS-Schnittstelle, aus der die Klimadaten weltweite Wetterjahre (TMY) laden.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_PORTAL_ERL" xml:space="preserve">
+    <value>Die Adresse des Portals der DWD-Testreferenzjahre.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_TRY_REGIONAL_ERL" xml:space="preserve">
+    <value>Die Adresse, unter der die TRY-Regionaldaten liegen.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_KUEHLUNG_ERL" xml:space="preserve">
+    <value>Der Anfangswert der Kühlung eines NEU angelegten Projekts; vorhandene Projekte und Läufe ändert der Schalter nicht.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_ERL" xml:space="preserve">
+    <value>Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes.</value>
+  </data>
+  <data name="KI_DLG_ADMSET_FARBE_UNGUELTIG" xml:space="preserve">
+    <value>„{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NAME" xml:space="preserve">
+    <value>{0} (Alle Daten)</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_ZU" xml:space="preserve">
+    <value>„Alle Daten anzeigen“ ist zugeklappt, oder es ist kein Katalogsatz gewählt — die Werte stehen dann nicht vor dem Anwender.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_NUR_ANZEIGE" xml:space="preserve">
+    <value>„Alle Daten“ ist in dieser Maske nur Anzeige — der Katalog hat hier keinen Speicherweg.</value>
+  </data>
+  <data name="KI_DLG_ALLE_DATEN_UNGEAENDERT" xml:space="preserve">
+    <value>Im Aufklapper „Alle Daten“ ist nichts geändert; einen anderen Speicherweg bietet die Maske „{0}“ nicht — ihre Liste übernimmt „OK“.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_NAME" xml:space="preserve">
+    <value>Anzeige</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_ERL" xml:space="preserve">
+    <value>Ein Schalter der Anzeige auf dem offenen Ergebnisblatt — „sortiert“ (Dauerlinie), eine Reihe des Bildes ein oder aus, im Wärmegang auch die Bedarfsart. Er stellt nur das Bild ein; gerechnet und gespeichert wird nichts.</value>
+  </data>
+  <data name="KI_DLG_SIM_ANZEIGE_WAHL" xml:space="preserve">
+    <value>„{0}“ ist eine Option einer Wahl — gewechselt wird, indem eine andere Option eingeschaltet wird.</value>
+  </data>
+  <data name="KI_DLG_SIM_REITER_NICHT_VORN" xml:space="preserve">
+    <value>Das Ergebnis steht nicht vorn — ein Blatt lässt sich erst in Schritt ③ wählen.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL" xml:space="preserve">
+    <value>Der Zeitraum des Kapitalwertverlaufs in Jahren (2 bis 60); gerechnet wird erst mit „Aktualisieren“, das der Anwender drückt.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME" xml:space="preserve">
+    <value>Im Verlauf zeigen</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL" xml:space="preserve">
+    <value>Ob der Kapitalwertverlauf diesen Stand bzw. dieses Szenario zeigt; ein Haken zeichnet nur neu, gerechnet ist schon.</value>
+  </data>
+  <data name="KI_DLG_WIRT_VERLAUF_GESPERRT" xml:space="preserve">
+    <value>Der Verlauf rechnet gerade, oder die Seite ist gesperrt — Zeitraum und Haken stehen erst danach wieder offen.</value>
   </data>
 </root>

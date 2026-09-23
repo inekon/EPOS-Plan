@@ -28547,6 +28547,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Farbe der Größe „{0}“ (Gruppe „{1}“) in allen Diagrammen und Berichten, als Farbton #RRGGBB; die Deckung bleibt die des Bildes. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_FARBE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_FARBE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist kein Farbton — erwartet wird #RRGGBB, etwa #1F77B4. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_FARBE_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_FARBE_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Geokodierungsdienstes (Nominatim), der aus einer Anschrift Breite und Länge eines Standorts sucht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_GEOKODIERUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_GEOKODIERUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Anfangswert der Kühlung eines NEU angelegten Projekts; vorhandene Projekte und Läufe ändert der Schalter nicht. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_KUEHLUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_KUEHLUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse der PVGIS-Schnittstelle, aus der die Klimadaten weltweite Wetterjahre (TMY) laden. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_PVGIS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_PVGIS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Portals der DWD-Testreferenzjahre. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_TRY_PORTAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_TRY_PORTAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse, unter der die TRY-Regionaldaten liegen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_TRY_REGIONAL_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_TRY_REGIONAL_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Adresse des Hilfe-Wikis, das „Hilfe“ und die Info-Knöpfe öffnen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ADMSET_WIKI_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_ADMSET_WIKI_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Alle Daten) ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Alle Daten“ ist in dieser Maske nur Anzeige — der Katalog hat hier keinen Speicherweg. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_NUR_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_NUR_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Aufklapper „Alle Daten“ ist nichts geändert; einen anderen Speicherweg bietet die Maske „{0}“ nicht — ihre Liste übernimmt „OK“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_UNGEAENDERT {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_UNGEAENDERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „Alle Daten anzeigen“ ist zugeklappt, oder es ist kein Katalogsatz gewählt — die Werte stehen dann nicht vor dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_DLG_ALLE_DATEN_ZU {
+            get {
+                return ResourceManager.GetString("KI_DLG_ALLE_DATEN_ZU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Auswahl „{0}“ führt „{1}“ mehrfach; die Angabe ist nicht eindeutig. ähnelt.
         /// </summary>
         public static string KI_DLG_AUSWAHL_MEHRDEUTIG {
@@ -32057,6 +32165,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Programmeinstellungen ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_ADMSET {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_ADMSET", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Brauchwasser-Katalog ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_BADM_BW {
@@ -32345,6 +32462,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkopf (Assistent „Neues Projekt“) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PKOPF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PKOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekt speichern unter ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PRK {
@@ -32489,6 +32615,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startseite ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_START {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_START", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Verwaltung Stromspeicher ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_STROMSPEICHER {
@@ -32575,6 +32710,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_WPA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_WPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kenndaten der Wärmepumpe ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_WPKL {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_WPKL", resourceCulture);
             }
         }
         
@@ -33277,6 +33421,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PEAK_ZINS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PEAK_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wer das Projekt bearbeitet — Freitext; ein neues Projekt trägt den angemeldeten Benutzer vor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_BEARBEITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_BEARBEITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Kurzbeschreibung des Vorhabens — Standort, Besonderheiten; Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_KLIMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_KLIMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kunde, für den das Projekt geplant wird — Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_KUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_KUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Projekts — Pflicht und bei einem neuen Projekt eindeutig. Im Bearbeiten-Modus steht er fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Bearbeiten-Modus steht der Projektname fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_NAME_FEST {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_NAME_FEST", resourceCulture);
             }
         }
         
@@ -34262,6 +34460,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ein Schalter der Anzeige auf dem offenen Ergebnisblatt — „sortiert“ (Dauerlinie), eine Reihe des Bildes ein oder aus, im Wärmegang auch die Bedarfsart. Er stellt nur das Bild ein; gerechnet und gespeichert wird nichts. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anzeige ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ ist eine Option einer Wahl — gewechselt wird, indem eine andere Option eingeschaltet wird. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANZEIGE_WAHL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANZEIGE_WAHL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUTARKIE_ERL {
@@ -34514,7 +34739,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt des Ergebnisses, das der Anwender gerade ansieht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis); leer in der Konfiguration. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Blatt des Ergebnisses, das vorn steht (Übersicht, Bedarf, Wärmepumpe, Heizkessel, Solarthermie, BHKW, Photovoltaik, Stromspeicher, Ergebnis). Es zu wählen ist derselbe Klick wie auf den Reiter — nur, solange das Ergebnis vorn steht; leer in der Konfiguration. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_REITER_ERL {
             get {
@@ -34528,6 +34753,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_REITER_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_REITER_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Das Ergebnis steht nicht vorn — ein Blatt lässt sich erst in Schritt ③ wählen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_REITER_NICHT_VORN {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_REITER_NICHT_VORN", resourceCulture);
             }
         }
         
@@ -35891,6 +36125,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des offenen Projekts aus den Stammregionen; geschrieben wird sie erst mit dem Knopf „Speichern“ daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_KLIMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_KLIMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Weiche der Kachel „Solarthermie“: „Profil“ öffnet die Eingabe der Kollektoren, „Ganglinie“ die Solarganglinien. Sie wirkt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_SOLARART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_SOLARART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie: Profil oder Ganglinie ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_SOLARART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_SOLARART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des im Projekt gewählten Stromspeichers — Anzeige aus der Projektliste, nicht eingebbar. ähnelt.
         /// </summary>
         public static string KI_DLG_STSP_ANLAGE_ERL {
@@ -36656,6 +36926,42 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ob der Kapitalwertverlauf diesen Stand bzw. dieses Szenario zeigt; ein Haken zeichnet nur neu, gerechnet ist schon. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ANZEIGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Verlauf zeigen ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ANZEIGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Verlauf rechnet gerade, oder die Seite ist gesperrt — Zeitraum und Haken stehen erst danach wieder offen. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_GESPERRT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Zeitraum des Kapitalwertverlaufs in Jahren (2 bis 60); gerechnet wird erst mit „Aktualisieren“, das der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WIRT_VERLAUF_ZEITRAUM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Bivalenztemperatur in °C — die Außentemperatur, unterhalb derer der zweite Wärmeerzeuger übernimmt; nur bei Alternativ- und Teilparallelbetrieb wirksam. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_ABSCHALTPUNKT_ERL {
@@ -37030,6 +37336,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_WPA_ZINS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_WPA_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungszahl (COP) der Wärmepumpe an dieser Stützstelle — Wärmeleistung geteilt durch elektrische Leistung, ohne Einheit. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_COP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_COP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlauftemperatur einer neuen Stufe in °C. Angelegt wird die Stufe erst mit dem Knopf „Neue Vorlauftemperatur“, den der Anwender drückt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEUVORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEUVORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungszahl (COP) der nächsten Stützstelle, ohne Einheit. Die Zeile entsteht erst mit „Daten übernehmen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_COP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_COP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleistung der nächsten Stützstelle in kW. Die Zeile entsteht erst mit „Daten übernehmen“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_PTHERM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_PTHERM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur der nächsten Stützstelle in °C. Die Zeile entsteht erst mit „Daten übernehmen“, und nur, wenn Temperatur, COP und Ptherm gesetzt sind. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_NEU_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_NEU_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmeleistung der Wärmepumpe an dieser Stützstelle in kW. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_PTHERM_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_PTHERM_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_STUFE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_STUFE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Außen- bzw. Quelltemperatur dieser Stützstelle in °C; sie ordnet die Stützstelle auf der Kennlinie der gewählten Vorlaufstufe ein. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_TEMPERATUR_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_TEMPERATUR_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Vorlaufstufe, deren Stützstellen das Raster zeigt, in °C. Sie zu wählen ist derselbe Klick wie in der Vorlaufliste; eine neue Stufe entsteht erst mit „Neue Vorlauftemperatur“. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_VORLAUF_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_VORLAUF_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Vorlaufstufe ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPKL_VORLAUF_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPKL_VORLAUF_NAME", resourceCulture);
             }
         }
         

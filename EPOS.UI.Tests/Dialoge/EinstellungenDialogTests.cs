@@ -860,4 +860,70 @@ public class EinstellungenDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-farbfeld"));
         Assert.Equal(6, cut.FindAll(".epos-reiter-knopf").Count);
     }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Der ZEUGE dieser Maske an der Maskenbrücke.</b> Der Dialog meldet über
+    /// <c>EinstellungenKiSicht</c> die Adressen, die Kühlungsvorgabe und je Farbrolle
+    /// ein Feld der Feldtafel an. Gesetzt wird in den ARBEITSSTAND; gespeichert über
+    /// denselben Delegaten wie „OK" — mit dem gesetzten Wert und ohne zu schließen.
+    /// </summary>
+    [Fact]
+    public async Task Der_Dialog_meldet_Adressen_Kuehlung_und_Farben_beim_Assistenten_an()
+    {
+        Einstellungensatz? geschrieben = null;
+        bool geschlossen = false;
+        var cut = Zeige(speichern: (s, _) => { geschrieben = s; return Task.FromResult(new SpeicherBefund(true, "")); },
+                        geschlossen: _ => geschlossen = true);
+
+        Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.EINSTELLUNGEN));
+
+        KiFeldzugang pvgis = KiMaskenbruecke.Feldzugang(KiMaskennamen.EINSTELLUNGEN, "pvgis_url");
+        Assert.NotNull(pvgis);
+        Assert.Equal("https://re.jrc.ec.europa.eu/api/tmy", pvgis.Lesen());
+        pvgis.Setzen("https://example.org/tmy");
+
+        KiFeldzugang kuehlung =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.EINSTELLUNGEN, "neue_projekte_kuehlung");
+        Assert.NotNull(kuehlung);
+        kuehlung.Setzen(true);
+
+        // Eine Farbrolle der Feldtafel: gelesen wird die Hausfarbe, gesetzt ein Farbton.
+        KiFeldzugang farbe = KiMaskenbruecke.Feldzugang(KiMaskennamen.EINSTELLUNGEN, "farbe_waerme_wp");
+        Assert.NotNull(farbe);
+        Assert.Equal(Diagrammfarben.Hex(Farbpalette.Vorgabe[Farbrolle.WAERME_WP]), farbe.Lesen());
+        farbe.Setzen("#12ab34");
+        Assert.Equal("#12AB34", farbe.Lesen());
+
+        // Ein Wert, der kein Farbton ist, wird benannt abgelehnt.
+        Assert.Throws<InvalidOperationException>(() => farbe.Setzen("rot"));
+
+        KiKern.KiErgebnis ergebnis = await KiMaskenbruecke.Haken(KiMaskennamen.EINSTELLUNGEN).Speichern!();
+        Assert.True(ergebnis.Erfolg, ergebnis.Text);
+        Assert.NotNull(geschrieben);
+        Assert.Equal("https://example.org/tmy", geschrieben!.PvgisUrl);
+        Assert.True(geschrieben.NeueProjekteMitKuehlung);
+        Assert.Contains("WAERME_WP=#12AB34", geschrieben.DiagrammFarben, StringComparison.Ordinal);
+        Assert.False(geschlossen);
+
+        cut.Instance.Dispose();
+        Assert.False(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.EINSTELLUNGEN));
+    }
+
+    /// <summary>
+    /// <b>Die Ordner, der Datenbankname und der KI-Abschalter stehen NICHT im Katalog</b>
+    /// — Dateiwahl, Datenbankwechsel und der Assistent selbst bleiben beim Anwender.
+    /// </summary>
+    [Fact]
+    public void Pfade_Datenbankname_und_KI_Abschalter_bleiben_beim_Anwender()
+    {
+        KiKern.KiDialog d = KiDialoge.Katalog.Finde(KiMaskennamen.EINSTELLUNGEN)!;
+
+        foreach (string pfad in new[] { "VdiPfad", "DbExportPfad", "DbImportPfad", "DbPfad",
+                                        "AllgemeinPfad", "DbName", "KiAus" })
+            Assert.DoesNotContain(d.Felder, f => f.Eigenschaft == pfad);
+    }
 }

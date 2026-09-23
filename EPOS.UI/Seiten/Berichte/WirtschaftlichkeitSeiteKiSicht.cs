@@ -10,8 +10,9 @@ namespace EPOS.UI.Seiten.Berichte;
 /// entscheidet, WELCHE Stände gegeneinander gerechnet werden (Vergleichssicht,
 /// Referenz, Paar A und B), unter WELCHEM Szenario (Erwartet, Best, Worst) — und
 /// sie pflegt den Freitext der nicht monetären Wirkungen nach DIN EN 17463. Die
-/// Kennzahltabelle, die Herleitungszeilen und der Kapitalwertverlauf darunter sind
-/// gerechnete Anzeige und bleiben draußen.</para>
+/// Kennzahltabelle, die Herleitungszeilen und das Bild des Kapitalwertverlaufs
+/// darunter sind gerechnete Anzeige und bleiben draußen; die Bedienleiste des
+/// Verlaufs (Zeitraum, Haken je Stand und Szenario) ist drin.</para>
 ///
 /// <para><b>Warum ein Sichtmodell.</b> Jedes dieser Felder ist an der Seite ein
 /// WEG und kein Wert: Die Seite holt sich zu jeder Wahl einen NEUEN Stand aus der
@@ -165,4 +166,31 @@ public sealed class WirtschaftlichkeitSeiteKiSicht
         get => ZahlungsszenarioLesen?.Invoke();
         set => ZahlungsszenarioSetzen?.Invoke(value);
     }
+
+    // =====================================================================
+    //  Der Abschnitt „Verlauf" (Welle #458, Stufe 2)
+    // =====================================================================
+
+    public Func<int?>? VerlaufZeitraumLesen { get; init; }
+    public Action<int?>? VerlaufZeitraumSetzen { get; init; }
+
+    /// <summary>Liefert die Haken des Verlaufs (je Stand, je Szenario); leer ohne Rechnung.</summary>
+    public Func<IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter>>? VerlaufschalterLesen { get; init; }
+
+    /// <summary>
+    /// Der Zeitraum des Kapitalwertverlaufs [Jahre] — derselbe Wert wie das Feld;
+    /// gerechnet wird erst mit „Aktualisieren".
+    /// </summary>
+    public int? VerlaufZeitraum
+    {
+        get => VerlaufZeitraumLesen?.Invoke();
+        set => VerlaufZeitraumSetzen?.Invoke(value);
+    }
+
+    /// <summary>
+    /// Die Haken des Verlaufs — eine SPALTE, je Stand und je Szenario eine Zeile mit
+    /// seinem Namen als Kennzeichen. Ein Haken zeichnet nur neu.
+    /// </summary>
+    public IReadOnlyList<EPOS.UI.Seiten.Simulation.Anzeigeschalter> Verlaufsschalter
+        => VerlaufschalterLesen?.Invoke() ?? Array.Empty<EPOS.UI.Seiten.Simulation.Anzeigeschalter>();
 }

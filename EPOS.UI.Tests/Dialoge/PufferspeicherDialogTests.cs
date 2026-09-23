@@ -846,11 +846,12 @@ public class PufferspeicherDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Ohne Speicherweg lehnt <c>dialog_speichern</c> benannt ab — die Maske gibt ihre
-    /// Liste erst beim OK an die Hülle, ein eigener Schreibweg fehlt ihr.
+    /// <b>Speichern ist der Knopf des Aufklappers „Alle Daten"</b> (Welle #458,
+    /// Stufe 2) — trägt er keine Änderung, lehnt <c>dialog_speichern</c> benannt ab:
+    /// Die Liste gibt die Maske erst beim OK an die Hülle.
     /// </summary>
     [Fact]
-    public void Die_Maske_meldet_keinen_Speicherweg()
+    public async Task Ohne_Aenderung_im_Aufklapper_lehnt_Speichern_benannt_ab()
     {
         Aufbauen();
 
@@ -858,6 +859,10 @@ public class PufferspeicherDialogTests : EposBunitContext
 
         Assert.NotNull(haken.Auffrischen);
         Assert.NotNull(haken.Schreibgeschuetzt);
-        Assert.Null(haken.Speichern);
+        Assert.NotNull(haken.Speichern);
+
+        KiKern.KiErgebnis ergebnis = await haken.Speichern!();
+        Assert.False(ergebnis.Erfolg);
+        Assert.Contains("Alle Daten", ergebnis.Text, StringComparison.Ordinal);
     }
 }
