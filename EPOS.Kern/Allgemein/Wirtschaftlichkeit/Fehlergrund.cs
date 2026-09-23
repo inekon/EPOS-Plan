@@ -31,7 +31,8 @@ namespace WindowsFormsApplication1
             while ((e is TargetInvocationException || e is AggregateException) && e.InnerException != null)
                 e = e.InnerException;
 
-            string meldung = (e.Message ?? "").Replace("\r", " ").Replace("\n", " ").Trim();
+            // Ein Zeilenumbruch wird EIN Leerzeichen — auch der Windows-Umbruch "\r\n".
+            string meldung = (e.Message ?? "").Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ').Trim();
             string text = e.GetType().Name + (meldung.Length > 0 ? ": " + meldung : "");
             return text.Length > HOECHSTLAENGE ? text.Substring(0, HOECHSTLAENGE - 1) + "…" : text;
         }
