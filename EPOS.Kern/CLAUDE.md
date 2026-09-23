@@ -66,6 +66,11 @@ eine zweite Hälfte hat — `partial` trägt nur innerhalb EINER Assembly.
   ihn eine Schale sieht.
 - **Die Feldgrößen sind fest verdrahtet:** 8 760 Stunden, 35 040 Viertelstunden, 168
   Wochenwerte, 365 Tage, 12 Monate, kein Schaltjahr; Arrays werden **in-place** beschrieben.
+- **Gebäudebedarf: eine Weiche, getrennte Module.** `SimulationWaermebedarf.HeizwaermeEinesGebaeudes`
+  ist die Fassade (Vorbereitung `GebaeudeVorbereitung`, Weiche `RechenwegWaehlen`, Naht
+  `IGebaeudeRechenweg`); der Tagesbilanz-Weg liegt eingefroren in `Allgemein/Simulation/Altweg/`
+  und bekommt keine neue Funktion. Außer der Weiche nennt keine Kerndatei `Altweg/`, und
+  `Gebaeude/` und `Altweg/` nennen einander nicht — Wächter `ModultrennungswacheTests`.
 - **Parallelität nur über `SpeicherEngine/Kulturweitergabe`**; ein nacktes `Parallel.*`,
   `Task.Run`, `new Thread` oder `.AsParallel()` fällt im Wächter `ParallelitaetWacheTests` auf —
   sonst lesen Aufrufer und Arbeitsfaden `DefaultThreadCurrent(UI)Culture` je für sich.
@@ -182,7 +187,8 @@ Nachweis: `RechenrandTests`, `RechenrandFahrweisenTests`.
 
 ## Keine `(int)`-Abschneidung auf einer Rechengröße
 
-`BhkwPlan.TaeglHeizlastWG`, `SolareGewinneC` und `SpezWaermeverlusteC` geben `double` zurück und
+`TagesbilanzPhysik.TaeglHeizlastWG`, `SolareGewinneC` und `SpezWaermeverlusteC` (Modul
+`Allgemein/Simulation/Altweg/`) geben `double` zurück und
 schneiden nicht ab; ihre Aufrufer rechnen mit `/ 100.0` statt ganzzahlig. Der Faktor 100 bleibt —
 er gehört zur Schnittstelle der Funktion, nicht zur Physik. **Die Regel daraus:** Auf einer
 Rechengröße steht keine `(int)`-Wandlung; wer eine Zahl ganzzahlig braucht, wandelt sie erst

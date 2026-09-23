@@ -40,8 +40,9 @@ namespace WindowsFormsApplication1
                 // stehen in GebaeudeSchema.SICHT_BESTAND und sind dieselben, aus denen
                 // GebaeudeSchema.SQL_VIEW_NEU die Sicht baut. Die acht Bezeichner mit
                 // Umlaut oder Eszett stehen buchstabengetreu (BETRIEB_SQLITE.md 6.1).
-                // Die fuenfzehn neuen Spalten liest dieser Leser nicht - kein Rechenweg
-                // braucht sie in diesem Schritt.
+                // Von den fuenfzehn neuen Spalten liest dieser Leser allein den Rechenweg
+                // (Gebaeude_Modell) - die Weiche der Gebaeudebedarfsrechnung (Stufe G1.0).
+                bool mitRechenweg = dt.Columns.Contains(GebaeudeSchema.SPALTE_GEBAEUDE_MODELL);
                 foreach (DataRow row in dt.Rows)
                 {
                     ProjektGebaeudeModel item = new ProjektGebaeudeModel();
@@ -104,6 +105,7 @@ namespace WindowsFormsApplication1
                     if (row["Gebaeudeart"] != DBNull.Value) item.Gebaeudeart = row["Gebaeudeart"].ToString();
                     if (row["Wohngebaeude_Nicht_Wohngebaeude"] != DBNull.Value) item.Wohngebaeude_Nicht_Wohngebaeude = row["Wohngebaeude_Nicht_Wohngebaeude"].ToString();
                     if (row["ID"] != DBNull.Value) item.ID_Gebaeude = Convert.ToInt32(row["ID"]);
+                    if (mitRechenweg && row[GebaeudeSchema.SPALTE_GEBAEUDE_MODELL] != DBNull.Value) item.Gebaeude_Modell = row[GebaeudeSchema.SPALTE_GEBAEUDE_MODELL].ToString();
 
                     _internalList.Add(item);
                 }

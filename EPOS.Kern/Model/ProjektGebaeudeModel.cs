@@ -66,7 +66,14 @@ namespace WindowsFormsApplication1
         public string Baualtersklasse;
         public string Gebaeudeart;
         public string Wohngebaeude_Nicht_Wohngebaeude;
-        
+
+        /// <summary>
+        /// Rechenweg des Gebäudes (<c>Gebaeude_Modell</c>); <c>null</c> = VDI 6007 (E1).
+        /// Gelesen von der Weiche <c>SimulationWaermebedarf.RechenwegWaehlen</c>; fällt mit
+        /// der Stufe GA.
+        /// </summary>
+        public string Gebaeude_Modell;
+
         public ProjektGebaeudeModel()
         {
             items = null;

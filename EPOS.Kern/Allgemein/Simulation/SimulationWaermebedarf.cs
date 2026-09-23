@@ -12,26 +12,14 @@ namespace WindowsFormsApplication1
         public double Wohnflaeche = 0;
         public int m_ID_Projekt = 0;
 
-        // Solare Wärme        
-        private double[] Sol_N = new double[365];
-        private double[] Sol_w = new double[365];
-        private double[] Sol_O = new double[365];
-        private double[] Sol_S = new double[365];
-        private double[] A_Temp = new double[365];
+        // Wochenendtage des Klimakalenders (gemeinsamer Teil). Die Einstrahlung, die
+        // Tagesmitteltemperatur und die Tagestypen stehen im Altweg-Teil des Kalenders.
         private bool[] WE = new bool[365];
-
-        private int[] TagTyp_W = new int[365];
-        private int[] TagTyp_NW = new int[365];
-        public double[] Solare_Gewinne = new double[365];
 
         // Gebäudeprofil Wärmebedarf
         public double[] Waermebedarf = new double[8760];
         public double[] Waermebedarf_Gebaeude = new double[8760];
         public double[] Waermebedarf_Gebaeude_Monat = new double[12];
-        // Merkplatz je Gebäude (Jahresheizwärme für die Verbrauchsrückrechnung). Der Lauf
-        // dimensioniert ihn auf die Zahl der Gebäude des Projekts, HeizwaermeEinesGebaeudes
-        // wächst ihn für jeden anderen Aufrufer — keine feste Obergrenze der Gebäudezahl.
-        public double[] HeizwaermebedarfGeb = new double[1];
         public double[] Waermebedarf_sortiert = new double[8760];
         public double Waermebedarf_Max = 0;
         public double Waermebedarf_Gesamt = 0;
@@ -53,16 +41,8 @@ namespace WindowsFormsApplication1
         // Temperaturgang Klimaregion
         public double[] Stundentemperatur = new double[8760];
 
-        private double[] SpezWaermeverluste = new double[365];
-        private double[] Heizlast = new double[365];
-        private double[] TagesVerteilung = new double[240];
         public double[] Dauerlinie = new double[8760];
         public double[] Dauerlinie_nicht_sortiert = new double[8760];
-        private bool[] F_Absenkung = new bool[365];
-
-        // Die Vortemperatur des Tagesbilanz-Wegs — je Instanz, je Gebäude zurückgesetzt
-        // (HeizwaermeEinesGebaeudes), nicht mehr statisch in BhkwPlan.
-        private readonly WPPlan.Core.Tagesbilanzzustand _tagesbilanz = new WPPlan.Core.Tagesbilanzzustand();
 
         // Netzverluste
         public int Netzverluste = 0;
@@ -113,10 +93,40 @@ namespace WindowsFormsApplication1
         /// </summary>
         private Kanalsatz _kanaele = new Kanalsatz();
 
+        // =====================================================================
+        //  Gebäudebedarfsrechnung: Fassade, Vorbereitung, Weiche (Stufe G1.0, E20,
+        //  ADR-006). Die Fassade ruft den modellfreien Vorbereitungsschritt, die Weiche
+        //  wählt je Gebäude GENAU EINEN Rechenweg hinter IGebaeudeRechenweg.
+        // =====================================================================
+
+        /// <summary>Der Klimakalender des Laufs, gefüllt in <see cref="KlimakalenderLesen"/>.</summary>
+        private readonly Klimakalender _kalender;
+
+        /// <summary>
+        /// Der Tagesbilanz-Weg (Modul <c>Altweg/</c>) — aufgebaut je Lauf in
+        /// <see cref="KlimakalenderLesen"/> mit dem Altweg-Teil des Kalenders.
+        /// </summary>
+        private Altweg.TagesbilanzRechenweg _altweg;
+
+        /// <summary>
+        /// Der VDI-6007-Weg (Modul <c>Gebaeude/</c>). <b>In Stufe G1.0 nicht angebunden</b>
+        /// (<c>null</c>): Die Anbindung ist der nächste Schritt von G1 und ändert jedes
+        /// Referenzprojekt — sie gehört deshalb nicht in die ergebnisneutrale Trennung.
+        /// </summary>
+        private readonly IGebaeudeRechenweg _vdi6007 = null;
+
+        /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
+        internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
+
         public SimulationWaermebedarf()
         {
             Classes.Simulation.Init init = new Classes.Simulation.Init();
             init.Monatswerte_berechnen(mo_anfang, mo_ende);
+
+            _kalender = new Klimakalender(
+                new KlimakalenderGemeinsam(WE, Stundentemperatur, mo_anfang, mo_ende),
+                new KlimakalenderAltweg());
+            _altweg = new Altweg.TagesbilanzRechenweg(_kalender.Altweg);
         }
 
         public class Ergebnis
@@ -193,17 +203,13 @@ namespace WindowsFormsApplication1
             // Ergebnis bitgleich zum bisherigen Verhalten.
             double[] Waermebedarf_EinGebaeude = new double[8760];
 
-            // Ein Merkplatz je Gebäude des Projekts - keine feste Obergrenze (bis hierher
-            // double[100]: das 101. Gebäude brach mit IndexOutOfRangeException ab).
-            HeizwaermebedarfGeb = new double[Math.Max(1, ctrl.rows)];
-
             for (int i = 0; i < ctrl.rows; i++)
             {
-                // iU9-W9.8: Der Rumpf bis einschliesslich StdWerte steht seit dem
-                // Anwenderwunsch W9-E-2 in HeizwaermeEinesGebaeudes - Anweisung fuer
-                // Anweisung derselbe Text, damit der Gebaeudedialog GENAU DIESE Rechnung
-                // fuer EIN Gebaeude fahren kann. false = die Tagesverteilung fehlt, und
-                // der Abbruch der Bedarfsrechnung bleibt an derselben Stelle wie bisher.
+                // Der Rumpf je Gebäude ist die Fassade HeizwaermeEinesGebaeudes (Vorbereitung,
+                // Weiche, genau ein Rechenweg), damit der Gebaeudedialog GENAU DIESE Rechnung
+                // fuer EIN Gebaeude fahren kann. false = eine Vorbedingung des Rechenwegs
+                // fehlt (Tagesbilanz: die Tagesverteilung), und der Abbruch der
+                // Bedarfsrechnung bleibt an derselben Stelle wie bisher.
                 if (!HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude)) return;
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
@@ -505,30 +511,35 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// <b>Der KLIMAKALENDER eines Laufs</b> (iU9-W9.8, Anwenderwunsch W9-E-2) — die
         /// 365 Tagessätze der Klimaregion, die 8 760 Stundentemperaturen und der daraus
-        /// abgeleitete Wochentag des 1. Januar.
+        /// abgeleitete Wochentag des 1. Januar; Teil des modellfreien Vorbereitungsschritts.
         ///
-        /// <para><b>Unverändert verschoben</b> aus <see cref="Waermebedarf_berechnen"/>
-        /// (der Block <c>// if (!DBGelesen)</c> samt der Zeile <c>WochentagJan1 =
-        /// ProfilBedarf.WochentagJan1AusWE(WE)</c>) — Anweisung für Anweisung derselbe
-        /// Text, damit der Gebäudedialog dieselbe Vorbereitung fahren kann wie der Lauf.
-        /// Ohne sie stünden <c>Sol_*</c>, <c>A_Temp</c>, <c>WE</c> und <c>TagTyp_*</c> auf
-        /// null, und jede Tagesheizlast käme als 0 heraus.</para>
+        /// <para><b>Zwei Teile</b> (Stufe G1.0, F-Ü3): <c>WE</c>, Stundentemperatur,
+        /// Wochentag und Monatsgrenzen bilden den gemeinsamen Teil
+        /// (<see cref="KlimakalenderGemeinsam"/>), Einstrahlung, Tagesmitteltemperatur und
+        /// Tagestypen den Altweg-Teil (<see cref="KlimakalenderAltweg"/>). Gelesen wird
+        /// Anweisung für Anweisung wie zuvor, nur in die Felder des Kalenders. Danach wird
+        /// der Tagesbilanz-Weg für diesen Lauf aufgebaut — mit dem Altweg-Teil und einem
+        /// frischen Merkplatz.</para>
+        ///
+        /// <para>Der Gebäudedialog fährt dieselbe Vorbereitung wie der Lauf. Ohne sie
+        /// stünden die Tagessätze auf 0, und jede Tagesheizlast käme als 0 heraus.</para>
         /// </summary>
         /// <param name="ID_Klimaregion">Die Klimaregion des Projekts.</param>
         internal void KlimakalenderLesen(int ID_Klimaregion)
         {
+            KlimakalenderAltweg altweg = _kalender.Altweg;
             KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
             ctrl_klima.ReadAll(ID_Klimaregion);
             for (int i = 0; i < ctrl_klima.rows; i++)
             {
-                Sol_N[i] = (double)ctrl_klima.items[i].m_Sol_Nord;
-                Sol_w[i] = (double)ctrl_klima.items[i].m_Sol_West;
-                Sol_O[i] = (double)ctrl_klima.items[i].m_Sol_Ost;
-                Sol_S[i] = (double)ctrl_klima.items[i].m_Sol_Sued;
-                A_Temp[i] = (double)ctrl_klima.items[i].m_nTemperatur;
+                altweg.Sol_N[i] = (double)ctrl_klima.items[i].m_Sol_Nord;
+                altweg.Sol_w[i] = (double)ctrl_klima.items[i].m_Sol_West;
+                altweg.Sol_O[i] = (double)ctrl_klima.items[i].m_Sol_Ost;
+                altweg.Sol_S[i] = (double)ctrl_klima.items[i].m_Sol_Sued;
+                altweg.A_Temp[i] = (double)ctrl_klima.items[i].m_nTemperatur;
                 WE[i] = (bool)ctrl_klima.items[i].m_WE;
-                TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
-                TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
+                altweg.TagTyp_W[i] = (int)ctrl_klima.items[i].m_TagTyp_W;
+                altweg.TagTyp_NW[i] = (int)ctrl_klima.items[i].m_TagTyp_NW;
             }
             Stundentemperatur_aus_DB(ID_Klimaregion);
             DBGelesen = true;
@@ -537,451 +548,97 @@ namespace WindowsFormsApplication1
             // Bedarfsarten führend. Die Profilkachelung startet damit mit dem
             // tatsächlichen Wochentag des 1. Januar statt fest mit Sonntag.
             WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+            _kalender.Gemeinsam.WochentagJan1 = WochentagJan1;
+
+            // Aufbau des Tagesbilanz-Wegs je Lauf (1.5): Er bekommt den Altweg-Teil des
+            // Kalenders; der VDI-Weg bekäme allein den gemeinsamen Teil.
+            _altweg = new Altweg.TagesbilanzRechenweg(altweg);
         }
 
         /// <summary>
-        /// <b>Die HEIZWÄRME EINES Gebäudes</b> (iU9-W9.8, Anwenderwunsch W9-E-2) — der
-        /// Rumpf der Gebäudeschleife aus <see cref="Waermebedarf_berechnen"/> bis
-        /// einschließlich <c>StdWerte</c>, Anweisung für Anweisung.
+        /// <b>Die HEIZWÄRME EINES Gebäudes — die Fassade der Gebäudebedarfsrechnung</b>
+        /// (Stufe G1.0 der Gebäudesimulation, Entscheid E20, ADR-006). Sie ruft den
+        /// modellfreien Vorbereitungsschritt (<see cref="GebaeudeVorbereitung"/>), die Weiche
+        /// wählt den Rechenweg des Gebäudes (<see cref="RechenwegWaehlen"/>), und genau dieser
+        /// eine Weg rechnet — hinter <see cref="IGebaeudeRechenweg"/>.
         ///
         /// <para><b>Warum es die Methode gibt.</b> Der Gebäudedialog zeigt seit dem
         /// Anwenderwunsch W9-E-2 den Wärmebedarf GENAU EINES Gebäudes. Diese Zahl muss
         /// dieselbe sein wie die des Laufs — also darf sie nicht ein zweites Mal
         /// gerechnet werden, sondern nur ein zweites Mal AUFGERUFEN. Der Lauf ruft sie in
-        /// seiner Schleife, der Dialog für sein eines Gebäude; der Referenzlauf ist damit
-        /// unberührt.</para>
+        /// seiner Schleife, der Dialog für sein eines Gebäude.</para>
         ///
-        /// <para><b>Der Index ist ein Merkplatz, kein Rang.</b> <paramref name="index"/>
-        /// trägt allein <c>HeizwaermebedarfGeb[index]</c> — den Jahreswert, den
-        /// <see cref="Bewohner_und_Flaeche_berechnen"/> für die Flächenrückrechnung
-        /// braucht. Eine Rechnung für EIN Gebäude nimmt deshalb 0 und bekommt bitgleich
-        /// dasselbe Ergebnis wie dieses Gebäude im Lauf.</para>
+        /// <para><b>Die Verbrauchs-Rückrechnung (E8) führt die Fassade.</b> Ist die Einheit
+        /// keine Fläche, rechnet der gewählte Weg zuerst auf der Katalogfläche
+        /// (<c>Wohnflaeche_gesamt</c>) und liefert den Jahreswert <c>verbrauchAltKwh</c>; die
+        /// Fläche wird im Verhältnis des angegebenen zum gerechneten Verbrauch
+        /// zurückgerechnet, und der Weg rechnet ein zweites Mal auf dieser Fläche — die
+        /// Reihenfolge des Bestands, weil der Tagesbilanz-Weg die Skalierung in der
+        /// Tagesrechnung trägt.</para>
         ///
-        /// <para><b>Das Ziel wird GENULLT</b> (<c>VectorInit</c>): <c>StdWerte</c>
-        /// addiert auf den vorhandenen Inhalt (V0-1).</para>
+        /// <para><b>Der Index ist ein Merkplatz, kein Rang.</b> Eine Rechnung für EIN
+        /// Gebäude nimmt deshalb 0 und bekommt bitgleich dasselbe Ergebnis wie dieses
+        /// Gebäude im Lauf.</para>
         /// </summary>
         /// <param name="item">Die Zeile aus <c>Abfrage_Projektgebaeude</c>. Sie wird
         /// GESCHRIEBEN — <c>Bewohner</c> und <c>Z_AuswahlWohnflaeche</c> werden
         /// nachgerechnet, wie im Lauf.</param>
-        /// <param name="index">Der Merkplatz in <c>HeizwaermebedarfGeb</c> (ab 0; das Feld
-        /// wächst bei Bedarf).</param>
+        /// <param name="index">Der Merkplatz des Gebäudes (ab 0).</param>
         /// <param name="ziel">Die 8 760 Stundenwerte in WATT; die Umrechnung nach kW
         /// macht der Aufrufer.</param>
-        /// <returns><c>false</c>, wenn zum Gebäudetyp keine Tagesverteilung hinterlegt
-        /// ist — der Lauf bricht dann ab, wie bisher.</returns>
+        /// <returns><c>false</c>, wenn eine Vorbedingung des gewählten Rechenwegs fehlt
+        /// (Tagesbilanz: keine Tagesverteilung zum Gebäudetyp) — der Lauf bricht dann ab,
+        /// wie bisher.</returns>
         internal bool HeizwaermeEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] ziel)
         {
-            // Keine feste Obergrenze der Gebäudezahl: Der Merkplatz wächst mit dem Index.
-            if (index >= HeizwaermebedarfGeb.Length)
-                Array.Resize(ref HeizwaermebedarfGeb, index + 1);
+            // 1. Der modellfreie Vorbereitungsschritt.
+            GebaeudeVorbereitung vorbereitung = GebaeudeVorbereitung.Bilden(_kalender, item);
 
-            // Jedes Gebäude beginnt mit frischem Zustand der Vortemperatur - das Ergebnis
-            // hängt damit nicht an der Zeilenreihenfolge und nicht an einem früheren Lauf
-            // im selben Prozess. Innerhalb des Gebäudes (Rückrechnung, dann Rechnung) wird
-            // der Zustand weitergereicht wie bisher.
-            _tagesbilanz.ResetState();
+            // 2. Die Weiche: genau ein Rechenweg je Gebäude.
+            IGebaeudeRechenweg weg = RechenwegWaehlen(item);
+            KlimakalenderGemeinsam gemeinsam = vorbereitung.Klimakalender.Gemeinsam;
+            double verbrauchAltKwh;
 
             // wenn die Einheit nicht als "Wohnfläche [m²]" angegeben ist...Wohnfläche und Anzahl Bewohner berechnen
-            if (item.Einheit == "Wohnfläche [m²]")
+            if (vorbereitung.IstFlaeche)
             {
                 item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
             }
             else
             {
-                Bewohner_und_Flaeche_berechnen(item, index);
+                // 3. Verbrauchs-Rückrechnung: erster Lauf auf der Katalogfläche.
+                item.Z_AuswahlWohnflaeche = vorbereitung.FlaecheAlt;
+
+                if (!weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh)) return false;
+                double FlaecheAlt = vorbereitung.FlaecheAlt;
+                double FlaecheNeu = vorbereitung.VerbrauchNeu / verbrauchAltKwh * FlaecheAlt;
+                item.Z_AuswahlWohnflaeche = FlaecheNeu;
+                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
             }
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
 
-            // Tagesverteilung berechnen
-            Berechnung_Gebaeude_Tageswerte(item, index);
-
-            bool tagv_found = false;
-            TagesVerteilung = DBTagesVeteilung(item.Typ, item.ID_Gebaeude, ref tagv_found);
-            // PAKET 8 (Konzept 13.4): Warnung im Protokollkanal statt MessageBox. Der
-            // ABBRUCH der Bedarfsrechnung bleibt unverändert (return an derselben
-            // Stelle) — die im Konzept genannte Ersatzlösung „Standardprofil
-            // verwenden“ wäre eine Rechenänderung und gehört nicht in ein
-            // Infrastrukturpaket (siehe Paket-8-Protokoll, offene Punkte).
-            if (!tagv_found)
-            {
-                SimulationProtokoll.Aktuell.Warnung(string.Format(
-                    MyResource.Resource.SIMENG_TAGESVERTEILUNG_FEHLT, item.Typ));
-                return false;
-            }
-
-            // V0-1: Einzelpuffer je Durchlauf nullen - StdWerte addiert auf.
-            WPPlan.Core.BhkwPlan.VectorInit(ziel);
-
-            // Stundenwerte Wärmebedarf je nach Gebäudetyp und Tagtyp aus Klimaregion
-            if (item.Typ == "Wohngebaeude  VDI 2067")
-            {
-                //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_W, TagesVerteilung, Heizlast);
-                WPPlan.Core.BhkwPlan.StdWerte(ziel, TagTyp_W, TagesVerteilung, Heizlast);
-            }
-            else
-                //com.I_StdWerte(ref Waermebedarf_Gebaeude, TagTyp_NW, TagesVerteilung, Heizlast);
-                WPPlan.Core.BhkwPlan.StdWerte(ziel, TagTyp_NW, TagesVerteilung, Heizlast);
-
-            return true;
-        }
-
-        private void Bewohner_und_Flaeche_berechnen(ProjektGebaeudeModel item, int index)
-        {
-            double VerbrauchNeu = 0.0;
-
-            if (item.Einheit == "Ölverbrauch [l/a]")
-            {
-                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 10.08;
-            }
-            else if (item.Einheit == "Gasverbrauch [m³/a]")
-            {
-                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 11.48;
-            }
-            else if (item.Einheit == "Gasverbrauch [MWh/a] (Ho)")
-            {
-                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad / 1.1 * 1000;
-            }
-            else if (item.Einheit == "Brennstoffverbrauch [MWh/a]")
-            {
-                VerbrauchNeu = item.Z_AuswahlWohnflaeche * item.Jahresnutzungsgrad * 1000;
-            }
-            else if (item.Einheit == "Verbrauch  [MWh/a]")
-            {
-                VerbrauchNeu = item.Z_AuswahlWohnflaeche * 1000;
-            }
-
-            if (item.Einheit == "Wohnfläche [m²]")
-            {
-                // item.Bewohner = item.AuswahlWohnflaeche / item.Flaeche_Nutzer;
-                item.Bewohner = item.Wohnflaeche_gesamt / item.Flaeche_Nutzer;
-            }
-            else
-            {
-                item.Z_AuswahlWohnflaeche = item.Wohnflaeche_gesamt;
-
-                Berechnung_Gebaeude_Tageswerte(item, index);
-                double FlaecheAlt = item.Wohnflaeche_gesamt;
-                //                double VerbrauchAlt = (BrauchwasserGeb[index] + HeizwaermebedarfGeb[index]) / 1000;
-                double VerbrauchAlt = HeizwaermebedarfGeb[index] / 1000;
-                double FlaecheNeu = VerbrauchNeu / VerbrauchAlt * FlaecheAlt;
-                item.Z_AuswahlWohnflaeche = FlaecheNeu;
-                item.Bewohner = item.Z_AuswahlWohnflaeche / item.Flaeche_Nutzer;
-
-            }
-        }
-
-        private double[] DBTagesVeteilung(string TagV_Type, int ID_Gebaeude, ref bool tagv_found)
-        {
-            double[] tagv = new double[192];
-            RecordSet rs = new RecordSet();
-
-            try
-            {
-                // BEFUND B1 (S7): "Tab_DBTagV.ID" war der Tabellen-, nicht der Sichtname -
-                // in SQLite "no such column". Der Ausfall war STILL (nur die Warnung
-                // "keine Daten hinterlegt"), die Tagesverteilung blieb leer. Die Sortierung
-                // steht im Rumpf der Sicht (ORDER BY Tab_DBTagVDaten.ID) und traegt auch
-                // durch dieses aeussere WHERE - an der migrierten Datenbank nachgemessen.
-                rs.Open("select * from Abfrage_Tagverteilung where Bezeichner='" + TagV_Type + "' and ID=" + ID_Gebaeude);
-                int n = 0;
-                while (rs.Next())
-                {
-                    double val = (double)rs.Read("Verteilung");
-                    tagv[n] = (double)val;
-                    n++;
-                }
-                if (n > 0) tagv_found = true;
-                return tagv;
-            }
-            finally { rs.Close(); }
+            // 4. Der Lauf auf der Bezugsfläche des Gebäudes.
+            return weg.Rechnen(item, index, ziel, gemeinsam, out verbrauchAltKwh);
         }
 
         /// <summary>
-        /// Bildet die Ferienmaske eines Gebäudes (<c>true</c> = der Tag ist abgesenkt) —
-        /// für jeden gültigen Zeitraum Tag für Tag dieselbe Maske wie bisher; wo die Eingabe
-        /// bisher still danebengriff, meldet sie eine benannte Warnung.
+        /// <b>Die Weiche</b> (E20): liest den Rechenweg des Gebäudes
+        /// (<c>Tab_Gebaeude.Gebaeude_Modell</c>) und wählt genau ein Modul.
         ///
-        /// <para><b>Die Lesart bleibt, wie sie ist</b> (eingefrorener Bestandsweg):
-        /// Zeitraum 1 ist der Jahreswechselblock — Tag <c>Ferienbeginn_1</c> (ohne
-        /// <c>−1</c>) bis Jahresende und Jahresanfang bis Tag <c>Ferienende_1</c>; er wirkt
-        /// nur bei <c>0 &lt; Ferienbeginn_1 ≤ 365</c>, 0 und 366 heißen „aus". Die Zeiträume
-        /// 2–4 laufen <c>Beginn − 1 … Ende</c> und wirken bei <c>Beginn &gt; 0</c> und
-        /// <c>Ende &gt; 0</c>. Gerechnet wird nur, wenn der Fahrplan aktiv ist
-        /// (<c>Ferien &gt; 0,9</c>).</para>
-        ///
-        /// <para><b>Was gemeldet wird.</b> (1) Ein Zeitraum, der über die Tage 1–365
-        /// hinausreicht, griff bisher über das Feld <c>bool[365]</c> hinaus und brach den
-        /// Lauf mit <c>IndexOutOfRangeException</c> ab — jetzt wird der Teil innerhalb des
-        /// Jahres abgesenkt und gewarnt; ein Beginn des Zeitraums 1 außerhalb von 0…366
-        /// wirkt wie bisher nicht, wird aber gemeldet. (2) Zeitraum 1 mit einem Beginn, der
-        /// nicht nach dem Ende liegt, senkt als Jahreswechsel gelesen das GANZE Jahr ab —
-        /// gerechnet wie bisher, aber gemeldet. (3) Ein Zeitraum 2–4, der keinen einzigen Tag
-        /// ergibt (Beginn nach Ende, nur eine der beiden Angaben), blieb still wirkungslos —
-        /// jetzt benannt. Ein Zeitraum, dessen beide Angaben 0 oder 366 sind, ist nicht
-        /// belegt und bleibt still.</para>
+        /// <para><b>Regel in Stufe G1.0:</b> <see cref="DbWerte.GEBAEUDE_MODELL_TAGESBILANZ"/>
+        /// führt auf den Tagesbilanz-Weg. <c>NULL</c> und
+        /// <see cref="DbWerte.GEBAEUDE_MODELL_VDI6007"/> gehören nach E1 dem VDI-Weg — der ist
+        /// in G1.0 noch nicht angebunden, deshalb rechnet bis zur Anbindung <b>jedes</b>
+        /// Gebäude auf dem Tagesbilanz-Weg. Die Anbindung belegt allein
+        /// <c>_vdi6007</c>; die Weiche selbst ändert sich dann nicht.</para>
         /// </summary>
-        /// <param name="item">Das Gebäude; nur gelesen.</param>
-        /// <param name="maske">Die 365 Tage; wird vollständig überschrieben.</param>
-        /// <param name="warnen">Nimmt (Schlüssel, Text) einer Warnung; der Schlüssel ist je
-        /// Gebäude, Zeitraum und Art eindeutig.</param>
-        internal static void FerienmaskeBilden(ProjektGebaeudeModel item, bool[] maske, Action<string, string> warnen)
+        internal IGebaeudeRechenweg RechenwegWaehlen(ProjektGebaeudeModel item)
         {
-            int tage = maske.Length;
-            for (int Tag = 0; Tag < tage; Tag++)
-            {
-                maske[Tag] = false;
-            }
+            if (string.Equals(item.Gebaeude_Modell, DbWerte.GEBAEUDE_MODELL_TAGESBILANZ, StringComparison.Ordinal))
+                return _altweg;
 
-            if (!(item.Ferien > 0.9)) return;
-
-            string name = item.Gebaeudename ?? "";
-
-            void Melden(int zeitraum, string art, string text) =>
-                warnen("Ferienmaske|" + item.ID_Gebaeude + "|" + zeitraum + "|" + art, text);
-
-            string Ausserhalb(int zeitraum, double beginn, double ende) =>
-                string.Format(MyResource.Resource.SIMENG_FERIEN_AUSSERHALB_JAHR, name, zeitraum, beginn, ende);
-
-            // --- Zeitraum 1: der Jahreswechselblock ---
-            double b1 = item.Ferienbeginn_1;
-            double e1 = item.Ferienende_1;
-            if (b1 > 0 && b1 <= tage)
-            {
-                for (int Tag = (int)b1; Tag < tage; Tag++)
-                {
-                    maske[Tag] = true;
-                }
-                if (e1 > tage) Melden(1, "ausserhalb", Ausserhalb(1, b1, e1));
-                for (int Tag = 0; Tag < (int)e1 && Tag < tage; Tag++)
-                {
-                    maske[Tag] = true;
-                }
-                if (e1 > 0 && b1 <= e1)
-                {
-                    Melden(1, "jahreswechsel", string.Format(
-                        MyResource.Resource.SIMENG_FERIEN_JAHRESWECHSEL, name, b1, e1));
-                }
-            }
-            else if (!(b1 == 0 || b1 == tage + 1))
-            {
-                // Negativ, jenseits von 366 oder keine Zahl: wirkt nicht - wie bisher -,
-                // wird aber nicht mehr verschwiegen.
-                Melden(1, "ausserhalb", Ausserhalb(1, b1, e1));
-            }
-
-            // --- Zeiträume 2 bis 4: Beginn - 1 ... Ende ---
-            double[] beginne = { item.Ferienbeginn_2, item.Ferienbeginn_3, item.Ferienbeginn_4 };
-            double[] enden = { item.Ferienende_2, item.Ferienende_3, item.Ferienende_4 };
-            for (int k = 0; k < 3; k++)
-            {
-                int zeitraum = k + 2;
-                double beginn = beginne[k];
-                double ende = enden[k];
-
-                if (beginn > 0 && ende > 0)
-                {
-                    int von = (int)beginn - 1;
-                    bool ausserhalb = von < 0 || von >= tage || ende > tage;
-                    if (ausserhalb) Melden(zeitraum, "ausserhalb", Ausserhalb(zeitraum, beginn, ende));
-                    if (!(von < ende))
-                    {
-                        if (!ausserhalb)
-                        {
-                            Melden(zeitraum, "ohnewirkung", string.Format(
-                                MyResource.Resource.SIMENG_FERIEN_OHNE_WIRKUNG, name, zeitraum, beginn, ende));
-                        }
-                        continue;
-                    }
-                    for (int Tag = Math.Max(von, 0); Tag < ende && Tag < tage; Tag++)
-                    {
-                        maske[Tag] = true;
-                    }
-                }
-                else if (!IstUnbelegt(beginn) || !IstUnbelegt(ende))
-                {
-                    Melden(zeitraum, "ohnewirkung", string.Format(
-                        MyResource.Resource.SIMENG_FERIEN_OHNE_WIRKUNG, name, zeitraum, beginn, ende));
-                }
-            }
-
-            bool IstUnbelegt(double tag) => tag == 0 || tag == tage + 1;
-        }
-
-        private void Berechnung_Gebaeude_Tageswerte(ProjektGebaeudeModel item, int GebaeudeNr)
-        {
-            int WE_Absenkung = 0;
-            int Ferien_Absenkung = 0;
-
-            if (item.Raumsolltemperatur_Ferien < 1)
-            {
-                item.Ferien = 0; // Ferienabsenkung
-            }
-
-            // Die Ferienmaske mit benannten Warnungen statt stiller Fehlgriffe; je Gebäude,
-            // Zeitraum und Art nur EINMAL je Lauf (die Verbrauchsrückrechnung ruft diese
-            // Methode je Gebäude zweimal).
-            FerienmaskeBilden(item, F_Absenkung,
-                (schluessel, text) => SimulationProtokoll.Aktuell.WarnungEinmal(schluessel, text));
-
-            // ANWENDERENTSCHEID W8-O-5d-Q2 (07.09.2026): "keine Treue zur alten DLL".
-            // Die drei Physik-Funktionen des BHKW-Plan-Ports gaben bis hierher int zurueck
-            // (Borland _ftol, Abschneiden Richtung Null); seither geben sie double zurueck.
-            // Zwei Stellen ziehen damit mit:
-            //
-            //   * Die Division "/ 100" hinter SpezWaermeverlusteC war GANZZAHLIG, solange
-            //     die Funktion int lieferte - also ein zweites Abschneiden hinter dem
-            //     ersten. Sie steht jetzt als "/ 100.0" da und ist eine double-Division.
-            //   * Die Division hinter SolareGewinneC war schon immer eine double-Division;
-            //     "(double)100" ist nur noch "100.0" geschrieben - derselbe Wert.
-            //
-            // Der Faktor 100 selbst BLEIBT: Er gehoert zur Schnittstelle der DLL-Funktion
-            // (sie liefert das Hundertfache), nicht zur Physik.
-            for (int Tag = 350; Tag < 365; Tag++)
-            {
-                /*
-                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                        (double)item.Fensterdurchlassgrad) / (double)100;
-                */
-                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                        (double)item.Fensterdurchlassgrad) / 100.0;
-
-                /*
-                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
-                        (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
-                        (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
-                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
-                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
-                */
-                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
-                       (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
-                       (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
-                       (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                       (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                       (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
-                       (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
-
-                WE_Absenkung = 0;
-                if ((double)item.Raumsolltemperatur_Wochenende > 5)
-                {
-                    if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
-                }
-                if (F_Absenkung[Tag]) Ferien_Absenkung = 1; else Ferien_Absenkung = 0;
-                /*
-                Heizlast[Tag] = com.I_TaeglHeizlastWG(Tag + 1,
-                        WE_Absenkung,
-                        (double)item.Raumsolltemperatur_Wochenende,
-                        Ferien_Absenkung,
-                        (double)item.Raumsolltemperatur_Ferien,
-                        (double)item.Raumsolltemperatur_Tag,
-                        (double)item.Raumsolltemperatur_Nachtabsenkung,
-                        (double)item.Interne_Waermegewinne,
-                        (double)Solare_Gewinne[Tag],
-                        (double)SpezWaermeverluste[Tag],
-                        (double)item.Bauweise,
-                        (double)A_Temp[Tag],
-                        (double)item.Maximaleraumtemperatur,
-                        (double)item.Z_AuswahlWohnflaeche,
-                        (double)item.Nutzflaeche);
-                */
-                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
-                        WE_Absenkung,
-                        (double)item.Raumsolltemperatur_Wochenende,
-                        Ferien_Absenkung,
-                        (double)item.Raumsolltemperatur_Ferien,
-                        (double)item.Raumsolltemperatur_Tag,
-                        (double)item.Raumsolltemperatur_Nachtabsenkung,
-                        (double)item.Interne_Waermegewinne,
-                        (double)Solare_Gewinne[Tag],
-                        (double)SpezWaermeverluste[Tag],
-                        (double)item.Bauweise,
-                        (double)A_Temp[Tag],
-                        (double)item.Maximaleraumtemperatur,
-                        (double)item.Z_AuswahlWohnflaeche,
-                        (double)item.Nutzflaeche);
-            }
-
-            HeizwaermebedarfGeb[GebaeudeNr] = 0;
-
-            for (int Tag = 0; Tag < 365; Tag++)
-            {
-                /*
-                Solare_Gewinne[Tag] = com.I_SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                        (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                        (double)item.Fensterdurchlassgrad) / 100;
-                */
-                Solare_Gewinne[Tag] = WPPlan.Core.BhkwPlan.SolareGewinneC(Sol_N[Tag], (double)item.Fensterflaeche_Nord, Sol_w[Tag], Sol_O[Tag],
-                    (double)item.Fensterflaeche_OstWest, Sol_S[Tag], (double)item.Fensterflaeche_Sued,
-                    (double)item.Fensterdurchlassgrad) / 100.0;
-                /*
-                SpezWaermeverluste[Tag] = com.I_SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
-                        (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
-                        (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
-                        (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                        (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                        (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
-                        (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100;
-                */
-                SpezWaermeverluste[Tag] = WPPlan.Core.BhkwPlan.SpezWaermeverlusteC((double)item.k_Wert_Außenwand, (double)item.Flaeche_Außenwand,
-                     (double)item.k_Wert_Fenster, (double)item.gesamte_Fensterflaeche, (double)item.k_Wert_Dachflaeche,
-                     (double)item.Dachflaeche, (double)item.k_Wert_Grundflaeche, (double)item.Grundflaeche,
-                     (double)item.k_Wert_Sonstiges, (double)item.Sonstige_Flaechen, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Fenster_Wand,
-                     (double)item.Abmessung_Anschluß_Fenster_Wand, (double)item.Waermebrueckenverlustkoeffizient_Anschluß_Wand_Dach, (double)item.Abmessung_Anschluß_Wand_Dach,
-                     (double)item.Waermebruckenverlustkoeffizient_Anschluß_Außenwand_Kellerdecke, (double)item.Abmessung_Anschluß_Außenwand_Kellerdecke, A_Temp[Tag], (double)item.Nutzflaeche,
-                     (double)item.Raumhoehe, (double)item.Luftwechselrate) / 100.0;
-
-                WE_Absenkung = 0;
-                if ((double)item.Raumsolltemperatur_Wochenende > 5)
-                {
-                    if (WE[Tag]) WE_Absenkung = 1; else WE_Absenkung = 0;
-                }
-                // Die Ferienabsenkung je Tag nachführen wie im Vorlauf. Bis hierher fehlte
-                // diese Zeile: Ferien_Absenkung behielt den Wert des letzten Vorlauftags
-                // (Tag 365) und galt damit für alle 365 Tage des Jahres oder für keinen
-                // (Befund X 3.4 Punkt 8).
-                if (F_Absenkung[Tag]) Ferien_Absenkung = 1; else Ferien_Absenkung = 0;
-
-                /*
-                Heizlast[Tag] = (double)com.I_TaeglHeizlastWG(
-                    Tag+1,
-                    WE_Absenkung,
-                    (double)item.Raumsolltemperatur_Wochenende,
-                    Ferien_Absenkung,
-                    (double)item.Raumsolltemperatur_Ferien,
-                    (double)item.Raumsolltemperatur_Tag,
-                    (double)item.Raumsolltemperatur_Nachtabsenkung,
-                    (double)item.Interne_Waermegewinne,
-                    (double)Solare_Gewinne[Tag],
-                    (double)SpezWaermeverluste[Tag],
-                    (double)item.Bauweise,
-                    (double)A_Temp[Tag],
-                    (double)item.Maximaleraumtemperatur,
-                    (double)item.Z_AuswahlWohnflaeche,
-                    (double)item.Nutzflaeche);
-                */
-                Heizlast[Tag] = WPPlan.Core.BhkwPlan.TaeglHeizlastWG(_tagesbilanz, Tag + 1,
-                      WE_Absenkung,
-                      (double)item.Raumsolltemperatur_Wochenende,
-                      Ferien_Absenkung,
-                      (double)item.Raumsolltemperatur_Ferien,
-                      (double)item.Raumsolltemperatur_Tag,
-                      (double)item.Raumsolltemperatur_Nachtabsenkung,
-                      (double)item.Interne_Waermegewinne,
-                      (double)Solare_Gewinne[Tag],
-                      (double)SpezWaermeverluste[Tag],
-                      (double)item.Bauweise,
-                      (double)A_Temp[Tag],
-                      (double)item.Maximaleraumtemperatur,
-                      (double)item.Z_AuswahlWohnflaeche,
-                      (double)item.Nutzflaeche);
-
-                HeizwaermebedarfGeb[GebaeudeNr] = HeizwaermebedarfGeb[GebaeudeNr] + Heizlast[Tag];
-            }
-
+            return _vdi6007 ?? _altweg;
         }
 
         private double Maximaler_Waermebedarf(double[] Waermebedarf)
