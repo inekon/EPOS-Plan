@@ -6925,7 +6925,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Betriebskosten nach Kostenarten</value>
   </data>
   <data name="WIRT_BK_HINWEIS" xml:space="preserve">
-    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen.</value>
+    <value>Positionen der Kategorie 2 im Szenario „Erwartet“, gegliedert nach der Kostenart der VDI 2067. Je Position stehen die Bemessungsart und — wo die Bemessung abgeleitet ist — die Herleitung Menge × Einheitpreis. Ein gepflegter Best- oder Worst-Case-Betrag schlägt die Ableitung; solche Zeilen sind gekennzeichnet. Erlöspositionen tragen ein negatives Vorzeichen. Positionen mit späterem Startjahr tragen „ab Jahr …“: Sie stehen in der Summe, zahlen aber erst ab diesem Jahr und zählen nicht zu den Betriebskosten des ersten Jahres.</value>
   </data>
   <data name="WIRT_BK_SP_POSITION" xml:space="preserve">
     <value>Position</value>
@@ -6948,8 +6948,11 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_BK_SZENARIOWERT" xml:space="preserve">
     <value>Szenariowert gepflegt</value>
   </data>
+  <data name="WIRT_BK_AB_JAHR" xml:space="preserve">
+    <value>ab Jahr {0}</value>
+  </data>
   <data name="WIRT_BK_ABWEICHUNG" xml:space="preserve">
-    <value>⚠ Die Summe der Positionen ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.</value>
+    <value>⚠ Die Summe der Positionen des ersten Jahres ({0}) weicht von den angesetzten Betriebskosten ({1}) ab — die Gliederung ist unvollständig.</value>
   </data>
   <data name="WIRT_BK_OHNE_SPALTEN" xml:space="preserve">
     <value>Gliederung nach Kostenarten nicht möglich: Die Datenbank führt die Spalten aus Migrationsschritt 19 (Kostenart, Bemessung, Menge, Einheitpreis) nicht.</value>
@@ -6968,21 +6971,6 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   </data>
   <data name="KOSTENART_OHNE" xml:space="preserve">
     <value>nicht eingeordnet</value>
-  </data>
-  <data name="BEMESSUNG_BETRAG" xml:space="preserve">
-    <value>fester Betrag</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_INVESTITION" xml:space="preserve">
-    <value>% der Investition</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_H" xml:space="preserve">
-    <value>je Betriebsstunde</value>
-  </data>
-  <data name="BEMESSUNG_EUR_PRO_KWH" xml:space="preserve">
-    <value>je kWh</value>
-  </data>
-  <data name="BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN" xml:space="preserve">
-    <value>% der Brennstoffkosten</value>
   </data>
   <data name="WIRT_KWKG_MODUL_TITEL" xml:space="preserve">
     <value>KWK-Zuschlag je Modul</value>
