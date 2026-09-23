@@ -246,22 +246,19 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Monatssicht des Brauchwassers auf dem Zapfprofilweg: dieselben Zahlen, das Bild
-        /// gestapelt aus Zapfung (Kanal minus Zirkulation) und Zirkulation — je Einheit einmal,
-        /// mit den Zeichenbausteinen des Zapfprofils (<c>ZapfprofilBilder.JahresgangModell</c>).
+        /// gestapelt aus Zapfung und Zirkulation — beide Schichten so, wie der Kern sie führt
+        /// (<c>Waermebedarf_Brauchwasser_Zapfung_Monat</c>, <c>…_Zirkulation_Monat</c>); die Hülle
+        /// rechnet keine Schicht selbst. Je Einheit einmal, mit den Zeichenbausteinen des
+        /// Zapfprofils (<c>ZapfprofilBilder.JahresgangModell</c>).
         /// </summary>
         private static Monatssicht ZapfprofilStapel(Monatssicht sicht, SimulationWaermebedarf simulation)
         {
-            double[] kanal = simulation.Waermebedarf_Brauchwasser_Monat;
+            double[] zapfung = simulation.Waermebedarf_Brauchwasser_Zapfung_Monat;
             double[] zirkulation = simulation.Waermebedarf_Brauchwasser_Zirkulation_Monat;
-            if (kanal == null || kanal.Length < 12 || zirkulation == null || zirkulation.Length < 12) return sicht;
+            if (zapfung == null || zapfung.Length < 12 || zirkulation == null || zirkulation.Length < 12) return sicht;
 
-            var zapfungMwh = new double[12];
-            var zirkMwh = new double[12];
-            for (int m = 0; m < 12; m++)
-            {
-                zirkMwh[m] = zirkulation[m];
-                zapfungMwh[m] = Math.Max(0.0, kanal[m] - zirkulation[m]);
-            }
+            double[] zapfungMwh = (double[])zapfung.Clone();
+            double[] zirkMwh = (double[])zirkulation.Clone();
 
             ZapfprofilBildtexte texte = ZapfprofilHuelle.Bildtexte();
             texte.TitelJahresgang = Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme");

@@ -40,9 +40,18 @@ namespace WindowsFormsApplication1
         /// <summary>
         /// Monatssummen der Zirkulation [MWh] (<c>BhkwPlan.MonatsSumme</c>) für den Monatsstapel
         /// von Vorschau und Bericht (2.2, 5.6); auf dem Bestandsweg 0. Die Zapfung eines Monats
-        /// ist <see cref="Waermebedarf_Brauchwasser_Monat"/> minus dieser Wert.
+        /// steht getrennt in <see cref="Waermebedarf_Brauchwasser_Zapfung_Monat"/>.
         /// </summary>
         public double[] Waermebedarf_Brauchwasser_Zirkulation_Monat = new double[12];
+
+        /// <summary>
+        /// Monatssummen der Zapfung [MWh] (<c>BhkwPlan.MonatsSumme</c> aus der Zapfreihe des
+        /// Generators) für den Monatsstapel (2.2, 5.6); auf dem Bestandsweg 0. Zapfung plus
+        /// <see cref="Waermebedarf_Brauchwasser_Zirkulation_Monat"/> ergibt
+        /// <see cref="Waermebedarf_Brauchwasser_Monat"/> — die Hülle liest beide Schichten und
+        /// rechnet keine selbst.
+        /// </summary>
+        public double[] Waermebedarf_Brauchwasser_Zapfung_Monat = new double[12];
 
         /// <summary>
         /// Das Ergebnis des Generatorwegs (Kennzahlen, Herkunft, Hinweise) aus dem letzten
@@ -907,6 +916,7 @@ namespace WindowsFormsApplication1
         {
             Brauchwasser_Zirkulation_Mwh = 0;
             Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zapfung_Monat, 0, Waermebedarf_Brauchwasser_Zapfung_Monat.Length);
             Zapfprofil = null;
             try
             {
@@ -1007,6 +1017,7 @@ namespace WindowsFormsApplication1
             WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
             Array.Clear(Waermebedarf_Brauchwasser_Monat, 0, Waermebedarf_Brauchwasser_Monat.Length);
             Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zapfung_Monat, 0, Waermebedarf_Brauchwasser_Zapfung_Monat.Length);
             Brauchwasser_Zirkulation_Mwh = 0;
             Waermebedarf_Brauchwasser = 0;
             Zapfprofil = null;
@@ -1044,12 +1055,14 @@ namespace WindowsFormsApplication1
         internal void ZapfprofilUebernehmen(ZapfprofilErgebnis e)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
+            double[] zapfung = e.Zapfung.KopieStundenKwh();
             double[] zirkulation = e.Zirkulation.KopieStundenKwh();
             WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
-            WPPlan.Core.BhkwPlan.VectorenAddieren(e.Zapfung.KopieStundenKwh(), brauchwasserwerte);
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zapfung, brauchwasserwerte);
             WPPlan.Core.BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
             Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(e.Zirkulation.JahressummeKwh);
             WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zapfung, Waermebedarf_Brauchwasser_Zapfung_Monat, mo_anfang, mo_ende);
             WPPlan.Core.BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat, mo_anfang, mo_ende);
             Zapfprofil = e;
         }

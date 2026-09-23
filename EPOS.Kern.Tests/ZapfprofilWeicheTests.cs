@@ -54,6 +54,7 @@ namespace EPOS.Kern.Tests
             Assert.Null(ohne.Zapfprofil);
             Assert.Equal(0.0, ohne.Brauchwasser_Zirkulation_Mwh);
             Assert.All(ohne.Waermebedarf_Brauchwasser_Zirkulation_Monat, m => Assert.Equal(0.0, m));
+            Assert.All(ohne.Waermebedarf_Brauchwasser_Zapfung_Monat, m => Assert.Equal(0.0, m));
 
             // Die Brauchwasserreihe ist die der Profilroutine — dieselbe Zeile wie vor der Weiche.
             var erwartet = new double[8760];
@@ -113,7 +114,8 @@ namespace EPOS.Kern.Tests
                                 Energieeinheit.MWh.AusKWh(e.Kennzahlen.JahresbedarfGesamtKwh)) < 1e-12);
             Assert.Equal(Energieeinheit.MWh.AusKWh(e.Kennzahlen.JahresverlustZirkulationKwh), lauf.Brauchwasser_Zirkulation_Mwh);
 
-            // Getrennte Monatssummen: Zirkulation für sich, Zapfung = Kanal − Zirkulation.
+            // Getrennte Monatssummen, beide im Kern gebildet: Zapfung aus der Zapfreihe,
+            // Zirkulation für sich, und Zapfung + Zirkulation = Kanal je Monat.
             var zapfMonat = new double[12];
             WPPlan.Core.BhkwPlan.MonatsSumme(e.Zapfung.KopieStundenKwh(), zapfMonat, lauf.mo_anfang, lauf.mo_ende);
             Assert.True(Relativ(lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat.Sum(), lauf.Brauchwasser_Zirkulation_Mwh) < 1e-9);
@@ -122,6 +124,10 @@ namespace EPOS.Kern.Tests
                 Assert.True(lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat[m] > 0, "Monat " + (m + 1));
                 Assert.True(Math.Abs(lauf.Waermebedarf_Brauchwasser_Monat[m] - lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat[m]
                                      - zapfMonat[m]) < 1e-9, "Monat " + (m + 1));
+                Assert.Equal(BitConverter.DoubleToInt64Bits(zapfMonat[m]),
+                             BitConverter.DoubleToInt64Bits(lauf.Waermebedarf_Brauchwasser_Zapfung_Monat[m]));
+                Assert.True(Math.Abs(lauf.Waermebedarf_Brauchwasser_Zapfung_Monat[m] + lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat[m]
+                                     - lauf.Waermebedarf_Brauchwasser_Monat[m]) < 1e-9, "Zapfung + Zirkulation = Kanal, Monat " + (m + 1));
             }
         }
 
@@ -208,6 +214,8 @@ namespace EPOS.Kern.Tests
                 ByteGleich(lauf.brauchwasserwerte, v.Waerme.brauchwasserwerte, "Vorschau gegen Lauf");
                 ByteGleich(lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat,
                            v.Waerme.Waermebedarf_Brauchwasser_Zirkulation_Monat, "Zirkulation je Monat");
+                ByteGleich(lauf.Waermebedarf_Brauchwasser_Zapfung_Monat,
+                           v.Waerme.Waermebedarf_Brauchwasser_Zapfung_Monat, "Zapfung je Monat");
                 ByteGleich(lauf.Waermebedarf_Brauchwasser_Monat, v.Waerme.Waermebedarf_Brauchwasser_Monat, "Kanal je Monat");
                 Assert.Equal(lauf.Waermebedarf_Brauchwasser, v.Waerme.Waermebedarf_Brauchwasser);
             }
