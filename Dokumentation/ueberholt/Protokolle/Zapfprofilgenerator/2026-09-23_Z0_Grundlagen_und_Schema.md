@@ -1,7 +1,7 @@
 # Z0 — Zapfprofilgenerator: Grundlagen und Schema (Protokoll, 23.09.2026)
 
 Statuszeile #438 in [`Status_iOS_Migration.md`](../../../aktuell/Status_iOS_Migration.md);
-Auftragsblatt Anhang A und Nachtrag N2 im
+Auftragsblatt Anhang A und die Nachträge N2 und N3 im
 [Umsetzungskonzept](../../../aktuell/Umsetzungskonzept_Zapfprofilgenerator_EPOS-Plan.md); Quellen im
 [Quellendossier](../../../aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md).
 Zweig `z0` von `90225f59`, Stand des Gates `4ddebed9`.
@@ -32,7 +32,8 @@ im Worktree `z0`, ohne Push und ohne CI-Lauf.
 | P10 | Auslieferungsvorlage: Schritt 3c, Prüfposten, `--katalogpaket`; Vorlagenprobe P6 auf 129 STRICT-Tabellen | `a1faa990`, `ca12cc9b`, `4ddebed9` |
 | P11 | Wache `TwwKatalogWacheTests` | `57e63591`, `b0055988` |
 | P12 | `SqlDialektPruefer` nach jedem neuen SQL-Text | in den Posten |
-| P13 | Quellendossier samt Indexzeile; Setup-Konzept 6.1; N2, Kapitel 7, 9 und Anhang A im Umsetzungskonzept; dieses Protokoll; Statuszeile | Dokumentationscommits auf `z0` |
+| P13 | Quellendossier samt Indexzeile | `a606be0c` |
+| — | Abschlusspapiere: Setup-Konzept 6.1; N2, Kapitel 7, 9 und Anhang A im Umsetzungskonzept; dieses Protokoll; Statuszeile | `5422f3c1`, `9d7678ed`, `f9f695d9`, `d5af9c7a`, `20394b2b` |
 
 Alle Commits tragen den Trailer des arbeitenden Modells. Die Schemanummer war zu Beginn auf `z0`,
 `main`, `origin/ios_migration_september` und allen Worktrees 100; T1 lief zuerst als 101 und wurde nach
@@ -55,20 +56,22 @@ Im Worktree `z0` auf `4ddebed9`:
 
 ## Gegenprüfungen
 
-Jede Postengruppe wurde nach der Umsetzung von einem zweiten Agenten gegengeprüft; nachgebessert
-wurde in eigenen Commits. Gezählt sind die nachgebesserten Befunde mit ihrer Nummer aus der
+Die Posten P1–P4 und P7–P11 wurden nach der Umsetzung in drei Prüfgruppen von einem zweiten Agenten
+gegengeprüft; nachgebessert wurde in eigenen Commits. P5 (`Parametersatz`) und P6 (`ZapfprofilCtrl`)
+gehörten zu keiner der drei Prüfgruppen; eine eigene Gegenprüfung ist nicht belegt (offener Punkt). Gezählt sind die nachgebesserten Befunde mit ihrer Nummer aus der
 Gegenprüfung. Schwereverteilung der drei Gegenprüfungen (aus den Workflow-Journalen der
-Orchestrierung): Gruppe P1–P3 zehn Befunde (1 hoch: Schrittnummer 101 doppelt mit e7;
-3 mittel; 6 gering), Gruppe P7/P8/P4 elf Befunde (1 hoch: Dublettendialog löschte benutzte
-Tww-Zeilen; 3 mittel; 7 gering), Gruppe P9–P11 elf Befunde (0 hoch; 4 mittel; 7 gering) —
+Orchestrierung): Prüfgruppe P1–P3 zehn Befunde (1 hoch: Schrittnummer 101 doppelt mit e7;
+3 mittel; 6 gering), Prüfgruppe P7/P8/P4 elf Befunde (1 hoch: Dublettendialog löschte benutzte
+Tww-Zeilen; 3 mittel; 7 gering), Prüfgruppe P9–P11 elf Befunde (0 hoch; 4 mittel; 7 gering) —
 zusammen 32 Befunde, 2 hoch, 10 mittel, 20 gering. Beide „hoch" sind behoben (Schritt 102;
 Sperre und Rollback in der Katalogbereinigung); die nicht nachgebesserten Befunde sind
 Prozesshinweise oder vorbestehend (Beidateien der Testdatenbank, ZU18).
 
-| Gruppe | Nachgebessert | Wichtigste |
+| Posten | Nachgebessert | Wichtigste |
 |---|---|---|
 | P1 | 1 (Befund 6) | Proben für Unterordner und fremde Endungen, damit eine spätere Gegenregel mit `!` auffällt |
 | P2 | 3 (Befunde 3, 8, 9) | `AUTOINCREMENT` für unveränderliche Versionen; CHECK an Ferienspalten und Realisierungen; Indizes |
+| P3 | 1 (Befund hoch) | T1 von 101 auf 102 umnummeriert (`5e96609b`) |
 | P4 | 1 (Befund 9) | die fiktive Kaltwasser-Bezugstemperatur fiel mit einem normativen Wert zusammen |
 | P7 | 3 (Befunde 3, 4, 10) | `TagesgangSpeichern` in einem Vorgang; Provenienz je Wertgruppe beim Ändern; `RasterUngueltig` |
 | P8 | 5 (Befunde 1, 2, 5, 6, 8) | Sperre benutzter Zeilen auch in der Katalogbereinigung; Löschen in einem Vorgang mit Rollback; Dublette über Bezeichner und Katalogversion |
@@ -76,12 +79,13 @@ Prozesshinweise oder vorbestehend (Beidateien der Testdatenbank, ZU18).
 | P10 | 3 (Befunde 4, 5, 9) | `ReadOnly = 1` für Auslieferungszeilen; Nennung des Beispielpakets; ZU11 als echter Posten |
 | P11 | 2 (Befunde 1, 8) | Wache verlangt `EIGEN` und `FIKTIV` zugleich samt Quellentext; Skriptlauf mit Frist |
 
-Summe: 22 nachgebesserte Befunde in acht Gruppen; P3, P5 und P6 ohne Nachbesserung.
+Summe: 23 nachgebesserte Befunde in neun Posten; P5 und P6 ohne Nachbesserung.
 
 ## Abweichungen vom Papier
 
-Die Abweichungen (a)–(m) stehen im Nachtrag N2 des Umsetzungskonzepts und sind dort im Hauptteil mit
-Verweis berichtigt (3.1, 3.2, Kapitel 6). Kurz: T1 ist Schritt 102; IDs mit `AUTOINCREMENT`;
+Die Abweichungen (a)–(m) stehen im Nachtrag N2 des Umsetzungskonzepts, die Berichtigungen dazu aus der
+Prüfung der Abschlusspapiere (a)–(d) im Nachtrag N3; beide sind im Hauptteil mit Verweis berichtigt
+(3.1, 3.2, Kapitel 6). Kurz: T1 ist Schritt 102; IDs mit `AUTOINCREMENT`;
 `Realisierungen_Auslegung` nullbar mit CHECK (≥ 1); zusätzliche UNIQUE-, NOT-NULL-, CHECK- und
 Indexfestlegungen; `.gitignore` mit Stern und Ausnahme für das LIESMICH; Controllerregeln für
 Tagesgang, Provenienz und Raster; Schalter der Katalogdefinition; fiktiver Testkatalog mit 19 Zeilen;
@@ -100,8 +104,14 @@ eingetragen.
 
 - **ZU16–ZU18** (Kapitel 9, Empfehlung, Entscheid offen): Ersetzen vorhandener Auslieferungszeilen
   durch das Katalogpaket; Inhaltsvergleich namensgleicher `EIGEN`-Zeilen beim Import (Z1); Umstellen
-  der Testklasse, die die Repo-Testdatenbank direkt öffnet.
+  einer oder mehrerer Testklassen (noch aufzuspüren), die die Repo-Testdatenbank direkt öffnen.
 - **P14** ruht bis zum Ergebnis von K8; **K1**, **K8** und **ZU15** liegen beim Anwender.
 - Bedarfstage und Parameter haben keinen Schreibweg; `ZapfprofilCtrl.Speichern` und `Eingang` folgen
   in Z1.
 - Der Auslieferungskatalog bleibt leer, bis ein Katalogpaket nach K8 vorliegt.
+- Kapitel 6 (e): Erweiterung der `WikiProduktdatenWacheTests` auf die Tww-Katalogtexte nicht in Z0
+  (Stufe Z4, N3 (c)).
+- Gegenprüfung von P5 und P6 nicht belegt (siehe „Gegenprüfungen").
+- Die Aufrufzeile der Hilfe der Auslieferungsvorlage (`Werkzeuge/Auslieferungsvorlage/Argumente.cs`)
+  nennt `[--katalogpaket <ordner>]` nicht, anders als das Setup-Konzept 6.1; die Option steht nur in
+  der Optionsliste — eigener Folgeposten.

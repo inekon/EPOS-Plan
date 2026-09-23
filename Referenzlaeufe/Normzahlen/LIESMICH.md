@@ -55,6 +55,15 @@ Zahlen, mit den versionierten Gegenwächtern für Prüfband, Vorzeichen und Such
   mit abgelegten Daten. Die Testausgabe nennt je Fall die Zahl der Zellen im Band und die
   größte Überschreitung, nie einen Absolutwert.
 
+## Zapfprofilgenerator
+
+Die lokalen Normkopien des Zapfprofilgenerators liegen in drei Unterordnern: `vdi4655/` und
+`vdi6002/` mit je einer `QUELLE.txt` (Regelwerk, Ausgabe, Herkunft der Kopie, Datum) und
+`zapfprofil/` mit der Ladedatei des Mockups. Auch hier steht keine Zahl im Repositorium; die Daten
+werden nicht weitergegeben, und ob die Kopien zulässig sind, klären K8 und ZU15. Regeln im
+[Quellendossier](../../Dokumentation/aktuell/Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md),
+§ 5.
+
 ## Nie committen
 
 `git status` zeigt unter `Referenzlaeufe/Normzahlen/` nur diese Datei. Wer dort etwas anderes

@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Entscheid N1 vom 23.09.2026 (Kapitel 11) — Z0 umgesetzt (N2)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N3 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -393,7 +393,7 @@ in der internen Spalte `Beleg` TEXT je Zeile; Oberfläche, Bericht und KiSicht z
 
 | Spalte | Typ | Bemerkung |
 |---|---|---|
-| `ID` | INTEGER PRIMARY KEY | |
+| `ID` | INTEGER PRIMARY KEY AUTOINCREMENT (N2) | |
 | `Bezeichner`, `Katalogversion` | TEXT NOT NULL, TEXT NOT NULL; UNIQUE (`Bezeichner`, `Katalogversion`) | neutraler Name; der Schlüssel ist zugleich der natürliche Schlüssel für Projektexport und -import (3.2) |
 | `Bezugsart` | INTEGER NOT NULL CHECK (`Bezugsart` IN (1,2,3,4,5,6,7)) | Personen, Wohneinheiten, Betten, Duschplätze, Sitzplätze, Beschäftigte, Fläche (nur Rückfall) |
 | `Bedarf_Niedrig`, `Bedarf_Mittel`, `Bedarf_Hoch` | REAL NOT NULL | kWh je Einheit und Tag bei den Bezugstemperaturen |
@@ -416,14 +416,14 @@ in der internen Spalte `Beleg` TEXT je Zeile; Oberfläche, Bericht und KiSicht z
 
 **`Tab_TwwTagesgangsatz_STAMM`** — ein Satz von vier Tagesgängen, eigenständig geschlüsselt, damit
 eine Zone einen anderen Satz als den ihrer Nutzungsart wählen kann (Eigenkonstruktion, Ecodesign,
-Anwenderkopie): `ID` INTEGER PRIMARY KEY, `Bezeichner` TEXT NOT NULL, `Katalogversion` TEXT NOT NULL,
+Anwenderkopie): `ID` INTEGER PRIMARY KEY AUTOINCREMENT, `Bezeichner` TEXT NOT NULL, `Katalogversion` TEXT NOT NULL,
 UNIQUE (`Bezeichner`, `Katalogversion`), `Status` wie oben, `Beleg`, `ReadOnly` wie oben.
 
 **`Tab_TwwTagesgang_STAMM`** — Tagesgangsatz × Tagtyp × 24:
 
 | Spalte | Typ | Bemerkung |
 |---|---|---|
-| `ID` | INTEGER PRIMARY KEY | |
+| `ID` | INTEGER PRIMARY KEY AUTOINCREMENT | |
 | `ID_Tagesgangsatz` | INTEGER NOT NULL REFERENCES `Tab_TwwTagesgangsatz_STAMM(ID)` ON DELETE CASCADE | |
 | `Tagtyp` | INTEGER NOT NULL CHECK (`Tagtyp` IN (1,2,3,4)) | Werktag, Samstag, Sonn-/Feiertag, Ruhetag |
 | `Anteil_01` … `Anteil_24` | REAL NOT NULL | Σ 1; die Spaltennamen entstehen im Controller aus einer Schleife, nie aus einer Eingabe |
@@ -455,7 +455,7 @@ neutraler Name der Ausstattungsklasse), `Wert` REAL NOT NULL (Belegung p bzw. Σ
 
 | Spalte | Typ | Bemerkung |
 |---|---|---|
-| `ID` | INTEGER PRIMARY KEY | |
+| `ID` | INTEGER PRIMARY KEY AUTOINCREMENT | |
 | `ID_Projekt` | INTEGER NOT NULL REFERENCES `Tab_Projekt(ID)` ON DELETE CASCADE | |
 | `ID_Nutzungsart` | INTEGER NOT NULL REFERENCES `Tab_TwwNutzungsart_STAMM(ID)` | Katalogverweis auf eine unveränderliche Version (3.2); Löschen einer benutzten Nutzungsart ist gesperrt |
 | `ID_Tagesgangsatz` | INTEGER NULL REFERENCES `Tab_TwwTagesgangsatz_STAMM(ID)` | Experte; NULL = Satz der Nutzungsart |
@@ -478,7 +478,7 @@ neutraler Name der Ausstattungsklasse), `Wert` REAL NOT NULL (Belegung p bzw. Σ
 | `Auslastung_01` … `Auslastung_12` | REAL | Experte: Auslastungsgang als Überschreibung der Monatsfaktoren; NULL = Katalog |
 
 **`Tab_TwwWohnungstyp`** — die Wohnungstabelle der DIN-4708-Kennzahl und des Mengengerüsts Wohnen:
-`ID` INTEGER PRIMARY KEY, `ID_Zone` INTEGER NOT NULL REFERENCES `Tab_TwwZone(ID)` ON DELETE CASCADE,
+`ID` INTEGER PRIMARY KEY AUTOINCREMENT, `ID_Zone` INTEGER NOT NULL REFERENCES `Tab_TwwZone(ID)` ON DELETE CASCADE,
 `Anzahl` INTEGER NOT NULL CHECK (`Anzahl` > 0), `Raumzahl` REAL, `Personen` REAL (NULL = Belegung p
 nach Raumzahl aus `Tab_TwwDin4708Wert_STAMM`), `ID_Ausstattung` INTEGER NULL REFERENCES
 `Tab_TwwDin4708Wert_STAMM(ID)` (Art AUSSTATTUNG; NULL = Vorgabeklasse), `Reihenfolge` INTEGER NOT NULL.
@@ -489,7 +489,7 @@ Mengengerüst, DIN 4708 und Gleichzeitigkeit lesen dieselben Zahlen.
 
 | Spalte | Typ | Bemerkung |
 |---|---|---|
-| `ID`, `ID_Projekt` | INTEGER PRIMARY KEY, INTEGER NOT NULL UNIQUE REFERENCES `Tab_Projekt(ID)` ON DELETE CASCADE | |
+| `ID`, `ID_Projekt` | INTEGER PRIMARY KEY AUTOINCREMENT, INTEGER NOT NULL UNIQUE REFERENCES `Tab_Projekt(ID)` ON DELETE CASCADE | |
 | `Weg` | TEXT NOT NULL DEFAULT 'BESTAND' CHECK (`Weg` IN ('BESTAND','GENERATOR')) | Muster `Tab_Projekt.Emission_Berechnungsmodus` |
 | `Jahresreihe_Stochastisch` | INTEGER NOT NULL DEFAULT 0 CHECK (`Jahresreihe_Stochastisch` IN (0,1)) | Rechenweg der Jahresreihe |
 | `Seed`, `Realisierungen` | INTEGER NOT NULL DEFAULT 1 / 10; `Realisierungen` CHECK (≥ 1) | Realisierungen der Jahresreihe |
@@ -533,13 +533,12 @@ Drei Schritte, jeweils der **nächste freie Schritt nach `SchemaStand.Zielversio
 | **T2 — Zapfkategorien** | Z3 | `Tab_TwwZapfkategorie_STAMM` |
 | **T3 — Typtage** | Z4b, nach K3a/K8 | `Tab_TwwTyptag_IMPORT` |
 
-Momentaufnahme vom 23.09.2026 (N2): T1 ist im Bestand Schritt 102, weil Schritt 101 an die
-Wirtschaftlichkeit ging. Die Nummer ist keine Regel; T2 und T3 bekommen beim Beauftragen den dann
-nächsten freien Schritt.
+T1 ist im Bestand Schritt 102 (N2 (a)); T2 und T3 bekommen den dann nächsten freien Schritt.
 
 Bauweise nach [`ADR-001`](ADR-001_Schema-Ausrollung.md) und den Regeln in
-`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs:4332-4350`: erst Konstante, Methode und
-Eintrag in `SCHRITTE_SQLITE` (`:4351`, Vorbilder `:4895-4960`), **dann** die Zielversion anheben; nur
+`WindowsFormsApplication1/Allgemein/Update/SchemaMigration.cs` (Kommentar über `SCHRITTE_SQLITE`): erst
+Konstante, Methode und Eintrag in `SCHRITTE_SQLITE` (`:4404`, Vorbilder die letzten Einträge der Liste),
+**dann** die Zielversion anheben; nur
 `SqliteDdl`/`SqliteTabelleVorhanden`. **Die DDL-Texte stehen in `EPOS.Kern/Allgemein/Update/TwwSchema.cs`
 nach dem Muster `WechselrichterSchema.cs`** (Katalog plus Projekttabelle mit
 `CREATE TABLE IF NOT EXISTS`, `:169-222`); `SchemaKatalog.Schritt99_BhkwWirkungsgradAnteile`
@@ -573,9 +572,9 @@ nach dem Muster `WechselrichterSchema.cs`** (Katalog plus Projekttabelle mit
   nachzumessen; ohne Mitnahme wird die Zone benannt abgelehnt, nie still umgehängt. Je Kopierstelle
   ein Test in der Abnahme von Z0. Löschen läuft über `ON DELETE CASCADE`.
 - **Auslieferungsvorlage.** `Werkzeuge/Auslieferungsvorlage` behält als Vorgabe jede Katalogzeile
-  (`--kataloge alle`, `Argumente.cs:25-28`, `:57`); die ReadOnly-Regel greift nur mit
+  (`--kataloge alle`, `Argumente.cs:25-31`, `:64`); die ReadOnly-Regel greift nur mit
   `--kataloge readonly`, eine Tabelle ohne Spalte `ReadOnly` bleibt vollständig
-  (`Vorlagenbau.cs:113`). Deshalb gilt für die Tww-Kataloge eine **eigene, von `--kataloge`
+  (`Vorlagenbau.cs:120`). Deshalb gilt für die Tww-Kataloge eine **eigene, von `--kataloge`
   unabhängige Regel** (Schritt 3c, `Werkzeuge/Auslieferungsvorlage/TwwKataloge.cs`, N2): bei
   eingeschaltetem Fremdschlüssel (`PRAGMA foreign_keys = ON`) bleibt in allen `Tab_Tww*_STAMM` nur,
   was `Status = 'AUSLIEFERUNG'` trägt und in keiner Provenienzgruppe die Herkunftsart `FIKTIV` oder
@@ -1245,8 +1244,11 @@ Repositoriums.
   Katalogimport in der Verwaltung (Z4, Muster Herstellerdaten-Import), nicht über den Schemaschritt
   (Frage ZU14). **Paketformat (N2):** je Tww-Katalogtabelle eine Datei `<Tabelle>.csv` (UTF-8,
   Kopfzeile mit den Spaltennamen, Trenner `;` oder `,`, Felder nach RFC 4180, Zahlen mit Punkt);
-  jede Zeile trägt `Status = 'AUSLIEFERUNG'`, `ReadOnly` ist 1 oder fehlt. Das Paket ersetzt den
-  Tww-Katalog der Quelle in einer Transaktion; ein Fehler nennt Datei und Zeile, rollt zurück und
+  jede Zeile einer Kopftabelle (Nutzungsart, Tagesgangsatz, Bedarfstag, Parameter, DIN-4708-Wert)
+  trägt `Status = 'AUSLIEFERUNG'`; `ReadOnly` ist dort 1 oder fehlt (dann 1). Tagesgänge und
+  Ereignisse führen keine dieser Spalten (N3). Das Paket vergibt die `ID` der Köpfe selbst;
+  Kindzeilen und Nutzungsarten verweisen über `ID_Tagesgangsatz` bzw. `ID_Bedarfstag` auf diese
+  IDs. Ein leeres Feld ist NULL. Das Paket ersetzt den Tww-Katalog der Quelle in einer Transaktion; ein Fehler nennt Datei und Zeile, rollt zurück und
   bricht ab. Jede Auslieferungszeile der Vorlage trägt `ReadOnly = 1` (3.2).
 - **(c) Wache.** `TwwKatalogWacheTests`: keine Zeile einer `Tab_Tww*_STAMM` der Testdatenbank mit
   `Status = 'AUSLIEFERUNG'`, jede Zeile `EIGEN` mit Herkunftsart `FIKTIV` und Quelle „Testkatalog
@@ -1259,7 +1261,8 @@ Repositoriums.
   (etwa frei publizierte Herstellerunterlagen, Konzept 3.4) zitierfähig ist, steht diese in der
   internen Spalte `Beleg`, die weder Oberfläche, Bericht noch KiSicht zeigen.
   `WikiProduktdatenWacheTests` wird sinngemäß auf die Katalogtexte der `Tab_Tww*_STAMM` der
-  Testdatenbank (ohne `Beleg`) und auf die `ZPG_`/`ZPGK_`-Ressourcen erweitert.
+  Testdatenbank (ohne `Beleg`) und auf die `ZPG_`/`ZPGK_`-Ressourcen erweitert — offen, Stufe Z4
+  (Kapitel 7, N3).
 
 | Quelle | Umgang |
 |---|---|
@@ -1300,14 +1303,7 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 | **Z4b — VDI-4655-Import mit Typtagzuordnung** | T3, `Normformvektorleser`, `Typtagzuordnung` mit Wetterkopplung (Vorfragen 4.2), Importdialog | Z4; K3a, K8 | Tests mit erfundenen Typtagen; Auslieferungsvorlage leert `Tab_TwwTyptag_IMPORT`; kein VDI-Wert in Repository oder CI | 3–5 PT |
 | **Z5 — Kalibrierung und Validierung** | Messdatenimport, Vergleichsbericht, Validierung gegen freie Messreihen und freigegebene INEKON-Projekte, Kalibrierung der Nichtwohn-Parameter, Katalogausbau auf 25–27 Typen; gegebenenfalls Referenzprojekt auf dem Generator (ZU7) | Z4; K5, K6 | Validierungsbericht mit messbaren Kriterien: Messspitze im P85–P95-Band der synthetischen Dauerlinie (Konzept 3.6), √N-Skalierung der Überschätzung, Formabgleich des Tagesgangs mit einer Schwelle (Parameter), Energie nach Kalibrierung exakt; bei Referenzprojekt: vierte Einfrierregel, Neueinfrieren mit Begründung, grüner CI-Lauf | 10–12 PT |
 
-**Stand Z0 (23.09.2026, N2).** Z0 ist auf dem Zweig `z0` umgesetzt: Posten P1–P12 in den Commits
-`6628e386` bis `4ddebed9`, P13 mit dem
-[Quellendossier](Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md); P14 ruht bis K8.
-Abnahme im Worktree: Kern-Filter 0 Fehler, 10 853 Tests grün und 1 übersprungen, Werkzeugtests der
-Auslieferungsvorlage 26/26, Windows-Schale 0 Fehler, `SqlDialektPruefer` 1 622 Texte ohne
-Fundstelle, Auslieferungsvorlage `--trocken` ohne Auffälligkeit, Referenzlauf 1030, 1007, 1017,
-1045, 1046 gegen die Basis `2026-09-22_R11_Bestandsbefunde` PASS und byte-gleich. Offen sind ZU16–ZU18
-(Kapitel 9). Einzelheiten stehen im [Protokoll](../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-23_Z0_Grundlagen_und_Schema.md).
+**Umsetzungsstand und Abweichungen:** N2 und N3 (Kapitel 11).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:
@@ -1352,7 +1348,7 @@ der `SchemaStand.Zielversion` hebt. **Statuszeile:** je Stufe eine Zeile in
 | A100/A1 bleiben Entwürfe oder der Weißdruck ändert die Rechenregeln (Konzept 3.7) | Nacharbeit an der Summenlinie | Koeffizienten und Setzungen als Parameter mit Versionskennung der Norm; Rechenregeln in einer Klasse; Entwurfsvermerk im Ergebnis |
 | K1/K8 blockieren die Erstbefüllung | Z1 wäre fachlich leer | fiktiver Testkatalog für Abnahme und Sichtprobe (Kapitel 6 (d)); Auslieferungskatalog als Paket außerhalb des Repositoriums |
 | Urheberrecht an Normtabellen | Vertriebsrisiko | Kapselung nach Kapitel 6, keine Normkonstante im Quelltext, Wachen, juristische Prüfung mit Z0 (K8) |
-| Lokale Normtabellen unter `Referenzlaeufe/Normzahlen/` im Arbeitsbaum, den `GitHub_Sync.bat` mit `add -A` synchronisiert; VDI 4655 untersagt schon innerbetriebliche Kopien | Normdaten landen im Repository | `.gitignore`-Zeile besteht; die Wache `Normzahlen_stehen_im_gitignore` kommt vor dem ersten Ablegen einer neuen Datei und prüft auch unversioniert vorgemerkte Dateien; lokale Kopien nur nach K8 |
+| Lokale Normtabellen unter `Referenzlaeufe/Normzahlen/` im Arbeitsbaum, den `GitHub_Sync.bat` mit `add -A` synchronisiert; VDI 4655 untersagt schon innerbetriebliche Kopien | Normdaten landen im Repository | `.gitignore`-Zeilen bestehen; die Wache `Normzahlen_stehen_im_gitignore` hält die Zeilen und prüft auch unversioniert vorgemerkte Dateien (N2); lokale Kopien nur nach K8 |
 | Digitalisate der VDI-6002-Bilder bleiben im Bestandskatalog (Abweichung vom Mockup A9) | Lizenzrisiko der Auslieferung bleibt | offen bis K8; bei „ersetzen" eigener Schritt in Z0 mit Einfrierprüfung 1007/1045/1046 und Begründung in `Referenzlaeufe/LIESMICH.md` |
 | Zwei Rechenpfade laufen auseinander | Inkonsistenz Bilanz/Stochastik | `ZapfensembleTests` in der CI, gemeinsame Schichten S0–S2 |
 | Akzeptanz der Stochastik bei Prüfern (Konzept 3.7) | Ergebnis wird angezweifelt | deterministischer Pfad als Nachweisebene, dokumentierter Seed, genau eine Empfehlung aus der Summenlinie, Normvergleich immer daneben |
@@ -1428,7 +1424,7 @@ Papier voraussetzt:
 | **ZU15** | Nutzung der VDI-6002-Kopien in der Ablage des Anwenders, deren Exemplare den Lizenzstempel einer Universität tragen? | **eigene Lizenz prüfen oder beschaffen**; bis dahin bleiben die daraus extrahierten Tabellen lokal (Kapitel 6, „Lokale Testdaten") und werden nicht weitergegeben — nicht an Dritte, nicht ins Repository, nicht in Testdatenbank, CI oder Auslieferung | nach Empfehlung, 23.09.2026 (N1) |
 | **ZU16** | Ersetzt `--katalogpaket` auch die Zeilen mit `Status = 'AUSLIEFERUNG'`, die die Quelle schon führt? | **ja** — das Paket ist die Quelle der Wahrheit für den Auslieferungskatalog; so ist das Werkzeug gebaut (N2 (j)) | offen |
 | **ZU17** | Der Projektimport ordnet eine namensgleiche `EIGEN`-Zeile (gleicher Bezeichner und Katalogversion) mit anderem Inhalt ohne Inhaltsvergleich der Zielzeile zu — soll er vergleichen? | **ja, in Z1:** Inhaltsvergleich über die Wertgruppen; bei Abweichung Mitnahme als neue Version mit Zusatz im Bezeichner, nie stilles Umhängen | offen |
-| **ZU18** | Testklassen, die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | offen |
+| **ZU18** | Eine oder mehrere Testklassen (noch aufzuspüren, N3 (d)), die die Repo-Testdatenbank direkt öffnen (danach liegen `-shm`/`-wal` daneben), auf eine Arbeitskopie oder `immutable` umstellen? | **ja**, als kleiner Folgeposten außerhalb der Z-Stufen | offen |
 
 ---
 
@@ -1454,9 +1450,11 @@ Papier voraussetzt:
 
 ## 11. Nachträge
 
-Nachträge halten Entscheide des Anwenders fest, die nach der Fassung 2 fallen. Ein Nachtrag wird nie
-umgeschrieben; spätere Entscheide kommen als N2, N3 … hinzu. Wo ein Nachtrag eine Empfehlung bestätigt,
-bleibt der Text des Papiers stehen; Kapitel 9 zeigt den Stand in der Spalte „Entscheid".
+Nachträge halten Entscheide des Anwenders und Umsetzungsbefunde einer Stufe fest, die nach der
+Fassung 2 anfallen. Ein Nachtrag wird nie umgeschrieben; spätere Entscheide und Befunde kommen als
+N2, N3 … hinzu. Wo ein Nachtrag eine Empfehlung bestätigt, bleibt der Text des Papiers stehen;
+Kapitel 9 zeigt den Stand in der Spalte „Entscheid". Ein Befund berichtigt den Hauptteil mit Verweis
+„(Nn)".
 
 ### N1 (23.09.2026) — offene Punkte nach Empfehlung
 
@@ -1576,6 +1574,38 @@ Anwenders; die neuen Fragen ZU16–ZU18 stehen mit Empfehlung in Kapitel 9 und s
 | ZU18 | bei Entscheid nach Empfehlung: Testklasse aufspüren und umstellen | Agent eines Folgepostens | unabhängig von den Stufen |
 | P14 | ruht bis zum Ergebnis von K8 (N1) | Agent nach K8 | Z0, eigener Schritt |
 
+### N3 (23.09.2026) — Nachbesserung der Abschlusspapiere Z0
+
+**Anlass.** Die Prüfung der Abschlusspapiere der Stufe Z0 (N2, Quellendossier, Setup-Konzept 6.1,
+Protokoll) hat Stellen gefunden, die den gebauten Stand ungenau wiedergeben. N2 bleibt unverändert;
+dieser Nachtrag berichtigt ihn, der Hauptteil ist mit Verweis „(N3)" nachgezogen. Er enthält
+**keinen Entscheid** des Anwenders.
+
+**Befunde:**
+
+- **(a) Provenienz nach einer Änderung (zu N2 (f)).** `TwwNutzungsartCtrl` setzt eine geänderte
+  Wertgruppe nur dann auf `EIGENKONSTRUKTION` mit neutraler Quelle „Eigenkonstruktion", wenn der
+  Entwurf die Provenienz der Vorlage unverändert mitbringt (Quelle, Ausgabe und Herkunftsart gleich);
+  eine im Entwurf ausdrücklich gesetzte andere Provenienz bleibt mit der neuen Katalogversion stehen.
+  Regelquelle ist das Quellendossier, § 2 Nr. 4.
+- **(b) Paketformat (zu Kapitel 6 (b) und N2 (j)).** `Status` und `ReadOnly` stehen nur in den fünf
+  Kopftabellen; `Tab_TwwTagesgang_STAMM` und `Tab_TwwBedarfstagEreignis_STAMM` führen keine dieser
+  Spalten, eine solche Spalte in ihrer Datei bricht mit Rückgabe 5 ab. Das Paket vergibt die IDs der
+  Köpfe selbst; ein leeres Feld ist NULL.
+- **(c) Erweiterung der `WikiProduktdatenWacheTests` (Kapitel 6 (e)) nicht in Z0.** Die Wache nennt
+  die Tww-Kataloge nicht; `TwwKatalogWacheTests` prüft nur die Quellentexte des Testkatalogs, nicht
+  Bezeichner oder andere Katalogtexte. Die Erweiterung gehört zur Abnahme der Stufe Z4 (Kapitel 7),
+  zusammen mit den `ZPG_`/`ZPGK_`-Ressourcen.
+- **(d) ZU18 (zu N2 (m)).** Wie viele Testklassen die Repo-Testdatenbank direkt öffnen, ist nicht
+  festgestellt: eine oder mehrere, noch aufzuspüren.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (c) | `WikiProduktdatenWacheTests` auf die Katalogtexte der `Tab_Tww*_STAMM` (ohne `Beleg`) erweitern | Agent der Stufe Z4 | Z4 |
+| (d) | bei Entscheid nach Empfehlung zu ZU18: jede gefundene Testklasse umstellen | Agent eines Folgepostens | unabhängig von den Stufen |
+
 ---
 
 ## Anhang A — Auftragsblatt Stufe Z0 (Grundlagen und Schema)
@@ -1659,7 +1689,4 @@ des `SqlDialektPruefer`, Build der Windows-Schale, den Befund zur Mitnahme fehle
 Projektimport (3.2), die an K8 hängenden offenen Posten und jede Abweichung von diesem Blatt mit Grund.
 Die Orchestrierung nimmt ab, führt zusammen und löscht `AGENT_LAEUFT`.
 
-**Stand 23.09.2026.** P1–P12 sind auf dem Zweig `z0` umgesetzt (Commits `6628e386` bis `4ddebed9`),
-P13 mit dem [Quellendossier](Zapfprofilgenerator/Quellendossier_Zapfprofilgenerator.md); P14 ruht bis
-zum Ergebnis von K8. Die Abweichungen von diesem Blatt stehen in N2 (Kapitel 11), die Abnahmezahlen
-in Kapitel 7 („Stand Z0").
+**Umsetzungsstand und Abweichungen:** N2 und N3 (Kapitel 11).
