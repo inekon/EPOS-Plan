@@ -27,10 +27,11 @@ namespace EPOS.Kern.Tests
     /// <para><b>Die Fälle:</b> keine Zeile mit <c>Status = 'AUSLIEFERUNG'</c>; jede
     /// Katalogzeile ist <c>EIGEN</c> UND trägt in jeder Provenienzgruppe ein zugelassenes Paar
     /// aus Herkunftsart und Quelle — <c>FIKTIV</c> mit „Testkatalog (fiktiv)“ (Kapitel 6 (b)),
-    /// in Nutzungsarten und Tagesgängen dazu <c>EIGENKONSTRUKTION</c> mit „VDI 6002 Blatt n
-    /// (abgeleitet)“ (Anwenderentscheid ZU19: geringfügig abweichende VDI-Werte, Regel in
-    /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c>), in Bedarfstagen
-    /// <c>FREI</c> mit der Ecodesign-Verordnung (EU-Recht). Eine Tabelle ohne Status — die
+    /// in Nutzungsarten und Tagesgängen dazu <c>FIKTIV</c> mit „VDI 6002 Blatt n (abgeleitet)“
+    /// (Anwenderentscheid ZU19: geringfügig abweichende VDI-Werte, Regel in
+    /// <c>Referenzlaeufe/Skripte/normzahlen_abgeleitet_bauen.py</c> — Testdaten nach Regel, weder
+    /// Eigenkonstruktion noch Normwert), in Bedarfstagen <c>FREI</c> mit der Ecodesign-Verordnung
+    /// (EU-Recht). Eine Tabelle ohne Status — die
     /// Tagesgänge — prüft nur Herkunft und Quelle, eine ohne Herkunftsspalte — der
     /// Tagesgangsatz — nur den Status. Die Katalogversion ist nie leer; das Einspielskript
     /// <c>Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py</c> ist wiederholbar — ein weiterer
@@ -69,15 +70,15 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Die zugelassenen Paare aus Herkunftsart und Quelle je Tabelle: überall der fiktive
-        /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19); in den
-        /// Bedarfstagen das Ecodesign-Zapfprofil.
+        /// Testkatalog; in Nutzungsarten und Tagesgängen die abgeleiteten VDI-Werte (ZU19, Herkunftsart
+        /// <c>FIKTIV</c>); in den Bedarfstagen das Ecodesign-Zapfprofil.
         /// </summary>
         private static IEnumerable<(string Herkunft, string Quelle)> Zugelassen(string tabelle)
         {
             yield return (TwwSchema.HERKUNFT_FIKTIV, QUELLE_FIKTIV);
             if (tabelle == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM || tabelle == TwwSchema.TAB_TWW_TAGESGANG_STAMM)
                 foreach (string blatt in new[] { "1", "2" })
-                    yield return (TwwSchema.HERKUNFT_EIGENKONSTRUKTION, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
+                    yield return (TwwSchema.HERKUNFT_FIKTIV, string.Format(CultureInfo.InvariantCulture, QUELLE_VDI_ABGELEITET, blatt));
             if (tabelle == TwwSchema.TAB_TWW_BEDARFSTAG_STAMM)
                 yield return (TwwSchema.HERKUNFT_FREI, QUELLE_ECODESIGN);
         }
@@ -132,8 +133,9 @@ namespace EPOS.Kern.Tests
                 "Herkunftsart und Quelle gefuehrt sind (Kapitel 6 (b), ZU19):\n" + string.Join("\n", funde));
             Assert.True(geprueft > 0, "Der Testkatalog fehlt — die Probe waere leer.");
             // Die abgeleiteten VDI-Zeilen und das Ecodesign-Zapfprofil stehen da (ZU19, Stufe Z3).
-            Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w",
-                             TwwSchema.HERKUNFT_EIGENKONSTRUKTION) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
+            Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $w " +
+                             "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'",
+                             TwwSchema.HERKUNFT_FIKTIV) > 0, "Keine abgeleitete VDI-Nutzungsart in der Testdatenbank.");
             Assert.True(Zahl(c, "SELECT COUNT(*) FROM \"" + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + "\" WHERE \"Quelle_Art\" = 5 AND \"Quelle\" = $w",
                              QUELLE_ECODESIGN) == 1, "Das Ecodesign-Zapfprofil fehlt in der Testdatenbank.");
         }
@@ -282,8 +284,9 @@ namespace EPOS.Kern.Tests
             using (SqliteConnection c = Oeffnen(pfad))
             using (SqliteCommand b = c.CreateCommand())
             {
-                b.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $h";
-                b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_EIGENKONSTRUKTION);
+                b.CommandText = "SELECT * FROM \"" + TwwSchema.TAB_TWW_NUTZUNGSART_STAMM + "\" WHERE \"Bedarf_Herkunftsart\" = $h " +
+                                "AND \"Bedarf_Quelle\" LIKE 'VDI 6002 Blatt _ (abgeleitet)'";
+                b.Parameters.AddWithValue("$h", TwwSchema.HERKUNFT_FIKTIV);
                 var zeilen = new List<Dictionary<string, object>>();
                 using (SqliteDataReader r = b.ExecuteReader())
                     while (r.Read())

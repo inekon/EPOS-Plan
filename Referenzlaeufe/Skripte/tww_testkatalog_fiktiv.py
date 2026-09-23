@@ -35,9 +35,11 @@ Katalog traegt die Testdatenbank vier Nutzungsarten mit GERINGFUEGIG ABWEICHENDE
 (je ein eigener Tagesgangsatz; Bedarf, Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie
 allein aus tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von
 normzahlen_abgeleitet_bauen.py nach der dort dokumentierten Regel; die Originale braucht dieses
-Skript nicht. Die Zeilen tragen Herkunftsart 'EIGENKONSTRUKTION' (das Schema kennt keine eigene
-Herkunftsart "abgeleitet") und die Quelle "VDI 6002 Blatt <n> (abgeleitet)"; ihre Zapfkategorien
-bleiben fiktiv.
+Skript nicht. Die Zeilen (Nutzungsart in allen drei Provenienzgruppen, Tagesgaenge) tragen
+Herkunftsart 'FIKTIV' mit der Quelle "VDI 6002 Blatt <n> (abgeleitet)": Sie sind weder
+Eigenkonstruktion noch Normwert, sondern Testdaten nach einer Regel. Wie jede FIKTIV-Zeile fallen
+sie deshalb in der Auslieferungsvorlage (TwwKataloge.Bereinigen) - gewollt, solange die Frage ZU20
+(abgeleitete Werte in der Auslieferung?) beim Anwender offen ist.
 
 DAS ECODESIGN-ZAPFPROFIL (Stufe Z3, Konzept 4.5 Quelle (5)): ein Bedarfstag der Art 5 mit den 24
 Zapfungen des Lastprofils L der Verordnung (EU) Nr. 814/2013, Anhang III, Tabelle 1 - EU-Recht,
@@ -56,6 +58,7 @@ WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel feh
 Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Eine vorhandene
 Nutzungsart dieses Katalogs, deren Bezugstemperaturen von BEZUG_ZAPF/BEZUG_KALT abweichen, wird
 auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank; ebenso
+die Provenienz (Quelle, Ausgabe, Herkunftsart) der Nutzungsarten und Tagesgaenge dieses Katalogs,
 ein vorhandener Parameter mit anderem Wert oder anderer Einheit und ein vorhandener DIN-4708-Wert
 mit anderem Wert. Ein zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
 diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
@@ -112,7 +115,7 @@ BEZUG_KALT = 12.0
 # --- Abgeleitete VDI-6002-Werte (ZU19) ---------------------------------------------------------
 # Die Datei traegt KEINEN Originalwert; ihre Regel steht im Kopf von normzahlen_abgeleitet_bauen.py.
 ABGELEITET_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_katalogwerte_abgeleitet.json")
-HERKUNFT_ABGELEITET = "EIGENKONSTRUKTION"
+HERKUNFT_ABGELEITET = "FIKTIV"      # Testdaten nach Regel - nie Eigenkonstruktion, nie Normwert
 AUSGABE_VDI = "2014-03"
 ZUSATZ_ABGELEITET = " (abgeleitet)"
 # Die Bedarfswerte der Quelle sind Liter je Einheit und Tag bei 60 Grad C; im Katalog stehen kWh bei
@@ -532,6 +535,24 @@ def main():
                                   '"Bezug_Kaltwasser" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
                                   'AND ("Bezug_Zapftemperatur" <> ? OR "Bezug_Kaltwasser" <> ?)',
                                   (n["bezug_zapf"], n["bezug_kalt"], n["name"], VERSION, n["bezug_zapf"], n["bezug_kalt"]))
+                nachgefuehrt += cur.rowcount
+
+            # --- Provenienz vorhandener Zeilen nachfuehren (Quelle, Ausgabe, Herkunftsart) ---
+            # So erreicht eine berichtigte Herkunftsart (etwa FIKTIV statt EIGENKONSTRUKTION fuer
+            # die abgeleiteten VDI-Zeilen) auch eine schon gefuellte Testdatenbank.
+            for n in ALLE_NUTZUNGSARTEN:
+                for g in ("Bedarf", "Jahresgang", "Wochengang"):
+                    cur = con.execute(f'UPDATE "Tab_TwwNutzungsart_STAMM" SET "{g}_Quelle" = ?, "{g}_Ausgabe" = ?, '
+                                      f'"{g}_Herkunftsart" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
+                                      f'AND ("{g}_Quelle" IS NOT ? OR "{g}_Ausgabe" IS NOT ? OR "{g}_Herkunftsart" IS NOT ?)',
+                                      (n["quelle"], n["ausgabe"], n["herkunft"], n["name"], VERSION,
+                                       n["quelle"], n["ausgabe"], n["herkunft"]))
+                    nachgefuehrt += cur.rowcount
+            for (satz, _gaenge, quelle, ausgabe, herkunft) in SAETZE:
+                cur = con.execute('UPDATE "Tab_TwwTagesgang_STAMM" SET "Quelle" = ?, "Ausgabe" = ?, "Herkunftsart" = ? '
+                                  'WHERE "ID_Tagesgangsatz" = ? AND ("Quelle" IS NOT ? OR "Ausgabe" IS NOT ? '
+                                  'OR "Herkunftsart" IS NOT ?)',
+                                  (quelle, ausgabe, herkunft, id_saetze[satz], quelle, ausgabe, herkunft))
                 nachgefuehrt += cur.rowcount
 
             # --- Parameter --------------------------------------------------------------
