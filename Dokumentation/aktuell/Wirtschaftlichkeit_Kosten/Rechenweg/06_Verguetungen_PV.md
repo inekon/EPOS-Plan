@@ -86,7 +86,8 @@ Anzulegender Wert (EegSatzRechner)
   Degression   Faktor 0,99^n   (n = Halbjahresstichtage 1.2. / 1.8. ab 01.02.2024 bis zur Inbetriebnahme)
   AW_Klasse  = round( Basis_Klasse × 0,99^n , 2 )      marginale Klassen 10 / 40 / 100 / 400 / 1000 kWp
   AW_mix     = round( Σ Anteil_k × AW_Klasse_k / Σ Anteil_k , 2 )
-  EV_fest    = max(0, AW_mix − 0,40)              nur ≤ 100 kW
+  EV_fest    = max(0, AW_ungerundet − 0,40)       nur ≤ 100 kW ; UNGERUNDET — der ungerundete Mix
+               (bzw. der AW-Override) abzüglich des Abschlags (V-1) ; die Herleitung nennt ihn
   Ausfallvergütung = AW × (1 − 20 %)              nur > 100 kW
 
 Vergütungsdauer   20 Jahre + Restmonate des Inbetriebnahmejahres (§ 25 Abs. 1)
@@ -110,11 +111,12 @@ Degradation (E2.4)   Faktor_t = (1 − d/100)^(t−1)     Jahr 1 = 1; d = 0 ⇒ 
   Mehrbezug_t = Eigenverbrauch_kWh × (1 − Faktor_t) × Strompreis      als Abzug in derselben Reihe
 
 § 51a — Kompensation im letzten Vergütungsjahr
-  Gutschrift = Ausfallarbeit(Jahr 1) × 0,5 × AW / 100 × Faktor_T       Einmalzahlung, auf ihr Jahr abgezinst
+  Gutschrift = Ausfallarbeit(Jahr 1) × 0,5 × Satz / 100 × Faktor_T     Einmalzahlung, auf ihr Jahr abgezinst
+  Satz       = EV_fest bei fester Vergütung (V-2), sonst AW (Direktvermarktung) ; Betrag ungerundet
 
 60-%-Kappung   Verlust [kWh] = Σ_h max(0, Einsp_h − 0,6 × kWp)       nur mit Stundenreihe; AUTO nur bei fester EV ohne iMSys
 
-Feste EV       Erlös = Arbeit × EV_fest / 100                         nur ≤ 100 kW
+Feste EV       Erlös = round(Arbeit × EV_fest / 100 ; 2)              nur ≤ 100 kW ; gerundet wird allein der Erlös
 
 Die PV-Reihe steigt NICHT mit p_E: Der anzulegende Wert ist gesetzlich fixiert (nominal konstant,
 DIN EN 17463, 6.3.2). Der Jahresmarktwert schwankt — er gehört in die Szenarienpflege, nicht in eine
@@ -162,3 +164,4 @@ Mit Degradation (`03` kennt sie nicht, sie ist Feld dieses Dialogs) sinkt die Ei
 | U38 | Die Vergütung galt faktisch je Stand, aber nur zufällig: Eine Variante hatte eigene Angaben genau dann, wenn sie NACH der Pflege des Stamms angelegt wurde (der Kopierlauf nahm die Zeile mit) — von außen nicht erkennbar | gebaut: `Uebernahme_Stamm` (Schemaschritt 93) macht daraus eine Wahl; `LiesAufgeloest` löst je Stand auf, der Kopierlauf lässt die PV-Zeile aus, Reiter und Dialog nennen die Herkunft |
 | U27 | Aufgeschlüsselte Vorschau (Spoterlös, Marktprämie, DV-Entgelt, Kappung, Summe, Vergütungsausfall, vermiedener Netzbezug) statt der einen Zeile; Jahresmarktwertzeile in der Gruppe Vermarktung — Marktwert-Override und Marktwertentwicklung haben im Dialog kein Feld | Mockup Abschnitt 6, Anhang Umsetzungsstand |
 | — | § 51a-Formel ist eine Näherung (Verlängerung der Vergütungsdauer um die Ausfallstunden) | im Bericht als Näherung deklarieren |
+| ✔ V-1 · V-2 | EV-Rundung: der EV-Mix wurde über dem schon gerundeten AW-Mix ein zweites Mal gerundet, der Erlös blieb ungerundet · § 51a bewertete auch bei fester Vergütung mit dem AW statt mit der EV | **umgesetzt #446** (E7c2, A4): EV-Mix ungerundet, gerundet allein der Erlös auf Cent; § 51a bei fester Vergütung mit der Einspeisevergütung, in der Direktvermarktung mit dem AW; der § 51a-Betrag bleibt ungerundet (E7c2‑Q6). `PvErloesRechnerEegTests` neu gepinnt, die Marktprämie (#380) gleich. Proben mit fester Vergütung: 1040 Erlös Jahr 1 139,832 → 139,83 €, § 51a 18,39 → 17,48 €; 1045 § 51a 6,48 → 6,16 €; 1046 § 51a 7,21 → 6,85 €; Rechner 100 kWp Jahr 1 3.207,96 → 3.209,02 €, § 51a 427,60 → 401,13 €. Das Beispiel dieses Papiers (300 kWp, Direktvermarktung) bleibt unverändert. Offen: der Satz der Speicherbewertung `VpvCtKwh` noch aus dem gerundeten Mix — ungerundet mit E7c3 (E7c2‑Q5) |
