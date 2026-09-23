@@ -1,0 +1,262 @@
+﻿@* Der Abschnitt „Verlauf" der Wirtschaftlichkeitsseite (Etappe E6, Konzept
+   Wirtschaftlichkeit § 2.13 (5), Mockup Dialog_Formel_Zahlenprobe.html Kategorie 8,
+   „Der Verlauf über die Zeit - alle drei Szenarien").
+
+   WAS ER ZEIGT. Den kumulierten Barwert der Differenz zur Referenz je Jahr, fuer
+   jeden angehakten Stand in drei Stricharten: Farbe = Stand, Strichart = Szenario,
+   die Legende zweigeteilt, der Nulldurchgang je Linie als Marke. In Sicht 2 ist es
+   die eine Linie B - A in drei Stricharten; ihr Nulldurchgang ist die dynamische
+   Amortisation von B gegenueber A.
+
+   IM ABSCHNITT, NICHT HINTER EINEM KNOPF. Bis E6 oeffnete „Verlauf…" in der
+   Fussleiste einen Dialog, der ein Szenario je Lauf rechnete. Der Abschnitt steht
+   in „Wie sicher ist das?" zwischen Bandbreite und Sensitivitaet: Die Bandbreite
+   zeigt die Spanne am Ende, der Verlauf, wie sie entsteht.
+
+   DIE BEDIENLEISTE DES VERLAUFS: Zeitraum, „Aktualisieren" (rechnet; waehrend der
+   Rechnung derselbe Knopf als „Abbrechen"), „Verlauf nach Excel…" (U13), darunter
+   je Stand und je Szenario ein Haken. Ein Haken ZEICHNET nur neu - gerechnet ist
+   schon; erst der Zeitraum braucht eine neue Rechnung.
+
+   DIE RECHNUNG LIEGT IN DER HUELLE (KapitalwertVerlaufHuelle): Sie sammelt die
+   Simulationsdaten, wo sie fehlen, rechnet drei vollstaendige Laeufe ohne Speichern
+   und baut das Zeichenmodell mit dem Renderer des Kerns. Der Abschnitt kennt weder
+   Datenbank noch Renderer.
+
+   DAS MODELL STEHT ALS FELD, EINMAL JE ANSICHT: DiagrammSvg baut seinen Knotenbaum
+   nur neu, wenn die REFERENZ des Modells wechselt. Die Legende des Bildes ist nicht
+   schaltbar - geschaltet wird ueber die Haken, denn ein Eintrag „Variante 1" traegt
+   drei Linien und ein Eintrag „Ungünstig" eine je Stand. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+@using EPOS.UI.Seiten.Simulation
+@implements IDisposable
+
+<div class="epos-wirt-verlauf-teil">
+    <p class="epos-untergruppe">@Texte.Titel</p>
+
+    <div class="epos-seite-zeile epos-wirt-verlauf-leiste">
+        <Ganzzahlfeld Bezeichnung="@Texte.LabelZeitraum" Wert="@_jahre" Min="@MIN_JAHRE" Max="@MAX_JAHRE"
+                      Aktiv="@(!_laeuft && !Gesperrt)" WertChanged="@(w => _jahre = w ?? _jahre)" />
+        @if (Dienste?.Berechnen is not null)
+        {
+            <button type="button" class="epos-knopf epos-wirt-verlauf-rechnen" disabled="@(Gesperrt && !_laeuft)"
+                    @onclick="AktualisierenOderAbbrechen">@(_laeuft ? Texte.Abbrechen : Texte.Aktualisieren)</button>
+        }
+        @if (Dienste?.NachExcel is not null)
+        {
+            <button type="button" class="epos-knopf epos-wirt-verlauf-excel"
+                    disabled="@(_laeuft || Gesperrt || _ansicht?.Modell is null)"
+                    @onclick="NachExcel">@Texte.NachExcel</button>
+        }
+    </div>
+
+    @if (_ansicht is not null && _ansicht.Staende.Count > 0)
+    {
+        <div class="epos-seite-zeile epos-wirt-verlauf-wahl" role="group" aria-label="@Texte.LabelVarianten">
+            <span class="epos-feld-text">@Texte.LabelVarianten</span>
+            @foreach ((int Id, string Text) s in _ansicht.Staende)
+            {
+                int id = s.Id;
+                <Schalter Bezeichnung="@s.Text" Wert="@_ansicht.GewaehlteStaende.Contains(id)"
+                          Aktiv="@(!_laeuft && !Gesperrt)" WertChanged="@(w => StandUmschalten(id, w))" />
+            }
+        </div>
+        <div class="epos-seite-zeile epos-wirt-verlauf-wahl" role="group" aria-label="@Texte.LabelSzenarien">
+            <span class="epos-feld-text">@Texte.LabelSzenarien</span>
+            @foreach ((int Id, string Text) s in _ansicht.Szenarien)
+            {
+                int id = s.Id;
+                <Schalter Bezeichnung="@s.Text" Wert="@_ansicht.GewaehlteSzenarien.Contains(id)"
+                          Aktiv="@(!_laeuft && !Gesperrt)" WertChanged="@(w => SzenarioUmschalten(id, w))" />
+            }
+        </div>
+    }
+    <Herleitungszeile Text="@Texte.Erklaerung" />
+
+    @if (!string.IsNullOrEmpty(_fehler))
+    {
+        <Warnbanner Stufe="WarnStufe.Fehler" Text="@_fehler" />
+    }
+
+    <DiagrammSvg Modell="@_ansicht?.Modell" Kennung="kapitalwert-szenarien" Bezeichnung="@Texte.Bild"
+                 PlatzhalterText="@Texte.Platzhalter" LegendeSchaltbar="false" />
+
+    @if (!string.IsNullOrEmpty(_ansicht?.Nulldurchgangszeile))
+    {
+        <Herleitungszeile Text="@_ansicht.Nulldurchgangszeile" />
+    }
+    @if (!string.IsNullOrEmpty(_ansicht?.Restwertzeile))
+    {
+        <Herleitungszeile Text="@_ansicht.Restwertzeile" />
+    }
+    @if (!string.IsNullOrEmpty(_ansicht?.Hinweis))
+    {
+        <Herleitungszeile Text="@_ansicht.Hinweis" />
+    }
+    @if (!string.IsNullOrEmpty(_status))
+    {
+        <p class="epos-status epos-wirt-verlauf-status">@_status</p>
+    }
+</div>
+
+@code {
+    /// <summary>Kleinster Zeitraum [a] — wie im abgelösten Verlaufsdialog.</summary>
+    public const int MIN_JAHRE = 2;
+
+    /// <summary>Größter Zeitraum [a] — wie im abgelösten Verlaufsdialog.</summary>
+    public const int MAX_JAHRE = 60;
+
+    /// <summary>Die Datenseite (Hülle). Ohne sie zeigt der Abschnitt nur den Platzhalter.</summary>
+    [Parameter] public VerlaufDienste? Dienste { get; set; }
+
+    /// <summary>Die Beschriftungen; das Bündel füllt sich selbst.</summary>
+    [Parameter] public VerlaufTexte Texte { get; set; } = new();
+
+    /// <summary>
+    /// Die FASSUNG des Seitenstandes: Die Seite zählt sie nach jedem Auffrischen, jedem
+    /// Rechenlauf und jedem Wechsel von Vergleichswahl, Referenz oder Sicht hoch — dann
+    /// holt sich der Abschnitt seine Ansicht neu (Hausregel „Fassungsnummer statt Kopie").
+    /// </summary>
+    [Parameter] public int Fassung { get; set; }
+
+    /// <summary>Läuft auf der Seite etwas (Berechnen, Bericht)? Dann ruht die Bedienung.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    /// <summary>Meldet eine fertige Rechnung — die Seite liest neu, wenn sie neu simuliert hat.</summary>
+    [Parameter] public EventCallback<VerlaufAnsicht> Gerechnet { get; set; }
+
+    private VerlaufAnsicht? _ansicht;
+    private int _jahre = 20;
+    private int? _fassung;
+    private bool _laeuft;
+    private string _status = "";
+    private string _fehler = "";
+    private CancellationTokenSource? _abbruch;
+
+    /// <summary>Die gezeigte Ansicht (Prüfhilfe).</summary>
+    public VerlaufAnsicht? Ansicht => _ansicht;
+
+    /// <summary>Läuft gerade eine Rechnung? (Prüfhilfe)</summary>
+    public bool Laeuft => _laeuft;
+
+    /// <summary>Die Statuszeile des Abschnitts (Prüfhilfe).</summary>
+    public string Status => _status;
+
+    protected override void OnParametersSet()
+    {
+        if (_fassung == Fassung) return;
+        bool erstmals = _fassung is null;
+        _fassung = Fassung;
+        if (_laeuft) return;
+
+        _ansicht = Dienste?.Zeichnen?.Invoke(Wahl());
+        if (_ansicht is not null && _ansicht.Jahre > 0) _jahre = _ansicht.Jahre;
+        else if (erstmals && Dienste is not null) _jahre = Begrenzt(Dienste.JahreVorgabe);
+    }
+
+    /// <summary>Die Wahl aus der gezeigten Ansicht — ohne Ansicht: alles.</summary>
+    private VerlaufWahl Wahl()
+        => _ansicht is null ? VerlaufWahl.Alle
+           : new VerlaufWahl(_ansicht.GewaehlteStaende, _ansicht.GewaehlteSzenarien);
+
+    private static int Begrenzt(int jahre) => Math.Min(MAX_JAHRE, Math.Max(MIN_JAHRE, jahre));
+
+    // ------------------------------------------------------------ Haken
+
+    private void StandUmschalten(int id, bool an)
+    {
+        if (_ansicht is null || Dienste?.Zeichnen is null) return;
+        var staende = new List<int>(_ansicht.GewaehlteStaende);
+        if (an) { if (!staende.Contains(id)) staende.Add(id); }
+        else staende.Remove(id);
+        NeuZeichnen(new VerlaufWahl(staende, _ansicht.GewaehlteSzenarien));
+    }
+
+    private void SzenarioUmschalten(int id, bool an)
+    {
+        if (_ansicht is null || Dienste?.Zeichnen is null) return;
+        var szenarien = new List<int>(_ansicht.GewaehlteSzenarien);
+        if (an) { if (!szenarien.Contains(id)) szenarien.Add(id); }
+        else szenarien.Remove(id);
+        NeuZeichnen(new VerlaufWahl(_ansicht.GewaehlteStaende, szenarien));
+    }
+
+    private void NeuZeichnen(VerlaufWahl wahl)
+    {
+        VerlaufAnsicht? neu = Dienste?.Zeichnen?.Invoke(wahl);
+        if (neu is not null) _ansicht = neu;
+    }
+
+    // ------------------------------------------------------------ Rechnen
+
+    /// <summary>
+    /// „Aktualisieren" rechnet über den Zeitraum des Feldes; während der Rechnung bricht
+    /// derselbe Knopf ab (wie im abgelösten Dialog). Der Abschnitt bleibt dabei stehen und
+    /// sagt „Vorgang abgebrochen".
+    /// </summary>
+    private async Task AktualisierenOderAbbrechen()
+    {
+        if (_laeuft)
+        {
+            try { _abbruch?.Cancel(); } catch { /* schon entsorgt */ }
+            return;
+        }
+        if (Dienste?.Berechnen is null || Gesperrt) return;
+
+        _laeuft = true;
+        _fehler = "";
+        _status = Texte.Laeuft;
+        _abbruch = new CancellationTokenSource();
+        StateHasChanged();
+
+        try
+        {
+            VerlaufAnsicht ansicht = await Dienste.Berechnen(Begrenzt(_jahre), Wahl(), _abbruch.Token);
+            _ansicht = ansicht;
+            if (ansicht.Jahre > 0) _jahre = ansicht.Jahre;
+            _status = ansicht.Statuszeile ?? "";
+            await Gerechnet.InvokeAsync(ansicht);
+        }
+        catch (OperationCanceledException)
+        {
+            _status = Texte.Abgebrochen;
+        }
+        catch (Exception ex)
+        {
+            _fehler = string.Format(Texte.VorlageFehler, ex.Message);
+            _status = "";
+        }
+        finally
+        {
+            _abbruch?.Dispose();
+            _abbruch = null;
+            _laeuft = false;
+            StateHasChanged();
+        }
+    }
+
+    // ------------------------------------------------------------ Excel (U13)
+
+    /// <summary>
+    /// „Verlauf nach Excel…": Die Hülle fragt über den Dateidienst der Plattform nach dem
+    /// Ziel und schreibt das Blatt „Verlauf"; die Rückmeldung steht in der Statuszeile, ein
+    /// Fehlschlag zusätzlich als Band.
+    /// </summary>
+    private async Task NachExcel()
+    {
+        if (Dienste?.NachExcel is null || _laeuft || Gesperrt) return;
+        _fehler = "";
+        Rueckmeldung r = await Dienste.NachExcel(Wahl());
+        if (!r.Erfolg) _fehler = r.Text;
+        else if (!string.IsNullOrEmpty(r.Text)) _status = r.Text;
+    }
+
+    /// <summary>Eine offene Rechnung wird mit dem Abschnitt abgebrochen.</summary>
+    public void Dispose()
+    {
+        try { _abbruch?.Cancel(); } catch { /* schon entsorgt */ }
+        _abbruch?.Dispose();
+        _abbruch = null;
+    }
+}

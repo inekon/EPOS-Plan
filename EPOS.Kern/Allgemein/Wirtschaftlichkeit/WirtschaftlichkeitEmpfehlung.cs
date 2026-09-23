@@ -46,6 +46,14 @@ namespace WindowsFormsApplication1
         /// <summary>Anzeigename der Variante (aus dem Ergebnis).</summary>
         public string Anzeige = "";
 
+        /// <summary>
+        /// Das Urteil gilt dem STAMMPROJEKT — das gibt es nur, wenn eine Variante die
+        /// Referenz ist (ETAPPE E5, Q7). Schneidet der Stamm dann am besten ab, lautet der
+        /// Vorschlag „Stammprojekt beibehalten" (<c>WIRT_EMPF_SATZ_STAMM</c>, Anwenderentscheid
+        /// 22.09.2026 zu Frage (2) aus E5b) — nicht „Variante „Stamm"".
+        /// </summary>
+        public bool IstStamm;
+
         /// <summary>Die Einstufung nach der Regel in <see cref="WirtschaftlichkeitEmpfehlung"/>.</summary>
         public EmpfehlungStufe Stufe;
 
@@ -200,6 +208,7 @@ namespace WindowsFormsApplication1
                 }
                 if (string.IsNullOrEmpty(v.Anzeige) && !string.IsNullOrEmpty(e.Anzeige))
                     v.Anzeige = e.Anzeige;
+                if (e.IstStamm) v.IstStamm = true;
 
                 if (string.Equals(e.Szenario, WirtschaftlichkeitSzenario.WORST, StringComparison.Ordinal))
                     v.DiffWorst = e.KapitalwertDiff;
@@ -328,7 +337,14 @@ namespace WindowsFormsApplication1
                         : MyResource.Resource.WIRT_EMPF_NUR_ERWARTET,
                     Geld(v.Schlechtester, kultur), Geld(v.Bester, kultur));
 
-            return string.Format(kultur, MyResource.Resource.WIRT_EMPF_SATZ,
+            // Anwenderentscheid 22.09.2026 (Frage (2) aus E5b): Schneidet bei einer Variante
+            // als Referenz das STAMMPROJEKT am besten ab, hat es einen eigenen Satz — es ist
+            // keine Variante, sondern der Stand, der bleibt. Dieselben Platzhalter wie
+            // WIRT_EMPF_SATZ; der Name ({0}) steht dort nicht, der Satz sagt „Stammprojekt".
+            string muster = v.IstStamm
+                          ? MyResource.Resource.WIRT_EMPF_SATZ_STAMM
+                          : MyResource.Resource.WIRT_EMPF_SATZ;
+            return string.Format(kultur, muster,
                                  v.Anzeige, Geld(v.DiffErwartet, kultur), zusatz, refName);
         }
 

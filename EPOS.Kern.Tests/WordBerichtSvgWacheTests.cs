@@ -59,9 +59,10 @@ namespace EPOS.Kern.Tests
         /// <c>asvg:svgBlip</c> darin zeigt. Der SVG-Teil beginnt wohlgeformt mit
         /// <c>&lt;svg</c> und trägt keinen BOM.
         ///
-        /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die vier
-        /// übrigen die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell
-        /// bekommen haben und seither ebenfalls über den Modellweg gehen.</para>
+        /// <para>Die ersten vier sind die Berichtsbilder der Gruppe (d), die nächsten vier
+        /// die Arten, die mit den Gruppen (b) und (c) ihr Zeichenmodell bekommen haben
+        /// und seither ebenfalls über den Modellweg gehen; die letzten zwei sind die Bilder
+        /// der Etappe E6 (Verlauf mit drei Szenarien, Spannenbild).</para>
         /// </summary>
         [Theory]
         [InlineData("jahresverlauf")]
@@ -72,6 +73,8 @@ namespace EPOS.Kern.Tests
         [InlineData("kuchen")]
         [InlineData("balken")]
         [InlineData("kapitalwert")]
+        [InlineData("kapitalwert_szenarien")]
+        [InlineData("kapitalwert_spanne")]
         public void EinModellLegtBeideTeileAb(string bild)
         {
             Zeichenmodell m = Bildmodell(bild);
@@ -385,6 +388,17 @@ namespace EPOS.Kern.Tests
                                           "Brennstoffeinsatz", "MWh/a", Balken());
                 case "kapitalwert": return ChartRenderer.KapitalwertVerlaufModell(
                                           "Kumulierte Barwerte je Version", Barwerte(), null);
+                // ETAPPE E6: das Dreierbild des Wortberichts (Verlauf mit drei Szenarien).
+                case "kapitalwert_szenarien": return Dreierbild();
+                // ETAPPE E6, Nachtrag E5b: das Spannenbild neben der Bandbreitentafel.
+                case "kapitalwert_spanne": return ChartRenderer.KapitalwertSpanneModell(
+                                          new List<ChartRenderer.Spannenbalken>
+                                          {
+                                              new ChartRenderer.Spannenbalken
+                                              {
+                                                  Name = "Variante A", Worst = -4000.0, Erwartet = 6000.0, Best = 11000.0
+                                              }
+                                          }, "Stamm", null);
                 default: throw new ArgumentOutOfRangeException(nameof(bild), bild, "unbekanntes Bild");
             }
         }
@@ -401,6 +415,28 @@ namespace EPOS.Kern.Tests
             new ChartRenderer.Balken("Stamm", 1240.0, true),
             new ChartRenderer.Balken("Variante A", 980.0, false)
         };
+
+        /// <summary>ETAPPE E6 — das Dreierbild aus einem synthetischen Sammelmodell: eine
+        /// Variante in drei Szenarien, gegen den Stamm.</summary>
+        private static Zeichenmodell Dreierbild()
+        {
+            var verlauf = new WirtschaftlichkeitVerlaufSzenarien { Jahre = 20 };
+            foreach (string s in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+            {
+                double f = s == WirtschaftlichkeitSzenario.WORST ? 0.9 : s == WirtschaftlichkeitSzenario.BEST ? 1.1 : 1.0;
+                var d = new double[21];
+                d[0] = -60000.0;
+                for (int j = 1; j < d.Length; j++) d[j] = d[j - 1] + 7000.0 * f;
+                var lauf = new WirtschaftlichkeitVerlauf { Jahre = 20, Szenario = s };
+                lauf.Absolut.Add(new VerlaufSerie { IdProjekt = 1, Anzeige = "Stamm", IstStamm = true, Kumuliert = new double[21] });
+                lauf.Absolut.Add(new VerlaufSerie { IdProjekt = 2, Anzeige = "Variante A", Kumuliert = d });
+                lauf.Differenz.Add(new VerlaufSerie { IdProjekt = 2, Anzeige = "Variante A", Kumuliert = d });
+                verlauf.Laeufe[s] = lauf;
+            }
+            var texte = new ChartRenderer.VerlaufSzenarienTexte();
+            return ChartRenderer.KapitalwertSzenarienModell("Verlauf",
+                ChartRenderer.VerlaufsReihenSzenarien(verlauf, texte), texte, null);
+        }
 
         private static List<ChartRenderer.Reihe> Barwerte()
         {

@@ -100,7 +100,6 @@ namespace WindowsFormsApplication1
             { "Wirtschaftlichkeit", "Economic viability" },
             { "Kapitalwertmethode (DIN EN 17463)", "Net present value method (DIN EN 17463)" },
             { "Kennzahlen im Szenario „Erwartet“", "Key figures, scenario \"Expected\"" },
-            { "Szenarien Worst / Erwartet / Best", "Scenarios worst / expected / best" },
             { "Szenario", "Scenario" },
             { "Investition I₀ [€]", "Investment I₀ [€]" },
             { "Betriebskosten [€/a]", "Operating cost [€/a]" },

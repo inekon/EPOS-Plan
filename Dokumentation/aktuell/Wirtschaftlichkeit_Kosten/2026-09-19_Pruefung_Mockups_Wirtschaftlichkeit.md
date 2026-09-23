@@ -14,6 +14,10 @@ Prüfprotokolle mit allen Einzelbefunden:
 > `01` Nachrechnung, `02` Papierabgleich, `03` Code-Abgleich, `04` Einheitlichkeit, `05` Wiki,
 > `06` HTML-Struktur), dort steht er mit Zeilennummern und Messung.
 
+> **Entscheidungsregister.** Die geltende Fassung aller Entscheide führt das
+> [Entscheidungsregister](Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md) (Q1–Q25 unter R‑Q);
+> § 4 bleibt als Teil dieser Prüfung mit ihrem Datum stehen.
+
 ## 0 Das Ergebnis in sechs Sätzen
 
 1. **Die Zahlen des konsolidierten Mockups sind valide.** Rund 180 Größen wurden nachgerechnet,

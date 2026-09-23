@@ -678,7 +678,7 @@ namespace EPOS.Kern.Tests
             {
                 new ChartRenderer.Reihe("Puffer oben", Jahresreihe(62, 8, 0), SKColors.Firebrick),
                 new ChartRenderer.Reihe("Puffer unten", Jahresreihe(48, 6, 0), SKColors.Firebrick,
-                                        ChartRenderer.Stapelart.Keine, true)
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Gestrichelt)
             };
 
         /// <summary>
@@ -953,7 +953,7 @@ namespace EPOS.Kern.Tests
                 new List<ChartRenderer.Reihe>
                 { new ChartRenderer.Reihe("Waermebedarf", gesamt, SKColors.DarkCyan) },
                 new ChartRenderer.Reihe("Gesamt", gesamt, SKColors.Green,
-                                        ChartRenderer.Stapelart.Keine, false, 4f),
+                                        ChartRenderer.Stapelart.Keine, ChartRenderer.Strichart.Durchgezogen,4f),
                 "Waermelast [kW]", ChartRenderer.Achse.Monate, false,
                 speicher, "Speicherinhalt [kWh]");
 

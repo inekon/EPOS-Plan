@@ -639,8 +639,18 @@ namespace WindowsFormsApplication1
         public string Szenario = "";
         /// <summary>Absolute kumulierte Barwerte je Projekt (inkl. Stamm).</summary>
         public List<VerlaufSerie> Absolut = new List<VerlaufSerie>();
-        /// <summary>Differenz Variante − Stamm (Nulldurchgang = dynamische Amortisation).</summary>
+        /// <summary>Differenz Stand − Referenz (Nulldurchgang = dynamische Amortisation);
+        /// die Referenz ist <see cref="IdReferenz"/>, ohne Wahl der Stamm.</summary>
         public List<VerlaufSerie> Differenz = new List<VerlaufSerie>();
+
+        /// <summary>
+        /// ETAPPE E6 — die Referenz, gegen die <see cref="Differenz"/> läuft
+        /// (<c>Tab_Projekt.ID</c>, aufgelöst wie in <c>Berechne</c>: in Sicht 2 A, sonst die
+        /// Gruppenreferenz, ohne Wahl der Stamm). Ihre Linie in <see cref="Absolut"/> trägt
+        /// den Namen, mit dem ein Kopf „Δ ‹Stand› − ‹Referenz›" sie nennt. 0 = keine
+        /// Rechnung.
+        /// </summary>
+        public int IdReferenz;
     }
 
     /// <summary>

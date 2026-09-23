@@ -238,7 +238,7 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         // Lauf ohne Ganglinie (Altstand) fällt auf den Zielwert des Standes zurück.
         if (Gewaehlt(reihen, REIHE_PEAKZIEL) && Peakganglinie(teil, PeakZiel(ergebnis)) is double[] treppe)
             reihenliste.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_PEAKZIEL,
-                treppe, ChartRenderer.C_BHKW) { Gestrichelt = true });
+                treppe, ChartRenderer.C_BHKW) { Strichart = ChartRenderer.Strichart.Gestrichelt });
 
         // DIE ZWEITE ACHSE (Hausregel 5.3): der Ladezustand EINER Einheit im Netzbild.
         // Auf der kW-Skala laege er bei 24 kWh Inhalt und 10 kW Bezug nicht dort, wo er
@@ -274,10 +274,10 @@ public static partial class SpeicherFlottenAnzeigeCtrl
                         ChartRenderer.C_WP));
             soc.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_SOC_MIN,
                 Enumerable.Repeat(einheit.KapazitaetKWh * einheit.SocMin, anzahl).ToArray(),
-                ChartRenderer.C_KESSEL) { Gestrichelt = true });
+                ChartRenderer.C_KESSEL) { Strichart = ChartRenderer.Strichart.Gestrichelt });
             soc.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_SOC_MAX,
                 Enumerable.Repeat(einheit.KapazitaetKWh * einheit.SocMax, anzahl).ToArray(),
-                ChartRenderer.C_BHKW) { Gestrichelt = true });
+                ChartRenderer.C_BHKW) { Strichart = ChartRenderer.Strichart.Gestrichelt });
         }
 
         Zeichnung.Zeichenmodell socBild = soc.Count > 0
@@ -337,13 +337,13 @@ public static partial class SpeicherFlottenAnzeigeCtrl
         var weitere = new List<ChartRenderer.Reihe>();
         if (Gewaehlt(reihen, REIHE_BETRIEB))
             weitere.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_BETRIEB,
-                konten.Select(x => -x.OpexEuro).ToArray(), ChartRenderer.C_BHKW) { Gestrichelt = true });
+                konten.Select(x => -x.OpexEuro).ToArray(), ChartRenderer.C_BHKW) { Strichart = ChartRenderer.Strichart.Gestrichelt });
         if (Gewaehlt(reihen, REIHE_DURCHSATZ))
             weitere.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_DURCHSATZ,
-                konten.Select(x => -x.DurchsatzkostenEuro).ToArray(), ChartRenderer.C_NETZ) { Gestrichelt = true });
+                konten.Select(x => -x.DurchsatzkostenEuro).ToArray(), ChartRenderer.C_NETZ) { Strichart = ChartRenderer.Strichart.Gestrichelt });
         if (Gewaehlt(reihen, REIHE_ERSATZ))
             weitere.Add(new ChartRenderer.Reihe(MyResource.Resource.FLOTTE_R_ERSATZ,
-                konten.Select(x => -x.ErsatzkostenEuro).ToArray(), ChartRenderer.C_RASTER_SCHLECHT) { Gestrichelt = true });
+                konten.Select(x => -x.ErsatzkostenEuro).ToArray(), ChartRenderer.C_RASTER_SCHLECHT) { Strichart = ChartRenderer.Strichart.Gestrichelt });
 
         return ChartRenderer.JahresprojektionModell(
             MyResource.Resource.FLOTTE_CHART_PROJEKTION, jahre,

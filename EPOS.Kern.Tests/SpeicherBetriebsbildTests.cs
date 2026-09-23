@@ -325,7 +325,7 @@ namespace EPOS.Kern.Tests
             Assert.Equal(3, ohne.Count);
             Assert.Equal(4, mit.Count);
             Assert.All(mit[2].Werte, w => Assert.Equal(25.0, w, 9));
-            Assert.True(mit[2].Gestrichelt);
+            Assert.Equal(ChartRenderer.Strichart.Gestrichelt, mit[2].Strichart);
         }
     }
 }

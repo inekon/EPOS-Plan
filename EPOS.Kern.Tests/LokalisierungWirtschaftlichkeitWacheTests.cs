@@ -65,6 +65,9 @@ namespace EPOS.Kern.Tests
         private static readonly string[] Dateien =
         {
             Path.Combine("EPOS.UI", "Seiten", "Berichte", "WirtschaftlichkeitSeite.razor"),
+            // ETAPPE E6: der Abschnitt „Verlauf" der Seite und sein Textbündel.
+            Path.Combine("EPOS.UI", "Seiten", "Berichte", "KapitalwertVerlaufAbschnitt.razor"),
+            Path.Combine("EPOS.UI", "Seiten", "Berichte", "VerlaufTexte.cs"),
             Path.Combine("EPOS.Kern", "Allgemein", "Wirtschaftlichkeit", "EndenergieAufloeser.cs"),
             Path.Combine("EPOS.Kern", "Allgemein", "Wirtschaftlichkeit", "KohaerenzPruefung.cs"),
             // Welle KI-F8 (Entscheid KI-D-Q9, 21.09.2026): die Leseregeln der

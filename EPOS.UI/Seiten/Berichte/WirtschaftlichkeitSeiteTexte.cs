@@ -63,6 +63,10 @@ public sealed class WirtschaftlichkeitSeiteTexte
     /// <summary>WIRT_BB_TITEL</summary>
     public string BandbreiteTitel { get; set; }
         = T("WIRT_BB_TITEL", "Bandbreite der Kapitalwertdifferenz — alle drei Szenarien");
+    /// <summary>WIRT_SPANNE_TITEL — die Bezeichnung des Spannenbilds für die Sprachausgabe
+    /// (ETAPPE E6, Nachtrag E5b).</summary>
+    public string SpanneBild { get; set; }
+        = T("WIRT_SPANNE_TITEL", "Spanne der Kapitalwertdifferenz je Version");
     /// <summary>WIRT_SENS_TITEL</summary>
     public string SensitivitaetTitel { get; set; }
         = T("WIRT_SENS_TITEL", "Sensitivität der Kapitalwertdifferenz — Szenario Erwartet");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using WindowsFormsApplication1.Zeichnung;
 
 namespace EPOS.UI.Seiten.Berichte;
 
@@ -299,6 +300,15 @@ public sealed class ErgebnisAnsicht
     /// im Bericht). Leer ohne Bandbreite.
     /// </summary>
     public string Bandbreitenfuss { get; set; } = "";
+
+    /// <summary>
+    /// ETAPPE E6 (Nachtrag E5b, Anwenderentscheid 22.09.2026 zu Frage (4), Mockup
+    /// <c>valeri-f2</c>): das <b>Spannenbild</b> — die Bandbreite je Version als Balken
+    /// (Ungünstig bis Günstig, Erwartet als Punkt, die Referenz als Nulllinie), gebaut vom
+    /// Renderer des Kerns aus DEMSELBEN Modell wie <see cref="Bandbreite"/>.
+    /// <c>null</c> = keine Bandbreite, dann steht kein Bild.
+    /// </summary>
+    public Zeichenmodell? Spannenbild { get; set; }
 }
 
 /// <summary>
