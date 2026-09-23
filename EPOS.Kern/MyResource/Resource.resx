@@ -6603,6 +6603,42 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_MJ_PROBE" xml:space="preserve">
     <value>Probe: kumulierter Barwert in T ({0}) + Restwert-Barwert ({1}) = Nettobarwert ({2}).</value>
   </data>
+  <data name="WIRT_FM_PARAM_TITEL" xml:space="preserve">
+    <value>Parameter der Rechnung (je Szenario)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_NAME" xml:space="preserve">
+    <value>Name in den Formeln</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS" xml:space="preserve">
+    <value>Kalkulationszins i</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
+    <value>Betrachtungszeitraum T [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
+    <value>Preissteigerung Energie p_E (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_B" xml:space="preserve">
+    <value>Preissteigerung Betrieb p_B (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_I" xml:space="preserve">
+    <value>Preissteigerung Investition/Ersatz p_I (je Jahr)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_INVEST" xml:space="preserve">
+    <value>Investition — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ERTRAG" xml:space="preserve">
+    <value>Erträge — Änderung gegenüber Erwartet</value>
+  </data>
+  <data name="WIRT_FM_PARAM_DAUER" xml:space="preserve">
+    <value>Nutzungsdauer — Änderung gegenüber Erwartet [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
+    <value>Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte.</value>
+  </data>
+  <data name="WIRT_FM_GRENZE" xml:space="preserve">
+    <value>Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>

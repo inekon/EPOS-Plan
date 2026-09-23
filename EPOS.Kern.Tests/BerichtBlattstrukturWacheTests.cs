@@ -47,6 +47,14 @@ namespace EPOS.Kern.Tests
         private const int STAMM = 9001;
         private const int VARIANTE_A = 9002;
 
+        /// <summary>
+        /// ETAPPE E8b, Stufe 0 der Formelmappe: Der Parameterblock steht unter der
+        /// Prosazeile des Parameternachweises (Zeile 2) und verschiebt alles darunter um
+        /// diese Zahl von Zeilen. Die Anker unten schreiben „P + ‹Zeile vor Stufe 0›" — die
+        /// Geschichte der Anker bleibt lesbar, und die ZAHLEN des Blattes sind unverändert.
+        /// </summary>
+        private const int P = ExcelFormelmappe.PARAMETERBLOCK_ZEILEN;
+
         // =====================================================================
         //  Die Prüfgruppe
         // =====================================================================
@@ -180,9 +188,16 @@ namespace EPOS.Kern.Tests
                 // er bleibt; Stufe 0 stellt den Parameterblock aus echten Zellen darunter.
                 Assert.StartsWith("i = 3,0 % · T = 20 a", w.Cell(2, 1).GetString());
 
+                // ETAPPE E8b, Stufe 0: Der Parameterblock (Kopf in Zeile 3) verschiebt alles
+                // darunter um P Zeilen. Die Zahlen hinter „P +" sind die Zeilen der Fassung
+                // vor Stufe 0 — die Geschichte der Anker bleibt lesbar; die ZAHLEN des
+                // Blattes sind unverändert (Zellvergleich Wert- gegen Formelfassung).
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_TITEL,
+                             w.Cell(3, 1).GetString());
+
                 // ETAPPE E2 (VALERI-Lücke G7): der Zeitraumhinweis steht seither auch im
                 // Excel-Blatt — er stand nur in Word und auf der Seite.
-                Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(4, 1).GetString());
+                Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(P + 4, 1).GetString());
 
                 // Die drei Szenario-Blöcke, jeder mit seinem eigenen Tabellenkopf.
                 //
@@ -191,31 +206,31 @@ namespace EPOS.Kern.Tests
                 // noch Photovoltaik; übrig bleibt der Block „projektweit" mit seinem
                 // Kopf und seiner Zwischensumme. Die ZAHLEN sind unverändert; U6 hat
                 // keine Rechenwirkung. Alles hinter den Blöcken wandert um sechs Zeilen.
-                Assert.Equal("Szenario: Erwartet", w.Cell(8, 1).GetString());
-                Zeile(w, 9, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("projektweit", w.Cell(15, 1).GetString());
-                Assert.Equal("Summe projektweit", w.Cell(18, 1).GetString());
+                Assert.Equal("Szenario: Erwartet", w.Cell(P + 8, 1).GetString());
+                Zeile(w, P + 9, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("projektweit", w.Cell(P + 15, 1).GetString());
+                Assert.Equal("Summe projektweit", w.Cell(P + 18, 1).GetString());
                 // ETAPPE E6 (E5‑Q2): Die Blöcke tragen den Anzeigenamen des Szenarios,
                 // nicht den gespeicherten Schlüssel.
-                Assert.Equal("Szenario: Günstig", w.Cell(26, 1).GetString());
-                Zeile(w, 28, "Kennzahl", "Stamm", "Variante A");
-                Assert.Equal("Szenario: Ungünstig", w.Cell(45, 1).GetString());
-                Zeile(w, 47, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Günstig", w.Cell(P + 26, 1).GetString());
+                Zeile(w, P + 28, "Kennzahl", "Stamm", "Variante A");
+                Assert.Equal("Szenario: Ungünstig", w.Cell(P + 45, 1).GetString());
+                Zeile(w, P + 47, "Kennzahl", "Stamm", "Variante A");
 
                 // ETAPPE E2 (VALERI-Lücke G8): die Bandbreitentafel mit der Spalte
                 // „Spanne" und der Referenzzeile darüber.
                 // ETAPPE E6 (E5‑Q2): Ungünstig / Günstig statt Worst / Best.
                 Assert.Equal("Bandbreite der Kapitalwertdifferenz (Ungünstig / Erwartet / Günstig)",
-                             w.Cell(64, 1).GetString());
-                Zeile(w, 65, "Variante", "ΔKW Ungünstig [€]", "ΔKW Erwartet [€]", "ΔKW Günstig [€]");
-                Assert.Equal("Spanne [€]", w.Cell(65, 5).GetString());
-                Assert.Equal("Stammprojekt", w.Cell(66, 1).GetString());   // Referenzzeile
-                Assert.Equal("Variante A", w.Cell(67, 1).GetString());
+                             w.Cell(P + 64, 1).GetString());
+                Zeile(w, P + 65, "Variante", "ΔKW Ungünstig [€]", "ΔKW Erwartet [€]", "ΔKW Günstig [€]");
+                Assert.Equal("Spanne [€]", w.Cell(P + 65, 5).GetString());
+                Assert.Equal("Stammprojekt", w.Cell(P + 66, 1).GetString());   // Referenzzeile
+                Assert.Equal("Variante A", w.Cell(P + 67, 1).GetString());
 
                 // ETAPPE E5 Teil b (U10): Unter dem Fußtext der Bandbreite steht der
                 // Hinweistext der Szenarien — eine Zeile; alles darunter wandert um EINE
                 // Zeile. Die ZAHLEN sind unverändert.
-                Assert.StartsWith("Was ein Szenario heute variiert", w.Cell(69, 1).GetString());
+                Assert.StartsWith("Was ein Szenario heute variiert", w.Cell(P + 69, 1).GetString());
 
                 // Der Kapitalwert-Verlauf und die Mehrjahrestabelle.
                 //
@@ -224,29 +239,29 @@ namespace EPOS.Kern.Tests
                 // darüber steht eine Zeile mit den Namen der Gruppen. Alles darunter wandert
                 // um EINE Zeile. Die ZAHLEN sind unverändert; E6 rechnet nichts um.
                 Assert.Equal("Kapitalwert-Verlauf (kumulierte Barwerte, ohne Restwert) [€]",
-                             w.Cell(73, 1).GetString());
-                Assert.Equal("Ungünstig", w.Cell(74, 2).GetString());
-                Assert.Equal("Erwartet", w.Cell(74, 5).GetString());
-                Assert.Equal("Günstig", w.Cell(74, 8).GetString());
-                Assert.True(w.Cell(74, 2).IsMerged(), "Der Kopf einer Spaltengruppe steht über ihren drei Spalten.");
-                Zeile(w, 75, "Jahr", "Stamm", "Variante A", "Δ Variante A − Stamm",
+                             w.Cell(P + 73, 1).GetString());
+                Assert.Equal("Ungünstig", w.Cell(P + 74, 2).GetString());
+                Assert.Equal("Erwartet", w.Cell(P + 74, 5).GetString());
+                Assert.Equal("Günstig", w.Cell(P + 74, 8).GetString());
+                Assert.True(w.Cell(P + 74, 2).IsMerged(), "Der Kopf einer Spaltengruppe steht über ihren drei Spalten.");
+                Zeile(w, P + 75, "Jahr", "Stamm", "Variante A", "Δ Variante A − Stamm",
                       "Stamm", "Variante A", "Δ Variante A − Stamm",
                       "Stamm", "Variante A", "Δ Variante A − Stamm");
-                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(99, 1).GetString());
-                Assert.Equal("Stamm", w.Cell(102, 1).GetString());
+                Assert.Equal("Mehrjahresübersicht der Zahlungsströme", w.Cell(P + 99, 1).GetString());
+                Assert.Equal("Stamm", w.Cell(P + 102, 1).GetString());
                 // ETAPPE E8b (Vorarbeit): der ganze Kopf der Mehrjahrestabelle, ihre Jahre
                 // 0 und T, die Abschlusszeile und die Probezeile — und der Kopf der zweiten
                 // Tabelle. Genau dieses Raster rechnet die Formelmappe ab Stufe 1 in Formeln.
-                Zeile(w, 103, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
-                Assert.Equal(0.0, w.Cell(104, 1).GetDouble());
-                Assert.Equal(20.0, w.Cell(124, 1).GetDouble());
+                Zeile(w, P + 103, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                Assert.Equal(0.0, w.Cell(P + 104, 1).GetDouble());
+                Assert.Equal(20.0, w.Cell(P + 124, 1).GetDouble());
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
-                             w.Cell(125, 1).GetString());
-                Assert.StartsWith("Probe:", w.Cell(126, 1).GetString());
-                Assert.Equal("Variante A", w.Cell(128, 1).GetString());
-                Zeile(w, 129, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
+                             w.Cell(P + 125, 1).GetString());
+                Assert.StartsWith("Probe:", w.Cell(P + 126, 1).GetString());
+                Assert.Equal("Variante A", w.Cell(P + 128, 1).GetString());
+                Zeile(w, P + 129, "Jahr", "Energiekosten", "Netto nominal", "Barwert", "Kumuliert");
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
-                             w.Cell(151, 1).GetString());
+                             w.Cell(P + 151, 1).GetString());
 
                 // ---- Verlauf (ETAPPE E6, U13) ---------------------------------
                 // Je Jahr eine Zeile, je Variante und Szenario eine Spalte in der
@@ -298,6 +313,9 @@ namespace EPOS.Kern.Tests
         /// <para><b>ETAPPE E6:</b> Der Verlauf trägt je Szenario eine Spaltengruppe mit
         /// eigenem Kopf; das Ende des Verlaufs steht in Zeile 96, der Erwartungsfall in der
         /// zweiten Gruppe. Die ZAHLEN sind unverändert.</para>
+        ///
+        /// <para><b>ETAPPE E8b, Stufe 0:</b> Alles wandert um den Parameterblock
+        /// (<see cref="P"/> Zeilen); die Zahlen sind unverändert.</para>
         /// </summary>
         [Fact]
         public void Excel_Ankerzeile_Nettobarwert_traegt_die_gerechneten_Werte()
@@ -314,62 +332,133 @@ namespace EPOS.Kern.Tests
                 using var wb = new XLWorkbook(ziel);
                 IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
 
-                Assert.Equal("Nettobarwert über T [€]", w.Cell(24, 1).GetString());
-                Assert.Equal(-178529.70, w.Cell(24, 2).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(24, 3).GetDouble(), 2);
+                Assert.Equal("Nettobarwert über T [€]", w.Cell(P + 24, 1).GetString());
+                Assert.Equal(-178529.70, w.Cell(P + 24, 2).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(P + 24, 3).GetDouble(), 2);
 
                 // ANWENDERENTSCHEID Q19 (E2): Die Differenzkennzahl steht DARÜBER — und
                 // seit E5 unmittelbar unter ihr Annuität und Amortisation (nachrichtlich).
-                Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(21, 1).GetString());
-                Assert.Equal(44632.42, w.Cell(21, 3).GetDouble(), 2);
+                Assert.Equal("Kapitalwert gegenüber Stamm [€]", w.Cell(P + 21, 1).GetString());
+                Assert.Equal(44632.42, w.Cell(P + 21, 3).GetDouble(), 2);
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_ZEILE_ANNUITAET,
-                             w.Cell(22, 1).GetString());
+                             w.Cell(P + 22, 1).GetString());
                 Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_ZEILE_AMORTISATION,
-                             w.Cell(23, 1).GetString());
+                             w.Cell(P + 23, 1).GetString());
 
                 // AUFTRAG U6: Die Zwischensumme des einzigen Komponentenblocks IST hier
                 // die Summe des Blocks A — die Gliederung ordnet, sie rechnet nicht.
-                Assert.Equal("Summe projektweit", w.Cell(18, 1).GetString());
-                Assert.Equal(w.Cell(19, 2).GetDouble(), w.Cell(18, 2).GetDouble(), 2);
-                Assert.Equal(w.Cell(19, 3).GetDouble(), w.Cell(18, 3).GetDouble(), 2);
+                Assert.Equal("Summe projektweit", w.Cell(P + 18, 1).GetString());
+                Assert.Equal(w.Cell(P + 19, 2).GetDouble(), w.Cell(P + 18, 2).GetDouble(), 2);
+                Assert.Equal(w.Cell(P + 19, 3).GetDouble(), w.Cell(P + 18, 3).GetDouble(), 2);
 
                 // Letztes Jahr des Verlaufs — ohne Restwert dieselbe Zahl. ETAPPE E5
                 // Teil b: eine Zeile tiefer (Hinweistext unter der Bandbreite). ETAPPE E6:
                 // noch eine Zeile tiefer (Kopf der Spaltengruppen), und der Erwartungsfall
                 // steht in der ZWEITEN Gruppe (Spalten 5 bis 7) — die Zahlen sind dieselben.
-                Assert.Equal(20.0, w.Cell(96, 1).GetDouble(), 6);
-                Assert.Equal(-178529.70, w.Cell(96, 5).GetDouble(), 2);
-                Assert.Equal(-133897.27, w.Cell(96, 6).GetDouble(), 2);
+                Assert.Equal(20.0, w.Cell(P + 96, 1).GetDouble(), 6);
+                Assert.Equal(-178529.70, w.Cell(P + 96, 5).GetDouble(), 2);
+                Assert.Equal(-133897.27, w.Cell(P + 96, 6).GetDouble(), 2);
 
                 // Die Differenzspalte des Erwartungsfalls ist die Kapitalwertdifferenz
                 // (Restwert 0) — und dieselbe Zahl steht im Blatt „Verlauf".
-                Assert.Equal(44632.42, w.Cell(96, 7).GetDouble(), 1);
+                Assert.Equal(44632.42, w.Cell(P + 96, 7).GetDouble(), 1);
                 IXLWorksheet v = wb.Worksheet("Verlauf");
-                Assert.Equal(w.Cell(96, 7).GetDouble(), v.Cell(VerlaufExcel.ZEILE_JAHR0 + 20, 3).GetDouble(), 6);
+                Assert.Equal(w.Cell(P + 96, 7).GetDouble(), v.Cell(VerlaufExcel.ZEILE_JAHR0 + 20, 3).GetDouble(), 6);
 
                 // Die Mehrjahrestabelle des Stamms: nominale Energiekosten je Jahr.
-                Assert.Equal(-12000.00, w.Cell(105, 2).GetDouble(), 2);
-                Assert.Equal(-12000.00, w.Cell(105, 3).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(P + 105, 2).GetDouble(), 2);
+                Assert.Equal(-12000.00, w.Cell(P + 105, 3).GetDouble(), 2);
 
                 // ETAPPE E8b (Vorarbeit der Formelmappe): Barwert und Kumuliert des ersten
                 // Jahres, das Jahr T und die Abschlusszeile — sie schließt die kumulierte
                 // Spalte auf den Nettobarwert der Kennzahltafel auf (Restwert 0). Dieselben
                 // Zahlen der zweiten Tabelle (Variante A). Die Stufen 1 und 2 rechnen genau
                 // diese Zellen in Formeln; ihre Werte dürfen sich dabei nicht bewegen.
-                Assert.Equal(-11650.49, w.Cell(105, 4).GetDouble(), 2);
-                Assert.Equal(-11650.49, w.Cell(105, 5).GetDouble(), 2);
-                Assert.Equal(-6644.11, w.Cell(124, 4).GetDouble(), 2);
-                Assert.Equal(-178529.70, w.Cell(124, 5).GetDouble(), 2);
-                Assert.Equal(0.0, w.Cell(125, 4).GetDouble(), 6);
-                Assert.Equal(w.Cell(24, 2).GetDouble(), w.Cell(125, 5).GetDouble(), 6);
-                Assert.Equal(-9000.00, w.Cell(131, 2).GetDouble(), 2);
-                Assert.Equal(-8737.86, w.Cell(131, 4).GetDouble(), 2);
-                Assert.Equal(w.Cell(24, 3).GetDouble(), w.Cell(151, 5).GetDouble(), 6);
+                Assert.Equal(-11650.49, w.Cell(P + 105, 4).GetDouble(), 2);
+                Assert.Equal(-11650.49, w.Cell(P + 105, 5).GetDouble(), 2);
+                Assert.Equal(-6644.11, w.Cell(P + 124, 4).GetDouble(), 2);
+                Assert.Equal(-178529.70, w.Cell(P + 124, 5).GetDouble(), 2);
+                Assert.Equal(0.0, w.Cell(P + 125, 4).GetDouble(), 6);
+                Assert.Equal(w.Cell(P + 24, 2).GetDouble(), w.Cell(P + 125, 5).GetDouble(), 6);
+                Assert.Equal(-9000.00, w.Cell(P + 131, 2).GetDouble(), 2);
+                Assert.Equal(-8737.86, w.Cell(P + 131, 4).GetDouble(), 2);
+                Assert.Equal(w.Cell(P + 24, 3).GetDouble(), w.Cell(P + 151, 5).GetDouble(), 6);
 
                 // ETAPPE E2 (G8): die Spanne der Bandbreitentafel — seit E5 (Q4) der Betrag
                 // aus größtem und kleinstem Szenariowert; hier liegt Erwartet zwischen Worst
                 // und Best, der Wert ist derselbe wie Best − Worst.
-                Assert.Equal(44957.21 - 44312.12, w.Cell(67, 5).GetDouble(), 2);
+                Assert.Equal(44957.21 - 44312.12, w.Cell(P + 67, 5).GetDouble(), 2);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
+        /// ETAPPE E8b, Stufe 0 (Konzept § 2.11.6) — der <b>Parameterblock aus echten
+        /// Zellen</b>: je Szenario ein Satz (Erwartet, Günstig, Ungünstig) mit Zins,
+        /// Betrachtungszeitraum, den drei Preissteigerungen und den Änderungen an
+        /// Investition, Erträgen und Nutzungsdauer; die Sätze als Dezimalzahl (3 % = 0,03),
+        /// wie der Rechenkern sie liest. Die Zellen der Spalte „Erwartet" tragen Namen, auf
+        /// die sich die Formeln der Mappe beziehen; die beiden anderen Spalten ihre Namen
+        /// mit Anhang. Darunter der Hinweis und die Grenze der Mappe (drei Sätze).
+        ///
+        /// <para>Die Prüfgruppe rechnet mit den Vorgaben (i = 3 %, T = 20 a, p = 0), die
+        /// Szenariosätze mit den Vorgaben ∓1 %-Punkt, ∓10 %, ±10 %, ±2 a.</para>
+        /// </summary>
+        [Fact]
+        public void Excel_Stufe0_Parameterblock_aus_echten_Zellen_mit_Namen()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "stufe0.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(Gruppendaten(), VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                var R = new
+                {
+                    Titel = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_TITEL,
+                    Name = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_NAME,
+                    Zins = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ZINS,
+                    Zeitraum = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ZEITRAUM,
+                    PreisE = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_E,
+                    PreisB = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_B,
+                    PreisI = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_PREIS_I,
+                    Invest = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_INVEST,
+                    Ertrag = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_ERTRAG,
+                    Dauer = WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_DAUER,
+                };
+
+                Zeile(w, 3, R.Titel, "Erwartet", "Günstig", "Ungünstig", R.Name);
+                SatzZeile(w, 4, R.Zins, "Zins_i", 0.03, 0.02, 0.04);
+                SatzZeile(w, 5, R.Zeitraum, "Zeitraum_T", 20, 20, 20);
+                SatzZeile(w, 6, R.PreisE, "p_E", 0.0, -0.01, 0.01);
+                SatzZeile(w, 7, R.PreisB, "p_B", 0.0, -0.01, 0.01);
+                SatzZeile(w, 8, R.PreisI, "p_I", 0.0, -0.01, 0.01);
+                SatzZeile(w, 9, R.Invest, "", 0.0, -0.10, 0.10);
+                SatzZeile(w, 10, R.Ertrag, "", 0.0, 0.10, -0.10);
+                SatzZeile(w, 11, R.Dauer, "", 0.0, 2.0, -2.0);
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_FM_PARAM_HINWEIS,
+                             w.Cell(12, 1).GetString());
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_FM_GRENZE,
+                             w.Cell(13, 1).GetString());
+                // Unter dem Block eine Leerzeile — der Block ist P Zeilen hoch (3 bis 14).
+                for (int c = 1; c <= 5; c++)
+                    Assert.Equal("", w.Cell(3 + P - 1, c).GetString());
+                Assert.StartsWith("Betrachtungszeitraum T = 20 a", w.Cell(3 + P + 1, 1).GetString());
+
+                // Die Namen: Erwartet ohne Anhang, die beiden anderen Szenarien mit.
+                string[] namen = { "Zins_i", "Zeitraum_T", "p_E", "p_B", "p_I" };
+                for (int i = 0; i < namen.Length; i++)
+                {
+                    int zeile = 4 + i;
+                    Assert.Equal("Wirtschaftlichkeit!$B$" + zeile + ":$B$" + zeile, Name(wb, namen[i]));
+                    Assert.Equal("Wirtschaftlichkeit!$C$" + zeile + ":$C$" + zeile, Name(wb, namen[i] + "_Guenstig"));
+                    Assert.Equal("Wirtschaftlichkeit!$D$" + zeile + ":$D$" + zeile, Name(wb, namen[i] + "_Unguenstig"));
+                }
             }
             finally { Aufraeumen(ordner); }
         }
@@ -585,6 +674,26 @@ namespace EPOS.Kern.Tests
         {
             for (int i = 0; i < erwartet.Length; i++)
                 Assert.Equal(erwartet[i], ws.Cell(zeile, i + 1).GetString());
+        }
+
+        /// <summary>ETAPPE E8b, Stufe 0: eine Zeile des Parameterblocks — Titel, die drei
+        /// Werte (Erwartet, Günstig, Ungünstig) und der Name in Spalte 5 (leer = keiner).</summary>
+        private static void SatzZeile(IXLWorksheet ws, int zeile, string titel, string name,
+                                      double erwartet, double guenstig, double unguenstig)
+        {
+            Assert.Equal(titel, ws.Cell(zeile, 1).GetString());
+            Assert.Equal(erwartet, ws.Cell(zeile, 2).GetDouble(), 12);
+            Assert.Equal(guenstig, ws.Cell(zeile, 3).GetDouble(), 12);
+            Assert.Equal(unguenstig, ws.Cell(zeile, 4).GetDouble(), 12);
+            Assert.Equal(name, ws.Cell(zeile, 5).GetString());
+        }
+
+        /// <summary>Der Bezug eines Arbeitsmappennamens (<c>RefersTo</c>); leer, wenn es
+        /// ihn nicht gibt.</summary>
+        private static string Name(XLWorkbook wb, string name)
+        {
+            IXLDefinedName n = wb.DefinedNames.FirstOrDefault(x => x.Name == name);
+            return n == null ? "" : n.RefersTo;
         }
 
         private static IEnumerable<string> MitStil(Body body, string stil)

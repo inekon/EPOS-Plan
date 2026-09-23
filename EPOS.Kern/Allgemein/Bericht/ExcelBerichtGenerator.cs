@@ -22,9 +22,11 @@ namespace WindowsFormsApplication1
     /// </summary>
     public class ExcelBerichtGenerator
     {
-        private static readonly XLColor KOPF = XLColor.FromHtml("#D9E1F2");
-        private static readonly XLColor STAMM = XLColor.FromHtml("#F2F2F2");
-        private static readonly XLColor GRUPPE = XLColor.FromHtml("#EAEDED");
+        // ETAPPE E8b: intern statt privat — die Blöcke der Formelmappe (ExcelFormelmappe)
+        // zeichnen in denselben Farben.
+        internal static readonly XLColor KOPF = XLColor.FromHtml("#D9E1F2");
+        internal static readonly XLColor STAMM = XLColor.FromHtml("#F2F2F2");
+        internal static readonly XLColor GRUPPE = XLColor.FromHtml("#EAEDED");
 
         // =============================================================== Schriftrückfall
         //
@@ -404,6 +406,13 @@ namespace WindowsFormsApplication1
                 alle[0].Zeitstempel.ToString("dd.MM.yyyy HH:mm", BerichtTexte.Kultur);
             ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
             r++;
+
+            // ETAPPE E8b, Stufe 0 (Konzept § 2.11.6): der Parameterblock aus ECHTEN Zellen,
+            // unmittelbar unter seiner Prosazeile — je Szenario ein Satz, die Spalte
+            // „Erwartet" benannt. Alles darunter wandert um
+            // ExcelFormelmappe.PARAMETERBLOCK_ZEILEN Zeilen; keine Zahl ändert sich.
+            r = ExcelFormelmappe.Parameterblock(ws, r, p);
+
             if (!ausDiesemLauf)
             {
                 ws.Cell(r, 1).Value = BerichtTexte.T(

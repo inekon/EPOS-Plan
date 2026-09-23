@@ -66517,6 +66517,114 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_GRENZE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_GRENZE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_DAUER {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_DAUER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erträge — Änderung gegenüber Erwartet ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ERTRAG {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ERTRAG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Formeln dieses Blatts rechnen mit der Spalte „Erwartet“ (Namen Zins_i, Zeitraum_T, p_E, p_B, p_I): Zins und Preissteigerungen lassen sich dort ändern, die Mehrjahrestabelle und die Kennzahlen des Szenarios „Erwartet“ ziehen mit. Die Jahreszeilen stehen fest — ein anderer Betrachtungszeitraum verlangt einen neuen Bericht. Die Spalten „Günstig“ und „Ungünstig“ nennen die Annahmen ihrer Läufe; deren Kennzahlen stehen als Werte. ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_HINWEIS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_HINWEIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Investition — Änderung gegenüber Erwartet ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_INVEST {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_INVEST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Name in den Formeln ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_NAME {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Betrieb p_B (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_B {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_B", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Energie p_E (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_E {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_E", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Preissteigerung Investition/Ersatz p_I (je Jahr) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_PREIS_I {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_PREIS_I", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter der Rechnung (je Szenario) ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betrachtungszeitraum T [a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ZEITRAUM {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ZEITRAUM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kalkulationszins i ähnelt.
+        /// </summary>
+        public static string WIRT_FM_PARAM_ZINS {
+            get {
+                return ResourceManager.GetString("WIRT_FM_PARAM_ZINS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Energiekosten nicht bestimmbar: Für {0} ist kein Arbeitspreis gepflegt. Ausweg: den Arbeitspreis unter „Berichte &amp; Kosten › Energieträger“ eintragen. ähnelt.
         /// </summary>
         public static string WIRT_GRUND_BRENNSTOFFPREIS_FEHLT {

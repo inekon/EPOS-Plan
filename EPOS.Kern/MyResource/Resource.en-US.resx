@@ -6587,6 +6587,42 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_MJ_PROBE" xml:space="preserve">
     <value>Check: cumulative present value in T ({0}) + discounted residual value ({1}) = net present value ({2}).</value>
   </data>
+  <data name="WIRT_FM_PARAM_TITEL" xml:space="preserve">
+    <value>Calculation parameters (per scenario)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_NAME" xml:space="preserve">
+    <value>Name in formulas</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZINS" xml:space="preserve">
+    <value>Discount rate i</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ZEITRAUM" xml:space="preserve">
+    <value>Evaluation period T [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_E" xml:space="preserve">
+    <value>Price change energy p_E (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_B" xml:space="preserve">
+    <value>Price change operation p_B (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_PREIS_I" xml:space="preserve">
+    <value>Price change investment/replacement p_I (per year)</value>
+  </data>
+  <data name="WIRT_FM_PARAM_INVEST" xml:space="preserve">
+    <value>Investment — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_ERTRAG" xml:space="preserve">
+    <value>Revenues — change against Expected</value>
+  </data>
+  <data name="WIRT_FM_PARAM_DAUER" xml:space="preserve">
+    <value>Service life — change against Expected [a]</value>
+  </data>
+  <data name="WIRT_FM_PARAM_HINWEIS" xml:space="preserve">
+    <value>The formulas on this sheet use the column “Expected” (names Zins_i, Zeitraum_T, p_E, p_B, p_I): the discount rate and the price changes can be edited there, and the multi-year table and the key figures of the scenario “Expected” follow. The year rows are fixed — a different evaluation period requires a new report. The columns “Favourable” and “Unfavourable” state the assumptions of their runs; their key figures remain values.</value>
+  </data>
+  <data name="WIRT_FM_GRENZE" xml:space="preserve">
+    <value>The workbook recalculates the evaluation of fixed annual quantities — any change to plant size, demand or operation requires a new hourly simulation that no cell formula provides. The legal logic and the evidence that make the figures valid cannot be represented. Whatever is changed in the workbook never returns to the project: it is traceable evidence, not a second input interface.</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Multi-year overview omitted — no cash flow series could be calculated for this project.</value>
   </data>
