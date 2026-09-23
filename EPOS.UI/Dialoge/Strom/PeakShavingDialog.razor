@@ -660,7 +660,7 @@
         {
             QuelleLesen = () => _gewaehlt.Length == 0 ? null
                               : _gewaehlt.StartsWith(DATEI, StringComparison.Ordinal) ? QuelleDatei : QuelleGanglinie,
-            QuelleSetzen = q => _ = QuelleGeaendert(q),
+            QuelleSetzen = KiQuelleSetzen,
             QuelleEintraege = () => KiMaskenanmeldung.Eintraege(Quellen, z => z.Id, z => z.Text),
 
             GanglinieLesen = () => GanglinienPlatz,
@@ -692,13 +692,21 @@
 
     private int? GanglinienPlatz => Platz(_gewaehlt);
 
-    /// <summary>Die Quelle als Wahl des Assistenten: Ganglinie = erste Zeile der Datenbank, Datei = letzte Datei.</summary>
-    private async Task QuelleGeaendert(int? quelle)
+    /// <summary>
+    /// Die Quelle als Wahl des Assistenten: Ganglinie = erste Zeile der Datenbank, Datei =
+    /// letzte eingelesene Datei — gewählt wie mit einem Klick. Gibt es keine solche Zeile,
+    /// nennt die Rückgabe den Grund (Welle #458: benannt statt still).
+    /// </summary>
+    private string? KiQuelleSetzen(int? quelle)
     {
         string? ziel = quelle == QuelleDatei
             ? _dateizeilen.LastOrDefault()?.Schluessel
             : _zeilen.FirstOrDefault(z => z.Schluessel.StartsWith(GANGLINIE, StringComparison.Ordinal))?.Schluessel;
-        if (ziel is not null) await BeiZeile(ziel);
+        if (ziel is null)
+            return quelle == QuelleDatei ? Resource.KI_PEAK_KEINE_DATEI : Resource.KI_PEAK_KEINE_GANGLINIE;
+
+        _ = BeiZeile(ziel);
+        return null;
     }
 
     private double? KiZahl(string feld) => feld switch

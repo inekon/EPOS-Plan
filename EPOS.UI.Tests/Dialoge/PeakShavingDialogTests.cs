@@ -606,6 +606,32 @@ public class PeakShavingDialogTests : EposBunitContext
         Assert.Equal("G1", cut.Instance.Gewaehlt);
     }
 
+    /// <summary>
+    /// <b>Die Quelle ist die Spalte „Quelle" der Lastgangliste</b> (Stufe 5 der
+    /// Neuordnung, gegengeprüft in Welle #458): „Ganglinie" wählt die erste
+    /// Ganglinienzeile wie ein Klick; „Datei" ohne eingelesene Datei lehnt BENANNT ab,
+    /// statt still nichts zu tun.
+    /// </summary>
+    [Fact]
+    public void Die_Quelle_waehlt_ihre_Zeile_und_ohne_Datei_lehnt_sie_benannt_ab()
+    {
+        var cut = Zeige();
+
+        KiFeldzugang quelle = KiMaskenbruecke.Feldzugang(KiMaskennamen.PEAK_SHAVING, "quelle");
+        Assert.NotNull(quelle);
+        Assert.Equal(2, quelle.Wahleintraege().Count);
+
+        quelle.Setzen(PeakShavingDialog.QuelleGanglinie);
+        cut.Render();
+        Assert.Equal(PeakShavingDialog.QuelleGanglinie, quelle.Lesen());
+        Assert.StartsWith("G", cut.Instance.Gewaehlt, StringComparison.Ordinal);
+
+        var fehler = Assert.Throws<InvalidOperationException>(
+            () => quelle.Setzen(PeakShavingDialog.QuelleDatei));
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_PEAK_KEINE_DATEI, fehler.Message);
+        Assert.Equal(PeakShavingDialog.QuelleGanglinie, quelle.Lesen());
+    }
+
     /// <summary>Reihenzeile, Herkunft und das offene Blatt sind NICHT setzbar.</summary>
     [Fact]
     public void Reihe_Herkunft_und_Reiter_bleiben_lesbar()

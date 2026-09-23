@@ -330,7 +330,10 @@ AKTIONSNAMEN denselben Weg wie der Knopf. **Führt ein Dialog seine Felder als D
 (Katalogbrowser), erzeugt der Kern die Feldkarte aus demselben Profil und die Sichtklasse beantwortet
 sie als `IKiFeldtafel` über den Schlüssel — keine zweite Feldliste von Hand. Die Wahl des Satzes einer
 Verwaltung ist `satzwahl` und bleibt frei, wenn `Schreibgeschuetzt` einen Auslieferungssatz meldet;
-`Schreibschutzgrund` nennt den Weg („Duplizieren…").
+`Schreibschutzgrund` nennt den Weg („Duplizieren…"). **Eine Maske mit Eingabefeldern ist angemeldet, Baustein eines
+anmeldenden Wirts oder steht mit Grund in `KiDialogAusnahmen`** — `KiMaskenabdeckungWacheTests` hält das samt
+Eingabebilanz: Eine neue Eingabe braucht ein Katalogfeld oder einen Grund (`BewusstDraussen`, Vermerk und Zahl in
+`EINGABESTELLEN`).
 
 ## Tests (`EPOS.UI.Tests`)
 

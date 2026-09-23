@@ -27661,6 +27661,123 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie löst eine Aktion aus (Übernahme, Auswahl zum Öffnen), die der Anwender selbst bestätigt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_AKTION {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_AKTION", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie legt Sätze an oder entfernt sie — das bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANLEGEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANLEGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie zeigt Ergebnisse an; ihre Schalter stellen nur das Bild ein und führen keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ANZEIGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ANZEIGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zum Hilfe-Assistenten selbst. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_ASSISTENT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_ASSISTENT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie wählt Dateien; die Pfadwahl bleibt Sache des Anwenders. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_DATEI {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Export oder Transfer; was ausgegeben wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_EXPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_EXPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihr Wert ist ein Feld der Maske, in der sie steht; dort setzt ihn der Assistent. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_FELD_DES_WIRTS {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_FELD_DES_WIRTS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie gehört zu einem Import; was eingelesen wird, entscheidet der Anwender. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_IMPORT {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_IMPORT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie nimmt Lizenz- oder Schlüsseleingaben auf, die Sache des Anwenders bleiben. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_LIZENZ {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_LIZENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ihre Anbindung an den Assistenten ist vorgesehen, aber noch nicht umgesetzt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie verwaltet nur Zeitreihen und ihre Herkunft und führt keine Einstellwerte. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_OHNE_EINSTELLWERTE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_OHNE_EINSTELLWERTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist eine Rückfrage, die der Anwender beantwortet. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_RUECKFRAGE {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_RUECKFRAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sie ist ein Pflegewerkzeug, dessen Eingriffe der Anwender selbst vornimmt. ähnelt.
+        /// </summary>
+        public static string KI_AUSNAHME_WERKZEUG {
+            get {
+                return ResourceManager.GetString("KI_AUSNAHME_WERKZEUG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Aktion wurde abgebrochen. ähnelt.
         /// </summary>
         public static string KI_AUS_ABGEBROCHEN {
@@ -28345,6 +28462,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_BERG_TABELLE_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_BERG_TABELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist bewusst nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_BEWUSST_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_BEWUSST_NICHT_STEUERBAR", resourceCulture);
             }
         }
         
@@ -30770,7 +30896,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; die Maske zeigt ihn gesperrt. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Freitext des geladenen Typs; gespeichert wird mit „Speichern“. Ein Auslieferungstyp ist nur lesbar. ähnelt.
         /// </summary>
         public static string KI_DLG_GTYP_BESCHREIBUNG_ERL {
             get {
@@ -32552,6 +32678,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diese Maske ist noch nicht steuerbar: {0} ähnelt.
+        /// </summary>
+        public static string KI_DLG_NOCH_NICHT_STEUERBAR {
+            get {
+                return ResourceManager.GetString("KI_DLG_NOCH_NICHT_STEUERBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die steuerliche Abschreibungsdauer dieses Satzes. Sie kann von der kalkulatorischen Nutzungsdauer abweichen. ähnelt.
         /// </summary>
         public static string KI_DLG_NUD_AFA_ERL {
@@ -33884,6 +34019,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpe oder der Heizkessel, auf den sich Wärmequelle, konstante Quelltemperatur, WP-Priorität und Betriebsmodus beziehen. Setzen wählt die Karte in der Konfiguration. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANLAGE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANLAGE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlage (Wärmequelle) ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_ANLAGE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_ANLAGE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Speichergröße, mit der das Blatt „Ergebnis“ den PV-Autarkiegrad rechnet; sie ist eine Annahme der Anzeige und verändert den Simulationslauf nicht. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_AUTARKIE_ERL {
@@ -33934,6 +34087,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_BETRIEBSART_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSART_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Leistungssteuerung der gewählten Wärmepumpe: laufzeit-, leistungs- oder PV-optimiert; gilt nur für Wärmepumpen. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSMODUS_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebsmodus ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_BETRIEBSMODUS_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_BETRIEBSMODUS_NAME", resourceCulture);
             }
         }
         
@@ -34010,6 +34181,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = der Lauf rechnet die Kühlung der Gebäude mit, aus = ohne Kühlung. Projekteinstellung; der Schalter schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_KUEHLBETRIEB_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_KUEHLBETRIEB_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die An = die Wärmepumpe liest den Speicherzustand vom Stundenanfang (konservativ), aus = vom Stundenende. Der Schalter gilt dem ganzen Projekt. ähnelt.
         /// </summary>
         public static string KI_DLG_SIM_LESEPUNKT_ERL {
@@ -34051,6 +34231,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SIM_OHNE_PLATZ_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SIM_OHNE_PLATZ_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einsatzreihenfolge der gewählten Wärmepumpe, eine ganze Zahl ab 1; gilt nur für Wärmepumpen. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_PRIORITAET_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_PRIORITAET_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die WP-Priorität ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_PRIORITAET_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_PRIORITAET_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmequelle der gewählten Anlage. Systemrücklauf, Außenluft und Konstant schreiben sofort; Pufferspeicher, Quellprofil und Erdreich öffnen ihren Dialog, der erst mit OK übernimmt; eine CSV-Datei wählt der Anwender selbst. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmequelle ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLE_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Temperatur der Quelle „Konstant“ der gewählten Anlage; setzbar, wenn diese Quelle gewählt ist. Schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLTEMP_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLTEMP_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Konstante Quelltemperatur ähnelt.
+        /// </summary>
+        public static string KI_DLG_SIM_QUELLTEMP_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_SIM_QUELLTEMP_NAME", resourceCulture);
             }
         }
         
@@ -36296,6 +36530,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die An = die Simulation darf die Kennlinie der Wärmepumpe über ihre Stützstellen hinaus fortschreiben. Projekteinstellung für alle Wärmepumpen; der Schalter schreibt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_WPA_EXTRAPOLATION_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_WPA_EXTRAPOLATION_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Hersteller des Geräts, wie er in der Projektkopie steht; freier Text. ähnelt.
         /// </summary>
         public static string KI_DLG_WPA_FIRMA_ERL {
@@ -38338,6 +38581,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_MENUE_ASSISTENT_HILFE {
             get {
                 return ResourceManager.GetString("KI_MENUE_ASSISTENT_HILFE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist noch keine Datei eingelesen. „Lastgang aus Datei…“ liest eine ein; die Dateiwahl bleibt dem Anwender. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Liste der Lastgänge führt keine Ganglinie. ähnelt.
+        /// </summary>
+        public static string KI_PEAK_KEINE_GANGLINIE {
+            get {
+                return ResourceManager.GetString("KI_PEAK_KEINE_GANGLINIE", resourceCulture);
             }
         }
         
@@ -40915,6 +41176,105 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_SICH_QUELLE_FEHLT {
             get {
                 return ResourceManager.GetString("KI_SICH_QUELLE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist keine Wärmepumpe und kein Heizkessel gewählt — zuerst das Feld „quellanlage“ setzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_ANLAGE_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_SIM_ANLAGE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Anlage {0} steht nicht unter den Wärmepumpen und Heizkesseln der Konfiguration. ähnelt.
+        /// </summary>
+        public static string KI_SIM_ANLAGE_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_SIM_ANLAGE_UNBEKANNT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Diesen Wert schreibt die Plattform hier nicht. ähnelt.
+        /// </summary>
+        public static string KI_SIM_KEIN_SCHREIBWEG {
+            get {
+                return ResourceManager.GetString("KI_SIM_KEIN_SCHREIBWEG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Dieser Wert gilt nur für Wärmepumpen; „{0}“ ist keine. ähnelt.
+        /// </summary>
+        public static string KI_SIM_NUR_WP {
+            get {
+                return ResourceManager.GetString("KI_SIM_NUR_WP", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die WP-Priorität ist eine ganze Zahl ab 1. ähnelt.
+        /// </summary>
+        public static string KI_SIM_PRIORITAET_POSITIV {
+            get {
+                return ResourceManager.GetString("KI_SIM_PRIORITAET_POSITIV", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle „{0}“ liest ein Profil aus einer Datei; die Datei wählt der Anwender an der Karte (Chip „Quelle“). ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLE_DATEI {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLE_DATEI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelle „{0}“ braucht ihre Angaben im Dialog „{1}“; er steht jetzt offen — die Werte dort setzen, übernommen wird erst mit OK. ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLE_DIALOG {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLE_DIALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Quelltemperatur gilt nur für die Quelle „{0}“; zuerst die Wärmequelle umstellen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_QUELLTEMP_NUR_KONSTANT {
+            get {
+                return ResourceManager.GetString("KI_SIM_QUELLTEMP_NUR_KONSTANT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Konfiguration (Schritt ①) steht nicht; dorthin wechseln, dann lässt sich der Wert setzen. ähnelt.
+        /// </summary>
+        public static string KI_SIM_SCHRITT1_FEHLT {
+            get {
+                return ResourceManager.GetString("KI_SIM_SCHRITT1_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auf der Konfiguration steht ein Dialog offen; der Wert wird dort gewählt oder nach dem Schließen gesetzt. ähnelt.
+        /// </summary>
+        public static string KI_SIM_UEBERLAGERUNG_OFFEN {
+            get {
+                return ResourceManager.GetString("KI_SIM_UEBERLAGERUNG_OFFEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ steht nicht in der Auswahl der gewählten Anlage. ähnelt.
+        /// </summary>
+        public static string KI_SIM_WERT_UNBEKANNT {
+            get {
+                return ResourceManager.GetString("KI_SIM_WERT_UNBEKANNT", resourceCulture);
             }
         }
         

@@ -202,9 +202,13 @@ public class KiSimulationMaskeTests : IDisposable
     /// <para>Mit der Welle KI‑F6 kommt die SPEICHERKAPAZITÄT der Autarkierechnung auf
     /// dem Blatt „Ergebnis" dazu — das einzige echte Eingabefeld der neun
     /// Reiterblätter. Alles andere darauf schaltet ein BILD.</para>
+    ///
+    /// <para>Welle #458: sechsundvierzig — der Kühlschalter von Schritt ① und die
+    /// fünf Felder JE ANLAGE (Anlage, Wärmequelle, konstante Quelltemperatur,
+    /// WP-Priorität, Betriebsmodus).</para>
     /// </summary>
     [Fact]
-    public void Die_Ansicht_meldet_vierzig_Felder_an()
+    public void Die_Ansicht_meldet_sechsundvierzig_Felder_an()
     {
         var probe = new Schreibprobe();
         using var anmeldung = KiMaskenanmeldung.Fuer(
@@ -213,7 +217,7 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.True(anmeldung.Angemeldet);
 
         IReadOnlyList<KiFeldwert> felder = KiMaskenbruecke.Lesen(KiMaskennamen.SIMULATION);
-        Assert.Equal(40, felder.Count);
+        Assert.Equal(46, felder.Count);
     }
 
     [Fact]
@@ -373,7 +377,9 @@ public class KiSimulationMaskeTests : IDisposable
         Assert.Equal(new[]
         {
             "netzverluste", "bhkw_betriebsart", "bhkw_leistungsgrenze",
-            "kessel_bereitschaft", "autarkie_speicher", "lesepunkt_davor",
+            "kessel_bereitschaft", "kuehlbetrieb", "quellanlage", "waermequelle",
+            "quelltemperatur_konstant", "wp_prioritaet", "wp_betriebsmodus",
+            "autarkie_speicher", "lesepunkt_davor",
             "speicher_soc_min", "speicher_soc_max", "speicher_ladeleistung",
             "speicher_kapazitaet", "speicher_ladeschwelle", "speicher_betriebsart",
             "speicher_berechnungsart", "speicher_peakziel", "speicher_peakziel_adaptiv",
@@ -690,5 +696,58 @@ public class KiSimulationMaskeTests : IDisposable
         feld.Setzen(99.0);
 
         Assert.Equal(25.0, stand.Autarkie.SpeicherKwh);
+    }
+
+    // =====================================================================
+    //  Der Kühlschalter von Schritt ① (Welle #458)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>„Kühlung rechnen" geht über den Delegaten des Schalters</b> und zieht den
+    /// Stand erst nach, wenn das Schreiben angekommen ist.
+    /// </summary>
+    [Fact]
+    public void Der_Kuehlschalter_schreibt_ueber_seinen_Delegaten()
+    {
+        var probe = new Schreibprobe();
+        var geschrieben = new List<bool>();
+        SimulationParameterDienste wege = probe.Wege();
+        wege.KuehlbetriebSchreiben = w => { geschrieben.Add(w); return true; };
+
+        var sicht = new SimulationKiSicht(() => null, () => probe.Stand, () => wege,
+                                          () => null, () => "", () => "");
+        using var anmeldung = KiMaskenanmeldung.Fuer(
+            KiMaskennamen.SIMULATION, () => sicht, new KiMaskenhaken());
+
+        KiFeldzugang feld = KiMaskenbruecke.Feldzugang(KiMaskennamen.SIMULATION, "kuehlbetrieb");
+        Assert.Equal(false, feld.Lesen());
+
+        feld.Setzen(true);
+
+        Assert.Equal(new[] { true }, geschrieben);
+        Assert.True(probe.Stand.Kuehlbetrieb);
+    }
+
+    /// <summary>
+    /// Die GEGENPROBEN: Scheitert das Schreiben oder fehlt der Weg, bleibt der Stand
+    /// stehen, und die Setzung sagt benannt, warum.
+    /// </summary>
+    [Fact]
+    public void Ein_gescheiterter_oder_fehlender_Kuehlweg_wird_benannt()
+    {
+        var probe = new Schreibprobe();
+        SimulationParameterDienste wege = probe.Wege();
+        wege.KuehlbetriebSchreiben = _ => false;
+
+        var sicht = new SimulationKiSicht(() => null, () => probe.Stand, () => wege,
+                                          () => null, () => "", () => "");
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => sicht.Kuehlbetrieb = true);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMKONF_MSG_KUEHLBETRIEB_FEHLER, ex.Message);
+        Assert.False(probe.Stand.Kuehlbetrieb);
+
+        wege.KuehlbetriebSchreiben = null;
+        ex = Assert.Throws<InvalidOperationException>(() => sicht.Kuehlbetrieb = true);
+        Assert.Equal(WindowsFormsApplication1.MyResource.Resource.KI_SIM_KEIN_SCHREIBWEG, ex.Message);
     }
 }

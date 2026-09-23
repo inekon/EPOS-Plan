@@ -447,6 +447,10 @@
         internal static string WpaModulkostenName => MyResource.Resource.MODK_LBL_MODULKOSTEN;
         internal static string WpaModulkostenErl => MyResource.Resource.KI_DLG_WPA_MODULKOSTEN_ERL;
 
+        // Welle #458: die Projekteinstellung neben der Auslegung.
+        internal static string WpaExtrapolationName => MyResource.Resource.SIM_EXTRAPOLATION_SCHALTER;
+        internal static string WpaExtrapolationErl => MyResource.Resource.KI_DLG_WPA_EXTRAPOLATION_ERL;
+
         // =================================================================== Feldarten
 
         internal static string TypGanzzahl => MyResource.Resource.KI_DLG_TYP_GANZZAHL;
@@ -666,6 +670,21 @@
 
         internal static string SimLesepunktName => MyResource.Resource.SIM_BOOSTER_LESEPUNKT_SCHALTER;
         internal static string SimLesepunktErl => MyResource.Resource.KI_DLG_SIM_LESEPUNKT_ERL;
+
+        // ---- Kuehlschalter und Werte je Anlage von Schritt ① (Welle #458) --------
+
+        internal static string SimKuehlbetriebName => MyResource.Resource.SIMKONF_LBL_KUEHLBETRIEB;
+        internal static string SimKuehlbetriebErl => MyResource.Resource.KI_DLG_SIM_KUEHLBETRIEB_ERL;
+        internal static string SimAnlageName => MyResource.Resource.KI_DLG_SIM_ANLAGE_NAME;
+        internal static string SimAnlageErl => MyResource.Resource.KI_DLG_SIM_ANLAGE_ERL;
+        internal static string SimQuelleName => MyResource.Resource.KI_DLG_SIM_QUELLE_NAME;
+        internal static string SimQuelleErl => MyResource.Resource.KI_DLG_SIM_QUELLE_ERL;
+        internal static string SimQuelltempName => MyResource.Resource.KI_DLG_SIM_QUELLTEMP_NAME;
+        internal static string SimQuelltempErl => MyResource.Resource.KI_DLG_SIM_QUELLTEMP_ERL;
+        internal static string SimPrioritaetName => MyResource.Resource.KI_DLG_SIM_PRIORITAET_NAME;
+        internal static string SimPrioritaetErl => MyResource.Resource.KI_DLG_SIM_PRIORITAET_ERL;
+        internal static string SimBetriebsmodusName => MyResource.Resource.KI_DLG_SIM_BETRIEBSMODUS_NAME;
+        internal static string SimBetriebsmodusErl => MyResource.Resource.KI_DLG_SIM_BETRIEBSMODUS_ERL;
         internal static string SimSpSocMinName => MyResource.Resource.SP_PARAM_LABEL_SOC_MIN;
         internal static string SimSpSocMinErl => MyResource.Resource.KI_DLG_SIM_SP_SOCMIN_ERL;
         internal static string SimSpSocMaxName => MyResource.Resource.SP_PARAM_LABEL_SOC_MAX;
