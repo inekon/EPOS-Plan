@@ -109,8 +109,15 @@ namespace EPOS.Kern.Tests
         /// p_I 2,5 %) und zwei Betriebspositionen der Variante A — eine davon mit Startjahr 6,
         /// damit die Basis des Betriebs-Topfes eine Stufe hat. Alles auf der Arbeitskopie.
         /// </summary>
-        private static BerichtsDaten Gruppe1040MitSaetzen()
+        private static BerichtsDaten Gruppe1040MitSaetzen(bool bemessenePosition = false)
         {
+            // ETAPPE E8b, Stufe 3: auf Wunsch zuerst eine BEMESSENE Position der Variante A —
+            // Instandhaltung als 2 % der Investition ihrer Komponente (3.775 €).
+            if (bemessenePosition)
+                DataRepository.ExecuteNonQuery(
+                    "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
+                    "Gruppe, Kostenart, Bemessung, Einheitpreis) VALUES (1041, 128, 4, 2, 0.0, " +
+                    "'Betriebskosten VDI 2067', 'BETRIEBSGEBUNDEN', 'PROZENT_INVESTITION', 2.0)");
             DataRepository.ExecuteNonQuery(
                 "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
                 "Gruppe, Kostenart, Bemessung) VALUES (1041, 83, 7, 2, 1800.0, 'Wartung BHKW', 'BETRIEBSGEBUNDEN', 'BETRAG')");
@@ -696,6 +703,59 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// ETAPPE E8b, Stufe 3 (Konzept § 2.11.6) — der <b>Betriebskostenblock</b>: Eine
+        /// bemessene Position trägt Menge und Satz in eigenen Spalten rechts des Betrags
+        /// (die Spalten davor bleiben, wo sie sind), der Betrag ist ihr Produkt — bei einer
+        /// Prozentbemessung geteilt durch 100; die Zahlformate nennen die Einheiten. Feste
+        /// Beträge bleiben Werte ohne Menge und Satz; die Summe der Positionen ist die
+        /// Spaltensumme der Beträge.
+        /// </summary>
+        [Fact]
+        public void Excel_Stufe3_Betriebskostenblock_Menge_mal_Satz()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "stufe3.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(Gruppe1040MitSaetzen(bemessenePosition: true),
+                                                    VolleKonfiguration(), ziel);
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                int titel = ZeileMitText(w, R.WIRT_BK_TITEL);
+                Assert.True(titel > 0, "Der Betriebskostenblock fehlt.");
+                int kopf = ZeileMitText(w, R.WIRT_BK_SP_POSITION, titel);
+                Zeile(w, kopf, R.WIRT_BK_SP_POSITION, R.WIRT_BK_SP_GRUPPE, R.WIRT_BK_SP_BEMESSUNG,
+                      R.WIRT_BK_SP_HERLEITUNG, R.WIRT_BK_SP_BETRAG, R.WIRT_FM_BK_MENGE, R.WIRT_FM_BK_SATZ);
+
+                // Die bemessene Position — erste unter dem Kostenartkopf „betriebsgebunden".
+                int pos = kopf + 2;
+                Assert.Equal("F" + pos + "*G" + pos + "/100", w.Cell(pos, 5).FormulaA1);
+                Assert.Equal(3775.0, w.Cell(pos, 6).GetDouble(), 6);
+                Assert.Equal(2.0, w.Cell(pos, 7).GetDouble(), 6);
+                Assert.Equal(75.5, w.Cell(pos, 5).GetDouble(), 6);
+                Assert.Equal("#,##0.000\" %\"", w.Cell(pos, 7).Style.NumberFormat.Format);
+                Assert.Equal("#,##0.00\" €\"", w.Cell(pos, 6).Style.NumberFormat.Format);
+
+                // Feste Beträge bleiben Werte, ohne Menge und Satz.
+                Assert.False(w.Cell(pos + 1, 5).HasFormula);
+                Assert.Equal(1800.0, w.Cell(pos + 1, 5).GetDouble(), 6);
+                Assert.True(w.Cell(pos + 1, 6).IsEmpty());
+
+                // Die Summe als Spaltensumme.
+                int summe = ZeileMitText(w, R.WIRT_BK_SUMME, kopf);
+                Assert.Equal("SUM(E" + (kopf + 1) + ":E" + (summe - 1) + ")", w.Cell(summe, 5).FormulaA1);
+                Assert.Equal(75.5 + 1800.0 + 600.0, w.Cell(summe, 5).GetDouble(), 6);
+
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 400);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
         /// ETAPPE E6 — der Differenzkopf des Verlaufs nennt die REFERENZ, gegen die der
         /// Verlauf rechnet: In Sicht 2 mit A = Variante A läuft die eine Differenzlinie
         /// B − A, und ihr Kopf heißt „Δ Stamm − Variante A" in allen drei Spaltengruppen —
@@ -772,6 +832,8 @@ namespace EPOS.Kern.Tests
                 Assert.Equal(100.0, v.Cell(2, 4).GetDouble(), 6);
                 Assert.Equal(80.0, v.Cell(2, 5).GetDouble(), 6);
                 Assert.Equal(-20.0, v.Cell(2, 6).GetDouble(), 6);
+                // ETAPPE E8b, Stufe 3: die Δ-Zelle als Zellbezug (Wert − Stamm) / |Stamm| · 100.
+                Assert.Equal("(E2-D2)/ABS(D2)*100", v.Cell(2, 6).FormulaA1);
 
                 Zeile(v, 3, "Effizienz", "Vollbenutzungsstunden WP", "h/a");
                 Assert.Equal(2500.0, v.Cell(3, 5).GetDouble(), 6);

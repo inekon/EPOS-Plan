@@ -6657,6 +6657,12 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_FM_MJ_AMORT_HILFE" xml:space="preserve">
     <value>Nulldurchgang in diesem Jahr [a]</value>
   </data>
+  <data name="WIRT_FM_BK_MENGE" xml:space="preserve">
+    <value>Menge</value>
+  </data>
+  <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
+    <value>Satz</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>

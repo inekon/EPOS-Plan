@@ -66517,6 +66517,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Menge ähnelt.
+        /// </summary>
+        public static string WIRT_FM_BK_MENGE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_BK_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz ähnelt.
+        /// </summary>
+        public static string WIRT_FM_BK_SATZ {
+            get {
+                return ResourceManager.GetString("WIRT_FM_BK_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche. ähnelt.
         /// </summary>
         public static string WIRT_FM_GRENZE {

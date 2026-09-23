@@ -569,6 +569,93 @@ namespace WindowsFormsApplication1
             zelle.Style.NumberFormat.Format = "#,##0";
         }
 
+        // =====================================================================
+        //  Stufe 3 — Betriebskostenblock und Δ%-Block
+        // =====================================================================
+
+        /// <summary>Spalte „Menge" des Betriebskostenblocks (rechts neben dem Betrag — die
+        /// Spalten davor bleiben, wo sie sind).</summary>
+        internal const int BK_SPALTE_BETRAG = 5;
+        internal const int BK_SPALTE_MENGE = 6;
+        internal const int BK_SPALTE_SATZ = 7;
+
+        /// <summary>
+        /// Stufe 3 (Konzept § 2.11.6): eine BEMESSENE Betriebskostenposition bekommt Menge
+        /// und Satz in eigene Spalten, der Betrag wird ihr Produkt — bei einer
+        /// Prozentbemessung geteilt durch 100, bei einer Erlösposition negativ. Welche
+        /// Rechnung gilt, sagt <see cref="BetriebskostenCtrl.Betrag"/> selbst (derselbe
+        /// Rechenweg, keine zweite Liste der Bemessungsarten): Er rechnet für Menge 1 und
+        /// Satz 1 genau 0,01 (Prozent) oder 1 (Satz je Einheit). Feste Beträge,
+        /// Jahresbeträge, szenariogepflegte und unvollständige Positionen bleiben Werte —
+        /// für sie trägt die Spalte „Herleitung" die Erklärung.
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Zeile eine Formel bekam.</returns>
+        internal static bool Betriebskostenzeile(IXLWorksheet ws, int r, KostenPositionNachweis n,
+                                                 Formelregister register)
+        {
+            if (ws == null || n == null || register == null || n.SzenarioGepflegt ||
+                !n.Menge.HasValue || !n.Einheitpreis.HasValue) return false;
+            double faktor = BetriebskostenCtrl.Betrag(n.Bemessung, 0.0, 1.0, 1.0, false);
+            bool prozent = Math.Abs(faktor - 0.01) < 1e-15;
+            if (!prozent && faktor != 1.0) return false;
+
+            ws.Cell(r, BK_SPALTE_MENGE).Value = n.Menge.Value;
+            ws.Cell(r, BK_SPALTE_MENGE).Style.NumberFormat.Format =
+                MitEinheit("#,##0.00", BetriebskostenCtrl.MengenEinheit(n.Bemessung, n.Komponente));
+            ws.Cell(r, BK_SPALTE_SATZ).Value = n.Einheitpreis.Value;
+            ws.Cell(r, BK_SPALTE_SATZ).Style.NumberFormat.Format =
+                MitEinheit("#,##0.000", BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true));
+
+            string produkt = Bezug(r, BK_SPALTE_MENGE) + "*" + Bezug(r, BK_SPALTE_SATZ) + (prozent ? "/100" : "");
+            string formel = n.IstErloes ? "-ABS(" + produkt + ")" : produkt;
+            double nach = BetriebskostenCtrl.Betrag(n.Bemessung, 0.0, n.Menge, n.Einheitpreis, n.IstErloes);
+            if (register.Formel(ws.Cell(r, BK_SPALTE_BETRAG), formel, n.BetragJahr, nach)) return true;
+
+            // Besteht die Gegenrechnung nicht, bleiben auch Menge und Satz leer — die
+            // Herleitung sagt dann, was gerechnet wurde.
+            ws.Cell(r, BK_SPALTE_MENGE).Clear();
+            ws.Cell(r, BK_SPALTE_SATZ).Clear();
+            return false;
+        }
+
+        /// <summary>Stufe 3: die Köpfe „Menge" und „Satz" über den neuen Spalten.</summary>
+        internal static void BetriebskostenKopf(IXLWorksheet ws, int kopfZeile)
+        {
+            Kopf(ws, kopfZeile, BK_SPALTE_MENGE, MyResource.Resource.WIRT_FM_BK_MENGE);
+            Kopf(ws, kopfZeile, BK_SPALTE_SATZ, MyResource.Resource.WIRT_FM_BK_SATZ);
+        }
+
+        /// <summary>Stufe 3: die Summe der Positionen als Spaltensumme der Beträge.</summary>
+        internal static void BetriebskostenSumme(IXLWorksheet ws, int r, int ersteZeile, int letzteZeile,
+                                                 double summe, double nachgerechnet, Formelregister register)
+        {
+            if (ws == null || register == null || letzteZeile < ersteZeile) return;
+            register.Formel(ws.Cell(r, BK_SPALTE_BETRAG),
+                "SUM(" + Bezug(ersteZeile, BK_SPALTE_BETRAG) + ":" + Bezug(letzteZeile, BK_SPALTE_BETRAG) + ")",
+                summe, nachgerechnet);
+        }
+
+        /// <summary>
+        /// Stufe 3: eine Zelle des Δ%-Blocks im Vergleichsblatt als Zellbezug —
+        /// (Wert − Stamm) / |Stamm| · 100, derselbe Ausdruck, der den Wert gerechnet hat.
+        /// </summary>
+        internal static void Deltazelle(IXLCell zelle, int zeile, int spalteWert, int spalteStamm,
+                                        double wert, double stamm, double delta, Formelregister register)
+        {
+            if (zelle == null || register == null) return;
+            string s = Bezug(zeile, spalteStamm);
+            register.Formel(zelle, "(" + Bezug(zeile, spalteWert) + "-" + s + ")/ABS(" + s + ")*100",
+                            delta, (wert - stamm) / Math.Abs(stamm) * 100.0);
+        }
+
+        /// <summary>Ein Zahlformat mit Einheit als Literal („#,##0.00" kWh/a"") — die Zelle
+        /// bleibt eine Zahl, das Prozentzeichen im Literal multipliziert nicht.</summary>
+        private static string MitEinheit(string format, string einheit)
+        {
+            if (string.IsNullOrWhiteSpace(einheit)) return format;
+            return format + "\" " + einheit.Replace("\"", "") + "\"";
+        }
+
         /// <summary>Fortschreibung einer Spalte ab Jahr 2: Jahr 1 × (1+p)^(t−1).</summary>
         private static void Fortschreibung(IXLWorksheet ws, MehrjahresTafel tafel, Mehrjahresbild bild,
                                            string schluessel, double satz, Formelregister register)

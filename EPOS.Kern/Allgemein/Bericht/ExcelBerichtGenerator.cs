@@ -167,7 +167,7 @@ namespace WindowsFormsApplication1
             using (var wb = new XLWorkbook())
             {
                 BlattUebersicht(wb, daten);
-                BlattVergleich(wb, daten);
+                BlattVergleich(wb, daten, formeln);
 
                 // Phase 6: Kapitalwert-Ergebnisse dieses Berichtslaufs (gleiche Quelle
                 // wie der Word-Baustein — BerichtsDaten.Wirtschaftlichkeit, ersatzweise
@@ -281,7 +281,7 @@ namespace WindowsFormsApplication1
 
         // ------------------------------------------------------------- Vergleich
 
-        private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten)
+        private static void BlattVergleich(XLWorkbook wb, BerichtsDaten daten, Formelregister formeln)
         {
             IXLWorksheet ws = wb.Worksheets.Add("Vergleich");
             // E5/F7: CO₂-Zeilen nach dem gerechneten Modus beschriften.
@@ -339,8 +339,15 @@ namespace WindowsFormsApplication1
                             && Math.Abs(stammWert.Value) > 1e-9)
                         {
                             IXLCell zelle = ws.Cell(r, deltaStart + i);
-                            zelle.Value = (wert.Value - stammWert.Value) / Math.Abs(stammWert.Value) * 100.0;
+                            double delta = (wert.Value - stammWert.Value) / Math.Abs(stammWert.Value) * 100.0;
+                            zelle.Value = delta;
                             zelle.Style.NumberFormat.Format = "+#,##0.0;−#,##0.0;±0,0";
+
+                            // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): der Δ%-Block als
+                            // Zellbezug auf die beiden Wertspalten derselben Zeile.
+                            ExcelFormelmappe.Deltazelle(zelle, r, 4 + daten.Varianten.IndexOf(varianten[i]),
+                                                        4 + daten.Varianten.IndexOf(stamm),
+                                                        wert.Value, stammWert.Value, delta, formeln);
                         }
                     }
                     r++;
@@ -726,7 +733,8 @@ namespace WindowsFormsApplication1
             r = BlattKwkgModule(ws, daten, alle, r);
 
             // ---------------- Betriebskosten nach Kostenarten (E3 → E7) ----------------
-            r = BlattBetriebskosten(ws, daten, alle, r);
+            // ETAPPE E8b, Stufe 3: bemessene Positionen als Menge × Satz.
+            r = BlattBetriebskosten(ws, daten, alle, r, formeln);
 
             // ---------------- Kapitalwert-Verlauf (Phase 11, Szenario Erwartet) ----------------
             // Jahresreihen frisch aus den Berichtsdaten gerechnet (T aus den Parametern);
@@ -1448,7 +1456,8 @@ namespace WindowsFormsApplication1
         /// <c>Kostenart</c>.
         /// </summary>
         private static int BlattBetriebskosten(IXLWorksheet ws, BerichtsDaten daten,
-                                               List<WirtschaftlichkeitErgebnis> alle, int r)
+                                               List<WirtschaftlichkeitErgebnis> alle, int r,
+                                               Formelregister formeln)
         {
             var mitPositionen = alle.Where(x => x.Szenario == WirtschaftlichkeitSzenario.ERWARTET &&
                                                 x.Betriebskosten != null &&
@@ -1472,6 +1481,7 @@ namespace WindowsFormsApplication1
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 r++;
 
+                int kopfZeile = r;   // ETAPPE E8b: Köpfe „Menge" und „Satz" folgen, wenn es bemessene Zeilen gibt
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SP_POSITION;
                 ws.Cell(r, 2).Value = MyResource.Resource.WIRT_BK_SP_GRUPPE;
                 ws.Cell(r, 3).Value = MyResource.Resource.WIRT_BK_SP_BEMESSUNG;
@@ -1482,6 +1492,7 @@ namespace WindowsFormsApplication1
                 r++;
 
                 double summe = 0;
+                bool bemessen = false;
                 foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
                 {
                     List<KostenPositionNachweis> block = e.Betriebskosten
@@ -1505,15 +1516,21 @@ namespace WindowsFormsApplication1
                         ws.Cell(r, 3).Value = WirtschaftlichkeitZeilen.BemessungText(n.Bemessung);
                         ws.Cell(r, 4).Value = herleitung;
                         Zahl(ws, r, 5, n.BetragJahr, "#,##0");
+                        // ETAPPE E8b, Stufe 3 (Konzept § 2.11.6): eine bemessene Position
+                        // trägt Menge und Satz in eigenen Spalten, der Betrag ist ihr Produkt.
+                        if (ExcelFormelmappe.Betriebskostenzeile(ws, r, n, formeln)) bemessen = true;
                         r++;
                         summe += n.BetragJahr;
                     }
                 }
+                if (bemessen) ExcelFormelmappe.BetriebskostenKopf(ws, kopfZeile);
 
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_BK_SUMME;
                 Zahl(ws, r, 5, summe, "#,##0");
                 ws.Range(r, 1, r, 5).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = KOPF;
+                // ETAPPE E8b, Stufe 3: die Summe als Spaltensumme der Beträge darüber.
+                ExcelFormelmappe.BetriebskostenSumme(ws, r, kopfZeile + 1, r - 1, summe, summe, formeln);
                 r++;
 
                 if (e.BetriebskostenJahr.HasValue &&
