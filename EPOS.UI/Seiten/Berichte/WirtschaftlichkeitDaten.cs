@@ -417,9 +417,6 @@ public sealed class WirtschaftlichkeitStand
     /// <summary>Führt die Gruppe ein BHKW? Dann erscheint „BHKW-Wirtschaftlichkeit…".</summary>
     public bool MitBhkw { get; set; }
 
-    /// <summary>Ist der Tarifsatz des Projekts aktiv? Dann erscheint „Strombezug…".</summary>
-    public bool MitStrombezug { get; set; }
-
     /// <summary>Die Statuszeile beim Aufbau (gespeicherter Stand, veraltet, keiner).</summary>
     public string Statuszeile { get; set; } = "";
 

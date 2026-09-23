@@ -157,6 +157,33 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     }
 
     // =================================================================================
+    // Das Geruest (Konzept Administrationsdialoge, Stufe 1, V1)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Die Kennlinien stehen im Eingabeblock</b>, nicht mehr zwischen Rahmen und
+    /// Fußleiste: Dort waren sie ein dritter Bereich, dessen Reiterblatt in sich rollte
+    /// (Katalogprobe, 1 088 × 624: 41 px sichtbar von 412). Im Eingabeblock rollen sie
+    /// mit den Feldern — Titel und Fußleiste stehen, und zwischen ihnen stehen nur
+    /// Liste und Eingabeblock.
+    /// </summary>
+    [Fact]
+    public void Die_Kennlinien_stehen_im_Eingabeblock()
+    {
+        var cut = Aufbauen();
+
+        Assert.Single(cut.FindAll(".epos-katalog-eingabe .epos-reiter"));
+        Assert.Single(cut.FindAll(".epos-katalog-eingabe .epos-optionsgruppe"));
+
+        // Zwischen Rahmen und Fussleiste steht kein weiterer Block.
+        var kinder = cut.Find(".epos-katalog-dialog").Children
+            .Select(e => e.ClassName ?? "").ToList();
+        int rahmen = kinder.FindIndex(k => k.Contains("epos-katalog-paar"));
+        int fuss = kinder.FindIndex(k => k.Contains("epos-leiste"));
+        Assert.True(rahmen >= 0 && fuss == rahmen + 1, string.Join(" | ", kinder));
+    }
+
+    // =================================================================================
     // Die Fussleiste nach der Hausregel (DL-2 Nr. 4, Konzept Abschnitt 2 Zeile 4)
     // =================================================================================
 

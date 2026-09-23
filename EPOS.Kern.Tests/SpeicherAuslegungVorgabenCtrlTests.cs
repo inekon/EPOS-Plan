@@ -17,10 +17,12 @@ namespace EPOS.Kern.Tests
     /// Preis der Stufe, in der die Spitze liegt. Ohne bekannte Spitze sagt der Text
     /// es.</para>
     ///
-    /// <para><b>Ohne Datenbank.</b> <c>TarifQuelle</c> bekommt den Tarifsatz als
-    /// Parameter; der Leseweg zu Variante, Tarifsatz und Energietraeger ist
+    /// <para><b>Ohne Datenbank.</b> <c>StaffelQuelle</c> bekommt die Staffel als
+    /// Parameter; der Leseweg zu Variante, Stromtraeger und seiner Staffel ist
     /// Datenbanksache und steckt in <c>Leistungspreisquellen</c>, von dem hier nur der
-    /// Fall "kein Projekt" geprueft ist.</para>
+    /// Fall "kein Projekt" geprueft ist. Seit Schemaschritt 104 (Entscheid Q11) steht
+    /// die Staffel am Stromtraeger der Kostenverwaltung statt im Tarifsatz — die
+    /// Stufenwahl ist dieselbe geblieben.</para>
     /// </summary>
     public sealed class SpeicherAuslegungVorgabenCtrlTests : IDisposable
     {
@@ -45,31 +47,33 @@ namespace EPOS.Kern.Tests
             Thread.CurrentThread.CurrentUICulture = _vorherUi;
         }
 
-        private static TarifParameter Tarif(double grenze, double preis1, double preis2)
-            => new TarifParameter
+        private static LeistungspreisStaffel Staffel(double grenze, double preis1, double preis2)
+            => new LeistungspreisStaffel
             {
-                StaffelGrenzeKW = grenze,
-                StaffelPreis1EurKW = preis1,
-                StaffelPreis2EurKW = preis2
+                GrenzeKW = grenze,
+                Preis1EurKWa = preis1,
+                Preis2EurKWa = preis2
             };
 
         [Fact]
         public void Eine_Spitze_Ueber_Der_Grenze_Nimmt_Die_Zweite_Stufe()
         {
             SpeicherOptimierungLeistungspreisQuelle q =
-                SpeicherAuslegungVorgabenCtrl.TarifQuelle(Tarif(500.0, 90.0, 120.0), 751.0);
+                SpeicherAuslegungVorgabenCtrl.StaffelQuelle(Staffel(500.0, 90.0, 120.0), 751.0);
 
             Assert.NotNull(q);
             Assert.Equal(120.0, q.WertEurProKwA, 9);
             Assert.Contains("751", q.Bezeichnung, StringComparison.Ordinal);
             Assert.Contains("500", q.Bezeichnung, StringComparison.Ordinal);
+            // Die Quelle heißt nach ihrem Ort: der Stromträger, nicht mehr die Tarifstruktur.
+            Assert.StartsWith("Leistungspreis-Staffel des Stromträgers", q.Bezeichnung, StringComparison.Ordinal);
         }
 
         [Fact]
         public void Eine_Spitze_Innerhalb_Der_Grenze_Nimmt_Die_Erste_Stufe()
         {
             SpeicherOptimierungLeistungspreisQuelle q =
-                SpeicherAuslegungVorgabenCtrl.TarifQuelle(Tarif(1000.0, 90.0, 120.0), 751.0);
+                SpeicherAuslegungVorgabenCtrl.StaffelQuelle(Staffel(1000.0, 90.0, 120.0), 751.0);
 
             Assert.NotNull(q);
             Assert.Equal(90.0, q.WertEurProKwA, 9);
@@ -79,7 +83,7 @@ namespace EPOS.Kern.Tests
         public void Ohne_Zweite_Stufe_Gilt_Die_Erste_Auch_Oberhalb()
         {
             SpeicherOptimierungLeistungspreisQuelle q =
-                SpeicherAuslegungVorgabenCtrl.TarifQuelle(Tarif(500.0, 90.0, 0.0), 751.0);
+                SpeicherAuslegungVorgabenCtrl.StaffelQuelle(Staffel(500.0, 90.0, 0.0), 751.0);
 
             Assert.NotNull(q);
             Assert.Equal(90.0, q.WertEurProKwA, 9);
@@ -89,19 +93,20 @@ namespace EPOS.Kern.Tests
         public void Ohne_Bekannte_Spitze_Sagt_Der_Text_Es()
         {
             SpeicherOptimierungLeistungspreisQuelle q =
-                SpeicherAuslegungVorgabenCtrl.TarifQuelle(Tarif(500.0, 90.0, 120.0), 0.0);
+                SpeicherAuslegungVorgabenCtrl.StaffelQuelle(Staffel(500.0, 90.0, 120.0), 0.0);
 
             Assert.NotNull(q);
             Assert.Equal(90.0, q.WertEurProKwA, 9);
-            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_QUELLE_TARIF_OHNE_SPITZE, q.Bezeichnung,
+            Assert.Contains(WindowsFormsApplication1.MyResource.Resource.OPT_QUELLE_STAFFEL_OHNE_SPITZE, q.Bezeichnung,
                             StringComparison.Ordinal);
         }
 
         [Fact]
         public void Ohne_Gepflegte_Staffel_Gibt_Es_Keine_Quelle()
         {
-            Assert.Null(SpeicherAuslegungVorgabenCtrl.TarifQuelle(Tarif(500.0, 0.0, 0.0), 751.0));
-            Assert.Null(SpeicherAuslegungVorgabenCtrl.TarifQuelle(null, 751.0));
+            Assert.Null(SpeicherAuslegungVorgabenCtrl.StaffelQuelle(Staffel(500.0, 0.0, 0.0), 751.0));
+            Assert.Null(SpeicherAuslegungVorgabenCtrl.StaffelQuelle(new LeistungspreisStaffel(), 751.0));
+            Assert.Null(SpeicherAuslegungVorgabenCtrl.StaffelQuelle(null, 751.0));
         }
 
         [Fact]

@@ -386,6 +386,74 @@ namespace EPOS.Kern.Tests
         }
 
         // =====================================================================
+        //  Wächter 2 auch über den Rechenweg des Zapfprofils
+        // =====================================================================
+
+        /// <summary>
+        /// Was ein Rechenordner des Zapfprofils NICHT nennen darf: Oberfläche, Windows-API,
+        /// Datenbank und Umgebung (Umsetzungskonzept Zapfprofilgenerator 2.1: „Keine Datei kennt
+        /// DataRepository, Dienste oder eine Oberfläche") — auch nicht <c>System.Data</c>, SQLite,
+        /// das Dateisystem, <c>SpecialFolder</c>, <c>Program.*</c> oder <c>Environment.*</c>.
+        /// </summary>
+        private static readonly Regex Umgebungsbindung = new Regex(
+            @"System\.Windows|System\.Drawing|MessageBox\.|\bRegistry\.|ProtectedData|OleDb|\bDataRepository\b|\bDienste\."
+            + @"|\bSystem\.Data\b|\bDataTable\b|Sqlite|\bSystem\.IO\b|SpecialFolder|\bProgram\.|\bEnvironment\.",
+            RegexOptions.Compiled);
+
+        /// <summary>
+        /// <b>Wächter 2 über <c>EPOS.Kern/Allgemein/Zapfprofil/</c></b> (Abnahme der Stufe Z1,
+        /// Kapitel 7): Jede Größe des Rechenwegs, deren Name eine Energiemenge ankündigt, trägt
+        /// ihre Einheit im Namen — und keine Datei des Ordners bindet sich an Oberfläche,
+        /// Windows, Datenbank oder <c>Dienste.*</c>. Kommentarzeilen zählen nicht.
+        /// </summary>
+        [Fact]
+        public void Der_Rechenweg_des_Zapfprofils_nennt_seine_Einheiten_und_keine_Umgebung()
+        {
+            string ordner = Path.Combine(Arbeitsbaum(), "EPOS.Kern", "Allgemein", "Zapfprofil");
+            Assert.True(Directory.Exists(ordner), "Ordner nicht gefunden: " + ordner);
+            string[] dateien = Directory.GetFiles(ordner, "*.cs", SearchOption.AllDirectories)
+                                        .Where(OhneBauordner).OrderBy(p => p, StringComparer.Ordinal).ToArray();
+            Assert.True(dateien.Length >= 10, "Nur " + dateien.Length + " Dateien im Zapfprofil-Ordner.");
+
+            var funde = new List<string>();
+            int benannt = 0;
+            foreach (string datei in dateien)
+            {
+                string[] zeilen = File.ReadAllText(datei).Replace("\r\n", "\n").Split('\n');
+                for (int i = 0; i < zeilen.Length; i++)
+                {
+                    if (IstKommentar(zeilen[i])) continue;
+                    if (Umgebungsbindung.IsMatch(zeilen[i]))
+                        funde.Add(Kurzname(datei) + ":" + (i + 1) + "  Umgebung: " + zeilen[i].Trim());
+
+                    Match m = Skalarfeld.Match(zeilen[i]);
+                    if (!m.Success) continue;
+                    string feld = m.Groups[1].Value;
+                    if (Einheitensuffix.IsMatch(feld)) benannt++;
+                    else if (Energiename.IsMatch(feld)) funde.Add(Kurzname(datei) + ":" + (i + 1) + "  Einheit fehlt: " + feld);
+                }
+            }
+
+            Assert.True(funde.Count == 0,
+                "Der Rechenweg des Zapfprofils verletzt die Einheitenregel oder bindet sich an die Umgebung:\n"
+                + string.Join("\n", funde));
+            Assert.True(benannt >= 5, "Nur " + benannt + " Größen mit Einheit im Namen gefunden - der Wächter sieht den Ordner nicht.");
+
+            // Gegenprobe zum Leser der Umgebung.
+            Assert.Matches(Umgebungsbindung, "DataTable t = DataRepository.GetDataTable(sql);");
+            Assert.Matches(Umgebungsbindung, "Dienste.Dialog.Zeige(text);");
+            Assert.DoesNotMatch(Umgebungsbindung, "internal static Zirkulationsansatz Ansetzen(ProjektStand p)");
+            foreach (string bindung in new[]
+                     {
+                         "using System.Data;", "DataTable t = new DataTable();", "var c = new SqliteConnection(pfad);",
+                         "using System.IO;", "Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);",
+                         "string p = Program.Pfad;", "string n = Environment.NewLine;"
+                     })
+                Assert.Matches(Umgebungsbindung, bindung);
+            Assert.DoesNotMatch(Umgebungsbindung, "System.DateTime jetzt; double datenMenge; int ProgrammTeil;");
+        }
+
+        // =====================================================================
         //  Hilfen
         // =====================================================================
 

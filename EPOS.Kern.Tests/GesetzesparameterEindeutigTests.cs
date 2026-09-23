@@ -206,6 +206,11 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
+            // ETAPPE E7c: Die Kopie zuerst auf die Zielgeneration bringen — steht die
+            // Testdatenbank auf einem älteren Saatstand, fehlten ihr sonst die Zeilen der
+            // jüngsten Generation, und der Lauf unten säte sie neu statt sie zu übergehen.
+            GesetzKatalog.StelleKatalogSicher();
+
             int ziel = GesetzKatalog.AktuelleGeneration;
             Assert.True(ziel > 1);
 

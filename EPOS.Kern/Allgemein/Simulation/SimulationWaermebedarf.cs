@@ -26,9 +26,47 @@ namespace WindowsFormsApplication1
         public double Waermebedarf_Gebaeude_Gesamt = 0;
 
 
-        // Brauchwasser Wärmeenergie 
+        // Brauchwasser Wärmeenergie
         public double[] Waermebedarf_Brauchwasser_Monat = new double[12];
         public double Waermebedarf_Brauchwasser = 0;
+
+        /// <summary>
+        /// Zapfprofilgenerator (Umsetzungskonzept Zapfprofilgenerator 2.2): Jahresverlust der
+        /// Zirkulation [MWh], die im Brauchwasserkanal als eigene Teilreihe mitläuft — auf dem
+        /// Bestandsweg 0. <see cref="Waermebedarf_Brauchwasser"/> trägt Zapfung UND Zirkulation.
+        /// </summary>
+        public double Brauchwasser_Zirkulation_Mwh = 0;
+
+        /// <summary>
+        /// Monatssummen der Zirkulation [MWh] (<c>BhkwPlan.MonatsSumme</c>) für den Monatsstapel
+        /// von Vorschau und Bericht (2.2, 5.6); auf dem Bestandsweg 0. Die Zapfung eines Monats
+        /// steht getrennt in <see cref="Waermebedarf_Brauchwasser_Zapfung_Monat"/>.
+        /// </summary>
+        public double[] Waermebedarf_Brauchwasser_Zirkulation_Monat = new double[12];
+
+        /// <summary>
+        /// Monatssummen der Zapfung [MWh] (<c>BhkwPlan.MonatsSumme</c> aus der Zapfreihe des
+        /// Generators) für den Monatsstapel (2.2, 5.6); auf dem Bestandsweg 0. Zapfung plus
+        /// <see cref="Waermebedarf_Brauchwasser_Zirkulation_Monat"/> ergibt
+        /// <see cref="Waermebedarf_Brauchwasser_Monat"/> — die Hülle liest beide Schichten und
+        /// rechnet keine selbst.
+        /// </summary>
+        public double[] Waermebedarf_Brauchwasser_Zapfung_Monat = new double[12];
+
+        /// <summary>
+        /// Das Ergebnis des Generatorwegs (Kennzahlen, Herkunft, Hinweise) aus dem letzten
+        /// Brauchwasserlauf; <c>null</c> auf dem Bestandsweg oder nach einem Abbruch.
+        /// </summary>
+        internal ZapfprofilErgebnis Zapfprofil;
+
+        /// <summary>
+        /// Benannter Abbruch der Bedarfsrechnung (Muster <c>SimulationStrombedarf.Fehlertext</c>):
+        /// leer = gerechnet. Gesetzt, wenn der Zapfprofilgenerator für das PROJEKT nicht rechnen
+        /// kann (Tabellen oder Katalogversion fehlen, unerwarteter Fehler; 2.2, N8); der Lauf
+        /// speichert dann kein Ergebnis, und die Bedarfsfelder stehen auf 0. Eine abgelehnte
+        /// Zone setzt ihn nicht — sie trägt 0 und steht als Warnung im Protokoll.
+        /// </summary>
+        public string Fehlertext = "";
 
         // Lastgang Gebäude
         public double[] Waermebedarf_Extern = new double[8760];
@@ -180,6 +218,7 @@ namespace WindowsFormsApplication1
 
 
             m_ID_Projekt = ID_Projekt;
+            Fehlertext = "";
             /*
             com.I_vector_init(ref Dauerlinie);
             com.I_vector_init(ref Dauerlinie_nicht_sortiert);
@@ -381,6 +420,17 @@ namespace WindowsFormsApplication1
 
             // Brauchwasserwärme
             Brauchwasserwaerme_berechnen();
+
+            // Zapfprofilgenerator (2.2, N8): Kann der Generatorweg für das PROJEKT nicht
+            // rechnen (Tabellen oder Katalogversion fehlen, unerwarteter Fehler), bricht die
+            // Bedarfsrechnung benannt ab — kein stiller Rückfall auf den Bestandsweg. Die
+            // Ergebnisfelder stehen dann ausdrücklich auf 0, damit kein Aufrufer die Zahlen
+            // eines früheren Laufs zeigt. Eine abgelehnte ZONE bricht nicht ab (sie trägt 0).
+            if (!string.IsNullOrEmpty(Fehlertext))
+            {
+                BedarfNachAbbruchLeeren();
+                return;
+            }
             //Waermebedarf_Brauchwasser = com.I_vector_summe(brauchwasserwerte);
             // W8-O-5b (07.09.2026): EINE Zeile fuer beide Wege - der Lauf ruft
             // dieselbe Methode wie die Vorschau, damit das Feld nicht mehr je nach
@@ -889,12 +939,33 @@ namespace WindowsFormsApplication1
         /// </summary>
         public void Brauchwasserwaerme_berechnen(List<string> list = null)
         {
+            Brauchwasser_Zirkulation_Mwh = 0;
+            Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zapfung_Monat, 0, Waermebedarf_Brauchwasser_Zapfung_Monat.Length);
+            Zapfprofil = null;
             try
             {
                 //com.I_vector_init(ref brauchwasserwerte);
                 WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
 
                 ProfilQuellmodus modus = ProfilBedarf.Vorschaumodus(list, m_ID_Projekt);
+
+                // DIE WEICHE des Zapfprofilgenerators (Umsetzungskonzept 2.2): nur in der
+                // Projektrechnung, je Projekt EXKLUSIV. Ohne Zeile in Tab_TwwProjekt (oder ohne
+                // Tabelle) oder mit Weg = BESTAND läuft der Code darunter Zeichen für Zeichen
+                // wie zuvor; die Bestandszeilen in Z_Projekt_Brauchwasser rechnen beim
+                // Generator nicht mit.
+                if (modus == ProfilQuellmodus.Projektrechnung
+                    && ZapfprofilCtrl.Weg(m_ID_Projekt) == BrauchwasserWeg.Generator)
+                {
+                    // Auch ein unerwarteter Fehler beim Lesen des Stands bricht benannt ab —
+                    // nie über den Warnzweig unten (N8).
+                    ZapfprofilStand stand;
+                    try { stand = ZapfprofilCtrl.Lies(m_ID_Projekt); }
+                    catch (Exception ex) { ZapfprofilAbbrechen(ex.Message); return; }
+                    BrauchwasserAusGenerator(stand);
+                    return;
+                }
 
                 int wochentag = (modus == ProfilQuellmodus.Projektrechnung)
                                 ? WochentagJan1 : ProfilBedarf.WOCHENTAG_ALTKONVENTION;
@@ -906,6 +977,142 @@ namespace WindowsFormsApplication1
             // Protokollkanal-Nachzug: WARNUNG, siehe Prozesswärme-Zweig.
             catch (SystemException ex) { SimulationProtokoll.Aktuell.Warnung("Fehler bei der Brauchwasserwärme-Berechnung (Ergebnis unvollständig): " + ex.Message); }
         }
+
+        // =====================================================================
+        //  Zapfprofilgenerator — der Generatorweg der Weiche (Umsetzungskonzept
+        //  Zapfprofilgenerator 2.2, 2.3; Stufe Z1)
+        // =====================================================================
+
+        /// <summary>Präfix der Protokollmeldungen des Generatorwegs.</summary>
+        internal const string ZAPFPROFIL_PRAEFIX = "Brauchwasser (Zapfprofilgenerator): ";
+
+        /// <summary>
+        /// Der Generatorweg über einen Arbeitsstand — im Lauf der gespeicherte
+        /// (<see cref="Brauchwasserwaerme_berechnen"/>), in der Vorschau der des Dialogs
+        /// (<c>BedarfsVorschauCtrl.ProjektVorschau</c>): derselbe Aufruf, dieselbe Reihe
+        /// (Vorschau gleich Lauf, 2.4). Kalender sind <see cref="WochentagJan1"/> und die
+        /// Wochenendkennzeichen des Klimakalenders.
+        ///
+        /// <para><b>Kein stiller Rückfall (2.2, N8).</b> Lehnt der Rechenweg eine ZONE benannt
+        /// ab (Nutzungsart gelöscht, Parameter fehlt, Bezugsmenge fehlt …) oder die Zirkulation,
+        /// meldet jede Ablehnung mit ihrer Zone als <see cref="SimulationProtokoll.Warnung"/>, die
+        /// betroffene Zone bzw. Zirkulation trägt 0, und der Lauf geht mit den übrigen Zonen
+        /// weiter — derselbe Ausgang wie der Bestandsweg bei Nullprofil, aber benannt. Kann der
+        /// Generator für das PROJEKT nicht rechnen — Tabellen oder Katalogversion fehlen, oder
+        /// Lesen, Katalog oder Rechnen scheitern unerwartet —, meldet er den Grund als
+        /// <see cref="SimulationProtokoll.Fehlermeldung"/>, <see cref="Fehlertext"/> nennt ihn,
+        /// der Kanal bleibt leer, und der Lauf bricht benannt ab. Hinweise des Rechenwegs gehen
+        /// als Hinweis ins Protokoll.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Reihe übernommen ist (auch mit abgelehnten Zonen).</returns>
+        internal bool BrauchwasserAusGenerator(ZapfprofilStand stand)
+        {
+            ZapfprofilErgebnis e;
+            try
+            {
+                e = ZapfprofilCtrl.Rechnen(m_ID_Projekt, stand, WochentagJan1, WE);
+            }
+            catch (Exception ex) { return ZapfprofilAbbrechen(ex.Message); }
+
+            foreach (ZapfAblehnung a in e.Ablehnungen)
+                SimulationProtokoll.Aktuell.Warnung(ZAPFPROFIL_PRAEFIX + ZapfAblehnungstext(a));
+
+            foreach (ZapfHinweis h in e.Hinweise)
+                SimulationProtokoll.Aktuell.HinweisEinmal("zapfprofil-" + h.Zone + "-" + h.Code + "-" + h.Text,
+                                                          ZAPFPROFIL_PRAEFIX + h.Text);
+            ZapfprofilUebernehmen(e);
+            return true;
+        }
+
+        /// <summary>
+        /// Der Protokolltext einer Ablehnung: Zone und Folge vorn, dann der Klartext des
+        /// Rechenwegs — „Zone „…“ trägt 0: …“; ohne Zone (Zirkulation, Zone ohne Angaben)
+        /// „Anteil trägt 0: …“.
+        /// </summary>
+        internal static string ZapfAblehnungstext(ZapfAblehnung a)
+        {
+            string zone = a?.Zone ?? "";
+            string text = a?.Klartext ?? "";
+            return zone.Length > 0 ? "Zone „" + zone + "“ trägt 0: " + text : "Anteil trägt 0: " + text;
+        }
+
+        /// <summary>Meldet den Grund als Fehler, setzt <see cref="Fehlertext"/> und lässt den Kanal leer.</summary>
+        private bool ZapfprofilAbbrechen(string grund)
+        {
+            WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
+            Array.Clear(Waermebedarf_Brauchwasser_Monat, 0, Waermebedarf_Brauchwasser_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zapfung_Monat, 0, Waermebedarf_Brauchwasser_Zapfung_Monat.Length);
+            Brauchwasser_Zirkulation_Mwh = 0;
+            Waermebedarf_Brauchwasser = 0;
+            Zapfprofil = null;
+            SimulationProtokoll.Aktuell.Fehlermeldung(ZAPFPROFIL_PRAEFIX + grund);
+            Fehlertext = ZAPFPROFIL_PRAEFIX + grund;
+            return false;
+        }
+
+        /// <summary>
+        /// Nach einem benannten Abbruch (<see cref="Fehlertext"/> gesetzt): Summen, Summenvektor
+        /// und Kanäle stehen ausdrücklich auf 0 — sonst zeigte ein Aufrufer, der dasselbe Objekt
+        /// wiederverwendet (Startseite, Ergebnisvorabrechnung), die Zahlen eines früheren Laufs.
+        /// </summary>
+        private void BedarfNachAbbruchLeeren()
+        {
+            _kanaele = new Kanalsatz();
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf);
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_sortiert);
+            WPPlan.Core.BhkwPlan.VectorInit(Dauerlinie);
+            WPPlan.Core.BhkwPlan.VectorInit(Dauerlinie_nicht_sortiert);
+            WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
+            Waermebedarf_Gesamt = 0;
+            Waermebedarf_Max = 0;
+            Waermebedarf_Brauchwasser = 0;
+            Waermebedarf_Netzverluste = 0;
+        }
+
+        /// <summary>
+        /// Übernimmt ein Ergebnis des Generators in den Brauchwasserkanal (2.2): Zapfung und
+        /// Zirkulation als Kopien auf <see cref="brauchwasserwerte"/> [kWh] — die Zirkulation
+        /// als eigene Teilreihe desselben Kanals (A4; die Netzverlustverteilung bleibt, ZU5) —,
+        /// die Monatssummen des Kanals und getrennt die der Zirkulation, der Jahresverlust der
+        /// Zirkulation in MWh. Kanalbuchung und Energieprobe folgen im Lauf wie beim Bestandsweg.
+        /// </summary>
+        internal void ZapfprofilUebernehmen(ZapfprofilErgebnis e)
+        {
+            if (e == null) throw new ArgumentNullException(nameof(e));
+            double[] zapfung = e.Zapfung.KopieStundenKwh();
+            double[] zirkulation = e.Zirkulation.KopieStundenKwh();
+            WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zapfung, brauchwasserwerte);
+            WPPlan.Core.BhkwPlan.VectorenAddieren(zirkulation, brauchwasserwerte);
+            Brauchwasser_Zirkulation_Mwh = Energieeinheit.MWh.AusKWh(e.Zirkulation.JahressummeKwh);
+            WPPlan.Core.BhkwPlan.MonatsSumme(brauchwasserwerte, Waermebedarf_Brauchwasser_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zapfung, Waermebedarf_Brauchwasser_Zapfung_Monat, mo_anfang, mo_ende);
+            WPPlan.Core.BhkwPlan.MonatsSumme(zirkulation, Waermebedarf_Brauchwasser_Zirkulation_Monat, mo_anfang, mo_ende);
+            Zapfprofil = e;
+        }
+
+        /// <summary>
+        /// Der Kalender des Generatorwegs OHNE den übrigen Klimakalender — für die Vorschau,
+        /// die keinen Lauf fährt: die Wochenendkennzeichen aus <c>Tab_Klimadaten.WE</c> (dieselbe
+        /// Quelle wie <see cref="KlimakalenderLesen"/>) und daraus <see cref="WochentagJan1"/>.
+        /// </summary>
+        internal void ZapfprofilKalenderLesen(int idKlimaregion)
+        {
+            KlimadatenCtrl ctrl_klima = new KlimadatenCtrl();
+            ctrl_klima.ReadAll(idKlimaregion);
+            Array.Clear(WE, 0, WE.Length);
+            for (int i = 0; i < ctrl_klima.rows && i < WE.Length; i++) WE[i] = (bool)ctrl_klima.items[i].m_WE;
+            WochentagJan1 = ProfilBedarf.WochentagJan1AusWE(WE);
+        }
+
+        /// <summary>
+        /// Eine KOPIE der 365 Kennzeichen „Wochenende oder Feiertag" des Kalenders, mit dem der
+        /// Generatorweg gerechnet hat — für die Vorschau des Zapfprofils, die daraus die Tagtypen
+        /// ihres Tagesgangs bildet (<c>Zapfkalender.Bilden</c>), ohne den Klimakalender ein
+        /// zweites Mal zu lesen. Nur lesend; die Reihe des Laufs bleibt unberührt.
+        /// </summary>
+        internal bool[] WochenendkennzeichenKopie() => (bool[])WE.Clone();
 
         /// <summary>
         /// Weist die gerechnete Stundenreihe <see cref="brauchwasserwerte"/> [kWh] als

@@ -1852,6 +1852,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
     <value>Heat consumer — supplied directly by a generator or from a buffer storage tank.</value>
   </data>
+  <data name="SIM_SCHEMA_WARNUNG_OHNE_VERSORGER" xml:space="preserve">
+    <value>No supplier</value>
+  </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Flow below the buffer set point</value>
   </data>
@@ -2580,7 +2583,7 @@ the curve then has to be supplemented with lower data points.</value>
     <value>Heating circuit</value>
   </data>
   <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
-    <value>Heating circuit (both)</value>
+    <value>Heating circuit (heating + hot water)</value>
   </data>
   <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
     <value>Heating circuit (space heating only)</value>
@@ -5045,18 +5048,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Take from</value>
   </data>
-  <data name="OPT_QUELLE_TARIF" xml:space="preserve">
-    <value>Tariff structure (economics): {0} €/(kW·a) — {1}</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE1" xml:space="preserve">
-    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE2" xml:space="preserve">
-    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_OHNE_SPITZE" xml:space="preserve">
-    <value>Tier 1, peak demand unknown</value>
-  </data>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Electricity carrier: {0} €/(kW·a)</value>
   </data>
@@ -5984,7 +5975,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Table {0} could not be read — its data is missing from the copy.</value>
   </data>
   <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
-    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (both).</value>
+    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (heating + hot water).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
@@ -6223,6 +6214,9 @@ After that the value will be missing from every calculation concerning that year
   <data name="ADM_BTN_SPEICHERN" xml:space="preserve">
     <value>Save</value>
   </data>
+  <data name="ADM_BTN_VERWERFEN" xml:space="preserve">
+    <value>Discard</value>
+  </data>
   <data name="ADM_TIP_SPEICHERN" xml:space="preserve">
     <value>Writes the values shown back into the catalogue record. The dialog stays open.</value>
   </data>
@@ -6378,7 +6372,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>CHP Act: {0} — order/permit dated after {1} and therefore not eligible under current law (section 6 KWKG 2025, regulatory risk of an amendment); no bonus for this unit.</value>
   </data>
   <data name="WIRT_KWKG_ANLAGE_FRIST" xml:space="preserve">
-    <value>CHP Act: {0} — commissioning after the realisation deadline of section 6 KWKG 2025 (until {1}); no bonus for this unit.</value>
+    <value>CHP Act: {0} — commissioning after the end of the commissioning deadline on {1} ({2}); no bonus for this unit.</value>
   </data>
   <data name="WIRT_KWKG_HERLEITUNG_TRANCHEN" xml:space="preserve">
     <value>{0} kW by capacity tranches: {1} → blended rate {2} ct/kWh ({3}, as of {4}).</value>
@@ -6741,7 +6735,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Demand without the plant [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
+    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero means the demand time series was missing in the run.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
@@ -8778,9 +8772,6 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_LP_SAISON" xml:space="preserve">
     <value>Seasonal rates…</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
-    <value>Electricity capacity price: managed via the tariff structure.</value>
-  </data>
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energy carrier management…</value>
   </data>
@@ -8956,7 +8947,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>Fed-in CHP electricity (tranches):</value>
   </data>
   <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
-    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration stays in the project's tariff structure (Einsp_* is purely CHP) — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
+    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration is not maintained here but in the “CHP economics” dialog (CHP electricity feed-in tariff) and, with an active role tariff, in the feed-in price of the tariff structure — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
   </data>
   <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
     <value>Funding duration and annual caps</value>
@@ -9255,14 +9246,8 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
-    <value>Tariff structure…</value>
-  </data>
   <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
     <value>CHP tariff…</value>
-  </data>
-  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
-    <value>Grid supply…</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Feed-in tariff…</value>
@@ -9349,6 +9334,18 @@ They typically stem from a variant copy without this trade and keep entering the
   </data>
   <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
     <value>Unit "{0}": the generator flow temperature of {1} °C is below the effective flow temperature of {2} °C of target storage "{3}". The generator can never charge the storage to its set temperature.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_DIREKT_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solar thermal without a buffer tank covers process heat only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for process heat.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solar thermal without a buffer tank covers the heating circuit only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for heating.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
+    <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE" xml:space="preserve">
+    <value>Channel {0} has demand but no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
   </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Unit "{0}": storage "{1}" is its heat source but is not charged by any unit of this project. After the initial fill the source would run empty.</value>
@@ -9570,7 +9567,7 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
     <value>Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there (Z_AnlageSenke.ID_Puffer empty). The row therefore supplies the HEATING CIRCUIT.</value>
   </data>
   <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
-    <value>Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}.</value>
+    <value>{0}: no heat sink assigned – the run uses {1}.</value>
   </data>
   <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
     <value>Solar storage</value>
@@ -10306,9 +10303,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>revenue (in the net present value)</value>
   </data>
-  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
-    <value>Electricity purchase…</value>
-  </data>
   <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
     <value>CHP tariff…</value>
   </data>
@@ -10516,9 +10510,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
     <value>Energy price (average) [€/kWh]:</value>
   </data>
-  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
-    <value>Save</value>
-  </data>
   <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
     <value>Feed-in price [€/kWh]:</value>
   </data>
@@ -10528,35 +10519,14 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_GUELTIG_AB" xml:space="preserve">
     <value>Price basis (valid from):</value>
   </data>
-  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
-    <value>Purchase prices [€/kWh]</value>
-  </data>
-  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
-    <value>Feed-in prices [€/kWh] (PV and CHP feed-in — shared field)</value>
-  </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
     <value>Feed-in (no demand price — finding 11 of the legacy application; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Role model (stage E5) — difference method “avoided cost”</value>
   </data>
-  <data name="TARIF_G_STAFFEL" xml:space="preserve">
-    <value>Demand price scale (on the annual peak purchase)</value>
-  </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
-    <value>Time zones (peak applies Mon–Fri; reference year 2026)</value>
-  </data>
-  <data name="TARIF_G_ZONEN" xml:space="preserve">
-    <value>Zone model (stage W3) — four zone prices, two-step scale</value>
-  </data>
-  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
-    <value>Zone model (stage W3) — feed-in prices</value>
-  </data>
-  <data name="TARIF_HT_BIS" xml:space="preserve">
-    <value>Peak to hour (exclusive):</value>
-  </data>
-  <data name="TARIF_HT_VON" xml:space="preserve">
-    <value>Peak from hour (zone model only):</value>
+    <value>Winter period (summer and winter maximum of the demand charge model “Scale”)</value>
   </data>
   <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
     <value>Demand price model:</value>
@@ -10570,26 +10540,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_LM_STAFFEL" xml:space="preserve">
     <value>Scale (summer and winter maximum separately)</value>
   </data>
-  <data name="TARIF_MODELL" xml:space="preserve">
-    <value>Tariff model:</value>
-  </data>
-  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
-    <value>Role model (purchase / residual power / feed-in)</value>
-  </data>
-  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
-    <value>Zone model (winter/summer × peak/off-peak)</value>
-  </data>
   <data name="TARIF_MONATSPREIS" xml:space="preserve">
     <value>Monthly demand price [€/kW·month]:</value>
   </data>
-  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
-    <value>The peak window is empty (from ≥ to).</value>
-  </data>
   <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
     <value>The role model is active, but no energy price is maintained for either purchase or residual power — the calculation then falls back to the flat prices of the cost screen.</value>
-  </data>
-  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
-    <value>The tariff structure is active, but no purchase price is maintained — the calculation then falls back to the flat prices of the cost screen.</value>
   </data>
   <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>The tariff structure could not be saved.</value>
@@ -10603,12 +10558,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
     <value>Component view: ONE tariff record applies per master project. Header data and shared price fields appear in several views and mean the same values.</value>
   </data>
-  <data name="TARIF_SOMMER_HT" xml:space="preserve">
-    <value>Summer peak:</value>
-  </data>
-  <data name="TARIF_SOMMER_NT" xml:space="preserve">
-    <value>Summer off-peak:</value>
-  </data>
   <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
     <value>Upper limit [kW]</value>
   </data>
@@ -10618,29 +10567,14 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_SP_WINTER" xml:space="preserve">
     <value>Winter [€/kW·a]</value>
   </data>
-  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
-    <value>Scale limit [kW]:</value>
-  </data>
   <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
     <value>The scale limits are CUMULATIVE upper limits: “500 / 2,000 / 8,000 kW” means up to 500 kW step 1, 500–2,000 kW step 2, 2,000–8,000 kW step 3, above that step 4. An upper limit of 0 means “open ended” and terminates the scale. The legacy catalogue stores step WIDTHS here — old number series must be converted before transfer.</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
-    <value>Price up to the limit [€/kW·a]:</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
-    <value>Price above the limit [€/kW·a]:</value>
   </data>
   <data name="TARIF_STUFE" xml:space="preserve">
     <value>Step {0}</value>
   </data>
   <data name="TARIF_STUFE_REST" xml:space="preserve">
     <value>Step {0} (remainder)</value>
-  </data>
-  <data name="TARIF_TITEL" xml:space="preserve">
-    <value>Electricity tariff structure</value>
-  </data>
-  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
-    <value>Tariff structure electricity purchase (heat pump &amp; loads)</value>
   </data>
   <data name="TARIF_TITEL_BHKW" xml:space="preserve">
     <value>Tariff structure CHP (electricity)</value>
@@ -10650,12 +10584,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="TARIF_WINTER_BIS" xml:space="preserve">
     <value>Winter to month:</value>
-  </data>
-  <data name="TARIF_WINTER_HT" xml:space="preserve">
-    <value>Winter peak:</value>
-  </data>
-  <data name="TARIF_WINTER_NT" xml:space="preserve">
-    <value>Winter off-peak:</value>
   </data>
   <data name="TARIF_WINTER_VON" xml:space="preserve">
     <value>Winter from month:</value>
@@ -13642,7 +13570,7 @@ Please check all entries!</value>
     <value>Maximum gas consumption:</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Total heat output of the modules:</value>
+    <value>Heat production of the modules:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Surplus:</value>
@@ -19259,6 +19187,12 @@ Do you want to allow this?</value>
   <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
     <value>the storage fleet was recalculated</value>
   </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PROJEKT" xml:space="preserve">
+    <value>demand, heat sinks or units were changed after the run</value>
+  </data>
+  <data name="SIMERG_ST_HINWEIS_OHNE_ABNEHMER" xml:space="preserve">
+    <value>Yield {0} MWh/a without a consumer: the heat sink "{1}" does not serve the channel {2} where the demand lies.</value>
+  </data>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>something was changed in the battery sizing view</value>
   </data>
@@ -22376,38 +22310,14 @@ Do you want to allow this?</value>
   <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
     <value>Is the tariff structure applied at all? When off, the simulation uses the plain energy price of the carrier.</value>
   </data>
-  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
-    <value>Zone model or role model. The zone model uses four price zones and a demand schedule, the role model one energy, base and demand price per role.</value>
-  </data>
   <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
     <value>The price date from which the tariff structure applies (ISO, YYYY-MM-DD).</value>
   </data>
   <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
-    <value>The month the winter zone begins with.</value>
+    <value>The month the winter period begins with — it separates the summer and winter maximum of the demand charge model “Scale”.</value>
   </data>
   <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
-    <value>The month the winter zone ends with.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
-    <value>The hour the peak tariff begins with — zone model only.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
-    <value>The hour the peak tariff ends with (exclusive) — zone model only.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
-    <value>The supply price of this price zone in the zone model.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
-    <value>The export price of this price zone in the zone model. It applies to PV AND CHP — both share the field.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
-    <value>The demand threshold above which the second tier price applies.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
-    <value>The demand price below the tier threshold.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
-    <value>The demand price above the tier threshold.</value>
+    <value>The month the winter period ends with.</value>
   </data>
   <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
     <value>The energy price of the supply role in the role model.</value>
@@ -23524,5 +23434,746 @@ Do you want to allow this?</value>
   </data>
   <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
+  </data>
+  <data name="ZPG_TITEL" xml:space="preserve">
+    <value>Domestic hot water draw-off profile</value>
+  </data>
+  <data name="ZPG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water draw-off profile – {0}</value>
+  </data>
+  <data name="ZPG_INFO_BEDIENUNG" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="ZPG_INFO_RECHENWEG" xml:space="preserve">
+    <value>Calculation method</value>
+  </data>
+  <data name="ZPG_KONTEXT_KLIMAREGION" xml:space="preserve">
+    <value>Climate region {0}</value>
+  </data>
+  <data name="ZPG_KONTEXT_KALENDER" xml:space="preserve">
+    <value>Calendar: 1 January = {0}, 365 days</value>
+  </data>
+  <data name="ZPG_KONTEXT_BILANZGRENZE" xml:space="preserve">
+    <value>Balance boundary: draw-off energy at the tap; circulation as a separate partial series</value>
+  </data>
+  <data name="ZPG_KONTEXT_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>{0} values overridden</value>
+  </data>
+  <data name="ZPG_STUFE_EINFACH" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="ZPG_STUFE_ERWEITERT" xml:space="preserve">
+    <value>Extended</value>
+  </data>
+  <data name="ZPG_STUFE_EXPERTE" xml:space="preserve">
+    <value>Expert</value>
+  </data>
+  <data name="ZPG_GRUND_NOCH_NICHT" xml:space="preserve">
+    <value>Not yet available in this version.</value>
+  </data>
+  <data name="ZPG_GRP_ZONEN" xml:space="preserve">
+    <value>Usage zones</value>
+  </data>
+  <data name="ZPG_GRP_ZONEN_SUMME" xml:space="preserve">
+    <value>{0} MWh/a draw-off</value>
+  </data>
+  <data name="ZPG_GRP_ZONE" xml:space="preserve">
+    <value>{0} · Use</value>
+  </data>
+  <data name="ZPG_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Type of use</value>
+  </data>
+  <data name="ZPG_SP_BEZUGSGROESSE" xml:space="preserve">
+    <value>Reference quantity</value>
+  </data>
+  <data name="ZPG_SP_JAHRESBEDARF" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ZPG_SUMME_ZONEN" xml:space="preserve">
+    <value>Total of {0} zones</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
+    <value>Add zone…</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="ZPG_LBL_ZONENNAME" xml:space="preserve">
+    <value>Zone name</value>
+  </data>
+  <data name="ZPG_LBL_NUTZUNGSART" xml:space="preserve">
+    <value>Type of use</value>
+  </data>
+  <data name="ZPG_LBL_BEZUGSMENGE" xml:space="preserve">
+    <value>Reference quantity</value>
+  </data>
+  <data name="ZPG_LBL_NIVEAU" xml:space="preserve">
+    <value>Demand level</value>
+  </data>
+  <data name="ZPG_NIVEAU_NIEDRIG" xml:space="preserve">
+    <value>low</value>
+  </data>
+  <data name="ZPG_NIVEAU_MITTEL" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="ZPG_NIVEAU_HOCH" xml:space="preserve">
+    <value>high</value>
+  </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
+    <value>Unit from the catalogue of the type of use</value>
+  </data>
+  <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
+    <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_VORGABE" xml:space="preserve">
+    <value>Further inputs are at the catalogue defaults.</value>
+  </data>
+  <data name="ZPG_HINW_NUTZUNGSART_KATALOG" xml:space="preserve">
+    <value>Catalogue · {0}</value>
+  </data>
+  <data name="ZPG_KAT_KEINE_AUSWAHL" xml:space="preserve">
+    <value>– please select –</value>
+  </data>
+  <data name="ZPG_SP_BEZUGSART" xml:space="preserve">
+    <value>Reference type</value>
+  </data>
+  <data name="ZPG_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPG_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ZPG_SP_KATALOGVERSION" xml:space="preserve">
+    <value>Catalogue version</value>
+  </data>
+  <data name="ZPG_STATUS_AUSLIEFERUNG" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="ZPG_STATUS_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="ZPG_STATUS_IMPORT" xml:space="preserve">
+    <value>Imported</value>
+  </data>
+  <data name="ZPG_HERKUNFT_VERFAHREN" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="ZPG_HERKUNFT_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>Own construction</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FREI" xml:space="preserve">
+    <value>freely available</value>
+  </data>
+  <data name="ZPG_HERKUNFT_IMPORT" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FIKTIV" xml:space="preserve">
+    <value>fictitious (test data)</value>
+  </data>
+  <data name="ZPG_HERKUNFT_OHNE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="ZPG_KAT_SPERRE_TAGESGANG" xml:space="preserve">
+    <value>The daily profile set of this type of use is incomplete.</value>
+  </data>
+  <data name="ZPG_BEZUG_PERSONEN" xml:space="preserve">
+    <value>persons</value>
+  </data>
+  <data name="ZPG_BEZUG_WOHNEINHEITEN" xml:space="preserve">
+    <value>dwelling units</value>
+  </data>
+  <data name="ZPG_BEZUG_BETTEN" xml:space="preserve">
+    <value>beds</value>
+  </data>
+  <data name="ZPG_BEZUG_DUSCHPLAETZE" xml:space="preserve">
+    <value>shower places</value>
+  </data>
+  <data name="ZPG_BEZUG_SITZPLAETZE" xml:space="preserve">
+    <value>seats</value>
+  </data>
+  <data name="ZPG_BEZUG_BESCHAEFTIGTE" xml:space="preserve">
+    <value>employees</value>
+  </data>
+  <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
+    <value>floor area [m²]</value>
+  </data>
+  <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
+    <value>pers.</value>
+  </data>
+  <data name="ZPG_EINHEIT_WOHNEINHEITEN" xml:space="preserve">
+    <value>DU</value>
+  </data>
+  <data name="ZPG_EINHEIT_BETTEN" xml:space="preserve">
+    <value>bed</value>
+  </data>
+  <data name="ZPG_EINHEIT_DUSCHPLAETZE" xml:space="preserve">
+    <value>shower</value>
+  </data>
+  <data name="ZPG_EINHEIT_SITZPLAETZE" xml:space="preserve">
+    <value>seat</value>
+  </data>
+  <data name="ZPG_EINHEIT_BESCHAEFTIGTE" xml:space="preserve">
+    <value>empl.</value>
+  </data>
+  <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ZPG_VORSCHAU_LIVE" xml:space="preserve">
+    <value>live · deterministic path</value>
+  </data>
+  <data name="ZPG_LBL_ANZEIGEN_FUER" xml:space="preserve">
+    <value>Show for</value>
+  </data>
+  <data name="ZPG_ANSICHT_SUMME" xml:space="preserve">
+    <value>Sum of all zones</value>
+  </data>
+  <data name="ZPG_REITER_TAGESGANG" xml:space="preserve">
+    <value>Daily profile</value>
+  </data>
+  <data name="ZPG_REITER_WOCHENPROFIL" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="ZPG_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="ZPG_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Load duration curve</value>
+  </data>
+  <data name="ZPG_REITER_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="ZPG_TAGTYP_WERKTAG" xml:space="preserve">
+    <value>Working day</value>
+  </data>
+  <data name="ZPG_TAGTYP_SAMSTAG" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="ZPG_TAGTYP_SONNTAG" xml:space="preserve">
+    <value>Sunday/public holiday</value>
+  </data>
+  <data name="ZPG_TAGTYP_RUHETAG" xml:space="preserve">
+    <value>Rest day</value>
+  </data>
+  <data name="ZPG_REIHE_ZAPFUNG" xml:space="preserve">
+    <value>Draw-off</value>
+  </data>
+  <data name="ZPG_REIHE_ZIRKULATION" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="ZPG_BILD_TAGESGANG" xml:space="preserve">
+    <value>Daily draw-off profile, {0}</value>
+  </data>
+  <data name="ZPG_BILD_WOCHENPROFIL" xml:space="preserve">
+    <value>Week with the highest daily demand</value>
+  </data>
+  <data name="ZPG_BILD_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile of draw-off and circulation</value>
+  </data>
+  <data name="ZPG_ACHSE_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="ZPG_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week 1–168, divisions every 24 h</value>
+  </data>
+  <data name="ZPG_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_TAGESGANG" xml:space="preserve">
+    <value>Draw-off in kW (kWh per hour), {0}, {1}; mean of the days per day type, excluding holidays.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_WOCHE" xml:space="preserve">
+    <value>168 hours from {0}, {2} {1} — the week with the highest daily demand of the year.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_JAHRESGANG" xml:space="preserve">
+    <value>Twelve monthly columns in MWh, stacked from draw-off and circulation.</value>
+  </data>
+  <data name="ZPG_KZ_BILANZ" xml:space="preserve">
+    <value>Balance · deterministic, live</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK" xml:space="preserve">
+    <value>Stochastics · not yet calculated</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
+    <value>“Calculate stochastically” in the footer draws the ensemble for percentiles and sizing; the balance series stays deterministic. The Expert level shows the individual values.</value>
+  </data>
+  <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
+    <value>Key figure</value>
+  </data>
+  <data name="ZPG_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_SP_VERMERK" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="ZPG_KZ_ZAPFUNG" xml:space="preserve">
+    <value>Annual draw-off demand</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATION" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATION_VERMERK" xml:space="preserve">
+    <value>separate partial series</value>
+  </data>
+  <data name="ZPG_KZ_GESAMT" xml:space="preserve">
+    <value>Domestic hot water total</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATIONSANTEIL" xml:space="preserve">
+    <value>Circulation share</value>
+  </data>
+  <data name="ZPG_KZ_TAGESMITTEL" xml:space="preserve">
+    <value>Daily mean draw-off</value>
+  </data>
+  <data name="ZPG_KZ_LITER_JE_TAG" xml:space="preserve">
+    <value>≈ {0} l/d</value>
+  </data>
+  <data name="ZPG_KZ_SPEZIFISCH" xml:space="preserve">
+    <value>Specific {0}</value>
+  </data>
+  <data name="ZPG_KZ_VOLLLAST" xml:space="preserve">
+    <value>Full-load hours</value>
+  </data>
+  <data name="ZPG_KZ_VOLLLAST_VERMERK" xml:space="preserve">
+    <value>DHW total ÷ largest hourly value</value>
+  </data>
+  <data name="ZPG_KZ_GROESSTER_STUNDENWERT" xml:space="preserve">
+    <value>Largest hourly value (draw-off + circulation)</value>
+  </data>
+  <data name="ZPG_KZ_VERMERK_STUNDENWERT" xml:space="preserve">
+    <value>Balance value, not a design quantity</value>
+  </data>
+  <data name="ZPG_KZ_STUNDEN_UEBER_SCHWELLE" xml:space="preserve">
+    <value>Hours above threshold {0} kW</value>
+  </data>
+  <data name="ZPG_KZ_GLEICHZEITIGKEIT" xml:space="preserve">
+    <value>Simultaneity</value>
+  </data>
+  <data name="ZPG_KZ_GLEICHZEITIGKEIT_VERMERK" xml:space="preserve">
+    <value>arises only from superposition; not an input factor</value>
+  </data>
+  <data name="ZPG_KZ_ABGELEHNT" xml:space="preserve">
+    <value>contributes 0</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK" xml:space="preserve">
+    <value>Calculate stochastically</value>
+  </data>
+  <data name="ZPG_BTN_AUSLEGUNG" xml:space="preserve">
+    <value>Design…</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU" xml:space="preserve">
+    <value>Preview up to date · deterministic · stochastics not yet calculated</value>
+  </data>
+  <data name="ZPG_STATUS_OHNE_VORSCHAU" xml:space="preserve">
+    <value>No preview — {0}</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_ZONE" xml:space="preserve">
+    <value>No zone has been created.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_NAME" xml:space="preserve">
+    <value>A zone has no name.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_NUTZUNGSART" xml:space="preserve">
+    <value>Zone “{0}”: please select a type of use.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Zone “{0}”: please enter a reference quantity greater than 0.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_NAME_DOPPELT" xml:space="preserve">
+    <value>Zone “{0}”: the name is used more than once — please give each zone a name of its own.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_TRAEGT_NULL" xml:space="preserve">
+    <value>Zone “{0}” contributes 0: {1}</value>
+  </data>
+  <data name="ZPG_MSG_ANTEIL_TRAEGT_NULL" xml:space="preserve">
+    <value>The circulation contributes 0: {0}</value>
+  </data>
+  <data name="ZPG_MSG_OHNE_PROJEKT" xml:space="preserve">
+    <value>The draw-off profile requires a saved project.</value>
+  </data>
+  <data name="ZPG_MSG_PLATTFORM" xml:space="preserve">
+    <value>The draw-off profile generator is not yet available on this platform.</value>
+  </data>
+  <data name="ZPG_MSG_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — its tables are missing.</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — the domestic hot water parameters carry no catalogue version.</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_KLIMAREGION" xml:space="preserve">
+    <value>The project has no climate region — no preview without a calendar.</value>
+  </data>
+  <data name="ZPG_MSG_UNERWARTET" xml:space="preserve">
+    <value>The preview could not be calculated: {0}</value>
+  </data>
+  <data name="ZPG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The draw-off profile was not saved — {0}</value>
+  </data>
+  <data name="ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The project's DHW profiles were not saved — {0}</value>
+  </data>
+  <data name="ZPG_MSG_ZONE" xml:space="preserve">
+    <value>Zone “{0}”: {1}</value>
+  </data>
+  <data name="ZPG_EINGABE_KALENDER_UNGUELTIG" xml:space="preserve">
+    <value>The calendar of the climate region is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_PROJEKT_FEHLT" xml:space="preserve">
+    <value>The project is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>The type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>The daily profile set is missing or incomplete.</value>
+  </data>
+  <data name="ZPG_EINGABE_BEZUGSMENGE_FEHLT" xml:space="preserve">
+    <value>The reference quantity is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>A value grid of the catalogue is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_TEMPERATUR_UNGUELTIG" xml:space="preserve">
+    <value>The temperature data are invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_PARAMETER_FEHLT" xml:space="preserve">
+    <value>A catalogue parameter is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_MESSWERT_UNGUELTIG" xml:space="preserve">
+    <value>The annual measured value is invalid or lacks its unit or balance boundary.</value>
+  </data>
+  <data name="ZPG_EINGABE_ZIRKULATION_UNGUELTIG" xml:space="preserve">
+    <value>The circulation data are invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
+    <value>The occupancy per number of rooms is missing from the catalogue.</value>
+  </data>
+  <data name="ZPG_EINGABE_TAGESBEDARF_UNGUELTIG" xml:space="preserve">
+    <value>The daily demand is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
+    <value>The zone has no day with draw-off.</value>
+  </data>
+  <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database.</value>
+  </data>
+  <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>the draw-off profile tables are missing in this database.</value>
+  </data>
+  <data name="ZPG_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
+    <value>the project does not exist.</value>
+  </data>
+  <data name="ZPG_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>the type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>the daily profile set is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_AUSSTATTUNG_FEHLT" xml:space="preserve">
+    <value>the equipment class is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_FEHLT" xml:space="preserve">
+    <value>the design day is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>the building does not exist.</value>
+  </data>
+  <data name="ZPG_SPEICHER_ZONE_UNGUELTIG" xml:space="preserve">
+    <value>the zone is incomplete or invalid.</value>
+  </data>
+  <data name="ZPG_SPEICHER_ZONE_FREMD" xml:space="preserve">
+    <value>the zone belongs to another project.</value>
+  </data>
+  <data name="ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
+    <value>a row of the dwelling table is invalid.</value>
+  </data>
+  <data name="ZPG_SPEICHER_GEBAEUDE_FREMD" xml:space="preserve">
+    <value>the building belongs to another project.</value>
+  </data>
+  <data name="ZPG_SPEICHER_PROJEKT_UNGUELTIG" xml:space="preserve">
+    <value>a project value lies outside its permitted range.</value>
+  </data>
+  <data name="ZPG_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>The domestic hot water parameters carry no catalogue version.</value>
+  </data>
+  <data name="ZPG_PARAMETER_KATALOGVERSION_FEHLT" xml:space="preserve">
+    <value>The catalogue version of the domestic hot water parameters is missing.</value>
+  </data>
+  <data name="ZPG_PARAMETER_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter “{0}” is missing from the catalogue.</value>
+  </data>
+  <data name="ZPG_HINW_PARAMETER_FEHLT" xml:space="preserve">
+    <value>A catalogue parameter is missing; the related check is omitted.</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANG_LEER" xml:space="preserve">
+    <value>Zone “{0}”: a daily profile is empty; these days carry no draw-off.</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANG_SUMME" xml:space="preserve">
+    <value>Zone “{0}”: a daily profile does not sum to 100 %; it was normalised before calculating.</value>
+  </data>
+  <data name="ZPG_HINW_WOCHENFAKTOREN_SUMME" xml:space="preserve">
+    <value>Zone “{0}”: the weekly factors do not sum to 1; they were normalised before calculating.</value>
+  </data>
+  <data name="ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Zone “{0}”: the specific demand lies outside the range of the level.</value>
+  </data>
+  <data name="ZPG_HINW_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Zone “{0}”: the storage loss has been deducted from the measured value.</value>
+  </data>
+  <data name="ZPG_HINW_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Zone “{0}”: the measured value deviates from the catalogue value by more than the query threshold.</value>
+  </data>
+  <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>The project has network losses, and the draw-off profile calculates a circulation. If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zone “{0}” belongs to the circulation but carries no floor area.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>No floor area for the area-specific circulation value; calculated with the share method.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>No zone carries a circulation share; the circulation is reported for the whole building.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Zone “{0}” carries no circulation share.</value>
+  </data>
+  <data name="BPF_BTN_ZAPFPROFIL_BW" xml:space="preserve">
+    <value>Generate draw-off profile…</value>
+  </data>
+  <data name="BPF_LBL_RECHENWEG_BW" xml:space="preserve">
+    <value>DHW calculation method</value>
+  </data>
+  <data name="BPF_OPT_BESTANDSPROFILE" xml:space="preserve">
+    <value>Existing profiles</value>
+  </data>
+  <data name="BPF_OPT_ZAPFPROFIL" xml:space="preserve">
+    <value>Draw-off profile</value>
+  </data>
+  <data name="BPF_HINW_ZAPFPROFILWEG" xml:space="preserve">
+    <value>The existing profiles are not included while the calculation method is set to draw-off profile.</value>
+  </data>
+  <data name="BPF_LBL_LEISTE_ZAPFPROFIL" xml:space="preserve">
+    <value>calculates the draw-off profile method</value>
+  </data>
+  <data name="BPF_TITEL_ZAPFPROFILGENERATOR" xml:space="preserve">
+    <value>Draw-off profile generator</value>
+  </data>
+  <data name="ZPG_LBL_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="BPF_HINW_RECHENWEG_BW" xml:space="preserve">
+    <value>The calculation method determines the source of the heat demand for domestic hot water: the existing profiles in this list or the draw-off profile of the usage zones.</value>
+  </data>
+  <data name="BPF_HINW_ZAPFPROFIL_OHNE_ZONEN" xml:space="preserve">
+    <value>There is no draw-off profile yet – “Generate draw-off profile…” creates one.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_ZIRKULATION" xml:space="preserve">
+    <value>of which circulation:</value>
+  </data>
+  <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies: the project's tariff set is still on the zone model and is no longer calculated — electricity is priced with the prices of the electricity carrier from cost management.</value>
+  </data>
+  <data name="WIRT_TARIF_NACHWEIS_ZONEN" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies — prices of the electricity carrier from cost management</value>
+  </data>
+  <data name="WIRT_MATRIX_TITEL" xml:space="preserve">
+    <value>Electricity volumes</value>
+  </data>
+  <data name="WIRT_MATRIX_HERKUNFT" xml:space="preserve">
+    <value>Annual totals from the hourly series of the in-memory simulation. CHP split: self-consumption = min(CHP generation, electricity demand after photovoltaics) per hour — documented approximation.</value>
+  </data>
+  <data name="WIRT_MATRIX_ZEITRAUM" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="WIRT_MATRIX_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENSPITZE" xml:space="preserve">
+    <value>Highest hourly grid import: {0} kW — the basis of the demand charges in the role tariff; the demand charge of the electricity carrier is based on the 15-minute peak.</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
+    <value>Highest hourly load</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL" xml:space="preserve">
+    <value>Demand charge tiers of the electricity carrier: {0} €/(kW·a) — {1}</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE1" xml:space="preserve">
+    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE2" xml:space="preserve">
+    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
+    <value>Tier 1, peak demand unknown</value>
+  </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Demand charge tiers (on the annual peak demand)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Tier limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Price up to the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Price above the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Based on the annual 15-minute peak of the grid import: the first price applies up to the limit, the second above it. Maintained tiers replace the demand charge and the seasonal rates of this electricity carrier; empty prices mean "no tiers".</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>The demand charge tiers could not be saved.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>The limit of the two-tier demand charge in kW: the first price applies up to it, the second above it — based on the annual 15-minute peak of the grid import. Electricity carrier in a project only.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>The demand charge up to the tier limit in €/(kW·a). Maintained tiers replace the demand charge and the seasonal rates of the electricity carrier.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>The demand charge above the tier limit in €/(kW·a).</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_GEPFLEGT" xml:space="preserve">
+    <value>maintained</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_BERECHNET" xml:space="preserve">
+    <value>calculated from P_el ÷ P_th of the unit record = {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="WIRT_KWKG_SIGMA_FEHLT" xml:space="preserve">
+    <value>neither maintained nor determinable from P_el ÷ P_th of the unit record</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ANLAGE" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 (heat dissipation device) — "{0}": power-to-heat ratio σ {1} ({2}); useful heat {3} MWh (heat production {4} MWh − share of the heat surplus {5} MWh); CHP electricity min({6} ; {3} × {1}) = {7} MWh; reduction {8} MWh, of which feed-in {9} MWh and self-consumption {10} MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_OHNE_SIGMA" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 (heat dissipation device) — "{0}": no power-to-heat ratio ({1}) — no CHP electricity under case 2, no bonus for this unit.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16, case 2 on the substitute path — useful heat of the project {0} MWh (heat production {1} MWh − heat surplus {2} MWh) and net electricity generation {3} MWh distributed {4} to the units: {5}. Total reduction {6} MWh, taken from feed-in first.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_ANLAGE" xml:space="preserve">
+    <value>"{0}" σ {1} ({2}), useful heat {3} MWh, CHP electricity {4} MWh, reduction {5} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_ERSATZ_OHNE_SIGMA" xml:space="preserve">
+    <value>"{0}" without power-to-heat ratio — CHP electricity 0 MWh, reduction {1} MWh</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_PEL" xml:space="preserve">
+    <value>by P_el</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VERTEILUNG_GLEICH" xml:space="preserve">
+    <value>in equal parts (no unit has P_el)</value>
+  </data>
+  <data name="KOH_KWKG_STROMKENNZAHL_FEHLT" xml:space="preserve">
+    <value>Power-to-heat ratio missing: {0} carries the flag "heat dissipation device", but neither a maintained power-to-heat ratio nor P_el and P_th in the unit record — CHP electricity under sec. 2 no. 16 CHP Act cannot be determined, no bonus is calculated for this unit. The power-to-heat ratio is entered in the CHP dialog under "Rates and origin".</value>
+  </data>
+  <data name="WIRT_KWKG_NACH_FRISTENDE" xml:space="preserve">
+    <value>CHP Act: commissioning on {0} after the end of the commissioning deadline on {1} ({2}) — no bonus.</value>
+  </data>
+  <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
+    <value>CHP Act: {0}the catalogue of statutory parameters holds no end of the commissioning deadline for commissioning year {1} ({2}) — the deadline is unchecked; the calculation proceeds without it.</value>
+  </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART" xml:space="preserve">
+    <value>CHP Act: neither a full-load hour quota is maintained nor a plant category recorded for "{0}" — without a plant category, sec. 8 CHP Act derives no quota; no bonus for this unit.</value>
+  </data>
+  <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
+    <value>Plant category missing: for {0}, neither a full-load hour quota is maintained nor a plant category recorded — without a plant category, sec. 8 CHP Act derives no quota, so no bonus is calculated for this unit. Enter the plant category or the quota in the CHP dialog.</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_ANLAGE" xml:space="preserve">
+    <value>Rates and origin…</value>
+  </data>
+  <data name="BHW_UEB_TITEL" xml:space="preserve">
+    <value>Rates and origin — {0}</value>
+  </data>
+  <data name="BHW_UEB_G_KWKG" xml:space="preserve">
+    <value>CHP bonus — this unit</value>
+  </data>
+  <data name="BHW_UEB_KWK_STROM" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act)</value>
+  </data>
+  <data name="BHW_FLD_FALL1" xml:space="preserve">
+    <value>Case 1 — net electricity generation</value>
+  </data>
+  <data name="BHW_FLD_ABWAERMEABFUHR" xml:space="preserve">
+    <value>Case 2 — heat dissipation device</value>
+  </data>
+  <data name="BHW_UEB_FALL1_MENGE" xml:space="preserve">
+    <value>→ {0} MWh net electricity generation in the last booked run</value>
+  </data>
+  <data name="BHW_UEB_FALL1_OHNE_LAUF" xml:space="preserve">
+    <value>→ the unit's net electricity generation (terminals minus auxiliary power)</value>
+  </data>
+  <data name="BHW_UEB_FALL2_FORMEL" xml:space="preserve">
+    <value>→ min(net electricity generation ; useful heat × σ) — useful heat: heat production of the module less its share of the heat surplus (by P_el)</value>
+  </data>
+  <data name="BHW_UEB_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="BHW_UEB_SP_VORSCHLAG" xml:space="preserve">
+    <value>Proposal</value>
+  </data>
+  <data name="BHW_UEB_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="BHW_UEB_SP_EIGEN" xml:space="preserve">
+    <value>own value</value>
+  </data>
+  <data name="BHW_UEB_SP_GILT" xml:space="preserve">
+    <value>applies</value>
+  </data>
+  <data name="BHW_UEB_LEER_VORSCHLAG" xml:space="preserve">
+    <value>empty = proposal</value>
+  </data>
+  <data name="BHW_FLD_STROMKENNZAHL" xml:space="preserve">
+    <value>Power-to-heat ratio σ</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL" xml:space="preserve">
+    <value>P_el ÷ P_th of the unit record: {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL_OHNE" xml:space="preserve">
+    <value>Unit record without P_el or P_th — no proposal</value>
+  </data>
+  <data name="BHW_UEB_GILT_VORSCHLAG" xml:space="preserve">
+    <value>{0} proposal</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN" xml:space="preserve">
+    <value>{0} own value — proposal {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN_OHNE" xml:space="preserve">
+    <value>{0} own value</value>
+  </data>
+  <data name="BHW_UEB_GILT_KEINE" xml:space="preserve">
+    <value>none — no CHP electricity under case 2, no bonus</value>
+  </data>
+  <data name="BHW_UEB_GILT_FALL1" xml:space="preserve">
+    <value>— (case 1 reads no power-to-heat ratio)</value>
+  </data>
+  <data name="BHW_UEB_INFO_SIGMA" xml:space="preserve">
+    <value>Empty means: σ is formed from P_el ÷ P_th of the unit record when calculating. An own value applies permanently, even if the unit record changes; "Apply proposal" empties the field — the way back. If there is neither an own value nor P_el and P_th, there is no CHP electricity under case 2 and no bonus for this unit. σ is only read in case 2.</value>
+  </data>
+  <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="BHW_A_KWK_FALL1" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 1 — net electricity generation.</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, power-to-heat ratio σ {0} ({1}).</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, but no power-to-heat ratio ({0}) — no bonus under case 2.</value>
   </data>
 </root>

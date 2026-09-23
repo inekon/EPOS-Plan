@@ -1,0 +1,144 @@
+{
+  "hinweis": "FIKTIV - Referenzfall des Zapfprofilgenerators (Stufe Z1). Alle Werte sind erfunden und rund; keine Normzahl, kein Normformvektor, keine Hersteller- oder Produktdaten.",
+  "wochentag_jan1": 3,
+  "feiertage": [1, 96, 121, 359, 360],
+  "anzeigetemperatur_c": 42.0,
+  "schwelle_kw": 2.0,
+  "parameter": {
+    "Kaltwasser.Bilanz.Mittel": 11.0,
+    "Kaltwasser.Bilanz.Amplitude": 2.0,
+    "Kaltwasser.Bilanz.MonatMaximum": 8.0,
+    "Zirkulation.Anteil": 0.25,
+    "Zirkulation.Laufzeit": 17.0,
+    "Zirkulation.Lage": 1.0,
+    "Zirkulation.Kennwert.Lage1": 5.0,
+    "Zirkulation.Kennwert.Lage2": 20.0,
+    "Zirkulation.VerlustJeMeter": 10.0,
+    "Zapfprofil.Messwert.Rueckfrageschwelle": 0.5,
+    "Zapfprofil.Formvektor.Warnschwelle": 0.01
+  },
+  "tagesgangsaetze": [
+    {
+      "id": 1,
+      "werktag": {"6": 0.2, "7": 0.3, "12": 0.1, "18": 0.15, "19": 0.25},
+      "samstag": {"8": 0.25, "9": 0.25, "13": 0.2, "19": 0.3},
+      "sonntag": {"9": 0.4, "10": 0.2, "12": 0.1, "20": 0.3},
+      "ruhetag": {"8": 0.125, "9": 0.125, "10": 0.125, "11": 0.125, "12": 0.125, "13": 0.125, "14": 0.125, "15": 0.125}
+    },
+    {
+      "id": 2,
+      "werktag": {"7": 0.5, "12": 0.25, "16": 0.25},
+      "samstag": {"8": 1.0},
+      "sonntag": {"9": 1.0},
+      "ruhetag": {}
+    }
+  ],
+  "nutzungsarten": [
+    {
+      "id": 1,
+      "name": "Referenzwohnen (fiktiv)",
+      "bezugsart": 1,
+      "bedarf_kwh_je_einheit_tag": [1.5, 2.0, 2.5],
+      "bezug_zapftemperatur_c": 50.0,
+      "bezug_kaltwasser_c": 12.0,
+      "bilanzgrenze": 1,
+      "kalenderart": 1,
+      "ferienfaktor": null,
+      "monate": [1.2, 1.15, 1.1, 1.0, 0.95, 0.9, 0.85, 0.85, 0.9, 1.0, 1.02, 1.08],
+      "woche": [0.14, 0.14, 0.14, 0.14, 0.14, 0.15, 0.15],
+      "tagesgangsatz": 1
+    },
+    {
+      "id": 2,
+      "name": "Referenzbetrieb (fiktiv)",
+      "bezugsart": 6,
+      "bedarf_kwh_je_einheit_tag": [0.5, 0.8, 1.2],
+      "bezug_zapftemperatur_c": 50.0,
+      "bezug_kaltwasser_c": 12.0,
+      "bilanzgrenze": 1,
+      "kalenderart": 2,
+      "ferienfaktor": 0.4,
+      "monate": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+      "woche": [0.2, 0.2, 0.2, 0.2, 0.2, 0.0, 0.0],
+      "tagesgangsatz": 1
+    },
+    {
+      "id": 3,
+      "name": "Referenzherberge (fiktiv)",
+      "bezugsart": 3,
+      "bedarf_kwh_je_einheit_tag": [0.8, 1.0, 1.4],
+      "bezug_zapftemperatur_c": 50.0,
+      "bezug_kaltwasser_c": 12.0,
+      "bilanzgrenze": 2,
+      "kalenderart": 4,
+      "ferienfaktor": null,
+      "monate": [0.8, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.3, 1.1, 0.9, 0.8, 0.8],
+      "woche": [0.13, 0.13, 0.13, 0.13, 0.14, 0.17, 0.17],
+      "tagesgangsatz": 1
+    }
+  ],
+  "zonen": [
+    {
+      "id": 1,
+      "name": "Zone A (fiktiv)",
+      "nutzungsart": 1,
+      "tagesgangsatz": null,
+      "bezugsmenge": 24.0,
+      "niveau": 2,
+      "zirkulation": true,
+      "ferien": [[366, 6], [200, 213]],
+      "zapftemperatur_c": null,
+      "kaltwasser_mittel_c": null,
+      "kaltwasser_amplitude_k": null,
+      "messwert_m3": null
+    },
+    {
+      "id": 2,
+      "name": "Zone B (fiktiv)",
+      "nutzungsart": 2,
+      "tagesgangsatz": 2,
+      "bezugsmenge": 40.0,
+      "niveau": 3,
+      "zirkulation": false,
+      "ferien": [[300, 309]],
+      "zapftemperatur_c": 55.0,
+      "kaltwasser_mittel_c": null,
+      "kaltwasser_amplitude_k": 3.0,
+      "messwert_m3": 380.0
+    },
+    {
+      "id": 3,
+      "name": "Zone C (fiktiv)",
+      "nutzungsart": 3,
+      "tagesgangsatz": null,
+      "bezugsmenge": 30.0,
+      "niveau": 2,
+      "zirkulation": true,
+      "ferien": [],
+      "zapftemperatur_c": null,
+      "kaltwasser_mittel_c": null,
+      "kaltwasser_amplitude_k": null,
+      "messwert_m3": null
+    },
+    {
+      "id": 4,
+      "name": "Zone D (fiktiv)",
+      "nutzungsart": 1,
+      "tagesgangsatz": null,
+      "bezugsmenge": 8.0,
+      "niveau": 1,
+      "zirkulation": true,
+      "ferien": [[120, 126]],
+      "zapftemperatur_c": null,
+      "kaltwasser_mittel_c": 10.0,
+      "kaltwasser_amplitude_k": null,
+      "messwert_m3": null,
+      "messwert_kwh": 6000.0,
+      "messwert_grenze": 2
+    }
+  ],
+  "projekt": {
+    "zirk_methode": 3,
+    "zirk_flaeche_m2": 600.0
+  }
+}

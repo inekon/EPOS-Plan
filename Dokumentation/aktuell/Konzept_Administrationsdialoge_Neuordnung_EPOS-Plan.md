@@ -5,8 +5,11 @@ AD-Q14 hat der Anwender am 22.09.2026 den Geltungsbereich auf die Verwaltungsdia
 Menügruppen Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme
 eingegrenzt (achtzehn Menüpunkte, elf Komponenten, 1.4), das Kennzeichen auf das Schloss beschränkt
 und den Mockup-Reiter „Schmal" gestrichen. Das Schema (Abschnitt 3) und die Vorschläge (Abschnitt 4)
-sind Vorschlag; AD-Q9 ist entschieden (Ja), offen ist AD-Q11 (6.2). Umgesetzt ist noch nichts, die Reihenfolge steht
-in Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
+sind Vorschlag; AD-Q9 ist entschieden (Ja), offen ist AD-Q11 (6.2). **Stufe 1 ist umgesetzt**
+(23.09.2026, Commits `c8e5f775`, `d9ef80b8`): V1, V2 und V7 im `Katalograhmen` und in der
+`Katalogliste`, dazu AD-Q6 im `KatalogBrowserDialog`; V10 und V15 sind aus Stufe 1 in Stufe 2
+verschoben (Abschnitt 7). Die Reihenfolge der übrigen Stufen steht in Abschnitt 7; was nicht mehr
+Gegenstand ist, fasst Abschnitt 8 zusammen.
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -123,10 +126,10 @@ dazwischen eine Arbeitsfläche mit höchstens einem Rollbereich je Spalte, nie e
 Liste nimmt die Resthöhe (`flex: 1; min-height: 0`) statt einer Höchsthöhe; ① und ② entfallen, ①
 bleibt nur als Notnagel unter dem Kleinstmaß. *Warum:* Die drei Rollbereiche ineinander sind der Kern
 der Beschwerde; die Fußleiste ist immer sichtbar. *Betroffen:* Baustein `Katalograhmen` und damit die
-sieben Komponenten, die ihn tragen (A1 bis A7); A8 kommt mit V14 dazu, A9 bis A11 mit V16.
+acht Komponenten, die ihn tragen (A1 bis A8, seit Stufe 1); A9 bis A11 kommen mit V16 dazu.
 *Aufwand:* M. *Abhängig:* Katalogprobe und Rasterprobe (Virtualisierung braucht weiter einen Behälter
 fester Höhe — den gibt die Resthöhe), die Regeln „LISTE in festem Rahmen" und „KATALOGDIALOG nutzt die
-Höhe" in `EPOS.UI/CLAUDE.md`.
+Höhe" in `EPOS.UI/CLAUDE.md`. **Umgesetzt (23.09.2026).**
 
 **V2 — Keine waagerechte Rollleiste: Spalten mit Rang.** *Was:* Jede `Katalogspalte` bekommt einen Rang
 (1 immer, 2 bei Platz, 3 nur im Stammblatt); eine Containerabfrage der Komponente blendet nach Breite
@@ -137,6 +140,7 @@ man wählt. *Betroffen:* `Katalogfilterprofil` (Kern) und `Katalogliste` — die
 Geltungsbereichs; weil der Baustein geteilt ist, erben die übrigen Wirte (Projektdialoge, Importe) die
 Ränge mit. *Aufwand:* M. *Abhängig:* Rasterprobe (Zeilen dürfen nicht umbrechen, das Zeilenmaß bleibt
 gesetzt), Konzept Katalogfilter 5.6.5 (die fachliche Spaltenwahl bleibt, nur ihr Rang ist neu).
+**Umgesetzt (23.09.2026).**
 
 **V3 — Stammblatt neben der Liste statt Detailblock darunter.** *Was:* Ab 900 CSS-Pixeln Dialogbreite
 steht rechts das Stammblatt (`clamp(340px, 36 %, 440px)`): Name, Herkunft, drei Kennzahlen, die
@@ -176,7 +180,7 @@ Trichter im Spaltenkopf und „Filter zurücksetzen" bleiben, wie im Konzept Kat
 Filterchips über der Liste kommen nicht zurück. Neu ist nur die Regel aus V2: Eine gefilterte Spalte
 bleibt sichtbar, damit ihr gefüllter Trichter den Filter anzeigt. „Vergleichen" steht in der
 Auswahlleiste (V8). *Warum:* Die Beschwerde betrifft das Rollen, nicht den Filter. *Betroffen:*
-`Katalogliste`. *Aufwand:* S. *Abhängig:* V2.
+`Katalogliste`. *Aufwand:* S. *Abhängig:* V2. **Umgesetzt (23.09.2026).**
 
 
 ## 3 Einheitliches Schema auf der Grundlage von Variante B
@@ -256,8 +260,8 @@ das Projekt.
 Quellen: die Komponenten unter `EPOS.UI/Dialoge/`, die Spaltenprofile in
 `EPOS.Kern/Allgemein/Katalog/Katalogfilterprofil.cs`, die Satzzahlen der Testdatenbank. Die Spalte
 **Stammblatt im Schema** nennt die Gruppen; **Abweichung vom Schema** nennt, was der Dialog anders
-braucht oder was sich an ihm mehr ändert als am Vorbild Heizkessel. A1 bis A7 tragen heute den
-`Katalograhmen`, A8 bis A11 nicht. Die Nummern A1 bis A8 sind die bisherigen; A9 bis A11 sind mit
+braucht oder was sich an ihm mehr ändert als am Vorbild Heizkessel. A1 bis A8 tragen heute den
+`Katalograhmen`, A9 bis A11 nicht. Die Nummern A1 bis A8 sind die bisherigen; A9 bis A11 sind mit
 AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Abschnitt 8).
 
 | Nr | Dialog (Menüpunkte) | Listeninhalt | Spalten | Detail heute | Handlungen heute | Besonderheiten | Stammblatt im Schema | Abweichung vom Schema |
@@ -269,7 +273,7 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
 | A5 | `BedarfAdminDialog` (Brauchwasser, Prozesswärme, Stromverbraucher) | Profile (16 / 32 / 41) | 5: Bezeichner, Typ, Jahressumme, Beschreibung, Auslieferung | `Formularraster` lesend (Jahressumme, Name, Beschreibung, Typ) | Grafik… · Typ ändern… · Füller · Neu… · Ändern… · Löschen · Beenden | vier Überlagerungen (Stammkopf, Wochenprofil-Editor mit 168 Stunden, Ergebnisgrafik, Namensabfrage); Löschsperre für Auslieferungssätze | Wochenprofil, Kenndaten | Felder direkt bedienbar statt „Ändern…"; Grafik… und Typ ändern… werden Knöpfe der Gruppe Wochenprofil; die Gruppe sagt, dass das Wochenprofil zum Typ gehört; Auslieferungsspalte → Schloss (Mockup-Reiter Brauchwasser, Prozesswärme, Stromverbraucher) |
 | A6 | `WaermebedarfAdminDialog` (Wärmebedarf Lastgang) | Zeitreihen (4) | 3: Bezeichner, Jahresarbeit, Spitze | kein Diagramm; Einleseblock (Ordner, Datei, Formathinweis, Fortschritt) | Anzeigen · Einlesen · Löschen · Füller · Beenden | `GanglinienImportLauf` (CSV/Text, Excel; 8 760 oder 35 040 Werte); Löschsperre bei Projektzuordnung und Auslieferung | Ganglinie, Herkunft | Einlesen als Überlagerung (V14); „Anzeigen" (Originaldatei) wird Knopf „Originaldatei…" der Gruppe Herkunft; die Gruppe Ganglinie ist neu (Baustein `GanglinienGrafik` gibt es); kein Neu…, kein Duplizieren |
 | A7 | `SolarganglinieAdminDialog` (Solarthermieganglinie) | Zeitreihen (1) | 4: Bezeichner, Beschreibung, Jahresarbeit, Spitze | wie A6, Fortschritt mit Anteil | Anzeigen · Einlesen · Löschen · Füller · OK | eigener Einleseweg (Textdatei mit Kopfzeile, 8 760 Werte), nicht `GanglinienImportLauf` | Ganglinie, Herkunft | wie A6; OK heißt Beenden; der eigene Einleseweg bleibt (anderes Format) |
-| A8 | `StromganglinieAdminDialog` (Stromganglinie) | Zeitreihen (3) | 4: Bezeichner, Zeitintervall, Jahresarbeit, Spitze | kein Diagramm; Zeitintervall und Dateiwahl als Einleseblock | Löschen · Füller · OK; Einlesen über die Dateiwahl | `GanglinienImportLauf` mit drei Überlagerungen; `ReadOnly`-Sperre und Rückfrage | Ganglinie, Herkunft | kein `Katalograhmen` — kommt ins Gerüst wie A6; OK heißt Beenden |
+| A8 | `StromganglinieAdminDialog` (Stromganglinie) | Zeitreihen (3) | 4: Bezeichner, Zeitintervall, Jahresarbeit, Spitze | kein Diagramm; Zeitintervall und Dateiwahl als Einleseblock | Löschen · Füller · OK; Einlesen über die Dateiwahl | `GanglinienImportLauf` mit drei Überlagerungen; `ReadOnly`-Sperre und Rückfrage | Ganglinie, Herkunft | trägt den `Katalograhmen` bereits seit Stufe 1 (vorgezogen); Einlesen als Überlagerung (V14) und OK heißt Beenden (V15) stehen wie bei A6 noch aus |
 | A9 | `GebaeudeDialog`, Betriebsart Verwaltung (Gebäude → Bearbeiten) | Gebäude (277) | eigene Tabelle: Name, „Typ/Wohnfläche"; vier Vorfilter darüber (Verwendung, Gebäudeart, Baujahr, Suche) | Gruppe „Gebäude: Verbrauch", lesend (Name, Gebäudeart, Beschreibung, Wohnfläche, Art der Angabe) | Gebäude in DB neu… · ändern… · löschen · Gebäudetyp in DB ändern… · Füller · Beenden | Katalogeditor mit zwei Reitern (Kenngrößen; Flächen, U-Werte, Raumtemperaturen, Ferien, Anschlussmaße) und Gebäudetypen-Verwaltung als Überlagerungen; dieselbe Komponente dient Projekt und Assistent | Kenndaten, Hülle, Alle Daten | **größte Abweichung**: eigene Tabelle und Vorfilter → `Katalogliste` mit Profil, Verwendung, Gebäudeart und Baujahr als Spalten mit Trichter (V16); der Katalogeditor zerfällt in Stammblattgruppen; „Gebäudetyp in DB ändern…" wird „Gebäudetypen…" im Kopf der Gruppe Kenndaten; keine Kosten, kein Import; Projekt und Assistent behalten ihre Anordnung (3.6) |
 | A10 | `GebaeudetypDialog` (Gebäudetypen) | Typen (12) mit je fünf oder acht Tageskurven zu 24 Stunden | eine Spalte (Name) mit rundem Wahlknopf; daneben die Kurvenliste als zweite Liste | Beschreibung lesend, 24 Stundenfelder und das Tagesbild (`DiagrammSvg`) unter den Listen | Typ speichern · Füller · Typ hinzufügen · Typ löschen · Beenden | Kopf-Detail-Modell; der Kurvenwechsel überträgt die 24 Felder still; ein Typ, der nicht „Veränderbar" ist, sperrt „Typ speichern" und sagt es in einer Herleitungszeile; Löschen fragt zurück | Tagesprofil, Kenndaten | **kein Gerätekatalog**: die Kurvenliste wird die Klappliste „Kurve" der Gruppe Tagesprofil, die 24 Felder öffnen als Überlagerung „Stundenwerte…", ein Kurvenwechsel mit Änderungen hält an; Schloss statt Herleitungszeile; Neu… fragt Name, Beschreibung und Kurvenzahl; keine Kosten, kein Import, kein „Alle Daten" |
 | A11 | `PeakShavingDialog` (Lastspitzenkappung) | Lastgänge: Stromganglinien aus Stamm und Projekt oder eine Datei, die nicht abgelegt wird | keine Liste: Optionsgruppe „Vorhandene Ganglinie \| Datei importieren", Klappliste, Dateiwahl | Parameterblock (Speicher, Zielschwelle mit „Minimale haltbare Schwelle ermitteln", Leistungs- und Bezugspreis, Kompatibilitätsmodus, fünf Wirtschaftlichkeitsfelder), darunter „Berechnen" und das Ergebnis in drei Reitern (Kennzahlen, Lastgang vorher/nachher, Monatsspitzen) | CSV-Export · In Variante übernehmen · Füller · Beenden | Rechenwerkzeug, legt nichts ab, braucht kein offenes Projekt; der Rechenlauf läuft nebenher mit Fortschritt; die Importkette zeigt Optionen und Protokoll als Überlagerungen | Speicher, Schwelle, Kosten, Ergebnis | **Rechenwerkzeug statt Katalog**: die Liste zeigt die Lastgänge mit der Quelle als Spalte (V16); die Datei kommt über „Lastgang aus Datei…" an der Stelle von Import…; „Berechnen" bleibt im Blatt zwischen Parametern und Ergebnis, der Stammblattfuß trägt keinen Knopf; Vergleichen rechnet über zwei bis drei Lastgänge; kein Neu…, Duplizieren, Löschen, kein Schloss |
@@ -424,7 +428,7 @@ Variante B nennt 6.1, AD-Q9 (entschieden: Ja) und die offene AD-Q11 stehen in 6.
 | Kennung | Frage | Empfehlung | Entscheid |
 |---|---|---|---|
 | **AD-Q1** | Stammblatt **neben** der Liste ab 900 px Dialogbreite, darunter als Blatt über der Liste (V3)? Das ersetzt „Liste über die ganze Breite, Eingabe darunter". | Ja — mit den Spaltenrängen aus V2 reicht die Breite, und der Detailblock ist ohne Rollen sichtbar | **22.09.2026: Ja** — Stammblatt neben der Liste ab 900 px Dialogbreite, darunter schmal als Blatt über der Liste (V3) |
-| **AD-Q6** | Verwaltung: Braucht es „Bearbeiten…" (Katalogeditor mit Überschreiben und Speichern unter) neben dem bearbeitbaren Stammblatt noch? | Nein — „Überschreiben" leistet schon „Speichern" in der Fußleiste, das das Stammblatt schreibt; „Speichern unter" wird „Kopieren…" neben „Neu…" | **22.09.2026: Entfällt** — die Felder sind direkt bedienbar mit Speichern/Verwerfen |
+| **AD-Q6** | Verwaltung: Braucht es „Bearbeiten…" (Katalogeditor mit Überschreiben und Speichern unter) neben dem bearbeitbaren Stammblatt noch? | Nein — „Überschreiben" leistet schon „Speichern" in der Fußleiste, das das Stammblatt schreibt; „Speichern unter" wird „Kopieren…" neben „Neu…" | **22.09.2026: Entfällt** — die Felder sind direkt bedienbar mit Speichern/Verwerfen. **Umgesetzt (23.09.2026)** — im `KatalogBrowserDialog` ohne „Bearbeiten…" |
 | **AD-Q8** | Reihenfolge der Umsetzung (Abschnitt 7)? | wie vorgeschlagen | **22.09.2026: wie vorgeschlagen** — Stufe 1 alle Verwaltungen über den gemeinsamen Rahmen (V1, V2, V7), Stufe 2 Zeilenwahl (V4), Stufe 3 Heizkessel-Projektdialog als Pilot (V3, V5, V6), Stufe 4 übrige Erzeuger, Stufe 5 Bedarf und Zeitreihen. Mit AD-Q12 gelten die Stufen 1 und 2 unverändert; an die Stelle der Stufen 3 bis 5 treten die des Abschnitts 7 |
 | **AD-Q12** | Welche Dialoge umfasst das Schema? | Stand bis dahin: neunzehn Komponenten — sieben Verwaltungen im `Katalograhmen`, zwölf Projektdialoge — und zwei Nachbarn (Stromganglinie, Kostenfaktoren) | **22.09.2026:** „Die Dialoge im Mockup sollen nur auf die Auswahlen des Menüs beschränkt sein; die anderen Dialoge eignen sich nicht für das vorgeschlagene Schema." — Gegenstand sind die Verwaltungsdialoge der fünf Menügruppen Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme (1.4); Projektdialoge, Kosten, Daten & Import und Einstellungen nicht (Abschnitt 8) |
 | **AD-Q13** | Wie zeigt die Zeile einen Auslieferungssatz? | Schloss mit dem Wort „Auslieferung" (V10) | **22.09.2026:** „Hinweis ‚Auslieferung' zu groß, evtl. nur das Schloss-Symbol." — nur das Schloss; das Wort steht im Kurztext und in der Legende (3.4) |
@@ -457,10 +461,10 @@ Menüpunkte, und Schloss, Vergleich und Import lassen sich an ihr zuerst zeigen.
 
 | Stufe | Inhalt | Aufwand | Voraussetzung |
 |---|---|---|---|
-| 1 | V1 + V2 + V7 im `Katalograhmen` und in der `Katalogliste`, dazu V10 (Schloss) und V15 (Fußleiste): die sieben Komponenten im Rahmen (A1 bis A7) auf einmal, Pilot „Heizkessel"; AD-Q6 im `KatalogBrowserDialog` | M + M + S + S + S | AD-Q6 |
-| 2 | V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` — alle Wirte | M + M | Stufe 1 |
+| 1 | ✔ **umgesetzt 23.09.2026** (Commits `c8e5f775`, `d9ef80b8`) — V1 + V2 + V7 im `Katalograhmen` und in der `Katalogliste`: die acht Komponenten im Rahmen (A1 bis A8) auf einmal, Pilot „Heizkessel"; AD-Q6 im `KatalogBrowserDialog` | M + M + S | AD-Q6 |
+| 2 | V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` — alle Wirte; dazu V10 (Schloss) und V15 (Fußleiste), aus Stufe 1 zurückgestellt | M + M + S + S | Stufe 1 |
 | 3 | V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, danach die Gerätekataloge in der Folge des Menüs — BHKW, Wärmepumpen, Solarkollektoren, Stromspeicher, PV Module, Wechselrichter, Pufferspeicher — und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5) | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
-| 4 | V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 bekommt dabei den `Katalograhmen`) | M | Stufe 3 |
+| 4 | V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1) | M | Stufe 3 |
 | 5 | V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
 
 **Warum diese Folge:** Die Gerätekataloge teilen sich zwei Komponenten (A1, A2) und gewinnen am

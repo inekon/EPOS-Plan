@@ -423,6 +423,25 @@ namespace EPOS.Kern.Tests
                 foreach (System.Collections.Generic.KeyValuePair<string, string> a in TwwSchema.Indizes)
                     DataRepository.ExecuteNonQuery(a.Value);
 
+                // Schritt 104 (Entscheid Q11, 22.09.2026): der Zeitzonentarif wird
+                // abgeloest - erst die drei Spalten der Leistungspreis-Staffel an
+                // energy_project_settings, dann der Datenteil aus DERSELBEN Quelle wie in
+                // der Migration und im Werkzeug (Staffel uebernehmen, Zonensaetze
+                // loeschen, mit Zonentarif gerechnete Ergebnisse verwerfen, Zonenzeilen der
+                // Strommatrix zusammenfassen). NACH 103 ohne Reihenfolgebedingung.
+                // Wiederholbar - auf einer nachgezogenen Kopie findet der Datenteil nichts
+                // mehr.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
+                    SpalteSicherstellen(s);
+                ZeitzonentarifAbloesung.Ausfuehren();
+
+                // Schritt 105 (Befund K-1, Entscheide EZ-5 und E7-Q2, 23.09.2026): das
+                // Kennzeichen "Vorrichtung zur Abwaermeabfuhr" (0/1, Vorgabe 0) und die
+                // nullbare Stromkennzahl an Tab_Energieanlagen. Wie in der Migration ueber
+                // ADD COLUMN, aus DERSELBEN Quelle; kein DML - 0 heisst Fall 1.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+                    SpalteSicherstellen(s);
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

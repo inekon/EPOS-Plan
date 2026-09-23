@@ -1048,7 +1048,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
     // =====================================================================
 
     [Fact]
-    public void Gruppe4_fuehrt_die_vier_Felder_und_beide_Sprungknoepfe()
+    public void Gruppe4_fuehrt_die_vier_Felder_und_den_Sprungknopf()
     {
         var cut = Aufbauen();
         IElement g = Koerper(cut, 4);
@@ -1063,10 +1063,12 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
             "Modus § 9 Abs. 1 Nr. 3:"
         }, Beschriftungen(g));
 
+        // Q11 (E7b): Der Sprung „Strombezug…“ ist entfallen — den Zeitzonentarif gibt
+        // es nicht mehr, die Leistungspreis-Staffel pflegt der Stromträger.
         var sprung = g.QuerySelectorAll("button.epos-sprung");
-        Assert.Equal(2, sprung.Length);
-        Assert.Equal("Strombezug…", sprung[0].TextContent.Trim());
-        Assert.Equal("BHKW-Tarif…", sprung[1].TextContent.Trim());
+        Assert.Single(sprung);
+        Assert.Equal("BHKW-Tarif…", sprung[0].TextContent.Trim());
+        Assert.DoesNotContain("Strombezug…", g.TextContent);
     }
 
     /// <summary>
@@ -1900,17 +1902,9 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
 
         cut.FindAll("button.epos-sprung")[0].Click();
 
-        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
         Assert.Equal(0, z.Zugriffe);
         Assert.False(ergebnis.Gespeichert);   // nichts geschrieben, nichts neu zu rechnen
-
-        var z2 = new Schreibzaehler();
-        var cut2 = Aufbauen(beimSchliessen: e => ergebnis = e,
-                            speichereAnlage: z2.Anlage, speichereVorgaben: z2.Vorgaben);
-        cut2.FindAll("button.epos-sprung")[1].Click();
-
-        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
-        Assert.Equal(0, z2.Zugriffe);
     }
 
     /// <summary>
@@ -1957,7 +1951,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         Assert.Equal(new[] { "Anlage:BHKW EW M 50 S [K] Erdgas" }, z.Wege);
         Assert.Equal(5.57, anlagen[0].SatzEinspCt);
         Assert.Null(anlagen[1].SatzEinspCt);
-        Assert.Equal(BhkwSprung.Strombezug, ergebnis!.Sprung);
+        Assert.Equal(BhkwSprung.BhkwTarif, ergebnis!.Sprung);
         Assert.True(ergebnis.Gespeichert);
     }
 
@@ -1972,7 +1966,7 @@ public class BhkwWirtschaftlichkeitDialogTests : EposBunitContext
         var cut = Aufbauen(anlagen, p, e => ergebnis = e, z.Anlage, z.Vorgaben);
 
         Koerper(cut, 4).QuerySelectorAll("input[type=checkbox]")[0].Change(true);
-        cut.FindAll("button.epos-sprung")[1].Click();
+        cut.FindAll("button.epos-sprung")[0].Click();
 
         Assert.Equal(new[] { "Vorgaben" }, z.Wege);
         Assert.True(p.RaeumlicherZusammenhang);

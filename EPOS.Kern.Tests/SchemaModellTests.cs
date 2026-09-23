@@ -171,6 +171,65 @@ namespace EPOS.Kern.Tests
             }
         }
 
+        // ================================================================== Abnehmer ohne Versorger
+
+        /// <summary>
+        /// ABNEHMER OHNE VERSORGER: 1026 fuehrt keine Senke fuer den Prozesskanal. Ist
+        /// dort Bedarf bekannt, zeichnet das Schema den Prozessabnehmer TROTZDEM — mit
+        /// Warnung, dem Satz aus dem Warnkatalog und ohne eine einzige Kante. Bis hierher
+        /// verschwand er still.
+        /// </summary>
+        [Fact]
+        public void Ein_Kanal_mit_Bedarf_ohne_Versorger_bekommt_einen_Warnknoten()
+        {
+            if (!_db.Vorhanden) return;
+
+            System.Globalization.CultureInfo vorher = System.Globalization.CultureInfo.CurrentUICulture;
+            System.Globalization.CultureInfo vorherZahl = System.Globalization.CultureInfo.CurrentCulture;
+            System.Globalization.CultureInfo.CurrentUICulture = new System.Globalization.CultureInfo("de-DE");
+            System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
+            try
+            {
+                SchemaModell m = SchemaModell.Aufbauen(1026, null, new[] { 10.0, 5.0, 50.0 });
+
+                SchemaModell.Knoten p = m.Finden(SchemaModell.ABNEHMER_PROZESS);
+                Assert.NotNull(p);
+                Assert.True(p.Warnung);
+                Assert.Equal(Warnkriterien.KanalOhneVersorgerText(Kanal.PROZESS, 50.0), p.Warntext);
+                Assert.StartsWith("Kanal Prozesswärme mit 50,0 MWh/a", p.Warntext);
+                Assert.DoesNotContain(m.Kantenliste, k => k.Nach == SchemaModell.ABNEHMER_PROZESS);
+
+                // Die versorgten Abnehmer bleiben, wie sie waren: ohne Warnung.
+                Assert.False(m.Finden(SchemaModell.ABNEHMER_HEIZKREIS).Warnung);
+                Assert.Empty(m.Pruefen());
+            }
+            finally
+            {
+                System.Globalization.CultureInfo.CurrentUICulture = vorher;
+                System.Globalization.CultureInfo.CurrentCulture = vorherZahl;
+            }
+        }
+
+        /// <summary>
+        /// Ohne Bedarf kein Warnknoten — weder ohne gerechneten Bedarf (1026 hat kein
+        /// Prozessprofil) noch mit Bedarf 0; und 1041, dessen Wärmepumpe den Prozesskanal
+        /// ausdruecklich bedient, zeichnet den Prozessabnehmer ohne Warnung.
+        /// </summary>
+        [Fact]
+        public void Ohne_Bedarf_oder_mit_Versorger_gibt_es_keinen_Warnknoten()
+        {
+            if (!_db.Vorhanden) return;
+
+            Assert.Null(SchemaModell.Aufbauen(1026, null).Finden(SchemaModell.ABNEHMER_PROZESS));
+            Assert.Null(SchemaModell.Aufbauen(1026, null, new[] { 10.0, 5.0, 0.0 })
+                                    .Finden(SchemaModell.ABNEHMER_PROZESS));
+
+            SchemaModell.Knoten p = SchemaModell.Aufbauen(1041, null, new[] { 10.0, 5.0, 50.0 })
+                                                .Finden(SchemaModell.ABNEHMER_PROZESS);
+            Assert.NotNull(p);
+            Assert.False(p.Warnung);
+        }
+
         private static bool Kreuzt(SchemaLayout.Punkt a, SchemaLayout.Punkt b,
                                    SchemaLayout.Rechteck r)
         {

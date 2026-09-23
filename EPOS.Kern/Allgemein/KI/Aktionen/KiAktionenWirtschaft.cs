@@ -121,11 +121,13 @@ namespace WindowsFormsApplication1
                         "co2_preis_eur_t", KiHilfe.Wert(p.CO2Preis),
                         "id_kraftwerkspark", p.IdKraftwerkspark,
                         "refkessel_wirkungsgrad_prozent", KiHilfe.Wert(p.RefKesselWirkungsgrad),
+                        // Q11 (E7b): Den Zeitzonentarif gibt es nicht mehr — kein HT-Fenster;
+                        // der Satz rechnet nur im Rollenmodell (tarif_wirksam).
                         "tarif_aktiv", t.Aktiv,
+                        "tarif_modus", KiHilfe.Text(t.Modus),
+                        "tarif_wirksam", t.Wirksam,
                         "tarif_winter_von_monat", t.WinterVonMonat,
-                        "tarif_winter_bis_monat", t.WinterBisMonat,
-                        "tarif_ht_von_stunde", t.HtVonStunde,
-                        "tarif_ht_bis_stunde", t.HtBisStunde));
+                        "tarif_winter_bis_monat", t.WinterBisMonat));
 
                     return KiErgebnis.Ok(
                         string.Format(CultureInfo.CurrentCulture, KiAktionsTexte.ParameterGelesen, id,

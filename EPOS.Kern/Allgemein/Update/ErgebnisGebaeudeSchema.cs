@@ -3,7 +3,7 @@
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Die Ergebnistabelle je Gebäude</b> — Schemaschritt 104 (Entscheid E30 vom 23.09.2026,
+    /// <b>Die Ergebnistabelle je Gebäude</b> — Schemaschritt 106 (Entscheid E30 vom 23.09.2026,
     /// Konzept Gebäudesimulation N1.35): Der Simulationslauf schreibt je Gebäude eine Zeile mit
     /// Rechenweg und Kennzahlen, der Bericht liest sie und rechnet nichts nach.
     ///

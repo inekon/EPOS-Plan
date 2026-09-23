@@ -1219,6 +1219,13 @@
         internal static string EtLeistungspreisErl => MyResource.Resource.KI_DLG_ET_LEISTUNGSPREIS_ERL;
         internal static string EtLpModusName => MyResource.Resource.KI_DLG_ET_LPMODUS_NAME;
         internal static string EtLpModusErl => MyResource.Resource.KI_DLG_ET_LPMODUS_ERL;
+        // Q11: die zweistufige Leistungspreis-Staffel des Stromträgers
+        internal static string EtStaffelGrenzeName => MyResource.Resource.ETV_STAFFEL_GRENZE;
+        internal static string EtStaffelGrenzeErl => MyResource.Resource.KI_DLG_ET_STAFFEL_GRENZE_ERL;
+        internal static string EtStaffelPreis1Name => MyResource.Resource.ETV_STAFFEL_PREIS1;
+        internal static string EtStaffelPreis1Erl => MyResource.Resource.KI_DLG_ET_STAFFEL_PREIS1_ERL;
+        internal static string EtStaffelPreis2Name => MyResource.Resource.ETV_STAFFEL_PREIS2;
+        internal static string EtStaffelPreis2Erl => MyResource.Resource.KI_DLG_ET_STAFFEL_PREIS2_ERL;
         internal static string EtHeizwertName => MyResource.Resource.ETV_LBL_HEIZWERT;
         internal static string EtHeizwertErl => MyResource.Resource.KI_DLG_ET_HEIZWERT_ERL;
         internal static string EtBrennwertName => MyResource.Resource.ETV_LBL_BRENNWERT;
@@ -1409,8 +1416,8 @@
         /// </summary>
         /// <remarks>
         /// <b>Eine Vorlage statt doppelter Schluessel.</b> Die Tarifstruktur fuehrt
-        /// „Winter HT" fuer Bezug UND Einspeisung und „Arbeitspreis" fuer Bezug UND
-        /// Reststrom; die Szenariotabelle fuehrt jede Groesse als Best- und als
+        /// „Arbeitspreis" und „Grundpreis" fuer Bezug, Reststrom UND Einspeisung;
+        /// die Szenariotabelle fuehrt jede Groesse als Best- und als
         /// Worst-Fall. Der Block wechselt, das Feld bleibt - zwei Eintraege je Paar
         /// waeren zwei Pflegestellen fuer denselben Begriff.
         /// </remarks>
@@ -1532,36 +1539,12 @@
 
         internal static string TarAktivName => MyResource.Resource.TARIF_AKTIV;
         internal static string TarAktivErl => MyResource.Resource.KI_DLG_TAR_AKTIV_ERL;
-        internal static string TarModellName => MyResource.Resource.TARIF_MODELL;
-        internal static string TarModellErl => MyResource.Resource.KI_DLG_TAR_MODELL_ERL;
         internal static string TarGueltigAbName => MyResource.Resource.TARIF_GUELTIG_AB;
         internal static string TarGueltigAbErl => MyResource.Resource.KI_DLG_TAR_GUELTIGAB_ERL;
         internal static string TarWinterVonName => MyResource.Resource.TARIF_WINTER_VON;
         internal static string TarWinterVonErl => MyResource.Resource.KI_DLG_TAR_WINTERVON_ERL;
         internal static string TarWinterBisName => MyResource.Resource.TARIF_WINTER_BIS;
         internal static string TarWinterBisErl => MyResource.Resource.KI_DLG_TAR_WINTERBIS_ERL;
-        internal static string TarHtVonName => MyResource.Resource.TARIF_HT_VON;
-        internal static string TarHtVonErl => MyResource.Resource.KI_DLG_TAR_HTVON_ERL;
-        internal static string TarHtBisName => MyResource.Resource.TARIF_HT_BIS;
-        internal static string TarHtBisErl => MyResource.Resource.KI_DLG_TAR_HTBIS_ERL;
-
-        internal static string TarBezugWinterHtName => Block(TarBezug, MyResource.Resource.TARIF_WINTER_HT);
-        internal static string TarBezugWinterNtName => Block(TarBezug, MyResource.Resource.TARIF_WINTER_NT);
-        internal static string TarBezugSommerHtName => Block(TarBezug, MyResource.Resource.TARIF_SOMMER_HT);
-        internal static string TarBezugSommerNtName => Block(TarBezug, MyResource.Resource.TARIF_SOMMER_NT);
-        internal static string TarBezugErl => MyResource.Resource.KI_DLG_TAR_ZONE_BEZUG_ERL;
-        internal static string TarEinspWinterHtName => Block(TarEinsp, MyResource.Resource.TARIF_WINTER_HT);
-        internal static string TarEinspWinterNtName => Block(TarEinsp, MyResource.Resource.TARIF_WINTER_NT);
-        internal static string TarEinspSommerHtName => Block(TarEinsp, MyResource.Resource.TARIF_SOMMER_HT);
-        internal static string TarEinspSommerNtName => Block(TarEinsp, MyResource.Resource.TARIF_SOMMER_NT);
-        internal static string TarEinspErl => MyResource.Resource.KI_DLG_TAR_ZONE_EINSP_ERL;
-
-        internal static string TarStaffelGrenzeName => MyResource.Resource.TARIF_STAFFEL_GRENZE;
-        internal static string TarStaffelGrenzeErl => MyResource.Resource.KI_DLG_TAR_STAFFEL_GRENZE_ERL;
-        internal static string TarStaffelUntenName => MyResource.Resource.TARIF_STAFFEL_PREIS1;
-        internal static string TarStaffelUntenErl => MyResource.Resource.KI_DLG_TAR_STAFFEL_UNTEN_ERL;
-        internal static string TarStaffelObenName => MyResource.Resource.TARIF_STAFFEL_PREIS2;
-        internal static string TarStaffelObenErl => MyResource.Resource.KI_DLG_TAR_STAFFEL_OBEN_ERL;
 
         internal static string TarBezugArbeitName => Block(TarBezug, MyResource.Resource.TARIF_ARBEITSPREIS);
         internal static string TarBezugArbeitErl => MyResource.Resource.KI_DLG_TAR_BEZUG_ARBEIT_ERL;

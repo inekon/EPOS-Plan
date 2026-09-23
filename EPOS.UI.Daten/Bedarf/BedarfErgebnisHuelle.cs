@@ -170,12 +170,18 @@ namespace WindowsFormsApplication1
             };
 
             Zeichenmodell jahresmodell = null;
+            bool zapfprofil = mitBrauchwasser && simulation.Zapfprofil != null;
             if (mitBrauchwasser)
             {
-                sichten.Add(Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
-                                  simulation.Waermebedarf_Brauchwasser_Monat,
-                                  Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme"),
-                                  ROLLE_BRAUCHWASSER, istBrauchwasser: true));
+                Monatssicht brauchwasser = Sicht(Text_("BERG_OPT_BRAUCHWASSER", "Brauchwasser"),
+                                                 simulation.Waermebedarf_Brauchwasser_Monat,
+                                                 Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme"),
+                                                 ROLLE_BRAUCHWASSER, istBrauchwasser: true);
+                // Der Zapfprofilweg (Umsetzungskonzept Zapfprofilgenerator 2.2, 5.2): dieselben
+                // Monatswerte, das Bild aber gestapelt aus Zapfung und Zirkulation - die
+                // Zirkulation ist eine eigene Teilreihe desselben Kanals.
+                if (zapfprofil) brauchwasser = ZapfprofilStapel(brauchwasser, simulation);
+                sichten.Add(brauchwasser);
 
                 jahresmodell = ChartRenderer.JahresverlaufModell(
                     Text_("BERG_BILD_JAHR", "Jahresübersicht"),
@@ -183,7 +189,7 @@ namespace WindowsFormsApplication1
                     Text_("BERG_ACHSE_WAERMEBEDARF", "Wärmebedarf [kW]"), ROLLE_JAHR);
             }
 
-            return new BedarfErgebnisDaten
+            var daten = new BedarfErgebnisDaten
             {
                 Sicht = ErgebnisSicht.Waerme,
                 MitBrauchwasser = mitBrauchwasser,
@@ -224,6 +230,50 @@ namespace WindowsFormsApplication1
                 },
                 Sichten = sichten
             };
+            if (zapfprofil)
+            {
+                // Die Zirkulation als eigener Posten VOR der Summe (Umsetzungskonzept
+                // Zapfprofilgenerator 5.2): Sie steckt im Brauchwasser und wird hier nur benannt.
+                var liste = new List<ErgebnisKennzahl>(daten.Kennzahlen);
+                int summe = liste.FindIndex(k => k.Art == Kennzahlart.Summe);
+                liste.Insert(summe < 0 ? liste.Count : summe,
+                             Energie(Text_("BERG_LBL_DAVON_ZIRKULATION", "davon Zirkulation:"),
+                                     simulation.Brauchwasser_Zirkulation_Mwh, Energieeinheit.MWh));
+                daten.Kennzahlen = liste;
+            }
+            return daten;
+        }
+
+        /// <summary>
+        /// Die Monatssicht des Brauchwassers auf dem Zapfprofilweg: dieselben Zahlen, das Bild
+        /// gestapelt aus Zapfung und Zirkulation — beide Schichten so, wie der Kern sie führt
+        /// (<c>Waermebedarf_Brauchwasser_Zapfung_Monat</c>, <c>…_Zirkulation_Monat</c>); die Hülle
+        /// rechnet keine Schicht selbst. Je Einheit einmal, mit den Zeichenbausteinen des
+        /// Zapfprofils (<c>ZapfprofilBilder.JahresgangModell</c>).
+        /// </summary>
+        private static Monatssicht ZapfprofilStapel(Monatssicht sicht, SimulationWaermebedarf simulation)
+        {
+            double[] zapfung = simulation.Waermebedarf_Brauchwasser_Zapfung_Monat;
+            double[] zirkulation = simulation.Waermebedarf_Brauchwasser_Zirkulation_Monat;
+            if (zapfung == null || zapfung.Length < 12 || zirkulation == null || zirkulation.Length < 12) return sicht;
+
+            double[] zapfungMwh = (double[])zapfung.Clone();
+            double[] zirkMwh = (double[])zirkulation.Clone();
+
+            ZapfprofilBildtexte texte = ZapfprofilHuelle.Bildtexte();
+            texte.TitelJahresgang = Text_("BERG_BILD_BRAUCHWASSER", "Brauchwasserwärme");
+            return sicht with
+            {
+                Modell = ZapfprofilBilder.JahresgangModell(zapfungMwh, zirkMwh, Energieeinheit.MWh.Text, texte),
+                ModellKWh = ZapfprofilBilder.JahresgangModell(InKWh(zapfungMwh), InKWh(zirkMwh), Energieeinheit.KWh.Text, texte)
+            };
+        }
+
+        private static double[] InKWh(double[] mwh)
+        {
+            var kwh = new double[mwh.Length];
+            for (int i = 0; i < mwh.Length; i++) kwh[i] = Energieeinheit.KWh.AusMWh(mwh[i]);
+            return kwh;
         }
 
         // =================================================================================

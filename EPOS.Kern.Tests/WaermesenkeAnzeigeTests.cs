@@ -130,7 +130,9 @@ namespace EPOS.Kern.Tests
                 Bedarfsart = WaermequelleClass.SENKE_HEIZUNG
             };
 
-            Assert.Equal("Heizkreis (beides)", WaermesenkeClass.SenkeAnzeige(beides));
+            // Die Vorbelegung heisst, was sie bedient - nicht „beides", sondern die
+            // zwei Kanaele beim Namen.
+            Assert.Equal("Heizkreis (Heizung + Warmwasser)", WaermesenkeClass.SenkeAnzeige(beides));
             Assert.Equal("Heizkreis (nur Warmwasser)", WaermesenkeClass.SenkeAnzeige(warmwasser));
             Assert.Equal("Heizkreis (nur Heizwärme)",
                          WaermesenkeClass.SenkeAnzeige(heizung));
@@ -150,7 +152,7 @@ namespace EPOS.Kern.Tests
                 Bedarfsart = "gibt-es-nicht"
             };
 
-            Assert.Equal("Heizkreis (beides)", WaermesenkeClass.SenkeAnzeige(z));
+            Assert.Equal("Heizkreis (Heizung + Warmwasser)", WaermesenkeClass.SenkeAnzeige(z));
         }
     }
 }

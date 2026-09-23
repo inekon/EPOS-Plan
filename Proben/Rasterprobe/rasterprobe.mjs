@@ -239,7 +239,11 @@ async function fall(browser, f) {
   const seite = await kontext.newPage();
   await seite.addInitScript(SONDE);
 
-  const adresse = `${WURZEL}/probe?modus=${f.modus}&zeilen=${f.zeilen}&takt=${f.takt}`;
+  // f.pfad: eine andere Seite des Wirtes - die Katalogprobe mit dem GANZEN
+  // Dialog (Neuordnung Stufe 1, Faelle J und K): dieselbe virtualisierte Liste,
+  // aber im Katalograhmen, dessen Liste die Resthoehe nimmt statt 420 px.
+  const adresse = f.pfad ? `${WURZEL}${f.pfad}`
+                         : `${WURZEL}/probe?modus=${f.modus}&zeilen=${f.zeilen}&takt=${f.takt}`;
   await seite.goto(adresse, { waitUntil: 'domcontentloaded' });
 
   // Auf den Aufbau der interaktiven Komponente warten (Blazor Server).
@@ -261,10 +265,13 @@ async function fall(browser, f) {
   // dann alle auf 0, was wie ein Erfolg aussieht. Das darf nicht durchgehen.
   const stil = await seite.evaluate(() => {
     const h = document.querySelector('.epos-raster-huelle');
-    return h ? getComputedStyle(h).maxHeight : '(keine Huelle)';
+    // Gelesen wird der RAHMEN der Huelle: Im Katalogdialog traegt die Liste seit
+    // Stufe 1 der Neuordnung keine Hoechsthoehe mehr (max-height: none), der
+    // Rahmen aber steht nur im Hausstilblatt.
+    return h ? getComputedStyle(h).borderTopStyle : '(keine Huelle)';
   });
-  if (stil === 'none' || stil === '(keine Huelle)') {
-    throw new Error(`Das Stilblatt epos-ui.css wirkt nicht (max-height der Huelle: ${stil}). ` +
+  if (stil !== 'solid') {
+    throw new Error(`Das Stilblatt epos-ui.css wirkt nicht (Rahmen der Huelle: ${stil}). ` +
       'Der Wirt liefert seine statischen Dateien nicht aus - Messung wertlos.');
   }
 
@@ -414,6 +421,16 @@ function pruefe(e) {
   if (virtualisiert && e.melderRollen > 12)
     maengel.push(`${e.melderRollen} Sichtbarkeitsmeldungen in den drei Sekunden nach dem ` +
                  'Rollen (soll <= 12; mehr heisst: die zwei Melder schieben das Fenster gegeneinander)');
+  // Im Katalogdialog (Faelle J, K): Virtualize muss die HUELLE als Rollbehaelter
+  // finden - fixe Hoehe aus dem Rahmen statt max-height - und die Zeile ist so
+  // hoch wie ItemSize.
+  if (e.fall.pfad) {
+    const b = e.bei5000;
+    if (!/epos-raster-huelle/.test(b.rollbehaelter || ''))
+      maengel.push(`Rollbehaelter ist ${b.rollbehaelter}, nicht die Huelle der Liste`);
+    if (b.echtHoehe !== null && Math.abs(b.echtHoehe - 53) > 0.5)
+      maengel.push(`Zeilenhoehe ${b.echtHoehe} px statt 53 (ItemSize)`);
+  }
   return maengel;
 }
 
@@ -432,7 +449,17 @@ const FAELLE = [
   // Die GEGENPROBE zum Fix: dieselbe Seite, aber das gesetzte Zeilenmass per
   // Stilblatt wieder weggenommen. Sie MUSS die Sollwerte verfehlen.
   { name: 'H_6654_ohne_Zeilenmass',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1300, hoehe: 900, dpr: 1,
-    entpinnt: true, mussFehlschlagen: true }
+    entpinnt: true, mussFehlschlagen: true },
+  // NEUORDNUNG STUFE 1 (Konzept Administrationsdialoge, Abschnitt 7): die
+  // Fenstermasse des Anwenders. J und K stellen die virtualisierte Liste IM
+  // Katalogdialog (Stromspeicher-Verwaltung, 6 654 volle Zeilen) - dort nimmt
+  // sie seit V1 die Resthoehe; L und M die freie Liste der Importmaske.
+  { name: 'J_6654_Dialog_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1' },
+  { name: 'K_6654_Dialog_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1,
+    pfad: '/katalogprobe?maske=modul&art=stromspeicher&zeilen=6654&voll=1' },
+  { name: 'L_6654_sofort_1088x624',   modus: 'sofort', zeilen: 6654, takt: 0, breite: 1088, hoehe: 624, dpr: 1 },
+  { name: 'M_6654_sofort_400x624',    modus: 'sofort', zeilen: 6654, takt: 0, breite: 400, hoehe: 624, dpr: 1 }
 ];
 
 if (FOTOS) await mkdir(FOTOS, { recursive: true });

@@ -121,6 +121,14 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die Wohnungstabelle der Zone in ihrer Reihenfolge; leer, wenn keine gepflegt ist.</summary>
         public IReadOnlyList<WohnungstypStand> Wohnungen { get; init; } = new WohnungstypStand[0];
+
+        /// <summary>
+        /// Fläche aus dem gebundenen Gebäude (A8) [m²] — <b>nur im Eingang</b> gesetzt
+        /// (<c>ZapfprofilCtrl.Eingang</c>), nie gelesen oder gespeichert; <c>null</c> ohne
+        /// Bindung. Gilt nur, wenn die Zone keine eigene Fläche trägt
+        /// (<see cref="Mengengeruest.FlaecheM2"/>).
+        /// </summary>
+        public double? GebaeudeflaecheM2 { get; init; }
     }
 
     /// <summary>

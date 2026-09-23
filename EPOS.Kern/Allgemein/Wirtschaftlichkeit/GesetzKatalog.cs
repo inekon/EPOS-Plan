@@ -83,6 +83,7 @@ namespace WindowsFormsApplication1
         ///   <item><term>5</term><description>Etappe P2 (PV-Konzept § 6.2): die EEG-Sätze der Photovoltaik</description></item>
         ///   <item><term>6</term><description>Etappe P4: die Jahresmarktwerte Solar</description></item>
         ///   <item><term>7</term><description>SP-E-3-Q1/S-6 (17.09.2026): der reduzierte Stromsteuersatz und die drei Umlagen (KWKG, Offshore, § 19 StromNEV)</description></item>
+        ///   <item><term>8</term><description>Etappe E7c (A20, E7‑Q3, 23.09.2026): das Ende der Frist zur Inbetriebnahme nach KWKG (31.12.2030)</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -1188,6 +1189,17 @@ namespace WindowsFormsApplication1
                     "KWKG 2025 § 6 Abs. 1 — Dauerbetrieb bis zum 31.12. dieses Jahres"));
             l.Add(N(DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST, KWKG, 2025, 4.0, JAHR, G,
                     "KWKG 2025 § 6 — Novelle 2025: bis 4 Jahre später bei Genehmigung/Beauftragung"));
+
+            // GENERATION 8 (Etappe E7c, A20, Entscheid E7-Q3 Lesart b vom 23.09.2026): das
+            // Förderende 2030 als ENDE DER FRIST ZUR INBETRIEBNAHME — Inbetriebnahme bis zum
+            // 31.12. dieses Jahres. Es löst die feste Realisierungsfrist von vier Jahren ab
+            // dem Stichtag ab (WirtschaftlichkeitCtrl.KWKG_REALISIERUNG_JAHRE ist entfallen).
+            // Eine Anlage mit Inbetriebnahme davor rechnet ihre Reihe bis zum Ende des
+            // Kontingents; eine Höchstdauer in Kalenderjahren gibt es nicht (Grundlagen
+            // KWKG, Rechenweg 05: die Beispielreihe zahlt bis 2037). Stichjahr 2020 wie
+            // KWKG_STICHTAG_DAUERBETRIEB — dieselbe Schreibweise eines Datums als Jahr.
+            l.Add(N(DbWerte.GESETZ_KWKG_INBETRIEBNAHME_FRISTENDE, KWKG, 2020, 2030.0, JAHR, G,
+                    "KWKG 2025 § 6 — Inbetriebnahme bis zum 31.12. dieses Jahres (Förderende, R-U5)", 8));
 
             // =================================================================
             // Stromsteuer — Grundlagen, Abschnitt 2

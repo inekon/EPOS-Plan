@@ -134,6 +134,10 @@ namespace WindowsFormsApplication1
             // Quelle ist die Stelle, die beide Huellen kennt - deshalb wird hier
             // verknuepft und nicht in einer der beiden.
             _konfig.AuslegungWegSetzen(_ergebnis.AuslegungOeffnen);
+
+            // Dasselbe fuer den KANALBEDARF des Schemas (Abnehmer ohne Versorger): Nur die
+            // Ergebnishuelle kennt den gerechneten Lauf und weiss, ob er noch gilt.
+            _konfig.KanalbedarfQuelleSetzen(_ergebnis.AktuellerKanalbedarf);
         }
 
         /// <summary>„Projekt „…"" — die Kopfzeile der Ansicht; leer ohne Namen.</summary>

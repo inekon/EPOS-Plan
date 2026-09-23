@@ -175,6 +175,24 @@ public sealed class EnergietraegerStand
     /// <summary>Statuszeile der Saisonreihe (FK6a); leer = keine gepflegt.</summary>
     public string ReihenStatus { get; set; } = "";
 
+    // ---- Die Leistungspreis-Staffel des Stromträgers (Q11) ---------------
+
+    /// <summary>
+    /// Zeigt die Karte die zweistufige Leistungspreis-Staffel? Nur beim
+    /// STROMträger im PROJEKTkontext — sie steht an der Projektübersteuerung
+    /// (<c>energy_project_settings</c>, Schemaschritt 104), der Katalog führt keine.
+    /// </summary>
+    public bool MitStaffel { get; set; }
+
+    /// <summary>Staffelgrenze [kW]; leer = nicht gepflegt.</summary>
+    public double? StaffelGrenze { get; set; }
+
+    /// <summary>Preis bis zur Grenze [€/(kW·a)]; leer = nicht gepflegt.</summary>
+    public double? StaffelPreis1 { get; set; }
+
+    /// <summary>Preis über der Grenze [€/(kW·a)]; leer = nicht gepflegt.</summary>
+    public double? StaffelPreis2 { get; set; }
+
     // ---- Formel (nur mit Heizwert) -------------------------------------
 
     /// <summary>Zeigt die Formelgruppe? Ohne Heizwert gibt es keine Formel.</summary>

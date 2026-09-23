@@ -704,7 +704,8 @@ namespace WindowsFormsApplication1
             // Konsistenz-Gate wie im Word-Baustein (Review 11): sind Tarif/KWKG aktiv,
             // aber keine Stundenreihen im Berichtslauf, entfällt der Block mit Hinweis.
             // ETAPPE BK1: dieselbe EINE Regel wie im Word-Baustein und im Rechenkern.
-            bool zeitreihenNoetig = (tarifP != null && tarifP.Aktiv) ||
+            // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+            bool zeitreihenNoetig = (tarifP != null && tarifP.Wirksam) ||
                                     KwkgAktivierung.IstAktiv(daten.IdStamm,
                                         daten.Varianten.Select(x => x.IdProjekt));
             int rStart = r;
@@ -876,10 +877,11 @@ namespace WindowsFormsApplication1
             }
 
             // ---------------- Strommengen-Matrix (W3) ----------------
+            // Q11 (E7b): keine Tarifzonen mehr — eine Jahreszeile je Projekt.
             Dictionary<int, StromMatrix> matrizen = provider.LadeStromMatrix(ids);
             if (matrizen.Count > 0)
             {
-                ws.Cell(r, 1).Value = BerichtTexte.T("Strommengen nach Tarifzonen [MWh]");
+                ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_TITEL + " [MWh]";
                 ws.Cell(r, 1).Style.Font.Bold = true;
                 ws.Range(r, 1, r, 5).Style.Fill.BackgroundColor = GRUPPE;
                 r++;
@@ -889,11 +891,12 @@ namespace WindowsFormsApplication1
                     StromMatrix m = matrizen[v.IdProjekt];
 
                     ws.Cell(r, 1).Value = (v.IstStamm ? "Stamm" : v.Anzeige) +
-                        " — " + BerichtTexte.T("Bezugsspitze") + " " + m.MaxBezugKW.ToString("N0", BerichtTexte.Kultur) + " kW";
+                        " — " + MyResource.Resource.WIRT_MATRIX_STUNDENLAST + " " +
+                        m.MaxBezugKW.ToString("N0", BerichtTexte.Kultur) + " kW";
                     ws.Cell(r, 1).Style.Font.Bold = true;
                     r++;
 
-                    ws.Cell(r, 1).Value = BerichtTexte.T("Zone");
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_ZEITRAUM;
                     // ETAPPE E7: „Bedarf ohne Anlage" — seit E5 gerechnet und
                     // persistiert, in beiden Matrixausgaben aber ungenutzt.
                     ws.Cell(r, 2).Value = MyResource.Resource.WIRT_MATRIX_BEDARF;
@@ -904,20 +907,15 @@ namespace WindowsFormsApplication1
                     ws.Range(r, 1, r, 6).Style.Font.Bold = true;
                     ws.Range(r, 1, r, 6).Style.Fill.BackgroundColor = KOPF;
                     r++;
-                    foreach (string zone in StromMatrix.Zonen)
+                    ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_JAHR;
+                    double[] werte = { m.BedarfGesamtMWh, m.BezugGesamtMWh, m.EinspeisungPvGesamtMWh,
+                                       m.KwkEigenGesamtMWh, m.KwkEinspeisungGesamtMWh };
+                    for (int i = 0; i < werte.Length; i++)
                     {
-                        StromMatrix.Zone z = m.Hole(zone);
-                        if (z == null) continue;
-                        ws.Cell(r, 1).Value = zone;
-                        double[] werte = { z.BedarfMWh, z.BezugMWh, z.EinspeisungPvMWh,
-                                           z.KwkEigenMWh, z.KwkEinspeisungMWh };
-                        for (int i = 0; i < werte.Length; i++)
-                        {
-                            ws.Cell(r, 2 + i).Value = werte[i];
-                            ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0.0";
-                        }
-                        r++;
+                        ws.Cell(r, 2 + i).Value = werte[i];
+                        ws.Cell(r, 2 + i).Style.NumberFormat.Format = "#,##0.0";
                     }
+                    r++;
                     r++;
                 }
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MATRIX_BEDARF_HINWEIS;

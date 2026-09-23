@@ -232,3 +232,49 @@ damit bei Z1 an.
   Auslieferungsvorlage um `--katalogpaket` ergänzen (Protokoll, offene Punkte).
 - **Nächster Auftrag:** Stufe Z1 (Bilanz deterministisch mit Weiche) nach Kapitel 7 des
   Umsetzungskonzepts; Voraussetzungen wie in Anhang A, Schemanummer für T2 erst in Z3.
+
+## 8 Nachtrag 23.09.2026 — Stufe Z1 umgesetzt
+
+Nach Abschnitt 7 wurde die Stufe Z1 noch am selben Tag auf dem Zweig `z1` ausgeführt (von
+`7062b849`, 40 Commits bis `1f68bac7`); der Übertrag setzt nach Sichtabnahme und Merge bei Z2 an.
+
+- **Ergebnis Gruppe 1 (Rechenweg):** S1 Mengengerüst mit Temperaturumrechnung und
+  Messwertgrenzen, S2 Zapfkalender, Kaltwassergang und Formvektor, S5 Zirkulationskanal,
+  `Bilanzreihe`, Fassade `ZapfprofilRechner` und Herkunftsprotokoll im Kern, ohne Datenbank und
+  Dienste; unabhängiger Referenzfall über 8760 h als Python-Skript mit Abweichung 0; Nachtrag N7.
+- **Ergebnis Gruppe 2 (Weiche, Schreibweg, Projekttransfer):** Weiche in `SimulationWaermebedarf`
+  exklusiv für Weg `GENERATOR` mit getrennten Monatssummen; Vorschau mit Arbeitsstand;
+  `ZapfprofilCtrl` Eingang, Rechnen und Speichern in einem `DbVorgang`; Inhaltsvergleich im
+  Projektimport (ZU17); Testkatalog um die fünfzehn Parameter des Rechenwegs in der Testdatenbank
+  (LFS); `ZapfprofilWeicheTests`; Nachtrag N8.
+- **Ergebnis Gruppe 3 (Oberfläche):** Vorschaubilder über den Kern-Renderer (ChartProben mit elf
+  neuen Bildern), DTO und Textbündel, Hülle `ZapfprofilHuelle` mit Naht `Zapfprofilwege`,
+  Ressourcen beider Sprachen, `ZapfprofilDialog.razor` Stufe Einfach mit Vorschau-Reitern,
+  Einbindung in den Bedarfsprofil-Dialog (Knopf, Optionsgruppe, Leiste mit Arbeitsstand, Schreiben
+  im OK), Hüllen der Windows-Schale, bunit-Tests, Wiki-Entwurf „Programm Dokumentation -
+  Brauchwasser-Zapfprofil"; Nachtrag N9.
+- **Statuszeile und Protokoll:** #443, Protokoll
+  [`2026-09-23_Z1_Bilanz_deterministisch.md`](../../ueberholt/Protokolle/Zapfprofilgenerator/2026-09-23_Z1_Bilanz_deterministisch.md).
+- **Gate im Worktree:** Kern-Filter 0 Fehler; voller Testlauf mindestens 11 128 grün, 0 rot,
+  1 übersprungen; ChartProben 135 Bilder ohne Verstoß; Windows-Schale 0 Fehler; Referenzlauf der
+  fünf CI-Projekte gegen `2026-09-22_R11_Bestandsbefunde` byte-gleich (nach Gruppe 2).
+- **Gegenprüfungen:** je Gruppe eine, zusammen 38 Befunde (1 hoch zu den Betreffzeilen der
+  Commits, 11 mittel, 26 gering); alle wesentlichen behoben.
+- **Beim Anwender:** Sichtabnahme unter Windows mit der Prüfliste — Startseite → Kachel
+  Brauchwasser → Knopf „Zapfprofil erzeugen…"; Optionsgruppe „Rechenweg Brauchwasser" hin und
+  zurück; Überlagerung mit den Reitern Tagesgang, Wochenprofil, Jahresgang und Kennzahlen; OK des
+  Bedarfsprofil-Dialogs; Ergebnisdialog mit gestapelten Brauchwassersäulen (Zapfung und
+  Zirkulation). Dazu der Wiki-Upload (gebündelt mit den übrigen Seiten), die Versionsnummer für
+  den Logbuch-Satz aus 5.8 des Umsetzungskonzepts und die Frage aus N8 (e) 1, ob die Provenienz
+  im Inhaltsvergleich mitzählt (vor Z2).
+- **Merge:** Auf `ios_migration_september` stehen inzwischen die Schemaschritte 104 und 105, die
+  Testdatenbank auf 105 und die Referenzbasis R12 der Gebäudesimulation; beim Merge deren
+  Testdatenbank übernehmen und `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` erneut
+  einspielen, danach das Gate auf dem Merge-Stand.
+- **Regel aus dieser Stufe:** Laufende Workflow-Agenten nie anschreiben — Steuerung nur per
+  Auftrag oder Datei. Hintergrund ist der Zwischenfall im Protokoll: Eine Zweitinstanz eines
+  Workflow-Agenten überschrieb kurz eine Datei.
+- **Nächster Auftrag:** Stufe Z2 (Auslegung deterministisch) nach Kapitel 7 des
+  Umsetzungskonzepts. Vorbedingungen: Z1 zusammengeführt; die K1-Unterlagen (A100-Bedarfstage,
+  Tabellen der DIN 4708-2) als lokale Testdaten unter `Referenzlaeufe/Normzahlen/` erfasst (N6;
+  Skript und `QUELLE.txt`, keine Werte in Papieren).

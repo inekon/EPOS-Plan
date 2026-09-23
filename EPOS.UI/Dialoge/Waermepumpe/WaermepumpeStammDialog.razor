@@ -147,56 +147,61 @@
                     }
                 </KindInhalt>
             </Gruppenkopf>
+
+            @* DIE KENNLINIEN STEHEN IM EINGABEBLOCK (Konzept Administrationsdialoge,
+               Stufe 1, V1): Zwischen Rahmen und Fussleiste waren sie ein dritter
+               Bereich, dessen Reiterblatt in sich rollte (gemessen 41 px sichtbar
+               von 412 bei 1 088 x 624). Im Eingabeblock rollen sie mit den Feldern -
+               ein Bereich, kein Rollbalken im Rollbalken. *@
+            @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
+            <h2 class="epos-untergruppe">@LabelKennlinien</h2>
+
+            @if (_hatKuehlung)
+            {
+                <Optionsgruppe Eintraege="@(new[] { (0, OptionWaerme), (1, OptionKuehlung) })"
+                               Auswahl="@(_kuehlung ? 1 : 0)"
+                               AuswahlChanged="BetriebsartWaehlen" />
+            }
+
+            @* ZWEI BILDER, ZWEI KENNUNGEN (Etappe DG-E3, Gruppe (b)): Die Kennung bildet die
+               clipPath-Namen; zwei gleiche schnitten das eine Bild am Rechteck des anderen.
+               Es sind dieselben zwei Kennungen wie im WaermepumpeAnlageDialog - die beiden
+               Masken stehen nie auf demselben Blatt.
+
+               KEIN ZOOM UND KEINE EINHEIT VON AUSSEN. Die Kennlinien haben keine
+               Zeichenflaeche (Entscheid DG-E3-7): Der Baustein schaltet den Zoom von selbst
+               ab und zeigt statt einer Reihenzeile den Wert des Elements unter dem Zeiger
+               (DG-E3-10) - jede Punktmarke nennt Aussentemperatur, Vorlauf und Wert bereits
+               fertig formatiert.
+
+               DIE FARBWAHL AM BILD steht jeder Vorlaufkennlinie offen: Das Kennlinienmodell
+               gibt jeder Reihe eine Farbrolle, und der Wirt reicht den Schreibweg der Huelle
+               durch (Farbrollen, Bedienung Teil 2). Ohne FarbeSetzen bleibt das Farbfeld
+               stumm. *@
+            <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
+                <KindInhalt>
+                    <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
+                                         Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild"
+                                         FarbwahlErlaubt="@Farbwahl"
+                                         FarbeGewaehlt="FarbeUebernehmen"
+                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                    <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
+                        <KindInhalt>
+                            <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
+                                         Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild"
+                                         FarbwahlErlaubt="@Farbwahl"
+                                         FarbeGewaehlt="FarbeUebernehmen"
+                                         FarbeZurueckgesetzt="FarbeVerwerfen" />
+                        </KindInhalt>
+                    </Reiterblatt>
+                </KindInhalt>
+            </Reiter>
         </Eingabe>
     </Katalograhmen>
-
-    @* --- Die beiden Kennlinienbilder ---------------------------------------- *@
-    <h2 class="epos-untergruppe">@LabelKennlinien</h2>
-
-    @if (_hatKuehlung)
-    {
-        <Optionsgruppe Eintraege="@(new[] { (0, OptionWaerme), (1, OptionKuehlung) })"
-                       Auswahl="@(_kuehlung ? 1 : 0)"
-                       AuswahlChanged="BetriebsartWaehlen" />
-    }
-
-    @* ZWEI BILDER, ZWEI KENNUNGEN (Etappe DG-E3, Gruppe (b)): Die Kennung bildet die
-       clipPath-Namen; zwei gleiche schnitten das eine Bild am Rechteck des anderen.
-       Es sind dieselben zwei Kennungen wie im WaermepumpeAnlageDialog - die beiden
-       Masken stehen nie auf demselben Blatt.
-
-       KEIN ZOOM UND KEINE EINHEIT VON AUSSEN. Die Kennlinien haben keine
-       Zeichenflaeche (Entscheid DG-E3-7): Der Baustein schaltet den Zoom von selbst
-       ab und zeigt statt einer Reihenzeile den Wert des Elements unter dem Zeiger
-       (DG-E3-10) - jede Punktmarke nennt Aussentemperatur, Vorlauf und Wert bereits
-       fertig formatiert.
-
-       DIE FARBWAHL AM BILD steht jeder Vorlaufkennlinie offen: Das Kennlinienmodell
-       gibt jeder Reihe eine Farbrolle, und der Wirt reicht den Schreibweg der Huelle
-       durch (Farbrollen, Bedienung Teil 2). Ohne FarbeSetzen bleibt das Farbfeld
-       stumm. *@
-    <Reiter Bezeichnung="@LabelKennlinien" @bind-Aktiv="_blatt">
-        <KindInhalt>
-            <Reiterblatt Schluessel="COP" Titel="@ReiterCop">
-                <KindInhalt>
-                    <DiagrammSvg Modell="@_bilder.Cop" Kennung="wp-kennlinie-cop"
-                                 Bezeichnung="@ReiterCop" PlatzhalterText="@PlatzhalterBild"
-                                 FarbwahlErlaubt="@Farbwahl"
-                                 FarbeGewaehlt="FarbeUebernehmen"
-                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
-                </KindInhalt>
-            </Reiterblatt>
-            <Reiterblatt Schluessel="LEISTUNG" Titel="@ReiterLeistung">
-                <KindInhalt>
-                    <DiagrammSvg Modell="@_bilder.Leistung" Kennung="wp-kennlinie-leistung"
-                                 Bezeichnung="@ReiterLeistung" PlatzhalterText="@PlatzhalterBild"
-                                 FarbwahlErlaubt="@Farbwahl"
-                                 FarbeGewaehlt="FarbeUebernehmen"
-                                 FarbeZurueckgesetzt="FarbeVerwerfen" />
-                </KindInhalt>
-            </Reiterblatt>
-        </KindInhalt>
-    </Reiter>
 
     @* KATALOGMUSTER (DL-2 Nr. 4): "Speichern" und der Kennlinieneditor wirken auf
        den markierten Satz und stehen LINKS vom Fueller, "Neu" und "Loeschen" auf

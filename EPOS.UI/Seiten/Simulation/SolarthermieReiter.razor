@@ -79,6 +79,16 @@
                                Daten.DeckungBekannt ? Zahl(Daten.DeckungProzent) : "", "%")
                 </dl>
 
+                @* ERTRAG OHNE ABNEHMER: Ueberschuss, weil die Senken der Felder den
+                   Kanal nicht bedienen, in dem der Bedarf liegt. Der Satz kommt fertig
+                   aus dem Kern (SimulationErgebnisCtrl.SolarHinweisOhneAbnehmer) -
+                   Stufe Hinweis, kein Fehler: Gerechnet ist richtig, nur eben ohne
+                   Abnehmer. *@
+                @if (!string.IsNullOrEmpty(Daten.HinweisOhneAbnehmer))
+                {
+                    <Warnbanner Stufe="WarnStufe.Hinweis" Text="@Daten.HinweisOhneAbnehmer" />
+                }
+
             </section>
 
             @* Das Diagramm steht ueber BEIDE Spalten (Befund W11b-B-2). *@

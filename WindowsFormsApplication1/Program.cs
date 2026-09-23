@@ -273,9 +273,9 @@ namespace WindowsFormsApplication1
             // Gebaeudehuellen liegen in EPOS.UI.Daten; zwei ihrer Unterdialoge haben die
             // Datenhaelfte noch hier - die Brauchwasser-Profilliste und die
             // Gebaeudetypen-Verwaltung. Ohne diese Haken fehlen ihre Knoepfe (iOS).
-            Gebaeudewege.BrauchwasserGaben = (projektId, zeilen, geaendert) =>
+            Gebaeudewege.BrauchwasserGaben = (projektId, zeilen, geaendert, zapfprofil) =>
                 BedarfsProfileHuelle.Gaben(null, BedarfsArt.Brauchwasser, projektId,
-                                           zeilen, geaendert, wizard: false);
+                                           zeilen, geaendert, wizard: false, zapfprofil);
             Gebaeudewege.GebaeudetypGaben = () => GebaeudetypHuelle.Gaben();
 
             // ETAPPE E3, SCHRITTE 5 UND 6: Die Uebergangsnaht Wirtschaftlichkeitswege

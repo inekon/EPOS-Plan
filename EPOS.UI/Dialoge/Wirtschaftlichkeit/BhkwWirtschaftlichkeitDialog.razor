@@ -19,7 +19,8 @@
    - als Delegat, wie es KwkgSatzRechner selbst haelt (Leitentscheidung L9) -
    der Zugang zum Gesetzeskatalog. Geschrieben wird ueber die beiden Rueckrufe
    SpeichereAnlage und SpeichereVorgaben; die Huelle ruft damit
-   KwkgAnlagenCtrl.Speichere(g, true) (K7, elf Spalten) bzw.
+   KwkgAnlagenCtrl.Speichere(g, true) (K7, alle Spalten des Dialogs - seit E7c
+   samt Kennzeichen und Stromkennzahl der Ueberlagerung „Saetze und Herkunft") bzw.
    WirtschaftlichkeitCtrl.SpeichereParameter.
 
    ER FUEHRT EINEN ARBEITSSTAND, UND GESCHRIEBEN WIRD IM OK-WEG. Jede Eingabe
@@ -31,9 +32,9 @@
    bei einem zweiten OK nicht wiederholt. Abbrechen, das Kreuz der
    Ueberlagerung und Esc verlassen den Dialog OHNE einen einzigen
    Schreibzugriff - und ohne dass ein hereingereichtes Objekt sich veraendert
-   haette. Die beiden Sprungknoepfe nehmen denselben Weg wie OK: Sie schreiben
-   und schliessen, sonst waeren die Eingaben mit dem Sprung verloren - aber sie
-   schreiben NUR, wenn sich der Arbeitsstand seit dem Laden wertlich geaendert
+   haette. Der Sprungknopf "BHKW-Tarif..." nimmt denselben Weg wie OK: Er schreibt
+   und schliesst, sonst waeren die Eingaben mit dem Sprung verloren - aber er
+   schreibt NUR, wenn sich der Arbeitsstand seit dem Laden wertlich geaendert
    hat. Wer nur nachschlagen will, soll keinen Schreibzugriff ausloesen; ein
    Schreiben ohne Aenderung ueberschriebe in einer Mehrbenutzerlage fremde
    Aenderungen mit dem eigenen geladenen Stand. Scheitert das Schreiben, findet
@@ -224,6 +225,17 @@
                 {
                     <Herleitungszeile Text="@_t.AHilfsBasis" />
                 }
+
+                @* ETAPPE E7c (Befund K-1, Entscheid E7-Q2 (5)): der Fall des § 2 Nr. 16
+                   KWKG dieser Anlage als Zeile, und der Knopf in die Ueberlagerung
+                   „Saetze und Herkunft", die Kennzeichen und Stromkennzahl pflegt. Bewusst
+                   KEINE Vorschlagszeile (epos-vorschlag): Der Knopf uebernimmt keinen
+                   Vorschlag, er oeffnet die Ueberlagerung. *@
+                <p class="epos-herleitung epos-kwkstrom">
+                    <span class="epos-herleitung-text">@KwkStromZeile()</span>
+                    <button type="button" class="epos-knopf epos-ueb-oeffnen"
+                            @onclick="UebOeffnen">@_t.UebKnopf</button>
+                </p>
             }
         </KindInhalt>
     </Gruppenkopf>
@@ -347,12 +359,12 @@
 
             <Herleitungszeile Text="@_t.SModusHerleitung" />
 
-            <button type="button" class="epos-knopf epos-sprung"
-                    @onclick="SprungStrombezug">@_t.BtnStrombezug</button>
-
             @* Kein Funktionsverlust durch K8 = c: Der Knopf der Wirtschaftlichkeitsseite,
                der bis B5 die BHKW-Sicht der Tarifstruktur oeffnete, fuehrt jetzt hierher -
-               die Sicht selbst bleibt ueber diesen Sprung erreichbar. *@
+               die Sicht selbst bleibt ueber diesen Sprung erreichbar. Der zweite Sprung
+               "Strombezug..." ist mit Q11 entfallen: Den Zeitzonentarif gibt es nicht
+               mehr, und die Leistungspreis-Staffel pflegt der Stromtraeger in der
+               Kostenverwaltung. *@
             <button type="button" class="epos-knopf epos-sprung"
                     @onclick="SprungBhkwTarif">@_t.BtnBhkwTarif</button>
 
@@ -431,6 +443,70 @@
     <SpeichernLeiste @ref="_leiste" MitSpeichern="false" MitAbbrechen="true"
                      OkText="@_t.Speichern" AbbrechenText="@_t.Abbrechen"
                      Ergebnis="BeiErgebnis" />
+
+    @* ETAPPE E7c (Befund K-1, Entscheid E7-Q2 (5)) — die Ueberlagerung „Saetze und
+       Herkunft" (Mockup U22), gebaut so weit, wie die zwei Felder des zweiten Falls
+       des § 2 Nr. 16 KWKG es brauchen: die Wahl Fall 1 / Fall 2 (Kennzeichen
+       „Vorrichtung zur Abwaermeabfuhr") und die Stromkennzahl mit Vorschlag
+       (P_el ÷ P_th der Geraetezeile, gerechnet von KwkStromRechner im Kern), Herkunft,
+       eigenem Wert und „gilt". Sie fuehrt einen EIGENEN Zwischenstand: „Uebernehmen"
+       legt ihn auf den Arbeitsstand der gewaehlten Anlage (geschrieben wird erst im
+       OK-Weg des Dialogs), Abbrechen, das Kreuz und Esc aendern nichts. Die uebrigen
+       Groessen des Mockups (Anlagenart, Tatbestand, Saetze, Kontingent, Deckel,
+       Energie- und Stromsteuer, Wirkung Jahr 1) stehen weiter im Formular. *@
+    <Ueberlagerung Offen="@_uebOffen" Titel="@UebTitel" Geschlossen="UebAbbrechen">
+        <KindInhalt>
+            <div class="epos-ueb-saetze">
+                <Gruppenkopf Titel="@_t.UebGKwkg">
+                    <KindInhalt>
+                        <Optionsgruppe Bezeichnung="@_t.UebKwkStrom"
+                                       Eintraege="@FallEintraege()"
+                                       Auswahl="@(_uebAbwaerme ? 1 : 0)"
+                                       AuswahlChanged="UebFall"
+                                       Beschreibungen="@FallBeschreibungen()" />
+
+                        <div class="epos-raster-huelle">
+                            <table class="epos-raster epos-ueb-herkunft">
+                                <thead>
+                                    <tr>
+                                        <th>@_t.UebSpGroesse</th>
+                                        <th>@_t.UebSpVorschlag</th>
+                                        <th>@_t.UebSpHerkunft</th>
+                                        <th>@(_t.UebSpEigen + " (" + _t.UebLeerVorschlag + ")")</th>
+                                        <th>@_t.UebSpGilt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="epos-ueb-sigma">
+                                        <td>@_t.UebSigma</td>
+                                        <td class="epos-zahl">@SigmaVorschlagText()</td>
+                                        <td>@SigmaHerkunft()</td>
+                                        <td>
+                                            <Zahlenfeld Min="0" Max="5" Nachkommastellen="3"
+                                                        Wert="@_uebSigma" WertChanged="UebSigma" />
+                                            <button type="button" class="epos-knopf epos-ueb-vorschlag"
+                                                    title="@(SigmaVorschlagErlaubt ? null : _t.UebHerkunftSigmaOhne)"
+                                                    aria-disabled="@(SigmaVorschlagErlaubt ? "false" : "true")"
+                                                    @onclick="UebSigmaVorschlag">@_t.BtnVorschlagFeld</button>
+                                        </td>
+                                        <td>@SigmaGilt()</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <Herleitungszeile Text="@_t.UebInfo" />
+                    </KindInhalt>
+                </Gruppenkopf>
+
+                <div class="epos-leiste">
+                    <button type="button" class="epos-knopf" @onclick="UebAbbrechen">@_t.Abbrechen</button>
+                    <button type="button" class="epos-knopf epos-knopf--primaer"
+                            @onclick="UebUebernehmen">@_t.UebUebernehmen</button>
+                </div>
+            </div>
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -498,7 +574,8 @@
 
     /// <summary>
     /// Schreibt EINE Anlagenzeile (<c>KwkgAnlagenCtrl.Speichere(a, true)</c>, K7,
-    /// elf Spalten); <c>false</c> = fehlgeschlagen. <b>Nur im OK-Weg.</b>
+    /// alle Spalten des Dialogs samt Kennzeichen und Stromkennzahl aus E7c);
+    /// <c>false</c> = fehlgeschlagen. <b>Nur im OK-Weg.</b>
     ///
     /// <para><b>Warum je Zeile und nicht ein Rueckruf fuer alles.</b> Scheitert ein
     /// Schritt, bleibt der Dialog offen — und ein zweites OK darf das bereits
@@ -973,6 +1050,133 @@
         return zeilen;
     }
 
+    // =====================================================================
+    // ETAPPE E7c — die Überlagerung „Sätze und Herkunft" (Befund K‑1, U22)
+    //
+    // Gerechnet wird NICHTS: Vorschlag und geltende Kennzahl kommen aus
+    // KwkStromRechner, derselben reinen Funktion, die der Rechenkern in
+    // ReiheJeAnlage ruft (BW8, Leitentscheidung L9). Die Überlagerung führt einen
+    // eigenen Zwischenstand; „Übernehmen" legt ihn auf den Arbeitsstand der gewählten
+    // Anlage — geschrieben wird wie jede andere Eingabe erst im OK-Weg.
+    // =====================================================================
+
+    private bool _uebOffen;
+    private bool _uebAbwaerme;
+    private double? _uebSigma;
+
+    /// <summary>Steht die Überlagerung „Sätze und Herkunft"? (Prüfhilfe für Tests)</summary>
+    public bool UeberlagerungOffen => _uebOffen;
+
+    private string UebTitel => string.Format(_t.UebTitel, Aktuelle?.Bezeichner ?? "");
+
+    /// <summary>Öffnet die Überlagerung mit dem Arbeitsstand der gewählten Anlage.</summary>
+    private void UebOeffnen()
+    {
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (st is null) return;
+        _uebAbwaerme = st.Abwaermeabfuhr;
+        _uebSigma = st.Stromkennzahl;
+        _uebOffen = true;
+        _meldung = "";
+    }
+
+    /// <summary>Abbrechen, Kreuz und Esc: nichts übernehmen.</summary>
+    private void UebAbbrechen() => _uebOffen = false;
+
+    /// <summary>
+    /// „Übernehmen": Kennzeichen und eigene Kennzahl gehen in den Arbeitsstand — und
+    /// nur, wenn sich etwas geändert hat, zählt es als Änderung (derselbe Grund wie bei
+    /// <see cref="BhkwAnlagenstand.Gleicht"/>). Eine Kennzahl ≤ 0 ist „kein eigener
+    /// Wert".
+    /// </summary>
+    private void UebUebernehmen()
+    {
+        BhkwAnlagenstand? st = AktuellerStand;
+        if (st is not null)
+        {
+            bool kennzeichen = _uebAbwaerme;
+            double? sigma = Positiv(_uebSigma);
+            if (st.Abwaermeabfuhr != kennzeichen || st.Stromkennzahl != sigma)
+                Setze(() => { st.Abwaermeabfuhr = kennzeichen; st.Stromkennzahl = sigma; });
+        }
+        _uebOffen = false;
+    }
+
+    private void UebFall(int? n) => _uebAbwaerme = n == 1;
+
+    private void UebSigma(double? w) => _uebSigma = w;
+
+    /// <summary>„Vorschlag übernehmen" leert das Feld — der Weg zurück zum Vorschlag.
+    /// Ohne Vorschlag (Gerätezeile ohne P_el oder P_th) ist der Knopf weich gesperrt.</summary>
+    private void UebSigmaVorschlag()
+    {
+        if (SigmaVorschlagErlaubt) _uebSigma = null;
+    }
+
+    private IReadOnlyList<(int Id, string Text)> FallEintraege()
+        => new List<(int, string)> { (0, _t.UebFall1), (1, _t.UebFall2) };
+
+    /// <summary>Die Wirkung je Fall: bei Fall 1 die Nettostromerzeugung des gebuchten
+    /// Laufs (aus dem Modulnachweis), bei Fall 2 die Formel.</summary>
+    private IReadOnlyDictionary<int, string> FallBeschreibungen()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        KwkgModulNachweis? n = a is null ? null : ModulNachweis(a);
+        string fall1 = n is null
+            ? _t.UebFall1OhneLauf
+            : string.Format(_t.UebFall1Menge, n.StromNettoMWh.ToString("N1", BhwTexte.Kultur));
+        return new Dictionary<int, string> { [0] = fall1, [1] = _t.UebFall2Formel };
+    }
+
+    /// <summary>Gibt die Gerätezeile einen Vorschlag P_el ÷ P_th her?</summary>
+    private bool SigmaVorschlagErlaubt =>
+        Aktuelle is not null && KwkStromRechner.Vorschlag(Aktuelle.PelKW, Aktuelle.PthKW).HasValue;
+
+    private string SigmaVorschlagText()
+    {
+        double? v = Aktuelle is null ? null : KwkStromRechner.Vorschlag(Aktuelle.PelKW, Aktuelle.PthKW);
+        return v.HasValue ? v.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, BhwTexte.Kultur) : "—";
+    }
+
+    private string SigmaHerkunft()
+    {
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (a is null || !SigmaVorschlagErlaubt) return _t.UebHerkunftSigmaOhne;
+        var k = BhwTexte.Kultur;
+        return string.Format(_t.UebHerkunftSigma, a.PelKW.ToString("N1", k), a.PthKW!.Value.ToString("N1", k));
+    }
+
+    /// <summary>Spalte „gilt": die Kennzahl, mit der gerechnet würde — Vorschlag,
+    /// eigener Wert samt Vorschlag, oder keine (kein Ersatz, keine Vorgabe).</summary>
+    private string SigmaGilt()
+    {
+        if (!_uebAbwaerme) return _t.UebGiltFall1;
+        KwkgAnlagenAngabe? a = Aktuelle;
+        KwkStromkennzahl s = KwkStromRechner.Stromkennzahl(_uebSigma, a?.PelKW, a?.PthKW, BhwTexte.Kultur);
+        if (!s.Bestimmbar) return _t.UebGiltKeine;
+        var k = BhwTexte.Kultur;
+        string wert = s.Wert!.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k);
+        if (s.Herkunft == KwkStromRechner.HERKUNFT_BERECHNET) return string.Format(_t.UebGiltVorschlag, wert);
+        return s.VorschlagWert.HasValue
+            ? string.Format(_t.UebGiltEigen, wert, s.VorschlagWert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k))
+            : string.Format(_t.UebGiltEigenOhne, wert);
+    }
+
+    /// <summary>Die Zeile bei den Angaben der gewählten Anlage — aus dem
+    /// ARBEITSSTAND, damit sie nach „Übernehmen" sofort stimmt.</summary>
+    private string KwkStromZeile()
+    {
+        BhkwAnlagenstand? st = AktuellerStand;
+        KwkgAnlagenAngabe? a = Aktuelle;
+        if (st is null || a is null) return "";
+        if (!st.Abwaermeabfuhr) return _t.AKwkFall1;
+        KwkStromkennzahl s = KwkStromRechner.Stromkennzahl(st.Stromkennzahl, a.PelKW, a.PthKW, BhwTexte.Kultur);
+        return s.Bestimmbar
+            ? string.Format(_t.AKwkFall2, s.Wert!.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, BhwTexte.Kultur),
+                            s.Herleitung)
+            : string.Format(_t.AKwkFall2Ohne, s.Herleitung);
+    }
+
     private double Katalogwert(string schluessel, int jahr, double rueckfall)
     {
         try
@@ -1051,13 +1255,19 @@
         if (n is null) return new[] { _t.HOhneLauf };
 
         var k = BhwTexte.Kultur;
-        return new[]
+        var zeilen = new List<string>
         {
             string.Format(_t.HKette1, n.StromBruttoMWh.ToString("N3", k),
                           n.HilfsstromMWh.ToString("N3", k), n.StromNettoMWh.ToString("N3", k)),
             string.Format(_t.HKette2, n.EigenMWh.ToString("N3", k),
                           n.EinspeisungMWh.ToString("N3", k))
         };
+        // ETAPPE E7c (Befund K-1): Rechnete die Anlage den zweiten Fall des § 2 Nr. 16
+        // KWKG, steht seine Herleitung (σ, Nutzwärme, KWK-Strom, Kürzung) als dritte
+        // Zeile darunter — fertig aus dem Nachweis, nachgerechnet wird nichts. Eigen und
+        // Einspeisung darüber sind dann die gekürzten Mengen.
+        if (!string.IsNullOrEmpty(n.HerleitungKwkStrom)) zeilen.Add(n.HerleitungKwkStrom);
+        return zeilen;
     }
 
     /// <summary>
@@ -1192,7 +1402,7 @@
 
     /// <summary>
     /// Der EINZIGE Schreibweg des Dialogs. Die Reihenfolge ist Absicht: erst die
-    /// Anlagenzeilen in Listenreihenfolge (elf Spalten, K7), dann die
+    /// Anlagenzeilen in Listenreihenfolge (alle Spalten des Dialogs, K7 und E7c), dann die
     /// Projektvorgaben — so steht der Projektwert nie vor den Zeilen, die ihn
     /// ueberschreiben. Der Arbeitsstand wird dabei Zeile fuer Zeile auf das
     /// hereingereichte Objekt gelegt und dieses geschrieben.
@@ -1203,8 +1413,8 @@
     /// die uebrigen Schritte laufen trotz eines Fehlschlags weiter, damit die Zahl
     /// stimmt.</para>
     ///
-    /// <para><b><paramref name="nurBeiAenderung"/> — der Sprungweg (#289).</b> Die
-    /// zwei Sprungknoepfe schreiben nur, was sich seit dem Laden WERTLICH
+    /// <para><b><paramref name="nurBeiAenderung"/> — der Sprungweg (#289).</b> Der
+    /// Sprungknopf schreibt nur, was sich seit dem Laden WERTLICH
     /// geaendert hat: Wer nur nachschlagen will, soll keinen Schreibzugriff
     /// ausloesen, und ein Schreiben ohne Aenderung ueberschriebe in einer
     /// Mehrbenutzerlage fremde Aenderungen mit dem eigenen geladenen Stand.
@@ -1287,7 +1497,7 @@
     private Task BeiErgebnis(bool ok)
         => ok ? Schreiben(BhkwSprung.Keiner, nurBeiAenderung: true) : Verwerfen();
 
-    // Die zwei Sprungknoepfe nehmen den OK-Weg: Sie schreiben und schliessen. Der
+    // Der Sprungknopf nimmt den OK-Weg: Er schreibt und schliesst. Der
     // Wirt oeffnet danach das Ziel und bringt den Dialog zurueck - ohne das
     // Schreiben waeren die Eingaben mit dem Sprung verloren, und der Satz unter den
     // Knoepfen (BHW_S_SPRUNG_HINWEIS) sagt es.
@@ -1299,8 +1509,6 @@
     // Aenderungen mit dem eigenen geladenen Stand. Ohne Unterschied springt der
     // Knopf also ohne einen einzigen Schreibaufruf.
     private Task SprungBhkwTarif() => Schreiben(BhkwSprung.BhkwTarif, nurBeiAenderung: true);
-
-    private Task SprungStrombezug() => Schreiben(BhkwSprung.Strombezug, nurBeiAenderung: true);
 
     /// <summary>
     /// Wuerde ein Sprung jetzt etwas schreiben? Das ist der Fall, sobald eine

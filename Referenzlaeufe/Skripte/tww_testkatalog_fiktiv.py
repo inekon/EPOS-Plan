@@ -13,6 +13,10 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
   - ein Tagesgangsatz mit den vier Tagtypen (je 24 Stundenanteile, Summe 1);
   - drei Nutzungsarten, alle auf diesen Satz (Monatsfaktoren Mittel 1, Wochenfaktoren Summe 1);
   - drei Parameter mit neutralen Schluesseln "Test.*" (keine Normkonstante, kein Normname);
+  - die fuenfzehn Parameter des Bilanzrechenwegs (Schluessel wie ZapfParameter in
+    EPOS.Kern/Allgemein/Zapfprofil/Zapfprofileingang.cs) mit runden, ERFUNDENEN Werten - kein
+    Wert faellt mit einer Normvorgabe zusammen; sie machen den Generatorweg auf einer
+    Projektkopie der Testdatenbank rechenbar (Stufe Z1, Gruppe 2);
   - ein Bedarfstag (Konstruktor) mit drei Ereignissen;
   - vier DIN-4708-Werte (zwei Belegungen, zwei Ausstattungsklassen) mit erfundenen Zahlen.
 
@@ -27,8 +31,9 @@ VORAUSSETZUNG. Schemastand 103 (die zehn Tww-Tabellen), nachgezogen mit
 WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die
 Ereignisse des Bedarfstags nur zusammen mit ihrem neu angelegten Kopf. Eine vorhandene
 Nutzungsart dieses Katalogs, deren Bezugstemperaturen von BEZUG_ZAPF/BEZUG_KALT abweichen, wird
-auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank. Ein
-zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
+auf diese nachgefuehrt - so erreicht ein geaenderter erfundener Wert die Testdatenbank; ebenso
+ein vorhandener Parameter mit anderem Wert oder anderer Einheit und ein vorhandener DIN-4708-Wert
+mit anderem Wert. Ein zweiter Lauf aendert nichts und meldet das. Steht in einer Tww-Katalogtabelle schon eine Zeile, die NICHT zu
 diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
@@ -81,6 +86,27 @@ PARAMETER = [
     ("Test.Faktor", 2.0, "-"),
     ("Test.Grenze", 100.0, "l"),
     ("Test.Dauer", 10.0, "min"),
+]
+
+# Die fuenfzehn Schluessel des Bilanzrechenwegs (ZapfParameter) - Werte rund und ERFUNDEN,
+# bewusst neben jeder Normvorgabe gewaehlt (Kapitel 6 (a)): kein Kaltwassermittel der Norm, keine
+# Laufzeit oder Kennwerte eines Regelwerks, keine Koeffizienten eines Verfahrens.
+PARAMETER += [
+    ("Kaltwasser.Bilanz.Mittel", 11.0, "°C"),
+    ("Kaltwasser.Bilanz.Amplitude", 3.0, "K"),
+    ("Kaltwasser.Bilanz.MonatMaximum", 9.0, "Monat"),
+    ("DIN18599.Wohnen.a", 20.0, "kWh/(m²·a)"),
+    ("DIN18599.Wohnen.b", 0.1, "kWh/(m⁴·a)"),
+    ("DIN18599.Wohnen.c", 5.0, "kWh/(m²·a)"),
+    ("Wohnen.FlaecheJeWe", 80.0, "m²"),
+    ("Zirkulation.Anteil", 0.2, "-"),
+    ("Zirkulation.Laufzeit", 20.0, "h"),
+    ("Zirkulation.Lage", 1.0, "-"),
+    ("Zirkulation.Kennwert.Lage1", 5.0, "kWh/(m²·a)"),
+    ("Zirkulation.Kennwert.Lage2", 10.0, "kWh/(m²·a)"),
+    ("Zirkulation.VerlustJeMeter", 8.0, "W/m"),
+    ("Zapfprofil.Messwert.Rueckfrageschwelle", 0.5, "-"),
+    ("Zapfprofil.Formvektor.Warnschwelle", 0.01, "-"),
 ]
 
 BEDARFSTAG = "Testbedarfstag (fiktiv)"
@@ -223,6 +249,12 @@ def main():
             for (schluessel, wert, einheit) in PARAMETER:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwParameter_STAMM" WHERE "Schluessel" = ? '
                              'AND "Katalogversion" = ?', schluessel, VERSION) > 0:
+                    # Vorhanden: Wert und Einheit nachfuehren, wenn sie abweichen.
+                    cur = con.execute('UPDATE "Tab_TwwParameter_STAMM" SET "Wert" = ?, "Einheit" = ? '
+                                      'WHERE "Schluessel" = ? AND "Katalogversion" = ? '
+                                      'AND ("Wert" <> ? OR "Einheit" IS NOT ?)',
+                                      (wert, einheit, schluessel, VERSION, wert, einheit))
+                    nachgefuehrt += cur.rowcount
                     continue
                 con.execute('INSERT INTO "Tab_TwwParameter_STAMM" ("Schluessel", "Wert", "Einheit", "Katalogversion", '
                             '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '
@@ -250,6 +282,11 @@ def main():
             for (art, schluessel, wert) in DIN4708_WERTE:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwDin4708Wert_STAMM" WHERE "Art" = ? AND "Schluessel" = ? '
                              'AND "Katalogversion" = ?', art, schluessel, VERSION) > 0:
+                    # Vorhanden: den Wert nachfuehren, wenn er abweicht.
+                    cur = con.execute('UPDATE "Tab_TwwDin4708Wert_STAMM" SET "Wert" = ? WHERE "Art" = ? '
+                                      'AND "Schluessel" = ? AND "Katalogversion" = ? AND "Wert" <> ?',
+                                      (wert, art, schluessel, VERSION, wert))
+                    nachgefuehrt += cur.rowcount
                     continue
                 con.execute('INSERT INTO "Tab_TwwDin4708Wert_STAMM" ("Art", "Schluessel", "Wert", "Katalogversion", '
                             '"Quelle", "Ausgabe", "Version", "Herkunftsart", "Status", "Beleg", "ReadOnly") '

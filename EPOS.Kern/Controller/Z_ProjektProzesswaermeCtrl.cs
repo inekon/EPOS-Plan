@@ -30,7 +30,12 @@ namespace WindowsFormsApplication1
                     new DbParam("@idProj", IDProjekt)
                 };
 
-                return DataRepository.ExecuteSQL(sql, ps);
+                bool ok = DataRepository.ExecuteSQL(sql, ps);
+
+                // AENDERUNGSDATUM: Die Jahressumme ist Bedarf - ein Lauf von vorher ist
+                // danach überholt (Muster WizardCtrl.Add_/Del_).
+                if (ok) MerkmalUebernahmeCtrl.MarkiereProjektGeaendert(IDProjekt);
+                return ok;
             }
             catch (Exception ex)
             {

@@ -1249,6 +1249,10 @@ namespace ChartProben
             // Mass-, Gegen- und SVG-Proben in Program.Spanne.cs.
             SpannenProben(ziel);
 
+            // ZAPFPROFILGENERATOR Z1 - die Vorschaubilder Tagesgang, Wochenprofil und Jahresgang:
+            // Mass-, Gegen- und SVG-Proben in Program.Zapfprofil.cs.
+            ZapfprofilProben(ziel);
+
             // AUFTRAG DF-1 - die Gegenprobe zur einstellbaren Palette.
             //
             // Masse, Farben und Determinismus stimmen auch dann, wenn Farbpalette.Aktuell

@@ -75,6 +75,12 @@ namespace WindowsFormsApplication1
     ///     Leitspeicher eines Parallelverbunds (Paket P1).</description></item>
     ///   <item><term>HART_*</term><description>Kurzschluss (Quelle = eigenes Ladeziel),
     ///     Ring in der Kaskadenkette, leeres Klassen-Set.</description></item>
+    ///   <item><term>SOLAR_DIREKT_OHNE_PUFFER</term><description>Solarthermie mit
+    ///     Direktsenke Prozesswärme und ohne Puffersenke — sie deckt nur zeitgleich. Das
+    ///     Heizkreis-Gegenstück ist vorbereitet, aber abgeschaltet.</description></item>
+    ///   <item><term>KANAL_OHNE_VERSORGER</term><description>Projektweit: ein Kanal mit
+    ///     Bedarf, den keine Senke bedient (<see cref="KanaeleOhneVersorger"/>, eigener
+    ///     Aufruf mit dem Kanalbedarf des Laufs).</description></item>
     /// </list></para>
     ///
     /// <para><b>PAKET P1 — die drei bis dahin vertagten Anteile sind scharf.</b> W4, W6
@@ -221,6 +227,53 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string QUELLE_UNBEGRENZT = "QUELLE_UNBEGRENZT";
 
+        /// <summary>
+        /// SOLARTHERMIE MIT DIREKTSENKE PROZESSWÄRME, ABER OHNE PUFFERSENKE. WEICH.
+        ///
+        /// <para>Die Solarthermie deckt den Prozesskanal dann nur ZEITGLEICH: Was ein
+        /// Feld in einer Stunde über dem Momentanbedarf des Kanals erzeugt, findet keinen
+        /// Speicher und wird als Überschuss verworfen
+        /// (<c>SimulationSolarthermie.Stunde_Ende</c>). Die Konstellation bleibt
+        /// erlaubt — gerechnet wird sie unverändert —, der Katalog sagt nur, was sie
+        /// kostet, und nennt den Ausweg (Pufferspeicher mit Nutzung Prozess).</para>
+        ///
+        /// <para>Jede Puffersenke mit gewähltem Speicher hebt den Befund auf, gleich
+        /// welchen Zweck sie lädt: Dann gibt es einen Ort für den Überschuss. Ein
+        /// Puffer-Ziel OHNE Speicher zählt nicht — es fällt beim Lesen auf den
+        /// Heizkreis zurück (<c>WaermesenkeClass.AusZuordnungstabelle</c>).</para>
+        /// </summary>
+        public const string SOLAR_DIREKT_OHNE_PUFFER = "SOLAR_DIREKT_OHNE_PUFFER";
+
+        /// <summary>
+        /// Dieselbe Frage für den HEIZKREIS: Solarthermie mit Direktsenke Heizkreis und
+        /// ohne Puffersenke. VORBEREITET, NICHT AKTIV — ob der häufige Fall „Solarthermie
+        /// direkt auf den Heizkreis" gewarnt werden soll, ist nicht entschieden. Schalter:
+        /// <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV"/>.
+        /// </summary>
+        public const string SOLAR_HEIZKREIS_OHNE_PUFFER = "SOLAR_HEIZKREIS_OHNE_PUFFER";
+
+        /// <summary>
+        /// Schalter für <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER"/>: <c>false</c> = das
+        /// Kriterium schweigt. <c>static readonly</c> statt <c>const</c>, damit der
+        /// abgeschaltete Zweig kein unerreichbarer Code ist.
+        /// </summary>
+        public static readonly bool SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV = false;
+
+        /// <summary>
+        /// PROJEKTWEIT: Ein Bedarfskanal mit Bedarf hat keinen Versorger — keine Anlage
+        /// trägt eine Senke (ausdrücklich oder per Vorbelegung Heizkreis/Beides), die den
+        /// Kanal bedient. Der Bedarf geht dann in den Restbedarf, und keine Stufe deckt
+        /// ihn. WEICH, nur Meldung (<see cref="KanaeleOhneVersorger"/>).
+        /// </summary>
+        public const string KANAL_OHNE_VERSORGER = "KANAL_OHNE_VERSORGER";
+
+        /// <summary>
+        /// Untergrenze [MWh/a], ab der ein Kanal als „mit Bedarf" gilt. Darunter liegt
+        /// nur Rundungsrauschen der Netzverlustverteilung; gemeldet würde sonst
+        /// „0,0 MWh/a".
+        /// </summary>
+        public const double KANAL_BEDARF_SCHWELLE_MWH = 0.05;
+
         /// <summary>HART: derselbe Speicher ist Quelle UND Ladeziel derselben Anlage.</summary>
         public const string HART_KURZSCHLUSS = "HART_KURZSCHLUSS";
 
@@ -291,6 +344,8 @@ namespace WindowsFormsApplication1
 
                 QuelleOhneLaderPruefen(bild, idAnlage, befunde);
                 KesselTemperaturpaarPruefen(bild, idAnlage, befunde);
+                SolarOhnePufferPruefen(bild, idAnlage, kette, SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV,
+                                       befunde);
             }
 
             foreach (int idPuffer in bild.BeteiligtePuffer)
@@ -339,6 +394,19 @@ namespace WindowsFormsApplication1
         public static List<Warnbefund> PruefeSenken(int idProjekt, int idAnlage,
                                                     IList<Z_AnlageSenkeModel> senken)
         {
+            return PruefeSenken(idProjekt, idAnlage, senken, SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV);
+        }
+
+        /// <summary>
+        /// <see cref="PruefeSenken(int, int, IList{Z_AnlageSenkeModel})"/> mit
+        /// ausdrücklichem Schalter für das VORBEREITETE Kriterium
+        /// <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER"/> — der Prüfweg, über den ein Test
+        /// zeigt, dass das Kriterium greift, sobald es eingeschaltet wird.
+        /// </summary>
+        internal static List<Warnbefund> PruefeSenken(int idProjekt, int idAnlage,
+                                                      IList<Z_AnlageSenkeModel> senken,
+                                                      bool heizkreisOhnePufferAktiv)
+        {
             List<Warnbefund> befunde = new List<Warnbefund>();
             if (senken == null || senken.Count == 0) return befunde;
 
@@ -348,7 +416,129 @@ namespace WindowsFormsApplication1
             for (int i = 0; i < senken.Count; i++)
                 ZeilePruefen(bild, idAnlage, senken[i], i + 1, befunde);
 
+            // Die Listenpruefung: Sie haengt an der GANZEN Senkenliste der Anlage
+            // (Direktsenke da, Puffersenke nicht), nicht an einer Zeile.
+            SolarOhnePufferPruefen(bild, idAnlage, senken, heizkreisOhnePufferAktiv, befunde);
+
             return befunde;
+        }
+
+        /// <summary>
+        /// BEDARFSKANAL OHNE VERSORGER (<see cref="KANAL_OHNE_VERSORGER"/>) — je Kanal mit
+        /// Bedarf die Frage, ob IRGENDEINE Wärmeerzeugeranlage des Projekts eine Senke
+        /// trägt, die ihn bedient; nie <c>null</c>, leer = jeder Kanal mit Bedarf hat
+        /// einen Versorger.
+        ///
+        /// <para><b>Welche Senken zählen.</b> Die Senkenlisten des Projektbilds — also
+        /// die Zeilen aus <c>Z_AnlageSenke</c> und für eine Anlage ohne Zeile die
+        /// Vorbelegung Heizkreis/Beides, genau das, was auch die Engine rechnet. Eine
+        /// Direktsenke bedient die Kanäle ihrer Kanalmaske
+        /// (<c>Kaskadenschleife.SenkenMaske</c>), eine Puffersenke die Kanäle, die ihr
+        /// Speicher laut Klassen-Set entlädt (<see cref="SenkeBedientKanal"/>).</para>
+        ///
+        /// <para><b>Der Bedarf kommt vom Aufrufer</b> (<paramref name="bedarfJeKanalMwh"/>,
+        /// Jahressumme je Kanal wie <c>SimulationRunner.BedarfJeKanal</c>): Der Lauf hat
+        /// ihn schon gerechnet, und ein zweites Rechnen hier wäre teuer und eine zweite
+        /// Wahrheit. Ein Kanal unter <see cref="KANAL_BEDARF_SCHWELLE_MWH"/> gilt als
+        /// ohne Bedarf.</para>
+        ///
+        /// <para>Die Prüfung MELDET, sie ändert nichts — die Vorbelegung bleibt, wie sie
+        /// ist, und der Rechenweg sieht diese Methode nie.</para>
+        /// </summary>
+        public static List<Warnbefund> KanaeleOhneVersorger(int idProjekt, double[] bedarfJeKanalMwh)
+        {
+            List<Warnbefund> befunde = new List<Warnbefund>();
+            if (idProjekt <= 0 || bedarfJeKanalMwh == null) return befunde;
+
+            Projektbild bild = null;
+
+            for (int kanal = 0; kanal < Kanal.ANZAHL && kanal < bedarfJeKanalMwh.Length; kanal++)
+            {
+                double mwh = bedarfJeKanalMwh[kanal];
+                if (double.IsNaN(mwh) || mwh < KANAL_BEDARF_SCHWELLE_MWH) continue;
+
+                // TRAEGE: Ein Projekt, dessen Kanaele alle ohne Bedarf sind, liest nichts.
+                if (bild == null) bild = Projektbild.Lesen(idProjekt);
+                if (bild == null) return befunde;
+
+                if (KanalVersorgt(bild, kanal)) continue;
+
+                befunde.Add(Befund(KANAL_OHNE_VERSORGER, false, 0, 0,
+                    KanalOhneVersorgerText(kanal, mwh)));
+            }
+
+            return befunde;
+        }
+
+        /// <summary>
+        /// Der Meldungstext „Kanal … hat keinen Versorger" — EINE Fassung für Laufprotokoll,
+        /// Ergebnisübersicht und Hydraulikübersicht. <paramref name="mwh"/> = <c>null</c>:
+        /// Der Bedarf ist bekannt, seine Menge nicht (Hydraulikübersicht ohne
+        /// gerechneten Bedarf) — dann ohne Zahl.
+        /// </summary>
+        public static string KanalOhneVersorgerText(int kanal, double? mwh)
+        {
+            return mwh.HasValue
+                ? string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.SIMWARN_KANAL_OHNE_VERSORGER,
+                                KanalAnzeige(kanal), mwh.Value.ToString("N1", CultureInfo.CurrentCulture))
+                : string.Format(CultureInfo.CurrentCulture,
+                                MyResource.Resource.SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE,
+                                KanalAnzeige(kanal));
+        }
+
+        /// <summary>
+        /// Bedient EINE Senkenzeile diesen Kanal? Dieselbe Regel wie die Engine:
+        /// <list type="bullet">
+        ///   <item><description>Puffer-Ziel MIT Speicher: die Kanäle, die der Speicher
+        ///     entlädt (Klassen-Set <paramref name="pufferSet"/>); ist das Set nicht
+        ///     bekannt, die Kanäle des Ladezwecks (<see cref="ZielKanaele"/>).</description></item>
+        ///   <item><description>Direktsenke — und ein Puffer-Ziel OHNE Speicher, das beim
+        ///     Lesen auf den Heizkreis zurückfällt: die Kanalmaske
+        ///     (<c>Kaskadenschleife.SenkenMaske</c>): Prozesswärme {P}, Heizkreis je
+        ///     Bedarfsart {H, B} / {H} / {B}.</description></item>
+        /// </list>
+        /// </summary>
+        internal static bool SenkeBedientKanal(Z_AnlageSenkeModel z, int kanal,
+                                               PufferSpCtrl.KlassenSet pufferSet)
+        {
+            if (z == null || kanal < 0 || kanal >= Kanal.ANZAHL) return false;
+
+            if (WaermesenkeClass.IstPufferZiel(z.Ziel) && z.ID_Puffer > 0)
+            {
+                if (pufferSet == null) return Enthaelt(ZielKanaele(z.Ziel), kanal);
+
+                switch (kanal)
+                {
+                    case Kanal.BRAUCHWASSER: return pufferSet.Brauchwasser;
+                    case Kanal.PROZESS: return pufferSet.Prozess;
+                    default: return pufferSet.Heizung;
+                }
+            }
+
+            Senkenzeile zeile = new Senkenzeile
+            {
+                Ziel = Senkenzuordnung.SenkeAusZiel(z.Ziel),
+                Bedarfsart = string.IsNullOrEmpty(z.Bedarfsart)
+                    ? WaermequelleClass.SENKE_BEIDES : z.Bedarfsart
+            };
+            if (zeile.IstPuffersenke) zeile.Ziel = Senke.Heizkreis;   // Puffer-Ziel ohne Speicher
+
+            bool[] maske = Kaskadenschleife.SenkenMaske(zeile);
+            return maske != null && maske[kanal];
+        }
+
+        /// <summary>Trägt irgendeine Anlage des Bildes eine Senke, die den Kanal bedient?</summary>
+        private static bool KanalVersorgt(Projektbild bild, int kanal)
+        {
+            foreach (int idAnlage in bild.AnlagenReihenfolge)
+                foreach (Z_AnlageSenkeModel z in bild.Senken(idAnlage))
+                {
+                    if (z == null) continue;
+                    Pufferdaten p = z.ID_Puffer > 0 ? bild.Puffer(z.ID_Puffer) : null;
+                    if (SenkeBedientKanal(z, kanal, p != null ? p.Set : null)) return true;
+                }
+            return false;
         }
 
         // =====================================================================
@@ -801,6 +991,56 @@ namespace WindowsFormsApplication1
             befunde.Add(Befund(KESSEL_TEMPERATURPAAR, false, idAnlage, idQuelle,
                 string.Format(MyResource.Resource.SIMWARN_KESSEL_TEMPERATURPAAR,
                               bild.Anlagenname(idAnlage), name)));
+        }
+
+        /// <summary>
+        /// SOLAR_DIREKT_OHNE_PUFFER (und, vorbereitet, SOLAR_HEIZKREIS_OHNE_PUFFER) —
+        /// eine Solarthermie-Anlage mit Direktsenke, aber ohne Puffersenke. Begründung
+        /// bei <see cref="SOLAR_DIREKT_OHNE_PUFFER"/>.
+        ///
+        /// <para>Geprüft wird die GANZE Senkenliste der Anlage: im Dialog die Zeilen,
+        /// wie sie gespeichert werden sollen, beim Laufstart die gelesene Kette samt
+        /// Vorbelegung. Ein Befund je Anlage und Kriterium, nicht je Zeile.</para>
+        /// </summary>
+        private static void SolarOhnePufferPruefen(Projektbild bild, int idAnlage,
+                                                   IList<Z_AnlageSenkeModel> senken,
+                                                   bool heizkreisAktiv,
+                                                   List<Warnbefund> befunde)
+        {
+            if (senken == null || senken.Count == 0) return;
+
+            Hydraulikbild.AnlagenEintrag a;
+            if (!bild.Bild.JeId.TryGetValue(idAnlage, out a) ||
+                a.ID_Type != ProjektPuffer.TYP_SOLARTHERMIE) return;
+
+            bool prozess = false, heizkreis = false;
+            foreach (Z_AnlageSenkeModel z in senken)
+            {
+                if (z == null) continue;
+
+                // Eine Puffersenke MIT Speicher nimmt den Ueberschuss auf - kein Befund.
+                if (WaermesenkeClass.IstPufferZiel(z.Ziel))
+                {
+                    if (z.ID_Puffer > 0) return;
+                    heizkreis = true;                     // faellt auf den Heizkreis zurueck
+                    continue;
+                }
+
+                if (string.Equals(z.Ziel, DbWerte.WS_ZIEL_PROZESS, StringComparison.Ordinal))
+                    prozess = true;
+                else
+                    heizkreis = true;
+            }
+
+            if (prozess)
+                befunde.Add(Befund(SOLAR_DIREKT_OHNE_PUFFER, false, idAnlage, 0,
+                    string.Format(MyResource.Resource.SIMWARN_SOLAR_DIREKT_OHNE_PUFFER,
+                                  bild.Anlagenname(idAnlage))));
+
+            if (heizkreis && heizkreisAktiv)
+                befunde.Add(Befund(SOLAR_HEIZKREIS_OHNE_PUFFER, false, idAnlage, 0,
+                    string.Format(MyResource.Resource.SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER,
+                                  bild.Anlagenname(idAnlage))));
         }
 
         /// <summary>

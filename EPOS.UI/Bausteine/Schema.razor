@@ -164,7 +164,7 @@
                         <rect class="epos-schema-warnflaeche" x="@(knoten.X + KNOTEN_RAND)"
                               y="@y" width="@(knoten.Breite - 2 * KNOTEN_RAND)" height="@ZEILE_HOEHE" />
                         <g><text class="epos-schema-warntext" x="@(knoten.X + KNOTEN_RAND + 2)"
-                              y="@(y + ZEILE_HOEHE / 2)" dominant-baseline="central">@WarnungText</text></g>
+                              y="@(y + ZEILE_HOEHE / 2)" dominant-baseline="central">@Warnzeile(knoten)</text></g>
                     }
                 </g>
             }
@@ -292,6 +292,12 @@
     /// <summary>SIM_SCHEMA_WARNUNG — die Warnzeile IM Kasten.</summary>
     [Parameter] public string WarnungText { get; set; } = "Vorlauf unter dem Puffer-Sollwert";
 
+    /// <summary>
+    /// SIM_SCHEMA_WARNUNG_OHNE_VERSORGER — die Warnzeile eines ABNEHMERS: Sein Kanal hat
+    /// Bedarf, aber keine Senke bedient ihn. Den ganzen Satz trägt der Kurzhinweis.
+    /// </summary>
+    [Parameter] public string AbnehmerWarnungText { get; set; } = "Kein Versorger";
+
     /// <summary>SIM_SCHEMA_KETTE_KOPF.</summary>
     [Parameter] public string KetteKopfText { get; set; } = "Kaskadenkette";
 
@@ -402,6 +408,13 @@
         if (e.Gestrichelt) s += " epos-schema-legendelinie--gestrichelt";
         return s;
     }
+
+    /// <summary>
+    /// Die Warnzeile im Kasten: am Abnehmer „ohne Versorger", sonst die
+    /// Temperaturwarnung der Erzeuger — die einzigen zwei Warnungen, die das Modell setzt.
+    /// </summary>
+    private string Warnzeile(SchemaKnoten n)
+        => n.Art == SchemaKnotenart.Abnehmer ? AbnehmerWarnungText : WarnungText;
 
     private string Knotenklasse(SchemaKnoten n)
     {

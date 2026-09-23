@@ -1175,20 +1175,72 @@ namespace Testdatenbankschema
                 if (!trocken) DataRepository.ExecuteNonQuery(i.Value);
             }
 
-            // ---- Schritt 104: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
+            // ---- Schritt 104: der Zeitzonentarif wird abgeloest (Entscheid Q11,
+            //      22.09.2026: "kein HT/NT"). DDL UND DML aus DENSELBEN Quellen, aus denen
+            //      sich SchemaMigration.Schritt_104_ZeitzonentarifAbloesung bedient: erst
+            //      die drei Spalten der Leistungspreis-Staffel an energy_project_settings
+            //      (SchemaKatalog.Schritt104_LeistungspreisStaffel), dann der Datenteil
+            //      (ZeitzonentarifAbloesung) - Staffel uebernehmen, Zonensaetze loeschen, mit
+            //      einem Zonentarif gerechnete Ergebnisse verwerfen (Entscheid E7b-Q4),
+            //      Zonenzeilen der Strommatrix je Projekt zu einer Jahreszeile.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Die Wirtschaftlichkeit steht nicht im Export,
+            //      und kein Referenzprojekt traegt einen Tarifsatz.
+            //
+            //      ER STEHT NACH 103 (Zapfprofilgenerator) ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 104, trocken);
+            Console.WriteLine("Schritt 104 - Tarifsaetze im Zonenmodell: " +
+                              ZeitzonentarifAbloesung.OffeneZonensaetze() + ", Zonenzeilen der Strommatrix: " +
+                              ZeitzonentarifAbloesung.OffeneZonenzeilen() + ".");
+            if (!trocken)
+            {
+                ZeitzonentarifAbloesung.Bericht bericht104 = ZeitzonentarifAbloesung.Ausfuehren();
+                Console.WriteLine("Schritt 104 - " + bericht104.Text() + ".");
+                Console.WriteLine("Schritt 104 - offen: " + ZeitzonentarifAbloesung.OffeneZonensaetze() +
+                                  " Zonensatz/-saetze, " + ZeitzonentarifAbloesung.OffeneZonenzeilen() +
+                                  " Zonenzeile(n) (erwartet 0 / 0).");
+            }
+            else
+            {
+                foreach (ZeitzonentarifAbloesung.Uebernahme u in ZeitzonentarifAbloesung.Uebernahmen())
+                    Console.WriteLine("Schritt 104 - " + u + ".");
+            }
+
+            // ---- Schritt 105: der zweite Fall des Paragraf 2 Nr. 16 KWKG (Befund K-1,
+            //      Entscheide EZ-5 und E7-Q2, 23.09.2026). REIN DDL aus DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_105_KwkgAbwaermeabfuhr bedient
+            //      (SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr): das Kennzeichen
+            //      KWKG_Abwaermeabfuhr (0/1, Vorgabe 0) und die nullbare Stromkennzahl an
+            //      Tab_Energieanlagen.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML, das Kennzeichen steht ueberall auf 0
+            //      (Fall 1), und die Wirtschaftlichkeit steht nicht im Export.
+            //
+            //      ER STEHT NACH 104 ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
+
+            // ---- Schritt 106: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
             //      Gebaeudesimulation N1.35). REIN DDL aus ErgebnisGebaeudeSchema - DERSELBEN
-            //      Quelle, aus der sich SchemaMigration.Schritt_104_ErgebnisGebaeude bedient;
+            //      Quelle, aus der sich SchemaMigration.Schritt_106_ErgebnisGebaeude bedient;
             //      erst die Tabelle, dann die zwei Indizes. ERGEBNISNEUTRAL: Die Tabelle
             //      entsteht leer, kein Rechenweg liest sie, der Referenzlauf exportiert sie nicht.
+            //
+            //      ER STEHT NACH 105 ohne Reihenfolgebedingung.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
             {
                 if (a.Key == ErgebnisGebaeudeSchema.TAB)
                 {
-                    tabellen += TabelleSicherstellen(a.Key, a.Value, 104, trocken);
+                    tabellen += TabelleSicherstellen(a.Key, a.Value, 106, trocken);
                     continue;
                 }
-                Console.WriteLine("Schritt 104 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                Console.WriteLine("Schritt 106 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
                 if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 
