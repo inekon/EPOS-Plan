@@ -196,6 +196,17 @@
                               Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
                               Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+                @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): die Zeile
+                   „Senken: …", FERTIG FORMULIERT von der Huelle (Kern:
+                   Senkenvorbelegung.Anzeigezeile) - die Zeilen einer gespeicherten
+                   Anlage, sonst was beim Speichern aus dem Bedarf entsteht. Leer (kein
+                   Waermeerzeuger, kein Projekt) = keine Zeile. Gepflegt werden die Senken
+                   in der Simulation (Senkendialog); die Zeile ist kein Feld und bekommt
+                   die volle Rasterbreite. *@
+                @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                {
+                    <Herleitungszeile Text="@_projektZeile.Senken" />
+                }
             }
             </KindInhalt>
         </Formularraster>

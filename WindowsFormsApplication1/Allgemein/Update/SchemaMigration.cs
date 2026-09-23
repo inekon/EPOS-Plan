@@ -3723,7 +3723,31 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_105_KWKG_ABWAERMEABFUHR = 105;
 
         /// <summary>
-        /// Schritt 106 — <b>die Ergebnistabelle je Gebäude</b> (Entscheid E30 vom
+        /// Schritt 106 — <b>fremde Ergebnisverweise der Wirtschaftlichkeit werden leer</b>
+        /// (Anwenderentscheid 23.09.2026: „Ergebnisverweise werden nicht mitkopiert; die
+        /// Kopie hat noch kein Ergebnis, die Wirtschaftlichkeit rechnet nach dem ersten Lauf
+        /// neu"). Er folgt auf <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Der Befund.</b> Das Duplizieren eines Projekts — und damit jede
+        /// Variante — kopierte <c>Tab_ErgebnisWirtschaftlichkeit</c> samt UNVERSETZTEM
+        /// <c>ID_Ergebnis</c>: Die Kopie zeigte auf den Simulationslauf des Quellprojekts.
+        /// Der Kopierlauf lässt den Verweis ab jetzt leer
+        /// (<c>ProjektDuplizierenCtrl.ERGEBNISVERWEISE_LEEREN</c>); dieser Schritt bereinigt
+        /// den Bestand.</para>
+        ///
+        /// <para><b>REIN DML</b>, eine Anweisung, die Quelle ist
+        /// <see cref="WirtschaftlichkeitFremdverweis"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>. Getroffen wird jeder gesetzte Verweis ohne Lauf DESSELBEN
+        /// Projekts; die Zeilen bleiben und gelten danach als „passt nicht zum
+        /// Simulationsstand". <b>Ergebnisneutral:</b> Kein Rechenweg liest den Verweis.
+        /// <b>Wiederholbar:</b> Ein zweiter Lauf findet nichts mehr.</para>
+        /// </summary>
+        public const int SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS = 106;
+
+        /// <summary>
+        /// Schritt 107 — <b>die Ergebnistabelle je Gebäude</b> (Entscheid E30 vom
         /// 23.09.2026, Konzept Gebäudesimulation N1.35).
         ///
         /// <para><b>Was der Schritt herstellt.</b> Die leere STRICT-Tabelle
@@ -3736,10 +3760,10 @@ namespace WindowsFormsApplication1
         /// <para><b>REIN DDL, ergebnisneutral.</b> Geschrieben wird die Tabelle erst vom
         /// nächsten Lauf (<c>ErgebnisCtrl.Save</c>); kein Rechenweg liest sie, und der
         /// Referenzlauf exportiert sie nicht. <b>Wiederholbar</b> über
-        /// <c>IF NOT EXISTS</c>. <b>Nach Schritt 105</b>, ohne Reihenfolgebedingung außer
+        /// <c>IF NOT EXISTS</c>. <b>Nach Schritt 106</b>, ohne Reihenfolgebedingung außer
         /// der, dass <c>Tab_Ergebnis</c> und <c>Tab_Gebaeude</c> bestehen.</para>
         /// </summary>
-        public const int SCHRITT_106_ERGEBNIS_GEBAEUDE = 106;
+        public const int SCHRITT_107_ERGEBNIS_GEBAEUDE = 107;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5189,15 +5213,31 @@ namespace WindowsFormsApplication1
                         "auf 0, und 0 heisst wie bisher Nettostromerzeugung.",
                         Schritt_105_KwkgAbwaermeabfuhr),
 
+            // ANWENDERENTSCHEID 23.09.2026 - fremde Ergebnisverweise der gespeicherten
+            // Wirtschaftlichkeit werden leer (Erbe des Duplizierens). REIN DML, kein
+            // DDL; die Quelle ist WirtschaftlichkeitFremdverweis. Er steht NACH 105 ohne
+            // Reihenfolgebedingung - er fasst allein einen Spaltenwert an.
+            new Schritt(SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS,
+                        "Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis: Verweise auf den Lauf " +
+                        "eines anderen Projekts werden NULL",
+                        "Eine gespeicherte Wirtschaftlichkeit nennt den Simulationslauf, auf " +
+                        "dem sie beruht. Kopien und Varianten eines Projekts trugen dort den " +
+                        "Lauf des Quellprojekts. Ab hier ist ein solcher Verweis leer: Die " +
+                        "Zeile bleibt stehen und gilt als 'passt nicht zum Simulationsstand' " +
+                        "- die Wirtschaftlichkeit rechnet nach dem naechsten Lauf des Projekts " +
+                        "neu. Ein Verweis auf den eigenen Lauf bleibt. ERGEBNISNEUTRAL: Kein " +
+                        "Rechenweg liest den Verweis.",
+                        Schritt_106_WirtschaftlichkeitFremdverweis),
+
             // ENTSCHEID E30 (23.09.2026, Konzept Gebaeudesimulation N1.35) - die
             // Ergebnistabelle je Gebaeude. REIN DDL; die Quelle ist
-            // ErgebnisGebaeudeSchema. Er steht NACH 105 ohne Reihenfolgebedingung.
-            new Schritt(SCHRITT_106_ERGEBNIS_GEBAEUDE,
+            // ErgebnisGebaeudeSchema. Er steht NACH 106 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_107_ERGEBNIS_GEBAEUDE,
                         "Tab_ErgebnisGebaeude anlegen (Kennzahlen je Gebaeude und Lauf)",
                         "Der Lauf schreibt die Kennzahlen je Gebaeude nicht, und der " +
                         "Bericht laesst den Abschnitt 'Gebaeude (Simulationsergebnis)' " +
                         "weg. Gerechnet wird unveraendert.",
-                        Schritt_106_ErgebnisGebaeude),
+                        Schritt_107_ErgebnisGebaeude),
         };
 
         /// <summary>
@@ -8014,17 +8054,66 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 106 - die Ergebnistabelle je Gebaeude (Entscheid E30, 23.09.2026)
+        // Schritt 106 - fremde Ergebnisverweise der Wirtschaftlichkeit (23.09.2026)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 106 — Anlass und Inhalt stehen bei
-        /// <see cref="SCHRITT_106_ERGEBNIS_GEBAEUDE"/>, die DDL bei
+        /// Schritt 106 — Anlass und Wortlaut des Entscheids stehen bei
+        /// <see cref="SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS"/> und bei
+        /// <see cref="WirtschaftlichkeitFremdverweis"/>.
+        ///
+        /// <para><b>Reines DML</b> über eine Spalte. Die betroffenen Zeilen werden VOR dem
+        /// Schreiben gelesen und mit Id, Projekt, Lauf und Szenario ins Protokoll
+        /// geschrieben — danach findet die Abfrage nichts mehr, und die Notiz soll sagen,
+        /// welche Zeilen der Schritt angefasst hat. Fehlt die Tabelle (erst der erste
+        /// Wirtschaftlichkeitslauf legt sie an), gibt es nichts zu tun.</para>
+        /// </summary>
+        private static bool Schritt_106_WirtschaftlichkeitFremdverweis(Lauf l)
+        {
+            List<string> betroffene = WirtschaftlichkeitFremdverweis.Betroffene();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in WirtschaftlichkeitFremdverweis.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("106: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            int rest = WirtschaftlichkeitFremdverweis.Offen();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) verweisen nach dem Schritt weiter auf den Lauf " +
+                                  "eines anderen Projekts.";
+                l.Notiz("106: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("106: " + betroffene.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Wirtschaftlichkeitszeile(n) mit fremdem Ergebnisverweis auf NULL gesetzt" +
+                    (betroffene.Count > 0 ? " - " + string.Join("; ", betroffene.ToArray()) : "") +
+                    ". Die Zeilen bleiben und gelten als 'passt nicht zum Simulationsstand'; " +
+                    "kein Rechenweg liest den Verweis - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 107 - die Ergebnistabelle je Gebaeude (Entscheid E30, 23.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 107 — Anlass und Inhalt stehen bei
+        /// <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/>, die DDL bei
         /// <see cref="ErgebnisGebaeudeSchema"/>. Dieselbe Schleife wie Schritt 103: erst die
         /// Tabelle, dann die Indizes; nur <see cref="SqliteDdl"/> und
         /// <see cref="SqliteTabelleVorhanden"/>.
         /// </summary>
-        private static bool Schritt_106_ErgebnisGebaeude(Lauf l)
+        private static bool Schritt_107_ErgebnisGebaeude(Lauf l)
         {
             bool vorher = SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB);
             foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
@@ -8033,11 +8122,11 @@ namespace WindowsFormsApplication1
             if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
             {
                 l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " steht nach dem Schritt nicht.";
-                l.Notiz("106: FEHLER - " + l.LetzterFehler);
+                l.Notiz("107: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("106: " + ErgebnisGebaeudeSchema.TAB + (vorher ? " stand bereits" : " angelegt") +
+            l.Notiz("107: " + ErgebnisGebaeudeSchema.TAB + (vorher ? " stand bereits" : " angelegt") +
                     ", zwei Indizes sichergestellt. KEIN DML: die Tabelle fuellt erst der naechste " +
                     "Lauf, kein Rechenweg liest sie. KEIN Rechenergebnis aendert sich; der " +
                     "Referenzlauf bleibt byte-gleich.");

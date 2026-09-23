@@ -349,19 +349,31 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Größe unverändert 67 727 360 Byte; der Referenzlauf der fünf CI-Projekte ist byte-gleich gegen diese Basis
 > (LFS-SHA-256 `a978270a…`).
 
-> **Nachtrag: Schemastand 106 (Entscheid E30, Gebäudesimulation), die Basis bleibt.** Migrationsschritt
-> **106** (`SCHRITT_106_ERGEBNIS_GEBAEUDE`, Quelle `ErgebnisGebaeudeSchema`; Konzept Gebäudesimulation N1.35)
+> **Nachtrag: Schemastand 106 (Auftrag #444, Kopierweg der Wirtschaftlichkeit), die Basis bleibt.** Migrationsschritt
+> **106** (`SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS`, Quelle
+> `EPOS.Kern/Allgemein/Update/WirtschaftlichkeitFremdverweis.cs`) setzt jeden Verweis
+> `Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis` auf NULL, zu dem kein Simulationslauf desselben Projekts gehört — das
+> Erbe des Duplizierens, das den Verweis bis dahin unversetzt kopierte. **Reines DML**, genau 21 Zellen: Zeilen 16,
+> 18, 20 (1028), 21, 23, 25 (1029), 189, 191, 193 (1040), 194, 196, 198 (1041) auf Lauf 167 von 1026 sowie 213–218
+> (1043) und 219–221 (1044) auf Lauf 206 von 1042. Die Zeilen bleiben stehen und gelten als „passt nicht zum
+> Simulationsstand". Größe und Schema bleiben, `integrity_check` ok, `foreign_key_check` leer, ein zweiter Lauf fasst
+> nichts an. **Keine Einfrierregel ist berührt.** Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema
+> -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der Datenbank des Gebäudemodell-Stands (Basis R12), LFS-SHA-256
+> `49284ce3…`.
+
+> **Nachtrag: Schemastand 107 (Entscheid E30, Gebäudesimulation), die Basis bleibt.** Migrationsschritt
+> **107** (`SCHRITT_107_ERGEBNIS_GEBAEUDE`, Quelle `ErgebnisGebaeudeSchema`; Konzept Gebäudesimulation N1.35)
 > legt die leere STRICT-Tabelle `Tab_ErgebnisGebaeude` samt zwei Indizes an, **reines DDL**; der Lauf schreibt
 > sie, der Referenzlauf exportiert sie nicht (die Kennzahlen stehen schon als Skalare `Geb[n].*`). Nachgezogen
 > mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
-> Fassung 105 samt Tww-Testkatalog, danach
+> Fassung 106, danach
 > [`Skripte/gebaeude_10612_233_bauweise.py`](Skripte/gebaeude_10612_233_bauweise.py) erneut eingespielt
-> (Datenwechsel oben). Zellvergleich aller Tabellen gegen die Fassung 105: `SchemaVersion` 105 → 106, die neue
+> (Datenwechsel oben). Zellvergleich aller Tabellen gegen die Fassung 106: `SchemaVersion` 106 → 107, die neue
 > leere Tabelle mit ihren zwei Indizes und die zwei `Bauweise`-Zellen (`Tab_Gebaeude` 10612,
 > `Tab_Gebaeude_STAMM` 233) — sonst nichts. `integrity_check` ok, `foreign_key_check` leer, Größe
 > 67 739 648 Byte. **Keine Einfrierregel mit Rechenwirkung ist berührt**, und der Referenzlauf aller dreizehn
 > Projekte ist **13/13 PASS** gegen diese Basis (4 250 839 Werte, 399/399 CSV byte-gleich, außer
-> `protokoll.txt`) (LFS-SHA-256 `948cc600…`).
+> `protokoll.txt`) (LFS-SHA-256 `36e693ad…`).
 
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt

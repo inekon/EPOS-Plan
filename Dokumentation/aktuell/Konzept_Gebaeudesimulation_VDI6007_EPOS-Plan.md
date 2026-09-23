@@ -24,7 +24,7 @@ rechnet die Sonnengeometrie auf den **Stundenanfang**, wie Photovoltaik und Sola
 Umstellung auf die Stundenmitte gibt es nur für alle drei gemeinsam. Die Folgeaufgabe aus E27 zu
 U6 ist damit erledigt.
 Nachgezogen am 23.09.2026 mit **E30** (N1.35): Die Gebäudekennzahlen aus Kapitel 9 schreibt der
-Lauf in die neue Ergebnistabelle `Tab_ErgebnisGebaeude` (Schemaschritt 106), der Bericht liest sie
+Lauf in die neue Ergebnistabelle `Tab_ErgebnisGebaeude` (Schemaschritt 107), der Bericht liest sie
 — Abschnitt „Gebäude" in der Projektbeschreibung und der Produktausweis nach E10 im Berichtskopf
 (A12); Kapitel 9 folgt.
 
@@ -3187,7 +3187,7 @@ schreibt ihn nicht ab" und verlängerte jeden Bericht um einen Gebäudelauf je S
 
 **Was damit gilt.**
 
-- **Schemaschritt 106** legt die STRICT-Tabelle `Tab_ErgebnisGebaeude` an (DDL an einer Stelle:
+- **Schemaschritt 107** legt die STRICT-Tabelle `Tab_ErgebnisGebaeude` an (DDL an einer Stelle:
   `ErgebnisGebaeudeSchema`; zwei Indizes auf den Verweisen). Je Lauf und Gebäude eine Zeile:
   `ID_Ergebnis` (Kopf, Löschweitergabe), `ID_Gebaeude` (`Tab_Gebaeude.ID`, Löschweitergabe),
   `Merkplatz` (der Index `n` von `Geb[n]`), `Gebaeudename`, `Rechenweg` (`VDI6007` oder
@@ -3206,7 +3206,7 @@ schreibt ihn nicht ab" und verlängerte jeden Bericht um einen Gebäudelauf je S
   Kühlenergie (informativ), Stunden mit Kühlbedarf, mittlere Raumtemperatur der Nutzungszeit und
   Überhitzungsstunden. Ein Gebäude des Tagesbilanz-Wegs trägt „Tagesbilanz (Bestandsweg)" und
   keine Kühlzeilen (E20, E21, E23). **Ohne Gebäudezeile entfällt der Abschnitt** — kein Gebäude,
-  kein Ergebnis oder eine Datenbank vor Schritt 106.
+  kein Ergebnis oder eine Datenbank vor Schritt 107.
 - **Der Produktausweis nach E10 steht im Berichtskopf** (A12, E27), sobald ein Stand des Berichts
   ein Gebäude auf dem VDI-Weg gerechnet hat — als Zeile „Gebäudemodell" des Deckblatts, im
   Wortlaut aus **einem** Ressourcenschlüssel (`GEB_PRODUKTAUSWEIS_VDI6007`, beide Sprachen).
@@ -3223,7 +3223,7 @@ schreibt ihn nicht ab" und verlängerte jeden Bericht um einen Gebäudelauf je S
 **Betroffene Stufen:** G2 (Bericht).
 
 **Nachgezogen:** Kopf dieses Papiers; Kapitel 9; [Statusdatei](Status_Gebaeudesimulation_VDI6007.md)
-Abschnitt 1 (E30) und Abschnitt 2 (G2); im Code Schemaschritt 106 (`SchemaMigration`,
-`Werkzeuge/Testdatenbankschema`, Testdatenbank auf Stand 106), `ErgebnisCtrl`,
+Abschnitt 1 (E30) und Abschnitt 2 (G2); im Code Schemaschritt 107 (`SchemaMigration`,
+`Werkzeuge/Testdatenbankschema`, Testdatenbank auf Stand 107), `ErgebnisCtrl`,
 `SimulationWaermebedarf`, `ProjektbeschreibungBaustein`, `DeckblattBaustein`; Tests
 `ErgebnisGebaeudeTests`.

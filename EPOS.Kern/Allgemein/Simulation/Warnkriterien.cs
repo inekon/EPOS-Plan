@@ -77,7 +77,8 @@ namespace WindowsFormsApplication1
     ///     Ring in der Kaskadenkette, leeres Klassen-Set.</description></item>
     ///   <item><term>SOLAR_DIREKT_OHNE_PUFFER</term><description>Solarthermie mit
     ///     Direktsenke Prozesswärme und ohne Puffersenke — sie deckt nur zeitgleich. Das
-    ///     Heizkreis-Gegenstück ist vorbereitet, aber abgeschaltet.</description></item>
+    ///     Heizkreis-Gegenstück SOLAR_HEIZKREIS_OHNE_PUFFER ist aktiv (Anwenderentscheid
+    ///     23.09.2026).</description></item>
     ///   <item><term>KANAL_OHNE_VERSORGER</term><description>Projektweit: ein Kanal mit
     ///     Bedarf, den keine Senke bedient (<see cref="KanaeleOhneVersorger"/>, eigener
     ///     Aufruf mit dem Kanalbedarf des Laufs).</description></item>
@@ -246,18 +247,26 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Dieselbe Frage für den HEIZKREIS: Solarthermie mit Direktsenke Heizkreis und
-        /// ohne Puffersenke. VORBEREITET, NICHT AKTIV — ob der häufige Fall „Solarthermie
-        /// direkt auf den Heizkreis" gewarnt werden soll, ist nicht entschieden. Schalter:
+        /// ohne Puffersenke. WEICH, AKTIV (Anwenderentscheid 23.09.2026): Auch der häufige
+        /// Fall „Solarthermie direkt auf den Heizkreis" deckt Heizwärme nur zeitgleich, der
+        /// Ertrag über dem Momentanbedarf wird verworfen — der Katalog sagt es und empfiehlt
+        /// einen Pufferspeicher. Gerechnet wird unverändert. Schalter:
         /// <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV"/>.
+        ///
+        /// <para>Wie beim Prozess-Gegenstück hebt JEDE Puffersenke mit gewähltem Speicher
+        /// den Befund auf; ein Puffer-Ziel ohne Speicher fällt auf den Heizkreis zurück und
+        /// zählt als Heizkreis-Direktsenke. Nur die SOLARTHERMIE — eine Wärmepumpe oder ein
+        /// Kessel regelt seine Leistung nach dem Bedarf.</para>
         /// </summary>
         public const string SOLAR_HEIZKREIS_OHNE_PUFFER = "SOLAR_HEIZKREIS_OHNE_PUFFER";
 
         /// <summary>
-        /// Schalter für <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER"/>: <c>false</c> = das
-        /// Kriterium schweigt. <c>static readonly</c> statt <c>const</c>, damit der
-        /// abgeschaltete Zweig kein unerreichbarer Code ist.
+        /// Schalter für <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER"/>: <c>true</c> = das
+        /// Kriterium meldet (Anwenderentscheid 23.09.2026), <c>false</c> = es schweigt.
+        /// <c>static readonly</c> statt <c>const</c>, damit keiner der beiden Zweige
+        /// unerreichbarer Code ist.
         /// </summary>
-        public static readonly bool SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV = false;
+        public static readonly bool SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV = true;
 
         /// <summary>
         /// PROJEKTWEIT: Ein Bedarfskanal mit Bedarf hat keinen Versorger — keine Anlage
@@ -399,9 +408,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// <see cref="PruefeSenken(int, int, IList{Z_AnlageSenkeModel})"/> mit
-        /// ausdrücklichem Schalter für das VORBEREITETE Kriterium
+        /// ausdrücklichem Schalter für das Kriterium
         /// <see cref="SOLAR_HEIZKREIS_OHNE_PUFFER"/> — der Prüfweg, über den ein Test
-        /// zeigt, dass das Kriterium greift, sobald es eingeschaltet wird.
+        /// zeigt, dass das Kriterium schweigt, sobald es ausgeschaltet wird.
         /// </summary>
         internal static List<Warnbefund> PruefeSenken(int idProjekt, int idAnlage,
                                                       IList<Z_AnlageSenkeModel> senken,
@@ -994,7 +1003,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// SOLAR_DIREKT_OHNE_PUFFER (und, vorbereitet, SOLAR_HEIZKREIS_OHNE_PUFFER) —
+        /// SOLAR_DIREKT_OHNE_PUFFER und SOLAR_HEIZKREIS_OHNE_PUFFER —
         /// eine Solarthermie-Anlage mit Direktsenke, aber ohne Puffersenke. Begründung
         /// bei <see cref="SOLAR_DIREKT_OHNE_PUFFER"/>.
         ///

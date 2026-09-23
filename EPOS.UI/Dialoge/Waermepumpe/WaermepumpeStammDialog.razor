@@ -36,7 +36,14 @@
 
    TASTATUR: Esc schliesst - aber erst, wenn keine Ueberlagerung und keine
    Rueckfrage offen ist. Enter ist nicht belegt: "Speichern" und "Loeschen"
-   schreiben sofort. *@
+   schreiben sofort.
+
+   STUFE 2 DER NEUORDNUNG (Konzept Administrationsdialoge, V4, V10, V11, V15,
+   Entscheid AD-Q11): Die Zeile ist die Wahl; ein Auslieferungssatz traegt das
+   Schloss, seine Felder sind nur lesbar, "Speichern" ist weich gesperrt und
+   "Duplizieren..." legt den eigenen Satz samt Kennlinien an. Fussleiste
+   Speichern - Kennliniendaten... - Fueller (Statuszeile) - Neu - Duplizieren... -
+   Loeschen - Beenden; Kreuz und Esc wie Beenden. *@
 
 @namespace EPOS.UI.Dialoge.Waermepumpe
 @inherits Farbwahlwirt
@@ -60,7 +67,7 @@
         <InfoKnopf Schluessel="@HilfeSchluessel" />
         @if (TitelAnzeigen)
         {
-            <Schliesskreuz Geschlossen="Abbrechen" />
+            <Schliesskreuz Geschlossen="Beenden" />
         }
     </div>
 
@@ -99,7 +106,7 @@
             <Katalogliste Profil="@Spaltenprofil" Zeilen="@_liste"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -131,9 +138,12 @@
                        Die Beschriftungen kommen weiterhin aus DIESER Huelle: Der
                        Dialog legt seine Einzelgaben in OnParametersSet in das Buendel
                        (siehe Felderbuendel). *@
+                    @* Ein Auslieferungssatz ist nur lesbar (AD-Q11); geaendert wird die
+                       eigene Kopie, die "Duplizieren..." anlegt. *@
                     <WaermepumpeStammFelder Daten="@Daten" Texte="@_felderTexte"
                                             Typen="@Typen" Leistungsstufen="@Leistungsstufen"
-                                            Aufstellungen="@Aufstellungen" Baujahre="@Baujahre" />
+                                            Aufstellungen="@Aufstellungen" Baujahre="@Baujahre"
+                                            Aktiv="@(!NurLesbar)" />
 
                     @* ALLE PARAMETER UND IHRE VERWENDUNG - Anwenderwunsch W14a-E-8
                        (06.09.2026). Gerade hier ist er die Auskunft, die im Bestand
@@ -210,13 +220,28 @@
        Text; den vollen ("Kennliniendaten Ansicht/Bearbeiten...") traegt die
        Ueberlagerung als Titel. *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        @* SPEICHERN BEI EINEM AUSLIEFERUNGSSATZ (AD-Q11): weich gesperrt, der Grund
+           im Kurztext und nach dem Klick im Warnband. *@
+        @if (NurLesbar)
+        {
+            <button type="button" class="epos-knopf" aria-disabled="true"
+                    title="@MeldungSpeichernGesperrt" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        }
+        else
+        {
+            <button type="button" class="epos-knopf" @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        }
         <button type="button" class="epos-knopf" @onclick="BeiKenndaten">@BtnKenndatenText</button>
-        <span class="epos-leiste-fueller"></span>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        @if (Duplizieren is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
+                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
+        }
         <button type="button" class="epos-knopf" @onclick="() => _loeschfrage = true">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                @onclick="() => Geschlossen.InvokeAsync(true)">@BtnBeendenText</button>
+                @onclick="Beenden">@BtnBeendenText</button>
     </div>
 
     @* --- Ueberlagerung 1: der Kennlinieneditor ------------------------------- *@
@@ -235,6 +260,21 @@
 
     <Rueckfrage Offen="@_loeschfrage" Frage="@FrageLoeschen" TitelText="@BtnLoeschenText"
                 JaText="@JaText" NeinText="@NeinText" Beantwortet="LoeschfrageBeantwortet" />
+
+    @* --- Namensabfrage von „Duplizieren…" (AD-Q11) ------------------------ *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <EPOS.UI.Dialoge.Allgemein.NamensDialog TitelText="" FrageText="@LabelName"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@MeldungNameFehlt" Pruefung="NameBelegt"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="BeiDuplizierName" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
 </div>
 
 @code {
@@ -298,6 +338,13 @@
 
     /// <summary>Löscht den Stammsatz samt Kennlinien.</summary>
     [Parameter] public Func<string, bool>? Loeschen { get; set; }
+
+    /// <summary>
+    /// <b>„Duplizieren…"</b> (Konzept Administrationsdialoge, Entscheid AD-Q11): kopiert
+    /// den Satz mit der ID als EIGENEN Satz unter dem Namen — samt seiner Kennlinien
+    /// (<c>WPStammCtrl.Duplizieren</c>). Ohne ihn steht der Knopf nicht da.
+    /// </summary>
+    [Parameter] public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; set; }
 
     /// <summary>Die Kennlinien eines Geräts für den Editor.</summary>
     [Parameter] public Func<int, IReadOnlyList<KennlinienZeile>>? Kennlinien { get; set; }
@@ -418,6 +465,25 @@
     [Parameter] public string BtnNeuText { get; set; } = "Neu";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+
+    /// <summary>„Duplizieren…" (AD-Q11).</summary>
+    [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
+
+    /// <summary>Der Grund am weich gesperrten „Speichern" eines Auslieferungssatzes (AD-Q11).</summary>
+    [Parameter] public string MeldungSpeichernGesperrt { get; set; } = Resource.ADM_SPEICHERN_GESPERRT;
+
+    /// <summary>Die Statuszeile nach „Duplizieren…"; <c>{0}</c> = Original, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string MeldungDupliziert { get; set; } = Resource.ADM_MSG_DUPLIZIERT;
+
+    /// <summary>Meldung, wenn der Name der Kopie schon vergeben ist.</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; } = Resource.PSP_MELDUNG_NAME_EXISTIERT;
+
+    /// <summary>Meldung, wenn die Namensabfrage ohne Namen bestätigt wird.</summary>
+    [Parameter] public string MeldungNameFehlt { get; set; } = Resource.PSP_MELDUNG_BEZEICHNER_UNGUELTIG;
+
+    /// <summary>OK und Abbrechen der Namensabfrage von „Duplizieren…".</summary>
+    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
     [Parameter] public string JaText { get; set; } = "Ja";
     [Parameter] public string NeinText { get; set; } = "Nein";
     [Parameter] public string FrageLoeschen { get; set; } = "Wollen Sie wirklich die Wärmepumpe löschen?";
@@ -472,8 +538,28 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Hinweis;
 
+    /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
+    private string _status = "";
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+
     /// <summary>Die gewählte Zeile — Prüfhilfe für die Tests.</summary>
     public int GewaehlteId => _gewaehlteId;
+
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+
+    /// <summary>
+    /// Steht ein Auslieferungssatz da? Dann sind die Felder nur lesbar und „Speichern"
+    /// ist weich gesperrt (AD-Q11). Ein neuer Satz ist nie einer.
+    /// </summary>
+    private bool NurLesbar => !_neu && Daten.NurLesen;
+
+    private bool DuplizierenErlaubt => !_neu && _gewaehlteId > 0 && Duplizieren is not null;
 
     /// <summary>Steht der Kennlinieneditor? Prüfhilfe für die Tests.</summary>
     public bool KennlinieneditorOffen => _kennlinien is not null;
@@ -492,6 +578,11 @@
         // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
         // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
         Filtertexte.SpalteWahl = SpalteWahl;
+
+        // Das Schloss nennt den Ausweg, wo es ihn gibt (V10, AD-Q11).
+        Filtertexte.Schloss = Duplizieren is not null
+            ? Resource.ADM_SCHLOSS_DUPLIZIEREN
+            : Resource.ADM_SCHLOSS;
 
         _felderTexte.LabelName = LabelName;
         _felderTexte.LabelHersteller = LabelHersteller;
@@ -607,6 +698,7 @@
         _gewaehlt = zeile.Bezeichner;
         _neu = false;
         _meldung = "";
+        _status = "";
 
         WaermepumpeStammDaten? satz = Satz?.Invoke(zeile.Id);
         if (satz is not null) Daten = satz;
@@ -646,25 +738,72 @@
         if (Speichern is null) return;
 
         // ReadOnly-Sperre nur beim AENDERN - der Vorlaeufer prueft !neu && ReadOnly.
-        if (!_neu && Daten.NurLesen)
+        // Seit AD-Q11 ist der Knopf dafuer weich gesperrt; der Klick nennt den Weg
+        // ueber "Duplizieren...".
+        if (NurLesbar)
         {
-            _meldung = MeldungReadOnlySpeichern;
-            _meldungStufe = WarnStufe.Hinweis;
+            _meldung = MeldungSpeichernGesperrt;
+            _meldungStufe = WarnStufe.Warnung;
             return;
         }
 
         KatalogSpeicherErgebnis ergebnis = Speichern(Daten, _neu);
-        _meldung = ergebnis.Meldung;
-        _meldungStufe = ergebnis.Ok ? WarnStufe.Hinweis : WarnStufe.Warnung;
-        if (!ergebnis.Ok) return;
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
 
         // Wie btn_Speichern_Click:417: Liste neu ziehen und den gespeicherten Satz
-        // wieder auswaehlen.
+        // wieder auswaehlen. Gelungenes steht in der Statuszeile (V11).
         _neu = false;
         ListeNeuLaden();
         Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
         if (zeile is not null) ZeileWaehlen(zeile);
-        _meldung = ergebnis.Meldung;
+        _meldung = "";
+        _meldungStufe = WarnStufe.Hinweis;
+        _status = ergebnis.Meldung;
+    }
+
+    // =================================================================================
+    // „Duplizieren…" (Entscheid AD-Q11)
+    // =================================================================================
+
+    /// <summary>
+    /// „Duplizieren…": Namensabfrage, vorbelegt mit „Name (Kopie)" (der erste freie),
+    /// dann der eigene Satz — mit allen Stammwerten und den Kennlinien des gewählten.
+    /// </summary>
+    private void BeiDuplizieren()
+    {
+        if (!DuplizierenErlaubt) return;
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name) => _liste.Any(z => z.Bezeichner == name);
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Duplizieren is null || _gewaehlteId <= 0) return;
+
+        string alt = _gewaehlt;
+        KatalogSpeicherErgebnis ergebnis = Duplizieren(_gewaehlteId, name);
+        if (!ergebnis.Ok)
+        {
+            _meldung = ergebnis.Meldung;
+            _meldungStufe = WarnStufe.Warnung;
+            return;
+        }
+
+        ListeNeuLaden();
+        Katalogfilterzeile? zeile = _liste.FirstOrDefault(z => z.Bezeichner == ergebnis.Name);
+        if (zeile is not null) ZeileWaehlen(zeile);
+        _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
     /// <summary>„Neu": leere Vorgaben, keine Zeile markiert (<c>btn_Neu_Click</c>:458).</summary>
@@ -674,6 +813,7 @@
         _gewaehlteId = 0;
         _gewaehlt = "";
         _meldung = "";
+        _status = "";
         _hatKuehlung = false;
         _kuehlung = false;
         _bilder = KennlinienBilder.Leer;
@@ -734,14 +874,18 @@
         BilderNeuZeichnen();                            // Chart aktualisieren (Z. 549)
     }
 
-    /// <summary>Abbrechen — von Esc und vom Schliesskreuz gerufen: schliesst ohne "Beenden".</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
+    /// <summary>
+    /// <b>„Beenden"</b> — der eine Schlussweg (V15): der Knopf, das Schliesskreuz und
+    /// Esc. Die Maske hat keinen Arbeitsstand, der zu verwerfen wäre — Speichern,
+    /// Duplizieren, Löschen und der Kennlinieneditor schreiben sofort.
+    /// </summary>
+    private Task Beenden() => Geschlossen.InvokeAsync(true);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         // Die Ueberlagerungen und die Rueckfrage werten Esc zuerst fuer sich aus.
-        if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage)
+        if (e.Key != "Escape" || _kennlinien is not null || _loeschfrage || _duplizierfrage)
             return Task.CompletedTask;
-        return Abbrechen();
+        return Beenden();
     }
 }

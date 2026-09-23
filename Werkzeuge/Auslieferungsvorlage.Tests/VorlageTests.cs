@@ -151,7 +151,7 @@ namespace Auslieferungsvorlage.Tests
             // 129 seit Schemaschritt 102 (Zapfprofilgenerator T1): die zehn Tww-Tabellen,
             // alle STRICT.
             //
-            // 130 seit Schemaschritt 106 (Entscheid E30, Gebaeudesimulation):
+            // 130 seit Schemaschritt 107 (Entscheid E30, Gebaeudesimulation):
             // Tab_ErgebnisGebaeude traegt STRICT von ihrer ersten Zeile an.
             Assert.Equal(130, befund.Strict);
         }

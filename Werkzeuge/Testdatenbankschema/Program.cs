@@ -1225,22 +1225,46 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
 
-            // ---- Schritt 106: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
+            // ---- Schritt 106: fremde Ergebnisverweise der gespeicherten Wirtschaftlichkeit
+            //      werden NULL (Anwenderentscheid 23.09.2026, Erbe des Duplizierens). REIN
+            //      DML, eine Anweisung aus WirtschaftlichkeitFremdverweis - DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_106_WirtschaftlichkeitFremdverweis
+            //      bedient.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest den Verweis, und die
+            //      Wirtschaftlichkeit steht nicht im Export.
+            //
+            //      ER STEHT NACH 105 ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            List<string> betroffene106 = WirtschaftlichkeitFremdverweis.Betroffene();
+            Console.WriteLine("Schritt 106 - " + WirtschaftlichkeitFremdverweis.TABELLE + "." +
+                              WirtschaftlichkeitFremdverweis.SPALTE + ": " + betroffene106.Count +
+                              " Zeile(n) mit fremdem Ergebnisverweis.");
+            foreach (string zeile in betroffene106)
+                Console.WriteLine("Schritt 106 - " + zeile);
+            if (!trocken)
+            {
+                int gesetzt106 = WirtschaftlichkeitFremdverweis.Ausfuehren();
+                Console.WriteLine("Schritt 106 - " + gesetzt106 + " Verweis(e) auf NULL gesetzt, offen " +
+                                  WirtschaftlichkeitFremdverweis.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 107: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
             //      Gebaeudesimulation N1.35). REIN DDL aus ErgebnisGebaeudeSchema - DERSELBEN
-            //      Quelle, aus der sich SchemaMigration.Schritt_106_ErgebnisGebaeude bedient;
+            //      Quelle, aus der sich SchemaMigration.Schritt_107_ErgebnisGebaeude bedient;
             //      erst die Tabelle, dann die zwei Indizes. ERGEBNISNEUTRAL: Die Tabelle
             //      entsteht leer, kein Rechenweg liest sie, der Referenzlauf exportiert sie nicht.
             //
-            //      ER STEHT NACH 105 ohne Reihenfolgebedingung.
+            //      ER STEHT NACH 106 ohne Reihenfolgebedingung.
             Console.WriteLine();
             foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
             {
                 if (a.Key == ErgebnisGebaeudeSchema.TAB)
                 {
-                    tabellen += TabelleSicherstellen(a.Key, a.Value, 106, trocken);
+                    tabellen += TabelleSicherstellen(a.Key, a.Value, 107, trocken);
                     continue;
                 }
-                Console.WriteLine("Schritt 106 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                Console.WriteLine("Schritt 107 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
                 if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 

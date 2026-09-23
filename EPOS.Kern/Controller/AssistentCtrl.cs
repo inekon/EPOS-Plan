@@ -834,6 +834,12 @@ namespace WindowsFormsApplication1
             if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
 
+            // SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026): Die Anlagen stehen seit
+            // Add_WP_Waermeerzeuger, Prozesswaerme und Waermeganglinien erst seit eben -
+            // die Senken der neuen Anlagen werden deshalb HIER aus dem vollstaendigen
+            // Bedarf abgeleitet. Best effort: ohne Zeile gilt die Vorbelegung.
+            ctrl.NeueAnlagenSenkenNachziehen(ProjektId, vorgang);
+
             Gespeichert = true;
             return new AssistentErgebnis(AssistentAusgang.Gespeichert, "");
         }
@@ -892,6 +898,11 @@ namespace WindowsFormsApplication1
 
             if (!ctrl.Add_Projekt_Stromverbraucher(ProjektId, Stromverbraucher, vorgang))
                 return new AssistentErgebnis(AssistentAusgang.Fehlgeschlagen, "Add_Projekt_Stromverbraucher");
+
+            // Senken beim Anlegen - wortgleich zum NEU-Zweig: Prozesswaerme und
+            // Waermeganglinien sind eben neu geschrieben; nur die im Assistenten NEU
+            // hinzugekommenen Anlagen bekommen ihre Senken aus diesem Bedarf.
+            ctrl.NeueAnlagenSenkenNachziehen(ProjektId, vorgang);
 
             Projekt.m_Aenderungsdatum = DateTime.Now;
             Projekt.m_szBearbeiter = Kopf[0].Bearbeiter ?? "";

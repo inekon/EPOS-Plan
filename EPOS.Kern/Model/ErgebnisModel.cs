@@ -49,7 +49,7 @@ namespace WindowsFormsApplication1
 
         // Gebaeude des Laufs (Tab_ErgebnisGebaeude, Entscheid E30): eine Zeile je
         // Gebaeude mit Rechenweg und Kennzahlen, nach Merkplatz geordnet. Leere Liste =
-        // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 106).
+        // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 107).
         public List<ErgebnisGebaeudeModel> Gebaeude = new List<ErgebnisGebaeudeModel>();
 
         public ErgebnisModel()

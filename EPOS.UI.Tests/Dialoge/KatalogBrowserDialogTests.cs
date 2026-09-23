@@ -228,8 +228,9 @@ public class KatalogBrowserDialogTests : EposBunitContext
         Assert.Empty(cut.FindAll(".epos-katalogbrowser-eigenschaften"));
         Assert.Equal(spalten, cut.FindAll(".epos-spaltenkopf").Count);
 
-        // Die Wahlspalte kommt dazu und traegt weder Sortierpfeil noch Trichter.
-        Assert.Equal(spalten + 1, cut.FindAll("thead th").Count);
+        // Keine Wahlspalte mehr (Konzept Administrationsdialoge, V4): Die Zeile
+        // selbst ist die Wahl, der Kopf traegt nur die Spalten des Profils.
+        Assert.Equal(spalten, cut.FindAll("thead th").Count);
     }
 
     /// <summary>
@@ -271,7 +272,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-anlagenwahl")[1].Click();
+        Zeilenklick.Zeile(cut, 1);
 
         Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
         Assert.Equal("Eintrag B", cut.FindAll("input[type=text]")[0].GetAttribute("value"));
@@ -521,6 +522,10 @@ public class KatalogBrowserDialogTests : EposBunitContext
     {
         var cut = Aufbauen(KatalogBrowserArt.Bhkw);
 
+        // "BHKW A" ist ein Auslieferungssatz und damit ganz nur lesbar (AD-Q11) -
+        // die Feldregel zeigt der eigene Satz "BHKW B".
+        Zeilenklick.Zeile(cut, 1);
+
         Assert.True(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgrad).HasAttribute("readonly"));
         Assert.False(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradEl).HasAttribute("readonly"));
         Assert.False(Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradTh).HasAttribute("readonly"));
@@ -535,6 +540,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
     public void Die_Summe_laeuft_mit_wenn_ein_Anteil_sich_aendert()
     {
         var cut = Aufbauen(KatalogBrowserArt.Bhkw);
+        Zeilenklick.Zeile(cut, 1);                 // der eigene Satz "BHKW B" (AD-Q11)
 
         Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradEl).Input("0,30");
         Eingabe(cut, KatalogBrowserProfil.FeldWirkungsgradTh).Input("0,60");
@@ -649,51 +655,70 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der BHKW-Browser fragt vor dem Überschreiben eines geschützten Satzes — in der
-    /// Auslieferungsdatenbank der Regelfall (<c>Form_BHKWAdmin.cs:413-430</c>).
+    /// <b>Ein Auslieferungssatz wird nie überschrieben</b> (Entscheid AD-Q11,
+    /// 23.09.2026): „BHKW A" trägt den Schreibschutz. Seine Felder stehen nur zum Lesen
+    /// da, „Speichern" ist WEICH gesperrt (<c>aria-disabled</c>, der Grund im Kurztext),
+    /// und ein Klick nennt den Weg über „Duplizieren…" im Warnband — geschrieben wird
+    /// nichts, und die Rückfrage „Trotzdem überschreiben?" gibt es nicht mehr.
     /// </summary>
     [Fact]
-    public void Das_BHKW_fragt_vor_dem_Ueberschreiben_eines_geschuetzten_Satzes()
-    {
-        bool? uebergangen = null;
-        var wege = new KatalogBrowserWege
-        {
-            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
-            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            IstGeschuetzt = _ => true,
-            Speichern = (n, _, u) => { uebergangen = u; return new KatalogSpeicherErgebnis(true, "ok", n); }
-        };
-        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
-
-        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
-        cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
-
-        Assert.True(cut.Instance.Schutzfrage);
-        Assert.Null(uebergangen);
-
-        cut.FindAll(".epos-rueckfrage button")[0].Click();
-        Assert.True(uebergangen);
-    }
-
-    [Fact]
-    public void Nein_auf_die_Schutzfrage_schreibt_nicht()
+    public void Ein_Auslieferungssatz_sperrt_Speichern_weich_und_nennt_den_Weg()
     {
         bool gerufen = false;
         var wege = new KatalogBrowserWege
         {
             Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
             Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
-            IstGeschuetzt = _ => true,
             Speichern = (n, _, __) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "ok", n); }
         };
         var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
 
-        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
-        cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
-        cut.FindAll(".epos-rueckfrage button")[1].Click();
+        Assert.Equal("BHKW A", cut.Instance.Gewaehlt);
+        Assert.True(cut.Instance.Auslieferungssatz);
+
+        // Die Felder sind nur lesbar - es gibt kein bedienbares Zahlenfeld.
+        Assert.Empty(cut.FindAll("input[inputmode=decimal]:not([readonly])"));
+
+        var speichern = cut.FindAll(".epos-leiste .epos-knopf")[0];
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        Assert.False(speichern.HasAttribute("disabled"));
+        Assert.Contains("Duplizieren", speichern.GetAttribute("title") ?? "");
+
+        speichern.Click();
 
         Assert.False(gerufen);
-        Assert.False(cut.Instance.Schutzfrage);
+        Assert.Contains("Duplizieren", cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll(".epos-rueckfrage"));
+    }
+
+    /// <summary>
+    /// Ein EIGENER Satz desselben Katalogs bleibt bearbeitbar — die Sperre hängt am
+    /// Satz, nicht an der Ausprägung. Der Schreibweg bekommt nie die Erlaubnis, den
+    /// Schutz zu übergehen.
+    /// </summary>
+    [Fact]
+    public void Ein_eigener_Satz_bleibt_bearbeitbar_und_uebergeht_nie_den_Schutz()
+    {
+        bool? uebergangen = null;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Speichern = (n, _, u) => { uebergangen = u; return new KatalogSpeicherErgebnis(true, "gespeichert", n); }
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        Zeilenklick.Zeile(cut, 1);                       // "BHKW B", kein Auslieferungssatz
+        Assert.False(cut.Instance.Auslieferungssatz);
+
+        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
+        var speichern = cut.FindAll(".epos-leiste .epos-knopf")[0];
+        Assert.Null(speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+
+        Assert.False(uebergangen);
+        Assert.Equal("gespeichert", cut.Instance.Status);
+        Assert.Equal("", cut.Instance.Meldung);
     }
 
     [Fact]
@@ -716,20 +741,23 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     // =================================================================================
-    // OK und Esc
+    // Beenden, Esc und das Kreuz (V15) - und was sie aufhält (V11)
     // =================================================================================
 
     /// <summary>
-    /// <b>Angleichung E-1 (Befund W14-B4).</b> Drei der vier Vorläufer setzten kein
-    /// <c>DialogResult</c> und lieferten IMMER <c>false</c>; „OK" heißt jetzt OK.
+    /// <b>„Beenden" statt „OK"</b> (Konzept Administrationsdialoge, V15): Der eine primäre
+    /// Schlussknopf steht zuletzt und meldet bestätigt samt gewähltem Eintrag.
     /// </summary>
     [Fact]
-    public void OK_meldet_bestaetigt_und_den_gewaehlten_Eintrag()
+    public void Beenden_meldet_bestaetigt_und_den_gewaehlten_Eintrag()
     {
         BrowserErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste .epos-knopf").Last().Click();
+        var letzter = cut.FindAll(".epos-leiste .epos-knopf").Last();
+        Assert.Equal("Beenden", letzter.TextContent.Trim());
+        Assert.Contains("epos-knopf--primaer", letzter.ClassName);
+        letzter.Click();
 
         Assert.NotNull(ergebnis);
         Assert.True(ergebnis!.Bestaetigt);
@@ -737,11 +765,12 @@ public class KatalogBrowserDialogTests : EposBunitContext
     }
 
     /// <summary>
-    /// „OK" schreibt vorher offene Änderungen zurück — genau wie
-    /// <c>btn_OK_Click</c> beim Heizkessel und beim BHKW (Speicherpaket 18.08.2026).
+    /// <b>Geänderte Felder halten „Beenden" auf</b> (Konzept 3.3): Es schreibt nicht
+    /// still zurück und verwirft nicht still, sondern sagt „Speichern oder Verwerfen"
+    /// und bleibt offen. Nach „Verwerfen" schließt es.
     /// </summary>
     [Fact]
-    public void OK_schreibt_offene_Aenderungen_zurueck()
+    public void Beenden_haelt_bei_geaenderten_Feldern_an_und_schreibt_nicht()
     {
         bool geschrieben = false;
         BrowserErgebnis? ergebnis = null;
@@ -756,32 +785,38 @@ public class KatalogBrowserDialogTests : EposBunitContext
         cut.FindAll("input[inputmode=decimal]")[0].Input("42");
         cut.FindAll(".epos-leiste .epos-knopf").Last().Click();
 
-        Assert.True(geschrieben);
+        Assert.Null(ergebnis);
+        Assert.False(geschrieben);
+        Assert.Contains("Speichern", cut.Instance.Meldung);
+        Assert.Contains("Verwerfen", cut.Instance.Meldung);
+
+        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();      // Verwerfen
+        cut.FindAll(".epos-leiste .epos-knopf").Last().Click();  // Beenden
+
         Assert.NotNull(ergebnis);
+        Assert.False(geschrieben);
     }
 
-    /// <summary>Scheitert das Schreiben, bleibt der Dialog offen — Bestandsverhalten.</summary>
+    /// <summary>
+    /// <b>Ein Zeilenwechsel verwirft keine Eingabe still</b> (V11): Mit geänderten
+    /// Feldern bleibt die Wahl stehen, und das Warnband sagt warum.
+    /// </summary>
     [Fact]
-    public void OK_laesst_den_Dialog_bei_einem_Fehlschlag_offen()
+    public void Ein_Zeilenwechsel_haelt_bei_geaenderten_Feldern_die_Wahl()
     {
-        BrowserErgebnis? ergebnis = null;
-        var wege = new KatalogBrowserWege
-        {
-            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
-            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
-            Speichern = (_, __, ___) => new KatalogSpeicherErgebnis(false, "Schreibgeschützt.", "")
-        };
-        var cut = Aufbauen(wege: wege, geschlossen: e => ergebnis = e);
+        var cut = Aufbauen();
 
         cut.FindAll("input[inputmode=decimal]")[0].Input("42");
-        cut.FindAll(".epos-leiste .epos-knopf").Last().Click();
+        Zeilenklick.Zeile(cut, 1);
 
-        Assert.Null(ergebnis);
-        Assert.Equal("Schreibgeschützt.", cut.Instance.Meldung);
+        Assert.Equal("Eintrag A", cut.Instance.Gewaehlt);
+        Assert.Contains("Verwerfen", cut.Instance.Meldung);
+        Assert.Equal("42", cut.FindAll("input[inputmode=decimal]")[0].GetAttribute("value"));
     }
 
+    /// <summary>Esc wirkt wie das Kreuz und wie „Beenden" — EIN Schlussweg (V15).</summary>
     [Fact]
-    public void Esc_schliesst_ohne_Bestaetigung()
+    public void Esc_schliesst_wie_Beenden()
     {
         BrowserErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
@@ -789,15 +824,15 @@ public class KatalogBrowserDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.NotNull(ergebnis);
-        Assert.False(ergebnis!.Bestaetigt);
+        Assert.True(ergebnis!.Bestaetigt);
     }
 
     /// <summary>
-    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
-    /// Kopfzeile wirkt genau wie Esc — es schließt ohne Bestätigung.
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026) — und es tut,
+    /// was „Beenden" tut (V15).
     /// </summary>
     [Fact]
-    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc_ohne_Bestaetigung()
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Beenden()
     {
         BrowserErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
@@ -805,7 +840,7 @@ public class KatalogBrowserDialogTests : EposBunitContext
         cut.Find(".epos-dialog-zu").Click();
 
         Assert.NotNull(ergebnis);
-        Assert.False(ergebnis!.Bestaetigt);
+        Assert.True(ergebnis!.Bestaetigt);
     }
 
     [Fact]
@@ -818,6 +853,194 @@ public class KatalogBrowserDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);
+    }
+
+    /// <summary>
+    /// Enter ist unbelegt (Hausregel: „Speichern", „Duplizieren…" und „Löschen" schreiben
+    /// sofort) — weder am Dialog noch an der Liste.
+    /// </summary>
+    [Fact]
+    public void Enter_tut_nichts()
+    {
+        BrowserErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => ergebnis = e);
+
+        Zeilenklick.Taste(cut, "Enter");
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Enter" });
+
+        Assert.Null(ergebnis);
+        Assert.Equal("Eintrag A", cut.Instance.Gewaehlt);
+        Assert.False(cut.Instance.Namensfrage);
+    }
+
+    // =================================================================================
+    // Die Zeile ist die Wahl (V4) und die Tastatur (V11)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Keine Wahlspalte mehr</b>: kein runder Knopf, die Zeile trägt die Wahl; die
+    /// gewählte Zeile ist markiert und ihre Zellen tragen <c>aria-current</c>.
+    /// </summary>
+    [Fact]
+    public void Die_Zeile_ist_die_Wahl_ohne_Wahlspalte()
+    {
+        var cut = Aufbauen();
+
+        Assert.Empty(cut.FindAll(".epos-anlagenwahl"));
+        Assert.Empty(cut.FindAll("th.epos-spalte-wahl"));
+
+        var zeilen = cut.FindAll(".epos-katalogliste tbody tr");
+        Assert.Contains("epos-zeile--gewaehlt", zeilen[0].ClassName ?? "");
+        Assert.DoesNotContain("epos-zeile--gewaehlt", zeilen[1].ClassName ?? "");
+        Assert.Equal("true", zeilen[0].QuerySelector(".epos-zeilenzelle")!.GetAttribute("aria-current"));
+    }
+
+    /// <summary>
+    /// <b>↑ ↓ Pos1 Ende</b> bewegen die Wahl — die Liste ist EIN Tabulatorhalt, und der
+    /// Eingabeblock folgt.
+    /// </summary>
+    [Fact]
+    public void Pfeiltasten_Pos1_und_Ende_bewegen_die_Wahl()
+    {
+        var cut = Aufbauen();
+
+        var huelle = cut.Find(".epos-katalogliste .epos-raster-huelle");
+        Assert.Equal("0", huelle.GetAttribute("tabindex"));
+
+        Zeilenklick.Taste(cut, "ArrowDown");
+        Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
+        Assert.Equal("Eintrag B", cut.FindAll("input[type=text]")[0].GetAttribute("value"));
+
+        Zeilenklick.Taste(cut, "ArrowDown");                 // am Ende bleibt es stehen
+        Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
+
+        Zeilenklick.Taste(cut, "Home");
+        Assert.Equal("Eintrag A", cut.Instance.Gewaehlt);
+
+        Zeilenklick.Taste(cut, "End");
+        Assert.Equal("Eintrag B", cut.Instance.Gewaehlt);
+
+        Zeilenklick.Taste(cut, "ArrowUp");
+        Assert.Equal("Eintrag A", cut.Instance.Gewaehlt);
+    }
+
+    // =================================================================================
+    // Das Schloss (V10) und „Duplizieren…" (AD-Q11)
+    // =================================================================================
+
+    /// <summary>
+    /// <b>Nur das Schloss</b> (AD-Q13): Der Auslieferungssatz trägt es hinter dem Namen,
+    /// ohne Wort, mit dem Satz im Kurztext — ein eigener Satz trägt keins.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_traegt_das_Schloss_mit_Kurztext()
+    {
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name)
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        var zeilen = cut.FindAll(".epos-katalogliste tbody tr");
+        var schloss = zeilen[0].QuerySelector(".epos-schloss");
+        Assert.NotNull(schloss);
+        Assert.Equal("Auslieferungssatz – nur lesen, Duplizieren erlaubt", schloss!.GetAttribute("title"));
+        Assert.Equal(schloss.GetAttribute("title"), schloss.GetAttribute("aria-label"));
+        Assert.Equal("", schloss.TextContent.Trim());
+        Assert.Null(zeilen[1].QuerySelector(".epos-schloss"));
+
+        // Keine Spalte „Auslieferung" oder „Schreibschutz".
+        Assert.DoesNotContain(cut.FindAll(".epos-katalogliste th"),
+                              th => th.TextContent.Contains("Auslieferung") || th.TextContent.Contains("Schreibschutz"));
+    }
+
+    /// <summary>
+    /// <b>Die Fußleiste der Verwaltung</b> (V15): Speichern · Verwerfen · Füller ·
+    /// Neu… · Duplizieren… · Löschen · Beenden — der Füller ist die Statuszeile.
+    /// </summary>
+    [Fact]
+    public void Die_Fussleiste_steht_in_der_Reihenfolge_der_Verwaltung()
+    {
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Heizkessel),
+            Detail = name => Felder(KatalogBrowserArt.Heizkessel, name),
+            Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "", n),
+            Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name)
+        };
+        var cut = Aufbauen(wege: wege);
+
+        var leiste = cut.FindAll(".epos-leiste").Last();
+        var texte = leiste.QuerySelectorAll(".epos-knopf").Select(k => k.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Duplizieren...", "Löschen", "Beenden" }, texte);
+
+        var kinder = leiste.Children.ToList();
+        int fueller = kinder.FindIndex(k => (k.ClassName ?? "").Contains("epos-leiste-fueller"));
+        Assert.Equal(2, fueller);
+        Assert.Equal("status", kinder[fueller].GetAttribute("role"));
+    }
+
+    /// <summary>
+    /// <b>„Duplizieren…" legt einen eigenen Satz an und wählt ihn</b> (AD-Q11): Die
+    /// Namensabfrage ist mit „Name (Kopie)" vorbelegt; der Weg bekommt die ID der
+    /// gewählten Zeile; danach ist die Kopie gewählt, und die Statuszeile nennt beide.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_legt_die_Kopie_an_und_waehlt_sie()
+    {
+        var katalog = Zeilen(KatalogBrowserArt.Bhkw).ToList();
+        (int Id, string Name)? gerufen = null;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => katalog,
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Duplizieren = (id, name) =>
+            {
+                gerufen = (id, name);
+                katalog = katalog.Append(new Katalogfilterzeile(99, name)
+                    .MitText(Katalogfilterprofil.SpBezeichner, name)).ToList();
+                return new KatalogSpeicherErgebnis(true, "", name);
+            }
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        cut.FindAll(".epos-leiste .epos-knopf").First(k => k.TextContent.Trim() == "Duplizieren...").Click();
+
+        Assert.True(cut.Instance.Duplizierfrage);
+        var feld = cut.Find(".epos-ueberlagerung input[type=text]");
+        Assert.Equal("BHKW A (Kopie)", feld.GetAttribute("value"));
+
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal((1, "BHKW A (Kopie)"), gerufen);
+        Assert.False(cut.Instance.Duplizierfrage);
+        Assert.Equal("BHKW A (Kopie)", cut.Instance.Gewaehlt);
+        Assert.False(cut.Instance.Auslieferungssatz);
+        Assert.Contains("BHKW A (Kopie)", cut.Instance.Status);
+        Assert.Contains("dupliziert", cut.Instance.Status);
+    }
+
+    /// <summary>Ein vergebener Name hält die Namensabfrage offen; geschrieben wird nichts.</summary>
+    [Fact]
+    public void Duplizieren_lehnt_einen_vergebenen_Namen_ab()
+    {
+        bool gerufen = false;
+        var wege = new KatalogBrowserWege
+        {
+            Katalogzeilen = () => Zeilen(KatalogBrowserArt.Bhkw),
+            Detail = name => Felder(KatalogBrowserArt.Bhkw, name),
+            Duplizieren = (id, name) => { gerufen = true; return new KatalogSpeicherErgebnis(true, "", name); }
+        };
+        var cut = Aufbauen(KatalogBrowserArt.Bhkw, wege: wege);
+
+        cut.FindAll(".epos-leiste .epos-knopf").First(k => k.TextContent.Trim() == "Duplizieren...").Click();
+        cut.Find(".epos-ueberlagerung input[type=text]").Input("BHKW B");
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.False(gerufen);
+        Assert.True(cut.Instance.Duplizierfrage);
     }
 
     // =================================================================================

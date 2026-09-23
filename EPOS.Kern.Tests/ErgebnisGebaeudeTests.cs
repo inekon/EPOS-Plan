@@ -12,7 +12,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// <b>Die Ergebnistabelle je Gebäude</b> (Entscheid E30, Schemaschritt 106, Konzept
+    /// <b>Die Ergebnistabelle je Gebäude</b> (Entscheid E30, Schemaschritt 107, Konzept
     /// Gebäudesimulation N1.35): Schema, Schreiben im Lauf, Lesen, Bericht und
     /// Produktausweis (A12).
     /// </summary>
@@ -92,7 +92,7 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Der Schritt vom Vorzustand 105: Auf der Testdatenbank ohne die Tabelle legen die
+        /// Der Schritt vom Vorzustand 106: Auf der Testdatenbank ohne die Tabelle legen die
         /// Anweisungen genau die Tabelle an, die die Messlatte trägt — und die Messlatte steht
         /// auf dem Zielstand.
         /// </summary>
@@ -105,7 +105,7 @@ namespace EPOS.Kern.Tests
             string soll = Convert.ToString(DataRepository.ExecuteScalar(
                 "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", new DbParam("@n", ErgebnisGebaeudeSchema.TAB)));
             Assert.Equal(ErgebnisGebaeudeSchema.SQL_CREATE.Replace("CREATE TABLE IF NOT EXISTS", "CREATE TABLE"), soll);
-            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= 106);
+            Assert.True(Convert.ToInt32(DataRepository.ExecuteScalar("SELECT SchemaVersion FROM Tab_Applikation")) >= 107);
 
             // Vorzustand herstellen, Schritt fahren, zweimal.
             DataRepository.ExecuteNonQuery("DROP TABLE " + ErgebnisGebaeudeSchema.TAB);

@@ -73,7 +73,10 @@ namespace WindowsFormsApplication1
                 // PufferSpStammCtrl.Exists im Kern liegt und die Schwestermaske sie nutzt.
                 Existiert = name => new PufferSpStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder)
+                Speichern = (name, felder, _) => Schreiben(name, felder),
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz an.
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(PufferSpStammCtrl.Duplizieren(id, name))
             };
         }
 

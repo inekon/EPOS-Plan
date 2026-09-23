@@ -227,6 +227,16 @@
                                               Feldname="@LabelNutzungszeit" Wert="@Daten.Nutzungszeit"
                                               WertChanged="w => Daten.Nutzungszeit = w" Aktiv="@(!NurLesen)" />
                             </span>
+
+                            @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026): die Zeile
+                               „Senken: …", FERTIG FORMULIERT von der Huelle (Kern:
+                               Senkenvorbelegung.Anzeigezeile). Sie gehoert zur Auslegung fuer
+                               die Verteilung - wohin die Waerme geht. Leer = keine Zeile;
+                               gepflegt werden die Senken in der Simulation. *@
+                            @if (!string.IsNullOrEmpty(SenkenText))
+                            {
+                                <Herleitungszeile Text="@SenkenText" />
+                            }
                         </KindInhalt>
                     </Formularraster>
                 </KindInhalt>
@@ -797,6 +807,12 @@
     /// <summary>Meldung, wenn das Schreiben fehlschlägt (<c>WPA_MSG_EXTRAPOLATION_FEHLER</c>).</summary>
     [Parameter] public string WarnungExtrapolation { get; set; } =
         "Die Einstellung „Extrapolation der WP-Kennlinie erlauben“ ließ sich nicht speichern.";
+    /// <summary>
+    /// Die Zeile „Senken: …" der Anlage (<c>ANL_SENKEN_ZEILE</c>, Anwenderentscheid
+    /// 23.09.2026), fertig formuliert von der Hülle; leer = keine Zeile (Assistent ohne
+    /// Projekt, Prüfstand).
+    /// </summary>
+    [Parameter] public string SenkenText { get; set; } = "";
     [Parameter] public string ReiterCop { get; set; } = "COP";
     [Parameter] public string ReiterLeistung { get; set; } = "Leistung";
     [Parameter] public string PlatzhalterBild { get; set; } = "Keine Kennlinien vorhanden";

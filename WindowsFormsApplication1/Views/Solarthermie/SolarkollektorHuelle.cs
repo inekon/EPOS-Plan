@@ -391,7 +391,10 @@ namespace WindowsFormsApplication1
                 Ruecklauf = m.Ruecklauf,
                 Neigung = m.m_Neigung,
                 Azimut = m.m_Azimut,
-                AnzahlModule = m.Kollektormodulanzahl
+                AnzahlModule = m.Kollektormodulanzahl,
+                // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
+                // formuliert im Kern; leer beim Referenzfeld und ohne Projekt.
+                Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)
             };
         }
 

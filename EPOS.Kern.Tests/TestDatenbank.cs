@@ -442,6 +442,12 @@ namespace EPOS.Kern.Tests
                 foreach (SchemaSpalte s in SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr)
                     SpalteSicherstellen(s);
 
+                // Schritt 106 (Anwenderentscheid 23.09.2026): fremde Ergebnisverweise der
+                // gespeicherten Wirtschaftlichkeit werden NULL. Reines DML aus DERSELBEN
+                // Quelle wie in der Migration; wiederholbar, auf einer nachgezogenen Kopie
+                // ohne Treffer.
+                WirtschaftlichkeitFremdverweis.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

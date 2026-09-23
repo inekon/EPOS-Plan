@@ -67,7 +67,10 @@ namespace WindowsFormsApplication1
                 Detail = name => KatalogBrowserHuelle.Felder(profil, ctrl.KatalogsatzAnzeige(name)),
                 Existiert = name => new HeizkesselStammCtrl().Exists(name),
                 Loeschen = Loeschen,
-                Speichern = (name, felder, _) => Schreiben(name, felder)
+                Speichern = (name, felder, _) => Schreiben(name, felder),
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz an.
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(HeizkesselStammCtrl.Duplizieren(id, name))
             };
         }
 

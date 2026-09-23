@@ -100,7 +100,7 @@
         @* Waehrend eines Laufs steht KEIN Kreuz - wie Esc, der dann nicht schliesst. *@
         @if (!_laeuft)
         {
-            <Schliesskreuz Geschlossen="Schliessen" />
+            <Schliesskreuz Geschlossen="BeiSchliessen" />
         }
     </div>
 
@@ -141,7 +141,7 @@
             <Katalogliste Profil="@Filterprofil" Zeilen="@_regionen"
                           Filterstand="@Filterstand" Texte="@Texte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichbar="false" />
+                          Vergleichbar="false" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -493,7 +493,6 @@
     [Parameter] public string SpalteLongitudeText { get; set; } = Resource.KLIMA_SP_LONGITUDE;
     [Parameter] public string SpalteLatitudeText { get; set; } = Resource.KLIMA_SP_LATITUDE;
     [Parameter] public string SpalteImportdatumText { get; set; } = Resource.KLIMA_SP_IMPORTDATUM;
-    [Parameter] public string SpalteSchreibschutzText { get; set; } = Resource.KLIMA_SP_SCHREIBSCHUTZ;
 
     // ---- Regionsvorschau (Auftrag KL-3) --------------------------------
     [Parameter] public string RegionErmittelnText { get; set; } = Resource.KLIMA_TRY_BTN_REGION;
@@ -589,9 +588,10 @@
     };
 
     /// <summary>
-    /// <b>Das Spaltenprofil der Regionsliste</b> (Auftrag KL-4) — SIEBEN Spalten:
-    /// Bezeichner, Quelle, Standort, Longitude, Latitude, Importdatum,
-    /// Schreibschutz.
+    /// <b>Das Spaltenprofil der Regionsliste</b> (Auftrag KL-4) — SECHS Spalten:
+    /// Bezeichner, Quelle, Standort, Longitude, Latitude, Importdatum. Der
+    /// Schreibschutz ist keine Spalte mehr: Eine Auslieferungsregion trägt das Schloss
+    /// hinter ihrem Namen (Konzept Administrationsdialoge, V10).
     ///
     /// <para><b>Die Spalten stehen als DATEN im Kern</b>
     /// (<c>Katalogfilterprofil.AusSpalten</c>) — derselbe Weg, den die zwei
@@ -607,7 +607,7 @@
     /// <para><b>Der Rang der Spalten</b> (Konzept Administrationsdialoge, V2): Region und
     /// Importdatum stehen immer — das Datum ist der Kennwert, nach dem man eine
     /// eingelesene Region wiederfindet; Quelle und Standort, sobald Platz ist; die
-    /// Koordinaten und der Schreibschutz nur in einer breiten Liste.</para>
+    /// Koordinaten nur in einer breiten Liste.</para>
     /// </summary>
     private Katalogfilterprofil Filterprofil => _filterprofil ??= Katalogfilterprofil.AusSpalten(
         KATALOG,
@@ -622,9 +622,7 @@
                               Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
             new Katalogspalte(Katalogfilterprofil.SpLatitude, SpalteLatitudeText, "",
                               Katalogspaltenart.Zahl, rang: Katalogspaltenrang.Breit),
-            new Katalogspalte(Katalogfilterprofil.SpImportdatum, SpalteImportdatumText),
-            new Katalogspalte(Katalogfilterprofil.SpSchreibschutz, SpalteSchreibschutzText, "",
-                              Katalogspaltenart.JaNein, rang: Katalogspaltenrang.Breit)
+            new Katalogspalte(Katalogfilterprofil.SpImportdatum, SpalteImportdatumText)
         });
 
     /// <summary>Der sprachneutrale Schlüssel dieses Katalogs im <c>Katalogfilterregister</c>.</summary>
@@ -1176,15 +1174,16 @@
         _meldungStufe = stufe;
     }
 
+    /// <summary>
+    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg
+    /// (Konzept Administrationsdialoge, V15). Einlesen und Löschen schreiben sofort.
+    /// </summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
-
-    /// <summary>Der Abbrechen-Weg: schliesst ohne Uebernahme. Esc und das ✕ im Kopf rufen ihn.</summary>
-    private Task Schliessen() => Geschlossen.InvokeAsync(false);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrageOffen || _laeuft) return Task.CompletedTask;
-        return Schliessen();
+        return BeiSchliessen();
     }
 }

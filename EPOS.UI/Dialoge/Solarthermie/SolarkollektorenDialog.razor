@@ -222,6 +222,14 @@
                               Wert="@_eingaben.Vorlauf" WertChanged="w => { _eingaben.Vorlauf = w; }" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="@EinheitGrad" Feldname="@LabelRuecklauf"
                               Wert="@_eingaben.Ruecklauf" WertChanged="w => { _eingaben.Ruecklauf = w; }" />
+                @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
+                   HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile.
+                   Bei der Solarthermie besonders wichtig: Ohne Senke fuer ihren Bedarf
+                   findet das Kollektorfeld keinen Abnehmer. *@
+                @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                {
+                    <Herleitungszeile Text="@_projektZeile.Senken" />
+                }
                     </KindInhalt>
                 </Formularraster>
                 <div class="epos-leiste">

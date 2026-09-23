@@ -30,7 +30,7 @@ namespace WindowsFormsApplication1
         public const string TAB_PV_MODUL = "Tab_ErgebnisPhotovoltaikModul";
         public const string TAB_PUFFER = "Tab_ErgebnisPufferspeicher";
         public const string TAB_SP = "Tab_ErgebnisStromspeicher";
-        public const string TAB_GEB = ErgebnisGebaeudeSchema.TAB;   // E30, Schritt 106
+        public const string TAB_GEB = ErgebnisGebaeudeSchema.TAB;   // E30, Schritt 107
 
         // Alte, funktionslose Signatur — nur für Übergangskompatibilität erhalten.
         [Obsolete("Delete(int idProjekt) verwenden — diese Überladung löscht nichts.")]
@@ -731,7 +731,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // 11. Detail: Gebaeude (Tab_ErgebnisGebaeude, Entscheid E30) - eine Zeile
-                    //     je Gebaeude des Laufs. Auf einer Datenbank vor Schritt 106 fehlt die
+                    //     je Gebaeude des Laufs. Auf einer Datenbank vor Schritt 107 fehlt die
                     //     Tabelle; dann wird nichts geschrieben (der Bericht laesst den
                     //     Abschnitt weg), und der Lauf gilt trotzdem als gespeichert.
                     //     Die Werte gehen UNGERUNDET hinein: Es sind Kennzahlen, keine
@@ -1145,7 +1145,7 @@ namespace WindowsFormsApplication1
                 }
 
             // Detail: Gebaeude (Tab_ErgebnisGebaeude, Entscheid E30). Dieselbe stille
-            // Ruecklaufebene: vor Schritt 106 fehlt die Tabelle, die Liste bleibt leer.
+            // Ruecklaufebene: vor Schritt 107 fehlt die Tabelle, die Liste bleibt leer.
             DataTable dg = GebaeudeZeilenLesenStill(m.ID);
             if (dg != null)
                 foreach (DataRow rg in dg.Rows)

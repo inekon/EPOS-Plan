@@ -47,6 +47,15 @@ public sealed class ErzeugerZeile
     /// <summary>Untere Grenzleistung — nur beim BHKW belegt.</summary>
     public double? Grenzleistung { get; set; }
 
+    /// <summary>
+    /// Die Zeile „Senken: …" der Anlage (Anwenderentscheid 23.09.2026) — FERTIG
+    /// FORMULIERT von der Hülle (<c>Senkenvorbelegung.Anzeigezeile</c> im Kern): die
+    /// Senkenzeilen einer gespeicherten Anlage, die Vorbelegung einer Anlage ohne Zeile,
+    /// oder was beim Speichern aus dem Bedarf des Projekts entsteht. Leer = keine Zeile
+    /// (kein Wärmeerzeuger, kein Projekt) — dann zeigt der Dialog nichts.
+    /// </summary>
+    public string Senken { get; set; } = "";
+
     /// <summary>Modulneigung [°] — nur bei der Photovoltaik belegt.</summary>
     public int? Neigung { get; set; }
 

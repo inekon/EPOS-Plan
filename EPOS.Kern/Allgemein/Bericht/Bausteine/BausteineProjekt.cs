@@ -95,7 +95,7 @@ namespace WindowsFormsApplication1
         /// Stamms, wie <c>ErgebnisCtrl.Load</c> sie aus <c>Tab_ErgebnisGebaeude</c> gelesen hat.
         ///
         /// <para><b>Der Abschnitt entfällt</b>, wenn die Liste leer ist: Das Projekt hat kein
-        /// Gebäude, es gibt noch kein Ergebnis, oder die Datenbank steht vor Schemaschritt 106.
+        /// Gebäude, es gibt noch kein Ergebnis, oder die Datenbank steht vor Schemaschritt 107.
         /// Eine Überschrift ohne Zeilen wäre keine Aussage. Gerechnet wird hier nichts — der
         /// Bericht zeigt die Zahlen des Laufs.</para>
         /// </summary>

@@ -92,6 +92,12 @@ namespace WindowsFormsApplication1
             {
                 ["Daten"] = daten,
 
+                // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ..." der
+                // Anlage, fertig formuliert im Kern - gespeicherte Zeilen, Vorbelegung
+                // oder was beim Speichern aus dem Bedarf des Projekts entsteht.
+                ["SenkenText"] = Senkenvorbelegung.Anzeigezeile(
+                    projektId, modell != null ? modell.ID : 0, WizardItemClass.WP_TYP),
+
                 // ET-5: Die drei Beschriftungen der Traegerwahl stehen seit dem
                 // 16.09.2026 im Textbuendel WaermepumpeKonfigurationTexte (dieselben
                 // Schluessel ETW_GRP_TITEL / ETW_LBL_GRUPPE / ETW_LBL_ART, nur fuellt

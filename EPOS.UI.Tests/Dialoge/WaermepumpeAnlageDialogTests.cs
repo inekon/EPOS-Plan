@@ -1956,4 +1956,25 @@ public class WaermepumpeAnlageDialogTests : EposBunitContext
         Assert.NotNull(haken.Schreibgeschuetzt);
         Assert.Null(haken.Speichern);
     }
+
+    // =================================================================================
+    // Senken der Anlage (Anwenderentscheid 23.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Die Zeile „Senken: …" steht in der Gruppe „Auslegung für Verteilung" — fertig
+    /// formuliert von der Hülle; ohne Text steht keine Zeile.
+    /// </summary>
+    [Fact]
+    public void Die_Senken_der_Anlage_stehen_bei_der_Auslegung()
+    {
+        var cut = Aufbauen();
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+
+        cut.Render(p => p.Add(x => x.SenkenText, "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme"));
+
+        Assert.Contains(cut.FindAll(".epos-wp-spalte--mitte .epos-herleitung-text"),
+                        e => e.TextContent == "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme");
+    }
 }

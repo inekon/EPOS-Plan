@@ -676,7 +676,10 @@ namespace WindowsFormsApplication1
                 GeraetId = m.ID_Kessel,
                 CarrierId = m.ID_Carrier,
                 Vorlauf = m.Vorlauf,
-                Ruecklauf = m.Ruecklauf
+                Ruecklauf = m.Ruecklauf,
+                // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
+                // formuliert im Kern; leer beim Referenzkessel und ohne Projekt.
+                Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)
             };
         }
 

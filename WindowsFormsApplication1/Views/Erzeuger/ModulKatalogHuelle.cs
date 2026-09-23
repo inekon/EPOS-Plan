@@ -64,7 +64,13 @@ namespace WindowsFormsApplication1
                 ["BtnNeuText"] = MyResource.Resource.KBROW_BTN_NEU,
                 ["BtnLoeschenText"] = MyResource.Resource.KBROW_BTN_LOESCHEN,
                 ["BtnSpeichernText"] = MyResource.Resource.ADM_BTN_SPEICHERN,
-                ["BtnBeendenText"] = MyResource.Resource.ALLG_BTN_OK,
+                // Konzept Administrationsdialoge, Stufe 2 (V15, AD-Q11): Die Leiste
+                // schliesst mit "Beenden" (bis hierher stand dort "OK"); dazu
+                // "Verwerfen" und "Duplizieren...".
+                ["BtnBeendenText"] = MyResource.Resource.ADM_BTN_BEENDEN,
+                ["BtnVerwerfenText"] = MyResource.Resource.ADM_BTN_VERWERFEN,
+                ["BtnDuplizierenText"] = MyResource.Resource.ADM_BTN_DUPLIZIEREN,
+                ["MeldungNameBelegt"] = MyResource.Resource.PSP_MELDUNG_NAME_EXISTIERT,
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["AbbrechenText"] = MyResource.Resource.ALLG_BTN_ABBRECHEN,
                 ["JaText"] = MyResource.Resource.ALLG_BTN_JA,
