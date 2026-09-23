@@ -87,8 +87,22 @@ namespace WindowsFormsApplication1
                 if (!Seed(2, "Erdgas-GuD-Kraftwerk", 58, 240, 0.3, 110, 5)) return;
                 Seed(3, "Steinkohle-Kraftwerk", 42, 400, 600, 220, 5);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — die Vorsorge bleibt ohne
+                // Dialog, aber der Grund steht bereit: Findet Berechne danach keinen Park,
+                // nennt die Bilanz ihn (Katalogfehler).
+                Katalogfehler = Fehlergrund.Text(ex);
+            }
         }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der Grund, aus dem der Katalog der Kraftwerksparks
+        /// zuletzt nicht angelegt oder nicht gelesen werden konnte; <c>null</c> = kein
+        /// Fehler. <see cref="Berechne(int,WirtschaftlichkeitParameter,BilanzKonvention)"/>
+        /// nennt ihn, statt still keine Bilanz zu liefern.
+        /// </summary>
+        public static string Katalogfehler { get; private set; }
 
         private static bool Seed(int id, string name,
                                  double eta, double co2, double so2, double nox, double verluste)
@@ -108,11 +122,14 @@ namespace WindowsFormsApplication1
         /// <summary>Alle Katalogeinträge (für die Auswahl im Parameterdialog).</summary>
         public static List<Kraftwerkspark> LadeKatalog()
         {
+            Katalogfehler = null;
             StelleKatalogSicher();
             var liste = new List<Kraftwerkspark>();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg — ein Abfragefehler erreicht den
+                // benannten Fang unten, statt als leere Tabelle „kein Park" zu heißen.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT * FROM " + TAB_PARK + " ORDER BY ID");
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
@@ -127,7 +144,13 @@ namespace WindowsFormsApplication1
                             NetzverlusteProzent = D(r, "Netzverluste") ?? 0
                         });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — die Liste bleibt leer (die Auswahl im
+                // Parameterdialog zeigt keinen Park), der Grund steht in Katalogfehler.
+                liste.Clear();
+                Katalogfehler = Fehlergrund.Text(ex);
+            }
             return liste;
         }
 
@@ -161,11 +184,27 @@ namespace WindowsFormsApplication1
         {
             if (p == null || p.IdKraftwerkspark <= 0) return null;
             Kraftwerkspark park = LadePark(p.IdKraftwerkspark);
-            if (park == null) return null;
+            if (park == null)
+            {
+                // ETAPPE E7c3 (B‑6): Ein gewählter Park, der sich nicht lesen ließ, ist
+                // keine fehlende Wahl — die Bilanz nennt den Grund, statt still zu fehlen.
+                string grund = Katalogfehler;
+                return grund == null ? null : NichtAusfuehrbar(idProjekt, STUFE_KATALOG, grund);
+            }
 
             ErgebnisModel m = null;
-            try { m = new ErgebnisCtrl().Load(idProjekt); } catch { }
+            try { m = new ErgebnisCtrl().Load(idProjekt); }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt statt catch { } — kein Ergebnis wegen eines
+                // Lesefehlers ist etwas anderes als „kein Lauf".
+                return NichtAusfuehrbar(idProjekt, STUFE_ERGEBNIS, Fehlergrund.Text(ex));
+            }
             if (m == null) return null;
+
+            // ETAPPE E7c3 (B‑6): Gründe gescheiterter Nebenschritte dieser Bilanz; sie
+            // stehen am Ende im Hinweis, die Zahlen bleiben, soweit sie bestimmbar sind.
+            var stufenfehler = new List<string>();
 
             // LEITENTSCHEIDUNGEN L12/L13 — der Rechenweg dieser Bilanz und die
             // Bilanzierungskonvention für Biomasse. Beide werden hier EINMAL aufgelöst
@@ -196,7 +235,17 @@ namespace WindowsFormsApplication1
             {
                 if (verbrauchMWh <= 0) return;
                 if (carrierId <= 0) { co2Voll = so2Voll = noxVoll = false; return; }
-                if (IstBiogenerTraeger(carrierId)) biogenMWh += verbrauchMWh;   // L13
+                // ETAPPE E7c3 (B‑6): Scheitert die Einstufung, zählt der Träger nicht als
+                // biogen — wie bisher —, aber der Hinweis nennt den Grund.
+                bool biogen;
+                try { biogen = IstBiogenerTraeger(carrierId); }
+                catch (Exception ex)
+                {
+                    biogen = false;
+                    string zeile = Stufe(STUFE_BIOGEN, Fehlergrund.Text(ex));
+                    if (!stufenfehler.Contains(zeile)) stufenfehler.Add(zeile);   // je Grund einmal, nicht je Modul
+                }
+                if (biogen) biogenMWh += verbrauchMWh;   // L13
                 EmissionsFaktorSatz f = EmissionsFaktorLader.Lade(idProjekt, carrierId);
                 double? co2Faktor = f.Wirksam(modus);   // F7 - im Modus CO2E das Äquivalent
                 // Einheiten: MWh × 1000 kWh × Faktor ÷ 1e6 →
@@ -224,6 +273,7 @@ namespace WindowsFormsApplication1
             if (brennstoffWaerme <= 0 && kwkStrom <= 0)
             {
                 b.Hinweis = "Keine Brennstoff-Erzeuger — Emissionsbilanz entfällt.";
+                foreach (string s in stufenfehler) b.Hinweis = Anhaengen(b.Hinweis, s);   // E7c3 (B‑6)
                 return b;
             }
 
@@ -248,6 +298,7 @@ namespace WindowsFormsApplication1
             // größere als Prozent (90); anschließend auf [10 %, 110 %] geklemmt
             // (Review Phase 8 — verhindert 100-fach überhöhte Referenzmengen).
             Faktoren rk = LadeKatalogFaktoren(p.RefKesselIdBrennstoff);
+            if (rk.Lesefehler != null) stufenfehler.Add(Stufe(STUFE_REFKESSEL, rk.Lesefehler));   // E7c3 (B‑6)
             double eta = Wirkungsgrad(p.RefKesselWirkungsgrad);
             double etaPark = Wirkungsgrad(park.WirkungsgradProzent);
             double verlust = Math.Min(0.99, Math.Max(0, park.NetzverlusteProzent / 100.0));
@@ -295,7 +346,9 @@ namespace WindowsFormsApplication1
 
             if (!refNoetig || rk.CO2.HasValue)
                 b.CO2GetrenntT = (refNoetig ? brennstoffRef * rk.CO2.Value / 1000.0 : 0) + parkCO2;
-            else if (b.Hinweis == null)
+            else if (b.Hinweis == null && rk.Lesefehler == null)
+                // ETAPPE E7c3 (B‑6): nur die echte Datenlücke — ein Lesefehler ist keine
+                // fehlende Pflege, ihn nennt die Stufenzeile „Faktoren des Referenzkessels".
                 b.Hinweis = "Referenzkessel-Träger ohne CO₂-Faktor (Katalog Tab_Brennstoff_Stamm prüfen).";
             if (!refNoetig || rk.SO2.HasValue)
                 b.SO2GetrenntKg = (refNoetig ? brennstoffRef * rk.SO2.Value / 1000.0 : 0) + parkSO2;
@@ -318,7 +371,51 @@ namespace WindowsFormsApplication1
                     "Kraftwerkspark gibt es keinen belegten Äquivalenzwert — sie stehen mit " +
                     "reinem CO₂. Die Vermeidung ist deshalb eine Obergrenze.");
 
+            // ETAPPE E7c3 (B‑6): die gescheiterten Nebenschritte, zuletzt — sie verdrängen
+            // keine Bestandsmeldung.
+            foreach (string s in stufenfehler) b.Hinweis = Anhaengen(b.Hinweis, s);
+
             return b;
+        }
+
+        // ------------------------------------------------------------- B‑6
+
+        /// <summary>Ressourcenschlüssel der Stufen der Emissionsbilanz, die scheitern
+        /// können (ETAPPE E7c3, Befund B‑6).</summary>
+        internal const string STUFE_KATALOG = "EMB_STUFE_KATALOG";
+        internal const string STUFE_ERGEBNIS = "EMB_STUFE_ERGEBNIS";
+        internal const string STUFE_BIOGEN = "EMB_STUFE_BIOGEN";
+        internal const string STUFE_REFKESSEL = "EMB_STUFE_REFKESSEL";
+
+        /// <summary>„Emissionsbilanz — Stufe „X“ nicht ausführbar: &lt;Grund&gt;“.</summary>
+        internal static string Stufe(string schluessel, string grund)
+        {
+            return string.Format(BerichtTexte.Kultur,
+                T("EMB_STUFE_NICHT_AUSFUEHRBAR", "Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1}"),
+                T(schluessel, schluessel), grund);
+        }
+
+        /// <summary>Eine Bilanz ohne Zahlen, die allein den Grund nennt — statt still
+        /// <c>null</c> („keine Bilanz"), wenn eine Grundstufe scheitert.</summary>
+        private static EmissionsBilanz NichtAusfuehrbar(int idProjekt, string schluessel, string grund)
+        {
+            return new EmissionsBilanz { IdProjekt = idProjekt, Hinweis = Stufe(schluessel, grund) };
+        }
+
+        /// <summary>MyResource mit deutschem Rückfall (Drei-Schichten-Regel).</summary>
+        private static string T(string schluessel, string rueckfall)
+        {
+            try
+            {
+                string s = MyResource.Resource.ResourceManager.GetString(schluessel);
+                return string.IsNullOrEmpty(s) ? rueckfall : s;
+            }
+            catch (Exception ex) when (ex is System.Resources.MissingManifestResourceException ||
+                                       ex is System.Resources.MissingSatelliteAssemblyException ||
+                                       ex is InvalidOperationException)
+            {
+                return rueckfall;
+            }
         }
 
         /// <summary>Hinweistexte verketten, ohne einen bestehenden zu verdrängen.</summary>
@@ -337,24 +434,24 @@ namespace WindowsFormsApplication1
         /// nach der ersten Katalogänderung falsch. <c>LadeFaktoren</c> fragt aus
         /// demselben Grund ebenfalls je Träger neu.</para>
         /// </summary>
+        /// <remarks>ETAPPE E7c3 (B‑6): ohne eigenes <c>try</c> und über den strengen Leseweg
+        /// (<see cref="StilleDb.TabelleStreng"/>) — ein Lesefehler erreicht den
+        /// Aufrufer in <see cref="Berechne(int,WirtschaftlichkeitParameter,BilanzKonvention)"/>,
+        /// der den Träger wie bisher als nicht biogen zählt und den Grund im Hinweis nennt.</remarks>
         private static bool IstBiogenerTraeger(int carrierId)
         {
             if (carrierId <= 0) return false;
             bool treffer = false;
-            try
-            {
-                DataTable dt = DataRepository.GetDataTable(
-                    "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
-                    "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
-                    "WHERE ec.id = ?",
-                    new DbParam("@c", carrierId));
-                if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Kategorie"] != DBNull.Value)
-                    treffer = BilanzKonvention.IstBiogen(
-                        Convert.ToInt32(dt.Rows[0]["ID_Kategorie"]),
-                        dt.Rows[0]["Bezeichner"] != DBNull.Value
-                            ? dt.Rows[0]["Bezeichner"].ToString() : "");
-            }
-            catch { }
+            DataTable dt = StilleDb.TabelleStreng(
+                "SELECT bs.ID_Kategorie, bs.Bezeichner FROM energy_carrier AS ec " +
+                "INNER JOIN Tab_Brennstoff_Stamm AS bs ON ec.id_brennstoff = bs.ID " +
+                "WHERE ec.id = ?",
+                new DbParam("@c", carrierId));
+            if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["ID_Kategorie"] != DBNull.Value)
+                treffer = BilanzKonvention.IstBiogen(
+                    Convert.ToInt32(dt.Rows[0]["ID_Kategorie"]),
+                    dt.Rows[0]["Bezeichner"] != DBNull.Value
+                        ? dt.Rows[0]["Bezeichner"].ToString() : "");
             return treffer;
         }
 
@@ -372,6 +469,7 @@ namespace WindowsFormsApplication1
             public double? CO2;   // g/kWh
             public double? SO2;   // mg/kWh
             public double? NOx;   // mg/kWh
+            public string Lesefehler;   // ETAPPE E7c3 (B‑6): Grund, null = gelesen
         }
 
         /// <summary>Faktoren direkt aus dem Brennstoff-Katalog (Referenzkessel-Träger).
@@ -384,7 +482,8 @@ namespace WindowsFormsApplication1
             var f = new Faktoren();
             try
             {
-                DataTable dt = DataRepository.GetDataTable(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                DataTable dt = StilleDb.TabelleStreng(
                     "SELECT CO2, SO2, NOx FROM Tab_Brennstoff_Stamm WHERE ID = ?",
                     new DbParam("@id", idBrennstoff));
                 if (dt != null && dt.Rows.Count > 0)
@@ -394,14 +493,25 @@ namespace WindowsFormsApplication1
                     f.NOx = D(dt.Rows[0], "NOx");
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — ohne Faktoren bleibt die getrennte Seite
+                // offen („—"), und der Hinweis nennt den Lesefehler statt „ohne Faktor".
+                f.Lesefehler = Fehlergrund.Text(ex);
+            }
             return f;
         }
 
+        /// <summary>Kommazahl einer Spalte; fehlt sie, ist sie leer oder keine Zahl:
+        /// <c>null</c> (ETAPPE E7c3: benannt — nur die Fehler der Zahlumwandlung).</summary>
         private static double? D(DataRow r, string spalte)
         {
             if (!r.Table.Columns.Contains(spalte) || r[spalte] == DBNull.Value) return null;
-            try { return Convert.ToDouble(r[spalte]); } catch { return null; }
+            try { return Convert.ToDouble(r[spalte]); }
+            catch (Exception ex) when (ex is FormatException || ex is InvalidCastException || ex is OverflowException)
+            {
+                return null;
+            }
         }
     }
 }

@@ -22344,7 +22344,7 @@ Do you want to allow this?</value>
     <value>The mode of section 9(1) no. 3 of the electricity tax act — it determines which exemption is applied.</value>
   </data>
   <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
-    <value>Does the plant have a device for waste-heat dissipation (section 2 no. 16 of the CHP act, second case)? Then its CHP electricity is not the net generation but min(net generation ; useful heat × power-to-heat ratio), and the full-load hours of the quota count from this CHP electricity.</value>
+    <value>Does the plant have a device for waste-heat dissipation (section 2 no. 16 of the CHP act, second case)? Then its CHP electricity is not the net generation but min(net generation ; useful heat × power-to-heat ratio) — it only determines the quantity paid; the full-load hours of the quota count as without the device, from the generated energy (gross ÷ rated electrical output).</value>
   </data>
   <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
     <value>The power-to-heat ratio σ of the plant for the second case of section 2 no. 16 of the CHP act. Empty means σ is formed from P_el ÷ P_th of the unit row; an own value applies permanently. σ is only read if the plant has a device for waste-heat dissipation.</value>
@@ -24405,10 +24405,10 @@ Do you want to allow this?</value>
     <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
-    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours from the CHP electricity {1} MWh ÷ {2} kW = {3} h/a (the whole module output would give {4} h/a); quota and annual cap count these hours.</value>
+    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours = generated energy ÷ P_rated = {1} MWh ÷ {2} kW = {3} h/a (gross at the terminals, as in case 1); quota and annual cap count these hours, the CHP electricity of {4} MWh only determines the quantity paid.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
-    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours from the CHP electricity of the combined plant {0} MWh ÷ {1} kW = {2} h/a (instead of {3} h/a); quota and annual cap count these hours.</value>
+    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours = generated energy ÷ P_rated = {0} MWh ÷ {1} kW = {2} h/a (gross at the terminals, as in case 1); quota and annual cap count these hours, the CHP electricity of {3} MWh only determines the quantity paid.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
     <value>The reduction below 0.01 MWh results from rounding σ or the quantities to 0.01 MWh.</value>
@@ -24463,6 +24463,135 @@ Do you want to allow this?</value>
   </data>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Catalogue list – ↑ and ↓ change the row, Home and End jump to the first and the last row</value>
+  </data>
+  <data name="KOH_PRUEFUNG_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Check “{0}” could not be run: {1}</value>
+  </data>
+  <data name="KOH_TP_HILFSENERGIE" xml:space="preserve">
+    <value>auxiliary energy maintained twice</value>
+  </data>
+  <data name="KOH_TP_PV_HERKUNFT" xml:space="preserve">
+    <value>origin of the PV remuneration</value>
+  </data>
+  <data name="KOH_TP_CO2_DOPPEL" xml:space="preserve">
+    <value>CO₂ counted twice</value>
+  </data>
+  <data name="KOH_TP_STROMMIX" xml:space="preserve">
+    <value>electricity-mix fallback</value>
+  </data>
+  <data name="KOH_TP_KWKG" xml:space="preserve">
+    <value>data gaps of the CHP Act calculation</value>
+  </data>
+  <data name="KOH_TP_BRENNSTOFF" xml:space="preserve">
+    <value>fuel side of the energy tax</value>
+  </data>
+  <data name="KOH_TP_MISCHLAGE" xml:space="preserve">
+    <value>mixed position sec. 53/53a next to sec. 54</value>
+  </data>
+  <data name="KOH_TP_STROM" xml:space="preserve">
+    <value>electricity side of the electricity tax</value>
+  </data>
+  <data name="KOH_TP_ERLAUBNIS" xml:space="preserve">
+    <value>licence threshold of the electricity tax</value>
+  </data>
+  <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
+    <value>double counting of the electricity tax exemption</value>
+  </data>
+  <data name="EMB_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Emission balance — step “{0}” could not be run: {1}</value>
+  </data>
+  <data name="EMB_STUFE_KATALOG" xml:space="preserve">
+    <value>catalogue of power plant parks</value>
+  </data>
+  <data name="EMB_STUFE_ERGEBNIS" xml:space="preserve">
+    <value>loading the result</value>
+  </data>
+  <data name="EMB_STUFE_BIOGEN" xml:space="preserve">
+    <value>biogenic classification of an energy carrier</value>
+  </data>
+  <data name="EMB_STUFE_REFKESSEL" xml:space="preserve">
+    <value>factors of the reference boiler</value>
+  </data>
+  <data name="EMQ_NICHT_LESBAR" xml:space="preserve">
+    <value>{0} not readable: {1}</value>
+  </data>
+  <data name="EMQ_WAS_BRENNSTOFF" xml:space="preserve">
+    <value>fuel catalogue</value>
+  </data>
+  <data name="EMQ_WAS_STROMTRAEGER" xml:space="preserve">
+    <value>electricity carrier of the project</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR" xml:space="preserve">
+    <value>factor of the electricity carrier</value>
+  </data>
+  <data name="EMQ_WAS_KATALOGTRAEGER" xml:space="preserve">
+    <value>delivered electricity carrier</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR_WAERME" xml:space="preserve">
+    <value>factor of the heat generator</value>
+  </data>
+  <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
+    <value>energy carrier of the heat generator</value>
+  </data>
+  <data name="WIRT_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Calculation step “{0}” could not be run: {1}</value>
+  </data>
+  <data name="WIRT_STUFE_PARAMETER" xml:space="preserve">
+    <value>project parameters</value>
+  </data>
+  <data name="WIRT_STUFE_TARIF" xml:space="preserve">
+    <value>electricity tariff of the project</value>
+  </data>
+  <data name="WIRT_STUFE_ANLAGEN" xml:space="preserve">
+    <value>plants of the project</value>
+  </data>
+  <data name="WIRT_STUFE_LEISTUNG" xml:space="preserve">
+    <value>electrical capacity of the CHP units</value>
+  </data>
+  <data name="WIRT_STUFE_TRAEGER" xml:space="preserve">
+    <value>energy carrier</value>
+  </data>
+  <data name="WIRT_STUFE_HEIZOEL" xml:space="preserve">
+    <value>heating oil check of the CHP units</value>
+  </data>
+  <data name="WIRT_STUFE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>operating costs</value>
+  </data>
+  <data name="WIRT_STUFE_KATALOG" xml:space="preserve">
+    <value>legal parameter catalogue</value>
+  </data>
+  <data name="WIRT_STUFE_KOHAERENZ" xml:space="preserve">
+    <value>coherence check</value>
+  </data>
+  <data name="WIRT_STUFE_SATZHERLEITUNG" xml:space="preserve">
+    <value>CHP Act rate derivation</value>
+  </data>
+  <data name="WIRT_STUFE_SPEICHERN" xml:space="preserve">
+    <value>saving the results</value>
+  </data>
+  <data name="WIRT_STUFE_LADEN" xml:space="preserve">
+    <value>loading the results</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU" xml:space="preserve">
+    <value>→ {0} {1} · {2} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_54" xml:space="preserve">
+    <value>→ {0} {1} − {2} € · {3} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE_SATZ" xml:space="preserve">
+    <value>→ {0} €/yr</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_GRUND" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_VOLL" xml:space="preserve">
+    <value>→ default · {0} €/yr under § 53</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_ENERGETISCH" xml:space="preserve">
+    <value>× {0} → {1} €/yr under § 53 — a deliberate lower bound</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
+    <value>The next run shows rate and amount for each option — the booked state does not carry them yet.</value>
   </data>
   <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
     <value>the constructed design day is invalid (no name or no draw-off event within the day).</value>

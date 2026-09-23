@@ -162,6 +162,31 @@ public class OptionsgruppeTests : BunitContext
         var cut = Render<Optionsgruppe>(p => p.Add(x => x.Eintraege, Quellen));
 
         Assert.Empty(cut.FindAll("p.epos-option-beschreibung"));
+        Assert.Empty(cut.FindAll("span.epos-option-wirkung"));
+    }
+
+    /// <summary>
+    /// ETAPPE E7c3 (Mockup U22): Die WIRKUNG steht IN der Zeile ihrer Option — im
+    /// <c>label</c> hinter dem Text, als eine Anzeigezeile je Wahl; ein Klick darauf
+    /// waehlt mit. Einen Absatz darunter gibt es dafuer nicht.
+    /// </summary>
+    [Fact]
+    public void Die_Wirkung_steht_in_der_Zeile_ihrer_Option()
+    {
+        int? gewaehlt = null;
+        var cut = Render<Optionsgruppe>(p => p
+            .Add(x => x.Eintraege, Quellen)
+            .Add(x => x.Wirkungen, new Dictionary<int, string> { [2] = "→ 5,50 €/MWh · 26.383,5 €/a" })
+            .Add(x => x.AuswahlChanged, (int? id) => gewaehlt = id));
+
+        var zeilen = cut.FindAll("label.epos-option");
+        Assert.Empty(zeilen[0].QuerySelectorAll("span.epos-option-wirkung"));
+        var wirkung = Assert.Single(zeilen[1].QuerySelectorAll("span.epos-option-wirkung"));
+        Assert.Equal("→ 5,50 €/MWh · 26.383,5 €/a", wirkung.TextContent);
+        Assert.Empty(cut.FindAll("p.epos-option-beschreibung"));
+
+        zeilen[1].QuerySelector("input[type=radio]")!.Change(true);
+        Assert.Equal(2, gewaehlt);
     }
 
     // =========================================================== Ein Eintrag je Aufruf

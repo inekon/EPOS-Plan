@@ -1360,6 +1360,17 @@ body {
     line-height: 1.4;
 }
 
+/* Die Wirkung einer Option IN ihrer Zeile (E7c3, Mockup U22: "→ Satz · Betrag").
+   Leise wie eine Herleitungszeile, Zahlen in Tabellenziffern; eine lange Wirkung
+   (Grund einer Sperre) bricht innerhalb der Zeile um, nicht unter den Wahlknopf. */
+.epos-option-wirkung {
+    flex: 1 1 0;
+    min-width: 0;
+    color: var(--epos-text-leise);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+}
+
 /* ==========================================================================
    Standards: Raster und Chartbild
    ========================================================================== */

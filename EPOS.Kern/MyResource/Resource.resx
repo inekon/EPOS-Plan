@@ -22351,7 +22351,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Modus des § 9 Abs. 1 Nr. 3 Stromsteuergesetz — er entscheidet, welche Befreiung angesetzt wird.</value>
   </data>
   <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
-    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom.</value>
+    <value>Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl) — er bestimmt allein die bezahlte Menge; die Vollbenutzungsstunden des Kontingents zählen wie ohne Vorrichtung nach der erzeugten Arbeit (brutto ÷ elektrische Nennleistung).</value>
   </data>
   <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
     <value>Die Stromkennzahl σ der Anlage für den zweiten Fall des § 2 Nr. 16 KWKG. Leer heißt: σ wird aus P_el ÷ P_th der Gerätezeile gebildet; ein eigener Wert gilt dauerhaft. Gelesen wird σ nur, wenn die Anlage eine Vorrichtung zur Abwärmeabfuhr hat.</value>
@@ -24412,10 +24412,10 @@ Möchten Sie das zulassen?</value>
     <value>Ob die Position am Ende des Betrachtungszeitraums einen linearen Restwert trägt: leer = wie bisher, ja oder nein.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
-    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+    <value>KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vbh = erzeugte Arbeit ÷ P_Nenn = {1} MWh ÷ {2} kW = {3} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {4} MWh bestimmt allein die bezahlte Menge.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
-    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden.</value>
+    <value>KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = {0} MWh ÷ {1} kW = {2} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {3} MWh bestimmt allein die bezahlte Menge.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
     <value>Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.</value>
@@ -24470,6 +24470,135 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_LISTE_TASTEN" xml:space="preserve">
     <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
+  </data>
+  <data name="KOH_PRUEFUNG_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Prüfung „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="KOH_TP_HILFSENERGIE" xml:space="preserve">
+    <value>Doppelpflege der Hilfsenergie</value>
+  </data>
+  <data name="KOH_TP_PV_HERKUNFT" xml:space="preserve">
+    <value>Herkunft der PV-Vergütung</value>
+  </data>
+  <data name="KOH_TP_CO2_DOPPEL" xml:space="preserve">
+    <value>CO₂-Doppelansatz</value>
+  </data>
+  <data name="KOH_TP_STROMMIX" xml:space="preserve">
+    <value>Strommix-Rückfall</value>
+  </data>
+  <data name="KOH_TP_KWKG" xml:space="preserve">
+    <value>Datenlücken der KWKG-Rechnung</value>
+  </data>
+  <data name="KOH_TP_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffseite der Energiesteuer</value>
+  </data>
+  <data name="KOH_TP_MISCHLAGE" xml:space="preserve">
+    <value>Mischlage § 53/§ 53a neben § 54</value>
+  </data>
+  <data name="KOH_TP_STROM" xml:space="preserve">
+    <value>Stromseite der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_ERLAUBNIS" xml:space="preserve">
+    <value>Erlaubnisschwelle der Stromsteuer</value>
+  </data>
+  <data name="KOH_TP_DOPPELZAEHLUNG" xml:space="preserve">
+    <value>Doppelzählung der Stromsteuerbefreiung</value>
+  </data>
+  <data name="EMB_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="EMB_STUFE_KATALOG" xml:space="preserve">
+    <value>Katalog der Kraftwerksparks</value>
+  </data>
+  <data name="EMB_STUFE_ERGEBNIS" xml:space="preserve">
+    <value>Laden des Ergebnisses</value>
+  </data>
+  <data name="EMB_STUFE_BIOGEN" xml:space="preserve">
+    <value>biogene Einstufung eines Energieträgers</value>
+  </data>
+  <data name="EMB_STUFE_REFKESSEL" xml:space="preserve">
+    <value>Faktoren des Referenzkessels</value>
+  </data>
+  <data name="EMQ_NICHT_LESBAR" xml:space="preserve">
+    <value>{0} nicht lesbar: {1}</value>
+  </data>
+  <data name="EMQ_WAS_BRENNSTOFF" xml:space="preserve">
+    <value>Brennstoffkatalog</value>
+  </data>
+  <data name="EMQ_WAS_STROMTRAEGER" xml:space="preserve">
+    <value>Stromträger des Projekts</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR" xml:space="preserve">
+    <value>Faktor des Stromträgers</value>
+  </data>
+  <data name="EMQ_WAS_KATALOGTRAEGER" xml:space="preserve">
+    <value>Auslieferungsträger Strom</value>
+  </data>
+  <data name="EMQ_WAS_FAKTOR_WAERME" xml:space="preserve">
+    <value>Faktor des Wärmeerzeugers</value>
+  </data>
+  <data name="EMQ_WAS_WAERMETRAEGER" xml:space="preserve">
+    <value>Energieträger des Wärmeerzeugers</value>
+  </data>
+  <data name="WIRT_STUFE_NICHT_AUSFUEHRBAR" xml:space="preserve">
+    <value>Rechenstufe „{0}“ nicht ausführbar: {1}</value>
+  </data>
+  <data name="WIRT_STUFE_PARAMETER" xml:space="preserve">
+    <value>Parameter des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_TARIF" xml:space="preserve">
+    <value>Stromtarif des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_ANLAGEN" xml:space="preserve">
+    <value>Anlagen des Projekts</value>
+  </data>
+  <data name="WIRT_STUFE_LEISTUNG" xml:space="preserve">
+    <value>elektrische Leistung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_TRAEGER" xml:space="preserve">
+    <value>Energieträger</value>
+  </data>
+  <data name="WIRT_STUFE_HEIZOEL" xml:space="preserve">
+    <value>Heizölprüfung der BHKW</value>
+  </data>
+  <data name="WIRT_STUFE_BETRIEBSKOSTEN" xml:space="preserve">
+    <value>Betriebskosten</value>
+  </data>
+  <data name="WIRT_STUFE_KATALOG" xml:space="preserve">
+    <value>Gesetzeskatalog</value>
+  </data>
+  <data name="WIRT_STUFE_KOHAERENZ" xml:space="preserve">
+    <value>Kohärenzprüfung</value>
+  </data>
+  <data name="WIRT_STUFE_SATZHERLEITUNG" xml:space="preserve">
+    <value>KWKG-Satzherleitung</value>
+  </data>
+  <data name="WIRT_STUFE_SPEICHERN" xml:space="preserve">
+    <value>Speichern der Ergebnisse</value>
+  </data>
+  <data name="WIRT_STUFE_LADEN" xml:space="preserve">
+    <value>Laden der Ergebnisse</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU" xml:space="preserve">
+    <value>→ {0} {1} · {2} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_54" xml:space="preserve">
+    <value>→ {0} {1} − {2} € · {3} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE_SATZ" xml:space="preserve">
+    <value>→ {0} €/a</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_GRUND" xml:space="preserve">
+    <value>{0} — {1}</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_VOLL" xml:space="preserve">
+    <value>→ Vorgabe · {0} €/a bei § 53</value>
+  </data>
+  <data name="BHW_UEB_AUF_VORSCHAU_ENERGETISCH" xml:space="preserve">
+    <value>× {0} → {1} €/a bei § 53 — bewusste Untergrenze</value>
+  </data>
+  <data name="BHW_UEB_ES_VORSCHAU_OHNE" xml:space="preserve">
+    <value>Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht.</value>
   </data>
   <data name="ZPG_SPEICHER_BEDARFSTAG_UNGUELTIG" xml:space="preserve">
     <value>der konstruierte Bedarfstag ist ungültig (ohne Namen oder ohne Zapfereignis im Tag).</value>

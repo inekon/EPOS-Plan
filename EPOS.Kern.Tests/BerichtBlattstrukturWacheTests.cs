@@ -57,7 +57,12 @@ namespace EPOS.Kern.Tests
             daten.Varianten.Add(Stand(STAMM, true, "Stammprojekt", 12000.0));
             daten.Varianten.Add(Stand(VARIANTE_A, false, "Variante A", 9000.0));
 
-            daten.Wirtschaftlichkeit = new WirtschaftlichkeitCtrl().Berechne(daten, Parametersatz());
+            // ETAPPE E7c3 (B‑6): OHNE Speichern. Die synthetischen Ids 9001/9002 stehen
+            // nicht in Tab_Projekt — das Speichern scheitert am Fremdschlüssel, und seit
+            // B‑6 steht das als Warnzeile „Rechenstufe „Speichern der Ergebnisse“ nicht
+            // ausführbar" an jedem Ergebnis; die Zeilen verschöben die Ankerzeilen des
+            // Blatts. Gespeichert wurde auch bisher nichts (der Fehler blieb still).
+            daten.Wirtschaftlichkeit = new WirtschaftlichkeitCtrl().Berechne(daten, Parametersatz(), 0, false);
             return daten;
         }
 

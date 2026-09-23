@@ -4699,6 +4699,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die × {0} → {1} €/a bei § 53 — bewusste Untergrenze ähnelt.
+        /// </summary>
+        public static string BHW_UEB_AUF_VORSCHAU_ENERGETISCH {
+            get {
+                return ResourceManager.GetString("BHW_UEB_AUF_VORSCHAU_ENERGETISCH", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → Vorgabe · {0} €/a bei § 53 ähnelt.
+        /// </summary>
+        public static string BHW_UEB_AUF_VORSCHAU_VOLL {
+            get {
+                return ResourceManager.GetString("BHW_UEB_AUF_VORSCHAU_VOLL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Befreiung § 9 Abs. 1 Nr. 3 ähnelt.
         /// </summary>
         public static string BHW_UEB_BEFREIUNG {
@@ -4785,6 +4803,51 @@ namespace WindowsFormsApplication1.MyResource {
         public static string BHW_UEB_ES_OHNE {
             get {
                 return ResourceManager.GetString("BHW_UEB_ES_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} {1} · {2} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} {1} − {2} € · {3} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_54 {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_54", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} — {1} ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_GRUND {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_GRUND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Satz und Betrag je Wahl nennt der nächste Lauf — der gebuchte Stand führt sie noch nicht. ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_OHNE {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_OHNE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die → {0} €/a ähnelt.
+        /// </summary>
+        public static string BHW_UEB_ES_VORSCHAU_OHNE_SATZ {
+            get {
+                return ResourceManager.GetString("BHW_UEB_ES_VORSCHAU_OHNE_SATZ", resourceCulture);
             }
         }
         
@@ -10211,6 +10274,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die biogene Einstufung eines Energieträgers ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_BIOGEN {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_BIOGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden des Ergebnisses ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_ERGEBNIS {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_ERGEBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalog der Kraftwerksparks ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_KATALOG {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Emissionsbilanz — Stufe „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktoren des Referenzkessels ähnelt.
+        /// </summary>
+        public static string EMB_STUFE_REFKESSEL {
+            get {
+                return ResourceManager.GetString("EMB_STUFE_REFKESSEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die ◆ geltend ähnelt.
         /// </summary>
         public static string EMK_AKTIV {
@@ -10747,6 +10855,69 @@ namespace WindowsFormsApplication1.MyResource {
         public static string EMK_WERT_VORLAGE {
             get {
                 return ResourceManager.GetString("EMK_WERT_VORLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} nicht lesbar: {1} ähnelt.
+        /// </summary>
+        public static string EMQ_NICHT_LESBAR {
+            get {
+                return ResourceManager.GetString("EMQ_NICHT_LESBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffkatalog ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor des Stromträgers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_FAKTOR {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_FAKTOR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Faktor des Wärmeerzeugers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_FAKTOR_WAERME {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_FAKTOR_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungsträger Strom ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_KATALOGTRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_KATALOGTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromträger des Projekts ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_STROMTRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_STROMTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger des Wärmeerzeugers ähnelt.
+        /// </summary>
+        public static string EMQ_WAS_WAERMETRAEGER {
+            get {
+                return ResourceManager.GetString("EMQ_WAS_WAERMETRAEGER", resourceCulture);
             }
         }
         
@@ -27899,7 +28070,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl), und die Vollbenutzungsstunden des Kontingents zählen aus diesem KWK-Strom. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Verfügt die Anlage über eine Vorrichtung zur Abwärmeabfuhr (§ 2 Nr. 16 KWKG, zweiter Fall)? Dann ist ihr KWK-Strom nicht die Nettostromerzeugung, sondern min(Nettostromerzeugung ; Nutzwärme × Stromkennzahl) — er bestimmt allein die bezahlte Menge; die Vollbenutzungsstunden des Kontingents zählen wie ohne Vorrichtung nach der erzeugten Arbeit (brutto ÷ elektrische Nennleistung). ähnelt.
         /// </summary>
         public static string KI_DLG_BHW_ABWAERME_ERL {
             get {
@@ -41434,6 +41605,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Prüfung „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string KOH_PRUEFUNG_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("KOH_PRUEFUNG_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Variante „{0}“ führt eine eigene, INAKTIVE PV-Vergütung, während das Stammprojekt „{1}“ eine aktive führt — gerechnet wird der flache Einspeisesatz. „Vom Stammprojekt übernehmen“ im Reiter Ertrag/Bonus löst es auf. ähnelt.
         /// </summary>
         public static string KOH_PV_EIGENE_INAKTIV {
@@ -41466,6 +41646,96 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KOH_STROMST_ERLAUBNIS {
             get {
                 return ResourceManager.GetString("KOH_STROMST_ERLAUBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Brennstoffseite der Energiesteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_BRENNSTOFF {
+            get {
+                return ResourceManager.GetString("KOH_TP_BRENNSTOFF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die CO₂-Doppelansatz ähnelt.
+        /// </summary>
+        public static string KOH_TP_CO2_DOPPEL {
+            get {
+                return ResourceManager.GetString("KOH_TP_CO2_DOPPEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelzählung der Stromsteuerbefreiung ähnelt.
+        /// </summary>
+        public static string KOH_TP_DOPPELZAEHLUNG {
+            get {
+                return ResourceManager.GetString("KOH_TP_DOPPELZAEHLUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Erlaubnisschwelle der Stromsteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_ERLAUBNIS {
+            get {
+                return ResourceManager.GetString("KOH_TP_ERLAUBNIS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Doppelpflege der Hilfsenergie ähnelt.
+        /// </summary>
+        public static string KOH_TP_HILFSENERGIE {
+            get {
+                return ResourceManager.GetString("KOH_TP_HILFSENERGIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Datenlücken der KWKG-Rechnung ähnelt.
+        /// </summary>
+        public static string KOH_TP_KWKG {
+            get {
+                return ResourceManager.GetString("KOH_TP_KWKG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Mischlage § 53/§ 53a neben § 54 ähnelt.
+        /// </summary>
+        public static string KOH_TP_MISCHLAGE {
+            get {
+                return ResourceManager.GetString("KOH_TP_MISCHLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Herkunft der PV-Vergütung ähnelt.
+        /// </summary>
+        public static string KOH_TP_PV_HERKUNFT {
+            get {
+                return ResourceManager.GetString("KOH_TP_PV_HERKUNFT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromseite der Stromsteuer ähnelt.
+        /// </summary>
+        public static string KOH_TP_STROM {
+            get {
+                return ResourceManager.GetString("KOH_TP_STROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Strommix-Rückfall ähnelt.
+        /// </summary>
+        public static string KOH_TP_STROMMIX {
+            get {
+                return ResourceManager.GetString("KOH_TP_STROMMIX", resourceCulture);
             }
         }
         
@@ -66607,7 +66877,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom {1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); Kontingent und Jahresdeckel zählen diese Stunden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vbh = erzeugte Arbeit ÷ P_Nenn = {1} MWh ÷ {2} kW = {3} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {4} MWh bestimmt allein die bezahlte Menge. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_FALL2_VBH {
             get {
@@ -66616,7 +66886,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); Kontingent und Jahresdeckel zählen diese Stunden. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = {0} MWh ÷ {1} kW = {2} h/a (brutto an den Klemmen, wie in Fall 1); Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom {3} MWh bestimmt allein die bezahlte Menge. ähnelt.
         /// </summary>
         public static string WIRT_KWKG_FALL2_VBH_ERSATZ {
             get {
@@ -67944,6 +68214,123 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_STROMTRAEGER_RUECKFALL {
             get {
                 return ResourceManager.GetString("WIRT_STROMTRAEGER_RUECKFALL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagen des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_ANLAGEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_ANLAGEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Betriebskosten ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_BETRIEBSKOSTEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_BETRIEBSKOSTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizölprüfung der BHKW ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_HEIZOEL {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_HEIZOEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Gesetzeskatalog ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_KATALOG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kohärenzprüfung ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_KOHAERENZ {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_KOHAERENZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Laden der Ergebnisse ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_LADEN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_LADEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die elektrische Leistung der BHKW ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_LEISTUNG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_LEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenstufe „{0}“ nicht ausführbar: {1} ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_NICHT_AUSFUEHRBAR {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_NICHT_AUSFUEHRBAR", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Parameter des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_PARAMETER {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_PARAMETER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG-Satzherleitung ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_SATZHERLEITUNG {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_SATZHERLEITUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Speichern der Ergebnisse ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_SPEICHERN {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Stromtarif des Projekts ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_TARIF {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_TARIF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Energieträger ähnelt.
+        /// </summary>
+        public static string WIRT_STUFE_TRAEGER {
+            get {
+                return ResourceManager.GetString("WIRT_STUFE_TRAEGER", resourceCulture);
             }
         }
         

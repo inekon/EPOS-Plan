@@ -58,7 +58,7 @@ namespace WindowsFormsApplication1
         /// <summary>Gesetzliche Einheit, siehe <c>DbWerte.GESETZ_EINHEIT_*</c>.</summary>
         public string Einheit { get; private set; }
 
-        /// <summary>GESICHERT / VORLAEUFIG / PROGNOSE, siehe <c>DbWerte.GESETZ_STATUS_*</c>.</summary>
+        /// <summary>GESICHERT / VORLAEUFIG / PROGNOSE / ABGEKUENDIGT, siehe <c>DbWerte.GESETZ_STATUS_*</c>.</summary>
         public string Status { get; private set; }
 
         /// <summary>Fundstelle oder Veröffentlichung, aus der der Wert stammt.</summary>
@@ -84,6 +84,7 @@ namespace WindowsFormsApplication1
         ///   <item><term>6</term><description>Etappe P4: die Jahresmarktwerte Solar</description></item>
         ///   <item><term>7</term><description>SP-E-3-Q1/S-6 (17.09.2026): der reduzierte Stromsteuersatz und die drei Umlagen (KWKG, Offshore, § 19 StromNEV)</description></item>
         ///   <item><term>8</term><description>Etappe E7c (A20, E7‑Q3, 23.09.2026): das Ende der Frist zur Inbetriebnahme nach KWKG (31.12.2030)</description></item>
+        ///   <item><term>9</term><description>Etappe E7c3 (23.09.2026): keine neue Zeile, nur <see cref="GesetzKatalog.Nachpflege"/> — Brennstoff 24 „Sonstige" mit H_i = H_s = 1,0; die KWKG-Zeilen ohne Leser als ABGEKUENDIGT gekennzeichnet (E7c1‑Q8)</description></item>
         /// </list>
         /// </summary>
         public int Generation { get; private set; }
@@ -364,14 +365,18 @@ namespace WindowsFormsApplication1
             };
         }
 
-        /// <summary>Die drei Statuswerte einer Zeile (gesichert / vorläufig / Prognose).</summary>
+        /// <summary>Die vier Statuswerte einer Zeile (gesichert / vorläufig / Prognose /
+        /// abgekündigt). ETAPPE E7c3: „abgekündigt" steht an einer Zeile ohne Leser
+        /// (Entscheid E7c1‑Q8); die Pflegemaske führt ihn, damit eine solche Zeile beim
+        /// Bearbeiten ihren Status behält.</summary>
         public static IReadOnlyList<string> Statuswerte()
         {
             return new[]
             {
                 DbWerte.GESETZ_STATUS_GESICHERT,
                 DbWerte.GESETZ_STATUS_VORLAEUFIG,
-                DbWerte.GESETZ_STATUS_PROGNOSE
+                DbWerte.GESETZ_STATUS_PROGNOSE,
+                DbWerte.GESETZ_STATUS_ABGEKUENDIGT
             };
         }
 
@@ -526,9 +531,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         public static bool Existiert(string klasse, string schluessel, int jahr, int ausserId)
         {
+            LetzterFehler = null;
             try
             {
-                object v = DataRepository.ExecuteScalar(
+                // ETAPPE E7c3 (B‑6): der strenge Leseweg, damit der Fang unten greift.
+                object v = StilleDb.ScalarStreng(
                     "SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER +
                     " WHERE Klasse = ? AND Schluessel = ? AND JahrVon = ? AND ID <> ?",
                     new DbParam("@kla", DbParamTyp.VarWChar, 40) { Wert = klasse ?? "" },
@@ -538,14 +545,41 @@ namespace WindowsFormsApplication1
                 return v != null && v != DBNull.Value &&
                        Convert.ToInt32(v, CultureInfo.InvariantCulture) > 0;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — „keine Dublette" wie bisher (der eindeutige
+                // Index aus Schritt 87 hält die Tabelle trotzdem), der Grund steht in
+                // LetzterFehler für die Pflegemaske.
+                LetzterFehler = Fehlergrund.Text(ex);
+                return false;
+            }
         }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der Grund, aus dem der letzte Schreib- oder
+        /// Prüfzugriff der Pflegemaske (<see cref="Existiert"/>, <see cref="Anlegen"/>,
+        /// <see cref="Aendern"/>, <see cref="Loeschen"/>) scheiterte; <c>null</c> = der
+        /// letzte gelang. Die Methoden melden ihr Scheitern weiter über ihren Rückgabewert
+        /// (0 / false) — die Pflegemaske kann den Grund daneben nennen. Einen
+        /// Datenbankfehler der drei Schreibwege meldet <c>DataRepository</c> wie jeden
+        /// Schreibfehler der Bedienung selbst (Dialog); hier steht dann kein zweiter Grund.
+        /// </summary>
+        public static string LetzterFehler { get; private set; }
+
+        /// <summary>
+        /// ETAPPE E7c3 (Befund B‑6) — der Grund, aus dem diese Instanz die Tabelle nicht
+        /// lesen konnte und deshalb aus der Rückfallebene rechnet
+        /// (<see cref="AusRueckfallebene"/>); <c>null</c> = gelesen, oder die Tabelle ist
+        /// leer bzw. fehlt (der bisherige, benannte Rückfall ohne Fehler).
+        /// </summary>
+        public string Lesefehler { get; private set; }
 
         /// <summary>Verwirft den Cache; der nächste Zugriff liest die Datenbank neu.</summary>
         public void Neuladen()
         {
             _reihen = null;
             AusRueckfallebene = false;
+            Lesefehler = null;
         }
 
         private List<GesetzParameter> ReiheRoh(string schluessel)
@@ -565,13 +599,17 @@ namespace WindowsFormsApplication1
             {
                 // Dialogfrei lesen: Fehlt die Tabelle, ist das kein Bedienfehler, sondern
                 // genau der Fall, für den die Rückfallebene unten da ist — eine
-                // MessageBox „Fehler beim Laden der Daten" wäre hier nur im Weg
-                // (DataRepository.FehlerMelden, Engine-Modus).
-                DataTable dt;
-                using (DataRepository.EngineModus())
-                    dt = DataRepository.GetDataTable(
+                // MessageBox „Fehler beim Laden der Daten" wäre hier nur im Weg.
+                // ETAPPE E7c3 (B‑6): Die fehlende Tabelle bleibt dieser benannte Rückfall
+                // ohne Fehler; jeder andere Abfragefehler erreicht über den strengen
+                // Leseweg (StilleDb.TabelleStreng) den Fang unten und steht in Lesefehler —
+                // bis E7c3 lieferte der Engine-Modus eine leere Tabelle, und die
+                // Rückfallebene sah aus wie ein leerer Katalog.
+                DataTable dt = StilleDb.TabelleVorhanden(TAB_GESETZESPARAMETER)
+                    ? StilleDb.TabelleStreng(
                         "SELECT ID, Schluessel, Klasse, JahrVon, [Wert], Einheit, [Status], Quelle " +
-                        "FROM " + TAB_GESETZESPARAMETER + " ORDER BY Schluessel, JahrVon");
+                        "FROM " + TAB_GESETZESPARAMETER + " ORDER BY Schluessel, JahrVon")
+                    : null;
                 if (dt != null)
                     foreach (DataRow r in dt.Rows)
                         roh.Add(new GesetzParameter(
@@ -584,7 +622,13 @@ namespace WindowsFormsApplication1
                             Text(r["Status"]),
                             Text(r["Quelle"])));
             }
-            catch { roh.Clear(); }
+            catch (Exception ex)
+            {
+                // ETAPPE E7c3 (B‑6): benannt — die Rückfallebene bleibt der Weg, der Grund
+                // steht in Lesefehler (die Wirtschaftlichkeit nennt ihn im Hinweis).
+                roh.Clear();
+                Lesefehler = Fehlergrund.Text(ex);
+            }
 
             // Rückfallebene wie bei Tab_KWKG_Staffel: lieber die Gesetzeswerte aus dem
             // Code als gar keine — eine fehlende Tabelle darf die Rechnung nicht kippen.
@@ -612,17 +656,26 @@ namespace WindowsFormsApplication1
             return o == null || o == DBNull.Value ? "" : o.ToString();
         }
 
+        /// <summary>Ganzzahl oder 0 (ETAPPE E7c3: benannt — nur die Fehler der Zahlumwandlung).</summary>
         private static int Ganzzahl(object o)
         {
             if (o == null || o == DBNull.Value) return 0;
-            try { return Convert.ToInt32(o); } catch { return 0; }
+            try { return Convert.ToInt32(o); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return 0; }
         }
 
+        /// <summary>Kommazahl oder <c>null</c> (ETAPPE E7c3: benannt — nur die Fehler der
+        /// Zahlumwandlung; <c>null</c> heißt „Satz entfallen", nie 0).</summary>
         private static double? Kommazahl(object o)
         {
             if (o == null || o == DBNull.Value) return null;
-            try { return Convert.ToDouble(o); } catch { return null; }
+            try { return Convert.ToDouble(o); }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return null; }
         }
+
+        /// <summary>Die drei Fehler einer Zahlumwandlung (ETAPPE E7c3, B‑6).</summary>
+        private static bool IstZahlfehler(Exception ex)
+            => ex is FormatException || ex is InvalidCastException || ex is OverflowException;
 
         // =====================================================================
         // Schreiben (Pflegemaske) — der einzige Schreibweg auf diese Tabelle
@@ -633,6 +686,7 @@ namespace WindowsFormsApplication1
                                   string einheit, string status, string quelle)
         {
             StelleKatalogSicher();
+            LetzterFehler = null;
             try
             {
                 int id = DataRepository.GetMaxID(TAB_GESETZESPARAMETER) + 1;
@@ -651,7 +705,11 @@ namespace WindowsFormsApplication1
                     new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) });
                 return ok ? id : 0;
             }
-            catch { return 0; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return 0;
+            }
         }
 
         /// <summary>Ändert eine vorhandene Zeile (Schlüssel und Klasse bleiben unangetastet).</summary>
@@ -659,6 +717,7 @@ namespace WindowsFormsApplication1
                                    string status, string quelle)
         {
             if (id <= 0) return false;
+            LetzterFehler = null;
             try
             {
                 return DataRepository.ExecuteSQL(
@@ -672,20 +731,29 @@ namespace WindowsFormsApplication1
                     new DbParam("@que", DbParamTyp.VarWChar, 120) { Wert = Gekuerzt(quelle, 120) },
                     new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
 
         /// <summary>Löscht eine Zeile.</summary>
         public static bool Loeschen(int id)
         {
             if (id <= 0) return false;
+            LetzterFehler = null;
             try
             {
                 return DataRepository.ExecuteSQL(
                     "DELETE FROM " + TAB_GESETZESPARAMETER + " WHERE ID = ?",
                     new DbParam("@id", DbParamTyp.Integer) { Wert = id });
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+                LetzterFehler = Fehlergrund.Text(ex);   // ETAPPE E7c3 (B‑6): benannt
+                return false;
+            }
         }
 
         private static object Gekuerzt(string s, int laenge)
@@ -701,8 +769,9 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Höchste Generation, die <see cref="Vorbelegung"/> führt (Etappe E6). Nach
-        /// einem Lauf von <see cref="StelleKatalogSicher"/> steht die Markerzeile
+        /// Höchste Generation, die <see cref="Vorbelegung"/> oder die
+        /// <see cref="Nachpflege"/> führt (Etappe E6, E7c3). Nach einem Lauf von
+        /// <see cref="StelleKatalogSicher"/> steht die Markerzeile
         /// <c>DbWerte.GESETZ_KATALOG_GENERATION</c> auf diesem Wert.
         /// </summary>
         public static int AktuelleGeneration
@@ -712,9 +781,36 @@ namespace WindowsFormsApplication1
                 int max = 0;
                 foreach (GesetzParameter p in Vorbelegung())
                     if (p.Generation > max) max = p.Generation;
+                foreach (Nachpflegeschritt s in Nachpflege())
+                    if (s.Generation > max) max = s.Generation;
                 return max;
             }
         }
+
+        /// <summary>
+        /// Höchste Generation, die eine ZEILE der <see cref="Vorbelegung"/> trägt — die
+        /// Generation der letzten Nachsaat im engeren Sinn (neue Zeilen). Sie liegt unter
+        /// <see cref="AktuelleGeneration"/>, wenn eine jüngere Generation nur pflegt
+        /// (ETAPPE E7c3, <see cref="Nachpflege"/>).
+        /// </summary>
+        public static int JuengsteSaatgeneration
+        {
+            get
+            {
+                int max = 0;
+                foreach (GesetzParameter p in Vorbelegung())
+                    if (p.Generation > max) max = p.Generation;
+                return max;
+            }
+        }
+
+        /// <summary>
+        /// Zahl der Zeilen, die der letzte Lauf von <see cref="StelleKatalogSicher"/>
+        /// über die <see cref="Nachpflege"/> geändert hat (ETAPPE E7c3) — 0 bei einer
+        /// Datenbank, die schon auf der aktuellen Generation steht. Diagnosegröße wie
+        /// <see cref="ZuletztNachgesaet"/>.
+        /// </summary>
+        public static int ZuletztNachgepflegt { get; private set; }
 
         /// <summary>
         /// Zahl der Zeilen, die der letzte Lauf von <see cref="StelleKatalogSicher"/>
@@ -804,6 +900,7 @@ namespace WindowsFormsApplication1
         public static void StelleKatalogSicher()
         {
             ZuletztNachgesaet = 0;
+            ZuletztNachgepflegt = 0;
             _saatwarnungen.Clear();
             try
             {
@@ -821,7 +918,13 @@ namespace WindowsFormsApplication1
                             "\"Status\" TEXT CHECK (length(\"Status\") <= 12), " +
                             "\"Quelle\" TEXT CHECK (length(\"Quelle\") <= 120))");
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    // ETAPPE E7c3 (B‑6): benannt — die Anlage der Tabelle ist Vorsorge; ihr
+                    // Scheitern steht jetzt in den SaatWarnungen, die Saat darunter
+                    // versucht es trotzdem (und scheitert dann benannt).
+                    Warnen(ex);
+                }
 
                 try
                 {
@@ -864,8 +967,15 @@ namespace WindowsFormsApplication1
                             WarnenDublette(p, ex.Message);
                         }
                     }
+
+                    // ETAPPE E7c3 — die Nachpflege der Generationen über dem Saatstand:
+                    // bestehende Zeilen, die eine jüngere Generation pflegt, ohne eine neue
+                    // zu säen. Scheitert ein Schritt, wirft er — der Marker steigt dann
+                    // nicht, und der Grund steht in den SaatWarnungen (wie bei der Saat).
+                    int gepflegt = Nachpflegen(gesaet);
                     MarkerSetzen(ziel, ref id);
                     ZuletztNachgesaet = neu;
+                    ZuletztNachgepflegt = gepflegt;
                 }
                 catch (Exception ex)
                 {
@@ -882,6 +992,148 @@ namespace WindowsFormsApplication1
             }
         }
 
+        // =====================================================================
+        // ETAPPE E7c3 — Nachpflege: Generationen, die bestehende Zeilen pflegen
+        // =====================================================================
+
+        /// <summary>
+        /// Ein Schritt der <b>Nachpflege</b> (ETAPPE E7c3): Er gehört zu einer Generation
+        /// wie eine Zeile der <see cref="Vorbelegung"/>, sät aber keine neue Zeile,
+        /// sondern pflegt bestehende — in jeder Datenbank, deren Saatstand unter seiner
+        /// Generation liegt, genau einmal (danach steht der Marker darüber).
+        ///
+        /// <para><b>Warum kein Schemaschritt.</b> Die Generationsmarke wirkt beim Start
+        /// jeder Schale und beim ersten Katalogzugriff ohne DDL und ohne Schrittnummer;
+        /// dieselbe Nachsaat, die seit E6 neue Schlüssel bringt (Generation 8), trägt
+        /// damit auch die zwei Pflegen des Auftrags E7c3. Jeder Schritt ist
+        /// <b>bedingt</b> (er schreibt nur, wo der ausgelieferte Stand noch steht) und
+        /// damit wiederholbar; ein Fehlschlag wirft, und der Marker steigt nicht.</para>
+        /// </summary>
+        public sealed class Nachpflegeschritt
+        {
+            /// <summary>Die Generation, zu der der Schritt gehört.</summary>
+            public int Generation { get; }
+
+            /// <summary>Kurzname für Protokoll und Warnung.</summary>
+            public string Name { get; }
+
+            /// <summary>Die Tabelle, die der Schritt pflegt — fehlt sie, gibt es nichts zu
+            /// pflegen, und der Schritt gilt als erledigt.</summary>
+            public string Tabelle { get; }
+
+            /// <summary>Die bedingte Anweisung.</summary>
+            public string Sql { get; }
+
+            private readonly Func<DbParam[]> _parameter;
+
+            internal Nachpflegeschritt(int generation, string name, string tabelle, string sql,
+                                       Func<DbParam[]> parameter)
+            {
+                Generation = generation;
+                Name = name;
+                Tabelle = tabelle;
+                Sql = sql;
+                _parameter = parameter;
+            }
+
+            /// <summary>Die Parameter der Anweisung, je Aufruf frisch.</summary>
+            public DbParam[] Parameter() => _parameter();
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3, Punkt 6 — Brennstoff 24 „Sonstige": H_i = H_s = 1,0 im Stamm. Der
+        /// Stammtext rechnet seit Schemaschritt 113 in kWh (Entscheid E7c2‑Q4), sein
+        /// Heizwert stand aber auf 0 — ein neu zugeordneter Träger bekäme in seiner
+        /// Preishistorie den Heizwert 0 (<c>WizardCtrl.TraegerSatzAnlegen</c> liest
+        /// H_i aus dieser Zeile). 1,0 kWh je kWh wie Strom (13) und Fernwärme (23).
+        /// Gesetzt wird nur, wo BEIDE Werte noch leer oder 0 sind.
+        /// </summary>
+        public const string SQL_NACHPFLEGE_SONSTIGE_HEIZWERT =
+            "UPDATE [Tab_Brennstoff_Stamm] SET [Hi] = ?, [Hs] = ? WHERE [ID] = ? " +
+            "AND COALESCE([Hi], 0) = 0 AND COALESCE([Hs], 0) = 0";
+
+        /// <summary>Der Heizwert des Brennstoffs 24 nach der Nachpflege [kWh je kWh].</summary>
+        public const double SONSTIGE_HEIZWERT = 1.0;
+
+        /// <summary>
+        /// ETAPPE E7c3, Punkt 7 — Entscheid E7c1‑Q8: die zwei Katalogzeilen ohne Leser
+        /// (<c>KWKG_REALISIERUNGSFRIST</c>, <c>KWKG_STICHTAG_DAUERBETRIEB</c>) tragen den
+        /// Status <c>ABGEKUENDIGT</c>. Gelöscht wird nichts, Wert, Stichjahr und Quelle
+        /// bleiben; jede Zeile dieser zwei Schlüssel der Klasse KWKG wird gekennzeichnet.
+        /// </summary>
+        public const string SQL_NACHPFLEGE_ABGEKUENDIGT =
+            "UPDATE [Tab_Gesetzesparameter] SET [Status] = ? WHERE [Klasse] = ? " +
+            "AND [Schluessel] IN (?, ?) AND COALESCE([Status], '') <> ?";
+
+        /// <summary>Die Schlüssel ohne Leser, die die Generation 9 als abgekündigt
+        /// kennzeichnet (Entscheid E7c1‑Q8).</summary>
+        public static readonly string[] ABGEKUENDIGTE_SCHLUESSEL =
+        {
+            DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST,
+            DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB
+        };
+
+        private static List<Nachpflegeschritt> _nachpflege;
+
+        /// <summary>
+        /// Die Schritte der Nachpflege in Generationsreihenfolge (ETAPPE E7c3).
+        /// <list type="table">
+        ///   <item><term>9</term><description>Brennstoff 24 „Sonstige": H_i = H_s = 1,0 (Punkt 6)</description></item>
+        ///   <item><term>9</term><description>zwei KWKG-Zeilen ohne Leser: Status ABGEKUENDIGT (Punkt 7, E7c1‑Q8)</description></item>
+        /// </list>
+        /// </summary>
+        public static IReadOnlyList<Nachpflegeschritt> Nachpflege()
+        {
+            if (_nachpflege != null) return _nachpflege;
+            var l = new List<Nachpflegeschritt>
+            {
+                new Nachpflegeschritt(9, "Brennstoff 24 Sonstige: Hi = Hs = 1,0", "Tab_Brennstoff_Stamm",
+                    SQL_NACHPFLEGE_SONSTIGE_HEIZWERT,
+                    () => new[]
+                    {
+                        new DbParam("@hi", SONSTIGE_HEIZWERT),
+                        new DbParam("@hs", SONSTIGE_HEIZWERT),
+                        new DbParam("@id", GaseNormkubikmeter.SONSTIGE)
+                    }),
+                new Nachpflegeschritt(9, "KWKG-Zeilen ohne Leser: abgekuendigt", TAB_GESETZESPARAMETER,
+                    SQL_NACHPFLEGE_ABGEKUENDIGT,
+                    () => new[]
+                    {
+                        new DbParam("@st", DbWerte.GESETZ_STATUS_ABGEKUENDIGT),
+                        new DbParam("@k", DbWerte.GESETZ_KLASSE_KWKG),
+                        new DbParam("@s1", ABGEKUENDIGTE_SCHLUESSEL[0]),
+                        new DbParam("@s2", ABGEKUENDIGTE_SCHLUESSEL[1]),
+                        new DbParam("@st2", DbWerte.GESETZ_STATUS_ABGEKUENDIGT)
+                    }),
+            };
+            _nachpflege = l;
+            return _nachpflege;
+        }
+
+        /// <summary>
+        /// Führt die Schritte der <see cref="Nachpflege"/> aus, deren Generation über
+        /// <paramref name="gesaet"/> liegt, und liefert die Zahl der geänderten Zeilen.
+        /// Fehlt die Tabelle eines Schritts, ist er gegenstandslos. Scheitert eine
+        /// Anweisung, wirft die Methode mit Schrittname und Grund — der Aufrufer hebt den
+        /// Marker dann nicht (dieselbe Regel wie bei der Saat, AUFTRAG US-1).
+        /// </summary>
+        private static int Nachpflegen(int gesaet)
+        {
+            int summe = 0;
+            foreach (Nachpflegeschritt s in Nachpflege())
+            {
+                if (s.Generation <= gesaet) continue;
+                if (!StilleDb.TabelleVorhanden(s.Tabelle)) continue;
+                int n = StilleDb.NonQuery(s.Sql, s.Parameter());
+                if (n < 0)
+                    throw new InvalidOperationException(
+                        "Nachpflege der Generation " + s.Generation.ToString(CultureInfo.InvariantCulture) +
+                        " („" + s.Name + "“) gescheitert: " + StilleDb.LetzterSchreibfehler);
+                summe += n;
+            }
+            return summe;
+        }
+
         /// <summary>
         /// Bis zu welcher Generation diese Datenbank gesät wurde. <b>Leere Tabelle = 0</b>
         /// (dann wird alles gesät, wie vor Etappe E6). Eine gefüllte Tabelle <b>ohne</b>
@@ -895,7 +1147,10 @@ namespace WindowsFormsApplication1
 
             if (marker != null && marker != DBNull.Value)
             {
-                try { return (int)Math.Round(Convert.ToDouble(marker)); } catch { }
+                // ETAPPE E7c3 (B‑6): benannt — nur die Fehler der Zahlumwandlung; ein
+                // unlesbarer Marker zählt wie „kein Marker" (Zeilenzahl entscheidet).
+                try { return (int)Math.Round(Convert.ToDouble(marker)); }
+                catch (Exception ex) when (IstZahlfehler(ex)) { }
             }
 
             object anz = StilleDb.Scalar("SELECT COUNT(*) FROM " + TAB_GESETZESPARAMETER);
@@ -920,7 +1175,11 @@ namespace WindowsFormsApplication1
                 object o = StilleDb.Scalar("SELECT MAX(ID) FROM " + TAB_GESETZESPARAMETER);
                 if (o != null && o != DBNull.Value) return Convert.ToInt32(o);
             }
-            catch { }
+            catch (Exception ex) when (IstZahlfehler(ex))
+            {
+                // ETAPPE E7c3 (B‑6): benannt — StilleDb wirft nicht; es bleibt die
+                // Zahlumwandlung. Eine falsche 0 fängt der eindeutige Index beim INSERT.
+            }
             return 0;
         }
 
@@ -973,7 +1232,7 @@ namespace WindowsFormsApplication1
 
             if (anz == null || anz == DBNull.Value) return false;
             try { return Convert.ToInt32(anz, CultureInfo.InvariantCulture) > 0; }
-            catch { return false; }
+            catch (Exception ex) when (IstZahlfehler(ex)) { return false; }   // E7c3 (B‑6): benannt
         }
 
         /// <summary>
@@ -1185,9 +1444,13 @@ namespace WindowsFormsApplication1
             l.Add(N(DbWerte.GESETZ_KWKG_PAUSCHALE_BIS2KW_VBH, KWKG, 2020, 60000.0, H, G, Q_PAUSCH));
             l.Add(N(DbWerte.GESETZ_KWKG_PAUSCHALE_GRENZE, KWKG, 2020, 2.0, KW, G, Q_PAUSCH));
 
-            l.Add(N(DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB, KWKG, 2020, 2026.0, JAHR, G,
+            // ETAPPE E7c3 (Entscheid E7c1‑Q8): Die zwei Zeilen haben seit E7c1 (A20) keinen
+            // Leser mehr — sie bleiben gesät, tragen aber den Status ABGEKUENDIGT; in
+            // Datenbanken mit älterem Saatstand setzt ihn die Nachpflege der Generation 9.
+            const string A = DbWerte.GESETZ_STATUS_ABGEKUENDIGT;
+            l.Add(N(DbWerte.GESETZ_KWKG_STICHTAG_DAUERBETRIEB, KWKG, 2020, 2026.0, JAHR, A,
                     "KWKG 2025 § 6 Abs. 1 — Dauerbetrieb bis zum 31.12. dieses Jahres"));
-            l.Add(N(DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST, KWKG, 2025, 4.0, JAHR, G,
+            l.Add(N(DbWerte.GESETZ_KWKG_REALISIERUNGSFRIST, KWKG, 2025, 4.0, JAHR, A,
                     "KWKG 2025 § 6 — Novelle 2025: bis 4 Jahre später bei Genehmigung/Beauftragung"));
 
             // GENERATION 8 (Etappe E7c, A20, Entscheid E7-Q3 Lesart b vom 23.09.2026): das
