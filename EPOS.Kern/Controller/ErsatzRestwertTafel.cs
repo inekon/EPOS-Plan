@@ -77,6 +77,13 @@ namespace WindowsFormsApplication1
             public int StartJahr;
             public bool IstErloes;
             public int? NutzungsdauerId;
+
+            /// <summary>ETAPPE E7c (Schritt E): die zwei Kennzeichen der Position;
+            /// <c>null</c> = wie bisher.</summary>
+            public bool? ErsatzFuehren;
+
+            /// <inheritdoc cref="ErsatzFuehren"/>
+            public bool? RestwertAnsetzen;
         }
 
         // =====================================================================
@@ -121,7 +128,10 @@ namespace WindowsFormsApplication1
                     {
                         Betrag = e.Betrag,
                         Nutzungsdauer = e.Nutzungsdauer ?? 0,
-                        StartJahr = e.StartJahr
+                        StartJahr = e.StartJahr,
+                        // E7c (Schritt E): dieselben Kennzeichen wie im Kapitalwert.
+                        ErsatzFuehren = e.ErsatzFuehren,
+                        RestwertAnsetzen = e.RestwertAnsetzen
                     },
                     T, preisstInvestProzent);
 
@@ -152,8 +162,11 @@ namespace WindowsFormsApplication1
                                         b.Nutzungsdauer.ToString("0.#", k)),
                     Ersatz = ErsatzText(b, T, k),
                     ErsatzBarwert = ersatzNominal == 0 ? "" : Barwert(ersatzBarwert, k),
+                    // E7c (Schritt E): Ein abgewählter Restwert steht als GRUND da,
+                    // nicht als 0,00 — die Herleitung je Position.
                     Restwert = b.OhneDauer ? MyResource.Resource.ND_TAFEL_STRICH
-                                           : Geld(b.Restwert, k),
+                             : b.RestwertAbgewaehlt ? MyResource.Resource.ND_TAFEL_RESTWERT_AUS
+                                                    : Geld(b.Restwert, k),
                     RestwertBarwert = b.Restwert == 0 ? "" : Barwert(restwertBarwert, k),
                     Herkunft = NutzungsdauerCtrl.Herkunft(komponentenId, e.NutzungsdauerId,
                                                           e.Nutzungsdauer)
@@ -189,6 +202,10 @@ namespace WindowsFormsApplication1
         {
             if (b.Ausserhalb) return MyResource.Resource.ND_TAFEL_STRICH;
             if (b.Ersatzjahre.Count > 0) return JahreText(b.Ersatzjahre, k);
+            // E7c (Schritt E): abgewählt ist ein GRUND, kein Strich — die Herleitung je
+            // Position nennt ihn, sobald die Dauer innerhalb von T abliefe.
+            if (b.ErsatzAbgewaehlt && !b.OhneDauer && b.Nutzungsdauer < t - 1e-9)
+                return MyResource.Resource.ND_TAFEL_ERSATZ_AUS;
             if (b.OhneDauer) return MyResource.Resource.ND_TAFEL_WIE_T;
             if (Math.Abs(b.Nutzungsdauer - t) < 1e-9) return MyResource.Resource.ND_TAFEL_GLEICH_T;
             return MyResource.Resource.ND_TAFEL_STRICH;

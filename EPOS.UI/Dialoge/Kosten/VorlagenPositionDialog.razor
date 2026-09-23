@@ -69,6 +69,26 @@
                 <Herleitungszeile Text="@InfoPositionsart" />
             }
 
+            @* ETAPPE E7c (Schritt E, Entscheid A6, Mockup U39): ERSATZ UND RESTWERT JE
+               POSITION, entkoppelt und dreiwertig - leer (wie bisher), ja, nein. Nur auf
+               der Investitionsseite und nur, wo die Datenbank die Spalten fuehrt
+               (Schemaschritt 108); sonst steht das Feld gar nicht erst da. Die Eintraege,
+               der Platzhalter und die Herleitungszeile kommen fertig aus dem Kern. *@
+            @if (MitKennzeichen)
+            {
+                <Auswahlfeld Bezeichnung="@LabelErsatz"
+                             Eintraege="@Kennzeichen"
+                             Platzhalter="@KennzeichenLeer"
+                             Auswahl="@_ersatz"
+                             AuswahlChanged="BeiErsatz" />
+                <Auswahlfeld Bezeichnung="@LabelRestwert"
+                             Eintraege="@Kennzeichen"
+                             Platzhalter="@KennzeichenLeer"
+                             Auswahl="@_restwert"
+                             AuswahlChanged="BeiRestwert" />
+                <Herleitungszeile Text="@InfoKennzeichen" />
+            }
+
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungVon" Wert="@_empfVon" WertChanged="BeiEmpfVon" />
 
             <Zahlenfeld Bezeichnung="@LabelEmpfehlungBis" Wert="@_empfBis" WertChanged="BeiEmpfBis" />
@@ -128,6 +148,36 @@
     /// <summary>Die Positionsart beim Oeffnen; <c>null</c> = keine.</summary>
     [Parameter] public int? PositionsartId { get; set; }
 
+    /// <summary>
+    /// ETAPPE E7c (Schritt E): Zeigt der Dialog die zwei Kennzeichen „Ersatzbeschaffung
+    /// führen" und „Restwert ansetzen"? Die Huelle setzt es auf der Investitionsseite,
+    /// sofern die Datenbank die Spalten fuehrt (Schemaschritt 108).
+    /// </summary>
+    [Parameter] public bool MitKennzeichen { get; set; }
+
+    /// <summary>ETAPPE E7c: die Eintraege beider Klapplisten („ja", „nein") — fertig
+    /// uebersetzt; leer ist der Platzhalter (<see cref="KennzeichenLeer"/>).</summary>
+    [Parameter] public IReadOnlyList<(int Id, string Text)> Kennzeichen { get; set; }
+        = Array.Empty<(int, string)>();
+
+    /// <summary>ETAPPE E7c: der Platzhalter beider Klapplisten — leer = wie bisher.</summary>
+    [Parameter] public string KennzeichenLeer { get; set; } = "(leer — wie bisher)";
+
+    /// <summary>ETAPPE E7c: „Ersatzbeschaffung führen" beim Oeffnen; <c>null</c> = leer.</summary>
+    [Parameter] public int? ErsatzAuswahl { get; set; }
+
+    /// <summary>ETAPPE E7c: „Restwert ansetzen" beim Oeffnen; <c>null</c> = leer.</summary>
+    [Parameter] public int? RestwertAuswahl { get; set; }
+
+    /// <summary>ETAPPE E7c: Beschriftung der ersten Klappliste.</summary>
+    [Parameter] public string LabelErsatz { get; set; } = "Ersatzbeschaffung führen:";
+
+    /// <summary>ETAPPE E7c: Beschriftung der zweiten Klappliste.</summary>
+    [Parameter] public string LabelRestwert { get; set; } = "Restwert ansetzen:";
+
+    /// <summary>ETAPPE E7c: die Herleitungszeile unter beiden Klapplisten.</summary>
+    [Parameter] public string InfoKennzeichen { get; set; } = "";
+
     /// <summary>Das Ergebnis bei OK, <c>null</c> bei Abbrechen. Geschlossen wird von der Huelle.</summary>
     [Parameter] public EventCallback<VorlagenPositionErgebnis?> Geschlossen { get; set; }
 
@@ -184,7 +234,15 @@
     private double? _empfVon;
     private double? _empfBis;
     private int? _positionsart;
+    private int? _ersatz;
+    private int? _restwert;
     private string _meldung = "";
+
+    /// <summary>ETAPPE E7c: die Wahl „Ersatzbeschaffung führen" (Pruefhilfe fuer Tests).</summary>
+    public int? Ersatz => _ersatz;
+
+    /// <summary>ETAPPE E7c: die Wahl „Restwert ansetzen" (Pruefhilfe fuer Tests).</summary>
+    public int? Restwert => _restwert;
 
     /// <summary>Die gewaehlte Kostenart (Pruefhilfe fuer Tests).</summary>
     public int? Kostenart => _kostenart;
@@ -202,6 +260,12 @@
         // auf "keine" zurueck - dieselbe Vorsicht wie bei der Kostenart.
         _positionsart = PositionsartId.HasValue && ArtBekannt(PositionsartId.Value)
             ? PositionsartId : null;
+        // ETAPPE E7c: Eine unbekannte Wahl faellt auf leer (wie bisher) zurueck -
+        // dieselbe Vorsicht wie bei der Positionsart.
+        _ersatz = ErsatzAuswahl.HasValue && KennzeichenBekannt(ErsatzAuswahl.Value)
+            ? ErsatzAuswahl : null;
+        _restwert = RestwertAuswahl.HasValue && KennzeichenBekannt(RestwertAuswahl.Value)
+            ? RestwertAuswahl : null;
         // Wie SetControls: eine unbekannte Kostenart faellt auf "sonstige" zurueck.
         _kostenart = KostenartId.HasValue && Bekannt(KostenartId.Value)
             ? KostenartId : RueckfallKostenartId;
@@ -245,7 +309,17 @@
             VonLesen = () => _empfVon,
             VonSetzen = w => _empfVon = w,
             BisLesen = () => _empfBis,
-            BisSetzen = w => _empfBis = w
+            BisSetzen = w => _empfBis = w,
+
+            // ETAPPE E7c (Schritt E): die zwei Kennzeichen — nur, wenn der Dialog sie
+            // zeigt; sonst liefert die Wahlliste nichts und der Assistent setzt nichts.
+            ErsatzLesen = () => _ersatz,
+            ErsatzSetzen = w => { if (MitKennzeichen) BeiErsatz(w); },
+            RestwertLesen = () => _restwert,
+            RestwertSetzen = w => { if (MitKennzeichen) BeiRestwert(w); },
+            KennzeichenEintraege = () => MitKennzeichen
+                ? KiMaskenanmeldung.Eintraege(Kennzeichen, z => z.Id, z => z.Text)
+                : Array.Empty<KiKern.KiWahleintrag>()
         };
     }
 
@@ -299,6 +373,19 @@
 
     private void BeiPositionsart(int? id) => _positionsart = id;
 
+    private bool KennzeichenBekannt(int id)
+    {
+        foreach (var eintrag in Kennzeichen)
+        {
+            if (eintrag.Id == id) return true;
+        }
+        return false;
+    }
+
+    private void BeiErsatz(int? id) => _ersatz = id.HasValue && KennzeichenBekannt(id.Value) ? id : null;
+
+    private void BeiRestwert(int? id) => _restwert = id.HasValue && KennzeichenBekannt(id.Value) ? id : null;
+
     private void BeiErloes(bool wert) => _istErloes = wert;
 
     private void BeiEmpfVon(double? wert) => _empfVon = wert;
@@ -328,7 +415,9 @@
             _istErloes,
             _empfVon,
             _empfBis,
-            _positionsart));
+            _positionsart,
+            MitKennzeichen ? _ersatz : null,
+            MitKennzeichen ? _restwert : null));
     }
 
     private Task BeiTaste(KeyboardEventArgs e) => e.Key switch

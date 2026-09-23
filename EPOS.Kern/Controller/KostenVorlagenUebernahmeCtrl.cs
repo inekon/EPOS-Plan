@@ -180,6 +180,11 @@ namespace WindowsFormsApplication1
                 HerkunftUndNutzungsdauer(id, vorlage.Id, p.Nutzungsdauer,
                                          p.NutzungsdauerId, vorlage.KomponentenId,
                                          vorlage.KategorieId);
+                // ETAPPE E7c (Schritt E): Die Kennzeichen der Vorlagenposition wandern in
+                // die frische Projektzeile — wie die Positionsart. Leer bleibt leer.
+                if (p.ErsatzFuehren.HasValue || p.RestwertAnsetzen.HasValue)
+                    ErsatzRestwertKennzeichen.Schreibe(SchemaKatalog.TAB_PROJEKTWERTE, id,
+                                                       p.ErsatzFuehren, p.RestwertAnsetzen);
                 if (idAnlage > 0) KostenProjektPositionenCtrl.AnlageZuordnen(id, idAnlage);
                 // ETAPPE H3: Das Pflichtmerkmal wandert bei JEDER Übernahme mit —
                 // die H1-Saat markierte nur den Bestand; ohne die Durchreichung
@@ -330,6 +335,15 @@ namespace WindowsFormsApplication1
                               quellProjektId + "))";
             }
 
+            // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Quellzeile wandern mit —
+            // nur, wo es die Spalten gibt (Schritt 108).
+            bool mitKennzeichen = ErsatzRestwertKennzeichen.SpaltenVorhanden(
+                SchemaKatalog.TAB_PROJEKTWERTE);
+            string kennzeichenSpalten = mitKennzeichen
+                ? ", [" + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + "], [" +
+                  SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + "]"
+                : "";
+
             DataTable dt = DataRepository.GetDataTable(
                 "SELECT StammID, EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
                 "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer, Einheit, Gruppe, [" +
@@ -339,7 +353,7 @@ namespace WindowsFormsApplication1
                 SchemaKatalog.SPALTE_PW_MENGE + "], [" +
                 SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
                 SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
-                SchemaKatalog.SPALTE_PW_STARTJAHR + "] " +
+                SchemaKatalog.SPALTE_PW_STARTJAHR + "]" + kennzeichenSpalten + " " +
                 "FROM Tab_ProjektWerte WHERE ProjektID = ? AND KomponentenID = ? AND KategorieID = ?" +
                 quellFilter,
                 quellParameter.ToArray());
@@ -360,18 +374,8 @@ namespace WindowsFormsApplication1
                     continue;
                 }
 
-                int n = DataRepository.ExecuteNonQuery(
-                    "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, " +
-                    "KategorieID, EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
-                    "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer, Einheit, Gruppe, [" +
-                    SchemaKatalog.SPALTE_PW_KOSTENART + "], [" +
-                    SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
-                    SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
-                    SchemaKatalog.SPALTE_PW_MENGE + "], [" +
-                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
-                    SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
-                    SchemaKatalog.SPALTE_PW_STARTJAHR + "]) " +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                var werte = new List<DbParam>
+                {
                     new DbParam("@p", zielProjektId),
                     new DbParam("@s", stammId),
                     new DbParam("@c", komponentenId),
@@ -390,7 +394,28 @@ namespace WindowsFormsApplication1
                     Roh(r, SchemaKatalog.SPALTE_PW_MENGE, DbParamTyp.Double),
                     Roh(r, SchemaKatalog.SPALTE_PW_EINHEITPREIS, DbParamTyp.Double),
                     Roh(r, SchemaKatalog.SPALTE_PW_VORLAGEID, DbParamTyp.Integer),
-                    Roh(r, SchemaKatalog.SPALTE_PW_STARTJAHR, DbParamTyp.Integer));
+                    Roh(r, SchemaKatalog.SPALTE_PW_STARTJAHR, DbParamTyp.Integer)
+                };
+                if (mitKennzeichen)
+                {
+                    werte.Add(Roh(r, SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN, DbParamTyp.Integer));
+                    werte.Add(Roh(r, SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN, DbParamTyp.Integer));
+                }
+
+                int n = DataRepository.ExecuteNonQuery(
+                    "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, " +
+                    "KategorieID, EingegebenerWert, BestCase, WorstCase, Nutzungsdauer, " +
+                    "BestCase_Nutzungsdauer, WorstCase_Nutzungsdauer, Einheit, Gruppe, [" +
+                    SchemaKatalog.SPALTE_PW_KOSTENART + "], [" +
+                    SchemaKatalog.SPALTE_PW_BEMESSUNG + "], [" +
+                    SchemaKatalog.SPALTE_PW_IST_ERLOES + "], [" +
+                    SchemaKatalog.SPALTE_PW_MENGE + "], [" +
+                    SchemaKatalog.SPALTE_PW_EINHEITPREIS + "], [" +
+                    SchemaKatalog.SPALTE_PW_VORLAGEID + "], [" +
+                    SchemaKatalog.SPALTE_PW_STARTJAHR + "]" + kennzeichenSpalten + ") " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?" +
+                    (mitKennzeichen ? ", ?, ?" : "") + ")",
+                    werte.ToArray());
 
                 if (n == 1)
                 {

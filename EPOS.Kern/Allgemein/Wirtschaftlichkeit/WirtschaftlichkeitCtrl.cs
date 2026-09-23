@@ -2912,20 +2912,42 @@ namespace WindowsFormsApplication1
                                                luecken);
             if (fall2Zeile != null) hinweise.Add(fall2Zeile);
 
+            // ETAPPE E7c — Entscheid E7c1‑Q2 b auf dem Ersatzweg: Trägt eine Anlage das
+            // Kennzeichen, zählen die Vbh der Gesamtanlage aus ihrem KWK-Strom (die
+            // gekürzten Mengen) ÷ ihrer Leistung — dieselbe Regel wie je Anlage auf dem
+            // Regelweg. Ohne Kennzeichen oder ohne Leistung bleibt es bei der
+            // Projektgröße.
+            if (fall2Zeile != null && nachLeistung && vbh > 0)
+            {
+                double kwkMWh = mitMatrix ? eigenNettoMWh + einspNettoMWh : stromNettoMWh;
+                double vbhKwk = Math.Max(0, kwkMWh) * 1000.0 / pelSumme;
+                hinweise.Add(string.Format(BerichtTexte.Kultur, T("WIRT_KWKG_FALL2_VBH_ERSATZ",
+                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem " +
+                    "KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); " +
+                    "Kontingent und Jahresdeckel zählen diese Stunden."),
+                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur),
+                    pelSumme.ToString("N0", BerichtTexte.Kultur),
+                    vbhKwk.ToString("N0", BerichtTexte.Kultur),
+                    vbh.ToString("N0", BerichtTexte.Kultur)));
+                vbh = vbhKwk;
+                if (vbh <= 0) return null;
+            }
+
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
             //  - W3-Split: getrennte Sätze auf KWK-Eigenstrom und -Einspeisung.
             //  - Fallback ohne Stundenreihen: Eigenstrom-Satz auf die Gesamtmenge (W2).
             //  - B3b: beide Mengen sind NETTO (Erzeugung minus Hilfsstrom, § 4.3);
             //    ohne gepflegten Anteil sind sie zeilengleich den Bruttomengen.
+            //  - E7c2: Betrag und Stunden aus KwkgJahresbetrag — derselbe Ausdruck wie im
+            //    Weg je Anlage und in der Überlagerung (ohne Einspeisung + 0,0: bitgleich).
             double bonusVoll;
             if (mitMatrix)
-                bonusVoll = eigenNettoMWh * 1000.0 * (satzEigen / 100.0)
-                          + einspNettoMWh * 1000.0 * (satzEinsp / 100.0);
+                bonusVoll = KwkgJahresbetrag.Voll(eigenNettoMWh, satzEigen, einspNettoMWh, satzEinsp);
             else
-                bonusVoll = stromNettoMWh * 1000.0 * (satzEigen / 100.0);
+                bonusVoll = KwkgJahresbetrag.Voll(stromNettoMWh, satzEigen, 0, 0);
             if (bonusVoll <= 0) return null;
 
-            double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
+            double abschlag = KwkgJahresbetrag.Abschlag(p.KwkgAbschlagNegativ);
 
             int jahre = Math.Max(1, p.Betrachtungszeitraum);
             double[] reihe = new double[jahre + 1];
@@ -2943,7 +2965,7 @@ namespace WindowsFormsApplication1
                                           : StaffelDeckel(staffel, beginnJeAnlage[i] + t - 1));
                 deckel /= gewichtSumme;
 
-                double verguetet = Math.Min(vbh, Math.Min(deckel, rest)) * (1.0 - abschlag);
+                double verguetet = KwkgJahresbetrag.VerguetetH(vbh, deckel, rest, abschlag);
                 reihe[t] = bonusVoll * (verguetet / vbh);
                 rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
             }
@@ -3027,7 +3049,10 @@ namespace WindowsFormsApplication1
             jahr1 = 0;
             if (_staffelCache == null) _staffelCache = LadeKwkgStaffel();
             List<KeyValuePair<int, double>> staffel = _staffelCache;
-            double abschlag = Math.Min(100.0, Math.Max(0.0, p.KwkgAbschlagNegativ)) / 100.0;
+            // ETAPPE E7c2 (E7c1-Q7): Abschlag, voller Jahresbetrag und vergütete Stunden
+            // stehen in KwkgJahresbetrag — die Überlagerung „Sätze und Herkunft" ruft
+            // dieselben Ausdrücke für ihre „Wirkung Jahr 1".
+            double abschlag = KwkgJahresbetrag.Abschlag(p.KwkgAbschlagNegativ);
             int T = Math.Max(1, p.Betrachtungszeitraum);
 
             // ETAPPE E7c (Befund K-1): die zwei Projektgrößen, die Fall 2 braucht — der
@@ -3108,11 +3133,34 @@ namespace WindowsFormsApplication1
                 // einmalig in jede leere Anlagenzelle geschrieben hat.
                 double satzEigen = SatzEigenDerAnlage(a, hinweise);
                 double satzEinsp = a.SatzEinspCt ?? 0;
-                double bonusVoll = eigenMWh * 1000.0 * (satzEigen / 100.0)
-                                 + einspMWh * 1000.0 * (satzEinsp / 100.0);
+                double bonusVoll = KwkgJahresbetrag.Voll(eigenMWh, satzEigen, einspMWh, satzEinsp);
                 if (bonusVoll <= 0) continue;
 
                 double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
+
+                // ETAPPE E7c — ENTSCHEID E7c1‑Q2 b (23.09.2026): „Vollbenutzungsstunden
+                // betrifft nur den KWK erzeugten Strom". In Fall 2 zählen die Vbh deshalb
+                // aus dem KWK-STROM der Anlage — Vbh = KWK-Strom ÷ P_el —, nicht aus dem
+                // ganzen Modulstrom; Kontingentverbrauch und Jahresdeckel laufen über
+                // diese Stunden (die Reihe wird länger, wo das Kontingent bindet). Ohne
+                // Kennzeichen (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie
+                // vorher. Ohne bestimmbare Kennzahl ist der Zuschlag ohnehin 0 (oben).
+                string vbhZeile = null;
+                if (fall2 != null && fall2.Stromkennzahl.Bestimmbar && a.PelKW > 0)
+                {
+                    double vbhKwk = fall2.KwkStromMWh * 1000.0 / a.PelKW;
+                    // WirtschaftlichkeitCtrl.T: die Laufzeit T dieser Methode verdeckt den Namen.
+                    vbhZeile = string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
+                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom " +
+                        "{1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); " +
+                        "Kontingent und Jahresdeckel zählen diese Stunden."),
+                        a.Bezeichner, fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur),
+                        a.PelKW.ToString("N0", BerichtTexte.Kultur),
+                        vbhKwk.ToString("N0", BerichtTexte.Kultur),
+                        vbhAnlage.ToString("N0", BerichtTexte.Kultur));
+                    hinweise.Add(vbhZeile);
+                    vbhAnlage = vbhKwk;
+                }
                 if (vbhAnlage <= 0) continue;
 
                 int beginn = a.Inbetriebnahme.HasValue ? a.Inbetriebnahme.Value.Year : foerderbeginn;
@@ -3135,7 +3183,7 @@ namespace WindowsFormsApplication1
                     if (rest <= 0) { if (erschoepftAb == 0) erschoepftAb = t; break; }
                     double deckel = deckelFest > 0 ? deckelFest
                                                    : StaffelDeckel(staffel, beginn + t - 1);
-                    double verguetet = Math.Min(vbhAnlage, Math.Min(deckel, rest)) * (1.0 - abschlag);
+                    double verguetet = KwkgJahresbetrag.VerguetetH(vbhAnlage, deckel, rest, abschlag);
                     reihe[t] += bonusVoll * (verguetet / vbhAnlage);
                     if (t == 1) jahr1Modul = bonusVoll * (verguetet / vbhAnlage);
                     rest -= verguetet;   // Negativpreis-Stunden verbrauchen das Kontingent nicht
@@ -3181,6 +3229,9 @@ namespace WindowsFormsApplication1
                         n.NutzwaermeMWh = fall2.NutzwaermeMWh;
                         n.KwkStromMWh = fall2.KwkStromMWh;
                         n.KuerzungMWh = fall2.KuerzungMWh;
+                        // E7c1-Q2 b: die Stunden aus dem KWK-Strom stehen in VbhElektrisch
+                        // (oben) und als eigene Hinweiszeile; die Herleitung bleibt die
+                        // der Menge.
                         n.HerleitungKwkStrom = fall2Zeile;
                     }
                     try
@@ -3278,7 +3329,23 @@ namespace WindowsFormsApplication1
                 f.KwkStromMWh.ToString("N3", k),
                 f.KuerzungMWh.ToString("N3", k),
                 Math.Max(0, vonEinspMWh).ToString("N3", k),
-                Math.Max(0, vonEigenMWh).ToString("N3", k));
+                Math.Max(0, vonEigenMWh).ToString("N3", k))
+                + Rundungsgrund(f.KuerzungMWh);
+        }
+
+        /// <summary>
+        /// ETAPPE E7c — Entscheid E7c1‑Q1 a mit Hinweis (23.09.2026): Die Formel des
+        /// zweiten Falls rechnet OHNE Toleranz; eine Kürzung unter 0,01 MWh bleibt stehen.
+        /// Sie entsteht aus der Rundung — σ = P_el ÷ P_th ist unrund, die Mengen des Laufs
+        /// stehen auf 0,01 MWh gerundet in der Datenbank —, und die Herleitung nennt das,
+        /// damit eine Kürzung von 0,002 MWh nicht wie ein Befund aussieht. Leer, wenn es
+        /// keine Kürzung gibt oder sie 0,01 MWh erreicht.
+        /// </summary>
+        internal static string Rundungsgrund(double kuerzungMWh)
+        {
+            if (!(kuerzungMWh > 0) || kuerzungMWh >= 0.01) return "";
+            return " " + T("WIRT_KWKG_FALL2_RUNDUNG",
+                "Die Kürzung unter 0,01 MWh entsteht aus der Rundung von σ bzw. der Mengen auf 0,01 MWh.");
         }
 
         /// <summary>
@@ -3330,7 +3397,12 @@ namespace WindowsFormsApplication1
                         "„{0}“ σ {1} ({2}), Nutzwärme {3} MWh, KWK-Strom {4} MWh, Kürzung {5} MWh"),
                         a.Bezeichner, sigma.Wert.Value.ToString(KwkStromRechner.FORMAT_KENNZAHL, k),
                         sigma.Herleitung, f.NutzwaermeMWh.ToString("N3", k),
-                        f.KwkStromMWh.ToString("N3", k), f.KuerzungMWh.ToString("N3", k)));
+                        f.KwkStromMWh.ToString("N3", k), f.KuerzungMWh.ToString("N3", k))
+                        // E7c1-Q1: der Rundungsgrund einer Kürzung unter 0,01 MWh.
+                        + (Rundungsgrund(f.KuerzungMWh).Length > 0
+                            ? " " + T("WIRT_KWKG_FALL2_RUNDUNG_KURZ",
+                                      "(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)")
+                            : ""));
             }
 
             if (mitMatrix)
@@ -3400,7 +3472,8 @@ namespace WindowsFormsApplication1
                     "KWKG: Für „{0}“ ist als Tatbestand nach § 6 Abs. 3 „keiner“ gewählt — " +
                     "der eigene Satz auf selbst genutzten Strom entfällt (§ 7 Abs. 2)."),
                     a.Bezeichner));
-                return 0;
+                // ETAPPE E7c2: dieselbe Regel, die die Überlagerung für „Wirkung Jahr 1" ruft.
+                return KwkgJahresbetrag.SatzEigenWirksam(satz, fall);
             }
             return satz;
         }
@@ -4382,23 +4455,17 @@ namespace WindowsFormsApplication1
         private static List<KeyValuePair<int, double>> LadeKwkgStaffel()
         {
             var liste = new GesetzKatalog().Reihe(DbWerte.GESETZ_KWKG_VBH_JAHRESDECKEL);
-            if (liste.Count == 0)
-            {
-                int[,] f = { { 2020, 5000 }, { 2023, 4000 }, { 2025, 3500 }, { 2026, 3300 },
-                             { 2027, 3100 }, { 2028, 2900 }, { 2029, 2700 }, { 2030, 2500 } };
-                for (int i = 0; i < f.GetLength(0); i++)
-                    liste.Add(new KeyValuePair<int, double>(f[i, 0], f[i, 1]));
-            }
+            // ETAPPE E7c2: die Rückfallstaffel steht einmal, in KwkgJahresbetrag — der
+            // Dialog fällt auf dieselben Zahlen zurück.
+            if (liste.Count == 0) liste.AddRange(KwkgJahresbetrag.STAFFEL_RUECKFALL);
             return liste;
         }
 
-        /// <summary>Deckel des Kalenderjahres: letzte Staffelzeile mit JahrVon ≤ Jahr.</summary>
+        /// <summary>Deckel des Kalenderjahres: letzte Staffelzeile mit JahrVon ≤ Jahr
+        /// (<see cref="KwkgJahresbetrag.StaffelDeckel(IReadOnlyList{KeyValuePair{int, double}}, int)"/>).</summary>
         private static double StaffelDeckel(List<KeyValuePair<int, double>> staffel, int jahr)
         {
-            double deckel = staffel.Count > 0 ? staffel[0].Value : 3500;
-            foreach (KeyValuePair<int, double> z in staffel)
-                if (z.Key <= jahr) deckel = z.Value; else break;
-            return deckel;
+            return KwkgJahresbetrag.StaffelDeckel(staffel, jahr);
         }
 
         /// <summary>
@@ -5465,7 +5532,9 @@ namespace WindowsFormsApplication1
                 foreach (KapitalwertRechner.InvestPosition pos in e.Investitionen)
                     invest.Add(new KapitalwertRechner.InvestPosition
                     { Betrag = pos.Betrag * investFaktor, Nutzungsdauer = pos.Nutzungsdauer,
-                      StartJahr = pos.StartJahr });   // KD6: Startjahr wandert mit (Sensitivität)
+                      StartJahr = pos.StartJahr,     // KD6: Startjahr wandert mit (Sensitivität)
+                      // E7c (Schritt E): die Kennzeichen der Position wandern mit.
+                      ErsatzFuehren = pos.ErsatzFuehren, RestwertAnsetzen = pos.RestwertAnsetzen });
 
                 // PAKET FX5-a (Anwenderentscheid 03.09.2026, offener Punkt FX4-1): Der
                 // Ausschlag zieht die INVESTITIONSGEKOPPELTEN BETRIEBSKOSTEN mit —
@@ -6302,7 +6371,11 @@ namespace WindowsFormsApplication1
                 {
                     Betrag = betrag,
                     Nutzungsdauer = dauer,
-                    StartJahr = z.Start
+                    StartJahr = z.Start,
+                    // ETAPPE E7c (Schritt E, Entscheid A6): die zwei Kennzeichen der
+                    // Position; null (der ganze Bestand) rechnet wie bisher.
+                    ErsatzFuehren = z.ErsatzFuehren,
+                    RestwertAnsetzen = z.RestwertAnsetzen
                 });
             }
             return liste;
@@ -6978,8 +7051,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static bool IstEnergiepreisArt(string bem)
         {
-            return IstEndenergieArt(bem) ||
-                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
+            return IstEndenergieArt(bem) || IstProjektkostenArt(bem);
+        }
+
+        /// <summary>
+        /// ETAPPE E7c (B‑4 Rest, Konzept § 4): die zwei projektweiten Alt-Arten
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>. Sie
+        /// eskalieren seit FX4-b mit p_E (<see cref="IstEnergiepreisArt"/>) und holen
+        /// ihre Bezugsgröße seit E7c frisch aus dem jüngsten Lauf wie <c>EUR_PRO_H</c>
+        /// und die <c>EUR_PRO_KWH_*</c>-Arten — die projektweiten Brennstoff- bzw.
+        /// Stromkosten des Laufs (<see cref="EndenergieAufloeser.BrennstoffkostenProjektEuro"/>,
+        /// <see cref="EndenergieAufloeser.StromkostenProjektEuro"/>). Die Menge-Spalte ist
+        /// damit auch hier Ausweisgröße und Konserve nur, wo frisch nichts ermittelbar ist.
+        /// </summary>
+        private static bool IstProjektkostenArt(string bem)
+        {
+            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_STROMKOSTEN, StringComparison.Ordinal);
         }
 
@@ -7051,10 +7138,15 @@ namespace WindowsFormsApplication1
         /// die Stundenzahl kommt aus dem jüngsten Lauf
         /// (<see cref="EndenergieAufloeser.BetriebsstundenH"/>). Damit sind von den vier
         /// Arten des Befundes B-4 drei noch reine Konserve: <c>EUR_PRO_KWH</c>,
-        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>.</para></summary>
+        /// <c>PROZENT_BRENNSTOFFKOSTEN</c> und <c>PROZENT_STROMKOSTEN</c>.</para>
+        /// <para><b>ETAPPE E7c (B‑4 Rest):</b> Die zwei Prozentarten holen ihre
+        /// Bezugsgröße seither ebenfalls frisch aus dem jüngsten Lauf
+        /// (<see cref="IstProjektkostenArt"/>) — die projektweiten Brennstoff- bzw.
+        /// Stromkosten; Konserve bleibt allein <c>EUR_PRO_KWH</c>.</para></summary>
         private static bool IstRueckfallErmittelbareArt(string bem)
         {
-            return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
+            return IstProjektkostenArt(bem) ||
+                   string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_INVESTITION, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_H, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_THERMISCH, StringComparison.Ordinal) ||
                    string.Equals(bem, DbWerte.BEMESSUNG_EUR_PRO_KWH_ELEKTRISCH, StringComparison.Ordinal) ||
@@ -7098,6 +7190,24 @@ namespace WindowsFormsApplication1
                     investSummen = BetriebskostenCtrl.Kaskadensummen(idProjekt, satz);
                 return BetriebskostenCtrl.InvestSummeFuer(idProjekt, komponente, idAnlage,
                                                           investSummen);
+            }
+
+            // ETAPPE E7c (B-4 Rest): „% der Brennstoffkosten" und „% der Stromkosten"
+            // holen ihre Bezugsgröße frisch aus dem jüngsten Lauf — PROJEKTWEIT, denn so
+            // sind die zwei Alt-Arten bemessen (der Vorläufer von Weg A, je Energieart
+            // getrennt). Komponente und Anlage der Zeile spielen keine Rolle. Ohne Lauf,
+            // Menge oder Preis bleibt es bei der gepflegten Menge (Konserve).
+            if (IstProjektkostenArt(bem))
+            {
+                if (!versucht)
+                {
+                    versucht = true;
+                    aufloeser = EndenergieAufloeser.FuerProjekt(idProjekt);
+                }
+                if (aufloeser == null) return null;
+                return string.Equals(bem, DbWerte.BEMESSUNG_PROZENT_BRENNSTOFFKOSTEN, StringComparison.Ordinal)
+                    ? aufloeser.BrennstoffkostenProjektEuro()
+                    : aufloeser.StromkostenProjektEuro();
             }
 
             // PAKET FX2 (B-4): „je Stunde" holt seine Stundenzahl aus dem Lauf — sonst
@@ -7268,14 +7378,18 @@ namespace WindowsFormsApplication1
                        (elektrokessel && komponente == BetriebskostenCtrl.KOMPONENTE_HEIZKESSEL)
                     ? BASISGRUND_LAUF : BASISGRUND_GEWERK;
 
+            // ETAPPE E7c (B-4 Rest): „% der Brennstoff-/Stromkosten" kommen aus dem
+            // Lauf — projektweit, an jedem Gewerk.
+            if (IstProjektkostenArt(bem)) return BASISGRUND_LAUF;
+
             // Die Arten aus der GERÄTEWELT. Hier unterscheidet die Landkarte selbst,
             // ob die Art zum Gewerk passt (H4c).
             if (IstRueckfallErmittelbareArt(bem))
                 return TechnikPlanwertCtrl.KenntBaugroesse(komponente, bem)
                     ? BASISGRUND_GERAET : BASISGRUND_GEWERK;
 
-            // „je kWh", „% der Brennstoff-/Stromkosten", „% der Erzeugerkosten":
-            // ihre Menge ist gepflegte Eingabe, keine Ermittlung (FX2, Befund B-4).
+            // „je kWh", „% der Erzeugerkosten": ihre Menge ist gepflegte Eingabe,
+            // keine Ermittlung (FX2, Befund B-4).
             return BASISGRUND_KONSERVE;
         }
 
@@ -7331,7 +7445,11 @@ namespace WindowsFormsApplication1
             }
             if (aufloeser == null) return grund;
 
-            string genauer = aufloeser.GrundOhneBasis(komponente, idAnlage, bem);
+            // ETAPPE E7c (B-4 Rest): Die projektweiten Arten fragen nicht nach der
+            // Anlage, sondern nach Lauf, Menge und Preis des ganzen Projekts.
+            string genauer = IstProjektkostenArt(bem)
+                ? aufloeser.GrundOhneProjektkosten(bem)
+                : aufloeser.GrundOhneBasis(komponente, idAnlage, bem);
             return string.IsNullOrEmpty(genauer) ? grund : genauer;
         }
 

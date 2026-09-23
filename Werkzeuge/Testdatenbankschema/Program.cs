@@ -1268,6 +1268,61 @@ namespace Testdatenbankschema
                 if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
             }
 
+            // ---- Schritt 108: Ersatz und Restwert je Position entkoppelt (Schritt E des
+            //      Analysepapiers, Entscheid A6 vom 20.09.2026, Mockup U39). REIN DDL aus
+            //      DERSELBEN Quelle, aus der sich
+            //      SchemaMigration.Schritt_108_ErsatzRestwertKennzeichen bedient
+            //      (SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen): die nullbaren
+            //      Kennzeichen ErsatzFuehren und RestwertAnsetzen (CHECK IN (0,1)) an
+            //      Tab_ProjektWerte und Tab_KostenVorlagePosition.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML, alle Zeilen stehen auf NULL, und
+            //      NULL heisst "wie bisher".
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 108, trocken);
+
+            // ---- Schritt 109: die Preisbasis der Traegerkarte als eigener Kartenzustand
+            //      (Schritt F, Entscheid ET-D-3 Rest, Mockup U32). DDL UND DML aus
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_109_Preisbasis: die
+            //      nullbare Textspalte Preisbasis an energy_project_settings
+            //      (SchemaKatalog.Schritt109_Preisbasis), dann der Datenteil
+            //      (PreisbasisUebernahme): ID_Umrechnung nach kWh -> "kWh", sonst die
+            //      Abrechnungseinheit des Traegers - genau die Basis, die die Karte bis
+            //      hierher beim Oeffnen zeigte.
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Spalte.
+            Console.WriteLine();
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt109_Preisbasis)
+                angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 109, trocken);
+            if (!trocken)
+            {
+                PreisbasisUebernahme.Bericht bericht109 = PreisbasisUebernahme.Ausfuehren();
+                Console.WriteLine("Schritt 109 - " + bericht109.Text() + "; offen: " +
+                                  PreisbasisUebernahme.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 110: der Stammtext der fuenf Gase auf Nm3 (Schritt G,
+            //      Entscheid U-1 Weg (a), Freigabe A9 - vor dem naechsten Vorlagenbau).
+            //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_110_GaseNm3
+            //      (GaseNormkubikmeter): Einheit m3 -> Nm3 und PreisEinheit -> EUR/Nm3 an
+            //      den Brennstoffen 1, 2, 3, 14, 25, dazu jede Preiszeile ihrer Traeger,
+            //      die noch m3 fuehrt; der Brennstoff 24 (Sonstige) auf kWh und EUR/kWh
+            //      (E7c2-Q4, reiner Stammtext).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: kein Zahlenwert; kein Rechenweg liest den
+            //      Stammtext, die Einfrierliste nennt am Brennstoffstamm nur CO2/SO2/NOx/Staub.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 110 - offen vorher: " + GaseNormkubikmeter.Offen() + ".");
+            if (!trocken)
+            {
+                GaseNormkubikmeter.Bericht bericht110 = GaseNormkubikmeter.Ausfuehren();
+                Console.WriteLine("Schritt 110 - " + bericht110.Text() + "; offen: " +
+                                  GaseNormkubikmeter.Offen() + " (erwartet 0).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

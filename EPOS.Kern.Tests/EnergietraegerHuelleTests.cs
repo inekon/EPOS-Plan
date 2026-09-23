@@ -311,6 +311,40 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.735, stand.Arbeitspreis, 9);
         }
 
+        /// <summary>
+        /// <b>ETAPPE E7c, Schritt F — die Abnahme von U32:</b> Öffnen–Speichern–Öffnen
+        /// hält die Preisbasis „kWh", auch wenn der Brennstoff KEINE Regel nach kWh führt
+        /// (Stadtgas: nur Nm³ → Nm³ und m³ → Nm³). Vor Schemaschritt 109 merkte sich die
+        /// Karte die Basis allein über die Regelkennung und fiel still auf Nm³ zurück.
+        /// </summary>
+        [Fact]
+        public async Task Die_Preisbasis_kWh_bleibt_ohne_Regel_nach_kWh_stehen()
+        {
+            using var _ = new Kulturvorrichtung();
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            const int projekt = 1024, stadtgas = 64;
+            EnergietraegerStand stand;
+            IReadOnlyDictionary<string, object> gaben =
+                Geladen(new EnergietraegerHuelle(projekt), stadtgas, out stand);
+
+            int kwh = IndexDerEinheit(stand, "kWh");
+            Assert.True(kwh > 0, "Stadtgas muss kWh als Preisbasis anbieten (Hi 4,8).");
+            Assert.Equal(0, stand.PreisbasisId);            // Nm³ aus dem Datenteil
+            Assert.Equal("", stand.PreisbasisHerleitung);   // Spalte steht - keine Zeile
+
+            await PreisbasisSetzen(gaben, kwh);
+            Assert.True(Speichern(gaben));
+
+            EnergietraegerStand neu;
+            Geladen(new EnergietraegerHuelle(projekt), stadtgas, out neu);
+            Assert.Equal(kwh, neu.PreisbasisId);
+
+            EnergietraegerPreisCtrl.Projektpreis p = EnergietraegerPreisCtrl.ProjektpreisLesen(projekt, stadtgas);
+            Assert.Equal("kWh", p.Preisbasis);
+        }
+
         [Fact]
         public async Task Oeffnen_Speichern_Oeffnen_laesst_Hi_Hs_und_Arbeitspreis_stehen()
         {

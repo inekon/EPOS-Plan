@@ -448,6 +448,30 @@ namespace EPOS.Kern.Tests
                 // ohne Treffer.
                 WirtschaftlichkeitFremdverweis.Ausfuehren();
 
+                // Schritt 107 (E30, Ergebnistabelle je Gebaeude) steht in der
+                // Testdatenbank selbst (Werkzeuge/Testdatenbankschema).
+                //
+                // Schritt 108 (Schritt E, Entscheid A6, 20.09.2026): die nullbaren
+                // Kennzeichen ErsatzFuehren und RestwertAnsetzen an Tab_ProjektWerte und
+                // Tab_KostenVorlagePosition. Wie in der Migration ueber ADD COLUMN, aus
+                // DERSELBEN Quelle; kein DML - NULL heisst "wie bisher".
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen)
+                    SpalteSicherstellen(s);
+
+                // Schritt 109 (Schritt F, ET-D-3 Rest, U32): die Preisbasis der
+                // Traegerkarte als eigene Spalte an energy_project_settings, dann der
+                // Datenteil aus DERSELBEN Quelle wie in der Migration (ID_Umrechnung ->
+                // kWh bzw. Abrechnungseinheit). Wiederholbar - gesetzt wird nur leer.
+                foreach (SchemaSpalte s in SchemaKatalog.Schritt109_Preisbasis)
+                    SpalteSicherstellen(s);
+                PreisbasisUebernahme.Ausfuehren();
+
+                // Schritt 110 (Schritt G, U-1 Weg (a), A9): der Stammtext der fuenf
+                // Gase auf Nm3 samt der Preiszeilen ihrer Traeger, dazu der Brennstoff
+                // 24 auf kWh (E7c2-Q4). Reines DML aus DERSELBEN Quelle wie in der
+                // Migration; wiederholbar.
+                GaseNormkubikmeter.Ausfuehren();
+
                 DataRepository.ExecuteNonQuery("UPDATE Tab_Applikation SET SchemaVersion = " + SchemaStand.Zielversion);
             }
             catch (Exception ex)

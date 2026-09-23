@@ -373,4 +373,104 @@ public class VorlagenPositionDialogTests : BunitContext
         Assert.Equal(art.Wahleintraege()[1].Schluessel,
                      Convert.ToString(cut.Instance.Kostenart, CultureInfo.InvariantCulture));
     }
+
+    // =====================================================================
+    //  ETAPPE E7c (Schritt E, Entscheid A6): Ersatz und Restwert je Position
+    // =====================================================================
+
+    private static readonly (int Id, string Text)[] Kennzeichen = { (1, "ja"), (0, "nein") };
+
+    private IRenderedComponent<VorlagenPositionDialog> MitKennzeichen(
+        Action<VorlagenPositionErgebnis?> beimSchliessen, int? ersatz, int? restwert, bool zeigen = true)
+    {
+        return Render<VorlagenPositionDialog>(p => p
+            .Add(x => x.Kostenarten, Kostenarten)
+            .Add(x => x.Bezeichnung, "Planung")
+            .Add(x => x.KostenartId, 0)
+            .Add(x => x.MitKennzeichen, zeigen)
+            .Add(x => x.Kennzeichen, Kennzeichen)
+            .Add(x => x.KennzeichenLeer, "(leer — wie bisher)")
+            .Add(x => x.ErsatzAuswahl, ersatz)
+            .Add(x => x.RestwertAuswahl, restwert)
+            .Add(x => x.InfoKennzeichen, "Herleitung")
+            .Add(x => x.Geschlossen, beimSchliessen));
+    }
+
+    /// <summary>Ohne Kennzeichen (Betriebsseite, Datenbank ohne Schritt 108) bleibt der
+    /// Dialog der von vorher — eine Klappliste.</summary>
+    [Fact]
+    public void Ohne_Kennzeichen_bleiben_die_zwei_Klapplisten_weg()
+    {
+        var cut = MitKennzeichen(_ => { }, 0, 1, zeigen: false);
+
+        Assert.Single(cut.FindAll("select"));
+    }
+
+    /// <summary>Mit Kennzeichen stehen zwei weitere Klapplisten da — je der Platzhalter
+    /// (leer = wie bisher) und „ja"/„nein"; die Vorbelegung steht in den Feldern.</summary>
+    [Fact]
+    public void Mit_Kennzeichen_stehen_zwei_Dreiwerte_Klapplisten_da()
+    {
+        var cut = MitKennzeichen(_ => { }, 0, null);
+
+        Assert.Equal(3, cut.FindAll("select").Count);
+        Assert.Equal(3, cut.FindAll("select")[1].QuerySelectorAll("option").Length);
+        Assert.Equal(0, cut.Instance.Ersatz);
+        Assert.Null(cut.Instance.Restwert);
+        Assert.Contains("Herleitung", cut.Markup, StringComparison.Ordinal);
+    }
+
+    /// <summary>OK meldet beide Wahlen; der Platzhalter meldet <c>null</c> (wie bisher).</summary>
+    [Fact]
+    public void OK_meldet_die_zwei_Kennzeichen()
+    {
+        VorlagenPositionErgebnis? ergebnis = null;
+        var cut = MitKennzeichen(e => ergebnis = e, null, null);
+
+        cut.FindAll("select")[1].Change("0");
+        cut.FindAll("select")[2].Change("1");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Equal(0, ergebnis!.ErsatzAuswahl);
+        Assert.Equal(1, ergebnis.RestwertAuswahl);
+
+        ergebnis = null;
+        cut.FindAll("select")[1].Change("");
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.NotNull(ergebnis);
+        Assert.Null(ergebnis!.ErsatzAuswahl);
+        Assert.Equal(1, ergebnis.RestwertAuswahl);
+    }
+
+    /// <summary>Eine unbekannte Vorbelegung fällt auf leer zurück.</summary>
+    [Fact]
+    public void Eine_unbekannte_Kennzeichenwahl_faellt_auf_leer_zurueck()
+    {
+        var cut = MitKennzeichen(_ => { }, 7, 1);
+
+        Assert.Null(cut.Instance.Ersatz);
+        Assert.Equal(1, cut.Instance.Restwert);
+    }
+
+    /// <summary>Der Assistent sieht beide Kennzeichen als Wahlfelder und setzt sie über
+    /// ihren Anzeigetext.</summary>
+    [Fact]
+    public void Der_Assistent_setzt_das_Ersatzkennzeichen_ueber_seinen_Text()
+    {
+        var cut = MitKennzeichen(_ => { }, null, null);
+
+        KiFeldzugang ersatz =
+            KiMaskenbruecke.Feldzugang(KiMaskennamen.VORLAGENPOSITION, "ersatz_fuehren");
+        Assert.NotNull(ersatz);
+        Assert.Equal(2, ersatz.Wahleintraege().Count);
+
+        KiFeldumsetzung wahl = KiFeldwandler.Wandle(ersatz, "nein");
+        Assert.True(wahl.Ok, wahl.Grund);
+        ersatz.Setzen(wahl.Wert);
+        cut.Render();
+
+        Assert.Equal(0, cut.Instance.Ersatz);
+    }
 }

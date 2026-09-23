@@ -6704,6 +6704,21 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
   <data name="WIRT_KWKG_SP_ERSCHOEPFT" xml:space="preserve">
     <value>Quota exhausted from year</value>
   </data>
+  <data name="WIRT_KWKG_SP_FALL" xml:space="preserve">
+    <value>Case sec. 2 no. 16</value>
+  </data>
+  <data name="WIRT_KWKG_SP_SIGMA" xml:space="preserve">
+    <value>Power-to-heat ratio σ</value>
+  </data>
+  <data name="WIRT_KWKG_SP_NUTZWAERME" xml:space="preserve">
+    <value>Useful heat [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KWK_STROM" xml:space="preserve">
+    <value>CHP electricity [MWh/a]</value>
+  </data>
+  <data name="WIRT_KWKG_SP_KUERZUNG" xml:space="preserve">
+    <value>Reduction [MWh/a]</value>
+  </data>
   <data name="WIRT_KWKG_SATZ_QUELLE_ANLAGE" xml:space="preserve">
     <value>unit</value>
   </data>
@@ -10018,8 +10033,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="WIRT_KESSELBRENNSTOFF_FEHLT" xml:space="preserve">
     <value>Energy costs/CO₂ balance incomplete: the fuel consumption of boiler {0} is not available in the simulation result — boiler fuel is missing from energy costs, CO₂ balance and the BEHG levy.</value>
   </data>
-  <data name="KOH_FALL5_MISCHLAGE" xml:space="preserve">
-    <value>Two relief regimes coexist in this project: {0} against {1}. Section 54 EnergieStG excludes quantities already relieved under Section 53 / Section 53a(5) — the same fuel quantity must not be relieved twice; the applications are separate procedures at the customs office. The calculation is unchanged: each plant is computed according to its own choice.</value>
+  <data name="KOH_FALL5_MISCHLAGE_SPERRE" xml:space="preserve">
+    <value>Two relief regimes coexist in this project: {0} against {1}. This mix is blocked — the Section 54 amount is discarded (EUR 0), only the relief under Section 53 / Section 53a(5) is calculated. Section 54 EnergieStG excludes quantities already relieved under Section 53 / Section 53a; to claim both reliefs, choose the same regime for every plant.</value>
+  </data>
+  <data name="STEUER_ENERGIEST_54_MISCHLAGE" xml:space="preserve">
+    <value>Section 54 EnergieStG blocked: Section 53 / Section 53a(5) ({0}) and Section 54 ({1}) coexist in this project. This mix is not permitted — the Section 54 amount is discarded (EUR 0); the relief under Section 53 / Section 53a remains.</value>
   </data>
   <data name="KOH_NORM_53" xml:space="preserve">
     <value>Sec. 53</value>
@@ -22295,6 +22313,12 @@ Do you want to allow this?</value>
   <data name="KI_DLG_BHW_MODUS_ERL" xml:space="preserve">
     <value>The mode of section 9(1) no. 3 of the electricity tax act — it determines which exemption is applied.</value>
   </data>
+  <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
+    <value>Does the plant have a device for waste-heat dissipation (section 2 no. 16 of the CHP act, second case)? Then its CHP electricity is not the net generation but min(net generation ; useful heat × power-to-heat ratio), and the full-load hours of the quota count from this CHP electricity.</value>
+  </data>
+  <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
+    <value>The power-to-heat ratio σ of the plant for the second case of section 2 no. 16 of the CHP act. Empty means σ is formed from P_el ÷ P_th of the unit row; an own value applies permanently. σ is only read if the plant has a device for waste-heat dissipation.</value>
+  </data>
   <data name="KI_DLG_MASKE_TAR" xml:space="preserve">
     <value>Tariff structure</value>
   </data>
@@ -24167,6 +24191,138 @@ Do you want to allow this?</value>
   <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
     <value>Apply</value>
   </data>
+  <data name="BHW_UEB_ART" xml:space="preserve">
+    <value>Type of plant (sec. 8 CHP Act)</value>
+  </data>
+  <data name="BHW_UEB_ART_HINWEIS" xml:space="preserve">
+    <value>The share of the new-build costs is the field in the form; it only counts for modernised and retrofitted.</value>
+  </data>
+  <data name="BHW_UEB_EIGENFALL" xml:space="preserve">
+    <value>Self-supply under sec. 6(3)</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG" xml:space="preserve">
+    <value>→ {0}</value>
+  </data>
+  <data name="BHW_UEB_VBH" xml:space="preserve">
+    <value>{0} full-load hours</value>
+  </data>
+  <data name="BHW_UEB_CT_KWH" xml:space="preserve">
+    <value>{0} ct/kWh</value>
+  </data>
+  <data name="BHW_UEB_Z_EINSP" xml:space="preserve">
+    <value>Rate, export</value>
+  </data>
+  <data name="BHW_UEB_Z_EIGEN" xml:space="preserve">
+    <value>Rate, self-consumption</value>
+  </data>
+  <data name="BHW_UEB_Z_KONTINGENT" xml:space="preserve">
+    <value>Full-load hour quota</value>
+  </data>
+  <data name="BHW_UEB_Z_DECKEL" xml:space="preserve">
+    <value>Annual cap</value>
+  </data>
+  <data name="BHW_UEB_STAFFEL" xml:space="preserve">
+    <value>Scale</value>
+  </data>
+  <data name="BHW_UEB_GILT_STAFFEL" xml:space="preserve">
+    <value>Scale — {0} h/a in {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_OHNE" xml:space="preserve">
+    <value>none — no suggestion, no bonus</value>
+  </data>
+  <data name="BHW_UEB_INFO_SAETZE" xml:space="preserve">
+    <value>Empty means: the suggestion applies and is written into the form field on Apply; quota and cap then stay empty and the calculation derives them itself (sec. 8(1) to (3), scale of sec. 8(4)). An own value applies permanently, even if the catalogue later supplies a different suggestion. "Apply suggestion" clears the field: the way back. In the form, 0 remains "no bonus".</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_JAHR1" xml:space="preserve">
+    <value>Effect in year 1 ({0})</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG" xml:space="preserve">
+    <value>paid {0} of {1} full-load hours (cap {2} h/a) = {3} → {4} €</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_KWKG_FORMEL" xml:space="preserve">
+    <value>{0} MWh × {1} ct × {2} + {3} MWh × {4} ct × {2} = {5} + {6} € — quantities from the booked run</value>
+  </data>
+  <data name="BHW_UEB_WIRKUNG_OHNE_LAUF" xml:space="preserve">
+    <value>No quantities without a booked run — the effect appears after "Calculate" in the economic efficiency tab.</value>
+  </data>
+  <data name="BHW_UEB_FUSS" xml:space="preserve">
+    <value>Apply writes rates, quota, cap, choices and mode into the form fields — nothing is saved until "Save".</value>
+  </data>
+  <data name="BHW_UEB_KNOPF_STEUERN" xml:space="preserve">
+    <value>Choice and origin…</value>
+  </data>
+  <data name="BHW_UEB_G_ENERGIEST" xml:space="preserve">
+    <value>Energy tax (EnergieStG)</value>
+  </data>
+  <data name="BHW_UEB_G_STROMST" xml:space="preserve">
+    <value>Electricity tax (StromStG) — project</value>
+  </data>
+  <data name="BHW_UEB_SCOPE" xml:space="preserve">
+    <value>Applies to</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_PROJEKT" xml:space="preserve">
+    <value>Project default for all plants</value>
+  </data>
+  <data name="BHW_UEB_SCOPE_ANLAGE" xml:space="preserve">
+    <value>this plant only</value>
+  </data>
+  <data name="BHW_UEB_ES_WAHL" xml:space="preserve">
+    <value>Energy tax relief</value>
+  </data>
+  <data name="BHW_UEB_ES_AUFTEILUNG" xml:space="preserve">
+    <value>Fuel split electricity/heat (sec. 53 only)</value>
+  </data>
+  <data name="BHW_UEB_ES_KEINE" xml:space="preserve">
+    <value>→ no relief, 0 €</value>
+  </data>
+  <data name="BHW_UEB_ES_53" xml:space="preserve">
+    <value>→ full tax rate on the fuel used for electricity generation</value>
+  </data>
+  <data name="BHW_UEB_ES_53A" xml:space="preserve">
+    <value>→ partial rate for high-efficiency CHP plants, annual efficiency at least 70 %</value>
+  </data>
+  <data name="BHW_UEB_ES_54" xml:space="preserve">
+    <value>→ heating fuels, manufacturing only, less the base amount</value>
+  </data>
+  <data name="BHW_UEB_AUF_VOLL" xml:space="preserve">
+    <value>→ default</value>
+  </data>
+  <data name="BHW_UEB_AUF_ENERGETISCH" xml:space="preserve">
+    <value>→ only the electrical share of the fuel — a deliberate lower bound</value>
+  </data>
+  <data name="BHW_UEB_ES_GEBUCHT" xml:space="preserve">
+    <value>{0}: {1} × {2} {3} = {4} €</value>
+  </data>
+  <data name="BHW_UEB_ES_OHNE" xml:space="preserve">
+    <value>The booked run shows no energy tax relief for this plant.</value>
+  </data>
+  <data name="BHW_UEB_UA" xml:space="preserve">
+    <value>Type of business</value>
+  </data>
+  <data name="BHW_UEB_UA_KEIN" xml:space="preserve">
+    <value>→ sec. 9b and sec. 54 do not apply</value>
+  </data>
+  <data name="BHW_UEB_UA_PROD" xml:space="preserve">
+    <value>→ sec. 9b relief on grid purchases, sec. 54 possible</value>
+  </data>
+  <data name="BHW_UEB_UA_LAND" xml:space="preserve">
+    <value>→ as manufacturing</value>
+  </data>
+  <data name="BHW_UEB_BEFREIUNG" xml:space="preserve">
+    <value>Exemption sec. 9(1) no. 3</value>
+  </data>
+  <data name="BHW_UEB_MODUS" xml:space="preserve">
+    <value>Mode</value>
+  </data>
+  <data name="BHW_UEB_MODUS_AUSWEIS" xml:space="preserve">
+    <value>→ shown only, not in the net present value</value>
+  </data>
+  <data name="BHW_UEB_MODUS_ERLOES" xml:space="preserve">
+    <value>→ revenue in the net present value (block A), always with a coherence warning</value>
+  </data>
+  <data name="BHW_UEB_ST_GEBUCHT" xml:space="preserve">
+    <value>Relief on grid purchases (sec. 9b) {0} € · exemption of self-consumption (sec. 9(1) no. 3) {1} € — {2}</value>
+  </data>
   <data name="BHW_A_KWK_FALL1" xml:space="preserve">
     <value>CHP electricity (sec. 2 no. 16 CHP Act): case 1 — net electricity generation.</value>
   </data>
@@ -24175,6 +24331,63 @@ Do you want to allow this?</value>
   </data>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, but no power-to-heat ratio ({0}) — no bonus under case 2.</value>
+  </data>
+  <data name="ERK_JA" xml:space="preserve">
+    <value>yes</value>
+  </data>
+  <data name="ERK_NEIN" xml:space="preserve">
+    <value>no</value>
+  </data>
+  <data name="ERK_LEER" xml:space="preserve">
+    <value>(blank — as before)</value>
+  </data>
+  <data name="ERK_WIE_BISHER" xml:space="preserve">
+    <value>as before</value>
+  </data>
+  <data name="ERK_HERLEITUNG" xml:space="preserve">
+    <value>Position flags — replacement investment: {0} · residual value: {1}.</value>
+  </data>
+  <data name="ERK_LBL_ERSATZ" xml:space="preserve">
+    <value>Carry replacement investment:</value>
+  </data>
+  <data name="ERK_LBL_RESTWERT" xml:space="preserve">
+    <value>Apply residual value:</value>
+  </data>
+  <data name="ERK_INFO" xml:space="preserve">
+    <value>Blank calculates as before: the item is replaced once its service life ends before the end of the evaluation period, and the residual value is linear in the final year. “no” switches one off without the other.</value>
+  </data>
+  <data name="ND_TAFEL_ERSATZ_AUS" xml:space="preserve">
+    <value>— no (position flag)</value>
+  </data>
+  <data name="ND_TAFEL_RESTWERT_AUS" xml:space="preserve">
+    <value>— no (position flag)</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_NAME" xml:space="preserve">
+    <value>Carry replacement investment</value>
+  </data>
+  <data name="KI_DLG_VOP_ERSATZ_ERL" xml:space="preserve">
+    <value>Whether the position is replaced when its service life ends: blank = as before, yes or no.</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_NAME" xml:space="preserve">
+    <value>Apply residual value</value>
+  </data>
+  <data name="KI_DLG_VOP_RESTWERT_ERL" xml:space="preserve">
+    <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours from the CHP electricity {1} MWh ÷ {2} kW = {3} h/a (the whole module output would give {4} h/a); quota and annual cap count these hours.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
+    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours from the CHP electricity of the combined plant {0} MWh ÷ {1} kW = {2} h/a (instead of {3} h/a); quota and annual cap count these hours.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
+    <value>The reduction below 0.01 MWh results from rounding σ or the quantities to 0.01 MWh.</value>
+  </data>
+  <data name="WIRT_KWKG_FALL2_RUNDUNG_KURZ" xml:space="preserve">
+    <value>(from rounding σ or the quantities to 0.01 MWh)</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
+    <value>This database cannot store the selected price basis yet (schema version before 109) — the card shows the billing unit.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Heat sinks: {0}</value>

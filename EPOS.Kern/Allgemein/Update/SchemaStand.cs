@@ -388,11 +388,33 @@ namespace WindowsFormsApplication1
         /// <see cref="ErgebnisGebaeudeSchema"/> steht. <b>Reines DDL</b> — der Lauf schreibt
         /// sie, kein Rechenweg liest sie, und der Referenzlauf exportiert sie nicht;
         /// <b>der Referenzlauf bleibt byte-gleich</b>.
+        /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 108, Schritt E
+        /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>108</b>:
+        /// <c>Tab_ProjektWerte</c> und <c>Tab_KostenVorlagePosition</c> bekommen die
+        /// nullbaren Kennzeichen <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c>
+        /// (<see cref="SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen"/>). <b>Reines
+        /// DDL, ergebnisneutral:</b> NULL heißt „wie bisher"; der Referenzlauf bleibt
+        /// byte-gleich.
+        /// Mit der PREISBASIS ALS EIGENEM KARTENZUSTAND (Schritt 109, Schritt F,
+        /// Entscheid ET‑D‑3 Rest, Mockup U32) steht das Ziel auf <b>109</b>:
+        /// <c>energy_project_settings</c> bekommt die nullbare Textspalte
+        /// <c>Preisbasis</c> (<see cref="SchemaKatalog.Schritt109_Preisbasis"/>), und der
+        /// Datenteil (<see cref="PreisbasisUebernahme"/>) setzt sie einmalig aus
+        /// <c>ID_Umrechnung</c> — Regel nach kWh → „kWh", sonst die Abrechnungseinheit,
+        /// also genau die Basis, die die Karte bis dahin beim Öffnen zeigte.
+        /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte.
+        /// Mit dem STAMMTEXT DER FÜNF GASE AUF Nm³ (Schritt 110, Schritt G, Entscheid
+        /// U‑1 Weg (a), Freigabe A9) steht das Ziel auf <b>110</b>: <c>Einheit</c> und
+        /// <c>PreisEinheit</c> der Brennstoffe 1, 2, 3, 14 und 25 in
+        /// <c>Tab_Brennstoff_Stamm</c> und jede Preiszeile ihrer Träger, die noch „m³"
+        /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
+        /// kein Zahlenwert, kein Rechenweg liest den Stammtext; dazu der Brennstoff 24
+        /// „Sonstige" auf kWh (Entscheid E7c2‑Q4).
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 107;
+        public const int Zielversion = 110;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

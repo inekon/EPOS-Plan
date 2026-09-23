@@ -17,6 +17,15 @@ namespace WindowsFormsApplication1
         /// <summary>Angewandter anzulegender Wert (Mix bzw. Override) [ct/kWh].</summary>
         public double AwMixCt;
 
+        /// <summary>
+        /// ETAPPE E7c — V‑1 (Entscheid A4): die feste Einspeisevergütung EV_mix
+        /// [ct/kWh], UNRUNDET — der unrundete Mix des anzulegenden Werts (bzw. der
+        /// Override) abzüglich des Abschlags. Gerundet wird allein der Erlös (auf Cent).
+        /// Gilt für die Vermarktungsform „feste Vergütung"; dort bewertet er auch
+        /// § 51a (V‑2).
+        /// </summary>
+        public double EvCt;
+
         /// <summary>Installierte Leistung der Rechnung [kWp] (Override oder V3).</summary>
         public double Kwp;
 
@@ -228,7 +237,16 @@ namespace WindowsFormsApplication1
                 if (satz.Unvollstaendig) e.Unvollstaendig = true;
             }
             double evAbschlag = katalog(DbWerte.GESETZ_EEG_EV_ABSCHLAG, ibnJahr) ?? 0.4;
-            double evCt = Math.Round(Math.Max(0, e.AwMixCt - evAbschlag), 2, MidpointRounding.AwayFromZero);
+            // ETAPPE E7c — V‑1 (Entscheid A4, Konzept § 4): Der EV-Mix rechnet UNRUNDET —
+            // auf der unrundeten Mischung des anzulegenden Werts (der Override steht,
+            // wie er gepflegt ist), abzüglich des Abschlags; gerundet wird allein der
+            // Erlös (auf Cent, unten in der Jahresschleife). Bis E7c stand hier
+            // Math.Round(max(0, AW_mix − Abschlag), 2) über der schon GERUNDETEN
+            // Mischung — der Satz war zweimal gerundet, der Erlös gar nicht. Dieselbe
+            // Regel wie bei Degression und Ausfallvergütung: genau einmal runden, am
+            // Ausgabewert.
+            double evCt = Math.Max(0, (pv.AwOverride ?? satz.AwMixCtUnrundet) - evAbschlag);
+            e.EvCt = evCt;
 
             // --- Vergütungsdauer: 20 Jahre + Restmonate des IBN-Jahres -----------
             double dauerJahre = katalog(DbWerte.GESETZ_EEG_VERGUETUNGSDAUER, ibnJahr) ?? 20.0;
@@ -368,7 +386,9 @@ namespace WindowsFormsApplication1
                     if (inVerguetung)
                     {
                         ausfallKwh = basisKwhT * a;
-                        erloes = (basisKwhT - ausfallKwh) * evCt / 100.0;
+                        // V‑1: der unrundete EV-Mix — gerundet wird allein der Erlös.
+                        erloes = Math.Round((basisKwhT - ausfallKwh) * evCt / 100.0, 2,
+                                            MidpointRounding.AwayFromZero);
                         ausfallEur = ausfallKwh * evCt / 100.0;
                     }
                     // nach Ablauf: keine Vergütung (Fall a → 0).
@@ -438,9 +458,16 @@ namespace WindowsFormsApplication1
             if (pv.Par51a_Kompensieren && ausfallKwhBasis > 0 && e.LetztesVerguetungsjahr >= 1)
             {
                 double faktor = katalog(DbWerte.GESETZ_EEG_51A_FAKTOR_SOLAR, ibnJahr) ?? 0.5;
+                // ETAPPE E7c — V‑2 (Entscheid A4, nach Volltextprüfung ausdrücklich
+                // bestätigt): Fährt die Anlage FESTE VERGÜTUNG, bewertet § 51a die
+                // ausgefallene Arbeit mit der Einspeisevergütung (dem EV-Mix, V‑1) — dem
+                // Satz, den sie in der Verlängerung tatsächlich bekäme — und nicht mit dem
+                // anzulegenden Wert. Bei Direktvermarktung bleibt der AW.
+                double satz51a = string.Equals(e.Vermarktungsform, DbWerte.PV_VERMARKTUNG_EV,
+                                               StringComparison.Ordinal) ? evCt : e.AwMixCt;
                 // E2.4: Die Gutschrift altert mit dem Jahr, in dem sie gutgeschrieben
                 // wird. Bei d = 0 ist der Faktor exakt 1,0.
-                e.Kompensation51aEur = ausfallKwhBasis * faktor * e.AwMixCt / 100.0
+                e.Kompensation51aEur = ausfallKwhBasis * faktor * satz51a / 100.0
                                      * DegradationsFaktor(e.DegradationProzent, e.LetztesVerguetungsjahr);
                 e.JeJahr[e.LetztesVerguetungsjahr] += e.Kompensation51aEur;
             }
@@ -452,6 +479,12 @@ namespace WindowsFormsApplication1
                 e.Par51Angewendet ? "angewendet" : "nicht angewendet",
                 e.AusfallanteilProzent, e.AusfallGemessen ? ", gemessen" : ", Pauschale",
                 einspeisungMWh, e.SatzJahr1Ct);
+
+            // ETAPPE E7c (V‑1): Bei fester Vergütung nennt die Herleitung den unrundeten
+            // Satz, mit dem gerechnet wurde.
+            if (string.Equals(e.Vermarktungsform, DbWerte.PV_VERMARKTUNG_EV, StringComparison.Ordinal))
+                sb.AppendFormat(kultur, " EV_mix {0:0.0000} ct/kWh (unrundet; gerundet wird der Erlös).",
+                                e.EvCt);
 
             if (e.DegradationProzent > 0.0)
                 sb.AppendFormat(kultur,
