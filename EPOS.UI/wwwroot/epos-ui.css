@@ -10941,10 +10941,29 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     white-space: nowrap;
 }
 
+/* Die Stochastik des Zapfprofils (Stufe Z3): Die Konsistenzprobe der Jahresreihe
+   (Reiter Kennzahlen) und der Konsistenzhinweis der Auslegung stehen als Kohaerenzzeile -
+   innerhalb der Toleranz in Ampelgruen, ausserhalb amber wie jede abweichende
+   Kohaerenzzeile. "nicht belastbar" traegt die Marke in Warnfarbe. Unter forced-colors
+   bleiben Zeichen (✓ / ≠) und Wort. */
+.epos-zapfprofil-konsistenz .epos-kohaerenz--ok,
+.epos-zapfausl-konsistenz .epos-kohaerenz--ok {
+    color: var(--epos-ampel-gruen);
+}
+
+.epos-zapfausl-marke--warnung {
+    border-color: var(--epos-warn-text);
+    color: var(--epos-warn-text);
+    font-weight: 600;
+}
+
 @media (forced-colors: active) {
     .epos-zapfausl-stufe--warnung,
     .epos-zapfausl-empfehlung,
-    .epos-zapfausl-marke {
+    .epos-zapfausl-marke,
+    .epos-zapfausl-marke--warnung,
+    .epos-zapfprofil-konsistenz .epos-kohaerenz--ok,
+    .epos-zapfausl-konsistenz .epos-kohaerenz--ok {
         forced-color-adjust: auto;
         border-color: CanvasText;
         color: CanvasText;

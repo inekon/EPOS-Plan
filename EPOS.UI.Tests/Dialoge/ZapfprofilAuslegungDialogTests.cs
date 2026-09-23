@@ -184,15 +184,20 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
         cut.WaitForAssertion(() => Assert.Contains("Punkt gewählt: Speicher 300 l · Leistung 25,0 kW", cut.Markup));
     }
 
+    /// <summary>
+    /// Stufe Z3: Vor „Stochastisch rechnen" ist das Perzentil offen — nicht mehr gesperrt, sondern
+    /// mit dem Weg dorthin; die Übergabe bleibt benannt gesperrt.
+    /// </summary>
     [Fact]
-    public void Perzentil_und_Uebergabe_sind_benannt_gesperrt()
+    public void Ohne_Lauf_ist_das_Perzentil_offen_und_die_Uebergabe_benannt_gesperrt()
     {
         var cut = Aufbauen();
 
         IElement perzentil = cut.Find(".epos-zapfausl-perzentil");
-        Assert.Equal("true", perzentil.GetAttribute("aria-disabled"));
-        Assert.Equal("In dieser Fassung noch nicht verfügbar.", perzentil.GetAttribute("title"));
-        Assert.StartsWith("noch nicht gerechnet", perzentil.TextContent);
+        Assert.Null(perzentil.GetAttribute("aria-disabled"));
+        Assert.Equal("noch nicht gerechnet — „Stochastisch rechnen“ in den Eingaben zieht das Ensemble; die Empfehlung "
+                     + "stützt sich auf (a) und (c).", perzentil.TextContent);
+        Assert.Empty(cut.FindAll(".epos-zapfausl-streuband"));
 
         IElement uebergabe = Knopf(cut, "An Speicherauslegung übergeben…");
         Assert.Equal("true", uebergabe.GetAttribute("aria-disabled"));
@@ -684,5 +689,279 @@ public class ZapfprofilAuslegungDialogTests : EposBunitContext
 
         Assert.Equal(0, gerufen);
         Assert.Null(cut.Instance.Eingabe.Entwurf);
+    }
+
+    // =================================================================================
+    // Stochastik (Stufe Z3): „Stochastisch rechnen", Perzentil, Realisierungen, Karte (b)
+    // =================================================================================
+
+    /// <summary>Ein Perzentil des Kerns als DTO (erfunden): Speicher in Litern beim Φ_N, sonst Minutenspitze in kW.</summary>
+    private static ZapfprofilPerzentilDaten PerzentilErgebnis(bool belastbar = true, bool volumen = true) => new()
+    {
+        Perzentil = 99,
+        Seed = 1,
+        Realisierungen = belastbar ? 150 : 50,
+        Mindestzahl = 100,
+        Belastbar = belastbar,
+        Tag = 17,
+        Volumen = volumen,
+        LeistungKw = volumen ? 25 : null,
+        Streuband =
+        {
+            new(50, volumen ? 250 : 20), new(90, volumen ? 280 : 24),
+            new(95, volumen ? 290 : 26), new(99, volumen ? 310 : 30)
+        },
+        Minimum = volumen ? 200 : 18,
+        Maximum = volumen ? 330 : 33,
+        MinutenspitzeKw = 30,
+        StundenspitzeKw = 11,
+        Gleichzeitigkeit = volumen ? 0.62 : 0.41,
+        Einheiten = 40,
+        WurzelNKw = 28.5,
+        KonsistenzGeprueft = volumen
+    };
+
+    /// <summary>Der Stand beim Öffnen samt Wertemenge, Grenzen und Vorgaben der Stochastik (erfunden).</summary>
+    private static ZapfprofilAuslegungStartDaten StartMitStochastik(ZapfprofilAuslegungDaten? ergebnis = null)
+    {
+        ZapfprofilAuslegungStartDaten s = Start(ergebnis);
+        s.Perzentile = new List<int> { 95, 99 };
+        s.PerzentilVorgabe = 99;
+        s.RealisierungenMindestens = 1;
+        s.RealisierungenHoechstens = 100000;
+        s.RealisierungenVorgabe = new Dictionary<int, int> { [95] = 30, [99] = 150 };
+        s.Mindestzahl = new Dictionary<int, int> { [95] = 20, [99] = 100 };
+        return s;
+    }
+
+    /// <summary>Das Ergebnis des Prüfdelegaten: mit „Stochastisch rechnen" trägt die Speichergruppe ihr Perzentil.</summary>
+    private static ZapfprofilAuslegungDaten ErgebnisZu(ZapfprofilAuslegungEingabeDaten e)
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        if (e.Stochastisch)
+        {
+            g.Perzentil = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet, VolumenL = 310, LeistungKw = 25 };
+            g.PerzentilErgebnis = PerzentilErgebnis();
+        }
+        ZapfprofilAuslegungDaten d = Ergebnis(g);
+        d.Stochastisch = e.Stochastisch;
+        return d;
+    }
+
+    [Fact]
+    public void Stochastisch_rechnen_zeigt_Perzentil_und_Realisierungen_und_OK_uebernimmt_sie()
+    {
+        var gesehen = new List<ZapfprofilAuslegungEingabeDaten>();
+        ZapfprofilAuslegungEingabeDaten? zurueck = null;
+        var cut = Aufbauen(StartMitStochastik(), rechnen: e => { gesehen.Add(e); return ErgebnisZu(e); },
+                           geschlossen: e => zurueck = e);
+
+        // Vor dem Schalter: weder Perzentil noch Realisierungen, das Perzentil offen.
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
+        Assert.DoesNotContain(cut.FindAll(".epos-feld-text"), t => t.TextContent == "Realisierungen des Bedarfstags");
+        Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));
+        Assert.Contains("eine Laufangabe, sie wird nicht gespeichert", cut.Markup);
+
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Assert.True(cut.Instance.Eingabe.Stochastisch);
+        Assert.True(gesehen.Last().Stochastisch);
+        Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
+
+        // Perzentil P95 | P99, die Vorgabe P99 gewählt; Realisierungen leer mit der Vorgabe als Platzhalter.
+        Assert.Equal(new[] { "P95", "P99" },
+                     cut.FindAll("fieldset[aria-label='Auslegungsperzentil'] .epos-feld-text").Select(x => x.TextContent).ToArray());
+        IElement p99 = cut.FindAll("fieldset[aria-label='Auslegungsperzentil'] label.epos-option")
+                          .Single(l => l.TextContent.Trim() == "P99").QuerySelector("input")!;
+        Assert.True(p99.HasAttribute("checked"));
+        Assert.Contains("P95 oder P99 (K3) · Vorgabe P99", cut.Markup);
+        Assert.Equal("(150)", Feld(cut, "Realisierungen des Bedarfstags").GetAttribute("placeholder"));
+        Assert.Contains("Ganze Zahl von 1 bis 100000 · leer = Vorgabe 150 (Vielfaches der Mindestzahl); unter 100 ist P99 "
+                        + "nicht belastbar.", cut.Markup);
+
+        // P95: Vorgabe und Mindestzahl folgen, die Rechnung nimmt das Perzentil.
+        cut.FindAll("fieldset[aria-label='Auslegungsperzentil'] label.epos-option")
+           .Single(l => l.TextContent.Trim() == "P95").QuerySelector("input")!.Change("95");
+        Assert.Equal(95, cut.Instance.Eingabe.Perzentil);
+        Assert.Equal(95, gesehen.Last().Perzentil);
+        Assert.Equal("(30)", Feld(cut, "Realisierungen des Bedarfstags").GetAttribute("placeholder"));
+        Assert.Contains("unter 20 ist P95 nicht belastbar.", cut.Markup);
+
+        Feld(cut, "Realisierungen des Bedarfstags").Input("12");
+        Assert.Equal(12, cut.Instance.Eingabe.RealisierungenAuslegung);
+        Assert.Equal(12, gesehen.Last().RealisierungenAuslegung);
+        Feld(cut, "Realisierungen des Bedarfstags").Input("");
+        Assert.Null(cut.Instance.Eingabe.RealisierungenAuslegung);      // leer = Vorgabe
+        Feld(cut, "Realisierungen des Bedarfstags").Input("12");
+
+        // OK übernimmt Schalter, Perzentil und Realisierungen samt Punkt.
+        Knopf(cut, "OK").Click();
+        Assert.NotNull(zurueck);
+        Assert.True(zurueck!.Stochastisch);
+        Assert.Equal(95, zurueck.Perzentil);
+        Assert.Equal(12, zurueck.RealisierungenAuslegung);
+        Assert.Equal(300, zurueck.PunktVolumenL);
+    }
+
+    [Fact]
+    public void Ausgeschaltet_verschwinden_die_Felder_und_die_Karte_b_ist_wieder_offen()
+    {
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu);
+        Feld(cut, "Stochastisch rechnen").Change(true);
+        Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
+
+        Feld(cut, "Stochastisch rechnen").Change(false);
+        Assert.False(cut.Instance.Eingabe.Stochastisch);
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Auslegungsperzentil']"));
+        Assert.Empty(cut.FindAll(".epos-zapfausl-streuband"));
+        Assert.NotNull(cut.Find(".epos-zapfausl-perzentil"));
+    }
+
+    /// <summary>
+    /// Karte (b) nach dem Lauf (4.5 b, Mockup): der Perzentilwert der Auslegungsgröße — beim
+    /// Speicher das Volumen beim Φ_N —, das Streuband P50 … P99 samt Spannweite als Tabellenzeilen
+    /// mit dem gewählten p markiert, die Gleichzeitigkeit GLF_V als Ergebnis mit ihrem Bezug,
+    /// nachrichtlich Minuten- und Stundenspitze und der Vergleich μ + z·σ/√N; der
+    /// Konsistenzhinweis ist geprüft (grün). Kein neues Bild.
+    /// </summary>
+    [Fact]
+    public void Die_Karte_b_zeigt_Wert_Streuband_Gleichzeitigkeit_und_Konsistenz_des_Speichers()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Perzentil = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet, VolumenL = 310, LeistungKw = 25 };
+        g.PerzentilErgebnis = PerzentilErgebnis();
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
+
+        IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
+        Assert.Contains("nach „Stochastisch rechnen“: Seed 1 · 150 Tage gezogen · maßgebender Tag 17", b.TextContent);
+        IElement wert = b.QuerySelector(".epos-zapfausl-perzentil-wert")!;
+        Assert.Contains("Volumen P99", wert.TextContent);
+        Assert.Contains("310 l bei 25,0 kW", wert.TextContent);
+        Assert.Null(b.QuerySelector(".epos-zapfausl-nichtbelastbar"));
+        Assert.Null(b.QuerySelector(".epos-zapfausl-perzentil"));
+        Assert.Empty(b.QuerySelectorAll("svg"));
+
+        string[] zeilen = b.QuerySelectorAll("table.epos-zapfausl-streuband tbody tr")
+                           .Select(z => string.Join(" | ", z.Children.Select(c => c.TextContent.Trim()))).ToArray();
+        Assert.Equal(new[] { "P50 | 250 l", "P90 | 280 l", "P95 | 290 l", "P99 | 310 l", "Spannweite (min – max) | 200 l – 330 l" }, zeilen);
+        Assert.Contains("epos-zeile--markiert", b.QuerySelectorAll("table.epos-zapfausl-streuband tbody tr")[3].ClassName);
+        Assert.Contains("Streuband über 150 Realisierungen", b.TextContent);
+
+        Assert.Contains("Gleichzeitigkeit GLF_V", b.QuerySelector(".epos-zapfausl-glf")!.TextContent);
+        Assert.Contains("0,62", b.QuerySelector(".epos-zapfausl-glf")!.TextContent);
+        Assert.Equal("Ergebnis, kein Eingabefaktor: P99 des Volumens der Gruppe ÷ Σ P99 der Volumina je Einheit (Σ n_E = 40)",
+                     b.QuerySelector(".epos-zapfausl-glf-bezug")!.TextContent);
+        Assert.Contains("nachrichtlich: Minutenspitze P99 30,0 kW · größte Stundenleistung P99 11,0 kW", b.TextContent);
+        Assert.Contains("Einzelstatistik μ + z·σ/√N: 28,5 kW (Hinweis)", b.TextContent);
+
+        // Der Konsistenzhinweis ist geprüft — keine gesperrte Zeile mehr, sondern die Kohärenzzeile.
+        IElement konsistenz = cut.Find(".epos-zapfausl-konsistenz");
+        Assert.Null(konsistenz.GetAttribute("aria-disabled"));
+        Assert.NotNull(konsistenz.QuerySelector(".epos-kohaerenz--ok"));
+        Assert.Contains("Konsistenzhinweis geprüft", konsistenz.TextContent);
+    }
+
+    [Fact]
+    public void Zu_wenige_Realisierungen_tragen_den_Vermerk_nicht_belastbar_und_der_Durchfluss_GLF_P()
+    {
+        var durchfluss = new ZapfprofilAuslegungsgruppeDaten
+        {
+            Topologie = "Durchfluss",
+            Zonen = { "Zone 3" },
+            Hauptwert = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet },
+            Perzentil = new ZapfprofilKarteDaten { Stand = ZapfprofilKartenstand.Gerechnet, LeistungKw = 30 },
+            Empfehlung = new ZapfprofilEmpfehlungDaten { Rechenbar = true, LeistungKw = 30 },
+            PerzentilErgebnis = PerzentilErgebnis(belastbar: false, volumen: false)
+        };
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(durchfluss)));
+
+        IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
+        IElement marke = b.QuerySelector(".epos-zapfausl-nichtbelastbar")!;
+        Assert.Equal("nicht belastbar", marke.TextContent);
+        Assert.Contains("epos-zapfausl-marke--warnung", marke.ClassName);
+        Assert.Equal("50 Realisierungen; ein empirisches P99 braucht mindestens 100 = 1/(1 − p).", marke.GetAttribute("title"));
+        Assert.Equal(marke.GetAttribute("title"), b.QuerySelector(".epos-zapfausl-nichtbelastbar-grund")!.TextContent);
+
+        Assert.Contains("Minutenspitze P99", b.QuerySelector(".epos-zapfausl-perzentil-wert")!.TextContent);
+        Assert.Contains("30,0 kW", b.QuerySelector(".epos-zapfausl-perzentil-wert")!.TextContent);
+        Assert.Equal("P50 | 20,0 kW", string.Join(" | ", b.QuerySelectorAll("table.epos-zapfausl-streuband tbody tr")[0]
+                                                           .Children.Select(c => c.TextContent.Trim())));
+        Assert.Contains("Gleichzeitigkeit GLF_P", b.QuerySelector(".epos-zapfausl-glf")!.TextContent);
+        Assert.Contains("0,41", b.QuerySelector(".epos-zapfausl-glf")!.TextContent);
+        Assert.StartsWith("Ergebnis, kein Eingabefaktor: P99 der Minutenspitze der Gruppe", b.QuerySelector(".epos-zapfausl-glf-bezug")!.TextContent);
+        // Der Konsistenzhinweis gehört zum Summenlinienpunkt — am Durchfluss keiner.
+        Assert.Empty(cut.FindAll(".epos-zapfausl-konsistenz"));
+    }
+
+    [Fact]
+    public void Der_Konsistenzhinweis_ist_nach_dem_Lauf_auffaellig_oder_ohne_Schwelle_benannt()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.PerzentilErgebnis = PerzentilErgebnis();
+        g.PerzentilErgebnis.KonsistenzAuffaellig = true;
+        g.PerzentilErgebnis.KonsistenzText = "Die stochastische Spitze liegt über der Schwelle.";
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
+        IElement k = cut.Find(".epos-zapfausl-konsistenz");
+        Assert.NotNull(k.QuerySelector(".epos-kohaerenz--abweichend"));
+        Assert.Contains("Konsistenzhinweis: Die stochastische Spitze liegt über der Schwelle.", k.TextContent);
+
+        g.PerzentilErgebnis.KonsistenzAuffaellig = false;
+        g.PerzentilErgebnis.KonsistenzGeprueft = false;
+        cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
+        Assert.Equal("Konsistenzhinweis entfällt — die Schwelle fehlt im Parametersatz.", cut.Find(".epos-zapfausl-konsistenz").TextContent);
+    }
+
+    [Fact]
+    public void Ein_nicht_rechenbares_Perzentil_nennt_seinen_Grund()
+    {
+        ZapfprofilAuslegungsgruppeDaten g = Speichergruppe();
+        g.Perzentil = new ZapfprofilKarteDaten
+        {
+            Stand = ZapfprofilKartenstand.NichtRechenbar,
+            Text = "Nicht rechenbar — für die Nutzungsart „Wohnen A“ der Zone „Zone 1“ stehen keine Zapfkategorien im Katalog."
+        };
+        var cut = Aufbauen(StartMitStochastik(Ergebnis(g)));
+
+        IElement b = cut.Find(".epos-zapfausl-karte--perzentil");
+        Assert.Contains("keine Zapfkategorien", b.QuerySelector(".epos-zapfausl-grund")!.TextContent);
+        Assert.Contains("„Wohnen A“", b.TextContent);
+        Assert.Empty(b.QuerySelectorAll("table"));
+    }
+
+    /// <summary>Der Knopf „Stochastisch rechnen" des Zapfprofils öffnet die Überlagerung mit eingeschaltetem Schalter.</summary>
+    [Fact]
+    public void Stochastisch_beim_Oeffnen_rechnet_gleich_mit_dem_Ensemble()
+    {
+        var gesehen = new List<ZapfprofilAuslegungEingabeDaten>();
+        var cut = Render<ZapfprofilAuslegungDialog>(p => p
+            .Add(x => x.Daten, StartMitStochastik())
+            .Add(x => x.Texte, new ZapfprofilAuslegungTexte())
+            .Add(x => x.Rechnen, e => { gesehen.Add(e); return ErgebnisZu(e); })
+            .Add(x => x.EntprellungMs, 0)
+            .Add(x => x.StochastischBeimOeffnen, true));
+
+        Assert.True(cut.Instance.Eingabe.Stochastisch);
+        Assert.True(Assert.Single(gesehen).Stochastisch);
+        Assert.NotNull(cut.Find(".epos-zapfausl-streuband"));
+        Assert.True(Feld(cut, "Stochastisch rechnen").HasAttribute("checked"));
+        Assert.False(cut.Instance.KonstruktorOffen);
+    }
+
+    [Fact]
+    public void Eine_Fehleingabe_der_Realisierungen_haelt_das_OK_an()
+    {
+        int gerufen = 0;
+        var cut = Aufbauen(StartMitStochastik(), rechnen: ErgebnisZu, geschlossen: _ => gerufen++);
+        Feld(cut, "Stochastisch rechnen").Change(true);
+
+        Feld(cut, "Realisierungen des Bedarfstags").Input("0");          // unter der Untergrenze 1
+        Assert.Contains("epos-fehleingabe", Feld(cut, "Realisierungen des Bedarfstags").ClassName);
+        Assert.Null(cut.Instance.Eingabe.RealisierungenAuslegung);
+        Knopf(cut, "OK").Click();
+        Assert.Equal(0, gerufen);
+        Assert.Equal("Bitte die markierten Felder berichtigen: Realisierungen des Bedarfstags.", cut.Instance.Hinweis);
+
+        Feld(cut, "Realisierungen des Bedarfstags").Input("40");
+        Knopf(cut, "OK").Click();
+        Assert.Equal(1, gerufen);
     }
 }

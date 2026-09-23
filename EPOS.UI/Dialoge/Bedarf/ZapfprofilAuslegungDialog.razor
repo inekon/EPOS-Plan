@@ -23,11 +23,22 @@
    herbeifuehrt (KonstruktorOeffnen einer Gruppe), nicht nach jedem Abbrechen erneut. Ein Tag
    aus dem Stundenprofil traegt das Warnbanner "Spitzen unterschaetzt" (SpitzenUnterschaetzt).
 
-   BENANNT GESPERRT. Das Perzentil ("noch nicht gerechnet"), der Konsistenzhinweis (braucht
-   das Perzentil), der Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der
-   Entnahmearmaturen fehlt im Datenmodell), die Quellen A100-Referenzprofil (solange der
-   Katalog keine Zeile dieser Art traegt) und Ecodesign-Zapfprofil sowie "An
-   Speicherauslegung uebergeben..." kommen spaeter: Sie stehen da, gesperrt mit Grund.
+   STOCHASTIK (Stufe Z3, 4.5 b). Der Schalter "Stochastisch rechnen" (eine Laufangabe) zieht
+   je Topologiegruppe das Ensemble des Bedarfstags; mit ihm stehen das Auslegungsperzentil
+   (P95 | P99, K3) und die Realisierungen des Bedarfstags (leer = Vorgabe des Kerns) in den
+   Eingaben. Die Karte (b) zeigt dann den Perzentilwert der Auslegungsgroesse (Speicher:
+   Volumen beim Phi_N des Summenlinienpunkts; sonst Minutenspitze), das Streuband P50 ... P99
+   samt Spannweite als Tabellenzeilen, die Gleichzeitigkeit als Ergebnis (GLF_V bzw. GLF_P mit
+   Bezug), den Vermerk "nicht belastbar" bei R < 1/(1 - p); die Speichergruppe traegt den
+   Konsistenzhinweis als Kohaerenzzeile. Ohne Schalter bleibt das Perzentil "noch nicht
+   gerechnet"; der Wirt kann die Ueberlagerung mit eingeschaltetem Schalter oeffnen
+   (StochastischBeimOeffnen, Knopf "Stochastisch rechnen" des Zapfprofils). Kein neues Bild.
+
+   BENANNT GESPERRT. Der Konsistenzhinweis vor dem Lauf (braucht das Perzentil), der
+   Rohrnetz-Spitzendurchfluss nach DIN 1988-300 (die Summe der Entnahmearmaturen fehlt im
+   Datenmodell), die Quellen A100-Referenzprofil und Ecodesign-Zapfprofil (solange der Katalog
+   keine Zeile ihrer Art traegt) sowie "An Speicherauslegung uebergeben..." stehen da,
+   gesperrt mit Grund.
 
    ENTPRELLT. Jede Eingabe rechnet neu, erst EntprellungMs nach der letzten (0 = sofort,
    bunit). *@
@@ -100,6 +111,23 @@
                     <Auswahlfeld Bezeichnung="@Texte.LabelWerkstoff" Eintraege="@Werkstoffe"
                                  Auswahl="@((int)_eingabe.Werkstoff)" AuswahlChanged="WerkstoffSetzen" />
                     <Herleitungszeile Text="@Laufangabe("")" />
+                    <Schalter Bezeichnung="@Texte.LabelStochastisch" Wert="@_eingabe.Stochastisch" WertChanged="StochastischSetzen" />
+                    <Herleitungszeile Text="@Texte.HerleitungStochastisch" />
+                    @if (_eingabe.Stochastisch)
+                    {
+                        if (Daten.Perzentile.Count > 0)
+                        {
+                            <Optionsgruppe Bezeichnung="@Texte.LabelPerzentil" Eintraege="@Perzentilwahl"
+                                           Auswahl="@PerzentilAuswahl" AuswahlChanged="PerzentilSetzen" />
+                            <Herleitungszeile Text="@Format(Texte.HerleitungPerzentil, Ganz(Daten.PerzentilVorgabe))" />
+                        }
+                        <Ganzzahlfeld Bezeichnung="@Texte.LabelRealisierungen" Feldname="@Texte.LabelRealisierungen"
+                                      Einheit="@Texte.EinheitTage" Min="@Daten.RealisierungenMindestens"
+                                      Max="@Daten.RealisierungenHoechstens"
+                                      Wert="@_eingabe.RealisierungenAuslegung" WertChanged="RealisierungenSetzen"
+                                      Platzhalter="@Klammer(RealisierungenVorgabe)" FehlerZustand="FehlerZustandMelden" />
+                        <Herleitungszeile Text="@RealisierungenHerleitung" />
+                    }
                 </KindInhalt>
             </Formularraster>
         </KindInhalt>
@@ -166,11 +194,70 @@
                             }
                         </section>
 
-                        @* (b) Perzentil - benannt gesperrt *@
+                        @* (b) Perzentil aus dem Ensemble des Bedarfstags (4.5 b) *@
                         <section class="epos-zapfausl-karte epos-zapfausl-karte--perzentil" aria-label="@Texte.KartePerzentil">
                             <h4>@Texte.KartePerzentil</h4>
                             <p class="epos-leisezeile">@Texte.KartePerzentilUnter</p>
-                            <p class="epos-leisezeile epos-zapfausl-perzentil" aria-disabled="true" title="@Texte.GrundNochNicht">@Texte.PerzentilOffen</p>
+                            @if (g.PerzentilErgebnis is { } pz)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-lauf">@Format(Texte.PerzentilLauf, pz.Seed, pz.Realisierungen, pz.Tag)</p>
+                                <div class="epos-zapfausl-wert epos-zapfausl-perzentil-wert">
+                                    <span>@Format(pz.Volumen ? Texte.PerzentilVolumen : Texte.PerzentilMinutenspitze, pz.Perzentil)</span>
+                                    <b>@Perzentilhaupttext(pz)</b>
+                                    @if (!pz.Belastbar)
+                                    {
+                                        <span class="epos-zapfausl-marke epos-zapfausl-marke--warnung epos-zapfausl-nichtbelastbar"
+                                              title="@NichtBelastbarGrund(pz)">@Texte.NichtBelastbar</span>
+                                    }
+                                </div>
+                                if (!pz.Belastbar)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-grund epos-zapfausl-nichtbelastbar-grund">@NichtBelastbarGrund(pz)</p>
+                                }
+                                <p class="epos-leisezeile">@Format(Texte.Streuband, pz.Realisierungen)</p>
+                                <table class="epos-raster epos-kennzahlen epos-zapfausl-streuband">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">@Texte.SpaltePerzentil</th>
+                                            <th scope="col">@Texte.SpalteWert</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (ZapfprofilPerzentilZeileDaten z in pz.Streuband)
+                                        {
+                                            <tr class="@(z.Perzentil == pz.Perzentil ? "epos-zeile--markiert" : null)">
+                                                <th scope="row">P@(z.Perzentil)</th>
+                                                <td class="epos-zahl">@Perzentilwerttext(pz, z.Wert)</td>
+                                            </tr>
+                                        }
+                                        <tr class="epos-zapfausl-spannweite">
+                                            <th scope="row">@Texte.Spannweite</th>
+                                            <td class="epos-zahl">@(Perzentilwerttext(pz, pz.Minimum) + " – " + Perzentilwerttext(pz, pz.Maximum))</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                if (pz.OhneNachweis > 0)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-ohnenachweis">@Format(Texte.OhneNachweis, pz.OhneNachweis, pz.Realisierungen)</p>
+                                }
+                                <div class="epos-zapfausl-wert epos-zapfausl-glf">
+                                    <span>@(pz.Volumen ? Texte.GlfV : Texte.GlfP)</span><b>@Zahl(pz.Gleichzeitigkeit, "N2")</b>
+                                </div>
+                                <p class="epos-leisezeile epos-zapfausl-glf-bezug">@Format(pz.Volumen ? Texte.GlfVBezug : Texte.GlfPBezug, pz.Perzentil, pz.Einheiten)</p>
+                                <p class="epos-leisezeile epos-zapfausl-perzentil-info">@Format(Texte.PerzentilNachrichtlich, pz.Perzentil, Zahl(pz.MinutenspitzeKw, "N1"), Zahl(pz.StundenspitzeKw, "N1"))</p>
+                                if (pz.WurzelNKw is double wurzelN)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-perzentil-info">@Format(Texte.WurzelN, Zahl(wurzelN, "N1"))</p>
+                                }
+                            }
+                            else if (g.Perzentil.Stand == ZapfprofilKartenstand.NichtRechenbar)
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-grund">@Standtext(g.Perzentil)</p>
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-perzentil">@Texte.PerzentilOffen</p>
+                            }
                         </section>
 
                         @* (c) Normvergleich *@
@@ -311,7 +398,24 @@
                         }
                         @if (g.Speicher)
                         {
-                            <p class="epos-leisezeile epos-zapfausl-konsistenz" aria-disabled="true" title="@Texte.GrundKonsistenz">@Texte.Konsistenz — @Texte.GrundKonsistenz</p>
+                            if (g.PerzentilErgebnis is { } kz)
+                            {
+                                if (!kz.KonsistenzGeprueft)
+                                {
+                                    <p class="epos-leisezeile epos-zapfausl-konsistenz">@Texte.KonsistenzOhneSchwelle</p>
+                                }
+                                else
+                                {
+                                    <div class="epos-zapfausl-konsistenz">
+                                        <Kohaerenzzeile Text="@(kz.KonsistenzAuffaellig ? Format(Texte.KonsistenzAuffaellig, kz.KonsistenzText) : Texte.KonsistenzOk)"
+                                                        Zustand="@(kz.KonsistenzAuffaellig ? KohaerenzZustand.Abweichend : KohaerenzZustand.Ok)" />
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="epos-leisezeile epos-zapfausl-konsistenz" aria-disabled="true" title="@Texte.GrundKonsistenz">@Texte.Konsistenz — @Texte.GrundKonsistenz</p>
+                            }
                         }
                     </section>
                 </KindInhalt>
@@ -397,6 +501,12 @@
     /// <summary>Wartezeit der Neuberechnung nach der letzten Eingabe [ms]; 0 = sofort (bunit).</summary>
     [Parameter] public int EntprellungMs { get; set; } = 400;
 
+    /// <summary>
+    /// Öffnet mit eingeschaltetem „Stochastisch rechnen" (Knopf „Stochastisch rechnen" des
+    /// Zapfprofils) und rechnet gleich stochastisch; <c>false</c> = die Eingaben, wie sie kommen.
+    /// </summary>
+    [Parameter] public bool StochastischBeimOeffnen { get; set; }
+
     [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
     [Parameter] public string AbbrechenText { get; set; } = Resource.ALLG_BTN_ABBRECHEN;
 
@@ -417,6 +527,9 @@
     private bool _rueckfrage;
     private string _hinweis = "";
     private CancellationTokenSource? _entprellung;
+
+    /// <summary>Die Felder, deren Text gerade keine gültige Zahl ist (Feldname) — sie halten das OK an.</summary>
+    private readonly SortedSet<string> _fehlfelder = new(StringComparer.Ordinal);
 
     /// <summary>Die Eingaben — Prüfhilfe für die Tests.</summary>
     public ZapfprofilAuslegungEingabeDaten Eingabe => _eingabe;
@@ -439,6 +552,13 @@
         _ergebnis = Daten.Ergebnis;
         _aktuell = _ergebnis is not null;
         _konstruktorOffen = KonstruktorFaellig(null, _ergebnis);
+        // „Stochastisch rechnen" des Zapfprofils: gleich mit Ensemble — der Konstruktor folgt
+        // dem Stand beim Öffnen, nicht dieser Neuberechnung.
+        if (StochastischBeimOeffnen && !_eingabe.Stochastisch)
+        {
+            _eingabe.Stochastisch = true;
+            Neurechnen(konstruktorFolgen: false);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -554,6 +674,57 @@
         ((int)ZapfprofilWerkstoff.Stahl, Texte.WerkstoffStahl),
         ((int)ZapfprofilWerkstoff.Edelstahl, Texte.WerkstoffEdelstahl)
     };
+
+    // --- Stochastik (4.5 b) -------------------------------------------------------------
+
+    /// <summary>Die Wahl des Auslegungsperzentils aus der Wertemenge des Schemas: „P95", „P99".</summary>
+    private IReadOnlyList<(int Id, string Text)> Perzentilwahl
+        => Daten.Perzentile.Select(p => (p, "P" + p.ToString(CultureInfo.InvariantCulture))).ToArray();
+
+    /// <summary>Das gewählte Perzentil — die Eingabe, sonst die Vorgabe der DDL.</summary>
+    private int? PerzentilAuswahl => _eingabe.Perzentil ?? Daten.PerzentilVorgabe;
+
+    /// <summary>Die Vorgabe der Realisierungen zum gewählten Perzentil (Kern); <c>null</c>, wenn nicht bestimmbar.</summary>
+    private int? RealisierungenVorgabe
+        => PerzentilAuswahl is int p && Daten.RealisierungenVorgabe.TryGetValue(p, out int r) ? r : null;
+
+    /// <summary>Die Herleitung der Realisierungen: Grenzen, Vorgabe und ab wann das Perzentil belastbar ist.</summary>
+    private string RealisierungenHerleitung
+    {
+        get
+        {
+            string min = Ganz(Daten.RealisierungenMindestens), max = Ganz(Daten.RealisierungenHoechstens);
+            if (RealisierungenVorgabe is not int vorgabe || PerzentilAuswahl is not int p)
+                return Format(Texte.HerleitungRealisierungenOhne, min, max, Daten.RealisierungenVorgabeGrund);
+            return Format(Texte.HerleitungRealisierungen, min, max, Ganz(vorgabe),
+                          Ganz(Daten.Mindestzahl.TryGetValue(p, out int m) ? m : (int?)null), p.ToString(CultureInfo.InvariantCulture));
+        }
+    }
+
+    /// <summary>Der Perzentilwert der Karte (b): Speicher „V l bei Φ kW", sonst die Minutenspitze in kW.</summary>
+    private string Perzentilhaupttext(ZapfprofilPerzentilDaten pz)
+        => pz.Volumen && !double.IsInfinity(pz.Wert) && !double.IsNaN(pz.Wert)
+            ? Format(Texte.PerzentilVolumenWert, Zahl(pz.Wert, "N0"), Zahl(pz.LeistungKw, "N1"))
+            : Perzentilwerttext(pz, pz.Wert);
+
+    /// <summary>Ein Wert des Streubands in seiner Einheit (l bzw. kW); ohne Nachweis „∞".</summary>
+    private static string Perzentilwerttext(ZapfprofilPerzentilDaten pz, double wert)
+    {
+        if (double.IsNaN(wert)) return "–";
+        if (double.IsPositiveInfinity(wert)) return "∞";
+        return pz.Volumen ? Zahl(wert, "N0") + " l" : Zahl(wert, "N1") + " kW";
+    }
+
+    /// <summary>Warum das Perzentil nicht belastbar ist: R gegen die Mindestzahl ⌈1/(1 − p)⌉.</summary>
+    private string NichtBelastbarGrund(ZapfprofilPerzentilDaten pz)
+        => Format(Texte.GrundNichtBelastbar, Ganz(pz.Realisierungen), pz.Perzentil.ToString(CultureInfo.InvariantCulture),
+                  Ganz(pz.Mindestzahl));
+
+    /// <summary>Eine Vorgabe als Platzhalter im leeren Feld: „(150)"; ohne Vorgabe leer.</summary>
+    private static string Klammer(int? wert) => wert is int w ? "(" + Ganz(w) + ")" : "";
+
+    /// <summary>Eine ganze Zahl für einen Satz; ohne Wert „–".</summary>
+    private static string Ganz(int? wert) => wert is int w ? w.ToString(CultureInfo.CurrentCulture) : "–";
 
     /// <summary>„Laufangabe — wird nicht gespeichert; …" ohne leeren Zusatz.</summary>
     private string Laufangabe(string zusatz)
@@ -712,6 +883,37 @@
         Geaendert();
     }
 
+    /// <summary>„Stochastisch rechnen": zieht (bzw. verwirft) das Ensemble des Bedarfstags — eine Laufangabe.</summary>
+    private void StochastischSetzen(bool an)
+    {
+        if (_eingabe.Stochastisch == an) return;
+        _eingabe.Stochastisch = an;
+        if (!an) _fehlfelder.Clear();
+        Geaendert();
+    }
+
+    private void PerzentilSetzen(int? id)
+    {
+        if (id is not int p || !Daten.Perzentile.Contains(p) || _eingabe.Perzentil == p) return;
+        _eingabe.Perzentil = p;
+        Geaendert();
+    }
+
+    /// <summary>Die Realisierungen des Bedarfstags; leer = die Vorgabe des Kerns (<c>null</c>).</summary>
+    private void RealisierungenSetzen(int? wert)
+    {
+        if (wert == _eingabe.RealisierungenAuslegung) return;
+        _eingabe.RealisierungenAuslegung = wert;
+        Geaendert();
+    }
+
+    /// <summary>Ein Feld meldet, ob sein Text gerade eine gültige Zahl ist — eine Fehleingabe hält das OK an.</summary>
+    private void FehlerZustandMelden((string Feld, bool Fehlerhaft) f)
+    {
+        if (f.Fehlerhaft) _fehlfelder.Add(f.Feld);
+        else _fehlfelder.Remove(f.Feld);
+    }
+
     /// <summary>Ein gesperrter Versuch (Übergabe): der Grund als leise Zeile.</summary>
     private void UebergabeGesperrt() => _hinweis = Texte.GrundUebergeben;
 
@@ -810,6 +1012,12 @@
         if (!ok)
         {
             await Abbrechen();
+            return;
+        }
+        // Ein Feld mit ungültigem Text (Realisierungen) hielte sonst still den alten Wert.
+        if (_fehlfelder.Count > 0)
+        {
+            _hinweis = Format(Texte.MeldungFehleingabe, string.Join(", ", _fehlfelder));
             return;
         }
         EntprellungAbbrechen();
