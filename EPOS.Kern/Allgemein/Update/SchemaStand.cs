@@ -358,11 +358,21 @@ namespace WindowsFormsApplication1
         /// aus einem Paket außerhalb des Repositoriums, kein Projekt steht auf dem
         /// Generator, und kein Rechenweg liest die Tabellen; <b>der Referenzlauf bleibt
         /// byte-gleich</b>.
+        /// Mit der ABLÖSUNG DES ZEITZONENTARIFS (Schritt 104, Entscheid Q11 vom
+        /// 22.09.2026: „kein HT/NT") steht das Ziel auf <b>104</b>:
+        /// <c>energy_project_settings</c> bekommt die zweistufige Leistungspreis-Staffel
+        /// des Stromträgers (<see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/>),
+        /// und der Datenteil (<see cref="ZeitzonentarifAbloesung"/>) übernimmt die Staffel
+        /// aus jedem Tarifsatz, in dem sie rechnete, löscht die Sätze des Zonenmodells,
+        /// verwirft die mit ihnen gerechneten gespeicherten Ergebnisse (Entscheid E7b‑Q4)
+        /// und fasst die Zonenzeilen der gespeicherten Strommatrix zu je einer Jahreszeile
+        /// zusammen. <b>Der Referenzlauf bleibt byte-gleich</b> — die Wirtschaftlichkeit
+        /// steht nicht im Export; in der Testdatenbank trägt kein Projekt einen Tarifsatz.
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 103;
+        public const int Zielversion = 104;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

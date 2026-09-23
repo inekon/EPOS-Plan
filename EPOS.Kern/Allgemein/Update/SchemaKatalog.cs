@@ -3728,6 +3728,55 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
+        // ETAPPE E7b — die zweistufige Leistungspreis-Staffel des Stromträgers (Schritt 104)
+        // ---------------------------------------------------------------------------
+
+        /// <summary>
+        /// <b>Staffelgrenze</b> der zweistufigen Leistungspreis-Staffel [kW] an der
+        /// Projektübersteuerung des Stromträgers (<c>energy_project_settings</c>). Bis zu
+        /// ihr gilt <see cref="SPALTE_LP_STAFFEL_PREIS1"/>, darüber
+        /// <see cref="SPALTE_LP_STAFFEL_PREIS2"/> — bemessen an der Viertelstundenspitze
+        /// des Netzbezugs (<c>KostenEmissionRechner</c>). NULL heißt „nicht gepflegt".
+        /// </summary>
+        public const string SPALTE_LP_STAFFEL_GRENZE = "Leistungspreis_Staffelgrenze";
+
+        /// <summary>Leistungspreis der ersten Stufe bis zur Staffelgrenze [€/(kW·a)];
+        /// NULL heißt „nicht gepflegt".</summary>
+        public const string SPALTE_LP_STAFFEL_PREIS1 = "Leistungspreis_Staffel1";
+
+        /// <summary>Leistungspreis der zweiten Stufe über der Staffelgrenze [€/(kW·a)];
+        /// NULL heißt „nicht gepflegt".</summary>
+        public const string SPALTE_LP_STAFFEL_PREIS2 = "Leistungspreis_Staffel2";
+
+        /// <summary>
+        /// Schritt 104 der Migration: die <b>zweistufige Leistungspreis-Staffel</b> an
+        /// <c>energy_project_settings</c> — der Stromträger der Kostenverwaltung pflegt
+        /// sie neben der Energiepreisstruktur (Entscheid Q11, Anwender 22.09.2026, Weg 2
+        /// aus Nach #291). Bis dahin stand sie im Tarifsatz (<c>Tab_ProjektTarif.Staffel_*</c>)
+        /// und rechnete nur im Zonenmodell, das mit demselben Entscheid entfällt.
+        ///
+        /// <para><b>MIT DML</b> — der Datenteil steht bei
+        /// <see cref="ZeitzonentarifAbloesung"/>: Er übernimmt die Staffel eines Satzes,
+        /// in dem sie rechnete, an den Stromträger jeder Version der Gruppe, löscht die
+        /// Tarifsätze des Zonenmodells, verwirft die mit ihnen gerechneten gespeicherten
+        /// Ergebnisse (Entscheid E7b‑Q4) und fasst die Zonenzeilen der Strommatrix zu
+        /// einer Jahreszeile zusammen.</para>
+        ///
+        /// <para><b>Nur Projektseite.</b> Der Katalog (<c>energy_carrier</c>) bekommt
+        /// keine Staffel: Sie ist wie vorher eine Angabe des Projekts, und
+        /// „Projektwert vor Katalogwert" braucht dafür keinen Katalogwert.</para>
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="Alle"/> — derselbe Grund
+        /// wie bei Schritt 95, 97 und 99: Die Simulation liest sie nicht.</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Schritt104_LeistungspreisStaffel =
+        {
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_LP_STAFFEL_GRENZE, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_LP_STAFFEL_PREIS1, "DOUBLE"),
+            new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_LP_STAFFEL_PREIS2, "DOUBLE"),
+        };
+
+        // ---------------------------------------------------------------------------
         // ETAPPE E5 — Tarifmodell Strom (Tab_ProjektTarif) und zwei Projektangaben
         // ---------------------------------------------------------------------------
 
@@ -3740,8 +3789,13 @@ namespace WindowsFormsApplication1
         ///
         /// <b>Die eine Spalte, an der die Ergebnisneutralität hängt.</b> Schritt 21b
         /// belegt jede Bestandszeile mit <c>ZONEN</c>, und die Leseseite behandelt
-        /// leer/NULL genauso — ohne ausdrückliche Wahl rechnet die Anwendung weiter mit
+        /// leer/NULL genauso — ohne ausdrückliche Wahl rechnete die Anwendung weiter mit
         /// dem Zonenmodell aus Phase 8.
+        ///
+        /// <b>Q11 (E7b):</b> Der Zonenmodus rechnet nicht mehr. Schritt 104 löscht jeden
+        /// Satz, der nicht <c>ROLLEN</c> führt; leer, NULL und <c>ZONEN</c> gelten der
+        /// Leseseite als nicht wirksam (<c>TarifParameter.Wirksam</c>), nur <c>ROLLEN</c>
+        /// rechnet.
         ///
         /// <b>Spaltenbreite.</b> Längster Wert <c>ROLLEN</c> (6 Zeichen) → TEXT(12).
         /// </summary>

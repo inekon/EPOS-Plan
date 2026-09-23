@@ -18,8 +18,8 @@ namespace EPOS.UI.Tests.Seiten;
 /// <para>Soll ist die Feldkarte: vier Kennzahl-Karten, die Vergleichsgruppe
 /// mit Haken, die Szenariowahl MIT dem Einstieg „Parameter…" daneben (AUFTRAG #325), der
 /// Parameternachweis, die Vergleichstabelle, der Bewertungsblock nach
-/// DIN EN 17463 darunter (AUFTRAG #325), die Sicht-Knöpfe (Photovoltaik, BHKW,
-/// Strombezug — je nach Ausstattung), „Berechnen" und der
+/// DIN EN 17463 darunter (AUFTRAG #325), die Sicht-Knöpfe (Photovoltaik, BHKW —
+/// je nach Ausstattung; „Strombezug…" ist mit Q11 entfallen), „Berechnen" und der
 /// Abbrechen-Knopf während eines Laufs. „Verlauf…" ist mit ETAPPE E6 entfallen: Der
 /// Verlauf steht als Abschnitt in „Wie sicher ist das?" (<see cref="KapitalwertVerlaufAbschnittTests"/>).</para>
 ///
@@ -66,8 +66,8 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         }
     };
 
-    private static WirtschaftlichkeitStand Standard(bool pv = true, bool bhkw = true,
-                                                    bool strom = true) => new WirtschaftlichkeitStand
+    private static WirtschaftlichkeitStand Standard(bool pv = true, bool bhkw = true)
+        => new WirtschaftlichkeitStand
     {
         Varianten = new[]
         {
@@ -86,7 +86,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
         Ansicht = Ansicht(),
         MitPhotovoltaik = pv,
         MitBhkw = bhkw,
-        MitStrombezug = strom,
         Statuszeile = "Gespeicherte Ergebnisse vom 02.09.2026 11:00."
     };
 
@@ -123,12 +122,7 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
                                      WirtschaftlichkeitSeite.Unterdialog art)
         => art == WirtschaftlichkeitSeite.Unterdialog.Parameter
             ? cut.Find(".epos-seite-zeile button")
-            : Fussknoepfe(cut)[art switch
-            {
-                WirtschaftlichkeitSeite.Unterdialog.Photovoltaik => 0,
-                WirtschaftlichkeitSeite.Unterdialog.Bhkw => 1,
-                _ => 2                                   // Strombezug
-            }];
+            : Fussknoepfe(cut)[art == WirtschaftlichkeitSeite.Unterdialog.Photovoltaik ? 0 : 1];
 
     // =====================================================================
     // Feldbestand (Feldkarte)
@@ -341,20 +335,21 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
     /// <summary>
     /// AUFTRAG #325: „Parameter…" ist aus der Fussleiste heraus — dort stehen noch
-    /// PV, BHKW, Strombezug und Berechnen. Der Einstieg selbst ist nicht
+    /// PV, BHKW und Berechnen. Der Einstieg selbst ist nicht
     /// verschwunden, er steht in der Zeile der Szenariowahl.
     ///
-    /// <para><b>ETAPPE E6 (K8, U2):</b> „Verlauf…" ist entfallen — die Leiste trägt
-    /// höchstens VIER Knöpfe; der Verlauf steht als Abschnitt in „Wie sicher ist das?".</para>
+    /// <para><b>ETAPPE E6 (K8, U2):</b> „Verlauf…" ist entfallen; <b>Q11 (E7b):</b>
+    /// „Strombezug…" ebenso — die Leiste trägt höchstens DREI Knöpfe; der Verlauf
+    /// steht als Abschnitt in „Wie sicher ist das?".</para>
     /// </summary>
     [Fact]
-    public void Die_drei_Sichtknoepfe_folgen_der_Ausstattung()
+    public void Die_zwei_Sichtknoepfe_folgen_der_Ausstattung()
     {
         var alle = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
-        Assert.Equal(4, Fussknoepfe(alle).Count);   // PV, BHKW, Strom, Berechnen
+        Assert.Equal(3, Fussknoepfe(alle).Count);   // PV, BHKW, Berechnen
 
         var ohne = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
-                         stand: Standard(pv: false, bhkw: false, strom: false));
+                         stand: Standard(pv: false, bhkw: false));
         Assert.Equal(1, Fussknoepfe(ohne).Count);   // Berechnen
     }
 
@@ -401,27 +396,18 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     }
 
     /// <summary>
-    /// Der Einstieg „Strombezug…" hängt allein am TARIFSATZ des Projekts
-    /// (<c>MitStrombezug</c>), nicht an der Erzeugerlage der Gruppe: Er pflegt
-    /// die Sicht „Strombezug" des Tarifsatzes, und die wirkt nur, solange der
-    /// Satz aktiv ist. Ein Wärmepumpenprojekt ohne aktiven Tarif zeigt ihn
-    /// deshalb nicht — es gibt dort nichts zu pflegen, was rechnet.
+    /// Q11 (E7b, Anwender 22.09.2026: „kein HT/NT"): Den Einstieg „Strombezug…" gibt
+    /// es nicht mehr. Er pflegte die Einkaufsseite des Tarifsatzes — Zonenpreise und
+    /// die zweistufige Leistungspreis-Staffel. Den Zeitzonentarif gibt es nicht mehr,
+    /// die Staffel pflegt der Stromträger in der Kostenverwaltung.
     /// </summary>
     [Fact]
-    public void Der_Strombezug_Einstieg_haengt_allein_am_Tarifsatz()
+    public void Den_Strombezug_Einstieg_gibt_es_nicht_mehr()
     {
-        // Aktiver Tarifsatz — der Knopf steht da, auch ohne PV und ohne BHKW.
-        var mitTarif = Zeige(
-            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
-            stand: Standard(pv: false, bhkw: false, strom: true));
-        Assert.Contains(Fussknoepfe(mitTarif), k => k.TextContent.Trim() == "Strombezug…");
+        var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()));
 
-        // Kein aktiver Tarifsatz — der Knopf fehlt, gleich welcher Erzeuger in
-        // der Vergleichsgruppe steht (die Wärmepumpe ankert ihn nicht mehr).
-        var ohneTarif = Zeige(
-            p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog _) => LeererSatz()),
-            stand: Standard(pv: false, bhkw: false, strom: false));
-        Assert.DoesNotContain(Fussknoepfe(ohneTarif), k => k.TextContent.Trim() == "Strombezug…");
+        Assert.DoesNotContain(Fussknoepfe(cut), k => k.TextContent.Trim() == "Strombezug…");
+        Assert.DoesNotContain("Strombezug…", cut.Markup);
     }
 
     /// <summary>Ohne Delegat kein Knopf (A-18 aus Welle 2).</summary>
@@ -705,7 +691,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     [Theory]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
     public void Jeder_Sichtknopf_oeffnet_seinen_Bereich(
         WirtschaftlichkeitSeite.Unterdialog erwartet)
@@ -735,12 +720,14 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     /// Wirt verwarf ihn — der Knopf tat dort gar nichts. Jetzt schließt der
     /// Dialog (er hat im OK-Weg geschrieben), und die Tarifstruktur geht in der
     /// gewünschten SICHT im selben Fenster auf.
+    ///
+    /// <para><b>Q11 (E7b):</b> Der zweite Sprung „Strombezug…" ist entfallen. Die
+    /// Tarif-Überlagerung ist seither nur noch über die Sprünge erreichbar — deshalb
+    /// prüft dieser Fall auch „ein Titel, ein Kreuz", den bis dahin der Knopf
+    /// „Strombezug…" in den zwei Fällen unten trug.</para>
     /// </summary>
-    [Theory]
-    [InlineData(BhkwSprung.BhkwTarif, WirtschaftlichkeitSeite.Unterdialog.TarifBhkw)]
-    [InlineData(BhkwSprung.Strombezug, WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
-    public void Der_Bhkw_Sprung_oeffnet_die_Tarifstruktur_in_seiner_Sicht(
-        BhkwSprung sprung, WirtschaftlichkeitSeite.Unterdialog erwartet)
+    [Fact]
+    public void Der_Bhkw_Sprung_oeffnet_die_Tarifstruktur_in_der_Sicht_Bhkw()
     {
         var gefragt = new List<WirtschaftlichkeitSeite.Unterdialog>();
         var cut = Zeige(p => p.Add(x => x.Gaben, (WirtschaftlichkeitSeite.Unterdialog a) =>
@@ -753,12 +740,18 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         var dialog = cut.FindComponent<BhkwWirtschaftlichkeitDialog>();
         cut.InvokeAsync(() => dialog.Instance.Geschlossen.InvokeAsync(
-            new BhkwWirtschaftlichkeitErgebnis(true, sprung)));
+            new BhkwWirtschaftlichkeitErgebnis(true, BhkwSprung.BhkwTarif)));
 
-        Assert.Equal(erwartet, cut.Instance.OffenerUnterdialog);
-        Assert.Equal(erwartet, gefragt[^1]);
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.TarifBhkw, cut.Instance.OffenerUnterdialog);
+        Assert.Equal(WirtschaftlichkeitSeite.Unterdialog.TarifBhkw, gefragt[^1]);
         Assert.Single(cut.FindAll(".epos-ueberlagerung"));
         Assert.Single(cut.FindComponents<TarifstrukturDialog>());
+
+        // Ein Titel, eine Stelle: die Überlagerung trägt Titel UND Kreuz, der Dialog keins.
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt .epos-dialog-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung h1.epos-dialog-titel"));
+        Assert.Single(cut.FindAll(".epos-ueberlagerung .epos-ueberlagerung-titel"));
     }
 
     /// <summary>
@@ -816,7 +809,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     [Theory]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
     public void Jede_Ueberlagerung_zeigt_nur_ein_Kreuz_und_einen_Titel(
         WirtschaftlichkeitSeite.Unterdialog art)
@@ -931,7 +923,6 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
     [Theory]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Bhkw)]
-    [InlineData(WirtschaftlichkeitSeite.Unterdialog.Strombezug)]
     [InlineData(WirtschaftlichkeitSeite.Unterdialog.Parameter)]
     public void Kein_Unterdialog_zeigt_in_der_Ueberlagerung_einen_eigenen_Titel(
         WirtschaftlichkeitSeite.Unterdialog art)

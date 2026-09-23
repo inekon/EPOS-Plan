@@ -5045,18 +5045,6 @@ Please run the simulation with photovoltaics first.</value>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Take from</value>
   </data>
-  <data name="OPT_QUELLE_TARIF" xml:space="preserve">
-    <value>Tariff structure (economics): {0} €/(kW·a) — {1}</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE1" xml:space="preserve">
-    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE2" xml:space="preserve">
-    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_OHNE_SPITZE" xml:space="preserve">
-    <value>Tier 1, peak demand unknown</value>
-  </data>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Electricity carrier: {0} €/(kW·a)</value>
   </data>
@@ -6741,7 +6729,7 @@ Saving would overwrite all of those records at once and is therefore refused. Pl
     <value>Demand without the plant [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero in every zone means the demand time series was missing in the run.</value>
+    <value>"Demand without the plant" is the electricity demand without any own generation (before deducting PV self-consumption) — the reference quantity of the avoided cost. A zero means the demand time series was missing in the run.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>CHP bonus</value>
@@ -8778,9 +8766,6 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_LP_SAISON" xml:space="preserve">
     <value>Seasonal rates…</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
-    <value>Electricity capacity price: managed via the tariff structure.</value>
-  </data>
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energy carrier management…</value>
   </data>
@@ -8956,7 +8941,7 @@ To deactivate it, set its rate or amount to 0.</value>
     <value>Fed-in CHP electricity (tranches):</value>
   </data>
   <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
-    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration stays in the project's tariff structure (Einsp_* is purely CHP) — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
+    <value>FK7: The ELECTRICITY-PRICE part of the CHP feed-in remuneration is not maintained here but in the “CHP economics” dialog (CHP electricity feed-in tariff) and, with an active role tariff, in the feed-in price of the tariff structure — this tab displays the statutory CHP/tax figures; calculation is done exclusively by the KwkgSatzRechner and the tax credit calculators of the economics module. Project-related switches (case, plant type, sec. 9 lump-sum mode, quota override) are maintained there per plant.</value>
   </data>
   <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
     <value>Funding duration and annual caps</value>
@@ -9255,14 +9240,8 @@ To deactivate it, set its rate or amount to 0.</value>
   <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
     <value>Cancel</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
-    <value>Tariff structure…</value>
-  </data>
   <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
     <value>CHP tariff…</value>
-  </data>
-  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
-    <value>Grid supply…</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Feed-in tariff…</value>
@@ -10306,9 +10285,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>revenue (in the net present value)</value>
   </data>
-  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
-    <value>Electricity purchase…</value>
-  </data>
   <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
     <value>CHP tariff…</value>
   </data>
@@ -10516,9 +10492,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
     <value>Energy price (average) [€/kWh]:</value>
   </data>
-  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
-    <value>Save</value>
-  </data>
   <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
     <value>Feed-in price [€/kWh]:</value>
   </data>
@@ -10528,35 +10501,14 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_GUELTIG_AB" xml:space="preserve">
     <value>Price basis (valid from):</value>
   </data>
-  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
-    <value>Purchase prices [€/kWh]</value>
-  </data>
-  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
-    <value>Feed-in prices [€/kWh] (PV and CHP feed-in — shared field)</value>
-  </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
     <value>Feed-in (no demand price — finding 11 of the legacy application; shared field for PV and CHP feed-in)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Role model (stage E5) — difference method “avoided cost”</value>
   </data>
-  <data name="TARIF_G_STAFFEL" xml:space="preserve">
-    <value>Demand price scale (on the annual peak purchase)</value>
-  </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
-    <value>Time zones (peak applies Mon–Fri; reference year 2026)</value>
-  </data>
-  <data name="TARIF_G_ZONEN" xml:space="preserve">
-    <value>Zone model (stage W3) — four zone prices, two-step scale</value>
-  </data>
-  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
-    <value>Zone model (stage W3) — feed-in prices</value>
-  </data>
-  <data name="TARIF_HT_BIS" xml:space="preserve">
-    <value>Peak to hour (exclusive):</value>
-  </data>
-  <data name="TARIF_HT_VON" xml:space="preserve">
-    <value>Peak from hour (zone model only):</value>
+    <value>Winter period (summer and winter maximum of the demand charge model “Scale”)</value>
   </data>
   <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
     <value>Demand price model:</value>
@@ -10570,26 +10522,11 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_LM_STAFFEL" xml:space="preserve">
     <value>Scale (summer and winter maximum separately)</value>
   </data>
-  <data name="TARIF_MODELL" xml:space="preserve">
-    <value>Tariff model:</value>
-  </data>
-  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
-    <value>Role model (purchase / residual power / feed-in)</value>
-  </data>
-  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
-    <value>Zone model (winter/summer × peak/off-peak)</value>
-  </data>
   <data name="TARIF_MONATSPREIS" xml:space="preserve">
     <value>Monthly demand price [€/kW·month]:</value>
   </data>
-  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
-    <value>The peak window is empty (from ≥ to).</value>
-  </data>
   <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
     <value>The role model is active, but no energy price is maintained for either purchase or residual power — the calculation then falls back to the flat prices of the cost screen.</value>
-  </data>
-  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
-    <value>The tariff structure is active, but no purchase price is maintained — the calculation then falls back to the flat prices of the cost screen.</value>
   </data>
   <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>The tariff structure could not be saved.</value>
@@ -10603,12 +10540,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
     <value>Component view: ONE tariff record applies per master project. Header data and shared price fields appear in several views and mean the same values.</value>
   </data>
-  <data name="TARIF_SOMMER_HT" xml:space="preserve">
-    <value>Summer peak:</value>
-  </data>
-  <data name="TARIF_SOMMER_NT" xml:space="preserve">
-    <value>Summer off-peak:</value>
-  </data>
   <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
     <value>Upper limit [kW]</value>
   </data>
@@ -10618,29 +10549,14 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   <data name="TARIF_SP_WINTER" xml:space="preserve">
     <value>Winter [€/kW·a]</value>
   </data>
-  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
-    <value>Scale limit [kW]:</value>
-  </data>
   <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
     <value>The scale limits are CUMULATIVE upper limits: “500 / 2,000 / 8,000 kW” means up to 500 kW step 1, 500–2,000 kW step 2, 2,000–8,000 kW step 3, above that step 4. An upper limit of 0 means “open ended” and terminates the scale. The legacy catalogue stores step WIDTHS here — old number series must be converted before transfer.</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
-    <value>Price up to the limit [€/kW·a]:</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
-    <value>Price above the limit [€/kW·a]:</value>
   </data>
   <data name="TARIF_STUFE" xml:space="preserve">
     <value>Step {0}</value>
   </data>
   <data name="TARIF_STUFE_REST" xml:space="preserve">
     <value>Step {0} (remainder)</value>
-  </data>
-  <data name="TARIF_TITEL" xml:space="preserve">
-    <value>Electricity tariff structure</value>
-  </data>
-  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
-    <value>Tariff structure electricity purchase (heat pump &amp; loads)</value>
   </data>
   <data name="TARIF_TITEL_BHKW" xml:space="preserve">
     <value>Tariff structure CHP (electricity)</value>
@@ -10650,12 +10566,6 @@ Outside 20 to 60 °C the simulation uses the fallback value of 45 °C.</value>
   </data>
   <data name="TARIF_WINTER_BIS" xml:space="preserve">
     <value>Winter to month:</value>
-  </data>
-  <data name="TARIF_WINTER_HT" xml:space="preserve">
-    <value>Winter peak:</value>
-  </data>
-  <data name="TARIF_WINTER_NT" xml:space="preserve">
-    <value>Winter off-peak:</value>
   </data>
   <data name="TARIF_WINTER_VON" xml:space="preserve">
     <value>Winter from month:</value>
@@ -22373,38 +22283,14 @@ Do you want to allow this?</value>
   <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
     <value>Is the tariff structure applied at all? When off, the simulation uses the plain energy price of the carrier.</value>
   </data>
-  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
-    <value>Zone model or role model. The zone model uses four price zones and a demand schedule, the role model one energy, base and demand price per role.</value>
-  </data>
   <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
     <value>The price date from which the tariff structure applies (ISO, YYYY-MM-DD).</value>
   </data>
   <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
-    <value>The month the winter zone begins with.</value>
+    <value>The month the winter period begins with — it separates the summer and winter maximum of the demand charge model “Scale”.</value>
   </data>
   <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
-    <value>The month the winter zone ends with.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
-    <value>The hour the peak tariff begins with — zone model only.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
-    <value>The hour the peak tariff ends with (exclusive) — zone model only.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
-    <value>The supply price of this price zone in the zone model.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
-    <value>The export price of this price zone in the zone model. It applies to PV AND CHP — both share the field.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
-    <value>The demand threshold above which the second tier price applies.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
-    <value>The demand price below the tier threshold.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
-    <value>The demand price above the tier threshold.</value>
+    <value>The month the winter period ends with.</value>
   </data>
   <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
     <value>The energy price of the supply role in the role model.</value>
@@ -23521,5 +23407,68 @@ Do you want to allow this?</value>
   </data>
   <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
+  </data>
+  <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies: the project's tariff set is still on the zone model and is no longer calculated — electricity is priced with the prices of the electricity carrier from cost management.</value>
+  </data>
+  <data name="WIRT_TARIF_NACHWEIS_ZONEN" xml:space="preserve">
+    <value>Time-of-use tariff (peak/off-peak) no longer applies — prices of the electricity carrier from cost management</value>
+  </data>
+  <data name="WIRT_MATRIX_TITEL" xml:space="preserve">
+    <value>Electricity volumes</value>
+  </data>
+  <data name="WIRT_MATRIX_HERKUNFT" xml:space="preserve">
+    <value>Annual totals from the hourly series of the in-memory simulation. CHP split: self-consumption = min(CHP generation, electricity demand after photovoltaics) per hour — documented approximation.</value>
+  </data>
+  <data name="WIRT_MATRIX_ZEITRAUM" xml:space="preserve">
+    <value>Period</value>
+  </data>
+  <data name="WIRT_MATRIX_JAHR" xml:space="preserve">
+    <value>Year</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENSPITZE" xml:space="preserve">
+    <value>Highest hourly grid import: {0} kW — the basis of the demand charges in the role tariff; the demand charge of the electricity carrier is based on the 15-minute peak.</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
+    <value>Highest hourly load</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL" xml:space="preserve">
+    <value>Demand charge tiers of the electricity carrier: {0} €/(kW·a) — {1}</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE1" xml:space="preserve">
+    <value>Tier 1, peak demand {0} kW within the tier limit {1} kW</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE2" xml:space="preserve">
+    <value>Tier 2, peak demand {0} kW above the tier limit {1} kW — shaving starts at the peak and is therefore valued with the upper tier price</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
+    <value>Tier 1, peak demand unknown</value>
+  </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Demand charge tiers (on the annual peak demand)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Tier limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Price up to the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Price above the limit</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Based on the annual 15-minute peak of the grid import: the first price applies up to the limit, the second above it. Maintained tiers replace the demand charge and the seasonal rates of this electricity carrier; empty prices mean "no tiers".</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>The demand charge tiers could not be saved.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>The limit of the two-tier demand charge in kW: the first price applies up to it, the second above it — based on the annual 15-minute peak of the grid import. Electricity carrier in a project only.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>The demand charge up to the tier limit in €/(kW·a). Maintained tiers replace the demand charge and the seasonal rates of the electricity carrier.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>The demand charge above the tier limit in €/(kW·a).</value>
   </data>
 </root>

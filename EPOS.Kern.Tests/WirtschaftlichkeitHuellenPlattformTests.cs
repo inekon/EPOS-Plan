@@ -262,8 +262,11 @@ namespace EPOS.Kern.Tests
 
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Photovoltaik));
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Bhkw));
-            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug));
+            Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.TarifBhkw));
             Assert.NotNull(weg(WirtschaftlichkeitSeite.Unterdialog.Parameter));
+
+            // Q11 (E7b): Den Knopf „Strombezug…“ gibt es nicht mehr.
+            Assert.False(satz.ContainsKey("StrombezugText"), "Den Knopf „Strombezug…“ gibt es nicht mehr.");
 
             // Der Verlauf: eine Datenseite mit allen drei Wegen, kein Knopftext mehr.
             Assert.False(satz.ContainsKey("VerlaufText"), "Den Knopf „Verlauf…“ gibt es nicht mehr.");
@@ -290,8 +293,6 @@ namespace EPOS.Kern.Tests
                          weg(WirtschaftlichkeitSeite.Unterdialog.TarifBhkw)["Sicht"]);
             Assert.Equal(TarifSicht.Photovoltaik,
                          weg(WirtschaftlichkeitSeite.Unterdialog.TarifPv)["Sicht"]);
-            Assert.Equal(TarifSicht.Strombezug,
-                         weg(WirtschaftlichkeitSeite.Unterdialog.Strombezug)["Sicht"]);
 
             // Die Titel der Ueberlagerung kommen aus demselben Textbuendel wie
             // der Dialog selbst - kein neuer Ressourcenschluessel.
@@ -320,10 +321,10 @@ namespace EPOS.Kern.Tests
         public void Tarifstruktur_baut_ihren_Satz_ohne_Windows_Dienst()
         {
             IReadOnlyDictionary<string, object> gaben =
-                TarifstrukturHuelle.Gaben(PROJEKT_BHKW, TarifSicht.Strombezug);
+                TarifstrukturHuelle.Gaben(PROJEKT_BHKW, TarifSicht.Bhkw);
 
             Assert.NotNull(gaben["Tarif"]);
-            Assert.Equal(TarifSicht.Strombezug, gaben["Sicht"]);
+            Assert.Equal(TarifSicht.Bhkw, gaben["Sicht"]);
             Assert.True(gaben.ContainsKey("Speichern"), "Der Schreibweg gehört zum Satz.");
             Assert.False(string.IsNullOrEmpty(TarifstrukturHuelle.Titel(TarifSicht.Bhkw)));
         }

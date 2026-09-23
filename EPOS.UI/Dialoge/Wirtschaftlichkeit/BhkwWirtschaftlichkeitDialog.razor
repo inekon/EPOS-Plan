@@ -31,9 +31,9 @@
    bei einem zweiten OK nicht wiederholt. Abbrechen, das Kreuz der
    Ueberlagerung und Esc verlassen den Dialog OHNE einen einzigen
    Schreibzugriff - und ohne dass ein hereingereichtes Objekt sich veraendert
-   haette. Die beiden Sprungknoepfe nehmen denselben Weg wie OK: Sie schreiben
-   und schliessen, sonst waeren die Eingaben mit dem Sprung verloren - aber sie
-   schreiben NUR, wenn sich der Arbeitsstand seit dem Laden wertlich geaendert
+   haette. Der Sprungknopf "BHKW-Tarif..." nimmt denselben Weg wie OK: Er schreibt
+   und schliesst, sonst waeren die Eingaben mit dem Sprung verloren - aber er
+   schreibt NUR, wenn sich der Arbeitsstand seit dem Laden wertlich geaendert
    hat. Wer nur nachschlagen will, soll keinen Schreibzugriff ausloesen; ein
    Schreiben ohne Aenderung ueberschriebe in einer Mehrbenutzerlage fremde
    Aenderungen mit dem eigenen geladenen Stand. Scheitert das Schreiben, findet
@@ -347,12 +347,12 @@
 
             <Herleitungszeile Text="@_t.SModusHerleitung" />
 
-            <button type="button" class="epos-knopf epos-sprung"
-                    @onclick="SprungStrombezug">@_t.BtnStrombezug</button>
-
             @* Kein Funktionsverlust durch K8 = c: Der Knopf der Wirtschaftlichkeitsseite,
                der bis B5 die BHKW-Sicht der Tarifstruktur oeffnete, fuehrt jetzt hierher -
-               die Sicht selbst bleibt ueber diesen Sprung erreichbar. *@
+               die Sicht selbst bleibt ueber diesen Sprung erreichbar. Der zweite Sprung
+               "Strombezug..." ist mit Q11 entfallen: Den Zeitzonentarif gibt es nicht
+               mehr, und die Leistungspreis-Staffel pflegt der Stromtraeger in der
+               Kostenverwaltung. *@
             <button type="button" class="epos-knopf epos-sprung"
                     @onclick="SprungBhkwTarif">@_t.BtnBhkwTarif</button>
 
@@ -1203,8 +1203,8 @@
     /// die uebrigen Schritte laufen trotz eines Fehlschlags weiter, damit die Zahl
     /// stimmt.</para>
     ///
-    /// <para><b><paramref name="nurBeiAenderung"/> — der Sprungweg (#289).</b> Die
-    /// zwei Sprungknoepfe schreiben nur, was sich seit dem Laden WERTLICH
+    /// <para><b><paramref name="nurBeiAenderung"/> — der Sprungweg (#289).</b> Der
+    /// Sprungknopf schreibt nur, was sich seit dem Laden WERTLICH
     /// geaendert hat: Wer nur nachschlagen will, soll keinen Schreibzugriff
     /// ausloesen, und ein Schreiben ohne Aenderung ueberschriebe in einer
     /// Mehrbenutzerlage fremde Aenderungen mit dem eigenen geladenen Stand.
@@ -1287,7 +1287,7 @@
     private Task BeiErgebnis(bool ok)
         => ok ? Schreiben(BhkwSprung.Keiner, nurBeiAenderung: true) : Verwerfen();
 
-    // Die zwei Sprungknoepfe nehmen den OK-Weg: Sie schreiben und schliessen. Der
+    // Der Sprungknopf nimmt den OK-Weg: Er schreibt und schliesst. Der
     // Wirt oeffnet danach das Ziel und bringt den Dialog zurueck - ohne das
     // Schreiben waeren die Eingaben mit dem Sprung verloren, und der Satz unter den
     // Knoepfen (BHW_S_SPRUNG_HINWEIS) sagt es.
@@ -1299,8 +1299,6 @@
     // Aenderungen mit dem eigenen geladenen Stand. Ohne Unterschied springt der
     // Knopf also ohne einen einzigen Schreibaufruf.
     private Task SprungBhkwTarif() => Schreiben(BhkwSprung.BhkwTarif, nurBeiAenderung: true);
-
-    private Task SprungStrombezug() => Schreiben(BhkwSprung.Strombezug, nurBeiAenderung: true);
 
     /// <summary>
     /// Wuerde ein Sprung jetzt etwas schreiben? Das ist der Fall, sobald eine

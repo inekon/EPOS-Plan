@@ -74,6 +74,28 @@
                                              AuswahlChanged="BeiLeistungsModus" />
                             }
 
+                            @* Q11 (Entscheid 22.09.2026, Weg 2 aus Nach #291): Die zweistufige
+                               Leistungspreis-Staffel steht hier, neben der Energiepreisstruktur -
+                               nur beim Stromtraeger im Projektkontext. Ein GELEERTES Feld heisst
+                               "nicht gepflegt" (NULL), nicht "Wert von vorhin": Anders als die
+                               Preise oben laesst sich die Staffel so wieder abschalten. *@
+                            @if (Stand.MitStaffel)
+                            {
+                                <Formulargruppe Titel="@TitelStaffel">
+                                    <KindInhalt>
+                                        <Zahlenfeld Bezeichnung="@LabelStaffelGrenze" Einheit="kW"
+                                                    Wert="@Stand.StaffelGrenze" Min="0" Nachkommastellen="0"
+                                                    WertChanged="@(w => Feld(() => Stand.StaffelGrenze = w))" />
+                                        <Zahlenfeld Bezeichnung="@LabelStaffelPreis1" Einheit="€/(kW·a)"
+                                                    Wert="@Stand.StaffelPreis1" Min="0" Nachkommastellen="2"
+                                                    WertChanged="@(w => Feld(() => Stand.StaffelPreis1 = w))" />
+                                        <Zahlenfeld Bezeichnung="@LabelStaffelPreis2" Einheit="€/(kW·a)"
+                                                    Wert="@Stand.StaffelPreis2" Min="0" Nachkommastellen="2"
+                                                    WertChanged="@(w => Feld(() => Stand.StaffelPreis2 = w))" />
+                                    </KindInhalt>
+                                </Formulargruppe>
+                            }
+
                             @if (Stand.MitHeizwert)
                             {
                                 <Zahlenfeld Bezeichnung="@LabelHeizwert" Einheit="@Stand.EinheitHeizwert"
@@ -88,6 +110,13 @@
                             }
                         </KindInhalt>
                     </Formularraster>
+
+                    @* Die Erklaerzeile der Staffel steht AUSSERHALB des Rasters: ein Satz,
+                       kein Feld - in einer Rasterzelle fiele er auf halbe Breite. *@
+                    @if (Stand.MitStaffel)
+                    {
+                        <Herleitungszeile Text="@HinweisStaffel" />
+                    }
 
                     @* Die Effektivzeile steht bei Hi und Hs, nicht bei den Regeln: Sie
                        faellt AUS ihnen. *@
@@ -566,6 +595,17 @@
     [Parameter] public string ModusJahrText { get; set; } = "Jahresleistungspreis";
     [Parameter] public string ModusMonatText { get; set; } = "Monatsleistungspreis";
     [Parameter] public string SaisonText { get; set; } = "Saisonale Sätze…";
+
+    // Q11: die zweistufige Leistungspreis-Staffel des Stromträgers (ETV_STAFFEL_*).
+    [Parameter] public string TitelStaffel { get; set; }
+        = "Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)";
+    [Parameter] public string LabelStaffelGrenze { get; set; } = "Staffelgrenze";
+    [Parameter] public string LabelStaffelPreis1 { get; set; } = "Preis bis zur Grenze";
+    [Parameter] public string LabelStaffelPreis2 { get; set; } = "Preis über der Grenze";
+    [Parameter] public string HinweisStaffel { get; set; }
+        = "Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze gilt "
+        + "der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt Leistungspreis "
+        + "und saisonale Sätze dieses Stromträgers; leere Preise heißen „keine Staffel“.";
     [Parameter] public string SpalteName { get; set; } = "Name";
     [Parameter] public string SpalteVon { get; set; } = "von";
     [Parameter] public string SpalteNach { get; set; } = "nach";

@@ -166,8 +166,9 @@ namespace WindowsFormsApplication1
                 {
                     var varianten = k.Gewaehlt.Where(id => id != _idStamm).ToList();
                     TarifParameter tarif = _ctrl.LadeTarif(_idStamm);
-                    // Dieselbe EINE Regel wie im Kern und auf der Seite (BK1, SP-W1, LS-E-2).
-                    bool mitZeitreihen = tarif.Aktiv ||
+                    // Dieselbe EINE Regel wie im Kern und auf der Seite (BK1, SP-W1, LS-E-2);
+                    // Q11 (E7b): nur ein WIRKSAMER Tarifsatz (Rollentarif) braucht die Reihen.
+                    bool mitZeitreihen = tarif.Wirksam ||
                                          KwkgAktivierung.IstAktiv(_idStamm, varianten) ||
                                          KostenEmissionRechner.StromLeistungspreisGepflegt(_idStamm, varianten);
                     BerichtsDaten daten = new BerichtsDatenSammler().Sammle(

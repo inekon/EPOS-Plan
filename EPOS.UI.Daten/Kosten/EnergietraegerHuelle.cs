@@ -833,7 +833,13 @@ namespace WindowsFormsApplication1
                 EinheitGrundpreis = "€/a",
                 // B3: Katalogwerte holen kann nur, wer ein Projekt pflegt - im
                 // Katalog SIND die Felder die Katalogwerte.
-                MitKatalogUebernahme = _projektId > 0
+                MitKatalogUebernahme = _projektId > 0,
+                // Q11 (Weg 2 aus Nach #291): Die Leistungspreis-Staffel pflegt der
+                // STROMtraeger im PROJEKT - sie steht an der Projektuebersteuerung,
+                // der Katalog fuehrt keine.
+                MitStaffel = _projektId > 0 &&
+                             string.Equals(_gewaehlt.PricingModel, "ELECTRICITY",
+                                           StringComparison.OrdinalIgnoreCase)
             };
 
             EnergietraegerPreisCtrl.Projektpreis projekt =
@@ -858,6 +864,12 @@ namespace WindowsFormsApplication1
                 int idUmrechnung = projekt.IdUmrechnung ?? -1;
                 gemerkteBasis = idUmrechnung > 0
                     ? EnergietraegerPreisCtrl.Zieleinheit(idUmrechnung) : null;
+
+                // Q11: die zweistufige Leistungspreis-Staffel (Schemaschritt 104) —
+                // leer bleibt leer, sie hat keinen Katalogwert.
+                stand.StaffelGrenze = projekt.Staffel.GrenzeKW;
+                stand.StaffelPreis1 = projekt.Staffel.Preis1EurKWa;
+                stand.StaffelPreis2 = projekt.Staffel.Preis2EurKWa;
             }
             else
             {
@@ -1561,6 +1573,20 @@ namespace WindowsFormsApplication1
 
             HistorieSchreibenWennGeaendert(preis, _projektId);
             EnergietraegerPreisCtrl.Projektwerte(_projektId, _gewaehlt.ID, preis);
+
+            // Q11: die Leistungspreis-Staffel des Stromtraegers - in DIESELBE Zeile,
+            // deshalb erst nach dem Upsert (wie die beiden Preisbloecke darunter).
+            // Ein Schreibfehler bricht das Speichern ab, statt still zu verschwinden.
+            if (_stand.MitStaffel &&
+                !EnergietraegerPreisCtrl.StaffelSchreiben(_projektId, _gewaehlt.ID, new LeistungspreisStaffel
+                {
+                    GrenzeKW = _stand.StaffelGrenze,
+                    Preis1EurKWa = _stand.StaffelPreis1,
+                    Preis2EurKWa = _stand.StaffelPreis2
+                }))
+                throw new InvalidOperationException(
+                    T("ETV_STAFFEL_SPEICHERFEHLER",
+                      "Die Leistungspreis-Staffel ließ sich nicht speichern."));
 
             // AP4/B2: Die beiden Blöcke schreiben in DIESELBE Zeile und deshalb
             // ERST JETZT — vor dem Upsert gäbe es beim ersten Speichern keine.
@@ -2680,6 +2706,16 @@ namespace WindowsFormsApplication1
                 ["ModusJahrText"] = T("KDLG_LP_MODUS_JAHR", "Jahresleistungspreis"),
                 ["ModusMonatText"] = T("KDLG_LP_MODUS_MONAT", "Monatsleistungspreis"),
                 ["SaisonText"] = T("KDLG_LP_SAISON", "Saisonale Sätze…"),
+                ["TitelStaffel"] = T("ETV_STAFFEL_TITEL",
+                    "Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)"),
+                ["LabelStaffelGrenze"] = T("ETV_STAFFEL_GRENZE", "Staffelgrenze"),
+                ["LabelStaffelPreis1"] = T("ETV_STAFFEL_PREIS1", "Preis bis zur Grenze"),
+                ["LabelStaffelPreis2"] = T("ETV_STAFFEL_PREIS2", "Preis über der Grenze"),
+                ["HinweisStaffel"] = T("ETV_STAFFEL_HINWEIS",
+                    "Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze "
+                    + "gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt "
+                    + "Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen "
+                    + "„keine Staffel“."),
                 ["SpalteName"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NAME,
                 ["SpalteVon"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_VON,
                 ["SpalteNach"] = MyResource.Resource.KOSTEN_UMRECHNUNG_SPALTE_NACH,

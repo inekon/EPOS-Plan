@@ -12,15 +12,21 @@ namespace EPOS.UI.Tests.Dialoge;
 /// <summary>
 /// Der Tarifdialog (iU9-W2.3). Soll ist die Handkarte der gelöschten Maske
 /// <c>Views/Wirtschaftlichkeit/Form_Tarifstruktur.cs</c> (K4, ohne Designer —
-/// die Felder wurden aus <c>InitializeComponent</c> von Hand aufgenommen):
+/// die Felder wurden aus <c>InitializeComponent</c> von Hand aufgenommen), ohne
+/// das Zonenmodell:
 ///
 /// <list type="bullet">
-/// <item>Kopf: Schalter „aktiv", Auswahl „Tarifmodell", Datum „Preisstand" (3)</item>
-/// <item>Zeitzonen: Winter von/bis Monat, HT von/bis Stunde (4)</item>
-/// <item>Zonenmodell: 4 Bezugs- + 4 Einspeisepreise + 3 Staffelfelder (11)</item>
+/// <item>Kopf: Schalter „aktiv", Datum „Preisstand" (2)</item>
+/// <item>Winterspanne: Winter von/bis Monat (2)</item>
 /// <item>Rollenmodell: je Rolle Arbeit, Grund, Modell, Monat und 4×3 Staffel
 ///       (16), zweimal — dazu Einspeisung Arbeit + Grund (2)</item>
 /// </list>
+///
+/// <para><b>Q11 (E7b, Anwender 22.09.2026: „kein HT/NT").</b> Das Zonenmodell —
+/// Modellwahl, HT-Fenster, vier Bezugs- und vier Einspeise-Zonenpreise, die
+/// zweistufige Leistungspreis-Staffel — und die Sichten „Strombezug" und
+/// „Komplett" sind entfallen. Die Staffel pflegt der Stromträger in der
+/// Kostenverwaltung (<see cref="EnergietraegerStaffelTests"/>).</para>
 ///
 /// Zahlen in der Anzeige: <c>de-DE</c> wie in <c>SpeichernLeisteTests</c> —
 /// die CI-Läufer laufen englisch.
@@ -32,28 +38,22 @@ public class TarifstrukturDialogTests : EposBunitContext
         Services.AddSingleton<IHilfeDienst>(new KeineHilfe());
     }
 
+    // Die Lage der Zahlenfelder in der BHKW-Sicht: je Rolle Arbeit, Grund, Monat
+    // und 4×3 Stufenfelder (15), die Einspeisung dahinter.
+    private const int BEZUG_ARBEIT = 0;
+    private const int BEZUG_STUFE1_GRENZE = 3;
+    private const int REST_ARBEIT = 15;
+    private const int EINSP_ARBEIT = 30;
+
     private static TarifParameter Satz()
     {
         var p = new TarifParameter
         {
             IdStamm = 1030,
             Aktiv = true,
-            Modus = DbWerte.TARIF_MODUS_ZONEN,
+            Modus = DbWerte.TARIF_MODUS_ROLLEN,
             WinterVonMonat = 10,
-            WinterBisMonat = 3,
-            HtVonStunde = 6,
-            HtBisStunde = 22,
-            PreisBezugWinterHT = 0.3210,
-            PreisBezugWinterNT = 0.2100,
-            PreisBezugSommerHT = 0.3000,
-            PreisBezugSommerNT = 0.1900,
-            PreisEinspWinterHT = 0.0800,
-            PreisEinspWinterNT = 0.0700,
-            PreisEinspSommerHT = 0.0600,
-            PreisEinspSommerNT = 0.0500,
-            StaffelGrenzeKW = 500,
-            StaffelPreis1EurKW = 120,
-            StaffelPreis2EurKW = 95
+            WinterBisMonat = 3
         };
         p.Bezug.ArbeitspreisEurKWh = 0.2500;
         p.Bezug.GrundpreisEurJahr = 1200;
@@ -70,7 +70,7 @@ public class TarifstrukturDialogTests : EposBunitContext
 
     private IRenderedComponent<TarifstrukturDialog> Aufbauen(
         TarifParameter satz,
-        TarifSicht sicht = TarifSicht.Komplett,
+        TarifSicht sicht = TarifSicht.Bhkw,
         Func<bool>? speichern = null,
         Action<bool>? geschlossen = null,
         bool titelAnzeigen = true)
@@ -105,6 +105,7 @@ public class TarifstrukturDialogTests : EposBunitContext
         var cut = Aufbauen(Satz());
 
         Assert.Single(cut.FindAll("h1.epos-dialog-titel"));
+        Assert.Equal("Tarifstruktur BHKW (Strom)", cut.Find("h1.epos-dialog-titel").TextContent);
     }
 
     // =====================================================================
@@ -112,17 +113,17 @@ public class TarifstrukturDialogTests : EposBunitContext
     // =====================================================================
 
     [Fact]
-    public void Die_volle_Sicht_zeigt_den_Feldbestand_der_Karte()
+    public void Die_Bhkw_Sicht_zeigt_den_Feldbestand_des_Rollenmodells()
     {
         var cut = Aufbauen(Satz());
 
-        // 4 Zeitzonen (Ganzzahl) + 11 Zonen + 2×16 Rollen + 2 Einspeisung
-        Assert.Equal(4, cut.FindAll("input[inputmode=numeric]").Count);
-        Assert.Equal(11 + 2 * 15 + 2, cut.FindAll("input[inputmode=decimal]").Count);
+        // 2 Winterspanne (Ganzzahl); 2×15 Rollen + 2 Einspeisung
+        Assert.Equal(2, cut.FindAll("input[inputmode=numeric]").Count);
+        Assert.Equal(2 * 15 + 2, cut.FindAll("input[inputmode=decimal]").Count);
 
         Assert.Single(cut.FindAll("input[type=checkbox]"));      // aktiv
         Assert.Single(cut.FindAll("input[type=date]"));          // Preisstand
-        Assert.Equal(3, cut.FindAll("select").Count);            // Modus + 2 Leistungsmodelle
+        Assert.Equal(2, cut.FindAll("select").Count);            // 2 Leistungsmodelle
         Assert.Equal(2, cut.FindAll("button.epos-knopf:not(.epos-dialog-zu)").Count); // Speichern, Abbrechen
     }
 
@@ -132,9 +133,31 @@ public class TarifstrukturDialogTests : EposBunitContext
         var cut = Aufbauen(Satz());
         var titel = cut.FindAll(".epos-gruppenkopf-titel").Select(e => e.TextContent).ToList();
 
-        Assert.Contains("Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)", titel);
-        Assert.Contains("Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel", titel);
+        Assert.Contains("Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)", titel);
         Assert.Contains("Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“", titel);
+        Assert.Equal(2, titel.Count);
+    }
+
+    /// <summary>
+    /// Q11 (E7b): Den Zeitzonentarif gibt es nicht mehr — keine Modellwahl, kein
+    /// HT-Fenster, keine Zonenpreise, keine zweistufige Staffel im Dialog.
+    /// </summary>
+    [Fact]
+    public void Das_Zonenmodell_steht_nicht_mehr_im_Dialog()
+    {
+        string markup = Aufbauen(Satz()).Markup;
+
+        Assert.DoesNotContain("Zonenmodell", markup);
+        Assert.DoesNotContain("Tarifmodell", markup);
+        Assert.DoesNotContain("HT von Stunde", markup);
+        Assert.DoesNotContain("Winter HT", markup);
+        Assert.DoesNotContain("Sommer NT", markup);
+
+        // Die zweistufige Staffel des Zonenmodells — nicht zu verwechseln mit den
+        // vier Leistungsstufen des Rollenmodells, deren Hinweis „Staffelgrenzen" nennt.
+        Assert.DoesNotContain("Staffelgrenze [kW]", markup);
+        Assert.DoesNotContain("Preis bis Grenze", markup);
+        Assert.DoesNotContain("Leistungspreis-Staffel", markup);
     }
 
     [Fact]
@@ -143,9 +166,11 @@ public class TarifstrukturDialogTests : EposBunitContext
         var cut = Aufbauen(Satz());
         var zahlen = cut.FindAll("input[inputmode=decimal]");
 
-        Assert.Equal("0,3210", zahlen[0].GetAttribute("value"));   // Bezug Winter HT
-        Assert.Equal("0,0800", zahlen[4].GetAttribute("value"));   // Einspeisung Winter HT
-        Assert.Equal("500", zahlen[8].GetAttribute("value"));      // Staffelgrenze
+        Assert.Equal("0,2500", zahlen[BEZUG_ARBEIT].GetAttribute("value"));
+        Assert.Equal("500", zahlen[BEZUG_STUFE1_GRENZE].GetAttribute("value"));
+        Assert.Equal("0,2800", zahlen[REST_ARBEIT].GetAttribute("value"));
+        Assert.Equal("0,0650", zahlen[EINSP_ARBEIT].GetAttribute("value"));
+        Assert.Equal("10", cut.FindAll("input[inputmode=numeric]")[0].GetAttribute("value"));
         Assert.True(cut.FindAll("input[type=checkbox]")[0].HasAttribute("checked"));
     }
 
@@ -154,84 +179,49 @@ public class TarifstrukturDialogTests : EposBunitContext
     // =====================================================================
 
     [Fact]
-    public void Die_Strombezugssicht_laesst_die_Einspeisung_weg()
-    {
-        var cut = Aufbauen(Satz(), TarifSicht.Strombezug);
-
-        // Zonen: nur Bezug (4) + Staffel (3); Rollen: nur Bezug (15)
-        Assert.Equal(4 + 3 + 15, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Equal(2, cut.FindAll("select").Count);   // Modus + 1 Leistungsmodell
-    }
-
-    [Fact]
-    public void Die_PV_Sicht_zeigt_nur_die_Einspeisepreise_beider_Modelle()
+    public void Die_PV_Sicht_zeigt_nur_die_Einspeisung()
     {
         var cut = Aufbauen(Satz(), TarifSicht.Photovoltaik);
 
-        // Zonen: nur Einspeisung (4); Rollen: nur Einspeisung (2)
-        Assert.Equal(4 + 2, cut.FindAll("input[inputmode=decimal]").Count);
-        Assert.Single(cut.FindAll("select"));           // nur der Modus
+        Assert.Equal(2, cut.FindAll("input[inputmode=decimal]").Count);   // Einspeisung
+        Assert.Empty(cut.FindAll("input[inputmode=numeric]"));            // keine Winterspanne
+        Assert.Empty(cut.FindAll("select"));                              // keine Bezugsrolle
+        Assert.Equal("Tarifstruktur PV-Einspeisung", cut.Find("h1.epos-dialog-titel").TextContent);
     }
 
     [Fact]
-    public void Eine_Komponentensicht_sagt_dass_der_Tarifsatz_geteilt_ist()
+    public void Jede_Sicht_sagt_dass_der_Tarifsatz_geteilt_ist()
     {
-        Assert.DoesNotContain(Aufbauen(Satz()).FindAll(".epos-herleitung"),
-                              e => e.TextContent.StartsWith("Komponentensicht"));
+        foreach (TarifSicht sicht in Enum.GetValues<TarifSicht>())
+        {
+            var cut = Aufbauen(Satz(), sicht);
+            Assert.Contains(cut.FindAll(".epos-herleitung-text"),
+                            e => e.TextContent.StartsWith("Komponentensicht"));
+        }
+    }
 
-        var cut = Aufbauen(Satz(), TarifSicht.Bhkw);
-        Assert.Contains(cut.FindAll(".epos-herleitung-text"),
-                        e => e.TextContent.StartsWith("Komponentensicht"));
+    /// <summary>Q11 (E7b): Es bleiben zwei Sichten — BHKW und Photovoltaik.</summary>
+    [Fact]
+    public void Es_gibt_nur_die_Sichten_Bhkw_und_Photovoltaik()
+    {
+        Assert.Equal(new[] { "Bhkw", "Photovoltaik" }, Enum.GetNames<TarifSicht>());
     }
 
     [Fact]
     public void Eine_Sicht_ueberschreibt_nur_ihre_eigenen_Felder()
     {
-        // Ae18: In der PV-Sicht sind Bezugspreise und Staffel gar nicht gebaut -
-        // sie muessen den geladenen Wert behalten.
+        // Ae18: In der PV-Sicht sind Bezugsrollen und Winterspanne gar nicht
+        // gebaut - sie muessen den geladenen Wert behalten.
         TarifParameter satz = Satz();
         var cut = Aufbauen(satz, TarifSicht.Photovoltaik);
 
-        cut.FindAll("input[inputmode=decimal]")[0].Input("0,0900");   // Einspeisung Winter HT
+        cut.FindAll("input[inputmode=decimal]")[0].Input("0,0900");   // Einspeisepreis
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal(0.0900, satz.PreisEinspWinterHT, 4);
-        Assert.Equal(0.3210, satz.PreisBezugWinterHT, 4);   // unberuehrt
-        Assert.Equal(500, satz.StaffelGrenzeKW, 3);         // unberuehrt
-    }
-
-    // =====================================================================
-    // Modellumschaltung
-    // =====================================================================
-
-    [Fact]
-    public void Im_Zonenmodell_ist_der_Rollenblock_gesperrt_bleibt_aber_lesbar()
-    {
-        var cut = Aufbauen(Satz());
-        var zahlen = cut.FindAll("input[inputmode=decimal]");
-
-        Assert.False(zahlen[0].HasAttribute("disabled"));    // Zonen: bedienbar
-        Assert.True(zahlen[11].HasAttribute("disabled"));    // Rollen: gesperrt
-        Assert.Equal("0,2500", zahlen[11].GetAttribute("value"));
-    }
-
-    [Fact]
-    public void Das_Rollenmodell_dreht_die_Sperren_um_und_nimmt_HT_NT_heraus()
-    {
-        var cut = Aufbauen(Satz());
-
-        cut.Find("select").Change("1");   // Rollenmodell
-
-        Assert.True(cut.Instance.Rollen);
-        var zahlen = cut.FindAll("input[inputmode=decimal]");
-        Assert.True(zahlen[0].HasAttribute("disabled"));     // Zonenpreise gesperrt
-        Assert.False(zahlen[11].HasAttribute("disabled"));   // Rollenpreise frei
-
-        // HT/NT entfaellt im Rollenmodell (L10), Winterspanne bleibt.
-        var ganz = cut.FindAll("input[inputmode=numeric]");
-        Assert.False(ganz[0].HasAttribute("disabled"));      // Winter von
-        Assert.True(ganz[2].HasAttribute("disabled"));       // HT von
-        Assert.True(ganz[3].HasAttribute("disabled"));       // HT bis
+        Assert.Equal(0.0900, satz.Einspeisung.ArbeitspreisEurKWh, 4);
+        Assert.Equal(0.2500, satz.Bezug.ArbeitspreisEurKWh, 4);    // unberuehrt
+        Assert.Equal(0.2800, satz.Reststrom.ArbeitspreisEurKWh, 4); // unberuehrt
+        Assert.Equal(10, satz.WinterVonMonat);                      // unberuehrt
     }
 
     // =====================================================================
@@ -247,16 +237,38 @@ public class TarifstrukturDialogTests : EposBunitContext
         var cut = Aufbauen(satz, speichern: () => { gerufen++; return true; },
                            geschlossen: e => ergebnis = e);
 
-        cut.FindAll("input[inputmode=decimal]")[0].Input("0,4000");
+        cut.FindAll("input[inputmode=decimal]")[BEZUG_ARBEIT].Input("0,4000");
         cut.FindAll("input[inputmode=numeric]")[0].Input("11");
         cut.Find("input[type=date]").Change("2026-01-01");
         cut.Find(".epos-knopf--primaer").Click();
 
         Assert.Equal(1, gerufen);
         Assert.True(ergebnis);
-        Assert.Equal(0.4000, satz.PreisBezugWinterHT, 4);
+        Assert.Equal(0.4000, satz.Bezug.ArbeitspreisEurKWh, 4);
         Assert.Equal(11, satz.WinterVonMonat);
         Assert.Equal(new DateTime(2026, 1, 1), satz.GueltigAb);
+        Assert.Equal(DbWerte.TARIF_MODUS_ROLLEN, satz.Modus);
+    }
+
+    /// <summary>
+    /// Q11 (E7b): Ein Satz, der noch auf dem Zonenmodell steht (eine Datenbank vor
+    /// Schemaschritt 104), wird mit dem ersten Speichern ein Rollentarif — mit den
+    /// Rollenpreisen, die der Dialog zeigt. Einen anderen Modus rechnet der Kern
+    /// nicht mehr.
+    /// </summary>
+    [Fact]
+    public void Ein_Satz_im_Zonenmodell_wird_beim_Speichern_ein_Rollentarif()
+    {
+        TarifParameter satz = Satz();
+        satz.Modus = DbWerte.TARIF_MODUS_ZONEN;
+        Assert.False(satz.Wirksam);
+
+        var cut = Aufbauen(satz);
+        cut.Find(".epos-knopf--primaer").Click();
+
+        Assert.Equal(DbWerte.TARIF_MODUS_ROLLEN, satz.Modus);
+        Assert.True(satz.Wirksam);
+        Assert.Equal(0.2500, satz.Bezug.ArbeitspreisEurKWh, 4);
     }
 
     [Fact]
@@ -266,41 +278,27 @@ public class TarifstrukturDialogTests : EposBunitContext
         TarifParameter satz = Satz();
         var cut = Aufbauen(satz);
 
-        cut.FindAll("input[inputmode=decimal]")[0].Input("");
+        cut.FindAll("input[inputmode=decimal]")[BEZUG_ARBEIT].Input("");
         cut.Find(".epos-knopf--primaer").Click();
 
-        Assert.Equal(0.3210, satz.PreisBezugWinterHT, 4);
+        Assert.Equal(0.2500, satz.Bezug.ArbeitspreisEurKWh, 4);
     }
 
     [Fact]
-    public void Ein_leeres_HT_Fenster_haelt_den_Dialog_an()
-    {
-        TarifParameter satz = Satz();
-        int gerufen = 0;
-        var cut = Aufbauen(satz, speichern: () => { gerufen++; return true; });
-
-        cut.FindAll("input[inputmode=numeric]")[2].Input("22");   // HT von = HT bis
-        cut.Find(".epos-knopf--primaer").Click();
-
-        Assert.Equal(0, gerufen);
-        Assert.Equal("Das HT-Fenster ist leer (von ≥ bis).",
-                     cut.Find(".epos-warnbanner-text").TextContent);
-    }
-
-    [Fact]
-    public void Aktiv_ohne_Bezugspreis_warnt_einmal_und_speichert_dann()
+    public void Aktiv_ohne_Arbeitspreis_warnt_einmal_und_speichert_dann()
     {
         // Der Vorlaeufer zeigte hier eine MessageBox und speicherte danach.
         TarifParameter satz = Satz();
         int gerufen = 0;
         var cut = Aufbauen(satz, speichern: () => { gerufen++; return true; });
 
-        var zahlen = cut.FindAll("input[inputmode=decimal]");
-        for (int i = 0; i < 4; i++) zahlen[i].Input("0");
+        cut.FindAll("input[inputmode=decimal]")[BEZUG_ARBEIT].Input("0");
+        cut.FindAll("input[inputmode=decimal]")[REST_ARBEIT].Input("0");
 
         cut.Find(".epos-knopf--primaer").Click();
         Assert.Equal(0, gerufen);
-        Assert.Contains("kein Bezugspreis gepflegt", cut.Find(".epos-warnbanner-text").TextContent);
+        Assert.Contains("weder für den Bezug noch für den Reststrom",
+                        cut.Find(".epos-warnbanner-text").TextContent);
 
         cut.Find(".epos-knopf--primaer").Click();
         Assert.Equal(1, gerufen);
@@ -360,7 +358,7 @@ public class TarifstrukturDialogTests : EposBunitContext
     {
         var cut = Render<TarifstrukturDialog>(p => p
             .Add(x => x.Tarif, Satz())
-            .Add(x => x.Sicht, TarifSicht.Komplett)
+            .Add(x => x.Sicht, TarifSicht.Bhkw)
             .Add(x => x.Speichern, () => true)
             .Add(x => x.Geschlossen, (bool _) => { })
             .Add(x => x.TitelAnzeigen, false));
@@ -374,7 +372,7 @@ public class TarifstrukturDialogTests : EposBunitContext
     [Fact]
     public void Enter_bleibt_unbelegt()
     {
-        // A-7 aus B5b: In einer Maske mit fuenfzig Zahlenfeldern waere ein
+        // A-7 aus B5b: In einer Maske mit vierzig Zahlenfeldern waere ein
         // versehentliches Enter kein Bestaetigen, sondern ein Zufall.
         bool gemeldet = false;
         var cut = Aufbauen(Satz(), geschlossen: _ => gemeldet = true);
@@ -399,8 +397,8 @@ public class TarifstrukturDialogTests : EposBunitContext
         TarifParameter satz = Satz();
         var cut = Aufbauen(satz);
 
-        // select[0] = Modus, select[1] = Leistungsmodell der Bezugsrolle
-        cut.FindAll("select")[1].Change("2");   // Jahreshoechstlast
+        // select[0] = Leistungsmodell der Bezugsrolle (eine Modellwahl gibt es nicht mehr)
+        cut.FindAll("select")[0].Change("2");   // Jahreshoechstlast
         cut.Find(".epos-knopf--primaer").Click();
 
         Assert.Equal(DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST, satz.Bezug.Leistungsmodell);
@@ -441,8 +439,8 @@ public class TarifstrukturDialogTests : EposBunitContext
     {
         var cut = Aufbauen(Satz());
 
-        // Kopf, Zeitzonen, Zonenmodell, Rollenmodell.
-        Assert.True(cut.FindAll(".epos-formularraster").Count >= 4);
+        // Kopf, Winterspanne, Rollenmodell.
+        Assert.True(cut.FindAll(".epos-formularraster").Count >= 3);
         Assert.True(cut.FindAll(".epos-formularraster .epos-feld").Count > 0);
 
         // Die Untergruppen sind Formulargruppen geworden.
@@ -471,35 +469,45 @@ public class TarifstrukturDialogTests : EposBunitContext
     /// <c>TarifParameter</c> des Kerns bleibt bis zum OK unangetastet.
     /// </summary>
     [Fact]
-    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_eine_Preiszone()
+    public void Die_Maske_meldet_sich_beim_Assistenten_an_und_setzt_einen_Rollenpreis()
     {
-        var cut = Aufbauen(Satz());
+        TarifParameter satz = Satz();
+        var cut = Aufbauen(satz);
 
         Assert.True(KiMaskenbruecke.IstAngemeldet(KiMaskennamen.TARIFSTRUKTUR));
 
-        KiFeldzugang zone = KiMaskenbruecke.Feldzugang(
-            KiMaskennamen.TARIFSTRUKTUR, "bezug_winter_hoch");
-        Assert.NotNull(zone);
-        Assert.True(zone.Setzbar);
+        KiFeldzugang preis = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.TARIFSTRUKTUR, "bezug_arbeitspreis");
+        Assert.NotNull(preis);
+        Assert.True(preis.Setzbar);
 
-        KiFeldumsetzung neu = KiFeldwandler.Wandle(zone, "0,2850");
+        KiFeldumsetzung neu = KiFeldwandler.Wandle(preis, "0,2850");
         Assert.True(neu.Ok, neu.Grund);
-        zone.Setzen(neu.Wert);
+        preis.Setzen(neu.Wert);
         cut.Render();
-        Assert.Equal(0.285, Convert.ToDouble(zone.Lesen(), CultureInfo.InvariantCulture), 4);
+        Assert.Equal(0.285, Convert.ToDouble(preis.Lesen(), CultureInfo.InvariantCulture), 4);
+        Assert.Equal(0.2500, satz.Bezug.ArbeitspreisEurKWh, 4);   // bis zum OK unangetastet
 
-        // Das MODELL ist ein Wahlfeld ueber seinen Steuerwert.
-        KiFeldzugang modell = KiMaskenbruecke.Feldzugang(KiMaskennamen.TARIFSTRUKTUR, "modell");
-        Assert.NotEmpty(modell.Wahleintraege());
+        // Das LEISTUNGSMODELL ist ein Wahlfeld ueber seinen Steuerwert.
+        KiFeldzugang modell = KiMaskenbruecke.Feldzugang(
+            KiMaskennamen.TARIFSTRUKTUR, "bezug_leistungsmodell");
+        Assert.Equal(3, modell.Wahleintraege().Count);
 
-        KiFeldumsetzung rollen = KiFeldwandler.Wandle(modell, modell.Wahleintraege()[1].Text);
-        Assert.True(rollen.Ok, rollen.Grund);
-        modell.Setzen(rollen.Wert);
+        KiFeldumsetzung jahr = KiFeldwandler.Wandle(modell, modell.Wahleintraege()[2].Text);
+        Assert.True(jahr.Ok, jahr.Grund);
+        modell.Setzen(jahr.Wert);
         cut.Render();
-        Assert.True(cut.Instance.Rollen);
+        Assert.Equal(DbWerte.LEISTUNGSMODELL_JAHRESHOECHSTLAST,
+                     Convert.ToString(modell.Lesen(), CultureInfo.InvariantCulture));
+
+        // Q11 (E7b): Modellwahl, HT-Fenster, Zonenpreise und Staffel gibt es nicht mehr.
+        var katalog = KiDialoge.Katalog.Finde(KiMaskennamen.TARIFSTRUKTUR)!;
+        foreach (string entfallen in new[]
+                 { "modell", "hochtarif_von", "hochtarif_bis", "bezug_winter_hoch",
+                   "einspeisung_sommer_nieder", "staffel_grenze", "staffel_preis_oben" })
+            Assert.Null(katalog.FindeFeld(entfallen));
 
         // Die vier Leistungsstufen je Rolle sind NICHT deklariert - eine Wertetafel.
-        Assert.Null(KiDialoge.Katalog.Finde(KiMaskennamen.TARIFSTRUKTUR)!
-                              .FindeFeld("bezug_stufe_1"));
+        Assert.Null(katalog.FindeFeld("bezug_stufe_1"));
     }
 }

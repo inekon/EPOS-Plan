@@ -62,9 +62,10 @@
 
     /// <summary>
     /// Bedienbar? <c>false</c> sperrt das Feld — Gegenstueck zu
-    /// <see cref="Zahlenfeld.Aktiv"/> (iU9-W2.3). Der Tarifdialog sperrt damit
-    /// die HT-Grenzen, sobald das Rollenmodell gilt: Dort gibt es kein HT/NT
-    /// (Leitentscheidung L10), die Zahlen bleiben aber stehen.
+    /// <see cref="Zahlenfeld.Aktiv"/> (iU9-W2.3). Der Tarifdialog sperrte damit
+    /// die HT-Grenzen, sobald das Rollenmodell galt (Leitentscheidung L10), und die
+    /// Zahlen blieben stehen. Mit Q11 ist das HT-Fenster entfallen; die Regel des
+    /// Bausteins bleibt.
     /// </summary>
     [Parameter] public bool Aktiv { get; set; } = true;
 

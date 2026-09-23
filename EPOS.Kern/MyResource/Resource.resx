@@ -5061,18 +5061,6 @@ Bitte zuerst die Simulation mit Photovoltaik durchführen.</value>
   <data name="OPT_LBL_LP_QUELLE" xml:space="preserve">
     <value>Übernehmen aus</value>
   </data>
-  <data name="OPT_QUELLE_TARIF" xml:space="preserve">
-    <value>Tarifstruktur (Wirtschaftlichkeit): {0} €/(kW·a) — {1}</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE1" xml:space="preserve">
-    <value>Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_STUFE2" xml:space="preserve">
-    <value>Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet</value>
-  </data>
-  <data name="OPT_QUELLE_TARIF_OHNE_SPITZE" xml:space="preserve">
-    <value>Stufe 1, Bezugsspitze nicht bekannt</value>
-  </data>
   <data name="OPT_QUELLE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträger Strom: {0} €/(kW·a)</value>
   </data>
@@ -6757,7 +6745,7 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
     <value>Bedarf ohne Anlage [MWh]</value>
   </data>
   <data name="WIRT_MATRIX_BEDARF_HINWEIS" xml:space="preserve">
-    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort in allen Zonen 0, fehlte die Strombedarfsreihe im Lauf.</value>
+    <value>„Bedarf ohne Anlage“ ist der Strombedarf ohne jede Eigenerzeugung (vor Abzug der PV-Eigennutzung) — die Bezugsgröße der vermiedenen Kosten. Steht dort 0, fehlte die Strombedarfsreihe im Lauf.</value>
   </data>
   <data name="WIRT_REIHE_KWKG" xml:space="preserve">
     <value>KWK-Zuschlag</value>
@@ -8785,9 +8773,6 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_LP_SAISON" xml:space="preserve">
     <value>Saisonale Sätze…</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF" xml:space="preserve">
-    <value>Leistungspreis Strom: über die Tarifstruktur.</value>
-  </data>
   <data name="KDLG_MENUE_ENERGIETRAEGER" xml:space="preserve">
     <value>Energieträgerverwaltung…</value>
   </data>
@@ -8963,7 +8948,7 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
     <value>Eingespeister KWK-Strom (Tranchen):</value>
   </data>
   <data name="KDLG_ERTRAG_FK7" xml:space="preserve">
-    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung bleibt in der Tarifstruktur des Projekts (Einsp_* ist rein KWK) — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
+    <value>FK7: Der STROMPREIS-Teil der BHKW-Einspeisevergütung steht nicht hier, sondern im Dialog „BHKW-Wirtschaftlichkeit“ (Einspeisevergütung KWK-Strom) und, bei aktivem Rollentarif, im Einspeisepreis der Tarifstruktur — dieser Reiter zeigt die gesetzlichen KWKG-/Steuergrößen an; gerechnet wird ausschließlich vom KwkgSatzRechner und den Steuer-Gutschriftrechnern der Wirtschaftlichkeit. Projektbezogene Schalter (Tatbestand, Anlagenart, Pauschalmodus § 9, Kontingent-Override) werden dort je Anlage gepflegt.</value>
   </data>
   <data name="KDLG_ERTRAG_G_DAUER" xml:space="preserve">
     <value>Förderdauer und Jahresdeckel</value>
@@ -9262,14 +9247,8 @@ Zum Deaktivieren den Satz bzw. Betrag auf 0 setzen.</value>
   <data name="KDLG_ET_ABBRECHEN" xml:space="preserve">
     <value>Abbrechen</value>
   </data>
-  <data name="KDLG_LP_STROM_TARIF_BTN" xml:space="preserve">
-    <value>Tarifstruktur…</value>
-  </data>
   <data name="WIRT_BTN_BHKW_TARIF" xml:space="preserve">
     <value>BHKW-Tarif…</value>
-  </data>
-  <data name="WIRT_BTN_STROM_TARIF" xml:space="preserve">
-    <value>Strombezug…</value>
   </data>
   <data name="PVW_BTN_TARIF" xml:space="preserve">
     <value>Einspeise-Tarif…</value>
@@ -10313,9 +10292,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="BHW_W_MODUS_ERLOES" xml:space="preserve">
     <value>Erlös (im Kapitalwert)</value>
   </data>
-  <data name="BHW_BTN_STROMBEZUG" xml:space="preserve">
-    <value>Strombezug…</value>
-  </data>
   <data name="BHW_BTN_BHKW_TARIF" xml:space="preserve">
     <value>BHKW-Tarif…</value>
   </data>
@@ -10523,9 +10499,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_ARBEITSPREIS" xml:space="preserve">
     <value>Arbeitspreis (Durchschnitt) [€/kWh]:</value>
   </data>
-  <data name="TARIF_BTN_SPEICHERN" xml:space="preserve">
-    <value>Speichern</value>
-  </data>
   <data name="TARIF_EINSPEISEPREIS" xml:space="preserve">
     <value>Einspeisepreis [€/kWh]:</value>
   </data>
@@ -10535,35 +10508,14 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_GUELTIG_AB" xml:space="preserve">
     <value>Preisstand (gültig ab):</value>
   </data>
-  <data name="TARIF_G_BEZUGSPREISE" xml:space="preserve">
-    <value>Bezugspreise [€/kWh]</value>
-  </data>
-  <data name="TARIF_G_EINSPEISEPREISE" xml:space="preserve">
-    <value>Einspeisepreise [€/kWh] (PV- und KWK-Einspeisung — geteiltes Feld)</value>
-  </data>
   <data name="TARIF_G_EINSPEISUNG" xml:space="preserve">
     <value>Einspeisung (kein Leistungspreis — Befund 11 der Altanwendung; geteiltes Feld für PV- und KWK-Einspeisung)</value>
   </data>
   <data name="TARIF_G_ROLLEN" xml:space="preserve">
     <value>Rollenmodell (Etappe E5) — Differenzmethode „vermiedene Kosten“</value>
   </data>
-  <data name="TARIF_G_STAFFEL" xml:space="preserve">
-    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
-  </data>
   <data name="TARIF_G_ZEITZONEN" xml:space="preserve">
-    <value>Zeitzonen (HT gilt Mo–Fr; Referenzjahr 2026)</value>
-  </data>
-  <data name="TARIF_G_ZONEN" xml:space="preserve">
-    <value>Zonenmodell (Stufe W3) — vier Zonenpreise, zweistufige Staffel</value>
-  </data>
-  <data name="TARIF_G_ZONEN_EINSP" xml:space="preserve">
-    <value>Zonenmodell (Stufe W3) — Einspeisepreise</value>
-  </data>
-  <data name="TARIF_HT_BIS" xml:space="preserve">
-    <value>HT bis Stunde (exklusiv):</value>
-  </data>
-  <data name="TARIF_HT_VON" xml:space="preserve">
-    <value>HT von Stunde (nur Zonenmodell):</value>
+    <value>Winterspanne (Sommer- und Wintermaximum des Leistungspreismodells „Staffel“)</value>
   </data>
   <data name="TARIF_LEISTUNGSMODELL" xml:space="preserve">
     <value>Leistungspreismodell:</value>
@@ -10577,26 +10529,11 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_LM_STAFFEL" xml:space="preserve">
     <value>Staffel (Sommer- und Wintermaximum getrennt)</value>
   </data>
-  <data name="TARIF_MODELL" xml:space="preserve">
-    <value>Tarifmodell:</value>
-  </data>
-  <data name="TARIF_MODELL_ROLLEN" xml:space="preserve">
-    <value>Rollenmodell (Bezug / Reststrom / Einspeisung)</value>
-  </data>
-  <data name="TARIF_MODELL_ZONEN" xml:space="preserve">
-    <value>Zonenmodell (Winter/Sommer × HT/NT)</value>
-  </data>
   <data name="TARIF_MONATSPREIS" xml:space="preserve">
     <value>Monatlicher Leistungspreis [€/kW·Monat]:</value>
   </data>
-  <data name="TARIF_MSG_HT_LEER" xml:space="preserve">
-    <value>Das HT-Fenster ist leer (von ≥ bis).</value>
-  </data>
   <data name="TARIF_MSG_OHNE_ARBEIT" xml:space="preserve">
     <value>Das Rollenmodell ist aktiv, aber weder für den Bezug noch für den Reststrom ist ein Arbeitspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
-  </data>
-  <data name="TARIF_MSG_OHNE_BEZUG" xml:space="preserve">
-    <value>Die Tarifstruktur ist aktiv, aber es ist kein Bezugspreis gepflegt — die Berechnung fällt dann auf die Flat-Preise der Kostenmaske zurück.</value>
   </data>
   <data name="TARIF_MSG_SPEICHERFEHLER" xml:space="preserve">
     <value>Die Tarifstruktur konnte nicht gespeichert werden.</value>
@@ -10610,12 +10547,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_SICHT_HINWEIS" xml:space="preserve">
     <value>Komponentensicht: Es gilt EIN Tarifsatz je Stamm. Kopfdaten und geteilte Preisfelder erscheinen in mehreren Sichten und meinen dieselben Werte.</value>
   </data>
-  <data name="TARIF_SOMMER_HT" xml:space="preserve">
-    <value>Sommer HT:</value>
-  </data>
-  <data name="TARIF_SOMMER_NT" xml:space="preserve">
-    <value>Sommer NT:</value>
-  </data>
   <data name="TARIF_SP_OBERGRENZE" xml:space="preserve">
     <value>Obergrenze [kW]</value>
   </data>
@@ -10625,29 +10556,14 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   <data name="TARIF_SP_WINTER" xml:space="preserve">
     <value>Winter [€/kW·a]</value>
   </data>
-  <data name="TARIF_STAFFEL_GRENZE" xml:space="preserve">
-    <value>Staffelgrenze [kW]:</value>
-  </data>
   <data name="TARIF_STAFFEL_HINWEIS" xml:space="preserve">
     <value>Die Staffelgrenzen sind KUMULIERTE Obergrenzen: „500 / 2.000 / 8.000 kW“ heißt bis 500 kW Stufe 1, 500–2.000 kW Stufe 2, 2.000–8.000 kW Stufe 3, darüber Stufe 4. Eine Obergrenze von 0 bedeutet „nach oben offen“ und beendet die Staffel. Der Altkatalog speichert an dieser Stelle Stufen-BREITEN — alte Zahlenreihen sind vor der Übernahme umzurechnen.</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS1" xml:space="preserve">
-    <value>Preis bis Grenze [€/kW·a]:</value>
-  </data>
-  <data name="TARIF_STAFFEL_PREIS2" xml:space="preserve">
-    <value>Preis über Grenze [€/kW·a]:</value>
   </data>
   <data name="TARIF_STUFE" xml:space="preserve">
     <value>Stufe {0}</value>
   </data>
   <data name="TARIF_STUFE_REST" xml:space="preserve">
     <value>Stufe {0} (Rest)</value>
-  </data>
-  <data name="TARIF_TITEL" xml:space="preserve">
-    <value>Tarifstruktur Strom</value>
-  </data>
-  <data name="TARIF_TITEL_BEZUG" xml:space="preserve">
-    <value>Tarifstruktur Strombezug (Wärmepumpe &amp; Verbraucher)</value>
   </data>
   <data name="TARIF_TITEL_BHKW" xml:space="preserve">
     <value>Tarifstruktur BHKW (Strom)</value>
@@ -10657,12 +10573,6 @@ Außerhalb von 20 bis 60 °C rechnet die Simulation mit dem Rückfallwert 45 °C
   </data>
   <data name="TARIF_WINTER_BIS" xml:space="preserve">
     <value>Winter bis Monat:</value>
-  </data>
-  <data name="TARIF_WINTER_HT" xml:space="preserve">
-    <value>Winter HT:</value>
-  </data>
-  <data name="TARIF_WINTER_NT" xml:space="preserve">
-    <value>Winter NT:</value>
   </data>
   <data name="TARIF_WINTER_VON" xml:space="preserve">
     <value>Winter von Monat:</value>
@@ -22380,38 +22290,14 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_TAR_AKTIV_ERL" xml:space="preserve">
     <value>Wird die Tarifstruktur überhaupt angewendet? Ausgeschaltet rechnet die Simulation mit dem einfachen Arbeitspreis des Energieträgers.</value>
   </data>
-  <data name="KI_DLG_TAR_MODELL_ERL" xml:space="preserve">
-    <value>Zonenmodell oder Rollenmodell. Das Zonenmodell rechnet mit vier Preiszonen und einer Leistungsstaffel, das Rollenmodell mit je einem Arbeits-, Grund- und Leistungspreis je Rolle.</value>
-  </data>
   <data name="KI_DLG_TAR_GUELTIGAB_ERL" xml:space="preserve">
     <value>Der Preisstand, ab dem die Tarifstruktur gilt (ISO, JJJJ-MM-TT).</value>
   </data>
   <data name="KI_DLG_TAR_WINTERVON_ERL" xml:space="preserve">
-    <value>Der Monat, mit dem die Winterzone beginnt.</value>
+    <value>Der Monat, mit dem die Winterspanne beginnt — sie trennt Sommer- und Wintermaximum des Leistungspreismodells „Staffel“.</value>
   </data>
   <data name="KI_DLG_TAR_WINTERBIS_ERL" xml:space="preserve">
-    <value>Der Monat, mit dem die Winterzone endet.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTVON_ERL" xml:space="preserve">
-    <value>Die Stunde, mit der der Hochtarif beginnt — nur im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_HTBIS_ERL" xml:space="preserve">
-    <value>Die Stunde, mit der der Hochtarif endet (exklusiv) — nur im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_BEZUG_ERL" xml:space="preserve">
-    <value>Der Bezugspreis dieser Preiszone im Zonenmodell.</value>
-  </data>
-  <data name="KI_DLG_TAR_ZONE_EINSP_ERL" xml:space="preserve">
-    <value>Der Einspeisepreis dieser Preiszone im Zonenmodell. Er gilt für PV UND KWK — beide teilen sich das Feld.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_GRENZE_ERL" xml:space="preserve">
-    <value>Die Leistungsgrenze, ab der der zweite Staffelpreis gilt.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_UNTEN_ERL" xml:space="preserve">
-    <value>Der Leistungspreis unterhalb der Staffelgrenze.</value>
-  </data>
-  <data name="KI_DLG_TAR_STAFFEL_OBEN_ERL" xml:space="preserve">
-    <value>Der Leistungspreis oberhalb der Staffelgrenze.</value>
+    <value>Der Monat, mit dem die Winterspanne endet.</value>
   </data>
   <data name="KI_DLG_TAR_BEZUG_ARBEIT_ERL" xml:space="preserve">
     <value>Der Arbeitspreis der Bezugsrolle im Rollenmodell.</value>
@@ -23528,5 +23414,68 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
     <value>Stromsteuer § 9 Abs. 1 Nr. 3 StromStG: {0} — kein Brennwert (Ho) gepflegt, deshalb heizwertbezogen geprüft; der CO₂-Wert je kWh Energieertrag fällt dadurch zu hoch aus (konservativ).</value>
+  </data>
+  <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
+    <value>Zeitzonentarif (HT/NT) entfällt: Der Tarifsatz des Projekts steht noch auf dem Zonenmodell und wird nicht mehr gerechnet — der Strom ist mit den Preisen des Stromträgers aus der Kostenverwaltung bepreist.</value>
+  </data>
+  <data name="WIRT_TARIF_NACHWEIS_ZONEN" xml:space="preserve">
+    <value>Zeitzonentarif (HT/NT) entfällt — Preise des Stromträgers aus der Kostenverwaltung</value>
+  </data>
+  <data name="WIRT_MATRIX_TITEL" xml:space="preserve">
+    <value>Strommengen</value>
+  </data>
+  <data name="WIRT_MATRIX_HERKUNFT" xml:space="preserve">
+    <value>Jahressummen aus den Stundenreihen der In-Memory-Simulation. KWK-Aufteilung: Eigenstrom = min(BHKW-Erzeugung, Strombedarf nach Photovoltaik) je Stunde — dokumentierte Näherung.</value>
+  </data>
+  <data name="WIRT_MATRIX_ZEITRAUM" xml:space="preserve">
+    <value>Zeitraum</value>
+  </data>
+  <data name="WIRT_MATRIX_JAHR" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENSPITZE" xml:space="preserve">
+    <value>Höchste Stundenlast des Netzbezugs: {0} kW — Bemessungsgröße der Leistungspreise im Rollentarif; der Leistungspreis des Stromträgers bemisst sich an der Viertelstundenspitze.</value>
+  </data>
+  <data name="WIRT_MATRIX_STUNDENLAST" xml:space="preserve">
+    <value>Höchste Stundenlast</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel des Stromträgers: {0} €/(kW·a) — {1}</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE1" xml:space="preserve">
+    <value>Stufe 1, Bezugsspitze {0} kW innerhalb der Staffelgrenze {1} kW</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_STUFE2" xml:space="preserve">
+    <value>Stufe 2, Bezugsspitze {0} kW über der Staffelgrenze {1} kW — die Kappung beginnt an der Spitze und wird deshalb mit dem Preis der oberen Stufe bewertet</value>
+  </data>
+  <data name="OPT_QUELLE_STAFFEL_OHNE_SPITZE" xml:space="preserve">
+    <value>Stufe 1, Bezugsspitze nicht bekannt</value>
+  </data>
+  <data name="ETV_STAFFEL_TITEL" xml:space="preserve">
+    <value>Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)</value>
+  </data>
+  <data name="ETV_STAFFEL_GRENZE" xml:space="preserve">
+    <value>Staffelgrenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS1" xml:space="preserve">
+    <value>Preis bis zur Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_PREIS2" xml:space="preserve">
+    <value>Preis über der Grenze</value>
+  </data>
+  <data name="ETV_STAFFEL_HINWEIS" xml:space="preserve">
+    <value>Bemessen an der Viertelstundenspitze des Netzbezugs im Jahr: bis zur Grenze gilt der erste, darüber der zweite Preis. Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze dieses Stromträgers; leere Preise heißen „keine Staffel“.</value>
+  </data>
+  <data name="ETV_STAFFEL_SPEICHERFEHLER" xml:space="preserve">
+    <value>Die Leistungspreis-Staffel ließ sich nicht speichern.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_GRENZE_ERL" xml:space="preserve">
+    <value>Die Grenze der zweistufigen Leistungspreis-Staffel in kW: bis zu ihr gilt der erste, darüber der zweite Preis — bemessen an der Viertelstundenspitze des Netzbezugs im Jahr. Nur beim Stromträger im Projekt.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS1_ERL" xml:space="preserve">
+    <value>Der Leistungspreis bis zur Staffelgrenze in €/(kW·a). Eine gepflegte Staffel ersetzt Leistungspreis und saisonale Sätze des Stromträgers.</value>
+  </data>
+  <data name="KI_DLG_ET_STAFFEL_PREIS2_ERL" xml:space="preserve">
+    <value>Der Leistungspreis über der Staffelgrenze in €/(kW·a).</value>
   </data>
 </root>

@@ -565,7 +565,8 @@ namespace WindowsFormsApplication1
         /// <c>YESNO</c> (Access legt sie mit <c>False</c> an ⇒ Aufschläge AUS) und
         /// <c>DOUBLE</c> (bleibt NULL ⇒ keine KWK-Vergütung). Die Leseseite behandelt
         /// einen leeren Modus genauso wie <c>ZONEN</c> — eine nicht migrierte Datenbank
-        /// rechnet deshalb ebenfalls wie bisher.
+        /// rechnet deshalb ebenfalls wie bisher. (Seit Q11 rechnet der Zonenmodus nicht
+        /// mehr; Schritt 104 löscht seine Sätze.)
         ///
         /// <b>Warum der Aufschlagsschalter überhaupt existiert.</b> Netzentgelt,
         /// Umlagen, Stromsteuer, Konzession und Vertrieb sind seit dem
@@ -3675,6 +3676,32 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const int SCHRITT_103_ZAPFPROFIL_KATALOG = 103;
 
+        /// <summary>
+        /// Schritt 104 — der <b>Zeitzonentarif HT/NT wird abgelöst</b> (Entscheid Q11,
+        /// Register R‑Q: „kein HT/NT"; der Rest nach Empfehlung: die zweistufige
+        /// Leistungspreis-Staffel zieht in die Kostenverwaltung neben die
+        /// Energiepreisstruktur). Er steht NACH 103 (Zapfprofilgenerator) ohne
+        /// Reihenfolgebedingung: Er fasst weder die Tww- noch die Gebäudetabellen an.
+        ///
+        /// <para><b>DDL und DML in EINEM Schritt</b>, wie Schritt 99. Die drei Spalten der
+        /// Staffel an <c>energy_project_settings</c> stehen bei
+        /// <see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/>, der Datenteil bei
+        /// <see cref="ZeitzonentarifAbloesung"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>: Die Staffel eines Tarifsatzes, in dem sie rechnete, geht
+        /// an den Stromträger jeder Version der Gruppe; die Sätze des Zonenmodells werden
+        /// gelöscht und die mit ihnen gerechneten gespeicherten Ergebnisse verworfen
+        /// (Entscheid E7b‑Q4, Anwender 23.09.2026: „alte Tarife verwerfen, nicht mehr
+        /// relevant"; ein Rollensatz bleibt); die Zonenzeilen der gespeicherten Strommatrix
+        /// werden je Projekt eine Jahreszeile.</para>
+        ///
+        /// <para><b>Rechenwirkung nur, wo ein Zonentarif rechnete</b> — dann mit dem
+        /// nächsten Lauf und benannt im Protokoll des Schrittes. In der Testdatenbank
+        /// trägt kein Projekt einen Tarifsatz; der Referenzlauf bleibt byte-gleich.
+        /// <b>Wiederholbar:</b> Ein zweiter Lauf findet nichts mehr.</para>
+        /// </summary>
+        public const int SCHRITT_104_ZEITZONENTARIF_ABLOESUNG = 104;
+
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
 
@@ -5083,6 +5110,29 @@ namespace WindowsFormsApplication1
                         "Zonen und Weiche haetten keine Tabelle. Gerechnet wird " +
                         "unveraendert auf dem Bestandsweg des Brauchwassers.",
                         Schritt_103_ZapfprofilKatalog),
+
+            // ENTSCHEID Q11 (22.09.2026, "kein HT/NT") - der Zeitzonentarif wird
+            // abgeloest. DDL UND DML; die Quellen sind
+            // SchemaKatalog.Schritt104_LeistungspreisStaffel (Spalten) und
+            // ZeitzonentarifAbloesung (Datenteil). Er steht NACH 103 ohne
+            // Reihenfolgebedingung - er fasst weder die Tww- noch die Gebaeudetabellen an.
+            new Schritt(SCHRITT_104_ZEITZONENTARIF_ABLOESUNG,
+                        "energy_project_settings bekommt die Leistungspreis-Staffel, der " +
+                        "Zeitzonentarif HT/NT wird abgeloest",
+                        "Den Zeitzonentarif (Winter/Sommer x HT/NT) gibt es nicht mehr. Die " +
+                        "zweistufige Leistungspreis-Staffel steht ab hier am Stromtraeger der " +
+                        "Kostenverwaltung (Staffelgrenze, Preis bis und Preis ueber der " +
+                        "Grenze) und wird an der Viertelstundenspitze des Netzbezugs " +
+                        "bemessen. Uebernommen wird sie aus jedem Tarifsatz, in dem sie " +
+                        "rechnete, an den Stromtraeger jeder Version der Gruppe. Die " +
+                        "Tarifsaetze des Zonenmodells werden geloescht, gespeicherte " +
+                        "Ergebnisse, die mit einem Zonentarif gerechnet wurden, verworfen " +
+                        "(ein Satz im Rollenmodell bleibt), und die gespeicherte " +
+                        "Strommatrix fuehrt je Projekt eine Jahreszeile statt vier " +
+                        "Zonenzeilen. Wo ein Zonentarif rechnete, rechnet der naechste Lauf " +
+                        "mit den Preisen des Stromtraegers - das Protokoll nennt jeden Satz " +
+                        "und jedes Projekt.",
+                        Schritt_104_ZeitzonentarifAbloesung),
         };
 
         /// <summary>
@@ -7795,6 +7845,68 @@ namespace WindowsFormsApplication1
                     "Tabellen sind nach dem Schritt LEER, kein Projekt steht auf dem " +
                     "Generator, und kein Rechenweg liest sie. KEIN Rechenergebnis aendert " +
                     "sich; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 104 - der Zeitzonentarif wird abgeloest (Entscheid Q11, 22.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 104 — Anlass, Spalten und Datenteil stehen bei
+        /// <see cref="SCHRITT_104_ZEITZONENTARIF_ABLOESUNG"/>, bei
+        /// <see cref="SchemaKatalog.Schritt104_LeistungspreisStaffel"/> und bei
+        /// <see cref="ZeitzonentarifAbloesung"/>.
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in Spalten, die
+        /// derselbe Schritt eben angelegt hat, und zwar in EINER Transaktion
+        /// (<see cref="ZeitzonentarifAbloesung.Ausfuehren"/>). <b>Die Nachprobe</b> fragt
+        /// dasselbe wie der Datenteil: Steht danach noch ein Satz im Zonenmodell oder eine
+        /// Zonenzeile der Strommatrix, ist der Schritt nicht gelaufen.</para>
+        ///
+        /// <para><b>Die Ausweisung gehört ins Protokoll</b>: jede übernommene und jede
+        /// nicht übernommene Staffel (mit Grund), jeder gelöschte Satz, jedes Projekt,
+        /// dessen mit einem Zonentarif gerechneter Lauf verworfen wurde, jedes Projekt,
+        /// dessen Matrix zusammengefasst wurde.</para>
+        /// </summary>
+        private static bool Schritt_104_ZeitzonentarifAbloesung(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt104_LeistungspreisStaffel)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            ZeitzonentarifAbloesung.Bericht bericht;
+            try { bericht = ZeitzonentarifAbloesung.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = "Datenteil: " + ex.Message;
+                l.Notiz("104: FEHLER - " + l.LetzterFehler + " (nichts geschrieben; der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int saetze = ZeitzonentarifAbloesung.OffeneZonensaetze();
+            int zeilen = ZeitzonentarifAbloesung.OffeneZonenzeilen();
+            if (saetze > 0 || zeilen > 0)
+            {
+                l.LetzterFehler = saetze.ToString(CultureInfo.InvariantCulture) +
+                                  " Tarifsatz/-saetze stehen weiter im Zonenmodell, " +
+                                  zeilen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) der Strommatrix tragen weiter einen Zonenschluessel.";
+                l.Notiz("104: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("104: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt104_LeistungspreisStaffel.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt. " + bericht.Text() + ". Wo ein Zonentarif rechnete, " +
+                    "rechnet der naechste Lauf mit den Preisen des Stromtraegers; der " +
+                    "Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

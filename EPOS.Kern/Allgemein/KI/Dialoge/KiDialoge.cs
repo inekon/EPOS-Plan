@@ -316,7 +316,7 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string BHKW_WIRTSCHAFTLICHKEIT = "Form_BhkwWirtschaftlichkeit";
 
-        /// <summary>Die Tarifstruktur des Strombezugs (<c>TarifstrukturDialog</c>).</summary>
+        /// <summary>Die Tarifstruktur Strom, Rollenmodell (<c>TarifstrukturDialog</c>).</summary>
         public const string TARIFSTRUKTUR = "Form_Tarifstruktur";
 
         /// <summary>
@@ -1543,17 +1543,17 @@ namespace WindowsFormsApplication1
         // =====================================================================
 
         /// <summary>
-        /// Die Tarifstruktur des Strombezugs — 28 Felder aus
+        /// Die Tarifstruktur Strom — 14 Felder aus
         /// <c>EPOS.UI.Dialoge.Wirtschaftlichkeit.TarifstrukturKiSicht</c>.
         /// </summary>
         /// <remarks>
         /// <para>
-        /// <b>Zwei Modelle, eine Maske.</b> Das ZONENMODELL rechnet mit vier
-        /// Preiszonen (Winter/Sommer × Hoch-/Niedertarif) und einer Leistungsstaffel,
-        /// das ROLLENMODELL mit je einem Arbeits-, Grund- und Leistungspreis fuer
-        /// Bezug und Reststrom. Welches gilt, sagt das Feld <c>modell</c>; die Felder
-        /// des jeweils anderen stehen gesperrt da. Deklariert sind beide - der
-        /// Anwender sieht beide.
+        /// <b>Ein Modell, das Rollenmodell</b> (Entscheid Q11, 22.09.2026: „kein
+        /// HT/NT"): je ein Arbeits-, Grund- und Leistungspreis fuer Bezug und
+        /// Reststrom, dazu die Einspeisung. Modellwahl, Hochtarif-Fenster,
+        /// Zonenpreise und die zweistufige Staffel stehen nicht mehr auf der Maske
+        /// und deshalb auch nicht hier; die Staffel fuehrt die Maske
+        /// <see cref="KiMaskennamen.ENERGIETRAEGER"/>.
         /// </para>
         /// <para>
         /// <b>Die vier LEISTUNGSSTUFEN je Rolle bleiben draussen.</b> Zwoelf Zellen je
@@ -1573,86 +1573,17 @@ namespace WindowsFormsApplication1
                     new KiDialogFeld("aktiv", "TarifstrukturKiSicht.Aktiv",
                                      KiDialogTexte.TarAktivName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.TarAktivErl),
-                    new KiDialogFeld("modell", "TarifstrukturKiSicht.Modell",
-                                     KiDialogTexte.TarModellName, KiParameterTyp.Wahl,
-                                     KiDialogTexte.TarModellErl, leerErlaubt: true),
                     new KiDialogFeld("gueltig_ab", "TarifstrukturKiSicht.GueltigAb",
                                      KiDialogTexte.TarGueltigAbName, KiParameterTyp.Text,
                                      KiDialogTexte.TarGueltigAbErl, leerErlaubt: true),
 
-                    // ---- Zeitzonen --------------------------------------------------
+                    // ---- Winterspanne (Modell „Staffel" der Bezugsrollen) -----------
                     new KiDialogFeld("winter_von", "TarifstrukturKiSicht.WinterVon",
                                      KiDialogTexte.TarWinterVonName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.TarWinterVonErl, leerErlaubt: true),
                     new KiDialogFeld("winter_bis", "TarifstrukturKiSicht.WinterBis",
                                      KiDialogTexte.TarWinterBisName, KiParameterTyp.Ganzzahl,
                                      KiDialogTexte.TarWinterBisErl, leerErlaubt: true),
-                    new KiDialogFeld("hochtarif_von", "TarifstrukturKiSicht.HochtarifVon",
-                                     KiDialogTexte.TarHtVonName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.TarHtVonErl, leerErlaubt: true),
-                    new KiDialogFeld("hochtarif_bis", "TarifstrukturKiSicht.HochtarifBis",
-                                     KiDialogTexte.TarHtBisName, KiParameterTyp.Ganzzahl,
-                                     KiDialogTexte.TarHtBisErl, leerErlaubt: true),
-
-                    // ---- Zonenmodell: Bezug -----------------------------------------
-                    new KiDialogFeld("bezug_winter_hoch",
-                                     "TarifstrukturKiSicht.BezugWinterHoch",
-                                     KiDialogTexte.TarBezugWinterHtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarBezugErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("bezug_winter_nieder",
-                                     "TarifstrukturKiSicht.BezugWinterNieder",
-                                     KiDialogTexte.TarBezugWinterNtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarBezugErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("bezug_sommer_hoch",
-                                     "TarifstrukturKiSicht.BezugSommerHoch",
-                                     KiDialogTexte.TarBezugSommerHtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarBezugErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("bezug_sommer_nieder",
-                                     "TarifstrukturKiSicht.BezugSommerNieder",
-                                     KiDialogTexte.TarBezugSommerNtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarBezugErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-
-                    // ---- Zonenmodell: Einspeisung -----------------------------------
-                    new KiDialogFeld("einspeisung_winter_hoch",
-                                     "TarifstrukturKiSicht.EinspeisungWinterHoch",
-                                     KiDialogTexte.TarEinspWinterHtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarEinspErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("einspeisung_winter_nieder",
-                                     "TarifstrukturKiSicht.EinspeisungWinterNieder",
-                                     KiDialogTexte.TarEinspWinterNtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarEinspErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("einspeisung_sommer_hoch",
-                                     "TarifstrukturKiSicht.EinspeisungSommerHoch",
-                                     KiDialogTexte.TarEinspSommerHtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarEinspErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-                    new KiDialogFeld("einspeisung_sommer_nieder",
-                                     "TarifstrukturKiSicht.EinspeisungSommerNieder",
-                                     KiDialogTexte.TarEinspSommerNtName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarEinspErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KWH, leerErlaubt: true),
-
-                    // ---- Zonenmodell: Leistungsstaffel ------------------------------
-                    new KiDialogFeld("staffel_grenze", "TarifstrukturKiSicht.StaffelGrenze",
-                                     KiDialogTexte.TarStaffelGrenzeName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarStaffelGrenzeErl,
-                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
-                    new KiDialogFeld("staffel_preis_unten",
-                                     "TarifstrukturKiSicht.StaffelPreisUnten",
-                                     KiDialogTexte.TarStaffelUntenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarStaffelUntenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
-                    new KiDialogFeld("staffel_preis_oben",
-                                     "TarifstrukturKiSicht.StaffelPreisOben",
-                                     KiDialogTexte.TarStaffelObenName, KiParameterTyp.Zahl,
-                                     KiDialogTexte.TarStaffelObenErl,
-                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
 
                     // ---- Rollenmodell: Bezug ----------------------------------------
                     new KiDialogFeld("bezug_arbeitspreis",
@@ -2260,6 +2191,24 @@ namespace WindowsFormsApplication1
                                      "EnergietraegerKiSicht.LeistungspreisMonatlich",
                                      KiDialogTexte.EtLpModusName, KiParameterTyp.Wahrheitswert,
                                      KiDialogTexte.EtLpModusErl),
+
+                    // ---- Q11: die zweistufige Leistungspreis-Staffel des
+                    //      Stromträgers (nur Stromträger im Projektkontext) -----------
+                    new KiDialogFeld("leistungspreis_staffelgrenze",
+                                     "EnergietraegerKiSicht.StaffelGrenze",
+                                     KiDialogTexte.EtStaffelGrenzeName, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStaffelGrenzeErl,
+                                     einheit: KiDialogTexte.EINHEIT_KW, leerErlaubt: true),
+                    new KiDialogFeld("leistungspreis_staffel_unten",
+                                     "EnergietraegerKiSicht.StaffelPreis1",
+                                     KiDialogTexte.EtStaffelPreis1Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStaffelPreis1Erl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
+                    new KiDialogFeld("leistungspreis_staffel_oben",
+                                     "EnergietraegerKiSicht.StaffelPreis2",
+                                     KiDialogTexte.EtStaffelPreis2Name, KiParameterTyp.Zahl,
+                                     KiDialogTexte.EtStaffelPreis2Erl,
+                                     einheit: KiDialogTexte.EINHEIT_EURO_KW_A, leerErlaubt: true),
                     new KiDialogFeld("heizwert", "EnergietraegerKiSicht.Heizwert",
                                      KiDialogTexte.EtHeizwertName, KiParameterTyp.Zahl,
                                      KiDialogTexte.EtHeizwertErl),

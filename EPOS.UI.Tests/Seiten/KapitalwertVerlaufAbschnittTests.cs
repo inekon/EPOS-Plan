@@ -312,7 +312,6 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
         Szenarien = new[] { (0, "Erwartet"), (1, "Günstig"), (2, "Ungünstig") },
         MitPhotovoltaik = true,
         MitBhkw = true,
-        MitStrombezug = true,
         Ansicht = new ErgebnisAnsicht
         {
             Bandbreite = new ErgebnisMatrix
@@ -404,12 +403,12 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
     }
 
     /// <summary>
-    /// K8 und der Rest von U2: Die Fußleiste trägt höchstens VIER Knöpfe — Photovoltaik,
-    /// BHKW, Strombezug, Berechnen —, und einen Verlaufsdialog gibt es nicht mehr: kein
-    /// Knopf „Verlauf…", kein Unterdialog „Verlauf".
+    /// K8 und der Rest von U2: Die Fußleiste trägt höchstens DREI Knöpfe — Photovoltaik,
+    /// BHKW, Berechnen (Q11, E7b: „Strombezug…" ist entfallen) —, und einen
+    /// Verlaufsdialog gibt es nicht mehr: kein Knopf „Verlauf…", kein Unterdialog „Verlauf".
     /// </summary>
     [Fact]
-    public void Die_Fussleiste_traegt_vier_Knoepfe_und_keinen_Verlauf()
+    public void Die_Fussleiste_traegt_drei_Knoepfe_und_keinen_Verlauf()
     {
         var cut = Render<WirtschaftlichkeitSeite>(p => p
             .Add(x => x.Laden, () => Stand())
@@ -418,11 +417,13 @@ public class KapitalwertVerlaufAbschnittTests : EposBunitContext
 
         string[] fuss = cut.FindAll(".epos-seite > .epos-leiste button")
                            .Select(k => k.TextContent.Trim()).ToArray();
-        Assert.Equal(4, fuss.Length);
+        Assert.Equal(3, fuss.Length);
         Assert.Equal("Berechnen", fuss[^1]);
         Assert.DoesNotContain(fuss, t => t.StartsWith("Verlauf", StringComparison.Ordinal));
+        Assert.DoesNotContain(fuss, t => t.StartsWith("Strombezug", StringComparison.Ordinal));
 
         Assert.DoesNotContain("Verlauf", Enum.GetNames(typeof(WirtschaftlichkeitSeite.Unterdialog)));
+        Assert.DoesNotContain("Strombezug", Enum.GetNames(typeof(WirtschaftlichkeitSeite.Unterdialog)));
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
     }
 
