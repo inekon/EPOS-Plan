@@ -205,8 +205,79 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================================
+        // 5 — Veraltet nach einer Änderung an Senken oder Bedarf
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Der Befund.</b> Die Ergebnishülle lebt, solange das Projekt offen ist, und
+        /// mit ihr der gerechnete Lauf. Wer danach eine SENKE ändert und zur
+        /// Ergebnisansicht zurückkehrt, sah den alten Lauf, als wäre nichts gewesen —
+        /// „veraltet" setzte nur die Speicherflotte. Jetzt setzt der Senkenschreibweg das
+        /// Änderungsdatum des Projekts, und die Hülle hält es beim Laden gegen den Stand
+        /// beim Lauf.
+        /// </summary>
+        [Fact]
+        public async Task Nach_einer_Senkenaenderung_ist_das_Ergebnis_veraltet()
+        {
+            using var kopie = new TestDatenbank();
+            if (!kopie.Vorhanden) return;
+
+            SimulationErgebnisDienste dienste = Ergebnisdienste(PROJEKT_GANGLINIE);
+            Rueckmeldung lauf = await dienste.Laufen((anteil, text) => { });
+            Assert.True(lauf.Erfolg, lauf.Text);
+            Assert.Equal(ErgebnisZustand.Gueltig, dienste.Laden(PROJEKT_GANGLINIE).Zustand);
+
+            // Ohne Änderung bleibt es gültig — auch beim zweiten Laden.
+            Assert.Equal(ErgebnisZustand.Gueltig, dienste.Laden(PROJEKT_GANGLINIE).Zustand);
+
+            // Der Kessel 11334 bekommt seine Senkenliste neu geschrieben (derselbe Weg wie
+            // „Speichern" im Senkendialog).
+            Assert.True(WaermesenkeClass.SenkenlisteUndVerbundSchreiben(
+                KESSEL_GANGLINIE, new Z_AnlageSenkeCtrl().LesenJeAnlage(KESSEL_GANGLINIE),
+                new List<int>()));
+
+            SimulationErgebnisDaten d = dienste.Laden(PROJEKT_GANGLINIE);
+
+            Assert.Equal(ErgebnisZustand.Veraltet, d.Zustand);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMERG_ZUSTAND_ANLASS_PROJEKT, d.Zustandsgrund);
+            Assert.Null(d.Uebersicht);
+        }
+
+        /// <summary>
+        /// Dasselbe für den BEDARF: Die Wärmeganglinie fällt weg (Weg der Bedarfskachel).
+        /// Das Ergebnis ist veraltet, und der Bedarf, den der Leerzustand nennt, ist der
+        /// NEUE — er wird mit der Veraltung neu gerechnet, sonst stünde dort die Zahl des
+        /// alten Stands.
+        /// </summary>
+        [Fact]
+        public async Task Nach_einer_Bedarfsaenderung_ist_das_Ergebnis_veraltet_und_der_Bedarf_neu()
+        {
+            using var kopie = new TestDatenbank();
+            if (!kopie.Vorhanden) return;
+
+            SimulationErgebnisDienste dienste = Ergebnisdienste(PROJEKT_GANGLINIE);
+            Rueckmeldung lauf = await dienste.Laufen((anteil, text) => { });
+            Assert.True(lauf.Erfolg, lauf.Text);
+
+            double waermeVorher = dienste.Laden(PROJEKT_GANGLINIE).Bedarf.WaermebedarfGesamtMwh;
+            Assert.True(waermeVorher > 0.0);
+
+            Assert.True(new WizardCtrl().Del_WaermebedarfExtern(PROJEKT_GANGLINIE));
+
+            SimulationErgebnisDaten d = dienste.Laden(PROJEKT_GANGLINIE);
+
+            Assert.Equal(ErgebnisZustand.Veraltet, d.Zustand);
+            Assert.Equal(WindowsFormsApplication1.MyResource.Resource.SIMERG_ZUSTAND_ANLASS_PROJEKT, d.Zustandsgrund);
+            Assert.True(d.Bedarf.WaermebedarfGesamtMwh < waermeVorher,
+                        "Der Leerzustand nennt noch den Bedarf vor der Änderung.");
+        }
+
+        // =================================================================================
         // Helfer
         // =================================================================================
+
+        /// <summary>Der Heizkessel des Projekts 1030 — Senke PufferHeizung auf Rang 1.</summary>
+        private const int KESSEL_GANGLINIE = 11334;
 
         private static SimulationErgebnisDienste Ergebnisdienste(int idProjekt)
             => Simulationsdienste(idProjekt).Ergebnis;

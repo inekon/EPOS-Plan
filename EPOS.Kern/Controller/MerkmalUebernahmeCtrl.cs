@@ -181,6 +181,37 @@ namespace WindowsFormsApplication1
             catch { /* der Hinweis an den Anwender hängt nicht daran */ }
         }
 
+        /// <summary>
+        /// <c>Tab_Projekt.Aenderungsdatum</c> — die Gegenrichtung zu
+        /// <see cref="MarkiereProjektGeaendert"/>; <c>null</c> = keines gesetzt oder nicht
+        /// lesbar.
+        /// </summary>
+        public static DateTime? Aenderungsdatum(int idProjekt)
+        {
+            if (idProjekt <= 0) return null;
+            try
+            {
+                object o = DataRepository.ExecuteScalar(
+                    "SELECT Aenderungsdatum FROM Tab_Projekt WHERE ID = ?",
+                    new DbParam("@p", idProjekt));
+                if (o != null && o != DBNull.Value) return Convert.ToDateTime(o);
+            }
+            catch { /* ohne Datum keine Veraltungsaussage - kein Fehler */ }
+            return null;
+        }
+
+        /// <summary>
+        /// Ist das Projekt NACH einem Stand geändert worden? <paramref name="stand"/> ist
+        /// das Änderungsdatum, wie es zum Zeitpunkt des Laufs stand (<c>null</c> = damals
+        /// keines), <paramref name="jetzt"/> das heutige. Kein heutiges Datum heißt: nichts
+        /// geändert, das sich nachweisen ließe.
+        /// </summary>
+        public static bool NachStandGeaendert(DateTime? stand, DateTime? jetzt)
+        {
+            if (!jetzt.HasValue) return false;
+            return !stand.HasValue || jetzt.Value > stand.Value;
+        }
+
         /// <summary>Führt das Projekt bereits ein gespeichertes Simulationsergebnis?</summary>
         public static bool HatErgebnisse(int idProjekt)
         {

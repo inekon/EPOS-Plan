@@ -431,6 +431,42 @@ public class ErzeugerReiterTests : EposBunitContext
         Assert.DoesNotContain("8,40", seite.Markup);
     }
 
+    /// <summary>
+    /// ERTRAG OHNE ABNEHMER: Liefert der Kern den Satz, steht er als HINWEISZEILE
+    /// (Stufe Hinweis, kein Fehler) unter den Kennzahlen — ohne ihn steht dort nichts.
+    /// Der Satz selbst entsteht im Kern (<c>SimulationErgebnisCtrl.SolarHinweisOhneAbnehmer</c>);
+    /// der Reiter zeigt ihn nur.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_zeigt_den_Ertrag_ohne_Abnehmer_als_Hinweiszeile()
+    {
+        var ohne = SolarZeichnen();
+        Assert.Empty(ohne.FindAll(".epos-warnbanner"));
+
+        var e = Solar(true);
+        e.HinweisOhneAbnehmer = "Ertrag 28,9 MWh/a ohne Abnehmer: Die Senke „Heizkreis (Heizung + " +
+                                "Warmwasser)\" bedient nicht den Kanal Prozesswärme, in dem der Bedarf liegt.";
+        var mit = Render<SolarthermieReiter>(p => p.Add(x => x.Daten, e).Add(x => x.Modell, Modell));
+
+        var banner = mit.Find(".epos-simerg-kennzahlenzeile .epos-warnbanner");
+        Assert.Contains("epos-warnbanner--hinweis", banner.ClassName);
+        Assert.Contains("ohne Abnehmer", banner.TextContent);
+        Assert.Contains("Prozesswärme", banner.TextContent);
+    }
+
+    /// <summary>
+    /// Das Etikett der Erzeugung heisst, was es zeigt: die WÄRMEPRODUKTION der Module
+    /// (Jahresmenge in MWh/a), keine Leistung.
+    /// </summary>
+    [Fact]
+    public void Solarthermie_nennt_die_Waermeproduktion_der_Module()
+    {
+        var seite = SolarZeichnen();
+
+        Assert.Contains("Wärmeproduktion der Module:", Zeilen(seite, 0));
+        Assert.DoesNotContain("Gesamte Wärmeleistung der Module:", seite.Markup);
+    }
+
     // ---- W11b‑B‑19: die zwei Linien des Solarbildes sind wählbar ----------
 
     /// <summary>
@@ -527,7 +563,7 @@ public class ErzeugerReiterTests : EposBunitContext
                      seite.FindAll("h2.epos-gruppenkopf-titel").Select(k => k.TextContent.Trim()).ToArray());
         Assert.Empty(seite.FindAll("h3.epos-untergruppe"));
         Assert.Equal(
-            new[] { "Wärmebedarf:", "Gesamte Wärmeleistung der Module:", "Überschuß:",
+            new[] { "Wärmebedarf:", "Wärmeproduktion der Module:", "Überschuß:",
                     "Restwärmebedarf:", "Wärmebedarfsdeckung:" },
             Zeilen(seite, 0));
         Assert.Equal(new[] { "Restwärmebedarf:" },

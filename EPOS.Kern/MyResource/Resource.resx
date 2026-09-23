@@ -1852,6 +1852,9 @@ Ohne Quellpuffer steht hier 0,00.</value>
   <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
     <value>Abnehmer der Wärme — er wird unmittelbar von einem Erzeuger oder aus einem Pufferspeicher versorgt.</value>
   </data>
+  <data name="SIM_SCHEMA_WARNUNG_OHNE_VERSORGER" xml:space="preserve">
+    <value>Kein Versorger</value>
+  </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Vorlauf unter dem Puffer-Sollwert</value>
   </data>
@@ -2596,7 +2599,7 @@ sollen; die Kennlinie ist dann um tiefere Stützstellen zu ergänzen.</value>
     <value>Heizkreis</value>
   </data>
   <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
-    <value>Heizkreis (beides)</value>
+    <value>Heizkreis (Heizung + Warmwasser)</value>
   </data>
   <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
     <value>Heizkreis (nur Heizwärme)</value>
@@ -5988,7 +5991,7 @@ Je nach Projektgröße dauert das einige Minuten. Fortfahren?</value>
     <value>Die Tabelle {0} konnte nicht gelesen werden — ihre Daten fehlen in der Kopie.</value>
   </data>
   <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
-    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides).</value>
+    <value>Die Wärmesenken der Anlage „{0}" konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (Heizung + Warmwasser).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>Die Betriebsführung der Speichervariante „{0}" konnte nicht angelegt werden.</value>
@@ -9336,6 +9339,18 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
   <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
     <value>Anlage „{0}": Der Erzeuger-Vorlauf {1} °C liegt unter dem wirksamen Vorlauf {2} °C des Zielspeichers „{3}". Der Erzeuger kann den Speicher nie auf Solltemperatur laden.</value>
   </data>
+  <data name="SIMWARN_SOLAR_DIREKT_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solarthermie ohne Pufferspeicher deckt Prozesswärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Prozess.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
+    <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE" xml:space="preserve">
+    <value>Kanal {0} hat Bedarf, aber keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
+  </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Anlage „{0}": Der Speicher „{1}" ist ihre Wärmequelle, wird aber von keiner Anlage dieses Projekts geladen. Nach der Startfüllung liefe die Quelle leer.</value>
   </data>
@@ -9556,7 +9571,7 @@ Wirksam nur bei einem GESCHICHTETEN Zielspeicher (Schichten &gt; 1): Von der Ein
     <value>Wärmesenke: Die Anlage {0} führt auf Rang {1} das Ziel {2}, hat dort aber KEINEN Pufferspeicher zugeordnet (Z_AnlageSenke.ID_Puffer leer). Die Zeile rechnet deshalb auf den HEIZKREIS.</value>
   </data>
   <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
-    <value>Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}.</value>
+    <value>{0}: keine Senke zugeordnet – der Lauf nimmt {1}.</value>
   </data>
   <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
     <value>Solarspeicher</value>
@@ -13556,7 +13571,7 @@ Alle Eingaben überprüfen!</value>
     <value>Maximaler Gasbezug:</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Gesamte Wärmeleistung der Module:</value>
+    <value>Wärmeproduktion der Module:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Überschuß:</value>
@@ -19172,6 +19187,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
     <value>die Speicherflotte wurde neu gerechnet</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PROJEKT" xml:space="preserve">
+    <value>Bedarf, Senken oder Anlagen wurden nach dem Lauf geändert</value>
+  </data>
+  <data name="SIMERG_ST_HINWEIS_OHNE_ABNEHMER" xml:space="preserve">
+    <value>Ertrag {0} MWh/a ohne Abnehmer: Die Senke „{1}" bedient nicht den Kanal {2}, in dem der Bedarf liegt.</value>
   </data>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>in der Stromspeicher-Auslegung wurde etwas geändert</value>

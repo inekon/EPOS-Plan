@@ -161,6 +161,38 @@ public class SchemaTests : BunitContext
         Assert.Empty(ohne.FindAll("rect.epos-schema-warnflaeche"));
     }
 
+    /// <summary>
+    /// ABNEHMER OHNE VERSORGER: Der Kern zeichnet den Abnehmer eines Kanals mit Bedarf
+    /// auch dann, wenn keine Senke ihn bedient — mit Warnung. Die Warnzeile IM Kasten
+    /// sagt dann nicht „Vorlauf unter dem Puffer-Sollwert", sondern „Kein Versorger",
+    /// und der Tooltipp trägt den ganzen Satz.
+    /// </summary>
+    [Fact]
+    public void Ein_Abnehmer_ohne_Versorger_traegt_seine_Warnzeile_und_den_Satz_im_Tooltipp()
+    {
+        SchemaBild bild = Bild(mitWarnung: false);
+        var knoten = new List<SchemaKnoten>();
+        foreach (SchemaKnoten k in bild.Knoten)
+            knoten.Add(k.Art == SchemaKnotenart.Abnehmer
+                ? k with
+                {
+                    Warnung = true,
+                    Warntext = "Kanal Heizung mit 12,0 MWh/a Bedarf hat keinen Versorger: " +
+                               "keine Anlage trägt eine Senke für diesen Kanal."
+                }
+                : k);
+
+        var cut = Render<Schema>(p => p
+            .Add(x => x.Layout, bild with { Knoten = knoten })
+            .Add(x => x.WarnungText, "Vorlauf unter dem Puffer-Sollwert")
+            .Add(x => x.AbnehmerWarnungText, "Kein Versorger"));
+
+        Assert.Single(cut.FindAll("g.epos-schema-knoten--warnung"));
+        Assert.Equal("Kein Versorger", cut.Find("text.epos-schema-warntext").TextContent);
+        Assert.Contains(cut.FindAll("g.epos-schema-knoten title"),
+                        t => t.TextContent.Contains("hat keinen Versorger"));
+    }
+
     // ================================================================== Titelkuerzung
 
     /// <summary>

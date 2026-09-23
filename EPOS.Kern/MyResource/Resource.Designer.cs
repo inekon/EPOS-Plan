@@ -5277,7 +5277,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmesenken der Anlage „{0}&quot; konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (beides). ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmesenken der Anlage „{0}&quot; konnten nicht angelegt werden — die Anlage rechnet mit der Vorbelegung Heizkreis (Heizung + Warmwasser). ähnelt.
         /// </summary>
         public static string BK_KOMP_HINW_SENKEN {
             get {
@@ -51650,7 +51650,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Für die Anlage {0} steht in Z_AnlageSenke keine einzige Zeile. Der Lauf rechnet die Vorbelegung {1}/{2}. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: keine Senke zugeordnet – der Lauf nimmt {1}. ähnelt.
         /// </summary>
         public static string SIMENG_SENKENLISTE_LEER {
             get {
@@ -52314,7 +52314,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Gesamte Wärmeleistung der Module: ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmeproduktion der Module: ähnelt.
         /// </summary>
         public static string SIMERG_LBL_GESAMTLEISTUNG_MODULE {
             get {
@@ -52809,6 +52809,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ertrag {0} MWh/a ohne Abnehmer: Die Senke „{1}&quot; bedient nicht den Kanal {2}, in dem der Bedarf liegt. ähnelt.
+        /// </summary>
+        public static string SIMERG_ST_HINWEIS_OHNE_ABNEHMER {
+            get {
+                return ResourceManager.GetString("SIMERG_ST_HINWEIS_OHNE_ABNEHMER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Wärme-/Strombedarf ähnelt.
         /// </summary>
         public static string SIMERG_TAB_BEDARF {
@@ -52931,6 +52940,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_ZUSTAND_ANLASS_FLOTTE {
             get {
                 return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_FLOTTE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf, Senken oder Anlagen wurden nach dem Lauf geändert ähnelt.
+        /// </summary>
+        public static string SIMERG_ZUSTAND_ANLASS_PROJEKT {
+            get {
+                return ResourceManager.GetString("SIMERG_ZUSTAND_ANLASS_PROJEKT", resourceCulture);
             }
         }
         
@@ -55065,6 +55083,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KANAL_OHNE_VERSORGER {
+            get {
+                return ResourceManager.GetString("SIMWARN_KANAL_OHNE_VERSORGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kanal {0} hat Bedarf, aber keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen. ähnelt.
+        /// </summary>
+        public static string SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE {
+            get {
+                return ResourceManager.GetString("SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Konfiguration prüfen ähnelt.
         /// </summary>
         public static string SIMWARN_KARTE_CHIP {
@@ -55106,6 +55142,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMWARN_QUELLE_UNBEGRENZT {
             get {
                 return ResourceManager.GetString("SIMWARN_QUELLE_UNBEGRENZT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt Prozesswärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Prozess. ähnelt.
+        /// </summary>
+        public static string SIMWARN_SOLAR_DIREKT_OHNE_PUFFER {
+            get {
+                return ResourceManager.GetString("SIMWARN_SOLAR_DIREKT_OHNE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung. ähnelt.
+        /// </summary>
+        public static string SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER {
+            get {
+                return ResourceManager.GetString("SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER", resourceCulture);
             }
         }
         
@@ -55883,7 +55937,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (beides) ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Heizkreis (Heizung + Warmwasser) ähnelt.
         /// </summary>
         public static string SIM_HEIZKREIS_BEIDES {
             get {
@@ -57540,6 +57594,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_SCHEMA_WARNUNG {
             get {
                 return ResourceManager.GetString("SIM_SCHEMA_WARNUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kein Versorger ähnelt.
+        /// </summary>
+        public static string SIM_SCHEMA_WARNUNG_OHNE_VERSORGER {
+            get {
+                return ResourceManager.GetString("SIM_SCHEMA_WARNUNG_OHNE_VERSORGER", resourceCulture);
             }
         }
         

@@ -3,7 +3,7 @@
 **Dialog:** `EnergietraegerDialog` (`EPOS.UI/Dialoge/Kosten/`) mit der Trägerkarte `EnergietraegerEinstellungen`,
 darin `BrennstoffBestandteile` bzw. `StrompreisDetails`; Hülle `EPOS.UI.Daten/Kosten/EnergietraegerHuelle.cs` ·
 **Mockup:** `../../Mockups/Dialog_Formel_Zahlenprobe.html#energie` · **Recht:** BEHG / EBeV 2030,
-EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`,
+EU-ETS 2, GEG Anlage 4 und 9 · **Code:** `StromMatrix`, `KostenEmissionRechner`, `LeistungspreisStaffel`,
 `energy_carrier` · `energy_price` · `energy_project_settings` · **Konzept:** § 2.5, § 3.5, § 3.11
 
 ## Was der Dialog zeigt
@@ -18,7 +18,10 @@ die Zeile darunter Projekt und Preisstellung („… · Preise netto").
 11,60 kWh (H_s)" · Herleitung „→ 0,0720 €/kWh · Umrechnungsfaktor H_s/H_i = 1,1048" · Formelzeile
 „Formel: 0,76 €/m³ ÷ 10,50 kWh/m³ = 0,0720 €/kWh". Darunter die saisonalen Sätze (nur bei Trägern mit
 Leistungspreis), die Katalogübernahme (nur im Projektkontext) und die Hinweise zu fehlenden oder
-geliehenen Werten.
+geliehenen Werten. **Beim Stromträger im Projektkontext** steht im selben Block die Gruppe
+„Leistungspreis-Staffel (auf die Jahres-Bezugsspitze)": Staffelgrenze [kW], Preis bis zur Grenze und Preis
+über der Grenze [€/(kW·a)], darunter die Erklärzeile; ein leeres Feld heißt „nicht gepflegt", der Katalog
+führt keine Staffel (Konzept § 2.5).
 
 **Block B · Preisbestandteile — Transparenz, ohne Preiswirkung** (beim Stromträger an derselben
 Stelle „Strompreis Details"). Er ist die Grundlage der Kohärenzprüfung gegen die
@@ -104,11 +107,16 @@ Netzbezug Strom
   Leistungsanteil — Basis ist die gemessene BEZUGSSPITZE, nicht die Anlagenleistung
     Spitze = Maximum der VIERTELSTUNDENreihe des Netzbezugs (dieselbe Reihe, die der
              Speicher kappt) ; das Stundenmittel (StromMatrix.MaxBezugKW) glättet sie
-             und gehört zur Tarifstruktur
+             und bemisst allein die Leistungspreismodelle des Rollentarifs
+    Staffel vor Saisonreihe vor konstantem Satz — genau einer rechnet, nie eine Summe
+    Staffel (gepflegt, sobald ein Preis > 0; nur am Stromträger des Projekts):
+             min(S, G) × P₁ + max(0, S − G) × P₂   S = Jahresspitze, G = max(0, Grenze),
+             P₁, P₂ in €/(kW·a), gleich welcher Modus am Träger steht
     Modus JAHR: Satz × Jahresspitze      Modus MONAT: Σ₁₂ (Monatsspitze × Satz)
-    Saisonreihe vor konstantem Satz: Σ₁₂ (Monatssatz × Monatsspitze)
+    Saisonreihe: Σ₁₂ (Monatssatz × Monatsspitze)
     Satz 0 / nicht gepflegt ⇒ kein Anteil ; keine Zeitreihen ⇒ kein Anteil, Träger wird benannt
-  Tarifmodus: Zonen- oder Rollenbetrag ersetzt den Flat-Anteil GANZ (samt Leistungsanteil)
+  Rollentarif: der Reststrombetrag ersetzt den Flat-Anteil GANZ (samt Leistungsanteil und Staffel) ;
+               einen Zeitzonentarif (HT/NT) gibt es nicht, die Strommatrix führt keine Tarifzonen
   Kein Aufschlag: Die Preisanteile („Strompreis Details") ZERLEGEN den Arbeitspreis,
                   sie kommen nicht auf ihn — es gibt genau eine Preiswahrheit, und das
                   ist der Arbeitspreis der Trägerkarte
@@ -165,6 +173,7 @@ sein — die Kohärenzprüfung (`05`) soll das anzeigen.
 | ✔ R5 | CO₂ doppelt: Preisbestandteil und BEHG-Reihe | **umgesetzt #405**: `KohaerenzPruefung.Co2DoppelansatzBehg` meldet den Fall als **WARNUNG mit dem doppelt gebuchten Jahresbetrag** (`KohaerenzCo2Tests`, 11 Fälle). Der Rechenweg bleibt, wie er ist — die Zeile ist Ausweis, nicht Korrektur (Entscheid Q3, Weg a) |
 | ✔ R6 | Die Kohärenzzeilen erreichten nur die Seite; der Strommix-Rückfall war ein Laufhinweis ohne seinen Wert | **umgesetzt #405**: Die Zeilen stehen im **einen** Zeilenkatalog (`WirtschaftlichkeitZeilen`) und damit in Rubrik, Wort- und Excelbericht; der Rückfall nennt seine 435 g CO₂/kWh |
 | ✔ R11 | Hi/Ho am CO₂-Grenzwert: Der Katalog führt Erdgas heiz- **und** brennwertbezogen (200,9 / 181,4 g/kWh), gelesen wurde der Schlüssel der Anlage; ist der Grenzwert 270 g/kWh des § 2 StromStG brennwertbezogen, zählt ein heizwertbezogener Zähler rund 10 % zu hoch | **umgesetzt #437** (E7 Teil a; Entscheid 22.09.2026, Anwender: „es gilt immer der Brennwert"): `SteuerGutschriftRechner.Co2JeEnergieertrag` nimmt zu Erdgas den Katalogwert 181,4 g/kWh (H_s), zu den übrigen Trägern den heizwertbezogenen Wert × H_i/H_s des Trägers, ohne gepflegten Brennwert den Hi-Faktor mit Begründung; die Herleitung nennt den Wert je Anlage. Die Pinnung in `KleinkorrekturenE2Tests` steht auf dem Brennwert (Grenzfall 0,00 → 8.200,00 €/a); das Beispiel in `05` liegt bei 218,6 statt 242,1 g/kWh. Bilanz und BEHG bleiben heizwertbezogen |
+| ✔ Q11 | Der Zeitzonentarif (Winter/Sommer × HT/NT) bepreiste den Netzbezug an vier Tarifzonen der Strommatrix; die zweistufige Leistungspreis-Staffel stand im Tarifsatz, rechnete nur dort und war allein über die Sicht „Strombezug" pflegbar | **umgesetzt #439** (E7 Teil b; Anwender 22.09.2026 „kein HT/NT", der Rest nach Empfehlung; die Fragen E7b‑Q1 bis E7b‑Q4 entschieden 23.09.2026): Die Strommatrix führt keine Tarifzonen (je Projekt eine Jahreszeile), den Netzbezug bepreist der Stromträger; die Staffel steht beim Stromträger, geht Leistungspreis und Saisonreihe vor (keine Addition) und bemisst sich an der Viertelstundenspitze — Probe 1030 mit 1.500 kW / 60 / 90 €/(kW·a) bei 2.011 kW: 1.500 × 60 + 511 × 90 = 135.990 €/a; Schemaschritt 104 übernimmt die Staffel der Zonensätze, löscht die Sätze und verwirft ihre gespeicherten Läufe. Das Beispiel dieses Papiers bleibt, wie es ist (kein Leistungspreis, kein Tarif) |
 | D-1 / E-1 | Emissionsspalte: eine Größe, Tooltip benennt Äquivalent/Vorkette | entschieden 30.08.2026 |
 | § 3.11 | Nachweis- und Bilanzsatz strikt trennen; Stichtag 01.01.2027 (GModG) mit Methodenwechsel für KWK | Katalog mit Gültig-ab-Datum, beide Sätze parallel |
 | § 3.11 | CO₂-Preispfad ab 2028 ist Prognose | editierbare Stützstellenreihe mit Status GESICHERT / VORLÄUFIG / PROGNOSE |

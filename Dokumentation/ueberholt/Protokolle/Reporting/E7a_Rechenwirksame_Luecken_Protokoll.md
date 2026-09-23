@@ -238,3 +238,6 @@ ohne Anlage" um die PV-Eigennutzung höher. (5) Englisch.
   Nr. 29/30/32, § 7, Anhang), Protokoll der Entscheidwege (§ 8.3, § 8.4), Analysepapier (Kopf, § 5, § 6), Rechenwege
   04, 05 und 07, Mockup (Schlüsseltafeln der Kategorien 5 und 7, CO₂-Beispiel 218,6 g/kWh, U6, Schrittnummer in U1
   und U32), Logbuch-Sätze und Wiki-Quelle der Seite Wirtschaftlichkeit.
+
+**Nachsatz:** Schritt 101 wurde am 23.09.2026 zu 102 umnummeriert (#438); die hier für K‑1 genannte 103 ist damit
+105 (#439).

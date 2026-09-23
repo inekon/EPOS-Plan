@@ -497,6 +497,10 @@ namespace WindowsFormsApplication1
             // Module.
             ErzeugerOhneKaskadenplatzMelden();
 
+            // Bedarf in einem Kanal, den keine Senke bedient, deckt keine Stufe - er
+            // steht still im Restbedarf. Ergebnisneutral: nur Protokoll.
+            BedarfskanalOhneVersorgerMelden();
+
             Stundentemperatur = simulation_Waermebedarf.Stundentemperatur;
             RestwaermeMwh = 0;
             ReststromMwh = simulation_Strombedarf.StrombedarfGesamtMwh; //MWh
@@ -3638,6 +3642,35 @@ namespace WindowsFormsApplication1
 
                 Protokoll.WarnungEinmal(
                     "erzeuger-ohne-platz-" + b.ID_Anlage,
+                    Zeilenumbruch.Einzeilig(b.Text));
+            }
+        }
+
+        /// <summary>
+        /// BEDARFSKANAL OHNE VERSORGER — meldet jeden Kanal mit Bedarf, für den keine
+        /// Anlage des Projekts eine Senke trägt (ausdrücklich oder per Vorbelegung
+        /// Heizkreis/Beides). Sein Bedarf geht in den Restbedarf, und keine Stufe deckt
+        /// ihn — bis hierher still: Ein Kollektorfeld auf Heizkreis/Beides fand in einem
+        /// reinen Prozesswärmeprojekt nie Bedarf, und sein ganzer Ertrag stand als
+        /// Überschuss da.
+        ///
+        /// <para><b>Ergebnisneutral.</b> Gelesen wird der schon gerechnete Kanalbedarf
+        /// (<see cref="SimulationRunner.BedarfJeKanal"/>) und die Senkenkonfiguration;
+        /// geschrieben wird allein das Protokoll. Die Vorbelegung bleibt, wie sie ist.</para>
+        /// </summary>
+        private void BedarfskanalOhneVersorgerMelden()
+        {
+            if (simulation_Waermebedarf == null) return;
+
+            List<Warnbefund> befunde = Warnkriterien.KanaeleOhneVersorger(
+                m_ID_Projekt, SimulationRunner.BedarfJeKanal(simulation_Waermebedarf));
+
+            foreach (Warnbefund b in befunde)
+            {
+                if (b == null || string.IsNullOrEmpty(b.Text)) continue;
+
+                Protokoll.WarnungEinmal(
+                    "kanal-ohne-versorger-" + b.Text,
                     Zeilenumbruch.Einzeilig(b.Text));
             }
         }

@@ -1852,6 +1852,9 @@ Without a source buffer this reads 0.00.</value>
   <data name="SIM_SCHEMA_TIP_ABNEHMER" xml:space="preserve">
     <value>Heat consumer — supplied directly by a generator or from a buffer storage tank.</value>
   </data>
+  <data name="SIM_SCHEMA_WARNUNG_OHNE_VERSORGER" xml:space="preserve">
+    <value>No supplier</value>
+  </data>
   <data name="SIM_SCHEMA_WARNUNG" xml:space="preserve">
     <value>Flow below the buffer set point</value>
   </data>
@@ -2580,7 +2583,7 @@ the curve then has to be supplemented with lower data points.</value>
     <value>Heating circuit</value>
   </data>
   <data name="SIM_HEIZKREIS_BEIDES" xml:space="preserve">
-    <value>Heating circuit (both)</value>
+    <value>Heating circuit (heating + hot water)</value>
   </data>
   <data name="SIM_HEIZKREIS_NUR_HEIZWAERME" xml:space="preserve">
     <value>Heating circuit (space heating only)</value>
@@ -5972,7 +5975,7 @@ Depending on the project size this takes several minutes. Continue?</value>
     <value>Table {0} could not be read — its data is missing from the copy.</value>
   </data>
   <data name="BK_KOMP_HINW_SENKEN" xml:space="preserve">
-    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (both).</value>
+    <value>The heat sinks of unit "{0}" could not be created — the unit uses the default heating circuit (heating + hot water).</value>
   </data>
   <data name="BK_KOMP_HINW_VARIANTE" xml:space="preserve">
     <value>The operating parameters of storage variant "{0}" could not be created.</value>
@@ -9329,6 +9332,18 @@ They typically stem from a variant copy without this trade and keep entering the
   <data name="SIMWARN_W3_VORLAUF_ZU_NIEDRIG" xml:space="preserve">
     <value>Unit "{0}": the generator flow temperature of {1} °C is below the effective flow temperature of {2} °C of target storage "{3}". The generator can never charge the storage to its set temperature.</value>
   </data>
+  <data name="SIMWARN_SOLAR_DIREKT_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solar thermal without a buffer tank covers process heat only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for process heat.</value>
+  </data>
+  <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
+    <value>{0}: Solar thermal without a buffer tank covers the heating circuit only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for heating.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
+    <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
+  </data>
+  <data name="SIMWARN_KANAL_OHNE_VERSORGER_OHNE_MENGE" xml:space="preserve">
+    <value>Channel {0} has demand but no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
+  </data>
   <data name="SIMWARN_W5_QUELLE_OHNE_LADER" xml:space="preserve">
     <value>Unit "{0}": storage "{1}" is its heat source but is not charged by any unit of this project. After the initial fill the source would run empty.</value>
   </data>
@@ -9549,7 +9564,7 @@ Effective only with a STRATIFIED target storage (layers &gt; 1): from the inlet 
     <value>Heat sink: Plant {0} carries target {2} at rank {1}, but has NO buffer storage assigned there (Z_AnlageSenke.ID_Puffer empty). The row therefore supplies the HEATING CIRCUIT.</value>
   </data>
   <data name="SIMENG_SENKENLISTE_LEER" xml:space="preserve">
-    <value>Heat sink: For plant {0} there is not a single row in Z_AnlageSenke. The run uses the default {1}/{2}.</value>
+    <value>{0}: no heat sink assigned – the run uses {1}.</value>
   </data>
   <data name="PSP_SPEICHERTYP_ANZEIGE_SOLAR" xml:space="preserve">
     <value>Solar storage</value>
@@ -13549,7 +13564,7 @@ Please check all entries!</value>
     <value>Maximum gas consumption:</value>
   </data>
   <data name="SIMERG_LBL_GESAMTLEISTUNG_MODULE" xml:space="preserve">
-    <value>Total heat output of the modules:</value>
+    <value>Heat production of the modules:</value>
   </data>
   <data name="SIMERG_LBL_UEBERSCHUSS" xml:space="preserve">
     <value>Surplus:</value>
@@ -19165,6 +19180,12 @@ Do you want to allow this?</value>
   </data>
   <data name="SIMERG_ZUSTAND_ANLASS_FLOTTE" xml:space="preserve">
     <value>the storage fleet was recalculated</value>
+  </data>
+  <data name="SIMERG_ZUSTAND_ANLASS_PROJEKT" xml:space="preserve">
+    <value>demand, heat sinks or units were changed after the run</value>
+  </data>
+  <data name="SIMERG_ST_HINWEIS_OHNE_ABNEHMER" xml:space="preserve">
+    <value>Yield {0} MWh/a without a consumer: the heat sink "{1}" does not serve the channel {2} where the demand lies.</value>
   </data>
   <data name="SIMERG_ZUSTAND_ANLASS_AUSLEGUNG" xml:space="preserve">
     <value>something was changed in the battery sizing view</value>
