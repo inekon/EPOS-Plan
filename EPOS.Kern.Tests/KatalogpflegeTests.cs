@@ -304,22 +304,31 @@ namespace EPOS.Kern.Tests
         // ==================================================================
 
         /// <summary>
-        /// <b>226 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand.
-        /// Die Dublettenpruefung der Maske laedt diese Zeilen heute bei JEDEM Speichern
-        /// vollstaendig neu (Befund W14c-B12).
+        /// <b>227 Zeilen in <c>Tab_Gesetzesparameter</c></b> — der Auslieferungsstand
+        /// (226 Zeilen der Vorbelegung und die Generationsmarke). Die Dublettenpruefung der
+        /// Maske laedt diese Zeilen heute bei JEDEM Speichern vollstaendig neu (Befund
+        /// W14c-B12).
         ///
         /// <para>Bis Auftrag US-1 waren es 222: Die Testdatenbank stand auf der
         /// Katalog-Generation 6, weil <c>GesetzKatalog.StelleKatalogSicher</c> sie nie
         /// erreicht hat. Seit das Werkzeug <c>Testdatenbankschema</c> die Nachsaat mit
-        /// zieht, steht sie auf Generation 7 — vier Zeilen mehr
-        /// (<c>STROMST_REDUZIERT_SATZ</c> und die drei UMLAGEN).</para>
+        /// zieht, steht sie auf der Zielgeneration — mit Generation 7 vier Zeilen mehr
+        /// (<c>STROMST_REDUZIERT_SATZ</c> und die drei UMLAGEN), mit Generation 8 (ETAPPE
+        /// E7c, A20) eine weitere: <c>KWKG_INBETRIEBNAHME_FRISTENDE</c>.</para>
+        ///
+        /// <para><b>Gezählt wird nach der Nachsaat</b> — dem Stand, den die Maske nach dem
+        /// Programmstart zeigt. Sie ist wiederholbar; so zählt der Fall auf einer Kopie, die
+        /// noch auf einer älteren Generation steht, dasselbe wie auf einer nachgezogenen,
+        /// und er hängt nicht davon ab, ob ein anderer Fall dieser Klasse die gemeinsame
+        /// Arbeitskopie schon nachgesät hat.</para>
         /// </summary>
         [Fact]
-        public void DerGesetzeskatalogFuehrt226Zeilen()
+        public void DerGesetzeskatalogFuehrt227Zeilen()
         {
             if (!_db.Vorhanden) return;
+            GesetzKatalog.StelleKatalogSicher();
             object v = DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Gesetzesparameter");
-            Assert.Equal(226, Convert.ToInt32(v, CultureInfo.InvariantCulture));
+            Assert.Equal(227, Convert.ToInt32(v, CultureInfo.InvariantCulture));
         }
 
         /// <summary>
@@ -544,6 +553,10 @@ namespace EPOS.Kern.Tests
             {
                 if (!eigene.Vorhanden) return;
 
+                // Erst die Nachsaat (wiederholbar): Steht die Kopie noch auf einer älteren
+                // Katalog-Generation, zöge der erste Schreibweg sie sonst MITTEN im Fall nach
+                // und zählte die nachgesäte Zeile als angelegte mit (ETAPPE E7c, Generation 8).
+                GesetzKatalog.StelleKatalogSicher();
                 int vorher = new GesetzKatalog().AlleDerKlasse(DbWerte.GESETZ_KLASSE_KWKG).Count;
 
                 int id = GesetzKatalog.Anlegen("W14C_PROBE", DbWerte.GESETZ_KLASSE_KWKG, 2026, 1.25,
