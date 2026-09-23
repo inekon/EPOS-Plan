@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N9 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N10 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -266,10 +266,10 @@ Die Auslegung hat eine eigene Fassade, damit sie strukturell keinen Weg zur Bila
 ```csharp
 internal static class ZapfprofilAuslegung
 {
-    // bekommt Katalog, Zonen, Bedarfstag und Wochenreihe — ausdrücklich keine Bilanzreihe
+    // bekommt Eingang und Katalog; Bedarfstag und Wochenreihe bildet sie je Topologiegruppe selbst
+    // — ausdrücklich keine Bilanzreihe (N10); das Ensemble kommt mit Z3
     internal static Auslegungsergebnis Rechnen(Zapfprofileingang e,
-        IReadOnlyList<Nutzungsart> katalog, Bedarfstag tag, Wochenreihe woche,
-        Auslegungseingang a, Zapfensemble? ensemble);
+        IReadOnlyList<Nutzungsart> katalog, Auslegungseingang a);
 }
 ```
 
@@ -648,7 +648,7 @@ Speicherverluste bleiben beim Speicher. Kulturpinnung in jeder Testklasse (Muste
 | `θ_Zapf` | Nutzungstemperatur an der Zapfstelle; bestimmt die Nutzenergie aus Volumen | Zone (Experte), Vorgabe `θ_Bezug` |
 | `θ̄_KW`, `A`, `m_max` | Kaltwasser-Jahresgang **nur der Bilanz** (K4) | Katalogkonvention, Zone (Experte) |
 | `θ_KW,Auslegung` | feste Kaltwassertemperatur **der Auslegung**, unabhängig von K4 | Parameter `A100.Kaltwasser.Auslegung`, Projekt (Experte) |
-| `θ_Speicher` | Speicher-Solltemperatur; `Δθ_Speicher = θ_Speicher − θ_KW,Auslegung` für alle Speichervolumina | Projekt, Vorgabe Parameter `W551.Mindesttemperatur` bei Großanlage |
+| `θ_Speicher` | Speicher-Solltemperatur; `Δθ_Speicher = θ_Speicher − θ_KW,Auslegung` für alle Speichervolumina — eine Temperatur je Topologiegruppe für alle Verfahren (N10) | Projekt, Vorgabe Parameter `W551.Mindesttemperatur` bei Großanlage, im Schnellpfad `A100.Vereinfachung.Speichertemperatur`, sonst `Speicherauslegung.Speichertemperatur_Vorgabe` (N10) |
 | `θ_Anzeige` | Temperatur der Literanzeige in Kennzahlen | Einstellung, INEKON-Setzung |
 
 ### 4.1 S1 — Mengengerüst
@@ -844,7 +844,7 @@ Attribution im Testordner).
 **Topologie.** Die Auslegung rechnet je **Topologiegruppe** (Zonen gleicher Topologie). Bei
 **Speicher** ist die Auslegungsgröße der Punkt der Summenlinie (V, Φ_N); bei **Durchfluss,
 Frischwasser- und Wohnungsstation** ist sie die Minutenspitze der superponierten Last [kW] (bei der
-Wohnungsstation je Einheit und für die Summe). Das Ergebnis trägt die Topologie. DIN 4708 und das
+Wohnungsstation je Einheit und für die Summe; je Einheit mit Z3, N10). Das Ergebnis trägt die Topologie. DIN 4708 und das
 GLF-Verfahren der Vorlage sind nur bei Speicher gültig, sonst Gültigkeitshinweis.
 
 **Bedarfstag (`Bedarfstag.cs`).** 1440 Minutenwerte in kWh, aus Mengengerüst und Formvektor, nie aus
@@ -853,7 +853,7 @@ Kaltwasser des Kalendertags. Quellen: (1) Stundenprofil der Zonen am Tag des gr�
 gleichmäßig auf Minuten expandiert — **nur mit Warnbanner „Spitzen unterschätzt"** (VDI-6002-Warnung
 zu Einzeltagesspitzen) und **nie als Empfehlung ohne Rückfrage**; (2) A100-Referenzprofil aus dem
 Katalog, erst nach K1/K8; (3) DIN-4708-Profil, nur Wohnen, ebenfalls ein Normdatensatz und damit
-K1/K8-pflichtig; (4) manuell konstruiert nach dem Verfahren der A100 (Konstruktor, Z2, Ablage als
+K1/K8-pflichtig (aus W_z(N) und den Zapfblöcken des Parametersatzes, N10); (4) manuell konstruiert nach dem Verfahren der A100 (Konstruktor, Z2, Ablage als
 Katalogeintrag Status EIGEN); (5) Ecodesign-Zapfprofil, nur Einfamilienhaus, zur Plausibilisierung.
 **Vorgaberegel:** Wohnen → (3), sobald nach K1/K8 zulässig, sonst (4); Nichtwohnen → (4); ohne
 konstruierten Tag öffnet die Auslegung den Konstruktor statt still (1) zu nehmen.
@@ -862,8 +862,8 @@ konstruierten Tag öffnet die Auslegung den Konstruktor statt still (1) zu nehme
 (Formeln nach Grundlagen 3, Koeffizienten als Parameter):
 
 ```
-Φ_Ü     = U·A · Δθ_Ü / 1000; U·A aus Uebertrager_UA_W_K, sonst U (Parameter) · A_HE,
-          A_HE eingegeben oder aus der Schätzformel des Verfahrens (Plausibilitätswächter)  [kW]
+Φ_Ü     = U·A · Δθ_Ü / 1000; U·A aus Uebertrager_UA_W_K, sonst U (Parameter je Werkstoff) · A_HE,
+          A_HE eingegeben oder aus der Schätzformel je Erzeugerart NA.1/NA.2 (Plausibilitätswächter, N10) [kW]
 Φ_N     = min(Φ_Erzeuger, Φ_Ü)                                                           [kW]
 Q_sto,max = V · c_w · Δθ_Speicher · f_l / 1000       f_l Ladungsfaktor (Parameter)       [kWh]
 Q_sto,on  = Q_sto,max · (1 − h_sensor/h_sto)         Einschaltpunkt
@@ -876,8 +876,10 @@ Minute i = 0..1439, Δt = 1/60 h:
   Φ_eff(i) = Φ_N − Φ_V(i)   wenn ein und (i − t_on) ≥ t_lag;   sonst −Φ_V(i)   (darf negativ sein)
   Q_sto(i+1) = min(Q_sto,max, Q_sto(i) − q_min(i) + Φ_eff(i) · Δt)                    (NA.3)
 Nachweis(V, Φ_N):  Q_sto(i) − q_min(i) ≥ Q_sto,min für alle i
-τ = m · c_w / (U·A) · k_τ   nur informativ (Anzeige, Dimensionsprobe); k_τ Parameter
-Wertepaarkurve:    für Φ_N auf einem Raster das kleinste V mit Nachweis
+τ = m · c_w / (U·A) · k_τ   nur informativ (Anzeige, Dimensionsprobe); k_τ Parameter der A1,
+          c_w in kJ/(kg·K): mit c_w in Wh/(l·K) τ = V · c_w · 3,6 / (U·A) · k_τ (N10)
+Wertepaarkurve:    für Φ_Erzeuger auf einem Raster bis zur Erzeugerleistung das kleinste V mit
+                   Φ_N = min(Φ_Erzeuger, Φ_Ü(V)) — jedes Paar baubar (N10)
 Ladezeit je Tag:   Σ t_power,on = Minuten mit Erzeuger ein / 60   [h/d]
 ```
 
@@ -914,7 +916,7 @@ V_DIN = W_z · 1000 / (c_w · Δθ_Speicher) / f_nutz           [l]   (ohne Zusc
 `a_i`, `z`, `p_b`, `w_b`, `W_b` und die Kappung sind Parameter aus `Tab_TwwParameter_STAMM`, nie
 Konstanten der Klasse. Dazu der Hinweis, dass die Kennzahl für Vorlauftemperaturen einer Wärmepumpe
 kaum aussagefähig ist, und nachrichtlich der Rohrnetz-Spitzendurchfluss nach dem Verfahren der
-DIN 1988-300 (Parameter gekapselt).
+DIN 1988-300 (Parameter gekapselt; offen, N10).
 
 **Die Empfehlung.** Die drei Werte stehen nebeneinander, nie zu einer Zahl gemischt. **Empfohlen wird
 genau ein Punkt je Topologiegruppe:** bei Speicher der gewählte Punkt der Summenlinie, dazu der
@@ -985,7 +987,7 @@ Ergebnis des Verfahrensvergleichs (nachrichtlich):
                           Raster der Vorlage (INEKON-Setzung aus V4, Parameter), Hinweis
                           „Mehrspeicheranlage prüfen"; Kriterium: Speicher mit N_L ≥ N (kein Produktwert)
 Füllstand:                C_sp = V · f_nutz · c_w · Δθ_Speicher / 1000;  SOC(t) = max(0, C_sp − D(t));
-                          Reserve = min SOC / C_sp
+                          Reserve = min SOC / C_sp;  V = Nenninhalt des empfohlenen Punkts (N10)
 Plausibilität Ladung:     P_lade · t_F ≥ Q_d,Zapfung + P_zirk · t_Lauf, sonst Mindestleistung nennen
 ```
 
@@ -995,8 +997,8 @@ ihr abgeleitet; die Formel ist gegen die Vorlage (Blatt „Berechnung") nachgeme
 steigt mit N monoton, strebt aber gegen eine Schranke — für große N hängt es kaum noch von der
 Gebäudegröße ab. Die übliche Form `W_z(N) / (N · W_z(1))` ergäbe `V_GLF = V_DIN · P / (N · p_b)` und
 damit kein eigenes Verfahren. Folge: Das GLF-Verfahren ist nur Teil des Plausibilitätsbands, gilt
-bis zu einer Obergrenze N_GLF (INEKON-Setzung, Parameter, in Z2 an Vorlage und Summenlinie
-festzulegen) und trägt darüber einen Gültigkeitshinweis; ohne Wannen ist es eingeschränkt.
+bis zu einer Obergrenze N_GLF (INEKON-Setzung, Parameter `Speicherauslegung.GLF_Gueltigkeitsgrenze`, an
+Vorlage und Summenlinie festzulegen, N10) und trägt darüber einen Gültigkeitshinweis; ohne Wannen ist es eingeschränkt.
 
 **Großanlage (`Grossanlage.cs`).** Erkennung aus Speichervolumen (`Nachweis_Volumen_l`, sonst gewählter
 Auslegungspunkt) und Leitungsinhalt (`Leitungsinhalt_l`, sonst `Zirk_Laenge_m` × Parameter Inhalt je
@@ -1323,7 +1325,9 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 **Umsetzungsstand und Abweichungen:** Z0 umgesetzt, N2 bis N4 (Kapitel 11); T1 ist Schritt 103
 (N4). Z1 umgesetzt und nach `ios_migration_september` zusammengeführt (Push `4971556a`, Gate auf
 dem Merge-Stand grün), Abweichungen und Festlegungen in N7 bis N9; die Sichtabnahme unter Windows
-steht aus. Stand je Stufe in der Statusdatei (#438, #443).
+steht aus. Z2 Gruppe 1 (Rechenweg der Auslegung) ist auf dem Zweig `z2` umgesetzt, gegengeprüft und
+nachgebessert; Abweichungen und Festlegungen in N10, der Nachzug der Testdatenbank steht mit dem Merge
+aus. Stand je Stufe in der Statusdatei (#438, #443).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:
@@ -1948,6 +1952,103 @@ oder es genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis 
 | (g) | Hinweis ZU5 in die Warnliste übernehmen | Agent der Stufe Z4 | Z4 |
 | (h) | `θ_Anzeige` und Schwelle der Stundenzählung in den Eingang; Zeilen der Stochastik „nach dem Lauf" | Agenten der Stufen Z3 und Z4 | Z3, Z4 |
 | (k) | Zonenliste auf `Raster`, sobald der Baustein einen Tabellenfuß führt (mit Rasterprobe) | Oberfläche | offen |
+
+### N10 (23.09.2026) — Umsetzungsbefunde Z2, Gruppe 1 (Rechenweg der Auslegung)
+
+**Anlass.** Bedarfstag, Wochenreihe, Summenlinie, DIN-4708-Kennzahl, Speicherauslegung nach V4,
+Großanlage, Auslegungsergebnis mit Fassade und der unabhängige Referenzfall sind auf dem Zweig `z2`
+umgesetzt und gegengeprüft; die Befunde der Gegenprüfung sind nachgebessert. Wo ein Befund dem Papier
+widersprach, gilt das Papier. Dieser Nachtrag hält fest, wo die Umsetzung vom Papier abweicht oder es
+genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis „(N10)" berichtigt (2.1, 4.0,
+4.5, 4.7). Er enthält **keinen Entscheid** des Anwenders.
+
+**Befunde und Festlegungen:**
+
+- **(a) Fassade (2.1).** `ZapfprofilAuslegung.Rechnen(eingang, katalog, auslegungseingang)` bildet
+  Wochenreihe und Bedarfstag je Topologiegruppe selbst; die Signatur in 2.1 mit `Bedarfstag`,
+  `Wochenreihe` und `Zapfensemble` entfällt, das Ensemble kommt mit Z3. `Auslegungseingang` trägt
+  DIN-4708-Katalog, Bedarfstage, Nenninhalte und die Laufangaben (i). Die Gruppe nennt ihre
+  Speichertemperatur (`Speichertemperatur`) und das Laufzeitfenster der Zirkulation
+  (`ZirkulationLaufzeit`).
+- **(b) DIN-4708-Profil (4.5).** Der Bedarfstag der Quelle (3) entsteht aus W_z(N) der Kennzahl und den
+  Zapfblöcken des Parametersatzes (`DIN4708.Profil.Bloecke`, `DIN4708.Profil.Block.{k}.Beginn|Dauer|Anteil`),
+  nicht aus einer Katalogzeile der Art 3. Festlegung: Eine Katalogzeile der Art 3 würde über ihre
+  Bezugsmenge linear skaliert, W_z(N) wächst aber nichtlinear in N; eine gespeicherte Zeile der Art 3
+  rechnet deshalb nur als gewählter Katalogtag, die Vorgaberegel nimmt das Profil aus W_z(N).
+- **(c) DIN 1988-300 nachrichtlich (4.5 c) — offen.** Der Rohrnetz-Spitzendurchfluss braucht die Summe
+  der Entnahmearmaturen ΣV̇_A; das Datenmodell trägt sie nicht. Der Wert entfällt bis dahin (Folgen).
+- **(d) Wohnungsstation (4.5).** Die Spitze je Einheit folgt mit dem Ensemble (Z3); Z2 weist die Summe
+  mit dem Hinweis `WOHNUNGSSTATION_JE_EINHEIT` aus.
+- **(e) Speichertemperatur (4.0) — berichtigt.** Die Umsetzung setzte θ_Speicher immer auf die
+  Mindesttemperatur nach DVGW W 551, das Papier nur bei Großanlage. Jetzt wählt die Fassade EINE
+  Temperatur je Gruppe (`Speichertemperaturwahl`): Projektwert, sonst bei Großanlage
+  `W551.Mindesttemperatur`, sonst im Schnellpfad `A100.Vereinfachung.Speichertemperatur`, sonst der neue
+  Parameter `Speicherauslegung.Speichertemperatur_Vorgabe` (INEKON-Setzung; im Testkatalog fiktiv).
+  Summenlinie, V_DIN, Verfahrensvergleich, Band und Reihenfolge rechnen mit ihr — der Schnellpfad nahm
+  seine Temperatur zuvor nur für die Summenlinie. Festlegungen: Die Großanlage geht dem Schnellpfad vor
+  (dessen Setzung hält die Mindesttemperatur nicht zugesichert ein); erkennt erst das empfohlene Volumen
+  die Großanlage, rechnet die Gruppe einmal neu mit der Mindesttemperatur (Hinweis
+  `SPEICHERTEMPERATUR_GROSSANLAGE`), die Einstufung gilt dann am neuen Volumen; die Warnung „unter der
+  Mindesttemperatur" entfällt bei erkannter Kleinanlage.
+- **(f) Großanlage (4.7).** Erkannt wird am empfohlenen Volumen als Nenninhalt, sonst am Punkt der
+  Summenlinie (`NenninhaltL ?? V`), vor dem Projektvolumen nur, wenn das Projekt keines nennt; vorab aus
+  Projektvolumen und Leitungsinhalt. Ein ungültiger Leitungsinhalt ist ein benannter Hinweis.
+- **(g) N_GLF (4.7).** Die Gültigkeitsgrenze des GLF-Verfahrens ist der Parameter
+  `Speicherauslegung.GLF_Gueltigkeitsgrenze` (im Testkatalog fiktiv), kein fester Wert; die Festlegung an
+  Vorlage und Summenlinie steht aus (Folgen). Das Verfahren trägt stets den Gültigkeitshinweis „ohne
+  Wannen eingeschränkt" (`GUELTIGKEIT_GLF_WANNEN`).
+- **(h) Zeitkonstante (4.5 a).** A1 setzt c_w in kJ/(kg·K) an; mit m = V (1 kg/l) und c_w in Wh/(l·K)
+  gilt `τ = V · c_w · 3,6 / (U·A) · k_τ`. Der Schlüssel `A100.Zeitkonstante.Koeffizient` ist der
+  A1-Koeffizient [min·W/kJ], keine Umrechnung von Wh; ein Koeffizient 60 hatte das verdeckt.
+- **(i) Wertepaarkurve und Übertrager (4.5 a).** Die Kurve rastert die Erzeugerleistung bis zur
+  Erzeugerleistung des Projekts (ohne Erzeuger bis zur Leistung des Auslegungspunkts) und sucht je
+  Stufe mit `Φ_N(V) = min(Φ_Erzeuger, Φ_Ü(V))` — ein festes Φ_N über Φ_Ü(V) war nicht baubar; der
+  letzte Punkt ist der Auslegungspunkt. Die Schätzformel der Übertragerfläche hat je Erzeugerart ein
+  Schlüsselpaar (`A100.Uebertragerflaeche.Kessel.*` nach NA.1, `….Waermepumpe.*` nach NA.2), U je
+  Werkstoff (`A100.Uebertrager.U.Stahl`, `….Edelstahl`). Erzeugerart und Werkstoff sind Laufangaben
+  des `Auslegungseingang`; fehlt die gebrauchte Angabe, lehnt die Summenlinie benannt ab
+  (`UebertragerUnbestimmt`), statt ein Paar zu raten.
+- **(j) Bedarfstag aus dem Katalog (4.5).** Skaliert wird auf die Bezugsmenge der Gruppe nur, wenn alle
+  Zonen dieselbe Bezugsart tragen; Mengen verschiedener Bezugsarten werden nicht summiert (benannte
+  Ablehnung). Festlegung: Ein Katalogtag gilt bei θ_KW,A des Parametersatzes
+  (`A100.Kaltwasser.Auslegung`) und wird auf θ_KW,A des Projekts umgerechnet,
+  `f = (θ_Zapf − θ_KW,A) / (θ_Zapf − θ_KW,A,Katalog)` mit der Zapftemperatur der Zonen; verschiedene
+  Zapftemperaturen machen die Umrechnung mehrdeutig und werden benannt abgelehnt. Die Tabelle trägt
+  weder Bezugsart noch Temperaturen (Folgen).
+- **(k) Nenninhalt und Füllstand (4.7).** Über dem Ende der Nenninhaltsliste gilt „Mehrspeicheranlage
+  prüfen" auch ohne Raster-Parameter (der Nenninhalt bleibt dann offen); der Parameter wird nur gelesen,
+  wenn er gebraucht wird. Der Füllstand bezieht sich auf das empfohlene Volumen (Nenninhalt des
+  Summenlinienpunkts, sonst der Punkt; ohne Punkt der Nenninhalt des Bands), beschriftet in
+  `FuellstandBezug`.
+- **(l) Summenkontrolle und Textformat (4.7).** Die Wochenreihe hält die Summe ihrer 168 Stundenwerte
+  gegen die Summe der Tagesmengen ihres Fensters (relativ 1e-9); eine Abweichung ist die Warnung
+  `SUMMENKONTROLLE`. Zahlen in Rechenweg-Sätzen und Hinweisen stehen in invarianter Kultur wie die
+  Vermerke des Mengengerüsts.
+- **(m) Wachen (2.4, Kapitel 6).** `ZapfprofilTrennungWacheTests` wertet eine Zeile mit `*` nur innerhalb
+  `/* … */` als Kommentar und prüft Zahlenlisten auch als Rückgabe, Eigenschaft und Feld, mit benannten
+  Ausnahmen je Glied (`Summenliniennachweis.InhaltKwh`, `Speicherauslegungsergebnis.DefizitKwh`,
+  `Nenninhaltsliste.WerteL` und `.Aus`). **Übergang:** Die Repo-Testdatenbank trägt den Testkatalog der
+  Stufe Z2 erst nach dem Nachzug beim Merge; bis dahin darf der erste Lauf des Einspielskripts in
+  `TwwKatalogWacheTests` anlegen (datierter Vermerk im Test), der zweite und dritte müssen 0/0 melden —
+  trägt die Repo-Datei jeden Parameterschlüssel, gilt 0/0 von selbst ab dem ersten Lauf. Der
+  Bedarfstagkatalog wird in `KatalogpflegeTests` auf einer Arbeitskopie nach dem Skriptlauf gezählt
+  (heute und nach dem Nachzug drei Sätze).
+- **(n) Referenzfall (Kapitel 7).** Das Skript
+  `EPOS.Kern.Tests/Proben/Zapfprofil/auslegung_referenzfall_bauen.py` rechnet neben drei Summenlinien
+  und der Speicherauslegung einen Fassadenfall (zwei Zonen am Durchfluss: Wochenreihe, f_KW,A, Wahl und
+  Umrechnung des Bedarfstags, Laufzeitfenster); Abweichung 0 auf 1e-9, ein zweiter Lauf schreibt
+  dieselben Bytes.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (m) | Nachzug der Testdatenbank mit dem Einspielskript beim Merge (LFS), danach Wache und Katalogzählung ohne Übergang | Orchestrator | Merge Z2 |
+| (c) | ΣV̇_A der Entnahmearmaturen ins Datenmodell, dann der Rohrnetz-Spitzendurchfluss nach DIN 1988-300 nachrichtlich | Agent der Stufe Z2 | Z2, Gruppe 2 oder Folgeposten mit Schemaschritt |
+| (d) | Spitze je Wohnungsstation aus dem Ensemble | Agent der Stufe Z3 | Z3 |
+| (i) | Erzeugerart und Werkstoff speichern oder aus dem Projekt ableiten (Schemaschritt oder `ZapfprofilCtrl`) | Agent der Stufe Z4 | Z4 |
+| (e), (g), (i) | Auslieferungswerte für `Speicherauslegung.Speichertemperatur_Vorgabe`, `Speicherauslegung.GLF_Gueltigkeitsgrenze` (an Vorlage und Summenlinie festgelegt) und die Übertragerpaare NA.1/NA.2 ins Katalogpaket | Katalogpflege | mit dem Auslieferungskatalog |
+| (j) | Bezugsart am Bedarfstag (Schemaschritt); der Konstruktor legt seinen Tag bei θ_KW,A des Parametersatzes ab | Agent der Stufe Z2 | Z2, Gruppe 2 bzw. Z4 |
 
 ---
 
