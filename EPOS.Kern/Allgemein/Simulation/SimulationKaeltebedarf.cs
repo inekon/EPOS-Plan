@@ -512,4 +512,44 @@ namespace WindowsFormsApplication1
                             "Zugewinn (6.4): misst, was ohne Anlage geschieht."),
         };
     }
+
+    /// <summary>
+    /// <b>Die Kernseite des Kanalexports der Kälte</b> (Stufe KU1; Kühlkonzept 4.7, 9.2; K17) —
+    /// WAS der Ergebnisexport für den Kühlkanal schreibt: die Kanalreihe [kWh je Stunde] als
+    /// <see cref="DATEI"/>, im Format jeder Vektordatei. Muster ist
+    /// <see cref="GebaeudeErgebnisexport"/>: Der Kern legt Dateiname und Bedingung fest,
+    /// <c>Referenzlauf/Ergebnisexport.cs</c> schreibt.
+    ///
+    /// <para><b>Nur wenn erhoben und nicht leer.</b> Die Datei entsteht allein für einen Lauf, der
+    /// Kälte ERHOBEN hat und einen Kältebedarf &gt; 0 führt — „nicht mit Nullen gefüllt" (Muster
+    /// Erdreichblock). Jedes Projekt ohne Kühlung, darunter alle Referenzprojekte, bekommt damit
+    /// weder eine neue Datei noch einen neuen Summenschlüssel, und die Basis bleibt byte-gleich;
+    /// eine unbedingte Datei wäre für jedes eingefrorene Projekt ein FAIL ohne Schalter (4.7).</para>
+    ///
+    /// <para><b>Die Grenze reist mit</b> (K5): <see cref="Grenze"/> ist der Satz, den der Export
+    /// neben die Datei schreibt (Protokoll des Laufs, Kopfzeile des CSV-Exports der Oberfläche) —
+    /// die Vektordatei selbst bleibt „Index;Wert".</para>
+    ///
+    /// <para>Öffentlich, weil der Referenzlauf den Kern ohne <c>InternalsVisibleTo</c> liest.</para>
+    /// </summary>
+    public static class KaelteErgebnisexport
+    {
+        /// <summary>Der Dateiname der Kanalreihe — nach dem Muster der Kanaldateien <c>waermebedarf_&lt;kanal&gt;.csv</c> (K17).</summary>
+        public const string DATEI = "waermebedarf_kuehlung.csv";
+
+        /// <summary>
+        /// Die Kanalreihe unter ihrem Dateinamen — oder gar keine, wenn der Lauf keine Kälte
+        /// erhoben hat oder sein Kältebedarf 0 ist.
+        /// </summary>
+        public static IReadOnlyList<KeyValuePair<string, double[]>> Reihen(SimulationKaeltebedarf kaelte)
+        {
+            var reihen = new List<KeyValuePair<string, double[]>>();
+            if (kaelte != null && kaelte.Gerechnet && kaelte.Kaeltebedarf_Gesamt > 0)
+                reihen.Add(new KeyValuePair<string, double[]>(DATEI, kaelte.Kaeltebedarf));
+            return reihen;
+        }
+
+        /// <summary>Der Satz, der mit jeder exportierten Kältezahl reist (K5): sensible Kälte ohne Entfeuchtung.</summary>
+        public static string Grenze => SimulationKaeltebedarf.GrenzeFeuchte;
+    }
 }

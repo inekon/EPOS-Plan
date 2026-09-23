@@ -117,6 +117,29 @@
             @Spalte(true)
             @Spalte(false)
         </div>
+
+        @* DIE KAELTE IST KEIN DRITTES SPALTENPAAR, sondern ein Block UNTER den beiden
+           Spalten (Stufe KU1; Kuehlkonzept 8.4): Kopf „Kaeltedeckung", Kaeltebedarf,
+           Kaeltespitze und die ungedeckte Kaelte als betonte Restzahl - ohne Kaelteerzeuger
+           der ganze Bedarf, und der Satz darunter sagt es. Die Waermeerzeugertabelle bleibt
+           bei drei Kanaelen (4.3 #32). Nur bei Kaeltebedarf > 0: Ein Projekt ohne Kuehlung
+           sieht das Dashboard unveraendert. Die Grenze der Zahl steht darunter (K5). *@
+        @if (Bedarf?.Kaelte is KaelteDaten kaelte && kaelte.KaeltebedarfMwh > 0)
+        {
+            <section class="epos-simueb-spalte epos-simueb-kaelte">
+                <Gruppenkopf Titel="@Resource.SIMUEB_GRP_KAELTE" />
+                <div class="epos-simueb-kennzahlen">
+                    @Kennzahl(Resource.SIMUEB_LBL_KAELTEBEDARF, Zahl(kaelte.KaeltebedarfMwh, "N2"), MWH, false)
+                    @Kennzahl(Resource.SIMUEB_LBL_KAELTELAST, Zahl(kaelte.KaeltelastMaxKw, "N1"), "kW", false)
+                    @Kennzahl(Resource.SIMUEB_LBL_KAELTE_UNGEDECKT, Zahl(kaelte.KaelterestbedarfMwh, "N2"), MWH, true)
+                </div>
+                @if (kaelte.Deckungshinweis.Length > 0)
+                {
+                    <p class="epos-simerg-hinweis">@kaelte.Deckungshinweis</p>
+                }
+                <p class="epos-simerg-hinweis">@kaelte.GrenzeFeuchte</p>
+            </section>
+        }
     }
     else
     {

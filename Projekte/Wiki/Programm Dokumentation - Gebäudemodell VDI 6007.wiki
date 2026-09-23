@@ -20,6 +20,8 @@ Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Progr
 
 Das Modell rechnet mit den Angaben, die der Gebäudedialog ohnehin führt: Nutzfläche, Raumhöhe, Bauweise (die Speichermasse), die Hülle als Tabelle aus U-Wert und Fläche je Bauteil, die Wärmebrücken, die Fensterflächen nach Nord, Ost, Süd und West, der Gesamtenergiedurchlassgrad der Fenster, die inneren Wärmegewinne und die Raumtemperaturen samt Absenkung, Wochenende und Ferien.
 
+Wie ein Gebäude gekühlt wird – Haken, Kühlsollwert und Kühlleistungsgrenze in der Gruppe ''Kühlung'' –, beschreibt die Seite [[Programm Dokumentation/Kühlung|Kühlung]].
+
 Dazu kommen die '''Modellparameter'''. Ein leeres Feld rechnet mit der Vorgabe, die als grauer Text im Feld steht; gespeichert wird dann kein Wert, sondern „leer".
 
 {| class="wikitable"
@@ -60,6 +62,8 @@ Mit eingeschalteter '''Sommerlüftung''' öffnen die Nutzer an warmen Tagen die 
 
 Die Sommerlüftung senkt Kühlbedarf und Überhitzungsstunden. Auf den Heizbedarf wirkt sie kaum.
 
+Bei einem gekühlten Gebäude (siehe [[Programm Dokumentation/Kühlung|Kühlung]]) liegt die Schwelle nicht bei 23 °C, sondern 3 K unter dem Kühlsollwert: Die Nutzer öffnen die Fenster, bevor gekühlt wird.
+
 == Strahlung auf die Außenbauteile ==
 {{Anker|strahlung}}
 
@@ -77,11 +81,19 @@ Das Modell nimmt die Stundenwerte der Klimaregion des Projekts: Außentemperatur
 
 Der Knopf ''Simulation…'' im Gebäudedialog öffnet den '''Wärmebedarf Gebäude'''. Auf dem Rechenweg VDI 6007 zeigt er neben Wärmebedarf, höchster Wärmelast und Vollbenutzungsstunden:
 
-* '''Kühlbedarf (informativ)''' – die Wärme, die abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet;
-* '''Stunden mit Kühlbedarf''';
 * '''mittlere Raumtemperatur''' in der Nutzungszeit (7 bis 22 Uhr);
-* '''Überhitzungsstunden''' – Stunden der Nutzungszeit mit einer operativen Temperatur über der oberen Raumtemperatur;
 * '''Stunden mit Sommerlüftung'''.
+
+Darunter steht der Abschnitt '''Kältebedarf''' mit denselben Bausteinen wie die Wärmeseite:
+
+* '''Kühlbedarf''' – mit eingeschalteter [[Programm Dokumentation/Kühlung|Kühlung]] der Kältebedarf am Kühlsollwert; ohne sie die Wärme, die abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet;
+* '''max. Kältelast''' und '''Vollbenutzungsstunden''' der Kälte;
+* '''Stunden mit Kühlbedarf''';
+* '''Überhitzungsstunden''' – Stunden der Nutzungszeit mit einer operativen Temperatur über der oberen Raumtemperatur;
+* '''Stunden mit Heizen und Kühlen''' – Stunden, in denen das Modell von Heizen auf Kühlen umschaltet; sie werden gezählt, nicht verrechnet;
+* ein eigenes Bild der '''Kältelast''' und in der Monatsübersicht die Spalte ''Kühlung'' neben ''Heizung''.
+
+Die Zeilen unter dem Abschnitt sagen, wie der Kühlbedarf entsteht, und nennen die Grenze der Zahl: Der Kältebedarf ist sensible Kälte ohne Entfeuchtung; Feuchte und latente Last sind nicht enthalten. Auf dem Rechenweg ''Tagesbilanz'' steht der Abschnitt mit 0 und dem Grund – dieser Weg liefert keine Kühllast.
 
 Die Tabelle '''Vergleich der Rechenwege''' stellt dasselbe Gebäude auf beiden Rechenwegen nebeneinander: Wärmebedarf, Spitzenlast der Stunde, Spitzenlast als höchstes Mittel über 24 Stunden, der Wert, den die Stundenlast in 95 % der Stunden nicht überschreitet, und die Vollbenutzungsstunden, jeweils mit der Abweichung des Stundenmodells in Prozent. Beide Spalten rechnet das Programm beim Öffnen; gespeichert wird dabei nichts.
 
@@ -95,5 +107,6 @@ Die Energiemengen folgen der Einheitenwahl oben im Dialog (MWh oder kWh); Leistu
 * Das Gebäude ist '''eine Zone'''. Räume unterschiedlicher Temperatur werden nicht getrennt gerechnet.
 * Die Hülle steht als U-Wert und Fläche je Bauteil, nicht als Schichtaufbau; die Kennwerte des Modells leitet das Programm daraus nach einem festen Schema ab.
 * Die Verschattung ist ein pauschaler Faktor, keine Geometrie.
-* Der Kühlbedarf ist eine Auskunft über das Gebäude. Er geht in keine Anlagenrechnung ein.
+* Ohne eingeschaltete Kühlung ist der Kühlbedarf eine Auskunft über das Gebäude und geht in keinen Kanal. Mit Kühlung geht er als Kältebedarf in den Kanal ''Kühlung'' und bleibt ungedeckt, weil kein Wärmeerzeuger Kälte deckt (siehe [[Programm Dokumentation/Kühlung|Kühlung]]).
+* Der Kühlbedarf ist sensible Kälte ohne Entfeuchtung.
 * Wie beim Bestandsweg rechnet das Modell das Gebäude des Katalogs und rechnet das Ergebnis auf die Fläche bzw. den Verbrauch des Projekts hoch.

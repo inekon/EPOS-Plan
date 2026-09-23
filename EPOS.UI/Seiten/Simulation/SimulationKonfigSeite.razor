@@ -89,6 +89,27 @@
             </section>
         }
 
+        @* DIE PROJEKTEINSTELLUNG „KUEHLUNG RECHNEN" (Stufe KU1, Kuehlkonzept 8.3; K10, E27).
+           Die EINE Stelle, an der ein Anwender die Kuehlung projektweit an- und abschaltet -
+           bewusst nicht im Gebaeudedialog, weil sie das ganze Projekt betrifft. Sie steht neben
+           dem Waermebedarf, weil sie wie die Netzverluste den BEDARF des Laufs parametriert, und
+           schreibt wie diese sofort. Den Anfangswert eines neuen Projekts setzt die
+           Programmeinstellung; hier ist der Schalter in beide Richtungen frei. Scheitert das
+           Schreiben, kehrt der Schalter zurueck (@key) und die Seite sagt es. *@
+        @if (Parameter?.Laden is not null && Parameter.KuehlbetriebSchreiben is not null)
+        {
+            <section class="epos-simkonfig-bedarf epos-simkonfig-kuehlung" aria-label="@Resource.SIMKONF_GRP_KUEHLUNG">
+                <Gruppenkopf Titel="@Resource.SIMKONF_GRP_KUEHLUNG" />
+                <div class="epos-simkonfig-felder" @key="_kuehlbetriebSchluessel">
+                    <Schalter Bezeichnung="@Resource.SIMKONF_LBL_KUEHLBETRIEB"
+                              Wert="@_parameter.Kuehlbetrieb"
+                              Aktiv="@(!_daten.Gesperrt)"
+                              WertChanged="KuehlbetriebGesetzt" />
+                    <Herleitungszeile Text="@Resource.SIMKONF_HRL_KUEHLBETRIEB" />
+                </div>
+            </section>
+        }
+
         @if (_ansicht == ANSICHT_SCHEMA)
         {
             <Schema Layout="@_schema" Gewaehlt="@_auswahl"
@@ -871,6 +892,28 @@
         _parameter.Netzverluste = wert ?? 0.0;
         Parameter?.NetzverlusteSchreiben?.Invoke(_parameter.Netzverluste,
                                                  _parameter.NetzverlusteEinheit);
+    }
+
+    /// <summary>@key des Kühlschalters — ein Neuaufbau nach gescheitertem Schreiben.</summary>
+    private int _kuehlbetriebSchluessel;
+
+    /// <summary>
+    /// Der Schalter „Kühlung rechnen" (Stufe KU1, Kühlkonzept 8.3) — schreibt sofort über
+    /// die Naht der Hülle. Steht danach nicht der gewünschte Wert, zeigt der Schalter wieder
+    /// den gespeicherten Stand, und die Fußzeile meldet es (kein stilles Zurückspringen).
+    /// </summary>
+    private void KuehlbetriebGesetzt(bool wert)
+    {
+        if (Parameter?.KuehlbetriebSchreiben is null) return;
+
+        if (Parameter.KuehlbetriebSchreiben(wert))
+        {
+            _parameter.Kuehlbetrieb = wert;
+            return;
+        }
+
+        _kuehlbetriebSchluessel++;
+        Melden(Resource.SIMKONF_MSG_KUEHLBETRIEB_FEHLER, WarnStufe.Warnung);
     }
 
     /// <summary>

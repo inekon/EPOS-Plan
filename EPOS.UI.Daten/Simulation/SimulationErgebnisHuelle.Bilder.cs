@@ -103,7 +103,8 @@ namespace WindowsFormsApplication1
         private Zeichenmodell Modell(Bildauftrag a)
         {
             if (a == null) return null;
-            if (!ErgebnisIstGueltig && a.Bild != Bilder.BedarfWaerme && a.Bild != Bilder.BedarfStrom)
+            if (!ErgebnisIstGueltig && a.Bild != Bilder.BedarfWaerme && a.Bild != Bilder.BedarfStrom
+                && a.Bild != Bilder.BedarfKaelte)
                 return null;
 
             try
@@ -112,6 +113,7 @@ namespace WindowsFormsApplication1
                 {
                     case Bilder.BedarfWaerme: return ModellBedarfWaerme(a);
                     case Bilder.BedarfStrom: return ModellBedarfStrom(a);
+                    case Bilder.BedarfKaelte: return ModellBedarfKaelte(a);
                     case Bilder.RingWaerme: return ModellRingWaerme();
                     case Bilder.RingStrom: return ModellRingStrom();
                     case Bilder.WpProduktion: return ModellWpProduktion(a);
@@ -187,6 +189,28 @@ namespace WindowsFormsApplication1
             return ChartRenderer.GanglinieNormiertModell(
                 MyResource.Resource.CHART_TITEL_WAERMELAST_JAHRESGANGLINIE, reihen,
                 MyResource.Resource.CHART_ACHSE_WAERMELAST,
+                a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
+                a.Sortiert);
+        }
+
+        /// <summary>
+        /// Die Kältelast des Projekts (Stufe KU1; Kühlkonzept 4.2, 8.4) — dieselbe Bildform wie
+        /// die Wärmelast, aber ein EIGENES Bild: Im Wärmebild normierte der Kältewert die
+        /// Wärmelinie mit. Ohne erhobene Kälte kein Bild.
+        /// </summary>
+        private Zeichenmodell ModellBedarfKaelte(Bildauftrag a)
+        {
+            SimulationErgebnisCtrl.KaelteErgebnis k = SimulationErgebnisCtrl.Kaelte(_waermebedarf);
+            if (k == null) return null;
+
+            var reihen = new List<ChartRenderer.Reihe>
+            {
+                Reihe(MyResource.Resource.CHART_ACHSE_KAELTELAST, k.KaeltebedarfKwh, Farbrolle.BEDARF)
+            };
+
+            return ChartRenderer.GanglinieNormiertModell(
+                MyResource.Resource.CHART_TITEL_KAELTELAST_JAHRESGANGLINIE, reihen,
+                MyResource.Resource.CHART_ACHSE_KAELTELAST,
                 a.Sortiert ? ChartRenderer.Achse.Jahresstunden : ChartRenderer.Achse.Monate,
                 a.Sortiert);
         }

@@ -13337,7 +13337,7 @@ Alle Eingaben überprüfen!</value>
     <value>95-%-Wert der Stundenlast:</value>
   </data>
   <data name="GEBB_LBL_KUEHLBEDARF" xml:space="preserve">
-    <value>Kühlbedarf (informativ):</value>
+    <value>Kühlbedarf:</value>
   </data>
   <data name="GEBB_LBL_KUEHLSTUNDEN" xml:space="preserve">
     <value>Stunden mit Kühlbedarf:</value>
@@ -24575,6 +24575,144 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ADM_SB_WOCHENPROFIL_TYP" xml:space="preserve">
     <value>Das Wochenprofil gehört zum Typ „{0}“ und gilt für jedes Profil dieses Typs.</value>
+  </data>
+  <data name="SIMKONF_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="SIMKONF_LBL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Kühlung rechnen</value>
+  </data>
+  <data name="SIMKONF_HRL_KUEHLBETRIEB" xml:space="preserve">
+    <value>Gilt für das ganze Projekt. Aus: Der Lauf rechnet keinen Kältebedarf; die Kühleingaben der Gebäude und die Lastgänge im Kanal Kühlung bleiben stehen, wirken aber nicht. Ein: Gekühlt wird jedes Gebäude, bei dem „Gebäude wird gekühlt“ gesetzt ist und das einen Kühlsollwert trägt.</value>
+  </data>
+  <data name="SIMKONF_MSG_KUEHLBETRIEB_FEHLER" xml:space="preserve">
+    <value>Die Projekteinstellung „Kühlung rechnen“ ließ sich nicht speichern.</value>
+  </data>
+  <data name="GEBK_GRP_KUEHLUNG" xml:space="preserve">
+    <value>Kühlung</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLUNG_AKTIV" xml:space="preserve">
+    <value>Gebäude wird gekühlt</value>
+  </data>
+  <data name="GEBK_LBL_KUEHL_SOLLWERT" xml:space="preserve">
+    <value>Kühlsollwert :</value>
+  </data>
+  <data name="GEBK_LBL_KUEHLLEISTUNG_MAX" xml:space="preserve">
+    <value>Kühlleistungsgrenze :</value>
+  </data>
+  <data name="GEBK_VORGABE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Vorgabe: Kühlung aus</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AN" xml:space="preserve">
+    <value>Der Kühlsollwert muss mindestens {0} K über dem höchsten Heizsollwert liegen ({1} °C). Ohne Kühlsollwert bleibt die Kühlung aus, und die Überhitzung wird an der Maximalraumtemperatur ({2} °C) gezählt.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_AUS" xml:space="preserve">
+    <value>Ohne Haken bleibt die Überhitzung informativ: Maximalraumtemperatur {0} °C.</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_PROJEKT" xml:space="preserve">
+    <value>Gerechnet wird die Kühlung nur in Projekten mit der Projekteinstellung „Kühlung rechnen“ (Simulationskonfiguration).</value>
+  </data>
+  <data name="GEBK_ZEILE_KUEHLUNG_BESTANDSWEG" xml:space="preserve">
+    <value>Tagesbilanz (Bestandsweg) liefert keine Kühllast — diese Eingaben gelten, sobald das Gebäude auf VDI 6007 rechnet.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_BEREICH" xml:space="preserve">
+    <value>Der Kühlsollwert muss zwischen {0} und {1} °C liegen.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLSOLLWERT_HEIZUNG" xml:space="preserve">
+    <value>Der Kühlsollwert {0} °C liegt nicht mindestens {2} K über dem höchsten Heizsollwert {1} °C — Heizung und Kühlung arbeiteten gegeneinander.</value>
+  </data>
+  <data name="GEBK_MSG_KUEHLLEISTUNG" xml:space="preserve">
+    <value>Die Kühlleistungsgrenze muss größer als 0 sein.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLUNG_AKTIV_ERL" xml:space="preserve">
+    <value>Wird das Gebäude gekühlt? Wirkt nur mit Kühlsollwert und in einem Projekt mit der Projekteinstellung „Kühlung rechnen“; ohne Haken bleibt die Überhitzung informativ.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHL_SOLLWERT_ERL" xml:space="preserve">
+    <value>Kühlsollwert des Stundenmodells in °C; leer = Kühlung aus. Mindestens 1 K über dem höchsten Heizsollwert, zwischen 15 und 35 °C.</value>
+  </data>
+  <data name="KI_DLG_GEBK_KUEHLLEISTUNG_MAX_ERL" xml:space="preserve">
+    <value>Größte Kühlleistung des Stundenmodells in kW; leer = unbegrenzt.</value>
+  </data>
+  <data name="GEBB_GRP_KAELTE" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="GEBB_LBL_KAELTELAST_MAX" xml:space="preserve">
+    <value>max. Kältelast</value>
+  </data>
+  <data name="GEBB_LBL_HEIZEN_UND_KUEHLEN" xml:space="preserve">
+    <value>Stunden mit Heizen und Kühlen:</value>
+  </data>
+  <data name="GEBB_UNBEGRENZT" xml:space="preserve">
+    <value>unbegrenzt</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_WIRKSAM" xml:space="preserve">
+    <value>Gekühlt auf {0} °C, Kühlleistungsgrenze {1}. Der Kältebedarf geht in den Kanal Kühlung; Wärmeerzeuger decken keine Kälte.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_PROJEKT_AUS" xml:space="preserve">
+    <value>Das Projekt rechnet keine Kälte (Projekteinstellung „Kühlung rechnen“ aus): Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+  </data>
+  <data name="GEBB_HRL_KAELTE_NICHT_GEKUEHLT" xml:space="preserve">
+    <value>Das Gebäude wird nicht gekühlt: Der Kühlbedarf ist informativ — die Wärme, die abgeführt werden müsste, damit die Raumluft {0} °C nicht überschreitet; er geht in keinen Kanal.</value>
+  </data>
+  <data name="CHART_TITEL_KAELTELAST_JAHRESGANGLINIE" xml:space="preserve">
+    <value>Kältelast Jahresganglinie</value>
+  </data>
+  <data name="CHART_ACHSE_KAELTELAST" xml:space="preserve">
+    <value>Kältelast</value>
+  </data>
+  <data name="SIMERG_GRP_KAELTE" xml:space="preserve">
+    <value>Kälte</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_MAX_KAELTELAST" xml:space="preserve">
+    <value>max. Kältelast:</value>
+  </data>
+  <data name="SIMERG_LBL_STUNDEN_KUEHLBEDARF" xml:space="preserve">
+    <value>Stunden mit Kühlbedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_VOLLBENUTZUNG_KAELTE" xml:space="preserve">
+    <value>Vollbenutzungsstunden Kälte:</value>
+  </data>
+  <data name="SIMERG_LBL_GESAMT_KAELTEBEDARF" xml:space="preserve">
+    <value>Gesamter Kältebedarf:</value>
+  </data>
+  <data name="SIMERG_LBL_KAELTE_JE_KANAL" xml:space="preserve">
+    <value>Kältebedarf je Bedarfsart</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kein Kälteerzeuger im Projekt: Wärmeerzeuger decken keine Kälte — der Kältebedarf bleibt ungedeckt.</value>
+  </data>
+  <data name="SIMERG_HRL_KAELTE_LEER" xml:space="preserve">
+    <value>Kein Gebäude wird gekühlt und kein Lastgang trägt den Kanal Kühlung — der Kältebedarf ist 0.</value>
+  </data>
+  <data name="SIMUEB_GRP_KAELTE" xml:space="preserve">
+    <value>Kältedeckung</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTEBEDARF" xml:space="preserve">
+    <value>Kältebedarf</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTELAST" xml:space="preserve">
+    <value>Kältelast max.</value>
+  </data>
+  <data name="SIMUEB_LBL_KAELTE_UNGEDECKT" xml:space="preserve">
+    <value>Kältebedarf ungedeckt</value>
+  </data>
+  <data name="SIM_TOOLTIP_CSV_KAELTE" xml:space="preserve">
+    <value>Kältelast des Projekts als CSV exportieren (sensible Kälte ohne Entfeuchtung)</value>
+  </data>
+  <data name="SIM_MSG_KEINE_DATEN_KAELTE" xml:space="preserve">
+    <value>Keine Kältedaten vorhanden — das Projekt rechnet keine Kälte.</value>
+  </data>
+  <data name="CHART_DATEI_KAELTEBEDARF" xml:space="preserve">
+    <value>Kaeltebedarf_Projekt_{0}.csv</value>
+  </data>
+  <data name="CHART_CSV_KAELTELAST" xml:space="preserve">
+    <value>Kältelast [kW]</value>
+  </data>
+  <data name="WBX_HRL_KANAL_KUEHLUNG" xml:space="preserve">
+    <value>Ein Lastgang im Kanal Kühlung ist Kältebedarf: Er wirkt nur mit der Projekteinstellung „Kühlung rechnen“, geht in keinen Wärmekanal und bleibt ohne Kälteerzeuger ungedeckt.</value>
   </data>
   <data name="ADM_BTN_IMPORT" xml:space="preserve">
     <value>Import…</value>

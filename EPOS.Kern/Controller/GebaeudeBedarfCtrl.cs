@@ -62,7 +62,11 @@ namespace WindowsFormsApplication1
         /// <summary>95-%-Quantil der Stundenlast nach nächstgelegenem Rang [kW].</summary>
         internal double? SpitzeQuantil95Kw;
 
-        /// <summary>Kühlbedarf (informativ) [MWh] — nur auf dem VDI-Weg, sonst <c>null</c>.</summary>
+        /// <summary>
+        /// Kühlbedarf [MWh] — nur auf dem VDI-Weg, sonst <c>null</c>. Mit wirksamer Kühlung
+        /// (<see cref="KuehlSollwertC"/>) der Kältebedarf am Kühlsollwert, sonst die Wärme, die
+        /// abgeführt werden müsste, damit die Raumluft die obere Raumtemperatur nicht überschreitet.
+        /// </summary>
         internal double? KuehlenergieMwh;
 
         /// <summary>Stunden mit Kühlbedarf [h] — nur auf dem VDI-Weg.</summary>
@@ -90,6 +94,52 @@ namespace WindowsFormsApplication1
 
         /// <summary>Die obere Raumtemperatur [°C] — obere Kante des Sollwertbands; <c>null</c> ohne VDI-Lauf.</summary>
         internal double? ObereRaumtemperaturC;
+
+        // ---- Stufe KU1: der Abschnitt „Kältebedarf" (Kühlkonzept 8.4; E21, F-K18) ----
+
+        /// <summary>
+        /// Die Kühlreihe des Gebäudes je Stunde [kWh] — dieselbe, die der Lauf bei wirksamer
+        /// Kühlung in den Kühlkanal bucht (ein Lauf, zwei Reihen); <c>null</c> ohne VDI-Lauf.
+        /// </summary>
+        internal double[] KuehlbedarfKwh;
+
+        /// <summary>Die zwölf Monatssummen der Kühlreihe [MWh]; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double[] KuehlMonatswerteMwh;
+
+        /// <summary>Die höchste Stundenkühllast [kW]; <c>null</c> ohne VDI-Lauf.</summary>
+        internal double? KaeltelastMaxKw;
+
+        /// <summary>
+        /// Vollbenutzungsstunden der Kälte [h/a] — Kühlbedarf durch Kältelast, aus beiden gebildet
+        /// (Kühlkonzept 6.4); <c>null</c> ohne Kältelast.
+        /// </summary>
+        internal double? VollbenutzungsstundenKaelteH
+            => KaeltelastMaxKw is double kw && kw > 0 && KuehlenergieMwh.HasValue
+                ? KuehlenergieMwh.Value * 1000.0 / kw : (double?)null;
+
+        /// <summary>Stunden mit gleichzeitigem Heizen und Kühlen (K6) — nicht saldiert; <c>null</c> ohne VDI-Lauf.</summary>
+        internal int? StundenHeizenUndKuehlen;
+
+        /// <summary>Rechnet das PROJEKT Kälte (<c>Tab_Einstellungen.Kuehlbetrieb</c>)?</summary>
+        internal bool KuehlbetriebProjekt;
+
+        /// <summary>Trägt das Gebäude „Gebäude wird gekühlt" (<c>Kuehlung_Aktiv</c>)?</summary>
+        internal bool KuehlungAktiv;
+
+        /// <summary>
+        /// Der wirksame Kühlsollwert [°C] — gesetzt genau dann, wenn der Lauf das Gebäude kühlt
+        /// (Projektschalter, Haken und Sollwert); <c>null</c> = der Kühlbedarf ist informativ.
+        /// </summary>
+        internal double? KuehlSollwertC;
+
+        /// <summary>Die Kühlleistungsgrenze [kW] bei wirksamer Kühlung; <c>null</c> = unbegrenzt.</summary>
+        internal double? KuehlleistungMaxKw;
+
+        /// <summary>
+        /// Rechnet das Gebäude auf dem Bestandsweg? Dann bucht der Lauf Kältebedarf 0 mit Hinweis
+        /// (F-K18) — der Bedarfsdialog zeigt dieselbe 0 mit demselben Hinweis. Bis Stufe GA.
+        /// </summary>
+        internal bool KaelteBestandsweg => Erfolgreich && Modell == DbWerte.GEBAEUDE_MODELL_TAGESBILANZ;
     }
 
     /// <summary>
@@ -202,7 +252,22 @@ namespace WindowsFormsApplication1
                 ergebnis.OperativeTemperaturC = vdi.OperativeTemperatur;
                 ergebnis.HeizsollwertC = vdi.Heizsollwert;
                 ergebnis.ObereRaumtemperaturC = vdi.ThetaMax;
+
+                // Stufe KU1 (Kuehlkonzept 8.4, E21): der Abschnitt „Kaeltebedarf" aus DEMSELBEN
+                // Ergebnis - die Kuehlreihe, die der Lauf bei wirksamer Kuehlung in den
+                // Kuehlkanal bucht, samt Spitze, Monatswerten und K6.
+                double[] kuehl = (double[])vdi.KuehlbedarfKwh.Clone();
+                ergebnis.KuehlbedarfKwh = kuehl;
+                ergebnis.KaeltelastMaxKw = GebaeudeKennzahlen.Hoechstwert(kuehl);
+                ergebnis.KuehlMonatswerteMwh = new double[12];
+                WPPlan.Core.BhkwPlan.MonatsSumme(kuehl, ergebnis.KuehlMonatswerteMwh,
+                                                 sim.mo_anfang, sim.mo_ende);
+                ergebnis.StundenHeizenUndKuehlen = vdi.StundenHeizenUndKuehlen;
+                ergebnis.KuehlSollwertC = vdi.KuehlSollwert;
             }
+            ergebnis.KuehlbetriebProjekt = sim.KuehlbetriebProjekt;
+            ergebnis.KuehlungAktiv = gebaeude.Kuehlung_Aktiv;
+            ergebnis.KuehlleistungMaxKw = ergebnis.KuehlSollwertC.HasValue ? gebaeude.Kuehlleistung_Max : null;
             ergebnis.Erfolgreich = true;
             return ergebnis;
         }

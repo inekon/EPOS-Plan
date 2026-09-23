@@ -72,7 +72,13 @@ namespace WindowsFormsApplication1
         /// <param name="temperaturStuendlich">Außentemperatur als Stundenwerte (8760), darf null sein</param>
         /// <param name="spalten">Wertspalten (mindestens eine)</param>
         /// <param name="viertelstundenwerte">true = 35040 Zeilen (15-min-Raster), false = 8760 Zeilen (Stundenraster)</param>
-        public static void Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte = false)
+        /// <param name="kopfzeilen">
+        /// Sätze, die VOR der Spaltenzeile stehen (Stufe KU1, Kühlkonzept 9.2): die Grenze einer
+        /// Zahl, die mit ihr reisen muss — beim Kältebedarf „sensibel, ohne Entfeuchtung" (K5).
+        /// <c>null</c> oder leer = die Datei beginnt wie bisher mit der Spaltenzeile.
+        /// </param>
+        public static void Export(string vorschlagDateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
+                                  bool viertelstundenwerte = false, IReadOnlyList<string> kopfzeilen = null)
         {
             if (spalten == null || spalten.Count == 0)
             {
@@ -100,7 +106,7 @@ namespace WindowsFormsApplication1
 
             try
             {
-                Schreiben(dateiname, temperaturStuendlich, spalten, viertelstundenwerte);
+                Schreiben(dateiname, temperaturStuendlich, spalten, viertelstundenwerte, kopfzeilen);
                 Dienste.Dialog.Meldung("CSV-Datei wurde erstellt:\n" + dateiname, "CSV Export");
             }
             catch (Exception ex)
@@ -109,7 +115,12 @@ namespace WindowsFormsApplication1
             }
         }
 
-        private static void Schreiben(string dateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten, bool viertelstundenwerte)
+        /// <summary>
+        /// Schreibt die Datei ohne Dialog — der Weg von <see cref="Export"/> nach der Dateiwahl;
+        /// <c>internal</c> für die Probe der Kopfzeilen.
+        /// </summary>
+        internal static void Schreiben(string dateiname, double[] temperaturStuendlich, List<CsvSpalte> spalten,
+                                       bool viertelstundenwerte, IReadOnlyList<string> kopfzeilen = null)
         {
             CultureInfo kultur = new CultureInfo("de-DE");
             const string SEP = ";";
@@ -126,6 +137,13 @@ namespace WindowsFormsApplication1
             // UTF-8 mit BOM, damit Excel Umlaute korrekt anzeigt
             using (StreamWriter sw = new StreamWriter(dateiname, false, new UTF8Encoding(true)))
             {
+                // Stufe KU1 (Kuehlkonzept 9.2, K5): Saetze VOR der Spaltenzeile - entschaerft wie
+                // die Spaltennamen, damit kein Trennzeichen eine Spalte vortaeuscht.
+                if (kopfzeilen != null)
+                    foreach (string satz in kopfzeilen)
+                        if (!string.IsNullOrWhiteSpace(satz))
+                            sw.WriteLine(satz.Replace(SEP, ",").Replace("\r", " ").Replace("\n", " ").Trim());
+
                 // Kopfzeile - Spaltennamen entschärft und eindeutig gemacht.
                 StringBuilder kopf = new StringBuilder();
                 kopf.Append("Zeitstempel").Append(SEP).Append("Außentemperatur [°C]");

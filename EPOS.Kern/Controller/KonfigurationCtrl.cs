@@ -832,26 +832,62 @@ namespace WindowsFormsApplication1
             if (idProjekt <= 0) return false;
             if (!EinstellungenCtrl.NeueProjekteMitKuehlungLesen()) return false;
 
-            bool satzVorhanden = StilleDb.Zahl(StilleDb.Scalar(
-                "SELECT COUNT(*) FROM Tab_Einstellungen WHERE ID_Projekt = ?",
-                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)), 0) > 0;
-
-            // Der VORMERKSATZ: dieselben Vorbelegungen wie beim ersten Speichern der Kaskade,
-            // aber OHNE Kaskade - die sechs Plaetze bleiben NULL (IstVormerksatz). So ist er
-            // fuer die Leser der Konfiguration „kein Satz", bis die Kaskade gespeichert ist.
-            if (!satzVorhanden)
-            {
-                KonfigurationCtrl anlage = new KonfigurationCtrl();
-                anlage.model.m_Tool_1 = null;
-                anlage.model.m_Tool_2 = null;
-                anlage.model.m_Tool_3 = null;
-                anlage.model.m_Tool_4 = null;
-                anlage.model.m_Tool_5 = null;
-                anlage.model.m_Tool_6 = null;
-                if (!anlage.Insert(idProjekt)) return false;
-            }
+            if (!SatzVorhanden(idProjekt) && !VormerksatzAnlegen(idProjekt)) return false;
 
             return KuehlbetriebSchreiben(idProjekt, true);
+        }
+
+        /// <summary>
+        /// <b>Der Projektschalter „Kühlung rechnen"</b> (Kühlkonzept 8.3; K10, E27) — der
+        /// Schreibweg der Oberfläche (Abschnitt „Kühlung" der Simulationskonfiguration). Er
+        /// schaltet die Kälte EINES Projekts in beide Richtungen; er liest die
+        /// Programmeinstellung nicht und ist kein Anlageweg.
+        ///
+        /// <para><b>Steht ein Einstellungssatz</b>, setzt er nur den Schalter
+        /// (<see cref="KuehlbetriebSchreiben"/>). <b>Steht keiner</b> (ein neues Projekt vor dem
+        /// ersten Speichern der Kaskade), ist „aus" ohne Satz schon wahr — dann schreibt er
+        /// nichts. „Ein" legt denselben <b>Vormerksatz</b> an wie die Projektanlage
+        /// (<see cref="IstVormerksatz"/>: dieselben Vorbelegungen, die sechs Plätze NULL), damit
+        /// der Schalter einen Satz hat, ohne dass eine Kaskade vorgetäuscht wird; zum
+        /// Einstellungssatz wird er beim ersten Speichern der Kaskade, das den Wert nachreicht.</para>
+        /// </summary>
+        /// <returns><c>true</c>, wenn die Projekteinstellung danach den gewünschten Wert trägt.</returns>
+        public static bool KuehlbetriebSetzen(int idProjekt, bool an)
+        {
+            if (idProjekt <= 0) return false;
+
+            if (!SatzVorhanden(idProjekt))
+            {
+                if (!an) return true;
+                if (!VormerksatzAnlegen(idProjekt)) return false;
+            }
+
+            return KuehlbetriebSchreiben(idProjekt, an);
+        }
+
+        /// <summary>Steht für das Projekt ein Einstellungssatz (auch ein Vormerksatz)?</summary>
+        private static bool SatzVorhanden(int idProjekt)
+        {
+            return StilleDb.Zahl(StilleDb.Scalar(
+                "SELECT COUNT(*) FROM Tab_Einstellungen WHERE ID_Projekt = ?",
+                StilleDb.Par("@proj", DbParamTyp.Integer, idProjekt)), 0) > 0;
+        }
+
+        /// <summary>
+        /// Legt den VORMERKSATZ an: dieselben Vorbelegungen wie beim ersten Speichern der
+        /// Kaskade, aber OHNE Kaskade - die sechs Plätze bleiben NULL (<see cref="IstVormerksatz"/>).
+        /// So ist er für die Leser der Konfiguration „kein Satz", bis die Kaskade gespeichert ist.
+        /// </summary>
+        private static bool VormerksatzAnlegen(int idProjekt)
+        {
+            KonfigurationCtrl anlage = new KonfigurationCtrl();
+            anlage.model.m_Tool_1 = null;
+            anlage.model.m_Tool_2 = null;
+            anlage.model.m_Tool_3 = null;
+            anlage.model.m_Tool_4 = null;
+            anlage.model.m_Tool_5 = null;
+            anlage.model.m_Tool_6 = null;
+            return anlage.Insert(idProjekt);
         }
 
         /// <summary>

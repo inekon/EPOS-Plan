@@ -350,6 +350,51 @@
                         </KindInhalt>
                     </Gruppenkopf>
 
+                    @* ---- Kuehlung (Stufe KU1; Kuehlkonzept 8.1; E20, E31) ---------------
+                       Teil der VDI-Struktur, deshalb IMMER sichtbar und bearbeitbar - auch auf
+                       dem Tagesbilanz-Weg; dort sagt eine Herleitungszeile, dass die Eingaben
+                       erst mit VDI 6007 gelten (F-K18, bis Stufe GA). Kein gesperrtes Feld, keine
+                       stille Null, kein verstecktes Eingabefeld. Kuehlsollwert und
+                       Kuehlleistungsgrenze stehen mit dem Haken (Tabelle 8.1); leer schreibt
+                       NULL. Der Nachtwert (KU3) steht nicht da und reist unveraendert mit, und
+                       der Rang der Kuehlung in der Knappheitsreihenfolge hat kein Bedienelement
+                       (K4). Die Projekteinstellung „Kuehlung rechnen" steht nicht hier - sie
+                       betrifft das ganze Projekt (8.3). *@
+                    <Gruppenkopf Titel="@Texte.GruppeKuehlung">
+                        <KindInhalt>
+                            <div class="gebk-kuehlung">
+                            <Formularraster>
+                                <KindInhalt>
+                            <Schalter Bezeichnung="@Texte.LabelKuehlungAktiv"
+                                      Wert="@_stand.KuehlungAktiv"
+                                      WertChanged="KuehlungGesetzt" />
+                            @if (_stand.KuehlungAktiv)
+                            {
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlSollwert" Einheit="°C"
+                                            Min="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN"
+                                            Max="@Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX"
+                                            Platzhalter="@Texte.VorgabeKuehlungAus"
+                                            Feldname="@Feld(Texte.LabelKuehlSollwert)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.KuehlSollwert"
+                                            WertChanged="w => _stand.KuehlSollwert = w" />
+                                <Zahlenfeld Bezeichnung="@Texte.LabelKuehlleistungMax" Einheit="kW" Min="0.01"
+                                            Platzhalter="@Texte.VorgabeUnbegrenzt"
+                                            Feldname="@Feld(Texte.LabelKuehlleistungMax)" FehlerZustand="FehlerMelden"
+                                            Wert="@_stand.KuehlleistungMax"
+                                            WertChanged="w => _stand.KuehlleistungMax = w" />
+                            }
+                                </KindInhalt>
+                            </Formularraster>
+                            <Herleitungszeile Text="@Kuehlungszeile" />
+                            <Herleitungszeile Text="@Texte.ZeileKuehlungProjekt" />
+                            @if (!IstVdi6007)
+                            {
+                                <Herleitungszeile Text="@Texte.ZeileKuehlungBestandsweg" />
+                            }
+                            </div>
+                        </KindInhalt>
+                    </Gruppenkopf>
+
                 </KindInhalt>
             </Reiterblatt>
 
@@ -694,6 +739,63 @@
             string vorgabe = Gebaeuderechenweg.IstVdi6007(null) ? Texte.RechenwegVdi6007 : Texte.RechenwegTagesbilanz;
             return zeile + " " + Texte.ZeileRechenwegVorgabe.Replace("{0}", vorgabe);
         }
+    }
+
+    /// <summary>
+    /// Die Herleitungszeile der Gruppe „Kühlung" (Kühlkonzept 8.1) — sie nennt den Rückfall in
+    /// BEIDEN Stellungen des Hakens: mit Haken die Prüfregel samt höchstem Heizsollwert, ohne
+    /// Haken die Maximalraumtemperatur, an der die Überhitzung informativ bleibt. Prüfhilfe
+    /// für die Tests.
+    /// </summary>
+    public string Kuehlungszeile
+    {
+        get
+        {
+            double maxTemperatur = _stand.MaxTemperatur ?? 0;
+            if (maxTemperatur < 1) maxTemperatur = 24;   // dieselbe Ableitung wie im OK-Weg
+            if (!_stand.KuehlungAktiv)
+                return string.Format(Texte.ZeileKuehlungAus, Zahl(maxTemperatur, 1));
+            return string.Format(Texte.ZeileKuehlungAn,
+                                 Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0),
+                                 Zahl(HoechsterHeizsollwert, 1),
+                                 Zahl(maxTemperatur, 1));
+        }
+    }
+
+    /// <summary>
+    /// Der höchste Heizsollwert des Arbeitsstands [°C] — über dieselbe Regel des Kerns, die
+    /// der Sollwertfahrplan des Stundenmodells kennt
+    /// (<see cref="Gebaeudemodellvorgaben.HoechsterHeizsollwert"/>); leere Felder gelten wie
+    /// im OK-Weg als 0.
+    /// </summary>
+    private double HoechsterHeizsollwert => Gebaeudemodellvorgaben.HoechsterHeizsollwert(
+        _stand.SollTag ?? 0, _stand.NachtAbsenkung ?? 0, _stand.WochenendAbsenkung ?? 0,
+        _stand.SollFerien ?? 0, FerienAktiv);
+
+    /// <summary>Gilt der Ferienfahrplan? Feriensollwert gesetzt und mindestens ein Zeitraum eingetragen.</summary>
+    private bool FerienAktiv
+    {
+        get
+        {
+            if (!((_stand.SollFerien ?? 0) > 0)) return false;
+            int[] beginn = Ferienbeginne(), ende = Ferienenden();
+            for (int n = 0; n < 4; n++)
+                if (beginn[n] > 0 && beginn[n] < 366 && ende[n] > 0 && ende[n] < 366) return true;
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Der Haken „Gebäude wird gekühlt". Ohne Haken stehen Kühlsollwert und Grenze nicht da —
+    /// ihre Werte bleiben im Arbeitsstand (wieder eingeschaltet sind sie zurück), eine
+    /// Fehleingabe in einem ausgeblendeten Feld hält den OK-Weg aber nicht mehr an.
+    /// </summary>
+    private void KuehlungGesetzt(bool wert)
+    {
+        _stand.KuehlungAktiv = wert;
+        if (wert) return;
+        _fehlerfelder.Remove(Feld(Texte.LabelKuehlSollwert));
+        _fehlerfelder.Remove(Feld(Texte.LabelKuehlleistungMax));
     }
 
     private bool SpeichernUnterMoeglich => Modus == GebaeudeKatalogModus.Bearbeiten && Speichern is not null;
@@ -1256,6 +1358,27 @@
         double spezifisch = bauweise / (_stand.WohnflaecheGesamt ?? 1);
         if (spezifisch < Gebaeudehuellbilanz.BAUWEISE_JE_M2_MIN || spezifisch > Gebaeudehuellbilanz.BAUWEISE_JE_M2_MAX)
             return Verletzt(Texte.MeldungBauweise, REITER_HUELLE);
+
+        // Stufe KU1 (Kuehlkonzept 8.1): die Regeln der Gruppe „Kuehlung" - nur mit Haken. Der
+        // Abstand zum hoechsten Heizsollwert ist DIESELBE Zahl, mit der der Loeser abbricht
+        // (Gebaeudemodellvorgaben.KuehlsollwertAbstand); ein leerer Sollwert heisst „Kuehlung
+        // aus" und ist erlaubt.
+        if (_stand.KuehlungAktiv)
+        {
+            if (_stand.KuehlSollwert is double soll)
+            {
+                if (soll < Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN || soll > Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX)
+                    return Verletzt(string.Format(Texte.MeldungKuehlsollwertBereich,
+                                                  Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MIN, 0),
+                                                  Zahl(Gebaeudemodellvorgaben.KUEHLSOLLWERT_MAX, 0)), REITER_HUELLE);
+                double heizMax = HoechsterHeizsollwert;
+                if (soll < heizMax + Gebaeudemodellvorgaben.KuehlsollwertAbstand)
+                    return Verletzt(string.Format(Texte.MeldungKuehlsollwertHeizung, Zahl(soll, 1), Zahl(heizMax, 1),
+                                                  Zahl(Gebaeudemodellvorgaben.KuehlsollwertAbstand, 0)), REITER_HUELLE);
+            }
+            if (_stand.KuehlleistungMax is double grenze && !(grenze > 0))
+                return Verletzt(Texte.MeldungKuehlleistung, REITER_HUELLE);
+        }
 
         string? regel = Ferienzeit.Pruefen(Ferienbeginne(), Ferienenden());
         if (regel is not null) return Verletzt(FerienMeldung(regel), REITER_TEMPERATUREN);

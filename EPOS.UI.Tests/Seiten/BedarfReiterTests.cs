@@ -291,4 +291,134 @@ public class BedarfReiterTests : EposBunitContext
         Assert.Equal(1, s);
         Assert.Equal(1, c);
     }
+
+    // =====================================================================
+    //  Stufe KU1 — die Kälteseite (Kühlkonzept 8.4; E21, K5, K6, K18)
+    // =====================================================================
+
+    private static readonly Zeichenmodell KAELTE =
+        Ganglinie("Kältelast Jahresganglinie", ChartRenderer.C_BEDARF);
+
+    private static readonly string FEUCHTE = SimulationKaeltebedarf.GrenzeFeuchte;
+
+    private static BedarfDaten MitKaelte()
+    {
+        BedarfDaten d = Daten();
+        d.Kaelte = new KaelteDaten
+        {
+            KaeltebedarfMwh = 12.5,
+            KaeltelastMaxKw = 8.25,
+            StundenMitKuehlbedarf = 640,
+            VollbenutzungsstundenH = 1515.0,
+            KaelterestbedarfMwh = 12.5,
+            Kanalname = "Kühlung",
+            Hinweise = new[] { "Kein Kälteerzeuger im Projekt." },
+            GrenzeFeuchte = FEUCHTE,
+            Deckungshinweis = "Kein Kälteerzeuger im Projekt."
+        };
+        return d;
+    }
+
+    private IRenderedComponent<BedarfReiter> ZeichnenMitKaelte(BedarfDaten daten, Action? csvKaelte = null)
+        => Render<BedarfReiter>(p =>
+        {
+            p.Add(x => x.Daten, daten);
+            p.Add(x => x.Modell, a =>
+            {
+                _auftraege.Add(a);
+                return a.Bild == Bilder.BedarfWaerme ? WAERME : a.Bild == Bilder.BedarfKaelte ? KAELTE : STROM;
+            });
+            if (csvKaelte is not null) p.Add(x => x.CsvKaelte, EventCallback.Factory.Create(this, csvKaelte));
+        });
+
+    /// <summary>
+    /// K18: Ein Projekt, das keine Kälte ERHOBEN hat, zeigt keine Kältegruppe — keine Nullen,
+    /// kein Bild, kein Bildauftrag.
+    /// </summary>
+    [Fact]
+    public void Ohne_erhobene_Kaelte_steht_keine_Kaeltegruppe()
+    {
+        var seite = Zeichnen(Daten());
+
+        Assert.Empty(seite.FindAll("section.epos-simerg-kaelte"));
+        Assert.DoesNotContain(_auftraege, a => a.Bild == Bilder.BedarfKaelte);
+        Assert.DoesNotContain("Kälte", seite.Markup);
+    }
+
+    /// <summary>
+    /// Der Abschnitt „Kälte" (8.4): Werte mit betonter Summenzeile, die VIERTE Kanalzeile
+    /// „Kühlung" in eigener Untergruppe, das EIGENE Bild der Kältelast und die Grenze der Zahl
+    /// (K5) — und der Kühlkanal steht NICHT in den Kanalzeilen der Wärme (4.3 #32).
+    /// </summary>
+    [Fact]
+    public void Mit_Kaelte_steht_der_Abschnitt_mit_Kanalzeile_eigenem_Bild_und_Grenze()
+    {
+        var seite = ZeichnenMitKaelte(MitKaelte());
+        var block = seite.Find("section.epos-simerg-kaelte");
+
+        Assert.Contains("12,50", block.TextContent);
+        Assert.Contains("8,25", block.TextContent);
+        Assert.Contains("640", block.TextContent);
+        Assert.Contains(FEUCHTE, block.TextContent);
+        Assert.Contains("Kein Kälteerzeuger im Projekt.", block.TextContent);
+
+        var listen = block.QuerySelectorAll("dl.epos-simerg-werte");
+        Assert.Equal(2, listen.Length);
+        Assert.Equal(new[] { "Kühlung" },
+                     listen[1].QuerySelectorAll("dt").Select(z => z.TextContent.Trim()).ToArray());
+        Assert.DoesNotContain("Kühlung", seite.FindAll("dl.epos-simerg-werte")[1].TextContent);
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfKaelte);
+        Assert.Equal(new[] { "simerg-bedarf-waerme", "simerg-bedarf-strom", "simerg-bedarf-kaelte" },
+                     seite.FindComponents<DiagrammSvg>().Select(b => b.Instance.Kennung).ToArray());
+    }
+
+    /// <summary>
+    /// Symmetrie (E21): Der Kälteabschnitt führt dieselben Bausteine wie die Wärme — Kopf,
+    /// Werteliste mit betonter Summenzeile (die letzte), die Untergruppe „je Bedarfsart" mit
+    /// den Kanalzeilen und ein eigenes Bild. Abweichungen sind benannt: die Kälte hat keinen
+    /// Kanalschalter (ein Kanal, keine Auswahl) und dafür die Sätze zu Deckung, K6 und K5.
+    /// </summary>
+    [Fact]
+    public void Der_Kaelteabschnitt_fuehrt_die_Bausteine_der_Waerme()
+    {
+        var seite = ZeichnenMitKaelte(MitKaelte());
+        var waerme = seite.FindAll("section.epos-simerg-block")[0];
+        var kaelte = seite.Find("section.epos-simerg-kaelte");
+
+        foreach (var abschnitt in new[] { waerme, kaelte })
+        {
+            Assert.NotNull(abschnitt.QuerySelector(".epos-gruppenkopf"));
+            var werte = abschnitt.QuerySelectorAll("dl.epos-simerg-werte");
+            Assert.True(werte.Length >= 2);
+            Assert.Contains("epos-simerg-abschluss", werte[0].QuerySelectorAll("dt").Last().ClassName ?? "");
+            Assert.NotNull(abschnitt.QuerySelector("h3.epos-untergruppe"));
+        }
+        Assert.NotNull(kaelte.QuerySelector("svg.epos-flaeche"));
+    }
+
+    /// <summary>Der eine Schalter „sortiert" wechselt auch das Bild der Kältelast.</summary>
+    [Fact]
+    public void Der_Sortiertschalter_wechselt_auch_das_Kaeltebild()
+    {
+        var seite = ZeichnenMitKaelte(MitKaelte());
+
+        _auftraege.Clear();
+        seite.FindAll("input[type='checkbox']")[0].Change(true);
+
+        Assert.Contains(_auftraege, a => a.Bild == Bilder.BedarfKaelte && a.Sortiert);
+    }
+
+    /// <summary>Der CSV-Knopf der Kälteseite erscheint nur mit Delegat und meldet seinen Klick.</summary>
+    [Fact]
+    public void Der_Kaelte_CSV_Knopf_meldet_seinen_Klick()
+    {
+        Assert.Empty(ZeichnenMitKaelte(MitKaelte()).FindAll("section.epos-simerg-kaelte button.epos-simerg-knopf"));
+
+        int n = 0;
+        var seite = ZeichnenMitKaelte(MitKaelte(), () => n++);
+        seite.Find("section.epos-simerg-kaelte button.epos-simerg-knopf").Click();
+
+        Assert.Equal(1, n);
+    }
 }

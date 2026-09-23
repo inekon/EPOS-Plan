@@ -87,6 +87,20 @@ namespace WindowsFormsApplication1.Referenzlauf
             dateien += Vektor(zielOrdner, "waermebedarf_dauerlinie.csv", wb.Dauerlinie, summen);
             dateien += Vektor(zielOrdner, "stundentemperatur.csv", wb.Stundentemperatur, summen);
 
+            // --- Kuehlkanal (Stufe KU1; Kuehlkonzept 4.7, 9.2; K17) -------------------------
+            // Die Kanalreihe in kWh, Name nach dem Muster der Kanaldateien - aber NUR, wenn der
+            // Lauf Kaelte ERHOBEN hat und einen Kaeltebedarf > 0 fuehrt, nicht „mit Nullen
+            // gefuellt" (Muster: der Erdreichblock). Jedes Projekt ohne Kuehlung - alle
+            // Referenzprojekte - bekommt damit keine neue Datei und keinen neuen Summenschluessel;
+            // die Basis bleibt byte-gleich. Das Format bleibt „Index;Wert" wie jede Vektordatei;
+            // die Grenze der Zahl (K5) reist im Protokoll des Laufs mit.
+            // Was geschrieben wird, entscheidet der Kern (KaelteErgebnisexport).
+            foreach (var reihe in KaelteErgebnisexport.Reihen(runner.simulation_Kaeltebedarf))
+            {
+                dateien += Vektor(zielOrdner, reihe.Key, reihe.Value, summen);
+                log.Zeile("Projekt " + idProjekt + ": " + reihe.Key + " - " + KaelteErgebnisexport.Grenze);
+            }
+
             // --- Gebaeudesimulation VDI 6007 (Stufe G1 + G2, Umsetzungskonzept 1.8) --------
             // Je Gebaeude des VDI-Wegs drei Reihen: raumtemperatur_<n>.csv und
             // operative_temperatur_<n>.csv in Grad Celsius, kuehlbedarf_<n>.csv in kWh

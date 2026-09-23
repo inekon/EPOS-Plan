@@ -210,6 +210,27 @@ public sealed class GebaeudeKatalogDaten
     /// <summary>Sommerlüftungsregel (0/1-Spalte, <c>NOT NULL DEFAULT 0</c>, Stufe G2).</summary>
     public bool Sommerlueftung { get; set; }
 
+    // ------------------------------------ Stufe KU1: Kühlung (Kühlkonzept 7.1, 8.1; KU-S1)
+    //
+    // Teil der VDI-Struktur und immer sichtbar (E20). NULL-erhaltend wie die Modellparameter:
+    // Der Dialog schreibt null, nicht die Vorgabe.
+
+    /// <summary>„Gebäude wird gekühlt" (<c>Kuehlung_Aktiv</c>, 0/1-Spalte, <c>NOT NULL DEFAULT 0</c>).</summary>
+    public bool KuehlungAktiv { get; set; }
+
+    /// <summary>Kühlsollwert [°C] (<c>Kuehl_Sollwert</c>); <c>null</c> = Kühlung aus (F-K1).</summary>
+    public double? KuehlSollwert { get; set; }
+
+    /// <summary>Kühlleistungsgrenze [kW] (<c>Kuehlleistung_Max</c>); <c>null</c> = unbegrenzt.</summary>
+    public double? KuehlleistungMax { get; set; }
+
+    /// <summary>
+    /// Kühlsollwert der Nacht [°C] (<c>Kuehl_Sollwert_Nacht</c>) — gelesen erst mit der Stufe
+    /// KU3; der Dialog zeigt ihn nicht und reicht ihn unverändert durch, auch bei „Speichern
+    /// unter".
+    /// </summary>
+    public double? KuehlSollwertNacht { get; set; }
+
     /// <summary>
     /// Eine TIEFE Kopie — der Arbeitsstand des Dialogs. Der hereingereichte Satz bleibt
     /// bis zum OK unberührt (Hausregel „Geschrieben wird im OK-Weg").
