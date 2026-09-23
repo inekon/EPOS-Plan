@@ -643,6 +643,50 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
     }
 
     /// <summary>
+    /// ETAPPE E8a (U47): <b>„Was daraus im Lauf wird"</b> steht UNTER dem Hinweistext in
+    /// „Was ist angenommen?" — je Szenario in der Reihenfolge der Bandbreite (Ungünstig ·
+    /// Erwartet · Günstig) die Investition I₀, die fälligen Ersatzbeschaffungen und der
+    /// Restwert am Ende. Ohne Jahresreihen steht keine Tafel.
+    /// </summary>
+    [Fact]
+    public void Was_daraus_im_Lauf_wird_steht_unter_dem_Hinweistext()
+    {
+        WirtschaftlichkeitStand stand = Voll();
+        stand.Ansicht.Laufwirkung = new ErgebnisMatrix
+        {
+            Spalten = new[] { "Wirkung auf WP klein", "Ungünstig", "Erwartet", "Günstig" },
+            Zeilen = new[]
+            {
+                new MatrixZeile { Titel = "Investition I₀", Zellen = new[] { "44.000", "40.000", "36.000" } },
+                new MatrixZeile { Titel = "Ersatzbeschaffungen fällig im Jahr", Zellen = new[] { "10 · 13 · 18", "12 · 15", "14 · 17" } },
+                new MatrixZeile { Titel = "Restwert am Ende, nominal", Zellen = new[] { "8.700", "9.600", "9.700" } }
+            }
+        };
+        var cut = Zeige(stand);
+
+        IElement annahmen = Abschnitt(cut, 3);
+        IElement hinweis = annahmen.QuerySelector(".epos-wirt-szenariohinweis")!;
+        IElement? teil = hinweis.NextElementSibling;
+        Assert.NotNull(teil);
+        Assert.Contains("epos-wirt-laufwirkung-teil", teil!.ClassList);
+        Assert.Equal("Was daraus im Lauf wird", teil.QuerySelector(".epos-untergruppe")!.TextContent);
+
+        IElement tafel = teil.QuerySelector(".epos-wirt-laufwirkung")!;
+        string[] koepfe = tafel.QuerySelectorAll("thead th").Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Wirkung auf WP klein", "Ungünstig", "Erwartet", "Günstig" }, koepfe);
+        // Die Szenariospalten stehen in der Reihenfolge der Bandbreite.
+        string[] bandbreite = cut.Find(".epos-wirt-bandbreite").QuerySelectorAll("thead th")
+                                 .Select(e => e.TextContent.Trim()).ToArray();
+        Assert.Equal(bandbreite.Skip(1).Take(3), koepfe.Skip(1));
+        Assert.Equal(new[] { "12 · 15" }, new[] { Zellen(tafel.QuerySelectorAll("tbody tr")[1])[1] });
+
+        // Ohne Jahresreihen: keine Tafel, der Hinweistext bleibt.
+        var ohne = Zeige();
+        Assert.Empty(Abschnitt(ohne, 3).QuerySelectorAll(".epos-wirt-laufwirkung"));
+        Assert.NotNull(Abschnitt(ohne, 3).QuerySelector(".epos-wirt-szenariohinweis"));
+    }
+
+    /// <summary>
     /// Die Deklarationen stehen im Klappblock „Bewertung nach DIN EN 17463" — auch ohne
     /// Schreibweg: zugeklappt nicht sichtbar, aufgeklappt in fester Reihenfolge, die
     /// Risikozeile ohne gepflegten Text mit „keine benannt" (Q5). Ohne Schreibweg kein

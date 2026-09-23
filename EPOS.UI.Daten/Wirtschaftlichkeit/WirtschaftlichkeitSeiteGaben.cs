@@ -832,6 +832,11 @@ namespace WindowsFormsApplication1
                                                                                   staendeSpalten, kultur);
             }
 
+            // ETAPPE E8a (U47): „Was daraus im Lauf wird" — die drei Szenarioläufe der
+            // Bandbreite, ihre Wirkung auf die Leitversion.
+            ansicht.Laufwirkung = ZahlungsreihenAnsicht.Laufwirkung(gliederungen, ansicht.Leitversion,
+                                                                    Name(ansicht.Leitversion), kultur);
+
             var spalten = new List<string> { T("WIRT_SP_KENNZAHL", "Kennzahl") };
             for (int i = 0; i < spaltenErg.Count; i++)
             {

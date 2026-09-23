@@ -373,6 +373,15 @@ public sealed class ErgebnisAnsicht
     public string BestandteileUnterzeile { get; set; } = "";
 
     /// <summary>
+    /// ETAPPE E8a (U47, Mockup „Was ist angenommen?"): die Tafel „Was daraus im Lauf wird" —
+    /// je Szenario (Ungünstig · Erwartet · Günstig) die Wirkung auf die Leitversion:
+    /// Investition I₀, die Jahre der fälligen Ersatzbeschaffungen, der Restwert am Ende. Die
+    /// Spalten sind die Szenarioläufe der Bandbreite. Sie hängt an der Vergleichswahl, nicht
+    /// an der Szenario-Klappliste. Leer = keine Jahresreihen.
+    /// </summary>
+    public ErgebnisMatrix Laufwirkung { get; set; } = new();
+
+    /// <summary>
     /// ETAPPE E8a (ValERI-Block 2): die Zahlungsreihen je Stand und Szenario — aus den
     /// Zahlungsbildern des Laufs, der in dieser Sitzung gerechnet ist, und nur, wo sie zum
     /// gespeicherten Ergebnis passen. Leer = keine Jahresreihen (dann steht

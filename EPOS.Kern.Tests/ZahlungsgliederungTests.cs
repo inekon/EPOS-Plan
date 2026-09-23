@@ -439,6 +439,87 @@ namespace EPOS.Kern.Tests
             Assert.Contains("i = 4,0 %", ZahlungsreihenAnsicht.Unterzeile(satz, WORST, staende, DE));
         }
 
+        // =====================================================================
+        //  (5) U47 — „Was daraus im Lauf wird"
+        // =====================================================================
+
+        /// <summary>
+        /// U47 in der Hülle: je Szenario (Ungünstig · Erwartet · Günstig) die Investition I₀,
+        /// die Jahre der fälligen Ersatzbeschaffungen und der Restwert am Ende, nominal. Ohne
+        /// Ersatz „keine", ohne Leitversion oder ohne Gliederung keine Tafel.
+        /// </summary>
+        [Fact]
+        public void Was_daraus_im_Lauf_wird_nennt_I0_Ersatzjahre_und_Restwert_je_Szenario()
+        {
+            WirtschaftlichkeitParameter p = Parameter();
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(Probeverlauf(p), p, null);
+
+            ErgebnisMatrix m = ZahlungsreihenAnsicht.Laufwirkung(satz, 901, "Variante", DE);
+
+            Assert.Equal(new[] { "Wirkung auf Variante", "Ungünstig", "Erwartet", "Günstig" }, m.Spalten.ToArray());
+            Assert.Equal(new[] { "Investition I₀", "Ersatzbeschaffungen fällig im Jahr", "Restwert am Ende, nominal" },
+                         m.Zeilen.Select(z => z.Titel).ToArray());
+            string[] reihenfolge = { WORST, ERWARTET, BEST };
+            for (int i = 0; i < 3; i++)
+            {
+                Zahlungsgliederung g = satz.Von(901, reihenfolge[i]);
+                Assert.Equal("140.000", m.Zeilen[0].Zellen[i]);
+                Assert.Equal("3 · 8 · 13 · 15 · 16", m.Zeilen[1].Zellen[i]);
+                Assert.Equal(g.Bestandteil(Zahlungsgliederung.RESTWERT).Nominal.ToString("N0", DE), m.Zeilen[2].Zellen[i]);
+            }
+
+            Assert.Equal("keine", ZahlungsreihenAnsicht.Laufwirkung(satz, 900, "Stamm", DE).Zeilen[1].Zellen[1]);
+            Assert.Empty(ZahlungsreihenAnsicht.Laufwirkung(satz, 0, "", DE).Zeilen);
+            Assert.Empty(ZahlungsreihenAnsicht.Laufwirkung(satz, 777, "Fremd", DE).Zeilen);
+            Assert.Empty(ZahlungsreihenAnsicht.Laufwirkung(null, 901, "Variante", DE).Zeilen);
+        }
+
+        /// <summary>
+        /// <b>Der Prüffall von U47: Die drei Spalten gleichen den Szenarioläufen der
+        /// Bandbreite.</b> Aus denselben drei Läufen, deren Zahlungsbilder die Tafel trägt,
+        /// entstehen die Kapitalwertdifferenzen Ungünstig · Erwartet · Günstig der Bandbreite
+        /// (<see cref="WirtschaftlichkeitBandbreite"/>) und die Restwerte der gerechneten
+        /// Ergebnisse — Spalte für Spalte in dieser Reihenfolge.
+        /// </summary>
+        [Fact]
+        public void Die_drei_Spalten_gleichen_den_Szenariolaeufen_der_Bandbreite()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            WirtschaftlichkeitParameter p = Parametersatz1040();
+            List<WirtschaftlichkeitErgebnis> lauf =
+                new WirtschaftlichkeitCtrl().Berechne(Gruppe1040(), Parametersatz1040(), 0, false);
+            var staende = new List<KeyValuePair<int, string>>
+            {
+                new KeyValuePair<int, string>(1040, "Stammprojekt"),
+                new KeyValuePair<int, string>(1041, "Variante A"),
+                new KeyValuePair<int, string>(1042, "Variante B")
+            };
+            WirtschaftlichkeitBandbreite bandbreite =
+                WirtschaftlichkeitBandbreite.Bilde(staende, lauf, 1040, "Stammprojekt");
+            Zahlungsgliederungen satz = Zahlungsgliederungen.Aus(
+                new WirtschaftlichkeitCtrl().BerechneVerlaufSzenarien(Gruppe1040(), p, 20), p, lauf);
+            int leit = Zahlungsgliederungen.Leitversion(lauf, staende.Select(s => s.Key), 1040);
+            Assert.True(leit == 1041 || leit == 1042);
+
+            ErgebnisMatrix m = ZahlungsreihenAnsicht.Laufwirkung(satz, leit, "Leitversion", DE);
+            BandbreitenZeile zeile = bandbreite.Zeile(leit);
+            string[] reihenfolge = { WORST, ERWARTET, BEST };
+            double?[] differenz = { zeile.Worst, zeile.Erwartet, zeile.Best };
+            for (int i = 0; i < 3; i++)
+            {
+                Zahlungsgliederung g = satz.Von(leit, reihenfolge[i]), r = satz.Von(1040, reihenfolge[i]);
+                Assert.NotNull(g);
+                Assert.True(differenz[i].HasValue);
+                Assert.Equal(differenz[i].Value, g.Kapitalwert - r.Kapitalwert, 6);
+                WirtschaftlichkeitErgebnis e = lauf.Single(x => x.IdProjekt == leit && x.Szenario == reihenfolge[i]);
+                Assert.Equal(e.RestwertBarwert, g.Bestandteil(Zahlungsgliederung.RESTWERT).Barwert, 6);
+                Assert.Equal((-g.Bestandteil(Zahlungsgliederung.INVESTITION).Wert(0)).ToString("N0", DE), m.Zeilen[0].Zellen[i]);
+                Assert.Equal(g.Bestandteil(Zahlungsgliederung.RESTWERT).Nominal.ToString("N0", DE), m.Zeilen[2].Zellen[i]);
+            }
+        }
+
         /// <summary>Ein Betrag der Seite („+1.234", „−567", „0") als Zahl.</summary>
         private static double Betrag(string text)
             => double.Parse(text.Replace("−", "-").Replace("+", ""), NumberStyles.Number, DE);

@@ -67561,6 +67561,51 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Ersatzbeschaffungen fällig im Jahr ähnelt.
+        /// </summary>
+        public static string WIRT_LW_ERSATZJAHRE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_ERSATZJAHRE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die keine ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KEINE {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KEINE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wirkung auf {0} ähnelt.
+        /// </summary>
+        public static string WIRT_LW_KOPF {
+            get {
+                return ResourceManager.GetString("WIRT_LW_KOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Restwert am Ende, nominal ähnelt.
+        /// </summary>
+        public static string WIRT_LW_RESTWERT {
+            get {
+                return ResourceManager.GetString("WIRT_LW_RESTWERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Was daraus im Lauf wird ähnelt.
+        /// </summary>
+        public static string WIRT_LW_TITEL {
+            get {
+                return ResourceManager.GetString("WIRT_LW_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Bedarf ohne Anlage [MWh] ähnelt.
         /// </summary>
         public static string WIRT_MATRIX_BEDARF {

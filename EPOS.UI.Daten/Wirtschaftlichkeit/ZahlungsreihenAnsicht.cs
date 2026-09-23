@@ -147,6 +147,60 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// U47 (Mockup „Was ist angenommen?"): die Tafel <b>„Was daraus im Lauf wird"</b> — je
+        /// Szenario (Ungünstig · Erwartet · Günstig, die Reihenfolge der Annahmentafel) die
+        /// Wirkung auf die Leitversion: die Investition I₀, die Jahre der fälligen
+        /// Ersatzbeschaffungen und der Restwert am Ende (nominal). Die drei Spalten sind die
+        /// Szenarioläufe der Bandbreite — dieselben Zahlungsbilder, aus denen deren
+        /// Kapitalwertdifferenzen stammen. Leer ohne Leitversion oder ohne Gliederung.
+        /// </summary>
+        internal static ErgebnisMatrix Laufwirkung(Zahlungsgliederungen satz, int leitversion, string name,
+                                                   CultureInfo kultur)
+        {
+            var tafel = new ErgebnisMatrix();
+            if (satz == null || leitversion == 0) return tafel;
+
+            var laeufe = new List<Zahlungsgliederung>();
+            bool irgendeiner = false;
+            foreach (string s in WirtschaftlichkeitVerlaufSzenarien.Reihenfolge)
+            {
+                Zahlungsgliederung g = satz.Von(leitversion, s);
+                laeufe.Add(g);
+                if (g != null) irgendeiner = true;
+            }
+            if (!irgendeiner) return tafel;
+
+            var investition = new List<string>();
+            var ersatz = new List<string>();
+            var restwert = new List<string>();
+            foreach (Zahlungsgliederung g in laeufe)
+            {
+                if (g == null) { investition.Add("—"); ersatz.Add("—"); restwert.Add("—"); continue; }
+                investition.Add((-g.Bestandteil(Zahlungsgliederung.INVESTITION).Wert(0)).ToString("N0", kultur));
+                List<int> jahre = g.Bestandteil(Zahlungsgliederung.ERSATZ).Jahre();
+                ersatz.Add(jahre.Count == 0
+                    ? MyResource.Resource.WIRT_LW_KEINE
+                    : string.Join(" · ", jahre.ConvertAll(t => t.ToString(CultureInfo.InvariantCulture)).ToArray()));
+                restwert.Add(g.Bestandteil(Zahlungsgliederung.RESTWERT).Nominal.ToString("N0", kultur));
+            }
+
+            tafel.Spalten = new List<string>
+            {
+                string.Format(kultur, MyResource.Resource.WIRT_LW_KOPF, name ?? ""),
+                MyResource.Resource.WIRT_SZEN_WORST,
+                MyResource.Resource.WIRT_SZEN_ERWARTET,
+                MyResource.Resource.WIRT_SZEN_BEST
+            };
+            tafel.Zeilen = new List<MatrixZeile>
+            {
+                new MatrixZeile { Titel = MyResource.Resource.WIRT_GL_INVESTITION, Zellen = investition },
+                new MatrixZeile { Titel = MyResource.Resource.WIRT_LW_ERSATZJAHRE, Zellen = ersatz },
+                new MatrixZeile { Titel = MyResource.Resource.WIRT_LW_RESTWERT, Zellen = restwert }
+            };
+            return tafel;
+        }
+
+        /// <summary>
         /// Die Zeile unter der Überschrift der Gliederung: Barwert und Nominalsumme, der Zins
         /// DIESES Szenarios und der Zeitraum. <c>""</c> ohne Gliederung.
         /// </summary>

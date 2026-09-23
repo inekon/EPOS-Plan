@@ -339,6 +339,12 @@
                     </div>
                 }
 
+                @* ETAPPE E8a (U47, Mockup "Was ist angenommen?"): UNTER dem Hinweistext die
+                   Tafel "Was daraus im Lauf wird" - je Szenario die Wirkung auf die
+                   Leitversion (I0, faellige Ersatzbeschaffungen, Restwert am Ende). Der
+                   Hinweistext sagt, was ein Szenario variiert; die Tafel, was daraus wird. *@
+                @Laufwirkungsteil
+
                 @* Der Parameternachweis (L12/L13) und der Nachweisblock W5-B-11 (VALERI
                    G7 / G10 / G1,G3,G5): Betrachtungszeitraum gegen die Nutzungsdauern,
                    U39 "k von n Positionen ohne Nutzungsdauer" (ein Pruefauftrag, keine
@@ -1485,6 +1491,19 @@
         @if (!string.IsNullOrEmpty(_stand.Ansicht.Zahlungshinweis))
         {
             <Herleitungszeile Text="@_stand.Ansicht.Zahlungshinweis" />
+        }
+    </div>;
+
+    /// <summary>
+    /// ETAPPE E8a (U47, Mockup „Was ist angenommen?"): die Tafel <b>„Was daraus im Lauf
+    /// wird"</b> — je Szenario die Wirkung auf die Leitversion, aus den Szenarioläufen der
+    /// Bandbreite. Ohne Jahresreihen steht sie nicht da (die Gliederung sagt, warum).
+    /// </summary>
+    private RenderFragment Laufwirkungsteil => @<div class="epos-wirt-laufwirkung-teil">
+        @if (_stand.Ansicht.Laufwirkung.Zeilen.Count > 0)
+        {
+            <p class="epos-untergruppe">@Texte.LaufwirkungTitel</p>
+            @Tafel(_stand.Ansicht.Laufwirkung, "epos-raster epos-wirt-tafel epos-wirt-laufwirkung", false)
         }
     </div>;
 

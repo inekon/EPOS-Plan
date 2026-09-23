@@ -16613,6 +16613,21 @@ The step "{0}" failed; nothing was saved, the project is unchanged.</value>
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Difference {0} − {1}</value>
   </data>
+  <data name="WIRT_LW_TITEL" xml:space="preserve">
+    <value>What this means over the period</value>
+  </data>
+  <data name="WIRT_LW_KOPF" xml:space="preserve">
+    <value>Effect on {0}</value>
+  </data>
+  <data name="WIRT_LW_ERSATZJAHRE" xml:space="preserve">
+    <value>Replacements due in year</value>
+  </data>
+  <data name="WIRT_LW_RESTWERT" xml:space="preserve">
+    <value>Residual value at the end, nominal</value>
+  </data>
+  <data name="WIRT_LW_KEINE" xml:space="preserve">
+    <value>none</value>
+  </data>
   <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
     <value>The breakdown by present value and nominal sum per component is shown after the next calculation run (“Calculate”, or “Refresh” in the progression) — stored results carry no annual series.</value>
   </data>

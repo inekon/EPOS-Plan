@@ -16602,6 +16602,21 @@ Der Schritt „{0}“ ist fehlgeschlagen; es wurde nichts gespeichert, das Proje
   <data name="WIRT_GL_DIFFERENZ" xml:space="preserve">
     <value>Differenz {0} − {1}</value>
   </data>
+  <data name="WIRT_LW_TITEL" xml:space="preserve">
+    <value>Was daraus im Lauf wird</value>
+  </data>
+  <data name="WIRT_LW_KOPF" xml:space="preserve">
+    <value>Wirkung auf {0}</value>
+  </data>
+  <data name="WIRT_LW_ERSATZJAHRE" xml:space="preserve">
+    <value>Ersatzbeschaffungen fällig im Jahr</value>
+  </data>
+  <data name="WIRT_LW_RESTWERT" xml:space="preserve">
+    <value>Restwert am Ende, nominal</value>
+  </data>
+  <data name="WIRT_LW_KEINE" xml:space="preserve">
+    <value>keine</value>
+  </data>
   <data name="WIRT_GL_NICHT_GERECHNET" xml:space="preserve">
     <value>Die Gliederung nach Barwert und Nominalsumme je Bestandteil steht nach dem nächsten Rechenlauf („Berechnen“ oder „Aktualisieren“ im Verlauf) — die gespeicherten Ergebnisse tragen keine Jahresreihen.</value>
   </data>
