@@ -667,6 +667,11 @@ namespace WindowsFormsApplication1
         /// ETAPPE E7c — <b>die Datenlücken der KWKG-Rechnung</b> als Zeilen der
         /// Kohärenzgruppe, je Art EINE Zeile mit den betroffenen Anlagen.
         ///
+        /// <para><b>„Anlagenart fehlt"</b> (§ 6.3 Nr. 30, Entscheid E7‑Q1 Lesart b): Das
+        /// Kontingent einer Anlage war nach § 8 aus ihrer Anlagenart abzuleiten — es ist
+        /// nicht gepflegt —, und die Anlagenart fehlt; der Zuschlag der Anlage ist 0. Ein
+        /// gepflegtes Kontingent bleibt wirksam und löst die Zeile NICHT aus.</para>
+        ///
         /// <para><b>„Stromkennzahl fehlt"</b> (Befund K‑1, Entscheid E7‑Q2 (2) mit Auflage):
         /// Eine Anlage trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr", aber weder
         /// eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — dann gibt es
@@ -682,6 +687,18 @@ namespace WindowsFormsApplication1
                                              List<KohaerenzHinweis> liste)
         {
             if (lauf.Kwkg == null) return;
+
+            if (lauf.Kwkg.OhneAnlagenart.Count > 0)
+                liste.Add(new KohaerenzHinweis
+                {
+                    Schwere = KohaerenzSchwere.HINWEIS,
+                    Text = string.Format(kultur, T("KOH_KWKG_ANLAGENART_FEHLT",
+                            "Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch " +
+                            "eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein " +
+                            "Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. " +
+                            "Anlagenart oder Kontingent im BHKW-Dialog eintragen."),
+                        Aufzaehlung(lauf.Kwkg.OhneAnlagenart))
+                });
 
             if (lauf.Kwkg.OhneStromkennzahl.Count > 0)
                 liste.Add(new KohaerenzHinweis

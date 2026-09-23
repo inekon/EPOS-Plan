@@ -38698,6 +38698,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. Anlagenart oder Kontingent im BHKW-Dialog eintragen. ähnelt.
+        /// </summary>
+        public static string KOH_KWKG_ANLAGENART_FEHLT {
+            get {
+                return ResourceManager.GetString("KOH_KWKG_ANLAGENART_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stromkennzahl fehlt: {0} trägt das Kennzeichen „Vorrichtung zur Abwärmeabfuhr“, aber weder eine gepflegte Stromkennzahl noch P_el und P_th in der Gerätezeile — KWK-Strom nach § 2 Nr. 16 KWKG ist nicht bestimmbar, für diese Anlage wird kein Zuschlag gerechnet. Die Stromkennzahl steht im BHKW-Dialog unter „Sätze und Herkunft“. ähnelt.
         /// </summary>
         public static string KOH_KWKG_STROMKENNZAHL_FEHLT {
@@ -63705,6 +63714,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WIRT_KWKG_KONTINGENT_ANLAGE {
             get {
                 return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ANLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent ab; für diese Anlage kein Zuschlag. ähnelt.
+        /// </summary>
+        public static string WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART {
+            get {
+                return ResourceManager.GetString("WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART", resourceCulture);
             }
         }
         

@@ -23214,4 +23214,10 @@ Möchten Sie das zulassen?</value>
   <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
     <value>KWKG: {0}Der Gesetzeskatalog führt für das Inbetriebnahmejahr {1} kein Ende der Frist zur Inbetriebnahme ({2}) — die Frist ist ungeprüft, gerechnet wird ohne sie.</value>
   </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART" xml:space="preserve">
+    <value>KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent ab; für diese Anlage kein Zuschlag.</value>
+  </data>
+  <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
+    <value>Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. Anlagenart oder Kontingent im BHKW-Dialog eintragen.</value>
+  </data>
 </root>

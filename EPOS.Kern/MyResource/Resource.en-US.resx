@@ -23207,4 +23207,10 @@ Do you want to allow this?</value>
   <data name="WIRT_KWKG_FRISTENDE_FEHLT" xml:space="preserve">
     <value>CHP Act: {0}the catalogue of statutory parameters holds no end of the commissioning deadline for commissioning year {1} ({2}) — the deadline is unchecked; the calculation proceeds without it.</value>
   </data>
+  <data name="WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART" xml:space="preserve">
+    <value>CHP Act: neither a full-load hour quota is maintained nor a plant category recorded for "{0}" — without a plant category, sec. 8 CHP Act derives no quota; no bonus for this unit.</value>
+  </data>
+  <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
+    <value>Plant category missing: for {0}, neither a full-load hour quota is maintained nor a plant category recorded — without a plant category, sec. 8 CHP Act derives no quota, so no bonus is calculated for this unit. Enter the plant category or the quota in the CHP dialog.</value>
+  </data>
 </root>

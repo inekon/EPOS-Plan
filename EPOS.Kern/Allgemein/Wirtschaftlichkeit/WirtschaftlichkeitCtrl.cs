@@ -2882,7 +2882,7 @@ namespace WindowsFormsApplication1
                 satzEinsp += gewicht[i] * (a.SatzEinspCt ?? 0);
                 kontingent += gewicht[i] * (a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
                                           ? a.VbhKontingent.Value
-                                          : KontingentDerAnlage(a, beginnJeAnlage[i], eigene));
+                                          : KontingentDerAnlage(a, beginnJeAnlage[i], eigene, luecken));
             }
             satzEigen /= gewichtSumme;
             satzEinsp /= gewichtSumme;
@@ -3122,7 +3122,7 @@ namespace WindowsFormsApplication1
                 // eine Kaskade nur eines ihrer Module treffen konnte.
                 double kontingent = a.VbhKontingent.HasValue && a.VbhKontingent.Value > 0
                                   ? a.VbhKontingent.Value
-                                  : KontingentDerAnlage(a, beginn, hinweise);
+                                  : KontingentDerAnlage(a, beginn, hinweise, luecken);
                 double deckelFest = a.VbhDeckel.HasValue && a.VbhDeckel.Value > 0
                                   ? a.VbhDeckel.Value : 0;
 
@@ -3419,8 +3419,18 @@ namespace WindowsFormsApplication1
         /// <para>Ohne erfasste Anlagenart liefert der Rechner 0 mit Begründung — das ist
         /// dieselbe Antwort wie am Projekt und kein stiller Ausfall: Eine Anlage ohne
         /// Kontingent bekommt keinen Zuschlag, und die Herleitung sagt warum.</para>
+        ///
+        /// <para><b>ETAPPE E7c — die Kern-Regel zu § 6.3 Nr. 30</b> (Entscheid E7‑Q1,
+        /// Lesart b, 23.09.2026): „NULL ⇒ kein Zuschlag" greift genau HIER — nur dort, wo
+        /// das Kontingent aus der Anlagenart abzuleiten ist. Ein gepflegtes Kontingent
+        /// kommt gar nicht bis hierher (es gilt, auch ohne Anlagenart). Fehlt die
+        /// Anlagenart, hält <paramref name="luecken"/> die Anlage fest — die Grundlage
+        /// der Kohärenzzeile „Anlagenart fehlt" —, und die Herleitung sagt es ohne den
+        /// Nachsatz „es gilt der eingetragene Wert", der ohne eingetragenen Wert nicht
+        /// stimmt.</para>
         /// </summary>
-        private double KontingentDerAnlage(BhkwAnlage a, int jahr, List<string> hinweise)
+        private double KontingentDerAnlage(BhkwAnlage a, int jahr, List<string> hinweise,
+                                           KwkgLuecken luecken)
         {
             if (_gesetze == null) _gesetze = new GesetzKatalog();
             System.Globalization.CultureInfo kultur = BerichtTexte.Kultur;
@@ -3428,12 +3438,22 @@ namespace WindowsFormsApplication1
                 a.Anlagenart, a.Kostenanteil ?? 0, jahr,
                 (sch, j) => _gesetze.WertMitHerkunft(sch, j), kultur);
 
+            bool ohneArt = string.IsNullOrEmpty(a.Anlagenart);
+            if (ohneArt && luecken != null) KwkgLuecken.Merke(luecken.OhneAnlagenart, a.Bezeichner);
+
             if (hinweise != null)
-                hinweise.Add(string.Format(kultur,
-                    T("WIRT_KWKG_KONTINGENT_ANLAGE",
-                      "KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — " +
-                      "abgeleitet {1} Vbh ({2})."),
-                    a.Bezeichner, v.KontingentH.ToString("N0", kultur), v.Herleitung));
+                hinweise.Add(ohneArt
+                    ? string.Format(kultur,
+                        T("WIRT_KWKG_KONTINGENT_ANLAGE_OHNE_ART",
+                          "KWKG: Für „{0}“ ist weder ein Vbh-Kontingent gepflegt noch eine " +
+                          "Anlagenart erfasst — ohne Anlagenart leitet § 8 KWKG kein Kontingent " +
+                          "ab; für diese Anlage kein Zuschlag."),
+                        a.Bezeichner)
+                    : string.Format(kultur,
+                        T("WIRT_KWKG_KONTINGENT_ANLAGE",
+                          "KWKG: Für „{0}“ ist kein eigenes Vbh-Kontingent gepflegt — " +
+                          "abgeleitet {1} Vbh ({2})."),
+                        a.Bezeichner, v.KontingentH.ToString("N0", kultur), v.Herleitung));
             return v.KontingentH;
         }
 
