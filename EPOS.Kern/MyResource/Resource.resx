@@ -6639,6 +6639,12 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_FM_GRENZE" xml:space="preserve">
     <value>Die Mappe rechnet die Bewertung feststehender Jahresmengen nach — jede Änderung an Anlagengröße, Bedarf oder Fahrweise verlangt einen neuen Stundenlauf, den keine Zellformel liefert. Die Gesetzeslogik und die Nachweise, die den Zahlen ihre Gültigkeit geben, sind nicht abbildbar. Was in der Mappe umgestellt wird, kommt nie ins Projekt zurück: Sie ist ein nachvollziehbarer Nachweis, keine zweite Eingabeoberfläche.</value>
   </data>
+  <data name="WIRT_FM_MJ_BASIS_PB" xml:space="preserve">
+    <value>Basis Betrieb mit p_B [€/a]</value>
+  </data>
+  <data name="WIRT_FM_MJ_BASIS_PE" xml:space="preserve">
+    <value>Basis Betrieb mit p_E [€/a]</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>

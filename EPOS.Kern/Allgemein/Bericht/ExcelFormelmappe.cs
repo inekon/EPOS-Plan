@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace WindowsFormsApplication1
 {
@@ -145,6 +149,198 @@ namespace WindowsFormsApplication1
         }
 
         // =====================================================================
+        //  Stufe 1 — die Mehrjahrestabelle in Formeln
+        // =====================================================================
+
+        /// <summary>Überschrift der Hilfsspalte „Basis des Betriebs-Topfes".</summary>
+        private static string KopfBasisPB { get { return MyResource.Resource.WIRT_FM_MJ_BASIS_PB; } }
+
+        /// <summary>Überschrift der Hilfsspalte „Basis des Endenergie-Topfes".</summary>
+        private static string KopfBasisPE { get { return MyResource.Resource.WIRT_FM_MJ_BASIS_PE; } }
+
+        /// <summary>
+        /// Stufe 1 (Konzept § 2.11.6): legt die Formeln über die fertig geschriebene
+        /// Mehrjahrestabelle EINES Projekts. Die Zellen tragen danach die Formel und — über
+        /// das <paramref name="register"/> — als zwischengespeichertes Ergebnis genau die
+        /// Zahl, die sie vorher als Wert trugen.
+        ///
+        /// <list type="bullet">
+        ///   <item><description><b>Energie</b> (und die <b>CO₂-Abgabe</b> nur im
+        ///     Rückfallzweig): ab dem Jahr 2 Jahr 1 × (1+p_E)^(t−1); mit jahresscharfer
+        ///     CO₂-Reihe bleibt sie zugelieferter Preispfad (Wert).</description></item>
+        ///   <item><description><b>Betrieb</b> als zwei Terme — Betriebs-Topf mit p_B,
+        ///     Endenergie-Topf mit p_E — über Hilfsspalten rechts der Tabelle, die die Basis
+        ///     je Jahr tragen (Preisstand Jahr 1, samt Stufen der Positionen mit späterem
+        ///     Startjahr).</description></item>
+        ///   <item><description><b>Netto</b> als Zeilensumme der Positionsspalten,
+        ///     <b>Barwert</b> als Netto × (1+i)^−t, <b>Kumuliert</b> als Laufsumme.</description></item>
+        ///   <item><description>Die <b>Abschlusszeile</b> trägt in der Nettospalte den
+        ///     nominalen Restwert (neu), im Barwert dessen Abzinsung und in Kumuliert den
+        ///     Nettobarwert.</description></item>
+        /// </list>
+        ///
+        /// <para>Investition und Ersatz, Einspeisung und die gesetzlichen Erlösreihen
+        /// (KWK-Zuschlag, Steuergutschriften, PV-Vergütung, Pauschale) bleiben Werte: Sie
+        /// hängen an Nutzungsdauern, Kontingenten und Rechtsständen, nicht an einer
+        /// Fortschreibung.</para>
+        ///
+        /// <para><b>Jede Formel wird gegengerechnet</b>, bevor sie die Zelle ersetzt: Weicht
+        /// ihr Ergebnis (in C# nachgerechnet) vom Wert ab, bleibt der Wert stehen
+        /// (<see cref="Formelregister.Abweichungen"/>).</para>
+        /// </summary>
+        /// <param name="kopfZeile">Die Zeile der Spaltenköpfe (Jahr 0 steht darunter).</param>
+        /// <param name="p">Der Parametersatz des Laufs — derselbe, aus dem der
+        /// Parameterblock steht und mit dem die Tabelle gerechnet wurde.</param>
+        /// <returns>Die Lage der Tabelle; <c>null</c>, wenn es kein Zahlungsbild gibt.</returns>
+        internal static MehrjahresTafel Mehrjahrestabelle(IXLWorksheet ws, int kopfZeile,
+            int idProjekt, Mehrjahresbild bild, VerlaufSerie serie, WirtschaftlichkeitParameter p,
+            Formelregister register)
+        {
+            KapitalwertRechner.Zahlungsbild zb = serie != null ? serie.Bild : null;
+            if (ws == null || bild == null || zb == null || p == null || register == null) return null;
+
+            var tafel = new MehrjahresTafel
+            {
+                IdProjekt = idProjekt,
+                KopfZeile = kopfZeile,
+                Jahr0Zeile = kopfZeile + 1,
+                Jahre = bild.Jahre,
+                AbschlussZeile = kopfZeile + 1 + bild.Jahre + 1,
+                Tabelle = bild,
+                Bild = zb,
+                SpalteNetto = SpalteVon(bild, "NETTO"),
+                SpalteBarwert = SpalteVon(bild, "BARWERT"),
+                SpalteKumuliert = SpalteVon(bild, "KUMULIERT"),
+                FreieSpalte = 2 + bild.Spalten.Count
+            };
+            int T = tafel.Jahre;
+            if (tafel.SpalteNetto < 0 || tafel.SpalteBarwert < 0 || tafel.SpalteKumuliert < 0 || T < 1)
+                return tafel;
+
+            double i = p.Zinssatz / 100.0;
+            double pE = p.PreissteigerungEnergie / 100.0;
+            double pB = p.PreissteigerungBetrieb / 100.0;
+
+            // ---- Energie und CO₂-Abgabe (Rückfallzweig): Fortschreibung ab Jahr 2 ----
+            Fortschreibung(ws, tafel, bild, "ENERGIE", pE, register);
+            if (zb.BehgFortgeschrieben) Fortschreibung(ws, tafel, bild, "BEHG", pE, register);
+
+            // ---- Betrieb als zwei Terme über Hilfsspalten ----
+            int cBetrieb = SpalteVon(bild, "BETRIEB");
+            if (cBetrieb > 0 && zb.BetriebBasisJeJahr != null && zb.EndenergieBasisJeJahr != null &&
+                zb.BetriebBasisJeJahr.Length > T && zb.EndenergieBasisJeJahr.Length > T)
+            {
+                bool mitEndenergie = false;
+                for (int t = 1; t <= T; t++) if (zb.EndenergieBasisJeJahr[t] != 0) mitEndenergie = true;
+
+                int hB = tafel.FreieSpalte++;
+                int hE = mitEndenergie ? tafel.FreieSpalte++ : -1;
+                Kopf(ws, kopfZeile, hB, KopfBasisPB);
+                if (hE > 0) Kopf(ws, kopfZeile, hE, KopfBasisPE);
+                MehrjahresSpalte betrieb = bild.Spalten[cBetrieb - 2];
+
+                for (int t = 1; t <= T; t++)
+                {
+                    int r = tafel.Zeile(t);
+                    Zahl(ws.Cell(r, hB), zb.BetriebBasisJeJahr[t]);
+                    if (hE > 0) Zahl(ws.Cell(r, hE), zb.EndenergieBasisJeJahr[t]);
+
+                    string jahr = Bezug(r, 1);
+                    string formel = hE > 0
+                        ? "-(" + Bezug(r, hB) + "*(1+" + PREIS_B + ")^(" + jahr + "-1)+" +
+                          Bezug(r, hE) + "*(1+" + PREIS_E + ")^(" + jahr + "-1))"
+                        : "-" + Bezug(r, hB) + "*(1+" + PREIS_B + ")^(" + jahr + "-1)";
+                    double nach = -(zb.BetriebBasisJeJahr[t] * Math.Pow(1.0 + pB, t - 1) +
+                                    (hE > 0 ? zb.EndenergieBasisJeJahr[t] * Math.Pow(1.0 + pE, t - 1) : 0.0));
+                    register.Formel(ws.Cell(r, cBetrieb), formel, betrieb.Wert(t), nach);
+                }
+            }
+
+            // ---- Netto (Zeilensumme), Barwert, Kumuliert ----
+            MehrjahresSpalte netto = bild.Spalten[tafel.SpalteNetto - 2];
+            MehrjahresSpalte barwert = bild.Spalten[tafel.SpalteBarwert - 2];
+            MehrjahresSpalte kumuliert = bild.Spalten[tafel.SpalteKumuliert - 2];
+            int letztePosition = tafel.SpalteNetto - 1;
+            double kum = 0;
+            for (int t = 0; t <= T; t++)
+            {
+                int r = tafel.Zeile(t);
+
+                double nettoNach = 0;
+                for (int c = 2; c <= letztePosition; c++) nettoNach += bild.Spalten[c - 2].Wert(t);
+                if (letztePosition >= 2)
+                    register.Formel(ws.Cell(r, tafel.SpalteNetto),
+                        "SUM(" + Bezug(r, 2) + ":" + Bezug(r, letztePosition) + ")", netto.Wert(t), nettoNach);
+
+                double barwertNach = netto.Wert(t) * Math.Pow(1.0 + i, -t);
+                register.Formel(ws.Cell(r, tafel.SpalteBarwert),
+                    Bezug(r, tafel.SpalteNetto) + "*(1+" + ZINS + ")^(-" + Bezug(r, 1) + ")",
+                    barwert.Wert(t), barwertNach);
+
+                kum = t == 0 ? barwert.Wert(0) : kum + barwert.Wert(t);
+                register.Formel(ws.Cell(r, tafel.SpalteKumuliert),
+                    t == 0 ? Bezug(r, tafel.SpalteBarwert)
+                           : Bezug(r - 1, tafel.SpalteKumuliert) + "+" + Bezug(r, tafel.SpalteBarwert),
+                    kumuliert.Wert(t), kum);
+            }
+
+            // ---- Abschlusszeile: nominaler Restwert, sein Barwert, der Nettobarwert ----
+            int rA = tafel.AbschlussZeile;
+            Zahl(ws.Cell(rA, tafel.SpalteNetto), zb.RestwertNominal);
+            ws.Cell(rA, tafel.SpalteNetto).Style.Font.Bold = true;
+            ws.Cell(rA, tafel.SpalteNetto).Style.Fill.BackgroundColor = ExcelBerichtGenerator.STAMM;
+            register.Formel(ws.Cell(rA, tafel.SpalteBarwert),
+                Bezug(rA, tafel.SpalteNetto) + "*(1+" + ZINS + ")^(-" + Bezug(tafel.Zeile(T), 1) + ")",
+                bild.RestwertBarwert, zb.RestwertNominal * Math.Pow(1.0 + i, -T));
+            register.Formel(ws.Cell(rA, tafel.SpalteKumuliert),
+                Bezug(tafel.Zeile(T), tafel.SpalteKumuliert) + "+" + Bezug(rA, tafel.SpalteBarwert),
+                bild.Kapitalwert, kumuliert.Wert(T) + bild.RestwertBarwert);
+            return tafel;
+        }
+
+        /// <summary>Fortschreibung einer Spalte ab Jahr 2: Jahr 1 × (1+p)^(t−1).</summary>
+        private static void Fortschreibung(IXLWorksheet ws, MehrjahresTafel tafel, Mehrjahresbild bild,
+                                           string schluessel, double satz, Formelregister register)
+        {
+            int c = SpalteVon(bild, schluessel);
+            if (c < 0) return;
+            MehrjahresSpalte s = bild.Spalten[c - 2];
+            string name = string.Equals(schluessel, "ENERGIE", StringComparison.Ordinal) ||
+                          string.Equals(schluessel, "BEHG", StringComparison.Ordinal) ? PREIS_E : PREIS_B;
+            string jahr1 = Bezug(tafel.Zeile(1), c, true);
+            for (int t = 2; t <= tafel.Jahre; t++)
+            {
+                int r = tafel.Zeile(t);
+                register.Formel(ws.Cell(r, c),
+                    jahr1 + "*(1+" + name + ")^(" + Bezug(r, 1) + "-1)",
+                    s.Wert(t), s.Wert(1) * Math.Pow(1.0 + satz, t - 1));
+            }
+        }
+
+        /// <summary>Spalte (1-basiert) der Positionsspalte mit dem Schlüssel; −1 = keine.</summary>
+        internal static int SpalteVon(Mehrjahresbild bild, string schluessel)
+        {
+            if (bild == null) return -1;
+            for (int k = 0; k < bild.Spalten.Count; k++)
+                if (string.Equals(bild.Spalten[k].Schluessel, schluessel, StringComparison.Ordinal))
+                    return 2 + k;
+            return -1;
+        }
+
+        private static void Kopf(IXLWorksheet ws, int zeile, int spalte, string text)
+        {
+            ws.Cell(zeile, spalte).Value = text;
+            ws.Cell(zeile, spalte).Style.Font.Bold = true;
+            ws.Cell(zeile, spalte).Style.Fill.BackgroundColor = ExcelBerichtGenerator.KOPF;
+        }
+
+        private static void Zahl(IXLCell zelle, double wert)
+        {
+            zelle.Value = wert;
+            zelle.Style.NumberFormat.Format = "#,##0";
+        }
+
+        // =====================================================================
         //  Zellbezüge
         // =====================================================================
 
@@ -161,6 +357,177 @@ namespace WindowsFormsApplication1
         internal static string Bezug(int zeile, int spalte, bool zeileFest = false)
         {
             return Spalte(spalte) + (zeileFest ? "$" : "") + zeile.ToString(CultureInfo.InvariantCulture);
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b — die Lage EINER Mehrjahrestabelle im Blatt „Wirtschaftlichkeit": wo
+    /// ihre Jahre stehen, welche Spalten Netto, Barwert und Kumuliert tragen und welche
+    /// Spalte rechts von ihr frei ist. Die Kennzahlen der Stufe 2 beziehen sich darauf.
+    /// </summary>
+    internal sealed class MehrjahresTafel
+    {
+        internal int IdProjekt;
+        internal int KopfZeile;
+        internal int Jahr0Zeile;
+        internal int Jahre;
+        internal int AbschlussZeile;
+        internal int SpalteNetto = -1;
+        internal int SpalteBarwert = -1;
+        internal int SpalteKumuliert = -1;
+
+        /// <summary>Die erste Spalte rechts der Tabelle und ihrer Hilfsspalten.</summary>
+        internal int FreieSpalte;
+
+        internal Mehrjahresbild Tabelle;
+        internal KapitalwertRechner.Zahlungsbild Bild;
+
+        /// <summary>Die Zeile des Jahres <paramref name="jahr"/> (0…T).</summary>
+        internal int Zeile(int jahr) { return Jahr0Zeile + jahr; }
+
+        /// <summary>true, wenn Netto, Barwert und Kumuliert als Spalten stehen.</summary>
+        internal bool Vollstaendig
+        {
+            get { return SpalteNetto > 0 && SpalteBarwert > 0 && SpalteKumuliert > 0 && Jahre >= 1; }
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b — das <b>Register der Formelzellen</b> einer Mappe und der Nachtrag
+    /// ihrer Ergebnisse.
+    ///
+    /// <para><b>Warum es das gibt</b> (Befund E8b/0, <c>FormelmappeClosedXmlBefundTests</c>):
+    /// ClosedXML 0.105.1 legt Formeln ohne zwischengespeichertes Ergebnis ab, und seine
+    /// Rechenmaschine kennt NPV, PMT und IRR nicht. Eine Mappe nur aus Formeln zeigte in
+    /// jedem Betrachter ohne eigene Rechenmaschine leere Zellen. Deshalb merkt sich dieses
+    /// Register zu jeder Formelzelle die Zahl, die sie als Wert trug, und trägt sie nach dem
+    /// Speichern als Ergebnis ein (OpenXML SDK, volle Stellenzahl); die Mappe verlangt
+    /// zugleich die Neuberechnung beim Öffnen (<c>fullCalcOnLoad</c>) — Excel und LibreOffice
+    /// rechnen dann selbst.</para>
+    ///
+    /// <para><b>Keine Formel ohne Gegenrechnung:</b> <see cref="Formel"/> nimmt das in C#
+    /// nachgerechnete Ergebnis der Formel mit. Weicht es vom Wert ab (mehr als
+    /// <see cref="TOLERANZ_RELATIV"/> bzw. <see cref="TOLERANZ_ABSOLUT"/>), bleibt die Zelle
+    /// ein Wert — die Mappe zeigt dann nie eine Formel, die etwas anderes rechnet als der
+    /// Bericht sagt.</para>
+    /// </summary>
+    internal sealed class Formelregister
+    {
+        /// <summary>Relative Toleranz der Gegenrechnung.</summary>
+        internal const double TOLERANZ_RELATIV = 1e-9;
+
+        /// <summary>Absolute Toleranz der Gegenrechnung [€ bzw. Einheit der Zelle].</summary>
+        internal const double TOLERANZ_ABSOLUT = 1e-6;
+
+        private sealed class Eintrag
+        {
+            internal string Blatt = "";
+            internal int Zeile;
+            internal int Spalte;
+            internal double Zahl;
+            internal string Text;
+        }
+
+        private readonly List<Eintrag> _eintraege = new List<Eintrag>();
+
+        /// <summary>Zahl der geschriebenen Formeln.</summary>
+        internal int Anzahl { get { return _eintraege.Count; } }
+
+        /// <summary>Zahl der Zellen, deren Formel die Gegenrechnung nicht bestand — sie
+        /// blieben Werte.</summary>
+        internal int Abweichungen { get; private set; }
+
+        /// <summary>Gleich im Sinne der Gegenrechnung.</summary>
+        internal static bool Gleich(double a, double b)
+        {
+            return Math.Abs(a - b) <= Math.Max(TOLERANZ_ABSOLUT, TOLERANZ_RELATIV * Math.Max(Math.Abs(a), Math.Abs(b)));
+        }
+
+        /// <summary>
+        /// Schreibt die Formel in die Zelle, wenn ihr nachgerechnetes Ergebnis dem Wert
+        /// gleicht; der Wert wird als Ergebnis vorgemerkt. Sonst bleibt der Wert stehen.
+        /// </summary>
+        /// <param name="wert">Die Zahl, die die Zelle als Wert trägt (und künftig als
+        /// zwischengespeichertes Ergebnis).</param>
+        /// <param name="nachgerechnet">Das Ergebnis der Formel, in C# nachgerechnet.</param>
+        internal bool Formel(IXLCell zelle, string formelA1, double wert, double nachgerechnet)
+        {
+            if (zelle == null || string.IsNullOrEmpty(formelA1)) return false;
+            if (double.IsNaN(wert) || double.IsInfinity(wert) || double.IsNaN(nachgerechnet) ||
+                double.IsInfinity(nachgerechnet) || !Gleich(wert, nachgerechnet))
+            {
+                Abweichungen++;
+                return false;
+            }
+            zelle.FormulaA1 = formelA1;
+            _eintraege.Add(new Eintrag
+            {
+                Blatt = zelle.Worksheet.Name,
+                Zeile = zelle.Address.RowNumber,
+                Spalte = zelle.Address.ColumnNumber,
+                Zahl = wert
+            });
+            return true;
+        }
+
+        /// <summary>
+        /// Eine Formel, deren Ergebnis ein TEXT ist (benannter Leerwert, Konzept § 2.11.6
+        /// Stufe 2) — ohne Gegenrechnung; der Aufrufer entscheidet, dass der Text gilt.
+        /// </summary>
+        internal void FormelText(IXLCell zelle, string formelA1, string text)
+        {
+            if (zelle == null || string.IsNullOrEmpty(formelA1) || text == null) return;
+            zelle.FormulaA1 = formelA1;
+            _eintraege.Add(new Eintrag
+            {
+                Blatt = zelle.Worksheet.Name,
+                Zeile = zelle.Address.RowNumber,
+                Spalte = zelle.Address.ColumnNumber,
+                Text = text
+            });
+        }
+
+        /// <summary>
+        /// Trägt nach dem Speichern je Formelzelle ihr Ergebnis ein (<c>&lt;v&gt;</c>, Zahl
+        /// mit voller Stellenzahl bzw. Text mit <c>t="str"</c>). Ohne Formeln geschieht nichts.
+        /// </summary>
+        internal void Nachtragen(string datei)
+        {
+            if (_eintraege.Count == 0) return;
+            using (SpreadsheetDocument doc = SpreadsheetDocument.Open(datei, true))
+            {
+                WorkbookPart mappe = doc.WorkbookPart;
+                foreach (IGrouping<string, Eintrag> gruppe in _eintraege.GroupBy(e => e.Blatt))
+                {
+                    Sheet blatt = mappe.Workbook.Descendants<Sheet>()
+                                       .FirstOrDefault(s => s.Name != null && s.Name.Value == gruppe.Key);
+                    if (blatt == null || blatt.Id == null) continue;
+                    var teil = (WorksheetPart)mappe.GetPartById(blatt.Id.Value);
+
+                    var zellen = new Dictionary<string, Cell>(StringComparer.Ordinal);
+                    foreach (Cell c in teil.Worksheet.Descendants<Cell>())
+                        if (c.CellReference != null && c.CellReference.Value != null)
+                            zellen[c.CellReference.Value] = c;
+
+                    foreach (Eintrag e in gruppe)
+                    {
+                        Cell c;
+                        if (!zellen.TryGetValue(ExcelFormelmappe.Bezug(e.Zeile, e.Spalte), out c) ||
+                            c.CellFormula == null) continue;
+                        if (e.Text != null)
+                        {
+                            c.DataType = CellValues.String;
+                            c.CellValue = new CellValue(e.Text);
+                        }
+                        else
+                        {
+                            c.DataType = null;
+                            c.CellValue = new CellValue(e.Zahl.ToString("R", CultureInfo.InvariantCulture));
+                        }
+                    }
+                    teil.Worksheet.Save();
+                }
+            }
         }
     }
 }

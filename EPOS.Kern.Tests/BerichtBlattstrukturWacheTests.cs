@@ -100,6 +100,45 @@ namespace EPOS.Kern.Tests
             };
         }
 
+        /// <summary>
+        /// ETAPPE E8b — die Prüfgruppe der Formelmappe: die ECHTEN Kostenpositionen der
+        /// Projekte 1040/1041/1042 (Investitionen mit Nutzungsdauer, Ersatz, Restwert) mit
+        /// synthetischen Energiekosten (Muster der Ergebnisansicht-Tests), dazu ein
+        /// gepflegter Parametersatz mit Sätzen ungleich 0 (i 4 %, p_E 2 %, p_B 1,5 %,
+        /// p_I 2,5 %) und zwei Betriebspositionen der Variante A — eine davon mit Startjahr 6,
+        /// damit die Basis des Betriebs-Topfes eine Stufe hat. Alles auf der Arbeitskopie.
+        /// </summary>
+        private static BerichtsDaten Gruppe1040MitSaetzen()
+        {
+            var ctrl = new WirtschaftlichkeitCtrl();
+            WirtschaftlichkeitParameter p = ctrl.LadeParameter(1040);
+            p.IdStamm = 1040;
+            p.Zinssatz = 4.0;
+            p.Betrachtungszeitraum = 20;
+            p.PreissteigerungEnergie = 2.0;
+            p.PreissteigerungBetrieb = 1.5;
+            p.PreissteigerungInvestition = 2.5;
+            Assert.True(ctrl.SpeichereParameter(p), "Der Parametersatz der Prüfgruppe wurde nicht gespeichert.");
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
+                "Gruppe, Kostenart, Bemessung) VALUES (1041, 83, 7, 2, 1800.0, 'Wartung BHKW', 'BETRIEBSGEBUNDEN', 'BETRAG')");
+            DataRepository.ExecuteNonQuery(
+                "INSERT INTO Tab_ProjektWerte (ProjektID, StammID, KomponentenID, KategorieID, EingegebenerWert, " +
+                "Gruppe, Kostenart, Bemessung, StartJahr) VALUES (1041, 79, 2, 2, 600.0, 'Wartung Kessel', " +
+                "'BETRIEBSGEBUNDEN', 'BETRAG', 6)");
+            p = ctrl.LadeParameter(1040);
+
+            var daten = new BerichtsDaten { IdStamm = 1040, Stammprojektname = "Stammprojekt" };
+            daten.Varianten.Add(Stand(1040, true, "Stammprojekt", 12000.0));
+            daten.Varianten.Add(Stand(1041, false, "Variante A", 9000.0));
+            daten.Varianten.Add(Stand(1042, false, "Variante B", 7000.0));
+            List<SensitivitaetZeile> sens;
+            daten.Wirtschaftlichkeit = ctrl.Berechne(daten, p, 0, false, out sens);
+            daten.Bewertung = WirtschaftlichkeitBewertung.FuerBericht(daten, daten.Wirtschaftlichkeit, p,
+                                                                      BerichtTexte.Kultur, sens);
+            return daten;
+        }
+
         /// <summary>Alle Bausteine an — sonst fehlte gerade der Block, um den es geht.</summary>
         private static BerichtsKonfiguration VolleKonfiguration()
         {
@@ -464,6 +503,81 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// ETAPPE E8b, Stufe 1 (Konzept § 2.11.6) — die <b>Mehrjahrestabelle rechnet in
+        /// Formeln</b>: Energie als Fortschreibung Jahr 1 × (1+p_E)^(t−1), Betrieb über die
+        /// Hilfsspalte „Basis" mit p_B (die Position mit Startjahr 6 hebt die Basis ab dem
+        /// Jahr 6), Netto als Zeilensumme, Barwert als Netto × (1+i)^−t, Kumuliert als
+        /// Laufsumme; die Abschlusszeile trägt den nominalen Restwert, seinen Barwert und
+        /// den Nettobarwert.
+        ///
+        /// <para><b>Die Zahlen:</b> Die zwischengespeicherten Ergebnisse sind die Werte
+        /// des Rechenlaufs (der Nettobarwert der Tabelle ist der der Kennzahltafel), und
+        /// ClosedXML rechnet jede Formel, deren Funktionen es kennt, auf dieselbe Zahl nach
+        /// (NPV, PMT, IRR ausgenommen — Befund E8b/0). Die Mappe verlangt beim Öffnen die
+        /// volle Neuberechnung.</para>
+        ///
+        /// <para>Prüfgruppe: 1040/1041/1042 mit gepflegtem Parametersatz (i 4 %, p_E 2 %,
+        /// p_B 1,5 %, p_I 2,5 %) — Muster der Ergebnisansicht-Tests.</para>
+        /// </summary>
+        [Fact]
+        public void Excel_Stufe1_Mehrjahrestabelle_rechnet_in_Formeln()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            string ordner = TempOrdner();
+            try
+            {
+                string ziel = Path.Combine(ordner, "stufe1.xlsx");
+                new ExcelBerichtGenerator().Erzeuge(Gruppe1040MitSaetzen(), VolleKonfiguration(), ziel);
+
+                using (var doc = DocumentFormat.OpenXml.Packaging.SpreadsheetDocument.Open(ziel, false))
+                    Assert.True(doc.WorkbookPart.Workbook.CalculationProperties?.FullCalculationOnLoad?.Value == true,
+                                "Die Formelmappe verlangt beim Öffnen die volle Neuberechnung.");
+
+                using var wb = new XLWorkbook(ziel);
+                IXLWorksheet w = wb.Worksheet("Wirtschaftlichkeit");
+                int kopf = TabellenKopf(w, "Variante A");
+                int j1 = kopf + 2;   // Jahr 1 (Jahr 0 steht unter dem Kopf)
+                Zeile(w, kopf, "Jahr", "Investition und Ersatz", "Betriebskosten", "Energiekosten",
+                      "Netto nominal", "Barwert", "Kumuliert",
+                      WindowsFormsApplication1.MyResource.Resource.WIRT_FM_MJ_BASIS_PB);
+
+                // Energie: Jahr 1 ist Wert, ab Jahr 2 die Fortschreibung mit p_E.
+                Assert.False(w.Cell(j1, 4).HasFormula);
+                Assert.Equal("D$" + j1 + "*(1+p_E)^(A" + (j1 + 1) + "-1)", w.Cell(j1 + 1, 4).FormulaA1);
+
+                // Betrieb über die Hilfsspalte — die Position mit Startjahr 6 hebt die Basis.
+                Assert.Equal("-H" + j1 + "*(1+p_B)^(A" + j1 + "-1)", w.Cell(j1, 3).FormulaA1);
+                Assert.Equal(1800.0, w.Cell(j1 + 4, 8).GetDouble(), 6);   // Jahr 5
+                Assert.Equal(2400.0, w.Cell(j1 + 5, 8).GetDouble(), 6);   // Jahr 6
+
+                // Netto, Barwert, Kumuliert.
+                Assert.Equal("SUM(B" + j1 + ":D" + j1 + ")", w.Cell(j1, 5).FormulaA1);
+                Assert.Equal("E" + j1 + "*(1+Zins_i)^(-A" + j1 + ")", w.Cell(j1, 6).FormulaA1);
+                Assert.Equal("G" + (j1 - 1) + "+F" + j1, w.Cell(j1, 7).FormulaA1);
+
+                // Abschluss: nominaler Restwert (Netto), sein Barwert, der Nettobarwert.
+                int abschluss = kopf + 22;
+                Assert.Equal(WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_RESTWERT_T,
+                             w.Cell(abschluss, 1).GetString());
+                Assert.Equal("E" + abschluss + "*(1+Zins_i)^(-A" + (abschluss - 1) + ")",
+                             w.Cell(abschluss, 6).FormulaA1);
+                Assert.Equal("G" + (abschluss - 1) + "+F" + abschluss, w.Cell(abschluss, 7).FormulaA1);
+
+                // Die Zahlen: der Nettobarwert der Tabelle ist der der Kennzahltafel.
+                int nbw = ZeileMitText(w, WindowsFormsApplication1.MyResource.Resource.WIRT_ZEILE_NETTOBARWERT);
+                Assert.True(nbw > 0, "Die Kennzahltafel fehlt.");
+                Assert.Equal(w.Cell(nbw, 3).GetDouble(), w.Cell(abschluss, 7).GetDouble(), 6);
+
+                // Und ClosedXML rechnet dieselben Formeln nach — drei Tabellen zu je 84
+                // Formeln, dazu die 20 Betriebszeilen der Variante A.
+                FormelnRechnenWieZwischengespeichert(wb, "Wirtschaftlichkeit", 3 * 84 + 20);
+            }
+            finally { Aufraeumen(ordner); }
+        }
+
+        /// <summary>
         /// ETAPPE E6 — der Differenzkopf des Verlaufs nennt die REFERENZ, gegen die der
         /// Verlauf rechnet: In Sicht 2 mit A = Variante A läuft die eine Differenzlinie
         /// B − A, und ihr Kopf heißt „Δ Stamm − Variante A" in allen drei Spaltengruppen —
@@ -686,6 +800,65 @@ namespace EPOS.Kern.Tests
             Assert.Equal(guenstig, ws.Cell(zeile, 3).GetDouble(), 12);
             Assert.Equal(unguenstig, ws.Cell(zeile, 4).GetDouble(), 12);
             Assert.Equal(name, ws.Cell(zeile, 5).GetString());
+        }
+
+        /// <summary>Erste Zeile, deren Spalte A den Text trägt; 0 = keine.</summary>
+        private static int ZeileMitText(IXLWorksheet w, string text, int abZeile = 1)
+        {
+            int letzte = w.LastRowUsed() != null ? w.LastRowUsed().RowNumber() : 0;
+            for (int r = abZeile; r <= letzte; r++)
+                if (string.Equals(w.Cell(r, 1).GetString().Trim(), text, StringComparison.Ordinal)) return r;
+            return 0;
+        }
+
+        /// <summary>ETAPPE E8b: die Kopfzeile („Jahr") der Mehrjahrestabelle des Standes
+        /// <paramref name="stand"/> — die Zeile unter seinem Namen, gesucht unterhalb des
+        /// Titels der Mehrjahresübersicht.</summary>
+        private static int TabellenKopf(IXLWorksheet w, string stand)
+        {
+            int titel = ZeileMitText(w, WindowsFormsApplication1.MyResource.Resource.WIRT_MJ_TITEL);
+            Assert.True(titel > 0, "Die Mehrjahresübersicht fehlt.");
+            int name = ZeileMitText(w, stand, titel + 1);
+            Assert.True(name > 0, "Die Mehrjahrestabelle „" + stand + "\" fehlt.");
+            Assert.Equal("Jahr", w.Cell(name + 1, 1).GetString());
+            return name + 1;
+        }
+
+        /// <summary>
+        /// ETAPPE E8b — die <b>Gegenprobe der Formeln in ClosedXML</b>: Jede Formelzelle des
+        /// Blattes trägt als zwischengespeichertes Ergebnis die Zahl des Rechenlaufs; nach
+        /// <c>RecalculateAllFormulas()</c> muss jede Formel, die ClosedXML rechnen kann, auf
+        /// dieselbe Zahl kommen. Zellen, deren Rechnung in ClosedXML einen Fehler ergibt (NPV,
+        /// PMT, IRR und was davon abhängt — Befund E8b/0), zählen nicht; sie prüft Excel.
+        /// </summary>
+        private static void FormelnRechnenWieZwischengespeichert(XLWorkbook wb, string blatt, int mindestens)
+        {
+            IXLWorksheet ws = wb.Worksheet(blatt);
+            var zwischen = new Dictionary<string, XLCellValue>();
+            foreach (IXLCell c in ws.CellsUsed(x => x.HasFormula))
+                zwischen[c.Address.ToString()] = c.CachedValue;
+            Assert.True(zwischen.Count >= mindestens,
+                        "Nur " + zwischen.Count + " Formelzellen, erwartet mindestens " + mindestens + ".");
+
+            wb.RecalculateAllFormulas();
+            int verglichen = 0;
+            foreach (KeyValuePair<string, XLCellValue> z in zwischen)
+            {
+                XLCellValue neu = ws.Cell(z.Key).Value;
+                if (neu.IsError) continue;
+                if (z.Value.IsNumber)
+                {
+                    Assert.True(neu.IsNumber, z.Key + ": ClosedXML rechnet keine Zahl.");
+                    Assert.True(Formelregister.Gleich(z.Value.GetNumber(), neu.GetNumber()),
+                                z.Key + " (" + ws.Cell(z.Key).FormulaA1 + "): zwischengespeichert " +
+                                z.Value.GetNumber().ToString("R") + ", gerechnet " + neu.GetNumber().ToString("R"));
+                }
+                else if (z.Value.IsText)
+                    Assert.Equal(z.Value.GetText(), neu.IsText ? neu.GetText() : neu.ToString());
+                verglichen++;
+            }
+            Assert.True(verglichen >= mindestens,
+                        "Nur " + verglichen + " Formeln in ClosedXML nachgerechnet, erwartet mindestens " + mindestens + ".");
         }
 
         /// <summary>Der Bezug eines Arbeitsmappennamens (<c>RefersTo</c>); leer, wenn es

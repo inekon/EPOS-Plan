@@ -66526,6 +66526,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis Betrieb mit p_B [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_BASIS_PB {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_BASIS_PB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Basis Betrieb mit p_E [€/a] ähnelt.
+        /// </summary>
+        public static string WIRT_FM_MJ_BASIS_PE {
+            get {
+                return ResourceManager.GetString("WIRT_FM_MJ_BASIS_PE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Nutzungsdauer — Änderung gegenüber Erwartet [a] ähnelt.
         /// </summary>
         public static string WIRT_FM_PARAM_DAUER {

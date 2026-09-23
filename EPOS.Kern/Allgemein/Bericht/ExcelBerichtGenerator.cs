@@ -159,6 +159,11 @@ namespace WindowsFormsApplication1
 
             GrafikModulSicherstellen();
 
+            // ETAPPE E8b (Formelmappe): das Register der Formelzellen — jede Formel, die ein
+            // Block schreibt, merkt sich hier ihr Ergebnis; nach dem Speichern wird es
+            // eingetragen (Befund E8b/0: ClosedXML legt keine Ergebnisse ab).
+            var formeln = new Formelregister();
+
             using (var wb = new XLWorkbook())
             {
                 BlattUebersicht(wb, daten);
@@ -169,7 +174,7 @@ namespace WindowsFormsApplication1
                 // der persistierte Stand aus Tab_ErgebnisWirtschaftlichkeit).
                 if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
                 {
-                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten);
+                    WirtschaftlichkeitVerlaufSzenarien verlauf = BlattWirtschaftlichkeit(wb, daten, formeln);
 
                     // ETAPPE E6 (U13): das Blatt „Verlauf" — je Jahr eine Zeile, je Variante
                     // und Szenario eine Spalte, dieselben Linien wie das Dreierbild des
@@ -186,8 +191,15 @@ namespace WindowsFormsApplication1
                     foreach (VariantenDaten v in daten.Varianten)
                         BlattDetail(wb, v);
 
+                // ETAPPE E8b: Eine Mappe mit Formeln verlangt beim Öffnen die volle
+                // Neuberechnung — Excel und LibreOffice rechnen dann selbst.
+                if (formeln.Anzahl > 0) wb.FullCalculationOnLoad = true;
                 wb.SaveAs(zielDatei);
             }
+
+            // ETAPPE E8b: die Ergebnisse der Formelzellen nachtragen — dieselben Zahlen, die
+            // die Zellen als Werte trugen; ein Betrachter ohne Rechenmaschine zeigt sie.
+            formeln.Nachtragen(zielDatei);
             return zielDatei;
         }
 
@@ -355,7 +367,8 @@ namespace WindowsFormsApplication1
         /// „Verlauf" schreibt dieselben Linien, ohne ein zweites Mal zu rechnen.
         /// <c>null</c> = kein Verlauf (keine Ergebnisse, Zeitreihen fehlen, Rechenfehler).
         /// </summary>
-        private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten)
+        private static WirtschaftlichkeitVerlaufSzenarien BlattWirtschaftlichkeit(XLWorkbook wb, BerichtsDaten daten,
+                                                                                  Formelregister formeln)
         {
             var provider = new WirtschaftlichkeitCtrl();
             List<int> ids = daten.Varianten.Select(v => v.IdProjekt).ToList();
@@ -828,7 +841,10 @@ namespace WindowsFormsApplication1
             }
 
             // ---------------- Mehrjahresübersicht der Zahlungsströme (E7) ----------------
-            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r);
+            // ETAPPE E8b, Stufe 1: Die Tabellen rechnen in Formeln auf den Parameterblock;
+            // ihre Lage merkt sich die Liste — die Kennzahlen der Stufe 2 beziehen sich darauf.
+            var tafeln = new List<MehrjahresTafel>();
+            r = BlattMehrjahres(ws, daten, verlaufFuerMehrjahres, alle, r, p, formeln, tafeln);
 
             // ---------------- Sensitivitätsanalyse (W2, Szenario Erwartet) ----------------
             // ETAPPE E5 Teil b (V‑A, V‑G6): die Zeilen der Bewertung dieses Laufs (in
@@ -1038,7 +1054,12 @@ namespace WindowsFormsApplication1
             // Spaltenbreiten: die Mehrjahresübersicht (E7) ist mit bis zu 13 Spalten der
             // breiteste Block des Blattes. ETAPPE E6: Der Verlauf trägt je Szenario eine
             // Spaltengruppe — drei Gruppen aus Projekten und Differenzen.
-            for (int i = 2; i <= Math.Max(14, 6 * daten.Varianten.Count); i++) ws.Column(i).Width = 18;
+            // ETAPPE E8b: Die Formelmappe hängt rechts an die Mehrjahrestabellen Hilfs- und
+            // Differenzspalten an — auch sie bekommen die Breite der Zahlenspalten.
+            int breit = Math.Max(14, 6 * daten.Varianten.Count);
+            IXLColumn letzteSpalte = ws.LastColumnUsed();
+            if (letzteSpalte != null) breit = Math.Max(breit, letzteSpalte.ColumnNumber());
+            for (int i = 2; i <= breit; i++) ws.Column(i).Width = 18;
             ws.SheetView.FreezeRows(2);
             return verlaufSzenarien;
         }
@@ -1085,7 +1106,9 @@ namespace WindowsFormsApplication1
         /// </summary>
         private static int BlattMehrjahres(IXLWorksheet ws, BerichtsDaten daten,
                                            WirtschaftlichkeitVerlauf verlauf,
-                                           List<WirtschaftlichkeitErgebnis> alle, int r)
+                                           List<WirtschaftlichkeitErgebnis> alle, int r,
+                                           WirtschaftlichkeitParameter p, Formelregister formeln,
+                                           List<MehrjahresTafel> tafeln)
         {
             if (verlauf == null || verlauf.Absolut.All(s => s.Bild == null)) return r;
 
@@ -1115,6 +1138,7 @@ namespace WindowsFormsApplication1
                 }
 
                 int spalten = bild.Spalten.Count;
+                int kopfZeile = r;   // ETAPPE E8b: Anker der Formeln (Jahr 0 steht darunter)
                 ws.Cell(r, 1).Value = MyResource.Resource.WIRT_MJ_JAHR;
                 for (int i = 0; i < spalten; i++) ws.Cell(r, 2 + i).Value = bild.Spalten[i].Titel;
                 ws.Range(r, 1, r, 1 + spalten).Style.Font.Bold = true;
@@ -1150,6 +1174,14 @@ namespace WindowsFormsApplication1
                     ws.Cell(r, 2 + i).Style.Fill.BackgroundColor = STAMM;
                 }
                 r++;
+
+                // ETAPPE E8b, Stufe 1 (Konzept § 2.11.6): dieselbe Tabelle in Formeln —
+                // Energie als Fortschreibung, Betrieb als zwei Terme über Hilfsspalten,
+                // Netto als Zeilensumme, Barwert, Laufsumme, Abschluss. Die Zellen tragen
+                // danach die Formel UND (über das Register) die Zahl, die hier stand.
+                MehrjahresTafel tafel = ExcelFormelmappe.Mehrjahrestabelle(ws, kopfZeile, v.IdProjekt,
+                                                                           bild, serie, p, formeln);
+                if (tafel != null) tafeln.Add(tafel);
 
                 ws.Cell(r, 1).Value = string.Format(MyResource.Resource.WIRT_MJ_PROBE,
                     bild.KumuliertT.ToString("N0", BerichtTexte.Kultur),
