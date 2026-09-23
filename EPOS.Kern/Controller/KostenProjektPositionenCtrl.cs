@@ -355,7 +355,7 @@ namespace WindowsFormsApplication1
                 liste.Add(z);
             }
 
-            // ETAPPE E7c (Schritt E, Schritt 107): die zwei Kennzeichen je Position —
+            // ETAPPE E7c (Schritt E, Schritt 108): die zwei Kennzeichen je Position —
             // eine Abfrage je Leseschleife; leer, wo es die Spalten nicht gibt.
             if (kategorieId == DbWerte.KOSTEN_KATEGORIE_INVESTITION && liste.Count > 0)
             {

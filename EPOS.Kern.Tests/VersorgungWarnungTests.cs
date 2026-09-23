@@ -18,8 +18,8 @@ namespace EPOS.Kern.Tests
     /// fand nie Bedarf, sein ganzer Ertrag stand als Überschuss da.
     ///
     /// <para><b>Was hier festgehalten wird.</b> (1) Das weiche Warnkriterium
-    /// „Solarthermie ohne Pufferspeicher auf Prozesswärme" samt dem vorbereiteten, NICHT
-    /// aktiven Heizkreis-Gegenstück; (2) die projektweite Prüfung „Bedarfskanal ohne
+    /// „Solarthermie ohne Pufferspeicher auf Prozesswärme" samt dem Heizkreis-Gegenstück
+    /// (aktiv seit dem Anwenderentscheid 23.09.2026); (2) die projektweite Prüfung „Bedarfskanal ohne
     /// Versorger" — Katalog, Laufprotokoll, Ergebnisübersicht, Hydraulikübersicht; (3)
     /// der Hinweis „Ertrag ohne Abnehmer" im Solarthermie-Reiter; (4) die Marke am
     /// Projekt, die ein gerechnetes Ergebnis nach einer Senken- oder Bedarfsänderung
@@ -123,31 +123,92 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
-        /// Das HEIZKREIS-Gegenstück ist VORBEREITET, aber NICHT AKTIV (Anwenderentscheid
-        /// steht aus): Schalter aus, weder Dialog- noch Laufprüfung melden es — und
-        /// eingeschaltet greift es an derselben Konstellation.
+        /// Das HEIZKREIS-Gegenstück ist AKTIV (Anwenderentscheid 23.09.2026): Dialog- und
+        /// Laufprüfung melden ein Kollektorfeld mit Direktsenke Heizkreis ohne Puffersenke
+        /// — WEICH, an der Anlage, mit dem Satz „deckt Heizwärme nur zeitgleich" und der
+        /// Empfehlung Pufferspeicher. Ausgeschaltet (Prüfweg mit ausdrücklichem Schalter)
+        /// schweigt es.
         /// </summary>
         [Fact]
-        public void Das_Heizkreis_Kriterium_ist_vorbereitet_aber_nicht_aktiv()
+        public void Das_Heizkreis_Kriterium_greift_bei_Solarthermie_auf_dem_Heizkreis_ohne_Puffer()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            Assert.False(Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV);
+            Assert.True(Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER_AKTIV);
 
             Z_AnlageSenkeModel[] heizkreis = { Direkt(DbWerte.WS_ZIEL_HEIZKREIS) };
 
-            Assert.DoesNotContain(Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026, heizkreis),
-                                  x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
-            // 1026 fuehrt das Kollektorfeld tatsaechlich auf Heizkreis/Beides ohne Puffer.
-            Assert.DoesNotContain(Warnkriterien.PruefeProjekt(PROJEKT_SOLAR),
-                                  x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+            Warnbefund b = Assert.Single(Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026, heizkreis),
+                                         x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+            Assert.False(b.Hart);
+            Assert.Equal(SOLAR_1026, b.ID_Anlage);
+            Assert.Contains("deckt Heizwärme nur zeitgleich", b.Text);
+            Assert.Contains("Ertrag über dem Momentanbedarf wird verworfen", b.Text);
+            Assert.EndsWith("Empfehlung: Pufferspeicher.", b.Text);
+            Assert.StartsWith("auroTHERM", b.Text);          // die Anlage beim Namen
 
-            // Eingeschaltet (nur ueber den Pruefweg mit ausdruecklichem Schalter):
-            Warnbefund b = Assert.Single(
-                Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026, heizkreis, true),
+            // Das Prozess-Kriterium bleibt still - die Senke ist der Heizkreis.
+            Assert.DoesNotContain(Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026, heizkreis),
+                                  x => x.Kriterium == Warnkriterien.SOLAR_DIREKT_OHNE_PUFFER);
+
+            // 1026 fuehrt das Kollektorfeld tatsaechlich auf Heizkreis/Beides ohne Puffer -
+            // der Laufstart meldet es.
+            Assert.Contains(Warnkriterien.PruefeProjekt(PROJEKT_SOLAR),
+                            x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER &&
+                                 x.ID_Anlage == SOLAR_1026);
+
+            // Ausgeschaltet (nur ueber den Pruefweg mit ausdruecklichem Schalter) schweigt es.
+            Assert.DoesNotContain(Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026, heizkreis, false),
+                                  x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+        }
+
+        /// <summary>
+        /// Eine PUFFERSENKE mit Speicher nimmt den Überschuss auf — auch neben einer
+        /// Heizkreis-Direktsenke schweigt das Kriterium dann. Ein Puffer-Ziel OHNE Speicher
+        /// zählt nicht: Es fällt auf den Heizkreis zurück und wird gemeldet.
+        /// </summary>
+        [Fact]
+        public void Das_Heizkreis_Kriterium_schweigt_mit_Puffersenke()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.DoesNotContain(
+                Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026,
+                    new[] { Direkt(DbWerte.WS_ZIEL_HEIZKREIS),
+                            Puffer(DbWerte.WS_ZIEL_PUFFER_KOMBI, KOMBI_1026) }),
                 x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
-            Assert.Contains("deckt den Heizkreis nur zeitgleich", b.Text);
+
+            Assert.DoesNotContain(
+                Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026,
+                    new[] { Puffer(DbWerte.WS_ZIEL_PUFFER_HEIZUNG, KOMBI_1026) }),
+                x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+
+            // Puffer-Ziel ohne Speicher: faellt auf den Heizkreis zurueck -> Befund.
+            Assert.Contains(
+                Warnkriterien.PruefeSenken(PROJEKT_SOLAR, SOLAR_1026,
+                    new[] { Puffer(DbWerte.WS_ZIEL_PUFFER_HEIZUNG, 0) }),
+                x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+        }
+
+        /// <summary>
+        /// Das Kriterium gilt der SOLARTHERMIE — eine Wärmepumpe auf dem Heizkreis ohne
+        /// Puffer ist der Regelfall und regelt ihre Leistung nach dem Bedarf.
+        /// </summary>
+        [Fact]
+        public void Das_Heizkreis_Kriterium_schweigt_bei_der_Waermepumpe()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            Assert.DoesNotContain(
+                Warnkriterien.PruefeSenken(PROJEKT_SOLAR, WP_1026, new[] { Direkt(DbWerte.WS_ZIEL_HEIZKREIS) }),
+                x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER);
+
+            Assert.DoesNotContain(Warnkriterien.PruefeProjekt(PROJEKT_SOLAR),
+                                  x => x.Kriterium == Warnkriterien.SOLAR_HEIZKREIS_OHNE_PUFFER &&
+                                       x.ID_Anlage != SOLAR_1026);
         }
 
         /// <summary>

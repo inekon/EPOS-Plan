@@ -55,8 +55,9 @@ public class StromganglinieAdminDialogTests : EposBunitContext
     private static IElement OkKnopf(IRenderedComponent<StromganglinieAdminDialog> cut)
         => cut.FindAll(".epos-dialog > .epos-leiste button")[1];
 
+    /// <summary>Die Zeile ist die Wahl (Konzept Administrationsdialoge, V4).</summary>
     private static void Waehle(IRenderedComponent<StromganglinieAdminDialog> cut, int zeile)
-        => cut.FindAll(".epos-raster tbody tr")[zeile].QuerySelector("button")!.Click();
+        => Zeilenklick.Zeile(cut, zeile);
 
     // =====================================================================
     // Feldbestand
@@ -307,25 +308,37 @@ public class StromganglinieAdminDialogTests : EposBunitContext
         Assert.True(ergebnis);
     }
 
+    /// <summary>Esc wirkt wie „Beenden" — EIN Schlussweg (Konzept Administrationsdialoge, V15).</summary>
     [Fact]
-    public void Esc_meldet_false()
+    public void Esc_meldet_wie_Beenden()
     {
         bool? ergebnis = null;
         var cut = Zeige(geschlossen: b => ergebnis = b);
 
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
     }
 
-    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: meldet false.</summary>
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc und wie „Beenden" (V15).</summary>
     [Fact]
-    public void Kreuz_meldet_false()
+    public void Kreuz_meldet_wie_Beenden()
     {
         bool? ergebnis = null;
         var cut = Zeige(geschlossen: b => ergebnis = b);
 
         cut.Find(".epos-dialog-zu").Click();
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
+    }
+
+    /// <summary>„OK" heißt in der Verwaltung „Beenden" (V15) — primär und zuletzt.</summary>
+    [Fact]
+    public void Der_Schlussknopf_heisst_Beenden()
+    {
+        var cut = Zeige();
+        var letzter = cut.FindAll(".epos-dialog > .epos-leiste button").Last();
+
+        Assert.Equal("Beenden", letzter.TextContent.Trim());
+        Assert.Contains("epos-knopf--primaer", letzter.ClassName);
     }
 
     /// <summary>

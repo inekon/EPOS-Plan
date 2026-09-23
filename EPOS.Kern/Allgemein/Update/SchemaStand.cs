@@ -375,35 +375,46 @@ namespace WindowsFormsApplication1
         /// (<see cref="SchemaKatalog.Schritt105_KwkgAbwaermeabfuhr"/>). <b>Reines DDL,
         /// ergebnisneutral:</b> 0 heißt Fall 1, die Nettostromerzeugung — der Rechenweg
         /// vor dem Schritt; der Referenzlauf bleibt byte-gleich.
-        /// Schritt <b>106</b> ist einer Nachbarwelle vorbehalten; die Migration läuft über
-        /// die Lücke (ein fehlender Schritt ist kein Fehler, der Marker hält allein die
-        /// höchste gelaufene Nummer).
-        /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 107, Schritt E
-        /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>107</b>:
+        /// Mit den FREMDEN ERGEBNISVERWEISEN DER WIRTSCHAFTLICHKEIT (Schritt 106,
+        /// Anwenderentscheid 23.09.2026) steht das Ziel auf <b>106</b>: Ein Verweis
+        /// <c>Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis</c> auf einen Simulationslauf, der
+        /// nicht demselben Projekt gehört — das Erbe des Duplizierens —, wird NULL
+        /// (<see cref="WirtschaftlichkeitFremdverweis"/>). <b>Reines DML,
+        /// ergebnisneutral:</b> Kein Rechenweg liest den Verweis, und die Wirtschaftlichkeit
+        /// steht nicht im Export; der Referenzlauf bleibt byte-gleich.
+        /// Mit der ERGEBNISTABELLE JE GEBÄUDE (Schritt 107, Entscheid E30 vom 23.09.2026,
+        /// Konzept Gebäudesimulation N1.35) steht das Ziel auf <b>107</b>: eine leere
+        /// STRICT-Tabelle <c>Tab_ErgebnisGebaeude</c> samt zwei Indizes, deren DDL bei
+        /// <see cref="ErgebnisGebaeudeSchema"/> steht. <b>Reines DDL</b> — der Lauf schreibt
+        /// sie, kein Rechenweg liest sie, und der Referenzlauf exportiert sie nicht;
+        /// <b>der Referenzlauf bleibt byte-gleich</b>.
+        /// Mit dem ENTKOPPELTEN ERSATZ UND RESTWERT JE POSITION (Schritt 108, Schritt E
+        /// des Analysepapiers, Entscheid A6 vom 20.09.2026) steht das Ziel auf <b>108</b>:
         /// <c>Tab_ProjektWerte</c> und <c>Tab_KostenVorlagePosition</c> bekommen die
         /// nullbaren Kennzeichen <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c>
-        /// (<see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>). <b>Reines
+        /// (<see cref="SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen"/>). <b>Reines
         /// DDL, ergebnisneutral:</b> NULL heißt „wie bisher"; der Referenzlauf bleibt
         /// byte-gleich.
-        /// Mit der PREISBASIS ALS EIGENEM KARTENZUSTAND (Schritt 108, Schritt F,
-        /// Entscheid ET‑D‑3 Rest, Mockup U32) steht das Ziel auf <b>108</b>:
+        /// Mit der PREISBASIS ALS EIGENEM KARTENZUSTAND (Schritt 109, Schritt F,
+        /// Entscheid ET‑D‑3 Rest, Mockup U32) steht das Ziel auf <b>109</b>:
         /// <c>energy_project_settings</c> bekommt die nullbare Textspalte
-        /// <c>Preisbasis</c> (<see cref="SchemaKatalog.Schritt108_Preisbasis"/>), und der
+        /// <c>Preisbasis</c> (<see cref="SchemaKatalog.Schritt109_Preisbasis"/>), und der
         /// Datenteil (<see cref="PreisbasisUebernahme"/>) setzt sie einmalig aus
         /// <c>ID_Umrechnung</c> — Regel nach kWh → „kWh", sonst die Abrechnungseinheit,
         /// also genau die Basis, die die Karte bis dahin beim Öffnen zeigte.
         /// <b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte.
-        /// Mit dem STAMMTEXT DER FÜNF GASE AUF Nm³ (Schritt 109, Schritt G, Entscheid
-        /// U‑1 Weg (a), Freigabe A9) steht das Ziel auf <b>109</b>: <c>Einheit</c> und
+        /// Mit dem STAMMTEXT DER FÜNF GASE AUF Nm³ (Schritt 110, Schritt G, Entscheid
+        /// U‑1 Weg (a), Freigabe A9) steht das Ziel auf <b>110</b>: <c>Einheit</c> und
         /// <c>PreisEinheit</c> der Brennstoffe 1, 2, 3, 14 und 25 in
         /// <c>Tab_Brennstoff_Stamm</c> und jede Preiszeile ihrer Träger, die noch „m³"
         /// führt (<see cref="GaseNormkubikmeter"/>). <b>Reines DML, ergebnisneutral:</b>
-        /// kein Zahlenwert, kein Rechenweg liest den Stammtext.
+        /// kein Zahlenwert, kein Rechenweg liest den Stammtext; dazu der Brennstoff 24
+        /// „Sonstige" auf kWh (Entscheid E7c2‑Q4).
         /// Der Freeze-Stand
         /// bleibt bei 61. Der Kern kennt nur das
         /// Ziel; der Freeze-Stand gehört dem Access-Zweig und bleibt dort.</para>
         /// </summary>
-        public const int Zielversion = 109;
+        public const int Zielversion = 110;
 
         /// <summary>
         /// Nummer der Vorbelegung von <c>Extrapolation_erlaubt</c> (Paket 8,

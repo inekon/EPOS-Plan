@@ -4,7 +4,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Schemaschritt 108 — die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
+    /// <b>Schemaschritt 109 — die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
     /// (Schritt F des Analysepapiers Wirtschaftlichkeit § 6, Entscheid ET‑D‑3 Rest,
     /// Mockup U32).
     ///
@@ -12,7 +12,7 @@ namespace WindowsFormsApplication1
     /// hierher allein über <c>energy_project_settings.ID_Umrechnung</c> — eine
     /// REGELkennung. Führte der Brennstoff keine Regel nach kWh, wurde beim Speichern −1
     /// (NULL) abgelegt, und die gewählte Preisbasis „kWh" fiel beim nächsten Öffnen still
-    /// auf die Abrechnungseinheit zurück. Seit Schritt 108 steht der Kartenzustand in
+    /// auf die Abrechnungseinheit zurück. Seit Schritt 109 steht der Kartenzustand in
     /// einer eigenen Spalte <c>Preisbasis</c> (TEXT, nullbar): der Einheitentext der
     /// gewählten Basis. <c>ID_Umrechnung</c> bleibt, was es ist — die Regel der
     /// Einheitenprüfung.</para>

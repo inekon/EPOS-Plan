@@ -56,11 +56,44 @@
        Breit, dann BeiPlatz; wann, rechnet Spaltenraenge aus der Breite des
        Inhalts, und eine Containerabfrage im Stilblatt blendet aus. Eine
        Spalte mit Filter oder Sortierung weicht nie, sonst saehe niemand, dass
-       gefiltert wird. Die Suche findet weiter in ALLEN Spalten. *@
+       gefiltert wird. Die Suche findet weiter in ALLEN Spalten.
+
+   DIE ZEILE IST DIE WAHL (Konzept Administrationsdialoge, Stufe 2, V4 und
+   V11; Schalter ZeileIstWahl, gesetzt von den Verwaltungen). Der runde
+   Wahlknopf war das einzige Klickziel einer 1 000 px breiten Zeile; jetzt
+   waehlt ein Klick irgendwo in der Zeile:
+     * Die Wahlspalte entfaellt. Jede Zelle traegt eine Klickflaeche ueber
+       ihre ganze Hoehe und Breite (epos-zeilenzelle) - QuickGrid kennt keinen
+       Zeilenklick, und ein display:flex auf dem <td> nimmt der Zelle ihre
+       Rolle (W5-B-1). Strg- und Umschalt-Klick markieren weiter fuer den
+       Vergleich.
+     * Die gewaehlte Zeile traegt Flaeche und linken Balken
+       (epos-zeile--gewaehlt ueber QuickGrids RowClass) und ihre Zellen
+       aria-current - RowClass setzt nur die Klasse, ein aria-selected auf dem
+       <tr> laesst QuickGrid nicht zu.
+     * Die Liste ist EIN Tabulatorhalt: Pfeil hoch/runter, Pos1 und Ende
+       bewegen die Wahl; Enter tut nichts (Hausregel: Knoepfe dieser Masken
+       schreiben sofort). Das Skript epos-katalogliste.js haelt die vier Tasten
+       vom Rollen ab - nur, wenn die Liste SELBST den Fokus hat, sonst bekaeme
+       das Feld eines Spaltenfilters kein Pos1 - und rollt die gewaehlte Zeile
+       in den sichtbaren Bereich.
+     * Die Zeile ist 46 statt 53 px hoch: 45 px Klickflaeche + 1 px Linie,
+       kein 44-px-Knopf mehr darin. Dieselbe Zahl geht als ItemSize an
+       Virtualize und als --epos-rasterzeile ins Stilblatt.
+   Ohne den Schalter (Projektdialoge, Importe, Gesetze) bleibt alles, wie es
+   war - samt Wahlspalte und 53-px-Zeile.
+
+   DAS SCHLOSS (V10): Ein Auslieferungssatz (Katalogfilterzeile.Geschuetzt)
+   traegt hinter seinem Bezeichner das Kennzeichen - in jeder Betriebsart, weil
+   die Profile ihre Spalten "Auslieferung" und "Schreibschutz" dafuer
+   abgegeben haben. *@
 
 @namespace EPOS.UI.Bausteine
 @using System.Globalization
 @using WindowsFormsApplication1
+@using Microsoft.JSInterop
+@inject IJSRuntime Js
+@implements IAsyncDisposable
 
 @if (Profil is not null)
 {
@@ -133,9 +166,14 @@
     }
 
     @* ---------------- ZONE B oben - die Liste ---------------------------- *@
-    <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen"
-            Virtualisiert="@Virtualisiert" Zeilenhoehe="@ZEILENHOEHE">
+    <Raster TZeile="Katalogfilterzeile" Zeilen="@_rasterzeilen" @ref="_raster"
+            Virtualisiert="@Virtualisiert" Zeilenhoehe="@Zeilenmass"
+            Zeilenklasse="@(ZeilenwahlAktiv ? _zeilenklasse : null)"
+            Tastenfuehrung="@(ZeilenwahlAktiv ? _tastenfuehrung : default)"
+            Tastenbeschriftung="@Texte.Listenbeschriftung">
         <KindInhalt>
+            @if (!ZeilenwahlAktiv)
+            {
             <TemplateColumn TGridItem="Katalogfilterzeile" Title="@Texte.SpalteWahl"
                             Class="epos-spalte-wahl">
                 @* EIN Klickziel, zwei Bedeutungen (S3.3): Ein blanker Klick waehlt
@@ -167,6 +205,7 @@
                                 Gewaehltwerden="@(() => BeiZeile(context))" />
                 }
             </TemplateColumn>
+            }
 
             @for (int i = 0; i < Profil.Spalten.Count; i++)
             {
@@ -231,8 +270,47 @@
                         </div>
                     </HeaderTemplate>
                     <ChildContent>
-                        <span class="@Zellenklasse(context)"
-                              title="@Zellkurztext(spalte, context)">@context.Text(spalte.Schluessel)</span>
+                        @if (ZeilenwahlAktiv)
+                        {
+                            @* DIE KLICKFLAECHE DER ZEILE (V4): ein Kasten ueber die ganze
+                               Zelle - die Zelle selbst hat keine Polsterung mehr. Der
+                               Bezeichner traegt Text und Schloss nebeneinander; gekuerzt
+                               wird nur der Text, das Schloss bleibt stehen. *@
+                            bool fokus = context.Schluessel == Gewaehlt;
+                            @if (Spaltenraenge.IstElastisch(spalte))
+                            {
+                                <span class="epos-zeilenzelle epos-zeilenzelle--name"
+                                      title="@Namenskurztext(context)"
+                                      aria-current="@(fokus ? "true" : null)"
+                                      @onclick="@(e => BeiZeilenklick(context, e))">
+                                    <span class="epos-zeilenzelle-text">@context.Text(spalte.Schluessel)</span>
+                                    @if (context.Geschuetzt)
+                                    {
+                                        <Kennzeichen Kurztext="@Texte.Schloss" />
+                                    }
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="epos-zeilenzelle" title="@Zellkurztext(spalte, context)"
+                                      aria-current="@(fokus ? "true" : null)"
+                                      @onclick="@(e => BeiZeilenklick(context, e))">@context.Text(spalte.Schluessel)</span>
+                            }
+                        }
+                        else if (context.Geschuetzt && Spaltenraenge.IstElastisch(spalte))
+                        {
+                            @* Das Schloss auch hier (V10) - neben dem gedimmten Namen. *@
+                            <span class="epos-bezeichner-schloss">
+                                <span class="@Zellenklasse(context)"
+                                      title="@Zellkurztext(spalte, context)">@context.Text(spalte.Schluessel)</span>
+                                <Kennzeichen Kurztext="@Texte.Schloss" />
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="@Zellenklasse(context)"
+                                  title="@Zellkurztext(spalte, context)">@context.Text(spalte.Schluessel)</span>
+                        }
                     </ChildContent>
                 </TemplateColumn>
             }
@@ -352,6 +430,183 @@
     [Parameter] public EventCallback<string> GewaehltChanged { get; set; }
 
     // =====================================================================
+    //  Die Zeile ist die Wahl (Konzept Administrationsdialoge, Stufe 2: V4, V11)
+    // =====================================================================
+
+    /// <summary>
+    /// <b>Die Zeile ist die Wahl</b> (V4): Ein Klick irgendwo in der Zeile wählt sie,
+    /// ↑ ↓ Pos1 Ende bewegen die Wahl, die Liste ist ein Tabulatorhalt, die Wahlspalte
+    /// entfällt und die Zeile ist <see cref="ZEILENHOEHE_ZEILENWAHL"/> px hoch.
+    ///
+    /// <para><b>Die Verwaltungen setzen ihn</b> (Menü Administration, A1 bis A8). Die
+    /// Projektdialoge, die Importe und die übrigen Wirte behalten die Wahlspalte: Sie
+    /// sind nicht Gegenstand des Konzepts (AD-Q12), und ihre Mehrfachwahl braucht das
+    /// Kästchen ohnehin. In der Mehrfachwahl wirkt der Schalter nicht.</para>
+    /// </summary>
+    [Parameter] public bool ZeileIstWahl { get; set; }
+
+    /// <summary>
+    /// <b>Das Zeilenmaß, wenn die Zeile die Wahl ist</b> (V4): 45 px Klickfläche + 1 px
+    /// Trennlinie. Die Zelle hat keine Polsterung, ihr Inhalt ist ein Kasten von 45 px
+    /// (<c>.epos-zeilenzelle</c>) — die Zeile kann damit weder höher noch niedriger
+    /// werden, als Virtualize rechnet. Berührungsziel bleibt über 44 px.
+    /// </summary>
+    public const float ZEILENHOEHE_ZEILENWAHL = 46f;
+
+    /// <summary>Wirkt <see cref="ZeileIstWahl"/>? Nicht in der Mehrfachwahl.</summary>
+    private bool ZeilenwahlAktiv => ZeileIstWahl && !Mehrfach;
+
+    /// <summary>Das Zeilenmaß dieser Liste — EINE Zahl für <c>ItemSize</c> und Stilblatt.</summary>
+    private float Zeilenmass => ZeilenwahlAktiv ? ZEILENHOEHE_ZEILENWAHL : ZEILENHOEHE;
+
+    /// <summary>Das Zeilenmaß, das die Liste dem Raster reicht (Prüfhilfe für Tests).</summary>
+    public float Zeilenhoehe => Zeilenmass;
+
+    private EPOS.UI.Standards.Raster<Katalogfilterzeile>? _raster;
+
+    /// <summary>Die Zeilenklasse als EIN Delegat — nicht je Zeichenlauf ein neuer.</summary>
+    private Func<Katalogfilterzeile, string?>? _zeilenklasse;
+
+    private EventCallback<KeyboardEventArgs> _tastenfuehrung;
+
+    private IJSObjectReference? _modul;
+    private bool _angemeldet;
+
+    /// <summary>Nach einem Tastenschritt die gewählte Zeile in den sichtbaren Bereich rollen.</summary>
+    private bool _zeigen;
+
+    protected override void OnInitialized()
+    {
+        _zeilenklasse = Zeilenklasse;
+        _tastenfuehrung = EventCallback.Factory.Create<KeyboardEventArgs>(this, BeiTaste);
+    }
+
+    /// <summary>
+    /// Die Klasse der Zeile: <c>epos-zeile--gewaehlt</c> für die Fokuszeile (Fläche und
+    /// linker Balken), <c>epos-zeile--markiert</c> für eine zum Vergleich markierte.
+    /// Eine Frage je Zeile in O(1) (höchstens drei Markierungen).
+    /// </summary>
+    private string? Zeilenklasse(Katalogfilterzeile zeile)
+    {
+        bool gewaehlt = zeile.Schluessel == Gewaehlt;
+        bool markiert = _markiert.Count > 0 && _markiert.Contains(zeile.Schluessel);
+        if (gewaehlt && markiert) return "epos-zeile--gewaehlt epos-zeile--markiert";
+        if (gewaehlt) return "epos-zeile--gewaehlt";
+        return markiert ? "epos-zeile--markiert" : null;
+    }
+
+    /// <summary>
+    /// Der Kurztext der Namenszelle: der volle Name, bei einer Markierung mit dem Zusatz
+    /// „Vergleich" — die Markierung trägt sonst nur einen Rahmen, und den hört eine
+    /// Sprachausgabe nicht.
+    /// </summary>
+    private string Namenskurztext(Katalogfilterzeile zeile)
+        => _markiert.Contains(zeile.Schluessel)
+            ? zeile.Bezeichner + " · " + Texte.VergleichTitel
+            : zeile.Bezeichner;
+
+    /// <summary>
+    /// Ein Klick in die Zeile: blank wählt sie, mit Strg oder Umschalt markiert er sie für
+    /// den Vergleich (dieselbe Regel wie am Wahlknopf, S3.3).
+    /// </summary>
+    private Task BeiZeilenklick(Katalogfilterzeile zeile, MouseEventArgs e)
+    {
+        if (Vergleichbar && (e.CtrlKey || e.ShiftKey))
+        {
+            Markieren(zeile);
+            return Task.CompletedTask;
+        }
+        return Waehlen(zeile);
+    }
+
+    private Task Waehlen(Katalogfilterzeile zeile)
+    {
+        Gewaehlt = zeile.Schluessel;
+        return GewaehltChanged.InvokeAsync(zeile.Schluessel);
+    }
+
+    /// <summary>
+    /// <b>Die Tastenführung der Liste</b> (V11): ↑ und ↓ wechseln die Zeile, Pos1 und Ende
+    /// springen an den Anfang und ans Ende der GEFILTERTEN Liste. Steht die Wahl nicht in
+    /// der Liste (ein Filter blendet sie aus), beginnen ↑ und ↓ bei der ersten Zeile.
+    /// Enter und alle übrigen Tasten tun nichts; Esc steigt zum Dialog auf und schließt
+    /// ihn dort wie das Kreuz.
+    /// </summary>
+    private async Task BeiTaste(KeyboardEventArgs e)
+    {
+        int n = _gefiltert.Count;
+        if (n == 0) return;
+
+        int i = IndexVon(Gewaehlt);
+        int ziel = e.Key switch
+        {
+            "ArrowDown" => i < 0 ? 0 : Math.Min(i + 1, n - 1),
+            "ArrowUp" => i < 0 ? 0 : Math.Max(i - 1, 0),
+            "Home" => 0,
+            "End" => n - 1,
+            _ => -1
+        };
+        if (ziel < 0) return;
+
+        _zeigen = true;
+        if (ziel == i) return;
+        await Waehlen(_gefiltert[ziel]);
+    }
+
+    /// <summary>Die Stelle eines Schlüssels in der gefilterten Liste; -1, wo er fehlt.</summary>
+    private int IndexVon(string schluessel)
+    {
+        for (int n = 0; n < _gefiltert.Count; n++)
+            if (_gefiltert[n].Schluessel == schluessel) return n;
+        return -1;
+    }
+
+    /// <summary>
+    /// Nach dem Zeichnen: das Skript einmal an die Hülle hängen (es hält die vier Tasten
+    /// vom Rollen ab) und nach einem Tastenschritt die gewählte Zeile zeigen. Wer das
+    /// Modul nicht laden kann, wählt trotzdem per Tastatur — nur rollt die Liste dann
+    /// nicht mit.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!ZeilenwahlAktiv || _raster is null) return;
+
+        try
+        {
+            if (!_angemeldet)
+            {
+                _angemeldet = true;
+                _modul = await Js.InvokeAsync<IJSObjectReference>("import", MODUL);
+                if (_modul is not null) await _modul.InvokeVoidAsync("anmelden", _raster.Huelle);
+            }
+
+            if (_zeigen)
+            {
+                _zeigen = false;
+                int i = IndexVon(Gewaehlt);
+                if (_modul is not null && i >= 0)
+                    await _modul.InvokeVoidAsync("zeileZeigen", _raster.Huelle, i, Zeilenmass);
+            }
+        }
+        catch (Exception)
+        {
+            // Ohne das Modul (bunit, eine Huelle ohne Skripte) rollt die Liste nicht mit -
+            // ein Schoenheitsfehler, kein Fehlschlag. Die Wahl steht trotzdem.
+        }
+    }
+
+    /// <summary>Der Ort des Skripts — statische Web-Assets der Bibliothek.</summary>
+    public const string MODUL = "./_content/EPOS.UI/epos-katalogliste.js";
+
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        if (_modul is null) return;
+        try { await _modul.DisposeAsync(); }
+        catch (Exception) { /* Die WebView ist schon weg - dann gibt es nichts zu loesen. */ }
+    }
+
+    // =====================================================================
     //  Mehrfachwahl (Stufe S3.4 — die zwei Importmasken)
     // =====================================================================
 
@@ -435,9 +690,10 @@
     /// Zeile misst 53,0 px (Rasterprobe, Fall F: 48,188 → 53,0). Die Zahl bleibt also
     /// 53, nun aber als GLEICHstand statt als Aufschlag — <c>height</c> an einer
     /// Tabellenzeile ist ein MINDESTmaß, es darf erreicht, nicht unterschritten werden.
-    /// JEDE Zeile dieser Liste trägt den Wahlknopf (die Wahlspalte steht in beiden
-    /// Betriebsarten), das Maß gilt also ohne Ausnahme; <c>KataloglisteTests</c> hält es
-    /// gegen das Stilblatt.</para>
+    /// Es gilt, solange die Wahlspalte steht (Einzel- und Mehrfachwahl);
+    /// <c>KataloglisteTests</c> hält es gegen das Stilblatt. Ist die Zeile selbst die Wahl
+    /// (<see cref="ZeileIstWahl"/>), gibt es keinen 44‑px‑Knopf mehr in ihr, und das Maß
+    /// ist <see cref="ZEILENHOEHE_ZEILENWAHL"/>.</para>
     /// </summary>
     private const float ZEILENHOEHE = Raster<Katalogfilterzeile>.ZEILENHOEHE;
 
@@ -798,6 +1054,8 @@
             k += " epos-spalte-rang" + ((int)spalte.Rang).ToString(CultureInfo.InvariantCulture);
             if (_stufen.TryGetValue(spalte.Schluessel, out int stufe) && stufe > 0)
                 k += " epos-spalte-ab-" + stufe.ToString(CultureInfo.InvariantCulture);
+            if (_balkenErsatz.Length > 0 && spalte.Schluessel == _balkenErsatz)
+                k += " epos-balken-ab-" + _balkenAb.ToString(CultureInfo.InvariantCulture);
         }
         return k;
     }
@@ -820,7 +1078,9 @@
     /// Breite nicht mehr am Inhalt. Die Wirte ohne Rang (Importe, Flotte, Gesetze,
     /// Projekttransfer) bleiben damit, wie sie waren.
     /// </summary>
-    private string Wurzelklasse => _hatRaenge ? "epos-katalogliste epos-katalogliste--raenge" : "epos-katalogliste";
+    private string Wurzelklasse =>
+        (_hatRaenge ? "epos-katalogliste epos-katalogliste--raenge" : "epos-katalogliste")
+        + (ZeilenwahlAktiv ? " epos-katalogliste--zeilenwahl" : "");
 
     private bool _hatRaenge;
 
@@ -860,8 +1120,39 @@
             _laengenProfil = Profil;
         }
 
-        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten);
+        // Ohne Wahlspalte (V4) hat die Liste deren 60 px mehr fuer ihre Spalten.
+        _stufen = Spaltenraenge.Stufen(Profil, _laengen, Festgehalten, mitWahlspalte: !ZeilenwahlAktiv);
+        BalkenErsatzRechnen();
     }
+
+    /// <summary>
+    /// <b>Wer trägt den linken Balken der Fokuszeile, wenn die erste Spalte weicht?</b>
+    /// (V4.) Der Balken steht an der ersten Zelle der Zeile (<c>td:first-child</c>). Hat
+    /// die erste Spalte einen Rang und weicht (die Wärmepumpe: Hersteller vor Modell),
+    /// verschwände er mit ihr — die Zelle ist dann <c>display: none</c>. Die erste Spalte,
+    /// die immer steht, übernimmt ihn genau unterhalb der Stufe, ab der die erste steht:
+    /// Sie bekommt <c>epos-balken-ab-N</c>, und die Containerabfrage im Stilblatt zeichnet
+    /// den Balken dort nur unter N. Ohne weichende erste Spalte gibt es keinen Ersatz.
+    /// </summary>
+    private void BalkenErsatzRechnen()
+    {
+        _balkenErsatz = "";
+        _balkenAb = 0;
+        if (!ZeilenwahlAktiv || Profil is null || Profil.Spalten.Count < 2) return;
+
+        if (!_stufen.TryGetValue(Profil.Spalten[0].Schluessel, out int erste) || erste <= 0) return;
+
+        foreach (Katalogspalte s in Profil.Spalten)
+            if (_stufen.TryGetValue(s.Schluessel, out int st) && st == 0)
+            {
+                _balkenErsatz = s.Schluessel;
+                _balkenAb = erste;
+                return;
+            }
+    }
+
+    private string _balkenErsatz = "";
+    private int _balkenAb;
 
     /// <summary>Trägt die Spalte einen Filter oder die Sortierung? Dann weicht sie nie (V7).</summary>
     private bool Festgehalten(Katalogspalte spalte)
@@ -936,6 +1227,15 @@
         _tastenklick = Vergleichbar && (klick.Strg || klick.Umschalt);
         if (!_tastenklick) return;
 
+        Markieren(zeile);
+    }
+
+    /// <summary>
+    /// Schaltet die Markierung einer Zeile um — vom Wahlknopf wie von der Zeile (V4)
+    /// gerufen. Die vierte Markierung fällt mit Hinweis.
+    /// </summary>
+    private void Markieren(Katalogfilterzeile zeile)
+    {
         _markierhinweis = "";
         string schluessel = zeile.Schluessel;
 

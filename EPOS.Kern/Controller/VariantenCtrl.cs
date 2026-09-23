@@ -299,7 +299,7 @@ namespace WindowsFormsApplication1
                             ? ", [" + SchemaKatalog.SPALTE_LP_STAFFEL_GRENZE + "], [" +
                               SchemaKatalog.SPALTE_LP_STAFFEL_PREIS1 + "], [" + SchemaKatalog.SPALTE_LP_STAFFEL_PREIS2 + "]"
                             : "";
-                    // ETAPPE E7c (Schritt F, Schemaschritt 108): der Kartenzustand
+                    // ETAPPE E7c (Schritt F, Schemaschritt 109): der Kartenzustand
                     // „Preisbasis" wandert mit - die Version oeffnet ihre Karte mit
                     // derselben Basis wie der Stamm. Ohne die Spalte wie bisher.
                     if (EnergietraegerPreisCtrl.PreisbasisSpalteVorhanden())

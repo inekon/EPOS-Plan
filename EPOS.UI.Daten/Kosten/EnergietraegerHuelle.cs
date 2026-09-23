@@ -861,18 +861,18 @@ namespace WindowsFormsApplication1
                 stand.AltSO2 = projekt.SO2 ?? _gewaehlt.SO2;
                 stand.AltNOx = projekt.NOx ?? _gewaehlt.NOx;
 
-                // ETAPPE E7c (Schritt F, Schemaschritt 108, Mockup U32): Die Preisbasis
+                // ETAPPE E7c (Schritt F, Schemaschritt 109, Mockup U32): Die Preisbasis
                 // ist ein EIGENER Kartenzustand und kommt aus ihrer Spalte - nicht mehr
                 // aus der Regelkennung ID_Umrechnung, die ohne Regel nach kWh auf -1
                 // fiel und die Wahl „kWh" beim naechsten Oeffnen still verlor. Leer heisst
                 // Abrechnungseinheit (die Vorgabe einer neu zugeordneten Zeile); fehlt
-                // die Spalte (Datenbank vor 108), sagt es die Herleitungszeile.
+                // die Spalte (Datenbank vor 109), sagt es die Herleitungszeile.
                 gemerkteBasis = string.IsNullOrWhiteSpace(projekt.Preisbasis)
                     ? null : projekt.Preisbasis.Trim();
                 if (projekt.PreisbasisSpalteFehlt)
                     stand.PreisbasisHerleitung = T("ETV_PREISBASIS_OHNE_SPALTE",
                         "Die gewählte Preisbasis kann diese Datenbank noch nicht speichern " +
-                        "(Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit.");
+                        "(Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit.");
 
                 // Q11: die zweistufige Leistungspreis-Staffel (Schemaschritt 104) —
                 // leer bleibt leer, sie hat keinen Katalogwert.

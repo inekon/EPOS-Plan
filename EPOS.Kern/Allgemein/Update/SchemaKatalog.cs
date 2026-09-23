@@ -4149,7 +4149,7 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
-        // ETAPPE E7c — Ersatz und Restwert je Position entkoppelt (Schritt E, Schritt 107)
+        // ETAPPE E7c — Ersatz und Restwert je Position entkoppelt (Schritt E, Schritt 108)
         // ---------------------------------------------------------------------------
 
         /// <summary>
@@ -4183,7 +4183,7 @@ namespace WindowsFormsApplication1
         public const string SPALTE_KVP_RESTWERT_ANSETZEN = SPALTE_PW_RESTWERT_ANSETZEN;
 
         /// <summary>
-        /// Schritt 107 der Migration (Etappe E7c, Schritt E) — die zwei Kennzeichen
+        /// Schritt 108 der Migration (Etappe E7c, Schritt E) — die zwei Kennzeichen
         /// <see cref="SPALTE_PW_ERSATZ_FUEHREN"/> und <see cref="SPALTE_PW_RESTWERT_ANSETZEN"/>
         /// an <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c>.
         ///
@@ -4203,7 +4203,7 @@ namespace WindowsFormsApplication1
         /// (<c>ErsatzRestwertKennzeichen.SpaltenVorhanden</c>), sodass eine nie migrierte
         /// Datenbank den Weg vor dem Schritt rechnet.</para>
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt107_ErsatzRestwertKennzeichen =
+        public static readonly SchemaSpalte[] Schritt108_ErsatzRestwertKennzeichen =
         {
             new SchemaSpalte(TAB_PROJEKTWERTE,          SPALTE_PW_ERSATZ_FUEHREN,     "YESNO_NULL"),
             new SchemaSpalte(TAB_PROJEKTWERTE,          SPALTE_PW_RESTWERT_ANSETZEN,  "YESNO_NULL"),
@@ -4212,7 +4212,7 @@ namespace WindowsFormsApplication1
         };
 
         // ---------------------------------------------------------------------------
-        // ETAPPE E7c — die Preisbasis als eigener Kartenzustand (Schritt F, Schritt 108)
+        // ETAPPE E7c — die Preisbasis als eigener Kartenzustand (Schritt F, Schritt 109)
         // ---------------------------------------------------------------------------
 
         /// <summary>
@@ -4227,13 +4227,13 @@ namespace WindowsFormsApplication1
         public const string SPALTE_EPS_PREISBASIS = "Preisbasis";
 
         /// <summary>
-        /// Schritt 108 der Migration (Etappe E7c, Schritt F) — die Spalte
+        /// Schritt 109 der Migration (Etappe E7c, Schritt F) — die Spalte
         /// <see cref="SPALTE_EPS_PREISBASIS"/> an <c>energy_project_settings</c>. Der
         /// Datenteil steht bei <see cref="PreisbasisUebernahme"/> (einmalig aus
         /// <c>ID_Umrechnung</c>: Regel nach kWh → „kWh", sonst die Abrechnungseinheit).
         /// Ergebnisneutral; die Spalte steht BEWUSST NICHT in <see cref="Alle"/>.
         /// </summary>
-        public static readonly SchemaSpalte[] Schritt108_Preisbasis =
+        public static readonly SchemaSpalte[] Schritt109_Preisbasis =
         {
             new SchemaSpalte(ENERGY_PROJECT_SETTINGS, SPALTE_EPS_PREISBASIS, "TEXT"),
         };

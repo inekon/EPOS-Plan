@@ -7666,6 +7666,148 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
 @container epos-katalogliste (max-width: 2399.98px) { .epos-spalte-ab-2400 { display: none; } }
 
 /* ==================================================================== */
+/* DIE ZEILE IST DIE WAHL (Konzept Administrationsdialoge, Stufe 2, V4   */
+/* und V11) - Schalter ZeileIstWahl der Katalogliste, gesetzt von den    */
+/* Verwaltungen.                                                        */
+/*                                                                      */
+/* Der runde Wahlknopf war das einzige Klickziel einer 1 000 px breiten  */
+/* Zeile. Jetzt waehlt ein Klick irgendwo in der Zeile: Jede Zelle gibt  */
+/* ihre Polsterung an einen Kasten ab, der sie ganz fuellt               */
+/* (.epos-zeilenzelle) - QuickGrid kennt keinen Zeilenklick, und ein     */
+/* display:flex auf dem <td> naehme der Zelle ihre Rolle (W5-B-1).       */
+/*                                                                      */
+/* DAS ZEILENMASS: 45 px Kasten + 1 px Trennlinie = 46 px - dieselbe     */
+/* Zahl, die die Liste als ItemSize an Virtualize und als                */
+/* --epos-rasterzeile an die Huelle gibt                                 */
+/* (Katalogliste.ZEILENHOEHE_ZEILENWAHL). Der Kasten bricht nie um, die  */
+/* Zeile kann also weder hoeher noch niedriger werden, als Virtualize    */
+/* rechnet. Beruehrungsziel bleibt ueber 44 px.                          */
+/* ==================================================================== */
+
+/* Wiegt (0,3,4) gegen die (0,2,4) der Hausregel (Auftrag #240). */
+.epos-katalogliste--zeilenwahl table.epos-raster.quickgrid > tbody > tr > td {
+    padding: 0;
+}
+
+.epos-zeilenzelle {
+    display: block;
+    box-sizing: border-box;
+    height: 45px;
+    line-height: 45px;
+    padding: 0 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+/* Der Bezeichner: Text und Schloss nebeneinander, gekuerzt wird nur der
+   Text. Der Flexkasten steht IN der Zelle. Dieselbe Anordnung traegt der
+   Name eines Auslieferungssatzes in einer Liste mit Wahlspalte. */
+.epos-zeilenzelle--name,
+.epos-bezeichner-schloss {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+}
+
+.epos-zeilenzelle--name {
+    line-height: normal;
+}
+
+.epos-zeilenzelle-text,
+.epos-bezeichner-schloss > span:first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Die Fokuszeile: Flaeche und linker Balken - wie im Mockup
+   Administrationsdialoge_Schema. */
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
+    background: var(--epos-karte-flaeche-hover);
+}
+
+.epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td:first-child {
+    box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen);
+}
+
+/* WEICHT DIE ERSTE SPALTE (Rang, V2 - die Waermepumpe fuehrt den Hersteller vor
+   dem Modell), faellt mit ihr der Balken. Die erste Spalte, die immer steht,
+   traegt dann epos-balken-ab-N (N = die Stufe, ab der die erste steht), und
+   unterhalb von N zeichnet sie den Balken - dieselbe Leiter wie oben. */
+@container epos-katalogliste (max-width: 399.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-400 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 479.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-480 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 559.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-560 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 639.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-640 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 719.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-720 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 799.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-800 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 879.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-880 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 959.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-960 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1039.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1040 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1119.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1120 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1199.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1200 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1279.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1280 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1359.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1360 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1439.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1440 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1519.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1520 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1599.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1600 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1679.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1680 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1759.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1760 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1839.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1840 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1919.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-1920 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 1999.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2000 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 2079.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2080 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 2159.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2160 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 2239.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2240 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 2319.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2320 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+@container epos-katalogliste (max-width: 2399.98px) { .epos-katalogliste--zeilenwahl tr.epos-zeile--gewaehlt > td.epos-balken-ab-2400 { box-shadow: inset 4px 0 0 var(--epos-quelle-rahmen); } }
+
+/* Zum Vergleich markiert (Strg-Klick): ein Rahmen in der Warnfarbe um den
+   Namen - dieselbe Farbe wie am Wahlknopf (.epos-anlagenwahl--markiert). */
+.epos-zeile--markiert .epos-zeilenzelle--name {
+    outline: 2px solid var(--epos-warn-rahmen);
+    outline-offset: -2px;
+}
+
+/* Die Liste als Tabulatorhalt: der Fokusring innen - aussen schnitte ihn
+   der Listenbereich ab (.epos-katalog-liste, overflow: hidden). */
+.epos-katalogliste--zeilenwahl .epos-raster-huelle:focus-visible {
+    outline: 2px solid var(--epos-quelle-rahmen);
+    outline-offset: -2px;
+}
+
+/* DAS SCHLOSS (V10, Baustein Kennzeichen): klein, ohne Wort, in der leisen
+   Schrift; der Satz steht im Kurztext. */
+.epos-schloss {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    color: var(--epos-text-leise);
+    cursor: help;
+}
+
+.epos-schloss-bild {
+    display: block;
+}
+
+@media (forced-colors: active) {
+    .epos-katalogliste--zeilenwahl table.epos-raster > tbody > tr.epos-zeile--gewaehlt > td {
+        outline: 2px solid Highlight;
+        outline-offset: -2px;
+    }
+
+    .epos-schloss {
+        color: CanvasText;
+    }
+}
+
+/* ==================================================================== */
 /* WOCHEN-STUNDENPROFIL (Befund W8-E-1, Windows-Abnahme 05.09.2026)      */
 /*                                                                      */
 /* Der Anwender wollte den Dialog "so wie zuvor". Die erste Fassung      */

@@ -24,16 +24,43 @@ namespace WindowsFormsApplication1
             string version = "";
             try { version = ProduktFassung(); } catch { }
 
-            k.Eigenschaften(
+            var paare = new System.Collections.Generic.List<string>
+            {
                 "Projekt", daten.Stammprojektname,
                 "Kunde", stamm != null && stamm.Projekt != null ? stamm.Projekt.m_szKunde : "",
                 "Bearbeiter", stamm != null && stamm.Projekt != null ? stamm.Projekt.m_szBearbeiter : "",
                 "Verglichene Varianten", varianten,
                 "Berichtsdatum", daten.ErstelltAm.ToString("dd.MM.yyyy", k.Kultur),
-                "EPOS-Plan-Version", version);
+                "EPOS-Plan-Version", version,
+            };
+
+            // A12 (E27) — der Produktausweis nach E10 im Berichtskopf, im Wortlaut aus EINEM
+            // Ressourcenschluessel. Er steht, sobald ein Gebaeude eines Stands auf dem
+            // VDI-Weg gerechnet hat; ohne ein solches Gebaeude sagte er nichts ueber diesen
+            // Bericht und entfaellt.
+            if (ProduktausweisNoetig(daten))
+            {
+                paare.Add(ZEILE_GEBAEUDEMODELL);
+                paare.Add(MyResource.Resource.GEB_PRODUKTAUSWEIS_VDI6007);
+            }
+            k.Eigenschaften(paare.ToArray());
 
             k.Hinweis("Erstellt mit EPOS-Plan · Energieplanungs-Software · Energie · Planung · Optimierung · Simulation");
             k.Seitenumbruch();
+        }
+
+        /// <summary>Die Beschriftung der Ausweiszeile im Berichtskopf (A12) — Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
+        internal const string ZEILE_GEBAEUDEMODELL = "Gebäudemodell";
+
+        /// <summary>
+        /// Trägt der Berichtskopf den Produktausweis nach E10 (A12)? Ja, sobald ein Stand des
+        /// Berichts ein Gebäude auf dem VDI-Weg gerechnet hat (<c>Tab_ErgebnisGebaeude</c>, E30).
+        /// </summary>
+        internal static bool ProduktausweisNoetig(BerichtsDaten daten)
+        {
+            if (daten == null || daten.Varianten == null) return false;
+            return daten.Varianten.Any(v => v != null && v.Ergebnis != null && v.Ergebnis.Gebaeude != null
+                                            && v.Ergebnis.Gebaeude.Any(g => g != null && g.IstVdi6007));
         }
 
         /// <summary>

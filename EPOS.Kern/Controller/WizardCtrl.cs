@@ -112,6 +112,10 @@ namespace WindowsFormsApplication1
 
             SpVariantenSichern(projektID, TYP_ALLE);
             SenkenSichern(projektID);
+            // SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026): Welche Anlagen es VOR
+            // dem Loeschen gab - nur eine Anlage, die danach neu hinzukommt, bekommt ihre
+            // Senken aus dem Bedarf (Block ueber AnlagenBestandMerken).
+            AnlagenBestandMerken(projektID);
             // ST1: Dieselbe Falle ein Gewerk weiter - Z_AnlageStrang haengt mit
             // Loeschweitergabe an der Anlagenzeile (Block ueber StraengeSichern).
             StraengeSichern(projektID);
@@ -144,6 +148,10 @@ namespace WindowsFormsApplication1
             // gleich ob mit oder ohne Typfilter. Anlagen, die den Filter ueberleben,
             // behalten ihre Senken und werden beim Wiederherstellen uebergangen.
             SenkenSichern(projektID);
+
+            // Senken beim Anlegen: Der Bestand wird auch hier VOLLSTAENDIG gemerkt - eine
+            // Anlage, die den Filter ueberlebt, wird ohnehin nicht neu geschrieben.
+            AnlagenBestandMerken(projektID);
 
             // ST1: Die Stranglisten werden AUCH im typgefilterten Weg gesichert -
             // wortgleiche Begruendung wie bei den Senken eine Zeile hoeher.
@@ -996,8 +1004,8 @@ namespace WindowsFormsApplication1
         /// Geschrieben wird ausschliesslich auf Anlagen, die JETZT keine Senkenzeile
         /// fuehren. Damit ist die Methode idempotent, sie ueberschreibt nichts, was der
         /// Dialog gerade gespeichert hat, und eine im Dialog neu hinzugekommene Anlage
-        /// bleibt ohne Senke - dort gilt wie bisher die Rueckfallregel
-        /// <c>Heizkreis</c>/<c>Beides</c>.
+        /// bekommt hier nichts - ihre Senken leitet danach der Block S2 aus dem Bedarf
+        /// des Projekts ab (<see cref="Senkenvorbelegung"/>).
         /// </para>
         ///
         /// <para>
@@ -1104,6 +1112,107 @@ namespace WindowsFormsApplication1
                     return s;
 
             return null;
+        }
+
+        // =================================================================================
+        //  S2 - SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026)
+        // =================================================================================
+        //
+        // Eine NEU angelegte Wärmeerzeugeranlage bekommt ihre Senkenzeilen im selben
+        // Schritt, abgeleitet aus den Bedarfskanälen des Projekts (Senkenvorbelegung). Bis
+        // hierher blieb sie ohne Zeile, der Lauf nahm die Vorbelegung Heizkreis (Heizung +
+        // Warmwasser) - und die bedient die Prozesswärme nicht.
+        //
+        // WAS "NEU" HEISST. Der Speicherweg ist Loeschen + Neuanlegen: Beim Schreiben ist
+        // JEDE Anlage eine frische Zeile mit neuem AutoWert. Neu im fachlichen Sinn ist nur
+        // eine Anlage, die es VOR dem Loeschen nicht gab - wiedererkannt ueber (ID_Type,
+        // Bezeichner), wortgleich zur Senken- und Variantenrettung (SenkenTreffer,
+        // SpTreffer). Gemerkt wird der Bestand beim Loeschen (beide Loeschwege); ohne
+        // vorheriges Loeschen desselben Projekts - der NEU-Zweig des Assistenten - ist jede
+        // geschriebene Anlage neu. Eine im Dialog UMBENANNTE Anlage gilt danach als neu:
+        // Ihre Senken verliert sie ohnehin (Grenze der Rettung, Block S1), und sie bekommt
+        // statt der Vorbelegung die Senken ihres Bedarfs.
+        //
+        // WANN. Nach SenkenWiederherstellen - die gerettete Liste einer bestehenden Anlage
+        // hat Vorrang, und eine Anlage mit Zeilen wird uebergangen - und vor dem
+        // Aufraeumlauf (die abgeleiteten Zeilen fuehren keinen Puffer, die Reihenfolge ist
+        // dort gleichgueltig). Der ASSISTENT schreibt den Bedarf erst NACH den Anlagen; er
+        // zieht deshalb am Ende seines Speicherlaufs nach (NeueAnlagenSenkenNachziehen).
+
+        /// <summary>Die (ID_Type, Bezeichner)-Merkmale der Anlagen vor dem Löschen; <c>null</c> = nicht gemerkt.</summary>
+        private HashSet<string> m_BestandMerkmale;
+
+        /// <summary>Das Projekt, zu dem <see cref="m_BestandMerkmale"/> gehört.</summary>
+        private int m_BestandProjekt;
+
+        /// <summary>Die Anlagen-Ids, die der letzte <see cref="Add_WP_Waermeerzeuger"/> NEU angelegt hat.</summary>
+        private List<int> m_NeuAngelegt = new List<int>();
+
+        /// <summary>
+        /// Die Wärmeerzeugeranlagen, die der letzte Lauf von
+        /// <see cref="Add_WP_Waermeerzeuger"/> NEU angelegt hat (Ids nach dem Schreiben) —
+        /// im Sinne des Blocks S2: Es gab sie vor dem Löschen nicht.
+        /// </summary>
+        public IReadOnlyList<int> NeuAngelegteAnlagen => m_NeuAngelegt;
+
+        /// <summary>
+        /// Leitet die Senken der zuletzt NEU angelegten Anlagen erneut aus dem Bedarf ab und
+        /// schreibt sie — ersetzt, was <see cref="Add_WP_Waermeerzeuger"/> dafür geschrieben
+        /// hat. Der Weg des Assistenten: Er schreibt Prozesswärme und Wärmeganglinien erst
+        /// nach den Anlagen, im selben Vorgang.
+        /// </summary>
+        /// <returns>Zahl der Anlagen, deren Senkenliste geschrieben wurde.</returns>
+        public int NeueAnlagenSenkenNachziehen(int projektID, DbVorgang vorgang = null)
+        {
+            using Vorgangsklammer.Halter klammer = Vorgangsklammer.Setzen(vorgang);
+            try
+            {
+                return Senkenvorbelegung.Anlegen(projektID, m_NeuAngelegt, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Die Senken der neuen Anlagen konnten nicht nachgezogen werden: " + ex.Message);
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Merkt die (ID_Type, Bezeichner) ALLER Anlagen des Projekts — vor dem Löschen, im
+        /// Arbeitsspeicher. Scheitert das Lesen, bleibt nichts gemerkt; dann gilt beim
+        /// Schreiben jede Anlage als neu, und die bestehenden verlieren nichts: Eine Anlage
+        /// mit (geretteten) Senkenzeilen wird ohnehin übergangen.
+        /// </summary>
+        private void AnlagenBestandMerken(int projektID)
+        {
+            m_BestandMerkmale = null;
+            m_BestandProjekt = 0;
+            if (projektID <= 0) return;
+
+            try
+            {
+                DataTable dt = DataRepository.GetDataTable(
+                    "SELECT ID_Type, Bezeichner FROM Tab_Energieanlagen WHERE ID_Projekt = ?",
+                    new DbParam("@pID", projektID));
+                if (dt == null) return;
+
+                HashSet<string> merkmale = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (DataRow r in dt.Rows)
+                    merkmale.Add(AnlagenMerkmal(SpZahl(r, "ID_Type"), SpText(r, "Bezeichner")));
+
+                m_BestandMerkmale = merkmale;
+                m_BestandProjekt = projektID;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Der Anlagenbestand konnte vor dem Loeschen nicht gemerkt werden: " +
+                                  ex.Message);
+            }
+        }
+
+        /// <summary>Das Wiedererkennungsmerkmal (ID_Type, Bezeichner) — Vergleich ohne Groß-/Kleinschreibung.</summary>
+        private static string AnlagenMerkmal(int idType, string bezeichner)
+        {
+            return idType.ToString(CultureInfo.InvariantCulture) + "|" + (bezeichner ?? "");
         }
 
         // =================================================================================
@@ -1749,6 +1858,14 @@ namespace WindowsFormsApplication1
                 // bekommt ihn unten als Argument, nicht als Feld (Begruendung dort).
                 HashSet<int> strangGeschrieben = new HashSet<int>();
 
+                // S2: Der gemerkte Bestand gehoert DIESEM Lauf - eine Sicherung, ein
+                // Schreiben (wie bei der Senkenrettung). Ohne Bestand fuer dieses Projekt
+                // ist jede geschriebene Anlage neu (Block ueber AnlagenBestandMerken).
+                HashSet<string> bestand = (m_BestandProjekt == projektID) ? m_BestandMerkmale : null;
+                m_BestandMerkmale = null;
+                m_BestandProjekt = 0;
+                m_NeuAngelegt = new List<int>();
+
                 foreach (var item in list)
                 {
                     // Ä24: Gerätestand VOR der Materialisierung merken — tauscht
@@ -2009,6 +2126,15 @@ namespace WindowsFormsApplication1
                         strangGeschrieben.Add(item.ID);
                     }
 
+                    // S2: Eine Waermeerzeugeranlage, die es vor dem Loeschen nicht gab, ist
+                    // NEU - sie bekommt unten ihre Senken aus dem Bedarf. item.ID traegt ab
+                    // hier die frische Anlagen-Id (Ä24 oben); ist sie nicht nachgezogen,
+                    // prueft Senkenvorbelegung.Anlegen Projekt und Typ und uebergeht sie.
+                    if (item.ID > 0 && Senkenvorbelegung.IstWaermeerzeuger(item.ID_Type) &&
+                        (bestand == null ||
+                         !bestand.Contains(AnlagenMerkmal(item.ID_Type, (item.Bezeichner ?? "").Trim()))))
+                        m_NeuAngelegt.Add(item.ID);
+
                     geschrieben.Add(item);
                 }
 
@@ -2080,6 +2206,16 @@ namespace WindowsFormsApplication1
                 // Aufraeumlauf, weil Z_AnlageSenke.ID_Puffer dort als Verweis zaehlt
                 // (Begruendung im Block ueber SenkenSichern).
                 SenkenWiederherstellen(projektID);
+
+                // S2: Die NEU angelegten Waermeerzeuger bekommen ihre Senken aus dem Bedarf
+                // des Projekts - NACH der Rettung (eine Anlage mit Zeilen wird uebergangen).
+                // BEST EFFORT wie die Rettung: Ohne Zeile gilt die Vorbelegung.
+                try { Senkenvorbelegung.Anlegen(projektID, m_NeuAngelegt, false); }
+                catch (Exception exSenke)
+                {
+                    Console.WriteLine("Die Senken der neuen Anlagen konnten nicht angelegt werden: " +
+                                      exSenke.Message);
+                }
 
                 // ST1: Die Stranglisten auf die NEUEN Anlagenzeilen zurueck - VOR dem
                 // Aufraeumlauf, und zwar zwingend: Z_AnlageStrang.ID_PV zaehlt fuer

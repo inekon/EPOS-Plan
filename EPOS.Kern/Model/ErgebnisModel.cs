@@ -47,10 +47,69 @@ namespace WindowsFormsApplication1
         // Sim_Stromspeicher sagt, ob die Speicherrechnung ueberhaupt lief.
         public List<ErgebnisStromspeicherModel> Stromspeicher = new List<ErgebnisStromspeicherModel>();
 
+        // Gebaeude des Laufs (Tab_ErgebnisGebaeude, Entscheid E30): eine Zeile je
+        // Gebaeude mit Rechenweg und Kennzahlen, nach Merkplatz geordnet. Leere Liste =
+        // der Lauf hatte kein Gebaeude (oder die Datenbank steht vor Schritt 107).
+        public List<ErgebnisGebaeudeModel> Gebaeude = new List<ErgebnisGebaeudeModel>();
+
         public ErgebnisModel()
         {
             Zeitstempel = DateTime.Now;
         }
+    }
+
+    /// <summary>
+    /// Detail: <b>ein Gebäude des Laufs</b> (<c>Tab_ErgebnisGebaeude</c>, Entscheid E30,
+    /// Konzept Gebäudesimulation N1.35). Die Einheit steht im Namen. Wärmebedarf und die drei
+    /// Spitzenwerte haben beide Rechenwege; die übrigen Größen gibt es nur auf dem VDI-Weg —
+    /// auf dem Tagesbilanz-Weg sind sie <c>null</c> („nicht gerechnet", nie 0).
+    /// </summary>
+    public class ErgebnisGebaeudeModel
+    {
+        /// <summary>Die Gebäudezeile des Projekts (<c>Tab_Gebaeude.ID</c>).</summary>
+        public int ID_Gebaeude;
+
+        /// <summary>Der Merkplatz des Gebäudes im Lauf (ab 0) — der Index <c>n</c> von <c>Geb[n]</c> im Referenzlauf.</summary>
+        public int Merkplatz;
+
+        /// <summary>Der Gebäudename der Projektkopie.</summary>
+        public string Gebaeudename = "";
+
+        /// <summary>Der wirksame Rechenweg (<c>DbWerte.GEBAEUDE_MODELL_*</c>).</summary>
+        public string Rechenweg = "";
+
+        /// <summary>Heizwärme des Gebäudes im Jahr [MWh] — sein Anteil am Heizkanal.</summary>
+        public double HeizwaermeMwh;
+
+        /// <summary>Höchste Stundenlast [kW].</summary>
+        public double SpitzeKw;
+
+        /// <summary>Größtes gleitendes Mittel über 24 Stunden [kW].</summary>
+        public double SpitzeTagesmittelKw;
+
+        /// <summary>95-%-Quantil der Stundenlast nach nächstgelegenem Rang [kW].</summary>
+        public double Spitze95Kw;
+
+        /// <summary>Kühlbedarf (informativ) [MWh]; nur VDI-Weg.</summary>
+        public double? KuehlenergieMwh;
+
+        /// <summary>Stunden mit Kühlbedarf [h]; nur VDI-Weg.</summary>
+        public int? KuehlstundenH;
+
+        /// <summary>Mittlere Raumlufttemperatur über die Nutzungszeit [°C]; nur VDI-Weg.</summary>
+        public double? MittlereRaumtemperaturC;
+
+        /// <summary>Stunden der Nutzungszeit über der oberen Raumtemperatur [h]; nur VDI-Weg.</summary>
+        public int? UeberhitzungsstundenH;
+
+        /// <summary>Stunden mit eingeschalteter Sommerlüftung [h]; nur VDI-Weg.</summary>
+        public int? SommerlueftungsstundenH;
+
+        /// <summary>Die obere Raumtemperatur, gegen die die Überhitzung gezählt ist [°C]; nur VDI-Weg.</summary>
+        public double? ObereRaumtemperaturC;
+
+        /// <summary>Rechnet das Gebäude auf dem VDI-Weg?</summary>
+        public bool IstVdi6007 => Rechenweg == DbWerte.GEBAEUDE_MODELL_VDI6007;
     }
 
     // Detail: Waerme-/Strombedarf (Tab_ErgebnisEnergiebedarf).

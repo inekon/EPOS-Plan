@@ -9354,7 +9354,7 @@ They typically stem from a variant copy without this trade and keep entering the
     <value>{0}: Solar thermal without a buffer tank covers process heat only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for process heat.</value>
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
-    <value>{0}: Solar thermal without a buffer tank covers the heating circuit only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for heating.</value>
+    <value>{0}: Solar thermal without a buffer tank covers heating demand only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank.</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
@@ -13406,6 +13406,9 @@ Please check all entries!</value>
   </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Search, e.g. house*_1990*</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
+    <value>Calculation core according to VDI 6007 Part 1; eleven of the twelve test cases within the standard band including print rounding, test case 11 off by 3.4 W in two switching hours (3.9 W against the band without print rounding)</value>
   </data>
   <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
     <value>Daily balance (legacy method)</value>
@@ -24384,6 +24387,51 @@ Do you want to allow this?</value>
     <value>(from rounding σ or the quantities to 0.01 MWh)</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
-    <value>This database cannot store the selected price basis yet (schema version before 108) — the card shows the billing unit.</value>
+    <value>This database cannot store the selected price basis yet (schema version before 109) — the card shows the billing unit.</value>
+  </data>
+  <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
+    <value>Heat sinks: {0}</value>
+  </data>
+  <data name="ANL_SENKEN_VORBELEGUNG" xml:space="preserve">
+    <value>{0} (default – no heat sink assigned)</value>
+  </data>
+  <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
+    <value>{0} (created from the project demand when saved)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME_N" xml:space="preserve">
+    <value>{0} (copy {1})</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>The record is no longer in the catalogue.</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>The record could not be duplicated.</value>
+  </data>
+  <data name="ADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="ADM_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate...</value>
+  </data>
+  <data name="ADM_MSG_DUPLIZIERT" xml:space="preserve">
+    <value>“{0}” duplicated as “{1}”.</value>
+  </data>
+  <data name="ADM_SCHLOSS" xml:space="preserve">
+    <value>Delivered record – read only</value>
+  </data>
+  <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
+    <value>Delivered record – read only, duplicating allowed</value>
+  </data>
+  <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
+    <value>Delivered record – read only. To change it, create your own record with “Duplicate...”.</value>
+  </data>
+  <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>There are unsaved changes – please “Save” or “Discard”.</value>
+  </data>
+  <data name="ADM_LISTE_TASTEN" xml:space="preserve">
+    <value>Catalogue list – ↑ and ↓ change the row, Home and End jump to the first and the last row</value>
   </data>
 </root>

@@ -314,7 +314,7 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>ETAPPE E7c, Schritt F — die Abnahme von U32:</b> Öffnen–Speichern–Öffnen
         /// hält die Preisbasis „kWh", auch wenn der Brennstoff KEINE Regel nach kWh führt
-        /// (Stadtgas: nur Nm³ → Nm³ und m³ → Nm³). Vor Schemaschritt 108 merkte sich die
+        /// (Stadtgas: nur Nm³ → Nm³ und m³ → Nm³). Vor Schemaschritt 109 merkte sich die
         /// Karte die Basis allein über die Regelkennung und fiel still auf Nm³ zurück.
         /// </summary>
         [Fact]

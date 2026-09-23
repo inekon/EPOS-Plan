@@ -9361,7 +9361,7 @@ Sie stammen z. B. aus einer Variantenkopie ohne dieses Gewerk und rechnen bis da
     <value>{0}: Solarthermie ohne Pufferspeicher deckt Prozesswärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Prozess.</value>
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
-    <value>{0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung.</value>
+    <value>{0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher.</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Kanal {0} mit {1} MWh/a Bedarf hat keinen Versorger: keine Anlage trägt eine Senke für diesen Kanal. Senken im Anlagendialog zuordnen.</value>
@@ -13413,6 +13413,9 @@ Alle Eingaben überprüfen!</value>
   </data>
   <data name="GEB_PLATZHALTER_SUCHE" xml:space="preserve">
     <value>Suche, z. B. Haus*_1990*</value>
+  </data>
+  <data name="GEB_PRODUKTAUSWEIS_VDI6007" xml:space="preserve">
+    <value>Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung)</value>
   </data>
   <data name="GEB_RECHENWEG_TAGESBILANZ" xml:space="preserve">
     <value>Tagesbilanz (Bestandsweg)</value>
@@ -24391,6 +24394,51 @@ Möchten Sie das zulassen?</value>
     <value>(aus der Rundung von σ bzw. der Mengen auf 0,01 MWh)</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
-    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit.</value>
+    <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit.</value>
+  </data>
+  <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
+    <value>Senken: {0}</value>
+  </data>
+  <data name="ANL_SENKEN_VORBELEGUNG" xml:space="preserve">
+    <value>{0} (Vorbelegung – keine Senke zugeordnet)</value>
+  </data>
+  <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
+    <value>{0} (wird beim Speichern aus dem Bedarf des Projekts angelegt)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME_N" xml:space="preserve">
+    <value>{0} (Kopie {1})</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>Der Satz steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Der Satz konnte nicht dupliziert werden.</value>
+  </data>
+  <data name="ADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ADM_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren...</value>
+  </data>
+  <data name="ADM_MSG_DUPLIZIERT" xml:space="preserve">
+    <value>„{0}“ dupliziert als „{1}“.</value>
+  </data>
+  <data name="ADM_SCHLOSS" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen</value>
+  </data>
+  <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+  </data>
+  <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
+  </data>
+  <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“.</value>
+  </data>
+  <data name="ADM_LISTE_TASTEN" xml:space="preserve">
+    <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
   </data>
 </root>

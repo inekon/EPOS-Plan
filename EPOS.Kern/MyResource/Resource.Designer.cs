@@ -70,6 +70,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Beenden ähnelt.
+        /// </summary>
+        public static string ADM_BTN_BEENDEN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_BEENDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Duplizieren... ähnelt.
+        /// </summary>
+        public static string ADM_BTN_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("ADM_BTN_DUPLIZIEREN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Speichern ähnelt.
         /// </summary>
         public static string ADM_BTN_SPEICHERN {
@@ -556,6 +574,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie) ähnelt.
+        /// </summary>
+        public static string ADM_KOPIE_NAME {
+            get {
+                return ResourceManager.GetString("ADM_KOPIE_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Kopie {1}) ähnelt.
+        /// </summary>
+        public static string ADM_KOPIE_NAME_N {
+            get {
+                return ResourceManager.GetString("ADM_KOPIE_NAME_N", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende ähnelt.
+        /// </summary>
+        public static string ADM_LISTE_TASTEN {
+            get {
+                return ResourceManager.GetString("ADM_LISTE_TASTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Bezeichner „{0}“ kommt im Katalog {1}-mal vor.
         ///
         ///Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird deshalb abgelehnt. Bitte die Dubletten zuerst bereinigen. ähnelt.
@@ -572,6 +617,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_MEHRDEUTIG_TITEL {
             get {
                 return ResourceManager.GetString("ADM_MEHRDEUTIG_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die „{0}“ dupliziert als „{1}“. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_DUPLIZIERT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_DUPLIZIERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz konnte nicht dupliziert werden. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_KOPIE_FEHLER {
+            get {
+                return ResourceManager.GetString("ADM_MSG_KOPIE_FEHLER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Satz steht nicht mehr im Katalog. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_KOPIE_FEHLT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_KOPIE_FEHLT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“. ähnelt.
+        /// </summary>
+        public static string ADM_MSG_UNGESPEICHERT {
+            get {
+                return ResourceManager.GetString("ADM_MSG_UNGESPEICHERT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen, Duplizieren erlaubt ähnelt.
+        /// </summary>
+        public static string ADM_SCHLOSS_DUPLIZIEREN {
+            get {
+                return ResourceManager.GetString("ADM_SCHLOSS_DUPLIZIEREN", resourceCulture);
             }
         }
         
@@ -880,6 +979,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ADM_SET_TITEL {
             get {
                 return ResourceManager.GetString("ADM_SET_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen. ähnelt.
+        /// </summary>
+        public static string ADM_SPEICHERN_GESPERRT {
+            get {
+                return ResourceManager.GetString("ADM_SPEICHERN_GESPERRT", resourceCulture);
             }
         }
         
@@ -1318,6 +1426,33 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ANL_KONFIG_MSG_NICHT_GEFUNDEN {
             get {
                 return ResourceManager.GetString("ANL_KONFIG_MSG_NICHT_GEFUNDEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (wird beim Speichern aus dem Bedarf des Projekts angelegt) ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_BEIM_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_BEIM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Vorbelegung – keine Senke zugeordnet) ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_VORBELEGUNG {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_VORBELEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senken: {0} ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_ZEILE {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_ZEILE", resourceCulture);
             }
         }
         
@@ -10661,7 +10796,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 108) — die Karte zeigt die Abrechnungseinheit. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 109) — die Karte zeigt die Abrechnungseinheit. ähnelt.
         /// </summary>
         public static string ETV_PREISBASIS_OHNE_SPALTE {
             get {
@@ -18641,6 +18776,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string GEB_PLATZHALTER_SUCHE {
             get {
                 return ResourceManager.GetString("GEB_PLATZHALTER_SUCHE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Rechenkern nach VDI 6007 Blatt 1; elf der zwölf Testbeispiele im Normband einschließlich Druckrundung, Testbeispiel 11 in zwei Umschaltstunden um 3,4 W daneben (3,9 W gegen das Band ohne Druckrundung) ähnelt.
+        /// </summary>
+        public static string GEB_PRODUKTAUSWEIS_VDI6007 {
+            get {
+                return ResourceManager.GetString("GEB_PRODUKTAUSWEIS_VDI6007", resourceCulture);
             }
         }
         
@@ -55803,7 +55947,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher. ähnelt.
         /// </summary>
         public static string SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER {
             get {

@@ -1,14 +1,16 @@
 # Konzept: Administrationsdialoge neu ordnen — ein Rollbereich je Spalte, Stammblatt, ein Schema für die Verwaltungen
 
-**Stand:** AD-Q1 bis AD-Q8 sind entschieden, Variante B ist die Grundlage (6.1). Mit AD-Q12 bis
-AD-Q14 hat der Anwender am 22.09.2026 den Geltungsbereich auf die Verwaltungsdialoge der fünf
-Menügruppen Gebäude, Klimadaten, Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme
-eingegrenzt (achtzehn Menüpunkte, elf Komponenten, 1.4), das Kennzeichen auf das Schloss beschränkt
-und den Mockup-Reiter „Schmal" gestrichen. Das Schema (Abschnitt 3) und die Vorschläge (Abschnitt 4)
-sind Vorschlag; AD-Q9 ist entschieden (Ja), offen ist AD-Q11 (6.2). **Stufe 1 ist umgesetzt**
-(23.09.2026, Commits `c8e5f775`, `d9ef80b8`): V1, V2 und V7 im `Katalograhmen` und in der
-`Katalogliste`, dazu AD-Q6 im `KatalogBrowserDialog`; V10 und V15 sind aus Stufe 1 in Stufe 2
-verschoben (Abschnitt 7). Die Reihenfolge der übrigen Stufen steht in Abschnitt 7; was nicht mehr
+**Stand:** AD-Q1 bis AD-Q9 sind entschieden, Variante B ist die Grundlage (6.1); mit AD-Q11 ist am
+23.09.2026 auch die letzte offene Frage entschieden (6.2). Mit AD-Q12 bis AD-Q14 hat der Anwender am
+22.09.2026 den Geltungsbereich auf die Verwaltungsdialoge der fünf Menügruppen Gebäude, Klimadaten,
+Wärmebedarf & Heizung, Strombedarf & Speicher und Energiesysteme eingegrenzt (achtzehn Menüpunkte,
+elf Komponenten, 1.4), das Kennzeichen auf das Schloss beschränkt und den Mockup-Reiter „Schmal"
+gestrichen. **Stufe 1 ist umgesetzt** (23.09.2026, Commits `c8e5f775`, `d9ef80b8`): V1, V2 und V7 im
+`Katalograhmen` und in der `Katalogliste`, dazu AD-Q6 im `KatalogBrowserDialog`. **Stufe 2 ist
+umgesetzt** (23.09.2026, Commits `5767e273`, `e2fbb829`, Merge `f6290028`): V4, V10, V11 und V15 in
+`Katalogliste`, `KatalogBrowserDialog` und `ModulKatalogDialog`, dazu AD-Q11 mit dem Kern-Baustein
+`Katalogkopie.Duplizieren`. Das Schema (Abschnitt 3) und die übrigen Vorschläge (Abschnitt 4, Stufen 3
+bis 5) sind noch Vorschlag. Die Reihenfolge der übrigen Stufen steht in Abschnitt 7; was nicht mehr
 Gegenstand ist, fasst Abschnitt 8 zusammen.
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
@@ -161,6 +163,8 @@ Knopf ist das einzige Klickziel einer 1 000 px breiten Zeile; Strg-Klick zum Mar
 *Betroffen:* `Katalogliste`, `Zeilenwahl`, `Raster` — alle Wirte. *Aufwand:* M. *Abhängig:* QuickGrid
 kennt keinen Zeilenklick (Klickfläche in jeder Zelle, kein `display: flex` auf `<td>`), neues Zeilenmaß
 als `ItemSize` und `--epos-rasterzeile` samt Rasterprobe, Fokusführung mit bunit.
+**Umgesetzt (23.09.2026)** in den acht Verwaltungen; Projektdialoge und Importe behalten die
+Wahlspalte und 53 px.
 
 **V5 — Übernahme aus der Zeile, Umschalter „Katalog | Im Projekt (n)".** Entfällt: betrifft nur die
 Projektdialoge (AD-Q2, Abschnitt 8).
@@ -337,14 +341,16 @@ Stammblatts, der volle Satz im Kurztext (3.4), Farbe auch mit `forced-colors`. *
 Spalten „Schreibschutz" (Klimadaten) und „Auslieferung" (Bedarfsprofile), die Listen die Breite nehmen;
 ein Wort an jeder Zeile war zu groß (AD-Q13). *Betroffen:* die `Katalogliste`-Wirte des
 Geltungsbereichs, Profile `FuerBedarf` und Klimadaten; Gebäude und Gebäudetypen mit V16. *Aufwand:* S.
-*Abhängig:* V2.
+*Abhängig:* V2. **Umgesetzt (23.09.2026).**
 
 **V11 — Gemeinsame Tastaturführung und Rückmeldung.** *Was:* Das Verhalten aus 3.3 einmal im Rahmen:
 Fokuszeile und Leertaste in der `Katalogliste`, Esc-Stufen im Gerüst (Überlagerung → Blatt → Dialog),
 Statuszeile mit `role="status"`, Warnband nach dem Versuch, das Festhalten der Wahl bei
 ungespeicherten Feldern. *Warum:* Heute trägt jede der elf Komponenten einen eigenen Tastenhandler
 (Esc); weder sie noch `Katalogliste` und `Zeilenwahl` kennen die Pfeiltasten. *Betroffen:* alle elf.
-*Aufwand:* M. *Abhängig:* V4, V9; bunit je Verhalten.
+*Aufwand:* M. *Abhängig:* V4, V9; bunit je Verhalten. **Umgesetzt (23.09.2026)** in den acht
+Verwaltungen (Pfeiltasten, Esc, Statuszeile, Halten bei ungespeicherten Feldern); die Leertaste der
+Mehrfachwahl steht mit V6 noch aus.
 
 **V12 — Vergleichstabelle.** *Was:* Baustein `Vergleichstabelle` für zwei bis drei Zeilen im
 Stammblatt: abweichende Werte fett und mit Wort („≠ abweichend"), gleiche leise, Schalter „nur
@@ -381,6 +387,10 @@ ins Stammblatt (V9), Löschen und Duplizieren in die Auswahlleiste (V8), „Bear
 Arbeitsstand schließt mit Beenden). *Warum:* Eine Leiste, die in allen Verwaltungen gleich aussieht;
 die Regeln der `KnopfleistenWacheTests` (ein primärer Knopf, zuletzt) bleiben unverändert.
 *Betroffen:* alle elf. *Aufwand:* S je Dialog, mit V8 und V9 zusammen gebaut. *Abhängig:* V8, V9.
+**Umgesetzt (23.09.2026)** in `KatalogBrowserDialog`, `ModulKatalogDialog` und den beiden
+Ganglinien-Verwaltungen: „OK" heißt „Beenden", Reihenfolge Speichern · Verwerfen · Füller ·
+Neu… · Duplizieren… · Löschen · Beenden; Speichern ins Stammblatt und Löschen/Duplizieren in
+die Auswahlleiste stehen mit V8 und V9 noch aus.
 
 **V16 — Die Sonderlisten in die Katalogliste.** *Was:* Die Verwaltung Gebäude bekommt ein Profil (Name,
 Gebäudeart, Verwendung, Baujahr, Wohnfläche), ihre vier Vorfilter werden Trichter und die Suche der
@@ -449,7 +459,7 @@ Auswahlleiste und trägt alle Zeilenhandlungen; der Vergleich im Stammblatt wird
 | Kennung | Frage | Variante (a) | Variante (b) | Empfehlung |
 |---|---|---|---|---|
 | **AD-Q9** | Löscht „Löschen…" in der Auswahlleiste auch mehrere gewählte Zeilen auf einmal? | **Ja:** eine Rückfrage nennt alle gewählten Zeilen und die, die stehen bleiben (Schloss, in Verwendung); gelöscht wird der Rest, die Statuszeile nennt beide Zahlen | **Nein:** Löschen nur bei genau einer Zeile, sonst weich gesperrt mit Grund | **(a)** — nach einem Herstellerimport mit Hunderten Sätzen ist Aufräumen Zeile für Zeile keine Bedienung; die Rückfrage bleibt die einzige des Schemas — **Entscheid 22.09.2026: Ja, Variante (a).** |
-| **AD-Q11** | Darf ein Auslieferungssatz (`ReadOnly`) in der Verwaltung überschrieben werden? | **Nein:** nur lesbar; „Duplizieren" legt den eigenen Satz an (so hält es die Wärmepumpe) | **Ja, nach Rückfrage** (so hält es das BHKW) | **(a)** — eine Regel für alle, eine Rückfrage weniger, und die Auslieferung bleibt Bezug. Folge: Beim BHKW (in der Testdatenbank 79 von 79 Sätzen `ReadOnly`) beginnt jede Änderung mit Duplizieren |
+| **AD-Q11** | Darf ein Auslieferungssatz (`ReadOnly`) in der Verwaltung überschrieben werden? | **Nein:** nur lesbar; „Duplizieren" legt den eigenen Satz an (so hält es die Wärmepumpe) | **Ja, nach Rückfrage** (so hält es das BHKW) | **(a)** — eine Regel für alle, eine Rückfrage weniger, und die Auslieferung bleibt Bezug. Folge: Beim BHKW (in der Testdatenbank 79 von 79 Sätzen `ReadOnly`) beginnt jede Änderung mit Duplizieren. **Entscheid 23.09.2026: (a).** **Umgesetzt (23.09.2026)** — Kern `Katalogkopie.Duplizieren` in allen acht Stamm-Controllern, die BHKW-Rückfrage „Trotzdem überschreiben?" entfällt |
 
 
 ## 7 Reihenfolge und Abnahme
@@ -462,8 +472,8 @@ Menüpunkte, und Schloss, Vergleich und Import lassen sich an ihr zuerst zeigen.
 | Stufe | Inhalt | Aufwand | Voraussetzung |
 |---|---|---|---|
 | 1 | ✔ **umgesetzt 23.09.2026** (Commits `c8e5f775`, `d9ef80b8`) — V1 + V2 + V7 im `Katalograhmen` und in der `Katalogliste`: die acht Komponenten im Rahmen (A1 bis A8) auf einmal, Pilot „Heizkessel"; AD-Q6 im `KatalogBrowserDialog` | M + M + S | AD-Q6 |
-| 2 | V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` — alle Wirte; dazu V10 (Schloss) und V15 (Fußleiste), aus Stufe 1 zurückgestellt | M + M + S + S | Stufe 1 |
-| 3 | V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, danach die Gerätekataloge in der Folge des Menüs — BHKW, Wärmepumpen, Solarkollektoren, Stromspeicher, PV Module, Wechselrichter, Pufferspeicher — und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5) | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
+| 2 | ✔ **umgesetzt 23.09.2026** (Commits `5767e273`, `e2fbb829`, Merge `f6290028`) — V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` in den acht Verwaltungen; dazu V10 (Schloss) und V15 (Fußleiste); AD-Q11 mit `Katalogkopie.Duplizieren` | M + M + S + S | Stufe 1 |
+| 3 | V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, danach die Gerätekataloge in der Folge des Menüs — BHKW, Wärmepumpen, Solarkollektoren, Stromspeicher, PV Module, Wechselrichter, Pufferspeicher — und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5); dazu aus Stufe 2 zurückgestellt: V6 (Leertaste und Kästchen der Mehrfachwahl), das weiche Sperren beim Löschen eines Auslieferungssatzes (V13), Duplizieren für die Bedarfsprofile und die Änderungserkennung der Wärmepumpenverwaltung | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
 | 4 | V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1) | M | Stufe 3 |
 | 5 | V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
 

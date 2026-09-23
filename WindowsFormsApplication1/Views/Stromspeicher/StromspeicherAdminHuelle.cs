@@ -63,7 +63,10 @@ namespace WindowsFormsApplication1
                 Detail = name => ModulKatalogHuelle.Felder(
                     profil, StromspeicherStammCtrl.KatalogsatzAnzeige(name)),
                 Speichern = Schreiben,
-                Loeschen = Loeschen
+                Loeschen = Loeschen,
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz an.
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(StromspeicherStammCtrl.Duplizieren(id, name))
             };
         }
 

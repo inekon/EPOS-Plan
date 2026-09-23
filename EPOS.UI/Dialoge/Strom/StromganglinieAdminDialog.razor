@@ -36,7 +36,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
+        <Schliesskreuz Geschlossen="BeiSchliessen" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -60,7 +60,7 @@
                kommen aus EINER Gruppenabfrage beim Aufbau der Liste. *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -83,7 +83,7 @@
                 @onclick="BeiLoeschen">@LoeschenText</button>
         <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                @onclick="BeiSchliessen">@OkText</button>
+                @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
     @* --- Rueckfrage vor dem Loeschen (A-Zeile zu Befund W12-B12) --------- *@
@@ -151,7 +151,11 @@
     [Parameter] public string LabelJahreswerte { get; set; } = Resource.IMPORT_LBL_JAHRESWERTE;
     [Parameter] public string EinlesenText { get; set; } = Resource.IMPORT_BTN_EINLESEN;
     [Parameter] public string LoeschenText { get; set; } = Resource.IMPORT_BTN_LOESCHEN;
-    [Parameter] public string OkText { get; set; } = Resource.SIM_BTN_OK;
+    /// <summary>
+    /// Der eine Schlussknopf der Verwaltung (Konzept Administrationsdialoge, V15): Er hieß
+    /// „OK"; ein Katalogdialog ohne Arbeitsstand schließt mit „Beenden".
+    /// </summary>
+    [Parameter] public string BeendenText { get; set; } = Resource.ADM_BTN_BEENDEN;
     [Parameter] public string Dateifilter { get; set; } = Resource.IMPORT_DATEIFILTER;
     [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.IMPORT_FRAGE_LOESCHEN;
     [Parameter] public string VorlageGeloescht { get; set; } = Resource.IMPORT_MSG_GELOESCHT;
@@ -368,6 +372,10 @@
         _meldungStufe = stufe;
     }
 
+    /// <summary>
+    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg
+    /// (Konzept Administrationsdialoge, V15). Einlesen und Löschen schreiben sofort.
+    /// </summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
 
     private Task BeiTaste(KeyboardEventArgs e)
@@ -379,6 +387,6 @@
         if (_import?.EtwasOffen == true || _loeschfrageOffen)
             return Task.CompletedTask;
 
-        return Geschlossen.InvokeAsync(false);
+        return BeiSchliessen();
     }
 }

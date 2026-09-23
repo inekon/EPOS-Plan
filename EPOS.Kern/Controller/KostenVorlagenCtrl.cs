@@ -51,7 +51,7 @@ namespace WindowsFormsApplication1
         /// <see cref="NutzungsdauerCtrl.Vorgabe"/>.</summary>
         public int? NutzungsdauerId;
 
-        /// <summary>ETAPPE E7c (Schritt E, Schritt 107): Ersatzbeschaffung führen?
+        /// <summary>ETAPPE E7c (Schritt E, Schritt 108): Ersatzbeschaffung führen?
         /// <c>null</c> = wie bisher. Gelesen und geschrieben über
         /// <see cref="ErsatzRestwertKennzeichen"/>; in der Projektzeile steht dieselbe
         /// Spalte an <c>Tab_ProjektWerte</c>.</summary>

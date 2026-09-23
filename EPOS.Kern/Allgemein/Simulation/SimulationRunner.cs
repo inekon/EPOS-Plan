@@ -378,6 +378,10 @@ namespace WindowsFormsApplication1
             // der Kanalsatz.Summe() den Summenvektor stundenweise bildet.
             m.Energiebedarf.Waermebedarf_Kanal = BedarfJeKanal(simulation_Waermebedarf);
 
+            // ENTSCHEID E30: die Kennzahlen je Gebaeude, wie die Gebaeudeschleife des Laufs
+            // sie gebildet hat - ErgebnisCtrl.Save legt sie nach Tab_ErgebnisGebaeude.
+            m.Gebaeude.AddRange(simulation_Waermebedarf.GebaeudeKennzahlenListe);
+
             // Detail: Waermepumpe (nur wenn gerechnet), Werte wie in der WP-Ansicht (MWh).
             if (sim.bSimulationWP)
             {

@@ -145,6 +145,27 @@ namespace WindowsFormsApplication1
         // W14a-E-10 / S1.5 - die Zeilen der KATALOGVERWALTUNG mit ihren Parameterspalten
         // =================================================================================
 
+        // --- DUPLIZIEREN (Konzept Administrationsdialoge, Entscheid AD-Q11) ---
+
+        /// <summary>
+        /// <b>„Duplizieren…"</b>: kopiert den Wärmepumpensatz <paramref name="id"/> als EIGENEN
+        /// Satz unter <paramref name="neuerName"/> — <c>ReadOnly = 0</c>, alle übrigen
+        /// Spalten wie im Original (Entscheid <b>AD-Q11</b> vom 23.09.2026:
+        /// Auslieferungssätze werden nie überschrieben; wer einen ändern will, dupliziert
+        /// ihn).
+        /// </summary>
+        /// <remarks>
+        /// Die Regel steht einmal in <see cref="Katalogkopie.Duplizieren"/>; hier steht nur,
+        /// WELCHE Tabelle es ist — und dass die Kennlinien (<c>Tab_Kenndaten_STAMM</c>,
+        /// <c>Tab_Kenndaten_Kuehlung_STAMM</c>) im selben Vorgang mitkommen.
+        /// </remarks>
+        public static Katalogkopie.Ergebnis Duplizieren(int id, string neuerName)
+        {
+            return Katalogkopie.Duplizieren(TABLE, id, neuerName,
+                new Katalogkopie.Kindtabelle(CURVE, "ID_WP"),
+                new Katalogkopie.Kindtabelle(CURVE_K, "ID_WP"));
+        }
+
         /// <summary>
         /// <b>Die Zeilen der Stammverwaltung</b> (Anwenderentscheid W14a-E-10,
         /// Konzept_Katalogfilter 4.3 und S1.5) — NEUN Spalten: Hersteller, Modell,

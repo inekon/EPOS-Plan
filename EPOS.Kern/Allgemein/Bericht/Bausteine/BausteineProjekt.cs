@@ -80,9 +80,76 @@ namespace WindowsFormsApplication1
                     "Deckungsgrad Prozesswärme", DeckungWert(k, stamm, "energie.deckung_prozess"));
             }
 
+            // ENTSCHEID E30: die Kennzahlen je Gebaeude aus Tab_ErgebnisGebaeude.
+            GebaeudeErgebnisseSchreiben(k, stamm);
+
             // PAKET P2 (Konzept 7.4): die Speichertemperaturen des Schichtmodells.
             SpeichertemperaturenSchreiben(k, stamm);
         }
+
+        /// <summary>Überschrift des Abschnitts (E30) — zugleich Schlüssel der Übersetzung in <see cref="BerichtTexte"/>.</summary>
+        internal const string UEBERSCHRIFT_GEBAEUDE_ERGEBNIS = "Gebäude (Simulationsergebnis Stamm)";
+
+        /// <summary>
+        /// <b>Die Gebäudezeilen, die der Abschnitt zeigt</b> (E30) — die des letzten Laufs des
+        /// Stamms, wie <c>ErgebnisCtrl.Load</c> sie aus <c>Tab_ErgebnisGebaeude</c> gelesen hat.
+        ///
+        /// <para><b>Der Abschnitt entfällt</b>, wenn die Liste leer ist: Das Projekt hat kein
+        /// Gebäude, es gibt noch kein Ergebnis, oder die Datenbank steht vor Schemaschritt 107.
+        /// Eine Überschrift ohne Zeilen wäre keine Aussage. Gerechnet wird hier nichts — der
+        /// Bericht zeigt die Zahlen des Laufs.</para>
+        /// </summary>
+        internal static List<ErgebnisGebaeudeModel> GebaeudeZeilen(VariantenDaten v)
+        {
+            if (v == null || v.Ergebnis == null || v.Ergebnis.Gebaeude == null) return new List<ErgebnisGebaeudeModel>();
+            return v.Ergebnis.Gebaeude.Where(g => g != null).OrderBy(g => g.Merkplatz).ToList();
+        }
+
+        /// <summary>
+        /// ENTSCHEID E30 — je Gebäude Rechenweg, Wärmebedarf, die drei Spitzenwerte und, auf
+        /// dem VDI-Weg, die Kühl- und Raumkennzahlen. Ein Gebäude auf dem Tagesbilanz-Weg trägt
+        /// die Zeile „Tagesbilanz (Bestandsweg)" (E20, E23) und keine Kühlzeilen — dieser Weg
+        /// liefert keine Kühllast (E21). Der Abschnitt entfällt nach
+        /// <see cref="GebaeudeZeilen"/>.
+        /// </summary>
+        private static void GebaeudeErgebnisseSchreiben(WordKontext k, VariantenDaten stamm)
+        {
+            List<ErgebnisGebaeudeModel> zeilen = GebaeudeZeilen(stamm);
+            if (zeilen.Count == 0) return;
+
+            k.Ueberschrift2(UEBERSCHRIFT_GEBAEUDE_ERGEBNIS);
+            foreach (ErgebnisGebaeudeModel g in zeilen)
+            {
+                k.Ueberschrift3Roh(string.IsNullOrWhiteSpace(g.Gebaeudename) ? "—" : g.Gebaeudename);
+
+                var paare = new List<string>
+                {
+                    "Rechenweg", g.IstVdi6007 ? MyResource.Resource.GEB_RECHENWEG_VDI6007
+                                              : MyResource.Resource.GEB_RECHENWEG_TAGESBILANZ,
+                    "Wärmebedarf Heizung", k.F(g.HeizwaermeMwh, 1) + " MWh/a",
+                    "Spitzenlast (Stundenwert)", k.F(g.SpitzeKw, 1) + " kW",
+                    "Spitzenlast (Tagesmittel)", k.F(g.SpitzeTagesmittelKw, 1) + " kW",
+                    "Spitzenlast (95-%-Quantil)", k.F(g.Spitze95Kw, 1) + " kW",
+                };
+                if (g.IstVdi6007)
+                {
+                    paare.Add("Kühlenergie (informativ)"); paare.Add(Wert(k, g.KuehlenergieMwh, 1, "MWh/a"));
+                    paare.Add("Stunden mit Kühlbedarf"); paare.Add(Wert(k, g.KuehlstundenH, "h/a"));
+                    paare.Add("Mittlere Raumtemperatur (Nutzungszeit)"); paare.Add(Wert(k, g.MittlereRaumtemperaturC, 1, "°C"));
+                    paare.Add("Überhitzungsstunden"); paare.Add(Wert(k, g.UeberhitzungsstundenH, "h/a"));
+                }
+                k.Eigenschaften(paare.ToArray());
+            }
+
+            if (zeilen.Any(g => !g.IstVdi6007))
+                k.Hinweis("Der Tagesbilanz-Weg (Bestandsweg) liefert weder Raumtemperatur noch Kühllast.");
+        }
+
+        private static string Wert(WordKontext k, double? w, int dez, string einheit)
+        { return w.HasValue ? k.F(w.Value, dez) + " " + einheit : "—"; }
+
+        private static string Wert(WordKontext k, int? w, string einheit)
+        { return w.HasValue ? k.F(w.Value, 0) + " " + einheit : "—"; }
 
         /// <summary>
         /// PAKET P2 — Temperaturen der obersten Schicht je Speicher, dazu die Ganglinie

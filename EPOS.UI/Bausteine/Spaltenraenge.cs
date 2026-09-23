@@ -143,15 +143,21 @@ namespace EPOS.UI.Bausteine
         /// <param name="profil">Die Spalten und ihr Rang.</param>
         /// <param name="laengen">Die längsten Werte je Spalte (<see cref="Laengen"/>).</param>
         /// <param name="festgehalten">Trägt die Spalte einen Filter oder die Sortierung? Dann weicht sie nie.</param>
+        /// <param name="mitWahlspalte">
+        /// Steht die Wahlspalte mit dem runden Knopf in der Liste? In den Verwaltungen ist
+        /// die Zeile selbst die Wahl (Konzept Administrationsdialoge, V4) — dort fällt sie
+        /// und mit ihr ihre 60 px.
+        /// </param>
         public static Dictionary<string, int> Stufen(Katalogfilterprofil profil,
                                                      IReadOnlyDictionary<string, int> laengen,
-                                                     Func<Katalogspalte, bool> festgehalten)
+                                                     Func<Katalogspalte, bool> festgehalten,
+                                                     bool mitWahlspalte = true)
         {
             var stufen = new Dictionary<string, int>(StringComparer.Ordinal);
 
             // Was immer steht: Rahmen, Wahlspalte, die Mindestbreite des Bezeichners
             // und jede Spalte mit Rang Immer oder mit Filter.
-            int grund = RAHMEN + WAHLSPALTE;
+            int grund = RAHMEN + (mitWahlspalte ? WAHLSPALTE : 0);
             var weichend = new List<Katalogspalte>();
             foreach (Katalogspalte s in profil.Spalten)
             {

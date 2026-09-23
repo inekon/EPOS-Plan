@@ -201,6 +201,12 @@
                               Wert="@_projektZeile.Vorlauf" WertChanged="BeiVorlauf" />
                 <Ganzzahlfeld Bezeichnung="@LabelRuecklauf" Einheit="°C"
                               Wert="@_projektZeile.Ruecklauf" WertChanged="BeiRuecklauf" />
+                @* DIE SENKEN DER ANLAGE (Anwenderentscheid 23.09.2026) - wortgleich zum
+                   HeizkesselDialog: fertig formuliert von der Huelle, leer = keine Zeile. *@
+                @if (!string.IsNullOrEmpty(_projektZeile.Senken))
+                {
+                    <Herleitungszeile Text="@_projektZeile.Senken" />
+                }
             }
                 </KindInhalt>
             </Formularraster>

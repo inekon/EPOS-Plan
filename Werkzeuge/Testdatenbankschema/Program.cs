@@ -131,7 +131,7 @@ namespace Testdatenbankschema
                 Console.WriteLine("Aufruf: Testdatenbankschema <pfad-zur.sqlite> [--trocken]");
                 Console.WriteLine();
                 Console.WriteLine("  Zieht die Datei auf Schemastand " + SchemaStand.Zielversion +
-                                  " nach (Schritte 62 bis 95), saet den Gesetzeskatalog nach");
+                                  " nach (Schritte 62 bis " + SchemaStand.Zielversion + "), saet den Gesetzeskatalog nach");
                 Console.WriteLine("  und fuehrt danach VACUUM aus.");
                 Console.WriteLine("  --trocken  nur berichten, nichts aendern.");
                 return 2;
@@ -1225,48 +1225,88 @@ namespace Testdatenbankschema
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
                                                 StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 105, trocken);
 
-            // ---- Schritt 106 ist einer Nachbarwelle vorbehalten; die Kette laeuft ueber
-            //      die Luecke.
+            // ---- Schritt 106: fremde Ergebnisverweise der gespeicherten Wirtschaftlichkeit
+            //      werden NULL (Anwenderentscheid 23.09.2026, Erbe des Duplizierens). REIN
+            //      DML, eine Anweisung aus WirtschaftlichkeitFremdverweis - DERSELBEN Quelle,
+            //      aus der sich SchemaMigration.Schritt_106_WirtschaftlichkeitFremdverweis
+            //      bedient.
             //
-            // ---- Schritt 107: Ersatz und Restwert je Position entkoppelt (Schritt E des
+            //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest den Verweis, und die
+            //      Wirtschaftlichkeit steht nicht im Export.
+            //
+            //      ER STEHT NACH 105 ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            List<string> betroffene106 = WirtschaftlichkeitFremdverweis.Betroffene();
+            Console.WriteLine("Schritt 106 - " + WirtschaftlichkeitFremdverweis.TABELLE + "." +
+                              WirtschaftlichkeitFremdverweis.SPALTE + ": " + betroffene106.Count +
+                              " Zeile(n) mit fremdem Ergebnisverweis.");
+            foreach (string zeile in betroffene106)
+                Console.WriteLine("Schritt 106 - " + zeile);
+            if (!trocken)
+            {
+                int gesetzt106 = WirtschaftlichkeitFremdverweis.Ausfuehren();
+                Console.WriteLine("Schritt 106 - " + gesetzt106 + " Verweis(e) auf NULL gesetzt, offen " +
+                                  WirtschaftlichkeitFremdverweis.Offen() + " (erwartet 0).");
+            }
+
+            // ---- Schritt 107: die Ergebnistabelle je Gebaeude (Entscheid E30, Konzept
+            //      Gebaeudesimulation N1.35). REIN DDL aus ErgebnisGebaeudeSchema - DERSELBEN
+            //      Quelle, aus der sich SchemaMigration.Schritt_107_ErgebnisGebaeude bedient;
+            //      erst die Tabelle, dann die zwei Indizes. ERGEBNISNEUTRAL: Die Tabelle
+            //      entsteht leer, kein Rechenweg liest sie, der Referenzlauf exportiert sie nicht.
+            //
+            //      ER STEHT NACH 106 ohne Reihenfolgebedingung.
+            Console.WriteLine();
+            foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
+            {
+                if (a.Key == ErgebnisGebaeudeSchema.TAB)
+                {
+                    tabellen += TabelleSicherstellen(a.Key, a.Value, 107, trocken);
+                    continue;
+                }
+                Console.WriteLine("Schritt 107 - Index " + a.Key + (trocken ? ": (trocken) uebersprungen." : ": sichergestellt."));
+                if (!trocken) DataRepository.ExecuteNonQuery(a.Value);
+            }
+
+            // ---- Schritt 108: Ersatz und Restwert je Position entkoppelt (Schritt E des
             //      Analysepapiers, Entscheid A6 vom 20.09.2026, Mockup U39). REIN DDL aus
             //      DERSELBEN Quelle, aus der sich
-            //      SchemaMigration.Schritt_107_ErsatzRestwertKennzeichen bedient
-            //      (SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen): die nullbaren
+            //      SchemaMigration.Schritt_108_ErsatzRestwertKennzeichen bedient
+            //      (SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen): die nullbaren
             //      Kennzeichen ErsatzFuehren und RestwertAnsetzen (CHECK IN (0,1)) an
             //      Tab_ProjektWerte und Tab_KostenVorlagePosition.
             //
             //      REFERENZLAUF BYTE-GLEICH: Kein DML, alle Zeilen stehen auf NULL, und
             //      NULL heisst "wie bisher".
             Console.WriteLine();
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
-                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 107, trocken);
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 108, trocken);
 
-            // ---- Schritt 108: die Preisbasis der Traegerkarte als eigener Kartenzustand
+            // ---- Schritt 109: die Preisbasis der Traegerkarte als eigener Kartenzustand
             //      (Schritt F, Entscheid ET-D-3 Rest, Mockup U32). DDL UND DML aus
-            //      DERSELBEN Quelle wie SchemaMigration.Schritt_108_Preisbasis: die
+            //      DERSELBEN Quelle wie SchemaMigration.Schritt_109_Preisbasis: die
             //      nullbare Textspalte Preisbasis an energy_project_settings
-            //      (SchemaKatalog.Schritt108_Preisbasis), dann der Datenteil
+            //      (SchemaKatalog.Schritt109_Preisbasis), dann der Datenteil
             //      (PreisbasisUebernahme): ID_Umrechnung nach kWh -> "kWh", sonst die
             //      Abrechnungseinheit des Traegers - genau die Basis, die die Karte bis
             //      hierher beim Oeffnen zeigte.
             //
             //      REFERENZLAUF BYTE-GLEICH: Kein Rechenweg liest die Spalte.
             Console.WriteLine();
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_Preisbasis)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt109_Preisbasis)
                 angelegt += SpalteSicherstellen(s.Tabelle, s.Name,
-                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 108, trocken);
+                                                StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition), 109, trocken);
             if (!trocken)
             {
-                PreisbasisUebernahme.Bericht bericht108 = PreisbasisUebernahme.Ausfuehren();
-                Console.WriteLine("Schritt 108 - " + bericht108.Text() + "; offen: " +
+                PreisbasisUebernahme.Bericht bericht109 = PreisbasisUebernahme.Ausfuehren();
+                Console.WriteLine("Schritt 109 - " + bericht109.Text() + "; offen: " +
                                   PreisbasisUebernahme.Offen() + " (erwartet 0).");
             }
 
-            // ---- Schritt 109: der Stammtext der fuenf Gase auf Nm3 (Schritt G,
+            // ---- Schritt 110: der Stammtext der fuenf Gase auf Nm3 (Schritt G,
             //      Entscheid U-1 Weg (a), Freigabe A9 - vor dem naechsten Vorlagenbau).
-            //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_109_GaseNm3
+            //      REINES DML aus DERSELBEN Quelle wie SchemaMigration.Schritt_110_GaseNm3
             //      (GaseNormkubikmeter): Einheit m3 -> Nm3 und PreisEinheit -> EUR/Nm3 an
             //      den Brennstoffen 1, 2, 3, 14, 25, dazu jede Preiszeile ihrer Traeger,
             //      die noch m3 fuehrt; der Brennstoff 24 (Sonstige) auf kWh und EUR/kWh
@@ -1275,11 +1315,11 @@ namespace Testdatenbankschema
             //      REFERENZLAUF BYTE-GLEICH: kein Zahlenwert; kein Rechenweg liest den
             //      Stammtext, die Einfrierliste nennt am Brennstoffstamm nur CO2/SO2/NOx/Staub.
             Console.WriteLine();
-            Console.WriteLine("Schritt 109 - offen vorher: " + GaseNormkubikmeter.Offen() + ".");
+            Console.WriteLine("Schritt 110 - offen vorher: " + GaseNormkubikmeter.Offen() + ".");
             if (!trocken)
             {
-                GaseNormkubikmeter.Bericht bericht109 = GaseNormkubikmeter.Ausfuehren();
-                Console.WriteLine("Schritt 109 - " + bericht109.Text() + "; offen: " +
+                GaseNormkubikmeter.Bericht bericht110 = GaseNormkubikmeter.Ausfuehren();
+                Console.WriteLine("Schritt 110 - " + bericht110.Text() + "; offen: " +
                                   GaseNormkubikmeter.Offen() + " (erwartet 0).");
             }
 

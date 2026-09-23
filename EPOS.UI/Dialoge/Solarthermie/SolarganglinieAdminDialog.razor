@@ -53,7 +53,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="@(() => Geschlossen.InvokeAsync(false))" />
+        <Schliesskreuz Geschlossen="BeiSchliessen" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -77,7 +77,7 @@
                Gruppenabfrage ueber die Wertetabelle. *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -106,7 +106,7 @@
                 @onclick="BeiLoeschen">@LoeschenText</button>
         <span class="epos-leiste-fueller"></span>
         <button type="button" class="epos-knopf epos-knopf--primaer"
-                @onclick="BeiSchliessen">@OkText</button>
+                @onclick="BeiSchliessen">@BeendenText</button>
     </div>
 
     @* --- Rueckfrage vor dem Loeschen (A-5) ------------------------------- *@
@@ -196,7 +196,11 @@
     [Parameter] public string AnzeigenText { get; set; } = Resource.SGAD_BTN_ANZEIGEN;
     [Parameter] public string EinlesenText { get; set; } = Resource.SGAD_BTN_EINLESEN;
     [Parameter] public string LoeschenText { get; set; } = Resource.SGAD_BTN_LOESCHEN;
-    [Parameter] public string OkText { get; set; } = Resource.ALLG_BTN_OK;
+    /// <summary>
+    /// Der eine Schlussknopf der Verwaltung (Konzept Administrationsdialoge, V15): Er hieß
+    /// „OK"; ein Katalogdialog ohne Arbeitsstand schließt mit „Beenden".
+    /// </summary>
+    [Parameter] public string BeendenText { get; set; } = Resource.ADM_BTN_BEENDEN;
     [Parameter] public string Dateifilter { get; set; } = Resource.WBAD_DATEIFILTER;
     [Parameter] public string TitelLoeschen { get; set; } = Resource.PSP_TITEL_LOESCHEN;
     [Parameter] public string VorlageLoeschfrage { get; set; } = Resource.PSP_MELDUNG_WIRKLICH_LOESCHEN;
@@ -426,9 +430,10 @@
     }
 
     /// <summary>
-    /// „OK" liefert OK. Der Vorläufer setzte ein eigenes Feld <c>result</c>, das
-    /// niemand las, und liess <c>this.DialogResult</c> auf <c>Cancel</c> stehen —
-    /// <c>MitOk</c> lieferte damit IMMER <c>false</c> (Befund W14-B4, A-7).
+    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc: EIN Schlussweg
+    /// (Konzept Administrationsdialoge, V15). Einlesen und Löschen schreiben sofort,
+    /// es gibt nichts zu verwerfen. Der Vorläufer setzte ein eigenes Feld
+    /// <c>result</c>, das niemand las, und lieferte IMMER <c>false</c> (Befund W14-B4).
     /// </summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
 
@@ -436,6 +441,6 @@
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrageOffen) return Task.CompletedTask;
-        return Geschlossen.InvokeAsync(false);
+        return BeiSchliessen();
     }
 }

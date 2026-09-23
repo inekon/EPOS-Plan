@@ -167,6 +167,51 @@ namespace EPOS.Kern.Tests
             Assert.Equal((1L, 2L, 1L), Zeilen());
         }
 
+        /// <summary>
+        /// <b>Veraltet nach dem Speichern.</b> Ein gespeichertes Zapfprofil — ebenso die allein
+        /// umgestellte Weiche — setzt <c>Tab_Projekt.Aenderungsdatum</c>; ein vorhandenes
+        /// Simulationsergebnis gilt danach als veraltet (derselbe Mechanismus wie in den übrigen
+        /// Schreibwegen). Die Marke sitzt im Vorgang des Aufrufers: Sein Rollback nimmt sie
+        /// zurück, sein Commit lässt sie stehen; eine Ablehnung setzt sie nie.
+        /// </summary>
+        [Fact]
+        public void Speichern_markiert_das_Projekt_als_geaendert_und_ein_Rollback_nimmt_die_Marke_zurueck()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            // Abgelehnt: nichts geschrieben, keine Marke.
+            DatumZuruecksetzen();
+            Assert.Throws<ZapfprofilSpeicherException>(() => ZapfprofilCtrl.Speichern(PROJEKT,
+                new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() with { IdNutzungsart = 987654 } }, null)));
+            Assert.Equal(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
+
+            // Im Vorgang des Aufrufers: dort gesetzt, mit dessen Rollback wieder fort.
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() }, null), v);
+                using (Vorgangsklammer.Setzen(v))
+                    Assert.True(MerkmalUebernahmeCtrl.NachStandGeaendert(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT)));
+                v.Rollback();
+            }
+            Assert.Equal(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
+            Assert.Equal((0L, 0L, 0L), Zeilen());
+
+            // Mit dessen Commit bleibt sie stehen.
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Bestand, new[] { ZoneA() }, null), v);
+                v.Commit();
+            }
+            Assert.True(MerkmalUebernahmeCtrl.NachStandGeaendert(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT)));
+
+            // Die Weiche allein: derselbe Stand, nur auf den Generator umgestellt.
+            DatumZuruecksetzen();
+            ZapfprofilCtrl.Speichern(PROJEKT, ZapfprofilCtrl.Lies(PROJEKT) with { Weg = BrauchwasserWeg.Generator });
+            Assert.Equal(BrauchwasserWeg.Generator, ZapfprofilCtrl.Weg(PROJEKT));
+            Assert.True(MerkmalUebernahmeCtrl.NachStandGeaendert(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT)));
+        }
+
         [Fact]
         public void Ungueltige_Verweise_werden_benannt_abgelehnt_und_nichts_wird_geschrieben()
         {
@@ -448,6 +493,17 @@ namespace EPOS.Kern.Tests
 
         private static long Anzahl(string sql, int id) =>
             Convert.ToInt64(DataRepository.ExecuteScalar(sql, new DbParam("@id", id)));
+
+        /// <summary>Ein Änderungsdatum, das jedes Speichern überbieten muss.</summary>
+        private static readonly DateTime ALT = new DateTime(2000, 1, 1);
+
+        private static void DatumZuruecksetzen()
+        {
+            DataRepository.ExecuteSQL("UPDATE Tab_Projekt SET Aenderungsdatum = ? WHERE ID = ?",
+                new DbParam("@d", DbParamTyp.Date) { Wert = ALT },
+                new DbParam("@id", PROJEKT));
+            Assert.Equal(ALT, MerkmalUebernahmeCtrl.Aenderungsdatum(PROJEKT));
+        }
 
         private static (long Zonen, long Wohnungen, long Projekte) Zeilen() =>
             (Convert.ToInt64(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone")),

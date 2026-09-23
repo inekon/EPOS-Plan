@@ -306,7 +306,7 @@ namespace WindowsFormsApplication1
             {
                 bool ok = DataRepository.ExecuteSQL(AnlagenSql.SQL_ANLAGE_INSERT,
                                                     AnlagenSql.AnlagenParameter(ID_Projekt, this));
-                if (ok) { StromTraegerNachziehen(); ProjektGeaendert(); }
+                if (ok) { StromTraegerNachziehen(); SenkenAnlegen(); ProjektGeaendert(); }
                 return ok;
             }
             catch (Exception ex)
@@ -345,6 +345,27 @@ namespace WindowsFormsApplication1
         {
             if (ID_Projekt <= 0) return;
             try { ProjektEnergietraegerCtrl.StromTraegerSicherstellen(ID_Projekt); }
+            catch { }
+        }
+
+        /// <summary>
+        /// SENKEN BEIM ANLEGEN (Anwenderentscheid 23.09.2026): Eine eben eingefügte
+        /// Wärmeerzeugeranlage bekommt ihre Senkenzeilen aus den Bedarfskanälen des
+        /// Projekts (<see cref="Senkenvorbelegung"/>) — dieselbe Regel wie im Speicherweg
+        /// <c>WizardCtrl.Add_WP_Waermeerzeuger</c>. Die neue Id ist der größte AutoWert des
+        /// Projekts und Typs. Best effort: Ohne Zeile gilt die Vorbelegung.
+        /// </summary>
+        private void SenkenAnlegen()
+        {
+            if (ID_Projekt <= 0 || !Senkenvorbelegung.IstWaermeerzeuger(ID_Type)) return;
+            try
+            {
+                object neu = DataRepository.ExecuteScalar(
+                    "SELECT MAX(ID) FROM Tab_Energieanlagen WHERE ID_Projekt = ? AND ID_Type = ?",
+                    new DbParam("@p", ID_Projekt), new DbParam("@t", ID_Type));
+                if (neu == null || neu == DBNull.Value) return;
+                Senkenvorbelegung.Anlegen(ID_Projekt, new[] { Convert.ToInt32(neu) }, false);
+            }
             catch { }
         }
 

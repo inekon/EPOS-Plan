@@ -980,4 +980,40 @@ public class SolarkollektorenDialogTests : EposBunitContext
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Übernehmen").Click();
         Assert.Equal(35, zeile.Neigung);
     }
+
+    // =================================================================================
+    // Senken der Anlage (Anwenderentscheid 23.09.2026)
+    // =================================================================================
+
+    /// <summary>
+    /// Die PROJEKTzeile zeigt ihre Senken in der Gruppe „Kollektor" — bei der
+    /// Solarthermie entscheidet die Senke, ob das Kollektorfeld überhaupt einen Abnehmer
+    /// findet.
+    /// </summary>
+    [Fact]
+    public void Die_Projektzeile_zeigt_ihre_Senken()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Vitosol 200");
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme";
+        var cut = Aufbauen(new List<ErzeugerZeile> { zeile });
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0]
+           .QuerySelector("button")!.Click();
+
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-herleitung-text"),
+                        e => e.TextContent == zeile.Senken);
+    }
+
+    /// <summary>Ohne Senkentext steht keine Zeile.</summary>
+    [Fact]
+    public void Ohne_Senkentext_steht_keine_Senkenzeile()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll("tbody tr")[0]
+           .QuerySelector("button")!.Click();
+
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+    }
 }

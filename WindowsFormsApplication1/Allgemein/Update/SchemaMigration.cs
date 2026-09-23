@@ -3723,16 +3723,58 @@ namespace WindowsFormsApplication1
         public const int SCHRITT_105_KWKG_ABWAERMEABFUHR = 105;
 
         /// <summary>
-        /// Schritt 107 — <b>Ersatz und Restwert je Position entkoppelt</b> (Schritt E des
+        /// Schritt 106 — <b>fremde Ergebnisverweise der Wirtschaftlichkeit werden leer</b>
+        /// (Anwenderentscheid 23.09.2026: „Ergebnisverweise werden nicht mitkopiert; die
+        /// Kopie hat noch kein Ergebnis, die Wirtschaftlichkeit rechnet nach dem ersten Lauf
+        /// neu"). Er folgt auf <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>Der Befund.</b> Das Duplizieren eines Projekts — und damit jede
+        /// Variante — kopierte <c>Tab_ErgebnisWirtschaftlichkeit</c> samt UNVERSETZTEM
+        /// <c>ID_Ergebnis</c>: Die Kopie zeigte auf den Simulationslauf des Quellprojekts.
+        /// Der Kopierlauf lässt den Verweis ab jetzt leer
+        /// (<c>ProjektDuplizierenCtrl.ERGEBNISVERWEISE_LEEREN</c>); dieser Schritt bereinigt
+        /// den Bestand.</para>
+        ///
+        /// <para><b>REIN DML</b>, eine Anweisung, die Quelle ist
+        /// <see cref="WirtschaftlichkeitFremdverweis"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>. Getroffen wird jeder gesetzte Verweis ohne Lauf DESSELBEN
+        /// Projekts; die Zeilen bleiben und gelten danach als „passt nicht zum
+        /// Simulationsstand". <b>Ergebnisneutral:</b> Kein Rechenweg liest den Verweis.
+        /// <b>Wiederholbar:</b> Ein zweiter Lauf findet nichts mehr.</para>
+        /// </summary>
+        public const int SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS = 106;
+
+        /// <summary>
+        /// Schritt 107 — <b>die Ergebnistabelle je Gebäude</b> (Entscheid E30 vom
+        /// 23.09.2026, Konzept Gebäudesimulation N1.35).
+        ///
+        /// <para><b>Was der Schritt herstellt.</b> Die leere STRICT-Tabelle
+        /// <c>Tab_ErgebnisGebaeude</c> — je Lauf und Gebäude eine Zeile mit Rechenweg,
+        /// Wärmebedarf, drei Spitzenwerten und den Kennzahlen des VDI-Wegs — samt zwei
+        /// Indizes auf den Verweisen. Die DDL steht bei
+        /// <see cref="ErgebnisGebaeudeSchema"/> — EINE Quelle für Migration,
+        /// <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis.</para>
+        ///
+        /// <para><b>REIN DDL, ergebnisneutral.</b> Geschrieben wird die Tabelle erst vom
+        /// nächsten Lauf (<c>ErgebnisCtrl.Save</c>); kein Rechenweg liest sie, und der
+        /// Referenzlauf exportiert sie nicht. <b>Wiederholbar</b> über
+        /// <c>IF NOT EXISTS</c>. <b>Nach Schritt 106</b>, ohne Reihenfolgebedingung außer
+        /// der, dass <c>Tab_Ergebnis</c> und <c>Tab_Gebaeude</c> bestehen.</para>
+        /// </summary>
+        public const int SCHRITT_107_ERGEBNIS_GEBAEUDE = 107;
+
+        /// <summary>
+        /// Schritt 108 — <b>Ersatz und Restwert je Position entkoppelt</b> (Schritt E des
         /// Analysepapiers Wirtschaftlichkeit § 6, Entscheid A6 vom 20.09.2026, Mockup U39,
-        /// Konzept § 2.13 (3)). Schritt <b>106</b> ist einer Nachbarwelle vorbehalten; die
-        /// Kette läuft über die Lücke, er folgt auf
-        /// <see cref="SCHRITT_105_KWKG_ABWAERMEABFUHR"/> ohne Reihenfolgebedingung.
+        /// Konzept § 2.13 (3)). Er folgt auf
+        /// <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>REIN DDL</b>, vier Spalten: die nullbaren Kennzeichen
         /// <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c> (<c>CHECK (… IN (0,1))</c>) an
         /// <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste
-        /// steht bei <see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>, EINE
+        /// steht bei <see cref="SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen"/>, EINE
         /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
         /// <c>EPOS.Kern.Tests</c>.</para>
         ///
@@ -3740,17 +3782,17 @@ namespace WindowsFormsApplication1
         /// abgelaufener Nutzungsdauer, der Restwert steht linear; der Referenzlauf bleibt
         /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
         /// </summary>
-        public const int SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN = 107;
+        public const int SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN = 108;
 
         /// <summary>
-        /// Schritt 108 — <b>die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
+        /// Schritt 109 — <b>die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
         /// (Schritt F des Analysepapiers § 6, Entscheid ET‑D‑3 Rest, Mockup U32). Er folgt
-        /// auf <see cref="SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN"/> ohne
+        /// auf <see cref="SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN"/> ohne
         /// Reihenfolgebedingung.
         ///
         /// <para><b>DDL und DML</b>: die nullbare Textspalte <c>Preisbasis</c> an
         /// <c>energy_project_settings</c>
-        /// (<see cref="SchemaKatalog.Schritt108_Preisbasis"/>), dann der einmalige
+        /// (<see cref="SchemaKatalog.Schritt109_Preisbasis"/>), dann der einmalige
         /// Datenteil (<see cref="PreisbasisUebernahme"/>): <c>ID_Umrechnung</c> nach kWh →
         /// „kWh", sonst die Abrechnungseinheit des Trägers — genau die Basis, die die Karte
         /// bis hierher beim Öffnen zeigte.</para>
@@ -3759,13 +3801,13 @@ namespace WindowsFormsApplication1
         /// bleibt byte-gleich. <b>Wiederholbar:</b> Gesetzt wird nur, wo die Spalte leer
         /// ist.</para>
         /// </summary>
-        public const int SCHRITT_108_PREISBASIS = 108;
+        public const int SCHRITT_109_PREISBASIS = 109;
 
         /// <summary>
-        /// Schritt 109 — <b>der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
+        /// Schritt 110 — <b>der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
         /// Analysepapiers § 6, Entscheid U‑1 Weg (a) vom 30.08.2026, Freigabe A9 vom
         /// 20.09.2026 „vor dem nächsten Vorlagenbau"). Er folgt auf
-        /// <see cref="SCHRITT_108_PREISBASIS"/> ohne Reihenfolgebedingung.
+        /// <see cref="SCHRITT_109_PREISBASIS"/> ohne Reihenfolgebedingung.
         ///
         /// <para><b>REIN DML</b> nach dem Muster von Schritt 26a: <c>Einheit</c> „m³" →
         /// „Nm³" und <c>PreisEinheit</c> → „€/Nm³" an den Brennstoffen 1, 2, 3, 14 und 25
@@ -3780,7 +3822,7 @@ namespace WindowsFormsApplication1
         /// Stammtext. Die nächste Zuordnung eines Gasträgers findet danach ihre
         /// Identitätsregel. <b>Wiederholbar.</b></para>
         /// </summary>
-        public const int SCHRITT_109_GASE_NM3 = 109;
+        public const int SCHRITT_110_GASE_NM3 = 110;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5230,28 +5272,51 @@ namespace WindowsFormsApplication1
                         "auf 0, und 0 heisst wie bisher Nettostromerzeugung.",
                         Schritt_105_KwkgAbwaermeabfuhr),
 
-            // Schritt 106 ist einer Nachbarwelle vorbehalten - die Kette laeuft ueber
-            // die Luecke (der Marker haelt die hoechste gelaufene Nummer).
-            //
+            // ANWENDERENTSCHEID 23.09.2026 - fremde Ergebnisverweise der gespeicherten
+            // Wirtschaftlichkeit werden leer (Erbe des Duplizierens). REIN DML, kein
+            // DDL; die Quelle ist WirtschaftlichkeitFremdverweis. Er steht NACH 105 ohne
+            // Reihenfolgebedingung - er fasst allein einen Spaltenwert an.
+            new Schritt(SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS,
+                        "Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis: Verweise auf den Lauf " +
+                        "eines anderen Projekts werden NULL",
+                        "Eine gespeicherte Wirtschaftlichkeit nennt den Simulationslauf, auf " +
+                        "dem sie beruht. Kopien und Varianten eines Projekts trugen dort den " +
+                        "Lauf des Quellprojekts. Ab hier ist ein solcher Verweis leer: Die " +
+                        "Zeile bleibt stehen und gilt als 'passt nicht zum Simulationsstand' " +
+                        "- die Wirtschaftlichkeit rechnet nach dem naechsten Lauf des Projekts " +
+                        "neu. Ein Verweis auf den eigenen Lauf bleibt. ERGEBNISNEUTRAL: Kein " +
+                        "Rechenweg liest den Verweis.",
+                        Schritt_106_WirtschaftlichkeitFremdverweis),
+
+            // ENTSCHEID E30 (23.09.2026, Konzept Gebaeudesimulation N1.35) - die
+            // Ergebnistabelle je Gebaeude. REIN DDL; die Quelle ist
+            // ErgebnisGebaeudeSchema. Er steht NACH 106 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_107_ERGEBNIS_GEBAEUDE,
+                        "Tab_ErgebnisGebaeude anlegen (Kennzahlen je Gebaeude und Lauf)",
+                        "Der Lauf schreibt die Kennzahlen je Gebaeude nicht, und der " +
+                        "Bericht laesst den Abschnitt 'Gebaeude (Simulationsergebnis)' " +
+                        "weg. Gerechnet wird unveraendert.",
+                        Schritt_107_ErgebnisGebaeude),
+
             // ENTSCHEID A6 (20.09.2026, Schritt E) - Ersatz und Restwert je Position
             // entkoppelt. REIN DDL; die Quelle ist
-            // SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen. Er steht NACH 105 ohne
+            // SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen. Er steht NACH 107 ohne
             // Reihenfolgebedingung - er legt allein vier neue Spalten an, die kein anderer
             // Schritt liest oder schreibt.
-            new Schritt(SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN,
+            new Schritt(SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN,
                         "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die " +
                         "Kennzeichen ErsatzFuehren und RestwertAnsetzen",
                         "Ersatzbeschaffung und Restwert lassen sich je Kostenposition getrennt " +
                         "fuehren: Jede Position (und jede Vorlagenposition) bekommt zwei " +
                         "Kennzeichen - leer = wie bisher, ja, nein. ERGEBNISNEUTRAL: Alle " +
                         "Zeilen stehen auf leer, und leer rechnet wie bisher.",
-                        Schritt_107_ErsatzRestwertKennzeichen),
+                        Schritt_108_ErsatzRestwertKennzeichen),
 
             // ENTSCHEID ET-D-3, offener Rest U32 (Schritt F) - die Preisbasis der
             // Traegerkarte als eigener Kartenzustand. DDL UND DML; die Quellen sind
-            // SchemaKatalog.Schritt108_Preisbasis und PreisbasisUebernahme. Er steht NACH
-            // 107 ohne Reihenfolgebedingung.
-            new Schritt(SCHRITT_108_PREISBASIS,
+            // SchemaKatalog.Schritt109_Preisbasis und PreisbasisUebernahme. Er steht NACH
+            // 108 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_109_PREISBASIS,
                         "energy_project_settings bekommt die Preisbasis der Traegerkarte",
                         "Die Traegerkarte merkt sich die gewaehlte Preisbasis (kWh oder die " +
                         "Abrechnungseinheit) in einer eigenen Spalte statt ueber die " +
@@ -5260,19 +5325,19 @@ namespace WindowsFormsApplication1
                         "die Basis, die die Karte bis dahin beim Oeffnen zeigte. " +
                         "ERGEBNISNEUTRAL: Die Preisbasis ist eine Eingabehilfe, gerechnet wird " +
                         "unveraendert mit dem Basiswert je Abrechnungseinheit.",
-                        Schritt_108_Preisbasis),
+                        Schritt_109_Preisbasis),
 
             // ENTSCHEID U-1 Weg (a), Freigabe A9 (Schritt G) - der Stammtext der fuenf
-            // Gase auf Nm3. REIN DML; die Quelle ist GaseNormkubikmeter. Er steht NACH
-            // 108 ohne Reihenfolgebedingung.
-            new Schritt(SCHRITT_109_GASE_NM3,
+            // Gase auf Nm3, dazu der Brennstoff 24 auf kWh (E7c2-Q4). REIN DML; die Quelle
+            // ist GaseNormkubikmeter. Er steht NACH 109 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_110_GASE_NM3,
                         "Tab_Brennstoff_Stamm: Einheit der fuenf Gase auf Nm3",
                         "Der Brennstoffstamm der fuenf Gase (Stadtgas, Erdgas LL, Erdgas E, " +
                         "Biogas, Wasserstoff) nennt seine Einheit Nm3 statt m3 - wie seine " +
                         "Energietraeger seit jeher. Die naechste Zuordnung eines Gastraegers " +
                         "findet damit ihre Umrechnungsregel. Der Brennstoff Sonstige (24) fuehrt " +
                         "kWh statt m3. ERGEBNISNEUTRAL: Kein Zahlenwert aendert sich.",
-                        Schritt_109_GaseNm3),
+                        Schritt_110_GaseNm3),
         };
 
         /// <summary>
@@ -8089,13 +8154,93 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 107 - Ersatz und Restwert je Position entkoppelt (Schritt E, A6)
+        // Schritt 106 - fremde Ergebnisverweise der Wirtschaftlichkeit (23.09.2026)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 107 — Anlass, Spalten und Ergebnisneutralität stehen bei
-        /// <see cref="SCHRITT_107_ERSATZ_RESTWERT_KENNZEICHEN"/> und bei
-        /// <see cref="SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen"/>.
+        /// Schritt 106 — Anlass und Wortlaut des Entscheids stehen bei
+        /// <see cref="SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS"/> und bei
+        /// <see cref="WirtschaftlichkeitFremdverweis"/>.
+        ///
+        /// <para><b>Reines DML</b> über eine Spalte. Die betroffenen Zeilen werden VOR dem
+        /// Schreiben gelesen und mit Id, Projekt, Lauf und Szenario ins Protokoll
+        /// geschrieben — danach findet die Abfrage nichts mehr, und die Notiz soll sagen,
+        /// welche Zeilen der Schritt angefasst hat. Fehlt die Tabelle (erst der erste
+        /// Wirtschaftlichkeitslauf legt sie an), gibt es nichts zu tun.</para>
+        /// </summary>
+        private static bool Schritt_106_WirtschaftlichkeitFremdverweis(Lauf l)
+        {
+            List<string> betroffene = WirtschaftlichkeitFremdverweis.Betroffene();
+
+            foreach (System.Collections.Generic.KeyValuePair<string, string> a
+                     in WirtschaftlichkeitFremdverweis.Anweisungen)
+            {
+                try { DataRepository.ExecuteNonQuery(a.Value); }
+                catch (Exception ex)
+                {
+                    l.LetzterFehler = a.Key + ": " + ex.Message;
+                    l.Notiz("106: FEHLER - " + l.LetzterFehler);
+                    return false;
+                }
+            }
+
+            int rest = WirtschaftlichkeitFremdverweis.Offen();
+            if (rest > 0)
+            {
+                l.LetzterFehler = rest.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) verweisen nach dem Schritt weiter auf den Lauf " +
+                                  "eines anderen Projekts.";
+                l.Notiz("106: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("106: " + betroffene.Count.ToString(CultureInfo.InvariantCulture) +
+                    " Wirtschaftlichkeitszeile(n) mit fremdem Ergebnisverweis auf NULL gesetzt" +
+                    (betroffene.Count > 0 ? " - " + string.Join("; ", betroffene.ToArray()) : "") +
+                    ". Die Zeilen bleiben und gelten als 'passt nicht zum Simulationsstand'; " +
+                    "kein Rechenweg liest den Verweis - der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 107 - die Ergebnistabelle je Gebaeude (Entscheid E30, 23.09.2026)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 107 — Anlass und Inhalt stehen bei
+        /// <see cref="SCHRITT_107_ERGEBNIS_GEBAEUDE"/>, die DDL bei
+        /// <see cref="ErgebnisGebaeudeSchema"/>. Dieselbe Schleife wie Schritt 103: erst die
+        /// Tabelle, dann die Indizes; nur <see cref="SqliteDdl"/> und
+        /// <see cref="SqliteTabelleVorhanden"/>.
+        /// </summary>
+        private static bool Schritt_107_ErgebnisGebaeude(Lauf l)
+        {
+            bool vorher = SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB);
+            foreach (KeyValuePair<string, string> a in ErgebnisGebaeudeSchema.Anweisungen)
+                if (!SqliteDdl(l, a.Value, a.Key)) return false;
+
+            if (!SqliteTabelleVorhanden(ErgebnisGebaeudeSchema.TAB))
+            {
+                l.LetzterFehler = "Die Tabelle " + ErgebnisGebaeudeSchema.TAB + " steht nach dem Schritt nicht.";
+                l.Notiz("107: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("107: " + ErgebnisGebaeudeSchema.TAB + (vorher ? " stand bereits" : " angelegt") +
+                    ", zwei Indizes sichergestellt. KEIN DML: die Tabelle fuellt erst der naechste " +
+                    "Lauf, kein Rechenweg liest sie. KEIN Rechenergebnis aendert sich; der " +
+                    "Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 108 - Ersatz und Restwert je Position entkoppelt (Schritt E, A6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 108 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_108_ERSATZ_RESTWERT_KENNZEICHEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen"/>.
         ///
         /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 105: Spaltenliste aus
         /// dem Kern, Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c> — „YESNO_NULL" wird
@@ -8104,11 +8249,11 @@ namespace WindowsFormsApplication1
         /// vorhandene Spalte wird übergangen. Danach vergisst der Kern seinen gemerkten
         /// Spaltenstand, damit derselbe Prozess die Kennzeichen sofort liest.</para>
         /// </summary>
-        private static bool Schritt_107_ErsatzRestwertKennzeichen(Lauf l)
+        private static bool Schritt_108_ErsatzRestwertKennzeichen(Lauf l)
         {
             int angelegt = 0;
 
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen)
             {
                 if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
                 if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
@@ -8117,8 +8262,8 @@ namespace WindowsFormsApplication1
             }
             ErsatzRestwertKennzeichen.SpaltenStandVergessen();
 
-            l.Notiz("107: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
-                    SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen.Length.ToString(CultureInfo.InvariantCulture) +
+            l.Notiz("108: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + " und " +
                     SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + " (nullbar, 0/1) an " +
                     SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
@@ -8128,13 +8273,13 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 108 - die Preisbasis als eigener Kartenzustand (Schritt F, ET-D-3, U32)
+        // Schritt 109 - die Preisbasis als eigener Kartenzustand (Schritt F, ET-D-3, U32)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 108 — Anlass, Spalte und Datenteil stehen bei
-        /// <see cref="SCHRITT_108_PREISBASIS"/>, bei
-        /// <see cref="SchemaKatalog.Schritt108_Preisbasis"/> und bei
+        /// Schritt 109 — Anlass, Spalte und Datenteil stehen bei
+        /// <see cref="SCHRITT_109_PREISBASIS"/>, bei
+        /// <see cref="SchemaKatalog.Schritt109_Preisbasis"/> und bei
         /// <see cref="PreisbasisUebernahme"/>.
         ///
         /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in die Spalte, die
@@ -8142,11 +8287,11 @@ namespace WindowsFormsApplication1
         /// Datenteil: Trägt danach noch eine Zeile mit Abrechnungseinheit keine
         /// Preisbasis, ist der Schritt nicht gelaufen.</para>
         /// </summary>
-        private static bool Schritt_108_Preisbasis(Lauf l)
+        private static bool Schritt_109_Preisbasis(Lauf l)
         {
             int angelegt = 0;
 
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_Preisbasis)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt109_Preisbasis)
             {
                 if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
                 if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
@@ -8159,7 +8304,7 @@ namespace WindowsFormsApplication1
             catch (Exception ex)
             {
                 l.LetzterFehler = "Datenteil: " + ex.Message;
-                l.Notiz("108: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                l.Notiz("109: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
                 return false;
             }
 
@@ -8168,12 +8313,12 @@ namespace WindowsFormsApplication1
             {
                 l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
                                   " Zeile(n) mit Abrechnungseinheit tragen nach dem Schritt keine Preisbasis.";
-                l.Notiz("108: FEHLER - " + l.LetzterFehler);
+                l.Notiz("109: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("108: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
-                    SchemaKatalog.Schritt108_Preisbasis.Length.ToString(CultureInfo.InvariantCulture) +
+            l.Notiz("109: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt109_Preisbasis.Length.ToString(CultureInfo.InvariantCulture) +
                     " Spalte(n) angelegt; " + bericht.Text() + ". Die Karte oeffnet mit derselben " +
                     "Basis wie bisher; kein Rechenweg liest die Spalte - der Referenzlauf bleibt " +
                     "byte-gleich.");
@@ -8181,24 +8326,24 @@ namespace WindowsFormsApplication1
         }
 
         // =================================================================================
-        // Schritt 109 - der Stammtext der fuenf Gase auf Nm3 (Schritt G, U-1, A9)
+        // Schritt 110 - der Stammtext der fuenf Gase auf Nm3 (Schritt G, U-1, A9)
         // =================================================================================
 
         /// <summary>
-        /// Schritt 109 — Anlass und Anweisungen stehen bei
-        /// <see cref="SCHRITT_109_GASE_NM3"/> und bei <see cref="GaseNormkubikmeter"/>.
+        /// Schritt 110 — Anlass und Anweisungen stehen bei
+        /// <see cref="SCHRITT_110_GASE_NM3"/> und bei <see cref="GaseNormkubikmeter"/>.
         /// <b>Die Nachprobe</b> fragt dasselbe wie die Anweisungen: Führt danach noch eine
         /// der fünf Stammzeilen oder eine Preiszeile ihrer Träger den alten Text, ist der
         /// Schritt nicht gelaufen.
         /// </summary>
-        private static bool Schritt_109_GaseNm3(Lauf l)
+        private static bool Schritt_110_GaseNm3(Lauf l)
         {
             GaseNormkubikmeter.Bericht bericht;
             try { bericht = GaseNormkubikmeter.Ausfuehren(); }
             catch (Exception ex)
             {
                 l.LetzterFehler = ex.Message;
-                l.Notiz("109: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                l.Notiz("110: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
                 return false;
             }
 
@@ -8207,11 +8352,11 @@ namespace WindowsFormsApplication1
             {
                 l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
                                   " Zeile(n) fuehren nach dem Schritt weiter m3.";
-                l.Notiz("109: FEHLER - " + l.LetzterFehler);
+                l.Notiz("110: FEHLER - " + l.LetzterFehler);
                 return false;
             }
 
-            l.Notiz("109: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
+            l.Notiz("110: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
                     "der Referenzlauf bleibt byte-gleich.");
             return true;
         }

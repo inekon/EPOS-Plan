@@ -305,17 +305,21 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.Equal("WP Alpha", cut.Find(".epos-gruppenkopf-koerper input").GetAttribute("value"));
     }
 
+    /// <summary>
+    /// <b>Ein Auslieferungssatz trägt das Schloss</b> (Konzept Administrationsdialoge,
+    /// V10) — nur das Zeichen hinter dem Modell, das Wort im Kurztext. Der Vorläufer
+    /// zeichnete ihn grau (listBox_WP_DrawItem:187); das Schloss ersetzt das Dimmen.
+    /// </summary>
     [Fact]
-    public void Ein_Auslieferungssatz_steht_gedimmt_in_der_Liste()
+    public void Ein_Auslieferungssatz_traegt_das_Schloss()
     {
-        // Der Vorlaeufer zeichnete ihn GRAU (listBox_WP_DrawItem:187). Seit
-        // W14a-E-10 traegt die Zelle den Dimmvermerk statt der Zeile: Die Liste
-        // hat jetzt NEUN Spalten, und jede von ihnen soll gedimmt sein.
         var cut = Aufbauen();
         var zeilen = cut.FindAll(".epos-raster tbody tr");
 
-        Assert.Empty(zeilen[0].QuerySelectorAll(".epos-gesperrt"));
-        Assert.NotEmpty(zeilen[1].QuerySelectorAll(".epos-gesperrt"));
+        Assert.Null(zeilen[0].QuerySelector(".epos-schloss"));
+        var schloss = zeilen[1].QuerySelector(".epos-schloss");
+        Assert.NotNull(schloss);
+        Assert.StartsWith("Auslieferungssatz", schloss!.GetAttribute("title"));
     }
 
     /// <summary>
@@ -360,7 +364,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
         Assert.Contains("BILD-COP", Bildtext(cut));
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();
+        Zeilenklick.Zeile(cut, 1);
 
         Assert.Equal(2, cut.Instance.GewaehlteId);
         Assert.Equal("WP Ausliefer", cut.Find(".epos-gruppenkopf-koerper input").GetAttribute("value"));
@@ -376,7 +380,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen();
         Assert.Single(cut.FindAll(".epos-optionsgruppe"));      // WP Alpha hat Kuehlung
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click(); // WP Ausliefer hat keine
+        Zeilenklick.Zeile(cut, 1); // WP Ausliefer hat keine
         Assert.Empty(cut.FindAll(".epos-optionsgruppe"));
     }
 
@@ -420,7 +424,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         var cut = Aufbauen(hatKuehlung: _ => true);
 
         cut.FindAll(".epos-optionsgruppe input[type=radio]")[1].Change(true);
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();
+        Zeilenklick.Zeile(cut, 1);
 
         Assert.True(cut.FindAll(".epos-optionsgruppe input[type=radio]")[0].IsChecked());
     }
@@ -439,11 +443,54 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             return new KatalogSpeicherErgebnis(true, "", d.Name);
         });
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer
-        Knopf(cut, "Speichern").Click();
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
+
+        // AD-Q11: weich gesperrt, der Grund im Kurztext; die Felder sind nur lesbar.
+        var speichern = Knopf(cut, "Speichern");
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        Assert.Contains("Duplizieren", speichern.GetAttribute("title") ?? "");
+        Assert.True(cut.Find(".epos-gruppenkopf-koerper input").HasAttribute("readonly"));
+
+        speichern.Click();
 
         Assert.False(geschrieben);
-        Assert.Contains("schreibgeschützt", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Contains("Duplizieren", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// <b>„Duplizieren…" legt die eigene Wärmepumpe an</b> (AD-Q11): vorbelegt mit
+    /// „Name (Kopie)", der Weg bekommt die ID des Auslieferungssatzes, danach ist die
+    /// Kopie gewählt, und die Statuszeile nennt beide.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_legt_die_eigene_Waermepumpe_an_und_waehlt_sie()
+    {
+        var liste = Liste.ToList();
+        (int, string)? gerufen = null;
+        var cut = Render<WaermepumpeStammDialog>(p => p
+            .Add(x => x.Filterstandvorgabe, _filterstand)
+            .Add(x => x.Liste, () => liste)
+            .Add(x => x.Satz, id => id == 3
+                ? new WaermepumpeStammDaten { Id = 3, Name = "WP Ausliefer (Kopie)", NurLesen = false }
+                : Satz(id))
+            .Add(x => x.Duplizieren, (id, name) =>
+            {
+                gerufen = (id, name);
+                liste.Add(new Katalogfilterzeile(3, name).MitText(Katalogfilterprofil.SpBezeichner, name));
+                return new KatalogSpeicherErgebnis(true, "", name);
+            }));
+
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
+        Knopf(cut, "Duplizieren...").Click();
+
+        Assert.True(cut.Instance.Duplizierfrage);
+        Assert.Equal("WP Ausliefer (Kopie)", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
+        cut.Find(".epos-ueberlagerung").QuerySelectorAll("button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal((2, "WP Ausliefer (Kopie)"), gerufen);
+        Assert.Equal(3, cut.Instance.GewaehlteId);
+        Assert.Contains("dupliziert", cut.Instance.Status);
+        Assert.Null(Knopf(cut, "Speichern").GetAttribute("aria-disabled"));
     }
 
     [Fact]
@@ -511,7 +558,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         bool geloescht = false;
         var cut = Aufbauen(loeschen: _ => { geloescht = true; return true; });
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
         Knopf(cut, "Löschen").Click();
         cut.Find(".epos-rueckfrage").QuerySelectorAll("button")
            .First(b => b.TextContent.Trim() == "Ja").Click();
@@ -569,7 +616,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         int geschrieben = 0;
         var cut = Aufbauen(abgleichen: (_, _) => { geschrieben++; return true; });
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer
         Knopf(cut, "Kennliniendaten...").Click();
 
         Assert.Contains("nur angesehen", cut.FindAll(".epos-warnbanner")[0].TextContent);
@@ -603,7 +650,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
 
         // Die Zeile wird in der Liste DIESER Maske gewählt - der Weg, den der
         // Knopf umständlich nachgebaut hat.
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();
+        Zeilenklick.Zeile(cut, 1);
         Assert.Equal(2, cut.Instance.GewaehlteId);              // "WP Ausliefer"
         Assert.Empty(cut.FindAll(".epos-ueberlagerung"));
     }
@@ -652,10 +699,11 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Knopf(cut, "Beenden").Click();
         Assert.True(ergebnis);
 
+        // Esc wirkt wie "Beenden" - EIN Schlussweg (Konzept Administrationsdialoge, V15).
         ergebnis = null;
         var cut2 = Aufbauen(geschlossen: b => ergebnis = b);
         cut2.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
     }
 
     [Fact]
@@ -671,16 +719,19 @@ public class WaermepumpeStammDialogTests : EposBunitContext
         Assert.Null(ergebnis);
     }
 
-    /// <summary>Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc.</summary>
+    /// <summary>
+    /// Anwenderentscheid 15.09.2026: das Kreuz der Kopfzeile wirkt wie Esc — und beide
+    /// wie „Beenden" (Konzept Administrationsdialoge, V15).
+    /// </summary>
     [Fact]
-    public void Kreuz_meldet_false()
+    public void Kreuz_meldet_wie_Beenden()
     {
         bool? ergebnis = null;
         var cut = Aufbauen(geschlossen: b => ergebnis = b);
 
         cut.Find(".epos-dialog-zu").Click();
 
-        Assert.False(ergebnis);
+        Assert.True(ergebnis);
     }
 
     /// <summary>Das ✕ der Ueberlagerung "Kennliniendaten..." bricht NUR die Ebene ab.</summary>
@@ -800,7 +851,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
     public void Ohne_Planwert_steht_ein_Strich_und_der_Grund_darunter()
     {
         var cut = Aufbauen();
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer: 0
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
 
         var feld = Modulkostenfeld(cut);
         Assert.Equal("–", feld.QuerySelector(".epos-lesewert")!.TextContent.Trim());
@@ -836,7 +887,7 @@ public class WaermepumpeStammDialogTests : EposBunitContext
             "from the stored catalogue; equipment costs are maintained in cost management"
         }, cut.FindAll(".epos-formularraster .epos-herleitung").Select(e => e.TextContent.Trim()));
 
-        cut.FindAll(".epos-raster tbody tr button")[1].Click();   // WP Ausliefer: 0
+        Zeilenklick.Zeile(cut, 1);   // WP Ausliefer: 0
         Assert.Equal("–", Modulkostenfeld(cut).QuerySelector(".epos-lesewert")!.TextContent.Trim());
         Assert.Equal(new[]
         {

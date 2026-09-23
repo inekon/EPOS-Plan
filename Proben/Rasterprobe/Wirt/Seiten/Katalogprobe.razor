@@ -138,6 +138,7 @@
                                     Speichern="@((d, _) => new KatalogSpeicherErgebnis(true, "Gespeichert", d.Name))"
                                     GesperrtDurch="@(_ => null)"
                                     Loeschen="@(_ => true)"
+                                    Duplizieren="@((id, n) => new KatalogSpeicherErgebnis(true, "", n))"
                                     Geschlossen="@(b => { })" />
             break;
 
@@ -321,7 +322,10 @@
         Katalogzeilen = ModulZeilen,
         Detail = ModulFelder,
         Speichern = (f, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", Modulname(f)),
-        Loeschen = n => new KatalogSpeicherErgebnis(true, "", n)
+        Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
+        // Stufe 2 (AD-Q11): mit dem Knopf "Duplizieren..." - die Fussleiste
+        // traegt dann ihre volle Belegung und muss auch bei 400 px frei stehen.
+        Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n)
     };
 
     private static string Modulname(IReadOnlyList<ModulFeldwert> felder)
@@ -378,7 +382,8 @@
         Existiert = _ => false,
         Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
         Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
-        IstGeschuetzt = _ => false
+        IstGeschuetzt = _ => false,
+        Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n)
     };
 
     private IReadOnlyList<Katalogfilterzeile> BrowserZeilen()

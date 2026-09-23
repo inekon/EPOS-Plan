@@ -267,14 +267,37 @@ Nach Abschnitt 7 wurde die Stufe Z1 noch am selben Tag auf dem Zweig `z1` ausgef
   Zirkulation). Dazu der Wiki-Upload (gebündelt mit den übrigen Seiten), die Versionsnummer für
   den Logbuch-Satz aus 5.8 des Umsetzungskonzepts und die Frage aus N8 (e) 1, ob die Provenienz
   im Inhaltsvergleich mitzählt (vor Z2).
-- **Merge:** Auf `ios_migration_september` stehen inzwischen die Schemaschritte 104 und 105, die
-  Testdatenbank auf 105 und die Referenzbasis R12 der Gebäudesimulation; beim Merge deren
-  Testdatenbank übernehmen und `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` erneut
-  einspielen, danach das Gate auf dem Merge-Stand.
+- **Merge und Push:** Merge `c220cbd1` von `origin` (`ac6e65ee`) nach `z1` (Konflikte in
+  Statusdatei, `Dokumentation/LIESMICH.md` und beiden Resource-`.resx` inhaltlich
+  zusammengeführt); Testdatenbank von `origin` (Schemastand 105) mit erneut eingespieltem
+  `Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py` (`7544bb9d`), Nachtrag in
+  `Referenzlaeufe/LIESMICH.md`; Push `4971556a` auf `ios_migration_september`.
+- **Gate auf dem Merge-Stand:** Kern-Build 0 Fehler; 11 252 Tests grün, 1 übersprungen;
+  Werkzeugtests Auslieferungsvorlage 26/26; Windows-Schale mit beiden Baubefehlen 0 Fehler;
+  ChartProben 135 Bilder ohne Verstoß; `SqlDialektPruefer` 1 672 Texte ohne Fund; Referenzlauf der
+  fünf CI-Projekte gegen `2026-09-23_R12_Gebaeudemodell` byte-gleich.
+- **Nachzug Veraltet-Markierung** (`db22001b`): `ZapfprofilCtrl.Speichern` setzt im selben
+  `DbVorgang` `Tab_Projekt.Aenderungsdatum` (`MerkmalUebernahmeCtrl.MarkiereProjektGeaendert`,
+  Mechanismus aus #441), auch beim bloßen Umstellen der Weiche — ein gespeichertes Zapfprofil
+  markiert ein vorhandenes Simulationsergebnis als veraltet; Fall in `ZapfprofilSpeichernTests`.
+- **Hinweis:** Budgetgrenze des Anwenders 98 % — die Folgesitzung setzt mit diesem Abschnitt an
+  (Sichtabnahme, dann Z2).
 - **Regel aus dieser Stufe:** Laufende Workflow-Agenten nie anschreiben — Steuerung nur per
   Auftrag oder Datei. Hintergrund ist der Zwischenfall im Protokoll: Eine Zweitinstanz eines
   Workflow-Agenten überschrieb kurz eine Datei.
+- **Vorbedingung Z2 erfasst (23.09.2026, N5/N6):** DIN 4708-2 und -3 sowie A100 und A1 liegen als
+  lokale Testdaten unter `Referenzlaeufe/Normzahlen/din4708/` (Belegungszahl, Zapfstellenwertigkeit,
+  Kennwerte, Formeln) und `Referenzlaeufe/Normzahlen/din12831a100/` (Bedarfstage, Kennwerte NA.4,
+  Profilkennwerte, Summenlinien-Regeln), je mit `QUELLE.txt`; gitignoriert, als Zip an den
+  Anwender übergeben (`Normzahlen_z2_din4708_a100_2026-09-23.zip`, in die Repowurzel entpacken).
+  **Lücken:** (a) Die Kennwerte der Zapfperiode (u1, u2, K(u), W_z(N)) stehen nur in **DIN 4708-1**,
+  die in der Ablage fehlt — nachbeschaffen (K1); ersatzweise sind z_B, W_zB(N) und z_x(N) aus
+  Teil 3 erfasst. (b) Die A100-Minutenprofile liegen nur auf der Daten-CD des Entwurfs; erfasst
+  sind abgelesene Summenlinien in 5-Minuten-Schritten, die vier DIN-4708-Profile als Zapfblöcke.
+  (c) Beide DIN-4708-PDFs haben keine Textlage (alles abgelesen); A100 zeigt Widersprüche, die in
+  `QUELLE.txt` benannt sind. A100 und A1 bleiben Entwürfe ohne Weißdruck-Hinweis.
 - **Nächster Auftrag:** Stufe Z2 (Auslegung deterministisch) nach Kapitel 7 des
-  Umsetzungskonzepts. Vorbedingungen: Z1 zusammengeführt; die K1-Unterlagen (A100-Bedarfstage,
-  Tabellen der DIN 4708-2) als lokale Testdaten unter `Referenzlaeufe/Normzahlen/` erfasst (N6;
-  Skript und `QUELLE.txt`, keine Werte in Papieren).
+  Umsetzungskonzepts; Vorbedingungen erfüllt bis auf DIN 4708-1 (siehe Lücke a). Das Katalog-
+  Einspielen der lokalen Testdaten in `Tab_TwwBedarfstag_STAMM` und `Tab_TwwDin4708Wert_STAMM`
+  geschieht in Z2 über ein Skript nach dem Muster von `tww_testkatalog_fiktiv.py`, lokal und nie
+  in der Repo-Testdatenbank (Kapitel 6).

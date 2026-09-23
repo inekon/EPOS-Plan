@@ -169,6 +169,15 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal GebaeudeErgebnistraeger GebaeudeErgebnisse { get; } = new GebaeudeErgebnistraeger();
 
+        /// <summary>
+        /// <b>Die Kennzahlen je Gebäude dieses Laufs</b> (Entscheid E30) — eine Zeile je
+        /// Gebäude und Rechenweg, nach Merkplatz geordnet, gebildet von
+        /// <see cref="GebaeudeKennzahlen"/> aus einer KOPIE der Einzelreihe. Der Lauf schreibt
+        /// sie über <c>SimulationRunner.BaueErgebnis</c> nach <c>Tab_ErgebnisGebaeude</c>; der
+        /// Rechenweg liest sie nicht. Geleert zu Beginn jeder Gebäudeschleife.
+        /// </summary>
+        internal List<ErgebnisGebaeudeModel> GebaeudeKennzahlenListe { get; } = new List<ErgebnisGebaeudeModel>();
+
         /// <summary>Der Tagesbilanz-Weg dieses Laufs — Zugang für die Tests des Altwegs.</summary>
         internal Altweg.TagesbilanzRechenweg Tagesbilanzweg => _altweg;
 
@@ -264,6 +273,7 @@ namespace WindowsFormsApplication1
             // bleibt damit wie bisher die Summe aller Gebäude. Bei einem Gebäude ist das
             // Ergebnis bitgleich zum bisherigen Verhalten.
             double[] Waermebedarf_EinGebaeude = new double[8760];
+            GebaeudeKennzahlenListe.Clear();
 
             for (int i = 0; i < ctrl.rows; i++)
             {
@@ -273,6 +283,11 @@ namespace WindowsFormsApplication1
                 // fehlt (Tagesbilanz: die Tagesverteilung), und der Abbruch der
                 // Bedarfsrechnung bleibt an derselben Stelle wie bisher.
                 if (!HeizwaermeEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude)) return;
+
+                // E30: die Kennzahlen des Gebaeudes fuer Tab_ErgebnisGebaeude - aus einer
+                // KOPIE der Einzelreihe, nach derselben Umrechnung W -> kW wie der Heizkanal
+                // unten. Der Rechenweg bleibt unberuehrt.
+                GebaeudeKennzahlenListe.Add(KennzahlenEinesGebaeudes(ctrl.items[i], i, Waermebedarf_EinGebaeude));
 
                 //com.CSharp_I_vectoren_addieren(Waermebedarf_Gebaeude, Waermebedarf);
                 // K1: Gebäudewärme geht in den HEIZKANAL statt in den Summenvektor.
@@ -775,6 +790,20 @@ namespace WindowsFormsApplication1
             Anzahl_Bewohner = (int)item.Bewohner;
             Wohnflaeche = item.Z_AuswahlWohnflaeche;
             return true;
+        }
+
+        /// <summary>
+        /// Die Ergebniszeile eines Gebäudes nach seiner Rechnung im Lauf (E30): Rechenweg,
+        /// Wärmebedarf, drei Spitzenwerte und — auf dem VDI-Weg — die Kennzahlen des
+        /// Ergebnisträgers. <paramref name="reiheW"/> wird nur gelesen.
+        /// </summary>
+        internal ErgebnisGebaeudeModel KennzahlenEinesGebaeudes(ProjektGebaeudeModel item, int index, double[] reiheW)
+        {
+            double[] reiheKw = (double[])reiheW.Clone();
+            WPPlan.Core.BhkwPlan.WattToKw(reiheKw);
+            return GebaeudeKennzahlen.Bilden(index, item.ID_Gebaeude, item.Gebaeudename,
+                                             Gebaeuderechenweg.Wirksam(item.Gebaeude_Modell),
+                                             reiheKw, GebaeudeErgebnisse.Ergebnis(index));
         }
 
         /// <summary>

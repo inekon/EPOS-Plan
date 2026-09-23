@@ -55,7 +55,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@TitelText</h1>
         <InfoKnopf Schluessel="@HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="Abbrechen" />
+        <Schliesskreuz Geschlossen="BeiSchliessen" />
     </div>
 
     @if (_meldung.Length > 0)
@@ -81,7 +81,7 @@
                Zahlen, die die Grafik der Ganglinien-Dialoge zeigt (W9-E-3). *@
             <Katalogliste Profil="@Katalogprofil" Zeilen="@_katalog"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
-                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" />
+                          Gewaehlt="@_gewaehlt" GewaehltChanged="Waehlen" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -431,15 +431,17 @@
         _meldungStufe = stufe;
     }
 
+    /// <summary>
+    /// „Beenden" liefert <c>true</c> — auch über das Kreuz und Esc (nach den Wächtern):
+    /// EIN Schlussweg (Konzept Administrationsdialoge, V15). Einlesen und Löschen
+    /// schreiben sofort, es gibt nichts zu verwerfen.
+    /// </summary>
     private Task BeiSchliessen() => Geschlossen.InvokeAsync(true);
-
-    /// <summary>Abbrechen — von Esc (nach den Wächtern) und vom Schliesskreuz gleichermaßen gerufen.</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(false);
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
         if (_loeschfrageOffen || _import?.EtwasOffen == true) return Task.CompletedTask;
-        return Abbrechen();
+        return BeiSchliessen();
     }
 }

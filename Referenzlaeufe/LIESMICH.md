@@ -168,6 +168,17 @@ Die Korrektur von 10576 entsteht wiederholbar aus
 fällt mit der Stufe GA der Gebäudesimulation; bis dahin ist 1040 das einzige Referenzprojekt
 auf dem Tagesbilanz-Weg.
 
+**Datenwechsel 23.09.2026 — Basis unverändert.** Der Katalogsatz `Tab_Gebaeude_STAMM` 233
+„MFH-H-U-112" und seine Projektkopie `Tab_Gebaeude` 10612 (Projekt 1009) trugen denselben
+falschen `Bauweise`-Wert 50 Wh/K wie früher 10576; beide stehen nach derselben Herleitung
+(50 Wh/(m²K) × 304 m²) auf 15 200 Wh/K —
+[`Skripte/gebaeude_10612_233_bauweise.py`](Skripte/gebaeude_10612_233_bauweise.py), genau zwei
+Zellen (Zellvergleich aller Tabellen), `integrity_check` ok. **Die Basis bleibt, weil keine der
+beiden Zeilen in einem Referenzprojekt rechnet:** 10612 gehört zu Projekt 1009, und der Lauf
+liest die Projektkopien, nicht den Katalog. Belegt durch den Referenzlauf aller dreizehn
+Projekte: **PASS und byte-gleich** (außer `protokoll.txt`). Projekt 1009 wird seither nicht
+mehr mit `BauweiseUnplausibel` abgelehnt.
+
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
@@ -338,6 +349,32 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 > Größe unverändert 67 727 360 Byte; der Referenzlauf der fünf CI-Projekte ist byte-gleich gegen diese Basis
 > (LFS-SHA-256 `a978270a…`).
 
+> **Nachtrag: Schemastand 106 (Auftrag #444, Kopierweg der Wirtschaftlichkeit), die Basis bleibt.** Migrationsschritt
+> **106** (`SCHRITT_106_WIRTSCHAFTLICHKEIT_FREMDVERWEIS`, Quelle
+> `EPOS.Kern/Allgemein/Update/WirtschaftlichkeitFremdverweis.cs`) setzt jeden Verweis
+> `Tab_ErgebnisWirtschaftlichkeit.ID_Ergebnis` auf NULL, zu dem kein Simulationslauf desselben Projekts gehört — das
+> Erbe des Duplizierens, das den Verweis bis dahin unversetzt kopierte. **Reines DML**, genau 21 Zellen: Zeilen 16,
+> 18, 20 (1028), 21, 23, 25 (1029), 189, 191, 193 (1040), 194, 196, 198 (1041) auf Lauf 167 von 1026 sowie 213–218
+> (1043) und 219–221 (1044) auf Lauf 206 von 1042. Die Zeilen bleiben stehen und gelten als „passt nicht zum
+> Simulationsstand". Größe und Schema bleiben, `integrity_check` ok, `foreign_key_check` leer, ein zweiter Lauf fasst
+> nichts an. **Keine Einfrierregel ist berührt.** Nachgezogen mit `dotnet run --project Werkzeuge/Testdatenbankschema
+> -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der Datenbank des Gebäudemodell-Stands (Basis R12), LFS-SHA-256
+> `49284ce3…`.
+
+> **Nachtrag: Schemastand 107 (Entscheid E30, Gebäudesimulation), die Basis bleibt.** Migrationsschritt
+> **107** (`SCHRITT_107_ERGEBNIS_GEBAEUDE`, Quelle `ErgebnisGebaeudeSchema`; Konzept Gebäudesimulation N1.35)
+> legt die leere STRICT-Tabelle `Tab_ErgebnisGebaeude` samt zwei Indizes an, **reines DDL**; der Lauf schreibt
+> sie, der Referenzlauf exportiert sie nicht (die Kennzahlen stehen schon als Skalare `Geb[n].*`). Nachgezogen
+> mit `dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite` auf der
+> Fassung 106, danach
+> [`Skripte/gebaeude_10612_233_bauweise.py`](Skripte/gebaeude_10612_233_bauweise.py) erneut eingespielt
+> (Datenwechsel oben). Zellvergleich aller Tabellen gegen die Fassung 106: `SchemaVersion` 106 → 107, die neue
+> leere Tabelle mit ihren zwei Indizes und die zwei `Bauweise`-Zellen (`Tab_Gebaeude` 10612,
+> `Tab_Gebaeude_STAMM` 233) — sonst nichts. `integrity_check` ok, `foreign_key_check` leer, Größe
+> 67 739 648 Byte. **Keine Einfrierregel mit Rechenwirkung ist berührt**, und der Referenzlauf aller dreizehn
+> Projekte ist **13/13 PASS** gegen diese Basis (4 250 839 Werte, 399/399 CSV byte-gleich, außer
+> `protokoll.txt`) (LFS-SHA-256 `36e693ad…`).
+
 > **Die Vorgängerbasis `2026-09-22_R11_Bestandsbefunde`**, die letzte Basis allein auf dem
 > Tagesbilanz-Weg, ist mit dieser Einfrierung aus dem Arbeitsbaum gefallen; ihr Protokoll samt
 > der Begründung zur Stufe GB und den Nachträgen zu den Schemaständen 101 bis 103 steht in
@@ -353,7 +390,7 @@ dem plattformfreien `EPOS.Referenzlauf` auf Windows gegen `Kenndaten_Test.sqlite
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 103) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 103) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 

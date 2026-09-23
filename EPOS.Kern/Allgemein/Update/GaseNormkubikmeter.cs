@@ -4,7 +4,7 @@ using System.Globalization;
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Schemaschritt 109 — der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
+    /// <b>Schemaschritt 110 — der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
     /// Analysepapiers Wirtschaftlichkeit § 6, Entscheid U‑1 Weg (a) vom 30.08.2026,
     /// Freigabe A9 vom 20.09.2026 „vor dem nächsten Vorlagenbau").
     ///
@@ -27,7 +27,7 @@ namespace WindowsFormsApplication1
     /// „m³". Entscheid E7c2‑Q4 (23.09.2026): Er bekommt „kWh" und „€/kWh" — wie Strom (13)
     /// und Fernwärme (23). Eine Umrechnung von Preisen über den Heizwert war dafür nicht
     /// nötig und wäre nicht möglich: Gemessen vor dem Bau führt weder die Testdatenbank
-    /// (Stand 105 und 109) noch die Anwenderdatenbank dieses Rechners einen Träger,
+    /// (Stand 105 und 110) noch die Anwenderdatenbank dieses Rechners einen Träger,
     /// eine Preiszeile, eine Projektzuordnung oder eine Umrechnungsregel des Brennstoffs
     /// 24, und sein Stamm trägt Hi = Hs = 0. Der Schritt setzt deshalb nur den
     /// Stammtext; die Zahl der Träger, Preiszeilen und Projektzuordnungen, die den

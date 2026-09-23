@@ -5,15 +5,15 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E7c — <b>Schritt G (Schemaschritt 109): der Stammtext der fünf Gase auf
+    /// ETAPPE E7c — <b>Schritt G (Schemaschritt 110): der Stammtext der fünf Gase auf
     /// Nm³</b> (Entscheid U‑1 Weg (a), Freigabe A9), dazu <b>der Brennstoff 24 „Sonstige"
     /// auf kWh</b> (Entscheid E7c2‑Q4 vom 23.09.2026, E7c2/10).
     ///
-    /// <para>Gemessen an der Testdatenbank (Schemastand 105 → 109): 5 Einheiten, 5
+    /// <para>Gemessen an der Testdatenbank (Schemastand 105 → 110): 5 Einheiten, 5
     /// Preiseinheiten und 1 Preiszeile (Projekt 1039, Erdgas E) — danach führt keine der
     /// fünf Stammzeilen und keine Preiszeile eines Gasträgers mehr „m³". Der Brennstoff 24
     /// führt „kWh"/„€/kWh"; ihn nutzt kein Träger, keine Preiszeile, keine Projektzuordnung
-    /// und keine Umrechnungsregel (Testdatenbank 105 und 109, Anwenderdatenbank des
+    /// und keine Umrechnungsregel (Testdatenbank 105 und 110, Anwenderdatenbank des
     /// Rechners), sein Stamm trägt Hi = Hs = 0 — also reiner Stammtext, keine
     /// Preisumrechnung. Die Wirkung: Die Identitätsregel eines Gases lässt sich aus dem
     /// Stammtext ableiten (vorher −1). Die dreizehn Basisprojekte rechnen Wert für Wert
@@ -23,10 +23,10 @@ namespace EPOS.Kern.Tests
     public class GaseNormkubikmeterTests
     {
         [Fact]
-        public void Der_Zielstand_ist_109_und_der_Schritt_nennt_die_fuenf_Gase()
+        public void Der_Zielstand_ist_110_und_der_Schritt_nennt_die_fuenf_Gase()
         {
-            Assert.True(SchemaStand.Zielversion >= 109,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 109.");
+            Assert.True(SchemaStand.Zielversion >= 110,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 110.");
             Assert.Equal(new[] { 1, 2, 3, 14, 25 }, GaseNormkubikmeter.BRENNSTOFFE);
             Assert.Equal("m³", GaseNormkubikmeter.ALT);
             Assert.Equal("Nm³", GaseNormkubikmeter.NEU);

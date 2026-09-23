@@ -25,7 +25,20 @@
    die EINZIGE der elf Masken, die kommentarlos loeschte (Befund W14-B35).
 
    TASTATUR. Esc schliesst die oberste Ebene. Enter ist NICHT belegt -
-   "Speichern" und "Loeschen" schreiben sofort. *@
+   "Speichern" und "Loeschen" schreiben sofort.
+
+   STUFE 2 DER NEUORDNUNG (Konzept Administrationsdialoge, V4, V10, V11, V15,
+   Entscheid AD-Q11) - dieselben Regeln wie im KatalogBrowserDialog:
+     * Die ZEILE ist die Wahl (Klick, Pfeiltasten, Pos1, Ende).
+     * Der Modulkatalog WERTET ReadOnly AUS: Ein Auslieferungssatz traegt das
+       Schloss, seine Felder sind nur lesbar, "Speichern" ist weich gesperrt,
+       und "Duplizieren..." legt den eigenen Satz an. Bis hierher kannte diese
+       Maske keinen Schutz je Satz, obwohl die drei Tabellen ReadOnly fuehren.
+     * Fussleiste Speichern - Verwerfen - Fueller - Neu... - Duplizieren... -
+       Loeschen - Beenden; Kreuz und Esc wie Beenden. Geaenderte Felder (auch
+       ein angelegter, noch nicht gespeicherter Satz) halten Beenden und den
+       Zeilenwechsel an: "Speichern oder Verwerfen".
+     * Gelungenes steht in der Statuszeile, Gescheitertes im Warnband. *@
 
 @namespace EPOS.UI.Dialoge.Erzeuger
 @using EPOS.UI.Dialoge.Allgemein
@@ -38,7 +51,7 @@
     <div class="epos-dialog-kopf">
         <h1 class="epos-dialog-titel">@Profil.Titel</h1>
         <InfoKnopf Schluessel="@Profil.HilfeSchluessel" />
-        <Schliesskreuz Geschlossen="Abbrechen" />
+        <Schliesskreuz Geschlossen="BeiBeenden" />
     </div>
 
     @if (!string.IsNullOrEmpty(_meldung))
@@ -65,7 +78,7 @@
             <Katalogliste Profil="@Profil.Filterprofil" Zeilen="@_zeilen"
                           Filterstand="@_filterstand" Texte="@Filtertexte"
                           Gewaehlt="@_gewaehlt" GewaehltChanged="BeiZeile"
-                          Vergleichsparameter="@Uebersicht" />
+                          Vergleichsparameter="@Uebersicht" ZeileIstWahl="true" />
         </Liste>
 
         <Eingabe>
@@ -144,11 +157,30 @@
         </Eingabe>
     </Katalograhmen>
 
+    @* DIE FUSSLEISTE DER VERWALTUNG (V15) - Muster KatalogBrowserDialog. Der
+       Fueller ist die Statuszeile; "Speichern" eines Auslieferungssatzes ist weich
+       gesperrt und nennt den Grund (AD-Q11). *@
     <div class="epos-leiste">
-        <button type="button" class="epos-knopf" disabled="@(_gewaehlt.Length == 0 && !_neu)"
-                @onclick="BeiSpeichern">@BtnSpeichernText</button>
-        <span class="epos-leiste-fueller"></span>
+        @if (SpeichernWeichGesperrt)
+        {
+            <button type="button" class="epos-knopf" aria-disabled="true"
+                    title="@MeldungSpeichernGesperrt"
+                    @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        }
+        else
+        {
+            <button type="button" class="epos-knopf" disabled="@(_gewaehlt.Length == 0 && !_neu)"
+                    @onclick="BeiSpeichern">@BtnSpeichernText</button>
+        }
+        <button type="button" class="epos-knopf" disabled="@(!Ungespeichert)"
+                @onclick="BeiVerwerfen">@BtnVerwerfenText</button>
+        <span class="epos-leiste-fueller epos-status" role="status">@_status</span>
         <button type="button" class="epos-knopf" @onclick="BeiNeu">@BtnNeuText</button>
+        @if (Wege.Duplizieren is not null)
+        {
+            <button type="button" class="epos-knopf" disabled="@(!DuplizierenErlaubt)"
+                    @onclick="BeiDuplizieren">@BtnDuplizierenText</button>
+        }
         <button type="button" class="epos-knopf" @onclick="BeiLoeschen">@BtnLoeschenText</button>
         <button type="button" class="epos-knopf epos-knopf--primaer"
                 @onclick="BeiBeenden">@BtnBeendenText</button>
@@ -166,6 +198,21 @@
                           MeldungLeer="@MeldungNameFehlt"
                           OkText="@OkText" AbbrechenText="@AbbrechenText"
                           Geschlossen="BeiNamensfrage" />
+        </KindInhalt>
+    </Ueberlagerung>
+
+    @* --- Namensabfrage von „Duplizieren…" (AD-Q11) ------------------------ *@
+    <Ueberlagerung Offen="@_duplizierfrage" Titel="@BtnDuplizierenText"
+                   Geschlossen="() => _duplizierfrage = false">
+        <KindInhalt>
+            @if (_duplizierfrage)
+            {
+                <NamensDialog TitelText="" FrageText="@Profil.Listenbeschriftung"
+                              Vorbelegung="@_kopievorschlag"
+                              MeldungLeer="@MeldungNameFehlt" Pruefung="NameBelegt"
+                              OkText="@OkText" AbbrechenText="@AbbrechenText"
+                              Geschlossen="BeiDuplizierName" />
+            }
         </KindInhalt>
     </Ueberlagerung>
 </div>
@@ -198,7 +245,10 @@
     /// </summary>
     [Parameter] public Func<string, IReadOnlyList<Parameterwert>>? Uebersicht { get; set; }
 
-    /// <summary>Der Katalog ist zu — <c>Bestaetigt</c> sagt, ob über „Beenden".</summary>
+    /// <summary>
+    /// Der Katalog ist zu. <c>Bestaetigt</c> ist immer <c>true</c>: „Beenden", das Kreuz
+    /// und Esc sind EIN Weg (V15).
+    /// </summary>
     [Parameter] public EventCallback<ModulErgebnis> Geschlossen { get; set; }
 
     // --- Texte -----------------------------------------------------------
@@ -206,7 +256,25 @@
     [Parameter] public string BtnNeuText { get; set; } = "Neu...";
     [Parameter] public string BtnLoeschenText { get; set; } = "Löschen";
     [Parameter] public string BtnSpeichernText { get; set; } = "Speichern";
-    [Parameter] public string BtnBeendenText { get; set; } = "Beenden";
+    [Parameter] public string BtnBeendenText { get; set; } = Resource.ADM_BTN_BEENDEN;
+
+    /// <summary>„Verwerfen" — nimmt geänderte Felder und einen ungespeicherten neuen Satz zurück.</summary>
+    [Parameter] public string BtnVerwerfenText { get; set; } = Resource.ADM_BTN_VERWERFEN;
+
+    /// <summary>„Duplizieren…" (AD-Q11).</summary>
+    [Parameter] public string BtnDuplizierenText { get; set; } = Resource.ADM_BTN_DUPLIZIEREN;
+
+    /// <summary>Der Grund am weich gesperrten „Speichern" eines Auslieferungssatzes (AD-Q11).</summary>
+    [Parameter] public string MeldungSpeichernGesperrt { get; set; } = Resource.ADM_SPEICHERN_GESPERRT;
+
+    /// <summary>„Speichern oder Verwerfen" (V11).</summary>
+    [Parameter] public string MeldungUngespeichert { get; set; } = Resource.ADM_MSG_UNGESPEICHERT;
+
+    /// <summary>Die Statuszeile nach „Duplizieren…"; <c>{0}</c> = Original, <c>{1}</c> = Kopie.</summary>
+    [Parameter] public string MeldungDupliziert { get; set; } = Resource.ADM_MSG_DUPLIZIERT;
+
+    /// <summary>Meldung, wenn der Name der Kopie schon vergeben ist.</summary>
+    [Parameter] public string MeldungNameBelegt { get; set; } = Resource.PSP_MELDUNG_NAME_EXISTIERT;
     [Parameter] public string OkText { get; set; } = "OK";
     [Parameter] public string AbbrechenText { get; set; } = "Abbrechen";
     [Parameter] public string JaText { get; set; } = "Ja";
@@ -280,9 +348,21 @@
     private string _meldung = "";
     private WarnStufe _meldungStufe = WarnStufe.Warnung;
 
+    /// <summary>Die Statuszeile der Fußleiste — was gelang (V11).</summary>
+    private string _status = "";
+
     private bool _loeschfrage;
     private string _loeschtext = "";
     private bool _namensfrage;
+
+    private bool _duplizierfrage;
+    private string _kopievorschlag = "";
+
+    /// <summary>Ein Feld des geladenen Satzes wurde geändert (V11).</summary>
+    private bool _geaendert;
+
+    /// <summary>Ist der geladene Satz ein Auslieferungssatz (ReadOnly)?</summary>
+    private bool _auslieferung;
 
     private readonly List<string> _fehlerhaft = new();
 
@@ -310,6 +390,26 @@
     /// <summary>Ist ein neuer, noch nicht geschriebener Satz in Arbeit? (Prüfhilfe.)</summary>
     public bool IstNeu => _neu;
 
+    /// <summary>Die Statuszeile der Fußleiste (Prüfhilfe für Tests).</summary>
+    public string Status => _status;
+
+    /// <summary>Ist der gewählte Satz ein Auslieferungssatz? (Prüfhilfe für Tests.)</summary>
+    public bool Auslieferungssatz => _auslieferung;
+
+    /// <summary>Steht die Namensabfrage von „Duplizieren…"? (Prüfhilfe für Tests.)</summary>
+    public bool Duplizierfrage => _duplizierfrage;
+
+    /// <summary>
+    /// Trägt die Maske etwas, das noch nicht geschrieben ist — ein geändertes Feld oder
+    /// einen neuen Satz? Dann halten Zeilenwechsel und Beenden an (V11).
+    /// </summary>
+    private bool Ungespeichert => _geaendert || _neu;
+
+    /// <summary>„Speichern" eines Auslieferungssatzes ist weich gesperrt (AD-Q11).</summary>
+    private bool SpeichernWeichGesperrt => !_neu && _auslieferung && _gewaehlt.Length > 0;
+
+    private bool DuplizierenErlaubt => !_neu && _gewaehlt.Length > 0 && Wege.Duplizieren is not null;
+
     protected override void OnParametersSet()
     {
         if (ProfilVorgabe is null && (_profil is null || _profil.Art != Art))
@@ -318,6 +418,11 @@
         // Der Kopf der WAHLSPALTE kommt weiter über den eigenen Text der Hülle
         // (KFAK_SP_WAHL) — dasselbe Wort in allen neun Katalogdialogen.
         Filtertexte.SpalteWahl = SpalteWahlText;
+
+        // Das Schloss nennt den Ausweg, wo es ihn gibt (V10, AD-Q11).
+        Filtertexte.Schloss = Wege.Duplizieren is not null
+            ? Resource.ADM_SCHLOSS_DUPLIZIEREN
+            : Resource.ADM_SCHLOSS;
     }
 
     protected override void OnInitialized()
@@ -366,7 +471,7 @@
         {
             Feldsuche = schluessel => _felder.FirstOrDefault(
                 f => string.Equals(f.Schluessel, schluessel, StringComparison.Ordinal)),
-            Gesetzt = () => _meldung = ""
+            Gesetzt = () => { _meldung = ""; _geaendert = true; }
         };
     }
 
@@ -377,10 +482,10 @@
     /// <para><b>Die Prüfung ist DIESELBE, die der Speicherknopf ruft</b>
     /// (<see cref="EingabenPruefen"/>): erst die ungültigen Texte, dann die
     /// Pflichtfelder des Profils.</para>
-    /// <para><b>Kein Haken „Schreibgeschützt".</b> Der Modulkatalog pflegt die
-    /// Stammtabelle selbst; einen Auslieferungsschutz je Satz führt er nicht.
-    /// Gesperrt sind einzelne FELDER (Bezeichner, Herkunft), und die stehen im
-    /// Katalog als „nur lesen".</para>
+    /// <para><b>Der Haken „Schreibgeschützt"</b> trägt den Auslieferungsschutz des
+    /// gewählten Satzes (AD-Q11): Solange er steht, lehnt schon <c>feld_setzen</c> ab,
+    /// nicht erst der Speicherknopf — dieselbe Regel wie in der Wärmepumpenverwaltung.
+    /// Gesperrt bleiben daneben einzelne FELDER (Bezeichner, Herkunft).</para>
     /// <para><b>„Löschen" bleibt draußen.</b> Es entfernt einen Katalogsatz ohne
     /// Umweg und ist damit eine Aktion mit Rückfrage und Sicherungspunkt, kein
     /// Speicherweg.</para>
@@ -388,6 +493,7 @@
     private KiMaskenhaken KiHaken() => new KiMaskenhaken
     {
         Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => SpeichernWeichGesperrt,
         Pruefen = () => EingabenPruefen() ? "" : _meldung,
         Speichern = KiSpeichern
     };
@@ -400,6 +506,9 @@
 
         if (_gewaehlt.Length == 0 && !_neu)
             return Task.FromResult(KiErgebnis.Abgelehnt(Profil.MeldungOhneAuswahl));
+
+        if (SpeichernWeichGesperrt)
+            return Task.FromResult(KiErgebnis.Abgelehnt(MeldungSpeichernGesperrt));
 
         if (!EingabenPruefen())
             return Task.FromResult(KiErgebnis.Abgelehnt(_meldung));
@@ -442,7 +551,13 @@
     {
         _fehlerhaft.Clear();
         _neu = false;
+        _geaendert = false;
         _schluessel = _gewaehlt;
+
+        // Der Schutz kommt aus der Zeile der Liste (ReadOnly der Stammtabelle) - bis
+        // hierher wertete diese Maske ihn nicht aus (Konzept V13, AD-Q11).
+        _auslieferung = _gewaehlt.Length > 0
+                     && _zeilen.Any(z => z.Bezeichner == _gewaehlt && z.Geschuetzt);
 
         // Auch ohne Auswahl (W14a-E-8): Was es an Parametern GIBT, haengt am Katalog
         // und nicht am Satz — dann stehen lauter Leerwerte darin.
@@ -452,10 +567,48 @@
         _felder = (Wege.Detail?.Invoke(_gewaehlt) ?? Array.Empty<ModulFeldwert>()).ToList();
     }
 
+    /// <summary>
+    /// Eine andere Zeile. Geänderte Felder oder ein ungespeicherter neuer Satz halten
+    /// die Wahl fest (V11) — die Liste springt zurück, das Warnband sagt warum.
+    /// </summary>
     private void BeiZeile(string bezeichner)
     {
-        _gewaehlt = bezeichner ?? "";
+        string neu = bezeichner ?? "";
+        if (neu == _gewaehlt && !_neu) return;
+
+        if (Ungespeichert)
+        {
+            Warnen(MeldungUngespeichert);
+            return;
+        }
+
+        _gewaehlt = neu;
         _meldung = "";
+        _status = "";
+        DetailLaden();
+    }
+
+    private void Warnen(string text)
+    {
+        _meldung = text ?? "";
+        _meldungStufe = WarnStufe.Warnung;
+    }
+
+    /// <summary>
+    /// „Verwerfen": Die Felder des gewählten Satzes kommen neu aus dem Katalog; ein
+    /// neuer, noch nicht gespeicherter Satz fällt weg, und die erste Zeile steht wieder.
+    /// </summary>
+    private void BeiVerwerfen()
+    {
+        if (!Ungespeichert) return;
+        _meldung = "";
+        if (_neu)
+        {
+            _neu = false;
+            _gewaehlt = "";
+            ListeAufbauen();
+            return;
+        }
         DetailLaden();
     }
 
@@ -467,28 +620,45 @@
 
     private void TextSetzen(ModulFeldwert feld, string wert)
     {
-        if (feld.Gesperrt) return;
+        if (feld.Gesperrt || NurLesbar) return;
         feld.Wert = wert;
-        _meldung = "";
+        Geaendert();
     }
 
     private void ZahlSetzen(ModulFeldwert feld, double? wert)
     {
+        if (NurLesbar) return;
         feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
-        _meldung = "";
+        Geaendert();
     }
 
     private void GanzzahlSetzen(ModulFeldwert feld, int? wert)
     {
+        if (NurLesbar) return;
         feld.Wert = wert?.ToString(System.Globalization.CultureInfo.CurrentCulture) ?? "";
-        _meldung = "";
+        Geaendert();
     }
+
+    /// <summary>Ein Feld hat sich geändert — Warnband und Statuszeile sind damit überholt.</summary>
+    private void Geaendert()
+    {
+        _geaendert = true;
+        _meldung = "";
+        _status = "";
+    }
+
+    /// <summary>
+    /// Stehen die Felder nur zum Lesen da? Bei einem Auslieferungssatz (AD-Q11) —
+    /// geändert wird die eigene Kopie, die „Duplizieren…" anlegt.
+    /// </summary>
+    private bool NurLesbar => !_neu && _auslieferung;
 
     private void BeiFehlerZustand((string Feld, bool Fehlerhaft) meldung)
     {
         if (meldung.Fehlerhaft)
         {
             if (!_fehlerhaft.Contains(meldung.Feld)) _fehlerhaft.Add(meldung.Feld);
+            _geaendert = true;
         }
         else
         {
@@ -527,8 +697,18 @@
     // Die vier Knoepfe
     // =====================================================================
 
+    /// <summary>
+    /// „Speichern". Ein Auslieferungssatz wird nie überschrieben (AD-Q11): Der Knopf ist
+    /// weich gesperrt, ein Klick nennt den Weg über „Duplizieren…".
+    /// </summary>
     private void BeiSpeichern()
     {
+        if (SpeichernWeichGesperrt)
+        {
+            Warnen(MeldungSpeichernGesperrt);
+            return;
+        }
+
         if (Wege.Speichern is null) return;
         if (_gewaehlt.Length == 0 && !_neu) return;
         if (!EingabenPruefen()) return;
@@ -555,9 +735,11 @@
             return ergebnis;
         }
 
-        _meldung = ergebnis.Meldung;
-        _meldungStufe = WarnStufe.Hinweis;
+        // Gelungen - die Statuszeile sagt es, das Warnband ist frei (V11).
+        _meldung = "";
+        _status = ergebnis.Meldung;
         _neu = false;
+        _geaendert = false;
         _gewaehlt = ergebnis.Name;
         _schluessel = ergebnis.Name;
         ListeAufbauen();
@@ -566,8 +748,53 @@
 
     private void BeiNeu()
     {
+        if (Ungespeichert) { Warnen(MeldungUngespeichert); return; }
         _meldung = "";
         _namensfrage = true;
+    }
+
+    // =====================================================================
+    // „Duplizieren…" (Entscheid AD-Q11)
+    // =====================================================================
+
+    /// <summary>
+    /// „Duplizieren…": Namensabfrage, vorbelegt mit „Name (Kopie)" (der erste freie),
+    /// dann der eigene Satz mit allen Werten des gewählten. Ungespeichertes hält es auf.
+    /// </summary>
+    private void BeiDuplizieren()
+    {
+        if (!DuplizierenErlaubt) return;
+        if (Ungespeichert) { Warnen(MeldungUngespeichert); return; }
+
+        _meldung = "";
+        _kopievorschlag = Katalogkopie.Namensvorschlag(_gewaehlt, NameVergeben);
+        _duplizierfrage = true;
+    }
+
+    private bool NameVergeben(string name) => _zeilen.Any(z => z.Bezeichner == name);
+
+    private string? NameBelegt(string name) => NameVergeben(name) ? MeldungNameBelegt : null;
+
+    private void BeiDuplizierName(string? name)
+    {
+        _duplizierfrage = false;
+        if (name is null || Wege.Duplizieren is null) return;
+
+        Katalogfilterzeile? zeile = _zeilen.FirstOrDefault(z => z.Bezeichner == _gewaehlt);
+        if (zeile is null) return;
+
+        string alt = _gewaehlt;
+        KatalogSpeicherErgebnis ergebnis = Wege.Duplizieren(zeile.Id, name);
+        if (!ergebnis.Ok)
+        {
+            Warnen(ergebnis.Meldung);
+            return;
+        }
+
+        _gewaehlt = ergebnis.Name;
+        ListeAufbauen();
+        DetailLaden();
+        _status = string.Format(MeldungDupliziert, alt, ergebnis.Name);
     }
 
     /// <summary>
@@ -640,18 +867,26 @@
         ListeAufbauen();
     }
 
-    private Task BeiBeenden() =>
-        Geschlossen.InvokeAsync(new ModulErgebnis(true, _gewaehlt));
-
-    /// <summary>Der Abbrechen-Weg: schliesst ohne zu speichern. Esc und das ✕ im Kopf rufen ihn.</summary>
-    private Task Abbrechen() => Geschlossen.InvokeAsync(new ModulErgebnis(false, _gewaehlt));
+    /// <summary>
+    /// <b>„Beenden"</b> — der eine Schlussweg (V15), auch für das Kreuz und Esc.
+    /// Ungespeichertes hält ihn auf: „Speichern oder Verwerfen" im Warnband (V11).
+    /// </summary>
+    private Task BeiBeenden()
+    {
+        if (Ungespeichert)
+        {
+            Warnen(MeldungUngespeichert);
+            return Task.CompletedTask;
+        }
+        return Geschlossen.InvokeAsync(new ModulErgebnis(true, _gewaehlt));
+    }
 
     private Task BeiTaste(KeyboardEventArgs e)
     {
         if (e.Key != "Escape") return Task.CompletedTask;
-        if (_namensfrage || _loeschfrage) return Task.CompletedTask;
+        if (_namensfrage || _duplizierfrage || _loeschfrage) return Task.CompletedTask;
 
-        return Abbrechen();
+        return BeiBeenden();
     }
 
     // =====================================================================
@@ -674,13 +909,18 @@
 
     private void AuswahlSetzen(ModulFeldwert feld, int? index)
     {
+        if (NurLesbar) return;
         feld.Wert = index.HasValue && index.Value >= 0 && index.Value < feld.Optionen.Count
             ? feld.Optionen[index.Value].Wert : "";
+        Geaendert();
     }
 
     private RenderFragment Feldmarkup(ModulFeldwert feld) => builder =>
     {
-        if (feld.Art == BrowserFeldArt.Zahl && !feld.Gesperrt)
+        // Ein Auslieferungssatz zeigt jedes Feld nur lesend (AD-Q11).
+        bool gesperrt = feld.Gesperrt || NurLesbar;
+
+        if (feld.Art == BrowserFeldArt.Zahl && !gesperrt)
         {
             builder.OpenComponent<Zahlenfeld>(0);
             builder.AddAttribute(1, "Bezeichnung", feld.Bezeichnung);
@@ -695,7 +935,7 @@
             return;
         }
 
-        if (feld.Art == BrowserFeldArt.Ganzzahl && !feld.Gesperrt)
+        if (feld.Art == BrowserFeldArt.Ganzzahl && !gesperrt)
         {
             builder.OpenComponent<Ganzzahlfeld>(10);
             builder.AddAttribute(11, "Bezeichnung", feld.Bezeichnung);
@@ -710,7 +950,7 @@
             return;
         }
 
-        if (feld.Art == BrowserFeldArt.Auswahl && !feld.Gesperrt)
+        if (feld.Art == BrowserFeldArt.Auswahl && !gesperrt)
         {
             // Paket B (Merge 5): die Zelltechnologie - Optionen aus dem Profil, der Wert
             // ist der Datenbankcode (leer = NULL).
@@ -729,7 +969,7 @@
         builder.AddAttribute(22, "Wert", feld.Wert);
         builder.AddAttribute(23, "WertChanged",
             EventCallback.Factory.Create<string>(this, w => TextSetzen(feld, w)));
-        builder.AddAttribute(24, "NurLesen", feld.Gesperrt);
+        builder.AddAttribute(24, "NurLesen", gesperrt);
         builder.AddAttribute(25, "Mehrzeilig", feld.Art == BrowserFeldArt.Mehrzeilig);
         builder.AddAttribute(26, "Zeilen", 2);
         builder.CloseComponent();

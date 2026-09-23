@@ -9,7 +9,7 @@ using Xunit;
 namespace EPOS.Kern.Tests
 {
     /// <summary>
-    /// ETAPPE E7c — <b>Schritt E (Schemaschritt 107): Ersatz und Restwert je Position
+    /// ETAPPE E7c — <b>Schritt E (Schemaschritt 108): Ersatz und Restwert je Position
     /// entkoppelt</b> (Entscheid A6 vom 20.09.2026, Mockup U39, Konzept § 2.13 (3)).
     ///
     /// <para>Drei Teile: (1) der Schemaschritt — Zielstand, Spaltenliste samt
@@ -42,12 +42,12 @@ namespace EPOS.Kern.Tests
         // =====================================================================
 
         [Fact]
-        public void Der_Zielstand_ist_107_und_der_Schritt_hat_vier_nullbare_Spalten()
+        public void Der_Zielstand_ist_108_und_der_Schritt_hat_vier_nullbare_Spalten()
         {
-            Assert.True(SchemaStand.Zielversion >= 107,
-                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 107.");
+            Assert.True(SchemaStand.Zielversion >= 108,
+                        "Zielstand " + SchemaStand.Zielversion + " liegt unter 108.");
 
-            SchemaSpalte[] spalten = SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen;
+            SchemaSpalte[] spalten = SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen;
             Assert.Equal(4, spalten.Length);
             Assert.Equal(new[] { "Tab_ProjektWerte", "Tab_ProjektWerte",
                                  "Tab_KostenVorlagePosition", "Tab_KostenVorlagePosition" },
@@ -69,7 +69,7 @@ namespace EPOS.Kern.Tests
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
 
-            foreach (SchemaSpalte s in SchemaKatalog.Schritt107_ErsatzRestwertKennzeichen)
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt108_ErsatzRestwertKennzeichen)
             {
                 Assert.True(DataRepository.SpalteVorhanden(s.Tabelle, s.Name), s.Tabelle + "." + s.Name + " fehlt.");
                 Assert.Equal(1, Zahl("SELECT COUNT(*) FROM pragma_table_info('" + s.Tabelle + "') " +
@@ -317,7 +317,7 @@ namespace EPOS.Kern.Tests
         /// <b>A/B an 1024</b> mit gepflegten Nutzungsdauern (Wärmepumpe 15 a, Kessel
         /// 25 a): ohne Kennzeichen, mit „Ersatz nein" an der Wärmepumpe, mit „Restwert
         /// nein" am Kessel und mit „nein/nein" an beiden. Gemessen 23.09.2026 auf der
-        /// Arbeitskopie (Schemastand 107).
+        /// Arbeitskopie (Schemastand 108).
         /// </summary>
         [Fact]
         public void Probe_an_1024_mit_beiden_Kennzeichen()

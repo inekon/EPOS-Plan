@@ -396,7 +396,7 @@ public class VorlagenPositionDialogTests : BunitContext
             .Add(x => x.Geschlossen, beimSchliessen));
     }
 
-    /// <summary>Ohne Kennzeichen (Betriebsseite, Datenbank ohne Schritt 107) bleibt der
+    /// <summary>Ohne Kennzeichen (Betriebsseite, Datenbank ohne Schritt 108) bleibt der
     /// Dialog der von vorher — eine Klappliste.</summary>
     [Fact]
     public void Ohne_Kennzeichen_bleiben_die_zwei_Klapplisten_weg()

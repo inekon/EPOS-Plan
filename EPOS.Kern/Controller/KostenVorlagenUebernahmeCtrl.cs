@@ -336,7 +336,7 @@ namespace WindowsFormsApplication1
             }
 
             // ETAPPE E7c (Schritt E): die zwei Kennzeichen der Quellzeile wandern mit —
-            // nur, wo es die Spalten gibt (Schritt 107).
+            // nur, wo es die Spalten gibt (Schritt 108).
             bool mitKennzeichen = ErsatzRestwertKennzeichen.SpaltenVorhanden(
                 SchemaKatalog.TAB_PROJEKTWERTE);
             string kennzeichenSpalten = mitKennzeichen

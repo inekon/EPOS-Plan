@@ -115,6 +115,20 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   aus (`Katalogspaltenrang`, Baustein `Spaltenraenge`); eine Spalte mit gesetztem Filter oder
   Sortierung weicht nie. Verwaltungen ohne Spaltenprofil (Gebäude, Gebäudetypen,
   Lastspitzenkappung) stehen außerhalb dieser Regel.
+- **In den Verwaltungen ist die ZEILE die Wahl** (`Katalogliste` mit `ZeileIstWahl`): Klick oder
+  Berührung auf eine Zelle wählt die Zeile, die Wahlspalte entfällt, das Zeilenmaß ist 46 statt
+  53 px (`ItemSize`, `--epos-rasterzeile`); ↑ ↓ Pos1 Ende bewegen die Wahl (`epos-katalogliste.js`
+  hält die Liste vom Rollen ab und rollt die gewählte Zeile ins Bild, auch virtualisiert), Enter
+  bleibt unbelegt, Esc wirkt wie das Schließkreuz. Projektdialoge und Importe behalten die
+  Wahlspalte und 53 px Zeilenhöhe.
+- **Ein Auslieferungssatz trägt nur das KENNZEICHEN:** Baustein `Kennzeichen` (Schloss ohne Wort,
+  mit Kurztext und `aria-label`), keine eigene Spalte „Auslieferung" oder „Schreibschutz". Sein
+  Satz ist nur lesbar, „Speichern" ist weich gesperrt mit Grund; ein eigener Satz entsteht über
+  `Katalogkopie.Duplizieren` (Kern, alle Spalten außer ID, Bezeichner, `ReadOnly`, `ReadOnly = 0`,
+  eine Transaktion) — nie durch Überschreiben.
+- **Die Fußleiste einer Verwaltung ohne Arbeitsstand ordnet sich Speichern · Verwerfen ·
+  Füller/Statuszeile · Neu… · Duplizieren… · Löschen · Beenden** (Konzept Knopfleisten); Kreuz und
+  Esc wirken wie Beenden, geänderte Felder halten Zeilenwechsel, Neu…, Duplizieren… und Beenden an.
 - **Ein PARAMETERBLOCK steht im `Formularraster`:** Beschriftung neben dem Feld, und ein Feld
   sagt **selbst**, wie lang es ist (`epos-feld--kurz` an Zahlenfeldern, `epos-feld--breit` am
   mehrzeiligen Textfeld; ein `Datumsfeld` nie kurz).

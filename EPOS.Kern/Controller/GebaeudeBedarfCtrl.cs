@@ -179,11 +179,14 @@ namespace WindowsFormsApplication1
             // "/ 1000.0" waere eine double-Division und ergaebe eine andere neunte
             // Stelle; der Anwender legt die zwei Zahlen nebeneinander.
             ergebnis.HeizwaermeMwh = werte.Sum() / 1000;
-            ergebnis.MaxLastKw = Hoechstwert(werte);
+            ergebnis.MaxLastKw = GebaeudeKennzahlen.Hoechstwert(werte);
             WPPlan.Core.BhkwPlan.MonatsSumme(werte, ergebnis.MonatswerteMwh,
                                              sim.mo_anfang, sim.mo_ende);
-            ergebnis.SpitzeTagesmittelKw = GroesstesTagesmittel(werte);
-            ergebnis.SpitzeQuantil95Kw = Quantil95(werte);
+            // Die Spitzenwerte bildet GebaeudeKennzahlen - dieselbe Stelle, aus der der Lauf
+            // die Zeilen von Tab_ErgebnisGebaeude fuellt (E30): Dialog und Bericht zeigen
+            // dieselbe Zahl.
+            ergebnis.SpitzeTagesmittelKw = GebaeudeKennzahlen.GroesstesTagesmittel(werte);
+            ergebnis.SpitzeQuantil95Kw = GebaeudeKennzahlen.Quantil95(werte);
 
             // Die Kennzahlen, die es nur auf dem VDI-Weg gibt, kommen aus dem Ergebnistraeger
             // des Laufs (Merkplatz 0) - skaliert nach E8 wie die Reihe.
@@ -240,40 +243,6 @@ namespace WindowsFormsApplication1
             DataTable dt = DataRepository.GetDataTable(sql, new DbParam("@id", idZ));
             if (dt == null || dt.Rows.Count == 0 || dt.Rows[0][0] == DBNull.Value) return 0;
             return Convert.ToInt32(dt.Rows[0][0]);
-        }
-
-        /// <summary>
-        /// Das größte gleitende Mittel über 24 Stunden [kW] — dieselbe Bildung wie
-        /// <c>GebaeudeModellErgebnis.SpitzeTagesmittelKw</c>, hier auf der Reihe beider Wege.
-        /// </summary>
-        private static double GroesstesTagesmittel(double[] werte)
-        {
-            double fenster = 0.0;
-            for (int h = 0; h < 24 && h < werte.Length; h++) fenster += werte[h];
-            double bestes = fenster;
-            for (int h = 24; h < werte.Length; h++)
-            {
-                fenster += werte[h] - werte[h - 24];
-                if (fenster > bestes) bestes = fenster;
-            }
-            return bestes / 24.0;
-        }
-
-        /// <summary>Das 95-%-Quantil nach nächstgelegenem Rang (1-basiert) [kW].</summary>
-        private static double Quantil95(double[] werte)
-        {
-            double[] sortiert = (double[])werte.Clone();
-            Array.Sort(sortiert);
-            int rang = (int)Math.Ceiling(0.95 * sortiert.Length);
-            return sortiert[Math.Max(rang, 1) - 1];
-        }
-
-        /// <summary>Der Höchstwert der Stundenreihe — wie <c>Maximaler_Waermebedarf</c>.</summary>
-        private static double Hoechstwert(double[] werte)
-        {
-            double max = 0;
-            for (int i = 0; i < werte.Length; i++) if (max < werte[i]) max = werte[i];
-            return max;
         }
     }
 }
