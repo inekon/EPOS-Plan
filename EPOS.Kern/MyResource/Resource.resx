@@ -6663,6 +6663,255 @@ Ein Speichern würde alle diese Datensätze zugleich überschreiben und wird des
   <data name="WIRT_FM_BK_SATZ" xml:space="preserve">
     <value>Satz</value>
   </data>
+  <data name="WIRT_AE_TITEL" xml:space="preserve">
+    <value>Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)</value>
+  </data>
+  <data name="WIRT_AE_BLATT" xml:space="preserve">
+    <value>Checkliste Anhang E</value>
+  </data>
+  <data name="WIRT_AE_KNOPF" xml:space="preserve">
+    <value>Anhang-E-Checkliste…</value>
+  </data>
+  <data name="WIRT_AE_HINWEIS" xml:space="preserve">
+    <value>Je Punkt der Norm: was verlangt ist, wo der Bericht es zeigt und was EPOS dazu liefert. Die Beurteilung 1–5 (1 = sehr gut) vergibt der Prüfer.</value>
+  </data>
+  <data name="WIRT_AE_SP_NR" xml:space="preserve">
+    <value>Nr.</value>
+  </data>
+  <data name="WIRT_AE_SP_THEMA" xml:space="preserve">
+    <value>Thema</value>
+  </data>
+  <data name="WIRT_AE_SP_ANFORDERUNG" xml:space="preserve">
+    <value>Anforderung</value>
+  </data>
+  <data name="WIRT_AE_SP_STELLE" xml:space="preserve">
+    <value>Stelle im Bericht</value>
+  </data>
+  <data name="WIRT_AE_SP_STAND" xml:space="preserve">
+    <value>Stand in EPOS</value>
+  </data>
+  <data name="WIRT_AE_SP_NOTE" xml:space="preserve">
+    <value>Beurteilung 1–5</value>
+  </data>
+  <data name="WIRT_AE_NOTE_FEHLER" xml:space="preserve">
+    <value>Bitte eine ganze Zahl von 1 (sehr gut) bis 5 eintragen.</value>
+  </data>
+  <data name="WIRT_AE_STAND_ERFUELLT" xml:space="preserve">
+    <value>erfüllt</value>
+  </data>
+  <data name="WIRT_AE_STAND_TEILWEISE" xml:space="preserve">
+    <value>teilweise</value>
+  </data>
+  <data name="WIRT_AE_STAND_OFFEN" xml:space="preserve">
+    <value>offen</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_0" xml:space="preserve">
+    <value>Gegenstand der Bewertung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_A" xml:space="preserve">
+    <value>A · Aufbau des Modells</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_B" xml:space="preserve">
+    <value>B · Berechnung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_C" xml:space="preserve">
+    <value>C · Auswertung</value>
+  </data>
+  <data name="WIRT_AE_GRUPPE_D" xml:space="preserve">
+    <value>D · Berichterstattung</value>
+  </data>
+  <data name="WIRT_AE_OHNE_RECHNUNG" xml:space="preserve">
+    <value>keine Wirtschaftlichkeit gerechnet — erst berechnen.</value>
+  </data>
+  <data name="WIRT_AE_01_THEMA" xml:space="preserve">
+    <value>Bezeichnung und Datum</value>
+  </data>
+  <data name="WIRT_AE_01_ANF" xml:space="preserve">
+    <value>Die Maßnahme ist benannt, das Datum der Bewertung steht fest.</value>
+  </data>
+  <data name="WIRT_AE_01_STELLE" xml:space="preserve">
+    <value>Wortbericht: Deckblatt · Tabellenbericht: Blatt „Übersicht“</value>
+  </data>
+  <data name="WIRT_AE_01_STAND" xml:space="preserve">
+    <value>Projekt, Varianten und Berichtsdatum stehen im Bericht.</value>
+  </data>
+  <data name="WIRT_AE_02_THEMA" xml:space="preserve">
+    <value>Beschreibung der Maßnahme</value>
+  </data>
+  <data name="WIRT_AE_02_ANF" xml:space="preserve">
+    <value>Die Maßnahme ist so beschrieben, dass ein Dritter versteht, worum es geht.</value>
+  </data>
+  <data name="WIRT_AE_02_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Projektbeschreibung“, „Komponenten &amp; Varianten“ · Tabellenbericht: Blatt „Übersicht“</value>
+  </data>
+  <data name="WIRT_AE_02_STAND" xml:space="preserve">
+    <value>Anlagen und Abweichungen je Variante aus den Projektdaten; eine Kurzbeschreibung der Maßnahme in Worten erfasst EPOS nicht.</value>
+  </data>
+  <data name="WIRT_AE_1_THEMA" xml:space="preserve">
+    <value>Nutzen und Lasten</value>
+  </data>
+  <data name="WIRT_AE_1_ANF" xml:space="preserve">
+    <value>Alle Wirkungen, die aus der Investitionsentscheidung folgen, sind erfasst.</value>
+  </data>
+  <data name="WIRT_AE_1_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Block „Erwartet“</value>
+  </data>
+  <data name="WIRT_AE_1_STAND" xml:space="preserve">
+    <value>Investition, Betriebs- und Energiekosten, Erlöse und Vorteile, Ersatz und Restwert je Stand.</value>
+  </data>
+  <data name="WIRT_AE_2A_THEMA" xml:space="preserve">
+    <value>Quantifizierung</value>
+  </data>
+  <data name="WIRT_AE_2A_ANF" xml:space="preserve">
+    <value>Jede messbare Wirkung ist als Menge angegeben.</value>
+  </data>
+  <data name="WIRT_AE_2A_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Berechnungsergebnisse je Variante“, „Variantenvergleich“ · Tabellenbericht: Blatt „Vergleich“, Blätter der Varianten</value>
+  </data>
+  <data name="WIRT_AE_2A_STAND" xml:space="preserve">
+    <value>Energiemengen aus der Stundensimulation je Stand.</value>
+  </data>
+  <data name="WIRT_AE_2B_THEMA" xml:space="preserve">
+    <value>Nicht quantifizierbare Wirkungen</value>
+  </data>
+  <data name="WIRT_AE_2B_ANF" xml:space="preserve">
+    <value>Wirkungen ohne Menge sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
+  </data>
+  <data name="WIRT_AE_2B_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Wirtschaftlichkeit“ › „Nicht monetäre Wirkungen“ · Tabellenbericht: Blatt „Wirtschaftlichkeit“, Zeile „Nicht monetäre Wirkungen“</value>
+  </data>
+  <data name="WIRT_AE_NM_TEILWEISE" xml:space="preserve">
+    <value>als Text beschrieben; Einordnung nach Art und Beurteilung nach Dauer und Wirkung fehlen.</value>
+  </data>
+  <data name="WIRT_AE_NM_OFFEN" xml:space="preserve">
+    <value>nicht erfasst — im Bewertungsblock der Ergebnisseite eintragen.</value>
+  </data>
+  <data name="WIRT_AE_3A_THEMA" xml:space="preserve">
+    <value>Monetarisierung</value>
+  </data>
+  <data name="WIRT_AE_3A_ANF" xml:space="preserve">
+    <value>Die Zahlungen sind vollständig, nur echte Zahlungen fließen ein, und jede ist erklärt.</value>
+  </data>
+  <data name="WIRT_AE_3A_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Mehrjahresübersicht der Zahlungsströme“ · Tabellenbericht: Mehrjahrestabellen, „Betriebskosten nach Kostenarten“</value>
+  </data>
+  <data name="WIRT_AE_3A_STAND" xml:space="preserve">
+    <value>Zahlungen je Jahr und Position; vermiedene Kosten nur als Nachweis, keine Abschreibung als Zahlung.</value>
+  </data>
+  <data name="WIRT_AE_3B_THEMA" xml:space="preserve">
+    <value>Nicht monetarisierbare Wirkungen</value>
+  </data>
+  <data name="WIRT_AE_3B_ANF" xml:space="preserve">
+    <value>Wirkungen ohne Geldwert sind beschrieben und in ihrer Bedeutung eingeschätzt.</value>
+  </data>
+  <data name="WIRT_AE_4_THEMA" xml:space="preserve">
+    <value>Laufzeit und Zahlungszeitpunkte</value>
+  </data>
+  <data name="WIRT_AE_4_ANF" xml:space="preserve">
+    <value>Der Betrachtungszeitraum ist angemessen gewählt, die Zeitpunkte der Zahlungen sind bestimmt.</value>
+  </data>
+  <data name="WIRT_AE_4_STELLE" xml:space="preserve">
+    <value>Wortbericht: Parameterzeile und Zeitraumhinweis im Kapitel „Wirtschaftlichkeit“ · Tabellenbericht: Parameterblock, Zeitraumhinweis, Mehrjahrestabellen</value>
+  </data>
+  <data name="WIRT_AE_4_ERFUELLT" xml:space="preserve">
+    <value>Zeitraum gegen die Nutzungsdauern abgeglichen; Ersatz und Restwert je Jahr.</value>
+  </data>
+  <data name="WIRT_AE_4_TEILWEISE" xml:space="preserve">
+    <value>Zeitraum angegeben; der Abgleich meldet Positionen ohne Nutzungsdauer oder fehlt.</value>
+  </data>
+  <data name="WIRT_AE_5_THEMA" xml:space="preserve">
+    <value>Kalkulationszins</value>
+  </data>
+  <data name="WIRT_AE_5_ANF" xml:space="preserve">
+    <value>Der Zins ist aus Eigen- und Fremdkapital nachvollziehbar hergeleitet und erläutert.</value>
+  </data>
+  <data name="WIRT_AE_5_STELLE" xml:space="preserve">
+    <value>Wortbericht: Parameterzeile · Tabellenbericht: Parameterblock (Zins_i)</value>
+  </data>
+  <data name="WIRT_AE_5_STAND" xml:space="preserve">
+    <value>Zins angegeben und je Szenario variiert; seine Herleitung erfasst EPOS nicht.</value>
+  </data>
+  <data name="WIRT_AE_6_THEMA" xml:space="preserve">
+    <value>Risiko, Preisänderung, Degradation</value>
+  </data>
+  <data name="WIRT_AE_6_ANF" xml:space="preserve">
+    <value>Risiken sind angesetzt oder beschrieben, unterschiedliche Preisänderungen berücksichtigt, Leistungsminderungen bedacht.</value>
+  </data>
+  <data name="WIRT_AE_6_STELLE" xml:space="preserve">
+    <value>Wortbericht: Deklarationen, „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Parameterblock (p_E, p_B, p_I), „Bewertung nach DIN EN 17463“</value>
+  </data>
+  <data name="WIRT_AE_6_STAND" xml:space="preserve">
+    <value>drei Preisänderungssätze (Energie, Betrieb, Investition/Ersatz); Risikozuschlag nicht angesetzt und Degradation nicht gerechnet — beides deklariert.</value>
+  </data>
+  <data name="WIRT_AE_7_THEMA" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="WIRT_AE_7_ANF" xml:space="preserve">
+    <value>Die Bewertung umfasst alle Nutzen und Lasten mit Geldwert.</value>
+  </data>
+  <data name="WIRT_AE_7_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Kennzahlen im Szenario „Erwartet““ · Tabellenbericht: Block „Erwartet“ (Kennzahlen in Formeln)</value>
+  </data>
+  <data name="WIRT_AE_7_STAND" xml:space="preserve">
+    <value>Kapitalwert je Stand und als Differenz zur Referenz; Annuität, Amortisation und Zinsfuß nachrichtlich.</value>
+  </data>
+  <data name="WIRT_AE_8_THEMA" xml:space="preserve">
+    <value>Sensitivitätsanalyse</value>
+  </data>
+  <data name="WIRT_AE_8_ANF" xml:space="preserve">
+    <value>Die Einflussgrößen sind einzeln verändert, ihre Wirkung auf den Kapitalwert ist ausgewiesen.</value>
+  </data>
+  <data name="WIRT_AE_8_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Sensitivitätsanalyse“ · Tabellenbericht: Sensitivitätsanalyse</value>
+  </data>
+  <data name="WIRT_AE_8_TEILWEISE" xml:space="preserve">
+    <value>Zins, Energiepreissteigerung, Investition, Energiekosten und KWK-Zuschlag mit Steigung; Laufzeit, Endzahlungen und Diagramm fehlen.</value>
+  </data>
+  <data name="WIRT_AE_8_OFFEN" xml:space="preserve">
+    <value>nicht gerechnet — sie braucht eine Variante mit Referenz.</value>
+  </data>
+  <data name="WIRT_AE_9_THEMA" xml:space="preserve">
+    <value>Szenarioanalyse</value>
+  </data>
+  <data name="WIRT_AE_9_ANF" xml:space="preserve">
+    <value>Ein ungünstiger und ein günstiger Fall sind vollständig durchgerechnet.</value>
+  </data>
+  <data name="WIRT_AE_9_STELLE" xml:space="preserve">
+    <value>Wortbericht: „Szenarien Ungünstig / Erwartet / Günstig“ · Tabellenbericht: Blöcke „Günstig“ und „Ungünstig“, Bandbreite, Blatt „Verlauf“</value>
+  </data>
+  <data name="WIRT_AE_9_TEILWEISE" xml:space="preserve">
+    <value>drei vollständige Läufe mit geänderten Zinsen, Preissteigerungen, Investitionen, Erträgen und Nutzungsdauern; Betrachtungszeitraum und Mengen bleiben unverändert.</value>
+  </data>
+  <data name="WIRT_AE_9_OFFEN" xml:space="preserve">
+    <value>keine Bandbreite gerechnet.</value>
+  </data>
+  <data name="WIRT_AE_10_THEMA" xml:space="preserve">
+    <value>Auswertung</value>
+  </data>
+  <data name="WIRT_AE_10_ANF" xml:space="preserve">
+    <value>Eine Schlussfolgerung mit Entscheidungsvorschlag liegt vor und bezieht Szenarien und Sensitivität ein.</value>
+  </data>
+  <data name="WIRT_AE_10_STELLE" xml:space="preserve">
+    <value>Wortbericht: Vorschlag zur Entscheidung unter der Bandbreite · Tabellenbericht: Vorschlagszeile unter der Bandbreite</value>
+  </data>
+  <data name="WIRT_AE_10_ERFUELLT" xml:space="preserve">
+    <value>Vorschlag mit Bandbreite und Einstufung je Variante.</value>
+  </data>
+  <data name="WIRT_AE_10_OFFEN" xml:space="preserve">
+    <value>kein Vorschlag — es fehlt eine Variante mit Kapitalwert gegenüber der Referenz.</value>
+  </data>
+  <data name="WIRT_AE_11_THEMA" xml:space="preserve">
+    <value>Transparente Darstellung</value>
+  </data>
+  <data name="WIRT_AE_11_ANF" xml:space="preserve">
+    <value>Rechnung und Ergebnisse sind so dargestellt, dass ein Dritter sie nachvollziehen kann.</value>
+  </data>
+  <data name="WIRT_AE_11_STELLE" xml:space="preserve">
+    <value>Wortbericht: Kapitel „Wirtschaftlichkeit“ und „Anhang“ · Tabellenbericht: Formelmappe (Parameterblock, Mehrjahrestabellen, Kennzahlen)</value>
+  </data>
+  <data name="WIRT_AE_11_STAND" xml:space="preserve">
+    <value>Deklarationen im Bericht; die Mappe rechnet mit sichtbaren Formeln auf den Parameterblock.</value>
+  </data>
   <data name="WIRT_MJ_ENTFAELLT" xml:space="preserve">
     <value>Mehrjahresübersicht entfällt — für dieses Projekt konnte keine Zahlungsreihe gerechnet werden.</value>
   </data>

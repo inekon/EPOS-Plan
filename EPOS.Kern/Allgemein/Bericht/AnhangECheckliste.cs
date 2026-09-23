@@ -1,0 +1,364 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
+
+namespace WindowsFormsApplication1
+{
+    /// <summary>ETAPPE E8b (U43) — wie weit EPOS einen Punkt der Anhang-E-Checkliste liefert.</summary>
+    public enum ChecklistenStand
+    {
+        /// <summary>EPOS liefert, was der Punkt verlangt.</summary>
+        Erfuellt,
+
+        /// <summary>EPOS liefert einen Teil; der Rest ist benannt.</summary>
+        Teilweise,
+
+        /// <summary>Es fehlt eine Angabe oder eine Rechnung.</summary>
+        Offen
+    }
+
+    /// <summary>ETAPPE E8b (U43) — ein Punkt der Anhang-E-Checkliste.</summary>
+    public sealed class ChecklistenPunkt
+    {
+        /// <summary>Nummer wie in der Norm („0.1", „2a", „11").</summary>
+        public string Nummer = "";
+
+        /// <summary>Die Gruppe (Gegenstand, A bis D) — bereits übersetzt.</summary>
+        public string Gruppe = "";
+
+        public string Thema = "";
+
+        /// <summary>Was der Punkt verlangt — mit eigenen Worten, nicht der Normtext.</summary>
+        public string Anforderung = "";
+
+        /// <summary>Die Stelle im Bericht: Kapitel des Wortberichts und Blatt/Block der Mappe.</summary>
+        public string Stelle = "";
+
+        public ChecklistenStand Stand;
+
+        /// <summary>Was EPOS zu dem Punkt liefert und was fehlt.</summary>
+        public string StandText = "";
+
+        /// <summary>Der Stand als Wort („erfüllt", „teilweise", „offen").</summary>
+        public string StandWort
+        {
+            get
+            {
+                switch (Stand)
+                {
+                    case ChecklistenStand.Erfuellt: return MyResource.Resource.WIRT_AE_STAND_ERFUELLT;
+                    case ChecklistenStand.Teilweise: return MyResource.Resource.WIRT_AE_STAND_TEILWEISE;
+                    default: return MyResource.Resource.WIRT_AE_STAND_OFFEN;
+                }
+            }
+        }
+
+        /// <summary>Die Zelle „Stand in EPOS": Wort und Erläuterung („offen: nicht erfasst — …") —
+        /// dieselbe Zeile im Wortbericht, in der Mappe und auf der Ergebnisseite.</summary>
+        public string StandZeile { get { return StandWort + ": " + StandText; } }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b (U43) — die LAGE, aus der die Checkliste ihren Stand ableitet: Was der
+    /// Lauf gerechnet und der Anwender gepflegt hat. Bericht und Ergebnisseite füllen sie
+    /// aus ihren eigenen Daten (<see cref="AusBericht"/> bzw. die Seite aus ihrem Stand); die
+    /// Punkte selbst entstehen EINMAL in <see cref="AnhangECheckliste.Punkte"/>.
+    /// </summary>
+    public sealed class ChecklistenLage
+    {
+        /// <summary>Mindestens ein Stand trägt im Szenario „Erwartet" einen Kapitalwert.</summary>
+        public bool Gerechnet;
+
+        /// <summary>Nicht monetäre Wirkungen sind als Text gepflegt.</summary>
+        public bool NichtMonetaerErfasst;
+
+        /// <summary>Der Betrachtungszeitraum ist gegen die Nutzungsdauern abgeglichen.</summary>
+        public bool ZeitraumBegruendet;
+
+        /// <summary>Positionen ohne Nutzungsdauer sind gemeldet.</summary>
+        public bool PositionenOhneNutzungsdauer;
+
+        /// <summary>Die Sensitivität ist gerechnet.</summary>
+        public bool SensitivitaetGerechnet;
+
+        /// <summary>Die drei Szenarien sind gerechnet (Bandbreite).</summary>
+        public bool SzenarienGerechnet;
+
+        /// <summary>Es gibt einen Vorschlag zur Entscheidung.</summary>
+        public bool VorschlagVorhanden;
+
+        /// <summary>Die Lage eines Berichtslaufs — aus seiner Bewertung und dem Parametersatz.</summary>
+        public static ChecklistenLage AusBericht(IList<WirtschaftlichkeitErgebnis> alle,
+                                                 WirtschaftlichkeitParameter p,
+                                                 WirtschaftlichkeitBewertung bewertung)
+        {
+            var lage = new ChecklistenLage
+            {
+                Gerechnet = alle != null && alle.Any(e => e != null &&
+                            e.Szenario == WirtschaftlichkeitSzenario.ERWARTET && e.Kapitalwert.HasValue),
+                NichtMonetaerErfasst = p != null && !string.IsNullOrWhiteSpace(p.NichtMonetaer)
+            };
+            if (bewertung != null)
+            {
+                NutzungsdauerHinweise nd = bewertung.Nutzungsdauer;
+                lage.ZeitraumBegruendet = nd != null && !string.IsNullOrEmpty(nd.Zeitraumzeile);
+                lage.PositionenOhneNutzungsdauer = nd != null && nd.Zeilen.Count > 0;
+                lage.SensitivitaetGerechnet = bewertung.Sensitivitaet != null && bewertung.Sensitivitaet.Count > 0;
+                lage.SzenarienGerechnet = bewertung.Bandbreite != null && !bewertung.Bandbreite.Leer;
+                lage.VorschlagVorhanden = !string.IsNullOrEmpty(bewertung.Vorschlagstext);
+            }
+            return lage;
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b (U43; Konzept § 2.11.2 V‑G12, Register Q18) — die <b>Checkliste für den
+    /// Bewertungsbericht</b> nach DIN EN 17463 Anhang E: 15 Punkte in den Gruppen
+    /// Gegenstand, A Aufbau des Modells, B Berechnung, C Auswertung, D Berichterstattung.
+    ///
+    /// <para><b>Was sie trägt:</b> je Punkt die Anforderung (mit eigenen Worten — der
+    /// Normtext steht nicht im Programm), die <b>Stelle im Bericht</b>, an der ein Prüfer den
+    /// Nachweis findet, und den <b>Stand</b>: was EPOS zu dem Punkt liefert und was fehlt —
+    /// aus der Lage des Laufs abgeleitet, nicht behauptet. Die <b>Beurteilung 1–5</b>
+    /// (1 = sehr gut) vergibt der Prüfer; die Spalte bleibt dafür frei.</para>
+    ///
+    /// <para><b>Wo sie steht:</b> als Abschlussseite des Wortberichts
+    /// (<see cref="AnhangEChecklisteBaustein"/>) und als letztes Blatt der Mappe
+    /// (<see cref="SchreibeExcel"/>), beide nur mit dem Baustein „Wirtschaftlichkeit"; auf
+    /// der Ergebnisseite hinter dem Knopf „Anhang-E-Checkliste…". Alle drei lesen dieselben
+    /// Punkte.</para>
+    /// </summary>
+    public static class AnhangECheckliste
+    {
+        /// <summary>Zahl der Punkte der Norm (0.1, 0.2, 1, 2a, 2b, 3a, 3b, 4 bis 11).</summary>
+        public const int ANZAHL = 15;
+
+        /// <summary>Name des Blattes in der Mappe (höchstens 31 Zeichen).</summary>
+        public static string Blattname { get { return MyResource.Resource.WIRT_AE_BLATT; } }
+
+        /// <summary>Die 15 Punkte mit ihrem Stand in dieser Lage.</summary>
+        public static List<ChecklistenPunkt> Punkte(ChecklistenLage lage)
+        {
+            lage = lage ?? new ChecklistenLage();
+            string g0 = MyResource.Resource.WIRT_AE_GRUPPE_0, gA = MyResource.Resource.WIRT_AE_GRUPPE_A,
+                   gB = MyResource.Resource.WIRT_AE_GRUPPE_B, gC = MyResource.Resource.WIRT_AE_GRUPPE_C,
+                   gD = MyResource.Resource.WIRT_AE_GRUPPE_D;
+            string ohneRechnung = MyResource.Resource.WIRT_AE_OHNE_RECHNUNG;
+
+            var l = new List<ChecklistenPunkt>
+            {
+                Punkt("0.1", g0, MyResource.Resource.WIRT_AE_01_THEMA, MyResource.Resource.WIRT_AE_01_ANF,
+                      MyResource.Resource.WIRT_AE_01_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_01_STAND),
+                Punkt("0.2", g0, MyResource.Resource.WIRT_AE_02_THEMA, MyResource.Resource.WIRT_AE_02_ANF,
+                      MyResource.Resource.WIRT_AE_02_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_02_STAND),
+                Punkt("1", gA, MyResource.Resource.WIRT_AE_1_THEMA, MyResource.Resource.WIRT_AE_1_ANF,
+                      MyResource.Resource.WIRT_AE_1_STELLE,
+                      lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
+                      lage.Gerechnet ? MyResource.Resource.WIRT_AE_1_STAND : ohneRechnung),
+                Punkt("2a", gA, MyResource.Resource.WIRT_AE_2A_THEMA, MyResource.Resource.WIRT_AE_2A_ANF,
+                      MyResource.Resource.WIRT_AE_2A_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_2A_STAND),
+                Punkt("2b", gA, MyResource.Resource.WIRT_AE_2B_THEMA, MyResource.Resource.WIRT_AE_2B_ANF,
+                      MyResource.Resource.WIRT_AE_2B_STELLE,
+                      lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
+                      lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE : MyResource.Resource.WIRT_AE_NM_OFFEN),
+                Punkt("3a", gA, MyResource.Resource.WIRT_AE_3A_THEMA, MyResource.Resource.WIRT_AE_3A_ANF,
+                      MyResource.Resource.WIRT_AE_3A_STELLE,
+                      lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
+                      lage.Gerechnet ? MyResource.Resource.WIRT_AE_3A_STAND : ohneRechnung),
+                Punkt("3b", gA, MyResource.Resource.WIRT_AE_3B_THEMA, MyResource.Resource.WIRT_AE_3B_ANF,
+                      MyResource.Resource.WIRT_AE_2B_STELLE,
+                      lage.NichtMonetaerErfasst ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
+                      lage.NichtMonetaerErfasst ? MyResource.Resource.WIRT_AE_NM_TEILWEISE : MyResource.Resource.WIRT_AE_NM_OFFEN),
+                Punkt("4", gA, MyResource.Resource.WIRT_AE_4_THEMA, MyResource.Resource.WIRT_AE_4_ANF,
+                      MyResource.Resource.WIRT_AE_4_STELLE,
+                      lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
+                          ? ChecklistenStand.Erfuellt : ChecklistenStand.Teilweise,
+                      lage.ZeitraumBegruendet && !lage.PositionenOhneNutzungsdauer
+                          ? MyResource.Resource.WIRT_AE_4_ERFUELLT : MyResource.Resource.WIRT_AE_4_TEILWEISE),
+                Punkt("5", gA, MyResource.Resource.WIRT_AE_5_THEMA, MyResource.Resource.WIRT_AE_5_ANF,
+                      MyResource.Resource.WIRT_AE_5_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_5_STAND),
+                Punkt("6", gA, MyResource.Resource.WIRT_AE_6_THEMA, MyResource.Resource.WIRT_AE_6_ANF,
+                      MyResource.Resource.WIRT_AE_6_STELLE, ChecklistenStand.Teilweise, MyResource.Resource.WIRT_AE_6_STAND),
+                Punkt("7", gB, MyResource.Resource.WIRT_AE_7_THEMA, MyResource.Resource.WIRT_AE_7_ANF,
+                      MyResource.Resource.WIRT_AE_7_STELLE,
+                      lage.Gerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
+                      lage.Gerechnet ? MyResource.Resource.WIRT_AE_7_STAND : ohneRechnung),
+                Punkt("8", gB, MyResource.Resource.WIRT_AE_8_THEMA, MyResource.Resource.WIRT_AE_8_ANF,
+                      MyResource.Resource.WIRT_AE_8_STELLE,
+                      lage.SensitivitaetGerechnet ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
+                      lage.SensitivitaetGerechnet ? MyResource.Resource.WIRT_AE_8_TEILWEISE : MyResource.Resource.WIRT_AE_8_OFFEN),
+                Punkt("9", gB, MyResource.Resource.WIRT_AE_9_THEMA, MyResource.Resource.WIRT_AE_9_ANF,
+                      MyResource.Resource.WIRT_AE_9_STELLE,
+                      lage.SzenarienGerechnet ? ChecklistenStand.Teilweise : ChecklistenStand.Offen,
+                      lage.SzenarienGerechnet ? MyResource.Resource.WIRT_AE_9_TEILWEISE : MyResource.Resource.WIRT_AE_9_OFFEN),
+                Punkt("10", gC, MyResource.Resource.WIRT_AE_10_THEMA, MyResource.Resource.WIRT_AE_10_ANF,
+                      MyResource.Resource.WIRT_AE_10_STELLE,
+                      lage.VorschlagVorhanden && lage.SzenarienGerechnet ? ChecklistenStand.Erfuellt : ChecklistenStand.Offen,
+                      lage.VorschlagVorhanden && lage.SzenarienGerechnet
+                          ? MyResource.Resource.WIRT_AE_10_ERFUELLT : MyResource.Resource.WIRT_AE_10_OFFEN),
+                Punkt("11", gD, MyResource.Resource.WIRT_AE_11_THEMA, MyResource.Resource.WIRT_AE_11_ANF,
+                      MyResource.Resource.WIRT_AE_11_STELLE, ChecklistenStand.Erfuellt, MyResource.Resource.WIRT_AE_11_STAND),
+            };
+            return l;
+        }
+
+        private static ChecklistenPunkt Punkt(string nummer, string gruppe, string thema, string anforderung,
+                                              string stelle, ChecklistenStand stand, string standText)
+        {
+            return new ChecklistenPunkt
+            {
+                Nummer = nummer, Gruppe = gruppe, Thema = thema, Anforderung = anforderung,
+                Stelle = stelle, Stand = stand, StandText = standText
+            };
+        }
+
+        /// <summary>Die Punkte eines Berichtslaufs — Quelle wie im Baustein „Wirtschaftlichkeit":
+        /// die Ergebnisse DIESES Laufs, ersatzweise der gespeicherte Stand.</summary>
+        public static List<ChecklistenPunkt> AusBericht(BerichtsDaten daten)
+        {
+            var provider = new WirtschaftlichkeitCtrl();
+            List<WirtschaftlichkeitErgebnis> alle = daten.Wirtschaftlichkeit.Count > 0
+                ? daten.Wirtschaftlichkeit
+                : provider.LadeErgebnisse(daten.Varianten.Select(v => v.IdProjekt).ToList());
+            WirtschaftlichkeitParameter p = provider.LadeParameter(daten.IdStamm);
+            WirtschaftlichkeitBewertung bewertung = daten.Bewertung;
+            if (bewertung == null && alle.Count > 0)
+            {
+                try { bewertung = WirtschaftlichkeitBewertung.FuerBericht(daten, alle, p, BerichtTexte.Kultur); }
+                catch { bewertung = null; }   // ohne Bewertung bleiben die Punkte „offen"
+            }
+            return Punkte(ChecklistenLage.AusBericht(alle, p, bewertung));
+        }
+
+        // =====================================================================
+        //  Tabellenbericht — das letzte Blatt der Mappe
+        // =====================================================================
+
+        /// <summary>Die Spalten: Nr., Thema, Anforderung, Stelle im Bericht, Stand, Note.</summary>
+        internal const int SPALTE_NOTE = 6;
+
+        /// <summary>
+        /// Schreibt die Checkliste als eigenes Blatt ans Ende der Mappe. Die Spalte
+        /// „Beurteilung 1–5" nimmt nur ganze Zahlen von 1 bis 5 an (Gültigkeitsprüfung).
+        /// </summary>
+        internal static void SchreibeExcel(XLWorkbook wb, List<ChecklistenPunkt> punkte)
+        {
+            if (wb == null || punkte == null || punkte.Count == 0) return;
+            IXLWorksheet ws = wb.Worksheets.Add(Blattname);
+
+            int r = 1;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_AE_TITEL;
+            ws.Cell(r, 1).Style.Font.Bold = true;
+            ws.Cell(r, 1).Style.Font.FontSize = 14;
+            r++;
+            ws.Cell(r, 1).Value = MyResource.Resource.WIRT_AE_HINWEIS;
+            ws.Cell(r, 1).Style.Font.FontColor = XLColor.FromHtml("#696969");
+            r += 2;
+
+            string[] kopf =
+            {
+                MyResource.Resource.WIRT_AE_SP_NR, MyResource.Resource.WIRT_AE_SP_THEMA,
+                MyResource.Resource.WIRT_AE_SP_ANFORDERUNG, MyResource.Resource.WIRT_AE_SP_STELLE,
+                MyResource.Resource.WIRT_AE_SP_STAND, MyResource.Resource.WIRT_AE_SP_NOTE
+            };
+            for (int i = 0; i < kopf.Length; i++) ws.Cell(r, 1 + i).Value = kopf[i];
+            ws.Range(r, 1, r, kopf.Length).Style.Font.Bold = true;
+            ws.Range(r, 1, r, kopf.Length).Style.Fill.BackgroundColor = ExcelBerichtGenerator.KOPF;
+            int ersteZeile = r + 1;
+            r++;
+
+            string gruppe = null;
+            foreach (ChecklistenPunkt pkt in punkte)
+            {
+                if (!string.Equals(gruppe, pkt.Gruppe, StringComparison.Ordinal))
+                {
+                    gruppe = pkt.Gruppe;
+                    ws.Cell(r, 1).Value = gruppe;
+                    ws.Cell(r, 1).Style.Font.Bold = true;
+                    ws.Range(r, 1, r, kopf.Length).Style.Fill.BackgroundColor = ExcelBerichtGenerator.GRUPPE;
+                    r++;
+                }
+                ws.Cell(r, 1).Value = pkt.Nummer;
+                ws.Cell(r, 2).Value = pkt.Thema;
+                ws.Cell(r, 3).Value = pkt.Anforderung;
+                ws.Cell(r, 4).Value = pkt.Stelle;
+                ws.Cell(r, 5).Value = pkt.StandZeile;
+                ws.Range(r, 1, r, kopf.Length).Style.Alignment.WrapText = true;
+                ws.Range(r, 1, r, kopf.Length).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+                r++;
+            }
+
+            // Die Beurteilung trägt der Prüfer ein — nur ganze Zahlen von 1 bis 5.
+            IXLDataValidation note = ws.Range(ersteZeile, SPALTE_NOTE, r - 1, SPALTE_NOTE).CreateDataValidation();
+            note.WholeNumber.Between(1, 5);
+            note.ErrorMessage = MyResource.Resource.WIRT_AE_NOTE_FEHLER;
+
+            ws.Column(1).Width = 8;
+            ws.Column(2).Width = 28;
+            ws.Column(3).Width = 55;
+            ws.Column(4).Width = 45;
+            ws.Column(5).Width = 55;
+            ws.Column(6).Width = 12;
+            ws.SheetView.FreezeRows(ersteZeile - 1);
+        }
+    }
+
+    /// <summary>
+    /// ETAPPE E8b (U43) — die Anhang-E-Checkliste als <b>Abschlussseite des Wortberichts</b>.
+    /// Sie hängt am Baustein „Wirtschaftlichkeit" (derselbe Schlüssel): ohne
+    /// Wirtschaftlichkeit keine Checkliste — ihre Punkte verweisen auf deren Kapitel.
+    /// </summary>
+    public class AnhangEChecklisteBaustein : IBerichtsBaustein
+    {
+        public string Schluessel { get { return BerichtsKonfiguration.B_WIRTSCHAFT; } }
+        public string Titel { get { return MyResource.Resource.WIRT_AE_TITEL; } }
+
+        public void SchreibeWord(WordKontext k, BerichtsDaten daten, BerichtsKonfiguration konfig)
+        {
+            List<ChecklistenPunkt> punkte = AnhangECheckliste.AusBericht(daten);
+            if (punkte.Count == 0) return;
+
+            k.Seitenumbruch();
+            k.MitStilRoh("Heading1", MyResource.Resource.WIRT_AE_TITEL);
+            k.HinweisRoh(MyResource.Resource.WIRT_AE_HINWEIS);
+
+            // Nr. · Thema · Anforderung · Stelle im Bericht · Stand · Beurteilung
+            int[] b = { 600, 1500, 2455, 2300, 1900, 600 };
+            int schrift = WordBerichtGenerator.SCHRIFT_TABELLE_SCHMAL;
+            Table t = k.NeueTabelle(b);
+            var kopf = new TableRow();
+            string[] titel =
+            {
+                MyResource.Resource.WIRT_AE_SP_NR, MyResource.Resource.WIRT_AE_SP_THEMA,
+                MyResource.Resource.WIRT_AE_SP_ANFORDERUNG, MyResource.Resource.WIRT_AE_SP_STELLE,
+                MyResource.Resource.WIRT_AE_SP_STAND, MyResource.Resource.WIRT_AE_SP_NOTE
+            };
+            for (int i = 0; i < titel.Length; i++)
+                kopf.Append(k.Zelle(titel[i], b[i], true, WordBerichtGenerator.HEAD_FILL,
+                                    JustificationValues.Left, false, schrift));
+            t.Append(kopf);
+
+            string gruppe = null;
+            foreach (ChecklistenPunkt pkt in punkte)
+            {
+                if (!string.Equals(gruppe, pkt.Gruppe, StringComparison.Ordinal))
+                {
+                    gruppe = pkt.Gruppe;
+                    var gz = new TableRow();
+                    for (int i = 0; i < b.Length; i++)
+                        gz.Append(k.Zelle(i == 0 ? gruppe : "", b[i], true, WordBerichtGenerator.STAMM_FILL,
+                                          JustificationValues.Left, false, schrift));
+                    t.Append(gz);
+                }
+                var z = new TableRow();
+                string[] werte = { pkt.Nummer, pkt.Thema, pkt.Anforderung, pkt.Stelle, pkt.StandZeile, "" };
+                for (int i = 0; i < werte.Length; i++)
+                    z.Append(k.Zelle(werte[i], b[i], false, null, JustificationValues.Left, false, schrift));
+                t.Append(z);
+            }
+            k.Fuege(t);
+        }
+    }
+}

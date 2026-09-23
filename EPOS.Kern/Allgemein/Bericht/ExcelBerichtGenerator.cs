@@ -191,6 +191,11 @@ namespace WindowsFormsApplication1
                     foreach (VariantenDaten v in daten.Varianten)
                         BlattDetail(wb, v);
 
+                // ETAPPE E8b (U43, Konzept V‑G12): die Anhang-E-Checkliste als letztes Blatt —
+                // nur mit dem Baustein „Wirtschaftlichkeit", auf dessen Blöcke sie verweist.
+                if (konfig != null && konfig.IstAktiv(BerichtsKonfiguration.B_WIRTSCHAFT))
+                    AnhangECheckliste.SchreibeExcel(wb, AnhangECheckliste.AusBericht(daten));
+
                 // ETAPPE E8b: Eine Mappe mit Formeln verlangt beim Öffnen die volle
                 // Neuberechnung — Excel und LibreOffice rechnen dann selbst.
                 if (formeln.Anzahl > 0) wb.FullCalculationOnLoad = true;

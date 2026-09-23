@@ -1398,6 +1398,7 @@
     /// Primärknopf — die Seite trägt genau einen, „Berechnen" in der Fußleiste (Q8).
     /// </summary>
     private RenderFragment BerichtKnopfteil => @<div class="epos-wirt-abschnitt-fuss">
+        <AnhangEChecklisteKnopf Stand="@_stand" Gesperrt="@_laeuft" />
         @if (BerichtErzeugen is not null)
         {
             <button type="button" class="epos-knopf epos-wirt-berichtknopf" disabled="@_laeuft"

@@ -105,6 +105,7 @@ namespace WindowsFormsApplication1
                 new VergleichBaustein(),
                 new WirtschaftlichkeitBaustein(),   // Phase 6: liest Tab_ErgebnisWirtschaftlichkeit
                 new AnhangBaustein(),
+                new AnhangEChecklisteBaustein(),    // ETAPPE E8b (U43): Abschlussseite, Schlüssel der Wirtschaftlichkeit
             };
             return alle.Where(b => konfig == null || konfig.IstAktiv(b.Schluessel)).ToList();
         }

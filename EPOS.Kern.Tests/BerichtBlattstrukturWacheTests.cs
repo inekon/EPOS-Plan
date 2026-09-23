@@ -181,10 +181,10 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// Blattzahl und Blattnamen in ihrer Reihenfolge: zwei feste Blätter, das
         /// Wirtschaftlichkeitsblatt, das Blatt „Verlauf" (ETAPPE E6, U13), dann EIN Blatt
-        /// je Variante.
+        /// je Variante und zuletzt die Anhang-E-Checkliste (ETAPPE E8b, U43).
         /// </summary>
         [Fact]
-        public void Excel_traegt_sechs_Blaetter_in_fester_Reihenfolge()
+        public void Excel_traegt_sieben_Blaetter_in_fester_Reihenfolge()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -199,9 +199,10 @@ namespace EPOS.Kern.Tests
                 Assert.True(File.Exists(ziel), "Die Mappe wurde nicht geschrieben.");
 
                 using var wb = new XLWorkbook(ziel);
-                Assert.Equal(6, wb.Worksheets.Count);
+                Assert.Equal(7, wb.Worksheets.Count);
                 Assert.Equal(
-                    new[] { "Übersicht", "Vergleich", "Wirtschaftlichkeit", "Verlauf", "Stamm", "Variante A" },
+                    new[] { "Übersicht", "Vergleich", "Wirtschaftlichkeit", "Verlauf", "Stamm", "Variante A",
+                            "Checkliste Anhang E" },
                     wb.Worksheets.OrderBy(w => w.Position).Select(w => w.Name).ToArray());
             }
             finally { Aufraeumen(ordner); }
@@ -882,6 +883,7 @@ namespace EPOS.Kern.Tests
                         "Variantenvergleich",
                         "Wirtschaftlichkeit",
                         "Anhang",
+                        "Checkliste für den Bewertungsbericht (DIN EN 17463, Anhang E)",
                     },
                     MitStil(body, "Heading1").ToArray());
             }
@@ -925,10 +927,11 @@ namespace EPOS.Kern.Tests
 
         /// <summary>
         /// Zahl der Tabellen und die Kopfzeile der Kennzahlentabelle. Die
-        /// Kennzahlentabelle ist die erste, deren Kopf mit „Kennzahl" beginnt.
+        /// Kennzahlentabelle ist die erste, deren Kopf mit „Kennzahl" beginnt; die letzte
+        /// Tabelle ist die Anhang-E-Checkliste (ETAPPE E8b, U43).
         /// </summary>
         [Fact]
-        public void Word_traegt_zehn_Tabellen_mit_der_Kennzahlentabelle_darunter()
+        public void Word_traegt_elf_Tabellen_mit_der_Kennzahlentabelle_darunter()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
@@ -943,7 +946,7 @@ namespace EPOS.Kern.Tests
                 Body body = doc.MainDocumentPart.Document.Body;
 
                 List<Table> tabellen = body.Descendants<Table>().ToList();
-                Assert.Equal(10, tabellen.Count);
+                Assert.Equal(11, tabellen.Count);
 
                 // Die ersten Köpfe in ihrer Reihenfolge — das Gerüst der Tabellen.
                 Assert.Equal(new[] { "Projekt", "Stammprojekt" }, Kopf(tabellen[0]));
@@ -956,6 +959,10 @@ namespace EPOS.Kern.Tests
                                               .FirstOrDefault(k => k.Length > 0 && k[0] == "Kennzahl");
                 Assert.NotNull(kennzahlen);
                 Assert.Equal(new[] { "Kennzahl", "Stamm", "Variante A" }, kennzahlen);
+
+                // Die Abschlussseite: die Anhang-E-Checkliste mit freier Beurteilungsspalte.
+                Assert.Equal(new[] { "Nr.", "Thema", "Anforderung", "Stelle im Bericht", "Stand in EPOS",
+                                     "Beurteilung 1–5" }, Kopf(tabellen[^1]));
             }
             finally { Aufraeumen(ordner); }
         }

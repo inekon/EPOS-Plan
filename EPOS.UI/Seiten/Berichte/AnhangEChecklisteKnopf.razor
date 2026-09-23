@@ -1,0 +1,95 @@
+﻿@* ETAPPE E8b (U43; Register Q18, Konzept § 2.11.2 V-G12) - der Knopf
+   "Anhang-E-Checkliste..." im Fuss des Bewertungsblocks der Wirtschaftlichkeitsseite
+   (Mockup: Fussleiste des Bewertungsblocks, zwischen "Parameter..." und "Bericht
+   erzeugen"). Er zeigt die Checkliste der DIN EN 17463, Anhang E, in einer
+   Ueberlagerung: je Punkt Anforderung, Stelle im Bericht und Stand in EPOS.
+
+   EIN EIGENER BAUSTEIN mit EINER Einbindungszeile in der Seite: Die Punkte entstehen
+   im Kern (AnhangECheckliste.Punkte) - dieselben wie auf der Abschlussseite des Wort-
+   und des Tabellenberichts. Hier wird nur die Lage aus dem Stand der Seite gelesen
+   (was gerechnet und gepflegt ist); die Beurteilung 1-5 vergibt der Pruefer im
+   Bericht, deshalb fehlt die Spalte hier. *@
+
+@namespace EPOS.UI.Seiten.Berichte
+@using WindowsFormsApplication1
+
+<button type="button" class="epos-knopf epos-wirt-checklistenknopf" disabled="@Gesperrt"
+        @onclick="Oeffnen">@Resource.WIRT_AE_KNOPF</button>
+
+<Ueberlagerung Offen="@_offen" Titel="@Resource.WIRT_AE_TITEL" Geschlossen="Schliessen">
+    <KindInhalt>
+        <Herleitungszeile Text="@Resource.WIRT_AE_HINWEIS" />
+        <div class="epos-raster-huelle">
+            <table class="epos-raster epos-wirt-tafel epos-wirt-checkliste">
+                <thead>
+                    <tr>
+                        <th>@Resource.WIRT_AE_SP_NR</th>
+                        <th>@Resource.WIRT_AE_SP_THEMA</th>
+                        <th>@Resource.WIRT_AE_SP_ANFORDERUNG</th>
+                        <th>@Resource.WIRT_AE_SP_STELLE</th>
+                        <th>@Resource.WIRT_AE_SP_STAND</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ string? gruppe = null; }
+                    @foreach (ChecklistenPunkt p in _punkte)
+                    {
+                        if (!string.Equals(gruppe, p.Gruppe, StringComparison.Ordinal))
+                        {
+                            gruppe = p.Gruppe;
+                            <tr class="epos-wirt-checkliste-gruppe"><th colspan="5">@gruppe</th></tr>
+                        }
+                        <tr class="@("epos-wirt-checkliste-" + p.Stand.ToString().ToLowerInvariant())">
+                            <td>@p.Nummer</td>
+                            <td>@p.Thema</td>
+                            <td>@p.Anforderung</td>
+                            <td>@p.Stelle</td>
+                            <td>@p.StandZeile</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </KindInhalt>
+</Ueberlagerung>
+
+@code {
+    /// <summary>Der Stand der Wirtschaftlichkeitsseite — aus ihm liest der Knopf, was
+    /// gerechnet und gepflegt ist.</summary>
+    [Parameter] public WirtschaftlichkeitStand? Stand { get; set; }
+
+    /// <summary>Während eines Laufs gesperrt, wie jeder Knopf der Seite.</summary>
+    [Parameter] public bool Gesperrt { get; set; }
+
+    private bool _offen;
+    private IReadOnlyList<ChecklistenPunkt> _punkte = Array.Empty<ChecklistenPunkt>();
+
+    private void Oeffnen()
+    {
+        _punkte = AnhangECheckliste.Punkte(Lage(Stand));
+        _offen = true;
+    }
+
+    private void Schliessen() => _offen = false;
+
+    /// <summary>
+    /// Die Lage aus dem Stand der Seite — dieselben Größen, die der Bericht aus seiner
+    /// Bewertung liest (<see cref="ChecklistenLage.AusBericht"/>): Kennzahlen gerechnet,
+    /// nicht monetäre Wirkungen gepflegt, Zeitraum abgeglichen, Positionen ohne
+    /// Nutzungsdauer, Sensitivität, Bandbreite, Vorschlag.
+    /// </summary>
+    internal static ChecklistenLage Lage(WirtschaftlichkeitStand? s)
+    {
+        if (s is null) return new ChecklistenLage();
+        return new ChecklistenLage
+        {
+            Gerechnet = s.Ansicht.Kennzahltafel.Zeilen.Count > 0,
+            NichtMonetaerErfasst = !string.IsNullOrWhiteSpace(s.NichtMonetaer),
+            ZeitraumBegruendet = !string.IsNullOrEmpty(s.Zeitraumzeile),
+            PositionenOhneNutzungsdauer = s.Nutzungsdauerhinweise.Count > 0,
+            SensitivitaetGerechnet = s.Ansicht.Sensitivitaet.Zeilen.Count > 0,
+            SzenarienGerechnet = s.Ansicht.Bandbreite.Zeilen.Count > 0,
+            VorschlagVorhanden = !string.IsNullOrEmpty(s.Ansicht.Empfehlungszeile)
+        };
+    }
+}
