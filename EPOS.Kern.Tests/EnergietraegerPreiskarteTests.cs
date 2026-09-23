@@ -117,17 +117,36 @@ namespace EPOS.Kern.Tests
             Assert.Equal("0,5000 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
         }
 
+        /// <summary>
+        /// <b>ET-D-4.</b> Steht die Preisbasis auf kWh, gibt der Anwender €/kWh ein —
+        /// die Zeile läuft dann in DIESER Richtung und sagt, in welcher Einheit
+        /// gespeichert wird. Das frühere „Direktabrechnung: … €/kWh" las sich wie ein
+        /// Abrechnungsweg und zeigte nur die eigene Eingabe.
+        /// </summary>
         [Fact]
-        public void Bei_Preisbasis_kWh_kommt_die_Direktabrechnung_dazu()
+        public void Bei_Preisbasis_kWh_rechnet_die_Formel_von_der_Eingabe_zum_gespeicherten_Preis()
         {
             using var _ = new Kulturvorrichtung();
 
+            // Stadtgas: 0,07 €/kWh bei Hi 4,8 kWh/Nm³ = 0,336 €/Nm³ je Mengeneinheit.
             EnergietraegerPreiskarte.Formelzeile z =
-                EnergietraegerPreiskarte.Formel(true, "Nm³", "kWh", 0.50, 10.50);
+                EnergietraegerPreiskarte.Formel(true, "Nm³", "kWh", 0.336, 4.80);
 
             Assert.NotNull(z);
-            Assert.StartsWith("0,5000 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh", z.Text);
-            Assert.Contains("Direktabrechnung: 0,0476 €/kWh", z.Text);
+            Assert.Equal("0,0700 €/kWh × 4,80 kWh/Nm³ = 0,3360 €/Nm³ (gespeichert je Nm³)", z.Text);
+            Assert.Equal("0,0700 €", z.PreisJeKwh);
+            Assert.DoesNotContain("Direktabrechnung", z.Text);
+        }
+
+        [Fact]
+        public void Die_Formel_je_kWh_steht_auch_auf_Englisch()
+        {
+            using var _ = new Kulturvorrichtung("en-US");
+
+            EnergietraegerPreiskarte.Formelzeile z =
+                EnergietraegerPreiskarte.Formel(true, "Nm³", "kWh", 0.336, 4.80);
+
+            Assert.Equal("0.0700 €/kWh × 4.80 kWh/Nm³ = 0.3360 €/Nm³ (stored per Nm³)", z.Text);
         }
 
         [Fact]
