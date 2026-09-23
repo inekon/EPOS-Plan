@@ -244,6 +244,102 @@ public class KatalograhmenTests : EposBunitContext
     }
 
     // =====================================================================
+    //  Stufe 3 der Neuordnung (V3): das Stammblatt NEBEN der Liste - ab
+    //  900 px Rahmenbreite, darunter als Blatt ueber ihr. Die MASSE misst die
+    //  Katalogprobe (Faelle N01 bis N04: acht ganze Zeilen bei 1 088 x 624,
+    //  Stammblatt rechts, 340 bis 440 px); hier stehen Markup und Regeln.
+    // =====================================================================
+
+    private IRenderedComponent<Katalograhmen> MitBlatt(bool offen = false) =>
+        Render<Katalograhmen>(p => p
+            .Add(x => x.BlattOffen, offen)
+            .Add(x => x.Liste, (RenderFragment)(b => b.AddMarkupContent(0, "<p id=\"liste\">Liste</p>")))
+            .Add(x => x.Auswahl, (RenderFragment)(b => b.AddMarkupContent(0, "<p id=\"auswahl\">Auswahl</p>")))
+            .Add(x => x.Blatt, (RenderFragment)(b => b.AddMarkupContent(0, "<p id=\"blatt\">Blatt</p>"))));
+
+    /// <summary>
+    /// <b>Mit Blatt ordnet der Rahmen anders</b>: eine Hülle als Container, darin das
+    /// Paar mit drei Bereichen — Liste, Auswahl, Stammblatt. Der Stammblattbereich trägt
+    /// weiter <c>epos-katalog-eingabe</c> (die Proben messen ihn unter diesem Namen).
+    /// </summary>
+    [Fact]
+    public void Mit_Blatt_stehen_Liste_Auswahl_und_Stammblatt_im_Container()
+    {
+        var cut = MitBlatt();
+
+        var huelle = cut.Find("div");
+        Assert.Contains("epos-katalograhmen", huelle.ClassName ?? "");
+        Assert.Contains("epos-katalog-fuellend", huelle.ClassName ?? "");
+
+        var paar = cut.Find(".epos-katalograhmen > .epos-katalog-paar");
+        Assert.Contains("epos-katalog-paar--stammblatt", paar.ClassName ?? "");
+        Assert.DoesNotContain("epos-katalog-paar--blatt", paar.ClassName ?? "");
+
+        Assert.Equal("Liste", cut.Find(".epos-katalog-liste #liste").TextContent);
+        Assert.Equal("Auswahl", cut.Find(".epos-katalog-auswahl #auswahl").TextContent);
+        Assert.Equal("Blatt", cut.Find(".epos-katalog-eingabe.epos-katalog-stammblatt #blatt").TextContent);
+    }
+
+    /// <summary><c>BlattOffen</c> hängt die Klasse an, die das Blatt im schmalen Fenster über die Liste legt.</summary>
+    [Fact]
+    public void BlattOffen_legt_das_Blatt_ueber_die_Liste()
+    {
+        Assert.Contains("epos-katalog-paar--blatt", MitBlatt(offen: true).Find(".epos-katalog-paar").ClassName ?? "");
+    }
+
+    /// <summary>Ohne Blatt bleibt der Rahmen von Stufe 1 — keine Hülle, kein Auswahlbereich.</summary>
+    [Fact]
+    public void Ohne_Blatt_bleibt_der_Rahmen_von_Stufe_1()
+    {
+        var cut = Aufbauen();
+        Assert.Empty(cut.FindAll(".epos-katalograhmen"));
+        Assert.Empty(cut.FindAll(".epos-katalog-auswahl"));
+    }
+
+    /// <summary>
+    /// <b>Die Regeln der Anordnung</b>: Die Hülle ist ein Container ihrer Breite; schmal
+    /// (die Vorgabe) steht die Auswahlleiste über der Liste und das Blatt ist verborgen;
+    /// ab 900 px stehen Liste und Stammblatt nebeneinander, das Stammblatt
+    /// <c>clamp(340px, 36%, 440px)</c> breit, und die Knöpfe des schmalen Fensters
+    /// weichen.
+    /// </summary>
+    [Fact]
+    public void Die_Regeln_ordnen_nach_der_Breite_des_Rahmens()
+    {
+        string huelle = Stilblock(".epos-katalograhmen {");
+        Assert.Contains("container-type: inline-size", huelle);
+        Assert.Contains("container-name: epos-katalograhmen", huelle);
+
+        string schmal = Stilblock(".epos-katalog-paar.epos-katalog-paar--stammblatt {");
+        Assert.Contains("display: grid", schmal);
+        Assert.Contains("\"auswahl\" \"liste\"", schmal);
+
+        Assert.Contains("display: none", Stilblock(".epos-katalog-paar--stammblatt > .epos-katalog-stammblatt {"));
+        Assert.Contains("\"auswahl\" \"blatt\"",
+                        Stilblock(".epos-katalog-paar.epos-katalog-paar--stammblatt.epos-katalog-paar--blatt {"));
+
+        string css = Stilblatt();
+        int a = css.IndexOf("@container epos-katalograhmen (min-width: 900px)", StringComparison.Ordinal);
+        Assert.True(a >= 0, "die Containerabfrage bei 900 px fehlt");
+        string breit = css.Substring(a, css.IndexOf("\n}", a, StringComparison.Ordinal) - a);
+        Assert.Contains("clamp(340px, 36%, 440px)", breit);
+        Assert.Contains("\"liste auswahl\" \"liste blatt\"", breit);
+        Assert.Contains(".epos-nur-schmal", breit);
+    }
+
+    /// <summary>
+    /// <b>Im Stammblatt rollt nur sein Inhalt</b> — Kopf und Fuß stehen; der Bereich
+    /// selbst rollt nicht (kein Rollbereich im Rollbereich).
+    /// </summary>
+    [Fact]
+    public void Im_Stammblatt_rollt_nur_der_Inhalt()
+    {
+        Assert.Contains("overflow: hidden", Stilblock(".epos-katalog-paar--stammblatt > .epos-katalog-stammblatt {"));
+        Assert.Contains("overflow: auto", Stilblock(".epos-stammblatt-inhalt {"));
+        Assert.DoesNotContain("overflow", Stilblock(".epos-stammblatt-kopf {"));
+    }
+
+    // =====================================================================
     //  Hilfen
     // =====================================================================
 

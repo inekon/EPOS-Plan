@@ -644,8 +644,11 @@ namespace WindowsFormsApplication1
         //   eskalieren seither EBENFALLS mit p_E - sie sind derselben Sache nach ein
         //   Anteil der Energiekosten, nur projektweit statt anlagenscharf bemessen.
         //   FX3 hatte sie noch ausgenommen ("sie laufen aus"); der Anwender hat das
-        //   revidiert. Die Zuordnung trifft WirtschaftlichkeitCtrl.IstEnergiepreisArt;
-        //   ihre MENGENermittlung bleibt unveraendert Konserve (IstEndenergieArt).
+        //   revidiert. Die Zuordnung trifft WirtschaftlichkeitCtrl.IstEnergiepreisArt.
+        //   ETAPPE E7c (B-4 Rest): Ihre Bezugsgroesse kommt seither frisch aus dem
+        //   juengsten Lauf - die projektweiten Brennstoff- bzw. Stromkosten
+        //   (WirtschaftlichkeitCtrl.IstProjektkostenArt, EndenergieAufloeser); die
+        //   Menge-Spalte ist Konserve nur, wo frisch nichts ermittelbar ist.
         //
         //   PAKET FX4-c: Der Sensitivitaets-Ausschlag "Energiekosten +-10 %" skaliert
         //   den p_E-Topf mit demselben Faktor wie die Energiekosten

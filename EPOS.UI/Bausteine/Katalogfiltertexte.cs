@@ -89,6 +89,12 @@ public sealed class Katalogfiltertexte
     /// <summary>Dieselbe Stelle, wenn schon alle gewählt sind — <c>KFLT_ALLE_ABWAEHLEN</c>.</summary>
     public string AlleAbwaehlen { get; set; } = Resource.KFLT_ALLE_ABWAEHLEN;
 
+    /// <summary>
+    /// Kurztext und Name des Kästchens einer Zeile (Stufe 3, V6); <c>{0}</c> = Bezeichner —
+    /// <c>ADM_KAESTCHEN_ZEILE</c>.
+    /// </summary>
+    public string KaestchenZeile { get; set; } = Resource.ADM_KAESTCHEN_ZEILE;
+
     // =====================================================================
     //  Der VERGLEICH (Frage Q3, Stufe S3.3)
     // =====================================================================

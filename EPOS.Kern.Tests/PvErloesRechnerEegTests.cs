@@ -305,11 +305,10 @@ namespace EPOS.Kern.Tests
         /// × Degradationsfaktor 0,909156 = <b>1.095,52 €</b>, aufgeschlagen auf
         /// Jahr 20: 5.946,77 + 1.095,52 = 7.042,29 €.
         ///
-        /// <para><b>OFFENER BEFUND V‑2.</b> Gerechnet wird mit dem ANZULEGENDEN WERT
-        /// (AW). Ob das der richtige Satz ist, ist offen — die Vorschrift spricht vom
-        /// Vergütungssatz, und bei Direktvermarktung ist der nicht der AW. Hier wird
-        /// das HEUTIGE Verhalten gepinnt, damit eine spätere Korrektur als Änderung
-        /// sichtbar wird und nicht als Zufall durchläuft.</para>
+        /// <para><b>BEFUND V‑2 — entschieden (A4, ETAPPE E7c).</b> Die Anlage des
+        /// Beispiels vermarktet direkt; dort bleibt § 51a beim ANZULEGENDEN WERT (AW) —
+        /// alt = neu 1.095,52 €. Mit dem Einspeisevergütungssatz bewertet wird allein die
+        /// FESTE Vergütung (eigener Fall unten, V2_…).</para>
         /// </summary>
         [Fact]
         public void Paragraf_51a_schlaegt_im_letzten_Jahr_die_halbe_Ausfallarbeit_auf()
@@ -326,7 +325,7 @@ namespace EPOS.Kern.Tests
             double faktor = PvErloesRechner.DegradationsFaktor(0.5, 20);
             Assert.Equal(0.909156, faktor, 6);
 
-            // V-2: der Satz ist der AW.
+            // V-2 (A4): in der Direktvermarktung bleibt der Satz der AW — alt = neu.
             Assert.Equal(39900.0 * 0.5 * AW_CT / 100.0 * faktor, r.Kompensation51aEur, 2);
             Assert.Equal(1095.52, r.Kompensation51aEur, 2);
 
@@ -370,6 +369,65 @@ namespace EPOS.Kern.Tests
 
             Assert.Equal(0.0, r.VerguetungsausfallKwh, 6);
             Assert.Equal(0.0, r.Kompensation51aEur, 6);
+        }
+
+        // =====================================================================
+        //  5a — ETAPPE E7c: Feste Vergütung — V‑1 und V‑2 (Entscheid A4)
+        // =====================================================================
+
+        /// <summary>Die Anlage des Beispiels mit FESTER Einspeisevergütung, § 51 an
+        /// (Pauschale 20 %), ohne Kappung.</summary>
+        private static ProjektPhotovoltaikModel Fest() => Anlage(p =>
+        {
+            p.Vermarktungsform = DbWerte.PV_VERMARKTUNG_EV;
+            p.Par51_Anwenden = DbWerte.PV_SCHALTER_JA;
+            p.AusfallanteilProzent = 20.0;
+            p.Kappung60_Anwenden = DbWerte.PV_SCHALTER_NEIN;
+        });
+
+        /// <summary>
+        /// <b>V‑1: Der EV-Mix rechnet unrundet, gerundet wird allein der Erlös.</b> Bei
+        /// 100 kWp ist AW_mix unrundet 6,432 ct/kWh (angezeigt 6,43), EV_mix also
+        /// 6,032 ct/kWh. 199.500 kWh − 20 % Ausfall = 159.600 kWh × 6,032 ct =
+        /// 9.627,072 € → <b>9.627,07 €</b>. Alt (bis E7c): der Satz gerundet über der
+        /// gerundeten Mischung, 6,43 − 0,40 = 6,03 ct → 9.623,88 €, der Erlös ungerundet.
+        /// </summary>
+        [Fact]
+        public void V1_Der_EV_Mix_rechnet_unrundet_und_gerundet_wird_der_Erloes()
+        {
+            PvErloesErgebnis r = Rechne(Fest(), kwp: 100.0);
+
+            Assert.Equal(6.43, r.AwMixCt, 6);
+            Assert.Equal(6.032, r.EvCt, 9);                        // alt: 6,03
+            Assert.Equal(9627.07, r.JeJahr[1], 6);                 // alt: 9.623,88
+            Assert.Equal(Math.Round(r.JeJahr[1], 2), r.JeJahr[1], 9);
+        }
+
+        /// <summary>
+        /// <b>V‑2: § 51a mit der Einspeisevergütung, wenn die Anlage feste Vergütung
+        /// fährt.</b> 39.900 kWh Ausfallarbeit × 0,5 × 6,032 ct = <b>1.203,38 €</b> im
+        /// letzten Vergütungsjahr (alt: mit dem anzulegenden Wert 6,43 ct = 1.282,79 €).
+        /// Der eigene Testfall des Entscheids A4.
+        /// </summary>
+        [Fact]
+        public void V2_Paragraf_51a_bewertet_die_feste_Verguetung_mit_der_Einspeiseverguetung()
+        {
+            PvErloesErgebnis r = Rechne(Fest(), kwp: 100.0);
+
+            Assert.Equal(20, r.LetztesVerguetungsjahr);
+            Assert.Equal(39900.0 * 0.5 * 6.032 / 100.0, r.Kompensation51aEur, 6);
+            Assert.Equal(1203.38, r.Kompensation51aEur, 2);        // alt: 1.282,79 (AW)
+            Assert.Equal(r.JeJahr[19] + r.Kompensation51aEur, r.JeJahr[20], 6);
+        }
+
+        /// <summary>V‑2 gilt NUR für die feste Vergütung: In der Direktvermarktung
+        /// bleibt § 51a beim anzulegenden Wert (siehe den Beleg oben, 1.204,98 €).</summary>
+        [Fact]
+        public void V2_Die_Direktvermarktung_behaelt_den_anzulegenden_Wert()
+        {
+            PvErloesErgebnis r = Rechne(Anlage());
+
+            Assert.Equal(39900.0 * 0.5 * AW_CT / 100.0, r.Kompensation51aEur, 6);
         }
 
         // =====================================================================

@@ -107,14 +107,17 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   darunter die Übernahmeleiste (je ein Zeichen ▲/▼ als `aria-hidden`-Element, nie im
   Ressourcentext), darunter die Katalogliste über die ganze Breite; Filter darüber, Detailblöcke
   darunter.
-- **Ein KATALOGDIALOG nutzt die Höhe:** Wurzel `epos-katalog-dialog`, Baustein `Katalograhmen`
-  mit `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander gehören), Umbruch bei
-  **900 CSS-Pixeln**. Die Liste hat keine Maximalhöhe mehr und nimmt die verbleibende Höhe des
-  Rahmens, nur ihre Hülle rollt; der Eingabeblock ist höchstens 34 % des Rahmens hoch, so hoch wie
-  sein Inhalt, und rollt eigenständig, oben durch eine Linie abgesetzt. Spalten blenden nach Rang
-  aus (`Katalogspaltenrang`, Baustein `Spaltenraenge`); eine Spalte mit gesetztem Filter oder
-  Sortierung weicht nie. Verwaltungen ohne Spaltenprofil (Gebäude, Gebäudetypen,
-  Lastspitzenkappung) stehen außerhalb dieser Regel.
+- **Ein KATALOGDIALOG nutzt die Höhe:** Wurzel `epos-katalog-dialog`, Baustein `Katalograhmen` mit
+  zwei Anordnungen. Ohne Stammblatt: `Liste` und `Eingabe` (`Gestapelt`, wo sie untereinander
+  gehören), Umbruch bei **900 CSS-Pixeln**; die Liste hat keine Maximalhöhe mehr und nimmt die
+  verbleibende Höhe des Rahmens, nur ihre Hülle rollt, der Eingabeblock ist höchstens 34 % des
+  Rahmens hoch, so hoch wie sein Inhalt, und rollt eigenständig, oben durch eine Linie abgesetzt.
+  Mit Stammblatt (die Verwaltungen, siehe AUSWAHLLEISTE/STAMMBLATT unten): ab 900 px steht das
+  Stammblatt rechts (`clamp(340px, 36 %, 440px)`) neben der Liste, die über die volle Rahmenhöhe
+  rollt; unter 900 px schiebt sich das Stammblatt als Blatt über Werkzeugleiste und Liste
+  (`‹ Liste`, Esc führt zurück). Spalten blenden nach Rang aus (`Katalogspaltenrang`, Baustein
+  `Spaltenraenge`); eine Spalte mit gesetztem Filter oder Sortierung weicht nie. Verwaltungen ohne
+  Spaltenprofil (Gebäude, Gebäudetypen, Lastspitzenkappung) stehen außerhalb dieser Regel.
 - **In den Verwaltungen ist die ZEILE die Wahl** (`Katalogliste` mit `ZeileIstWahl`): Klick oder
   Berührung auf eine Zelle wählt die Zeile, die Wahlspalte entfällt, das Zeilenmaß ist 46 statt
   53 px (`ItemSize`, `--epos-rasterzeile`); ↑ ↓ Pos1 Ende bewegen die Wahl (`epos-katalogliste.js`
@@ -127,8 +130,23 @@ Doku-Regeln stehen in [`../CLAUDE.md`](../CLAUDE.md); hier nur Oberflächenspezi
   `Katalogkopie.Duplizieren` (Kern, alle Spalten außer ID, Bezeichner, `ReadOnly`, `ReadOnly = 0`,
   eine Transaktion) — nie durch Überschreiben.
 - **Die Fußleiste einer Verwaltung ohne Arbeitsstand ordnet sich Speichern · Verwerfen ·
-  Füller/Statuszeile · Neu… · Duplizieren… · Löschen · Beenden** (Konzept Knopfleisten); Kreuz und
-  Esc wirken wie Beenden, geänderte Felder halten Zeilenwechsel, Neu…, Duplizieren… und Beenden an.
+  Füller/Statuszeile · Neu… · Beenden** (Konzept Knopfleisten); Duplizieren… und Löschen stehen
+  nicht mehr in der Fußleiste, sondern in der `Auswahlleiste` (siehe unten). Kreuz und Esc wirken
+  wie Beenden, geänderte Felder halten Zeilenwechsel, Neu… und Beenden an.
+- **Zeilenhandlungen stehen in der AUSWAHLLEISTE, nicht in der Fußleiste:** Baustein
+  `Auswahlleiste` nennt zuerst, worauf sie wirkt — die Fokuszeile oder „n gewählt" —, bietet
+  Vergleichen, Duplizieren… und Löschen als Daten (Text, Rückruf, kleinste/größte Zeilenzahl,
+  Sperrgrund je Zeile); eine Handlung außerhalb ihrer Zeilenzahl ist weich gesperrt und nennt den
+  Grund, „Auswahl aufheben" nur bei gesetzten Kästchen. Im breiten Fenster steht sie über dem
+  Stammblatt, im schmalen über der Liste.
+- **Der gewählte Satz steht im STAMMBLATT, nicht mehr im Detailblock:** Baustein `Stammblatt` mit
+  Kopf (Name, Herkunft samt Kennzeichen, Kennzahlen), steckbaren `Stammblattgruppe`n (feste
+  Gruppen Kenndaten, Kosten, Alle Daten, dazu dialogspezifische wie Kennlinie oder Wochenprofil),
+  Fuß mit geänderter Feldzahl, Verwerfen, Speichern. Ab zwei gewählten Zeilen zeigt es die
+  `Vergleichstabelle` statt der Felder der Fokuszeile.
+- **Mehrfachwahl über eine KÄSTCHENSPALTE:** `Katalogliste` trägt eine eigene Spalte für das
+  Kästchen (Kopfkästchen = alle sichtbaren), die Leertaste setzt das Kästchen der Fokuszeile,
+  Strg-Klick markiert weiter — ohne Obergrenze der Zeilenzahl.
 - **Ein PARAMETERBLOCK steht im `Formularraster`:** Beschriftung neben dem Feld, und ein Feld
   sagt **selbst**, wie lang es ist (`epos-feld--kurz` an Zahlenfeldern, `epos-feld--breit` am
   mehrzeiligen Textfeld; ein `Datumsfeld` nie kurz).

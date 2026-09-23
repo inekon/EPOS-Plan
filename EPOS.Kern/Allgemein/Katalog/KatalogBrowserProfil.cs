@@ -191,13 +191,6 @@ namespace WindowsFormsApplication1
         public bool HatSpeicherweg { get; private set; }
 
         /// <summary>
-        /// Zeichnet die Liste schreibgeschuetzte Saetze grau und fragt beim
-        /// Ueberschreiben nach? Nur das BHKW (Vorlaeufer <c>:202</c> und <c>:418</c>) —
-        /// in der Auslieferungsdatenbank sind dort ALLE Saetze geschuetzt.
-        /// </summary>
-        public bool ZeigtSchreibschutz { get; private set; }
-
-        /// <summary>
         /// Der Schluessel des Infoknopfs — die ZEILE LINKS in <c>help_mapping.txt</c>
         /// (<c>Form_X.btn_Help</c>), nicht das Ziel rechts. Die Zuordnung bleibt damit
         /// unveraendert, obwohl die Maske dahinter nicht mehr existiert; dasselbe
@@ -336,6 +329,30 @@ namespace WindowsFormsApplication1
         public const string FeldKdir = "KDIR";
         public const string FeldKdiff = "KDIFF";
 
+        // -----------------------------------------------------------------
+        // Die Gruppe KOSTEN des Stammblatts (Konzept Administrationsdialoge,
+        // Stufe 3, Vorschlag V9): Das Stammblatt einer Verwaltung teilt die
+        // Felder eines Satzes in "Kenndaten" und "Kosten". Welches Feld ein
+        // Kostenfeld ist, ist Fachwissen und steht deshalb hier, neben den
+        // Schluesseln - nicht in der Oberflaeche.
+        // -----------------------------------------------------------------
+
+        private static readonly HashSet<string> KOSTENFELDER = new HashSet<string>(StringComparer.Ordinal)
+        {
+            FeldInvestitionskosten, FeldWartungskosten, FeldWartungEinheit, FeldNutzungsdauer,
+            FeldInvestitionJeKwel, FeldKostenModul, FeldKostenMontage, FeldKostenLieferung,
+            FeldKostenSchallschutz, FeldKostenAbgasreinigung, FeldWartungJeKwhel
+        };
+
+        /// <summary>
+        /// <b>Gehoert das Detailfeld in die Gruppe „Kosten" des Stammblatts?</b>
+        /// (Stufe 3, V9) — Investition, Wartung und Nutzungsdauer, beim BHKW dazu die
+        /// fuenf Kostenposten und die zwei spezifischen Kosten. Alle uebrigen Felder
+        /// stehen unter „Kenndaten".
+        /// </summary>
+        public static bool IstKostenfeld(string schluessel)
+            => schluessel != null && KOSTENFELDER.Contains(schluessel);
+
         // ==================================================================
         // Die vier Auspraegungen
         // ==================================================================
@@ -359,7 +376,6 @@ namespace WindowsFormsApplication1
                         Zweispaltig = false,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Heizkessel, t),
                         HatSpeicherweg = true,
-                        ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_Heizkessel_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_Heizkessel_Admin.Berechnung",
                         BerechnungsSeite = "Heizkessel",
@@ -432,7 +448,6 @@ namespace WindowsFormsApplication1
                         Zweispaltig = true,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Bhkw, t),
                         HatSpeicherweg = true,
-                        ZeigtSchreibschutz = true,
                         HilfeSchluessel = "Form_BHKWAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_BHKWAdmin.Berechnung",
                         BerechnungsSeite = "BHKW",
@@ -540,7 +555,6 @@ namespace WindowsFormsApplication1
                         Zweispaltig = true,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Solarkollektoren, t),
                         HatSpeicherweg = true,
-                        ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_SolarKollektorenAdmin.btn_Help",
                         BerechnungsSchluessel = "Form_SolarKollektorenAdmin.Berechnung",
                         BerechnungsSeite = "Solarthermie",
@@ -606,7 +620,6 @@ namespace WindowsFormsApplication1
                         Zweispaltig = false,
                         Filterprofil = Katalogfilterprofil.Finde(Anlagenart.Pufferspeicher, t),
                         HatSpeicherweg = true,
-                        ZeigtSchreibschutz = false,
                         HilfeSchluessel = "Form_PufferSp_Admin.btn_Help",
                         BerechnungsSchluessel = "Form_PufferSp_Admin.Berechnung",
                         BerechnungsSeite = "Pufferspeicher",

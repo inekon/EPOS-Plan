@@ -9,9 +9,16 @@ gestrichen. **Stufe 1 ist umgesetzt** (23.09.2026, Commits `c8e5f775`, `d9ef80b8
 `Katalograhmen` und in der `Katalogliste`, dazu AD-Q6 im `KatalogBrowserDialog`. **Stufe 2 ist
 umgesetzt** (23.09.2026, Commits `5767e273`, `e2fbb829`, Merge `f6290028`): V4, V10, V11 und V15 in
 `Katalogliste`, `KatalogBrowserDialog` und `ModulKatalogDialog`, dazu AD-Q11 mit dem Kern-Baustein
-`Katalogkopie.Duplizieren`. Das Schema (Abschnitt 3) und die übrigen Vorschläge (Abschnitt 4, Stufen 3
-bis 5) sind noch Vorschlag. Die Reihenfolge der übrigen Stufen steht in Abschnitt 7; was nicht mehr
-Gegenstand ist, fasst Abschnitt 8 zusammen.
+`Katalogkopie.Duplizieren`. **Stufe 3 ist umgesetzt** (23.09.2026, Commits `d0660247`, `d8660fde`): V8,
+V9, V12 und V13 als Bausteine (`Auswahlleiste`, `Stammblatt`, `Vergleichstabelle`), V6 (Kästchenspalte)
+und V3 (Stammblatt neben der Liste) in A1 bis A3 und A5 — Heizkessel als Pilot, dieselbe Komponente für
+BHKW, Solarkollektoren, Pufferspeicher, Wärmepumpe (mit Gruppe Kennlinie), PV-Module, Wechselrichter,
+Stromspeicher und Bedarfsprofile. Offen bleiben V14 an den einlesenden Verwaltungen (A4, A6 bis A8) und
+V16 an den Sonderlisten (A9 bis A11, Stufe 4/5), dazu einzelne Reste aus Stufe 3 (Abschnitt 7). Die
+Auswahlleiste steht im breiten Fenster über dem Stammblatt statt über der Liste — Abweichung vom
+Schema, Begründung in 3.6 Punkt 7. Das Schema (Abschnitt 3) gilt als umgesetzter Stand für A1 bis A3
+und A5, als Vorschlag für die übrigen Komponenten. Die Reihenfolge der übrigen Stufen steht in
+Abschnitt 7; was nicht mehr Gegenstand ist, fasst Abschnitt 8 zusammen.
 **Anlass:** Anwender, 22.09.2026, mit zwei Screenshots (Dialog „Administration Heizkessel", Menü
 „Administration"): „Die Administrationsdialoge haben ein benutzerunfreundliches Schema und Bedienung
 (Beispiel Heizkessel). Insbesondere die verschachtelten Scrollbars sind nicht gut passend. Die Auswahl
@@ -154,6 +161,10 @@ Fensters. Die Liste braucht die ganze Breite nur, weil sie alle Spalten zeigt �
 mindestens 150 px. *Betroffen:* `Katalograhmen` einmal, damit die Verwaltungen; die iOS-Hülle erbt die
 schmale Anordnung. *Aufwand:* M. *Abhängig:* Katalogprobe mit den Fällen 1 088 × 624 und 400 × 624.
 *Entschieden:* AD-Q1 (ersetzt „Liste über die ganze Breite, Eingabe darunter").
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5 (Heizkessel, BHKW, Solarkollektoren, Pufferspeicher,
+Wärmepumpe, PV-Module, Wechselrichter, Stromspeicher, Bedarfsprofile); A4, A6 bis A8 (V14) und A9 bis
+A11 (V16) stehen noch aus. Die Auswahlleiste steht dabei breit über dem Stammblatt statt über der
+Liste (Abweichung, 3.6 Punkt 7).
 
 **V4 — Die Zeile ist die Wahl.** *Was:* Klick oder Berührung auf die Zeile wählt, ↑ ↓ Pos1 Ende bewegen
 die Wahl (ein Tabulatorhalt für die Liste), die gewählte Zeile trägt Fläche und linken Balken und
@@ -178,6 +189,9 @@ Herstellerimport mit Hunderten Sätzen ist Aufräumen Zeile für Zeile keine Bed
 `Katalogliste` (Mehrfachmodus und Vergleich sind da), alle Verwaltungen. *Aufwand:* M. *Abhängig:* V4,
 Baustein `Zeilenmarkierung`. *Entschieden:* mit Variante B (6.1); die Sammelübernahme ins Projekt aus
 AD-Q4 ist nicht mehr Gegenstand (Abschnitt 8).
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5: Kästchenspalte mit Kopfkästchen, Leertaste und
+Strg-Klick, ohne Obergrenze; Vergleichen zeigt zwei bis drei Sätze im Stammblatt (V12), ab vier die
+breite Überlagerung.
 
 **V7 — Suche und Filter: Bestand, eine Ergänzung.** *Was:* Suchfeld über alle Spalten, Trefferzahl,
 Trichter im Spaltenkopf und „Filter zurücksetzen" bleiben, wie im Konzept Katalogfilter entschieden;
@@ -202,7 +216,7 @@ Reihenfolge und ihr Verhalten sind überall gleich. Mockup:
 | **1 Titelzeile** | Titel, Info, ✕ | Titel links, Info (Wiki) daneben, `Schliesskreuz` rechts außen. Das Kreuz steht beim Titel: Trägt eine `Ueberlagerung` den Titel, trägt sie auch das Kreuz, die eingebettete Komponente dann keins | nur der Titeltext |
 | **2 Werkzeugleiste** | Suche, Trefferzahl | Suche über alle Spalten (`*` und `?`), Trefferzahl, „Filter zurücksetzen". Sortierpfeil und Trichter bleiben im Spaltenkopf (Konzept Katalogfilter 5.6) | ein Schalter, der einen Trichter setzt (Wärmepumpen: „nur mit Kühlfunktion" legt „>0" in die Spalte Kühlleistung) — nie ein zweiter Filterweg |
 | **3 Liste** | ein Rollbereich | Kästchenspalte für die Mehrfachwahl; die Zeile ist die Wahl, die Fokuszeile zeigt das Stammblatt (V4); Spalten nach Rang, nie waagerecht rollend (V2); das Schloss hinter dem Bezeichner (3.4) | die Spalten und ihr Rang (Profil im Kern) |
-| **4 Auswahlleiste** | Handlungen an Zeilen | steht über der Liste, sobald eine Zeile gewählt ist, und nennt zuerst, worauf sie wirkt: die Fokuszeile beim Namen oder „n gewählt". Ein Knopf, der gerade nicht geht, ist weich gesperrt (`aria-disabled`) und nennt den Grund im Kurztext; „Auswahl aufheben" nur bei gesetzten Kästchen | welche Handlungen: Vergleichen, Duplizieren, Löschen… |
+| **4 Auswahlleiste** | Handlungen an Zeilen | steht, sobald eine Zeile gewählt ist, im breiten Fenster über dem Stammblatt, im schmalen über der Liste (3.6 Punkt 7), und nennt zuerst, worauf sie wirkt: die Fokuszeile beim Namen oder „n gewählt". Ein Knopf, der gerade nicht geht, ist weich gesperrt (`aria-disabled`) und nennt den Grund im Kurztext; „Auswahl aufheben" nur bei gesetzten Kästchen | welche Handlungen: Vergleichen, Duplizieren, Löschen… |
 | **5 Stammblatt** | Felder der Fokuszeile | ab 900 px Dialogbreite rechts (`clamp(340px, 36 %, 440px)`), darunter als Blatt über Werkzeugleiste und Liste (AD-Q1). Kopf mit Name, Herkunft (Auslieferungssatz mit Schloss oder eigener Satz) und drei Kennzahlen; Gruppen „Kenndaten", „Kosten", „Alle Daten" (Aufklapper); Fuß „n Felder geändert · Verwerfen · Speichern" (AD-Q6). Ab zwei gewählten Zeilen zeigt es die Vergleichstabelle (V12). Auslieferungssätze nur lesbar, mit Hinweis im Fuß (V13). Rollt allein, falls nötig | eine bis vier steckbare Gruppen: Kennlinie, Jahresverlauf, Wochenprofil, Tagesprofil, Ganglinie, Hülle, Herkunft; bei der Lastspitzenkappung Speicher, Schwelle, Ergebnis |
 | **6 Fußleiste** | Handlungen am Dialog | links Neu… und Import…, dann die Statuszeile, Füller, zuletzt der eine primäre Knopf „Beenden" (Konzept Knopfleisten, V15) | ob es Neu… und Import… gibt und was Import… öffnet |
 
@@ -308,6 +322,13 @@ AD-Q12 hinzugekommen (der frühere A9, der Kostenfaktorenkatalog, steht in Absch
    Lesefluss Parameter → Rechnen → Ergebnis aus dem Entscheid DL-Q2 zu den Knopfleisten bleibt —, und
    der Fuß des Blatts trägt keinen Knopf, weil nichts abgelegt wird. Kein Neu…, kein Duplizieren, kein
    Löschen, kein Schloss; Stromganglinien pflegt die Verwaltung Stromganglinie.
+7. **Die Auswahlleiste steht im breiten Fenster über dem Stammblatt, nicht über der Liste**
+   (Abweichung von 3.1 Zone 4, gültiger Stand seit der Umsetzung 23.09.2026). Grund: Die Liste soll bei
+   1 088 × 624 CSS-Pixeln ihre acht Zeilen behalten (Suchzeile 44 px, Spaltenkopf 53 px); eine
+   Auswahlleiste zusätzlich über der Liste kostete davon eine Zeile. Im schmalen Fenster (unter 900 px)
+   bleibt es bei 3.3: die Auswahlleiste steht über der Liste, das Stammblatt schiebt sich als Blatt
+   darüber. Die Überschrift über der Liste entfällt dafür; bei der Wärmepumpe trägt der Titel den
+   Kurztext, den sie sonst getragen hätte.
 
 
 ## 4 Vorschläge V8 bis V17 — das Schema als Bausteine
@@ -323,6 +344,8 @@ Löschen fragt zurück und nennt die Zeilen, die bleiben (Schloss, in Verwendung
 für alle Zeilenhandlungen, gleich benannt in allen Dialogen; die Sammelleiste der Variante B und
 die Auswahlleiste des schmalen Fensters (V3) werden eins. *Betroffen:* alle elf Komponenten.
 *Aufwand:* M. *Abhängig:* V4, V6, `Zeilenmarkierung`; AD-Q9.
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5; steht dort breit über dem Stammblatt statt über der
+Liste (Abweichung, 3.6 Punkt 7). A4, A6 bis A8 und A9 bis A11 stehen noch aus.
 
 **V9 — Stammblatt mit steckbaren Gruppen.** *Was:* Baustein `Stammblatt` mit Kopf (Name, Herkunft samt
 Schloss, drei Kennzahlen), festen Gruppen „Kenndaten" (`Formularraster`), „Kosten", „Alle Daten"
@@ -334,6 +357,9 @@ gewählten Zeilen tritt die Vergleichstabelle (V12) an seine Stelle. *Warum:* He
 seinen Detailblock selbst — `Katalogfelder`-Block, Einleseblock, lesendes `Formularraster`,
 Stundenfelder, Parameterblock. *Betroffen:* alle elf. *Aufwand:* L. *Abhängig:* V3, AD-Q6; Diagramme
 als `DiagrammSvg` mit Modell aus dem Kern.
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5, mit den Gruppen Kenndaten, Kosten, Alle Daten sowie
+dialogspezifisch Kennlinie (Wärmepumpe) und Wochenprofil (Bedarfsprofile); A4, A6 bis A8 und A9 bis
+A11 stehen noch aus.
 
 **V10 — Kennzeichen-Baustein: das Schloss.** *Was:* Baustein `Kennzeichen` mit genau einer Form: das
 Schloss ohne Wort für einen Auslieferungssatz, klein hinter dem Bezeichner und im Kopf des
@@ -360,6 +386,8 @@ Kennzahlen und legen die Verläufe übereinander, die Gebäudetypen dieselbe Tag
 Lastspitzenkappung rechnet dieselben Parameter über die gewählten Lastgänge. *Warum:* Der Vergleich
 existiert als Überlagerung, die das Bild verdeckt, nach dem man wählt. *Betroffen:* alle
 `Katalogliste`-Wirte; A4, A6 bis A8, A10 und A11 neu. *Aufwand:* M. *Abhängig:* V6, V9.
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5, für zwei bis drei Sätze im Stammblatt; A4, A6 bis A8,
+A10 und A11 stehen noch aus.
 
 **V13 — Auslieferungssätze: lesen, duplizieren, nicht überschreiben.** *Was:* Ein Satz mit `ReadOnly`
 trägt das Schloss an der Zeile; sein Stammblatt zeigt die Felder als Text, nicht als gesperrte
@@ -369,6 +397,9 @@ Löschen ist weich gesperrt. *Warum:* Heute gibt es drei Antworten auf dieselbe 
 (Wärmepumpe, Gebäudetypen), Überschreiben nach Rückfrage (BHKW), gar kein Schutz (der Modulkatalog
 wertet `ReadOnly` nicht aus). *Betroffen:* A1 bis A10 (die Lastspitzenkappung pflegt keinen Katalog).
 *Aufwand:* S bis M. *Abhängig:* V9, V10; AD-Q11.
+**Umgesetzt (23.09.2026)** in A1 bis A3 und A5: Duplizieren, weich gesperrtes Löschen mit Rückfrage,
+Hinweistext im Stammblattkopf. Offen bleibt, die Felder eines Auslieferungssatzes als Text statt als
+gesperrte Eingaben zu zeigen (Nach #447).
 
 **V14 — Import als Handlung im Schema.** *Was:* „Import…" bzw. „Daten einlesen…" steht links in der
 Fußleiste und öffnet die vorhandene Einlesekette als Überlagerung — `GanglinienImportLauf` für
@@ -473,8 +504,8 @@ Menüpunkte, und Schloss, Vergleich und Import lassen sich an ihr zuerst zeigen.
 |---|---|---|---|
 | 1 | ✔ **umgesetzt 23.09.2026** (Commits `c8e5f775`, `d9ef80b8`) — V1 + V2 + V7 im `Katalograhmen` und in der `Katalogliste`: die acht Komponenten im Rahmen (A1 bis A8) auf einmal, Pilot „Heizkessel"; AD-Q6 im `KatalogBrowserDialog` | M + M + S | AD-Q6 |
 | 2 | ✔ **umgesetzt 23.09.2026** (Commits `5767e273`, `e2fbb829`, Merge `f6290028`) — V4 + V11 in `Katalogliste`, `Zeilenwahl`, `Raster` in den acht Verwaltungen; dazu V10 (Schloss) und V15 (Fußleiste); AD-Q11 mit `Katalogkopie.Duplizieren` | M + M + S + S | Stufe 1 |
-| 3 | V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, danach die Gerätekataloge in der Folge des Menüs — BHKW, Wärmepumpen, Solarkollektoren, Stromspeicher, PV Module, Wechselrichter, Pufferspeicher — und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5); dazu aus Stufe 2 zurückgestellt: V6 (Leertaste und Kästchen der Mehrfachwahl), das weiche Sperren beim Löschen eines Auslieferungssatzes (V13), Duplizieren für die Bedarfsprofile und die Änderungserkennung der Wärmepumpenverwaltung | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
-| 4 | V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1) | M | Stufe 3 |
+| 3 | ✔ **umgesetzt 23.09.2026** (Commits `d0660247`, `d8660fde`, Merge `f3957840`) — V8 + V9 + V12 + V13 als Bausteine; Pilot Heizkessel nach dem Mockup-Reiter, dieselbe Komponente für BHKW, Wärmepumpen, Solarkollektoren, Pufferspeicher (A1, A3), PV-Module, Wechselrichter, Stromspeicher (A2) und die Profile Brauchwasser, Prozesswärme, Stromverbraucher (A5); dazu aus Stufe 2 zurückgestellt: V6 (Leertaste und Kästchen der Mehrfachwahl), das weiche Sperren beim Löschen eines Auslieferungssatzes, Duplizieren für die Bedarfsprofile und die Änderungserkennung der Wärmepumpenverwaltung | M + L + M + S | Stufe 2, AD-Q9, AD-Q11 |
+| 4 | V14 an den einlesenden Verwaltungen: Klimadaten (A4) und die drei Zeitreihen (A6 bis A8; A8 trägt den `Katalograhmen` schon seit Stufe 1); dazu aus Stufe 3 zurückgestellt: Schalter „nur mit Kühlfunktion" in der Werkzeugleiste der Wärmepumpenverwaltung, „Import…" in der Fußleiste der Gerätekataloge (Zweitweg zu V14 bei A1 bis A3), direkt bedienbare Bedarfsfelder statt „Ändern…" (A5), eigene Kostengruppe bei der Wärmepumpe, die Felder eines Auslieferungssatzes als Text statt als gesperrte Eingaben (V13) | M | Stufe 3 |
 | 5 | V16 an den Sonderlisten: Gebäude in der Betriebsart Verwaltung (A9), Gebäudetypen (A10), Lastspitzenkappung (A11) | M + M | Stufe 3; für A11 auch Stufe 4 (Importkette als Überlagerung) |
 
 **Warum diese Folge:** Die Gerätekataloge teilen sich zwei Komponenten (A1, A2) und gewinnen am

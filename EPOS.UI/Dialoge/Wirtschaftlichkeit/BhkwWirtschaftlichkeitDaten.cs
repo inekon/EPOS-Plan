@@ -331,6 +331,11 @@ public sealed class BhkwAnlagenstand
     /// sich auf ein Merkflag zu verlassen: Ein Flag kippt schon bei einem
     /// Fokuswechsel oder einem Neuzeichnen, ein Wertvergleich nicht.
     /// </summary>
+    /// <summary>ETAPPE E7c2 (U22): eine Kopie — der Zwischenstand der Überlagerung „Sätze
+    /// und Herkunft", der erst mit „Übernehmen" auf den Arbeitsstand geht. Alle Felder
+    /// sind Werte oder Zeichenketten, eine flache Kopie genügt.</summary>
+    public BhkwAnlagenstand Kopie() => (BhkwAnlagenstand)MemberwiseClone();
+
     public bool Gleicht(KwkgAnlagenAngabe a)
         => Stichtag == a.Stichtag
         && Inbetriebnahme == a.Inbetriebnahme
@@ -456,6 +461,9 @@ public sealed class BhkwVorgabenstand
     /// Schreibzugriff auslösen, und ein Schreiben ohne Änderung überschriebe in
     /// einer Mehrbenutzerlage fremde Änderungen mit dem eigenen geladenen Stand.
     /// </summary>
+    /// <summary>ETAPPE E7c2 (U22): eine Kopie für den Zwischenstand der Überlagerung.</summary>
+    public BhkwVorgabenstand Kopie() => (BhkwVorgabenstand)MemberwiseClone();
+
     public bool Gleicht(WirtschaftlichkeitParameter p)
         => EinspeiseverguetungKwk == p.EinspeiseverguetungKWK
         && KwkgAbschlagNegativ == p.KwkgAbschlagNegativ

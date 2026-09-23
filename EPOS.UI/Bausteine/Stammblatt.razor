@@ -1,0 +1,207 @@
+﻿@* DAS STAMMBLATT (Konzept Administrationsdialoge, Stufe 3: V3, V9, V12, V13;
+   Schema Zone 5).
+
+   WAS ES ERSETZT. Bis Stufe 2 baute jede Verwaltung ihren Detailblock selbst -
+   Katalogfelder-Block, lesendes Formularraster, Feldgruppen - und stellte ihn
+   UNTER die Liste, wo er der Liste die Hoehe nahm (bei 1 088 x 624 blieben ihr
+   drei Zeilen). Das Stammblatt steht NEBEN der Liste (Katalograhmen, ab 900 px
+   Rahmenbreite) und ist in allen Verwaltungen gleich gebaut:
+
+     * KOPF: Name der Fokuszeile, beim Auslieferungssatz das Schloss dahinter,
+       darunter die Herkunft ("Hersteller - Brennstoff - Auslieferungssatz")
+       und bis zu drei Kennzahlen. Ein Auslieferungssatz sagt HIER in Worten,
+       dass er nur lesbar ist und wie man ihn aendert (V13) - der Kurztext am
+       Schloss erreicht eine Beruehrung nicht.
+     * INHALT (rollt allein): zuerst die dialogspezifischen Gruppen (Kennlinie,
+       Wochenprofil ...), dann "Kenndaten" und "Kosten", dann "Alle Daten" (der
+       Aufklapper der Parameteruebersicht) und ein Nachsatz des Wirts. Jede
+       Gruppe ist ein RenderFragment - keine Gabe, keine Gruppe.
+     * FUSS: der Hinweis des Wirts ("2 Felder geaendert", "Speichern oder
+       Verwerfen"); im Vergleich der Satz, dass er nur lesbar ist.
+
+   DER VERGLEICH (V12): Reicht der Wirt Vergleichszeilen herein, tritt die
+   Vergleichstabelle an die Stelle der Gruppen - bei zwei oder drei Saetzen IM
+   Blatt, ab vier in der breiten Ueberlagerung (V6), weil vier Wertespalten
+   neben der Parameterspalte in 440 px nicht passen. Schliessen der
+   Ueberlagerung (Kreuz, Esc) und "‹ Stammblatt von ..." fuehren beide ueber
+   VergleichZurueck zurueck.
+
+   IM SCHMALEN FENSTER steht das Blatt ueber der Liste (V3); "‹ Liste" fuehrt
+   zurueck und steht nur dort (epos-nur-schmal).
+
+   DAS BLATT SCHREIBT NICHTS. Felder, Speichern und Verwerfen gehoeren dem
+   Wirt; er steckt seine Felder als Gruppen herein und haelt ihren Zustand. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+
+<section class="epos-stammblatt@(VergleichImBlatt ? " epos-stammblatt--vergleich" : "")"
+         aria-label="@Texte.Beschriftung">
+    <div class="epos-stammblatt-kopf">
+        @if (ZurListe.HasDelegate)
+        {
+            <button type="button" class="epos-textknopf epos-nur-schmal epos-stammblatt-zurliste"
+                    @onclick="ZurListe">@Texte.ZurListe</button>
+        }
+
+        @if (VergleichImBlatt)
+        {
+            <h2 class="epos-stammblatt-name">@Texte.VergleichTitel</h2>
+            <p class="epos-stammblatt-unter">@string.Format(CultureInfo.CurrentCulture, Texte.VergleichSaetze, Vergleichskoepfe!.Count)</p>
+        }
+        else if (string.IsNullOrEmpty(Name))
+        {
+            <p class="epos-stammblatt-leer">@Texte.Leer</p>
+        }
+        else
+        {
+            <h2 class="epos-stammblatt-name">
+                <span class="epos-stammblatt-nametext" title="@Name">@Name</span>
+                @if (Auslieferung)
+                {
+                    <Kennzeichen Kurztext="@SchlossText" />
+                }
+            </h2>
+            @if (!string.IsNullOrEmpty(Unterzeile))
+            {
+                <p class="epos-stammblatt-unter">@Unterzeile</p>
+            }
+            @if (Auslieferung && Texte.NurLesen.Length > 0)
+            {
+                <p class="epos-stammblatt-schutz">@Texte.NurLesen</p>
+            }
+            @if (Kennzahlen.Count > 0)
+            {
+                <dl class="epos-stammblatt-kennzahlen">
+                    @foreach (Stammblattkennzahl k in Kennzahlen)
+                    {
+                        <div class="epos-stammblatt-kennzahl">
+                            <dt>@k.Name</dt>
+                            <dd>@k.Wert</dd>
+                        </div>
+                    }
+                </dl>
+            }
+        }
+    </div>
+
+    <div class="epos-stammblatt-inhalt">
+        @if (VergleichImBlatt)
+        {
+            <Vergleichstabelle Koepfe="@(Vergleichskoepfe!)" Zeilen="@(Vergleichszeilen!)" Texte="@Texte" />
+            @if (VergleichZurueck.HasDelegate)
+            {
+                <button type="button" class="epos-textknopf epos-stammblatt-zurueck"
+                        @onclick="VergleichZurueck">@ZurueckText</button>
+            }
+        }
+        else if (!string.IsNullOrEmpty(Name))
+        {
+            @Gruppen
+            @if (Kenndaten is not null)
+            {
+                <Stammblattgruppe Titel="@Texte.Kenndaten" KindInhalt="@Kenndaten" />
+            }
+            @if (Kosten is not null)
+            {
+                <Stammblattgruppe Titel="@Texte.Kosten" KindInhalt="@Kosten" />
+            }
+            @AlleDaten
+            @Nachsatz
+        }
+    </div>
+
+    @if (Fusstext.Length > 0 || Fuss is not null)
+    {
+        <div class="epos-stammblatt-fuss">
+            <span class="epos-stammblatt-hinweis" role="status">@Fusstext</span>
+            @Fuss
+        </div>
+    }
+
+    @* AB VIER SAETZEN die breite Ueberlagerung (V6). Sie steht fest im Fenster,
+       nicht im Blatt; ihr Kreuz und Esc fuehren zurueck wie "‹ Stammblatt". *@
+    <Ueberlagerung Offen="@VergleichBreit" Titel="@Texte.VergleichTitel"
+                   Zusatzklasse="epos-ueberlagerung--breit" Geschlossen="VergleichZurueck">
+        <KindInhalt>
+            @if (VergleichBreit)
+            {
+                <Vergleichstabelle Koepfe="@(Vergleichskoepfe!)" Zeilen="@(Vergleichszeilen!)" Texte="@Texte" />
+            }
+        </KindInhalt>
+    </Ueberlagerung>
+</section>
+
+@code {
+    /// <summary>Der Name der Fokuszeile; leer = keine Zeile gewählt.</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>Die Herkunftszeile unter dem Namen („Hersteller · Brennstoff · eigener Satz").</summary>
+    [Parameter] public string Unterzeile { get; set; } = "";
+
+    /// <summary>Ist die Fokuszeile ein Auslieferungssatz? Dann Schloss und Hinweis im Kopf (V13).</summary>
+    [Parameter] public bool Auslieferung { get; set; }
+
+    /// <summary>Der Kurztext am Schloss — derselbe wie an der Zeile.</summary>
+    [Parameter] public string SchlossText { get; set; } = Resource.ADM_SCHLOSS;
+
+    /// <summary>Bis zu drei Kennzahlen im Kopf.</summary>
+    [Parameter] public IReadOnlyList<Stammblattkennzahl> Kennzahlen { get; set; } = Array.Empty<Stammblattkennzahl>();
+
+    /// <summary>Die dialogspezifischen Gruppen (Kennlinie, Wochenprofil …) — sie stehen zuerst.</summary>
+    [Parameter] public RenderFragment? Gruppen { get; set; }
+
+    /// <summary>Der Inhalt der Gruppe „Kenndaten"; ohne ihn keine Gruppe.</summary>
+    [Parameter] public RenderFragment? Kenndaten { get; set; }
+
+    /// <summary>Der Inhalt der Gruppe „Kosten"; ohne ihn keine Gruppe.</summary>
+    [Parameter] public RenderFragment? Kosten { get; set; }
+
+    /// <summary>„Alle Daten" — der Aufklapper der Parameterübersicht, wo es ihn gibt.</summary>
+    [Parameter] public RenderFragment? AlleDaten { get; set; }
+
+    /// <summary>Was nach den Gruppen steht (der Weg „Berechnungsweg …").</summary>
+    [Parameter] public RenderFragment? Nachsatz { get; set; }
+
+    /// <summary>Der Hinweis im Fuß („2 Felder geändert"); leer = keiner.</summary>
+    [Parameter] public string Hinweis { get; set; } = "";
+
+    /// <summary>Knöpfe im Fuß, wo ein Wirt sie dort braucht.</summary>
+    [Parameter] public RenderFragment? Fuss { get; set; }
+
+    /// <summary>„‹ Liste" im schmalen Fenster — ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback ZurListe { get; set; }
+
+    /// <summary>
+    /// Die Köpfe des Vergleichs — je gewähltem Satz sein Name. Zusammen mit
+    /// <see cref="Vergleichszeilen"/> schaltet es das Blatt auf den Vergleich.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Vergleichskoepfe { get; set; }
+
+    /// <summary>Die Zeilen des Vergleichs (<see cref="Vergleichsbau"/>); <c>null</c> = kein Vergleich.</summary>
+    [Parameter] public IReadOnlyList<Vergleichszeile>? Vergleichszeilen { get; set; }
+
+    /// <summary>Zurück zum Stammblatt der Fokuszeile — „‹ Stammblatt von …", Kreuz und Esc der breiten Ansicht.</summary>
+    [Parameter] public EventCallback VergleichZurueck { get; set; }
+
+    /// <summary>Die Beschriftungen — EIN Bündel.</summary>
+    [Parameter] public Stammblatttexte Texte { get; set; } = new();
+
+    /// <summary>Höchstens so viele Sätze vergleicht das Blatt selbst; darüber die breite Ansicht (V6).</summary>
+    public const int IM_BLATT_HOECHSTENS = 3;
+
+    private bool Vergleicht => Vergleichszeilen is not null && Vergleichskoepfe is not null
+                               && Vergleichskoepfe.Count >= 2;
+
+    /// <summary>Steht der Vergleich im Blatt (zwei oder drei Sätze)?</summary>
+    public bool VergleichImBlatt => Vergleicht && Vergleichskoepfe!.Count <= IM_BLATT_HOECHSTENS;
+
+    /// <summary>Steht der Vergleich in der breiten Überlagerung (ab vier Sätzen)?</summary>
+    public bool VergleichBreit => Vergleicht && Vergleichskoepfe!.Count > IM_BLATT_HOECHSTENS;
+
+    private string ZurueckText
+        => string.Format(CultureInfo.CurrentCulture, Texte.VergleichZurueck, Name ?? "");
+
+    /// <summary>Was im Fuß steht: im Vergleich „nur lesbar", sonst der Hinweis des Wirts.</summary>
+    private string Fusstext => VergleichImBlatt ? Texte.VergleichNurLesen : (Hinweis ?? "");
+}

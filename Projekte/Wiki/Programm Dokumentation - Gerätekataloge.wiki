@@ -15,11 +15,11 @@ Alle acht Verwaltungen liegen im Menü '''Administration''':
 == Aufbau der Verwaltung ==
 {{Anker|aufbau}}
 
-'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses; ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten und Pos1/Ende) — und rechts seine Felder, direkt bearbeitbar. ''Speichern'' schreibt die Änderungen in den Satz zurück, ''Verwerfen'' nimmt sie zurück und lädt die Felder des Satzes neu; ''Neu…'' fragt einen Namen ab und legt einen leeren Satz an; ''Duplizieren…'' legt eine eigene Kopie des gewählten Satzes an; ''Löschen'' fragt zuerst nach; ''Beenden'' schließt die Verwaltung, ebenso das Kreuz und Esc. Der Name selbst lässt sich nicht ändern.
+'''Heizkessel, BHKW, Solarkollektoren und Pufferspeicher''' zeigen links die Liste der Katalogsätze — Suche über alle Spalten, ein Trichter je Spalte, wie in jedem Katalog des Hauses; ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten und Pos1/Ende) — und rechts seine Felder im Stammblatt, direkt bearbeitbar; in einem schmalen Fenster schiebt sich das Stammblatt als Blatt über die Liste. Ein Kästchen je Zeile erlaubt die Mehrfachwahl, ein Kästchen im Spaltenkopf wählt alle sichtbaren Sätze; darüber erscheint dann eine Leiste mit ''Vergleichen'', ''Duplizieren…'' und ''Löschen'' für die gewählten Sätze. ''Speichern'' schreibt die Änderungen in den Satz zurück, ''Verwerfen'' nimmt sie zurück und lädt die Felder des Satzes neu; ''Neu…'' fragt einen Namen ab und legt einen leeren Satz an; ''Beenden'' schließt die Verwaltung, ebenso das Kreuz und Esc. Der Name selbst lässt sich nicht ändern.
 
-'''PV-Module, Wechselrichter und Stromspeicher''' fassen Liste und Eingabefelder in einer Maske zusammen: Ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten). ''Speichern'' schreibt sofort, ''Verwerfen'' nimmt ungespeicherte Änderungen zurück, ''Neu…'' fragt einen Namen ab und öffnet eine leere Zeile, ''Duplizieren…'' legt eine eigene Kopie des gewählten Satzes an, ''Löschen'' fragt nach, ''Beenden'' schließt die Maske.
+'''PV-Module, Wechselrichter und Stromspeicher''' fassen Liste und Felder ebenso in Liste und Stammblatt zusammen: Ein Klick auf eine Zeile wählt den Satz (auch mit den Pfeiltasten), ein Kästchen je Zeile erlaubt die Mehrfachwahl mit ''Vergleichen'', ''Duplizieren…'' und ''Löschen'' für die gewählten Sätze. ''Speichern'' schreibt sofort, ''Verwerfen'' nimmt ungespeicherte Änderungen zurück, ''Neu…'' fragt einen Namen ab und öffnet eine leere Zeile, ''Beenden'' schließt die Maske.
 
-'''Wärmepumpen''' führen eine eigene Stammdatenpflege: Liste links, Kenndatenblock rechts, dazu zwei Überlagerungen — ''Kennliniendaten Ansicht/Bearbeiten…'' und ''Modul-Katalog…''. Ein Klick auf eine Zeile wählt den Satz. ''Speichern'' schreibt den gewählten Satz, ''Neu'' legt einen an, ''Duplizieren…'' legt eine eigene Kopie des gewählten Satzes samt Kennlinien an, ''Löschen'' fragt nach, ''Beenden'' schließt die Maske.
+'''Wärmepumpen''' führen eine eigene Stammdatenpflege: Liste links, Stammblatt mit den Kenndaten rechts, darin die Gruppe ''Kennliniendaten…'' als eigene Überlagerung, dazu ''Modul-Katalog…''. Ein Klick auf eine Zeile wählt den Satz; bei ungespeicherten Änderungen hält ein Zeilenwechsel oder ''Beenden'' an und verlangt Speichern oder Verwerfen. ''Speichern'' schreibt den gewählten Satz, ''Verwerfen'' nimmt Änderungen zurück, ''Neu'' legt einen an, ''Duplizieren…'' legt eine eigene Kopie des gewählten Satzes samt Kennlinien an, ''Löschen'' fragt nach und ist gesperrt, solange die Pumpe in einem Projekt verwendet wird (der Grund nennt das Projekt), ''Beenden'' schließt die Maske.
 
 == Heizkessel ==
 {{Anker|heizkessel}}
@@ -37,7 +37,7 @@ Der Heizkesselkatalog führt die Kenndaten von Heizkesseln. Der Editor zeigt:
 
 Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs führt zusätzlich Raumbedarf (m³), Wartungskosten samt ihrer Einheit, Nutzungsdauer (Jahre) und die Emissionsfaktoren CO₂, SO₂, NOx, CO und Staub (je g/MWh) — Herstellerangaben, die die Simulation nicht selbst verwendet: Sie rechnet mit dem Emissionsfaktor des gewählten Energieträgers.
 
-Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste der Verwaltung: ''Speichern'' und ''Verwerfen'' (beide nur bei ungespeicherten Eingaben), ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == BHKW ==
 {{Anker|bhkw}}
@@ -55,7 +55,7 @@ Der BHKW-Katalog führt die Kenndaten von Blockheizkraftwerk-Modulen. Der Editor
 
 Darunter führt eine eigene Knopfleiste zu Investitions-, Betriebs- und Energiekosten. Der Aufklapper ''Alle Daten anzeigen'' des Projektdialogs zeigt zusätzlich die fünf Kostenposten Modul, Montage und Inbetriebnahme, Lieferung, Schallschutzhaube und Abgasreinigung (je €), daraus abgeleitet die Investition je kW elektrisch (nur Anzeige), Wartungskosten (€/kWh elektrisch), Raumbedarf (m³), Nutzungsdauer (Jahre) sowie die Emissionsfaktoren NOx, SO₂, CO, CO₂ und Staub (je g/MWh, Herstellerangaben, ohne Wirkung auf den Rechenweg).
 
-Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Solarkollektoren ==
 {{Anker|solarkollektoren}}
@@ -70,7 +70,7 @@ Der Kollektorkatalog führt die Kenndaten von Sonnenkollektoren samt ihrer Kennl
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Pufferspeicher ==
 {{Anker|pufferspeicher}}
@@ -84,7 +84,7 @@ Der Pufferspeicherkatalog führt die sechs Gerätewerte, mit denen ein Speicher 
 
 Investitionskosten (€) stehen im Aufklapper ''Alle Daten anzeigen'' des Projektdialogs.
 
-Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste der Verwaltung: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Wärmepumpen ==
 {{Anker|waermepumpen}}
@@ -100,7 +100,7 @@ Die Stammdatenpflege der Wärmepumpen führt neben den Kenndaten auch die Heiz- 
 
 Ein Auslieferungssatz trägt das Schloss und steht in der Liste gedimmt; seine Felder und Kennlinien lassen sich nur ansehen, ''Duplizieren…'' legt eine eigene Kopie samt Kennlinien an.
 
-Fußleiste: ''Speichern'', ''Neu'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == PV-Module ==
 {{Anker|pv-module}}
@@ -118,7 +118,7 @@ Der Modulkatalog der Photovoltaik führt eine Zeile je Modul. Einziges Pflichtfe
 * '''Zelltemperatur NOCT''' – in °C.
 * '''Zelltechnologie''' – Auswahl.
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Wechselrichter ==
 {{Anker|wechselrichter}}
@@ -131,7 +131,7 @@ Der Wechselrichterkatalog gliedert sich in drei Gruppen. Die Liste führt einen 
 
 '''Wirkungsgrad''': die Teillastwirkungsgrade bei 5, 10, 20, 30, 50 und 100 % Auslastung, dazu Euro- und Maximalwirkungsgrad — alle als Faktor zwischen 0 und 1, nicht in Prozent —, sowie Standby- und Nachtverbrauch (je in W).
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Stromspeicher ==
 {{Anker|stromspeicher}}
@@ -142,7 +142,7 @@ Der Stromspeicherkatalog führt das Gerät — nicht die im Projekt geplante Spe
 
 '''Gerätetechnik''' (alle sechs Felder dürfen leer bleiben und heißen dann nicht gepflegt): Wirkungsgrad (Round-Trip), Zyklen (zugesichert), Verschleißkosten (€/(kWh·Zyklus)), Leistungskosten (€/kW), Investition fix (€), Standby-Verbrauch (W).
 
-Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Duplizieren…'', ''Löschen'', ''Beenden''.
+Fußleiste: ''Speichern'', ''Verwerfen'', ''Neu…'', ''Beenden''; ''Duplizieren…'' und ''Löschen'' stehen bei den gewählten Sätzen (siehe „Aufbau der Verwaltung").
 
 == Import ==
 {{Anker|import}}
@@ -159,7 +159,7 @@ Ein Katalogsatz wird nie unmittelbar im Projekt verwendet: Die Übernahme im Erz
 == Schreibschutz und Löschen ==
 {{Anker|schreibschutz}}
 
-Sätze der Auslieferung tragen ein Schloss, stehen in der Liste gedimmt und sind nur lesbar; keine Verwaltung lässt sie speichern, löschen oder umbenennen. ''Duplizieren…'' legt aus einem solchen Satz einen eigenen, frei bearbeitbaren Satz an (bei der Wärmepumpe samt Kennlinien) und wählt ihn gleich aus. Löschen fragt in jeder Verwaltung zuerst nach und nennt den Bezeichner des Satzes.
+Sätze der Auslieferung tragen ein Schloss, stehen in der Liste gedimmt und sind nur lesbar; keine Verwaltung lässt sie speichern, löschen oder umbenennen. ''Duplizieren…'' legt aus einem solchen Satz einen eigenen, frei bearbeitbaren Satz an (bei der Wärmepumpe samt Kennlinien) und wählt ihn gleich aus. ''Löschen'' fragt zuerst nach und nennt den oder die Bezeichner der gewählten Sätze; über die Kästchen der Liste lassen sich mehrere Sätze auf einmal wählen und gemeinsam löschen.
 
 == Dubletten ==
 {{Anker|dubletten}}

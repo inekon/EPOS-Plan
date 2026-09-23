@@ -1,0 +1,147 @@
+﻿@* DIE AUSWAHLLEISTE (Konzept Administrationsdialoge, Stufe 3, Vorschlag V8;
+   Schema Zone 4).
+
+   EINE STELLE FUER ALLE HANDLUNGEN AN ZEILEN - gleich benannt in allen
+   Verwaltungen: Vergleichen, Duplizieren..., Loeschen. Was ein Wirt anbietet,
+   reicht er als DATEN herein (Auswahlhandlung); die Leiste zeichnet sie,
+   zaehlt und sperrt. Kein Rueckruf, kein Knopf.
+
+   DAS ERSTE WORT SAGT, WORAUF SIE WIRKT (Konzept 3.3): der Name der Fokuszeile
+   oder "3 gewaehlt". Sind Kaestchen gesetzt, wirkt jede Handlung auf die
+   gewaehlten Zeilen, sonst auf die Fokuszeile - die Leiste zaehlt danach, und
+   eine Handlung ausserhalb ihrer Zeilenzahl ist WEICH gesperrt: aria-disabled,
+   der Grund im Kurztext, und ein Klick meldet ihn ueber Gesperrt (Hausregel
+   "Bedienung": ein gesperrter Knopf, der seinen Grund erklaeren soll, ist nie
+   disabled). HART gesperrt (disabled) ist nur, was im Lesemodus des Wirts gar
+   nicht geht.
+
+   "AUSWAHL AUFHEBEN" STEHT NUR BEI GESETZTEN KAESTCHEN - und nur hier: Esc
+   bleibt Beenden. Ohne Kaestchen steht an seiner Stelle der leise Hinweis, dass
+   es sie gibt.
+
+   OHNE FOKUSZEILE (leere oder weggefilterte Liste) steht eine leise Zeile an
+   ihrem Platz, damit die Liste nicht springt.
+
+   "STAMMBLATT ›" ist der Weg des schmalen Fensters (V3): Er steht nur unter
+   900 px Rahmenbreite (epos-nur-schmal, Containerabfrage des Katalograhmens)
+   und nur, wenn der Wirt ihn anbietet. *@
+
+@namespace EPOS.UI.Bausteine
+@using System.Globalization
+
+<div class="epos-auswahlleiste" role="region" aria-label="@Beschriftung">
+    @if (Zielzahl == 0)
+    {
+        <span class="epos-auswahlleiste-leise">@LeerText</span>
+    }
+    else
+    {
+        <span class="epos-auswahlleiste-was" title="@Wastext">@Wastext</span>
+
+        @foreach (Auswahlhandlung h in Handlungen)
+        {
+            if (!h.Ausfuehren.HasDelegate) { continue; }
+            string grund = Grund(h);
+
+            @if (h.Aus)
+            {
+                <button type="button" class="epos-knopf epos-auswahlleiste-knopf" disabled>@h.Text</button>
+            }
+            else if (grund.Length > 0)
+            {
+                <button type="button" class="epos-knopf epos-auswahlleiste-knopf" aria-disabled="true"
+                        title="@grund" @onclick="@(() => Gesperrt.InvokeAsync(grund))">@h.Text</button>
+            }
+            else
+            {
+                @* Ein eingerasteter Umschalter ("Vergleichen" waehrend des Vergleichs)
+                   traegt das Bild des Hauses dafuer (epos-knopf--gewaehlt) und
+                   aria-pressed - Farbe allein traegt keine Aussage. *@
+                <button type="button"
+                        class="epos-knopf epos-auswahlleiste-knopf@(h.Gedrueckt == true ? " epos-knopf--gewaehlt" : "")"
+                        aria-pressed="@Gedrueckt(h)" @onclick="h.Ausfuehren">@h.Text</button>
+            }
+        }
+
+        <span class="epos-auswahlleiste-fueller"></span>
+
+        @if (Anzahl > 0 && Aufheben.HasDelegate)
+        {
+            <button type="button" class="epos-textknopf epos-auswahlleiste-aufheben"
+                    @onclick="Aufheben">@AufhebenText</button>
+        }
+        else if (HinweisText.Length > 0)
+        {
+            <span class="epos-auswahlleiste-leise">@HinweisText</span>
+        }
+
+        @if (Stammblatt.HasDelegate)
+        {
+            <button type="button" class="epos-knopf epos-auswahlleiste-knopf epos-nur-schmal"
+                    @onclick="Stammblatt">@StammblattText</button>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Der Name der Fokuszeile; leer, wenn keine Zeile gewählt ist.</summary>
+    [Parameter] public string Fokus { get; set; } = "";
+
+    /// <summary>Wie viele Zeilen über das Kästchen gewählt sind.</summary>
+    [Parameter] public int Anzahl { get; set; }
+
+    /// <summary>Die Handlungen des Wirts, in Anzeigereihenfolge.</summary>
+    [Parameter] public IReadOnlyList<Auswahlhandlung> Handlungen { get; set; } = Array.Empty<Auswahlhandlung>();
+
+    /// <summary>„Auswahl aufheben" — ohne Delegat steht der Knopf nicht da.</summary>
+    [Parameter] public EventCallback Aufheben { get; set; }
+
+    /// <summary>Ein Klick auf einen weich gesperrten Knopf — mit seinem Grund, damit der Wirt ihn meldet.</summary>
+    [Parameter] public EventCallback<string> Gesperrt { get; set; }
+
+    /// <summary>„Stammblatt ›" im schmalen Fenster (V3) — ohne Delegat kein Knopf.</summary>
+    [Parameter] public EventCallback Stammblatt { get; set; }
+
+    /// <summary>„{0} gewählt" — <c>ADM_AW_GEWAEHLT</c>.</summary>
+    [Parameter] public string GewaehltText { get; set; } = Resource.ADM_AW_GEWAEHLT;
+
+    /// <summary>„Auswahl aufheben" — <c>ADM_AW_AUFHEBEN</c>.</summary>
+    [Parameter] public string AufhebenText { get; set; } = Resource.ADM_AW_AUFHEBEN;
+
+    /// <summary>Der leise Hinweis ohne Kästchen — <c>ADM_AW_HINWEIS</c>; leer = keiner.</summary>
+    [Parameter] public string HinweisText { get; set; } = Resource.ADM_AW_HINWEIS;
+
+    /// <summary>Die leise Zeile ohne Fokuszeile — <c>ADM_AW_LEER</c>.</summary>
+    [Parameter] public string LeerText { get; set; } = Resource.ADM_AW_LEER;
+
+    /// <summary>„Stammblatt ›" — <c>ADM_AW_STAMMBLATT</c>.</summary>
+    [Parameter] public string StammblattText { get; set; } = Resource.ADM_AW_STAMMBLATT;
+
+    /// <summary>Name des Bereichs für die Sprachausgabe — <c>ADM_AW_BESCHRIFTUNG</c>.</summary>
+    [Parameter] public string Beschriftung { get; set; } = Resource.ADM_AW_BESCHRIFTUNG;
+
+    /// <summary>
+    /// <b>Auf wie viele Zeilen die Handlungen wirken</b>: die gewählten, sonst die
+    /// Fokuszeile, ohne sie keine.
+    /// </summary>
+    public int Zielzahl => Anzahl > 0 ? Anzahl : (string.IsNullOrEmpty(Fokus) ? 0 : 1);
+
+    /// <summary>Das erste Wort der Leiste: „3 gewählt" oder der Name der Fokuszeile.</summary>
+    private string Wastext => Anzahl > 0
+        ? string.Format(CultureInfo.CurrentCulture, GewaehltText, Anzahl)
+        : Fokus;
+
+    /// <summary>
+    /// Warum die Handlung gerade nicht geht — zuerst die Zeilenzahl, dann der Grund des
+    /// Wirts; leer, wenn sie geht.
+    /// </summary>
+    private string Grund(Auswahlhandlung h)
+    {
+        int n = Zielzahl;
+        if (n < h.Mindestens || n > h.Hoechstens) return h.ZahlGrund.Length > 0 ? h.ZahlGrund : h.Text;
+        return h.Sperrgrund ?? "";
+    }
+
+    private static string? Gedrueckt(Auswahlhandlung h)
+        => h.Gedrueckt is bool b ? (b ? "true" : "false") : null;
+}

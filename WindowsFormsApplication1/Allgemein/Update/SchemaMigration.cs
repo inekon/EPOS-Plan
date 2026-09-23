@@ -3732,8 +3732,8 @@ namespace WindowsFormsApplication1
         /// <para><b>Der Befund.</b> Das Duplizieren eines Projekts — und damit jede
         /// Variante — kopierte <c>Tab_ErgebnisWirtschaftlichkeit</c> samt UNVERSETZTEM
         /// <c>ID_Ergebnis</c>: Die Kopie zeigte auf den Simulationslauf des Quellprojekts.
-        /// Der Kopierlauf lässt den Verweis ab jetzt leer
-        /// (<c>ProjektDuplizierenCtrl.ERGEBNISVERWEISE_LEEREN</c>); dieser Schritt bereinigt
+        /// Der Kopierlauf nimmt keine Ergebnistabelle mehr mit
+        /// (<c>ProjektDuplizierenCtrl.IstErgebnisTabelle</c>); dieser Schritt bereinigt
         /// den Bestand.</para>
         ///
         /// <para><b>REIN DML</b>, eine Anweisung, die Quelle ist
@@ -3816,6 +3816,65 @@ namespace WindowsFormsApplication1
         /// bleibt byte-gleich. <b>Nach Schritt 109</b> ohne Reihenfolgebedingung.</para>
         /// </summary>
         public const int SCHRITT_110_KUEHLUNG_ERGEBNIS = 110;
+
+        /// <summary>
+        /// Schritt 111 — <b>Ersatz und Restwert je Position entkoppelt</b> (Schritt E des
+        /// Analysepapiers Wirtschaftlichkeit § 6, Entscheid A6 vom 20.09.2026, Mockup U39,
+        /// Konzept § 2.13 (3)). Er folgt auf
+        /// <see cref="SCHRITT_110_KUEHLUNG_ERGEBNIS"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DDL</b>, vier Spalten: die nullbaren Kennzeichen
+        /// <c>ErsatzFuehren</c> und <c>RestwertAnsetzen</c> (<c>CHECK (… IN (0,1))</c>) an
+        /// <c>Tab_ProjektWerte</c> und an <c>Tab_KostenVorlagePosition</c> — die Liste
+        /// steht bei <see cref="SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen"/>, EINE
+        /// Quelle für Migration, <c>Werkzeuge/Testdatenbankschema</c> und den Nachweis in
+        /// <c>EPOS.Kern.Tests</c>.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> NULL heißt „wie bisher" — ersetzt wird bei
+        /// abgelaufener Nutzungsdauer, der Restwert steht linear; der Referenzlauf bleibt
+        /// byte-gleich. <b>Wiederholbar:</b> Eine vorhandene Spalte wird übergangen.</para>
+        /// </summary>
+        public const int SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN = 111;
+
+        /// <summary>
+        /// Schritt 112 — <b>die Preisbasis der Trägerkarte als eigener Kartenzustand</b>
+        /// (Schritt F des Analysepapiers § 6, Entscheid ET‑D‑3 Rest, Mockup U32). Er folgt
+        /// auf <see cref="SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN"/> ohne
+        /// Reihenfolgebedingung.
+        ///
+        /// <para><b>DDL und DML</b>: die nullbare Textspalte <c>Preisbasis</c> an
+        /// <c>energy_project_settings</c>
+        /// (<see cref="SchemaKatalog.Schritt112_Preisbasis"/>), dann der einmalige
+        /// Datenteil (<see cref="PreisbasisUebernahme"/>): <c>ID_Umrechnung</c> nach kWh →
+        /// „kWh", sonst die Abrechnungseinheit des Trägers — genau die Basis, die die Karte
+        /// bis hierher beim Öffnen zeigte.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> Kein Rechenweg liest die Spalte; der Referenzlauf
+        /// bleibt byte-gleich. <b>Wiederholbar:</b> Gesetzt wird nur, wo die Spalte leer
+        /// ist.</para>
+        /// </summary>
+        public const int SCHRITT_112_PREISBASIS = 112;
+
+        /// <summary>
+        /// Schritt 113 — <b>der Stammtext der fünf Gase auf Nm³</b> (Schritt G des
+        /// Analysepapiers § 6, Entscheid U‑1 Weg (a) vom 30.08.2026, Freigabe A9 vom
+        /// 20.09.2026 „vor dem nächsten Vorlagenbau"). Er folgt auf
+        /// <see cref="SCHRITT_112_PREISBASIS"/> ohne Reihenfolgebedingung.
+        ///
+        /// <para><b>REIN DML</b> nach dem Muster von Schritt 26a: <c>Einheit</c> „m³" →
+        /// „Nm³" und <c>PreisEinheit</c> → „€/Nm³" an den Brennstoffen 1, 2, 3, 14 und 25
+        /// in <c>Tab_Brennstoff_Stamm</c>, dazu jede Preiszeile ihrer Träger, die noch
+        /// „m³" führt — die Quelle ist <see cref="GaseNormkubikmeter"/>.</para>
+        ///
+        /// <para><b>Brennstoff 24 „Sonstige"</b> (Entscheid E7c2‑Q4, 23.09.2026): Einheit
+        /// „m³" → „kWh", Preiseinheit → „€/kWh" — reiner Stammtext; Träger, Preiszeilen und
+        /// Projektzuordnungen des Brennstoffs werden nur gezählt (Protokoll) und bleiben.</para>
+        ///
+        /// <para><b>Ergebnisneutral:</b> kein Zahlenwert; kein Rechenweg liest den
+        /// Stammtext. Die nächste Zuordnung eines Gasträgers findet danach ihre
+        /// Identitätsregel. <b>Wiederholbar.</b></para>
+        /// </summary>
+        public const int SCHRITT_113_GASE_NM3 = 113;
 
         /// <summary>Best-effort-Protokoll neben der Datenbank.</summary>
         public const string PROTOKOLL_DATEI = "migration_protokoll.txt";
@@ -5323,6 +5382,47 @@ namespace WindowsFormsApplication1
                         "Der Kuehlkanal haette keine Ergebnisspalten. KEIN Rechenergebnis " +
                         "aendert sich - die Spalten bleiben leer, bis ein Lauf Kaelte rechnet.",
                         Schritt_110_KuehlungErgebnis),
+
+            // ENTSCHEID A6 (20.09.2026, Schritt E) - Ersatz und Restwert je Position
+            // entkoppelt. REIN DDL; die Quelle ist
+            // SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen. Er steht NACH 110 ohne
+            // Reihenfolgebedingung - er legt allein vier neue Spalten an, die kein anderer
+            // Schritt liest oder schreibt.
+            new Schritt(SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN,
+                        "Tab_ProjektWerte und Tab_KostenVorlagePosition bekommen die " +
+                        "Kennzeichen ErsatzFuehren und RestwertAnsetzen",
+                        "Ersatzbeschaffung und Restwert lassen sich je Kostenposition getrennt " +
+                        "fuehren: Jede Position (und jede Vorlagenposition) bekommt zwei " +
+                        "Kennzeichen - leer = wie bisher, ja, nein. ERGEBNISNEUTRAL: Alle " +
+                        "Zeilen stehen auf leer, und leer rechnet wie bisher.",
+                        Schritt_111_ErsatzRestwertKennzeichen),
+
+            // ENTSCHEID ET-D-3, offener Rest U32 (Schritt F) - die Preisbasis der
+            // Traegerkarte als eigener Kartenzustand. DDL UND DML; die Quellen sind
+            // SchemaKatalog.Schritt112_Preisbasis und PreisbasisUebernahme. Er steht NACH
+            // 111 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_112_PREISBASIS,
+                        "energy_project_settings bekommt die Preisbasis der Traegerkarte",
+                        "Die Traegerkarte merkt sich die gewaehlte Preisbasis (kWh oder die " +
+                        "Abrechnungseinheit) in einer eigenen Spalte statt ueber die " +
+                        "Umrechnungsregel - die Wahl kWh bleibt so auch dann stehen, wenn der " +
+                        "Brennstoff keine Regel nach kWh fuehrt. Jede Zeile bekommt einmalig " +
+                        "die Basis, die die Karte bis dahin beim Oeffnen zeigte. " +
+                        "ERGEBNISNEUTRAL: Die Preisbasis ist eine Eingabehilfe, gerechnet wird " +
+                        "unveraendert mit dem Basiswert je Abrechnungseinheit.",
+                        Schritt_112_Preisbasis),
+
+            // ENTSCHEID U-1 Weg (a), Freigabe A9 (Schritt G) - der Stammtext der fuenf
+            // Gase auf Nm3, dazu der Brennstoff 24 auf kWh (E7c2-Q4). REIN DML; die Quelle
+            // ist GaseNormkubikmeter. Er steht NACH 112 ohne Reihenfolgebedingung.
+            new Schritt(SCHRITT_113_GASE_NM3,
+                        "Tab_Brennstoff_Stamm: Einheit der fuenf Gase auf Nm3",
+                        "Der Brennstoffstamm der fuenf Gase (Stadtgas, Erdgas LL, Erdgas E, " +
+                        "Biogas, Wasserstoff) nennt seine Einheit Nm3 statt m3 - wie seine " +
+                        "Energietraeger seit jeher. Die naechste Zuordnung eines Gastraegers " +
+                        "findet damit ihre Umrechnungsregel. Der Brennstoff Sonstige (24) fuehrt " +
+                        "kWh statt m3. ERGEBNISNEUTRAL: Kein Zahlenwert aendert sich.",
+                        Schritt_113_GaseNm3),
         };
 
         /// <summary>
@@ -8321,6 +8421,134 @@ namespace WindowsFormsApplication1
                     " Ergebnisspalte(n) des Kuehlkanals angelegt, alle nullbar. KEIN DML: Die " +
                     "Spalten bleiben leer, bis ein Lauf Kaelte rechnet; der Referenzlauf bleibt " +
                     "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 111 - Ersatz und Restwert je Position entkoppelt (Schritt E, A6)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 111 — Anlass, Spalten und Ergebnisneutralität stehen bei
+        /// <see cref="SCHRITT_111_ERSATZ_RESTWERT_KENNZEICHEN"/> und bei
+        /// <see cref="SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen"/>.
+        ///
+        /// <para><b>Reines DDL</b>, dieselbe Schleife wie bei Schritt 105: Spaltenliste aus
+        /// dem Kern, Typdefinition aus <c>StilleDb.SqliteSpaltenTyp</c> — „YESNO_NULL" wird
+        /// <c>INTEGER CHECK (… IN (0,1))</c> ohne <c>NOT NULL</c> und ohne Vorgabe, an der
+        /// STRICT-Tabelle per <c>ADD COLUMN</c> zulässig. <b>Wiederholbar</b>: Eine
+        /// vorhandene Spalte wird übergangen. Danach vergisst der Kern seinen gemerkten
+        /// Spaltenstand, damit derselbe Prozess die Kennzeichen sofort liest.</para>
+        /// </summary>
+        private static bool Schritt_111_ErsatzRestwertKennzeichen(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+            ErsatzRestwertKennzeichen.SpaltenStandVergessen();
+
+            l.Notiz("111: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt111_ErsatzRestwertKennzeichen.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt - " + SchemaKatalog.SPALTE_PW_ERSATZ_FUEHREN + " und " +
+                    SchemaKatalog.SPALTE_PW_RESTWERT_ANSETZEN + " (nullbar, 0/1) an " +
+                    SchemaKatalog.TAB_PROJEKTWERTE + " und " + SchemaKatalog.TAB_KOSTENVORLAGEPOSITION +
+                    ". KEIN DML: Alle Zeilen stehen auf leer - Ersatz und Restwert rechnen " +
+                    "wie bisher; der Referenzlauf bleibt byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 112 - die Preisbasis als eigener Kartenzustand (Schritt F, ET-D-3, U32)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 112 — Anlass, Spalte und Datenteil stehen bei
+        /// <see cref="SCHRITT_112_PREISBASIS"/>, bei
+        /// <see cref="SchemaKatalog.Schritt112_Preisbasis"/> und bei
+        /// <see cref="PreisbasisUebernahme"/>.
+        ///
+        /// <para><b>Erst DDL, dann DML</b> — der Datenteil schreibt in die Spalte, die
+        /// derselbe Schritt eben angelegt hat. <b>Die Nachprobe</b> fragt dasselbe wie der
+        /// Datenteil: Trägt danach noch eine Zeile mit Abrechnungseinheit keine
+        /// Preisbasis, ist der Schritt nicht gelaufen.</para>
+        /// </summary>
+        private static bool Schritt_112_Preisbasis(Lauf l)
+        {
+            int angelegt = 0;
+
+            foreach (SchemaSpalte s in SchemaKatalog.Schritt112_Preisbasis)
+            {
+                if (SqliteSpalteVorhanden(s.Tabelle, s.Name)) continue;
+                if (!SqliteSpalteAnlegen(l, s.Tabelle, s.Name,
+                                         StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition))) return false;
+                angelegt++;
+            }
+
+            PreisbasisUebernahme.Bericht bericht;
+            try { bericht = PreisbasisUebernahme.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = "Datenteil: " + ex.Message;
+                l.Notiz("112: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = PreisbasisUebernahme.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) mit Abrechnungseinheit tragen nach dem Schritt keine Preisbasis.";
+                l.Notiz("112: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("112: " + angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                    SchemaKatalog.Schritt112_Preisbasis.Length.ToString(CultureInfo.InvariantCulture) +
+                    " Spalte(n) angelegt; " + bericht.Text() + ". Die Karte oeffnet mit derselben " +
+                    "Basis wie bisher; kein Rechenweg liest die Spalte - der Referenzlauf bleibt " +
+                    "byte-gleich.");
+            return true;
+        }
+
+        // =================================================================================
+        // Schritt 113 - der Stammtext der fuenf Gase auf Nm3 (Schritt G, U-1, A9)
+        // =================================================================================
+
+        /// <summary>
+        /// Schritt 113 — Anlass und Anweisungen stehen bei
+        /// <see cref="SCHRITT_113_GASE_NM3"/> und bei <see cref="GaseNormkubikmeter"/>.
+        /// <b>Die Nachprobe</b> fragt dasselbe wie die Anweisungen: Führt danach noch eine
+        /// der fünf Stammzeilen oder eine Preiszeile ihrer Träger den alten Text, ist der
+        /// Schritt nicht gelaufen.
+        /// </summary>
+        private static bool Schritt_113_GaseNm3(Lauf l)
+        {
+            GaseNormkubikmeter.Bericht bericht;
+            try { bericht = GaseNormkubikmeter.Ausfuehren(); }
+            catch (Exception ex)
+            {
+                l.LetzterFehler = ex.Message;
+                l.Notiz("113: FEHLER - " + l.LetzterFehler + " (der Schritt ist wiederholbar)");
+                return false;
+            }
+
+            int offen = GaseNormkubikmeter.Offen();
+            if (offen > 0)
+            {
+                l.LetzterFehler = offen.ToString(CultureInfo.InvariantCulture) +
+                                  " Zeile(n) fuehren nach dem Schritt weiter m3.";
+                l.Notiz("113: FEHLER - " + l.LetzterFehler);
+                return false;
+            }
+
+            l.Notiz("113: " + bericht.Text() + ". Reine Semantik - kein Zahlenwert aendert sich; " +
+                    "der Referenzlauf bleibt byte-gleich.");
             return true;
         }
 

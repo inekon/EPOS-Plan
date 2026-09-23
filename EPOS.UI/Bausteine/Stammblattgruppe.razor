@@ -1,0 +1,31 @@
+﻿@* EINE GRUPPE DES STAMMBLATTS (Konzept Administrationsdialoge, Stufe 3, V9):
+   Titel links, Knoepfe, die die Gruppe VERTIEFEN (Kennliniendaten...,
+   Wochenprofil bearbeiten...), rechts im Kopf (Konzept 3.2), darunter der
+   Inhalt. Die festen Gruppen "Kenndaten" und "Kosten" zeichnet das Stammblatt
+   selbst mit diesem Baustein; eine dialogspezifische Gruppe (Kennlinie,
+   Wochenprofil, Jahresverlauf ...) steckt der Wirt mit ihm in den Schlitz
+   Gruppen. *@
+
+@namespace EPOS.UI.Bausteine
+
+<section class="epos-stammblattgruppe" aria-label="@Titel">
+    <h3 class="epos-stammblattgruppe-kopf">
+        <span class="epos-stammblattgruppe-titel">@Titel</span>
+        @if (Kopf is not null)
+        {
+            <span class="epos-stammblattgruppe-knoepfe">@Kopf</span>
+        }
+    </h3>
+    @KindInhalt
+</section>
+
+@code {
+    /// <summary>Der Titel der Gruppe („Kenndaten", „Kennlinie", „Wochenprofil").</summary>
+    [Parameter] public string Titel { get; set; } = "";
+
+    /// <summary>Knöpfe im Kopf der Gruppe — nur solche, die die Gruppe vertiefen.</summary>
+    [Parameter] public RenderFragment? Kopf { get; set; }
+
+    /// <summary>Der Inhalt der Gruppe.</summary>
+    [Parameter] public RenderFragment? KindInhalt { get; set; }
+}

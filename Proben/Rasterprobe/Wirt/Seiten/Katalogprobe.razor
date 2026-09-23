@@ -382,7 +382,6 @@
         Existiert = _ => false,
         Loeschen = n => new KatalogSpeicherErgebnis(true, "", n),
         Speichern = (n, _, __) => new KatalogSpeicherErgebnis(true, "Datensatz gespeichert", n),
-        IstGeschuetzt = _ => false,
         Duplizieren = (id, n) => new KatalogSpeicherErgebnis(true, "", n)
     };
 

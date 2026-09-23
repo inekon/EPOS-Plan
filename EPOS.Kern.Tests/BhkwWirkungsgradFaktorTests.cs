@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -25,9 +26,11 @@ namespace EPOS.Kern.Tests
     /// „EC-POWER XRGI 15" bei 1 016 Volllaststunden.</para>
     /// </summary>
     [Collection("Testdatenbank")]
-    public class BhkwWirkungsgradFaktorTests
+    public class BhkwWirkungsgradFaktorTests : IDisposable
     {
         private readonly TestDatenbank _db = new TestDatenbank();
+
+        public void Dispose() => _db.Dispose();
 
         /// <summary>Das Modul, an dem der Anwender den Fehler gesehen hat.</summary>
         private const string XRGI15 = "EC-POWER XRGI 15";
