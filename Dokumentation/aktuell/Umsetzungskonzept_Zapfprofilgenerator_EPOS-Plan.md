@@ -1,6 +1,6 @@
 # Umsetzungskonzept: Zapfprofilgenerator und Brauchwasserauslegung in EPOS-Plan
 
-**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N10 (Kapitel 11)**
+**Stand 2026-09-23 — Fassung 2 — Umsetzungsentwurf, zur Abnahme durch den Anwender — Nachträge N1–N11 (Kapitel 11)**
 
 Auftrag (Anwender, im Wortlaut): „starte das Umsetzungskonzept".
 
@@ -522,7 +522,8 @@ Mengengerüst, DIN 4708 und Gleichzeitigkeit lesen dieselben Zahlen.
 
 Die **Reihe wird nicht gespeichert** (A2): gespeichert sind Zonen, Parameter, Seed und Herkunft; der
 Lauf rechnet sie neu. Die Liste der Speicher-Nenninhalte ist keine Tabelle, sondern eine Einstellung
-(`IEinstellungen`, Schlüssel `Zapfprofil.Nenninhalte`) mit einer neutralen Vorgabe im Code.
+(`IEinstellungen`, Schlüssel `Zapfprofil.Nenninhalte`) mit einer neutralen Vorgabe aus dem Parametersatz
+(`Speicherauslegung.Nenninhalt.Liste.{k}`), nicht aus dem Code (N11).
 
 **Später:** `Tab_TwwZapfkategorie_STAMM` (T2, Z3: `ID_Nutzungsart`, `Kategorie`, `Volumenstrom_l_min`,
 `Dauer_min`, `Anteil`, `Sigma`, Provenienz, `Status`), `Tab_TwwTyptag_IMPORT` (T3, Z4b: `Klimazone`,
@@ -852,9 +853,10 @@ der Jahresreihe; Energie bei `θ_KW,Auslegung` (Faktor `f_KW,A`, 4.2), nicht bei
 Kaltwasser des Kalendertags. Quellen: (1) Stundenprofil der Zonen am Tag des größten Tagesbedarfs,
 gleichmäßig auf Minuten expandiert — **nur mit Warnbanner „Spitzen unterschätzt"** (VDI-6002-Warnung
 zu Einzeltagesspitzen) und **nie als Empfehlung ohne Rückfrage**; (2) A100-Referenzprofil aus dem
-Katalog, erst nach K1/K8; (3) DIN-4708-Profil, nur Wohnen, ebenfalls ein Normdatensatz und damit
+Katalog, erst nach K1/K8 (bis dahin benannt gesperrt, N11); (3) DIN-4708-Profil, nur Wohnen, ebenfalls ein Normdatensatz und damit
 K1/K8-pflichtig (aus W_z(N) und den Zapfblöcken des Parametersatzes, N10); (4) manuell konstruiert nach dem Verfahren der A100 (Konstruktor, Z2, Ablage als
-Katalogeintrag Status EIGEN); (5) Ecodesign-Zapfprofil, nur Einfamilienhaus, zur Plausibilisierung.
+Katalogeintrag Status EIGEN); (5) Ecodesign-Zapfprofil, nur Einfamilienhaus, zur Plausibilisierung
+(benannt gesperrt bis Z3, N11).
 **Vorgaberegel:** Wohnen → (3), sobald nach K1/K8 zulässig, sonst (4); Nichtwohnen → (4); ohne
 konstruierten Tag öffnet die Auslegung den Konstruktor statt still (1) zu nehmen.
 
@@ -916,7 +918,7 @@ V_DIN = W_z · 1000 / (c_w · Δθ_Speicher) / f_nutz           [l]   (ohne Zusc
 `a_i`, `z`, `p_b`, `w_b`, `W_b` und die Kappung sind Parameter aus `Tab_TwwParameter_STAMM`, nie
 Konstanten der Klasse. Dazu der Hinweis, dass die Kennzahl für Vorlauftemperaturen einer Wärmepumpe
 kaum aussagefähig ist, und nachrichtlich der Rohrnetz-Spitzendurchfluss nach dem Verfahren der
-DIN 1988-300 (Parameter gekapselt; offen, N10).
+DIN 1988-300 (Parameter gekapselt; offen, N10; in der Karte benannt gesperrt, N11).
 
 **Die Empfehlung.** Die drei Werte stehen nebeneinander, nie zu einer Zahl gemischt. **Empfohlen wird
 genau ein Punkt je Topologiegruppe:** bei Speicher der gewählte Punkt der Summenlinie, dazu der
@@ -1001,7 +1003,7 @@ bis zu einer Obergrenze N_GLF (INEKON-Setzung, Parameter `Speicherauslegung.GLF_
 Vorlage und Summenlinie festzulegen, N10) und trägt darüber einen Gültigkeitshinweis; ohne Wannen ist es eingeschränkt.
 
 **Großanlage (`Grossanlage.cs`).** Erkennung aus Speichervolumen (`Nachweis_Volumen_l`, sonst gewählter
-Auslegungspunkt) und Leitungsinhalt (`Leitungsinhalt_l`, sonst `Zirk_Laenge_m` × Parameter Inhalt je
+Auslegungspunkt; die Überlagerung „Auslegung" rechnet ohne übernommenen Punkt, N11) und Leitungsinhalt (`Leitungsinhalt_l`, sonst `Zirk_Laenge_m` × Parameter Inhalt je
 Meter) gegen die Schwellen nach DVGW W 551 als Parameter — keine Schwelle im Text oder Code. Die
 Erkennung steuert die Vorgaben (Mindesttemperatur, Zirkulation ja) und Hinweise.
 
@@ -1202,10 +1204,12 @@ der Katalogdialog bleibt dort geschlossen.
 Alle als `Zeichenmodell` aus dem Kern-Renderer `EPOS.Kern/Allgemein/Bericht/ChartRenderer.cs`, kein neuer
 Renderer: Tagesgang und Wochenprofil `StundenprofileModell` (mehrere Reihen, neu in Z1, N9), Jahresgang gestapelt Zapfung +
 Zirkulation `MonatsStapelModell` (`:3048`, aus den getrennten Monatssummen, 2.2), Dauerlinie
-`JahresverlaufModell`-Familie bzw. `DauerlinieWaermeModell` (`:363`) mit Perzentillinien,
-Wertepaarkurve `KennlinienModell` (`:1467`), Wochendiagramm mit Füllstand `SpeicherbetriebModell`
-(`:3244`). **Neu** sind `StundenprofileModell` (Z1, N9) und — mit Z2 — ein `SummenlinieModell` (kumulierter Bedarf und Versorgung über 1440
-Minuten mit markiertem Abstand); dafür ein Fall in `Proben/ChartProben` samt neuer Messlatte.
+`JahresverlaufModell`-Familie bzw. `DauerlinieWaermeModell` (`:363`) mit Perzentillinien;
+Wertepaarkurve und Wochendiagramm mit Füllstand zeichnet ebenfalls das `SummenlinieModell` (N11).
+**Neu** sind `StundenprofileModell` (Z1, N9) und — mit Z2 — das `SummenlinieModell`, ein Linienbild über
+einer x-Größe mit eigener Teilung, zweiter Achse und Marken: kumulierter Bedarf und Versorgung über 1440
+Minuten mit markiertem Abstand, Wertepaarkurve und maßgebende Woche der Stundenbilanz (N11); dafür Fälle
+in `Proben/ChartProben` samt neuer Messlatte.
 `ZeichenmodellWacheTests` und `DiagrammfarbenWacheTests` gelten.
 
 ### 5.7 Tests der Oberfläche
@@ -1327,7 +1331,9 @@ neutral, N_L erscheint nur als Kriterium. **Keine Messobjektdaten** vor der Frei
 dem Merge-Stand grün), Abweichungen und Festlegungen in N7 bis N9; die Sichtabnahme unter Windows
 steht aus. Z2 Gruppe 1 (Rechenweg der Auslegung) ist auf dem Zweig `z2` umgesetzt, gegengeprüft und
 nachgebessert; Abweichungen und Festlegungen in N10, der Nachzug der Testdatenbank steht mit dem Merge
-aus. Stand je Stufe in der Statusdatei (#438, #443).
+aus. Z2 Gruppe 2 (Oberfläche der Auslegung: DTO, Hülle, Überlagerung „Auslegung" samt Konstruktor,
+`SummenlinieModell` und die Bilder der Auslegung) ist auf demselben Zweig umgesetzt, gegengeprüft und
+nachgebessert; Abweichungen und Festlegungen in N11. Stand je Stufe in der Statusdatei (#438, #443).
 
 **Herleitung des Aufwands (Annahme, ±30 %).** Grundlage sind die Phasen P0–P5 des Konzepts (3.5),
 angepasst an die Architektur und um den Mehrumfang dieses Papiers ergänzt:
@@ -2049,6 +2055,86 @@ genauer fasst; der Hauptteil ist an den betroffenen Stellen mit Verweis „(N10)
 | (i) | Erzeugerart und Werkstoff speichern oder aus dem Projekt ableiten (Schemaschritt oder `ZapfprofilCtrl`) | Agent der Stufe Z4 | Z4 |
 | (e), (g), (i) | Auslieferungswerte für `Speicherauslegung.Speichertemperatur_Vorgabe`, `Speicherauslegung.GLF_Gueltigkeitsgrenze` (an Vorlage und Summenlinie festgelegt) und die Übertragerpaare NA.1/NA.2 ins Katalogpaket | Katalogpflege | mit dem Auslieferungskatalog |
 | (j) | Bezugsart am Bedarfstag (Schemaschritt); der Konstruktor legt seinen Tag bei θ_KW,A des Parametersatzes ab | Agent der Stufe Z2 | Z2, Gruppe 2 bzw. Z4 |
+
+### N11 (23.09.2026) — Umsetzungsbefunde Z2, Gruppe 2 (Oberfläche der Auslegung)
+
+**Anlass.** DTO und Textbündel der Überlagerung „Auslegung", ihre Hülle, die Überlagerung samt
+Konstruktor, das `SummenlinieModell` und die Bilder der Auslegung sind auf dem Zweig `z2` umgesetzt und
+gegengeprüft; die Befunde der Gegenprüfung sind nachgebessert. Wo ein Befund dem Papier widersprach,
+gilt das Papier. Dieser Nachtrag hält fest, wo die Umsetzung vom Papier abweicht oder es genauer fasst;
+der Hauptteil ist an den betroffenen Stellen mit Verweis „(N11)" berichtigt (3.1, 4.5, 4.7, 5.6,
+Kapitel 7). Er enthält **keinen Entscheid** des Anwenders.
+
+**Befunde und Festlegungen:**
+
+- **(a) Diagramme (5.6).** Summenlinie des Bedarfstags, Wertepaarkurve und maßgebende Woche der
+  Stundenbilanz zeichnet EIN neues Modell, `ChartRenderer.SummenlinieModell` (x-Größe mit eigener
+  Teilung, vorzeichenfähige linke Achse, zweite Achse, Marken als Strecke oder Punkt) — nicht
+  `KennlinienModell` und `SpeicherbetriebModell`, die weder eigene x-Stellen noch Marken führen. Die
+  Reihen bildet `ZapfprofilBilder` aus den Ergebnissen des Kerns. `Proben/ChartProben`: vier Maß-, drei
+  Gegen- und drei SVG-Proben, zehn Bilder neu, kein altes geändert; sie stehen noch nicht in der
+  Messlatte (Folgen).
+- **(b) Nenninhalte (3.1).** Die Liste bleibt die Einstellung `Zapfprofil.Nenninhalte`; ihre Vorgabe
+  kommt aus dem Parametersatz (`Speicherauslegung.Nenninhalt.Liste.{k}`, geordnet nach k), nicht aus dem
+  Code — keine Liste im Quelltext (Kapitel 6). Eine ungültige Einstellung oder Vorgabe nennt ein Hinweis
+  (`NENNINHALTE_EINSTELLUNG_UNGUELTIG`, `NENNINHALTE_PARAMETER_UNGUELTIG`); ohne Liste wird nicht gerundet
+  (`NENNINHALTE_FEHLEN`).
+- **(c) Stufe und Schnellauslegung (4.5).** Die Überlagerung öffnet in dieser Fassung stets in der Stufe
+  Einfach (die Gaben der Hülle setzen sie fest); jeder Punkt trägt deshalb die Marke „Schnellauslegung".
+- **(d) Eingaben des Verfahrensvergleichs (4.7).** Ladeleistung (auto oder manuell), Personen,
+  Kennzahl N, nutzbarer Anteil und Zuschlag stehen als Lesezeile über der Tabelle, nicht als Felder; das
+  Muster `Schaetzwert` wirkt im Kern. Der Bezug des Füllstands ist nicht wählbar — er folgt N10 (k) und
+  steht beschriftet in der Kachel.
+- **(e) Quellen des Bedarfstags (4.5).** A100-Referenzprofil und Ecodesign-Zapfprofil stehen in der Wahl
+  benannt gesperrt, solange der Katalog keine Zeile ihrer Art führt: die Zeilen der A100 folgen mit dem
+  Katalogpaket (K1/K8), das Ecodesign-Zapfprofil mit Z3; eine Katalogzeile ihrer Art steht als Katalogtag
+  da. Ein Normtag des Katalogs ist gesperrt, er rechnet als DIN-4708-Profil (N10 (b)). Jeder gesperrte
+  Eintrag trägt seinen eigenen Grund.
+- **(f) Nicht gerechnete Werte benannt (4.5).** Der Rohrnetz-Spitzendurchfluss nach DIN 1988-300 steht in
+  der Karte (c) als gesperrte Zeile mit Grund (N10 (c)); der Konsistenzhinweis (stochastische Spitze
+  gegen die Leistung des Summenlinienpunkts) steht in der Warnliste der Speichergruppe gesperrt — er
+  braucht das Perzentil (Z3).
+- **(g) Vorgaberegel und Stundenprofil (4.5).** Ohne konstruierten Tag öffnet die Überlagerung den
+  Konstruktor, sobald der Fall eintritt — beim Öffnen und nach einer Neuberechnung, die ihn herbeiführt,
+  nicht nach jedem Abbrechen erneut. Ein Tag aus dem Stundenprofil trägt je Gruppe das Warnbanner
+  „Spitzen unterschätzt"; OK fragt vor der Übernahme nach.
+- **(h) Der Punkt ist Ergebnis, nicht Eingabe (4.7, N10 (f)).** Die Überlagerung rechnet ohne
+  übernommenen Punkt; ein alter Punkt — im Arbeitsstand oder gespeichert — steuerte sonst
+  Großanlagenerkennung, Speichertemperatur und Warnliste und damit den neuen Punkt. In ihr erkennt die
+  Großanlage deshalb am Nachweisvolumen, sonst am empfohlenen Volumen; die Regel der Großanlage bleibt im
+  Kern. Der Punkt geht nur mit OK und Speichern in die Projektgrößen. Ändert der Anwender danach eine
+  Zone so, dass sich die Auslegung ändert (neue, doppelte oder entfernte Zone, Nutzungsart,
+  Bezugsgröße, Niveau), ist der Punkt überholt: eine leise Zeile im Zapfprofil sagt es, das Speichern
+  verwirft ihn — auch einen Punkt, den schon der Stand beim Öffnen trug —, ein neues OK der Auslegung
+  setzt ihn wieder.
+- **(i) Laufangaben (4.5 a, N10 (i)).** Erzeugerart und Werkstoff sind in der Überlagerung Laufangaben:
+  gewählt, nicht gespeichert, beim nächsten Öffnen „keine Angabe". Die Erzeugerart schlägt der
+  Anlagenbestand vor, wenn er eindeutig ist; die Zeile unter dem Feld nennt die Herkunft.
+- **(j) Konstruktor (4.5).** Solange der Zapfprofil-Dialog offen ist, trägt der Entwurf die Zeilen, aus
+  denen er entstand; ein erneutes Öffnen des Konstruktors beginnt mit ihnen. Der Arbeitsstand des Kerns
+  trägt nur Ereignisse — öffnet der Anwender das Zapfprofil erneut, beginnt der Konstruktor mit einer
+  Zeile. Den Namen prüft der Konstruktor lesend gegen die Katalogversion und nennt einen freien; der
+  Schreibweg prüft ihn erneut. Jedes Feld der Zeilentabelle trägt „Spalte, Zeile n" als Beschriftung;
+  eine Fehleingabe hält das OK an und wird benannt; die letzte Zeile bleibt, der Versuch nennt den Grund.
+- **(k) Sprache der Sätze (Kapitel 6, N10 (l)).** Beschriftungen, Titel und Gründe der Oberfläche stehen
+  in beiden Sprachen; die Wache `HuellenTextschluesselWacheTests` hält jeden Literalschlüssel der Hüllen
+  gegen beide Ressourcendateien. Die Sätze des Kerns — Rechenweg-Sätze, Hinweistexte der Warnliste,
+  Gründe der Karten und Empfehlungen — bleiben nach N10 (l) deutsch und in invarianter Kultur, auch in
+  der englischen Oberfläche; die Titel der Warnliste übersetzt die Hülle.
+
+**Folgen:**
+
+| Punkt | Folge | Verantwortlich | Stufe |
+|---|---|---|---|
+| (a) | die zehn Auslegungsbilder beim nächsten Kern-Lauf auf ubuntu in die Linux-Messlatte von `Proben/ChartProben` aufnehmen (alle alten Zeilen gleich, zehn neu, keine geändert; Verfahren in `Proben/ChartProben/LIESMICH.md`) | Orchestrator | Merge Z2 |
+| (b) | neutrale Auslieferungswerte der Nenninhaltsliste (`Speicherauslegung.Nenninhalt.Liste.{k}`) ins Katalogpaket | Katalogpflege | mit dem Auslieferungskatalog |
+| (c) | die Marke „Schnellauslegung" nach der Stufe des Dialogs, sobald Erweitert und Experte wählbar sind | Agent der Stufe Z4 | Z4 |
+| (d) | Eingaben des Verfahrensvergleichs als Felder (auto/manuell), Bezug des Füllstands wählbar | Agent der Stufe Z4 | Z4 |
+| (e) | Katalogzeilen der Art A100-Referenzprofil mit dem Katalogpaket; Ecodesign-Zapfprofil als Quelle | Katalogpflege; Agent der Stufe Z3 | nach K1/K8; Z3 |
+| (f) | Konsistenzhinweis mit dem Perzentil; DIN 1988-300 nach Folge (c) von N10 | Agent der Stufe Z3; Folgeposten mit Schemaschritt | Z3; offen |
+| (i) | Erzeugerart und Werkstoff speichern oder ableiten (Folge (i) von N10) | Agent der Stufe Z4 | Z4 |
+| (j) | die Zeilen eines konstruierten Tags über das Schließen des Zapfprofils hinaus tragen (am Arbeitsstand des Kerns oder am Bedarfstag) | Agent der Stufe Z4 | Z4 |
+| (k) | die Sätze des Kerns in Oberflächensprache und -kultur (Kennung und Werte statt fertiger Sätze) | Agent der Stufe Z4 | Z4 |
 
 ---
 
