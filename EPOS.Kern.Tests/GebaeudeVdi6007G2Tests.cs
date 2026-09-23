@@ -105,17 +105,27 @@ namespace EPOS.Kern.Tests
             Assert.Equal(0.0, eAus.SommerlueftungZusatzleitwertWK);
             Assert.Equal((2.0 - 0.7) * 201.0 * 2.75 * 0.34, eEin.SommerlueftungZusatzleitwertWK, 9);
 
+            // Ungekühlt (freier Lauf, E32): Die Sommerlüftung senkt die Überhitzung.
             GebaeudeModellErgebnis a = Vdi6007Rechenweg.Laufen(eAus, 0, 1);
             GebaeudeModellErgebnis b = Vdi6007Rechenweg.Laufen(eEin, 0, 1);
             Assert.Equal(0, a.StundenMitSommerlueftung);
             Assert.True(b.StundenMitSommerlueftung > 0);
-            Assert.True(b.KuehlenergieMwh < a.KuehlenergieMwh);
-            Assert.True(b.Ueberhitzungsstunden <= a.Ueberhitzungsstunden);
+            Assert.True(b.Ueberhitzungsstunden < a.Ueberhitzungsstunden);
             Assert.InRange(b.JahresheizwaermeMwh / a.JahresheizwaermeMwh, 0.98, 1.05);
+
+            // Gekühlt auf 25 °C (Schwelle der Lüftung 22 °C, θ_kuehl − 3 K): Sie senkt den Kühlbedarf.
+            ProjektGebaeudeModel gAus = Vdi6007Probe.Gekuehlt(25.0);
+            ProjektGebaeudeModel gEin = Vdi6007Probe.Gekuehlt(25.0);
+            gEin.Sommerlueftung = true;
+            GebaeudeModellErgebnis c = Vdi6007Rechenweg.Laufen(Vdi6007Probe.EingangGekuehlt(gAus, klima), 0, 1);
+            GebaeudeModellErgebnis d = Vdi6007Rechenweg.Laufen(Vdi6007Probe.EingangGekuehlt(gEin, klima), 0, 1);
+            Assert.True(d.StundenMitSommerlueftung > 0);
+            Assert.True(d.KuehlenergieMwh.Value < c.KuehlenergieMwh.Value);
+            Assert.True(d.Ueberhitzungsstunden <= c.Ueberhitzungsstunden);
             _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                "Sommerlüftung: {0} h; Kühlenergie {1:F3} → {2:F3} MWh; Überhitzung {3} → {4} h; Heizwärme {5:F3} → {6:F3} MWh",
-                b.StundenMitSommerlueftung, a.KuehlenergieMwh, b.KuehlenergieMwh, a.Ueberhitzungsstunden,
-                b.Ueberhitzungsstunden, a.JahresheizwaermeMwh, b.JahresheizwaermeMwh));
+                "Sommerlüftung: {0} h; Überhitzung frei {1} → {2} h; Heizwärme {3:F3} → {4:F3} MWh; gekühlt 25 °C: Kühlenergie {5:F3} → {6:F3} MWh",
+                b.StundenMitSommerlueftung, a.Ueberhitzungsstunden, b.Ueberhitzungsstunden,
+                a.JahresheizwaermeMwh, b.JahresheizwaermeMwh, c.KuehlenergieMwh, d.KuehlenergieMwh));
 
             // Energiebilanz mit wechselndem Lüftungszustand (Zusatzleitwert im Abfluss).
             ErsatzparameterRC p = eEin.Parameter;
@@ -257,7 +267,7 @@ namespace EPOS.Kern.Tests
         [Fact]
         public void Der_Exportsatz_nennt_drei_Reihen_und_neun_Zahlenskalare()
         {
-            GebaeudeModellEingang e = Vdi6007Probe.Eingang(Vdi6007Probe.Gebaeude(), Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang));
+            GebaeudeModellEingang e = Vdi6007Probe.EingangGekuehlt(Vdi6007Probe.Gekuehlt(), Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang));
             GebaeudeModellErgebnis r = Vdi6007Rechenweg.Laufen(e, 2, 4711);
             GebaeudeExportsatz s = GebaeudeErgebnisexport.Satz(r);
 
@@ -273,6 +283,19 @@ namespace EPOS.Kern.Tests
             }, s.Skalare.Select(p => p.Key).ToArray());
             Assert.Equal(4711.0, s.Skalare[0].Value);
             Assert.Equal(r.JahresheizwaermeMwh, s.Skalare[1].Value);
+
+            // Ohne wirksame Kühlung läuft das Gebäude frei (E32): keine Kühlreihe, und die beiden
+            // Kühlskalare fehlen - nicht mit Nullen gefüllt.
+            GebaeudeModellErgebnis frei = Vdi6007Rechenweg.Laufen(
+                Vdi6007Probe.Eingang(Vdi6007Probe.Gebaeude(), Vdi6007Probe.Klima(Vdi6007Probe.Jahresgang)), 2, 4711);
+            GebaeudeExportsatz f = GebaeudeErgebnisexport.Satz(frei);
+            Assert.Equal(new[] { "raumtemperatur_2.csv", "operative_temperatur_2.csv" }, f.Reihen.Select(p => p.Key).ToArray());
+            Assert.Equal(new[]
+            {
+                "Geb[2].ID_Gebaeude", "Geb[2].JahresheizwaermeMwh", "Geb[2].SpitzeKw", "Geb[2].SpitzeTagesmittelKw",
+                "Geb[2].Spitze95Kw", "Geb[2].MittlereRaumtemperaturHeizzeit", "Geb[2].Ueberhitzungsstunden"
+            }, f.Skalare.Select(p => p.Key).ToArray());
+            Assert.Equal(frei.Ueberhitzungsstunden, f.Skalare[6].Value);
 
             // Ohne VDI-Gebäude: kein Satz (der Bestandsordner bleibt byte-gleich).
             Assert.Empty(GebaeudeErgebnisexport.Saetze(new SimulationWaermebedarf()));
@@ -326,7 +349,7 @@ namespace EPOS.Kern.Tests
         {
             if (!_db.Vorhanden) return;
 
-            var summen = new Dictionary<string, double[]>();   // Variante → {Heiz, Kühl, Überhitzung}
+            var summen = new Dictionary<string, double[]>();   // Variante → {Heiz, Raumluft, Überhitzung}
             string[] varianten = { "Basis", "Sommerlüftung", "Infiltration 0,3 + Nutzer 0,4", "Nutzer 0", "Strahlung kurzwellig", "Strahlung kurz- und langwellig" };
             foreach (string v in varianten) summen[v] = new double[3];
             int gebaeude = 0;
@@ -363,8 +386,11 @@ namespace EPOS.Kern.Tests
                         }
                         GebaeudeModellEingang e = GebaeudeModellEingang.Bauen(x, klima, k.WochenendeOrtszeit, k.Laengengrad, k.Breitengrad);
                         GebaeudeModellErgebnis r = Vdi6007Rechenweg.Laufen(e, i, x.ID_Gebaeude);
+                        // Ohne Kühlung laufen die Gebäude frei (E32): keine Kühlreihe, dafür die
+                        // mittlere Raumluft der Nutzungszeit und die Überhitzungsstunden.
+                        Assert.Null(r.KuehlenergieMwh);
                         summen[v][0] += r.JahresheizwaermeMwh;
-                        summen[v][1] += r.KuehlenergieMwh;
+                        summen[v][1] += r.MittlereRaumtemperaturHeizzeit;
                         summen[v][2] += r.Ueberhitzungsstunden;
                     }
                 }
@@ -376,13 +402,14 @@ namespace EPOS.Kern.Tests
             {
                 double[] s = summen[v];
                 _ausgabe.WriteLine(string.Format(CultureInfo.InvariantCulture,
-                    "{0}: Heizwärme {1:F1} MWh ({2:+0.00;-0.00} %), Kühlbedarf {3:F1} MWh ({4:+0.0;-0.0} %), Überhitzungsstunden {5:F0} ({6:+0.0;-0.0} %)",
-                    v, s[0], 100.0 * (s[0] / b[0] - 1.0), s[1], 100.0 * (s[1] / b[1] - 1.0), s[2], 100.0 * (s[2] / b[2] - 1.0)));
+                    "{0}: Heizwärme {1:F1} MWh ({2:+0.00;-0.00} %), mittlere Raumluft der Nutzungszeit {3:F2} °C, Überhitzungsstunden {4:F0} ({5:+0.0;-0.0} %)",
+                    v, s[0], 100.0 * (s[0] / b[0] - 1.0), s[1] / gebaeude, s[2], 100.0 * (s[2] / b[2] - 1.0)));
             }
 
-            // Die Richtung: Sommerlüftung senkt die Kühlung, die Vorgabe 0,3 + 0,4 = 0,7 ist die
-            // Luftwechselrate der gesäten Gebäude, weniger Luftwechsel senkt die Heizwärme.
-            Assert.True(summen["Sommerlüftung"][1] < b[1]);
+            // Die Richtung: Sommerlüftung senkt die Überhitzung des frei laufenden Gebäudes, die
+            // Vorgabe 0,3 + 0,4 = 0,7 ist die Luftwechselrate der gesäten Gebäude, weniger
+            // Luftwechsel senkt die Heizwärme.
+            Assert.True(summen["Sommerlüftung"][2] < b[2]);
             Assert.Equal(b[0], summen["Infiltration 0,3 + Nutzer 0,4"][0], 9);
             Assert.True(summen["Nutzer 0"][0] < b[0]);
             Assert.True(summen["Strahlung kurzwellig"][0] < b[0]);
