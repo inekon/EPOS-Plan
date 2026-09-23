@@ -161,6 +161,43 @@ namespace EPOS.Kern.Tests
         }
 
         /// <summary>
+        /// Umsetzungskonzept Zapfprofilgenerator 5.2: Aus der Verwaltung (Modus Admin) reicht der
+        /// Gebäudekatalog der Brauchwasser-Profilliste keinen Zapfprofil-Behälter — ohne Projekt
+        /// kein Zapfprofil-Knopf; im Projekt (Bearbeiten, Neu) je Öffnen einen frischen.
+        /// </summary>
+        [Fact]
+        public void Aus_der_Verwaltung_reicht_der_Katalog_keinen_Zapfprofil_Behaelter()
+        {
+            if (!_db.Vorhanden) return;
+
+            var alt = Gebaeudewege.BrauchwasserGaben;
+            var gereicht = new List<ZapfprofilBehaelter>();
+            Gebaeudewege.BrauchwasserGaben = (id, zeilen, geaendert, behaelter) =>
+            {
+                gereicht.Add(behaelter);
+                return new Dictionary<string, object>();
+            };
+            try
+            {
+                var admin = (Func<IReadOnlyDictionary<string, object>>)
+                    GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Admin)["BrauchwasserGaben"];
+                var projekt = (Func<IReadOnlyDictionary<string, object>>)
+                    GebaeudeKatalogHuelle.Gaben("", GebaeudeKatalogModus.Bearbeiten)["BrauchwasserGaben"];
+
+                admin();
+                projekt();
+                projekt();
+
+                Assert.Equal(3, gereicht.Count);
+                Assert.Null(gereicht[0]);
+                Assert.NotNull(gereicht[1]);
+                Assert.NotNull(gereicht[2]);
+                Assert.NotSame(gereicht[1], gereicht[2]);
+            }
+            finally { Gebaeudewege.BrauchwasserGaben = alt; }
+        }
+
+        /// <summary>
         /// Die Parametersätze der Hüllen treffen nur <c>[Parameter]</c> ihrer Komponenten — ein
         /// unbekannter Schlüssel bräche erst beim ersten Zeichnen der Überlagerung
         /// (Gegenstück zu <c>ParametersatzTests</c>, das die Fenster der Schale liest).

@@ -69,7 +69,7 @@ namespace WindowsFormsApplication1
                 // eingehaengt hat (Gebaeudewege).
                 ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
                     ? null
-                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser)),
+                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, modus)),
                 ["BrauchwasserFertig"] = new Action<bool>(BrauchwasserFertig),
 
                 ["Texte"] = Texte(),
@@ -249,10 +249,15 @@ namespace WindowsFormsApplication1
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            List<Z_ProjektBrauchwasserModel> ziel)
+            List<Z_ProjektBrauchwasserModel> ziel, GebaeudeKatalogModus modus)
         {
             int projektId = Dienste.Projekt.Id;
-            var zapfprofil = new ZapfprofilBehaelter(projektId);
+
+            // Aus der Verwaltung (Modus Admin) gehoert der Gebaeudekatalog keinem Projekt: Die
+            // Huelle reicht keinen Zapfprofil-Behaelter, der Bedarfsprofil-Dialog zeigt dann weder
+            // Knopf noch Optionsgruppe (Umsetzungskonzept Zapfprofilgenerator 5.2).
+            ZapfprofilBehaelter zapfprofil = modus == GebaeudeKatalogModus.Admin
+                ? null : new ZapfprofilBehaelter(projektId);
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
