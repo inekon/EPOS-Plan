@@ -392,12 +392,21 @@ namespace WindowsFormsApplication1
         /// Vorbelegung in <c>ZapfprofilCtrl.Eingang</c> verteilt sie nur auf Zonen ohne eigene.
         /// Die Bezugsmenge ist hier die gespeicherte; eine Wohnungstabelle zählt über Σ Anzahl.
         /// </summary>
-        internal static bool HatEigeneFlaeche(ZonenStand z, Nutzungsart n)
+        internal static bool HatEigeneFlaeche(ZonenStand z, Nutzungsart n) => EigeneFlaecheM2(z, n).HasValue;
+
+        /// <summary>
+        /// Die EIGENE Fläche der Zone [m²] (<see cref="HatEigeneFlaeche"/>): bei Bezugsart Fläche
+        /// die Bezugsmenge, sonst WE-Zahl · eigene Wohnfläche je WE — dieselbe Rechnung wie
+        /// <see cref="FlaecheM2"/>; <c>null</c> ohne eigene Fläche. Die Vorbelegung des gebundenen
+        /// Gebäudes zieht sie von der Gebäudefläche ab (A8, N8).
+        /// </summary>
+        internal static double? EigeneFlaecheM2(ZonenStand z, Nutzungsart n)
         {
-            if (z == null || n == null) return false;
-            if (n.Bezug == ZapfBezugsart.Flaeche) return true;
-            return WohneinheitenZahl(z, n, z.Bezugsmenge, out _).HasValue
-                   && z.WohnflaecheJeWeM2.HasValue && z.WohnflaecheJeWeM2.Value > 0;
+            if (z == null || n == null) return null;
+            if (n.Bezug == ZapfBezugsart.Flaeche) return z.Bezugsmenge;
+            double? we = WohneinheitenZahl(z, n, z.Bezugsmenge, out _);
+            if (!we.HasValue || !z.WohnflaecheJeWeM2.HasValue || !(z.WohnflaecheJeWeM2.Value > 0)) return null;
+            return we.Value * z.WohnflaecheJeWeM2.Value;
         }
 
         /// <summary>

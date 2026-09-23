@@ -123,6 +123,23 @@ namespace WindowsFormsApplication1
         /// <summary><c>Tab_TwwDin4708Wert_STAMM.Art</c>: Ausstattungsklasse.</summary>
         public const string DIN4708_ART_AUSSTATTUNG = "AUSSTATTUNG";
 
+        /// <summary>
+        /// Wertemenge von <c>Tab_TwwProjekt.Perzentil</c> — EINE Quelle für die CHECK-Klausel der
+        /// DDL und die Prüfung des Schreibwegs (<see cref="Perzentile"/>).
+        /// </summary>
+        public const string PERZENTIL_WERTE = "95,99";
+
+        /// <summary>Untergrenze von <c>Realisierungen</c> und <c>Realisierungen_Auslegung</c> — DDL und Schreibweg.</summary>
+        public const string REALISIERUNGEN_MINDESTENS = "1";
+
+        /// <summary><see cref="PERZENTIL_WERTE"/> als Zahlen.</summary>
+        public static readonly IReadOnlyList<int> Perzentile =
+            System.Array.ConvertAll(PERZENTIL_WERTE.Split(','), s => int.Parse(s, System.Globalization.CultureInfo.InvariantCulture));
+
+        /// <summary><see cref="REALISIERUNGEN_MINDESTENS"/> als Zahl.</summary>
+        public static readonly int RealisierungenMindestens =
+            int.Parse(REALISIERUNGEN_MINDESTENS, System.Globalization.CultureInfo.InvariantCulture);
+
         // =================================================================
         //  Die DDL
         // =================================================================
@@ -372,9 +389,9 @@ namespace WindowsFormsApplication1
             "    \"Weg\" TEXT NOT NULL DEFAULT 'BESTAND' CHECK (\"Weg\" IN ('BESTAND','GENERATOR')),\n" +
             "    \"Jahresreihe_Stochastisch\" INTEGER NOT NULL DEFAULT 0 CHECK (\"Jahresreihe_Stochastisch\" IN (0,1)),\n" +
             "    \"Seed\" INTEGER NOT NULL DEFAULT 1,\n" +
-            "    \"Realisierungen\" INTEGER NOT NULL DEFAULT 10 CHECK (\"Realisierungen\" >= 1),\n" +
-            "    \"Realisierungen_Auslegung\" INTEGER CHECK (\"Realisierungen_Auslegung\" >= 1),\n" +
-            "    \"Perzentil\" INTEGER NOT NULL DEFAULT 99 CHECK (\"Perzentil\" IN (95,99)),\n" +
+            "    \"Realisierungen\" INTEGER NOT NULL DEFAULT 10 CHECK (\"Realisierungen\" >= " + REALISIERUNGEN_MINDESTENS + "),\n" +
+            "    \"Realisierungen_Auslegung\" INTEGER CHECK (\"Realisierungen_Auslegung\" >= " + REALISIERUNGEN_MINDESTENS + "),\n" +
+            "    \"Perzentil\" INTEGER NOT NULL DEFAULT 99 CHECK (\"Perzentil\" IN (" + PERZENTIL_WERTE + ")),\n" +
             "    \"Zirk_Auto\" INTEGER NOT NULL DEFAULT 1 CHECK (\"Zirk_Auto\" IN (0,1)),\n" +
             "    \"Zirk_Methode\" INTEGER NOT NULL DEFAULT 3 CHECK (\"Zirk_Methode\" IN (1,2,3)),\n" +
             "    \"Zirk_Lage\" INTEGER CHECK (\"Zirk_Lage\" IN (1,2)),\n" +

@@ -36,8 +36,17 @@ namespace WindowsFormsApplication1
         /// <summary>Eine Zone trägt die Id einer Zone eines ANDEREN Projekts — sie wird nie still umgehängt.</summary>
         ZoneFremd = 9,
 
-        /// <summary>Ein Wohnungstyp ist ungültig (Anzahl nicht positiv) oder gehört zu einer anderen Zone.</summary>
-        WohnungstypUngueltig = 10
+        /// <summary>
+        /// Ein Wohnungstyp ist ungültig (Anzahl nicht positiv) oder trägt die Id eines Wohnungstyps
+        /// einer ANDEREN Zone; eine unbekannte Id legt eine neue Zeile an.
+        /// </summary>
+        WohnungstypUngueltig = 10,
+
+        /// <summary>Eine Zone verweist auf das Gebäude eines ANDEREN Projekts.</summary>
+        GebaeudeFremd = 11,
+
+        /// <summary>Eine Projektgröße liegt außerhalb ihrer Wertemenge (Perzentil, Methode, Speicherart …).</summary>
+        ProjektUngueltig = 12
     }
 
     /// <summary>Die benannte Ablehnung des Schreibwegs: Grund, betroffene Zone (leer = Projekt) und Klartext.</summary>
@@ -77,7 +86,8 @@ namespace WindowsFormsApplication1
     /// DDL, eine vorhandene behält ihre Größen.</para>
     ///
     /// <para><b>Katalogverweise.</b> Nutzungsart, Tagesgangsatz, Ausstattungsklasse, Bedarfstag
-    /// und Gebäude müssen am Ziel stehen, sonst die benannte Ablehnung. Eine Katalogzeile wird
+    /// und Gebäude müssen am Ziel stehen — das Gebäude im selben Projekt —, sonst die benannte
+    /// Ablehnung; ebenso eine Projektgröße außerhalb ihrer Wertemenge (N8). Eine Katalogzeile wird
     /// hier nie geschrieben: Was eine Zone benutzt, bleibt über
     /// <see cref="TwwNutzungsartCtrl.IstBenutzt"/> gesperrt (3.2).</para>
     /// </summary>
@@ -118,7 +128,8 @@ namespace WindowsFormsApplication1
                                   new DbParam("@projekt", idProjekt));
             if (dz != null) foreach (DataRow r in dz.Rows) bekannteZonen.Add(Ganz(r, "ID"));
 
-            foreach (ZonenStand z in zonen) ZonePruefen(v, z, bekannteZonen);
+            foreach (ZonenStand z in zonen) ZonePruefen(v, idProjekt, z, bekannteZonen);
+            if (stand.Projekt != null) ProjektPruefen(stand.Projekt);
             if (stand.Projekt?.IdBedarfstag != null
                 && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_BEDARFSTAG_STAMM + " WHERE ID = ?",
                           stand.Projekt.IdBedarfstag.Value) == 0)
@@ -203,7 +214,31 @@ namespace WindowsFormsApplication1
         // Prüfen
         // =================================================================================
 
-        private static void ZonePruefen(DbVorgang v, ZonenStand z, HashSet<int> bekannteZonen)
+        /// <summary>
+        /// Die Projektgrößen gegen ihre Wertemengen — vor dem ersten Schreiben, damit eine
+        /// CHECK-Klausel nie als unbenannte Ausnahme mitten im Vorgang greift (N8). Die
+        /// Enum-Größen prüft <see cref="Enum.IsDefined(Type, object)"/>, Perzentil und
+        /// Realisierungen die Wertemengen der DDL aus <see cref="TwwSchema"/>.
+        /// </summary>
+        private static void ProjektPruefen(ProjektStand p)
+        {
+            string grund = null;
+            if (!TwwSchema.Perzentile.Contains(p.Perzentil)) grund = "das Perzentil " + p.Perzentil;
+            else if (p.Realisierungen < TwwSchema.RealisierungenMindestens) grund = "die Zahl der Realisierungen";
+            else if (p.RealisierungenAuslegung.HasValue && p.RealisierungenAuslegung.Value < TwwSchema.RealisierungenMindestens)
+                grund = "die Zahl der Realisierungen der Auslegung";
+            else if (!Enum.IsDefined(typeof(ZapfZirkulationsmethode), p.ZirkMethode)) grund = "die Methode der Zirkulation";
+            else if (p.ZirkLage.HasValue && !Enum.IsDefined(typeof(ZapfLeitungslage), p.ZirkLage.Value))
+                grund = "die Lage der Zirkulationsleitung";
+            else if (!Enum.IsDefined(typeof(ZapfSpeicherart), p.Speicherart)) grund = "die Speicherart";
+            else if (p.BedarfstagQuelle.HasValue && !Enum.IsDefined(typeof(ZapfBedarfstagquelle), p.BedarfstagQuelle.Value))
+                grund = "die Quelle des Bedarfstags";
+            if (grund != null)
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ProjektUngueltig, "",
+                    "Das Zapfprofil kann nicht gespeichert werden — " + grund + " liegt außerhalb der Wertemenge.");
+        }
+
+        private static void ZonePruefen(DbVorgang v, int idProjekt, ZonenStand z, HashSet<int> bekannteZonen)
         {
             if (z == null)
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.ZoneUngueltig, "", "Eine Zone ohne Angaben.");
@@ -241,6 +276,12 @@ namespace WindowsFormsApplication1
                 throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.GebaeudeFehlt, name,
                     "Das Zapfprofil kann nicht gespeichert werden — das Gebäude " + z.IdGebaeude.Value + " der Zone „"
                     + name + "“ gibt es nicht.");
+            if (z.IdGebaeude.HasValue
+                && Anzahl(v, "SELECT COUNT(*) FROM Tab_Gebaeude WHERE ID = ? AND ID_Projekt = ?",
+                          z.IdGebaeude.Value, idProjekt) == 0)
+                throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.GebaeudeFremd, name,
+                    "Das Zapfprofil kann nicht gespeichert werden — das Gebäude " + z.IdGebaeude.Value + " der Zone „"
+                    + name + "“ gehört zu einem anderen Projekt.");
 
             foreach (WohnungstypStand w in z.Wohnungen ?? new WohnungstypStand[0])
             {
@@ -248,6 +289,18 @@ namespace WindowsFormsApplication1
                     throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.WohnungstypUngueltig, name,
                         "Das Zapfprofil kann nicht gespeichert werden — ein Wohnungstyp der Zone „" + name
                         + "“ hat keine positive Anzahl.");
+                // Wie bei den Zonen (ZoneFremd): Die Id eines Wohnungstyps einer ANDEREN Zone wird
+                // nie still als neue Zeile angelegt; eine unbekannte Id legt eine neue an.
+                if (w.Id > 0)
+                {
+                    object zoneDesTyps = v.Skalar("SELECT ID_Zone FROM " + TwwSchema.TAB_TWW_WOHNUNGSTYP + " WHERE ID = ?",
+                                                  new DbParam("@id", w.Id));
+                    if (zoneDesTyps != null && zoneDesTyps != DBNull.Value
+                        && Convert.ToInt32(zoneDesTyps, CultureInfo.InvariantCulture) != z.Id)
+                        throw new ZapfprofilSpeicherException(ZapfSpeicherfehler.WohnungstypUngueltig, name,
+                            "Das Zapfprofil kann nicht gespeichert werden — ein Wohnungstyp der Zone „" + name
+                            + "“ gehört zu einer anderen Zone.");
+                }
                 if (w.IdAusstattung.HasValue
                     && Anzahl(v, "SELECT COUNT(*) FROM " + TwwSchema.TAB_TWW_DIN4708_WERT_STAMM + " WHERE ID = ? AND Art = ?",
                               w.IdAusstattung.Value, TwwSchema.DIN4708_ART_AUSSTATTUNG) == 0)

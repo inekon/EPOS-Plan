@@ -197,15 +197,47 @@ namespace EPOS.Kern.Tests
                 Wohnungen = new[] { new WohnungstypStand { Anzahl = 0 } }
             }));
 
+            // Das Gebäude eines ANDEREN Projekts wird nicht gebunden (N8).
+            int fremdesGebaeude = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM Tab_Gebaeude WHERE ID_Projekt <> ?", new DbParam("@p", PROJEKT)));
+            ZapfprofilSpeicherException gf = Assert.Throws<ZapfprofilSpeicherException>(() => ZapfprofilCtrl.Speichern(PROJEKT,
+                new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() with { IdGebaeude = fremdesGebaeude } }, null)));
+            Assert.Equal(ZapfSpeicherfehler.GebaeudeFremd, gf.Fehler);
+            Assert.Contains("gehört zu einem anderen Projekt", gf.Message);
+
+            // Eine Projektgröße außerhalb ihrer Wertemenge wird benannt abgelehnt, bevor geschrieben
+            // wird — nicht erst von der CHECK-Klausel mitten im Vorgang (N8).
+            ProjektStand vorgabe = ZapfprofilCtrl.ProjektVorgabe();
+            foreach (ProjektStand falsch in new[]
+                     {
+                         vorgabe with { Perzentil = 97 },
+                         vorgabe with { Realisierungen = 0 },
+                         vorgabe with { ZirkMethode = (ZapfZirkulationsmethode)9 },
+                         vorgabe with { Speicherart = (ZapfSpeicherart)9 },
+                         vorgabe with { ZirkLage = (ZapfLeitungslage)9 },
+                         vorgabe with { BedarfstagQuelle = (ZapfBedarfstagquelle)9 }
+                     })
+            {
+                ZapfprofilSpeicherException pu = Assert.Throws<ZapfprofilSpeicherException>(() => ZapfprofilCtrl.Speichern(PROJEKT,
+                    new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ZoneA() }, falsch)));
+                Assert.Equal(ZapfSpeicherfehler.ProjektUngueltig, pu.Fehler);
+            }
+
             Assert.Equal((0L, 0L, 0L), Zeilen());
 
             // Eine Zone eines ANDEREN Projekts wird nie still umgehängt.
             ZapfprofilStand fremd = ZapfprofilCtrl.Speichern(ANDERES_PROJEKT,
-                new ZapfprofilStand(BrauchwasserWeg.Bestand, new[] { ZoneB() }, null));
+                new ZapfprofilStand(BrauchwasserWeg.Bestand, new[] { ZoneB(), ZoneA() with { IdGebaeude = null } }, null));
             Assert.Equal(ZapfSpeicherfehler.ZoneFremd, Grund(PROJEKT, fremd.Zonen[0]));
             Assert.Equal(0L, Anzahl("SELECT COUNT(*) FROM Tab_TwwZone WHERE ID_Projekt = ?", PROJEKT));
             Assert.Equal(ANDERES_PROJEKT, Convert.ToInt32(DataRepository.ExecuteScalar(
                 "SELECT ID_Projekt FROM Tab_TwwZone WHERE ID = ?", new DbParam("@id", fremd.Zonen[0].Id))));
+
+            // Ebenso ein Wohnungstyp einer anderen Zone (N8).
+            long wohnungenVorher = Zeilen().Wohnungen;
+            Assert.Equal(ZapfSpeicherfehler.WohnungstypUngueltig, Grund(PROJEKT, ZoneA() with { Wohnungen = fremd.Zonen[1].Wohnungen }));
+            Assert.Equal(0L, Anzahl("SELECT COUNT(*) FROM Tab_TwwZone WHERE ID_Projekt = ?", PROJEKT));
+            Assert.Equal(wohnungenVorher, Zeilen().Wohnungen);
         }
 
         [Fact]
@@ -336,6 +368,28 @@ namespace EPOS.Kern.Tests
             // Im Rechenweg trägt die Zone die Gebäudefläche als Zonenfläche.
             ZapfprofilErgebnis r = ZapfprofilRechner.Rechnen(e, ZapfprofilCtrl.Katalog());
             Assert.Contains(r.Herkunft, h => h.Zone == "Ohne Ferien" && h.Feld == ZapfFeld.ZONENFLAECHE && h.Wert == 100.0);
+
+            // Gemischte Zonen an einem Gebäude (N8): Die eigene Fläche (6 WE · 20 m²) geht von der
+            // Gebäudefläche ab, der Rest (80 m²) zu gleichen Teilen an die Zonen ohne eigene.
+            ZonenStand eigene = ZoneA() with { Name = "Eigene Fläche", IdGebaeude = gebaeude, WohnflaecheJeWeM2 = 20.0 };
+            ZonenStand rest = ZoneB() with { Name = "Rest", IdGebaeude = gebaeude };
+            Zapfprofileingang gemischt = ZapfprofilCtrl.Eingang(PROJEKT,
+                new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { ohneFerien, eigene, rest }, null), 0, new bool[365]);
+            Assert.Equal(40.0, gemischt.Zonen[0].GebaeudeflaecheM2);
+            Assert.Null(gemischt.Zonen[1].GebaeudeflaecheM2);
+            Assert.Equal(40.0, gemischt.Zonen[2].GebaeudeflaecheM2);
+
+            // Deckt die eigene Fläche das Gebäude (6 · 40 m² ≥ 200 m²), belegt es keine Fläche vor.
+            Zapfprofileingang gedeckt = ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator,
+                new[] { ohneFerien, eigene with { WohnflaecheJeWeM2 = 40.0 } }, null), 0, new bool[365]);
+            Assert.Null(gedeckt.Zonen[0].GebaeudeflaecheM2);
+
+            // Das Gebäude eines anderen Projekts liest der Eingang nicht.
+            int fremdesGebaeude = Convert.ToInt32(DataRepository.ExecuteScalar(
+                "SELECT MIN(ID) FROM Tab_Gebaeude WHERE ID_Projekt <> ? AND Wohnflaeche_gesamt > 0", new DbParam("@p", PROJEKT)));
+            Zapfprofileingang fremd = ZapfprofilCtrl.Eingang(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator,
+                new[] { ohneFerien with { IdGebaeude = fremdesGebaeude } }, null), 0, new bool[365]);
+            Assert.Null(fremd.Zonen[0].GebaeudeflaecheM2);
         }
 
         // =================================================================================

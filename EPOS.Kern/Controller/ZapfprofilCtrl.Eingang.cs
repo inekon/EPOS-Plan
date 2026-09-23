@@ -25,9 +25,12 @@ namespace WindowsFormsApplication1
     /// übernimmt die Ferienzeiten des Gebäudes nur, wenn sie selbst keine trägt und das
     /// Gebäude seine Ferien führt (<c>Ferien</c> über der Schwelle des Gebäudemodells), und
     /// seine Fläche (<c>Wohnflaeche_gesamt</c>, sonst <c>Nutzflaeche</c>) nur, wenn sie
-    /// selbst keine trägt (<see cref="Mengengeruest.HatEigeneFlaeche"/>). Mehrere solche Zonen
-    /// an einem Gebäude teilen seine Fläche zu gleichen Teilen — sie zählt einmal. Gespeichert
-    /// wird davon nichts.</para>
+    /// selbst keine trägt (<see cref="Mengengeruest.HatEigeneFlaeche"/>). Die Gebäudefläche zählt
+    /// einmal (N8): Zonen desselben Gebäudes mit eigener Fläche ziehen diese ab, der Rest geht zu
+    /// gleichen Teilen auf die Zonen ohne eigene Fläche; bleibt kein positiver Rest, belegt das
+    /// Gebäude keine Fläche vor. Gelesen wird nur ein Gebäude DES PROJEKTS
+    /// (<c>Tab_Gebaeude.ID_Projekt</c>); ein fremdes lehnt schon der Schreibweg ab
+    /// (<see cref="ZapfSpeicherfehler.GebaeudeFremd"/>). Gespeichert wird davon nichts.</para>
     /// </summary>
     internal static partial class ZapfprofilCtrl
     {
@@ -57,7 +60,7 @@ namespace WindowsFormsApplication1
             Parametersatz ps = Parameter();
             katalog ??= Katalog();
 
-            IReadOnlyList<ZonenStand> zonen = MitGebaeude(stand.Zonen ?? new ZonenStand[0], katalog);
+            IReadOnlyList<ZonenStand> zonen = MitGebaeude(idProjekt, stand.Zonen ?? new ZonenStand[0], katalog);
 
             return new Zapfprofileingang
             {
@@ -128,19 +131,24 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Zonen mit den Vorbelegungen ihres gebundenen Gebäudes: Ferien, wenn die Zone
-        /// keine trägt, und die Fläche, geteilt unter den Zonen ohne eigene Fläche.
+        /// keine trägt, und die Fläche — Gebäudefläche minus die eigenen Flächen der Zonen
+        /// desselben Gebäudes, geteilt unter den Zonen ohne eigene Fläche (N8).
         /// </summary>
-        private static IReadOnlyList<ZonenStand> MitGebaeude(IReadOnlyList<ZonenStand> zonen,
+        private static IReadOnlyList<ZonenStand> MitGebaeude(int idProjekt, IReadOnlyList<ZonenStand> zonen,
                                                              IReadOnlyList<Nutzungsart> katalog)
         {
             var gebaeude = new Dictionary<int, GebaeudeAngaben>();
             var flaechenteiler = new Dictionary<int, int>();
+            var eigeneFlaechen = new Dictionary<int, double>();
             foreach (ZonenStand z in zonen)
             {
                 if (z?.IdGebaeude == null) continue;
                 int g = z.IdGebaeude.Value;
-                if (!gebaeude.ContainsKey(g)) gebaeude[g] = GebaeudeLesen(g);
-                if (!Mengengeruest.HatEigeneFlaeche(z, Suchen(katalog, z.IdNutzungsart)))
+                if (!gebaeude.ContainsKey(g)) gebaeude[g] = GebaeudeLesen(idProjekt, g);
+                double? eigene = Mengengeruest.EigeneFlaecheM2(z, Suchen(katalog, z.IdNutzungsart));
+                if (eigene.HasValue)
+                    eigeneFlaechen[g] = (eigeneFlaechen.TryGetValue(g, out double s) ? s : 0.0) + eigene.Value;
+                else
                     flaechenteiler[g] = (flaechenteiler.TryGetValue(g, out int n) ? n : 0) + 1;
             }
             if (gebaeude.Count == 0) return zonen;
@@ -156,9 +164,12 @@ namespace WindowsFormsApplication1
                 ZonenStand neu = z;
                 if (a.FerienAktiv && !FerienGesetzt(z))
                     neu = neu with { Ferienbeginn = (int?[])a.Ferienbeginn.Clone(), Ferienende = (int?[])a.Ferienende.Clone() };
-                if (a.FlaecheM2.HasValue && flaechenteiler.TryGetValue(z.IdGebaeude.Value, out int teiler) && teiler > 0
+                double rest = a.FlaecheM2.HasValue
+                    ? a.FlaecheM2.Value - (eigeneFlaechen.TryGetValue(z.IdGebaeude.Value, out double abzug) ? abzug : 0.0)
+                    : 0.0;
+                if (rest > 0 && flaechenteiler.TryGetValue(z.IdGebaeude.Value, out int teiler) && teiler > 0
                     && !Mengengeruest.HatEigeneFlaeche(z, Suchen(katalog, z.IdNutzungsart)))
-                    neu = neu with { GebaeudeflaecheM2 = a.FlaecheM2.Value / teiler };
+                    neu = neu with { GebaeudeflaecheM2 = rest / teiler };
                 ergebnis.Add(neu);
             }
             return ergebnis;
@@ -172,11 +183,14 @@ namespace WindowsFormsApplication1
             internal int?[] Ferienende = new int?[4];
         }
 
-        /// <summary>Fläche und Ferien eines Gebäudes aus <c>Tab_Gebaeude</c>; <c>null</c>, wenn es die Zeile nicht gibt.</summary>
-        private static GebaeudeAngaben GebaeudeLesen(int idGebaeude)
+        /// <summary>
+        /// Fläche und Ferien eines Gebäudes des Projekts aus <c>Tab_Gebaeude</c>; <c>null</c>, wenn
+        /// es die Zeile nicht gibt oder sie zu einem anderen Projekt gehört.
+        /// </summary>
+        private static GebaeudeAngaben GebaeudeLesen(int idProjekt, int idGebaeude)
         {
-            DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ?",
-                                                       new DbParam("@id", idGebaeude));
+            DataTable dt = DataRepository.GetDataTable("SELECT * FROM Tab_Gebaeude WHERE ID = ? AND ID_Projekt = ?",
+                                                       new DbParam("@id", idGebaeude), new DbParam("@projekt", idProjekt));
             if (dt == null || dt.Rows.Count == 0) return null;
             DataRow r = dt.Rows[0];
 
