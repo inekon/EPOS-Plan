@@ -8499,3 +8499,71 @@ Referenzlauf 13/13 PASS gegen R13 (4 145 687 Werte in Toleranz); Push von
 versehentlich auf `main` (Hauptbaum stand auf `main`); `ios_migration_september`
 wurde per Fast-Forward darauf gezogen und `main` auf `origin/main`
 (`591229e1`) zurückgesetzt.
+
+## #457 — Energieträgerverwaltung: Arbeitspreis wahlweise in €/kWh, Preisbasis direkt am Feld (ET-D-4) (23.09.2026)
+
+Auftrag des Anwenders wörtlich: „Der Arbeitspreis soll immer zusätzlich
+in €/kWh wählbar sein (außer €/Mengeneinheit)." Commits `2cd92e16`
+(Energieträger: Preisbasis €/kWh direkt am Arbeitspreis), `a71f2260`
+(KI-Sicht Energieträger: Preisbasis über den Weg der Klappliste), `1421701c`
+(Tests zu ET-D-4), `47a45cef` (Papiere zu ET-D-4); Merge `48717545`.
+
+**Befund.** Die Klappliste „Preisbasis" (Mengeneinheit ↔ kWh, seit
+#446 in `energy_project_settings.Preisbasis` gemerkt) existierte, lag
+aber im standardmäßig zugeklappten Block D „Einheiten und Umrechnung"
+(Entscheid ET‑D‑3). Gespeichert wird weiterhin je Mengeneinheit; kein
+Schemaschritt, Rechenkern unverändert.
+
+**Entscheide.** ET‑D‑4 (neu): Die Preisbasis steht künftig direkt am
+Arbeitspreis im Block „Preis und Heizwert", nicht mehr verborgen im Block D
+„Einheiten und Umrechnung"; die Anordnung aus ET‑D‑3 gilt als abgelöst.
+
+**Umsetzung.** Klappliste steht im Block „Preis und Heizwert" direkt unter
+dem Arbeitspreis („€/Nm³" / „€/kWh", ohne eigene Beschriftung,
+Sprachausgabe „Einheit des Arbeitspreises"); bei nur einer Einheit (Strom,
+Fernwärme, Sonstige) keine Liste; die Liste wird bei jedem Nachziehen neu
+gebaut — ein erst im Dialog eingetragener Heizwert macht €/kWh sofort
+wählbar, ohne Heizwert eine leise Hinweiszeile; fällt der Heizwert bei
+gewählter €/kWh auf 0, geht die Wahl auf die Mengeneinheit zurück und
+zeigt den zuletzt gespeicherten Preis; Formelzeile bei €/kWh „0,0700
+€/kWh × 4,80 kWh/Nm³ = 0,3360 €/Nm³ (gespeichert je Nm³)",
+`ETV_FORMEL_DIREKT_BASIS` entfernt; „Katalogwerte übernehmen" behält
+die Preisbasis; KI-Sicht `EnergietraegerKiSicht` setzt die Preisbasis über
+den Weg der Klappliste (vorher verschob sich der gespeicherte Preis um den
+Faktor Hi). Neue Ressourcen `ETV_FORMEL_JE_KWH`, `ETV_PREISBASIS_ARIA`,
+`ETV_PREISBASIS_OHNE_HEIZWERT` (beide Sprachen), `KI_DLG_ET_PREISBASIS_ERL`.
+
+**Tests.** Voller Lauf 11 845 bestanden, 1 übersprungen, 0 rot (Kern 5 314,
+UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27); Doku-Wachen
+26 grün; Windows-Schale 0 Fehler; Referenzlauf 1030 PASS. Neue Tests:
+`EnergietraegerHuelleTests` (Umschalten und Speichern je Nm³, nachgetragener
+Heizwert, Heizwert auf 0, Katalogübernahme behält Preisbasis, KI ohne
+Wertverschiebung), `EnergietraegerDialogTests` (Lage und aria-label, eine
+Einheit samt Hinweis, Assistent über die Klappliste), Preiskarte de/en.
+
+**Papiere.** Entscheidungsregister Wirtschaftlichkeit
+(`Dokumentation/aktuell/Wirtschaftlichkeit_Kosten/Entscheidungsregister_Wirtschaftlichkeit_EPOS-Plan.md`):
+ET‑D‑4 neu, ET‑D‑3 Anordnung als abgelöst vermerkt;
+`Rechenweg/04_Energiekosten.md` Block A/D; konsolidiertes Konzept §
+2.5 (drei Sätze berichtigt); Mockup `Dialog_Formel_Zahlenprobe.html`
+zwei Stellen; Wiki-Quelle `Projekte/Wiki/Programm Dokumentation -
+Kosten.wiki` (Anker `preisbasis`, `umrechnungsregeln`, `preis-je-kwh`,
+`katalogwerte-uebernehmen`).
+
+**Logbuch-Vorschlag** (Version wie #452, beim Anwender erfragen):
+
+> Der Arbeitspreis eines Energieträgers lässt sich direkt am Feld wahlweise
+> je Mengeneinheit oder in €/kWh eingeben.
+
+**Was offen bleibt.** Katalogkontext merkt die Preisbasis bewusst nicht
+(nur Eingabehilfe, im Entscheidungsregister vermerkt). Nebenbefund:
+`EnergietraegerKiSicht.LeistungspreisMonatlich` setzt nur das Kartenfeld,
+die Oberfläche schreibt den Modus sofort in den Katalog — über den
+Assistenten wird er nie gespeichert (wandert in Welle #458, KI-Maskensteuerung
+der übrigen Masken).
+
+**Gate nach Merge auf `48717545`.** Kern-Filter 0 Fehler; Tests Kern
+5 314, UI 5 594, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R13_Kuehlung`: alle 13 Basisprojekte PASS (4 145 687 Werte in
+Toleranz).
