@@ -1330,4 +1330,34 @@ public class BhkwDialogTests : EposBunitContext
         Assert.Equal("Modul A", zugang.Lesen());
         Assert.False(zugang.Setzbar);
     }
+
+    // =================================================================================
+    // Senken der Anlage (Anwenderentscheid 23.09.2026)
+    // =================================================================================
+
+    /// <summary>Die PROJEKTzeile zeigt ihre Senken — wie im HeizkesselDialog.</summary>
+    [Fact]
+    public void Die_Projektzeile_zeigt_ihre_Senken()
+    {
+        ErzeugerZeile zeile = Zeile(1, "Modul A", 100);
+        zeile.Senken = "Senken: Heizkreis (Heizung + Warmwasser); Prozesswärme";
+        var cut = Aufbauen(zeilen: new List<ErzeugerZeile> { zeile });
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        Assert.Contains(cut.FindAll(".epos-formularraster .epos-herleitung-text"),
+                        e => e.TextContent == zeile.Senken);
+    }
+
+    /// <summary>Ohne Senkentext steht keine Zeile.</summary>
+    [Fact]
+    public void Ohne_Senkentext_steht_keine_Senkenzeile()
+    {
+        var cut = Aufbauen();
+
+        cut.FindAll(".epos-raster")[0].QuerySelectorAll(".epos-anlagenwahl")[0].Click();
+
+        Assert.DoesNotContain(cut.FindAll(".epos-herleitung-text"),
+                              e => e.TextContent.StartsWith("Senken", StringComparison.Ordinal));
+    }
 }

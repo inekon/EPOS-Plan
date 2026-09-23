@@ -717,7 +717,10 @@ namespace WindowsFormsApplication1
                 CarrierId = m.ID_Carrier,
                 Grenzleistung = m.Grenzleistung,
                 Vorlauf = m.Vorlauf,
-                Ruecklauf = m.Ruecklauf
+                Ruecklauf = m.Ruecklauf,
+                // SENKEN (Anwenderentscheid 23.09.2026): die Zeile "Senken: ...", fertig
+                // formuliert im Kern; leer ohne Projekt.
+                Senken = Senkenvorbelegung.Anzeigezeile(m.ID_Projekt, m.ID, m.ID_Type)
             };
         }
 

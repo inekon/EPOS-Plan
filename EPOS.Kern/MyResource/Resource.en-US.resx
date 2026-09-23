@@ -9339,7 +9339,7 @@ They typically stem from a variant copy without this trade and keep entering the
     <value>{0}: Solar thermal without a buffer tank covers process heat only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for process heat.</value>
   </data>
   <data name="SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER" xml:space="preserve">
-    <value>{0}: Solar thermal without a buffer tank covers the heating circuit only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank used for heating.</value>
+    <value>{0}: Solar thermal without a buffer tank covers heating demand only simultaneously; yield above the momentary demand is discarded. Recommendation: a buffer tank.</value>
   </data>
   <data name="SIMWARN_KANAL_OHNE_VERSORGER" xml:space="preserve">
     <value>Channel {0} with {1} MWh/a demand has no supplier: no unit carries a heat sink for this channel. Assign heat sinks in the unit dialog.</value>
@@ -23623,5 +23623,14 @@ Do you want to allow this?</value>
   </data>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, but no power-to-heat ratio ({0}) — no bonus under case 2.</value>
+  </data>
+  <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
+    <value>Heat sinks: {0}</value>
+  </data>
+  <data name="ANL_SENKEN_VORBELEGUNG" xml:space="preserve">
+    <value>{0} (default – no heat sink assigned)</value>
+  </data>
+  <data name="ANL_SENKEN_BEIM_SPEICHERN" xml:space="preserve">
+    <value>{0} (created from the project demand when saved)</value>
   </data>
 </root>

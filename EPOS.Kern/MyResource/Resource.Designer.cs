@@ -1322,6 +1322,33 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (wird beim Speichern aus dem Bedarf des Projekts angelegt) ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_BEIM_SPEICHERN {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_BEIM_SPEICHERN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} (Vorbelegung – keine Senke zugeordnet) ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_VORBELEGUNG {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_VORBELEGUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Senken: {0} ähnelt.
+        /// </summary>
+        public static string ANL_SENKEN_ZEILE {
+            get {
+                return ResourceManager.GetString("ANL_SENKEN_ZEILE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Der Name „{0}&quot; ist im Projekt bereits vergeben. Die Speichervariante wurde in „{1}&quot; umbenannt. ähnelt.
         /// </summary>
         public static string ANL_SP_NAME_ANGEPASST {
@@ -55164,7 +55191,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt den Heizkreis nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher mit Nutzung Heizung. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0}: Solarthermie ohne Pufferspeicher deckt Heizwärme nur zeitgleich; Ertrag über dem Momentanbedarf wird verworfen. Empfehlung: Pufferspeicher. ähnelt.
         /// </summary>
         public static string SIMWARN_SOLAR_HEIZKREIS_OHNE_PUFFER {
             get {
