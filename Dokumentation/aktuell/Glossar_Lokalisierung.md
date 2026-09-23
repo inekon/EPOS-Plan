@@ -134,6 +134,12 @@ angelsächsischen Anlagenbau übliche Begriff.
 | Kälteverhältnis (EER) | energy efficiency ratio (EER) | EN 14511; Kälteleistung durch elektrische Leistungsaufnahme im Kühlbetrieb, auch „Kälteleistungszahl"; im Schema die Spalte `COP` der Kühlkennlinie (Hinweis unter der Tabelle); EER bleibt EER |
 | Kälteleistung | cooling capacity | EN 14511; die Spalte `Pkuehl` der Kühlkennlinie |
 | Kühlbetrieb | cooling mode | Betriebsart einer reversiblen Wärmepumpe; Heizbetrieb = heating mode |
+| Tagesbetriebsart | daily operating mode | Umschaltregel der reversiblen Wärmepumpe (K8a): je Tag Heizen oder Kühlen |
+| Kühltag / Heiztag | cooling day / heating day | Tag, dessen Kältebedarf den Heizbedarf übersteigt bzw. nicht |
+| Kältekreis | cooling circuit | Senke der Kälteseite (Persistenzwert `Kaeltekreis`) |
+| Kältestrom | cooling electricity | Strom des Kühlbetriebs einschließlich Hilfsstrom |
+| Hilfsstromanteil | auxiliary power share | Pumpen und Ventilatoren des Kältekreises, Anteil an der Verdichterarbeit |
+| Jahresarbeitszahl Kälte (EER-Jahreswert) | seasonal EER | Kälte durch Kältestrom über das Jahr |
 | Wirkungsgrad | efficiency | |
 | Nutzungsgrad | utilisation ratio | über einen Zeitraum, im Unterschied zum momentanen Wirkungsgrad |
 | Auslastung | utilisation | |
