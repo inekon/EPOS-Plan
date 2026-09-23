@@ -22,7 +22,10 @@ namespace WindowsFormsApplication1
     /// (Hausregel <c>EPOS.UI/CLAUDE.md</c>). Alles, was sie zeigt, wird hier
     /// geladen — mit denselben Controllern und in derselben Reihenfolge wie zuvor
     /// im Konstruktor des Formulars — und alles, was sie schreibt, wird hier
-    /// geschrieben: <c>KwkgAnlagenCtrl.Speichere(g, true)</c> (K7, elf Spalten) und
+    /// geschrieben: <c>KwkgAnlagenCtrl.Speichere(g, true)</c> (K7, alle Spalten des
+    /// Dialogs — seit Etappe E7c samt Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und
+    /// Stromkennzahl aus Schemaschritt 105, gepflegt in der Überlagerung „Sätze und
+    /// Herkunft") und
     /// <c>WirtschaftlichkeitCtrl.SpeichereParameter</c>. Beides sind ZWEI benannte
     /// Wege, und der Dialog ruft sie ausschliesslich in seinem OK-Weg — er traegt
     /// OK und Abbrechen, und bis zum OK steht seine Eingabe in seinem
@@ -109,7 +112,9 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Schreibt EINE Anlagenzeile mit ihren ELF Spalten (K7).
+        /// Schreibt EINE Anlagenzeile mit allen Spalten des Dialogs (K7; ETAPPE E7c:
+        /// dazu Kennzeichen „Vorrichtung zur Abwärmeabfuhr" und Stromkennzahl). Die
+        /// Gerätezeile (P_el, P_th) liest der Kern mit, geschrieben wird sie nie.
         /// </summary>
         private static bool SpeichereAnlage(KwkgAnlagenCtrl anlagenCtrl, KwkgAnlagenAngabe anlage)
         {

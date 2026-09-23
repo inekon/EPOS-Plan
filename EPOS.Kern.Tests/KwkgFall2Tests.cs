@@ -264,6 +264,50 @@ namespace EPOS.Kern.Tests
         }
 
         // =================================================================
+        //  Der Schreibweg des Dialogs (Kern-Controller, keine Datenbank in der UI)
+        // =================================================================
+
+        /// <summary>
+        /// <c>KwkgAnlagenCtrl</c> — der Weg, den die Hülle des BHKW-Dialogs geht: Er liest
+        /// Kennzeichen, Stromkennzahl und P_th der Gerätezeile und schreibt die zwei
+        /// Anlagenspalten im Dialogweg (<c>Speichere(g, true)</c>) mit; eine Kennzahl ≤ 0
+        /// wird NULL. Der Bestandsweg mit acht Spalten (<c>Speichere(g)</c>) lässt sie
+        /// stehen.
+        /// </summary>
+        [Fact]
+        public void Der_Kern_Controller_liest_und_schreibt_Kennzeichen_und_Kennzahl()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            var ctrl = new KwkgAnlagenCtrl();
+            KwkgAnlagenAngabe g = ctrl.LadeGruppe(PROJEKT, "").Single(x => x.IdAnlage == ANLAGE_GROSS);
+            Assert.False(g.Abwaermeabfuhr);
+            Assert.Null(g.Stromkennzahl);
+            Assert.Equal(PTH_GROSS, g.PthKW.Value, 9);
+
+            g.Abwaermeabfuhr = true;
+            g.Stromkennzahl = 0.55;
+            Assert.True(ctrl.Speichere(g, true));
+            KwkgAnlagenAngabe neu = ctrl.LadeGruppe(PROJEKT, "").Single(x => x.IdAnlage == ANLAGE_GROSS);
+            Assert.True(neu.Abwaermeabfuhr);
+            Assert.Equal(0.55, neu.Stromkennzahl.Value, 12);
+
+            // Der Bestandsweg (acht E6-Spalten) fasst die zwei Spalten nicht an.
+            neu.Abwaermeabfuhr = false;
+            neu.Stromkennzahl = null;
+            Assert.True(ctrl.Speichere(neu));
+            KwkgAnlagenAngabe nachBestand = ctrl.LadeGruppe(PROJEKT, "").Single(x => x.IdAnlage == ANLAGE_GROSS);
+            Assert.True(nachBestand.Abwaermeabfuhr);
+            Assert.Equal(0.55, nachBestand.Stromkennzahl.Value, 12);
+
+            // 0 ist „kein eigener Wert" und wird NULL.
+            nachBestand.Stromkennzahl = 0;
+            Assert.True(ctrl.Speichere(nachBestand, true));
+            Assert.Null(ctrl.LadeGruppe(PROJEKT, "").Single(x => x.IdAnlage == ANLAGE_GROSS).Stromkennzahl);
+        }
+
+        // =================================================================
         //  Der Nachweisumschlag
         // =================================================================
 

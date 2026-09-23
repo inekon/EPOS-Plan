@@ -23213,4 +23213,88 @@ Do you want to allow this?</value>
   <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
     <value>Plant category missing: for {0}, neither a full-load hour quota is maintained nor a plant category recorded — without a plant category, sec. 8 CHP Act derives no quota, so no bonus is calculated for this unit. Enter the plant category or the quota in the CHP dialog.</value>
   </data>
+  <data name="BHW_UEB_KNOPF_ANLAGE" xml:space="preserve">
+    <value>Rates and origin…</value>
+  </data>
+  <data name="BHW_UEB_TITEL" xml:space="preserve">
+    <value>Rates and origin — {0}</value>
+  </data>
+  <data name="BHW_UEB_G_KWKG" xml:space="preserve">
+    <value>CHP bonus — this unit</value>
+  </data>
+  <data name="BHW_UEB_KWK_STROM" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act)</value>
+  </data>
+  <data name="BHW_FLD_FALL1" xml:space="preserve">
+    <value>Case 1 — net electricity generation</value>
+  </data>
+  <data name="BHW_FLD_ABWAERMEABFUHR" xml:space="preserve">
+    <value>Case 2 — heat dissipation device</value>
+  </data>
+  <data name="BHW_UEB_FALL1_MENGE" xml:space="preserve">
+    <value>→ {0} MWh net electricity generation in the last booked run</value>
+  </data>
+  <data name="BHW_UEB_FALL1_OHNE_LAUF" xml:space="preserve">
+    <value>→ the unit's net electricity generation (terminals minus auxiliary power)</value>
+  </data>
+  <data name="BHW_UEB_FALL2_FORMEL" xml:space="preserve">
+    <value>→ min(net electricity generation ; useful heat × σ) — useful heat: heat production of the module less its share of the heat surplus (by P_el)</value>
+  </data>
+  <data name="BHW_UEB_SP_GROESSE" xml:space="preserve">
+    <value>Quantity</value>
+  </data>
+  <data name="BHW_UEB_SP_VORSCHLAG" xml:space="preserve">
+    <value>Proposal</value>
+  </data>
+  <data name="BHW_UEB_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="BHW_UEB_SP_EIGEN" xml:space="preserve">
+    <value>own value</value>
+  </data>
+  <data name="BHW_UEB_SP_GILT" xml:space="preserve">
+    <value>applies</value>
+  </data>
+  <data name="BHW_UEB_LEER_VORSCHLAG" xml:space="preserve">
+    <value>empty = proposal</value>
+  </data>
+  <data name="BHW_FLD_STROMKENNZAHL" xml:space="preserve">
+    <value>Power-to-heat ratio σ</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL" xml:space="preserve">
+    <value>P_el ÷ P_th of the unit record: {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL_OHNE" xml:space="preserve">
+    <value>Unit record without P_el or P_th — no proposal</value>
+  </data>
+  <data name="BHW_UEB_GILT_VORSCHLAG" xml:space="preserve">
+    <value>{0} proposal</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN" xml:space="preserve">
+    <value>{0} own value — proposal {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN_OHNE" xml:space="preserve">
+    <value>{0} own value</value>
+  </data>
+  <data name="BHW_UEB_GILT_KEINE" xml:space="preserve">
+    <value>none — no CHP electricity under case 2, no bonus</value>
+  </data>
+  <data name="BHW_UEB_GILT_FALL1" xml:space="preserve">
+    <value>— (case 1 reads no power-to-heat ratio)</value>
+  </data>
+  <data name="BHW_UEB_INFO_SIGMA" xml:space="preserve">
+    <value>Empty means: σ is formed from P_el ÷ P_th of the unit record when calculating. An own value applies permanently, even if the unit record changes; "Apply proposal" empties the field — the way back. If there is neither an own value nor P_el and P_th, there is no CHP electricity under case 2 and no bonus for this unit. σ is only read in case 2.</value>
+  </data>
+  <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="BHW_A_KWK_FALL1" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 1 — net electricity generation.</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, power-to-heat ratio σ {0} ({1}).</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
+    <value>CHP electricity (sec. 2 no. 16 CHP Act): case 2 — heat dissipation device, but no power-to-heat ratio ({0}) — no bonus under case 2.</value>
+  </data>
 </root>

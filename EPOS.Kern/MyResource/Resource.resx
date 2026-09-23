@@ -23220,4 +23220,88 @@ Möchten Sie das zulassen?</value>
   <data name="KOH_KWKG_ANLAGENART_FEHLT" xml:space="preserve">
     <value>Anlagenart fehlt: Für {0} ist weder ein Vbh-Kontingent gepflegt noch eine Anlagenart erfasst — § 8 KWKG leitet ohne Anlagenart kein Kontingent ab, für diese Anlage wird kein Zuschlag gerechnet. Anlagenart oder Kontingent im BHKW-Dialog eintragen.</value>
   </data>
+  <data name="BHW_UEB_KNOPF_ANLAGE" xml:space="preserve">
+    <value>Sätze und Herkunft…</value>
+  </data>
+  <data name="BHW_UEB_TITEL" xml:space="preserve">
+    <value>Sätze und Herkunft — {0}</value>
+  </data>
+  <data name="BHW_UEB_G_KWKG" xml:space="preserve">
+    <value>KWK-Zuschlag — diese Anlage</value>
+  </data>
+  <data name="BHW_UEB_KWK_STROM" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG)</value>
+  </data>
+  <data name="BHW_FLD_FALL1" xml:space="preserve">
+    <value>Fall 1 — Nettostromerzeugung</value>
+  </data>
+  <data name="BHW_FLD_ABWAERMEABFUHR" xml:space="preserve">
+    <value>Fall 2 — Vorrichtung zur Abwärmeabfuhr</value>
+  </data>
+  <data name="BHW_UEB_FALL1_MENGE" xml:space="preserve">
+    <value>→ {0} MWh Nettostromerzeugung im zuletzt gebuchten Lauf</value>
+  </data>
+  <data name="BHW_UEB_FALL1_OHNE_LAUF" xml:space="preserve">
+    <value>→ die Nettostromerzeugung der Anlage (Klemme minus Hilfsstrom)</value>
+  </data>
+  <data name="BHW_UEB_FALL2_FORMEL" xml:space="preserve">
+    <value>→ min(Nettostromerzeugung ; Nutzwärme × σ) — Nutzwärme: Wärmeproduktion des Moduls abzüglich seines Anteils am Wärmeüberschuss (nach P_el)</value>
+  </data>
+  <data name="BHW_UEB_SP_GROESSE" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="BHW_UEB_SP_VORSCHLAG" xml:space="preserve">
+    <value>Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_SP_HERKUNFT" xml:space="preserve">
+    <value>Herkunft</value>
+  </data>
+  <data name="BHW_UEB_SP_EIGEN" xml:space="preserve">
+    <value>eigener Wert</value>
+  </data>
+  <data name="BHW_UEB_SP_GILT" xml:space="preserve">
+    <value>gilt</value>
+  </data>
+  <data name="BHW_UEB_LEER_VORSCHLAG" xml:space="preserve">
+    <value>leer = Vorschlag</value>
+  </data>
+  <data name="BHW_FLD_STROMKENNZAHL" xml:space="preserve">
+    <value>Stromkennzahl σ</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL" xml:space="preserve">
+    <value>P_el ÷ P_th der Gerätezeile: {0} kW ÷ {1} kW</value>
+  </data>
+  <data name="BHW_HERL_STROMKENNZAHL_OHNE" xml:space="preserve">
+    <value>Gerätezeile ohne P_el oder P_th — kein Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_VORSCHLAG" xml:space="preserve">
+    <value>{0} Vorschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN" xml:space="preserve">
+    <value>{0} eigener Wert — Vorschlag {1}</value>
+  </data>
+  <data name="BHW_UEB_GILT_EIGEN_OHNE" xml:space="preserve">
+    <value>{0} eigener Wert</value>
+  </data>
+  <data name="BHW_UEB_GILT_KEINE" xml:space="preserve">
+    <value>keine — kein KWK-Strom nach Fall 2, kein Zuschlag</value>
+  </data>
+  <data name="BHW_UEB_GILT_FALL1" xml:space="preserve">
+    <value>— (Fall 1 liest keine Stromkennzahl)</value>
+  </data>
+  <data name="BHW_UEB_INFO_SIGMA" xml:space="preserve">
+    <value>Leer heißt: σ wird beim Rechnen aus P_el ÷ P_th der Gerätezeile gebildet. Ein eigener Wert gilt dauerhaft, auch wenn sich die Gerätezeile ändert; „Vorschlag übernehmen“ leert das Feld — der Weg zurück. Gibt es weder einen eigenen Wert noch P_el und P_th, gibt es keinen KWK-Strom nach Fall 2 und für diese Anlage keinen Zuschlag. Gelesen wird σ nur bei Fall 2.</value>
+  </data>
+  <data name="BHW_UEB_UEBERNEHMEN" xml:space="preserve">
+    <value>Übernehmen</value>
+  </data>
+  <data name="BHW_A_KWK_FALL1" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 1 — Nettostromerzeugung.</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, Stromkennzahl σ {0} ({1}).</value>
+  </data>
+  <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
+    <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
+  </data>
 </root>
