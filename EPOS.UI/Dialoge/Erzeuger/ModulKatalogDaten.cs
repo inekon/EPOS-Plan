@@ -89,4 +89,11 @@ public sealed class ModulKatalogWege
 
     /// <summary>Löscht ein Modul und sagt, warum es nicht ging.</summary>
     public Func<string, KatalogSpeicherErgebnis>? Loeschen { get; init; }
+
+    /// <summary>
+    /// <b>„Duplizieren…"</b> (Konzept Administrationsdialoge, Entscheid AD-Q11): kopiert
+    /// den Satz mit der ID als EIGENEN Satz (<c>ReadOnly = 0</c>) unter dem Namen —
+    /// <c>…StammCtrl.Duplizieren</c>. Ohne ihn steht der Knopf nicht da.
+    /// </summary>
+    public Func<int, string, KatalogSpeicherErgebnis>? Duplizieren { get; init; }
 }

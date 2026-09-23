@@ -208,7 +208,7 @@ public class ModulKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-anlagenwahl")[1].Click();
+        Zeilenklick.Zeile(cut, 1);
 
         Assert.Equal("Modul B", cut.Instance.Gewaehlt);
         Assert.Equal("Modul B", cut.FindAll("input[type=text]")[0].GetAttribute("value"));
@@ -223,7 +223,7 @@ public class ModulKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
 
         Assert.True(cut.Instance.Namensfrage);
         Assert.NotEmpty(cut.FindAll(".epos-ueberlagerung"));
@@ -239,7 +239,7 @@ public class ModulKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen(ModulKatalogArt.Stromspeicher);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
         cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input("Neuer Speicher");
         cut.FindAll(".epos-ueberlagerung .epos-knopf--primaer")[0].Click();
 
@@ -261,7 +261,7 @@ public class ModulKatalogDialogTests : EposBunitContext
     {
         var cut = Aufbauen(ModulKatalogArt.Photovoltaik);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
         cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input("Neues Modul");
         cut.FindAll(".epos-ueberlagerung .epos-knopf--primaer")[0].Click();
 
@@ -282,7 +282,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
         cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input("Neuer Speicher");
         cut.FindAll(".epos-ueberlagerung .epos-knopf--primaer")[0].Click();
         cut.FindAll(".epos-leiste .epos-knopf")[0].Click();
@@ -450,7 +450,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(art, wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
 
         Assert.True(cut.Instance.Loeschfrage);
         Assert.Contains("Modul A", cut.Find(".epos-rueckfrage").TextContent);
@@ -471,7 +471,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
         cut.FindAll(".epos-rueckfrage button")[1].Click();
 
         Assert.False(gerufen);
@@ -492,7 +492,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
         cut.FindAll(".epos-rueckfrage button")[0].Click();
 
         Assert.Equal("Der Satz ist schreibgeschützt.", cut.Instance.Meldung);
@@ -508,7 +508,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         };
         var cut = Aufbauen(wege: wege);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
 
         Assert.False(cut.Instance.Loeschfrage);
         Assert.Equal(Profil(ModulKatalogArt.Stromspeicher).MeldungOhneAuswahl,
@@ -525,15 +525,16 @@ public class ModulKatalogDialogTests : EposBunitContext
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[4].Click();
 
         Assert.NotNull(ergebnis);
         Assert.True(ergebnis!.Bestaetigt);
         Assert.Equal("Modul A", ergebnis.Bezeichner);
     }
 
+    /// <summary>Esc wirkt wie „Beenden" — EIN Schlussweg (Konzept Administrationsdialoge, V15).</summary>
     [Fact]
-    public void Esc_schliesst_ohne_Bestaetigung()
+    public void Esc_schliesst_wie_Beenden()
     {
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
@@ -541,15 +542,15 @@ public class ModulKatalogDialogTests : EposBunitContext
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.NotNull(ergebnis);
-        Assert.False(ergebnis!.Bestaetigt);
+        Assert.True(ergebnis!.Bestaetigt);
     }
 
     /// <summary>
-    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
-    /// Kopfzeile wirkt genau wie Esc — es schließt ohne Bestätigung.
+    /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026) — und es tut,
+    /// was „Beenden" tut (V15).
     /// </summary>
     [Fact]
-    public void Das_Kreuz_im_Kopf_schliesst_wie_Esc_ohne_Bestaetigung()
+    public void Das_Kreuz_im_Kopf_schliesst_wie_Beenden()
     {
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
@@ -557,7 +558,118 @@ public class ModulKatalogDialogTests : EposBunitContext
         cut.Find(".epos-dialog-zu").Click();
 
         Assert.NotNull(ergebnis);
-        Assert.False(ergebnis!.Bestaetigt);
+        Assert.True(ergebnis!.Bestaetigt);
+    }
+
+    /// <summary>
+    /// <b>„Beenden" statt „OK"</b> — und geänderte Felder halten es auf: „Speichern oder
+    /// Verwerfen" im Warnband, der Dialog bleibt offen (V11, Konzept 3.3).
+    /// </summary>
+    [Fact]
+    public void Beenden_haelt_bei_geaenderten_Feldern_an()
+    {
+        ModulErgebnis? ergebnis = null;
+        var cut = Aufbauen(geschlossen: e => ergebnis = e);
+
+        Assert.Equal("Beenden", cut.FindAll(".epos-leiste .epos-knopf").Last().TextContent.Trim());
+
+        cut.FindAll("input[inputmode=decimal]")[0].Input("42");
+        cut.FindAll(".epos-leiste .epos-knopf").Last().Click();
+
+        Assert.Null(ergebnis);
+        Assert.Contains("Verwerfen", cut.Instance.Meldung);
+
+        // Ein Zeilenwechsel haelt ebenso an.
+        Zeilenklick.Zeile(cut, 1);
+        Assert.Equal("Modul A", cut.Instance.Gewaehlt);
+
+        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();       // Verwerfen
+        cut.FindAll(".epos-leiste .epos-knopf").Last().Click();   // Beenden
+        Assert.NotNull(ergebnis);
+    }
+
+    // =================================================================================
+    //  Auslieferungssätze (Entscheid AD-Q11) und das Schloss (V10)
+    // =================================================================================
+
+    private static IReadOnlyList<Katalogfilterzeile> ZeilenMitAuslieferung() => new[]
+    {
+        new Katalogfilterzeile(1, "Modul A") { Geschuetzt = true }
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul A")
+            .MitText(Katalogfilterprofil.SpHersteller, "Ablytek"),
+        new Katalogfilterzeile(2, "Modul B")
+            .MitText(Katalogfilterprofil.SpBezeichner, "Modul B")
+            .MitText(Katalogfilterprofil.SpHersteller, "Jinkosolar")
+    };
+
+    /// <summary>
+    /// <b>Der Modulkatalog wertet ReadOnly aus</b> (AD-Q11, V13): Ein Auslieferungssatz
+    /// trägt das Schloss, seine Felder sind nur lesbar, „Speichern" ist weich gesperrt
+    /// und nennt den Weg über „Duplizieren…" — geschrieben wird nichts.
+    /// </summary>
+    [Fact]
+    public void Ein_Auslieferungssatz_ist_nur_lesbar_und_sperrt_Speichern_weich()
+    {
+        bool geschrieben = false;
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = ZeilenMitAuslieferung,
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            Speichern = (f, _, __) => { geschrieben = true; return new KatalogSpeicherErgebnis(true, "", "Modul A"); },
+            Duplizieren = (id, name) => new KatalogSpeicherErgebnis(true, "", name)
+        };
+        var cut = Aufbauen(wege: wege);
+
+        Assert.True(cut.Instance.Auslieferungssatz);
+        Assert.NotNull(cut.FindAll(".epos-katalogliste tbody tr")[0].QuerySelector(".epos-schloss"));
+        Assert.Empty(cut.FindAll("input[inputmode=decimal]"));
+
+        var speichern = cut.FindAll(".epos-leiste .epos-knopf")[0];
+        Assert.Equal("true", speichern.GetAttribute("aria-disabled"));
+        speichern.Click();
+
+        Assert.False(geschrieben);
+        Assert.Contains("Duplizieren", cut.Instance.Meldung);
+
+        // Der eigene Satz bleibt bearbeitbar.
+        Zeilenklick.Zeile(cut, 1);
+        Assert.False(cut.Instance.Auslieferungssatz);
+        Assert.NotEmpty(cut.FindAll("input[inputmode=decimal]"));
+    }
+
+    /// <summary>
+    /// <b>„Duplizieren…"</b> fragt den Namen (vorbelegt „Name (Kopie)"), ruft den Weg mit
+    /// der ID der gewählten Zeile und wählt danach die Kopie.
+    /// </summary>
+    [Fact]
+    public void Duplizieren_legt_die_Kopie_an_und_waehlt_sie()
+    {
+        var katalog = ZeilenMitAuslieferung().ToList();
+        (int, string)? gerufen = null;
+        var wege = new ModulKatalogWege
+        {
+            Katalogzeilen = () => katalog,
+            Detail = name => Felder(ModulKatalogArt.Stromspeicher, name),
+            Duplizieren = (id, name) =>
+            {
+                gerufen = (id, name);
+                katalog.Add(new Katalogfilterzeile(3, name).MitText(Katalogfilterprofil.SpBezeichner, name));
+                return new KatalogSpeicherErgebnis(true, "", name);
+            }
+        };
+        var cut = Aufbauen(wege: wege);
+
+        var texte = cut.FindAll(".epos-leiste .epos-knopf").Select(k => k.TextContent.Trim()).ToList();
+        Assert.Equal(new[] { "Speichern", "Verwerfen", "Neu...", "Duplizieren...", "Löschen", "Beenden" }, texte);
+
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
+        Assert.Equal("Modul A (Kopie)", cut.Find(".epos-ueberlagerung input[type=text]").GetAttribute("value"));
+        cut.FindAll(".epos-ueberlagerung button").First(b => b.TextContent.Trim() == "OK").Click();
+
+        Assert.Equal((1, "Modul A (Kopie)"), gerufen);
+        Assert.Equal("Modul A (Kopie)", cut.Instance.Gewaehlt);
+        Assert.False(cut.Instance.Auslieferungssatz);
+        Assert.Contains("dupliziert", cut.Instance.Status);
     }
 
     [Fact]
@@ -566,7 +678,7 @@ public class ModulKatalogDialogTests : EposBunitContext
         ModulErgebnis? ergebnis = null;
         var cut = Aufbauen(geschlossen: e => ergebnis = e);
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Null(ergebnis);

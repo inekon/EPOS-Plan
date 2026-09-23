@@ -58,7 +58,10 @@ namespace WindowsFormsApplication1
                 Katalogzeilen = PhotovoltaikStammCtrl.Katalogfilterzeilen,
                 Detail = name => ModulKatalogHuelle.Felder(profil, Anzeige(name)),
                 Speichern = Schreiben,
-                Loeschen = Loeschen
+                Loeschen = Loeschen,
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz an.
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(PhotovoltaikStammCtrl.Duplizieren(id, name))
             };
         }
 

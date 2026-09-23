@@ -70,7 +70,7 @@ namespace EPOS.Kern.Tests
         [InlineData(BedarfsArt.Brauchwasser)]
         [InlineData(BedarfsArt.Prozesswaerme)]
         [InlineData(BedarfsArt.Stromverbraucher)]
-        public void Alle_drei_Bedarfskataloge_tragen_dieselben_fuenf_Spalten(BedarfsArt art)
+        public void Alle_drei_Bedarfskataloge_tragen_dieselben_vier_Spalten(BedarfsArt art)
         {
             Katalogfilterprofil p = Katalogfilterprofil.FuerBedarf(art);
 
@@ -79,8 +79,7 @@ namespace EPOS.Kern.Tests
                 Katalogfilterprofil.SpBezeichner,
                 Katalogfilterprofil.SpTyp,
                 Katalogfilterprofil.SpJahressummeMwh,
-                Katalogfilterprofil.SpBeschreibung,
-                Katalogfilterprofil.SpAuslieferung
+                Katalogfilterprofil.SpBeschreibung
             }, p.Spalten.Select(s => s.Schluessel).ToArray());
 
             // Die Jahressumme ist eine ZAHL und traegt ihre Einheit im Kopf.
@@ -89,12 +88,9 @@ namespace EPOS.Kern.Tests
             Assert.Equal("MWh", summe.Einheit);
             Assert.True(summe.Rechtsbuendig);
 
-            // Die Auslieferung ist ein KENNZEICHEN: Sortierpfeil ja, Trichter nein
-            // (5.6.2) - "nur eigene Saetze" ist eine Spalte, kein Schalter.
-            Katalogspalte aus = p.Spalte(Katalogfilterprofil.SpAuslieferung);
-            Assert.Equal(Katalogspaltenart.JaNein, aus.Art);
-            Assert.True(aus.Sortierbar);
-            Assert.False(aus.Filterbar);
+            // Die Auslieferung ist KEINE Spalte mehr (Konzept Administrationsdialoge,
+            // V10): Ein Auslieferungssatz traegt das Schloss hinter dem Bezeichner.
+            Assert.Null(p.Spalte(Katalogfilterprofil.SpAuslieferung));
         }
 
         /// <summary>

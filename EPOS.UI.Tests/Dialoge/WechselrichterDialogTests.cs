@@ -223,7 +223,7 @@ public class WechselrichterDialogTests : EposBunitContext
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
 
-        cut.FindAll(".epos-anlagenwahl")[2].Click();
+        Zeilenklick.Zeile(cut, 2);
 
         Assert.Equal("Beta 10K", cut.Instance.Gewaehlt);
         Assert.Equal("Beta 10K", cut.FindAll("input[readonly]")[0].GetAttribute("value"));
@@ -239,7 +239,7 @@ public class WechselrichterDialogTests : EposBunitContext
     {
         IRenderedComponent<ModulKatalogDialog> cut = Verwaltung();
 
-        cut.FindAll(".epos-leiste .epos-knopf")[1].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();       // Neu (nach Verwerfen)
         Assert.True(cut.Instance.Namensfrage);
 
         cut.FindAll(".epos-ueberlagerung input[type=text]")[0].Input("Neues Geraet");
@@ -294,7 +294,7 @@ public class WechselrichterDialogTests : EposBunitContext
             Loeschen = n => { geloescht = n; return new KatalogSpeicherErgebnis(true, "", n); }
         });
 
-        cut.FindAll(".epos-leiste .epos-knopf")[2].Click();
+        cut.FindAll(".epos-leiste .epos-knopf")[3].Click();       // Loeschen (nach Verwerfen, Neu)
         Assert.True(cut.Instance.Loeschfrage);
         Assert.Null(geloescht);
 

@@ -66,7 +66,10 @@ namespace WindowsFormsApplication1
                 Existiert = name => BHKWStammCtrl.IdZu(name) > 0,
                 Loeschen = Loeschen,
                 Speichern = Schreiben,
-                IstGeschuetzt = BHKWStammCtrl.IstSchreibgeschuetzt
+                IstGeschuetzt = BHKWStammCtrl.IstSchreibgeschuetzt,
+                // AD-Q11 (23.09.2026): ein Auslieferungssatz wird nie ueberschrieben;
+                // "Duplizieren..." legt den eigenen Satz an.
+                Duplizieren = (id, name) => KatalogBrowserHuelle.Kopie(BHKWStammCtrl.Duplizieren(id, name))
             };
         }
 

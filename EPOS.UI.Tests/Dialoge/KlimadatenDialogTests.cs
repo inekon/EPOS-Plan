@@ -143,7 +143,7 @@ public class KlimadatenDialogTests : EposBunitContext
         var cut = Zeige();
 
         // Die drei Regionen der Liste.
-        Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count);
+        Assert.Equal(3, Zeilenklick.Zeilen(cut).Count);
         Assert.Contains("Stuttgart", cut.Markup);
 
         // Zwei Reiter mit je einem Bild.
@@ -200,7 +200,7 @@ public class KlimadatenDialogTests : EposBunitContext
                 "PVGIS-SARAH3", 13.4, 52.5, MODELL, MODELL, ""));
         });
 
-        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
 
         // W16b-O-2 (Gate 10.09.2026): bunits Click() gibt das Ereignis nur an
         // den Zeichner ab und wartet nicht auf den Ereignisbehandler - erst
@@ -238,7 +238,7 @@ public class KlimadatenDialogTests : EposBunitContext
             new KlimadatenDialog.Regionsansicht("", null, null, null, null,
                                                  "Für diese Region liegen keine Stundenwerte vor.")));
 
-        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
 
         // W16b-O-2 (Gate 10.09.2026): erst auf die gezeichnete Meldung warten,
         // statt sofort nach dem Click zu pruefen - siehe die Begruendung unten
@@ -270,7 +270,7 @@ public class KlimadatenDialogTests : EposBunitContext
         var geloescht = new List<string>();
         var cut = Zeige(loeschen: n => { geloescht.Add(n); return Task.FromResult(true); });
 
-        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
 
         // W16b-O-2 (Gate 10.09.2026): bunits Click() wartet nicht auf den
@@ -298,7 +298,7 @@ public class KlimadatenDialogTests : EposBunitContext
         int geloescht = 0;
         var cut = Zeige(loeschen: _ => { geloescht++; return Task.FromResult(true); });
 
-        cut.FindAll("button.epos-anlagenwahl")[2].Click();       // "Auslieferung Nord"
+        Zeilenklick.Zeile(cut, 2);       // "Auslieferung Nord"
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
 
         // W16b-O-2 (Gate 10.09.2026): BeiLoeschen setzt die Meldung synchron,
@@ -490,7 +490,7 @@ public class KlimadatenDialogTests : EposBunitContext
         bool? antwort = null;
         var cut = Zeige(geschlossen: b => antwort = b);
 
-        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         cut.FindAll("button").First(b => b.TextContent.Trim() == "Löschen").Click();
         cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(antwort);      // BeiTaste liefert bei offener Rueckfrage nichts - kein Wettlauf
@@ -499,15 +499,16 @@ public class KlimadatenDialogTests : EposBunitContext
            .FindAll("button").First(b => b.TextContent.Trim() == "Nein").Click();
         cut.Find("div.epos-katalog-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
-        // W16b-O-2 (Gate 10.09.2026): BeiTaste ruft hier Geschlossen.InvokeAsync(false)
+        // W16b-O-2 (Gate 10.09.2026): BeiTaste ruft hier Geschlossen.InvokeAsync
         // ueber den Renderer-Dispatcher - derselbe Wettlauf wie bei Beenden_liefert_OK.
-        cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
+        // Esc wirkt wie "Beenden" und meldet true (Konzept Administrationsdialoge, V15).
+        cut.WaitForAssertion(() => Assert.True(antwort), TimeSpan.FromSeconds(10));
     }
 
     /// <summary>
     /// <b>„Das Kreuz steht beim Titel"</b> (Anwenderentscheid 15.09.2026): Das ✕ der
-    /// Kopfzeile wirkt genau wie Esc — es schließt ohne Übernahme und meldet
-    /// <c>false</c>.
+    /// Kopfzeile wirkt genau wie Esc — und beide wie „Beenden" (Konzept
+    /// Administrationsdialoge, V15): Es meldet <c>true</c>.
     /// </summary>
     [Fact]
     public void Das_Kreuz_im_Kopf_schliesst_wie_Esc()
@@ -518,7 +519,7 @@ public class KlimadatenDialogTests : EposBunitContext
         cut.Find(".epos-dialog-zu").Click();
 
         // Derselbe Wettlauf wie oben: Geschlossen.InvokeAsync laeuft ueber den Dispatcher.
-        cut.WaitForAssertion(() => Assert.False(antwort), TimeSpan.FromSeconds(10));
+        cut.WaitForAssertion(() => Assert.True(antwort), TimeSpan.FromSeconds(10));
     }
 
     // =====================================================================
@@ -1086,7 +1087,7 @@ public class KlimadatenDialogTests : EposBunitContext
                              TimeSpan.FromSeconds(10));
 
         Assert.Equal(2, laeufe);
-        Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count);
+        Assert.Equal(3, Zeilenklick.Zeilen(cut).Count);
     }
 
     /// <summary>
@@ -1096,7 +1097,7 @@ public class KlimadatenDialogTests : EposBunitContext
     /// Kennwerten.
     /// </summary>
     [Fact]
-    public void Die_Liste_zeigt_Suche_sieben_Spalten_und_keinen_Vergleich()
+    public void Die_Liste_zeigt_Suche_sechs_Spalten_und_keinen_Vergleich()
     {
         var cut = Zeige();
 
@@ -1106,8 +1107,13 @@ public class KlimadatenDialogTests : EposBunitContext
 
         var koepfe = cut.FindAll("span.epos-spaltenkopf-text")
                         .Select(e => e.TextContent.Trim()).ToList();
+        // Der Schreibschutz ist keine Spalte mehr, sondern das Schloss hinter dem
+        // Namen (Konzept Administrationsdialoge, V10) - ohne "Duplizieren" im Kurztext.
         Assert.Equal(new[] { "Klimaregion", "Quelle", "Standort", "Longitude", "Latitude",
-                             "Importdatum", "Schreibschutz" }, koepfe);
+                             "Importdatum" }, koepfe);
+        var schloss = cut.FindAll(".epos-katalogliste .epos-schloss");
+        Assert.Single(schloss);
+        Assert.Equal("Auslieferungssatz – nur lesen", schloss[0].GetAttribute("title"));
 
         // Quelle und Standort stehen als Text in den Zeilen.
         Assert.Contains("DWD-Testreferenzjahr aus Datei", cut.Markup);
@@ -1142,7 +1148,7 @@ public class KlimadatenDialogTests : EposBunitContext
 
         // Ueber das Bezugsjahr laesst sich suchen - ohne eine eigene Spalte.
         cut.Find("label.epos-katalog-suchfeld input").Input("2045");
-        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+        cut.WaitForAssertion(() => Assert.Single(Zeilenklick.Zeilen(cut)),
                              TimeSpan.FromSeconds(10));
         Assert.Contains("hagelloch", cut.Markup);
         Assert.DoesNotContain("Berlin, Deutschland", cut.Markup);
@@ -1157,17 +1163,17 @@ public class KlimadatenDialogTests : EposBunitContext
     {
         var cut = Zeige();
 
-        cut.FindAll("button.epos-anlagenwahl")[1].Click();       // Stuttgart
+        Zeilenklick.Zeile(cut, 1);       // Stuttgart
         cut.WaitForAssertion(() => Assert.Equal("Stuttgart", cut.Instance.Gewaehlt),
                              TimeSpan.FromSeconds(10));
 
         cut.Find("label.epos-katalog-suchfeld input").Input("stutt");
-        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+        cut.WaitForAssertion(() => Assert.Single(Zeilenklick.Zeilen(cut)),
                              TimeSpan.FromSeconds(10));
         Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
 
         cut.Find("label.epos-katalog-suchfeld input").Input("");
-        cut.WaitForAssertion(() => Assert.Equal(3, cut.FindAll("button.epos-anlagenwahl").Count),
+        cut.WaitForAssertion(() => Assert.Equal(3, Zeilenklick.Zeilen(cut).Count),
                              TimeSpan.FromSeconds(10));
         Assert.Equal("Stuttgart", cut.Instance.Gewaehlt);
     }
@@ -1216,10 +1222,10 @@ public class KlimadatenDialogTests : EposBunitContext
         Assert.Contains("150", cut.Find("span.epos-katalog-treffer").TextContent);
 
         cut.Find("label.epos-katalog-suchfeld input").Input("Region 007");
-        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("button.epos-anlagenwahl")),
+        cut.WaitForAssertion(() => Assert.Single(Zeilenklick.Zeilen(cut)),
                              TimeSpan.FromSeconds(10));
 
-        cut.FindAll("button.epos-anlagenwahl")[0].Click();
+        Zeilenklick.Zeile(cut, 0);
         cut.WaitForAssertion(() => Assert.Equal("Region 007", cut.Instance.Gewaehlt),
                              TimeSpan.FromSeconds(10));
     }
@@ -1300,7 +1306,7 @@ public class KlimadatenDialogTests : EposBunitContext
     /// gewählten Region, ohne sie steht der Platzhalter.
     /// </summary>
     private static void Region(IRenderedComponent<KlimadatenDialog> cut, int nr)
-        => cut.FindAll("button.epos-anlagenwahl")[nr].Click();
+        => Zeilenklick.Zeile(cut, nr);
 
     /// <summary>
     /// <b>Beide Reiter zeigen ein SVG, nicht ein Bild.</b> Der Zoom auf der

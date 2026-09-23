@@ -145,7 +145,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
         // (Konzept_Katalogfilter 4.9) - die drei Kataloge sind Drillinge DERSELBEN
         // Tabellenform. Vorher trugen Prozess und Brauchwasser eine Typspalte und der
         // Stromverbraucher keine; der Unterschied war Bestand, keine Fachaussage.
-        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
+        // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
 
         foreach (string t in new[] { "Prozess in DB ändern", "Prozess in DB neu",
@@ -177,7 +179,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         Assert.Contains("jährlicher Strombedarf:", cut.Markup);
         Assert.Contains("Summe aller ausgewählten Strombedarfe:", cut.Markup);
-        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
+        // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Stromverbraucher ändern..."));
     }
@@ -193,7 +197,9 @@ public class BedarfsProfileDialogTests : EposBunitContext
 
         Assert.Contains("jährlicher Wärmebedarf:", cut.Markup);
         Assert.Contains("Summe Brauchwasserprofile:", cut.Markup);
-        Assert.Equal(7, cut.FindAll(".epos-katalogliste thead th").Count);
+        // Wahl + vier Spalten des Profils + Verwendung: Die Spalte „Auslieferung" ist
+        // dem Schloss hinter dem Namen gewichen (Konzept Administrationsdialoge, V10).
+        Assert.Equal(6, cut.FindAll(".epos-katalogliste thead th").Count);
         Assert.Contains("KFLT_SP_TYP", cut.Markup);
         Assert.NotNull(Knopf(cut, "Profil in DB ändern"));
     }

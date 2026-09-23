@@ -273,7 +273,7 @@ public class BedarfAdminDialogTests : EposBunitContext
                            jahressumme: n => { aufrufe++; return n + "-summe"; });
 
         aufrufe = 0;
-        cut.FindAll("tbody tr")[2].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 2);
 
         Assert.Equal("Gamma", cut.Instance.Gewaehlt);
         Assert.Equal("Gamma-summe", cut.Instance.JahressummeText);

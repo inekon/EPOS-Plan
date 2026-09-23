@@ -99,7 +99,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         Assert.Contains("Datei bearbeiten...", knoepfe);
         Assert.Contains("Datei Einlesen...", knoepfe);
         Assert.Contains("Ganglinie Löschen", knoepfe);
-        Assert.Contains("OK", knoepfe);
+        Assert.Contains("Beenden", knoepfe);          // V15: "OK" heisst "Beenden"
 
         // Der Hilfeknopf ist der InfoKnopf, kein eigener Knopf mit totem Handler.
         Assert.DoesNotContain("Hilfe", knoepfe);
@@ -158,7 +158,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll("tbody tr")[0].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "Ganglinie Löschen").Click();
 
         Assert.Contains("Soll Tsol1 wirklich gelöscht werden ?", cut.Markup);
@@ -176,7 +176,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         var cut = Aufbauen(hatZuordnung: _ => Task.FromResult(true),
                            loeschen: _ => { geloescht++; return Task.FromResult(true); });
 
-        cut.FindAll("tbody tr")[0].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "Ganglinie Löschen").Click();
 
         Assert.Equal(0, geloescht);
@@ -190,7 +190,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     {
         var cut = Aufbauen();
 
-        cut.FindAll("tbody tr")[1].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 1);
         Knopf(cut, "Ganglinie Löschen").Click();
 
         Assert.Contains("schreibgeschützt", cut.Instance.Meldung);
@@ -212,7 +212,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
                                return Task.FromResult(true);
                            });
 
-        cut.FindAll("tbody tr")[0].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "Ganglinie Löschen").Click();
         Knopf(cut, "Ja").Click();
 
@@ -225,7 +225,7 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     {
         var cut = Aufbauen(loeschen: _ => Task.FromResult(false));
 
-        cut.FindAll("tbody tr")[0].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "Ganglinie Löschen").Click();
         Knopf(cut, "Ja").Click();
 
@@ -372,12 +372,12 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
     /// (Befund W14‑B4).
     /// </summary>
     [Fact]
-    public void OK_liefert_OK()
+    public void Beenden_liefert_OK()
     {
         bool? antwort = null;
         var cut = Aufbauen(geschlossen: b => antwort = b);
 
-        Knopf(cut, "OK").Click();
+        Knopf(cut, "Beenden").Click();
 
         Assert.True(antwort);
     }
@@ -389,24 +389,25 @@ public class SolarganglinieAdminDialogTests : EposBunitContext
         bool? antwort = null;
         var cut = Aufbauen(geschlossen: b => antwort = b);
 
-        cut.FindAll("tbody tr")[0].QuerySelector("button")!.Click();
+        Zeilenklick.Zeile(cut, 0);
         Knopf(cut, "Ganglinie Löschen").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.Null(antwort);
 
+        // Esc wirkt wie "Beenden" (Konzept Administrationsdialoge, V15).
         Knopf(cut, "Nein").Click();
         cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
-        Assert.False(antwort);
+        Assert.True(antwort);
     }
 
-    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc: schliesst mit <c>false</c>.</summary>
+    /// <summary>Das Schliesskreuz im Kopf wirkt wie Esc und wie „Beenden" (V15).</summary>
     [Fact]
-    public void Kreuz_schliesst_mit_false()
+    public void Kreuz_schliesst_wie_Beenden()
     {
         bool? antwort = null;
         var cut = Aufbauen(geschlossen: b => antwort = b);
 
         cut.Find(".epos-dialog-zu").Click();
-        Assert.False(antwort);
+        Assert.True(antwort);
     }
 }

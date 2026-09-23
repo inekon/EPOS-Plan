@@ -23631,4 +23631,40 @@ Möchten Sie das zulassen?</value>
   <data name="BHW_A_KWK_FALL2_OHNE" xml:space="preserve">
     <value>KWK-Strom (§ 2 Nr. 16 KWKG): Fall 2 — Vorrichtung zur Abwärmeabfuhr, aber keine Stromkennzahl ({0}) — kein Zuschlag nach Fall 2.</value>
   </data>
+  <data name="ADM_KOPIE_NAME" xml:space="preserve">
+    <value>{0} (Kopie)</value>
+  </data>
+  <data name="ADM_KOPIE_NAME_N" xml:space="preserve">
+    <value>{0} (Kopie {1})</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLT" xml:space="preserve">
+    <value>Der Satz steht nicht mehr im Katalog.</value>
+  </data>
+  <data name="ADM_MSG_KOPIE_FEHLER" xml:space="preserve">
+    <value>Der Satz konnte nicht dupliziert werden.</value>
+  </data>
+  <data name="ADM_BTN_BEENDEN" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="ADM_BTN_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplizieren...</value>
+  </data>
+  <data name="ADM_MSG_DUPLIZIERT" xml:space="preserve">
+    <value>„{0}“ dupliziert als „{1}“.</value>
+  </data>
+  <data name="ADM_SCHLOSS" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen</value>
+  </data>
+  <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen, Duplizieren erlaubt</value>
+  </data>
+  <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
+    <value>Auslieferungssatz – nur lesen. Zum Ändern mit „Duplizieren...“ einen eigenen Satz anlegen.</value>
+  </data>
+  <data name="ADM_MSG_UNGESPEICHERT" xml:space="preserve">
+    <value>Es gibt ungespeicherte Änderungen – bitte „Speichern“ oder „Verwerfen“.</value>
+  </data>
+  <data name="ADM_LISTE_TASTEN" xml:space="preserve">
+    <value>Katalogliste – ↑ und ↓ wechseln die Zeile, Pos1 und Ende springen an den Anfang und ans Ende</value>
+  </data>
 </root>

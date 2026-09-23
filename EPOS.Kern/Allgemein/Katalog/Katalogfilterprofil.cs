@@ -430,10 +430,10 @@ namespace WindowsFormsApplication1
         public const string SpBeschreibung = "BESCHREIBUNG";
 
         /// <summary>
-        /// <b>„nur eigene Saetze" als SPALTE</b> (4.9) — der Schreibschutz der
-        /// Auslieferung (<c>ReadOnly</c>). Im Spaltenmodell gibt es keinen Schalter
-        /// mehr, in den er passte; als Kennzeichen traegt er den Sortierpfeil und
-        /// stellt die eigenen Saetze zusammen (5.6.2).
+        /// <b>„nur eigene Saetze"</b> (4.9) — der Schreibschutz der Auslieferung
+        /// (<c>ReadOnly</c>) als Wert der Bedarfszeile. Eine SPALTE ist er nicht mehr:
+        /// Die Liste zeigt ihn als Schloss hinter dem Bezeichner (Konzept
+        /// Administrationsdialoge, V10).
         /// </summary>
         public const string SpAuslieferung = "AUSLIEFERUNG";
 
@@ -496,8 +496,9 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Der <b>Schreibschutz</b> einer Klimaregion (4.11) — <c>ReadOnly</c>: ein
-        /// Satz der Auslieferung laesst sich nicht loeschen. Als Kennzeichen traegt er
-        /// nur den Sortierpfeil (5.6.2).
+        /// Satz der Auslieferung laesst sich nicht loeschen. Der Wert steht in der Zeile;
+        /// die Liste zeigt ihn als Schloss hinter dem Bezeichner, nicht als Spalte
+        /// (Konzept Administrationsdialoge, V10).
         /// </summary>
         public const string SpSchreibschutz = "SCHREIBSCHUTZ";
 
@@ -763,14 +764,17 @@ namespace WindowsFormsApplication1
         /// (<c>Bezeichner</c>, <c>Typ</c>, <c>Beschreibung</c>, <c>Monat_1…12</c>,
         /// <c>ReadOnly</c>), und sie bekommen deshalb DASSELBE Profil.
         ///
-        /// <para><b>Fuenf Spalten:</b> Bezeichner · Typ (die Profilzuordnung — der
+        /// <para><b>Vier Spalten:</b> Bezeichner · Typ (die Profilzuordnung — der
         /// Grund, warum zwei gleich grosse Bedarfe verschieden rechnen) · Jahressumme
-        /// [MWh] · Beschreibung · Auslieferung. Die Beschreibung steht als SPALTE und
+        /// [MWh] · Beschreibung. Die Beschreibung steht als SPALTE und
         /// nicht nur im Suchraum, weil die VDI-6002-Saetze ihren Kennwert im Text
         /// tragen; ein Trichter „enthaelt 28 l" findet sie.</para>
         ///
-        /// <para><b>„nur eigene Saetze" ist eine Spalte, kein Schalter</b> (4.9): Im
-        /// Spaltenmodell gibt es keine Leiste mehr, in die ein Schalter passte.</para>
+        /// <para><b>Die Auslieferung ist keine Spalte mehr</b> (Konzept
+        /// Administrationsdialoge, V10; Entscheid AD-Q13): Ein Auslieferungssatz traegt
+        /// das Schloss hinter seinem Bezeichner (<see cref="Katalogfilterzeile.Geschuetzt"/>),
+        /// die Spalte nahm der Liste nur Breite. Der Wert <see cref="SpAuslieferung"/>
+        /// steht weiter in der Zeile.</para>
         /// </summary>
         public static Katalogfilterprofil FuerBedarf(BedarfsArt art, Func<string, string> text = null)
         {
@@ -784,8 +788,7 @@ namespace WindowsFormsApplication1
                     new Katalogspalte(SpBezeichner,      t("KFLT_SP_BEZEICHNER")),
                     new Katalogspalte(SpTyp,             t("KFLT_SP_TYP"), rang: Katalogspaltenrang.BeiPlatz),
                     new Katalogspalte(SpJahressummeMwh,  t("KFLT_SP_JAHRESSUMME"), "MWh", Katalogspaltenart.Zahl),
-                    new Katalogspalte(SpBeschreibung,    t("KFLT_SP_BESCHREIBUNG"), rang: Katalogspaltenrang.Breit),
-                    new Katalogspalte(SpAuslieferung,    t("KFLT_SP_AUSLIEFERUNG"), "", Katalogspaltenart.JaNein, rang: Katalogspaltenrang.Breit)
+                    new Katalogspalte(SpBeschreibung,    t("KFLT_SP_BESCHREIBUNG"), rang: Katalogspaltenrang.Breit)
                 }
             };
         }
