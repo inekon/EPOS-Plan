@@ -68,5 +68,64 @@ namespace WindowsFormsApplication1
 
         /// <summary>Kellertemperatur [°C] bei Randbedingung Keller.</summary>
         public static double Kellertemperatur => GebaeudeFestwerte.VORGABE_KELLERTEMPERATUR;
+
+        /// <summary>Infiltration [1/h] (Stufe G2).</summary>
+        public static double LuftwechselInfiltration => GebaeudeFestwerte.VORGABE_LUFTWECHSEL_INFILTRATION;
+
+        /// <summary>Nutzerlüftung [1/h] (Stufe G2).</summary>
+        public static double LuftwechselNutzer => GebaeudeFestwerte.VORGABE_LUFTWECHSEL_NUTZER;
+
+        /// <summary>Luftwechsel der Sommerlüftung [1/h] (Stufe G2).</summary>
+        public static double LuftwechselSommer => GebaeudeFestwerte.SOMMERLUEFTUNG_LUFTWECHSEL;
+
+        /// <summary>Einschaltschwelle der Sommerlüftung [°C] (Stufe G2).</summary>
+        public static double SommerlueftungSchwelle => GebaeudeFestwerte.SOMMERLUEFTUNG_SCHWELLE;
+
+        /// <summary>
+        /// <b>Der Luftwechsel, mit dem der VDI-Weg rechnet</b> [1/h] (Stufe G2;
+        /// Softwarearchitektur 2.8, Rechenschritte A7) — die eine Stelle der Regel, die
+        /// Eingangsbauer und Gebäudedialog teilen:
+        /// <list type="number">
+        /// <item>ist Infiltration oder Nutzerlüftung gesetzt, gilt ihre Summe, das fehlende
+        /// Glied mit seiner Vorgabe (0,3 bzw. 0,4 1/h);</item>
+        /// <item>sind beide leer, gilt die <c>Luftwechselrate</c> des Gebäudes, sofern sie größer
+        /// null ist;</item>
+        /// <item>sonst die Summe der beiden Vorgaben (0,7 1/h).</item>
+        /// </list>
+        /// Der Rückfall wird nie still überschrieben — <paramref name="herkunft"/> nennt ihn.
+        /// </summary>
+        public static double WirksamerLuftwechsel(double? luftwechselrate, double? infiltration,
+                                                  double? nutzer, out Luftwechselherkunft herkunft)
+        {
+            if (infiltration.HasValue || nutzer.HasValue)
+            {
+                herkunft = Luftwechselherkunft.InfiltrationUndNutzer;
+                return (infiltration ?? LuftwechselInfiltration) + (nutzer ?? LuftwechselNutzer);
+            }
+            if (luftwechselrate is double n && n > 0.0 && !double.IsInfinity(n))
+            {
+                herkunft = Luftwechselherkunft.Luftwechselrate;
+                return n;
+            }
+            herkunft = Luftwechselherkunft.Vorgabe;
+            return LuftwechselInfiltration + LuftwechselNutzer;
+        }
+
+        /// <summary>Dasselbe ohne Herkunft.</summary>
+        public static double WirksamerLuftwechsel(double? luftwechselrate, double? infiltration, double? nutzer)
+            => WirksamerLuftwechsel(luftwechselrate, infiltration, nutzer, out _);
+    }
+
+    /// <summary>Woher der Luftwechsel des VDI-Wegs kommt (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?, out Luftwechselherkunft)"/>).</summary>
+    public enum Luftwechselherkunft
+    {
+        /// <summary>Summe aus Infiltration und Nutzerlüftung (Stufe G2).</summary>
+        InfiltrationUndNutzer,
+
+        /// <summary>Beide leer: die Luftwechselrate des Gebäudes.</summary>
+        Luftwechselrate,
+
+        /// <summary>Alles leer bzw. null: die Summe der beiden Vorgaben.</summary>
+        Vorgabe,
     }
 }

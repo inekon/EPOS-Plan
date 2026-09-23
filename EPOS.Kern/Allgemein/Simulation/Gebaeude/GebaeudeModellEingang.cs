@@ -83,8 +83,21 @@ namespace WindowsFormsApplication1
         internal double Verschattungsfaktor { get; private set; }
         /// <summary>Σψ·L der drei Wärmebrückenpaare [W/K].</summary>
         internal double SummePsiL_WK { get; private set; }
-        /// <summary>Luftwechselrate n [1/h].</summary>
+        /// <summary>
+        /// Der wirksame Grundluftwechsel n [1/h] (Stufe G2): Infiltration + Nutzerlüftung, bei
+        /// beiden leer die Luftwechselrate, sonst die Vorgaben
+        /// (<see cref="Gebaeudemodellvorgaben.WirksamerLuftwechsel(double?, double?, double?, out Luftwechselherkunft)"/>).
+        /// </summary>
         internal double Luftwechselrate_h { get; private set; }
+        /// <summary>Woher <see cref="Luftwechselrate_h"/> kommt.</summary>
+        internal Luftwechselherkunft LuftwechselHerkunft { get; private set; }
+        /// <summary>Ist die Sommerlüftungsregel eingeschaltet (Spalte <c>Sommerlueftung</c>)?</summary>
+        internal bool Sommerlueftung { get; private set; }
+        /// <summary>
+        /// Der Zusatzleitwert einer Stunde mit Sommerlüftung [W/K]: der Luftwechsel steigt von
+        /// <see cref="Luftwechselrate_h"/> auf 2,0 1/h, (2,0 − n)·A_f·H·c·ρ, nie negativ.
+        /// </summary>
+        internal double SommerlueftungZusatzleitwertWK { get; private set; }
         /// <summary>Innere Wärmegewinne des Katalogbaus [W], zeitlich konstant (G1).</summary>
         internal double InnereGewinne_W { get; private set; }
 
@@ -113,10 +126,8 @@ namespace WindowsFormsApplication1
         internal string GrundRandbedingung { get; private set; }
         /// <summary>Kellertemperatur [°C].</summary>
         internal double Kellertemperatur { get; private set; }
-        /// <summary>Schalter „Strahlung auf Außenbauteile" (in G1 ohne Wirkung, E5).</summary>
+        /// <summary>Schalter „Strahlung auf Außenbauteile": opake Flächen mit kurz- und langwelligem Term (E5, Stufe G2).</summary>
         internal bool AussenbauteileStrahlung { get; private set; }
-        /// <summary>Ist eine der G2-Spalten (Infiltration, Nutzerlüftung, Sommerlüftung) gesetzt? In G1 ohne Wirkung.</summary>
-        internal bool G2SpaltenGesetzt { get; private set; }
 
         // =====================================================================
         //  Ersatzparameter und Randreihen (Schritte A und E)
@@ -151,16 +162,21 @@ namespace WindowsFormsApplication1
         internal Fassadenstrahlung Strahlung { get; private set; }
         /// <summary>Fiel die Erdreichrechnung auf Ersatzwerte des Jahresgangs zurück?</summary>
         internal bool ErdreichErsatzwerte { get; private set; }
-        /// <summary>Zahl der Stunden mit Gegenstrahlung (in G1 nicht rechenwirksam).</summary>
+        /// <summary>Zahl der Stunden mit Gegenstrahlung — nur in ihnen rechnet der langwellige Term (NULL-Regel E5).</summary>
         internal int StundenMitGegenstrahlung { get; private set; }
 
-        /// <summary>Die Randbedingung der Stunde <paramref name="h"/> für den Löser.</summary>
-        internal Stundenrand Rand(int h)
+        /// <summary>
+        /// Die Randbedingung der Stunde <paramref name="h"/> für den Löser;
+        /// <paramref name="sommerlueftung"/> legt den Zusatzleitwert der Sommerlüftung parallel
+        /// zum Lüftungszweig (Rechenschritte 7.2 — der Zustand gilt die ganze Stunde).
+        /// </summary>
+        internal Stundenrand Rand(int h, bool sommerlueftung = false)
         {
             return new Stundenrand(ThetaOut[h], ThetaEq[h], ThetaSoll[h], ThetaMax[h],
                                    PhiRadAW[h], PhiRadIW[h], PhiConv[h],
                                    heizleistungMaxW: HeizleistungMaxW,
-                                   heizungStrahlungsanteil: HeizungStrahlungsanteil);
+                                   heizungStrahlungsanteil: HeizungStrahlungsanteil,
+                                   zusatzleitwertWK: sommerlueftung ? SommerlueftungZusatzleitwertWK : 0.0);
         }
 
         /// <summary>Ist Stunde <paramref name="h"/> (0 … 8759) Nutzungszeit — Stunde des Tages 7 … 22, 1-basiert (Rechenschritte 8.2, E8)?</summary>
@@ -229,6 +245,9 @@ namespace WindowsFormsApplication1
             // ---- Gewichte der äquivalenten Außentemperatur (E7) ----
             double uaLuftseitig = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Dach * e.A_Dach_M2
                                   + e.U_Sonstige * e.A_Sonstige_M2;
+            // Mit Schalter: Wand und Sonstiges senkrecht, Dach waagerecht (Klassenweg, Rechenschritte E5).
+            double uaSenkrecht = e.U_Aussenwand * e.A_Aussenwand_M2 + e.U_Sonstige * e.A_Sonstige_M2;
+            double uaDach = e.U_Dach * e.A_Dach_M2;
             double uaGrund = e.U_Grund * e.A_Grund_M2;
             double uaFenster = p.UA_Fenster_WK;
             double uaSumme = p.SummeUA_opak_WK + uaFenster;
@@ -254,13 +273,33 @@ namespace WindowsFormsApplication1
                 phiRadIW[h] = solRad * anteilIW + innenRad * anteilIW;
                 phiConv[h] = solLuft + innenKonv;
 
-                // E5/E7 — in G1: opake Flächen θ_out (Schalter aus), Fenster θ_out + Δθ_lw (NULL-Regel 0).
+                // E5/E7 (G2) — Fenster θ_out + Δθ_lw nach Gl. (39); opake Flächen mit Schalter
+                // θ_out + Δθ_lw + Δθ_kw nach Gl. (32), ohne Schalter θ_out. NULL-Regel: ohne
+                // Gegenstrahlung ist Δθ_lw = 0. Die Außenwand des Klassenwegs hat keine
+                // Orientierung; ihre Einstrahlung ist das Mittel der vier Fassaden, das Dach
+                // liegt waagerecht und bekommt die Globalstrahlung (benannte Festlegung E5).
                 double tOut = e.ThetaOut[h];
-                double tFenster = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(
-                    GebaeudeKlimaweg.Gegenstrahlung(solarOrtszeit[h]));
-                thetaEq[h] = uaSumme > 0.0
-                    ? (uaLuftseitig * tOut + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
-                    : tOut;
+                double eA = GebaeudeKlimaweg.Gegenstrahlung(solarOrtszeit[h]);
+                double tFenster = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND);
+                if (!e.AussenbauteileStrahlung)
+                {
+                    // Ohne Schalter dieselbe Bildung wie in G1 (bitgleich bei fehlender Gegenstrahlung).
+                    thetaEq[h] = uaSumme > 0.0
+                        ? (uaLuftseitig * tOut + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
+                        : tOut;
+                }
+                else
+                {
+                    double iWand = 0.25 * (s.Sued[h] + s.Ost[h] + s.West[h] + s.Nord[h]);
+                    double iDach = Math.Max(solarOrtszeit[h].Globalstrahlung, 0.0);
+                    double tSenkrecht = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_WAND)
+                                        + GebaeudeKlimaweg.DeltaThetaKurzwellig(iWand, eA, tOut);
+                    double tDach = tOut + GebaeudeKlimaweg.DeltaThetaLangwellig(eA, tOut, GebaeudeFestwerte.SICHTFAKTOR_DACH)
+                                   + GebaeudeKlimaweg.DeltaThetaKurzwellig(iDach, eA, tOut);
+                    thetaEq[h] = uaSumme > 0.0
+                        ? (uaSenkrecht * tSenkrecht + uaDach * tDach + uaGrund * e.ThetaGrund[h] + uaFenster * tFenster) / uaSumme
+                        : tOut;
+                }
             }
 
             e.ThetaEq = thetaEq;
@@ -308,7 +347,6 @@ namespace WindowsFormsApplication1
                 GWert = g.Fensterdurchlassgrad,
                 Rahmenanteil = g.Rahmenanteil ?? GebaeudeFestwerte.VORGABE_RAHMENANTEIL,
                 Verschattungsfaktor = g.Verschattungsfaktor ?? GebaeudeFestwerte.VORGABE_VERSCHATTUNGSFAKTOR,
-                Luftwechselrate_h = g.Luftwechselrate,
                 InnereGewinne_W = g.Interne_Waermegewinne,
                 SollTag = g.Raumsolltemperatur_Tag,
                 SollNacht = g.Raumsolltemperatur_Nachtabsenkung,
@@ -323,8 +361,21 @@ namespace WindowsFormsApplication1
                     ? DbWerte.GRUND_ERDREICH : g.Grundflaeche_Randbedingung,
                 Kellertemperatur = g.Kellertemperatur ?? GebaeudeFestwerte.VORGABE_KELLERTEMPERATUR,
                 AussenbauteileStrahlung = g.Aussenbauteile_Strahlung,
-                G2SpaltenGesetzt = g.Luftwechsel_Infiltration.HasValue || g.Luftwechsel_Nutzer.HasValue || g.Sommerlueftung,
+                Sommerlueftung = g.Sommerlueftung,
             };
+
+            // Lüftung (G2): Infiltration + Nutzerlüftung, sonst Luftwechselrate, sonst Vorgabe.
+            e.Luftwechselrate_h = Gebaeudemodellvorgaben.WirksamerLuftwechsel(
+                g.Luftwechselrate, g.Luftwechsel_Infiltration, g.Luftwechsel_Nutzer, out Luftwechselherkunft herkunft);
+            e.LuftwechselHerkunft = herkunft;
+            if (g.Luftwechsel_Infiltration is double nInf && (!Endlich(nInf) || nInf <= 0.0))
+                e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Infiltration " + Text(nInf) + " 1/h ist nicht größer null.");
+            if (g.Luftwechsel_Nutzer is double nNutz && (!Endlich(nNutz) || nNutz < 0.0))
+                e.Fehler(GebaeudeModellFehler.ParameterUngueltig, "Die Nutzerlüftung " + Text(nNutz) + " 1/h ist negativ oder nicht endlich.");
+            double zusatzN = GebaeudeFestwerte.SOMMERLUEFTUNG_LUFTWECHSEL - e.Luftwechselrate_h;
+            e.SommerlueftungZusatzleitwertWK = e.Sommerlueftung && zusatzN > 0.0 && Endlich(zusatzN)
+                ? zusatzN * e.Nutzflaeche_M2 * e.Raumhoehe_M * GebaeudeFestwerte.C_RHO_LUFT
+                : 0.0;
 
             // Ost/West: die NULL-Vorgabe aus dem Bestandsfeld bildet der Vorbereitungsschritt.
             GebaeudeVorbereitung.FensterflaechenOstWest(g, out double ost, out double west);

@@ -57,11 +57,12 @@ namespace WindowsFormsApplication1
     /// wie PV und Solarthermie. Die isotrope Bestandsfunktion mit ihren statischen Feldern
     /// wird nicht benutzt (Umsetzungskonzept 1.2).</para>
     ///
-    /// <para><b>Gegenstrahlung</b> (E5, Rechenschritte 1.2): NULL heißt „nicht verfügbar",
-    /// dann gilt Δθ_lw = 0 und α_str,A = 5,0 W/(m²K). In Stufe G1 ist der langwellige Term
-    /// auch bei vorhandener Gegenstrahlung nicht rechenwirksam — die Normformel füllt den
-    /// Schalter <c>Aussenbauteile_Strahlung</c> erst mit G2 (Rechenschritte E5); die Zahl der
-    /// Stunden mit Gegenstrahlung wird deshalb ausgewiesen (<see cref="StundenMitGegenstrahlung"/>).</para>
+    /// <para><b>Gegenstrahlung und Außenflächen</b> (E5, Stufe G2): der langwellige Austausch
+    /// nach VDI 6007 Blatt 1 Gl. (33)–(37) mit der Ausstrahlung der Erdoberfläche nach
+    /// Blatt 3 Gl. (89), der kurzwellige Term nach Blatt 1 Gl. (38). <b>NULL-Regel:</b> fehlt
+    /// die Gegenstrahlung einer Stunde (oder ist sie nicht größer null), gilt Δθ_lw = 0 und
+    /// α_str,A = 5,0 W/(m²K) — geschätzt wird nichts. Der Leitwert des Netzes (α_A = 25) bleibt
+    /// davon unberührt; α_str,A geht allein in die beiden Δθ-Terme ein (Rechenschritte E5).</para>
     ///
     /// <para>Reine Umrechnung: ohne Datenbank, ohne Protokoll, ohne Zustand, durchgehend
     /// <c>double</c>.</para>
@@ -190,22 +191,85 @@ namespace WindowsFormsApplication1
                 GebaeudeFestwerte.ERDREICH_TEMPERATURLEITFAEHIGKEIT_M2D, out erdreichAusKlimadaten);
         }
 
+        /// <summary>Emissionsgrad des Erdbodens in Blatt 1 Gl. (34), (35) und Blatt 3 Gl. (89) [–].</summary>
+        internal const double EMISSIONSGRAD_ERDBODEN = 0.93;
+
+        /// <summary>Die Strahlungskonstante, wie sie Blatt 3 Gl. (89) schreibt [W/(m²K⁴)].</summary>
+        internal const double SIGMA_BLATT3 = 5.671e-8;
+
+        /// <summary>Ist die Gegenstrahlung der Stunde rechenbar (endlich und größer null)?</summary>
+        internal static bool GegenstrahlungRechenbar(double gegenstrahlungWm2)
+            => !double.IsNaN(gegenstrahlungWm2) && !double.IsInfinity(gegenstrahlungWm2) && gegenstrahlungWm2 > 0.0;
+
         /// <summary>
-        /// Der langwellige Term Δθ_lw einer Fläche [K] (Rechenschritte E5). NULL-Regel: ohne
-        /// Gegenstrahlung 0. In Stufe G1 ist er stets 0 — die Normformel kommt mit G2.
+        /// Die langwellige Ausstrahlung der Erdoberfläche E_E [W/m²] einschließlich der
+        /// reflektierten Gegenstrahlung — VDI 6007 Blatt 3 Gl. (89), Vorzeichenregel des DWD
+        /// (Einstrahlung positiv, Ausstrahlung negativ); aus der Außenlufttemperatur abgeleitet.
         /// </summary>
-        internal static double DeltaThetaLangwellig(double gegenstrahlungWm2)
+        internal static double AusstrahlungErde(double gegenstrahlungWm2, double thetaAussen)
         {
-            return 0.0;
+            double t = GebaeudeFestwerte.KELVIN + thetaAussen;
+            return -EMISSIONSGRAD_ERDBODEN * SIGMA_BLATT3 * t * t * t * t
+                   + (1.0 - EMISSIONSGRAD_ERDBODEN) * gegenstrahlungWm2;
+        }
+
+        /// <summary>Strahlungstemperatur der Atmosphäre θ_Atm [°C] — Blatt 1 Gl. (34).</summary>
+        internal static double TemperaturAtmosphaere(double gegenstrahlungWm2)
+            => Math.Pow(gegenstrahlungWm2 / (EMISSIONSGRAD_ERDBODEN * 5.67), 0.25) * 100.0 - GebaeudeFestwerte.KELVIN;
+
+        /// <summary>Strahlungstemperatur der Erdoberfläche θ_Erd [°C] — Blatt 1 Gl. (35).</summary>
+        internal static double TemperaturErde(double ausstrahlungErdeWm2)
+            => Math.Pow(-ausstrahlungErdeWm2 / (EMISSIONSGRAD_ERDBODEN * 5.67), 0.25) * 100.0 - GebaeudeFestwerte.KELVIN;
+
+        /// <summary>
+        /// Der Strahlungsanteil des äußeren Übergangs α_str,A [W/(m²K)] — Blatt 1 Gl. (37):
+        /// (E_A + E_E)/(θ_Atm − θ_Erd); 5,0 bei E_A + E_E = 0, bei θ_Atm = θ_Erd und nach der
+        /// NULL-Regel (keine Gegenstrahlung).
+        /// </summary>
+        internal static double AlphaStrAussen(double gegenstrahlungWm2, double thetaAussen)
+        {
+            if (!GegenstrahlungRechenbar(gegenstrahlungWm2)) return GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL;
+            double eE = AusstrahlungErde(gegenstrahlungWm2, thetaAussen);
+            double summe = gegenstrahlungWm2 + eE;
+            double dTheta = TemperaturAtmosphaere(gegenstrahlungWm2) - TemperaturErde(eE);
+            if (summe == 0.0 || dTheta == 0.0 || double.IsNaN(dTheta)) return GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL;
+            return summe / dTheta;
         }
 
         /// <summary>
-        /// Der äußere Übergang α_A [W/(m²K)] (Gl. (38)): α_kon,A + α_str,A mit dem Rückfallwert
-        /// α_str,A = 5,0, solange die Gegenstrahlung fehlt — und in G1 stets.
+        /// Der äußere Übergang der Δθ-Terme α_A = α_kon,A + α_str,A [W/(m²K)] — Blatt 1
+        /// Gl. (38), mit α_str,A nach Gl. (37). Ohne Gegenstrahlung 25 W/(m²K).
         /// </summary>
-        internal static double AlphaAussen(double gegenstrahlungWm2)
+        internal static double AlphaAussen(double gegenstrahlungWm2, double thetaAussen)
+            => GebaeudeFestwerte.ALPHA_KON_AUSSEN + AlphaStrAussen(gegenstrahlungWm2, thetaAussen);
+
+        /// <summary>
+        /// Der langwellige Term Δθ_lw einer Außenfläche [K] — Blatt 1 Gl. (33) mit θ_Atm (34),
+        /// θ_Erd (35), α_str,A (37) und E_E nach Blatt 3 (89); <paramref name="sichtfaktor"/> ist
+        /// φ nach Gl. (36a) (senkrecht 0,5, waagerecht nach oben 1,0). NULL-Regel: ohne
+        /// Gegenstrahlung 0.
+        /// </summary>
+        internal static double DeltaThetaLangwellig(double gegenstrahlungWm2, double thetaAussen, double sichtfaktor)
         {
-            return GebaeudeFestwerte.ALPHA_KON_AUSSEN + GebaeudeFestwerte.ALPHA_STR_AUSSEN_RUECKFALL;
+            if (!GegenstrahlungRechenbar(gegenstrahlungWm2)) return 0.0;
+            double eE = AusstrahlungErde(gegenstrahlungWm2, thetaAussen);
+            double thetaAtm = TemperaturAtmosphaere(gegenstrahlungWm2);
+            double thetaErd = TemperaturErde(eE);
+            double alphaStr = AlphaStrAussen(gegenstrahlungWm2, thetaAussen);
+            double alphaA = GebaeudeFestwerte.ALPHA_KON_AUSSEN + alphaStr;
+            double dt = (thetaErd - thetaAussen) * (1.0 - sichtfaktor) + (thetaAtm - thetaAussen) * sichtfaktor;
+            double w = dt * GebaeudeFestwerte.EMISSIONSGRAD_AUSSEN * alphaStr / (alphaA * EMISSIONSGRAD_ERDBODEN);
+            return double.IsNaN(w) || double.IsInfinity(w) ? 0.0 : w;
+        }
+
+        /// <summary>
+        /// Der kurzwellige Term Δθ_kw einer opaken Außenfläche [K] — Blatt 1 Gl. (38):
+        /// (I_dir + I_diff)·a_F/α_A, α_A mit α_str,A nach Gl. (37) bzw. der NULL-Regel.
+        /// </summary>
+        internal static double DeltaThetaKurzwellig(double einstrahlungWm2, double gegenstrahlungWm2, double thetaAussen)
+        {
+            if (!(einstrahlungWm2 > 0.0)) return 0.0;
+            return einstrahlungWm2 * GebaeudeFestwerte.ABSORPTIONSGRAD_OPAK / AlphaAussen(gegenstrahlungWm2, thetaAussen);
         }
 
         /// <summary>Die Gegenstrahlung einer Zeile [W/m²]; NaN = nicht verfügbar (NULL).</summary>
