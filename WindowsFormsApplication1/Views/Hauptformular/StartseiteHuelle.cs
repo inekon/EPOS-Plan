@@ -905,15 +905,18 @@ namespace WindowsFormsApplication1
 
         private void Brauchwasser(IWin32Window wirt)
         {
-            // Woertlich pBox_Brauchwasser_Click (:1755-1779).
-            WizardCtrl wizctrl = new WizardCtrl();
-
+            // pBox_Brauchwasser_Click (:1755-1779) - dazu das Zapfprofil (Umsetzungskonzept
+            // Zapfprofilgenerator 5.2): Der Behaelter nimmt seinen Arbeitsstand auf, und nach OK
+            // schreiben Zuordnungen UND Zapfprofil in EINEM DbVorgang. Scheitert ein Schritt,
+            // rollt alles zurueck; eine Ablehnung des Zapfprofils nennt ihren Grund.
             List<Z_ProjektBrauchwasserModel> liste = Z_ProjektBrauchwasserCtrl.LiesProjekt(_kontext.Id);
+            var behaelter = new ZapfprofilBehaelter(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
+            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, behaelter))
             {
-                wizctrl.Del_Projekt_Brauchwasser(_kontext.Id);
-                wizctrl.Add_Projekt_Brauchwasser(_kontext.Id, liste);
+                ZapfprofilSpeicherergebnis e = ZapfprofilHuelle.BrauchwasserSchreiben(_kontext.Id, liste, behaelter);
+                if (!e.Erfolg && e.Meldung != null)
+                    Dienste.Dialog.Warnung(e.Meldung.Text, BedarfsProfileHuelle.Titel(BedarfsArt.Brauchwasser));
             }
         }
 

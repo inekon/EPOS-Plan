@@ -26,6 +26,14 @@ namespace WindowsFormsApplication1
     ///
     /// <para><b>Vier Überlagerungen statt vier Fenstern</b> (Risiko R2): Ergebnis (W8.2),
     /// Stammkopf (W8.1) in beiden Modi und Wochen-Stundenprofil (W8.3).</para>
+    ///
+    /// <para><b>Das Zapfprofil</b> (Umsetzungskonzept Zapfprofilgenerator 5.2, 5.5): Bei
+    /// Brauchwasser hängt die Hülle den Einstieg der plattformfreien
+    /// <see cref="ZapfprofilHuelle"/> ein — Delegaten für die fünfte Überlagerung, die
+    /// Optionsgruppe „Rechenweg Brauchwasser" über einen <see cref="ZapfprofilBehaelter"/> je
+    /// Öffnen, die Leiste „monatlicher Verlauf" mit dessen Arbeitsstand. Geschrieben wird
+    /// der Behälter vom Aufrufer, im selben Vorgang wie die Zuordnungen
+    /// (<see cref="ZapfprofilHuelle.BrauchwasserSchreiben"/>).</para>
     /// </summary>
     internal static class BedarfsProfileHuelle
     {
@@ -93,9 +101,14 @@ namespace WindowsFormsApplication1
                           wizard: false);
         }
 
-        /// <summary>Die BRAUCHWASSERPROFILE eines Projekts.</summary>
+        /// <summary>
+        /// Die BRAUCHWASSERPROFILE eines Projekts. Der <paramref name="behaelter"/> nimmt den
+        /// Arbeitsstand des Zapfprofils auf (5.2); der Aufrufer schreibt ihn nach OK im selben
+        /// Vorgang wie die Zuordnungen. <c>null</c> = ohne Zapfprofil.
+        /// </summary>
         internal static bool Oeffnen(IWin32Window besitzer, int projektId, string projektName,
-                                     List<Z_ProjektBrauchwasserModel> modelle)
+                                     List<Z_ProjektBrauchwasserModel> modelle,
+                                     ZapfprofilBehaelter behaelter = null)
         {
             var zeilen = new List<BedarfsProfilZeile>();
             foreach (Z_ProjektBrauchwasserModel m in modelle)
@@ -117,7 +130,7 @@ namespace WindowsFormsApplication1
             };
 
             return Zeigen(besitzer, BedarfsArt.Brauchwasser, projektId, zeilen, geaendert,
-                          wizard: false);
+                          wizard: false, behaelter);
         }
 
         /// <summary>
@@ -185,13 +198,14 @@ namespace WindowsFormsApplication1
         // =================================================================================
 
         private static bool Zeigen(IWin32Window besitzer, BedarfsArt art, int projektId,
-                                   List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard)
+                                   List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard,
+                                   ZapfprofilBehaelter behaelter = null)
         {
             bool ok = false;
             BlazorDialogForm<BedarfsProfileDialog> dlg = null;
 
             var werte = new Dictionary<string, object>(
-                Gaben(besitzer, art, projektId, zeilen, geaendert, wizard))
+                Gaben(besitzer, art, projektId, zeilen, geaendert, wizard, behaelter))
             {
                 ["Geschlossen"] = EventCallback.Factory.Create<bool>(new object(), b =>
                 {
@@ -212,17 +226,24 @@ namespace WindowsFormsApplication1
         // Der Parametersatz
         // =================================================================================
 
+        /// <summary>
+        /// Der Parametersatz. Bei Brauchwasser mit <paramref name="behaelter"/> kommt der
+        /// Zapfprofil-Einstieg dazu (5.2): Knopf, Optionsgruppe, Arbeitsstand der Leiste.
+        /// </summary>
         internal static IReadOnlyDictionary<string, object> Gaben(
             IWin32Window besitzer, BedarfsArt art, int projektId,
-            List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard)
+            List<BedarfsProfilZeile> zeilen, Action geaendert, bool wizard,
+            ZapfprofilBehaelter behaelter = null)
         {
             int[] naechsteId = { STARTINDEX };
+            bool zapfprofil = art == BedarfsArt.Brauchwasser && behaelter != null;
 
             // Das Rechenobjekt gehoert der HUELLE - genau wie im Vorlaeufer, wo es ein Feld
             // der Maske war. "monatlicher Verlauf" zeigt danach denselben Stand noch einmal.
-            var rechenstand = new Rechenstand(art, projektId);
+            // Beim Brauchwasser rechnet es mit dem Arbeitsstand des Zapfprofils (5.2).
+            var rechenstand = new Rechenstand(art, projektId, zapfprofil ? behaelter : null);
 
-            return new Dictionary<string, object>
+            var gaben = new Dictionary<string, object>
             {
                 ["Art"] = art,
                 ["Zeilen"] = zeilen,
@@ -351,6 +372,15 @@ namespace WindowsFormsApplication1
                 ["HilfeSchluesselBerechnung"] = BerechnungsSchluessel(art),
                 ["HilfeKurztextBerechnung"] = BerechnungsKurztext(art)
             };
+
+            // Zapfprofil (5.2; ZU4, ZU6, ZU10): Knopf nur mit gespeichertem Projekt, sonst
+            // benannt gesperrt; die Meldung der Leiste kommt aus dem Rechenstand.
+            if (zapfprofil)
+            {
+                ZapfprofilHuelle.Einhaengen(gaben, projektId, ProjektCtrl.Existiert(projektId), behaelter);
+                gaben["SimulationMeldung"] = new Func<string>(() => rechenstand.Meldung);
+            }
+            return gaben;
         }
 
         // =================================================================================
@@ -373,26 +403,37 @@ namespace WindowsFormsApplication1
         {
             private readonly BedarfsArt _art;
             private readonly int _projektId;
+            private readonly ZapfprofilBehaelter _zapfprofil;
             private BedarfsVorschau _stand;
             private string _titelZusatz = "";
 
-            internal Rechenstand(BedarfsArt art, int projektId)
+            internal Rechenstand(BedarfsArt art, int projektId, ZapfprofilBehaelter zapfprofil = null)
             {
                 _art = art;
                 _projektId = projektId;
+                _zapfprofil = zapfprofil;
             }
+
+            /// <summary>Die Meldung des letzten Laufs (Zapfprofilweg); leer = keine.</summary>
+            internal string Meldung { get; private set; } = "";
 
             internal IReadOnlyDictionary<string, object> Rechnen(IReadOnlyList<string> namen)
             {
-                BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen);
+                // Beim Brauchwasser mit dem ARBEITSSTAND des Zapfprofils (5.2): null = der
+                // gespeicherte Stand; steht er auf dem Generator, rechnet der Zapfprofilweg.
+                BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(_art, _projektId, namen,
+                                                                       _zapfprofil?.Arbeitsstand);
+                Meldung = _zapfprofil != null ? ZapfprofilHuelle.Leistenmeldung(v) : "";
                 if (!v.Erfolgreich) return null;
 
                 _stand = v;
 
                 // Nur der Brauchwasserweg haengt den Profilnamen an den Fenstertitel
-                // (Form_Brauchwasser.btn_Berechnen_Click:308).
-                _titelZusatz = (_art == BedarfsArt.Brauchwasser && namen != null && namen.Count > 0)
-                    ? namen[0] : "";
+                // (Form_Brauchwasser.btn_Berechnen_Click:308); auf dem Zapfprofilweg steht
+                // dort der Generator (N8 g).
+                _titelZusatz = v.Zapfprofilweg
+                    ? TextEinfach("BPF_TITEL_ZAPFPROFILGENERATOR", "Zapfprofilgenerator")
+                    : (_art == BedarfsArt.Brauchwasser && namen != null && namen.Count > 0) ? namen[0] : "";
 
                 return LetzterStand();
             }

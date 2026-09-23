@@ -43,8 +43,10 @@ namespace WindowsFormsApplication1
                 : Laden(bezeichner) ?? new GebaeudeModel();
 
             // Die Brauchwasser-Zuordnungen des laufenden Projekts. Sie werden erst beim
-            // Oeffnen der Ueberlagerung gelesen und bei OK zurueckgeschrieben.
+            // Oeffnen der Ueberlagerung gelesen und bei OK zurueckgeschrieben - zusammen mit
+            // dem Arbeitsstand des Zapfprofils (Behaelter je Oeffnen, 5.2).
             var brauchwasser = new List<Z_ProjektBrauchwasserModel>();
+            var zapfprofil = new ZapfprofilBehaelter[1];
 
             return new Dictionary<string, object>
             {
@@ -68,9 +70,9 @@ namespace WindowsFormsApplication1
                 // eingehaengt hat (Gebaeudewege).
                 ["BrauchwasserGaben"] = Gebaeudewege.BrauchwasserGaben == null
                     ? null
-                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser)),
+                    : new Func<IReadOnlyDictionary<string, object>>(() => BrauchwasserGaben(brauchwasser, zapfprofil)),
                 ["BrauchwasserFertig"] = new Action<bool>(
-                    ok => BrauchwasserSchreiben(ok, brauchwasser)),
+                    ok => BrauchwasserSchreiben(ok, brauchwasser, zapfprofil[0])),
 
                 ["Texte"] = Texte(),
                 ["TitelText"] = Titel(),
@@ -249,9 +251,10 @@ namespace WindowsFormsApplication1
         /// Projekts werden hier frisch gelesen — der Vorläufer tat dasselbe beim Klick.
         /// </summary>
         private static IReadOnlyDictionary<string, object> BrauchwasserGaben(
-            List<Z_ProjektBrauchwasserModel> ziel)
+            List<Z_ProjektBrauchwasserModel> ziel, ZapfprofilBehaelter[] zapfprofil)
         {
             int projektId = Dienste.Projekt.Id;
+            zapfprofil[0] = new ZapfprofilBehaelter(projektId);
 
             ziel.Clear();
             ziel.AddRange(Z_ProjektBrauchwasserCtrl.LiesProjekt(projektId));
@@ -275,23 +278,31 @@ namespace WindowsFormsApplication1
                     });
             };
 
-            return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert);
+            return Gebaeudewege.BrauchwasserGaben?.Invoke(projektId, zeilen, geaendert, zapfprofil[0]);
         }
 
         /// <summary>
         /// Nach OK wird die Zuordnung geschrieben — Löschen + Neuanlegen samt
-        /// Änderungsdatum, wörtlich aus <c>btn_Brauchwasser_Click</c>:246-254.
+        /// Änderungsdatum (<c>btn_Brauchwasser_Click</c>:246-254), und im SELBEN Vorgang der
+        /// Arbeitsstand des Zapfprofils (5.2). Der Katalog führt keinen Arbeitsstand: geschrieben
+        /// wird sofort. Eine Ablehnung des Zapfprofils rollt alles zurück und nennt ihren Grund.
         /// </summary>
-        private static void BrauchwasserSchreiben(bool ok, List<Z_ProjektBrauchwasserModel> liste)
+        private static void BrauchwasserSchreiben(bool ok, List<Z_ProjektBrauchwasserModel> liste,
+                                                  ZapfprofilBehaelter zapfprofil)
         {
             if (!ok) return;
 
             int projektId = Dienste.Projekt.Id;
             string projektName = Dienste.Projekt.Name;
 
-            var wizctrl = new WizardCtrl();
-            wizctrl.Del_Projekt_Brauchwasser(projektId);
-            wizctrl.Add_Projekt_Brauchwasser(projektId, liste);
+            ZapfprofilSpeicherergebnis e = ZapfprofilHuelle.BrauchwasserSchreiben(projektId, liste, zapfprofil);
+            if (!e.Erfolg)
+            {
+                // Die Meldung laeuft HINTER dem Ereignis (Hausregel: kein synchrones
+                // Plattformfenster aus einem Rueckruf der Oberflaeche).
+                if (e.Meldung != null) _ = Dienste.Dialog.WarnungAsync(e.Meldung.Text, Titel());
+                return;
+            }
 
             var projctrl = new ProjektCtrl();
             projctrl.ReadSingle(projektName);

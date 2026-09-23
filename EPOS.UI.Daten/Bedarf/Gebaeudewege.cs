@@ -23,10 +23,11 @@ namespace WindowsFormsApplication1
     {
         /// <summary>
         /// Der Parametersatz der Brauchwasser-Profilliste des Projekts: Projekt-Id, die
-        /// Zeilen (die Liste gehört dem Aufrufer) und der Änderungsrückruf. <c>null</c> =
-        /// diese Schale zeigt die Liste nicht an.
+        /// Zeilen (die Liste gehört dem Aufrufer), der Änderungsrückruf und der
+        /// Zapfprofil-Behälter dieses Öffnens (Umsetzungskonzept Zapfprofilgenerator 5.2).
+        /// <c>null</c> = diese Schale zeigt die Liste nicht an.
         /// </summary>
-        internal static Func<int, List<BedarfsProfilZeile>, Action, IReadOnlyDictionary<string, object>> BrauchwasserGaben;
+        internal static Func<int, List<BedarfsProfilZeile>, Action, ZapfprofilBehaelter, IReadOnlyDictionary<string, object>> BrauchwasserGaben;
 
         /// <summary>Der Parametersatz der Gebäudetypen-Verwaltung; <c>null</c> = kein Knopf.</summary>
         internal static Func<IReadOnlyDictionary<string, object>> GebaeudetypGaben;

@@ -576,6 +576,107 @@ namespace WindowsFormsApplication1
             => new ZapfprofilMeldung(kennung, zone ?? "", text, ZapfprofilMeldungsart.Fehler);
 
         // =================================================================================
+        // Der Einstieg im Bedarfsprofil-Dialog (5.2; ZU4, ZU6, ZU10)
+        // =================================================================================
+
+        /// <summary>
+        /// Hängt den Zapfprofil-Einstieg in den Parametersatz des Bedarfsprofil-Dialogs der
+        /// Ausprägung Brauchwasser: die zwei Delegaten aus <see cref="Einstieg"/> (oder den
+        /// benannten Grund), die Optionsgruppe „Rechenweg Brauchwasser" über den
+        /// <paramref name="behaelter"/>, die Zahl der Zonen und die Beschriftungen. Ohne
+        /// gespeichertes Projekt (ZU10) gibt es nur den Grund; die Schale entscheidet das über
+        /// <paramref name="projektGespeichert"/>.
+        /// </summary>
+        internal static void Einhaengen(IDictionary<string, object> gaben, int idProjekt, bool projektGespeichert,
+                                        ZapfprofilBehaelter behaelter)
+        {
+            if (gaben == null) throw new ArgumentNullException(nameof(gaben));
+            ZapfprofilEinstieg einstieg = behaelter == null
+                ? Einstieg(idProjekt, null)
+                : Einstieg(projektGespeichert ? idProjekt : 0, behaelter.Wege());
+
+            gaben["ZapfprofilEinstiegTexte"] = EinstiegTexte();
+            gaben["ZapfprofilGaben"] = einstieg.Gaben;
+            gaben["ZapfprofilUebernommen"] = einstieg.Uebernommen;
+            gaben["ZapfprofilSperrgrund"] = einstieg.Grund ?? "";
+            if (!einstieg.Angeboten) return;
+
+            gaben["RechenwegBrauchwasser"] = behaelter.Weg;
+            gaben["RechenwegGesetzt"] = new Action<ZapfprofilWeg>(behaelter.WegSetzen);
+            gaben["ZapfprofilZonen"] = (behaelter.Arbeitsstand ?? ZapfprofilCtrl.Lies(idProjekt)).Zonen?.Count ?? 0;
+        }
+
+        /// <summary>Die Beschriftungen des Einstiegs in der Oberflächensprache; fehlt ein Schlüssel, bleibt der deutsche Rückfall.</summary>
+        internal static ZapfprofilEinstiegTexte EinstiegTexte()
+        {
+            var t = new ZapfprofilEinstiegTexte();
+            t.Knopf = Text_("BPF_BTN_ZAPFPROFIL_BW", t.Knopf);
+            t.Titel = Text_("ZPG_TITEL", t.Titel);
+            t.LabelRechenweg = Text_("BPF_LBL_RECHENWEG_BW", t.LabelRechenweg);
+            t.OptionBestand = Text_("BPF_OPT_BESTANDSPROFILE", t.OptionBestand);
+            t.OptionZapfprofil = Text_("BPF_OPT_ZAPFPROFIL", t.OptionZapfprofil);
+            t.HinweisRechenweg = Text_("BPF_HINW_RECHENWEG_BW", t.HinweisRechenweg);
+            t.HinweisZapfprofilweg = Text_("BPF_HINW_ZAPFPROFILWEG", t.HinweisZapfprofilweg);
+            t.HinweisOhneZonen = Text_("BPF_HINW_ZAPFPROFIL_OHNE_ZONEN", t.HinweisOhneZonen);
+            t.LeisteZapfprofil = Text_("BPF_LBL_LEISTE_ZAPFPROFIL", t.LeisteZapfprofil);
+            return t;
+        }
+
+        /// <summary>
+        /// Die Meldung der Leiste „Simulation · monatlicher Verlauf" (5.2, N8 b/g) zu einer
+        /// Vorschau des Bedarfsprofil-Dialogs: auf dem Zapfprofilweg der Grund eines Abbruchs
+        /// oder je abgelehnter Zone ihr Satz („Zone „…“ trägt 0: …") in der Oberflächensprache;
+        /// auf dem Bestandsweg leer.
+        /// </summary>
+        internal static string Leistenmeldung(BedarfsVorschau v)
+        {
+            if (v == null || !v.Zapfprofilweg) return "";
+            if (v.Erfolgreich && v.Waerme?.Zapfprofil != null)
+                return string.Join(Environment.NewLine, v.Waerme.Zapfprofil.Ablehnungen.Select(a => Meldung(a).Text));
+
+            ZapfVerfuegbarkeit verfuegbar = ZapfprofilCtrl.Verfuegbar();
+            if (!verfuegbar.Ja) return Verfuegbarkeitsgrund(verfuegbar.Grund);
+            if (v.Waerme == null)
+                return Text_("ZPG_MSG_KEINE_KLIMAREGION", "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.");
+            return Format(Text_("ZPG_MSG_UNERWARTET", "Die Vorschau konnte nicht gerechnet werden: {0}"),
+                          OhnePraefix(string.IsNullOrEmpty(v.Meldung) ? v.Waerme.Fehlertext : v.Meldung));
+        }
+
+        // =================================================================================
+        // Der gemeinsame Schreibweg des Bedarfsprofil-Dialogs (5.2)
+        // =================================================================================
+
+        /// <summary>
+        /// <b>Ein Vorgang für beides</b> (5.2): Löschen und Neuanlegen der Brauchwasser-
+        /// Zuordnungen des Projekts (<c>Del/Add_Projekt_Brauchwasser</c>) und der Arbeitsstand
+        /// des Zapfprofils (<see cref="ZapfprofilBehaelter.Schreiben"/> →
+        /// <c>ZapfprofilCtrl.Speichern(id, stand, v)</c>) in EINEM <see cref="DbVorgang"/>.
+        /// Scheitert ein Schritt, rollt der Vorgang alles zurück: ein Fehler der Zuordnungen hat
+        /// sich schon selbst gemeldet (<c>DataRepository.FehlerMelden</c>, Meldung <c>null</c>),
+        /// eine Ablehnung des Zapfprofils kommt als Meldung zurück. Nach dem Commit gilt der
+        /// Behälter wieder als unverändert. Aufrufer: Startseite und Gebäudekatalog.
+        /// </summary>
+        internal static ZapfprofilSpeicherergebnis BrauchwasserSchreiben(int idProjekt,
+                                                                         List<Z_ProjektBrauchwasserModel> liste,
+                                                                         ZapfprofilBehaelter behaelter)
+        {
+            var wizctrl = new WizardCtrl();
+            ZapfprofilSpeicherergebnis e;
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                if (!wizctrl.Del_Projekt_Brauchwasser(idProjekt, 0, v)
+                    || !wizctrl.Add_Projekt_Brauchwasser(idProjekt, liste ?? new List<Z_ProjektBrauchwasserModel>(), v))
+                    return new ZapfprofilSpeicherergebnis(false, null, null);
+
+                e = behaelter?.Schreiben(v) ?? new ZapfprofilSpeicherergebnis(true, null, null);
+                if (!e.Erfolg) return e;
+                v.Commit();
+            }
+            behaelter?.Geschrieben();
+            return e;
+        }
+
+        // =================================================================================
         // Speichern (5.2: im DbVorgang des Aufrufers)
         // =================================================================================
 
@@ -700,6 +801,7 @@ namespace WindowsFormsApplication1
             t.KontextKalender = Text_("ZPG_KONTEXT_KALENDER", t.KontextKalender);
             t.KontextBilanzgrenze = Text_("ZPG_KONTEXT_BILANZGRENZE", t.KontextBilanzgrenze);
             t.KontextUeberschrieben = Text_("ZPG_KONTEXT_UEBERSCHRIEBEN", t.KontextUeberschrieben);
+            t.LabelStufe = Text_("ZPG_LBL_STUFE", t.LabelStufe);
             t.StufeEinfach = Text_("ZPG_STUFE_EINFACH", t.StufeEinfach);
             t.StufeErweitert = Text_("ZPG_STUFE_ERWEITERT", t.StufeErweitert);
             t.StufeExperte = Text_("ZPG_STUFE_EXPERTE", t.StufeExperte);
