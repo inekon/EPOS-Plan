@@ -1185,11 +1185,13 @@ public class WirtschaftlichkeitSeiteTests : EposBunitContext
 
         IElement fuss = cut.Find(".epos-wirt-szenariofuss");
         Assert.Equal(vorgaben, fuss.TextContent);
-        // Sie steht im Fuß von „Was ist angenommen?", über dem Knopffuß.
+        // Sie steht im Fuß von „Was ist angenommen?" — E8a‑Q4: links in DERSELBEN Reihe
+        // wie die Knöpfe „Anhang-E-Checkliste…" und „Bericht erzeugen".
         IElement annahmen = cut.FindAll("section.epos-gruppenkopf")[3];
         Assert.Contains("Was ist angenommen?", annahmen.TextContent);
         Assert.NotNull(annahmen.QuerySelector(".epos-wirt-szenariofuss"));
-        Assert.Contains("epos-wirt-abschnitt-fuss", fuss.NextElementSibling!.ClassList);
+        Assert.Contains("epos-wirt-abschnitt-fuss", fuss.ParentElement!.ClassList);
+        Assert.Contains("epos-wirt-checklistenknopf", fuss.NextElementSibling!.ClassList);
 
         Einstieg(cut, WirtschaftlichkeitSeite.Unterdialog.Parameter).Click();
         var dialog = cut.FindComponent<WirtschaftlichkeitParameterDialog>();

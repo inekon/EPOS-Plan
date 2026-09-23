@@ -815,7 +815,8 @@ public class WirtschaftlichkeitErgebnisansichtTests : EposBunitContext
             })
             .Add(x => x.DateiOeffnen, (string pfad) => { geoeffnet = pfad; return Task.CompletedTask; }));
 
-        IElement knopf = Abschnitt(cut, 3).QuerySelector(".epos-wirt-abschnitt-fuss button")!;
+        // ETAPPE E8b (U43): Im Fuß steht davor der Knopf „Anhang-E-Checkliste…" (Mockup-Folge).
+        IElement knopf = Abschnitt(cut, 3).QuerySelector(".epos-wirt-abschnitt-fuss .epos-wirt-berichtknopf")!;
         Assert.Equal("Bericht erzeugen", knopf.TextContent.Trim());
         Assert.DoesNotContain("epos-knopf--primaer", knopf.ClassList);
         Assert.DoesNotContain(Fussknoepfe(cut), k => k.TextContent.Trim() == "Bericht erzeugen");
