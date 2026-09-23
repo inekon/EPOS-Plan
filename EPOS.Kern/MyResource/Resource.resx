@@ -19482,8 +19482,8 @@ Möchten Sie das zulassen?</value>
   <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
     <value>Direktabrechnung nach kWh</value>
   </data>
-  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
-    <value>Direktabrechnung: {0} €/kWh</value>
+  <data name="ETV_FORMEL_JE_KWH" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh/{2} = {3} €/{2} (gespeichert je {2})</value>
   </data>
   <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
     <value>Heizwert [{0}]</value>
@@ -21886,7 +21886,7 @@ Möchten Sie das zulassen?</value>
     <value>Der Brennwert des Brennstoffs. Er wird für Brennwertgeräte gebraucht und steht nur an Trägern, die ihn führen.</value>
   </data>
   <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
-    <value>Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird.</value>
+    <value>Die Einheit, in der der Arbeitspreis eingegeben wird: die Mengeneinheit des Trägers (etwa Liter, Kubikmeter oder Kilogramm) oder die Kilowattstunde, sobald ein Heizwert gepflegt ist. Gespeichert wird immer der Preis je Mengeneinheit; ein Wechsel rechnet nur die Anzeige über den Heizwert um.</value>
   </data>
   <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
     <value>Die Einheit, in der die Preiskette rechnet — Anzeige. Sie folgt der Preisbasis und den aktiven Umrechnungsregeln.</value>
@@ -24425,6 +24425,12 @@ Möchten Sie das zulassen?</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>Die gewählte Preisbasis kann diese Datenbank noch nicht speichern (Schemastand vor 112) — die Karte zeigt die Abrechnungseinheit.</value>
+  </data>
+  <data name="ETV_PREISBASIS_ARIA" xml:space="preserve">
+    <value>Einheit des Arbeitspreises</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_HEIZWERT" xml:space="preserve">
+    <value>€/kWh ist wählbar, sobald ein Heizwert gepflegt ist.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Senken: {0}</value>
