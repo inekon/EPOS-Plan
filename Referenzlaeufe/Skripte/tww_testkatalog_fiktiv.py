@@ -26,18 +26,30 @@ die Testdatenbank einen kleinen, in sich stimmigen Satz mit ERFUNDENEN, runden W
     (Quelle_Art 4, 2, 3) - keiner ist ein Normprofil;
   - fuenf DIN-4708-Werte (drei Belegungen, zwei Ausstattungsklassen, Sigma v*w_v in Wh) mit
     erfundenen Zahlen;
-  - VORBEREITET, INAKTIV (Stufe Z3): Zapfkategorien je Nutzungsart und die Parameter der
-    Stochastik (Schluessel wie ZapfStochastikParameter in
-    EPOS.Kern/Allgemein/Zapfprofil/Zapfkategorie.cs). Der Block schreibt erst mit dem
-    Schemaschritt T2 (Tab_TwwZapfkategorie_STAMM) - Schalter STOCHASTIK_AKTIV oder einmalig
-    --stochastik; ohne die Tabelle bricht er ohne Schreiben ab.
+  - Stufe Z3 (Schemaschritt T2, Schritt 114): Zapfkategorien je Nutzungsart und die fuenf
+    Parameter der Stochastik (Schluessel wie ZapfStochastikParameter in
+    EPOS.Kern/Allgemein/Zapfprofil/Zapfkategorie.cs), erfunden - keine Jordan/Vajen-Zahl.
 
-Jede Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog (fiktiv)",
-Katalogversion "TEST-1", kein Beleg. KEINE Zeile mit Status 'AUSLIEFERUNG' oder 'IMPORT', keine
-Zone und keine Zeile in Tab_TwwProjekt - kein Projekt steht auf dem Generator, der
-Referenzlauf bleibt unberuehrt.
+ABGELEITETE VDI-6002-WERTE (Anwenderentscheid ZU19 vom 23.09.2026, Stufe Z3). Neben dem fiktiven
+Katalog traegt die Testdatenbank vier Nutzungsarten mit GERINGFUEGIG ABWEICHENDEN VDI-6002-Werten
+(je ein eigener Tagesgangsatz; Bedarf, Jahresgang, Wochengang, Tagesgaenge). Das Skript liest sie
+allein aus tww_katalogwerte_abgeleitet.json neben diesem Skript - erzeugt von
+normzahlen_abgeleitet_bauen.py nach der dort dokumentierten Regel; die Originale braucht dieses
+Skript nicht. Die Zeilen tragen Herkunftsart 'EIGENKONSTRUKTION' (das Schema kennt keine eigene
+Herkunftsart "abgeleitet") und die Quelle "VDI 6002 Blatt <n> (abgeleitet)"; ihre Zapfkategorien
+bleiben fiktiv.
 
-VORAUSSETZUNG. Schemastand 103 (die zehn Tww-Tabellen), nachgezogen mit
+DAS ECODESIGN-ZAPFPROFIL (Stufe Z3, Konzept 4.5 Quelle (5)): ein Bedarfstag der Art 5 mit den 24
+Zapfungen des Lastprofils L der Verordnung (EU) Nr. 814/2013, Anhang III, Tabelle 1 - EU-Recht,
+frei verwendbar; Herkunftsart 'FREI'. Die Tagessumme ist Q_ref des Profils.
+
+Jede fiktive Zeile: Status 'EIGEN', ReadOnly 0, Herkunftsart 'FIKTIV', Quelle "Testkatalog
+(fiktiv)", Katalogversion "TEST-1", kein Beleg; die abgeleiteten und die freien Zeilen ebenso
+'EIGEN', ReadOnly 0, "TEST-1". KEINE Zeile mit Status 'AUSLIEFERUNG' oder 'IMPORT', keine Zone
+und keine Zeile in Tab_TwwProjekt - kein Projekt steht auf dem Generator, der Referenzlauf bleibt
+unberuehrt.
+
+VORAUSSETZUNG. Schemastand 114 (die zehn Tww-Tabellen und die Zapfkategorien), nachgezogen mit
     dotnet run --project Werkzeuge/Testdatenbankschema -- Referenzlaeufe/Kenndaten_Test.sqlite
 
 WIEDERHOLBAR. Jede Zeile wird nur angelegt, wenn ihr natuerlicher Schluessel fehlt; die
@@ -50,11 +62,14 @@ diesem Katalog gehoert, bricht das Skript ohne Schreiben ab (Rueckgabe 2).
 
 Aufruf (Windows: `py`, sonst `python3`):
     py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py Referenzlaeufe/Kenndaten_Test.sqlite
-    py Referenzlaeufe/Skripte/tww_testkatalog_fiktiv.py <Kopie.sqlite> --stochastik   (erst nach T2)
+(der Schalter --stochastik der Stufe Z2 ist ohne Wirkung - der Block ist dauerhaft an)
 """
 
+import json
+import os
 import sqlite3
 import sys
+from decimal import Decimal, ROUND_HALF_UP
 
 QUELLE = "Testkatalog (fiktiv)"
 VERSION = "TEST-1"
@@ -93,6 +108,74 @@ NUTZUNGSARTEN = [
 # (Kapitel 6 (a), (b)). Ergebnisneutral: kein Referenzprojekt nutzt den Generator.
 BEZUG_ZAPF = 50.0
 BEZUG_KALT = 12.0
+
+# --- Abgeleitete VDI-6002-Werte (ZU19) ---------------------------------------------------------
+# Die Datei traegt KEINEN Originalwert; ihre Regel steht im Kopf von normzahlen_abgeleitet_bauen.py.
+ABGELEITET_DATEI = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tww_katalogwerte_abgeleitet.json")
+HERKUNFT_ABGELEITET = "EIGENKONSTRUKTION"
+AUSGABE_VDI = "2014-03"
+ZUSATZ_ABGELEITET = " (abgeleitet)"
+# Die Bedarfswerte der Quelle sind Liter je Einheit und Tag bei 60 Grad C; im Katalog stehen kWh bei
+# den Bezugstemperaturen der Zeile: kWh = l * CW * (BEZUG_ZAPF_VDI - BEZUG_KALT_VDI) / 1000.
+BEZUG_ZAPF_VDI = 60.0
+BEZUG_KALT_VDI = BEZUG_KALT          # Setzung (kein normativer Wert), wie die fiktiven Zeilen
+CW = 1.163                           # Wh/(l*K), wie Mengengeruest.WAERMEKAPAZITAET_WASSER_WH_JE_L_K
+
+# (Nutzungsart der Quelle, Bezugsart, Kalenderart, Tagtypen 1..4 aus den Tagtypen der Quelle).
+# Nur die Nutzungsarten, deren Bezug das Schema kennt (Person, Bett) und die Profile tragen;
+# Tagtyp 4 (Ruhetag) nimmt den Sonntag - die Quelle behandelt Feiertage wie Sonntage.
+VDI_NUTZUNGSARTEN = [
+    ("Wohnen groß", 1, 1, ("werktag", "samstag", "sonntag", "sonntag")),
+    ("Studentenwohnheim", 1, 1, ("werktag", "samstag", "sonntag", "sonntag")),
+    ("Seniorenheim", 3, 4, ("werktag", "samstag", "sonntag", "sonntag")),
+    ("Krankenhaus", 3, 4, ("alle", "alle", "alle", "alle")),
+]
+WOCHENTAGE = ("mo", "di", "mi", "do", "fr", "sa", "so")
+MONATE = ("jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez")
+
+
+def normiert(werte, ziel):
+    """Die Werte exakt auf die Summe `ziel` gebracht (Tagesgang und Woche 1, Monate 12)."""
+    s = sum(werte)
+    return [w * ziel / s for w in werte]
+
+
+def abgeleitete_saetze_und_arten():
+    """Tagesgangsaetze und Nutzungsarten aus der JSON-Datei der abgeleiteten Werte."""
+    with open(ABGELEITET_DATEI, encoding="utf-8") as f:
+        d = json.load(f)
+    bedarf = {b["nutzungsart"]: b for b in d["bedarf"]}
+    saetze, arten = [], []
+    for (art, bezugsart, kalender, tagtypen) in VDI_NUTZUNGSARTEN:
+        b = bedarf[art]
+        quelle = "VDI 6002 Blatt %s (abgeleitet)" % b["blatt"]
+        name = art + ZUSATZ_ABGELEITET
+        profile = d["tagesprofile"][art]
+        saetze.append((name, {t + 1: normiert(profile[tagtypen[t]], 1.0) for t in range(4)},
+                       quelle, AUSGABE_VDI, HERKUNFT_ABGELEITET))
+        kwh = CW * (BEZUG_ZAPF_VDI - BEZUG_KALT_VDI) / 1000.0
+        arten.append(dict(
+            name=name, bezug=bezugsart,
+            bedarf=(b["minimum"] * kwh, b["mittel"] * kwh, b["maximum"] * kwh),
+            grenze=1, kalender=kalender, ferien=None,
+            monate=normiert([d["saisonfaktoren"][art][m] for m in MONATE], 12.0),
+            woche=normiert([d["wochenanteile"][art][t] for t in WOCHENTAGE], 1.0),
+            satz=name, bezug_zapf=BEZUG_ZAPF_VDI, bezug_kalt=BEZUG_KALT_VDI,
+            quelle=quelle, ausgabe=AUSGABE_VDI, herkunft=HERKUNFT_ABGELEITET))
+    return saetze, arten
+
+
+ABGELEITETE_SAETZE, ABGELEITETE_NUTZUNGSARTEN = abgeleitete_saetze_und_arten()
+
+# Alle Tagesgangsaetze: (Bezeichner, {Tagtyp: 24 Anteile}, Quelle, Ausgabe, Herkunftsart).
+SAETZE = [(SATZ, TAGESGAENGE, QUELLE, None, HERKUNFT)] + ABGELEITETE_SAETZE
+
+# Alle Nutzungsarten als Zeilenbeschreibung (die fiktiven auf den Testsatz).
+ALLE_NUTZUNGSARTEN = [
+    dict(name=n, bezug=bz, bedarf=bd, grenze=g, kalender=k, ferien=fe, monate=mo, woche=wo,
+         satz=SATZ, bezug_zapf=BEZUG_ZAPF, bezug_kalt=BEZUG_KALT, quelle=QUELLE, ausgabe=None, herkunft=HERKUNFT)
+    for (n, bz, bd, g, k, fe, mo, wo) in NUTZUNGSARTEN
+] + ABGELEITETE_NUTZUNGSARTEN
 
 # (Schluessel, Wert, Einheit) - neutrale Schluessel, runde erfundene Werte.
 PARAMETER = [
@@ -202,6 +285,70 @@ BEDARFSTAGE = [
     ]),
 ]
 
+# --- Das Ecodesign-Zapfprofil (Konzept 4.5 Quelle (5), Stufe Z3) ------------------------------
+# Verordnung (EU) Nr. 814/2013 der Kommission vom 2. August 2013, Anhang III, Tabelle 1
+# "Lastprofile von Warmwasserbereitern", Profil L (ABl. L 239 vom 6.9.2013, S. 162) - EU-Recht,
+# frei verwendbar; abgerufen am 23.09.2026 ueber das Amt fuer Veroeffentlichungen
+# (publications.europa.eu, CELEX 32013R0814, deutsche Fassung).
+# (Uhrzeit, Q_tap in kWh, f in l/min, T_m in Grad C, T_p in Grad C oder None)
+ECODESIGN_QUELLE = "Verordnung (EU) Nr. 814/2013 Anhang III"
+ECODESIGN_AUSGABE = "ABl. L 239 vom 6.9.2013, Tabelle 1, Lastprofil L"
+ECODESIGN_Q_REF = "11.655"           # Q_ref des Profils L in kWh (Tabelle 1, letzte Zeile)
+ECODESIGN_L = [
+    ("07:00", "0.105", 3, 25, None),
+    ("07:05", "1.4", 6, 40, None),
+    ("07:30", "0.105", 3, 25, None),
+    ("07:45", "0.105", 3, 25, None),
+    ("08:05", "3.605", 10, 10, 40),
+    ("08:25", "0.105", 3, 25, None),
+    ("08:30", "0.105", 3, 25, None),
+    ("08:45", "0.105", 3, 25, None),
+    ("09:00", "0.105", 3, 25, None),
+    ("09:30", "0.105", 3, 25, None),
+    ("10:30", "0.105", 3, 10, 40),
+    ("11:30", "0.105", 3, 25, None),
+    ("11:45", "0.105", 3, 25, None),
+    ("12:45", "0.315", 4, 10, 55),
+    ("14:30", "0.105", 3, 25, None),
+    ("15:30", "0.105", 3, 25, None),
+    ("16:30", "0.105", 3, 25, None),
+    ("18:00", "0.105", 3, 25, None),
+    ("18:15", "0.105", 3, 40, None),
+    ("18:30", "0.105", 3, 40, None),
+    ("19:00", "0.105", 3, 25, None),
+    ("20:30", "0.735", 4, 10, 55),
+    ("21:00", "3.605", 10, 10, 40),
+    ("21:30", "0.105", 3, 25, None),
+]
+# Die Dauer einer Zapfung steht nicht in der Tabelle; die Setzung der Umsetzung (nicht der
+# Verordnung): Dauer = Volumen / f, Volumen = Q_tap / (CW * (Nutztemperatur - Kaltwasser)),
+# Nutztemperatur = T_p, wo angegeben, sonst T_m; Kaltwasser 10 Grad C; ganze Minuten
+# kaufmaennisch, mindestens 1. Die Energie jeder Zapfung ist Q_tap unveraendert.
+ECODESIGN_KALTWASSER = Decimal("10")
+
+
+def ecodesign_dauer(q_tap, f, t_m, t_p):
+    nutz = Decimal(t_p if t_p is not None else t_m)
+    volumen = Decimal(q_tap) * 1000 / (Decimal(str(CW)) * (nutz - ECODESIGN_KALTWASSER))
+    minuten = (volumen / Decimal(f)).quantize(Decimal(1), rounding=ROUND_HALF_UP)
+    return max(1, int(minuten))
+
+
+def ecodesign_ereignisse():
+    liste = []
+    for n, (uhrzeit, q_tap, f, t_m, t_p) in enumerate(ECODESIGN_L, start=1):
+        h, m = uhrzeit.split(":")
+        liste.append((int(h) * 60 + int(m), ecodesign_dauer(q_tap, f, t_m, t_p), float(q_tap), n))
+    return liste
+
+
+# Bedarfstage mit eigener Provenienz: (Bezeichner, Quelle_Art, Bezugsmenge, Ereignisse, Quelle,
+# Ausgabe, Herkunftsart). Bezugsmenge NULL: der Tag wird nicht skaliert (nur Einfamilienhaus).
+BEDARFSTAGE_FREI = [
+    ("Ecodesign-Zapfprofil L", 5, None, ecodesign_ereignisse(), ECODESIGN_QUELLE, ECODESIGN_AUSGABE, "FREI"),
+]
+ALLE_BEDARFSTAGE = [(b, q, m, e, QUELLE, None, HERKUNFT) for (b, q, m, e) in BEDARFSTAGE] + BEDARFSTAGE_FREI
+
 # (Art, Schluessel, Wert) - Belegung in Personen, Ausstattung als Sigma v*w_v in Wh.
 DIN4708_WERTE = [
     ("BELEGUNG", "2", 1.0),
@@ -211,14 +358,11 @@ DIN4708_WERTE = [
     ("AUSSTATTUNG", "Testklasse B", 9000.0),
 ]
 
-# --- Stufe Z3: Stochastik (Zapfkategorien T2 und Parameter) - VORBEREITET, INAKTIV -----------
-# Eingeschaltet wird der Block erst mit dem Schemaschritt T2 (Tab_TwwZapfkategorie_STAMM, Stufe Z3,
-# Gruppe 2, Schrittnummer nach erneuter Messung): dann STOCHASTIK_AKTIV = True setzen (oder einmalig
-# mit --stochastik rufen), die Spaltennamen gegen die DDL von T2 halten und die Testdatenbank mit
-# aktivem LFS-Filter nachziehen. Bis dahin aendert er nichts - die Repo-Testdatenbank bleibt, wie sie
-# ist, und TwwKatalogWacheTests erwartet weiter 0/0. Die Werte sind ERFUNDEN: keine
-# Jordan/Vajen-Zahl, kein Normquantil, keine Setzung eines fremden Generators (Kapitel 6).
-STOCHASTIK_AKTIV = False
+# --- Stufe Z3: Stochastik (Zapfkategorien T2 und Parameter) ---------------------------------------
+# Dauerhaft an seit dem Schemaschritt T2 (Schritt 114, Tab_TwwZapfkategorie_STAMM). Die Werte sind
+# ERFUNDEN: keine Jordan/Vajen-Zahl, kein Normquantil, keine Setzung eines fremden Generators
+# (Kapitel 6). Die Spaltennamen folgen der DDL von T2 (TwwSchema.SQL_CREATE_ZAPFKATEGORIE).
+STOCHASTIK_AKTIV = True
 
 # (Schluessel, Wert, Einheit) - Schluessel wie ZapfStochastikParameter, runde erfundene Werte.
 STOCHASTIK_PARAMETER = [
@@ -241,6 +385,10 @@ ZAPFKATEGORIEN = [
     ("Testnutzung C (fiktiv)", "Testkategorie G (fiktiv)", 4.0, 2, 0.50, 1.5, None),
     ("Testnutzung C (fiktiv)", "Testkategorie H (fiktiv)", 9.0, 6, 0.50, 3.0, 12.0),
 ]
+# Die abgeleiteten Nutzungsarten bekommen den erfundenen Satz der Testnutzung A - ohne Kategorien
+# rechnete eine stochastische Zone auf ihnen nicht.
+ZAPFKATEGORIEN += [(a["name"],) + k[1:] for a in ABGELEITETE_NUTZUNGSARTEN
+                   for k in ZAPFKATEGORIEN if k[0] == "Testnutzung A (fiktiv)"]
 TABELLE_KATEGORIEN = "Tab_TwwZapfkategorie_STAMM"
 
 KATALOGTABELLEN = [
@@ -251,11 +399,11 @@ KATALOGTABELLEN = [
 
 # Die erwartete Zeilenzahl je Tabelle nach dem Lauf.
 ERWARTET = {
-    "Tab_TwwTagesgangsatz_STAMM": 1,
-    "Tab_TwwTagesgang_STAMM": len(TAGESGAENGE),
-    "Tab_TwwNutzungsart_STAMM": len(NUTZUNGSARTEN),
-    "Tab_TwwBedarfstag_STAMM": len(BEDARFSTAGE),
-    "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in BEDARFSTAGE),
+    "Tab_TwwTagesgangsatz_STAMM": len(SAETZE),
+    "Tab_TwwTagesgang_STAMM": sum(len(s[1]) for s in SAETZE),
+    "Tab_TwwNutzungsart_STAMM": len(ALLE_NUTZUNGSARTEN),
+    "Tab_TwwBedarfstag_STAMM": len(ALLE_BEDARFSTAGE),
+    "Tab_TwwBedarfstagEreignis_STAMM": sum(len(t[3]) for t in ALLE_BEDARFSTAGE),
     "Tab_TwwParameter_STAMM": len(PARAMETER),
     "Tab_TwwDin4708Wert_STAMM": len(DIN4708_WERTE),
     "Tab_TwwZone": 0,
@@ -269,12 +417,19 @@ def pruefe_summen():
     for name in {k[0] for k in ZAPFKATEGORIEN}:
         summe = sum(k[4] for k in ZAPFKATEGORIEN if k[0] == name)
         assert abs(summe - 1.0) < 1e-12, f"{name}: Anteile der Zapfkategorien {summe}"
-        assert name in [n[0] for n in NUTZUNGSARTEN], f"{name}: keine Nutzungsart des Katalogs"
-    for t, a in TAGESGAENGE.items():
-        assert abs(sum(a) - 1.0) < 1e-12, f"Tagtyp {t}: Summe {sum(a)}"
-    for n in NUTZUNGSARTEN:
-        assert len(n[6]) == 12 and abs(sum(n[6]) / 12.0 - 1.0) < 1e-12, f"{n[0]}: Monatsmittel"
-        assert len(n[7]) == 7 and abs(sum(n[7]) - 1.0) < 1e-12, f"{n[0]}: Wochensumme"
+        assert name in [n["name"] for n in ALLE_NUTZUNGSARTEN], f"{name}: keine Nutzungsart des Katalogs"
+    for (name, gaenge, _q, _a, _h) in SAETZE:
+        assert sorted(gaenge) == [1, 2, 3, 4], f"{name}: Tagtypen"
+        for t, a in gaenge.items():
+            assert len(a) == 24 and abs(sum(a) - 1.0) < 1e-12, f"{name}, Tagtyp {t}: Summe {sum(a)}"
+    for n in ALLE_NUTZUNGSARTEN:
+        assert len(n["monate"]) == 12 and abs(sum(n["monate"]) / 12.0 - 1.0) < 1e-12, f"{n['name']}: Monatsmittel"
+        assert len(n["woche"]) == 7 and abs(sum(n["woche"]) - 1.0) < 1e-12, f"{n['name']}: Wochensumme"
+        assert n["satz"] in [s[0] for s in SAETZE], f"{n['name']}: Tagesgangsatz"
+    for a in ALLE_NUTZUNGSARTEN:
+        assert any(k[0] == a["name"] for k in ZAPFKATEGORIEN), f"{a['name']}: keine Zapfkategorien"
+    summe = sum(Decimal(e[1]) for e in ECODESIGN_L)
+    assert summe == Decimal(ECODESIGN_Q_REF), f"Ecodesign L: Tagessumme {summe} statt Q_ref {ECODESIGN_Q_REF}"
 
 
 def zahl(con, sql, *p):
@@ -286,7 +441,7 @@ def main():
         print("Aufruf: tww_testkatalog_fiktiv.py <Kenndaten_Test.sqlite> [--stochastik]")
         return 2
     pruefe_summen()
-    stochastik = STOCHASTIK_AKTIV or "--stochastik" in sys.argv[2:]
+    stochastik = STOCHASTIK_AKTIV or "--stochastik" in sys.argv[2:]   # der Schalter bleibt fuer alte Aufrufe
     parameter = PARAMETER + (STOCHASTIK_PARAMETER if stochastik else [])
     erwartet = dict(ERWARTET)
     if stochastik:
@@ -325,56 +480,58 @@ def main():
         angelegt = 0
         nachgefuehrt = 0
         with con:
-            # --- Tagesgangsatz und seine vier Tagesgaenge -------------------------------
-            if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
-                         'AND "Katalogversion" = ?', SATZ, VERSION) == 0:
-                con.execute('INSERT INTO "Tab_TwwTagesgangsatz_STAMM" ("Bezeichner", "Katalogversion", '
-                            '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, NULL, 0)', (SATZ, VERSION, STATUS))
-                angelegt += 1
-            id_satz = zahl(con, 'SELECT "ID" FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
-                                'AND "Katalogversion" = ?', SATZ, VERSION)
-
+            # --- Tagesgangsaetze und ihre vier Tagesgaenge (fiktiv und abgeleitet) -------------
             spalten = ", ".join(f'"Anteil_{h:02d}"' for h in range(1, 25))
             platz = ", ".join("?" for _ in range(24))
-            for tagtyp, werte in TAGESGAENGE.items():
-                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgang_STAMM" WHERE "ID_Tagesgangsatz" = ? '
-                             'AND "Tagtyp" = ?', id_satz, tagtyp) == 0:
-                    con.execute(f'INSERT INTO "Tab_TwwTagesgang_STAMM" ("ID_Tagesgangsatz", "Tagtyp", {spalten}, '
-                                f'"Quelle", "Ausgabe", "Version", "Herkunftsart") VALUES (?, ?, {platz}, ?, NULL, ?, ?)',
-                                (id_satz, tagtyp, *werte, QUELLE, VERSION, HERKUNFT))
+            id_saetze = {}
+            for (satz, gaenge, quelle, ausgabe, herkunft) in SAETZE:
+                if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
+                             'AND "Katalogversion" = ?', satz, VERSION) == 0:
+                    con.execute('INSERT INTO "Tab_TwwTagesgangsatz_STAMM" ("Bezeichner", "Katalogversion", '
+                                '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, NULL, 0)', (satz, VERSION, STATUS))
                     angelegt += 1
+                id_satz = zahl(con, 'SELECT "ID" FROM "Tab_TwwTagesgangsatz_STAMM" WHERE "Bezeichner" = ? '
+                                    'AND "Katalogversion" = ?', satz, VERSION)
+                id_saetze[satz] = id_satz
+                for tagtyp, werte in sorted(gaenge.items()):
+                    if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwTagesgang_STAMM" WHERE "ID_Tagesgangsatz" = ? '
+                                 'AND "Tagtyp" = ?', id_satz, tagtyp) == 0:
+                        con.execute(f'INSERT INTO "Tab_TwwTagesgang_STAMM" ("ID_Tagesgangsatz", "Tagtyp", {spalten}, '
+                                    f'"Quelle", "Ausgabe", "Version", "Herkunftsart") VALUES (?, ?, {platz}, ?, ?, ?, ?)',
+                                    (id_satz, tagtyp, *werte, quelle, ausgabe, VERSION, herkunft))
+                        angelegt += 1
 
-            # --- Nutzungsarten ----------------------------------------------------------
-            for (name, bezug, bedarf, grenze, kalender, ferien, monate, woche) in NUTZUNGSARTEN:
+            # --- Nutzungsarten (fiktiv und abgeleitet) ------------------------------------------
+            for n in ALLE_NUTZUNGSARTEN:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwNutzungsart_STAMM" WHERE "Bezeichner" = ? '
-                             'AND "Katalogversion" = ?', name, VERSION) > 0:
+                             'AND "Katalogversion" = ?', n["name"], VERSION) > 0:
                     continue
+                prov = [n["quelle"], n["ausgabe"], VERSION, n["herkunft"]]
                 namen = ["Bezeichner", "Katalogversion", "Bezugsart",
                          "Bedarf_Niedrig", "Bedarf_Mittel", "Bedarf_Hoch",
                          "Bedarf_Quelle", "Bedarf_Ausgabe", "Bedarf_Version", "Bedarf_Herkunftsart",
                          "Bezug_Zapftemperatur", "Bezug_Kaltwasser", "Bilanzgrenze", "Kalenderart", "Ferienfaktor"]
-                werte = [name, VERSION, bezug, *bedarf,
-                         QUELLE, None, VERSION, HERKUNFT,
-                         BEZUG_ZAPF, BEZUG_KALT, grenze, kalender, ferien]
+                werte = [n["name"], VERSION, n["bezug"], *n["bedarf"], *prov,
+                         n["bezug_zapf"], n["bezug_kalt"], n["grenze"], n["kalender"], n["ferien"]]
                 namen += [f"Monat_{m}" for m in range(1, 13)]
-                werte += monate
+                werte += n["monate"]
                 namen += ["Jahresgang_Quelle", "Jahresgang_Ausgabe", "Jahresgang_Version", "Jahresgang_Herkunftsart"]
-                werte += [QUELLE, None, VERSION, HERKUNFT]
+                werte += prov
                 namen += [f"Woche_{w}" for w in range(1, 8)]
-                werte += woche
+                werte += n["woche"]
                 namen += ["Wochengang_Quelle", "Wochengang_Ausgabe", "Wochengang_Version", "Wochengang_Herkunftsart",
                           "ID_Tagesgangsatz", "ID_Vorlage", "Status", "Beleg", "Freigabe", "ReadOnly"]
-                werte += [QUELLE, None, VERSION, HERKUNFT, id_satz, None, STATUS, None, None, 0]
-                con.execute(f'INSERT INTO "Tab_TwwNutzungsart_STAMM" ({", ".join(chr(34) + n + chr(34) for n in namen)}) '
+                werte += prov + [id_saetze[n["satz"]], None, STATUS, None, None, 0]
+                con.execute(f'INSERT INTO "Tab_TwwNutzungsart_STAMM" ({", ".join(chr(34) + s + chr(34) for s in namen)}) '
                             f'VALUES ({", ".join("?" for _ in namen)})', werte)
                 angelegt += 1
 
             # --- Bezugstemperaturen vorhandener Zeilen nachfuehren -------------------------
-            for (name, *_rest) in NUTZUNGSARTEN:
+            for n in ALLE_NUTZUNGSARTEN:
                 cur = con.execute('UPDATE "Tab_TwwNutzungsart_STAMM" SET "Bezug_Zapftemperatur" = ?, '
                                   '"Bezug_Kaltwasser" = ? WHERE "Bezeichner" = ? AND "Katalogversion" = ? '
                                   'AND ("Bezug_Zapftemperatur" <> ? OR "Bezug_Kaltwasser" <> ?)',
-                                  (BEZUG_ZAPF, BEZUG_KALT, name, VERSION, BEZUG_ZAPF, BEZUG_KALT))
+                                  (n["bezug_zapf"], n["bezug_kalt"], n["name"], VERSION, n["bezug_zapf"], n["bezug_kalt"]))
                 nachgefuehrt += cur.rowcount
 
             # --- Parameter --------------------------------------------------------------
@@ -395,15 +552,15 @@ def main():
                 angelegt += 1
 
             # --- Bedarfstage samt Ereignissen (nur mit neu angelegtem Kopf) ---------------
-            for (bezeichner, quelle_art, bezugsmenge, ereignisse) in BEDARFSTAGE:
+            for (bezeichner, quelle_art, bezugsmenge, ereignisse, quelle, ausgabe, herkunft) in ALLE_BEDARFSTAGE:
                 if zahl(con, 'SELECT COUNT(*) FROM "Tab_TwwBedarfstag_STAMM" WHERE "Bezeichner" = ? '
                              'AND "Katalogversion" = ?', bezeichner, VERSION) > 0:
                     continue
                 cur = con.execute('INSERT INTO "Tab_TwwBedarfstag_STAMM" ("Bezeichner", "Katalogversion", '
                                   '"Quelle_Art", "Bezugsmenge", "Quelle", "Ausgabe", "Version", "Herkunftsart", '
-                                  '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, NULL, 0)',
+                                  '"Status", "Beleg", "ReadOnly") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 0)',
                                   (bezeichner, VERSION, quelle_art, bezugsmenge,
-                                   QUELLE, VERSION, HERKUNFT, STATUS))
+                                   quelle, ausgabe, VERSION, herkunft, STATUS))
                 id_tag = cur.lastrowid
                 angelegt += 1
                 for (beginn, dauer, energie, reihenfolge) in ereignisse:
@@ -457,7 +614,7 @@ def main():
         ausgeliefert = sum(zahl(con, f'SELECT COUNT(*) FROM "{t}" WHERE "Status" IN (\'AUSLIEFERUNG\', \'IMPORT\')')
                            for t in ("Tab_TwwTagesgangsatz_STAMM", "Tab_TwwNutzungsart_STAMM",
                                      "Tab_TwwBedarfstag_STAMM", "Tab_TwwParameter_STAMM",
-                                     "Tab_TwwDin4708Wert_STAMM"))
+                                     "Tab_TwwDin4708Wert_STAMM") + ((TABELLE_KATEGORIEN,) if stochastik else ()))
         integritaet = con.execute("PRAGMA integrity_check").fetchone()[0]
         fk = con.execute("PRAGMA foreign_key_check").fetchall()
         print(f"  Status AUSLIEFERUNG/IMPORT: {ausgeliefert}; integrity_check: {integritaet}; "

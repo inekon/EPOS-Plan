@@ -207,6 +207,38 @@ oder verschwinden.
 >
 > **Nicht** betroffen sind Kühleingaben von Projekten außerhalb der Referenzliste.
 
+## Abgeleitete VDI-Werte im Tww-Testkatalog (Anwenderentscheid ZU19)
+
+Der Tww-Katalog der Testdatenbank ist fiktiv (Umsetzungskonzept Zapfprofilgenerator, Kapitel 6 (b))
+— mit einer Ausnahme, die der Anwender am 23.09.2026 entschieden hat: **geringfügig abweichende
+VDI-Werte dürfen ins Repositorium.** Vier Nutzungsarten „… (abgeleitet)“ (Wohnen groß,
+Studentenwohnheim, Seniorenheim, Krankenhaus) tragen samt eigenem Tagesgangsatz Bedarfswerte,
+Monatsfaktoren, Wochenanteile und Tagesgänge, die aus VDI 6002 Blatt 1 und 2 abgeleitet sind;
+Herkunftsart `EIGENKONSTRUKTION`, Quelle „VDI 6002 Blatt n (abgeleitet)“. Ihre Zapfkategorien
+bleiben fiktiv.
+
+- **Die Regel** steht im Kopf von
+  [`Skripte/normzahlen_abgeleitet_bauen.py`](Skripte/normzahlen_abgeleitet_bauen.py): jeder Wert
+  v der Datenzeile i wird v · (1 + δ) mit δ zyklisch aus (+0,04; −0,03; +0,05; −0,04; +0,03;
+  −0,05), gerundet auf die Stellenzahl der Quelle (mindestens zwei signifikante Ziffern);
+  Tagesgänge und Wochenanteile werden auf Summe 1, Monatsfaktoren auf Mittel 1 renormiert; kein
+  Wert gleicht seinem Original, jeder liegt höchstens 5,9 % davon entfernt (sonst das nächste δ,
+  dann eine Stelle feiner). Deterministisch; ein zweiter Lauf schreibt dieselben Bytes.
+- **Das Skript läuft nur lokal** — es liest die gitignorierten Originale unter
+  `Normzahlen/vdi6002/` und schreibt die committete Datei
+  [`Skripte/tww_katalogwerte_abgeleitet.json`](Skripte/tww_katalogwerte_abgeleitet.json) (497 Werte,
+  kein Originalwert). Das Einspielskript
+  [`Skripte/tww_testkatalog_fiktiv.py`](Skripte/tww_testkatalog_fiktiv.py) liest nur diese Datei
+  und läuft ohne die Originale; die Bedarfswerte rechnet es von Litern bei 60 °C mit
+  c_w = 1,163 Wh/(l·K) auf kWh bei den Bezugstemperaturen 60/12 °C der Zeile um.
+- **Die Wache** `EPOS.Kern.Tests/TwwKatalogWacheTests.Kein_abgeleiteter_Katalogwert_gleicht_dem_VDI_Original`
+  prüft lokal — nur wenn `Normzahlen/vdi6002/` beiliegt, sonst schweigt sie —, dass kein Wert der
+  Testdatenbank und der JSON-Datei seinem Original gleicht und jeder innerhalb ±6 % liegt; ihre
+  Meldung nennt Abweichungen, nie einen Absolutwert.
+- **Nicht abgeleitet** werden VDI 4655 (folgt mit Stufe Z4b unter derselben Regel) und die
+  DIN-Profile: A100-Referenzprofil und DIN-4708-Profil bleiben gesperrt (K1/K8).
+- **Ergebnisneutral:** Kein Referenzprojekt steht auf dem Zapfprofilgenerator; die Basis bleibt.
+
 ## Entfernte Basen
 
 **`Referenzlaeufe/Importproben` gehört zum Testbestand und wird nie gelöscht; wer die Ordner der
@@ -355,7 +387,7 @@ kein Referenzprojekt — ihr Nachtrag steht beim R12-Abschnitt unter `ueberholt/
 | `<...>/Projekt_<ID>/*.csv` | Die Ganglinien: 8760 Stundenwerte bzw. 35040 Viertelstundenwerte, `Index;Wert` |
 | `Arbeitskopie/` | Die Kopie der Datenbank, auf der gerechnet wird. Wird bei jedem `lauf` neu angelegt. Nicht im Git (`Kenndaten.accdb` ist in `.gitignore`) |
 | `Kenndaten_Test.sqlite` | Die reduzierte Testdatenbank, gegen die der plattformfreie `EPOS.Referenzlauf` und der SQL-Dialektprüfer laufen. **Versioniert** — eine Änderung daran gehört in einen eigenen Commit |
-| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert) und `tww_testkatalog_fiktiv.py` (fiktiver Katalog des Zapfprofilgenerators, Schemastand 103) |
+| `Skripte/` | Was an dieser Testdatenbank gemacht wurde, als Skript und nicht als Erzählung: `pruefprojekt_1045_ost_west.py` (W6‑O‑7), `pruefprojekt_1046_speicherflotte.py` (SP‑O‑8), `gebaeude_10576_bauweise.py` (Stufe GB, Befund D), `gebaeude_10612_233_bauweise.py` (dieselbe Korrektur an 1009 und Katalogsatz 233, Basis unverändert), `tww_testkatalog_fiktiv.py` (Testkatalog des Zapfprofilgenerators samt Zapfkategorien und Ecodesign-Zapfprofil, Schemastand 114) und `normzahlen_abgeleitet_bauen.py` (nur lokal: abgeleitete VDI-6002-Werte nach `tww_katalogwerte_abgeleitet.json`, ZU19) |
 
 Der Werkzeugcode liegt in `../Referenzlauf/`.
 
