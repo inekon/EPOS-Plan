@@ -33,7 +33,11 @@ namespace WindowsFormsApplication1
         /// </summary>
         internal bool Zapfprofilweg;
 
-        /// <summary>Der benannte Grund, wenn der Zapfprofilweg nicht rechnen konnte; sonst leer.</summary>
+        /// <summary>
+        /// Der benannte Grund, wenn der Zapfprofilweg nicht rechnen konnte
+        /// (<see cref="Erfolgreich"/> <c>false</c>); bei Erfolg die Ablehnungen einzelner Zonen,
+        /// die 0 tragen (je Zeile eine, N8); sonst leer.
+        /// </summary>
         internal string Meldung = "";
     }
 
@@ -168,9 +172,11 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Die Vorschau des Zapfprofilwegs (2.2): Kalender der Klimaregion des Projekts, dann
-        /// derselbe Generatoraufruf wie im Lauf. Eine benannte Ablehnung lässt die Vorschau
-        /// ohne Ergebnis (<see cref="BedarfsVorschau.Erfolgreich"/> <c>false</c>) und nennt den
-        /// Grund in <see cref="BedarfsVorschau.Meldung"/> — wie der Lauf, der dann abbricht.
+        /// derselbe Generatoraufruf wie im Lauf. Kann der Generator für das Projekt nicht
+        /// rechnen, bleibt die Vorschau ohne Ergebnis (<see cref="BedarfsVorschau.Erfolgreich"/>
+        /// <c>false</c>) und nennt den Grund in <see cref="BedarfsVorschau.Meldung"/> — wie der
+        /// Lauf, der dann abbricht. Abgelehnte Zonen tragen 0 wie im Lauf; die Meldung nennt sie
+        /// (N8).
         /// </summary>
         private static BedarfsVorschau ZapfprofilVorschau(BedarfsVorschau ergebnis, int idProjekt, ZapfprofilStand stand)
         {
@@ -191,7 +197,9 @@ namespace WindowsFormsApplication1
 
             ergebnis.Waerme = sim;
             ergebnis.Erfolgreich = ok;
-            ergebnis.Meldung = ok ? "" : sim.Fehlertext;
+            ergebnis.Meldung = !ok ? sim.Fehlertext
+                : string.Join(Environment.NewLine, sim.Zapfprofil.Ablehnungen.Select(a =>
+                      SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX + SimulationWaermebedarf.ZapfAblehnungstext(a)));
             return ergebnis;
         }
 

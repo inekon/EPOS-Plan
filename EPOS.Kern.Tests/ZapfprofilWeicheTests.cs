@@ -15,9 +15,12 @@ namespace EPOS.Kern.Tests
     ///
     /// <para>(a) Ohne Zeile in <c>Tab_TwwProjekt</c> — und mit <c>Weg = BESTAND</c> — rechnet
     /// der Bestandsweg byte-gleich. (b) Mit <c>Weg = GENERATOR</c> und einer fiktiven Zone kommt
-    /// die Reihe allein aus dem Generator; Energieprobe, Jahressumme und getrennte Monatssummen
-    /// stimmen, und die Vorschau rechnet dieselbe Reihe. (c) Eine benannte Ablehnung (fehlender
-    /// Parameter) bricht den Lauf benannt ab. (d) Kein Projekt der Referenzbasis trägt eine
+    /// die Reihe allein aus dem Generator; Energieprobe (auch mit Netzverlusten in % und kWh/a),
+    /// Jahressumme und getrennte Monatssummen stimmen, und die Vorschau rechnet dieselbe Reihe.
+    /// (c) Eine abgelehnte Zone (fehlender Parameter) trägt 0 und steht benannt als Warnung im
+    /// Protokoll, der Lauf geht weiter; kann der Generator für das Projekt nicht rechnen
+    /// (Katalogversion fehlt, unerwarteter Fehler), bricht der Lauf benannt ab und die
+    /// Bedarfsfelder stehen auf 0 (2.2, N8). (d) Kein Projekt der Referenzbasis trägt eine
     /// Zeile in <c>Tab_TwwProjekt</c>.</para>
     ///
     /// <para>Projekt 1007 dient nur auf der Kopie als Träger (es hat Bestandsprofile — so zeigt
@@ -105,9 +108,6 @@ namespace EPOS.Kern.Tests
             Assert.True(e.Zirkulation.JahressummeKwh > 0, "Die Zone liegt in Z1 und trägt eine Zirkulation.");
             Assert.NotEqual(bestandMwh, lauf.Waermebedarf_Brauchwasser);
 
-            // Energieprobe: Zapfung und Zirkulation sind gebucht.
-            Assert.Equal(0, lauf.Energieprobe_Verletzungen);
-
             // Jahressumme = Kennzahl, Zirkulation getrennt ausgewiesen.
             Assert.True(Relativ(lauf.Waermebedarf_Brauchwasser,
                                 Energieeinheit.MWh.AusKWh(e.Kennzahlen.JahresbedarfGesamtKwh)) < 1e-12);
@@ -123,6 +123,68 @@ namespace EPOS.Kern.Tests
                 Assert.True(Math.Abs(lauf.Waermebedarf_Brauchwasser_Monat[m] - lauf.Waermebedarf_Brauchwasser_Zirkulation_Monat[m]
                                      - zapfMonat[m]) < 1e-9, "Monat " + (m + 1));
             }
+        }
+
+        /// <summary>
+        /// Energieprobe im Generatorweg (2.4): Zapfung UND Zirkulation liegen vor der Probe auf
+        /// dem Brauchwasserkanal — die unabhängig geführte Summe trifft die Kanalsumme.
+        /// </summary>
+        [Fact]
+        public void Die_Energieprobe_zaehlt_Zapfung_und_Zirkulation()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+
+            SimulationWaermebedarf lauf = Lauf(PROJEKT);
+            Assert.Equal("", lauf.Fehlertext);
+            Assert.True(lauf.Zapfprofil.Zapfung.JahressummeKwh > 0);
+            Assert.True(lauf.Zapfprofil.Zirkulation.JahressummeKwh > 0);
+            Assert.Equal(0, lauf.Energieprobe_Verletzungen);
+            double summe = lauf.KanaeleDrei().Brauchwasser.Sum();
+            Assert.True(Relativ(summe, lauf.Zapfprofil.Zapfung.JahressummeKwh + lauf.Zapfprofil.Zirkulation.JahressummeKwh) < 1e-12);
+        }
+
+        /// <summary>
+        /// Netzverluste im Generatorweg (ZU5): Die Verteilung F2 bleibt unverändert — der
+        /// Brauchwasserkanal bekommt je Stunde den Stundenbetrag mal Kanalanteil an der
+        /// Kanalsumme, die Energieprobe hält, und die Monatssummen bleiben ohne Netzverlust.
+        /// Einmal in %, einmal in kWh/a (erfundene Werte).
+        /// </summary>
+        [Theory]
+        [InlineData(10, "%")]
+        [InlineData(5000, "kWh/a")]
+        public void Netzverluste_gehen_anteilig_auf_den_Generatorkanal(int netzverluste, string einheit)
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+
+            SimulationWaermebedarf ohne = Lauf(PROJEKT);
+            Kanalsatz vorher = ohne.KanaeleDrei();
+            double[] generator = (double[])ohne.brauchwasserwerte.Clone();
+            double gesamtVorherMwh = ohne.Waermebedarf_Gesamt;
+
+            var mit = new SimulationWaermebedarf { Netzverluste = netzverluste, Netzverluste_Einheit = einheit };
+            mit.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
+            Assert.Equal("", mit.Fehlertext);
+            Assert.Equal(0, mit.Energieprobe_Verletzungen);
+
+            double stunde = einheit == "%" ? gesamtVorherMwh * 1000 * netzverluste / 876000.0 : netzverluste / 8760.0;
+            Assert.True(stunde > 0);
+            for (int h = 0; h < 8760; h++)
+            {
+                double kanalsumme = vorher.Heizung[h] + vorher.Brauchwasser[h] + vorher.Prozess[h];
+                double erwartet = kanalsumme > 0 ? generator[h] + stunde * (generator[h] / kanalsumme) : generator[h];
+                Assert.True(Math.Abs(mit.brauchwasserwerte[h] - erwartet) <= 1e-9 * Math.Max(1.0, Math.Abs(erwartet)),
+                            "Stunde " + h + ": " + mit.brauchwasserwerte[h].ToString("R") + " gegen " + erwartet.ToString("R"));
+            }
+            Assert.True(mit.brauchwasserwerte.Sum() > generator.Sum());
+
+            // Monatssummen und Jahresmenge bleiben der reine Profilanteil.
+            ByteGleich(ohne.Waermebedarf_Brauchwasser_Monat, mit.Waermebedarf_Brauchwasser_Monat, "Monate");
+            ByteGleich(ohne.Waermebedarf_Brauchwasser_Zirkulation_Monat, mit.Waermebedarf_Brauchwasser_Zirkulation_Monat, "Zirkulation");
+            Assert.Equal(ohne.Waermebedarf_Brauchwasser, mit.Waermebedarf_Brauchwasser);
         }
 
         /// <summary>Vorschau gleich Lauf (2.4): Die Leiste „monatlicher Verlauf" rechnet dieselbe Reihe.</summary>
@@ -162,12 +224,20 @@ namespace EPOS.Kern.Tests
         // (c) Benannte Ablehnung
         // =================================================================================
 
+        /// <summary>
+        /// Kein stiller Rückfall, aber kein Abbruch (2.2, N8): Fehlt ein Parameter, den nur eine
+        /// Zone braucht, trägt diese Zone 0 und steht mit ihrem Namen und dem Schlüssel als
+        /// Warnung im Protokoll; die rechenbare Zone rechnet, der Lauf geht weiter.
+        /// </summary>
         [Fact]
-        public void Ein_fehlender_Parameter_bricht_den_Lauf_benannt_ab()
+        public void Ein_fehlender_Parameter_nennt_die_Zone_und_sie_traegt_null()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
-            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+            ZonenStand ohneEigene = Zone();
+            ZonenStand mitEigener = Zone() with { Name = "Zone Eigen", KaltwasserMittelC = 11.0 };
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator,
+                                                                  new[] { ohneEigene, mitEigener }, null));
             Assert.True(DataRepository.ExecuteSQL(
                 "DELETE FROM Tab_TwwParameter_STAMM WHERE Schluessel = ? AND Katalogversion = ?",
                 new DbParam("@s", ZapfParameter.KALTWASSER_MITTEL), new DbParam("@k", VERSION)));
@@ -177,34 +247,95 @@ namespace EPOS.Kern.Tests
             var strom = new SimulationStrombedarf();
             string fehler = SimulationLaufCtrl.Bedarf(PROJEKT, Klimaregion(PROJEKT), 0, "", waerme, strom);
 
-            Assert.NotNull(fehler);
-            Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, fehler);
-            Assert.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, fehler);
-            Assert.Equal(fehler, waerme.Fehlertext);
-            Assert.Contains(SimulationProtokoll.Aktuell.Fehler, f => f.Contains(ZapfParameter.KALTWASSER_MITTEL));
-            Assert.Null(waerme.Zapfprofil);
-            Assert.All(waerme.brauchwasserwerte, w => Assert.Equal(0.0, w));   // kein stiller Rückfall
+            Assert.Null(fehler);
+            Assert.Equal("", waerme.Fehlertext);
+            Assert.Empty(SimulationProtokoll.Aktuell.Fehler);
+            string warnung = Assert.Single(SimulationProtokoll.Aktuell.Warnungen,
+                                           w => w.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX));
+            Assert.Contains("Zone „Zone Probe“ trägt 0", warnung);
+            Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, warnung);
 
-            // Die Vorschau lehnt ebenso benannt ab.
+            ZapfprofilErgebnis e = waerme.Zapfprofil;
+            Assert.NotNull(e);
+            Assert.Equal("Zone Probe", Assert.Single(e.Ablehnungen).Zone);
+            Assert.True(e.Zapfung.JahressummeKwh > 0, "Die Zone mit eigenem Kaltwassermittel rechnet.");
+            IReadOnlyList<double> zapf = e.Zapfung.StundenKwh, zirk = e.Zirkulation.StundenKwh;
+            for (int h = 0; h < 8760; h++)
+                Assert.True(Math.Abs(waerme.brauchwasserwerte[h] - (zapf[h] + zirk[h])) <= 1e-12 * Math.Max(1.0, zapf[h] + zirk[h]),
+                            "Stunde " + h);
+            Assert.Equal(0, waerme.Energieprobe_Verletzungen);
+            Assert.True(waerme.Waermebedarf_Gesamt > 0);
+
+            // Die Vorschau rechnet dieselbe Reihe und nennt die Zone.
             BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Brauchwasser, PROJEKT, new List<string>());
             Assert.True(v.Zapfprofilweg);
-            Assert.False(v.Erfolgreich);
+            Assert.True(v.Erfolgreich);
+            Assert.Contains("Zone „Zone Probe“ trägt 0", v.Meldung);
             Assert.Contains(ZapfParameter.KALTWASSER_MITTEL, v.Meldung);
+            Assert.Equal(waerme.Waermebedarf_Brauchwasser, v.Waerme.Waermebedarf_Brauchwasser);
         }
 
+        /// <summary>
+        /// Fehlt die Katalogversion, kann der Generator für das PROJEKT nicht rechnen: Der Lauf
+        /// bricht benannt ab — und die Bedarfsfelder eines wiederverwendeten Objekts stehen auf
+        /// 0 statt auf den Zahlen des vorigen Laufs (Startseite, Ergebnisvorabrechnung).
+        /// </summary>
         [Fact]
         public void Ohne_Katalogversion_bricht_der_Lauf_benannt_ab()
         {
             using var db = new TestDatenbank();
             if (!db.Vorhanden) return;
+
+            // Erst ein gültiger Lauf auf demselben Objekt …
+            var waerme = new SimulationWaermebedarf();
+            waerme.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
+            Assert.True(waerme.Waermebedarf_Gesamt > 0);
+
             ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
             Assert.True(DataRepository.ExecuteSQL("DELETE FROM Tab_TwwParameter_STAMM"));
 
+            // … dann der Abbruch.
             SimulationProtokoll.NeuStarten();
-            SimulationWaermebedarf lauf = Lauf(PROJEKT);
-            Assert.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, lauf.Fehlertext);
-            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, lauf.Fehlertext);
+            waerme.Waermebedarf_berechnen(PROJEKT, Klimaregion(PROJEKT));
+            Assert.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, waerme.Fehlertext);
+            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, waerme.Fehlertext);
             Assert.Single(SimulationProtokoll.Aktuell.Fehler);
+            Assert.Equal(0.0, waerme.Waermebedarf_Gesamt);
+            Assert.Equal(0.0, waerme.Waermebedarf_Brauchwasser);
+            Assert.All(waerme.Waermebedarf, w => Assert.Equal(0.0, w));
+            Assert.All(waerme.brauchwasserwerte, w => Assert.Equal(0.0, w));
+
+            // Die Vorschau lehnt ebenso benannt ab.
+            BedarfsVorschau v = BedarfsVorschauCtrl.ProjektVorschau(BedarfsArt.Brauchwasser, PROJEKT, new List<string>());
+            Assert.True(v.Zapfprofilweg);
+            Assert.False(v.Erfolgreich);
+            Assert.Contains(TwwSchema.TAB_TWW_PARAMETER_STAMM, v.Meldung);
+        }
+
+        /// <summary>
+        /// Ein unerwarteter Fehler im Generatorweg — hier eine Katalogtabelle ohne erwartete Spalte
+        /// auf der Arbeitskopie — fällt nicht in den Warnzweig der Brauchwasserrechnung: Der Lauf
+        /// bricht benannt ab (N8).
+        /// </summary>
+        [Fact]
+        public void Ein_unerwarteter_Fehler_bricht_den_Lauf_benannt_ab()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            ZapfprofilCtrl.Speichern(PROJEKT, new ZapfprofilStand(BrauchwasserWeg.Generator, new[] { Zone() }, null));
+            Assert.True(DataRepository.ExecuteSQL(
+                "ALTER TABLE " + TwwSchema.TAB_TWW_TAGESGANG_STAMM + " RENAME COLUMN Anteil_01 TO Anteil_01_umbenannt"));
+
+            SimulationProtokoll.NeuStarten();
+            var waerme = new SimulationWaermebedarf();
+            string fehler = SimulationLaufCtrl.Bedarf(PROJEKT, Klimaregion(PROJEKT), 0, "", waerme, new SimulationStrombedarf());
+
+            Assert.NotNull(fehler);
+            Assert.StartsWith(SimulationWaermebedarf.ZAPFPROFIL_PRAEFIX, waerme.Fehlertext);
+            Assert.Equal(fehler, waerme.Fehlertext);
+            Assert.Single(SimulationProtokoll.Aktuell.Fehler);
+            Assert.DoesNotContain(SimulationProtokoll.Aktuell.Warnungen, w => w.Contains("Brauchwasserwärme-Berechnung"));
+            Assert.Equal(0.0, waerme.Waermebedarf_Gesamt);
         }
 
         // =================================================================================

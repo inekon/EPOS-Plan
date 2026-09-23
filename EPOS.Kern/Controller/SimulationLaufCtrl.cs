@@ -98,8 +98,8 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Rechnet Wärme- und Strombedarf des Projekts (Schritt 7 aus § 1c der
-        /// Vermessung) und liefert den Fehlertext der Wärme- (benannte Ablehnung des
-        /// Zapfprofilgenerators) bzw. der Stromrechnung — <c>null</c> bei Erfolg.
+        /// Vermessung) und liefert den Fehlertext der Wärme- (der Zapfprofilgenerator kann
+        /// für das Projekt nicht rechnen, N8) bzw. der Stromrechnung — <c>null</c> bei Erfolg.
         ///
         /// <para><b>Die beiden Bedarfsobjekte gehören dem Aufrufer</b> (Befund W11-B3):
         /// <c>Form_Start</c> reicht sie in die Detailansicht hinein und nutzt sie danach
@@ -119,7 +119,8 @@ namespace WindowsFormsApplication1
             waerme.Netzverluste_Einheit = netzverlusteEinheit;
             waerme.Waermebedarf_berechnen(idProjekt, idKlimaregion);
 
-            // Zapfprofilgenerator (2.2): eine benannte Ablehnung bricht den Lauf ab.
+            // Zapfprofilgenerator (2.2, N8): kann er für das Projekt nicht rechnen, bricht der
+            // Lauf benannt ab; eine abgelehnte Zone trägt 0 und bricht nicht ab.
             if (!string.IsNullOrEmpty(waerme.Fehlertext)) return waerme.Fehlertext;
 
             strom.m_ID_Projekt = idProjekt;

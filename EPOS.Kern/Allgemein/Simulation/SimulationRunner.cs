@@ -183,8 +183,9 @@ namespace WindowsFormsApplication1
             simulation_Waermebedarf.Netzverluste_Einheit = ctrl.m_szNetzverlusteEinheit;
             simulation_Waermebedarf.Waermebedarf_berechnen(idProjekt, nKlimaregion);
 
-            // Zapfprofilgenerator (Umsetzungskonzept 2.2): Lehnt der Generatorweg eine Eingabe
-            // benannt ab, bricht der Lauf ab — kein Ergebnis mit leerem Brauchwasserkanal.
+            // Zapfprofilgenerator (Umsetzungskonzept 2.2, N8): Kann der Generatorweg für das
+            // Projekt nicht rechnen (Tabellen, Katalogversion, unerwarteter Fehler), bricht der
+            // Lauf benannt ab. Eine abgelehnte Zone trägt 0 und steht als Warnung im Protokoll.
             if (!string.IsNullOrEmpty(simulation_Waermebedarf.Fehlertext))
             {
                 fehler = simulation_Waermebedarf.Fehlertext;

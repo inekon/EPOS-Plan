@@ -52,8 +52,10 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// Benannter Abbruch der Bedarfsrechnung (Muster <c>SimulationStrombedarf.Fehlertext</c>):
-        /// leer = gerechnet. Gesetzt, wenn der Zapfprofilgenerator eine Eingabe benannt ablehnt
-        /// (2.2, „kein stiller Rückfall"); der Lauf speichert dann kein Ergebnis.
+        /// leer = gerechnet. Gesetzt, wenn der Zapfprofilgenerator für das PROJEKT nicht rechnen
+        /// kann (Tabellen oder Katalogversion fehlen, unerwarteter Fehler; 2.2, N8); der Lauf
+        /// speichert dann kein Ergebnis, und die Bedarfsfelder stehen auf 0. Eine abgelehnte
+        /// Zone setzt ihn nicht — sie trägt 0 und steht als Warnung im Protokoll.
         /// </summary>
         public string Fehlertext = "";
 
@@ -397,9 +399,16 @@ namespace WindowsFormsApplication1
             // Brauchwasserwärme
             Brauchwasserwaerme_berechnen();
 
-            // Zapfprofilgenerator (2.2): Eine benannte Ablehnung bricht die Bedarfsrechnung
-            // ab — kein stiller Rückfall auf den Bestandsweg, kein Ergebnis mit leerem Kanal.
-            if (!string.IsNullOrEmpty(Fehlertext)) return;
+            // Zapfprofilgenerator (2.2, N8): Kann der Generatorweg für das PROJEKT nicht
+            // rechnen (Tabellen oder Katalogversion fehlen, unerwarteter Fehler), bricht die
+            // Bedarfsrechnung benannt ab — kein stiller Rückfall auf den Bestandsweg. Die
+            // Ergebnisfelder stehen dann ausdrücklich auf 0, damit kein Aufrufer die Zahlen
+            // eines früheren Laufs zeigt. Eine abgelehnte ZONE bricht nicht ab (sie trägt 0).
+            if (!string.IsNullOrEmpty(Fehlertext))
+            {
+                BedarfNachAbbruchLeeren();
+                return;
+            }
             //Waermebedarf_Brauchwasser = com.I_vector_summe(brauchwasserwerte);
             // W8-O-5b (07.09.2026): EINE Zeile fuer beide Wege - der Lauf ruft
             // dieselbe Methode wie die Vorschau, damit das Feld nicht mehr je nach
@@ -914,7 +923,12 @@ namespace WindowsFormsApplication1
                 if (modus == ProfilQuellmodus.Projektrechnung
                     && ZapfprofilCtrl.Weg(m_ID_Projekt) == BrauchwasserWeg.Generator)
                 {
-                    BrauchwasserAusGenerator(ZapfprofilCtrl.Lies(m_ID_Projekt));
+                    // Auch ein unerwarteter Fehler beim Lesen des Stands bricht benannt ab —
+                    // nie über den Warnzweig unten (N8).
+                    ZapfprofilStand stand;
+                    try { stand = ZapfprofilCtrl.Lies(m_ID_Projekt); }
+                    catch (Exception ex) { ZapfprofilAbbrechen(ex.Message); return; }
+                    BrauchwasserAusGenerator(stand);
                     return;
                 }
 
@@ -944,14 +958,18 @@ namespace WindowsFormsApplication1
         /// (Vorschau gleich Lauf, 2.4). Kalender sind <see cref="WochentagJan1"/> und die
         /// Wochenendkennzeichen des Klimakalenders.
         ///
-        /// <para><b>Kein stiller Rückfall.</b> Lehnt der Eingang oder der Rechenweg etwas
-        /// benannt ab — Tabellen oder Katalogversion fehlen, ein Parameter fehlt, eine Zone ist
-        /// nicht rechenbar, die Zirkulation ist ungültig —, meldet jede Ablehnung als
-        /// <see cref="SimulationProtokoll.Fehlermeldung"/>, <see cref="Fehlertext"/> nennt den
-        /// Grund, und der Kanal bleibt leer: Der Lauf bricht benannt ab. Hinweise des
-        /// Rechenwegs gehen als Hinweis ins Protokoll.</para>
+        /// <para><b>Kein stiller Rückfall (2.2, N8).</b> Lehnt der Rechenweg eine ZONE benannt
+        /// ab (Nutzungsart gelöscht, Parameter fehlt, Bezugsmenge fehlt …) oder die Zirkulation,
+        /// meldet jede Ablehnung mit ihrer Zone als <see cref="SimulationProtokoll.Warnung"/>, die
+        /// betroffene Zone bzw. Zirkulation trägt 0, und der Lauf geht mit den übrigen Zonen
+        /// weiter — derselbe Ausgang wie der Bestandsweg bei Nullprofil, aber benannt. Kann der
+        /// Generator für das PROJEKT nicht rechnen — Tabellen oder Katalogversion fehlen, oder
+        /// Lesen, Katalog oder Rechnen scheitern unerwartet —, meldet er den Grund als
+        /// <see cref="SimulationProtokoll.Fehlermeldung"/>, <see cref="Fehlertext"/> nennt ihn,
+        /// der Kanal bleibt leer, und der Lauf bricht benannt ab. Hinweise des Rechenwegs gehen
+        /// als Hinweis ins Protokoll.</para>
         /// </summary>
-        /// <returns><c>true</c>, wenn die Reihe übernommen ist.</returns>
+        /// <returns><c>true</c>, wenn die Reihe übernommen ist (auch mit abgelehnten Zonen).</returns>
         internal bool BrauchwasserAusGenerator(ZapfprofilStand stand)
         {
             ZapfprofilErgebnis e;
@@ -959,15 +977,10 @@ namespace WindowsFormsApplication1
             {
                 e = ZapfprofilCtrl.Rechnen(m_ID_Projekt, stand, WochentagJan1, WE);
             }
-            catch (ZapfprofilEingabeException ex) { return ZapfprofilAbbrechen(ex.Message); }
-            catch (ParametersatzException ex) { return ZapfprofilAbbrechen(ex.Message); }
+            catch (Exception ex) { return ZapfprofilAbbrechen(ex.Message); }
 
-            if (!e.Vollstaendig)
-            {
-                var gruende = new List<string>();
-                foreach (ZapfAblehnung a in e.Ablehnungen) gruende.Add(a.Klartext);
-                return ZapfprofilAbbrechen(gruende.ToArray());
-            }
+            foreach (ZapfAblehnung a in e.Ablehnungen)
+                SimulationProtokoll.Aktuell.Warnung(ZAPFPROFIL_PRAEFIX + ZapfAblehnungstext(a));
 
             foreach (ZapfHinweis h in e.Hinweise)
                 SimulationProtokoll.Aktuell.HinweisEinmal("zapfprofil-" + h.Zone + "-" + h.Code + "-" + h.Text,
@@ -976,15 +989,49 @@ namespace WindowsFormsApplication1
             return true;
         }
 
-        /// <summary>Meldet jeden Grund als Fehler, setzt <see cref="Fehlertext"/> und lässt den Kanal leer.</summary>
-        private bool ZapfprofilAbbrechen(params string[] gruende)
+        /// <summary>
+        /// Der Protokolltext einer Ablehnung: Zone und Folge vorn, dann der Klartext des
+        /// Rechenwegs — „Zone „…“ trägt 0: …“; ohne Zone (Zirkulation, Zone ohne Angaben)
+        /// „Anteil trägt 0: …“.
+        /// </summary>
+        internal static string ZapfAblehnungstext(ZapfAblehnung a)
+        {
+            string zone = a?.Zone ?? "";
+            string text = a?.Klartext ?? "";
+            return zone.Length > 0 ? "Zone „" + zone + "“ trägt 0: " + text : "Anteil trägt 0: " + text;
+        }
+
+        /// <summary>Meldet den Grund als Fehler, setzt <see cref="Fehlertext"/> und lässt den Kanal leer.</summary>
+        private bool ZapfprofilAbbrechen(string grund)
         {
             WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
             Array.Clear(Waermebedarf_Brauchwasser_Monat, 0, Waermebedarf_Brauchwasser_Monat.Length);
+            Array.Clear(Waermebedarf_Brauchwasser_Zirkulation_Monat, 0, Waermebedarf_Brauchwasser_Zirkulation_Monat.Length);
+            Brauchwasser_Zirkulation_Mwh = 0;
+            Waermebedarf_Brauchwasser = 0;
             Zapfprofil = null;
-            foreach (string g in gruende) SimulationProtokoll.Aktuell.Fehlermeldung(ZAPFPROFIL_PRAEFIX + g);
-            Fehlertext = ZAPFPROFIL_PRAEFIX + string.Join(" ", gruende);
+            SimulationProtokoll.Aktuell.Fehlermeldung(ZAPFPROFIL_PRAEFIX + grund);
+            Fehlertext = ZAPFPROFIL_PRAEFIX + grund;
             return false;
+        }
+
+        /// <summary>
+        /// Nach einem benannten Abbruch (<see cref="Fehlertext"/> gesetzt): Summen, Summenvektor
+        /// und Kanäle stehen ausdrücklich auf 0 — sonst zeigte ein Aufrufer, der dasselbe Objekt
+        /// wiederverwendet (Startseite, Ergebnisvorabrechnung), die Zahlen eines früheren Laufs.
+        /// </summary>
+        private void BedarfNachAbbruchLeeren()
+        {
+            _kanaele = new Kanalsatz();
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf);
+            WPPlan.Core.BhkwPlan.VectorInit(Waermebedarf_sortiert);
+            WPPlan.Core.BhkwPlan.VectorInit(Dauerlinie);
+            WPPlan.Core.BhkwPlan.VectorInit(Dauerlinie_nicht_sortiert);
+            WPPlan.Core.BhkwPlan.VectorInit(brauchwasserwerte);
+            Waermebedarf_Gesamt = 0;
+            Waermebedarf_Max = 0;
+            Waermebedarf_Brauchwasser = 0;
+            Waermebedarf_Netzverluste = 0;
         }
 
         /// <summary>
