@@ -84,6 +84,8 @@ melden sie im Takt des Bildaufbaus.
 | G | 20 746 Zeilen (die CEC-Modulliste), Ladeweg |
 | I | 6 654 Zeilen, danach im Suchfeld gefiltert (→ 444 Zeilen, weiter virtualisiert) |
 | H | **Gegenprobe zum Fix**: dieselbe Seite, das gesetzte Zeilenmaß per Stilblatt wieder weggenommen. Sie MUSS die Sollwerte verfehlen — sonst belegt der Fix nichts |
+| J / K | 6 654 Stromspeicher **im Katalogdialog** (Seite `/katalogprobe`, Stromspeicher-Verwaltung), 1 088 × 624 und 400 × 624 — die Liste nimmt dort seit Stufe 1 der Neuordnung die Resthöhe; zusätzlich geprüft: Rollbehälter = Hülle, Zeile 53 px |
+| L / M | wie A (freie Liste der Importmaske), 1 088 × 624 und 400 × 624 |
 
 ---
 
@@ -221,6 +223,9 @@ schrumpfen und rollt nicht in sich) — der Lauf muss dann rot sein.
 
 Die Seite des Wirtes nimmt ihre Gaben aus der Adresse:
 `/katalogprobe?maske=klima|bedarf|modul|waermebedarf|solar|browser|waermepumpe&zeilen=<n>&bilder=1|0`.
+Seit Stufe 1 der Neuordnung dazu `maske=stromganglinie|projekt-heizkessel`, `art=` (Ausprägung
+von `browser`, `modul`, `bedarf`) und `voll=1` (jede Spalte belegt, in den Textlängen der
+Testdatenbank — `Zeilenbau.Voll`).
 Die Zeilen sind synthetisch, die **Maße** nicht: Das Diagramm kommt aus demselben
 `ChartRenderer.Jahresgang` (1 304 × 440 px), den die Windows-Hülle ruft.
 
@@ -249,7 +254,10 @@ jeden gerollten Dialog als Verstoß.
 | B1 / B2 | Stromverbraucher Verwaltung, dieselben zwei Größen |
 | M1 / M2 | Photovoltaik-Module, dieselben zwei Größen |
 | W1, S1, C1, P1 | Wärmebedarf, Solarganglinie, BHKW-Katalog, Wärmepumpen-Stamm (je 1 180 × 780) |
-| G1 | **Gegenprobe**: Klimadaten mit dem Maß von vor KL-5. Sie MUSS den Befund zeigen |
+| G1 | **Gegenprobe**: Klimadaten mit dem Maß von vor KL-5 (seit Stufe 1 samt dem Raster von damals). Sie MUSS den Befund zeigen |
+| N01a … N15b | **Neuordnung Stufe 1**: jede Verwaltung im Katalograhmen (vier Katalogbrowser, drei Modulkataloge, Wärmepumpe, Klimadaten, drei Bedarfe, drei Zeitreihen) mit vollen Zeilen, je 1 088 × 624 (`a`) und 400 × 624 (`b`) — Messung und Sollwerte im Abschnitt zu Stufe 1 unten |
+| G2 | **Gegenprobe zu Stufe 1**: Heizkessel mit den Regeln von vor Stufe 1. Sie MUSS Rollbereich-in-Rollbereich und Querüberlauf zeigen |
+| P2a / P2b | Nachbar: der Heizkessel-**Projektdialog** (erbt die Katalogliste); die Liste darf nicht zusammenfallen, bei 1 088 px nicht quer rollen |
 
 ### Ergebnis vom 19.09.2026 (Auftrag KL-5)
 
@@ -322,3 +330,48 @@ schlicht außerhalb der runden Ecke, und das ist kein Befund. `katalogprobe.mjs`
 deshalb auch einen Treffer gelten, der den Knopf **enthält** (`oben.contains(b)`). Eine
 echte Überdeckung kommt immer aus einem anderen Zweig des Baumes; die Gegenprobe G1 meldet
 ihre drei verdeckten Knöpfe unverändert über `img.epos-chartbild`.
+
+---
+
+## Neuordnung der Administrationsdialoge, Stufe 1 (V1, V2, V7)
+
+Konzept `Dokumentation/aktuell/Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`,
+Abschnitt 7: Abnahme je Stufe mit den Fällen **1 088 × 624** (das Fenstermaß des Anwenders,
+85 % × 90 % von 1 920 × 1 040 bei 150 %) und **400 × 624**.
+
+**Aufruf unter Windows ohne npm.** Das NuGet-Paket `Microsoft.Playwright` bringt Node und die
+Bibliothek mit; Fassung 1.58.0 passt zum Browser `chromium-1208` unter
+`%LOCALAPPDATA%\ms-playwright`. Die Probe findet die Bibliothek über `NODE_PATH`, wenn dort ein
+Ordner `playwright` liegt (z. B. eine Verzeichnisverbindung auf
+`%USERPROFILE%\.nuget\packages\microsoft.playwright\1.58.0\.playwright\package`):
+
+```bash
+NODE_PATH=<ordner mit playwright> \
+  ~/.nuget/packages/microsoft.playwright/1.58.0/.playwright/node/win32_x64/node.exe \
+  katalogprobe.mjs --url http://127.0.0.1:5299 --nur N
+```
+
+**Was die Fälle N zusätzlich messen** (Funktion `STUFE1`, Sollwerte in `pruefe`):
+
+| | Größe | Sollwert |
+|---|---|---|
+| (s1) | jedes Element, das WIRKLICH rollt (overflow auto/scroll und mehr Inhalt als Platz), und ob eines im anderen liegt | keines im anderen |
+| (s2) | rollt die Maske (`.epos-katalog-dialog`)? | nein |
+| (s3) | Querüberlauf der Listenhülle, und welche Spalte jenseits ihrer Innenbreite liegt | ≤ 1 px |
+| (s4) | Höhe der ersten Datenzeile | 53 px (`ItemSize`) |
+| (s5) | ein gekürzter Bezeichner trägt seinen vollen Namen im Kurztext | ja |
+
+Die KL-5-Prüfungen (Überlagerung, Fußleiste im Fenster, Knöpfe frei) laufen in jedem Fall mit.
+
+**Ergebnis vom 23.09.2026** (Chromium headless, Playwright 1.58.0):
+
+| | vorher (Bestand) | nachher |
+|---|---|---|
+| Rollbereiche ineinander | 27 von 28 Fällen: die Liste im rollenden Rahmen (Wärmepumpe dazu das Reiterblatt) | 0 von 30 |
+| Heizkessel 1 088 × 624 | Rahmen 474 px sichtbar von 1 261, Liste 367 von 456 px sichtbar, Eingabeblock 0 px sichtbar; Tabelle 1 288 px in 1 054 px Hülle (Bezeichner 487 px, Hersteller 251 px; P_th, η, Brennwert jenseits) | Liste 209 px und Eingabeblock 160 px je für sich rollend, alle sieben Spalten in 1 054 px, 0 px quer |
+| größter Querüberlauf 1 088 × 624 | Wärmepumpe 1 269 px | 0 px (drei Spalten mit Rang weichen) |
+| größter Querüberlauf 400 × 624 | Wärmepumpe 1 957 px | 0 px (Bezeichner und Hauptkennwert bleiben) |
+| Fußleiste | im Fenster, frei | im Fenster, frei (400 px: zweizeilig) |
+| Zeilenhöhe | 53 px | 53 px |
+| virtualisiert im Dialog (J, K) | — | Rollbehälter = Hülle (209 / 118 px), Zeile 53 px, 4 Melder nach dem Rollen |
+| Rückgabe | Katalogprobe 1, Rasterprobe — | Katalogprobe 0 (45 Fälle), Rasterprobe 0 (13 Fälle) |
