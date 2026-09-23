@@ -63,8 +63,14 @@ namespace WindowsFormsApplication1
 
             if (k.KaeltebedarfMwh > 0)
             {
-                // KU1: Kaelteerzeuger gibt es nicht - der ganze Bedarf bleibt ungedeckt, benannt.
-                deckung = MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT;
+                // KU2: Mit Waermepumpen im Kuehlbetrieb nennt der Satz ihre Deckung; ohne sie bleibt
+                // der ganze Bedarf ungedeckt, benannt (F-K12). Die ungedeckte Kaelte steht als
+                // Kennzahl daneben.
+                deckung = k.MitKaelteerzeuger
+                    ? string.Format(kultur, MyResource.Resource.SIMERG_HRL_KAELTE_GEDECKT,
+                                    k.KaeltedeckungMwh.ToString("N2", kultur),
+                                    SimulationRunner.DeckungProzent(k.KaeltedeckungMwh, k.KaeltebedarfMwh).ToString("N1", kultur))
+                    : MyResource.Resource.SIMERG_HRL_KAELTE_UNGEDECKT;
                 hinweise.Add(deckung);
             }
             else

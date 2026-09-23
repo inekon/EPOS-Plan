@@ -1368,6 +1368,28 @@ namespace Testdatenbankschema
                                   GaseNormkubikmeter.Offen() + " (erwartet 0).");
             }
 
+            // ---- Schritt 114: KU-S3, der Kuehlbetrieb am Erzeuger (Kuehlkonzept 7.3, Stufe
+            //      KU2 Welle 1; Entscheide E15 und E33). REIN DDL aus DERSELBEN Quelle, aus der
+            //      sich SchemaMigration.Schritt_114_KuehlungErzeuger bedient (KuehlungSchema):
+            //      Kuehlbetrieb (0/1, Vorgabe 0), Kuehl_Vorlauf und Kuehl_Hilfsstromanteil an
+            //      Tab_WP und Tab_WP_STAMM, dazu Tab_Energieanlagen.Kuehl_ID_Carrier mit seinem
+            //      eigenen Typ (Verweis auf energy_carrier.id, ON DELETE SET NULL).
+            //
+            //      REFERENZLAUF BYTE-GLEICH: Kein DML - jede Waermepumpe steht auf 0, die
+            //      uebrigen Spalten bleiben NULL, und kein Rechenweg liest sie.
+            Console.WriteLine();
+            Console.WriteLine("Schritt 114 - Spalten des Kuehlbetriebs am Erzeuger: " +
+                              (KuehlungSchema.ErzeugerspaltenVollstaendig() ? "stehen bereits" : "offen") + ".");
+            if (!trocken)
+            {
+                var bericht114 = new List<string>();
+                angelegt += KuehlungSchema.ErzeugerspaltenAlle(bericht114);
+                foreach (string zeile in bericht114)
+                    Console.WriteLine("Schritt 114 - " + zeile + ".");
+                Console.WriteLine("Schritt 114 - vollstaendig: " + KuehlungSchema.ErzeugerspaltenVollstaendig() +
+                                  " (erwartet True).");
+            }
+
             Console.WriteLine();
             Console.WriteLine(angelegt + " Spalte(n) angelegt, " + tabellen + " Tabelle(n) angelegt.");
 

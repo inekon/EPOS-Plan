@@ -582,8 +582,9 @@ namespace WindowsFormsApplication1
                     {
                         string sql = @"INSERT INTO " + TABLE + @"
                             (Bezeichner, Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung,
-                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                             maxPtherm, Heizung, Regelung, Modulkosten, Bauart, Kuehlleistung, ReadOnly,
+                             Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         DbParam[] ps = {
                             new DbParam("@nam", WPName ?? (object)DBNull.Value),
                             new DbParam("@fir", Firma ?? (object)DBNull.Value),
@@ -598,7 +599,13 @@ namespace WindowsFormsApplication1
                             new DbParam("@mod", Modulkosten),
                             new DbParam("@bart", Bauart ?? (object)DBNull.Value),
                             new DbParam("@kuehl", Kuehlleistung),
-                            new DbParam("@ro", false)
+                            new DbParam("@ro", false),
+                            // KU-S3 (Schemaschritt 114): NULL-treu, nie 0 fuer ein leeres Feld
+                            new DbParam("@kbet", Kuehlbetrieb),
+                            ProjektPuffer.Par("@kvor", DbParamTyp.Integer,
+                                KuehlVorlauf.HasValue ? (object)KuehlVorlauf.Value : null),
+                            ProjektPuffer.Par("@khs", DbParamTyp.Double,
+                                KuehlHilfsstromanteil.HasValue ? (object)KuehlHilfsstromanteil.Value : null)
                         };
 
                         // ARBEITSPAKET S4e: Einfuegen und ID-Rueckgabe in EINEM Aufruf auf der
@@ -791,7 +798,7 @@ namespace WindowsFormsApplication1
         private const string UEBERNAHME_SPALTEN =
             "Firma, Beschreibung, Typ, Baujahr, Aufstellung, Nennleistung, maxPtherm, " +
             "Heizung, Regelung, Modulkosten, Laenge, Breite, Hoehe, Gewicht, Raum, " +
-            "Kuehlleistung, Bauart";
+            "Kuehlleistung, Bauart, Kuehlbetrieb, Kuehl_Vorlauf, Kuehl_Hilfsstromanteil";
 
         /// <summary>
         /// Was eine Uebernahme VORFINDEN wird — damit die Oberflaeche ihre Rueckfrage
@@ -1022,7 +1029,7 @@ namespace WindowsFormsApplication1
 
                             katalogId = v.EinfuegenUndId(
                                 "INSERT INTO " + TABLE + " (Bezeichner, " + UEBERNAHME_SPALTEN +
-                                ", ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                                ", ReadOnly) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                                 p.ToArray());
                             if (katalogId <= 0) throw new InvalidOperationException(
                                 "Der Katalogsatz konnte nicht angelegt werden.");
@@ -1036,7 +1043,8 @@ namespace WindowsFormsApplication1
                                 "UPDATE " + TABLE + " SET Firma = ?, Beschreibung = ?, Typ = ?, " +
                                 "Baujahr = ?, Aufstellung = ?, Nennleistung = ?, maxPtherm = ?, " +
                                 "Heizung = ?, Regelung = ?, Modulkosten = ?, Laenge = ?, Breite = ?, " +
-                                "Hoehe = ?, Gewicht = ?, Raum = ?, Kuehlleistung = ?, Bauart = ? " +
+                                "Hoehe = ?, Gewicht = ?, Raum = ?, Kuehlleistung = ?, Bauart = ?, " +
+                                "Kuehlbetrieb = ?, Kuehl_Vorlauf = ?, Kuehl_Hilfsstromanteil = ? " +
                                 "WHERE ID = ?",
                                 p.ToArray());
                         }
@@ -1129,7 +1137,7 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
-        /// Die Werte der siebzehn Fachspalten in der Reihenfolge von
+        /// Die Werte der zwanzig Fachspalten in der Reihenfolge von
         /// <see cref="UEBERNAHME_SPALTEN"/> — EINE Stelle fuer INSERT und UPDATE, damit
         /// Spaltenliste und Werte nicht auseinanderlaufen koennen.
         /// </summary>
@@ -1153,7 +1161,11 @@ namespace WindowsFormsApplication1
                 new DbParam("@gew", Feldwert(satz, "Gewicht")),
                 new DbParam("@rau", Feldwert(satz, "Raum")),
                 new DbParam("@kue", Feldwert(satz, "Kuehlleistung")),
-                new DbParam("@bart", Feldwert(satz, "Bauart"))
+                new DbParam("@bart", Feldwert(satz, "Bauart")),
+                // KU-S3 (Schemaschritt 114): dieselben Namen in Tab_WP und Tab_WP_STAMM
+                new DbParam("@kbet", Feldwert(satz, KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB)),
+                new DbParam("@kvor", Feldwert(satz, KuehlungSchema.SPALTE_KUEHL_VORLAUF)),
+                new DbParam("@khs", Feldwert(satz, KuehlungSchema.SPALTE_KUEHL_HILFSSTROMANTEIL))
             };
         }
 
@@ -1204,6 +1216,7 @@ namespace WindowsFormsApplication1
             if (dt.Columns.Contains("Max") && row["Max"] != DBNull.Value) item.MaxVorlauf = Convert.ToInt32(row["Max"]);
             if (dt.Columns.Contains("Min") && row["Min"] != DBNull.Value) item.MinVorlauf = Convert.ToInt32(row["Min"]);
             item.m_bReadOnly = dt.Columns.Contains("ReadOnly") && row["ReadOnly"] != DBNull.Value && Convert.ToBoolean(row["ReadOnly"]);
+            WPCtrl.KuehlfelderLesen(dt, row, item);   // KU-S3, NULL-treu (Schemaschritt 114)
         }
 
         #endregion

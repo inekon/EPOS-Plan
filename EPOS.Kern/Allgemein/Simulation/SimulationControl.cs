@@ -736,6 +736,9 @@ namespace WindowsFormsApplication1
             // SimulationWaermebedarf selbst in das Lauf-Protokoll meldet.
             Kanalsatz kanaele = simulation_Waermebedarf.KanaeleDrei();
 
+            // KU2: die Kälteseite des Vorlaufs verwerfen (Kälteerzeuger, Tagesbetriebsart).
+            KaelteseiteZuruecksetzen();
+
             // KNAPPHEITSREIHENFOLGE des Laufs (Konzept 4.3, F10) - EINMAL aufgelöst und
             // an beide Verbraucher gegeben: an die statischen Regeln, die die
             // Erzeugermodule und die Vektorstufen rufen (Kaskadenschleife.SenkeAbziehen,
@@ -831,6 +834,12 @@ namespace WindowsFormsApplication1
                         temp = Stundenwerte_zu_viertelstunden(simulation_wp.Heizstab_stuendlich);
                         Rest_Strombedarf_viertelstuendlich = AddVectors(Rest_Strombedarf_viertelstuendlich, temp);
                         bSimulationWP = true;
+
+                        // KU2 (Kühlkonzept 5.5, 6.1): die Kältekaskade NACH der Wärmekaskade der
+                        // reversiblen Maschinen - und ihr Kältestrom genau hier, an der Stelle des
+                        // Wärmepumpenstroms, als eigene Reihe in den Rest. Ohne Kälteerzeuger ein
+                        // sofortiger Rücksprung.
+                        KaeltekaskadeRechnen(kanaele);
                     }
 
                     if (_kesselInSchleife)
@@ -915,6 +924,10 @@ namespace WindowsFormsApplication1
 
             RestwaermeMwh = 0;
             for (int n = 0; n < 8760; n++) RestwaermeMwh += Rest_Waermebedarf_stuendlich[n];
+
+            // KU2: Meldungen der Kälteseite und die Deckungsprobe Kälte (Kühlkonzept 4.3 #31) -
+            // nach der GANZEN Wärmekaskade. Ohne erhobene Kälte ein sofortiger Rücksprung.
+            KaelteseiteAbschliessen(kanaele);
         }
 
         // NACHARBEIT PAKET 6, BEFUND N10: Hier stand „RestAufKanaeleZurueck" — die
@@ -1326,6 +1339,11 @@ namespace WindowsFormsApplication1
 
             schleife.Kontext = kontext;
             schleife.Bedarfsreihenfolge = BedarfsreihenfolgeAufbauen();
+
+            // KU2 (Kühlkonzept 5.2, 5.5): die Wärmepumpen im Kühlbetrieb und die
+            // Tagesbetriebsart - VOR der Stundenschleife, denn am Kühltag ist ihr Heizkanal
+            // gesperrt. Ohne Kühlbetrieb bleibt das Wärmepumpenmodul unberührt.
+            if (_wpInSchleife) KaelteerzeugerVorbereiten();
 
             // --- 5. Stundenschleife A–G ------------------------------------------------
             m_bError = !schleife.Rechnen(kanaele);
@@ -2635,6 +2653,11 @@ namespace WindowsFormsApplication1
             sb.AppendLine(string.Format(
                 "Kanalganglinien-Probe (Paket E2): {0} Zusagen geprueft, {1} FEHLER, groesster Rest {2:G4} kWh.",
                 geprueft, fehler, groessterRest));
+
+            // KU2 (Kühlkonzept 4.3 #31): die Kälteregel daneben - kein Wärmeerzeuger im Kühlkanal,
+            // kein Kälteerzeuger in einem Wärmekanal, die Kältebilanz geschlossen.
+            string kaelte = DeckungsprobeKaelteZeile();
+            if (kaelte.Length > 0) sb.AppendLine(kaelte);
             return sb.ToString();
         }
 

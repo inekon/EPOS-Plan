@@ -22809,6 +22809,24 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Kühlblöcke mit vertauschten Achsen nicht übernommen (Vorlauf {2} °C) — die Temperaturachse trägt die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KUEHLBLOCK_ACHSE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KUEHLBLOCK_ACHSE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Kühlblöcke in Heizlage nicht übernommen (Vorlauf {2} °C) — sie beschreiben die Kälteleistung am Verdampfer im Heizbetrieb, keinen Kühlbetrieb. ähnelt.
+        /// </summary>
+        public static string IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Die Datei konnte nicht gelesen werden: {0} ähnelt.
         /// </summary>
         public static string IMP_KAT_PROT_LESEFEHLER {
@@ -54323,11 +54341,56 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kälteerzeugung: {0} MWh/a von {1} MWh/a Kältebedarf gedeckt ({2} %), Kältestrom {3} MWh/a, EER-Jahreswert {4}; {5} Kühltage. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Deckungsprobe Kälte: {0} Wärmebuchungen im Kühlkanal, {1} Stunden mit verändertem Kühlkanal, {2} Stunden mit verändertem Wärmekanal, {3} Stunden mit offener Kältebilanz (größte Abweichung {4} kWh). Die Trennung von Wärme und Kälte hält nicht; der Lauf wird nicht gespeichert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_DECKUNGSPROBE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_DECKUNGSPROBE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Stunden mit gleichzeitigem Heizen und Kühlen: {0} h (Gebäude „{1}&quot;) — Umschaltstunden der Übergangszeit oder eine Zonierung, die beides verlangt. Heiz- und Kältebedarf werden nicht gegeneinander verrechnet. ähnelt.
         /// </summary>
         public static string SIMENG_KAELTE_HEIZEN_UND_KUEHLEN {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_HEIZEN_UND_KUEHLEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Tagesbetriebsart: An {0} Kühltagen ist der Heizkanal der Wärmepumpen im Kühlbetrieb gesperrt; von {1} MWh Heizbedarf dieser Tage blieben nach allen Erzeugern {2} MWh ungedeckt. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_HEIZKANAL_GESPERRT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_HEIZKANAL_GESPERRT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die deren Werte gelten ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KENNLINIE_GEKAPPT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KENNLINIE_GEKAPPT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die linear verlängert ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_KENNLINIE_VERLAENGERT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_KENNLINIE_VERLAENGERT", resourceCulture);
             }
         }
         
@@ -54355,6 +54418,141 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_KAELTE_PROJEKT_AUS {
             get {
                 return ResourceManager.GetString("SIMENG_KAELTE_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältebedarf teilweise ungedeckt: {0} MWh/a — davon {1} MWh/a an Heiztagen (die Betriebsart des Tages ist Heizen), {2} MWh/a an Kühltagen (Leistung zu klein oder die Stunde durch Brauchwasser bzw. Sperrzeit belegt). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_UNTERDECKUNG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_UNTERDECKUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Die Kühlkennlinie für den Vorlauf {1} °C trägt auf der Temperaturachse die Kaltwassertemperatur statt der Außen- bzw. Quellentemperatur — sie wird nicht umgedeutet; die Maschine kühlt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_ACHSEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_ACHSEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Stützstellen der Kühlkennlinie stehen doppelt mit gleichen Werten — sie sind zusammengefasst. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_DUBLETTEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_DUBLETTEN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: {1} Stützstellen der Kühlkennlinie stehen mehrfach mit abweichenden Werten — es gilt jeweils die zuerst gespeicherte Zeile. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_DUBLETTEN_ABWEICHEND", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;, Kühl-Vorlauf {1} °C: Die Kühlkennlinie hat nur eine Stützstelle ({2} °C) — Kälteleistung und EER gelten in jeder Stunde unverändert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_EINZELPUNKT {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_EINZELPUNKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Die Kühlkennlinie für den Vorlauf {1} °C liegt in Heizlage (Kälteleistung am Verdampfer im Heizbetrieb, kein EER) — sie wird nicht als Kühlkennlinie gelesen; die Maschine kühlt nicht. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_HEIZLAGE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_HEIZLAGE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Hilfsstromanteil {1} liegt nicht zwischen 0 und 1 — gerechnet wird ohne Hilfsstromzuschlag. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_HILFSSTROM_UNGUELTIG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;, Kühl-Vorlauf {1} °C: In {2} Stunden mit Kältebedarf lag die Temperatur unter der untersten Stützstelle ({3} °C, deren Werte gelten), in {4} Stunden über der obersten ({5} °C, {6}). ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KENNLINIE_AUSSERHALB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Katalog führt zu diesem Gerät eine Kühlkennlinie; sie lässt sich aus dem Katalog nachholen. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KENNLINIE_IM_KATALOG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der gewählte Stromträger der Kühlung wird noch nicht gesondert bepreist — der Kältestrom trägt Tarif und Emissionsfaktor des Projekts. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_KUEHLTRAEGER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_KUEHLTRAEGER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Nennkühlleistung ohne Kühlkennlinie — diese Maschine rechnet nur Wärme. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_NENNLEISTUNG_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Kühlbetrieb ohne Kühlkennlinie im Projekt — zu diesem Gerät liegen keine Kühlkenndaten vor; die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühlbetrieb ist eingestellt, das Projekt rechnet aber keine Kälte (Projekteinstellung „Kühlung rechnen&quot; aus) — die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_PROJEKT_AUS {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_PROJEKT_AUS", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Kühlbetrieb mit Quellspeicher wird nicht gerechnet — die Maschine heizt nur. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_QUELLSPEICHER {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_QUELLSPEICHER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmepumpe „{0}&quot;: Der Kühl-Vorlauf {1} °C ist keine Stützstelle der Kühlkennlinie ({2} °C) — gerechnet wird mit {3} °C; über den Vorlauf wird nicht interpoliert. ähnelt.
+        /// </summary>
+        public static string SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN {
+            get {
+                return ResourceManager.GetString("SIMENG_KAELTE_WP_VORLAUF_AUSGEWICHEN", resourceCulture);
             }
         }
         
@@ -54652,6 +54850,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMENG_SENKENZEILE_OHNE_PUFFER {
             get {
                 return ResourceManager.GetString("SIMENG_SENKENZEILE_OHNE_PUFFER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wärmesenke: Die Anlage {0} trägt in der Altspalte WS_Ziel das Kälteziel „Kältekreis&quot;. Die Altspalten kennen nur Wärmeziele — dort rechnet sie auf dem Heizkreis; eine Kältesenke steht allein in der Senkenliste. ähnelt.
+        /// </summary>
+        public static string SIMENG_SENKE_KAELTEZIEL_ALTSPALTE {
+            get {
+                return ResourceManager.GetString("SIMENG_SENKE_KAELTEZIEL_ALTSPALTE", resourceCulture);
             }
         }
         
@@ -55165,6 +55372,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIMERG_GRP_WAERME {
             get {
                 return ResourceManager.GetString("SIMERG_GRP_WAERME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Wärmepumpen im Kühlbetrieb decken {0} MWh/a des Kältebedarfs ({1} %). ähnelt.
+        /// </summary>
+        public static string SIMERG_HRL_KAELTE_GEDECKT {
+            get {
+                return ResourceManager.GetString("SIMERG_HRL_KAELTE_GEDECKT", resourceCulture);
             }
         }
         
@@ -61587,6 +61803,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string SIM_W_STROMPLATZ_BELEGT {
             get {
                 return ResourceManager.GetString("SIM_W_STROMPLATZ_BELEGT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kältekreis ähnelt.
+        /// </summary>
+        public static string SIM_ZIEL_KAELTEKREIS {
+            get {
+                return ResourceManager.GetString("SIM_ZIEL_KAELTEKREIS", resourceCulture);
             }
         }
         
@@ -73305,11 +73530,38 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHLBETRIEB {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHLBETRIEB", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Kühlleistung ähnelt.
         /// </summary>
         public static string WPS_LBL_KUEHLLEISTUNG {
             get {
                 return ResourceManager.GetString("WPS_LBL_KUEHLLEISTUNG", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Hilfsstromanteil Kühlung ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_HILFSSTROM {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_HILFSSTROM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühl-Vorlauf ähnelt.
+        /// </summary>
+        public static string WPS_LBL_KUEHL_VORLAUF {
+            get {
+                return ResourceManager.GetString("WPS_LBL_KUEHL_VORLAUF", resourceCulture);
             }
         }
         
@@ -73688,6 +73940,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string WP_PROJ_MSG_KEIN_SATZ {
             get {
                 return ResourceManager.GetString("WP_PROJ_MSG_KEIN_SATZ", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Zu diesem Gerät liegen keine Kühlkenndaten vor — der Kühlbetrieb bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_OHNE_KENNLINIE", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Kühlbetrieb mit Quellspeicher wird nicht gerechnet — der Kühlbetrieb bleibt gesperrt. ähnelt.
+        /// </summary>
+        public static string WP_PROJ_MSG_KUEHL_QUELLSPEICHER {
+            get {
+                return ResourceManager.GetString("WP_PROJ_MSG_KUEHL_QUELLSPEICHER", resourceCulture);
             }
         }
         

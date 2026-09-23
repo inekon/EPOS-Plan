@@ -99,8 +99,9 @@ namespace WindowsFormsApplication1
         /// zum Halbgeviertstrich; eine 0 bleibt eine 0 — sie ist eine Aussage.
         /// </summary>
         /// <remarks>
-        /// <b>Zwei Spalten sind WAHRHEITSWERTE</b> und stehen in SQLite als 0/1:
-        /// <c>Brennwert</c> (nur der Heizkessel) und <c>ReadOnly</c> (alle sieben).
+        /// <b>Drei Spalten sind WAHRHEITSWERTE</b> und stehen in SQLite als 0/1:
+        /// <c>Brennwert</c> (nur der Heizkessel), <c>Kuehlbetrieb</c> (nur die Waermepumpe,
+        /// KU-S3) und <c>ReadOnly</c> (alle sieben).
         /// „1" waere hier keine Auskunft; sie werden zu Ja/Nein aus demselben
         /// Ressourcenpaar, das jede Rueckfrage des Hauses benutzt.
         /// </remarks>
@@ -130,7 +131,9 @@ namespace WindowsFormsApplication1
         private static bool IstJaNein(string spalte)
         {
             return string.Equals(spalte, "Brennwert", StringComparison.OrdinalIgnoreCase)
-                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase);
+                || string.Equals(spalte, "ReadOnly", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(spalte, KuehlungSchema.SPALTE_ERZEUGER_KUEHLBETRIEB,
+                                 StringComparison.OrdinalIgnoreCase);   // KU-S3, Waermepumpe
         }
 
         private static string Wahrheit(object wert)

@@ -19,9 +19,11 @@ namespace WindowsFormsApplication1
     /// Lastgangschleife hierher durch (<see cref="GebaeudeBuchen"/>, <see cref="GanglinieBuchen"/>)
     /// — gebucht wird im selben Durchlauf wie die Wärme, entschieden und gemessen hier.</para>
     ///
-    /// <para><b>Gedeckt von niemandem — benannt.</b> Kälteerzeuger kommen mit Stufe KU2. Bis dahin
-    /// ist die ungedeckte Kälte (<see cref="Kaelterestbedarf"/>) der ganze Bedarf, und der Lauf
-    /// sagt es als Warnung (F-K12, Kühlkonzept 5.5): kein stiller Rest.</para>
+    /// <para><b>Gedeckt von den Kälteerzeugern — der Rest benannt.</b> Die Deckung rechnet die
+    /// <see cref="Kaeltekaskade"/> (Stufe KU2) NACH der Wärmekaskade; ihr Ergebnis steht in
+    /// <see cref="Kaskade"/>, und <see cref="Kaelterestbedarf"/> ist danach der ungedeckte Rest. Ohne
+    /// Kälteerzeuger bleibt er der ganze Bedarf, und der Lauf sagt es als Warnung (F-K12,
+    /// Kühlkonzept 5.5): kein stiller Rest.</para>
     ///
     /// <para><b>Nur mit dem Projektschalter.</b> Rechnet das Projekt keine Kälte
     /// (<c>Tab_Einstellungen.Kuehlbetrieb</c> = 0, jedes Bestands- und Referenzprojekt), bleibt
@@ -96,11 +98,26 @@ namespace WindowsFormsApplication1
         public double Kaeltebedarf_Extern_Gesamt = 0;
 
         /// <summary>
-        /// Ungedeckte Kälte [MWh] — Zwilling von <c>Waermerestbedarf</c>. In KU1 deckt NIEMAND
-        /// Kälte: Sie ist der ganze Bedarf (benannt, F-K12). Ab KU2 bildet sie die
-        /// Kältekaskade dieser Fassade.
+        /// Ungedeckte Kälte [MWh] — Zwilling von <c>Waermerestbedarf</c>. Nach dem Bedarfslauf der
+        /// ganze Bedarf; hat eine <see cref="Kaeltekaskade"/> gerechnet (<see cref="DeckungUebernehmen"/>),
+        /// ihr Rest. Ohne Kälteerzeuger bleibt sie der Bedarf (benannt, F-K12).
         /// </summary>
         public double Kaelterestbedarf = 0;
+
+        /// <summary>
+        /// Die Kältekaskade des Laufs (Stufe KU2, Kühlkonzept 5.5) — Deckung, Kältestrom und
+        /// EER-Jahreswert je Erzeuger und gesamt. <c>null</c>, solange kein Kälteerzeuger gerechnet
+        /// hat (kein Kühlbetrieb, alle benannt gesperrt oder die Kälte nicht erhoben).
+        /// </summary>
+        public Kaeltekaskade Kaskade { get; private set; }
+
+        /// <summary>
+        /// Zahl der im Projekt ANGELEGTEN Kälteerzeuger (Wärmepumpen mit Kühlbetrieb), gesetzt vom
+        /// Bedarfslauf. Ist sie größer 0, meldet erst die Kältekaskade die Unterdeckung — mit ihrem
+        /// Grund —, nicht schon der Bedarfslauf: Dort stünde sonst „ohne Kälteerzeuger" über einem
+        /// Projekt, das einen hat.
+        /// </summary>
+        public int KaelteerzeugerAngelegt = 0;
 
         /// <summary>Stunden mit Kältebedarf [h] (<c>kaelte.stunden</c>) — gezählt am Kanalvektor, nicht als Summe der Gebäude.</summary>
         public int StundenMitKuehlbedarf = 0;
@@ -194,6 +211,8 @@ namespace WindowsFormsApplication1
             Kaeltebedarf_Gebaeude_Gesamt = 0;
             Kaeltebedarf_Extern_Gesamt = 0;
             Kaelterestbedarf = 0;
+            Kaskade = null;
+            KaelteerzeugerAngelegt = 0;
             StundenMitKuehlbedarf = 0;
             StundenHeizenUndKuehlen = 0;
             StundenHeizenUndKuehlenGebaeude = "";
@@ -339,17 +358,16 @@ namespace WindowsFormsApplication1
                 Array.Reverse(Dauerlinie);
             }
 
-            // KU1: Kälteerzeuger gibt es noch nicht - die ungedeckte Kälte ist der Bedarf.
+            // Vor der Deckung ist die ungedeckte Kälte der Bedarf; die Kältekaskade (KU2) setzt
+            // danach ihren Rest (DeckungUebernehmen).
             Kaelterestbedarf = Kaeltebedarf_Gesamt;
             Gerechnet = true;
 
             if (Kaeltebedarf_Gesamt > 0)
             {
-                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest.
-                protokoll.Warnung(string.Format(CultureInfo.CurrentCulture,
-                    MyResource.Resource.SIMENG_KAELTE_OHNE_ERZEUGER,
-                    Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
-                    Kaeltebedarf_Max.ToString("N1", CultureInfo.CurrentCulture)));
+                // F-K12: Unterdeckung ist eine benannte Meldung, kein stiller Rest. Hat das
+                // Projekt Kälteerzeuger, sagt es die Kältekaskade - mit Menge und Grund.
+                if (KaelteerzeugerAngelegt <= 0) OhneErzeugerMelden();
 
                 // K5: die Grenze der Zahl, einmal je Lauf.
                 protokoll.HinweisEinmal("kaelte-grenze-feuchte", GrenzeFeuchte);
@@ -361,6 +379,31 @@ namespace WindowsFormsApplication1
                     StundenHeizenUndKuehlen, StundenHeizenUndKuehlenGebaeude));
 
             return true;
+        }
+
+        /// <summary>
+        /// Die Warnung „Kältebedarf ohne Kälteerzeuger" (F-K12, 8.5) — aus dem Bedarfslauf, wenn das
+        /// Projekt keinen Kälteerzeuger anlegt, sonst aus der Kältekaskade, wenn keiner rechnen kann.
+        /// </summary>
+        internal void OhneErzeugerMelden()
+        {
+            if (!Gerechnet || !(Kaeltebedarf_Gesamt > 0)) return;
+            SimulationProtokoll.Aktuell.Warnung(string.Format(CultureInfo.CurrentCulture,
+                MyResource.Resource.SIMENG_KAELTE_OHNE_ERZEUGER,
+                Kaeltebedarf_Gesamt.ToString("N2", CultureInfo.CurrentCulture),
+                Kaeltebedarf_Max.ToString("N1", CultureInfo.CurrentCulture)));
+        }
+
+        /// <summary>
+        /// Übernimmt das Ergebnis der <see cref="Kaeltekaskade"/> (Stufe KU2): Die ungedeckte Kälte
+        /// ist danach ihr Rest [MWh] — gebildet wie <see cref="Kaeltebedarf_Gesamt"/> (Summe in
+        /// Stundenfolge, dann / 1000).
+        /// </summary>
+        internal void DeckungUebernehmen(Kaeltekaskade kaskade)
+        {
+            if (!Gerechnet || kaskade == null) return;
+            Kaskade = kaskade;
+            Kaelterestbedarf = Jahressumme(kaskade.Rest_stuendlich) / 1000.0;
         }
 
         /// <summary>
@@ -477,13 +520,17 @@ namespace WindowsFormsApplication1
             new Gegenstueck("Stunden mit Wärmebedarf", "StundenMitKuehlbedarf", "KU1"),
             new Gegenstueck("Vollbenutzungsstunden Wärme", "VollbenutzungsstundenKaelte", "KU1"),
             new Gegenstueck("Ergebnis.Waermerestbedarf (Restwaerme nach der Kaskade)", "Kaelterestbedarf", "KU1",
-                            "In KU1 gedeckt von niemandem: der ganze Bedarf, benannt als Warnung (F-K12)."),
+                            "Nach der Kältekaskade ihr Rest (KU2); ohne Kälteerzeuger der ganze Bedarf, benannt als Warnung (F-K12)."),
 
-            // ---- KU2: angekündigt ----
+            // ---- KU2: gebaut ----
+            new Gegenstueck("Kaskadenschleife (Wärmekaskade)", "Kaskade", "KU2",
+                            "Eigene Stundenschleife Kaeltekaskade nach der Wärmekaskade (5.5); Reihenfolge = Kaskadenplätze, gefiltert auf die Kälteerzeuger."),
             new Gegenstueck("KennzahlenKatalog.DeckungKanal", "KennzahlenKatalog.DeckungKanalKaelte", "KU2",
                             "Eigener Zweig mit Kaeltebedarf_Gesamt als Nenner, kein vierter Fall (6.4)."),
-            new Gegenstueck("Jahresarbeitszahl der Wärmepumpe", "Jahresarbeitszahl Kälte", "KU2",
-                            "Kommt mit dem Kälteerzeuger (reversible Wärmepumpe)."),
+            new Gegenstueck("Jahresarbeitszahl der Wärmepumpe", "Kaeltekaskade.EerJahreswert", "KU2",
+                            "Kälte / Kältestrom einschließlich Hilfsstrom (6.1, 6.4)."),
+            new Gegenstueck("WP_Strombedarf_stuendlich", "Kaeltekaskade.Stromverbrauch_Kuehlung_stuendlich", "KU2",
+                            "Eigene Reihe, nicht die der Wärmepumpe (5.1 Festlegung 5, 6.1)."),
 
             // ---- Benannte Abweichungen ----
             new Gegenstueck("Kanalsatz.NetzverlusteVerteilen", null, "—",
@@ -510,6 +557,10 @@ namespace WindowsFormsApplication1
                             "Die Grenze der Kältezahl (K5): sensible Kälte ohne Entfeuchtung."),
             new Gegenstueck(null, "Überhitzungsstunden (Gebäudekennzahl)", "KU1",
                             "Zugewinn (6.4): misst, was ohne Anlage geschieht."),
+            new Gegenstueck(null, "KaelteerzeugerAngelegt", "KU2",
+                            "Angekündigte Kälteerzeuger: Die Unterdeckung meldet dann die Kältekaskade mit ihrem Grund (5.5)."),
+            new Gegenstueck(null, "Kaeltekaskade.Kuehltage", "KU2",
+                            "Tagesbetriebsart der reversiblen Maschine (K8a, 5.2) - die Wärmeseite kennt keine Umschaltung."),
         };
     }
 
@@ -547,6 +598,41 @@ namespace WindowsFormsApplication1
             if (kaelte != null && kaelte.Gerechnet && kaelte.Kaeltebedarf_Gesamt > 0)
                 reihen.Add(new KeyValuePair<string, double[]>(DATEI, kaelte.Kaeltebedarf));
             return reihen;
+        }
+
+        /// <summary>
+        /// <b>Die Skalare der Kältedeckung</b> für die Kennzahlendatei <c>aggregate.csv</c>
+        /// (Stufe KU2; Kühlkonzept 4.7, 7.4, 7.6 — der Kältestrom bleibt Skalar, K24/E27): gedeckte
+        /// Kälte, Kältestrom samt Hilfsstrom, EER-Jahreswert, Deckungsgrad, Kühltage und je Erzeuger
+        /// Kälte und Kältestrom; Jahressummen in MWh, die Einheit im Namen.
+        ///
+        /// <para><b>Nur mit gerechnetem Kälteerzeuger</b> — dieselbe Bedingung wie die Kanaldatei: Ein
+        /// Projekt ohne Kühlbetrieb, darunter jedes Referenzprojekt bis zum Einfrierschritt von KU2,
+        /// bekommt keinen neuen Schlüssel, und die Basis bleibt byte-gleich.</para>
+        /// </summary>
+        public static IReadOnlyList<KeyValuePair<string, double>> Skalare(SimulationKaeltebedarf kaelte)
+        {
+            var s = new List<KeyValuePair<string, double>>();
+            Kaeltekaskade k = kaelte?.Kaskade;
+            if (kaelte == null || !kaelte.Gerechnet || k == null || k.Erzeuger.Count == 0) return s;
+
+            s.Add(new KeyValuePair<string, double>("Kaelte.ErzeugungMwh", k.DeckungGesamtKwh / 1000.0));
+            s.Add(new KeyValuePair<string, double>("Kaelte.StromMwh", k.StromGesamtKwh / 1000.0));
+            s.Add(new KeyValuePair<string, double>("Kaelte.HilfsstromMwh", k.HilfsstromGesamtKwh / 1000.0));
+            s.Add(new KeyValuePair<string, double>("Kaelte.EerJahreswert", k.EerJahreswert));
+            s.Add(new KeyValuePair<string, double>("Kaelte.DeckungsgradProzent",
+                SimulationRunner.DeckungProzent(k.DeckungGesamtKwh / 1000.0, kaelte.Kaeltebedarf_Gesamt)));
+            s.Add(new KeyValuePair<string, double>("Kaelte.Kuehltage", k.AnzahlKuehltage));
+            for (int i = 0; i < k.Erzeuger.Count; i++)
+            {
+                Kaelteerzeuger e = k.Erzeuger[i];
+                string p = "Kaelte[" + i.ToString(CultureInfo.InvariantCulture) + "].";
+                s.Add(new KeyValuePair<string, double>(p + "ID_Anlage", e.AnlagenID));
+                s.Add(new KeyValuePair<string, double>(p + "Vorlauf", e.Kennlinie != null ? e.Kennlinie.Vorlauf : 0));
+                s.Add(new KeyValuePair<string, double>(p + "ErzeugungMwh", e.KaelteGesamtKwh / 1000.0));
+                s.Add(new KeyValuePair<string, double>(p + "StromMwh", e.StromGesamtKwh / 1000.0));
+            }
+            return s;
         }
 
         /// <summary>Der Satz, der mit jeder exportierten Kältezahl reist (K5): sensible Kälte ohne Entfeuchtung.</summary>

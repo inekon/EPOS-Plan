@@ -454,6 +454,81 @@ namespace WindowsFormsApplication1
 
         public string[] WP_Modul = new string[MAX_WP];
 
+        // ==================================================================
+        // STUFE KU2 DER KÜHLUNG — die reversible Wärmepumpe (Kühlkonzept 5.1, 5.2)
+        //
+        // Die Wärmepumpe rechnet ihre KÄLTE nicht hier, sondern in der Kältekaskade
+        // (Kaeltekaskade, nach der Wärmekaskade, 5.5). Hier stehen nur die zwei Dinge, die die
+        // Wärmekaskade dafür wissen und tun muss:
+        //
+        //   1. DIE UMSCHALTREGEL JE TAG (K8a): Am KÜHLTAG ist für ein Modul im Kühlbetrieb der
+        //      HEIZKANAL gesperrt — in der Bedarfsphase, in der Ladephase (kein Puffer, der den
+        //      Heizkanal bedient) und beim Heizstab. Brauchwasser und Prozesswärme bleiben
+        //      bedienbar: „je Stunde zuerst Brauchwasser, der Rest an die Kälte".
+        //   2. DER ZEITANTEIL DES HEIZBETRIEBS je Stunde — erzeugte Wärme durch die volle
+        //      Heizleistung der Stunde. Was von der Stunde übrig bleibt, steht der Kälte offen.
+        //
+        // Ohne Modul im Kühlbetrieb (KuehlModule == null — jeder Lauf ohne Kühlung und jedes
+        // Referenzprojekt) ist jede Zeile hierzu ein sofortiger Rücksprung: Die Wärmeseite
+        // rechnet Anweisung für Anweisung wie zuvor.
+        // ==================================================================
+
+        /// <summary>
+        /// Je Modul (Index wie <see cref="wp_list"/>): rechnet es im Kühlbetrieb mit? Gesetzt von
+        /// <see cref="KuehlbetriebSetzen"/> vor der Kaskade; <c>null</c> = kein Modul kühlt.
+        /// </summary>
+        public bool[] KuehlModule { get; private set; }
+
+        /// <summary>Tagesbetriebsart des Laufs (<see cref="Kaeltekaskade.TagesbetriebsartBestimmen"/>): true = Kühltag.</summary>
+        public bool[] Kuehltage { get; private set; }
+
+        /// <summary>
+        /// Zeitanteil des Heizbetriebs je Modul und Stunde [0…1] — nur für die Module im
+        /// Kühlbetrieb angelegt (sonst <c>null</c>): erzeugte Verdichterwärme der Stunde
+        /// (Bedarfsdeckung und Speicherladung) durch die Heizleistung der Stunde.
+        /// </summary>
+        public double[][] Heizzeitanteil_stuendlich { get; private set; }
+
+        private readonly double[] _heizWaermeStunde = new double[MAX_WP];
+        private readonly double[] _heizLeistungStunde = new double[MAX_WP];
+
+        /// <summary>
+        /// Stellt Module auf Kühlbetrieb (Stufe KU2) — gerufen von <c>SimulationControl</c> nach
+        /// dem Modulaufbau und vor der Kaskade, EINMAL je Lauf.
+        /// </summary>
+        /// <param name="module">Je Modul: kühlt es mit? <c>null</c> oder ohne <c>true</c> = keins.</param>
+        /// <param name="kuehltage">Die Tagesbetriebsart des Laufs (365 Tage).</param>
+        public void KuehlbetriebSetzen(bool[] module, bool[] kuehltage)
+        {
+            KuehlModule = null;
+            Kuehltage = null;
+            Heizzeitanteil_stuendlich = null;
+            if (module == null || kuehltage == null || Array.IndexOf(module, true) < 0) return;
+
+            KuehlModule = (bool[])module.Clone();
+            Kuehltage = (bool[])kuehltage.Clone();
+            Heizzeitanteil_stuendlich = new double[KuehlModule.Length][];
+            for (int i = 0; i < KuehlModule.Length; i++)
+                if (KuehlModule[i]) Heizzeitanteil_stuendlich[i] = new double[8760];
+        }
+
+        /// <summary>true, wenn Modul <paramref name="index"/> im Kühlbetrieb mitrechnet.</summary>
+        private bool Reversibel(int index)
+        {
+            return KuehlModule != null && index >= 0 && index < KuehlModule.Length && KuehlModule[index];
+        }
+
+        /// <summary>
+        /// true, wenn für Modul <paramref name="index"/> in dieser Stunde der HEIZKANAL gesperrt
+        /// ist — ein Modul im Kühlbetrieb an einem Kühltag (K8a, 5.2).
+        /// </summary>
+        public bool HeizkanalGesperrt(int index, int stunde)
+        {
+            if (!Reversibel(index) || Kuehltage == null) return false;
+            int tag = stunde / 24;
+            return tag >= 0 && tag < Kuehltage.Length && Kuehltage[tag];
+        }
+
         public class _Kenndaten
         {
             public int ID_WP = 0;
@@ -968,6 +1043,13 @@ namespace WindowsFormsApplication1
             Array.Clear(_zkLadeEl, 0, _zkModule);
             Array.Clear(_zkLadeRest, 0, _zkModule);
             Array.Clear(_zkPvGebunden, 0, _zkModule);
+
+            // KU2: Zeitanteil des Heizbetriebs - die Stunde beginnt ohne Wärme und ohne Leistung.
+            if (KuehlModule != null)
+            {
+                Array.Clear(_heizWaermeStunde, 0, MAX_WP);
+                Array.Clear(_heizLeistungStunde, 0, MAX_WP);
+            }
         }
 
         /// <summary>
@@ -1000,6 +1082,19 @@ namespace WindowsFormsApplication1
                     // Ebene 0, und die Prüfung ist immer wahr.
                     if (!EbeneAktiv(index)) continue;
 
+                    // KU2 (K8a, Kühlkonzept 5.2): Am Kühltag ist der HEIZKANAL dieses Moduls
+                    // gesperrt - für die Dauer seines Rumpfs steht er auf 0 und wird danach
+                    // unverändert zurückgelegt. Brauchwasser und Prozess bleiben bedienbar.
+                    // Ohne Kühlbetrieb ist die Bedingung falsch, und der Rumpf ist der bisherige.
+                    bool heizkanalGesperrt = HeizkanalGesperrt(index, stunde);
+                    double heizkanalZurueck = 0;
+                    if (heizkanalGesperrt)
+                    {
+                        heizkanalZurueck = rest[Kanal.HEIZUNG];
+                        rest[Kanal.HEIZUNG] = 0;
+                    }
+                    try
+                    {
                     WErzeugerModel model = wp_model[index];
                     _Kenndaten kenndaten = wp_kenndaten[index];
                     Senkenliste senken = kontext.SenkenlisteJeModul[index];
@@ -1073,6 +1168,9 @@ namespace WindowsFormsApplication1
                     bool kannLaden = false;
                     for (int q = 0; q < auftraege[index].Count && !kannLaden; q++)
                         kannLaden = Ladefaehig(auftraege[index][q], pvUeberschuss, rest);
+
+                    // KU2: die Heizleistung der Stunde - Bezugsgröße des Heizzeitanteils.
+                    if (Reversibel(index)) _heizLeistungStunde[index] = result[PTHERM];
 
                     if (verfuegbar <= 0 && !kannLaden) continue;
 
@@ -1203,6 +1301,14 @@ namespace WindowsFormsApplication1
                     ladeRest[index] = ladeTherm[index] - erzeugt;
                     if (ladeRest[index] < 0) ladeRest[index] = 0;
 
+                    // KU2: die Verdichterwärme der Stunde (Bedarfsdeckung).
+                    if (Reversibel(index)) _heizWaermeStunde[index] += erzeugt;
+                    }
+                    finally
+                    {
+                        if (heizkanalGesperrt) rest[Kanal.HEIZUNG] = heizkanalZurueck;
+                    }
+
                 } // end alle WP-Module
 
             return true;
@@ -1216,6 +1322,26 @@ namespace WindowsFormsApplication1
         public void Zweikanalig_StundeEnde(int stunde, double[] rest)
         {
             waermerestbedarf_stuendlich[stunde] = (double)Kaskadenschleife.RestSumme(rest);
+
+            // KU2 (5.2): der Zeitanteil des Heizbetriebs dieser Stunde je Modul im Kühlbetrieb.
+            if (KuehlModule != null && stunde >= 0 && stunde < 8760)
+                for (int i = 0; i < KuehlModule.Length && i < MAX_WP; i++)
+                {
+                    if (!KuehlModule[i] || Heizzeitanteil_stuendlich[i] == null) continue;
+                    Heizzeitanteil_stuendlich[i][stunde] = Heizzeitanteil(_heizWaermeStunde[i], _heizLeistungStunde[i]);
+                }
+        }
+
+        /// <summary>
+        /// Zeitanteil des Heizbetriebs [0…1] = erzeugte Verdichterwärme / Heizleistung der Stunde.
+        /// Ohne Heizleistung: 1, wenn trotzdem Wärme entstand (die Stunde ist belegt), sonst 0.
+        /// </summary>
+        public static double Heizzeitanteil(double waermeKwh, double leistungKw)
+        {
+            if (!(waermeKwh > 0)) return 0.0;
+            if (!(leistungKw > 0)) return 1.0;
+            double a = waermeKwh / leistungKw;
+            return a >= 1.0 ? 1.0 : a;
         }
 
         /// <summary>Abschluss des zweikanaligen Laufs: Sortierung, Jahressummen, Bivalenzpunkt.</summary>
@@ -1485,6 +1611,11 @@ namespace WindowsFormsApplication1
                 SimulationPufferspeicher sp = a.Speicher;
                 if (sp == null) return 0;
 
+                // KU2 (K8a, 5.2): Am Kühltag lädt ein Modul im Kühlbetrieb keinen Speicher, der
+                // den Heizkanal bedient - das wäre Heizen über den Umweg des Puffers. Ein
+                // Brauchwasser- oder Prozessspeicher bleibt ladbar.
+                if (HeizkanalGesperrt(index, stunde) && sp.BedientKanal(Kanal.HEIZUNG)) return 0;
+
                 // BILANZRAUM statt reiner Ladefähigkeit (Nutzerentscheidung zu 4b-1):
                 // Was in dieser Stunde ohnehin wieder entnommen wird, darf der Speicher
                 // zusätzlich aufnehmen — er ist eine hydraulische Weiche. Das Budget je
@@ -1548,6 +1679,9 @@ namespace WindowsFormsApplication1
                 ladeRest[index] -= ladung;
                 if (ladeRest[index] < 0) ladeRest[index] = 0;
 
+                // KU2: die Verdichterwärme der Stunde (Speicherladung).
+                if (Reversibel(index)) _heizWaermeStunde[index] += ladung;
+
                 WP_Waermeproduktion_stuendlich[stunde] += (double)ladung;
                 WpWaermeproduktionGesamtKwh += ladung;
                 Modul_WP_Waermeproduktion[index] += ladung;
@@ -1605,6 +1739,16 @@ namespace WindowsFormsApplication1
                 if (!WP_MitHeizstab[index]) continue;
                 if (WP_Heizung[index] <= 0) continue;
 
+                // KU2 (K8a, 5.2): Am Kühltag ist der Heizkanal dieses Moduls gesperrt - sein
+                // Heizstab bedient dann nur das Brauchwasser.
+                string senke = WaermequelleClass.SENKE_BEIDES;
+                if (HeizkanalGesperrt(index, stunde))
+                {
+                    senke = WaermequelleClass.SENKE_WARMWASSER;
+                    offen = Kanalabzug.Offen(senke, rest);
+                    if (offen <= 0) continue;
+                }
+
                 double menge = Math.Min(offen, WP_Heizung[index]);
                 Heizstab_stuendlich[stunde] += (double)menge;
                 HeizstabGesamtKwh += menge;
@@ -1612,7 +1756,7 @@ namespace WindowsFormsApplication1
 
                 // PAKET E2: derselbe Abzug schreibt zusätzlich die Kanalganglinie des
                 // Heizstabs — gemessen an derselben rest-Differenz wie Heizstab_Kanal.
-                SenkeAbziehen(WaermequelleClass.SENKE_BEIDES, menge, rest, Heizstab_Kanal,
+                SenkeAbziehen(senke, menge, rest, Heizstab_Kanal,
                               Heizstab_KanalStuendlich, stunde);
             }
         }
@@ -1984,6 +2128,12 @@ namespace WindowsFormsApplication1
             Quellentnahmen.Clear();
             ModulEbenen = null;
             AktiveEbene = 0;
+
+            // KU2: Der Kühlbetrieb gehört zum Laufzustand - SimulationControl setzt ihn je
+            // Lauf neu; ein Lauf ohne Kühlung darf keine Module eines Vorlaufs erben.
+            KuehlModule = null;
+            Kuehltage = null;
+            Heizzeitanteil_stuendlich = null;
 
             for (int i = 0; i < MAX_WP; i++)
             {

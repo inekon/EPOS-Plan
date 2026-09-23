@@ -1,10 +1,13 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 
 namespace WindowsFormsApplication1
 {
     /// <summary>
-    /// <b>Die Schemaschritte der Kuehlung, Stufe KU1</b> (Kuehlkonzept Kapitel 7; Entscheide
-    /// E12, E21, E27, E31) — EINE Quelle fuer Migration, <c>Werkzeuge/Testdatenbankschema</c>,
+    /// <b>Die Schemaschritte der Kuehlung, Stufen KU1 und KU2</b> (Kuehlkonzept Kapitel 7;
+    /// Entscheide E12, E15, E21, E27, E31, E33) — EINE Quelle fuer Migration,
+    /// <c>Werkzeuge/Testdatenbankschema</c>,
     /// die Arbeitskopie der Tests und den Nachweis.
     ///
     /// <para><b>Drei Schritte, drei Nummern.</b> Das Kuehlkonzept fuehrt KU-S1, KU-S2 und
@@ -32,8 +35,12 @@ namespace WindowsFormsApplication1
     /// Reihenfolge innerhalb von KU1); sie lesen und schreiben diese Spalten nur, wenn das
     /// Projekt Kaelte rechnet (<c>Kuehlbetrieb</c> = 1).</para>
     ///
-    /// <para><b>KU-S3</b> (Kuehlbetrieb am Erzeuger) gehoert zur Stufe KU2 und steht hier noch
-    /// nicht.</para>
+    /// <para><b>KU-S3 (Schritt 114)</b> — der Kuehlbetrieb am Erzeuger (Kuehlkonzept 7.3; E15,
+    /// E33), Stufe KU2 Welle 1: drei Spalten je Waermepumpentabelle
+    /// (<see cref="Erzeugerspalten"/>) und die Stromtraegerwahl der Kuehlung an der
+    /// Anlagenzeile (<see cref="SPALTE_KUEHL_ID_CARRIER"/>). Ebenfalls reines DDL: Jede
+    /// Waermepumpe steht danach auf „kein Kuehlbetrieb", die uebrigen Spalten auf NULL, und kein
+    /// Rechenweg liest sie.</para>
     /// </summary>
     public static class KuehlungSchema
     {
@@ -133,6 +140,101 @@ namespace WindowsFormsApplication1
         };
 
         // =====================================================================
+        //  KU-S3 — der Kuehlbetrieb am Erzeuger (Kuehlkonzept 7.3; E15, E33)
+        // =====================================================================
+
+        /// <summary>Die Projektkopie der Waermepumpe (<c>Tab_WP</c>).</summary>
+        public const string TAB_WP = "Tab_WP";
+
+        /// <summary>Der Waermepumpenkatalog — derselbe Name wie <see cref="WPStammCtrl.TABLE"/>.</summary>
+        public const string TAB_WP_STAMM = "Tab_WP_STAMM";
+
+        /// <summary>
+        /// <c>Kuehlbetrieb</c> an <c>Tab_WP</c> und <c>Tab_WP_STAMM</c> (0/1, NOT NULL DEFAULT 0):
+        /// „diese Maschine wird im Projekt auch zum Kuehlen benutzt". <b>Vorgabe 0 — aus</b>;
+        /// einschaltbar erst, wenn die Projektkopie eine Kuehlkennlinie traegt (Kuehlkonzept 5.0.5,
+        /// 8.2). Derselbe Spaltenname wie die Projekteinstellung <see cref="SPALTE_KUEHLBETRIEB"/>
+        /// in <c>Tab_Einstellungen</c> — ueber ihr steht sie: Solange das Projekt keine Kaelte
+        /// rechnet, rechnet keine Angabe am Erzeuger.
+        /// </summary>
+        public const string SPALTE_ERZEUGER_KUEHLBETRIEB = "Kuehlbetrieb";
+
+        /// <summary>
+        /// <c>Kuehl_Vorlauf</c> [degC], <c>INTEGER</c>, nullbar: der Kaltwasser-Vorlauf des
+        /// Kaeltekreises. Er waehlt die Kuehlkennlinie wie der Heizvorlauf die Heizkennlinie —
+        /// derselbe Typ wie <c>Tab_Kenndaten_Kuehlung.Vorlauf</c>, gewaehlt aus dessen
+        /// Stuetzstellen, ohne Interpolation (K21, E33). <b>NULL = kleinster Stuetzwert</b> der
+        /// Kuehlkennlinie des Geraets (Kuehlkonzept 5.1, Festlegung 2).
+        /// </summary>
+        public const string SPALTE_KUEHL_VORLAUF = "Kuehl_Vorlauf";
+
+        /// <summary>
+        /// <c>Kuehl_Hilfsstromanteil</c> [—], <c>REAL</c>, nullbar: der Anteil Hilfsstrom (Pumpen,
+        /// Ventilatoren des Kaeltekreises) an der Verdichterarbeit des Kuehlbetriebs, je Anlage
+        /// (K23, E33). <b>NULL = kein Zuschlag</b> — keine geratene Zahl (Kuehlkonzept 6.1).
+        /// </summary>
+        public const string SPALTE_KUEHL_HILFSSTROMANTEIL = "Kuehl_Hilfsstromanteil";
+
+        /// <summary>
+        /// Die sechs <see cref="SchemaSpalte"/>-Eintraege von KU-S3 am Geraet: je drei an
+        /// <c>Tab_WP</c> und <c>Tab_WP_STAMM</c> — sonst verloere die Katalogkopie die Einstellung,
+        /// und die Uebernahme in den Katalog koennte sie nicht setzen (Kuehlkonzept 7.3).
+        /// <c>YESNO</c> wird <c>INTEGER NOT NULL DEFAULT 0 CHECK (… IN (0,1))</c>, <c>INTEGER</c>
+        /// bleibt <c>INTEGER</c>, <c>DOUBLE</c> wird <c>REAL</c> — beide nullbar, ohne Vorgabe
+        /// (kein DDL-DEFAULT auf einem Fachwert).
+        ///
+        /// <para>Die Spalten stehen BEWUSST NICHT in <see cref="SchemaKatalog.Alle"/> — wie
+        /// KU-S1 und KU-S2: Die Rueckfallebene fuehrt die Kuehlung nicht, und ihre Leser fragen
+        /// die Spalte ueber die Zeile (<c>DataColumnCollection.Contains</c>).</para>
+        /// </summary>
+        public static readonly SchemaSpalte[] Erzeugerspalten =
+        {
+            new SchemaSpalte(TAB_WP,       SPALTE_ERZEUGER_KUEHLBETRIEB,   "YESNO"),
+            new SchemaSpalte(TAB_WP,       SPALTE_KUEHL_VORLAUF,           "INTEGER"),
+            new SchemaSpalte(TAB_WP,       SPALTE_KUEHL_HILFSSTROMANTEIL,  "DOUBLE"),
+            new SchemaSpalte(TAB_WP_STAMM, SPALTE_ERZEUGER_KUEHLBETRIEB,   "YESNO"),
+            new SchemaSpalte(TAB_WP_STAMM, SPALTE_KUEHL_VORLAUF,           "INTEGER"),
+            new SchemaSpalte(TAB_WP_STAMM, SPALTE_KUEHL_HILFSSTROMANTEIL,  "DOUBLE"),
+        };
+
+        /// <summary>
+        /// <c>Tab_Energieanlagen.Kuehl_ID_Carrier</c> — <b>der Stromtraeger des Kaeltestroms</b>
+        /// (K9, E33, abweichend von der Empfehlung): wahlweise ein anderer Stromtraeger des
+        /// Projekts; <b>NULL = wie Heizbetrieb</b>, also der Stromtraeger, mit dem die Anlage im
+        /// Heizbetrieb rechnet (ihr <c>ID_Carrier</c>, sonst der des Projekts).
+        ///
+        /// <para><b>Warum an der Anlagenzeile.</b> Die Waermepumpe waehlt ihren Stromtraeger im
+        /// Bestand je Anlage (<see cref="SchemaKatalog.SPALTE_ID_CARRIER"/>, ET-5), nicht am
+        /// Geraet — und ein Katalogsatz kennt keine Traeger eines Projekts. Die Kuehlwahl steht
+        /// deshalb daneben; eine Stammspalte gibt es nicht (Kuehlkonzept 6.3, 7.3).</para>
+        /// </summary>
+        public const string SPALTE_KUEHL_ID_CARRIER = "Kuehl_ID_Carrier";
+
+        /// <summary>
+        /// Alles hinter dem Spaltennamen des <c>ADD COLUMN</c> von
+        /// <see cref="SPALTE_KUEHL_ID_CARRIER"/> — dieselbe Bauart wie
+        /// <see cref="WaermepumpeKatalogverweis.TYP_SPALTE"/>.
+        ///
+        /// <para><b>Mit <c>REFERENCES</c>, ohne <c>DEFAULT</c>:</b> SQLite laesst ein
+        /// nachtraegliches <c>ADD COLUMN</c> mit Fremdschluessel zu, wenn die Vorgabe NULL ist —
+        /// und NULL ist die Aussage „wie Heizbetrieb". Eine 0 wird deshalb NIE geschrieben (die
+        /// Beziehung wiese sie ab; <c>AnlagenSql</c> und <c>WErzeugerCtrl</c> schreiben NULL).
+        /// Anders als <c>ID_Carrier</c>, das im Bestand 0 fuehrt und darum bewusst ohne Beziehung
+        /// steht (SchemaKatalog, Schritt 8).</para>
+        ///
+        /// <para><b><c>ON DELETE SET NULL</c>:</b> Ein geloeschter Traeger faellt auf „wie
+        /// Heizbetrieb" zurueck, statt die Anlage mitzunehmen. Geloescht wird ein Traeger ohnehin
+        /// nur ohne Verwendung (<c>EnergietraegerKatalogCtrl.Loeschen</c> zaehlt beide Spalten).</para>
+        /// </summary>
+        public const string TYP_KUEHL_ID_CARRIER =
+            "INTEGER REFERENCES \"energy_carrier\" (\"id\") ON DELETE SET NULL";
+
+        /// <summary>Die Spalte — <c>ALTER TABLE … ADD COLUMN</c>.</summary>
+        public const string SQL_KUEHL_ID_CARRIER =
+            "ALTER TABLE \"" + SchemaKatalog.TAB_ENERGIEANLAGEN + "\" ADD COLUMN \"" +
+            SPALTE_KUEHL_ID_CARRIER + "\" " + TYP_KUEHL_ID_CARRIER;
+
+        // =====================================================================
         //  Auskunft (Nachprobe der Migration, Werkzeug, Nachweis)
         // =====================================================================
 
@@ -146,6 +248,67 @@ namespace WindowsFormsApplication1
         public static bool ErgebnisspaltenVollstaendig()
         {
             return Ergebnisspalten.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name));
+        }
+
+        /// <summary>
+        /// Steht KU-S3 (Schritt 114)? Die sechs Spalten am Geraet und die Stromtraegerwahl an der
+        /// Anlagenzeile stehen.
+        /// </summary>
+        public static bool ErzeugerspaltenVollstaendig()
+        {
+            return Erzeugerspalten.All(s => DataRepository.SpalteVorhanden(s.Tabelle, s.Name))
+                && DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN, SPALTE_KUEHL_ID_CARRIER);
+        }
+
+        /// <summary>
+        /// Fuehrt KU-S3 (Schritt 114) in EINEM Vorgang aus — fuer
+        /// <c>Werkzeuge/Testdatenbankschema</c> und <c>EPOS.Kern.Tests</c>; die Migration der
+        /// Schale geht denselben Weg ueber ihre eigenen Helfer, aus denselben Definitionen. Legt
+        /// die fehlenden der sechs <see cref="Erzeugerspalten"/> an und dann
+        /// <see cref="SQL_KUEHL_ID_CARRIER"/>. <b>Wiederholbar:</b> Eine vorhandene Spalte wird
+        /// uebergangen. <b>Kein DML</b> — <c>Kuehlbetrieb</c> steht danach ueberall auf 0, die
+        /// uebrigen Spalten auf NULL.
+        /// </summary>
+        /// <param name="bericht">Nimmt je Handgriff eine Zeile auf; darf <c>null</c> sein.</param>
+        /// <returns>Die Zahl der angelegten Spalten (hoechstens sieben).</returns>
+        public static int ErzeugerspaltenAlle(IList<string> bericht)
+        {
+            int angelegt = 0;
+            // Die Auskunft VOR dem Vorgang - SpalteVorhanden arbeitet auf einer eigenen
+            // Verbindung und saehe die offene Transaktion nicht.
+            var fehlend = Erzeugerspalten.Where(s => !DataRepository.SpalteVorhanden(s.Tabelle, s.Name)).ToList();
+            bool traegerFehlt = !DataRepository.SpalteVorhanden(SchemaKatalog.TAB_ENERGIEANLAGEN,
+                                                                SPALTE_KUEHL_ID_CARRIER);
+
+            using (DbVorgang v = DataRepository.Vorgang())
+            {
+                try
+                {
+                    foreach (SchemaSpalte s in fehlend)
+                    {
+                        v.Ausfuehren("ALTER TABLE [" + s.Tabelle + "] ADD COLUMN [" + s.Name + "] " +
+                                     StilleDb.SqliteSpaltenTyp(s.Name, s.TypDefinition));
+                        angelegt++;
+                    }
+                    bericht?.Add(angelegt.ToString(CultureInfo.InvariantCulture) + " von " +
+                                 Erzeugerspalten.Length.ToString(CultureInfo.InvariantCulture) +
+                                 " Spalte(n) an Tab_WP und Tab_WP_STAMM angelegt");
+                    if (traegerFehlt)
+                    {
+                        v.Ausfuehren(SQL_KUEHL_ID_CARRIER);
+                        angelegt++;
+                    }
+                    bericht?.Add(SchemaKatalog.TAB_ENERGIEANLAGEN + "." + SPALTE_KUEHL_ID_CARRIER + ": " +
+                                 (traegerFehlt ? "angelegt" : "vorhanden"));
+                    v.Commit();
+                }
+                catch
+                {
+                    v.Rollback();
+                    throw;
+                }
+            }
+            return angelegt;
         }
     }
 }

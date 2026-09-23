@@ -1,6 +1,6 @@
 # Offene Entscheide der Gebäudesimulation — Register mit Erläuterung
 
-**Stand 23.09.2026, nach den Entscheiden E16–E31 und der Prüfung vom 17.09.2026.**
+**Stand 23.09.2026, nach den Entscheiden E16–E34 und der Prüfung vom 17.09.2026.**
 
 **Zweck.** Dieses Register ist die **eine Stelle, an der jede offene Frage der Gebäudesimulation
 mit ihrer Erläuterung steht** — Frage, Hintergrund, Optionen, Empfehlung des jeweiligen Papiers,
@@ -13,20 +13,21 @@ N1.x in [`Konzept_Gebaeudesimulation_VDI6007_EPOS-Plan.md`](Konzept_Gebaeudesimu
 die Zeile je Entscheid in [`Status_Gebaeudesimulation_VDI6007.md`](Status_Gebaeudesimulation_VDI6007.md),
 der Architekturentscheid im zugehörigen ADR. Dieses Register **zeigt nur auf sie** und wird beim
 Entscheid um den betroffenen Punkt gekürzt; die mit **E27** und **E28** (22.09.2026) und die mit
-**E31** (23.09.2026) entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren
+**E31** und **E33** (23.09.2026) entschiedenen Punkte stehen ausnahmsweise mit Entscheidvermerk weiter in ihren
 Kapiteln (Kapitel 9).
 
 **Lesehinweis.**
 
 - **Kapitel 0** nennt die 36 Punkte, die **vor dem Start von G0/G1 oder vor der Beauftragung einer
   Stufe** fällig waren — alles, was Schema, Referenzbasis, Datenmodell oder eine Fremdbibliothek
-  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 15 Punkte, die
+  unwiderruflich festlegt —, seit **E27** (22.09.2026) mit ihrem Entscheid, dazu die 11 Punkte, die
   noch offen sind, nach Fälligkeit; seit **E28** ist vor G0, GB und G1 keiner mehr offen, seit **E31**
-  auch vor KU1 keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
+  auch vor KU1 keiner, seit **E33** auch vor KU2 keiner. Wer wenig Zeit hat, liest nur dieses Kapitel.
 - **Kapitel 1 bis 6** führen je Papier alle Punkte einzeln aus (Kapitel 1 trägt Q24, Q25 und Q26),
-  immer im selben Aufbau; die mit E27, E28 oder E31 entschiedenen tragen unter der Überschrift den
-  Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026, Konzept
-  N1.33)**" bzw. „**Entschieden: E31 (23.09.2026, Konzept N1.36)**"; **Kapitel 7** hält
+  immer im selben Aufbau; die mit E27, E28, E31 oder E33 entschiedenen tragen unter der Überschrift
+  den Vermerk „**Entschieden: E27 (22.09.2026, Konzept N1.32)**", „**Entschieden: E28 (22.09.2026,
+  Konzept N1.33)**", „**Entschieden: E31 (23.09.2026, Konzept N1.36)**" bzw. „**Entschieden: E33
+  (23.09.2026, Konzept N1.38)**"; **Kapitel 7** hält
   den Stand der zwölf Fragen H1 bis H12 der Anlagenkopplung fest, die mit E24 entschieden sind:
   Frage, Hintergrund, Optionen, Empfehlung des Papiers, Folge bei Nichtentscheid, Fällig vor.
 - **Kapitel 8** nennt die technischen Festlegungen, denen nur zu widersprechen ist — darunter in
@@ -38,9 +39,13 @@ Kapiteln (Kapitel 9).
   Umsetzungskonzept, **M** Mehrzonenmodell, **D** Datenaustausch, **A** Softwarearchitektur, **H** Anlagenkopplung,
   **K** Kühlung.
 
-**Umfang in Zahlen.** **15 offene Punkte** (Stand E31, 23.09.2026): 3 im Umsetzungskonzept
-(U13, U14, U15), 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13) und 4 im Kühlkonzept (K8, K9, K21,
-K23); Konzept, Datenaustauschkonzept und Softwarearchitektur haben keinen offenen Punkt mehr.
+**Umfang in Zahlen.** **11 offene Punkte** (Stand E33, 23.09.2026): 3 im Umsetzungskonzept
+(U13, U14, U15) und 8 im Mehrzonenkonzept (M3, M5–M8, M11–M13); Konzept,
+Datenaustauschkonzept, Softwarearchitektur und Kühlkonzept haben keinen offenen Punkt mehr.
+**E33** (23.09.2026) hat die vier vor KU2 fälligen Kühlpunkte **K8, K21 und K23** nach Empfehlung
+und **K9 abweichend von der Empfehlung** entschieden; vor KU2 ist damit kein Anwenderentscheid mehr
+offen. **E34** (23.09.2026) ergänzt K9 um die Regel für einen abweichenden Kühlträger (anteilig am
+Netzbezug oder eigener Zähler, je Anlage wählbar) und lässt die Zählung unverändert.
 **E31** (23.09.2026) hat die fünf vor KU1 fälligen Kühlpunkte **K4, K5, K6, K7 und K12** nach
 Empfehlung entschieden; vor KU1 ist damit kein Anwenderentscheid mehr offen.
 **E27** hat 44 der bisher 66 Punkte entschieden — 3 im Konzept (Q24, Q25, Q26), 9 im
@@ -50,7 +55,7 @@ A9–A15, A17, A18; A4, A5 und A9 über U1, U3 und U5) und 5 im Kühlkonzept (K1
 K24) — und die Festlegung K2 (8.2) bestätigt; alle bis auf **K10** nach Empfehlung. Drei
 entschiedene Punkte tragen eine Folgeaufgabe: **U6** (Endwahl nach der Messung in G1 — mit **E29**
 am 23.09.2026 erledigt: Stundenanfang, Konzept N1.34), **K22**
-(Prüfung vor KU2), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
+(Prüfung vor KU2 — am 23.09.2026 erledigt, Glossar), **D6** (Gegenüber benennen vor der Stufe über die semantische hinaus).
 **E28** (22.09.2026) hat danach **U4** und **U9** nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen.
 Davor: Die Entscheide E16–E25 vom 16.09.2026 haben Q10, Q11a, H1–H12, U2, U11, U16, M1, M4, A7,
@@ -93,7 +98,7 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **K10** | **Abweichend von der Empfehlung:** eine Programmeinstellung legt fest, ob **neue** Projekte mit eingeschalteter Kühlung angelegt werden (Vorgabe aus); bestehende Projekte samt Referenzprojekten bleiben aus, bis die je Projekt schaltbare Projekteinstellung ausdrücklich eingeschaltet wird; Umsetzung über `Dienste.Einstellungen`. | **KU1** | — |
 | **K11** | Eigener Kühlsollwert und eigene Kühlleistungsgrenze in KU1 nach Empfehlung (a); das Zeitprofil nach deren Wortlaut in KU3. | **KU1** | — |
 | **K19** | KU2 bekommt einen eigenen, kleinen Einfrierschritt. | **KU2** | — |
-| **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung** vor KU2 |
+| **K22** | Vor KU2 prüfen, ob die COP-Spalte das Kälteverhältnis führt, und im Glossar festhalten. | **KU2** | **Prüfung erledigt** (23.09.2026): die Spalte führt den EER; Importregel für Kühlblöcke in Heizlage mit KU2 |
 | **A11** | Schemaschrittnummern erst bei Beauftragung; verbindlich sind Reihenfolge und Inhalt. | **erste Auslieferung** eines Schemaschritts | — |
 | **A1** | Die Kaskade bleibt; Schreibweg vor G3 messen, Rettung an der Löschstelle. | **G3** | — |
 | **A14** | Umschalter Klassenweg → Bauteilweg nach Datenlage, Übergang benannt. | **G3** | — |
@@ -116,12 +121,13 @@ Die Erläuterung steht weiter im jeweiligen Abschnitt der Kapitel 1 bis 6.
 | **D6** | Semantische Stufe (G7c) zuerst bauen. | **G7e** | **Gegenüber** (Werkzeug, Zweck) benennen, vor der Stufe über die semantische hinaus |
 | **D11** | Rückgabe angereicherter fremder IFC-Dateien zulässig, mit Kennung in der Datei und Beipackzettel. | **G7d** | — |
 
-**Was noch offen ist — 15 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
+**Was noch offen ist — 11 Punkte, keiner erfüllt das Kriterium dieser Liste.** U9 (GB) und U4
 (G1) sind mit **E28** (22.09.2026, Konzept N1.33) nach Empfehlung entschieden; vor G0, GB und G1
 ist damit kein Anwenderentscheid mehr offen. K4, K5, K6, K7 und K12 (KU1) sind mit **E31**
-(23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. Nach
-Fälligkeit: **G4** U13, U14, U15; **G6b** M3, M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11;
-**KU2** K8 (freie Kühlung KU3, Nachtlüftung G2), K9, K21, K23.
+(23.09.2026, Konzept N1.36) nach Empfehlung entschieden; vor KU1 ist keiner mehr offen. K8, K21
+und K23 (KU2) sind mit **E33** (23.09.2026, Konzept N1.38) nach Empfehlung entschieden, K9
+abweichend davon; vor KU2 ist keiner mehr offen. Nach Fälligkeit: **G4** U13, U14, U15; **G6b** M3,
+M5, M6; **G6c** M7, M8, M12, M13; **G6d** M11.
 Dazu die Festlegungen F-Ü1 bis F-D1 (8.4), denen bis zur Beauftragung von G1 zu widersprechen ist.
 
 **Was hier nicht steht, ist nicht unwichtig** — es ist nur an seine Stufe gebunden und kann mit
@@ -1472,8 +1478,9 @@ dieses Registers steht.
 
 Mit **E27** (22.09.2026, N1.32) sind **K10, K11, K19, K22 und K24** entschieden — **K10
 abweichend von der Empfehlung** —, und die Festlegung **K2** (Kapitel 0 und 8.2) ist bestätigt.
-Mit **E31** (23.09.2026, N1.36) sind **K4, K5, K6, K7 und K12** nach Empfehlung entschieden;
-offen bleiben K8, K9, K21 und K23.
+Mit **E31** (23.09.2026, N1.36) sind **K4, K5, K6, K7 und K12** nach Empfehlung entschieden, mit
+**E33** (23.09.2026, N1.38) **K8, K21 und K23** nach Empfehlung und **K9 abweichend von der
+Empfehlung**; in diesem Kapitel ist kein Punkt mehr offen.
 
 ### K1 — vierter Kanal oder eigene Kältestruktur
 
@@ -1562,6 +1569,8 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 
 ### K8 — freie Kühlung und Rückkühlung: bauen oder benannt ablehnen?
 
+**Entschieden: E33 (23.09.2026, Konzept N1.38)** — nach Empfehlung (a): bauen, aber keine als eigener Erzeuger. Die Rückkühlung ist Bestandteil der Kältemaschine — bei der reversiblen Wärmepumpe steckt sie in Maschine und Kennlinie, bei der Kältemaschine kommt sie mit dieser in KU3 —; die freie Kühlung ist ein Betriebsfall der vorhandenen Maschine (KU3); die Nachtlüftung ist eine Gebäudemaßnahme (G2).
+
 - **Frage:** Werden freie Kühlung und Rückkühlung gebaut — und wenn ja, als eigene Erzeuger?
 - **Hintergrund:** Ohne Rückkühlung ist eine Kältemaschine energetisch unvollständig: Die Abwärme
   muss irgendwohin, und der Aufwand dafür gehört zur Strombilanz. Die Nachtlüftung ist dagegen eine
@@ -1581,6 +1590,10 @@ Bericht mit denselben Mustern). Konzept N1.26, Kühlkonzept Rev. 3, Statusdatei 
 - **Quelle:** [Kühlkonzept](Konzept_Kuehlung_Gebaeudesimulation_EPOS-Plan.md) 3.4, 5.4 und 12.1 (K8).
 
 ### K9 — Tarif und Stromträger des Kältestroms
+
+**Entschieden: E33 (23.09.2026, Konzept N1.38)** — **abweichend von der Empfehlung.** Der Kältestrom läuft per Vorgabe über denselben Stromträger und Tarif wie die Wärmepumpe im Heizbetrieb; wahlweise kann je Anlage ein anderer Stromträger des Projekts gewählt werden; ein leeres Feld (NULL) heißt „wie Heizbetrieb". Die Wahl steht an der Anlagenzeile neben dem Stromträger des Heizbetriebs (`Tab_Energieanlagen.Kuehl_ID_Carrier`, Verweis über die Kennung des Trägers) — dort, wo die Wärmepumpe ihren Stromträger im Bestand wählt (ET-5). Gegenüber der Empfehlung (a) kommt die Wahl je Anlage hinzu; wie ein abweichender Kühlträger bepreist und in den Emissionen bewertet wird, legt die Welle fest, die den Kältestrom in Kosten und Emissionen bringt (der Netzbezug wird heute einmal, mit dem Stromträger des Projekts, bepreist).
+
+**Ergänzt: E34 (23.09.2026, Konzept N1.39)** — die Regel für einen abweichenden Kühlträger, je Anlage wählbar: **(1) anteilig am Netzbezug (Vorgabe)** — ein Netzanschluss, der Netzbezug jedes Zeitschritts wird nach dem Anteil des Kältestroms am Stromverbrauch aufgeteilt, dieser Anteil trägt Arbeitspreis und CO₂-Faktor des Kühlträgers; PV-Eigenverbrauch bleibt gemeinsam, der Leistungspreis beim Stromträger des Projekts; **(2) eigener Zähler** — der Kältestrom wird vollständig mit dem Kühlträger bepreist und bewertet und nicht aus PV-Eigenstrom gedeckt. Umgesetzt mit der dritten Welle von KU2; E34 öffnet und schließt keinen Punkt.
 
 - **Frage:** Trägt der Kältestrom denselben Tarif und denselben Stromträger wie der
   Wärmepumpenstrom?
@@ -1690,6 +1703,8 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 
 ### K21 — Kühl-Vorlauf: Auswahl aus den Stützstellen oder freie Eingabe
 
+**Entschieden: E33 (23.09.2026, Konzept N1.38)** — nach Empfehlung (a): Auswahl aus den Stützstellen der Kühlkennlinie, keine Interpolation über den Vorlauf, ein leeres Feld heißt kleinster Stützwert, eine Extrapolation wird gewarnt wie auf der Heizseite, eine Stützstellenprobe je Vorlauf sichert es ab.
+
 - **Frage:** Wird die Kaltwasser-Vorlauftemperatur der Anlage aus den **Stützstellen der
   Kühlkennlinie ausgewählt** — oder **frei eingegeben**, mit Interpolation zwischen zwei Vorläufen?
 - **Hintergrund:** Der Wert wählt die Kennlinie, so wie der Heizvorlauf es auf der Wärmeseite tut;
@@ -1717,6 +1732,16 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
 
 **Entschieden: E27 (22.09.2026, Konzept N1.32)** — (a), nach Empfehlung — vor KU2 wird an den vorhandenen Kühlkennlinien geprüft, ob die COP-Spalte das Kälteverhältnis führt, und das Ergebnis im Glossar festgehalten. **Offen bleibt als Folgeaufgabe die Prüfung selbst**, fällig vor KU2.
 
+**Prüfung erledigt (23.09.2026, KU2 Welle 1; Ergebnis im [Glossar](Glossar_Lokalisierung.md),
+Abschnitt 6):** Die Spalte `COP` der Kühlkennlinie führt das Kälteverhältnis (EER), nie das
+Wärmeverhältnis. Am Importweg ist die Kennzahl der Kühlblöcke in 99,1 % der Wertzeilen der
+Herstellerdateien die Kälteleistung durch die elektrische Leistungsaufnahme; die sieben
+Katalogsätze der Testdatenbank (174 Zeilen) liegen in Kaltwasserlage und führen den EER des
+Kühlbetriebs. **Befund:** 826 von 2 641 Kühlblöcken der Herstellerdateien liegen in Heizlage und
+beschreiben die Kälteleistung am Verdampfer im Heizbetrieb — kein EER; der Import übernimmt sie
+heute ungeprüft. Nach der Empfehlung (a) wird eine solche Lage beim Import benannt abgelehnt —
+eine Aufgabe der Stufe KU2, kein neuer Entscheid.
+
 - **Frage:** Führt die Spalte `COP` der Kühlkennlinie **wirklich das Kälteverhältnis (EER)** — oder
   in manchen Datensätzen das Wärmeverhältnis eines Heizbetriebs bei Kühlvorlauf?
 - **Hintergrund:** Der Herstellerdaten-Import trennt Heiz- und Kühlblock, **die Herstellerangaben
@@ -1741,6 +1766,8 @@ ist mehr zu entscheiden, das Katalogfilter-Konzept stellt auf die Zahlenspalte u
   (K22); [Glossar_Lokalisierung.md](Glossar_Lokalisierung.md).
 
 ### K23 — Hilfsstrom je Anlage oder pauschal je Projekt
+
+**Entschieden: E33 (23.09.2026, Konzept N1.38)** — nach Empfehlung (a): Der Hilfsstromanteil des Kältekreises steht je Anlage (`Kuehl_Hilfsstromanteil` an der Wärmepumpe); NULL heißt kein Zuschlag.
 
 - **Frage:** Wird der Anteil Hilfsstrom des Kältekreises (Pumpen, Ventilatoren) **je Anlage**
   geführt — oder **pauschal je Projekt** in den Einstellungen?
@@ -1966,10 +1993,10 @@ und die Papiertabelle der Statusdatei sowie die Indexzeile in
 **Dieses Register wird im selben Schritt gekürzt** — der entschiedene Punkt verschwindet hier und
 steht fortan im Nachtrag und in der Statusdatei; ist der letzte Punkt eines Kapitels entschieden,
 entfällt das Kapitel. **Abweichend davon** stehen die mit **E27** und **E28** (22.09.2026) und die mit
-**E31** (23.09.2026) entschiedenen Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026, Konzept
-N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)" bzw. „Entschieden: E31 (23.09.2026,
-Konzept N1.36)" weiter in ihren Kapiteln, weil ihre
+**E31** und **E33** (23.09.2026) entschiedenen Punkte mit dem Vermerk „Entschieden: E27 (22.09.2026,
+Konzept N1.32)", „Entschieden: E28 (22.09.2026, Konzept N1.33)", „Entschieden: E31 (23.09.2026,
+Konzept N1.36)" bzw. „Entschieden: E33 (23.09.2026, Konzept N1.38)" weiter in ihren Kapiteln, weil ihre
 Erläuterung die Begründung der Stufenaufträge trägt und drei von ihnen eine Folgeaufgabe haben
-(U6 — mit E29 erledigt —, K22, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
+(U6 — mit E29 erledigt —, K22 — mit der Prüfung vom 23.09.2026 erledigt —, D6). Führt der Entscheid zu einer für den Anwender sichtbaren Funktionsänderung,
 wird nach der Hausregel ein Eintrag im Wiki-Update-Logbuch **entworfen** und die Versionsnummer
 beim Anwender erfragt; die Veröffentlichung läuft gebündelt.

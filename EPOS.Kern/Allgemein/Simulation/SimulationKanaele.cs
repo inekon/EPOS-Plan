@@ -934,6 +934,9 @@ namespace WindowsFormsApplication1
         ///      Kühlschlüssel (Kühlung immer zuletzt), tolerante Schreibweise — und
         ///      Rückfall auf die Vorbelegung bei jeder unbrauchbaren Eingabe (leer, Unfug,
         ///      unvollständige Wärmeordnung, doppelt, zu viele)
+        ///   8. ZIEL ↔ SENKE DER KÄLTESEITE (Kühlkonzept 4.3 #14–#16, #19; KU2): das Kälteziel
+        ///      „Kaeltekreis" bildet hin und zurück, ist weder Puffer- noch Wärmedirektsenke
+        ///      und trägt in der Wärmekaskade eine LEERE Maske (nicht null = alle Kanäle)
         /// </summary>
         public static string Selbsttest()
         {
@@ -1148,6 +1151,21 @@ namespace WindowsFormsApplication1
                           "Rückfall bei unbrauchbarer Eingabe = " + (knappOk ? "OK" : "FEHLER"));
             if (!knappOk) allesOk = false;
 
+            // --- 8. Ziel <-> Senke der Kälteseite (Kühlkonzept 4.3 #14-#16, #19; KU2) ---------
+            // Das Kälteziel bildet hin und zurück, ist weder Puffer- noch Wärmedirektsenke und
+            // deckt in der Wärmekaskade keinen Kanal (leere Maske, nicht null = „alle").
+            Senkenzeile kaeltezeile = new Senkenzeile { Ziel = Senke.Kaeltekreis };
+            bool[] kaeltemaske = Kaskadenschleife.SenkenMaske(kaeltezeile);
+            bool kaelteOk = Senkenzuordnung.SenkeAusZiel(WaermesenkeClass.ZIEL_KAELTEKREIS) == Senke.Kaeltekreis &&
+                            Senkenzuordnung.ZielAusSenke(Senke.Kaeltekreis) == WaermesenkeClass.ZIEL_KAELTEKREIS &&
+                            !WaermesenkeClass.IstPufferZiel(WaermesenkeClass.ZIEL_KAELTEKREIS) &&
+                            WaermesenkeClass.VerwendungZuZiel(WaermesenkeClass.ZIEL_KAELTEKREIS) == null &&
+                            !kaeltezeile.IstDirektsenke && kaeltezeile.IstKaeltesenke && !kaeltezeile.IstPuffersenke &&
+                            kaeltemaske != null && Array.IndexOf(kaeltemaske, true) < 0;
+            sb.AppendLine("8. Ziel <-> Senke der Kaelteseite (Kaeltekreis, keine Waermedeckung) = " +
+                          (kaelteOk ? "OK" : "FEHLER"));
+            if (!kaelteOk) allesOk = false;
+
             sb.AppendLine();
             sb.AppendLine(allesOk ? "ERGEBNIS: alle Pruefungen bestanden."
                                   : "ERGEBNIS: mindestens eine Pruefung FEHLGESCHLAGEN.");
@@ -1333,7 +1351,16 @@ namespace WindowsFormsApplication1
         /// Ladung; welche Kanäle der Speicher entlädt, entscheidet allein sein
         /// Klassen-Set (<c>SimulationPufferspeicher.BedientKanal</c>).
         /// </summary>
-        PufferProzess
+        PufferProzess,
+
+        /// <summary>
+        /// DIREKTSENKE DER KÄLTESEITE (Stufe KU2, Kühlkonzept 4.3 #14, 4.6): die Übergabe eines
+        /// Kälteerzeugers an den gekühlten Raum — Erzeuger → Kältekreis → Kühlkanal. Ein neuer
+        /// Wert, kein vierter Fall eines bestehenden: Er ist weder Puffersenke noch Direktsenke
+        /// der WÄRMEseite (<see cref="Senkenzeile.IstDirektsenke"/> ist für ihn falsch), und die
+        /// Wärmekaskade deckt über ihn keinen Kanal (<c>Kaskadenschleife.SenkenMaske</c>).
+        /// </summary>
+        Kaeltekreis
     }
 
     /// <summary>
@@ -1399,6 +1426,10 @@ namespace WindowsFormsApplication1
                 return Senke.PufferProzess;
             if (string.Equals(ziel, WaermesenkeClass.ZIEL_PROZESSWAERME, StringComparison.Ordinal))
                 return Senke.Prozesswaerme;
+            // KU2 (Kühlkonzept 4.3 #16): Das Kälteziel hat seinen EIGENEN Zweig - es fällt nie
+            // auf den Heizkreis zurück.
+            if (string.Equals(ziel, WaermesenkeClass.ZIEL_KAELTEKREIS, StringComparison.Ordinal))
+                return Senke.Kaeltekreis;
             return Senke.Heizkreis;
         }
 
@@ -1412,6 +1443,7 @@ namespace WindowsFormsApplication1
                 case Senke.PufferKombi: return WaermesenkeClass.ZIEL_PUFFER_KOMBI;
                 case Senke.PufferProzess: return WaermesenkeClass.ZIEL_PUFFER_PROZESS;
                 case Senke.Prozesswaerme: return WaermesenkeClass.ZIEL_PROZESSWAERME;
+                case Senke.Kaeltekreis: return WaermesenkeClass.ZIEL_KAELTEKREIS;
                 default: return WaermesenkeClass.ZIEL_HEIZKREIS;
             }
         }
@@ -1504,10 +1536,21 @@ namespace WindowsFormsApplication1
             get { return Senkenzuordnung.IstPuffersenke(Ziel); }
         }
 
-        /// <summary>true, wenn diese Zeile Bedarf DIREKT deckt (Phase B).</summary>
+        /// <summary>
+        /// true, wenn diese Zeile WÄRMEbedarf DIREKT deckt (Phase B). Die Senke der Kälteseite
+        /// (<see cref="Senke.Kaeltekreis"/>) ist ausdrücklich KEINE Direktsenke der Wärmekaskade
+        /// (Kühlkonzept 4.3 #14-#16): Sie bedient keinen Wärmekanal und macht eine Anlage nicht
+        /// zum Wärmelieferanten.
+        /// </summary>
         public bool IstDirektsenke
         {
-            get { return !IstPuffersenke; }
+            get { return !IstPuffersenke && !IstKaeltesenke; }
+        }
+
+        /// <summary>true, wenn diese Zeile die Senke der Kälteseite ist (<see cref="Senke.Kaeltekreis"/>, Stufe KU2).</summary>
+        public bool IstKaeltesenke
+        {
+            get { return Ziel == Senke.Kaeltekreis; }
         }
 
         public override string ToString()

@@ -105,7 +105,7 @@ namespace WindowsFormsApplication1
                 // schreibt sie anwendungsweit. Kein Delegat, kein Waehler.
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
-                ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndaten),
+                ["HatKuehlung"] = new Func<int, bool>(KenndatenKuehlungCtrl.HatKenndatenStamm),
                 ["Speichern"] = new Func<WaermepumpeStammDaten, bool, KatalogSpeicherErgebnis>(Speichern),
                 ["GesperrtDurch"] = new Func<string, string>(
                     name => new WPStammCtrl().GesperrtDurchProjekt(name)),

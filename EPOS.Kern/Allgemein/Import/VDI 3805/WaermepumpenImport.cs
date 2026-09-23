@@ -213,6 +213,11 @@ namespace WindowsFormsApplication1
             }
             fileReader.Close();
 
+            // KU2 (K22, E27): Kuehlbloecke in Heizlage und mit vertauschten Achsen werden nicht
+            // uebernommen (KennlinienZu) - und hier, beim Lesen, je Satz benannt, damit das
+            // Leseprotokoll sie zeigt, bevor jemand uebernimmt.
+            KuehlbloeckeMelden();
+
             //string[] tokens = szDaten.Split(';');
 
 
@@ -239,8 +244,27 @@ namespace WindowsFormsApplication1
         /// dasselbe mit <c>"2"</c> (dazu die Lastangabe aus Feld 7, wobei
         /// <c>MAX</c> als 100 zaehlt); die Wertzeilen <c>710.91</c> liefern
         /// Temperatur (2), Ptherm bzw. Pkuehl (3) und COP (5).</para>
+        ///
+        /// <para><b>KU2 — die Importregel für Kühlblöcke</b> (K22, E27; Kühlkonzept 5.1,
+        /// Festlegung 4): Ein Kühlblock in Heizlage oder mit vertauschten Achsen wird NICHT
+        /// übernommen (<see cref="KuehlblockPruefung"/>); das Leseprotokoll nennt ihn
+        /// (<see cref="Meldungen"/>). Die Rohzeilen liefert <see cref="KennlinienRoh"/>.</para>
         /// </summary>
         public void KennlinienZu(int index,
+            out List<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenndaten,
+            out List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlung)
+        {
+            List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> roh;
+            KennlinienRoh(index, out kenndaten, out roh);
+            List<KuehlblockPruefung.Abgelehnt> abgelehnt;
+            kuehlung = KuehlblockPruefung.Pruefen(roh, out abgelehnt);
+        }
+
+        /// <summary>
+        /// Die Kennlinien eines Satzes, wie sie in der Datei stehen — ohne die Importregel für
+        /// Kühlblöcke. Die Zerlegung ist die wörtlich übernommene von <see cref="KennlinienZu"/>.
+        /// </summary>
+        public void KennlinienRoh(int index,
             out List<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenndaten,
             out List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> kuehlung)
         {
@@ -287,6 +311,41 @@ namespace WindowsFormsApplication1
                                   nLast));
                 }
             }
+        }
+
+        /// <summary>
+        /// Meldet je Satz die abgelehnten Kühlblöcke (KU2, K22) — eine Warnung je Satz und Befund,
+        /// mit der Zahl der Blöcke und ihren Vorläufen.
+        /// </summary>
+        private void KuehlbloeckeMelden()
+        {
+            for (int i = 0; i < _list.Count; i++)
+            {
+                List<(int Vorlauf, int Temperatur, double COP, double Ptherm)> kenn;
+                List<(int Vorlauf, int Temperatur, double COP, double Pkuehl, int Last)> roh;
+                KennlinienRoh(i, out kenn, out roh);
+                if (roh.Count == 0) continue;
+
+                List<KuehlblockPruefung.Abgelehnt> abgelehnt;
+                KuehlblockPruefung.Pruefen(roh, out abgelehnt);
+                if (abgelehnt.Count == 0) continue;
+
+                string name = _list[i].szName ?? "";
+                BlockMelden(name, abgelehnt, KuehlblockBefund.Heizlage, "IMP_KAT_PROT_KUEHLBLOCK_HEIZLAGE");
+                BlockMelden(name, abgelehnt, KuehlblockBefund.AchsenVertauscht, "IMP_KAT_PROT_KUEHLBLOCK_ACHSE");
+            }
+        }
+
+        private void BlockMelden(string name, List<KuehlblockPruefung.Abgelehnt> abgelehnt,
+                                 KuehlblockBefund befund, string schluessel)
+        {
+            List<KuehlblockPruefung.Abgelehnt> treffer = abgelehnt.Where(a => a.Befund == befund).ToList();
+            if (treffer.Count == 0) return;
+
+            string vorlaeufe = string.Join(", ", treffer.Select(a => a.Vorlauf).Distinct().OrderBy(v => v)
+                                                        .Select(v => v.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            Meldungen.Add(new PruefMeldung(PruefStufe.Warnung, schluessel, name,
+                treffer.Count.ToString(System.Globalization.CultureInfo.InvariantCulture), vorlaeufe));
         }
 
         private bool checkDaten(CsvReader csvReader, int stufen)

@@ -1280,6 +1280,22 @@ namespace WindowsFormsApplication1
         /// </summary>
         public const string WS_ZIEL_PUFFER_PROZESS = "PufferProzess";
 
+        /// <summary>
+        /// Stufe KU2 der Kühlung (Kühlkonzept 4.3 #15, 4.6): die DIREKTSENKE DER KÄLTESEITE — die
+        /// Übergabe eines Kälteerzeugers an den gekühlten Raum (Erzeuger → Kältekreis →
+        /// Kühlkanal). Ein eigener Wert, kein vierter Fall eines bestehenden: Er ist weder ein
+        /// Puffer-Ziel noch eine Wärmesenke, und er darf nie auf <see cref="WS_ZIEL_HEIZKREIS"/>
+        /// zurückfallen (4.3 #16).
+        ///
+        /// <para>In KU2 schreibt ihn kein Bedienweg: Die reversible Wärmepumpe kühlt über ihren
+        /// Kühlbetrieb (<c>Tab_WP.Kuehlbetrieb</c>), und die Kältekaskade bucht ihre Deckung auf
+        /// diese Senke. Steht der Wert trotzdem in <c>Z_AnlageSenke</c>, bedient die Zeile keinen
+        /// Wärmekanal. Einen Kältespeicher gibt es erst mit KU3 (K7) — kein Puffer-Ziel der Kälte.</para>
+        ///
+        /// Persistenzwert, immer deutsch, ohne Umlaut, eingefroren (Drei-Schichten-Regel).
+        /// </summary>
+        public const string WS_ZIEL_KAELTEKREIS = "Kaeltekreis";
+
         // =====================================================================
         // Wärmesenke — abgedeckter Bedarfsanteil
         //   Tab_Energieanlagen.WS_Typ
