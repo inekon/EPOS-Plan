@@ -663,6 +663,10 @@ namespace WindowsFormsApplication1
                 t.Append(kopf);
 
                 double summe = 0;
+                // ETAPPE E8c (E8b‑Q3, Lesart b): die Probe unten vergleicht nur die Positionen,
+                // die im ersten Jahr zahlen — eine Position mit späterem Startjahr steht in der
+                // Summe, aber nicht in den angesetzten Betriebskosten p. a.
+                double summeErstesJahr = 0;
                 foreach (string art in WirtschaftlichkeitZeilen.Kostenarten)
                 {
                     List<KostenPositionNachweis> block = e.Betriebskosten
@@ -683,9 +687,9 @@ namespace WindowsFormsApplication1
 
                     foreach (KostenPositionNachweis n in block)
                     {
-                        string herleitung = WirtschaftlichkeitZeilen.Herleitung(n, k.Kultur);
-                        if (herleitung.Length == 0 && n.SzenarioGepflegt)
-                            herleitung = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+                        // ETAPPE E8c (E8b‑Q3): Herleitung oder Szenariokennzeichen, bei einem
+                        // späteren Startjahr mit „ab Jahr X".
+                        string herleitung = WirtschaftlichkeitZeilen.HerleitungZeile(n, k.Kultur);
 
                         var tr = new TableRow();
                         tr.Append(k.Zelle(n.Bezeichnung, w[0], false, null, JustificationValues.Left,
@@ -703,6 +707,7 @@ namespace WindowsFormsApplication1
                                           WordBerichtGenerator.SCHRIFT_TABELLE));
                         t.Append(tr);
                         summe += n.BetragJahr;
+                        if (WirtschaftlichkeitZeilen.LaeuftImErstenJahr(n)) summeErstesJahr += n.BetragJahr;
                     }
                 }
 
@@ -720,12 +725,11 @@ namespace WindowsFormsApplication1
                 t.Append(sz);
                 k.Fuege(t);
 
-                // Probe gegen die Zahl, mit der die Kapitalwertrechnung gerechnet hat.
-                if (e.BetriebskostenJahr.HasValue &&
-                    Math.Abs(summe - e.BetriebskostenJahr.Value) > 0.5)
-                    k.HinweisRoh(string.Format(MyResource.Resource.WIRT_BK_ABWEICHUNG,
-                                               k.F(summe, 2),
-                                               k.F(e.BetriebskostenJahr.Value, 2)));
+                // Probe gegen die Zahl, mit der die Kapitalwertrechnung gerechnet hat — die
+                // Positionen des ersten Jahres gegen die Betriebskosten p. a. (E8c).
+                string abweichung = WirtschaftlichkeitZeilen.GliederungAbweichung(
+                    summeErstesJahr, e.BetriebskostenJahr, k.Kultur);
+                if (abweichung.Length > 0) k.HinweisRoh(abweichung);
                 k.Beschriftung(" ");
             }
         }

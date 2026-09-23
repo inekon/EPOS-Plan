@@ -1942,6 +1942,79 @@ namespace WindowsFormsApplication1
                    n.Einheitpreis.Value.ToString("N3", kultur) + " " +
                    BetriebskostenCtrl.SatzEinheit(n.Bemessung, n.Komponente, true);
         }
+
+        // =====================================================================
+        // ETAPPE E8c (E8b‑Q3) — Positionen mit späterem Startjahr in der Gliederung
+        // =====================================================================
+
+        /// <summary>
+        /// Toleranz der Gliederungsprobe [€/a]: Weichen Positionen und angesetzte
+        /// Betriebskosten um mehr ab, warnt der Bericht (<see cref="GliederungAbweichung"/>).
+        /// </summary>
+        public const double GLIEDERUNG_TOLERANZ_EUR = 0.5;
+
+        /// <summary>
+        /// Zahlt die Position schon im ersten Jahr? Nein nur bei einem Startjahr ≥ 2 (KD6) —
+        /// dieselbe Grenze wie die Summenschleife der Rechnung
+        /// (<c>WirtschaftlichkeitCtrl.LiesBetriebskostenTopfe</c>, <c>start &gt; 1</c>).
+        /// </summary>
+        public static bool LaeuftImErstenJahr(KostenPositionNachweis n)
+        {
+            return n == null || !n.StartJahr.HasValue || n.StartJahr.Value <= 1;
+        }
+
+        /// <summary>
+        /// Die <b>Probe der Betriebskostengliederung</b> gegen die angesetzten Betriebskosten
+        /// p. a. — leer, wenn beide auf <see cref="GLIEDERUNG_TOLERANZ_EUR"/> übereinstimmen
+        /// oder keine Vergleichszahl vorliegt; sonst die Warnung „Gliederung unvollständig"
+        /// mit beiden Beträgen. Wort- und Tabellenbericht rufen dieselbe Probe.
+        ///
+        /// <para><b>Verglichen werden nur die Positionen des ersten Jahres</b> (Anwenderentscheid
+        /// 23.09.2026 zu E8b‑Q3, Lesart b). Die angesetzten Betriebskosten p. a.
+        /// (<see cref="WirtschaftlichkeitErgebnis.BetriebskostenJahr"/>) sind die Jahr-1-Zahl
+        /// der Rechnung; eine Position mit späterem Startjahr zahlt erst ab ihrem Jahr und
+        /// steckt nicht darin. Bis E8c ging sie trotzdem in den Vergleich, und der Bericht
+        /// meldete eine unvollständige Gliederung, wo nur ein Startjahr stand (2.400 gegen
+        /// 1.800 € — die Differenz war die Wartung ab Jahr 6). Eine echte Lücke — eine
+        /// Position der Rechnung, die in keinem Block der Tabelle steht, oder eine
+        /// abgebrochene Nachweisliste — trifft die Jahr-1-Zahl weiterhin und warnt.</para>
+        ///
+        /// <para><b>Warum nicht „die Warnung nennt Startjahr und Differenz".</b> Die zweite
+        /// Lesart warnte weiter, wo nichts fehlt — und eine echte Lücke neben einer
+        /// Startjahr-Position ginge in ihrer Aufzählung unter. Das Startjahr steht
+        /// stattdessen an der Position selbst (<see cref="HerleitungZeile"/>).</para>
+        /// </summary>
+        /// <param name="summeErstesJahr">Summe der Tabellenpositionen, die im ersten Jahr
+        /// zahlen [€/a] (<see cref="LaeuftImErstenJahr"/>).</param>
+        /// <param name="betriebskostenJahr">Die angesetzten Betriebskosten p. a. [€/a];
+        /// <c>null</c> = keine Vergleichszahl, keine Probe.</param>
+        public static string GliederungAbweichung(double summeErstesJahr, double? betriebskostenJahr,
+                                                  CultureInfo kultur)
+        {
+            if (!betriebskostenJahr.HasValue ||
+                Math.Abs(summeErstesJahr - betriebskostenJahr.Value) <= GLIEDERUNG_TOLERANZ_EUR)
+                return "";
+            return string.Format(MyResource.Resource.WIRT_BK_ABWEICHUNG,
+                                 summeErstesJahr.ToString("N2", kultur),
+                                 betriebskostenJahr.Value.ToString("N2", kultur));
+        }
+
+        /// <summary>
+        /// Die Spalte „Herleitung" einer Position in Wort- und Tabellenbericht: ihre
+        /// <see cref="Herleitung"/>, sonst — wo ein Szenariowert die Ableitung schlug — dessen
+        /// Kennzeichen, und bei einem Startjahr ≥ 2 dahinter „ab Jahr X". So bleibt sichtbar,
+        /// warum die Summe der Tabelle die angesetzten Betriebskosten p. a. übersteigen darf:
+        /// Die Position steht in der Summe, zahlt aber erst ab ihrem Jahr.
+        /// </summary>
+        public static string HerleitungZeile(KostenPositionNachweis n, CultureInfo kultur)
+        {
+            if (n == null) return "";
+            string text = Herleitung(n, kultur);
+            if (text.Length == 0 && n.SzenarioGepflegt) text = MyResource.Resource.WIRT_BK_SZENARIOWERT;
+            if (LaeuftImErstenJahr(n)) return text;
+            string ab = string.Format(kultur, MyResource.Resource.WIRT_BK_AB_JAHR, n.StartJahr.Value);
+            return text.Length == 0 ? ab : text + " · " + ab;
+        }
     }
 
     // =========================================================================

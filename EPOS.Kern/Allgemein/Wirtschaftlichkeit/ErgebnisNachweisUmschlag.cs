@@ -50,7 +50,7 @@ namespace WindowsFormsApplication1
         /// ein halb verstandener Nachweis wäre schlimmer als keiner. Eine ÄLTERE
         /// dagegen schon: Ihre Felder sind eine echte Teilmenge, die fehlenden bleiben
         /// auf ihrer Vorgabe (siehe <see cref="Lesen"/>).</summary>
-        public const int FASSUNG = 8;
+        public const int FASSUNG = 9;
 
         /// <summary>Die älteste Fassung, die noch gelesen wird. Darunter gab es keinen
         /// Umschlag.</summary>
@@ -73,6 +73,14 @@ namespace WindowsFormsApplication1
 
         /// <inheritdoc cref="WirtschaftlichkeitErgebnis.EnergiekostenJeAnlage"/>
         public List<EnergieAnlageNachweis> EnergiekostenJeAnlage = new List<EnergieAnlageNachweis>();
+
+        // ---- ETAPPE E8c (Fassung 9, E8b‑Q3) — das Startjahr je Betriebskostenposition ----
+        //
+        // Jede Position trägt ihr Startjahr (KostenPositionNachweis.StartJahr), geschrieben
+        // nur, wo es ≥ 2 ist — eine Position ohne Startjahr steht Zeichen für Zeichen wie in
+        // Fassung 8. Einem Umschlag der Fassung 1 bis 8 fehlt es; seine Positionen lesen
+        // sich als „ab dem ersten Jahr", und die Probe der Gliederung vergleicht dort wie
+        // damals alle Positionen — die Auskunft, die ein damals gebuchter Lauf trägt.
 
         /// <inheritdoc cref="WirtschaftlichkeitErgebnis.Betriebskosten"/>
         public List<KostenPositionNachweis> Betriebskosten = new List<KostenPositionNachweis>();
