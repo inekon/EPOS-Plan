@@ -2706,7 +2706,7 @@ namespace WindowsFormsApplication1
                 // Pfad sein, der beim nächsten Ausbau brutto rechnet.
                 double stromNettoMWh = Math.Max(0, stromMWh - hilfsstrom.GesamtMWh);
                 double[] ersatz = ReiheErsatzGewichtet(v, p, mitMatrix, eigenNettoMWh, einspNettoMWh,
-                                                       stromNettoMWh, vbh, foerderbeginn,
+                                                       stromNettoMWh, stromMWh, vbh, foerderbeginn,
                                                        hinweise, luecken, out jahr1);
                 if (hinweise.Count > 0) hinweis = string.Join(" | ", hinweise);
                 return ersatz;
@@ -2836,6 +2836,9 @@ namespace WindowsFormsApplication1
         /// <param name="einspNettoMWh">Ebenso die KWK-Einspeisung [MWh/a].</param>
         /// <param name="stromNettoMWh">Ebenso die Gesamterzeugung [MWh/a] — die
         /// Bezugsgröße des Fallbacks ohne Stundenreihen.</param>
+        /// <param name="stromBruttoMWh">ETAPPE E7c3: die Stromerzeugung des Projekts an den
+        /// Klemmen [MWh/a] — die erzeugte Arbeit der Vbh-Definition; nur für die
+        /// Herleitungszeile des Falls 2, gerechnet wird mit <paramref name="vbh"/>.</param>
         /// <param name="foerderbeginn">Förderbeginn des PROJEKTS; er gilt für jede
         /// Anlage ohne eigenes Inbetriebnahmedatum.</param>
         /// <param name="hinweise">Die Meldungsliste des Aufrufers — dieser Weg hängt
@@ -2845,6 +2848,7 @@ namespace WindowsFormsApplication1
         private double[] ReiheErsatzGewichtet(VariantenDaten v, WirtschaftlichkeitParameter p,
                                               bool mitMatrix, double eigenNettoMWh,
                                               double einspNettoMWh, double stromNettoMWh,
+                                              double stromBruttoMWh,
                                               double vbh, int foerderbeginn,
                                               List<string> hinweise, KwkgLuecken luecken,
                                               out double jahr1)
@@ -2912,25 +2916,27 @@ namespace WindowsFormsApplication1
                                                luecken);
             if (fall2Zeile != null) hinweise.Add(fall2Zeile);
 
-            // ETAPPE E7c — Entscheid E7c1‑Q2 b auf dem Ersatzweg: Trägt eine Anlage das
-            // Kennzeichen, zählen die Vbh der Gesamtanlage aus ihrem KWK-Strom (die
-            // gekürzten Mengen) ÷ ihrer Leistung — dieselbe Regel wie je Anlage auf dem
-            // Regelweg. Ohne Kennzeichen oder ohne Leistung bleibt es bei der
-            // Projektgröße.
+            // ETAPPE E7c3 — VOLLBENUTZUNGSSTUNDEN NACH DEFINITION (Anwenderentscheid vom
+            // 23.09.2026): Vbh = erzeugte Arbeit ÷ P_Nenn — die elektrische Arbeit, die das
+            // Modul an den Klemmen erzeugt (brutto), durch seine elektrische Nennleistung;
+            // ein normierter Auslastungsindikator, in Fall 1 und Fall 2 derselbe. Auf dem
+            // Ersatzweg ist das die Projektgröße aus VbhElektrisch, mit der Kontingent und
+            // Jahresdeckel zählen; der KWK-Strom des Falls 2 bestimmt allein die bezahlte
+            // Menge (die gekürzten Mengen oben). Trägt eine Anlage das Kennzeichen, nennt
+            // eine Herleitungszeile die Rechnung mit Zahlen — ohne Kennzeichen bleibt der
+            // Hinweistext Zeile für Zeile der von vorher.
             if (fall2Zeile != null && nachLeistung && vbh > 0)
             {
                 double kwkMWh = mitMatrix ? eigenNettoMWh + einspNettoMWh : stromNettoMWh;
-                double vbhKwk = Math.Max(0, kwkMWh) * 1000.0 / pelSumme;
                 hinweise.Add(string.Format(BerichtTexte.Kultur, T("WIRT_KWKG_FALL2_VBH_ERSATZ",
-                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vollbenutzungsstunden aus dem " +
-                    "KWK-Strom der Gesamtanlage {0} MWh ÷ {1} kW = {2} h/a (statt {3} h/a); " +
-                    "Kontingent und Jahresdeckel zählen diese Stunden."),
-                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur),
+                    "KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = " +
+                    "{0} MWh ÷ {1} kW = {2} h/a (brutto an den Klemmen, wie in Fall 1); " +
+                    "Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom " +
+                    "{3} MWh bestimmt allein die bezahlte Menge."),
+                    stromBruttoMWh.ToString("N3", BerichtTexte.Kultur),
                     pelSumme.ToString("N0", BerichtTexte.Kultur),
-                    vbhKwk.ToString("N0", BerichtTexte.Kultur),
-                    vbh.ToString("N0", BerichtTexte.Kultur)));
-                vbh = vbhKwk;
-                if (vbh <= 0) return null;
+                    vbh.ToString("N0", BerichtTexte.Kultur),
+                    Math.Max(0, kwkMWh).ToString("N3", BerichtTexte.Kultur)));
             }
 
             // ---------------- Bonus bei voller Vergütung [€/a] ----------------
@@ -3136,30 +3142,30 @@ namespace WindowsFormsApplication1
                 double bonusVoll = KwkgJahresbetrag.Voll(eigenMWh, satzEigen, einspMWh, satzEinsp);
                 if (bonusVoll <= 0) continue;
 
-                double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromAnlageMWh);
+                // ETAPPE E7c3 — Vbh NACH DEFINITION (Anwenderentscheid vom 23.09.2026):
+                // Vbh = erzeugte Arbeit ÷ P_Nenn, die Arbeit brutto an den Klemmen. Der
+                // Rückfall ohne gespeicherte Modulzahl nimmt deshalb die BRUTTOerzeugung
+                // dieses Moduls (bis E7c3 stand hier die Nettomenge nach Hilfsstrom — nur
+                // wirksam, wo die Ergebniszeile keine Vbh führt UND ein Anteil gepflegt ist).
+                double vbhAnlage = VbhDerAnlage(a, auswahl.Module[i], stromBruttoMWh);
 
-                // ETAPPE E7c — ENTSCHEID E7c1‑Q2 b (23.09.2026): „Vollbenutzungsstunden
-                // betrifft nur den KWK erzeugten Strom". In Fall 2 zählen die Vbh deshalb
-                // aus dem KWK-STROM der Anlage — Vbh = KWK-Strom ÷ P_el —, nicht aus dem
-                // ganzen Modulstrom; Kontingentverbrauch und Jahresdeckel laufen über
-                // diese Stunden (die Reihe wird länger, wo das Kontingent bindet). Ohne
-                // Kennzeichen (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie
-                // vorher. Ohne bestimmbare Kennzahl ist der Zuschlag ohnehin 0 (oben).
-                string vbhZeile = null;
-                if (fall2 != null && fall2.Stromkennzahl.Bestimmbar && a.PelKW > 0)
+                // In Fall 2 bleibt es bei denselben Stunden wie in Fall 1: Kontingent-
+                // verbrauch und Jahresdeckel zählen die Bruttostunden, der KWK-Strom
+                // bestimmt allein die bezahlte Menge (die gekürzten Mengen oben). Die
+                // Herleitungszeile nennt die Rechnung mit Zahlen; ohne Kennzeichen
+                // (Fall 1) wird der Zweig nicht betreten — Zeile für Zeile wie vorher.
+                if (fall2 != null && a.PelKW > 0 && vbhAnlage > 0)
                 {
-                    double vbhKwk = fall2.KwkStromMWh * 1000.0 / a.PelKW;
                     // WirtschaftlichkeitCtrl.T: die Laufzeit T dieser Methode verdeckt den Namen.
-                    vbhZeile = string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
-                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vollbenutzungsstunden aus dem KWK-Strom " +
-                        "{1} MWh ÷ {2} kW = {3} h/a (aus dem ganzen Modulstrom wären es {4} h/a); " +
-                        "Kontingent und Jahresdeckel zählen diese Stunden."),
-                        a.Bezeichner, fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur),
+                    hinweise.Add(string.Format(BerichtTexte.Kultur, WirtschaftlichkeitCtrl.T("WIRT_KWKG_FALL2_VBH",
+                        "KWKG § 2 Nr. 16 Fall 2 — „{0}“: Vbh = erzeugte Arbeit ÷ P_Nenn = " +
+                        "{1} MWh ÷ {2} kW = {3} h/a (brutto an den Klemmen, wie in Fall 1); " +
+                        "Kontingent und Jahresdeckel zählen diese Stunden, der KWK-Strom " +
+                        "{4} MWh bestimmt allein die bezahlte Menge."),
+                        a.Bezeichner, stromBruttoMWh.ToString("N3", BerichtTexte.Kultur),
                         a.PelKW.ToString("N0", BerichtTexte.Kultur),
-                        vbhKwk.ToString("N0", BerichtTexte.Kultur),
-                        vbhAnlage.ToString("N0", BerichtTexte.Kultur));
-                    hinweise.Add(vbhZeile);
-                    vbhAnlage = vbhKwk;
+                        vbhAnlage.ToString("N0", BerichtTexte.Kultur),
+                        fall2.KwkStromMWh.ToString("N3", BerichtTexte.Kultur)));
                 }
                 if (vbhAnlage <= 0) continue;
 
@@ -3229,9 +3235,9 @@ namespace WindowsFormsApplication1
                         n.NutzwaermeMWh = fall2.NutzwaermeMWh;
                         n.KwkStromMWh = fall2.KwkStromMWh;
                         n.KuerzungMWh = fall2.KuerzungMWh;
-                        // E7c1-Q2 b: die Stunden aus dem KWK-Strom stehen in VbhElektrisch
-                        // (oben) und als eigene Hinweiszeile; die Herleitung bleibt die
-                        // der Menge.
+                        // E7c3: VbhElektrisch (oben) trägt in beiden Fällen die Stunden
+                        // nach Definition (erzeugte Arbeit ÷ P_Nenn); die Herleitung ist
+                        // die der Menge.
                         n.HerleitungKwkStrom = fall2Zeile;
                     }
                     try
@@ -3545,7 +3551,15 @@ namespace WindowsFormsApplication1
         /// § 8 Abs. 4 verschieben, obwohl die Anlage genauso lange gelaufen ist. Der
         /// Hilfsstrom wirkt ausschließlich über die Mengen (siehe
         /// <see cref="ReiheJeAnlage"/>).</para>
+        ///
+        /// <para><b>ETAPPE E7c3 — die Definition des Anwenders (23.09.2026):</b>
+        /// Vbh = erzeugte Arbeit ÷ P_Nenn, die elektrische Arbeit an den Klemmen durch die
+        /// installierte elektrische Nennleistung — ein normierter Auslastungsindikator,
+        /// in Fall 1 und Fall 2 des § 2 Nr. 16 KWKG derselbe. Der Aufrufer reicht deshalb
+        /// die BRUTTOerzeugung des Moduls herein, auch für den Rückfall.</para>
         /// </summary>
+        /// <param name="stromMWh">Die Stromerzeugung des Moduls an den Klemmen [MWh/a]
+        /// (brutto, vor Hilfsstrom).</param>
         private static double VbhDerAnlage(BhkwAnlage a, ErgebnisBHKWModulModel modul, double stromMWh)
         {
             if (modul != null && modul.VbhElektrisch > 0) return modul.VbhElektrisch;

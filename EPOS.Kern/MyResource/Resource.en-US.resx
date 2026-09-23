@@ -22326,7 +22326,7 @@ Do you want to allow this?</value>
     <value>The mode of section 9(1) no. 3 of the electricity tax act — it determines which exemption is applied.</value>
   </data>
   <data name="KI_DLG_BHW_ABWAERME_ERL" xml:space="preserve">
-    <value>Does the plant have a device for waste-heat dissipation (section 2 no. 16 of the CHP act, second case)? Then its CHP electricity is not the net generation but min(net generation ; useful heat × power-to-heat ratio), and the full-load hours of the quota count from this CHP electricity.</value>
+    <value>Does the plant have a device for waste-heat dissipation (section 2 no. 16 of the CHP act, second case)? Then its CHP electricity is not the net generation but min(net generation ; useful heat × power-to-heat ratio) — it only determines the quantity paid; the full-load hours of the quota count as without the device, from the generated energy (gross ÷ rated electrical output).</value>
   </data>
   <data name="KI_DLG_BHW_SIGMA_ERL" xml:space="preserve">
     <value>The power-to-heat ratio σ of the plant for the second case of section 2 no. 16 of the CHP act. Empty means σ is formed from P_el ÷ P_th of the unit row; an own value applies permanently. σ is only read if the plant has a device for waste-heat dissipation.</value>
@@ -24387,10 +24387,10 @@ Do you want to allow this?</value>
     <value>Whether the position carries a linear residual value at the end of the evaluation period: blank = as before, yes or no.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH" xml:space="preserve">
-    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours from the CHP electricity {1} MWh ÷ {2} kW = {3} h/a (the whole module output would give {4} h/a); quota and annual cap count these hours.</value>
+    <value>CHP Act sec. 2 no. 16 case 2 — “{0}”: full-load hours = generated energy ÷ P_rated = {1} MWh ÷ {2} kW = {3} h/a (gross at the terminals, as in case 1); quota and annual cap count these hours, the CHP electricity of {4} MWh only determines the quantity paid.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_VBH_ERSATZ" xml:space="preserve">
-    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours from the CHP electricity of the combined plant {0} MWh ÷ {1} kW = {2} h/a (instead of {3} h/a); quota and annual cap count these hours.</value>
+    <value>CHP Act sec. 2 no. 16 case 2 on the substitute path: full-load hours = generated energy ÷ P_rated = {0} MWh ÷ {1} kW = {2} h/a (gross at the terminals, as in case 1); quota and annual cap count these hours, the CHP electricity of {3} MWh only determines the quantity paid.</value>
   </data>
   <data name="WIRT_KWKG_FALL2_RUNDUNG" xml:space="preserve">
     <value>The reduction below 0.01 MWh results from rounding σ or the quantities to 0.01 MWh.</value>

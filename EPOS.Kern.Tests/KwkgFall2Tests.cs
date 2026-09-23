@@ -76,12 +76,13 @@ namespace EPOS.Kern.Tests
         /// σ = 0,5 an der 50-kW-Anlage: KWK-Strom = min(373,78 ; 605,52 × 0,5) = 302,76 MWh,
         /// Kürzung 71,02 MWh. Ohne Stundenreihen ist alles Eigenverbrauch; die 9-kW-Anlage
         /// (ohne Kennzeichen) bleibt, wie sie war.
-        /// <para><b>ETAPPE E7c2 — Entscheid E7c1‑Q2 b:</b> Die Vollbenutzungsstunden
-        /// zählen aus dem KWK-Strom (302,76 MWh ÷ 50 kW = 6.055,2 h/a statt 7.475,69 h/a
-        /// aus dem Modulstrom). Der Jahresdeckel der Staffel bindet, also wird je Jahr der
-        /// gedeckelte KWK-Strom bezahlt — der Zuschlag der Anlage steht wieder auf
-        /// 6.200,00 € (alt 5.021,91 €, im Verhältnis KWK-Strom / Netto gekürzt), Jahr 1
-        /// gesamt <b>7.316,03 € (alt 6.137,94 €)</b>.</para>
+        /// <para><b>ETAPPE E7c3 — Vbh nach Definition (Anwenderentscheid 23.09.2026):</b>
+        /// Vbh = erzeugte Arbeit ÷ P_Nenn = 373,78 MWh ÷ 50 kW = 7.475,69 h/a — in Fall 2
+        /// dieselben Stunden wie in Fall 1; Kontingent und Deckel zählen sie, der KWK-Strom
+        /// bestimmt allein die bezahlte Menge. Der Zuschlag der Anlage sinkt deshalb im
+        /// Verhältnis KWK-Strom / Netto (5.021,91 €), Jahr 1 gesamt <b>6.137,94 €</b>
+        /// (E7c2 mit den Stunden aus dem KWK-Strom: 6.055,2 h/a, 6.200,00 € bzw. 7.316,03 €
+        /// — zurückgenommen).</para>
         /// </summary>
         [Fact]
         public void Gepflegte_Stromkennzahl_kuerzt_auf_Nutzwaerme_mal_Sigma()
@@ -110,16 +111,19 @@ namespace EPOS.Kern.Tests
             Assert.Equal(netto - kwk, gross.KuerzungMWh.Value, 9);
             Assert.Equal(kwk, gross.EigenMWh, 9);                // ohne Stundenreihen: alles Eigen
             Assert.Equal(netto, gross.StromNettoMWh, 9);          // der Anteil bleibt physikalisch
-            // E7c1-Q2 b: die Vbh aus dem KWK-Strom (alt: 7.475,69 h/a aus dem Modulstrom).
-            Assert.Equal(kwk * 1000.0 / PEL_GROSS, gross.VbhElektrisch, 9);
-            Gleich(6200.00, gross.Jahr1Eur, "Jahr 1 der 50-kW-Anlage");   // alt: 5.021,91 (= ohne × KWK/Netto)
+            // E7c3: die Vbh nach Definition — brutto, in Fall 2 dieselben wie in Fall 1
+            // (E7c2: 6.055,2 h/a aus dem KWK-Strom, zurückgenommen).
+            Assert.Equal(grossOhne.VbhElektrisch, gross.VbhElektrisch, 9);
+            Assert.Equal(7475.69, gross.VbhElektrisch, 2);
+            Gleich(grossOhne.Jahr1Eur * kwk / netto, gross.Jahr1Eur, "Jahr 1 der 50-kW-Anlage");   // E7c2: 6.200,00
 
             KwkgModulNachweis klein = Modul(mit, NAME_KLEIN);
             Assert.Null(klein.Abwaermeabfuhr);
             Gleich(kleinOhne.Jahr1Eur, klein.Jahr1Eur, "Jahr 1 der 9-kW-Anlage");
-            Gleich(7316.031276, mit.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");   // alt: 6.137,940960
-            Assert.Contains("Vollbenutzungsstunden aus dem KWK-Strom 302,760 MWh ÷ 50 kW = 6.055 h/a",
+            Gleich(6137.940960, mit.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");   // E7c2: 7.316,031276
+            Assert.Contains("„" + NAME_GROSS + "“: Vbh = erzeugte Arbeit ÷ P_Nenn = 373,780 MWh ÷ 50 kW = 7.476 h/a",
                             mit.Hinweis ?? "");
+            Assert.Contains("der KWK-Strom 302,760 MWh bestimmt allein die bezahlte Menge", mit.Hinweis ?? "");
 
             Assert.Contains("„" + NAME_GROSS + "“: Stromkennzahl σ 0,500 (gepflegt)", mit.Hinweis ?? "");
             Assert.Equal(gross.HerleitungKwkStrom, (mit.Hinweis ?? "").Split(" | ")
@@ -162,10 +166,10 @@ namespace EPOS.Kern.Tests
 
             // Die 9-kW-Anlage trägt kein Kennzeichen — ihr Anteil am Überschuss wirkt nicht.
             Assert.Null(Modul(e, NAME_KLEIN).Abwaermeabfuhr);
-            // E7c1-Q2 b: Vbh aus dem KWK-Strom (321,466 MWh ÷ 50 kW = 6.429,3 h/a); der
-            // Staffeldeckel bindet, der Zuschlag steht auf dem gedeckelten KWK-Strom.
-            Assert.Equal(kwk * 1000.0 / PEL_GROSS, gross.VbhElektrisch, 9);
-            Gleich(7316.031276, e.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");   // alt: 6.448,212218
+            // E7c3: Vbh nach Definition, brutto 7.475,69 h/a wie in Fall 1 (E7c2: 6.429,3 h/a
+            // aus dem KWK-Strom, Jahr 1 7.316,031276 — zurückgenommen).
+            Assert.Equal(7475.69, gross.VbhElektrisch, 2);
+            Gleich(6448.212218, e.KwkgErloesJahr1, "Jahr 1 gesamt (gemessen)");
         }
 
         // =================================================================
@@ -280,8 +284,9 @@ namespace EPOS.Kern.Tests
         /// nach P_el: an die 50-kW-Anlage 50/59. Mit σ = 0,5 ist ihr KWK-Strom
         /// min(366,356 ; 623,915 × 0,5) = 311,958 MWh, die Kürzung 54,398 MWh — ohne
         /// Stundenreihen mindert sie die Gesamtmenge, der Zuschlag sinkt im selben
-        /// Verhältnis. Gemessen: Jahr 1 7.315,95 → 6.395,35 € (vor E7c1‑Q2 b); seit
-        /// Q2 b zählen die Vbh aus dem KWK-Strom, der Deckel bindet — 7.316,00 €.
+        /// Verhältnis. Gemessen: Jahr 1 7.315,95 → 6.395,35 €. Die Vbh der Gesamtanlage
+        /// bleiben die nach Definition (E7c3): 432,3 MWh ÷ 59 kW = 7.327 h/a (E7c2 zählte
+        /// sie aus dem KWK-Strom, 6.405 h/a und 7.316,00 € — zurückgenommen).
         /// </summary>
         [Fact]
         public void Der_Ersatzweg_verteilt_die_Nutzwaerme_des_Projekts_nach_Pel()
@@ -301,17 +306,76 @@ namespace EPOS.Kern.Tests
             double nutz = bhkw.Waermeproduktion - bhkw.Waermeueberschuss;
             double kuerzung = netto * anteil - Math.Min(netto * anteil, nutz * anteil * 0.5);
 
-            // E7c1-Q2 b: Die Vbh der Gesamtanlage zählen aus ihrem KWK-Strom
-            // ((432,3 − 54,398) MWh ÷ 59 kW = 6.405 h/a statt 7.327 h/a); der Deckel bindet,
-            // Jahr 1 = 59 kW × Deckel × Satz — alt: ohne × (Netto − Kürzung) / Netto = 6.395,35 €.
+            // E7c3: Die Vbh der Gesamtanlage bleiben die nach Definition (7.327 h/a, brutto);
+            // der Zuschlag sinkt im Verhältnis der gekürzten Menge (E7c2: 7.316,00 € mit den
+            // Stunden aus dem KWK-Strom, 6.405 h/a — zurückgenommen).
             Assert.True(kuerzung > 0);
-            Gleich(7316.00, e.KwkgErloesJahr1, "Jahr 1 auf dem Ersatzweg");
-            Assert.True(e.KwkgErloesJahr1 >= ohne - 0.01);
+            Gleich(ohne * (netto - kuerzung) / netto, e.KwkgErloesJahr1, "Jahr 1 auf dem Ersatzweg");
+            Gleich(6395.349114, e.KwkgErloesJahr1, "Jahr 1 auf dem Ersatzweg (gemessen)");
             Assert.Contains(Resource.WIRT_KWKG_ERSATZ_GEWICHTET.Substring(0, 30), e.Hinweis ?? "");
             Assert.Contains("KWKG § 2 Nr. 16 Fall 2 auf dem Ersatzweg", e.Hinweis ?? "");
             Assert.Contains("Kürzung zusammen 54,398 MWh", e.Hinweis ?? "");
-            Assert.Contains("Vollbenutzungsstunden aus dem KWK-Strom der Gesamtanlage 377,902 MWh ÷ 59 kW = 6.405 h/a",
+            Assert.Contains("auf dem Ersatzweg: Vbh = erzeugte Arbeit ÷ P_Nenn = 432,300 MWh ÷ 59 kW = 7.327 h/a",
                             e.Hinweis ?? "");
+            Assert.Contains("der KWK-Strom 377,902 MWh bestimmt allein die bezahlte Menge", e.Hinweis ?? "");
+        }
+
+        // =================================================================
+        //  E7c3 — Vbh nach Definition: Hilfsstrom, Rückfall, Deckel
+        // =================================================================
+
+        /// <summary>
+        /// ETAPPE E7c3 — <b>die Vbh bleiben brutto, auch mit Hilfsstrom und in Fall 2</b>
+        /// (Anwenderentscheid 23.09.2026: Vbh = erzeugte Arbeit an den Klemmen ÷ P_Nenn).
+        /// Mit 5 % Hilfsenergieanteil an der 50-kW-Anlage zählen Kontingent und Deckel in
+        /// Fall 1 und Fall 2 dieselben 7.475,69 h/a; der Hilfsstrom mindert allein die
+        /// bezahlte Menge. Gemessen: Fall 1 Jahr 1 6.600,90 €, Fall 2 (σ 0,5) 6.137,94 €
+        /// — in Fall 2 bindet Nutzwärme × σ = 302,76 MWh unter dem Netto, der Hilfsstrom
+        /// wirkt dort nicht mehr (E7c2 hatte in Fall 2 die Stunden aus dem KWK-Strom und
+        /// damit nach Hilfsstrom gezählt).
+        /// </summary>
+        [Fact]
+        public void Die_Vbh_bleiben_brutto_mit_Hilfsstrom_in_Fall_1_und_Fall_2()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            double vbhOhne = Modul(Rechne(null), NAME_GROSS).VbhElektrisch;
+            Hilfsenergie(ANLAGE_GROSS, 5.0);
+            WirtschaftlichkeitErgebnis fall1 = Rechne(null);
+            KwkgModulNachweis g1 = Modul(fall1, NAME_GROSS);
+            Assert.True(g1.HilfsstromMWh > 0, "Der Prüffall braucht Hilfsstrom.");
+            Assert.Equal(vbhOhne, g1.VbhElektrisch, 9);
+            Gleich(6600.903442, fall1.KwkgErloesJahr1, "Fall 1 mit Hilfsstrom (gemessen)");
+
+            Kennzeichen(ANLAGE_GROSS, 0.5);
+            WirtschaftlichkeitErgebnis fall2 = Rechne(null);
+            KwkgModulNachweis g2 = Modul(fall2, NAME_GROSS);
+            Assert.Equal(vbhOhne, g2.VbhElektrisch, 9);
+            Gleich(6137.940960, fall2.KwkgErloesJahr1, "Fall 2 mit Hilfsstrom (gemessen)");
+        }
+
+        /// <summary>
+        /// ETAPPE E7c3 — der Rückfall ohne gespeicherte Modulzahl: Führt die Ergebniszeile
+        /// keine Vbh, bildet <c>VbhDerAnlage</c> sie aus der BRUTTOerzeugung des Moduls ÷
+        /// P_el — mit 5 % Hilfsstrom 373,78 MWh ÷ 50 kW = 7.475,6 h/a (bis E7c3 aus der
+        /// Nettomenge: 6.613,42 h/a, Jahr 1 7.316,00 €). Gemessen: Jahr 1 6.600,94 €.
+        /// </summary>
+        [Fact]
+        public void Der_Rueckfall_ohne_Modulzahl_rechnet_die_Vbh_brutto()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+
+            ErgebnisBHKWModulModel m = ErgebnisModul(NAME_GROSS);
+            Hilfsenergie(ANLAGE_GROSS, 5.0);
+            ModulVbhLeeren();
+            WirtschaftlichkeitErgebnis e = Rechne(null);
+            KwkgModulNachweis gross = Modul(e, NAME_GROSS);
+
+            Assert.True(gross.HilfsstromMWh > 0, "Der Prüffall braucht Hilfsstrom.");
+            Assert.Equal(m.Stromproduktion * 1000.0 / PEL_GROSS, gross.VbhElektrisch, 9);
+            Gleich(6600.938199, e.KwkgErloesJahr1, "Jahr 1 im Rückfall (gemessen)");
         }
 
         // =================================================================
@@ -408,6 +472,25 @@ namespace EPOS.Kern.Tests
                 "UPDATE Tab_Energieanlagen SET KWKG_Abwaermeabfuhr = 1, KWKG_Stromkennzahl = ? WHERE ID = ?",
                 new DbParam("@s", DbParamTyp.Double) { Wert = sigma.HasValue ? (object)sigma.Value : DBNull.Value },
                 new DbParam("@id", idAnlage));
+        }
+
+        /// <summary>E7c3: der Hilfsenergieanteil einer Anlage [%] (Schemaschritt 61).</summary>
+        private static void Hilfsenergie(int idAnlage, double prozent)
+        {
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_Energieanlagen SET Hilfsenergie_Anteil = ? WHERE ID = ?",
+                new DbParam("@a", prozent), new DbParam("@id", idAnlage));
+        }
+
+        /// <summary>E7c3: die gespeicherten Modul-Vbh des Projekts auf 0 — der Stand einer
+        /// Ergebniszeile vor E2, der den Rückfall in <c>VbhDerAnlage</c> auslöst.</summary>
+        private static void ModulVbhLeeren()
+        {
+            DataRepository.ExecuteNonQuery(
+                "UPDATE Tab_ErgebnisBHKWModul SET VbhElektrisch = 0 " +
+                "WHERE ID_ErgebnisBHKW IN (SELECT b.ID FROM Tab_ErgebnisBHKW AS b " +
+                "INNER JOIN Tab_Ergebnis AS e ON e.ID = b.ID_Ergebnis WHERE e.ID_Projekt = ?)",
+                new DbParam("@p", PROJEKT));
         }
 
         private static void Ueberschuss(double mwh)
