@@ -4473,7 +4473,7 @@ Please run the simulation with photovoltaics first.</value>
     <value>name occurs more than once in the selection</value>
   </data>
   <data name="IMP_KONFLIKT_HINWEIS_READONLY" xml:space="preserve">
-    <value>Factory data set: an overwrite will be reverted by the next database update.</value>
+    <value>Delivery record: overwriting replaces the delivered values; a program update does not restore them.</value>
   </data>
   <data name="IMP_KONFLIKT_AKTION_IMPORTIEREN" xml:space="preserve">
     <value>Import</value>
@@ -19848,7 +19848,7 @@ Do you want to allow this?</value>
     <value>Catalogue record “{0}” created.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_READONLY" xml:space="preserve">
-    <value>Factory data sets are not overwritten.</value>
+    <value>Delivery records are not overwritten – unlock the record in the heat pump administration first.</value>
   </data>
   <data name="WP_STAMM_UEBERNAHME_MSG_FEHLER" xml:space="preserve">
     <value>The transfer to the catalogue failed.</value>
@@ -24459,7 +24459,7 @@ Do you want to allow this?</value>
     <value>Delivered record – read only</value>
   </data>
   <data name="ADM_SCHLOSS_DUPLIZIEREN" xml:space="preserve">
-    <value>Delivered record – read only, duplicating allowed</value>
+    <value>Delivered record – read only, duplicating or unlocking allowed</value>
   </data>
   <data name="ADM_SPEICHERN_GESPERRT" xml:space="preserve">
     <value>Delivered record – read only. To change it, create your own record with “Duplicate...”.</value>
@@ -25326,7 +25326,7 @@ Do you want to allow this?</value>
     <value>Duplicate works on exactly one row.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT" xml:space="preserve">
-    <value>Delivery record – deletion locked. Create your own record with “Duplicate...”.</value>
+    <value>Delivery record – deletion locked. Create your own record with “Duplicate...” or “Unlock...”.</value>
   </data>
   <data name="ADM_LOESCHEN_FRAGE_MEHR" xml:space="preserve">
     <value>Delete these {0} records? {1}</value>
@@ -25362,7 +25362,7 @@ Do you want to allow this?</value>
     <value>All data</value>
   </data>
   <data name="ADM_SB_NUR_LESEN" xml:space="preserve">
-    <value>Delivery record – read only. To change it, duplicate it in the selection bar.</value>
+    <value>Delivery record – read only. To change it, duplicate or unlock it in the selection bar.</value>
   </data>
   <data name="ADM_SB_AUSLIEFERUNG" xml:space="preserve">
     <value>Delivery record</value>
@@ -25560,13 +25560,82 @@ Do you want to allow this?</value>
     <value>enlarge…</value>
   </data>
   <data name="ADM_SB_NUR_LESEN_OHNE_KOPIE" xml:space="preserve">
-    <value>Delivered record – read only, cannot be deleted.</value>
+    <value>Delivered record – read only, cannot be deleted. To change it, unlock it in the selection bar.</value>
   </data>
   <data name="ADM_AW_LOESCHEN_GESPERRT_OHNE_KOPIE" xml:space="preserve">
-    <value>Delivered record – deletion is locked.</value>
+    <value>Delivered record – deletion is locked. Unlock it first (“Unlock...”).</value>
   </data>
   <data name="ADM_AW_LOESCHEN_VERWENDET" xml:space="preserve">
     <value>Used in projects ({0}) – deletion is locked; remove it there first.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN" xml:space="preserve">
+    <value>Unlock...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN" xml:space="preserve">
+    <value>Lock...</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_AUFHEBEN_KURZ" xml:space="preserve">
+    <value>The selected delivery records become your own records – after confirmation.</value>
+  </data>
+  <data name="ADM_AW_SCHLOSS_SETZEN_KURZ" xml:space="preserve">
+    <value>The selected records become delivery records: read only, cannot be deleted – after confirmation.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_TITEL" xml:space="preserve">
+    <value>Unlock</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE" xml:space="preserve">
+    <value>Unlock “{0}”? It becomes your own record: you can edit and delete it. A program update neither changes nor restores it; the delivered values then exist only in a database backup. You can lock it again; its values then stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_AUFHEBEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Unlock {0} records ({1})? They become your own records: you can edit and delete them. A program update neither changes nor restores them; the delivered values then exist only in a database backup. You can lock them again; their values then stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT" xml:space="preserve">
+    <value>The weekly profile belongs to type “{0}” and stays locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_TYP_BLEIBT_MEHR" xml:space="preserve">
+    <value>The weekly profiles belong to their types ({0}) and stay locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_TITEL" xml:space="preserve">
+    <value>Lock</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE" xml:space="preserve">
+    <value>Lock “{0}” as a delivery record? It is then read only and cannot be deleted; you can change it again only after “Unlock...”. Its values stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SETZEN_FRAGE_MEHR" xml:space="preserve">
+    <value>Lock {0} records as delivery records ({1})? They are then read only and cannot be deleted; you can change them again only after “Unlock...”. Their values stay as they are.</value>
+  </data>
+  <data name="ADM_SCHLOSS_UNVERAENDERT" xml:space="preserve">
+    <value>{0} were already in that state and stayed unchanged.</value>
+  </data>
+  <data name="ADM_SB_ENTSPERRT" xml:space="preserve">
+    <value>Delivered record, unlocked – your changes count as your own values; an update does not restore the delivered values.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN" xml:space="preserve">
+    <value>“{0}” unlocked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_AUFGEHOBEN_MEHR" xml:space="preserve">
+    <value>{0} records unlocked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT" xml:space="preserve">
+    <value>“{0}” locked.</value>
+  </data>
+  <data name="ADM_MSG_SCHLOSS_GESETZT_MEHR" xml:space="preserve">
+    <value>{0} records locked.</value>
+  </data>
+  <data name="ADM_SCHLOSS_KATALOG_UNBEKANNT" xml:space="preserve">
+    <value>Unknown catalogue “{0}” – the lock stays as it is.</value>
+  </data>
+  <data name="ADM_SCHLOSS_STATUS" xml:space="preserve">
+    <value>The lock of this catalogue follows its release status and cannot be switched here.</value>
+  </data>
+  <data name="ADM_SCHLOSS_OHNE_KENNZEICHEN" xml:space="preserve">
+    <value>The catalogue “{0}” has no delivery flag – there is no lock to switch.</value>
+  </data>
+  <data name="ADM_SCHLOSS_SATZ_FEHLT" xml:space="preserve">
+    <value>Record {0} is no longer in the catalogue – no lock was switched.</value>
+  </data>
+  <data name="ADM_SCHLOSS_FEHLER" xml:space="preserve">
+    <value>The lock could not be switched; nothing was changed.</value>
   </data>
   <data name="ADM_LOESCHEN_BLEIBEN_VERWENDET" xml:space="preserve">
     <value>Kept (used in projects): {0}</value>

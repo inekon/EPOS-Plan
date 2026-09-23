@@ -167,6 +167,15 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>„Schloss setzen…" / „Schloss aufheben…"</b> (Entscheid AD-Q15): schaltet das
+        /// Auslieferungskennzeichen der Sätze <paramref name="ids"/> — nur den Kopfsatz, kein
+        /// Wert ändert sich. Die Regel steht einmal in
+        /// <see cref="Auslieferungskennzeichen.SetzenInTabelle"/>; hier steht nur die Tabelle.
+        /// </summary>
+        public static Auslieferungskennzeichen.Ergebnis SchlossSetzen(IReadOnlyList<int> ids, bool gesperrt)
+            => Auslieferungskennzeichen.SetzenInTabelle(TABLE, ids, gesperrt);
+
+        /// <summary>
         /// <b>Die Zeilen der Stammverwaltung</b> (Anwenderentscheid W14a-E-10,
         /// Konzept_Katalogfilter 4.3 und S1.5) — NEUN Spalten: Hersteller, Modell,
         /// Quelle, Nennleistung, VL min, VL max, Zuheizung, Kuehlleistung und COP bei A2/W35.
@@ -920,10 +929,12 @@ namespace WindowsFormsApplication1
         /// Meldung sagt, was geschah.</para>
         ///
         /// <para><b>Auslieferungssaetze bleiben stehen.</b> Ein <c>ReadOnly</c>-Satz
-        /// gehoert zur Auslieferung; eine Ueberschreibung ginge beim naechsten
-        /// Datenbank-Update ohnehin verloren. Anders als der VDI-Import (Entscheidung 9.2
-        /// des Dublettenkonzepts) darf dieser Weg sie deshalb nicht anfassen — er lehnt
-        /// benannt ab.</para>
+        /// gehoert zur Auslieferung und bleibt Bezug; ein Programm-Update ueberschreibt
+        /// Katalogsaetze nie und stellt einen ueberschriebenen darum auch nicht wieder her
+        /// (ADR-001). Anders als der VDI-Import (Entscheidung 9.2 des Dublettenkonzepts)
+        /// darf dieser Weg ihn deshalb nicht anfassen — er lehnt benannt ab; wer den Satz
+        /// aendern will, hebt in der Waermepumpenverwaltung zuerst sein Schloss auf
+        /// (Entscheid AD-Q15).</para>
         ///
         /// <para><b>Andere Projekte aendern sich nicht.</b> Geschrieben wird allein der
         /// Katalogsatz. Die Kopien anderer Projekte bleiben, wie sie sind; ihre Zahl
@@ -987,10 +998,10 @@ namespace WindowsFormsApplication1
                     if (geschuetzt)
                         return new SpeicherErgebnis(false,
                             Text("IMP_KONFLIKT_HINWEIS_READONLY",
-                                 "Auslieferungssatz: Eine Überschreibung geht beim nächsten Datenbank-Update verloren.") +
+                                 "Auslieferungssatz: Ein Überschreiben ersetzt die ausgelieferten Werte; ein Programm-Update stellt sie nicht wieder her.") +
                             " " +
                             Text("WP_STAMM_UEBERNAHME_MSG_READONLY",
-                                 "Auslieferungssätze werden nicht überschrieben."),
+                                 "Auslieferungssätze werden nicht überschrieben – zuerst in der Wärmepumpenverwaltung das Schloss aufheben."),
                             bezeichner);
                 }
 
