@@ -2467,7 +2467,7 @@ namespace WindowsFormsApplication1
         /// die DEGRESSIVE Vbh-Staffel (§ 8, Katalog Tab_Gesetzesparameter; Override über
         /// den Parameter-Deckel), kumuliert bis zum Vbh-Kontingent (30.000 Vbh).
         /// Vorab die Förderfähigkeits-Prüfkette: Fristenlogik § 6 (Stichtag
-        /// 31.12.2026 + 4 Jahre Realisierung), Ausschreibungsgrenze <b>je Anlage</b>
+        /// 31.12.2026, Inbetriebnahme bis zum Fristende des Katalogs), Ausschreibungsgrenze <b>je Anlage</b>
         /// (§ 8a KWKG / KWKAusV) und Heizöl-Ausschluss für Neuanlagen — Verstoß ⇒
         /// Bonus = 0 mit Hinweis.
         /// Negativpreis-Abschlag (§ 7 Abs. 5) als %-Näherung auf die vergüteten Vbh;

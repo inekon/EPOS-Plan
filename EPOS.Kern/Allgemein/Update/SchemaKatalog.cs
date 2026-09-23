@@ -3937,7 +3937,7 @@ namespace WindowsFormsApplication1
 
         /// <summary>
         /// ETAPPE E6 — Inbetriebnahmedatum <b>dieser Anlage</b>. Es entscheidet über die
-        /// Realisierungsfrist des § 6, über das Stichtagsjahr des Zuschlagssatzes, über
+        /// Frist zur Inbetriebnahme des § 6, über das Stichtagsjahr des Zuschlagssatzes, über
         /// den Beginn der Jahresdeckel-Staffel <b>und</b> über Neuanlage/Bestandsanlage
         /// und damit über den Heizöl-Ausschluss.
         /// <inheritdoc cref="SPALTE_EA_KWKG_STICHTAG" path="/summary/text()[last()]"/>
