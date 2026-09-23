@@ -142,8 +142,9 @@ dotnet run --project EPOS.Referenzlauf -c Release --no-build -- vergleich <basis
 
 **Die Abnahme ist der Vergleich gegen die Basis, nicht die Meinung.** Jede Änderung am
 Rechenweg wird gegen die aktuelle Basis unter `Referenzlaeufe/` gehalten (gegenwärtig
-`2026-09-22_R11_Bestandsbefunde`, dreizehn Projekte, die letzte Basis allein auf dem
-Tagesbilanz-Weg der Gebäude; Aufbau, Herleitung und Schemastand in
+`2026-09-23_R12_Gebaeudemodell`, dreizehn Projekte; die Gebäude rechnen nach VDI 6007, allein
+Projekt 1040 bis zur Stufe GA auf dem Tagesbilanz-Weg, gehalten von
+`EPOS.Kern.Tests/GebaeudeRueckwegTests`; Aufbau, Herleitung und Schemastand in
 [`Referenzlaeufe/LIESMICH.md`](Referenzlaeufe/LIESMICH.md)). Die CI rechnet die Projekte
 1030, 1007, 1017, 1045 und 1046; Toleranz: Betrag ≥ 1 relativ 1e‑4, sonst absolut 0,01;
 der Byte-Vergleich ist nur Information.
@@ -159,7 +160,8 @@ begründet den Wechsel in `Referenzlaeufe/LIESMICH.md`:
 - der Flottenstand `@Projektflotte` des Projekts 1046 in `Tab_SpeicherAuslegung` und dessen
   Projektzeilen;
 - gesäte Gebäudedaten: `Tab_Gebaeude(_STAMM)` mit `Bauweise`, U-Werten, Flächen, Sollwerten,
-  `Luftwechselrate`, `Fensterdurchlassgrad`, die Gebäudezuordnungen der Referenzprojekte und
+  `Luftwechselrate`, `Fensterdurchlassgrad`, `Gebaeude_Modell` und den übrigen Spalten des
+  Gebäudemodells, die Gebäudezuordnungen der Referenzprojekte und
   das Anlegen oder Entfernen eines ihrer Gebäude.
 
 Frühere Basen liegen nicht mehr im Repository; ihre Protokolle stehen unter

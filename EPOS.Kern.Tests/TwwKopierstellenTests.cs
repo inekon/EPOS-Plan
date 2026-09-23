@@ -416,6 +416,221 @@ namespace EPOS.Kern.Tests
         }
 
         // =============================================================================
+        //  ZU17 — Inhaltsvergleich namensgleicher EIGEN-Zeilen (N6)
+        // =============================================================================
+
+        /// <summary>
+        /// Gleicher Inhalt: Die namensgleiche EIGEN-Zeile am Ziel trägt dieselben Werte — nur ihre
+        /// Provenienz (Quelle) ist anders. Die Zone zeigt auf sie, nichts wird mitgenommen, der
+        /// Bericht nennt keine Abweichung.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_namensgleicher_Zeile_gleichen_Inhalts_zeigt_auf_sie()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwNutzungsart_STAMM SET Bedarf_Quelle = 'Andere Quelle (fiktiv)' WHERE ID = ?",
+                new DbParam("@id", q.Nutzungsart)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwTagesgang_STAMM SET Quelle = 'Andere Quelle (fiktiv)' WHERE ID_Tagesgangsatz = ?",
+                new DbParam("@id", q.Tagesgangsatz)));
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Gleich", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            Assert.Equal(q.Nutzungsart, Convert.ToInt64(z["ID_Nutzungsart"]));
+            Assert.Equal(q.Tagesgangsatz, Convert.ToInt64(z["ID_Tagesgangsatz"]));
+            Assert.Equal(vorher, Katalogzeilen());
+            Assert.Equal(0, ImportZeilen());
+            Assert.DoesNotContain(io.LetzterBericht, b => b.Contains("weicht"));
+        }
+
+        /// <summary>
+        /// Abweichender Inhalt: Am Ziel trägt die namensgleiche EIGEN-Nutzungsart einen anderen
+        /// Bedarf und die Ausstattungsklasse A einen anderen Wert. Beide kommen als NEUE Version
+        /// mit dem Zusatz „ (Import 1)“ und Status IMPORT; die Zielzeilen bleiben unverändert, der
+        /// gleiche Tagesgangsatz wird weiter benutzt, der Bericht nennt beides. Ein zweiter Import
+        /// findet die mitgenommene Version wieder, statt eine dritte anzulegen.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_abweichender_Zeile_nimmt_eine_neue_Version_mit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            // Das Ziel ändert seine EIGEN-Zeilen unter demselben Namen (erfundene Werte).
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwNutzungsart_STAMM SET Bedarf_Mittel = 2.5 WHERE ID = ?", new DbParam("@id", q.Nutzungsart)));
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwDin4708Wert_STAMM SET Wert = 15.0 WHERE ID = ?", new DbParam("@id", q.KlasseA)));
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Abweichend", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            long nutzung = Convert.ToInt64(z["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            DataRow n = Assert.Single(DataRepository.GetDataTable(
+                "SELECT * FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung)).Rows.Cast<DataRow>());
+            Assert.Equal(NUTZUNG + " (Import 1)", Convert.ToString(n["Bezeichner"]));
+            Assert.Equal(VERSION, Convert.ToString(n["Katalogversion"]));
+            Assert.Equal(TwwSchema.STATUS_IMPORT, Convert.ToString(n["Status"]));
+            Assert.Equal(2.0, Convert.ToDouble(n["Bedarf_Mittel"]));                       // der Wert des Pakets
+            Assert.Equal(q.Tagesgangsatz, Convert.ToInt64(n["ID_Tagesgangsatz"]));        // Satz gleich: weiter benutzt
+            Assert.Equal(q.Tagesgangsatz, Convert.ToInt64(z["ID_Tagesgangsatz"]));
+
+            // Die Zielzeilen bleiben unberührt.
+            Assert.Equal(2.5, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Bedarf_Mittel FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", q.Nutzungsart))));
+            Assert.Equal(TwwSchema.STATUS_EIGEN, Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Status FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", q.Nutzungsart))));
+
+            // Ausstattungsklasse A als neue Version im Schlüssel, B unverändert zugeordnet.
+            long[] klassen = Wohnungstypen(Convert.ToInt64(z["ID"])).Rows.Cast<DataRow>()
+                .Select(r => Convert.ToInt64(r["ID_Ausstattung"])).ToArray();
+            Assert.NotEqual(q.KlasseA, klassen[0]);
+            Assert.Equal(q.KlasseB, klassen[1]);
+            Assert.Equal(KLASSE_A + " (Import 1)", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Schluessel FROM Tab_TwwDin4708Wert_STAMM WHERE ID = ?", new DbParam("@id", klassen[0]))));
+            Assert.Equal(10.0, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Wert FROM Tab_TwwDin4708Wert_STAMM WHERE ID = ?", new DbParam("@id", klassen[0]))));
+
+            Assert.Equal(vorher + 2, Katalogzeilen());
+            Assert.Equal(2, io.LetzterBericht.Count(b => b.Contains("weicht vom namensgleichen Eintrag")
+                                                          && b.Contains("(Import 1)")));
+
+            // Zweiter Import: dieselbe mitgenommene Version, keine dritte.
+            int zweit = io.Importieren(paket, "Tww Abweichend", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                       null, out fehler);
+            Assert.True(zweit > 0, "Zweiter Import fehlgeschlagen: " + fehler);
+            Assert.Equal(vorher + 2, Katalogzeilen());
+            Assert.Equal(nutzung, Convert.ToInt64(Assert.Single(Zonen(zweit).Rows.Cast<DataRow>())["ID_Nutzungsart"]));
+            Assert.Contains(io.LetzterBericht, b => b.Contains("entspricht der schon mitgenommenen Version"));
+        }
+
+        /// <summary>
+        /// Nur der Tagesgangsatz weicht ab (ein Tagesgang am Ziel geändert): Der Satz kommt als
+        /// neue Version samt seinen vier Tagesgängen, und die Nutzungsart — deren eigene Werte
+        /// gleich sind — ebenfalls, weil sie auf den Satz des Pakets zeigen muss. Die Zone zeigt
+        /// auf beide neuen Versionen.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_abweichendem_Tagesgangsatz_nimmt_Satz_und_Nutzungsart_neu_mit()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Stand q = Anlegen(quelle);
+            string paket = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, paket));
+
+            Assert.True(DataRepository.ExecuteSQL(
+                "UPDATE Tab_TwwTagesgang_STAMM SET Anteil_07 = 0.5, Anteil_08 = 0.0 WHERE ID_Tagesgangsatz = ? AND Tagtyp = 1",
+                new DbParam("@id", q.Tagesgangsatz)));
+            int vorher = Katalogzeilen();
+
+            int neu = io.Importieren(paket, "Tww Satz", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                     null, out string fehler);
+            Assert.True(neu > 0, "Import fehlgeschlagen: " + fehler);
+
+            DataRow z = Assert.Single(Zonen(neu).Rows.Cast<DataRow>());
+            long satz = Convert.ToInt64(z["ID_Tagesgangsatz"]);
+            long nutzung = Convert.ToInt64(z["ID_Nutzungsart"]);
+            Assert.NotEqual(q.Tagesgangsatz, satz);
+            Assert.NotEqual(q.Nutzungsart, nutzung);
+            Assert.Equal(SATZ + " (Import 1)", Convert.ToString(DataRepository.ExecuteScalar(
+                "SELECT Bezeichner FROM Tab_TwwTagesgangsatz_STAMM WHERE ID = ?", new DbParam("@id", satz))));
+            Assert.Equal(satz, Convert.ToInt64(DataRepository.ExecuteScalar(
+                "SELECT ID_Tagesgangsatz FROM Tab_TwwNutzungsart_STAMM WHERE ID = ?", new DbParam("@id", nutzung))));
+            Assert.Equal(0.25, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Anteil_07 FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz = ? AND Tagtyp = 1",
+                new DbParam("@id", satz))));
+            Assert.Equal(0.5, Convert.ToDouble(DataRepository.ExecuteScalar(
+                "SELECT Anteil_07 FROM Tab_TwwTagesgang_STAMM WHERE ID_Tagesgangsatz = ? AND Tagtyp = 1",
+                new DbParam("@id", q.Tagesgangsatz))));
+
+            // Zwei Köpfe und vier Tagesgänge neu; Bedarfstag und Ausstattung wie am Ziel.
+            Assert.Equal(vorher + 2 + 4, Katalogzeilen());
+            Assert.Equal(2, io.LetzterBericht.Count(b => b.Contains("weicht vom namensgleichen Eintrag")));
+        }
+
+        /// <summary>
+        /// Ein präpariertes Manifest (N8): Kindtabelle mit fremder Verweisspalte, Kindtabelle mit
+        /// fremdem Namen, Tww-Katalog mit anderem natürlichem Schlüssel oder Primärschlüssel. Die
+        /// Bezeichner gingen sonst in SQL-Texte ein — der Import lehnt benannt ab und ändert nichts.
+        /// </summary>
+        [Fact]
+        public void Transfer_mit_praepariertem_Manifest_wird_benannt_abgelehnt()
+        {
+            using var db = new TestDatenbank();
+            if (!db.Vorhanden) return;
+            using var ordner = new Arbeitsordner();
+
+            int quelle = new ProjektDuplizierenCtrl().GetProjektId(PROJEKT);
+            Anlegen(quelle);
+            string original = ordner.Datei("tww.wpx");
+            var io = new ProjektExportImportCtrl();
+            Assert.True(io.Exportieren(PROJEKT, original));
+            (int Projekte, int Zonen, int Katalog) vorher = Bestand();
+
+            var faelle = new (string Name, Action<JsonNode> Aendern, string Erwartet)[]
+            {
+                ("Verweisspalte", m => m["catalogChildren"][0]["parentColumn"] = "ID_Tagesgangsatz] = 0 OR [ID",
+                 "unbekannte Kindtabelle"),
+                ("Kindname", m => m["catalogChildren"][0]["name"] = "Tab_Projekt",
+                 "unbekannte Kindtabelle"),
+                ("Schluessel", m => m["catalogs"].AsArray()
+                     .Single(k => (string)k["name"] == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)["naturalKey"] =
+                         new JsonArray("Bezeichner] = '' OR [Bezeichner", "Katalogversion"),
+                 TwwSchema.TAB_TWW_NUTZUNGSART_STAMM),
+                ("Primaerschluessel", m => m["catalogs"].AsArray()
+                     .Single(k => (string)k["name"] == TwwSchema.TAB_TWW_NUTZUNGSART_STAMM)["pk"] = "Bezeichner",
+                 TwwSchema.TAB_TWW_NUTZUNGSART_STAMM),
+            };
+            foreach (var f in faelle)
+            {
+                string paket = ordner.Datei("tww-" + f.Name + ".wpx");
+                File.Copy(original, paket);
+                ManifestAendern(paket, f.Aendern);
+
+                int neu = io.Importieren(paket, "Tww Manifest " + f.Name, ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                         null, out string fehler);
+                Assert.True(neu <= 0, f.Name + ": Der Import haette abgelehnt werden muessen.");
+                Assert.Contains(f.Erwartet, fehler);
+                Assert.Contains("Import abgelehnt, nichts geändert", fehler);
+                Assert.Equal(vorher, Bestand());
+            }
+
+            // Das unveränderte Paket geht weiter.
+            Assert.True(io.Importieren(original, "Tww Manifest echt", ProjektExportImportCtrl.BeiVorhandenem.NeuerName,
+                                       null, out string ok) > 0, ok);
+        }
+
+        // =============================================================================
         //  Handwerkszeug
         // =============================================================================
 
@@ -502,6 +717,19 @@ namespace EPOS.Kern.Tests
             (Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_Projekt")),
              Convert.ToInt32(DataRepository.ExecuteScalar("SELECT COUNT(*) FROM Tab_TwwZone")),
              Katalogzeilen());
+
+        /// <summary>Ändert das Manifest eines Pakets an Ort und Stelle.</summary>
+        private static void ManifestAendern(string paket, Action<JsonNode> aendern)
+        {
+            using ZipArchive zip = ZipFile.Open(paket, ZipArchiveMode.Update);
+            ZipArchiveEntry m = zip.GetEntry("manifest.json");
+            JsonNode manifest;
+            using (var r = new StreamReader(m.Open())) manifest = JsonNode.Parse(r.ReadToEnd());
+            aendern(manifest);
+            m.Delete();
+            using (var w = new StreamWriter(zip.CreateEntry("manifest.json").Open()))
+                w.Write(manifest.ToJsonString());
+        }
 
         /// <summary>
         /// Nimmt einen Katalog aus dem Paket: die Datei unter <c>catalogs/</c> und ihren

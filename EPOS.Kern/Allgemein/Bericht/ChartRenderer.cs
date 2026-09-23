@@ -2910,6 +2910,179 @@ namespace WindowsFormsApplication1
         }
 
         /// <summary>
+        /// <b>STUNDENPROFIL MIT MEHREREN REIHEN</b> (Umsetzungskonzept Zapfprofilgenerator 5.6;
+        /// Stufe Z1, Gruppe 3) — der Zwilling von <see cref="Stundenprofil"/> für mehr als eine
+        /// Reihe: der Tagesgang je Tagtyp (Werktag, Samstag, Sonn-/Feiertag) samt Zirkulation
+        /// über 24 Stunden, das Wochenprofil über 168 Stunden.
+        ///
+        /// <para><b>Dieselbe Achse wie das Stundenprofil:</b> x zählt den INDEX der Reihe
+        /// (0 … n), Wert <c>i</c> steht am rechten Rand seines Fachs (Stunde n meint das
+        /// Intervall (n−1, n]); y endet auf der runden Stufe über dem Größtwert aller Reihen
+        /// (<c>Skala.Stufe</c>), Rückfall 1. Die erste
+        /// Reihe ist eine Fläche in ihrer Farbe (Deckung 100) mit Randlinie, jede weitere eine
+        /// Linie in ihrer Strichart. Die Legende steht oben; bricht sie um, rückt die
+        /// Zeichenfläche nach unten und das Bild wird um die Zeile höher.</para>
+        ///
+        /// <para><b>Nur gleich lange Reihen.</b> Eine Reihe mit anderer Länge als die erste,
+        /// mit weniger als zwei oder mit nicht endlichen Werten entfällt; ohne gültige Reihe
+        /// steht der Leerhinweis.</para>
+        /// </summary>
+        /// <param name="titel">Überschrift; leer = ohne.</param>
+        /// <param name="reihen">Die Reihen in Zeichenreihenfolge; die erste ist die Fläche.</param>
+        /// <param name="intervall">Abstand der x-Beschriftung: 24 (Tagesgrenzen) bzw. 6 (Tagesstunden).</param>
+        /// <param name="xTitel">Beschriftung der x-Achse.</param>
+        /// <param name="yTitel">Beschriftung der y-Achse, z. B. „Leistung [kW]".</param>
+        public static byte[] Stundenprofile(string titel, IReadOnlyList<Reihe> reihen, int intervall,
+                                            string xTitel, string yTitel)
+            => SkiaMaler.Png(StundenprofileModell(titel, reihen, intervall, xTitel, yTitel));
+
+        /// <summary>
+        /// DASSELBE BILD ALS ZEICHENMODELL — der Weg der Oberfläche (<c>DiagrammSvg</c>): je
+        /// Reihe eine <see cref="Datenreihe"/> mit den ungekürzten Werten, die erste als Fläche
+        /// mit Randfarbe, die übrigen als Linien; Marken <c>titel</c>, <c>xachse</c>,
+        /// <c>yachse</c>, <c>reihe:…</c>, <c>legende:…</c>, <c>leerhinweis</c>.
+        /// </summary>
+        public static Zeichenmodell StundenprofileModell(string titel, IReadOnlyList<Reihe> reihen, int intervall,
+                                                         string xTitel, string yTitel)
+        {
+            const int W = 1244;
+            const float FLAECHE_HOEHE = 300f;
+            const byte FLAECHE_DECKUNG = 100;
+
+            var gueltig = new List<Reihe>();
+            foreach (Reihe r in reihen ?? new List<Reihe>())
+            {
+                if (r == null || r.Werte == null || r.Werte.Length < 2) continue;
+                if (r.Werte.Any(w => double.IsNaN(w) || double.IsInfinity(w))) continue;
+                if (gueltig.Count > 0 && r.Werte.Length != gueltig[0].Werte.Length) continue;
+                gueltig.Add(r);
+            }
+
+            // Die Legende belegt eine oder mehr Zeilen; ihre Hoehe ergibt sich aus derselben
+            // Umbruchregel, mit der sie gezeichnet wird (LegendenHoehe).
+            float legendeY = 62f;
+            float legendenHoehe = 0f;
+            if (gueltig.Count > 0)
+                using (var f = Schrift(16f))
+                    legendenHoehe = LegendenHoehe(
+                        gueltig.Select(r => 40f + f.MeasureText(r.Name ?? "") + 24f).ToList(), 100f, W - 30f);
+            float oben = gueltig.Count > 0 ? legendeY + legendenHoehe + 44f : 76f;
+            int H = (int)Math.Ceiling(oben + FLAECHE_HOEHE + 88f);
+
+            var z = Modell(W, H);
+            if (!string.IsNullOrEmpty(titel)) z.Markiert("titel", zt => Titel(zt, titel, W));
+            var rc = SKRect.Create(100f, oben, W - 200f, FLAECHE_HOEHE);
+
+            if (gueltig.Count == 0)
+            {
+                using (var f = Schrift(18f))
+                    z.Markiert("leerhinweis", zl =>
+                        Text(zl, BerichtTexte.T("Kein Profil vorhanden."), f, Farbrolle.ACHSE,
+                             rc.Left, rc.Top + 20f));
+                return z;
+            }
+
+            Legende(z, gueltig.Select(r => new Segment(r.Name, 0, r.Farbe, r.Strichart)).ToList(),
+                    100f, legendeY, W - 30f);
+
+            int n = gueltig[0].Werte.Length;
+            double maxWert = 0;
+            foreach (Reihe r in gueltig)
+                foreach (double w in r.Werte) if (w > maxWert) maxWert = w;
+            // Die y-Achse endet auf einer RUNDEN Stufe (Skala.Stufe, Schritte 1/2/2,5/5 je
+            // Zehnerpotenz): Beschriftungen wie 2,4 oder 7,2 lesen sich als Leistung schlecht.
+            double min = 0.0, max = maxWert > 0 ? maxWert : 1.0;
+            double schritt = Skala.Stufe(ref min, ref max);
+            int stufen = (int)Math.Round(max / schritt);
+            // So viele Nachkommastellen, wie die Stufe braucht (2,5 -> eine, 0,25 -> zwei).
+            int stellen = 0;
+            for (double s = schritt; stellen < 3 && Math.Abs(s - Math.Round(s)) > 1e-9; s *= 10) stellen++;
+            string format = "N" + stellen.ToString(CultureInfo.InvariantCulture);
+            var raster = Stift(Farbrolle.RASTER, 1f);
+            z.Markiert("yachse", zy =>
+            {
+                using (var f = Schrift(15f))
+                    for (int i = 0; i <= stufen; i++)
+                    {
+                        double wert = schritt * i;
+                        float y = rc.Bottom - (float)(wert / max) * rc.Height;
+                        zy.Linie(rc.Left, y, rc.Right, y, raster);
+                        string lab = wert.ToString(format, DE);
+                        Text(zy, lab, f, Farbrolle.ACHSE, rc.Left - f.MeasureText(lab) - 6f,
+                             y - TextHoehe(f) / 2f);
+                    }
+            });
+
+            int schrittX = intervall > 0 ? intervall : Math.Max(1, n / 6);
+            z.Markiert("xachse", zx =>
+            {
+                using (var f = Schrift(15f))
+                    for (int h = 0; h <= n; h += schrittX)
+                    {
+                        float x = rc.Left + (float)h / n * rc.Width;
+                        zx.Linie(x, rc.Top, x, rc.Bottom, raster);
+                        string lab = h.ToString(DE);
+                        Text(zx, lab, f, Farbrolle.ACHSE, x - f.MeasureText(lab) / 2f, rc.Bottom + 8f);
+                    }
+            });
+
+            Achsenkreuz(z, rc);
+            using (var f = Schrift(15f))
+            {
+                z.Markiert("xachse", zx =>
+                    Text(zx, xTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Bottom + 34f));
+                z.Markiert("yachse", zy =>
+                    Text(zy, yTitel ?? "", f, Farbrolle.ACHSE, rc.Left, rc.Top - 24f));
+            }
+
+            z.Flaeche = new Zeichenflaeche(rc.Modellrahmen(),
+                                           new Datenfenster(0, n, 0, max),
+                                           Achsenart.Index);
+
+            for (int k = 0; k < gueltig.Count; k++)
+            {
+                Reihe r = gueltig[k];
+                var punkte = new SKPoint[n + 1];
+                for (int i = 0; i < n; i++)
+                {
+                    float x = rc.Left + (float)(i + 1) / n * rc.Width;
+                    float y = (float)(rc.Bottom - Math.Max(0, r.Werte[i]) / max * rc.Height);
+                    punkte[i + 1] = new SKPoint(x, Math.Max(rc.Top, Math.Min(rc.Bottom, y)));
+                }
+                // Der erste Wert gilt ab dem linken Rand - wie im Stundenprofil.
+                punkte[0] = new SKPoint(rc.Left, punkte[1].Y);
+
+                float staerke = r.Breite > 0 ? r.Breite : 2f;
+                Strichmuster muster = Strichfolge(r.Strichart);
+                var fenster = new Datenfenster(1, n, 0, max);
+
+                if (k == 0)
+                {
+                    var flaechenzug = new SKPoint[punkte.Length + 2];
+                    flaechenzug[0] = new SKPoint(rc.Left, rc.Bottom);
+                    Array.Copy(punkte, 0, flaechenzug, 1, punkte.Length);
+                    flaechenzug[flaechenzug.Length - 1] = new SKPoint(punkte[punkte.Length - 1].X, rc.Bottom);
+
+                    z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                    {
+                        Vieleck(zr, flaechenzug, Flaeche(Ton(r, FLAECHE_DECKUNG)));
+                        Linienzug(zr, punkte, Stift(Ton(r), staerke, muster, Strichverbindung.Rund));
+                    });
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r, FLAECHE_DECKUNG), staerke, muster, r.Werte,
+                                                fenster, Reihenart.Flaeche, null, Ton(r)));
+                }
+                else
+                {
+                    z.Markiert("reihe:" + (r.Name ?? ""), zr =>
+                        Linienzug(zr, punkte, Stift(Ton(r), staerke, muster, Strichverbindung.Rund)));
+                    z.FuegeReihe(new Datenreihe(r.Name ?? "", Ton(r), staerke, muster, r.Werte, fenster));
+                }
+            }
+
+            return z;
+        }
+
+        /// <summary>
         /// Jahresverlauf über alle 8 760 Stunden (Paket iU9-W8.0c) — die Jahresansicht des
         /// Brauchwasser-Ergebnisdialogs (<c>ZeigeJahresGrafik</c>:166).
         ///

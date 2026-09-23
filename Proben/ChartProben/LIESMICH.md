@@ -238,3 +238,35 @@ Die drei Bilder (eines der Maßprobe, zwei der Gegenprobe) stehen noch nicht in 
 sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel wie die
 Bilder der Etappe E6: alle alten Zeilen gleich, drei neu, keines geändert. Das Bild nutzt den
 vorhandenen Verlaufsweg des Temperaturbilds; kein bestehendes Bild ändert sich.
+
+---
+
+## Zapfprofilgenerator (Stufe Z1): die Vorschaubilder des Zapfprofils
+
+`ZapfprofilBilder` (`EPOS.Kern/Allgemein/Bericht/`) zeichnet die drei Vorschaubilder des
+Dialogs „Brauchwasser-Zapfprofil": den **Tagesgang** je Tagtyp (Werktag, Samstag, Sonn-/Feiertag)
+mit der Zirkulation gestrichelt, das **Wochenprofil** über 168 Stunden und den **Jahresgang** als
+Monatsstapel aus Zapfung und Zirkulation. Tagesgang und Wochenprofil gehen durch das neue
+`ChartRenderer.StundenprofileModell` — das Stundenprofil mit mehreren Reihen: die erste als Fläche,
+jede weitere als Linie in ihrer Strichart, die Legende oben, die y-Achse auf runder Stufe
+(`Skala.Stufe`). Der Jahresgang nimmt den vorhandenen `MonatsStapelModell`. Die Proben stehen in
+`Program.Zapfprofil.cs`; ihre Texte sind die deutsche Vorgabe (`ZapfprofilBildtexte`).
+
+| Art | Probe | Aussage |
+|---|---|---|
+| Maßprobe | `zapfprofil_tagesgang` | drei Tagtypen und Zirkulation, 1244 × 524, die Farben der Rollen `WARMWASSER`, `SERIE_6`, `SERIE_5` |
+| Maßprobe | `zapfprofil_wochenprofil` | 168 Wochenstunden, Teilung alle 24 h, 1244 × 524 |
+| Maßprobe | `zapfprofil_jahresgang` | zwölf gestapelte Säulen, 978 × 542, Zapfung (`WARMWASSER`) und Zirkulation (`SERIE_7`) |
+| Maßprobe | `stundenprofile_leer` | keine gültige Reihe: der Leerhinweis, 1244 × 464 |
+| Maßprobe | `stundenprofile_legende_umbruch` | drei lange Reihennamen, die Legende bricht einmal um: 1244 × 554 (die Namen sind so lang, dass die Zeilenzahl auch bei anderen Textbreiten bleibt) |
+| Gegenprobe | `stundenprofile_zweite_reihe_wirkt` | mit und ohne Samstag |
+| Gegenprobe | `stundenprofile_strichart_wirkt` | die Zirkulation gestrichelt und durchgezogen |
+| Gegenprobe | `zapfprofil_jahresgang_zirkulation_wirkt` | der Jahresgang mit und ohne Zirkulationsschicht |
+| SVG-Probe | `svg_zapfprofil_tagesgang`, `svg_zapfprofil_wochenprofil` | Modellprobe der Gruppe (a): je Reihe ein `path.epos-reihe`, die erste als geschlossene Fläche |
+| SVG-Probe | `svg_c_zapfprofil_jahresgang` | Pixelbildprobe der Gruppe (c): jede Schicht mit ihrem Wert |
+
+Das sind fünf Maßproben und drei Gegenproben — **11 neue Bilder** — und drei SVG-Proben. Kein Bild
+von vorher hat sich geändert: auf Windows am selben Rechner gegen den Stand vor der Stufe gemessen,
+alle 111 Hashes des Vorstands gleich, 11 neu (122 Zeilen). Die elf Bilder stehen noch nicht in der
+Messlatte; sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel
+wie die Bilder der Etappe E6: alle alten Zeilen gleich, elf neu, keines geändert.

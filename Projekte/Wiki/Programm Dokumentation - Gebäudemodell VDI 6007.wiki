@@ -10,10 +10,10 @@ Das '''Gebäudemodell nach VDI 6007''' rechnet den Heizwärmebedarf eines Gebäu
 
 Im Gebäudedialog wählen Sie unter ''Rechenweg'', wie das Gebäude gerechnet wird:
 
-* '''VDI 6007''' – das Stundenmodell dieser Seite.
+* '''VDI 6007''' – das Stundenmodell dieser Seite; es ist die Vorgabe für jedes Gebäude.
 * '''Tagesbilanz''' – der Bestandsweg, der den Wärmebedarf aus Tageswerten und einer Tagesverteilung bildet. Seine eigenen Eingaben stehen im eingeklappten Abschnitt ''Tagesbilanz (Bestandsweg)''.
 
-Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Programms; die Zeile unter dem Schalter nennt sie. Die Modellparameter bleiben in beiden Stellungen stehen und werden mitgespeichert.
+Fassen Sie den Schalter nicht an, rechnet das Gebäude mit der Vorgabe des Programms, also nach VDI 6007; die Zeile unter dem Schalter sagt, dass die Vorgabe gilt. Auf der Tagesbilanz rechnet nur ein Gebäude, bei dem Sie sie ausdrücklich wählen. Die Modellparameter bleiben in beiden Stellungen stehen und werden mitgespeichert.
 
 == Eingaben ==
 {{Anker|eingaben}}

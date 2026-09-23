@@ -324,3 +324,32 @@ EN ISO 13790, EN ISO 10211 / 14683, EN 410.
 | obere Raumtemperatur | maximum indoor temperature | Bestandsfeld `Maximaleraumtemperatur`; obere Kante des Sollwertbands |
 | Überhitzungsstunden | overheating hours | Stunden der Nutzungszeit über der oberen Raumtemperatur |
 | Vergleich der Rechenwege | comparison of calculation methods | Tabelle im Bedarfsdialog, bis Stufe GA |
+
+## 14. Trinkwarmwasser und Zapfprofil
+
+Die Begriffe des Zapfprofilgenerators (Dialog „Brauchwasser-Zapfprofil", Ressourcen `ZPG_*`).
+Sie stehen vor den englischen Ressourcenwerten fest (Umsetzungskonzept Zapfprofilgenerator 5.3).
+Terminologiequellen: EN 12831-3, EN 15316-3, EN 806.
+
+| DE | EN | Anmerkung |
+|---|---|---|
+| Zapfprofil | draw-off profile | Profil der Warmwasserentnahme; im Titel „domestic hot water draw-off profile" |
+| Zapfprofilgenerator | draw-off profile generator | |
+| Zapfung | draw-off | die entnommene Warmwasserenergie |
+| Zapfstelle | tap | Bilanzgrenze „an der Zapfstelle" → „at the tap" |
+| Zirkulation | circulation | Zirkulationsleitung: circulation pipe |
+| Teilreihe | partial series | „Zirkulation als eigene Teilreihe" |
+| Nutzungsart | type of use | Katalogeintrag des Generators |
+| Nutzungszone | usage zone | |
+| Bezugsgröße | reference quantity | Menge in der Bezugsart der Nutzungsart |
+| Bedarfsniveau | demand level | niedrig/mittel/hoch → low/medium/high |
+| Tagesgang | daily profile | Stundenanteile eines Tages |
+| Tagesgangsatz | daily profile set | vier Tagesgänge je Tagtyp |
+| Tagtyp | day type | Werktag, Samstag, Sonn-/Feiertag, Ruhetag → working day, Saturday, Sunday/public holiday, rest day |
+| Jahresgang | annual profile | zwölf Monatswerte |
+| Bilanzgrenze | balance boundary | |
+| Auslegung | design | „Auslegung…" → „Design…" |
+| Summenlinie | cumulative curve | Summenlinienverfahren der Speicherauslegung |
+| Bedarfskennzahl | demand index | Kennzahl der Wohnungstabelle |
+| Nenninhalt | nominal capacity | Speicher; **nicht** „nominal volume" (das ist Nennvolumen) |
+| Katalogversion | catalogue version | Schreibweise „catalogue" wie im Bestand |

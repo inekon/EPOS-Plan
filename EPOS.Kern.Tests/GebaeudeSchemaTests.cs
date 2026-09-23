@@ -134,12 +134,19 @@ namespace EPOS.Kern.Tests
             foreach (string n in NICHT_ASCII)
                 Assert.Contains(n, sicht);
 
-            // Die neuen Spalten stehen im Bestand leer (die Schalter auf 0).
+            // Die neuen Spalten stehen im Bestand leer (die Schalter auf 0). Einzige Ausnahme
+            // ist die gesäte Zelle des Referenzprojekts auf dem Altweg (A15): Gebäude 10645 in
+            // Projekt 1040 trägt Gebaeude_Modell = 'TAGESBILANZ' — bis zur Stufe GA
+            // (Referenzlaeufe/Skripte/gebaeude_1040_tagesbilanz.py).
             foreach (SchemaSpalte s in GebaeudeSchema.Gebaeudespalten)
             {
+                string ausnahme = s.Tabelle == "Tab_Gebaeude" && s.Name == "Gebaeude_Modell"
+                    ? " AND NOT (ID = " + GebaeudeRueckwegTests.GEBAEUDE + " AND [Gebaeude_Modell] = '" +
+                      DbWerte.GEBAEUDE_MODELL_TAGESBILANZ + "')"
+                    : "";
                 object n = DataRepository.ExecuteScalar(
                     "SELECT COUNT(*) FROM [" + s.Tabelle + "] WHERE [" + s.Name + "] IS NOT NULL AND [" +
-                    s.Name + "] <> 0");
+                    s.Name + "] <> 0" + ausnahme);
                 Assert.Equal(0L, Convert.ToInt64(n, CultureInfo.InvariantCulture));
             }
         }

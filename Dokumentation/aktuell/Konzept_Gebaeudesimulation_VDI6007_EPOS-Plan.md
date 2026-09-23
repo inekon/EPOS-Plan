@@ -1523,6 +1523,10 @@ konsistent; Mischfall Gebäude plus Ganglinie (Projekt 1041) summiert richtig.
   G0 wiederholt sie mit dem Auslieferungsweg (R_si-Abzug, F_W = 0,9, Hay-Davies, Ortszeit,
   a_kon = 0,09), trägt die neuen Prozentwerte je Referenzgebäude ein und leitet das Fenster
   daraus ab. Bis dahin ist das Kriterium **informativ** und keine Abnahmesperre.
+  **Bestimmt mit der Schlusswelle G1 + G2 (23.09.2026):** gemessen 95,8–109,4 % je
+  Referenzgebäude mit Katalogwert, das Fenster ist **90–115 %** und eine Prüfung in
+  `GebaeudeVdi6007DatenbankTests` (Protokoll unter
+  `Dokumentation/ueberholt/Protokolle/Gebaeudesimulation/`).
 - Die Korrektur von `Bauweise` in Gebäude 10576 (Q22), die Warnungen im Tagesmodell (Q18)
   und der Instanzzustand statt `_prevRoomTemp` (Q23) ändern die Referenzergebnisse von 1008
   und 1039; sie bilden den eigenen Einfrierschritt GB (Kapitel 11), der **vor** G1 läuft.
@@ -1838,7 +1842,7 @@ wird: GeometryGymIFC_Core unter MIT (gleiche Aufgabe ohne Geometrie, kleineres �
 
 **Q14, Q22, Q23 — Neu-Einfrieren der Basis mit einer vierten Einfrierregel.** Die
 Referenzbasis ist der eingefrorene Ergebnissatz der dreizehn Testprojekte
-(`Referenzlaeufe/2026-09-22_R11_Bestandsbefunde`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
+(`Referenzlaeufe/2026-09-23_R12_Gebaeudemodell`; die Befunde dieses Papiers sind gegen die Basis R7 gemessen); jede Änderung am Rechenweg wird gegen sie
 gehalten, mit Toleranz 1e‑4 relativ. Sie bleibt nur gültig, wenn sich weder Rechenweg noch
 gesäte Daten der Testdatenbank ändern. Für die gesäten Daten nennt die `CLAUDE.md` drei
 **Einfrierregeln** — Bereiche, deren Änderung eine neue Basis erzwingt: Emissionsfaktoren,

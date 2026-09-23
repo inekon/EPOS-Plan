@@ -12,19 +12,17 @@ namespace EPOS.Kern.Tests
     /// (Entscheid E20, ADR-006; Umsetzungskonzept 1.1, 1.5). Ohne Datenbank: die Regel der
     /// Weiche, der modellfreie Vorbereitungsschritt und der Zuschnitt des Klimakalenders.
     ///
-    /// <para><b>Regel der Weiche nach der Anbindung (Stufe G1):</b> <c>VDI6007</c> führt auf
-    /// den VDI-Weg (<c>GebaeudeVdi6007Tests</c>); <c>TAGESBILANZ</c> und — bis zur
-    /// Schlusswelle G1+G2 — <c>NULL</c> führen auf den Tagesbilanz-Weg.</para>
+    /// <para><b>Regel der Weiche:</b> <c>VDI6007</c> und <c>NULL</c> führen auf den VDI-Weg
+    /// (<c>GebaeudeVdi6007Tests</c>); allein <c>TAGESBILANZ</c> führt auf den
+    /// Tagesbilanz-Weg.</para>
     /// </summary>
     public class GebaeudeWeicheTests
     {
-        [Theory]
-        [InlineData(DbWerte.GEBAEUDE_MODELL_TAGESBILANZ)]
-        [InlineData(null)]
-        public void Tagesbilanz_und_ohne_Angabe_fuehren_auf_den_Tagesbilanz_Weg(string modell)
+        [Fact]
+        public void Tagesbilanz_fuehrt_auf_den_Tagesbilanz_Weg()
         {
             var sim = new SimulationWaermebedarf();
-            var item = new ProjektGebaeudeModel { Gebaeude_Modell = modell };
+            var item = new ProjektGebaeudeModel { Gebaeude_Modell = DbWerte.GEBAEUDE_MODELL_TAGESBILANZ };
 
             IGebaeudeRechenweg weg = sim.RechenwegWaehlen(item);
 
@@ -85,10 +83,11 @@ namespace EPOS.Kern.Tests
     }
 
     /// <summary>
-    /// <b>Stufe G1.0 — die Fälle mit Datenbank.</b> Der Rechenweg wird gelesen
-    /// (<c>Gebaeude_Modell</c>, in der Testdatenbank NULL) und ändert in G1.0 nichts: Ein
-    /// ausdrücklich auf Tagesbilanz gestelltes Gebäude rechnet bitgleich wie dasselbe
-    /// Gebäude ohne Angabe — auch auf dem Weg der Verbrauchs-Rückrechnung.
+    /// <b>Die Fälle mit Datenbank.</b> Der Rechenweg wird gelesen (<c>Gebaeude_Modell</c>,
+    /// in der Testdatenbank für 1007 NULL): Ein Gebäude ohne Angabe rechnet bitgleich wie
+    /// dasselbe Gebäude, das ausdrücklich auf VDI 6007 steht (E1: VDI 6007 ist die Vorgabe)
+    /// — auch auf dem Weg der Verbrauchs-Rückrechnung —, und ausdrücklich Tagesbilanz
+    /// rechnet anders.
     /// </summary>
     [Collection("Testdatenbank")]
     public class GebaeudeWeicheDatenbankTests : IClassFixture<TestDatenbank>
@@ -124,15 +123,17 @@ namespace EPOS.Kern.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void Tagesbilanz_ausdruecklich_rechnet_wie_ohne_Angabe(bool verbrauch)
+        public void VDI6007_ausdruecklich_rechnet_wie_ohne_Angabe(bool verbrauch)
         {
             if (!_db.Vorhanden) return;
 
             double[] ohne = Rechne(1007, null, verbrauch);
+            double[] vdi = Rechne(1007, DbWerte.GEBAEUDE_MODELL_VDI6007, verbrauch);
             double[] tagesbilanz = Rechne(1007, DbWerte.GEBAEUDE_MODELL_TAGESBILANZ, verbrauch);
 
             Assert.True(ohne.Sum() > 0, "Das Probegebäude heizt gar nicht — der Fall prüft dann nichts.");
-            Assert.Equal(ohne, tagesbilanz);
+            Assert.Equal(ohne, vdi);
+            Assert.NotEqual(ohne, tagesbilanz);
         }
     }
 }

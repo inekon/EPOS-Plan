@@ -851,4 +851,285 @@ public class BedarfsProfileDialogTests : EposBunitContext
         Assert.False(zugang.Setzbar);
         Assert.Equal(BedarfsArt.Brauchwasser.ToString(), zugang.Lesen());
     }
+
+    // =================================================================================
+    // Zapfprofil (Umsetzungskonzept Zapfprofilgenerator 5.2, 5.7; ZU4, ZU6, ZU10)
+    // =================================================================================
+
+    /// <summary>Der Parametersatz eines Zapfprofil-Dialogs mit einer Zone — erfunden.</summary>
+    private static IReadOnlyDictionary<string, object> ZapfprofilSatz()
+    {
+        var eingabe = new ZapfprofilEingabeDaten { Weg = ZapfprofilWeg.Bestand };
+        eingabe.Zonen.Add(new ZapfprofilZoneDaten { Id = 5, Name = "Zone 1", IdNutzungsart = 1, Bezugsmenge = 10 });
+        return new Dictionary<string, object>
+        {
+            ["Daten"] = new ZapfprofilDaten { IdProjekt = 7, Eingabe = eingabe, Verfuegbar = true },
+            ["Texte"] = new ZapfprofilTexte(),
+            ["Pruefen"] = new Func<ZapfprofilEingabeDaten, IReadOnlyList<ZapfprofilMeldung>>(_ => Array.Empty<ZapfprofilMeldung>()),
+            ["EntprellungMs"] = 0
+        };
+    }
+
+    private IRenderedComponent<BedarfsProfileDialog> AufbauenZapfprofil(
+        BedarfsArt art = BedarfsArt.Brauchwasser,
+        Func<IReadOnlyDictionary<string, object>>? gaben = null,
+        Action<ZapfprofilErgebnisDaten>? uebernommen = null,
+        string sperrgrund = "",
+        ZapfprofilWeg weg = ZapfprofilWeg.Bestand,
+        Action<ZapfprofilWeg>? wegGesetzt = null,
+        int zonen = 0,
+        List<BedarfsProfilZeile>? zeilen = null,
+        Func<IReadOnlyList<string>, IReadOnlyDictionary<string, object>?>? simulieren = null,
+        Func<string>? simulationMeldung = null,
+        Action<bool>? geschlossen = null,
+        Func<string>? speichern = null)
+        => Render<BedarfsProfileDialog>(p => p
+            .Add(x => x.Art, art)
+            .Add(x => x.TitelText, "Brauchwasserwärme")
+            .Add(x => x.Zeilen, zeilen ?? new List<BedarfsProfilZeile> { Zeile(1) })
+            .Add(x => x.Katalogzeilen, Katalogzeilen)
+            .Add(x => x.Katalogprofil, Profil(art))
+            .Add(x => x.Filterstandvorgabe, new Katalogfilterstand())
+            .Add(x => x.Info, n => new BedarfsProfilInfo(n, "Beschreibung " + n, "Typ 1"))
+            .Add(x => x.Jahressumme, _ => 42.0)
+            .Add(x => x.Simulieren, simulieren ?? (_ => new Dictionary<string, object>()))
+            .Add(x => x.ErgebnisGaben, () => new Dictionary<string, object>())
+            .Add(x => x.ZapfprofilGaben, gaben)
+            .Add(x => x.ZapfprofilUebernommen, uebernommen)
+            .Add(x => x.ZapfprofilSperrgrund, sperrgrund)
+            .Add(x => x.RechenwegBrauchwasser, weg)
+            .Add(x => x.RechenwegGesetzt, wegGesetzt)
+            .Add(x => x.ZapfprofilZonen, zonen)
+            .Add(x => x.SimulationMeldung, simulationMeldung)
+            .Add(x => x.Speichern, speichern)
+            .Add(x => x.Geschlossen, b => geschlossen?.Invoke(b)));
+
+    private static IElement? ZapfprofilKnopf(IRenderedComponent<BedarfsProfileDialog> cut)
+        => cut.FindAll("button").FirstOrDefault(b => b.TextContent.Trim() == "Zapfprofil erzeugen…");
+
+    private static IElement Rechenweg(IRenderedComponent<BedarfsProfileDialog> cut, string text)
+        => cut.FindAll("fieldset[aria-label='Rechenweg Brauchwasser'] label.epos-option")
+              .First(l => l.TextContent.Trim() == text).QuerySelector("input")!;
+
+    /// <summary>ZU6: Der Knopf steht im Aktionsschlitz der Fußleiste — vor Abbrechen und OK, nicht in der Leiste „Simulation".</summary>
+    [Fact]
+    public void Der_Zapfprofil_Knopf_steht_im_Aktionsschlitz_der_Fussleiste()
+    {
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { });
+
+        IElement fuss = cut.FindAll(".epos-leiste").Last();
+        string[] knoepfe = fuss.QuerySelectorAll("button").Select(b => b.TextContent.Trim()).ToArray();
+        Assert.Equal(new[] { "Zapfprofil erzeugen…", "Abbrechen", "OK" }, knoepfe);
+
+        IElement simulation = cut.FindAll(".epos-leiste").First(l => l.TextContent.Contains("Simulation"));
+        Assert.DoesNotContain("Zapfprofil erzeugen…", simulation.TextContent);
+    }
+
+    /// <summary>Kein Delegat, kein Knopf — und nur bei Brauchwasser.</summary>
+    [Fact]
+    public void Der_Knopf_gibt_es_nur_mit_Delegat_und_nur_bei_Brauchwasser()
+    {
+        Assert.Null(ZapfprofilKnopf(AufbauenZapfprofil()));
+        Assert.Null(ZapfprofilKnopf(AufbauenZapfprofil(BedarfsArt.Prozesswaerme, gaben: ZapfprofilSatz)));
+        Assert.Null(ZapfprofilKnopf(Aufbauen(BedarfsArt.Brauchwasser)));
+        Assert.NotNull(ZapfprofilKnopf(AufbauenZapfprofil(gaben: ZapfprofilSatz)));
+    }
+
+    /// <summary>ZU10: Ohne gespeichertes Projekt reicht die Hülle nur den Grund — der Knopf steht weich gesperrt da und nennt ihn.</summary>
+    [Fact]
+    public void Ohne_gespeichertes_Projekt_ist_der_Knopf_benannt_gesperrt()
+    {
+        var cut = AufbauenZapfprofil(sperrgrund: "Das Zapfprofil braucht ein gespeichertes Projekt.");
+
+        IElement knopf = ZapfprofilKnopf(cut)!;
+        Assert.Equal("true", knopf.GetAttribute("aria-disabled"));
+        Assert.False(knopf.HasAttribute("disabled"));
+        Assert.Equal("Das Zapfprofil braucht ein gespeichertes Projekt.", knopf.GetAttribute("title"));
+
+        knopf.Click();
+
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.Equal("Das Zapfprofil braucht ein gespeichertes Projekt.", cut.Instance.Meldung);
+        Assert.Empty(cut.FindAll("fieldset[aria-label='Rechenweg Brauchwasser']"));
+    }
+
+    /// <summary>ZU4: Das OK des Zapfprofils übergibt den Stand und stellt die Optionsgruppe auf Zapfprofil.</summary>
+    [Fact]
+    public void Das_OK_des_Zapfprofils_uebergibt_den_Stand_und_setzt_den_Weg()
+    {
+        ZapfprofilErgebnisDaten? uebernommen = null;
+        ZapfprofilWeg? gesetzt = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, uebernommen: e => uebernommen = e,
+                                     wegGesetzt: w => gesetzt = w);
+
+        Assert.True(Rechenweg(cut, "Bestandsprofile").HasAttribute("checked"));
+        ZapfprofilKnopf(cut)!.Click();
+        Assert.True(cut.Instance.ZapfprofilOffen);
+
+        // „Ein Titel, eine Stelle": die Überlagerung trägt Titel und Kreuz.
+        Assert.Single(cut.FindAll(".epos-ueberlagerung-zu"));
+        Assert.Empty(cut.FindAll(".epos-ueberlagerung-inhalt h1.epos-dialog-titel"));
+        Assert.Equal("Brauchwasser-Zapfprofil", cut.Find(".epos-ueberlagerung-titel").TextContent);
+
+        cut.FindAll(".epos-ueberlagerung-inhalt .epos-leiste .epos-knopf--primaer").Last().Click();
+
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.NotNull(uebernommen);
+        Assert.Equal(ZapfprofilWeg.Generator, uebernommen!.Weg);
+        Assert.Equal("Zone 1", Assert.Single(uebernommen.Eingabe.Zonen).Name);
+        Assert.Equal(ZapfprofilWeg.Generator, cut.Instance.Rechenweg);
+        Assert.True(Rechenweg(cut, "Zapfprofil").HasAttribute("checked"));
+        Assert.Contains("Die Bestandsprofile rechnen nicht mit", cut.Markup);
+        Assert.Null(gesetzt);   // den Weg des OK trägt der übernommene Stand, nicht die Optionsgruppe
+    }
+
+    /// <summary>Abbrechen im Zapfprofil lässt Stand und Weg stehen; Esc schließt nur die Überlagerung.</summary>
+    [Fact]
+    public void Abbrechen_im_Zapfprofil_laesst_alles_stehen_und_Esc_schliesst_nur_die_Ueberlagerung()
+    {
+        bool uebernommen = false;
+        bool geschlossen = false;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, uebernommen: _ => uebernommen = true,
+                                     wegGesetzt: _ => { }, geschlossen: _ => geschlossen = true);
+
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find(".epos-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(geschlossen);
+
+        cut.FindAll(".epos-ueberlagerung-inhalt button").First(b => b.TextContent.Trim() == "Abbrechen").Click();
+
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.False(uebernommen);
+        Assert.False(geschlossen);
+        Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
+
+        // Esc in der Überlagerung schließt nur sie.
+        ZapfprofilKnopf(cut)!.Click();
+        cut.Find(".epos-ueberlagerung").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.False(cut.Instance.ZapfprofilOffen);
+        Assert.False(uebernommen);
+        Assert.False(geschlossen);
+    }
+
+    /// <summary>ZU4: Zurückschalten geht über die Optionsgruppe und meldet den Weg an die Hülle (die Zonen bleiben dort).</summary>
+    [Fact]
+    public void Die_Optionsgruppe_setzt_den_Weg_und_schaltet_zurueck()
+    {
+        var gesetzt = new List<ZapfprofilWeg>();
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, weg: ZapfprofilWeg.Generator, zonen: 1,
+                                     wegGesetzt: gesetzt.Add);
+
+        Assert.True(Rechenweg(cut, "Zapfprofil").HasAttribute("checked"));
+        Assert.Contains("rechnet den Zapfprofilweg", cut.Markup);
+        Assert.Contains("Brauchwasser (Trinkwarmwasser)", cut.Markup);
+
+        Rechenweg(cut, "Bestandsprofile").Change("0");
+        Assert.Equal(new[] { ZapfprofilWeg.Bestand }, gesetzt);
+        Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
+        Assert.DoesNotContain("rechnet den Zapfprofilweg", cut.Markup);
+
+        Rechenweg(cut, "Zapfprofil").Change("1");
+        Assert.Equal(new[] { ZapfprofilWeg.Bestand, ZapfprofilWeg.Generator }, gesetzt);
+    }
+
+    /// <summary>Ohne Zone gibt es nichts zu rechnen: „Zapfprofil" ist weich gesperrt und nennt den Weg dorthin.</summary>
+    [Fact]
+    public void Ohne_Zone_ist_der_Zapfprofilweg_benannt_gesperrt()
+    {
+        bool gesetzt = false;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, zonen: 0, wegGesetzt: _ => gesetzt = true);
+
+        IElement option = Rechenweg(cut, "Zapfprofil");
+        Assert.Equal("true", option.GetAttribute("aria-disabled"));
+        option.Change("1");
+
+        Assert.False(gesetzt);
+        Assert.Equal(ZapfprofilWeg.Bestand, cut.Instance.Rechenweg);
+        Assert.StartsWith("Es gibt noch kein Zapfprofil", cut.Instance.Meldung);
+    }
+
+    /// <summary>
+    /// Die Leiste „monatlicher Verlauf" rechnet auf dem Zapfprofilweg ohne gewähltes
+    /// Bestandsprofil und zeigt die Meldung des Laufs (eine Zone, die 0 trägt) nach dem
+    /// Bestandsmuster als Banner.
+    /// </summary>
+    [Fact]
+    public void Die_Leiste_rechnet_den_Zapfprofilweg_und_zeigt_seine_Meldung()
+    {
+        IReadOnlyList<string>? namen = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, weg: ZapfprofilWeg.Generator, zonen: 1,
+                                     wegGesetzt: _ => { }, zeilen: new List<BedarfsProfilZeile>(),
+                                     simulieren: n => { namen = n; return new Dictionary<string, object>(); },
+                                     simulationMeldung: () => "Zone „Zone 1“ trägt 0: Bezugsmenge fehlt.");
+
+        Knopf(cut, "Simulation").Click();
+
+        Assert.NotNull(namen);
+        Assert.Empty(namen!);
+        Assert.True(cut.Instance.ErgebnisOffen);
+        Assert.Equal("Zone „Zone 1“ trägt 0: Bezugsmenge fehlt.", cut.Instance.Meldung);
+    }
+
+    /// <summary>Ein Abbruch des Zapfprofilwegs (kein Ergebnis) nennt seinen Grund, statt still nichts zu tun.</summary>
+    [Fact]
+    public void Ein_Abbruch_des_Zapfprofilwegs_nennt_den_Grund()
+    {
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, weg: ZapfprofilWeg.Generator, zonen: 1,
+                                     wegGesetzt: _ => { }, simulieren: _ => null,
+                                     simulationMeldung: () => "Das Projekt hat keine Klimaregion — ohne Kalender keine Vorschau.");
+
+        Knopf(cut, "Simulation").Click();
+
+        Assert.False(cut.Instance.ErgebnisOffen);
+        Assert.Contains("keine Klimaregion", cut.Find(".epos-warnbanner").TextContent);
+    }
+
+    /// <summary>
+    /// 5.2 und die OK-Regel (EPOS.UI/CLAUDE.md): Das OK schreibt über den Schreibweg der Hülle,
+    /// BEVOR der Dialog schließt. Lehnt er ab, steht sein Grund als Banner da, der Dialog bleibt
+    /// offen, Zeilen und Weg bleiben stehen; ein zweites OK schreibt erneut und schließt.
+    /// </summary>
+    [Fact]
+    public void Eine_Ablehnung_des_Schreibwegs_haelt_den_Dialog_offen()
+    {
+        var antworten = new Queue<string>(new[]
+        {
+            "Das Zapfprofil wurde nicht gespeichert — Zone „Zone 1“: Die Nutzungsart steht nicht im Katalog.",
+            ""
+        });
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, weg: ZapfprofilWeg.Generator, zonen: 1,
+                                     wegGesetzt: _ => { }, geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return antworten.Dequeue(); });
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(1, geschrieben);
+        Assert.Null(geschlossen);
+        Assert.Contains("Die Nutzungsart steht nicht im Katalog", cut.Find(".epos-warnbanner").TextContent);
+        Assert.Single(cut.Instance.Zeilen);
+        Assert.Equal(ZapfprofilWeg.Generator, cut.Instance.Rechenweg);
+
+        Knopf(cut, "OK").Click();
+
+        Assert.Equal(2, geschrieben);
+        Assert.True(geschlossen);
+    }
+
+    /// <summary>Abbrechen fragt den Schreibweg nicht.</summary>
+    [Fact]
+    public void Abbrechen_schreibt_nicht()
+    {
+        int geschrieben = 0;
+        bool? geschlossen = null;
+        var cut = AufbauenZapfprofil(gaben: ZapfprofilSatz, wegGesetzt: _ => { },
+                                     geschlossen: b => geschlossen = b,
+                                     speichern: () => { geschrieben++; return ""; });
+
+        Knopf(cut, "Abbrechen").Click();
+
+        Assert.Equal(0, geschrieben);
+        Assert.False(geschlossen);
+    }
 }

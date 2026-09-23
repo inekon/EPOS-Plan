@@ -570,9 +570,19 @@ namespace WindowsFormsApplication1
                 foreach (var k in man.fill ?? new List<KatMeta>())
                     fillRows[k.name] = LiesZeilen(ReadEntry(zip, "fill/" + k.name + ".json"));
                 // Zapfprofilgenerator: Kindzeilen mitreisender Katalogköpfe (Tagesgänge,
-                // Ereignisse). Ein Paket ohne den Abschnitt bringt keine.
-                foreach (var k in man.catalogChildren ?? new List<KindMeta>())
+                // Ereignisse). Ein Paket ohne den Abschnitt bringt keine. Schlüssel und
+                // Kindtabellen der Tww-Kataloge kommen aus den festen Tabellen dieses
+                // Programms, nicht aus dem Manifest (ZU17, N8) — sonst benannte Ablehnung.
+                if (!TwwManifestPruefen(man.catalogs, man.catalogChildren, out List<KindMeta> twwKinder, out string twwFehler))
+                {
+                    fehler = twwFehler;
+                    return -1;
+                }
+                foreach (var k in twwKinder)
                     kindRows[k.name] = LiesZeilen(ReadEntry(zip, KINDER_PRAEFIX + k.name + ".json") ?? "[]");
+                // ZU17: Der Inhaltsvergleich namensgleicher Köpfe braucht ihre Kindzeilen.
+                _twwKinderMeta = twwKinder;
+                _twwKindRows = kindRows;
                 TwwDirekteVerweiseSammeln(new[] { tableRows }.Concat(variantRows));
 
                 // § 2.16: die Beilagen. Ein ALTPAKET führt den Abschnitt nicht — dann
@@ -653,7 +663,7 @@ namespace WindowsFormsApplication1
                     }
 
                     // 1a) Zapfprofilgenerator: die Kindzeilen der mitgenommenen Köpfe.
-                    TwwKinderEinspielen(v, man.catalogChildren, kindRows, katMap);
+                    TwwKinderEinspielen(v, _twwKinderMeta, kindRows, katMap);
 
                     // 1b) Referenzierte Katalogzeilen mit Original-ID auffüllen (falls im Ziel fehlend).
                     //     Sichert die referenzielle Integrität für nicht kopierte Katalogtabellen
@@ -1250,12 +1260,17 @@ namespace WindowsFormsApplication1
                                          string.Join(" AND ", wo), ps.ToArray());
                     }
                     catch (Exception ex) { throw new Exception(Diagnose("Katalog-Suche " + k.name, new List<string>(k.naturalKey), ps, zielTypen) + " :: " + ex.Message, ex); }
-                    if (found != null && found != DBNull.Value) neuId = Convert.ToInt64(found);
+                    bool gefunden = found != null && found != DBNull.Value;
+                    if (gefunden && !(IstTwwKatalog(k.name) && !TwwInhaltGleich(v, k, row, Convert.ToInt64(found), katMap)))
+                        neuId = Convert.ToInt64(found);
                     else if (IstTwwKatalog(k.name))
                     {
                         // Zapfprofilgenerator (Konzept 3.2): mitnehmen als Status IMPORT —
                         // umgeschlüsselt, ohne Vorlage, beschreibbar, im Bericht genannt. Ein
                         // Tagesgangsatz, der nur als Abhängigkeit reist, wartet auf Bedarf.
+                        // ZU17 (N6): Auch eine namensgleiche Zielzeile mit ANDEREM Inhalt wird
+                        // nicht still zugeordnet — sie kommt als neue Version mit Zusatz im
+                        // Bezeichner (TwwZeileMitnehmen).
                         if (TwwVormerken(k, row, zielTypen)) continue;
                         neuId = TwwZeileMitnehmen(v, k, row, katMap, zielTypen);
                     }

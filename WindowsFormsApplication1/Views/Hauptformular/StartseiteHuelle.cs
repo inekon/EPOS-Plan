@@ -602,9 +602,15 @@ namespace WindowsFormsApplication1
             _bedarf.Strom.Berechnung(_kontext.Id);
             _bedarf.Waerme.Waermebedarf_berechnen(_kontext.Id, idKlima);
 
+            // Zapfprofilgenerator (Umsetzungskonzept 2.2, N8): Bricht die Wärmerechnung benannt
+            // ab, steht an Stelle der Zahl der Grund — nie eine Zahl, die nicht gerechnet ist.
+            string waerme = string.IsNullOrEmpty(_bedarf.Waerme.Fehlertext)
+                ? _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a"
+                : _bedarf.Waerme.Fehlertext;
+
             return new Zusammenfassung(
                 _kontext.Name,
-                _bedarf.Waerme.Waermebedarf_Gesamt.ToString("F2") + " MWh/a",
+                waerme,
                 _bedarf.Strom.StrombedarfGesamtMwh.ToString("F2") + " MWh/a",
                 Technologien());
         }
@@ -899,16 +905,15 @@ namespace WindowsFormsApplication1
 
         private void Brauchwasser(IWin32Window wirt)
         {
-            // Woertlich pBox_Brauchwasser_Click (:1755-1779).
-            WizardCtrl wizctrl = new WizardCtrl();
-
+            // pBox_Brauchwasser_Click (:1755-1779) - dazu das Zapfprofil (Umsetzungskonzept
+            // Zapfprofilgenerator 5.2): Der Behaelter nimmt seinen Arbeitsstand auf. Das OK des
+            // Dialogs schreibt Zuordnungen UND Zapfprofil in EINEM DbVorgang, BEVOR er schliesst
+            // (ZapfprofilHuelle.Schreibweg); scheitert ein Schritt, rollt alles zurueck und der
+            // Dialog bleibt mit dem Grund offen. Hier bleibt nichts mehr zu schreiben.
             List<Z_ProjektBrauchwasserModel> liste = Z_ProjektBrauchwasserCtrl.LiesProjekt(_kontext.Id);
+            var behaelter = new ZapfprofilBehaelter(_kontext.Id);
 
-            if (BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste))
-            {
-                wizctrl.Del_Projekt_Brauchwasser(_kontext.Id);
-                wizctrl.Add_Projekt_Brauchwasser(_kontext.Id, liste);
-            }
+            BedarfsProfileHuelle.Oeffnen(wirt, _kontext.Id, _kontext.Name, liste, behaelter);
         }
 
         // ---- Reiter 3: Strombedarf -----------------------------------------

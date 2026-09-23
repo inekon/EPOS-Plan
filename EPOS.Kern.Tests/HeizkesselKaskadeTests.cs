@@ -481,6 +481,11 @@ namespace EPOS.Kern.Tests
         /// <summary>
         /// <b>Die Wirkung.</b> Der Lauf des Projekts 1007 rechnet den Kessel jetzt: Er
         /// deckt die Restwaerme, die vorher ungedeckt blieb.
+        /// <para>Nicht ganz auf null: Auf dem VDI-6007-Weg (Vorgabe seit G1 + G2) deckt der
+        /// ideale Heizer den Sprung vom Nacht- auf den Tagsollwert in einer Stunde; in sechs
+        /// Morgenstunden des Jahres bleiben dabei zusammen rund 22 kWh (hoechstens 8,2 kW)
+        /// ungedeckt — gegen rund 73 MWh Waermebedarf. Die Probe haelt deshalb die Groesse,
+        /// nicht die Null.</para>
         /// </summary>
         [Fact]
         public void Der_Lauf_rechnet_den_nachgezogenen_Kessel_mit()
@@ -493,7 +498,7 @@ namespace EPOS.Kern.Tests
             Assert.True(laeufer.Simuliere(PROJEKT_LUECKE, out fehler), fehler);
 
             Assert.True(laeufer.sim.bSimulationKessel);
-            Assert.Equal(0.0, laeufer.sim.RestwaermeMwh, 6);
+            Assert.InRange(laeufer.sim.RestwaermeMwh, 0.0, 0.05);
 
             // Und die Luecke ist zu: der Lauf meldet keinen Kessel ohne Platz mehr.
             foreach (Warnbefund b in SimulationLaufCtrl.ErzeugerOhneKaskadenplatz(

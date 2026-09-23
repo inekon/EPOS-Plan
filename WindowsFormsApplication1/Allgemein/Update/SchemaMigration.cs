@@ -3613,8 +3613,8 @@ namespace WindowsFormsApplication1
         ///
         /// <para><b>Ergebnisneutral.</b> Die neuen Spalten bleiben NULL (die zwei
         /// Schalter 0), kein Rechenweg liest sie; die Umbenennung trägt die Werte 1:1.
-        /// Der Referenzlauf bleibt byte-gleich, die Basis
-        /// <c>2026-09-22_R11_Bestandsbefunde</c> gilt weiter.</para>
+        /// Der Referenzlauf bleibt byte-gleich, gemessen gegen die damalige Basis
+        /// <c>2026-09-22_R11_Bestandsbefunde</c>.</para>
         ///
         /// <para><b>Nach Schritt 100</b>: 100 baut <c>Tab_Gebaeude</c> neu (Vorgabe 0
         /// von <c>ID_ProjektGebaeude</c>), und die Umbenennung und die neuen Spalten

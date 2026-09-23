@@ -23432,6 +23432,555 @@ Do you want to allow this?</value>
   <data name="STEUER_STROMST_CO2_HEIZWERT" xml:space="preserve">
     <value>Electricity tax § 9 (1) no. 3 StromStG: {0} — no gross calorific value (Ho) maintained, therefore checked on a net calorific value basis; the CO₂ value per kWh of energy output is therefore too high (conservative).</value>
   </data>
+  <data name="ZPG_TITEL" xml:space="preserve">
+    <value>Domestic hot water draw-off profile</value>
+  </data>
+  <data name="ZPG_TITEL_PROJEKT" xml:space="preserve">
+    <value>Domestic hot water draw-off profile – {0}</value>
+  </data>
+  <data name="ZPG_INFO_BEDIENUNG" xml:space="preserve">
+    <value>Operation</value>
+  </data>
+  <data name="ZPG_INFO_RECHENWEG" xml:space="preserve">
+    <value>Calculation method</value>
+  </data>
+  <data name="ZPG_KONTEXT_KLIMAREGION" xml:space="preserve">
+    <value>Climate region {0}</value>
+  </data>
+  <data name="ZPG_KONTEXT_KALENDER" xml:space="preserve">
+    <value>Calendar: 1 January = {0}, 365 days</value>
+  </data>
+  <data name="ZPG_KONTEXT_BILANZGRENZE" xml:space="preserve">
+    <value>Balance boundary: draw-off energy at the tap; circulation as a separate partial series</value>
+  </data>
+  <data name="ZPG_KONTEXT_UEBERSCHRIEBEN" xml:space="preserve">
+    <value>{0} values overridden</value>
+  </data>
+  <data name="ZPG_STUFE_EINFACH" xml:space="preserve">
+    <value>Basic</value>
+  </data>
+  <data name="ZPG_STUFE_ERWEITERT" xml:space="preserve">
+    <value>Extended</value>
+  </data>
+  <data name="ZPG_STUFE_EXPERTE" xml:space="preserve">
+    <value>Expert</value>
+  </data>
+  <data name="ZPG_GRUND_NOCH_NICHT" xml:space="preserve">
+    <value>Not yet available in this version.</value>
+  </data>
+  <data name="ZPG_GRP_ZONEN" xml:space="preserve">
+    <value>Usage zones</value>
+  </data>
+  <data name="ZPG_GRP_ZONEN_SUMME" xml:space="preserve">
+    <value>{0} MWh/a draw-off</value>
+  </data>
+  <data name="ZPG_GRP_ZONE" xml:space="preserve">
+    <value>{0} · Use</value>
+  </data>
+  <data name="ZPG_SP_ZONE" xml:space="preserve">
+    <value>Zone</value>
+  </data>
+  <data name="ZPG_SP_NUTZUNGSART" xml:space="preserve">
+    <value>Type of use</value>
+  </data>
+  <data name="ZPG_SP_BEZUGSGROESSE" xml:space="preserve">
+    <value>Reference quantity</value>
+  </data>
+  <data name="ZPG_SP_JAHRESBEDARF" xml:space="preserve">
+    <value>MWh/a</value>
+  </data>
+  <data name="ZPG_SUMME_ZONEN" xml:space="preserve">
+    <value>Total of {0} zones</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_NEU" xml:space="preserve">
+    <value>Add zone…</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_DUPLIZIEREN" xml:space="preserve">
+    <value>Duplicate</value>
+  </data>
+  <data name="ZPG_BTN_ZONE_ENTFERNEN" xml:space="preserve">
+    <value>Remove</value>
+  </data>
+  <data name="ZPG_ZONE_NAME_VORGABE" xml:space="preserve">
+    <value>Zone {0}</value>
+  </data>
+  <data name="ZPG_ZONE_KOPIE" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="ZPG_LBL_ZONENNAME" xml:space="preserve">
+    <value>Zone name</value>
+  </data>
+  <data name="ZPG_LBL_NUTZUNGSART" xml:space="preserve">
+    <value>Type of use</value>
+  </data>
+  <data name="ZPG_LBL_BEZUGSMENGE" xml:space="preserve">
+    <value>Reference quantity</value>
+  </data>
+  <data name="ZPG_LBL_NIVEAU" xml:space="preserve">
+    <value>Demand level</value>
+  </data>
+  <data name="ZPG_NIVEAU_NIEDRIG" xml:space="preserve">
+    <value>low</value>
+  </data>
+  <data name="ZPG_NIVEAU_MITTEL" xml:space="preserve">
+    <value>medium</value>
+  </data>
+  <data name="ZPG_NIVEAU_HOCH" xml:space="preserve">
+    <value>high</value>
+  </data>
+  <data name="ZPG_HINW_BEZUGSMENGE_EINHEIT" xml:space="preserve">
+    <value>Unit from the catalogue of the type of use</value>
+  </data>
+  <data name="ZPG_HINW_NIVEAU_VORGABE" xml:space="preserve">
+    <value>Default · {0} = {1} kWh/({2}·d) from the catalogue</value>
+  </data>
+  <data name="ZPG_HINW_WEITERE_VORGABE" xml:space="preserve">
+    <value>Further inputs are at the catalogue defaults.</value>
+  </data>
+  <data name="ZPG_HINW_NUTZUNGSART_KATALOG" xml:space="preserve">
+    <value>Catalogue · {0}</value>
+  </data>
+  <data name="ZPG_KAT_KEINE_AUSWAHL" xml:space="preserve">
+    <value>– please select –</value>
+  </data>
+  <data name="ZPG_SP_BEZUGSART" xml:space="preserve">
+    <value>Reference type</value>
+  </data>
+  <data name="ZPG_SP_HERKUNFT" xml:space="preserve">
+    <value>Origin</value>
+  </data>
+  <data name="ZPG_SP_STATUS" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="ZPG_SP_KATALOGVERSION" xml:space="preserve">
+    <value>Catalogue version</value>
+  </data>
+  <data name="ZPG_STATUS_AUSLIEFERUNG" xml:space="preserve">
+    <value>Delivered</value>
+  </data>
+  <data name="ZPG_STATUS_EIGEN" xml:space="preserve">
+    <value>own</value>
+  </data>
+  <data name="ZPG_STATUS_IMPORT" xml:space="preserve">
+    <value>Imported</value>
+  </data>
+  <data name="ZPG_HERKUNFT_VERFAHREN" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="ZPG_HERKUNFT_EIGENKONSTRUKTION" xml:space="preserve">
+    <value>Own construction</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FREI" xml:space="preserve">
+    <value>freely available</value>
+  </data>
+  <data name="ZPG_HERKUNFT_IMPORT" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="ZPG_HERKUNFT_FIKTIV" xml:space="preserve">
+    <value>fictitious (test data)</value>
+  </data>
+  <data name="ZPG_HERKUNFT_OHNE" xml:space="preserve">
+    <value>not specified</value>
+  </data>
+  <data name="ZPG_KAT_SPERRE_TAGESGANG" xml:space="preserve">
+    <value>The daily profile set of this type of use is incomplete.</value>
+  </data>
+  <data name="ZPG_BEZUG_PERSONEN" xml:space="preserve">
+    <value>persons</value>
+  </data>
+  <data name="ZPG_BEZUG_WOHNEINHEITEN" xml:space="preserve">
+    <value>dwelling units</value>
+  </data>
+  <data name="ZPG_BEZUG_BETTEN" xml:space="preserve">
+    <value>beds</value>
+  </data>
+  <data name="ZPG_BEZUG_DUSCHPLAETZE" xml:space="preserve">
+    <value>shower places</value>
+  </data>
+  <data name="ZPG_BEZUG_SITZPLAETZE" xml:space="preserve">
+    <value>seats</value>
+  </data>
+  <data name="ZPG_BEZUG_BESCHAEFTIGTE" xml:space="preserve">
+    <value>employees</value>
+  </data>
+  <data name="ZPG_BEZUG_FLAECHE" xml:space="preserve">
+    <value>floor area [m²]</value>
+  </data>
+  <data name="ZPG_EINHEIT_PERSONEN" xml:space="preserve">
+    <value>pers.</value>
+  </data>
+  <data name="ZPG_EINHEIT_WOHNEINHEITEN" xml:space="preserve">
+    <value>DU</value>
+  </data>
+  <data name="ZPG_EINHEIT_BETTEN" xml:space="preserve">
+    <value>bed</value>
+  </data>
+  <data name="ZPG_EINHEIT_DUSCHPLAETZE" xml:space="preserve">
+    <value>shower</value>
+  </data>
+  <data name="ZPG_EINHEIT_SITZPLAETZE" xml:space="preserve">
+    <value>seat</value>
+  </data>
+  <data name="ZPG_EINHEIT_BESCHAEFTIGTE" xml:space="preserve">
+    <value>empl.</value>
+  </data>
+  <data name="ZPG_EINHEIT_FLAECHE" xml:space="preserve">
+    <value>m²</value>
+  </data>
+  <data name="ZPG_GRP_VORSCHAU" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="ZPG_VORSCHAU_LIVE" xml:space="preserve">
+    <value>live · deterministic path</value>
+  </data>
+  <data name="ZPG_LBL_ANZEIGEN_FUER" xml:space="preserve">
+    <value>Show for</value>
+  </data>
+  <data name="ZPG_ANSICHT_SUMME" xml:space="preserve">
+    <value>Sum of all zones</value>
+  </data>
+  <data name="ZPG_REITER_TAGESGANG" xml:space="preserve">
+    <value>Daily profile</value>
+  </data>
+  <data name="ZPG_REITER_WOCHENPROFIL" xml:space="preserve">
+    <value>Weekly profile</value>
+  </data>
+  <data name="ZPG_REITER_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile</value>
+  </data>
+  <data name="ZPG_REITER_DAUERLINIE" xml:space="preserve">
+    <value>Load duration curve</value>
+  </data>
+  <data name="ZPG_REITER_KENNZAHLEN" xml:space="preserve">
+    <value>Key figures</value>
+  </data>
+  <data name="ZPG_TAGTYP_WERKTAG" xml:space="preserve">
+    <value>Working day</value>
+  </data>
+  <data name="ZPG_TAGTYP_SAMSTAG" xml:space="preserve">
+    <value>Saturday</value>
+  </data>
+  <data name="ZPG_TAGTYP_SONNTAG" xml:space="preserve">
+    <value>Sunday/public holiday</value>
+  </data>
+  <data name="ZPG_TAGTYP_RUHETAG" xml:space="preserve">
+    <value>Rest day</value>
+  </data>
+  <data name="ZPG_REIHE_ZAPFUNG" xml:space="preserve">
+    <value>Draw-off</value>
+  </data>
+  <data name="ZPG_REIHE_ZIRKULATION" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="ZPG_BILD_TAGESGANG" xml:space="preserve">
+    <value>Daily draw-off profile, {0}</value>
+  </data>
+  <data name="ZPG_BILD_WOCHENPROFIL" xml:space="preserve">
+    <value>Week with the highest daily demand</value>
+  </data>
+  <data name="ZPG_BILD_JAHRESGANG" xml:space="preserve">
+    <value>Annual profile of draw-off and circulation</value>
+  </data>
+  <data name="ZPG_ACHSE_STUNDE" xml:space="preserve">
+    <value>Hour</value>
+  </data>
+  <data name="ZPG_ACHSE_WOCHENSTUNDE" xml:space="preserve">
+    <value>Hour of the week 1–168, divisions every 24 h</value>
+  </data>
+  <data name="ZPG_ACHSE_LEISTUNG" xml:space="preserve">
+    <value>Power [kW]</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_TAGESGANG" xml:space="preserve">
+    <value>Draw-off in kW (kWh per hour), {0}, {1}; mean of the days per day type, excluding holidays.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_WOCHE" xml:space="preserve">
+    <value>168 hours from {0}, {2} {1} — the week with the highest daily demand of the year.</value>
+  </data>
+  <data name="ZPG_UNTERSCHRIFT_JAHRESGANG" xml:space="preserve">
+    <value>Twelve monthly columns in MWh, stacked from draw-off and circulation.</value>
+  </data>
+  <data name="ZPG_KZ_BILANZ" xml:space="preserve">
+    <value>Balance · deterministic, live</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK" xml:space="preserve">
+    <value>Stochastics · not yet calculated</value>
+  </data>
+  <data name="ZPG_KZ_STOCHASTIK_ERKLAERUNG" xml:space="preserve">
+    <value>“Calculate stochastically” in the footer draws the ensemble for percentiles and sizing; the balance series stays deterministic. The Expert level shows the individual values.</value>
+  </data>
+  <data name="ZPG_SP_KENNZAHL" xml:space="preserve">
+    <value>Key figure</value>
+  </data>
+  <data name="ZPG_SP_WERT" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="ZPG_SP_VERMERK" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="ZPG_KZ_ZAPFUNG" xml:space="preserve">
+    <value>Annual draw-off demand</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATION" xml:space="preserve">
+    <value>Circulation</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATION_VERMERK" xml:space="preserve">
+    <value>separate partial series</value>
+  </data>
+  <data name="ZPG_KZ_GESAMT" xml:space="preserve">
+    <value>Domestic hot water total</value>
+  </data>
+  <data name="ZPG_KZ_ZIRKULATIONSANTEIL" xml:space="preserve">
+    <value>Circulation share</value>
+  </data>
+  <data name="ZPG_KZ_TAGESMITTEL" xml:space="preserve">
+    <value>Daily mean draw-off</value>
+  </data>
+  <data name="ZPG_KZ_LITER_JE_TAG" xml:space="preserve">
+    <value>≈ {0} l/d</value>
+  </data>
+  <data name="ZPG_KZ_SPEZIFISCH" xml:space="preserve">
+    <value>Specific {0}</value>
+  </data>
+  <data name="ZPG_KZ_VOLLLAST" xml:space="preserve">
+    <value>Full-load hours</value>
+  </data>
+  <data name="ZPG_KZ_VOLLLAST_VERMERK" xml:space="preserve">
+    <value>DHW total ÷ largest hourly value</value>
+  </data>
+  <data name="ZPG_KZ_GROESSTER_STUNDENWERT" xml:space="preserve">
+    <value>Largest hourly value (draw-off + circulation)</value>
+  </data>
+  <data name="ZPG_KZ_VERMERK_STUNDENWERT" xml:space="preserve">
+    <value>Balance value, not a design quantity</value>
+  </data>
+  <data name="ZPG_KZ_STUNDEN_UEBER_SCHWELLE" xml:space="preserve">
+    <value>Hours above threshold {0} kW</value>
+  </data>
+  <data name="ZPG_KZ_GLEICHZEITIGKEIT" xml:space="preserve">
+    <value>Simultaneity</value>
+  </data>
+  <data name="ZPG_KZ_GLEICHZEITIGKEIT_VERMERK" xml:space="preserve">
+    <value>arises only from superposition; not an input factor</value>
+  </data>
+  <data name="ZPG_KZ_ABGELEHNT" xml:space="preserve">
+    <value>contributes 0</value>
+  </data>
+  <data name="ZPG_BTN_STOCHASTIK" xml:space="preserve">
+    <value>Calculate stochastically</value>
+  </data>
+  <data name="ZPG_BTN_AUSLEGUNG" xml:space="preserve">
+    <value>Design…</value>
+  </data>
+  <data name="ZPG_STATUS_VORSCHAU" xml:space="preserve">
+    <value>Preview up to date · deterministic · stochastics not yet calculated</value>
+  </data>
+  <data name="ZPG_STATUS_OHNE_VORSCHAU" xml:space="preserve">
+    <value>No preview — {0}</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_ZONE" xml:space="preserve">
+    <value>No zone has been created.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_NAME" xml:space="preserve">
+    <value>A zone has no name.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_NUTZUNGSART" xml:space="preserve">
+    <value>Zone “{0}”: please select a type of use.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_OHNE_BEZUGSMENGE" xml:space="preserve">
+    <value>Zone “{0}”: please enter a reference quantity greater than 0.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_NAME_DOPPELT" xml:space="preserve">
+    <value>Zone “{0}”: the name is used more than once — please give each zone a name of its own.</value>
+  </data>
+  <data name="ZPG_MSG_ZONE_TRAEGT_NULL" xml:space="preserve">
+    <value>Zone “{0}” contributes 0: {1}</value>
+  </data>
+  <data name="ZPG_MSG_ANTEIL_TRAEGT_NULL" xml:space="preserve">
+    <value>The circulation contributes 0: {0}</value>
+  </data>
+  <data name="ZPG_MSG_OHNE_PROJEKT" xml:space="preserve">
+    <value>The draw-off profile requires a saved project.</value>
+  </data>
+  <data name="ZPG_MSG_PLATTFORM" xml:space="preserve">
+    <value>The draw-off profile generator is not yet available on this platform.</value>
+  </data>
+  <data name="ZPG_MSG_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — its tables are missing.</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database — the domestic hot water parameters carry no catalogue version.</value>
+  </data>
+  <data name="ZPG_MSG_KEINE_KLIMAREGION" xml:space="preserve">
+    <value>The project has no climate region — no preview without a calendar.</value>
+  </data>
+  <data name="ZPG_MSG_UNERWARTET" xml:space="preserve">
+    <value>The preview could not be calculated: {0}</value>
+  </data>
+  <data name="ZPG_MSG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The draw-off profile was not saved — {0}</value>
+  </data>
+  <data name="ZPG_MSG_ZUORDNUNG_NICHT_GESPEICHERT" xml:space="preserve">
+    <value>The project's DHW profiles were not saved — {0}</value>
+  </data>
+  <data name="ZPG_MSG_ZONE" xml:space="preserve">
+    <value>Zone “{0}”: {1}</value>
+  </data>
+  <data name="ZPG_EINGABE_KALENDER_UNGUELTIG" xml:space="preserve">
+    <value>The calendar of the climate region is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_PROJEKT_FEHLT" xml:space="preserve">
+    <value>The project is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>The type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_EINGABE_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>The daily profile set is missing or incomplete.</value>
+  </data>
+  <data name="ZPG_EINGABE_BEZUGSMENGE_FEHLT" xml:space="preserve">
+    <value>The reference quantity is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_RASTER_UNGUELTIG" xml:space="preserve">
+    <value>A value grid of the catalogue is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_TEMPERATUR_UNGUELTIG" xml:space="preserve">
+    <value>The temperature data are invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_PARAMETER_FEHLT" xml:space="preserve">
+    <value>A catalogue parameter is missing.</value>
+  </data>
+  <data name="ZPG_EINGABE_MESSWERT_UNGUELTIG" xml:space="preserve">
+    <value>The annual measured value is invalid or lacks its unit or balance boundary.</value>
+  </data>
+  <data name="ZPG_EINGABE_ZIRKULATION_UNGUELTIG" xml:space="preserve">
+    <value>The circulation data are invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_BELEGUNG_FEHLT" xml:space="preserve">
+    <value>The occupancy per number of rooms is missing from the catalogue.</value>
+  </data>
+  <data name="ZPG_EINGABE_TAGESBEDARF_UNGUELTIG" xml:space="preserve">
+    <value>The daily demand is invalid.</value>
+  </data>
+  <data name="ZPG_EINGABE_KEINE_VERTEILUNG" xml:space="preserve">
+    <value>The zone has no day with draw-off.</value>
+  </data>
+  <data name="ZPG_EINGABE_NICHT_VERFUEGBAR" xml:space="preserve">
+    <value>The draw-off profile generator is not available in this database.</value>
+  </data>
+  <data name="ZPG_SPEICHER_TABELLEN_FEHLEN" xml:space="preserve">
+    <value>the draw-off profile tables are missing in this database.</value>
+  </data>
+  <data name="ZPG_SPEICHER_PROJEKT_FEHLT" xml:space="preserve">
+    <value>the project does not exist.</value>
+  </data>
+  <data name="ZPG_SPEICHER_NUTZUNGSART_FEHLT" xml:space="preserve">
+    <value>the type of use is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_TAGESGANGSATZ_FEHLT" xml:space="preserve">
+    <value>the daily profile set is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_AUSSTATTUNG_FEHLT" xml:space="preserve">
+    <value>the equipment class is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_BEDARFSTAG_FEHLT" xml:space="preserve">
+    <value>the design day is not in the catalogue.</value>
+  </data>
+  <data name="ZPG_SPEICHER_GEBAEUDE_FEHLT" xml:space="preserve">
+    <value>the building does not exist.</value>
+  </data>
+  <data name="ZPG_SPEICHER_ZONE_UNGUELTIG" xml:space="preserve">
+    <value>the zone is incomplete or invalid.</value>
+  </data>
+  <data name="ZPG_SPEICHER_ZONE_FREMD" xml:space="preserve">
+    <value>the zone belongs to another project.</value>
+  </data>
+  <data name="ZPG_SPEICHER_WOHNUNGSTYP_UNGUELTIG" xml:space="preserve">
+    <value>a row of the dwelling table is invalid.</value>
+  </data>
+  <data name="ZPG_SPEICHER_GEBAEUDE_FREMD" xml:space="preserve">
+    <value>the building belongs to another project.</value>
+  </data>
+  <data name="ZPG_SPEICHER_PROJEKT_UNGUELTIG" xml:space="preserve">
+    <value>a project value lies outside its permitted range.</value>
+  </data>
+  <data name="ZPG_PARAMETER_KEINE_KATALOGVERSION" xml:space="preserve">
+    <value>The domestic hot water parameters carry no catalogue version.</value>
+  </data>
+  <data name="ZPG_PARAMETER_KATALOGVERSION_FEHLT" xml:space="preserve">
+    <value>The catalogue version of the domestic hot water parameters is missing.</value>
+  </data>
+  <data name="ZPG_PARAMETER_PARAMETER_FEHLT" xml:space="preserve">
+    <value>Parameter “{0}” is missing from the catalogue.</value>
+  </data>
+  <data name="ZPG_HINW_PARAMETER_FEHLT" xml:space="preserve">
+    <value>A catalogue parameter is missing; the related check is omitted.</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANG_LEER" xml:space="preserve">
+    <value>Zone “{0}”: a daily profile is empty; these days carry no draw-off.</value>
+  </data>
+  <data name="ZPG_HINW_TAGESGANG_SUMME" xml:space="preserve">
+    <value>Zone “{0}”: a daily profile does not sum to 100 %; it was normalised before calculating.</value>
+  </data>
+  <data name="ZPG_HINW_WOCHENFAKTOREN_SUMME" xml:space="preserve">
+    <value>Zone “{0}”: the weekly factors do not sum to 1; they were normalised before calculating.</value>
+  </data>
+  <data name="ZPG_HINW_BEDARF_AUSSERHALB_BANDBREITE" xml:space="preserve">
+    <value>Zone “{0}”: the specific demand lies outside the range of the level.</value>
+  </data>
+  <data name="ZPG_HINW_MESSWERT_SPEICHERVERLUST" xml:space="preserve">
+    <value>Zone “{0}”: the storage loss has been deducted from the measured value.</value>
+  </data>
+  <data name="ZPG_HINW_MESSWERT_ABWEICHUNG" xml:space="preserve">
+    <value>Zone “{0}”: the measured value deviates from the catalogue value by more than the query threshold.</value>
+  </data>
+  <data name="ZPG_HINW_NETZVERLUST_UND_ZIRKULATION" xml:space="preserve">
+    <value>The project has network losses, and the draw-off profile calculates a circulation. If the network losses already contain the circulation losses, they are counted twice – then adjust the network losses or the circulation.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_ZONE_OHNE_FLAECHE" xml:space="preserve">
+    <value>Zone “{0}” belongs to the circulation but carries no floor area.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_OHNE_FLAECHE" xml:space="preserve">
+    <value>No floor area for the area-specific circulation value; calculated with the share method.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_OHNE_ZONE" xml:space="preserve">
+    <value>No zone carries a circulation share; the circulation is reported for the whole building.</value>
+  </data>
+  <data name="ZPG_HINW_ZIRKULATION_NICHT_IN_Z1" xml:space="preserve">
+    <value>Zone “{0}” carries no circulation share.</value>
+  </data>
+  <data name="BPF_BTN_ZAPFPROFIL_BW" xml:space="preserve">
+    <value>Generate draw-off profile…</value>
+  </data>
+  <data name="BPF_LBL_RECHENWEG_BW" xml:space="preserve">
+    <value>DHW calculation method</value>
+  </data>
+  <data name="BPF_OPT_BESTANDSPROFILE" xml:space="preserve">
+    <value>Existing profiles</value>
+  </data>
+  <data name="BPF_OPT_ZAPFPROFIL" xml:space="preserve">
+    <value>Draw-off profile</value>
+  </data>
+  <data name="BPF_HINW_ZAPFPROFILWEG" xml:space="preserve">
+    <value>The existing profiles are not included while the calculation method is set to draw-off profile.</value>
+  </data>
+  <data name="BPF_LBL_LEISTE_ZAPFPROFIL" xml:space="preserve">
+    <value>calculates the draw-off profile method</value>
+  </data>
+  <data name="BPF_TITEL_ZAPFPROFILGENERATOR" xml:space="preserve">
+    <value>Draw-off profile generator</value>
+  </data>
+  <data name="ZPG_LBL_STUFE" xml:space="preserve">
+    <value>Level</value>
+  </data>
+  <data name="BPF_HINW_RECHENWEG_BW" xml:space="preserve">
+    <value>The calculation method determines the source of the heat demand for domestic hot water: the existing profiles in this list or the draw-off profile of the usage zones.</value>
+  </data>
+  <data name="BPF_HINW_ZAPFPROFIL_OHNE_ZONEN" xml:space="preserve">
+    <value>There is no draw-off profile yet – “Generate draw-off profile…” creates one.</value>
+  </data>
+  <data name="BERG_LBL_DAVON_ZIRKULATION" xml:space="preserve">
+    <value>of which circulation:</value>
+  </data>
   <data name="WIRT_HINWEIS_ZEITZONENTARIF" xml:space="preserve">
     <value>Time-of-use tariff (peak/off-peak) no longer applies: the project's tariff set is still on the zone model and is no longer calculated — electricity is priced with the prices of the electricity carrier from cost management.</value>
   </data>
