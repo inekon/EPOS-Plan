@@ -8332,3 +8332,75 @@ in `MyResource`. (3) Nach #444 Punkt (c) ist damit erledigt.
 > Seit 23.09.2026 übernehmen Projektkopien und neue Varianten keine
 > Simulations- und Wirtschaftlichkeitsergebnisse mehr; sie werden nach dem
 > Anlegen neu gerechnet.
+
+## #449 — Administrationsdialoge Stufe 4: Klimadaten und Zeitreihen im Stammblatt, Einlesen als Überlagerung, Reste aus Stufe 3 (23.09.2026)
+
+Anwenderzuruf „fahre fort Stufe 4“ nach dem Konzept
+`Konzept_Administrationsdialoge_Neuordnung_EPOS-Plan.md`. Commits `5a46b0b1`
+(Umsetzung), `b1569752` (Katalogprobe), Merge `df78272c` (von origin: Kühlung
+KU1 Welle 2, keine Konflikte).
+
+**Umsetzung.** Klimadaten-Verwaltung im Stammblatt: Kopf mit Kennzahlen
+Jahresmittel, Tiefst-, Höchstwert; Gruppe „Jahresverlauf“ (Reiter
+Temperatur/Sonnenwinkel, Bild vom Kern-Renderer, „groß…“ öffnet die breite
+Überlagerung); Gruppe „Herkunft“ als Text (Quelle, Importdatum, Standort,
+Länge, Breite, Vermerk); Fußleiste Statuszeile · Import… · Beenden; „Import…“
+öffnet die Überlagerung „Klimadaten einlesen“ mit Kreuz beim Titel, nach dem
+Einlesen ist der neue Satz gewählt; Löschen bei Auslieferungssätzen weich
+gesperrt, Schloss ohne „Duplizieren erlaubt“; neu Kästchen, Vergleich (nur
+Kennwerte) und Löschen mehrerer Sätze. Zeitreihen (Wärmebedarf extern,
+Solarthermie-, Stromganglinie) im Stammblatt mit Gruppen „Ganglinie“
+(Jahresverlauf, „groß…“) und „Herkunft“ (mit „Verwendet in“), Kennzahlen
+Jahresarbeit, Spitze, Volllaststunden; Einlesen als Überlagerung hinter
+„Import…“; kein Duplizieren; Löschsperre bei Projektverwendung mit Projektnamen
+(`ZeitreihenKatalogCtrl.Projektverwendung`); Stromganglinie: Dateiwahl setzt
+nur den Pfad, das Einlesen startet „Datei einlesen…“, Löschen durch
+Projektzuordnung gesperrt. Reste aus Stufe 3: Schalter „nur mit Kühlfunktion“
+in der Wärmepumpenverwaltung (Schlitz `Werkzeug` der Katalogliste, Filter
+`AUSDRUCK_MIT_KUEHLUNG`); eigene Gruppe „Kosten“ im Wärmepumpen-Stammblatt;
+Bedarfsprofile direkt bedienbar (Typ, Beschreibung, Monatswerte;
+Speichern/Verwerfen, Rückhalt bei ungespeicherten Änderungen), „Ändern…“
+entfernt; Auslieferungssätze als Text (Lesemodus der `Stammblattgruppe` mit
+Baustein `Stammblattwerte`) in Gerätekatalogen, Modulkatalogen, Wärmepumpe und
+Bedarfsprofilen. Neue Bausteine `Stammblattwerte`,
+`Ganglinienblattgruppe`/`Ganglinienblatt`/`Ganglinienansicht`, Naht
+`ZeitreihenAdminWege`. 20 neue Schlüssel (ADM_BTN_IMPORT, ADM_SB_*,
+ADM_AW_LOESCHEN_*, ADM_LOESCHEN_BLEIBEN_VERWENDET, ADM_MSG_EINGELESEN,
+KLIMA_IMPORT_TITEL, KLIMA_KZ_*, KLIMA_SB_VERMERK).
+
+**Messung (Katalogprobe, 46 Fälle, Rasterprobe 13/13).** Klimadaten 1 088 ×
+624: Liste 424 px (8 Zeilen), Stammblatt 380 × 370, Bild 358 × 122,
+Import-Überlagerung 900 × 562 mit einem Kreuz; 400 × 624: Liste 286 px (5
+Zeilen), Überlagerung 368 × 562; Zeitreihen Bild 358 × 199 / 346 × 193,
+Import-Überlagerungen 900 × 292/272/272; Vergleich Klimadaten (drei gewählt)
+358 × 535 im Blatt; überall 0 px Querlauf, Kreuz schließt jede Überlagerung.
+Gegenprobe G1 auf neuer Probeseite `rahmen` (116 471 px² Überschneidung), Fall
+K4 mit Behebung (Liste 372 px).
+
+**Prüfung (vor dem Merge).** Kern-Filter 0 Fehler; EPOS.UI.Tests 5 500,
+EPOS.Kern.Tests 5 101, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27 (1
+übersprungen) — 0 Fehlschläge; 35 neue Tests, rund 60 umgestellt;
+Windows-Schale 0 Fehler; SQL-Prüfer 1 715 Texte, 0 Fundstellen; Wachen grün.
+
+**Gate auf dem Merge-Stand `df78272c`.** Kern-Filter 0 Fehler; EPOS.Kern.Tests
+5 142, EPOS.UI.Tests 5 500, KiKern 524, SpeicherEngine 386, SpeicherPlanung 27
+(1 übersprungen) — 0 Fehlschläge; Windows-Schale 0 Fehler; Referenzlauf gegen
+`2026-09-23_R12_Gebaeudemodell`: alle 13 Basisprojekte PASS (4 250 839 Werte).
+
+**Was offen bleibt.** (1) Klimadaten und Zeitreihen lassen sich nicht
+umbenennen (Klimaname ist Schlüssel, kein Speicherweg) — deshalb ohne
+Speichern/Verwerfen. (2) „Originaldatei…“ fehlt, keine Spalte speichert den
+Quellpfad; bei Wärmebedarf und Solar bleibt „Anzeigen“ in der
+Import-Überlagerung. (3) Klimavergleich nur Kennwerte, keine überlagerten
+Kurven. (4) „Import…“ als zweiter Weg in den Gerätekatalogen nicht umgesetzt.
+(5) Diagrammbeschriftung im Stammblatt klein (Kern-Modelle 978 × 542
+verkleinert), „groß…“ gleicht aus. (6) Schlitz `Eingabe` des `Katalograhmen`
+nutzt kein Dialog mehr; unbenutzte Parameter `BtnAendernText`,
+`GruppeListeText`. (7) `Proben/Rasterprobe/LIESMICH.md` trägt ein BOM
+(Bestand).
+
+**Logbuch-Vorschlag** (Version wie #447, beim Anwender erfragen):
+
+> Seit 23.09.2026 zeigen auch Klimadaten und Zeitreihen den gewählten Satz im
+> Stammblatt mit Jahresverlauf und Herkunft, das Einlesen läuft über „Import…“,
+> und Bedarfsprofile werden direkt im Stammblatt geändert.
