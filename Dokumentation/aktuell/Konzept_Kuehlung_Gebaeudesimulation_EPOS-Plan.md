@@ -808,6 +808,14 @@ Kühlkanal entlädt. Jede der vier Stellen bekommt deshalb einen **ausdrücklich
 wo die Kühlung dort (noch) nicht gilt, eine benannte Ablehnung statt eines Rückfalls
 (Kapitel 13).
 
+**So umgesetzt — KU1, zweite Welle (23.09.2026).** Die KU1-Stellen #1 bis #13, #19 bis #24, #29,
+#30, #32 und #34 stehen; #22 kam mit der ersten Welle (Schritt 110), #19 steht als statische
+Zusicherung samt Probe (`KuehlkanalTests`), #28 war die Vorbedingung aus G1. #25 ist vorgezogen:
+`Warnkriterien.Set_BedientKanal` lehnt den Kühlkanal ausdrücklich ab, statt auf Heizung zu fallen,
+und die Versorgerprüfung der Warnkriterien sieht nur die Wärmekanäle. Bei ihrer Stufe bleiben #14
+bis #18, #26, #27, #31 und #33: In KU1 bucht kein Erzeuger, keine Senke und kein Speicher in den
+Kühlkanal — der Kältebedarf bleibt ungedeckt und wird benannt (5.5).
+
 ### 4.4 Wie die Trennung der Deckungswelten erzwungen wird
 
 Eine Verabredung, die nur im Papier steht, hält einen Rechenkern nicht. Vier Vorrichtungen machen
@@ -1634,6 +1642,18 @@ Bauvorschriften für KU1:
 Ein **Projektduplikat** übernimmt den Wert seiner Quelle, nicht die Programmeinstellung: Es ist
 ein kopiertes, kein neu angelegtes Projekt (Festlegung dieses Papiers; Datenbankfall 10.3).
 
+**So umgesetzt — der Vormerksatz (KU1, 23.09.2026).** Bei eingeschalteter Programmeinstellung legt
+die Projektanlage einen **Vormerksatz** an: dieselben Vorbelegungen wie beim ersten Speichern der
+Kaskade und `Kuehlbetrieb = 1`, aber **ohne Kaskade** — die sechs Plätze `Tool_1..6` bleiben NULL
+(`KonfigurationCtrl.KuehlbetriebAnfangswertSetzen`, `KonfigurationCtrl.IstVormerksatz`). Für jeden
+Leser der Konfiguration ist er „kein Satz": Der Lauf meldet „keine Konfiguration" wie ohne Satz, die
+Konfigurationsseite wählt die verbauten Anlagen in derselben Reihenfolge vor, und das Nachziehen des
+Heizkessels greift nicht vor der Vorwahl ein; allein `KuehlbetriebLesen` sieht den Schalter. Beim
+ersten Speichern der Kaskade wird er zum Einstellungssatz — jeder Speicherweg schreibt die Plätze als
+Text. Ein früher Satz mit leerer Kaskade hätte beides verschoben, Meldung und Vorwahl. Probe:
+`KuehlbetriebProgrammeinstellungTests` — ein neues Projekt mit und ohne Programmeinstellung ergibt
+dieselbe Meldung, dieselbe Vorwahl und nach dem Speichern denselben Satz bis auf den Schalter.
+
 ### 7.3 `KU-S3` — Kühlbetrieb am Erzeuger
 
 | Tabelle | Spalte | Typangabe | Bedeutung |
@@ -2120,6 +2140,15 @@ verlangt keinen zweiten.
 | **Symmetrie der Kennzahlen** | Zu jeder Kennzahl der Wärmeseite aus der Gegenüberstellung in 6.4 liegt das benannte Gegenstück der Kälteseite vor — oder die Abweichung steht in der Abweichungsliste (4.2, 5.5, 6.4). Die Probe läuft über die **Liste**, nicht über Zahlen: Sie fällt, sobald eine Größe auf einer Seite hinzukommt und auf der anderen weder gebaut noch benannt abgelehnt wird (E21, F-K19) |
 | **Ein Lauf, zwei Reihen** | Das Gebäudemodell wird je Gebäude und Lauf **einmal** gerufen; Heiz- und Kühlreihe stammen aus demselben Ergebnis. Die Probe zählt die Aufrufe des Moduls `Gebaeude/` — sie fällt, sobald eine zweite Gebäuderechnung für die Kälte entsteht (E21, 3.7) |
 
+**Umgesetzt mit KU1 (23.09.2026)** in `KaeltebedarfTests` und `KuehlkanalTests`: Paritätsprobe
+(dazu bitgleich, wenn der Kühlsollwert auf der oberen Raumtemperatur steht), Winter,
+Kühlleistungsgrenze, Vorzeichen — der scharfe Teil als benannter Fehler `AbschnittsregelVerletzt`
+im Löser, der Hinweisteil als Kennzahl K6 mit Herkunft —, Kanallisten, Netzverluste,
+Knappheitsparser, Kanalsumme der Kälteseite und die drei Proben „Bestandsweg-Gebäude liefert
+Kältebedarf 0 mit Hinweis", „Symmetrie der Kennzahlen" und „Ein Lauf, zwei Reihen"; dazu die
+Energiebilanz mit Kühlung. Die Umschaltstunde ist als Kennzahl gezählt; in den gemessenen Läufen
+trat keine auf. Deckung, Tagesbetriebsart, zwei Nenner, EER und Kühl-Vorlauf kommen mit KU2.
+
 ### 10.3 Datenbankfälle
 
 `[Collection("Testdatenbank")]` mit `Kulturvorrichtung`, Muster der bestehenden Controller-Tests:
@@ -2224,6 +2253,13 @@ Damit ist die Schemastufe **byte-gleich in allen Dateien** nachgewiesen (dreizeh
 `2026-09-23_R12_Gebaeudemodell`, außer `protokoll.txt`), und die CI vergleicht weiter ohne `--ohne`.
 Sobald der Kanal die Spalten schreibt, erscheinen die Schlüssel von selbst — mit dem Einfrierschritt,
 der für KU1 ohnehin fällig ist.
+
+**Nach der zweiten Welle (23.09.2026):** Der Kanal schreibt die Spalten, aber nur für ein Projekt mit
+`Kuehlbetrieb = 1`. Alle dreizehn Referenzprojekte stehen auf 0 — kein Gebäude rechnet anders, der
+Kühlkanal bleibt leer, die Spalten bleiben NULL, und es entsteht keine neue Datei: dreizehn Projekte
+gegen `2026-09-23_R12_Gebaeudemodell` **byte-gleich in allen Dateien** (außer `protokoll.txt`), ohne
+Schemaschritt und ohne Änderung der Testdatenbank. Die Schlüssel erscheinen mit dem Referenzprojekt
+mit Kühlung (10.4) und dessen Einfrierschritt.
 
 **Was das Einfrieren erzwingt, ist allein die Datei.** Und weil KU1 sie erzeugt, während G1 + G2
 ohnehin alle dreizehn Projekte bewegen: **Getrennt gefahren kostet dasselbe Ergebnis zwei
