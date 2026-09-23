@@ -162,6 +162,31 @@ public sealed class GebaeudeHuelleTexte
     /// <summary><c>GEBK_LBL_AUSSEN_STRAHLUNG</c></summary>
     public string LabelAussenStrahlung { get; set; } = "Außenbauteile mit Strahlung";
 
+    /// <summary><c>GEBK_LBL_INFILTRATION</c></summary>
+    public string LabelInfiltration { get; set; } = "Infiltration :";
+
+    /// <summary><c>GEBK_LBL_NUTZERLUEFTUNG</c></summary>
+    public string LabelNutzerlueftung { get; set; } = "Nutzerlüftung :";
+
+    /// <summary><c>GEBK_LBL_SOMMERLUEFTUNG</c></summary>
+    public string LabelSommerlueftung { get; set; } = "Sommerlüftung";
+
+    /// <summary><c>GEBK_HINWEIS_LUFTWECHSEL</c> — „{0}" der Luftwechsel, „{1}" seine Herkunft.</summary>
+    public string HinweisLuftwechsel { get; set; } = "VDI 6007 rechnet mit {0} 1/h ({1}).";
+
+    /// <summary><c>GEBK_HERKUNFT_INFILTRATION_NUTZER</c></summary>
+    public string HerkunftInfiltrationNutzer { get; set; } = "Infiltration + Nutzerlüftung";
+
+    /// <summary><c>GEBK_HERKUNFT_LUFTWECHSELRATE</c></summary>
+    public string HerkunftLuftwechselrate { get; set; } = "Luftwechselrate des Gebäudes";
+
+    /// <summary><c>GEBK_HERKUNFT_VORGABE</c></summary>
+    public string HerkunftVorgabe { get; set; } = "Vorgabe";
+
+    /// <summary><c>GEBK_HINWEIS_SOMMERLUEFTUNG</c> — „{0}" Schwelle [°C], „{1}" Luftwechsel [1/h].</summary>
+    public string HinweisSommerlueftung { get; set; }
+        = "Sommerlüftung: Ist die Raumluft über {0} °C und die Außenluft mindestens 2 K kühler, steigt der Luftwechsel auf {1} 1/h.";
+
     /// <summary><c>GEBK_VORGABE</c> — „Vorgabe {0}", Platzhalter im leeren Feld.</summary>
     public string VorgabeFormat { get; set; } = "Vorgabe {0}";
 

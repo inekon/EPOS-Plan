@@ -220,3 +220,21 @@ eingefroren und nennt diese 17 Bilder noch nicht. Nachgezogen wird dort: Ein Lau
 Zeilen müssen der bisherigen Datei gleichen — sonst hat sich ein Bild geändert —, die 17 neuen
 sind die Bilder dieser Tafel. Die neue Datei ersetzt die alte im selben Schritt (Regel oben);
 die Begründung — 17 Bilder neu, keines geändert — steht in der Commit-Nachricht.
+
+---
+
+## Gebäudesimulation (Stufe G2): Raumtemperatur eines Gebäudes
+
+`ChartRenderer.Raumtemperatur` zeichnet den Jahresverlauf der Raumluft- und der operativen
+Temperatur mit dem Sollwertband (Heizsollwert nach Fahrplan und obere Raumtemperatur,
+gestrichelt) — das zweite Bild des Bedarfsdialogs eines Gebäudes. Zwei Proben halten es:
+
+| Probe | Aussage |
+|---|---|
+| `raumtemperatur_gebaeude` | Maßprobe 1240 × 560, die Farben der Rollen `SERIE_1` und `SERIE_2`, Determinismus |
+| `raumtemperatur_sollband_wirkt` | Gegenprobe: dasselbe Bild mit und ohne Sollwertband muss sich unterscheiden |
+
+Die drei Bilder (eines der Maßprobe, zwei der Gegenprobe) stehen noch nicht in der Messlatte;
+sie kommen mit dem nächsten Einfrieren auf dem Linux-Läufer dazu, nach derselben Regel wie die
+Bilder der Etappe E6: alle alten Zeilen gleich, drei neu, keines geändert. Das Bild nutzt den
+vorhandenen Verlaufsweg des Temperaturbilds; kein bestehendes Bild ändert sich.

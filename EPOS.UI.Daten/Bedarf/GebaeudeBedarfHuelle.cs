@@ -13,10 +13,11 @@ namespace WindowsFormsApplication1
     /// (Umsetzungskonzept Gebäudesimulation 2.8).
     ///
     /// <para><b>Gerechnet wird im Kern</b> (<c>GebaeudeBedarfCtrl</c>), gezeichnet auch
-    /// (<c>ChartRenderer.GanglinieNormiertModell</c>) — die Komponente bekommt Zahlen und
-    /// ein Zeichenmodell. Seit G1 trägt das DTO den Rechenweg (Ausweis
-    /// „Tagesbilanz (Bestandsweg)" nach ADR-006) und die Kennzahlen des Vergleichs; ihre
-    /// Darstellung und der Vergleich alt/neu über <c>modellErzwungen</c> folgen mit G2.</para>
+    /// (<c>ChartRenderer.GanglinieNormiertModell</c>, <c>ChartRenderer.RaumtemperaturModell</c>)
+    /// — die Komponente bekommt Zahlen und Zeichenmodelle. Das DTO trägt den Rechenweg (Ausweis
+    /// „Tagesbilanz (Bestandsweg)" nach ADR-006), die Kennzahlen des VDI-Wegs und den
+    /// <b>Vergleich alt/neu</b>: zwei Aufrufe desselben Controllers, der zweite mit
+    /// <c>modellErzwungen</c> auf den jeweils anderen Weg (Umsetzungskonzept 2.7) — bis Stufe GA.</para>
     /// </summary>
     internal static class GebaeudeBedarfHuelle
     {
@@ -37,31 +38,44 @@ namespace WindowsFormsApplication1
                 GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ);
             if (!ergebnis.Erfolgreich) return null;
 
-            var monate = new double[12];
-            for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
-                monate[m] = ergebnis.MonatswerteMwh[m];
+            // Der Vergleich alt/neu: derselbe Controller, der andere Rechenweg. Liefert er
+            // nichts (etwa ein benannt abgelehntes Gebaeude auf dem VDI-Weg), bleibt die
+            // Vergleichstabelle weg - die Meldung steht im Protokoll des Aufrufs.
+            string anderer = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007
+                ? DbWerte.GEBAEUDE_MODELL_TAGESBILANZ
+                : DbWerte.GEBAEUDE_MODELL_VDI6007;
+            GebaeudeBedarfErgebnis gegen =
+                GebaeudeBedarfCtrl.Rechnen(projektId, projekt.m_ID_Klimaregion, zeile.IdZ, anderer);
 
-            var daten = new GebaeudeBedarfDaten
-            {
-                Name = ergebnis.Name,
-                HeizwaermeMwh = ergebnis.HeizwaermeMwh,
-                MaxLastKw = ergebnis.MaxLastKw,
-                VollbenutzungsstundenH = ergebnis.VollbenutzungsstundenH,
-                MonatswerteMwh = monate,
+            GebaeudeBedarfDaten daten = Daten(ergebnis, gegen.Erfolgreich ? Daten(gegen, null) : null);
 
-                Modelltext = GebaeudeHuelle.Rechenwegtext(ergebnis.Modell, vorgabe: false),
-                SpitzeTagesmittelKw = ergebnis.SpitzeTagesmittelKw,
-                SpitzeQuantil95Kw = ergebnis.SpitzeQuantil95Kw,
-                KuehlenergieMwh = ergebnis.KuehlenergieMwh,
-                KuehlstundenH = ergebnis.KuehlstundenH,
-                MittlereRaumtemperaturC = ergebnis.MittlereRaumtemperaturC
-            };
+            // Das Bild "Raumtemperatur" gibt es nur auf dem VDI-Weg (Konzept 8.2).
+            Func<Zeichenmodell> raumbild = ergebnis.RaumtemperaturC != null
+                ? () => Raumtemperaturmodell(ergebnis)
+                : null;
 
             return new Dictionary<string, object>
             {
                 ["Daten"] = daten,
                 ["Bildauftrag"] = new Func<bool, Zeichenmodell>(
                     sortiert => Bedarfsmodell(ergebnis, sortiert)),
+                ["BildauftragRaumtemperatur"] = raumbild,
+                ["BildtextRaumtemperatur"] = Text_("GEBB_BILD_RAUMTEMPERATUR", "Raumtemperatur"),
+                ["GruppeVergleich"] = Text_("GEBB_GRP_VERGLEICH", "Vergleich der Rechenwege"),
+                ["SpalteKennzahl"] = Text_("GEBB_SP_KENNZAHL", "Kennzahl"),
+                ["SpalteTagesbilanz"] = Text_("GEBB_SP_TAGESBILANZ", "Tagesbilanz"),
+                ["SpalteVdi6007"] = Text_("GEBB_SP_VDI6007", "VDI 6007"),
+                ["SpalteAbweichung"] = Text_("GEBB_SP_ABWEICHUNG", "Abweichung"),
+                ["LabelSpitzeStunde"] = Text_("GEBB_LBL_SPITZE_STUNDE", "Spitzenlast (Stunde):"),
+                ["LabelSpitzeTagesmittel"] = Text_("GEBB_LBL_SPITZE_TAGESMITTEL", "Spitzenlast (Tagesmittel):"),
+                ["LabelSpitzeQuantil95"] = Text_("GEBB_LBL_SPITZE_QUANTIL95", "95-%-Wert der Stundenlast:"),
+                ["LabelKuehlbedarf"] = Text_("GEBB_LBL_KUEHLBEDARF", "Kühlbedarf (informativ):"),
+                ["LabelKuehlstunden"] = Text_("GEBB_LBL_KUEHLSTUNDEN", "Stunden mit Kühlbedarf:"),
+                ["LabelMittlereRaumtemperatur"] =
+                    Text_("GEBB_LBL_MITTLERE_RAUMTEMPERATUR", "mittlere Raumtemperatur (Nutzungszeit):"),
+                ["LabelUeberhitzung"] = Text_("GEBB_LBL_UEBERHITZUNG", "Überhitzungsstunden:"),
+                ["LabelSommerlueftung"] = Text_("GEBB_LBL_SOMMERLUEFTUNG", "Stunden mit Sommerlüftung:"),
+                ["EinheitStundenZahl"] = Text_("GEBB_EINHEIT_H", "h"),
                 ["FarbeSetzen"] = new Func<Farbrolle, Farbe, Task>(FarbeSetzen),
                 ["FarbeZuruecksetzen"] = new Func<Farbrolle, Task>(FarbeZuruecksetzen),
 
@@ -87,6 +101,58 @@ namespace WindowsFormsApplication1
                 ["OkText"] = MyResource.Resource.ALLG_BTN_OK,
                 ["HilfeSchluessel"] = "Form_Gebaeude.btn_Help"
             };
+        }
+
+        /// <summary>
+        /// Das DTO eines Ergebnisses; <paramref name="vergleich"/> ist der andere Rechenweg
+        /// (<c>null</c> = keiner). Energiemengen bleiben in MWh, umgerechnet wird an der
+        /// Anzeigekante.
+        /// </summary>
+        private static GebaeudeBedarfDaten Daten(GebaeudeBedarfErgebnis ergebnis, GebaeudeBedarfDaten vergleich)
+        {
+            var monate = new double[12];
+            for (int m = 0; m < 12 && m < ergebnis.MonatswerteMwh.Length; m++)
+                monate[m] = ergebnis.MonatswerteMwh[m];
+
+            return new GebaeudeBedarfDaten
+            {
+                Name = ergebnis.Name,
+                HeizwaermeMwh = ergebnis.HeizwaermeMwh,
+                MaxLastKw = ergebnis.MaxLastKw,
+                VollbenutzungsstundenH = ergebnis.VollbenutzungsstundenH,
+                MonatswerteMwh = monate,
+
+                Modelltext = GebaeudeHuelle.Rechenwegtext(ergebnis.Modell, vorgabe: false),
+                IstVdi6007 = ergebnis.Modell == DbWerte.GEBAEUDE_MODELL_VDI6007,
+                SpitzeTagesmittelKw = ergebnis.SpitzeTagesmittelKw,
+                SpitzeQuantil95Kw = ergebnis.SpitzeQuantil95Kw,
+                KuehlenergieMwh = ergebnis.KuehlenergieMwh,
+                KuehlstundenH = ergebnis.KuehlstundenH,
+                MittlereRaumtemperaturC = ergebnis.MittlereRaumtemperaturC,
+                UeberhitzungsstundenH = ergebnis.UeberhitzungsstundenH,
+                SommerlueftungsstundenH = ergebnis.SommerlueftungsstundenH,
+                Vergleich = vergleich
+            };
+        }
+
+        /// <summary>
+        /// Das Bild „Raumtemperatur" (Stufe G2): Raumluft und operativ mit dem Sollwertband —
+        /// gezeichnet im Kern (<c>ChartRenderer.RaumtemperaturModell</c>).
+        /// </summary>
+        private static Zeichenmodell Raumtemperaturmodell(GebaeudeBedarfErgebnis ergebnis)
+        {
+            return ChartRenderer.RaumtemperaturModell(
+                Text_("GEBB_BILD_RAUMTEMPERATUR", "Raumtemperatur"),
+                ergebnis.RaumtemperaturC, ergebnis.OperativeTemperaturC,
+                ergebnis.HeizsollwertC, ergebnis.ObereRaumtemperaturC,
+                new ChartRenderer.Raumtemperaturnamen
+                {
+                    Raumluft = Text_("GEBB_REIHE_RAUMLUFT", "Raumluft"),
+                    Operativ = Text_("GEBB_REIHE_OPERATIV", "operative Temperatur"),
+                    Heizsollwert = Text_("GEBB_REIHE_HEIZSOLLWERT", "Heizsollwert"),
+                    ObereGrenze = Text_("GEBB_REIHE_OBERE_GRENZE", "obere Raumtemperatur"),
+                    Achse = "°C"
+                });
         }
 
         /// <summary>
