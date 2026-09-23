@@ -361,9 +361,11 @@ der Preisbasis umgerechnet — ein Brennstoff hat seinen Heizwert, gleichgültig
 abrechnet. Gespeichert werden `custom_hi`/`custom_hs` bzw. `hi_kwh_per_unit`/`hs_kwh_per_unit`
 immer in dieser Einheit.
 
-**Nur der Arbeitspreis folgt der Preisbasis.** Die Klappliste „Preisbasis" sagt, in welcher
-Einheit der Anwender ihn eingeben will; angezeigt wird `Basiswert ÷ Faktor`, gespeichert wird der
-Basiswert je Abrechnungseinheit. **Die gewählte Basis ist ein eigener Kartenzustand** (ET‑D‑3, Mockup-Anhang
+**Nur der Arbeitspreis folgt der Preisbasis.** Die Klappliste „Preisbasis" steht direkt unter dem
+Arbeitspreis und bietet „€/‹Abrechnungseinheit›" und — sobald ein Heizwert im Feld steht — „€/kWh"
+(ET‑D‑4, → Register R‑D); sie sagt, in welcher Einheit der Anwender ihn eingeben will. Angezeigt wird
+`Basiswert ÷ Faktor`, gespeichert wird der Basiswert je Abrechnungseinheit. Ohne Heizwert nennt eine leise
+Zeile, warum „€/kWh" fehlt; rechnet der Träger ohnehin nach kWh ab, gibt es keine Liste. **Die gewählte Basis ist ein eigener Kartenzustand** (ET‑D‑3, Mockup-Anhang
 U32; umgesetzt #446): Sie steht als Einheitentext („kWh" oder die Abrechnungseinheit) in
 `energy_project_settings.Preisbasis` (Schemaschritt 112), und beim Öffnen wird die Anzeige in dieser Basis
 umgerechnet — auch wenn der Brennstoff keine Umrechnungsregel nach kWh führt. `ID_Umrechnung` geht weiter mit,
@@ -376,8 +378,8 @@ Versionskopie trägt die Basis mit. Der **Leistungspreis** bleibt in
 
 **Formelzeile und Effektivprüfung rechnen über die Basiswerte** — Arbeitspreis je
 Abrechnungseinheit ÷ Heizwert je Abrechnungseinheit — und nennen die Einheiten:
-„0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh"; bei Preisbasis kWh kommt „Direktabrechnung:
-0,0476 €/kWh" dazu. Rechnet der Träger unmittelbar nach kWh ab (Strom, Fernwärme), steht
+„0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh"; bei Preisbasis kWh läuft die Zeile in Eingaberichtung:
+„0,0476 €/kWh × 10,50 kWh/Nm³ = 0,5000 €/Nm³ (gespeichert je Nm³)". Rechnet der Träger unmittelbar nach kWh ab (Strom, Fernwärme), steht
 „Direktabrechnung nach kWh". Die Rechnung selbst liegt einmal im Kern
 (`EnergietraegerPreiskarte`); der Riegel `EnergieEinheitenPruefung.ErreichtKwh` fragt über
 derselben Abrechnungseinheit.
@@ -393,8 +395,8 @@ unter der Tabelle, geschrieben wird dort die Katalogzeile selbst.
 
 **Die Katalogübernahme ist eine einmalige Kopie.** Der Knopf „Katalogwerte übernehmen" steht nur
 im Projektkontext und holt Arbeits-, Grund- und Leistungspreis, Heiz- und Brennwert sowie die drei
-Emissionswerte aus der Katalogzeile in die Felder; die Preisbasis geht dabei auf die
-Abrechnungseinheit zurück. Die Karte meldet „Katalogwerte übernommen — noch nicht gespeichert";
+Emissionswerte aus der Katalogzeile in die Felder; die gewählte Preisbasis bleibt stehen, und der
+Katalogpreis je Abrechnungseinheit erscheint in ihr. Die Karte meldet „Katalogwerte übernommen — noch nicht gespeichert";
 geschrieben wird erst mit „Speichern" bzw. „OK", und dabei entsteht die Historienzeile. Das
 Projekt folgt dem Katalog danach **nicht** — eine spätere Änderung im Katalog lässt die
 Projektwerte, wo sie sind.

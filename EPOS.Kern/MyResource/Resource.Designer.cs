@@ -11102,15 +11102,6 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung: {0} €/kWh ähnelt.
-        /// </summary>
-        public static string ETV_FORMEL_DIREKT_BASIS {
-            get {
-                return ResourceManager.GetString("ETV_FORMEL_DIREKT_BASIS", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Direktabrechnung nach kWh ähnelt.
         /// </summary>
         public static string ETV_FORMEL_DIREKT_KWH {
@@ -11125,6 +11116,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_FORMEL_JE_EINHEIT {
             get {
                 return ResourceManager.GetString("ETV_FORMEL_JE_EINHEIT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die {0} €/kWh × {1} kWh/{2} = {3} €/{2} (gespeichert je {2}) ähnelt.
+        /// </summary>
+        public static string ETV_FORMEL_JE_KWH {
+            get {
+                return ResourceManager.GetString("ETV_FORMEL_JE_KWH", resourceCulture);
             }
         }
         
@@ -11503,6 +11503,24 @@ namespace WindowsFormsApplication1.MyResource {
         public static string ETV_LUECKE_TITEL {
             get {
                 return ResourceManager.GetString("ETV_LUECKE_TITEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Einheit des Arbeitspreises ähnelt.
+        /// </summary>
+        public static string ETV_PREISBASIS_ARIA {
+            get {
+                return ResourceManager.GetString("ETV_PREISBASIS_ARIA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die €/kWh ist wählbar, sobald ein Heizwert gepflegt ist. ähnelt.
+        /// </summary>
+        public static string ETV_PREISBASIS_OHNE_HEIZWERT {
+            get {
+                return ResourceManager.GetString("ETV_PREISBASIS_OHNE_HEIZWERT", resourceCulture);
             }
         }
         
@@ -29474,7 +29492,7 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, auf die sich der Arbeitspreis bezieht (Kilowattstunde, Liter, Kubikmeter, Tonne). Sie entscheidet, wie der Preis in Kilowattstunden umgerechnet wird. ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Einheit, in der der Arbeitspreis eingegeben wird: die Mengeneinheit des Trägers (etwa Liter, Kubikmeter oder Kilogramm) oder die Kilowattstunde, sobald ein Heizwert gepflegt ist. Gespeichert wird immer der Preis je Mengeneinheit; ein Wechsel rechnet nur die Anzeige über den Heizwert um. ähnelt.
         /// </summary>
         public static string KI_DLG_ET_PREISBASIS_ERL {
             get {

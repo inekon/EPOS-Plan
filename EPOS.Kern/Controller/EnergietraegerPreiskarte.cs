@@ -24,7 +24,9 @@ namespace WindowsFormsApplication1
     /// <para><b>Gerechnet wird über die Basiswerte</b> — Arbeitspreis je
     /// Abrechnungseinheit ÷ Heizwert je Abrechnungseinheit —, und die Formelzeile
     /// nennt die Einheiten, damit die Division lesbar bleibt:
-    /// „0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh".</para>
+    /// „0,50 €/Nm³ ÷ 10,50 kWh/Nm³ = 0,0476 €/kWh". Steht die Preisbasis auf
+    /// kWh, läuft die Zeile in der Richtung der Eingabe:
+    /// „0,0476 €/kWh × 10,50 kWh/Nm³ = 0,5000 €/Nm³ (gespeichert je Nm³)".</para>
     /// </summary>
     public static class EnergietraegerPreiskarte
     {
@@ -97,9 +99,11 @@ namespace WindowsFormsApplication1
         ///
         /// <para>Ein Träger ohne Heizwert — oder einer, der ohnehin nach kWh
         /// abrechnet — bekommt „Direktabrechnung nach kWh". Sonst steht die
-        /// Division samt Einheiten da; steht die Preisbasis auf kWh, kommt der
-        /// Hinweis „Direktabrechnung: … €/kWh" dazu, weil der Anwender den Preis
-        /// dann bereits in €/kWh eingibt.</para>
+        /// Division samt Einheiten da. Steht die Preisbasis auf kWh, gibt der
+        /// Anwender den Preis in €/kWh ein; dann läuft die Zeile in DIESER Richtung
+        /// — Preis je kWh × Heizwert = Preis je Abrechnungseinheit — und sagt dazu,
+        /// in welcher Einheit gespeichert wird. Gerechnet wird in beiden Fällen
+        /// dasselbe: Basiswert und Heizwert, beide je Abrechnungseinheit.</para>
         /// </summary>
         /// <param name="mitHeizwert">Führt der Träger einen Heizwert? (<c>pricing_model.has_hi</c>)</param>
         /// <param name="abrechnungseinheit">Die Einheit, in der Hi und der Basis-Arbeitspreis stehen.</param>
@@ -133,14 +137,19 @@ namespace WindowsFormsApplication1
             // was das Ergebnis darunter mit vier Stellen ausweist: „0,05 € ÷ 10,50 =
             // 0,0476 €" ging nicht auf, und die Formel stand dauerhaft falsch da.
             // Gerechnet wird unverändert mit dem vollen Wert.
-            string text = string.Format(k, MyResource.Resource.ETV_FORMEL_JE_EINHEIT,
-                                        arbeitspreisBasis.ToString("N4", k), einheit,
-                                        heizwertBasis.ToString("N2", k),
-                                        ergebnis.ToString("N4", k));
-
-            if (IstKwh(preisbasis))
-                text += "  " + string.Format(k, MyResource.Resource.ETV_FORMEL_DIREKT_BASIS,
-                                             ergebnis.ToString("N4", k));
+            //
+            // Preisbasis kWh (ET-D-4): Der Anwender gibt €/kWh ein, also
+            // steht die Zeile in dieser Richtung da — Eingabe × Heizwert = gespeicherter
+            // Preis je Abrechnungseinheit. Die Division „… ÷ … = … €/kWh" hätte ihm nur
+            // seine eigene Eingabe als Ergebnis gezeigt.
+            string text = IstKwh(preisbasis)
+                ? string.Format(k, MyResource.Resource.ETV_FORMEL_JE_KWH,
+                                ergebnis.ToString("N4", k), heizwertBasis.ToString("N2", k),
+                                einheit, arbeitspreisBasis.ToString("N4", k))
+                : string.Format(k, MyResource.Resource.ETV_FORMEL_JE_EINHEIT,
+                                arbeitspreisBasis.ToString("N4", k), einheit,
+                                heizwertBasis.ToString("N2", k),
+                                ergebnis.ToString("N4", k));
 
             return new Formelzeile { PreisJeKwh = ergebnis.ToString("N4", k) + " €", Text = text };
         }

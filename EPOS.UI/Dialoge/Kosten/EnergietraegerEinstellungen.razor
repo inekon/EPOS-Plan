@@ -26,8 +26,12 @@
 
    Block D ist der Pruefblock: Die Umrechnungsregeln pruefen die
    Einheitenkette, sie RECHNEN nicht mehr. Gerechnet wird mit Heizwert und
-   Brennwert - die Preisbasis „kWh" traegt seit ET-D den Heizwert als Faktor
+   Brennwert - die Preisbasis „kWh" traegt den Heizwert als Faktor
    (Befund UR-1, EnergietraegerPreisCtrl.Preisbasen).
+
+   DIE PREISBASIS STEHT AM ARBEITSPREIS (Entscheid ET-D-4, loest die Anordnung
+   aus ET-D-3 ab): Wer den Preis eintraegt, waehlt dort auch, ob in €/Nm³ oder
+   in €/kWh - im zugeklappten Block D fand sie niemand.
 
    HISTORIE UND SPEICHERN STEHEN UNTER DEN BLOECKEN: Der Speichern-Knopf gilt
    fuer die ganze Karte.
@@ -52,13 +56,26 @@
             <Gruppenkopf Titel="@TitelBlockPreis">
                 <KindInhalt>
                     @* Formularraster (iU8-E-2 / W14a-E-7, Paket P2): Beschriftung neben dem
-                       Feld, Zahlenfelder kurz mit der Einheit dahinter. Die Preisbasis steht
-                       NICHT mehr hier - sie gehoert zu den Einheiten (Block D). *@
+                       Feld, Zahlenfelder kurz mit der Einheit dahinter. *@
                     <Formularraster>
                         <KindInhalt>
                             <Zahlenfeld Bezeichnung="@LabelArbeitspreis" Einheit="@Stand.EinheitArbeitspreis"
                                         Wert="@Stand.Arbeitspreis"
                                         WertChanged="@(w => Feld(() => Stand.Arbeitspreis = w ?? Stand.Arbeitspreis))" />
+
+                            @* ET-D-4: Die Preisbasis steht DIREKT unter dem Arbeitspreis, ohne
+                               eigene Beschriftung - dasselbe Muster wie der Leistungspreis-Modus
+                               darunter; die Sprachausgabe hoert den Kurznamen. Sie sagt nur, in
+                               welcher Einheit der Preis EINGEGEBEN wird; gespeichert wird immer je
+                               Mengeneinheit. Fuehrt der Traeger nur eine Einheit (Strom,
+                               Fernwaerme, kein Heizwert), steht keine Liste da - dann genuegt die
+                               Einheit am Feld. *@
+                            @if (Stand.Preisbasen.Count > 1)
+                            {
+                                <Auswahlfeld Eintraege="@Stand.Preisbasen" Auswahl="@Stand.PreisbasisId"
+                                             Kurzname="@LabelPreisbasisAria"
+                                             AuswahlChanged="BeiPreisbasis" />
+                            }
 
                             <Zahlenfeld Bezeichnung="@LabelGrundpreis" Einheit="@Stand.EinheitGrundpreis"
                                         Wert="@Stand.Grundpreis"
@@ -110,6 +127,19 @@
                             }
                         </KindInhalt>
                     </Formularraster>
+
+                    @* Die beiden Zeilen zur Preisbasis stehen wie die Staffelzeile AUSSERHALB
+                       des Rasters: Saetze, keine Felder. Die erste sagt, warum „€/kWh" fehlt
+                       (Heizwert noch nicht gepflegt), die zweite, warum die Karte die
+                       Mengeneinheit zeigt (Schemastand vor 112 - kein stiller Rueckfall). *@
+                    @if (!string.IsNullOrEmpty(Stand.PreisbasisHinweis))
+                    {
+                        <Herleitungszeile Text="@Stand.PreisbasisHinweis" />
+                    }
+                    @if (!string.IsNullOrEmpty(Stand.PreisbasisHerleitung))
+                    {
+                        <Herleitungszeile Text="@Stand.PreisbasisHerleitung" />
+                    }
 
                     @* Die Erklaerzeile der Staffel steht AUSSERHALB des Rasters: ein Satz,
                        kein Feld - in einer Rasterzelle fiele er auf halbe Breite. *@
@@ -333,20 +363,9 @@
 
                 @if (_einheitenOffen)
                 {
-                    <Formularraster>
-                        <KindInhalt>
-                            <Auswahlfeld Bezeichnung="@LabelPreisbasis" Eintraege="@Stand.Preisbasen"
-                                         Auswahl="@Stand.PreisbasisId" AuswahlChanged="BeiPreisbasis" />
-                        </KindInhalt>
-                    </Formularraster>
+                    @* Die Preisbasis steht am Arbeitspreis (Block A, ET-D-4); hier bleibt
+                       die Einheit, in der die Regelkette beginnt. *@
                     <Herleitungszeile Text="@($"{LabelBasiseinheit} {Stand.Basiseinheit}")" />
-                    @if (!string.IsNullOrEmpty(Stand.PreisbasisHerleitung))
-                    {
-                        @* ETAPPE E7c (Schritt F): kein stiller Rueckfall der Preisbasis -
-                           vor Schemastand 112 sagt die Karte, warum sie die
-                           Abrechnungseinheit zeigt. *@
-                        <Herleitungszeile Text="@Stand.PreisbasisHerleitung" />
-                    }
 
                     <Raster TZeile="UmrechnungsregelZeile" Zeilen="@Stand.Regeln.AsQueryable()"
                             Bearbeitbar="true">
@@ -591,7 +610,11 @@
         = "Diese Regeln prüfen die Einheitenkette; gerechnet wird mit Heizwert und Brennwert.";
 
     [Parameter] public string TitelHistorie { get; set; } = "Preishistorie";
-    [Parameter] public string LabelPreisbasis { get; set; } = "Preisbasis";
+    /// <summary>
+    /// Der Kurzname der Preisbasis-Liste für die Sprachausgabe — sie steht ohne
+    /// sichtbare Beschriftung unter dem Arbeitspreis (ET-D-4).
+    /// </summary>
+    [Parameter] public string LabelPreisbasisAria { get; set; } = "Einheit des Arbeitspreises";
     [Parameter] public string LabelBasiseinheit { get; set; } = "Basiseinheit:";
     [Parameter] public string LabelArbeitspreis { get; set; } = "Arbeitspreis";
     [Parameter] public string LabelLeistungspreis { get; set; } = "Leistungspreis";

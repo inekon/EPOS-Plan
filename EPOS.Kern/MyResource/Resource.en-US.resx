@@ -19604,8 +19604,8 @@ Do you want to allow this?</value>
   <data name="ETV_FORMEL_DIREKT_KWH" xml:space="preserve">
     <value>billed directly in kWh</value>
   </data>
-  <data name="ETV_FORMEL_DIREKT_BASIS" xml:space="preserve">
-    <value>Direct billing: {0} €/kWh</value>
+  <data name="ETV_FORMEL_JE_KWH" xml:space="preserve">
+    <value>{0} €/kWh × {1} kWh/{2} = {3} €/{2} (stored per {2})</value>
   </data>
   <data name="ETV_SP_HEIZWERT_EINHEIT" xml:space="preserve">
     <value>Calorific value [{0}]</value>
@@ -22008,7 +22008,7 @@ Do you want to allow this?</value>
     <value>Gross calorific value of the fuel. Needed for condensing appliances; shown only on carriers that carry it.</value>
   </data>
   <data name="KI_DLG_ET_PREISBASIS_ERL" xml:space="preserve">
-    <value>The unit the energy price refers to (kilowatt hour, litre, cubic metre, tonne). It determines how the price is converted into kilowatt hours.</value>
+    <value>The unit in which the energy price is entered: the quantity unit of the carrier (such as litre, cubic metre or kilogram) or the kilowatt hour once a net calorific value is maintained. The price is always stored per quantity unit; switching only converts the display via the net calorific value.</value>
   </data>
   <data name="KI_DLG_ET_BASISEINHEIT_ERL" xml:space="preserve">
     <value>The unit the price chain calculates in — display only. It follows the price basis and the active conversion rules.</value>
@@ -24547,6 +24547,12 @@ Do you want to allow this?</value>
   </data>
   <data name="ETV_PREISBASIS_OHNE_SPALTE" xml:space="preserve">
     <value>This database cannot store the selected price basis yet (schema version before 112) — the card shows the billing unit.</value>
+  </data>
+  <data name="ETV_PREISBASIS_ARIA" xml:space="preserve">
+    <value>Unit of the energy price</value>
+  </data>
+  <data name="ETV_PREISBASIS_OHNE_HEIZWERT" xml:space="preserve">
+    <value>€/kWh can be selected once a net calorific value is maintained.</value>
   </data>
   <data name="ANL_SENKEN_ZEILE" xml:space="preserve">
     <value>Heat sinks: {0}</value>
