@@ -25988,4 +25988,40 @@ Do you want to allow this?</value>
   <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
     <value>The flow temperature level “{0}” is not in the list. The user creates a new level with “{1}”.</value>
   </data>
+  <data name="KI_DLG_MASKE_PKOPF" xml:space="preserve">
+    <value>Project header (“New project” wizard)</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_ERL" xml:space="preserve">
+    <value>The name of the project — required and unique for a new project. In edit mode it is fixed.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KLIMA_ERL" xml:space="preserve">
+    <value>The climate region of the project from the master regions — required; the simulation calculates with its weather data.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KUNDE_ERL" xml:space="preserve">
+    <value>The customer the project is planned for — free text.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BEARBEITER_ERL" xml:space="preserve">
+    <value>Who works on the project — free text; a new project is prefilled with the signed-in user.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>A short description of the plan — site, special features; free text.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_FEST" xml:space="preserve">
+    <value>In edit mode the project name is fixed.</value>
+  </data>
+  <data name="KI_DLG_MASKE_START" xml:space="preserve">
+    <value>Start page</value>
+  </data>
+  <data name="KI_DLG_START_KLIMA_ERL" xml:space="preserve">
+    <value>The climate region of the open project from the master regions; it is only written with the “Save” button next to it.</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_NAME" xml:space="preserve">
+    <value>Solar thermal: profile or load profile</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_ERL" xml:space="preserve">
+    <value>The switch of the “Solar thermal” tile: “Profile” opens the collector input, “Load profile” the solar load profiles. It takes effect at once.</value>
+  </data>
+  <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
+    <value>No project is open — climate region and solar mode belong to the open project.</value>
+  </data>
 </root>

@@ -25995,4 +25995,40 @@ Möchten Sie das zulassen?</value>
   <data name="KI_DLG_WPKL_STUFE_FEHLT" xml:space="preserve">
     <value>Die Vorlaufstufe „{0}“ steht nicht in der Liste. Eine neue Stufe legt der Anwender mit „{1}“ an.</value>
   </data>
+  <data name="KI_DLG_MASKE_PKOPF" xml:space="preserve">
+    <value>Projektkopf (Assistent „Neues Projekt“)</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_ERL" xml:space="preserve">
+    <value>Der Name des Projekts — Pflicht und bei einem neuen Projekt eindeutig. Im Bearbeiten-Modus steht er fest.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_KUNDE_ERL" xml:space="preserve">
+    <value>Der Kunde, für den das Projekt geplant wird — Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BEARBEITER_ERL" xml:space="preserve">
+    <value>Wer das Projekt bearbeitet — Freitext; ein neues Projekt trägt den angemeldeten Benutzer vor.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_BESCHREIBUNG_ERL" xml:space="preserve">
+    <value>Eine Kurzbeschreibung des Vorhabens — Standort, Besonderheiten; Freitext.</value>
+  </data>
+  <data name="KI_DLG_PKOPF_NAME_FEST" xml:space="preserve">
+    <value>Im Bearbeiten-Modus steht der Projektname fest.</value>
+  </data>
+  <data name="KI_DLG_MASKE_START" xml:space="preserve">
+    <value>Startseite</value>
+  </data>
+  <data name="KI_DLG_START_KLIMA_ERL" xml:space="preserve">
+    <value>Die Klimaregion des offenen Projekts aus den Stammregionen; geschrieben wird sie erst mit dem Knopf „Speichern“ daneben.</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_NAME" xml:space="preserve">
+    <value>Solarthermie: Profil oder Ganglinie</value>
+  </data>
+  <data name="KI_DLG_START_SOLARART_ERL" xml:space="preserve">
+    <value>Die Weiche der Kachel „Solarthermie“: „Profil“ öffnet die Eingabe der Kollektoren, „Ganglinie“ die Solarganglinien. Sie wirkt sofort.</value>
+  </data>
+  <data name="KI_DLG_START_KEIN_PROJEKT" xml:space="preserve">
+    <value>Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt.</value>
+  </data>
 </root>

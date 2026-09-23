@@ -2399,5 +2399,30 @@
         internal static string WpklNeuPthermName
             => MyResource.Resource.WPKL_GRP_NEU + ": " + MyResource.Resource.WPKL_LBL_PTHERM;
         internal static string WpklNeuPthermErl => MyResource.Resource.KI_DLG_WPKL_NEU_PTHERM_ERL;
+
+        // ---- Der Projektkopf des Assistenten „Neues Projekt" (Wizard_Projekt)
+        internal static string MaskeProjektkopf => MyResource.Resource.KI_DLG_MASKE_PKOPF;
+        internal static string PkopfNameName => MyResource.Resource.PKOPF_LBL_NAME;
+        internal static string PkopfNameErl => MyResource.Resource.KI_DLG_PKOPF_NAME_ERL;
+        internal static string PkopfKlimaName => MyResource.Resource.PKOPF_LBL_KLIMA;
+        internal static string PkopfKlimaErl => MyResource.Resource.KI_DLG_PKOPF_KLIMA_ERL;
+        internal static string PkopfKundeName => MyResource.Resource.PKOPF_LBL_KUNDE;
+        internal static string PkopfKundeErl => MyResource.Resource.KI_DLG_PKOPF_KUNDE_ERL;
+        internal static string PkopfBearbeiterName => MyResource.Resource.PKOPF_LBL_BEARBEITER;
+        internal static string PkopfBearbeiterErl => MyResource.Resource.KI_DLG_PKOPF_BEARBEITER_ERL;
+        internal static string PkopfBeschreibungName => MyResource.Resource.PKOPF_LBL_BESCHREIBUNG;
+        internal static string PkopfBeschreibungErl => MyResource.Resource.KI_DLG_PKOPF_BESCHREIBUNG_ERL;
+
+        /// <summary>„Weiter ▶" des Assistenten.</summary>
+        internal static string KnopfWeiter => MyResource.Resource.WIZ_BTN_WEITER;
+
+        // ---- Die Startseite (Form_Start)
+        internal static string MaskeStartseite => MyResource.Resource.KI_DLG_MASKE_START;
+
+        /// <summary>„Klimaregion" — das Wort des Projektkopfs; das Kopfband fragt „auswählen:".</summary>
+        internal static string StartKlimaName => MyResource.Resource.PKOPF_LBL_KLIMA;
+        internal static string StartKlimaErl => MyResource.Resource.KI_DLG_START_KLIMA_ERL;
+        internal static string StartSolarartName => MyResource.Resource.KI_DLG_START_SOLARART_NAME;
+        internal static string StartSolarartErl => MyResource.Resource.KI_DLG_START_SOLARART_ERL;
     }
 }

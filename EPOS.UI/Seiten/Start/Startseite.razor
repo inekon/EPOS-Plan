@@ -65,7 +65,12 @@
    Huelle: StartseiteHuelle unter Windows, IProjektQuelle.Startkacheln auf iOS.
    Der PROJEKTWECHSEL laeuft ueber den SeitenZustand - dieselbe Bauart wie in
    BerichteKostenSeite (W5.6): Wer im Kopfband umschaltet, loest Geaendert aus,
-   und die Seite holt ihre Gaben neu, OHNE dass die WebView neu gebaut wuerde. *@
+   und die Seite holt ihre Gaben neu, OHNE dass die WebView neu gebaut wuerde.
+
+   HILFE-ASSISTENT (Welle #458, Stufe 2): Die Seite meldet Klimaregion und
+   Solarart an (KiMaskennamen.STARTSEITE, Sichtklasse StartseiteKiSicht) - sie
+   ist der Wirt des Erzeugerreiters. Die Projekt- und Variantenwahl bleibt
+   draussen: Sie oeffnet ein anderes Projekt und ist Navigation. *@
 
 @namespace EPOS.UI.Seiten.Start
 @using EPOS.UI.Seiten.Simulation
@@ -732,12 +737,79 @@
     {
         if (Zustand is not null) Zustand.Geaendert += BeiZustand;
         Laden();
+
+        // Welle #458, Stufe 2: Klimaregion und Solarart des offenen Projekts beim
+        // Hilfe-Assistenten anmelden - die Seite ist der Wirt des Erzeugerreiters.
+        _kiMaske = KiMaskenanmeldung.Fuer(WindowsFormsApplication1.KiMaskennamen.STARTSEITE,
+                                          () => KiSicht(), KiHaken());
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
         if (Zustand is not null) Zustand.Geaendert -= BeiZustand;
+        _kiMaske?.Dispose();
+    }
+
+    // =====================================================================
+    //  Der Hilfe-Assistent (Welle #458, Stufe 2)
+    // =====================================================================
+
+    private KiMaskenanmeldung? _kiMaske;
+    private StartseiteKiSicht? _kiSicht;
+
+    /// <summary>
+    /// Die Sicht des Assistenten: die Klimaregion des Kopfbandes und die Weiche der
+    /// Solarthermiekachel — gesetzt über dieselben Wege wie von Hand.
+    /// </summary>
+    private StartseiteKiSicht KiSicht() => _kiSicht ??= new StartseiteKiSicht
+    {
+        KlimaLesen = () => _klimaregionId > 0 ? _klimaregionId : null,
+        KlimaSetzen = BeiKlima,
+        Klimaregionen = () => _klimaregionen,
+        GanglinieLesen = () => _solarGanglinie,
+        GanglinieSetzen = BeiSolarart,
+        Solararten = () => new[] { SolarProfilText, SolarGanglinieText }
+    };
+
+    /// <summary>
+    /// Was der Assistent über die Feldwerte hinaus darf.
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Speichern ist der Knopf neben der Klimaregion</b> — derselbe Weg
+    /// (<see cref="KlimaSpeichern"/>) samt derselben Meldung. Die Solarart braucht ihn
+    /// nicht: Sie wirkt wie der Klick sofort.</para>
+    /// <para><b>Ohne offenes Projekt</b> ist die Maske schreibgeschützt — beide Werte
+    /// gehören dem Projekt, und die Seite sperrt ihre Felder dann selbst.</para>
+    /// </remarks>
+    private WindowsFormsApplication1.KiMaskenhaken KiHaken() => new WindowsFormsApplication1.KiMaskenhaken
+    {
+        Auffrischen = () => _ = InvokeAsync(StateHasChanged),
+        Schreibgeschuetzt = () => !ProjektOffen,
+        Schreibschutzgrund = () => Resource.KI_DLG_START_KEIN_PROJEKT,
+        Speichern = () => Task.FromResult(KiKlimaSpeichern())
+    };
+
+    /// <summary>„Speichern" der Klimaregion für den Assistenten — der Weg des Knopfes.</summary>
+    private KiKern.KiErgebnis KiKlimaSpeichern()
+    {
+        if (KlimaSpeichern is null)
+            return KiKern.KiErgebnis.Abgelehnt(Resource.KI_AKTION_SPEICHERN_KEIN_WEG
+                                                       .Replace("{0}", Resource.KI_DLG_MASKE_START));
+
+        (bool Fehler, string Text) ergebnis = KlimaSpeichern(_klimaregionId);
+
+        // Dieselbe Meldung wie am Knopf - gezeichnet wird aber ueber den Verteiler:
+        // Der Assistent ruft diesen Weg nicht aus einem Ereignis der Seite.
+        _meldung = ergebnis.Text ?? "";
+        _meldungsstufe = ergebnis.Fehler ? WarnStufe.Fehler : WarnStufe.Erfolg;
+        _meldungsfrist = null;
+        Laden();
+        _ = InvokeAsync(StateHasChanged);
+
+        return ergebnis.Fehler
+            ? KiKern.KiErgebnis.Abgelehnt(ergebnis.Text)
+            : KiKern.KiErgebnis.Ok(ergebnis.Text, anzahl: 1);
     }
 
     private void BeiZustand()

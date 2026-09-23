@@ -232,13 +232,6 @@ namespace WindowsFormsApplication1
                            "Diagrammschalter eines Reiterblatts der Simulation.", STUFE_2),
 
             // ---- Offen: Stufe 2 --------------------------------------------------------
-            new KiAusnahme("ProjektKopfSeite", KiAusnahmegrund.Offen,
-                           "Der Projektkopf des Assistenten-Ablaufs.", STUFE_2),
-            new KiAusnahme("Startseite", KiAusnahmegrund.Offen,
-                           "Die Klimaregion der Startseite.", STUFE_2),
-            new KiAusnahme("ErzeugerReiter", KiAusnahmegrund.Offen,
-                           "Die Solarart des Reiters Energieerzeuger.", STUFE_2,
-                           hilfeschluessel: "Form_Start.btn_Help_Energieerzeuger"),
             new KiAusnahme("EinstellungenDialog", KiAusnahmegrund.Offen,
                            "Die Programmeinstellungen — steuerbar wird eine Teilmenge ohne Pfade.", STUFE_2,
                            hilfeschluessel: "Form_AdminSettings.btn_Help"),

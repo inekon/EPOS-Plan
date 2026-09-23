@@ -65,7 +65,7 @@ public sealed class KiMaskenabdeckungWacheTests
     /// </summary>
     private readonly record struct Wirt(string Kind, string Wirtkomponente, string Maske);
 
-    /// <summary>Die achtzehn Bausteine und ihre Wirte.</summary>
+    /// <summary>Die Bausteine und ihre Wirte.</summary>
     private static readonly Wirt[] WIRTE =
     {
         new("PvModellFelder",                 "PhotovoltaikDialog",          KiMaskennamen.PHOTOVOLTAIK),
@@ -85,7 +85,8 @@ public sealed class KiMaskenabdeckungWacheTests
         new("OptimierungBlock",               "StromspeicherAuslegungSeite", KiMaskennamen.STROMSPEICHER_AUSLEGUNG),
         new("SimulationKonfigSeite",          "SimulationSeite",             KiMaskennamen.SIMULATION),
         new("SpeicherParameterBlock",         "SimulationSeite",             KiMaskennamen.SIMULATION),
-        new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION)
+        new("ErgebnisReiter",                 "SimulationSeite",             KiMaskennamen.SIMULATION),
+        new("ErzeugerReiter",                 "Startseite",                  KiMaskennamen.STARTSEITE)
     };
 
     // =====================================================================
@@ -117,6 +118,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("EnergietraegerEinstellungen", 21),
         new("EnergietraegerVarianteDialog", 2),
         new("ErgebnisReiter", 1),
+        new("ErzeugerReiter", 1),
         new("ErtragBonus", 2),
         new("GebaeudeAdminDialog", 5),
         new("GebaeudeBedarfDialog", 2),
@@ -142,6 +144,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("PeakShavingDialog", 17),
         new("PhotovoltaikDialog", 5, "„Alle Daten“ (Katalogfelder des Satzes) sind offen (#458 Stufe 2)"),
         new("PhotovoltaikVerguetungDialog", 16),
+        new("ProjektKopfSeite", 5),
         new("ProjektKopieDialog", 4),
         new("ProjektVarianteDialog", 2),
         new("PufferSpProjektDialog", 20),
@@ -159,6 +162,7 @@ public sealed class KiMaskenabdeckungWacheTests
         new("SpeicherFlottenWirtschaftBlock", 6),
         new("SpeicherParameterBlock", 20),
         new("SpeicherZeitreihenDialog", 16),
+        new("Startseite", 2, "die Projekt- und Variantenwahl im Kopfband öffnet ein anderes Projekt — Navigation, kein Einstellwert"),
         new("StromganglinieAdminDialog", 1),
         new("StrompreisDetails", 3),
         new("StromspeicherAuslegungSeite", 0),

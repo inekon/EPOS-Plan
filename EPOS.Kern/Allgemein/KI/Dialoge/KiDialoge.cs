@@ -489,6 +489,20 @@ namespace WindowsFormsApplication1
         public const string KENNLINIEN = "Kenndaten";
 
         /// <summary>
+        /// Der Projektkopf, Schritt 1 des Assistenten „Neues Projekt"
+        /// (<c>ProjektKopfSeite</c>) — der Nachfolger von <c>Wizard_Projekt</c>, dessen
+        /// Namen er behaelt.
+        /// </summary>
+        public const string PROJEKTKOPF = "Wizard_Projekt";
+
+        /// <summary>
+        /// Die Startseite (<c>Startseite</c> samt <c>ErzeugerReiter</c>) — der Nachfolger
+        /// von <c>Form_Start</c>, dessen Namen er behaelt; ihre Info-Knoepfe tragen
+        /// weiter <c>Form_Start.btn_Help_*</c>.
+        /// </summary>
+        public const string STARTSEITE = "Form_Start";
+
+        /// <summary>
         /// Der Katalogschluessel der Verwaltung zu einer Auspraegung des Katalogbrowsers —
         /// die EINE Stelle, an der der Dialog erfaehrt, unter welchem Namen er sich anmeldet.
         /// </summary>
@@ -683,7 +697,9 @@ namespace WindowsFormsApplication1
                 Berichtseite(),
                 ProjektKopie(),
                 ProjektVariante(),
-                Kennlinien());
+                Kennlinien(),
+                Projektkopf(),
+                Startseite());
         }
 
         // =====================================================================
@@ -6725,6 +6741,102 @@ namespace WindowsFormsApplication1
                 {
                     new KiDialogKnopf("ok", "btn_OK", KiDialogTexte.KnopfOk),
                     new KiDialogKnopf("abbrechen", "btn_Abbrechen", KiDialogTexte.KnopfAbbrechen)
+                });
+        }
+
+        // =====================================================================
+        // Wizard_Projekt  ->  Seiten.Assistent.ProjektKopfSeite   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Der Projektkopf des Assistenten „Neues Projekt" — fuenf Felder aus
+        /// <c>EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Eine Sichtklasse, obwohl die Seite in ein Daten-Objekt schreibt</b>
+        /// (<c>ProjektKopfDaten</c>): Die Klimaregion steht darin als Id UND Name, und
+        /// die Seite setzt beide zugleich; der Name steht im Bearbeiten-Modus fest. Beides
+        /// kennt nur der Weg der Seite, nicht die nackte Eigenschaft.
+        /// </para>
+        /// <para>
+        /// <b>Die Pruefung ist die der Seite</b> (<c>ProjektKopfRegeln</c>): Name leer,
+        /// Name vergeben, Klimaregion fehlt — derselbe Hinweis unter den Feldern und
+        /// dasselbe Veto beim Verlassen der Seite. <b>Kein Speicherweg:</b> Angelegt wird
+        /// das Projekt mit „Fertig"; das bleibt der Klick des Anwenders.
+        /// </para>
+        /// <para>
+        /// <b>Die zwei Datumsfelder bleiben draussen</b> — sie sind gesperrt und zeigen,
+        /// was das Programm gespeichert hat.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Projektkopf()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.PROJEKTKOPF,
+                anzeigename: KiDialogTexte.MaskeProjektkopf,
+                felder: new[]
+                {
+                    new KiDialogFeld("name", "ProjektKopfKiSicht.Name",
+                                     KiDialogTexte.PkopfNameName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfNameErl),
+                    new KiDialogFeld("klimaregion", "ProjektKopfKiSicht.Klimaregion",
+                                     KiDialogTexte.PkopfKlimaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.PkopfKlimaErl),
+                    new KiDialogFeld("kunde", "ProjektKopfKiSicht.Kunde",
+                                     KiDialogTexte.PkopfKundeName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfKundeErl, leerErlaubt: true),
+                    new KiDialogFeld("bearbeiter", "ProjektKopfKiSicht.Bearbeiter",
+                                     KiDialogTexte.PkopfBearbeiterName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfBearbeiterErl, leerErlaubt: true),
+                    new KiDialogFeld("beschreibung", "ProjektKopfKiSicht.Beschreibung",
+                                     KiDialogTexte.PkopfBeschreibungName, KiParameterTyp.Text,
+                                     KiDialogTexte.PkopfBeschreibungErl, leerErlaubt: true)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("weiter", "btn_Weiter", KiDialogTexte.KnopfWeiter)
+                });
+        }
+
+        // =====================================================================
+        // Form_Start  ->  Seiten.Start.Startseite   (Welle #458, Stufe 2)
+        // =====================================================================
+
+        /// <summary>
+        /// Die Startseite — zwei Einstellwerte des offenen Projekts aus
+        /// <c>EPOS.UI.Seiten.Start.StartseiteKiSicht</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <b>Die Klimaregion</b> des Kopfbandes ist ein Wahlfeld ueber die Stammregionen;
+        /// geschrieben wird sie mit dem Knopf „Speichern" daneben, und genau der ist der
+        /// Speicherweg der Maske. <b>Die Solarart</b> ist die Weiche der
+        /// Solarthermiekachel (Profil oder Ganglinie); sie wirkt wie der Klick sofort.
+        /// </para>
+        /// <para>
+        /// <b>Die Projekt- und Variantenwahl bleibt draussen:</b> Sie oeffnet ein anderes
+        /// Projekt — eine Navigation, kein Einstellwert. Ohne offenes Projekt ist die
+        /// Maske schreibgeschuetzt.
+        /// </para>
+        /// </remarks>
+        private static KiDialog Startseite()
+        {
+            return new KiDialog(
+                maskenname: KiMaskennamen.STARTSEITE,
+                anzeigename: KiDialogTexte.MaskeStartseite,
+                felder: new[]
+                {
+                    new KiDialogFeld("klimaregion", "StartseiteKiSicht.Klimaregion",
+                                     KiDialogTexte.StartKlimaName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.StartKlimaErl, leerErlaubt: true),
+                    new KiDialogFeld("solarart", "StartseiteKiSicht.Solarart",
+                                     KiDialogTexte.StartSolarartName, KiParameterTyp.Wahl,
+                                     KiDialogTexte.StartSolarartErl)
+                },
+                knoepfe: new[]
+                {
+                    new KiDialogKnopf("speichern", "btn_Speichern", KiDialogTexte.KnopfSpeichern)
                 });
         }
     }

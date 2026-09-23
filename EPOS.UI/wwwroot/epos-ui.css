@@ -6500,11 +6500,17 @@ table.epos-raster--bearbeitbar.quickgrid > tbody > tr > td {
     border-top: 1px solid var(--epos-rahmen-leise);
 }
 
-.epos-startkachel-wahl > label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-height: var(--epos-touchziel);
+/* Die Weiche ist die Optionsgruppe des Hauses: Ihre zwei Optionen stehen hier
+   NEBENEINANDER wie zuvor, und ihr Titel bleibt aus - er steht schon auf der
+   Kachel darueber; die Gruppe traegt ihn als aria-label. */
+.epos-startkachel-wahl > .epos-optionsgruppe {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.epos-startkachel-wahl .epos-optionsgruppe-titel {
+    display: none;
 }
 
 /* ---- Projektzusammenfassung (Reiter Simulation) ------------------------

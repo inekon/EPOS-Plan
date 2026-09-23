@@ -256,7 +256,15 @@ public class KiDialogkatalogTests : IDisposable
         // Welle #458, Stufe 2: die uebrigen Masken mit Einstellwerten. Die
         // Ueberlagerung „Kenndaten" meldet ihren Arbeitsstand ueber eine Sichtklasse
         // an - die Stuetzstellen sind Spalten der gewaehlten Vorlaufstufe.
-        { KiMaskennamen.KENNLINIEN, typeof(KennlinienKiSicht) }
+        { KiMaskennamen.KENNLINIEN, typeof(KennlinienKiSicht) },
+
+        // Der Projektkopf des Assistenten und die Startseite: je eine Sichtklasse
+        // ueber die Wege der Seite (Klimaregion samt Name, Name im Bearbeiten-Modus
+        // fest; Klimaregion und Weiche der Solarthermiekachel).
+        { KiMaskennamen.PROJEKTKOPF,
+          typeof(EPOS.UI.Seiten.Assistent.ProjektKopfKiSicht) },
+        { KiMaskennamen.STARTSEITE,
+          typeof(EPOS.UI.Seiten.Start.StartseiteKiSicht) }
     };
 
     /// <summary>
@@ -358,7 +366,7 @@ public class KiDialogkatalogTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public void Der_Katalog_fuehrt_neunundsechzig_Masken()
+    public void Der_Katalog_fuehrt_einundsiebzig_Masken()
     {
         KiDialogKatalog katalog = KiDialoge.Katalog;
 
@@ -366,8 +374,8 @@ public class KiDialogkatalogTests : IDisposable
         // Photovoltaik hat einen eigenen Schluessel bekommen (Anwenderentscheid
         // 21.09.2026, KI-D-Q7). ACHTUNDSECHZIG seit der Welle #456: die vier
         // Verwaltungen der Erzeugerkataloge (KI-D-Q11). Welle #458, Stufe 2: der
-        // Kennlinieneditor.
-        Assert.Equal(69, katalog.Anzahl);
+        // Kennlinieneditor, der Projektkopf des Assistenten und die Startseite.
+        Assert.Equal(71, katalog.Anzahl);
         foreach (object[] zeile in Masken())
             Assert.True(katalog.Kennt((string)zeile[0]), (string)zeile[0]);
     }
@@ -1363,7 +1371,16 @@ public class KiDialogkatalogTests : IDisposable
         [KiMaskennamen.KENNLINIEN] =
             "bindet über die Sichtklasse KennlinienKiSicht auf den Arbeitsstand der " +
             "Überlagerung: Stufenwahl, die Zeilen der gewählten Stufe als Spalten und " +
-            "die Felder der neuen Stützstelle; Zeuge ist KennlinienEditorDialogTests"
+            "die Felder der neuen Stützstelle; Zeuge ist KennlinienEditorDialogTests",
+        [KiMaskennamen.PROJEKTKOPF] =
+            "bindet über die Sichtklasse ProjektKopfKiSicht: drei Texte reicht sie an " +
+            "ProjektKopfDaten durch, die Klimaregion geht über den Weg der Seite (Id und " +
+            "Name zugleich), der Name steht im Bearbeiten-Modus fest; Zeuge ist " +
+            "ProjektKopfSeiteTests",
+        [KiMaskennamen.STARTSEITE] =
+            "bindet über die Sichtklasse StartseiteKiSicht auf die privaten Felder der " +
+            "Seite (Klimaregion des Kopfbandes, Weiche der Solarthermiekachel); Zeuge ist " +
+            "StartseiteTests"
     };
 
     /// <summary>

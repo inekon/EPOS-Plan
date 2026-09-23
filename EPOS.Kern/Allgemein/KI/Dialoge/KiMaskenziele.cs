@@ -510,7 +510,16 @@ namespace WindowsFormsApplication1
                 // braucht eine gewaehlte Waermepumpe; kontextfrei gibt es ihn nicht.
                 // Sein Ziel ist deshalb die Verwaltung - dieselbe Bauart wie die
                 // Ueberlagerung „Anlagenwerte" der Photovoltaik.
-                { KiMaskennamen.KENNLINIEN, Masken.WpAdministration }
+                { KiMaskennamen.KENNLINIEN, Masken.WpAdministration },
+
+                // Der PROJEKTKOPF ist Schritt 1 des Assistenten „Neues Projekt" -
+                // Masken.Assistent ohne Argument oeffnet ihn in der Betriebsart Neu
+                // (AssistentCtrl.BETRIEBSART_NEU = 0), dem Weg des Menues.
+                { KiMaskennamen.PROJEKTKOPF, Masken.Assistent },
+
+                // Die STARTSEITE ist ihr eigenes Ziel; ohne Argument entscheidet sie
+                // selbst, welcher Reiter vorn steht.
+                { KiMaskennamen.STARTSEITE, STARTSEITE }
             };
 
         /// <summary>

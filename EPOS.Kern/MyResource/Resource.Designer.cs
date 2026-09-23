@@ -32120,6 +32120,15 @@ namespace WindowsFormsApplication1.MyResource {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Projektkopf (Assistent „Neues Projekt“) ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_PKOPF {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_PKOPF", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Projekt speichern unter ähnelt.
         /// </summary>
         public static string KI_DLG_MASKE_PRK {
@@ -32260,6 +32269,15 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_MASKE_SPA {
             get {
                 return ResourceManager.GetString("KI_DLG_MASKE_SPA", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Startseite ähnelt.
+        /// </summary>
+        public static string KI_DLG_MASKE_START {
+            get {
+                return ResourceManager.GetString("KI_DLG_MASKE_START", resourceCulture);
             }
         }
         
@@ -33061,6 +33079,60 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_PEAK_ZINS_ERL {
             get {
                 return ResourceManager.GetString("KI_DLG_PEAK_ZINS_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Wer das Projekt bearbeitet — Freitext; ein neues Projekt trägt den angemeldeten Benutzer vor. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_BEARBEITER_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_BEARBEITER_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Eine Kurzbeschreibung des Vorhabens — Standort, Besonderheiten; Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_BESCHREIBUNG_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_BESCHREIBUNG_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des Projekts aus den Stammregionen — Pflicht; mit ihren Wetterdaten rechnet die Simulation. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_KLIMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_KLIMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Kunde, für den das Projekt geplant wird — Freitext. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_KUNDE_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_KUNDE_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Der Name des Projekts — Pflicht und bei einem neuen Projekt eindeutig. Im Bearbeiten-Modus steht er fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_NAME_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_NAME_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Im Bearbeiten-Modus steht der Projektname fest. ähnelt.
+        /// </summary>
+        public static string KI_DLG_PKOPF_NAME_FEST {
+            get {
+                return ResourceManager.GetString("KI_DLG_PKOPF_NAME_FEST", resourceCulture);
             }
         }
         
@@ -35671,6 +35743,42 @@ namespace WindowsFormsApplication1.MyResource {
         public static string KI_DLG_SPA_ZIEL_NAME {
             get {
                 return ResourceManager.GetString("KI_DLG_SPA_ZIEL_NAME", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Es ist kein Projekt geöffnet — Klimaregion und Solarart gehören zum offenen Projekt. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_KEIN_PROJEKT {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_KEIN_PROJEKT", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Klimaregion des offenen Projekts aus den Stammregionen; geschrieben wird sie erst mit dem Knopf „Speichern“ daneben. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_KLIMA_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_KLIMA_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Die Weiche der Kachel „Solarthermie“: „Profil“ öffnet die Eingabe der Kollektoren, „Ganglinie“ die Solarganglinien. Sie wirkt sofort. ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_SOLARART_ERL {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_SOLARART_ERL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Solarthermie: Profil oder Ganglinie ähnelt.
+        /// </summary>
+        public static string KI_DLG_START_SOLARART_NAME {
+            get {
+                return ResourceManager.GetString("KI_DLG_START_SOLARART_NAME", resourceCulture);
             }
         }
         
